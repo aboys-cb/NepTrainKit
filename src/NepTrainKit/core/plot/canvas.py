@@ -8,10 +8,87 @@ from abc import abstractmethod
 
 import numpy as np
 from PySide6.QtCore import Signal
-from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem
+
+from vispy import scene
+
+from vispy.app import use_app
+from vispy.app.backends import _pyside6
+use_app('pyside6')
 
 
+class ViewBoxWidget(scene.Widget):
+    def __init__(self, title, *args, **kwargs):
+        super(ViewBoxWidget, self).__init__(*args, **kwargs)
+        self.unfreeze()
+        self.grid = self.add_grid(margin=0)
+        self._title=title
+        self.grid.spacing = 0
+        title = scene.Label(title, color='blue',font_size=8)
+        title.height_max = 30
+        self.grid.add_widget(title, row=0, col=0, col_span=2)
 
+        self.yaxis = scene.AxisWidget(orientation='left',
+                                 axis_width=1,
+                                 # axis_label='Y Axis',
+                                 # axis_font_size=12,
+                                 # axis_label_margin=10,
+                                 tick_label_margin=5,
+                                 axis_color="black",
+                                 text_color="black"
+                                 )
+        self.yaxis.width_max = 50
+        self.grid.add_widget(self.yaxis, row=1, col=0)
+
+        self.xaxis = scene.AxisWidget(orientation='bottom',
+                                 axis_width=1,
+
+                                 # axis_label='X Axis',
+                                 # axis_font_size=12,
+                                 # axis_label_margin=10,
+                                 tick_label_margin=10,
+                                 axis_color="black",
+                                 text_color="black"
+
+                                 )
+
+        self.xaxis.height_max = 30
+        self.grid.add_widget(self.xaxis, row=2, col=1)
+
+        right_padding = self.grid.add_widget(row=1, col=2, row_span=1)
+        right_padding.width_max = 5
+        self._view = self.grid.add_view(row=1, col=1,  )
+        self._view.camera = scene.cameras.PanZoomCamera()
+        self._view.camera.interactive = False
+        self.xaxis.link_view(self._view)
+        self.yaxis.link_view(self._view)
+
+
+        self._scatter=None
+        self.freeze()
+
+    def scatter(self,x,y,**kwargs):
+        if self._scatter is None:
+            self._scatter = scene.visuals.Markers()
+            self._view.add(self._scatter)
+        self._scatter.set_data(np.vstack([x, y]).T, **kwargs)
+        self._view.camera.set_range()
+
+        return self._scatter
+
+    def line(self,x,y,**kwargs):
+        xy=np.vstack([x,y]).T
+
+        line=scene.Line(xy , **kwargs)
+        self.view.add(line)
+
+    def diagonal(self,**kwargs):
+        x_domain = self.xaxis.axis.domain
+        line_data = np.linspace(*x_domain,num=100)
+        return self.line(line_data,line_data,**kwargs)
+
+    @property
+    def view(self):
+        return self._view
 
 class PlotBase:
 
@@ -62,73 +139,21 @@ class LayoutPlotBase(PlotBase):
         super().__init__()
         self.current_plot=None
         self.tool_bar=None
-        self.axes_list=[]
-        self.width = 3
-        self.height = 3
-        if row is not None and col is not None:
-            self.subplot(row,col)
-
-    def subplot(self,row,col):
-
-        self.axes_list.clear()
-        self.rows=row
-        self.cols=col
-        self.clear()
-
-        for r in range(5):
-            if r==0:
-                plot = self.addPlot(row=r, col=0,colspan=3 )
-            else:
-
-                plot = self.addPlot(row=1, col=r-1  )
-            plot.getViewBox().mouseDoubleClickEvent = self.on_click(plot)
-            plot.getViewBox().setMouseEnabled(False, False)
-            self.axes_list.append(plot)
-
-        self.on_click(self.axes_list[0])(None)
-
 
     def set_current_plot(self,plot):
 
         if self.current_plot != plot:
-
-
             self.current_plot=plot
             self.currentPlotChanged.emit()
             return True
         return False
-    def on_click(self,plot):
-        """
-        子图点击  放大
-        :param event:
-        :return:
-        """
 
 
-        def handler(event):
-            # 清除现有布局
-            self.ci.clear()
-
-            # 将被双击的子图放在第一行
-            self.addItem(plot, row=0, col=0, colspan=4 )
-
-            self.set_current_plot(plot)
-
-            # 将其他子图放在第二行
-            other_plots = [p for p in self.axes_list if p != plot]
-            for i, other_plot in enumerate(other_plots):
-                self.addItem(other_plot, row=1, col=i)
-
-            for col, factor in enumerate([3, 1]):
-                self.ci.layout.setRowStretchFactor(col, factor)
-
-        return handler
-
-class CustomGraphicsLayoutWidget(LayoutPlotBase,GraphicsLayoutWidget):
+class CustomGraphicsLayoutWidget(LayoutPlotBase,scene.SceneCanvas):
 
     def __init__(self,*args,**kwargs):
         super().__init__(self )
 
-        GraphicsLayoutWidget.__init__(self,*args,**kwargs)
+        scene.SceneCanvas.__init__(self,*args,**kwargs)
 
 

@@ -89,7 +89,7 @@ class ShowNepWidget(QWidget):
         self.graph_widget.structureIndexChanged.connect(self.struct_index_spinbox.setValue)
 
         self.graph_toolbar = NepDisplayGraphicsToolBar(self.graph_widget, self.plot_widget)
-
+        self.graph_widget.set_tool_bar(self.graph_toolbar)
 
         self.search_lineEdit=ConfigTypeSearchLineEdit(self.plot_widget)
         self.search_lineEdit.searchSignal.connect(self.search_config_type)

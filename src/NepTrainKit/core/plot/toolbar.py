@@ -7,7 +7,7 @@ from enum import Enum
 
 
 import numpy as np
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QAction, QIcon, QPen
 from PySide6.QtWidgets import QToolBar
 from pyqtgraph import ViewBox, PlotCurveItem
@@ -35,30 +35,28 @@ class _Mode(str, Enum):
 
 
 class NepDisplayGraphicsToolBar(QToolBar):
-
+    panSignal=Signal(bool)
+    resetSignal=Signal()
+    findMaxSignal=Signal()
+    sparseSignal=Signal()
+    PenSignal=Signal()
+    undoSignal=Signal()
+    deleteSignal=Signal()
 
     def __init__(self,graph_widget, parent=None):
         super().__init__(parent)
         self._parent = parent
         self.graph_widget=graph_widget
         self.graph_widget.tool_bar=self
-        self.graph_widget.currentPlotChanged.connect(self.reset_connect)
+        # self.graph_widget.currentPlotChanged.connect(self.reset_connect)
         self._actions={}
         self.init_actions()
         self.mode=_Mode.NONE
-        if self.graph_widget.current_plot:
-            self.current_plot=self.graph_widget.current_plot
-            self.view_box = self.graph_widget.current_plot.getViewBox()
-        else:
-            self.current_plot=None
-            self.view_box=None
+
     def init_actions(self):
         self.add_action("Reset View",QIcon(":/images/src/images/init.svg"),self.reset_view)
         pan_action=self.add_action("Pan View",QIcon(":/images/src/images/pan.svg"),self.pan)
         pan_action.setCheckable(True)
-
-
-
         find_max_action=self.add_action( "Find Max Error Point",
                                           QIcon(":/images/src/images/find_max.svg"),
                                           self.find_max_error_point)
@@ -112,10 +110,7 @@ class NepDisplayGraphicsToolBar(QToolBar):
 
     def reset_view(self):
         """重置视图"""
-        if self.view_box is None:
-            return False
-
-        self.view_box.autoRange()
+        self.resetSignal.emit()
 
     def delete(self):
         self.graph_widget.delete()
@@ -170,20 +165,19 @@ class NepDisplayGraphicsToolBar(QToolBar):
 
     def pan(self, checked):
         """切换平移模式"""
-        if self.view_box is None:
-            self._update_buttons_checked()
-            return False
+
 
         if checked:
             self.mode = _Mode.PAN
+            self.panSignal.emit(True)
+            # self.view_box.setMouseEnabled(True, True)
 
-            self.view_box.setMouseEnabled(True, True)
-
-            self.view_box.setMouseMode(ViewBox.PanMode)  # 启用平移模式
+            # self.view_box.setMouseMode(ViewBox.PanMode)  # 启用平移模式
         else:
             self.mode = _Mode.NONE
+            self.panSignal.emit(False)
 
-            self.view_box.setMouseEnabled(False, False)
+            # self.view_box.setMouseEnabled(False, False)
         self._update_buttons_checked()
 
 

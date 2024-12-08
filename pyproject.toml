@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "NepTrainKit"
 authors = [{ name = "Chen Cheng bing", email = "1747193328@qq.com" }]
-version = "1.5.0"
+version = "2.0.0"
 
 description = """
 NepTrainKit is a Python package for visualizing and manipulating training datasets for NEP.
@@ -38,7 +38,7 @@ dependencies = [
 "PySide6-Fluent-Widgets>=1.7.0",
 "loguru>=0.7.2",
 "requests>=2.32.3",
-"pyqtgraph>=0.13.7",
+"vispy>=0.14.3",
 "PyOpenGL>=3.1.7",
 "numpy>=1.26.0"
 ]

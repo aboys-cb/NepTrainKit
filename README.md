@@ -20,7 +20,7 @@ NepTrainKit is a toolkit focused on the operation and visualization of neuroevol
 
 # Installation
 
-**It is strongly recommended to use pip for installation, as it will compile the OpenMP version and significantly speed up the acquisition of descriptors.**
+**It is strongly recommended to use pip for installation.**
 
 ## Installation Methods
 ### 1. Install via pip

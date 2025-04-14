@@ -872,7 +872,7 @@ class CardGroup(MakeDataCardWidget):
         self.setAcceptDrops(True)
         self.index=0
         self.group_widget = QWidget(self)
-        self.setStyleSheet("CardGroup{boder: 2px solid #C0C0C0;}")
+        # self.setStyleSheet("CardGroup{boder: 2px solid #C0C0C0;}")
         self.viewLayout.addWidget(self.group_widget)
         self.group_layout = QVBoxLayout(self.group_widget)
         self.exportSignal.connect(self.export_data)

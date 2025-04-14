@@ -182,7 +182,7 @@ class MakeDataWidget(QWidget):
                 config["cards"].append(card.to_dict())
 
 
-            with open(path, "w") as file:
+            with open(path, "w",encoding="utf-8") as file:
                 json.dump(config, file, indent=4,ensure_ascii=False)
             MessageManager.send_success_message("Card configuration exported successfully.")
     def load_card_config(self):
@@ -192,7 +192,7 @@ class MakeDataWidget(QWidget):
             self.parse_card_config(path)
     def parse_card_config(self,path):
             try:
-                with open(path, "r") as file:
+                with open(path, "r",encoding="utf-8") as file:
                     config = json.load(file)
             except:
                 MessageManager.send_warning_message("Invalid card configuration file.")

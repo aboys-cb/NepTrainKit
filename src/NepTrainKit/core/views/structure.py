@@ -172,7 +172,7 @@ class StructurePlotWidget(gl.GLViewWidget):
             halo = gl.GLMeshItem(meshdata=halo_sphere, smooth=True, shader='shaded', color=halo_color, glOptions='translucent')
             halo.translate(atom["position"][0], atom["position"][1], atom["position"][2])
             self.addItem(halo)
-            self.itemsAt()
+
             # 更新atom_items中的mesh和halo
             # self.atom_items[atom_index]["mesh"] = new_mesh
             self.atom_items[atom_index]["halo"] = halo

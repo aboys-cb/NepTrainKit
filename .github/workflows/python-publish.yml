@@ -159,13 +159,13 @@ jobs:
           name: cibw-sdist-all
           path: dist/*
 
-#    - name: Publish package
-#      uses: pypa/gh-action-pypi-publish@release/v1
-#      with:
-#        user: __token__
-#        password: ${{ secrets.PYPI_API_TOKEN }}
-#        packages_dir: dist
-#        skip_existing: false
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          packages_dir: dist
+          skip_existing: true
 #      - name: Publish to PyPI
 #        run: |
 #          pip install twine

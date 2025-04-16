@@ -535,7 +535,7 @@ def calculate_pairwise_distances(lattice_params, atom_coords, fractional=True):
         atom_coords = np.dot(atom_coords, lattice_params)
 
     diff = atom_coords[np.newaxis, :, :] - atom_coords[:, np.newaxis, :]
-    shifts = np.array(np.meshgrid([-1, 0, 1], [-1, 0, 1], [-1, 0, 1])).T.reshape(-1, 3)
+    shifts = np.array(np.meshgrid([-1, 0, 1], [-1, 0, 1], [-1, 0, 1]), dtype=np.int8).T.reshape(-1, 3)
     lattice_shifts = np.dot(shifts, lattice_params)
     all_diffs = diff[:, :, np.newaxis, :] + lattice_shifts[np.newaxis, np.newaxis, :, :]
     all_distances = np.sqrt(np.sum(all_diffs ** 2, axis=-1))

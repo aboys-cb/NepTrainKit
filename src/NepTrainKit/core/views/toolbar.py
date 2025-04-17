@@ -4,14 +4,36 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QSize
 from PySide6.QtGui import QAction, QIcon, QActionGroup
 from PySide6.QtWidgets import QToolBar
 
+from qfluentwidgets import CommandBar, Action,CommandBarView
 
 
+class KitToolBarBase(CommandBarView):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._parent = parent
+        self._actions = {}
+        self.setIconSize(QSize(24, 24))
+        self.setSpaing(2)
+        self.init_actions()
 
-class NepDisplayGraphicsToolBar(QToolBar):
+    def addButton(self, name,icon,callback,checkable=False):
+        action=Action(QIcon(icon),name,self)
+        if checkable:
+            action.setCheckable(True)
+            action.toggled.connect(callback)
+        else:
+            action.triggered.connect(callback)
+        self._actions[name]=action
+        self.addAction(action)
+        action.setToolTip(name)
+        return action
+    def init_actions(self):
+        pass
+class NepDisplayGraphicsToolBar(KitToolBarBase):
     panSignal=Signal(bool)
     resetSignal=Signal()
     findMaxSignal=Signal()
@@ -22,31 +44,27 @@ class NepDisplayGraphicsToolBar(QToolBar):
     deleteSignal=Signal()
     revokeSignal=Signal()
     exportSignal=Signal()
-    def __init__(self,  parent=None):
-        super().__init__(parent)
-        self._parent = parent
-        self._actions={}
-        self.init_actions()
+
 
 
     def init_actions(self):
-        self.add_action("Reset View",QIcon(":/images/src/images/init.svg"),self.resetSignal)
-        pan_action=self.add_action("Pan View",
+        self.addButton("Reset View",QIcon(":/images/src/images/init.svg"),self.resetSignal)
+        pan_action=self.addButton("Pan View",
                                    QIcon(":/images/src/images/pan.svg"),
                                    self.pan,
                                    True
                                    )
 
 
-        find_max_action=self.add_action( "Find Max Error Point",
+        find_max_action=self.addButton( "Find Max Error Point",
                                           QIcon(":/images/src/images/find_max.svg"),
                                           self.findMaxSignal)
-        sparse_action=self.add_action( "Sparse samples",
+        sparse_action=self.addButton( "Sparse samples",
                                           QIcon(":/images/src/images/sparse.svg"),
                                           self.sparseSignal)
 
 
-        pen_action=self.add_action("Mouse Selection",
+        pen_action=self.addButton("Mouse Selection",
                                    QIcon(":/images/src/images/pen.svg"),
                                    self.pen,
                                    True
@@ -59,35 +77,21 @@ class NepDisplayGraphicsToolBar(QToolBar):
         self.action_group.addAction(pen_action)
         self.action_group.setExclusionPolicy(QActionGroup.ExclusionPolicy.ExclusiveOptional)
 
-        discovery_action=self.add_action("Finding non-physical structures",QIcon(":/images/src/images/discovery.svg"),self.discoverySignal)
+        discovery_action=self.addButton("Finding non-physical structures",QIcon(":/images/src/images/discovery.svg"),self.discoverySignal)
 
 
-        revoke_action=self.add_action("Undo",QIcon(":/images/src/images/revoke.svg"),self.revokeSignal)
+        revoke_action=self.addButton("Undo",QIcon(":/images/src/images/revoke.svg"),self.revokeSignal)
 
-        delete_action=self.add_action("Delete Selected Items",QIcon(":/images/src/images/delete.svg"),self.deleteSignal)
+        delete_action=self.addButton("Delete Selected Items",QIcon(":/images/src/images/delete.svg"),self.deleteSignal)
         self.addSeparator()
-        export_action=self.add_action("Export structure descriptor",QIcon(":/images/src/images/export.svg"),self.exportSignal)
+        export_action=self.addButton("Export structure descriptor",QIcon(":/images/src/images/export.svg"),self.exportSignal)
 
     def reset(self):
         if self.action_group.checkedAction():
             self.action_group.checkedAction().setChecked(False)
 
-    def add_action(self, name,icon,callback,checkable=False):
-        action=QAction(QIcon(icon),name,self)
-        if checkable:
-            action.setCheckable(True)
-            action.toggled.connect(callback)
-        else:
-            action.triggered.connect(callback)
-        self._actions[name]=action
-        self.addAction(action)
-        action.setToolTip(name)
-        return action
-
-
     def pan(self, checked):
         """切换平移模式"""
-
         if checked:
             self.panSignal.emit(True)
         else:
@@ -100,3 +104,19 @@ class NepDisplayGraphicsToolBar(QToolBar):
             self.penSignal.emit(True)
         else:
             self.penSignal.emit(False)
+
+
+
+
+class StructureToolBar(KitToolBarBase):
+    pass
+    orthoViewSignal=Signal(bool)
+    def init_actions(self):
+        view_action=self.addButton( "Ortho View",
+                                          QIcon(":/images/src/images/view_change.svg"),
+                                          self.view_changed,True)
+    def view_changed(self,checked):
+        if checked:
+            self.orthoViewSignal.emit(True)
+        else:
+            self.orthoViewSignal.emit(False)

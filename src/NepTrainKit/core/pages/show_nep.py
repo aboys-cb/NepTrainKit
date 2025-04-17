@@ -97,10 +97,23 @@ class ShowNepWidget(QWidget):
         self.struct_index_widget_layout.addWidget(self.auto_switch_button)
         self.struct_index_spinbox.valueChanged.connect(self.show_current_structure)
 
+        self.bond_label=StrongBodyLabel(self.struct_widget)
+        self.bond_label.setFont(getFont(20, QFont.DemiBold))
+        # self.bond_label.setFixedHeight(30)  # 设置状态栏的高度
+        self.bond_label.setWordWrap(True)
+        # 添加到布局的底部
+        # self.bond_label.setStyleSheet("QLabel { background-color: #f3f3f3; color: black; padding: 5px; }")
+        self.bond_label.setToolTip('The Tip is the minimum distance between atoms in the current structure, in Å.')
+
+        self.bond_label.installEventFilter(ToolTipFilter(self.bond_label, 300, ToolTipPosition.TOP))
+
+
+
         self.struct_widget_layout.addWidget(self.show_struct_widget, 0, 0, 1, 1)
         self.struct_widget_layout.addWidget(self.export_single_struct_button, 1, 0, 1, 1, alignment=Qt.AlignRight)
         self.struct_widget_layout.addWidget(self.struct_info_edit, 2, 0, 1, 1)
         self.struct_widget_layout.addWidget(self.struct_index_widget, 3, 0, 1, 1)
+        self.struct_widget_layout.addWidget(self.bond_label, 4, 0, 1, 1)
 
         self.struct_widget_layout.setRowStretch(0, 3)
         self.struct_widget_layout.setRowStretch(1, 1)
@@ -125,37 +138,27 @@ class ShowNepWidget(QWidget):
         self.search_lineEdit.uncheckSignal.connect(self.uncheck_config_type)
 
 
-
+        # 创建状态栏
+        self.path_label = HyperlinkLabel(self.plot_widget)
+        self.path_label.setFixedHeight(30)  # 设置状态栏的高度
         self.plot_widget_layout.addWidget(self.graph_toolbar)
 
         self.plot_widget_layout.addWidget(self.search_lineEdit)
         self.plot_widget_layout.addWidget(self.graph_widget)
-        self.plot_widget_layout.setContentsMargins(0,0,0,0)
+        self.plot_widget_layout.addWidget(self.path_label )
 
+        self.plot_widget_layout.setContentsMargins(0,0,0,0)
 
 
 
 
         self.gridLayout.addWidget(self.plot_widget, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.struct_widget, 0, 1, 1, 1)
-
-        # 创建状态栏
-        self.path_label = HyperlinkLabel(  self)
-        self.path_label.setFixedHeight(30)  # 设置状态栏的高度
-
         # 将状态栏添加到布局的底部
-        self.gridLayout.addWidget(self.path_label, 1, 0, 1, 1)
 
-        self.bond_label=StrongBodyLabel(self)
-        self.bond_label.setFont(getFont(20, QFont.DemiBold))
-        # self.bond_label.setFixedHeight(30)  # 设置状态栏的高度
-        self.bond_label.setWordWrap(True)
-        # 添加到布局的底部
-        self.gridLayout.addWidget(self.bond_label, 1, 1, 1, 1)
-        # self.bond_label.setStyleSheet("QLabel { background-color: #f3f3f3; color: black; padding: 5px; }")
-        self.bond_label.setToolTip('The Tip is the minimum distance between atoms in the current structure, in Å.')
 
-        self.bond_label.installEventFilter(ToolTipFilter(self.bond_label, 300, ToolTipPosition.TOP))
+
+
 
         # self.gridLayout.setHorizontalSpacing( 0)
 

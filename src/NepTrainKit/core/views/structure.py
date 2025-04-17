@@ -7,6 +7,7 @@ import numpy as np
 import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 from OpenGL.GL import *  # noqa
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor,QMatrix4x4
 from PySide6.QtWidgets import QApplication
 
@@ -25,6 +26,7 @@ class StructurePlotWidget(gl.GLViewWidget):
 
         self.structure=None
         self.show_bond_flag = None
+
     def set_projection(self,ortho=True):
         self.ortho=ortho
         self.setProjection()
@@ -67,6 +69,101 @@ class StructurePlotWidget(gl.GLViewWidget):
             return mat
         else:
             return super().projectionMatrix(region)
+
+    def mousePressEvent(self, event):
+        super().mousePressEvent(event)
+        return
+        if event.button() == Qt.LeftButton:
+            pos = event.pos()
+            x, y = pos.x(), pos.y()
+
+            # 获取投影和视图矩阵
+            proj = self.projectionMatrix()
+            view = self.viewMatrix()
+            viewport = self.getViewport()
+            width, height = viewport[2], viewport[3]
+
+            # 转换为标准化设备坐标 (NDC)
+            ndc_x = (2.0 * x) / width - 1.0
+            ndc_y = 1.0 - (2.0 * y) / height
+            ndc_z = 0.0
+
+            # 反投影到世界坐标
+            # 将 QMatrix4x4 转换为 NumPy 数组
+            proj_data = np.array(proj.data(), dtype=np.float32).reshape(4, 4, order='F')  # Column-major
+            view_data = np.array(view.data(), dtype=np.float32).reshape(4, 4, order='F')  # Column-major
+            proj_view = proj_data @ view_data  # 矩阵乘法
+            inv_proj_view = np.linalg.inv(proj_view)
+
+            ndc = np.array([ndc_x, ndc_y, ndc_z, 1.0])
+            world_pos = inv_proj_view @ ndc
+            world_pos /= world_pos[3]  # 归一化
+
+            # 射线起点和方向
+            camera_pos = self.cameraPosition()
+            ray_origin = np.array([camera_pos.x(), camera_pos.y(), camera_pos.z()])
+            ray_dir = world_pos[:3] - ray_origin
+            ray_dir = ray_dir / np.linalg.norm(ray_dir)
+
+            # 检测与对象的边界框相交
+            for item in self.items:
+                # 获取对象的边界框
+                if not isinstance(item, gl.GLMeshItem):
+                    continue
+                meshdata=item.opts['meshdata']
+                vertices = meshdata.vertexes()
+                min_bound = vertices.min(axis=0)
+                max_bound = vertices.max(axis=0)
+
+                # 应用对象的变换
+                transform = item.transform()
+                transform_data = np.array(transform.data(), dtype=np.float32).reshape(4, 4, order='F')
+                inv_transform = np.linalg.inv(transform_data)
+                local_origin = inv_transform @ np.append(ray_origin, 1.0)
+                local_dir = inv_transform @ np.append(ray_dir, 0.0)
+                local_origin = local_origin[:3] / local_origin[3]
+                local_dir = local_dir[:3]
+
+                # AABB 相交检测
+                t_min = (min_bound - local_origin) / local_dir
+                t_max = (max_bound - local_origin) / local_dir
+                t1 = np.minimum(t_min, t_max)
+                t2 = np.maximum(t_min, t_max)
+                t_near = np.max(t1)
+                t_far = np.min(t2)
+
+                if t_near <= t_far and t_far >= 0:
+                    print(f"Clicked on item: {item}")
+                    return
+
+    # def mouseReleaseEvent(self, ev):
+    #     super().mouseReleaseEvent(ev)
+    #
+    #     if ev.button() == Qt.LeftButton:
+    #         self.makeCurrent()
+    #
+    #         pos = ev.pos()
+    #         # 正确获取坐标值
+    #         x, y = pos.x(), pos.y()
+    #
+    #         # 创建一个区域元组 (x, y, width, height)
+    #         # 这里使用1x1像素的区域来检测点击
+    #
+    #         region = (x,y, 5, 5)
+    #         print(self.itemsAt(region))
+            # 使用小区域检测
+            # region = (x, self.height() - y - 1, 1, 1)
+            # print(f"点击区域: {region}")
+            # clicked_items = self.itemsAt(region)
+            # print(clicked_items)
+            #
+            # if clicked_items:
+            #     item = clicked_items[0]
+            #
+            #     print(f"点击了: {item}")
+
+
+
     def addItems(self, items):
         for item in items:
 

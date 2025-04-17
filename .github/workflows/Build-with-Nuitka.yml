@@ -59,7 +59,7 @@ jobs:
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe ${{ github.workspace }}/src/build/main.dist/update.exe
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/nep_cpu.pyd ${{ github.workspace }}/src/build/main.dist/nep_cpu.pyd
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/libomp140.x86_64.dll ${{ github.workspace }}/src/build/main.dist/libomp140.x86_64.dll
-
+          Remove-Item -Path "${{ github.workspace }}/src/build/main.dist/NepTrainKit" -Recurse -Force
           New-Item -ItemType Directory -Force ${{ github.workspace }}/src/build/main.dist/Log
           New-Item -ItemType File -Path ${{ github.workspace }}/src/build/main.dist/Log/.placeholder -Force
       - name: Package artifacts (Windows)
@@ -112,11 +112,11 @@ jobs:
               core.setFailed(`Error: No release found for tag ${process.env.TAG_NAME}. Please create it first.`);
             }
       # 使用现有 body 创建/更新 Release
-      - name: Create and Upload Release
+      - name: Upload Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ inputs.tag_name }}
-          name: Release ${{ inputs.tag_name }}
+          name: ${{ inputs.tag_name }}
           body: ${{ steps.get_release.outputs.body }}  # 使用获取到的现有 body
           files: ${{ github.workspace }}/NepTrainKit.win32.zip
           draft: false

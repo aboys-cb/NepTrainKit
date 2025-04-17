@@ -110,13 +110,29 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
 
 class StructureToolBar(KitToolBarBase):
     pass
+    showBondSignal=Signal(bool)
     orthoViewSignal=Signal(bool)
+    exportSignal=Signal()
     def init_actions(self):
         view_action=self.addButton( "Ortho View",
                                           QIcon(":/images/src/images/view_change.svg"),
                                           self.view_changed,True)
+
+        show_bond_action=self.addButton( "Show Bonds",
+                                          QIcon(":/images/src/images/hide.svg"),
+                                          self.show_bond,True)
+
+        export_action=self.addButton("Export current structure",
+                                     QIcon(":/images/src/images/export1.svg"),self.exportSignal)
     def view_changed(self,checked):
         if checked:
             self.orthoViewSignal.emit(True)
         else:
             self.orthoViewSignal.emit(False)
+    def show_bond(self,checked):
+        if checked:
+            self._actions["Show Bonds"].setIcon(QIcon(":/images/src/images/show.svg"))
+            self.showBondSignal.emit(True)
+        else:
+            self._actions["Show Bonds"].setIcon(QIcon(":/images/src/images/hide.svg"))
+            self.showBondSignal.emit(False)

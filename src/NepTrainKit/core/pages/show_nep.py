@@ -24,6 +24,7 @@ from NepTrainKit.core.io.utils import get_nep_type
 from NepTrainKit.core.structure import table_info, atomic_numbers
 from NepTrainKit.core.types import Brushes
 from NepTrainKit.core.views import NepResultPlotWidget, NepDisplayGraphicsToolBar, StructurePlotWidget
+from NepTrainKit.core.views.toolbar import StructureToolBar
 
 
 class ShowNepWidget(QWidget):
@@ -61,8 +62,14 @@ class ShowNepWidget(QWidget):
         self.struct_widget_layout = QGridLayout(self.struct_widget)
 
         self.show_struct_widget = StructurePlotWidget(self.struct_widget)
-        self.export_single_struct_button = TransparentToolButton(QIcon(':/images/src/images/export1.svg') ,self.struct_widget)
-        self.export_single_struct_button.clicked.connect(self.export_single_struct)
+        # self.export_single_struct_button = TransparentToolButton(QIcon(':/images/src/images/export1.svg') ,self.struct_widget)
+        # self.export_single_struct_button.clicked.connect(self.export_single_struct)
+        self.structure_toolbar = StructureToolBar(self.struct_widget)
+        self.structure_toolbar.showBondSignal.connect(self.show_struct_widget.set_show_bonds)
+        self.structure_toolbar.orthoViewSignal.connect(self.show_struct_widget.set_projection)
+        self.structure_toolbar.exportSignal.connect(self.export_single_struct)
+
+
         self.struct_info_edit = PlainTextEdit(self.struct_widget)
 
 
@@ -108,9 +115,10 @@ class ShowNepWidget(QWidget):
         self.bond_label.installEventFilter(ToolTipFilter(self.bond_label, 300, ToolTipPosition.TOP))
 
 
+        self.struct_widget_layout.addWidget(self.structure_toolbar, 0, 0, 1, 1)
 
-        self.struct_widget_layout.addWidget(self.show_struct_widget, 0, 0, 1, 1)
-        self.struct_widget_layout.addWidget(self.export_single_struct_button, 1, 0, 1, 1, alignment=Qt.AlignRight)
+        self.struct_widget_layout.addWidget(self.show_struct_widget, 1, 0, 1, 1)
+        # self.struct_widget_layout.addWidget(self.export_single_struct_button, 1, 0, 1, 1, alignment=Qt.AlignRight)
         self.struct_widget_layout.addWidget(self.struct_info_edit, 2, 0, 1, 1)
         self.struct_widget_layout.addWidget(self.struct_index_widget, 3, 0, 1, 1)
         self.struct_widget_layout.addWidget(self.bond_label, 4, 0, 1, 1)

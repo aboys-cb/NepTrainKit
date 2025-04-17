@@ -39,6 +39,9 @@
     <file>src/images/fps.svg</file>
 
     <file>src/images/view_change.svg</file>
+    <file>src/images/hide.svg</file>
+    <file>src/images/show.svg</file>
+
   </qresource>
   <qresource prefix="/theme">
     <file>src/qss/theme.qss</file>

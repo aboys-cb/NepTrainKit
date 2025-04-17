@@ -154,7 +154,7 @@ class StructurePlotWidget(gl.GLViewWidget):
         bond2.translate(mid_point[0], mid_point[1], mid_point[2])
         # self.addItem(bond2)
         return bond1, bond2
-    @utils.timeit
+
     def show_elem(self, structure):
         self.atom_items = []  # 清空之前的原子信息
         atom_items = []

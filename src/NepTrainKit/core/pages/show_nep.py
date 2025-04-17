@@ -9,9 +9,9 @@ from io import StringIO
 from venv import logger
 
 import numpy as np
-from PySide6.QtCore import QUrl, QTimer, Qt
+from PySide6.QtCore import QUrl, QTimer, Qt, Signal
 from PySide6.QtGui import QIcon, QFont
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout,QSplitter
 from qfluentwidgets import HyperlinkLabel, MessageBox, PlainTextEdit, CaptionLabel, SpinBox, \
     TransparentToolButton, StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition,TransparentToolButton
 
@@ -35,6 +35,7 @@ class ShowNepWidget(QWidget):
         2.拖拽实现目录导入
         3.对于选定的结构 进行展示
     """
+    updateBondInfoSignal=Signal(str)
     def __init__(self,parent=None):
         super().__init__(parent)
         self._parent = parent
@@ -42,6 +43,8 @@ class ShowNepWidget(QWidget):
         self.setAcceptDrops(True)
         self.nep_result_data=None
         self.init_ui()
+        self.updateBondInfoSignal.connect(self.bond_label.setText)
+
         self.first_show=False
     def showEvent(self, event):
         auto_load_config = Config.getboolean("widget","auto_load",False)
@@ -120,8 +123,9 @@ class ShowNepWidget(QWidget):
         self.struct_widget_layout.addWidget(self.show_struct_widget, 1, 0, 1, 1)
         # self.struct_widget_layout.addWidget(self.export_single_struct_button, 1, 0, 1, 1, alignment=Qt.AlignRight)
         self.struct_widget_layout.addWidget(self.struct_info_edit, 2, 0, 1, 1)
-        self.struct_widget_layout.addWidget(self.struct_index_widget, 3, 0, 1, 1)
-        self.struct_widget_layout.addWidget(self.bond_label, 4, 0, 1, 1)
+        self.struct_widget_layout.addWidget(self.bond_label,3, 0, 1, 1)
+
+        self.struct_widget_layout.addWidget(self.struct_index_widget, 4, 0, 1, 1)
 
         self.struct_widget_layout.setRowStretch(0, 3)
         self.struct_widget_layout.setRowStretch(1, 1)
@@ -160,18 +164,23 @@ class ShowNepWidget(QWidget):
 
 
 
-        self.gridLayout.addWidget(self.plot_widget, 0, 0, 1, 1)
-        self.gridLayout.addWidget(self.struct_widget, 0, 1, 1, 1)
+        # self.gridLayout.addWidget(self.plot_widget, 0, 0, 1, 1)
+        # self.gridLayout.addWidget(self.struct_widget, 0, 1, 1, 1)
         # 将状态栏添加到布局的底部
-
-
+        self.splitter = QSplitter(Qt.Horizontal, self)
+        self.splitter.addWidget(self.plot_widget)
+        self.splitter.addWidget(self.struct_widget)
+        self.splitter.setSizes([300,200])
+        self.splitter.setStretchFactor(0, 3)
+        self.splitter.setStretchFactor(1, 2)
+        self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
 
 
 
         # self.gridLayout.setHorizontalSpacing( 0)
 
-        self.gridLayout.setColumnStretch(0, 3)
-        self.gridLayout.setColumnStretch(1, 3)
+        # self.gridLayout.setColumnStretch(0, 3)
+        # self.gridLayout.setColumnStretch(1, 3)
 
     def dragEnterEvent(self, event):
         # 检查拖拽的内容是否包含文件
@@ -359,6 +368,9 @@ class ShowNepWidget(QWidget):
         self.struct_info_edit.setPlainText(comm)
         text_io.close()
     def update_structure_bond_info(self,atoms):
+        self.calculate_bond_thread=utils.LoadingThread(self,show_tip=False )
+        self.calculate_bond_thread.start_work(self.calculate_bond_info,atoms)
+    def calculate_bond_info(self,atoms):
         distance_info = atoms.get_mini_distance_info()
         bond_text = ""
         radius_coefficient_config = Config.getfloat("widget","radius_coefficient",0.7)
@@ -366,14 +378,15 @@ class ShowNepWidget(QWidget):
         for elems,bond_length in distance_info.items():
             elem0_info = table_info[str(atomic_numbers[elems[0]])]
             elem1_info = table_info[str(atomic_numbers[elems[1]])]
-            bond_text += f"{elems[0]}-{elems[1]}:"
             #相邻原子距离小于共价半径之和×系数就标红
             if (elem0_info["radii"] + elem1_info["radii"]) * radius_coefficient_config > bond_length*100:
+                bond_text += f"{elems[0]}-{elems[1]}:"
+
                 bond_text += f'<font color="red">{bond_length:.2f}</font> Å | '
                 unreasonable = True
-            else:
-                bond_text+=f'<font color="green">{bond_length:.2f}</font> Å | '
-        self.bond_label.setText( bond_text )
+            # else:
+            #     bond_text+=f'<font color="green">{bond_length:.2f}</font> Å | '
+        self.updateBondInfoSignal.emit( bond_text )
         if unreasonable:
             MessageManager.send_info_message("The distance between atoms is too small, and the structure may be unreasonable.")
     def search_config_type(self,config):

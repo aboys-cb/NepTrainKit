@@ -24,6 +24,7 @@ from NepTrainKit.core.io.utils import get_nep_type
 from NepTrainKit.core.structure import table_info, atomic_numbers
 from NepTrainKit.core.types import Brushes
 from NepTrainKit.core.views import NepResultPlotWidget, NepDisplayGraphicsToolBar, StructurePlotWidget
+from NepTrainKit.core.views.structure import StructureInfoWidget
 from NepTrainKit.core.views.toolbar import StructureToolBar
 
 
@@ -72,13 +73,13 @@ class ShowNepWidget(QWidget):
         self.structure_toolbar.orthoViewSignal.connect(self.show_struct_widget.set_projection)
         self.structure_toolbar.exportSignal.connect(self.export_single_struct)
 
-
-        self.struct_info_edit = PlainTextEdit(self.struct_widget)
-
-
-
-        self.struct_info_edit.setReadOnly(True)
-
+        #
+        # self.struct_info_edit = PlainTextEdit(self.struct_widget)
+        #
+        #
+        #
+        # self.struct_info_edit.setReadOnly(True)
+        self.struct_info_widget = StructureInfoWidget(self.struct_widget)
         self.struct_index_widget = QWidget(self)
         self.struct_index_widget_layout = QHBoxLayout(self.struct_index_widget)
         self.struct_index_label = CaptionLabel(self.struct_index_widget)
@@ -122,7 +123,7 @@ class ShowNepWidget(QWidget):
 
         self.struct_widget_layout.addWidget(self.show_struct_widget, 1, 0, 1, 1)
         # self.struct_widget_layout.addWidget(self.export_single_struct_button, 1, 0, 1, 1, alignment=Qt.AlignRight)
-        self.struct_widget_layout.addWidget(self.struct_info_edit, 2, 0, 1, 1)
+        self.struct_widget_layout.addWidget(self.struct_info_widget, 2, 0, 1, 1)
         self.struct_widget_layout.addWidget(self.bond_label,3, 0, 1, 1)
 
         self.struct_widget_layout.addWidget(self.struct_index_widget, 4, 0, 1, 1)
@@ -377,14 +378,15 @@ class ShowNepWidget(QWidget):
 
         self.show_struct_widget.show_structure(atoms)
         self.update_structure_bond_info(atoms)
-        text_io=StringIO()
-        atoms.write(text_io)
-
-        text_io.seek(0)
-        # comm=text.readlines()[1]
-        comm=text_io.read()
-        self.struct_info_edit.setPlainText(comm)
-        text_io.close()
+        self.struct_info_widget.show_structure_info(atoms)
+        # text_io=StringIO()
+        # atoms.write(text_io)
+        #
+        # text_io.seek(0)
+        # # comm=text.readlines()[1]
+        # comm=text_io.read()
+        # # self.struct_info_edit.setPlainText(comm)
+        # text_io.close()
     def update_structure_bond_info(self,atoms):
         self.calculate_bond_thread=utils.LoadingThread(self,show_tip=False )
         self.calculate_bond_thread.start_work(self.calculate_bond_info,atoms)

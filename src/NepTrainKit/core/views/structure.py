@@ -9,12 +9,12 @@ import pyqtgraph.opengl as gl
 from OpenGL.GL import *  # noqa
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor,QMatrix4x4
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QWidget, QGridLayout
 
 from NepTrainKit.core import Config
 from NepTrainKit.core.structure import table_info, Structure
 from NepTrainKit import utils
-
+from qfluentwidgets import BodyLabel
 class StructurePlotWidget(gl.GLViewWidget):
     def __init__(self, *args, **kwargs):
         self.ortho=False
@@ -26,6 +26,7 @@ class StructurePlotWidget(gl.GLViewWidget):
 
         self.structure=None
         self.show_bond_flag = None
+        self.scale_factor=1
 
     def set_projection(self,ortho=True):
         self.ortho=ortho
@@ -35,8 +36,11 @@ class StructurePlotWidget(gl.GLViewWidget):
         self.show_bond_flag = show_bonds
         if self.structure is not None:
             if show_bonds:
-                self.show_bond(self.structure)
+                self.scale_factor=0.6
+                self.show_structure(self.structure)
             else:
+                self.scale_factor=1
+
                 self.show_structure(self.structure)
     def setProjection(self, region=None ):
         m = self.projectionMatrix(region)
@@ -213,9 +217,9 @@ class StructurePlotWidget(gl.GLViewWidget):
             # else:
             color1 = QColor(elem0_info["color"]).getRgbF()
             color2 = QColor(elem1_info["color"]).getRgbF()
-            bond_radius = 0.15
-            radius1 = table_info[str(structure.numbers[pair[0]])]["radii"] / 150
-            radius2 = table_info[str(structure.numbers[pair[1]])]["radii"] / 150
+            bond_radius = 0.1
+            radius1 = table_info[str(structure.numbers[pair[0]])]["radii"] / 150*self.scale_factor
+            radius2 = table_info[str(structure.numbers[pair[1]])]["radii"] / 150*self.scale_factor
             bond1, bond2 = self.add_bond(pos1, pos2, color1, color2, radius1, radius2, bond_radius=bond_radius)
             bond_items.append(bond1)
             bond_items.append(bond2)
@@ -257,7 +261,7 @@ class StructurePlotWidget(gl.GLViewWidget):
         atom_items = []
         for idx, (n, p) in enumerate(zip(structure.numbers, structure.positions)):
             color = QColor(table_info[str(n)]["color"]).getRgbF()
-            size = table_info[str(n)]["radii"] / 150
+            size = table_info[str(n)]["radii"] / 150*self.scale_factor
             sphere = gl.MeshData.sphere(rows=10, cols=10, radius=size)
             m = gl.GLMeshItem(meshdata=sphere, smooth=True, shader='shaded', color=color)
             m.translate(p[0], p[1], p[2])
@@ -376,6 +380,54 @@ class StructurePlotWidget(gl.GLViewWidget):
 
         # 示例：高亮第0个原子
         # self.highlight_atom(0)
+
+
+class StructureInfoWidget(QWidget):
+    def __init__(self, parent=None):
+        super(StructureInfoWidget, self).__init__(parent)
+        self.init_ui()
+    def init_ui(self):
+        self._layout = QGridLayout(self)  # 创建布局
+        self._layout.setContentsMargins(0, 0, 0, 0)  # 设置边距
+        self._layout.setSpacing(0)  # 设置间距
+        self.setLayout(self._layout)  # 设置布局
+
+
+        self.atom_label = BodyLabel(self)
+        self.atom_label.setText("Atoms:")
+        self.atom_num_text = BodyLabel(self)
+
+        self.formula_label = BodyLabel(self)
+        self.formula_label.setText("Formula:")
+        self.formula_text = BodyLabel(self)
+
+
+        self.lattice_label=BodyLabel(self)
+        self.lattice_label.setText("Lattice:")
+        self.lattice_text = BodyLabel(self)
+        self.lattice_text.setWordWrap(True)
+
+        self.config_label = BodyLabel(self)
+        self.config_label.setText("Config Type:")
+        self.config_text = BodyLabel(self)
+
+        self._layout.addWidget(self.atom_label, 0,0,1,1)
+        self._layout.addWidget(self.atom_num_text, 0, 1,1,3)
+        self._layout.addWidget(self.formula_label, 1,0,1,1)
+        self._layout.addWidget(self.formula_text, 1, 1,1,3)
+
+
+        self._layout.addWidget(self.config_label, 2, 0,1,1)
+        self._layout.addWidget(self.config_text, 2, 1,1,3)
+
+        self._layout.addWidget(self.lattice_label, 3, 0,1,1)
+        self._layout.addWidget(self.lattice_text, 3, 1,1,3)
+    def show_structure_info(self, structure):
+        pass
+        self.atom_num_text.setText(str(len(structure )))
+        self.formula_text.setText(structure.formula)
+        self.lattice_text.setText(str(np.round(structure.lattice,3)))
+        self.config_text.setText(structure.Config_type)
 
 if __name__ == '__main__':
     app = QApplication([])

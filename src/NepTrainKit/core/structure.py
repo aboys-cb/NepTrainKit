@@ -91,6 +91,19 @@ class Structure():
     @property
     def numbers(self):
         return [atomic_numbers[element] for element in self.elements]
+    @property
+    def formula(self):
+        diffs = np.diff(self.numbers)
+        # 找到变化的地方，包含第一个元素的起始位置
+        change_points = np.where(diffs != 0)[0] + 1
+        # 在变化的位置之间进行分段
+        segments = np.split(self.elements, change_points)
+        # 格式化每个段落
+        result = [f"{segment[0]}{len(segment)}" for segment in segments]
+
+
+        return "".join(result)
+
 
     @property
     def per_atom_energy(self):

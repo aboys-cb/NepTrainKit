@@ -9,7 +9,7 @@ import traceback
 from pathlib import Path
 
 import numpy as np
-from PySide6.QtCore import QObject
+from PySide6.QtCore import QObject, Signal
 from loguru import logger
 
 from NepTrainKit.core import MessageManager, Structure, Config
@@ -38,10 +38,12 @@ def pca(X, k):
     # 5. 投影到前k个主成分
     X_pca = X_centered.dot(top_k_eigenvectors)
 
-    return X_pca
+    return X_pca.astype(np.float32)
 
 
 class ResultData(QObject):
+    #通知界面更新训练集的数量情况
+    updateInfoSignal = Signal( )
 
     def __init__(self,nep_txt_path,data_xyz_path,descriptor_path):
         super().__init__()
@@ -79,11 +81,13 @@ class ResultData(QObject):
         传入一个索引列表，将索引对应的结构标记为选中状态
         这个下标是结构在train.xyz中的索引
         """
+
         if isinstance(_list,(int,np.int_,np.int64, np.int32,np.uint32,np.uint64)):
             _list=[_list]
 
         for i in _list:
             self.select_index.add(i)
+        self.updateInfoSignal.emit()
 
     def uncheck(self,_list):
         """
@@ -96,6 +100,7 @@ class ResultData(QObject):
             if i in self.select_index:
                 self.select_index.remove(i)
 
+        self.updateInfoSignal.emit()
 
 
     def export_model_xyz(self,save_path):
@@ -137,6 +142,8 @@ class ResultData(QObject):
         self._atoms_dataset.remove(i)
         for dataset in self.dataset:
             dataset.remove(i)
+        self.updateInfoSignal.emit()
+
     @property
     def is_revoke(self):
         """
@@ -157,6 +164,7 @@ class ResultData(QObject):
         """
         self.remove(list(self.select_index))
         self.select_index.clear()
+        self.updateInfoSignal.emit()
 
 
     def _load_descriptors(self):

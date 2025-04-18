@@ -13,7 +13,7 @@ from PySide6.QtCore import QUrl, QTimer, Qt, Signal
 from PySide6.QtGui import QIcon, QFont
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout,QSplitter
 from qfluentwidgets import HyperlinkLabel, MessageBox, PlainTextEdit, CaptionLabel, SpinBox, \
-    TransparentToolButton, StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition,TransparentToolButton
+    TransparentToolButton, StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
@@ -153,11 +153,17 @@ class ShowNepWidget(QWidget):
         # 创建状态栏
         self.path_label = HyperlinkLabel(self.plot_widget)
         self.path_label.setFixedHeight(30)  # 设置状态栏的高度
-        self.plot_widget_layout.addWidget(self.graph_toolbar)
 
-        self.plot_widget_layout.addWidget(self.search_lineEdit)
-        self.plot_widget_layout.addWidget(self.graph_widget)
-        self.plot_widget_layout.addWidget(self.path_label )
+        self.dataset_info_label = BodyLabel(self.plot_widget)
+        self.dataset_info_label.setFixedHeight(30)  # 设置状态栏的高度
+
+
+        self.plot_widget_layout.addWidget(self.graph_toolbar, 0, 0, 1, 2)
+
+        self.plot_widget_layout.addWidget(self.search_lineEdit, 1, 0, 1, 2)
+        self.plot_widget_layout.addWidget(self.graph_widget, 2, 0, 1, 2)
+        self.plot_widget_layout.addWidget(self.path_label , 3, 0, 1, 1)
+        self.plot_widget_layout.addWidget(self.dataset_info_label , 3, 1, 1, 1)
 
         self.plot_widget_layout.setContentsMargins(0,0,0,0)
 
@@ -267,6 +273,8 @@ class ShowNepWidget(QWidget):
         self.struct_index_spinbox.setMaximum(self.nep_result_data.num)
 
         self.graph_widget.set_dataset(self.nep_result_data)
+        self.nep_result_data.updateInfoSignal.connect(self.update_dataset_info)
+        self.nep_result_data.updateInfoSignal.emit()
         self.search_lineEdit.setCompleterKeyWord(self.nep_result_data.structure.get_all_config())
         self.struct_index_spinbox.valueChanged.emit(0)
 
@@ -278,6 +286,7 @@ class ShowNepWidget(QWidget):
         """
 
         dir_path = os.path.dirname(path)
+        file_name = os.path.basename(path)
         model_type=get_nep_type(os.path.join(dir_path,"nep.txt"))
         logger.info(f"NEP model type: {model_type}")
         if model_type==0:
@@ -292,7 +301,7 @@ class ShowNepWidget(QWidget):
         if self.nep_result_data is None:
             return
 
-        self.path_label.setText(f"Current working directory: {path}")
+        self.path_label.setText(f"Current file: {file_name}")
         self.path_label.setUrl(QUrl.fromLocalFile(os.path.dirname(path)))
         # self.graph_widget.set_dataset(self.dataset)
 
@@ -300,7 +309,12 @@ class ShowNepWidget(QWidget):
         if self.nep_result_data is None:
             return None
         current_index = self.struct_index_spinbox.value()
-        sort_index = np.sort(self.nep_result_data.structure.group_array.now_data, axis=0)
+        if self.nep_result_data.select_index:
+
+            sort_index = np.sort(np.array(list(self.nep_result_data.select_index)) )
+
+        else:
+            sort_index = np.sort(self.nep_result_data.structure.group_array.now_data, axis=0)
         index = np.searchsorted(sort_index, current_index, side='left')
 
         self.struct_index_spinbox.setValue(int(sort_index[index-1 if index>0 else index]))
@@ -309,7 +323,11 @@ class ShowNepWidget(QWidget):
         if self.nep_result_data is None:
             return None
         current_index=self.struct_index_spinbox.value()
-        sort_index= np.sort(self.nep_result_data.structure.group_array.now_data,axis=0)
+        if self.nep_result_data.select_index:
+            sort_index = np.sort(np.array(list(self.nep_result_data.select_index)) )
+
+        else:
+            sort_index = np.sort(self.nep_result_data.structure.group_array.now_data, axis=0)
         index = np.searchsorted(sort_index, current_index, side='right')
         if index>=sort_index.shape[0]:
             return False
@@ -407,3 +425,7 @@ class ShowNepWidget(QWidget):
         indexs = self.nep_result_data.structure.search_config(config)
 
         self.graph_widget.canvas.select_index(indexs,True )
+    def update_dataset_info(self ):
+        info=f"Dataset Size:  Original: {self.nep_result_data.atoms_num_list.shape[0]} Current: {self.nep_result_data.structure.now_data.shape[0]} "\
+        f"Removed: {self.nep_result_data.structure.remove_data.shape[0]} Selected: {len(self.nep_result_data.select_index)}"
+        self.dataset_info_label.setText(info)

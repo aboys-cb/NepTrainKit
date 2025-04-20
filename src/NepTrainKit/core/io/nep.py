@@ -314,10 +314,17 @@ class NepTrainResultData(ResultData):
         return not check_fullbatch(nep_in, len(self.atoms_num_list)) or not output_files_exist
 
     def _save_energy_data(self, potentials: np.ndarray)  :
+
         """保存能量数据到文件。"""
+
         try:
             ref_energies = np.array([s.per_atom_energy for s in self.structure.now_data], dtype=np.float32)
-            energy_array = np.column_stack([potentials / self.atoms_num_list, ref_energies])
+
+            if potentials.size  == 0:
+                #计算失败 空数组
+                energy_array = np.column_stack([ref_energies, ref_energies])
+            else:
+                energy_array = np.column_stack([potentials / self.atoms_num_list, ref_energies])
         except Exception:
             logger.debug(traceback.format_exc())
             energy_array = np.column_stack([potentials / self.atoms_num_list, potentials / self.atoms_num_list])
@@ -329,7 +336,13 @@ class NepTrainResultData(ResultData):
         """保存力数据到文件。"""
         try:
             ref_forces = np.vstack([s.forces for s in self.structure.now_data], dtype=np.float32)
-            forces_array = np.column_stack([forces, ref_forces])
+
+            if forces.size == 0:
+                # 计算失败 空数组
+                forces_array = np.column_stack([ref_forces, ref_forces])
+
+            else:
+                forces_array = np.column_stack([forces, ref_forces])
         except KeyError:
             MessageManager.send_warning_message("use nep3 calculator to calculate forces replace the original forces")
             forces_array = np.column_stack([forces, forces])
@@ -350,7 +363,11 @@ class NepTrainResultData(ResultData):
         coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data]))[:, np.newaxis]
         try:
             ref_virials = np.vstack([s.nep_virial for s in self.structure.now_data], dtype=np.float32)
-            virials_array = np.column_stack([virials, ref_virials])
+            if virials.size == 0:
+                # 计算失败 空数组
+                virials_array = np.column_stack([ref_virials, ref_virials])
+            else:
+                virials_array = np.column_stack([virials, ref_virials])
         except AttributeError:
             MessageManager.send_warning_message("use nep3 calculator to calculate virial replace the original virial")
             virials_array = np.column_stack([virials, virials])
@@ -376,6 +393,10 @@ class NepTrainResultData(ResultData):
             nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(
                 self.nep_txt_path.as_posix(),
                 self.structure.now_data,"calculate")
+            if nep_potentials_array.size == 0:
+                MessageManager.send_warning_message("The nep calculator fails to calculate the potentials, use the original potentials instead.")
+
+
             energy_array = self._save_energy_data(nep_potentials_array)
             force_array = self._save_force_data(nep_forces_array)
             virial_array, stress_array = self._save_virial_and_stress_data(nep_virials_array)
@@ -470,7 +491,8 @@ class NepPolarizabilityResultData(ResultData):
             nep_polarizability_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
                                                                    self.structure.now_data, "polarizability")
 
-
+            if nep_polarizability_array.size == 0:
+                MessageManager.send_warning_message("The nep calculator fails to calculate the polarizability, use the original polarizability instead.")
             nep_polarizability_array = self._save_polarizability_data(  nep_polarizability_array)
 
         except Exception as e:
@@ -484,11 +506,16 @@ class NepPolarizabilityResultData(ResultData):
         nep_polarizability_array = polarizability / (self.atoms_num_list[:, np.newaxis])
 
         try:
-            polarizability_array = np.column_stack([nep_polarizability_array,
-                                                    np.vstack([structure.nep_polarizability for structure in
-                                                               self.structure.now_data]),
+            ref_polarizability = np.vstack([s.nep_polarizability for s in self.structure.now_data], dtype=np.float32)
+            if polarizability.size == 0:
+                # 计算失败 空数组
+                polarizability_array = np.column_stack([ref_polarizability, ref_polarizability])
+            else:
 
-                                                    ])
+                polarizability_array = np.column_stack([nep_polarizability_array,
+                                                        ref_polarizability
+
+                                                        ])
 
         except Exception:
             logger.debug(traceback.format_exc())
@@ -583,7 +610,8 @@ class NepDipoleResultData(ResultData):
         try:
             nep_dipole_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
                                                            self.structure.now_data, "dipole")
-
+            if nep_dipole_array.size == 0:
+                MessageManager.send_warning_message("The nep calculator fails to calculate the dipole, use the original dipole instead.")
             nep_dipole_array = self._save_dipole_data(  nep_dipole_array)
 
         except Exception as e:
@@ -597,9 +625,13 @@ class NepDipoleResultData(ResultData):
         nep_dipole_array = dipole / (self.atoms_num_list[:, np.newaxis])
 
         try:
-            dipole_array = np.column_stack([nep_dipole_array,
-                                                    np.vstack([structure.nep_dipole for structure in
-                                                               self.structure.now_data]),
+            ref_dipole = np.vstack([s.nep_dipole for s in self.structure.now_data], dtype=np.float32)
+            if dipole.size == 0:
+                # 计算失败 空数组
+                dipole_array = np.column_stack([ref_dipole, ref_dipole])
+            else:
+                dipole_array = np.column_stack([nep_dipole_array,
+                                            ref_dipole
 
                                                     ])
 

@@ -4,7 +4,7 @@ requires = [
 "numpy",
 "setuptools>=68.0.0",
 "pybind11>=2.12.0",
-"setuptools-scm>=7"
+"setuptools-scm>=8.2.1"
 ]
 build-backend = "setuptools.build_meta"
 
@@ -73,8 +73,8 @@ include = ["NepTrainKit", "NepTrainKit.*" ]
 # - 指定 Git 标签格式（默认匹配 v*）
 tag_regex = "^v(?P<version>[0-9.]+(?:b[0-9]+)?)$"
 # - 启用本地版本号（开发时生成 dev 版本）
-#local_scheme = "no-local-version"  # 或 "node-and-date"
-#version_scheme = "no-guess-dev"  # 使用确切标签，不递增
+local_scheme = "no-local-version"  # 或 "node-and-date"
+
 write_to = "src/NepTrainKit/_version.py"
 
 [tool.cibuildwheel.linux]

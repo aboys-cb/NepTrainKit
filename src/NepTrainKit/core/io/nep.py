@@ -327,7 +327,11 @@ class NepTrainResultData(ResultData):
                 energy_array = np.column_stack([potentials / self.atoms_num_list, ref_energies])
         except Exception:
             logger.debug(traceback.format_exc())
-            energy_array = np.column_stack([potentials / self.atoms_num_list, potentials / self.atoms_num_list])
+            if potentials.size == 0:
+                # 计算失败 空数组
+                energy_array = np.column_stack([potentials, potentials])
+            else:
+                energy_array = np.column_stack([potentials / self.atoms_num_list, potentials / self.atoms_num_list])
         energy_array = energy_array.astype(np.float32)
         if energy_array.size != 0:
             np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')

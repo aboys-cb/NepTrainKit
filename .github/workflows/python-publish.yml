@@ -123,7 +123,8 @@ jobs:
       - name: Ensure clean repository
         run: git clean -fdx
       - name: Build source distribution
-        run: python -m build --sdist
+        run: python setup.py sdist
+
 
       - name: Test source distribution
         run: pip install dist/*.tar.gz

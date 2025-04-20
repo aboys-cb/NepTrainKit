@@ -167,6 +167,7 @@ def run_nep3_calculator(nep_txt,structures,calculator_type,queue):
         result = np.array([])
         if queue:
             queue.put(result)
+
     return result
 def run_nep3_calculator_process(nep_txt,structures,calculator_type="calculate"):
     if len(structures)<1000:
@@ -175,11 +176,11 @@ def run_nep3_calculator_process(nep_txt,structures,calculator_type="calculate"):
     p = multiprocessing.Process(target=run_nep3_calculator, args=(nep_txt, structures, calculator_type,queue))
     # 启动进程
     p.start()
-    queue.join()
+    # queue.join()
     result = queue.get( )
-
     p.join()
     queue.close()
+
     p.close()
 
     return result

@@ -123,7 +123,7 @@ jobs:
       - name: Ensure clean repository
         run: git clean -fdx
       - name: Build source distribution
-        run: python -m build
+        run: python -m build -n
 
 
       - name: Test source distribution

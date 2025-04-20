@@ -329,7 +329,8 @@ class NepTrainResultData(ResultData):
             logger.debug(traceback.format_exc())
             energy_array = np.column_stack([potentials / self.atoms_num_list, potentials / self.atoms_num_list])
         energy_array = energy_array.astype(np.float32)
-        np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
+        if energy_array.size != 0:
+            np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
         return energy_array
 
     def _save_force_data(self, forces: np.ndarray)  :
@@ -351,7 +352,8 @@ class NepTrainResultData(ResultData):
             logger.debug(traceback.format_exc())
             forces_array = np.column_stack([forces, forces])
             MessageManager.send_error_message("an error occurred while calculating forces. Please check the input file.")
-        np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
+        if forces_array.size != 0:
+            np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
 
 
         return forces_array
@@ -379,8 +381,10 @@ class NepTrainResultData(ResultData):
 
         stress_array = virials_array * coefficient * 160.21766208  # 单位转换
         stress_array = stress_array.astype(np.float32)
-        np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
-        np.savetxt(self.stress_out_path, stress_array, fmt='%10.8f')
+        if virials_array.size != 0:
+            np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
+        if stress_array.size != 0:
+            np.savetxt(self.stress_out_path, stress_array, fmt='%10.8f')
 
 
         return virials_array, stress_array
@@ -521,7 +525,8 @@ class NepPolarizabilityResultData(ResultData):
             logger.debug(traceback.format_exc())
             polarizability_array = np.column_stack([polarizability, polarizability])
         polarizability_array = polarizability_array.astype(np.float32)
-        np.savetxt(self.polarizability_out_path, polarizability_array, fmt='%10.8f')
+        if polarizability_array.size != 0:
+            np.savetxt(self.polarizability_out_path, polarizability_array, fmt='%10.8f')
 
         return polarizability_array
 
@@ -639,7 +644,8 @@ class NepDipoleResultData(ResultData):
             logger.debug(traceback.format_exc())
             dipole_array = np.column_stack([nep_dipole_array, nep_dipole_array])
         dipole_array = dipole_array.astype(np.float32)
-        np.savetxt(self.dipole_out_path, dipole_array, fmt='%10.8f')
+        if dipole_array.size != 0:
+            np.savetxt(self.dipole_out_path, dipole_array, fmt='%10.8f')
 
         return dipole_array
 

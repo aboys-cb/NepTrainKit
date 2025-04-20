@@ -171,9 +171,9 @@ class ViewBoxWidget(scene.Widget):
         if pen is not None:
 
             kwargs["edge_color"]=self.convert_color(pen)
-
-        self._scatter.set_data(np.vstack([x, y]).T, **kwargs)
-        self.auto_range()
+        if x.size != 0:
+            self._scatter.set_data(np.vstack([x, y]).T, **kwargs)
+            self.auto_range()
         self.update_diagonal()
         return self._scatter
 

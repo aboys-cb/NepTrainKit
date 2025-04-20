@@ -96,9 +96,9 @@ def get_nep_type(file_path):
             nep_type=parts[0]
             model_type = nep_type_to_model_type.get(nep_type )
     except FileNotFoundError:
-        logger.warning(f"错误: 文件 {file_path} 未找到。默认model_type为0")
+        logger.warning(f"Error: File {file_path} not found. Default model_type is 0")
     except Exception as e:
-        logger.warning(f"解析文件时发生错误: {e}")
+        logger.warning(f"An error occurred while parsing the file: {e}")
 
     return model_type
 

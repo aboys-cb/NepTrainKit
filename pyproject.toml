@@ -69,6 +69,7 @@ include = ["NepTrainKit", "NepTrainKit.*" ]
 "NepTrainKit.Config" = ["config.sqlite","ptable.json" ]
 
 [tool.setuptools_scm]
+
 # 可选配置（根据需求调整）：
 # - 指定 Git 标签格式（默认匹配 v*）
 tag_regex = "^v(?P<version>[0-9.]+(?:b[0-9]+)?)$"

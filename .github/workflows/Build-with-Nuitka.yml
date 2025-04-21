@@ -62,6 +62,13 @@ jobs:
           Remove-Item -Path "${{ github.workspace }}/src/build/main.dist/NepTrainKit" -Recurse -Force
           New-Item -ItemType Directory -Force ${{ github.workspace }}/src/build/main.dist/Log
           New-Item -ItemType File -Path ${{ github.workspace }}/src/build/main.dist/Log/.placeholder -Force
+
+      - name: Upload Artifact (backup)
+        uses: actions/upload-artifact@v4
+        with:
+          name: NepTrainKit-${{ matrix.os }}-${{ inputs.tag_name }}
+          path: ${{ github.workspace }}/src/build/main.dist/
+
       - name: Package artifacts (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
@@ -127,9 +134,3 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Artifact (backup)
-        uses: actions/upload-artifact@v4
-        with:
-          name: NepTrainKit-${{ matrix.os }}-${{ inputs.tag_name }}
-          path: ${{ github.workspace }}/src/build/main.dist/

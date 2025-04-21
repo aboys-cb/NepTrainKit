@@ -93,18 +93,40 @@ class Structure():
         return [atomic_numbers[element] for element in self.elements]
     @property
     def formula(self):
-        diffs = np.diff(self.numbers)
-        # 找到变化的地方，包含第一个元素的起始位置
-        change_points = np.where(diffs != 0)[0] + 1
-        # 在变化的位置之间进行分段
-        segments = np.split(self.elements, change_points)
-        # 格式化每个段落
-        result = [f"{segment[0]}{len(segment)}" for segment in segments]
+        #这种形式会导致化学式过长 比如有机分子环境下
+        # diffs = np.diff(self.numbers)
+        # # 找到变化的地方，包含第一个元素的起始位置
+        # change_points = np.where(diffs != 0)[0] + 1
+        # # 在变化的位置之间进行分段
+        # segments = np.split(self.elements, change_points)
+        # # 格式化每个段落
+        # result = [f"{segment[0]}{len(segment)}" for segment in segments]
 
 
-        return "".join(result)
-
-
+        # return "".join(result)
+        # 改成下面的形式
+        formula = ""
+        elems={}
+        for element in self.elements:
+            if element in elems.keys():
+                elems[element]+=1
+            else:
+                elems[element]=1
+        for element,count in elems.items():
+            formula+=element+str(count)
+        return formula
+    @property
+    def html_formula(self):
+        formula = ""
+        elems = {}
+        for element in self.elements:
+            if element in elems.keys():
+                elems[element] += 1
+            else:
+                elems[element] = 1
+        for element, count in elems.items():
+            formula += element +"<sub>" + str(count) + "</sub>"
+        return formula
     @property
     def per_atom_energy(self):
 

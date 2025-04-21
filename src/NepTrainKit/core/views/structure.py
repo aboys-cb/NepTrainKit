@@ -9,7 +9,7 @@ import pyqtgraph.opengl as gl
 from OpenGL.GL import *  # noqa
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor,QMatrix4x4
-from PySide6.QtWidgets import QApplication, QWidget, QGridLayout
+from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QSizePolicy
 
 from NepTrainKit.core import Config
 from NepTrainKit.core.structure import table_info, Structure
@@ -400,7 +400,8 @@ class StructureInfoWidget(QWidget):
         self.formula_label = BodyLabel(self)
         self.formula_label.setText("Formula:")
         self.formula_text = BodyLabel(self)
-
+        self.formula_text.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        self.formula_text.setWordWrap(True)
 
         self.lattice_label=BodyLabel(self)
         self.lattice_label.setText("Lattice:")
@@ -410,6 +411,8 @@ class StructureInfoWidget(QWidget):
         self.config_label = BodyLabel(self)
         self.config_label.setText("Config Type:")
         self.config_text = BodyLabel(self)
+        self.config_text.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+
 
         self._layout.addWidget(self.atom_label, 0,0,1,1)
         self._layout.addWidget(self.atom_num_text, 0, 1,1,3)
@@ -425,7 +428,7 @@ class StructureInfoWidget(QWidget):
     def show_structure_info(self, structure):
         pass
         self.atom_num_text.setText(str(len(structure )))
-        self.formula_text.setText(structure.formula)
+        self.formula_text.setText(structure.html_formula)
         self.lattice_text.setText(str(np.round(structure.lattice,3)))
         self.config_text.setText(structure.Config_type)
 

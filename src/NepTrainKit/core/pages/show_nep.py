@@ -82,7 +82,7 @@ class ShowNepWidget(QWidget):
         self.struct_info_widget = StructureInfoWidget(self.struct_widget)
         self.struct_index_widget = QWidget(self)
         self.struct_index_widget_layout = QHBoxLayout(self.struct_index_widget)
-        self.struct_index_label = CaptionLabel(self.struct_index_widget)
+        self.struct_index_label = BodyLabel(self.struct_index_widget)
         self.struct_index_label.setText("Current structure (original file index):")
 
         self.struct_index_spinbox = SpinBox(self.struct_index_widget)
@@ -428,6 +428,6 @@ class ShowNepWidget(QWidget):
 
         self.graph_widget.canvas.select_index(indexs,True )
     def update_dataset_info(self ):
-        info=f"Dataset Size:  Original: {self.nep_result_data.atoms_num_list.shape[0]} Current: {self.nep_result_data.structure.now_data.shape[0]} "\
-        f"Removed: {self.nep_result_data.structure.remove_data.shape[0]} Selected: {len(self.nep_result_data.select_index)}"
+        info=f"Data: Orig: {self.nep_result_data.atoms_num_list.shape[0]} Now: {self.nep_result_data.structure.now_data.shape[0]} "\
+        f"Rm: {self.nep_result_data.structure.remove_data.shape[0]} Sel: {len(self.nep_result_data.select_index)} Unsel: {self.nep_result_data.structure.now_data.shape[0]-len(self.nep_result_data.select_index)}"
         self.dataset_info_label.setText(info)

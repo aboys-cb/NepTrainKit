@@ -348,7 +348,7 @@ class StructurePlotWidget(gl.GLViewWidget):
 
         # 设置相机参数
         fov = 60
-        distance = max_dimension / (2 * np.tan(np.radians(fov / 2))) * 2.1
+        distance = max_dimension / (2 * np.tan(np.radians(fov / 2))) * 2.8
         self.opts['center'] = pg.Vector(center[0], center[1], center[2])
         self.opts['distance'] = distance
         aspect_ratio = size / np.max(size)  # 计算 x、y、z 的相对比例

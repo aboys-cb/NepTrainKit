@@ -4,6 +4,7 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import json
+import os.path
 from pathlib import Path
 
 from PySide6.QtCore import Signal
@@ -100,11 +101,13 @@ class MakeDataWidget(QWidget):
         if path:
             self.load_base_structure(path)
     def _export_file(self,path):
+        if os.path.exists(path):
+            os.remove(path)
         with open(path, "w") as file:
             for card in self.workspace_card_widget.cards:
                 if card.check_state:
 
-                    card.write_result_dataset(file)
+                    card.write_result_dataset(file,append=True)
 
 
     def export_file(self):

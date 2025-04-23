@@ -22,8 +22,9 @@ from NepTrainKit.core import MessageManager, Config
 from NepTrainKit.core.pages import *
 
 from NepTrainKit import utils,src_rc
-# from ase import Atoms
-# from scipy.sparse.csgraph import connected_components
+import warnings
+
+warnings.filterwarnings("ignore")
 
 
 class NepTrainKitMainWindow(FluentWindow):

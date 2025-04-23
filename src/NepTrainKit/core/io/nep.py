@@ -193,6 +193,7 @@ class ResultData(QObject):
             else:
                 # 结构描述符
                 pass
+
         if desc_array.size != 0:
             if desc_array.shape[1] > 2:
                 desc_array = pca(desc_array, 2)

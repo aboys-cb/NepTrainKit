@@ -42,6 +42,7 @@ def check_path_type(path):
     返回:
         str: "folder"（文件夹）、"file"（文件）或 "unknown"（未知或不存在）。
     """
+
     if os.path.isdir(path):
         return "folder"
     elif os.path.isfile(path):
@@ -66,26 +67,30 @@ def call_path_dialog(self, title, dialog_type="file", default_filename="", file_
     if not dialog_func:
         return None
 
-    path = dialog_func()
+    select_path = dialog_func()
 
-    if isinstance(path, tuple):
-        path = path[0]  # 处理 `getSaveFileName` 和 `getOpenFileName` 返回的 tuple
-    elif isinstance(path, list):
-        if not path:
+    if isinstance(select_path, tuple):
+        select_path = select_path[0]  # 处理 `getSaveFileName` 和 `getOpenFileName` 返回的 tuple
+    elif isinstance(select_path, list):
+        if not select_path:
             return None
-        path = path[0]  # `getOpenFileNames` 返回 list
+        select_path = select_path[0]  # `getOpenFileNames` 返回 list
 
-    if not path:
+    if not select_path:
         return None
 
     # 提取目录并保存到配置
+    if isinstance(select_path,list):
+        path = select_path[0]
+    else:
+        path = select_path
     if check_path_type(path)=="file":
         last_dir = os.path.dirname(path)
     else:
         last_dir = path
 
     Config.set("setting", "last_path", last_dir)
-    return path
+    return select_path
 
 def unzip( ):
 

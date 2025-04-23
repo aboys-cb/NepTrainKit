@@ -59,10 +59,9 @@ class Nep3Calculator( ):
         if isinstance(structures, Structure):
             structures = [structures]
         for structure in structures:
-            symbols = structure.elements
+            symbols = structure.get_chemical_symbols()
             _type = [self.type_dict[k] for k in symbols]
             _box = structure.cell.transpose(1, 0).reshape(-1).tolist()
-
             _position = structure.positions.transpose(1, 0).reshape(-1).tolist()
             _types.append(_type)
             _boxs.append(_box)
@@ -101,7 +100,7 @@ class Nep3Calculator( ):
     def get_descriptor(self,structure:Structure):
         if not self.initialized:
             return np.array([])
-        symbols = structure.elements
+        symbols = structure.get_chemical_symbols()
         _type = [self.type_dict[k] for k in symbols]
         _box = structure.cell.transpose(1, 0).reshape(-1).tolist()
 
@@ -170,7 +169,7 @@ def run_nep3_calculator(nep_txt,structures,calculator_type,queue):
 
     return result
 def run_nep3_calculator_process(nep_txt,structures,calculator_type="calculate"):
-    if len(structures)<1000:
+    if len(structures)<2000:
         return run_nep3_calculator(nep_txt, structures,calculator_type, None)
     queue = multiprocessing.JoinableQueue()
     p = multiprocessing.Process(target=run_nep3_calculator, args=(nep_txt, structures, calculator_type,queue))

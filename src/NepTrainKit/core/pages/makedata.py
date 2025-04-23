@@ -12,10 +12,10 @@ from qfluentwidgets import CommandBar
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.custom_widget import MakeWorkflowArea, CardGroup
-from NepTrainKit.core.io.base import StructureData
-from NepTrainKit.core.structure import Structure
+
 from NepTrainKit.core.views.cards import *
 from NepTrainKit.version import __version__
+
 
 
 
@@ -49,35 +49,35 @@ class MakeDataWidget(QWidget):
 
         if urls:
             # 获取第一个文件路径
-            file_path = urls[0].toLocalFile()
-            if file_path.endswith(".xyz")  :
+            structures_path = []
+            for url in urls:
+                file_path = url.toLocalFile()
+                if (file_path.endswith(".xyz") or
+                    file_path.endswith(".vasp") or
+                    file_path.endswith(".cif")):
+                    structures_path.append(file_path)
 
+                elif file_path.endswith(".json"):
+                    self.parse_card_config(file_path)
+                else:
+                    MessageManager.send_info_message("Only .xyz .vasp .cif or json files are supported for import.")
+            if structures_path:
+                self.load_base_structure(structures_path)
 
-                self.load_base_structure(file_path)
-            elif file_path.endswith(".json"):
-                self.parse_card_config(file_path)
-            else:
-                MessageManager.send_info_message("Only XYZ or json files are supported for import.")
         # event.accept()
-    def load_base_structure(self,path):
-        path=Path(path)
+
+    def load_base_structure(self,paths):
+
         structures_list = []
+        for path  in paths:
+            atoms = ase_read(path,":")
+            if isinstance(atoms, list):
 
-        if path.is_file():
-            # 读取文件
-            structures=Structure.read_multiple(path)
-            structures_list.extend(structures)
-
-        else:
-            for file in path.iterdir():
-                if file.is_file():
-                    # 读取文件
-                    if file.suffix==".xyz":
-                        structures=Structure.read_multiple(file)
-                        structures_list.extend(structures)
-
-
+                structures_list.extend(atoms)
+            else:
+                structures_list.append(atoms)
         self.dataset=structures_list
+        MessageManager.send_success_message(f"success load base structure ({len(structures_list)} atoms).")
 
     def init_ui(self):
 
@@ -95,7 +95,8 @@ class MakeDataWidget(QWidget):
 
     def open_file(self):
         path = utils.call_path_dialog(self,"Please choose the structure files",
-                                      "select",file_filter="XYZ Files (*.xyz)")
+                                      "selects",file_filter="XYZ Files (*.xyz)")
+
         if path:
             self.load_base_structure(path)
     def _export_file(self,path):
@@ -104,6 +105,7 @@ class MakeDataWidget(QWidget):
                 if card.check_state:
 
                     card.write_result_dataset(file)
+
 
     def export_file(self):
 

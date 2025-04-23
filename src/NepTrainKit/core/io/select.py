@@ -54,7 +54,7 @@ def farthest_point_sampling(points, n_samples, min_dist=0.1, selected_data=None)
 
     else:
         # 如果没有初始点，则随机选择一个作为第一个点
-        first_index = np.random.randint(n_points)
+        first_index = 0
         sampled_indices.append(first_index)
         # 计算所有点到第一个点的距离
         min_distances = np.linalg.norm(points - points[first_index], axis=1)

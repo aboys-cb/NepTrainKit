@@ -36,13 +36,14 @@ classifiers = [
 dependencies = [
 
 "PySide6-Fluent-Widgets>=1.7.0",
-    "sobolsequence",
 "loguru>=0.7.2",
 "requests>=2.32.3",
 "pyqtgraph>=0.13.7",
 "PyOpenGL>=3.1.7",
 "numpy>=1.26.0",
 "vispy>=0.14.3",
+"ase",
+"scipy>=1.15.0"
 ]
 
 

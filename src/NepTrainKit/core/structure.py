@@ -153,7 +153,8 @@ class Structure():
         vir = np.array(self.pol.split(" "), dtype=np.float32)
 
         return vir[[0,4,8,1,5,6]] / self.num_atoms
-
+    def get_chemical_symbols(self):
+        return self.elements
 
     @property
     def elements(self):

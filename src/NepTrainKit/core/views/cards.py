@@ -6,7 +6,7 @@
 import os
 import time
 from typing import List, Tuple
-import sobol
+
 
 import numpy as np
 from PySide6.QtCore import Signal
@@ -21,6 +21,13 @@ from NepTrainKit.core.custom_widget import SpinBoxUnitInputFrame, MakeDataCardWi
 from NepTrainKit import utils
 from NepTrainKit.core.calculator import run_nep3_calculator_process
 from NepTrainKit.core.io.select import farthest_point_sampling
+from scipy.sparse.csgraph import connected_components
+from scipy.stats.qmc import Sobol
+from ase import neighborlist
+from ase.io import read as ase_read
+from ase.io import write as ase_write
+from ase.build import make_supercell
+from ase import Atoms
 
 card_info_dict = {}
 def register_card_info(card_class  ):
@@ -29,6 +36,57 @@ def register_card_info(card_class  ):
     return card_class
 
 
+
+
+
+
+def is_organic_cluster(symbols):
+    """
+    判断一个团簇是否为有机分子。
+    规则：必须含有碳（C），通常还含有氢（H）或其他有机元素（O, N, S, P）。
+
+    参数:
+        symbols (list): 团簇中所有原子的化学符号列表。
+
+    返回:
+        bool: 如果是有机分子，返回 True，否则返回 False。
+    """
+    has_carbon = 'C' in symbols
+    if not has_carbon:
+        return False
+    # 可选：强制要求含氢（H）或其他有机元素
+    # organic_elements = {'H', 'O', 'N', 'S', 'P'}
+    # has_organic_elements = any(symbol in organic_elements for symbol in symbols)
+    # return has_carbon and has_organic_elements
+    return True
+
+
+def get_clusters(structure):
+    """
+    识别结构中的团簇（连通分量）。
+
+    参数:
+        structure (ase.Atoms): 输入的 ASE Atoms 对象。
+
+    返回:
+        list: 每个团簇的原子索引列表。
+        list: 每个团簇是否为有机分子的布尔值列表。
+    """
+    cutoff = neighborlist.natural_cutoffs(structure)
+    nl = neighborlist.NeighborList(cutoff, self_interaction=False, bothways=True)
+    nl.update(structure)
+    matrix = nl.get_connectivity_matrix()
+    n_components, component_list = connected_components(matrix)
+
+    clusters = []
+    is_organic_list = []
+    for i in range(n_components):
+        cluster_indices = [j for j in range(len(structure)) if component_list[j] == i]
+        cluster_symbols = [structure[j].symbol for j in cluster_indices]
+        clusters.append(cluster_indices)
+        is_organic_list.append(is_organic_cluster(cluster_symbols))
+
+    return clusters, is_organic_list
 
 class MakeDataCard(MakeDataCardWidget):
     #通知下一个card执行
@@ -70,17 +128,8 @@ class MakeDataCard(MakeDataCardWidget):
         self.result_dataset=[]
 
         self.update_dataset_info()
-    def write_result_dataset(self, file):
-        if isinstance(file, str):
-            file=open(file, "w", encoding="utf8")
-            io_action=False
-        else:
-            io_action=True
-
-        for structure in self.result_dataset:
-            structure.write(file)
-        if not io_action:
-            file.close()
+    def write_result_dataset(self, file,**kwargs):
+        ase_write(file,self.result_dataset,**kwargs)
     def export_data(self):
 
         if self.dataset is not None:
@@ -91,7 +140,7 @@ class MakeDataCard(MakeDataCardWidget):
             thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
             thread.start_work(self.write_result_dataset, path)
 
-    def process_structure(self, structure) :
+    def process_structure(self, structure:Atoms) :
         """
         自定义对每个结构的处理 最后返回一个处理后的结构列表
         """
@@ -257,10 +306,10 @@ class SuperCellCard(MakeDataCard):
         na, nb, nc = self.super_scale_condition_frame.get_input_value()
         return [(na, nb, nc)]
 
-    def _get_max_cell_factors(self, structure) -> List[Tuple[int, int, int]]:
+    def _get_max_cell_factors(self, structure:Atoms) -> List[Tuple[int, int, int]]:
         """根据最大晶格常数计算扩包比例"""
         max_a, max_b, max_c = self.super_cell_condition_frame.get_input_value()
-        lattice = structure.lattice
+        lattice = structure.cell.array
 
         # 计算晶格向量长度
         a_len = np.linalg.norm(lattice[0])
@@ -284,7 +333,7 @@ class SuperCellCard(MakeDataCard):
     def _get_max_atoms_factors(self, structure) -> List[Tuple[int, int, int]]:
         """根据最大原子数计算所有可能的扩包比例"""
         max_atoms = self.max_atoms_condition_frame.get_input_value()[0]
-        num_atoms_orig = structure.num_atoms
+        num_atoms_orig = len(structure)
 
 
 
@@ -320,8 +369,11 @@ class SuperCellCard(MakeDataCard):
             if na == 1 and nb == 1 and nc == 1:  # 只有一个扩包
 
 
-                return [structure]  # 直接返回原始结构
-            supercell = structure.supercell([na, nb, nc])
+                return [structure.copy()]  # 直接返回原始结构
+
+            supercell = make_supercell(structure,np.diag([na, nb, nc]),order="atom-major")
+            supercell.info["Config_type"] = supercell.info.get("Config_type","") + f" supercell({na, nb, nc})"
+
             structure_list.append(supercell)
 
         elif super_cell_type == 1:  # 随机组合或所有组合
@@ -331,12 +383,14 @@ class SuperCellCard(MakeDataCard):
 
 
                     if na==1 and nb==1 and nc==1:  # 只有一个扩包
-                        supercell=structure
+                        supercell=structure.copy()
 
 
                     else:
+                        supercell = make_supercell(structure, np.diag([na, nb, nc]),order="atom-major")
+                        supercell.info["Config_type"] = supercell.info.get("Config_type","") + f" supercell({na, nb, nc})"
 
-                        supercell = structure.supercell([na, nb, nc])
+                        # supercell = structure.supercell([na, nb, nc])
                     structure_list.append(supercell)
             else:
                 # 对于 scale 或 max_cell，枚举所有子组合
@@ -346,18 +400,20 @@ class SuperCellCard(MakeDataCard):
                         for k in range(1, nc + 1):
 
                             if na == 1 and nb == 1 and nc == 1:  # 只有一个扩包
-                                supercell = structure
+                                supercell = structure.copy()
 
 
                             else:
-                                supercell = structure.supercell((i, j, k))
+                                supercell = make_supercell(structure, np.diag([i, j, k]),order="atom-major")
+                                supercell.info["Config_type"]=supercell.info.get("Config_type","") +f" supercell({i,j,k})"
+                                # supercell = structure.supercell((i, j, k))
 
                             structure_list.append(supercell)
 
         # super_cell_type == 2 的情况未实现，保持为空
         return structure_list
     def process_structure(self,structure):
-        # time.sleep(0.2)
+
 
 
         super_cell_type = self.behavior_type_combo.currentIndex()
@@ -466,12 +522,13 @@ class VacancyDefectCard(MakeDataCard):
 
 
         orig_positions = structure.positions
-        orig_elements = structure.elements
+        orig_elements = structure.get_chemical_symbols()
 
         if engine_type == 0:
             # 为数量和位置分配维度：1 维用于数量，n_atoms 维用于位置
-            sobol_seq = sobol.sample(dimension=n_atoms + 1, n_points=max_num)
 
+            sobol_engine = Sobol(d=n_atoms + 1, scramble=True)
+            sobol_seq = sobol_engine.random(max_num)  # 生成 [0, 1] 的序列
         else:
             # Uniform 模式下分开处理
             defect_counts = np.random.randint(1, max_defects + 1, max_num)
@@ -493,7 +550,7 @@ class VacancyDefectCard(MakeDataCard):
                 target_defects = defect_counts[i]
 
             if target_defects == 0:
-                structure_list.append(structure)
+                structure_list.append(new_struct)
                 continue
             if engine_type == 0:
                 sorted_indices = np.argsort(position_scores)
@@ -505,18 +562,20 @@ class VacancyDefectCard(MakeDataCard):
 
 
             # 创建空位
-            mask = np.ones(n_atoms, dtype=bool)
-            mask[defect_indices] = False
-            n_vacancies = np.sum(~mask)
-            new_positions = orig_positions[mask]
-            new_elements = orig_elements[mask]
+            mask = np.zeros(n_atoms, dtype=bool)
+            mask[defect_indices] = True
+            n_vacancies = np.sum(mask)
+            # new_positions = orig_positions[mask]
+            # new_elements = orig_elements[mask]
+            del new_struct[mask]
+            new_struct.info["Config_type"] = new_struct.info.get("Config_type","") + f" Vacancy(num={n_vacancies})"
 
             # 更新结构
-            new_struct.structure_info['pos'] = new_positions
-            new_struct.structure_info['species'] = new_elements
-            new_struct.additional_fields["Config_type"] = structure.additional_fields["Config_type"] +f" Vacancy Defect {i} (num={n_vacancies})"
-            if structure.force_label in new_struct.structure_info:
-                new_struct.structure_info[structure.force_label] = new_struct.structure_info[structure.force_label][mask]
+            # new_struct.structure_info['pos'] = new_positions
+            # new_struct.structure_info['species'] = new_elements
+            # new_struct.additional_fields["Config_type"] = structure.additional_fields["Config_type"] +f" Vacancy Defect {i} (num={n_vacancies})"
+            # if structure.force_label in new_struct.structure_info:
+            #     new_struct.structure_info[structure.force_label] = new_struct.structure_info[structure.force_label][mask]
             structure_list.append(new_struct)
 
         return structure_list
@@ -593,24 +652,43 @@ class PerturbCard(MakeDataCard):
         dim = n_atoms * 3  # 每个原子有 x, y, z 三个维度
 
         if engine_type == 0:
-            sobol_seq = sobol.sample(dimension=dim, n_points=max_num)
+
+            sobol_engine = Sobol(d=dim, scramble=True)
+            sobol_seq = sobol_engine.random(max_num)  # 生成 [0, 1] 的序列
             perturbation_factors = (sobol_seq - 0.5) * 2  # 转换为 [-1, 1]
-
-
         else:
             # 生成均匀分布的扰动因子，范围 [-1, 1]
             perturbation_factors = np.random.uniform(-1, 1, (max_num, dim))
 
+            # 识别团簇和有机分子
+        clusters, is_organic_list = get_clusters(structure)
+
         orig_positions = structure.positions
         for i in range(max_num):
             new_struct = structure.copy()
+            new_positions = orig_positions.copy()
+
             # 提取当前结构的扰动因子并重塑为 (n_atoms, 3)
             delta = perturbation_factors[i].reshape(n_atoms, 3) * max_scaling
-            new_positions = orig_positions + delta
 
-            # 更新坐标
-            new_struct.structure_info['pos'] = new_positions
-            new_struct.additional_fields["Config_type"] = structure.additional_fields["Config_type"] + f" Perturb {i} (distance={max_scaling},{'uniform' if engine_type==1 else 'Sobol'  })"
+            # 对每个团簇应用微扰
+            for cluster_indices, is_organic in zip(clusters, is_organic_list):
+                if is_organic:
+                    # 有机分子：整体平移，应用统一的偏移向量
+                    # 从团簇的第一个原子的扰动因子中取偏移向量
+                    cluster_delta = delta[cluster_indices[0]]
+                    for idx in cluster_indices:
+                        new_positions[idx] += cluster_delta
+                else:
+                    # 非有机分子：逐原子微扰
+                    for idx in cluster_indices:
+                        new_positions[idx] += delta[idx]
+
+            # 更新新结构的坐标
+            new_struct.set_positions(new_positions)
+            new_struct.info["Config_type"] = new_struct.info.get("Config_type","") + f" Perturb(distance={max_scaling}, {'uniform' if engine_type == 1 else 'Sobol'})"
+
+
 
             structure_list.append(new_struct)
 
@@ -696,17 +774,19 @@ class CellScalingCard(MakeDataCard):
             dim=3 #abc
             perturb_angles=False
         if engine_type == 0:
-            sobol_seq = sobol.sample(dimension=dim, n_points=max_num)
 
+            sobol_engine = Sobol(d=dim, scramble=True)
+            sobol_seq = sobol_engine.random(max_num)  # 生成 [0, 1] 的序列
             perturbation_factors = 1 + (sobol_seq - 0.5) * 2 * max_scaling
         else:
             perturbation_factors = 1 + np.random.uniform(-max_scaling, max_scaling, (max_num, dim))
 
-        orig_lattice = structure.lattice
+        orig_lattice = structure.cell.array
         orig_lengths = np.linalg.norm(orig_lattice, axis=1)
         unit_vectors = orig_lattice / orig_lengths[:, np.newaxis]  # 原始晶格的单位向量
         for i in range(max_num):
             # 提取微扰因子
+            new_struct=structure.copy()
             length_factors = perturbation_factors[i, :3]
             new_lengths = orig_lengths * length_factors
 
@@ -734,8 +814,9 @@ class CellScalingCard(MakeDataCard):
                 new_lattice[2] = [cx, cy, cz]
 
             # 缩放原子位置
-            new_struct = structure.set_lattice(new_lattice,in_place=False)
-            new_struct.additional_fields["Config_type"] = structure.additional_fields["Config_type"] +f" Cell Scaling {i} (scaling={max_scaling},{'uniform' if engine_type==1 else 'Sobol'  })"
+            new_struct.info["Config_type"] = new_struct.info.get("Config_type","") + f" Scaling(scaling={max_scaling},{'uniform' if engine_type==1 else 'Sobol'  })"
+
+            new_struct.set_cell(new_lattice,  scale_atoms=True)
 
             structure_list.append(new_struct)
         return structure_list
@@ -800,7 +881,9 @@ class FPSFilterDataCard(FilterDataCard):
         n_samples=self.num_condition_frame.get_input_value()[0]
         distance=self.min_distance_condition_frame.get_input_value()[0]
         desc_array = run_nep3_calculator_process(nep_path, self.dataset, "descriptor")
+
         remaining_indices = farthest_point_sampling(desc_array, n_samples=n_samples, min_dist=distance)
+
         self.result_dataset = [self.dataset[i] for i in remaining_indices]
 
 
@@ -974,17 +1057,23 @@ class CardGroup(MakeDataCardWidget):
             self.result_dataset = self.dataset
             self.runFinishedSignal.emit(self.index)
 
-    def write_result_dataset(self, file):
+    def write_result_dataset(self, file,**kwargs):
 
-        if isinstance(file,str):
-            file=open(file, "w", encoding="utf8")
+
+
         if self.filter_card and self.filter_card.check_state:
-            self.filter_card.write_result_dataset(file)
+            self.filter_card.write_result_dataset(file,**kwargs)
             return
-        for card in self.card_list:
+
+        for index,card in enumerate(self.card_list):
+            if index==0:
+                if "append" not in kwargs:
+                    kwargs["append"] = False
+            else:
+                kwargs["append"] = True
             if card.check_state:
-                card.write_result_dataset(file)
-        file.close()
+                card.write_result_dataset(file,**kwargs)
+
     def export_data(self):
 
         if self.dataset is not None:

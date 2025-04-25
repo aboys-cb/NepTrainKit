@@ -9,6 +9,7 @@ import os
 import traceback
 
 import numpy as np
+from ase import Atoms
 from loguru import logger
 
 from NepTrainKit import utils
@@ -56,7 +57,7 @@ class Nep3Calculator( ):
         _types = []
         _boxs = []
         _positions = []
-        if isinstance(structures, Structure):
+        if   isinstance(structures, (Structure,Atoms)):
             structures = [structures]
         for structure in structures:
             symbols = structure.get_chemical_symbols()

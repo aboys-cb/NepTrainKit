@@ -620,6 +620,10 @@ class PerturbCard(MakeDataCard):
         self.engine_type_combo=ComboBox(self.setting_widget)
         self.engine_type_combo.addItem("Sobol")
         self.engine_type_combo.addItem("Uniform")
+        self.organic_label=BodyLabel("Identify organic:",self.setting_widget)
+
+        self.organic_checkbox=CheckBox( self.setting_widget)
+        self.organic_checkbox.setChecked(True)
 
         self.scaling_condition_frame = SpinBoxUnitInputFrame(self)
         self.scaling_condition_frame.set_input("Å",1,"float")
@@ -636,12 +640,16 @@ class PerturbCard(MakeDataCard):
         self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
         self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
 
-        self.settingLayout.addWidget(self.scaling_radio_label, 1, 0, 1, 1)
+        self.settingLayout.addWidget(self.organic_label, 1, 0, 1, 1)
+        self.settingLayout.addWidget(self.organic_checkbox,1, 1, 1, 2)
 
-        self.settingLayout.addWidget(self.scaling_condition_frame, 1, 1, 1,2)
-        self.settingLayout.addWidget(self.num_label, 2, 0, 1, 1)
+        self.settingLayout.addWidget(self.scaling_radio_label, 2, 0, 1, 1)
 
-        self.settingLayout.addWidget(self.num_condition_frame, 2, 1, 1,2)
+        self.settingLayout.addWidget(self.scaling_condition_frame, 2, 1, 1,2)
+
+        self.settingLayout.addWidget(self.num_label,3, 0, 1, 1)
+
+        self.settingLayout.addWidget(self.num_condition_frame,3, 1, 1,2)
     def process_structure(self, structure):
         structure_list=[]
         engine_type=self.engine_type_combo.currentIndex()
@@ -700,7 +708,7 @@ class PerturbCard(MakeDataCard):
         data_dict["check_state"]=self.check_state
 
         data_dict['engine_type'] = self.engine_type_combo.currentIndex()
-
+        data_dict["organic"]=self.organic_checkbox.isChecked()
         data_dict['scaling_condition'] = self.scaling_condition_frame.get_input_value()
 
         data_dict['num_condition'] = self.num_condition_frame.get_input_value()
@@ -713,6 +721,7 @@ class PerturbCard(MakeDataCard):
         self.scaling_condition_frame.set_input_value(data_dict['scaling_condition'])
 
         self.num_condition_frame.set_input_value(data_dict['num_condition'])
+        self.organic_checkbox.setChecked(data_dict.get("organic", False))
 @register_card_info
 
 class CellScalingCard(MakeDataCard):

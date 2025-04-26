@@ -5,6 +5,7 @@
 # @email    : 1747193328@qq.com
 import os.path
 import sys
+
 from io import StringIO
 from venv import logger
 
@@ -13,7 +14,8 @@ from PySide6.QtCore import QUrl, QTimer, Qt, Signal
 from PySide6.QtGui import QIcon, QFont
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout,QSplitter
 from qfluentwidgets import HyperlinkLabel, MessageBox, PlainTextEdit, CaptionLabel, SpinBox, \
-    TransparentToolButton, StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel
+    TransparentToolButton, StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
+    Action
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
@@ -43,11 +45,18 @@ class ShowNepWidget(QWidget):
         self.setObjectName("ShowNepWidget")
         self.setAcceptDrops(True)
         self.nep_result_data=None
+        self.init_action()
         self.init_ui()
         self.updateBondInfoSignal.connect(self.bond_label.setText)
 
         self.first_show=False
+
+
+
     def showEvent(self, event):
+        if hasattr(self._parent,"save_menu"):
+
+            self._parent.save_menu.addAction(self.export_selected_action)
         auto_load_config = Config.getboolean("widget","auto_load",False)
         if not auto_load_config:
             return
@@ -57,6 +66,15 @@ class ShowNepWidget(QWidget):
             if os.path.exists("./train.xyz") and os.path.exists("./nep.txt"):
                 self.set_work_path(os.path.join(os.getcwd(),"train.xyz"))
 
+
+
+    def hideEvent(self, event):
+
+        if hasattr(self._parent,"save_menu"):
+            self._parent.save_menu.removeAction(self.export_selected_action)
+    def init_action(self):
+        self.export_selected_action=Action(QIcon(":/images/src/images/export1.svg"),"Export Selected Structures")
+        self.export_selected_action.triggered.connect(self.export_selected_structures)
     def init_ui(self):
         self.gridLayout = QGridLayout(self)
         self.gridLayout.setObjectName("show_nep_gridLayout")
@@ -222,8 +240,17 @@ class ShowNepWidget(QWidget):
             thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
             thread.start_work(self.nep_result_data.export_model_xyz, path)
 
-
-
+    def export_selected_structures(self):
+        if self.nep_result_data is None:
+            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            return
+        if len(self.nep_result_data.select_index)==0:
+            MessageManager.send_info_message("Please select some structures first！")
+            return
+        path = utils.call_path_dialog(self,"Please choose the XYZ file","file",file_filter="XYZ files (*.xyz)",default_filename="selected_structures.xyz")
+        if path:
+            thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
+            thread.start_work(self.nep_result_data.export_selected_xyz, path)
     def set_work_path(self,path):
 
         if os.path.isdir(path):

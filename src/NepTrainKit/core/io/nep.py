@@ -101,7 +101,21 @@ class ResultData(QObject):
                 self.select_index.remove(i)
 
         self.updateInfoSignal.emit()
+    def export_selected_xyz(self,save_file_path):
+        """
+        导出当前选中的结构
+        """
+        index=list(self.select_index)
+        try:
 
+            with open(save_file_path,"w",encoding="utf8") as f:
+                for structure in self._atoms_dataset.now_data[index]:
+                    structure.write(f)
+
+            MessageManager.send_info_message(f"File exported to: {save_file_path}")
+        except:
+            MessageManager.send_info_message(f"An unknown error occurred while saving. The error message has been output to the log!")
+            logger.error(traceback.format_exc())
 
     def export_model_xyz(self,save_path):
         """

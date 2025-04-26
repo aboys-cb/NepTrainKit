@@ -39,11 +39,11 @@ class NepTrainKitMainWindow(FluentWindow):
         # create sub interface
         MessageManager._createInstance(self)
         Config()
+        self.init_menu()
 
         self.init_widget()
         self.init_navigation()
         self.initWindow()
-        self.init_menu()
 
 
 
@@ -71,10 +71,9 @@ class NepTrainKitMainWindow(FluentWindow):
         self.open_dir_button = SplitToolButton(QIcon(':/images/src/images/open.svg') ,self.menu_widget)
         self.open_dir_button.clicked.connect(self.open_file_dialog)
 
-        self.load_card_config_action = QAction(QIcon(r":/images/src/images/open.svg"), "Import Card Config")
-        self.load_card_config_action.triggered.connect(self.make_data_widget.load_card_config)
+
         self.load_menu = RoundMenu(parent=self)
-        self.load_menu.addAction(self.load_card_config_action)
+
         self.open_dir_button.setFlyout(self.load_menu)
 
 
@@ -83,10 +82,7 @@ class NepTrainKitMainWindow(FluentWindow):
         self.save_dir_button.clicked.connect(self.export_file_dialog)
 
         self.save_menu = RoundMenu(parent=self)
-        self.export_card_config_action = QAction(QIcon(r":/images/src/images/save.svg"), "Export Card Config")
-        self.export_card_config_action.triggered.connect(self.make_data_widget.export_card_config)
 
-        self.save_menu.addAction(self.export_card_config_action)
         self.save_dir_button.setFlyout(self.save_menu)
 
 

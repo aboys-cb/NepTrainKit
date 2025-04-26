@@ -20,7 +20,7 @@ if is_nuitka_compiled:
 
 
     logger.add("./Log/{time:%Y-%m}.log",
-               level="INFO",
+               level="DEBUG",
                 )
     module_path="./"
 else:

@@ -25,14 +25,17 @@ class MakeDataWidget(QWidget):
     """
 微扰训练集制作
     """
+
     def __init__(self,parent=None):
         super().__init__(parent)
         self._parent = parent
         self.setObjectName("MakeDataWidget")
         self.setAcceptDrops(True)
         self.nep_result_data=None
+        self.init_action()
         self.init_ui()
         self.dataset=None
+
 
     def dragEnterEvent(self, event):
 
@@ -67,19 +70,23 @@ class MakeDataWidget(QWidget):
 
         # event.accept()
 
-    def load_base_structure(self,paths):
+    def showEvent(self, event):
+        if hasattr(self._parent,"load_menu"):
+            self._parent.load_menu.addAction(self.load_card_config_action)
+        if hasattr(self._parent,"save_menu"):
+            self._parent.save_menu.addAction(self.export_card_config_action)
 
-        structures_list = []
-        for path  in paths:
-            atoms = ase_read(path,":")
-            if isinstance(atoms, list):
+    def hideEvent(self, event):
+        if hasattr(self._parent,"load_menu"):
+            self._parent.load_menu.removeAction(self.load_card_config_action)
+        if hasattr(self._parent,"save_menu"):
+            self._parent.save_menu.removeAction(self.export_card_config_action)
 
-                structures_list.extend(atoms)
-            else:
-                structures_list.append(atoms)
-        self.dataset=structures_list
-        MessageManager.send_success_message(f"success load base structure ({len(structures_list)} atoms).")
-
+    def init_action(self):
+        self.export_card_config_action = QAction(QIcon(r":/images/src/images/save.svg"), "Export Card Config")
+        self.export_card_config_action.triggered.connect(self.export_card_config)
+        self.load_card_config_action = QAction(QIcon(r":/images/src/images/open.svg"), "Import Card Config")
+        self.load_card_config_action.triggered.connect(self.load_card_config)
     def init_ui(self):
 
         self.gridLayout = QGridLayout(self)
@@ -93,6 +100,19 @@ class MakeDataWidget(QWidget):
         self.gridLayout.addWidget(self.setting_group, 0, 0, 1, 1)
         self.gridLayout.addWidget(self.workspace_card_widget, 1, 0, 1, 1)
         self.setLayout(self.gridLayout)
+
+    def load_base_structure(self,paths):
+
+        structures_list = []
+        for path  in paths:
+            atoms = ase_read(path,":")
+            if isinstance(atoms, list):
+
+                structures_list.extend(atoms)
+            else:
+                structures_list.append(atoms)
+        self.dataset=structures_list
+        MessageManager.send_success_message(f"success load base structure ({len(structures_list)} atoms).")
 
     def open_file(self):
         path = utils.call_path_dialog(self,"Please choose the structure files",

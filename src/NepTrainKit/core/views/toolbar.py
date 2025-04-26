@@ -119,7 +119,7 @@ class StructureToolBar(KitToolBarBase):
                                           self.view_changed,True)
 
         show_bond_action=self.addButton( "Show Bonds",
-                                          QIcon(":/images/src/images/hide.svg"),
+                                          QIcon(":/images/src/images/show_bond.svg"),
                                           self.show_bond,True)
 
         export_action=self.addButton("Export current structure",
@@ -131,8 +131,8 @@ class StructureToolBar(KitToolBarBase):
             self.orthoViewSignal.emit(False)
     def show_bond(self,checked):
         if checked:
-            self._actions["Show Bonds"].setIcon(QIcon(":/images/src/images/show.svg"))
+            self._actions["Show Bonds"].setIcon(QIcon(":/images/src/images/hide_bond.svg"))
             self.showBondSignal.emit(True)
         else:
-            self._actions["Show Bonds"].setIcon(QIcon(":/images/src/images/hide.svg"))
+            self._actions["Show Bonds"].setIcon(QIcon(":/images/src/images/show_bond.svg"))
             self.showBondSignal.emit(False)

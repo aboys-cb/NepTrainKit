@@ -41,6 +41,8 @@
     <file>src/images/view_change.svg</file>
     <file>src/images/hide.svg</file>
     <file>src/images/show.svg</file>
+    <file>src/images/show_bond.svg</file>
+    <file>src/images/hide_bond.svg</file>
 
   </qresource>
   <qresource prefix="/theme">

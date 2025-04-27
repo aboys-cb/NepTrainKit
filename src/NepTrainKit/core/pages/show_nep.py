@@ -353,7 +353,7 @@ class ShowNepWidget(QWidget):
 
         # self.nep_result_data.load()
     def stop_loading(self):
-        print("stop_loading  ww")
+
         self.load_thread.terminate()
         if self.nep_result_data is not None:
             self.nep_result_data.nep_calc_thread.stop()

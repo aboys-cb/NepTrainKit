@@ -12,6 +12,7 @@ import numpy as np
 from PySide6.QtCore import QObject, Signal
 from loguru import logger
 
+from NepTrainKit import module_path
 from NepTrainKit.core import MessageManager, Structure, Config
 from NepTrainKit.core.calculator import NEPProcess
 from NepTrainKit.core.io.base import NepPlotData, StructureData
@@ -58,6 +59,8 @@ class ResultData(QObject):
         self.select_index=set()
 
         self.nep_calc_thread = NEPProcess()
+
+
     def load_structures(self):
         structures = Structure.read_multiple(self.data_xyz_path)
         self._atoms_dataset=StructureData(structures)
@@ -293,7 +296,9 @@ class NepTrainResultData(ResultData):
         file_name=dataset_path.stem
 
         nep_txt_path = dataset_path.with_name(f"nep.txt")
-
+        if not nep_txt_path.exists():
+            nep89_path = os.path.join(module_path, "Config/nep89.txt")
+            nep_txt_path=Path(nep89_path)
         energy_out_path = dataset_path.with_name(f"energy_{file_name}.out")
         force_out_path = dataset_path.with_name(f"force_{file_name}.out")
         stress_out_path = dataset_path.with_name(f"stress_{file_name}.out")

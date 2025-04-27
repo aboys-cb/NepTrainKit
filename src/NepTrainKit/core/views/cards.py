@@ -18,7 +18,7 @@ from qfluentwidgets import ComboBox, BodyLabel, RadioButton, SplitToolButton, Ro
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.custom_widget import SpinBoxUnitInputFrame, MakeDataCardWidget, ProcessLabel
-from NepTrainKit import utils
+from NepTrainKit import utils, module_path
 from NepTrainKit.core.calculator import NEPProcess
 from NepTrainKit.core.io.select import farthest_point_sampling
 from scipy.sparse.csgraph import connected_components
@@ -643,11 +643,13 @@ class PerturbCard(MakeDataCard):
         self.scaling_condition_frame.set_input("Å",1,"float")
         self.scaling_condition_frame.setRange(0,1)
         self.scaling_radio_label=BodyLabel("Max distance:",self.setting_widget)
-
+        self.scaling_condition_frame.set_input_value([0.3])
 
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("unit",1,"int")
         self.num_condition_frame.setRange(1,10000)
+        self.num_condition_frame.set_input_value([50])
+
         self.num_label=BodyLabel("Max num:",self.setting_widget)
 
 
@@ -764,6 +766,8 @@ class CellScalingCard(MakeDataCard):
         self.scaling_condition_frame = SpinBoxUnitInputFrame(self)
         self.scaling_condition_frame.set_input("",1,"float")
         self.scaling_condition_frame.setRange(0,1)
+        self.scaling_condition_frame.set_input_value([0.04])
+
         self.scaling_radio_label=BodyLabel("Max Scaling:",self.setting_widget)
         self.perturb_angle_checkbox=CheckBox( self.setting_widget)
         self.perturb_angle_checkbox.setText("Perturb angle")
@@ -775,6 +779,7 @@ class CellScalingCard(MakeDataCard):
         self.num_condition_frame.set_input("unit",1,"int")
         self.num_condition_frame.setRange(1,10000)
         self.num_label=BodyLabel("Max num:",self.setting_widget)
+        self.num_condition_frame.set_input_value([50])
 
         self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
         self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
@@ -881,6 +886,11 @@ class FPSFilterDataCard(FilterDataCard):
 
         self.nep_path_lineedit = LineEdit(self.setting_widget)
         self.nep_path_lineedit.setPlaceholderText("nep.txt path")
+
+        nep89_path = os.path.join(module_path, "Config","nep89.txt")
+        self.nep_path_lineedit.setText(nep89_path)
+
+
         self.num_label = BodyLabel("Max selected", self.setting_widget)
 
         self.num_condition_frame = SpinBoxUnitInputFrame(self)

@@ -9,7 +9,6 @@ import re
 import sys
 import traceback
 
-import requests
 from PySide6.QtCore import Signal, QObject
 from loguru import logger
 from qfluentwidgets import MessageBox
@@ -34,6 +33,8 @@ class UpdateWoker( QObject):
 
     def download(self,url):
         # url="https://github.moeyy.xyz/"+url
+        import requests
+
         resp = requests.get(url, stream=True)
         # content_size = int(resp.headers['content-length'])
 
@@ -66,8 +67,7 @@ class UpdateWoker( QObject):
 
 
     def _check_update(self):
-
-
+        import requests
 
         MessageManager.send_info_message("Checking for updates, please wait...")
 
@@ -141,6 +141,7 @@ class UpdateNEP89Woker( QObject):
 
     def download(self,latest_date):
         # url="https://github.moeyy.xyz/"+url
+        import requests
         raw_url = (
             f"https://raw.githubusercontent.com/brucefan1983/GPUMD/master/"
             f"potentials/nep/nep89_{latest_date}/nep89_{latest_date}.txt"
@@ -171,6 +172,7 @@ class UpdateNEP89Woker( QObject):
 
 
     def _check_update(self):
+        import requests
         MessageManager.send_info_message("Checking for updates, please wait...")
         api_url = "https://api.github.com/repos/brucefan1983/GPUMD/contents/potentials/nep"
         response = requests.get(api_url)

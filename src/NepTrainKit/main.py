@@ -6,11 +6,10 @@
 import os
 import sys
 import traceback
-
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from PySide6.QtCore import Qt, QFile, QThread
 from PySide6.QtGui import QIcon, QFont, QPixmap, QPalette, QColor, QAction
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QSplashScreen
 from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition,
                             TransparentToolButton, TransparentDropDownToolButton, PrimaryDropDownToolButton,
@@ -175,17 +174,20 @@ def set_light_theme(app):
     app.setStyle("Fusion")  # 使用 Fusion 样式，确保一致性
 def main():
     setTheme(Theme.LIGHT)
-    # 设置全局异常捕获 k 
+    # 设置全局异常捕获 k
+    # import time
+    # start_time=time.time()
     sys.excepthook = global_exception_handler
     if os.path.exists("update.zip") or os.path.exists("update.tar.gz"):
         utils.unzip()
     app = QApplication(sys.argv)
     set_light_theme(app)
-    splash = QSplashScreen()
-    splash.setPixmap(QPixmap(':/images/src/images/logo.png'))
-    splash.setFont(QFont("Arial", 16))  # 设置字体
-    splash.showMessage("Please wait...", Qt.AlignBottom | Qt.AlignHCenter, Qt.white)
-    splash.show()
+    # splash = QSplashScreen()
+    # splash.setAttribute(Qt.WA_TranslucentBackground, False)
+    # splash.setPixmap(QPixmap(':/images/src/images/logo.png'))
+    # splash.setFont(QFont("Arial", 16))  # 设置字体
+    # splash.showMessage("Please wait...", Qt.AlignBottom | Qt.AlignHCenter, Qt.white)
+    # splash.show()
 
     font = QFont("Arial", 12)  # 设置字体为 Arial，字号为 12
     app.setFont(font)
@@ -194,8 +196,9 @@ def main():
     theme=theme_file.readAll().data().decode("utf-8")
     app.setStyleSheet(theme)
     w = NepTrainKitMainWindow()
-    splash.finish(w)
+    # splash.finish(w)
     w.show()
+
     # print("--- %s seconds ---" % (time.time() - start_time))
 
     # w.close()

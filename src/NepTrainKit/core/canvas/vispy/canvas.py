@@ -3,8 +3,8 @@
 # @Time    : 2025/1/1 15:06
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-
-
+import os
+os.environ["VISPY_IGNORE_OLD_VERSION"] = "true"
 
 
 

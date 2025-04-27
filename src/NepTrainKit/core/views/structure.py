@@ -3,22 +3,37 @@
 # @Time    : 2025/3/15 13:44
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import time
+start=time.time()
 import numpy as np
+
+
+
+#TODO: 这个导入慢 后面看能不能优化
 import pyqtgraph as pg
+
+
 import pyqtgraph.opengl as gl
+
+
 from OpenGL.GL import *  # noqa
+
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor,QMatrix4x4
 from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QSizePolicy
+
 
 from NepTrainKit.core import Config
 from NepTrainKit.core.structure import table_info, Structure
 from NepTrainKit import utils
 from qfluentwidgets import BodyLabel
+
+
 class StructurePlotWidget(gl.GLViewWidget):
     def __init__(self, *args, **kwargs):
         self.ortho=False
-
+        #
         super().__init__(*args, **kwargs)
         self.setBackgroundColor('w')
         # self.setCameraPosition(distance=30, elevation=30, azimuth=30)

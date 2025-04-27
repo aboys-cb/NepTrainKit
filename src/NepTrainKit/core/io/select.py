@@ -3,8 +3,8 @@
 # @Time    : 2024/11/29 00:24
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import numpy as np
 
+import numpy as np
 
 def numpy_cdist(X, Y):
     """
@@ -79,3 +79,6 @@ def farthest_point_sampling(points, n_samples, min_dist=0.1, selected_data=None)
         # 更新每个点到现有样本点集的最小距离
         min_distances = np.minimum(min_distances, new_distances)
     return sampled_indices
+
+
+

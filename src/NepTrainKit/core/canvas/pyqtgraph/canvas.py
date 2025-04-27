@@ -10,7 +10,7 @@ from functools import partial
 import numpy as np
 import pyqtgraph as pg
 from PySide6.QtCore import Qt
-from pyqtgraph import GraphicsLayoutWidget, mkPen, ScatterPlotItem, PlotItem, ViewBox, TextItem
+from pyqtgraph import GraphicsLayoutWidget,  ScatterPlotItem, PlotItem, ViewBox, TextItem
 
 from NepTrainKit import utils
 from NepTrainKit.core.types import Brushes, Pens
@@ -53,7 +53,7 @@ class MyPlotItem(PlotItem):
 
     def add_diagonal(self):
 
-        self.addLine(angle=45, pos=(0.5, 0.5), pen=mkPen('r', width=2))
+        self.addLine(angle=45, pos=(0.5, 0.5), pen=Pens.Line)
 
     def item_clicked(self,scatter_item,items,event):
 

@@ -4,17 +4,16 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import contextlib
-import multiprocessing
+
 import os
 import traceback
-from multiprocessing import JoinableQueue, Process
+
 
 import numpy as np
 from PySide6.QtCore import QThread, Signal, QObject
 from ase import Atoms
 from loguru import logger
-from pyqtgraph.debug import QObjCache
-from pyqtgraph.multiprocess import QtProcess
+from multiprocessing import Process, JoinableQueue, Event
 
 from NepTrainKit import utils
 from NepTrainKit.core import Structure, MessageManager
@@ -169,11 +168,9 @@ def run_nep3_calculator(nep_txt,structures,calculator_type,queue=None):
     if   queue is  None:
         return result
 
-import atexit
-import signal
-import sys
-from multiprocessing import Process, JoinableQueue, Event
-from queue import Empty
+
+
+
 
 
 

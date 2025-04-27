@@ -3,11 +3,10 @@
 # @Time    : 2024/10/18 15:31
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+
 import re
 from functools import cached_property
-
 import numpy as np
-
 from NepTrainKit import utils
 from NepTrainKit.core.types import Brushes
 

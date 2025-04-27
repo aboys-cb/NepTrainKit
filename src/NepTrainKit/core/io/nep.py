@@ -3,7 +3,8 @@
 # @Time    : 2024/10/18 13:26
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-
+import time
+start=time.time()
 import os
 import traceback
 from pathlib import Path
@@ -11,13 +12,15 @@ from pathlib import Path
 import numpy as np
 from PySide6.QtCore import QObject, Signal
 from loguru import logger
-
 from NepTrainKit import module_path
 from NepTrainKit.core import MessageManager, Structure, Config
 from NepTrainKit.core.calculator import NEPProcess
-from NepTrainKit.core.io.base import NepPlotData, StructureData
-from NepTrainKit.core.io.utils import read_nep_out_file, check_fullbatch, read_nep_in, parse_array_by_atomnum
 
+
+from NepTrainKit.core.io.base import NepPlotData, StructureData
+
+
+from NepTrainKit.core.io.utils import read_nep_out_file, check_fullbatch, read_nep_in, parse_array_by_atomnum
 
 def pca(X, k):
     # 1. 标准化数据（去均值和方差标准化）

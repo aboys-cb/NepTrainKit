@@ -12,7 +12,12 @@ from PySide6.QtWidgets import QWidget, QGridLayout, QApplication
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.custom_widget import MakeWorkflowArea, CardGroup
 
-from NepTrainKit.core.views.cards import MakeDataCard,CardGroup,CellScalingCard,ConsoleWidget,SuperCellCard,PerturbCard,FilterDataCard,MakeDataCardWidget,FPSFilterDataCard,VacancyDefectCard
+from NepTrainKit.core.views.cards import (MakeDataCard,CardGroup,CellScalingCard,ConsoleWidget,
+                                          SuperCellCard,PerturbCard,FilterDataCard,
+                                          MakeDataCardWidget,FPSFilterDataCard,VacancyDefectCard,
+card_info_dict
+
+                                          )
 from NepTrainKit.version import __version__
 from NepTrainKit import utils, module_path
 

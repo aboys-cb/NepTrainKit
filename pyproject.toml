@@ -67,7 +67,7 @@ where = ["src"]
 include = ["NepTrainKit", "NepTrainKit.*" ]
 
 [tool.setuptools.package-data]
-"NepTrainKit.Config" = ["config.sqlite","ptable.json" ]
+"NepTrainKit.Config" = ["config.sqlite","ptable.json","nep.json","nep89.txt" ]
 
 [tool.setuptools_scm]
 

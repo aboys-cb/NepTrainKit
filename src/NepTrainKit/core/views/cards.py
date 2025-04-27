@@ -19,7 +19,7 @@ from qfluentwidgets import ComboBox, BodyLabel, RadioButton, SplitToolButton, Ro
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.custom_widget import SpinBoxUnitInputFrame, MakeDataCardWidget, ProcessLabel
 from NepTrainKit import utils
-from NepTrainKit.core.calculator import run_nep3_calculator_process
+from NepTrainKit.core.calculator import NEPProcess
 from NepTrainKit.core.io.select import farthest_point_sampling
 from scipy.sparse.csgraph import connected_components
 from scipy.stats.qmc import Sobol
@@ -220,17 +220,31 @@ class FilterDataCard(MakeDataCard):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Filter Data")
+    def stop(self):
+
+        if hasattr(self, "worker_thread"):
+
+            if self.worker_thread.isRunning():
+                self.worker_thread.terminate()
+
+
+                self.result_dataset = []
+                self.update_dataset_info()
+                del self.worker_thread
+
     def update_progress(self, progress):
         self.status_label.setText(f"Processing {progress}%")
         self.status_label.set_progress(progress)
     def on_processing_finished(self):
         # self.status_label.setText("Processing finished")
-
+        # 清理所有残留的 multiprocessing 进程
 
         self.update_dataset_info()
         self.status_label.set_colors(["#a5d6a7" ])
         self.runFinishedSignal.emit(self.index)
-        del self.worker_thread
+        if hasattr(self, "worker_thread"):
+
+            del self.worker_thread
     def on_processing_error(self, error):
         self.close_button.setEnabled(True)
 
@@ -655,7 +669,7 @@ class PerturbCard(MakeDataCard):
         engine_type=self.engine_type_combo.currentIndex()
         max_scaling=self.scaling_condition_frame.get_input_value()[0]
         max_num=self.num_condition_frame.get_input_value()[0]
-
+        identify_organic=self.organic_checkbox.isChecked()
         n_atoms = len(structure)
         dim = n_atoms * 3  # 每个原子有 x, y, z 三个维度
 
@@ -669,28 +683,32 @@ class PerturbCard(MakeDataCard):
             perturbation_factors = np.random.uniform(-1, 1, (max_num, dim))
 
             # 识别团簇和有机分子
-        clusters, is_organic_list = get_clusters(structure)
+        if identify_organic:
+            clusters, is_organic_list = get_clusters(structure)
 
         orig_positions = structure.positions
         for i in range(max_num):
             new_struct = structure.copy()
-            new_positions = orig_positions.copy()
 
             # 提取当前结构的扰动因子并重塑为 (n_atoms, 3)
             delta = perturbation_factors[i].reshape(n_atoms, 3) * max_scaling
+            if identify_organic:
+                # 对每个团簇应用微扰
+                new_positions = orig_positions.copy()
 
-            # 对每个团簇应用微扰
-            for cluster_indices, is_organic in zip(clusters, is_organic_list):
-                if is_organic:
-                    # 有机分子：整体平移，应用统一的偏移向量
-                    # 从团簇的第一个原子的扰动因子中取偏移向量
-                    cluster_delta = delta[cluster_indices[0]]
-                    for idx in cluster_indices:
-                        new_positions[idx] += cluster_delta
-                else:
-                    # 非有机分子：逐原子微扰
-                    for idx in cluster_indices:
-                        new_positions[idx] += delta[idx]
+                for cluster_indices, is_organic in zip(clusters, is_organic_list):
+                    if is_organic:
+                        # 有机分子：整体平移，应用统一的偏移向量
+                        # 从团簇的第一个原子的扰动因子中取偏移向量
+                        cluster_delta = delta[cluster_indices[0]]
+                        for idx in cluster_indices:
+                            new_positions[idx] += cluster_delta
+                    else:
+                        # 非有机分子：逐原子微扰
+                        for idx in cluster_indices:
+                            new_positions[idx] += delta[idx]
+            else:
+                new_positions=orig_positions+delta
 
             # 更新新结构的坐标
             new_struct.set_positions(new_positions)
@@ -889,13 +907,20 @@ class FPSFilterDataCard(FilterDataCard):
         nep_path=self.nep_path_lineedit.text()
         n_samples=self.num_condition_frame.get_input_value()[0]
         distance=self.min_distance_condition_frame.get_input_value()[0]
-        desc_array = run_nep3_calculator_process(nep_path, self.dataset, "descriptor")
+        self.nep_thread = NEPProcess()
+        self.nep_thread.run_nep3_calculator_process(nep_path, self.dataset, "descriptor",wait=True)
+        desc_array=self.nep_thread.func_result
+
 
         remaining_indices = farthest_point_sampling(desc_array, n_samples=n_samples, min_dist=distance)
 
         self.result_dataset = [self.dataset[i] for i in remaining_indices]
 
-
+    def stop(self):
+        super().stop()
+        if hasattr(self, "nep_thread"):
+            self.nep_thread.stop()
+            del self.nep_thread
 
     def run(self):
         # 创建并启动线程
@@ -1048,6 +1073,8 @@ class CardGroup(MakeDataCardWidget):
     def stop(self):
         for card in self.card_list:
             card.stop()
+        if self.filter_card:
+            self.filter_card.stop()
     def run(self):
         # 创建并启动线程
         self.run_card_num = len(self.card_list)

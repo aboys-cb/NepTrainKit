@@ -141,7 +141,7 @@ class MakeDataWidget(QWidget):
         if not  self.dataset  :
             MessageManager.send_info_message("Please import the structure file first. You can drag it in directly or import it from the upper left corner!")
             return
-
+        self.stop_run_card()
         first_card=self._next_card(-1)
         if first_card:
             first_card.dataset = self.dataset
@@ -180,7 +180,9 @@ class MakeDataWidget(QWidget):
             MessageManager.send_success_message("Perturbation training set created successfully.")
     def stop_run_card(self):
         for card in self.workspace_card_widget.cards:
+            card.runFinishedSignal.disconnect(self._run_next_card)
             card.stop()
+
     def add_card(self,card_name):
 
 

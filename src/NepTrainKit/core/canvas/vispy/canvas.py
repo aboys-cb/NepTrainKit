@@ -388,7 +388,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
 
         self.set_view_layout()
-
+        self.update()
 
     def set_view_layout(self):
         if len(self.axes_list)==0:

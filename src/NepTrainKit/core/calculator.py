@@ -7,10 +7,14 @@ import contextlib
 import multiprocessing
 import os
 import traceback
+from multiprocessing import JoinableQueue, Process
 
 import numpy as np
+from PySide6.QtCore import QThread, Signal, QObject
 from ase import Atoms
 from loguru import logger
+from pyqtgraph.debug import QObjCache
+from pyqtgraph.multiprocess import QtProcess
 
 from NepTrainKit import utils
 from NepTrainKit.core import Structure, MessageManager
@@ -143,14 +147,9 @@ class Nep3Calculator( ):
         dipole = self.nep3.get_structures_dipole(_types, _boxs, _positions)
 
         return np.array(dipole,dtype=np.float32)
-
-
-
-
-
-
-def run_nep3_calculator(nep_txt,structures,calculator_type,queue):
+def run_nep3_calculator(nep_txt,structures,calculator_type,queue=None):
     try:
+
         nep3 = Nep3Calculator(nep_txt)
         if calculator_type == 'polarizability':
             result = nep3.get_structures_polarizability(structures)
@@ -167,23 +166,101 @@ def run_nep3_calculator(nep_txt,structures,calculator_type,queue):
         result = np.array([])
         if queue:
             queue.put(result)
+    if   queue is  None:
+        return result
 
-    return result
-def run_nep3_calculator_process(nep_txt,structures,calculator_type="calculate"):
-    if len(structures)<2000:
-        return run_nep3_calculator(nep_txt, structures,calculator_type, None)
-    queue = multiprocessing.JoinableQueue()
-    p = multiprocessing.Process(target=run_nep3_calculator, args=(nep_txt, structures, calculator_type,queue))
-    # 启动进程
-    p.start()
-    # queue.join()
-    result = queue.get( )
-    p.join()
-    queue.close()
+import atexit
+import signal
+import sys
+from multiprocessing import Process, JoinableQueue, Event
+from queue import Empty
 
-    p.close()
 
-    return result
+
+class NEPProcess(QObject):
+    result_signal = Signal( )  # 信号，用于传递进程结果
+    error_signal = Signal(str )  # 信号，用于传递错误信息
+
+    def __init__(self ):
+        super().__init__()
+
+        self.process = None
+        self.use_process = False
+        self.func_result = None
+    def run_nep3_calculator_process(self,nep_txt, structures, calculator_type="calculate",wait=False):
+        self.func=run_nep3_calculator
+        self.queue = JoinableQueue()
+
+        self.input_kwargs={
+            "nep_txt": nep_txt,
+            "calculator_type": calculator_type,
+            "structures": structures,
+
+        }
+        if len(structures) < 2000:
+            self.use_process=False
+            self.input_kwargs["queue"] =  None
+        else:
+            self.input_kwargs["queue"] = self.queue
+            self.use_process=True
+
+        self.input_args=()
+        self.func_result=None
+
+        self.run()
+
+
+
+
+    def run(self):
+
+        try:
+
+            if self.use_process:
+                # 创建并启动进程
+                self.process = Process(target=self.func, args= self.input_args ,kwargs = self.input_kwargs,daemon=True)
+                self.process.start()
+                # 获取结果
+
+                self.func_result = self.queue.get()
+
+
+            else:
+
+                self.func_result=self.func(*self.input_args,**self.input_kwargs)
+
+            if self.func_result is not None:
+                self.result_signal.emit( )
+            else:
+                self.error_signal.emit("No result returned from process")
+
+        except Exception as e:
+            logger.error(traceback.format_exc())
+            self.error_signal.emit(f"Error: {str(e)}")
+        finally:
+            self.queue.close()  # 关闭队列
+            # self.queue.join()  # 等待队列任务完成
+            if self.process is not None :
+                self.process.terminate()  # 确保进程被终止
+
+                self.process.join()
+                # self.process.close()
+
+    def stop(self):
+        """强制终止进程并清理资源"""
+        try:
+            if self.process is not None:
+                if self.process.is_alive():
+
+                    self.process.terminate()
+
+                    self.process.join()
+            self.queue.cancel_join_thread()
+        except Exception as e:
+            logger.error(traceback.format_exc())
+
+
+
 
 
 

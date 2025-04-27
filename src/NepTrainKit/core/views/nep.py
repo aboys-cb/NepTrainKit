@@ -41,6 +41,10 @@ class NepResultPlotWidget(QWidget):
 
 
 
+    def clear(self):
+        self.canvas.clear_axes()
+        self.last_figure_num=None
+
 
 
     def set_tool_bar(self, tool):

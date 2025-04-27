@@ -7,7 +7,7 @@ import os
 import sys
 import traceback
 
-from PySide6.QtCore import Qt, QFile
+from PySide6.QtCore import Qt, QFile, QThread
 from PySide6.QtGui import QIcon, QFont, QPixmap, QPalette, QColor, QAction
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -33,6 +33,7 @@ class NepTrainKitMainWindow(FluentWindow):
         super().__init__()
         self.setMicaEffectEnabled(False)
         self.init_ui()
+
 
 
     def init_ui(self):

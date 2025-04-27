@@ -10,12 +10,12 @@ from io import StringIO
 from venv import logger
 
 import numpy as np
-from PySide6.QtCore import QUrl, QTimer, Qt, Signal
+from PySide6.QtCore import QUrl, QTimer, Qt, Signal, QThread
 from PySide6.QtGui import QIcon, QFont
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout,QSplitter
 from qfluentwidgets import HyperlinkLabel, MessageBox, PlainTextEdit, CaptionLabel, SpinBox, \
     TransparentToolButton, StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
-    Action
+    Action, StateToolTip
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
@@ -285,20 +285,25 @@ class ShowNepWidget(QWidget):
 
 
         #设置工作路径后 开始画图了
+        self.check_nep_result(path)
+        # self.load_thread=QThread(self)
 
-
-        self.load_thread=utils.LoadingThread(self,show_tip=True,title="Loading NEP data")
-        self.load_thread.finished.connect(self.set_dataset)
-
-        self.load_thread.start_work(self.check_nep_result,path)
+        # self.load_thread=utils.LoadingThread(self,show_tip=True,title="Loading NEP data")
+        # self.load_thread.finished.connect(self.set_dataset)
+        #
+        # self.load_thread.start_work(self.check_nep_result,path)
 
         # self.check_nep_result(path)
-    def set_dataset(self):
+    def set_dataset(self,*args):
+
         if self.nep_result_data is None:
             return
-
+        if not self.nep_result_data.load_flag :
+            self.nep_result_data=None
+            return
 
         self.struct_index_spinbox.setMaximum(self.nep_result_data.num)
+        self.graph_widget.clear()
 
         self.graph_widget.set_dataset(self.nep_result_data)
         self.nep_result_data.updateInfoSignal.connect(self.update_dataset_info)
@@ -332,8 +337,28 @@ class ShowNepWidget(QWidget):
         self.path_label.setText(f"Current file: {file_name}")
         self.path_label.setUrl(QUrl.fromLocalFile(os.path.dirname(path)))
         # self.graph_widget.set_dataset(self.dataset)
+        self.load_thread=QThread(self)
+        tip = StateToolTip("Loading", 'Please wait patiently~~', self )
+        tip.show()
+        tip.closedSignal.connect(self.stop_loading)
 
+
+        self.nep_result_data.moveToThread(self.load_thread)
+        self.load_thread.finished.connect(self.set_dataset)
+        self.load_thread.finished.connect(lambda :tip.setState(True))
+
+        self.nep_result_data.loadFinishedSignal.connect(self.load_thread.quit)
+        self.load_thread.started.connect(self.nep_result_data.load)
+        self.load_thread.start()
+
+        # self.nep_result_data.load()
+    def stop_loading(self):
+        print("stop_loading  ww")
+        self.load_thread.terminate()
+        if self.nep_result_data is not None:
+            self.nep_result_data.nep_calc_thread.stop()
     def to_last_structure(self):
+
         if self.nep_result_data is None:
             return None
         current_index = self.struct_index_spinbox.value()

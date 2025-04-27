@@ -9,6 +9,7 @@ import re
 from itertools import product
 from copy import deepcopy
 import numpy as np
+from PySide6.QtCore import QThread
 from numpy.linalg import solve, norm
 
 from NepTrainKit import utils, module_path
@@ -421,6 +422,7 @@ class Structure():
         """
         Read a multi-structure XYZ file and return a list of Structure objects.
         """
+
 
         # data_to_process = []
         structures = []

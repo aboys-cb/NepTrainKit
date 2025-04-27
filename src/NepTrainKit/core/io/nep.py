@@ -13,7 +13,7 @@ from PySide6.QtCore import QObject, Signal
 from loguru import logger
 
 from NepTrainKit.core import MessageManager, Structure, Config
-from NepTrainKit.core.calculator import run_nep3_calculator_process
+from NepTrainKit.core.calculator import NEPProcess
 from NepTrainKit.core.io.base import NepPlotData, StructureData
 from NepTrainKit.core.io.utils import read_nep_out_file, check_fullbatch, read_nep_in, parse_array_by_atomnum
 
@@ -44,19 +44,35 @@ def pca(X, k):
 class ResultData(QObject):
     #通知界面更新训练集的数量情况
     updateInfoSignal = Signal( )
+    loadFinishedSignal = Signal()
+
 
     def __init__(self,nep_txt_path,data_xyz_path,descriptor_path):
         super().__init__()
-
-        structures = Structure.read_multiple(data_xyz_path)
+        self.load_flag=False
 
         self.descriptor_path=descriptor_path
         self.data_xyz_path=data_xyz_path
         self.nep_txt_path=nep_txt_path
 
+        self.select_index=set()
+
+        self.nep_calc_thread = NEPProcess()
+    def load_structures(self):
+        structures = Structure.read_multiple(self.data_xyz_path)
         self._atoms_dataset=StructureData(structures)
         self.atoms_num_list = np.array([len(struct) for struct in self.structure.now_data])
-        self.select_index=set()
+
+
+    def load(self ):
+
+        self.load_structures()
+        self._load_descriptors()
+        self._load_dataset()
+        self.load_flag=True
+        self.loadFinishedSignal.emit()
+    def _load_dataset(self):
+        raise NotImplementedError()
 
     @property
     def dataset(self):
@@ -191,11 +207,13 @@ class ResultData(QObject):
             desc_array = np.array([])
 
         if desc_array.size == 0:
-
-            desc_array = run_nep3_calculator_process(
-                self.nep_txt_path.as_posix(),
+            self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
                 self.structure.now_data,
-                "descriptor")
+                "descriptor" ,wait=True)
+            desc_array=self.nep_calc_thread.func_result
+            # desc_array = run_nep3_calculator_process(
+            #     )
+
             if desc_array.size != 0:
                 np.savetxt(self.descriptor_path, desc_array, fmt='%.6g')
         else:
@@ -235,9 +253,9 @@ class NepTrainResultData(ResultData):
 
 
 
-        self._load_dataset()
+        # self._load_dataset()
 
-        self._load_descriptors()
+        # self._load_descriptors()
 
 
 
@@ -413,9 +431,13 @@ class NepTrainResultData(ResultData):
 
 
         try:
-            nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(
-                self.nep_txt_path.as_posix(),
-                self.structure.now_data,"calculate")
+            self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
+                self.structure.now_data,
+                "calculate" ,wait=True)
+            nep_potentials_array, nep_forces_array, nep_virials_array=self.nep_calc_thread.func_result
+            # nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(
+            #     self.nep_txt_path.as_posix(),
+            #     self.structure.now_data,"calculate")
             if nep_potentials_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the potentials, use the original potentials instead.")
 
@@ -451,9 +473,6 @@ class NepPolarizabilityResultData(ResultData):
         self.polarizability_out_path = polarizability_out_path
 
 
-        self._load_dataset()
-
-        self._load_descriptors()
 
 
     @property
@@ -511,9 +530,12 @@ class NepPolarizabilityResultData(ResultData):
     def _recalculate_and_save(self ):
 
         try:
-            nep_polarizability_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
-                                                                   self.structure.now_data, "polarizability")
-
+            # nep_polarizability_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
+            #                                                        self.structure.now_data, "polarizability")
+            self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
+                self.structure.now_data,
+                "polarizability" ,wait=True)
+            nep_polarizability_array=self.nep_calc_thread.func_result
             if nep_polarizability_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the polarizability, use the original polarizability instead.")
             nep_polarizability_array = self._save_polarizability_data(  nep_polarizability_array)
@@ -573,9 +595,7 @@ class NepDipoleResultData(ResultData):
 
         self.dipole_out_path = dipole_out_path
 
-        self._load_dataset()
 
-        self._load_descriptors()
 
     @property
     def dataset(self):
@@ -632,8 +652,13 @@ class NepDipoleResultData(ResultData):
     def _recalculate_and_save(self ):
 
         try:
-            nep_dipole_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
-                                                           self.structure.now_data, "dipole")
+            # nep_dipole_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
+            #                                                self.structure.now_data, "dipole")
+            self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
+                self.structure.now_data,
+                "dipole" ,wait=True)
+            nep_dipole_array=self.nep_calc_thread.func_result
+
             if nep_dipole_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the dipole, use the original dipole instead.")
             nep_dipole_array = self._save_dipole_data(  nep_dipole_array)

@@ -146,7 +146,10 @@ jobs:
     name: Upload to pypi
     if: github.event_name == 'release' || github.event.inputs.upload == 'true'
     runs-on: ubuntu-latest
-
+    environment: pypi
+    permissions:
+      # IMPORTANT: this permission is mandatory for Trusted Publishing
+      id-token: write
     needs: [build_wheels, build_sdist]
     # The artifacts cannot be uploaded on PRs
 

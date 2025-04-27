@@ -20,7 +20,7 @@ card_info_dict
                                           )
 from NepTrainKit.version import __version__
 from NepTrainKit import utils, module_path
-
+from ase.io import read as ase_read
 
 
 

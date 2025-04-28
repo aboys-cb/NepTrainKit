@@ -134,8 +134,14 @@ class ViewBoxWidget(scene.Widget):
                 y_range[1] = y_max
         # self._view.camera.set_range( )
         #
+        if "descriptor"!=self.title:
 
-        self._view.camera.set_range( x_range,  y_range)
+            real_range=(min(x_range[0],y_range[0]),max(x_range[1],y_range[1]))
+
+            self._view.camera.set_range( real_range,  real_range)
+        else:
+            self._view.camera.set_range( x_range,  y_range)
+
     def set_current_point(self, x,y):
         if np.array(x).size == 0:
             if self.current_point is not None:

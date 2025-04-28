@@ -282,8 +282,12 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
                         y_range[0]=y_min
                     if y_max > y_range[1]:
                         y_range[1]=y_max
+            if plot.title!="descriptor":
 
-            view.setRange(xRange=x_range,yRange=y_range)
+                real_range=(min(x_range[0],y_range[0]),max(x_range[1],y_range[1]))
+                view.setRange(xRange=real_range,yRange=real_range)
+            else:
+                view.setRange(xRange=x_range,yRange=y_range)
 
     def pan(self, checked):
 

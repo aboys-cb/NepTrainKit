@@ -55,9 +55,9 @@ def is_organic_cluster(symbols):
     if not has_carbon:
         return False
     # 可选：强制要求含氢（H）或其他有机元素
-    # organic_elements = {'H', 'O', 'N', 'S', 'P'}
-    # has_organic_elements = any(symbol in organic_elements for symbol in symbols)
-    # return has_carbon and has_organic_elements
+    organic_elements = {'H', 'O', 'N', 'S', 'P'}
+    has_organic_elements = any(symbol in organic_elements for symbol in symbols)
+    return has_carbon and has_organic_elements
     return True
 
 

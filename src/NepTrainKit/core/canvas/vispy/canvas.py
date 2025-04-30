@@ -16,12 +16,10 @@ from vispy import scene
 from vispy.app.backends import _pyside6
 from vispy.color import ColorArray
 from vispy.visuals.filters import MarkerPickingFilter
-
 from NepTrainKit import utils
 from NepTrainKit.core.canvas.base.canvas import VispyCanvasLayoutBase
 from NepTrainKit.core.io import NepTrainResultData
 from NepTrainKit.core.types import Brushes, Pens
-
 _pyside6
 vispy.use("PySide6", "gl2")
 
@@ -115,8 +113,8 @@ class ViewBoxWidget(scene.Widget):
         x = x[x > -10000]
         y = y[y > -10000]
         if x.size == 0:
-            x_range =None
-            y_range = None
+            x_range =[0,1]
+            y_range =[0,1]
 
         else:
 
@@ -143,6 +141,7 @@ class ViewBoxWidget(scene.Widget):
             self._view.camera.set_range( x_range,  y_range)
 
     def set_current_point(self, x,y):
+
         if np.array(x).size == 0:
             if self.current_point is not None:
                 self.current_point.parent=None
@@ -443,11 +442,10 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         self.nep_result_data.select_index.clear()
 
         for index,_dataset in enumerate(self.nep_result_data.dataset):
-            plot=self.axes_list[index]
-            # if _dataset.x.size==0:
-            #
 
-            #     continue
+            plot=self.axes_list[index]
+
+
             plot.title= _dataset.title
 
             plot.scatter(_dataset.x,_dataset.y,data=_dataset.structure_index,
@@ -456,6 +454,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
                                       )
 
+            # continue
             if _dataset.group_array.num !=0:
                 #更新结构
                 if self.structure_index not in _dataset.group_array.now_data:
@@ -472,7 +471,6 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 plot.text.text=text
                 plot.text.pos=pos
     def convert_pos(self,plot,pos):
-
         x_range = plot.xaxis.axis.domain  # x轴范围 [xmin, xmax]
         y_range = plot.yaxis.axis.domain # y轴范围 [ymin, ymax]
 

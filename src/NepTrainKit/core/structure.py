@@ -6,11 +6,10 @@
 import json
 import os
 import re
-from itertools import product
+
 from copy import deepcopy
 import numpy as np
-from PySide6.QtCore import QThread
-from numpy.linalg import solve, norm
+
 
 from NepTrainKit import utils, module_path
 
@@ -132,16 +131,28 @@ class Structure():
     def per_atom_energy(self):
 
 
-        return self.additional_fields[ "energy"]/self.num_atoms
+        return self.additional_fields["energy"]/self.num_atoms
     @property
     def forces(self):
         return self.structure_info[self.force_label]
 
     @property
     def nep_virial(self):
-
-        vir=np.array(self.virial.split(" "),dtype=np.float32)
-
+        try:
+            vir=np.array(self.virial.split(" "),dtype=np.float32)
+            # print(vir)
+            # raise ValueError
+        except:
+            #检查下有没有压强
+            try:
+                stress=np.array(self.stress.split(" "),dtype=np.float32)
+            except:
+                raise ValueError("No virial or stress data")
+            # print("stress",stress)
+            print(self.volume)
+            # vir = stress/160.21766208*self.volume
+            # print(vir)
+            raise ValueError
         return vir[[0,4,8,1,5,6]]/self.num_atoms
     @property
     def nep_dipole(self):
@@ -394,7 +405,7 @@ class Structure():
                     # 这里是为了后面的Config搜索做统一
                     key = "Config_type"
                     value=str(value)
-                if key.lower() in ("energy", "pbc","virial"):
+                if key.lower() in ("energy", "pbc","virial","stress"):
                     key=key.lower()
                 additional_fields[key] = value
                 # print(additional_fields)

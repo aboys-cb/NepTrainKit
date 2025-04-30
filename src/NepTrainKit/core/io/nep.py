@@ -4,6 +4,9 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import time
+
+from ase.stress import full_3x3_to_voigt_6_stress
+
 start=time.time()
 import os
 import traceback
@@ -15,6 +18,7 @@ from loguru import logger
 from NepTrainKit import module_path
 from NepTrainKit.core import MessageManager, Structure, Config
 from NepTrainKit.core.calculator import NEPProcess
+
 
 
 from NepTrainKit.core.io.base import NepPlotData, StructureData
@@ -424,7 +428,8 @@ class NepTrainResultData(ResultData):
             logger.debug(traceback.format_exc())
             virials_array = np.column_stack([virials, virials])
 
-        stress_array = virials_array * coefficient * 160.21766208  # 单位转换
+        stress_array = virials_array * coefficient # * 160.21766208  # 单位转换\
+        print(stress_array[0])
         stress_array = stress_array.astype(np.float32)
         if virials_array.size != 0:
             np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')

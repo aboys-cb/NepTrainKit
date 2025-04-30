@@ -303,7 +303,7 @@ class ShowNepWidget(QWidget):
             return
 
         self.struct_index_spinbox.setMaximum(self.nep_result_data.num)
-        self.graph_widget.clear()
+        # self.graph_widget.clear()
 
         self.graph_widget.set_dataset(self.nep_result_data)
         self.nep_result_data.updateInfoSignal.connect(self.update_dataset_info)

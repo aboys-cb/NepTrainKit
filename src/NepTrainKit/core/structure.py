@@ -140,19 +140,13 @@ class Structure():
     def nep_virial(self):
         try:
             vir=np.array(self.virial.split(" "),dtype=np.float32)
-            # print(vir)
-            # raise ValueError
         except:
             #检查下有没有压强
             try:
-                stress=np.array(self.stress.split(" "),dtype=np.float32)
+                vir= np.array(self.stress.split(" "),dtype=np.float32)*self.volume*-1
             except:
                 raise ValueError("No virial or stress data")
-            # print("stress",stress)
-            print(self.volume)
-            # vir = stress/160.21766208*self.volume
-            # print(vir)
-            raise ValueError
+
         return vir[[0,4,8,1,5,6]]/self.num_atoms
     @property
     def nep_dipole(self):

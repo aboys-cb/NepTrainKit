@@ -233,9 +233,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         VispyCanvasLayoutBase.__init__(self)
 
         scene.SceneCanvas.__init__(self, *args, **kwargs)
-        print(self.dpi)
-        print(self.physical_size)
-        print(self.pixel_scale)
+
         self.unfreeze()
         self.nep_result_data = None
         self.grid = self.central_widget.add_grid(margin=0, spacing=0)

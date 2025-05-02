@@ -474,6 +474,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 text=f"rmse: {_dataset.get_formart_rmse()}"
                 plot.text.text=text
                 plot.text.pos=pos
+        # self.update()
     def convert_pos(self,plot,pos):
         x_range = plot.xaxis.axis.domain  # x轴范围 [xmin, xmax]
         y_range = plot.yaxis.axis.domain # y轴范围 [ymin, ymax]

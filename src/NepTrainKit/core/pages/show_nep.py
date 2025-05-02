@@ -195,8 +195,8 @@ class ShowNepWidget(QWidget):
         self.splitter = QSplitter(Qt.Horizontal, self)
         self.splitter.addWidget(self.plot_widget)
         self.splitter.addWidget(self.struct_widget)
-        self.splitter.setSizes([300,200])
-        self.splitter.setStretchFactor(0, 3)
+        self.splitter.setSizes([400,200])
+        self.splitter.setStretchFactor(0, 4)
         self.splitter.setStretchFactor(1, 2)
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
 

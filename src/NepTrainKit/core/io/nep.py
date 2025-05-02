@@ -350,7 +350,7 @@ class NepTrainResultData(ResultData):
         """判断是否需要重新计算 NEP 数据。"""
 
 
-        output_files_exist = all([
+        output_files_exist = any([
             self.energy_out_path.exists(),
             self.force_out_path.exists(),
             self.stress_out_path.exists(),

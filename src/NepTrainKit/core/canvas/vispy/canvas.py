@@ -82,6 +82,7 @@ class ViewBoxWidget(scene.Widget):
         self.freeze()
 
 
+
     def convert_color(self, obj):
         if isinstance(obj, (QPen, QBrush)):
 
@@ -178,6 +179,9 @@ class ViewBoxWidget(scene.Widget):
             kwargs["edge_color"]=self.convert_color(pen)
         if x.size != 0:
             self._scatter.set_data(np.vstack([x, y]).T, **kwargs)
+            self.auto_range()
+        else:
+            self._scatter.set_data(np.empty((0, 3)), **kwargs)
             self.auto_range()
         self.update_diagonal()
         return self._scatter

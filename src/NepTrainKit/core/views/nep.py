@@ -11,12 +11,8 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
-
-
 from NepTrainKit.core.custom_widget import GetIntMessageBox, SparseMessageBox
-
 from NepTrainKit.core.io.select import farthest_point_sampling
-
 from NepTrainKit.core.views.toolbar import NepDisplayGraphicsToolBar
 
 
@@ -32,8 +28,8 @@ class NepResultPlotWidget(QWidget):
         canvas_type = Config.get("widget","canvas_type","pyqtgraph")
         self.last_figure_num=None
         self.swith_canvas(canvas_type)
-    def swith_canvas(self,canvas_type="pyqtgraph"):
 
+    def swith_canvas(self,canvas_type="pyqtgraph"):
 
         if canvas_type == "pyqtgraph":
             from ..canvas.pyqtgraph.canvas import PyqtgraphCanvas
@@ -48,14 +44,9 @@ class NepResultPlotWidget(QWidget):
             self.canvas = VispyCanvas(self, bgcolor='white')
             self._layout.addWidget(self.canvas.native)
 
-
-
-
-    def clear(self):
-        self.canvas.clear_axes()
+    # def clear(self):
+    #     self.canvas.clear_axes()
         # self.last_figure_num=None
-
-
 
     def set_tool_bar(self, tool):
         self.tool_bar: NepDisplayGraphicsToolBar = tool
@@ -71,9 +62,10 @@ class NepResultPlotWidget(QWidget):
         self.canvas.tool_bar=self.tool_bar
 
 
-
-
     def __find_non_physical_structures(self):
+        """
+        对每个结构进行非物理距离判断
+        """
         structure_list = self.canvas.nep_result_data.structure.now_data
         group_array = self.canvas.nep_result_data.structure.group_array.now_data
         radius_coefficient_config = Config.getfloat("widget","radius_coefficient",0.7)
@@ -88,7 +80,9 @@ class NepResultPlotWidget(QWidget):
 
 
     def find_non_physical_structures(self):
-
+        """
+        非物理结构函数入口
+        """
         if self.canvas.nep_result_data is None:
             return
         progress_diag = QProgressDialog(f"" ,"Cancel",0,self.canvas.nep_result_data.structure.num,self._parent)
@@ -159,6 +153,7 @@ class NepResultPlotWidget(QWidget):
         if path:
             thread = utils.LoadingThread(self, show_tip=True, title="Exporting descriptor data")
             thread.start_work(self._export_descriptor_data, path)
+
     def _export_descriptor_data(self,path):
 
         if len(self.canvas.nep_result_data.select_index) == 0:

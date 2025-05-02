@@ -7,21 +7,15 @@ import sys
 from importlib.metadata import version
 try:
     from NepTrainKit._version import version as __version__
-
 except:
-
     __version__ = version("NepTrainKit")
-
 
 OWNER="aboys-cb"
 REPO="NepTrainKit"
 HELP_URL=f"https://neptrainkit.readthedocs.io/en/latest/index.html"
 FEEDBACK_URL=f"https://github.com/{OWNER}/{REPO}/issues"
 RELEASES_URL=f"https://github.com/{OWNER}/{REPO}/releases"
-
 RELEASES_API_URL=f"https://api.github.com/repos/{OWNER}/{REPO}/releases/latest"
-
-
 YEAR=2024
 AUTHOR="ChengBing Chen"
 if sys.platform=="win32":

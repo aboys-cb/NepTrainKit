@@ -23,17 +23,17 @@ class DataBase:
     def __init__(self,data_list ):
         # self.raw_data = np.array(data_list)
         self.now_data= data_list
-
         shape=list(self.now_data.shape)
         shape[0]=0
         self.remove_data = np.empty( tuple(shape), dtype=self.now_data.dtype)
-
-
         #记录每次删除了几个  比如[3,6,4]
         self.remove_num=[]
 
     @property
-    def num(self):
+    def num(self) -> int:
+        """
+        返回当前数组的数量
+        """
         return self.now_data.shape[0]
     def remove(self,i):
         """
@@ -78,14 +78,10 @@ class NepData:
 
         self.data = DataBase(data_list )
         if isinstance(group_list,int):
-
             group = np.arange(data_list.shape[0],dtype=np.uint32)
-
             self.group_array=DataBase(group)
         else:
-            pass
             group = np.arange(len(group_list),dtype=np.uint32 )
-
             self.group_array=DataBase(group.repeat(group_list))
 
         for key,value in kwargs.items():
@@ -190,9 +186,6 @@ class NepPlotData(NepData):
     def __init__(self,data_list,**kwargs ):
         super().__init__(data_list,**kwargs )
 
-
-
-
     @property
     def normal_color(self):
         return Brushes.TransparentBrush
@@ -200,7 +193,6 @@ class NepPlotData(NepData):
     def x(self):
         if self.cols==0:
             return self.now_data
-
         return self.now_data[ : ,self.cols:].ravel()
     @property
     def y(self):
@@ -218,7 +210,6 @@ class StructureData(NepData):
     def get_all_config(self):
 
         return [structure.additional_fields["Config_type"]  for structure in self.now_data]
-
 
     def search_config(self,config):
 

@@ -35,11 +35,6 @@ def register_card_info(card_class  ):
 
     return card_class
 
-
-
-
-
-
 def is_organic_cluster(symbols):
     """
     判断一个团簇是否为有机分子。
@@ -58,7 +53,7 @@ def is_organic_cluster(symbols):
     organic_elements = {'H', 'O', 'N', 'S', 'P'}
     has_organic_elements = any(symbol in organic_elements for symbol in symbols)
     return has_carbon and has_organic_elements
-    return True
+
 
 
 def get_clusters(structure):
@@ -101,9 +96,6 @@ class MakeDataCard(MakeDataCardWidget):
         self.result_dataset=[]
         self.index=0
         # self.setFixedSize(400, 200)
-
-
-
         self.setting_widget = QWidget(self)
         self.viewLayout.setContentsMargins(3, 6, 3, 6)
         self.viewLayout.addWidget(self.setting_widget)
@@ -113,6 +105,7 @@ class MakeDataCard(MakeDataCardWidget):
         self.status_label = ProcessLabel(self)
         self.vBoxLayout.addWidget(self.status_label)
         self.windowStateChangedSignal.connect(self.show_setting)
+
     def show_setting(self ):
         if self.window_state == "expand":
             self.setting_widget.show( )
@@ -120,16 +113,15 @@ class MakeDataCard(MakeDataCardWidget):
         else:
             self.setting_widget.hide( )
 
-
-
-
     def set_dataset(self,dataset):
-        self.dataset =dataset
-        self.result_dataset=[]
+        self.dataset = dataset
+        self.result_dataset = []
 
         self.update_dataset_info()
+
     def write_result_dataset(self, file,**kwargs):
         ase_write(file,self.result_dataset,**kwargs)
+
     def export_data(self):
 
         if self.dataset is not None:
@@ -145,6 +137,7 @@ class MakeDataCard(MakeDataCardWidget):
         自定义对每个结构的处理 最后返回一个处理后的结构列表
         """
         raise NotImplementedError
+
     def closeEvent(self, event):
 
         if hasattr(self, "worker_thread"):
@@ -156,6 +149,7 @@ class MakeDataCard(MakeDataCardWidget):
 
         self.deleteLater()
         super().closeEvent(event)
+
     def stop(self):
         if hasattr(self, "worker_thread"):
             if self.worker_thread.isRunning():
@@ -163,6 +157,7 @@ class MakeDataCard(MakeDataCardWidget):
                 self.result_dataset = self.worker_thread.result_dataset
                 self.update_dataset_info()
                 del self.worker_thread
+
     def run(self):
         # 创建并启动线程
 
@@ -184,9 +179,11 @@ class MakeDataCard(MakeDataCardWidget):
             self.update_dataset_info()
             self.runFinishedSignal.emit(self.index)
         # self.worker_thread.wait()
+
     def update_progress(self, progress):
         self.status_label.setText(f"Processing {progress}%")
         self.status_label.set_progress(progress)
+
     def on_processing_finished(self):
         # self.status_label.setText("Processing finished")
 
@@ -195,6 +192,7 @@ class MakeDataCard(MakeDataCardWidget):
         self.status_label.set_colors(["#a5d6a7" ])
         self.runFinishedSignal.emit(self.index)
         del self.worker_thread
+
     def on_processing_error(self, error):
         self.close_button.setEnabled(True)
 
@@ -205,12 +203,12 @@ class MakeDataCard(MakeDataCardWidget):
         self.runFinishedSignal.emit(self.index)
 
         MessageManager.send_error_message(f"Error occurred: {error}")
+
     def from_dict(self, data):
         pass
+
     def to_dict(self):
         return {}
-
-
 
     def update_dataset_info(self ):
         text = f"Input structures: {len(self.dataset)} → Output: {len(self.result_dataset)}"
@@ -220,6 +218,7 @@ class FilterDataCard(MakeDataCard):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Filter Data")
+
     def stop(self):
 
         if hasattr(self, "worker_thread"):
@@ -235,16 +234,15 @@ class FilterDataCard(MakeDataCard):
     def update_progress(self, progress):
         self.status_label.setText(f"Processing {progress}%")
         self.status_label.set_progress(progress)
+
     def on_processing_finished(self):
-        # self.status_label.setText("Processing finished")
-        # 清理所有残留的 multiprocessing 进程
 
         self.update_dataset_info()
         self.status_label.set_colors(["#a5d6a7" ])
         self.runFinishedSignal.emit(self.index)
         if hasattr(self, "worker_thread"):
-
             del self.worker_thread
+
     def on_processing_error(self, error):
         self.close_button.setEnabled(True)
 
@@ -255,12 +253,10 @@ class FilterDataCard(MakeDataCard):
         self.runFinishedSignal.emit(self.index)
 
         MessageManager.send_error_message(f"Error occurred: {error}")
+
     def update_dataset_info(self ):
         text = f"Input structures: {len(self.dataset)} → Selected: {len(self.result_dataset)}"
         self.status_label.setText(text)
-
-
-
 
 
 @register_card_info
@@ -270,13 +266,10 @@ class SuperCellCard(MakeDataCard):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Make Supercell")
-
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("super_cell_card_widget")
-
-
         self.behavior_type_combo=ComboBox(self.setting_widget)
         self.behavior_type_combo.addItem("Maximum")
         self.behavior_type_combo.addItem("Iteration")
@@ -309,11 +302,6 @@ class SuperCellCard(MakeDataCard):
         self.settingLayout.addWidget(self.super_cell_condition_frame, 2, 1, 1, 2)
         self.settingLayout.addWidget(self.max_atoms_radio_button, 3, 0, 1, 1)
         self.settingLayout.addWidget(self.max_atoms_condition_frame, 3, 1, 1, 2)
-
-
-
-
-
 
     def _get_scale_factors(self) -> List[Tuple[int, int, int]]:
         """从 super_scale_condition_frame 获取扩包比例"""
@@ -348,9 +336,6 @@ class SuperCellCard(MakeDataCard):
         """根据最大原子数计算所有可能的扩包比例"""
         max_atoms = self.max_atoms_condition_frame.get_input_value()[0]
         num_atoms_orig = len(structure)
-
-
-
         # 估算最大可能倍数
         max_n = int(max_atoms / num_atoms_orig)
         max_n_a = max_n_b = max_n_c = max(max_n, 1)
@@ -426,12 +411,9 @@ class SuperCellCard(MakeDataCard):
 
         # super_cell_type == 2 的情况未实现，保持为空
         return structure_list
+
     def process_structure(self,structure):
-
-
-
         super_cell_type = self.behavior_type_combo.currentIndex()
-
         # 根据选择的扩包方式获取扩包参数
         if self.super_scale_radio_button.isChecked():
             expansion_factors = self._get_scale_factors()
@@ -460,6 +442,7 @@ class SuperCellCard(MakeDataCard):
         data_dict['max_atoms_radio_button'] = self.max_atoms_radio_button.isChecked()
         data_dict['max_atoms_condition'] = self.max_atoms_condition_frame.get_input_value()
         return data_dict
+
     def from_dict(self, data_dict):
         self.state_checkbox.setChecked(data_dict['check_state'])
 
@@ -473,7 +456,6 @@ class SuperCellCard(MakeDataCard):
 
 
 @register_card_info
-
 class VacancyDefectCard(MakeDataCard):
     card_name= "Vacancy Defect Generation"
     menu_icon=r":/images/src/images/defect.svg"
@@ -517,6 +499,7 @@ class VacancyDefectCard(MakeDataCard):
         self.settingLayout.addWidget(self.concentration_condition_frame, 2, 1, 1, 2)
         self.settingLayout.addWidget(self.max_atoms_label, 3, 0, 1, 1)
         self.settingLayout.addWidget(self.max_atoms_condition_frame, 3, 1, 1, 2)
+
     def process_structure(self,structure):
         structure_list = []
         engine_type = self.engine_type_combo.currentIndex()
@@ -534,19 +517,13 @@ class VacancyDefectCard(MakeDataCard):
         if max_defects ==n_atoms:
             max_defects=max_defects-1
 
-
-        orig_positions = structure.positions
-        orig_elements = structure.get_chemical_symbols()
-
         if engine_type == 0:
             # 为数量和位置分配维度：1 维用于数量，n_atoms 维用于位置
-
             sobol_engine = Sobol(d=n_atoms + 1, scramble=True)
             sobol_seq = sobol_engine.random(max_num)  # 生成 [0, 1] 的序列
         else:
             # Uniform 模式下分开处理
             defect_counts = np.random.randint(1, max_defects + 1, max_num)
-
 
         for i in range(max_num):
             new_struct =structure.copy()
@@ -557,7 +534,6 @@ class VacancyDefectCard(MakeDataCard):
                 target_defects = 1 + int(sobol_seq[i, 0] * max_defects)  # [0, 1] -> [1, max_defects]
                 target_defects = min(target_defects, max_defects)  # 确保不超过 max_defects
                 # 使用 Sobol 第 0 维控制数量
-                # target_defects = int(sobol_seq[i, 0] * (max_defects + 1))  # [0, 1] 映射到 [0, max_defects]
                 # 使用剩余维度控制位置
                 position_scores = sobol_seq[i, 1:]
             else:
@@ -572,24 +548,12 @@ class VacancyDefectCard(MakeDataCard):
             else:
 
                 defect_indices = np.random.choice(n_atoms, target_defects, replace=False)
-
-
-
             # 创建空位
             mask = np.zeros(n_atoms, dtype=bool)
             mask[defect_indices] = True
             n_vacancies = np.sum(mask)
-            # new_positions = orig_positions[mask]
-            # new_elements = orig_elements[mask]
             del new_struct[mask]
             new_struct.info["Config_type"] = new_struct.info.get("Config_type","") + f" Vacancy(num={n_vacancies})"
-
-            # 更新结构
-            # new_struct.structure_info['pos'] = new_positions
-            # new_struct.structure_info['species'] = new_elements
-            # new_struct.additional_fields["Config_type"] = structure.additional_fields["Config_type"] +f" Vacancy Defect {i} (num={n_vacancies})"
-            # if structure.force_label in new_struct.structure_info:
-            #     new_struct.structure_info[structure.force_label] = new_struct.structure_info[structure.force_label][mask]
             structure_list.append(new_struct)
 
         return structure_list
@@ -607,6 +571,7 @@ class VacancyDefectCard(MakeDataCard):
         data_dict['max_atoms_condition'] = self.max_atoms_condition_frame.get_input_value()
 
         return data_dict
+
     def from_dict(self, data_dict):
         self.state_checkbox.setChecked(data_dict['check_state'])
         self.engine_type_combo.setCurrentIndex(data_dict['engine_type'])
@@ -616,10 +581,7 @@ class VacancyDefectCard(MakeDataCard):
         self.concentration_radio_button.setChecked(data_dict['concentration_radio_button'])
         self.num_radio_button.setChecked(data_dict['num_radio_button'])
 
-
-        pass
 @register_card_info
-
 class PerturbCard(MakeDataCard):
     card_name= "Atomic perturb"
     menu_icon=r":/images/src/images/perturb.svg"
@@ -666,6 +628,7 @@ class PerturbCard(MakeDataCard):
         self.settingLayout.addWidget(self.num_label,3, 0, 1, 1)
 
         self.settingLayout.addWidget(self.num_condition_frame,3, 1, 1,2)
+
     def process_structure(self, structure):
         structure_list=[]
         engine_type=self.engine_type_combo.currentIndex()
@@ -715,12 +678,10 @@ class PerturbCard(MakeDataCard):
             # 更新新结构的坐标
             new_struct.set_positions(new_positions)
             new_struct.info["Config_type"] = new_struct.info.get("Config_type","") + f" Perturb(distance={max_scaling}, {'uniform' if engine_type == 1 else 'Sobol'})"
-
-
-
             structure_list.append(new_struct)
 
         return structure_list
+
     def to_dict(self):
         data_dict = {}
         data_dict['class']="PerturbCard"
@@ -733,6 +694,7 @@ class PerturbCard(MakeDataCard):
 
         data_dict['num_condition'] = self.num_condition_frame.get_input_value()
         return data_dict
+
     def from_dict(self, data_dict):
         self.state_checkbox.setChecked(data_dict['check_state'])
 
@@ -742,8 +704,8 @@ class PerturbCard(MakeDataCard):
 
         self.num_condition_frame.set_input_value(data_dict['num_condition'])
         self.organic_checkbox.setChecked(data_dict.get("organic", False))
-@register_card_info
 
+@register_card_info
 class CellScalingCard(MakeDataCard):
     card_name= "Lattice scaling"
     menu_icon=r":/images/src/images/scaling.svg"
@@ -793,6 +755,7 @@ class CellScalingCard(MakeDataCard):
         self.settingLayout.addWidget(self.num_label, 3, 0, 1, 1)
 
         self.settingLayout.addWidget(self.num_condition_frame, 3, 1, 1,2)
+
     def process_structure(self, structure):
         structure_list=[]
         engine_type=self.engine_type_combo.currentIndex()
@@ -852,6 +815,7 @@ class CellScalingCard(MakeDataCard):
 
             structure_list.append(new_struct)
         return structure_list
+
     def to_dict(self):
         data_dict = {}
         data_dict['class']="CellScalingCard"
@@ -862,6 +826,7 @@ class CellScalingCard(MakeDataCard):
         data_dict['scaling_condition'] = self.scaling_condition_frame.get_input_value()
         data_dict['num_condition'] = self.num_condition_frame.get_input_value()
         return data_dict
+
     def from_dict(self, data_dict):
         self.state_checkbox.setChecked(data_dict['check_state'])
 
@@ -913,6 +878,7 @@ class FPSFilterDataCard(FilterDataCard):
 
         self.settingLayout.addWidget(self.nep_path_label, 2, 0, 1, 1)
         self.settingLayout.addWidget(self.nep_path_lineedit, 2, 1, 1, 2)
+
     def process_structure(self,*args, **kwargs ):
         nep_path=self.nep_path_lineedit.text()
         n_samples=self.num_condition_frame.get_input_value()[0]
@@ -920,8 +886,6 @@ class FPSFilterDataCard(FilterDataCard):
         self.nep_thread = NEPProcess()
         self.nep_thread.run_nep3_calculator_process(nep_path, self.dataset, "descriptor",wait=True)
         desc_array=self.nep_thread.func_result
-
-
         remaining_indices = farthest_point_sampling(desc_array, n_samples=n_samples, min_dist=distance)
 
         self.result_dataset = [self.dataset[i] for i in remaining_indices]
@@ -954,18 +918,15 @@ class FPSFilterDataCard(FilterDataCard):
             self.worker_thread.errorSignal.connect(self.on_processing_error)
 
             self.worker_thread.start()
-
-
-
-
-
         else:
             self.result_dataset = self.dataset
             self.update_dataset_info()
             self.runFinishedSignal.emit(self.index)
+
     def update_progress(self, progress):
         self.status_label.setText(f"generate descriptors ...")
         self.status_label.set_progress(progress)
+
     def to_dict(self):
         data_dict = {}
         data_dict['class']="FPSFilterDataCard"
@@ -985,13 +946,13 @@ class FPSFilterDataCard(FilterDataCard):
             self.min_distance_condition_frame.set_input_value(data_dict['min_distance_condition'])
         except:
             pass
+
 @register_card_info
 class CardGroup(MakeDataCardWidget):
     separator=True
     card_name= "Card Group"
     menu_icon=r":/images/src/images/group.svg"
     #通知下一个card执行
-
     runFinishedSignal=Signal(int)
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1012,14 +973,17 @@ class CardGroup(MakeDataCardWidget):
         self.dataset:list=None
         self.result_dataset=[]
         self.resize(400, 200)
+
     def set_filter_card(self,card):
 
         self.filter_card=card
         self.fillter_layout.addWidget(card)
+
     def state_changed(self, state):
         super().state_changed(state)
         for card in self.card_list:
             card.state_checkbox.setChecked(state)
+
     @property
     def card_list(self)->["MakeDataCard"]:
 
@@ -1034,47 +998,41 @@ class CardGroup(MakeDataCardWidget):
         self.result_dataset=[]
 
     def add_card(self, card):
-
         self.group_layout.addWidget(card)
-    def remove_card(self, card):
 
+    def remove_card(self, card):
         self.group_layout.removeWidget(card)
+
     def clear_cards(self):
         for card in self.card_list:
             self.group_layout.removeWidget(card)
 
-
     def closeEvent(self, event):
-
         for card in self.card_list:
             card.close()
         self.deleteLater()
         super().closeEvent(event)
 
-
-
-
     def dragEnterEvent(self, event):
-
         if isinstance(event.source(), (MakeDataCard,CardGroup)):
             event.acceptProposedAction()
         else:
             event.ignore()  # 忽略其他类型的拖拽
-    def dropEvent(self, event):
 
+    def dropEvent(self, event):
         widget = event.source()
         if isinstance(widget, FilterDataCard):
             self.set_filter_card(widget)
         elif isinstance(widget, (MakeDataCard,CardGroup)):
             self.add_card(widget)
         event.acceptProposedAction()
+
     def on_card_finished(self, index):
         self.run_card_num-=1
         self.card_list[index].runFinishedSignal.disconnect(self.on_card_finished)
         self.result_dataset.extend(self.card_list[index].result_dataset)
 
         if self.run_card_num==0:
-
             self.runFinishedSignal.emit(self.index)
             if self.filter_card and self.filter_card.check_state:
                 self.filter_card.set_dataset(self.result_dataset)
@@ -1085,6 +1043,7 @@ class CardGroup(MakeDataCardWidget):
             card.stop()
         if self.filter_card:
             self.filter_card.stop()
+
     def run(self):
         # 创建并启动线程
         self.run_card_num = len(self.card_list)
@@ -1104,9 +1063,6 @@ class CardGroup(MakeDataCardWidget):
             self.runFinishedSignal.emit(self.index)
 
     def write_result_dataset(self, file,**kwargs):
-
-
-
         if self.filter_card and self.filter_card.check_state:
             self.filter_card.write_result_dataset(file,**kwargs)
             return
@@ -1121,9 +1077,7 @@ class CardGroup(MakeDataCardWidget):
                 card.write_result_dataset(file,**kwargs)
 
     def export_data(self):
-
         if self.dataset is not None:
-
             path = utils.call_path_dialog(self, "Choose a file save location", "file",f"export_{self.getTitle()}_structure.xyz")
             if not path:
                 return
@@ -1133,9 +1087,7 @@ class CardGroup(MakeDataCardWidget):
         data_dict={}
         data_dict['class']="CardGroup"
         data_dict['name']=self.card_name
-
         data_dict["check_state"]=self.check_state
-
         data_dict["card_list"]=[]
 
         for card in self.card_list:
@@ -1147,21 +1099,16 @@ class CardGroup(MakeDataCardWidget):
 
         return data_dict
     def from_dict(self,data_dict):
-
         self.state_checkbox.setChecked(data_dict['check_state'])
-
-
         for sub_card in data_dict.get("card_list",[]):
             card_name=sub_card["name"]
             card  = card_info_dict[card_name](self)
-
             self.add_card(card)
             card.from_dict(sub_card)
 
         if data_dict.get("filter_card"):
             card_name=data_dict["filter_card"]["name"]
             filter_card  = card_info_dict[card_name](self)
-
             filter_card.from_dict(data_dict["filter_card"])
             self.set_filter_card(filter_card)
 
@@ -1181,8 +1128,6 @@ class ConsoleWidget(QWidget):
         self.gridLayout = QGridLayout(self)
         self.gridLayout.setObjectName("console_gridLayout")
         self.setting_command =CommandBar(self)
-
-
         self.new_card_button = PrimaryDropDownPushButton(QIcon(":/images/src/images/copy_figure.svg"),
                                                          "Add new card",self)
         self.new_card_button.setMaximumWidth(200 )
@@ -1199,8 +1144,12 @@ class ConsoleWidget(QWidget):
         self.setting_command.addWidget(self.new_card_button)
 
         self.setting_command.addSeparator()
-        self.setting_command.addAction(Action(QIcon(r":/images/src/images/run.svg"), 'Run', triggered=self.run ))
-        self.setting_command.addAction(Action(QIcon(r":/images/src/images/stop.svg"), 'Stop', triggered=self.stop ))
+        self.setting_command.addAction(Action(QIcon(r":/images/src/images/run.svg"),
+                                              'Run',
+                                              triggered=self.run ))
+        self.setting_command.addAction(Action(QIcon(r":/images/src/images/stop.svg"),
+                                              'Stop',
+                                              triggered=self.stop ))
 
 
 

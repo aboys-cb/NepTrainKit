@@ -13,6 +13,7 @@ from loguru import logger
 
 def read_nep_in(  file_name):
     run_in={}
+
     if  not os.path.exists(file_name):
         return run_in
     with open(file_name, 'r', encoding="utf8") as f:
@@ -24,8 +25,8 @@ def read_nep_in(  file_name):
             run_in[group[0].strip()] = group[1].strip()
 
     return run_in
-def check_fullbatch(run_in,structure_num):
 
+def check_fullbatch(run_in,structure_num):
 
     if run_in.get("prediction")=="1":
         return True
@@ -33,17 +34,11 @@ def check_fullbatch(run_in,structure_num):
         return True
     return False
 
-
-
-
-
-
 def read_nep_out_file(file_path,**kwargs):
 
     logger.info("Reading file: {}".format(file_path))
     if os.path.exists(file_path):
         data = np.loadtxt(file_path,**kwargs)
-
         return data
     else:
         return np.array([])

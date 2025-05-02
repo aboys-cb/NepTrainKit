@@ -7,7 +7,7 @@
 import os
 import sys
 from loguru import logger
-
+import src_rc
 
 try:
     # Actual if statement not needed, but keeps code inspectors more happy

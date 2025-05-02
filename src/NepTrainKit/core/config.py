@@ -1,9 +1,7 @@
 import os
 import platform
 import shutil
-
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
-
 from NepTrainKit import module_path
 
 
@@ -14,7 +12,6 @@ class Config:
     _instance = None
     init_flag = False
 
-
     def __new__(cls, *args):
         if cls._instance is None:
             cls._instance = object.__new__(cls)
@@ -23,22 +20,20 @@ class Config:
     def __init__(self):
         if Config.init_flag:
             return
-
         Config.init_flag = True
         self.connect_db()
+
     def connect_db(self):
-        self.db=QSqlDatabase.addDatabase("QSQLITE","config")
-        user_config_path=os.path.expanduser("~/.config/NepTrainKit")
+        self.db = QSqlDatabase.addDatabase("QSQLITE","config")
 
         if platform.system() == 'Windows':
             # Windows 系统通常使用 AppData 路径存放应用数据
             local_path = os.getenv('LOCALAPPDATA', None)
             if local_path is None:
                 local_path = os.getenv('USERPROFILE', '') + '\\AppData\\Local '
-            user_config_path=os.path.join(local_path,'NepTrainKit')
+            user_config_path = os.path.join(local_path,'NepTrainKit')
         else:
-            user_config_path=os.path.expanduser("~/.config/NepTrainKit")
-
+            user_config_path = os.path.expanduser("~/.config/NepTrainKit")
 
         if not os.path.exists(f"{user_config_path}/config.sqlite"):
             if not os.path.exists(user_config_path):
@@ -62,7 +57,6 @@ class Config:
             if os.path.exists(path):
                 return path
         return "./"
-
 
     @classmethod
     def has_option(self,section, option):
@@ -113,11 +107,10 @@ class Config:
 
         query.next()
         first= query.value(0)
-
-
         if first  is None:
             return fallback
         return first
+
     @classmethod
     def set(self,section,option,value):
         if option=="theme":

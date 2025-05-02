@@ -9,10 +9,8 @@ from enum import Enum
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor, QPen
 
-
-
-
-def mkPen(*args, **kargs):
+#pyqtgragh导入很慢  所以先拷贝过来 后面看要不要优化掉
+def mkPen(*args, **kwargs):
     """
     Convenience function for constructing QPen.
 
@@ -25,12 +23,12 @@ def mkPen(*args, **kargs):
         mkPen(None)   # (no pen)
 
     In these examples, *color* may be replaced with any arguments accepted by :func:`mkColor() <pyqtgraph.mkColor>`    """
-    color = kargs.get('color', None)
-    width = kargs.get('width', 1)
-    style = kargs.get('style', None)
-    dash = kargs.get('dash', None)
-    cosmetic = kargs.get('cosmetic', True)
-    hsv = kargs.get('hsv', None)
+    color = kwargs.get('color', None)
+    width = kwargs.get('width', 1)
+    style = kwargs.get('style', None)
+    dash = kwargs.get('dash', None)
+    cosmetic = kwargs.get('cosmetic', True)
+    hsv = kwargs.get('hsv', None)
 
     if len(args) == 1:
         arg = args[0]
@@ -73,20 +71,13 @@ class CanvasMode(Enum):
     vispy="vispy"
     pyqtgraph="pyqtgraph"
 
-
-
 class Base:
-
     @classmethod
     def get(cls,name):
         if hasattr(cls, name):
             return getattr(cls, name)
         else:
             return getattr(cls,"Default")
-
-
-
-
 
 class Pens(Base):
     Default=mkPen(color="blue", width=0.5)
@@ -102,9 +93,6 @@ class Pens(Base):
 
 class Brushes(Base):
     # 基本颜色刷子
-
-
-
     BlueBrush = QBrush(QColor(0, 0, 255))   # 蓝色
     YellowBrush = QBrush(QColor(255, 255, 0))  # 黄色
     Default = QBrush(QColor(255, 255, 255,0))  # 黄色

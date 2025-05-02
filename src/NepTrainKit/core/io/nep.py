@@ -74,6 +74,14 @@ class ResultData(QObject):
         self.atoms_num_list = np.array([len(struct) for struct in self.structure.now_data])
 
 
+    def write_prediction(self):
+        if self.atoms_num_list.shape[0] > 1000:
+            #
+            if not self.data_xyz_path.with_name("nep.in").exists():
+                with open(self.data_xyz_path.with_name("nep.in"),
+                          "w", encoding="utf8") as f:
+                    f.write("prediction 1 ")
+
     def load(self ):
 
         self.load_structures()
@@ -85,7 +93,7 @@ class ResultData(QObject):
         raise NotImplementedError()
 
     @property
-    def dataset(self):
+    def dataset(self) -> ["NepPlotData"]:
         return []
 
     @property
@@ -260,24 +268,10 @@ class NepTrainResultData(ResultData):
         self.stress_out_path = stress_out_path
         self.virial_out_path = virial_out_path
 
-
-
-
-        # self._load_dataset()
-
-        # self._load_descriptors()
-
-
-
-
-
-
     @property
     def dataset(self):
         # return [self.energy, self.stress,self.virial, self.descriptor]
         return [self.energy,self.force,self.stress,self.virial, self.descriptor]
-
-
 
     @property
     def energy(self):
@@ -296,7 +290,6 @@ class NepTrainResultData(ResultData):
         return self._virial_dataset
 
     @classmethod
-
     def from_path(cls, path ):
         dataset_path = Path(path)
 
@@ -319,7 +312,7 @@ class NepTrainResultData(ResultData):
 
     def _load_dataset(self) -> None:
         """加载或计算 NEP 数据集，并更新内部数据集属性。"""
-        nep_in = read_nep_in(self.nep_txt_path.with_name("nep.in"))
+        nep_in = read_nep_in(self.data_xyz_path.with_name("nep.in"))
         if self._should_recalculate(nep_in):
             energy_array, force_array, virial_array, stress_array = self._recalculate_and_save( )
         else:
@@ -348,9 +341,7 @@ class NepTrainResultData(ResultData):
             self._virial_dataset = NepPlotData([], title="virial")
     def _should_recalculate(self, nep_in: dict) -> bool:
         """判断是否需要重新计算 NEP 数据。"""
-
-
-        output_files_exist = any([
+        output_files_exist = all([
             self.energy_out_path.exists(),
             self.force_out_path.exists(),
             self.stress_out_path.exists(),
@@ -441,8 +432,6 @@ class NepTrainResultData(ResultData):
 
     def _recalculate_and_save(self ):
 
-
-
         try:
             self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
                 self.structure.now_data,
@@ -458,6 +447,9 @@ class NepTrainResultData(ResultData):
             energy_array = self._save_energy_data(nep_potentials_array)
             force_array = self._save_force_data(nep_forces_array)
             virial_array, stress_array = self._save_virial_and_stress_data(nep_virials_array)
+
+
+            self.write_prediction()
             return energy_array,force_array,virial_array, stress_array
         except Exception as e:
             logger.debug(traceback.format_exc())
@@ -481,12 +473,7 @@ class NepPolarizabilityResultData(ResultData):
         descriptor_path
                  ):
         super().__init__(nep_txt_path,data_xyz_path,descriptor_path)
-
-
         self.polarizability_out_path = polarizability_out_path
-
-
-
 
     @property
     def dataset(self):
@@ -507,25 +494,17 @@ class NepPolarizabilityResultData(ResultData):
     def polarizability_no_diagonal(self):
         return self._polarizability_no_diagonal_dataset
 
-
-
     @property
     def descriptor(self):
         return self._descriptor_dataset
 
-
-
     @classmethod
     def from_path(cls, path ):
         dataset_path = Path(path)
-
         file_name = dataset_path.stem
-
         nep_txt_path = dataset_path.with_name(f"nep.txt")
-
         polarizability_out_path = dataset_path.with_name(f"polarizability_{file_name}.out")
         if file_name == "train":
-
             descriptor_path = dataset_path.with_name(f"descriptor.out")
         else:
             descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
@@ -533,7 +512,6 @@ class NepPolarizabilityResultData(ResultData):
         return cls(nep_txt_path, dataset_path, polarizability_out_path, descriptor_path)
     def _should_recalculate(self, nep_in: dict) -> bool:
         """判断是否需要重新计算 NEP 数据。"""
-
         output_files_exist = all([
             self.polarizability_out_path.exists(),
 
@@ -552,6 +530,7 @@ class NepPolarizabilityResultData(ResultData):
             if nep_polarizability_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the polarizability, use the original polarizability instead.")
             nep_polarizability_array = self._save_polarizability_data(  nep_polarizability_array)
+            self.write_prediction()
 
         except Exception as e:
             logger.debug(traceback.format_exc())
@@ -586,7 +565,7 @@ class NepPolarizabilityResultData(ResultData):
 
     def _load_dataset(self) -> None:
         """加载或计算 NEP 数据集，并更新内部数据集属性。"""
-        nep_in = read_nep_in(self.nep_txt_path.with_name("nep.in"))
+        nep_in = read_nep_in(self.data_xyz_path.with_name("nep.in"))
         if self._should_recalculate(nep_in):
             polarizability_array = self._recalculate_and_save( )
         else:
@@ -607,12 +586,8 @@ class NepDipoleResultData(ResultData):
         super().__init__(nep_txt_path, data_xyz_path, descriptor_path)
 
         self.dipole_out_path = dipole_out_path
-
-
-
     @property
     def dataset(self):
-
         return [self.dipole , self.descriptor]
 
     @property
@@ -675,6 +650,7 @@ class NepDipoleResultData(ResultData):
             if nep_dipole_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the dipole, use the original dipole instead.")
             nep_dipole_array = self._save_dipole_data(  nep_dipole_array)
+            self.write_prediction()
 
         except Exception as e:
             logger.debug(traceback.format_exc())
@@ -708,7 +684,7 @@ class NepDipoleResultData(ResultData):
 
     def _load_dataset(self) -> None:
         """加载或计算 NEP 数据集，并更新内部数据集属性。"""
-        nep_in = read_nep_in(self.nep_txt_path.with_name("nep.in"))
+        nep_in = read_nep_in(self.data_xyz_path.with_name("nep.in"))
         if self._should_recalculate(nep_in):
             dipole_array = self._recalculate_and_save( )
         else:

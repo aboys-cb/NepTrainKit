@@ -17,7 +17,7 @@ import pybind11
 from pybind11.setup_helpers import Pybind11Extension
 from setuptools import  Extension, find_packages, setup
 from setuptools.command.build_ext import build_ext
-
+from Cython.Build import cythonize
 
 # 获取 pybind11 的 include 路径
 pybind11_include = pybind11.get_include()
@@ -94,6 +94,7 @@ ext_modules = [
         extra_link_args=extra_link_args,
         language="c++",  # 指定语言为 C++
     ),
+cythonize("src/NepTrainKit/core/ctest.pyx")
 ]
 
 # 自定义 build_ext 命令，确保兼容性

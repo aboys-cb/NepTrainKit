@@ -4,12 +4,8 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 
- 
 from PySide6.QtCore import QObject, Signal, Qt
-
-
 from qfluentwidgets import   InfoBar, InfoBarIcon, InfoBarPosition,MessageBox
-
 
 class MessageManager(QObject):
     """
@@ -41,17 +37,16 @@ class MessageManager(QObject):
         cls._createInstance()
         return cls._instance
 
-
-
     @classmethod
     def send_info_message(cls,message,title="Tip"):
         cls._createInstance()
-
         cls._instance.showMessageSignal.emit(InfoBarIcon.INFORMATION, message, title)
+
     @classmethod
     def send_success_message(cls,message,title="Success"):
         cls._createInstance()
         cls._instance.showMessageSignal.emit(InfoBarIcon.SUCCESS, message, title)
+
     @classmethod
     def send_warning_message(cls,message,title="Warning"):
         cls._createInstance()
@@ -63,7 +58,6 @@ class MessageManager(QObject):
         cls._instance.showMessageSignal.emit(InfoBarIcon.ERROR, message, title)
 
     @classmethod
-
     def send_message_box(cls,message,title="Tip"):
         cls._createInstance()
         cls._instance.showBoxSignal.emit(message, title)
@@ -73,13 +67,9 @@ class MessageManager(QObject):
         w.cancelButton.hide()
         w.exec_()
 
-
-
-
     def _show_message(self,msg_type,msg,title):
 
         InfoBar.new(msg_type,
-
             title=title,
             content=msg,
             orient=Qt.Orientation.Vertical,  # vertical layout

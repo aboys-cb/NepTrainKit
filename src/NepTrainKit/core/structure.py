@@ -6,11 +6,8 @@
 import json
 import os
 import re
-
 from copy import deepcopy
 import numpy as np
-
-
 from NepTrainKit import utils, module_path
 
 atomic_numbers={ 'H': 1, 'He': 2, 'Li': 3, 'Be': 4,
@@ -39,24 +36,11 @@ atomic_numbers={ 'H': 1, 'He': 2, 'Li': 3, 'Be': 4,
                  'Rf': 104, 'Db': 105, 'Sg': 106, 'Bh': 107, 'Hs': 108,
                  'Mt': 109, 'Ds': 110, 'Rg': 111, 'Cn': 112, 'Nh': 113,
                  'Fl': 114, 'Mc': 115, 'Lv': 116, 'Ts': 117, 'Og': 118}
+
 with open(os.path.join(module_path, "Config/ptable.json"), "r", encoding="utf-8") as f:
     table_info = json.loads(f.read())
-def ext_gcd(a, b):
-    """扩展欧几里得算法，返回 (gcd, x, y) 使得 ax + by = gcd"""
-    if b == 0:
-        return a, 1, 0
-    gcd, x, y = ext_gcd(b, a % b)
-    return gcd, y, x - (a // b) * y
 
-def gcd(a, b):
-    """最大公约数"""
-    while b:
-        a, b = b, a % b
-    return a
-
-
-
-class Structure():
+class Structure:
     """
     extxyz格式的结构类
     原子坐标是笛卡尔坐标
@@ -80,10 +64,12 @@ class Structure():
     @classmethod
     def read_xyz(cls, filename):
         with open(filename, 'r') as f:
-            return cls.parse_xyz(f.read())
+            structure = cls.parse_xyz(f.read())
+        return structure
     @property
     def cell(self):
         return self.lattice
+
     @property
     def volume(self):
         return np.abs(np.linalg.det(self.lattice))
@@ -91,6 +77,7 @@ class Structure():
     @property
     def numbers(self):
         return [atomic_numbers[element] for element in self.elements]
+
     @property
     def formula(self):
         #这种形式会导致化学式过长 比如有机分子环境下
@@ -101,8 +88,6 @@ class Structure():
         # segments = np.split(self.elements, change_points)
         # # 格式化每个段落
         # result = [f"{segment[0]}{len(segment)}" for segment in segments]
-
-
         # return "".join(result)
         # 改成下面的形式
         formula = ""
@@ -115,6 +100,7 @@ class Structure():
         for element,count in elems.items():
             formula+=element+str(count)
         return formula
+
     @property
     def html_formula(self):
         formula = ""
@@ -127,11 +113,11 @@ class Structure():
         for element, count in elems.items():
             formula += element +"<sub>" + str(count) + "</sub>"
         return formula
+
     @property
     def per_atom_energy(self):
-
-
         return self.additional_fields["energy"]/self.num_atoms
+
     @property
     def forces(self):
         return self.structure_info[self.force_label]
@@ -148,27 +134,27 @@ class Structure():
                 raise ValueError("No virial or stress data")
 
         return vir[[0,4,8,1,5,6]]/self.num_atoms
+
     @property
     def nep_dipole(self):
-
         dipole=np.array(self.dipole.split(" "),dtype=np.float32)
-
         return dipole/self.num_atoms
+
     @property
     def nep_polarizability(self):
         vir = np.array(self.pol.split(" "), dtype=np.float32)
-
         return vir[[0,4,8,1,5,6]] / self.num_atoms
+
     def get_chemical_symbols(self):
         return self.elements
 
     @property
     def elements(self):
         return self.structure_info['species']
+
     @property
     def positions(self):
         return self.structure_info['pos']
-
 
     @property
     def num_atoms(self):
@@ -176,6 +162,7 @@ class Structure():
 
     def copy(self):
         return deepcopy(self)
+
     def set_lattice(self, new_lattice: np.ndarray,in_place=False):
         """
         根据新晶格缩放原子位置，支持原地修改或返回新对象。
@@ -197,7 +184,6 @@ class Structure():
         target.structure_info['pos'] = new_positions
 
         return target
-
 
     def supercell(self, scale_factor, order="atom-major", tol=1e-5):
         """
@@ -254,10 +240,11 @@ class Structure():
             new_elements = np.tile(self.elements, np.prod(scale_factor))
         elif order == "atom-major":
             new_elements = np.repeat(self.elements, np.prod(scale_factor))
-
+        else:
+            raise ValueError( )
 
         # 更新结构信息
-        structure_info={}
+        structure_info = {}
         structure_info['pos'] = new_positions.astype(np.float32)
         structure_info['species'] = new_elements
 
@@ -268,12 +255,12 @@ class Structure():
         additional_fields["Config_type"] =self.additional_fields.get('Config_type', "")+f" super cell({scale_factor})"
 
         return Structure(new_lattice, structure_info, properties, additional_fields)
-    def adjust_reasonable(self, coeff=0.7):
+    def adjust_reasonable(self, coefficient=0.7):
         """
         根据传入系数 对比共价半径和实际键长，
-        如果实际键长小于coeff*共价半径之和，判定为不合理结构 返回False
+        如果实际键长小于coefficient*共价半径之和，判定为不合理结构 返回False
         否则返回 True
-        :param coeff: 系数
+        :param coefficient: 系数
         :return:
 
         """
@@ -283,7 +270,7 @@ class Structure():
             elem1_info = table_info[str(atomic_numbers[elems[1]])]
 
             # 相邻原子距离小于共价半径之和×系数就选中
-            if (elem0_info["radii"] + elem1_info["radii"]) * coeff > bond_length * 100:
+            if (elem0_info["radii"] + elem1_info["radii"]) * coefficient > bond_length * 100:
                 return False
         return True
 
@@ -320,9 +307,6 @@ class Structure():
         """
         if isinstance(lines, str):
             lines = lines.strip().split('\n')
-        # Read the number of atoms (1st line)
-        num_atoms = int(lines[0].strip())
-
         # Parse the second line (global properties)
         global_properties = lines[1].strip()
         lattice, properties, additional_fields = cls._parse_global_properties(global_properties)
@@ -344,8 +328,8 @@ class Structure():
             # _info =[row[index:index + prop["count"]] for row in array]
 
             if prop["type"] == "S":
-                # pass
-                _info=_info.astype(np.str_)
+                pass
+                # _info=_info.astype(np.str_)
                 # _info = np.array(_info,dtype=str)
             elif prop["type"] == "R":
                 _info=_info.astype( np.float32)
@@ -353,7 +337,7 @@ class Structure():
             else:
                 pass
             if prop["count"] == 1:
-                _info = _info.flatten()
+                _info = _info.ravel()
             else:
 
                 _info = _info.reshape((-1, prop["count"]))
@@ -434,7 +418,6 @@ class Structure():
 
         with open(filename, 'r') as file:
             lines = file.read().splitlines()
-
         i = 0
         while i < len(lines):
             num_atoms = lines[i].strip()
@@ -445,7 +428,7 @@ class Structure():
             num_atoms = int(num_atoms)
             end = i + 2 + num_atoms
             structure_lines = lines[i:end]
-            # data_to_process.append(structure_lines)
+
             structure = Structure.parse_xyz(structure_lines)
             structures.append(structure)
             i = end
@@ -478,10 +461,6 @@ class Structure():
             else:
                 global_line.append(f'{key}="{value}"')
         file.write(" ".join(global_line) + "\n")
-
-
-
-
 
         for row in range(self.num_atoms):
             line = ""
@@ -546,7 +525,7 @@ class Structure():
         bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
         return bond_pairs
 
-    def get_bad_bond_pairs(self, cutoff=0.8):
+    def get_bad_bond_pairs(self, coefficient=0.8):
         """
         根据键长阈值判断
         返回所有的非物理键长
@@ -556,11 +535,12 @@ class Structure():
         upper_distances = distances[i, j]
         covalent_radii = np.array([table_info[str(n)]["radii"] / 100 for n in self.numbers])
         radius_sum = covalent_radii[i] + covalent_radii[j]
-        bond_mask = (upper_distances < radius_sum * cutoff)
+        bond_mask = (upper_distances < radius_sum * coefficient)
 
         bad_bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
         return bad_bond_pairs
-def calculate_pairwise_distances(lattice_params, atom_coords, fractional=True):
+
+def calculate_pairwise_distances(lattice_params:np.ndarray, atom_coords:np.ndarray, fractional=True):
     """
     计算晶体中所有原子对之间的距离，考虑周期性边界条件
 

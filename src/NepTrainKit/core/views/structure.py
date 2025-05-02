@@ -3,16 +3,10 @@
 # @Time    : 2025/3/15 13:44
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import time
-start=time.time()
+
 import numpy as np
-
-
-
 #TODO: 这个导入慢 后面看能不能优化
 import pyqtgraph as pg
-
-
 import pyqtgraph.opengl as gl
 
 
@@ -39,14 +33,15 @@ class StructurePlotWidget(gl.GLViewWidget):
         # self.setCameraPosition(distance=30, elevation=30, azimuth=30)
         self.atom_items = []  # 存储所有原子的信息和对应的GLMeshItem
 
-        self.structure=None
+        self.structure = None
         self.show_bond_flag = None
-        self.scale_factor=1
+        self.scale_factor = 1
 
     def set_projection(self,ortho=True):
         self.ortho=ortho
         self.setProjection()
         self.update()
+
     def set_show_bonds(self,show_bonds=True):
         self.show_bond_flag = show_bonds
         if self.structure is not None:
@@ -57,10 +52,12 @@ class StructurePlotWidget(gl.GLViewWidget):
                 self.scale_factor=1
 
                 self.show_structure(self.structure)
+
     def setProjection(self, region=None ):
         m = self.projectionMatrix(region)
         glMatrixMode(GL_PROJECTION)
         glLoadMatrixf(np.array(m.data(), dtype=np.float32))
+
     def projectionMatrix(self, region=None ):
         # 如果已经缓存，直接返回
         if self.ortho:
@@ -193,6 +190,7 @@ class StructurePlotWidget(gl.GLViewWidget):
 
             item._setView(self)
         self.update()
+
     def show_lattice(self, structure):
         origin = np.array([0.0, 0.0, 0.0])
         a1 = structure.cell[0]
@@ -238,7 +236,9 @@ class StructurePlotWidget(gl.GLViewWidget):
             bond1, bond2 = self.add_bond(pos1, pos2, color1, color2, radius1, radius2, bond_radius=bond_radius)
             bond_items.append(bond1)
             bond_items.append(bond2)
+
         self.addItems(bond_items)
+
     def add_bond(self, pos1, pos2, color1, color2, radius1, radius2, bond_radius=0.12):
         """使用圆柱体绘制两个原子之间的化学键，从球体表面开始"""
         bond_vector = pos2 - pos1
@@ -370,17 +370,21 @@ class StructurePlotWidget(gl.GLViewWidget):
         # print("aspect_ratio", aspect_ratio)
         flat_threshold=0.5
         # 根据扁平方向调整视角
-        if aspect_ratio[0] < flat_threshold and aspect_ratio[1] >= flat_threshold and aspect_ratio[2] >= flat_threshold:
+        if (aspect_ratio[0] < flat_threshold
+                and aspect_ratio[1] >= flat_threshold
+                and aspect_ratio[2] >= flat_threshold):
             # x 方向扁平，从 x 轴法线方向（侧面）看
             self.opts['elevation'] = 0
             self.opts['azimuth'] = 0
-        elif aspect_ratio[1] < flat_threshold and aspect_ratio[0] >= flat_threshold and aspect_ratio[
-            2] >= flat_threshold:
+        elif (aspect_ratio[1] < flat_threshold
+              and aspect_ratio[0] >= flat_threshold
+              and aspect_ratio[2] >= flat_threshold):
             # y 方向扁平，从 y 轴法线方向（侧面）看
             self.opts['elevation'] = 0
             self.opts['azimuth'] = 0
-        elif aspect_ratio[2] < flat_threshold and aspect_ratio[0] >= flat_threshold and aspect_ratio[
-            1] >= flat_threshold:
+        elif (aspect_ratio[2] < flat_threshold
+              and aspect_ratio[0] >= flat_threshold
+              and aspect_ratio[1] >= flat_threshold):
             # z 方向扁平，从 z 轴法线方向（顶部）看
             self.opts['elevation'] = 90
             self.opts['azimuth'] = 0
@@ -440,6 +444,7 @@ class StructureInfoWidget(QWidget):
 
         self._layout.addWidget(self.lattice_label, 3, 0,1,1)
         self._layout.addWidget(self.lattice_text, 3, 1,1,3)
+
     def show_structure_info(self, structure):
         pass
         self.atom_num_text.setText(str(len(structure )))

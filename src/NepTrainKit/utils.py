@@ -5,6 +5,7 @@
 # @email    : 1747193328@qq.com
 import subprocess
 import time
+import os
 import traceback
 from collections.abc import Iterable
 
@@ -18,6 +19,13 @@ from NepTrainKit.version import UPDATE_EXE, UPDATE_FILE, NepTrainKit_EXE
 
 
 def timeit(func):
+    """
+    统计函数耗时
+    使用用法：
+        @timeit
+        def demo():
+            pass
+    """
     def wrapper(*args, **kwargs):
         start_time = time.time()  # 记录开始时间
         result = func(*args, **kwargs)  # 调用原始函数
@@ -26,13 +34,7 @@ def timeit(func):
         return result
     return wrapper
 
-
-
-
-
-import os
-
-def check_path_type(path):
+def check_path_type(path:str) -> str:
     """
     判断路径是文件夹还是文件，即使路径不存在。
 
@@ -40,7 +42,7 @@ def check_path_type(path):
         path (str): 路径字符串。
 
     返回:
-        str: "folder"（文件夹）、"file"（文件）或 "unknown"（未知或不存在）。
+        str: "folder"（文件夹）、"file"（文件） 。
     """
 
     if os.path.isdir(path):
@@ -55,7 +57,12 @@ def check_path_type(path):
             return "folder"
 
 
-def call_path_dialog(self, title, dialog_type="file", default_filename="", file_filter="", selected_filter=""):
+def call_path_dialog(self,
+                     title:str,
+                     dialog_type:str = "file",
+                     default_filename:str = "",
+                     file_filter:str = "",
+                     selected_filter:str = "") -> str|None:
     dialog_map = {
         "file": lambda: QFileDialog.getSaveFileName(self, title, os.path.join(Config.get_path(), default_filename), file_filter, selected_filter),
         "select": lambda: QFileDialog.getOpenFileName(self, title, Config.get_path(), file_filter),
@@ -92,7 +99,7 @@ def call_path_dialog(self, title, dialog_type="file", default_filename="", file_
     Config.set("setting", "last_path", last_dir)
     return select_path
 
-def unzip( ):
+def unzip():
 
     cmd = f"ping -n 3 127.0.0.1&{UPDATE_EXE} {UPDATE_FILE}&ping -n 2 127.0.0.1&start {NepTrainKit_EXE}"
 
@@ -105,16 +112,18 @@ def unzip( ):
 
 class LoadingThread(QThread):
     progressSignal = Signal(int)
-    def __init__(self,parent=None,show_tip=True,title='running'):
+    def __init__(self, parent=None, show_tip=True, title='running'):
         super(LoadingThread,self).__init__(parent)
         self.show_tip=show_tip
         self.title=title
         self._parent=parent
+
     def run(self ):
         result =self._func(*self._args, **self._kwargs)
         if isinstance(result, Iterable):
             for i,_ in enumerate(result):
                 self.progressSignal.emit(i)
+
     def start_work(self,func,*args,**kwargs):
         if self.show_tip:
             self.tip = StateToolTip(self.title, 'Please wait patiently~~', self._parent)
@@ -127,10 +136,12 @@ class LoadingThread(QThread):
         self._args = args
         self._kwargs = kwargs
         self.start()
+
     def __finished_work(self ):
         if self.tip:
             self.tip.setContent('任务完成啦 😆')
             self.tip.setState(True)
+
     def stop_work(self ):
         self.terminate()
 
@@ -168,6 +179,8 @@ class DataProcessingThread(QThread):
         except Exception as e:
             logger.debug(traceback.format_exc())
             self.errorSignal.emit(str(e))
+
+
 class FillterProcessingThread(QThread):
     # 定义信号用于通信
     progressSignal = Signal(int)  # 进度更新信号
@@ -176,24 +189,16 @@ class FillterProcessingThread(QThread):
 
     def __init__(self,  process_func):
         super().__init__()
-
         self.process_func = process_func
-
 
     def run(self):
         """线程主逻辑"""
         try:
-
             self.progressSignal.emit(0)
-
             # 处理每个结构
             self.process_func()
-
-
-
                 # 发射进度信号 (百分比)
             self.progressSignal.emit(100)
-
             # 处理完成
             self.finishSignal.emit( )
         except Exception as e:

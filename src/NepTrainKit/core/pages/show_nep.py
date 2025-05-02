@@ -6,8 +6,7 @@
 import os.path
 import sys
 
-from io import StringIO
-from venv import logger
+from loguru import logger
 
 import numpy as np
 from PySide6.QtCore import QUrl, QTimer, Qt, Signal, QThread
@@ -55,26 +54,23 @@ class ShowNepWidget(QWidget):
 
     def showEvent(self, event):
         if hasattr(self._parent,"save_menu"):
-
             self._parent.save_menu.addAction(self.export_selected_action)
         auto_load_config = Config.getboolean("widget","auto_load",False)
         if not auto_load_config:
             return
-
         if not self.first_show:
             self.first_show=True
             if os.path.exists("./train.xyz") and os.path.exists("./nep.txt"):
                 self.set_work_path(os.path.join(os.getcwd(),"train.xyz"))
 
-
-
     def hideEvent(self, event):
-
         if hasattr(self._parent,"save_menu"):
             self._parent.save_menu.removeAction(self.export_selected_action)
+
     def init_action(self):
         self.export_selected_action=Action(QIcon(":/images/src/images/export1.svg"),"Export Selected Structures")
         self.export_selected_action.triggered.connect(self.export_selected_structures)
+
     def init_ui(self):
         self.gridLayout = QGridLayout(self)
         self.gridLayout.setObjectName("show_nep_gridLayout")
@@ -91,12 +87,6 @@ class ShowNepWidget(QWidget):
         self.structure_toolbar.orthoViewSignal.connect(self.show_struct_widget.set_projection)
         self.structure_toolbar.exportSignal.connect(self.export_single_struct)
 
-        #
-        # self.struct_info_edit = PlainTextEdit(self.struct_widget)
-        #
-        #
-        #
-        # self.struct_info_edit.setReadOnly(True)
         self.struct_info_widget = StructureInfoWidget(self.struct_widget)
         self.struct_index_widget = QWidget(self)
         self.struct_index_widget_layout = QHBoxLayout(self.struct_index_widget)
@@ -183,14 +173,8 @@ class ShowNepWidget(QWidget):
         self.plot_widget_layout.addWidget(self.graph_widget, 2, 0, 1, 2)
         self.plot_widget_layout.addWidget(self.path_label , 3, 0, 1, 1)
         self.plot_widget_layout.addWidget(self.dataset_info_label , 3, 1, 1, 1)
-
         self.plot_widget_layout.setContentsMargins(0,0,0,0)
 
-
-
-
-        # self.gridLayout.addWidget(self.plot_widget, 0, 0, 1, 1)
-        # self.gridLayout.addWidget(self.struct_widget, 0, 1, 1, 1)
         # 将状态栏添加到布局的底部
         self.splitter = QSplitter(Qt.Horizontal, self)
         self.splitter.addWidget(self.plot_widget)
@@ -199,13 +183,6 @@ class ShowNepWidget(QWidget):
         self.splitter.setStretchFactor(0, 4)
         self.splitter.setStretchFactor(1, 2)
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
-
-
-
-        # self.gridLayout.setHorizontalSpacing( 0)
-
-        # self.gridLayout.setColumnStretch(0, 3)
-        # self.gridLayout.setColumnStretch(1, 3)
 
     def dragEnterEvent(self, event):
         # 检查拖拽的内容是否包含文件
@@ -222,9 +199,6 @@ class ShowNepWidget(QWidget):
             file_path = urls[0].toLocalFile()
 
             self.set_work_path(file_path)
-
-
-
 
     def open_file(self):
         path = utils.call_path_dialog(self,"Please choose the XYZ file","select",file_filter="XYZ files (*.xyz)")
@@ -251,25 +225,18 @@ class ShowNepWidget(QWidget):
         if path:
             thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
             thread.start_work(self.nep_result_data.export_selected_xyz, path)
-    def set_work_path(self,path):
 
+    def set_work_path(self,path):
         if os.path.isdir(path):
             if os.path.exists(os.path.join(path,"train.xyz")):
                 path=os.path.join(path,"train.xyz")
             else:
                 MessageManager.send_info_message("The directory does not contain a train.xyz file!")
                 return
-
-
         if not path.endswith(".xyz"):
             MessageManager.send_info_message(f"Please choose a xyz file, not {path}!")
             return
-        #     path = os.path.dirname(path)
-
-
-
         url=self.path_label.getUrl().toString()
-
         old_path=url.replace("file://","")
         if sys.platform == "win32":
             old_path=old_path[1:]
@@ -281,30 +248,15 @@ class ShowNepWidget(QWidget):
             if box.result()==0:
                 return
 
-
-
-
-        #设置工作路径后 开始画图了
         self.check_nep_result(path)
-        # self.load_thread=QThread(self)
 
-        # self.load_thread=utils.LoadingThread(self,show_tip=True,title="Loading NEP data")
-        # self.load_thread.finished.connect(self.set_dataset)
-        #
-        # self.load_thread.start_work(self.check_nep_result,path)
-
-        # self.check_nep_result(path)
     def set_dataset(self,*args):
-
         if self.nep_result_data is None:
             return
         if not self.nep_result_data.load_flag :
             self.nep_result_data=None
             return
-
         self.struct_index_spinbox.setMaximum(self.nep_result_data.num)
-        # self.graph_widget.clear()
-
         self.graph_widget.set_dataset(self.nep_result_data)
         self.nep_result_data.updateInfoSignal.connect(self.update_dataset_info)
         self.nep_result_data.updateInfoSignal.emit()
@@ -341,8 +293,6 @@ class ShowNepWidget(QWidget):
         tip = StateToolTip("Loading", 'Please wait patiently~~', self )
         tip.show()
         tip.closedSignal.connect(self.stop_loading)
-
-
         self.nep_result_data.moveToThread(self.load_thread)
         self.load_thread.finished.connect(self.set_dataset)
         self.load_thread.finished.connect(lambda :tip.setState(True))
@@ -365,12 +315,12 @@ class ShowNepWidget(QWidget):
         if self.nep_result_data.select_index:
 
             sort_index = np.sort(np.array(list(self.nep_result_data.select_index)) )
-
         else:
             sort_index = np.sort(self.nep_result_data.structure.group_array.now_data, axis=0)
         index = np.searchsorted(sort_index, current_index, side='left')
 
         self.struct_index_spinbox.setValue(int(sort_index[index-1 if index>0 else index]))
+
     # @utils.timeit
     def to_next_structure(self):
         if self.nep_result_data is None:
@@ -387,11 +337,10 @@ class ShowNepWidget(QWidget):
         self.struct_index_spinbox.setValue(int(sort_index[index]))
 
         if index==sort_index.shape[0]-1:
-
             return True
         else:
-
             return False
+
     def start_play(self):
         if self.auto_switch_button.isChecked():
             self.auto_switch_button.setIcon(QIcon(':/images/src/images/pause.svg'))
@@ -399,9 +348,9 @@ class ShowNepWidget(QWidget):
         else:
             self.auto_switch_button.setIcon(QIcon(':/images/src/images/play.svg'))
             self.play_timer.stop()
-    def play_show_structures(self):
-        if   self.to_next_structure():
 
+    def play_show_structures(self):
+        if self.to_next_structure():
             self.auto_switch_button.click()
     def export_single_struct(self):
         if self.nep_result_data is None:
@@ -431,17 +380,11 @@ class ShowNepWidget(QWidget):
         self.show_struct_widget.show_structure(atoms)
         self.update_structure_bond_info(atoms)
         self.struct_info_widget.show_structure_info(atoms)
-        # text_io=StringIO()
-        # atoms.write(text_io)
-        #
-        # text_io.seek(0)
-        # # comm=text.readlines()[1]
-        # comm=text_io.read()
-        # # self.struct_info_edit.setPlainText(comm)
-        # text_io.close()
+
     def update_structure_bond_info(self,atoms):
         self.calculate_bond_thread=utils.LoadingThread(self,show_tip=False )
         self.calculate_bond_thread.start_work(self.calculate_bond_info,atoms)
+
     def calculate_bond_info(self,atoms):
         distance_info = atoms.get_mini_distance_info()
         bond_text = ""
@@ -461,24 +404,22 @@ class ShowNepWidget(QWidget):
         self.updateBondInfoSignal.emit( bond_text )
         if unreasonable:
             MessageManager.send_info_message("The distance between atoms is too small, and the structure may be unreasonable.")
+
     def search_config_type(self,config):
 
-        indexs= self.nep_result_data.structure.search_config(config)
+        indexes= self.nep_result_data.structure.search_config(config)
 
-        self.graph_widget.canvas.update_scatter_color(indexs,Brushes.Show)
-
+        self.graph_widget.canvas.update_scatter_color(indexes,Brushes.Show)
 
     def checked_config_type(self, config):
 
-        indexs = self.nep_result_data.structure.search_config(config)
-
-        self.graph_widget.canvas.select_index(indexs,  False)
+        indexes = self.nep_result_data.structure.search_config(config)
+        self.graph_widget.canvas.select_index(indexes,  False)
 
     def uncheck_config_type(self, config):
 
-        indexs = self.nep_result_data.structure.search_config(config)
-
-        self.graph_widget.canvas.select_index(indexs,True )
+        indexes = self.nep_result_data.structure.search_config(config)
+        self.graph_widget.canvas.select_index(indexes,True )
     def update_dataset_info(self ):
         info=f"Data: Orig: {self.nep_result_data.atoms_num_list.shape[0]} Now: {self.nep_result_data.structure.now_data.shape[0]} "\
         f"Rm: {self.nep_result_data.structure.remove_data.shape[0]} Sel: {len(self.nep_result_data.select_index)} Unsel: {self.nep_result_data.structure.now_data.shape[0]-len(self.nep_result_data.select_index)}"

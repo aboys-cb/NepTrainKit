@@ -4,14 +4,10 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import contextlib
-
 import os
 import traceback
-
-
 import numpy as np
 from PySide6.QtCore import QThread, Signal, QObject
-from ase import Atoms
 from loguru import logger
 from multiprocessing import Process, JoinableQueue, Event
 
@@ -39,13 +35,9 @@ class Nep3Calculator( ):
 
         if CpuNep is None:
             MessageManager.send_message_box("Failed to import nep_cpu.\n To use the display functionality normally, please prepare the *_train.out and descriptor.out files.","Error")
-
             return
 
         if os.path.exists(model_file):
-
-            # model_file = model_file.encode("utf-8")
-
 
             with open(os.devnull, 'w') as devnull:
                 with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
@@ -60,7 +52,7 @@ class Nep3Calculator( ):
         _types = []
         _boxs = []
         _positions = []
-        if   isinstance(structures, (Structure,Atoms)):
+        if  not isinstance(structures,(list,np.ndarray)):
             structures = [structures]
         for structure in structures:
             symbols = structure.get_chemical_symbols()
@@ -72,22 +64,19 @@ class Nep3Calculator( ):
             _positions.append(_position)
             group_size.append(len(_type))
         return  _types, _boxs, _positions,group_size
+
     @utils.timeit
     def calculate(self,structures:list[Structure]):
         if not self.initialized:
             return np.array([]),np.array([]),np.array([])
-
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
         potentials, forces, virials = self.nep3.calculate(_types, _boxs, _positions)
-
-
         split_indices = np.cumsum(group_size)[:-1]
         #
         potentials=np.hstack(potentials)
         split_potential_arrays = np.split(potentials, split_indices)
         potentials_array = np.array(list(map(np.sum, split_potential_arrays)), dtype=np.float32)
         # print(potentials_array)
-
         # 处理每个force数组：reshape (3, -1) 和 transpose(1, 0)
         reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
 
@@ -102,6 +91,9 @@ class Nep3Calculator( ):
 
 
     def get_descriptor(self,structure:Structure):
+        """
+        获取单个结构的所有原子描述符
+        """
         if not self.initialized:
             return np.array([])
         symbols = structure.get_chemical_symbols()
@@ -118,6 +110,7 @@ class Nep3Calculator( ):
     @utils.timeit
     def get_structures_descriptor(self,structures:list[Structure]):
         """
+        获取结构描述符：原子平均
         返回的已经结构的描述符了 无需平均
         """
         if not self.initialized:
@@ -168,12 +161,6 @@ def run_nep3_calculator(nep_txt,structures,calculator_type,queue=None):
     if   queue is  None:
         return result
 
-
-
-
-
-
-
 class NEPProcess(QObject):
     result_signal = Signal( )  # 信号，用于传递进程结果
     error_signal = Signal(str )  # 信号，用于传递错误信息
@@ -203,29 +190,18 @@ class NEPProcess(QObject):
 
         self.input_args=()
         self.func_result=None
-
         self.run()
 
-
-
-
     def run(self):
-
         try:
-
             if self.use_process:
                 # 创建并启动进程
                 self.process = Process(target=self.func, args= self.input_args ,kwargs = self.input_kwargs,daemon=True)
                 self.process.start()
                 # 获取结果
-
                 self.func_result = self.queue.get()
-
-
             else:
-
                 self.func_result=self.func(*self.input_args,**self.input_kwargs)
-
             if self.func_result is not None:
                 self.result_signal.emit( )
             else:
@@ -255,12 +231,6 @@ class NEPProcess(QObject):
             self.queue.cancel_join_thread()
         except Exception as e:
             logger.error(traceback.format_exc())
-
-
-
-
-
-
 
 if __name__ == '__main__':
     structures = Structure.read_multiple(r"D:\Desktop\nep\nep-data-main\2023_Zhao_PdCuNiP\train.xyz")

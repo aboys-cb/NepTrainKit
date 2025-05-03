@@ -126,7 +126,6 @@ class NepCalculator():
         if not self.initialized:
             return np.array([])
         _types, _boxs, _positions, group_size = self.compose_structures(structures)
-
         polarizability = self.nep3.get_structures_polarizability(_types, _boxs, _positions)
 
         return np.array(polarizability,dtype=np.float32)

@@ -29,7 +29,7 @@ class ViewBoxWidget(scene.Widget):
         super(ViewBoxWidget, self).__init__(*args, **kwargs)
 
         self.unfreeze()
-        self.grid = self.add_grid(margin=0)
+        self.grid = self.add_grid(margin=10)
 
         self.grid.spacing = 0
         self.title_label = scene.Label(title, color='black',font_size=8)
@@ -236,15 +236,15 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
         VispyCanvasLayoutBase.__init__(self)
 
-        scene.SceneCanvas.__init__(self, *args, **kwargs)
+        scene.SceneCanvas.__init__(self, *args, fullscreen=True, **kwargs)
 
         self.unfreeze()
         self.nep_result_data = None
-        self.grid = self.central_widget.add_grid(margin=0, spacing=0)
+
+
+        self.grid = self.central_widget.add_grid(margin=10, spacing=0)
         self.grid.spacing = 0
-        # self.events.mouse_press.connect(self.on_mouse_press)
-        # self.events.mouse_move.connect(self.on_mouse_move)
-        # self.events.mouse_release.connect(self.on_mouse_release)
+
 
         self.events.mouse_double_click.connect(self.switch_view_box)
         self.path_line = scene.visuals.Line(color='red', method='gl' )
@@ -303,11 +303,6 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
             index = self.point_at(event.pos)
 
-            # tr = self.scene.node_transform(self.current_axes.view.scene)
-            #
-            # x, y, _, _ = tr.map(event.pos)
-
-            # index = self.current_axes.point_at(x, y)
             current_axes = self._get_clicked_axes(event.pos)
 
             if index is not None:
@@ -356,12 +351,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 self.select_point_from_polygon(np.array(self.mouse_path),reverse)
             else:
                 # 右键的话  选中单个点
-
-
                 index = self.point_at(event.pos)
-
-
-
                 if index is not None:
                     structure_index = self.current_axes.data[index]
 
@@ -391,11 +381,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         self.clear_axes()
         for r in range(axes_num):
             plot = ViewBoxWidget(title="")
-
-
             self.axes_list.append(plot)
-
-
         self.set_view_layout()
         self.update()
 
@@ -474,7 +460,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 text=f"rmse: {_dataset.get_formart_rmse()}"
                 plot.text.text=text
                 plot.text.pos=pos
-        # self.update()
+
     def convert_pos(self,plot,pos):
         x_range = plot.xaxis.axis.domain  # x轴范围 [xmin, xmax]
         y_range = plot.yaxis.axis.domain # y轴范围 [ymin, ymax]

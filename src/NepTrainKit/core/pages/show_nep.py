@@ -101,7 +101,6 @@ class ShowNepWidget(QWidget):
         self.struct_index_spinbox.upButton.clicked.connect(self.to_next_structure)
         self.struct_index_spinbox.setMinimum(0)
         self.struct_index_spinbox.setMaximum(0)
-
         self.play_timer=QTimer(self)
         self.play_timer.timeout.connect(self.play_show_structures)
 

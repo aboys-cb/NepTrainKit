@@ -43,6 +43,9 @@ class NepResultPlotWidget(QWidget):
 
             self.canvas = VispyCanvas(self, bgcolor='white')
             self._layout.addWidget(self.canvas.native)
+            self.window().windowHandle().screenChanged.connect(self.canvas.native.screen_changed)
+
+            self.canvas.native.setParent(self)
 
     # def clear(self):
     #     self.canvas.clear_axes()

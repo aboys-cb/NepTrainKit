@@ -27,8 +27,15 @@ jobs:
 
     - name: Run tests with pytest
       run: |
-        pytest tests/  --cov=./src/NepTrainKit  --cov-report=xml -v
+        pytest tests/  --cov=./src/NepTrainKit  --junitxml=junit.xml -o junit_family=legacy
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       if: success()
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+    - name: Upload test results to Codecov
+      if: ${{ !cancelled() }}
+      uses: codecov/test-results-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}

@@ -3,6 +3,7 @@
 
 [![PyPI Downloads](https://img.shields.io/pypi/dm/NepTrainKit?logo=pypi&logoColor=white&color=blue&label=PyPI)](https://pypi.org/project/NepTrainKit)
 [![Requires Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white)](https://python.org/downloads)
+[![codecov](https://codecov.io/gh/your/repo/branch/main/graph/badge.svg)](https://codecov.io/gh/your/repo)
  
 </h4>
 

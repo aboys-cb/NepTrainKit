@@ -6,7 +6,7 @@
 import os
 import sys
 import traceback
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 from PySide6.QtCore import Qt, QFile
 from PySide6.QtGui import QIcon, QFont, QPalette, QColor
 

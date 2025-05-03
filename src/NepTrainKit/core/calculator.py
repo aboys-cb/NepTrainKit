@@ -25,7 +25,7 @@ except ImportError:
 
         CpuNep=None
 
-class Nep3Calculator( ):
+class NepCalculator():
 
     def __init__(self, model_file="nep.txt"):
         super().__init__()
@@ -139,10 +139,13 @@ class Nep3Calculator( ):
         dipole = self.nep3.get_structures_dipole(_types, _boxs, _positions)
 
         return np.array(dipole,dtype=np.float32)
-def run_nep3_calculator(nep_txt,structures,calculator_type,queue=None):
+
+Nep3Calculator = NepCalculator
+
+def run_nep_calculator(nep_txt, structures, calculator_type, queue=None):
     try:
 
-        nep3 = Nep3Calculator(nep_txt)
+        nep3 = NepCalculator(nep_txt)
         if calculator_type == 'polarizability':
             result = nep3.get_structures_polarizability(structures)
         elif calculator_type == 'descriptor':
@@ -172,7 +175,7 @@ class NEPProcess(QObject):
         self.use_process = False
         self.func_result = None
     def run_nep3_calculator_process(self,nep_txt, structures, calculator_type="calculate",wait=False):
-        self.func=run_nep3_calculator
+        self.func=run_nep_calculator
         self.queue = JoinableQueue()
 
         self.input_kwargs={
@@ -234,5 +237,5 @@ class NEPProcess(QObject):
 
 if __name__ == '__main__':
     structures = Structure.read_multiple(r"D:\Desktop\nep\nep-data-main\2023_Zhao_PdCuNiP\train.xyz")
-    nep = Nep3Calculator(r"D:\Desktop\nep\nep-data-main\2023_Zhao_PdCuNiP\nep.txt")
+    nep = NepCalculator(r"D:\Desktop\nep\nep-data-main\2023_Zhao_PdCuNiP\nep.txt")
     nep.calculate(structures)

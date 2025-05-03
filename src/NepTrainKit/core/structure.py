@@ -310,14 +310,8 @@ class Structure:
         # Parse the second line (global properties)
         global_properties = lines[1].strip()
         lattice, properties, additional_fields = cls._parse_global_properties(global_properties)
-        # array = np.array([line.split() for line in lines[2:]],dtype=str)
-        # array =  [line.split() for line in lines[2:]]
-
         array = np.array([line.split() for line in lines[2:]],dtype=object )
-        # print(array.shape)
-        # array = np.array([line.split() for line in lines[2:]])
 
-        # print(array.shape)
         structure_info = {}
         index = 0
 
@@ -329,17 +323,15 @@ class Structure:
 
             if prop["type"] == "S":
                 pass
-                # _info=_info.astype(np.str_)
-                # _info = np.array(_info,dtype=str)
+
             elif prop["type"] == "R":
                 _info=_info.astype( np.float32)
-                 # _info = np.array(_info,dtype=float)
+
             else:
                 pass
             if prop["count"] == 1:
                 _info = _info.ravel()
             else:
-
                 _info = _info.reshape((-1, prop["count"]))
 
             structure_info[prop["name"]] = _info

@@ -3,6 +3,7 @@
 # @Time    : 2024/10/17 13:14
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import platform
 import subprocess
 import time
 import os
@@ -108,7 +109,6 @@ def unzip():
         QApplication.instance().exit()
     else:
         quit()
-
 
 class LoadingThread(QThread):
     progressSignal = Signal(int)

@@ -2,7 +2,7 @@ import os
 import platform
 import shutil
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
-from NepTrainKit import module_path
+from NepTrainKit import module_path,get_user_config_path
 
 
 class Config:
@@ -26,14 +26,7 @@ class Config:
     def connect_db(self):
         self.db = QSqlDatabase.addDatabase("QSQLITE","config")
 
-        if platform.system() == 'Windows':
-            # Windows 系统通常使用 AppData 路径存放应用数据
-            local_path = os.getenv('LOCALAPPDATA', None)
-            if local_path is None:
-                local_path = os.getenv('USERPROFILE', '') + '\\AppData\\Local '
-            user_config_path = os.path.join(local_path,'NepTrainKit')
-        else:
-            user_config_path = os.path.expanduser("~/.config/NepTrainKit")
+        user_config_path = get_user_config_path()
 
         if not os.path.exists(f"{user_config_path}/config.sqlite"):
             if not os.path.exists(user_config_path):

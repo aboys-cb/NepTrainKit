@@ -3,22 +3,23 @@
 # @Time    : 2025/4/6 13:21
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import importlib
 import os
 import time
+from pathlib import Path
 from typing import List, Tuple
-
-
 import numpy as np
+from loguru import logger
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import QGridLayout, QFrame, QWidget, QVBoxLayout
 
 from qfluentwidgets import ComboBox, BodyLabel, RadioButton, SplitToolButton, RoundMenu, PrimaryDropDownToolButton, \
     PrimaryDropDownPushButton, CommandBar, Action, CheckBox, LineEdit
+from NepTrainKit import utils, module_path,get_user_config_path
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.custom_widget import SpinBoxUnitInputFrame, MakeDataCardWidget, ProcessLabel
-from NepTrainKit import utils, module_path
 from NepTrainKit.core.calculator import NEPProcess
 from NepTrainKit.core.io.select import farthest_point_sampling
 from scipy.sparse.csgraph import connected_components
@@ -34,6 +35,35 @@ def register_card_info(card_class  ):
     card_info_dict[card_class.card_name] =card_class
 
     return card_class
+
+
+def load_cards_from_directory(directory: str) -> None:
+    """Load all card modules from a directory"""
+    dir_path = Path(directory)
+
+    if not dir_path.is_dir():
+        return None
+    #     raise ValueError(f"Directory not found: {directory}")
+
+    for file_path in dir_path.glob("*.py"):
+
+        if file_path.name.startswith("_"):
+            continue  # Skip private/python module files
+
+        module_name = file_path.stem
+        try:
+            # Import the module
+            spec = importlib.util.spec_from_file_location(module_name, file_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+
+            # The module should register its cards automatically via decorators
+            logger.success(f"Successfully loaded card module: {module_name}")
+
+        except Exception as e:
+            logger.error(f"Failed to load card module {file_path}: {str(e)}")
+
+
 
 def is_organic_cluster(symbols):
     """
@@ -258,11 +288,20 @@ class FilterDataCard(MakeDataCard):
         text = f"Input structures: {len(self.dataset)} → Selected: {len(self.result_dataset)}"
         self.status_label.setText(text)
 
+#加载自定义卡片
+user_config_path=get_user_config_path()
+
+if os.path.exists(f"{user_config_path}/cards"):
+    load_cards_from_directory(os.path.join(user_config_path,"cards"))
+
+
+
 
 @register_card_info
 class SuperCellCard(MakeDataCard):
     card_name= "Super Cell"
     menu_icon=r":/images/src/images/supercell.svg"
+    separator = True
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Make Supercell")
@@ -400,8 +439,6 @@ class SuperCellCard(MakeDataCard):
 
                             if na == 1 and nb == 1 and nc == 1:  # 只有一个扩包
                                 supercell = structure.copy()
-
-
                             else:
                                 supercell = make_supercell(structure, np.diag([i, j, k]),order="atom-major")
                                 supercell.info["Config_type"]=supercell.info.get("Config_type","") +f" supercell({i,j,k})"

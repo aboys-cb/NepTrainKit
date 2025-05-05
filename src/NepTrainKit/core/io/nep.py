@@ -3,11 +3,7 @@
 # @Time    : 2024/10/18 13:26
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import time
 
-from ase.stress import full_3x3_to_voigt_6_stress
-
-start=time.time()
 import os
 import traceback
 from pathlib import Path

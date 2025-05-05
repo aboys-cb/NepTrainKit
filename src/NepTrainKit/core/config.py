@@ -40,6 +40,7 @@ class Config:
                 os.makedirs(user_config_path)
 
             shutil.copy(os.path.join(module_path,'Config/config.sqlite'),f"{user_config_path}/config.sqlite")
+
         self.db.setDatabaseName(f"{user_config_path}/config.sqlite")
 
         self.db.open()
@@ -103,7 +104,7 @@ class Config:
     @classmethod
     def get(self,section,option,fallback=None):
         query = QSqlQuery(self._instance.db )
-        result=query.exec_(f"""SELECT value FROM "config" where config.option='{option}' and config.section='{section}';""")
+        result=query.exec(f"""SELECT value FROM "config" where config.option='{option}' and config.section='{section}';""")
 
         query.next()
         first= query.value(0)
@@ -116,10 +117,10 @@ class Config:
         if option=="theme":
             self.theme=value
         query = QSqlQuery(self._instance.db)
-        result=query.exec_(f"""INSERT OR REPLACE INTO  "main"."config"("section", "option", "value") VALUES ('{section}', '{option}', '{value}')""")
+        result=query.exec(f"""INSERT OR REPLACE INTO  "main"."config"("section", "option", "value") VALUES ('{section}', '{option}', '{value}')""")
 
     @classmethod
     def update_section(self,old,new):
         query = QSqlQuery(self._instance.db)
-        result=query.exec_(f"""UPDATE  "main"."config" set   section='{new}' where section='{old}'""")
+        result=query.exec(f"""UPDATE  "main"."config" set   section='{new}' where section='{old}'""")
 

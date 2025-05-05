@@ -20,7 +20,7 @@ Users can import files in the following two ways:
 software will automatically detect the `nep.txt` file type and import it, including the `norm`、`dipole` and `polarizability`.
 Currently, the software only supports two import methods:
 - `train.xyz` and `*.out` combination.
-- or `nep.txt` and `train.xyz` combination.
+- or `nep.txt`(optional, if not provided, the NEP89 large model will be used) and `train.xyz` combination.
 :::
 
  
@@ -31,7 +31,7 @@ to export the results as two files:
 
 - **export_remove_model.xyz**: Contains information about the deleted structures.
 - **export_good_model.xyz**: Contains information about the remaining structures.
-
+In the export menu, you can click "Export Selected Structures" to export the currently selected structures.
 ## 3.Toolbar
 
 In the drawing toolbar, we have integrated function buttons such as reset, zoom, selection and editing, undo, and delete. Users can perform basic operations on the image using these tools. Please note that these operation tools are only effective on the main chart.

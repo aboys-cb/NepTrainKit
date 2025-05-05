@@ -809,7 +809,8 @@ class CellScalingCard(MakeDataCard):
                 new_lattice[2] = [cx, cy, cz]
 
             # 缩放原子位置
-            new_struct.info["Config_type"] = new_struct.info.get("Config_type","") + f" Scaling(scaling={max_scaling},{'uniform' if engine_type==1 else 'Sobol'  })"
+
+            new_struct.info["Config_type"] = new_struct.info.get("Config_type","") + f" Scaling(scaling={int(max_scaling)},{'uniform' if engine_type==1 else 'Sobol'  })"
 
             new_struct.set_cell(new_lattice,  scale_atoms=True)
 
@@ -1014,13 +1015,21 @@ class CardGroup(MakeDataCardWidget):
         super().closeEvent(event)
 
     def dragEnterEvent(self, event):
-        if isinstance(event.source(), (MakeDataCard,CardGroup)):
+
+        widget = event.source()
+
+        if widget == self:
+            return
+        if isinstance(widget, (MakeDataCard,CardGroup)):
             event.acceptProposedAction()
         else:
             event.ignore()  # 忽略其他类型的拖拽
 
     def dropEvent(self, event):
+
         widget = event.source()
+        if widget == self:
+            return
         if isinstance(widget, FilterDataCard):
             self.set_filter_card(widget)
         elif isinstance(widget, (MakeDataCard,CardGroup)):

@@ -6,6 +6,7 @@
 import json
 import os.path
 
+import numpy as np
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QApplication
 
@@ -106,11 +107,19 @@ class MakeDataWidget(QWidget):
         structures_list = []
         for path  in paths:
             atoms = ase_read(path,":")
-            if isinstance(atoms, list):
+            #ase有时候会将字符串解析成数组或者int  这里转换成str
+            for atom in atoms:
+                if isinstance(atom.info.get("Config_type"),np.ndarray):
+                    if atom.info["Config_type"].size==0:
 
-                structures_list.extend(atoms)
-            else:
-                structures_list.append(atoms)
+                        atom.info["Config_type"] = ""
+                    else:
+                        atom.info["Config_type"]=" ".join(atom.info["Config_type"])
+
+                else:
+                    atom.info["Config_type"]=str(atom.info["Config_type"])
+                structures_list.append(atom)
+
         self.dataset=structures_list
         MessageManager.send_success_message(f"success load base structure ({len(structures_list)} atoms).")
 

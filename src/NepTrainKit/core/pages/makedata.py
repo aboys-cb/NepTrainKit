@@ -125,7 +125,7 @@ class MakeDataWidget(QWidget):
 
     def open_file(self):
         path = utils.call_path_dialog(self,"Please choose the structure files",
-                                      "selects",file_filter="XYZ Files (*.xyz)")
+                                      "selects",file_filter="Structure Files (*.xyz;*.vasp;*.cif)")
 
         if path:
             self.load_base_structure(path)
@@ -236,7 +236,7 @@ class MakeDataWidget(QWidget):
             self.workspace_card_widget.clear_cards()
             cards=config.get("cards")
             for card in cards:
-                name=card.get("name")
+                name=card.get("class")
                 card_widget=self.add_card(name)
                 card_widget.from_dict(card)
 

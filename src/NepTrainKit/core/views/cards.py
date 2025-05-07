@@ -33,7 +33,7 @@ from ase import Atoms
 
 card_info_dict = {}
 def register_card_info(card_class  ):
-    card_info_dict[card_class.card_name] =card_class
+    card_info_dict[card_class.__name__] =card_class
 
     return card_class
 
@@ -235,11 +235,7 @@ class MakeDataCard(MakeDataCardWidget):
 
         MessageManager.send_error_message(f"Error occurred: {error}")
 
-    def from_dict(self, data):
-        pass
 
-    def to_dict(self):
-        return {}
 
     def update_dataset_info(self ):
         text = f"Input structures: {len(self.dataset)} → Output: {len(self.result_dataset)}"
@@ -467,10 +463,8 @@ class SuperCellCard(MakeDataCard):
         return structure_list
 
     def to_dict(self):
-        data_dict = {}
-        data_dict['class']="SuperCellCard"
-        data_dict['name'] = self.card_name
-        data_dict["check_state"]=self.check_state
+        data_dict = super().to_dict()
+
 
         data_dict['super_cell_type'] = self.behavior_type_combo.currentIndex()
         data_dict['super_scale_radio_button'] = self.super_scale_radio_button.isChecked()
@@ -482,7 +476,7 @@ class SuperCellCard(MakeDataCard):
         return data_dict
 
     def from_dict(self, data_dict):
-        self.state_checkbox.setChecked(data_dict['check_state'])
+        super().from_dict(data_dict)
 
         self.behavior_type_combo.setCurrentIndex(data_dict['super_cell_type'])
         self.super_scale_radio_button.setChecked(data_dict['super_scale_radio_button'])
@@ -597,10 +591,8 @@ class VacancyDefectCard(MakeDataCard):
         return structure_list
 
     def to_dict(self):
-        data_dict = {}
-        data_dict['class']="VacancyDefectCard"
-        data_dict['name'] =  self.card_name
-        data_dict["check_state"]=self.check_state
+        data_dict = super().to_dict()
+
         data_dict['engine_type'] = self.engine_type_combo.currentIndex()
         data_dict['num_condition'] = self.num_condition_frame.get_input_value()
         data_dict["num_radio_button"]=self.num_radio_button.isChecked()
@@ -611,7 +603,8 @@ class VacancyDefectCard(MakeDataCard):
         return data_dict
 
     def from_dict(self, data_dict):
-        self.state_checkbox.setChecked(data_dict['check_state'])
+        super().from_dict(data_dict)
+
         self.engine_type_combo.setCurrentIndex(data_dict['engine_type'])
         self.num_condition_frame.set_input_value(data_dict['num_condition'])
         self.concentration_condition_frame.set_input_value(data_dict['concentration_condition'])
@@ -721,10 +714,8 @@ class PerturbCard(MakeDataCard):
         return structure_list
 
     def to_dict(self):
-        data_dict = {}
-        data_dict['class']="PerturbCard"
-        data_dict['name'] =  self.card_name
-        data_dict["check_state"]=self.check_state
+        data_dict = super().to_dict()
+
 
         data_dict['engine_type'] = self.engine_type_combo.currentIndex()
         data_dict["organic"]=self.organic_checkbox.isChecked()
@@ -734,7 +725,7 @@ class PerturbCard(MakeDataCard):
         return data_dict
 
     def from_dict(self, data_dict):
-        self.state_checkbox.setChecked(data_dict['check_state'])
+        super().from_dict(data_dict)
 
         self.engine_type_combo.setCurrentIndex(data_dict['engine_type'])
 
@@ -856,10 +847,8 @@ class CellScalingCard(MakeDataCard):
         return structure_list
 
     def to_dict(self):
-        data_dict = {}
-        data_dict['class']="CellScalingCard"
-        data_dict['name'] =  self.card_name
-        data_dict["check_state"]=self.check_state
+        data_dict = super().to_dict()
+
         data_dict['engine_type'] = self.engine_type_combo.currentIndex()
         data_dict['perturb_angle'] = self.perturb_angle_checkbox.isChecked()
         data_dict['scaling_condition'] = self.scaling_condition_frame.get_input_value()
@@ -867,7 +856,8 @@ class CellScalingCard(MakeDataCard):
         return data_dict
 
     def from_dict(self, data_dict):
-        self.state_checkbox.setChecked(data_dict['check_state'])
+        super().from_dict(data_dict)
+
 
         self.engine_type_combo.setCurrentIndex(data_dict['engine_type'])
         self.perturb_angle_checkbox.setChecked(data_dict['perturb_angle'])
@@ -944,11 +934,12 @@ class CellStrainCard(MakeDataCard):
         elif axes=="triaxial":  # tri
             axes_combinations = [all_axes]
         else:
-            axes_combinations=[ ["XYZ".index(i.upper()) for i in axes]]
+            axes_combinations=[ ["XYZ".index(i.upper()) for i in axes if i.upper() in "XYZ"]]
         # Apply strain for each axis combination
         for ax_comb in axes_combinations:
             # Create strain combinations for the current axes
-
+            if len(ax_comb)==0:
+                continue
             strain_combinations = np.array(np.meshgrid(*[strain_range[_] for _ in ax_comb])).T.reshape(-1,
                                                                                                     len(ax_comb))
 
@@ -980,10 +971,8 @@ class CellStrainCard(MakeDataCard):
         return structure_list
 
     def to_dict(self):
-        data_dict = {}
-        data_dict['class']="CellScalingCard"
-        data_dict['name'] =  self.card_name
-        data_dict["check_state"]=self.check_state
+        data_dict = super().to_dict()
+
         data_dict['engine_type'] = self.engine_type_combo.currentText()
         data_dict['x_range'] = self.strain_x_frame.get_input_value()
         data_dict['y_range'] = self.strain_y_frame.get_input_value()
@@ -992,7 +981,8 @@ class CellStrainCard(MakeDataCard):
         return data_dict
 
     def from_dict(self, data_dict):
-        self.state_checkbox.setChecked(data_dict['check_state'])
+        super().from_dict(data_dict)
+
 
         self.engine_type_combo.setText(data_dict['engine_type'])
 
@@ -1094,10 +1084,8 @@ class FPSFilterDataCard(FilterDataCard):
         self.status_label.set_progress(progress)
 
     def to_dict(self):
-        data_dict = {}
-        data_dict['class']="FPSFilterDataCard"
-        data_dict['name'] =  self.card_name
-        data_dict["check_state"]=self.check_state
+        data_dict = super().to_dict()
+
         data_dict['nep_path']=self.nep_path_lineedit.text()
         data_dict['num_condition'] = self.num_condition_frame.get_input_value()
         data_dict['min_distance_condition'] = self.min_distance_condition_frame.get_input_value()
@@ -1105,7 +1093,8 @@ class FPSFilterDataCard(FilterDataCard):
 
     def from_dict(self, data_dict):
         try:
-            self.state_checkbox.setChecked(data_dict['check_state'])
+            super().from_dict(data_dict)
+
             if os.path.exists(data_dict['nep_path']):
                 self.nep_path_lineedit.setText(data_dict['nep_path'])
             else:
@@ -1260,10 +1249,8 @@ class CardGroup(MakeDataCardWidget):
             thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
             thread.start_work(self.write_result_dataset, path)
     def to_dict(self):
-        data_dict={}
-        data_dict['class']="CardGroup"
-        data_dict['name']=self.card_name
-        data_dict["check_state"]=self.check_state
+        data_dict = super().to_dict()
+
         data_dict["card_list"]=[]
 
         for card in self.card_list:
@@ -1277,13 +1264,13 @@ class CardGroup(MakeDataCardWidget):
     def from_dict(self,data_dict):
         self.state_checkbox.setChecked(data_dict['check_state'])
         for sub_card in data_dict.get("card_list",[]):
-            card_name=sub_card["name"]
+            card_name=sub_card["class"]
             card  = card_info_dict[card_name](self)
             self.add_card(card)
             card.from_dict(sub_card)
 
         if data_dict.get("filter_card"):
-            card_name=data_dict["filter_card"]["name"]
+            card_name=data_dict["filter_card"]["class"]
             filter_card  = card_info_dict[card_name](self)
             filter_card.from_dict(data_dict["filter_card"])
             self.set_filter_card(filter_card)
@@ -1312,7 +1299,7 @@ class ConsoleWidget(QWidget):
         for card_name,card_class in card_info_dict.items():
             if card_class.separator:
                 self.menu.addSeparator()
-            self.menu.addAction(QAction(QIcon(card_class.menu_icon),card_name))
+            self.menu.addAction(QAction(QIcon(card_class.menu_icon),card_class.card_name))
 
 
         self.menu.triggered.connect(self.menu_clicked)

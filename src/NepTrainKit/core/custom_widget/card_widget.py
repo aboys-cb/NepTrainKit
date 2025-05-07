@@ -95,5 +95,15 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         else:
             self.collapse_button.setIcon(QIcon(":/images/src/images/expand.svg"))
 
+    def from_dict(self, data):
+        self.state_checkbox.setChecked(data['check_state'])
 
+    def to_dict(self):
+
+        return {
+            'class': self.__class__.__name__,
+            # 'name': self.card_name,
+            'check_state': self.check_state,
+
+        }
 

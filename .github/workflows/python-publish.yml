@@ -91,6 +91,8 @@ jobs:
         python: ["cp310","cp311", "cp312" ]
 
     env:
+      PYTHONUTF8: 1
+      PYTHONIOENCODING: utf-8
       CIBW_BUILD_VERBOSITY: 1
       IS_32_BIT: ${{ matrix.buildplat[1] == 'win32' }}
       IS_PUSH: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}

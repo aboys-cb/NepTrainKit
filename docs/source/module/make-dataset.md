@@ -1,8 +1,5 @@
 # Make dataset
 
-
-# NepTrainKit 结构数据处理工具使用手册
-
 ## 1. 核心概念与工作流程
 
 ### 1.1 数据流模型
@@ -27,7 +24,7 @@
 ## 2. 生产类卡片详解
 
 ### 2.1 Super Cell（超胞生成）
-![Super Cell卡片示意图]
+
 
 **功能**：通过扩胞操作生成超胞结构
 
@@ -46,7 +43,7 @@
   ```
 
 ### 2.2 Vacancy Defect Generation（空位缺陷生成）
-![Vacancy Defect卡片示意图]
+
 
 **功能**：创建含空位缺陷的结构集合
 
@@ -54,16 +51,13 @@
 ```python
 structure.info["Config_type"] += f" Vacancy(num={缺陷数量})"
 ```
-**技术细节**：
-- Sobol引擎：使用准随机序列保证缺陷分布均匀性
-- 有机分子处理：自动识别并保持分子完整性
+ 
+
 
 ### 2.3 Atomic Perturb（原子微扰）
-![Perturb卡片示意图]
 
-**扰动参数**：
-- 最大位移：0.1-1.0Å（建议值）
-- 采样数：50-1000
+
+
 - 高级选项：
   - 有机分子识别（默认开启）
   - 随机引擎选择
@@ -74,7 +68,7 @@ structure.info["Config_type"] += f" Perturb(dist={最大位移}Å, {engine_type}
 ```
 
 ### 2.4 Lattice Scaling（晶格缩放）
-![Scaling卡片示意图]
+
 
 **参数矩阵**：
 
@@ -90,7 +84,7 @@ structure.info["Config_type"] += f" Scaling({缩放系数})"
 ```
 
 ### 2.5 Lattice Strain（晶格应变）
-![Strain卡片示意图]
+
 
 **应变模式**：
 - 单轴（Uniaxial）
@@ -109,7 +103,7 @@ structure.info["Config_type"] += f" Scaling({缩放系数})"
 ## 3. 过滤类卡片
 
 ### 3.1 FPS Filter（最远点采样过滤）
-![FPS卡片示意图]
+
 
 **算法流程**：
 1. 计算所有结构的NEP描述符
@@ -133,7 +127,7 @@ structure.info["Config_type"] += f" Scaling({缩放系数})"
 ## 4. 容器卡片
 
 ### 4.1 Card Group（卡片组）
-![Card Group示意图]
+
 
 **操作指南**：
 1. **创建组**：添加Card Group卡片
@@ -184,7 +178,7 @@ from NepTrainKit.core.views.cards import MakeDataCard, register_card_info
 class CustomCard(MakeDataCard):
     # 必须定义的类属性
     card_name = "自定义卡片名称"
-    menu_icon = ":/images/src/images/default_icon.svg"
+    menu_icon = ":/images/src/images/logo.svg"
     
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -204,16 +198,12 @@ class CustomCard(MakeDataCard):
     
     def to_dict(self):
         """序列化卡片配置"""
-        return {
-            'class': self.__class__.__name__,
-            'name': self.card_name,
-            'check_state': self.check_state,
-            # 自定义参数...
-        }
-    
+        return super().to_dict( )
+        
+ 
     def from_dict(self, data_dict):
         """反序列化配置"""
-        self.state_checkbox.setChecked(data_dict['check_state'])
+        super().from_dict(data_dict)
         # 自定义参数恢复...
 ```
 
@@ -270,134 +260,10 @@ def from_dict(self, data):
     self.param_input.setValue(data.get('custom_param', 10))
 ```
 
-### 4.2 进度反馈
-```python
-def process_structure(self, structure):
-    total = 100  # 总步骤数
-    for i in range(total):
-        # 处理逻辑...
-        progress = int((i+1)/total*100)
-        self.progressSignal.emit(progress)  # 发送进度信号
-```
 
-## 5. 调试与测试
 
-### 5.1 调试建议
-```python
-# 在process_structure中添加日志
-from loguru import logger
 
-def process_structure(self, structure):
-    logger.debug(f"Processing structure with {len(structure)} atoms")
-    try:
-        # 处理代码...
-    except Exception as e:
-        logger.error(f"Processing failed: {str(e)}")
-        raise
-```
-
-### 5.2 单元测试示例
-```python
-def test_custom_card():
-    from ase.build import molecule
-    card = CustomCard()
-    test_structure = molecule('H2O')
-    
-    # 测试处理功能
-    results = card.process_structure(test_structure)
-    assert isinstance(results, list)
-    assert len(results) > 0
-    
-    # 测试序列化
-    config = card.to_dict()
-    new_card = CustomCard()
-    new_card.from_dict(config)
-```
-
-## 6. 发布与共享
-
-### 6.1 卡片打包建议
-```
-my_card_package/
-├── __init__.py
-├── card_definition.py
-└── resources/
-    └── icon.svg
-```
-
-### 6.2 安装方式
-用户只需将卡片文件(.py)放入cards目录即可自动加载
 
 ## 附录：完整示例卡片
-
-```python
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-from NepTrainKit.core.views.cards import MakeDataCard, register_card_info
-from qfluentwidgets import SpinBox, BodyLabel
-from ase import Atoms
-import numpy as np
-
-@register_card_info
-class RandomDisplacementCard(MakeDataCard):
-    card_name = "随机位移"
-    menu_icon = ":/images/src/images/perturb.svg"
-    separator = True
-    
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setTitle("原子随机位移")
-        self.init_ui()
-    
-    def init_ui(self):
-        self.setObjectName("random_disp_card")
-        
-        # 位移幅度设置
-        self.disp_label = BodyLabel("最大位移 (Å):", self)
-        self.disp_input = SpinBox(self)
-        self.disp_input.setRange(0.01, 5.0)
-        self.disp_input.setValue(0.3)
-        self.disp_input.setSingleStep(0.05)
-        
-        # 生成数量设置
-        self.num_label = BodyLabel("生成数量:", self)
-        self.num_input = SpinBox(self)
-        self.num_input.setRange(1, 1000)
-        self.num_input.setValue(50)
-        
-        self.settingLayout.addWidget(self.disp_label, 0, 0)
-        self.settingLayout.addWidget(self.disp_input, 0, 1)
-        self.settingLayout.addWidget(self.num_label, 1, 0)
-        self.settingLayout.addWidget(self.num_input, 1, 1)
-    
-    def process_structure(self, structure):
-        max_disp = self.disp_input.value()
-        num_structures = self.num_input.value()
-        
-        structures = []
-        for _ in range(num_structures):
-            new_struct = structure.copy()
-            displacements = np.random.uniform(
-                -max_disp, max_disp, 
-                size=(len(structure), 3)
-            
-            new_struct.positions += displacements
-            new_struct.info["random_disp"] = max_disp
-            structures.append(new_struct)
-        
-        return structures
-    
-    def to_dict(self):
-        return {
-            'class': self.__class__.__name__,
-            'name': self.card_name,
-            'check_state': self.check_state,
-            'max_disp': self.disp_input.value(),
-            'num_structures': self.num_input.value()
-        }
-    
-    def from_dict(self, data):
-        self.state_checkbox.setChecked(data['check_state'])
-        self.disp_input.setValue(data.get('max_disp', 0.3))
-        self.num_input.setValue(data.get('num_structures', 50))
-```
+https://github.com/aboys-cb/NepTrainKit/blob/master/src/NepTrainKit/core/views/cards.py
+ 

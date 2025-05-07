@@ -1296,10 +1296,12 @@ class ConsoleWidget(QWidget):
         self.new_card_button.setMaximumWidth(200 )
         self.new_card_button.setObjectName("new_card_button")
         self.menu = RoundMenu(parent=self)
-        for card_name,card_class in card_info_dict.items():
+        for class_name,card_class in card_info_dict.items():
             if card_class.separator:
                 self.menu.addSeparator()
-            self.menu.addAction(QAction(QIcon(card_class.menu_icon),card_class.card_name))
+            action = QAction(QIcon(card_class.menu_icon),card_class.card_name)
+            action.setObjectName(class_name)
+            self.menu.addAction(action)
 
 
         self.menu.triggered.connect(self.menu_clicked)
@@ -1321,7 +1323,7 @@ class ConsoleWidget(QWidget):
     def menu_clicked(self,action):
 
 
-        self.newCardSignal.emit(action.text())
+        self.newCardSignal.emit(action.objectName())
 
     def run(self,*args,**kwargs):
         self.runSignal.emit()

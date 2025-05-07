@@ -6,6 +6,7 @@
 import importlib
 import os
 import time
+from itertools import combinations
 from pathlib import Path
 from typing import List, Tuple
 import numpy as np
@@ -15,7 +16,7 @@ from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import QGridLayout, QFrame, QWidget, QVBoxLayout
 
 from qfluentwidgets import ComboBox, BodyLabel, RadioButton, SplitToolButton, RoundMenu, PrimaryDropDownToolButton, \
-    PrimaryDropDownPushButton, CommandBar, Action, CheckBox, LineEdit
+    PrimaryDropDownPushButton, CommandBar, Action, CheckBox, LineEdit, EditableComboBox
 from NepTrainKit import utils, module_path,get_user_config_path
 
 from NepTrainKit.core import MessageManager
@@ -620,7 +621,7 @@ class VacancyDefectCard(MakeDataCard):
 
 @register_card_info
 class PerturbCard(MakeDataCard):
-    card_name= "Atomic perturb"
+    card_name= "Atomic Perturb"
     menu_icon=r":/images/src/images/perturb.svg"
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -744,7 +745,7 @@ class PerturbCard(MakeDataCard):
 
 @register_card_info
 class CellScalingCard(MakeDataCard):
-    card_name= "Lattice scaling"
+    card_name= "Lattice Scaling"
     menu_icon=r":/images/src/images/scaling.svg"
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -872,6 +873,133 @@ class CellScalingCard(MakeDataCard):
         self.perturb_angle_checkbox.setChecked(data_dict['perturb_angle'])
         self.scaling_condition_frame.set_input_value(data_dict['scaling_condition'])
         self.num_condition_frame.set_input_value(data_dict['num_condition'])
+@register_card_info
+class CellStrainCard(MakeDataCard):
+    card_name= "Lattice Strain"
+    menu_icon=r":/images/src/images/scaling.svg"
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setTitle("Make Cell Strain")
+
+        self.init_ui()
+
+    def init_ui(self):
+        self.setObjectName("cell_strain_card_widget")
+
+
+        self.engine_label=BodyLabel("Axes:",self.setting_widget)
+        self.engine_type_combo=EditableComboBox(self.setting_widget)
+        axes_type=["uniaxial","biaxial","triaxial"]
+        self.engine_type_combo.addItems(axes_type)
+        self.engine_type_combo.setToolTip('Pull down to select or enter a specific axis, such as X or XY')
+
+        self.strain_x_label=BodyLabel("X:",self.setting_widget)
+        self.strain_x_frame = SpinBoxUnitInputFrame(self)
+        self.strain_x_frame.set_input(["-","% step:","%"],3,"int")
+        self.strain_x_frame.setRange(-100,100)
+        self.strain_x_frame.set_input_value([-5,5,1])
+
+        self.strain_y_label=BodyLabel("Y:",self.setting_widget)
+        self.strain_y_frame = SpinBoxUnitInputFrame(self)
+        self.strain_y_frame.set_input(["-","% step:","%"],3,"int")
+        self.strain_y_frame.setRange(-100,100)
+        self.strain_y_frame.set_input_value([-5,5,1])
+
+        self.strain_z_label=BodyLabel("Z:",self.setting_widget)
+        self.strain_z_frame = SpinBoxUnitInputFrame(self)
+        self.strain_z_frame.set_input(["-","% step:","%"],3,"int")
+        self.strain_z_frame.setRange(-100,100)
+        self.strain_z_frame.set_input_value([-5,5,1])
+
+        self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
+        self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
+
+        self.settingLayout.addWidget(self.strain_x_label, 1, 0, 1, 1)
+        self.settingLayout.addWidget(self.strain_x_frame, 1, 1, 1,1)
+        self.settingLayout.addWidget(self.strain_y_label, 2, 0, 1, 1)
+        self.settingLayout.addWidget(self.strain_y_frame, 2, 1, 1,1)
+        self.settingLayout.addWidget(self.strain_z_label, 3, 0, 1, 1)
+        self.settingLayout.addWidget(self.strain_z_frame, 3, 1, 1,1)
+
+    def process_structure(self, structure):
+        structure_list=[]
+        axes=self.engine_type_combo.currentText()
+        x=self.strain_x_frame.get_input_value()
+        y=self.strain_y_frame.get_input_value()
+        z=self.strain_z_frame.get_input_value()
+        strain_range=[
+            np.arange(start=x[0],stop=x[1],step=x[2]),
+            np.arange(start=y[0], stop=y[1], step=y[2]),
+            np.arange(start=z[0], stop=z[1], step=z[2]),
+        ]
+        cell = structure.get_cell()
+        # Define possible axes (0: x, 1: y, 2: z)
+        all_axes = [0, 1, 2]
+
+        # Determine axes combinations based on mode
+        if axes == 'uniaxial':
+            axes_combinations = [[i] for i in all_axes]
+        elif axes == 'biaxial':
+            axes_combinations = list(combinations(all_axes, 2))
+        elif axes=="triaxial":  # tri
+            axes_combinations = [all_axes]
+        else:
+            axes_combinations=[ ["XYZ".index(i.upper()) for i in axes]]
+        # Apply strain for each axis combination
+        for ax_comb in axes_combinations:
+            # Create strain combinations for the current axes
+
+            strain_combinations = np.array(np.meshgrid(*[strain_range[_] for _ in ax_comb])).T.reshape(-1,
+                                                                                                    len(ax_comb))
+
+
+            for strain_vals in strain_combinations:
+                # Copy the original structure
+
+                new_structure = structure.copy()
+                new_cell = cell.copy()
+
+                # Apply strain along specified axes
+                for ax_idx, strain in zip(ax_comb, strain_vals):
+                    new_cell[ax_idx] *= (1 + strain/100)
+
+                # Update the cell and scale positions
+                new_structure.set_cell(new_cell, scale_atoms=True)
+
+                # Store strain info as metadata
+                strain_info = ["XYZ"[ax]+":"+ str(s)+"%" for ax, s in zip(ax_comb, strain_vals)]
+
+
+
+                new_structure.info["Config_type"] = new_structure.info.get("Config_type",
+                                                                     "") + f" Strain({'|'.join(strain_info)})"
+
+                structure_list.append(new_structure)
+
+
+        return structure_list
+
+    def to_dict(self):
+        data_dict = {}
+        data_dict['class']="CellScalingCard"
+        data_dict['name'] =  self.card_name
+        data_dict["check_state"]=self.check_state
+        data_dict['engine_type'] = self.engine_type_combo.currentText()
+        data_dict['x_range'] = self.strain_x_frame.get_input_value()
+        data_dict['y_range'] = self.strain_y_frame.get_input_value()
+        data_dict['z_range'] = self.strain_z_frame.get_input_value()
+
+        return data_dict
+
+    def from_dict(self, data_dict):
+        self.state_checkbox.setChecked(data_dict['check_state'])
+
+        self.engine_type_combo.setText(data_dict['engine_type'])
+
+        self.strain_x_frame.set_input_value(data_dict['x_range'])
+        self.strain_y_frame.set_input_value(data_dict['y_range'])
+        self.strain_z_frame.set_input_value(data_dict['z_range'])
+
 
 
 @register_card_info
@@ -890,8 +1018,8 @@ class FPSFilterDataCard(FilterDataCard):
         self.nep_path_lineedit = LineEdit(self.setting_widget)
         self.nep_path_lineedit.setPlaceholderText("nep.txt path")
 
-        nep89_path = os.path.join(module_path, "Config","nep89.txt")
-        self.nep_path_lineedit.setText(nep89_path)
+        self.nep89_path = os.path.join(module_path, "Config","nep89.txt")
+        self.nep_path_lineedit.setText(self.nep89_path )
 
 
         self.num_label = BodyLabel("Max selected", self.setting_widget)
@@ -978,8 +1106,10 @@ class FPSFilterDataCard(FilterDataCard):
     def from_dict(self, data_dict):
         try:
             self.state_checkbox.setChecked(data_dict['check_state'])
-
-            self.nep_path_lineedit.setText(data_dict['nep_path'])
+            if os.path.exists(data_dict['nep_path']):
+                self.nep_path_lineedit.setText(data_dict['nep_path'])
+            else:
+                self.nep_path_lineedit.setText(self.nep89_path )
             self.num_condition_frame.set_input_value(data_dict['num_condition'])
             self.min_distance_condition_frame.set_input_value(data_dict['min_distance_condition'])
         except:

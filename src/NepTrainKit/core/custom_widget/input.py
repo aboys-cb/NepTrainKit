@@ -21,11 +21,18 @@ class SpinBoxUnitInputFrame(QFrame):
         else:
             raise TypeError('unit_str must be str or list')
 
+        if  isinstance(input_type,str):
+            input_type = [input_type]*object_num
+        elif isinstance(input_type,list):
+            input_type=input_type
+        else:
+            raise TypeError('input_type must be str or list')
+
         for i in range(object_num):
-            if input_type=="int":
+            if input_type[i%len(unit_str)]=="int":
                 input_object = QSpinBox(self)
                 input_object.setButtonSymbols(QSpinBox.NoButtons)
-            elif input_type=="float":
+            elif input_type[i%len(unit_str)]=="float":
                 input_object = QDoubleSpinBox(self)
                 input_object.setDecimals(3)
                 input_object.setButtonSymbols(QSpinBox.NoButtons)

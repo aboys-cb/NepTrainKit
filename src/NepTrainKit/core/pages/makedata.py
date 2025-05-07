@@ -117,7 +117,7 @@ class MakeDataWidget(QWidget):
                         atom.info["Config_type"]=" ".join(atom.info["Config_type"])
 
                 else:
-                    atom.info["Config_type"]=str(atom.info["Config_type"])
+                    atom.info["Config_type"]=str(atom.info.get("Config_type",""))
                 structures_list.append(atom)
 
         self.dataset=structures_list

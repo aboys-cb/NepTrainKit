@@ -21,6 +21,96 @@
    - 导出：保存当前卡片配置为JSON
    - 导入：加载已有配置文件
 
+这里分享一个我做好的配置文件
+```json
+{
+    "software_version": "2.0.6.dev35",
+    "cards": [
+        {
+            "class": "SuperCellCard",
+            "check_state": true,
+            "super_cell_type": 0,
+            "super_scale_radio_button": false,
+            "super_scale_condition": [
+                1,
+                1,
+                1
+            ],
+            "super_cell_radio_button": true,
+            "super_cell_condition": [
+                20,
+                20,
+                20
+            ],
+            "max_atoms_radio_button": false,
+            "max_atoms_condition": [
+                1
+            ]
+        },
+        {
+            "class": "CardGroup",
+            "check_state": true,
+            "card_list": [
+                {
+                    "class": "CellStrainCard",
+                    "check_state": true,
+                    "engine_type": "triaxial",
+                    "x_range": [
+                        -5,
+                        5,
+                        1
+                    ],
+                    "y_range": [
+                        -5,
+                        5,
+                        1
+                    ],
+                    "z_range": [
+                        -5,
+                        5,
+                        1
+                    ]
+                },
+                {
+                    "class": "PerturbCard",
+                    "check_state": true,
+                    "engine_type": 0,
+                    "organic": true,
+                    "scaling_condition": [
+                        0.3
+                    ],
+                    "num_condition": [
+                        50
+                    ]
+                },
+                {
+                    "class": "CellScalingCard",
+                    "check_state": true,
+                    "engine_type": 0,
+                    "perturb_angle": true,
+                    "scaling_condition": [
+                        0.04
+                    ],
+                    "num_condition": [
+                        50
+                    ]
+                }
+            ],
+            "filter_card": {
+                "class": "FPSFilterDataCard",
+                "check_state": true,
+                "nep_path": "D:\\PycharmProjects\\NepTrainKit\\src\\NepTrainKit\\Config\\nep89.txt",
+                "num_condition": [
+                    100
+                ],
+                "min_distance_condition": [
+                    0.001
+                ]
+            }
+        }
+    ]
+}
+```
 ## 2. 生产类卡片详解
 
 ### 2.1 Super Cell（超胞生成）

@@ -1,0 +1,5 @@
+pre {
+    max-height: 400px;  /* 设置最大高度 */
+    overflow-y: auto;   /* 启用垂直滚动条 */
+
+}

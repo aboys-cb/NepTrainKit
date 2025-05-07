@@ -50,6 +50,9 @@ html_static_path = ['_static']
 html_context = {
     "author_name": author,
 }
+html_css_files = [
+    'css/custom.css',  # 你可以在这里指定你的自定义 CSS 文件
+]
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',

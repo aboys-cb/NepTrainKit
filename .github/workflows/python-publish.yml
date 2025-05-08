@@ -126,9 +126,6 @@ jobs:
       env:
         CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
         CIBW_BEFORE_BUILD_LINUX: "yum install -y libgomp"
-        CIBW_BEFORE_BUILD_MACOS: |
-            brew install libomp
-
 
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=13.0' }}
@@ -169,7 +166,8 @@ jobs:
 
       - name: Setup Python
         uses: actions/setup-python@v5
-
+        with:
+          python-version: "3.10"
       - name: Store artifacts
         uses: actions/upload-artifact@v4
         with:

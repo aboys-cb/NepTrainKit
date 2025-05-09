@@ -139,7 +139,10 @@ class ResultData(QObject):
         try:
 
             with open(save_file_path,"w",encoding="utf8") as f:
-                for structure in self._atoms_dataset.now_data[index]:
+
+                index=self.structure.convert_index(index)
+
+                for structure in self.structure.now_data[index]:
                     structure.write(f)
 
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
@@ -157,11 +160,11 @@ class ResultData(QObject):
         try:
 
             with open(Path(save_path).joinpath("export_good_model.xyz"),"w",encoding="utf8") as f:
-                for structure in self._atoms_dataset.now_data:
+                for structure in self.structure.now_data:
                     structure.write(f)
 
             with open(Path(save_path).joinpath("export_remove_model.xyz"),"w",encoding="utf8") as f:
-                for structure in self._atoms_dataset.remove_data:
+                for structure in self.structure.remove_data:
                     structure.write(f)
 
 
@@ -173,8 +176,8 @@ class ResultData(QObject):
 
     def get_atoms(self,index ):
         """根据原始索引获取原子结构对象"""
-        index=self._atoms_dataset.convert_index(index)
-        return self._atoms_dataset.now_data[index][0]
+        index=self.structure.convert_index(index)
+        return self.structure.now_data[index][0]
 
 
 
@@ -183,7 +186,7 @@ class ResultData(QObject):
         """
         在所有的dataset中删除某个索引对应的结构
         """
-        self._atoms_dataset.remove(i)
+        self.structure.remove(i)
         for dataset in self.dataset:
             dataset.remove(i)
         self.updateInfoSignal.emit()
@@ -193,12 +196,12 @@ class ResultData(QObject):
         """
         判断是否有被删除的结构
         """
-        return self._atoms_dataset.remove_data.size!=0
+        return self.structure.remove_data.size!=0
     def revoke(self):
         """
         撤销到上一次的删除
         """
-        self._atoms_dataset.revoke()
+        self.structure.revoke()
         for dataset in self.dataset:
             dataset.revoke( )
 
@@ -476,12 +479,7 @@ class NepPolarizabilityResultData(ResultData):
 
         return [self.polarizability_diagonal,self.polarizability_no_diagonal, self.descriptor]
 
-    @property
-    def num(self):
-        return self._atoms_dataset.num
-    @property
-    def structure(self):
-        return self._atoms_dataset
+
 
     @property
     def polarizability_diagonal(self):
@@ -585,14 +583,6 @@ class NepDipoleResultData(ResultData):
     @property
     def dataset(self):
         return [self.dipole , self.descriptor]
-
-    @property
-    def num(self):
-        return self._atoms_dataset.num
-
-    @property
-    def structure(self):
-        return self._atoms_dataset
 
     @property
     def dipole(self):

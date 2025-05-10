@@ -1,27 +1,27 @@
-# Make dataset
+# Make Dataset
 
-## 1. 核心概念与工作流程
+## 1. Core Concepts & Workflow
 
-### 1.1 数据流模型
-- **线性处理链**：卡片按添加顺序执行，前一个卡片的输出自动成为下一个卡片的输入
-- **组内并行流**：卡片组内所有卡片共享同一输入，输出结果自动合并
-- **过滤机制**：可在卡片组末尾添加过滤器对组内所有卡片的输出进行筛选
+### 1.1 Data Flow Model
+- **Linear Processing Chain**: Cards execute sequentially, with each card's output automatically becoming the next card's input
+- **In-Group Parallel Flow**: All cards within a group share the same input, with outputs automatically merged
+- **Filter Mechanism**: Filters can be added at group ends to screen outputs from all group cards
 
-### 1.2 基本操作
-1. **导入结构**：
-   - 支持格式：VASP/POSCAR、CIF、XYZ
-   - 方式：点击"打开"按钮或直接拖拽文件到窗口
+### 1.2 Basic Operations
+1. **Import Structures**:
+   - Supported formats: VASP/POSCAR, CIF, XYZ
+   - Methods: Click "Open" button or drag files directly into window
 
-2. **构建处理流程**：
-   - 通过"Add new card"添加处理卡片
-   - 拖拽卡片调整执行顺序
-   - 使用Card Group组织复杂流程
+2. **Build Processing Pipeline**:
+   - Add processing cards via "Add new card"
+   - Reorder cards via drag-and-drop
+   - Use Card Groups for complex workflows
 
-3. **保存/加载配置**：
-   - 导出：保存当前卡片配置为JSON
-   - 导入：加载已有配置文件
+3. **Save/Load Configuration**:
+   - Export: Save current card setup as JSON
+   - Import: Load existing configuration files
 
-这里分享一个我做好的配置文件
+Sample configuration file:
 ```json
 {
     "software_version": "2.0.6.dev35",
@@ -31,21 +31,11 @@
             "check_state": true,
             "super_cell_type": 0,
             "super_scale_radio_button": false,
-            "super_scale_condition": [
-                1,
-                1,
-                1
-            ],
+            "super_scale_condition": [1,1,1],
             "super_cell_radio_button": true,
-            "super_cell_condition": [
-                20,
-                20,
-                20
-            ],
+            "super_cell_condition": [20,20,20],
             "max_atoms_radio_button": false,
-            "max_atoms_condition": [
-                1
-            ]
+            "max_atoms_condition": [1]
         },
         {
             "class": "CardGroup",
@@ -55,192 +45,153 @@
                     "class": "CellStrainCard",
                     "check_state": true,
                     "engine_type": "triaxial",
-                    "x_range": [
-                        -5,
-                        5,
-                        1
-                    ],
-                    "y_range": [
-                        -5,
-                        5,
-                        1
-                    ],
-                    "z_range": [
-                        -5,
-                        5,
-                        1
-                    ]
+                    "x_range": [-5,5,1],
+                    "y_range": [-5,5,1],
+                    "z_range": [-5,5,1]
                 },
                 {
                     "class": "PerturbCard",
                     "check_state": true,
                     "engine_type": 0,
                     "organic": true,
-                    "scaling_condition": [
-                        0.3
-                    ],
-                    "num_condition": [
-                        50
-                    ]
+                    "scaling_condition": [0.3],
+                    "num_condition": [50]
                 },
                 {
                     "class": "CellScalingCard",
                     "check_state": true,
                     "engine_type": 0,
                     "perturb_angle": true,
-                    "scaling_condition": [
-                        0.04
-                    ],
-                    "num_condition": [
-                        50
-                    ]
+                    "scaling_condition": [0.04],
+                    "num_condition": [50]
                 }
             ],
             "filter_card": {
                 "class": "FPSFilterDataCard",
                 "check_state": true,
                 "nep_path": "D:\\PycharmProjects\\NepTrainKit\\src\\NepTrainKit\\Config\\nep89.txt",
-                "num_condition": [
-                    100
-                ],
-                "min_distance_condition": [
-                    0.001
-                ]
+                "num_condition": [100],
+                "min_distance_condition": [0.001]
             }
         }
     ]
 }
 ```
-## 2. 生产类卡片详解
 
-### 2.1 Super Cell（超胞生成）
+## 2. Production Cards Explained
 
+### 2.1 Super Cell Generation
+**Function**: Creates supercells through expansion
 
-**功能**：通过扩胞操作生成超胞结构
+**Parameters**:
+| Parameter Group | Option | Description | Typical Values |
+|-----------------|--------|-------------|----------------|
+| Mode | Maximum | Generates largest possible supercell | - |
+|      | Iteration | Generates all possible combinations | - |
+| Expansion Method | Super Scale | Fixed expansion multiplier | (2,2,2) |
+|                 | Super Cell | Calculates by max lattice constant | (10Å,10Å,10Å) |
+|                 | Max Atoms | Limits by maximum atom count | 200 |
 
-**参数配置**：
-| 参数组 | 选项 | 说明 | 典型值 |
-|--------|------|------|--------|
-| 行为模式 | Maximum | 生成最大可能的超胞 | - |
-|        | Iteration | 生成所有可能的组合 | - |
-| 扩胞方式 | Super Scale | 固定扩胞倍数 | (2,2,2) |
-|        | Super Cell | 按最大晶格常数计算 | (10Å,10Å,10Å) |
-|        | Max Atoms | 按最大原子数限制 | 200 |
+**Structure Tagging**:
+```python
+structure.info["Config_type"] += "supercell(nx,ny,nz)"  # e.g., supercell(2,2,1)
+```
 
-**结构标记规则**：
+### 2.2 Vacancy Defect Generation
+**Function**: Creates structure sets with vacancy defects
+
+**Structure Tagging**:
+```python
+structure.info["Config_type"] += f" Vacancy(num={defect_count})"
+```
+
+### 2.3 Atomic Perturbation
+**Advanced Options**:
+- Organic molecule recognition (enabled by default)
+- Random engine selection
+
+**Structure Tagging**:
+```python
+structure.info["Config_type"] += f" Perturb(dist={max_displacement}Å, {engine_type})"
+```
+
+### 2.4 Lattice Scaling
+**Parameter Matrix**:
+| Parameter | Range | Step | Unit |
+|-----------|-------|------|------|
+| Scaling Factor | 0.9-1.1 | 0.01 | - |
+| Angle Perturbation | On/Off | - | - |
+| Structure Count | 1-1000 | - | - |
+
+**Structure Tagging**:
+```python
+structure.info["Config_type"] += f" Scaling({scaling_factor})"
+```
+
+### 2.5 Lattice Strain
+**Strain Modes**:
+- Uniaxial
+- Biaxial
+- Triaxial
+- **Custom Axis Combinations**: Supports any XYZ combinations (e.g., "XY", "XZ", "YZX")
   ```python
-  structure.info["Config_type"] +="supercell(nx,ny,nz)"  # 例如：supercell(2,2,1)
+  # Example: Apply strain only to X and Z axes
+  strain_axes = "XZ"  # Equivalent to "ZX"
+  ```
+  
+**Structure Tagging**:
+```python
+structure.info["Config_type"] += f" Strain({axis1}:{value1}%, {axis2}:{value2}%)"
+```
+
+## 3. Filter Cards
+
+### 3.1 FPS Filter (Farthest Point Sampling)
+**Algorithm**:
+1. Calculates NEP descriptors for all structures
+2. Executes FPS algorithm in high-dimensional space
+
+**Key Parameters**:
+- NEP file path (required)
+- Maximum selection count
+- Minimum distance threshold
+
+**Filter Mechanism**:
+- Filters only affect exported results, not data flow
+- Export logic:
+  ```python
+  if filter_active:
+      export_filtered_results
+  else:
+      export_raw_merged_results
   ```
 
-### 2.2 Vacancy Defect Generation（空位缺陷生成）
+## 4. Container Cards
 
+### 4.1 Card Group
+**Usage Guide**:
+1. **Create Group**: Add Card Group card
+2. **Add Members**: Drag cards into group
+3. **Set Filter**: Drag filter card to group bottom area
 
-**功能**：创建含空位缺陷的结构集合
+**Execution Example**:
+- **Scenario**: 3 group cards generating 10, 15, and 20 structures respectively
+- **Without Filter**: Passes 45 structures to next stage
+- **With Filter**: Passes 45 structures but may only export 30
 
-**结构标记规则**：
-```python
-structure.info["Config_type"] += f" Vacancy(num={缺陷数量})"
+# NepTrainKit Custom Card Development Guide
+
+## 1. Development Environment Setup
+
+### 1.1 Card Directory Structure
 ```
- 
-
-
-### 2.3 Atomic Perturb（原子微扰）
-
-
-
-- 高级选项：
-  - 有机分子识别（默认开启）
-  - 随机引擎选择
-
-**结构标记规则**：
-```python
-structure.info["Config_type"] += f" Perturb(dist={最大位移}Å, {engine_type})"
-```
-
-### 2.4 Lattice Scaling（晶格缩放）
-
-
-**参数矩阵**：
-
-| 参数 | 范围 | 步长 | 单位 |
-|------|------|------|------|
-| 缩放系数 | 0.9-1.1 | 0.01 | - |
-| 角度扰动 | On/Off | - | - |
-| 结构数 | 1-1000 | - | - |
-
-**结构标记规则**：
-```python
-structure.info["Config_type"] += f" Scaling({缩放系数})"
-```
-
-### 2.5 Lattice Strain（晶格应变）
-
-
-**应变模式**：
-- 单轴（Uniaxial）
-- 双轴（Biaxial）
-- 三轴（Triaxial）
-- **自定义轴组合**：支持任意XYZ字母组合（如"XY"、"XZ"、"YZX"等）
-  ```python
-  # 示例：仅对X和Z轴施加应变
-  strain_axes = "XZ"  # 等效于"ZX"
-  ```
-- **结构标记规则**：
-  ```python
-  structure.info["Config_type"] += f" Strain({axis1}:{value1}%, {axis2}:{value2}%)"
-  ```
-
-## 3. 过滤类卡片
-
-### 3.1 FPS Filter（最远点采样过滤）
-
-
-**算法流程**：
-1. 计算所有结构的NEP描述符
-2. 在高维空间执行FPS算法：
- 
-
-**关键参数**：
-- NEP文件路径（必需）
-- 最大选择数
-- 最小间距阈值
-3. **过滤机制**：
-   - 过滤器仅影响导出结果，不影响数据传递
-   - 导出时逻辑：
-     ```python
-     if 过滤器激活:
-         导出过滤后结果
-     else:
-         导出原始合并结果
-     ```
-
-## 4. 容器卡片
-
-### 4.1 Card Group（卡片组）
-
-
-**操作指南**：
-1. **创建组**：添加Card Group卡片
-2. **添加成员**：拖拽其他卡片到组内
-3. **设置过滤**：将过滤卡片拖到组底部区域
-
-4. **执行示例**：
-   - **场景**：组内3个卡片分别生成10、15、20个结构
-   - **无过滤**：传递45个结构到下一环节
-   - **有过滤**：传递45个结构，但导出时可能只保留30个
-# NepTrainKit 自定义卡片开发指南
-
-## 1. 开发环境准备
-
-### 1.1 卡片目录结构
-```
-用户配置目录/
+User_Config_Directory/
 ├── cards/
-│   ├── custom_card1.py  # 自定义卡片文件
+│   ├── custom_card1.py  # Custom card files
 │   └── custom_card2.py
 ```
 
-### 1.2 获取配置目录路径
+### 1.2 Get Config Directory Path
 ```python
 import os
 import platform
@@ -249,82 +200,82 @@ def get_user_config_path():
     if platform.system() == 'Windows':
         local_path = os.getenv('LOCALAPPDATA', None)
         if local_path is None:
-            local_path = os.getenv('USERPROFILE', '') + '\\AppData\\Local '
+            local_path = os.getenv('USERPROFILE', '') + '\\AppData\\Local'
         user_config_path = os.path.join(local_path, 'NepTrainKit')
     else:
         user_config_path = os.path.expanduser("~/.config/NepTrainKit")
     return user_config_path
 ```
-一般情况下目录为：
-windows：C:\Users\用户名\AppData\Local\NepTrainKit\
-linux：~/.config/NepTrainKit
-## 2. 卡片开发模板
+Default paths:
+Windows: C:\Users\Username\AppData\Local\NepTrainKit\
+Linux: ~/.config/NepTrainKit
 
-### 2.1 基础模板结构
+## 2. Card Development Template
+
+### 2.1 Basic Template Structure
 ```python
 from NepTrainKit.core.views.cards import MakeDataCard, register_card_info
 
 @register_card_info
 class CustomCard(MakeDataCard):
-    # 必须定义的类属性
-    card_name = "自定义卡片名称"
+    # Required class attributes
+    card_name = "Custom Card Name"
     menu_icon = ":/images/src/images/logo.svg"
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("卡片标题")
+        self.setTitle("Card Title")
         self.init_ui()
     
     def init_ui(self):
-        """初始化用户界面"""
+        """Initialize UI"""
         self.setObjectName("custom_card_widget")
-        # 在此添加控件和布局代码
+        # Add controls and layout code here
     
     def process_structure(self, structure):
-        """核心处理逻辑"""
+        """Core processing logic"""
         processed_structures = []
-        # 处理代码...
+        # Processing code...
         return processed_structures
     
     def to_dict(self):
-        """序列化卡片配置"""
-        return super().to_dict( )
+        """Serialize card configuration"""
+        return super().to_dict()
         
- 
     def from_dict(self, data_dict):
-        """反序列化配置"""
+        """Deserialize configuration"""
         super().from_dict(data_dict)
-        # 自定义参数恢复...
+        # Custom parameter restoration...
 ```
 
-## 3. 核心功能实现
+## 3. Core Function Implementation
 
-### 3.1 处理函数规范
+### 3.1 Processing Function Specification
 ```python
 def process_structure(self, structure):
     """
-    参数:
-        structure (ase.Atoms): 输入的结构对象
+    Parameters:
+        structure (ase.Atoms): Input structure object
     
-    返回:
-        List[ase.Atoms]: 处理后的结构列表
+    Returns:
+        List[ase.Atoms]: Processed structure list
     
-    注意:
-        - 必须返回列表，即使只有一个结构
-        - 每个结构应使用copy()避免修改原始数据
+    Notes:
+        - Must return a list, even with single structure
+        - Each structure should use copy() to avoid modifying original
     """
     new_structure = structure.copy()
-    # 处理逻辑...
+    # Processing logic...
     return [new_structure]
 ```
 
-### 3.2 界面开发建议
+### 3.2 UI Development Recommendations
 ```python
 def init_ui(self):
-    # 示例：添加一个参数输入框
+    # Example: Add parameter input
     from qfluentwidgets import SpinBox, BodyLabel
     
-    self.param_label = BodyLabel("参数值:", self)
+    self.param_label = BodyLabel("Parameter:", self)
     self.param_input = SpinBox(self)
     self.param_input.setRange(1, 100)
     self.param_input.setValue(10)
@@ -333,9 +284,9 @@ def init_ui(self):
     self.settingLayout.addWidget(self.param_input, 0, 1)
 ```
 
-## 4. 高级功能实现
+## 4. Advanced Features
 
-### 4.1 状态持久化
+### 4.1 State Persistence
 ```python
 def to_dict(self):
     data = super().to_dict()
@@ -350,10 +301,5 @@ def from_dict(self, data):
     self.param_input.setValue(data.get('custom_param', 10))
 ```
 
-
-
-
-
-## 附录：完整示例卡片
+## Appendix: Complete Example Card
 https://github.com/aboys-cb/NepTrainKit/blob/master/src/NepTrainKit/core/views/cards.py
- 

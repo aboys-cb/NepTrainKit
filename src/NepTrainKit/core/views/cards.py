@@ -1023,6 +1023,7 @@ class FPSFilterDataCard(FilterDataCard):
         self.min_distance_condition_frame = SpinBoxUnitInputFrame(self)
         self.min_distance_condition_frame.set_input("", 1,"float")
         self.min_distance_condition_frame.setRange(0, 100)
+        self.min_distance_condition_frame.object_list[0].setDecimals(4)
         self.min_distance_condition_frame.set_input_value([0.01])
 
         self.min_distance_label = BodyLabel("Min distance", self.setting_widget)

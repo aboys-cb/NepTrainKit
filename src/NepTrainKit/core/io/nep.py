@@ -79,11 +79,16 @@ class ResultData(QObject):
                     f.write("prediction 1 ")
 
     def load(self ):
+        try:
+            self.load_structures()
+            self._load_descriptors()
+            self._load_dataset()
+            self.load_flag=True
+        except:
+            logger.error(traceback.format_exc())
 
-        self.load_structures()
-        self._load_descriptors()
-        self._load_dataset()
-        self.load_flag=True
+            MessageManager.send_error_message("load dataset error!")
+
         self.loadFinishedSignal.emit()
     def _load_dataset(self):
         raise NotImplementedError()

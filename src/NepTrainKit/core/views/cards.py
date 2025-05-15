@@ -27,6 +27,7 @@ from scipy.sparse.csgraph import connected_components
 from scipy.stats.qmc import Sobol
 from ase import neighborlist
 from ase.io import extxyz
+from ase.geometry import find_mic
 from ase.io import read as ase_read
 from ase.io import write as ase_write
 from ase.build import make_supercell
@@ -114,6 +115,32 @@ def get_clusters(structure):
         is_organic_list.append(is_organic_cluster(cluster_symbols))
 
     return clusters, is_organic_list
+
+def unwrap_molecule(atoms, cluster_indices):
+    # 获取分子中原子的分数坐标
+    scaled_pos = atoms.get_scaled_positions(wrap=False)[cluster_indices]
+
+    center =atoms[cluster_indices].get_center_of_mass(True)
+    cell=atoms.cell
+
+
+    # 计算所有原子相对于质心的位移（分数坐标）
+    delta = scaled_pos - center
+    # 转换为笛卡尔坐标的位移
+    delta_cartesian = np.dot(delta, cell)
+
+    # 使用find_mic计算最小镜像位移
+    mic_vectors, _ = find_mic(delta_cartesian, cell, pbc=True)
+
+    # 将最小镜像位移转换回分数坐标
+    mic_delta = np.dot(mic_vectors, np.linalg.inv(cell))
+
+    # 更新分数坐标
+    scaled_pos = center + mic_delta
+
+    unwrapped_pos = np.dot(scaled_pos, atoms.cell)
+
+    return unwrapped_pos
 
 class MakeDataCard(MakeDataCardWidget):
     #通知下一个card执行
@@ -559,7 +586,7 @@ class VacancyDefectCard(MakeDataCard):
             defect_counts = np.random.randint(1, max_defects + 1, max_num)
 
         for i in range(max_num):
-            new_struct =structure.copy()
+            new_structure =structure.copy()
 
             # 确定当前结构的缺陷数量
             if engine_type == 0:
@@ -573,7 +600,7 @@ class VacancyDefectCard(MakeDataCard):
                 target_defects = defect_counts[i]
 
             if target_defects == 0:
-                structure_list.append(new_struct)
+                structure_list.append(new_structure)
                 continue
             if engine_type == 0:
                 sorted_indices = np.argsort(position_scores)
@@ -585,9 +612,9 @@ class VacancyDefectCard(MakeDataCard):
             mask = np.zeros(n_atoms, dtype=bool)
             mask[defect_indices] = True
             n_vacancies = np.sum(mask)
-            del new_struct[mask]
-            new_struct.info["Config_type"] = new_struct.info.get("Config_type","") + f" Vacancy(num={n_vacancies})"
-            structure_list.append(new_struct)
+            del new_structure[mask]
+            new_structure.info["Config_type"] = new_structure.info.get("Config_type","") + f" Vacancy(num={n_vacancies})"
+            structure_list.append(new_structure)
 
         return structure_list
 
@@ -628,10 +655,18 @@ class PerturbCard(MakeDataCard):
         self.engine_type_combo=ComboBox(self.setting_widget)
         self.engine_type_combo.addItem("Sobol")
         self.engine_type_combo.addItem("Uniform")
-        self.organic_label=BodyLabel("Identify organic:",self.setting_widget)
 
-        self.organic_checkbox=CheckBox( self.setting_widget)
+        self.optional_frame = QFrame(self.setting_widget)
+        self.optional_frame_layout = QGridLayout(self.optional_frame)
+        self.optional_frame_layout.setContentsMargins(0, 0, 0, 0)
+        self.optional_frame_layout.setSpacing(2)
+
+        self.optional_label=BodyLabel("Optional",self.setting_widget)
+        self.organic_checkbox=CheckBox("Identify organic", self.setting_widget)
         self.organic_checkbox.setChecked(True)
+
+
+        self.optional_frame_layout.addWidget(self.organic_checkbox,0,0,1,1)
 
         self.scaling_condition_frame = SpinBoxUnitInputFrame(self)
         self.scaling_condition_frame.set_input("Å",1,"float")
@@ -650,8 +685,8 @@ class PerturbCard(MakeDataCard):
         self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
         self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
 
-        self.settingLayout.addWidget(self.organic_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.organic_checkbox,1, 1, 1, 2)
+        self.settingLayout.addWidget(self.optional_label, 1, 0, 1, 1)
+        self.settingLayout.addWidget(self.optional_frame,1, 1, 1, 2)
 
         self.settingLayout.addWidget(self.scaling_radio_label, 2, 0, 1, 1)
 
@@ -685,7 +720,7 @@ class PerturbCard(MakeDataCard):
 
         orig_positions = structure.positions
         for i in range(max_num):
-            new_struct = structure.copy()
+            new_structure = structure.copy()
 
             # 提取当前结构的扰动因子并重塑为 (n_atoms, 3)
             delta = perturbation_factors[i].reshape(n_atoms, 3) * max_scaling
@@ -708,9 +743,9 @@ class PerturbCard(MakeDataCard):
                 new_positions=orig_positions+delta
 
             # 更新新结构的坐标
-            new_struct.set_positions(new_positions)
-            new_struct.info["Config_type"] = new_struct.info.get("Config_type","") + f" Perturb(distance={max_scaling}, {'uniform' if engine_type == 1 else 'Sobol'})"
-            structure_list.append(new_struct)
+            new_structure.set_positions(new_positions)
+            new_structure.info["Config_type"] = new_structure.info.get("Config_type","") + f" Perturb(distance={max_scaling}, {'uniform' if engine_type == 1 else 'Sobol'})"
+            structure_list.append(new_structure)
 
         return structure_list
 
@@ -761,11 +796,20 @@ class CellScalingCard(MakeDataCard):
         self.scaling_condition_frame.set_input_value([0.04])
 
         self.scaling_radio_label=BodyLabel("Max Scaling:",self.setting_widget)
+
+        self.optional_frame=QFrame(self.setting_widget)
+        self.optional_frame_layout = QGridLayout(self.optional_frame)
+        self.optional_frame_layout.setContentsMargins(0,0,0,0)
+        self.optional_frame_layout.setSpacing(2)
         self.perturb_angle_checkbox=CheckBox( self.setting_widget)
         self.perturb_angle_checkbox.setText("Perturb angle")
         self.perturb_angle_checkbox.setChecked(True)
-        self.perturb_angle_label=BodyLabel("Optional",self.setting_widget)
+        self.optional_label=BodyLabel("Optional",self.setting_widget)
+        self.organic_checkbox=CheckBox("Identify organic", self.setting_widget)
+        self.organic_checkbox.setChecked(True)
 
+        self.optional_frame_layout.addWidget(self.perturb_angle_checkbox,0,0,1,1)
+        self.optional_frame_layout.addWidget(self.organic_checkbox,1,0,1,1)
 
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("unit",1,"int")
@@ -776,8 +820,8 @@ class CellScalingCard(MakeDataCard):
         self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
         self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
 
-        self.settingLayout.addWidget(self.perturb_angle_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.perturb_angle_checkbox, 1, 1, 1,1)
+        self.settingLayout.addWidget(self.optional_label, 1, 0, 1, 1)
+        self.settingLayout.addWidget(self.optional_frame, 1, 1, 1,1)
 
         self.settingLayout.addWidget(self.scaling_radio_label, 2, 0, 1, 1)
 
@@ -791,6 +835,7 @@ class CellScalingCard(MakeDataCard):
         engine_type=self.engine_type_combo.currentIndex()
         max_scaling=self.scaling_condition_frame.get_input_value()[0]
         max_num=self.num_condition_frame.get_input_value()[0]
+        identify_organic=self.organic_checkbox.isChecked()
 
         if self.perturb_angle_checkbox.isChecked():
             perturb_angles=True
@@ -809,9 +854,11 @@ class CellScalingCard(MakeDataCard):
         orig_lattice = structure.cell.array
         orig_lengths = np.linalg.norm(orig_lattice, axis=1)
         unit_vectors = orig_lattice / orig_lengths[:, np.newaxis]  # 原始晶格的单位向量
+        if identify_organic:
+            clusters, is_organic_list = get_clusters(structure)
         for i in range(max_num):
             # 提取微扰因子
-            new_struct=structure.copy()
+            new_structure=structure.copy()
             length_factors = perturbation_factors[i, :3]
             new_lengths = orig_lengths * length_factors
 
@@ -840,11 +887,26 @@ class CellScalingCard(MakeDataCard):
 
             # 缩放原子位置
 
-            new_struct.info["Config_type"] = new_struct.info.get("Config_type","") + f" Scaling(scaling={int(max_scaling)},{'uniform' if engine_type==1 else 'Sobol'  })"
+            new_structure.info["Config_type"] = new_structure.info.get("Config_type","") + f" Scaling(scaling={max_scaling},{'uniform' if engine_type==1 else 'Sobol'  })"
 
-            new_struct.set_cell(new_lattice,  scale_atoms=True)
+            new_structure.set_cell(new_lattice,  scale_atoms=True)
+            if identify_organic:
+                #判断下有没有有机分子  如果有 就将有机分子做整体的偏移 而不是拉伸
+                for cluster_indices, is_organic in zip(clusters, is_organic_list):
+                    if is_organic:
 
-            structure_list.append(new_struct)
+                        unwrap_old_pos = unwrap_molecule(structure,cluster_indices)
+                        unwrap_new_pos = unwrap_molecule(new_structure,cluster_indices)
+                        distance = unwrap_new_pos[0] - unwrap_old_pos[0]
+
+                        pos = unwrap_old_pos + distance
+                        new_structure.positions[cluster_indices] = pos
+                        new_structure.wrap()
+
+                    else:
+                        pass
+
+            structure_list.append(new_structure)
         return structure_list
 
     def to_dict(self):
@@ -852,6 +914,8 @@ class CellScalingCard(MakeDataCard):
 
         data_dict['engine_type'] = self.engine_type_combo.currentIndex()
         data_dict['perturb_angle'] = self.perturb_angle_checkbox.isChecked()
+        data_dict['organic'] = self.organic_checkbox.isChecked()
+
         data_dict['scaling_condition'] = self.scaling_condition_frame.get_input_value()
         data_dict['num_condition'] = self.num_condition_frame.get_input_value()
         return data_dict
@@ -859,7 +923,7 @@ class CellScalingCard(MakeDataCard):
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
 
-
+        self.organic_checkbox.setChecked(data_dict.get("organic", False))
         self.engine_type_combo.setCurrentIndex(data_dict['engine_type'])
         self.perturb_angle_checkbox.setChecked(data_dict['perturb_angle'])
         self.scaling_condition_frame.set_input_value(data_dict['scaling_condition'])
@@ -884,6 +948,18 @@ class CellStrainCard(MakeDataCard):
         self.engine_type_combo.addItems(axes_type)
         self.engine_type_combo.setToolTip('Pull down to select or enter a specific axis, such as X or XY')
 
+        self.optional_frame=QFrame(self.setting_widget)
+        self.optional_frame_layout = QGridLayout(self.optional_frame)
+        self.optional_frame_layout.setContentsMargins(0,0,0,0)
+        self.optional_frame_layout.setSpacing(2)
+
+        self.optional_label=BodyLabel("Optional",self.setting_widget)
+        self.organic_checkbox=CheckBox("Identify organic", self.setting_widget)
+        self.organic_checkbox.setChecked(True)
+
+
+        self.optional_frame_layout.addWidget(self.organic_checkbox,0,0,1,1)
+
         self.strain_x_label=BodyLabel("X:",self.setting_widget)
         self.strain_x_frame = SpinBoxUnitInputFrame(self)
         self.strain_x_frame.set_input(["-","% step:","%"],3,"int")
@@ -904,13 +980,14 @@ class CellStrainCard(MakeDataCard):
 
         self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
         self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
-
-        self.settingLayout.addWidget(self.strain_x_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.strain_x_frame, 1, 1, 1,1)
-        self.settingLayout.addWidget(self.strain_y_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.strain_y_frame, 2, 1, 1,1)
-        self.settingLayout.addWidget(self.strain_z_label, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.strain_z_frame, 3, 1, 1,1)
+        self.settingLayout.addWidget(self.optional_label, 1, 0, 1, 1)
+        self.settingLayout.addWidget(self.optional_frame, 1, 1, 1,1)
+        self.settingLayout.addWidget(self.strain_x_label, 2, 0, 1, 1)
+        self.settingLayout.addWidget(self.strain_x_frame, 2, 1, 1,1)
+        self.settingLayout.addWidget(self.strain_y_label, 3, 0, 1, 1)
+        self.settingLayout.addWidget(self.strain_y_frame, 3, 1, 1,1)
+        self.settingLayout.addWidget(self.strain_z_label, 4, 0, 1, 1)
+        self.settingLayout.addWidget(self.strain_z_frame, 4, 1, 1,1)
 
     def process_structure(self, structure):
         structure_list=[]
@@ -918,6 +995,11 @@ class CellStrainCard(MakeDataCard):
         x=self.strain_x_frame.get_input_value()
         y=self.strain_y_frame.get_input_value()
         z=self.strain_z_frame.get_input_value()
+        identify_organic=self.organic_checkbox.isChecked()
+
+
+        if identify_organic:
+            clusters, is_organic_list = get_clusters(structure)
         strain_range=[
             np.arange(start=x[0],stop=x[1],step=x[2]),
             np.arange(start=y[0], stop=y[1], step=y[2]),
@@ -958,6 +1040,22 @@ class CellStrainCard(MakeDataCard):
                 # Update the cell and scale positions
                 new_structure.set_cell(new_cell, scale_atoms=True)
 
+                if identify_organic:
+                    # 判断下有没有有机分子  如果有 就将有机分子做整体的偏移 而不是拉伸
+                    for cluster_indices, is_organic in zip(clusters, is_organic_list):
+                        if is_organic:
+                            unwrap_old_pos = unwrap_molecule(structure, cluster_indices)
+                            unwrap_new_pos = unwrap_molecule(new_structure, cluster_indices)
+                            distance = unwrap_new_pos[0] - unwrap_old_pos[0]
+
+                            pos = unwrap_old_pos + distance
+                            new_structure.positions[cluster_indices] = pos
+                            new_structure.wrap()
+
+                        else:
+                            pass
+
+
                 # Store strain info as metadata
                 strain_info = ["XYZ"[ax]+":"+ str(s)+"%" for ax, s in zip(ax_comb, strain_vals)]
 
@@ -973,6 +1071,7 @@ class CellStrainCard(MakeDataCard):
 
     def to_dict(self):
         data_dict = super().to_dict()
+        data_dict['organic'] = self.organic_checkbox.isChecked()
 
         data_dict['engine_type'] = self.engine_type_combo.currentText()
         data_dict['x_range'] = self.strain_x_frame.get_input_value()
@@ -984,6 +1083,7 @@ class CellStrainCard(MakeDataCard):
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
 
+        self.organic_checkbox.setChecked(data_dict.get("organic", False))
 
         self.engine_type_combo.setText(data_dict['engine_type'])
 

@@ -7,11 +7,10 @@ import os
 os.environ["VISPY_IGNORE_OLD_VERSION"] = "true"
 
 
-
 import numpy as np
-import vispy
+
 from PySide6.QtGui import QBrush, QColor, QPen
-from vispy import scene
+from vispy import scene,use
 # 不要去掉
 from vispy.app.backends import _pyside6
 from vispy.color import ColorArray
@@ -21,7 +20,7 @@ from NepTrainKit.core.canvas.base.canvas import VispyCanvasLayoutBase
 from NepTrainKit.core.io import NepTrainResultData
 from NepTrainKit.core.types import Brushes, Pens
 _pyside6
-vispy.use("PySide6", "gl2")
+use("PySide6", "gl2")
 
 class ViewBoxWidget(scene.Widget):
 
@@ -236,7 +235,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
         VispyCanvasLayoutBase.__init__(self)
 
-        scene.SceneCanvas.__init__(self, *args, fullscreen=True, **kwargs)
+        scene.SceneCanvas.__init__(self, *args,   **kwargs)
 
         self.unfreeze()
         self.nep_result_data = None

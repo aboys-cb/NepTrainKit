@@ -5,6 +5,7 @@
 # @email    : 1747193328@qq.com
 import os.path
 import sys
+import time
 
 from loguru import logger
 
@@ -24,7 +25,7 @@ from NepTrainKit.core.io.nep import NepPolarizabilityResultData, NepDipoleResult
 from NepTrainKit.core.io.utils import get_nep_type
 from NepTrainKit.core.structure import table_info, atomic_numbers
 from NepTrainKit.core.types import Brushes
-from NepTrainKit.core.views import NepResultPlotWidget, NepDisplayGraphicsToolBar, StructurePlotWidget
+from NepTrainKit.core.views import NepResultPlotWidget, NepDisplayGraphicsToolBar
 from NepTrainKit.core.views.structure import StructureInfoWidget
 from NepTrainKit.core.views.toolbar import StructureToolBar
 
@@ -45,14 +46,15 @@ class ShowNepWidget(QWidget):
         self.setAcceptDrops(True)
         self.nep_result_data=None
         self.init_action()
-        self.init_ui()
-        self.updateBondInfoSignal.connect(self.bond_label.setText)
+        # self.init_ui()
 
         self.first_show=False
 
+        QTimer.singleShot(100, self.init_ui)  # 100ms 后执行
 
 
     def showEvent(self, event):
+        # self.init_ui()
         if hasattr(self._parent,"save_menu"):
             self._parent.save_menu.addAction(self.export_selected_action)
         auto_load_config = Config.getboolean("widget","auto_load",False)
@@ -78,10 +80,18 @@ class ShowNepWidget(QWidget):
 
         self.struct_widget = QWidget(self)
         self.struct_widget_layout = QGridLayout(self.struct_widget)
+        canvas_type = Config.get("widget", "canvas_type", "pyqtgraph")
+        if canvas_type == "pyqtgraph":
+            from NepTrainKit.core.canvas.pyqtgraph.structure import StructurePlotWidget
+            self.show_struct_widget = StructurePlotWidget(self.struct_widget)
 
-        self.show_struct_widget = StructurePlotWidget(self.struct_widget)
-        # self.export_single_struct_button = TransparentToolButton(QIcon(':/images/src/images/export1.svg') ,self.struct_widget)
-        # self.export_single_struct_button.clicked.connect(self.export_single_struct)
+            self.struct_widget_layout.addWidget(self.show_struct_widget, 1, 0, 1, 1)
+
+        else:
+            from NepTrainKit.core.canvas.vispy.structure import StructurePlotWidget
+            self.show_struct_widget = StructurePlotWidget( parent=self.struct_widget)
+
+            self.struct_widget_layout.addWidget(self.show_struct_widget.native, 1, 0, 1, 1)
         self.structure_toolbar = StructureToolBar(self.struct_widget)
         self.structure_toolbar.showBondSignal.connect(self.show_struct_widget.set_show_bonds)
         self.structure_toolbar.orthoViewSignal.connect(self.show_struct_widget.set_projection)
@@ -128,7 +138,6 @@ class ShowNepWidget(QWidget):
 
         self.struct_widget_layout.addWidget(self.structure_toolbar, 0, 0, 1, 1)
 
-        self.struct_widget_layout.addWidget(self.show_struct_widget, 1, 0, 1, 1)
         # self.struct_widget_layout.addWidget(self.export_single_struct_button, 1, 0, 1, 1, alignment=Qt.AlignRight)
         self.struct_widget_layout.addWidget(self.struct_info_widget, 2, 0, 1, 1)
         self.struct_widget_layout.addWidget(self.bond_label,3, 0, 1, 1)
@@ -182,6 +191,7 @@ class ShowNepWidget(QWidget):
         self.splitter.setStretchFactor(0, 4)
         self.splitter.setStretchFactor(1, 2)
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
+        self.updateBondInfoSignal.connect(self.bond_label.setText)
 
     def dragEnterEvent(self, event):
         # 检查拖拽的内容是否包含文件

@@ -152,6 +152,10 @@ def main():
     sys.excepthook = global_exception_handler
     if os.path.exists("update.zip") or os.path.exists("update.tar.gz"):
         utils.unzip()
+
+
+    import time
+    start=time.time()
     app = QApplication(sys.argv)
 
     set_light_theme(app)
@@ -163,7 +167,7 @@ def main():
     app.setStyleSheet(theme)
     w = NepTrainKitMainWindow()
     w.show()
-
+    print(time.time()-start)
     app.exec()
 
 

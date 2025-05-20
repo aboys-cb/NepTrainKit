@@ -46,11 +46,11 @@ class ShowNepWidget(QWidget):
         self.setAcceptDrops(True)
         self.nep_result_data=None
         self.init_action()
-        # self.init_ui()
+        self.init_ui()
 
         self.first_show=False
 
-        QTimer.singleShot(100, self.init_ui)  # 100ms 后执行
+        # QTimer.singleShot(100, self.init_ui)  # 100ms 后执行
 
 
     def showEvent(self, event):

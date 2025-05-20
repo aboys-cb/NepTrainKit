@@ -6,6 +6,7 @@
 import os
 os.environ["VISPY_IGNORE_OLD_VERSION"] = "true"
 
+# os.environ["VISPY_PYQT5_SHARE_CONTEXT"] = "true"
 
 import numpy as np
 
@@ -28,7 +29,7 @@ class ViewBoxWidget(scene.Widget):
         super(ViewBoxWidget, self).__init__(*args, **kwargs)
 
         self.unfreeze()
-        self.grid = self.add_grid(margin=10)
+        self.grid = self.add_grid(margin=0)
 
         self.grid.spacing = 0
         self.title_label = scene.Label(title, color='black',font_size=8)
@@ -235,13 +236,13 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
         VispyCanvasLayoutBase.__init__(self)
 
-        scene.SceneCanvas.__init__(self, *args,   **kwargs)
+        scene.SceneCanvas.__init__(self, *args,    **kwargs)
 
         self.unfreeze()
         self.nep_result_data = None
 
 
-        self.grid = self.central_widget.add_grid(margin=10, spacing=0)
+        self.grid = self.central_widget.add_grid(margin=0, spacing=0)
         self.grid.spacing = 0
 
 

@@ -5,7 +5,7 @@
 # @email    : 1747193328@qq.com
 
 
-
+from NepTrainKit.core import Config
 from NepTrainKit.core.structure import table_info
 import numpy as np
 
@@ -75,7 +75,7 @@ class StructurePlotWidget(scene.SceneCanvas):
             'center': self.view.camera.center,
             'elevation': self.view.camera.elevation,
             'azimuth': self.view.camera.azimuth,
-            'scale_factor': self.view.camera.scale_factor
+
         }
         if self.ortho:
             self.view.camera = scene.cameras.TurntableCamera(
@@ -285,7 +285,9 @@ class StructurePlotWidget(scene.SceneCanvas):
                 item['mesh'] = mesh
 
         # Highlight bad bonds
-        radius_coefficient = 0.7
+
+        radius_coefficient = Config.getfloat("widget", "radius_coefficient", 0.7)
+
         bond_pairs = structure.get_bad_bond_pairs(radius_coefficient)
         for pair in bond_pairs:
             self.highlight_atom(pair[0])
@@ -338,7 +340,7 @@ class StructurePlotWidget(scene.SceneCanvas):
         size = max_coords - min_coords
         max_dimension = np.max(size)
         fov = 60
-        scale_factor = max_dimension / (2 * np.tan(np.radians(fov / 2))) * 2.8
+        distance = max_dimension / (2 * np.tan(np.radians(fov / 2))) * 2.8
         aspect_ratio = size / np.max(size)
         flat_threshold = 0.5
         if aspect_ratio[0] < flat_threshold and aspect_ratio[1] >= flat_threshold and aspect_ratio[2] >= flat_threshold:
@@ -355,8 +357,10 @@ class StructurePlotWidget(scene.SceneCanvas):
             'center': tuple(center),
             'elevation': elevation,
             'azimuth': azimuth,
-            'scale_factor': scale_factor
+
         })
+        self.view.camera.distance=distance
+
         self.update_lighting()
 
 

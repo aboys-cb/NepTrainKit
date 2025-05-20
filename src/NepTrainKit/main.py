@@ -28,7 +28,7 @@ class NepTrainKitMainWindow(FluentWindow):
         super().__init__()
         self.setMicaEffectEnabled(False)
         self.init_ui()
-
+    @utils.timeit
     def init_ui(self):
         # create sub interface
         MessageManager._createInstance(self)
@@ -153,9 +153,6 @@ def main():
     if os.path.exists("update.zip") or os.path.exists("update.tar.gz"):
         utils.unzip()
 
-
-    import time
-    start=time.time()
     app = QApplication(sys.argv)
 
     set_light_theme(app)
@@ -167,7 +164,6 @@ def main():
     app.setStyleSheet(theme)
     w = NepTrainKitMainWindow()
     w.show()
-    print(time.time()-start)
     app.exec()
 
 

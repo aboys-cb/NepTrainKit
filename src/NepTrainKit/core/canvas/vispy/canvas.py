@@ -11,17 +11,16 @@ os.environ["VISPY_IGNORE_OLD_VERSION"] = "true"
 import numpy as np
 
 from PySide6.QtGui import QBrush, QColor, QPen
-from vispy import scene,use
-# 不要去掉
-from vispy.app.backends import _pyside6
+from vispy import scene
+
 from vispy.color import ColorArray
 from vispy.visuals.filters import MarkerPickingFilter
 from NepTrainKit import utils
 from NepTrainKit.core.canvas.base.canvas import VispyCanvasLayoutBase
 from NepTrainKit.core.io import NepTrainResultData
 from NepTrainKit.core.types import Brushes, Pens
-_pyside6
-use("PySide6", "gl2")
+
+
 
 class ViewBoxWidget(scene.Widget):
 

@@ -32,14 +32,14 @@ class NepResultPlotWidget(QWidget):
     def swith_canvas(self,canvas_type="pyqtgraph"):
 
         if canvas_type == "pyqtgraph":
-            from ..canvas.pyqtgraph.canvas import PyqtgraphCanvas
+            from ..canvas.pyqtgraph import PyqtgraphCanvas
             self.canvas = PyqtgraphCanvas(self)
             self._layout.addWidget(self.canvas)
 
         elif canvas_type == "vispy":
 
 
-            from ..canvas.vispy.canvas import VispyCanvas
+            from ..canvas.vispy import VispyCanvas
 
 
             self.canvas = VispyCanvas(parent=self, bgcolor='white')

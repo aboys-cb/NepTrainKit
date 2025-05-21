@@ -249,7 +249,7 @@ class ResultData(QObject):
                 pass
 
             else:
-                os.remove(self.descriptor_path)
+                self.descriptor_path.unlink()
                 return self._load_descriptors()
 
         if desc_array.size != 0:
@@ -332,6 +332,15 @@ class NepTrainResultData(ResultData):
             force_array = read_nep_out_file(self.force_out_path, dtype=np.float32)
             virial_array = read_nep_out_file(self.virial_out_path, dtype=np.float32)
             stress_array = read_nep_out_file(self.stress_out_path, dtype=np.float32)
+
+            if energy_array.shape[0]!=self.atoms_num_list.shape[0]:
+                self.energy_out_path.unlink(True)
+                self.force_out_path.unlink(True)
+                self.virial_out_path.unlink(True)
+                self.stress_out_path.unlink(True)
+
+                return self._load_dataset()
+
 
         self._energy_dataset = NepPlotData(energy_array, title="energy")
         default_forces = Config.get("widget", "forces_data", "Row")
@@ -577,6 +586,9 @@ class NepPolarizabilityResultData(ResultData):
             polarizability_array = self._recalculate_and_save( )
         else:
             polarizability_array= read_nep_out_file(self.polarizability_out_path, dtype=np.float32)
+            if polarizability_array.shape[0]!=self.atoms_num_list.shape[0]:
+                self.polarizability_out_path.unlink()
+                return self._load_dataset()
         self._polarizability_diagonal_dataset = NepPlotData(polarizability_array[:, [0,1,2,6,7,8]], title="Polar Diag")
 
         self._polarizability_no_diagonal_dataset = NepPlotData(polarizability_array[:, [3,4,5,9,10,11]], title="Polar NoDiag")
@@ -688,4 +700,7 @@ class NepDipoleResultData(ResultData):
             dipole_array = self._recalculate_and_save( )
         else:
             dipole_array= read_nep_out_file(self.dipole_out_path, dtype=np.float32)
+            if dipole_array.shape[0]!=self.atoms_num_list.shape[0]:
+                self.dipole_out_path.unlink()
+                return self._load_dataset()
         self._dipole_dataset = NepPlotData(dipole_array, title="dipole")

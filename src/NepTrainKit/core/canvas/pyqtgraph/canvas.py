@@ -8,7 +8,7 @@
 from functools import partial
 
 import numpy as np
-import pyqtgraph as pg
+
 from PySide6.QtCore import Qt
 from pyqtgraph import GraphicsLayoutWidget,  ScatterPlotItem, PlotItem, ViewBox, TextItem
 
@@ -17,9 +17,7 @@ from NepTrainKit.core.types import Brushes, Pens
 from ..base.canvas import CanvasLayoutBase
 from ...io import NepTrainResultData
 
-pg.setConfigOption('background', 'w')  # 设置背景为白色
-pg.setConfigOption('foreground', 'k')  # 设置前景元素为黑色（如坐标轴）
-pg.setConfigOptions(antialias=False,useOpenGL=False)
+
 
 class MyPlotItem(PlotItem):
     """

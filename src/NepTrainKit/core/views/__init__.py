@@ -5,5 +5,5 @@
 # @email    : 1747193328@qq.com
 
 from .nep import NepResultPlotWidget
-from .structure import StructurePlotWidget
+
 from .toolbar import NepDisplayGraphicsToolBar

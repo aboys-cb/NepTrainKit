@@ -239,18 +239,26 @@ class ResultData(QObject):
             if desc_array.size != 0:
                 np.savetxt(self.descriptor_path, desc_array, fmt='%.6g')
         else:
-            if desc_array.shape[0] != len(self.atoms_num_list):
+            if desc_array.shape[0] == np.sum(self.atoms_num_list):
                 # 原子描述符 需要计算结构描述符
-                desc_array = parse_array_by_atomnum(desc_array, self.atoms_num_list, map_func=np.mean, axis=0)
 
-                pass
-            else:
+
+                desc_array = parse_array_by_atomnum(desc_array, self.atoms_num_list, map_func=np.mean, axis=0)
+            elif desc_array.shape[0] == self.atoms_num_list.shape[0]:
                 # 结构描述符
                 pass
 
+            else:
+                os.remove(self.descriptor_path)
+                return self._load_descriptors()
+
         if desc_array.size != 0:
             if desc_array.shape[1] > 2:
-                desc_array = pca(desc_array, 2)
+                try:
+                    desc_array = pca(desc_array, 2)
+                except:
+                    MessageManager.send_error_message("PCA dimensionality reduction fails")
+                    desc_array = np.array([])
 
         self._descriptor_dataset = NepPlotData(desc_array, title="descriptor")
 

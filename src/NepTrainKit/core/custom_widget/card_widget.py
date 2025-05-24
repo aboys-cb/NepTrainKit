@@ -5,14 +5,12 @@
 # @email    : 1747193328@qq.com
 from PySide6.QtCore import Qt, Signal, QMimeData
 from PySide6.QtGui import QIcon, QDrag, QPixmap
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout
+
 from qfluentwidgets import HeaderCardWidget, CheckBox, TransparentToolButton
 
-from NepTrainKit.core import MessageManager
 
 from qfluentwidgets import FluentIcon as FIF
-from NepTrainKit.core.custom_widget import ProcessLabel
-from NepTrainKit import utils
+
 
 
 

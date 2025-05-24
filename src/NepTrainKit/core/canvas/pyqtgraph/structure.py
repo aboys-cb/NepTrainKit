@@ -8,7 +8,7 @@ import pyqtgraph as pg
 import pyqtgraph.opengl as gl
 
 import numpy as np
-from OpenGL.GL import *  # noqa
+from OpenGL.GL import GL_PROJECTION, glLoadMatrixf, glMatrixMode
 from NepTrainKit.core import Config
 
 

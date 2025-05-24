@@ -6,4 +6,3 @@
 from .makedata import MakeDataWidget
 from .settings import SettingsWidget
 from .show_nep import ShowNepWidget
-from .train_nep import TrainNepWidget

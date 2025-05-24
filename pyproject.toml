@@ -44,7 +44,6 @@ dependencies = [
 "vispy>=0.14.3",
 "ase",
 "scipy>=1.15.0",
-"paramiko>=2.12"
 ]
 [project.optional-dependencies]
 test = [

@@ -98,37 +98,5 @@ def get_nep_type(file_path):
     return model_type
 
 
-def parse_loss_file(file_path):
-    """Parse a ``loss.out`` style file.
 
-    The file is expected to contain at least two columns where the first
-    column is the step index and the second column is the loss value. If the
-    file contains only a single column of losses, the step index will be
-    generated sequentially starting from zero.
-
-    Parameters
-    ----------
-    file_path : str or Path
-        Path to the ``loss.out`` file.
-
-    Returns
-    -------
-    tuple[np.ndarray, np.ndarray]
-        A tuple ``(steps, losses)`` with ``dtype`` ``int`` and ``float``
-        respectively. Empty arrays are returned when the file does not exist.
-    """
-
-    logger.info(f"Reading loss file: {file_path}")
-    if not os.path.exists(file_path):
-        return np.array([]), np.array([])
-
-    data = np.loadtxt(file_path)
-    if data.ndim == 1:
-        steps = np.arange(data.shape[0], dtype=int)
-        losses = data.astype(float)
-    else:
-        steps = data[:, 0].astype(int)
-        losses = data[:, 1].astype(float)
-
-    return steps, losses
 

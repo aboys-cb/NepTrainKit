@@ -20,49 +20,65 @@ class DataBase:
 
     """
 
-    def __init__(self,data_list ):
-        # self.raw_data = np.array(data_list)
-        self.now_data= data_list
-        shape=list(self.now_data.shape)
-        shape[0]=0
-        self.remove_data = np.empty( tuple(shape), dtype=self.now_data.dtype)
-        #记录每次删除了几个  比如[3,6,4]
-        self.remove_num=[]
+    def __init__(self, data_list):
+        """Initialize the database with a numpy array."""
+        self._data = np.asarray(data_list)
+        # active indices of ``_data``
+        self._active_indices = list(range(len(self._data)))
+        # indices that have been removed in order of deletion
+        self._removed_indices = []
+        # number of indices removed in each remove operation
+        self._history = []
 
     @property
     def num(self) -> int:
         """
         返回当前数组的数量
         """
-        return self.now_data.shape[0]
-    def remove(self,i):
-        """
-        根据index删除数据 并且将删除的数据记录到remove_data中
-        """
-        if self.now_data.size==0:
+        return len(self._active_indices)
+
+    @property
+    def now_data(self):
+        """Return the currently active data."""
+        if len(self._active_indices) == 0:
+            # Ensure correct shape when empty
+            return self._data[:0]
+        return self._data[self._active_indices]
+
+    @property
+    def remove_data(self):
+        """Return all removed data."""
+        if len(self._removed_indices) == 0:
+            return self._data[:0]
+        return self._data[self._removed_indices]
+    def remove(self, i):
+        """Remove items by indices and record their positions."""
+        if self.num == 0:
             return
-        if isinstance(i,int):
-            data=self.now_data[i]
-            self.now_data = np.delete(self.now_data,i,0)
-            self.remove_data=np.append(self.remove_data,data)
-            self.remove_num.append(1)
-        elif isinstance(i,(list,np.ndarray)):
-            datas = self.now_data[i]
-            self.now_data = np.delete(self.now_data, i, 0)
-            self.remove_data = np.append(self.remove_data, datas,axis=0)
-            self.remove_num.append(len(i))
+        if isinstance(i, int):
+            idx_list = [i]
+        else:
+            idx_list = list(i)
+        if not idx_list:
+            return
+        idx_list = sorted(idx_list)
+        removed = [self._active_indices[idx] for idx in idx_list]
+        for idx in reversed(idx_list):
+            self._active_indices.pop(idx)
+        self._removed_indices.extend(removed)
+        self._history.append(len(removed))
 
     def __getitem__(self, item):
+        """Direct indexing on the active dataset."""
         return self.now_data[item]
 
     def revoke(self):
-        """
-        恢复上一次删除的数据
-        """
-        if self.remove_num:
-            last_remove_num=self.remove_num.pop(-1)
-            self.now_data = np.append(self.now_data, self.remove_data[-last_remove_num: ],axis=0)
-            self.remove_data = np.delete(self.remove_data, np.s_[-last_remove_num:], axis=0)
+        """Restore the last removed items."""
+        if self._history:
+            last_count = self._history.pop()
+            restored = self._removed_indices[-last_count:]
+            del self._removed_indices[-last_count:]
+            self._active_indices.extend(restored)
 
 
 class NepData:

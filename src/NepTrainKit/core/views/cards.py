@@ -646,7 +646,7 @@ class PerturbCard(MakeDataCard):
     menu_icon=r":/images/src/images/perturb.svg"
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Make Perturb")
+        self.setTitle("Make Atomic Perturb")
         self.init_ui()
 
     def init_ui(self):
@@ -769,14 +769,14 @@ class PerturbCard(MakeDataCard):
 
         self.num_condition_frame.set_input_value(data_dict['num_condition'])
         self.organic_checkbox.setChecked(data_dict.get("organic", False))
-
+#这里类名设计失误 但为了兼容以前的配置文件  不再修改类名了
 @register_card_info
 class CellScalingCard(MakeDataCard):
-    card_name= "Lattice Scaling"
+    card_name= "Lattice Perturb"
     menu_icon=r":/images/src/images/scaling.svg"
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Make Cell Scaling")
+        self.setTitle("Make Lattice Perturb")
 
         self.init_ui()
 

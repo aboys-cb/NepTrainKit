@@ -78,6 +78,7 @@ class NepTrainKitMainWindow(FluentWindow):
                              QIcon(':/images/src/images/make.svg'),
                              'Make Data' )
 
+
         self.addSubInterface(self.setting_interface,
                              FIF.SETTING,
                              'Settings',

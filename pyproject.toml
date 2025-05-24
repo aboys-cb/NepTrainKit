@@ -43,7 +43,7 @@ dependencies = [
 "numpy>=1.26.0",
 "vispy>=0.14.3",
 "ase",
-"scipy>=1.15.0"
+"scipy>=1.15.0",
 ]
 [project.optional-dependencies]
 test = [

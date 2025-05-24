@@ -646,7 +646,7 @@ class PerturbCard(MakeDataCard):
     menu_icon=r":/images/src/images/perturb.svg"
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Make Perturb")
+        self.setTitle("Make Atomic Perturb")
         self.init_ui()
 
     def init_ui(self):
@@ -769,14 +769,14 @@ class PerturbCard(MakeDataCard):
 
         self.num_condition_frame.set_input_value(data_dict['num_condition'])
         self.organic_checkbox.setChecked(data_dict.get("organic", False))
-
+#这里类名设计失误 但为了兼容以前的配置文件  不再修改类名了
 @register_card_info
 class CellScalingCard(MakeDataCard):
-    card_name= "Lattice Scaling"
+    card_name= "Lattice Perturb"
     menu_icon=r":/images/src/images/scaling.svg"
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Make Cell Scaling")
+        self.setTitle("Make Lattice Perturb")
 
         self.init_ui()
 
@@ -944,7 +944,7 @@ class CellStrainCard(MakeDataCard):
 
         self.engine_label=BodyLabel("Axes:",self.setting_widget)
         self.engine_type_combo=EditableComboBox(self.setting_widget)
-        axes_type=["uniaxial","biaxial","triaxial"]
+        axes_type=["uniaxial","biaxial","triaxial","isotropic"]
         self.engine_type_combo.addItems(axes_type)
         self.engine_type_combo.setToolTip('Pull down to select or enter a specific axis, such as X or XY')
 
@@ -1001,71 +1001,63 @@ class CellStrainCard(MakeDataCard):
         if identify_organic:
             clusters, is_organic_list = get_clusters(structure)
         strain_range=[
-            np.arange(start=x[0],stop=x[1],step=x[2]),
-            np.arange(start=y[0], stop=y[1], step=y[2]),
-            np.arange(start=z[0], stop=z[1], step=z[2]),
+            np.arange(start=x[0],stop=x[1]+1,step=x[2]),
+            np.arange(start=y[0], stop=y[1]+1, step=y[2]),
+            np.arange(start=z[0], stop=z[1]+1, step=z[2]),
         ]
         cell = structure.get_cell()
         # Define possible axes (0: x, 1: y, 2: z)
         all_axes = [0, 1, 2]
 
-        # Determine axes combinations based on mode
-        if axes == 'uniaxial':
-            axes_combinations = [[i] for i in all_axes]
-        elif axes == 'biaxial':
-            axes_combinations = list(combinations(all_axes, 2))
-        elif axes=="triaxial":  # tri
-            axes_combinations = [all_axes]
-        else:
-            axes_combinations=[ ["XYZ".index(i.upper()) for i in axes if i.upper() in "XYZ"]]
-        # Apply strain for each axis combination
-        for ax_comb in axes_combinations:
-            # Create strain combinations for the current axes
-            if len(ax_comb)==0:
-                continue
-            strain_combinations = np.array(np.meshgrid(*[strain_range[_] for _ in ax_comb])).T.reshape(-1,
-                                                                                                    len(ax_comb))
 
-
-            for strain_vals in strain_combinations:
-                # Copy the original structure
-
+        if axes == 'isotropic':
+            for strain in strain_range[0]:
                 new_structure = structure.copy()
-                new_cell = cell.copy()
-
-                # Apply strain along specified axes
-                for ax_idx, strain in zip(ax_comb, strain_vals):
-                    new_cell[ax_idx] *= (1 + strain/100)
-
-                # Update the cell and scale positions
+                new_cell = cell.copy() * (1 + strain / 100)
                 new_structure.set_cell(new_cell, scale_atoms=True)
-
                 if identify_organic:
-                    # 判断下有没有有机分子  如果有 就将有机分子做整体的偏移 而不是拉伸
                     for cluster_indices, is_organic in zip(clusters, is_organic_list):
                         if is_organic:
                             unwrap_old_pos = unwrap_molecule(structure, cluster_indices)
                             unwrap_new_pos = unwrap_molecule(new_structure, cluster_indices)
                             distance = unwrap_new_pos[0] - unwrap_old_pos[0]
-
                             pos = unwrap_old_pos + distance
                             new_structure.positions[cluster_indices] = pos
                             new_structure.wrap()
-
-                        else:
-                            pass
-
-
-                # Store strain info as metadata
-                strain_info = ["XYZ"[ax]+":"+ str(s)+"%" for ax, s in zip(ax_comb, strain_vals)]
-
-
-
-                new_structure.info["Config_type"] = new_structure.info.get("Config_type",
-                                                                     "") + f" Strain({'|'.join(strain_info)})"
-
+                strain_info = [f"all:{strain}%"]
+                new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Strain({'|'.join(strain_info)})"
                 structure_list.append(new_structure)
-
+        else:
+            if axes == 'uniaxial':
+                axes_combinations = [[i] for i in all_axes]
+            elif axes == 'biaxial':
+                axes_combinations = list(combinations(all_axes, 2))
+            elif axes == 'triaxial':
+                axes_combinations = [all_axes]
+            else:
+                axes_combinations = [["XYZ".index(i.upper()) for i in axes if i.upper() in "XYZ"]]
+            for ax_comb in axes_combinations:
+                if len(ax_comb) == 0:
+                    continue
+                strain_combinations = (np.array(np.meshgrid(*[strain_range[_] for _ in ax_comb])).T.reshape(-1, len(ax_comb)))
+                for strain_vals in strain_combinations:
+                    new_structure = structure.copy()
+                    new_cell = cell.copy()
+                    for ax_idx, strain in zip(ax_comb, strain_vals):
+                        new_cell[ax_idx] *= (1 + strain / 100)
+                    new_structure.set_cell(new_cell, scale_atoms=True)
+                    if identify_organic:
+                        for cluster_indices, is_organic in zip(clusters, is_organic_list):
+                            if is_organic:
+                                unwrap_old_pos = unwrap_molecule(structure, cluster_indices)
+                                unwrap_new_pos = unwrap_molecule(new_structure, cluster_indices)
+                                distance = unwrap_new_pos[0] - unwrap_old_pos[0]
+                                pos = unwrap_old_pos + distance
+                                new_structure.positions[cluster_indices] = pos
+                                new_structure.wrap()
+                    strain_info = ["XYZ"[ax] + ":" + str(s) + "%" for ax, s in zip(ax_comb, strain_vals)]
+                    new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Strain({'|'.join(strain_info)})"
+                    structure_list.append(new_structure)
 
         return structure_list
 

@@ -61,12 +61,14 @@ class DataBase:
             idx_list = list(i)
         if not idx_list:
             return
+
         idx_list = sorted(idx_list)
         removed = [self._active_indices[idx] for idx in idx_list]
         for idx in reversed(idx_list):
             self._active_indices.pop(idx)
         self._removed_indices.extend(removed)
         self._history.append(len(removed))
+
 
     def __getitem__(self, item):
         """Direct indexing on the active dataset."""

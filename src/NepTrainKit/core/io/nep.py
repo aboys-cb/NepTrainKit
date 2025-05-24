@@ -22,25 +22,40 @@ from NepTrainKit.core.io.base import NepPlotData, StructureData
 
 from NepTrainKit.core.io.utils import read_nep_out_file, check_fullbatch, read_nep_in, parse_array_by_atomnum
 
-def pca(X, k):
-    # 1. 标准化数据（去均值和方差标准化）
 
+def pca(X, n_components=None):
+    """
+    执行主成分分析 (PCA)，只返回降维后的数据
+    """
+    n_samples, n_features = X.shape
+
+    # 1. 计算均值并中心化数据
     mean = np.mean(X, axis=0)
     X_centered = X - mean
+    #樊老师说不用处理 就不减去均值了
+    # 但是我还不确定哪种好 还是保持现状把
+    # X_centered = X
 
 
-    # 2. 计算协方差矩阵
-    cov_matrix = np.cov(X_centered.T)
+    # 3. 计算协方差矩阵
+    cov_matrix = np.dot(X_centered.T, X_centered) / (n_samples - 1)
 
-    # 3. 特征值分解协方差矩阵
-    eigenvalues, eigenvectors = np.linalg.eig(cov_matrix)
+    # 4. 计算特征值和特征向量
+    eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
 
-    # 4. 对特征值进行排序，选择前k个特征值和对应的特征向量
-    sorted_indices = np.argsort(eigenvalues)[::-1]  # 从大到小排序
-    top_k_eigenvectors = eigenvectors[:, sorted_indices[:k]]
+    # 5. 特征值和特征向量按降序排列
+    idx = np.argsort(eigenvalues)[::-1]
+    eigenvalues = eigenvalues[idx]
+    eigenvectors = eigenvectors[:, idx]
 
-    # 5. 投影到前k个主成分
-    X_pca = X_centered.dot(top_k_eigenvectors)
+    # 6. 确定要保留的主成分数量
+    if n_components is None:
+        n_components = n_features
+    elif n_components > n_features:
+        n_components = n_features
+
+    # 7. 将数据投影到前n_components个主成分上 (降维)
+    X_pca = np.dot(X_centered, eigenvectors[:, :n_components])
 
     return X_pca.astype(np.float32)
 

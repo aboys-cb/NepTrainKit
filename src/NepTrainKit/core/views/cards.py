@@ -1164,7 +1164,7 @@ class FPSFilterDataCard(FilterDataCard):
 
             return
         if self.check_state:
-            self.worker_thread = utils.FillterProcessingThread(
+            self.worker_thread = utils.FilterProcessingThread(
 
                 self.process_structure
             )
@@ -1224,9 +1224,9 @@ class CardGroup(MakeDataCardWidget):
         self.group_layout = QVBoxLayout(self.group_widget)
         self.exportSignal.connect(self.export_data)
         self.windowStateChangedSignal.connect(self.show_card_setting)
-        self.fillter_widget = QWidget(self)
-        self.fillter_layout = QVBoxLayout(self.fillter_widget)
-        self.vBoxLayout.addWidget(self.fillter_widget)
+        self.filter_widget = QWidget(self)
+        self.filter_layout = QVBoxLayout(self.filter_widget)
+        self.vBoxLayout.addWidget(self.filter_widget)
 
         self.filter_card=None
         self.dataset:list=None
@@ -1236,7 +1236,7 @@ class CardGroup(MakeDataCardWidget):
     def set_filter_card(self,card):
 
         self.filter_card=card
-        self.fillter_layout.addWidget(card)
+        self.filter_layout.addWidget(card)
 
     def state_changed(self, state):
         super().state_changed(state)

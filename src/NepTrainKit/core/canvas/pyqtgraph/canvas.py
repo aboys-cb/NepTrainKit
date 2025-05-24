@@ -10,6 +10,7 @@ from functools import partial
 import numpy as np
 
 from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QApplication
 from pyqtgraph import GraphicsLayoutWidget,  ScatterPlotItem, PlotItem, ViewBox, TextItem
 
 from NepTrainKit import utils
@@ -135,37 +136,44 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
 
     @utils.timeit
     def plot_nep_result(self):
-        """
-        画图函数 每次数据变动（删除、撤销等）均通过此函数重新绘图
-        """
-        self.nep_result_data.select_index.clear()
+        """绘制训练结果。"""
+        if self.nep_result_data is None:
+            return
 
-        for index,_dataset in enumerate(self.nep_result_data.dataset):
-            plot=self.axes_list[index]
-            plot.title= _dataset.title
-            plot.scatter(_dataset.x,_dataset.y,data=_dataset.structure_index,
-                                      brush=Brushes.get(_dataset.title.upper()) ,pen=Pens.get(_dataset.title.upper()),
-                                      symbol='o',size=7,
+        self.setUpdatesEnabled(False)
+        try:
+            self.nep_result_data.select_index.clear()
 
-                                      )
-            # 设置视图框更新模式
-            self.auto_range(plot)
-            if _dataset.group_array.num !=0:
-                #更新结构
-                if self.structure_index not in _dataset.group_array.now_data:
-                    self.structure_index=_dataset.group_array.now_data[0]
-                    self.structureIndexChanged.emit(self.structure_index)
+            for index, _dataset in enumerate(self.nep_result_data.dataset):
+                plot = self.axes_list[index]
+                plot.title = _dataset.title
+                plot.scatter(
+                    _dataset.x,
+                    _dataset.y,
+                    data=_dataset.structure_index,
+                    brush=Brushes.get(_dataset.title.upper()),
+                    pen=Pens.get(_dataset.title.upper()),
+                    symbol="o",
+                    size=7,
+                )
+                # 设置视图框更新模式
+                self.auto_range(plot)
+                if _dataset.group_array.num != 0:
+                    # 更新结构
+                    if self.structure_index not in _dataset.group_array.now_data:
+                        self.structure_index = _dataset.group_array.now_data[0]
+                        self.structureIndexChanged.emit(self.structure_index)
+                else:
+                    plot.set_current_point([], [])
 
-            else:
-                plot.set_current_point([], [])
-
-
-            if _dataset.title not in ["descriptor"]:
-            #
-                pos=self.convert_pos(plot,(0 ,1))
-                text=f"rmse: {_dataset.get_formart_rmse()}"
-                plot.text.setText(text)
-                plot.text.setPos(*pos)
+                if _dataset.title not in ["descriptor"]:
+                    pos = self.convert_pos(plot, (0, 1))
+                    text = f"rmse: {_dataset.get_formart_rmse()}"
+                    plot.text.setText(text)
+                    plot.text.setPos(*pos)
+        finally:
+            self.setUpdatesEnabled(True)
+            QApplication.processEvents()
 
 
 
@@ -220,19 +228,19 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
         """
         当结构点的状态发生变化的时候 通过该函数更改axes中散点的颜色
         """
+        structure_index = np.asarray(structure_index)
+        if structure_index.size == 0:
+            return
 
-        for i,plot in enumerate(self.axes_list):
-
+        for plot in self.axes_list:
             if not plot._scatter:
                 continue
-            structure_index_set= set(structure_index)
-            index_list = [i for i, val in enumerate(plot._scatter.data["data"]) if val in structure_index_set]
-
-            plot._scatter.data["brush"][index_list]=   color
-            plot._scatter.data['sourceRect'][index_list] = (0, 0, 0, 0)
-
-
-            plot._scatter.updateSpots( )
+            mask = np.isin(plot._scatter.data["data"], structure_index)
+            if not np.any(mask):
+                continue
+            plot._scatter.data["brush"][mask] = color
+            plot._scatter.data['sourceRect'][mask] = (0, 0, 0, 0)
+            plot._scatter.updateSpots()
 
     def convert_pos(self,plot,pos):
         view_range = plot.viewRange()

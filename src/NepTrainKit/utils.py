@@ -181,7 +181,7 @@ class DataProcessingThread(QThread):
             self.errorSignal.emit(str(e))
 
 
-class FillterProcessingThread(QThread):
+class FilterProcessingThread(QThread):
     # 定义信号用于通信
     progressSignal = Signal(int)  # 进度更新信号
     finishSignal = Signal()  # 处理完成信号

@@ -44,7 +44,7 @@ class DataBase:
         if isinstance(i,int):
             data=self.now_data[i]
             self.now_data = np.delete(self.now_data,i,0)
-            self.remove_data=np.append(self.remove_data,data)
+            self.remove_data = np.append(self.remove_data, np.expand_dims(data, 0), axis=0)
             self.remove_num.append(1)
         elif isinstance(i,(list,np.ndarray)):
             datas = self.now_data[i]

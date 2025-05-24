@@ -1,0 +1,8 @@
+**/__pycache__/
+/src/NepTrainKit.egg-info/
+/build
+/dist
+/docs/build
+.idea/
+/src/NepTrainKit/?.py
+/src/NepTrainKit/Log/*.log

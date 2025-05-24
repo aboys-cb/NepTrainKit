@@ -77,6 +77,9 @@ class NepTrainKitMainWindow(FluentWindow):
         self.addSubInterface(self.make_data_widget,
                              QIcon(':/images/src/images/make.svg'),
                              'Make Data' )
+        self.addSubInterface(self.train_nep_widget,
+                             QIcon(':/images/src/images/run.svg'),
+                             'Train NEP')
 
         self.addSubInterface(self.setting_interface,
                              FIF.SETTING,
@@ -90,6 +93,7 @@ class NepTrainKitMainWindow(FluentWindow):
     def init_widget(self):
         self.show_nep_interface = ShowNepWidget(self)
         self.make_data_widget = MakeDataWidget(self)
+        self.train_nep_widget = TrainNepWidget(self)
 
         self.setting_interface = SettingsWidget(self)
 

@@ -215,7 +215,7 @@ class PyqtgraphCanvas(CanvasLayoutBase,GraphicsLayoutWidget, metaclass=CombinedM
             self.select_index(structure_index,reverse)
 
 
-
+    @utils.timeit
     def update_scatter_color(self,structure_index,color=Brushes.Selected):
         """
         当结构点的状态发生变化的时候 通过该函数更改axes中散点的颜色

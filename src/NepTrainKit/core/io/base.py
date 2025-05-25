@@ -10,77 +10,64 @@ import numpy as np
 from NepTrainKit import utils
 from NepTrainKit.core.types import Brushes
 
+import numpy as np
 
 class DataBase:
     """
-    对列表进行封装 比如结构训练集 能量 力
-    以下功能要实现：
-        1.根据索引删除指定结构
-        2.支持回退（记录删除的data）
-
+    优化后的 DataBase 类，对列表进行封装，支持根据索引删除结构和回退。
+    使用布尔掩码管理活动/删除状态，减少列表操作开销。
     """
-
     def __init__(self, data_list):
-        """Initialize the database with a numpy array."""
+        """Initialize with a NumPy array."""
         self._data = np.asarray(data_list)
-        # active indices of ``_data``
-        self._active_indices = list(range(len(self._data)))
-        # indices that have been removed in order of deletion
-        self._removed_indices = []
-        # number of indices removed in each remove operation
+        # 布尔掩码：True 表示活跃，False 表示已删除
+        self._active_mask = np.ones(len(self._data), dtype=bool)
+        # 历史记录栈，存储每次删除的掩码变化
         self._history = []
 
     @property
     def num(self) -> int:
-        """
-        返回当前数组的数量
-        """
-        return len(self._active_indices)
-
+        """返回当前活跃数据的数量"""
+        return np.sum(self._active_mask)
+    @property
+    def all_data(self):
+        return self._data
     @property
     def now_data(self):
-        """Return the currently active data."""
-        if len(self._active_indices) == 0:
-            # Ensure correct shape when empty
-            return self._data[:0]
-        return self._data[self._active_indices]
+        """返回当前活跃数据"""
+        return self._data[self._active_mask]
 
     @property
     def remove_data(self):
-        """Return all removed data."""
-        if len(self._removed_indices) == 0:
-            return self._data[:0]
-        return self._data[self._removed_indices]
-    def remove(self, i):
-        """Remove items by indices and record their positions."""
-        if self.num == 0:
+        """返回所有已删除的数据"""
+        return self._data[~self._active_mask]
+
+    @property
+    def now_indices(self):
+        """返回当前活跃数据的索引下标"""
+        return np.where(self._active_mask)[0]
+
+    @property
+    def remove_indices(self):
+        """返回已删除数据的索引下标"""
+        return np.where(~self._active_mask)[0]
+
+    def remove(self, indices):
+        idx = np.unique(np.asarray(indices, dtype=int) if not isinstance(indices, int) else [indices])
+        idx = idx[(idx >= 0) & (idx < len(self._data))]
+        if len(idx) == 0:
             return
-        if isinstance(i, int):
-            idx_list = [i]
-        else:
-            idx_list = list(i)
-        if not idx_list:
-            return
-
-        idx_list = sorted(idx_list)
-        removed = [self._active_indices[idx] for idx in idx_list]
-        for idx in reversed(idx_list):
-            self._active_indices.pop(idx)
-        self._removed_indices.extend(removed)
-        self._history.append(len(removed))
-
-
-    def __getitem__(self, item):
-        """Direct indexing on the active dataset."""
-        return self.now_data[item]
+        self._history.append(idx)  # 存储删除的索引
+        self._active_mask[idx] = False
 
     def revoke(self):
-        """Restore the last removed items."""
         if self._history:
-            last_count = self._history.pop()
-            restored = self._removed_indices[-last_count:]
-            del self._removed_indices[-last_count:]
-            self._active_indices.extend(restored)
+            last_indices = self._history.pop()
+            self._active_mask[last_indices] = True
+
+    def __getitem__(self, item):
+        """直接索引活跃数据集"""
+        return self.now_data[item]
 
 
 class NepData:
@@ -123,6 +110,9 @@ class NepData:
         返回当前数据
         """
         return self.data.now_data
+    @property
+    def all_data(self):
+        return self.data.all_data
 
     @property
     def remove_data(self):
@@ -136,7 +126,7 @@ class NepData:
         """
         if isinstance(index_list,int):
             index_list=[index_list]
-        return np.where(np.isin(self.group_array.now_data,index_list))[0]
+        return np.where(np.isin(self.group_array.all_data,index_list))[0]
 
 
 

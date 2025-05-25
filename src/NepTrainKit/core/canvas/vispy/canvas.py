@@ -477,33 +477,33 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             dataset=self.get_axes_dataset(plot)
             array_index=dataset.convert_index(structure_index)
             if dataset.now_data.size!=0:
-                data=dataset.now_data[array_index,: ]
+                data=dataset.all_data[array_index,: ]
                 plot.set_current_point(data[:,dataset.cols:].flatten(),
                                        data[:, :dataset.cols].flatten(),
                                        )
     @utils.timeit
     def update_scatter_color(self,structure_index,color=Brushes.Selected):
+        structure_index = np.asarray(structure_index)
+        if structure_index.size == 0:
+            return
+        new_color = ColorArray(self.axes_list[0].convert_color(color)).rgba
 
-
-        for i,plot in enumerate(self.axes_list):
-
+        for plot in self.axes_list:
             if not plot._scatter:
                 continue
-            structure_index_set=np.array( list(set(structure_index)))
-            mask = np.isin(plot.data, structure_index_set)
-
-            if mask.size == 0:
+            mask = np.isin(plot.data, structure_index)
+            if not np.any(mask):
                 continue
-            # 使用 where 函数找到满足条件的索引，并转换为列表
-            index_list = np.where(mask)[0].tolist()
-
-            plot._scatter._data["a_bg_color"][index_list]=   ColorArray(plot.convert_color(color)).rgba
-            # plot._scatter._data['sourceRect'][index_list] = (0, 0, 0, 0)
-            plot._scatter.set_data(  pos=plot._scatter._data["a_position"]
-                                   , size=plot._scatter._data["a_size"] ,
-                                   edge_width=None, edge_width_rel=None,
-                 edge_color=plot._scatter._data["a_fg_color"], face_color=plot._scatter._data["a_bg_color"],
-                 symbol='o')
+            plot._scatter._data["a_bg_color"][mask] = new_color
+            plot._scatter.set_data(
+                pos=plot._scatter._data["a_position"],
+                size=plot._scatter._data["a_size"],
+                edge_width=None,
+                edge_width_rel=None,
+                edge_color=plot._scatter._data["a_fg_color"],
+                face_color=plot._scatter._data["a_bg_color"],
+                symbol="o",
+            )
 
 
     def select_point_from_polygon(self,polygon_xy,reverse ):

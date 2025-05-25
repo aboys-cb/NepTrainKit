@@ -11,7 +11,7 @@ from pathlib import Path
 import numpy as np
 from PySide6.QtCore import QObject, Signal
 from loguru import logger
-from NepTrainKit import module_path
+from NepTrainKit import module_path,utils
 from NepTrainKit.core import MessageManager, Structure, Config
 from NepTrainKit.core.calculator import NEPProcess
 
@@ -126,17 +126,21 @@ class ResultData(QObject):
     def is_select(self,i):
         return i in self.select_index
 
-    def select(self,_list):
+    def select(self,indices):
         """
         传入一个索引列表，将索引对应的结构标记为选中状态
         这个下标是结构在train.xyz中的索引
         """
 
-        if isinstance(_list,(int,np.int_,np.int64, np.int32,np.uint32,np.uint64)):
-            _list=[_list]
 
-        for i in _list:
-            self.select_index.add(i)
+        # 统一转换为 NumPy 数组
+        idx = np.asarray(indices, dtype=int) if not isinstance(indices, int) else np.array([indices])
+        # 去重并过滤有效索引（在数据范围内且为活跃数据）
+        idx = np.unique(idx)
+        idx = idx[(idx >= 0) & (idx < len(self.structure.all_data)) & (self.structure.data._active_mask[idx])]
+        # 批量添加到选中集合
+        self.select_index.update(idx)
+
         self.updateInfoSignal.emit()
 
     def uncheck(self,_list):
@@ -197,7 +201,7 @@ class ResultData(QObject):
     def get_atoms(self,index ):
         """根据原始索引获取原子结构对象"""
         index=self.structure.convert_index(index)
-        return self.structure.now_data[index][0]
+        return self.structure.all_data[index][0]
 
 
 
@@ -224,7 +228,9 @@ class ResultData(QObject):
         self.structure.revoke()
         for dataset in self.dataset:
             dataset.revoke( )
+        self.updateInfoSignal.emit()
 
+    @utils.timeit
     def delete_selected(self ):
         """
         删除所有selected的结构

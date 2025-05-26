@@ -10,6 +10,7 @@ from functools import partial
 import numpy as np
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
 from pyqtgraph import GraphicsLayoutWidget, ScatterPlotItem, PlotItem, ViewBox, TextItem
 
 from NepTrainKit import utils
@@ -72,7 +73,13 @@ class MyPlotItem(PlotItem):
         if t != "descriptor":
             self.add_diagonal()
 
+    @property
+    def rmse_size(self):
+        return self.text.textItem.font().pointSize()
+    @rmse_size.setter
+    def rmse_size(self,size):
 
+        self.text.setFont(QFont("Arial",size))
 class CombinedMeta(type(CanvasLayoutBase), type(GraphicsLayoutWidget)):
     pass
 
@@ -122,11 +129,13 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
 
         self.ci.clear()
         self.addItem(self.current_axes, row=0, col=0, colspan=4)
+        self.current_axes.rmse_size = 12
 
         # 将其他子图放在第二行
         other_plots = [p for p in self.axes_list if p != self.current_axes]
         for i, other_plot in enumerate(other_plots):
             self.addItem(other_plot, row=1, col=i)
+            other_plot.rmse_size = 6
 
         for col, factor in enumerate([3, 1]):
             self.ci.layout.setRowStretchFactor(col, factor)

@@ -784,11 +784,13 @@ class RandomDopingCard(MakeDataCard):
     def init_ui(self):
         self.setObjectName("random_doping_card_widget")
 
+
         self.rules_label = BodyLabel("Rules(JSON)", self.setting_widget)
         self.rules_edit = PlainTextEdit(self.setting_widget)
         self.rules_edit.setPlaceholderText(
             '[{"target":"O","dopants":{"N":0.5,"S":0.5},"count":1,"indices":[0,1]}]'
         )
+
 
         self.max_atoms_label = BodyLabel("Max structures", self.setting_widget)
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
@@ -845,19 +847,24 @@ class RandomDopingCard(MakeDataCard):
                 total_doping += doping_num
             if total_doping:
                 new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Doping(num={total_doping})"
+
             structure_list.append(new_structure)
 
         return structure_list
 
     def to_dict(self):
         data_dict = super().to_dict()
+
         data_dict['rules'] = self.rules_edit.toPlainText()
+
         data_dict['max_atoms_condition'] = self.max_atoms_condition_frame.get_input_value()
         return data_dict
 
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
+
         self.rules_edit.setPlainText(data_dict.get('rules', ''))
+
         self.max_atoms_condition_frame.set_input_value(data_dict.get('max_atoms_condition', [1]))
 #这里类名设计失误 但为了兼容以前的配置文件  不再修改类名了
 @register_card_info

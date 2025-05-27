@@ -18,10 +18,11 @@ from .card_widget import (
     ShareCheckableHeaderCardWidget,
     MakeDataCardWidget,
 )
+from .doping_rule import DopingRulesWidget
+
 from .docker import MakeWorkflowArea
 from .search_widget import ConfigTypeSearchLineEdit
 from .settingscard import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
-from .doping_rule import DopingRulesWidget
 
 __all__ = [
     "FlowLayout",

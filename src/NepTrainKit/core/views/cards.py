@@ -24,9 +24,9 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.core.custom_widget import (
     SpinBoxUnitInputFrame,
     MakeDataCardWidget,
-    ProcessLabel,
-    DopingRulesWidget,
+    ProcessLabel
 )
+from NepTrainKit.core.custom_widget import DopingRulesWidget
 from NepTrainKit.core.calculator import NEPProcess
 from NepTrainKit.core.io.select import farthest_point_sampling
 from scipy.sparse.csgraph import connected_components
@@ -148,6 +148,47 @@ def unwrap_molecule(atoms, cluster_indices):
     unwrapped_pos = np.dot(scaled_pos, atoms.cell)
 
     return unwrapped_pos
+
+def sample_dopants(dopant_list, ratios, N, exact=False, seed=None):
+    """
+    采样 dopant 的函数。
+
+    参数：
+    - dopant_list: list，可选的 dopant 值列表，比如 [0,1,2]
+    - ratios: list，与 dopant_list 对应的概率或比例列表，比如 [0.6,0.3,0.1]
+    - N: int，要生成的样本总数
+    - exact: bool，控制采样方式：
+        - False（默认）：每次独立按概率 p=ratios 抽样，结果数量只在期望值附近波动
+        - True：严格按 ratios*N 计算各值的个数（向下取整后把差值补给概率最高的那一项），然后打乱顺序
+    - seed: int 或 None，用于设置随机种子，保证可复现
+
+    返回：
+    - list，长度为 N 的采样结果
+    """
+    if seed is not None:
+        np.random.seed(seed)
+
+    dopant_list = list(dopant_list)
+    ratios = np.array(ratios, dtype=float)
+    ratios = ratios / ratios.sum()  # 归一化，以防输入不规范
+
+    if not exact:
+        # 独立概率抽样
+        return list(np.random.choice(dopant_list, size=N, p=ratios))
+    else:
+        # 严格按比例生成固定个数再打乱
+        counts = (ratios * N).astype(int)
+        diff = N - counts.sum()
+        if diff != 0:
+            # 差值补给比例最大的那一项
+            max_idx = np.argmax(ratios)
+            counts[max_idx] += diff
+
+        arr = np.repeat(dopant_list, counts)
+        np.random.shuffle(arr)
+        return list(arr)
+
+
 
 class MakeDataCard(MakeDataCardWidget):
     #通知下一个card执行
@@ -794,7 +835,11 @@ class RandomDopingCard(MakeDataCard):
         self.rules_label = BodyLabel("Rules", self.setting_widget)
         self.rules_widget = DopingRulesWidget(self.setting_widget)
 
+        self.doping_label = BodyLabel("Doping", self.setting_widget)
 
+        self.doping_type_combo=ComboBox(self.setting_widget)
+        self.doping_type_combo.addItem("Random")
+        self.doping_type_combo.addItem("Exact")
         self.max_atoms_label = BodyLabel("Max structures", self.setting_widget)
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_condition_frame.set_input("unit", 1)
@@ -802,8 +847,10 @@ class RandomDopingCard(MakeDataCard):
 
         self.settingLayout.addWidget(self.rules_label, 0, 0, 1, 1)
         self.settingLayout.addWidget(self.rules_widget, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.max_atoms_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_atoms_condition_frame, 1, 1, 1, 2)
+        self.settingLayout.addWidget(self.doping_label, 1, 0, 1, 1)
+        self.settingLayout.addWidget(self.doping_type_combo, 1, 1, 1, 2)
+        self.settingLayout.addWidget(self.max_atoms_label, 2, 0, 1, 1)
+        self.settingLayout.addWidget(self.max_atoms_condition_frame, 2, 1, 1, 2)
 
     def process_structure(self, structure):
         structure_list = []
@@ -813,38 +860,49 @@ class RandomDopingCard(MakeDataCard):
             return [structure]
 
         max_num = self.max_atoms_condition_frame.get_input_value()[0]
-
+        exact = self.doping_type_combo.currentText()=="Exact"
         for _ in range(max_num):
             new_structure = structure.copy()
             total_doping = 0
             for rule in rules:
+
                 target = rule.get("target")
                 dopants = rule.get("dopants", {})
                 if not target or not dopants:
                     continue
 
-                candidate_indices = [i for i, a in enumerate(new_structure) if a.symbol == target]
-                indices = rule.get("indices")
-                if indices:
-                    candidate_indices = [i for i in candidate_indices if i in indices]
+                groups = rule.get("group")
+
+                if groups and "group" in new_structure.arrays:
+
+                    candidate_indices = [i for i,elem,g in zip(range(len(new_structure)), new_structure ,new_structure.arrays["group"]) if elem.symbol == target and g in groups]
+                else:
+                    candidate_indices = [i for i, a in enumerate(new_structure) if a.symbol == target]
+
                 if not candidate_indices:
                     continue
 
-                if "concentration" in rule:
+                if "concentration" == rule["use"]:
                     doping_num = max(1, int(len(candidate_indices) * float(rule["concentration"])))
-                elif "count" in rule:
+                elif "count" == rule["use"]:
                     doping_num = int(rule["count"])
                 else:
                     doping_num = len(candidate_indices)
+
                 doping_num = min(doping_num, len(candidate_indices))
 
                 idxs = np.random.choice(candidate_indices, doping_num, replace=False)
+
+
+
                 dopant_list = list(dopants.keys())
                 ratios = np.array(list(dopants.values()), dtype=float)
                 ratios = ratios / ratios.sum()
+                sample = sample_dopants(dopant_list,ratios,doping_num,exact,42)
 
-                for idx in idxs:
-                    new_structure[idx].symbol = np.random.choice(dopant_list, p=ratios)
+
+                for idx,elem in zip(idxs,sample):
+                    new_structure[idx].symbol = elem
                 total_doping += doping_num
             if total_doping:
                 new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Doping(num={total_doping})"
@@ -857,7 +915,7 @@ class RandomDopingCard(MakeDataCard):
         data_dict = super().to_dict()
 
         data_dict['rules'] = json.dumps(self.rules_widget.to_rules(), ensure_ascii=False)
-
+        data_dict['doping_type'] = self.doping_type_combo.currentText()
         data_dict['max_atoms_condition'] = self.max_atoms_condition_frame.get_input_value()
         return data_dict
 
@@ -871,7 +929,7 @@ class RandomDopingCard(MakeDataCard):
             except Exception:
                 rules = []
         self.rules_widget.from_rules(rules)
-
+        self.doping_type_combo.setCurrentText(data_dict.get("doping_type","Exact"))
         self.max_atoms_condition_frame.set_input_value(data_dict.get('max_atoms_condition', [1]))
 #这里类名设计失误 但为了兼容以前的配置文件  不再修改类名了
 @register_card_info

@@ -21,6 +21,7 @@ from .card_widget import (
 from .docker import MakeWorkflowArea
 from .search_widget import ConfigTypeSearchLineEdit
 from .settingscard import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
+from .doping_rule import DopingRulesWidget
 
 __all__ = [
     "FlowLayout",
@@ -40,4 +41,5 @@ __all__ = [
     "ConfigTypeSearchLineEdit",
     "MyComboBoxSettingCard",
     "DoubleSpinBoxSettingCard",
+    "DopingRulesWidget",
 ]

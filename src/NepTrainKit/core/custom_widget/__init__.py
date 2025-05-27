@@ -6,7 +6,12 @@
 from .layout import FlowLayout
 from .label import ProcessLabel
 from .completer import CompleterModel, JoinDelegate, ConfigCompleter
-from .dialog import GetIntMessageBox, SparseMessageBox, ProgressDialog
+from .dialog import (
+    GetIntMessageBox,
+    SparseMessageBox,
+    ProgressDialog,
+    PeriodicTableDialog,
+)
 from .input import SpinBoxUnitInputFrame
 from .card_widget import (
     CheckableHeaderCardWidget,
@@ -26,6 +31,7 @@ __all__ = [
     "GetIntMessageBox",
     "SparseMessageBox",
     "ProgressDialog",
+    "PeriodicTableDialog",
     "SpinBoxUnitInputFrame",
     "CheckableHeaderCardWidget",
     "ShareCheckableHeaderCardWidget",

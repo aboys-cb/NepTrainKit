@@ -144,6 +144,20 @@ structure.info["Config_type"] += f" Scaling({scaling_factor})"
 structure.info["Config_type"] += f" Strain({axis1}:{value1}%, {axis2}:{value2}%)"
 ```
 
+### 2.6 Random Doping Substitution
+**Function**: Randomly replace a target element with specified dopants
+
+**Key Parameters**:
+- Target element symbol
+- Dopant element list (comma separated)
+- Doping count or concentration
+- Optional index list to restrict sites
+
+**Structure Tagging**:
+```python
+structure.info["Config_type"] += f" Doping(num={dopant_count})"
+```
+
 ## 3. Filter Cards
 
 ### 3.1 FPS Filter (Farthest Point Sampling)

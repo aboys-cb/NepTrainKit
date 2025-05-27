@@ -27,7 +27,8 @@ from NepTrainKit.core.io.select import farthest_point_sampling
 from scipy.sparse.csgraph import connected_components
 from scipy.stats.qmc import Sobol
 from ase import neighborlist
-from ase.io import extxyz
+from ase.io import extxyz,cif,vasp
+
 from ase.geometry import find_mic
 from ase.io import read as ase_read
 from ase.io import write as ase_write

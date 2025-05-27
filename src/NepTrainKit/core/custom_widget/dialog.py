@@ -3,8 +3,9 @@
 # @Time    : 2024/11/28 22:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QVBoxLayout, QFrame, QGridLayout, QPushButton
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, Qt
 from qfluentwidgets import (
     MessageBoxBase,
     SpinBox,
@@ -12,6 +13,8 @@ from qfluentwidgets import (
     DoubleSpinBox,
     ProgressBar,
     FluentStyleSheet,
+    FluentTitleBar,
+    TitleLabel
 )
 from qframelesswindow import FramelessDialog
 import json
@@ -108,8 +111,11 @@ class PeriodicTableDialog(FramelessDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setTitleBar(FluentTitleBar(self))
         self.setWindowTitle("Periodic Table")
-        self.resize(600, 400)
+        self.setWindowIcon(QIcon(':/images/src/images/logo.svg'))
+        self.resize(400, 350)
+
 
         with open(os.path.join(module_path, "Config/ptable.json"), "r", encoding="utf-8") as f:
             self.table_data = {int(k): v for k, v in json.load(f).items()}
@@ -121,9 +127,12 @@ class PeriodicTableDialog(FramelessDialog):
                 self.group_colors[g] = info.get("color", "#FFFFFF")
 
         self.layout = QGridLayout(self)
-        self.layout.setContentsMargins(2, 2, 2, 2)
-        self.layout.setSpacing(2)
+        self.layout.setContentsMargins(2, 2,2, 2)
+        self.layout.setSpacing(1)
+        self.setLayout(self.layout)
+        self.layout.setMenuBar(self.titleBar)
 
+        # self.layout.addWidget(self.titleBar,0,0,1,18)
         for num in range(1, 119):
             info = self.table_data.get(num)
             if not info:
@@ -132,10 +141,10 @@ class PeriodicTableDialog(FramelessDialog):
             period = self._get_period(num)
             row, col = self._grid_position(num, group, period)
             btn = QPushButton(info["symbol"], self)
-            btn.setStyleSheet(f"background-color: {self.group_colors.get(group, '#FFFFFF')};")
+            btn.setFixedSize(30,30)
+            btn.setStyleSheet(f'background-color: {info.get("color", "#FFFFFF")};')
             btn.clicked.connect(lambda _=False, sym=info["symbol"]: self.elementSelected.emit(sym))
-            self.layout.addWidget(btn, row, col)
-
+            self.layout.addWidget(btn, row+1, col)
     def _get_period(self, num: int) -> int:
         if num <= 2:
             return 1
@@ -166,11 +175,3 @@ class PeriodicTableDialog(FramelessDialog):
             row, col = period, group
         return row - 1, col - 1
 
-if __name__ == '__main__':
-    from PySide6.QtWidgets import QApplication
-    import sys
-    app = QApplication(sys.argv)
-
-    progress_dialog = ProgressDialog()
-    progress_dialog.show()
-    app.exec_()

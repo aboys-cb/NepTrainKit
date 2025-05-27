@@ -5,7 +5,7 @@ include README.md
 recursive-include src *
 prune **/__pycache__
 prune docs
-prune test
+prune tests
 prune tools
 prune .idea
 prune .github

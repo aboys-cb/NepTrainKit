@@ -21,7 +21,12 @@ from qfluentwidgets import ComboBox, BodyLabel, RadioButton, SplitToolButton, Ro
 from NepTrainKit import utils, module_path,get_user_config_path
 
 from NepTrainKit.core import MessageManager
-from NepTrainKit.core.custom_widget import SpinBoxUnitInputFrame, MakeDataCardWidget, ProcessLabel
+from NepTrainKit.core.custom_widget import (
+    SpinBoxUnitInputFrame,
+    MakeDataCardWidget,
+    ProcessLabel,
+    DopingRulesWidget,
+)
 from NepTrainKit.core.calculator import NEPProcess
 from NepTrainKit.core.io.select import farthest_point_sampling
 from scipy.sparse.csgraph import connected_components
@@ -785,11 +790,8 @@ class RandomDopingCard(MakeDataCard):
         self.setObjectName("random_doping_card_widget")
 
 
-        self.rules_label = BodyLabel("Rules(JSON)", self.setting_widget)
-        self.rules_edit = PlainTextEdit(self.setting_widget)
-        self.rules_edit.setPlaceholderText(
-            '[{"target":"O","dopants":{"N":0.5,"S":0.5},"count":1,"indices":[0,1]}]'
-        )
+        self.rules_label = BodyLabel("Rules", self.setting_widget)
+        self.rules_widget = DopingRulesWidget(self.setting_widget)
 
 
         self.max_atoms_label = BodyLabel("Max structures", self.setting_widget)
@@ -798,17 +800,15 @@ class RandomDopingCard(MakeDataCard):
         self.max_atoms_condition_frame.setRange(1, 10000)
 
         self.settingLayout.addWidget(self.rules_label, 0, 0, 1, 1)
-        self.settingLayout.addWidget(self.rules_edit, 0, 1, 1, 2)
+        self.settingLayout.addWidget(self.rules_widget, 0, 1, 1, 2)
         self.settingLayout.addWidget(self.max_atoms_label, 1, 0, 1, 1)
         self.settingLayout.addWidget(self.max_atoms_condition_frame, 1, 1, 1, 2)
 
     def process_structure(self, structure):
         structure_list = []
 
-        try:
-            rules = json.loads(self.rules_edit.toPlainText())
-            assert isinstance(rules, list)
-        except Exception:
+        rules = self.rules_widget.to_rules()
+        if not isinstance(rules, list) or not rules:
             return [structure]
 
         max_num = self.max_atoms_condition_frame.get_input_value()[0]
@@ -855,7 +855,7 @@ class RandomDopingCard(MakeDataCard):
     def to_dict(self):
         data_dict = super().to_dict()
 
-        data_dict['rules'] = self.rules_edit.toPlainText()
+        data_dict['rules'] = json.dumps(self.rules_widget.to_rules(), ensure_ascii=False)
 
         data_dict['max_atoms_condition'] = self.max_atoms_condition_frame.get_input_value()
         return data_dict
@@ -863,7 +863,13 @@ class RandomDopingCard(MakeDataCard):
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
 
-        self.rules_edit.setPlainText(data_dict.get('rules', ''))
+        rules = data_dict.get('rules', '')
+        if isinstance(rules, str):
+            try:
+                rules = json.loads(rules)
+            except Exception:
+                rules = []
+        self.rules_widget.from_rules(rules)
 
         self.max_atoms_condition_frame.set_input_value(data_dict.get('max_atoms_condition', [1]))
 #这里类名设计失误 但为了兼容以前的配置文件  不再修改类名了

@@ -9,6 +9,7 @@ import time
 from itertools import combinations
 from pathlib import Path
 from typing import List, Tuple
+import json
 import numpy as np
 from loguru import logger
 from PySide6.QtCore import Signal
@@ -16,7 +17,7 @@ from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import QGridLayout, QFrame, QWidget, QVBoxLayout
 
 from qfluentwidgets import ComboBox, BodyLabel, RadioButton, SplitToolButton, RoundMenu, PrimaryDropDownToolButton, \
-    PrimaryDropDownPushButton, CommandBar, Action, CheckBox, LineEdit, EditableComboBox
+    PrimaryDropDownPushButton, CommandBar, Action, CheckBox, LineEdit, EditableComboBox, PlainTextEdit
 from NepTrainKit import utils, module_path,get_user_config_path
 
 from NepTrainKit.core import MessageManager
@@ -783,103 +784,87 @@ class RandomDopingCard(MakeDataCard):
     def init_ui(self):
         self.setObjectName("random_doping_card_widget")
 
-        self.target_label = BodyLabel("Target element", self.setting_widget)
-        self.target_lineedit = LineEdit(self.setting_widget)
 
-        self.dopant_label = BodyLabel("Dopant elements", self.setting_widget)
-        self.dopant_lineedit = LineEdit(self.setting_widget)
+        self.rules_label = BodyLabel("Rules(JSON)", self.setting_widget)
+        self.rules_edit = PlainTextEdit(self.setting_widget)
+        self.rules_edit.setPlaceholderText(
+            '[{"target":"O","dopants":{"N":0.5,"S":0.5},"count":1,"indices":[0,1]}]'
+        )
 
-        self.index_label = BodyLabel("Indices(optional)", self.setting_widget)
-        self.index_lineedit = LineEdit(self.setting_widget)
-
-        self.num_radio_button = RadioButton("Doping num", self.setting_widget)
-        self.num_radio_button.setChecked(True)
-        self.num_condition_frame = SpinBoxUnitInputFrame(self)
-        self.num_condition_frame.set_input("unit", 1)
-        self.num_condition_frame.setRange(1, 10000)
-
-        self.concentration_radio_button = RadioButton("Doping concentration", self.setting_widget)
-        self.concentration_condition_frame = SpinBoxUnitInputFrame(self)
-        self.concentration_condition_frame.set_input("", 1, "float")
-        self.concentration_condition_frame.setRange(0, 1)
 
         self.max_atoms_label = BodyLabel("Max structures", self.setting_widget)
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_condition_frame.set_input("unit", 1)
         self.max_atoms_condition_frame.setRange(1, 10000)
 
-        self.settingLayout.addWidget(self.target_label, 0, 0, 1, 1)
-        self.settingLayout.addWidget(self.target_lineedit, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.dopant_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.dopant_lineedit, 1, 1, 1, 2)
-        self.settingLayout.addWidget(self.index_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.index_lineedit, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.num_radio_button, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.num_condition_frame, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.concentration_radio_button, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.concentration_condition_frame, 4, 1, 1, 2)
-        self.settingLayout.addWidget(self.max_atoms_label, 5, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_atoms_condition_frame, 5, 1, 1, 2)
+        self.settingLayout.addWidget(self.rules_label, 0, 0, 1, 1)
+        self.settingLayout.addWidget(self.rules_edit, 0, 1, 1, 2)
+        self.settingLayout.addWidget(self.max_atoms_label, 1, 0, 1, 1)
+        self.settingLayout.addWidget(self.max_atoms_condition_frame, 1, 1, 1, 2)
 
     def process_structure(self, structure):
         structure_list = []
-        target = self.target_lineedit.text().strip()
-        dopants = [e.strip() for e in self.dopant_lineedit.text().split(',') if e.strip()]
-        if not target or not dopants:
-            return [structure]
 
-        candidate_indices = [i for i, atom in enumerate(structure) if atom.symbol == target]
-        index_text = self.index_lineedit.text().strip()
-        if index_text:
-            try:
-                select_indices = [int(i) for i in index_text.replace(',', ' ').split()]
-                candidate_indices = [i for i in candidate_indices if i in select_indices]
-            except ValueError:
-                pass
-
-        if not candidate_indices:
+        try:
+            rules = json.loads(self.rules_edit.toPlainText())
+            assert isinstance(rules, list)
+        except Exception:
             return [structure]
 
         max_num = self.max_atoms_condition_frame.get_input_value()[0]
-        if self.concentration_radio_button.isChecked():
-            conc = self.concentration_condition_frame.get_input_value()[0]
-            doping_num = max(1, int(len(candidate_indices) * conc))
-        else:
-            doping_num = self.num_condition_frame.get_input_value()[0]
-
-        doping_num = min(doping_num, len(candidate_indices))
 
         for _ in range(max_num):
             new_structure = structure.copy()
-            indices = np.random.choice(candidate_indices, doping_num, replace=False)
-            for idx in indices:
-                new_structure[idx].symbol = np.random.choice(dopants)
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Doping(num={doping_num})"
+            total_doping = 0
+            for rule in rules:
+                target = rule.get("target")
+                dopants = rule.get("dopants", {})
+                if not target or not dopants:
+                    continue
+
+                candidate_indices = [i for i, a in enumerate(new_structure) if a.symbol == target]
+                indices = rule.get("indices")
+                if indices:
+                    candidate_indices = [i for i in candidate_indices if i in indices]
+                if not candidate_indices:
+                    continue
+
+                if "concentration" in rule:
+                    doping_num = max(1, int(len(candidate_indices) * float(rule["concentration"])))
+                elif "count" in rule:
+                    doping_num = int(rule["count"])
+                else:
+                    doping_num = len(candidate_indices)
+                doping_num = min(doping_num, len(candidate_indices))
+
+                idxs = np.random.choice(candidate_indices, doping_num, replace=False)
+                dopant_list = list(dopants.keys())
+                ratios = np.array(list(dopants.values()), dtype=float)
+                ratios = ratios / ratios.sum()
+
+                for idx in idxs:
+                    new_structure[idx].symbol = np.random.choice(dopant_list, p=ratios)
+                total_doping += doping_num
+            if total_doping:
+                new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Doping(num={total_doping})"
+
             structure_list.append(new_structure)
 
         return structure_list
 
     def to_dict(self):
         data_dict = super().to_dict()
-        data_dict['target'] = self.target_lineedit.text()
-        data_dict['dopants'] = self.dopant_lineedit.text()
-        data_dict['indices'] = self.index_lineedit.text()
-        data_dict['num_radio_button'] = self.num_radio_button.isChecked()
-        data_dict['num_condition'] = self.num_condition_frame.get_input_value()
-        data_dict['concentration_radio_button'] = self.concentration_radio_button.isChecked()
-        data_dict['concentration_condition'] = self.concentration_condition_frame.get_input_value()
+
+        data_dict['rules'] = self.rules_edit.toPlainText()
+
         data_dict['max_atoms_condition'] = self.max_atoms_condition_frame.get_input_value()
         return data_dict
 
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
-        self.target_lineedit.setText(data_dict.get('target', ''))
-        self.dopant_lineedit.setText(data_dict.get('dopants', ''))
-        self.index_lineedit.setText(data_dict.get('indices', ''))
-        self.num_radio_button.setChecked(data_dict.get('num_radio_button', True))
-        self.num_condition_frame.set_input_value(data_dict.get('num_condition', [1]))
-        self.concentration_radio_button.setChecked(data_dict.get('concentration_radio_button', False))
-        self.concentration_condition_frame.set_input_value(data_dict.get('concentration_condition', [0.0]))
+
+        self.rules_edit.setPlainText(data_dict.get('rules', ''))
+
         self.max_atoms_condition_frame.set_input_value(data_dict.get('max_atoms_condition', [1]))
 #这里类名设计失误 但为了兼容以前的配置文件  不再修改类名了
 @register_card_info

@@ -216,7 +216,13 @@ class ViewBoxWidget(scene.Widget):
     @property
     def title(self):
         return self.title_label._text_visual.text
+    @property
+    def rmse_size(self):
+        return self.text.font_size
+    @rmse_size.setter
+    def rmse_size(self,size):
 
+        self.text.font_size=size
     @title.setter
     def title(self, t):
 
@@ -398,8 +404,11 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             self.grid.remove_widget(widget)
 
             if widget == self.current_axes:
+                widget.rmse_size=8
                 self.grid.add_widget(widget, row=0, col=0, row_span=6, col_span=row_0_col_span)
             else:
+                widget.rmse_size=4
+
                 self.grid.add_widget(widget, row=6, col=i, row_span=2, col_span=1)
 
                 i += 1

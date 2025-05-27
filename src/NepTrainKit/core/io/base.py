@@ -172,7 +172,7 @@ class NepData:
             rmse*=1000
         else:
             return ""
-        return f"{rmse:.2f}{unit}"
+        return f"{rmse:.2f} {unit}"
 
     def get_max_error_index(self,nmax):
         """

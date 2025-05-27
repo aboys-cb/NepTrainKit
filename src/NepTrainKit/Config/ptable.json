@@ -3,708 +3,944 @@
         "name": "Hydrogen",
         "radii": 31,
         "color": "#FFFFFF",
-        "symbol": "H"
+        "symbol": "H",
+        "number": 1,
+        "group": 1
     },
     "2": {
         "name": "Helium",
         "radii": 28,
         "color": "#D9FFFF",
-        "symbol": "He"
+        "symbol": "He",
+        "number": 2,
+        "group": 18
     },
     "3": {
         "name": "Lithium",
         "radii": 128,
         "color": "#CC80FF",
-        "symbol": "Li"
+        "symbol": "Li",
+        "number": 3,
+        "group": 1
     },
     "4": {
         "name": "Beryllium",
         "radii": 96,
         "color": "#C2FF00",
-        "symbol": "Be"
+        "symbol": "Be",
+        "number": 4,
+        "group": 2
     },
     "5": {
         "name": "Boron",
         "radii": 85,
         "color": "#FFB5B5",
-        "symbol": "B"
+        "symbol": "B",
+        "number": 5,
+        "group": 13
     },
     "6": {
         "name": "Carbon",
         "radii": 76,
         "color": "#909090",
-        "symbol": "C"
+        "symbol": "C",
+        "number": 6,
+        "group": 14
     },
     "7": {
         "name": "Nitrogen",
         "radii": 71,
         "color": "#3050F8",
-        "symbol": "N"
+        "symbol": "N",
+        "number": 7,
+        "group": 15
     },
     "8": {
         "name": "Oxygen",
         "radii": 66,
         "color": "#FF0D0D",
-        "symbol": "O"
+        "symbol": "O",
+        "number": 8,
+        "group": 16
     },
     "9": {
         "name": "Fluorine",
         "radii": 57,
         "color": "#90E050",
-        "symbol": "F"
+        "symbol": "F",
+        "number": 9,
+        "group": 17
     },
     "10": {
         "name": "Neon",
         "radii": 58,
         "color": "#B3E3F5",
-        "symbol": "Ne"
+        "symbol": "Ne",
+        "number": 10,
+        "group": 18
     },
     "11": {
         "name": "Sodium",
         "radii": 166,
         "color": "#AB5CF2",
-        "symbol": "Na"
+        "symbol": "Na",
+        "number": 11,
+        "group": 1
     },
     "12": {
         "name": "Magnesium",
         "radii": 141,
         "color": "#8AFF00",
-        "symbol": "Mg"
+        "symbol": "Mg",
+        "number": 12,
+        "group": 2
     },
     "13": {
         "name": "Aluminum",
         "radii": 121,
         "color": "#BFA6A6",
-        "symbol": "Al"
+        "symbol": "Al",
+        "number": 13,
+        "group": 13
     },
     "14": {
         "name": "Silicon",
         "radii": 111,
         "color": "#F0C8A0",
-        "symbol": "Si"
+        "symbol": "Si",
+        "number": 14,
+        "group": 14
     },
     "15": {
         "name": "Phosphorus",
         "radii": 107,
         "color": "#FF8000",
-        "symbol": "P"
+        "symbol": "P",
+        "number": 15,
+        "group": 15
     },
     "16": {
         "name": "Sulfur",
         "radii": 105,
         "color": "#FFFF30",
-        "symbol": "S"
+        "symbol": "S",
+        "number": 16,
+        "group": 16
     },
     "17": {
         "name": "Chlorine",
         "radii": 102,
         "color": "#1FF01F",
-        "symbol": "Cl"
+        "symbol": "Cl",
+        "number": 17,
+        "group": 17
     },
     "18": {
         "name": "Argon",
         "radii": 106,
         "color": "#80D1E3",
-        "symbol": "Ar"
+        "symbol": "Ar",
+        "number": 18,
+        "group": 18
     },
     "19": {
         "name": "Potassium",
         "radii": 203,
         "color": "#8F40D4",
-        "symbol": "K"
+        "symbol": "K",
+        "number": 19,
+        "group": 1
     },
     "20": {
         "name": "Calcium",
         "radii": 176,
         "color": "#3DFF00",
-        "symbol": "Ca"
+        "symbol": "Ca",
+        "number": 20,
+        "group": 2
     },
     "21": {
         "name": "Scandium",
         "radii": 170,
         "color": "#E6E6E6",
-        "symbol": "Sc"
+        "symbol": "Sc",
+        "number": 21,
+        "group": 3
     },
     "22": {
         "name": "Titanium",
         "radii": 160,
         "color": "#BFC2C7",
-        "symbol": "Ti"
+        "symbol": "Ti",
+        "number": 22,
+        "group": 4
     },
     "23": {
         "name": "Vanadium",
         "radii": 153,
         "color": "#A6A6AB",
-        "symbol": "V"
+        "symbol": "V",
+        "number": 23,
+        "group": 5
     },
     "24": {
         "name": "Chromium",
         "radii": 139,
         "color": "#8A99C7",
-        "symbol": "Cr"
+        "symbol": "Cr",
+        "number": 24,
+        "group": 6
     },
     "25": {
         "name": "Manganese",
         "radii": 139,
         "color": "#9C7AC7",
-        "symbol": "Mn"
+        "symbol": "Mn",
+        "number": 25,
+        "group": 7
     },
     "26": {
         "name": "Iron",
         "radii": 132,
         "color": "#E06633",
-        "symbol": "Fe"
+        "symbol": "Fe",
+        "number": 26,
+        "group": 8
     },
     "27": {
         "name": "Cobalt",
         "radii": 126,
         "color": "#F090A0",
-        "symbol": "Co"
+        "symbol": "Co",
+        "number": 27,
+        "group": 9
     },
     "28": {
         "name": "Nickel",
         "radii": 124,
         "color": "#50D050",
-        "symbol": "Ni"
+        "symbol": "Ni",
+        "number": 28,
+        "group": 10
     },
     "29": {
         "name": "Copper",
         "radii": 132,
         "color": "#C88033",
-        "symbol": "Cu"
+        "symbol": "Cu",
+        "number": 29,
+        "group": 11
     },
     "30": {
         "name": "Zinc",
         "radii": 122,
         "color": "#7D80B0",
-        "symbol": "Zn"
+        "symbol": "Zn",
+        "number": 30,
+        "group": 12
     },
     "31": {
         "name": "Gallium",
         "radii": 122,
         "color": "#C28F8F",
-        "symbol": "Ga"
+        "symbol": "Ga",
+        "number": 31,
+        "group": 13
     },
     "32": {
         "name": "Germanium",
         "radii": 120,
         "color": "#668F8F",
-        "symbol": "Ge"
+        "symbol": "Ge",
+        "number": 32,
+        "group": 14
     },
     "33": {
         "name": "Arsenic",
         "radii": 119,
         "color": "#BD80E3",
-        "symbol": "As"
+        "symbol": "As",
+        "number": 33,
+        "group": 15
     },
     "34": {
         "name": "Selenium",
         "radii": 120,
         "color": "#FFA100",
-        "symbol": "Se"
+        "symbol": "Se",
+        "number": 34,
+        "group": 16
     },
     "35": {
         "name": "Bromine",
         "radii": 120,
         "color": "#A62929",
-        "symbol": "Br"
+        "symbol": "Br",
+        "number": 35,
+        "group": 17
     },
     "36": {
         "name": "Krypton",
         "radii": 116,
         "color": "#5CB8D1",
-        "symbol": "Kr"
+        "symbol": "Kr",
+        "number": 36,
+        "group": 18
     },
     "37": {
         "name": "Rubidium",
         "radii": 220,
         "color": "#702EB0",
-        "symbol": "Rb"
+        "symbol": "Rb",
+        "number": 37,
+        "group": 1
     },
     "38": {
         "name": "Strontium",
         "radii": 195,
         "color": "#00FF00",
-        "symbol": "Sr"
+        "symbol": "Sr",
+        "number": 38,
+        "group": 2
     },
     "39": {
         "name": "Yttrium",
         "radii": 190,
         "color": "#94FFFF",
-        "symbol": "Y"
+        "symbol": "Y",
+        "number": 39,
+        "group": 3
     },
     "40": {
         "name": "Zirconium",
         "radii": 175,
         "color": "#94E0E0",
-        "symbol": "Zr"
+        "symbol": "Zr",
+        "number": 40,
+        "group": 4
     },
     "41": {
         "name": "Niobium",
         "radii": 164,
         "color": "#73C2C9",
-        "symbol": "Nb"
+        "symbol": "Nb",
+        "number": 41,
+        "group": 5
     },
     "42": {
         "name": "Molybdenum",
         "radii": 154,
         "color": "#54B5B5",
-        "symbol": "Mo"
+        "symbol": "Mo",
+        "number": 42,
+        "group": 6
     },
     "43": {
         "name": "Technetium",
         "radii": 147,
         "color": "#3B9E9E",
-        "symbol": "Tc"
+        "symbol": "Tc",
+        "number": 43,
+        "group": 7
     },
     "44": {
         "name": "Ruthenium",
         "radii": 146,
         "color": "#248F8F",
-        "symbol": "Ru"
+        "symbol": "Ru",
+        "number": 44,
+        "group": 8
     },
     "45": {
         "name": "Rhodium",
         "radii": 142,
         "color": "#0A7D8C",
-        "symbol": "Rh"
+        "symbol": "Rh",
+        "number": 45,
+        "group": 9
     },
     "46": {
         "name": "Palladium",
         "radii": 139,
         "color": "#006985",
-        "symbol": "Pd"
+        "symbol": "Pd",
+        "number": 46,
+        "group": 10
     },
     "47": {
         "name": "Silver",
         "radii": 145,
         "color": "#C0C0C0",
-        "symbol": "Ag"
+        "symbol": "Ag",
+        "number": 47,
+        "group": 11
     },
     "48": {
         "name": "Cadmium",
         "radii": 144,
         "color": "#FFD98F",
-        "symbol": "Cd"
+        "symbol": "Cd",
+        "number": 48,
+        "group": 12
     },
     "49": {
         "name": "Indium",
         "radii": 142,
         "color": "#A67573",
-        "symbol": "In"
+        "symbol": "In",
+        "number": 49,
+        "group": 13
     },
     "50": {
         "name": "Tin",
         "radii": 139,
         "color": "#668080",
-        "symbol": "Sn"
+        "symbol": "Sn",
+        "number": 50,
+        "group": 14
     },
     "51": {
         "name": "Antimony",
         "radii": 139,
         "color": "#9E63B5",
-        "symbol": "Sb"
+        "symbol": "Sb",
+        "number": 51,
+        "group": 15
     },
     "52": {
         "name": "Tellurium",
         "radii": 138,
         "color": "#D47A00",
-        "symbol": "Te"
+        "symbol": "Te",
+        "number": 52,
+        "group": 16
     },
     "53": {
         "name": "Iodine",
         "radii": 139,
         "color": "#940094",
-        "symbol": "I"
+        "symbol": "I",
+        "number": 53,
+        "group": 17
     },
     "54": {
         "name": "Xenon",
         "radii": 140,
         "color": "#429EB0",
-        "symbol": "Xe"
+        "symbol": "Xe",
+        "number": 54,
+        "group": 18
     },
     "55": {
         "name": "Cesium",
         "radii": 244,
         "color": "#57178F",
-        "symbol": "Cs"
+        "symbol": "Cs",
+        "number": 55,
+        "group": 1
     },
     "56": {
         "name": "Barium",
         "radii": 215,
         "color": "#00C900",
-        "symbol": "Ba"
+        "symbol": "Ba",
+        "number": 56,
+        "group": 2
     },
     "57": {
         "name": "Lanthanum",
         "radii": 207,
         "color": "#70D4FF",
-        "symbol": "La"
+        "symbol": "La",
+        "number": 57,
+        "group": 0
     },
     "58": {
         "name": "Cerium",
         "radii": 204,
         "color": "#FFFFC7",
-        "symbol": "Ce"
+        "symbol": "Ce",
+        "number": 58,
+        "group": 0
     },
     "59": {
         "name": "Praseodymium",
         "radii": 203,
         "color": "#D9FFC7",
-        "symbol": "Pr"
+        "symbol": "Pr",
+        "number": 59,
+        "group": 0
     },
     "60": {
         "name": "Neodymium",
         "radii": 201,
         "color": "#C7FFC7",
-        "symbol": "Nd"
+        "symbol": "Nd",
+        "number": 60,
+        "group": 0
     },
     "61": {
         "name": "Promethium",
         "radii": 199,
         "color": "#A3FFC7",
-        "symbol": "Pm"
+        "symbol": "Pm",
+        "number": 61,
+        "group": 0
     },
     "62": {
         "name": "Samarium",
         "radii": 198,
         "color": "#8FFFC7",
-        "symbol": "Sm"
+        "symbol": "Sm",
+        "number": 62,
+        "group": 0
     },
     "63": {
         "name": "Europium",
         "radii": 198,
         "color": "#61FFC7",
-        "symbol": "Eu"
+        "symbol": "Eu",
+        "number": 63,
+        "group": 0
     },
     "64": {
         "name": "Gadolinium",
         "radii": 196,
         "color": "#45FFC7",
-        "symbol": "Gd"
+        "symbol": "Gd",
+        "number": 64,
+        "group": 0
     },
     "65": {
         "name": "Terbium",
         "radii": 194,
         "color": "#30FFC7",
-        "symbol": "Tb"
+        "symbol": "Tb",
+        "number": 65,
+        "group": 0
     },
     "66": {
         "name": "Dysprosium",
         "radii": 192,
         "color": "#1FFFC7",
-        "symbol": "Dy"
+        "symbol": "Dy",
+        "number": 66,
+        "group": 0
     },
     "67": {
         "name": "Holmium",
         "radii": 192,
         "color": "#00FF9C",
-        "symbol": "Ho"
+        "symbol": "Ho",
+        "number": 67,
+        "group": 0
     },
     "68": {
         "name": "Erbium",
         "radii": 189,
         "color": "#00E675",
-        "symbol": "Er"
+        "symbol": "Er",
+        "number": 68,
+        "group": 0
     },
     "69": {
         "name": "Thulium",
         "radii": 190,
         "color": "#00D452",
-        "symbol": "Tm"
+        "symbol": "Tm",
+        "number": 69,
+        "group": 0
     },
     "70": {
         "name": "Ytterbium",
         "radii": 187,
         "color": "#00BF38",
-        "symbol": "Yb"
+        "symbol": "Yb",
+        "number": 70,
+        "group": 0
     },
     "71": {
         "name": "Lutetium",
         "radii": 187,
         "color": "#00AB24",
-        "symbol": "Lu"
+        "symbol": "Lu",
+        "number": 71,
+        "group": 0
     },
     "72": {
         "name": "Hafnium",
         "radii": 175,
         "color": "#4DC2FF",
-        "symbol": "Hf"
+        "symbol": "Hf",
+        "number": 72,
+        "group": 4
     },
     "73": {
         "name": "Tantalum",
         "radii": 170,
         "color": "#4DA6FF",
-        "symbol": "Ta"
+        "symbol": "Ta",
+        "number": 73,
+        "group": 5
     },
     "74": {
         "name": "Tungsten",
         "radii": 162,
         "color": "#2194D6",
-        "symbol": "W"
+        "symbol": "W",
+        "number": 74,
+        "group": 6
     },
     "75": {
         "name": "Rhenium",
         "radii": 151,
         "color": "#267DAB",
-        "symbol": "Re"
+        "symbol": "Re",
+        "number": 75,
+        "group": 7
     },
     "76": {
         "name": "Osmium",
         "radii": 144,
         "color": "#266696",
-        "symbol": "Os"
+        "symbol": "Os",
+        "number": 76,
+        "group": 8
     },
     "77": {
         "name": "Iridium",
         "radii": 141,
         "color": "#175487",
-        "symbol": "Ir"
+        "symbol": "Ir",
+        "number": 77,
+        "group": 9
     },
     "78": {
         "name": "Platinum",
         "radii": 136,
         "color": "#D0D0E0",
-        "symbol": "Pt"
+        "symbol": "Pt",
+        "number": 78,
+        "group": 10
     },
     "79": {
         "name": "Gold",
         "radii": 136,
         "color": "#FFD123",
-        "symbol": "Au"
+        "symbol": "Au",
+        "number": 79,
+        "group": 11
     },
     "80": {
         "name": "Mercury",
         "radii": 132,
         "color": "#B8B8D0",
-        "symbol": "Hg"
+        "symbol": "Hg",
+        "number": 80,
+        "group": 12
     },
     "81": {
         "name": "Thallium",
         "radii": 145,
         "color": "#A6544D",
-        "symbol": "Tl"
+        "symbol": "Tl",
+        "number": 81,
+        "group": 13
     },
     "82": {
         "name": "Lead",
         "radii": 146,
         "color": "#575961",
-        "symbol": "Pb"
+        "symbol": "Pb",
+        "number": 82,
+        "group": 14
     },
     "83": {
         "name": "Bismuth",
         "radii": 148,
         "color": "#9E4FB5",
-        "symbol": "Bi"
+        "symbol": "Bi",
+        "number": 83,
+        "group": 15
     },
     "84": {
         "name": "Polonium",
         "radii": 140,
         "color": "#AB5C00",
-        "symbol": "Po"
+        "symbol": "Po",
+        "number": 84,
+        "group": 16
     },
     "85": {
         "name": "Astatine",
         "radii": 150,
         "color": "#754F45",
-        "symbol": "At"
+        "symbol": "At",
+        "number": 85,
+        "group": 17
     },
     "86": {
         "name": "Radon",
         "radii": 150,
         "color": "#428296",
-        "symbol": "Rn"
+        "symbol": "Rn",
+        "number": 86,
+        "group": 18
     },
     "87": {
         "name": "Francium",
         "radii": 260,
         "color": "#420066",
-        "symbol": "Fr"
+        "symbol": "Fr",
+        "number": 87,
+        "group": 1
     },
     "88": {
         "name": "Radium",
         "radii": 221,
         "color": "#007D00",
-        "symbol": "Ra"
+        "symbol": "Ra",
+        "number": 88,
+        "group": 2
     },
     "89": {
         "name": "Actinium",
         "radii": 215,
         "color": "#70ABFA",
-        "symbol": "Ac"
+        "symbol": "Ac",
+        "number": 89,
+        "group": 0
     },
     "90": {
         "name": "Thorium",
         "radii": 206,
         "color": "#00BAFF",
-        "symbol": "Th"
+        "symbol": "Th",
+        "number": 90,
+        "group": 0
     },
     "91": {
         "name": "Protactinium",
         "radii": 200,
         "color": "#00A1FF",
-        "symbol": "Pa"
+        "symbol": "Pa",
+        "number": 91,
+        "group": 0
     },
     "92": {
         "name": "Uranium",
         "radii": 196,
         "color": "#008FFF",
-        "symbol": "U"
+        "symbol": "U",
+        "number": 92,
+        "group": 0
     },
     "93": {
         "name": "Neptunium",
         "radii": 190,
         "color": "#0080FF",
-        "symbol": "Np"
+        "symbol": "Np",
+        "number": 93,
+        "group": 0
     },
     "94": {
         "name": "Plutonium",
         "radii": 187,
         "color": "#006BFF",
-        "symbol": "Pu"
+        "symbol": "Pu",
+        "number": 94,
+        "group": 0
     },
     "95": {
         "name": "Americium",
         "radii": 180,
         "color": "#545CF2",
-        "symbol": "Am"
+        "symbol": "Am",
+        "number": 95,
+        "group": 0
     },
     "96": {
         "name": "Curium",
         "radii": 169,
         "color": "#785CE3",
-        "symbol": "Cm"
+        "symbol": "Cm",
+        "number": 96,
+        "group": 0
     },
     "97": {
         "name": "Berkelium",
         "radii": 150,
         "color": "#8A4FE3",
-        "symbol": "Bk"
+        "symbol": "Bk",
+        "number": 97,
+        "group": 0
     },
     "98": {
         "name": "Californium",
         "radii": 150,
         "color": "#A136D4",
-        "symbol": "Cf"
+        "symbol": "Cf",
+        "number": 98,
+        "group": 0
     },
     "99": {
         "name": "Einsteinium",
         "radii": 150,
         "color": "#B31FD4",
-        "symbol": "Es"
+        "symbol": "Es",
+        "number": 99,
+        "group": 0
     },
     "100": {
         "name": "Fermium",
         "radii": 150,
         "color": "#B31FBA",
-        "symbol": "Fm"
+        "symbol": "Fm",
+        "number": 100,
+        "group": 0
     },
     "101": {
         "name": "Mendelevium",
         "radii": 150,
         "color": "#B30DA6",
-        "symbol": "Md"
+        "symbol": "Md",
+        "number": 101,
+        "group": 0
     },
     "102": {
         "name": "Nobelium",
         "radii": 150,
         "color": "#BD0D87",
-        "symbol": "No"
+        "symbol": "No",
+        "number": 102,
+        "group": 0
     },
     "103": {
         "name": "Lawrencium",
         "radii": 150,
         "color": "#C70066",
-        "symbol": "Lr"
+        "symbol": "Lr",
+        "number": 103,
+        "group": 0
     },
     "104": {
         "name": "Rutherfordium",
         "radii": 150,
         "color": "#CC0059",
-        "symbol": "Rf"
+        "symbol": "Rf",
+        "number": 104,
+        "group": 4
     },
     "105": {
         "name": "Dubnium",
         "radii": 150,
         "color": "#D1004F",
-        "symbol": "Db"
+        "symbol": "Db",
+        "number": 105,
+        "group": 5
     },
     "106": {
         "name": "Seaborgium",
         "radii": 150,
         "color": "#D90045",
-        "symbol": "Sg"
+        "symbol": "Sg",
+        "number": 106,
+        "group": 6
     },
     "107": {
         "name": "Bohrium",
         "radii": 150,
         "color": "#E00038",
-        "symbol": "Bh"
+        "symbol": "Bh",
+        "number": 107,
+        "group": 7
     },
     "108": {
         "name": "Hassium",
         "radii": 150,
         "color": "#E6002E",
-        "symbol": "Hs"
+        "symbol": "Hs",
+        "number": 108,
+        "group": 8
     },
     "109": {
         "name": "Meitnerium",
         "radii": 150,
         "color": "#EB0026",
-        "symbol": "Mt"
+        "symbol": "Mt",
+        "number": 109,
+        "group": 9
     },
     "110": {
         "name": "Darmstadtium",
         "radii": 150,
         "color": "#ef0025",
-        "symbol": "Ds"
+        "symbol": "Ds",
+        "number": 110,
+        "group": 10
     },
     "111": {
         "name": "Roentgenium",
         "radii": 150,
         "color": "#Rg",
-        "symbol": "Rg"
+        "symbol": "Rg",
+        "number": 111,
+        "group": 11
     },
     "112": {
         "name": "Copernicium",
         "radii": 150,
         "color": "#ef0221",
-        "symbol": "Cn"
+        "symbol": "Cn",
+        "number": 112,
+        "group": 12
     },
     "113": {
         "name": "Nihonium",
         "radii": 150,
         "color": "#f7021c",
-        "symbol": "Nh"
+        "symbol": "Nh",
+        "number": 113,
+        "group": 13
     },
     "114": {
         "name": "Flerovium",
         "radii": 150,
         "color": "#fc0112",
-        "symbol": "Fl"
+        "symbol": "Fl",
+        "number": 114,
+        "group": 14
     },
     "115": {
         "name": "Moscovium",
         "radii": 150,
         "color": "#f20414",
-        "symbol": "Mc"
+        "symbol": "Mc",
+        "number": 115,
+        "group": 15
     },
     "116": {
         "name": "Livermorium",
         "radii": 150,
         "color": "#f80313",
-        "symbol": "Lv"
+        "symbol": "Lv",
+        "number": 116,
+        "group": 16
     },
     "117": {
         "name": "Tennessine",
         "radii": 150,
         "color": "#fe0016",
-        "symbol": "Ts"
+        "symbol": "Ts",
+        "number": 117,
+        "group": 17
     },
     "118": {
         "name": "Oganesson",
         "radii": 150,
         "color": "#fa010f",
-        "symbol": "Og"
+        "symbol": "Og",
+        "number": 118,
+        "group": 18
     }
 }

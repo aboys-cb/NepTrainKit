@@ -6,13 +6,20 @@
 from .layout import FlowLayout
 from .label import ProcessLabel
 from .completer import CompleterModel, JoinDelegate, ConfigCompleter
-from .dialog import GetIntMessageBox, SparseMessageBox, ProgressDialog
+from .dialog import (
+    GetIntMessageBox,
+    SparseMessageBox,
+    ProgressDialog,
+    PeriodicTableDialog,
+)
 from .input import SpinBoxUnitInputFrame
 from .card_widget import (
     CheckableHeaderCardWidget,
     ShareCheckableHeaderCardWidget,
     MakeDataCardWidget,
 )
+from .doping_rule import DopingRulesWidget
+
 from .docker import MakeWorkflowArea
 from .search_widget import ConfigTypeSearchLineEdit
 from .settingscard import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
@@ -26,6 +33,7 @@ __all__ = [
     "GetIntMessageBox",
     "SparseMessageBox",
     "ProgressDialog",
+    "PeriodicTableDialog",
     "SpinBoxUnitInputFrame",
     "CheckableHeaderCardWidget",
     "ShareCheckableHeaderCardWidget",
@@ -34,4 +42,5 @@ __all__ = [
     "ConfigTypeSearchLineEdit",
     "MyComboBoxSettingCard",
     "DoubleSpinBoxSettingCard",
+    "DopingRulesWidget",
 ]

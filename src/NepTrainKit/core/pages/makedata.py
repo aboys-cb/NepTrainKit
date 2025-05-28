@@ -125,7 +125,7 @@ class MakeDataWidget(QWidget):
 
     def open_file(self):
         path = utils.call_path_dialog(self,"Please choose the structure files",
-                                      "selects",file_filter="Structure Files (*.xyz,*.vasp,*.cif)")
+                                      "selects",file_filter="Structure Files (*.xyz *.vasp *.cif)")
 
         if path:
             self.load_base_structure(path)

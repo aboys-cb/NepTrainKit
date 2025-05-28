@@ -728,6 +728,8 @@ class PerturbCard(MakeDataCard):
         self.engine_type_combo=ComboBox(self.setting_widget)
         self.engine_type_combo.addItem("Sobol")
         self.engine_type_combo.addItem("Uniform")
+        self.engine_label.setToolTip("Select random engine")
+        self.engine_label.installEventFilter(ToolTipFilter(self.engine_label, 0, ToolTipPosition.TOP))
 
         self.optional_frame = QFrame(self.setting_widget)
         self.optional_frame_layout = QGridLayout(self.optional_frame)
@@ -989,8 +991,7 @@ class CellScalingCard(MakeDataCard):
         self.engine_type_combo=ComboBox(self.setting_widget)
         self.engine_type_combo.addItem("Sobol")
         self.engine_type_combo.addItem("Uniform")
-        self.engine_label.setToolTip("How random numbers are generated")
-
+        self.engine_label.setToolTip("Select random engine")
         self.engine_label.installEventFilter(ToolTipFilter(self.engine_label, 0, ToolTipPosition.TOP))
 
 

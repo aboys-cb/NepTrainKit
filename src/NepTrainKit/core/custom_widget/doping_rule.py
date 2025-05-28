@@ -23,7 +23,11 @@ from qfluentwidgets import (
     TransparentToolButton,
     SpinBox,
     DoubleSpinBox,
-    FluentIcon, LineEdit,RadioButton
+    FluentIcon,
+    LineEdit,
+    RadioButton,
+    ToolTipFilter,
+    ToolTipPosition,
 )
 
 
@@ -37,7 +41,7 @@ class DopingRuleItem(QFrame):
         self.layout.setSpacing(4)
         self.setStyleSheet("background-color: rgb(239, 249, 254);")
         self.target_edit = QLineEdit(self)
-        self.setFixedSize(300,100)
+        self.setFixedSize(300, 100)
         self.dopants_edit = QLineEdit(self)
 
         self.concentration_spin = QLineEdit(self)
@@ -50,19 +54,34 @@ class DopingRuleItem(QFrame):
         self.delete_button = TransparentToolButton(QIcon(":/images/src/images/delete.svg"), self)
         self.delete_button.clicked.connect(self._delete_self)
 
-        self.layout.addWidget(BodyLabel("Target", self), 0, 0)
+        self.target_label = BodyLabel("Target", self)
+        self.target_label.setToolTip("Element to replace")
+        self.target_label.installEventFilter(ToolTipFilter(self.target_label, 0, ToolTipPosition.TOP))
+        self.layout.addWidget(self.target_label, 0, 0)
         self.layout.addWidget(self.target_edit, 0, 1)
-        self.layout.addWidget(BodyLabel("Group", self), 0,2)
+        self.group_label = BodyLabel("Group", self)
+        self.group_label.setToolTip("Optional group name")
+        self.group_label.installEventFilter(ToolTipFilter(self.group_label, 0, ToolTipPosition.TOP))
+        self.layout.addWidget(self.group_label, 0, 2)
         self.layout.addWidget(self.indices_edit, 0, 3, 1,1)
 
-        self.layout.addWidget(BodyLabel("Dopants", self), 1, 0)
-        self.layout.addWidget(self.dopants_edit, 1, 1,1,3)
+        self.dopants_label = BodyLabel("Dopants", self)
+        self.dopants_label.setToolTip("Dopant elements and ratio")
+        self.dopants_label.installEventFilter(ToolTipFilter(self.dopants_label, 0, ToolTipPosition.TOP))
+        self.layout.addWidget(self.dopants_label, 1, 0)
+        self.layout.addWidget(self.dopants_edit, 1, 1, 1, 3)
+        self.concentration_botton.setToolTip("Use concentration")
+        self.concentration_botton.installEventFilter(ToolTipFilter(self.concentration_botton, 0, ToolTipPosition.TOP))
         self.layout.addWidget(self.concentration_botton, 2, 0)
-        self.layout.addWidget(self.concentration_spin,2, 1)
+        self.layout.addWidget(self.concentration_spin, 2, 1)
+        self.count_botton.setToolTip("Use count")
+        self.count_botton.installEventFilter(ToolTipFilter(self.count_botton, 0, ToolTipPosition.TOP))
         self.layout.addWidget(self.count_botton, 2, 2)
         self.layout.addWidget(self.count_spin, 2, 3)
 
-        self.layout.addWidget(self.delete_button, 0, 4,3,3)
+        self.delete_button.setToolTip("Delete rule")
+        self.delete_button.installEventFilter(ToolTipFilter(self.delete_button, 0, ToolTipPosition.TOP))
+        self.layout.addWidget(self.delete_button, 0, 4, 3, 3)
 
     def _delete_self(self) -> None:
         self.setParent(None)
@@ -132,6 +151,8 @@ class DopingRulesWidget(QWidget):
         btn_layout.setContentsMargins(0, 0, 0, 0)
         self.add_button = TransparentToolButton(FluentIcon.ADD, self)
         self.add_button.clicked.connect(self.add_rule)
+        self.add_button.setToolTip("Add rule")
+        self.add_button.installEventFilter(ToolTipFilter(self.add_button, 0, ToolTipPosition.TOP))
         btn_layout.addWidget(self.add_button, 0, Qt.AlignLeft)
         btn_layout.addStretch(1)
         self.layout.addLayout(btn_layout)

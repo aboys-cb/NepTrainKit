@@ -6,8 +6,7 @@
 from PySide6.QtCore import Qt, Signal, QMimeData
 from PySide6.QtGui import QIcon, QDrag, QPixmap
 
-from qfluentwidgets import HeaderCardWidget, CheckBox, TransparentToolButton
-
+from qfluentwidgets import HeaderCardWidget, CheckBox, TransparentToolButton, ToolTipFilter, ToolTipPosition
 
 from qfluentwidgets import FluentIcon as FIF
 
@@ -47,10 +46,12 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         self.export_button=TransparentToolButton(QIcon(":/images/src/images/export1.svg"),self)
         self.export_button.clicked.connect(self.exportSignal)
         self.export_button.setToolTip("Export data")
+        self.export_button.installEventFilter(ToolTipFilter(self.export_button, 0, ToolTipPosition.TOP))
 
         self.close_button=TransparentToolButton(FIF.CLOSE,self)
         self.close_button.clicked.connect(self.close)
         self.close_button.setToolTip("Close card")
+        self.close_button.installEventFilter(ToolTipFilter(self.close_button, 0, ToolTipPosition.TOP))
 
 
         self.headerLayout.addWidget(self.export_button, 0, Qt.AlignmentFlag.AlignRight)
@@ -65,6 +66,8 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         self.collapse_button=TransparentToolButton(QIcon(":/images/src/images/collapse.svg"),self)
         self.collapse_button.clicked.connect(self.collapse)
         self.collapse_button.setToolTip("Collapse or expand card")
+        self.collapse_button.installEventFilter(ToolTipFilter(self.collapse_button, 0, ToolTipPosition.TOP))
+
         self.headerLayout.insertWidget(0, self.collapse_button, 0,Qt.AlignmentFlag.AlignLeft)
         self.windowStateChangedSignal.connect(self.update_window_state)
 

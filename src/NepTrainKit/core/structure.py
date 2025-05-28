@@ -469,6 +469,8 @@ class Structure:
 
                 elif prop["type"] == 'R':  # 浮点数类型
                     line += " ".join([f"{x:.10g}" for x in values]) + " "
+                else:
+                    line += " ".join([f"{x}" for x in values]) + " "
             file.write(line.strip() + "\n")
 
     def get_all_distances(self):

@@ -121,7 +121,7 @@ class MakeDataWidget(QWidget):
                 structures_list.append(atom)
 
         self.dataset=structures_list
-        MessageManager.send_success_message(f"success load base structure ({len(structures_list)} atoms).")
+        MessageManager.send_success_message(f"success load {len(structures_list)} structures.")
 
     def open_file(self):
         path = utils.call_path_dialog(self,"Please choose the structure files",

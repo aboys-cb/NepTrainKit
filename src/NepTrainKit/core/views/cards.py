@@ -385,6 +385,7 @@ class SuperCellCard(MakeDataCard):
         self.behavior_type_combo=ComboBox(self.setting_widget)
         self.behavior_type_combo.addItem("Maximum")
         self.behavior_type_combo.addItem("Iteration")
+        self.behavior_type_combo.setToolTip("Select supercell generation method")
         self.combo_label=BodyLabel("behavior:",self.setting_widget)
 
         self.super_scale_radio_button = RadioButton("super scale",self.setting_widget)
@@ -392,18 +393,22 @@ class SuperCellCard(MakeDataCard):
         self.super_scale_condition_frame = SpinBoxUnitInputFrame(self)
         self.super_scale_condition_frame.set_input("",3)
         self.super_scale_condition_frame.setRange(1,100)
+        self.super_scale_condition_frame.setToolTip("Scale factors along axes")
 
         self.super_cell_radio_button = RadioButton("super cell",self.setting_widget)
         self.super_cell_condition_frame = SpinBoxUnitInputFrame(self)
         self.super_cell_condition_frame.set_input("Å",3)
         self.super_cell_condition_frame.setRange(1,100)
+        self.super_cell_condition_frame.setToolTip("Target lattice constant in Å")
 
 
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_condition_frame.set_input("unit",1)
         self.max_atoms_condition_frame.setRange(1,10000)
+        self.max_atoms_condition_frame.setToolTip("Maximum allowed atoms")
 
         self.max_atoms_radio_button = RadioButton("Max atoms",self.setting_widget)
+        self.max_atoms_radio_button.setToolTip("Limit cell size by atom count")
 
 
         self.settingLayout.addWidget(self.combo_label,0, 0,1, 1)
@@ -579,22 +584,28 @@ class VacancyDefectCard(MakeDataCard):
         self.engine_type_combo=ComboBox(self.setting_widget)
         self.engine_type_combo.addItem("Sobol")
         self.engine_type_combo.addItem("Uniform")
+        self.engine_type_combo.setToolTip("Select random engine")
 
         self.num_radio_button = RadioButton("Vacancy num",self.setting_widget)
         self.num_radio_button.setChecked(True)
+        self.num_radio_button.setToolTip("Set fixed number of vacancies")
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("unit",1)
         self.num_condition_frame.setRange(1,10000)
+        self.num_condition_frame.setToolTip("Vacancy count")
 
         self.concentration_radio_button = RadioButton("Vacancy concentration",self.setting_widget)
         self.concentration_condition_frame = SpinBoxUnitInputFrame(self)
         self.concentration_condition_frame.set_input("",1,"float")
         self.concentration_condition_frame.setRange(0,1)
+        self.concentration_radio_button.setToolTip("Set vacancy concentration")
+        self.concentration_condition_frame.setToolTip("Ratio of vacancies")
 
 
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_condition_frame.set_input("unit",1)
         self.max_atoms_condition_frame.setRange(1,10000)
+        self.max_atoms_condition_frame.setToolTip("Number of structures to generate")
 
         self.max_atoms_label= BodyLabel("Max num",self.setting_widget)
 
@@ -712,6 +723,7 @@ class PerturbCard(MakeDataCard):
         self.optional_label=BodyLabel("Optional",self.setting_widget)
         self.organic_checkbox=CheckBox("Identify organic", self.setting_widget)
         self.organic_checkbox.setChecked(True)
+        self.organic_checkbox.setToolTip("Treat organic molecules as rigid units")
 
 
         self.optional_frame_layout.addWidget(self.organic_checkbox,0,0,1,1)
@@ -721,11 +733,13 @@ class PerturbCard(MakeDataCard):
         self.scaling_condition_frame.setRange(0,1)
         self.scaling_radio_label=BodyLabel("Max distance:",self.setting_widget)
         self.scaling_condition_frame.set_input_value([0.3])
+        self.scaling_condition_frame.setToolTip("Maximum displacement distance")
 
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("unit",1,"int")
         self.num_condition_frame.setRange(1,10000)
         self.num_condition_frame.set_input_value([50])
+        self.num_condition_frame.setToolTip("Number of structures to generate")
 
         self.num_label=BodyLabel("Max num:",self.setting_widget)
 
@@ -834,16 +848,19 @@ class RandomDopingCard(MakeDataCard):
 
         self.rules_label = BodyLabel("Rules", self.setting_widget)
         self.rules_widget = DopingRulesWidget(self.setting_widget)
+        self.rules_widget.setToolTip("Double-click items to edit doping rules")
 
         self.doping_label = BodyLabel("Doping", self.setting_widget)
 
         self.doping_type_combo=ComboBox(self.setting_widget)
         self.doping_type_combo.addItem("Random")
         self.doping_type_combo.addItem("Exact")
+        self.doping_type_combo.setToolTip("Select doping algorithm")
         self.max_atoms_label = BodyLabel("Max structures", self.setting_widget)
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_condition_frame.set_input("unit", 1)
         self.max_atoms_condition_frame.setRange(1, 10000)
+        self.max_atoms_condition_frame.setToolTip("Number of structures to generate")
 
         self.settingLayout.addWidget(self.rules_label, 0, 0, 1, 1)
         self.settingLayout.addWidget(self.rules_widget, 0, 1, 1, 2)
@@ -956,6 +973,7 @@ class CellScalingCard(MakeDataCard):
         self.scaling_condition_frame.set_input("",1,"float")
         self.scaling_condition_frame.setRange(0,1)
         self.scaling_condition_frame.set_input_value([0.04])
+        self.scaling_condition_frame.setToolTip("Maximum scaling factor")
 
         self.scaling_radio_label=BodyLabel("Max Scaling:",self.setting_widget)
 
@@ -966,9 +984,11 @@ class CellScalingCard(MakeDataCard):
         self.perturb_angle_checkbox=CheckBox( self.setting_widget)
         self.perturb_angle_checkbox.setText("Perturb angle")
         self.perturb_angle_checkbox.setChecked(True)
+        self.perturb_angle_checkbox.setToolTip("Also perturb lattice angles")
         self.optional_label=BodyLabel("Optional",self.setting_widget)
         self.organic_checkbox=CheckBox("Identify organic", self.setting_widget)
         self.organic_checkbox.setChecked(True)
+        self.organic_checkbox.setToolTip("Treat organic molecules as rigid units")
 
         self.optional_frame_layout.addWidget(self.perturb_angle_checkbox,0,0,1,1)
         self.optional_frame_layout.addWidget(self.organic_checkbox,1,0,1,1)
@@ -978,6 +998,7 @@ class CellScalingCard(MakeDataCard):
         self.num_condition_frame.setRange(1,10000)
         self.num_label=BodyLabel("Max num:",self.setting_widget)
         self.num_condition_frame.set_input_value([50])
+        self.num_condition_frame.setToolTip("Number of structures to generate")
 
         self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
         self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
@@ -1127,18 +1148,21 @@ class CellStrainCard(MakeDataCard):
         self.strain_x_frame.set_input(["-","% step:","%"],3,"int")
         self.strain_x_frame.setRange(-100,100)
         self.strain_x_frame.set_input_value([-5,5,1])
+        self.strain_x_frame.setToolTip("X-axis strain range")
 
         self.strain_y_label=BodyLabel("Y:",self.setting_widget)
         self.strain_y_frame = SpinBoxUnitInputFrame(self)
         self.strain_y_frame.set_input(["-","% step:","%"],3,"int")
         self.strain_y_frame.setRange(-100,100)
         self.strain_y_frame.set_input_value([-5,5,1])
+        self.strain_y_frame.setToolTip("Y-axis strain range")
 
         self.strain_z_label=BodyLabel("Z:",self.setting_widget)
         self.strain_z_frame = SpinBoxUnitInputFrame(self)
         self.strain_z_frame.set_input(["-","% step:","%"],3,"int")
         self.strain_z_frame.setRange(-100,100)
         self.strain_z_frame.set_input_value([-5,5,1])
+        self.strain_z_frame.setToolTip("Z-axis strain range")
 
         self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
         self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
@@ -1262,6 +1286,7 @@ class FPSFilterDataCard(FilterDataCard):
 
         self.nep_path_lineedit = LineEdit(self.setting_widget)
         self.nep_path_lineedit.setPlaceholderText("nep.txt path")
+        self.nep_path_lineedit.setToolTip("Path to NEP model")
 
         self.nep89_path = os.path.join(module_path, "Config","nep89.txt")
         self.nep_path_lineedit.setText(self.nep89_path )
@@ -1273,12 +1298,14 @@ class FPSFilterDataCard(FilterDataCard):
         self.num_condition_frame.set_input("unit", 1, "int")
         self.num_condition_frame.setRange(1, 10000)
         self.num_condition_frame.set_input_value([100])
+        self.num_condition_frame.setToolTip("Number of structures to keep")
 
         self.min_distance_condition_frame = SpinBoxUnitInputFrame(self)
         self.min_distance_condition_frame.set_input("", 1,"float")
         self.min_distance_condition_frame.setRange(0, 100)
         self.min_distance_condition_frame.object_list[0].setDecimals(4)
         self.min_distance_condition_frame.set_input_value([0.01])
+        self.min_distance_condition_frame.setToolTip("Minimum distance between samples")
 
         self.min_distance_label = BodyLabel("Min distance", self.setting_widget)
 
@@ -1551,6 +1578,7 @@ class ConsoleWidget(QWidget):
                                                          "Add new card",self)
         self.new_card_button.setMaximumWidth(200 )
         self.new_card_button.setObjectName("new_card_button")
+        self.new_card_button.setToolTip("Add a new card")
         self.menu = RoundMenu(parent=self)
         for class_name,card_class in card_info_dict.items():
             if card_class.separator:
@@ -1565,12 +1593,12 @@ class ConsoleWidget(QWidget):
         self.setting_command.addWidget(self.new_card_button)
 
         self.setting_command.addSeparator()
-        self.setting_command.addAction(Action(QIcon(r":/images/src/images/run.svg"),
-                                              'Run',
-                                              triggered=self.run ))
-        self.setting_command.addAction(Action(QIcon(r":/images/src/images/stop.svg"),
-                                              'Stop',
-                                              triggered=self.stop ))
+        run_action = Action(QIcon(r":/images/src/images/run.svg"), 'Run', triggered=self.run)
+        run_action.setToolTip('Run selected cards')
+        self.setting_command.addAction(run_action)
+        stop_action = Action(QIcon(r":/images/src/images/stop.svg"), 'Stop', triggered=self.stop)
+        stop_action.setToolTip('Stop running cards')
+        self.setting_command.addAction(stop_action)
 
 
 

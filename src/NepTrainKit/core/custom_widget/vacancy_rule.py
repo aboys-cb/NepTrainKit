@@ -21,6 +21,7 @@ from qfluentwidgets import (
     ToolTipFilter,
     ToolTipPosition,
 )
+from .input import SpinBoxUnitInputFrame
 
 
 class VacancyRuleItem(QFrame):
@@ -36,8 +37,10 @@ class VacancyRuleItem(QFrame):
         self.element_edit = QLineEdit(self)
         self.element_edit.setPlaceholderText("Cs")
         self.group_edit = QLineEdit(self)
-        self.count_edit = QLineEdit(self)
-        self.count_edit.setText("1")
+        self.count_frame = SpinBoxUnitInputFrame(self)
+        self.count_frame.set_input(["-", ""], 2, "int")
+        self.count_frame.setRange(0, 10000)
+        self.count_frame.set_input_value([1, 1])
 
         self.delete_button = TransparentToolButton(QIcon(":/images/src/images/delete.svg"), self)
         self.delete_button.clicked.connect(self._delete_self)
@@ -57,7 +60,7 @@ class VacancyRuleItem(QFrame):
         self.layout.addWidget(self.group_label, 0, 2)
         self.layout.addWidget(self.group_edit, 0, 3)
         self.layout.addWidget(self.count_label, 1, 0)
-        self.layout.addWidget(self.count_edit, 1, 1)
+        self.layout.addWidget(self.count_frame, 1, 1)
         self.layout.addWidget(self.delete_button, 0, 4, 2, 1)
 
     def _delete_self(self) -> None:
@@ -69,12 +72,7 @@ class VacancyRuleItem(QFrame):
         element = self.element_edit.text().strip()
         if element:
             rule["element"] = element
-        count_text = self.count_edit.text().strip()
-        if count_text:
-            try:
-                rule["count"] = int(float(count_text))
-            except Exception:
-                pass
+        rule["count"] = [int(v) for v in self.count_frame.get_input_value()]
         groups = self.group_edit.text().strip()
         if groups:
             rule["group"] = [g.strip() for g in groups.split(",") if g.strip()]
@@ -85,7 +83,7 @@ class VacancyRuleItem(QFrame):
             return
         self.element_edit.setText(str(rule.get("element", "")))
         if "count" in rule:
-            self.count_edit.setText(str(rule["count"]))
+            self.count_frame.set_input_value(rule["count"])
         if "group" in rule:
             self.group_edit.setText(",".join(str(i) for i in rule["group"]))
 

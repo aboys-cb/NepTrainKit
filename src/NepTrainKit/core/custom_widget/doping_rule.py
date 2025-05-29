@@ -15,20 +15,19 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QVBoxLayout,
-    QWidget, QLineEdit,
-
+    QWidget,
+    QLineEdit,
 )
 from qfluentwidgets import (
     BodyLabel,
     TransparentToolButton,
-    SpinBox,
-    DoubleSpinBox,
     FluentIcon,
     LineEdit,
     RadioButton,
     ToolTipFilter,
     ToolTipPosition,
 )
+from .input import SpinBoxUnitInputFrame
 
 
 class DopingRuleItem(QFrame):
@@ -46,13 +45,17 @@ class DopingRuleItem(QFrame):
         self.setFixedSize(300, 100)
         self.dopants_edit = QLineEdit(self)
          
-        self.concentration_spin = QLineEdit(self)
-        self.concentration_spin.setText("1")
+        self.concentration_frame = SpinBoxUnitInputFrame(self)
+        self.concentration_frame.set_input(["-", ""], 2, "float")
+        self.concentration_frame.setRange(0, 1)
+        self.concentration_frame.set_input_value([0.0, 1.0])
 
         self.concentration_botton = RadioButton("Conc", self)
         self.concentration_botton.setChecked(True)
-        self.count_spin = QLineEdit(self)
-        self.count_spin.setText("10")
+        self.count_frame = SpinBoxUnitInputFrame(self)
+        self.count_frame.set_input(["-", ""], 2, "int")
+        self.count_frame.setRange(0, 10000)
+        self.count_frame.set_input_value([1, 1])
         self.count_botton = RadioButton("Count", self)
 
         self.indices_edit = QLineEdit(self)
@@ -78,11 +81,11 @@ class DopingRuleItem(QFrame):
         self.concentration_botton.setToolTip("Use concentration")
         self.concentration_botton.installEventFilter(ToolTipFilter(self.concentration_botton, 300, ToolTipPosition.TOP))
         self.layout.addWidget(self.concentration_botton, 2, 0)
-        self.layout.addWidget(self.concentration_spin, 2, 1)
+        self.layout.addWidget(self.concentration_frame, 2, 1)
         self.count_botton.setToolTip("Use count")
         self.count_botton.installEventFilter(ToolTipFilter(self.count_botton, 300, ToolTipPosition.TOP))
         self.layout.addWidget(self.count_botton, 2, 2)
-        self.layout.addWidget(self.count_spin, 2, 3)
+        self.layout.addWidget(self.count_frame, 2, 3)
 
         self.delete_button.setToolTip("Delete rule")
         self.delete_button.installEventFilter(ToolTipFilter(self.delete_button, 300, ToolTipPosition.TOP))
@@ -115,9 +118,9 @@ class DopingRuleItem(QFrame):
         except Exception:
             logger.error(traceback.format_exc())
 
-        rule["concentration"] =float(self.concentration_spin.text().strip()) if self.concentration_spin.text().strip() else 0
+        rule["concentration"] = [float(v) for v in self.concentration_frame.get_input_value()]
 
-        rule["count"] =float(self.count_spin.text().strip()) if self.count_spin.text().strip() else 0
+        rule["count"] = [int(v) for v in self.count_frame.get_input_value()]
         rule["use"] = "concentration" if self.concentration_botton.isChecked() else "count"
         indices_text = self.indices_edit.text().strip()
         if indices_text:
@@ -136,9 +139,9 @@ class DopingRuleItem(QFrame):
         if dopants is not None:
             self.dopants_edit.setText(json.dumps(dopants))
         if "concentration" in rule:
-            self.concentration_spin.setText(str(rule["concentration"]))
+            self.concentration_frame.set_input_value(rule["concentration"])
         if "count" in rule:
-            self.count_spin.setText(str(rule["count"]))
+            self.count_frame.set_input_value(rule["count"])
         if "group" in rule:
             self.indices_edit.setText(",".join(str(i) for i in rule["group"]))
         if "use" in  rule:

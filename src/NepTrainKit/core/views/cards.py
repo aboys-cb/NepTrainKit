@@ -924,9 +924,12 @@ class RandomDopingCard(MakeDataCard):
                     continue
 
                 if "concentration" == rule["use"]:
-                    doping_num = max(1, int(len(candidate_indices) * float(rule["concentration"])))
+                    conc_min, conc_max = rule.get("concentration", [0.0, 1.0])
+                    conc = np.random.uniform(float(conc_min), float(conc_max))
+                    doping_num = max(1, int(len(candidate_indices) * conc))
                 elif "count" == rule["use"]:
-                    doping_num = int(rule["count"])
+                    count_min, count_max = rule.get("count", [1, 1])
+                    doping_num = np.random.randint(int(count_min), int(count_max) + 1)
                 else:
                     doping_num = len(candidate_indices)
 
@@ -1017,8 +1020,8 @@ class RandomVacancyCard(MakeDataCard):
             total_remove = 0
             for rule in rules:
                 element = rule.get("element")
-                count = int(rule.get("count", 0))
-                if not element or count <= 0:
+                count_min, count_max = rule.get("count", [0, 0])
+                if not element or int(count_max) <= 0:
                     continue
 
                 groups = rule.get("group")
@@ -1030,7 +1033,8 @@ class RandomVacancyCard(MakeDataCard):
                 if not candidate_indices:
                     continue
 
-                remove_num = min(count, len(candidate_indices))
+                remove_num = np.random.randint(int(count_min), int(count_max) + 1)
+                remove_num = min(remove_num, len(candidate_indices))
                 if remove_num <= 0:
                     continue
 

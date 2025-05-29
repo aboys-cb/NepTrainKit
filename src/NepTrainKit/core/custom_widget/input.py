@@ -53,5 +53,8 @@ class SpinBoxUnitInputFrame(QFrame):
         return [input_object.value() for input_object in self.object_list]
 
     def set_input_value(self, value_list):
+        if not isinstance(value_list,list):
+            value_list=[value_list]*len(self.object_list)
+
         for i, input_object in enumerate(self.object_list):
             input_object.setValue(value_list[i])

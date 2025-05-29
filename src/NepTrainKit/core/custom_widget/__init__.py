@@ -19,6 +19,7 @@ from .card_widget import (
     MakeDataCardWidget,
 )
 from .doping_rule import DopingRulesWidget
+from .vacancy_rule import VacancyRulesWidget
 
 from .docker import MakeWorkflowArea
 from .search_widget import ConfigTypeSearchLineEdit
@@ -43,4 +44,5 @@ __all__ = [
     "MyComboBoxSettingCard",
     "DoubleSpinBoxSettingCard",
     "DopingRulesWidget",
+    "VacancyRulesWidget",
 ]

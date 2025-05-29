@@ -98,7 +98,14 @@ structure.info["Config_type"] += "supercell(nx,ny,nz)"  # e.g., supercell(2,2,1)
 ```
 
 ### 2.2 Vacancy Defect Generation
-**Function**: Creates structure sets with vacancy defects
+**Function**: Creates vacancy-defect structures by deleting random atoms
+
+**Key Parameters**:
+- **Random engine**: `Sobol` sequence or `Uniform` distribution
+- **Vacancy specification**:
+  - *Vacancy num*: fixed number of vacancies
+  - *Vacancy concentration*: fraction of atoms to remove
+- **Max structures**: number of structures to generate
 
 **Structure Tagging**:
 ```python
@@ -106,22 +113,28 @@ structure.info["Config_type"] += f" Vacancy(num={defect_count})"
 ```
 
 ### 2.3 Atomic Perturbation
-**Advanced Options**:
-- Organic molecule recognition (enabled by default)
-- Random engine selection
+**Function**: Adds random displacements to atomic positions
+
+**Key Parameters**:
+- **Random engine**: `Sobol` or `Uniform`
+- **Max distance**: maximum displacement amplitude in Å
+- **Identify organic**: treat organic molecules as rigid units
+- **Max structures**: number of structures to generate
 
 **Structure Tagging**:
 ```python
-structure.info["Config_type"] += f" Perturb(dist={max_displacement}Å, {engine_type})"
+structure.info["Config_type"] += f" Perturb(distance={max_displacement}, {engine_type})"
 ```
 
 ### 2.4 Lattice Scaling
-**Parameter Matrix**:
-| Parameter | Range | Step | Unit |
-|-----------|-------|------|------|
-| Scaling Factor | 0.9-1.1 | 0.01 | - |
-| Angle Perturbation | On/Off | - | - |
-| Structure Count | 1-1000 | - | - |
+**Function**: Randomly scales lattice vectors
+
+**Key Parameters**:
+- **Random engine**: `Sobol` or `Uniform`
+- **Max scaling**: 0–1, applied symmetrically as `1±value`
+- **Perturb angle**: whether lattice angles are also perturbed
+- **Identify organic**: treat organic molecules as rigid units
+- **Max structures**: number of structures to generate
 
 **Structure Tagging**:
 ```python
@@ -133,29 +146,73 @@ structure.info["Config_type"] += f" Scaling({scaling_factor})"
 - Uniaxial
 - Biaxial
 - Triaxial
+- Isotropic (uniform scaling; only X range is used)
 - **Custom Axis Combinations**: Supports any XYZ combinations (e.g., "XY", "XZ", "YZX")
   ```python
   # Example: Apply strain only to X and Z axes
   strain_axes = "XZ"  # Equivalent to "ZX"
   ```
-  
+
+**Key Parameters**:
+- **Axes**: built‑in modes or custom strings like `X`, `XY`
+- **X/Y/Z range**: strain percentage ranges. In isotropic mode only `X` values are used
+- **Identify organic**: treat organic molecules as rigid units
+
 **Structure Tagging**:
 ```python
 structure.info["Config_type"] += f" Strain({axis1}:{value1}%, {axis2}:{value2}%)"
 ```
 
 ### 2.6 Random Doping Substitution
-**Function**: Randomly replace a target element with specified dopants
+**Function**: Randomly substitute atoms according to user-defined rules
 
 **Key Parameters**:
-- Target element symbol
-- Dopant element list (comma separated)
-- Doping count or concentration
-- Optional index list to restrict sites
+- **Doping rules**: each rule contains a target element, dopant elements and their ratios,
+  a concentration or count range, and optional groups
+- **Doping algorithm**: `Random` (sample dopants by probability) or `Exact` (follow ratios exactly)
+- **Max structures**: number of structures to generate
 
 **Structure Tagging**:
 ```python
 structure.info["Config_type"] += f" Doping(num={dopant_count})"
+```
+When using grouping (`group`), you must use files in XYZ format and specify the `group` column. For example:
+
+```xyz
+5
+Lattice="6.383697472927415 0.0 0.0 0.0 6.383697472927415 1.4e-15 0.0 8e-16 6.383697472927415" Properties=species:S:1:pos:R:3:group:S:1 pbc="T T T"
+Cs       0.00000000       0.00000000       0.00000000 a
+I        3.19184873       3.19184873      -0.00000000 b
+I        3.19184873      -0.00000000       3.19184873 c
+I       -0.00000000       3.19184873       3.19184873 c
+Pb       3.19184873       3.19184873       3.19184873 d
+```
+
+
+### 2.7 Random Vacancy Deletion
+**Function**: Removes atoms according to vacancy rules
+
+**Key Parameters**:
+- **Vacancy rules**: each rule specifies an element, a deletion count range,
+  and optional groups to restrict affected sites
+- **Max structures**: number of structures to generate
+
+**Structure Tagging**:
+```python
+structure.info["Config_type"] += f" Vacancy(num={removed_count})"
+```
+
+### 2.8 Random Slab Generation
+**Function**: Builds slabs with random Miller indices and vacuum thickness
+
+**Key Parameters**:
+- **h/k/l range**: Miller index ranges
+- **Layer range**: minimum, maximum and step
+- **Vacuum range**: vacuum thickness in Å
+
+**Structure Tagging**:
+```python
+structure.info["Config_type"] += f" Slab(hkl={h}{k}{l},layers={layers},vacuum={vac})"
 ```
 
 ## 3. Filter Cards

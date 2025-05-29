@@ -42,20 +42,20 @@ class DopingRuleItem(QFrame):
         self.target_edit = QLineEdit(self)
         self.target_edit.setPlaceholderText("Cs")
 
-        self.setFixedSize(300, 100)
+        self.setFixedSize(300, 130)
         self.dopants_edit = QLineEdit(self)
          
         self.concentration_frame = SpinBoxUnitInputFrame(self)
         self.concentration_frame.set_input(["-", ""], 2, "float")
         self.concentration_frame.setRange(0, 1)
-        self.concentration_frame.set_input_value([0.0, 1.0])
+        self.concentration_frame.set_input_value([1.0, 1.0])
 
         self.concentration_botton = RadioButton("Conc", self)
         self.concentration_botton.setChecked(True)
         self.count_frame = SpinBoxUnitInputFrame(self)
         self.count_frame.set_input(["-", ""], 2, "int")
         self.count_frame.setRange(0, 10000)
-        self.count_frame.set_input_value([1, 1])
+        self.count_frame.set_input_value([10, 10])
         self.count_botton = RadioButton("Count", self)
 
         self.indices_edit = QLineEdit(self)
@@ -81,15 +81,15 @@ class DopingRuleItem(QFrame):
         self.concentration_botton.setToolTip("Use concentration")
         self.concentration_botton.installEventFilter(ToolTipFilter(self.concentration_botton, 300, ToolTipPosition.TOP))
         self.layout.addWidget(self.concentration_botton, 2, 0)
-        self.layout.addWidget(self.concentration_frame, 2, 1)
+        self.layout.addWidget(self.concentration_frame, 2, 1,1,4)
         self.count_botton.setToolTip("Use count")
         self.count_botton.installEventFilter(ToolTipFilter(self.count_botton, 300, ToolTipPosition.TOP))
-        self.layout.addWidget(self.count_botton, 2, 2)
-        self.layout.addWidget(self.count_frame, 2, 3)
+        self.layout.addWidget(self.count_botton, 3, 0)
+        self.layout.addWidget(self.count_frame, 3, 1,1,4)
 
         self.delete_button.setToolTip("Delete rule")
         self.delete_button.installEventFilter(ToolTipFilter(self.delete_button, 300, ToolTipPosition.TOP))
-        self.layout.addWidget(self.delete_button, 0, 4, 3, 3)
+        self.layout.addWidget(self.delete_button, 0, 4, 3, 1)
 
     def _delete_self(self) -> None:
         self.setParent(None)

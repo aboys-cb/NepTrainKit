@@ -166,7 +166,7 @@ class ResultData(QObject):
 
                 index=self.structure.convert_index(index)
 
-                for structure in self.structure.now_data[index]:
+                for structure in self.structure.all_data[index]:
                     structure.write(f)
 
             MessageManager.send_info_message(f"File exported to: {save_file_path}")

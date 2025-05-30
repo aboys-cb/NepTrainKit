@@ -42,6 +42,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     deleteSignal=Signal()
     revokeSignal=Signal()
     exportSignal=Signal()
+    shiftEnergySignal=Signal()
 
     def init_actions(self):
         self.addButton("Reset View",QIcon(":/images/src/images/init.svg"),self.resetSignal)
@@ -82,6 +83,10 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         export_action = self.addButton("Export structure descriptor",
                                      QIcon(":/images/src/images/export.svg"),
                                      self.exportSignal)
+        self.addSeparator()
+        self.addButton("Energy Baseline Shift",
+                       QIcon(":/images/src/images/scaling.svg"),
+                       self.shiftEnergySignal)
 
     def reset(self):
         if self.action_group.checkedAction():

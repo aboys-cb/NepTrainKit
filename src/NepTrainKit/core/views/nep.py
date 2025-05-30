@@ -63,6 +63,7 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.findMaxSignal.connect(self.find_max_error_point)
         self.tool_bar.discoverySignal.connect(self.find_non_physical_structures)
         self.tool_bar.sparseSignal.connect(self.sparse_point)
+        self.tool_bar.shiftEnergySignal.connect(self.shift_energy_baseline)
         self.canvas.tool_bar=self.tool_bar
 
 
@@ -174,6 +175,22 @@ class NepResultPlotWidget(QWidget):
 
         with open(path, "w") as f:
             np.savetxt(f,descriptor_data,fmt='%.6g',delimiter='\t')
+
+    def shift_energy_baseline(self):
+        """Shift energies using the selected structure as reference."""
+        data = self.canvas.nep_result_data
+        if data is None:
+            return
+        ref_index = self.canvas.structure_index
+        try:
+            from ..core.energy_shift import shift_dataset_energy
+            shift_dataset_energy(data.structure.now_data, ref_index)
+            if hasattr(data, "energy") and data.energy.num != 0:
+                for i, s in enumerate(data.structure.now_data):
+                    data.energy.data._data[i, 1] = s.additional_fields["energy"] / s.num_atoms
+            self.canvas.plot_nep_result()
+        except Exception as e:
+            MessageManager.send_error_message(str(e))
 
     def set_dataset(self,dataset):
 

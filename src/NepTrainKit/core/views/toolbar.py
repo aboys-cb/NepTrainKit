@@ -85,7 +85,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
                                      self.exportSignal)
         self.addSeparator()
         self.addButton("Energy Baseline Shift",
-                       QIcon(":/images/src/images/scaling.svg"),
+                       QIcon(":/images/src/images/alignment.svg"),
                        self.shiftEnergySignal)
 
     def reset(self):

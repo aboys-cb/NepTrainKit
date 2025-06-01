@@ -43,7 +43,7 @@
     <file>src/images/show.svg</file>
     <file>src/images/show_bond.svg</file>
     <file>src/images/hide_bond.svg</file>
-
+    <file>src/images/alignment.svg</file>
   </qresource>
   <qresource prefix="/theme">
     <file>src/qss/theme.qss</file>

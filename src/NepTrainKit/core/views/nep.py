@@ -4,6 +4,10 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import time
+import traceback
+
+from loguru import logger
+
 start=time.time()
 import numpy as np
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
@@ -14,6 +18,7 @@ from NepTrainKit.core import MessageManager, Config
 from NepTrainKit.core.custom_widget import GetIntMessageBox, SparseMessageBox
 from NepTrainKit.core.io.select import farthest_point_sampling
 from NepTrainKit.core.views.toolbar import NepDisplayGraphicsToolBar
+from NepTrainKit.core.energy_shift import shift_dataset_energy
 
 
 class NepResultPlotWidget(QWidget):
@@ -176,21 +181,37 @@ class NepResultPlotWidget(QWidget):
         with open(path, "w") as f:
             np.savetxt(f,descriptor_data,fmt='%.6g',delimiter='\t')
 
+
     def shift_energy_baseline(self):
-        """Shift energies using the selected structure as reference."""
         data = self.canvas.nep_result_data
         if data is None:
             return
-        ref_index = self.canvas.structure_index
-        try:
-            from ..core.energy_shift import shift_dataset_energy
-            shift_dataset_energy(data.structure.now_data, ref_index)
-            if hasattr(data, "energy") and data.energy.num != 0:
-                for i, s in enumerate(data.structure.now_data):
-                    data.energy.data._data[i, 1] = s.additional_fields["energy"] / s.num_atoms
-            self.canvas.plot_nep_result()
-        except Exception as e:
-            MessageManager.send_error_message(str(e))
+        ref_index = list(data.select_index)
+        if len(ref_index) == 0:
+            MessageManager.send_info_message("No data selected!")
+            return
+        max_generations = 100000
+        population_size = 40
+        convergence_tol = 1e-8
+        progress_diag = QProgressDialog(f"", "Cancel", 0, max_generations, self._parent)
+        thread = utils.LoadingThread(self._parent, show_tip=False)
+        progress_diag.setFixedSize(300, 100)
+        progress_diag.setWindowTitle("Shift energies")
+        thread.progressSignal.connect(progress_diag.setValue)
+        thread.finished.connect(progress_diag.accept)
+        progress_diag.canceled.connect(thread.stop_work)  # 用户取消时终止线程
+        thread.start_work(shift_dataset_energy,
+                          structures=data.structure.now_data,
+                          reference_structures=data.structure.all_data[ref_index],
+                          max_generations = max_generations,
+                          population_size=population_size,
+                          convergence_tol=convergence_tol)
+        progress_diag.exec()
+        if hasattr(data, "energy") and data.energy.num != 0:
+            for i, s in enumerate(data.structure.all_data):
+                print(s.per_atom_energy)
+                data.energy.data._data[i, 1] = s.per_atom_energy
+        self.canvas.plot_nep_result()
 
     def set_dataset(self,dataset):
 

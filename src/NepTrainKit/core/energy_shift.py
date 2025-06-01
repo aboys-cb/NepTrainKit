@@ -1,11 +1,14 @@
-"""Utilities for shifting structure energies using atomic baselines."""
+"""Utilities for shifting structure energies using atomic baselines.
+抄的陈博的代码(已允许)
+Zherui Chen Email: <chenzherui0124@foxmail.com>
+"""
 
 from __future__ import annotations
 
 import numpy as np
 from collections import Counter
 from typing import List, Dict
-
+from NepTrainKit import utils
 from .structure import Structure
 
 
@@ -18,7 +21,7 @@ def atomic_baseline_cost(param_population: np.ndarray,
     cost = np.mean((shifted - target_energies[None, :]) ** 2, axis=1)
     return cost.reshape(-1, 1)
 
-
+@utils.timeit
 def nes_optimize_atomic_baseline(num_variables: int,
                                  max_generations: int,
                                  energies: np.ndarray,
@@ -59,16 +62,17 @@ def nes_optimize_atomic_baseline(num_variables: int,
     return elite[-1]
 
 
+
 def shift_dataset_energy(structures: List[Structure],
-                         reference_index: int,
+                         reference_structures: List[Structure],
                          max_generations: int = 100000,
                          population_size: int = 40,
                          convergence_tol: float = 1e-8,
-                         random_seed: int = 42) -> Dict[str, np.ndarray]:
+                         random_seed: int = 42):
     """Shift structure energies so that groups align to the reference structure."""
     frames = []
     for s in structures:
-        energy = float(s.additional_fields.get("energy", 0.0))
+        energy = float(s.energy)
         config_type = str(s.additional_fields.get("Config_type", ""))
         elem_counts = Counter(s.elements)
         frames.append({"energy": energy, "config_type": config_type, "elem_counts": elem_counts})
@@ -76,12 +80,12 @@ def shift_dataset_energy(structures: List[Structure],
     all_elements = sorted({e for f in frames for e in f["elem_counts"]})
     num_elements = len(all_elements)
 
-    reference_group = frames[reference_index]["config_type"]
-    ref_energies = np.array([f["energy"] for f in frames if f["config_type"] == reference_group])
+
+    ref_energies = np.array([f.energy for f in reference_structures ])
     ref_mean = np.mean(ref_energies)
 
     all_config_types = {f["config_type"] for f in frames}
-    shift_groups = [g for g in all_config_types if g != reference_group]
+    shift_groups = [g for g in all_config_types ]
 
     group_to_atomic_ref = {}
     for group in shift_groups:
@@ -101,6 +105,8 @@ def shift_dataset_energy(structures: List[Structure],
                                                   seed=random_seed,
                                                   print_every=100)
         group_to_atomic_ref[group] = atomic_ref
+        #这里是为了更新ui信号
+        yield 1
 
     # apply shift
     for s, frame in zip(structures, frames):
@@ -109,5 +115,5 @@ def shift_dataset_energy(structures: List[Structure],
             count_vec = np.array([frame["elem_counts"].get(e, 0) for e in all_elements], dtype=float)
             shift = np.dot(count_vec, group_to_atomic_ref[group])
             new_energy = frame["energy"] - shift
-            s.additional_fields["energy"] = new_energy
-    return group_to_atomic_ref
+            s.energy = new_energy
+    # return group_to_atomic_ref

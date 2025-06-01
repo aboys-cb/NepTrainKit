@@ -122,6 +122,7 @@ class LoadingThread(QThread):
         result =self._func(*self._args, **self._kwargs)
         if isinstance(result, Iterable):
             for i,_ in enumerate(result):
+
                 self.progressSignal.emit(i)
 
     def start_work(self,func,*args,**kwargs):

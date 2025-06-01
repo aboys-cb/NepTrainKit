@@ -116,8 +116,13 @@ class Structure:
 
     @property
     def per_atom_energy(self):
-        return self.additional_fields["energy"]/self.num_atoms
-
+        return self.energy/self.num_atoms
+    @property
+    def energy(self):
+        return self.additional_fields["energy"]
+    @energy.setter
+    def energy(self,new_energy):
+        self.additional_fields["energy"] = new_energy
     @property
     def forces(self):
         return self.structure_info[self.force_label]

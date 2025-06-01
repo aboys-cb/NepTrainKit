@@ -209,7 +209,7 @@ class NepResultPlotWidget(QWidget):
         progress_diag.exec()
         if hasattr(data, "energy") and data.energy.num != 0:
             for i, s in enumerate(data.structure.all_data):
-                print(s.per_atom_energy)
+                # print(s.per_atom_energy)
                 data.energy.data._data[i, 1] = s.per_atom_energy
         self.canvas.plot_nep_result()
 

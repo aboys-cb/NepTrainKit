@@ -69,6 +69,7 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.discoverySignal.connect(self.find_non_physical_structures)
         self.tool_bar.sparseSignal.connect(self.sparse_point)
         self.tool_bar.shiftEnergySignal.connect(self.shift_energy_baseline)
+        self.tool_bar.inverseSignal.connect(self.inverse_select)
         self.canvas.tool_bar=self.tool_bar
 
 
@@ -213,6 +214,9 @@ class NepResultPlotWidget(QWidget):
                 # print(s.per_atom_energy)
                 data.energy.data._data[i, 1] = s.per_atom_energy
         self.canvas.plot_nep_result()
+
+    def inverse_select(self):
+        self.canvas.inverse_select()
 
     def set_dataset(self,dataset):
 

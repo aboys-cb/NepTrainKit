@@ -73,6 +73,9 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         discovery_action = self.addButton("Finding non-physical structures",
                                         QIcon(":/images/src/images/discovery.svg"),
                                         self.discoverySignal)
+        inverse_action = self.addButton("Inverse Selection",
+                                     QIcon(":/images/src/images/inverse.svg"),
+                                     self.inverseSignal)
         revoke_action = self.addButton("Undo",
                                      QIcon(":/images/src/images/revoke.svg"),
                                      self.revokeSignal)
@@ -80,9 +83,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         delete_action = self.addButton("Delete Selected Items",
                                      QIcon(":/images/src/images/delete.svg"),
                                      self.deleteSignal)
-        inverse_action = self.addButton("Inverse Selection",
-                                     QIcon(":/images/src/images/show.svg"),
-                                     self.inverseSignal)
+
         self.addSeparator()
         export_action = self.addButton("Export structure descriptor",
                                      QIcon(":/images/src/images/export.svg"),

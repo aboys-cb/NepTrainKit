@@ -111,6 +111,9 @@ class NepData:
         """
         return self.data.now_data
     @property
+    def now_indices(self):
+        return self.data.now_indices
+    @property
     def all_data(self):
         return self.data.all_data
 

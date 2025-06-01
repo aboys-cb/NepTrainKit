@@ -160,8 +160,10 @@ class CanvasLayoutBase(CanvasBase):
     def inverse_select(self):
         if self.nep_result_data is None:
             return
+
         active_indices = set(self.nep_result_data.structure.now_indices.tolist())
         selected = set(self.nep_result_data.select_index)
+
         self.select_index(list(selected), True)
         self.select_index(list(active_indices - selected), False)
 class VispyCanvasLayoutBase(CanvasLayoutBase,QObject,metaclass=CombinedMeta):

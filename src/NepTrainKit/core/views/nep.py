@@ -193,7 +193,8 @@ class NepResultPlotWidget(QWidget):
         max_generations = 100000
         population_size = 40
         convergence_tol = 1e-8
-        progress_diag = QProgressDialog(f"", "Cancel", 0, max_generations, self._parent)
+        config_set = set(data.structure.get_all_config())
+        progress_diag = QProgressDialog(f"", "Cancel", 0, len(config_set), self._parent)
         thread = utils.LoadingThread(self._parent, show_tip=False)
         progress_diag.setFixedSize(300, 100)
         progress_diag.setWindowTitle("Shift energies")

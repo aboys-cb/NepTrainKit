@@ -66,6 +66,16 @@ class TestNepTrainResultData( unittest.TestCase):
         os.remove(os.path.join(self.data_dir,"virial_train.out"))
         os.remove(os.path.join(self.data_dir,"descriptor.out"))
 
+    def test_inverse_select(self):
+        result = NepTrainResultData.from_path(self.train_path)
+        result.load()
+        result.select([0,1,3])
+        result.uncheck(0)
+        result.inverse_select()
+        self.assertEqual(len(result.select_index), result.num-2)
+        self.assertNotIn(1, result.select_index)
+        self.assertNotIn(3, result.select_index)
+
 
 class TestNepPolarizabilityResultData( unittest.TestCase):
     def setUp(self):
@@ -110,6 +120,16 @@ class TestNepPolarizabilityResultData( unittest.TestCase):
         os.remove(os.path.join(self.data_dir,"polarizability_train.out"))
         os.remove(os.path.join(self.data_dir,"descriptor.out"))
 
+    def test_inverse_select(self):
+        result = NepPolarizabilityResultData.from_path(self.train_path)
+        result.load()
+        result.select([0,1,3])
+        result.uncheck(0)
+        result.inverse_select()
+        self.assertEqual(len(result.select_index), result.num-2)
+        self.assertNotIn(1, result.select_index)
+        self.assertNotIn(3, result.select_index)
+
 class TestNepDipoleResultData(unittest.TestCase):
     def setUp(self):
 
@@ -151,6 +171,16 @@ class TestNepDipoleResultData(unittest.TestCase):
         result.load()
         os.remove(os.path.join(self.data_dir,"dipole_train.out"))
         os.remove(os.path.join(self.data_dir,"descriptor.out"))
+
+    def test_inverse_select(self):
+        result = NepDipoleResultData.from_path(self.train_path)
+        result.load()
+        result.select([0,1,3])
+        result.uncheck(0)
+        result.inverse_select()
+        self.assertEqual(len(result.select_index), result.num-2)
+        self.assertNotIn(1, result.select_index)
+        self.assertNotIn(3, result.select_index)
 
 
 if __name__ == "__main__":

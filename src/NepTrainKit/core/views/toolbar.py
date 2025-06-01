@@ -43,6 +43,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     revokeSignal=Signal()
     exportSignal=Signal()
     shiftEnergySignal=Signal()
+    inverseSignal=Signal()
 
     def init_actions(self):
         self.addButton("Reset View",QIcon(":/images/src/images/init.svg"),self.resetSignal)
@@ -79,6 +80,9 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         delete_action = self.addButton("Delete Selected Items",
                                      QIcon(":/images/src/images/delete.svg"),
                                      self.deleteSignal)
+        inverse_action = self.addButton("Inverse Selection",
+                                     QIcon(":/images/src/images/show.svg"),
+                                     self.inverseSignal)
         self.addSeparator()
         export_action = self.addButton("Export structure descriptor",
                                      QIcon(":/images/src/images/export.svg"),

@@ -15,7 +15,12 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
-from NepTrainKit.core.custom_widget import GetIntMessageBox, SparseMessageBox, IndexSelectMessageBox
+from NepTrainKit.core.custom_widget import (
+    GetIntMessageBox,
+    SparseMessageBox,
+    IndexSelectMessageBox,
+    ShiftEnergyMessageBox,
+)
 from NepTrainKit.core.io.select import farthest_point_sampling
 from NepTrainKit.core.views.toolbar import NepDisplayGraphicsToolBar
 from NepTrainKit.core.energy_shift import shift_dataset_energy
@@ -195,6 +200,22 @@ class NepResultPlotWidget(QWidget):
         max_generations = 100000
         population_size = 40
         convergence_tol = 1e-8
+
+        box = ShiftEnergyMessageBox(
+            self._parent,
+            "Specify regex groups for Config_type (comma separated)"
+        )
+        box.genSpinBox.setValue(max_generations)
+        box.sizeSpinBox.setValue(population_size)
+        box.tolSpinBox.setValue(convergence_tol)
+        if not box.exec():
+            return
+        pattern_text = box.groupEdit.text().strip()
+        group_patterns = [p.strip() for p in pattern_text.split(',') if p.strip()]
+        max_generations = box.genSpinBox.value()
+        population_size = box.sizeSpinBox.value()
+        convergence_tol = box.tolSpinBox.value()
+
         config_set = set(data.structure.get_all_config())
         progress_diag = QProgressDialog(f"", "Cancel", 0, len(config_set), self._parent)
         thread = utils.LoadingThread(self._parent, show_tip=False)
@@ -203,12 +224,15 @@ class NepResultPlotWidget(QWidget):
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
         progress_diag.canceled.connect(thread.stop_work)  # 用户取消时终止线程
-        thread.start_work(shift_dataset_energy,
-                          structures=data.structure.now_data,
-                          reference_structures=data.structure.all_data[ref_index],
-                          max_generations = max_generations,
-                          population_size=population_size,
-                          convergence_tol=convergence_tol)
+        thread.start_work(
+            shift_dataset_energy,
+            structures=data.structure.now_data,
+            reference_structures=data.structure.all_data[ref_index],
+            max_generations=max_generations,
+            population_size=population_size,
+            convergence_tol=convergence_tol,
+            group_patterns=group_patterns,
+        )
         progress_diag.exec()
         if hasattr(data, "energy") and data.energy.num != 0:
             for i, s in enumerate(data.structure.all_data):

@@ -95,6 +95,44 @@ class IndexSelectMessageBox(MessageBoxBase):
         self.widget.setMinimumWidth(200)
 
 
+class ShiftEnergyMessageBox(MessageBoxBase):
+    """Dialog for energy baseline shift parameters."""
+
+    def __init__(self, parent=None, tip="Group regex patterns (comma separated)"):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel.setWordWrap(True)
+        self.groupEdit = QLineEdit(self)
+
+        self._frame = QFrame(self)
+        self.frame_layout = QGridLayout(self._frame)
+        self.frame_layout.setContentsMargins(0, 0, 0, 0)
+        self.frame_layout.setSpacing(2)
+
+        self.genSpinBox = SpinBox(self)
+        self.genSpinBox.setMaximum(100000000)
+        self.sizeSpinBox = SpinBox(self)
+        self.sizeSpinBox.setMaximum(999999)
+        self.tolSpinBox = DoubleSpinBox(self)
+        self.tolSpinBox.setDecimals(8)
+        self.tolSpinBox.setMinimum(0)
+
+        self.frame_layout.addWidget(CaptionLabel("Max generations", self), 0, 0)
+        self.frame_layout.addWidget(self.genSpinBox, 0, 1)
+        self.frame_layout.addWidget(CaptionLabel("Population size", self), 1, 0)
+        self.frame_layout.addWidget(self.sizeSpinBox, 1, 1)
+        self.frame_layout.addWidget(CaptionLabel("Convergence tol", self), 2, 0)
+        self.frame_layout.addWidget(self.tolSpinBox, 2, 1)
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.groupEdit)
+        self.viewLayout.addWidget(self._frame)
+
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
+        self.widget.setMinimumWidth(250)
+
+
 
 
 class ProgressDialog(FramelessDialog):

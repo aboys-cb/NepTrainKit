@@ -10,6 +10,7 @@ from .dialog import (
     GetIntMessageBox,
     SparseMessageBox,
     IndexSelectMessageBox,
+    ShiftEnergyMessageBox,
     ProgressDialog,
     PeriodicTableDialog,
 )
@@ -35,6 +36,7 @@ __all__ = [
     "GetIntMessageBox",
     "SparseMessageBox",
     "IndexSelectMessageBox",
+    "ShiftEnergyMessageBox",
     "ProgressDialog",
     "PeriodicTableDialog",
     "SpinBoxUnitInputFrame",

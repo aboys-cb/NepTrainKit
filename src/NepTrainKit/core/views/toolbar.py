@@ -61,7 +61,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
                                     self.sparseSignal)
 
         self.addButton("Select by Index",
-                       QIcon(":/images/src/images/search.svg"),
+                       QIcon(":/images/src/images/index.svg"),
                        self.selectIndexSignal)
 
 

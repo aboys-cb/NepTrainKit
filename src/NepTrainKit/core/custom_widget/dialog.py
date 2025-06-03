@@ -94,6 +94,9 @@ class IndexSelectMessageBox(MessageBoxBase):
         self.cancelButton.setText('Cancel')
         self.widget.setMinimumWidth(200)
 
+
+
+
 class ProgressDialog(FramelessDialog):
     """进度条弹窗"""
     def __init__(self,parent=None,title=""):

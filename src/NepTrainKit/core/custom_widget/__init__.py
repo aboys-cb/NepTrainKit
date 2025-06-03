@@ -9,6 +9,7 @@ from .completer import CompleterModel, JoinDelegate, ConfigCompleter
 from .dialog import (
     GetIntMessageBox,
     SparseMessageBox,
+    IndexSelectMessageBox,
     ProgressDialog,
     PeriodicTableDialog,
 )
@@ -33,6 +34,7 @@ __all__ = [
     "ConfigCompleter",
     "GetIntMessageBox",
     "SparseMessageBox",
+    "IndexSelectMessageBox",
     "ProgressDialog",
     "PeriodicTableDialog",
     "SpinBoxUnitInputFrame",

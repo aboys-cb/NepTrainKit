@@ -4,13 +4,14 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QVBoxLayout, QFrame, QGridLayout, QPushButton
+from PySide6.QtWidgets import QVBoxLayout, QFrame, QGridLayout, QPushButton, QLineEdit
 from PySide6.QtCore import Signal, Qt
 from qfluentwidgets import (
     MessageBoxBase,
     SpinBox,
     CaptionLabel,
     DoubleSpinBox,
+    CheckBox,
     ProgressBar,
     FluentStyleSheet,
     FluentTitleBar,
@@ -71,6 +72,26 @@ class SparseMessageBox(MessageBoxBase):
         self.yesButton.setText('Ok')
         self.cancelButton.setText('Cancel')
 
+        self.widget.setMinimumWidth(200)
+
+
+class IndexSelectMessageBox(MessageBoxBase):
+    """Dialog for selecting structures by index."""
+
+    def __init__(self, parent=None, tip="Specify index or slice"):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel.setWordWrap(True)
+        self.indexEdit = QLineEdit(self)
+        self.checkBox = CheckBox("Use original indices", self)
+        self.checkBox.setChecked(True)
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.indexEdit)
+        self.viewLayout.addWidget(self.checkBox)
+
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
         self.widget.setMinimumWidth(200)
 
 class ProgressDialog(FramelessDialog):

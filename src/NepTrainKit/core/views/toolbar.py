@@ -44,6 +44,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     exportSignal=Signal()
     shiftEnergySignal=Signal()
     inverseSignal=Signal()
+    selectIndexSignal=Signal()
 
     def init_actions(self):
         self.addButton("Reset View",QIcon(":/images/src/images/init.svg"),self.resetSignal)
@@ -58,6 +59,10 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         sparse_action=self.addButton("Sparse samples",
                                     QIcon(":/images/src/images/sparse.svg"),
                                     self.sparseSignal)
+
+        self.addButton("Select by Index",
+                       QIcon(":/images/src/images/search.svg"),
+                       self.selectIndexSignal)
 
 
         pen_action=self.addButton("Mouse Selection",

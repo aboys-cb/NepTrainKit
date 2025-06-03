@@ -15,7 +15,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
-from NepTrainKit.core.custom_widget import GetIntMessageBox, SparseMessageBox
+from NepTrainKit.core.custom_widget import GetIntMessageBox, SparseMessageBox, IndexSelectMessageBox
 from NepTrainKit.core.io.select import farthest_point_sampling
 from NepTrainKit.core.views.toolbar import NepDisplayGraphicsToolBar
 from NepTrainKit.core.energy_shift import shift_dataset_energy
@@ -70,6 +70,7 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.sparseSignal.connect(self.sparse_point)
         self.tool_bar.shiftEnergySignal.connect(self.shift_energy_baseline)
         self.tool_bar.inverseSignal.connect(self.inverse_select)
+        self.tool_bar.selectIndexSignal.connect(self.select_by_index)
         self.canvas.tool_bar=self.tool_bar
 
 
@@ -217,6 +218,23 @@ class NepResultPlotWidget(QWidget):
 
     def inverse_select(self):
         self.canvas.inverse_select()
+
+    def select_by_index(self):
+        if self.canvas.nep_result_data is None:
+            return
+        box = IndexSelectMessageBox(self._parent, "Select structures by index")
+        if not box.exec():
+            return
+        text = box.indexEdit.text().strip()
+        use_origin = box.checkBox.isChecked()
+        data = self.canvas.nep_result_data.structure
+        total = data.all_data.shape[0] if use_origin else data.now_data.shape[0]
+        indices = utils.parse_index_string(text, total)
+        if not indices:
+            return
+        if not use_origin:
+            indices = data.group_array.now_data[indices].tolist()
+        self.canvas.select_index(indices, False)
 
     def set_dataset(self,dataset):
 

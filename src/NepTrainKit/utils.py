@@ -8,6 +8,7 @@ import subprocess
 import time
 import os
 import traceback
+import re
 from collections.abc import Iterable
 
 from PySide6.QtCore import QThread, Signal
@@ -205,3 +206,43 @@ class FilterProcessingThread(QThread):
         except Exception as e:
             logger.debug(traceback.format_exc())
             self.errorSignal.emit(str(e))
+
+
+def parse_index_string(s: str, total: int) -> list[int]:
+    """Parse an index expression into a list of indices.
+
+    Parameters
+    ----------
+    s : str
+        Index expression like ``"1:10"``, ``":100"`` or ``"::3"``.
+        Multiple expressions can be separated by comma or whitespace.
+    total : int
+        Maximum length of the dataset for bounds checking.
+
+    Returns
+    -------
+    list[int]
+        Sorted list of unique indices within ``range(total)``.
+    """
+    indices: list[int] = []
+    tokens = [t for t in re.split(r"[,\s]+", s.strip()) if t]
+    for token in tokens:
+        if ":" in token:
+            parts = token.split(":")
+            if len(parts) > 3:
+                continue
+            start = int(parts[0]) if parts[0] else None
+            end = int(parts[1]) if len(parts) > 1 and parts[1] else None
+            step = int(parts[2]) if len(parts) == 3 and parts[2] else None
+            slc = slice(start, end, step)
+            indices.extend(range(*slc.indices(total)))
+        else:
+            try:
+                idx = int(token)
+            except ValueError:
+                continue
+            if idx < 0:
+                idx += total
+            if 0 <= idx < total:
+                indices.append(idx)
+    return sorted(set(indices))

@@ -8,6 +8,7 @@ from __future__ import annotations
 import numpy as np
 from collections import Counter
 from typing import List, Dict
+import re
 from NepTrainKit import utils
 from .structure import Structure
 
@@ -68,7 +69,8 @@ def shift_dataset_energy(structures: List[Structure],
                          max_generations: int = 100000,
                          population_size: int = 40,
                          convergence_tol: float = 1e-8,
-                         random_seed: int = 42):
+                         random_seed: int = 42,
+                         group_patterns: List[str] | None = None):
     """Shift structure energies so that groups align to the reference structure."""
     frames = []
     for s in structures:
@@ -85,11 +87,26 @@ def shift_dataset_energy(structures: List[Structure],
     ref_mean = np.mean(ref_energies)
 
     all_config_types = {f["config_type"] for f in frames}
-    shift_groups = [g for g in all_config_types ]
+
+    # build mapping from config_type to regex group name
+    config_to_group: Dict[str, str] = {}
+    if group_patterns:
+        for pat in group_patterns:
+            try:
+                regex = re.compile(pat)
+            except re.error:
+                continue
+            for ct in all_config_types:
+                if ct not in config_to_group and regex.match(ct):
+                    config_to_group[ct] = pat
+    for ct in all_config_types:
+        config_to_group.setdefault(ct, ct)
+
+    shift_groups = sorted(set(config_to_group.values()))
 
     group_to_atomic_ref = {}
     for group in shift_groups:
-        grp_frames = [f for f in frames if f["config_type"] == group]
+        grp_frames = [f for f in frames if config_to_group[f["config_type"]] == group]
         if not grp_frames:
             continue
         energies = np.array([f["energy"] for f in grp_frames])
@@ -110,7 +127,7 @@ def shift_dataset_energy(structures: List[Structure],
 
     # apply shift
     for s, frame in zip(structures, frames):
-        group = frame["config_type"]
+        group = config_to_group[frame["config_type"]]
         if group in group_to_atomic_ref:
             count_vec = np.array([frame["elem_counts"].get(e, 0) for e in all_elements], dtype=float)
             shift = np.dot(count_vec, group_to_atomic_ref[group])

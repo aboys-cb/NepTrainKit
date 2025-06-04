@@ -23,7 +23,7 @@ from NepTrainKit.core.custom_widget import (
 )
 from NepTrainKit.core.io.select import farthest_point_sampling
 from NepTrainKit.core.views.toolbar import NepDisplayGraphicsToolBar
-from NepTrainKit.core.energy_shift import shift_dataset_energy
+from NepTrainKit.core.energy_shift import shift_dataset_energy, suggest_group_patterns
 
 
 class NepResultPlotWidget(QWidget):
@@ -197,25 +197,33 @@ class NepResultPlotWidget(QWidget):
         if len(ref_index) == 0:
             MessageManager.send_info_message("No data selected!")
             return
-        max_generations = 100000
-        population_size = 40
-        convergence_tol = 1e-8
 
+        max_generations = Config.getint("widget","max_generation_value",100000)
+        population_size =  Config.getint("widget","population_size",40)
+        convergence_tol = Config.getfloat("widget","convergence_tol", 1e-8)
+        config_set = set(data.structure.get_all_config())
+        suggested = suggest_group_patterns(list(config_set))
         box = ShiftEnergyMessageBox(
             self._parent,
             "Specify regex groups for Config_type (comma separated)"
         )
+        box.groupEdit.setText(";".join(suggested))
         box.genSpinBox.setValue(max_generations)
         box.sizeSpinBox.setValue(population_size)
         box.tolSpinBox.setValue(convergence_tol)
+
         if not box.exec():
             return
+
         pattern_text = box.groupEdit.text().strip()
-        group_patterns = [p.strip() for p in pattern_text.split(',') if p.strip()]
+        group_patterns = [p.strip() for p in pattern_text.split(';') if p.strip()]
+
         max_generations = box.genSpinBox.value()
         population_size = box.sizeSpinBox.value()
         convergence_tol = box.tolSpinBox.value()
-
+        Config.set("widget","max_generation_value",max_generations)
+        Config.set("widget","population_size",population_size)
+        Config.set("widget","convergence_tol",convergence_tol)
         config_set = set(data.structure.get_all_config())
         progress_diag = QProgressDialog(f"", "Cancel", 0, len(config_set), self._parent)
         thread = utils.LoadingThread(self._parent, show_tip=False)

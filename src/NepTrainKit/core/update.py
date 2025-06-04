@@ -72,9 +72,7 @@ class UpdateWoker( QObject):
         if version_info['tag_name'][1:] == __version__:
             MessageManager.send_success_message("You are already using the latest version!")
             return
-        if not is_nuitka_compiled:
-            MessageManager.send_info_message("You can update via pip install NepTrainKit -U")
-            return
+
         box = MessageBox("New version detected:" + version_info["name"] + version_info["tag_name"],
                          version_info["body"],
                          self._parent
@@ -92,6 +90,9 @@ class UpdateWoker( QObject):
         MessageManager.send_warning_message("No update package available for your system. Please download it manually!")
 
     def check_update(self):
+        if not is_nuitka_compiled:
+            MessageManager.send_info_message("You can update via pip install NepTrainKit -U --pre")
+            return
         self.update_thread.start_work(self._check_update)
 
 

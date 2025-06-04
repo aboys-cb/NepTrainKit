@@ -53,6 +53,9 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
                                    self.pan,
                                    True
                                    )
+        self.addButton("Select by Index",
+                       QIcon(":/images/src/images/index.svg"),
+                       self.selectIndexSignal)
         find_max_action = self.addButton("Find Max Error Point",
                                         QIcon(":/images/src/images/find_max.svg"),
                                         self.findMaxSignal)
@@ -60,9 +63,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
                                     QIcon(":/images/src/images/sparse.svg"),
                                     self.sparseSignal)
 
-        self.addButton("Select by Index",
-                       QIcon(":/images/src/images/index.svg"),
-                       self.selectIndexSignal)
+
 
 
         pen_action=self.addButton("Mouse Selection",

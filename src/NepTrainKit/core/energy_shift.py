@@ -12,7 +12,42 @@ import re
 from NepTrainKit import utils
 from .structure import Structure
 
+def longest_common_prefix(strs: List[str]) -> str:
+    if not strs:
+        return ""
+    s1, s2 = min(strs), max(strs)
+    for i, c in enumerate(s1):
+        if c != s2[i]:
+            return s1[:i]
+    return s1
 
+
+def suggest_group_patterns(config_types: List[str], min_group_size: int = 2, min_prefix_len: int = 3) -> List[str]:
+    """Group strings by common prefix without relying on delimiters, and output regex patterns."""
+    unused = set(config_types)
+    patterns = []
+
+    while unused:
+        base = unused.pop()
+        group = [base]
+        to_remove = []
+
+        for other in unused:
+            prefix = longest_common_prefix([base, other])
+            if len(prefix) >= min_prefix_len:
+                group.append(other)
+                to_remove.append(other)
+
+        for item in to_remove:
+            unused.remove(item)
+
+        if len(group) >= min_group_size:
+            prefix = longest_common_prefix(group)
+            patterns.append(re.escape(prefix) + '.*')
+        else:
+            patterns.extend(re.escape(g) for g in group)
+
+    return sorted(patterns)
 def atomic_baseline_cost(param_population: np.ndarray,
                          energies: np.ndarray,
                          element_counts: np.ndarray,
@@ -106,6 +141,7 @@ def shift_dataset_energy(structures: List[Structure],
 
     group_to_atomic_ref = {}
     for group in shift_groups:
+
         grp_frames = [f for f in frames if config_to_group[f["config_type"]] == group]
         if not grp_frames:
             continue

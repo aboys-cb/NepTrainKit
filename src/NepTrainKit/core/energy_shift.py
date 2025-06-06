@@ -11,6 +11,11 @@ from typing import List, Dict
 import re
 from NepTrainKit import utils
 from .structure import Structure
+from .calculator import NepCalculator
+
+REF_GROUP_ALIGNMENT = "REF_GROUP_ALIGNMENT"
+ZERO_BASELINE_ALIGNMENT = "ZERO_BASELINE_ALIGNMENT"
+DFT_TO_NEP_ALIGNMENT = "DFT_TO_NEP_ALIGNMENT"
 
 def longest_common_prefix(strs: List[str]) -> str:
     if not strs:
@@ -99,14 +104,32 @@ def nes_optimize_atomic_baseline(num_variables: int,
 
 
 
-def shift_dataset_energy(structures: List[Structure],
-                         reference_structures: List[Structure],
-                         max_generations: int = 100000,
-                         population_size: int = 40,
-                         convergence_tol: float = 1e-8,
-                         random_seed: int = 42,
-                         group_patterns: List[str] | None = None):
-    """Shift structure energies so that groups align to the reference structure."""
+def shift_dataset_energy(
+        structures: List[Structure],
+        reference_structures: List[Structure] | None,
+        max_generations: int = 100000,
+        population_size: int = 40,
+        convergence_tol: float = 1e-8,
+        random_seed: int = 42,
+        group_patterns: List[str] | None = None,
+        alignment_mode: str = REF_GROUP_ALIGNMENT,
+        nep_model_file: str | None = None):
+    """Shift structure energies using different alignment strategies.
+
+    Parameters
+    ----------
+    structures
+        Structures whose energies will be shifted.
+    reference_structures
+        Structures used to compute the reference mean energy when
+        ``alignment_mode`` is ``REF_GROUP_ALIGNMENT``.
+    alignment_mode
+        One of ``REF_GROUP_ALIGNMENT``, ``ZERO_BASELINE_ALIGNMENT`` or
+        ``DFT_TO_NEP_ALIGNMENT``.
+    nep_model_file
+        Path to NEP model when ``alignment_mode`` is
+        ``DFT_TO_NEP_ALIGNMENT``.
+    """
     frames = []
     for s in structures:
         energy = float(s.energy)
@@ -118,8 +141,20 @@ def shift_dataset_energy(structures: List[Structure],
     num_elements = len(all_elements)
 
 
-    ref_energies = np.array([f.energy for f in reference_structures ])
-    ref_mean = np.mean(ref_energies)
+    ref_mean = None
+    if alignment_mode == REF_GROUP_ALIGNMENT:
+        if not reference_structures:
+            raise ValueError("reference_structures is required for REF_GROUP_ALIGNMENT")
+        ref_energies = np.array([f.energy for f in reference_structures])
+        ref_mean = np.mean(ref_energies)
+
+    if alignment_mode == DFT_TO_NEP_ALIGNMENT:
+        if nep_model_file is None:
+            raise ValueError("nep_model_file is required for DFT_TO_NEP_ALIGNMENT")
+        calculator = NepCalculator(nep_model_file)
+        nep_energies, _, _ = calculator.calculate(structures)
+        for f, e in zip(frames, nep_energies):
+            f["nep_energy"] = e
 
     all_config_types = {f["config_type"] for f in frames}
 
@@ -147,16 +182,24 @@ def shift_dataset_energy(structures: List[Structure],
             continue
         energies = np.array([f["energy"] for f in grp_frames])
         counts = np.array([[f["elem_counts"].get(e, 0) for e in all_elements] for f in grp_frames], dtype=float)
-        targets = np.full_like(energies, ref_mean)
-        atomic_ref = nes_optimize_atomic_baseline(num_elements,
-                                                  max_generations,
-                                                  energies,
-                                                  counts,
-                                                  targets,
-                                                  pop_size=population_size,
-                                                  tol=convergence_tol,
-                                                  seed=random_seed,
-                                                  print_every=100)
+
+        if alignment_mode == REF_GROUP_ALIGNMENT:
+            targets = np.full_like(energies, ref_mean)
+        elif alignment_mode == ZERO_BASELINE_ALIGNMENT:
+            targets = np.zeros_like(energies)
+        else:  # DFT_TO_NEP_ALIGNMENT
+            targets = np.array([f["nep_energy"] for f in grp_frames])
+        atomic_ref = nes_optimize_atomic_baseline(
+            num_elements,
+            max_generations,
+            energies,
+            counts,
+            targets,
+            pop_size=population_size,
+            tol=convergence_tol,
+            seed=random_seed,
+            print_every=100,
+        )
         group_to_atomic_ref[group] = atomic_ref
         #这里是为了更新ui信号
         yield 1

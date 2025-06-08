@@ -13,6 +13,7 @@ from qfluentwidgets import (
     DoubleSpinBox,
     CheckBox,
     ProgressBar,
+    ComboBox,
     FluentStyleSheet,
     FluentTitleBar,
     TitleLabel
@@ -116,6 +117,13 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.tolSpinBox = DoubleSpinBox(self)
         self.tolSpinBox.setDecimals(8)
         self.tolSpinBox.setMinimum(0)
+        self.modeCombo = ComboBox(self)
+        self.modeCombo.addItems([
+            "REF_GROUP_ALIGNMENT",
+            "ZERO_BASELINE_ALIGNMENT",
+            "DFT_TO_NEP_ALIGNMENT",
+        ])
+        self.nepLineEdit = QLineEdit(self)
 
         self.frame_layout.addWidget(CaptionLabel("Max generations", self), 0, 0)
         self.frame_layout.addWidget(self.genSpinBox, 0, 1)
@@ -123,6 +131,10 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.frame_layout.addWidget(self.sizeSpinBox, 1, 1)
         self.frame_layout.addWidget(CaptionLabel("Convergence tol", self), 2, 0)
         self.frame_layout.addWidget(self.tolSpinBox, 2, 1)
+        self.frame_layout.addWidget(CaptionLabel("Mode", self), 3, 0)
+        self.frame_layout.addWidget(self.modeCombo, 3, 1)
+        self.frame_layout.addWidget(CaptionLabel("NEP model", self), 4, 0)
+        self.frame_layout.addWidget(self.nepLineEdit, 4, 1)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.groupEdit)

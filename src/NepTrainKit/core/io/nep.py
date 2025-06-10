@@ -155,6 +155,17 @@ class ResultData(QObject):
                 self.select_index.remove(i)
 
         self.updateInfoSignal.emit()
+
+    def inverse_select(self):
+        """Invert the current selection state of all active structures"""
+        active_indices = set(self.structure.data.now_indices.tolist())
+        selected_indices = set(self.select_index)
+        unselect = list(selected_indices)
+        select = list(active_indices - selected_indices)
+        if unselect:
+            self.uncheck(unselect)
+        if select:
+            self.select(select)
     def export_selected_xyz(self,save_file_path):
         """
         导出当前选中的结构

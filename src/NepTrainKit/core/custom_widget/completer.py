@@ -33,7 +33,7 @@ class CompleterModel(QAbstractListModel):
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
 
         if not index.isValid():
-            print("index")
+
             return None
         # print(role)
         # Qt.ItemDataRole.DisplayRole
@@ -44,7 +44,7 @@ class CompleterModel(QAbstractListModel):
             if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
                 return word
             elif role == CountRole:
-                print(count)
+
                 return str(count)
 
 

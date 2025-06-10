@@ -4,14 +4,16 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QVBoxLayout, QFrame, QGridLayout, QPushButton
+from PySide6.QtWidgets import QVBoxLayout, QFrame, QGridLayout, QPushButton, QLineEdit
 from PySide6.QtCore import Signal, Qt
 from qfluentwidgets import (
     MessageBoxBase,
     SpinBox,
     CaptionLabel,
     DoubleSpinBox,
+    CheckBox,
     ProgressBar,
+    ComboBox,
     FluentStyleSheet,
     FluentTitleBar,
     TitleLabel
@@ -72,6 +74,78 @@ class SparseMessageBox(MessageBoxBase):
         self.cancelButton.setText('Cancel')
 
         self.widget.setMinimumWidth(200)
+
+
+class IndexSelectMessageBox(MessageBoxBase):
+    """Dialog for selecting structures by index."""
+
+    def __init__(self, parent=None, tip="Specify index or slice"):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel.setWordWrap(True)
+        self.indexEdit = QLineEdit(self)
+        self.checkBox = CheckBox("Use original indices", self)
+        self.checkBox.setChecked(True)
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.indexEdit)
+        self.viewLayout.addWidget(self.checkBox)
+
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
+        self.widget.setMinimumWidth(200)
+
+
+class ShiftEnergyMessageBox(MessageBoxBase):
+    """Dialog for energy baseline shift parameters."""
+
+    def __init__(self, parent=None, tip="Group regex patterns (comma separated)"):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel.setWordWrap(True)
+        self.groupEdit = QLineEdit(self)
+
+        self._frame = QFrame(self)
+        self.frame_layout = QGridLayout(self._frame)
+        self.frame_layout.setContentsMargins(0, 0, 0, 0)
+        self.frame_layout.setSpacing(2)
+
+        self.genSpinBox = SpinBox(self)
+        self.genSpinBox.setMaximum(100000000)
+        self.sizeSpinBox = SpinBox(self)
+        self.sizeSpinBox.setMaximum(999999)
+        self.tolSpinBox = DoubleSpinBox(self)
+        self.tolSpinBox.setDecimals(8)
+        self.tolSpinBox.setMinimum(0)
+        self.modeCombo = ComboBox(self)
+        self.modeCombo.addItems([
+            "REF_GROUP_ALIGNMENT",
+            "ZERO_BASELINE_ALIGNMENT",
+            "DFT_TO_NEP_ALIGNMENT",
+        ])
+        self.modeCombo.setCurrentText("DFT_TO_NEP_ALIGNMENT")
+
+
+        self.frame_layout.addWidget(CaptionLabel("Max generations", self), 0, 0)
+        self.frame_layout.addWidget(self.genSpinBox, 0, 1)
+        self.frame_layout.addWidget(CaptionLabel("Population size", self), 1, 0)
+        self.frame_layout.addWidget(self.sizeSpinBox, 1, 1)
+        self.frame_layout.addWidget(CaptionLabel("Convergence tol", self), 2, 0)
+        self.frame_layout.addWidget(self.tolSpinBox, 2, 1)
+        self.frame_layout.addWidget(CaptionLabel("Mode", self), 3, 0)
+        self.frame_layout.addWidget(self.modeCombo, 3, 1)
+
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.groupEdit)
+        self.viewLayout.addWidget(self._frame)
+
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
+        self.widget.setMinimumWidth(250)
+
+
+
 
 class ProgressDialog(FramelessDialog):
     """进度条弹窗"""

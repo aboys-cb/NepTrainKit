@@ -156,6 +156,16 @@ class CanvasLayoutBase(CanvasBase):
             self.nep_result_data.select(structure_index)
 
             self.update_scatter_color(structure_index, Brushes.Selected)
+
+    def inverse_select(self):
+        if self.nep_result_data is None:
+            return
+
+        active_indices = set(self.nep_result_data.structure.now_indices.tolist())
+        selected = set(self.nep_result_data.select_index)
+
+        self.select_index(list(selected), True)
+        self.select_index(list(active_indices - selected), False)
 class VispyCanvasLayoutBase(CanvasLayoutBase,QObject,metaclass=CombinedMeta):
     def __init__(self,*args,**kwargs):
         QObject.__init__(self)

@@ -42,6 +42,9 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     deleteSignal=Signal()
     revokeSignal=Signal()
     exportSignal=Signal()
+    shiftEnergySignal=Signal()
+    inverseSignal=Signal()
+    selectIndexSignal=Signal()
 
     def init_actions(self):
         self.addButton("Reset View",QIcon(":/images/src/images/init.svg"),self.resetSignal)
@@ -50,12 +53,17 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
                                    self.pan,
                                    True
                                    )
+        self.addButton("Select by Index",
+                       QIcon(":/images/src/images/index.svg"),
+                       self.selectIndexSignal)
         find_max_action = self.addButton("Find Max Error Point",
                                         QIcon(":/images/src/images/find_max.svg"),
                                         self.findMaxSignal)
         sparse_action=self.addButton("Sparse samples",
                                     QIcon(":/images/src/images/sparse.svg"),
                                     self.sparseSignal)
+
+
 
 
         pen_action=self.addButton("Mouse Selection",
@@ -71,6 +79,9 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         discovery_action = self.addButton("Finding non-physical structures",
                                         QIcon(":/images/src/images/discovery.svg"),
                                         self.discoverySignal)
+        inverse_action = self.addButton("Inverse Selection",
+                                     QIcon(":/images/src/images/inverse.svg"),
+                                     self.inverseSignal)
         revoke_action = self.addButton("Undo",
                                      QIcon(":/images/src/images/revoke.svg"),
                                      self.revokeSignal)
@@ -78,10 +89,15 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         delete_action = self.addButton("Delete Selected Items",
                                      QIcon(":/images/src/images/delete.svg"),
                                      self.deleteSignal)
+
         self.addSeparator()
         export_action = self.addButton("Export structure descriptor",
                                      QIcon(":/images/src/images/export.svg"),
                                      self.exportSignal)
+        self.addSeparator()
+        self.addButton("Energy Baseline Shift",
+                       QIcon(":/images/src/images/alignment.svg"),
+                       self.shiftEnergySignal)
 
     def reset(self):
         if self.action_group.checkedAction():

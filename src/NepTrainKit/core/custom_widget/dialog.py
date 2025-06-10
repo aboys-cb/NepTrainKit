@@ -5,7 +5,7 @@
 # @email    : 1747193328@qq.com
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QVBoxLayout, QFrame, QGridLayout, QPushButton, QLineEdit
-from PySide6.QtCore import Signal, Qt
+from PySide6.QtCore import Signal, Qt, QUrl
 from qfluentwidgets import (
     MessageBoxBase,
     SpinBox,
@@ -16,7 +16,7 @@ from qfluentwidgets import (
     ComboBox,
     FluentStyleSheet,
     FluentTitleBar,
-    TitleLabel
+    TitleLabel,HyperlinkLabel
 )
 from qframelesswindow import FramelessDialog
 import json
@@ -115,15 +115,15 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.sizeSpinBox = SpinBox(self)
         self.sizeSpinBox.setMaximum(999999)
         self.tolSpinBox = DoubleSpinBox(self)
-        self.tolSpinBox.setDecimals(8)
+        self.tolSpinBox.setDecimals(9)
         self.tolSpinBox.setMinimum(0)
         self.modeCombo = ComboBox(self)
         self.modeCombo.addItems([
-            "REF_GROUP_ALIGNMENT",
-            "ZERO_BASELINE_ALIGNMENT",
-            "DFT_TO_NEP_ALIGNMENT",
+            "REF_GROUP",
+            "ZERO_BASELINE",
+            "DFT_TO_NEP",
         ])
-        self.modeCombo.setCurrentText("DFT_TO_NEP_ALIGNMENT")
+        self.modeCombo.setCurrentText("DFT_TO_NEP")
 
 
         self.frame_layout.addWidget(CaptionLabel("Max generations", self), 0, 0)
@@ -132,7 +132,8 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.frame_layout.addWidget(self.sizeSpinBox, 1, 1)
         self.frame_layout.addWidget(CaptionLabel("Convergence tol", self), 2, 0)
         self.frame_layout.addWidget(self.tolSpinBox, 2, 1)
-        self.frame_layout.addWidget(CaptionLabel("Mode", self), 3, 0)
+        self.frame_layout.addWidget(HyperlinkLabel(QUrl("https://github.com/brucefan1983/GPUMD/tree/master/tools/Analysis_and_Processing/energy-reference-aligner"),
+                                                   "Alignment mode", self), 3, 0)
         self.frame_layout.addWidget(self.modeCombo, 3, 1)
 
 

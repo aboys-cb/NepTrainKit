@@ -3,6 +3,7 @@
 # @Time    : 2024/10/20 22:22
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import os
 import time
 import traceback
 
@@ -13,7 +14,7 @@ import numpy as np
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 
 
-from NepTrainKit import utils
+from NepTrainKit import utils, module_path
 from NepTrainKit.core import MessageManager, Config
 from NepTrainKit.core.custom_widget import (
     GetIntMessageBox,
@@ -194,9 +195,9 @@ class NepResultPlotWidget(QWidget):
         if data is None:
             return
         ref_index = list(data.select_index)
-        if len(ref_index) == 0:
-            MessageManager.send_info_message("No data selected!")
-            return
+        # if len(ref_index) == 0:
+        #     MessageManager.send_info_message("No data selected!")
+        #     return
 
         max_generations = Config.getint("widget","max_generation_value",100000)
         population_size =  Config.getint("widget","population_size",40)
@@ -211,6 +212,8 @@ class NepResultPlotWidget(QWidget):
         box.genSpinBox.setValue(max_generations)
         box.sizeSpinBox.setValue(population_size)
         box.tolSpinBox.setValue(convergence_tol)
+        nep89_path = os.path.join(module_path, "Config", "nep89.txt")
+        box.nepLineEdit.setText(nep89_path)
 
         if not box.exec():
             return

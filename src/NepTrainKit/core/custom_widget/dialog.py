@@ -123,6 +123,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
             "ZERO_BASELINE_ALIGNMENT",
             "DFT_TO_NEP_ALIGNMENT",
         ])
+        self.modeCombo.setCurrentText("DFT_TO_NEP_ALIGNMENT")
         self.nepLineEdit = QLineEdit(self)
 
         self.frame_layout.addWidget(CaptionLabel("Max generations", self), 0, 0)

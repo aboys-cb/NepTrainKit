@@ -143,7 +143,7 @@ def shift_dataset_energy(
 
     ref_mean = None
     if alignment_mode == REF_GROUP_ALIGNMENT:
-        if not reference_structures:
+        if not len(reference_structures):
             raise ValueError("reference_structures is required for REF_GROUP_ALIGNMENT")
         ref_energies = np.array([f.energy for f in reference_structures])
         ref_mean = np.mean(ref_energies)

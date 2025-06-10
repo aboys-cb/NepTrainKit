@@ -212,8 +212,7 @@ class NepResultPlotWidget(QWidget):
         box.genSpinBox.setValue(max_generations)
         box.sizeSpinBox.setValue(population_size)
         box.tolSpinBox.setValue(convergence_tol)
-        nep89_path = os.path.join(module_path, "Config", "nep89.txt")
-        box.nepLineEdit.setText(nep89_path)
+
 
         if not box.exec():
             return
@@ -222,7 +221,7 @@ class NepResultPlotWidget(QWidget):
         group_patterns = [p.strip() for p in pattern_text.split(';') if p.strip()]
 
         alignment_mode = box.modeCombo.currentText()
-        nep_model_file = box.nepLineEdit.text().strip() or None
+
 
         max_generations = box.genSpinBox.value()
         population_size = box.sizeSpinBox.value()
@@ -247,7 +246,7 @@ class NepResultPlotWidget(QWidget):
             convergence_tol=convergence_tol,
             group_patterns=group_patterns,
             alignment_mode=alignment_mode,
-            nep_model_file=nep_model_file,
+            nep_energy_array=data.energy.y,
         )
         progress_diag.exec()
         if hasattr(data, "energy") and data.energy.num != 0:

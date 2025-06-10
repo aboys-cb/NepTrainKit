@@ -1,5 +1,6 @@
 """Utilities for shifting structure energies using atomic baselines.
 抄的陈博的代码(已允许)
+url: https://github.com/brucefan1983/GPUMD/tree/master/tools/Analysis_and_Processing/energy-reference-aligner
 Zherui Chen Email: <chenzherui0124@foxmail.com>
 """
 
@@ -113,7 +114,7 @@ def shift_dataset_energy(
         random_seed: int = 42,
         group_patterns: List[str] | None = None,
         alignment_mode: str = REF_GROUP_ALIGNMENT,
-        nep_model_file: str | None = None):
+        nep_energy_array: np.array | None = None):
     """Shift structure energies using different alignment strategies.
 
     Parameters
@@ -126,8 +127,8 @@ def shift_dataset_energy(
     alignment_mode
         One of ``REF_GROUP_ALIGNMENT``, ``ZERO_BASELINE_ALIGNMENT`` or
         ``DFT_TO_NEP_ALIGNMENT``.
-    nep_model_file
-        Path to NEP model when ``alignment_mode`` is
+    nep_energy_array
+        nep energy array when ``alignment_mode`` is
         ``DFT_TO_NEP_ALIGNMENT``.
     """
     frames = []
@@ -135,6 +136,7 @@ def shift_dataset_energy(
         energy = float(s.energy)
         config_type = str(s.additional_fields.get("Config_type", ""))
         elem_counts = Counter(s.elements)
+
         frames.append({"energy": energy, "config_type": config_type, "elem_counts": elem_counts})
 
     all_elements = sorted({e for f in frames for e in f["elem_counts"]})
@@ -149,12 +151,11 @@ def shift_dataset_energy(
         ref_mean = np.mean(ref_energies)
 
     if alignment_mode == DFT_TO_NEP_ALIGNMENT:
-        if nep_model_file is None:
-            raise ValueError("nep_model_file is required for DFT_TO_NEP_ALIGNMENT")
-        calculator = NepCalculator(nep_model_file)
-        nep_energies, _, _ = calculator.calculate(structures)
-        for f, e in zip(frames, nep_energies):
-            f["nep_energy"] = e
+        if nep_energy_array is None:
+            raise ValueError("nep_energy_array is required for DFT_TO_NEP_ALIGNMENT")
+
+        for f, e in zip(frames, nep_energy_array):
+            f["nep_energy"] = e * f["elem_counts"].total()
 
     all_config_types = {f["config_type"] for f in frames}
 

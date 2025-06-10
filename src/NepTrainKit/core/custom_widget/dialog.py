@@ -124,7 +124,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
             "DFT_TO_NEP_ALIGNMENT",
         ])
         self.modeCombo.setCurrentText("DFT_TO_NEP_ALIGNMENT")
-        self.nepLineEdit = QLineEdit(self)
+
 
         self.frame_layout.addWidget(CaptionLabel("Max generations", self), 0, 0)
         self.frame_layout.addWidget(self.genSpinBox, 0, 1)
@@ -134,8 +134,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.frame_layout.addWidget(self.tolSpinBox, 2, 1)
         self.frame_layout.addWidget(CaptionLabel("Mode", self), 3, 0)
         self.frame_layout.addWidget(self.modeCombo, 3, 1)
-        self.frame_layout.addWidget(CaptionLabel("NEP model", self), 4, 0)
-        self.frame_layout.addWidget(self.nepLineEdit, 4, 1)
+
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.groupEdit)

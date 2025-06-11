@@ -14,9 +14,9 @@ from NepTrainKit import utils
 from .structure import Structure
 from .calculator import NepCalculator
 
-REF_GROUP_ALIGNMENT = "REF_GROUP_ALIGNMENT"
-ZERO_BASELINE_ALIGNMENT = "ZERO_BASELINE_ALIGNMENT"
-DFT_TO_NEP_ALIGNMENT = "DFT_TO_NEP_ALIGNMENT"
+REF_GROUP_ALIGNMENT = "REF_GROUP"
+ZERO_BASELINE_ALIGNMENT = "ZERO_BASELINE"
+DFT_TO_NEP_ALIGNMENT = "DFT_TO_NEP"
 
 def longest_common_prefix(strs: List[str]) -> str:
     if not strs:

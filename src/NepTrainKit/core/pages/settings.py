@@ -76,7 +76,7 @@ class SettingsWidget(ScrollArea):
         self.auto_load_card.setValue(auto_load_config)
 
         self.sort_atoms_card = SwitchSettingCard(
-            QIcon(":/images/src/images/alignment.svg"),
+            QIcon(":/images/src/images/sort.svg"),
             'Sort atoms',
             'Sort atoms in structures when processing cards',
             parent=self.personal_group

@@ -47,6 +47,7 @@
         <file>src/images/inverse.svg</file>
         <file>src/images/index.svg</file>
 
+        <file>src/images/sort.svg</file>
   </qresource>
   <qresource prefix="/theme">
     <file>src/qss/theme.qss</file>

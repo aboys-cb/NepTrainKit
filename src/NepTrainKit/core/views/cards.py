@@ -387,11 +387,11 @@ class SuperCellCard(MakeDataCard):
         self.behavior_type_combo.addItem("Maximum")
         self.behavior_type_combo.addItem("Iteration")
 
-        self.combo_label=BodyLabel("behavior:",self.setting_widget)
+        self.combo_label=BodyLabel("Behavior:",self.setting_widget)
         self.combo_label.setToolTip("Select supercell generation method")
         self.combo_label.installEventFilter(ToolTipFilter(self.combo_label, 300, ToolTipPosition.TOP))
 
-        self.super_scale_radio_button = RadioButton("super scale",self.setting_widget)
+        self.super_scale_radio_button = RadioButton("Super scale",self.setting_widget)
         self.super_scale_radio_button.setChecked(True)
         self.super_scale_condition_frame = SpinBoxUnitInputFrame(self)
         self.super_scale_condition_frame.set_input("",3)
@@ -399,7 +399,7 @@ class SuperCellCard(MakeDataCard):
         self.super_scale_radio_button.setToolTip("Scale factors along axes")
         self.super_scale_radio_button.installEventFilter(ToolTipFilter(self.super_scale_radio_button, 300, ToolTipPosition.TOP))
 
-        self.super_cell_radio_button = RadioButton("super cell",self.setting_widget)
+        self.super_cell_radio_button = RadioButton("Super cell",self.setting_widget)
         self.super_cell_condition_frame = SpinBoxUnitInputFrame(self)
         self.super_cell_condition_frame.set_input("Å",3)
         self.super_cell_condition_frame.setRange(1,100)

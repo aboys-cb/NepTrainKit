@@ -17,6 +17,7 @@ from loguru import logger
 from qfluentwidgets import StateToolTip
 
 from NepTrainKit.core import Config
+from ase.build.tools import sort as ase_sort
 from NepTrainKit.version import UPDATE_EXE, UPDATE_FILE, NepTrainKit_EXE
 
 
@@ -167,9 +168,12 @@ class DataProcessingThread(QThread):
         try:
             total = len(self.dataset)
             self.progressSignal.emit(0)
+            sort_atoms = Config.getboolean("widget", "sort_atoms", False)
             for index, structure in enumerate(self.dataset):
                 # 处理每个结构
                 processed = self.process_func(structure)
+                if sort_atoms:
+                    processed = [ase_sort(s) for s in processed]
 
                 self.result_dataset.extend(processed)
 

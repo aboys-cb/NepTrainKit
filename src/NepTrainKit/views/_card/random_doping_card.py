@@ -1,4 +1,62 @@
-from ..cards import *
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 2025/6/18 13:21
+# @Author  : 兵
+# @email    : 1747193328@qq.com
+import json
+from itertools import combinations
+
+import numpy as np
+from PySide6.QtWidgets import QFrame, QGridLayout
+from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
+
+from NepTrainKit.core import CardManager, process_organic_clusters, get_clusters
+from NepTrainKit.custom_widget import SpinBoxUnitInputFrame, DopingRulesWidget
+from NepTrainKit.custom_widget.card_widget import MakeDataCard
+from scipy.stats.qmc import Sobol
+
+
+def sample_dopants(dopant_list, ratios, N, exact=False, seed=None):
+    """
+    采样 dopant 的函数。
+
+    参数：
+    - dopant_list: list，可选的 dopant 值列表，比如 [0,1,2]
+    - ratios: list，与 dopant_list 对应的概率或比例列表，比如 [0.6,0.3,0.1]
+    - N: int，要生成的样本总数
+    - exact: bool，控制采样方式：
+        - False（默认）：每次独立按概率 p=ratios 抽样，结果数量只在期望值附近波动
+        - True：严格按 ratios*N 计算各值的个数（向下取整后把差值补给概率最高的那一项），然后打乱顺序
+    - seed: int 或 None，用于设置随机种子，保证可复现
+
+    返回：
+    - list，长度为 N 的采样结果
+    """
+    if seed is not None:
+        np.random.seed(seed)
+
+    dopant_list = list(dopant_list)
+    ratios = np.array(ratios, dtype=float)
+    ratios = ratios / ratios.sum()  # 归一化，以防输入不规范
+
+    if not exact:
+        # 独立概率抽样
+        return list(np.random.choice(dopant_list, size=N, p=ratios))
+    else:
+        # 严格按比例生成固定个数再打乱
+        counts = (ratios * N).astype(int)
+        diff = N - counts.sum()
+        if diff != 0:
+            # 差值补给比例最大的那一项
+            max_idx = np.argmax(ratios)
+            counts[max_idx] += diff
+
+        arr = np.repeat(dopant_list, counts)
+        np.random.shuffle(arr)
+        return list(arr)
+
+
+@CardManager.register_card
 
 class RandomDopingCard(MakeDataCard):
     card_name = "Random Doping"

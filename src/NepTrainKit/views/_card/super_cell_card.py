@@ -1,6 +1,23 @@
-from ..cards import *
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 2025/6/18 13:21
+# @Author  : 兵
+# @email    : 1747193328@qq.com
 
-@register_card_info
+from itertools import combinations
+from typing import List, Tuple
+
+import numpy as np
+from PySide6.QtWidgets import QFrame, QGridLayout
+from ase.build import make_supercell
+from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox, RadioButton
+
+from NepTrainKit.core import CardManager, process_organic_clusters, get_clusters
+from NepTrainKit.custom_widget import SpinBoxUnitInputFrame
+from NepTrainKit.custom_widget.card_widget import MakeDataCard
+from scipy.stats.qmc import Sobol
+
+@CardManager.register_card
 class SuperCellCard(MakeDataCard):
     card_name= "Super Cell"
     menu_icon=r":/images/src/images/supercell.svg"
@@ -60,7 +77,7 @@ class SuperCellCard(MakeDataCard):
         na, nb, nc = self.super_scale_condition_frame.get_input_value()
         return [(na, nb, nc)]
 
-    def _get_max_cell_factors(self, structure:Atoms) -> List[Tuple[int, int, int]]:
+    def _get_max_cell_factors(self, structure) -> List[Tuple[int, int, int]]:
         """根据最大晶格常数计算扩包比例"""
         max_a, max_b, max_c = self.super_cell_condition_frame.get_input_value()
         lattice = structure.cell.array

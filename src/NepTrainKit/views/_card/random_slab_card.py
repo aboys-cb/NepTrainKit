@@ -1,6 +1,22 @@
-from ..cards import *
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 2025/6/18 13:21
+# @Author  : 兵
+# @email    : 1747193328@qq.com
+from itertools import combinations
 
-@register_card_info
+import numpy as np
+from PySide6.QtWidgets import QFrame, QGridLayout
+from ase.build import surface
+from loguru import logger
+from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
+
+from NepTrainKit.core import CardManager, process_organic_clusters, get_clusters
+from NepTrainKit.custom_widget import SpinBoxUnitInputFrame
+from NepTrainKit.custom_widget.card_widget import MakeDataCard
+from scipy.stats.qmc import Sobol
+
+@CardManager.register_card
 class RandomSlabCard(MakeDataCard):
     card_name = "Random Slab"
     menu_icon = r":/images/src/images/supercell.svg"

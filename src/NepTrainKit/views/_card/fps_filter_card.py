@@ -1,6 +1,25 @@
-from ..cards import *
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 2025/6/18 13:21
+# @Author  : 兵
+# @email    : 1747193328@qq.com
+import os
+from itertools import combinations
 
-@register_card_info
+import numpy as np
+from PySide6.QtWidgets import QFrame, QGridLayout
+from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox, LineEdit
+
+from NepTrainKit import module_path, utils
+from NepTrainKit.core import CardManager, process_organic_clusters, get_clusters, MessageManager
+from NepTrainKit.core.calculator import NEPProcess
+from NepTrainKit.core.io.select import farthest_point_sampling
+from NepTrainKit.custom_widget import SpinBoxUnitInputFrame
+from NepTrainKit.custom_widget.card_widget import MakeDataCard, FilterDataCard
+
+
+@CardManager.register_card
+
 class FPSFilterDataCard(FilterDataCard):
     separator=True
     card_name= "FPS Filter"

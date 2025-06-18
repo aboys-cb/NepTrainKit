@@ -1,5 +1,20 @@
-from ..cards import *
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 2025/6/18 13:21
+# @Author  : 兵
+# @email    : 1747193328@qq.com
+from itertools import combinations
 
+import numpy as np
+from PySide6.QtWidgets import QFrame, QGridLayout
+from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
+
+from NepTrainKit.core import CardManager, process_organic_clusters, get_clusters
+from NepTrainKit.custom_widget import SpinBoxUnitInputFrame
+from NepTrainKit.custom_widget.card_widget import MakeDataCard
+from scipy.stats.qmc import Sobol
+
+@CardManager.register_card
 class PerturbCard(MakeDataCard):
     card_name= "Atomic Perturb"
     menu_icon=r":/images/src/images/perturb.svg"

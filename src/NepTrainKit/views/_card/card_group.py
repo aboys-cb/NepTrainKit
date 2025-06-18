@@ -1,6 +1,18 @@
-from ..cards import *
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# @Time    : 2025/6/18 13:21
+# @Author  : 兵
+# @email    : 1747193328@qq.com
+from PySide6.QtCore import Signal
+from PySide6.QtWidgets import QWidget, QVBoxLayout
 
-@register_card_info
+from NepTrainKit import utils
+from NepTrainKit.core import CardManager
+from NepTrainKit.custom_widget import MakeDataCardWidget
+from NepTrainKit.custom_widget.card_widget import MakeDataCard, FilterDataCard
+
+
+@CardManager.register_card
 class CardGroup(MakeDataCardWidget):
     separator=True
     card_name= "Card Group"
@@ -161,12 +173,12 @@ class CardGroup(MakeDataCardWidget):
         self.state_checkbox.setChecked(data_dict['check_state'])
         for sub_card in data_dict.get("card_list",[]):
             card_name=sub_card["class"]
-            card  = card_info_dict[card_name](self)
+            card  = CardManager.card_info_dict[card_name](self)
             self.add_card(card)
             card.from_dict(sub_card)
 
         if data_dict.get("filter_card"):
             card_name=data_dict["filter_card"]["class"]
-            filter_card  = card_info_dict[card_name](self)
+            filter_card  = CardManager.card_info_dict[card_name](self)
             filter_card.from_dict(data_dict["filter_card"])
             self.set_filter_card(filter_card)

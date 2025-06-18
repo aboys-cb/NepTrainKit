@@ -10,10 +10,10 @@ import numpy as np
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QApplication
 
-from NepTrainKit.core import MessageManager
+from NepTrainKit.core import MessageManager, CardManager
 from NepTrainKit.custom_widget import MakeWorkflowArea
 
-from NepTrainKit.views.cards import   ConsoleWidget,card_info_dict
+from NepTrainKit.views.cards import   ConsoleWidget
 
 
 from NepTrainKit.version import __version__
@@ -195,10 +195,10 @@ class MakeDataWidget(QWidget):
     def add_card(self,card_name):
 
 
-        if card_name not in card_info_dict:
+        if card_name not in CardManager.card_info_dict:
             MessageManager.send_warning_message("no card")
             return
-        card=card_info_dict[card_name](self)
+        card=CardManager.card_info_dict[card_name](self)
         self.workspace_card_widget.add_card(card)
         return card
 

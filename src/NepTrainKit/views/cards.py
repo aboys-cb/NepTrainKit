@@ -71,39 +71,15 @@ def load_cards_from_directory(directory: str):
             logger.error(f"Failed to load card module {file_path}: {str(e)}")
 
 
-
+# 判断团簇是否为有机分子
 def is_organic_cluster(symbols):
-    """
-    判断一个团簇是否为有机分子。
-    规则：必须含有碳（C），通常还含有氢（H）或其他有机元素（O, N, S, P）。
-
-    参数:
-        symbols (list): 团簇中所有原子的化学符号列表。
-
-    返回:
-        bool: 如果是有机分子，返回 True，否则返回 False。
-    """
     has_carbon = 'C' in symbols
-    if not has_carbon:
-        return False
-    # 可选：强制要求含氢（H）或其他有机元素
     organic_elements = {'H', 'O', 'N', 'S', 'P'}
     has_organic_elements = any(symbol in organic_elements for symbol in symbols)
     return has_carbon and has_organic_elements
 
-
-
+# 识别结构中的团簇
 def get_clusters(structure):
-    """
-    识别结构中的团簇（连通分量）。
-
-    参数:
-        structure (ase.Atoms): 输入的 ASE Atoms 对象。
-
-    返回:
-        list: 每个团簇的原子索引列表。
-        list: 每个团簇是否为有机分子的布尔值列表。
-    """
     cutoff = neighborlist.natural_cutoffs(structure)
     nl = neighborlist.NeighborList(cutoff, self_interaction=False, bothways=True)
     nl.update(structure)
@@ -117,35 +93,49 @@ def get_clusters(structure):
         cluster_symbols = [structure[j].symbol for j in cluster_indices]
         clusters.append(cluster_indices)
         is_organic_list.append(is_organic_cluster(cluster_symbols))
-
     return clusters, is_organic_list
 
-def unwrap_molecule(atoms, cluster_indices):
-    # 获取分子中原子的分数坐标
-    scaled_pos = atoms.get_scaled_positions(wrap=False)[cluster_indices]
+# 解包跨越边界的分子
+def unwrap_molecule(structure, cluster_indices):
+    pos = structure.positions[cluster_indices]
+    cell = structure.cell
+    ref_pos = pos[0]
+    unwrapped_pos = [ref_pos]
 
-    center =atoms[cluster_indices].get_center_of_mass(True)
-    cell=atoms.cell
+    for i in range(1, len(cluster_indices)):
+        delta = pos[i] - ref_pos
+        mic_delta, _ = find_mic(delta, cell, pbc=True)
+        unwrapped_pos.append(ref_pos + mic_delta)
+    return np.array(unwrapped_pos)
 
+# 封装循环部分：处理有机分子团簇
+def process_organic_clusters(structure, new_structure, clusters, is_organic_list):
+    """处理有机分子团簇并更新原子位置"""
 
-    # 计算所有原子相对于质心的位移（分数坐标）
-    delta = scaled_pos - center
-    # 转换为笛卡尔坐标的位移
-    delta_cartesian = np.dot(delta, cell)
+    for cluster_indices, is_organic in zip(clusters, is_organic_list):
+        if is_organic:
+            # 解包分子
+            unwrapped_pos = unwrap_molecule(structure, cluster_indices)
 
-    # 使用find_mic计算最小镜像位移
-    mic_vectors, _ = find_mic(delta_cartesian, cell, pbc=True)
+            # 计算解包后质心
+            center_unwrapped = np.mean(unwrapped_pos, axis=0)
 
-    # 将最小镜像位移转换回分数坐标
-    mic_delta = np.dot(mic_vectors, np.linalg.inv(cell))
+            # 将质心转换到分数坐标并映射回晶胞内
+            scaled_center = np.dot(center_unwrapped, np.linalg.inv(structure.cell)) % 1.0
+            center_original = np.dot(scaled_center, structure.cell)
 
-    # 更新分数坐标
-    scaled_pos = center + mic_delta
+            # 计算原子相对于质心的位移
+            delta_pos = unwrapped_pos - center_unwrapped
 
-    unwrapped_pos = np.dot(scaled_pos, atoms.cell)
+            # 在新晶胞中计算新质心
+            center_new = np.dot(scaled_center, new_structure.cell)
 
-    return unwrapped_pos
+            # 新位置 = 新质心 + 原始位移
+            pos_new = center_new + delta_pos
 
+            # 更新原子位置
+            new_structure.positions[cluster_indices] = pos_new
+    new_structure.wrap()
 def sample_dopants(dopant_list, ratios, N, exact=False, seed=None):
     """
     采样 dopant 的函数。
@@ -1319,20 +1309,7 @@ class CellScalingCard(MakeDataCard):
 
             new_structure.set_cell(new_lattice,  scale_atoms=True)
             if identify_organic:
-                #判断下有没有有机分子  如果有 就将有机分子做整体的偏移 而不是拉伸
-                for cluster_indices, is_organic in zip(clusters, is_organic_list):
-                    if is_organic:
-
-                        unwrap_old_pos = unwrap_molecule(structure,cluster_indices)
-                        unwrap_new_pos = unwrap_molecule(new_structure,cluster_indices)
-                        distance = unwrap_new_pos[0] - unwrap_old_pos[0]
-
-                        pos = unwrap_old_pos + distance
-                        new_structure.positions[cluster_indices] = pos
-                        new_structure.wrap()
-
-                    else:
-                        pass
+                process_organic_clusters(structure, new_structure, clusters, is_organic_list )
 
             structure_list.append(new_structure)
         return structure_list
@@ -1453,14 +1430,8 @@ class CellStrainCard(MakeDataCard):
                 new_cell = cell.copy() * (1 + strain / 100)
                 new_structure.set_cell(new_cell, scale_atoms=True)
                 if identify_organic:
-                    for cluster_indices, is_organic in zip(clusters, is_organic_list):
-                        if is_organic:
-                            unwrap_old_pos = unwrap_molecule(structure, cluster_indices)
-                            unwrap_new_pos = unwrap_molecule(new_structure, cluster_indices)
-                            distance = unwrap_new_pos[0] - unwrap_old_pos[0]
-                            pos = unwrap_old_pos + distance
-                            new_structure.positions[cluster_indices] = pos
-                            new_structure.wrap()
+                    process_organic_clusters(structure, new_structure, clusters, is_organic_list )
+
                 strain_info = [f"all:{strain}%"]
                 new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Strain({'|'.join(strain_info)})"
                 structure_list.append(new_structure)
@@ -1484,14 +1455,8 @@ class CellStrainCard(MakeDataCard):
                         new_cell[ax_idx] *= (1 + strain / 100)
                     new_structure.set_cell(new_cell, scale_atoms=True)
                     if identify_organic:
-                        for cluster_indices, is_organic in zip(clusters, is_organic_list):
-                            if is_organic:
-                                unwrap_old_pos = unwrap_molecule(structure, cluster_indices)
-                                unwrap_new_pos = unwrap_molecule(new_structure, cluster_indices)
-                                distance = unwrap_new_pos[0] - unwrap_old_pos[0]
-                                pos = unwrap_old_pos + distance
-                                new_structure.positions[cluster_indices] = pos
-                                new_structure.wrap()
+                        process_organic_clusters(structure, new_structure, clusters, is_organic_list)
+
                     strain_info = ["XYZ"[ax] + ":" + str(s) + "%" for ax, s in zip(ax_comb, strain_vals)]
                     new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Strain({'|'.join(strain_info)})"
                     structure_list.append(new_structure)

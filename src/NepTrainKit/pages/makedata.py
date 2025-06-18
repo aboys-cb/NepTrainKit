@@ -109,6 +109,13 @@ class MakeDataWidget(QWidget):
             atoms = ase_read(path,":")
             #ase有时候会将字符串解析成数组或者int  这里转换成str
             for atom in atoms:
+
+                if 'config_type' in atom.info:
+                    atom.info["Config_type"]=atom.info["config_type"]
+                    del atom.info["config_type"]
+
+
+
                 if isinstance(atom.info.get("Config_type"),np.ndarray):
                     if atom.info["Config_type"].size==0:
 

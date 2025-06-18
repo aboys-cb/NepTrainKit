@@ -50,15 +50,16 @@ class CellStrainCard(MakeDataCard):
 
         self.strain_x_label=BodyLabel("X:",self.setting_widget)
         self.strain_x_frame = SpinBoxUnitInputFrame(self)
-        self.strain_x_frame.set_input(["-","% step:","%"],3,"int")
+        self.strain_x_frame.set_input(["-","% step:","%"],3,"float")
         self.strain_x_frame.setRange(-100,100)
+
         self.strain_x_frame.set_input_value([-5,5,1])
         self.strain_x_label.setToolTip("X-axis strain range")
         self.strain_x_label.installEventFilter(ToolTipFilter(self.strain_x_label, 300, ToolTipPosition.TOP))
 
         self.strain_y_label=BodyLabel("Y:",self.setting_widget)
         self.strain_y_frame = SpinBoxUnitInputFrame(self)
-        self.strain_y_frame.set_input(["-","% step:","%"],3,"int")
+        self.strain_y_frame.set_input(["-","% step:","%"],3,"float")
         self.strain_y_frame.setRange(-100,100)
         self.strain_y_frame.set_input_value([-5,5,1])
         self.strain_y_label.setToolTip("Y-axis strain range")
@@ -66,7 +67,7 @@ class CellStrainCard(MakeDataCard):
 
         self.strain_z_label=BodyLabel("Z:",self.setting_widget)
         self.strain_z_frame = SpinBoxUnitInputFrame(self)
-        self.strain_z_frame.set_input(["-","% step:","%"],3,"int")
+        self.strain_z_frame.set_input(["-","% step:","%"],3,"float")
         self.strain_z_frame.setRange(-100,100)
         self.strain_z_frame.set_input_value([-5,5,1])
         self.strain_z_label.setToolTip("Z-axis strain range")

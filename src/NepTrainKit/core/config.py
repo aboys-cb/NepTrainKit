@@ -71,7 +71,7 @@ class Config:
 
     @classmethod
     def getint(self, section, option, fallback=None):
-        v = self.get(section, option)
+        v = self.get(section, option,fallback)
 
         try:
             v = int(v)
@@ -84,7 +84,7 @@ class Config:
         return v
     @classmethod
     def getfloat(self,section,option,fallback=None):
-        v=    self.get(section,option)
+        v=    self.get(section,option,fallback)
 
         try:
             v=float(v)
@@ -102,6 +102,9 @@ class Config:
         query.next()
         first= query.value(0)
         if first  is None:
+
+            if fallback is not None:
+                self.set(section,option,fallback)
             return fallback
         return first
 

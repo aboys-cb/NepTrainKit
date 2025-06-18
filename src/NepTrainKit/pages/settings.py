@@ -13,7 +13,7 @@ from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCa
     OptionsValidator, EnumSerializer, SwitchSettingCard
 
 from NepTrainKit.core import Config
-from NepTrainKit.core.custom_widget import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
+from NepTrainKit.custom_widget import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
 from NepTrainKit.core.types import ForcesMode, CanvasMode
 from NepTrainKit.core.update import UpdateWoker,UpdateNEP89Woker
 from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR

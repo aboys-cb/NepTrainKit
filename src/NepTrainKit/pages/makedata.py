@@ -11,13 +11,13 @@ from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QApplication
 
 from NepTrainKit.core import MessageManager
-from NepTrainKit.core.custom_widget import MakeWorkflowArea
+from NepTrainKit.custom_widget import MakeWorkflowArea
 
-from NepTrainKit.core.views.cards import   ConsoleWidget,card_info_dict
+from NepTrainKit.views.cards import   ConsoleWidget,card_info_dict
 
 
 from NepTrainKit.version import __version__
-from NepTrainKit import utils, module_path
+from NepTrainKit import utils
 from ase.io import read as ase_read
 
 

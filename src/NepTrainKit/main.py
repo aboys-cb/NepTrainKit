@@ -16,7 +16,7 @@ from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPositio
 from qfluentwidgets import FluentIcon as FIF
 from loguru import logger
 from NepTrainKit.core import MessageManager, Config
-from NepTrainKit.core.pages import *
+from NepTrainKit.pages import *
 from NepTrainKit import utils
 import warnings
 warnings.filterwarnings("ignore")

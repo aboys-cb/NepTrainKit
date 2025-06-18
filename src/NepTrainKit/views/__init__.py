@@ -6,4 +6,4 @@
 
 from .nep import NepResultPlotWidget
 
-from .toolbar import NepDisplayGraphicsToolBar
+from .toolbar import NepDisplayGraphicsToolBar,StructureToolBar

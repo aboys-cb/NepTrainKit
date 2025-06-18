@@ -11,8 +11,8 @@
 
 from PySide6.QtWidgets import QWidget, QApplication, QScrollArea
 
-from NepTrainKit.core.custom_widget import  FlowLayout
-from NepTrainKit.core.views.cards import CardGroup,  MakeDataCard
+from NepTrainKit.custom_widget import  FlowLayout
+from NepTrainKit.views.cards import CardGroup,  MakeDataCard
 
 
 class MakeWorkflowArea(QScrollArea):

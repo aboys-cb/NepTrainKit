@@ -5,7 +5,6 @@
 # @email    : 1747193328@qq.com
 import importlib
 import os
-import time
 from itertools import combinations
 from pathlib import Path
 from typing import List, Tuple
@@ -16,27 +15,24 @@ from PySide6.QtCore import Signal
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import QGridLayout, QFrame, QWidget, QVBoxLayout
 
-from qfluentwidgets import ComboBox, BodyLabel, RadioButton, SplitToolButton, RoundMenu, PrimaryDropDownToolButton, \
-    PrimaryDropDownPushButton, CommandBar, Action, CheckBox, LineEdit, EditableComboBox, PlainTextEdit, ToolTip, \
+from qfluentwidgets import ComboBox, BodyLabel, RadioButton, RoundMenu, PrimaryDropDownPushButton, CommandBar, Action, CheckBox, LineEdit, EditableComboBox, \
     ToolTipFilter, ToolTipPosition
 from NepTrainKit import utils, module_path,get_user_config_path
 
 from NepTrainKit.core import MessageManager
-from NepTrainKit.core.custom_widget import (
+from NepTrainKit.custom_widget import (
     SpinBoxUnitInputFrame,
     MakeDataCardWidget,
     ProcessLabel
 )
-from NepTrainKit.core.custom_widget import DopingRulesWidget, VacancyRulesWidget
+from NepTrainKit.custom_widget import DopingRulesWidget, VacancyRulesWidget
 from NepTrainKit.core.calculator import NEPProcess
 from NepTrainKit.core.io.select import farthest_point_sampling
 from scipy.sparse.csgraph import connected_components
 from scipy.stats.qmc import Sobol
 from ase import neighborlist
-from ase.io import extxyz,cif,vasp
 
 from ase.geometry import find_mic
-from ase.io import read as ase_read
 from ase.io import write as ase_write
 from ase.build import make_supercell,surface
 from ase import Atoms
@@ -48,7 +44,7 @@ def register_card_info(card_class  ):
     return card_class
 
 
-def load_cards_from_directory(directory: str) -> None:
+def load_cards_from_directory(directory: str):
     """Load all card modules from a directory"""
     dir_path = Path(directory)
 

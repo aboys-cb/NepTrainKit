@@ -115,7 +115,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.sizeSpinBox = SpinBox(self)
         self.sizeSpinBox.setMaximum(999999)
         self.tolSpinBox = DoubleSpinBox(self)
-        self.tolSpinBox.setDecimals(9)
+        self.tolSpinBox.setDecimals(10)
         self.tolSpinBox.setMinimum(0)
         self.modeCombo = ComboBox(self)
         self.modeCombo.addItems([

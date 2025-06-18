@@ -3,27 +3,23 @@
 # @Time    : 2024/10/20 22:22
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import os
 import time
-import traceback
-
-from loguru import logger
 
 start=time.time()
 import numpy as np
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 
 
-from NepTrainKit import utils, module_path
+from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
-from NepTrainKit.core.custom_widget import (
+from NepTrainKit.custom_widget import (
     GetIntMessageBox,
     SparseMessageBox,
     IndexSelectMessageBox,
     ShiftEnergyMessageBox,
 )
 from NepTrainKit.core.io.select import farthest_point_sampling
-from NepTrainKit.core.views.toolbar import NepDisplayGraphicsToolBar
+from NepTrainKit.views.toolbar import NepDisplayGraphicsToolBar
 from NepTrainKit.core.energy_shift import shift_dataset_energy, suggest_group_patterns
 
 
@@ -43,14 +39,14 @@ class NepResultPlotWidget(QWidget):
     def swith_canvas(self,canvas_type="pyqtgraph"):
 
         if canvas_type == "pyqtgraph":
-            from ..canvas.pyqtgraph import PyqtgraphCanvas
+            from NepTrainKit.core.canvas.pyqtgraph import PyqtgraphCanvas
             self.canvas = PyqtgraphCanvas(self)
             self._layout.addWidget(self.canvas)
 
         elif canvas_type == "vispy":
 
 
-            from ..canvas.vispy import VispyCanvas
+            from NepTrainKit.core.canvas.vispy import VispyCanvas
 
 
             self.canvas = VispyCanvas(parent=self, bgcolor='white')

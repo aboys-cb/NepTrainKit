@@ -10,14 +10,14 @@ import numpy as np
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QApplication
 
-from NepTrainKit.core import MessageManager
-from NepTrainKit.core.custom_widget import MakeWorkflowArea
+from NepTrainKit.core import MessageManager, CardManager
+from NepTrainKit.custom_widget import MakeWorkflowArea
 
-from NepTrainKit.core.views.cards import   ConsoleWidget,card_info_dict
+from NepTrainKit.views.cards import   ConsoleWidget
 
 
 from NepTrainKit.version import __version__
-from NepTrainKit import utils, module_path
+from NepTrainKit import utils
 from ase.io import read as ase_read
 
 
@@ -109,6 +109,13 @@ class MakeDataWidget(QWidget):
             atoms = ase_read(path,":")
             #ase有时候会将字符串解析成数组或者int  这里转换成str
             for atom in atoms:
+
+                if 'config_type' in atom.info:
+                    atom.info["Config_type"]=atom.info["config_type"]
+                    del atom.info["config_type"]
+
+
+
                 if isinstance(atom.info.get("Config_type"),np.ndarray):
                     if atom.info["Config_type"].size==0:
 
@@ -195,10 +202,10 @@ class MakeDataWidget(QWidget):
     def add_card(self,card_name):
 
 
-        if card_name not in card_info_dict:
+        if card_name not in CardManager.card_info_dict:
             MessageManager.send_warning_message("no card")
             return
-        card=card_info_dict[card_name](self)
+        card=CardManager.card_info_dict[card_name](self)
         self.workspace_card_widget.add_card(card)
         return card
 

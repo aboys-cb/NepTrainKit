@@ -285,9 +285,9 @@ Linux: ~/.config/NepTrainKit
 
 ### 2.1 Basic Template Structure
 ```python
-from NepTrainKit.core.views.cards import MakeDataCard, register_card_info
-
-@register_card_info
+from NepTrainKit.core import CardManager
+from NepTrainKit.custom_widget.card_widget import MakeDataCard
+@CardManager.register_card
 class CustomCard(MakeDataCard):
     # Required class attributes
     card_name = "Custom Card Name"
@@ -373,4 +373,4 @@ def from_dict(self, data):
 ```
 
 ## Appendix: Complete Example Card
-https://github.com/aboys-cb/NepTrainKit/blob/master/src/NepTrainKit/core/views/cards.py
+https://github.com/aboys-cb/NepTrainKit/tree/dev/src/NepTrainKit/views/_card

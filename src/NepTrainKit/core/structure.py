@@ -8,6 +8,10 @@ import os
 import re
 from copy import deepcopy
 import numpy as np
+from ase import neighborlist
+from ase.geometry import find_mic
+from scipy.sparse.csgraph import connected_components
+
 from NepTrainKit import utils, module_path
 
 atomic_numbers={ 'H': 1, 'He': 2, 'Li': 3, 'Be': 4,
@@ -564,3 +568,71 @@ def calculate_pairwise_distances(lattice_params:np.ndarray, atom_coords:np.ndarr
     distances = np.min(all_distances, axis=-1)
     np.fill_diagonal(distances, 0)
     return distances
+
+
+
+# 判断团簇是否为有机分子
+def is_organic_cluster(symbols):
+    has_carbon = 'C' in symbols
+    organic_elements = {'H', 'O', 'N', 'S', 'P'}
+    has_organic_elements = any(symbol in organic_elements for symbol in symbols)
+    return has_carbon and has_organic_elements
+
+# 识别结构中的团簇
+def get_clusters(structure):
+    cutoff = neighborlist.natural_cutoffs(structure)
+    nl = neighborlist.NeighborList(cutoff, self_interaction=False, bothways=True)
+    nl.update(structure)
+    matrix = nl.get_connectivity_matrix()
+    n_components, component_list = connected_components(matrix)
+
+    clusters = []
+    is_organic_list = []
+    for i in range(n_components):
+        cluster_indices = [j for j in range(len(structure)) if component_list[j] == i]
+        cluster_symbols = [structure[j].symbol for j in cluster_indices]
+        clusters.append(cluster_indices)
+        is_organic_list.append(is_organic_cluster(cluster_symbols))
+    return clusters, is_organic_list
+
+# 解包跨越边界的分子
+def unwrap_molecule(structure, cluster_indices):
+    pos = structure.positions[cluster_indices]
+    cell = structure.cell
+    ref_pos = pos[0]
+    unwrapped_pos = [ref_pos]
+
+    for i in range(1, len(cluster_indices)):
+        delta = pos[i] - ref_pos
+        mic_delta, _ = find_mic(delta, cell, pbc=True)
+        unwrapped_pos.append(ref_pos + mic_delta)
+    return np.array(unwrapped_pos)
+
+# 封装循环部分：处理有机分子团簇
+def process_organic_clusters(structure, new_structure, clusters, is_organic_list):
+    """处理有机分子团簇并更新原子位置"""
+
+    for cluster_indices, is_organic in zip(clusters, is_organic_list):
+        if is_organic:
+            # 解包分子
+            unwrapped_pos = unwrap_molecule(structure, cluster_indices)
+
+            # 计算解包后质心
+            center_unwrapped = np.mean(unwrapped_pos, axis=0)
+
+            # 将质心转换到分数坐标并映射回晶胞内
+            scaled_center = np.dot(center_unwrapped, np.linalg.inv(structure.cell)) % 1.0
+            center_original = np.dot(scaled_center, structure.cell)
+
+            # 计算原子相对于质心的位移
+            delta_pos = unwrapped_pos - center_unwrapped
+
+            # 在新晶胞中计算新质心
+            center_new = np.dot(scaled_center, new_structure.cell)
+
+            # 新位置 = 新质心 + 原始位移
+            pos_new = center_new + delta_pos
+
+            # 更新原子位置
+            new_structure.positions[cluster_indices] = pos_new
+    new_structure.wrap()

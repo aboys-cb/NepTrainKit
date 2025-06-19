@@ -12,7 +12,7 @@ from qfluentwidgets import RoundMenu, PrimaryDropDownPushButton, CommandBar, Act
 
 from NepTrainKit import get_user_config_path
 from NepTrainKit.core import load_cards_from_directory, CardManager
-
+from ase.io import extxyz,cif,vasp
 from NepTrainKit.views._card import *
 
 user_config_path = get_user_config_path()

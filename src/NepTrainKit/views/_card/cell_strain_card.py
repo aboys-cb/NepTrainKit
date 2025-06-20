@@ -96,9 +96,9 @@ class CellStrainCard(MakeDataCard):
         if identify_organic:
             clusters, is_organic_list = get_clusters(structure)
         strain_range=[
-            np.arange(start=x[0],stop=x[1]+1,step=x[2]),
-            np.arange(start=y[0], stop=y[1]+1, step=y[2]),
-            np.arange(start=z[0], stop=z[1]+1, step=z[2]),
+            np.arange(start=x[0],stop=x[1]+0.001,step=x[2]),
+            np.arange(start=y[0], stop=y[1]+0.001, step=y[2]),
+            np.arange(start=z[0], stop=z[1]+0.001, step=z[2]),
         ]
         cell = structure.get_cell()
         # Define possible axes (0: x, 1: y, 2: z)

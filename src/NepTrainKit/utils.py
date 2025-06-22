@@ -12,8 +12,6 @@ import re
 from collections.abc import Iterable
 
 from PySide6.QtCore import QThread, Signal
-from concurrent.futures import ThreadPoolExecutor, as_completed
-import multiprocessing
 from PySide6.QtWidgets import QFileDialog, QApplication
 from loguru import logger
 from qfluentwidgets import StateToolTip
@@ -171,16 +169,16 @@ class DataProcessingThread(QThread):
             total = len(self.dataset)
             self.progressSignal.emit(0)
             sort_atoms = Config.getboolean("widget", "sort_atoms", False)
+            for index, structure in enumerate(self.dataset):
+                # 处理每个结构
+                processed = self.process_func(structure)
+                if sort_atoms:
+                    processed = [ase_sort(s) for s in processed]
 
-            max_workers = min(multiprocessing.cpu_count(), total) or 1
-            with ThreadPoolExecutor(max_workers=max_workers) as executor:
-                futures = [executor.submit(self.process_func, s) for s in self.dataset]
-                for i, fut in enumerate(as_completed(futures), start=1):
-                    processed = fut.result()
-                    if sort_atoms:
-                        processed = [ase_sort(s) for s in processed]
-                    self.result_dataset.extend(processed)
-                    self.progressSignal.emit(int(i / total * 100))
+                self.result_dataset.extend(processed)
+
+                # 发射进度信号 (百分比)
+                self.progressSignal.emit(int((index + 1) / total * 100))
 
             # 处理完成
             self.finishSignal.emit( )

@@ -35,6 +35,7 @@ class VacancyDefectCard(MakeDataCard):
         self.engine_type_combo=ComboBox(self.setting_widget)
         self.engine_type_combo.addItem("Sobol")
         self.engine_type_combo.addItem("Uniform")
+        self.engine_type_combo.setCurrentIndex(1)
 
         self.num_radio_button = RadioButton("Vacancy num",self.setting_widget)
         self.num_radio_button.setChecked(True)

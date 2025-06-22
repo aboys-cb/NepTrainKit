@@ -31,6 +31,7 @@ class CellScalingCard(MakeDataCard):
         self.engine_type_combo=ComboBox(self.setting_widget)
         self.engine_type_combo.addItem("Sobol")
         self.engine_type_combo.addItem("Uniform")
+        self.engine_type_combo.setCurrentIndex(1)
         self.engine_label.setToolTip("Select random engine")
         self.engine_label.installEventFilter(ToolTipFilter(self.engine_label, 300, ToolTipPosition.TOP))
 
@@ -58,7 +59,7 @@ class CellScalingCard(MakeDataCard):
 
         self.optional_label=BodyLabel("Optional",self.setting_widget)
         self.organic_checkbox=CheckBox("Identify organic", self.setting_widget)
-        self.organic_checkbox.setChecked(True)
+        self.organic_checkbox.setChecked(False)
         self.organic_checkbox.setToolTip("Treat organic molecules as rigid units")
         self.organic_checkbox.installEventFilter(ToolTipFilter(self.organic_checkbox, 300, ToolTipPosition.TOP))
 

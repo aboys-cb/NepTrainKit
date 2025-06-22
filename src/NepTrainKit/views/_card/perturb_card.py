@@ -9,6 +9,7 @@ import numpy as np
 from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
 
+from NepTrainKit import utils
 from NepTrainKit.core import CardManager, process_organic_clusters, get_clusters
 from NepTrainKit.custom_widget import SpinBoxUnitInputFrame
 from NepTrainKit.custom_widget.card_widget import MakeDataCard
@@ -29,6 +30,8 @@ class PerturbCard(MakeDataCard):
         self.engine_type_combo=ComboBox(self.setting_widget)
         self.engine_type_combo.addItem("Sobol")
         self.engine_type_combo.addItem("Uniform")
+        self.engine_type_combo.setCurrentIndex(1)
+
         self.engine_label.setToolTip("Select random engine")
         self.engine_label.installEventFilter(ToolTipFilter(self.engine_label, 300, ToolTipPosition.TOP))
 
@@ -39,7 +42,7 @@ class PerturbCard(MakeDataCard):
 
         self.optional_label=BodyLabel("Optional",self.setting_widget)
         self.organic_checkbox=CheckBox("Identify organic", self.setting_widget)
-        self.organic_checkbox.setChecked(True)
+        self.organic_checkbox.setChecked(False)
         self.optional_label.setToolTip("Treat organic molecules as rigid units")
         self.optional_label.installEventFilter(ToolTipFilter(self.optional_label, 300, ToolTipPosition.TOP))
 
@@ -79,55 +82,57 @@ class PerturbCard(MakeDataCard):
 
         self.settingLayout.addWidget(self.num_condition_frame,3, 1, 1,2)
 
+
+    @utils.timeit
     def process_structure(self, structure):
-        structure_list=[]
-        engine_type=self.engine_type_combo.currentIndex()
-        max_scaling=self.scaling_condition_frame.get_input_value()[0]
-        max_num=self.num_condition_frame.get_input_value()[0]
-        identify_organic=self.organic_checkbox.isChecked()
+        structure_list = []
+        engine_type = self.engine_type_combo.currentIndex()
+        max_scaling = self.scaling_condition_frame.get_input_value()[0]
+        max_num = self.num_condition_frame.get_input_value()[0]
+        identify_organic = self.organic_checkbox.isChecked()
+
         n_atoms = len(structure)
-        dim = n_atoms * 3  # 每个原子有 x, y, z 三个维度
+        dim = n_atoms * 3
 
+        # 生成扰动因子
         if engine_type == 0:
-
             sobol_engine = Sobol(d=dim, scramble=True)
-            sobol_seq = sobol_engine.random(max_num)  # 生成 [0, 1] 的序列
-            perturbation_factors = (sobol_seq - 0.5) * 2  # 转换为 [-1, 1]
+            perturbation_factors = (sobol_engine.random(max_num) - 0.5) * 2
         else:
-            # 生成均匀分布的扰动因子，范围 [-1, 1]
             perturbation_factors = np.random.uniform(-1, 1, (max_num, dim))
 
-            # 识别团簇和有机分子
+        # 识别团簇（如启用）
         if identify_organic:
             clusters, is_organic_list = get_clusters(structure)
+            # 预先构建聚类索引（避免每次遍历）
+            organic_clusters = [cluster for cluster, is_org in zip(clusters, is_organic_list) if is_org]
+            inorganic_clusters = [cluster for cluster, is_org in zip(clusters, is_organic_list) if not is_org]
 
         orig_positions = structure.positions
-        for i in range(max_num):
-            new_structure = structure.copy()
 
-            # 提取当前结构的扰动因子并重塑为 (n_atoms, 3)
+        for i in range(max_num):
             delta = perturbation_factors[i].reshape(n_atoms, 3) * max_scaling
+            new_positions = orig_positions + delta  # 默认：全部扰动
+
             if identify_organic:
-                # 对每个团簇应用微扰
+                # 初始化为原始坐标，随后分组替换
                 new_positions = orig_positions.copy()
 
-                for cluster_indices, is_organic in zip(clusters, is_organic_list):
-                    if is_organic:
-                        # 有机分子：整体平移，应用统一的偏移向量
-                        # 从团簇的第一个原子的扰动因子中取偏移向量
-                        cluster_delta = delta[cluster_indices[0]]
-                        for idx in cluster_indices:
-                            new_positions[idx] += cluster_delta
-                    else:
-                        # 非有机分子：逐原子微扰
-                        for idx in cluster_indices:
-                            new_positions[idx] += delta[idx]
-            else:
-                new_positions=orig_positions+delta
+                # 有机分子：整体平移
 
-            # 更新新结构的坐标
+                for cluster in organic_clusters:
+                    cluster_delta = delta[cluster[0]]
+                    new_positions[cluster] += cluster_delta  # 利用 NumPy 索引批量加
+
+                # 无机分子：逐原子扰动（其实和默认行为相同，略冗余，但保留逻辑清晰）
+                for cluster in inorganic_clusters:
+                    new_positions[cluster] += delta[cluster]
+
+            # 构造新结构
+            new_structure = structure.copy()
             new_structure.set_positions(new_positions)
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type","") + f" Perturb(distance={max_scaling}, {'uniform' if engine_type == 1 else 'Sobol'})"
+            config_str = f" Perturb(distance={max_scaling}, {'uniform' if engine_type == 1 else 'Sobol'})"
+            new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + config_str
             structure_list.append(new_structure)
 
         return structure_list

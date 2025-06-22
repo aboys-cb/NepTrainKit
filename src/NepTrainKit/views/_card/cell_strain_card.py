@@ -9,6 +9,7 @@ import numpy as np
 from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
 
+from NepTrainKit import utils
 from NepTrainKit.core import CardManager, process_organic_clusters, get_clusters
 from NepTrainKit.custom_widget import SpinBoxUnitInputFrame
 from NepTrainKit.custom_widget.card_widget import MakeDataCard
@@ -41,7 +42,7 @@ class CellStrainCard(MakeDataCard):
 
         self.optional_label=BodyLabel("Optional",self.setting_widget)
         self.organic_checkbox=CheckBox("Identify organic", self.setting_widget)
-        self.organic_checkbox.setChecked(True)
+        self.organic_checkbox.setChecked(False)
         self.organic_checkbox.setToolTip("Treat organic molecules as rigid units")
         self.organic_checkbox.installEventFilter(ToolTipFilter(self.organic_checkbox, 300, ToolTipPosition.TOP))
 

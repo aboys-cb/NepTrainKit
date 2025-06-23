@@ -83,7 +83,7 @@ class PerturbCard(MakeDataCard):
         self.settingLayout.addWidget(self.num_condition_frame,3, 1, 1,2)
 
 
-    @utils.timeit
+
     def process_structure(self, structure):
         structure_list = []
         engine_type = self.engine_type_combo.currentIndex()

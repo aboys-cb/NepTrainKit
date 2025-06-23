@@ -578,7 +578,9 @@ def is_organic_cluster(symbols):
     has_organic_elements = any(symbol in organic_elements for symbol in symbols)
     return has_carbon and has_organic_elements
 
-# 识别结构中的团簇
+# # 识别结构中的团簇
+
+
 def get_clusters(structure):
     cutoff = neighborlist.natural_cutoffs(structure)
     nl = neighborlist.NeighborList(cutoff, self_interaction=False, bothways=True)
@@ -586,27 +588,38 @@ def get_clusters(structure):
     matrix = nl.get_connectivity_matrix()
     n_components, component_list = connected_components(matrix)
 
+    component_array = np.array(component_list)
+    all_symbols = [atom.symbol for atom in structure]
+
     clusters = []
     is_organic_list = []
     for i in range(n_components):
-        cluster_indices = [j for j in range(len(structure)) if component_list[j] == i]
-        cluster_symbols = [structure[j].symbol for j in cluster_indices]
+        cluster_indices = np.where(component_array == i)[0].tolist()
+        cluster_symbols = [all_symbols[j] for j in cluster_indices]
         clusters.append(cluster_indices)
         is_organic_list.append(is_organic_cluster(cluster_symbols))
-    return clusters, is_organic_list
 
+    return clusters, is_organic_list
 # 解包跨越边界的分子
+
+
 def unwrap_molecule(structure, cluster_indices):
     pos = structure.positions[cluster_indices]
     cell = structure.cell
     ref_pos = pos[0]
-    unwrapped_pos = [ref_pos]
 
-    for i in range(1, len(cluster_indices)):
-        delta = pos[i] - ref_pos
-        mic_delta, _ = find_mic(delta, cell, pbc=True)
-        unwrapped_pos.append(ref_pos + mic_delta)
-    return np.array(unwrapped_pos)
+    # 所有位置相对 ref_pos 的位移
+    delta = pos - ref_pos
+
+    # 求解最小镜像向量
+    inv_cell = np.linalg.inv(cell.T)  # 提前计算逆矩阵
+    frac_delta = np.dot(delta, inv_cell)
+    frac_delta -= np.round(frac_delta)
+    mic_delta = np.dot(frac_delta, cell.T)
+
+    unwrapped_pos = ref_pos + mic_delta
+    return unwrapped_pos
+
 
 # 封装循环部分：处理有机分子团簇
 def process_organic_clusters(structure, new_structure, clusters, is_organic_list):

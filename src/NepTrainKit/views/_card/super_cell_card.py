@@ -42,6 +42,7 @@ class SuperCellCard(MakeDataCard):
         self.super_scale_condition_frame = SpinBoxUnitInputFrame(self)
         self.super_scale_condition_frame.set_input("",3)
         self.super_scale_condition_frame.setRange(1,100)
+        self.super_scale_condition_frame.set_input_value([3,3,3])
         self.super_scale_radio_button.setToolTip("Scale factors along axes")
         self.super_scale_radio_button.installEventFilter(ToolTipFilter(self.super_scale_radio_button, 300, ToolTipPosition.TOP))
 
@@ -49,6 +50,8 @@ class SuperCellCard(MakeDataCard):
         self.super_cell_condition_frame = SpinBoxUnitInputFrame(self)
         self.super_cell_condition_frame.set_input("Å",3)
         self.super_cell_condition_frame.setRange(1,100)
+        self.super_cell_condition_frame.set_input_value([20,20,20])
+
         self.super_cell_radio_button.setToolTip("Target lattice constant in Å")
         self.super_cell_radio_button.installEventFilter(ToolTipFilter(self.super_cell_radio_button, 300, ToolTipPosition.TOP))
 
@@ -57,6 +60,7 @@ class SuperCellCard(MakeDataCard):
         self.max_atoms_condition_frame.set_input("unit",1)
         self.max_atoms_condition_frame.setRange(1,10000)
         # self.max_atoms_condition_frame.setToolTip("Maximum allowed atoms")
+        self.max_atoms_condition_frame.set_input_value([100])
 
         self.max_atoms_radio_button = RadioButton("Max atoms",self.setting_widget)
         self.max_atoms_radio_button.setToolTip("Limit cell size by atom count")

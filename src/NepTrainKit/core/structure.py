@@ -62,6 +62,15 @@ class Structure:
         else:
             self.force_label = "force"
 
+    @property
+    def tag(self):
+        """Alias for the ``Config_type`` additional field."""
+        return self.additional_fields.get("Config_type", "")
+
+    @tag.setter
+    def tag(self, value):
+        self.additional_fields["Config_type"] = value
+
     def __len__(self):
         return len(self.elements)
 

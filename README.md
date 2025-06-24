@@ -4,6 +4,9 @@
 [![PyPI Downloads](https://img.shields.io/pypi/dm/NepTrainKit?logo=pypi&logoColor=white&color=blue&label=PyPI)](https://pypi.org/project/NepTrainKit)
 [![Requires Python 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white)](https://python.org/downloads)
 [![codecov](https://codecov.io/github/aboys-cb/NepTrainKit/graph/badge.svg?token=HQ5FMLD91F)](https://codecov.io/github/aboys-cb/NepTrainKit)
+[![arXiv](https://img.shields.io/badge/arXiv-2506.01868-b31b1b.svg)](https://doi.org/10.48550/arXiv.2506.01868)
+
+
 </h4>
 
 

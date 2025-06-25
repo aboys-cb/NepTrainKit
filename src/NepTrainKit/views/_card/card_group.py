@@ -110,7 +110,7 @@ class CardGroup(MakeDataCardWidget):
         if self.run_card_num==0:
 
             self.runFinishedSignal.emit(self.index)
-            if isValid(self.filter_card) and self.filter_card.check_state:
+            if self.filter_card and isValid(self.filter_card) and self.filter_card.check_state:
                 self.filter_card.set_dataset(self.result_dataset)
                 self.filter_card.run()
 

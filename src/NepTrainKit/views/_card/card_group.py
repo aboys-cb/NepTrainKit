@@ -5,6 +5,7 @@
 # @email    : 1747193328@qq.com
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout
+from shiboken6 import isValid
 
 from NepTrainKit import utils
 from NepTrainKit.core import CardManager
@@ -96,6 +97,7 @@ class CardGroup(MakeDataCardWidget):
             return
         if isinstance(widget, FilterDataCard):
             self.set_filter_card(widget)
+
         elif isinstance(widget, (MakeDataCard,CardGroup)):
             self.add_card(widget)
         event.acceptProposedAction()
@@ -106,8 +108,9 @@ class CardGroup(MakeDataCardWidget):
         self.result_dataset.extend(self.card_list[index].result_dataset)
 
         if self.run_card_num==0:
+
             self.runFinishedSignal.emit(self.index)
-            if self.filter_card and self.filter_card.check_state:
+            if isValid(self.filter_card) and self.filter_card.check_state:
                 self.filter_card.set_dataset(self.result_dataset)
                 self.filter_card.run()
 

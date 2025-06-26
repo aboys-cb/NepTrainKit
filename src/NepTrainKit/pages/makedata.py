@@ -196,7 +196,10 @@ class MakeDataWidget(QWidget):
             MessageManager.send_success_message("Perturbation training set created successfully.")
     def stop_run_card(self):
         for card in self.workspace_card_widget.cards:
-            card.runFinishedSignal.disconnect(self._run_next_card)
+            try:
+                card.runFinishedSignal.disconnect(self._run_next_card)
+            except:
+                pass
             card.stop()
 
     def add_card(self,card_name):

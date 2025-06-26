@@ -103,6 +103,7 @@ class CardGroup(MakeDataCardWidget):
         event.acceptProposedAction()
 
     def on_card_finished(self, index):
+        return
         self.run_card_num -= 1
         self.card_list[index].runFinishedSignal.disconnect(self.on_card_finished)
         self.result_dataset.extend(self.card_list[index].result_dataset)
@@ -116,7 +117,7 @@ class CardGroup(MakeDataCardWidget):
     def stop(self):
         for card in self.card_list:
             try:
-                card.runFinishedSignal.disconnect(self._run_next_card)
+                card.runFinishedSignal.disconnect(self.on_card_finished)
             except Exception:
                 pass
             card.stop()
@@ -124,55 +125,27 @@ class CardGroup(MakeDataCardWidget):
             self.filter_card.stop()
 
     def run(self):
-        """Run child cards sequentially instead of in parallel."""
+        """Run all child cards in parallel with the same input dataset."""
         self.run_card_num = len(self.card_list)
 
-        if not (self.check_state and self.run_card_num > 0):
-            self.result_dataset = self.dataset
-            self.runFinishedSignal.emit(self.index)
-            return
+        if self.check_state and self.run_card_num > 0:
+            self.result_dataset = []
+            for index, card in enumerate(self.card_list):
+                if card.check_state:
 
-        self.result_dataset = []
+                    card.set_dataset(self.dataset)
+                    card.index = index
+                    card.runFinishedSignal.connect(self.on_card_finished)
+                    card.run()
 
-        first_card = self._next_card(-1)
-        if first_card:
-            first_card.set_dataset(self.dataset)
-            first_card.runFinishedSignal.connect(self._run_next_card)
-            first_card.run()
+                else:
+                    self.run_card_num -= 1
         else:
             self.result_dataset = self.dataset
             self.runFinishedSignal.emit(self.index)
-
-    def _next_card(self, current_card_index=-1):
-        cards = self.card_list
-        if current_card_index + 1 >= len(cards):
-            return None
-        current_card_index += 1
-        for i, card in enumerate(cards[current_card_index:]):
-            if card.check_state:
-                card.index = i + current_card_index
-                return card
-        return None
-
-    def _run_next_card(self, current_card_index):
-        cards = self.card_list
-        current_card = cards[current_card_index]
-        current_card.runFinishedSignal.disconnect(self._run_next_card)
-        self.result_dataset.extend(current_card.result_dataset)
-
-        next_card = self._next_card(current_card_index)
-        if next_card:
-            next_card.set_dataset(current_card.result_dataset)
-            next_card.runFinishedSignal.connect(self._run_next_card)
-            next_card.run()
-        else:
-            self.runFinishedSignal.emit(self.index)
-            if self.filter_card and isValid(self.filter_card) and self.filter_card.check_state:
-                self.filter_card.set_dataset(self.result_dataset)
-                self.filter_card.run()
 
     def write_result_dataset(self, file,**kwargs):
-        if self.filter_card and self.filter_card.check_state:
+        if self.filter_card and isValid(self.filter_card) and  self.filter_card.check_state:
             self.filter_card.write_result_dataset(file,**kwargs)
             return
 
@@ -199,7 +172,7 @@ class CardGroup(MakeDataCardWidget):
 
         for card in self.card_list:
             data_dict["card_list"].append(card.to_dict())
-        if self.filter_card:
+        if self.filter_card and isValid(self.filter_card)  :
             data_dict["filter_card"]=self.filter_card.to_dict()
         else:
             data_dict["filter_card"]=None

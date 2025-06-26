@@ -220,9 +220,9 @@ class StructureData(NepData):
     @utils.timeit
     def get_all_config(self):
 
-        return [structure.additional_fields["Config_type"]  for structure in self.now_data]
+        return [structure.tag for structure in self.now_data]
 
     def search_config(self,config):
 
-        result_index=[i for i ,structure in enumerate(self.now_data) if re.search(config, structure.additional_fields["Config_type"])]
+        result_index=[i for i ,structure in enumerate(self.now_data) if re.search(config, structure.tag)]
         return self.group_array[result_index].tolist()

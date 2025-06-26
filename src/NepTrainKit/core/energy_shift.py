@@ -134,7 +134,7 @@ def shift_dataset_energy(
     frames = []
     for s in structures:
         energy = float(s.energy)
-        config_type = str(s.additional_fields.get("Config_type", ""))
+        config_type = str(s.tag)
         elem_counts = Counter(s.elements)
 
         frames.append({"energy": energy, "config_type": config_type, "elem_counts": elem_counts})

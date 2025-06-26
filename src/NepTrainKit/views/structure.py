@@ -62,5 +62,5 @@ class StructureInfoWidget(QWidget):
         self.atom_num_text.setText(str(len(structure )))
         self.formula_text.setText(structure.html_formula)
         self.lattice_text.setText(str(np.round(structure.lattice,3)))
-        self.config_text.setText(structure.Config_type)
+        self.config_text.setText(structure.tag)
 

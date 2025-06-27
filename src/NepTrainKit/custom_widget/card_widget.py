@@ -189,7 +189,7 @@ class MakeDataCard(MakeDataCardWidget):
                 self.worker_thread.terminate()
                 self.result_dataset = self.worker_thread.result_dataset
                 self.update_dataset_info()
-                del self.workerthread
+                del self.worker_thread
 
     def run(self):
         # 创建并启动线程

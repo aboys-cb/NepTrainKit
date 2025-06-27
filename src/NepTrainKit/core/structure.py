@@ -88,6 +88,26 @@ class Structure:
         return np.abs(np.linalg.det(self.lattice))
 
     @property
+    def abc(self):
+        """Return lattice vector lengths (a, b, c)."""
+        return np.linalg.norm(self.lattice, axis=1)
+
+    @property
+    def angles(self):
+        """Return lattice angles (alpha, beta, gamma) in degrees."""
+        a_vec, b_vec, c_vec = self.lattice
+
+        def _angle(v1, v2):
+            cos_ang = np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
+            cos_ang = np.clip(cos_ang, -1.0, 1.0)
+            return np.degrees(np.arccos(cos_ang))
+
+        alpha = _angle(b_vec, c_vec)
+        beta = _angle(a_vec, c_vec)
+        gamma = _angle(a_vec, b_vec)
+        return np.array([alpha, beta, gamma], dtype=np.float32)
+
+    @property
     def numbers(self):
         return [atomic_numbers[element] for element in self.elements]
 

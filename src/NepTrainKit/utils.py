@@ -162,7 +162,7 @@ class DataProcessingThread(QThread):
         self.dataset = dataset
         self.process_func = process_func
         self.result_dataset = []
-
+        self.setStackSize(8*1024*1024)
     def run(self):
         """线程主逻辑"""
         try:

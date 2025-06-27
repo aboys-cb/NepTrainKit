@@ -5,6 +5,8 @@
 # @email    : 1747193328@qq.com
 import os
 import sys
+if sys.platform == "darwin":
+    os.environ['OPENBLAS_NUM_THREADS'] = '1'
 import traceback
 
 from PySide6.QtCore import Qt, QFile

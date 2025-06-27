@@ -111,7 +111,7 @@ class ShearMatrixStrainCard(MakeDataCard):
                     if abs(sxz) > 1e-8:
                         info_list.append(f"xz:{sxz}%")
                     info_str = "|".join(info_list)
-                    new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Shear({info_str})"
+                    new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Shear({info_str},symmetric={symmetric})"
                     structure_list.append(new_structure)
         return structure_list
 

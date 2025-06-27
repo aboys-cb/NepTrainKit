@@ -9,13 +9,13 @@ from NepTrainKit.custom_widget import SpinBoxUnitInputFrame
 from NepTrainKit.custom_widget.card_widget import MakeDataCard
 
 @CardManager.register_card
-class ShearStrainCard(MakeDataCard):
-    card_name = "Shear Strain"
-    menu_icon = r":/images/src/images/alignment.svg"
+class ShearMatrixStrainCard(MakeDataCard):
+    card_name = "Shear Matrix Strain"
+    menu_icon = r":/images/src/images/scaling.svg"
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Make Shear Strain")
+        self.setTitle("Make Shear Matrix Strain")
         self.init_ui()
 
     def init_ui(self):

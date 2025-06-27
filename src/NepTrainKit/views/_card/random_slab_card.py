@@ -19,7 +19,7 @@ from scipy.stats.qmc import Sobol
 @CardManager.register_card
 class RandomSlabCard(MakeDataCard):
     card_name = "Random Slab"
-    menu_icon = r":/images/src/images/supercell.svg"
+    menu_icon = r":/images/src/images/defect.svg"
 
     def __init__(self, parent=None):
         super().__init__(parent)

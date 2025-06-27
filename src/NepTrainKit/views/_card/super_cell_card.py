@@ -21,7 +21,7 @@ from scipy.stats.qmc import Sobol
 class SuperCellCard(MakeDataCard):
     card_name= "Super Cell"
     menu_icon=r":/images/src/images/supercell.svg"
-    separator = True
+    separator = False
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Make Supercell")

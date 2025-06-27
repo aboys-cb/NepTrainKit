@@ -9,7 +9,7 @@ from NepTrainKit.custom_widget import SpinBoxUnitInputFrame
 from NepTrainKit.custom_widget.card_widget import MakeDataCard
 
 @CardManager.register_card
-class ShearMatrixStrainCard(MakeDataCard):
+class ShearMatrixCard(MakeDataCard):
     card_name = "Shear Matrix Strain"
     menu_icon = r":/images/src/images/scaling.svg"
 

@@ -61,6 +61,11 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         self.headerLayout.addWidget(self.close_button, 0, Qt.AlignmentFlag.AlignRight)
 
 class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
+    """Base class for cards used in console workflow."""
+
+    # group name used for card menu categorization
+    group = None
+
     windowStateChangedSignal=Signal( )
     def __init__(self, parent=None):
         super().__init__(parent)

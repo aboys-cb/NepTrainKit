@@ -17,6 +17,7 @@ from scipy.stats.qmc import Sobol
 
 @CardManager.register_card
 class PerturbCard(MakeDataCard):
+    group = "Perturbation"
     card_name= "Atomic Perturb"
     menu_icon=r":/images/src/images/perturb.svg"
     def __init__(self, parent=None):

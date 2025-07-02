@@ -15,6 +15,7 @@ from scipy.stats.qmc import Sobol
 
 @CardManager.register_card
 class CellScalingCard(MakeDataCard):
+    group = "Lattice"
     card_name= "Lattice Perturb"
     menu_icon=r":/images/src/images/scaling.svg"
     def __init__(self, parent=None):

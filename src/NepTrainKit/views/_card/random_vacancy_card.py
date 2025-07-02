@@ -17,6 +17,8 @@ from scipy.stats.qmc import Sobol
 
 @CardManager.register_card
 class RandomVacancyCard(MakeDataCard):
+    group = "Defect"
+
     card_name = "Random Vacancy"
     menu_icon = r":/images/src/images/defect.svg"
 

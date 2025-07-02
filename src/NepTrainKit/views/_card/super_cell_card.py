@@ -19,6 +19,7 @@ from scipy.stats.qmc import Sobol
 
 @CardManager.register_card
 class SuperCellCard(MakeDataCard):
+    group = "Lattice"
     card_name= "Super Cell"
     menu_icon=r":/images/src/images/supercell.svg"
     separator = False

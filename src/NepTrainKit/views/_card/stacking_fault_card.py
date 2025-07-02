@@ -9,6 +9,7 @@ from NepTrainKit.custom_widget.card_widget import MakeDataCard
 @CardManager.register_card
 class StackingFaultCard(MakeDataCard):
     """Generate stacking fault or twin structures."""
+    group = "Defect"
     card_name = "Stacking Fault"
     menu_icon = r":/images/src/images/defect.svg"
 

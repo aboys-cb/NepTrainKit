@@ -46,7 +46,7 @@ jobs:
           mode: standalone
           windows-console-mode: disable
           include-qt-plugins: sqldrivers
-          include-package-data: vispy
+          include-package-data: vispy,ase
           upx-binary: ${{ github.workspace }}/src/NepTrainKit/upx${{ runner.os == 'Windows' && '.exe' || '' }}
           enable-plugins: pyside6,upx
           windows-icon-from-ico: NepTrainKit/src/images/logo.png

@@ -7,8 +7,10 @@ import json
 import os.path
 
 import numpy as np
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QApplication
+from qfluentwidgets import HyperlinkLabel, BodyLabel, SubtitleLabel
 
 from NepTrainKit.core import MessageManager, CardManager
 from NepTrainKit.custom_widget import MakeWorkflowArea
@@ -17,7 +19,7 @@ from NepTrainKit.views.cards import   ConsoleWidget
 
 
 from NepTrainKit.version import __version__
-from NepTrainKit import utils
+from NepTrainKit import utils, get_user_config_path
 from ase.io import read as ase_read
 
 
@@ -98,8 +100,21 @@ class MakeDataWidget(QWidget):
         self.setting_group.runSignal.connect(self.run_card)
         self.setting_group.stopSignal.connect(self.stop_run_card)
         self.setting_group.newCardSignal.connect(self.add_card)
-        self.gridLayout.addWidget(self.setting_group, 0, 0, 1, 1)
-        self.gridLayout.addWidget(self.workspace_card_widget, 1, 0, 1, 1)
+
+        self.path_label = HyperlinkLabel(self)
+        self.path_label.setFixedHeight(30)  # 设置状态栏的高度
+        user_config_path = get_user_config_path()
+        self.path_label.setText("Folder for Custom Cards  ")
+
+        self.path_label.setUrl(f"file:///{user_config_path}/cards")
+
+        self.dataset_info_label = BodyLabel(self)
+        self.dataset_info_label.setFixedHeight(30)  # 设置状态栏的高度
+
+        self.gridLayout.addWidget(self.setting_group, 0, 0, 1, 2)
+        self.gridLayout.addWidget(self.workspace_card_widget, 1, 0, 1, 2)
+        self.gridLayout.addWidget(self.dataset_info_label, 2, 0, 1, 1)
+        self.gridLayout.addWidget(self.path_label, 2, 1, 1, 1,alignment=Qt.AlignmentFlag.AlignRight)
         self.setLayout(self.gridLayout)
 
     def load_base_structure(self,paths):
@@ -129,7 +144,7 @@ class MakeDataWidget(QWidget):
 
         self.dataset=structures_list
         MessageManager.send_success_message(f"success load {len(structures_list)} structures.")
-
+        self.dataset_info_label.setText(f" Success load {len(structures_list)} structures.")
     def open_file(self):
         path = utils.call_path_dialog(self,"Please choose the structure files",
                                       "selects",file_filter="Structure Files (*.xyz *.vasp *.cif)")

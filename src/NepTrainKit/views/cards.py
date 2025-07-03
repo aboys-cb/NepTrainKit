@@ -18,6 +18,8 @@ from NepTrainKit.views._card import *
 user_config_path = get_user_config_path()
 if os.path.exists(f"{user_config_path}/cards"):
     load_cards_from_directory(os.path.join(user_config_path, "cards"))
+else:
+    os.makedirs(f"{user_config_path}/cards")
 
 class ConsoleWidget(QWidget):
     """

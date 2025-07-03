@@ -290,6 +290,7 @@ from NepTrainKit.custom_widget.card_widget import MakeDataCard
 @CardManager.register_card
 class CustomCard(MakeDataCard):
     # Required class attributes
+    group = "Custom" # menu name
     card_name = "Custom Card Name"
     menu_icon = ":/images/src/images/logo.svg"
     

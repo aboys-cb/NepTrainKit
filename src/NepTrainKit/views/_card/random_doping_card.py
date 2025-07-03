@@ -59,6 +59,7 @@ def sample_dopants(dopant_list, ratios, N, exact=False, seed=None):
 @CardManager.register_card
 
 class RandomDopingCard(MakeDataCard):
+    group = "Defect"
     card_name = "Random Doping"
     menu_icon = r":/images/src/images/defect.svg"
 

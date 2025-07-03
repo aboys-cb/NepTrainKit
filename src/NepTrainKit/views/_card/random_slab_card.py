@@ -18,6 +18,8 @@ from scipy.stats.qmc import Sobol
 
 @CardManager.register_card
 class RandomSlabCard(MakeDataCard):
+    group = "Defect"
+
     card_name = "Random Slab"
     menu_icon = r":/images/src/images/defect.svg"
 

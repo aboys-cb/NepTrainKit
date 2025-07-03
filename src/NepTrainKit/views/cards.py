@@ -11,13 +11,15 @@ from PySide6.QtWidgets import QGridLayout, QWidget
 from qfluentwidgets import RoundMenu, PrimaryDropDownPushButton, CommandBar, Action, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit import get_user_config_path
-from NepTrainKit.core import load_cards_from_directory, CardManager
+from NepTrainKit.core import load_cards_from_directory, CardManager, Config
 from ase.io import extxyz,cif,vasp
 from NepTrainKit.views._card import *
 
 user_config_path = get_user_config_path()
 if os.path.exists(f"{user_config_path}/cards"):
     load_cards_from_directory(os.path.join(user_config_path, "cards"))
+else:
+    os.makedirs(f"{user_config_path}/cards")
 
 class ConsoleWidget(QWidget):
     """
@@ -44,13 +46,31 @@ class ConsoleWidget(QWidget):
         self.new_card_button.installEventFilter(ToolTipFilter(self.new_card_button, 300, ToolTipPosition.TOP))
 
         self.menu = RoundMenu(parent=self)
-        for class_name,card_class in CardManager.card_info_dict.items():
 
-            if card_class.separator:
-                self.menu.addSeparator()
-            action = QAction(QIcon(card_class.menu_icon),card_class.card_name)
-            action.setObjectName(class_name)
-            self.menu.addAction(action)
+        use_group_menu = Config.getboolean("widget", "use_group_menu", False)
+        if use_group_menu:
+            group_menus = {}
+            for class_name, card_class in CardManager.card_info_dict.items():
+                group = getattr(card_class, "group", None)
+                target_menu = self.menu
+                if group:
+                    if group not in group_menus:
+                        group_menu = RoundMenu(group, self.menu)
+                        group_menus[group] = group_menu
+                        self.menu.addMenu(group_menu)
+                    target_menu = group_menus[group]
+                if card_class.separator:
+                    target_menu.addSeparator()
+                action = QAction(QIcon(card_class.menu_icon), card_class.card_name)
+                action.setObjectName(class_name)
+                target_menu.addAction(action)
+        else:
+            for class_name, card_class in CardManager.card_info_dict.items():
+                if card_class.separator:
+                    self.menu.addSeparator()
+                action = QAction(QIcon(card_class.menu_icon), card_class.card_name)
+                action.setObjectName(class_name)
+                self.menu.addAction(action)
 
 
         self.menu.triggered.connect(self.menu_clicked)

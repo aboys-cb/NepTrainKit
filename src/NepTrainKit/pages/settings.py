@@ -66,6 +66,8 @@ class SettingsWidget(ScrollArea):
 
         sort_atoms_config = Config.getboolean("widget", "sort_atoms", False)
 
+        use_group_menu_config = Config.getboolean("widget", "use_group_menu", False)
+
         self.auto_load_card = SwitchSettingCard(
             QIcon(":/images/src/images/auto_load.svg"),
             self.tr('Auto loading'),
@@ -82,6 +84,14 @@ class SettingsWidget(ScrollArea):
             parent=self.personal_group
         )
         self.sort_atoms_card.setValue(sort_atoms_config)
+
+        self.use_group_menu_card = SwitchSettingCard(
+            QIcon(":/images/src/images/group.svg"),
+            'Use card group menu',
+            'Group cards by "group" in console menu',
+            parent=self.personal_group
+        )
+        self.use_group_menu_card.setValue(use_group_menu_config)
         radius_coefficient_config=Config.getfloat("widget","radius_coefficient",0.7)
 
         self.radius_coefficient_Card = DoubleSpinBoxSettingCard(
@@ -142,6 +152,7 @@ class SettingsWidget(ScrollArea):
         self.personal_group.addSettingCard(self.auto_load_card)
         self.personal_group.addSettingCard(self.radius_coefficient_Card)
         self.personal_group.addSettingCard(self.sort_atoms_card)
+        self.personal_group.addSettingCard(self.use_group_menu_card)
 
         self.about_group.addSettingCard(self.about_nep89_card)
         self.about_group.addSettingCard(self.help_card)
@@ -161,6 +172,7 @@ class SettingsWidget(ScrollArea):
 
         self.auto_load_card.checkedChanged.connect(lambda state:Config.set("widget","auto_load",state))
         self.sort_atoms_card.checkedChanged.connect(lambda state:Config.set("widget","sort_atoms",state))
+        self.use_group_menu_card.checkedChanged.connect(lambda state:Config.set("widget","use_group_menu",state))
         # self.about_card.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(RELEASES_URL)))
         self.feedback_card.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl(FEEDBACK_URL)))

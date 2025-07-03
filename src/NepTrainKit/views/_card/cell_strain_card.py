@@ -16,6 +16,8 @@ from NepTrainKit.custom_widget.card_widget import MakeDataCard
 @CardManager.register_card
 
 class CellStrainCard(MakeDataCard):
+    group = "Lattice"
+
     card_name= "Lattice Strain"
     menu_icon=r":/images/src/images/scaling.svg"
     def __init__(self, parent=None):

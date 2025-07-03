@@ -11,6 +11,7 @@ from NepTrainKit.custom_widget.card_widget import MakeDataCard
 
 @CardManager.register_card
 class ShearAngleCard(MakeDataCard):
+    group = "Lattice"
     card_name = "Shear Angle Strain"
     menu_icon = r":/images/src/images/scaling.svg"
 

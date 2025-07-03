@@ -17,6 +17,7 @@ from scipy.stats.qmc import Sobol
 
 @CardManager.register_card
 class PerturbCard(MakeDataCard):
+    group = "Perturbation"
     card_name= "Atomic Perturb"
     menu_icon=r":/images/src/images/perturb.svg"
     def __init__(self, parent=None):
@@ -131,6 +132,7 @@ class PerturbCard(MakeDataCard):
             # 构造新结构
             new_structure = structure.copy()
             new_structure.set_positions(new_positions)
+            new_structure.wrap()
             config_str = f" Perturb(distance={max_scaling}, {'uniform' if engine_type == 1 else 'Sobol'})"
             new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + config_str
             structure_list.append(new_structure)

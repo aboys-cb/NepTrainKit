@@ -18,6 +18,7 @@ from scipy.stats.qmc import Sobol
 
 @CardManager.register_card
 class VacancyDefectCard(MakeDataCard):
+    group = "Defect"
     card_name= "Vacancy Defect Generation"
     menu_icon=r":/images/src/images/defect.svg"
     def __init__(self, parent=None):

@@ -36,7 +36,7 @@ class StackingFaultCard(MakeDataCard):
         self.step_frame.set_input(["-", "step", ""], 3, "float")
         self.step_frame.setRange(-10, 10)
         self.step_frame.set_input_value([0.0, 1.0, 0.5])
-        self.step_label.setToolTip("Displacement start, end, and step: Controls the displacement during the fault. Units: multiples of lattice constant or nanometers.")
+        self.step_label.setToolTip("Displacement start, end, and step: Controls the displacement during the fault. Units: multiples of lattice normal.")
         self.step_label.installEventFilter(ToolTipFilter(self.step_label, 0, ToolTipPosition.TOP))
 
         self.layer_label = BodyLabel("Layers", self.setting_widget)
@@ -60,7 +60,7 @@ class StackingFaultCard(MakeDataCard):
         h, k, l = [int(v) for v in self.hkl_frame.get_input_value()]
         step_start, step_end, step_step = self.step_frame.get_input_value()
         num_layers = int(self.layer_frame.get_input_value()[0])
-        fault_type = self.type_combo.currentText()
+        # fault_type = self.type_combo.currentText()
 
         cell = structure.cell.array
         recip = np.linalg.inv(cell).T
@@ -79,13 +79,11 @@ class StackingFaultCard(MakeDataCard):
         coord = positions @ perpendicular_vector  # 使用垂直向量进行投影
         unique_coords = np.unique(np.round(coord, 8))
         unique_coords.sort()
-
         # 按照分层数选择平面位置
         if num_layers >= len(unique_coords):
             plane_pos = unique_coords[len(unique_coords) // 2]
         else:
             plane_pos = unique_coords[num_layers - 1]
-
         mask = coord >= plane_pos
 
         step_values = np.arange(step_start, step_end + step_step / 2, step_step)
@@ -97,7 +95,7 @@ class StackingFaultCard(MakeDataCard):
 
             new_structure.set_positions(pos)
             new_structure.wrap()
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" {fault_type}(hkl={h}{k}{l},step={d})"
+            new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" StackingFault(hkl={h}{k}{l},step={d})"
             structure_list.append(new_structure)
         return structure_list
 

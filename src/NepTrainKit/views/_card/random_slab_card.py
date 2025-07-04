@@ -109,7 +109,10 @@ class RandomSlabCard(MakeDataCard):
                     for layers in layer_range:
                         for vac in vac_range:
                             try:
-                                slab = surface(structure, (int(h), int(k), int(l)), int(layers), vacuum=float(vac))
+                                if vac==0:
+                                    vac=None
+                                slab = surface(structure, (int(h), int(k), int(l)), int(layers), vacuum=vac,periodic=True)
+                                slab.wrap()
                                 slab.info["Config_type"] = slab.info.get("Config_type", "") + f" Slab(hkl={int(h)}{int(k)}{int(l)},layers={int(layers)},vacuum={vac})"
                                 structure_list.append(slab)
                             except Exception as e:

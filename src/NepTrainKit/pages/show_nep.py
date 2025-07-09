@@ -5,6 +5,7 @@
 # @email    : 1747193328@qq.com
 import os.path
 import sys
+import traceback
 
 from loguru import logger
 
@@ -18,6 +19,7 @@ from qfluentwidgets import HyperlinkLabel, MessageBox, SpinBox, \
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
+from NepTrainKit.core.io.deepmd import is_deepmd_path
 from NepTrainKit.custom_widget import ConfigTypeSearchLineEdit
 from NepTrainKit.core.io import NepTrainResultData, DeepmdResultData
 from NepTrainKit.core.io.nep import NepPolarizabilityResultData, NepDipoleResultData
@@ -238,13 +240,13 @@ class ShowNepWidget(QWidget):
         if os.path.isdir(path):
             if os.path.exists(os.path.join(path, "train.xyz")):
                 path = os.path.join(path, "train.xyz")
-            elif os.path.exists(os.path.join(path, "coord.npy")):
+            elif is_deepmd_path(path):
                 pass
             else:
                 MessageManager.send_info_message(
-                    "The directory does not contain a train.xyz or deepmd npy files!")
+                    "The directory does not contain a train.xyz or type.raw file!")
                 return
-        if not path.endswith(".xyz") and not os.path.exists(os.path.join(path, "coord.npy")):
+        if not path.endswith(".xyz") and not is_deepmd_path(path):
             MessageManager.send_info_message(f"Please choose a xyz file or deepmd directory, not {path}!")
             return
         url=self.path_label.getUrl().toString()
@@ -283,7 +285,7 @@ class ShowNepWidget(QWidget):
 
         if os.path.isdir(path):
             file_name = os.path.basename(path)
-            if os.path.exists(os.path.join(path, "coord.npy")):
+            if is_deepmd_path(path):
                 self.nep_result_data = DeepmdResultData.from_path(path)
             else:
                 self.nep_result_data = None
@@ -391,9 +393,9 @@ class ShowNepWidget(QWidget):
         try:
             atoms=self.nep_result_data.get_atoms(current_index)
         except:
+
             MessageManager.send_message_box("The index is invalid, perhaps the structure has been deleted")
             return
-
         self.graph_widget.canvas.plot_current_point(current_index)
 
         self.show_struct_widget.show_structure(atoms)

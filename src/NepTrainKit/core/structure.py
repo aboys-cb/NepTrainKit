@@ -3,10 +3,13 @@
 # @Time    : 2024/11/21 14:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import glob
 import json
 import os
 import re
 from copy import deepcopy
+from pathlib import Path
+
 import numpy as np
 from ase import neighborlist
 from ase.geometry import find_mic
@@ -699,3 +702,77 @@ def process_organic_clusters(structure, new_structure, clusters, is_organic_list
             # 更新原子位置
             new_structure.positions[cluster_indices] = pos_new
     new_structure.wrap()
+@utils.timeit
+def _load_npy_structure(folder):
+    structures=[]
+    if  not os.path.exists(os.path.join(folder, "type_map.raw")):
+        return structures
+    type_map = np.loadtxt(os.path.join(folder, "type_map.raw"),dtype=str)
+    type_ = np.loadtxt(os.path.join(folder, "type.raw"),dtype=int)
+
+    elem_list=np.array([type_map[i] for i in type_],dtype=str)
+    atoms_num=len(elem_list)
+    if os.path.isfile(os.path.join(folder, "nopbc")):
+        nopbc= True
+    else:
+        nopbc = False
+    sets = sorted(glob.glob(os.path.join(folder, "set.*")))
+    dataset_dict={}
+    for _set in sets:
+
+        for data_path in Path(_set).iterdir():
+            key=data_path.stem
+
+            data = np.load(data_path)
+            if key in dataset_dict:
+                dataset_dict[key]=np.vstack((dataset_dict[key],data))
+            else:
+
+                dataset_dict[key]=data
+    config_type = os.path.basename(folder)
+    for index in range(dataset_dict["box"].shape[0]):
+        box=dataset_dict["box"][index].reshape(3,3)
+        coords=dataset_dict["coord"][index].reshape(-1,3)
+        properties = [
+            {"name": "species", "type": "S", "count": 1},
+            {"name": "pos", "type": "R", "count": 3},
+        ]
+        info={
+            "species":elem_list,
+            "pos": coords,
+        }
+        additional_fields={"Config_type": config_type}
+        if nopbc:
+            additional_fields["pbc"]="F F F"
+        else:
+            additional_fields["pbc"]="T T T"
+        for key in dataset_dict.keys():
+            if key not in ["box", "coord"]:
+                prop=dataset_dict[key][index]
+                count=prop.shape[0]
+                if count>atoms_num:
+                    col=count//atoms_num
+                    info[key] = prop.reshape((-1, col))
+                    properties.append({"name": key, "type": "R", "count": col})
+                else:
+                    if count==1:
+                        additional_fields[key] = prop[0]
+                    else:
+                        additional_fields[key] = " ".join(prop.astype(str))
+
+        structure = Structure(lattice=box,structure_info=info,properties=properties,additional_fields=additional_fields)
+        structures.append(structure)
+    return structures
+
+
+def load_npy_structure(folders):
+
+    if    os.path.exists(os.path.join(folders, "type.raw")):
+
+        return _load_npy_structure(folders)
+    else:
+        structures = []
+
+        for folder in Path(folders).iterdir():
+            structures.extend(_load_npy_structure(folder))
+        return structures

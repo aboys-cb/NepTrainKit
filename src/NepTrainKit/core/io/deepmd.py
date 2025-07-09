@@ -1,145 +1,64 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import traceback
 from pathlib import Path
 import os
 import numpy as np
 from PySide6.QtCore import QObject, Signal
 from loguru import logger
+import glob
+from .base import NepPlotData, StructureData, ResultData
+from NepTrainKit.core.structure import Structure, load_npy_structure
+from .utils import parse_array_by_atomnum
+from .. import Config, MessageManager
+from ... import module_path
+def is_deepmd_path(folder)-> bool:
+    if os.path.exists(os.path.join(folder,"type.raw")):
+        return True
+    if glob.glob(os.path.join(folder, "*/type.raw")):
+        return True
+    return False
+class DeepmdResultData(ResultData):
 
-from .base import NepPlotData, StructureData
-from NepTrainKit.core.structure import Structure
+
+    def __init__(self, nep_txt_path,data_xyz_path: Path,
+                 energy_out_path,
+                 force_out_path,
+                 stress_out_path,
+                 virial_out_path,
+                 descriptor_path):
+        super().__init__(nep_txt_path, data_xyz_path,descriptor_path)
+        self.energy_out_path = energy_out_path
+        self.force_out_path = force_out_path
+        self.stress_out_path = stress_out_path
+        self.virial_out_path = virial_out_path
 
 
-class DeepmdResultData(QObject):
-    updateInfoSignal = Signal()
-    loadFinishedSignal = Signal()
-
-    def __init__(self, data_dir: Path):
-        super().__init__()
-        self.data_dir = Path(data_dir)
-        self.select_index = set()
-        self.load_flag = False
 
     @classmethod
     def from_path(cls, path):
-        return cls(Path(path))
+        dataset_path = Path(path)
+        file_name=dataset_path.name
+        nep_txt_path = dataset_path.with_name(f"nep.txt")
+        if not nep_txt_path.exists():
+            nep89_path = os.path.join(module_path, "Config/nep89.txt")
+            nep_txt_path=Path(nep89_path)
+        descriptor_path = dataset_path.with_name(f"descriptor.out")
+        energy_out_path = dataset_path.with_name(f"energy_{file_name}.out")
+        force_out_path = dataset_path.with_name(f"force_{file_name}.out")
+        stress_out_path = dataset_path.with_name(f"stress_{file_name}.out")
+        virial_out_path = dataset_path.with_name(f"virial_{file_name}.out")
+        return cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,stress_out_path,virial_out_path,descriptor_path)
 
     def load_structures(self):
-        type_map_file = self.data_dir / "type_map.raw"
-        if type_map_file.exists():
-            type_map = [t.strip() for t in open(type_map_file).read().split()]
-        else:
-            type_map = []
-        coords = np.load(self.data_dir / "coord.npy")
-        boxes = np.load(self.data_dir / "box.npy")
-        types = np.load(self.data_dir / "type.npy")
-        energies = np.load(self.data_dir / "energy.npy") if (self.data_dir / "energy.npy").exists() else None
-        forces = np.load(self.data_dir / "force.npy") if (self.data_dir / "force.npy").exists() else None
-        virials = np.load(self.data_dir / "virial.npy") if (self.data_dir / "virial.npy").exists() else None
-        structures = []
-        for i in range(coords.shape[0]):
-            species_index = types[i]
-            if type_map:
-                species = [type_map[j] for j in species_index]
-            else:
-                species = list(species_index)
-            s = Structure.from_deepmd(
-                boxes[i],
-                species,
-                coords[i],
-                energy=energies[i] if energies is not None else None,
-                forces=forces[i] if forces is not None else None,
-                virial=virials[i] if virials is not None else None,
-            )
-            structures.append(s)
+
+        structures = load_npy_structure(self.data_xyz_path)
         self._atoms_dataset = StructureData(structures)
         self.atoms_num_list = np.array([len(s) for s in structures])
 
-    def load(self):
-        try:
-            self.load_structures()
-            self._load_dataset()
-            self.load_flag = True
-        except Exception:
-            logger.error("load dataset error", exc_info=True)
-        self.loadFinishedSignal.emit()
 
-    @property
-    def structure(self):
-        return self._atoms_dataset
 
-    @property
-    def num(self):
-        return self._atoms_dataset.num
 
-    def is_select(self, i):
-        return i in self.select_index
-
-    def select(self, indices):
-        idx = np.asarray(indices, dtype=int) if not isinstance(indices, int) else np.array([indices])
-        idx = np.unique(idx)
-        idx = idx[(idx >= 0) & (idx < len(self.structure.all_data)) & (self.structure.data._active_mask[idx])]
-        self.select_index.update(idx)
-        self.updateInfoSignal.emit()
-
-    def uncheck(self, indices):
-        if isinstance(indices, int):
-            indices = [indices]
-        for i in indices:
-            self.select_index.discard(i)
-        self.updateInfoSignal.emit()
-
-    def remove(self, i):
-        self.structure.remove(i)
-        for dataset in self.dataset:
-            dataset.remove(i)
-        self.updateInfoSignal.emit()
-
-    @property
-    def is_revoke(self):
-        return self.structure.remove_data.size != 0
-
-    def revoke(self):
-        self.structure.revoke()
-        for dataset in self.dataset:
-            dataset.revoke()
-        self.updateInfoSignal.emit()
-
-    def delete_selected(self):
-        self.remove(list(self.select_index))
-        self.select_index.clear()
-        self.updateInfoSignal.emit()
-
-    def _load_dataset(self):
-        if (self.data_dir / "energy.npy").exists():
-            energy = np.load(self.data_dir / "energy.npy")
-            energy_array = np.column_stack([energy, energy]).astype(np.float32)
-        else:
-            energy_array = np.array([])
-        if (self.data_dir / "force.npy").exists():
-            force = np.load(self.data_dir / "force.npy")
-            f = force.reshape(force.shape[0] * force.shape[1], 3)
-            force_array = np.column_stack([f, f]).astype(np.float32)
-            group = np.repeat(np.arange(force.shape[0]), force.shape[1])
-        else:
-            force_array = np.array([])
-            group = 1
-        if (self.data_dir / "virial.npy").exists():
-            virial = np.load(self.data_dir / "virial.npy")
-            v = virial.reshape(virial.shape[0], -1)
-            virial_array = np.column_stack([v, v]).astype(np.float32)
-            volume = np.array([s.volume for s in self.structure.now_data])
-            coefficient = (self.atoms_num_list / volume)[:, np.newaxis]
-            stress = virial * coefficient[:, :, None] * 160.21766208
-            stress_array = np.column_stack([stress.reshape(virial.shape[0], -1), stress.reshape(virial.shape[0], -1)]).astype(np.float32)
-        else:
-            virial_array = np.array([])
-            stress_array = np.array([])
-        self._energy_dataset = NepPlotData(energy_array, title="energy")
-        self._force_dataset = NepPlotData(force_array, group_list=group, title="force")
-        self._virial_dataset = NepPlotData(virial_array, title="virial")
-        self._stress_dataset = NepPlotData(stress_array, title="stress")
-        self._descriptor_dataset = NepPlotData([], title="descriptor")
 
     @property
     def dataset(self):
@@ -161,6 +80,142 @@ class DeepmdResultData(QObject):
     def virial(self):
         return self._virial_dataset
 
-    @property
-    def descriptor(self):
-        return self._descriptor_dataset
+
+    def _load_dataset(self) -> None:
+
+        if self._should_recalculate( ):
+            energy_array, force_array, virial_array, stress_array = self._recalculate_and_save( )
+
+
+
+        self._energy_dataset = NepPlotData(energy_array, title="energy")
+        default_forces = Config.get("widget", "forces_data", "Row")
+        if force_array.size != 0 and default_forces == "Norm":
+
+            force_array = parse_array_by_atomnum(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
+
+            self._force_dataset = NepPlotData(force_array, title="force")
+        else:
+            self._force_dataset = NepPlotData(force_array, group_list=self.atoms_num_list, title="force")
+
+
+        self._stress_dataset = NepPlotData(stress_array, title="stress")
+
+        self._virial_dataset = NepPlotData(virial_array, title="virial")
+
+    def _should_recalculate(self  ) -> bool:
+        """判断是否需要重新计算 NEP 数据。"""
+        output_files_exist = all([
+            self.energy_out_path.exists(),
+            self.force_out_path.exists(),
+            self.stress_out_path.exists(),
+            self.virial_out_path.exists()
+        ])
+        return  True
+
+    def _save_energy_data(self, potentials: np.ndarray)  :
+
+        """保存能量数据到文件。"""
+
+        try:
+            ref_energies = np.array([s.per_atom_energy for s in self.structure.now_data], dtype=np.float32)
+
+            if potentials.size  == 0:
+                #计算失败 空数组
+                energy_array = np.column_stack([ref_energies, ref_energies])
+            else:
+                energy_array = np.column_stack([potentials / self.atoms_num_list, ref_energies])
+        except Exception:
+            logger.debug(traceback.format_exc())
+            if potentials.size == 0:
+                # 计算失败 空数组
+                energy_array = np.column_stack([potentials, potentials])
+            else:
+                energy_array = np.column_stack([potentials / self.atoms_num_list, potentials / self.atoms_num_list])
+        energy_array = energy_array.astype(np.float32)
+        if energy_array.size != 0:
+            np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
+        return energy_array
+
+    def _save_force_data(self, forces: np.ndarray)  :
+        """保存力数据到文件。"""
+        try:
+            ref_forces = np.vstack([s.forces for s in self.structure.now_data], dtype=np.float32)
+
+            if forces.size == 0:
+                # 计算失败 空数组
+                forces_array = np.column_stack([ref_forces, ref_forces])
+
+            else:
+                forces_array = np.column_stack([forces, ref_forces])
+        except KeyError:
+            MessageManager.send_warning_message("use nep3 calculator to calculate forces replace the original forces")
+            forces_array = np.column_stack([forces, forces])
+
+        except Exception:
+            logger.debug(traceback.format_exc())
+            forces_array = np.column_stack([forces, forces])
+            MessageManager.send_error_message("an error occurred while calculating forces. Please check the input file.")
+        if forces_array.size != 0:
+            np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
+
+
+        return forces_array
+
+
+
+    def _save_virial_and_stress_data(self, virials: np.ndarray )    :
+        """保存维里张量和应力数据到文件。"""
+        coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data]))[:, np.newaxis]
+        try:
+            ref_virials = np.vstack([s.nep_virial for s in self.structure.now_data], dtype=np.float32)
+            if virials.size == 0:
+                # 计算失败 空数组
+                virials_array = np.column_stack([ref_virials, ref_virials])
+            else:
+                virials_array = np.column_stack([virials, ref_virials])
+        except AttributeError:
+            MessageManager.send_warning_message("use nep3 calculator to calculate virial replace the original virial")
+            virials_array = np.column_stack([virials, virials])
+
+        except Exception:
+            MessageManager.send_error_message(f"An error occurred while calculating virial and stress. Please check the input file.")
+            logger.debug(traceback.format_exc())
+            virials_array = np.column_stack([virials, virials])
+
+        stress_array = virials_array * coefficient  * 160.21766208  # 单位转换\
+
+        stress_array = stress_array.astype(np.float32)
+        if virials_array.size != 0:
+            np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
+        if stress_array.size != 0:
+            np.savetxt(self.stress_out_path, stress_array, fmt='%10.8f')
+
+
+        return virials_array, stress_array
+
+    def _recalculate_and_save(self ):
+
+        try:
+            self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
+                self.structure.now_data,
+                "calculate" ,wait=True)
+            nep_potentials_array, nep_forces_array, nep_virials_array=self.nep_calc_thread.func_result
+            # nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(
+            #     self.nep_txt_path.as_posix(),
+            #     self.structure.now_data,"calculate")
+            if nep_potentials_array.size == 0:
+                MessageManager.send_warning_message("The nep calculator fails to calculate the potentials, use the original potentials instead.")
+
+
+            energy_array = self._save_energy_data(nep_potentials_array)
+            force_array = self._save_force_data(nep_forces_array)
+            virial_array, stress_array = self._save_virial_and_stress_data(nep_virials_array)
+
+
+            self.write_prediction()
+            return energy_array,force_array,virial_array, stress_array
+        except Exception as e:
+            logger.debug(traceback.format_exc())
+            MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
+            return np.array([]), np.array([]), np.array([]), np.array([])

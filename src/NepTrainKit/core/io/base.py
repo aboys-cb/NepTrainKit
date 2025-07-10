@@ -12,6 +12,7 @@ from pathlib import Path
 import numpy as np
 from PySide6.QtCore import QObject, Signal
 from loguru import logger
+from numpy import bool_
 
 from NepTrainKit import utils
 from NepTrainKit.core import Structure, MessageManager
@@ -162,7 +163,9 @@ class NepData:
     @property
     def all_data(self):
         return self.data.all_data
-
+    def is_visible(self,index) -> bool_:
+        """<UNK>"""
+        return self.data._active_mask[index].all()
     @property
     def remove_data(self):
         """返回删除的数据"""
@@ -242,7 +245,8 @@ class NepPlotData(NepData):
 
     def __init__(self,data_list,**kwargs ):
         super().__init__(data_list,**kwargs )
-
+        self.x_cols=slice(None,self.cols)
+        self.y_cols=slice(self.cols,None)
     @property
     def normal_color(self):
         return Brushes.TransparentBrush
@@ -250,19 +254,22 @@ class NepPlotData(NepData):
     def x(self):
         if self.cols==0:
             return self.now_data
-        return self.now_data[ : ,self.cols:].ravel()
+        return self.now_data[ : ,self.x_cols].ravel()
     @property
     def y(self):
         if self.cols==0:
             return self.now_data
-        return self.now_data[ : , :self.cols].ravel()
+        return self.now_data[ : , self.y_cols].ravel()
+
+
     @property
     def structure_index(self):
         return self.group_array[ : ].repeat(self.cols)
 class DPPlotData(NepData):
     def __init__(self,data_list,**kwargs ):
         super().__init__(data_list,**kwargs )
-
+        self.x_cols=slice(None,self.cols)
+        self.y_cols=slice(self.cols,None)
     @property
     def normal_color(self):
         return Brushes.TransparentBrush
@@ -270,12 +277,24 @@ class DPPlotData(NepData):
     def x(self):
         if self.cols==0:
             return self.now_data
-        return self.now_data[ : ,:self.cols].ravel()
+        return self.now_data[ : ,self.x_cols].ravel()
     @property
     def y(self):
         if self.cols==0:
             return self.now_data
-        return self.now_data[ : , self.cols:].ravel()
+        return self.now_data[ : , self.y_cols].ravel()
+
+
+
+    def all_x(self):
+        if self.cols==0:
+            return self.all_data
+        return self.all_data[ : ,:self.cols].ravel()
+    @property
+    def all_y(self):
+        if self.cols==0:
+            return self.all_data
+        return self.all_data[ : , self.cols:].ravel()
     @property
     def structure_index(self):
         return self.group_array[ : ].repeat(self.cols)
@@ -405,14 +424,10 @@ class ResultData(QObject):
         """
         index=list(self.select_index)
         try:
-
             with open(save_file_path,"w",encoding="utf8") as f:
-
                 index=self.structure.convert_index(index)
-
                 for structure in self.structure.all_data[index]:
                     structure.write(f)
-
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
         except:
             MessageManager.send_info_message(f"An unknown error occurred while saving. The error message has been output to the log!")

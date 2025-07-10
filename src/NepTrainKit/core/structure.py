@@ -716,6 +716,7 @@ def _load_npy_structure(folder):
         for data_path in Path(_set).iterdir():
             key = data_path.stem
             data = np.load(data_path)
+
             if key in dataset_dict:
                 dataset_dict[key].append(data)  # Collect in lists for later concatenation
             else:
@@ -775,3 +776,58 @@ def load_npy_structure(folders):
                 structures.extend(load_npy_structure(folder))
 
         return structures
+
+@utils.timeit
+def save_npy_structure(folder, structures):
+    """
+    保存结构信息到指定的文件夹，根据Config_type将数据组织
+    :param folder: 保存的目标文件夹
+    :param structures: 包含结构信息的Structure列表
+    """
+
+
+    # 确保文件夹存在，如果不存在则创建
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    # 创建用于保存数据的字典
+
+    dataset_dict = defaultdict(lambda: defaultdict(list))
+
+    # 遍历所有结构并收集数据
+    for structure in structures:
+        # 从结构对象中提取数据
+        config_type=structure.tag
+        dataset_dict[config_type]["box"].append(structure.lattice.flatten())  # 确保box是3x3矩阵展平为1D数组
+        dataset_dict[config_type]["coord"].append(structure.structure_info["pos"].flatten())  # 确保coords是1D数组
+        dataset_dict[config_type]["species"].append(structure.structure_info["species"])
+
+        # 保存每个额外字段（如果有）
+        for prop_info  in structure.properties:
+            name=prop_info["name"]
+            if name not in [  "species", "pos"]:
+                dataset_dict[config_type][name].append(structure.structure_info[name].flatten())
+        if "virial" in structure.additional_fields:
+            virial = list(map(float, structure.additional_fields["virial"].split()))
+            dataset_dict[config_type]["virial"].append(virial)
+        if "energy" in structure.additional_fields:
+            dataset_dict[config_type]["energy"].append(structure.energy)
+
+
+    for config ,data in dataset_dict.items():
+        save_path = os.path.join(folder, config,"set.000")
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        species=data["species"][0]
+        unique_species = list(set([species   for species in species]))
+        np.savetxt(os.path.join(folder,config,  "type_map.raw"), unique_species, fmt="%s")
+        type_data = np.array([unique_species.index(species)   for species in species]).flatten()
+        np.savetxt(os.path.join(folder, config, "type.raw"), type_data, fmt="%d")
+        # 保存额外字段（如果有）
+        for key, value in data.items():
+            if key =="species":
+                continue
+
+
+            np.save(os.path.join(save_path, f"{key}.npy"), np.vstack(value ))
+
+

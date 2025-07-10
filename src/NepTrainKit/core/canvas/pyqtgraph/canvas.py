@@ -182,12 +182,14 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         for plot in self.axes_list:
             dataset = self.get_axes_dataset(plot)
             array_index = dataset.convert_index(structure_index)
-            if dataset.now_data.size != 0:
-                data = dataset.all_data[array_index, :]
-                plot.set_current_point(data[:, dataset.cols:].flatten(),
-                                       data[:, :dataset.cols].flatten(),
-                                       )
+            if dataset.is_visible(array_index) :
 
+                data=dataset.all_data[array_index,: ]
+                plot.set_current_point(data[:,dataset.x_cols].flatten(),
+                                       data[:, dataset.y_cols].flatten(),
+                                       )
+            else:
+                plot.set_current_point([], [])
     def item_clicked(self, scatter_item, items, event):
 
         if items.any():

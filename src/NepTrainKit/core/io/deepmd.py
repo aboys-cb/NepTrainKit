@@ -8,7 +8,7 @@ from PySide6.QtCore import QObject, Signal
 from loguru import logger
 import glob
 from .base import NepPlotData, StructureData, ResultData,DPPlotData
-from NepTrainKit.core.structure import Structure, load_npy_structure
+from NepTrainKit.core.structure import Structure, load_npy_structure,save_npy_structure
 from .utils import parse_array_by_atomnum,read_nep_out_file
 from .. import Config, MessageManager
 from ... import module_path
@@ -231,3 +231,20 @@ class DeepmdResultData(ResultData):
             logger.debug(traceback.format_exc())
             MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
             return np.array([]), np.array([]), np.array([])
+
+    def export_model_xyz(self,save_path):
+        """
+        导出当前结构
+        :param save_path: 保存路径
+        被删除的导出到export_remove_model
+        被保留的导出到export_good_model
+        """
+        try:
+            save_npy_structure(os.path.join(save_path, "export_good_model"),self.structure.now_data)
+            save_npy_structure(os.path.join(save_path, "export_remove_model"),self.structure.remove_data)
+
+
+            MessageManager.send_info_message(f"File exported to: {save_path}")
+        except:
+            MessageManager.send_info_message(f"An unknown error occurred while saving. The error message has been output to the log!")
+            logger.error(traceback.format_exc())

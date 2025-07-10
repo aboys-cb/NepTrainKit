@@ -485,11 +485,13 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         for plot in  self.axes_list :
             dataset=self.get_axes_dataset(plot)
             array_index=dataset.convert_index(structure_index)
-            if dataset.now_data.size!=0:
+            if dataset.is_visible(array_index) :
                 data=dataset.all_data[array_index,: ]
-                plot.set_current_point(data[:,dataset.cols:].flatten(),
-                                       data[:, :dataset.cols].flatten(),
+                plot.set_current_point(data[:,dataset.x_cols].flatten(),
+                                       data[:, dataset.y_cols].flatten(),
                                        )
+            else:
+                plot.set_current_point([], [])
     @utils.timeit
     def update_scatter_color(self,structure_index,color=Brushes.Selected):
         structure_index = np.asarray(structure_index)

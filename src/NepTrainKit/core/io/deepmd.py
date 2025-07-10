@@ -100,7 +100,13 @@ class DeepmdResultData(ResultData):
             energy_array=read_nep_out_file(self.energy_out_path)
             force_array=read_nep_out_file(self.force_out_path)
             virial_array=read_nep_out_file(self.virial_out_path)
+            if energy_array.shape[0]!=self.atoms_num_list.shape[0]:
+                self.energy_out_path.unlink(True)
+                self.force_out_path.unlink(True)
+                self.virial_out_path.unlink(True)
 
+
+                return self._load_dataset()
 
         self._energy_dataset = DPPlotData(energy_array, title="energy")
         default_forces = Config.get("widget", "forces_data", "Row")

@@ -529,7 +529,7 @@ class ResultData(QObject):
                 pass
 
             else:
-                self.descriptor_path.unlink()
+                self.descriptor_path.unlink(True)
                 return self._load_descriptors()
 
         if desc_array.size != 0:

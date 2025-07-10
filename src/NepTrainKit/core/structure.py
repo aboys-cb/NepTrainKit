@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 from ase import neighborlist
 from ase.geometry import find_mic
+from loguru import logger
 from scipy.sparse.csgraph import connected_components
 
 from NepTrainKit import utils, module_path
@@ -702,77 +703,93 @@ def process_organic_clusters(structure, new_structure, clusters, is_organic_list
             # 更新原子位置
             new_structure.positions[cluster_indices] = pos_new
     new_structure.wrap()
-@utils.timeit
+
+
+
 def _load_npy_structure(folder):
-    structures=[]
-    if  not os.path.exists(os.path.join(folder, "type_map.raw")):
+    structures = []
+    type_map_path = os.path.join(folder, "type_map.raw")
+    type_path = os.path.join(folder, "type.raw")
+
+    if not os.path.exists(type_map_path) or not os.path.exists(type_path):
         return structures
-    type_map = np.loadtxt(os.path.join(folder, "type_map.raw"),dtype=str)
-    type_ = np.loadtxt(os.path.join(folder, "type.raw"),dtype=int)
 
-    elem_list=np.array([type_map[i] for i in type_],dtype=str)
-    atoms_num=len(elem_list)
-    if os.path.isfile(os.path.join(folder, "nopbc")):
-        nopbc= True
-    else:
-        nopbc = False
+    # Load once and reuse
+    type_map = np.loadtxt(type_map_path, dtype=str,ndmin=1)
+    type_ = np.loadtxt(type_path, dtype=int,ndmin=1)
+
+    # Use np.array and list comprehension for faster element mapping
+
+
+    elem_list = type_map[type_]
+
+    atoms_num = len(elem_list)
+    nopbc = os.path.isfile(os.path.join(folder, "nopbc"))
+
     sets = sorted(glob.glob(os.path.join(folder, "set.*")))
-    dataset_dict={}
+    dataset_dict = {}
+
+    # Load data from files and use np.concatenate instead of vstack
     for _set in sets:
-
         for data_path in Path(_set).iterdir():
-            key=data_path.stem
-
+            key = data_path.stem
             data = np.load(data_path)
             if key in dataset_dict:
-                dataset_dict[key]=np.vstack((dataset_dict[key],data))
+                dataset_dict[key].append(data)  # Collect in lists for later concatenation
             else:
+                dataset_dict[key] = [data]
 
-                dataset_dict[key]=data
     config_type = os.path.basename(folder)
+
+    # Efficient concatenation outside the loop
+    for key in dataset_dict.keys():
+        dataset_dict[key] = np.concatenate(dataset_dict[key], axis=0)
+    logger.debug(f"load {dataset_dict['box'].shape[0]} structures from {folder}" )
     for index in range(dataset_dict["box"].shape[0]):
-        box=dataset_dict["box"][index].reshape(3,3)
-        coords=dataset_dict["coord"][index].reshape(-1,3)
+        box = dataset_dict["box"][index].reshape(3, 3)
+        coords = dataset_dict["coord"][index].reshape(-1, 3)
+
         properties = [
             {"name": "species", "type": "S", "count": 1},
             {"name": "pos", "type": "R", "count": 3},
         ]
-        info={
-            "species":elem_list,
+        info = {
+            "species": elem_list,
             "pos": coords,
         }
-        additional_fields={"Config_type": config_type}
-        if nopbc:
-            additional_fields["pbc"]="F F F"
-        else:
-            additional_fields["pbc"]="T T T"
+        additional_fields = {"Config_type": config_type}
+        additional_fields["pbc"] = "F F F" if nopbc else "T T T"
+
+        # Optimize adding properties and additional fields
         for key in dataset_dict.keys():
             if key not in ["box", "coord"]:
-                prop=dataset_dict[key][index]
-                count=prop.shape[0]
-                if count>atoms_num:
-                    col=count//atoms_num
+                prop = dataset_dict[key][index]
+                count = prop.shape[0]
+
+                if count > atoms_num:
+                    col = count // atoms_num
                     info[key] = prop.reshape((-1, col))
                     properties.append({"name": key, "type": "R", "count": col})
                 else:
-                    if count==1:
+                    if count == 1:
                         additional_fields[key] = prop[0]
                     else:
-                        additional_fields[key] = " ".join(prop.astype(str))
+                        additional_fields[key] = " ".join(map(str, prop))
 
-        structure = Structure(lattice=box,structure_info=info,properties=properties,additional_fields=additional_fields)
+        structure = Structure(lattice=box, structure_info=info, properties=properties,
+                              additional_fields=additional_fields)
         structures.append(structure)
+
     return structures
 
 
 def load_npy_structure(folders):
-
-    if    os.path.exists(os.path.join(folders, "type.raw")):
-
+    if os.path.exists(os.path.join(folders, "type.raw")):
         return _load_npy_structure(folders)
     else:
         structures = []
+        if os.path.isdir(folders):
+            for folder in Path(folders).iterdir():
+                structures.extend(load_npy_structure(folder))
 
-        for folder in Path(folders).iterdir():
-            structures.extend(_load_npy_structure(folder))
         return structures

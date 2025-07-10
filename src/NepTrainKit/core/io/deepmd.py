@@ -7,9 +7,9 @@ import numpy as np
 from PySide6.QtCore import QObject, Signal
 from loguru import logger
 import glob
-from .base import NepPlotData, StructureData, ResultData
+from .base import NepPlotData, StructureData, ResultData,DPPlotData
 from NepTrainKit.core.structure import Structure, load_npy_structure
-from .utils import parse_array_by_atomnum
+from .utils import parse_array_by_atomnum,read_nep_out_file
 from .. import Config, MessageManager
 from ... import module_path
 def is_deepmd_path(folder)-> bool:
@@ -24,13 +24,13 @@ class DeepmdResultData(ResultData):
     def __init__(self, nep_txt_path,data_xyz_path: Path,
                  energy_out_path,
                  force_out_path,
-                 stress_out_path,
+
                  virial_out_path,
                  descriptor_path):
         super().__init__(nep_txt_path, data_xyz_path,descriptor_path)
         self.energy_out_path = energy_out_path
         self.force_out_path = force_out_path
-        self.stress_out_path = stress_out_path
+        # self.stress_out_path = stress_out_path
         self.virial_out_path = virial_out_path
 
 
@@ -38,17 +38,23 @@ class DeepmdResultData(ResultData):
     @classmethod
     def from_path(cls, path):
         dataset_path = Path(path)
+
         file_name=dataset_path.name
         nep_txt_path = dataset_path.with_name(f"nep.txt")
         if not nep_txt_path.exists():
             nep89_path = os.path.join(module_path, "Config/nep89.txt")
             nep_txt_path=Path(nep89_path)
         descriptor_path = dataset_path.with_name(f"descriptor.out")
-        energy_out_path = dataset_path.with_name(f"energy_{file_name}.out")
-        force_out_path = dataset_path.with_name(f"force_{file_name}.out")
-        stress_out_path = dataset_path.with_name(f"stress_{file_name}.out")
-        virial_out_path = dataset_path.with_name(f"virial_{file_name}.out")
-        return cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,stress_out_path,virial_out_path,descriptor_path)
+        e_path = list(dataset_path.parent.glob("*.e_peratom.out") )[0]
+
+        suffix = (e_path.name.replace(".e_peratom.out",""))
+
+
+        energy_out_path = dataset_path.with_name(f"{suffix}.e_peratom.out")
+        force_out_path = dataset_path.with_name(f"{suffix}.fr.out")
+        # stress_out_path = dataset_path.with_name(f"{suffix}.v.out")
+        virial_out_path = dataset_path.with_name(f"{suffix}.v_peratom.out")
+        return cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,virial_out_path,descriptor_path)
 
     def load_structures(self):
 
@@ -62,7 +68,7 @@ class DeepmdResultData(ResultData):
 
     @property
     def dataset(self):
-        return [self.energy, self.force, self.stress, self.virial, self.descriptor]
+        return [self.energy, self.force,  self.virial, self.descriptor]
 
     @property
     def energy(self):
@@ -72,9 +78,9 @@ class DeepmdResultData(ResultData):
     def force(self):
         return self._force_dataset
 
-    @property
-    def stress(self):
-        return self._stress_dataset
+    # @property
+    # def stress(self):
+    #     return self._stress_dataset
 
     @property
     def virial(self):
@@ -84,34 +90,36 @@ class DeepmdResultData(ResultData):
     def _load_dataset(self) -> None:
 
         if self._should_recalculate( ):
-            energy_array, force_array, virial_array, stress_array = self._recalculate_and_save( )
+            energy_array, force_array, virial_array = self._recalculate_and_save( )
+        else:
+            energy_array=read_nep_out_file(self.energy_out_path)
+            force_array=read_nep_out_file(self.force_out_path)
+            virial_array=read_nep_out_file(self.virial_out_path)
 
 
-
-        self._energy_dataset = NepPlotData(energy_array, title="energy")
+        self._energy_dataset = DPPlotData(energy_array, title="energy")
         default_forces = Config.get("widget", "forces_data", "Row")
         if force_array.size != 0 and default_forces == "Norm":
 
             force_array = parse_array_by_atomnum(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
 
-            self._force_dataset = NepPlotData(force_array, title="force")
+            self._force_dataset = DPPlotData(force_array, title="force")
         else:
-            self._force_dataset = NepPlotData(force_array, group_list=self.atoms_num_list, title="force")
+            self._force_dataset = DPPlotData(force_array, group_list=self.atoms_num_list, title="force")
 
 
-        self._stress_dataset = NepPlotData(stress_array, title="stress")
 
-        self._virial_dataset = NepPlotData(virial_array, title="virial")
+        self._virial_dataset = DPPlotData(virial_array, title="virial")
 
     def _should_recalculate(self  ) -> bool:
         """判断是否需要重新计算 NEP 数据。"""
-        output_files_exist = all([
+        output_files_exist = any([
             self.energy_out_path.exists(),
             self.force_out_path.exists(),
-            self.stress_out_path.exists(),
+
             self.virial_out_path.exists()
         ])
-        return  True
+        return   not output_files_exist
 
     def _save_energy_data(self, potentials: np.ndarray)  :
 
@@ -124,7 +132,7 @@ class DeepmdResultData(ResultData):
                 #计算失败 空数组
                 energy_array = np.column_stack([ref_energies, ref_energies])
             else:
-                energy_array = np.column_stack([potentials / self.atoms_num_list, ref_energies])
+                energy_array = np.column_stack([ref_energies,potentials / self.atoms_num_list  ])
         except Exception:
             logger.debug(traceback.format_exc())
             if potentials.size == 0:
@@ -147,7 +155,7 @@ class DeepmdResultData(ResultData):
                 forces_array = np.column_stack([ref_forces, ref_forces])
 
             else:
-                forces_array = np.column_stack([forces, ref_forces])
+                forces_array = np.column_stack([ref_forces,forces ])
         except KeyError:
             MessageManager.send_warning_message("use nep3 calculator to calculate forces replace the original forces")
             forces_array = np.column_stack([forces, forces])
@@ -173,7 +181,7 @@ class DeepmdResultData(ResultData):
                 # 计算失败 空数组
                 virials_array = np.column_stack([ref_virials, ref_virials])
             else:
-                virials_array = np.column_stack([virials, ref_virials])
+                virials_array = np.column_stack([ref_virials,virials  ])
         except AttributeError:
             MessageManager.send_warning_message("use nep3 calculator to calculate virial replace the original virial")
             virials_array = np.column_stack([virials, virials])
@@ -183,16 +191,15 @@ class DeepmdResultData(ResultData):
             logger.debug(traceback.format_exc())
             virials_array = np.column_stack([virials, virials])
 
-        stress_array = virials_array * coefficient  * 160.21766208  # 单位转换\
 
-        stress_array = stress_array.astype(np.float32)
+
+
         if virials_array.size != 0:
             np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
-        if stress_array.size != 0:
-            np.savetxt(self.stress_out_path, stress_array, fmt='%10.8f')
 
 
-        return virials_array, stress_array
+
+        return virials_array
 
     def _recalculate_and_save(self ):
 
@@ -210,12 +217,12 @@ class DeepmdResultData(ResultData):
 
             energy_array = self._save_energy_data(nep_potentials_array)
             force_array = self._save_force_data(nep_forces_array)
-            virial_array, stress_array = self._save_virial_and_stress_data(nep_virials_array)
+            virial_array = self._save_virial_and_stress_data(nep_virials_array)
 
 
             self.write_prediction()
-            return energy_array,force_array,virial_array, stress_array
+            return energy_array,force_array,virial_array
         except Exception as e:
             logger.debug(traceback.format_exc())
             MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
-            return np.array([]), np.array([]), np.array([]), np.array([])
+            return np.array([]), np.array([]), np.array([])

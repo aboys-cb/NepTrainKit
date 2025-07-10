@@ -259,7 +259,26 @@ class NepPlotData(NepData):
     @property
     def structure_index(self):
         return self.group_array[ : ].repeat(self.cols)
+class DPPlotData(NepData):
+    def __init__(self,data_list,**kwargs ):
+        super().__init__(data_list,**kwargs )
 
+    @property
+    def normal_color(self):
+        return Brushes.TransparentBrush
+    @property
+    def x(self):
+        if self.cols==0:
+            return self.now_data
+        return self.now_data[ : ,:self.cols].ravel()
+    @property
+    def y(self):
+        if self.cols==0:
+            return self.now_data
+        return self.now_data[ : , self.cols:].ravel()
+    @property
+    def structure_index(self):
+        return self.group_array[ : ].repeat(self.cols)
 
 class StructureData(NepData):
 

@@ -26,11 +26,13 @@ class DeepmdResultData(ResultData):
                  force_out_path,
 
                  virial_out_path,
-                 descriptor_path):
+                 descriptor_path,
+                 spin_out_path=None
+                 ):
         super().__init__(nep_txt_path, data_xyz_path,descriptor_path)
         self.energy_out_path = energy_out_path
         self.force_out_path = force_out_path
-        # self.stress_out_path = stress_out_path
+        self.spin_out_path = spin_out_path
         self.virial_out_path = virial_out_path
 
 
@@ -59,7 +61,10 @@ class DeepmdResultData(ResultData):
         force_out_path = dataset_path.with_name(f"{suffix}.fr.out")
         # stress_out_path = dataset_path.with_name(f"{suffix}.v.out")
         virial_out_path = dataset_path.with_name(f"{suffix}.v_peratom.out")
-        return cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,virial_out_path,descriptor_path)
+        spin_out_path=  dataset_path.with_name(f"{suffix}.fm.out")
+        if not spin_out_path.exists():
+            spin_out_path= None
+        return cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,virial_out_path,descriptor_path,spin_out_path=spin_out_path)
 
     def load_structures(self):
 
@@ -73,8 +78,10 @@ class DeepmdResultData(ResultData):
 
     @property
     def dataset(self):
-        return [self.energy, self.force,  self.virial, self.descriptor]
-
+        if self.spin_out_path is None:
+            return [self.energy, self.force,  self.virial, self.descriptor]
+        else:
+            return [self.energy, self.force,self.spin, self.virial, self.descriptor]
     @property
     def energy(self):
         return self._energy_dataset
@@ -83,9 +90,9 @@ class DeepmdResultData(ResultData):
     def force(self):
         return self._force_dataset
 
-    # @property
-    # def stress(self):
-    #     return self._stress_dataset
+    @property
+    def spin(self):
+        return self._spin_dataset
 
     @property
     def virial(self):
@@ -103,6 +110,8 @@ class DeepmdResultData(ResultData):
             if energy_array.shape[0]!=self.atoms_num_list.shape[0]:
                 self.energy_out_path.unlink(True)
                 self.force_out_path.unlink(True)
+                self.spin_out_path.unlink(True)
+
                 self.virial_out_path.unlink(True)
 
 
@@ -118,7 +127,10 @@ class DeepmdResultData(ResultData):
         else:
             self._force_dataset = DPPlotData(force_array, group_list=self.atoms_num_list, title="force")
 
+        if self.spin_out_path is not None:
+            spin_array=read_nep_out_file(self.spin_out_path)
 
+            self._spin_dataset = DPPlotData(spin_array, title="spin")
 
         self._virial_dataset = DPPlotData(virial_array, title="virial")
 

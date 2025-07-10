@@ -222,6 +222,9 @@ class NepData:
         elif "dipole" == self.title:
             unit="(m.a.u./atom)"
             rmse*=1000
+        elif "spin" ==self.title:
+            unit = "meV/μB"
+            rmse*=1000
         else:
             return ""
         return f"{rmse:.2f} {unit}"

@@ -5,9 +5,9 @@
 # @email    : 1747193328@qq.com
 
 import numpy as np
+from PySide6.QtCore import Qt
 
-from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QSizePolicy
-
+from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QSizePolicy, QLabel
 
 from qfluentwidgets import BodyLabel
 
@@ -50,8 +50,11 @@ class StructureInfoWidget(QWidget):
         self.config_label = BodyLabel(self)
         self.config_label.setText("Config Type:")
         self.config_text = BodyLabel(self)
-        self.config_text.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        self.config_text.setMaximumWidth(400)
 
+        # self.config_text.setMinimumWidth(10)
+        self.config_text.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        self.config_text.setWordWrap(True)
 
         self._layout.addWidget(self.atom_label, 0,0,1,1)
         self._layout.addWidget(self.atom_num_text, 0, 1,1,3)
@@ -80,5 +83,6 @@ class StructureInfoWidget(QWidget):
         self.angle_text.setText(
             " ".join(f"{x:.2f}°" for x in structure.angles)
         )
-        self.config_text.setText(structure.tag)
+        self.config_text.setText('\n'.join(structure.tag[i:i+50] for i in range(0, len(structure.tag), 50)))
+
 

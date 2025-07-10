@@ -45,9 +45,14 @@ class DeepmdResultData(ResultData):
             nep89_path = os.path.join(module_path, "Config/nep89.txt")
             nep_txt_path=Path(nep89_path)
         descriptor_path = dataset_path.with_name(f"descriptor.out")
-        e_path = list(dataset_path.parent.glob("*.e_peratom.out") )[0]
+        e_path = list(dataset_path.parent.glob("*.e_peratom.out") )
+        if e_path:
+            e_path = e_path[0]
+            suffix = (e_path.name.replace(".e_peratom.out",""))
 
-        suffix = (e_path.name.replace(".e_peratom.out",""))
+        else:
+            suffix="detail"
+
 
 
         energy_out_path = dataset_path.with_name(f"{suffix}.e_peratom.out")

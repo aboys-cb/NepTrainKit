@@ -101,7 +101,7 @@ structure.info["Config_type"] += "supercell(nx,ny,nz)"  # e.g., supercell(2,2,1)
 **Function**: Creates vacancy-defect structures by deleting random atoms
 
 **Key Parameters**:
-- **Random engine**: `Sobol` sequence or `Uniform` distribution
+- **Random engine**: `Sobol`, `Uniform` or `Gaussian` distribution
 - **Vacancy specification**:
   - *Vacancy num*: fixed number of vacancies
   - *Vacancy concentration*: fraction of atoms to remove
@@ -116,7 +116,7 @@ structure.info["Config_type"] += f" Vacancy(num={defect_count})"
 **Function**: Adds random displacements to atomic positions
 
 **Key Parameters**:
-- **Random engine**: `Sobol` or `Uniform`
+- **Random engine**: `Sobol`, `Uniform` or `Gaussian`
 - **Max distance**: maximum displacement amplitude in Å
 - **Identify organic**: treat organic molecules as rigid units
 - **Max structures**: number of structures to generate
@@ -130,7 +130,7 @@ structure.info["Config_type"] += f" Perturb(distance={max_displacement}, {engine
 **Function**: Randomly scales lattice vectors
 
 **Key Parameters**:
-- **Random engine**: `Sobol` or `Uniform`
+- **Random engine**: `Sobol`, `Uniform` or `Gaussian`
 - **Max scaling**: 0–1, applied symmetrically as `1±value`
 - **Perturb angle**: whether lattice angles are also perturbed
 - **Identify organic**: treat organic molecules as rigid units

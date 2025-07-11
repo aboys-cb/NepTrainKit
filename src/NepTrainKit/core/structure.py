@@ -364,6 +364,7 @@ class Structure:
 
             if prop["type"] == "S":
                 pass
+                _info=_info.astype( np.str_)
 
             elif prop["type"] == "R":
                 _info=_info.astype( np.float32)
@@ -371,12 +372,13 @@ class Structure:
             else:
                 pass
             if prop["count"] == 1:
-                _info = _info.ravel()
+                _info = _info.flatten()
             else:
                 _info = _info.reshape((-1, prop["count"]))
 
             structure_info[prop["name"]] = _info
             index += prop["count"]
+        del array
 
         # return
         return cls(lattice, structure_info, properties, additional_fields)
@@ -449,25 +451,25 @@ class Structure:
         # data_to_process = []
         structures = []
 
-        with open(filename, 'r') as file:
-            lines = file.read().splitlines()
-        i = 0
-        while i < len(lines):
-            num_atoms = lines[i].strip()
+        with open(filename, "r") as file:
+            while True:
+                num_atoms_line = file.readline()
+                if not num_atoms_line:
+                    break
+                num_atoms_line = num_atoms_line.strip()
+                if not num_atoms_line:
+                    continue
+                num_atoms = int(num_atoms_line)
+                structure_lines = [num_atoms_line, file.readline().rstrip()]  # global properties
+                for _ in range(num_atoms):
+                    line = file.readline()
+                    if not line:
+                        break
+                    structure_lines.append(line.rstrip())
 
-            if not num_atoms:
-                i += 1
-                continue
-            num_atoms = int(num_atoms)
-            end = i + 2 + num_atoms
-            structure_lines = lines[i:end]
-
-            structure = Structure.parse_xyz(structure_lines)
-            structures.append(structure)
-            i = end
-        # with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-            # map 函数并行处理每个结构的读取
-            # structures = pool.map(Structure.read, data_to_process)
+                structure = Structure.parse_xyz(structure_lines)
+                structures.append(structure)
+                del structure_lines
 
         return structures
 

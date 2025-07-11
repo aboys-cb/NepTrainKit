@@ -32,100 +32,73 @@ heat transport, Phys. Rev. B. 104, 104309 (2021).
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#include <cctype>
+
 #if defined(_OPENMP)
 #include <omp.h>
 #endif
 
 namespace
 {
-const int MAX_NEURON = 200; // maximum number of neurons in the hidden layer
+const int MAX_NEURON = 120; // maximum number of neurons in the hidden layer
 const int MN = 1000;        // maximum number of neighbors for one atom
-const int NUM_OF_ABC = 80; // 3 + 5 + 7 + 9 + 11 + 13 + 15 + 17 for L_max = 8
-const int MAX_NUM_N = 20;   // n_max+1 = 19+1
-const int MAX_DIM = MAX_NUM_N * 7;
-const int MAX_DIM_ANGULAR = MAX_NUM_N * 6;
+const int NUM_OF_ABC = 80;  // 3 + 5 + 7 + 9 + 11 + 13 + 15 + 17 for L_max = 8
+const int MAX_NUM_N = 17;   // basis_size_radial+1 = 16+1
+const int MAX_DIM = 103;
+const int MAX_DIM_ANGULAR = 90;
 const double C3B[NUM_OF_ABC] = {
-  0.238732414637843, 0.119366207318922, 0.119366207318922, 0.099471839432435,
-  0.596831036594608, 0.596831036594608, 0.149207759148652, 0.149207759148652,
-  0.139260575205408, 0.104445431404056, 0.104445431404056, 1.044454314040563,
-  1.044454314040563, 0.174075719006761, 0.174075719006761, 0.011190581936149,
-  0.223811638722978, 0.223811638722978, 0.111905819361489, 0.111905819361489,
-  1.566681471060845, 1.566681471060845, 0.195835183882606, 0.195835183882606,
-  0.013677377921960, 0.102580334414698, 0.102580334414698, 2.872249363611549,
-  2.872249363611549, 0.119677056817148, 0.119677056817148, 2.154187022708661,
-  2.154187022708661, 0.215418702270866, 0.215418702270866, 0.004041043476943,
-  0.169723826031592, 0.169723826031592, 0.106077391269745, 0.106077391269745,
-  0.424309565078979, 0.424309565078979, 0.127292869523694, 0.127292869523694,
-  2.800443129521260, 2.800443129521260, 0.233370260793438, 0.233370260793438,
-  0.004662742473395, 0.004079899664221, 0.004079899664221, 0.024479397985326,
-  0.024479397985326, 0.012239698992663, 0.012239698992663, 0.538546755677165,
-  0.538546755677165, 0.134636688919291, 0.134636688919291, 3.500553911901575,
-  3.500553911901575, 0.250039565135827, 0.250039565135827, 0.000082569397966,
-  0.005944996653579, 0.005944996653579, 0.104037441437634, 0.104037441437634,
-  0.762941237209318, 0.762941237209318, 0.114441185581398, 0.114441185581398,
-  5.950941650232678, 5.950941650232678, 0.141689086910302, 0.141689086910302,
-  4.250672607309055, 4.250672607309055, 0.265667037956816, 0.265667037956816
-};
+  0.238732414637843, 0.119366207318922, 0.119366207318922, 0.099471839432435, 0.596831036594608,
+  0.596831036594608, 0.149207759148652, 0.149207759148652, 0.139260575205408, 0.104445431404056,
+  0.104445431404056, 1.044454314040563, 1.044454314040563, 0.174075719006761, 0.174075719006761,
+  0.011190581936149, 0.223811638722978, 0.223811638722978, 0.111905819361489, 0.111905819361489,
+  1.566681471060845, 1.566681471060845, 0.195835183882606, 0.195835183882606, 0.013677377921960,
+  0.102580334414698, 0.102580334414698, 2.872249363611549, 2.872249363611549, 0.119677056817148,
+  0.119677056817148, 2.154187022708661, 2.154187022708661, 0.215418702270866, 0.215418702270866,
+  0.004041043476943, 0.169723826031592, 0.169723826031592, 0.106077391269745, 0.106077391269745,
+  0.424309565078979, 0.424309565078979, 0.127292869523694, 0.127292869523694, 2.800443129521260,
+  2.800443129521260, 0.233370260793438, 0.233370260793438, 0.004662742473395, 0.004079899664221,
+  0.004079899664221, 0.024479397985326, 0.024479397985326, 0.012239698992663, 0.012239698992663,
+  0.538546755677165, 0.538546755677165, 0.134636688919291, 0.134636688919291, 3.500553911901575,
+  3.500553911901575, 0.250039565135827, 0.250039565135827, 0.000082569397966, 0.005944996653579,
+  0.005944996653579, 0.104037441437634, 0.104037441437634, 0.762941237209318, 0.762941237209318,
+  0.114441185581398, 0.114441185581398, 5.950941650232678, 5.950941650232678, 0.141689086910302,
+  0.141689086910302, 4.250672607309055, 4.250672607309055, 0.265667037956816, 0.265667037956816};
 const double C4B[5] = {
   -0.007499480826664, -0.134990654879954, 0.067495327439977, 0.404971964639861, -0.809943929279723};
 const double C5B[3] = {0.026596810706114, 0.053193621412227, 0.026596810706114};
 
-const double Z_COEFFICIENT_1[2][2] = {
-  {0.0, 1.0},
-  {1.0, 0.0}
-};
+const double Z_COEFFICIENT_1[2][2] = {{0.0, 1.0}, {1.0, 0.0}};
 
-const double Z_COEFFICIENT_2[3][3] = {
-  {-1.0, 0.0, 3.0},
-  {0.0, 1.0, 0.0},
-  {1.0, 0.0, 0.0}
-};
+const double Z_COEFFICIENT_2[3][3] = {{-1.0, 0.0, 3.0}, {0.0, 1.0, 0.0}, {1.0, 0.0, 0.0}};
 
 const double Z_COEFFICIENT_3[4][4] = {
-  {0.0, -3.0, 0.0, 5.0},
-  {-1.0, 0.0, 5.0, 0.0},
-  {0.0, 1.0, 0.0, 0.0},
-  {1.0, 0.0, 0.0, 0.0}
-};
+  {0.0, -3.0, 0.0, 5.0}, {-1.0, 0.0, 5.0, 0.0}, {0.0, 1.0, 0.0, 0.0}, {1.0, 0.0, 0.0, 0.0}};
 
 const double Z_COEFFICIENT_4[5][5] = {
   {3.0, 0.0, -30.0, 0.0, 35.0},
   {0.0, -3.0, 0.0, 7.0, 0.0},
   {-1.0, 0.0, 7.0, 0.0, 0.0},
   {0.0, 1.0, 0.0, 0.0, 0.0},
-  {1.0, 0.0, 0.0, 0.0, 0.0}
-};
+  {1.0, 0.0, 0.0, 0.0, 0.0}};
 
 const double Z_COEFFICIENT_5[6][6] = {
-  {0.0, 15.0, 0.0, -70.0, 0.0, 63.0},
-  {1.0, 0.0, -14.0, 0.0, 21.0, 0.0},
-  {0.0, -1.0, 0.0, 3.0, 0.0, 0.0},
-  {-1.0, 0.0, 9.0, 0.0, 0.0, 0.0},
-  {0.0, 1.0, 0.0, 0.0, 0.0, 0.0},
-  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0}
-};
+  {0.0, 15.0, 0.0, -70.0, 0.0, 63.0}, {1.0, 0.0, -14.0, 0.0, 21.0, 0.0},
+  {0.0, -1.0, 0.0, 3.0, 0.0, 0.0},    {-1.0, 0.0, 9.0, 0.0, 0.0, 0.0},
+  {0.0, 1.0, 0.0, 0.0, 0.0, 0.0},     {1.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
 
 const double Z_COEFFICIENT_6[7][7] = {
-  {-5.0, 0.0, 105.0, 0.0, -315.0, 0.0, 231.0},
-  {0.0, 5.0, 0.0, -30.0, 0.0, 33.0, 0.0},
-  {1.0, 0.0, -18.0, 0.0, 33.0, 0.0, 0.0},
-  {0.0, -3.0, 0.0, 11.0, 0.0, 0.0, 0.0},
-  {-1.0, 0.0, 11.0, 0.0, 0.0, 0.0, 0.0},
-  {0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
-};
+  {-5.0, 0.0, 105.0, 0.0, -315.0, 0.0, 231.0}, {0.0, 5.0, 0.0, -30.0, 0.0, 33.0, 0.0},
+  {1.0, 0.0, -18.0, 0.0, 33.0, 0.0, 0.0},      {0.0, -3.0, 0.0, 11.0, 0.0, 0.0, 0.0},
+  {-1.0, 0.0, 11.0, 0.0, 0.0, 0.0, 0.0},       {0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
 
-const double Z_COEFFICIENT_7[8][8] = {
-  {0.0, -35.0, 0.0, 315.0, 0.0, -693.0, 0.0, 429.0},
-  {-5.0, 0.0, 135.0, 0.0, -495.0, 0.0, 429.0, 0.0},
-  {0.0, 15.0, 0.0, -110.0, 0.0, 143.0, 0.0, 0.0},
-  {3.0, 0.0, -66.0, 0.0, 143.0, 0.0, 0.0, 0.0},
-  {0.0, -3.0, 0.0, 13.0, 0.0, 0.0, 0.0, 0.0},
-  {-1.0, 0.0, 13.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-  {0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
-};
+const double Z_COEFFICIENT_7[8][8] = {{0.0, -35.0, 0.0, 315.0, 0.0, -693.0, 0.0, 429.0},
+                                      {-5.0, 0.0, 135.0, 0.0, -495.0, 0.0, 429.0, 0.0},
+                                      {0.0, 15.0, 0.0, -110.0, 0.0, 143.0, 0.0, 0.0},
+                                      {3.0, 0.0, -66.0, 0.0, 143.0, 0.0, 0.0, 0.0},
+                                      {0.0, -3.0, 0.0, 13.0, 0.0, 0.0, 0.0, 0.0},
+                                      {-1.0, 0.0, 13.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                                      {0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
+                                      {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
 
 const double Z_COEFFICIENT_8[9][9] = {
   {35.0, 0.0, -1260.0, 0.0, 6930.0, 0.0, -12012.0, 0.0, 6435.0},
@@ -136,8 +109,7 @@ const double Z_COEFFICIENT_8[9][9] = {
   {0.0, -1.0, 0.0, 5.0, 0.0, 0.0, 0.0, 0.0, 0.0},
   {-1.0, 0.0, 15.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
   {0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0},
-  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}
-};
+  {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0}};
 
 const double K_C_SP = 14.399645; // 1/(4*PI*epsilon_0)
 const double PI = 3.141592653589793;
@@ -179,7 +151,9 @@ void apply_ann_one_layer(
   double* q,
   double& energy,
   double* energy_derivative,
-  double* latent_space)
+  double* latent_space,
+  bool need_B_projection,
+  double* B_projection)
 {
   for (int n = 0; n < num_neurons1; ++n) {
     double w0_times_q = 0.0;
@@ -187,10 +161,23 @@ void apply_ann_one_layer(
       w0_times_q += w0[n * dim + d] * q[d];
     }
     double x1 = tanh(w0_times_q - b0[n]);
+    double tan_der = 1.0 - x1 * x1;
+
+    if (need_B_projection) {
+      // calculate B_projection:
+      // dE/dw0
+      for (int d = 0; d < dim; ++d)
+        B_projection[n * (dim + 2) + d] = tan_der * q[d] * w1[n];
+      // dE/db0
+      B_projection[n * (dim + 2) + dim] = -tan_der * w1[n];
+      // dE/dw1
+      B_projection[n * (dim + 2) + dim + 1] = x1;
+    }
+
     latent_space[n] = w1[n] * x1; // also try x1
     energy += w1[n] * x1;
     for (int d = 0; d < dim; ++d) {
-      double y1 = (1.0 - x1 * x1) * w0[n * dim + d];
+      double y1 = tan_der * w0[n * dim + d];
       energy_derivative[d] += w1[n] * y1;
     }
   }
@@ -519,11 +506,7 @@ void get_f12_5body(
 
 template <int L>
 void calculate_s_one(
-  const int n,
-  const int n_max_angular_plus_1,
-  const double* Fp,
-  const double* sum_fxyz,
-  double* s)
+  const int n, const int n_max_angular_plus_1, const double* Fp, const double* sum_fxyz, double* s)
 {
   const int L_minus_1 = L - 1;
   const int L_twice_plus_1 = 2 * L + 1;
@@ -545,9 +528,12 @@ void accumulate_f12_one(
   const double* r12,
   double* f12)
 {
-  const double dx[3] = {(1.0 - r12[0] * r12[0]) * d12inv, -r12[0] * r12[1] * d12inv, -r12[0] * r12[2] * d12inv};
-  const double dy[3] = {-r12[0] * r12[1] * d12inv, (1.0 - r12[1] * r12[1]) * d12inv, -r12[1] * r12[2] * d12inv};
-  const double dz[3] = {-r12[0] * r12[2] * d12inv, -r12[1] * r12[2] * d12inv, (1.0 - r12[2] * r12[2]) * d12inv};
+  const double dx[3] = {
+    (1.0 - r12[0] * r12[0]) * d12inv, -r12[0] * r12[1] * d12inv, -r12[0] * r12[2] * d12inv};
+  const double dy[3] = {
+    -r12[0] * r12[1] * d12inv, (1.0 - r12[1] * r12[1]) * d12inv, -r12[1] * r12[2] * d12inv};
+  const double dz[3] = {
+    -r12[0] * r12[2] * d12inv, -r12[1] * r12[2] * d12inv, (1.0 - r12[2] * r12[2]) * d12inv};
 
   double z_pow[L + 1] = {1.0};
   for (int n = 1; n <= L; ++n) {
@@ -648,7 +634,7 @@ void accumulate_f12(
   const double fn_original = fn;
   const double fnp_original = fnp;
   const double d12inv = 1.0 / d12;
-  const double r12unit[3] = {r12[0]*d12inv, r12[1]*d12inv, r12[2]*d12inv};
+  const double r12unit[3] = {r12[0] * d12inv, r12[1] * d12inv, r12[2] * d12inv};
 
   fnp = fnp * d12inv - fn * d12inv * d12inv;
   fn = fn * d12inv;
@@ -663,16 +649,13 @@ void accumulate_f12(
     calculate_s_one<1>(n, n_max_angular_plus_1, Fp, sum_fxyz, s1);
     accumulate_f12_one<1>(d12inv, fn_original, fnp_original, s1, r12unit, f12);
   }
-  
+
   fnp = fnp * d12inv - fn * d12inv * d12inv;
   fn = fn * d12inv;
   if (num_L >= L_max + 1) {
     double s2[5] = {
-      sum_fxyz[n * NUM_OF_ABC + 3],
-      sum_fxyz[n * NUM_OF_ABC + 4],
-      sum_fxyz[n * NUM_OF_ABC + 5],
-      sum_fxyz[n * NUM_OF_ABC + 6],
-      sum_fxyz[n * NUM_OF_ABC + 7]};
+      sum_fxyz[n * NUM_OF_ABC + 3], sum_fxyz[n * NUM_OF_ABC + 4], sum_fxyz[n * NUM_OF_ABC + 5],
+      sum_fxyz[n * NUM_OF_ABC + 6], sum_fxyz[n * NUM_OF_ABC + 7]};
     get_f12_4body(d12, d12inv, fn, fnp, Fp[L_max * n_max_angular_plus_1 + n], s2, r12, f12);
   }
 
@@ -721,11 +704,7 @@ void accumulate_f12(
 
 template <int L>
 void accumulate_s_one(
-  const double x12,
-  const double y12,
-  const double z12,
-  const double fn,
-  double* s)
+  const double x12, const double y12, const double z12, const double fn, double* s)
 {
   int s_index = L * L - 1;
   double z_pow[L + 1] = {1.0};
@@ -774,7 +753,8 @@ void accumulate_s_one(
   }
 }
 
-void accumulate_s(const int L_max, const double d12, double x12, double y12, double z12, const double fn, double* s)
+void accumulate_s(
+  const int L_max, const double d12, double x12, double y12, double z12, const double fn, double* s)
 {
   double d12inv = 1.0 / d12;
   x12 *= d12inv;
@@ -806,10 +786,10 @@ void accumulate_s(const int L_max, const double d12, double x12, double y12, dou
   }
 }
 
-template<int L>
+template <int L>
 double find_q_one(const double* s)
 {
-  const int start_index = L * L-1;
+  const int start_index = L * L - 1;
   const int num_terms = 2 * L + 1;
   double q = 0.0;
   for (int k = 1; k < num_terms; ++k) {
@@ -821,11 +801,11 @@ double find_q_one(const double* s)
 }
 
 void find_q(
-  const int L_max, 
-  const int num_L, 
-  const int n_max_angular_plus_1, 
-  const int n, 
-  const double* s, 
+  const int L_max,
+  const int num_L,
+  const int n_max_angular_plus_1,
+  const int n,
+  const double* s,
   double* q)
 {
   if (L_max >= 1) {
@@ -861,7 +841,7 @@ void find_q(
   if (num_L >= L_max + 2) {
     double s0_sq = s[0] * s[0];
     double s1_sq_plus_s2_sq = s[1] * s[1] + s[2] * s[2];
-    q[(L_max + 1) * n_max_angular_plus_1 + n] = C5B[0] * s0_sq * s0_sq + 
+    q[(L_max + 1) * n_max_angular_plus_1 + n] = C5B[0] * s0_sq * s0_sq +
                                                 C5B[1] * s0_sq * s1_sq_plus_s2_sq +
                                                 C5B[2] * s1_sq_plus_s2_sq * s1_sq_plus_s2_sq;
   }
@@ -956,7 +936,9 @@ void find_descriptor_small_box(
   double* g_potential,
   double* g_descriptor,
   double* g_latent_space,
-  double* g_virial)
+  double* g_virial,
+  bool calculating_B_projection,
+  double* g_B_projection)
 {
 #if defined(_OPENMP)
 #pragma omp parallel for
@@ -1056,7 +1038,8 @@ void find_descriptor_small_box(
         accumulate_s(paramb.L_max, d12, r12[0], r12[1], r12[2], gn12, s);
 #endif
       }
-      find_q(paramb.L_max, paramb.num_L, paramb.n_max_angular + 1, n, s, q + (paramb.n_max_radial + 1));
+      find_q(
+        paramb.L_max, paramb.num_L, paramb.n_max_angular + 1, n, s, q + (paramb.n_max_radial + 1));
       for (int abc = 0; abc < NUM_OF_ABC; ++abc) {
         g_sum_fxyz[(n * NUM_OF_ABC + abc) * N + n1] = s[abc];
       }
@@ -1068,7 +1051,9 @@ void find_descriptor_small_box(
       }
     }
 
-    if (calculating_potential || calculating_latent_space || calculating_polarizability) {
+    if (
+      calculating_potential || calculating_latent_space || calculating_polarizability ||
+      calculating_B_projection) {
       for (int d = 0; d < annmb.dim; ++d) {
         q[d] = q[d] * paramb.q_scaler[d];
       }
@@ -1078,7 +1063,7 @@ void find_descriptor_small_box(
       if (calculating_polarizability) {
         apply_ann_one_layer(
           annmb.dim, annmb.num_neurons1, annmb.w0_pol[t1], annmb.b0_pol[t1], annmb.w1_pol[t1],
-          annmb.b1_pol, q, F, Fp, latent_space);
+          annmb.b1_pol, q, F, Fp, latent_space, false, nullptr);
         g_virial[n1] = F;
         g_virial[n1 + N * 4] = F;
         g_virial[n1 + N * 8] = F;
@@ -1093,12 +1078,13 @@ void find_descriptor_small_box(
 
       if (paramb.version == 5) {
         apply_ann_one_layer_nep5(
-          annmb.dim, annmb.num_neurons1, annmb.w0[t1], annmb.b0[t1], annmb.w1[t1], annmb.b1, q, F, Fp,
-          latent_space);
+          annmb.dim, annmb.num_neurons1, annmb.w0[t1], annmb.b0[t1], annmb.w1[t1], annmb.b1, q, F,
+          Fp, latent_space);
       } else {
         apply_ann_one_layer(
-          annmb.dim, annmb.num_neurons1, annmb.w0[t1], annmb.b0[t1], annmb.w1[t1], annmb.b1, q, F, Fp,
-          latent_space);
+          annmb.dim, annmb.num_neurons1, annmb.w0[t1], annmb.b0[t1], annmb.w1[t1], annmb.b1, q, F,
+          Fp, latent_space, calculating_B_projection,
+          g_B_projection + n1 * (annmb.num_neurons1 * (annmb.dim + 2)));
       }
 
       if (calculating_latent_space) {
@@ -1286,7 +1272,9 @@ void find_force_angular_small_box(
           g_gn_angular[index_left_all] * weight_left + g_gn_angular[index_right_all] * weight_right;
         double gnp12 = g_gnp_angular[index_left_all] * weight_left +
                        g_gnp_angular[index_right_all] * weight_right;
-        accumulate_f12(paramb.L_max, paramb.num_L, n, paramb.n_max_angular + 1, d12, r12, gn12, gnp12, Fp, sum_fxyz, f12);
+        accumulate_f12(
+          paramb.L_max, paramb.num_L, n, paramb.n_max_angular + 1, d12, r12, gn12, gnp12, Fp,
+          sum_fxyz, f12);
       }
 #else
       int t2 = g_type[n2];
@@ -1315,7 +1303,9 @@ void find_force_angular_small_box(
           gn12 += fn12[k] * annmb.c[c_index];
           gnp12 += fnp12[k] * annmb.c[c_index];
         }
-        accumulate_f12(paramb.L_max, paramb.num_L, n, paramb.n_max_angular + 1, d12, r12, gn12, gnp12, Fp, sum_fxyz, f12);
+        accumulate_f12(
+          paramb.L_max, paramb.num_L, n, paramb.n_max_angular + 1, d12, r12, gn12, gnp12, Fp,
+          sum_fxyz, f12);
       }
 #endif
 
@@ -1744,7 +1734,8 @@ void find_descriptor_for_lammps(
         accumulate_s(paramb.L_max, d12, r12[0], r12[1], r12[2], gn12, s);
 #endif
       }
-      find_q(paramb.L_max, paramb.num_L, paramb.n_max_angular + 1, n, s, q + (paramb.n_max_radial + 1));
+      find_q(
+        paramb.L_max, paramb.num_L, paramb.n_max_angular + 1, n, s, q + (paramb.n_max_radial + 1));
       for (int abc = 0; abc < NUM_OF_ABC; ++abc) {
         g_sum_fxyz[(n * NUM_OF_ABC + abc) * nlocal + n1] = s[abc];
       }
@@ -1763,7 +1754,7 @@ void find_descriptor_for_lammps(
     } else {
       apply_ann_one_layer(
         annmb.dim, annmb.num_neurons1, annmb.w0[t1], annmb.b0[t1], annmb.w1[t1], annmb.b1, q, F, Fp,
-        latent_space);
+        latent_space, false, nullptr);
     }
 
     g_total_potential += F; // always calculate this
@@ -1950,7 +1941,9 @@ void find_force_angular_for_lammps(
           g_gn_angular[index_left_all] * weight_left + g_gn_angular[index_right_all] * weight_right;
         double gnp12 = g_gnp_angular[index_left_all] * weight_left +
                        g_gnp_angular[index_right_all] * weight_right;
-        accumulate_f12(paramb.L_max, paramb.num_L, n, paramb.n_max_angular + 1, d12, r12, gn12, gnp12, Fp, sum_fxyz, f12);
+        accumulate_f12(
+          paramb.L_max, paramb.num_L, n, paramb.n_max_angular + 1, d12, r12, gn12, gnp12, Fp,
+          sum_fxyz, f12);
       }
 #else
       double fc12, fcp12;
@@ -1977,7 +1970,9 @@ void find_force_angular_for_lammps(
           gn12 += fn12[k] * annmb.c[c_index];
           gnp12 += fnp12[k] * annmb.c[c_index];
         }
-        accumulate_f12(paramb.L_max, paramb.num_L, n, paramb.n_max_angular + 1, d12, r12, gn12, gnp12, Fp, sum_fxyz, f12);
+        accumulate_f12(
+          paramb.L_max, paramb.num_L, n, paramb.n_max_angular + 1, d12, r12, gn12, gnp12, Fp,
+          sum_fxyz, f12);
       }
 #endif
 
@@ -2524,7 +2519,7 @@ double get_double_from_token(const std::string& token, const char* filename, con
 
 NEP3::NEP3() {}
 
-NEP3::NEP3(const std::string& potential_filename) { init_from_file(potential_filename, false); }
+NEP3::NEP3(const std::string& potential_filename) { init_from_file(potential_filename, true); }
 
 void NEP3::init_from_file(const std::string& potential_filename, const bool is_rank_0)
 {
@@ -2935,17 +2930,8 @@ void NEP3::compute(
     exit(1);
   }
 
-//  allocate_memory(N);
-    int num_atoms = N;
-    std::vector<double> sum_fxyz(N * (paramb.n_max_angular + 1) * NUM_OF_ABC);
-    std::vector<int> NN_radial(N);
-    std::vector<int> NL_radial(N * MN);
-    std::vector<int> NN_angular(N);
-    std::vector<int> NL_angular(N * MN);
-    std::vector<double> r12(N * MN * 6);
-    std::vector<double> Fp(N * annmb.dim);
-    int num_cells[3];
-    double ebox[18];
+  allocate_memory(N);
+
   for (int n = 0; n < potential.size(); ++n) {
     potential[n] = 0.0;
   }
@@ -2968,7 +2954,7 @@ void NEP3::compute(
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
     gn_radial.data(), gn_angular.data(),
 #endif
-    Fp.data(), sum_fxyz.data(), potential.data(), nullptr, nullptr, nullptr);
+    Fp.data(), sum_fxyz.data(), potential.data(), nullptr, nullptr, nullptr, false, nullptr);
 
   find_force_radial_small_box(
     false, paramb, annmb, N, NN_radial.data(), NL_radial.data(), type.data(), r12.data(),
@@ -3123,7 +3109,7 @@ void NEP3::find_descriptor(
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
     gn_radial.data(), gn_angular.data(),
 #endif
-    Fp.data(), sum_fxyz.data(), nullptr, descriptor.data(), nullptr, nullptr);
+    Fp.data(), sum_fxyz.data(), nullptr, descriptor.data(), nullptr, nullptr, false, nullptr);
 }
 
 void NEP3::find_latent_space(
@@ -3158,7 +3144,41 @@ void NEP3::find_latent_space(
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
     gn_radial.data(), gn_angular.data(),
 #endif
-    Fp.data(), sum_fxyz.data(), nullptr, nullptr, latent_space.data(), nullptr);
+    Fp.data(), sum_fxyz.data(), nullptr, nullptr, latent_space.data(), nullptr, false, nullptr);
+}
+
+void NEP3::find_B_projection(
+  const std::vector<int>& type,
+  const std::vector<double>& box,
+  const std::vector<double>& position,
+  std::vector<double>& B_projection)
+{
+  const int N = type.size();
+  const int size_x12 = N * MN;
+
+  if (N * 3 != position.size()) {
+    std::cout << "Type and position sizes are inconsistent.\n";
+    exit(1);
+  }
+  if (N * annmb.num_neurons1 * (annmb.dim + 2) != B_projection.size()) {
+    std::cout << "Type and B_projection sizes are inconsistent.\n";
+    exit(1);
+  }
+
+  allocate_memory(N);
+  find_neighbor_list_small_box(
+    paramb.rc_radial, paramb.rc_angular, N, box, position, num_cells, ebox, NN_radial, NL_radial,
+    NN_angular, NL_angular, r12);
+
+  find_descriptor_small_box(
+    false, false, false, false, paramb, annmb, N, NN_radial.data(), NL_radial.data(),
+    NN_angular.data(), NL_angular.data(), type.data(), r12.data(), r12.data() + size_x12,
+    r12.data() + size_x12 * 2, r12.data() + size_x12 * 3, r12.data() + size_x12 * 4,
+    r12.data() + size_x12 * 5,
+#ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
+    gn_radial.data(), gn_angular.data(),
+#endif
+    Fp.data(), sum_fxyz.data(), nullptr, nullptr, nullptr, nullptr, true, B_projection.data());
 }
 
 void NEP3::find_dipole(
@@ -3203,7 +3223,7 @@ void NEP3::find_dipole(
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
     gn_radial.data(), gn_angular.data(),
 #endif
-    Fp.data(), sum_fxyz.data(), potential.data(), nullptr, nullptr, nullptr);
+    Fp.data(), sum_fxyz.data(), potential.data(), nullptr, nullptr, nullptr, false, nullptr);
 
   find_force_radial_small_box(
     true, paramb, annmb, N, NN_radial.data(), NL_radial.data(), type.data(), r12.data(),
@@ -3272,7 +3292,7 @@ void NEP3::find_polarizability(
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
     gn_radial.data(), gn_angular.data(),
 #endif
-    Fp.data(), sum_fxyz.data(), potential.data(), nullptr, nullptr, virial.data());
+    Fp.data(), sum_fxyz.data(), potential.data(), nullptr, nullptr, virial.data(), false, nullptr);
 
   find_force_radial_small_box(
     false, paramb, annmb, N, NN_radial.data(), NL_radial.data(), type.data(), r12.data(),

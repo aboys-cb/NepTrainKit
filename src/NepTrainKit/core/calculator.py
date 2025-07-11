@@ -85,9 +85,58 @@ class NepCalculator():
 
         reshaped_virials = np.vstack([np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials],dtype=np.float32)
 
-        virials_array = reshaped_virials[:,[0,4,8,1,5,6]]
+        # virials_array = reshaped_virials[:,[0,4,8,1,5,6]]
 
-        return potentials_array,forces_array,virials_array
+        return potentials_array,forces_array,reshaped_virials
+
+
+    @utils.timeit
+    def calculate_dftd3(self,structures:list[Structure],functional,cutoff,cutoff_cn):
+        if not self.initialized:
+            return np.array([]),np.array([]),np.array([])
+        _types, _boxs, _positions,group_size = self.compose_structures(structures)
+        potentials, forces, virials = self.nep3.calculate_dftd3(functional,cutoff,cutoff_cn,_types, _boxs, _positions)
+        split_indices = np.cumsum(group_size)[:-1]
+        #
+        potentials=np.hstack(potentials)
+        split_potential_arrays = np.split(potentials, split_indices)
+        potentials_array = np.array(list(map(np.sum, split_potential_arrays)), dtype=np.float32)
+        # print(potentials_array)
+        # 处理每个force数组：reshape (3, -1) 和 transpose(1, 0)
+        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
+
+        forces_array = np.vstack(reshaped_forces,dtype=np.float32)
+        # print(forces_array)
+
+        reshaped_virials = np.vstack([np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials],dtype=np.float32)
+
+        # virials_array = reshaped_virials[:,[0,4,8,1,5,6]]
+
+        return potentials_array,forces_array,reshaped_virials
+
+    @utils.timeit
+    def calculate_with_dftd3(self,structures:list[Structure],functional,cutoff,cutoff_cn):
+        if not self.initialized:
+            return np.array([]),np.array([]),np.array([])
+        _types, _boxs, _positions,group_size = self.compose_structures(structures)
+        potentials, forces, virials = self.nep3.calculate_with_dftd3( functional,cutoff,cutoff_cn,_types, _boxs, _positions)
+        split_indices = np.cumsum(group_size)[:-1]
+        #
+        potentials=np.hstack(potentials)
+        split_potential_arrays = np.split(potentials, split_indices)
+        potentials_array = np.array(list(map(np.sum, split_potential_arrays)), dtype=np.float32)
+        # print(potentials_array)
+        # 处理每个force数组：reshape (3, -1) 和 transpose(1, 0)
+        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
+
+        forces_array = np.vstack(reshaped_forces,dtype=np.float32)
+        # print(forces_array)
+
+        reshaped_virials = np.vstack([np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials],dtype=np.float32)
+
+        # virials_array = reshaped_virials[:,[0,4,8,1,5,6]]
+
+        return potentials_array,forces_array,reshaped_virials
 
 
     def get_descriptor(self,structure:Structure):
@@ -141,7 +190,7 @@ class NepCalculator():
 
 Nep3Calculator = NepCalculator
 
-def run_nep_calculator(nep_txt, structures, calculator_type, queue=None):
+def run_nep_calculator(nep_txt, structures, calculator_type, func_kwargs={},queue=None):
     try:
 
         nep3 = NepCalculator(nep_txt)
@@ -151,6 +200,10 @@ def run_nep_calculator(nep_txt, structures, calculator_type, queue=None):
             result = nep3.get_structures_descriptor(structures)
         elif calculator_type == 'dipole':
             result = nep3.get_structures_dipole(structures)
+        elif  calculator_type == 'calculate_with_dftd3':
+            result = nep3.calculate_with_dftd3(structures,**func_kwargs)
+        elif  calculator_type == 'calculate_dftd3':
+            result = nep3.calculate_dftd3(structures,**func_kwargs)
         else:
             result = nep3.calculate(structures)
         if queue:
@@ -173,7 +226,7 @@ class NEPProcess(QObject):
         self.process = None
         self.use_process = False
         self.func_result = None
-    def run_nep3_calculator_process(self,nep_txt, structures, calculator_type="calculate",wait=False):
+    def run_nep3_calculator_process(self,nep_txt, structures, calculator_type="calculate",func_kwargs={},wait=False):
         self.func=run_nep_calculator
         self.queue = JoinableQueue()
 
@@ -181,6 +234,7 @@ class NEPProcess(QObject):
             "nep_txt": nep_txt,
             "calculator_type": calculator_type,
             "structures": structures,
+            "func_kwargs":func_kwargs
 
         }
         if len(structures) < 2000:

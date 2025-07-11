@@ -162,18 +162,29 @@ class Structure:
     @property
     def forces(self):
         return self.structure_info[self.force_label]
+    @forces.setter
+    def forces(self,arr):
+        self.structure_info[self.force_label] = arr
+
+    @property
+    def virial(self):
+        try:
+            vir =self.additional_fields["virial"]
+        except:
+            # 检查下有没有压强
+            try:
+                vir = self.additional_fields["stress"].split(" ")* self.volume * -1
+            except:
+                raise ValueError("No virial or stress data")
+        return vir
+    @virial.setter
+    def virial(self,new_virial):
+        self.additional_fields["virial"] = new_virial
 
     @property
     def nep_virial(self):
-        try:
-            vir=np.array(self.virial.split(" "),dtype=np.float32)
-        except:
-            #检查下有没有压强
-            try:
-                vir= np.array(self.stress.split(" "),dtype=np.float32)*self.volume*-1
-            except:
-                raise ValueError("No virial or stress data")
 
+        vir=self.virial
         return vir[[0,4,8,1,5,6]]/self.num_atoms
 
     @property
@@ -420,6 +431,8 @@ class Structure:
                     value=str(value)
                 if key.lower() in ("energy", "pbc","virial","stress"):
                     key=key.lower()
+                if key =="virial" or key =="stress":
+                    value= np.array(value.split(" "), dtype=np.float32)
                 additional_fields[key] = value
                 # print(additional_fields)
         return lattice, properties, additional_fields
@@ -492,6 +505,10 @@ class Structure:
 
             if isinstance(value, (float, int)):
                 global_line.append(f"{key}={value}")
+            elif isinstance(value, np.ndarray):
+                value_str = " ".join(map(str, value.flatten()))
+                global_line.append(f"{key}={value_str}")
+
 
             else:
                 global_line.append(f'{key}="{value}"')

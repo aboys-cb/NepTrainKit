@@ -5,6 +5,8 @@
 # @email    : 1747193328@qq.com
 import time
 
+from NepTrainKit.core.calculator import NEPProcess
+
 start=time.time()
 import numpy as np
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
@@ -16,7 +18,7 @@ from NepTrainKit.custom_widget import (
     GetIntMessageBox,
     SparseMessageBox,
     IndexSelectMessageBox,
-    ShiftEnergyMessageBox,
+    ShiftEnergyMessageBox, DFTD3MessageBox,
 )
 from NepTrainKit.core.io.select import farthest_point_sampling
 from NepTrainKit.views.toolbar import NepDisplayGraphicsToolBar
@@ -73,6 +75,7 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.shiftEnergySignal.connect(self.shift_energy_baseline)
         self.tool_bar.inverseSignal.connect(self.inverse_select)
         self.tool_bar.selectIndexSignal.connect(self.select_by_index)
+        self.tool_bar.dftd3Signal.connect(self.calc_dft_d3)
         self.canvas.tool_bar=self.tool_bar
 
 
@@ -250,6 +253,78 @@ class NepResultPlotWidget(QWidget):
                 # print(s.per_atom_energy)
                 data.energy.data._data[i, 1] = s.per_atom_energy
         self.canvas.plot_nep_result()
+
+
+    def calc_dft_d3(self):
+
+        data = self.canvas.nep_result_data
+        if data is None:
+            return
+
+        function = Config.getint("widget","functional","scan")
+        cutoff = Config.getfloat("widget","cutoff",12)
+        cutoff_cn = Config.getfloat("widget","cutoff_cn",6)
+
+        box = DFTD3MessageBox(
+            self._parent,
+            "DFT D3"
+        )
+        box.functionEdit.setText(function)
+        box.d1SpinBox.setValue(cutoff)
+        box.d1cnSpinBox.setValue(cutoff_cn)
+        if not box.exec():
+            return
+
+        mode = box.modeCombo.currentIndex()
+        D3_cutoff = box.d1SpinBox.value()
+        D3_cutoff_cn = box.d1cnSpinBox.value()
+
+        Config.set("widget","cutoff",D3_cutoff)
+        Config.set("widget","cutoff_cn",D3_cutoff_cn)
+        Config.set("widget","functional",box.functionEdit.text().strip())
+
+        nep_txt_path = self.canvas.nep_result_data.nep_txt_path
+        if mode == 0:
+            calculate_type="calculate"
+            func_kwargs = {}
+        elif mode==2:
+            calculate_type="calculate_with_dftd3"
+            func_kwargs={
+                "functional":box.functionEdit.text().strip(),
+                "cutoff": D3_cutoff,
+                "cutoff_cn": D3_cutoff_cn,
+
+            }
+        else:
+            calculate_type="calculate_dftd3"
+            func_kwargs={
+                "functional":box.functionEdit.text().strip(),
+                "cutoff": D3_cutoff,
+                "cutoff_cn": D3_cutoff_cn,
+
+            }
+        nep_calc_thread = NEPProcess()
+        nep_calc_thread.run_nep3_calculator_process(nep_txt_path.as_posix(),
+                                                         self.canvas.nep_result_data.structure.now_data,
+                                                         calculate_type,func_kwargs=func_kwargs, wait=True)
+        nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc_thread.func_result
+        split_indices = np.cumsum(self.canvas.nep_result_data.atoms_num_list)[:-1]
+        nep_forces_array = np.split(nep_forces_array, split_indices)
+
+
+        if mode<3:
+            for index,structure in enumerate(self.canvas.nep_result_data.structure.now_data):
+                structure.energy = nep_potentials_array[index]
+                structure.forces = nep_forces_array[index]
+                structure.virial = nep_virials_array[index]
+        else:
+            factor = 1 if mode==3 else -1
+            for index,structure in enumerate(self.canvas.nep_result_data.structure.now_data):
+                structure.energy += nep_potentials_array[index]*factor
+                structure.forces += nep_forces_array[index]*factor
+                structure.virial += nep_virials_array[index]*factor
+
+
 
     def inverse_select(self):
         self.canvas.inverse_select()

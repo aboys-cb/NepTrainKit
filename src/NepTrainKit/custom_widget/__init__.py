@@ -12,7 +12,7 @@ from .dialog import (
     IndexSelectMessageBox,
     ShiftEnergyMessageBox,
     ProgressDialog,
-    PeriodicTableDialog,
+    PeriodicTableDialog, DFTD3MessageBox,
 )
 from .input import SpinBoxUnitInputFrame
 from .card_widget import (
@@ -49,4 +49,6 @@ __all__ = [
     "DoubleSpinBoxSettingCard",
     "DopingRulesWidget",
     "VacancyRulesWidget",
+    "DFTD3MessageBox"
+
 ]

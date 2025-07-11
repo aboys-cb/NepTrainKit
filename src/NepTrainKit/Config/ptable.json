@@ -942,5 +942,950 @@
         "symbol": "Og",
         "number": 118,
         "group": 18
+    },
+
+    "201": {
+        "name": "Type_0",
+        "radii": 80,
+        "color": "#b446f0",
+        "symbol": "E1",
+        "number": 201,
+        "group": 18
+    },
+    "202": {
+        "name": "Type_1",
+        "radii": 80,
+        "color": "#36dc17",
+        "symbol": "E2",
+        "number": 202,
+        "group": 18
+    },
+    "203": {
+        "name": "Type_2",
+        "radii": 80,
+        "color": "#73a920",
+        "symbol": "E3",
+        "number": 203,
+        "group": 18
+    },
+    "204": {
+        "name": "Type_3",
+        "radii": 80,
+        "color": "#253be0",
+        "symbol": "E4",
+        "number": 204,
+        "group": 18
+    },
+    "205": {
+        "name": "Type_4",
+        "radii": 80,
+        "color": "#6cb3ce",
+        "symbol": "E5",
+        "number": 205,
+        "group": 18
+    },
+    "206": {
+        "name": "Type_5",
+        "radii": 80,
+        "color": "#f98984",
+        "symbol": "E6",
+        "number": 206,
+        "group": 18
+    },
+    "207": {
+        "name": "Type_6",
+        "radii": 80,
+        "color": "#233ed8",
+        "symbol": "E7",
+        "number": 207,
+        "group": 18
+    },
+    "208": {
+        "name": "Type_7",
+        "radii": 80,
+        "color": "#9f0a37",
+        "symbol": "E8",
+        "number": 208,
+        "group": 18
+    },
+    "209": {
+        "name": "Type_8",
+        "radii": 80,
+        "color": "#a7317d",
+        "symbol": "E9",
+        "number": 209,
+        "group": 18
+    },
+    "210": {
+        "name": "Type_9",
+        "radii": 80,
+        "color": "#d99d4a",
+        "symbol": "E10",
+        "number": 210,
+        "group": 18
+    },
+    "211": {
+        "name": "Type_10",
+        "radii": 80,
+        "color": "#f78720",
+        "symbol": "E11",
+        "number": 211,
+        "group": 18
+    },
+    "212": {
+        "name": "Type_11",
+        "radii": 80,
+        "color": "#1b13c3",
+        "symbol": "E12",
+        "number": 212,
+        "group": 18
+    },
+    "213": {
+        "name": "Type_12",
+        "radii": 80,
+        "color": "#b25aa5",
+        "symbol": "E13",
+        "number": 213,
+        "group": 18
+    },
+    "214": {
+        "name": "Type_13",
+        "radii": 80,
+        "color": "#42b88c",
+        "symbol": "E14",
+        "number": 214,
+        "group": 18
+    },
+    "215": {
+        "name": "Type_14",
+        "radii": 80,
+        "color": "#a0ba8f",
+        "symbol": "E15",
+        "number": 215,
+        "group": 18
+    },
+    "216": {
+        "name": "Type_15",
+        "radii": 80,
+        "color": "#b791d6",
+        "symbol": "E16",
+        "number": 216,
+        "group": 18
+    },
+    "217": {
+        "name": "Type_16",
+        "radii": 80,
+        "color": "#7a0904",
+        "symbol": "E17",
+        "number": 217,
+        "group": 18
+    },
+    "218": {
+        "name": "Type_17",
+        "radii": 80,
+        "color": "#e85084",
+        "symbol": "E18",
+        "number": 218,
+        "group": 18
+    },
+    "219": {
+        "name": "Type_18",
+        "radii": 80,
+        "color": "#c1c07d",
+        "symbol": "E19",
+        "number": 219,
+        "group": 18
+    },
+    "220": {
+        "name": "Type_19",
+        "radii": 80,
+        "color": "#79079b",
+        "symbol": "E20",
+        "number": 220,
+        "group": 18
+    },
+    "221": {
+        "name": "Type_20",
+        "radii": 80,
+        "color": "#c67abb",
+        "symbol": "E21",
+        "number": 221,
+        "group": 18
+    },
+    "222": {
+        "name": "Type_21",
+        "radii": 80,
+        "color": "#0b1f8b",
+        "symbol": "E22",
+        "number": 222,
+        "group": 18
+    },
+    "223": {
+        "name": "Type_22",
+        "radii": 80,
+        "color": "#9d5e40",
+        "symbol": "E23",
+        "number": 223,
+        "group": 18
+    },
+    "224": {
+        "name": "Type_23",
+        "radii": 80,
+        "color": "#7cb192",
+        "symbol": "E24",
+        "number": 224,
+        "group": 18
+    },
+    "225": {
+        "name": "Type_24",
+        "radii": 80,
+        "color": "#219d4d",
+        "symbol": "E25",
+        "number": 225,
+        "group": 18
+    },
+    "226": {
+        "name": "Type_25",
+        "radii": 80,
+        "color": "#188cee",
+        "symbol": "E26",
+        "number": 226,
+        "group": 18
+    },
+    "227": {
+        "name": "Type_26",
+        "radii": 80,
+        "color": "#aea8c5",
+        "symbol": "E27",
+        "number": 227,
+        "group": 18
+    },
+    "228": {
+        "name": "Type_27",
+        "radii": 80,
+        "color": "#e1a89b",
+        "symbol": "E28",
+        "number": 228,
+        "group": 18
+    },
+    "229": {
+        "name": "Type_28",
+        "radii": 80,
+        "color": "#b15704",
+        "symbol": "E29",
+        "number": 229,
+        "group": 18
+    },
+    "230": {
+        "name": "Type_29",
+        "radii": 80,
+        "color": "#1730e1",
+        "symbol": "E30",
+        "number": 230,
+        "group": 18
+    },
+    "231": {
+        "name": "Type_30",
+        "radii": 80,
+        "color": "#87aa0b",
+        "symbol": "E31",
+        "number": 231,
+        "group": 18
+    },
+    "232": {
+        "name": "Type_31",
+        "radii": 80,
+        "color": "#6eabd8",
+        "symbol": "E32",
+        "number": 232,
+        "group": 18
+    },
+    "233": {
+        "name": "Type_32",
+        "radii": 80,
+        "color": "#e7c02e",
+        "symbol": "E33",
+        "number": 233,
+        "group": 18
+    },
+    "234": {
+        "name": "Type_33",
+        "radii": 80,
+        "color": "#135dc7",
+        "symbol": "E34",
+        "number": 234,
+        "group": 18
+    },
+    "235": {
+        "name": "Type_34",
+        "radii": 80,
+        "color": "#7f418d",
+        "symbol": "E35",
+        "number": 235,
+        "group": 18
+    },
+    "236": {
+        "name": "Type_35",
+        "radii": 80,
+        "color": "#ea9ed9",
+        "symbol": "E36",
+        "number": 236,
+        "group": 18
+    },
+    "237": {
+        "name": "Type_36",
+        "radii": 80,
+        "color": "#808c93",
+        "symbol": "E37",
+        "number": 237,
+        "group": 18
+    },
+    "238": {
+        "name": "Type_37",
+        "radii": 80,
+        "color": "#7297aa",
+        "symbol": "E38",
+        "number": 238,
+        "group": 18
+    },
+    "239": {
+        "name": "Type_38",
+        "radii": 80,
+        "color": "#b2af6f",
+        "symbol": "E39",
+        "number": 239,
+        "group": 18
+    },
+    "240": {
+        "name": "Type_39",
+        "radii": 80,
+        "color": "#6a0bc7",
+        "symbol": "E40",
+        "number": 240,
+        "group": 18
+    },
+    "241": {
+        "name": "Type_40",
+        "radii": 80,
+        "color": "#ddbaa4",
+        "symbol": "E41",
+        "number": 241,
+        "group": 18
+    },
+    "242": {
+        "name": "Type_41",
+        "radii": 80,
+        "color": "#c90a5a",
+        "symbol": "E42",
+        "number": 242,
+        "group": 18
+    },
+    "243": {
+        "name": "Type_42",
+        "radii": 80,
+        "color": "#490467",
+        "symbol": "E43",
+        "number": 243,
+        "group": 18
+    },
+    "244": {
+        "name": "Type_43",
+        "radii": 80,
+        "color": "#360783",
+        "symbol": "E44",
+        "number": 244,
+        "group": 18
+    },
+    "245": {
+        "name": "Type_44",
+        "radii": 80,
+        "color": "#e34620",
+        "symbol": "E45",
+        "number": 245,
+        "group": 18
+    },
+    "246": {
+        "name": "Type_45",
+        "radii": 80,
+        "color": "#c22ba0",
+        "symbol": "E46",
+        "number": 246,
+        "group": 18
+    },
+    "247": {
+        "name": "Type_46",
+        "radii": 80,
+        "color": "#305d2a",
+        "symbol": "E47",
+        "number": 247,
+        "group": 18
+    },
+    "248": {
+        "name": "Type_47",
+        "radii": 80,
+        "color": "#d1c13e",
+        "symbol": "E48",
+        "number": 248,
+        "group": 18
+    },
+    "249": {
+        "name": "Type_48",
+        "radii": 80,
+        "color": "#fa1cf6",
+        "symbol": "E49",
+        "number": 249,
+        "group": 18
+    },
+    "250": {
+        "name": "Type_49",
+        "radii": 80,
+        "color": "#2beff6",
+        "symbol": "E50",
+        "number": 250,
+        "group": 18
+    },
+    "251": {
+        "name": "Type_50",
+        "radii": 80,
+        "color": "#be97ce",
+        "symbol": "E51",
+        "number": 251,
+        "group": 18
+    },
+    "252": {
+        "name": "Type_51",
+        "radii": 80,
+        "color": "#d6afeb",
+        "symbol": "E52",
+        "number": 252,
+        "group": 18
+    },
+    "253": {
+        "name": "Type_52",
+        "radii": 80,
+        "color": "#1a08ae",
+        "symbol": "E53",
+        "number": 253,
+        "group": 18
+    },
+    "254": {
+        "name": "Type_53",
+        "radii": 80,
+        "color": "#af371f",
+        "symbol": "E54",
+        "number": 254,
+        "group": 18
+    },
+    "255": {
+        "name": "Type_54",
+        "radii": 80,
+        "color": "#a3ca9a",
+        "symbol": "E55",
+        "number": 255,
+        "group": 18
+    },
+    "256": {
+        "name": "Type_55",
+        "radii": 80,
+        "color": "#6df95e",
+        "symbol": "E56",
+        "number": 256,
+        "group": 18
+    },
+    "257": {
+        "name": "Type_56",
+        "radii": 80,
+        "color": "#0cc352",
+        "symbol": "E57",
+        "number": 257,
+        "group": 18
+    },
+    "258": {
+        "name": "Type_57",
+        "radii": 80,
+        "color": "#13b0c9",
+        "symbol": "E58",
+        "number": 258,
+        "group": 18
+    },
+    "259": {
+        "name": "Type_58",
+        "radii": 80,
+        "color": "#5503c3",
+        "symbol": "E59",
+        "number": 259,
+        "group": 18
+    },
+    "260": {
+        "name": "Type_59",
+        "radii": 80,
+        "color": "#6ea41b",
+        "symbol": "E60",
+        "number": 260,
+        "group": 18
+    },
+    "261": {
+        "name": "Type_60",
+        "radii": 80,
+        "color": "#f5c892",
+        "symbol": "E61",
+        "number": 261,
+        "group": 18
+    },
+    "262": {
+        "name": "Type_61",
+        "radii": 80,
+        "color": "#a62f34",
+        "symbol": "E62",
+        "number": 262,
+        "group": 18
+    },
+    "263": {
+        "name": "Type_62",
+        "radii": 80,
+        "color": "#c5c804",
+        "symbol": "E63",
+        "number": 263,
+        "group": 18
+    },
+    "264": {
+        "name": "Type_63",
+        "radii": 80,
+        "color": "#0ea616",
+        "symbol": "E64",
+        "number": 264,
+        "group": 18
+    },
+    "265": {
+        "name": "Type_64",
+        "radii": 80,
+        "color": "#f12127",
+        "symbol": "E65",
+        "number": 265,
+        "group": 18
+    },
+    "266": {
+        "name": "Type_65",
+        "radii": 80,
+        "color": "#eb9472",
+        "symbol": "E66",
+        "number": 266,
+        "group": 18
+    },
+    "267": {
+        "name": "Type_66",
+        "radii": 80,
+        "color": "#e8ae69",
+        "symbol": "E67",
+        "number": 267,
+        "group": 18
+    },
+    "268": {
+        "name": "Type_67",
+        "radii": 80,
+        "color": "#d742cc",
+        "symbol": "E68",
+        "number": 268,
+        "group": 18
+    },
+    "269": {
+        "name": "Type_68",
+        "radii": 80,
+        "color": "#d0c4a8",
+        "symbol": "E69",
+        "number": 269,
+        "group": 18
+    },
+    "270": {
+        "name": "Type_69",
+        "radii": 80,
+        "color": "#8226f2",
+        "symbol": "E70",
+        "number": 270,
+        "group": 18
+    },
+    "271": {
+        "name": "Type_70",
+        "radii": 80,
+        "color": "#d7260b",
+        "symbol": "E71",
+        "number": 271,
+        "group": 18
+    },
+    "272": {
+        "name": "Type_71",
+        "radii": 80,
+        "color": "#2c9e4b",
+        "symbol": "E72",
+        "number": 272,
+        "group": 18
+    },
+    "273": {
+        "name": "Type_72",
+        "radii": 80,
+        "color": "#845dc4",
+        "symbol": "E73",
+        "number": 273,
+        "group": 18
+    },
+    "274": {
+        "name": "Type_73",
+        "radii": 80,
+        "color": "#f117a1",
+        "symbol": "E74",
+        "number": 274,
+        "group": 18
+    },
+    "275": {
+        "name": "Type_74",
+        "radii": 80,
+        "color": "#3d872f",
+        "symbol": "E75",
+        "number": 275,
+        "group": 18
+    },
+    "276": {
+        "name": "Type_75",
+        "radii": 80,
+        "color": "#00c270",
+        "symbol": "E76",
+        "number": 276,
+        "group": 18
+    },
+    "277": {
+        "name": "Type_76",
+        "radii": 80,
+        "color": "#0956de",
+        "symbol": "E77",
+        "number": 277,
+        "group": 18
+    },
+    "278": {
+        "name": "Type_77",
+        "radii": 80,
+        "color": "#f6a9b0",
+        "symbol": "E78",
+        "number": 278,
+        "group": 18
+    },
+    "279": {
+        "name": "Type_78",
+        "radii": 80,
+        "color": "#674a4d",
+        "symbol": "E79",
+        "number": 279,
+        "group": 18
+    },
+    "280": {
+        "name": "Type_79",
+        "radii": 80,
+        "color": "#46e768",
+        "symbol": "E80",
+        "number": 280,
+        "group": 18
+    },
+    "281": {
+        "name": "Type_80",
+        "radii": 80,
+        "color": "#6ccdbc",
+        "symbol": "E81",
+        "number": 281,
+        "group": 18
+    },
+    "282": {
+        "name": "Type_81",
+        "radii": 80,
+        "color": "#41cbaa",
+        "symbol": "E82",
+        "number": 282,
+        "group": 18
+    },
+    "283": {
+        "name": "Type_82",
+        "radii": 80,
+        "color": "#35de6d",
+        "symbol": "E83",
+        "number": 283,
+        "group": 18
+    },
+    "284": {
+        "name": "Type_83",
+        "radii": 80,
+        "color": "#d9b5c7",
+        "symbol": "E84",
+        "number": 284,
+        "group": 18
+    },
+    "285": {
+        "name": "Type_84",
+        "radii": 80,
+        "color": "#f9fc5a",
+        "symbol": "E85",
+        "number": 285,
+        "group": 18
+    },
+    "286": {
+        "name": "Type_85",
+        "radii": 80,
+        "color": "#85dfa9",
+        "symbol": "E86",
+        "number": 286,
+        "group": 18
+    },
+    "287": {
+        "name": "Type_86",
+        "radii": 80,
+        "color": "#7e569e",
+        "symbol": "E87",
+        "number": 287,
+        "group": 18
+    },
+    "288": {
+        "name": "Type_87",
+        "radii": 80,
+        "color": "#f85694",
+        "symbol": "E88",
+        "number": 288,
+        "group": 18
+    },
+    "289": {
+        "name": "Type_88",
+        "radii": 80,
+        "color": "#e8926b",
+        "symbol": "E89",
+        "number": 289,
+        "group": 18
+    },
+    "290": {
+        "name": "Type_89",
+        "radii": 80,
+        "color": "#b6a396",
+        "symbol": "E90",
+        "number": 290,
+        "group": 18
+    },
+    "291": {
+        "name": "Type_90",
+        "radii": 80,
+        "color": "#8cd747",
+        "symbol": "E91",
+        "number": 291,
+        "group": 18
+    },
+    "292": {
+        "name": "Type_91",
+        "radii": 80,
+        "color": "#b2fe96",
+        "symbol": "E92",
+        "number": 292,
+        "group": 18
+    },
+    "293": {
+        "name": "Type_92",
+        "radii": 80,
+        "color": "#f973c8",
+        "symbol": "E93",
+        "number": 293,
+        "group": 18
+    },
+    "294": {
+        "name": "Type_93",
+        "radii": 80,
+        "color": "#68f2de",
+        "symbol": "E94",
+        "number": 294,
+        "group": 18
+    },
+    "295": {
+        "name": "Type_94",
+        "radii": 80,
+        "color": "#5c3d47",
+        "symbol": "E95",
+        "number": 295,
+        "group": 18
+    },
+    "296": {
+        "name": "Type_95",
+        "radii": 80,
+        "color": "#993adc",
+        "symbol": "E96",
+        "number": 296,
+        "group": 18
+    },
+    "297": {
+        "name": "Type_96",
+        "radii": 80,
+        "color": "#076697",
+        "symbol": "E97",
+        "number": 297,
+        "group": 18
+    },
+    "298": {
+        "name": "Type_97",
+        "radii": 80,
+        "color": "#6665cf",
+        "symbol": "E98",
+        "number": 298,
+        "group": 18
+    },
+    "299": {
+        "name": "Type_98",
+        "radii": 80,
+        "color": "#cdcf09",
+        "symbol": "E99",
+        "number": 299,
+        "group": 18
+    },
+    "300": {
+        "name": "Type_99",
+        "radii": 80,
+        "color": "#536c00",
+        "symbol": "E100",
+        "number": 300,
+        "group": 18
+    },
+    "301": {
+        "name": "Type_100",
+        "radii": 80,
+        "color": "#a26d91",
+        "symbol": "E101",
+        "number": 301,
+        "group": 18
+    },
+    "302": {
+        "name": "Type_101",
+        "radii": 80,
+        "color": "#13146c",
+        "symbol": "E102",
+        "number": 302,
+        "group": 18
+    },
+    "303": {
+        "name": "Type_102",
+        "radii": 80,
+        "color": "#497ce0",
+        "symbol": "E103",
+        "number": 303,
+        "group": 18
+    },
+    "304": {
+        "name": "Type_103",
+        "radii": 80,
+        "color": "#891973",
+        "symbol": "E104",
+        "number": 304,
+        "group": 18
+    },
+    "305": {
+        "name": "Type_104",
+        "radii": 80,
+        "color": "#499c64",
+        "symbol": "E105",
+        "number": 305,
+        "group": 18
+    },
+    "306": {
+        "name": "Type_105",
+        "radii": 80,
+        "color": "#8a2c9a",
+        "symbol": "E106",
+        "number": 306,
+        "group": 18
+    },
+    "307": {
+        "name": "Type_106",
+        "radii": 80,
+        "color": "#51a8b6",
+        "symbol": "E107",
+        "number": 307,
+        "group": 18
+    },
+    "308": {
+        "name": "Type_107",
+        "radii": 80,
+        "color": "#3cbd54",
+        "symbol": "E108",
+        "number": 308,
+        "group": 18
+    },
+    "309": {
+        "name": "Type_108",
+        "radii": 80,
+        "color": "#82c394",
+        "symbol": "E109",
+        "number": 309,
+        "group": 18
+    },
+    "310": {
+        "name": "Type_109",
+        "radii": 80,
+        "color": "#bbec3f",
+        "symbol": "E110",
+        "number": 310,
+        "group": 18
+    },
+    "311": {
+        "name": "Type_110",
+        "radii": 80,
+        "color": "#dbef44",
+        "symbol": "E111",
+        "number": 311,
+        "group": 18
+    },
+    "312": {
+        "name": "Type_111",
+        "radii": 80,
+        "color": "#9ac255",
+        "symbol": "E112",
+        "number": 312,
+        "group": 18
+    },
+    "313": {
+        "name": "Type_112",
+        "radii": 80,
+        "color": "#2f612f",
+        "symbol": "E113",
+        "number": 313,
+        "group": 18
+    },
+    "314": {
+        "name": "Type_113",
+        "radii": 80,
+        "color": "#b45fdc",
+        "symbol": "E114",
+        "number": 314,
+        "group": 18
+    },
+    "315": {
+        "name": "Type_114",
+        "radii": 80,
+        "color": "#5ad7de",
+        "symbol": "E115",
+        "number": 315,
+        "group": 18
+    },
+    "316": {
+        "name": "Type_115",
+        "radii": 80,
+        "color": "#290225",
+        "symbol": "E116",
+        "number": 316,
+        "group": 18
+    },
+    "317": {
+        "name": "Type_116",
+        "radii": 80,
+        "color": "#607d44",
+        "symbol": "E117",
+        "number": 317,
+        "group": 18
+    },
+    "318": {
+        "name": "Type_117",
+        "radii": 80,
+        "color": "#f4d405",
+        "symbol": "E118",
+        "number": 318,
+        "group": 18
     }
 }

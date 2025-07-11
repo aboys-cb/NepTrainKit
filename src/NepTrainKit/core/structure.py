@@ -3,46 +3,28 @@
 # @Time    : 2024/11/21 14:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import glob
 import json
 import os
 import re
 from copy import deepcopy
+from pathlib import Path
+
 import numpy as np
 from ase import neighborlist
 from ase.geometry import find_mic
+from loguru import logger
 from scipy.sparse.csgraph import connected_components
-
+from collections import defaultdict
 from NepTrainKit import utils, module_path
 
-atomic_numbers={ 'H': 1, 'He': 2, 'Li': 3, 'Be': 4,
-                 'B': 5, 'C': 6, 'N': 7, 'O': 8,
-                 'F': 9, 'Ne': 10, 'Na': 11, 'Mg': 12,
-                 'Al': 13, 'Si': 14, 'P': 15, 'S': 16,
-                 'Cl': 17, 'Ar': 18, 'K': 19, 'Ca': 20,
-                 'Sc': 21, 'Ti': 22, 'V': 23, 'Cr': 24,
-                 'Mn': 25, 'Fe': 26, 'Co': 27, 'Ni': 28,
-                 'Cu': 29, 'Zn': 30, 'Ga': 31, 'Ge': 32,
-                 'As': 33, 'Se': 34, 'Br': 35, 'Kr': 36,
-                 'Rb': 37, 'Sr': 38, 'Y': 39, 'Zr': 40,
-                 'Nb': 41, 'Mo': 42, 'Tc': 43, 'Ru': 44,
-                 'Rh': 45, 'Pd': 46, 'Ag': 47, 'Cd': 48,
-                 'In': 49, 'Sn': 50, 'Sb': 51, 'Te': 52, 'I': 53,
-                 'Xe': 54, 'Cs': 55, 'Ba': 56, 'La': 57, 'Ce': 58,
-                 'Pr': 59, 'Nd': 60, 'Pm': 61, 'Sm': 62, 'Eu': 63,
-                 'Gd': 64, 'Tb': 65, 'Dy': 66, 'Ho': 67, 'Er': 68,
-                 'Tm': 69, 'Yb': 70, 'Lu': 71, 'Hf': 72, 'Ta': 73,
-                 'W': 74, 'Re': 75, 'Os': 76, 'Ir': 77, 'Pt': 78,
-                 'Au': 79, 'Hg': 80, 'Tl': 81, 'Pb': 82, 'Bi': 83,
-                 'Po': 84, 'At': 85, 'Rn': 86, 'Fr': 87, 'Ra': 88,
-                 'Ac': 89, 'Th': 90, 'Pa': 91, 'U': 92, 'Np': 93,
-                 'Pu': 94, 'Am': 95, 'Cm': 96, 'Bk': 97, 'Cf': 98,
-                 'Es': 99, 'Fm': 100, 'Md': 101, 'No': 102, 'Lr': 103,
-                 'Rf': 104, 'Db': 105, 'Sg': 106, 'Bh': 107, 'Hs': 108,
-                 'Mt': 109, 'Ds': 110, 'Rg': 111, 'Cn': 112, 'Nh': 113,
-                 'Fl': 114, 'Mc': 115, 'Lv': 116, 'Ts': 117, 'Og': 118}
+
 
 with open(os.path.join(module_path, "Config/ptable.json"), "r", encoding="utf-8") as f:
     table_info = json.loads(f.read())
+
+
+atomic_numbers={elem_info["symbol"]:elem_info["number"] for elem_info in table_info.values()}
 
 class Structure:
     """
@@ -79,6 +61,27 @@ class Structure:
         with open(filename, 'r') as f:
             structure = cls.parse_xyz(f.read())
         return structure
+
+    @classmethod
+    def from_deepmd(cls, cell, species, positions, energy=None, forces=None, virial=None):
+        """Create ``Structure`` from DeepMD numpy arrays."""
+        properties = [
+            {"name": "species", "type": "S", "count": 1},
+            {"name": "pos", "type": "R", "count": 3},
+        ]
+        info = {
+            "species": np.array(species),
+            "pos": np.asarray(positions, dtype=np.float32),
+        }
+        if forces is not None:
+            properties.append({"name": "forces", "type": "R", "count": 3})
+            info["forces"] = np.asarray(forces, dtype=np.float32)
+        additional = {}
+        if energy is not None:
+            additional["energy"] = float(energy)
+        if virial is not None:
+            additional["virial"] = " ".join(str(x) for x in np.asarray(virial).ravel())
+        return cls(cell, info, properties, additional)
     @property
     def cell(self):
         return self.lattice
@@ -109,7 +112,7 @@ class Structure:
 
     @property
     def numbers(self):
-        return [atomic_numbers[element] for element in self.elements]
+        return [atomic_numbers[element] for element in self.elements ]
 
     @property
     def formula(self):
@@ -361,6 +364,7 @@ class Structure:
 
             if prop["type"] == "S":
                 pass
+                _info=_info.astype( np.str_)
 
             elif prop["type"] == "R":
                 _info=_info.astype( np.float32)
@@ -368,12 +372,13 @@ class Structure:
             else:
                 pass
             if prop["count"] == 1:
-                _info = _info.ravel()
+                _info = _info.flatten()
             else:
                 _info = _info.reshape((-1, prop["count"]))
 
             structure_info[prop["name"]] = _info
             index += prop["count"]
+        del array
 
         # return
         return cls(lattice, structure_info, properties, additional_fields)
@@ -446,25 +451,25 @@ class Structure:
         # data_to_process = []
         structures = []
 
-        with open(filename, 'r') as file:
-            lines = file.read().splitlines()
-        i = 0
-        while i < len(lines):
-            num_atoms = lines[i].strip()
+        with open(filename, "r") as file:
+            while True:
+                num_atoms_line = file.readline()
+                if not num_atoms_line:
+                    break
+                num_atoms_line = num_atoms_line.strip()
+                if not num_atoms_line:
+                    continue
+                num_atoms = int(num_atoms_line)
+                structure_lines = [num_atoms_line, file.readline().rstrip()]  # global properties
+                for _ in range(num_atoms):
+                    line = file.readline()
+                    if not line:
+                        break
+                    structure_lines.append(line.rstrip())
 
-            if not num_atoms:
-                i += 1
-                continue
-            num_atoms = int(num_atoms)
-            end = i + 2 + num_atoms
-            structure_lines = lines[i:end]
-
-            structure = Structure.parse_xyz(structure_lines)
-            structures.append(structure)
-            i = end
-        # with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-            # map 函数并行处理每个结构的读取
-            # structures = pool.map(Structure.read, data_to_process)
+                structure = Structure.parse_xyz(structure_lines)
+                structures.append(structure)
+                del structure_lines
 
         return structures
 
@@ -678,3 +683,153 @@ def process_organic_clusters(structure, new_structure, clusters, is_organic_list
             # 更新原子位置
             new_structure.positions[cluster_indices] = pos_new
     new_structure.wrap()
+
+
+
+def _load_npy_structure(folder):
+    structures = []
+    type_map_path = os.path.join(folder, "type_map.raw")
+    type_path = os.path.join(folder, "type.raw")
+
+    if  not os.path.exists(type_path):
+        return structures
+
+
+    # Load once and reuse
+    type_ = np.loadtxt(type_path, dtype=int,ndmin=1)
+
+    if   os.path.exists(type_map_path) :
+        type_map = np.loadtxt(type_map_path, dtype=str, ndmin=1)
+    else:
+        type_map=np.array([f"E{i+1}" for i in np.unique(type_)], dtype=str, ndmin=1)
+    # Use np.array and list comprehension for faster element mapping
+
+
+    elem_list = type_map[type_]
+
+    atoms_num = len(elem_list)
+    nopbc = os.path.isfile(os.path.join(folder, "nopbc"))
+
+    sets = sorted(glob.glob(os.path.join(folder, "set.*")))
+    dataset_dict = {}
+
+    # Load data from files and use np.concatenate instead of vstack
+    for _set in sets:
+        for data_path in Path(_set).iterdir():
+            key = data_path.stem
+            data = np.load(data_path)
+
+            if key in dataset_dict:
+                dataset_dict[key].append(data)  # Collect in lists for later concatenation
+            else:
+                dataset_dict[key] = [data]
+
+    config_type = os.path.basename(folder)
+
+    # Efficient concatenation outside the loop
+    for key in dataset_dict.keys():
+        dataset_dict[key] = np.concatenate(dataset_dict[key], axis=0)
+    logger.debug(f"load {dataset_dict['box'].shape[0]} structures from {folder}" )
+    for index in range(dataset_dict["box"].shape[0]):
+        box = dataset_dict["box"][index].reshape(3, 3)
+        coords = dataset_dict["coord"][index].reshape(-1, 3)
+
+        properties = [
+            {"name": "species", "type": "S", "count": 1},
+            {"name": "pos", "type": "R", "count": 3},
+        ]
+        info = {
+            "species": elem_list,
+            "pos": coords,
+        }
+        additional_fields = {"Config_type": config_type}
+        additional_fields["pbc"] = "F F F" if nopbc else "T T T"
+
+        # Optimize adding properties and additional fields
+        for key in dataset_dict.keys():
+            if key not in ["box", "coord"]:
+                prop = dataset_dict[key][index]
+                count = prop.shape[0]
+
+                if count > atoms_num:
+                    col = count // atoms_num
+                    info[key] = prop.reshape((-1, col))
+                    properties.append({"name": key, "type": "R", "count": col})
+                else:
+                    if count == 1:
+                        additional_fields[key] = prop[0]
+                    else:
+                        additional_fields[key] = " ".join(map(str, prop))
+
+        structure = Structure(lattice=box, structure_info=info, properties=properties,
+                              additional_fields=additional_fields)
+        structures.append(structure)
+
+    return structures
+
+
+def load_npy_structure(folders):
+    if os.path.exists(os.path.join(folders, "type.raw")):
+        return _load_npy_structure(folders)
+    else:
+        structures = []
+        if os.path.isdir(folders):
+            for folder in Path(folders).iterdir():
+                structures.extend(load_npy_structure(folder))
+
+        return structures
+
+@utils.timeit
+def save_npy_structure(folder, structures):
+    """
+    保存结构信息到指定的文件夹，根据Config_type将数据组织
+    :param folder: 保存的目标文件夹
+    :param structures: 包含结构信息的Structure列表
+    """
+
+
+    # 确保文件夹存在，如果不存在则创建
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    # 创建用于保存数据的字典
+
+    dataset_dict = defaultdict(lambda: defaultdict(list))
+
+    # 遍历所有结构并收集数据
+    for structure in structures:
+        # 从结构对象中提取数据
+        config_type=structure.tag
+        dataset_dict[config_type]["box"].append(structure.lattice.flatten())  # 确保box是3x3矩阵展平为1D数组
+        dataset_dict[config_type]["coord"].append(structure.structure_info["pos"].flatten())  # 确保coords是1D数组
+        dataset_dict[config_type]["species"].append(structure.structure_info["species"])
+
+        # 保存每个额外字段（如果有）
+        for prop_info  in structure.properties:
+            name=prop_info["name"]
+            if name not in [  "species", "pos"]:
+                dataset_dict[config_type][name].append(structure.structure_info[name].flatten())
+        if "virial" in structure.additional_fields:
+            virial = list(map(float, structure.additional_fields["virial"].split()))
+            dataset_dict[config_type]["virial"].append(virial)
+        if "energy" in structure.additional_fields:
+            dataset_dict[config_type]["energy"].append(structure.energy)
+
+
+    for config ,data in dataset_dict.items():
+        save_path = os.path.join(folder, config,"set.000")
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        species=data["species"][0]
+        unique_species = list(set([species   for species in species]))
+        np.savetxt(os.path.join(folder,config,  "type_map.raw"), unique_species, fmt="%s")
+        type_data = np.array([unique_species.index(species)   for species in species]).flatten()
+        np.savetxt(os.path.join(folder, config, "type.raw"), type_data, fmt="%d")
+        # 保存额外字段（如果有）
+        for key, value in data.items():
+            if key =="species":
+                continue
+
+
+            np.save(os.path.join(save_path, f"{key}.npy"), np.vstack(value ))
+
+

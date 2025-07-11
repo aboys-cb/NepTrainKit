@@ -5,6 +5,7 @@
 # @email    : 1747193328@qq.com
 import os.path
 import sys
+import traceback
 
 from loguru import logger
 
@@ -18,8 +19,9 @@ from qfluentwidgets import HyperlinkLabel, MessageBox, SpinBox, \
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
+from NepTrainKit.core.io.deepmd import is_deepmd_path
 from NepTrainKit.custom_widget import ConfigTypeSearchLineEdit
-from NepTrainKit.core.io import NepTrainResultData
+from NepTrainKit.core.io import NepTrainResultData, DeepmdResultData
 from NepTrainKit.core.io.nep import NepPolarizabilityResultData, NepDipoleResultData
 from NepTrainKit.core.io.utils import get_nep_type
 from NepTrainKit.core.structure import table_info, atomic_numbers
@@ -234,15 +236,18 @@ class ShowNepWidget(QWidget):
             thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
             thread.start_work(self.nep_result_data.export_selected_xyz, path)
 
-    def set_work_path(self,path):
+    def set_work_path(self, path):
         if os.path.isdir(path):
-            if os.path.exists(os.path.join(path,"train.xyz")):
-                path=os.path.join(path,"train.xyz")
+            if os.path.exists(os.path.join(path, "train.xyz")):
+                path = os.path.join(path, "train.xyz")
+            elif is_deepmd_path(path):
+                pass
             else:
-                MessageManager.send_info_message("The directory does not contain a train.xyz file!")
+                MessageManager.send_info_message(
+                    "The directory does not contain a train.xyz or type.raw file!")
                 return
-        if not path.endswith(".xyz"):
-            MessageManager.send_info_message(f"Please choose a xyz file, not {path}!")
+        if not path.endswith(".xyz") and not is_deepmd_path(path):
+            MessageManager.send_info_message(f"Please choose a xyz file or deepmd directory, not {path}!")
             return
         url=self.path_label.getUrl().toString()
         old_path=url.replace("file://","")
@@ -271,31 +276,39 @@ class ShowNepWidget(QWidget):
         self.search_lineEdit.setCompleterKeyWord(self.nep_result_data.structure.get_all_config())
         self.struct_index_spinbox.valueChanged.emit(0)
 
-    def check_nep_result(self,path):
+    def check_nep_result(self, path):
         """
         检查输出文件都有什么
         然后设置窗口布局
         :return:
         """
 
-        dir_path = os.path.dirname(path)
-        file_name = os.path.basename(path)
-        model_type=get_nep_type(os.path.join(dir_path,"nep.txt"))
-        logger.info(f"NEP model type: {model_type}")
-        if model_type==0:
-            self.nep_result_data=NepTrainResultData.from_path(path)
-        elif model_type==1:
-            self.nep_result_data=NepDipoleResultData.from_path(path)
-        elif model_type==2:
-            self.nep_result_data=NepPolarizabilityResultData.from_path(path)
+        if os.path.isdir(path):
+            file_name = os.path.basename(path)
+            if is_deepmd_path(path):
+                self.nep_result_data = DeepmdResultData.from_path(path)
+            else:
+                self.nep_result_data = None
         else:
-            self.nep_result_data=None
+            dir_path = os.path.dirname(path)
+            file_name = os.path.basename(path)
+            model_type = get_nep_type(os.path.join(dir_path, "nep.txt"))
+            logger.info(f"NEP model type: {model_type}")
+            if model_type == 0:
+                self.nep_result_data = NepTrainResultData.from_path(path)
+            elif model_type == 1:
+                self.nep_result_data = NepDipoleResultData.from_path(path)
+            elif model_type == 2:
+                self.nep_result_data = NepPolarizabilityResultData.from_path(path)
+            else:
+                self.nep_result_data = None
 
         if self.nep_result_data is None:
             return
 
         self.path_label.setText(f"Current file: {file_name}")
-        self.path_label.setUrl(QUrl.fromLocalFile(os.path.dirname(path)))
+        show_path = path if os.path.isdir(path) else os.path.dirname(path)
+        self.path_label.setUrl(QUrl.fromLocalFile(show_path))
         # self.graph_widget.set_dataset(self.dataset)
         self.load_thread=QThread(self)
         tip = StateToolTip("Loading", 'Please wait patiently~~', self )
@@ -380,9 +393,9 @@ class ShowNepWidget(QWidget):
         try:
             atoms=self.nep_result_data.get_atoms(current_index)
         except:
+
             MessageManager.send_message_box("The index is invalid, perhaps the structure has been deleted")
             return
-
         self.graph_widget.canvas.plot_current_point(current_index)
 
         self.show_struct_widget.show_structure(atoms)

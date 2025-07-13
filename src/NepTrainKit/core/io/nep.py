@@ -219,6 +219,8 @@ class NepTrainResultData(ResultData):
                 self.structure.now_data,
                 "calculate" ,wait=True)
             nep_potentials_array, nep_forces_array, nep_virials_array=self.nep_calc_thread.func_result
+
+
             # nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(
             #     self.nep_txt_path.as_posix(),
             #     self.structure.now_data,"calculate")
@@ -228,7 +230,7 @@ class NepTrainResultData(ResultData):
 
             energy_array = self._save_energy_data(nep_potentials_array)
             force_array = self._save_force_data(nep_forces_array)
-            virial_array, stress_array = self._save_virial_and_stress_data(nep_virials_array)
+            virial_array, stress_array = self._save_virial_and_stress_data(nep_virials_array[:, [0, 4, 8, 1, 5, 6]])
 
 
             self.write_prediction()

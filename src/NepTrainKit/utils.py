@@ -133,6 +133,7 @@ class LoadingThread(QThread):
             self.tip.show()
             self.finished.connect(self.__finished_work)
             self.tip.closedSignal.connect(self.quit)
+            time.sleep(0.0001)
         else:
             self.tip=None
         self._func = func

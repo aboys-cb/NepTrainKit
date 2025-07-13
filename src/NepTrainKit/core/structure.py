@@ -62,26 +62,7 @@ class Structure:
             structure = cls.parse_xyz(f.read())
         return structure
 
-    @classmethod
-    def from_deepmd(cls, cell, species, positions, energy=None, forces=None, virial=None):
-        """Create ``Structure`` from DeepMD numpy arrays."""
-        properties = [
-            {"name": "species", "type": "S", "count": 1},
-            {"name": "pos", "type": "R", "count": 3},
-        ]
-        info = {
-            "species": np.array(species),
-            "pos": np.asarray(positions, dtype=np.float32),
-        }
-        if forces is not None:
-            properties.append({"name": "forces", "type": "R", "count": 3})
-            info["forces"] = np.asarray(forces, dtype=np.float32)
-        additional = {}
-        if energy is not None:
-            additional["energy"] = float(energy)
-        if virial is not None:
-            additional["virial"] = " ".join(str(x) for x in np.asarray(virial).ravel())
-        return cls(cell, info, properties, additional)
+
     @property
     def cell(self):
         return self.lattice
@@ -162,18 +143,29 @@ class Structure:
     @property
     def forces(self):
         return self.structure_info[self.force_label]
+    @forces.setter
+    def forces(self,arr):
+        self.structure_info[self.force_label] = arr
+
+    @property
+    def virial(self):
+        try:
+            vir =self.additional_fields["virial"]
+        except:
+            # 检查下有没有压强
+            try:
+                vir = self.additional_fields["stress"]  * self.volume * -1
+            except:
+                raise ValueError("No virial or stress data")
+        return vir
+    @virial.setter
+    def virial(self,new_virial):
+        self.additional_fields["virial"] = new_virial
 
     @property
     def nep_virial(self):
-        try:
-            vir=np.array(self.virial.split(" "),dtype=np.float32)
-        except:
-            #检查下有没有压强
-            try:
-                vir= np.array(self.stress.split(" "),dtype=np.float32)*self.volume*-1
-            except:
-                raise ValueError("No virial or stress data")
 
+        vir=self.virial
         return vir[[0,4,8,1,5,6]]/self.num_atoms
 
     @property
@@ -420,6 +412,8 @@ class Structure:
                     value=str(value)
                 if key.lower() in ("energy", "pbc","virial","stress"):
                     key=key.lower()
+                if key =="virial" or key =="stress":
+                    value= np.array(value.split(" "), dtype=np.float32)
                 additional_fields[key] = value
                 # print(additional_fields)
         return lattice, properties, additional_fields
@@ -492,6 +486,10 @@ class Structure:
 
             if isinstance(value, (float, int)):
                 global_line.append(f"{key}={value}")
+            elif isinstance(value, np.ndarray):
+                value_str = " ".join(map(str, value.flatten()))
+                global_line.append(f"{key}={value_str}")
+
 
             else:
                 global_line.append(f'{key}="{value}"')

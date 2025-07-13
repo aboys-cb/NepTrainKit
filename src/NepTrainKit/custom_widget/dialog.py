@@ -16,7 +16,7 @@ from qfluentwidgets import (
     ComboBox,
     FluentStyleSheet,
     FluentTitleBar,
-    TitleLabel,HyperlinkLabel
+    TitleLabel, HyperlinkLabel, RadioButton, LineEdit, MessageBox
 )
 from qframelesswindow import FramelessDialog
 import json
@@ -250,3 +250,64 @@ class PeriodicTableDialog(FramelessDialog):
             row, col = period, group
         return row - 1, col - 1
 
+
+
+class DFTD3MessageBox(MessageBoxBase):
+    """Dialog for DFTD3 parameters."""
+
+    def __init__(self, parent=None, tip="DFTD3 correction"):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel.setWordWrap(True)
+        self.functionEdit = LineEdit(self)
+        self.functionEdit.setPlaceholderText("dft d3 functional")
+        self._frame = QFrame(self)
+        self.frame_layout = QGridLayout(self._frame)
+        self.frame_layout.setContentsMargins(0, 0, 0, 0)
+        self.frame_layout.setSpacing(2)
+
+        self.d1SpinBox = DoubleSpinBox(self)
+        self.d1SpinBox.setMaximum(100000000)
+        self.d1SpinBox.setDecimals(3)
+
+        self.d1cnSpinBox = SpinBox(self)
+        self.d1cnSpinBox.setMaximum(999999)
+
+
+        self.modeCombo = ComboBox(self)
+        self.modeCombo.addItems([
+            "NEP Only",
+            "DFT-D3 only",
+            "NEP with DFT-D3",
+            "Add DFT-D3",
+            "Subtract DFT-D3",
+
+        ])
+        self.modeCombo.setCurrentText("NEP Only")
+
+
+        self.frame_layout.addWidget(CaptionLabel("D3 cutoff ", self), 0, 0)
+        self.frame_layout.addWidget(self.d1SpinBox, 0, 1)
+        self.frame_layout.addWidget(CaptionLabel("D3 cutoff _cn ", self), 1, 0)
+        self.frame_layout.addWidget(self.d1cnSpinBox, 1, 1)
+
+        self.frame_layout.addWidget(CaptionLabel("Alignment mode", self), 3, 0)
+        self.frame_layout.addWidget(self.modeCombo, 3, 1)
+
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.functionEdit)
+        self.viewLayout.addWidget(self._frame)
+
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
+        self.widget.setMinimumWidth(250)
+
+
+    def validate(self):
+        if self.modeCombo.currentIndex()!=0:
+            if len(self.functionEdit.text()) == 0:
+
+                self.functionEdit.setFocus()
+                return False
+        return True

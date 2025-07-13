@@ -147,6 +147,12 @@ public:
     const std::vector<double>& position,
     std::vector<double>& latent_space);
 
+  void find_B_projection(
+    const std::vector<int>& type,
+    const std::vector<double>& box,
+    const std::vector<double>& position,
+    std::vector<double>& B_projection);
+
   void find_dipole(
     const std::vector<int>& type,
     const std::vector<double>& box,

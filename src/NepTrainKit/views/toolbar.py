@@ -45,7 +45,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     shiftEnergySignal=Signal()
     inverseSignal=Signal()
     selectIndexSignal=Signal()
-
+    dftd3Signal=Signal()
     def init_actions(self):
         self.addButton("Reset View",QIcon(":/images/src/images/init.svg"),self.resetSignal)
         pan_action=self.addButton("Pan View",
@@ -98,7 +98,9 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         self.addButton("Energy Baseline Shift",
                        QIcon(":/images/src/images/alignment.svg"),
                        self.shiftEnergySignal)
-
+        self.addButton("DFT D3",
+                       QIcon(":/images/src/images/dft_d3.png"),
+                       self.dftd3Signal)
     def reset(self):
         if self.action_group.checkedAction():
             self.action_group.checkedAction().setChecked(False)

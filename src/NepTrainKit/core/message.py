@@ -69,9 +69,9 @@ class MessageManager(QObject):
 
     def _show_message(self,msg_type,msg,title):
         if msg_type==InfoBarIcon.ERROR:
-            duration=4000
+            duration=10000
         elif msg_type==InfoBarIcon.WARNING:
-            duration=3000
+            duration=8000
         else:
             duration=2000
         InfoBar.new(msg_type,

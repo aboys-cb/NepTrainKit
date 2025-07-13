@@ -251,7 +251,7 @@ class NepResultPlotWidget(QWidget):
         if hasattr(data, "energy") and data.energy.num != 0:
             for i, s in enumerate(data.structure.all_data):
                 # print(s.per_atom_energy)
-                data.energy.data._data[i, data.energy.y_cols] = s.per_atom_energy
+                data.energy.data._data[i, data.energy.x_cols] = s.per_atom_energy
         self.canvas.plot_nep_result()
     def _calc_dft_d3(self,mode,functional,cutoff,cutoff_cn):
         nep_txt_path = self.canvas.nep_result_data.nep_txt_path
@@ -299,7 +299,7 @@ class NepResultPlotWidget(QWidget):
         if hasattr( self.canvas.nep_result_data, "energy") and  self.canvas.nep_result_data.energy.num != 0:
             for i, s in enumerate( self.canvas.nep_result_data.structure.all_data):
                 # print(s.per_atom_energy)
-                self.canvas.nep_result_data.energy.data._data[i,  self.canvas.nep_result_data.energy.y_cols] = s.per_atom_energy
+                self.canvas.nep_result_data.energy.data._data[i,  self.canvas.nep_result_data.energy.x_cols] = s.per_atom_energy
 
     def calc_dft_d3(self):
 

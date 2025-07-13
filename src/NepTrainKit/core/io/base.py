@@ -248,8 +248,8 @@ class NepPlotData(NepData):
 
     def __init__(self,data_list,**kwargs ):
         super().__init__(data_list,**kwargs )
-        self.x_cols=slice(None,self.cols)
-        self.y_cols=slice(self.cols,None)
+        self.x_cols=slice(self.cols,None)
+        self.y_cols=slice(None,self.cols )
     @property
     def normal_color(self):
         return Brushes.TransparentBrush

@@ -16,7 +16,7 @@ from qfluentwidgets import (
     ComboBox,
     FluentStyleSheet,
     FluentTitleBar,
-    TitleLabel, HyperlinkLabel, RadioButton, LineEdit, MessageBox
+    TitleLabel, HyperlinkLabel, RadioButton, LineEdit, MessageBox, EditableComboBox
 )
 from qframelesswindow import FramelessDialog
 import json
@@ -259,8 +259,65 @@ class DFTD3MessageBox(MessageBoxBase):
         super().__init__(parent)
         self.titleLabel = CaptionLabel(tip, self)
         self.titleLabel.setWordWrap(True)
-        self.functionEdit = LineEdit(self)
+        self.functionEdit = EditableComboBox(self)
         self.functionEdit.setPlaceholderText("dft d3 functional")
+        functionals = [
+            "b1b95",
+            "b2gpplyp",
+            "b2plyp",
+            "b3lyp",
+            "b3pw91",
+            "b97d",
+            "bhlyp",
+            "blyp",
+            "bmk",
+            "bop",
+            "bp86",
+            "bpbe",
+            "camb3lyp",
+            "dsdblyp",
+            "hcth120",
+            "hf",
+            "hse-hjs",
+            "lc-wpbe08",
+            "lcwpbe",
+            "m11",
+            "mn12l",
+            "mn12sx",
+            "mpw1b95",
+            "mpwb1k",
+            "mpwlyp",
+            "n12sx",
+            "olyp",
+            "opbe",
+            "otpss",
+            "pbe",
+            "pbe0",
+            "pbe38",
+            "pbesol",
+            "ptpss",
+            "pw6b95",
+            "pwb6k",
+            "pwpb95",
+            "revpbe",
+            "revpbe0",
+            "revpbe38",
+            "revssb",
+            "rpbe",
+            "rpw86pbe",
+            "scan",
+            "sogga11x",
+            "ssb",
+            "tpss",
+            "tpss0",
+            "tpssh",
+            "b2kplyp",
+            "dsd-pbep86",
+            "b97m",
+            "wb97x",
+            "wb97m"
+        ]
+        self.functionEdit.addItems(functionals)
         self._frame = QFrame(self)
         self.frame_layout = QGridLayout(self._frame)
         self.frame_layout.setContentsMargins(0, 0, 0, 0)

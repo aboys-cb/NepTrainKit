@@ -488,7 +488,7 @@ class Structure:
                 global_line.append(f"{key}={value}")
             elif isinstance(value, np.ndarray):
                 value_str = " ".join(map(str, value.flatten()))
-                global_line.append(f"{key}={value_str}")
+                global_line.append(f'{key}="{value_str}"')
 
 
             else:

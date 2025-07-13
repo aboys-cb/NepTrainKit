@@ -28,7 +28,7 @@ class TestNep(unittest.TestCase):
         potentials, forces, virials = self.calculator.calculate(self.structures)
         np.testing.assert_array_equal(self.energy, potentials)
         np.testing.assert_array_equal(self.forces, forces)
-        np.testing.assert_array_equal(self.virial, virials)
+        np.testing.assert_array_equal(self.virial, virials[:,[0,4,8,1,5,6]])
 
     def test_get_descriptor(self):
         descriptor = self.calculator.get_descriptor(self.structures)

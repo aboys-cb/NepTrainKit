@@ -62,26 +62,7 @@ class Structure:
             structure = cls.parse_xyz(f.read())
         return structure
 
-    @classmethod
-    def from_deepmd(cls, cell, species, positions, energy=None, forces=None, virial=None):
-        """Create ``Structure`` from DeepMD numpy arrays."""
-        properties = [
-            {"name": "species", "type": "S", "count": 1},
-            {"name": "pos", "type": "R", "count": 3},
-        ]
-        info = {
-            "species": np.array(species),
-            "pos": np.asarray(positions, dtype=np.float32),
-        }
-        if forces is not None:
-            properties.append({"name": "forces", "type": "R", "count": 3})
-            info["forces"] = np.asarray(forces, dtype=np.float32)
-        additional = {}
-        if energy is not None:
-            additional["energy"] = float(energy)
-        if virial is not None:
-            additional["virial"] = " ".join(str(x) for x in np.asarray(virial).ravel())
-        return cls(cell, info, properties, additional)
+
     @property
     def cell(self):
         return self.lattice
@@ -173,7 +154,7 @@ class Structure:
         except:
             # 检查下有没有压强
             try:
-                vir = self.additional_fields["stress"].split(" ")* self.volume * -1
+                vir = self.additional_fields["stress"]  * self.volume * -1
             except:
                 raise ValueError("No virial or stress data")
         return vir

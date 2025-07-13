@@ -164,7 +164,7 @@ class NepData:
     def all_data(self):
         return self.data.all_data
     def is_visible(self,index) -> bool_:
-        """<UNK>"""
+
         return self.data._active_mask[index].all()
     @property
     def remove_data(self):

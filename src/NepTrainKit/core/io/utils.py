@@ -18,7 +18,7 @@ def read_nep_in(  file_name):
         return run_in
     with open(file_name, 'r', encoding="utf8") as f:
 
-        groups = re.findall("^([A-Za-z_]+)\s+([^\#\n]*)", f.read(), re.MULTILINE)
+        groups = re.findall(r"^([A-Za-z_]+)\s+([^\#\n]*)", f.read(), re.MULTILINE)
 
         for group in groups:
 

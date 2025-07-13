@@ -18,7 +18,7 @@ class TestStructure(unittest.TestCase):
             {"name": "pos", "type": "R", "count": 3},
             {"name": "forces", "type":  "R", "count": 3}
         ]
-        self.additional_fields = {"energy": 1.0, "virial": "0 0 0 0 0 0 0 0 0"}
+        self.additional_fields = {"energy": 1.0, "virial": np.array([0, 0 ,0, 0 ,0 ,0 ,0, 0, 0])}
         self.structure = Structure(self.lattice, self.structure_info, self.properties, self.additional_fields)
 
     def test_basic_properties(self):

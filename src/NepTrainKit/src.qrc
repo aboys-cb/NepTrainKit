@@ -48,6 +48,8 @@
         <file>src/images/index.svg</file>
 
         <file>src/images/sort.svg</file>
+        <file>src/images/dft_d3.png</file>
+
   </qresource>
   <qresource prefix="/theme">
     <file>src/qss/theme.qss</file>

@@ -251,14 +251,60 @@ class NepResultPlotWidget(QWidget):
         if hasattr(data, "energy") and data.energy.num != 0:
             for i, s in enumerate(data.structure.all_data):
                 # print(s.per_atom_energy)
-                data.energy.data._data[i, 1] = s.per_atom_energy
+                data.energy.data._data[i, data.energy.y_cols] = s.per_atom_energy
         self.canvas.plot_nep_result()
+    def _calc_dft_d3(self,mode,functional,cutoff,cutoff_cn):
+        nep_txt_path = self.canvas.nep_result_data.nep_txt_path
+        if mode == 0:
+            calculate_type = "calculate"
+            func_kwargs = {}
+        elif mode == 2:
+            calculate_type = "calculate_with_dftd3"
+            func_kwargs = {
+                "functional":functional,
+                "cutoff": cutoff,
+                "cutoff_cn": cutoff_cn,
 
+            }
+        else:
+            calculate_type = "calculate_dftd3"
+            func_kwargs = {
+                "functional":functional,
+                "cutoff": cutoff,
+                "cutoff_cn": cutoff_cn,
+
+            }
+
+
+        nep_calc_thread = NEPProcess()
+        nep_calc_thread.run_nep3_calculator_process(nep_txt_path.as_posix(),
+                                                    self.canvas.nep_result_data.structure.now_data,
+                                                    calculate_type, func_kwargs=func_kwargs, wait=True)
+        nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc_thread.func_result
+        split_indices = np.cumsum(self.canvas.nep_result_data.atoms_num_list)[:-1]
+        nep_forces_array = np.split(nep_forces_array, split_indices)
+
+
+        if mode < 3:
+            for index, structure in enumerate(self.canvas.nep_result_data.structure.now_data):
+                structure.energy = nep_potentials_array[index]
+                structure.forces = nep_forces_array[index]
+                structure.virial = nep_virials_array[index]
+        else:
+            factor = 1 if mode == 3 else -1
+            for index, structure in enumerate(self.canvas.nep_result_data.structure.now_data):
+                structure.energy += nep_potentials_array[index] * factor
+                structure.forces += nep_forces_array[index] * factor
+                structure.virial += nep_virials_array[index] * factor
+        if hasattr( self.canvas.nep_result_data, "energy") and  self.canvas.nep_result_data.energy.num != 0:
+            for i, s in enumerate( self.canvas.nep_result_data.structure.all_data):
+                # print(s.per_atom_energy)
+                self.canvas.nep_result_data.energy.data._data[i,  self.canvas.nep_result_data.energy.y_cols] = s.per_atom_energy
 
     def calc_dft_d3(self):
 
-        data = self.canvas.nep_result_data
-        if data is None:
+
+        if  self.canvas.nep_result_data is None:
             return
 
         function = Config.getint("widget","functional","scan")
@@ -278,51 +324,23 @@ class NepResultPlotWidget(QWidget):
         mode = box.modeCombo.currentIndex()
         D3_cutoff = box.d1SpinBox.value()
         D3_cutoff_cn = box.d1cnSpinBox.value()
-
+        functional=box.functionEdit.text().strip()
         Config.set("widget","cutoff",D3_cutoff)
         Config.set("widget","cutoff_cn",D3_cutoff_cn)
-        Config.set("widget","functional",box.functionEdit.text().strip())
+        Config.set("widget","functional",functional)
 
-        nep_txt_path = self.canvas.nep_result_data.nep_txt_path
-        if mode == 0:
-            calculate_type="calculate"
-            func_kwargs = {}
-        elif mode==2:
-            calculate_type="calculate_with_dftd3"
-            func_kwargs={
-                "functional":box.functionEdit.text().strip(),
-                "cutoff": D3_cutoff,
-                "cutoff_cn": D3_cutoff_cn,
+        thread = utils.LoadingThread(self._parent, show_tip=True,title="calculating dftd3")
 
-            }
-        else:
-            calculate_type="calculate_dftd3"
-            func_kwargs={
-                "functional":box.functionEdit.text().strip(),
-                "cutoff": D3_cutoff,
-                "cutoff_cn": D3_cutoff_cn,
+        thread.start_work(
+            self._calc_dft_d3,
+            mode,functional,cutoff,cutoff_cn
+        )
+        thread.finished.connect(self.canvas.plot_nep_result)
 
-            }
-        nep_calc_thread = NEPProcess()
-        nep_calc_thread.run_nep3_calculator_process(nep_txt_path.as_posix(),
-                                                         self.canvas.nep_result_data.structure.now_data,
-                                                         calculate_type,func_kwargs=func_kwargs, wait=True)
-        nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc_thread.func_result
-        split_indices = np.cumsum(self.canvas.nep_result_data.atoms_num_list)[:-1]
-        nep_forces_array = np.split(nep_forces_array, split_indices)
+        # self.canvas.plot_nep_result()
 
 
-        if mode<3:
-            for index,structure in enumerate(self.canvas.nep_result_data.structure.now_data):
-                structure.energy = nep_potentials_array[index]
-                structure.forces = nep_forces_array[index]
-                structure.virial = nep_virials_array[index]
-        else:
-            factor = 1 if mode==3 else -1
-            for index,structure in enumerate(self.canvas.nep_result_data.structure.now_data):
-                structure.energy += nep_potentials_array[index]*factor
-                structure.forces += nep_forces_array[index]*factor
-                structure.virial += nep_virials_array[index]*factor
+
 
 
 

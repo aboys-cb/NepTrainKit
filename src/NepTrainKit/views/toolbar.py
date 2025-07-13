@@ -99,7 +99,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
                        QIcon(":/images/src/images/alignment.svg"),
                        self.shiftEnergySignal)
         self.addButton("DFT D3",
-                       QIcon(":/images/src/images/alignment.svg"),
+                       QIcon(":/images/src/images/dft_d3.png"),
                        self.dftd3Signal)
     def reset(self):
         if self.action_group.checkedAction():

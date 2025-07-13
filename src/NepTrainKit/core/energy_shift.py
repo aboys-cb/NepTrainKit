@@ -174,12 +174,12 @@ def shift_dataset_energy(
         config_to_group.setdefault(ct, ct)
 
     shift_groups = sorted(set(config_to_group.values()))
-    print(alignment_mode)
+
     group_to_atomic_ref = {}
     for group in shift_groups:
-        print(group)
+
         grp_frames = [f for f in frames if config_to_group[f["config_type"]] == group]
-        print("grp_frames", len(grp_frames))
+
         if not grp_frames:
             continue
         energies = np.array([f["energy"] for f in grp_frames])
@@ -191,8 +191,7 @@ def shift_dataset_energy(
             targets = np.zeros_like(energies)
         else:  # DFT_TO_NEP_ALIGNMENT
             targets = np.array([f["nep_energy"] for f in grp_frames])
-        print(targets)
-        print(targets.shape)
+
         atomic_ref = nes_optimize_atomic_baseline(
             num_elements,
             max_generations,
@@ -207,7 +206,6 @@ def shift_dataset_energy(
         group_to_atomic_ref[group] = atomic_ref
         #这里是为了更新ui信号
         yield 1
-    print(group_to_atomic_ref)
     # apply shift
     for s, frame in zip(structures, frames):
         group = config_to_group[frame["config_type"]]

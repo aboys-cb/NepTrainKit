@@ -393,7 +393,6 @@ class ShowNepWidget(QWidget):
     def show_current_structure(self,current_index):
 
         try:
-            print(current_index)
             atoms=self.nep_result_data.get_atoms(current_index)
         except:
             logger.debug(traceback.format_exc())

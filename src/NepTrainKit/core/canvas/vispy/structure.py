@@ -288,7 +288,7 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.arrow_items = []
 
         forces = self.structure.structure_info["spin"]
-        print(forces)
+
 
         arrow_meshdata = create_arrow_mesh()
         z_axis = np.array([0, 0, 1], dtype=float)

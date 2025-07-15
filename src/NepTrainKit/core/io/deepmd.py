@@ -130,7 +130,7 @@ class DeepmdResultData(ResultData):
         if self.spin_out_path is not None:
             spin_array=read_nep_out_file(self.spin_out_path)
 
-            self._spin_dataset = DPPlotData(spin_array, title="spin")
+            self._spin_dataset = DPPlotData(spin_array,  group_list=self.atoms_num_list, title="spin")
 
         self._virial_dataset = DPPlotData(virial_array, title="virial")
 

@@ -312,6 +312,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
             if index is not None:
                 structure_index=current_axes.data[index]
+
+
                 self.structureIndexChanged.emit(structure_index)
 
             return False

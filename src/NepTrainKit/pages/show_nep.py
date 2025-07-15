@@ -393,9 +393,10 @@ class ShowNepWidget(QWidget):
     def show_current_structure(self,current_index):
 
         try:
+            print(current_index)
             atoms=self.nep_result_data.get_atoms(current_index)
         except:
-
+            logger.debug(traceback.format_exc())
             MessageManager.send_message_box("The index is invalid, perhaps the structure has been deleted")
             return
         self.graph_widget.canvas.plot_current_point(current_index)

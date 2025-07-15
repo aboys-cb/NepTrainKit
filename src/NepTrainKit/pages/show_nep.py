@@ -96,6 +96,8 @@ class ShowNepWidget(QWidget):
         self.structure_toolbar = StructureToolBar(self.struct_widget)
         self.structure_toolbar.showBondSignal.connect(self.show_struct_widget.set_show_bonds)
         self.structure_toolbar.orthoViewSignal.connect(self.show_struct_widget.set_projection)
+        self.structure_toolbar.autoViewSignal.connect(self.show_struct_widget.set_auto_view)
+
         self.structure_toolbar.exportSignal.connect(self.export_single_struct)
 
         self.struct_info_widget = StructureInfoWidget(self.struct_widget)

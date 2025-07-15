@@ -3,14 +3,14 @@
 # @Time    : 2025/5/19 20:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-
+from vispy.visuals.filters import ShadingFilter
 
 from NepTrainKit.core import Config
 from NepTrainKit.core.structure import table_info
 import numpy as np
 
 from vispy import app, scene, visuals
-from vispy.geometry import MeshData
+from vispy.geometry import MeshData, create_cylinder, create_cone
 from vispy.scene.visuals import Mesh, Line
 from vispy.color import Color
 
@@ -24,6 +24,7 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.bgcolor = 'white'  # Set background to white
         self.view = self.central_widget.add_view()
         self.view.camera = 'turntable'  # Interactive camera
+        self.auto_view=False
         self.ortho = False
         self.atom_items = []  # Store atom meshes and metadata
         self.bond_items = []  # Store bond meshes
@@ -67,6 +68,18 @@ class StructurePlotWidget(scene.SceneCanvas):
             self.cylinder_faces.append([2 * self.n_segments, i2, i1])  # Bottom cap
             self.cylinder_faces.append([2 * self.n_segments + 1, i1 + self.n_segments, i2 + self.n_segments])  # Top cap
         self.cylinder_faces = np.array(self.cylinder_faces)
+        self.shading_filter = ShadingFilter(shading="smooth",
+                                            ambient_light = (1, 1, 1, .5),
+
+
+                                            )
+        self.set_projection(False)
+    def set_auto_view(self,auto_view):
+        self.auto_view=auto_view
+        if self.structure is not None:
+
+            self.show_structure(self.structure)
+
 
     def set_projection(self, ortho=True):
         """Toggle between orthographic and perspective projection."""
@@ -82,11 +95,15 @@ class StructurePlotWidget(scene.SceneCanvas):
                 fov=0,  # Orthographic
                 **current_state
             )
+            self.view.camera.distance=350
+
         else:
             self.view.camera = scene.cameras.TurntableCamera(
                 fov=60,  # Perspective
                 **current_state
             )
+            self.view.camera.distance=50
+
         self.update()
 
     def set_show_bonds(self, show_bonds=True):
@@ -103,18 +120,11 @@ class StructurePlotWidget(scene.SceneCanvas):
         dir = np.concatenate((self.initial_light_dir, [0]))
         light_dir = transform.map(dir)[:3]
         # Update shading filter for atoms, bonds, and halos
-        for item in self.atom_items:
-            if item['mesh'] and hasattr(item['mesh'], 'shading_filter'):
-                item['mesh'].shading_filter.light_dir = tuple(light_dir)
-                # item['mesh']._program.draw()  # Force shader update
-            if item['halo'] and hasattr(item['halo'], 'shading_filter'):
-                item['halo'].shading_filter.light_dir = tuple(light_dir)
-                # item['halo']._program.draw()  # Force shader update
-        for mesh in self.bond_items:
-            if hasattr(mesh, 'shading_filter'):
-                mesh.shading_filter.light_dir = tuple(light_dir)
-                # mesh._program.draw()  # Force shader update
+        self.shading_filter.light_dir  = tuple(light_dir)
         self.update()
+
+        return
+
 
     def show_lattice(self, structure):
         """Draw the crystal lattice as 12 distinct edges."""
@@ -136,7 +146,7 @@ class StructurePlotWidget(scene.SceneCanvas):
             width=1.5,
             connect='segments',
             method='gl',
-            parent=self.view.scene
+            parent=self.view.scene,antialias=True
         )
 
     def show_bond(self, structure):
@@ -231,10 +241,10 @@ class StructurePlotWidget(scene.SceneCanvas):
             mesh_data = MeshData(vertices=vertices, faces=faces, vertex_colors=colors)
             mesh = Mesh(
                 meshdata=mesh_data,
-                shading='smooth',
+                # shading='smooth',
                 parent=self.view.scene
             )
-
+            # mesh.attach(self.shading_filter)
             self.bond_items.append(mesh)
 
     def show_elem(self, structure):
@@ -277,9 +287,10 @@ class StructurePlotWidget(scene.SceneCanvas):
             mesh_data = MeshData(vertices=vertices, faces=faces, vertex_colors=colors)
             mesh = Mesh(
                 meshdata=mesh_data,
-                shading='smooth',
+                # shading='smooth',
                 parent=self.view.scene
             )
+            mesh.attach(self.shading_filter)
 
             for item in self.atom_items:
                 item['mesh'] = mesh
@@ -292,6 +303,8 @@ class StructurePlotWidget(scene.SceneCanvas):
         for pair in bond_pairs:
             self.highlight_atom(pair[0])
             self.highlight_atom(pair[1])
+
+
 
     def highlight_atom(self, atom_index):
         """Highlight an atom with a translucent halo."""
@@ -333,42 +346,41 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.show_lattice(structure)
         self.show_elem(structure)
         self.show_bond(structure)
-        coords = structure.positions
-        min_coords = coords.min(axis=0)
-        max_coords = coords.max(axis=0)
-        center = (min_coords + max_coords) / 2
-        size = max_coords - min_coords
-        max_dimension = np.max(size)
-        fov = 60
-        distance = max_dimension / (2 * np.tan(np.radians(fov / 2))) * 2.8
-        aspect_ratio = size / np.max(size)
-        flat_threshold = 0.5
-        if aspect_ratio[0] < flat_threshold and aspect_ratio[1] >= flat_threshold and aspect_ratio[2] >= flat_threshold:
-            elevation, azimuth = 0, 0
-        elif aspect_ratio[1] < flat_threshold and aspect_ratio[0] >= flat_threshold and aspect_ratio[
-            2] >= flat_threshold:
-            elevation, azimuth = 0, 0
-        elif aspect_ratio[2] < flat_threshold and aspect_ratio[0] >= flat_threshold and aspect_ratio[
-            1] >= flat_threshold:
-            elevation, azimuth = 90, 0
-        else:
-            elevation, azimuth = 30, 45
-        self.view.camera.set_state({
-            'center': tuple(center),
-            'elevation': elevation,
-            'azimuth': azimuth,
+        if self.auto_view:
+            coords = structure.positions
+            min_coords = coords.min(axis=0)
+            max_coords = coords.max(axis=0)
+            center = (min_coords + max_coords) / 2
+            size = max_coords - min_coords
+            max_dimension = np.max(size)
+            fov = 60
+            distance = max_dimension / (2 * np.tan(np.radians(fov / 2))) * 2.8
+            aspect_ratio = size / np.max(size)
+            flat_threshold = 0.5
+            if aspect_ratio[0] < flat_threshold and aspect_ratio[1] >= flat_threshold and aspect_ratio[2] >= flat_threshold:
+                elevation, azimuth = 0, 0
+            elif aspect_ratio[1] < flat_threshold and aspect_ratio[0] >= flat_threshold and aspect_ratio[
+                2] >= flat_threshold:
+                elevation, azimuth = 0, 0
+            elif aspect_ratio[2] < flat_threshold and aspect_ratio[0] >= flat_threshold and aspect_ratio[
+                1] >= flat_threshold:
+                elevation, azimuth = 90, 0
+            else:
+                elevation, azimuth = 30, 45
+            self.view.camera.set_state({
+                'center': tuple(center),
+                'elevation': elevation,
+                'azimuth': azimuth,
 
-        })
-        self.view.camera.distance=distance
+            })
+            self.view.camera.distance=distance
 
         self.update_lighting()
 
 
     def on_mouse_move(self, event):
         """Update lighting during rotation."""
-
         if event.is_dragging:
-
             self.update_lighting()
 if __name__ == '__main__':
     from PySide6.QtWidgets import QApplication

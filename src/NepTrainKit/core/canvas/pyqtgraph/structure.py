@@ -24,12 +24,18 @@ class StructurePlotWidget(gl.GLViewWidget):
         #
         super().__init__(*args, **kwargs)
         self.setBackgroundColor('w')
-        # self.setCameraPosition(distance=30, elevation=30, azimuth=30)
+        self.setCameraPosition(distance=80, elevation=30, azimuth=30)
         self.atom_items = []  # 存储所有原子的信息和对应的GLMeshItem
+        self.auto_view=False
 
         self.structure = None
         self.show_bond_flag = None
         self.scale_factor = 1
+
+    def set_auto_view(self, auto_view):
+        self.auto_view = auto_view
+        if self.structure is not None:
+            self.show_structure(self.structure)
 
     def set_projection(self,ortho=True):
         self.ortho=ortho
@@ -347,48 +353,49 @@ class StructurePlotWidget(gl.GLViewWidget):
         self.show_lattice(structure)
         self.show_elem(structure)
         self.show_bond(structure )
-        # 计算边界框和相机参数
-        coords=structure.positions
-        min_coords = coords.min(axis=0)
-        max_coords = coords.max(axis=0)
-        center = (min_coords + max_coords) / 2
-        size = max_coords - min_coords
-        max_dimension = np.max(size)
 
-        # 设置相机参数
-        fov = 60
-        distance = max_dimension / (2 * np.tan(np.radians(fov / 2))) * 2.8
-        self.opts['center'] = pg.Vector(center[0], center[1], center[2])
-        self.opts['distance'] = distance
-        aspect_ratio = size / np.max(size)  # 计算 x、y、z 的相对比例
-        # print("aspect_ratio", aspect_ratio)
-        flat_threshold=0.5
-        # 根据扁平方向调整视角
-        if (aspect_ratio[0] < flat_threshold
-                and aspect_ratio[1] >= flat_threshold
-                and aspect_ratio[2] >= flat_threshold):
-            # x 方向扁平，从 x 轴法线方向（侧面）看
-            self.opts['elevation'] = 0
-            self.opts['azimuth'] = 0
-        elif (aspect_ratio[1] < flat_threshold
-              and aspect_ratio[0] >= flat_threshold
-              and aspect_ratio[2] >= flat_threshold):
-            # y 方向扁平，从 y 轴法线方向（侧面）看
-            self.opts['elevation'] = 0
-            self.opts['azimuth'] = 0
-        elif (aspect_ratio[2] < flat_threshold
-              and aspect_ratio[0] >= flat_threshold
-              and aspect_ratio[1] >= flat_threshold):
-            # z 方向扁平，从 z 轴法线方向（顶部）看
-            self.opts['elevation'] = 90
-            self.opts['azimuth'] = 0
-        else:
-            # 没有明显扁平方向，使用默认斜视角
-            self.opts['elevation'] = 30
-            self.opts['azimuth'] = 45
+        if self.auto_view:
+            # 计算边界框和相机参数
+            coords = structure.positions
+            min_coords = coords.min(axis=0)
+            max_coords = coords.max(axis=0)
+            center = (min_coords + max_coords) / 2
+            size = max_coords - min_coords
+            max_dimension = np.max(size)
+            # 设置相机参数
+            fov = 60
+            distance = max_dimension / (2 * np.tan(np.radians(fov / 2))) * 2.8
+            self.opts['center'] = pg.Vector(center[0], center[1], center[2])
+            self.opts['distance'] = distance
+            aspect_ratio = size / np.max(size)  # 计算 x、y、z 的相对比例
+            # print("aspect_ratio", aspect_ratio)
+            flat_threshold=0.5
+            # 根据扁平方向调整视角
+            if (aspect_ratio[0] < flat_threshold
+                    and aspect_ratio[1] >= flat_threshold
+                    and aspect_ratio[2] >= flat_threshold):
+                # x 方向扁平，从 x 轴法线方向（侧面）看
+                self.opts['elevation'] = 0
+                self.opts['azimuth'] = 0
+            elif (aspect_ratio[1] < flat_threshold
+                  and aspect_ratio[0] >= flat_threshold
+                  and aspect_ratio[2] >= flat_threshold):
+                # y 方向扁平，从 y 轴法线方向（侧面）看
+                self.opts['elevation'] = 0
+                self.opts['azimuth'] = 0
+            elif (aspect_ratio[2] < flat_threshold
+                  and aspect_ratio[0] >= flat_threshold
+                  and aspect_ratio[1] >= flat_threshold):
+                # z 方向扁平，从 z 轴法线方向（顶部）看
+                self.opts['elevation'] = 90
+                self.opts['azimuth'] = 0
+            else:
+                # 没有明显扁平方向，使用默认斜视角
+                self.opts['elevation'] = 30
+                self.opts['azimuth'] = 45
 
-        # 应用设置
-        self.setCameraPosition( )
+            # 应用设置
+            self.setCameraPosition( )
 
 
         # 示例：高亮第0个原子

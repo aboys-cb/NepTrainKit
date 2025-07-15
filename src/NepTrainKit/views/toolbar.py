@@ -125,13 +125,17 @@ class StructureToolBar(KitToolBarBase):
     pass
     showBondSignal=Signal(bool)
     orthoViewSignal=Signal(bool)
+    autoViewSignal=Signal(bool)
     exportSignal=Signal()
     def init_actions(self):
         view_action = self.addButton( "Ortho View",
                                           QIcon(":/images/src/images/view_change.svg"),
                                           self.view_changed,
                                     True)
-
+        auto_action = self.addButton( "Automatic View",
+                                          QIcon(":/images/src/images/auto_distance.svg"),
+                                          self.auto_view_changed,
+                                    True)
         show_bond_action = self.addButton( "Show Bonds",
                                           QIcon(":/images/src/images/show_bond.svg"),
                                           self.show_bond,
@@ -146,7 +150,11 @@ class StructureToolBar(KitToolBarBase):
             self.orthoViewSignal.emit(True)
         else:
             self.orthoViewSignal.emit(False)
-
+    def auto_view_changed(self,checked):
+        if checked:
+            self.autoViewSignal.emit(True)
+        else:
+            self.autoViewSignal.emit(False)
     def show_bond(self,checked):
 
         if checked:

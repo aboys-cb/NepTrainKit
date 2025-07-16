@@ -59,6 +59,9 @@ class DeepmdResultData(ResultData):
 
         energy_out_path = dataset_path.with_name(f"{suffix}.e_peratom.out")
         force_out_path = dataset_path.with_name(f"{suffix}.fr.out")
+        if  not force_out_path.exists():
+            force_out_path = dataset_path.with_name(f"{suffix}.f.out")
+
         # stress_out_path = dataset_path.with_name(f"{suffix}.v.out")
         virial_out_path = dataset_path.with_name(f"{suffix}.v_peratom.out")
         spin_out_path=  dataset_path.with_name(f"{suffix}.fm.out")

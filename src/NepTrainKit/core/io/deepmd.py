@@ -15,7 +15,7 @@ from ... import module_path
 def is_deepmd_path(folder)-> bool:
     if os.path.exists(os.path.join(folder,"type.raw")):
         return True
-    if glob.glob(os.path.join(folder, "*/type.raw")):
+    if glob.glob(os.path.join(folder, "**/type.raw"), recursive=True):
         return True
     return False
 class DeepmdResultData(ResultData):
@@ -113,7 +113,8 @@ class DeepmdResultData(ResultData):
             if energy_array.shape[0]!=self.atoms_num_list.shape[0]:
                 self.energy_out_path.unlink(True)
                 self.force_out_path.unlink(True)
-                self.spin_out_path.unlink(True)
+                if self.spin_out_path is not None:
+                    self.spin_out_path.unlink(True)
 
                 self.virial_out_path.unlink(True)
 

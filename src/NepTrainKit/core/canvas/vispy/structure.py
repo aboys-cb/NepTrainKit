@@ -381,7 +381,7 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.show_lattice(structure)
         self.show_elem(structure)
         self.show_bond(structure)
-        # self.show_arrow()
+        self.show_arrow()
         if self.auto_view:
             coords = structure.positions
             min_coords = coords.min(axis=0)

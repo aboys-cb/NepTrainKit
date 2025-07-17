@@ -757,7 +757,8 @@ def _load_npy_structure(folder):
                     if count == 1:
                         additional_fields[key] = prop[0]
                     else:
-                        additional_fields[key] = " ".join(map(str, prop))
+
+                        additional_fields[key] = prop.flatten()
 
         structure = Structure(lattice=box, structure_info=info, properties=properties,
                               additional_fields=additional_fields)

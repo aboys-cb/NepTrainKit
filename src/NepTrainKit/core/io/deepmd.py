@@ -201,9 +201,12 @@ class DeepmdResultData(ResultData):
 
     def _save_virial_and_stress_data(self, virials: np.ndarray )    :
         """保存维里张量和应力数据到文件。"""
+
         coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data]))[:, np.newaxis]
         try:
             ref_virials = np.vstack([s.nep_virial for s in self.structure.now_data], dtype=np.float32)
+
+
             if virials.size == 0:
                 # 计算失败 空数组
                 virials_array = np.column_stack([ref_virials, ref_virials])
@@ -244,7 +247,7 @@ class DeepmdResultData(ResultData):
 
             energy_array = self._save_energy_data(nep_potentials_array)
             force_array = self._save_force_data(nep_forces_array)
-            virial_array = self._save_virial_and_stress_data(nep_virials_array)
+            virial_array = self._save_virial_and_stress_data(nep_virials_array[:, [0, 4, 8, 1, 5, 6]])
 
 
             self.write_prediction()

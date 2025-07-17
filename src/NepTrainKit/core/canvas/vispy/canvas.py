@@ -488,8 +488,6 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             dataset=self.get_axes_dataset(plot)
             array_index=dataset.convert_index(structure_index)
             if dataset.is_visible(array_index) :
-                print(dataset.all_data.shape)
-                print(dataset.title)
 
                 data=dataset.all_data[array_index,: ]
                 plot.set_current_point(data[:,dataset.x_cols].flatten(),

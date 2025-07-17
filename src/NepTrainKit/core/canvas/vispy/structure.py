@@ -286,7 +286,8 @@ class StructurePlotWidget(scene.SceneCanvas):
         for item in self.arrow_items:
             item.parent = None
         self.arrow_items = []
-
+        if "spin" not in self.structure.structure_info:
+            return
         forces = self.structure.structure_info["spin"]
 
 

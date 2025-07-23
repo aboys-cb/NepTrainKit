@@ -192,7 +192,7 @@ class NepTrainResultData(ResultData):
                 virials_array = np.column_stack([ref_virials, ref_virials])
             else:
                 virials_array = np.column_stack([virials, ref_virials])
-        except AttributeError:
+        except ValueError:
             MessageManager.send_warning_message("use nep3 calculator to calculate virial replace the original virial")
             virials_array = np.column_stack([virials, virials])
 

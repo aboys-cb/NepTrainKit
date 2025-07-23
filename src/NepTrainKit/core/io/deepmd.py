@@ -133,10 +133,14 @@ class DeepmdResultData(ResultData):
 
         if self.spin_out_path is not None:
             spin_array=read_nep_out_file(self.spin_out_path)
-
-            self._spin_dataset = DPPlotData(spin_array,  group_list=self.atoms_num_list, title="spin")
+            group_list=[s.spin_num for s in self.structure.now_data]
+            if (np.sum(group_list))!=0:
+                self._spin_dataset = DPPlotData(spin_array,  group_list=group_list, title="spin")
+            else:
+                self.spin_out_path = None
 
         self._virial_dataset = DPPlotData(virial_array, title="virial")
+
 
     def _should_recalculate(self  ) -> bool:
         """判断是否需要重新计算 NEP 数据。"""

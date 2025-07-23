@@ -398,6 +398,7 @@ class ShowNepWidget(QWidget):
             logger.debug(traceback.format_exc())
             MessageManager.send_message_box("The index is invalid, perhaps the structure has been deleted")
             return
+
         self.graph_widget.canvas.plot_current_point(current_index)
 
         self.show_struct_widget.show_structure(atoms)

@@ -350,8 +350,8 @@ class StructurePlotWidget(scene.SceneCanvas):
                 atom['halo'].parent = None
             halo_size = atom['size'] * 1.2
             halo_color = [1, 1, 0, 0.6]
-            vertices = self.sphere_vertices * halo_size + atom['position']
-            mesh_data = MeshData(vertices=vertices, faces=self.sphere_faces)
+            vertices = self.sphere_meshdata.get_vertices() * halo_size + atom['position']
+            mesh_data = MeshData(vertices=vertices, faces=self.sphere_meshdata.get_faces())
             halo = Mesh(
                 meshdata=mesh_data,
                 color=halo_color,

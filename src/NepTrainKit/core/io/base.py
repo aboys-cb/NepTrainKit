@@ -366,7 +366,7 @@ class ResultData(QObject):
 
     @property
     def dataset(self) -> ["NepPlotData"]:
-        return []
+        raise NotImplementedError()
 
     @property
     def descriptor(self):
@@ -543,5 +543,4 @@ class ResultData(QObject):
                 except:
                     MessageManager.send_error_message("PCA dimensionality reduction fails")
                     desc_array = np.array([])
-
         self._descriptor_dataset = NepPlotData(desc_array, title="descriptor")

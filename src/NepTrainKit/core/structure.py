@@ -94,7 +94,13 @@ class Structure:
     @property
     def numbers(self):
         return [atomic_numbers[element] for element in self.elements ]
-
+    @property
+    def spin_num(self)->int:
+        if  "force_mag" not in self.structure_info :
+            return 0
+        mag=self.structure_info["force_mag"]
+        count = np.sum(~np.all(mag == 0, axis=1))
+        return count
     @property
     def formula(self):
         #这种形式会导致化学式过长 比如有机分子环境下
@@ -699,7 +705,7 @@ def _load_npy_structure(folder):
     if   os.path.exists(type_map_path) :
         type_map = np.loadtxt(type_map_path, dtype=str, ndmin=1)
     else:
-        type_map=np.array([f"E{i+1}" for i in np.unique(type_)], dtype=str, ndmin=1)
+        type_map=np.array([f"Type_{i+1}" for i in np.unique(type_)], dtype=str, ndmin=1)
     # Use np.array and list comprehension for faster element mapping
 
 

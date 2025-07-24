@@ -31,6 +31,7 @@ class PerturbCard(MakeDataCard):
         self.engine_type_combo=ComboBox(self.setting_widget)
         self.engine_type_combo.addItem("Sobol")
         self.engine_type_combo.addItem("Uniform")
+        self.engine_type_combo.addItem("Gaussian")
         self.engine_type_combo.setCurrentIndex(1)
 
         self.engine_label.setToolTip("Select random engine")
@@ -99,8 +100,10 @@ class PerturbCard(MakeDataCard):
         if engine_type == 0:
             sobol_engine = Sobol(d=dim, scramble=True)
             perturbation_factors = (sobol_engine.random(max_num) - 0.5) * 2
-        else:
+        elif engine_type == 1:
             perturbation_factors = np.random.uniform(-1, 1, (max_num, dim))
+        else:
+            perturbation_factors = np.random.normal(0, 1, (max_num, dim))
 
         # 识别团簇（如启用）
         if identify_organic:
@@ -133,7 +136,13 @@ class PerturbCard(MakeDataCard):
             new_structure = structure.copy()
             new_structure.set_positions(new_positions)
             new_structure.wrap()
-            config_str = f" Perturb(distance={max_scaling}, {'uniform' if engine_type == 1 else 'Sobol'})"
+            if engine_type == 0:
+                engine = 'Sobol'
+            elif engine_type == 1:
+                engine = 'uniform'
+            else:
+                engine = 'gaussian'
+            config_str = f" Perturb(distance={max_scaling}, {engine})"
             new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + config_str
             structure_list.append(new_structure)
 

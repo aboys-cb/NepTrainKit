@@ -96,6 +96,8 @@ class ShowNepWidget(QWidget):
         self.structure_toolbar = StructureToolBar(self.struct_widget)
         self.structure_toolbar.showBondSignal.connect(self.show_struct_widget.set_show_bonds)
         self.structure_toolbar.orthoViewSignal.connect(self.show_struct_widget.set_projection)
+        self.structure_toolbar.autoViewSignal.connect(self.show_struct_widget.set_auto_view)
+
         self.structure_toolbar.exportSignal.connect(self.export_single_struct)
 
         self.struct_info_widget = StructureInfoWidget(self.struct_widget)
@@ -393,9 +395,10 @@ class ShowNepWidget(QWidget):
         try:
             atoms=self.nep_result_data.get_atoms(current_index)
         except:
-
+            logger.debug(traceback.format_exc())
             MessageManager.send_message_box("The index is invalid, perhaps the structure has been deleted")
             return
+
         self.graph_widget.canvas.plot_current_point(current_index)
 
         self.show_struct_widget.show_structure(atoms)

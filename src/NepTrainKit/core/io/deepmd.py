@@ -15,7 +15,7 @@ from ... import module_path
 def is_deepmd_path(folder)-> bool:
     if os.path.exists(os.path.join(folder,"type.raw")):
         return True
-    if glob.glob(os.path.join(folder, "*/type.raw")):
+    if glob.glob(os.path.join(folder, "**/type.raw"), recursive=True):
         return True
     return False
 class DeepmdResultData(ResultData):
@@ -59,6 +59,9 @@ class DeepmdResultData(ResultData):
 
         energy_out_path = dataset_path.with_name(f"{suffix}.e_peratom.out")
         force_out_path = dataset_path.with_name(f"{suffix}.fr.out")
+        if  not force_out_path.exists():
+            force_out_path = dataset_path.with_name(f"{suffix}.f.out")
+
         # stress_out_path = dataset_path.with_name(f"{suffix}.v.out")
         virial_out_path = dataset_path.with_name(f"{suffix}.v_peratom.out")
         spin_out_path=  dataset_path.with_name(f"{suffix}.fm.out")
@@ -110,7 +113,8 @@ class DeepmdResultData(ResultData):
             if energy_array.shape[0]!=self.atoms_num_list.shape[0]:
                 self.energy_out_path.unlink(True)
                 self.force_out_path.unlink(True)
-                self.spin_out_path.unlink(True)
+                if self.spin_out_path is not None:
+                    self.spin_out_path.unlink(True)
 
                 self.virial_out_path.unlink(True)
 
@@ -129,10 +133,14 @@ class DeepmdResultData(ResultData):
 
         if self.spin_out_path is not None:
             spin_array=read_nep_out_file(self.spin_out_path)
-
-            self._spin_dataset = DPPlotData(spin_array, title="spin")
+            group_list=[s.spin_num for s in self.structure.now_data]
+            if (np.sum(group_list))!=0:
+                self._spin_dataset = DPPlotData(spin_array,  group_list=group_list, title="spin")
+            else:
+                self.spin_out_path = None
 
         self._virial_dataset = DPPlotData(virial_array, title="virial")
+
 
     def _should_recalculate(self  ) -> bool:
         """判断是否需要重新计算 NEP 数据。"""
@@ -197,9 +205,12 @@ class DeepmdResultData(ResultData):
 
     def _save_virial_and_stress_data(self, virials: np.ndarray )    :
         """保存维里张量和应力数据到文件。"""
+
         coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data]))[:, np.newaxis]
         try:
             ref_virials = np.vstack([s.nep_virial for s in self.structure.now_data], dtype=np.float32)
+
+
             if virials.size == 0:
                 # 计算失败 空数组
                 virials_array = np.column_stack([ref_virials, ref_virials])
@@ -240,7 +251,7 @@ class DeepmdResultData(ResultData):
 
             energy_array = self._save_energy_data(nep_potentials_array)
             force_array = self._save_force_data(nep_forces_array)
-            virial_array = self._save_virial_and_stress_data(nep_virials_array)
+            virial_array = self._save_virial_and_stress_data(nep_virials_array[:, [0, 4, 8, 1, 5, 6]])
 
 
             self.write_prediction()

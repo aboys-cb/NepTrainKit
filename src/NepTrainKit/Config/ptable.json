@@ -943,12 +943,11 @@
         "number": 118,
         "group": 18
     },
-
     "201": {
         "name": "Type_0",
         "radii": 80,
         "color": "#b446f0",
-        "symbol": "E1",
+        "symbol": "Type_0",
         "number": 201,
         "group": 18
     },
@@ -956,7 +955,7 @@
         "name": "Type_1",
         "radii": 80,
         "color": "#36dc17",
-        "symbol": "E2",
+        "symbol": "Type_1",
         "number": 202,
         "group": 18
     },
@@ -964,7 +963,7 @@
         "name": "Type_2",
         "radii": 80,
         "color": "#73a920",
-        "symbol": "E3",
+        "symbol": "Type_2",
         "number": 203,
         "group": 18
     },
@@ -972,7 +971,7 @@
         "name": "Type_3",
         "radii": 80,
         "color": "#253be0",
-        "symbol": "E4",
+        "symbol": "Type_3",
         "number": 204,
         "group": 18
     },
@@ -980,7 +979,7 @@
         "name": "Type_4",
         "radii": 80,
         "color": "#6cb3ce",
-        "symbol": "E5",
+        "symbol": "Type_4",
         "number": 205,
         "group": 18
     },
@@ -988,7 +987,7 @@
         "name": "Type_5",
         "radii": 80,
         "color": "#f98984",
-        "symbol": "E6",
+        "symbol": "Type_5",
         "number": 206,
         "group": 18
     },
@@ -996,7 +995,7 @@
         "name": "Type_6",
         "radii": 80,
         "color": "#233ed8",
-        "symbol": "E7",
+        "symbol": "Type_6",
         "number": 207,
         "group": 18
     },
@@ -1004,7 +1003,7 @@
         "name": "Type_7",
         "radii": 80,
         "color": "#9f0a37",
-        "symbol": "E8",
+        "symbol": "Type_7",
         "number": 208,
         "group": 18
     },
@@ -1012,7 +1011,7 @@
         "name": "Type_8",
         "radii": 80,
         "color": "#a7317d",
-        "symbol": "E9",
+        "symbol": "Type_8",
         "number": 209,
         "group": 18
     },
@@ -1020,7 +1019,7 @@
         "name": "Type_9",
         "radii": 80,
         "color": "#d99d4a",
-        "symbol": "E10",
+        "symbol": "Type_9",
         "number": 210,
         "group": 18
     },
@@ -1028,7 +1027,7 @@
         "name": "Type_10",
         "radii": 80,
         "color": "#f78720",
-        "symbol": "E11",
+        "symbol": "Type_10",
         "number": 211,
         "group": 18
     },
@@ -1036,7 +1035,7 @@
         "name": "Type_11",
         "radii": 80,
         "color": "#1b13c3",
-        "symbol": "E12",
+        "symbol": "Type_11",
         "number": 212,
         "group": 18
     },
@@ -1044,7 +1043,7 @@
         "name": "Type_12",
         "radii": 80,
         "color": "#b25aa5",
-        "symbol": "E13",
+        "symbol": "Type_12",
         "number": 213,
         "group": 18
     },
@@ -1052,7 +1051,7 @@
         "name": "Type_13",
         "radii": 80,
         "color": "#42b88c",
-        "symbol": "E14",
+        "symbol": "Type_13",
         "number": 214,
         "group": 18
     },
@@ -1060,7 +1059,7 @@
         "name": "Type_14",
         "radii": 80,
         "color": "#a0ba8f",
-        "symbol": "E15",
+        "symbol": "Type_14",
         "number": 215,
         "group": 18
     },
@@ -1068,7 +1067,7 @@
         "name": "Type_15",
         "radii": 80,
         "color": "#b791d6",
-        "symbol": "E16",
+        "symbol": "Type_15",
         "number": 216,
         "group": 18
     },
@@ -1076,7 +1075,7 @@
         "name": "Type_16",
         "radii": 80,
         "color": "#7a0904",
-        "symbol": "E17",
+        "symbol": "Type_16",
         "number": 217,
         "group": 18
     },
@@ -1084,7 +1083,7 @@
         "name": "Type_17",
         "radii": 80,
         "color": "#e85084",
-        "symbol": "E18",
+        "symbol": "Type_17",
         "number": 218,
         "group": 18
     },
@@ -1092,7 +1091,7 @@
         "name": "Type_18",
         "radii": 80,
         "color": "#c1c07d",
-        "symbol": "E19",
+        "symbol": "Type_18",
         "number": 219,
         "group": 18
     },
@@ -1100,7 +1099,7 @@
         "name": "Type_19",
         "radii": 80,
         "color": "#79079b",
-        "symbol": "E20",
+        "symbol": "Type_19",
         "number": 220,
         "group": 18
     },
@@ -1108,7 +1107,7 @@
         "name": "Type_20",
         "radii": 80,
         "color": "#c67abb",
-        "symbol": "E21",
+        "symbol": "Type_20",
         "number": 221,
         "group": 18
     },
@@ -1116,7 +1115,7 @@
         "name": "Type_21",
         "radii": 80,
         "color": "#0b1f8b",
-        "symbol": "E22",
+        "symbol": "Type_21",
         "number": 222,
         "group": 18
     },
@@ -1124,7 +1123,7 @@
         "name": "Type_22",
         "radii": 80,
         "color": "#9d5e40",
-        "symbol": "E23",
+        "symbol": "Type_22",
         "number": 223,
         "group": 18
     },
@@ -1132,7 +1131,7 @@
         "name": "Type_23",
         "radii": 80,
         "color": "#7cb192",
-        "symbol": "E24",
+        "symbol": "Type_23",
         "number": 224,
         "group": 18
     },
@@ -1140,7 +1139,7 @@
         "name": "Type_24",
         "radii": 80,
         "color": "#219d4d",
-        "symbol": "E25",
+        "symbol": "Type_24",
         "number": 225,
         "group": 18
     },
@@ -1148,7 +1147,7 @@
         "name": "Type_25",
         "radii": 80,
         "color": "#188cee",
-        "symbol": "E26",
+        "symbol": "Type_25",
         "number": 226,
         "group": 18
     },
@@ -1156,7 +1155,7 @@
         "name": "Type_26",
         "radii": 80,
         "color": "#aea8c5",
-        "symbol": "E27",
+        "symbol": "Type_26",
         "number": 227,
         "group": 18
     },
@@ -1164,7 +1163,7 @@
         "name": "Type_27",
         "radii": 80,
         "color": "#e1a89b",
-        "symbol": "E28",
+        "symbol": "Type_27",
         "number": 228,
         "group": 18
     },
@@ -1172,7 +1171,7 @@
         "name": "Type_28",
         "radii": 80,
         "color": "#b15704",
-        "symbol": "E29",
+        "symbol": "Type_28",
         "number": 229,
         "group": 18
     },
@@ -1180,7 +1179,7 @@
         "name": "Type_29",
         "radii": 80,
         "color": "#1730e1",
-        "symbol": "E30",
+        "symbol": "Type_29",
         "number": 230,
         "group": 18
     },
@@ -1188,7 +1187,7 @@
         "name": "Type_30",
         "radii": 80,
         "color": "#87aa0b",
-        "symbol": "E31",
+        "symbol": "Type_30",
         "number": 231,
         "group": 18
     },
@@ -1196,7 +1195,7 @@
         "name": "Type_31",
         "radii": 80,
         "color": "#6eabd8",
-        "symbol": "E32",
+        "symbol": "Type_31",
         "number": 232,
         "group": 18
     },
@@ -1204,7 +1203,7 @@
         "name": "Type_32",
         "radii": 80,
         "color": "#e7c02e",
-        "symbol": "E33",
+        "symbol": "Type_32",
         "number": 233,
         "group": 18
     },
@@ -1212,7 +1211,7 @@
         "name": "Type_33",
         "radii": 80,
         "color": "#135dc7",
-        "symbol": "E34",
+        "symbol": "Type_33",
         "number": 234,
         "group": 18
     },
@@ -1220,7 +1219,7 @@
         "name": "Type_34",
         "radii": 80,
         "color": "#7f418d",
-        "symbol": "E35",
+        "symbol": "Type_34",
         "number": 235,
         "group": 18
     },
@@ -1228,7 +1227,7 @@
         "name": "Type_35",
         "radii": 80,
         "color": "#ea9ed9",
-        "symbol": "E36",
+        "symbol": "Type_35",
         "number": 236,
         "group": 18
     },
@@ -1236,7 +1235,7 @@
         "name": "Type_36",
         "radii": 80,
         "color": "#808c93",
-        "symbol": "E37",
+        "symbol": "Type_36",
         "number": 237,
         "group": 18
     },
@@ -1244,7 +1243,7 @@
         "name": "Type_37",
         "radii": 80,
         "color": "#7297aa",
-        "symbol": "E38",
+        "symbol": "Type_37",
         "number": 238,
         "group": 18
     },
@@ -1252,7 +1251,7 @@
         "name": "Type_38",
         "radii": 80,
         "color": "#b2af6f",
-        "symbol": "E39",
+        "symbol": "Type_38",
         "number": 239,
         "group": 18
     },
@@ -1260,7 +1259,7 @@
         "name": "Type_39",
         "radii": 80,
         "color": "#6a0bc7",
-        "symbol": "E40",
+        "symbol": "Type_39",
         "number": 240,
         "group": 18
     },
@@ -1268,7 +1267,7 @@
         "name": "Type_40",
         "radii": 80,
         "color": "#ddbaa4",
-        "symbol": "E41",
+        "symbol": "Type_40",
         "number": 241,
         "group": 18
     },
@@ -1276,7 +1275,7 @@
         "name": "Type_41",
         "radii": 80,
         "color": "#c90a5a",
-        "symbol": "E42",
+        "symbol": "Type_41",
         "number": 242,
         "group": 18
     },
@@ -1284,7 +1283,7 @@
         "name": "Type_42",
         "radii": 80,
         "color": "#490467",
-        "symbol": "E43",
+        "symbol": "Type_42",
         "number": 243,
         "group": 18
     },
@@ -1292,7 +1291,7 @@
         "name": "Type_43",
         "radii": 80,
         "color": "#360783",
-        "symbol": "E44",
+        "symbol": "Type_43",
         "number": 244,
         "group": 18
     },
@@ -1300,7 +1299,7 @@
         "name": "Type_44",
         "radii": 80,
         "color": "#e34620",
-        "symbol": "E45",
+        "symbol": "Type_44",
         "number": 245,
         "group": 18
     },
@@ -1308,7 +1307,7 @@
         "name": "Type_45",
         "radii": 80,
         "color": "#c22ba0",
-        "symbol": "E46",
+        "symbol": "Type_45",
         "number": 246,
         "group": 18
     },
@@ -1316,7 +1315,7 @@
         "name": "Type_46",
         "radii": 80,
         "color": "#305d2a",
-        "symbol": "E47",
+        "symbol": "Type_46",
         "number": 247,
         "group": 18
     },
@@ -1324,7 +1323,7 @@
         "name": "Type_47",
         "radii": 80,
         "color": "#d1c13e",
-        "symbol": "E48",
+        "symbol": "Type_47",
         "number": 248,
         "group": 18
     },
@@ -1332,7 +1331,7 @@
         "name": "Type_48",
         "radii": 80,
         "color": "#fa1cf6",
-        "symbol": "E49",
+        "symbol": "Type_48",
         "number": 249,
         "group": 18
     },
@@ -1340,7 +1339,7 @@
         "name": "Type_49",
         "radii": 80,
         "color": "#2beff6",
-        "symbol": "E50",
+        "symbol": "Type_49",
         "number": 250,
         "group": 18
     },
@@ -1348,7 +1347,7 @@
         "name": "Type_50",
         "radii": 80,
         "color": "#be97ce",
-        "symbol": "E51",
+        "symbol": "Type_50",
         "number": 251,
         "group": 18
     },
@@ -1356,7 +1355,7 @@
         "name": "Type_51",
         "radii": 80,
         "color": "#d6afeb",
-        "symbol": "E52",
+        "symbol": "Type_51",
         "number": 252,
         "group": 18
     },
@@ -1364,7 +1363,7 @@
         "name": "Type_52",
         "radii": 80,
         "color": "#1a08ae",
-        "symbol": "E53",
+        "symbol": "Type_52",
         "number": 253,
         "group": 18
     },
@@ -1372,7 +1371,7 @@
         "name": "Type_53",
         "radii": 80,
         "color": "#af371f",
-        "symbol": "E54",
+        "symbol": "Type_53",
         "number": 254,
         "group": 18
     },
@@ -1380,7 +1379,7 @@
         "name": "Type_54",
         "radii": 80,
         "color": "#a3ca9a",
-        "symbol": "E55",
+        "symbol": "Type_54",
         "number": 255,
         "group": 18
     },
@@ -1388,7 +1387,7 @@
         "name": "Type_55",
         "radii": 80,
         "color": "#6df95e",
-        "symbol": "E56",
+        "symbol": "Type_55",
         "number": 256,
         "group": 18
     },
@@ -1396,7 +1395,7 @@
         "name": "Type_56",
         "radii": 80,
         "color": "#0cc352",
-        "symbol": "E57",
+        "symbol": "Type_56",
         "number": 257,
         "group": 18
     },
@@ -1404,7 +1403,7 @@
         "name": "Type_57",
         "radii": 80,
         "color": "#13b0c9",
-        "symbol": "E58",
+        "symbol": "Type_57",
         "number": 258,
         "group": 18
     },
@@ -1412,7 +1411,7 @@
         "name": "Type_58",
         "radii": 80,
         "color": "#5503c3",
-        "symbol": "E59",
+        "symbol": "Type_58",
         "number": 259,
         "group": 18
     },
@@ -1420,7 +1419,7 @@
         "name": "Type_59",
         "radii": 80,
         "color": "#6ea41b",
-        "symbol": "E60",
+        "symbol": "Type_59",
         "number": 260,
         "group": 18
     },
@@ -1428,7 +1427,7 @@
         "name": "Type_60",
         "radii": 80,
         "color": "#f5c892",
-        "symbol": "E61",
+        "symbol": "Type_60",
         "number": 261,
         "group": 18
     },
@@ -1436,7 +1435,7 @@
         "name": "Type_61",
         "radii": 80,
         "color": "#a62f34",
-        "symbol": "E62",
+        "symbol": "Type_61",
         "number": 262,
         "group": 18
     },
@@ -1444,7 +1443,7 @@
         "name": "Type_62",
         "radii": 80,
         "color": "#c5c804",
-        "symbol": "E63",
+        "symbol": "Type_62",
         "number": 263,
         "group": 18
     },
@@ -1452,7 +1451,7 @@
         "name": "Type_63",
         "radii": 80,
         "color": "#0ea616",
-        "symbol": "E64",
+        "symbol": "Type_63",
         "number": 264,
         "group": 18
     },
@@ -1460,7 +1459,7 @@
         "name": "Type_64",
         "radii": 80,
         "color": "#f12127",
-        "symbol": "E65",
+        "symbol": "Type_64",
         "number": 265,
         "group": 18
     },
@@ -1468,7 +1467,7 @@
         "name": "Type_65",
         "radii": 80,
         "color": "#eb9472",
-        "symbol": "E66",
+        "symbol": "Type_65",
         "number": 266,
         "group": 18
     },
@@ -1476,7 +1475,7 @@
         "name": "Type_66",
         "radii": 80,
         "color": "#e8ae69",
-        "symbol": "E67",
+        "symbol": "Type_66",
         "number": 267,
         "group": 18
     },
@@ -1484,7 +1483,7 @@
         "name": "Type_67",
         "radii": 80,
         "color": "#d742cc",
-        "symbol": "E68",
+        "symbol": "Type_67",
         "number": 268,
         "group": 18
     },
@@ -1492,7 +1491,7 @@
         "name": "Type_68",
         "radii": 80,
         "color": "#d0c4a8",
-        "symbol": "E69",
+        "symbol": "Type_68",
         "number": 269,
         "group": 18
     },
@@ -1500,7 +1499,7 @@
         "name": "Type_69",
         "radii": 80,
         "color": "#8226f2",
-        "symbol": "E70",
+        "symbol": "Type_69",
         "number": 270,
         "group": 18
     },
@@ -1508,7 +1507,7 @@
         "name": "Type_70",
         "radii": 80,
         "color": "#d7260b",
-        "symbol": "E71",
+        "symbol": "Type_70",
         "number": 271,
         "group": 18
     },
@@ -1516,7 +1515,7 @@
         "name": "Type_71",
         "radii": 80,
         "color": "#2c9e4b",
-        "symbol": "E72",
+        "symbol": "Type_71",
         "number": 272,
         "group": 18
     },
@@ -1524,7 +1523,7 @@
         "name": "Type_72",
         "radii": 80,
         "color": "#845dc4",
-        "symbol": "E73",
+        "symbol": "Type_72",
         "number": 273,
         "group": 18
     },
@@ -1532,7 +1531,7 @@
         "name": "Type_73",
         "radii": 80,
         "color": "#f117a1",
-        "symbol": "E74",
+        "symbol": "Type_73",
         "number": 274,
         "group": 18
     },
@@ -1540,7 +1539,7 @@
         "name": "Type_74",
         "radii": 80,
         "color": "#3d872f",
-        "symbol": "E75",
+        "symbol": "Type_74",
         "number": 275,
         "group": 18
     },
@@ -1548,7 +1547,7 @@
         "name": "Type_75",
         "radii": 80,
         "color": "#00c270",
-        "symbol": "E76",
+        "symbol": "Type_75",
         "number": 276,
         "group": 18
     },
@@ -1556,7 +1555,7 @@
         "name": "Type_76",
         "radii": 80,
         "color": "#0956de",
-        "symbol": "E77",
+        "symbol": "Type_76",
         "number": 277,
         "group": 18
     },
@@ -1564,7 +1563,7 @@
         "name": "Type_77",
         "radii": 80,
         "color": "#f6a9b0",
-        "symbol": "E78",
+        "symbol": "Type_77",
         "number": 278,
         "group": 18
     },
@@ -1572,7 +1571,7 @@
         "name": "Type_78",
         "radii": 80,
         "color": "#674a4d",
-        "symbol": "E79",
+        "symbol": "Type_78",
         "number": 279,
         "group": 18
     },
@@ -1580,7 +1579,7 @@
         "name": "Type_79",
         "radii": 80,
         "color": "#46e768",
-        "symbol": "E80",
+        "symbol": "Type_79",
         "number": 280,
         "group": 18
     },
@@ -1588,7 +1587,7 @@
         "name": "Type_80",
         "radii": 80,
         "color": "#6ccdbc",
-        "symbol": "E81",
+        "symbol": "Type_80",
         "number": 281,
         "group": 18
     },
@@ -1596,7 +1595,7 @@
         "name": "Type_81",
         "radii": 80,
         "color": "#41cbaa",
-        "symbol": "E82",
+        "symbol": "Type_81",
         "number": 282,
         "group": 18
     },
@@ -1604,7 +1603,7 @@
         "name": "Type_82",
         "radii": 80,
         "color": "#35de6d",
-        "symbol": "E83",
+        "symbol": "Type_82",
         "number": 283,
         "group": 18
     },
@@ -1612,7 +1611,7 @@
         "name": "Type_83",
         "radii": 80,
         "color": "#d9b5c7",
-        "symbol": "E84",
+        "symbol": "Type_83",
         "number": 284,
         "group": 18
     },
@@ -1620,7 +1619,7 @@
         "name": "Type_84",
         "radii": 80,
         "color": "#f9fc5a",
-        "symbol": "E85",
+        "symbol": "Type_84",
         "number": 285,
         "group": 18
     },
@@ -1628,7 +1627,7 @@
         "name": "Type_85",
         "radii": 80,
         "color": "#85dfa9",
-        "symbol": "E86",
+        "symbol": "Type_85",
         "number": 286,
         "group": 18
     },
@@ -1636,7 +1635,7 @@
         "name": "Type_86",
         "radii": 80,
         "color": "#7e569e",
-        "symbol": "E87",
+        "symbol": "Type_86",
         "number": 287,
         "group": 18
     },
@@ -1644,7 +1643,7 @@
         "name": "Type_87",
         "radii": 80,
         "color": "#f85694",
-        "symbol": "E88",
+        "symbol": "Type_87",
         "number": 288,
         "group": 18
     },
@@ -1652,7 +1651,7 @@
         "name": "Type_88",
         "radii": 80,
         "color": "#e8926b",
-        "symbol": "E89",
+        "symbol": "Type_88",
         "number": 289,
         "group": 18
     },
@@ -1660,7 +1659,7 @@
         "name": "Type_89",
         "radii": 80,
         "color": "#b6a396",
-        "symbol": "E90",
+        "symbol": "Type_89",
         "number": 290,
         "group": 18
     },
@@ -1668,7 +1667,7 @@
         "name": "Type_90",
         "radii": 80,
         "color": "#8cd747",
-        "symbol": "E91",
+        "symbol": "Type_90",
         "number": 291,
         "group": 18
     },
@@ -1676,7 +1675,7 @@
         "name": "Type_91",
         "radii": 80,
         "color": "#b2fe96",
-        "symbol": "E92",
+        "symbol": "Type_91",
         "number": 292,
         "group": 18
     },
@@ -1684,7 +1683,7 @@
         "name": "Type_92",
         "radii": 80,
         "color": "#f973c8",
-        "symbol": "E93",
+        "symbol": "Type_92",
         "number": 293,
         "group": 18
     },
@@ -1692,7 +1691,7 @@
         "name": "Type_93",
         "radii": 80,
         "color": "#68f2de",
-        "symbol": "E94",
+        "symbol": "Type_93",
         "number": 294,
         "group": 18
     },
@@ -1700,7 +1699,7 @@
         "name": "Type_94",
         "radii": 80,
         "color": "#5c3d47",
-        "symbol": "E95",
+        "symbol": "Type_94",
         "number": 295,
         "group": 18
     },
@@ -1708,7 +1707,7 @@
         "name": "Type_95",
         "radii": 80,
         "color": "#993adc",
-        "symbol": "E96",
+        "symbol": "Type_95",
         "number": 296,
         "group": 18
     },
@@ -1716,7 +1715,7 @@
         "name": "Type_96",
         "radii": 80,
         "color": "#076697",
-        "symbol": "E97",
+        "symbol": "Type_96",
         "number": 297,
         "group": 18
     },
@@ -1724,7 +1723,7 @@
         "name": "Type_97",
         "radii": 80,
         "color": "#6665cf",
-        "symbol": "E98",
+        "symbol": "Type_97",
         "number": 298,
         "group": 18
     },
@@ -1732,7 +1731,7 @@
         "name": "Type_98",
         "radii": 80,
         "color": "#cdcf09",
-        "symbol": "E99",
+        "symbol": "Type_98",
         "number": 299,
         "group": 18
     },
@@ -1740,7 +1739,7 @@
         "name": "Type_99",
         "radii": 80,
         "color": "#536c00",
-        "symbol": "E100",
+        "symbol": "Type_99",
         "number": 300,
         "group": 18
     },
@@ -1748,7 +1747,7 @@
         "name": "Type_100",
         "radii": 80,
         "color": "#a26d91",
-        "symbol": "E101",
+        "symbol": "Type_100",
         "number": 301,
         "group": 18
     },
@@ -1756,7 +1755,7 @@
         "name": "Type_101",
         "radii": 80,
         "color": "#13146c",
-        "symbol": "E102",
+        "symbol": "Type_101",
         "number": 302,
         "group": 18
     },
@@ -1764,7 +1763,7 @@
         "name": "Type_102",
         "radii": 80,
         "color": "#497ce0",
-        "symbol": "E103",
+        "symbol": "Type_102",
         "number": 303,
         "group": 18
     },
@@ -1772,7 +1771,7 @@
         "name": "Type_103",
         "radii": 80,
         "color": "#891973",
-        "symbol": "E104",
+        "symbol": "Type_103",
         "number": 304,
         "group": 18
     },
@@ -1780,7 +1779,7 @@
         "name": "Type_104",
         "radii": 80,
         "color": "#499c64",
-        "symbol": "E105",
+        "symbol": "Type_104",
         "number": 305,
         "group": 18
     },
@@ -1788,7 +1787,7 @@
         "name": "Type_105",
         "radii": 80,
         "color": "#8a2c9a",
-        "symbol": "E106",
+        "symbol": "Type_105",
         "number": 306,
         "group": 18
     },
@@ -1796,7 +1795,7 @@
         "name": "Type_106",
         "radii": 80,
         "color": "#51a8b6",
-        "symbol": "E107",
+        "symbol": "Type_106",
         "number": 307,
         "group": 18
     },
@@ -1804,7 +1803,7 @@
         "name": "Type_107",
         "radii": 80,
         "color": "#3cbd54",
-        "symbol": "E108",
+        "symbol": "Type_107",
         "number": 308,
         "group": 18
     },
@@ -1812,7 +1811,7 @@
         "name": "Type_108",
         "radii": 80,
         "color": "#82c394",
-        "symbol": "E109",
+        "symbol": "Type_108",
         "number": 309,
         "group": 18
     },
@@ -1820,7 +1819,7 @@
         "name": "Type_109",
         "radii": 80,
         "color": "#bbec3f",
-        "symbol": "E110",
+        "symbol": "Type_109",
         "number": 310,
         "group": 18
     },
@@ -1828,7 +1827,7 @@
         "name": "Type_110",
         "radii": 80,
         "color": "#dbef44",
-        "symbol": "E111",
+        "symbol": "Type_110",
         "number": 311,
         "group": 18
     },
@@ -1836,7 +1835,7 @@
         "name": "Type_111",
         "radii": 80,
         "color": "#9ac255",
-        "symbol": "E112",
+        "symbol": "Type_111",
         "number": 312,
         "group": 18
     },
@@ -1844,7 +1843,7 @@
         "name": "Type_112",
         "radii": 80,
         "color": "#2f612f",
-        "symbol": "E113",
+        "symbol": "Type_112",
         "number": 313,
         "group": 18
     },
@@ -1852,7 +1851,7 @@
         "name": "Type_113",
         "radii": 80,
         "color": "#b45fdc",
-        "symbol": "E114",
+        "symbol": "Type_113",
         "number": 314,
         "group": 18
     },
@@ -1860,7 +1859,7 @@
         "name": "Type_114",
         "radii": 80,
         "color": "#5ad7de",
-        "symbol": "E115",
+        "symbol": "Type_114",
         "number": 315,
         "group": 18
     },
@@ -1868,7 +1867,7 @@
         "name": "Type_115",
         "radii": 80,
         "color": "#290225",
-        "symbol": "E116",
+        "symbol": "Type_115",
         "number": 316,
         "group": 18
     },
@@ -1876,7 +1875,7 @@
         "name": "Type_116",
         "radii": 80,
         "color": "#607d44",
-        "symbol": "E117",
+        "symbol": "Type_116",
         "number": 317,
         "group": 18
     },
@@ -1884,7 +1883,7 @@
         "name": "Type_117",
         "radii": 80,
         "color": "#f4d405",
-        "symbol": "E118",
+        "symbol": "Type_117",
         "number": 318,
         "group": 18
     }

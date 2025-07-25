@@ -312,6 +312,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
             if index is not None:
                 structure_index=current_axes.data[index]
+
+
                 self.structureIndexChanged.emit(structure_index)
 
             return False
@@ -486,6 +488,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             dataset=self.get_axes_dataset(plot)
             array_index=dataset.convert_index(structure_index)
             if dataset.is_visible(array_index) :
+
                 data=dataset.all_data[array_index,: ]
                 plot.set_current_point(data[:,dataset.x_cols].flatten(),
                                        data[:, dataset.y_cols].flatten(),

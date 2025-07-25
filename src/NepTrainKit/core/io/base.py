@@ -164,7 +164,8 @@ class NepData:
     def all_data(self):
         return self.data.all_data
     def is_visible(self,index) -> bool_:
-
+        if self.data.all_data.size == 0:
+            return False
         return self.data._active_mask[index].all()
     @property
     def remove_data(self):
@@ -365,7 +366,7 @@ class ResultData(QObject):
 
     @property
     def dataset(self) -> ["NepPlotData"]:
-        return []
+        raise NotImplementedError()
 
     @property
     def descriptor(self):
@@ -542,5 +543,4 @@ class ResultData(QObject):
                 except:
                     MessageManager.send_error_message("PCA dimensionality reduction fails")
                     desc_array = np.array([])
-
         self._descriptor_dataset = NepPlotData(desc_array, title="descriptor")

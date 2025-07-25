@@ -814,7 +814,7 @@ def save_npy_structure(folder, structures):
             if name not in [  "species", "pos"]:
                 dataset_dict[config_type][name].append(structure.structure_info[name].flatten())
         if "virial" in structure.additional_fields:
-            virial = list(map(float, structure.additional_fields["virial"].split()))
+            virial = structure.additional_fields["virial"]
             dataset_dict[config_type]["virial"].append(virial)
         if "energy" in structure.additional_fields:
             dataset_dict[config_type]["energy"].append(structure.energy)

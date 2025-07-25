@@ -50,6 +50,7 @@
         <file>src/images/sort.svg</file>
         <file>src/images/dft_d3.png</file>
         <file>src/images/auto_distance.svg</file>
+        <file>src/images/test_logo.png</file>
 
   </qresource>
   <qresource prefix="/theme">

@@ -58,7 +58,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
                        QIcon(":/images/src/images/index.svg"),
                        self.selectIndexSignal)
         self.addButton("Select by Range",
-                       QIcon(":/images/src/images/scaling.svg"),
+                       QIcon(":/images/src/images/data_range.svg"),
                        self.rangeSignal)
         find_max_action = self.addButton("Find Max Error Point",
                                         QIcon(":/images/src/images/find_max.svg"),

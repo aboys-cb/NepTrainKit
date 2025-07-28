@@ -415,11 +415,8 @@ class NepResultPlotWidget(QWidget):
         y_min, y_max = sorted([box.yMinSpin.value(), box.yMaxSpin.value()])
         mask_x = (dataset.x >= x_min) & (dataset.x <= x_max)
         mask_y = (dataset.y >= y_min) & (dataset.y <= y_max)
-        if box.logicCombo.currentText() == "AND":
-            mask = mask_x & mask_y
-        else:
-            mask = mask_x | mask_y
-        indices = np.unique(dataset.group_array.now_data[mask]).tolist()
+        mask = mask_x & mask_y if box.logicCombo.currentText() == "AND" else mask_x | mask_y
+        indices = np.unique(dataset.structure_index[mask]).tolist()
         self.canvas.select_index(indices, False)
 
     def set_dataset(self,dataset):

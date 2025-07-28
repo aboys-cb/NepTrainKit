@@ -96,6 +96,54 @@ class IndexSelectMessageBox(MessageBoxBase):
         self.widget.setMinimumWidth(200)
 
 
+class RangeSelectMessageBox(MessageBoxBase):
+    """Dialog for selecting structures by axis range."""
+
+    def __init__(self, parent=None, tip="Specify x/y range"):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel.setWordWrap(True)
+
+        self._frame = QFrame(self)
+        self.frame_layout = QGridLayout(self._frame)
+        self.frame_layout.setContentsMargins(0, 0, 0, 0)
+        self.frame_layout.setSpacing(2)
+
+        self.xMinSpin = DoubleSpinBox(self)
+        self.xMinSpin.setDecimals(6)
+        self.xMinSpin.setRange(-1e8, 1e8)
+        self.xMaxSpin = DoubleSpinBox(self)
+        self.xMaxSpin.setDecimals(6)
+        self.xMaxSpin.setRange(-1e8, 1e8)
+        self.yMinSpin = DoubleSpinBox(self)
+        self.yMinSpin.setDecimals(6)
+        self.yMinSpin.setRange(-1e8, 1e8)
+        self.yMaxSpin = DoubleSpinBox(self)
+        self.yMaxSpin.setDecimals(6)
+        self.yMaxSpin.setRange(-1e8, 1e8)
+
+        self.logicCombo = ComboBox(self)
+        self.logicCombo.addItems(["AND", "OR"])
+
+        self.frame_layout.addWidget(CaptionLabel("X min", self), 0, 0)
+        self.frame_layout.addWidget(self.xMinSpin, 0, 1)
+        self.frame_layout.addWidget(CaptionLabel("X max", self), 0, 2)
+        self.frame_layout.addWidget(self.xMaxSpin, 0, 3)
+        self.frame_layout.addWidget(CaptionLabel("Y min", self), 1, 0)
+        self.frame_layout.addWidget(self.yMinSpin, 1, 1)
+        self.frame_layout.addWidget(CaptionLabel("Y max", self), 1, 2)
+        self.frame_layout.addWidget(self.yMaxSpin, 1, 3)
+        self.frame_layout.addWidget(CaptionLabel("Logic", self), 2, 0)
+        self.frame_layout.addWidget(self.logicCombo, 2, 1, 1, 3)
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self._frame)
+
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
+        self.widget.setMinimumWidth(300)
+
+
 class ShiftEnergyMessageBox(MessageBoxBase):
     """Dialog for energy baseline shift parameters."""
 

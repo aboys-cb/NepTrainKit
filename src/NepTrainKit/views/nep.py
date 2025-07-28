@@ -18,6 +18,7 @@ from NepTrainKit.custom_widget import (
     GetIntMessageBox,
     SparseMessageBox,
     IndexSelectMessageBox,
+    RangeSelectMessageBox,
     ShiftEnergyMessageBox, DFTD3MessageBox,
 )
 from NepTrainKit.core.io.select import farthest_point_sampling
@@ -75,6 +76,7 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.shiftEnergySignal.connect(self.shift_energy_baseline)
         self.tool_bar.inverseSignal.connect(self.inverse_select)
         self.tool_bar.selectIndexSignal.connect(self.select_by_index)
+        self.tool_bar.rangeSignal.connect(self.select_by_range)
         self.tool_bar.dftd3Signal.connect(self.calc_dft_d3)
         self.canvas.tool_bar=self.tool_bar
 
@@ -394,6 +396,30 @@ class NepResultPlotWidget(QWidget):
             return
         if not use_origin:
             indices = data.group_array.now_data[indices].tolist()
+        self.canvas.select_index(indices, False)
+
+    def select_by_range(self):
+        if self.canvas.nep_result_data is None:
+            return
+        dataset = self.canvas.get_axes_dataset(self.canvas.current_axes)
+        if dataset is None or dataset.now_data.size == 0:
+            return
+        box = RangeSelectMessageBox(self._parent, "Select structures by range")
+        box.xMinSpin.setValue(float(np.min(dataset.x)))
+        box.xMaxSpin.setValue(float(np.max(dataset.x)))
+        box.yMinSpin.setValue(float(np.min(dataset.y)))
+        box.yMaxSpin.setValue(float(np.max(dataset.y)))
+        if not box.exec():
+            return
+        x_min, x_max = sorted([box.xMinSpin.value(), box.xMaxSpin.value()])
+        y_min, y_max = sorted([box.yMinSpin.value(), box.yMaxSpin.value()])
+        mask_x = (dataset.x >= x_min) & (dataset.x <= x_max)
+        mask_y = (dataset.y >= y_min) & (dataset.y <= y_max)
+        if box.logicCombo.currentText() == "AND":
+            mask = mask_x & mask_y
+        else:
+            mask = mask_x | mask_y
+        indices = np.unique(dataset.group_array.now_data[mask]).tolist()
         self.canvas.select_index(indices, False)
 
     def set_dataset(self,dataset):

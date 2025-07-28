@@ -1,6 +1,6 @@
 <div align="center">
 <a href="https://github.com/aboys-cb/NepTrainKit">
-  <img src="neptrainkit-logo.svg" width="25%" alt="NepTrainKit Logo">
+  <img src="./src/NepTrainKit/src/images/logo.svg" width="25%" alt="NepTrainKit Logo">
 </a><br>    
 <a href="https://pypi.org/project/NepTrainKit"><img src="https://img.shields.io/pypi/dm/NepTrainKit?logo=pypi&logoColor=white&color=blue&label=PyPI" alt="PyPI Downloads"></a>   
 <a href="https://python.org/downloads"><img src="https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white" alt="Python Version"></a>  

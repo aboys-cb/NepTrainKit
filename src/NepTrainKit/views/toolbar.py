@@ -45,6 +45,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     shiftEnergySignal=Signal()
     inverseSignal=Signal()
     selectIndexSignal=Signal()
+    rangeSignal=Signal()
     dftd3Signal=Signal()
     def init_actions(self):
         self.addButton("Reset View",QIcon(":/images/src/images/init.svg"),self.resetSignal)
@@ -56,6 +57,9 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         self.addButton("Select by Index",
                        QIcon(":/images/src/images/index.svg"),
                        self.selectIndexSignal)
+        self.addButton("Select by Range",
+                       QIcon(":/images/src/images/data_range.svg"),
+                       self.rangeSignal)
         find_max_action = self.addButton("Find Max Error Point",
                                         QIcon(":/images/src/images/find_max.svg"),
                                         self.findMaxSignal)

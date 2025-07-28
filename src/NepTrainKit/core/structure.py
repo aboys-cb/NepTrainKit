@@ -755,8 +755,9 @@ def _load_npy_structure(folder):
                 prop = dataset_dict[key][index]
                 count = prop.shape[0]
 
-                if count > atoms_num:
+                if count > atoms_num and key!="virial":
                     col = count // atoms_num
+
                     info[key] = prop.reshape((-1, col))
                     properties.append({"name": key, "type": "R", "count": col})
                 else:

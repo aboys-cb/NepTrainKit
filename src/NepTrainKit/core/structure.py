@@ -367,6 +367,11 @@ class Structure:
             elif prop["type"] == "R":
                 _info=_info.astype( np.float32)
 
+            elif prop["type"] == "L":
+                _info=_info.astype( np.bool_)
+            elif  prop["type"] == "I":
+                _info=_info.astype( np.int8)
+
             else:
                 pass
             if prop["count"] == 1:
@@ -508,8 +513,6 @@ class Structure:
                     values=[self.structure_info[prop["name"]][row]]
                 else:
                     values=self.structure_info[prop["name"]][row,:]
-
-
 
                 if prop["type"] == 'S':  # 字符串类型
                     line += " ".join([f"{x }" for x in values]) + " "

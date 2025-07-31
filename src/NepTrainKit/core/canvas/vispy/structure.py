@@ -4,6 +4,7 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 from vispy.visuals.filters import ShadingFilter
+from vispy.visuals.transforms import MatrixTransform
 
 from NepTrainKit.core import Config
 from NepTrainKit.core.structure import table_info
@@ -12,7 +13,7 @@ from vispy.util.transforms import rotate
 
 from vispy import app, scene, visuals
 from vispy.geometry import MeshData, create_cylinder, create_cone, create_sphere
-from vispy.scene.visuals import Mesh, Line
+from vispy.scene.visuals import Mesh, Line,Text
 from vispy.color import Color
 
 
@@ -24,6 +25,130 @@ def create_arrow_mesh():
     faces = np.vstack((cyl.get_faces(),
                        cone.get_faces() + len(cyl.get_vertices())))
     return MeshData(vertices=verts, faces=faces)
+
+
+
+class ArrowAxes:
+    """A class to create and manage 3D arrow-based coordinate axes."""
+    def __init__(
+        self,
+        canvas,
+        parent,
+        directions=None,
+        colors=None,
+        labels=None,
+        label_positions=None,
+        scale=0.5,
+        font_size=12
+    ):
+        """
+        Initialize the arrow axes.
+
+        Parameters:
+        - canvas: SceneCanvas, the Vispy canvas to render on.
+        - parent: Node, the parent node for the axes.
+        - directions: List of 3D vectors for X, Y, Z axes directions.
+        - colors: List of colors for X, Y, Z axes.
+        - labels: List of label texts for X, Y, Z axes.
+        - label_positions: List of 3D positions for X, Y, Z labels.
+        - scale: Float, scale factor for arrows.
+        - font_size: Float, font size for labels.
+        """
+        self.canvas = canvas
+        self.axis_root = scene.Node(parent=parent)
+        self.arrow_mesh = create_arrow_mesh()
+        self.transform = MatrixTransform()
+        self.axis_root.transform = self.transform
+
+        # Default values
+        self.directions = directions or [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        self.colors = colors or ['red', 'green', 'blue']
+        self.labels = labels or ['X', 'Y', 'Z']
+        self.label_positions = label_positions or [[0.6, 0, 0], [0, 0.6, 0], [0, 0, 0.6]]
+        self.scale = scale
+        self.font_size = font_size
+
+        # Create arrows and labels
+        self._create_arrows()
+        self._create_labels()
+
+        # Connect events
+        self.canvas.events.mouse_move.connect(self._on_mouse_move)
+        self.canvas.events.resize.connect(self._on_resize)
+
+        # Initial update
+        self._update_axis()
+
+    def _create_arrows(self):
+        """Create arrow visuals for each axis with precise direction alignment."""
+        for i, (direction, color) in enumerate(zip(self.directions, self.colors)):
+            arrow = Mesh(meshdata=self.arrow_mesh, color=color, parent=self.axis_root)
+            arrow.set_gl_state(depth_test=False, depth_func='always', cull_face=False)
+            transform = MatrixTransform()
+
+            # Normalize direction
+            direction = np.array(direction, dtype=float)
+            if np.linalg.norm(direction) == 0:
+                raise ValueError(f"Direction vector {i} is zero, cannot normalize.")
+            direction /= np.linalg.norm(direction)
+
+            # Align arrow (Z-axis to direction) using quaternion rotation
+            z_axis = np.array([0, 0, 1], dtype=float)
+            if not np.allclose(direction, z_axis) and not np.allclose(direction, -z_axis):
+                # Compute rotation axis and angle
+                axis = np.cross(z_axis, direction)
+                axis_norm = np.linalg.norm(axis)
+                if axis_norm > 1e-6:  # Avoid division by zero
+                    axis /= axis_norm
+                    angle = np.arccos(np.clip(np.dot(z_axis, direction), -1.0, 1.0)) * 180 / np.pi
+                    transform.rotate(angle, axis)
+                elif np.allclose(direction, -z_axis):
+                    transform.rotate(180, [1, 0, 0])
+
+            transform.scale([self.scale, self.scale, self.scale])
+            arrow.transform = transform
+
+            # Debug direction
+            print(f"Axis {self.labels[i]} direction: {direction}")
+
+    def _create_labels(self):
+        """Create text labels for each axis."""
+        for label, color, pos in zip(self.labels, self.colors, self.label_positions):
+            text = Text(
+                label,
+                color=color,
+                bold=False,
+                font_size=self.font_size,
+                anchor_x='center',
+                anchor_y='center',
+                pos=pos,
+                parent=self.axis_root
+            )
+            text.set_gl_state(depth_test=False)
+
+    def _update_axis(self, event=None):
+        """Update axis orientation based on camera angles."""
+        self.transform = MatrixTransform()
+        cam = self.canvas.central_widget.children[0].camera
+        self.transform.rotate(cam.roll, (0, 0, 1))
+        self.transform.rotate(cam.elevation, (1, 0, 0))
+        self.transform.rotate(cam.azimuth, (0, 1, 0))
+        self.transform.scale((100, 100, 0.001))
+        self.transform.translate((80, self.canvas.size[1] - 80))
+        self.axis_root.transform = self.transform
+        self.axis_root.update()
+
+    def _on_mouse_move(self, event):
+        """Handle mouse move events for dragging."""
+        if event.button == 1 and event.is_dragging:
+            self._update_axis()
+
+    def _on_resize(self, event):
+        """Handle canvas resize events."""
+        self._update_axis()
+
+
+
 class StructurePlotWidget(scene.SceneCanvas):
     def __init__(self, *args, **kwargs):
         super().__init__( *args, **kwargs)
@@ -40,6 +165,7 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.lattice_item = None  # Store lattice lines
         self.structure = None
         self.show_bond_flag = False
+        self.axes=None
         self.scale_factor = 1
         initial_camera_dir = (0, -1, 0)  # for a default initialised camera
 
@@ -136,6 +262,18 @@ class StructurePlotWidget(scene.SceneCanvas):
             connect='segments',
             method='gl',
             parent=self.view.scene,antialias=True
+        )
+
+
+        self.axes = ArrowAxes(
+            canvas=self,
+            parent=self.scene,
+            directions=[a1 / np.linalg.norm(a1),a2/ np.linalg.norm(a2), a3 / np.linalg.norm(a3)],
+            colors=['red', 'green', 'blue'],
+            labels=['X', 'Y', 'Z'],
+            label_positions=[[0.6, 0, 0], [0, 0.6, 0], [0, 0, 0.6]],
+            scale=0.5,
+            font_size=12
         )
 
     def show_bond(self, structure):
@@ -375,7 +513,8 @@ class StructurePlotWidget(scene.SceneCanvas):
     def show_structure(self, structure):
         """Display the entire crystal structure."""
         self.structure = structure
-
+        if self.axes is not None:
+            self.axes.axis_root.parent = None
 
         if self.lattice_item:
             self.lattice_item.parent = None
@@ -383,6 +522,7 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.show_elem(structure)
         self.show_bond(structure)
         self.show_arrow()
+
         if self.auto_view:
             coords = structure.positions
             min_coords = coords.min(axis=0)

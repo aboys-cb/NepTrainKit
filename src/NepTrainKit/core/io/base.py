@@ -507,7 +507,7 @@ class ResultData(QObject):
 
 
         if os.path.exists(self.descriptor_path):
-            desc_array = read_nep_out_file(self.descriptor_path,dtype=np.float32)
+            desc_array = read_nep_out_file(self.descriptor_path,dtype=np.float32,ndmin=2)
 
         else:
             desc_array = np.array([])

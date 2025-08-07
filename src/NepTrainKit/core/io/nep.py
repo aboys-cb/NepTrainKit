@@ -89,10 +89,10 @@ class NepTrainResultData(ResultData):
         if self._should_recalculate(nep_in):
             energy_array, force_array, virial_array, stress_array = self._recalculate_and_save( )
         else:
-            energy_array = read_nep_out_file(self.energy_out_path, dtype=np.float32)
-            force_array = read_nep_out_file(self.force_out_path, dtype=np.float32)
-            virial_array = read_nep_out_file(self.virial_out_path, dtype=np.float32)
-            stress_array = read_nep_out_file(self.stress_out_path, dtype=np.float32)
+            energy_array = read_nep_out_file(self.energy_out_path, dtype=np.float32,ndmin=2)
+            force_array = read_nep_out_file(self.force_out_path, dtype=np.float32,ndmin=2)
+            virial_array = read_nep_out_file(self.virial_out_path, dtype=np.float32,ndmin=2)
+            stress_array = read_nep_out_file(self.stress_out_path, dtype=np.float32,ndmin=2)
 
             if energy_array.shape[0]!=self.atoms_num_list.shape[0]:
                 self.energy_out_path.unlink(True)
@@ -348,7 +348,7 @@ class NepPolarizabilityResultData(ResultData):
         if self._should_recalculate(nep_in):
             polarizability_array = self._recalculate_and_save( )
         else:
-            polarizability_array= read_nep_out_file(self.polarizability_out_path, dtype=np.float32)
+            polarizability_array= read_nep_out_file(self.polarizability_out_path, dtype=np.float32,ndmin=2)
             if polarizability_array.shape[0]!=self.atoms_num_list.shape[0]:
                 self.polarizability_out_path.unlink()
                 return self._load_dataset()
@@ -462,7 +462,7 @@ class NepDipoleResultData(ResultData):
         if self._should_recalculate(nep_in):
             dipole_array = self._recalculate_and_save( )
         else:
-            dipole_array= read_nep_out_file(self.dipole_out_path, dtype=np.float32)
+            dipole_array= read_nep_out_file(self.dipole_out_path, dtype=np.float32,ndmin=2)
             if dipole_array.shape[0]!=self.atoms_num_list.shape[0]:
                 self.dipole_out_path.unlink()
                 return self._load_dataset()

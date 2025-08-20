@@ -541,10 +541,7 @@ class StructurePlotWidget(scene.SceneCanvas):
 
         if self.lattice_item:
             self.lattice_item.parent = None
-        self.show_lattice(structure)
-        self.show_elem(structure)
-        self.show_bond(structure)
-        self.show_arrow()
+
 
         if self.auto_view:
             coords = structure.positions
@@ -574,6 +571,11 @@ class StructurePlotWidget(scene.SceneCanvas):
 
             })
             self.view.camera.distance=distance
+
+        self.show_lattice(structure)
+        self.show_elem(structure)
+        self.show_bond(structure)
+        self.show_arrow()
 
         self.update_lighting()
 

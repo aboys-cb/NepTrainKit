@@ -157,7 +157,14 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.unfreeze()
 
         self.bgcolor = 'white'  # Set background to white
-        self.view = self.central_widget.add_view()
+
+        self.grid = self.central_widget.add_grid(margin=5
+                                                 )
+
+        self.grid.spacing = 3
+
+        self.view = self.grid.add_view(row=0,col=0,row_span=10,col_span=8)
+
         self.view.camera = 'turntable'  # Interactive camera
         self.auto_view=False
         self.ortho = False
@@ -193,6 +200,20 @@ class StructurePlotWidget(scene.SceneCanvas):
 
                                             )
         self.set_projection(False)
+        self.events.mouse_move.connect(self._on_mouse_move)
+        self.events.resize.connect(self._on_resize)
+    def _on_mouse_move(self,ev):
+        """Handle mouse move events."""
+        pass
+    def _on_resize(self,ev):
+        """Handle canvas resize events."""
+        pass
+        if self.arrow_colorbar is not None:
+
+
+            self.arrow_colorbar.pos=[self.size[0]-50,self.size[1]-150]
+            self.arrow_colorbar.update()
+            # self.update( self.arrow_colorbar)
     def set_auto_view(self,auto_view):
         self.auto_view=auto_view
         if self.structure is not None:
@@ -451,6 +472,8 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.arrow_items = []
         if self.arrow_colorbar:
             self.arrow_colorbar.parent = None
+            # self.arrow_colorbar._colorbar.parent = None
+            # self.grid.remove_widget(self.arrow_colorbar)
             self.arrow_colorbar = None
 
     def show_arrow(self, prop_name="spin", scale=1.0, cmap="viridis"):
@@ -473,6 +496,8 @@ class StructurePlotWidget(scene.SceneCanvas):
 
         mags = np.linalg.norm(vectors, axis=1)
         max_mag = mags.max() if np.any(mags) else 1.0
+        min_mag = mags.min() if np.any(mags) else 0
+
         cmap_obj = get_colormap(cmap)
         color_values = cmap_obj.map(mags / max_mag if max_mag > 0 else mags)
 
@@ -522,10 +547,16 @@ class StructurePlotWidget(scene.SceneCanvas):
             self.arrow_items.append(arrow_mesh)
 
             from vispy.scene.widgets import ColorBarWidget
-            self.arrow_colorbar = ColorBarWidget(cmap=cmap_obj, orientation='right', label=prop_name)
-            self.arrow_colorbar.height_max = 100
-            self.arrow_colorbar.width_max = 20
-            self.central_widget.add_widget(self.arrow_colorbar, row=0, col=1)
+            self.arrow_colorbar = scene.ColorBar(cmap=cmap_obj, orientation='right',
+                                                 pos=(self.size[0]-50,self.size[1]-150),
+                                                 size=(200,10),
+                                                 label=prop_name,clim=(round(min_mag,2),round(max_mag)),parent=self.scene)
+            # self.arrow_colorbar.transform = STTransform(translate=(-25, -25, 0))
+            # self.arrow_colorbar.update()
+
+            # self.arrow_colorbar.height_max = 100
+            # self.arrow_colorbar.width_max = 5
+            # self.grid.add_widget(self.arrow_colorbar,row=0, col=9,row_span=10,col_span=1 )
 
     def clear_arrow(self):
         """Remove arrow visuals and reset configuration."""

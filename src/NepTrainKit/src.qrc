@@ -52,6 +52,7 @@
         <file>src/images/auto_distance.svg</file>
 
         <file>src/images/data_range.svg</file>
+        <file>src/images/xyz.svg</file>
 
   </qresource>
   <qresource prefix="/theme">

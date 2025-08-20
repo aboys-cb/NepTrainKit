@@ -147,7 +147,7 @@ class StructureToolBar(KitToolBarBase):
                                          True)
 
         self.addButton("Show Arrows",
-                       QIcon(":/images/src/images/scaling.svg"),
+                       QIcon(":/images/src/images/xyz.svg"),
                        self.arrowSignal)
 
         export_action = self.addButton("Export current structure",

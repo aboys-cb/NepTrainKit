@@ -131,6 +131,7 @@ class StructureToolBar(KitToolBarBase):
     orthoViewSignal=Signal(bool)
     autoViewSignal=Signal(bool)
     exportSignal=Signal()
+    arrowSignal=Signal()
     def init_actions(self):
         view_action = self.addButton( "Ortho View",
                                           QIcon(":/images/src/images/view_change.svg"),
@@ -144,6 +145,10 @@ class StructureToolBar(KitToolBarBase):
                                           QIcon(":/images/src/images/show_bond.svg"),
                                           self.show_bond,
                                          True)
+
+        self.addButton("Show Arrows",
+                       QIcon(":/images/src/images/xyz.svg"),
+                       self.arrowSignal)
 
         export_action = self.addButton("Export current structure",
                                      QIcon(":/images/src/images/export1.svg"),

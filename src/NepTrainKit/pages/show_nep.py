@@ -20,7 +20,7 @@ from qfluentwidgets import HyperlinkLabel, MessageBox, SpinBox, \
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
 from NepTrainKit.core.io.deepmd import is_deepmd_path
-from NepTrainKit.custom_widget import ConfigTypeSearchLineEdit
+from NepTrainKit.custom_widget import ConfigTypeSearchLineEdit, ArrowMessageBox
 from NepTrainKit.core.io import NepTrainResultData, DeepmdResultData
 from NepTrainKit.core.io.nep import NepPolarizabilityResultData, NepDipoleResultData
 from NepTrainKit.core.io.utils import get_nep_type
@@ -99,6 +99,7 @@ class ShowNepWidget(QWidget):
         self.structure_toolbar.autoViewSignal.connect(self.show_struct_widget.set_auto_view)
 
         self.structure_toolbar.exportSignal.connect(self.export_single_struct)
+        self.structure_toolbar.arrowSignal.connect(self.show_arrow_dialog)
 
         self.struct_info_widget = StructureInfoWidget(self.struct_widget)
         self.struct_index_widget = QWidget(self)
@@ -296,8 +297,8 @@ class ShowNepWidget(QWidget):
             file_name = os.path.basename(path)
             model_type = get_nep_type(os.path.join(dir_path, "nep.txt"))
             logger.info(f"NEP model type: {model_type}")
-            if model_type == 0:
-                self.nep_result_data = NepTrainResultData.from_path(path)
+            if model_type == 0 or  model_type == 3:
+                self.nep_result_data = NepTrainResultData.from_path(path,model_type=model_type)
             elif model_type == 1:
                 self.nep_result_data = NepDipoleResultData.from_path(path)
             elif model_type == 2:
@@ -388,7 +389,35 @@ class ShowNepWidget(QWidget):
             with open(path,"w",encoding="utf-8") as f:
                 atoms.write(f)
 
+    def show_arrow_dialog(self):
+        structure = getattr(self.show_struct_widget, "structure", None)
+        if structure is None:
+            return
+        props = [
+            name for name, arr in structure.structure_info.items()
+            if isinstance(arr, np.ndarray) and arr.ndim == 2 and arr.shape[1] == 3
+        ]
+        if not props:
+            MessageManager.send_info_message("No vector data available")
+            return
+        box = ArrowMessageBox(self, props)
+        cfg = getattr(self.show_struct_widget, "arrow_config", None)
+        if cfg and cfg.get("prop_name") in props:
+            box.propCombo.setCurrentText(cfg["prop_name"])
+            box.scaleSpin.setValue(cfg["scale"])
+            box.colorCombo.setCurrentText(cfg["cmap"])
+            box.showCheck.setChecked(True)
+        if not box.exec():
+            return
+        if box.showCheck.isChecked():
+            prop = box.propCombo.currentText()
+            scale = box.scaleSpin.value()
+            cmap = box.colorCombo.currentText()
+            self.show_struct_widget.show_arrow(prop, scale, cmap)
+        else:
+            self.show_struct_widget.clear_arrow()
 
+    
     # @utils.timeit
     def show_current_structure(self,current_index):
 

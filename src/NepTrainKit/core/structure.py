@@ -39,10 +39,10 @@ class Structure:
         self.additional_fields = additional_fields
         if "Config_type" not in self.additional_fields.keys():
             self.additional_fields["Config_type"] = ""
-        if "forces" in self.structure_info.keys():
-            self.force_label="forces"
+        if "force" in self.structure_info.keys():
+            self.force_label="force"
         else:
-            self.force_label = "force"
+            self.force_label = "forces"
 
     @property
     def tag(self):
@@ -151,6 +151,10 @@ class Structure:
         return self.structure_info[self.force_label]
     @forces.setter
     def forces(self,arr):
+        has_forces=[i["name"]==self.force_label for i in self.properties]
+        if not any(has_forces):
+            self.properties.append({'name': self.force_label, 'type': 'R', 'count': 3})
+
         self.structure_info[self.force_label] = arr
 
     @property
@@ -367,6 +371,11 @@ class Structure:
             elif prop["type"] == "R":
                 _info=_info.astype( np.float32)
 
+            elif prop["type"] == "L":
+                _info=_info.astype( np.bool_)
+            elif  prop["type"] == "I":
+                _info=_info.astype( np.int8)
+
             else:
                 pass
             if prop["count"] == 1:
@@ -508,8 +517,6 @@ class Structure:
                     values=[self.structure_info[prop["name"]][row]]
                 else:
                     values=self.structure_info[prop["name"]][row,:]
-
-
 
                 if prop["type"] == 'S':  # 字符串类型
                     line += " ".join([f"{x }" for x in values]) + " "

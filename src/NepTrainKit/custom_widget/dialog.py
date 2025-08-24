@@ -144,6 +144,50 @@ class RangeSelectMessageBox(MessageBoxBase):
         self.widget.setMinimumWidth(300)
 
 
+class ArrowMessageBox(MessageBoxBase):
+    """Dialog for selecting arrow display options."""
+
+    def __init__(self, parent=None, props=None):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel("Vector property", self)
+        self.titleLabel.setWordWrap(True)
+
+        self._frame = QFrame(self)
+        self.frame_layout = QGridLayout(self._frame)
+        self.frame_layout.setContentsMargins(0, 0, 0, 0)
+        self.frame_layout.setSpacing(2)
+
+        self.propCombo = ComboBox(self)
+        if props:
+            self.propCombo.addItems(props)
+
+        self.scaleSpin = DoubleSpinBox(self)
+        self.scaleSpin.setDecimals(3)
+        self.scaleSpin.setRange(0, 1000)
+        self.scaleSpin.setValue(1.0)
+
+        self.colorCombo = ComboBox(self)
+        self.colorCombo.addItems(["viridis", "magma", "plasma", "inferno", "jet"])
+
+        self.showCheck = CheckBox("Show arrows", self)
+        self.showCheck.setChecked(True)
+
+        self.frame_layout.addWidget(CaptionLabel("Property", self), 0, 0)
+        self.frame_layout.addWidget(self.propCombo, 0, 1)
+        self.frame_layout.addWidget(CaptionLabel("Scale", self), 1, 0)
+        self.frame_layout.addWidget(self.scaleSpin, 1, 1)
+        self.frame_layout.addWidget(CaptionLabel("Colormap", self), 2, 0)
+        self.frame_layout.addWidget(self.colorCombo, 2, 1)
+        self.frame_layout.addWidget(self.showCheck, 3, 0, 1, 2)
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self._frame)
+
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
+        self.widget.setMinimumWidth(250)
+
+
 class ShiftEnergyMessageBox(MessageBoxBase):
     """Dialog for energy baseline shift parameters."""
 

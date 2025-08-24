@@ -81,6 +81,8 @@ def get_nep_type(file_path):
         "nep4_zbl": 0,
         "nep4_dipole": 1,
         "nep4_polarizability": 2,
+        "nep4_zbl_temperature":3,
+        "nep4_temperature":3,
         "nep5": 0,
         "nep5_zbl": 0
     }

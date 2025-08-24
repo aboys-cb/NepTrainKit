@@ -107,9 +107,9 @@ class DeepmdResultData(ResultData):
         if self._should_recalculate( ):
             energy_array, force_array, virial_array = self._recalculate_and_save( )
         else:
-            energy_array=read_nep_out_file(self.energy_out_path)
-            force_array=read_nep_out_file(self.force_out_path)
-            virial_array=read_nep_out_file(self.virial_out_path)
+            energy_array=read_nep_out_file(self.energy_out_path,ndmin=2)
+            force_array=read_nep_out_file(self.force_out_path,ndmin=2)
+            virial_array=read_nep_out_file(self.virial_out_path,ndmin=2)
             if energy_array.shape[0]!=self.atoms_num_list.shape[0]:
                 self.energy_out_path.unlink(True)
                 self.force_out_path.unlink(True)
@@ -132,7 +132,7 @@ class DeepmdResultData(ResultData):
             self._force_dataset = DPPlotData(force_array, group_list=self.atoms_num_list, title="force")
 
         if self.spin_out_path is not None:
-            spin_array=read_nep_out_file(self.spin_out_path)
+            spin_array=read_nep_out_file(self.spin_out_path,ndmin=2)
             group_list=[s.spin_num for s in self.structure.now_data]
             if (np.sum(group_list))!=0:
                 self._spin_dataset = DPPlotData(spin_array,  group_list=group_list, title="spin")

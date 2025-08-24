@@ -63,15 +63,16 @@ class NepTrainResultData(ResultData):
         return self._virial_dataset
 
     @classmethod
-    def from_path(cls, path ):
+    def from_path(cls, path ,model_type=0):
         dataset_path = Path(path)
 
         file_name=dataset_path.stem
 
         nep_txt_path = dataset_path.with_name(f"nep.txt")
-        if not nep_txt_path.exists():
+        if not nep_txt_path.exists() or model_type>2:
             nep89_path = os.path.join(module_path, "Config/nep89.txt")
             nep_txt_path=Path(nep89_path)
+            MessageManager.send_warning_message(f"NEP_CPU currently does not support model_type={model_type}; the program will use nep89 instead.")
         energy_out_path = dataset_path.with_name(f"energy_{file_name}.out")
         force_out_path = dataset_path.with_name(f"force_{file_name}.out")
         stress_out_path = dataset_path.with_name(f"stress_{file_name}.out")
@@ -89,10 +90,10 @@ class NepTrainResultData(ResultData):
         if self._should_recalculate(nep_in):
             energy_array, force_array, virial_array, stress_array = self._recalculate_and_save( )
         else:
-            energy_array = read_nep_out_file(self.energy_out_path, dtype=np.float32)
-            force_array = read_nep_out_file(self.force_out_path, dtype=np.float32)
-            virial_array = read_nep_out_file(self.virial_out_path, dtype=np.float32)
-            stress_array = read_nep_out_file(self.stress_out_path, dtype=np.float32)
+            energy_array = read_nep_out_file(self.energy_out_path, dtype=np.float32,ndmin=2)
+            force_array = read_nep_out_file(self.force_out_path, dtype=np.float32,ndmin=2)
+            virial_array = read_nep_out_file(self.virial_out_path, dtype=np.float32,ndmin=2)
+            stress_array = read_nep_out_file(self.stress_out_path, dtype=np.float32,ndmin=2)
 
             if energy_array.shape[0]!=self.atoms_num_list.shape[0]:
                 self.energy_out_path.unlink(True)
@@ -348,7 +349,7 @@ class NepPolarizabilityResultData(ResultData):
         if self._should_recalculate(nep_in):
             polarizability_array = self._recalculate_and_save( )
         else:
-            polarizability_array= read_nep_out_file(self.polarizability_out_path, dtype=np.float32)
+            polarizability_array= read_nep_out_file(self.polarizability_out_path, dtype=np.float32,ndmin=2)
             if polarizability_array.shape[0]!=self.atoms_num_list.shape[0]:
                 self.polarizability_out_path.unlink()
                 return self._load_dataset()
@@ -462,7 +463,7 @@ class NepDipoleResultData(ResultData):
         if self._should_recalculate(nep_in):
             dipole_array = self._recalculate_and_save( )
         else:
-            dipole_array= read_nep_out_file(self.dipole_out_path, dtype=np.float32)
+            dipole_array= read_nep_out_file(self.dipole_out_path, dtype=np.float32,ndmin=2)
             if dipole_array.shape[0]!=self.atoms_num_list.shape[0]:
                 self.dipole_out_path.unlink()
                 return self._load_dataset()

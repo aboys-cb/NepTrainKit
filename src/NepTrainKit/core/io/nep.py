@@ -63,15 +63,16 @@ class NepTrainResultData(ResultData):
         return self._virial_dataset
 
     @classmethod
-    def from_path(cls, path ):
+    def from_path(cls, path ,model_type=0):
         dataset_path = Path(path)
 
         file_name=dataset_path.stem
 
         nep_txt_path = dataset_path.with_name(f"nep.txt")
-        if not nep_txt_path.exists():
+        if not nep_txt_path.exists() or model_type>2:
             nep89_path = os.path.join(module_path, "Config/nep89.txt")
             nep_txt_path=Path(nep89_path)
+            MessageManager.send_warning_message(f"NEP_CPU currently does not support model_type={model_type}; the program will use nep89 instead.")
         energy_out_path = dataset_path.with_name(f"energy_{file_name}.out")
         force_out_path = dataset_path.with_name(f"force_{file_name}.out")
         stress_out_path = dataset_path.with_name(f"stress_{file_name}.out")

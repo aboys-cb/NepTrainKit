@@ -297,8 +297,8 @@ class ShowNepWidget(QWidget):
             file_name = os.path.basename(path)
             model_type = get_nep_type(os.path.join(dir_path, "nep.txt"))
             logger.info(f"NEP model type: {model_type}")
-            if model_type == 0:
-                self.nep_result_data = NepTrainResultData.from_path(path)
+            if model_type == 0 or  model_type == 3:
+                self.nep_result_data = NepTrainResultData.from_path(path,model_type=model_type)
             elif model_type == 1:
                 self.nep_result_data = NepDipoleResultData.from_path(path)
             elif model_type == 2:

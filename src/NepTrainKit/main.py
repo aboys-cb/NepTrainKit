@@ -110,7 +110,7 @@ class NepTrainKitMainWindow(FluentWindow):
 
         widget = self.stackedWidget.currentWidget()
         if hasattr(widget,"open_file"):
-            widget.open_file( )
+            widget.open_file( ) # type: ignore  
     def export_file_dialog(self):
         widget = self.stackedWidget.currentWidget()
         if hasattr(widget,"export_file"):

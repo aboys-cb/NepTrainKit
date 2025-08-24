@@ -110,11 +110,11 @@ class NepTrainKitMainWindow(FluentWindow):
 
         widget = self.stackedWidget.currentWidget()
         if hasattr(widget,"open_file"):
-            widget.open_file( ) # type: ignore  
+            widget.open_file() # type: ignore  
     def export_file_dialog(self):
         widget = self.stackedWidget.currentWidget()
         if hasattr(widget,"export_file"):
-            widget.export_file( )
+            widget.export_file()  # type: ignore  
 
 def global_exception_handler(exc_type, exc_value, exc_traceback):
     """
@@ -134,15 +134,15 @@ def set_light_theme(app):
     palette = QPalette()
 
     # 设置亮色主题的颜色
-    palette.setColor(QPalette.Window, QColor(240, 240, 240))  # 窗口背景色（浅灰）
-    palette.setColor(QPalette.WindowText, Qt.black)  # 文本颜色
-    palette.setColor(QPalette.Base, Qt.white)  # 输入框等背景色
-    palette.setColor(QPalette.AlternateBase, QColor(245, 245, 245))  # 交替颜色
-    palette.setColor(QPalette.Text, Qt.black)  # 输入框文字颜色
-    palette.setColor(QPalette.Button, QColor(230, 230, 230))  # 按钮背景色
-    palette.setColor(QPalette.ButtonText, Qt.black)  # 按钮文字颜色
-    palette.setColor(QPalette.Highlight, QColor(0, 120, 215))  # 高亮颜色（选中状态）
-    palette.setColor(QPalette.HighlightedText, Qt.white)  # 高亮文字颜色
+    palette.setColor(QPalette.ColorRole.Window, QColor(240, 240, 240))  # 窗口背景色（浅灰）
+    palette.setColor(QPalette.ColorRole.WindowText, Qt.GlobalColor.black)  # 文本颜色
+    palette.setColor(QPalette.ColorRole.Base, Qt.GlobalColor.white)  # 输入框等背景色
+    palette.setColor(QPalette.ColorRole.AlternateBase, QColor(245, 245, 245))  # 交替颜色
+    palette.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.black)  # 输入框文字颜色
+    palette.setColor(QPalette.ColorRole.Button, QColor(230, 230, 230))  # 按钮背景色
+    palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.black)  # 按钮文字颜色
+    palette.setColor(QPalette.ColorRole.Highlight, QColor(0, 120, 215))  # 高亮颜色（选中状态）
+    palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)  # 高亮文字颜色
 
     # 应用调色板
     app.setPalette(palette)

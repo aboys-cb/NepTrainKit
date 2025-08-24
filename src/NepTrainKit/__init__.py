@@ -13,7 +13,7 @@ from NepTrainKit import src_rc
 
 try:
     # Actual if statement not needed, but keeps code inspectors more happy
-    if __nuitka_binary_dir is not None:
+    if __nuitka_binary_dir is not None: # type: ignore  
         is_nuitka_compiled = True
     else:
         is_nuitka_compiled = False

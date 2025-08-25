@@ -3,19 +3,71 @@
 # @Time    : 2025/1/7 23:23
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-from PySide6.QtCore import Qt, Signal, QMimeData
-from PySide6.QtGui import QIcon, QDrag, QPixmap
-from PySide6.QtWidgets import QWidget, QGridLayout
+from typing import Any
 
-from qfluentwidgets import HeaderCardWidget, CheckBox, TransparentToolButton, ToolTipFilter, ToolTipPosition
+from PySide6.QtCore import Qt, Signal, QMimeData, Property
+from PySide6.QtGui import QIcon, QDrag, QPixmap, QFont
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel
+
+from qfluentwidgets import   CheckBox, TransparentToolButton, ToolTipFilter, ToolTipPosition, \
+    FluentStyleSheet, setFont
 
 from qfluentwidgets import FluentIcon as FIF
+from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleCardWidget
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager
 from NepTrainKit.custom_widget import ProcessLabel
 from ase.io import write as ase_write
 
+
+class HeaderCardWidget(SimpleCardWidget):
+    """ Header card widget """
+
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.headerView = QWidget(self)
+        self.headerLabel = QLabel(self)
+        self.separator = CardSeparator(self)
+        self.view = QWidget(self)
+
+        self.vBoxLayout = QVBoxLayout(self)
+        self.headerLayout = QHBoxLayout(self.headerView)
+        self.viewLayout = QHBoxLayout(self.view)
+
+        self.headerLayout.addWidget(self.headerLabel)
+        self.headerLayout.setContentsMargins(24, 0, 16, 0)
+        self.headerView.setFixedHeight(48)
+
+        self.vBoxLayout.setSpacing(0)
+        self.vBoxLayout.setContentsMargins(0, 0, 0, 0)
+        self.vBoxLayout.addWidget(self.headerView)
+        self.vBoxLayout.addWidget(self.separator)
+        self.vBoxLayout.addWidget(self.view)
+
+        self.viewLayout.setContentsMargins(24, 24, 24, 24)
+        setFont(self.headerLabel, 15, QFont.Weight.DemiBold)
+
+        self.view.setObjectName('view')
+        self.headerView.setObjectName('headerView')
+        self.headerLabel.setObjectName('headerLabel')
+        FluentStyleSheet.CARD_WIDGET.apply(self)
+
+        self._postInit()
+
+
+
+    def getTitle(self):
+        return self.headerLabel.text()
+
+    def setTitle(self, title: str):
+        self.headerLabel.setText(title)
+
+    def _postInit(self):
+        pass
+
+    title = Property(str, getTitle, setTitle)
 class CheckableHeaderCardWidget(HeaderCardWidget):
 
     def __init__(self, parent=None):
@@ -24,11 +76,7 @@ class CheckableHeaderCardWidget(HeaderCardWidget):
         self.state_checkbox.setChecked(True)
         self.state_checkbox.stateChanged.connect(self.state_changed)
         self.state_checkbox.setToolTip("Enable or disable this card")
-
-
         self.headerLayout.insertWidget(0, self.state_checkbox, 0,Qt.AlignmentFlag.AlignLeft)
-
-
         self.headerLayout.setStretch(1, 3)
         self.headerLayout.setContentsMargins(10, 0, 3, 0)
         self.headerLayout.setSpacing(3)
@@ -80,7 +128,7 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         self.windowStateChangedSignal.connect(self.update_window_state)
 
     def mouseMoveEvent(self, e):
-        if e.buttons() != Qt.LeftButton:
+        if e.buttons() != Qt.MouseButton.LeftButton:
             return
         drag = QDrag(self)
         mime = QMimeData()
@@ -92,7 +140,7 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         drag.setPixmap(pixmap)
         drag.setHotSpot(e.pos())
 
-        drag.exec(Qt.MoveAction)
+        drag.exec(Qt.DropAction.MoveAction)
     def collapse(self):
 
         if self.window_state == "collapse":
@@ -108,10 +156,10 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         else:
             self.collapse_button.setIcon(QIcon(":/images/src/images/expand.svg"))
 
-    def from_dict(self, data):
-        self.state_checkbox.setChecked(data['check_state'])
+    def from_dict(self, data_dict):
+        self.state_checkbox.setChecked(data_dict['check_state'])
 
-    def to_dict(self):
+    def to_dict(self)->dict[str,Any]:
 
         return {
             'class': self.__class__.__name__,
@@ -128,7 +176,7 @@ class MakeDataCard(MakeDataCardWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.exportSignal.connect(self.export_data)
-        self.dataset:list=None
+        self.dataset:Any=None
         self.result_dataset=[]
         self.index=0
         # self.setFixedSize(400, 200)

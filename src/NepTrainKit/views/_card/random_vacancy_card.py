@@ -54,7 +54,7 @@ class RandomVacancyCard(MakeDataCard):
         if not isinstance(rules, list) or not rules:
             return [structure]
 
-        max_num = self.max_atoms_condition_frame.get_input_value()[0]
+        max_num = int(self.max_atoms_condition_frame.get_input_value()[0])
         for _ in range(max_num):
             new_structure = structure.copy()
             total_remove = 0

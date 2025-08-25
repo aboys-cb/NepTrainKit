@@ -93,7 +93,6 @@ class NepTrainKitMainWindow(FluentWindow):
     def init_widget(self):
         self.show_nep_interface = ShowNepWidget(self)
         self.make_data_widget = MakeDataWidget(self)
-
         self.setting_interface = SettingsWidget(self)
 
     def initWindow(self):
@@ -110,11 +109,11 @@ class NepTrainKitMainWindow(FluentWindow):
 
         widget = self.stackedWidget.currentWidget()
         if hasattr(widget,"open_file"):
-            widget.open_file() # type: ignore  
+            widget.open_file()   # pyright:ignore
     def export_file_dialog(self):
         widget = self.stackedWidget.currentWidget()
         if hasattr(widget,"export_file"):
-            widget.export_file()  # type: ignore  
+            widget.export_file()    # pyright:ignore
 
 def global_exception_handler(exc_type, exc_value, exc_traceback):
     """
@@ -162,8 +161,8 @@ def main():
     font = QFont("Arial", 12)  # 设置字体为 Arial，字号为 12
     app.setFont(font)
     theme_file = QFile(":/theme/src/qss/theme.qss")
-    theme_file.open(QFile.ReadOnly )
-    theme=theme_file.readAll().data().decode("utf-8")
+    theme_file.open(QFile.OpenModeFlag.ReadOnly )
+    theme=theme_file.readAll().data().decode("utf-8")  # pyright:ignore
     app.setStyleSheet(theme)
     w = NepTrainKitMainWindow()
     w.show()

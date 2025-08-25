@@ -30,7 +30,7 @@ class NepResultPlotWidget(QWidget):
     def __init__(self,parent=None):
         super().__init__(parent)
         self._parent=parent
-
+        self.tool_bar: NepDisplayGraphicsToolBar
         self.draw_mode=False
         # self.setRenderHint(QPainter.Antialiasing, False)
         self._layout = QHBoxLayout(self)
@@ -78,7 +78,7 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.selectIndexSignal.connect(self.select_by_index)
         self.tool_bar.rangeSignal.connect(self.select_by_range)
         self.tool_bar.dftd3Signal.connect(self.calc_dft_d3)
-        self.canvas.tool_bar=self.tool_bar
+        self.canvas.tool_bar = self.tool_bar
 
 
     def __find_non_physical_structures(self):
@@ -211,6 +211,7 @@ class NepResultPlotWidget(QWidget):
         )
         box.groupEdit.setText(";".join(suggested))
         box.genSpinBox.setValue(max_generations)
+
         box.sizeSpinBox.setValue(population_size)
         box.tolSpinBox.setValue(convergence_tol)
 
@@ -338,7 +339,7 @@ class NepResultPlotWidget(QWidget):
         if  self.canvas.nep_result_data is None:
             return
 
-        function = Config.getint("widget","functional","scan")
+        function = Config.get("widget","functional","scan")
         cutoff = Config.getfloat("widget","cutoff",12)
         cutoff_cn = Config.getfloat("widget","cutoff_cn",6)
         mode = Config.getint("widget","d3_mode",0)

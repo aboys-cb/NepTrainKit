@@ -280,7 +280,7 @@ class Structure:
 
         # 元素扩展（保持a方向优先顺序）
         if order == "cell-major":
-            new_elements = np.tile(self.elements, np.prod(scale_factor))
+            new_elements = np.tile(self.elements, int(np.prod(scale_factor)))
         elif order == "atom-major":
             new_elements = np.repeat(self.elements, np.prod(scale_factor))
         else:
@@ -428,7 +428,7 @@ class Structure:
                 if key.lower() in ("energy", "pbc","virial","stress"):
                     key=key.lower()
                 if key =="virial" or key =="stress":
-                    value= np.array(value.split(" "), dtype=np.float32)
+                    value= np.array(str(value).split(" "), dtype=np.float32)   # pyright:ignore
                 additional_fields[key] = value
                 # print(additional_fields)
         return lattice, properties, additional_fields
@@ -588,7 +588,7 @@ class Structure:
         bad_bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
         return bad_bond_pairs
 
-def calculate_pairwise_distances(lattice_params:np.ndarray, atom_coords:np.ndarray, fractional=True):
+def calculate_pairwise_distances(lattice_params:np.ndarray[tuple[int,int],np.dtype[np.float32]], atom_coords:np.ndarray[tuple[int,int],np.dtype[np.float32]], fractional=True):
     """
     计算晶体中所有原子对之间的距离，考虑周期性边界条件
 

@@ -94,7 +94,7 @@ class ShearAngleCard(MakeDataCard):
                     new_lattice = cellpar_to_cell(new_cellpar)
                     new_structure.set_cell(new_lattice, scale_atoms=True)
                     if identify_organic:
-                        process_organic_clusters(structure, new_structure, clusters, is_organic_list)
+                        process_organic_clusters(structure, new_structure, clusters, is_organic_list)  # pyright:ignore
                     info_list = []
                     if abs(da) > 1e-8:
                         info_list.append(f"alpha:{da}°")

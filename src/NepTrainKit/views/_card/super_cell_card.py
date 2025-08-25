@@ -80,7 +80,7 @@ class SuperCellCard(MakeDataCard):
     def _get_scale_factors(self) -> List[Tuple[int, int, int]]:
         """从 super_scale_condition_frame 获取扩包比例"""
         na, nb, nc = self.super_scale_condition_frame.get_input_value()
-        return [(na, nb, nc)]
+        return [(int(na), int(nb), int(nc))]
 
     def _get_max_cell_factors(self, structure) -> List[Tuple[int, int, int]]:
         """根据最大晶格常数计算扩包比例"""

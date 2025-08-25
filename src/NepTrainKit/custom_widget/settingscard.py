@@ -16,7 +16,7 @@ class MyComboBoxSettingCard(SettingCard):
 
     def __init__(self, configItem: OptionsConfigItem,
                  icon: Union[str, QIcon, FluentIconBase],
-                 title, content=None, texts=None, default=None,
+                 title, content , texts:list[str], default=None,
                  parent=None):
         """
         Parameters
@@ -42,7 +42,7 @@ class MyComboBoxSettingCard(SettingCard):
         super().__init__(icon, title, content, parent)
         self.configItem = configItem
         self.comboBox = ComboBox(self)
-        self.hBoxLayout.addWidget(self.comboBox, 0, Qt.AlignRight)
+        self.hBoxLayout.addWidget(self.comboBox, 0, Qt.AlignmentFlag.AlignRight)
         self.hBoxLayout.addSpacing(16)
 
         self.optionToText = {o: t for o, t in zip(configItem.options, texts)}
@@ -95,7 +95,7 @@ class DoubleSpinBoxSettingCard(SettingCard):
         self.doubleSpinBox.setDecimals(2)
         self.doubleSpinBox.setSingleStep(0.1)
         self.doubleSpinBox.setMinimumWidth(200)
-        self.hBoxLayout.addWidget(self.doubleSpinBox, 0, Qt.AlignRight)
+        self.hBoxLayout.addWidget(self.doubleSpinBox, 0, Qt.AlignmentFlag.AlignRight)
         self.hBoxLayout.addSpacing(16)
         self.doubleSpinBox.valueChanged.connect(self.valueChanged)
     def setValue(self, value):

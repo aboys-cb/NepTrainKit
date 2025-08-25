@@ -8,7 +8,7 @@ from collections import defaultdict
 from PySide6.QtCore import Qt, QAbstractListModel, QModelIndex
 from PySide6.QtWidgets import QApplication, QCompleter, QStyleOptionViewItem, QStyledItemDelegate, QStyle
 
-CountRole = Qt.UserRole +1
+CountRole = Qt.ItemDataRole.UserRole +1
 
 class CompleterModel(QAbstractListModel):
     def __init__(self, data=None, parent=None):
@@ -30,7 +30,7 @@ class CompleterModel(QAbstractListModel):
     def rowCount(self, parent=QModelIndex()):
         return len(self.data_map.keys())
 
-    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
+    def data(self, index, role:int=Qt.ItemDataRole.DisplayRole):
 
         if not index.isValid():
 
@@ -67,7 +67,7 @@ class JoinDelegate(QStyledItemDelegate):
         # 获取模型数据
         model = index.model()
 
-        text1 = model.data(index , Qt.DisplayRole)  # 第一列数据
+        text1 = model.data(index , Qt.ItemDataRole.DisplayRole)  # 第一列数据
         if text1  in self.data:
             text2=str(self.data[text1])
         else:
@@ -75,18 +75,18 @@ class JoinDelegate(QStyledItemDelegate):
 
 
         # 修改绘制的文本
-        opt.text = text1
-        opt.displayAlignment = Qt.AlignLeft | Qt.AlignVCenter
-        widget = option.widget
+        opt.text = text1 # pyright:ignore
+        opt.displayAlignment = Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter    # pyright:ignore
+        widget = option.widget # pyright:ignore
         style = widget.style() if widget else QApplication.style()
-        style.drawControl(QStyle.CE_ItemViewItem, opt, painter, widget)
+        style.drawControl(QStyle.ControlElement.CE_ItemViewItem, opt, painter, widget)
 
         # 绘制第二列，右对齐
         opt.text = text2
-        rect2 = opt.rect
-        rect2.setLeft(opt.rect.left() + opt.rect.width() // 2)  # 将第二列区域推到右边
-        opt.displayAlignment = Qt.AlignRight | Qt.AlignVCenter
-        style.drawControl(QStyle.CE_ItemViewItem, opt, painter, widget)
+        rect2 = opt.rect # pyright:ignore
+        rect2.setLeft(opt.rect.left() + opt.rect.width() // 2)   # pyright:ignore
+        opt.displayAlignment = Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter  # pyright:ignore
+        style.drawControl(QStyle.ControlElement.CE_ItemViewItem, opt, painter, widget)
 
 
 
@@ -97,6 +97,6 @@ class ConfigCompleter(QCompleter):
         # columns: are the columns that are going to concatenate
         self._model = CompleterModel(data)
         self.setModel(self._model)
-        self.setFilterMode(Qt.MatchContains)
+        self.setFilterMode(Qt.MatchFlag.MatchContains)
 
 

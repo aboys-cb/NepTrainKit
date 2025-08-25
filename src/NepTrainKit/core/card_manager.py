@@ -1,9 +1,11 @@
 import importlib
+import importlib.util
+
 from pathlib import Path
 
 from loguru import logger
 
-from NepTrainKit.core import MessageManager
+
 
 
 class CardManager:

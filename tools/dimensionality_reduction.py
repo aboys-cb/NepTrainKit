@@ -5,10 +5,10 @@
 # @email    : 1747193328@qq.com
 # @File    : https://github.com/aboys-cb/NepTrainKit/blob/master/tools/dimensionality_reduction.py
 import numpy as np
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
-from umap import UMAP
-import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA  # pyright:ignore
+from sklearn.preprocessing import StandardScaler  # pyright:ignore
+from umap import UMAP # pyright:ignore
+import matplotlib.pyplot as plt # pyright:ignore
 import argparse
 
 
@@ -66,6 +66,8 @@ def main():
         reduced_data, model = perform_pca(descriptior_data )
     elif args.method == 'umap':
         reduced_data, model = perform_umap(descriptior_data )
+    else:
+        return
     plot_results(reduced_data, "dimensionality_reduction.png")
     # 保存结果
     np.savetxt(args.output, reduced_data, fmt='%.10g')

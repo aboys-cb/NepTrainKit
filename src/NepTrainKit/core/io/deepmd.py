@@ -204,7 +204,7 @@ class DeepmdResultData(ResultData):
 
 
     def _save_virial_and_stress_data(self, virials: np.ndarray )    :
-        """保存维里张量和应力数据到文件。"""
+        """保存维里和应力数据到文件。"""
 
         coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data]))[:, np.newaxis]
         try:

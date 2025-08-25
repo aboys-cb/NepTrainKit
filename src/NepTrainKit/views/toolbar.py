@@ -47,6 +47,11 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     selectIndexSignal=Signal()
     rangeSignal=Signal()
     dftd3Signal=Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.action_group:QActionGroup
+
     def init_actions(self):
         self.addButton("Reset View",QIcon(":/images/src/images/init.svg"),self.resetSignal)
         pan_action=self.addButton("Pan View",

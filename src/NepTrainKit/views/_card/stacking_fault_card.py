@@ -107,10 +107,10 @@ class StackingFaultCard(MakeDataCard):
         data['layers'] = self.layer_frame.get_input_value()
         return data
 
-    def from_dict(self, data):
-        super().from_dict(data)
+    def from_dict(self, data_dict):
+        super().from_dict(data_dict)
 
-        self.hkl_frame.set_input_value(data.get('hkl', [1, 1, 1]))
-        self.step_frame.set_input_value(data.get('step', [0.0, 1.0, 0.5]))
-        self.layer_frame.set_input_value(data.get('layers', [1]))
+        self.hkl_frame.set_input_value(data_dict.get('hkl', [1, 1, 1]))
+        self.step_frame.set_input_value(data_dict.get('step', [0.0, 1.0, 0.5]))
+        self.layer_frame.set_input_value(data_dict.get('layers', [1]))
 

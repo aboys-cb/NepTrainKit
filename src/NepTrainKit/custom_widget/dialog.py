@@ -253,22 +253,22 @@ class ProgressDialog(FramelessDialog):
 
         self.setWindowTitle(title)
         self.setFixedSize(300,100)
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(0,0,0,0)
+        self.__layout = QVBoxLayout(self)
+        self.__layout.setContentsMargins(0,0,0,0)
         self.progressBar = ProgressBar(self)
         self.progressBar.setRange(0,100)
         self.progressBar.setValue(0)
-        self.layout.addWidget(self.progressBar)
-        self.setLayout(self.layout)
-        self.thread = LoadingThread(self,show_tip=False)
-        self.thread.finished.connect(self.close)
+        self.__layout.addWidget(self.progressBar)
+        self.setLayout(self.__layout)
+        self.__thread = LoadingThread(self, show_tip=False)
+        self.__thread.finished.connect(self.close)
 
-        self.thread.progressSignal.connect(self.progressBar.setValue)
+        self.__thread.progressSignal.connect(self.progressBar.setValue)
     def closeEvent(self,event):
-        if self.thread.isRunning():
-            self.thread.stop_work()
+        if self.__thread.isRunning():
+            self.__thread.stop_work()
     def run_task(self,task_function,*args,**kwargs):
-        self.thread.start_work(task_function,*args,**kwargs)
+        self.__thread.start_work(task_function, *args, **kwargs)
 
 
 class PeriodicTableDialog(FramelessDialog):
@@ -293,13 +293,13 @@ class PeriodicTableDialog(FramelessDialog):
             if g not in self.group_colors:
                 self.group_colors[g] = info.get("color", "#FFFFFF")
 
-        self.layout = QGridLayout(self)
-        self.layout.setContentsMargins(2, 2,2, 2)
-        self.layout.setSpacing(1)
-        self.setLayout(self.layout)
-        self.layout.setMenuBar(self.titleBar)
+        self.__layout = QGridLayout(self)
+        self.__layout.setContentsMargins(2, 2,2, 2)
+        self.__layout.setSpacing(1)
+        self.setLayout(self.__layout)
+        self.__layout.setMenuBar(self.titleBar)
 
-        # self.layout.addWidget(self.titleBar,0,0,1,18)
+        # self.__layout.addWidget(self.titleBar,0,0,1,18)
         for num in range(1, 119):
             info = self.table_data.get(num)
             if not info:
@@ -311,7 +311,7 @@ class PeriodicTableDialog(FramelessDialog):
             btn.setFixedSize(30,30)
             btn.setStyleSheet(f'background-color: {info.get("color", "#FFFFFF")};')
             btn.clicked.connect(lambda _=False, sym=info["symbol"]: self.elementSelected.emit(sym))
-            self.layout.addWidget(btn, row+1, col)
+            self.__layout.addWidget(btn, row+1, col)
     def _get_period(self, num: int) -> int:
         if num <= 2:
             return 1
@@ -419,7 +419,7 @@ class DFTD3MessageBox(MessageBoxBase):
         self.d1SpinBox.setMaximum(100000000)
         self.d1SpinBox.setDecimals(3)
 
-        self.d1cnSpinBox = SpinBox(self)
+        self.d1cnSpinBox = DoubleSpinBox(self)
         self.d1cnSpinBox.setMaximum(999999)
 
 

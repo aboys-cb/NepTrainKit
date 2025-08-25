@@ -245,7 +245,7 @@ class NEPProcess(QObject):
             self.use_process=True
 
         self.input_args=()
-        self.func_result=None
+        self.func_result:tuple
         self.run()
 
     def run(self):
@@ -258,7 +258,7 @@ class NEPProcess(QObject):
                 self.func_result = self.queue.get()
             else:
                 self.func_result=self.func(*self.input_args,**self.input_kwargs)
-            if self.func_result is not None:
+            if len(self.func_result) !=0:
                 self.result_signal.emit( )
             else:
                 self.error_signal.emit("No result returned from process")

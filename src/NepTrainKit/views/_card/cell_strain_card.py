@@ -114,7 +114,7 @@ class CellStrainCard(MakeDataCard):
                 new_cell = cell.copy() * (1 + strain / 100)
                 new_structure.set_cell(new_cell, scale_atoms=True)
                 if identify_organic:
-                    process_organic_clusters(structure, new_structure, clusters, is_organic_list )
+                    process_organic_clusters(structure, new_structure, clusters, is_organic_list )  # pyright:ignore
 
                 strain_info = [f"all:{strain}%"]
                 new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Strain({'|'.join(strain_info)})"
@@ -139,7 +139,7 @@ class CellStrainCard(MakeDataCard):
                         new_cell[ax_idx] *= (1 + strain / 100)
                     new_structure.set_cell(new_cell, scale_atoms=True)
                     if identify_organic:
-                        process_organic_clusters(structure, new_structure, clusters, is_organic_list)
+                        process_organic_clusters(structure, new_structure, clusters, is_organic_list)  # pyright:ignore
 
                     strain_info = ["XYZ"[ax] + ":" + str(s) + "%" for ax, s in zip(ax_comb, strain_vals)]
                     new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Strain({'|'.join(strain_info)})"

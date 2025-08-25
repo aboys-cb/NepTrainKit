@@ -11,8 +11,8 @@
 
 from PySide6.QtWidgets import QWidget, QApplication, QScrollArea
 
-from NepTrainKit.custom_widget import FlowLayout, MakeDataCardWidget
-
+from .layout import FlowLayout
+from .card_widget import MakeDataCard,MakeDataCardWidget
 
 
 class MakeWorkflowArea(QScrollArea):
@@ -30,19 +30,19 @@ class MakeWorkflowArea(QScrollArea):
 
         self.init_ui()
     @property
-    def cards(self):
-        return [item.widget() for item in self.flow_layout.itemList]
+    def cards(self) ->list["MakeDataCard"]:
+        return [item.widget() for item in self.flow_layout.itemList]   # pyright:ignore
     def dragEnterEvent(self, event):
 
 
-        if isinstance(event.source(), (MakeDataCardWidget)):
+        if isinstance(event.source(), MakeDataCardWidget):
             event.acceptProposedAction()
         else:
             event.ignore()  # 忽略其他类型的拖拽
 
     def dropEvent(self, event):
 
-        if isinstance(event.source(), (MakeDataCardWidget)):
+        if isinstance(event.source(), MakeDataCardWidget):
 
 
             dragged_widget = event.source()

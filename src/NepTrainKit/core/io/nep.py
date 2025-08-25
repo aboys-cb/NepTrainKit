@@ -69,7 +69,12 @@ class NepTrainResultData(ResultData):
         file_name=dataset_path.stem
 
         nep_txt_path = dataset_path.with_name(f"nep.txt")
-        if not nep_txt_path.exists() or model_type>2:
+        if not nep_txt_path.exists()  :
+            nep89_path = os.path.join(module_path, "Config/nep89.txt")
+            nep_txt_path=Path(nep89_path)
+            MessageManager.send_warning_message(f"no find nep.txt; the program will use nep89 instead.")
+
+        elif model_type>2:
             nep89_path = os.path.join(module_path, "Config/nep89.txt")
             nep_txt_path=Path(nep89_path)
             MessageManager.send_warning_message(f"NEP_CPU currently does not support model_type={model_type}; the program will use nep89 instead.")
@@ -184,7 +189,7 @@ class NepTrainResultData(ResultData):
 
 
     def _save_virial_and_stress_data(self, virials: np.ndarray )    :
-        """保存维里张量和应力数据到文件。"""
+        """保存维里和应力数据到文件。"""
         coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data]))[:, np.newaxis]
         try:
             ref_virials = np.vstack([s.nep_virial for s in self.structure.now_data], dtype=np.float32)

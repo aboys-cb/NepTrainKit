@@ -3,6 +3,7 @@
 # @Time    : 2025/4/5 20:11
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+from __future__ import annotations
 from PySide6.QtWidgets import QFrame, QHBoxLayout, QSpinBox, QDoubleSpinBox,QLineEdit
 from qfluentwidgets import BodyLabel
 
@@ -12,7 +13,7 @@ class SpinBoxUnitInputFrame(QFrame):
         super(SpinBoxUnitInputFrame, self).__init__(parent)
         self._layout = QHBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
-        self.object_list = []
+        self.object_list:list[ QSpinBox | QDoubleSpinBox] = []
     def set_input(self, unit_str,object_num ,input_type="int"):
         if  isinstance(unit_str,str):
             unit_str = [unit_str]*object_num
@@ -31,11 +32,11 @@ class SpinBoxUnitInputFrame(QFrame):
         for i in range(object_num):
             if input_type[i%len(unit_str)]=="int":
                 input_object = QSpinBox(self)
-                input_object.setButtonSymbols(QSpinBox.NoButtons)
+                input_object.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
             elif input_type[i%len(unit_str)]=="float":
                 input_object = QDoubleSpinBox(self)
                 input_object.setDecimals(3)
-                input_object.setButtonSymbols(QSpinBox.NoButtons)
+                input_object.setButtonSymbols(QSpinBox.ButtonSymbols.NoButtons)
             else:
                 raise TypeError('input_type must be int or float')
 
@@ -48,7 +49,7 @@ class SpinBoxUnitInputFrame(QFrame):
         for input_object in self.object_list:
             input_object.setRange(min_value, max_value)
 
-    def get_input_value(self):
+    def get_input_value(self)->list[int|float]:
 
         return [input_object.value() for input_object in self.object_list]
 

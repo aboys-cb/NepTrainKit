@@ -10,6 +10,7 @@ import numpy as np
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QApplication
+from ase import Atoms, Atom
 from qfluentwidgets import HyperlinkLabel, BodyLabel, SubtitleLabel
 
 from NepTrainKit.core import MessageManager, CardManager
@@ -75,15 +76,15 @@ class MakeDataWidget(QWidget):
 
     def showEvent(self, event):
         if hasattr(self._parent,"load_menu"):
-            self._parent.load_menu.addAction(self.load_card_config_action)
+            self._parent.load_menu.addAction(self.load_card_config_action)  # pyright:ignore
         if hasattr(self._parent,"save_menu"):
-            self._parent.save_menu.addAction(self.export_card_config_action)
+            self._parent.save_menu.addAction(self.export_card_config_action)  # pyright:ignore
 
     def hideEvent(self, event):
         if hasattr(self._parent,"load_menu"):
-            self._parent.load_menu.removeAction(self.load_card_config_action)
+            self._parent.load_menu.removeAction(self.load_card_config_action)  # pyright:ignore
         if hasattr(self._parent,"save_menu"):
-            self._parent.save_menu.removeAction(self.export_card_config_action)
+            self._parent.save_menu.removeAction(self.export_card_config_action)   # pyright:ignore
 
     def init_action(self):
         self.export_card_config_action = QAction(QIcon(r":/images/src/images/save.svg"), "Export Card Config")
@@ -121,9 +122,11 @@ class MakeDataWidget(QWidget):
 
         structures_list = []
         for path  in paths:
-            atoms = ase_read(path,":")
+            atoms  = ase_read(path,":")
             #ase有时候会将字符串解析成数组或者int  这里转换成str
             for atom in atoms:
+                if isinstance(atom, Atom):
+                    continue
 
                 if 'config_type' in atom.info:
                     atom.info["Config_type"]=atom.info["config_type"]
@@ -222,7 +225,7 @@ class MakeDataWidget(QWidget):
 
         if card_name not in CardManager.card_info_dict:
             MessageManager.send_warning_message("no card")
-            return
+            return None
         card=CardManager.card_info_dict[card_name](self)
         self.workspace_card_widget.add_card(card)
         return card
@@ -263,7 +266,8 @@ class MakeDataWidget(QWidget):
             for card in cards:
                 name=card.get("class")
                 card_widget=self.add_card(name)
-                card_widget.from_dict(card)
+                if card_widget is not None:
+                    card_widget.from_dict(card)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,8 @@
 # @Time    : 2025/5/19 20:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+from typing import Any
+
 from vispy.visuals.filters import ShadingFilter
 from vispy.visuals.transforms import MatrixTransform, STTransform
 
@@ -152,6 +154,7 @@ class ArrowAxes:
         self._update_axis()
 
 class StructurePlotWidget(scene.SceneCanvas):
+
     def __init__(self, *args, **kwargs):
         super().__init__( *args, **kwargs)
         self.unfreeze()
@@ -172,6 +175,7 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.bond_items = []  # Store bond meshes
         self.arrow_items = []
         self.arrow_colorbar = None
+        self.arrow_config:dict[str,Any]
         self.arrow_config = None
         self.lattice_item = None  # Store lattice lines
         self.structure = None
@@ -377,17 +381,17 @@ class StructurePlotWidget(scene.SceneCanvas):
             rot[:3, 0] = v1  # X-axis maps to v1
             rot[:3, 1] = v2  # Y-axis maps to v2
             rot[:3, 2] = direction  # Z-axis maps to bond direction
-
+            base_vertices_size=base_vertices.shape[0]
             for start, length, color in [(start1, length1, color1), (mid, length2, color2)]:
                 scale = np.diag([1.0, 1.0, length, 1.0])
                 transform = rot @ scale
                 transform[:3, 3] = start
-                verts = np.c_[base_vertices, np.ones(len(base_vertices))]
+                verts = np.c_[base_vertices, np.ones(base_vertices_size)]
                 verts = (transform @ verts.T).T[:, :3]
                 faces = base_faces + offset
-                offset += len(base_vertices)
+                offset +=base_vertices_size
 
-                color_array = np.tile(color, (len(base_vertices), 1))
+                color_array = np.tile(color, (base_vertices_size, 1))
                 all_vertices.append(verts)
                 all_faces.append(faces)
                 all_colors.append(color_array)
@@ -421,6 +425,8 @@ class StructurePlotWidget(scene.SceneCanvas):
         all_colors = []
         face_offset = 0
         sphere_vertices=self.sphere_meshdata.get_vertices()
+        sphere_vertices_size=sphere_vertices.shape[0]
+
         sphere_faces=self.sphere_meshdata.get_faces()
         for idx, (n, p) in enumerate(zip(structure.numbers, structure.positions)):
             elem = str(n)
@@ -429,15 +435,15 @@ class StructurePlotWidget(scene.SceneCanvas):
             scaled_vertices = sphere_vertices * size + p
             all_vertices.append(scaled_vertices)
             all_faces.append(sphere_faces + face_offset)
-            all_colors.append(np.repeat([color], len(sphere_vertices), axis=0))
-            face_offset += len(sphere_vertices)
+            all_colors.append(np.repeat([color], sphere_vertices_size, axis=0))
+            face_offset += sphere_vertices_size
             self.atom_items.append({
                 'mesh': None,
                 'position': p,
                 'original_color': color,
                 'size': size,
                 'halo': None,
-                'vertex_range': (len(all_vertices) - 1) * len(sphere_vertices)
+                'vertex_range': (len(all_vertices) - 1) * sphere_vertices_size
             })
 
         # Create single mesh for atoms
@@ -527,16 +533,16 @@ class StructurePlotWidget(scene.SceneCanvas):
             scale_mat = np.diag([length, length, length, 1.0])
             transform = rot @ scale_mat
             transform[:3, 3] = pos
-
-            verts = np.c_[base_vertices, np.ones(len(base_vertices))]
+            base_vertices_size=base_vertices.shape[0]
+            verts = np.c_[base_vertices, np.ones(base_vertices_size)]
             verts = (transform @ verts.T).T[:, :3]
 
             faces = base_faces + offset
-            offset += len(base_vertices)
+            offset += base_vertices_size
 
             all_vertices.append(verts)
             all_faces.append(faces)
-            all_colors.append(np.repeat([color], len(base_vertices), axis=0))
+            all_colors.append(np.repeat([color], base_vertices_size, axis=0))
 
         if all_vertices:
             vertices = np.vstack(all_vertices)

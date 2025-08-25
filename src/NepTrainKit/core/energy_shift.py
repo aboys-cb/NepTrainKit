@@ -114,7 +114,7 @@ def shift_dataset_energy(
         random_seed: int = 42,
         group_patterns: List[str] | None = None,
         alignment_mode: str = REF_GROUP_ALIGNMENT,
-        nep_energy_array: np.array | None = None):
+        nep_energy_array: np.ndarray | None = None):
     """Shift structure energies using different alignment strategies.
 
     Parameters

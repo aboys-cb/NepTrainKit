@@ -19,6 +19,7 @@ from qfluentwidgets import HyperlinkLabel, MessageBox, SpinBox, \
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
+from NepTrainKit.core.io.base import ResultData
 from NepTrainKit.core.io.deepmd import is_deepmd_path
 from NepTrainKit.custom_widget import ConfigTypeSearchLineEdit, ArrowMessageBox
 from NepTrainKit.core.io import NepTrainResultData, DeepmdResultData
@@ -45,10 +46,12 @@ class ShowNepWidget(QWidget):
         self._parent = parent
         self.setObjectName("ShowNepWidget")
         self.setAcceptDrops(True)
-        self.nep_result_data=None
+        self.nep_result_data:ResultData
+        self.nep_result_data=None  # pyright:ignore
         self.init_action()
         self.init_ui()
-
+        self.calculate_bond_thread:utils.LoadingThread
+        self.load_thread:QThread
         self.first_show=False
 
         # QTimer.singleShot(100, self.init_ui)  # 100ms 后执行
@@ -57,7 +60,7 @@ class ShowNepWidget(QWidget):
     def showEvent(self, event):
         # self.init_ui()
         if hasattr(self._parent,"save_menu"):
-            self._parent.save_menu.addAction(self.export_selected_action)
+            self._parent.save_menu.addAction(self.export_selected_action)   # pyright:ignore
         auto_load_config = Config.getboolean("widget","auto_load",False)
         if not auto_load_config:
             return
@@ -68,7 +71,7 @@ class ShowNepWidget(QWidget):
 
     def hideEvent(self, event):
         if hasattr(self._parent,"save_menu"):
-            self._parent.save_menu.removeAction(self.export_selected_action)
+            self._parent.save_menu.removeAction(self.export_selected_action)   # pyright:ignore
 
     def init_action(self):
         self.export_selected_action=Action(QIcon(":/images/src/images/export1.svg"),"Export Selected Structures")
@@ -130,7 +133,7 @@ class ShowNepWidget(QWidget):
         self.struct_index_spinbox.valueChanged.connect(self.show_current_structure)
 
         self.bond_label=StrongBodyLabel(self.struct_widget)
-        self.bond_label.setFont(getFont(20, QFont.DemiBold))
+        self.bond_label.setFont(getFont(20, QFont.Weight.DemiBold))
         # self.bond_label.setFixedHeight(30)  # 设置状态栏的高度
         self.bond_label.setWordWrap(True)
         # 添加到布局的底部
@@ -188,7 +191,7 @@ class ShowNepWidget(QWidget):
         self.plot_widget_layout.setContentsMargins(0,0,0,0)
 
         # 将状态栏添加到布局的底部
-        self.splitter = QSplitter(Qt.Horizontal, self)
+        self.splitter = QSplitter(Qt.Orientation.Horizontal, self)
         self.splitter.addWidget(self.plot_widget)
         self.splitter.addWidget(self.struct_widget)
         self.splitter.setSizes([400,200])
@@ -270,7 +273,7 @@ class ShowNepWidget(QWidget):
         if self.nep_result_data is None:
             return
         if not self.nep_result_data.load_flag :
-            self.nep_result_data=None
+            self.nep_result_data=None   # pyright:ignore
             return
         self.struct_index_spinbox.setMaximum(self.nep_result_data.num)
         self.graph_widget.set_dataset(self.nep_result_data)
@@ -291,7 +294,7 @@ class ShowNepWidget(QWidget):
             if is_deepmd_path(path):
                 self.nep_result_data = DeepmdResultData.from_path(path)
             else:
-                self.nep_result_data = None
+                self.nep_result_data = None   # pyright:ignore
         else:
             dir_path = os.path.dirname(path)
             file_name = os.path.basename(path)
@@ -304,7 +307,7 @@ class ShowNepWidget(QWidget):
             elif model_type == 2:
                 self.nep_result_data = NepPolarizabilityResultData.from_path(path)
             else:
-                self.nep_result_data = None
+                self.nep_result_data = None   # pyright:ignore
 
         if self.nep_result_data is None:
             return
@@ -385,7 +388,7 @@ class ShowNepWidget(QWidget):
         path=utils.call_path_dialog(self,"Choose a file save location","file",
                                     file_filter="XYZ files (*.xyz)",
                                     default_filename=f"structure_{index}.xyz")
-        if path:
+        if path is not None:
             with open(path,"w",encoding="utf-8") as f:
                 atoms.write(f)
 

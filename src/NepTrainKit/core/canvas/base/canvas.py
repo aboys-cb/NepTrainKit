@@ -13,13 +13,14 @@ from PySide6.QtCore import Signal, QObject
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.types import Brushes
+from NepTrainKit.views.toolbar import KitToolBarBase
 
 
 class CanvasBase(ABC):
     def __init__(self):
         self.current_axes = None
 
-        self.tool_bar=None
+        self.tool_bar:KitToolBarBase
     @abstractmethod
     def pan(self ,*args,**kwargs):
         """

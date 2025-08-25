@@ -124,6 +124,7 @@ class NepData:
     title 能量 力 等 用于画图axes的标题
 
     """
+    title:str
     def __init__(self,data_list,group_list=1, **kwargs ):
         if isinstance(data_list,(list )):
             data_list=np.array(data_list)
@@ -163,7 +164,7 @@ class NepData:
     @property
     def all_data(self):
         return self.data.all_data
-    def is_visible(self,index) -> bool_:
+    def is_visible(self,index) -> bool | bool_:
         if self.data.all_data.size == 0:
             return False
         return self.data._active_mask[index].all()

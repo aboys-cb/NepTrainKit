@@ -1,6 +1,8 @@
 import os
 import platform
 import shutil
+from typing import Any
+
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 from NepTrainKit import module_path,get_user_config_path
 
@@ -39,7 +41,7 @@ class Config:
         self.db.open()
 
     @classmethod
-    def get_path(cls,section="setting", option="last_path"):
+    def get_path(cls,section="setting", option="last_path")->str:
         """
         获取上一次文件交互的路径
         :param section:
@@ -53,13 +55,13 @@ class Config:
         return "./"
 
     @classmethod
-    def has_option(cls,section, option):
+    def has_option(cls,section, option) ->bool:
         if cls.get(section,option) is not None:
             return True
         return False
 
     @classmethod
-    def getboolean(cls, section, option, fallback=None):
+    def getboolean(cls, section, option, fallback=None)->bool|None:
         v = cls.get(section, option,fallback)
         try:
             v = eval(v)
@@ -70,7 +72,7 @@ class Config:
         return v
 
     @classmethod
-    def getint(cls, section, option, fallback=None):
+    def getint(cls, section, option, fallback=None) ->int|None:
         v = cls.get(section, option,fallback)
 
         try:
@@ -83,7 +85,7 @@ class Config:
 
         return v
     @classmethod
-    def getfloat(cls,section,option,fallback=None):
+    def getfloat(cls,section,option,fallback=None)->float|None:
         v=    cls.get(section,option,fallback)
 
         try:
@@ -95,7 +97,7 @@ class Config:
             return fallback
         return v
     @classmethod
-    def get(cls,section,option,fallback=None):
+    def get(cls,section,option,fallback=None)->Any:
         query = QSqlQuery(cls._instance.db )
         result=query.exec(f"""SELECT value FROM "config" where config.option='{option}' and config.section='{section}';""")
 

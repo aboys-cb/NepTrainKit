@@ -138,7 +138,7 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             other_plot.rmse_size = 6
 
         for col, factor in enumerate([3, 1]):
-            self.ci.layout.setRowStretchFactor(col, factor)
+            self.ci.__layout.setRowStretchFactor(col, factor)
 
     @utils.timeit
     def plot_nep_result(self):

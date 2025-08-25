@@ -30,8 +30,8 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
         self.checkButton.setIconSize(QSize(16, 16))
         self.uncheckButton.setIconSize(QSize(16, 16))
 
-        self.hBoxLayout.addWidget(self.checkButton, 0, Qt.AlignRight)
-        self.hBoxLayout.addWidget(self.uncheckButton, 0, Qt.AlignRight)
+        self.hBoxLayout.addWidget(self.checkButton, 0, Qt.AlignmentFlag.AlignRight)
+        self.hBoxLayout.addWidget(self.uncheckButton, 0, Qt.AlignmentFlag.AlignRight)
 
 
         self.checkButton.clicked.connect(self._checked)
@@ -45,9 +45,9 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
 
 
         completer = QCompleter( self.completer_model , self)
-        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         # completer.setMaxVisibleItems(10)
-        completer.setFilterMode(Qt.MatchContains)
+        completer.setFilterMode(Qt.MatchFlag.MatchContains)
         self.setCompleter(completer)
         _completerMenu=CompleterMenu(self)
         self.setCompleterMenu(_completerMenu)

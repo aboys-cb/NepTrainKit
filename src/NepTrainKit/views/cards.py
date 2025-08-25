@@ -80,12 +80,12 @@ class ConsoleWidget(QWidget):
         self.setting_command.addSeparator()
         run_action = Action(QIcon(r":/images/src/images/run.svg"), 'Run', triggered=self.run)
         run_action.setToolTip('Run selected cards')
-        run_action.installEventFilter(ToolTipFilter(run_action, 300, ToolTipPosition.TOP))
+        run_action.installEventFilter(ToolTipFilter(run_action, 300, ToolTipPosition.TOP))  # pyright:ignore
 
         self.setting_command.addAction(run_action)
         stop_action = Action(QIcon(r":/images/src/images/stop.svg"), 'Stop', triggered=self.stop)
         stop_action.setToolTip('Stop running cards')
-        stop_action.installEventFilter(ToolTipFilter(stop_action, 300, ToolTipPosition.TOP))
+        stop_action.installEventFilter(ToolTipFilter(stop_action, 300, ToolTipPosition.TOP)) # pyright:ignore
 
         self.setting_command.addAction(stop_action)
 

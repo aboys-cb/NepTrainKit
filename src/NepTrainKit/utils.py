@@ -3,21 +3,20 @@
 # @Time    : 2024/10/17 13:14
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import platform
+import os
+import re
 import subprocess
 import time
-import os
 import traceback
-import re
 from collections.abc import Iterable
-
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from PySide6.QtCore import QThread, Signal
 from PySide6.QtWidgets import QFileDialog, QApplication
+from ase.build.tools import sort as ase_sort
 from loguru import logger
 from qfluentwidgets import StateToolTip
 
 from NepTrainKit.core import Config
-from ase.build.tools import sort as ase_sort
 from NepTrainKit.version import UPDATE_EXE, UPDATE_FILE, NepTrainKit_EXE
 
 
@@ -65,7 +64,10 @@ def call_path_dialog(self,
                      dialog_type:str = "file",
                      default_filename:str = "",
                      file_filter:str = "",
-                     selected_filter:str = "") -> str|None:
+                     selected_filter:str = "") -> Any:
+    """
+    这里一般返回一个str  如果是selects 返回一个list[str]
+    """
     dialog_map = {
         "file": lambda: QFileDialog.getSaveFileName(self, title, os.path.join(Config.get_path(), default_filename), file_filter, selected_filter),
         "select": lambda: QFileDialog.getOpenFileName(self, title, Config.get_path(), file_filter),
@@ -108,7 +110,7 @@ def unzip():
 
     subprocess.Popen(cmd, shell=True)
     if QApplication.instance():
-        QApplication.instance().exit()
+        QApplication.instance().exit()   # pyright:ignore
     else:
         quit()
 
@@ -119,7 +121,10 @@ class LoadingThread(QThread):
         self.show_tip=show_tip
         self.title=title
         self._parent=parent
-
+        self.tip:StateToolTip
+        self._kwargs:Any
+        self._args:Any
+        self._func:Any
     def run(self ):
         result =self._func(*self._args, **self._kwargs)
         if isinstance(result, Iterable):
@@ -135,7 +140,7 @@ class LoadingThread(QThread):
             self.tip.closedSignal.connect(self.quit)
             time.sleep(0.0001)
         else:
-            self.tip=None
+            self.tip=None   # pyright:ignore
         self._func = func
         self._args = args
         self._kwargs = kwargs

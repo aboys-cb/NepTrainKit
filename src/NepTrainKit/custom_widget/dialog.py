@@ -188,6 +188,45 @@ class ArrowMessageBox(MessageBoxBase):
         self.widget.setMinimumWidth(250)
 
 
+class EditInfoMessageBox(MessageBoxBase):
+    """Dialog for editing structure information."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel("Edit info", self)
+        self.titleLabel.setWordWrap(True)
+
+        self._frame = QFrame(self)
+        self.frame_layout = QGridLayout(self._frame)
+        self.frame_layout.setContentsMargins(0, 0, 0, 0)
+        self.frame_layout.setSpacing(2)
+
+        self.dataCombo = ComboBox(self)
+        self.dataCombo.addItems(["structure_info", "additional_fields"])
+
+        self.keyEdit = LineEdit(self)
+        self.valueEdit = LineEdit(self)
+
+        self.opCombo = ComboBox(self)
+        self.opCombo.addItems(["add/modify", "delete"])
+
+        self.frame_layout.addWidget(CaptionLabel("Target", self), 0, 0)
+        self.frame_layout.addWidget(self.dataCombo, 0, 1, 1, 3)
+        self.frame_layout.addWidget(CaptionLabel("Key", self), 1, 0)
+        self.frame_layout.addWidget(self.keyEdit, 1, 1, 1, 3)
+        self.frame_layout.addWidget(CaptionLabel("Value", self), 2, 0)
+        self.frame_layout.addWidget(self.valueEdit, 2, 1, 1, 3)
+        self.frame_layout.addWidget(CaptionLabel("Operation", self), 3, 0)
+        self.frame_layout.addWidget(self.opCombo, 3, 1, 1, 3)
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self._frame)
+
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
+        self.widget.setMinimumWidth(300)
+
+
 class ShiftEnergyMessageBox(MessageBoxBase):
     """Dialog for energy baseline shift parameters."""
 

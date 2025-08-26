@@ -4,10 +4,11 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import time
+import json
 
 from NepTrainKit.core.calculator import NEPProcess
 
-start=time.time()
+start = time.time()
 import numpy as np
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 
@@ -19,7 +20,9 @@ from NepTrainKit.custom_widget import (
     SparseMessageBox,
     IndexSelectMessageBox,
     RangeSelectMessageBox,
-    ShiftEnergyMessageBox, DFTD3MessageBox,
+    EditInfoMessageBox,
+    ShiftEnergyMessageBox,
+    DFTD3MessageBox,
 )
 from NepTrainKit.core.io.select import farthest_point_sampling
 from NepTrainKit.views.toolbar import NepDisplayGraphicsToolBar
@@ -78,6 +81,7 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.selectIndexSignal.connect(self.select_by_index)
         self.tool_bar.rangeSignal.connect(self.select_by_range)
         self.tool_bar.dftd3Signal.connect(self.calc_dft_d3)
+        self.tool_bar.editInfoSignal.connect(self.edit_structure_info)
         self.canvas.tool_bar = self.tool_bar
 
 
@@ -163,6 +167,39 @@ class NepResultPlotWidget(QWidget):
         # remove_indices = np.setdiff1d(all_indices, remaining_indices)
         structures = dataset.group_array[remaining_indices]
         self.canvas.select_index(structures.tolist(),False)
+
+    def edit_structure_info(self):
+        data = self.canvas.nep_result_data
+        if data is None or len(data.select_index) == 0:
+            MessageManager.send_info_message("No data selected!")
+            return
+        box = EditInfoMessageBox(self._parent)
+        if not box.exec():
+            return
+        target = box.dataCombo.currentText()
+        key = box.keyEdit.text().strip()
+        op = box.opCombo.currentText()
+        value_text = box.valueEdit.text().strip()
+        if not key:
+            MessageManager.send_warning_message("Key cannot be empty")
+            return
+        for idx in list(data.select_index):
+            structure = data.get_atoms(idx)
+            target_dict = structure.structure_info if target == "structure_info" else structure.additional_fields
+            if op == "delete":
+                target_dict.pop(key, None)
+            else:
+                try:
+                    value = json.loads(value_text)
+                    if isinstance(value, list):
+                        value = np.array(value)
+                except Exception:
+                    try:
+                        value = float(value_text)
+                    except Exception:
+                        value = value_text
+                target_dict[key] = value
+        MessageManager.send_info_message("Edit completed")
 
     def export_descriptor_data(self):
         if self.canvas.nep_result_data is None:

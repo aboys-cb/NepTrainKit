@@ -40,6 +40,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     undoSignal=Signal()
     discoverySignal=Signal()
     deleteSignal=Signal()
+    editInfoSignal=Signal()
     revokeSignal=Signal()
     exportSignal=Signal()
     shiftEnergySignal=Signal()
@@ -98,6 +99,9 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         delete_action = self.addButton("Delete Selected Items",
                                      QIcon(":/images/src/images/delete.svg"),
                                      self.deleteSignal)
+        self.addButton("Edit Info",
+                       QIcon(":/images/src/images/group.svg"),
+                       self.editInfoSignal)
 
         self.addSeparator()
         export_action = self.addButton("Export structure descriptor",

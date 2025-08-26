@@ -9,7 +9,7 @@ import os
 import re
 from copy import deepcopy
 from pathlib import Path
-
+from functools import cached_property
 import numpy as np
 from ase import neighborlist
 from ase.geometry import find_mic
@@ -43,7 +43,7 @@ class Structure:
             self.force_label="force"
         else:
             self.force_label = "forces"
-
+        self.formula
     @property
     def tag(self):
         """Alias for the ``Config_type`` additional field."""
@@ -115,7 +115,7 @@ class Structure:
         mag=self.atomic_properties["force_mag"]
         count = np.sum(~np.all(mag == 0, axis=1))
         return count
-    @property
+    @cached_property
     def formula(self):
         #这种形式会导致化学式过长 比如有机分子环境下
         # diffs = np.diff(self.numbers)
@@ -141,7 +141,7 @@ class Structure:
 
 
 
-    @property
+    @cached_property
     def html_formula(self)->str:
 
         return self.__get_formula(sub=True)

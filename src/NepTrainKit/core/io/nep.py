@@ -20,8 +20,7 @@ from NepTrainKit.core.calculator import NEPProcess
 from NepTrainKit.core.io.base import NepPlotData, StructureData, ResultData
 
 from NepTrainKit.core.io.utils import read_nep_out_file, check_fullbatch, read_nep_in, parse_array_by_atomnum
-
-
+from NepTrainKit.core.types import ForcesMode
 
 
 class NepTrainResultData(ResultData):
@@ -42,7 +41,7 @@ class NepTrainResultData(ResultData):
         self.virial_out_path = virial_out_path
 
     @property
-    def dataset(self):
+    def datasets(self):
         # return [self.energy, self.stress,self.virial, self.descriptor]
         return [self.energy,self.force,self.stress,self.virial, self.descriptor]
 
@@ -110,8 +109,8 @@ class NepTrainResultData(ResultData):
 
 
         self._energy_dataset = NepPlotData(energy_array, title="energy")
-        default_forces = Config.get("widget", "forces_data", "Row")
-        if force_array.size != 0 and default_forces == "Norm":
+        default_forces = Config.get("widget", "forces_data", ForcesMode.Raw)
+        if force_array.size != 0 and default_forces == ForcesMode.Norm:
 
             force_array = parse_array_by_atomnum(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
 
@@ -266,7 +265,7 @@ class NepPolarizabilityResultData(ResultData):
         self.polarizability_out_path = polarizability_out_path
 
     @property
-    def dataset(self):
+    def datasets(self):
 
         return [self.polarizability_diagonal,self.polarizability_no_diagonal, self.descriptor]
 
@@ -375,7 +374,7 @@ class NepDipoleResultData(ResultData):
 
         self.dipole_out_path = dipole_out_path
     @property
-    def dataset(self):
+    def datasets(self):
         return [self.dipole , self.descriptor]
 
     @property

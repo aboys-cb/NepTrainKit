@@ -12,10 +12,10 @@ from loguru import logger
 import numpy as np
 from PySide6.QtCore import QUrl, QTimer, Qt, Signal, QThread
 from PySide6.QtGui import QIcon, QFont
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout,QSplitter
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame
 from qfluentwidgets import HyperlinkLabel, MessageBox, SpinBox, \
     StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
-    Action, StateToolTip
+    Action, StateToolTip, CheckBox
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager, Config
@@ -26,7 +26,7 @@ from NepTrainKit.core.io import NepTrainResultData, DeepmdResultData
 from NepTrainKit.core.io.nep import NepPolarizabilityResultData, NepDipoleResultData
 from NepTrainKit.core.io.utils import get_nep_type
 from NepTrainKit.core.structure import table_info, atomic_numbers
-from NepTrainKit.core.types import Brushes
+from NepTrainKit.core.types import Brushes, CanvasMode, SearchType
 from NepTrainKit.views import NepResultPlotWidget, NepDisplayGraphicsToolBar
 from NepTrainKit.views.structure import StructureInfoWidget
 from NepTrainKit.views import StructureToolBar
@@ -84,8 +84,8 @@ class ShowNepWidget(QWidget):
 
         self.struct_widget = QWidget(self)
         self.struct_widget_layout = QGridLayout(self.struct_widget)
-        canvas_type = Config.get("widget", "canvas_type", "pyqtgraph")
-        if canvas_type == "pyqtgraph":
+        canvas_type = Config.get("widget", "canvas_type",  CanvasMode.PYQTGRAPH)
+        if canvas_type == CanvasMode.PYQTGRAPH:
             from NepTrainKit.core.canvas.pyqtgraph import StructurePlotWidget
             self.show_struct_widget = StructurePlotWidget(self.struct_widget)
 
@@ -167,12 +167,21 @@ class ShowNepWidget(QWidget):
 
         self.graph_toolbar = NepDisplayGraphicsToolBar(  self.plot_widget)
         self.graph_widget.set_tool_bar(self.graph_toolbar)
-
-        self.search_lineEdit=ConfigTypeSearchLineEdit(self.plot_widget)
+        frame = QFrame(self.plot_widget)
+        frame_layout = QHBoxLayout(frame)
+        self.search_lineEdit = ConfigTypeSearchLineEdit(self.plot_widget)
         self.search_lineEdit.searchSignal.connect(self.search_config_type)
         self.search_lineEdit.checkSignal.connect(self.checked_config_type)
         self.search_lineEdit.uncheckSignal.connect(self.uncheck_config_type)
+        self.search_lineEdit.typeChangeSignal.connect(lambda search_type:self.search_lineEdit.setCompleterKeyWord(self.nep_result_data.structure.get_all_config(search_type)) if self.nep_result_data is not None else None)
 
+
+        switch_config_checkbox= CheckBox("formula",frame)
+        switch_config_checkbox.setToolTip("switch search formula")
+        switch_config_checkbox.checkStateChanged.connect(lambda state:self.search_lineEdit.set_search_type(SearchType.FORMULA) if state == Qt.CheckState.Checked else self.search_lineEdit.set_search_type(SearchType.TAG))
+        frame_layout.addWidget(switch_config_checkbox)
+
+        frame_layout.addWidget(self.search_lineEdit)
 
         # 创建状态栏
         self.path_label = HyperlinkLabel(self.plot_widget)
@@ -184,7 +193,7 @@ class ShowNepWidget(QWidget):
 
         self.plot_widget_layout.addWidget(self.graph_toolbar, 0, 0, 1, 2)
 
-        self.plot_widget_layout.addWidget(self.search_lineEdit, 1, 0, 1, 2)
+        self.plot_widget_layout.addWidget(frame, 1, 0, 1, 2)
         self.plot_widget_layout.addWidget(self.graph_widget, 2, 0, 1, 2)
         self.plot_widget_layout.addWidget(self.path_label , 3, 0, 1, 1)
         self.plot_widget_layout.addWidget(self.dataset_info_label , 3, 1, 1, 1)
@@ -279,7 +288,7 @@ class ShowNepWidget(QWidget):
         self.graph_widget.set_dataset(self.nep_result_data)
         self.nep_result_data.updateInfoSignal.connect(self.update_dataset_info)
         self.nep_result_data.updateInfoSignal.emit()
-        self.search_lineEdit.setCompleterKeyWord(self.nep_result_data.structure.get_all_config())
+        self.search_lineEdit.typeChangeSignal.emit(self.search_lineEdit.search_type)
         self.struct_index_spinbox.valueChanged.emit(0)
 
     def check_nep_result(self, path):
@@ -461,20 +470,20 @@ class ShowNepWidget(QWidget):
         if unreasonable:
             MessageManager.send_info_message("The distance between atoms is too small, and the structure may be unreasonable.")
 
-    def search_config_type(self,config):
+    def search_config_type(self,config:str,search_type:SearchType):
 
-        indexes= self.nep_result_data.structure.search_config(config)
+        indexes= self.nep_result_data.structure.search_config(config,search_type)
 
         self.graph_widget.canvas.update_scatter_color(indexes,Brushes.Show)
 
-    def checked_config_type(self, config):
+    def checked_config_type(self, config:str,search_type:SearchType):
 
-        indexes = self.nep_result_data.structure.search_config(config)
+        indexes = self.nep_result_data.structure.search_config(config,search_type)
         self.graph_widget.canvas.select_index(indexes,  False)
 
-    def uncheck_config_type(self, config):
+    def uncheck_config_type(self, config:str,search_type:SearchType):
 
-        indexes = self.nep_result_data.structure.search_config(config)
+        indexes = self.nep_result_data.structure.search_config(config,search_type)
         self.graph_widget.canvas.select_index(indexes,True )
     def update_dataset_info(self ):
         info=f"Data: Orig: {self.nep_result_data.atoms_num_list.shape[0]} Now: {self.nep_result_data.structure.now_data.shape[0]} "\

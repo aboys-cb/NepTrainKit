@@ -17,7 +17,7 @@ from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleC
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager
-from NepTrainKit.custom_widget import ProcessLabel
+from .label import ProcessLabel
 from ase.io import write as ase_write
 
 

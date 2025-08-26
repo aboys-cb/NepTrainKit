@@ -15,9 +15,9 @@ from ase import neighborlist
 from ase.geometry import find_mic
 from loguru import logger
 from scipy.sparse.csgraph import connected_components
-from collections import defaultdict
+from collections import defaultdict, Counter
 from NepTrainKit import utils, module_path
-
+from ase.data import atomic_numbers
 
 
 with open(os.path.join(module_path, "Config/ptable.json"), "r", encoding="utf-8") as f:
@@ -113,30 +113,47 @@ class Structure:
         # result = [f"{segment[0]}{len(segment)}" for segment in segments]
         # return "".join(result)
         # 改成下面的形式
-        formula = ""
-        elems={}
-        for element in self.elements:
-            if element in elems.keys():
-                elems[element]+=1
-            else:
-                elems[element]=1
-        for element,count in elems.items():
-            formula+=element+str(count)
-        return formula
+        # formula = ""
+        # elems={}
+        # for element in self.elements:
+        #     if element in elems.keys():
+        #         elems[element]+=1
+        #     else:
+        #         elems[element]=1
+        # for element,count in elems.items():
+        #     formula+=element+str(count)
+        # return formula
+        return self.__get_formula(sub=False)
+
+
 
     @property
-    def html_formula(self):
-        formula = ""
-        elems = {}
-        for element in self.elements:
-            if element in elems.keys():
-                elems[element] += 1
-            else:
-                elems[element] = 1
-        for element, count in elems.items():
-            formula += element +"<sub>" + str(count) + "</sub>"
-        return formula
+    def html_formula(self)->str:
 
+        return self.__get_formula(sub=True)
+
+    def __get_formula(self, sub=False):
+        # priority = {'C': 0, 'H': 1}
+
+        # 优先级：C → H → 按原子序数 → 未知元素按字母
+        def priority(sym):
+            if sym == 'C':
+                return (0, 0)
+            if sym == 'H':
+                return (0, 1)
+            z = atomic_numbers.get(sym, 999)
+            return (1, z) if z != 999 else (2, sym)
+
+        cnt = Counter(self.elements)
+        count2 = dict(sorted(cnt.items(), key=lambda kv: priority(kv[0])))
+        if sub:
+            formula = ''.join(symb + ("<sub>" + str(n) + "</sub>" if n > 1 else '')
+                              for symb, n in count2.items())
+        else:
+
+            formula = ''.join(symb + (str(n) if n > 1 else '')
+                              for symb, n in count2.items())
+        return formula
     @property
     def per_atom_energy(self):
         return self.energy/self.num_atoms

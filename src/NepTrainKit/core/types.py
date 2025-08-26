@@ -3,12 +3,17 @@
 # @Time    : 2024/12/2 20:02
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-
+import sys
 from enum import Enum
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor, QPen
-
+if sys.version_info >= (3, 11):
+    from enum import StrEnum          # 3.11+
+else:
+    from enum import Enum
+    class StrEnum(str, Enum):         # 3.10- 的回退
+        pass
 #pyqtgragh导入很慢  所以先拷贝过来 后面看要不要优化掉
 def mkPen(*args, **kwargs):
     """
@@ -63,13 +68,17 @@ def mkPen(*args, **kwargs):
 
     return pen
 
-class ForcesMode(Enum):
+class ForcesMode(StrEnum):
     Raw="Raw"
     Norm="Norm"
 
-class CanvasMode(Enum):
-    vispy="vispy"
-    pyqtgraph="pyqtgraph"
+class CanvasMode(StrEnum):
+    VISPY= "vispy"
+    PYQTGRAPH= "pyqtgraph"
+
+class SearchType(StrEnum):
+    TAG="Config_type"
+    FORMULA="formula"
 
 class Base:
     @classmethod

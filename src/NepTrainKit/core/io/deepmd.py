@@ -80,7 +80,7 @@ class DeepmdResultData(ResultData):
 
 
     @property
-    def dataset(self):
+    def datasets(self):
         if self.spin_out_path is None:
             return [self.energy, self.force,  self.virial, self.descriptor]
         else:

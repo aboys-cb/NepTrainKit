@@ -5,20 +5,27 @@
 # @email    : 1747193328@qq.com
 from PySide6.QtCore import Qt, Signal, QSize
 from PySide6.QtWidgets import QCompleter
-from qfluentwidgets import SearchLineEdit
+from qfluentwidgets import SearchLineEdit,CheckBox
 from qfluentwidgets.components.widgets.line_edit import CompleterMenu, LineEditButton
 
 from .completer import CompleterModel, JoinDelegate
+from ..core.types import SearchType
 
 
 class ConfigTypeSearchLineEdit(SearchLineEdit):
-    checkSignal=Signal(str)
-    uncheckSignal=Signal(str)
+    searchSignal = Signal(str,SearchType)
+
+    checkSignal=Signal(str,SearchType)
+    uncheckSignal=Signal(str,SearchType)
+    typeChangeSignal=Signal(str )
     def __init__(self, parent):
         super().__init__(parent)
         self.init()
-
+        self.search_type:SearchType = SearchType.TAG
     def init(self):
+
+
+
         self.searchButton.setToolTip("Searching for structures based on Config_type")
         self.checkButton = LineEditButton(":/images/src/images/check.svg", self)
         self.checkButton.setToolTip("Mark structure according to Config_type")
@@ -39,10 +46,9 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
 
 
         self.setObjectName("search_lineEdit")
-        self.setPlaceholderText("Click to view Config_type")
+        self.set_search_type(SearchType.TAG)
         stands = []
         self.completer_model = CompleterModel(stands)
-
 
         completer = QCompleter( self.completer_model , self)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
@@ -54,18 +60,25 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
         self._delegate =JoinDelegate(self,{})
         _completerMenu.view.setItemDelegate(self._delegate)
         _completerMenu.view.setMaxVisibleItems(10)
+    def search(self):
+        """ emit search signal """
+        text = self.text().strip()
+        if text:
+            self.searchSignal.emit(text, self.search_type)
+        else:
+            self.clearSignal.emit()
 
 
-
-
-
-
+    def set_search_type(self, search_type:SearchType):
+        self.search_type = search_type
+        self.setPlaceholderText(f"Mark structure according to {search_type}")
+        self.typeChangeSignal.emit(search_type)
 
     def _checked(self):
-        self.checkSignal.emit(self.text())
+        self.checkSignal.emit(self.text(), self.search_type)
 
     def _unchecked(self):
-        self.uncheckSignal.emit(self.text())
+        self.uncheckSignal.emit(self.text(), self.search_type)
 
 
 
@@ -78,6 +91,7 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
 
 
     def setCompleterKeyWord(self, new_words):
+
         if isinstance(new_words, list):
             new_words = self.completer_model.parser_list(new_words)
         self._delegate.data=new_words

@@ -32,7 +32,7 @@ class SettingsWidget(ScrollArea):
              'Personalization' , self.scrollWidget)
 
 
-        default_forces = Config.get("widget","forces_data","Raw")
+        default_forces = Config.get("widget","forces_data",ForcesMode.Raw)
         if default_forces=="Row":
             #没什么用 替换以前的坑 之前写错单词了
             default_forces="Raw"
@@ -42,12 +42,12 @@ class SettingsWidget(ScrollArea):
             'Force data format',
             "Streamline data and speed up drawing",
             texts=[
-                "Raw","Norm"
+             mode.value for mode in    ForcesMode
             ],
             default=default_forces,
             parent=self.personal_group
         )
-        canvas_type = Config.get("widget","canvas_type","pyqtgraph")
+        canvas_type = Config.get("widget","canvas_type",CanvasMode.PYQTGRAPH)
 
         self.canvas_card = MyComboBoxSettingCard(
             OptionsConfigItem("canvas","canvas",CanvasMode(canvas_type),OptionsValidator(CanvasMode), EnumSerializer(CanvasMode)),
@@ -55,7 +55,8 @@ class SettingsWidget(ScrollArea):
             'Canvas Engine',
             "Choose GPU with vispy",
             texts=[
-                "pyqtgraph","vispy"
+             mode.value for mode in    CanvasMode
+
             ],
             default=canvas_type,
             parent=self.personal_group

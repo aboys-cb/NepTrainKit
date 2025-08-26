@@ -115,7 +115,7 @@ class CanvasLayoutBase(CanvasBase):
         if axes is None or self.nep_result_data is None:
             return None
         axes_index = self.axes_list.index(axes)
-        return self.nep_result_data.dataset[axes_index]
+        return self.nep_result_data.datasets[axes_index]
     def clear_axes(self):
         """
         清空逻辑

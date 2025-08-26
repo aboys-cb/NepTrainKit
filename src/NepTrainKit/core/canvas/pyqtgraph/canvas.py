@@ -138,7 +138,7 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             other_plot.rmse_size = 6
 
         for col, factor in enumerate([3, 1]):
-            self.ci.__layout.setRowStretchFactor(col, factor)
+            self.ci.layout.setRowStretchFactor(col, factor)
 
     @utils.timeit
     def plot_nep_result(self):
@@ -147,7 +147,7 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         """
         self.nep_result_data.select_index.clear()
 
-        for index, _dataset in enumerate(self.nep_result_data.dataset):
+        for index, _dataset in enumerate(self.nep_result_data.datasets):
             plot = self.axes_list[index]
             plot.title = _dataset.title
             plot.scatter(_dataset.x, _dataset.y, data=_dataset.structure_index,

@@ -18,7 +18,7 @@ from NepTrainKit import utils
 from NepTrainKit.core import Structure, MessageManager
 from NepTrainKit.core.calculator import NEPProcess
 from NepTrainKit.core.io.utils import read_nep_out_file, parse_array_by_atomnum
-from NepTrainKit.core.types import Brushes
+from NepTrainKit.core.types import Brushes, SearchType
 
 import numpy as np
 def pca(X, n_components=None):
@@ -271,6 +271,8 @@ class NepPlotData(NepData):
     def structure_index(self):
         return self.group_array[ : ].repeat(self.cols)
 class DPPlotData(NepData):
+
+
     def __init__(self,data_list,**kwargs ):
         super().__init__(data_list,**kwargs )
         self.x_cols=slice(None,self.cols)
@@ -307,13 +309,24 @@ class DPPlotData(NepData):
 class StructureData(NepData):
 
     @utils.timeit
-    def get_all_config(self):
+    def get_all_config(self,search_type:SearchType)->list[str]:
 
-        return [structure.tag for structure in self.now_data]
+        if search_type==SearchType.TAG:
+            return [structure.tag for structure in self.now_data]
+        elif search_type==SearchType.FORMULA:
+            return [structure.formula for structure in self.now_data]
+        else:
+            MessageManager.send_warning_message(f"no such search_type:{search_type}")
+            return []
+    def search_config(self,config:str,search_type:SearchType):
+        if search_type==SearchType.TAG:
 
-    def search_config(self,config):
-
-        result_index=[i for i ,structure in enumerate(self.now_data) if re.search(config, structure.tag)]
+            result_index=[i for i ,structure in enumerate(self.now_data) if re.search(config, structure.tag)]
+        elif search_type==SearchType.FORMULA:
+            result_index=[i for i ,structure in enumerate(self.now_data) if re.search(config, structure.formula)]
+        else:
+            MessageManager.send_warning_message(f"no such search_type:{search_type}")
+            return []
         return self.group_array[result_index].tolist()
 
 
@@ -366,7 +379,7 @@ class ResultData(QObject):
         raise NotImplementedError()
 
     @property
-    def dataset(self) -> ["NepPlotData"]:
+    def datasets(self) -> list["NepPlotData"]:
         raise NotImplementedError()
 
     @property
@@ -475,7 +488,7 @@ class ResultData(QObject):
         在所有的dataset中删除某个索引对应的结构
         """
         self.structure.remove(i)
-        for dataset in self.dataset:
+        for dataset in self.datasets:
             dataset.remove(i)
         self.updateInfoSignal.emit()
 
@@ -490,7 +503,7 @@ class ResultData(QObject):
         撤销到上一次的删除
         """
         self.structure.revoke()
-        for dataset in self.dataset:
+        for dataset in self.datasets:
             dataset.revoke( )
         self.updateInfoSignal.emit()
 

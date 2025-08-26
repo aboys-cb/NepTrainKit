@@ -422,10 +422,10 @@ class NepResultPlotWidget(QWidget):
 
     def set_dataset(self,dataset):
 
-        if self.last_figure_num !=len(dataset.dataset):
+        if self.last_figure_num !=len(dataset.datasets):
 
-            self.canvas.init_axes(len(dataset.dataset))
-            self.last_figure_num = len(dataset.dataset)
+            self.canvas.init_axes(len(dataset.datasets))
+            self.last_figure_num = len(dataset.datasets)
 
         self.canvas.set_nep_result_data(dataset)
         self.canvas.plot_nep_result()

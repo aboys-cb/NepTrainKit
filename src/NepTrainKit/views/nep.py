@@ -177,6 +177,9 @@ class NepResultPlotWidget(QWidget):
             return
         selected_structures = data.get_selected_structures()
         tags= {item for structure in selected_structures for item in structure.get_prop_key(True, True)}
+        #这两个不允许删除
+        tags.remove("species")
+        tags.remove("pos")
         box = EditInfoMessageBox(self._parent)
 
         box.init_tags(list(tags))

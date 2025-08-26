@@ -436,6 +436,12 @@ class ResultData(QObject):
             self.uncheck(unselect)
         if select:
             self.select(select)
+    def get_selected_structures(self)->list[Structure]:
+        index=list(self.select_index)
+        index = self.structure.convert_index(index)
+
+        return self.structure.all_data[index].tolist()
+
     def export_selected_xyz(self,save_file_path):
         """
         导出当前选中的结构

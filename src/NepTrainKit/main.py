@@ -17,7 +17,8 @@ from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPositio
                             SplitToolButton, RoundMenu)
 from qfluentwidgets import FluentIcon as FIF
 from loguru import logger
-from NepTrainKit.core import MessageManager, Config
+from NepTrainKit.core import MessageManager
+from NepTrainKit.config import Config
 from NepTrainKit.pages import *
 from NepTrainKit import utils
 import warnings

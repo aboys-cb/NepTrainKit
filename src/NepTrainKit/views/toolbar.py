@@ -99,11 +99,12 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         delete_action = self.addButton("Delete Selected Items",
                                      QIcon(":/images/src/images/delete.svg"),
                                      self.deleteSignal)
-        self.addButton("Edit Info",
-                       QIcon(":/images/src/images/group.svg"),
-                       self.editInfoSignal)
+
 
         self.addSeparator()
+        self.addButton("Edit Info",
+                       QIcon(":/images/src/images/edit_info.svg"),
+                       self.editInfoSignal)
         export_action = self.addButton("Export structure descriptor",
                                      QIcon(":/images/src/images/export.svg"),
                                      self.exportSignal)

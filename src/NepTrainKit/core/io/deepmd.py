@@ -10,7 +10,9 @@ import glob
 from .base import NepPlotData, StructureData, ResultData,DPPlotData
 from NepTrainKit.core.structure import Structure, load_npy_structure,save_npy_structure
 from .utils import parse_array_by_atomnum,read_nep_out_file
-from .. import Config, MessageManager
+from NepTrainKit.config import Config
+
+from .. import   MessageManager
 from ... import module_path
 def is_deepmd_path(folder)-> bool:
     if os.path.exists(os.path.join(folder,"type.raw")):

@@ -8,7 +8,7 @@ from typing import Any
 from vispy.visuals.filters import ShadingFilter
 from vispy.visuals.transforms import MatrixTransform, STTransform
 
-from NepTrainKit.core import Config
+from NepTrainKit.config import Config
 from NepTrainKit.core.structure import table_info
 import numpy as np
 from vispy.util.transforms import rotate
@@ -488,9 +488,9 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.arrow_config = {"prop_name": prop_name, "scale": scale, "cmap": cmap}
         if self.structure is None:
             return
-        if prop_name not in self.structure.structure_info:
+        if prop_name not in self.structure.atomic_properties:
             return
-        vectors = self.structure.structure_info[prop_name]
+        vectors = self.structure.atomic_properties[prop_name]
         if vectors.ndim != 2 or vectors.shape[1] != 3:
             return
         vectors = vectors * scale
@@ -644,7 +644,7 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.show_elem(structure)
         self.show_bond(structure)
         cfg = self.arrow_config
-        if cfg and cfg.get("prop_name") in structure.structure_info:
+        if cfg and cfg.get("prop_name") in structure.atomic_properties:
             self.show_arrow(cfg["prop_name"], cfg["scale"], cfg["cmap"])
         self.update_lighting()
 

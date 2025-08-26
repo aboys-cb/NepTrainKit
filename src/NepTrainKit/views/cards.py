@@ -11,7 +11,9 @@ from PySide6.QtWidgets import QGridLayout, QWidget
 from qfluentwidgets import RoundMenu, PrimaryDropDownPushButton, CommandBar, Action, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit import get_user_config_path
-from NepTrainKit.core import load_cards_from_directory, CardManager, Config
+from NepTrainKit.core import load_cards_from_directory, CardManager
+from NepTrainKit.config import Config
+
 from ase.io import extxyz,cif,vasp
 from NepTrainKit.views._card import *
 

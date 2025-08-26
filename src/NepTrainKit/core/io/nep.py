@@ -12,7 +12,9 @@ import numpy as np
 from PySide6.QtCore import QObject, Signal
 from loguru import logger
 from NepTrainKit import module_path,utils
-from NepTrainKit.core import MessageManager, Structure, Config
+from NepTrainKit.core import MessageManager, Structure
+from NepTrainKit.config import Config
+
 from NepTrainKit.core.calculator import NEPProcess
 
 

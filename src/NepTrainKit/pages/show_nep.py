@@ -18,7 +18,9 @@ from qfluentwidgets import HyperlinkLabel, MessageBox, SpinBox, \
     Action, StateToolTip, CheckBox
 
 from NepTrainKit import utils
-from NepTrainKit.core import MessageManager, Config
+from NepTrainKit.config import Config
+
+from NepTrainKit.core import MessageManager
 from NepTrainKit.core.io.base import ResultData
 from NepTrainKit.core.io.deepmd import is_deepmd_path
 from NepTrainKit.custom_widget import ConfigTypeSearchLineEdit, ArrowMessageBox
@@ -406,7 +408,7 @@ class ShowNepWidget(QWidget):
         if structure is None:
             return
         props = [
-            name for name, arr in structure.structure_info.items()
+            name for name, arr in structure.atomic_properties.items()
             if isinstance(arr, np.ndarray) and arr.ndim == 2 and arr.shape[1] == 3
         ]
         if not props:

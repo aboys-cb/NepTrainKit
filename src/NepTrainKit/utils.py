@@ -16,7 +16,8 @@ from ase.build.tools import sort as ase_sort
 from loguru import logger
 from qfluentwidgets import StateToolTip
 
-from NepTrainKit.core import Config
+from NepTrainKit.config import Config
+
 from NepTrainKit.version import UPDATE_EXE, UPDATE_FILE, NepTrainKit_EXE
 
 

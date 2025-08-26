@@ -12,7 +12,7 @@ from qfluentwidgets import FluentIcon as FIF, ScrollArea
 from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCard, ExpandLayout, OptionsConfigItem, \
     OptionsValidator, EnumSerializer, SwitchSettingCard
 
-from NepTrainKit.core import Config
+from NepTrainKit.config import Config
 from NepTrainKit.custom_widget import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
 from NepTrainKit.core.types import ForcesMode, CanvasMode
 from NepTrainKit.core.update import UpdateWoker,UpdateNEP89Woker

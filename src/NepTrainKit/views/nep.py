@@ -14,7 +14,9 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 
 
 from NepTrainKit import utils
-from NepTrainKit.core import MessageManager, Config
+from NepTrainKit.core import MessageManager
+from NepTrainKit.config import Config
+
 from NepTrainKit.custom_widget import (
     GetIntMessageBox,
     SparseMessageBox,
@@ -173,22 +175,29 @@ class NepResultPlotWidget(QWidget):
         if data is None or len(data.select_index) == 0:
             MessageManager.send_info_message("No data selected!")
             return
+        selected_structures = data.get_selected_structures()
+        tags= {item for structure in selected_structures for item in structure.get_prop_key(True, True)}
         box = EditInfoMessageBox(self._parent)
+
+        box.init_tags(list(tags))
         if not box.exec():
             return
-        target = box.dataCombo.currentText()
-        key = box.keyEdit.text().strip()
-        op = box.opCombo.currentText()
-        value_text = box.valueEdit.text().strip()
-        if not key:
-            MessageManager.send_warning_message("Key cannot be empty")
-            return
-        for idx in list(data.select_index):
-            structure = data.get_atoms(idx)
-            target_dict = structure.structure_info if target == "structure_info" else structure.additional_fields
-            if op == "delete":
-                target_dict.pop(key, None)
-            else:
+
+
+        for structure in selected_structures:
+
+            for remove_tag in box.remove_tag:
+                if remove_tag in structure.additional_fields:
+                    structure.additional_fields.pop(remove_tag)
+                #这里是为了避免info和array有重复名字的 所以如果info有，就只删除info
+                #如果在想删除array的 就要再操作一次即可
+
+                elif remove_tag in structure.atomic_properties:
+                    structure.remove_atomic_properties(remove_tag)
+
+            for new_tag,value_text in box.new_tag_info.items():
+
+
                 try:
                     value = json.loads(value_text)
                     if isinstance(value, list):
@@ -198,7 +207,7 @@ class NepResultPlotWidget(QWidget):
                         value = float(value_text)
                     except Exception:
                         value = value_text
-                target_dict[key] = value
+                structure.additional_fields[new_tag] = value
         MessageManager.send_info_message("Edit completed")
 
     def export_descriptor_data(self):

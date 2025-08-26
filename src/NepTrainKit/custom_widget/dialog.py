@@ -3,8 +3,10 @@
 # @Time    : 2024/11/28 22:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import sys
+
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QVBoxLayout, QFrame, QGridLayout, QPushButton, QLineEdit
+from PySide6.QtWidgets import QVBoxLayout, QFrame, QGridLayout, QPushButton, QLineEdit,QWidget
 from PySide6.QtCore import Signal, Qt, QUrl
 from qfluentwidgets import (
     MessageBoxBase,
@@ -16,11 +18,16 @@ from qfluentwidgets import (
     ComboBox,
     FluentStyleSheet,
     FluentTitleBar,
-    TitleLabel, HyperlinkLabel, RadioButton, LineEdit, MessageBox, EditableComboBox
+    TitleLabel, HyperlinkLabel, RadioButton, LineEdit, FlowLayout, EditableComboBox, PrimaryDropDownPushButton,
+    PrimaryPushButton, Flyout, InfoBarIcon, MessageBox
 )
 from qframelesswindow import FramelessDialog
 import json
 import os
+from .button import TagPushButton, TagGroup
+from qfluentwidgets import FluentIcon as FIF
+from NepTrainKit.core import MessageManager
+
 from NepTrainKit import module_path
 
 from NepTrainKit.utils import LoadingThread
@@ -186,14 +193,12 @@ class ArrowMessageBox(MessageBoxBase):
         self.yesButton.setText('Ok')
         self.cancelButton.setText('Cancel')
         self.widget.setMinimumWidth(250)
+class InputInfoMessageBox(MessageBoxBase):
 
-
-class EditInfoMessageBox(MessageBoxBase):
-    """Dialog for editing structure information."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel("Edit info", self)
+        self.titleLabel = CaptionLabel("new structure info", self)
         self.titleLabel.setWordWrap(True)
 
         self._frame = QFrame(self)
@@ -201,31 +206,92 @@ class EditInfoMessageBox(MessageBoxBase):
         self.frame_layout.setContentsMargins(0, 0, 0, 0)
         self.frame_layout.setSpacing(2)
 
-        self.dataCombo = ComboBox(self)
-        self.dataCombo.addItems(["structure_info", "additional_fields"])
-
         self.keyEdit = LineEdit(self)
         self.valueEdit = LineEdit(self)
-
-        self.opCombo = ComboBox(self)
-        self.opCombo.addItems(["add/modify", "delete"])
-
-        self.frame_layout.addWidget(CaptionLabel("Target", self), 0, 0)
-        self.frame_layout.addWidget(self.dataCombo, 0, 1, 1, 3)
         self.frame_layout.addWidget(CaptionLabel("Key", self), 1, 0)
         self.frame_layout.addWidget(self.keyEdit, 1, 1, 1, 3)
         self.frame_layout.addWidget(CaptionLabel("Value", self), 2, 0)
         self.frame_layout.addWidget(self.valueEdit, 2, 1, 1, 3)
-        self.frame_layout.addWidget(CaptionLabel("Operation", self), 3, 0)
-        self.frame_layout.addWidget(self.opCombo, 3, 1, 1, 3)
-
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
         self.yesButton.setText('Ok')
         self.cancelButton.setText('Cancel')
-        self.widget.setMinimumWidth(300)
+        self.widget.setMinimumWidth(100)
+    def validate(self):
+        if self.keyEdit.text().strip() != "":
+            return True
+        Flyout.create(
+            icon=InfoBarIcon.INFORMATION,
+            title='Tip',
+            content="A valid value must be entered",
+            target=self.keyEdit,
+            parent=self,
+            isClosable=True
+        )
+        return False
+class EditInfoMessageBox(MessageBoxBase):
+    """Dialog for editing structure information."""
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel("Edit info", self)
+        self.titleLabel.setWordWrap(True)
+        self.new_tag_button = PrimaryPushButton(QIcon(":/images/src/images/copy_figure.svg"),
+                                                         "Add new tag", self)
+        self.new_tag_button.setMaximumWidth(200)
+        self.new_tag_button.setObjectName("new_tag_button")
+        self.new_tag_button.clicked.connect(self.new_tag)
+        self.tag_group = TagGroup(parent=self)
+        self.tag_group.tagRemovedSignal.connect(self.tag_removed)
+        self.viewLayout.addWidget(self.new_tag_button)
+
+        self.viewLayout.addWidget(self.tag_group)
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
+        self.widget.setMinimumWidth(600)
+        self.remove_tag=set()
+        self.new_tag_info={}
+    def new_tag(self):
+        box = InputInfoMessageBox(self)
+        if not box.exec():
+            return
+        key=box.keyEdit.text()
+        value=box.valueEdit.text()
+
+        if key.strip():
+            self.add_tag(key.strip(),value)
+    def init_tags(self, tags):
+        for tag in tags:
+            self.tag_group.add_tag(tag)
+    def tag_removed(self,tag):
+        if tag in self.new_tag_info.keys():
+            self.new_tag_info.pop(tag)
+        self.remove_tag.add(tag)
+    def add_tag(self,tag,value):
+        if self.tag_group.has_tag(tag):
+            MessageManager.send_message_box(f"{tag} already exists, please delete it first")
+            return
+        self.new_tag_info[tag] = value
+        self.tag_group.add_tag(tag)
+    def validate(self):
+        if len(self.new_tag_info)!=0 or len(self.remove_tag)!=0:
+            title = 'Modify information confirmation'
+            remove_info=";".join(self.remove_tag)
+            add_info="\n".join([f"{k}={v}" for k,v in self.new_tag_info.items()])
+            content = f"""You removed the following information from the structure: \n{remove_info}  \nadded the following information: \n{add_info}"""
+
+            w = MessageBox(title, content, self)
+
+            w.setClosableOnMaskClicked(True)
+
+
+            if w.exec():
+
+                return True
+            else:
+                return False
+        return True
 
 class ShiftEnergyMessageBox(MessageBoxBase):
     """Dialog for energy baseline shift parameters."""

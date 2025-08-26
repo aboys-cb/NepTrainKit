@@ -7,6 +7,7 @@ import contextlib
 import os
 import traceback
 import numpy as np
+import numpy.typing as npt
 from PySide6.QtCore import QThread, Signal, QObject
 from loguru import logger
 from multiprocessing import Process, JoinableQueue, Event
@@ -66,7 +67,9 @@ class NepCalculator():
         return  _types, _boxs, _positions,group_size
 
     @utils.timeit
-    def calculate(self,structures:list[Structure]):
+    def calculate(self,
+                  structures:list[Structure]
+                  )->tuple[npt.NDArray[np.float32],npt.NDArray[np.float32],npt.NDArray[np.float32]]:
         if not self.initialized:
             return np.array([]),np.array([]),np.array([])
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
@@ -91,7 +94,11 @@ class NepCalculator():
 
 
     @utils.timeit
-    def calculate_dftd3(self,structures:list[Structure],functional,cutoff,cutoff_cn):
+    def calculate_dftd3(self,
+                        structures:list[Structure],
+                        functional,
+                        cutoff,
+                        cutoff_cn)->tuple[npt.NDArray[np.float32],npt.NDArray[np.float32],npt.NDArray[np.float32]]:
         if not self.initialized:
             return np.array([]),np.array([]),np.array([])
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
@@ -115,7 +122,11 @@ class NepCalculator():
         return potentials_array,forces_array,reshaped_virials
 
     @utils.timeit
-    def calculate_with_dftd3(self,structures:list[Structure],functional,cutoff,cutoff_cn):
+    def calculate_with_dftd3(self,
+                             structures:list[Structure],
+                             functional,
+                             cutoff,
+                             cutoff_cn)->tuple[npt.NDArray[np.float32],npt.NDArray[np.float32],npt.NDArray[np.float32]]:
         if not self.initialized:
             return np.array([]),np.array([]),np.array([])
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
@@ -139,7 +150,7 @@ class NepCalculator():
         return potentials_array,forces_array,reshaped_virials
 
 
-    def get_descriptor(self,structure:Structure):
+    def get_descriptor(self,structure:Structure)->npt.NDArray[np.float32]:
         """
         获取单个结构的所有原子描述符
         """
@@ -157,7 +168,9 @@ class NepCalculator():
 
         return descriptors_per_atom
     @utils.timeit
-    def get_structures_descriptor(self,structures:list[Structure]):
+    def get_structures_descriptor(self,
+                                  structures:list[Structure]
+                                  )->npt.NDArray[np.float32]:
         """
         获取结构描述符：原子平均
         返回的已经结构的描述符了 无需平均
@@ -171,7 +184,9 @@ class NepCalculator():
         return np.array(descriptor,dtype=np.float32)
 
     @utils.timeit
-    def get_structures_polarizability(self,structures:list[Structure]):
+    def get_structures_polarizability(self,
+                                      structures:list[Structure]
+                                      )->npt.NDArray[np.float32]:
         if not self.initialized:
             return np.array([])
         _types, _boxs, _positions, group_size = self.compose_structures(structures)
@@ -179,7 +194,9 @@ class NepCalculator():
 
         return np.array(polarizability,dtype=np.float32)
 
-    def get_structures_dipole(self,structures:list[Structure]):
+    def get_structures_dipole(self,
+                              structures:list[Structure]
+                              )->npt.NDArray[np.float32]:
         if not self.initialized:
             return np.array([])
         _types, _boxs, _positions, group_size = self.compose_structures(structures)

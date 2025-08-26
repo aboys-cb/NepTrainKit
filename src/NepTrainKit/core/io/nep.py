@@ -7,17 +7,14 @@
 import os
 import traceback
 from pathlib import Path
-
+import numpy.typing as npt
 import numpy as np
-from PySide6.QtCore import QObject, Signal
 from loguru import logger
 from NepTrainKit import module_path,utils
 from NepTrainKit.core import MessageManager, Structure
 from NepTrainKit.config import Config
 
 from NepTrainKit.core.calculator import NEPProcess
-
-
 
 from NepTrainKit.core.io.base import NepPlotData, StructureData, ResultData
 
@@ -26,21 +23,25 @@ from NepTrainKit.core.types import ForcesMode
 
 
 class NepTrainResultData(ResultData):
+    _energy_dataset: NepPlotData
+    _force_dataset: NepPlotData
+    _stress_dataset: NepPlotData
+    _virial_dataset: NepPlotData
     def __init__(self,
-                 nep_txt_path,
-                 data_xyz_path,
-                 energy_out_path,
-                 force_out_path,
-                 stress_out_path,
-                 virial_out_path,
-                 descriptor_path
+                 nep_txt_path: Path|str,
+                 data_xyz_path: Path|str,
+                 energy_out_path: Path|str,
+                 force_out_path: Path|str,
+                 stress_out_path: Path|str,
+                 virial_out_path: Path|str,
+                 descriptor_path: Path|str
 
                  ):
         super().__init__(nep_txt_path,data_xyz_path,descriptor_path)
-        self.energy_out_path = energy_out_path
-        self.force_out_path = force_out_path
-        self.stress_out_path = stress_out_path
-        self.virial_out_path = virial_out_path
+        self.energy_out_path = Path(energy_out_path)
+        self.force_out_path = Path(force_out_path)
+        self.stress_out_path = Path(stress_out_path)
+        self.virial_out_path = Path(virial_out_path)
 
     @property
     def datasets(self):
@@ -138,7 +139,7 @@ class NepTrainResultData(ResultData):
         ])
         return not check_fullbatch(nep_in, len(self.atoms_num_list)) or not output_files_exist
 
-    def _save_energy_data(self, potentials: np.ndarray)  :
+    def _save_energy_data(self, potentials:npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
 
         """保存能量数据到文件。"""
 
@@ -162,7 +163,7 @@ class NepTrainResultData(ResultData):
             np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
         return energy_array
 
-    def _save_force_data(self, forces: np.ndarray)  :
+    def _save_force_data(self, forces: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
         """保存力数据到文件。"""
         try:
             ref_forces = np.vstack([s.forces for s in self.structure.now_data], dtype=np.float32)
@@ -189,7 +190,7 @@ class NepTrainResultData(ResultData):
 
 
 
-    def _save_virial_and_stress_data(self, virials: np.ndarray )    :
+    def _save_virial_and_stress_data(self, virials: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
         """保存维里和应力数据到文件。"""
         coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data]))[:, np.newaxis]
         try:
@@ -256,15 +257,17 @@ class NepTrainResultData(ResultData):
 
 
 class NepPolarizabilityResultData(ResultData):
-    def __init__(self,
-                 nep_txt_path,
-                 data_xyz_path,
-                 polarizability_out_path,
+    _polarizability_diagonal_dataset: NepPlotData
+    _polarizability_no_diagonal_dataset: NepPlotData
 
-        descriptor_path
+    def __init__(self,
+                 nep_txt_path: Path|str,
+                 data_xyz_path: Path|str,
+                 polarizability_out_path: Path|str,
+                 descriptor_path: Path|str
                  ):
         super().__init__(nep_txt_path,data_xyz_path,descriptor_path)
-        self.polarizability_out_path = polarizability_out_path
+        self.polarizability_out_path = Path(polarizability_out_path)
 
     @property
     def datasets(self):
@@ -324,7 +327,7 @@ class NepPolarizabilityResultData(ResultData):
 
             nep_polarizability_array = np.array([])
         return nep_polarizability_array
-    def _save_polarizability_data(self, polarizability: np.ndarray)  :
+    def _save_polarizability_data(self, polarizability: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
         """保存polarizability数据到文件。"""
         nep_polarizability_array = polarizability / (self.atoms_num_list[:, np.newaxis])
 
@@ -365,16 +368,16 @@ class NepPolarizabilityResultData(ResultData):
 
 
 class NepDipoleResultData(ResultData):
+    _dipole_dataset: NepPlotData
     def __init__(self,
-                 nep_txt_path,
-                 data_xyz_path,
-                 dipole_out_path,
-
-                 descriptor_path
+                 nep_txt_path: Path|str,
+                 data_xyz_path: Path|str,
+                 dipole_out_path: Path|str,
+                 descriptor_path: Path|str
                  ):
         super().__init__(nep_txt_path, data_xyz_path, descriptor_path)
 
-        self.dipole_out_path = dipole_out_path
+        self.dipole_out_path = Path(dipole_out_path)
     @property
     def datasets(self):
         return [self.dipole , self.descriptor]
@@ -383,8 +386,6 @@ class NepDipoleResultData(ResultData):
     def dipole(self):
         return self._dipole_dataset
 
-
-
     @property
     def descriptor(self):
         return self._descriptor_dataset
@@ -392,11 +393,8 @@ class NepDipoleResultData(ResultData):
     @classmethod
     def from_path(cls, path, model="train"):
         dataset_path = Path(path)
-
         file_name = dataset_path.stem
-
         nep_txt_path = dataset_path.with_name(f"nep.txt")
-
         polarizability_out_path = dataset_path.with_name(f"dipole_{file_name}.out")
 
         if file_name == "train":
@@ -439,7 +437,7 @@ class NepDipoleResultData(ResultData):
 
             nep_dipole_array = np.array([])
         return nep_dipole_array
-    def _save_dipole_data(self, dipole: np.ndarray)  :
+    def _save_dipole_data(self, dipole: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
         """保存dipole数据到文件。"""
         nep_dipole_array = dipole / (self.atoms_num_list[:, np.newaxis])
 

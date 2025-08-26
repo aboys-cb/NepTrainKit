@@ -3,6 +3,7 @@
 # @Time    : 2024/11/21 14:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+from __future__ import annotations
 import glob
 import json
 import os
@@ -10,14 +11,17 @@ import re
 from copy import deepcopy
 from pathlib import Path
 from functools import cached_property
+from typing import Any,IO
+
 import numpy as np
+import numpy.typing as npt
 from ase import neighborlist
 from ase.geometry import find_mic
 from loguru import logger
 from scipy.sparse.csgraph import connected_components
 from collections import defaultdict, Counter
 from NepTrainKit import utils, module_path
-from ase.data import atomic_numbers
+
 
 
 with open(os.path.join(module_path, "Config/ptable.json"), "r", encoding="utf-8") as f:
@@ -31,7 +35,19 @@ class Structure:
     extxyz格式的结构类
     原子坐标是笛卡尔坐标
     """
-    def __init__(self, lattice, atomic_properties, properties, additional_fields):
+    def __init__(self,
+                 lattice: list[float]|npt.NDArray[np.float32],
+                 atomic_properties:dict[str,npt.NDArray[np.float32]],
+                 properties:list[dict[str,str]],
+                 additional_fields:dict[str,Any]  ):
+        """
+
+        :param lattice: 晶格矩阵
+        :param atomic_properties:
+            和原子对应的属性 比如{"pos":np.array(),"forces":np.array(),"species":np.array()}
+        :param properties: [{'name': "pos", 'type': 'R', 'count': 3},...]
+        :param additional_fields: xyz的第二行的信息 比如{"energy":3}
+        """
         super().__init__()
         self.properties = properties
         self.lattice = np.array(lattice,dtype=np.float32).reshape((3,3))  # Optional: Lattice vectors
@@ -43,9 +59,10 @@ class Structure:
             self.force_label="force"
         else:
             self.force_label = "forces"
+        #预加载下属性
         self.formula
     @property
-    def tag(self):
+    def tag(self)->str:
         """Alias for the ``Config_type`` additional field."""
         return self.additional_fields.get("Config_type", "")
 
@@ -53,13 +70,19 @@ class Structure:
     def tag(self, value):
         self.additional_fields["Config_type"] = value
     def get_prop_key(self,additional_fields=True,atomic_properties=True)->list[str]:
+        """
+        获取整个结构中，所有的属性key值
+        :param additional_fields:
+        :param atomic_properties:
+        :return: ["pos","energy",...]
+        """
         keys=[]
         if additional_fields:
             keys.extend(self.additional_fields.keys())
         if atomic_properties:
             keys.extend(self.atomic_properties.keys())
         return keys
-    def remove_atomic_properties(self,key):
+    def remove_atomic_properties(self,key:str):
         if key in self.atomic_properties:
             self.atomic_properties.pop(key)
             for prop in self.properties:
@@ -71,7 +94,7 @@ class Structure:
         return len(self.elements)
 
     @classmethod
-    def read_xyz(cls, filename):
+    def read_xyz(cls, filename:str) -> Structure:
         with open(filename, 'r') as f:
             structure = cls.parse_xyz(f.read())
         return structure
@@ -146,7 +169,7 @@ class Structure:
 
         return self.__get_formula(sub=True)
 
-    def __get_formula(self, sub=False):
+    def __get_formula(self, sub=False)->str:
         # priority = {'C': 0, 'H': 1}
 
         # 优先级：C → H → 按原子序数 → 未知元素按字母
@@ -175,13 +198,13 @@ class Structure:
     def energy(self):
         return self.additional_fields["energy"]
     @energy.setter
-    def energy(self,new_energy):
+    def energy(self,new_energy:float):
         self.additional_fields["energy"] = new_energy
     @property
     def forces(self):
         return self.atomic_properties[self.force_label]
     @forces.setter
-    def forces(self,arr):
+    def forces(self,arr:npt.NDArray[np.float32]):
         has_forces=[i["name"]==self.force_label for i in self.properties]
         if not any(has_forces):
             self.properties.append({'name': self.force_label, 'type': 'R', 'count': 3})
@@ -200,7 +223,7 @@ class Structure:
                 raise ValueError("No virial or stress data")
         return vir
     @virial.setter
-    def virial(self,new_virial):
+    def virial(self,new_virial:npt.NDArray[np.float32]):
         self.additional_fields["virial"] = new_virial
 
     @property
@@ -237,7 +260,7 @@ class Structure:
     def copy(self):
         return deepcopy(self)
 
-    def set_lattice(self, new_lattice: np.ndarray,in_place=False):
+    def set_lattice(self, new_lattice: npt.NDArray[np.float32],in_place=False):
         """
         根据新晶格缩放原子位置，支持原地修改或返回新对象。
 
@@ -259,7 +282,7 @@ class Structure:
 
         return target
 
-    def supercell(self, scale_factor, order="atom-major", tol=1e-5):
+    def supercell(self, scale_factor, order="atom-major", tol=1e-5)->Structure:
         """
         按指定比例因子扩展晶胞，参考 ASE 的高效实现。
         保持晶格角度不变，并支持按元素排序。
@@ -329,7 +352,7 @@ class Structure:
         additional_fields["Config_type"] =self.additional_fields.get('Config_type', "")+f" super cell({scale_factor})"
 
         return Structure(new_lattice, atomic_properties, properties, additional_fields)
-    def adjust_reasonable(self, coefficient=0.7):
+    def adjust_reasonable(self, coefficient=0.7)->bool:
         """
         根据传入系数 对比共价半径和实际键长，
         如果实际键长小于coefficient*共价半径之和，判定为不合理结构 返回False
@@ -375,7 +398,7 @@ class Structure:
 
 
     @classmethod
-    def parse_xyz(cls, lines):
+    def parse_xyz(cls, lines:list[str]|str)->Structure:
         """
         Parse a single structure from a list of lines.
         """
@@ -422,7 +445,7 @@ class Structure:
         return cls(lattice, atomic_properties, properties, additional_fields)
 
     @classmethod
-    def _parse_global_properties(cls, line):
+    def _parse_global_properties(cls, line:str)->tuple[list[float],list[dict[str,Any]],dict[str,Any]]:
         """
         Parse global properties from the second line of an XYZ block.
         """
@@ -465,7 +488,7 @@ class Structure:
         return lattice, properties, additional_fields
 
     @staticmethod
-    def _parse_properties(properties_str):
+    def _parse_properties(properties_str)->list[dict[str,Any]]:
         """
         Parse `Properties` attribute string to extract atom-specific fields.
         """
@@ -482,7 +505,7 @@ class Structure:
 
     @staticmethod
     @utils.timeit
-    def read_multiple(filename ):
+    def read_multiple(filename:str ):
         """
         Read a multi-structure XYZ file and return a list of Structure objects.
         """
@@ -513,7 +536,7 @@ class Structure:
 
         return structures
 
-    def write(self, file):
+    def write(self, file:IO):
         """
         Write the current structure to an XYZ file.
         """
@@ -573,11 +596,11 @@ class Structure:
         bond_lengths = {}
         # 遍历所有原子对，计算每一对元素的最小键长
         for idx in range(len(i)):
-            atom_i, atom_j = symbols[i[idx]], symbols[j[idx]]
+            atom_i, atom_j = str(symbols[i[idx]]), str(symbols[j[idx]])
             # if atom_i==atom_j:
             #     continue
             # 获取当前键长
-            bond_length = dist_matrix[i[idx], j[idx]]
+            bond_length = float(dist_matrix[i[idx], j[idx]])
             # if bond_length>5:
             #     continue
             # 确保元素对按字母顺序排列，避免 Cs-Ag 和 Ag-Cs 视为不同
@@ -619,7 +642,10 @@ class Structure:
         bad_bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
         return bad_bond_pairs
 
-def calculate_pairwise_distances(lattice_params:np.ndarray[tuple[int,int],np.dtype[np.float32]], atom_coords:np.ndarray[tuple[int,int],np.dtype[np.float32]], fractional=True):
+def calculate_pairwise_distances(lattice_params:npt.NDArray[np.float32],
+                                 atom_coords:npt.NDArray[np.float32],
+                                 fractional=True
+                                 )->npt.NDArray[np.float32]:
     """
     计算晶体中所有原子对之间的距离，考虑周期性边界条件
 
@@ -648,7 +674,7 @@ def calculate_pairwise_distances(lattice_params:np.ndarray[tuple[int,int],np.dty
 
 
 # 判断团簇是否为有机分子
-def is_organic_cluster(symbols):
+def is_organic_cluster(symbols:list[str]) -> bool:
     has_carbon = 'C' in symbols
     organic_elements = {'H', 'O', 'N', 'S', 'P'}
     has_organic_elements = any(symbol in organic_elements for symbol in symbols)
@@ -658,6 +684,11 @@ def is_organic_cluster(symbols):
 
 
 def get_clusters(structure):
+    """
+
+    :param structure:  ase.Atoms
+    :return:
+    """
     cutoff = neighborlist.natural_cutoffs(structure)
     nl = neighborlist.NeighborList(cutoff, self_interaction=False, bothways=True)
     nl.update(structure)
@@ -824,7 +855,7 @@ def load_npy_structure(folders):
         return structures
 
 @utils.timeit
-def save_npy_structure(folder, structures):
+def save_npy_structure(folder:str, structures:list[Structure]):
     """
     保存结构信息到指定的文件夹，根据Config_type将数据组织
     :param folder: 保存的目标文件夹

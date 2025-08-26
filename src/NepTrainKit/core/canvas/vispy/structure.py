@@ -3,6 +3,7 @@
 # @Time    : 2025/5/19 20:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+from __future__ import annotations
 from typing import Any
 
 from vispy.visuals.filters import ShadingFilter
@@ -19,7 +20,7 @@ from vispy.scene.visuals import Mesh, Line,Text
 from vispy.color import Color, get_colormap
 
 
-def create_arrow_mesh():
+def create_arrow_mesh()->MeshData:
     """Return MeshData representing an arrow aligned to +Z axis."""
     cyl = create_cylinder(20, 32, radius=[0.05, 0.05], length=0.8)
     cone = create_cone(32, radius=0.1, length=0.2)
@@ -599,7 +600,7 @@ class StructurePlotWidget(scene.SceneCanvas):
             self.update()
 
 
-    def show_structure(self, structure):
+    def show_structure(self, structure:Structure):
         """Display the entire crystal structure."""
         self.structure = structure
         if self.axes is not None:

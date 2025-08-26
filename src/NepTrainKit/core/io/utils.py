@@ -6,12 +6,18 @@
 import os
 import re
 from functools import partial
-
+from pathlib import Path
 import numpy as np
+import numpy.typing as npt
 from loguru import logger
 
 
-def read_nep_in(  file_name):
+def read_nep_in(file_name: str|Path) ->dict[str,str]:
+    """
+    将nep.in的内容解析成dict
+    :param file_name: nep.in的路径
+    :return:
+    """
     run_in={}
 
     if  not os.path.exists(file_name):
@@ -26,7 +32,7 @@ def read_nep_in(  file_name):
 
     return run_in
 
-def check_fullbatch(run_in,structure_num):
+def check_fullbatch(run_in:dict[str,str],structure_num:int)->bool:
 
     if run_in.get("prediction")=="1":
         return True
@@ -34,8 +40,13 @@ def check_fullbatch(run_in,structure_num):
         return True
     return False
 
-def read_nep_out_file(file_path,**kwargs):
-
+def read_nep_out_file(file_path:Path|str,**kwargs)->npt.NDArray[np.float32]:
+    """
+    读取out数值文件
+    :param file_path: energy_train.out
+    :param kwargs:
+    :return:
+    """
     if os.path.exists(file_path):
 
         data = np.loadtxt(file_path,**kwargs)
@@ -45,7 +56,11 @@ def read_nep_out_file(file_path,**kwargs):
     else:
         return np.array([])
 
-def parse_array_by_atomnum(array,atoms_num_list,map_func=np.linalg.norm,axis=0):
+def parse_array_by_atomnum(array: npt.NDArray[np.float32],
+                           atoms_num_list: npt.NDArray[np.float32],
+                           map_func=np.linalg.norm,
+                           axis:int=0
+                           )->npt.NDArray[np.float32]:
     """
     根据一个映射列表，将原数组按照原子数列表拆分，
     这个主要是处理文件中原子数不一致的情况，比如力 描述符等文件是按照原子数的 把他们转换成结构的
@@ -68,7 +83,7 @@ def parse_array_by_atomnum(array,atoms_num_list,map_func=np.linalg.norm,axis=0):
     new_array = np.array(list(map(func, split_arrays)))
     return new_array
 
-def get_nep_type(file_path):
+def get_nep_type(file_path:Path|str)->int:
     """
     根据nep.txt 判断势函数类别
     """

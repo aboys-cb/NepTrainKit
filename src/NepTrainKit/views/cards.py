@@ -25,7 +25,8 @@ else:
 
 class ConsoleWidget(QWidget):
     """
-控制台"""
+    控制台
+    """
     newCardSignal = Signal(str)  # 定义一个信号，用于通知上层组件新增卡片
     stopSignal = Signal()
     runSignal = Signal( )

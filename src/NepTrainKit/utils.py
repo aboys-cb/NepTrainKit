@@ -15,7 +15,8 @@ from PySide6.QtWidgets import QFileDialog, QApplication
 from ase.build.tools import sort as ase_sort
 from loguru import logger
 from qfluentwidgets import StateToolTip
-
+import hashlib
+from pathlib import Path
 from NepTrainKit.config import Config
 
 from NepTrainKit.version import UPDATE_EXE, UPDATE_FILE, NepTrainKit_EXE
@@ -105,6 +106,17 @@ def call_path_dialog(self,
     Config.set("setting", "last_path", last_dir)
     return select_path
 
+
+def sha256_file(path: str | Path, chunk: int = 8 * 1024 * 1024) -> str:
+    p = Path(path)
+    h = hashlib.sha256()
+    with p.open("rb") as f:
+        while True:
+            b = f.read(chunk)
+            if not b:
+                break
+            h.update(b)
+    return h.hexdigest()
 def unzip():
 
     cmd = f"ping -n 3 127.0.0.1&{UPDATE_EXE} {UPDATE_FILE}&ping -n 2 127.0.0.1&start {NepTrainKit_EXE}"

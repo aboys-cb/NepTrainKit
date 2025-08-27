@@ -8,7 +8,12 @@ class DatasetManager(QObject):
         super().__init__(parent)
 
         self._parent = parent
-        self.database=DataBaseEngine()
+
+        # database and services
+        # self._db = Database()
+        # self.dataset_service = DatasetService(self._db)
+        # self.model_service = ModelService(self._db)
+        # self.lineage_service = LineageService(self._db)
 
     def generate_dataset_id(self):
 

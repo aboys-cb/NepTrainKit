@@ -5,12 +5,13 @@
 # @email    : 1747193328@qq.com
 import os
 import re
+import traceback
 from functools import partial
 from pathlib import Path
 import numpy as np
 import numpy.typing as npt
 from loguru import logger
-
+from NepTrainKit.core import MessageManager
 
 def read_nep_in(file_name: str|Path) ->dict[str,str]:
     """
@@ -22,14 +23,18 @@ def read_nep_in(file_name: str|Path) ->dict[str,str]:
 
     if  not os.path.exists(file_name):
         return run_in
-    with open(file_name, 'r', encoding="utf8") as f:
+    try:
+        with open(file_name, 'r', encoding="utf8") as f:
 
-        groups = re.findall(r"^([A-Za-z_]+)\s+([^\#\n]*)", f.read(), re.MULTILINE)
+            groups = re.findall(r"^([A-Za-z_]+)\s+([^\#\n]*)", f.read(), re.MULTILINE)
 
-        for group in groups:
+            for group in groups:
 
-            run_in[group[0].strip()] = group[1].strip()
-
+                run_in[group[0].strip()] = group[1].strip()
+    except:
+        logger.debug(traceback.format_exc())
+        MessageManager.send_warning_message("read nep.in file error")
+        nep_in = {}
     return run_in
 
 def check_fullbatch(run_in:dict[str,str],structure_num:int)->bool:

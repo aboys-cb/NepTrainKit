@@ -256,9 +256,6 @@ class DeepmdResultData(ResultData):
             energy_array = self._save_energy_data(nep_potentials_array)
             force_array = self._save_force_data(nep_forces_array)
             virial_array = self._save_virial_and_data(nep_virials_array[:, [0, 4, 8, 1, 5, 6]])
-
-
-            self.write_prediction()
             return energy_array,force_array,virial_array
         except Exception as e:
             logger.debug(traceback.format_exc())

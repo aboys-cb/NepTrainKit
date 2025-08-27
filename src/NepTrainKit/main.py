@@ -77,11 +77,13 @@ class NepTrainKitMainWindow(FluentWindow):
         self.addSubInterface(self.show_nep_interface,
                              QIcon(':/images/src/images/show_nep.svg'),
                              'NEP Dataset Display')
-        self.addSubInterface(self.make_data_widget,
+        self.addSubInterface(self.make_data_interface,
                              QIcon(':/images/src/images/make.svg'),
-                             'Make Data' )
+                             'Make Data')
 
-
+        self.addSubInterface(self.data_manager_interface,
+                             QIcon(':/images/src/images/make.svg'),
+                             'Data Management')
         self.addSubInterface(self.setting_interface,
                              FIF.SETTING,
                              'Settings',
@@ -93,8 +95,9 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def init_widget(self):
         self.show_nep_interface = ShowNepWidget(self)
-        self.make_data_widget = MakeDataWidget(self)
+        self.make_data_interface = MakeDataWidget(self)
         self.setting_interface = SettingsWidget(self)
+        self.data_manager_interface = DataManagerWidget(self)
 
     def initWindow(self):
         self.resize(1200, 700)

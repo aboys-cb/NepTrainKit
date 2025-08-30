@@ -1,7 +1,8 @@
 import uuid
 
 from PySide6.QtCore import QObject
-from .database import DataBaseEngine
+from .database import Database
+from .services import ModelService,ProjectService
 
 class DatasetManager(QObject):
     def __init__(self,parent=None):
@@ -10,11 +11,10 @@ class DatasetManager(QObject):
         self._parent = parent
 
         # database and services
-        # self._db = Database()
-        # self.dataset_service = DatasetService(self._db)
-        # self.model_service = ModelService(self._db)
-        # self.lineage_service = LineageService(self._db)
+        self._db = Database()
+        self.model_service = ModelService(self._db)
 
-    def generate_dataset_id(self):
+        self.project_service = ProjectService(self._db)
+    def get_models(self,**kwargs):
+        return self.model_service.search_models(**kwargs)
 
-        return uuid.uuid4().hex

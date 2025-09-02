@@ -791,7 +791,8 @@ def _load_npy_structure(folder):
         for data_path in Path(_set).iterdir():
             key = data_path.stem
             data = np.load(data_path)
-
+            if data.ndim == 1:
+                data=data.reshape(data.shape[0], -1)
             if key in dataset_dict:
                 dataset_dict[key].append(data)  # Collect in lists for later concatenation
             else:

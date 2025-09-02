@@ -1,18 +1,24 @@
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QCursor
+from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex, Signal
+from PySide6.QtGui import QCursor, QColor
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from qfluentwidgets import TreeItemDelegate, TreeView, RoundMenu, Action
 from NepTrainKit.core.dataset import DatasetManager
+# from NepTrainKit.custom_widget import DatasetItemModel
 
-class DatasetItemTableWidget(TreeView):
+
+class ModelItemTableWidget(TreeView):
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.manager = DatasetManager()
+        # self.setModel()
+        # self._model=DatasetItemModel()
+        # self.setModel(self._model)
+        # self._model.setHorizontalHeaderLabels(["ID","Type","Name","Create At"])
         self.create_menu()
     def create_menu(self):
-        self.menu = RoundMenu(self)
+        self.menu = RoundMenu(parent=self)
         self.menu.addAction(Action("test",self))
         self.customContextMenuRequested.connect(self.show_menu)
 
@@ -24,4 +30,6 @@ class DatasetItemTableWidget(TreeView):
     def load_item(self):
         all_models = self.manager.get_models()
         for item in all_models:
-            item.
+            # item.
+            pass
+

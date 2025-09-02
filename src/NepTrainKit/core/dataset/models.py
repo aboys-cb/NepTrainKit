@@ -4,6 +4,10 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import String, Integer, DateTime, ForeignKey, Text, JSON, Boolean
 
 
+
+
+
+
 class Base(DeclarativeBase):
     pass
 
@@ -23,7 +27,12 @@ class Project(Base):
     updated_at: Mapped[dt.datetime] = mapped_column(
         DateTime, default=dt.datetime.utcnow, onupdate=dt.datetime.utcnow
     )
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id"))
+    parent: Mapped["Project | None"] = relationship(
+        remote_side=[id], backref="children",
+        # cascade="all, delete-orphan",
 
+    )
     # 关键：指定 foreign_keys = ModelVersion.project_id
     model_versions: Mapped[list["ModelVersion"]] = relationship(
         back_populates="project",

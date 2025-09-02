@@ -19,7 +19,7 @@ from qfluentwidgets import (
     FluentStyleSheet,
     FluentTitleBar,
     TitleLabel, HyperlinkLabel, RadioButton, LineEdit, FlowLayout, EditableComboBox, PrimaryDropDownPushButton,
-    PrimaryPushButton, Flyout, InfoBarIcon, MessageBox
+    PrimaryPushButton, Flyout, InfoBarIcon, MessageBox,TextEdit
 )
 from qframelesswindow import FramelessDialog
 import json
@@ -564,4 +564,31 @@ class DFTD3MessageBox(MessageBoxBase):
 
                 self.functionEdit.setFocus()
                 return False
+        return True
+class ProjectInfoMessageBox(MessageBoxBase):
+    def __init__(self, parent=None):
+        super(ProjectInfoMessageBox, self).__init__(parent)
+        self.widget = QWidget(self)
+        self.widget_layout = QGridLayout(self.widget)
+
+        self.parent_combox=ComboBox(self.widget)
+        self.project_name=LineEdit(self.widget)
+        self.project_name.setPlaceholderText("The name of the project")
+
+        self.project_note=TextEdit(self.widget)
+        self.project_note.setMinimumSize(200,100)
+        self.project_note.setPlaceholderText("Notes on the project")
+        self.widget_layout.addWidget(CaptionLabel("Parent",self.widget), 0, 0)
+
+        self.widget_layout.addWidget(self.parent_combox, 0, 1)
+
+        self.widget_layout.addWidget(CaptionLabel("Project Name",self.widget), 1, 0)
+        self.widget_layout.addWidget(self.project_name, 1, 1)
+        self.widget_layout.addWidget(CaptionLabel("Project Note",self.widget), 2, 0 )
+        self.widget_layout.addWidget(self.project_note, 2, 1 )
+        self.viewLayout.addWidget(self.widget)
+    def validate(self):
+        project_name=self.project_name.text().strip()
+        if len(project_name)==0:
+            return False
         return True

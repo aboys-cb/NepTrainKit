@@ -8,7 +8,8 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QApplication, QSplitter
 
-from NepTrainKit.views import DatasetItemTableWidget
+from NepTrainKit.views import ModelItemTableWidget
+from NepTrainKit.views.project_view import ProjectWidget
 
 
 class DataManagerWidget(QWidget):
@@ -46,15 +47,18 @@ class DataManagerWidget(QWidget):
         self.gridLayout.setContentsMargins(0, 0, 0, 0)
 
         self.splitter = QSplitter(Qt.Orientation.Horizontal, self)
-        self.classification_widget = QWidget(self)
-        self.classification_widget.setObjectName("classification_widget")
-        self.data_item_widget = DatasetItemTableWidget(self)
+        self.project_widget = ProjectWidget(self)
+        self.project_widget.setObjectName("project_widget")
+        self.project_widget.setAutoFillBackground(True)
+
+        self.data_item_widget = ModelItemTableWidget(self)
         self.data_info_widget = QWidget(self)
-        self.splitter.addWidget(self.classification_widget)
+        self.data_info_widget.setAutoFillBackground(True)
+        self.splitter.addWidget(self.project_widget)
         self.splitter.addWidget(self.data_item_widget)
         self.splitter.addWidget(self.data_info_widget)
 
-        self.splitter.setSizes([150,800,200])
+        self.splitter.setSizes([160,800,200])
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 8)
         self.splitter.setStretchFactor(2, 2)

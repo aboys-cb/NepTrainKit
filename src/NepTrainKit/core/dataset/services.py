@@ -6,9 +6,13 @@ import hashlib
 import json
 import os
 import shutil
+from decimal import Decimal
 from pathlib import Path
+
 from typing import Iterable
 from dataclasses import dataclass
+
+from loguru import logger
 
 from NepTrainKit import utils
 
@@ -20,7 +24,28 @@ from .models import (
     ModelVersion,
     StorageRef,
 )
+def query_set_to_dict(func):
+    def wrapper(*args, **kwargs):
+        objs = func(*args, **kwargs)
+        if not isinstance(objs, (list, tuple)):
+            objs = [objs]
+        result=[]
+        for obj in objs:
+            obj_dict = {}
+            for column in obj.__table__.columns.keys():
+                val = getattr(obj, column)
+                if isinstance(val, Decimal):
+                    val = float(val)
+                if isinstance(val, datetime.datetime):
+                    val = val.strftime("%Y/%m/%d %H:%M:%S")
+                elif isinstance(val, datetime.date):
+                    val = val.strftime("%Y/%m/%d")
 
+                obj_dict[column] = val
+            result.append(obj_dict)
+
+        return result
+    return wrapper
 
 def _hash_file(path: str) -> str:
     """Return the SHA256 hash of a file."""
@@ -70,6 +95,7 @@ class ProjectService:
     项目的service
     """
     db: Database
+    # @query_set_to_dict
     def search_projects(self,**kwargs) -> list[Project]:
         with self.db.session() as session:
             return (
@@ -84,12 +110,36 @@ class ProjectService:
             return None
         return projects[0]
 
-    def create_project(self,  name: str, description: str = ""   ) -> Project:
+    def create_project(self,  name: str, description: str = "", parent_id: int = None   ) -> Project|None:
+        try:
+            with self.db.session() as session:
+                family = Project(name=name, description=description,parent_id=parent_id )
+                session.add(family)
+                session.commit()
+                return family
+        except Exception as e:
+            logger.error(e)
+            return None
+    def modify_project(self, project_id: int, name: str, description: str = "", parent_id: int = None ) -> Project|None:
+
+
         with self.db.session() as session:
-            family = Project(name=name, description=description )
-            session.add(family)
+
+            session.query(Project).filter_by(id=project_id).update(
+                {"name":name,"description":description}
+            )
+
             session.commit()
-            return family
+
+
+    def remove_project(self, project_id: int) -> Project|None:
+        with self.db.session() as session:
+            session.query(Project).filter_by(id=project_id).delete()
+
+
+            session.commit()
+
+
 @dataclass
 class ModelService:
     db: Database

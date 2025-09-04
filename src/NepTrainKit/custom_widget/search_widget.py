@@ -5,7 +5,7 @@
 # @email    : 1747193328@qq.com
 from PySide6.QtCore import Qt, Signal, QSize
 from PySide6.QtWidgets import QCompleter
-from qfluentwidgets import SearchLineEdit,CheckBox
+from qfluentwidgets import SearchLineEdit, CheckBox, ToolTipFilter, ToolTipPosition
 from qfluentwidgets.components.widgets.line_edit import CompleterMenu, LineEditButton
 
 from .completer import CompleterModel, JoinDelegate
@@ -27,10 +27,15 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
 
 
         self.searchButton.setToolTip("Searching for structures based on Config_type")
+        self.searchButton.installEventFilter(ToolTipFilter(self.searchButton, 300, ToolTipPosition.TOP))
+
         self.checkButton = LineEditButton(":/images/src/images/check.svg", self)
+        self.checkButton.installEventFilter(ToolTipFilter(self.checkButton, 300, ToolTipPosition.TOP))
+
         self.checkButton.setToolTip("Mark structure according to Config_type")
         self.uncheckButton = LineEditButton(":/images/src/images/uncheck.svg", self)
         self.uncheckButton.setToolTip("Unmark structure according to Config_type")
+        self.uncheckButton.installEventFilter(ToolTipFilter(self.uncheckButton, 300, ToolTipPosition.TOP))
 
         self.searchButton.setIconSize(QSize(16, 16))
 

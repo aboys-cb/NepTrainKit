@@ -54,6 +54,8 @@
         <file>src/images/data_range.svg</file>
         <file>src/images/xyz.svg</file>
         <file>src/images/edit_info.svg</file>
+        <file>src/images/gpumd.png</file>
+        <file>src/images/gpumd_new.png</file>
 
   </qresource>
   <qresource prefix="/theme">

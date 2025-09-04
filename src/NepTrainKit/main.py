@@ -14,8 +14,8 @@ from PySide6.QtGui import QIcon, QFont, QPalette, QColor
 
 from PySide6.QtWidgets import QApplication, QWidget, QGridLayout
 from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition,
-                            SplitToolButton, RoundMenu)
-from qfluentwidgets import FluentIcon as FIF
+                            SplitToolButton, RoundMenu,FluentIcon)
+
 from loguru import logger
 from NepTrainKit.core import MessageManager
 from NepTrainKit.config import Config
@@ -85,7 +85,7 @@ class NepTrainKitMainWindow(FluentWindow):
                              QIcon(':/images/src/images/make.svg'),
                              'Data Management')
         self.addSubInterface(self.setting_interface,
-                             FIF.SETTING,
+                             FluentIcon.SETTING,
                              'Settings',
                              NavigationItemPosition.BOTTOM)
 

@@ -7,7 +7,8 @@ import sys
 from enum import Enum
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QBrush, QColor, QPen
+from PySide6.QtGui import QBrush, QColor, QPen, QIcon
+
 if sys.version_info >= (3, 11):
     from enum import StrEnum          # 3.11+
 else:
@@ -115,3 +116,7 @@ class Brushes(Base):
     Current=QBrush(QColor(255, 0,0 ))
     def __getattr__(self, item):
         return getattr(self.Default, item)
+
+class ModelTypeIcon(Base):
+
+    NEP=':/images/src/images/gpumd_new.png'

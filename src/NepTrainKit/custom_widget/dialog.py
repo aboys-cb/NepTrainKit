@@ -25,7 +25,7 @@ from qframelesswindow import FramelessDialog
 import json
 import os
 from .button import TagPushButton, TagGroup
-from qfluentwidgets import FluentIcon as FIF
+
 from NepTrainKit.core import MessageManager
 
 from NepTrainKit import module_path
@@ -567,28 +567,42 @@ class DFTD3MessageBox(MessageBoxBase):
         return True
 class ProjectInfoMessageBox(MessageBoxBase):
     def __init__(self, parent=None):
-        super(ProjectInfoMessageBox, self).__init__(parent)
-        self.widget = QWidget(self)
-        self.widget_layout = QGridLayout(self.widget)
+        super().__init__(parent)
 
-        self.parent_combox=ComboBox(self.widget)
-        self.project_name=LineEdit(self.widget)
+        self._widget = QWidget(self)
+
+        self.widget_layout = QGridLayout(self._widget)
+
+        self.parent_combox=ComboBox(self._widget)
+        self.project_name=LineEdit(self._widget)
         self.project_name.setPlaceholderText("The name of the project")
 
-        self.project_note=TextEdit(self.widget)
+        self.project_note=TextEdit(self._widget)
         self.project_note.setMinimumSize(200,100)
         self.project_note.setPlaceholderText("Notes on the project")
-        self.widget_layout.addWidget(CaptionLabel("Parent",self.widget), 0, 0)
+        self.widget_layout.addWidget(CaptionLabel("Parent",self), 0, 0)
 
         self.widget_layout.addWidget(self.parent_combox, 0, 1)
 
-        self.widget_layout.addWidget(CaptionLabel("Project Name",self.widget), 1, 0)
+        self.widget_layout.addWidget(CaptionLabel("Project Name",self), 1, 0)
         self.widget_layout.addWidget(self.project_name, 1, 1)
-        self.widget_layout.addWidget(CaptionLabel("Project Note",self.widget), 2, 0 )
+        self.widget_layout.addWidget(CaptionLabel("Project Note",self), 2, 0 )
         self.widget_layout.addWidget(self.project_note, 2, 1 )
-        self.viewLayout.addWidget(self.widget)
+        self.viewLayout.addWidget(self._widget)
     def validate(self):
         project_name=self.project_name.text().strip()
         if len(project_name)==0:
             return False
         return True
+
+
+class ModelInfoMessageBox(MessageBoxBase):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._widget = QWidget(self)
+
+        self._widget_layout = QGridLayout(self._widget)
+
+
+
+        self.viewLayout.addWidget(self._widget)

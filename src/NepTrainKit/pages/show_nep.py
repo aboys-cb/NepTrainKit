@@ -178,6 +178,8 @@ class ShowNepWidget(QWidget):
 
         switch_config_checkbox= CheckBox("formula",frame)
         switch_config_checkbox.setToolTip("switch search formula")
+        switch_config_checkbox.installEventFilter(ToolTipFilter(switch_config_checkbox, 300, ToolTipPosition.TOP))
+
         switch_config_checkbox.checkStateChanged.connect(lambda state:self.search_lineEdit.set_search_type(SearchType.FORMULA) if state == Qt.CheckState.Checked else self.search_lineEdit.set_search_type(SearchType.TAG))
         frame_layout.addWidget(switch_config_checkbox)
 

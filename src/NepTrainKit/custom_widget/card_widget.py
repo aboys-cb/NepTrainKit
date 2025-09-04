@@ -10,9 +10,9 @@ from PySide6.QtGui import QIcon, QDrag, QPixmap, QFont
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel
 
 from qfluentwidgets import   CheckBox, TransparentToolButton, ToolTipFilter, ToolTipPosition, \
-    FluentStyleSheet, setFont
+    FluentStyleSheet, setFont,FluentIcon
 
-from qfluentwidgets import FluentIcon as FIF
+
 from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleCardWidget
 
 from NepTrainKit import utils
@@ -99,7 +99,7 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         self.export_button.setToolTip("Export data")
         self.export_button.installEventFilter(ToolTipFilter(self.export_button, 300, ToolTipPosition.TOP))
 
-        self.close_button=TransparentToolButton(FIF.CLOSE,self)
+        self.close_button=TransparentToolButton(FluentIcon.CLOSE,self)
         self.close_button.clicked.connect(self.close)
         self.close_button.setToolTip("Close card")
         self.close_button.installEventFilter(ToolTipFilter(self.close_button, 300, ToolTipPosition.TOP))

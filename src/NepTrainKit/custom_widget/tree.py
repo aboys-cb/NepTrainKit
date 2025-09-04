@@ -3,15 +3,23 @@
 # @Time    : 2025/8/31 09:54
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt
+from PySide6.QtCore import QAbstractItemModel, QModelIndex, Qt, QRect, QSize
+
+
+from PySide6.QtGui import QColor, QFont, QPainter, QPen, QBrush,QIcon
+from PySide6.QtWidgets import (
+    QStyledItemDelegate, QStyleOptionViewItem, QWidget,
+    QLineEdit, QCompleter
+)
 
 class TreeItem:
-    __slots__ = ("parentItem", "childItems", "itemData", "_row")
+    __slots__ = ("parentItem", "childItems", "itemData", "_row","icon")
 
     def __init__(self, data, parent=None):
         # data 建议用 tuple，一次性创建后不再改动，节省内存 & 更快
         self.parentItem = parent
         self.childItems = []
+        self.icon:QIcon|None=None
         self.itemData = tuple(data) if not isinstance(data, tuple) else data
         self._row = -1  # 本节点在父节点中的行号（O(1) 获取）
 
@@ -82,7 +90,7 @@ class TreeModel(QAbstractItemModel):
         super(TreeModel, self).__init__(parent)
         self.rootItem = TreeItem(())  # 根的 header 在 setHeader 设置
         # 预缓存：flags 常量
-        self.count_column = 0
+        self.count_column = None
         self._base_flags = super().flags(QModelIndex())
 
     # ------- 数据访问 -------
@@ -90,14 +98,20 @@ class TreeModel(QAbstractItemModel):
         if not index.isValid():
             return None
         # ⚡ 快速路径：只处理显示文本，其他 role 直接返回 None
+        item = index.internalPointer()
+        col = index.column()
 
-        if role != Qt.DisplayRole:
+        if role==Qt.ItemDataRole.DecorationRole:
+
+            if col==0:
+                return item.icon
+
+
+        if role != Qt.DisplayRole  :
 
 
             return None
 
-        item = index.internalPointer()
-        col = index.column()
 
 
         if col == self.count_column:
@@ -210,4 +224,108 @@ class TreeModel(QAbstractItemModel):
 
         self.endResetModel()
         return child
+
+
+
+
+class TagDelegate(QStyledItemDelegate):
+    """
+    一个简单的 Tag 代理：
+    - 在 TreeView 中以彩色小圆角矩形显示标签
+    - 双击可编辑，输入逗号分隔的标签
+    - 可选支持自动补全（传入 tag_list）
+    """
+
+    def __init__(self, parent=None, tag_list=None):
+        super().__init__(parent)
+        self.tag_list = tag_list or []   # 用于 QCompleter
+    def sizeHint(self, option, index):
+        tags = index.data(Qt.DisplayRole)
+        if not tags:
+            return super().sizeHint(option, index)
+
+        if isinstance(tags, str):
+            tags = [t.strip() for t in tags.split(",") if t.strip()]
+
+        font = option.font
+        font.setPointSize(font.pointSize() - 1)
+        metrics = option.fontMetrics if option.fontMetrics else option.widget.fontMetrics()
+
+        spacing = 4
+        padding = 6
+        height = metrics.height() + 8
+
+        # 计算总宽度
+        total_width = 4  # 左侧内边距
+        for tag in tags:
+            tag_width = metrics.horizontalAdvance(tag) + padding * 2
+            total_width += tag_width + spacing
+
+        return QSize(total_width, height)
+
+    # --- 显示 ---
+    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index):
+        # 从 model 拿到数据，假设是 list[str]
+        tags = index.data(Qt.DisplayRole)
+        if not tags:
+            super().paint(painter, option, index)
+            return
+
+        if isinstance(tags, str):
+            tags = [t.strip() for t in tags.split(",") if t.strip()]
+
+        painter.save()
+        painter.setRenderHint(QPainter.Antialiasing)
+
+        rect = option.rect
+        x, y = rect.x() + 4, rect.y() + 2
+        spacing = 4
+        padding = 6
+        tag_height = rect.height() - 4
+
+        font = option.font
+        font.setPointSize(font.pointSize() - 1)
+        painter.setFont(font)
+
+        for tag in tags:
+            tag_width = painter.fontMetrics().horizontalAdvance(tag) + padding * 2
+            r = QRect(x, y, tag_width, tag_height)
+
+            # 背景
+            painter.setBrush(QBrush(QColor("#D1E9FF")))
+            painter.setPen(Qt.NoPen)
+            painter.drawRoundedRect(r, 6, 6)
+
+            # 文本
+            painter.setPen(QPen(Qt.black))
+            painter.drawText(r, Qt.AlignCenter, tag)
+
+            x += tag_width + spacing
+            if x > rect.right():
+                break  # 超出就不画
+
+        painter.restore()
+
+    # --- 编辑器 ---
+    def createEditor(self, parent: QWidget, option, index):
+        editor = QLineEdit(parent)
+        editor.setPlaceholderText("逗号分隔多个标签")
+        if self.tag_list:
+            completer = QCompleter(self.tag_list, editor)
+            completer.setCaseSensitivity(Qt.CaseInsensitive)
+            editor.setCompleter(completer)
+        return editor
+
+    def setEditorData(self, editor: QLineEdit, index):
+        tags = index.data(Qt.EditRole)
+        if isinstance(tags, list):
+            editor.setText(", ".join(tags))
+        elif isinstance(tags, str):
+            editor.setText(tags)
+
+    def setModelData(self, editor: QLineEdit, model, index):
+        text = editor.text().strip()
+        tags = [t.strip() for t in text.split(",") if t.strip()]
+        model.setData(index, tags, Qt.EditRole)
+
 

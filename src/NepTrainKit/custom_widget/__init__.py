@@ -30,7 +30,7 @@ from .docker import MakeWorkflowArea
 from .search_widget import ConfigTypeSearchLineEdit
 from .settingscard import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
 from .table import IdNameTableModel
-from .tree import  TreeModel,TreeItem
+from .tree import  TreeModel,TreeItem,TagDelegate
 __all__ = [
     "FlowLayout",
     "ProcessLabel",
@@ -60,6 +60,7 @@ __all__ = [
     "IdNameTableModel",
     "TreeModel",
     "TreeItem",
-    "ProjectInfoMessageBox"
+    "ProjectInfoMessageBox",
+    "TagDelegate"
 
 ]

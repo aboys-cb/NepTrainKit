@@ -8,9 +8,9 @@
 from PySide6.QtCore import QUrl, Qt
 from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QWidget
-from qfluentwidgets import FluentIcon as FIF, ScrollArea
+ 
 from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCard, ExpandLayout, OptionsConfigItem, \
-    OptionsValidator, EnumSerializer, SwitchSettingCard
+    OptionsValidator, EnumSerializer, SwitchSettingCard,FluentIcon  , ScrollArea
 
 from NepTrainKit.config import Config
 from NepTrainKit.custom_widget import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
@@ -38,7 +38,7 @@ class SettingsWidget(ScrollArea):
             default_forces="Raw"
         self.optimization_forces_card = MyComboBoxSettingCard(
             OptionsConfigItem("forces","forces",ForcesMode(default_forces),OptionsValidator(ForcesMode), EnumSerializer(ForcesMode)),
-            FIF.BRUSH,
+            FluentIcon.BRUSH,
             'Force data format',
             "Streamline data and speed up drawing",
             texts=[
@@ -51,7 +51,7 @@ class SettingsWidget(ScrollArea):
 
         self.canvas_card = MyComboBoxSettingCard(
             OptionsConfigItem("canvas","canvas",CanvasMode(canvas_type),OptionsValidator(CanvasMode), EnumSerializer(CanvasMode)),
-            FIF.BRUSH,
+            FluentIcon.BRUSH,
             'Canvas Engine',
             "Choose GPU with vispy",
             texts=[
@@ -97,7 +97,7 @@ class SettingsWidget(ScrollArea):
 
         self.radius_coefficient_Card = DoubleSpinBoxSettingCard(
 
-            FIF.ALBUM,
+            FluentIcon.ALBUM,
             'Covalent radius coefficient',
             'Coefficient used to detect bond length',
             self.personal_group
@@ -109,14 +109,14 @@ class SettingsWidget(ScrollArea):
         self.help_card = HyperlinkCard(
             HELP_URL,
              'Open Help Page' ,
-            FIF.HELP,
+            FluentIcon.HELP,
              'Help' ,
              'Discover new features and learn useful tips about NepTrainKit.' ,
             self.about_group
         )
         self.feedback_card = PrimaryPushSettingCard(
             "Submit Feedback",
-            FIF.FEEDBACK,
+            FluentIcon.FEEDBACK,
             "Submit Feedback",
 
             'Help us improve NepTrainKit by providing feedback.',
@@ -124,7 +124,7 @@ class SettingsWidget(ScrollArea):
         )
         self.about_card = PrimaryPushSettingCard(
             'Check for Updates',
-            FIF.INFO,
+            FluentIcon.INFO,
             "About",
             'Copyright ©' + f" {YEAR}, {AUTHOR}. " +
             "Version" + f" {__version__}",
@@ -132,7 +132,7 @@ class SettingsWidget(ScrollArea):
         )
         self.about_nep89_card = PrimaryPushSettingCard(
             'Check and update',
-            FIF.INFO,
+            FluentIcon.INFO,
             "About NEP89",
             "NEP official NEP89 large model",
             self.about_group

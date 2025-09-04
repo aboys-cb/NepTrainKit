@@ -12,6 +12,10 @@ import numpy.typing as npt
 from loguru import logger
 
 
+
+def get_rmse(array1, array2):
+    return np.sqrt(((array1 - array2) ** 2).mean())
+
 def read_nep_in(file_name: str|Path) ->dict[str,str]:
     """
     将nep.in的内容解析成dict
@@ -116,6 +120,10 @@ def get_nep_type(file_path:Path|str)->int:
 
     return model_type
 
-
-
+def get_xyz_nframe(path):
+    if os.path.exists(path):
+        with open(path, 'r') as file:
+            nums = re.findall("^(\d+)$", file.read(), re.MULTILINE)
+            return len(nums)
+    return 0
 

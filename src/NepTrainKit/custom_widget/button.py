@@ -3,8 +3,9 @@ from typing import Union
 from PySide6.QtCore import QRectF, Qt, QSize, Signal
 from PySide6.QtGui import QPainter, QIcon, QPainterPath, QColor
 from PySide6.QtWidgets import QApplication, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy
-from qfluentwidgets import PushButton, TransparentPushButton, FluentIconBase, FlowLayout,TransparentToolButton
-from qfluentwidgets import FluentIcon as FIF
+from qfluentwidgets import (PushButton, TransparentPushButton, FluentIconBase,
+                            FlowLayout,TransparentToolButton,FluentIcon)
+
 from qfluentwidgets.common.overload import singledispatchmethod
 
 
@@ -19,7 +20,7 @@ class CloseWidgetBase(QWidget):
         self.isHover=False
         self.isPressed=False
         self.closeButton = TransparentToolButton( self)
-        self.closeButton.setIcon(FIF.CLOSE)
+        self.closeButton.setIcon(FluentIcon.CLOSE)
         self.hBoxLayout = QHBoxLayout(self)
         self.hBoxLayout.setSpacing(0)
         self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
@@ -111,7 +112,7 @@ class TagPushButton(CloseWidgetBase):
     def __init__(self, parent: QWidget = None):
 
         super(TagPushButton, self).__init__(parent)
-        self.button = TransparentPushButton(FIF.TAG,"", self)
+        self.button = TransparentPushButton(FluentIcon.TAG,"", self)
         self.button.setObjectName('PushButton')
 
         self.setWidget(self.button)
@@ -160,7 +161,7 @@ class TagGroup(QWidget):
                 self.add_tag(tag)
     def has_tag(self, tag):
         return tag in self.tags
-    def add_tag(self, tag,icon=FIF.TAG) ->TagPushButton:
+    def add_tag(self, tag,icon=FluentIcon.TAG) ->TagPushButton:
         button = TagPushButton(icon,tag, self)
         button.closeClicked.connect(lambda _tag=tag:self.del_tag(_tag))
         self._layout.addWidget(button)
@@ -182,7 +183,7 @@ if __name__ == '__main__':
     frame.resize(800, 600)
     layout = QVBoxLayout()
     frame.setLayout(layout)
-    pushButton = TagPushButton(FIF.PROJECTOR,"dwasd",frame )
+    pushButton = TagPushButton(FluentIcon.PROJECTOR,"dwasd",frame )
     layout.addWidget(pushButton)
 
     frame.show()

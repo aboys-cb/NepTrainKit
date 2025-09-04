@@ -8,7 +8,10 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QApplication, QSplitter
 
-from NepTrainKit.views import ModelItemTableWidget
+from NepTrainKit.core.dataset.database import Database
+from NepTrainKit.core.dataset.services import ModelService, ProjectService
+
+from NepTrainKit.views.dataset_widget import ModelItemWidget
 from NepTrainKit.views.project_view import ProjectWidget
 
 
@@ -20,8 +23,12 @@ class DataManagerWidget(QWidget):
         self.setObjectName("DataManagerWidget")
         self.setAcceptDrops(True)
 
+        self._db = Database()
+        self.model_service = ModelService(self._db)
 
+        self.project_service = ProjectService(self._db)
         self.init_ui()
+        self.project_widget.gen_test()
 
 
     def dragEnterEvent(self, event):
@@ -50,10 +57,20 @@ class DataManagerWidget(QWidget):
         self.project_widget = ProjectWidget(self)
         self.project_widget.setObjectName("project_widget")
         self.project_widget.setAutoFillBackground(True)
-
-        self.data_item_widget = ModelItemTableWidget(self)
+        self.project_widget.db=self._db
+        self.project_widget.project_service=self.project_service
+        self.project_widget.model_service=self.model_service
+        self.splitter.addWidget(self.project_widget)
+        self.data_item_widget = ModelItemWidget(self)
+        self.data_item_widget.db=self._db
+        self.data_item_widget.project_service=self.project_service
+        self.data_item_widget.model_service=self.model_service
         self.data_info_widget = QWidget(self)
         self.data_info_widget.setAutoFillBackground(True)
+
+
+        self.project_widget.projectChangedSignal.connect(self.data_item_widget.load_models)
+
         self.splitter.addWidget(self.project_widget)
         self.splitter.addWidget(self.data_item_widget)
         self.splitter.addWidget(self.data_info_widget)
@@ -65,8 +82,5 @@ class DataManagerWidget(QWidget):
 
 
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
-        # self.gridLayout.addWidget(self.setting_group, 0, 0, 1, 2)
-        # self.gridLayout.addWidget(self.workspace_card_widget, 1, 0, 1, 2)
-        # self.gridLayout.addWidget(self.dataset_info_label, 2, 0, 1, 1)
-        # self.gridLayout.addWidget(self.path_label, 2, 1, 1, 1,alignment=Qt.AlignmentFlag.AlignRight)
+
         self.setLayout(self.gridLayout)

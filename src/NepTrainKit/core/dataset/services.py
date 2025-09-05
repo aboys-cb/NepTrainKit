@@ -68,6 +68,51 @@ class ModelItem:
     children:list[ModelItem]=field( default_factory=list)
 
 
+@dataclass
+class TagService:
+    """Service class for tag CRUD operations."""
+    db: Database
+
+    def create_tag(self, name: str, color: str = "#D1E9FF", notes: str = "") -> TagItem | None:
+        """Create a new tag. Returns TagItem or None if name exists."""
+        n = name.strip()
+        if not n:
+            return None
+        with self.db.session() as session:
+            tag = Tag(name=n, color=color, notes=notes)
+            session.add(tag)
+            try:
+                session.commit()
+            except IntegrityError:
+                session.rollback()
+                return None
+            return TagItem(name=tag.name, tag_id=tag.id, color=tag.color, notes=tag.notes)
+
+    def update_tag(self, tag_id: int, **kwargs) -> None:
+        """Update tag fields by id."""
+        if not kwargs:
+            return
+        with self.db.session() as session:
+            session.query(Tag).filter_by(id=tag_id).update(kwargs)
+            session.commit()
+
+    def remove_tag(self, tag_id: int) -> None:
+        """Remove tag by id."""
+        with self.db.session() as session:
+            session.query(Tag).filter_by(id=tag_id).delete()
+            session.commit()
+
+    def get_tags(self, **kwargs) -> list[TagItem]:
+        """List tags matching filters."""
+        with self.db.session() as session:
+            tags = (
+                session.query(Tag)
+                .filter_by(**kwargs)
+                .order_by(Tag.created_at)
+                .all()
+            )
+            return [TagItem(name=t.name, tag_id=t.id, color=t.color, notes=t.notes) for t in tags]
+
 def query_set_to_dict(func):
     def wrapper(*args, **kwargs):
         objs = func(*args, **kwargs)
@@ -531,16 +576,6 @@ class ModelService:
         with self.db.session() as session:
             session.query(ModelVersion).filter_by(id=model_id).delete()
             session.commit()
-
-    def get_tags(self,**kwargs) -> list[TagItem]:
-        with self.db.session() as session:
-            tags= (
-                session.query(Tag)
-                .filter_by(**kwargs)
-                .order_by(Tag.created_at)
-                .all()
-            )
-            return [TagItem(name=tag.name, tag_id=tag.id,notes=tag.notes,color=tag.color) for tag in tags]
 
 class LineageService:
     """Query lineage chains for data and model versions."""

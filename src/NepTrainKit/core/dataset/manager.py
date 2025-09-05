@@ -5,12 +5,13 @@ from pathlib import Path
 
 from PySide6.QtCore import QObject
 from .database import Database
-from .services import ModelService,ProjectService
+from .services import ModelService,ProjectService,TagService
 
 class DatasetManager:
     _db:Database
     _model_service:ModelService
     _project_service:ProjectService
+    _tag_service:TagService
     def __init__(self,*args,**kwargs):
         # super().__init__(parent)
 
@@ -36,6 +37,14 @@ class DatasetManager:
     @project_service.setter
     def project_service(self, service):
         self._project_service = service
+
+    @property
+    def tag_service(self):
+        return self._tag_service
+
+    @tag_service.setter
+    def tag_service(self, service):
+        self._tag_service = service
 
     def gen_test(self):
         try:

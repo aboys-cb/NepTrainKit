@@ -15,8 +15,7 @@ from NepTrainKit.core.dataset import DatasetManager
 
 from NepTrainKit.core.dataset.database import Database
 from NepTrainKit.core.dataset.services import ModelService, ProjectService, ProjectItem
-from NepTrainKit.custom_widget import IdNameTableModel, TreeModel, TreeItem, ProjectInfoMessageBox
-from NepTrainKit.custom_widget.button import TagGroup
+from NepTrainKit.custom_widget import IdNameTableModel, TreeModel, TreeItem, ProjectInfoMessageBox, TagManageDialog
 from NepTrainKit.views import KitToolBarBase
 
 
@@ -44,25 +43,11 @@ class ProjectWidget(QWidget,DatasetManager):
 
         self._view.setColumnHidden(1,True)
         self._view.setColumnWidth(0,140)
-        # self.tag_widget=QWidget(self)
-        #
-        # self.tag_layout = QVBoxLayout(self.tag_widget )
-        # self.tag_layout.setContentsMargins(0,0,0,0)
-        # self.search_lineedit = SearchLineEdit(self)
-        # self.search_lineedit.setPlaceholderText("please enter a tag name to search for")
-        # self.tag_group= TagGroup([],self)
-        # self.tag_group._layout.setVerticalSpacing(3)
-        # self.tag_group._layout.setHorizontalSpacing(3)
-        #
-        # self.tag_layout.addWidget(self.search_lineedit,1)
-        # self.tag_layout.addWidget(self.tag_group,6)
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0,0,0,0)
-        # self._layout.addWidget(self.tool_bar)
         self._layout.addWidget(self._view)
-        # self._layout.addWidget(self.tag_widget,2)
         self.create_menu()
 
         QTimer.singleShot(1, self.load)
@@ -85,6 +70,9 @@ class ProjectWidget(QWidget,DatasetManager):
         delete_action = Action( "Delete", self.menu)
         delete_action.triggered.connect(self.remove_project)
         self.menu.addAction(delete_action)
+        tag_action = Action("Manage Tags", self.menu)
+        tag_action.triggered.connect(self.manage_tags)
+        self.menu.addAction(tag_action)
 
         self._view.customContextMenuRequested.connect(self.show_menu)
     def show_menu(self,pos):
@@ -170,10 +158,10 @@ class ProjectWidget(QWidget,DatasetManager):
 
     def load(self):
         self.load_all_projects()
-        tags=self.model_service.get_tags()
-        for tag in  tags:
 
-            self.tag_group.add_tag(tag.name,color=tag.color,checkable=True)
+    def manage_tags(self):
+        dlg = TagManageDialog(self.tag_service, self._parent)
+        dlg.exec_()
 
     def _build_tree(self,project,parent:TreeItem):
         child = TreeItem((project.name, project.project_id,project.model_num))

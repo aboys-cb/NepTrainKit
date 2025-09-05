@@ -3,11 +3,13 @@
 # @Time    : 2025/8/27 17:18
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+import os
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QApplication, QSplitter
 
+from NepTrainKit import get_user_config_path
 from NepTrainKit.core.dataset.database import Database
 from NepTrainKit.core.dataset.services import ModelService, ProjectService
 
@@ -22,14 +24,14 @@ class DataManagerWidget(QWidget):
         self._parent = parent
         self.setObjectName("DataManagerWidget")
         self.setAcceptDrops(True)
-
-        self._db = Database()
+        user_path = get_user_config_path()
+        self._db = Database(os.path.join(user_path, "mlpman.db"))
         self.model_service = ModelService(self._db)
 
         self.project_service = ProjectService(self._db)
         self.init_ui()
-        self.project_widget.gen_test()
-
+        self.project_widget.gen_nep_data_git()
+        # self.project_widget.gen_test()
 
     def dragEnterEvent(self, event):
         # 检查拖拽的内容是否包含文件
@@ -65,20 +67,20 @@ class DataManagerWidget(QWidget):
         self.data_item_widget.db=self._db
         self.data_item_widget.project_service=self.project_service
         self.data_item_widget.model_service=self.model_service
-        self.data_info_widget = QWidget(self)
-        self.data_info_widget.setAutoFillBackground(True)
+        # self.data_info_widget = QWidget(self)
+        # self.data_info_widget.setAutoFillBackground(True)
 
 
-        self.project_widget.projectChangedSignal.connect(self.data_item_widget.load_models)
+        self.project_widget.projectChangedSignal.connect(self.data_item_widget.load_models_by_project)
 
         self.splitter.addWidget(self.project_widget)
         self.splitter.addWidget(self.data_item_widget)
-        self.splitter.addWidget(self.data_info_widget)
+        # self.splitter.addWidget(self.data_info_widget)
 
         self.splitter.setSizes([160,800,200])
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 8)
-        self.splitter.setStretchFactor(2, 2)
+        # self.splitter.setStretchFactor(2, 2)
 
 
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)

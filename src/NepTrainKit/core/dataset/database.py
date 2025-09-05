@@ -14,6 +14,7 @@ class Database:
 
     def __init__(self, path: str | Path = "mlpman.db") -> None:
         self.path = Path(path)
+        self.first=not self.path.exists()
         self.engine = create_engine(f"sqlite:///{self.path}", future=True)
         @event.listens_for(self.engine, "connect")
         def _fk_on(dbapi_conn, _):

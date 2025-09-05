@@ -13,7 +13,9 @@ from typing import Iterable
 from dataclasses import dataclass,field
 
 from loguru import logger
+from sqlalchemy import select, func, distinct
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import aliased
 
 from NepTrainKit import utils
 
@@ -57,8 +59,8 @@ class ModelItem:
     virial:virial
     parent_id:int
     project_id:int
-    train_params:dict
-    calc_params:dict
+    model_path:str
+
     notes:str
     created_at:datetime.datetime
     tags:list[TagItem]=field( default_factory=list)
@@ -207,6 +209,106 @@ class ProjectService:
 class ModelService:
     db: Database
 
+    def _project_ids_with_descendants_subq(self, session, root_ids: list[int]):
+        """
+        返回一个可用于 IN (...) 的子查询，包含 root_ids 以及它们的全部子项目 id。
+        支持传入单个或多个 root id。
+        """
+        P = aliased(Project)
+
+        # 支持多根：先用一个临时表 roots 装入起点
+        roots = select(Project.id).where(Project.id.in_(root_ids)).cte("roots")
+
+        # 递归：从根出发向下找 children
+        desc = select(roots.c.id.label("id")).cte("desc", recursive=True)
+        desc = desc.union_all(
+            select(P.id).where(P.parent_id == desc.c.id)
+        )
+        # 用 select(desc.c.id) 作为 IN 子查询即可
+        return select(desc.c.id)
+    def search_models_advanced(
+            self,
+            *,
+            project_id: int | list[int] | None = None,
+            include_descendants: bool = True,
+            parent_id: int | None = None,
+            name_contains: str | None = None,
+            notes_contains: str | None = None,
+            model_type: str | None = None,
+            tags_all: Iterable[str] | None = None,
+            tags_any: Iterable[str] | None = None,
+            tags_none: Iterable[str] | None = None,
+            order_by_created_asc: bool = True,
+            limit: int | None = None,
+            offset: int | None = None,
+    ) -> list[ModelItem]:
+        names_all = self._normalize_names(tags_all) if tags_all else []
+        names_any = self._normalize_names(tags_any) if tags_any else []
+        names_none = self._normalize_names(tags_none) if tags_none else []
+
+        with self.db.session() as session:
+            mv = ModelVersion
+            tg = Tag
+            mvt = ModelVersionTag
+
+            q = session.query(mv)
+
+            # ------------ 关键：项目 + 子项目 ------------
+            if project_id is not None:
+                if isinstance(project_id, int):
+                    roots = [project_id]
+                else:
+                    roots = list(project_id)
+                if include_descendants:
+                    subq = self._project_ids_with_descendants_subq(session, roots)
+                    q = q.filter(mv.project_id.in_(subq))
+                else:
+                    q = q.filter(mv.project_id.in_(roots))
+
+            # 其他常规过滤
+            if parent_id is not None:
+                if parent_id<0:
+                    q = q.filter(mv.parent_id == None)
+
+                else:
+
+                    q = q.filter(mv.parent_id == parent_id)
+            if model_type:
+                q = q.filter(mv.model_type == model_type)
+            if name_contains:
+                q = q.filter(mv.name.like(f"%{name_contains}%"))
+            if notes_contains:
+                q = q.filter(mv.notes.like(f"%{notes_contains}%"))
+
+            # 标签 OR（任一）
+            if names_any:
+                q = q.join(mv.tags).filter(tg.name.in_(names_any)).distinct()
+
+            # 标签 AND（全部）
+            if names_all:
+                q = (q.join(mv.tags)
+                     .filter(tg.name.in_(names_all))
+                     .group_by(mv.id)
+                     .having(func.count(distinct(tg.id)) == len(names_all)))
+
+            # 标签 NOT（排除）
+            if names_none:
+                sub_exists = (
+                    session.query(mvt.model_version_id)
+                    .join(tg, tg.id == mvt.tag_id)
+                    .filter(mvt.model_version_id == mv.id,
+                            tg.name.in_(names_none))
+                    .exists()
+                )
+                q = q.filter(~sub_exists)
+
+            q = q.order_by(mv.created_at.asc() if order_by_created_asc else mv.created_at.desc())
+            if offset: q = q.offset(offset)
+            if limit:  q = q.limit(limit)
+
+            models = q.all()
+            return [self._build_tree(m) for m in models]
+
     # --- 内部工具：归一化输入标签 ---
     @staticmethod
     def _normalize_names(names: Iterable[str]) -> list[str]:
@@ -246,26 +348,27 @@ class ModelService:
 
 
         return list(have_lower.values())
-    def _get_or_create_tags_simple(self, names: Iterable[str]) -> list["Tag"]:
+    def _get_or_create_tags_simple(self, names: Iterable[str],session) -> list["Tag"]:
         """单机简化版：查已有 -> 插入缺失 -> flush -> 返回全部"""
         names = self._normalize_names(names)
         if not names:
             return []
         # 1) 已有
-        with self.db.session() as session:
 
-            existing = session.query(Tag).where(Tag.name.in_(names)).all()
 
-            have_lower = {t.name.lower(): t for t in existing}
-            # 2) 缺失则创建
-            to_create = [Tag(name=n) for n in names if n.lower() not in have_lower]
-            if to_create:
-                session.add_all(to_create)
-                session.flush()  # 拿到 id
-                session.commit()
+        existing = session.query(Tag).where(Tag.name.in_(names)).all()
+
+        have_lower = {t.name.lower(): t for t in existing}
+        # 2) 缺失则创建
+        to_create = [Tag(name=n) for n in names if n.lower() not in have_lower]
+        if to_create:
+            session.add_all(to_create)
+            session.flush()  # 拿到 id
+            session.commit()
         return existing + to_create
     def _build_tree(self, node: ModelVersion) -> ModelItem:
         """递归地把 ORM 对象转成 ModelItem"""
+
         item = ModelItem(
             model_id=node.id,
             name=node.name,
@@ -277,8 +380,9 @@ class ModelService:
             energy=node.energy,
             force=node.force,
             virial=node.virial,
-            train_params=node.train_params,
-            calc_params=node.calc_params,
+            model_path=node.model_path,
+            # train_params=node.train_params,
+            # calc_params=node.calc_params,
             created_at=node.created_at,
 
 
@@ -292,17 +396,9 @@ class ModelService:
 
 
     def get_models_by_project_id(self, project_id: int) -> list[ModelItem]:
-        return self.search_models(project_id=project_id,parent_id=None)
+        return self.search_models_advanced(project_id=project_id,parent_id=-1)
 
-    def search_models(self, **kwargs) -> list[ModelItem]:
-        with self.db.session() as session:
-            models= (
-                session.query(ModelVersion)
-                .filter_by(**kwargs)
-                .order_by(ModelVersion.created_at)
-                .all()
-            )
-            return [self._build_tree(model) for model in models]
+
     def add_version_from_path(self,
                               model_type:str,
                               name:str,
@@ -326,34 +422,20 @@ class ModelService:
             calc_params={}
 
 
-            print(dict(
-                project_id=project_id,
-                name=name,
-                model_type=model_type.upper(),
-                model_file=model_file,
-                data_file=data_file,
-                data_size=data_size,
-                energy=energy,
-                force=force,
-                virial=virial,
-                train_params=train_params,
-                calc_params=calc_params,
-                notes=notes,
-                tags=tags,
-                parent_id=parent_id
-            ))
+
             return self.add_version(
                 project_id=project_id,
                 name=name,
                 model_type=model_type.upper(),
-                model_file=model_file,
-                data_file=data_file,
+                # model_file=model_file,
+                # data_file=data_file,
+                model_path=path,
                 data_size=data_size,
                 energy=energy,
                 force=force,
                 virial=virial,
-                train_params=train_params,
-                calc_params=calc_params,
+                # train_params=train_params,
+                # calc_params=calc_params,
                 notes=notes,
                 tags=tags,
                 parent_id=parent_id
@@ -364,48 +446,54 @@ class ModelService:
                     project_id: int,
                     name:str,
                     model_type: str,
-                    model_file: Path|str | None = None,
-                    data_file: Path|str | None = None,
+                    # model_file: Path|str | None = None,
+                    # data_file: Path|str | None = None,
+                    model_path: Path|str | None = None,
                     data_size: int | None = None,
-                    train_params: dict | None = None,
-                    calc_params: dict | None = None,
+                    # train_params: dict | None = None,
+                    # calc_params: dict | None = None,
                     energy:float|None = None,
                     force:float|None = None,
                     virial:float|None = None,
                     tags:list[str] | None = None,
                     notes: str = "",
                     parent_id: int | None = None,
+                    id:int|None = None
                     ) -> ModelVersion:
 
-        tag_objs = self._get_or_create_tags_simple(tags or [])
         with self.db.session() as session:
+            tag_objs = self._get_or_create_tags_simple(tags or [],session)
+
             project = session.get(Project, project_id)
             if project is None:
                 raise ValueError(f"Project {project} not found")
-            data_sr =   None
-            model_sr =   None
-            if model_file:
-                model_sr  = _create_storage(session,model_file )
-            if data_file:
-                data_sr  = _create_storage(session,data_file)
+            # data_sr =   None
+            # model_sr =   None
+            # if model_file:
+            #     model_sr  = _create_storage(session,model_file )
+            # if data_file:
+            #     data_sr  = _create_storage(session,data_file)
 
             # if parent_id is None:
             #     parent_id = project.active_model_version_id
-
+            if isinstance(model_path, Path):
+                model_path=model_path.as_posix()
             version = ModelVersion(
+                id=id,
                 project_id=project_id,
                 name=name,
                 model_type=model_type,
-                model_storage_ref_id = (model_sr.id  if model_sr else None),
+                model_path=model_path,
+                # model_storage_ref_id = (model_sr.id  if model_sr else None),
 
-                data_storage_ref_id = (data_sr.id if data_sr else None),
+                # data_storage_ref_id = (data_sr.id if data_sr else None),
                 data_size=data_size,
-                train_params=train_params,
+                # train_params=train_params,
 
-                calc_params=calc_params,
+                # calc_params=calc_params,
                 energy=energy,
                 force=force,
-                virial=virial,
+                virial=virial if virial<10000 else 0,
                 notes=notes,
                 parent_id=parent_id,
                 tags=set(tag_objs)
@@ -424,7 +512,35 @@ class ModelService:
             # session.add(event)
             session.commit()
             return version
+    def modify_model(self,model_id:int,**kwargs):
+        with self.db.session() as session:
+            mv = session.get(ModelVersion, model_id)  # 取对象
+            if not mv:
+                raise ValueError(f"ModelVersion {model_id} not found")
+            tag_objs = self._get_or_create_tags_simple(kwargs.pop("tags", []) or [],session)
 
+            # 先更新普通字段
+            for key, value in kwargs.items():
+                setattr(mv, key, value)
+
+            # 单独更新关系字段
+            if tag_objs:
+                mv.tags = set(tag_objs)
+            session.commit()
+    def remove_model(self, model_id: int) :
+        with self.db.session() as session:
+            session.query(ModelVersion).filter_by(id=model_id).delete()
+            session.commit()
+
+    def get_tags(self,**kwargs) -> list[TagItem]:
+        with self.db.session() as session:
+            tags= (
+                session.query(Tag)
+                .filter_by(**kwargs)
+                .order_by(Tag.created_at)
+                .all()
+            )
+            return [TagItem(name=tag.name, tag_id=tag.id,notes=tag.notes,color=tag.color) for tag in tags]
 
 class LineageService:
     """Query lineage chains for data and model versions."""

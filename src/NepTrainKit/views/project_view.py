@@ -7,21 +7,22 @@
 
 from PySide6.QtCore import QObject, QTimer, Qt, QPoint, Signal
 from PySide6.QtGui import QCursor, QIcon
-from PySide6.QtWidgets import QWidget, QVBoxLayout
-from qfluentwidgets import RoundMenu, Action, TreeView, TableView, MessageBox,FluentIcon
+from PySide6.QtWidgets import QWidget, QVBoxLayout,QGroupBox
+from qfluentwidgets import RoundMenu, Action, TreeView, TableView, MessageBox, FluentIcon, SearchLineEdit
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset import DatasetManager
 
 from NepTrainKit.core.dataset.database import Database
-from NepTrainKit.core.dataset.services import ModelService, ProjectService
+from NepTrainKit.core.dataset.services import ModelService, ProjectService, ProjectItem
 from NepTrainKit.custom_widget import IdNameTableModel, TreeModel, TreeItem, ProjectInfoMessageBox
+from NepTrainKit.custom_widget.button import TagGroup
 from NepTrainKit.views import KitToolBarBase
 
 
 class ProjectWidget(QWidget,DatasetManager):
     project_item_dict={}
-    projectChangedSignal=Signal(int)
+    projectChangedSignal=Signal(ProjectItem)
     def __init__(self, parent=None):
         super(ProjectWidget, self).__init__(parent)
         self._parent=parent
@@ -33,8 +34,6 @@ class ProjectWidget(QWidget,DatasetManager):
 
         self._view.setIndentation(10)
         self._view.header().setDefaultSectionSize(5)
-
-
         self._view.header().setStretchLastSection(True)
         self._model=TreeModel()
 
@@ -44,25 +43,35 @@ class ProjectWidget(QWidget,DatasetManager):
 
 
         self._view.setColumnHidden(1,True)
-        self._view.setColumnWidth(0,110)
-
-
-
+        self._view.setColumnWidth(0,140)
+        # self.tag_widget=QWidget(self)
+        #
+        # self.tag_layout = QVBoxLayout(self.tag_widget )
+        # self.tag_layout.setContentsMargins(0,0,0,0)
+        # self.search_lineedit = SearchLineEdit(self)
+        # self.search_lineedit.setPlaceholderText("please enter a tag name to search for")
+        # self.tag_group= TagGroup([],self)
+        # self.tag_group._layout.setVerticalSpacing(3)
+        # self.tag_group._layout.setHorizontalSpacing(3)
+        #
+        # self.tag_layout.addWidget(self.search_lineedit,1)
+        # self.tag_layout.addWidget(self.tag_group,6)
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0,0,0,0)
         # self._layout.addWidget(self.tool_bar)
         self._layout.addWidget(self._view)
+        # self._layout.addWidget(self.tag_widget,2)
         self.create_menu()
 
-        QTimer.singleShot(2, self.load_all_projects)
+        QTimer.singleShot(1, self.load)
 
 
     def item_clicked(self,index):
         item = index.internalPointer()
-
-        self.projectChangedSignal.emit(item.data(1))
+        project=self.project_item_dict[item.data(1)]
+        self.projectChangedSignal.emit(project)
     def create_menu(self):
         self._menu_pos = QPoint()
         self.menu = RoundMenu(parent=self)
@@ -146,7 +155,7 @@ class ProjectWidget(QWidget,DatasetManager):
 
         item = index.internalPointer()
 
-        parent_id = item.data(1)
+        project_id = item.data(1)
         box = MessageBox("Ask",
                          "Do you want to delete this item?\nIf you delete it, all items under it will be deleted!",
                          self._parent)
@@ -154,17 +163,30 @@ class ProjectWidget(QWidget,DatasetManager):
         if box.result() == 0:
             return
 
-        self.project_service.remove_project(project_id=parent_id)
+        self.project_service.remove_project(project_id=project_id)
 
         MessageManager.send_success_message("Project deleted successfully")
         self.load_all_projects()
+
+    def load(self):
+        self.load_all_projects()
+        tags=self.model_service.get_tags()
+        for tag in  tags:
+
+            self.tag_group.add_tag(tag.name,color=tag.color,checkable=True)
+
     def _build_tree(self,project,parent:TreeItem):
         child = TreeItem((project.name, project.project_id,project.model_num))
+        child.icon=FluentIcon.FOLDER.icon()
+
         self.project_item_dict[project.project_id] = project
         parent.appendChild(child)
         for item in project.children:
             self._build_tree(item,child)
         return child
+
+
+
     def load_all_projects(self):
         self._model.clear()
         all_project = self.project_service.search_projects(parent_id=None)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 import datetime as dt
 
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, column_property
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, column_property, backref
 from sqlalchemy import String, Integer, DateTime, ForeignKey, Text, JSON, Boolean, Float, select, func, CTE, Index
 
 
@@ -29,7 +29,7 @@ class Tag(Base):
     name: Mapped[str] = mapped_column(
         String(64, collation="NOCASE"), nullable=False, unique=True, index=True
     )
-    color: Mapped[str] = mapped_column(String(9), default="#6B7280")  # 可选：HEX 颜色
+    color: Mapped[str] = mapped_column(String(9), default="#D1E9FF")  # 可选：HEX 颜色
     notes: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
 
@@ -63,53 +63,59 @@ class ModelVersion(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(80))
-    # 关键：这是到 Project 的“所属”外键
-    project_id: Mapped[int] = mapped_column(ForeignKey("projects.id"), index=True)
+
+    # 归属项目 → 删项目时，模型级联删除
+    project_id: Mapped[int] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        index=True
+    )
 
     model_type: Mapped[str] = mapped_column(String(20))  # NEP | DeepMD | ...
-    data_size:Mapped[int] = mapped_column(Integer)
+    data_size: Mapped[int] = mapped_column(Integer)
     energy: Mapped[float] = mapped_column(Float)
     force: Mapped[float] = mapped_column(Float)
     virial: Mapped[float] = mapped_column(Float)
 
-
-    model_storage_ref_id: Mapped[int] = mapped_column(ForeignKey("storage_refs.id"))
-
-
-    data_storage_ref_id: Mapped[int | None] = mapped_column(ForeignKey("storage_refs.id"))
-
-    train_params: Mapped[dict] = mapped_column(JSON, default=dict)
-
-    calc_params: Mapped[dict] = mapped_column(JSON, default=dict)
+    model_path: Mapped[str] = mapped_column(Text, nullable=False)
     notes: Mapped[str] = mapped_column(Text, default="")
 
-    # 自引用（版本继承/分支）
-    parent_id: Mapped[int | None] = mapped_column(ForeignKey("model_versions.id"))
+    # 自引用（版本继承/分支）→ 删父版本时，子版本级联删除
+    parent_id: Mapped[int | None] = mapped_column(
+        ForeignKey("model_versions.id", ondelete="CASCADE"),
+        index=True
+    )
+
     created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
 
-    # 关键：在子表端也显式指定 foreign_keys = [project_id]
+    # 关系：归属项目
     project: Mapped["Project"] = relationship(
         back_populates="model_versions",
         foreign_keys=[project_id],
+        passive_deletes=True,      # 交给 DB ondelete 处理
     )
 
+    # 关系：父/子版本树
     parent: Mapped["ModelVersion | None"] = relationship(
-        remote_side=[id], backref="children"
+        remote_side=[id],
+        backref=backref(
+            "children",
+            cascade="all, delete-orphan",
+            passive_deletes=True
+        ),
+        single_parent=True,        # delete-orphan 需要
+        passive_deletes=True
     )
 
-    model_storage: Mapped["StorageRef"] = relationship(
-        foreign_keys=[model_storage_ref_id]
-    )
-    data_storage: Mapped["StorageRef | None"] = relationship(
-        foreign_keys=[data_storage_ref_id]
-    )
+    # 多对多标签（这里不动）
     tags: Mapped[set["Tag"]] = relationship(
         "Tag",
         secondary="model_version_tags",
         back_populates="models",
         collection_class=set,
         lazy="selectin",
+        passive_deletes=True
     )
+
 
 class Project(Base):
     __tablename__ = "projects"
@@ -118,44 +124,57 @@ class Project(Base):
     name: Mapped[str] = mapped_column(String(200), unique=True, nullable=False)
     notes: Mapped[str] = mapped_column(Text, default="")
 
-    # 允许为空；指向“当前激活”的模型版本
-    active_model_version_id: Mapped[int | None] = mapped_column(
-        ForeignKey("model_versions.id"), nullable=True
-    )
+    # 当前激活模型 → 被删时置空，避免 FK 失败
+    # active_model_version_id: Mapped[int | None] = mapped_column(
+    #     ForeignKey("model_versions.id", ondelete="SET NULL"),
+    #     nullable=True
+    # )
+
     created_at: Mapped[dt.datetime] = mapped_column(DateTime, default=dt.datetime.utcnow)
     updated_at: Mapped[dt.datetime] = mapped_column(
         DateTime, default=dt.datetime.utcnow, onupdate=dt.datetime.utcnow
     )
-    parent_id: Mapped[int | None] = mapped_column(ForeignKey("projects.id"))
 
-
-
-    parent: Mapped["Project | None"] = relationship(
-        remote_side=[id], backref="children",
-        # cascade="all, delete-orphan",
-
+    # 自引用项目树 → 删父项目时子项目级联删除
+    parent_id: Mapped[int | None] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        index=True
     )
-    # 关键：指定 foreign_keys = ModelVersion.project_id
+
+    # 项目树关系
+    parent: Mapped["Project | None"] = relationship(
+        remote_side=[id],
+        backref=backref(
+            "children",
+            cascade="all, delete-orphan",
+            passive_deletes=True
+        ),
+        single_parent=True,
+        passive_deletes=True
+    )
+
+    # 项目下的所有模型 → 删项目时“模型”也删（双保险：ORM + DB）
     model_versions: Mapped[list["ModelVersion"]] = relationship(
         back_populates="project",
         foreign_keys="ModelVersion.project_id",
         cascade="all, delete-orphan",
+        passive_deletes=True
     )
 
-    # 单独定义一个关系指向“激活版本”，避免歧义；uselist=False 保证一对一语义
-    active_model_version: Mapped["ModelVersion | None"] = relationship(
-        "ModelVersion",
-        foreign_keys=[active_model_version_id],
-        uselist=False,
-        post_update=True,  # 避免循环依赖的 UPDATE 次序问题
-    )
-    # 直接在这里声明
+    # 如需：激活版本关系（可保持注释，或启用）
+    # active_model_version: Mapped["ModelVersion | None"] = relationship(
+    #     "ModelVersion",
+    #     foreign_keys=[active_model_version_id],
+    #     uselist=False,
+    #     post_update=True,
+    #     passive_deletes=True
+    # )
+
     model_num: Mapped[int] = column_property(
         select(func.count(ModelVersion.id))
-        .where( ModelVersion.project_id == id)
+        .where(ModelVersion.project_id == id)
         .scalar_subquery()
     )
-
 
 
 class Event(Base):

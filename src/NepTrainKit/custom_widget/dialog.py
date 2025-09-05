@@ -4,9 +4,12 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import sys
+from pathlib import Path
+from typing import Any, Dict
 
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QVBoxLayout, QFrame, QGridLayout, QPushButton, QLineEdit,QWidget
+from PySide6.QtGui import QIcon, QDoubleValidator, QIntValidator
+from PySide6.QtWidgets import (QVBoxLayout, QFrame, QGridLayout,
+                               QPushButton, QLineEdit, QWidget, QHBoxLayout, QFormLayout, QSizePolicy, QComboBox)
 from PySide6.QtCore import Signal, Qt, QUrl
 from qfluentwidgets import (
     MessageBoxBase,
@@ -17,9 +20,9 @@ from qfluentwidgets import (
     ProgressBar,
     ComboBox,
     FluentStyleSheet,
-    FluentTitleBar,
+    FluentTitleBar,CompactDoubleSpinBox,TransparentToolButton,Dialog,
     TitleLabel, HyperlinkLabel, RadioButton, LineEdit, FlowLayout, EditableComboBox, PrimaryDropDownPushButton,
-    PrimaryPushButton, Flyout, InfoBarIcon, MessageBox,TextEdit
+    PrimaryPushButton, Flyout, InfoBarIcon, MessageBox,TextEdit,FluentIcon
 )
 from qframelesswindow import FramelessDialog
 import json
@@ -30,7 +33,8 @@ from NepTrainKit.core import MessageManager
 
 from NepTrainKit import module_path
 
-from NepTrainKit.utils import LoadingThread
+from NepTrainKit.utils import LoadingThread,call_path_dialog
+from ..core.io.utils import get_xyz_nframe, read_nep_in, read_nep_out_file, get_rmse
 
 
 class GetIntMessageBox(MessageBoxBase):
@@ -90,7 +94,7 @@ class IndexSelectMessageBox(MessageBoxBase):
         super().__init__(parent)
         self.titleLabel = CaptionLabel(tip, self)
         self.titleLabel.setWordWrap(True)
-        self.indexEdit = QLineEdit(self)
+        self.indexEdit = LineEdit(self)
         self.checkBox = CheckBox("Use original indices", self)
         self.checkBox.setChecked(True)
 
@@ -300,7 +304,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         super().__init__(parent)
         self.titleLabel = CaptionLabel(tip, self)
         self.titleLabel.setWordWrap(True)
-        self.groupEdit = QLineEdit(self)
+        self.groupEdit = LineEdit(self)
 
         self._frame = QFrame(self)
         self.frame_layout = QGridLayout(self._frame)
@@ -596,13 +600,424 @@ class ProjectInfoMessageBox(MessageBoxBase):
         return True
 
 
+
 class ModelInfoMessageBox(MessageBoxBase):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.setAcceptDrops(True)
+
+        # ===== 根容器 =====
         self._widget = QWidget(self)
-
-        self._widget_layout = QGridLayout(self._widget)
-
-
-
         self.viewLayout.addWidget(self._widget)
+        root = QVBoxLayout(self._widget)
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(2)
+
+        # ===== 顶部 Title =====
+        titleBar = QFrame(self._widget)
+        tLayout = QHBoxLayout(titleBar)
+        tLayout.setContentsMargins(0, 0, 0, 0)
+        tLayout.setSpacing(0)
+        self.titleLabel = TitleLabel("Create / Edit Model", titleBar)
+
+        self.titleLabel.setAlignment(Qt.AlignCenter)
+        tLayout.addWidget(self.titleLabel)
+        root.addWidget(titleBar)
+
+        # ===== 基本信息（左） =====
+        infoCard = QFrame(self._widget)
+        info = QFormLayout(infoCard)
+        info.setLabelAlignment(Qt.AlignRight)
+        info.setHorizontalSpacing(5)
+        info.setVerticalSpacing(2)
+
+        self.parent_combox = ComboBox(infoCard)
+        self.model_type_combox = ComboBox(infoCard)
+        self.model_type_combox.addItems(["NEP"])
+        self.model_name_edit = LineEdit(infoCard)
+        self.model_name_edit.setPlaceholderText("The name of the model")
+
+        info.addRow(CaptionLabel("Parent", self), self.parent_combox)
+        info.addRow(CaptionLabel("Type", self), self.model_type_combox)
+        info.addRow(CaptionLabel("Name", self), self.model_name_edit)
+
+        # ===== RMSE（右）——就是 energy/force/virial 三个输入 =====
+        rmseCard = QFrame(self._widget)
+        rmse = QGridLayout(rmseCard)
+        rmse.setContentsMargins(0, 0, 0, 0)
+        rmse.setHorizontalSpacing(5)
+        rmse.setVerticalSpacing(2)
+
+        titleRmse = CaptionLabel("RMSE (energy / force / virial)", self)
+        tf = titleRmse.font()
+        tf.setBold(True)
+        titleRmse.setFont(tf)
+
+        self.energy_spinBox = LineEdit(rmseCard)
+        self.force_spinBox  = LineEdit(rmseCard)
+        self.virial_spinBox = LineEdit(rmseCard)
+        self.energy_spinBox.setText("0")
+        self.force_spinBox.setText("0")
+        self.virial_spinBox.setText("0")
+
+
+        validator = QDoubleValidator(bottom=-1e12, top=1e12, decimals=2)
+        for w in (self.energy_spinBox, self.force_spinBox, self.virial_spinBox):
+            w.setValidator(validator)
+            w.setPlaceholderText("0.0")
+
+        r = 0
+        rmse.addWidget(titleRmse, r, 0, 1, 3)
+        r += 1
+        rmse.addWidget(CaptionLabel("energy", self), r, 0)
+        rmse.addWidget(self.energy_spinBox, r, 1)
+        rmse.addWidget(CaptionLabel("meV/atom", self), r, 2)
+        r += 1
+        rmse.addWidget(CaptionLabel("force",  self), r, 0)
+        rmse.addWidget(self.force_spinBox,  r, 1)
+        rmse.addWidget(CaptionLabel("meV/Å",    self), r, 2)
+        r += 1
+        rmse.addWidget(CaptionLabel("virial", self), r, 0)
+        rmse.addWidget(self.virial_spinBox, r, 1)
+        rmse.addWidget(CaptionLabel("meV/atom", self), r, 2)
+        r += 1
+        rmse.setColumnStretch(1, 1)
+
+        # ===== 第一行：基本信息 + RMSE 并排 =====
+        row1 = QHBoxLayout()
+        row1.setContentsMargins(0, 0, 0, 0)
+        row1.setSpacing(2)
+        row1.addWidget(infoCard, 2)
+        row1.addWidget(rmseCard, 1)
+        root.addLayout(row1)
+
+        # ===== 文件路径（整行） =====
+        pathCard = QFrame(self._widget)
+        path = QFormLayout(pathCard)
+        path.setLabelAlignment(Qt.AlignRight)
+        path.setHorizontalSpacing(5); path.setVerticalSpacing(3)
+
+
+        structureRow = QWidget(pathCard)
+        h = QHBoxLayout(structureRow)
+        h.setContentsMargins(0, 0, 0, 0)
+        h.setSpacing(3)
+        self.train_path_edit = LineEdit(structureRow)
+        self.train_path_edit.setPlaceholderText("model train path")
+        self.train_path_edit.editingFinished.connect(self.check_path)
+        browse = TransparentToolButton(FluentIcon.FOLDER_ADD, structureRow)
+        browse.setFixedHeight(self.train_path_edit.sizeHint().height())
+        browse.clicked.connect(self._pick_file)
+        h.addWidget(self.train_path_edit, 1)
+        h.addWidget(browse, 0)
+
+
+
+
+        path.addRow(CaptionLabel("Path", self), structureRow)
+
+        root.addWidget(pathCard)
+
+        # ===== Tags（Notes 之前） =====
+        tagsCard = QFrame(self._widget)
+        tags = QFormLayout(tagsCard)
+        tags.setLabelAlignment(Qt.AlignRight)
+        tags.setHorizontalSpacing(0)
+        tags.setVerticalSpacing(0)
+
+        self.new_tag_edit = LineEdit(tagsCard)
+        self.new_tag_edit.setPlaceholderText("Enter the tag and press Enter")
+        self.new_tag_edit.returnPressed.connect(lambda :self.add_tag(self.new_tag_edit.text()))
+        self.tag_group = TagGroup(parent=self)
+
+        tags.addRow(CaptionLabel("Tags", self), self.new_tag_edit )
+        tags.addRow(CaptionLabel(""), self.tag_group)  # 让 TagGroup 独占一行
+        root.addWidget(tagsCard)
+
+        # ===== Notes（最后） =====
+        notesCard = QFrame(self._widget)
+        notes = QFormLayout(notesCard)
+        notes.setLabelAlignment(Qt.AlignRight)
+        notes.setHorizontalSpacing(5)
+        notes.setVerticalSpacing(0)
+
+        self.model_note_edit = TextEdit(notesCard)
+        self.model_note_edit.setPlaceholderText("Notes on the model")
+        self.model_note_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        # self.model_note_edit.setMinimumHeight(30)
+
+        notes.addRow(CaptionLabel("Notes", self), self.model_note_edit)
+        root.addWidget(notesCard)
+
+        # 允许底部区域伸展
+        root.addStretch(1)
+
+
+
+    # 简单文件选择器
+    def _pick_file(self):
+        path=call_path_dialog(self,"Select the model folder path","directory")
+
+        if path:
+            self.train_path_edit.setText(path)
+            self.check_path()
+    def add_tag(self,tag ):
+        if self.tag_group.has_tag(tag):
+            MessageManager.send_info_message(f"{tag} already exists!")
+            return
+
+        self.tag_group.add_tag(tag)
+    def check_path(self):
+        _path=self.train_path_edit.text()
+        path=Path(_path)
+        if not path.exists():
+            MessageManager.send_message_box(f"{_path} does not exist!")
+            return
+        if self.model_type_combox.currentText()=="NEP":
+            model_file=path.joinpath("nep.txt")
+            if not model_file.exists():
+                MessageManager.send_message_box("No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing.")
+
+            data_file=path.joinpath("train.xyz")
+            if not data_file.exists():
+                MessageManager.send_message_box("No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing.")
+                # data_size=0
+                energy=0
+                force=0
+                virial=0
+            else:
+
+                # data_size=get_xyz_nframe(data_file)
+                # if data_size
+                energy_array=read_nep_out_file(path.joinpath("energy_train.out"))
+                energy = get_rmse(energy_array[:,0],energy_array[:,1])*1000
+                force_array=read_nep_out_file(path.joinpath("force_train.out"))
+                force = get_rmse(force_array[:,:3],force_array[:,3:])*1000
+                virial_array=read_nep_out_file(path.joinpath("virial_train.out"))
+                virial = get_rmse(virial_array[:,:6],virial_array[:,6:])*1000
+
+            self.force_spinBox.setText(str(round(force,2)))
+            self.energy_spinBox.setText(str(round(energy,2)))
+            self.virial_spinBox.setText(str(round(virial,2)))
+    def get_dict(self):
+        path=Path(self.train_path_edit.text())
+        data_file=path.joinpath("train.xyz")
+        data_size = get_xyz_nframe(data_file)
+        return dict(
+            # project_id=self.,
+            name=self.model_name_edit.text().strip(),
+            model_type=self.model_type_combox.currentText(),
+            model_path=self.train_path_edit.text().strip(),
+            # model_file=path.joinpath("nep.txt"),
+            # data_file=data_file,
+            data_size=data_size,
+            energy=float(self.energy_spinBox.text().strip()),
+            force=float(self.force_spinBox.text().strip()),
+            virial=float(self.virial_spinBox.text().strip()),
+
+            notes=self.model_note_edit.toPlainText(),
+            tags=list(self.tag_group.tags.keys()),
+            parent_id=self.parent_combox.currentData()
+        )
+class AdvancedModelSearchDialog(MessageBoxBase):
+    """
+    仅负责收集搜索条件并发送信号，不执行查询。
+    使用：
+        dlg = AdvancedModelSearchDialog(parent)
+        dlg.searchRequested.connect(handle_search_params_dict)
+        dlg.show()
+    """
+    searchRequested = Signal(dict)  # 发出参数字典
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Advanced Search - Models")
+        self.setDraggable(True)
+        self.setModal(False)
+        # self.resize(640, 520)
+        self._build_ui()
+        self._wire_events()
+
+    # ---------- UI ----------
+    def _build_ui(self):
+        root = QVBoxLayout()
+        root.setContentsMargins(0, 0, 0, 0)
+        root.setSpacing(3)
+        self.viewLayout.addLayout(root)
+        # Title
+        titleBar = QFrame(self)
+        tLay = QHBoxLayout(titleBar); tLay.setContentsMargins(0, 0, 0, 0)
+        self.titleLabel = TitleLabel("Advanced Model Search", titleBar)
+        # f = self.titleLabel.font(); f.setPointSize(f.pointSize() + 3); f.setBold(True)
+        # self.titleLabel.setFont(f)
+        self.titleLabel.setAlignment(Qt.AlignCenter)
+        tLay.addWidget(self.titleLabel)
+        root.addWidget(titleBar)
+
+        # 表单
+        formCard = QFrame(self); form = QFormLayout(formCard)
+        form.setLabelAlignment(Qt.AlignRight); form.setHorizontalSpacing(3); form.setVerticalSpacing(3)
+
+        # Project IDs（逗号分隔）
+        self.projectIdsEdit = LineEdit(formCard)
+        self.projectIdsEdit.setPlaceholderText("e.g. 1 or 1,3,5")
+        self.includeDescendantsChk = CheckBox("Include sub-projects", formCard)
+        self.includeDescendantsChk.setChecked(True)
+
+        # Parent id
+        self.parentIdEdit = LineEdit(formCard)
+        self.parentIdEdit.setPlaceholderText("None or integer")
+        self.parentIdEdit.setValidator(QIntValidator())
+
+        # 模糊
+        self.nameContainsEdit = LineEdit(formCard)
+        self.nameContainsEdit.setPlaceholderText("contains in name")
+        self.notesContainsEdit = LineEdit(formCard)
+        self.notesContainsEdit.setPlaceholderText("contains in notes")
+
+        # 类型
+        self.modelTypeCombo = ComboBox(formCard)
+        self.modelTypeCombo.addItems(["<Any>", "NEP", "DeepMD", "Other"])
+
+        # 标签
+        self.tagsAllEdit  = LineEdit(formCard); self.tagsAllEdit.setPlaceholderText("tag1, tag2 (AND)")
+        self.tagsAnyEdit  = LineEdit(formCard); self.tagsAnyEdit.setPlaceholderText("tag1, tag2 (OR)")
+        self.tagsNoneEdit = LineEdit(formCard); self.tagsNoneEdit.setPlaceholderText("tag1, tag2 (NOT)")
+
+        # 排序与分页
+        self.orderAscChk = CheckBox("Order by created_at ascending", formCard)
+        self.orderAscChk.setChecked(True)
+        self.limitEdit  = LineEdit(formCard); self.limitEdit.setPlaceholderText("e.g. 100"); self.limitEdit.setValidator(QIntValidator(0, 10**9))
+        self.offsetEdit = LineEdit(formCard); self.offsetEdit.setPlaceholderText("e.g. 0");   self.offsetEdit.setValidator(QIntValidator(0, 10**9))
+
+        # 加入表单
+        form.addRow(CaptionLabel("Project ID(s):",self), self.projectIdsEdit)
+        form.addRow(CaptionLabel("",self), self.includeDescendantsChk)
+        form.addRow(CaptionLabel("Parent ID:",self), self.parentIdEdit)
+        form.addRow(CaptionLabel("Model Type:",self), self.modelTypeCombo)
+        form.addRow(CaptionLabel("Name contains:",self), self.nameContainsEdit)
+        form.addRow(CaptionLabel("Notes contains:",self), self.notesContainsEdit)
+        form.addRow(CaptionLabel("Tags (ALL):",self), self.tagsAllEdit)
+        form.addRow(CaptionLabel("Tags (ANY):",self), self.tagsAnyEdit)
+        form.addRow(CaptionLabel("Tags (NOT):",self), self.tagsNoneEdit)
+        form.addRow(CaptionLabel("Order:",self), self.orderAscChk)
+        form.addRow(CaptionLabel("Limit:",self), self.limitEdit)
+        form.addRow(CaptionLabel("Offset:",self), self.offsetEdit)
+
+        root.addWidget(formCard)
+
+        # 按钮区
+
+        self.buttonLayout.removeWidget(self.yesButton)
+        self.buttonLayout.removeWidget(self.cancelButton)
+        self.yesButton.hide()
+        self.cancelButton.hide()
+        self.searchBtn = PrimaryPushButton("Search", self)
+        self.resetBtn  = PrimaryPushButton("Reset", self)
+        self.closeBtn  = PrimaryPushButton("Close", self)
+        self.buttonLayout.addWidget(self.searchBtn)
+        self.buttonLayout.addWidget(self.resetBtn)
+        self.buttonLayout.addWidget(self.closeBtn)
+
+
+        root.addStretch(1)
+
+
+    # ---------- 事件 ----------
+    def _wire_events(self):
+        self.searchBtn.clicked.connect(self._emit_params)
+        self.resetBtn.clicked.connect(self._on_reset)
+        self.closeBtn.clicked.connect(self.reject)
+        # Enter 键触发搜索
+        self.projectIdsEdit.returnPressed.connect(self._emit_params)
+        self.nameContainsEdit.returnPressed.connect(self._emit_params)
+        self.notesContainsEdit.returnPressed.connect(self._emit_params)
+        self.tagsAllEdit.returnPressed.connect(self._emit_params)
+        self.tagsAnyEdit.returnPressed.connect(self._emit_params)
+        self.tagsNoneEdit.returnPressed.connect(self._emit_params)
+
+    # ---------- 参数构造 ----------
+    @staticmethod
+    def _split_csv(text: str) -> list[str]:
+        if not text:
+            return []
+        out, seen = [], set()
+        for part in text.split(","):
+            s = part.strip()
+            if not s:
+                continue
+            key = s.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append(s)
+        return out
+
+    @staticmethod
+    def _parse_project_ids(text: str) -> list[int]:
+        if not text.strip():
+            return []
+        ids = []
+        for part in text.split(","):
+            p = part.strip()
+            if not p:
+                continue
+            try:
+                ids.append(int(p))
+            except ValueError:
+                pass
+        return ids
+
+    def build_params(self) -> Dict[str, Any]:
+        """收集并返回与 search_models_advanced 对应的参数字典。"""
+        project_ids = self._parse_project_ids(self.projectIdsEdit.text())
+        mt_text = self.modelTypeCombo.currentText()
+        model_type = None if mt_text == "<Any>" else mt_text
+
+        parent_text = self.parentIdEdit.text().strip()
+        parent_id_val = int(parent_text) if parent_text.isdigit() else None
+
+        params: Dict[str, Any] = dict(
+            project_id=(
+                project_ids[0] if len(project_ids) == 1
+                else (project_ids if project_ids else None)
+            ),
+            include_descendants=self.includeDescendantsChk.isChecked(),
+            parent_id=parent_id_val,
+            name_contains=(self.nameContainsEdit.text().strip() or None),
+            notes_contains=(self.notesContainsEdit.text().strip() or None),
+            model_type=model_type,
+            tags_all=self._split_csv(self.tagsAllEdit.text()),
+            tags_any=self._split_csv(self.tagsAnyEdit.text()),
+            tags_none=self._split_csv(self.tagsNoneEdit.text()),
+            order_by_created_asc=self.orderAscChk.isChecked(),
+        )
+
+        limit_text = self.limitEdit.text().strip()
+        if limit_text:
+            params["limit"] = int(limit_text)
+        offset_text = self.offsetEdit.text().strip()
+        if offset_text:
+            params["offset"] = int(offset_text)
+
+        return params
+
+    # ---------- 对外：发出信号 ----------
+    def _emit_params(self):
+        params = self.build_params()
+        self.searchRequested.emit(params)
+
+    # ---------- 重置 ----------
+    def _on_reset(self):
+        self.projectIdsEdit.clear()
+        self.includeDescendantsChk.setChecked(True)
+        self.parentIdEdit.clear()
+        self.modelTypeCombo.setCurrentIndex(0)
+        self.nameContainsEdit.clear()
+        self.notesContainsEdit.clear()
+        self.tagsAllEdit.clear()
+        self.tagsAnyEdit.clear()
+        self.tagsNoneEdit.clear()
+        self.orderAscChk.setChecked(True)
+        self.limitEdit.clear()
+        self.offsetEdit.clear()

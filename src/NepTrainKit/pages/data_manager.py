@@ -11,7 +11,7 @@ from PySide6.QtWidgets import QWidget, QGridLayout, QApplication, QSplitter
 
 from NepTrainKit import get_user_config_path
 from NepTrainKit.core.dataset.database import Database
-from NepTrainKit.core.dataset.services import ModelService, ProjectService
+from NepTrainKit.core.dataset.services import ModelService, ProjectService, TagService
 
 from NepTrainKit.views.dataset_widget import ModelItemWidget
 from NepTrainKit.views.project_view import ProjectWidget
@@ -27,8 +27,8 @@ class DataManagerWidget(QWidget):
         user_path = get_user_config_path()
         self._db = Database(os.path.join(user_path, "mlpman.db"))
         self.model_service = ModelService(self._db)
-
         self.project_service = ProjectService(self._db)
+        self.tag_service = TagService(self._db)
         self.init_ui()
         self.project_widget.gen_nep_data_git()
         # self.project_widget.gen_test()
@@ -62,11 +62,13 @@ class DataManagerWidget(QWidget):
         self.project_widget.db=self._db
         self.project_widget.project_service=self.project_service
         self.project_widget.model_service=self.model_service
+        self.project_widget.tag_service=self.tag_service
         self.splitter.addWidget(self.project_widget)
         self.data_item_widget = ModelItemWidget(self)
         self.data_item_widget.db=self._db
         self.data_item_widget.project_service=self.project_service
         self.data_item_widget.model_service=self.model_service
+        self.data_item_widget.tag_service=self.tag_service
         # self.data_info_widget = QWidget(self)
         # self.data_info_widget.setAutoFillBackground(True)
 

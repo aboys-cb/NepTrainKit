@@ -7,10 +7,10 @@ import sys
 from pathlib import Path
 from typing import Any, Dict
 
-from PySide6.QtGui import QIcon, QDoubleValidator, QIntValidator
+from PySide6.QtGui import QIcon, QDoubleValidator, QIntValidator, QColor
 from PySide6.QtWidgets import (QVBoxLayout, QFrame, QGridLayout,
-                               QPushButton, QLineEdit, QWidget, QHBoxLayout, QFormLayout, QSizePolicy, QComboBox)
-from PySide6.QtCore import Signal, Qt, QUrl
+                               QPushButton, QLineEdit, QWidget, QHBoxLayout, QFormLayout, QSizePolicy, QComboBox, QColorDialog)
+from PySide6.QtCore import Signal, Qt, QUrl, QEvent
 from qfluentwidgets import (
     MessageBoxBase,
     SpinBox,
@@ -22,7 +22,7 @@ from qfluentwidgets import (
     FluentStyleSheet,
     FluentTitleBar,CompactDoubleSpinBox,TransparentToolButton,Dialog,
     TitleLabel, HyperlinkLabel, RadioButton, LineEdit, FlowLayout, EditableComboBox, PrimaryDropDownPushButton,
-    PrimaryPushButton, Flyout, InfoBarIcon, MessageBox,TextEdit,FluentIcon
+    PrimaryPushButton, Flyout, InfoBarIcon, MessageBox,TextEdit,FluentIcon, PushButton
 )
 from qframelesswindow import FramelessDialog
 import json
@@ -1021,3 +1021,129 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         self.orderAscChk.setChecked(True)
         self.limitEdit.clear()
         self.offsetEdit.clear()
+
+
+class TagEditDialog(FramelessDialog):
+    """Dialog for editing tag properties."""
+
+    def __init__(self, name: str, color: str, notes: str, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Edit Tag")
+        self.resize(300, 200)
+
+        layout = QVBoxLayout(self)
+        form = QFormLayout()
+        self.nameEdit = LineEdit(self)
+        self.nameEdit.setText(name)
+        self.colorEdit = LineEdit(self)
+        self.colorEdit.setText(color)
+        self.colorBtn = PrimaryPushButton("...", self)
+        self.colorBtn.setFixedWidth(30)
+        colorLayout = QHBoxLayout()
+        colorLayout.setContentsMargins(0, 0, 0, 0)
+        colorLayout.setSpacing(3)
+        colorLayout.addWidget(self.colorEdit)
+        colorLayout.addWidget(self.colorBtn)
+        colorWidget = QWidget(self)
+        colorWidget.setLayout(colorLayout)
+        self.notesEdit = TextEdit(self)
+        self.notesEdit.setPlainText(notes)
+
+        form.addRow("Name", self.nameEdit)
+        form.addRow("Color", colorWidget)
+        form.addRow("Notes", self.notesEdit)
+        layout.addLayout(form)
+
+        btnLayout = QHBoxLayout()
+        btnLayout.addStretch(1)
+        self.okBtn = PrimaryPushButton("Ok", self)
+        self.cancelBtn = PushButton("Cancel", self)
+        btnLayout.addWidget(self.okBtn)
+        btnLayout.addWidget(self.cancelBtn)
+        layout.addLayout(btnLayout)
+
+        self.colorBtn.clicked.connect(self._choose_color)
+        self.okBtn.clicked.connect(self.accept)
+        self.cancelBtn.clicked.connect(self.reject)
+
+    def _choose_color(self):
+        color = QColorDialog.getColor(QColor(self.colorEdit.text()), self)
+        if color.isValid():
+            self.colorEdit.setText(color.name())
+
+    def get_values(self) -> tuple[str, str, str]:
+        return (
+            self.nameEdit.text().strip(),
+            self.colorEdit.text().strip(),
+            self.notesEdit.toPlainText().strip(),
+        )
+
+class TagManageDialog(FramelessDialog):
+    """Dialog to create, edit and remove tags."""
+
+    def __init__(self, tag_service, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Manage Tags")
+        self.tag_service = tag_service
+        self._tag_map: dict[str, int] = {}
+        self.resize(360, 240)
+
+        self._layout = QVBoxLayout(self)
+        self.new_tag_edit = LineEdit(self)
+        self.new_tag_edit.setPlaceholderText("Enter the tag and press Enter")
+        self.new_tag_edit.returnPressed.connect(self.add_tag)
+        self.tag_group = TagGroup(parent=self)
+        self.tag_group.tagRemovedSignal.connect(self.remove_tag)
+        self._layout.addWidget(self.new_tag_edit)
+        self._layout.addWidget(self.tag_group)
+
+        self._load_tags()
+
+    def _load_tags(self):
+        for tag in self.tag_service.get_tags():
+            btn = self.tag_group.add_tag(tag.name, color=tag.color)
+            btn.setToolTip(tag.notes)
+            btn.installEventFilter(self)
+            self._tag_map[tag.name] = tag.tag_id
+
+    def add_tag(self):
+        name = self.new_tag_edit.text().strip()
+        if not name:
+            return
+        if self.tag_group.has_tag(name):
+            MessageManager.send_info_message(f"{name} already exists!")
+            return
+        item = self.tag_service.create_tag(name)
+        if item:
+            btn = self.tag_group.add_tag(item.name, color=item.color)
+            btn.setToolTip(item.notes)
+            btn.installEventFilter(self)
+            self._tag_map[item.name] = item.tag_id
+        self.new_tag_edit.clear()
+
+    def remove_tag(self, name: str):
+        tag_id = self._tag_map.pop(name, None)
+        if tag_id is not None:
+            self.tag_service.remove_tag(tag_id)
+
+    def eventFilter(self, obj, event):
+        if isinstance(obj, TagPushButton) and event.type() == QEvent.MouseButtonDblClick:
+            old_name = obj.text()
+            tag_id = self._tag_map.get(old_name)
+            dlg = TagEditDialog(old_name, obj.backgroundColor, obj.toolTip(), self)
+            if dlg.exec():
+                new_name, color, notes = dlg.get_values()
+                if not new_name:
+                    return True
+                if new_name != old_name and self.tag_group.has_tag(new_name):
+                    MessageManager.send_info_message(f"{new_name} already exists!")
+                    return True
+                self.tag_service.update_tag(tag_id, name=new_name, color=color, notes=notes)
+                obj.setText(new_name)
+                obj.setBackgroundColor(color)
+                obj.setToolTip(notes)
+                if new_name != old_name:
+                    self.tag_group.tags[new_name] = self.tag_group.tags.pop(old_name)
+                    self._tag_map[new_name] = self._tag_map.pop(old_name)
+            return True
+        return super().eventFilter(obj, event)

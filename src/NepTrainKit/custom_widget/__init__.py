@@ -15,7 +15,7 @@ from .dialog import (
     EditInfoMessageBox,
     ShiftEnergyMessageBox,
     ProgressDialog,
-    PeriodicTableDialog, DFTD3MessageBox,ProjectInfoMessageBox
+    PeriodicTableDialog, DFTD3MessageBox,ProjectInfoMessageBox, TagManageDialog
 )
 from .input import SpinBoxUnitInputFrame
 from .card_widget import (
@@ -61,6 +61,7 @@ __all__ = [
     "TreeModel",
     "TreeItem",
     "ProjectInfoMessageBox",
-    "TagDelegate"
+    "TagDelegate",
+    "TagManageDialog"
 
 ]

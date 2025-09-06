@@ -20,7 +20,7 @@ from qfluentwidgets import (
     ProgressBar,
     ComboBox,
     FluentStyleSheet,
-    FluentTitleBar,CompactDoubleSpinBox,TransparentToolButton,Dialog,
+    FluentTitleBar,CompactDoubleSpinBox,TransparentToolButton,Dialog,ColorDialog,
     TitleLabel, HyperlinkLabel, RadioButton, LineEdit, FlowLayout, EditableComboBox, PrimaryDropDownPushButton,
     PrimaryPushButton, Flyout, InfoBarIcon, MessageBox,TextEdit,FluentIcon, PushButton
 )
@@ -1023,15 +1023,16 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         self.offsetEdit.clear()
 
 
-class TagEditDialog(FramelessDialog):
+class TagEditDialog(MessageBoxBase):
     """Dialog for editing tag properties."""
 
     def __init__(self, name: str, color: str, notes: str, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Edit Tag")
-        self.resize(300, 200)
+        # self.resize(300, 200)
 
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout()
+        self.viewLayout.addLayout(layout)
         form = QFormLayout()
         self.nameEdit = LineEdit(self)
         self.nameEdit.setText(name)
@@ -1054,22 +1055,15 @@ class TagEditDialog(FramelessDialog):
         form.addRow("Notes", self.notesEdit)
         layout.addLayout(form)
 
-        btnLayout = QHBoxLayout()
-        btnLayout.addStretch(1)
-        self.okBtn = PrimaryPushButton("Ok", self)
-        self.cancelBtn = PushButton("Cancel", self)
-        btnLayout.addWidget(self.okBtn)
-        btnLayout.addWidget(self.cancelBtn)
-        layout.addLayout(btnLayout)
+
 
         self.colorBtn.clicked.connect(self._choose_color)
-        self.okBtn.clicked.connect(self.accept)
-        self.cancelBtn.clicked.connect(self.reject)
+
 
     def _choose_color(self):
-        color = QColorDialog.getColor(QColor(self.colorEdit.text()), self)
-        if color.isValid():
-            self.colorEdit.setText(color.name())
+        color_dialog = ColorDialog(QColor(self.colorEdit.text()),"Edit Tag Color", self)
+        if color_dialog.exec():
+            self.colorEdit.setText(color_dialog.color.name())
 
     def get_values(self) -> tuple[str, str, str]:
         return (
@@ -1078,24 +1072,30 @@ class TagEditDialog(FramelessDialog):
             self.notesEdit.toPlainText().strip(),
         )
 
-class TagManageDialog(FramelessDialog):
+class TagManageDialog(MessageBoxBase):
     """Dialog to create, edit and remove tags."""
 
     def __init__(self, tag_service, parent=None):
         super().__init__(parent)
+        self._parent=parent
+        self.tag_changed=False
         self.setWindowTitle("Manage Tags")
         self.tag_service = tag_service
         self._tag_map: dict[str, int] = {}
-        self.resize(360, 240)
+        # self.resize(360, 240)
 
-        self._layout = QVBoxLayout(self)
+        self._layout = QVBoxLayout()
         self.new_tag_edit = LineEdit(self)
+        self.new_tag_edit.setMinimumWidth(300)
         self.new_tag_edit.setPlaceholderText("Enter the tag and press Enter")
         self.new_tag_edit.returnPressed.connect(self.add_tag)
         self.tag_group = TagGroup(parent=self)
+        self.tag_group.setMinimumHeight(100)
         self.tag_group.tagRemovedSignal.connect(self.remove_tag)
         self._layout.addWidget(self.new_tag_edit)
         self._layout.addWidget(self.tag_group)
+        self.viewLayout.addLayout(self._layout)
+
 
         self._load_tags()
 
@@ -1127,10 +1127,11 @@ class TagManageDialog(FramelessDialog):
             self.tag_service.remove_tag(tag_id)
 
     def eventFilter(self, obj, event):
-        if isinstance(obj, TagPushButton) and event.type() == QEvent.MouseButtonDblClick:
+
+        if isinstance(obj, TagPushButton) and event.type() == QEvent.ContextMenu:
             old_name = obj.text()
             tag_id = self._tag_map.get(old_name)
-            dlg = TagEditDialog(old_name, obj.backgroundColor, obj.toolTip(), self)
+            dlg = TagEditDialog(old_name, obj.backgroundColor, obj.toolTip(), self._parent)
             if dlg.exec():
                 new_name, color, notes = dlg.get_values()
                 if not new_name:
@@ -1138,6 +1139,7 @@ class TagManageDialog(FramelessDialog):
                 if new_name != old_name and self.tag_group.has_tag(new_name):
                     MessageManager.send_info_message(f"{new_name} already exists!")
                     return True
+                self.tag_changed=True
                 self.tag_service.update_tag(tag_id, name=new_name, color=color, notes=notes)
                 obj.setText(new_name)
                 obj.setBackgroundColor(color)

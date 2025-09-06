@@ -257,7 +257,8 @@ class TagDelegate(QStyledItemDelegate):
 
         # 计算总宽度
         total_width = 4  # 左侧内边距
-        for tag in tags:
+        for tag_info in tags:
+            tag=tag_info["name"]
             tag_width = metrics.horizontalAdvance(tag) + padding * 2
             total_width += tag_width + spacing
 
@@ -271,8 +272,7 @@ class TagDelegate(QStyledItemDelegate):
             super().paint(painter, option, index)
             return
 
-        if isinstance(tags, str):
-            tags = [t.strip() for t in tags.split(",") if t.strip()]
+
 
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing)
@@ -287,12 +287,14 @@ class TagDelegate(QStyledItemDelegate):
         font.setPointSize(font.pointSize() - 1)
         painter.setFont(font)
 
-        for tag in tags:
+        for tag_info in tags:
+            tag=tag_info["name"]
+            color = tag_info["color"]
             tag_width = painter.fontMetrics().horizontalAdvance(tag) + padding * 2
             r = QRect(x, y, tag_width, tag_height)
 
             # 背景
-            painter.setBrush(QBrush(QColor("#D1E9FF")))
+            painter.setBrush(QBrush(QColor(color)))
             painter.setPen(Qt.NoPen)
             painter.drawRoundedRect(r, 6, 6)
 

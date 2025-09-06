@@ -10,7 +10,7 @@ from NepTrainKit.core.dataset import DatasetManager
 from NepTrainKit.core.dataset.services import ProjectItem, ModelItem
 from NepTrainKit.core.types import ModelTypeIcon
 from NepTrainKit.custom_widget import TreeModel, TreeItem,TagDelegate
-from NepTrainKit.custom_widget.dialog import ModelInfoMessageBox, AdvancedModelSearchDialog
+from NepTrainKit.custom_widget.dialog import ModelInfoMessageBox, AdvancedModelSearchDialog, TagManageDialog
 
 
 # from NepTrainKit.custom_widget import DatasetItemModel
@@ -87,11 +87,19 @@ class ModelItemWidget(QWidget,DatasetManager):
         delete_action = Action("Delete", self.menu)
         delete_action.triggered.connect(self.remove_model)
         self.menu.addAction(delete_action)
-
+        tag_action = Action("Manage Tags", self.menu)
+        tag_action.triggered.connect(self.manage_tags)
+        self.menu.addAction(tag_action)
         self._view.customContextMenuRequested.connect(self.show_menu)
     def show_menu(self,pos):
         self._menu_pos=pos
         self.menu.exec_(self.mapToGlobal(pos))
+    def manage_tags(self):
+        dlg = TagManageDialog(self.tag_service, self._parent)
+        dlg.exec_()
+        # if dlg.tag_changed:
+        #     self.
+
     def _build_tree(self,model,parent:TreeItem):
         child = TreeItem((model.model_id,
                               model.name,
@@ -99,7 +107,7 @@ class ModelItemWidget(QWidget,DatasetManager):
                               model.energy,
                               model.force ,
                               model.virial ,
-                          [tag.name for tag in model.tags],
+                          [{"name":tag.name,"color":tag.color} for tag in model.tags],
 
                               model.created_at.strftime("%Y-%m-%d %H:%M:%S"),))
 

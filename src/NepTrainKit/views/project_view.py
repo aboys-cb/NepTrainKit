@@ -70,9 +70,7 @@ class ProjectWidget(QWidget,DatasetManager):
         delete_action = Action( "Delete", self.menu)
         delete_action.triggered.connect(self.remove_project)
         self.menu.addAction(delete_action)
-        tag_action = Action("Manage Tags", self.menu)
-        tag_action.triggered.connect(self.manage_tags)
-        self.menu.addAction(tag_action)
+
 
         self._view.customContextMenuRequested.connect(self.show_menu)
     def show_menu(self,pos):
@@ -159,9 +157,6 @@ class ProjectWidget(QWidget,DatasetManager):
     def load(self):
         self.load_all_projects()
 
-    def manage_tags(self):
-        dlg = TagManageDialog(self.tag_service, self._parent)
-        dlg.exec_()
 
     def _build_tree(self,project,parent:TreeItem):
         child = TreeItem((project.name, project.project_id,project.model_num))

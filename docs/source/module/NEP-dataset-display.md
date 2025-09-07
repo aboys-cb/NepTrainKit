@@ -18,9 +18,10 @@ Users can import files in the following two ways:
 - Drag and drop the file directly into the software interface for import.
 :::{important}
 software will automatically detect the `nep.txt` file type and import it, including the `norm`、`dipole` and `polarizability`.
-Currently, the software only supports two import methods:
-- `train.xyz` and `*.out` combination.
-- or `nep.txt`(optional, if not provided, the NEP89 large model will be used) and `train.xyz` combination.
+Currently, the software supports:
+- `train.xyz` and matching `*.out` files
+- `nep.txt` (optional; falls back to NEP89 if absent) + `train.xyz`
+- DeepMD training directory (auto‑detected)
 :::
 
  
@@ -71,6 +72,10 @@ After clicking the search button, the relevant structures will turn green to ind
 :::{important}
 If there are no **Config_type** available, clicking the **Select** button will select all visible items, and clicking the **Deselect** button will deselect all items.
 :::
+\n+### Search by formula
+
+- Toggle the small "formula" checkbox next to the search box to switch between searching by `Config_type` (default) and searching by chemical formula.
+- When formula mode is enabled, autocompletion updates to your available formulas.
 ## 4.Result Visualization and Structure Display
 
 - The result visualization area consists of five subplots, displaying the descriptors, energy, force, pressure, and potential energy information of the dataset. We use the **pyqtgraph** library to encapsulate the plotting functions, and all five subplots support switching to the main plot by double-clicking.
@@ -80,9 +85,19 @@ If there are no **Config_type** available, clicking the **Select** button will s
 
 **Plotting Details:** During the plotting process, **energy**, **force**, **pressure**, and **potential energy** data are all read from the NEP output files in the working path. For **descriptor projection**, we use NEP_CPU to obtain the descriptor of each atom and compute its average as the structure descriptor. Then, principal component analysis (PCA) is used to project the structure descriptors into a two-dimensional space for easier visualization.
 
+### Vector field overlay
+
+- If your structure data contains per-atom vector properties (e.g., dipoles), you can overlay arrows in the structure view.
+- Click the arrow button in the structure toolbar, choose a vector property, colormap, and scale, and apply to show/hide the overlay.
+
 ## 5.Information Display Area
 
 - In the information display area on the right, the system will show detailed information about the selected **xyz file**. By default, when you click on any data point in the subplots, the display area on the right will synchronize and show the detailed information of the selected structure.
 - Below the display area, the **frame number** of the current structure in the original file will be shown. Users can adjust the frame number to view the corresponding structure and its detailed information.
 
 <img src="../_static/image/information.png" alt="information" width='650' height='190' />
+
+### Auto playback
+
+- Use the play/pause button near the index to automatically step through currently visible/selected structures.
+- Playback respects your current selection and stops at the end of the range.

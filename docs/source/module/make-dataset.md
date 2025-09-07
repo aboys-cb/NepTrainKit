@@ -97,6 +97,21 @@ Sample configuration file:
 structure.info["Config_type"] += "supercell(nx,ny,nz)"  # e.g., supercell(2,2,1)
 ```
 
+#### Algorithm
+- Super Scale: directly uses `[na, nb, nc]` as diagonal expansion factors and builds `make_supercell(structure, diag([na,nb,nc]))`.
+- Super Cell (max lattice): computes `[na, nb, nc] = floor([amax/a, bmax/b, cmax/c])` with safety checks, then clamps to at least 1 in each direction.
+- Max Atoms: enumerates integer triplets `[na, nb, nc]` whose product times `N_atoms` does not exceed the limit; sorted by total atoms, return either all (Iteration) or the largest (Maximum).
+
+#### Caveats
+- If any lattice vector length is near zero, max‑cell estimation falls back to 1 to avoid divide‑by‑zero.
+- Very large supercells can create memory pressure; prefer Max Atoms to cap size.
+- Iteration may generate many structures—use a follow‑up filter (e.g., FPS) to down‑select.
+
+#### Best Practices
+- Use Max Atoms to scale safely across diverse inputs.
+- Prefer Iteration when exploring and Maximum when preparing a single supercell.
+- Combine with Lattice Strain or Perturb after expansion to enrich diversity.
+
 ### 2.2 Vacancy Defect Generation
 **Function**: Creates vacancy-defect structures by deleting random atoms
 
@@ -112,6 +127,19 @@ structure.info["Config_type"] += "supercell(nx,ny,nz)"  # e.g., supercell(2,2,1)
 structure.info["Config_type"] += f" Vacancy(num={defect_count})"
 ```
 
+#### Algorithm
+- If using concentration `c`, compute `max_defects = floor(c * N_atoms)`; else use fixed number.
+- Engine `Sobol`: sample both defect count and positions deterministically in [0,1), then map to indices.
+- Engine `Uniform`: draw a random integer count and random, unique atom indices to remove.
+
+#### Caveats
+- A concentration of 1.0 is clamped to avoid removing all atoms.
+- Removing many atoms can break intended stoichiometry or PBC artifacts—validate downstream.
+
+#### Best Practices
+- Keep `c` small (e.g., ≤ 0.2) for incremental datasets.
+- Prefer Sobol for repeatable sweeps; use Uniform for stochastic augmentation.
+
 ### 2.3 Atomic Perturbation
 **Function**: Adds random displacements to atomic positions
 
@@ -125,6 +153,19 @@ structure.info["Config_type"] += f" Vacancy(num={defect_count})"
 ```python
 structure.info["Config_type"] += f" Perturb(distance={max_displacement}, {engine_type})"
 ```
+
+#### Algorithm
+- Builds a 3N‑dimensional random vector from Sobol or Uniform in [‑1,1], reshaped to N×3, then scaled by `max_distance` and added to atomic positions.
+- If “Identify organic” is enabled: organic clusters are translated as rigid units; inorganic clusters perturb per‑atom.
+- Wraps atoms back into the cell.
+
+#### Caveats
+- Large `max_distance` may cause unrealistic overlaps even with wrapping.
+- Cluster detection is heuristic; verify for complex organics.
+
+#### Best Practices
+- Start small (0.1–0.3 Å) and inspect min interatomic distances.
+- Combine with FPS Filter to keep diverse displacements while avoiding redundancy.
 
 ### 2.4 Lattice Scaling
 **Function**: Randomly scales lattice vectors
@@ -140,6 +181,19 @@ structure.info["Config_type"] += f" Perturb(distance={max_displacement}, {engine
 ```python
 structure.info["Config_type"] += f" Scaling({scaling_factor})"
 ```
+
+#### Algorithm
+- Random engine produces a sequence of factors; lattice lengths are scaled by `1 ± s` (uniform or Sobol).
+- If “Perturb angle” is enabled, angles are also perturbed and a new lattice is reconstructed from (lengths, angles).
+- Optionally treats organics as rigid clusters during scaling.
+
+#### Caveats
+- Angle perturbation rebuilds the lattice; extreme angles can generate ill‑conditioned cells.
+- Ensure `Max scaling` is small (≤ 0.05) when also perturbing angles.
+
+#### Best Practices
+- Use Uniform for broad coverage; Sobol for low‑discrepancy sweeps.
+- Keep scaling conservative for stability, especially before DFT relaxations.
 
 ### 2.5 Lattice Strain
 **Strain Modes**:
@@ -162,6 +216,18 @@ structure.info["Config_type"] += f" Scaling({scaling_factor})"
 ```python
 structure.info["Config_type"] += f" Strain({axis1}:{value1}%, {axis2}:{value2}%)"
 ```
+
+#### Algorithm
+- Builds mesh over selected axes: `np.arange(start, end+step, step)` per axis; isotropic uses a single scalar applied to all.
+- Scales selected lattice vectors by `(1 + strain/100)`; optionally applies rigid handling of organic clusters.
+
+#### Caveats
+- Large strains (>10–15%) can produce severe distortions; prefer smaller increments.
+- Custom axis strings must only include X/Y/Z.
+
+#### Best Practices
+- Use biaxial/triaxial for comprehensive scans; isotropic for quick sweeps.
+- Pair with FPS or error‑based selection to trim the grid.
 
 ### 2.6 Random Doping Substitution
 **Function**: Randomly substitute atoms according to user-defined rules
@@ -188,6 +254,46 @@ I       -0.00000000       3.19184873       3.19184873 c
 Pb       3.19184873       3.19184873       3.19184873 d
 ```
 
+#### Rule Schema
+- Rules is a list; each item is a JSON object with keys:
+  - `target` (string): Element symbol to be replaced (e.g., "Si").
+  - `dopants` (object): Mapping of element symbol → ratio. Ratios are normalized internally (e.g., "Ge:0.7,C:0.3").
+  - `use` (string): One of `"concentration"` or `"count"`.
+  - `concentration` ([min, max], floats in 0–1): Fraction of eligible sites to replace.
+  - `count` ([min, max], integers): Number of sites to replace.
+  - `group` (array, optional): Limit replacement to atoms whose `group` value is in this list  (e.g., "a,c").
+
+If `use` is omitted or unrecognized, all eligible sites are replaced.
+
+
+
+#### How Ratios and Exact Work
+- `Random`: for each selected site, samples a dopant species according to normalized `dopants` ratios.
+- `Exact`: computes integer counts as `floor(ratio * N)` for each species, assigns leftovers to the largest‑ratio species, shuffles order for randomness.
+
+#### Edge Cases and Validation
+- If fewer eligible `target` sites exist than requested, the algorithm clamps to the available count.
+- `group` matching is exact (case‑sensitive) against the structure’s `group` array values.
+- Combining multiple rules applies them sequentially per structure; later rules see results of earlier substitutions.
+
+#### Tips
+- Use `Exact` for reproducible stoichiometry, `Random` for data augmentation.
+- Keep concentration windows narrow for incremental variations (e.g., 2–10%).
+- Prefer `group` when only specific sublattices or layers should be doped.
+
+#### Algorithm
+- For each rule, find candidate sites (optionally limited by `group`).
+- If `use == concentration`, sample a fraction of candidates; if `use == count`, sample an integer range.
+- Choose dopant species by probability (`Random`) or exact counts (`Exact`) and substitute symbols.
+
+#### Caveats
+- If candidates are fewer than requested, the algorithm clamps to available sites.
+- Doping can break charge balance; validate for your physics/chemistry constraints.
+
+#### Best Practices
+- Prefer `Exact` to reproduce specific stoichiometries; use `Random` for augmentation.
+- Use `group` to limit substitutions to sublattices or layers.
+
 
 ### 2.7 Random Vacancy Deletion
 **Function**: Removes atoms according to vacancy rules
@@ -202,6 +308,32 @@ Pb       3.19184873       3.19184873       3.19184873 d
 structure.info["Config_type"] += f" Vacancy(num={removed_count})"
 ```
 
+#### Rule Schema
+- Rules is a list; each item is a JSON object with keys:
+  - `element` (string): Element symbol to delete.
+  - `count` ([min, max], integers): Number of atoms to remove per rule application.
+  - `group` (array, optional): Restrict deletions to atoms with `group` in the list.
+
+If `element` is missing or `count.max <= 0`, the rule is skipped.
+
+
+#### Edge Cases and Validation
+- Requested deletions are clamped to available eligible atoms.
+- Multiple rules are applied sequentially; later rules operate on the already‑modified structure.
+
+#### Tips
+- Combine with Super Cell to maintain sufficient system size after deletions.
+- For surface models, use `group` to target only top layers or named regions.
+
+#### Algorithm
+- For each rule, determines deletions by element and optional `group`, draws a random integer count in range, and deletes unique indices.
+
+#### Caveats
+- Excessive deletion can collapse periodic images; keep counts modest.
+
+#### Best Practices
+- Use alongside Super Cell to maintain adequate atoms after deletion.
+
 ### 2.8 Random Slab Generation
 **Function**: Builds slabs with random Miller indices and vacuum thickness
 
@@ -214,6 +346,59 @@ structure.info["Config_type"] += f" Vacancy(num={removed_count})"
 ```python
 structure.info["Config_type"] += f" Slab(hkl={h}{k}{l},layers={layers},vacuum={vac})"
 ```
+
+#### Algorithm
+- Enumerates Miller indices (h,k,l), layer counts, and vacuum values; for each combination builds an ASE slab `surface(...)`, wraps, and annotates.
+
+#### Caveats
+- (0,0,0) is skipped; degenerate or redundant orientations can arise for symmetric lattices.
+- Large enumerations can explode combinatorially; trim ranges sensibly.
+
+#### Best Practices
+- Start with a few low‑index planes and small layer/vacuum ranges.
+- Post‑filter by thickness, surface area, or descriptor distance.
+
+### 2.9 Shear Angle Strain
+Adjusts cell angles (alpha, beta, gamma) over specified ranges.
+
+**Parameters**: Alpha/Beta/Gamma ranges (degrees), Identify organic.
+
+#### Algorithm
+- Convert cell to `[a,b,c,alpha,beta,gamma]`, add angle deltas, rebuild the lattice, and rescale atoms.
+
+#### Caveats
+- Large angle changes may yield ill‑conditioned cells; keep steps small.
+
+#### Best Practices
+- Combine with small lattice scaling to explore local angle neighborhoods.
+
+### 2.10 Shear Matrix Strain
+Applies a shear matrix to the lattice; optionally symmetric.
+
+**Parameters**: XY/YZ/XZ strain percentages, Identify organic, Symmetric shear.
+
+#### Algorithm
+- Build shear matrix with off‑diagonal terms from percentages; if symmetric, also fill transposed entries; multiply with cell and rescale atoms.
+
+#### Caveats
+- Large shear may produce non‑physical cells; maintain moderate ranges (±5%).
+
+#### Best Practices
+- Use symmetric shear for balanced distortions unless specific directionality is desired.
+
+### 2.11 Stacking Fault Generation
+Generates stacking faults (or twins) along a specified Miller plane.
+
+**Parameters**: (h,k,l), Step range (start, end, step), Layers.
+
+#### Algorithm
+- Compute plane normal from reciprocal lattice, select a layer split along a perpendicular direction, translate the upper part by multiples in the normal direction, wrap, and annotate.
+
+#### Caveats
+- If the normal becomes ill‑defined, the card skips modification.
+
+#### Best Practices
+- Use small step sizes and validate resulting interlayer distances.
 
 ## 3. Filter Cards
 
@@ -237,6 +422,16 @@ structure.info["Config_type"] += f" Slab(hkl={h}{k}{l},layers={layers},vacuum={v
       export_raw_merged_results
   ```
 
+#### Algorithm
+- Runs NEP to compute structure descriptors; uses FPS to select up to `Max selected` with a minimum pairwise distance `Min distance` in descriptor space.
+
+#### Caveats
+- Descriptor generation requires a valid NEP file; large datasets can take time—progress is reported.
+
+#### Best Practices
+- Use a modest `Min distance` first (e.g., 1e-3–1e-2) and tune up.
+- Cascade after generation cards to reduce redundancy and export only representative samples.
+
 ## 4. Container Cards
 
 ### 4.1 Card Group
@@ -249,6 +444,12 @@ structure.info["Config_type"] += f" Slab(hkl={h}{k}{l},layers={layers},vacuum={v
 - **Scenario**: 3 group cards generating 10, 15, and 20 structures respectively
 - **Without Filter**: Passes 45 structures to next stage
 - **With Filter**: Passes 45 structures but may only export 30
+
+#### Caveats
+- Group outputs can be large; consider an in‑group filter to control size.
+
+#### Best Practices
+- Use Card Group for parallel variants (e.g., different perturb cards) and a single filter at the bottom to unify selection criteria.
 
 # NepTrainKit Custom Card Development Guide
 

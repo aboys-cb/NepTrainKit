@@ -29,6 +29,7 @@ class KitToolBarBase(CommandBarView):
         self.addAction(action)
         action.setToolTip(name)
         return action
+
     def init_actions(self):
         pass
 class NepDisplayGraphicsToolBar(KitToolBarBase):

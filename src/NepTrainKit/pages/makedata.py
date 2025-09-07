@@ -16,7 +16,7 @@ from qfluentwidgets import HyperlinkLabel, BodyLabel, SubtitleLabel
 from NepTrainKit.core import MessageManager, CardManager
 from NepTrainKit.custom_widget import MakeWorkflowArea
 
-from NepTrainKit.views.cards import   ConsoleWidget
+from NepTrainKit.views import   ConsoleWidget
 
 
 from NepTrainKit.version import __version__

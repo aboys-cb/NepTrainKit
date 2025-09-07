@@ -3,8 +3,9 @@ from typing import Union
 from PySide6.QtCore import QRectF, Qt, QSize, Signal
 from PySide6.QtGui import QPainter, QIcon, QPainterPath, QColor
 from PySide6.QtWidgets import QApplication, QVBoxLayout, QWidget, QHBoxLayout, QSizePolicy
-from qfluentwidgets import PushButton, TransparentPushButton, FluentIconBase, FlowLayout,TransparentToolButton
-from qfluentwidgets import FluentIcon as FIF
+from qfluentwidgets import (PushButton, TransparentPushButton, FluentIconBase,
+                            FlowLayout, TransparentToolButton, FluentIcon, TransparentTogglePushButton)
+
 from qfluentwidgets.common.overload import singledispatchmethod
 
 
@@ -19,7 +20,7 @@ class CloseWidgetBase(QWidget):
         self.isHover=False
         self.isPressed=False
         self.closeButton = TransparentToolButton( self)
-        self.closeButton.setIcon(FIF.CLOSE)
+        self.closeButton.setIcon(FluentIcon.CLOSE)
         self.hBoxLayout = QHBoxLayout(self)
         self.hBoxLayout.setSpacing(0)
         self.hBoxLayout.setContentsMargins(0, 0, 0, 0)
@@ -106,31 +107,36 @@ class CloseWidgetBase(QWidget):
  
 
 class TagPushButton(CloseWidgetBase):
-
+    checkedSignal = Signal(str)
     @singledispatchmethod
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, parent: QWidget = None,checkable: bool = False):
 
         super(TagPushButton, self).__init__(parent)
-        self.button = TransparentPushButton(FIF.TAG,"", self)
+        if checkable:
+
+            self.button = TransparentTogglePushButton(FluentIcon.TAG,"", self)
+            self.button.toggled.connect(lambda :self.checkedSignal.emit(self.button.text()))
+        else:
+            self.button = TransparentPushButton(FluentIcon.TAG, "", self)
         self.button.setObjectName('PushButton')
 
         self.setWidget(self.button)
 
 
     @__init__.register
-    def _(self, text: str, parent: QWidget = None, icon: Union[QIcon, str, FluentIconBase] = None):
-        self.__init__(parent)
+    def _(self, text: str, parent: QWidget = None, icon: Union[QIcon, str, FluentIconBase] = None, checkable: bool = False):
+        self.__init__(parent,checkable)
         self.setText(text)
 
         self.setIcon(icon)
 
     @__init__.register
-    def _(self, icon: QIcon, text: str, parent: QWidget = None):
-        self.__init__(text, parent, icon)
+    def _(self, icon: QIcon, text: str, checkable: bool = False, parent: QWidget = None):
+        self.__init__(text, parent, icon,checkable)
 
     @__init__.register
-    def _(self, icon: FluentIconBase, text: str, parent: QWidget = None):
-        self.__init__(text, parent, icon)
+    def _(self, icon: FluentIconBase, text: str, checkable: bool = False, parent: QWidget = None):
+        self.__init__(text, parent, icon,checkable)
     def text(self):
         return self.button.text()
 
@@ -149,7 +155,7 @@ class TagPushButton(CloseWidgetBase):
 
 class TagGroup(QWidget):
     tagRemovedSignal = Signal(str)
-
+    tagCheckedSignal = Signal(str)
     def __init__(self,tags=None, parent: QWidget = None):
         super(TagGroup, self).__init__(parent)
         self._layout = FlowLayout(self, needAni=True)
@@ -158,14 +164,22 @@ class TagGroup(QWidget):
         if tags is not None:
             for tag in tags:
                 self.add_tag(tag)
+
     def has_tag(self, tag):
         return tag in self.tags
-    def add_tag(self, tag,icon=FIF.TAG) ->TagPushButton:
-        button = TagPushButton(icon,tag, self)
+
+    def add_tag(self, tag,color=None,icon=FluentIcon.TAG,checkable=False) ->TagPushButton:
+
+
+        button = TagPushButton(icon,tag,checkable, self)
+        button.checkedSignal.connect(self.tagCheckedSignal)
         button.closeClicked.connect(lambda _tag=tag:self.del_tag(_tag))
+        if color is not None:
+            button.setBackgroundColor(color)
         self._layout.addWidget(button)
         self.tags[tag]=button
         return button
+
     def del_tag(self, tag):
         button = self.tags[tag]
         self._layout.removeWidget(button)
@@ -182,7 +196,7 @@ if __name__ == '__main__':
     frame.resize(800, 600)
     layout = QVBoxLayout()
     frame.setLayout(layout)
-    pushButton = TagPushButton(FIF.PROJECTOR,"dwasd",frame )
+    pushButton = TagPushButton(FluentIcon.PROJECTOR,"dwasd",frame )
     layout.addWidget(pushButton)
 
     frame.show()

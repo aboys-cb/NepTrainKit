@@ -21,17 +21,15 @@ from NepTrainKit import utils
 from NepTrainKit.config import Config
 
 from NepTrainKit.core import MessageManager
-from NepTrainKit.core.io.base import ResultData
-from NepTrainKit.core.io.deepmd import is_deepmd_path
 from NepTrainKit.custom_widget import ConfigTypeSearchLineEdit, ArrowMessageBox
-from NepTrainKit.core.io import NepTrainResultData, DeepmdResultData
-from NepTrainKit.core.io.nep import NepPolarizabilityResultData, NepDipoleResultData
-from NepTrainKit.core.io.utils import get_nep_type
+from NepTrainKit.core.io import (NepTrainResultData, DeepmdResultData,is_deepmd_path, NepPolarizabilityResultData,
+                                 NepDipoleResultData,ResultData,get_nep_type)
+
 from NepTrainKit.core.structure import table_info, atomic_numbers
 from NepTrainKit.core.types import Brushes, CanvasMode, SearchType
-from NepTrainKit.views import NepResultPlotWidget, NepDisplayGraphicsToolBar
-from NepTrainKit.views.structure import StructureInfoWidget
-from NepTrainKit.views import StructureToolBar
+from NepTrainKit.views import NepResultPlotWidget, NepDisplayGraphicsToolBar,StructureInfoWidget,StructureToolBar
+
+
 
 
 class ShowNepWidget(QWidget):
@@ -180,6 +178,8 @@ class ShowNepWidget(QWidget):
 
         switch_config_checkbox= CheckBox("formula",frame)
         switch_config_checkbox.setToolTip("switch search formula")
+        switch_config_checkbox.installEventFilter(ToolTipFilter(switch_config_checkbox, 300, ToolTipPosition.TOP))
+
         switch_config_checkbox.checkStateChanged.connect(lambda state:self.search_lineEdit.set_search_type(SearchType.FORMULA) if state == Qt.CheckState.Checked else self.search_lineEdit.set_search_type(SearchType.TAG))
         frame_layout.addWidget(switch_config_checkbox)
 

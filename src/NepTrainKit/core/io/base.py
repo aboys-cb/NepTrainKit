@@ -17,7 +17,7 @@ import numpy.typing as npt
 from NepTrainKit import utils
 from NepTrainKit.core import Structure, MessageManager
 from NepTrainKit.core.calculator import NEPProcess
-from NepTrainKit.core.io.utils import read_nep_out_file, parse_array_by_atomnum
+from NepTrainKit.core.io.utils import read_nep_out_file, parse_array_by_atomnum,get_rmse
 from NepTrainKit.core.types import Brushes, SearchType
 
 def pca(X, n_components=None):
@@ -211,7 +211,8 @@ class NepData:
     def get_rmse(self)->float:
         if not self.cols:
             return 0
-        return np.sqrt(((self.now_data[:, 0:self.cols] - self.now_data[:, self.cols: ]) ** 2).mean( ))
+        return get_rmse(self.now_data[:, 0:self.cols],self.now_data[:, self.cols: ])
+        # return np.sqrt(((self.now_data[:, 0:self.cols] - self.now_data[:, self.cols: ]) ** 2).mean( ))
 
     def get_formart_rmse(self)->str:
         rmse=self.get_rmse()
@@ -219,7 +220,7 @@ class NepData:
             unit="meV/atom"
             rmse*=1000
         elif self.title =="force":
-            unit="meV/A"
+            unit="meV/Å"
             rmse*=1000
         elif self.title =="virial":
             unit="meV/atom"

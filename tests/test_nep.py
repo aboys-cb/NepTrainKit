@@ -5,7 +5,8 @@ import numpy as np
 from pathlib import Path
 import os
 from NepTrainKit.core.io.nep import NepTrainResultData,NepPolarizabilityResultData,NepDipoleResultData
-from NepTrainKit.core import Structure,Config
+from NepTrainKit.core import Structure
+from NepTrainKit.config import  Config
 from PySide6.QtWidgets import QApplication
 
 app = QApplication()

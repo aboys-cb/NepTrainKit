@@ -8,11 +8,11 @@
 from PySide6.QtCore import QUrl, Qt
 from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QWidget
-from qfluentwidgets import FluentIcon as FIF, ScrollArea
+ 
 from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCard, ExpandLayout, OptionsConfigItem, \
-    OptionsValidator, EnumSerializer, SwitchSettingCard
+    OptionsValidator, EnumSerializer, SwitchSettingCard,FluentIcon  , ScrollArea
 
-from NepTrainKit.core import Config
+from NepTrainKit.config import Config
 from NepTrainKit.custom_widget import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
 from NepTrainKit.core.types import ForcesMode, CanvasMode
 from NepTrainKit.core.update import UpdateWoker,UpdateNEP89Woker
@@ -32,30 +32,31 @@ class SettingsWidget(ScrollArea):
              'Personalization' , self.scrollWidget)
 
 
-        default_forces = Config.get("widget","forces_data","Raw")
+        default_forces = Config.get("widget","forces_data",ForcesMode.Raw)
         if default_forces=="Row":
             #没什么用 替换以前的坑 之前写错单词了
             default_forces="Raw"
         self.optimization_forces_card = MyComboBoxSettingCard(
             OptionsConfigItem("forces","forces",ForcesMode(default_forces),OptionsValidator(ForcesMode), EnumSerializer(ForcesMode)),
-            FIF.BRUSH,
+            FluentIcon.BRUSH,
             'Force data format',
             "Streamline data and speed up drawing",
             texts=[
-                "Raw","Norm"
+             mode.value for mode in    ForcesMode
             ],
             default=default_forces,
             parent=self.personal_group
         )
-        canvas_type = Config.get("widget","canvas_type","pyqtgraph")
+        canvas_type = Config.get("widget","canvas_type",CanvasMode.PYQTGRAPH)
 
         self.canvas_card = MyComboBoxSettingCard(
             OptionsConfigItem("canvas","canvas",CanvasMode(canvas_type),OptionsValidator(CanvasMode), EnumSerializer(CanvasMode)),
-            FIF.BRUSH,
+            FluentIcon.BRUSH,
             'Canvas Engine',
             "Choose GPU with vispy",
             texts=[
-                "pyqtgraph","vispy"
+             mode.value for mode in    CanvasMode
+
             ],
             default=canvas_type,
             parent=self.personal_group
@@ -96,7 +97,7 @@ class SettingsWidget(ScrollArea):
 
         self.radius_coefficient_Card = DoubleSpinBoxSettingCard(
 
-            FIF.ALBUM,
+            FluentIcon.ALBUM,
             'Covalent radius coefficient',
             'Coefficient used to detect bond length',
             self.personal_group
@@ -108,14 +109,14 @@ class SettingsWidget(ScrollArea):
         self.help_card = HyperlinkCard(
             HELP_URL,
              'Open Help Page' ,
-            FIF.HELP,
+            FluentIcon.HELP,
              'Help' ,
              'Discover new features and learn useful tips about NepTrainKit.' ,
             self.about_group
         )
         self.feedback_card = PrimaryPushSettingCard(
             "Submit Feedback",
-            FIF.FEEDBACK,
+            FluentIcon.FEEDBACK,
             "Submit Feedback",
 
             'Help us improve NepTrainKit by providing feedback.',
@@ -123,7 +124,7 @@ class SettingsWidget(ScrollArea):
         )
         self.about_card = PrimaryPushSettingCard(
             'Check for Updates',
-            FIF.INFO,
+            FluentIcon.INFO,
             "About",
             'Copyright ©' + f" {YEAR}, {AUTHOR}. " +
             "Version" + f" {__version__}",
@@ -131,7 +132,7 @@ class SettingsWidget(ScrollArea):
         )
         self.about_nep89_card = PrimaryPushSettingCard(
             'Check and update',
-            FIF.INFO,
+            FluentIcon.INFO,
             "About NEP89",
             "NEP official NEP89 large model",
             self.about_group
@@ -139,7 +140,7 @@ class SettingsWidget(ScrollArea):
         self.init_layout()
         self.init_signal()
     def init_layout(self):
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         # self.setViewportMargins(0, 80, 0, 20)
         self.setWidget(self.scrollWidget)
         self.setWidgetResizable(True)

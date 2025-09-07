@@ -92,7 +92,7 @@ class CellScalingCard(MakeDataCard):
         structure_list=[]
         engine_type=self.engine_type_combo.currentIndex()
         max_scaling=self.scaling_condition_frame.get_input_value()[0]
-        max_num=self.num_condition_frame.get_input_value()[0]
+        max_num = int(self.num_condition_frame.get_input_value()[0])
         identify_organic=self.organic_checkbox.isChecked()
 
         if self.perturb_angle_checkbox.isChecked():
@@ -149,7 +149,7 @@ class CellScalingCard(MakeDataCard):
 
             new_structure.set_cell(new_lattice,  scale_atoms=True)
             if identify_organic:
-                process_organic_clusters(structure, new_structure, clusters, is_organic_list )
+                process_organic_clusters(structure, new_structure, clusters, is_organic_list )  # pyright:ignore
 
             structure_list.append(new_structure)
         return structure_list

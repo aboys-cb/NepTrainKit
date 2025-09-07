@@ -441,7 +441,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
     def plot_nep_result(self):
         self.nep_result_data.select_index.clear()
 
-        for index,_dataset in enumerate(self.nep_result_data.dataset):
+        for index,_dataset in enumerate(self.nep_result_data.datasets):
 
             plot=self.axes_list[index]
 

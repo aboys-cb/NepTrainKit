@@ -23,6 +23,7 @@ class MessageManager(QObject):
     def __init__(self,parent=None):
         super().__init__()
         self._parent = parent
+        self._instance:MessageManager
         self.showMessageSignal.connect(self._show_message)
         self.showBoxSignal.connect(self._show_box)
 

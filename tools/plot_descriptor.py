@@ -12,11 +12,6 @@ import time
 # 选择计算方式：'dbscan' 或 'alphashape'
 method = 'alphashape'
 
-if method == 'alphashape':
-    import alphashape
-else:
-    from sklearn.cluster import DBSCAN
-    from scipy.spatial import ConvexHull
 start_time = time.time()
 config = [
     #(描述符路径, 图例标签, 标记符号)
@@ -39,6 +34,8 @@ colors = ['blue', 'orange', 'green']
 
 # DBSCAN 方法
 def compute_dbscan_boundary(points, color):
+    from sklearn.cluster import DBSCAN # pyright:ignore
+    from scipy.spatial import ConvexHull
     if len(points) > 1:
         db = DBSCAN(eps=0.1, min_samples=3).fit(points)  # 调整 eps 和 min_samples
         labels = db.labels_
@@ -64,6 +61,8 @@ def compute_dbscan_boundary(points, color):
 
 # Alpha Shape 方法
 def compute_alphashape_boundary(points, color):
+    import alphashape # pyright:ignore
+
     if len(points) >= 3:
         alpha = 1.0  # 调整 alpha 值
         hull = alphashape.alphashape(points, alpha)
@@ -78,6 +77,7 @@ def compute_alphashape_boundary(points, color):
 
 
 # 主绘图逻辑
+scatter=None
 for idx, (file, label, marker) in enumerate(config):
     descriptor_array = np.loadtxt(file)
 
@@ -99,7 +99,8 @@ for idx, (file, label, marker) in enumerate(config):
         raise ValueError("Invalid method. Use 'dbscan' or 'alphashape'.")
 
 ax.legend(frameon=False)
-fig.colorbar(scatter, ax=ax, label='Energy Per Atom')
+if scatter is not None:
+    fig.colorbar(scatter, ax=ax, label='Energy Per Atom')
 
 ax.set_xlabel('Descriptor 1')
 ax.set_ylabel('Descriptor 2')

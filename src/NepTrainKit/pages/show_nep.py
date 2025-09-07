@@ -12,23 +12,24 @@ from loguru import logger
 import numpy as np
 from PySide6.QtCore import QUrl, QTimer, Qt, Signal, QThread
 from PySide6.QtGui import QIcon, QFont
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout,QSplitter
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame
 from qfluentwidgets import HyperlinkLabel, MessageBox, SpinBox, \
     StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
-    Action, StateToolTip
+    Action, StateToolTip, CheckBox
 
 from NepTrainKit import utils
-from NepTrainKit.core import MessageManager, Config
-from NepTrainKit.core.io.deepmd import is_deepmd_path
+from NepTrainKit.config import Config
+
+from NepTrainKit.core import MessageManager
 from NepTrainKit.custom_widget import ConfigTypeSearchLineEdit, ArrowMessageBox
-from NepTrainKit.core.io import NepTrainResultData, DeepmdResultData
-from NepTrainKit.core.io.nep import NepPolarizabilityResultData, NepDipoleResultData
-from NepTrainKit.core.io.utils import get_nep_type
+from NepTrainKit.core.io import (NepTrainResultData, DeepmdResultData,is_deepmd_path, NepPolarizabilityResultData,
+                                 NepDipoleResultData,ResultData,get_nep_type)
+
 from NepTrainKit.core.structure import table_info, atomic_numbers
-from NepTrainKit.core.types import Brushes
-from NepTrainKit.views import NepResultPlotWidget, NepDisplayGraphicsToolBar
-from NepTrainKit.views.structure import StructureInfoWidget
-from NepTrainKit.views import StructureToolBar
+from NepTrainKit.core.types import Brushes, CanvasMode, SearchType
+from NepTrainKit.views import NepResultPlotWidget, NepDisplayGraphicsToolBar,StructureInfoWidget,StructureToolBar
+
+
 
 
 class ShowNepWidget(QWidget):
@@ -45,10 +46,12 @@ class ShowNepWidget(QWidget):
         self._parent = parent
         self.setObjectName("ShowNepWidget")
         self.setAcceptDrops(True)
-        self.nep_result_data=None
+        self.nep_result_data:ResultData
+        self.nep_result_data=None  # pyright:ignore
         self.init_action()
         self.init_ui()
-
+        self.calculate_bond_thread:utils.LoadingThread
+        self.load_thread:QThread
         self.first_show=False
 
         # QTimer.singleShot(100, self.init_ui)  # 100ms 后执行
@@ -57,7 +60,7 @@ class ShowNepWidget(QWidget):
     def showEvent(self, event):
         # self.init_ui()
         if hasattr(self._parent,"save_menu"):
-            self._parent.save_menu.addAction(self.export_selected_action)
+            self._parent.save_menu.addAction(self.export_selected_action)   # pyright:ignore
         auto_load_config = Config.getboolean("widget","auto_load",False)
         if not auto_load_config:
             return
@@ -68,7 +71,7 @@ class ShowNepWidget(QWidget):
 
     def hideEvent(self, event):
         if hasattr(self._parent,"save_menu"):
-            self._parent.save_menu.removeAction(self.export_selected_action)
+            self._parent.save_menu.removeAction(self.export_selected_action)   # pyright:ignore
 
     def init_action(self):
         self.export_selected_action=Action(QIcon(":/images/src/images/export1.svg"),"Export Selected Structures")
@@ -81,8 +84,8 @@ class ShowNepWidget(QWidget):
 
         self.struct_widget = QWidget(self)
         self.struct_widget_layout = QGridLayout(self.struct_widget)
-        canvas_type = Config.get("widget", "canvas_type", "pyqtgraph")
-        if canvas_type == "pyqtgraph":
+        canvas_type = Config.get("widget", "canvas_type",  CanvasMode.PYQTGRAPH)
+        if canvas_type == CanvasMode.PYQTGRAPH:
             from NepTrainKit.core.canvas.pyqtgraph import StructurePlotWidget
             self.show_struct_widget = StructurePlotWidget(self.struct_widget)
 
@@ -130,7 +133,7 @@ class ShowNepWidget(QWidget):
         self.struct_index_spinbox.valueChanged.connect(self.show_current_structure)
 
         self.bond_label=StrongBodyLabel(self.struct_widget)
-        self.bond_label.setFont(getFont(20, QFont.DemiBold))
+        self.bond_label.setFont(getFont(20, QFont.Weight.DemiBold))
         # self.bond_label.setFixedHeight(30)  # 设置状态栏的高度
         self.bond_label.setWordWrap(True)
         # 添加到布局的底部
@@ -164,12 +167,23 @@ class ShowNepWidget(QWidget):
 
         self.graph_toolbar = NepDisplayGraphicsToolBar(  self.plot_widget)
         self.graph_widget.set_tool_bar(self.graph_toolbar)
-
-        self.search_lineEdit=ConfigTypeSearchLineEdit(self.plot_widget)
+        frame = QFrame(self.plot_widget)
+        frame_layout = QHBoxLayout(frame)
+        self.search_lineEdit = ConfigTypeSearchLineEdit(self.plot_widget)
         self.search_lineEdit.searchSignal.connect(self.search_config_type)
         self.search_lineEdit.checkSignal.connect(self.checked_config_type)
         self.search_lineEdit.uncheckSignal.connect(self.uncheck_config_type)
+        self.search_lineEdit.typeChangeSignal.connect(lambda search_type:self.search_lineEdit.setCompleterKeyWord(self.nep_result_data.structure.get_all_config(search_type)) if self.nep_result_data is not None else None)
 
+
+        switch_config_checkbox= CheckBox("formula",frame)
+        switch_config_checkbox.setToolTip("switch search formula")
+        switch_config_checkbox.installEventFilter(ToolTipFilter(switch_config_checkbox, 300, ToolTipPosition.TOP))
+
+        switch_config_checkbox.checkStateChanged.connect(lambda state:self.search_lineEdit.set_search_type(SearchType.FORMULA) if state == Qt.CheckState.Checked else self.search_lineEdit.set_search_type(SearchType.TAG))
+        frame_layout.addWidget(switch_config_checkbox)
+
+        frame_layout.addWidget(self.search_lineEdit)
 
         # 创建状态栏
         self.path_label = HyperlinkLabel(self.plot_widget)
@@ -181,14 +195,14 @@ class ShowNepWidget(QWidget):
 
         self.plot_widget_layout.addWidget(self.graph_toolbar, 0, 0, 1, 2)
 
-        self.plot_widget_layout.addWidget(self.search_lineEdit, 1, 0, 1, 2)
+        self.plot_widget_layout.addWidget(frame, 1, 0, 1, 2)
         self.plot_widget_layout.addWidget(self.graph_widget, 2, 0, 1, 2)
         self.plot_widget_layout.addWidget(self.path_label , 3, 0, 1, 1)
         self.plot_widget_layout.addWidget(self.dataset_info_label , 3, 1, 1, 1)
         self.plot_widget_layout.setContentsMargins(0,0,0,0)
 
         # 将状态栏添加到布局的底部
-        self.splitter = QSplitter(Qt.Horizontal, self)
+        self.splitter = QSplitter(Qt.Orientation.Horizontal, self)
         self.splitter.addWidget(self.plot_widget)
         self.splitter.addWidget(self.struct_widget)
         self.splitter.setSizes([400,200])
@@ -270,13 +284,13 @@ class ShowNepWidget(QWidget):
         if self.nep_result_data is None:
             return
         if not self.nep_result_data.load_flag :
-            self.nep_result_data=None
+            self.nep_result_data=None   # pyright:ignore
             return
         self.struct_index_spinbox.setMaximum(self.nep_result_data.num)
         self.graph_widget.set_dataset(self.nep_result_data)
         self.nep_result_data.updateInfoSignal.connect(self.update_dataset_info)
         self.nep_result_data.updateInfoSignal.emit()
-        self.search_lineEdit.setCompleterKeyWord(self.nep_result_data.structure.get_all_config())
+        self.search_lineEdit.typeChangeSignal.emit(self.search_lineEdit.search_type)
         self.struct_index_spinbox.valueChanged.emit(0)
 
     def check_nep_result(self, path):
@@ -291,7 +305,7 @@ class ShowNepWidget(QWidget):
             if is_deepmd_path(path):
                 self.nep_result_data = DeepmdResultData.from_path(path)
             else:
-                self.nep_result_data = None
+                self.nep_result_data = None   # pyright:ignore
         else:
             dir_path = os.path.dirname(path)
             file_name = os.path.basename(path)
@@ -304,7 +318,7 @@ class ShowNepWidget(QWidget):
             elif model_type == 2:
                 self.nep_result_data = NepPolarizabilityResultData.from_path(path)
             else:
-                self.nep_result_data = None
+                self.nep_result_data = None   # pyright:ignore
 
         if self.nep_result_data is None:
             return
@@ -385,7 +399,7 @@ class ShowNepWidget(QWidget):
         path=utils.call_path_dialog(self,"Choose a file save location","file",
                                     file_filter="XYZ files (*.xyz)",
                                     default_filename=f"structure_{index}.xyz")
-        if path:
+        if path is not None:
             with open(path,"w",encoding="utf-8") as f:
                 atoms.write(f)
 
@@ -394,7 +408,7 @@ class ShowNepWidget(QWidget):
         if structure is None:
             return
         props = [
-            name for name, arr in structure.structure_info.items()
+            name for name, arr in structure.atomic_properties.items()
             if isinstance(arr, np.ndarray) and arr.ndim == 2 and arr.shape[1] == 3
         ]
         if not props:
@@ -458,20 +472,20 @@ class ShowNepWidget(QWidget):
         if unreasonable:
             MessageManager.send_info_message("The distance between atoms is too small, and the structure may be unreasonable.")
 
-    def search_config_type(self,config):
+    def search_config_type(self,config:str,search_type:SearchType):
 
-        indexes= self.nep_result_data.structure.search_config(config)
+        indexes= self.nep_result_data.structure.search_config(config,search_type)
 
         self.graph_widget.canvas.update_scatter_color(indexes,Brushes.Show)
 
-    def checked_config_type(self, config):
+    def checked_config_type(self, config:str,search_type:SearchType):
 
-        indexes = self.nep_result_data.structure.search_config(config)
+        indexes = self.nep_result_data.structure.search_config(config,search_type)
         self.graph_widget.canvas.select_index(indexes,  False)
 
-    def uncheck_config_type(self, config):
+    def uncheck_config_type(self, config:str,search_type:SearchType):
 
-        indexes = self.nep_result_data.structure.search_config(config)
+        indexes = self.nep_result_data.structure.search_config(config,search_type)
         self.graph_widget.canvas.select_index(indexes,True )
     def update_dataset_info(self ):
         info=f"Data: Orig: {self.nep_result_data.atoms_num_list.shape[0]} Now: {self.nep_result_data.structure.now_data.shape[0]} "\

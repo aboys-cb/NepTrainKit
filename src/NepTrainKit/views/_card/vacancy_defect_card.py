@@ -82,9 +82,9 @@ class VacancyDefectCard(MakeDataCard):
         engine_type = self.engine_type_combo.currentIndex()
         concentration = self.concentration_condition_frame.get_input_value()[0]
 
-        defect_num = self.num_condition_frame.get_input_value()[0]
+        defect_num = int(self.num_condition_frame.get_input_value()[0])
 
-        max_num = self.max_atoms_condition_frame.get_input_value()[0]
+        max_num = int(self.max_atoms_condition_frame.get_input_value()[0])
 
         n_atoms = len(structure)
         if self.concentration_radio_button.isChecked():
@@ -108,18 +108,19 @@ class VacancyDefectCard(MakeDataCard):
             # 确定当前结构的缺陷数量
             if engine_type == 0:
 
-                target_defects = 1 + int(sobol_seq[i, 0] * max_defects)  # [0, 1] -> [1, max_defects]
-                target_defects = min(target_defects, max_defects)  # 确保不超过 max_defects
+                target_defects = 1 + int(sobol_seq[i, 0] * max_defects)  # pyright:ignore
+                target_defects = int(min(target_defects, max_defects))  # 确保不超过 max_defects
                 # 使用 Sobol 第 0 维控制数量
                 # 使用剩余维度控制位置
-                position_scores = sobol_seq[i, 1:]
             else:
-                target_defects = defect_counts[i]
+                target_defects = int(defect_counts[i])  # pyright:ignore
 
             if target_defects == 0:
                 structure_list.append(new_structure)
                 continue
             if engine_type == 0:
+                position_scores = sobol_seq[i, 1:] # pyright:ignore
+
                 sorted_indices = np.argsort(position_scores)
                 defect_indices = sorted_indices[:target_defects]
             else:

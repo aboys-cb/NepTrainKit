@@ -103,7 +103,7 @@ class ShearMatrixCard(MakeDataCard):
                     new_cell = np.matmul(cell, shear_matrix)
                     new_structure.set_cell(new_cell, scale_atoms=True)
                     if identify_organic:
-                        process_organic_clusters(structure, new_structure, clusters, is_organic_list)
+                        process_organic_clusters(structure, new_structure, clusters, is_organic_list)  # pyright:ignore
                     info_list = []
                     if abs(sxy) > 1e-8:
                         info_list.append(f"xy:{sxy}%")

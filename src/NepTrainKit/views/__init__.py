@@ -6,4 +6,6 @@
 
 from .nep import NepResultPlotWidget
 
-from .toolbar import NepDisplayGraphicsToolBar,StructureToolBar
+from .toolbar import NepDisplayGraphicsToolBar,StructureToolBar,KitToolBarBase
+from .structure import StructureInfoWidget
+from .cards import ConsoleWidget

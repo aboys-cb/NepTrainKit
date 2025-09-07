@@ -9,7 +9,7 @@ import pyqtgraph.opengl as gl
 
 import numpy as np
 from OpenGL.GL import GL_PROJECTION, glLoadMatrixf, glMatrixMode
-from NepTrainKit.core import Config
+from NepTrainKit.config import Config
 
 
 from PySide6.QtCore import Qt

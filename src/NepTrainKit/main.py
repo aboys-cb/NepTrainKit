@@ -14,10 +14,11 @@ from PySide6.QtGui import QIcon, QFont, QPalette, QColor
 
 from PySide6.QtWidgets import QApplication, QWidget, QGridLayout
 from qfluentwidgets import (setTheme, Theme, FluentWindow, NavigationItemPosition,
-                            SplitToolButton, RoundMenu)
-from qfluentwidgets import FluentIcon as FIF
+                            SplitToolButton, RoundMenu,FluentIcon)
+
 from loguru import logger
-from NepTrainKit.core import MessageManager, Config
+from NepTrainKit.core import MessageManager
+from NepTrainKit.config import Config
 from NepTrainKit.pages import *
 from NepTrainKit import utils
 import warnings
@@ -76,13 +77,15 @@ class NepTrainKitMainWindow(FluentWindow):
         self.addSubInterface(self.show_nep_interface,
                              QIcon(':/images/src/images/show_nep.svg'),
                              'NEP Dataset Display')
-        self.addSubInterface(self.make_data_widget,
+        self.addSubInterface(self.make_data_interface,
                              QIcon(':/images/src/images/make.svg'),
-                             'Make Data' )
+                             'Make Data')
 
-
+        self.addSubInterface(self.data_manager_interface,
+                             QIcon(':/images/src/images/dataset.svg'),
+                             'Data Management')
         self.addSubInterface(self.setting_interface,
-                             FIF.SETTING,
+                             FluentIcon.SETTING,
                              'Settings',
                              NavigationItemPosition.BOTTOM)
 
@@ -92,9 +95,9 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def init_widget(self):
         self.show_nep_interface = ShowNepWidget(self)
-        self.make_data_widget = MakeDataWidget(self)
-
+        self.make_data_interface = MakeDataWidget(self)
         self.setting_interface = SettingsWidget(self)
+        self.data_manager_interface = DataManagerWidget(self)
 
     def initWindow(self):
         self.resize(1200, 700)
@@ -110,11 +113,11 @@ class NepTrainKitMainWindow(FluentWindow):
 
         widget = self.stackedWidget.currentWidget()
         if hasattr(widget,"open_file"):
-            widget.open_file( )
+            widget.open_file()   # pyright:ignore
     def export_file_dialog(self):
         widget = self.stackedWidget.currentWidget()
         if hasattr(widget,"export_file"):
-            widget.export_file( )
+            widget.export_file()    # pyright:ignore
 
 def global_exception_handler(exc_type, exc_value, exc_traceback):
     """
@@ -134,15 +137,15 @@ def set_light_theme(app):
     palette = QPalette()
 
     # 设置亮色主题的颜色
-    palette.setColor(QPalette.Window, QColor(240, 240, 240))  # 窗口背景色（浅灰）
-    palette.setColor(QPalette.WindowText, Qt.black)  # 文本颜色
-    palette.setColor(QPalette.Base, Qt.white)  # 输入框等背景色
-    palette.setColor(QPalette.AlternateBase, QColor(245, 245, 245))  # 交替颜色
-    palette.setColor(QPalette.Text, Qt.black)  # 输入框文字颜色
-    palette.setColor(QPalette.Button, QColor(230, 230, 230))  # 按钮背景色
-    palette.setColor(QPalette.ButtonText, Qt.black)  # 按钮文字颜色
-    palette.setColor(QPalette.Highlight, QColor(0, 120, 215))  # 高亮颜色（选中状态）
-    palette.setColor(QPalette.HighlightedText, Qt.white)  # 高亮文字颜色
+    palette.setColor(QPalette.ColorRole.Window, QColor(240, 240, 240))  # 窗口背景色（浅灰）
+    palette.setColor(QPalette.ColorRole.WindowText, Qt.GlobalColor.black)  # 文本颜色
+    palette.setColor(QPalette.ColorRole.Base, Qt.GlobalColor.white)  # 输入框等背景色
+    palette.setColor(QPalette.ColorRole.AlternateBase, QColor(245, 245, 245))  # 交替颜色
+    palette.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.black)  # 输入框文字颜色
+    palette.setColor(QPalette.ColorRole.Button, QColor(230, 230, 230))  # 按钮背景色
+    palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.black)  # 按钮文字颜色
+    palette.setColor(QPalette.ColorRole.Highlight, QColor(0, 120, 215))  # 高亮颜色（选中状态）
+    palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)  # 高亮文字颜色
 
     # 应用调色板
     app.setPalette(palette)
@@ -162,8 +165,8 @@ def main():
     font = QFont("Arial", 12)  # 设置字体为 Arial，字号为 12
     app.setFont(font)
     theme_file = QFile(":/theme/src/qss/theme.qss")
-    theme_file.open(QFile.ReadOnly )
-    theme=theme_file.readAll().data().decode("utf-8")
+    theme_file.open(QFile.OpenModeFlag.ReadOnly )
+    theme=theme_file.readAll().data().decode("utf-8")  # pyright:ignore
     app.setStyleSheet(theme)
     w = NepTrainKitMainWindow()
     w.show()

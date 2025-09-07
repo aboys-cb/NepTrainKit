@@ -4,13 +4,16 @@ import traceback
 from pathlib import Path
 import os
 import numpy as np
+import numpy.typing as npt
 from PySide6.QtCore import QObject, Signal
 from loguru import logger
 import glob
 from .base import NepPlotData, StructureData, ResultData,DPPlotData
 from NepTrainKit.core.structure import Structure, load_npy_structure,save_npy_structure
 from .utils import parse_array_by_atomnum,read_nep_out_file
-from .. import Config, MessageManager
+from NepTrainKit.config import Config
+
+from .. import   MessageManager
 from ... import module_path
 def is_deepmd_path(folder)-> bool:
     if os.path.exists(os.path.join(folder,"type.raw")):
@@ -19,21 +22,23 @@ def is_deepmd_path(folder)-> bool:
         return True
     return False
 class DeepmdResultData(ResultData):
-
-
-    def __init__(self, nep_txt_path,data_xyz_path: Path,
-                 energy_out_path,
-                 force_out_path,
-
-                 virial_out_path,
-                 descriptor_path,
-                 spin_out_path=None
+    _energy_dataset:DPPlotData
+    _force_dataset:DPPlotData
+    _spin_dataset:DPPlotData
+    _virial_dataset:DPPlotData
+    def __init__(self, nep_txt_path: Path|str,
+                 data_xyz_path: Path|str,
+                 energy_out_path: Path|str,
+                 force_out_path: Path|str,
+                 virial_out_path: Path|str,
+                 descriptor_path: Path|str,
+                 spin_out_path: Path|str|None=None
                  ):
         super().__init__(nep_txt_path, data_xyz_path,descriptor_path)
-        self.energy_out_path = energy_out_path
-        self.force_out_path = force_out_path
-        self.spin_out_path = spin_out_path
-        self.virial_out_path = virial_out_path
+        self.energy_out_path = Path(energy_out_path)
+        self.force_out_path = Path(force_out_path)
+        self.spin_out_path = Path(spin_out_path) if spin_out_path is not None else None
+        self.virial_out_path = Path(virial_out_path)
 
 
 
@@ -41,7 +46,7 @@ class DeepmdResultData(ResultData):
     def from_path(cls, path):
         dataset_path = Path(path)
 
-        file_name=dataset_path.name
+        # file_name=dataset_path.name
         nep_txt_path = dataset_path.with_name(f"nep.txt")
         if not nep_txt_path.exists():
             nep89_path = os.path.join(module_path, "Config/nep89.txt")
@@ -66,11 +71,14 @@ class DeepmdResultData(ResultData):
         virial_out_path = dataset_path.with_name(f"{suffix}.v_peratom.out")
         spin_out_path=  dataset_path.with_name(f"{suffix}.fm.out")
         if not spin_out_path.exists():
-            spin_out_path= None
+            spin_out_path = None
         return cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,virial_out_path,descriptor_path,spin_out_path=spin_out_path)
 
     def load_structures(self):
-
+        """
+        加载训练集的结构
+        :return:
+        """
         structures = load_npy_structure(self.data_xyz_path)
         self._atoms_dataset = StructureData(structures)
         self.atoms_num_list = np.array([len(s) for s in structures])
@@ -80,7 +88,7 @@ class DeepmdResultData(ResultData):
 
 
     @property
-    def dataset(self):
+    def datasets(self):
         if self.spin_out_path is None:
             return [self.energy, self.force,  self.virial, self.descriptor]
         else:
@@ -143,7 +151,7 @@ class DeepmdResultData(ResultData):
 
 
     def _should_recalculate(self  ) -> bool:
-        """判断是否需要重新计算 NEP 数据。"""
+        """判断是否需要重新计算 性质 数据。"""
         output_files_exist = any([
             self.energy_out_path.exists(),
             self.force_out_path.exists(),
@@ -152,7 +160,7 @@ class DeepmdResultData(ResultData):
         ])
         return   not output_files_exist
 
-    def _save_energy_data(self, potentials: np.ndarray)  :
+    def _save_energy_data(self, potentials: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
 
         """保存能量数据到文件。"""
 
@@ -176,7 +184,7 @@ class DeepmdResultData(ResultData):
             np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
         return energy_array
 
-    def _save_force_data(self, forces: np.ndarray)  :
+    def _save_force_data(self, forces: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
         """保存力数据到文件。"""
         try:
             ref_forces = np.vstack([s.forces for s in self.structure.now_data], dtype=np.float32)
@@ -203,10 +211,9 @@ class DeepmdResultData(ResultData):
 
 
 
-    def _save_virial_and_stress_data(self, virials: np.ndarray )    :
-        """保存维里张量和应力数据到文件。"""
+    def _save_virial_and_data(self, virials: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+        """保存维里和应力数据到文件。"""
 
-        coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data]))[:, np.newaxis]
         try:
             ref_virials = np.vstack([s.nep_virial for s in self.structure.now_data], dtype=np.float32)
 
@@ -224,9 +231,6 @@ class DeepmdResultData(ResultData):
             MessageManager.send_error_message(f"An error occurred while calculating virial and stress. Please check the input file.")
             logger.debug(traceback.format_exc())
             virials_array = np.column_stack([virials, virials])
-
-
-
 
         if virials_array.size != 0:
             np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
@@ -251,10 +255,7 @@ class DeepmdResultData(ResultData):
 
             energy_array = self._save_energy_data(nep_potentials_array)
             force_array = self._save_force_data(nep_forces_array)
-            virial_array = self._save_virial_and_stress_data(nep_virials_array[:, [0, 4, 8, 1, 5, 6]])
-
-
-            self.write_prediction()
+            virial_array = self._save_virial_and_data(nep_virials_array[:, [0, 4, 8, 1, 5, 6]])
             return energy_array,force_array,virial_array
         except Exception as e:
             logger.debug(traceback.format_exc())
@@ -264,7 +265,7 @@ class DeepmdResultData(ResultData):
     def export_model_xyz(self,save_path):
         """
         导出当前结构
-        :param save_path: 保存路径
+        :param save_path: 保存路径，传入的是一个文件夹路径
         被删除的导出到export_remove_model
         被保留的导出到export_good_model
         """

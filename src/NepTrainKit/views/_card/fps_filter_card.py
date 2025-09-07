@@ -28,6 +28,7 @@ class FPSFilterDataCard(FilterDataCard):
         super().__init__(parent)
         self.setTitle("Filter by FPS")
         self.init_ui()
+        self.nep_thread:NEPProcess
     def init_ui(self):
         self.setObjectName("fps_filter_card_widget")
         self.nep_path_label = BodyLabel("NEP file path: ", self.setting_widget)
@@ -53,7 +54,7 @@ class FPSFilterDataCard(FilterDataCard):
         self.min_distance_condition_frame = SpinBoxUnitInputFrame(self)
         self.min_distance_condition_frame.set_input("", 1,"float")
         self.min_distance_condition_frame.setRange(0, 100)
-        self.min_distance_condition_frame.object_list[0].setDecimals(4)
+        self.min_distance_condition_frame.object_list[0].setDecimals(4)   # pyright:ignore
         self.min_distance_condition_frame.set_input_value([0.01])
 
         self.min_distance_label = BodyLabel("Min distance", self.setting_widget)

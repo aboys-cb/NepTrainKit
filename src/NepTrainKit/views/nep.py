@@ -4,22 +4,27 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import time
+import json
 
 from NepTrainKit.core.calculator import NEPProcess
 
-start=time.time()
+start = time.time()
 import numpy as np
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 
 
 from NepTrainKit import utils
-from NepTrainKit.core import MessageManager, Config
+from NepTrainKit.core import MessageManager
+from NepTrainKit.config import Config
+
 from NepTrainKit.custom_widget import (
     GetIntMessageBox,
     SparseMessageBox,
     IndexSelectMessageBox,
     RangeSelectMessageBox,
-    ShiftEnergyMessageBox, DFTD3MessageBox,
+    EditInfoMessageBox,
+    ShiftEnergyMessageBox,
+    DFTD3MessageBox,
 )
 from NepTrainKit.core.io.select import farthest_point_sampling
 from NepTrainKit.views.toolbar import NepDisplayGraphicsToolBar
@@ -30,7 +35,7 @@ class NepResultPlotWidget(QWidget):
     def __init__(self,parent=None):
         super().__init__(parent)
         self._parent=parent
-
+        self.tool_bar: NepDisplayGraphicsToolBar
         self.draw_mode=False
         # self.setRenderHint(QPainter.Antialiasing, False)
         self._layout = QHBoxLayout(self)
@@ -78,7 +83,8 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.selectIndexSignal.connect(self.select_by_index)
         self.tool_bar.rangeSignal.connect(self.select_by_range)
         self.tool_bar.dftd3Signal.connect(self.calc_dft_d3)
-        self.canvas.tool_bar=self.tool_bar
+        self.tool_bar.editInfoSignal.connect(self.edit_structure_info)
+        self.canvas.tool_bar = self.tool_bar
 
 
     def __find_non_physical_structures(self):
@@ -164,6 +170,49 @@ class NepResultPlotWidget(QWidget):
         structures = dataset.group_array[remaining_indices]
         self.canvas.select_index(structures.tolist(),False)
 
+    def edit_structure_info(self):
+        data = self.canvas.nep_result_data
+        if data is None or len(data.select_index) == 0:
+            MessageManager.send_info_message("No data selected!")
+            return
+        selected_structures = data.get_selected_structures()
+        tags= {item for structure in selected_structures for item in structure.get_prop_key(True, True)}
+        #这两个不允许删除
+        tags.remove("species")
+        tags.remove("pos")
+        box = EditInfoMessageBox(self._parent)
+
+        box.init_tags(list(tags))
+        if not box.exec():
+            return
+
+
+        for structure in selected_structures:
+
+            for remove_tag in box.remove_tag:
+                if remove_tag in structure.additional_fields:
+                    structure.additional_fields.pop(remove_tag)
+                #这里是为了避免info和array有重复名字的 所以如果info有，就只删除info
+                #如果在想删除array的 就要再操作一次即可
+
+                elif remove_tag in structure.atomic_properties:
+                    structure.remove_atomic_properties(remove_tag)
+
+            for new_tag,value_text in box.new_tag_info.items():
+
+
+                try:
+                    value = json.loads(value_text)
+                    if isinstance(value, list):
+                        value = np.array(value)
+                except Exception:
+                    try:
+                        value = float(value_text)
+                    except Exception:
+                        value = value_text
+                structure.additional_fields[new_tag] = value
+        MessageManager.send_info_message("Edit completed")
+
     def export_descriptor_data(self):
         if self.canvas.nep_result_data is None:
             MessageManager.send_info_message("NEP data has not been loaded yet!")
@@ -211,6 +260,7 @@ class NepResultPlotWidget(QWidget):
         )
         box.groupEdit.setText(";".join(suggested))
         box.genSpinBox.setValue(max_generations)
+
         box.sizeSpinBox.setValue(population_size)
         box.tolSpinBox.setValue(convergence_tol)
 
@@ -338,7 +388,7 @@ class NepResultPlotWidget(QWidget):
         if  self.canvas.nep_result_data is None:
             return
 
-        function = Config.getint("widget","functional","scan")
+        function = Config.get("widget","functional","scan")
         cutoff = Config.getfloat("widget","cutoff",12)
         cutoff_cn = Config.getfloat("widget","cutoff_cn",6)
         mode = Config.getint("widget","d3_mode",0)
@@ -421,10 +471,10 @@ class NepResultPlotWidget(QWidget):
 
     def set_dataset(self,dataset):
 
-        if self.last_figure_num !=len(dataset.dataset):
+        if self.last_figure_num !=len(dataset.datasets):
 
-            self.canvas.init_axes(len(dataset.dataset))
-            self.last_figure_num = len(dataset.dataset)
+            self.canvas.init_axes(len(dataset.datasets))
+            self.last_figure_num = len(dataset.datasets)
 
         self.canvas.set_nep_result_data(dataset)
         self.canvas.plot_nep_result()

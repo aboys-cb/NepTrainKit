@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
@@ -29,9 +31,9 @@ class VacancyRuleItem(QFrame):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.layout = QGridLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(4)
+        self.__layout = QGridLayout(self)
+        self.__layout.setContentsMargins(0, 0, 0, 0)
+        self.__layout.setSpacing(4)
         self.setStyleSheet("background-color: rgb(239, 249, 254);")
 
         self.element_edit = QLineEdit(self)
@@ -55,20 +57,20 @@ class VacancyRuleItem(QFrame):
         self.count_label.setToolTip("Number of atoms to remove")
         self.count_label.installEventFilter(ToolTipFilter(self.count_label, 300, ToolTipPosition.TOP))
 
-        self.layout.addWidget(self.element_label, 0, 0)
-        self.layout.addWidget(self.element_edit, 0, 1)
-        self.layout.addWidget(self.group_label, 0, 2)
-        self.layout.addWidget(self.group_edit, 0, 3)
-        self.layout.addWidget(self.count_label, 1, 0)
-        self.layout.addWidget(self.count_frame, 1, 1)
-        self.layout.addWidget(self.delete_button, 0, 4, 2, 1)
+        self.__layout.addWidget(self.element_label, 0, 0)
+        self.__layout.addWidget(self.element_edit, 0, 1)
+        self.__layout.addWidget(self.group_label, 0, 2)
+        self.__layout.addWidget(self.group_edit, 0, 3)
+        self.__layout.addWidget(self.count_label, 1, 0)
+        self.__layout.addWidget(self.count_frame, 1, 1)
+        self.__layout.addWidget(self.delete_button, 0, 4, 2, 1)
 
     def _delete_self(self) -> None:
         self.setParent(None)
         self.deleteLater()
 
-    def to_rule(self) -> dict:
-        rule: dict[str, object] = {}
+    def to_rule(self) -> dict[str, Any]:
+        rule: dict[str, Any] = {}
         element = self.element_edit.text().strip()
         if element:
             rule["element"] = element
@@ -78,7 +80,7 @@ class VacancyRuleItem(QFrame):
             rule["group"] = [g.strip() for g in groups.split(",") if g.strip()]
         return rule
 
-    def from_rule(self, rule: dict) -> None:
+    def from_rule(self, rule: dict[str, Any]) -> None:
         if not rule:
             return
         self.element_edit.setText(str(rule.get("element", "")))
@@ -93,9 +95,9 @@ class VacancyRulesWidget(QWidget):
 
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
-        self.layout = QVBoxLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(4)
+        self.__layout = QVBoxLayout(self)
+        self.__layout.setContentsMargins(0, 0, 0, 0)
+        self.__layout.setSpacing(4)
 
         btn_layout = QHBoxLayout()
         btn_layout.setContentsMargins(0, 0, 0, 0)
@@ -103,25 +105,25 @@ class VacancyRulesWidget(QWidget):
         self.add_button.clicked.connect(self.add_rule)
         self.add_button.setToolTip("Add rule")
         self.add_button.installEventFilter(ToolTipFilter(self.add_button, 300, ToolTipPosition.TOP))
-        btn_layout.addWidget(self.add_button, 0, Qt.AlignLeft)
+        btn_layout.addWidget(self.add_button, 0, Qt.AlignmentFlag.AlignLeft)
         btn_layout.addStretch(1)
-        self.layout.addLayout(btn_layout)
+        self.__layout.addLayout(btn_layout)
 
         self.rule_container = QWidget(self)
         self.rule_layout = QVBoxLayout(self.rule_container)
         self.rule_layout.setContentsMargins(0, 0, 0, 0)
         self.rule_layout.setSpacing(4)
-        self.layout.addWidget(self.rule_container)
+        self.__layout.addWidget(self.rule_container)
 
-    def add_rule(self, rule: dict | None = None) -> VacancyRuleItem:
+    def add_rule(self, rule: dict[str, Any] ) -> VacancyRuleItem:
         item = VacancyRuleItem(self.rule_container)
         self.rule_layout.addWidget(item)
         if rule:
             item.from_rule(rule)
         return item
 
-    def to_rules(self) -> list[dict]:
-        rules: list[dict] = []
+    def to_rules(self) -> list[dict[str, Any]]:
+        rules: list[dict[str, Any]] = []
         for i in range(self.rule_layout.count()):
             widget = self.rule_layout.itemAt(i).widget()
             if isinstance(widget, VacancyRuleItem):
@@ -130,7 +132,7 @@ class VacancyRulesWidget(QWidget):
                     rules.append(rule)
         return rules
 
-    def from_rules(self, rules: list[dict]) -> None:
+    def from_rules(self, rules: list[dict[str, Any]]) -> None:
         while self.rule_layout.count():
             item = self.rule_layout.takeAt(0).widget()
             if item is not None:

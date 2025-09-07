@@ -9,12 +9,14 @@ import platform
 import sys
 from loguru import logger
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-import src_rc
+from NepTrainKit import src_rc
 
 try:
     # Actual if statement not needed, but keeps code inspectors more happy
-    if __nuitka_binary_dir is not None:
+    if __nuitka_binary_dir is not None: # type: ignore  
         is_nuitka_compiled = True
+    else:
+        is_nuitka_compiled = False
 except NameError:
     is_nuitka_compiled = False
 

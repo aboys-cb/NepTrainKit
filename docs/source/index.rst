@@ -11,5 +11,6 @@ NepTrainKit is a toolkit focused on the operation and visualization of neuroevol
    :maxdepth: 2
    :caption: Documentation:
 
+   Quickstart <quickstart>
    module    <module/index>
    example    <example/index>

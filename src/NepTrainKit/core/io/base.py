@@ -8,19 +8,18 @@ import re
 import traceback
 from functools import cached_property
 from pathlib import Path
-
 import numpy as np
 from PySide6.QtCore import QObject, Signal
 from loguru import logger
+from typing import Any
 from numpy import bool_
-
+import numpy.typing as npt
 from NepTrainKit import utils
 from NepTrainKit.core import Structure, MessageManager
 from NepTrainKit.core.calculator import NEPProcess
-from NepTrainKit.core.io.utils import read_nep_out_file, parse_array_by_atomnum
-from NepTrainKit.core.types import Brushes
+from NepTrainKit.core.io.utils import read_nep_out_file, parse_array_by_atomnum,get_rmse
+from NepTrainKit.core.types import Brushes, SearchType
 
-import numpy as np
 def pca(X, n_components=None):
     """
     执行主成分分析 (PCA)，只返回降维后的数据
@@ -64,42 +63,45 @@ class DataBase:
     优化后的 DataBase 类，对列表进行封装，支持根据索引删除结构和回退。
     使用布尔掩码管理活动/删除状态，减少列表操作开销。
     """
-    def __init__(self, data_list):
+    def __init__(self, data_list:list[Any]|npt.NDArray[Any]):
         """Initialize with a NumPy array."""
         self._data = np.asarray(data_list)
         # 布尔掩码：True 表示活跃，False 表示已删除
         self._active_mask = np.ones(len(self._data), dtype=bool)
         # 历史记录栈，存储每次删除的掩码变化
         self._history = []
+    @property
+    def mask_array(self):
+        return self._active_mask
 
     @property
     def num(self) -> int:
         """返回当前活跃数据的数量"""
         return np.sum(self._active_mask)
     @property
-    def all_data(self):
+    def all_data(self) -> npt.NDArray[Any]:
         return self._data
     @property
-    def now_data(self):
+    def now_data(self) -> npt.NDArray[Any]:
         """返回当前活跃数据"""
         return self._data[self._active_mask]
 
     @property
-    def remove_data(self):
+    def remove_data(self) -> npt.NDArray[Any]:
         """返回所有已删除的数据"""
         return self._data[~self._active_mask]
 
     @property
-    def now_indices(self):
+    def now_indices(self) -> npt.NDArray[np.int32]:
         """返回当前活跃数据的索引下标"""
         return np.where(self._active_mask)[0]
 
     @property
-    def remove_indices(self):
+    def remove_indices(self) -> npt.NDArray[np.int32]:
         """返回已删除数据的索引下标"""
         return np.where(~self._active_mask)[0]
 
-    def remove(self, indices):
+    def remove(self, indices)->None:
         idx = np.unique(np.asarray(indices, dtype=int) if not isinstance(indices, int) else [indices])
         idx = idx[(idx >= 0) & (idx < len(self._data))]
         if len(idx) == 0:
@@ -107,7 +109,7 @@ class DataBase:
         self._history.append(idx)  # 存储删除的索引
         self._active_mask[idx] = False
 
-    def revoke(self):
+    def revoke(self)->None:
         if self._history:
             last_indices = self._history.pop()
             self._active_mask[last_indices] = True
@@ -124,11 +126,15 @@ class NepData:
     title 能量 力 等 用于画图axes的标题
 
     """
-    def __init__(self,data_list,group_list=1, **kwargs ):
+    title:str
+    def __init__(self,
+                 data_list:list[Any]|npt.NDArray[Any],
+                 group_list:int|list[int]=1,
+                 **kwargs ):
         if isinstance(data_list,(list )):
             data_list=np.array(data_list)
 
-        self.data = DataBase(data_list )
+        self.data = DataBase(data_list)
         if isinstance(group_list,int):
             group = np.arange(data_list.shape[0],dtype=np.uint32)
             self.group_array=DataBase(group)
@@ -139,10 +145,10 @@ class NepData:
         for key,value in kwargs.items():
             setattr(self,key,value)
     @property
-    def num(self):
+    def num(self)->int:
         return self.data.num
     @cached_property
-    def cols(self):
+    def cols(self)->int:
         """
         将列数除以2 前面是nep 后面是dft
         """
@@ -152,30 +158,34 @@ class NepData:
         index = self.now_data.shape[1] // 2
         return index
     @property
-    def now_data(self):
+    def now_data(self) -> npt.NDArray[Any]:
         """
         返回当前数据
         """
         return self.data.now_data
     @property
-    def now_indices(self):
+    def now_indices(self) -> npt.NDArray[np.int32]:
         return self.data.now_indices
     @property
-    def all_data(self):
+    def all_data(self) -> npt.NDArray[Any]:
         return self.data.all_data
-    def is_visible(self,index) -> bool_:
+    def is_visible(self,index) -> bool:
         if self.data.all_data.size == 0:
             return False
-        return self.data._active_mask[index].all()
+        return self.data.mask_array[index].all()
     @property
-    def remove_data(self):
+    def remove_data(self) -> npt.NDArray[Any]:
         """返回删除的数据"""
 
         return self.data.remove_data
 
-    def convert_index(self,index_list):
+    def convert_index(self,index_list:list[int]|int) -> npt.NDArray[np.int32]:
         """
         传入结构的原始下标 然后转换成现在已有的
+        这个主要是映射force等性质的下标 或者其他一对多的性质
+        对于一对一的比如，转换后会将index_list按照原始下标排序
+        输入[np.int64(98), np.int64(9), np.int64(42), np.int64(141), np.int64(79), np.int64(56)]
+        输出[  9  42  56  79  98 141]
         """
         if isinstance(index_list,int):
             index_list=[index_list]
@@ -183,7 +193,7 @@ class NepData:
 
 
 
-    def remove(self,remove_index):
+    def remove(self,remove_index:list[int]|int):
         """
         根据index删除
         remove_index 结构的原始下标
@@ -198,18 +208,19 @@ class NepData:
         self.data.revoke()
         self.group_array.revoke()
 
-    def get_rmse(self):
+    def get_rmse(self)->float:
         if not self.cols:
             return 0
-        return np.sqrt(((self.now_data[:, 0:self.cols] - self.now_data[:, self.cols: ]) ** 2).mean( ))
+        return get_rmse(self.now_data[:, 0:self.cols],self.now_data[:, self.cols: ])
+        # return np.sqrt(((self.now_data[:, 0:self.cols] - self.now_data[:, self.cols: ]) ** 2).mean( ))
 
-    def get_formart_rmse(self):
+    def get_formart_rmse(self)->str:
         rmse=self.get_rmse()
         if self.title =="energy":
             unit="meV/atom"
             rmse*=1000
         elif self.title =="force":
-            unit="meV/A"
+            unit="meV/Å"
             rmse*=1000
         elif self.title =="virial":
             unit="meV/atom"
@@ -230,7 +241,7 @@ class NepData:
             return ""
         return f"{rmse:.2f} {unit}"
 
-    def get_max_error_index(self,nmax):
+    def get_max_error_index(self,nmax)->list[int]:
         """
         返回nmax个最大误差的下标
         这个下标是结构的原始下标
@@ -240,7 +251,7 @@ class NepData:
         structure_index =self.group_array.now_data[rmse_max_ids]
         index,indices=np.unique(structure_index,return_index=True)
 
-        return   structure_index[np.sort(indices)][:nmax].tolist()
+        return structure_index[np.sort(indices)][:nmax].tolist()
 
 
 
@@ -251,16 +262,17 @@ class NepPlotData(NepData):
         super().__init__(data_list,**kwargs )
         self.x_cols=slice(self.cols,None)
         self.y_cols=slice(None,self.cols )
+
     @property
-    def normal_color(self):
-        return Brushes.TransparentBrush
-    @property
-    def x(self):
+    def x(self) -> npt.NDArray[Any]:
+        """
+        这里返回的是展平之后的数据 方便直接画图
+        """
         if self.cols==0:
             return self.now_data
         return self.now_data[ : ,self.x_cols].ravel()
     @property
-    def y(self):
+    def y(self) -> npt.NDArray[Any]:
         if self.cols==0:
             return self.now_data
         return self.now_data[ : , self.y_cols].ravel()
@@ -268,15 +280,19 @@ class NepPlotData(NepData):
 
     @property
     def structure_index(self):
+        """
+        这里根据列数 将group做一个扩充 传入到画图的data里
+        为了将散点将结构下标映射起来
+        """
         return self.group_array[ : ].repeat(self.cols)
 class DPPlotData(NepData):
+
+
     def __init__(self,data_list,**kwargs ):
         super().__init__(data_list,**kwargs )
         self.x_cols=slice(None,self.cols)
         self.y_cols=slice(self.cols,None)
-    @property
-    def normal_color(self):
-        return Brushes.TransparentBrush
+
     @property
     def x(self):
         if self.cols==0:
@@ -290,15 +306,15 @@ class DPPlotData(NepData):
 
 
 
-    def all_x(self):
-        if self.cols==0:
-            return self.all_data
-        return self.all_data[ : ,:self.cols].ravel()
-    @property
-    def all_y(self):
-        if self.cols==0:
-            return self.all_data
-        return self.all_data[ : , self.cols:].ravel()
+    # def all_x(self):
+    #     if self.cols==0:
+    #         return self.all_data
+    #     return self.all_data[ : ,:self.cols].ravel()
+    # @property
+    # def all_y(self):
+    #     if self.cols==0:
+    #         return self.all_data
+    #     return self.all_data[ : , self.cols:].ravel()
     @property
     def structure_index(self):
         return self.group_array[ : ].repeat(self.cols)
@@ -306,42 +322,79 @@ class DPPlotData(NepData):
 class StructureData(NepData):
 
     @utils.timeit
-    def get_all_config(self):
+    def get_all_config(self,search_type:SearchType)->list[str]:
+        """
+        获取所有结构的某个属性 用于搜索
+        :param search_type:SearchType
+        :return:每个结构的属性值
+        """
+        if search_type==SearchType.TAG:
+            return [structure.tag for structure in self.now_data]
+        elif search_type==SearchType.FORMULA:
+            return [structure.formula for structure in self.now_data]
+        else:
+            MessageManager.send_warning_message(f"no such search_type:{search_type}")
+            return []
+    def search_config(self,config:str,search_type:SearchType):
+        """
+        根据传入的config 对结构的属性值进行匹配
+        这里使用了正则 可以使用正则支持的语法
+        :param config:
+        :param search_type:
+        :return:符合搜索的结构的下标
+        """
+        if search_type==SearchType.TAG:
 
-        return [structure.tag for structure in self.now_data]
-
-    def search_config(self,config):
-
-        result_index=[i for i ,structure in enumerate(self.now_data) if re.search(config, structure.tag)]
+            result_index=[i for i ,structure in enumerate(self.now_data) if re.search(config, structure.tag)]
+        elif search_type==SearchType.FORMULA:
+            result_index=[i for i ,structure in enumerate(self.now_data) if re.search(config, structure.formula)]
+        else:
+            MessageManager.send_warning_message(f"no such search_type:{search_type}")
+            return []
         return self.group_array[result_index].tolist()
 
 
 class ResultData(QObject):
     #通知界面更新训练集的数量情况
     updateInfoSignal = Signal( )
+    #加载训练集结束后发出的信号
     loadFinishedSignal = Signal()
+    atoms_num_list: npt.NDArray
+    _atoms_dataset: StructureData
 
-
-    def __init__(self,nep_txt_path,data_xyz_path,descriptor_path):
+    def __init__(self,
+                 nep_txt_path:Path|str,
+                 data_xyz_path:Path|str,
+                 descriptor_path:Path|str):
         super().__init__()
         self.load_flag=False
 
-        self.descriptor_path=descriptor_path
-        self.data_xyz_path=data_xyz_path
-        self.nep_txt_path=nep_txt_path
-
+        self.descriptor_path=Path(descriptor_path)
+        self.data_xyz_path=Path(data_xyz_path)
+        self.nep_txt_path=Path(nep_txt_path)
+        #存储选中结构的真实下标
         self.select_index=set()
 
         self.nep_calc_thread = NEPProcess()
 
 
     def load_structures(self):
+        """
+        加载结构xyz文件
+        :return:
+        """
         structures = Structure.read_multiple(self.data_xyz_path)
-        self._atoms_dataset=StructureData(structures)
+        self._atoms_dataset = StructureData(structures)
         self.atoms_num_list = np.array([len(struct) for struct in self.structure.now_data])
 
 
     def write_prediction(self):
+        """
+        程序将严格检测batch和结构数的关系，如果不是fullbatch，
+        就会触发计算，通过写入一个nep.in文件 可以避免这种情况。
+        在nep_cpu计算后，回调用该函数
+        :return:
+        """
         if self.atoms_num_list.shape[0] > 1000:
             #
             if not self.data_xyz_path.with_name("nep.in").exists():
@@ -350,6 +403,10 @@ class ResultData(QObject):
                     f.write("prediction 1 ")
 
     def load(self ):
+        """
+        加载数据集的主函数
+        :return:
+        """
         try:
             self.load_structures()
             self._load_descriptors()
@@ -362,10 +419,15 @@ class ResultData(QObject):
 
         self.loadFinishedSignal.emit()
     def _load_dataset(self):
+        """
+        不同类型的势函数通过重写该函数实现不同的加载逻辑
+        主要是加载结构性质
+        :return:
+        """
         raise NotImplementedError()
 
     @property
-    def dataset(self) -> ["NepPlotData"]:
+    def datasets(self) -> list["NepPlotData"]:
         raise NotImplementedError()
 
     @property
@@ -382,10 +444,12 @@ class ResultData(QObject):
     def is_select(self,i):
         return i in self.select_index
 
-    def select(self,indices):
+    def select(self,indices:list[int]|int):
         """
         传入一个索引列表，将索引对应的结构标记为选中状态
         这个下标是结构在train.xyz中的索引
+        :param indices: 索引
+        :return:
         """
 
 
@@ -393,16 +457,18 @@ class ResultData(QObject):
         idx = np.asarray(indices, dtype=int) if not isinstance(indices, int) else np.array([indices])
         # 去重并过滤有效索引（在数据范围内且为活跃数据）
         idx = np.unique(idx)
-        idx = idx[(idx >= 0) & (idx < len(self.structure.all_data)) & (self.structure.data._active_mask[idx])]
+        idx = idx[(idx >= 0) & (idx < len(self.structure.all_data)) & (self.structure.data.mask_array[idx])]
         # 批量添加到选中集合
         self.select_index.update(idx)
 
         self.updateInfoSignal.emit()
 
-    def uncheck(self,_list):
+    def uncheck(self,_list:list[int]|int):
         """
         check_list 传入一个索引列表，将索引对应的结构标记为未选中状态
         这个下标是结构在train.xyz中的索引
+        :param _list:
+        :return:
         """
         if isinstance(_list,int):
             _list=[_list]
@@ -413,7 +479,10 @@ class ResultData(QObject):
         self.updateInfoSignal.emit()
 
     def inverse_select(self):
-        """Invert the current selection state of all active structures"""
+        """
+        根据现在选择的结构对先有训练集进行一个反选的操作
+        :return:
+        """
         active_indices = set(self.structure.data.now_indices.tolist())
         selected_indices = set(self.select_index)
         unselect = list(selected_indices)
@@ -422,13 +491,26 @@ class ResultData(QObject):
             self.uncheck(unselect)
         if select:
             self.select(select)
+    def get_selected_structures(self)->list[Structure]:
+        """
+        获取选中结构的list
+        :return: list[Structure]
+        """
+        index=list(self.select_index)
+        index = self.structure.convert_index(index)
+
+        return self.structure.all_data[index].tolist()
+
     def export_selected_xyz(self,save_file_path):
         """
         导出当前选中的结构
+        :param save_file_path: 保存文件路径，具体到文件 例如~/select.xyz
+        :return:
         """
         index=list(self.select_index)
         try:
             with open(save_file_path,"w",encoding="utf8") as f:
+
                 index=self.structure.convert_index(index)
                 for structure in self.structure.all_data[index]:
                     structure.write(f)
@@ -472,9 +554,10 @@ class ResultData(QObject):
 
         """
         在所有的dataset中删除某个索引对应的结构
+        i是原始下标
         """
         self.structure.remove(i)
-        for dataset in self.dataset:
+        for dataset in self.datasets:
             dataset.remove(i)
         self.updateInfoSignal.emit()
 
@@ -489,7 +572,7 @@ class ResultData(QObject):
         撤销到上一次的删除
         """
         self.structure.revoke()
-        for dataset in self.dataset:
+        for dataset in self.datasets:
             dataset.revoke( )
         self.updateInfoSignal.emit()
 
@@ -504,7 +587,10 @@ class ResultData(QObject):
 
 
     def _load_descriptors(self):
-
+        """
+        加载训练集的描述符
+        :return:
+        """
 
         if os.path.exists(self.descriptor_path):
             desc_array = read_nep_out_file(self.descriptor_path,dtype=np.float32,ndmin=2)

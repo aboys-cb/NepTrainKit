@@ -89,7 +89,7 @@ class PerturbCard(MakeDataCard):
         structure_list = []
         engine_type = self.engine_type_combo.currentIndex()
         max_scaling = self.scaling_condition_frame.get_input_value()[0]
-        max_num = self.num_condition_frame.get_input_value()[0]
+        max_num = int(self.num_condition_frame.get_input_value()[0])
         identify_organic = self.organic_checkbox.isChecked()
 
         n_atoms = len(structure)
@@ -121,12 +121,12 @@ class PerturbCard(MakeDataCard):
 
                 # 有机分子：整体平移
 
-                for cluster in organic_clusters:
+                for cluster in organic_clusters:  # pyright:ignore
                     cluster_delta = delta[cluster[0]]
                     new_positions[cluster] += cluster_delta  # 利用 NumPy 索引批量加
 
                 # 无机分子：逐原子扰动（其实和默认行为相同，略冗余，但保留逻辑清晰）
-                for cluster in inorganic_clusters:
+                for cluster in inorganic_clusters:  # pyright:ignore
                     new_positions[cluster] += delta[cluster]
 
             # 构造新结构

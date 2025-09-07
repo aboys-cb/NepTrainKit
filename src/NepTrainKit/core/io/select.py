@@ -5,8 +5,8 @@
 # @email    : 1747193328@qq.com
 
 import numpy as np
-
-def numpy_cdist(X, Y):
+import numpy.typing as npt
+def numpy_cdist(X:npt.NDArray[np.float32], Y:npt.NDArray[np.float32])->int:
     """
     使用 NumPy 计算两个数组之间的成对欧几里得距离
 
@@ -26,7 +26,7 @@ def numpy_cdist(X, Y):
     # 返回距离（平方根）
     return np.sqrt(squared_dist)
 
-def farthest_point_sampling(points, n_samples, min_dist=0.1, selected_data=None):
+def farthest_point_sampling(points, n_samples, min_dist=0.1, selected_data=None)->list[int]:
     """
     最远点采样：支持已有样本扩展，并加入最小距离限制。
 

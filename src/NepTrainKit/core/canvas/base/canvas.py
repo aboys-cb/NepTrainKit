@@ -13,13 +13,14 @@ from PySide6.QtCore import Signal, QObject
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.types import Brushes
+from NepTrainKit.views.toolbar import KitToolBarBase
 
 
 class CanvasBase(ABC):
     def __init__(self):
         self.current_axes = None
 
-        self.tool_bar=None
+        self.tool_bar:KitToolBarBase
     @abstractmethod
     def pan(self ,*args,**kwargs):
         """
@@ -114,7 +115,7 @@ class CanvasLayoutBase(CanvasBase):
         if axes is None or self.nep_result_data is None:
             return None
         axes_index = self.axes_list.index(axes)
-        return self.nep_result_data.dataset[axes_index]
+        return self.nep_result_data.datasets[axes_index]
     def clear_axes(self):
         """
         清空逻辑

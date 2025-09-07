@@ -4,8 +4,7 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 from PySide6.QtCore import QRect, Qt, QSize, QPoint
-from PySide6.QtWidgets import QLayout
-
+from PySide6.QtWidgets import QLayout, QLayoutItem
 
 
 class FlowLayout(QLayout):
@@ -13,7 +12,7 @@ class FlowLayout(QLayout):
         super().__init__(parent)
         self.setContentsMargins(margin, margin, margin, margin)
         self.setSpacing(spacing)
-        self.itemList = []
+        self.itemList:list[QLayoutItem] = []
 
     def addItem(self, item):
         self.itemList.append(item)
@@ -29,13 +28,13 @@ class FlowLayout(QLayout):
     def takeAt(self, index):
         if 0 <= index < len(self.itemList):
             return self.itemList.pop(index)
-        return None
+        return super().takeAt(index)
     def insertWidget(self, index, widget):
         self.addWidget(widget)
         self.moveItem(len(self.itemList)-1,index)
 
     def expandingDirections(self):
-        return Qt.Orientations(Qt.Orientation(0))
+        return  Qt.Orientation(0)
 
     def hasHeightForWidth(self):
         return True

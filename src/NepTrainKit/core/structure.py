@@ -3,19 +3,23 @@
 # @Time    : 2024/11/21 14:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+from __future__ import annotations
 import glob
 import json
 import os
 import re
 from copy import deepcopy
 from pathlib import Path
+from functools import cached_property
+from typing import Any,IO
 
 import numpy as np
+import numpy.typing as npt
 from ase import neighborlist
 from ase.geometry import find_mic
 from loguru import logger
 from scipy.sparse.csgraph import connected_components
-from collections import defaultdict
+from collections import defaultdict, Counter
 from NepTrainKit import utils, module_path
 
 
@@ -31,33 +35,66 @@ class Structure:
     extxyz格式的结构类
     原子坐标是笛卡尔坐标
     """
-    def __init__(self, lattice, structure_info, properties, additional_fields):
+    def __init__(self,
+                 lattice: list[float]|npt.NDArray[np.float32],
+                 atomic_properties:dict[str,npt.NDArray[np.float32]],
+                 properties:list[dict[str,str]],
+                 additional_fields:dict[str,Any]  ):
+        """
+
+        :param lattice: 晶格矩阵
+        :param atomic_properties:
+            和原子对应的属性 比如{"pos":np.array(),"forces":np.array(),"species":np.array()}
+        :param properties: [{'name': "pos", 'type': 'R', 'count': 3},...]
+        :param additional_fields: xyz的第二行的信息 比如{"energy":3}
+        """
         super().__init__()
         self.properties = properties
         self.lattice = np.array(lattice,dtype=np.float32).reshape((3,3))  # Optional: Lattice vectors
-        self.structure_info = structure_info
+        self.atomic_properties = atomic_properties
         self.additional_fields = additional_fields
         if "Config_type" not in self.additional_fields.keys():
             self.additional_fields["Config_type"] = ""
-        if "force" in self.structure_info.keys():
+        if "force" in self.atomic_properties.keys():
             self.force_label="force"
         else:
             self.force_label = "forces"
-
+        #预加载下属性
+        self.formula
     @property
-    def tag(self):
+    def tag(self)->str:
         """Alias for the ``Config_type`` additional field."""
         return self.additional_fields.get("Config_type", "")
 
     @tag.setter
     def tag(self, value):
         self.additional_fields["Config_type"] = value
+    def get_prop_key(self,additional_fields=True,atomic_properties=True)->list[str]:
+        """
+        获取整个结构中，所有的属性key值
+        :param additional_fields:
+        :param atomic_properties:
+        :return: ["pos","energy",...]
+        """
+        keys=[]
+        if additional_fields:
+            keys.extend(self.additional_fields.keys())
+        if atomic_properties:
+            keys.extend(self.atomic_properties.keys())
+        return keys
+    def remove_atomic_properties(self,key:str):
+        if key in self.atomic_properties:
+            self.atomic_properties.pop(key)
+            for prop in self.properties:
+                if prop["name"]==key:
+                    self.properties.remove(prop)
+                    break
 
     def __len__(self):
         return len(self.elements)
 
     @classmethod
-    def read_xyz(cls, filename):
+    def read_xyz(cls, filename:str) -> Structure:
         with open(filename, 'r') as f:
             structure = cls.parse_xyz(f.read())
         return structure
@@ -96,12 +133,12 @@ class Structure:
         return [atomic_numbers[element] for element in self.elements ]
     @property
     def spin_num(self)->int:
-        if  "force_mag" not in self.structure_info :
+        if  "force_mag" not in self.atomic_properties :
             return 0
-        mag=self.structure_info["force_mag"]
+        mag=self.atomic_properties["force_mag"]
         count = np.sum(~np.all(mag == 0, axis=1))
         return count
-    @property
+    @cached_property
     def formula(self):
         #这种形式会导致化学式过长 比如有机分子环境下
         # diffs = np.diff(self.numbers)
@@ -113,30 +150,47 @@ class Structure:
         # result = [f"{segment[0]}{len(segment)}" for segment in segments]
         # return "".join(result)
         # 改成下面的形式
-        formula = ""
-        elems={}
-        for element in self.elements:
-            if element in elems.keys():
-                elems[element]+=1
-            else:
-                elems[element]=1
-        for element,count in elems.items():
-            formula+=element+str(count)
-        return formula
+        # formula = ""
+        # elems={}
+        # for element in self.elements:
+        #     if element in elems.keys():
+        #         elems[element]+=1
+        #     else:
+        #         elems[element]=1
+        # for element,count in elems.items():
+        #     formula+=element+str(count)
+        # return formula
+        return self.__get_formula(sub=False)
 
-    @property
-    def html_formula(self):
-        formula = ""
-        elems = {}
-        for element in self.elements:
-            if element in elems.keys():
-                elems[element] += 1
-            else:
-                elems[element] = 1
-        for element, count in elems.items():
-            formula += element +"<sub>" + str(count) + "</sub>"
-        return formula
 
+
+    @cached_property
+    def html_formula(self)->str:
+
+        return self.__get_formula(sub=True)
+
+    def __get_formula(self, sub=False)->str:
+        # priority = {'C': 0, 'H': 1}
+
+        # 优先级：C → H → 按原子序数 → 未知元素按字母
+        def priority(sym):
+            if sym == 'C':
+                return (0, 0)
+            if sym == 'H':
+                return (0, 1)
+            z = atomic_numbers.get(sym, 999)
+            return (1, z) if z != 999 else (2, sym)
+
+        cnt = Counter(self.elements)
+        count2 = dict(sorted(cnt.items(), key=lambda kv: priority(kv[0])))
+        if sub:
+            formula = ''.join(symb + ("<sub>" + str(n) + "</sub>" if n > 1 else '')
+                              for symb, n in count2.items())
+        else:
+
+            formula = ''.join(symb + (str(n) if n > 1 else '')
+                              for symb, n in count2.items())
+        return formula
     @property
     def per_atom_energy(self):
         return self.energy/self.num_atoms
@@ -144,18 +198,18 @@ class Structure:
     def energy(self):
         return self.additional_fields["energy"]
     @energy.setter
-    def energy(self,new_energy):
+    def energy(self,new_energy:float):
         self.additional_fields["energy"] = new_energy
     @property
     def forces(self):
-        return self.structure_info[self.force_label]
+        return self.atomic_properties[self.force_label]
     @forces.setter
-    def forces(self,arr):
+    def forces(self,arr:npt.NDArray[np.float32]):
         has_forces=[i["name"]==self.force_label for i in self.properties]
         if not any(has_forces):
             self.properties.append({'name': self.force_label, 'type': 'R', 'count': 3})
 
-        self.structure_info[self.force_label] = arr
+        self.atomic_properties[self.force_label] = arr
 
     @property
     def virial(self):
@@ -169,7 +223,7 @@ class Structure:
                 raise ValueError("No virial or stress data")
         return vir
     @virial.setter
-    def virial(self,new_virial):
+    def virial(self,new_virial:npt.NDArray[np.float32]):
         self.additional_fields["virial"] = new_virial
 
     @property
@@ -193,11 +247,11 @@ class Structure:
 
     @property
     def elements(self):
-        return self.structure_info['species']
+        return self.atomic_properties['species']
 
     @property
     def positions(self):
-        return self.structure_info['pos']
+        return self.atomic_properties['pos']
 
     @property
     def num_atoms(self):
@@ -206,7 +260,7 @@ class Structure:
     def copy(self):
         return deepcopy(self)
 
-    def set_lattice(self, new_lattice: np.ndarray,in_place=False):
+    def set_lattice(self, new_lattice: npt.NDArray[np.float32],in_place=False):
         """
         根据新晶格缩放原子位置，支持原地修改或返回新对象。
 
@@ -224,11 +278,11 @@ class Structure:
 
         # 更新晶格和坐标
         target.lattice = new_lattice
-        target.structure_info['pos'] = new_positions
+        target.atomic_properties['pos'] = new_positions
 
         return target
 
-    def supercell(self, scale_factor, order="atom-major", tol=1e-5):
+    def supercell(self, scale_factor, order="atom-major", tol=1e-5)->Structure:
         """
         按指定比例因子扩展晶胞，参考 ASE 的高效实现。
         保持晶格角度不变，并支持按元素排序。
@@ -280,16 +334,16 @@ class Structure:
 
         # 元素扩展（保持a方向优先顺序）
         if order == "cell-major":
-            new_elements = np.tile(self.elements, np.prod(scale_factor))
+            new_elements = np.tile(self.elements, int(np.prod(scale_factor)))
         elif order == "atom-major":
             new_elements = np.repeat(self.elements, np.prod(scale_factor))
         else:
             raise ValueError( )
 
         # 更新结构信息
-        structure_info = {}
-        structure_info['pos'] = new_positions.astype(np.float32)
-        structure_info['species'] = new_elements
+        atomic_properties = {}
+        atomic_properties['pos'] = new_positions.astype(np.float32)
+        atomic_properties['species'] = new_elements
 
         properties=[{'name': 'species', 'type': 'S', 'count': 1}, {'name': 'pos', 'type': 'R', 'count': 3}]
         # 设置周期性边界条件（假设与原始一致）
@@ -297,8 +351,8 @@ class Structure:
         additional_fields['pbc'] = self.additional_fields.get('pbc', "T T T")
         additional_fields["Config_type"] =self.additional_fields.get('Config_type', "")+f" super cell({scale_factor})"
 
-        return Structure(new_lattice, structure_info, properties, additional_fields)
-    def adjust_reasonable(self, coefficient=0.7):
+        return Structure(new_lattice, atomic_properties, properties, additional_fields)
+    def adjust_reasonable(self, coefficient=0.7)->bool:
         """
         根据传入系数 对比共价半径和实际键长，
         如果实际键长小于coefficient*共价半径之和，判定为不合理结构 返回False
@@ -337,14 +391,14 @@ class Structure:
 
         if item in self.additional_fields.keys():
             return self.additional_fields[item]
-        elif item in self.structure_info.keys():
-            return self.structure_info[item]
+        elif item in self.atomic_properties.keys():
+            return self.atomic_properties[item]
         else:
             raise AttributeError
 
 
     @classmethod
-    def parse_xyz(cls, lines):
+    def parse_xyz(cls, lines:list[str]|str)->Structure:
         """
         Parse a single structure from a list of lines.
         """
@@ -355,7 +409,7 @@ class Structure:
         lattice, properties, additional_fields = cls._parse_global_properties(global_properties)
         array = np.array([line.split() for line in lines[2:]],dtype=object )
 
-        structure_info = {}
+        atomic_properties = {}
         index = 0
 
         for prop in properties:
@@ -383,15 +437,15 @@ class Structure:
             else:
                 _info = _info.reshape((-1, prop["count"]))
 
-            structure_info[prop["name"]] = _info
+            atomic_properties[prop["name"]] = _info
             index += prop["count"]
         del array
 
         # return
-        return cls(lattice, structure_info, properties, additional_fields)
+        return cls(lattice, atomic_properties, properties, additional_fields)
 
     @classmethod
-    def _parse_global_properties(cls, line):
+    def _parse_global_properties(cls, line:str)->tuple[list[float],list[dict[str,Any]],dict[str,Any]]:
         """
         Parse global properties from the second line of an XYZ block.
         """
@@ -428,13 +482,13 @@ class Structure:
                 if key.lower() in ("energy", "pbc","virial","stress"):
                     key=key.lower()
                 if key =="virial" or key =="stress":
-                    value= np.array(value.split(" "), dtype=np.float32)
+                    value= np.array(str(value).split(" "), dtype=np.float32)   # pyright:ignore
                 additional_fields[key] = value
                 # print(additional_fields)
         return lattice, properties, additional_fields
 
     @staticmethod
-    def _parse_properties(properties_str):
+    def _parse_properties(properties_str)->list[dict[str,Any]]:
         """
         Parse `Properties` attribute string to extract atom-specific fields.
         """
@@ -451,7 +505,7 @@ class Structure:
 
     @staticmethod
     @utils.timeit
-    def read_multiple(filename ):
+    def read_multiple(filename:str ):
         """
         Read a multi-structure XYZ file and return a list of Structure objects.
         """
@@ -482,7 +536,7 @@ class Structure:
 
         return structures
 
-    def write(self, file):
+    def write(self, file:IO):
         """
         Write the current structure to an XYZ file.
         """
@@ -514,9 +568,9 @@ class Structure:
             line = ""
             for prop  in self.properties :
                 if prop["count"] == 1:
-                    values=[self.structure_info[prop["name"]][row]]
+                    values=[self.atomic_properties[prop["name"]][row]]
                 else:
-                    values=self.structure_info[prop["name"]][row,:]
+                    values= self.atomic_properties[prop["name"]][row, :]
 
                 if prop["type"] == 'S':  # 字符串类型
                     line += " ".join([f"{x }" for x in values]) + " "
@@ -542,11 +596,11 @@ class Structure:
         bond_lengths = {}
         # 遍历所有原子对，计算每一对元素的最小键长
         for idx in range(len(i)):
-            atom_i, atom_j = symbols[i[idx]], symbols[j[idx]]
+            atom_i, atom_j = str(symbols[i[idx]]), str(symbols[j[idx]])
             # if atom_i==atom_j:
             #     continue
             # 获取当前键长
-            bond_length = dist_matrix[i[idx], j[idx]]
+            bond_length = float(dist_matrix[i[idx], j[idx]])
             # if bond_length>5:
             #     continue
             # 确保元素对按字母顺序排列，避免 Cs-Ag 和 Ag-Cs 视为不同
@@ -588,7 +642,10 @@ class Structure:
         bad_bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
         return bad_bond_pairs
 
-def calculate_pairwise_distances(lattice_params:np.ndarray, atom_coords:np.ndarray, fractional=True):
+def calculate_pairwise_distances(lattice_params:npt.NDArray[np.float32],
+                                 atom_coords:npt.NDArray[np.float32],
+                                 fractional=True
+                                 )->npt.NDArray[np.float32]:
     """
     计算晶体中所有原子对之间的距离，考虑周期性边界条件
 
@@ -617,7 +674,7 @@ def calculate_pairwise_distances(lattice_params:np.ndarray, atom_coords:np.ndarr
 
 
 # 判断团簇是否为有机分子
-def is_organic_cluster(symbols):
+def is_organic_cluster(symbols:list[str]) -> bool:
     has_carbon = 'C' in symbols
     organic_elements = {'H', 'O', 'N', 'S', 'P'}
     has_organic_elements = any(symbol in organic_elements for symbol in symbols)
@@ -627,6 +684,11 @@ def is_organic_cluster(symbols):
 
 
 def get_clusters(structure):
+    """
+
+    :param structure:  ase.Atoms
+    :return:
+    """
     cutoff = neighborlist.natural_cutoffs(structure)
     nl = neighborlist.NeighborList(cutoff, self_interaction=False, bothways=True)
     nl.update(structure)
@@ -729,7 +791,8 @@ def _load_npy_structure(folder):
         for data_path in Path(_set).iterdir():
             key = data_path.stem
             data = np.load(data_path)
-
+            if data.ndim == 1:
+                data=data.reshape(data.shape[0], -1)
             if key in dataset_dict:
                 dataset_dict[key].append(data)  # Collect in lists for later concatenation
             else:
@@ -774,7 +837,7 @@ def _load_npy_structure(folder):
 
                         additional_fields[key] = prop.flatten()
 
-        structure = Structure(lattice=box, structure_info=info, properties=properties,
+        structure = Structure(lattice=box, atomic_properties=info, properties=properties,
                               additional_fields=additional_fields)
         structures.append(structure)
 
@@ -793,7 +856,7 @@ def load_npy_structure(folders):
         return structures
 
 @utils.timeit
-def save_npy_structure(folder, structures):
+def save_npy_structure(folder:str, structures:list[Structure]):
     """
     保存结构信息到指定的文件夹，根据Config_type将数据组织
     :param folder: 保存的目标文件夹
@@ -813,14 +876,14 @@ def save_npy_structure(folder, structures):
         # 从结构对象中提取数据
         config_type=structure.tag
         dataset_dict[config_type]["box"].append(structure.lattice.flatten())  # 确保box是3x3矩阵展平为1D数组
-        dataset_dict[config_type]["coord"].append(structure.structure_info["pos"].flatten())  # 确保coords是1D数组
-        dataset_dict[config_type]["species"].append(structure.structure_info["species"])
+        dataset_dict[config_type]["coord"].append(structure.atomic_properties["pos"].flatten())  # 确保coords是1D数组
+        dataset_dict[config_type]["species"].append(structure.atomic_properties["species"])
 
         # 保存每个额外字段（如果有）
         for prop_info  in structure.properties:
             name=prop_info["name"]
             if name not in [  "species", "pos"]:
-                dataset_dict[config_type][name].append(structure.structure_info[name].flatten())
+                dataset_dict[config_type][name].append(structure.atomic_properties[name].flatten())
         if "virial" in structure.additional_fields:
             virial = structure.additional_fields["virial"]
             dataset_dict[config_type]["virial"].append(virial)

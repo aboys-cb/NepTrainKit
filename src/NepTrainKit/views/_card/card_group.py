@@ -3,6 +3,8 @@
 # @Time    : 2025/6/18 13:21
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+from typing import Any
+
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout
 from shiboken6 import isValid
@@ -34,9 +36,9 @@ class CardGroup(MakeDataCardWidget):
         self.filter_widget = QWidget(self)
         self.filter_layout = QVBoxLayout(self.filter_widget)
         self.vBoxLayout.addWidget(self.filter_widget)
-
+        self.run_card_num:int
         self.filter_card=None
-        self.dataset:list=None
+        self.dataset:Any
         self.result_dataset=[]
         self.cards_to_run = []
         self.current_index = 0
@@ -53,9 +55,9 @@ class CardGroup(MakeDataCardWidget):
             card.state_checkbox.setChecked(state)
 
     @property
-    def card_list(self)->["MakeDataCard"]:
+    def card_list(self)->list["MakeDataCard"]:
 
-        return [self.group_layout.itemAt(i).widget() for i in range(self.group_layout.count()) ]
+        return [self.group_layout.itemAt(i).widget() for i in range(self.group_layout.count()) ]  # pyright:ignore
     def show_card_setting(self):
 
         for card in self.card_list:

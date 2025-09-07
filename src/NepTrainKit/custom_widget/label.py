@@ -3,17 +3,16 @@
 # @Time    : 2025/4/7 14:06
 # @Author  : 兵
 # @email    : 1747193328@qq.com
+from PySide6.QtWidgets import QWidget
 from qfluentwidgets import  BodyLabel
 
 from PySide6.QtGui import QPainter, QLinearGradient, QColor
 from PySide6.QtCore import Qt, QRectF
 
 class ProcessLabel(BodyLabel):
-    def __init__(self, parent=None):
-        super(ProcessLabel, self).__init__(parent)
+    _progress:int=0
+    _colors:list[QColor]=[QColor("white"),QColor("white")]
 
-        self._progress = 0  # 0~100
-        self.set_colors( ["white" ])
     def set_progress(self, value):
         """设置进度(0-100)"""
         self._progress = max(0, min(100, value))
@@ -29,7 +28,7 @@ class ProcessLabel(BodyLabel):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         # 计算进度对应的宽度
         progress_width = self.width() * (self._progress / 100)
@@ -41,7 +40,7 @@ class ProcessLabel(BodyLabel):
 
         # 绘制背景（全宽度，半透明）
         painter.setBrush(gradient)
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.drawRect(QRectF(0, 0, self.width(), self.height()))
 
         # 绘制进度遮罩（右侧未完成部分用灰色覆盖）
@@ -52,5 +51,5 @@ class ProcessLabel(BodyLabel):
                                     self.width() - progress_width, self.height()))
 
         # 可选：绘制进度文本
-        painter.setPen(Qt.black)
-        painter.drawText(self.rect(), Qt.AlignCenter,self.text())
+        painter.setPen(Qt.GlobalColor.black)
+        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter,self.text())

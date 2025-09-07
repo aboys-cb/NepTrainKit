@@ -5,28 +5,43 @@
 # @email    : 1747193328@qq.com
 import os
 import re
+import traceback
 from functools import partial
-
+from pathlib import Path
 import numpy as np
+import numpy.typing as npt
 from loguru import logger
+from NepTrainKit.core import MessageManager
 
 
-def read_nep_in(  file_name):
+def get_rmse(array1, array2):
+    return np.sqrt(((array1 - array2) ** 2).mean())
+
+def read_nep_in(file_name: str|Path) ->dict[str,str]:
+    """
+    将nep.in的内容解析成dict
+    :param file_name: nep.in的路径
+    :return:
+    """
     run_in={}
 
     if  not os.path.exists(file_name):
         return run_in
-    with open(file_name, 'r', encoding="utf8") as f:
+    try:
+        with open(file_name, 'r', encoding="utf8") as f:
 
-        groups = re.findall(r"^([A-Za-z_]+)\s+([^\#\n]*)", f.read(), re.MULTILINE)
+            groups = re.findall(r"^([A-Za-z_]+)\s+([^\#\n]*)", f.read(), re.MULTILINE)
 
-        for group in groups:
+            for group in groups:
 
-            run_in[group[0].strip()] = group[1].strip()
-
+                run_in[group[0].strip()] = group[1].strip()
+    except:
+        logger.debug(traceback.format_exc())
+        MessageManager.send_warning_message("read nep.in file error")
+        nep_in = {}
     return run_in
 
-def check_fullbatch(run_in,structure_num):
+def check_fullbatch(run_in:dict[str,str],structure_num:int)->bool:
 
     if run_in.get("prediction")=="1":
         return True
@@ -34,8 +49,13 @@ def check_fullbatch(run_in,structure_num):
         return True
     return False
 
-def read_nep_out_file(file_path,**kwargs):
-
+def read_nep_out_file(file_path:Path|str,**kwargs)->npt.NDArray[np.float32]:
+    """
+    读取out数值文件
+    :param file_path: energy_train.out
+    :param kwargs:
+    :return:
+    """
     if os.path.exists(file_path):
 
         data = np.loadtxt(file_path,**kwargs)
@@ -45,7 +65,11 @@ def read_nep_out_file(file_path,**kwargs):
     else:
         return np.array([])
 
-def parse_array_by_atomnum(array,atoms_num_list,map_func=np.linalg.norm,axis=0):
+def parse_array_by_atomnum(array: npt.NDArray[np.float32],
+                           atoms_num_list: npt.NDArray[np.float32],
+                           map_func=np.linalg.norm,
+                           axis:int=0
+                           )->npt.NDArray[np.float32]:
     """
     根据一个映射列表，将原数组按照原子数列表拆分，
     这个主要是处理文件中原子数不一致的情况，比如力 描述符等文件是按照原子数的 把他们转换成结构的
@@ -68,7 +92,7 @@ def parse_array_by_atomnum(array,atoms_num_list,map_func=np.linalg.norm,axis=0):
     new_array = np.array(list(map(func, split_arrays)))
     return new_array
 
-def get_nep_type(file_path):
+def get_nep_type(file_path:Path|str)->int:
     """
     根据nep.txt 判断势函数类别
     """
@@ -101,6 +125,10 @@ def get_nep_type(file_path):
 
     return model_type
 
-
-
+def get_xyz_nframe(path):
+    if os.path.exists(path):
+        with open(path, 'r') as file:
+            nums = re.findall("^(\d+)$", file.read(), re.MULTILINE)
+            return len(nums)
+    return 0
 

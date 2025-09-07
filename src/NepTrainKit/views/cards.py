@@ -11,7 +11,9 @@ from PySide6.QtWidgets import QGridLayout, QWidget
 from qfluentwidgets import RoundMenu, PrimaryDropDownPushButton, CommandBar, Action, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit import get_user_config_path
-from NepTrainKit.core import load_cards_from_directory, CardManager, Config
+from NepTrainKit.core import load_cards_from_directory, CardManager
+from NepTrainKit.config import Config
+
 from ase.io import extxyz,cif,vasp
 from NepTrainKit.views._card import *
 
@@ -23,7 +25,8 @@ else:
 
 class ConsoleWidget(QWidget):
     """
-控制台"""
+    控制台
+    """
     newCardSignal = Signal(str)  # 定义一个信号，用于通知上层组件新增卡片
     stopSignal = Signal()
     runSignal = Signal( )
@@ -80,12 +83,12 @@ class ConsoleWidget(QWidget):
         self.setting_command.addSeparator()
         run_action = Action(QIcon(r":/images/src/images/run.svg"), 'Run', triggered=self.run)
         run_action.setToolTip('Run selected cards')
-        run_action.installEventFilter(ToolTipFilter(run_action, 300, ToolTipPosition.TOP))
+        run_action.installEventFilter(ToolTipFilter(run_action, 300, ToolTipPosition.TOP))  # pyright:ignore
 
         self.setting_command.addAction(run_action)
         stop_action = Action(QIcon(r":/images/src/images/stop.svg"), 'Stop', triggered=self.stop)
         stop_action.setToolTip('Stop running cards')
-        stop_action.installEventFilter(ToolTipFilter(stop_action, 300, ToolTipPosition.TOP))
+        stop_action.installEventFilter(ToolTipFilter(stop_action, 300, ToolTipPosition.TOP)) # pyright:ignore
 
         self.setting_command.addAction(stop_action)
 

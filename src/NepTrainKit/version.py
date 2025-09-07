@@ -23,6 +23,6 @@ if sys.platform=="win32":
     UPDATE_EXE="update.exe"
     NepTrainKit_EXE="NepTrainKit.exe"
 else:
-    UPDATE_FILE="update.tar.gz"
-    UPDATE_EXE="update.bin"
-    NepTrainKit_EXE="NepTrainKit.bin"
+    UPDATE_FILE="update.tar.gz"   # pyright:ignore
+    UPDATE_EXE="update.bin"  # pyright:ignore
+    NepTrainKit_EXE="NepTrainKit.bin"  # pyright:ignore

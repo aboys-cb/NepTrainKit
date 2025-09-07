@@ -1,6 +1,8 @@
 import os
 import platform
 import shutil
+from typing import Any
+
 from PySide6.QtSql import QSqlDatabase, QSqlQuery
 from NepTrainKit import module_path,get_user_config_path
 
@@ -39,28 +41,28 @@ class Config:
         self.db.open()
 
     @classmethod
-    def get_path(self,section="setting", option="last_path"):
+    def get_path(cls,section="setting", option="last_path")->str:
         """
         获取上一次文件交互的路径
         :param section:
         :param option:
         :return:
         """
-        path = self.get(section, option)
+        path = cls.get(section, option)
         if path:
             if os.path.exists(path):
                 return path
         return "./"
 
     @classmethod
-    def has_option(self,section, option):
-        if self.get(section,option) is not None:
+    def has_option(cls,section, option) ->bool:
+        if cls.get(section,option) is not None:
             return True
         return False
 
     @classmethod
-    def getboolean(self, section, option, fallback=None):
-        v = self.get(section, option,fallback)
+    def getboolean(cls, section, option, fallback=None)->bool|None:
+        v = cls.get(section, option,fallback)
         try:
             v = eval(v)
         except:
@@ -70,8 +72,8 @@ class Config:
         return v
 
     @classmethod
-    def getint(self, section, option, fallback=None):
-        v = self.get(section, option,fallback)
+    def getint(cls, section, option, fallback=None) ->int|None:
+        v = cls.get(section, option,fallback)
 
         try:
             v = int(v)
@@ -83,8 +85,8 @@ class Config:
 
         return v
     @classmethod
-    def getfloat(self,section,option,fallback=None):
-        v=    self.get(section,option,fallback)
+    def getfloat(cls,section,option,fallback=None)->float|None:
+        v=    cls.get(section,option,fallback)
 
         try:
             v=float(v)
@@ -95,8 +97,8 @@ class Config:
             return fallback
         return v
     @classmethod
-    def get(self,section,option,fallback=None):
-        query = QSqlQuery(self._instance.db )
+    def get(cls,section,option,fallback=None)->Any:
+        query = QSqlQuery(cls._instance.db )
         result=query.exec(f"""SELECT value FROM "config" where config.option='{option}' and config.section='{section}';""")
 
         query.next()
@@ -104,19 +106,19 @@ class Config:
         if first  is None:
 
             if fallback is not None:
-                self.set(section,option,fallback)
+                cls.set(section,option,fallback)
             return fallback
         return first
 
     @classmethod
-    def set(self,section,option,value):
+    def set(cls,section,option,value):
         if option=="theme":
-            self.theme=value
-        query = QSqlQuery(self._instance.db)
+            cls.theme=value
+        query = QSqlQuery(cls._instance.db)
         result=query.exec(f"""INSERT OR REPLACE INTO  "main"."config"("section", "option", "value") VALUES ('{section}', '{option}', '{value}')""")
 
     @classmethod
-    def update_section(self,old,new):
-        query = QSqlQuery(self._instance.db)
+    def update_section(cls,old,new):
+        query = QSqlQuery(cls._instance.db)
         result=query.exec(f"""UPDATE  "main"."config" set   section='{new}' where section='{old}'""")
 

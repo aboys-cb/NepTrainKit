@@ -29,6 +29,7 @@ class KitToolBarBase(CommandBarView):
         self.addAction(action)
         action.setToolTip(name)
         return action
+
     def init_actions(self):
         pass
 class NepDisplayGraphicsToolBar(KitToolBarBase):
@@ -40,6 +41,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     undoSignal=Signal()
     discoverySignal=Signal()
     deleteSignal=Signal()
+    editInfoSignal=Signal()
     revokeSignal=Signal()
     exportSignal=Signal()
     shiftEnergySignal=Signal()
@@ -47,6 +49,11 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     selectIndexSignal=Signal()
     rangeSignal=Signal()
     dftd3Signal=Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.action_group:QActionGroup
+
     def init_actions(self):
         self.addButton("Reset View",QIcon(":/images/src/images/init.svg"),self.resetSignal)
         pan_action=self.addButton("Pan View",
@@ -94,7 +101,11 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
                                      QIcon(":/images/src/images/delete.svg"),
                                      self.deleteSignal)
 
+
         self.addSeparator()
+        self.addButton("Edit Info",
+                       QIcon(":/images/src/images/edit_info.svg"),
+                       self.editInfoSignal)
         export_action = self.addButton("Export structure descriptor",
                                      QIcon(":/images/src/images/export.svg"),
                                      self.exportSignal)

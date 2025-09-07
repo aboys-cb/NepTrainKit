@@ -147,7 +147,7 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         """
         self.nep_result_data.select_index.clear()
 
-        for index, _dataset in enumerate(self.nep_result_data.dataset):
+        for index, _dataset in enumerate(self.nep_result_data.datasets):
             plot = self.axes_list[index]
             plot.title = _dataset.title
             plot.scatter(_dataset.x, _dataset.y, data=_dataset.structure_index,

@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import annotations
 import unittest
 import numpy as np
 from NepTrainKit.core.structure import Structure,load_npy_structure,save_npy_structure
 
 class TestStructure(unittest.TestCase):
+    lattice:np.ndarray  = np.array([])
+    structure_info:dict = {}
+    properties:list[dict] = []
+    additional_fields:dict = {}
+    structure:Structure
     def setUp(self):
         # 创建测试用的晶格和原子结构
         self.lattice = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=np.float32)

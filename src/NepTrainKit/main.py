@@ -158,7 +158,6 @@ def main():
     sys.excepthook = global_exception_handler
     if os.path.exists("update.zip") or os.path.exists("update.tar.gz"):
         utils.unzip()
-
     app = QApplication(sys.argv)
 
     set_light_theme(app)
@@ -169,7 +168,11 @@ def main():
     theme=theme_file.readAll().data().decode("utf-8")  # pyright:ignore
     app.setStyleSheet(theme)
     w = NepTrainKitMainWindow()
+
     w.show()
+    if len(sys.argv) == 2:
+        dir_path = sys.argv[1]
+        w.show_nep_interface.set_work_path(dir_path)
     app.exec()
 
 

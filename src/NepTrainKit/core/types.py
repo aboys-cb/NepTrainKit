@@ -81,6 +81,11 @@ class SearchType(StrEnum):
     TAG="Config_type"
     FORMULA="formula"
 
+class NepBackend(StrEnum):
+    AUTO = "auto"
+    GPU = "gpu"
+    CPU = "cpu"
+
 class Base:
     @classmethod
     def get(cls,name):

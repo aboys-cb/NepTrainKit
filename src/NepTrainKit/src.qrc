@@ -57,6 +57,7 @@
         <file>src/images/gpumd.png</file>
         <file>src/images/gpumd_new.png</file>
         <file>src/images/dataset.svg</file>
+        <file>src/images/gpu.svg</file>
 
   </qresource>
   <qresource prefix="/theme">

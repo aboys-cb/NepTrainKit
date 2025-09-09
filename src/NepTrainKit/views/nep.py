@@ -26,6 +26,7 @@ from NepTrainKit.custom_widget import (
     ShiftEnergyMessageBox,
     DFTD3MessageBox,
 )
+from NepTrainKit.core.types import NepBackend
 from NepTrainKit.core.io.select import farthest_point_sampling
 from NepTrainKit.views.toolbar import NepDisplayGraphicsToolBar
 from NepTrainKit.core.energy_shift import shift_dataset_energy, suggest_group_patterns
@@ -311,6 +312,7 @@ class NepResultPlotWidget(QWidget):
         if mode == 0:
             calculate_type = "calculate"
             func_kwargs = {}
+            cls_kwargs = { }
         elif mode == 2:
             calculate_type = "calculate_with_dftd3"
             func_kwargs = {
@@ -319,6 +321,7 @@ class NepResultPlotWidget(QWidget):
                 "cutoff_cn": cutoff_cn,
 
             }
+            cls_kwargs={"backend":NepBackend.CPU}
         else:
             calculate_type = "calculate_dftd3"
             func_kwargs = {
@@ -327,12 +330,13 @@ class NepResultPlotWidget(QWidget):
                 "cutoff_cn": cutoff_cn,
 
             }
+            cls_kwargs={"backend":NepBackend.CPU}
 
 
         nep_calc_thread = NEPProcess()
         nep_calc_thread.run_nep3_calculator_process(nep_txt_path.as_posix(),
                                                     nep_result_data.structure.now_data,
-                                                    calculate_type, func_kwargs=func_kwargs, wait=True)
+                                                    calculate_type, func_kwargs=func_kwargs,cls_kwargs=cls_kwargs, wait=True)
         nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc_thread.func_result
         split_indices = np.cumsum(nep_result_data.atoms_num_list)[:-1]
         nep_forces_array = np.split(nep_forces_array, split_indices)

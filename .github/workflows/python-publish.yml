@@ -121,11 +121,35 @@ jobs:
         echo "OMP_INCLUDE_PATH=$(brew --prefix libomp)/include" >> $GITHUB_ENV
         echo "OMP_LIB_PATH=$(brew --prefix libomp)/lib" >> $GITHUB_ENV
 
+    - name: Install CUDA (Windows)
+      if: matrix.buildplat[0] == 'windows-2022'
+      uses: Jimver/cuda-toolkit@v0.2.25
+      with:
+        cuda: '12.4.0'
+
     - name: Build wheels
       uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a  # v2.23.2
       env:
         CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
-        CIBW_BEFORE_BUILD_LINUX: "yum install -y libgomp"
+        # Install CUDA toolchain inside manylinux container (x86_64/aarch64) and expose env
+        CIBW_BEFORE_BUILD_LINUX: >
+          bash -exc "
+          yum install -y libgomp yum-utils && \
+          ARCH=$(uname -m); \
+          if [ \"$ARCH\" = \"x86_64\" ]; then \
+            REPO=https://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/cuda-rhel7.repo; \
+          else \
+            REPO=https://developer.download.nvidia.com/compute/cuda/repos/rhel7/aarch64/cuda-rhel7.repo; \
+          fi; \
+          yum-config-manager --add-repo $REPO && \
+          yum clean all && \
+          yum -y install cuda-toolkit-12-4 && \
+          echo CUDA installed at /usr/local/cuda; \
+          "
+        CIBW_ENVIRONMENT_LINUX: >
+          CUDA_HOME=/usr/local/cuda
+          PATH=/usr/local/cuda/bin:$PATH
+          LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=13.0' }}

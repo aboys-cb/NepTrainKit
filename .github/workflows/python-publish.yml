@@ -123,7 +123,7 @@ jobs:
 
     - name: Install CUDA (Windows x64)
       if: matrix.buildplat[1] == 'win_amd64'
-      uses: Jimver/cuda-toolkit@master
+      uses: Jimver/cuda-toolkit@v0.2.24
       id: cuda-toolkit
       with:
         cuda: '12.5.0'

@@ -126,7 +126,7 @@ jobs:
       uses: Jimver/cuda-toolkit@master
       id: cuda-toolkit
       with:
-        cuda: '12.4.0'
+        cuda: '12.5.0'
 
 
     - name: Build wheels

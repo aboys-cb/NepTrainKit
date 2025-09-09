@@ -121,11 +121,14 @@ jobs:
         echo "OMP_INCLUDE_PATH=$(brew --prefix libomp)/include" >> $GITHUB_ENV
         echo "OMP_LIB_PATH=$(brew --prefix libomp)/lib" >> $GITHUB_ENV
 
-    - name: Install CUDA (Windows)
-      if: matrix.buildplat[0] == 'windows-2022'
+    - name: Install CUDA (Windows x64)
+      if: matrix.buildplat[1] == 'win_amd64'
       uses: Jimver/cuda-toolkit@v0.2.25
       with:
         cuda: '12.4.0'
+        method: network
+        use-github-cache: false
+        use-local-cache: false
 
     - name: Build wheels
       uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a  # v2.23.2

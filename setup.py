@@ -191,8 +191,8 @@ class BuildExtNVCC(build_ext):
         if os.environ.get("NEP_GPU_STRONG_DEBUG"):
             nvcc_flags += ["-DSTRONG_DEBUG"]
         if os.name == 'nt':
-            # Enable OpenMP and typical MSVC flags for host compilation
-            nvcc_flags += ["-Xcompiler", "/openmp,/MD,/O2,/EHsc"]
+            # Enable OpenMP (SIMD) and typical MSVC flags for host compilation
+            nvcc_flags += ["-Xcompiler", "/openmp:experimental,/MD,/O2,/EHsc"]
         else:
             # PIC for shared lib, enable OpenMP on host compiler
             nvcc_flags += ["-Xcompiler", "-fPIC", "-Xcompiler", "-fopenmp"]
@@ -248,6 +248,16 @@ class BuildExtNVCC(build_ext):
         except Exception as e:
             print(f"WARNING: Linking nep_gpu failed: {e}")
             return
+    def build_extensions(self):
+        # If nvcc is unavailable, drop the GPU extension so copy stage won't fail
+        try:
+            nvcc, _, _ = self._cuda_paths()
+        except Exception:
+            nvcc = None
+        if not nvcc:
+            print("WARNING: nvcc not found; skipping NepTrainKit.nep_gpu build.")
+            self.extensions = [e for e in self.extensions if e.name != "NepTrainKit.nep_gpu"]
+        return super().build_extensions()
 setup(
     author="Chen Cheng bing",
 cmdclass={'build_ext': BuildExtNVCC},

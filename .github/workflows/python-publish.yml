@@ -79,15 +79,15 @@ jobs:
         buildplat:
           - [ubuntu-22.04, manylinux_x86_64, ""]
 #          - [ubuntu-22.04, musllinux_x86_64, ""]
-          - [ubuntu-22.04-arm, manylinux_aarch64, ""]
+          # - [ubuntu-22.04-arm, manylinux_aarch64, ""]
 #          - [ubuntu-22.04-arm, musllinux_aarch64, ""]
-          - [macos-13, macosx_x86_64, ""]
+          # - [macos-13, macosx_x86_64, ""]
 
           # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
 #          - [macos-13, macosx_x86_64, ""]
-          - [macos-14, macosx_arm64, ""]  # always use accelerate
-          - [windows-2022, win_amd64, ""]
-          - [windows-2022, win32, ""]
+          # - [macos-14, macosx_arm64, ""]  # always use accelerate
+          # - [windows-2022, win_amd64, ""]
+          # - [windows-2022, win32, ""]
         python: ["cp310","cp311", "cp312" ]
 
     env:
@@ -122,11 +122,11 @@ jobs:
         echo "OMP_LIB_PATH=$(brew --prefix libomp)/lib" >> $GITHUB_ENV
 
     - name: Install CUDA (Windows x64)
-      if: matrix.buildplat[1] == 'win_amd64'
+      if: matrix.buildplat[0] != 'macos-13' && matrix.buildplat[0] != 'macos-14'
       uses: Jimver/cuda-toolkit@v0.2.24
       id: cuda-toolkit
       with:
-        cuda: '12.5.0'
+        cuda: '12.9.0'
 
 
     - name: Build wheels
@@ -137,20 +137,8 @@ jobs:
         CIBW_BEFORE_BUILD_LINUX: |
           set -euxo pipefail
           yum install -y libgomp yum-utils
-          ARCH="$(uname -m)"
-          if [ "$ARCH" = "x86_64" ]; then
-            REPO=https://developer.download.nvidia.com/compute/cuda/repos/rhel7/x86_64/cuda-rhel7.repo
-          else
-            REPO=https://developer.download.nvidia.com/compute/cuda/repos/rhel7/aarch64/cuda-rhel7.repo
-          fi
-          yum-config-manager --add-repo "$REPO"
-          yum clean all
-          yum -y install cuda-toolkit-12-4
-          echo "CUDA installed at /usr/local/cuda"
-        CIBW_ENVIRONMENT_LINUX: |
-          CUDA_HOME=/usr/local/cuda
-          PATH=/usr/local/cuda/bin:$PATH
-          LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+          
+
 
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=13.0' }}

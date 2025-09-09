@@ -122,12 +122,16 @@ jobs:
         echo "OMP_LIB_PATH=$(brew --prefix libomp)/lib" >> $GITHUB_ENV
 
 
-    - name: Install CUDA    
+    - name: Install CUDA
       if: matrix.buildplat[0] == 'windows-2022'
       run: |
-        choco install cuda --version=12.9.1.576
-        
- 
+        choco install cuda --version=12.9.1.576 --no-progress --yes
+
+    - name: Setup MSVC (x64)
+      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
     - name: Build wheels
       uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a  # v2.23.2
@@ -137,15 +141,26 @@ jobs:
         CIBW_BEFORE_BUILD_LINUX: |
           set -euxo pipefail
           yum install -y libgomp yum-utils
-          
-        CIBW_ENVIRONMENT_WINDOWS: "CUDA_PATH='C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.9'"
+
+        CIBW_ENVIRONMENT_WINDOWS: |
+          CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.9
+          CUDA_HOME=%CUDA_PATH%
+          VSINSTALLDIR=%VSINSTALLDIR%
+          VCINSTALLDIR=%VCINSTALLDIR%
+          WindowsSdkDir=%WindowsSdkDir%
+          WindowsSDKVersion=%WindowsSDKVersion%
+          VCToolsInstallDir=%VCToolsInstallDir%
+          DISTUTILS_USE_SDK=1
+          MSSdk=1
+          CC=cl.exe
+          CXX=cl.exe
+          PATH=%VCToolsInstallDir%bin\Hostx64\x64;%WindowsSdkDir%bin\%WindowsSDKVersion%x64;%CUDA_PATH%\bin;%PATH%
 
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=13.0' }}
 
         CIBW_BEFORE_BUILD_WINDOWS: |
           pip install delvewheel
-          set CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.9
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
             python -m delvewheel repair -w {dest_dir} {wheel}
 

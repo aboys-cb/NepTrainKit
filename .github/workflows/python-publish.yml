@@ -138,7 +138,7 @@ jobs:
           set -euxo pipefail
           yum install -y libgomp yum-utils
           
-
+        CIBW_ENVIRONMENT_WINDOWS: "CUDA_PATH='C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.9'"
 
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=13.0' }}

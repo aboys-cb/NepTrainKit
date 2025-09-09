@@ -123,12 +123,11 @@ jobs:
 
     - name: Install CUDA (Windows x64)
       if: matrix.buildplat[1] == 'win_amd64'
-      uses: Jimver/cuda-toolkit@v0.2.25
+      uses: Jimver/cuda-toolkit@master
+      id: cuda-toolkit
       with:
         cuda: '12.4.0'
-        method: network
-        use-github-cache: false
-        use-local-cache: false
+
 
     - name: Build wheels
       uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a  # v2.23.2

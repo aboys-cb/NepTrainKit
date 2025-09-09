@@ -17,6 +17,9 @@ import pybind11
 from pybind11.setup_helpers import Pybind11Extension
 from setuptools import  Extension, find_packages, setup
 from setuptools.command.build_ext import build_ext
+import sysconfig
+import shutil
+from pathlib import Path
 
 # 获取 pybind11 的 include 路径
 pybind11_include = pybind11.get_include()
@@ -95,6 +98,38 @@ ext_modules = [
     )
 ]
 
+# ---- CUDA-based nep_gpu extension (built via custom NVCC flow) ----
+gpu_sources_cu = [
+    "src/nep_gpu/main_nep/dataset.cu",
+    "src/nep_gpu/main_nep/nep.cu",
+    "src/nep_gpu/main_nep/nep_charge.cu",
+    "src/nep_gpu/main_nep/parameters.cu",
+    "src/nep_gpu/main_nep/structure.cu",
+    "src/nep_gpu/main_nep/tnep.cu",
+    # utilities (exclude predict_main.cu, fitness.cu, snes.cu)
+    "src/nep_gpu/utilities/cusolver_wrapper.cu",
+    "src/nep_gpu/utilities/error.cu",
+    "src/nep_gpu/utilities/main_common.cu",
+    "src/nep_gpu/utilities/read_file.cu",
+]
+
+gpu_include_dirs = [
+    pybind11_include,
+    "src/nep_gpu",  # so that "utilities/..." resolves
+    "src/nep_gpu/main_nep",
+]
+# ext_modules=[]
+ext_modules.append(
+    Extension(
+        "NepTrainKit.nep_gpu",
+        sources=["src/nep_gpu/nep_gpu.cu", "src/nep_gpu/nep_desc.cu", "src/nep_gpu/nep_parameters.cu"] + gpu_sources_cu,
+        include_dirs=gpu_include_dirs,
+        language="c++",
+        extra_link_args=extra_link_args,
+        extra_compile_args=extra_compile_args,
+    )
+)
+
 # 自定义 build_ext 命令，确保兼容性
 class BuildExt(build_ext):
     def build_extensions(self):
@@ -114,9 +149,108 @@ class BuildExt(build_ext):
             self.ext_modules = []
 
 
+
+class BuildExtNVCC(build_ext):
+    """NVCC-enabled build_ext.
+    CPU extensions build normally; for NepTrainKit.nep_gpu, .cu files
+    are compiled with nvcc and linked against CUDA libs.
+    """
+    def _cuda_paths(self):
+        cuda_path = os.environ.get("CUDA_PATH") or os.environ.get("CUDA_HOME")
+        if cuda_path:
+            cuda_bin = os.path.join(cuda_path, "bin")
+            nvcc = os.path.join(cuda_bin, "nvcc.exe" if os.name == 'nt' else "nvcc")
+            include = os.path.join(cuda_path, "include")
+            lib64 = os.path.join(cuda_path, "lib", "x64") if os.name == 'nt' else os.path.join(cuda_path, "lib64")
+            return (nvcc if os.path.exists(nvcc) else shutil.which("nvcc"), include, lib64)
+        return (shutil.which("nvcc"), None, None)
+
+    def build_extension(self, ext):
+        if ext.name != "NepTrainKit.nep_gpu":
+            return super().build_extension(ext)
+
+        nvcc, cuda_include, cuda_lib = self._cuda_paths()
+        if not nvcc:
+            print("WARNING: nvcc not found; skipping NepTrainKit.nep_gpu build.")
+            return
+
+        cu_srcs = [s for s in ext.sources if s.endswith('.cu')]
+        cpp_srcs = [s for s in ext.sources if not s.endswith('.cu')]
+
+        objects = []
+        if cpp_srcs:
+            objects += self.compiler.compile(
+                cpp_srcs,
+                output_dir=self.build_temp,
+                include_dirs=ext.include_dirs,
+                extra_postargs=ext.extra_compile_args,
+                depends=ext.depends)
+
+        nvcc_flags = ["-O3", "-std=c++14"]
+        # Optional stronger CUDA error checks
+        if os.environ.get("NEP_GPU_STRONG_DEBUG"):
+            nvcc_flags += ["-DSTRONG_DEBUG"]
+        if os.name == 'nt':
+            # Enable OpenMP and typical MSVC flags for host compilation
+            nvcc_flags += ["-Xcompiler", "/openmp,/MD,/O2,/EHsc"]
+        else:
+            # PIC for shared lib, enable OpenMP on host compiler
+            nvcc_flags += ["-Xcompiler", "-fPIC", "-Xcompiler", "-fopenmp"]
+
+        incs = []
+        for inc in (ext.include_dirs or []):
+            incs += ["-I", inc]
+        if cuda_include:
+            incs += ["-I", cuda_include]
+
+        # Add Python.h include dirs for NVCC (pybind11 needs it)
+        try:
+            paths = sysconfig.get_paths()
+            py_inc = paths.get("include")
+            plat_inc = paths.get("platinclude")
+            if py_inc:
+                incs += ["-I", py_inc]
+            if plat_inc and plat_inc != py_inc:
+                incs += ["-I", plat_inc]
+        except Exception:
+            pass
+
+        # Enable verbose debug prints via env var
+        if os.environ.get("NEP_GPU_DEBUG"):
+            nvcc_flags += ["-DNEP_GPU_DEBUG"]
+
+        Path(self.build_temp).mkdir(parents=True, exist_ok=True)
+
+        for src in cu_srcs:
+            base = os.path.basename(src)
+            obj = os.path.join(self.build_temp, base + (".obj" if os.name == 'nt' else ".o"))
+            cmd = [nvcc, "-c", src, "-o", obj] + nvcc_flags + incs
+            try:
+                subprocess.check_call(cmd)
+            except Exception as e:
+                print(f"WARNING: NVCC failed on {src}: {e}")
+                return
+            objects.append(obj)
+
+        lib_dirs = []
+        if cuda_lib:
+            lib_dirs.append(cuda_lib)
+        libs = ["cudart", "cublas", "cusolver", "curand"]
+        output_path = self.get_ext_fullpath(ext.name)
+        try:
+            self.compiler.link_shared_object(
+                objects,
+                output_path,
+                libraries=libs,
+                library_dirs=lib_dirs,
+                extra_postargs=ext.extra_link_args,
+                target_lang='c++')
+        except Exception as e:
+            print(f"WARNING: Linking nep_gpu failed: {e}")
+            return
 setup(
     author="Chen Cheng bing",
-cmdclass={'build_ext': BuildExt},
+cmdclass={'build_ext': BuildExtNVCC},
     # include_dirs=[np.get_include()],
 ext_modules=ext_modules,
 zip_safe=False,

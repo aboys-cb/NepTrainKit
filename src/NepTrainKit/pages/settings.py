@@ -14,7 +14,7 @@ from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCa
 
 from NepTrainKit.config import Config
 from NepTrainKit.custom_widget import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
-from NepTrainKit.core.types import ForcesMode, CanvasMode
+from NepTrainKit.core.types import ForcesMode, CanvasMode, NepBackend
 from NepTrainKit.core.update import UpdateWoker,UpdateNEP89Woker
 from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR
 
@@ -30,7 +30,8 @@ class SettingsWidget(ScrollArea):
 
         self.personal_group = SettingCardGroup(
              'Personalization' , self.scrollWidget)
-
+        self.nep_group = SettingCardGroup(
+             'NEP Settings' , self.scrollWidget)
 
         default_forces = Config.get("widget","forces_data",ForcesMode.Raw)
         if default_forces=="Row":
@@ -105,6 +106,31 @@ class SettingsWidget(ScrollArea):
         self.radius_coefficient_Card.setValue(radius_coefficient_config)
         self.radius_coefficient_Card.setRange(0.0, 1.5)
 
+        # NEP backend selection
+        nep_backend_default = Config.get("nep", "backend", NepBackend.AUTO)
+        self.nep_backend_card = MyComboBoxSettingCard(
+            OptionsConfigItem("nep", "backend", NepBackend(nep_backend_default), OptionsValidator(NepBackend),
+                              EnumSerializer(NepBackend)),
+            QIcon(":/images/src/images/gpu.svg"),
+            'NEP Backend',
+            'Select CPU/GPU or Auto detection',
+            texts=[mode.value for mode in NepBackend],
+            default=nep_backend_default,
+            parent=self.nep_group
+        )
+
+        # GPU batch size
+        gpu_bs_default = Config.getint("nep", "gpu_batch_size", 1000) or 1000
+        self.gpu_bs_card = DoubleSpinBoxSettingCard(
+            FluentIcon.SPEED_HIGH,
+            'GPU Batch Size',
+            'Batch of frames processed GPU slice',
+            self.nep_group
+        )
+        self.gpu_bs_card.setRange(0, 10000000)
+        self.gpu_bs_card.setValue(float(gpu_bs_default))
+
+
         self.about_group = SettingCardGroup("About", self.scrollWidget)
         self.help_card = HyperlinkCard(
             HELP_URL,
@@ -155,6 +181,9 @@ class SettingsWidget(ScrollArea):
         self.personal_group.addSettingCard(self.sort_atoms_card)
         self.personal_group.addSettingCard(self.use_group_menu_card)
 
+        self.nep_group.addSettingCard(self.nep_backend_card)
+        self.nep_group.addSettingCard(self.gpu_bs_card)
+
         self.about_group.addSettingCard(self.about_nep89_card)
         self.about_group.addSettingCard(self.help_card)
         self.about_group.addSettingCard(self.feedback_card)
@@ -162,6 +191,8 @@ class SettingsWidget(ScrollArea):
 
 
         self.expand_layout.addWidget(self.personal_group)
+        self.expand_layout.addWidget(self.nep_group)
+
         self.expand_layout.addWidget(self.about_group)
 
     def init_signal(self):
@@ -170,6 +201,9 @@ class SettingsWidget(ScrollArea):
         self.optimization_forces_card.optionChanged.connect(lambda option:Config.set("widget","forces_data",option ))
         self.about_card.clicked.connect(self.check_update)
         self.about_nep89_card.clicked.connect(self.check_update_nep89)
+
+        self.nep_backend_card.optionChanged.connect(lambda option: Config.set("nep", "backend", option))
+        self.gpu_bs_card.valueChanged.connect(lambda value: Config.set("nep", "gpu_batch_size", int(value)))
 
         self.auto_load_card.checkedChanged.connect(lambda state:Config.set("widget","auto_load",state))
         self.sort_atoms_card.checkedChanged.connect(lambda state:Config.set("widget","sort_atoms",state))

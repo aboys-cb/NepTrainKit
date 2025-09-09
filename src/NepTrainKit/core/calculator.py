@@ -13,40 +13,97 @@ from loguru import logger
 from multiprocessing import Process, JoinableQueue, Event
 
 from NepTrainKit import utils
+from NepTrainKit.config import Config
 from NepTrainKit.core import Structure, MessageManager
+from NepTrainKit.core.types import NepBackend
 
 try:
     from NepTrainKit.nep_cpu import CpuNep
 except ImportError:
-    logger.debug(traceback.format_exc())
+    logger.debug("no found NepTrainKit.nep_cpu")
+
     try:
         from nep_cpu import CpuNep
     except ImportError:
-        logger.debug(traceback.format_exc())
+        logger.debug("no found nep_cpu")
+
 
         CpuNep=None
+try:
+    from NepTrainKit.nep_gpu import GpuNep
+except ImportError:
+    logger.debug("no found NepTrainKit.nep_gpu")
 
+    try:
+        from nep_gpu import GpuNep
+    except ImportError:
+        logger.debug("no found nep_gpu")
+        GpuNep=None
 class NepCalculator():
 
-    def __init__(self, model_file="nep.txt"):
+    def __init__(self, model_file="nep.txt",backend:NepBackend=None,batch_size:int=None):
         super().__init__()
         if not isinstance(model_file, str):
             model_file = str(model_file )
         self.initialized = False
+        if backend is   None:
+            self.backend=Config.get("nep", "backend", NepBackend.AUTO)
+        else:
+            self.backend:NepBackend=backend
+        if batch_size is None:
+            self.batch_size= Config.getint("nep", "gpu_batch_size", 1000)
+        else:
 
-        if CpuNep is None:
-            MessageManager.send_message_box("Failed to import nep_cpu.\n To use the display functionality normally, please prepare the *_train.out and descriptor.out files.","Error")
+            self.batch_size:int = batch_size
+        self.model_file=model_file
+        if CpuNep is None and GpuNep is None:
+            MessageManager.send_message_box("Failed to import NEP.\n To use the display functionality normally, please prepare the *.out and descriptor.out files.","Error")
             return
 
         if os.path.exists(model_file):
 
-            with open(os.devnull, 'w') as devnull:
-                with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
-                    self.nep3 = CpuNep(model_file)
+            self.load_nep()
             self.element_list=self.nep3.get_element_list()
             self.type_dict = {e: i for i, e in enumerate(self.element_list)}
 
             self.initialized = True
+        else:
+            self.initialized = False
+
+
+
+    def load_nep(self):
+        if self.backend == NepBackend.AUTO:
+            if not self._load_nep_backend(NepBackend.GPU):
+                self._load_nep_backend(NepBackend.CPU)
+        elif self.backend == NepBackend.GPU:
+            if not self._load_nep_backend(NepBackend.GPU):
+                MessageManager.send_warning_message("The NEP backend you selected is GPU, but it failed to load on your device; the program has switched to the CPU backend.")
+                self._load_nep_backend(NepBackend.CPU)
+        else:
+            self._load_nep_backend(NepBackend.CPU)
+    def _load_nep_backend(self,backend):
+        try:
+            with open(os.devnull, 'w') as devnull:
+                with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
+                    if backend==NepBackend.GPU:
+                        if GpuNep is not None:
+                            self.nep3 = GpuNep(self.model_file)
+                            self.nep3.set_batch_size(self.batch_size)
+                        else:
+                            return False
+                    else:
+                        # backend==NepBackend.CPU
+                        if CpuNep is not None:
+
+                            self.nep3 = CpuNep(self.model_file)
+                        else:
+                            return False
+                    return True
+        except:
+            logger.debug(traceback.format_exc())
+            return False
+
 
     def compose_structures(self, structures:list[Structure]):
         group_size = []
@@ -207,10 +264,10 @@ class NepCalculator():
 
 Nep3Calculator = NepCalculator
 
-def run_nep_calculator(nep_txt, structures, calculator_type, func_kwargs={},queue=None):
+def run_nep_calculator(nep_txt, structures, calculator_type, func_kwargs={},cls_kwargs={},queue=None):
     try:
 
-        nep3 = NepCalculator(nep_txt)
+        nep3 = NepCalculator(nep_txt,**cls_kwargs)
         if calculator_type == 'polarizability':
             result = nep3.get_structures_polarizability(structures)
         elif calculator_type == 'descriptor':
@@ -243,7 +300,7 @@ class NEPProcess(QObject):
         self.process = None
         self.use_process = False
         self.func_result = None
-    def run_nep3_calculator_process(self,nep_txt, structures, calculator_type="calculate",func_kwargs={},wait=False):
+    def run_nep3_calculator_process(self,nep_txt, structures, calculator_type="calculate",func_kwargs={},cls_kwargs={},wait=False):
         self.func=run_nep_calculator
         self.queue = JoinableQueue()
 
@@ -251,7 +308,8 @@ class NEPProcess(QObject):
             "nep_txt": nep_txt,
             "calculator_type": calculator_type,
             "structures": structures,
-            "func_kwargs":func_kwargs
+            "func_kwargs":func_kwargs,
+            "cls_kwargs":cls_kwargs,
 
         }
         if len(structures) < 2000:

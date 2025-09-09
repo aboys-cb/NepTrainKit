@@ -6,6 +6,7 @@
 import os.path
 import sys
 import traceback
+from pathlib import Path
 
 from loguru import logger
 
@@ -52,7 +53,7 @@ class ShowNepWidget(QWidget):
         self.init_ui()
         self.calculate_bond_thread:utils.LoadingThread
         self.load_thread:QThread
-        self.first_show=False
+        self.first_show=True
 
         # QTimer.singleShot(100, self.init_ui)  # 100ms 后执行
 
@@ -64,10 +65,12 @@ class ShowNepWidget(QWidget):
         auto_load_config = Config.getboolean("widget","auto_load",False)
         if not auto_load_config:
             return
-        if not self.first_show:
-            self.first_show=True
-            if os.path.exists("./train.xyz") and os.path.exists("./nep.txt"):
-                self.set_work_path(os.path.join(os.getcwd(),"train.xyz"))
+        if   self.first_show:
+            self.first_show=False
+            path = list(Path("./").glob("*.xyz"))
+
+            if path :
+                self.set_work_path(path[0].absolute().as_posix())
 
     def hideEvent(self, event):
         if hasattr(self._parent,"save_menu"):
@@ -253,7 +256,8 @@ class ShowNepWidget(QWidget):
             thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")
             thread.start_work(self.nep_result_data.export_selected_xyz, path)
 
-    def set_work_path(self, path):
+    def set_work_path(self, path:str):
+
         if os.path.isdir(path):
             if os.path.exists(os.path.join(path, "train.xyz")):
                 path = os.path.join(path, "train.xyz")
@@ -277,7 +281,7 @@ class ShowNepWidget(QWidget):
             box.exec_()
             if box.result()==0:
                 return
-
+        print(path)
         self.check_nep_result(path)
 
     def set_dataset(self,*args):

@@ -142,19 +142,8 @@ jobs:
           set -euxo pipefail
           yum install -y libgomp yum-utils
 
-        CIBW_ENVIRONMENT_WINDOWS: |
-          CUDA_PATH=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.9
-          CUDA_HOME=%CUDA_PATH%
-          VSINSTALLDIR=%VSINSTALLDIR%
-          VCINSTALLDIR=%VCINSTALLDIR%
-          WindowsSdkDir=%WindowsSdkDir%
-          WindowsSDKVersion=%WindowsSDKVersion%
-          VCToolsInstallDir=%VCToolsInstallDir%
-          DISTUTILS_USE_SDK=1
-          MSSdk=1
-          CC=cl.exe
-          CXX=cl.exe
-          PATH=%VCToolsInstallDir%bin\Hostx64\x64;%WindowsSdkDir%bin\%WindowsSDKVersion%x64;%CUDA_PATH%\bin;%PATH%
+        CIBW_ENVIRONMENT_WINDOWS: >
+          CUDA_PATH="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.9" CUDA_HOME="%CUDA_PATH%" VSINSTALLDIR="%VSINSTALLDIR%" VCINSTALLDIR="%VCINSTALLDIR%" WindowsSdkDir="%WindowsSdkDir%" WindowsSDKVersion="%WindowsSDKVersion%" VCToolsInstallDir="%VCToolsInstallDir%" DISTUTILS_USE_SDK=1 MSSdk=1 CC=cl.exe CXX=cl.exe PATH="%VCToolsInstallDir%bin\\Hostx64\\x64;%WindowsSdkDir%bin\\%WindowsSDKVersion%x64;%CUDA_PATH%\\bin;%PATH%"
 
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=13.0' }}

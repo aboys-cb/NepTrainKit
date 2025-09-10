@@ -79,6 +79,7 @@ jobs:
         buildplat:
           - [ubuntu-22.04, manylinux_x86_64, ""]
 #          - [ubuntu-22.04, musllinux_x86_64, ""]
+
 #           - [ubuntu-22.04-arm, manylinux_aarch64, ""]
           - [ubuntu-22.04-arm, musllinux_aarch64, ""]
           # - [macos-13, macosx_x86_64, ""]
@@ -88,6 +89,7 @@ jobs:
           - [macos-14, macosx_arm64, ""]  # always use accelerate
           - [windows-2022, win_amd64, ""]
           - [windows-2022, win32, ""]
+
         python: ["cp310","cp311", "cp312" ]
 
     env:
@@ -142,6 +144,7 @@ jobs:
         # Install CUDA toolchain inside manylinux container (x86_64 only) and expose env
         CIBW_BEFORE_BUILD_LINUX: |
           cat /etc/os-release
+
           set -euxo pipefail
           yum install -y libgomp yum-utils
 #          ARCH="$(uname -m)"
@@ -163,6 +166,7 @@ jobs:
 #          CUDA_HOME=/usr/local/cuda
 #          PATH=/usr/local/cuda/bin:$PATH
 #          LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+
         # Try to repair with auditwheel; if CUDA libs cannot be bundled, keep original wheel
         CIBW_REPAIR_WHEEL_COMMAND_LINUX: |
           find {wheel} -name '*.so*' -exec strip --strip-unneeded {} \;

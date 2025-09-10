@@ -125,7 +125,7 @@ jobs:
 
 
     - name: Install CUDA
-      if: matrix.buildplat[0] == 'windows-2022'
+      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
       run: |
         choco install cuda --version=12.9.1.576 --no-progress --yes
 

@@ -77,7 +77,7 @@ jobs:
         # Github Actions doesn't support pairing matrix values together, let's improvise
         # https://github.com/github/feedback/discussions/7835#discussioncomment-1769026
         buildplat:
-          #- [ubuntu-22.04, manylinux_x86_64, ""]
+          - [ubuntu-22.04, manylinux_x86_64, ""]
 #          - [ubuntu-22.04, musllinux_x86_64, ""]
           # - [ubuntu-22.04-arm, manylinux_aarch64, ""]
 #          - [ubuntu-22.04-arm, musllinux_aarch64, ""]
@@ -137,10 +137,31 @@ jobs:
       uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a  # v2.23.2
       env:
         CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
-        # Install CUDA toolchain inside manylinux container (x86_64/aarch64) and expose env
+        # Install CUDA toolchain inside manylinux container (x86_64 only) and expose env
         CIBW_BEFORE_BUILD_LINUX: |
           set -euxo pipefail
           yum install -y libgomp yum-utils
+          ARCH="$(uname -m)"
+          if [ "$ARCH" = "x86_64" ]; then
+            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb
+            sudo dpkg -i cuda-keyring_1.0-1_all.deb
+            sudo apt-get update
+            sudo apt-get -y install cuda
+            echo "CUDA installed at /usr/local/cuda"
+          else
+            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/cross-linux-sbsa/cuda-keyring_1.0-1_all.deb
+            sudo dpkg -i cuda-keyring_1.0-1_all.deb
+            sudo apt-get update
+            sudo apt-get -y install cuda
+             
+          fi
+        CIBW_ENVIRONMENT_LINUX: |
+          CUDA_HOME=/usr/local/cuda
+          PATH=/usr/local/cuda/bin:$PATH
+          LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+        # Try to repair with auditwheel; if CUDA libs cannot be bundled, keep original wheel
+        CIBW_REPAIR_WHEEL_COMMAND_LINUX: >
+          auditwheel repair -w {dest_dir} {wheel} || cp {wheel} {dest_dir}/
 
         CIBW_ENVIRONMENT_WINDOWS: >
           CUDA_PATH="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.9" CUDA_HOME="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.9" DISTUTILS_USE_SDK=1 MSSdk=1 CC=cl.exe CXX=cl.exe

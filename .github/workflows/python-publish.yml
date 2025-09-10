@@ -142,18 +142,18 @@ jobs:
         # Install CUDA toolchain inside manylinux container (x86_64 only) and expose env
         CIBW_BEFORE_BUILD_LINUX: |
           set -euxo pipefail
-          yum install -y libgomp yum-utils
+          dnf install -y libgomp dnf-plugins-core 
           ARCH="$(uname -m)"
           if [ "$ARCH" = "x86_64" ]; then
-            yum-config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo"
-            yum clean all
-            yum -y install cuda-toolkit-11-8
+            dnf config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo"
+            dnf clean all
+            dnf -y install cuda-toolkit-11-8
             ln -s /usr/local/cuda-11.8 /usr/local/cuda || true
             echo "CUDA installed at /usr/local/cuda"
           else
-            yum-config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-rhel8.repo"
-            yum clean all
-            yum -y install cuda-toolkit-11-8
+            dnf config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-rhel8.repo"
+            dnf clean all
+            dnf -y install cuda-toolkit-11-8
             ln -s /usr/local/cuda-11.8 /usr/local/cuda || true
             echo "CUDA installed at /usr/local/cuda"
              

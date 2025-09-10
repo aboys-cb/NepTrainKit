@@ -11,7 +11,7 @@ from PySide6.QtWidgets import QApplication
 
 app = QApplication()
 Config()
-
+Config.set("nep", "backend","cpu")
 
 class TestNepTrainResultData( unittest.TestCase):
     def setUp(self):

@@ -141,6 +141,7 @@ jobs:
         CIBW_BEFORE_BUILD_LINUX: |
           set -euxo pipefail
           yum install -y libgomp yum-utils
+          apt-get install -y wget
           ARCH="$(uname -m)"
           if [ "$ARCH" = "x86_64" ]; then
             wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb

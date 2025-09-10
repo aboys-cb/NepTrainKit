@@ -115,6 +115,8 @@ jobs:
 #      with:
 #        architecture: 'x86'
     - name: Setup VS 2022 17.9
+      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
+
       uses: microsoft/setup-msbuild@v2
       with:
         vs-version: '17.9'

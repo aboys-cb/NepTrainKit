@@ -260,6 +260,7 @@ class BuildExtNVCC(build_ext):
         if cuda_lib:
             lib_dirs.append(cuda_lib)
         libs = ["cudart", "cublas", "cusolver", "curand"]
+        libs = ["cudart" ]
 
 
         output_path = self.get_ext_fullpath(ext.name)

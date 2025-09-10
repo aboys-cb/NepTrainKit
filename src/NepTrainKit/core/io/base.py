@@ -324,12 +324,14 @@ class DPPlotData(NepData):
 class StructureData(NepData):
 
     @utils.timeit
-    def get_all_config(self,search_type:SearchType)->list[str]:
+    def get_all_config(self,search_type:SearchType=None)->list[str]:
         """
         获取所有结构的某个属性 用于搜索
         :param search_type:SearchType
         :return:每个结构的属性值
         """
+        if search_type is None:
+            search_type=SearchType.TAG
         if search_type==SearchType.TAG:
             return [structure.tag for structure in self.now_data]
         elif search_type==SearchType.FORMULA:

@@ -26,7 +26,7 @@ from NepTrainKit.custom_widget import (
     ShiftEnergyMessageBox,
     DFTD3MessageBox,
 )
-from NepTrainKit.core.types import NepBackend
+from NepTrainKit.core.types import NepBackend, SearchType
 from NepTrainKit.core.io.select import farthest_point_sampling
 from NepTrainKit.views.toolbar import NepDisplayGraphicsToolBar
 from NepTrainKit.core.energy_shift import shift_dataset_energy, suggest_group_patterns
@@ -253,7 +253,7 @@ class NepResultPlotWidget(QWidget):
         max_generations = Config.getint("widget","max_generation_value",100000)
         population_size =  Config.getint("widget","population_size",40)
         convergence_tol = Config.getfloat("widget","convergence_tol", 1e-8)
-        config_set = set(data.structure.get_all_config())
+        config_set = set(data.structure.get_all_config(SearchType.TAG))
         suggested = suggest_group_patterns(list(config_set))
         box = ShiftEnergyMessageBox(
             self._parent,
@@ -281,7 +281,7 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget","max_generation_value",max_generations)
         Config.set("widget","population_size",population_size)
         Config.set("widget","convergence_tol",convergence_tol)
-        config_set = set(data.structure.get_all_config())
+        config_set = set(data.structure.get_all_config(SearchType.TAG))
         progress_diag = QProgressDialog(f"", "Cancel", 0, len(config_set), self._parent)
         thread = utils.LoadingThread(self._parent, show_tip=False)
         progress_diag.setFixedSize(300, 100)

@@ -136,6 +136,8 @@ jobs:
     - name: Build wheels
       uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a  # v2.23.2
       env:
+        CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
+        CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux_2_28_aarch64
         CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
         # Install CUDA toolchain inside manylinux container (x86_64 only) and expose env
         CIBW_BEFORE_BUILD_LINUX: |
@@ -144,16 +146,17 @@ jobs:
           apt-get install -y wget
           ARCH="$(uname -m)"
           if [ "$ARCH" = "x86_64" ]; then
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb
-            sudo dpkg -i cuda-keyring_1.0-1_all.deb
-            sudo apt-get update
-            sudo apt-get -y install cuda
+            yum-config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo"
+            yum clean all
+            yum -y install cuda-toolkit-11-8
+            ln -s /usr/local/cuda-11.8 /usr/local/cuda || true
             echo "CUDA installed at /usr/local/cuda"
           else
-            wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/cross-linux-sbsa/cuda-keyring_1.0-1_all.deb
-            sudo dpkg -i cuda-keyring_1.0-1_all.deb
-            sudo apt-get update
-            sudo apt-get -y install cuda
+            yum-config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-rhel8.repo"
+            yum clean all
+            yum -y install cuda-toolkit-11-8
+            ln -s /usr/local/cuda-11.8 /usr/local/cuda || true
+            echo "CUDA installed at /usr/local/cuda"
              
           fi
         CIBW_ENVIRONMENT_LINUX: |

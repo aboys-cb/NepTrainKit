@@ -13,6 +13,7 @@ import sys
 
 import os
 import subprocess
+import shlex
 import pybind11
 from pybind11.setup_helpers import Pybind11Extension
 from setuptools import  Extension, find_packages, setup
@@ -187,15 +188,38 @@ class BuildExtNVCC(build_ext):
                 depends=ext.depends)
 
         nvcc_flags = ["-O3", "-std=c++14"]
+        # Target GPU architecture(s)
+        # Accept either:
+        #  - NEP_GPU_GENCODE="arch=compute_80,code=sm_80"
+        #  - NEP_GPU_GENCODE="-gencode arch=compute_60,code=sm_60 -gencode arch=compute_80,code=sm_80"
+        # If unset, default to sm_60.
+        gencode_env = os.environ.get("NEP_GPU_GENCODE", "").strip()
+        if gencode_env:
+            parts = shlex.split(gencode_env)
+            if any(p == "-gencode" for p in parts):
+                i = 0
+                while i < len(parts):
+                    if parts[i] == "-gencode" and i + 1 < len(parts):
+                        nvcc_flags += ["-gencode", parts[i + 1]]
+                        i += 2
+                    else:
+                        i += 1
+            else:
+                nvcc_flags += ["-gencode", gencode_env]
+        else:
+            nvcc_flags += ["-gencode", "arch=compute_60,code=sm_60"]
+        # Optional: silence warnings for older architectures on newer toolchains
+        if os.environ.get("NEP_GPU_SILENCE_DEPRECATED", "1") == "1":
+            nvcc_flags += ["-Wno-deprecated-gpu-targets"]
         # Optional stronger CUDA error checks
         # if os.environ.get("NEP_GPU_STRONG_DEBUG"):
         #     nvcc_flags += ["-DSTRONG_DEBUG"]
         if os.name == 'nt':
             # Enable OpenMP (SIMD) and typical MSVC flags for host compilation
-            nvcc_flags += ["-gencode arch=compute_60,code=sm_60","-Xcompiler", "/openmp:experimental,/MD,/O2,/EHsc"]
+            nvcc_flags += ["-Xcompiler", "/openmp:experimental,/MD,/O2,/EHsc"]
         else:
             # PIC for shared lib, enable OpenMP on host compiler
-            nvcc_flags += ["-gencode arch=compute_60,code=sm_60","-Xcompiler", "-fPIC", "-Xcompiler", "-fopenmp"]
+            nvcc_flags += ["-Xcompiler", "-fPIC", "-Xcompiler", "-fopenmp"]
 
         incs = []
         for inc in (ext.include_dirs or []):

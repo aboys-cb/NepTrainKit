@@ -154,10 +154,10 @@ jobs:
 #      uses: microsoft/setup-msbuild@v2
 #      with:
 #          vs-version: '[17.9,17.10)'
-#    - name: Install CUDA
-#      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-#      run: |
-#        choco install cuda --version=11.8.0.52206 --no-progress --yes
+    - name: Install CUDA
+      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
+      run: |
+        choco install cuda --version=11.8.0.52206 --no-progress --yes
 #
 
     - name: Build wheels
@@ -197,8 +197,8 @@ jobs:
           find {wheel} -name '*.so*' -exec strip --strip-unneeded {} \;
           auditwheel repair -w {dest_dir} {wheel} || cp {wheel} {dest_dir}/
 
-#        CIBW_ENVIRONMENT_WINDOWS: >
-#          CUDA_PATH="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8" CUDA_HOME="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8" DISTUTILS_USE_SDK=1 MSSdk=1 CC=cl.exe CXX=cl.exe
+        CIBW_ENVIRONMENT_WINDOWS: >
+          CUDA_PATH="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8" CUDA_HOME="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8"
 
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=13.0' }}

@@ -128,12 +128,6 @@ jobs:
         brew install libomp
         echo "OMP_INCLUDE_PATH=$(brew --prefix libomp)/include" >> $GITHUB_ENV
         echo "OMP_LIB_PATH=$(brew --prefix libomp)/lib" >> $GITHUB_ENV
-
-
-    - name: Install CUDA
-      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-      run: |
-        choco install cuda --version=12.2.0.53625 --no-progress --yes
     - name: Setup MSVC (x86)
       if: ${{ matrix.buildplat[1] == 'win32' }}
       uses: ilammy/msvc-dev-cmd@v1
@@ -144,7 +138,13 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
-        toolset: 16.XX
+        toolset: 16.0
+
+    - name: Install CUDA
+      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
+      run: |
+        choco install cuda --version=12.2.0.53625 --no-progress --yes
+
 
     - name: Build wheels
       uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a  # v2.23.2

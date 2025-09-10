@@ -148,7 +148,10 @@ jobs:
       if: ${{ matrix.buildplat[1] == 'win_amd64' }}
       shell: powershell
       run: |
-        $installPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+        $installPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
+          -latest -products * `
+          -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+          -property installationPath
         if (!$installPath) {
           Write-Error "VC++ tools not found"
           exit 1
@@ -159,13 +162,7 @@ jobs:
           exit 1
         }
         echo "VCVARSALL=$vcvarsall" >> $env:GITHUB_ENV
-        
-        - name: Setup MSVC 14.39 environment
-          if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-          shell: cmd
-          run: |
-            call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x64 -vcvars_ver=14.39
-            set >> %GITHUB_ENV%
+
     - name: Setup MSVC 14.39 environment
       if: ${{ matrix.buildplat[1] == 'win_amd64' }}
       shell: cmd

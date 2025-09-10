@@ -15,10 +15,12 @@ from typing import Any
 from numpy import bool_
 import numpy.typing as npt
 from NepTrainKit import utils
+from NepTrainKit.config import Config
 from NepTrainKit.core import Structure, MessageManager
 from NepTrainKit.core.calculator import NEPProcess
 from NepTrainKit.core.io.utils import read_nep_out_file, parse_array_by_atomnum,get_rmse
-from NepTrainKit.core.types import Brushes, SearchType
+from NepTrainKit.core.types import Brushes, SearchType, NepBackend
+
 
 def pca(X, n_components=None):
     """
@@ -601,7 +603,13 @@ class ResultData(QObject):
         if desc_array.size == 0:
             self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
                 self.structure.now_data,
-                "descriptor" ,wait=True)
+             cls_kwargs={
+                 "backend": NepBackend(
+                     Config.get("nep", "backend", NepBackend.AUTO)),
+                 "batch_size": Config.getint("nep", "gpu_batch_size",
+                                             1000)
+             },
+                calculator_type="descriptor" ,wait=True)
             desc_array=self.nep_calc_thread.func_result
             # desc_array = run_nep3_calculator_process(
             #     )

@@ -79,12 +79,12 @@ jobs:
         buildplat:
           - [ubuntu-22.04, manylinux_x86_64, ""]
 #          - [ubuntu-22.04, musllinux_x86_64, ""]
-          - [ubuntu-22.04-arm, manylinux_aarch64, ""]
-#          - [ubuntu-22.04-arm, musllinux_aarch64, ""]
-          - [macos-13, macosx_x86_64, ""]
+#           - [ubuntu-22.04-arm, manylinux_aarch64, ""]
+          - [ubuntu-22.04-arm, musllinux_aarch64, ""]
+          # - [macos-13, macosx_x86_64, ""]
 
           # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile
-#          - [macos-13, macosx_x86_64, ""]
+          - [macos-13, macosx_x86_64, ""]
           - [macos-14, macosx_arm64, ""]  # always use accelerate
           - [windows-2022, win_amd64, ""]
           - [windows-2022, win32, ""]
@@ -121,18 +121,63 @@ jobs:
         echo "OMP_INCLUDE_PATH=$(brew --prefix libomp)/include" >> $GITHUB_ENV
         echo "OMP_LIB_PATH=$(brew --prefix libomp)/lib" >> $GITHUB_ENV
 
+
+    - name: Install CUDA
+      if: matrix.buildplat[0] == 'windows-2022'
+      run: |
+        choco install cuda --version=12.9.1.576 --no-progress --yes
+
+    - name: Setup MSVC (x64)
+      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
     - name: Build wheels
       uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a  # v2.23.2
       env:
+#        CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
+#        CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux_2_28_aarch64
         CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
-        CIBW_BEFORE_BUILD_LINUX: "yum install -y libgomp"
+        # Install CUDA toolchain inside manylinux container (x86_64 only) and expose env
+        CIBW_BEFORE_BUILD_LINUX: |
+          cat /etc/os-release
+          set -euxo pipefail
+          yum install -y libgomp yum-utils
+#          ARCH="$(uname -m)"
+#          if [ "$ARCH" = "x86_64" ]; then
+#            yum-config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo"
+#            yum clean all
+#            yum -y install cuda-toolkit-11-8
+#            ln -s /usr/local/cuda-11.8 /usr/local/cuda || true
+#            echo "CUDA installed at /usr/local/cuda"
+#          else
+#            yum-config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-rhel8.repo"
+#            yum clean all
+#            yum -y install cuda-toolkit-11-8
+#            ln -s /usr/local/cuda-11.8 /usr/local/cuda || true
+#            echo "CUDA installed at /usr/local/cuda"
+#
+#          fi
+#        CIBW_ENVIRONMENT_LINUX: |
+#          CUDA_HOME=/usr/local/cuda
+#          PATH=/usr/local/cuda/bin:$PATH
+#          LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+        # Try to repair with auditwheel; if CUDA libs cannot be bundled, keep original wheel
+        CIBW_REPAIR_WHEEL_COMMAND_LINUX: |
+          find {wheel} -name '*.so*' -exec strip --strip-unneeded {} \;
+          auditwheel repair -w {dest_dir} {wheel} || cp {wheel} {dest_dir}/
+
+        CIBW_ENVIRONMENT_WINDOWS: >
+          CUDA_PATH="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.9" CUDA_HOME="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.9" DISTUTILS_USE_SDK=1 MSSdk=1 CC=cl.exe CXX=cl.exe
 
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=13.0' }}
 
-        CIBW_BEFORE_BUILD_WINDOWS: "pip install delvewheel"
+        CIBW_BEFORE_BUILD_WINDOWS: |
+          pip install delvewheel
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
-            python -m delvewheel repair -w {dest_dir} {wheel}
+            python -m delvewheel repair --add-path "%CUDA_PATH%\bin" -w {dest_dir} {wheel}
 
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:

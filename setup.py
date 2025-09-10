@@ -13,6 +13,7 @@ import sys
 
 import os
 import subprocess
+import shlex
 import pybind11
 from pybind11.setup_helpers import Pybind11Extension
 from setuptools import  Extension, find_packages, setup
@@ -187,12 +188,35 @@ class BuildExtNVCC(build_ext):
                 depends=ext.depends)
 
         nvcc_flags = ["-O3", "-std=c++14"]
+        # Target GPU architecture(s)
+        # Accept either:
+        #  - NEP_GPU_GENCODE="arch=compute_80,code=sm_80"
+        #  - NEP_GPU_GENCODE="-gencode arch=compute_60,code=sm_60 -gencode arch=compute_80,code=sm_80"
+        # If unset, default to sm_60.
+        gencode_env = os.environ.get("NEP_GPU_GENCODE", "").strip()
+        if gencode_env:
+            parts = shlex.split(gencode_env)
+            if any(p == "-gencode" for p in parts):
+                i = 0
+                while i < len(parts):
+                    if parts[i] == "-gencode" and i + 1 < len(parts):
+                        nvcc_flags += ["-gencode", parts[i + 1]]
+                        i += 2
+                    else:
+                        i += 1
+            else:
+                nvcc_flags += ["-gencode", gencode_env]
+        else:
+            nvcc_flags += ["-gencode", "arch=compute_60,code=sm_60"]
+        # Optional: silence warnings for older architectures on newer toolchains
+        if os.environ.get("NEP_GPU_SILENCE_DEPRECATED", "1") == "1":
+            nvcc_flags += ["-Wno-deprecated-gpu-targets"]
         # Optional stronger CUDA error checks
-        if os.environ.get("NEP_GPU_STRONG_DEBUG"):
-            nvcc_flags += ["-DSTRONG_DEBUG"]
+        # if os.environ.get("NEP_GPU_STRONG_DEBUG"):
+        #     nvcc_flags += ["-DSTRONG_DEBUG"]
         if os.name == 'nt':
-            # Enable OpenMP and typical MSVC flags for host compilation
-            nvcc_flags += ["-Xcompiler", "/openmp,/MD,/O2,/EHsc"]
+            # Enable OpenMP (SIMD) and typical MSVC flags for host compilation
+            nvcc_flags += ["-Xcompiler", "/openmp:experimental,/MD,/O2,/EHsc"]
         else:
             # PIC for shared lib, enable OpenMP on host compiler
             nvcc_flags += ["-Xcompiler", "-fPIC", "-Xcompiler", "-fopenmp"]
@@ -216,8 +240,8 @@ class BuildExtNVCC(build_ext):
             pass
 
         # Enable verbose debug prints via env var
-        if os.environ.get("NEP_GPU_DEBUG"):
-            nvcc_flags += ["-DNEP_GPU_DEBUG"]
+        # if os.environ.get("NEP_GPU_DEBUG"):
+        #     nvcc_flags += ["-DNEP_GPU_DEBUG"]
 
         Path(self.build_temp).mkdir(parents=True, exist_ok=True)
 
@@ -236,6 +260,9 @@ class BuildExtNVCC(build_ext):
         if cuda_lib:
             lib_dirs.append(cuda_lib)
         libs = ["cudart", "cublas", "cusolver", "curand"]
+
+
+
         output_path = self.get_ext_fullpath(ext.name)
         try:
             self.compiler.link_shared_object(
@@ -248,6 +275,16 @@ class BuildExtNVCC(build_ext):
         except Exception as e:
             print(f"WARNING: Linking nep_gpu failed: {e}")
             return
+    def build_extensions(self):
+        # If nvcc is unavailable, drop the GPU extension so copy stage won't fail
+        try:
+            nvcc, _, _ = self._cuda_paths()
+        except Exception:
+            nvcc = None
+        if not nvcc:
+            print("WARNING: nvcc not found; skipping NepTrainKit.nep_gpu build.")
+            self.extensions = [e for e in self.extensions if e.name != "NepTrainKit.nep_gpu"]
+        return super().build_extensions()
 setup(
     author="Chen Cheng bing",
 cmdclass={'build_ext': BuildExtNVCC},

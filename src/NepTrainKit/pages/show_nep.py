@@ -281,7 +281,7 @@ class ShowNepWidget(QWidget):
             box.exec_()
             if box.result()==0:
                 return
-        print(path)
+
         self.check_nep_result(path)
 
     def set_dataset(self,*args):

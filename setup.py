@@ -188,14 +188,14 @@ class BuildExtNVCC(build_ext):
 
         nvcc_flags = ["-O3", "-std=c++14"]
         # Optional stronger CUDA error checks
-        if os.environ.get("NEP_GPU_STRONG_DEBUG"):
-            nvcc_flags += ["-DSTRONG_DEBUG"]
+        # if os.environ.get("NEP_GPU_STRONG_DEBUG"):
+        #     nvcc_flags += ["-DSTRONG_DEBUG"]
         if os.name == 'nt':
             # Enable OpenMP (SIMD) and typical MSVC flags for host compilation
-            nvcc_flags += ["-Xcompiler", "/openmp:experimental,/MD,/O2,/EHsc"]
+            nvcc_flags += ["-gencode arch=compute_60,code=sm_60","-Xcompiler", "/openmp:experimental,/MD,/O2,/EHsc"]
         else:
             # PIC for shared lib, enable OpenMP on host compiler
-            nvcc_flags += ["-Xcompiler", "-fPIC", "-Xcompiler", "-fopenmp"]
+            nvcc_flags += ["-gencode arch=compute_60,code=sm_60","-Xcompiler", "-fPIC", "-Xcompiler", "-fopenmp"]
 
         incs = []
         for inc in (ext.include_dirs or []):
@@ -216,8 +216,8 @@ class BuildExtNVCC(build_ext):
             pass
 
         # Enable verbose debug prints via env var
-        if os.environ.get("NEP_GPU_DEBUG"):
-            nvcc_flags += ["-DNEP_GPU_DEBUG"]
+        # if os.environ.get("NEP_GPU_DEBUG"):
+        #     nvcc_flags += ["-DNEP_GPU_DEBUG"]
 
         Path(self.build_temp).mkdir(parents=True, exist_ok=True)
 
@@ -236,6 +236,8 @@ class BuildExtNVCC(build_ext):
         if cuda_lib:
             lib_dirs.append(cuda_lib)
         libs = ["cudart", "cublas", "cusolver", "curand"]
+
+
         output_path = self.get_ext_fullpath(ext.name)
         try:
             self.compiler.link_shared_object(

@@ -143,7 +143,6 @@ jobs:
         CIBW_BEFORE_BUILD_LINUX: |
           set -euxo pipefail
           yum install -y libgomp yum-utils
-          apt-get install -y wget
           ARCH="$(uname -m)"
           if [ "$ARCH" = "x86_64" ]; then
             yum-config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo"

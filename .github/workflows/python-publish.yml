@@ -109,17 +109,8 @@ jobs:
       with:
         python-version: "3.10"
 
-#    - name: Setup MSVC (32-bit)
-#      if: ${{ matrix.buildplat[1] == 'win32' }}
-#      uses: bus1/cabuild/action/msdevshell@e22aba57d6e74891d059d66501b6b5aed8123c4d  # v1
-#      with:
-#        architecture: 'x86'
-#    - name: Setup VS 2022 17.9
-#      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-#
-#      uses: microsoft/setup-msbuild@v2
-#      with:
-#        vs-version: '17.9'
+
+
     - name: Setup macOS
       if: matrix.buildplat[0] == 'macos-13' || matrix.buildplat[0] == 'macos-14'
       run: |
@@ -134,51 +125,18 @@ jobs:
       with:
         arch: x86
 
-    - name: Install MSVC 14.39 side-by-side
+    - name: Setup MSVC (x64)
       if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-      shell: powershell
-      run: |
-        Invoke-WebRequest -Uri https://aka.ms/vs/17/release/vs_BuildTools.exe -OutFile vs_BuildTools.exe
-        Start-Process -Wait -FilePath .\vs_BuildTools.exe -ArgumentList `
-          '--quiet', '--wait', '--add', 'Microsoft.VisualStudio.Workload.VCTools', `
-          '--add', 'Microsoft.VisualStudio.Component.VC.14.39.x86.x64', `
-          '--add', 'Microsoft.VisualStudio.Component.VC.14.39.ATL', `
-          '--add', 'Microsoft.VisualStudio.Component.Windows11SDK.22000'
-    - name: Find vcvarsall.bat
-      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-      shell: powershell
-      run: |
-        $installPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" `
-          -latest -products * `
-          -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
-          -property installationPath
-        if (!$installPath) {
-          Write-Error "VC++ tools not found"
-          exit 1
-        }
-        $vcvarsall = Join-Path $installPath "VC\Auxiliary\Build\vcvarsall.bat"
-        if (!(Test-Path $vcvarsall)) {
-          Write-Error "vcvarsall.bat not found at $vcvarsall"
-          exit 1
-        }
-        echo "VCVARSALL=$vcvarsall" >> $env:GITHUB_ENV
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
 
-    - name: Setup MSVC 14.39 environment
-      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-      shell: cmd
-      run: |
-        call "%VCVARSALL%" x64 -vcvars_ver=14.39
-        set >> %GITHUB_ENV%
-    - name: Verify cl.exe version
-      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-      shell: cmd
-      run: |
-        where cl
-        cl
+
+
     - name: Install CUDA
       if: ${{ matrix.buildplat[1] == 'win_amd64' }}
       run: |
-        choco install cuda --version=11.8.0.52206 --no-progress --yes
+        choco install cuda --version=12.4.0.551 --no-progress --yes
 #
 
     - name: Build wheels
@@ -219,7 +177,7 @@ jobs:
           auditwheel repair -w {dest_dir} {wheel} || cp {wheel} {dest_dir}/
 
         CIBW_ENVIRONMENT_WINDOWS: >
-          CUDA_PATH="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8" CUDA_HOME="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8"
+          CUDA_PATH="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.4" CUDA_HOME="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.4"
 
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=13.0' }}

@@ -263,6 +263,8 @@ class BuildExtNVCC(build_ext):
 
 
 
+
+
         output_path = self.get_ext_fullpath(ext.name)
         try:
             self.compiler.link_shared_object(

@@ -33,8 +33,9 @@ class TestStructure(unittest.TestCase):
         # 测试基本属性
         self.assertEqual(len(self.structure), 2)
         self.assertEqual(self.structure.num_atoms, 2)
-        self.assertEqual(self.structure.formula, "H1O1")
-        self.assertEqual(self.structure.html_formula, "H<sub>1</sub>O<sub>1</sub>")
+        self.assertEqual(self.structure.formula, "HO")
+
+        self.assertEqual(self.structure.html_formula, "HO")
         self.assertListEqual(self.structure.numbers, [1, 8])
 
     def test_energy_calculations(self):

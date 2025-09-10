@@ -133,13 +133,27 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x86
-    - name: Setup MSVC (x64)
+#    - name: Setup MSVC (x64)
+#      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
+#      uses: ilammy/msvc-dev-cmd@v1
+#      with:
+#        arch: x64
+#        toolset: 16.0
+    - name: Install VS2022 17.9 build tools
       if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-      uses: ilammy/msvc-dev-cmd@v1
+      shell: powershell
+      run: |
+        Invoke-WebRequest -Uri https://aka.ms/vs/17/release/vs_BuildTools.exe -OutFile vs_BuildTools.exe
+        Start-Process -Wait -FilePath .\vs_BuildTools.exe -ArgumentList `
+          '--quiet', '--wait', '--add', 'Microsoft.VisualStudio.Workload.VCTools', `
+          '--add', 'Microsoft.VisualStudio.Component.VC.Tools.x86.x64', `
+          '--add', 'Microsoft.VisualStudio.Component.Windows11SDK.22000'
+      # 2. 把 17.9 设为默认
+    - name: Setup MSVC 17.9
+      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
+      uses: microsoft/setup-msbuild@v2
       with:
-        arch: x64
-        toolset: 16.0
-
+          vs-version: '[17.9,17.10)'
     - name: Install CUDA
       if: ${{ matrix.buildplat[1] == 'win_amd64' }}
       run: |

@@ -33,7 +33,7 @@ try:
     from NepTrainKit.nep_gpu import GpuNep
 except ImportError:
     logger.debug("no found NepTrainKit.nep_gpu")
-
+    logger.debug(traceback.format_exc())
     try:
         from nep_gpu import GpuNep
     except ImportError:
@@ -47,11 +47,11 @@ class NepCalculator():
             model_file = str(model_file )
         self.initialized = False
         if backend is   None:
-            self.backend=Config.get("nep", "backend", NepBackend.AUTO)
+            self.backend=NepBackend.AUTO
         else:
             self.backend:NepBackend=backend
         if batch_size is None:
-            self.batch_size= Config.getint("nep", "gpu_batch_size", 1000)
+            self.batch_size= 1000
         else:
 
             self.batch_size:int = batch_size

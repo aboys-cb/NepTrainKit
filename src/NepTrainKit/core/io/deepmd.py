@@ -14,6 +14,7 @@ from .utils import parse_array_by_atomnum,read_nep_out_file
 from NepTrainKit.config import Config
 
 from .. import   MessageManager
+from ..types import NepBackend
 from ... import module_path
 def is_deepmd_path(folder)-> bool:
     if os.path.exists(os.path.join(folder,"type.raw")):
@@ -243,8 +244,11 @@ class DeepmdResultData(ResultData):
 
         try:
             self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
-                self.structure.now_data,
-                "calculate" ,wait=True)
+                self.structure.now_data,cls_kwargs={
+                "backend":NepBackend(Config.get("nep", "backend", NepBackend.AUTO)),
+                    "batch_size": Config.getint("nep", "gpu_batch_size", 1000)
+                },
+                calculator_type="calculate" ,wait=True)
             nep_potentials_array, nep_forces_array, nep_virials_array=self.nep_calc_thread.func_result
             # nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(
             #     self.nep_txt_path.as_posix(),

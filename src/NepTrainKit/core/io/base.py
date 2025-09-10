@@ -605,7 +605,7 @@ class ResultData(QObject):
                 self.structure.now_data,
              cls_kwargs={
                  "backend": NepBackend(
-                     Config.get("nep", "backend", NepBackend.AUTO)),
+                     Config.get("nep", "backend", "auto")),
                  "batch_size": Config.getint("nep", "gpu_batch_size",
                                              1000)
              },

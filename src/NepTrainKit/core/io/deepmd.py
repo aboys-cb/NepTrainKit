@@ -245,7 +245,7 @@ class DeepmdResultData(ResultData):
         try:
             self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
                 self.structure.now_data,cls_kwargs={
-                "backend":NepBackend(Config.get("nep", "backend", NepBackend.AUTO)),
+                "backend":NepBackend(Config.get("nep", "backend", "auto")),
                     "batch_size": Config.getint("nep", "gpu_batch_size", 1000)
                 },
                 calculator_type="calculate" ,wait=True)

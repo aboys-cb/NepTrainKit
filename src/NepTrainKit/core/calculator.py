@@ -37,6 +37,8 @@ except ImportError:
     try:
         from nep_gpu import GpuNep
     except ImportError:
+        logger.debug(traceback.format_exc())
+
         logger.debug("no found nep_gpu")
         GpuNep=None
 class NepCalculator():

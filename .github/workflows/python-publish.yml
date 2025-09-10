@@ -136,8 +136,8 @@ jobs:
     - name: Build wheels
       uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a  # v2.23.2
       env:
-        CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
-        CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux_2_28_aarch64
+#        CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
+#        CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux_2_28_aarch64
         CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
         # Install CUDA toolchain inside manylinux container (x86_64 only) and expose env
         CIBW_BEFORE_BUILD_LINUX: |

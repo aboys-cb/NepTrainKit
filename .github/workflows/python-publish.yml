@@ -80,7 +80,7 @@ jobs:
           - [ubuntu-22.04, manylinux_x86_64, ""]
 #          - [ubuntu-22.04, musllinux_x86_64, ""]
           # - [ubuntu-22.04-arm, manylinux_aarch64, ""]
-          - [ubuntu-22.04-arm, musllinux_aarch64, ""]
+#          - [ubuntu-22.04-arm, musllinux_aarch64, ""]
           # - [macos-13, macosx_x86_64, ""]
 
           # targeting macos >= 14. Could probably build on macos-14, but it would be a cross-compile

@@ -114,12 +114,12 @@ jobs:
 #      uses: bus1/cabuild/action/msdevshell@e22aba57d6e74891d059d66501b6b5aed8123c4d  # v1
 #      with:
 #        architecture: 'x86'
-    - name: Setup VS 2022 17.9
-      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-
-      uses: microsoft/setup-msbuild@v2
-      with:
-        vs-version: '17.9'
+#    - name: Setup VS 2022 17.9
+#      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
+#
+#      uses: microsoft/setup-msbuild@v2
+#      with:
+#        vs-version: '17.9'
     - name: Setup macOS
       if: matrix.buildplat[0] == 'macos-13' || matrix.buildplat[0] == 'macos-14'
       run: |
@@ -144,6 +144,7 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
+        toolset: 16.XX
 
     - name: Build wheels
       uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a  # v2.23.2

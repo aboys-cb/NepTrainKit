@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <fstream>
 #include <ctime>
+#include <atomic>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -104,6 +105,13 @@ private:
     NepParameters para;
     std::vector<float> elite;
     std::unique_ptr<Potential> potential;
+    std::atomic<bool> canceled_{false};
+
+    inline void check_canceled() const {
+        if (canceled_.load(std::memory_order_relaxed)) {
+            throw std::runtime_error("Canceled by user");
+        }
+    }
 
     
 
@@ -127,6 +135,10 @@ public:
         para.output_descriptor = 0;
 //         std::printf("[nep_gpu] init done.\n");
     }
+
+    void cancel() { canceled_.store(true, std::memory_order_relaxed); }
+    void reset_cancel() { canceled_.store(false, std::memory_order_relaxed); }
+    bool is_canceled() const { return canceled_.load(std::memory_order_relaxed); }
 
     std::vector<std::string> get_element_list() const {
         return para.elements;
@@ -256,6 +268,9 @@ std::vector<Structure> create_structures(const std::vector<std::vector<int>>& ty
 
         // Release the Python GIL during heavy GPU/CPU work to allow concurrency
         py::gil_scoped_release _gil_release;
+        if (canceled_.load(std::memory_order_relaxed)) {
+            throw std::runtime_error("Canceled by user");
+        }
  
  
 
@@ -291,6 +306,9 @@ std::vector<Structure> create_structures(const std::vector<std::vector<int>>& ty
 
         std::vector<Dataset> dataset_vec(1);
         for (int start = 0; start < structure_num; start += bs) {
+            if (canceled_.load(std::memory_order_relaxed)) {
+                throw std::runtime_error("Canceled by user");
+            }
             int end = std::min(start + bs, structure_num);
             dataset_vec[0].construct(para, structures, start, end, 0 /*device id*/);
             if (para.train_mode == 1 || para.train_mode == 2) {
@@ -372,6 +390,9 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors(
         const std::vector<std::vector<double>>& position)
 {
     py::gil_scoped_release _gil_release;
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
 
     int devCount = 0; auto devErr = gpuGetDeviceCount(&devCount);
     if (devErr != gpuSuccess || devCount <= 0) {
@@ -393,6 +414,9 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors(
     std::vector<Dataset> dataset_vec(1);
     std::vector<float> desc_host;
     for (int start = 0; start < structure_num; start += bs) {
+        if (canceled_.load(std::memory_order_relaxed)) {
+            throw std::runtime_error("Canceled by user");
+        }
         int end = std::min(start + bs, structure_num);
         dataset_vec[0].construct(para, structures, start, end, 0);
         NEP_Descriptors desc_engine(para,
@@ -440,6 +464,9 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors_scaled(
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position)
 {
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
     auto raw = calculate_descriptors(type, box, position);
     const int dim = para.dim;
     const bool have_scaler = (int)para.q_scaler_cpu.size() == dim;
@@ -467,6 +494,9 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors_avg(
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position)
 {
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
     auto raw = calculate_descriptors(type, box, position);
     const int dim = para.dim;
     const bool have_scaler = (int)para.q_scaler_cpu.size() == dim;
@@ -494,6 +524,9 @@ PYBIND11_MODULE(nep_gpu, m) {
         .def("get_element_list", &GpuNep::get_element_list)
         .def("set_batch_size", &GpuNep::set_batch_size)
         .def("calculate", &GpuNep::calculate)
+        .def("cancel", &GpuNep::cancel)
+        .def("reset_cancel", &GpuNep::reset_cancel)
+        .def("is_canceled", &GpuNep::is_canceled)
         .def("get_descriptor", &GpuNep::calculate_descriptors)
         .def("calculate_descriptors_scaled", &GpuNep::calculate_descriptors_scaled)
         .def("get_structures_descriptor", &GpuNep::calculate_descriptors_avg);

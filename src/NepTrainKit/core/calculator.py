@@ -72,7 +72,8 @@ class NepCalculator():
         else:
             self.initialized = False
 
-
+    def cancel(self):
+        self.nep3.cancel()
 
     def load_nep(self):
         if self.backend == NepBackend.AUTO:
@@ -132,6 +133,7 @@ class NepCalculator():
         if not self.initialized:
             return np.array([]),np.array([]),np.array([])
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
+        self.nep3.reset_cancel()
         potentials, forces, virials = self.nep3.calculate(_types, _boxs, _positions)
         split_indices = np.cumsum(group_size)[:-1]
         #
@@ -161,6 +163,8 @@ class NepCalculator():
         if not self.initialized:
             return np.array([]),np.array([]),np.array([])
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
+        self.nep3.reset_cancel()
+
         potentials, forces, virials = self.nep3.calculate_dftd3(functional,cutoff,cutoff_cn,_types, _boxs, _positions)
         split_indices = np.cumsum(group_size)[:-1]
         #
@@ -189,6 +193,8 @@ class NepCalculator():
         if not self.initialized:
             return np.array([]),np.array([]),np.array([])
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
+        self.nep3.reset_cancel()
+
         potentials, forces, virials = self.nep3.calculate_with_dftd3( functional,cutoff,cutoff_cn,_types, _boxs, _positions)
         split_indices = np.cumsum(group_size)[:-1]
         #
@@ -220,6 +226,7 @@ class NepCalculator():
         _box = structure.cell.transpose(1, 0).reshape(-1).tolist()
 
         _position = structure.positions.transpose(1, 0).reshape(-1).tolist()
+        self.nep3.reset_cancel()
 
         descriptor = self.nep3.get_descriptor(_type, _box, _position)
 
@@ -237,6 +244,7 @@ class NepCalculator():
         if not self.initialized:
             return np.array([])
         _types, _boxs, _positions, group_size = self.compose_structures(structures)
+        self.nep3.reset_cancel()
 
         descriptor = self.nep3.get_structures_descriptor(_types, _boxs, _positions)
 
@@ -249,6 +257,8 @@ class NepCalculator():
         if not self.initialized:
             return np.array([])
         _types, _boxs, _positions, group_size = self.compose_structures(structures)
+        self.nep3.reset_cancel()
+
         polarizability = self.nep3.get_structures_polarizability(_types, _boxs, _positions)
 
         return np.array(polarizability,dtype=np.float32)
@@ -258,6 +268,8 @@ class NepCalculator():
                               )->npt.NDArray[np.float32]:
         if not self.initialized:
             return np.array([])
+        self.nep3.reset_cancel()
+
         _types, _boxs, _positions, group_size = self.compose_structures(structures)
 
         dipole = self.nep3.get_structures_dipole(_types, _boxs, _positions)

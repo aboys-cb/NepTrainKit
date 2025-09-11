@@ -7,12 +7,13 @@ from pathlib import Path
 
 from NepTrainKit.core import Structure
 from NepTrainKit.core.calculator import Nep3Calculator
+from NepTrainKit.core.types import NepBackend
 
 class TestNep(unittest.TestCase):
     def setUp(self):
         self.test_dir = Path(__file__).parent
 
-        self.calculator = Nep3Calculator(os.path.join(self.test_dir,"data/nep/nep.txt"))
+        self.calculator = Nep3Calculator(os.path.join(self.test_dir,"data/nep/nep.txt"),backend=NepBackend.CPU)
         self.structures = Structure.read_multiple(os.path.join(self.test_dir,"data/nep/train.xyz"))[0]
         self.energy = np.load(os.path.join(self.test_dir,"data/nep/energy.npy"))
         self.forces = np.load(os.path.join(self.test_dir,"data/nep/forces.npy"))
@@ -46,7 +47,7 @@ class TestNep(unittest.TestCase):
 class TestDipole(unittest.TestCase):
     def setUp(self):
         self.test_dir = Path(__file__).parent
-        self.calculator = Nep3Calculator(os.path.join(self.test_dir,"data/dipole/nep.txt"))
+        self.calculator = Nep3Calculator(os.path.join(self.test_dir,"data/dipole/nep.txt"),backend=NepBackend.CPU)
         self.structures = Structure.read_multiple(os.path.join(self.test_dir,"data/dipole/train.xyz"))[0]
 
     def tearDown(self):
@@ -65,7 +66,7 @@ class TestPolarizability(unittest.TestCase):
     def setUp(self):
         self.test_dir = Path(__file__).parent
 
-        self.calculator = Nep3Calculator(os.path.join(self.test_dir,"data/polarizability/nep.txt"))
+        self.calculator = Nep3Calculator(os.path.join(self.test_dir,"data/polarizability/nep.txt"),backend=NepBackend.CPU)
         self.structures = Structure.read_multiple(os.path.join(self.test_dir,"data/polarizability/train.xyz"))[0]
 
     def tearDown(self):

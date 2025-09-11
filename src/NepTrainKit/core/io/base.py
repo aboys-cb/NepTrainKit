@@ -15,10 +15,12 @@ from typing import Any
 from numpy import bool_
 import numpy.typing as npt
 from NepTrainKit import utils
+from NepTrainKit.config import Config
 from NepTrainKit.core import Structure, MessageManager
 from NepTrainKit.core.calculator import NEPProcess
 from NepTrainKit.core.io.utils import read_nep_out_file, parse_array_by_atomnum,get_rmse
-from NepTrainKit.core.types import Brushes, SearchType
+from NepTrainKit.core.types import Brushes, SearchType, NepBackend
+
 
 def pca(X, n_components=None):
     """
@@ -322,12 +324,14 @@ class DPPlotData(NepData):
 class StructureData(NepData):
 
     @utils.timeit
-    def get_all_config(self,search_type:SearchType)->list[str]:
+    def get_all_config(self,search_type:SearchType=None)->list[str]:
         """
         获取所有结构的某个属性 用于搜索
         :param search_type:SearchType
         :return:每个结构的属性值
         """
+        if search_type is None:
+            search_type=SearchType.TAG
         if search_type==SearchType.TAG:
             return [structure.tag for structure in self.now_data]
         elif search_type==SearchType.FORMULA:
@@ -601,7 +605,13 @@ class ResultData(QObject):
         if desc_array.size == 0:
             self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
                 self.structure.now_data,
-                "descriptor" ,wait=True)
+             cls_kwargs={
+                 "backend": NepBackend(
+                     Config.get("nep", "backend", "auto")),
+                 "batch_size": Config.getint("nep", "gpu_batch_size",
+                                             1000)
+             },
+                calculator_type="descriptor" ,wait=True)
             desc_array=self.nep_calc_thread.func_result
             # desc_array = run_nep3_calculator_process(
             #     )

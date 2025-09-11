@@ -107,7 +107,7 @@ class SettingsWidget(ScrollArea):
         self.radius_coefficient_Card.setRange(0.0, 1.5)
 
         # NEP backend selection
-        nep_backend_default = Config.get("nep", "backend", NepBackend.AUTO)
+        nep_backend_default = Config.get("nep", "backend","auto")
         self.nep_backend_card = MyComboBoxSettingCard(
             OptionsConfigItem("nep", "backend", NepBackend(nep_backend_default), OptionsValidator(NepBackend),
                               EnumSerializer(NepBackend)),

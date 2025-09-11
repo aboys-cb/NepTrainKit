@@ -3,8 +3,13 @@ import platform
 import shutil
 from typing import Any
 
-from PySide6.QtSql import QSqlDatabase, QSqlQuery
-from NepTrainKit import module_path,get_user_config_path
+from sqlalchemy import (
+    create_engine, MetaData, Table, Column, String, select, update, inspect
+)
+from sqlalchemy.engine import Engine
+from sqlalchemy.exc import SQLAlchemyError
+
+from NepTrainKit import module_path, get_user_config_path
 
 
 class Config:
@@ -26,19 +31,32 @@ class Config:
         self.connect_db()
 
     def connect_db(self):
-        self.db = QSqlDatabase.addDatabase("QSQLITE","config")
-
         user_config_path = get_user_config_path()
 
-        if not os.path.exists(f"{user_config_path}/config.sqlite"):
+        db_file = os.path.join(user_config_path, "config.sqlite")
+        if not os.path.exists(db_file):
             if not os.path.exists(user_config_path):
                 os.makedirs(user_config_path)
+            shutil.copy(os.path.join(module_path, 'Config/config.sqlite'), db_file)
 
-            shutil.copy(os.path.join(module_path,'Config/config.sqlite'),f"{user_config_path}/config.sqlite")
+        # Initialize SQLAlchemy engine for SQLite
+        url = f"sqlite:///{db_file}"
+        # check_same_thread=False to be safe with GUI contexts
+        self.engine: Engine = create_engine(url, future=True)
 
-        self.db.setDatabaseName(f"{user_config_path}/config.sqlite")
-
-        self.db.open()
+        # Ensure the table exists (reflect if present, otherwise create)
+        self._metadata = MetaData()
+        inspector = inspect(self.engine)
+        if inspector.has_table('config'):
+            self._config_table = Table('config', self._metadata, autoload_with=self.engine)
+        else:
+            self._config_table = Table(
+                'config', self._metadata,
+                Column('section', String, primary_key=True),
+                Column('option', String, primary_key=True),
+                Column('value', String)
+            )
+            self._metadata.create_all(self.engine)
 
     @classmethod
     def get_path(cls,section="setting", option="last_path")->str:
@@ -98,27 +116,48 @@ class Config:
         return v
     @classmethod
     def get(cls,section,option,fallback=None)->Any:
-        query = QSqlQuery(cls._instance.db )
-        result=query.exec(f"""SELECT value FROM "config" where config.option='{option}' and config.section='{section}';""")
-
-        query.next()
-        first= query.value(0)
-        if first  is None:
-
-            if fallback is not None:
-                cls.set(section,option,fallback)
+        try:
+            cfg = cls._instance
+            table = cfg._config_table
+            with cfg.engine.begin() as conn:
+                stmt = select(table.c.value).where(
+                    table.c.section == section,
+                    table.c.option == option
+                ).limit(1)
+                result = conn.execute(stmt).scalar_one_or_none()
+            if result is None:
+                if fallback is not None:
+                    cls.set(section, option, fallback)
+                return fallback
+            return result
+        except SQLAlchemyError:
+            # Fallback behavior in case of unexpected DB errors
             return fallback
-        return first
 
     @classmethod
     def set(cls,section,option,value):
-        if option=="theme":
-            cls.theme=value
-        query = QSqlQuery(cls._instance.db)
-        result=query.exec(f"""INSERT OR REPLACE INTO  "main"."config"("section", "option", "value") VALUES ('{section}', '{option}', '{value}')""")
+        if option == "theme":
+            cls.theme = value
+        cfg = cls._instance
+        table = cfg._config_table
+        val_str = str(value)
+        with cfg.engine.begin() as conn:
+            # Try update first; if no row affected, insert
+            upd = (
+                update(table)
+                .where(table.c.section == section, table.c.option == option)
+                .values(value=val_str)
+            )
+            res = conn.execute(upd)
+            if res.rowcount == 0:
+                ins = table.insert().values(section=section, option=option, value=val_str)
+                conn.execute(ins)
 
     @classmethod
     def update_section(cls,old,new):
-        query = QSqlQuery(cls._instance.db)
-        result=query.exec(f"""UPDATE  "main"."config" set   section='{new}' where section='{old}'""")
+        cfg = cls._instance
+        table = cfg._config_table
+        with cfg.engine.begin() as conn:
+            stmt = update(table).where(table.c.section == old).values(section=new)
+            conn.execute(stmt)
 

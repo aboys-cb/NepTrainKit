@@ -122,6 +122,7 @@ std::tuple<std::vector<std::vector<double>>,
 calculate(const std::vector<std::vector<int>>& type,
           const std::vector<std::vector<double>>& box,
           const std::vector<std::vector<double>>& position) {
+    py::gil_scoped_release _gil_release;
 
     size_t type_size = type.size();
     std::vector<std::vector<double>> potentials(type_size);  // 预分配空间
@@ -154,6 +155,7 @@ calculate_dftd3(
 const std::vector<std::vector<int>>& type,
           const std::vector<std::vector<double>>& box,
           const std::vector<std::vector<double>>& position) {
+    py::gil_scoped_release _gil_release;
 
     size_t type_size = type.size();
     std::vector<std::vector<double>> potentials(type_size);  // 预分配空间
@@ -189,6 +191,7 @@ const std::vector<std::vector<int>>& type,
 
           const std::vector<std::vector<double>>& box,
           const std::vector<std::vector<double>>& position) {
+    py::gil_scoped_release _gil_release;
 
     size_t type_size = type.size();
     std::vector<std::vector<double>> potentials(type_size);  // 预分配空间
@@ -216,6 +219,8 @@ const std::vector<std::vector<int>>& type,
     std::vector<double> get_descriptor(const std::vector<int>& type,
                                        const std::vector<double>& box,
                                        const std::vector<double>& position) {
+        py::gil_scoped_release _gil_release;
+
         std::vector<double> descriptor(type.size() * annmb.dim);
         find_descriptor(type, box, position, descriptor);
         return descriptor;
@@ -230,6 +235,7 @@ const std::vector<std::vector<int>>& type,
     std::vector<std::vector<double>> get_structures_descriptor(const std::vector<std::vector<int>>& type,
                                                      const std::vector<std::vector<double>>& box,
                                                      const std::vector<std::vector<double>>& position) {
+    py::gil_scoped_release _gil_release;
 
         size_t type_size = type.size();
         std::vector<std::vector<double>> all_descriptors(type_size, std::vector<double>(annmb.dim));
@@ -252,6 +258,7 @@ const std::vector<std::vector<int>>& type,
     std::vector<std::vector<double>> get_structures_polarizability(const std::vector<std::vector<int>>& type,
                                                      const std::vector<std::vector<double>>& box,
                                                      const std::vector<std::vector<double>>& position) {
+    py::gil_scoped_release _gil_release;
 
         size_t type_size = type.size();
         std::vector<std::vector<double>> all_polarizability(type_size, std::vector<double>(6));
@@ -270,6 +277,7 @@ const std::vector<std::vector<int>>& type,
     std::vector<std::vector<double>> get_structures_dipole(const std::vector<std::vector<int>>& type,
                                                      const std::vector<std::vector<double>>& box,
                                                      const std::vector<std::vector<double>>& position) {
+    py::gil_scoped_release _gil_release;
 
         size_t type_size = type.size();
         std::vector<std::vector<double>> all_dipole(type_size, std::vector<double>(3));

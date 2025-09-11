@@ -103,7 +103,8 @@ class GpuNep {
 private:
     NepParameters para;
     std::vector<float> elite;
-    
+    std::unique_ptr<Potential> potential;
+
     
 
 public:
@@ -254,7 +255,7 @@ std::vector<Structure> create_structures(const std::vector<std::vector<int>>& ty
         // std::printf("[nep_gpu] calculate() enter\n");
 
         // Release the Python GIL during heavy GPU/CPU work to allow concurrency
-        // py::gil_scoped_release _gil_release;
+        py::gil_scoped_release _gil_release;
  
  
 
@@ -283,41 +284,40 @@ std::vector<Structure> create_structures(const std::vector<std::vector<int>>& ty
         const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
         const int Nc_max = std::min(bs, structure_num);
 
-        // Pass 1: scan slices to compute maximum allocation requirements
-        int N_max = 0;
-        int N_times_max_NN_radial = -1;
-        int N_times_max_NN_angular = -1;
-        {
-            std::vector<Dataset> dataset_scan_vec(1);
-            for (int start = 0; start < structure_num; start += bs) {
-                int end = std::min(start + bs, structure_num);
-                dataset_scan_vec[0].construct(para, structures, start, end, 0 /*device id*/);
-                const int Nslice = dataset_scan_vec[0].N;
-                if (Nslice > N_max) N_max = Nslice;
-                int prod_r = Nslice * dataset_scan_vec[0].max_NN_radial;
-                int prod_a = Nslice * dataset_scan_vec[0].max_NN_angular;
-                if (prod_r > N_times_max_NN_radial) N_times_max_NN_radial = prod_r;
-                if (prod_a > N_times_max_NN_angular) N_times_max_NN_angular = prod_a;
-            }
-        }
 
-        // Create a single Potential instance sized for the worst case
-        std::unique_ptr<Potential> potential;
-        if (para.train_mode == 1 || para.train_mode == 2) {
-            potential.reset(new TNEP(para, N_max, N_times_max_NN_radial, N_times_max_NN_angular, para.version, 1));
-        } else if (para.charge_mode) {
-            potential.reset(new NEP_Charge(para, N_max, Nc_max, N_times_max_NN_radial, N_times_max_NN_angular, para.version, 1));
-        } else {
-            potential.reset(new NEP(para, N_max, N_times_max_NN_radial, N_times_max_NN_angular, para.version, 1));
-        }
+
 
         // Pass 2: run each slice using the reusable Potential
 
         std::vector<Dataset> dataset_vec(1);
-
         for (int start = 0; start < structure_num; start += bs) {
             int end = std::min(start + bs, structure_num);
             dataset_vec[0].construct(para, structures, start, end, 0 /*device id*/);
+            if (para.train_mode == 1 || para.train_mode == 2) {
+                potential.reset(new TNEP(para,
+                                           dataset_vec[0].N,
+                                           dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                           dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                           para.version,
+                                           1));
+            } else {
+              if (para.charge_mode) {
+                potential.reset(new NEP_Charge(para,
+                                               dataset_vec[0].N,
+                                               dataset_vec[0].Nc,
+                                               dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                               dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                               para.version,
+                                               1));
+              } else {
+                potential.reset(new NEP(para,
+                                        dataset_vec[0].N,
+                                        dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                        dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                        para.version,
+                                        1));
+              }
+            }
             potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
             CHECK(gpuDeviceSynchronize());
             dataset_vec[0].energy.copy_to_host(dataset_vec[0].energy_cpu.data());
@@ -387,32 +387,23 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors(
     }
 
     const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
-    int N_max = 0, N_times_max_NN_radial = -1, N_times_max_NN_angular = -1;
 
 
-    {   
-        std::vector<Dataset> dataset_scan(1);
-        for (int start = 0; start < structure_num; start += bs) {
-            int end = std::min(start + bs, structure_num);
-            dataset_scan[0].construct(para, structures, start, end, 0);
-
-            const int Nslice = dataset_scan[0].N;
-            if (Nslice > N_max) N_max = Nslice;
-            int prod_r = Nslice * dataset_scan[0].max_NN_radial;
-            int prod_a = Nslice * dataset_scan[0].max_NN_angular;
-            if (prod_r > N_times_max_NN_radial) N_times_max_NN_radial = prod_r;
-            if (prod_a > N_times_max_NN_angular) N_times_max_NN_angular = prod_a;
-        }
-    }
-
-    NEP_Descriptors desc_engine(para, N_max, N_times_max_NN_radial, N_times_max_NN_angular, para.version);
-    desc_engine.update_parameters_from_host(elite.data());
 
     std::vector<Dataset> dataset_vec(1);
     std::vector<float> desc_host;
     for (int start = 0; start < structure_num; start += bs) {
         int end = std::min(start + bs, structure_num);
         dataset_vec[0].construct(para, structures, start, end, 0);
+        NEP_Descriptors desc_engine(para,
+        dataset_vec[0].N,
+        dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+        dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+        para.version
+         );
+
+        desc_engine.update_parameters_from_host(elite.data());
+
         desc_engine.compute_descriptors(para, dataset_vec[0]);
         desc_engine.copy_descriptors_to_host(desc_host);
     const int Nslice = dataset_vec[0].N;

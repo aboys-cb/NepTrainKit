@@ -314,13 +314,15 @@ class NEPProcess(QObject):
             "cls_kwargs":cls_kwargs,
 
         }
-        if len(structures) < 2000:
-            self.use_process=False
-            self.input_kwargs["queue"] =  None
-        else:
-            self.input_kwargs["queue"] = self.queue
-            self.use_process=True
-
+        #好像在dll释放下gil就不会卡了  这里先统一不使用进程了
+        # if len(structures) < 2000:
+        #     self.use_process=False
+        #     self.input_kwargs["queue"] =  None
+        # else:
+        #     self.input_kwargs["queue"] = self.queue
+        #     self.use_process=True
+        # self.use_process=False
+        self.input_kwargs["queue"] =  None
         self.input_args=()
         self.func_result:tuple
         self.run()
@@ -354,7 +356,9 @@ class NEPProcess(QObject):
 
     def stop(self):
         """强制终止进程并清理资源"""
+        return
         try:
+
             if self.process is not None:
                 if self.process.is_alive():
 

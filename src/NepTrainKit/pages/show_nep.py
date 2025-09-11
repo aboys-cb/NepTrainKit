@@ -347,8 +347,8 @@ class ShowNepWidget(QWidget):
     def stop_loading(self):
 
         self.load_thread.terminate()
-        if self.nep_result_data is not None:
-            self.nep_result_data.nep_calc_thread.stop()
+        # if self.nep_result_data is not None:
+        #     self.nep_result_data.nep_calc_thread.stop()
     def to_last_structure(self):
 
         if self.nep_result_data is None:

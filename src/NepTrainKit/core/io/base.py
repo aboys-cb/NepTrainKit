@@ -17,7 +17,7 @@ import numpy.typing as npt
 from NepTrainKit import utils
 from NepTrainKit.config import Config
 from NepTrainKit.core import Structure, MessageManager
-from NepTrainKit.core.calculator import NEPProcess
+from NepTrainKit.core.calculator import NEPProcess, run_nep_calculator
 from NepTrainKit.core.io.utils import read_nep_out_file, parse_array_by_atomnum,get_rmse
 from NepTrainKit.core.types import Brushes, SearchType, NepBackend
 
@@ -379,7 +379,7 @@ class ResultData(QObject):
         #存储选中结构的真实下标
         self.select_index=set()
 
-        self.nep_calc_thread = NEPProcess()
+        # self.nep_calc_thread = NEPProcess()
 
 
     def load_structures(self):
@@ -603,7 +603,7 @@ class ResultData(QObject):
             desc_array = np.array([])
 
         if desc_array.size == 0:
-            self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
+            desc_array = run_nep_calculator(self.nep_txt_path.as_posix(),
                 self.structure.now_data,
              cls_kwargs={
                  "backend": NepBackend(
@@ -611,8 +611,8 @@ class ResultData(QObject):
                  "batch_size": Config.getint("nep", "gpu_batch_size",
                                              1000)
              },
-                calculator_type="descriptor" ,wait=True)
-            desc_array=self.nep_calc_thread.func_result
+                calculator_type="descriptor"  )
+            # desc_array=self.nep_calc_thread.func_result
             # desc_array = run_nep3_calculator_process(
             #     )
 

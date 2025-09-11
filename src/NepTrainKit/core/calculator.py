@@ -47,6 +47,7 @@ class NepCalculator():
         super().__init__()
         if not isinstance(model_file, str):
             model_file = str(model_file )
+        print(model_file,backend,batch_size)
         self.initialized = False
         if backend is   None:
             self.backend=NepBackend.AUTO

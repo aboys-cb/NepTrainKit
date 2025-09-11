@@ -99,6 +99,41 @@ class Structure:
             structure = cls.parse_xyz(f.read())
         return structure
 
+    @staticmethod
+    def iter_read_multiple(filename: str, cancel_event=None):
+        """
+        Incrementally read a multi-structure XYZ file and yield Structure objects.
+        If cancel_event is provided and set(), stop early.
+        """
+        with open(filename, "r") as file:
+            while True:
+                if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
+                    return
+                num_atoms_line = file.readline()
+                if not num_atoms_line:
+                    break
+                num_atoms_line = num_atoms_line.strip()
+                if not num_atoms_line:
+                    continue
+
+                num_atoms = int(num_atoms_line)
+
+                global_line = file.readline()
+                if not global_line:
+                    break
+                structure_lines = [num_atoms_line, global_line.rstrip()]
+                for _ in range(num_atoms):
+                    if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
+                        return
+                    line = file.readline()
+                    if not line:
+                        break
+                    structure_lines.append(line.rstrip())
+
+                yield Structure.parse_xyz(structure_lines)
+
+
+
 
     @property
     def cell(self):

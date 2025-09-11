@@ -244,12 +244,8 @@ class DeepmdResultData(ResultData):
     def _recalculate_and_save(self ):
 
         try:
-            nep_potentials_array, nep_forces_array, nep_virials_array=run_nep_calculator(self.nep_txt_path.as_posix(),
-                self.structure.now_data,cls_kwargs={
-                "backend":NepBackend(Config.get("nep", "backend", "auto")),
-                    "batch_size": Config.getint("nep", "gpu_batch_size", 1000)
-                },
-                calculator_type="calculate" )
+            nep_potentials_array, nep_forces_array, nep_virials_array=   self.nep_calc.calculate(self.structure.now_data.tolist())
+
             # nep_potentials_array, nep_forces_array, nep_virials_array=self.nep_calc_thread.func_result
             # nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(
             #     self.nep_txt_path.as_posix(),

@@ -345,11 +345,24 @@ class ShowNepWidget(QWidget):
 
         # self.nep_result_data.load()
     def stop_loading(self):
-        print("stop_loading")
-        self.load_thread.terminate()
 
+        # Request cooperative cancel for structure IO and NEP calc
         if self.nep_result_data is not None:
-            self.nep_result_data.nep_calc.cancel()
+            try:
+                # propagate to both structure loader and calculator
+                if hasattr(self.nep_result_data, "request_cancel"):
+                    self.nep_result_data.request_cancel()
+                else:
+                    self.nep_result_data.nep_calc.cancel()
+            except Exception:
+                pass
+        # Politely stop the worker thread's event loop
+        try:
+            if self.load_thread is not None and self.load_thread.isRunning():
+                self.load_thread.quit()
+                self.load_thread.wait()
+        except Exception:
+            pass
         #     self.nep_result_data.nep_calc_thread.stop()
     def to_last_structure(self):
 

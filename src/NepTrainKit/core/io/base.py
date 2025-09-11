@@ -4,6 +4,7 @@
 # @Author  : 兵
 # @email    : 1747193328@qq.com
 import os
+import threading
 import re
 import traceback
 from functools import cached_property
@@ -372,6 +373,8 @@ class ResultData(QObject):
                  descriptor_path:Path|str):
         super().__init__()
         self.load_flag=False
+        # cooperative cancel for long-running loads
+        self.cancel_event = threading.Event()
 
         self.descriptor_path=Path(descriptor_path)
         self.data_xyz_path=Path(data_xyz_path)
@@ -385,15 +388,31 @@ class ResultData(QObject):
                              batch_size=Config.getint("nep", "gpu_batch_size", 1000)
                              )
 
+    def request_cancel(self):
+        """Request cooperative cancel during load. Also forward to calculator."""
+        self.cancel_event.set()
+        try:
+            if hasattr(self, "nep_calc") and self.nep_calc is not None:
+                self.nep_calc.cancel()
+        except Exception:
+            pass
+
+    def reset_cancel(self):
+        self.cancel_event.clear()
+    @utils.timeit
     def load_structures(self):
         """
         加载结构xyz文件
         :return:
         """
-        structures = Structure.read_multiple(self.data_xyz_path)
+        # structures = Structure.read_multiple(self.data_xyz_path)
+        # self._atoms_dataset = StructureData(structures)
+        # self.atoms_num_list = np.array([len(struct) for struct in self.structure.now_data])
+        structures = []
+        for s in Structure.iter_read_multiple(self.data_xyz_path, cancel_event=self.cancel_event):
+            structures.append(s)
         self._atoms_dataset = StructureData(structures)
         self.atoms_num_list = np.array([len(struct) for struct in self.structure.now_data])
-
 
     def write_prediction(self):
         """
@@ -415,10 +434,18 @@ class ResultData(QObject):
         :return:
         """
         try:
+            # fresh start and cooperative cancel
+            self.reset_cancel()
+            # If subclass overrides load_structures, defer to it; otherwise do cancel-aware read
+
             self.load_structures()
-            self._load_descriptors()
-            self._load_dataset()
-            self.load_flag=True
+
+            if not self.cancel_event.is_set():
+                self._load_descriptors()
+            if not self.cancel_event.is_set():
+                self._load_dataset()
+            if not self.cancel_event.is_set():
+                self.load_flag=True
         except:
             logger.error(traceback.format_exc())
 

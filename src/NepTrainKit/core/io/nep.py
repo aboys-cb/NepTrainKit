@@ -266,10 +266,10 @@ class NepPolarizabilityResultData(ResultData):
                  ):
         super().__init__(nep_txt_path,data_xyz_path,descriptor_path)
         self.polarizability_out_path = Path(polarizability_out_path)
-        self.nep_calc = NepCalculator(model_file=self.nep_txt_path.as_posix(),
-                                      backend=NepBackend.CPU,
-                                      batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-                                      )
+        # self.nep_calc = NepCalculator(model_file=self.nep_txt_path.as_posix(),
+        #                               backend=NepBackend.CPU,
+        #                               batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+        #                               )
     @property
     def datasets(self):
 
@@ -379,10 +379,10 @@ class NepDipoleResultData(ResultData):
         super().__init__(nep_txt_path, data_xyz_path, descriptor_path)
 
         self.dipole_out_path = Path(dipole_out_path)
-        self.nep_calc = NepCalculator(model_file=self.nep_txt_path.as_posix(),
-                             backend=NepBackend.CPU,
-                             batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-                             )
+        # self.nep_calc = NepCalculator(model_file=self.nep_txt_path.as_posix(),
+        #                      backend=NepBackend.CPU,
+        #                      batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+        #                      )
     @property
     def datasets(self):
         return [self.dipole , self.descriptor]

@@ -171,6 +171,18 @@ public:
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position);
 
+    // Structure-level dipole (3 comps per frame) for dipole models (train_mode==1)
+    std::vector<std::vector<double>> get_structures_dipole(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position);
+
+    // Structure-level polarizability (6 comps per frame) for polarizability models (train_mode==2)
+    std::vector<std::vector<double>> get_structures_polarizability(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position);
+
 
 std::vector<Structure> create_structures(const std::vector<std::vector<int>>& type,
         const std::vector<std::vector<double>>& box,
@@ -517,6 +529,131 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors_avg(
     return avg;
 }
 
+// ---- Structure dipole (3 comps) ----
+std::vector<std::vector<double>> GpuNep::get_structures_dipole(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position)
+{
+    py::gil_scoped_release _gil_release;
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
+    if (para.train_mode != 1) {
+        throw std::runtime_error("Model is not a dipole NEP (train_mode!=1)");
+    }
+
+    int devCount = 0; auto devErr = gpuGetDeviceCount(&devCount);
+    if (devErr != gpuSuccess || devCount <= 0) {
+        throw std::runtime_error("CUDA device not available");
+    }
+
+    std::vector<Structure> structures = create_structures(type, box, position);
+    const int structure_num = static_cast<int>(structures.size());
+    std::vector<std::vector<double>> dipoles(structure_num, std::vector<double>(3, 0.0));
+    const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
+
+    std::vector<Dataset> dataset_vec(1);
+    for (int start = 0; start < structure_num; start += bs) {
+        if (canceled_.load(std::memory_order_relaxed)) {
+            throw std::runtime_error("Canceled by user");
+        }
+        int end = std::min(start + bs, structure_num);
+        dataset_vec[0].construct(para, structures, start, end, 0);
+        // For dipole/polarizability, use TNEP path
+        potential.reset(new TNEP(para,
+                                 dataset_vec[0].N,
+                                 dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                 dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                 para.version,
+                                 1));
+        potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
+        CHECK(gpuDeviceSynchronize());
+        dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
+        const int Nslice = dataset_vec[0].N;
+        for (int gi = start; gi < end; ++gi) {
+            int li = gi - start;
+            const int Na = dataset_vec[0].Na_cpu[li];
+            const int offset = dataset_vec[0].Na_sum_cpu[li];
+            double dx = 0.0, dy = 0.0, dz = 0.0;
+            for (int m = 0; m < Na; ++m) {
+                dx += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 0]);
+                dy += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 1]);
+                dz += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 2]);
+            }
+            dipoles[gi][0] = dx;
+            dipoles[gi][1] = dy;
+            dipoles[gi][2] = dz;
+        }
+    }
+    return dipoles;
+}
+
+// ---- Structure polarizability (6 comps) ----
+std::vector<std::vector<double>> GpuNep::get_structures_polarizability(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position)
+{
+    py::gil_scoped_release _gil_release;
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
+    if (para.train_mode != 2) {
+        throw std::runtime_error("Model is not a polarizability NEP (train_mode!=2)");
+    }
+
+    int devCount = 0; auto devErr = gpuGetDeviceCount(&devCount);
+    if (devErr != gpuSuccess || devCount <= 0) {
+        throw std::runtime_error("CUDA device not available");
+    }
+
+    std::vector<Structure> structures = create_structures(type, box, position);
+    const int structure_num = static_cast<int>(structures.size());
+    std::vector<std::vector<double>> pols(structure_num, std::vector<double>(6, 0.0));
+    const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
+
+    std::vector<Dataset> dataset_vec(1);
+    for (int start = 0; start < structure_num; start += bs) {
+        if (canceled_.load(std::memory_order_relaxed)) {
+            throw std::runtime_error("Canceled by user");
+        }
+        int end = std::min(start + bs, structure_num);
+        dataset_vec[0].construct(para, structures, start, end, 0);
+        potential.reset(new TNEP(para,
+                                 dataset_vec[0].N,
+                                 dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                 dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                 para.version,
+                                 1));
+        potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
+        CHECK(gpuDeviceSynchronize());
+        dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
+        const int Nslice = dataset_vec[0].N;
+        for (int gi = start; gi < end; ++gi) {
+            int li = gi - start;
+            const int Na = dataset_vec[0].Na_cpu[li];
+            const int offset = dataset_vec[0].Na_sum_cpu[li];
+            double xx=0.0, yy=0.0, zz=0.0, xy=0.0, yz=0.0, zx=0.0;
+            for (int m = 0; m < Na; ++m) {
+                xx += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 0]);
+                yy += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 1]);
+                zz += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 2]);
+                xy += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 3]);
+                yz += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 4]);
+                zx += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 5]);
+            }
+            pols[gi][0] = xx;
+            pols[gi][1] = yy;
+            pols[gi][2] = zz;
+            pols[gi][3] = xy;
+            pols[gi][4] = yz;
+            pols[gi][5] = zx;
+        }
+    }
+    return pols;
+}
+
 PYBIND11_MODULE(nep_gpu, m) {
     m.doc() = "GPU-accelerated NEP bindings";
     py::class_<GpuNep>(m, "GpuNep")
@@ -529,7 +666,9 @@ PYBIND11_MODULE(nep_gpu, m) {
         .def("is_canceled", &GpuNep::is_canceled)
         .def("get_descriptor", &GpuNep::calculate_descriptors)
         .def("calculate_descriptors_scaled", &GpuNep::calculate_descriptors_scaled)
-        .def("get_structures_descriptor", &GpuNep::calculate_descriptors_avg);
+        .def("get_structures_descriptor", &GpuNep::calculate_descriptors_avg)
+        .def("get_structures_dipole", &GpuNep::get_structures_dipole)
+        .def("get_structures_polarizability", &GpuNep::get_structures_polarizability);
 
     m.def("_version_tag", [](){ return std::string("nep_gpu_ext_desc_1"); });
 }

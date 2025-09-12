@@ -172,7 +172,7 @@ def main():
     w.show()
     if len(sys.argv) == 2:
         dir_path = sys.argv[1]
-        w.show_nep_interface.set_work_path(dir_path)
+        w.show_nep_interface.set_work_path(os.path.abspath(dir_path))
     app.exec()
 
 

@@ -1,3 +1,27 @@
+/*
+    NepTrainKit GPU bindings for NEP (descriptor I/O and utilities)
+    Copyright (C) 2025 NepTrainKit contributors
+
+    This file adapts and interfaces with GPUMD
+    (https://github.com/brucefan1983/GPUMD) by Zheyong Fan and the
+    GPUMD development team, licensed under the GNU General Public License
+    version 3 (or later). Portions of logic and data structures are derived
+    from GPUMD source files.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 

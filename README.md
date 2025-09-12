@@ -84,3 +84,20 @@ For detailed usage documentation and examples, please refer to the official docu
 [https://neptrainkit.readthedocs.io/en/latest/index.html](https://neptrainkit.readthedocs.io/en/latest/index.html)
 
 ---
+
+## Licensing and Attribution
+
+- License: This repository is licensed under the GNU General Public License v3.0
+  (or, at your option, any later version). See `LICENSE` at the repository root.
+- Third‑party code: NepTrainKit incorporates source files and adapted logic from:
+  - NEP_CPU (by Zheyong Fan, Junjie Wang, Eric Lindgren, and contributors):
+    https://github.com/brucefan1983/NEP_CPU (GPL‑3.0‑or‑later)
+  - GPUMD (by Zheyong Fan and the GPUMD development team):
+    https://github.com/brucefan1983/GPUMD (GPL‑3.0‑or‑later)
+- Directory‑level notes: See `src/nep_cpu/README.md` and `src/nep_gpu/README.md` for
+  file‑level provenance, what was modified or added, and links to the upstream projects.
+- Redistribution: Any modifications and redistributions must remain under the GPL and
+  preserve copyright and license notices, per the GPL requirements.
+
+If you use NepTrainKit in academic work, please cite the project and also acknowledge
+NEP_CPU and/or GPUMD as appropriate.

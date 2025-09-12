@@ -90,7 +90,7 @@ jobs:
           - [windows-2022, win_amd64, ""]
           - [windows-2022, win32, ""]
 
-        python: ["cp310","cp311", "cp312" ]
+        python: ["cp310","cp311", "cp312" , "cp313"]
 
     env:
       PYTHONUTF8: 1

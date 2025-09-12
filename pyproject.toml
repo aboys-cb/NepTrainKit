@@ -18,7 +18,7 @@ description = """
 NepTrainKit is a Python package for visualizing and manipulating training datasets for NEP.
 """
 readme = "README.md"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10"
 license= { "text"="GPL-3.0" }
 classifiers = [
     "Development Status :: 4 - Beta",

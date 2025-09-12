@@ -316,7 +316,7 @@ class ShowNepWidget(QWidget):
         if self.nep_result_data is None:
             return
 
-        self.path_label.setText(f"Current file: {file_name}")
+        self.path_label.setText(f"Current file: {file_name} ({self.nep_result_data.nep_txt_path.name})")
         show_path = path if os.path.isdir(path) else os.path.dirname(path)
         self.path_label.setUrl(QUrl.fromLocalFile(show_path))
         # self.graph_widget.set_dataset(self.dataset)

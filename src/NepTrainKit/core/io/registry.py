@@ -5,9 +5,11 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from typing import Callable, Optional, Protocol
-
+from loguru import logger
 from . import deepmd, nep
 from .utils import get_nep_type
+from .importers import import_structures, write_extxyz
+from NepTrainKit import get_user_config_path
 
 
 class ResultDataProtocol(Protocol):
@@ -38,7 +40,22 @@ def load_result_data(path: str):
                 return loader.load(path)
         except Exception:
             # Fail soft per loader
+            logger.debug(f"{loader.name}failed to load {path}")
             continue
+
+    # Fallback: try format importers to convert to EXTXYZ and load as NEP dataset
+    # try:
+    #     structures = import_structures(path)
+    #     if structures:
+    #         base = os.path.basename(path.rstrip("/\\"))
+    #         base_noext = os.path.splitext(base)[0]
+    #         target_dir = os.path.join(get_user_config_path(), "imported")
+    #         os.makedirs(target_dir, exist_ok=True)
+    #         target_xyz = os.path.join(target_dir, f"{base_noext}.xyz")
+    #         write_extxyz(target_xyz, structures)
+    #         return nep.NepTrainResultData.from_path(target_xyz)
+    # except Exception:
+    #     pass
     return None
 
 
@@ -55,19 +72,20 @@ class NepModelTypeLoader:
         self.name = name
         self._types = set(model_types)
         self._factory = factory
+        self.model_type=None
 
     def matches(self, path: str) -> bool:
         if os.path.isdir(path):
             return False
         dir_path = os.path.dirname(path)
-        model_type = get_nep_type(os.path.join(dir_path, "nep.txt"))
-        return model_type in self._types
+        self.model_type = get_nep_type(os.path.join(dir_path, "nep.txt"))
+        return self.model_type in self._types and path.endswith(".xyz")
 
     def load(self, path: str):
         # Pass through model_type for NepTrainResultData to keep behavior parity
-        model_type = get_nep_type(os.path.join(os.path.dirname(path), "nep.txt"))
+        # model_type = get_nep_type(os.path.join(os.path.dirname(path), "nep.txt"))
         if getattr(self._factory, "__name__", "") == getattr(nep.NepTrainResultData, "__name__", ""):
-            return self._factory.from_path(path, model_type=model_type)
+            return self._factory.from_path(path, model_type=self.model_type)
         return self._factory.from_path(path)
 
 

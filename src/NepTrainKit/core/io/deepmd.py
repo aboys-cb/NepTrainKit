@@ -81,7 +81,7 @@ class DeepmdResultData(ResultData):
         加载训练集的结构
         :return:
         """
-        structures = load_npy_structure(self.data_xyz_path)
+        structures = load_npy_structure(self.data_xyz_path, cancel_event=self.cancel_event)
         self._atoms_dataset = StructureData(structures)
         self.atoms_num_list = np.array([len(s) for s in structures])
 

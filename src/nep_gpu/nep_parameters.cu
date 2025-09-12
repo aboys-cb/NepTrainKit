@@ -5,6 +5,7 @@
 #include "utilities/read_file.cuh"
 #include <cmath>
 #include <cstring>
+// SPDX-License-Identifier: GPL-3.0-or-later
 /*
     NepTrainKit NEP parameter utilities (loader/extractor)
     Copyright (C) 2025 NepTrainKit contributors

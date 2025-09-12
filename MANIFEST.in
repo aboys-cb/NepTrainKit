@@ -1,6 +1,8 @@
 # MANIFEST.in 文件
 include requirements.txt
 include README.md
+include LICENSE
+include THIRD_PARTY_NOTICES.md
 
 recursive-include src *
 prune **/__pycache__

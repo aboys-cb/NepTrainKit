@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /*
     NepTrainKit CPU bindings for NEP
     Copyright (C) 2025 NepTrainKit contributors

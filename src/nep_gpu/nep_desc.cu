@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /*
     NepTrainKit NEP descriptor kernels (extracted/adapted)
     Copyright (C) 2025 NepTrainKit contributors

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /*
     NepTrainKit GPU bindings for NEP (descriptor I/O and utilities)
     Copyright (C) 2025 NepTrainKit contributors

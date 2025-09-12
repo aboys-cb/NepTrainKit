@@ -6,7 +6,7 @@
 <a href="https://python.org/downloads"><img src="https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white" alt="Python Version"></a>  
 <a href="https://codecov.io/github/aboys-cb/NepTrainKit"><img src="https://codecov.io/github/aboys-cb/NepTrainKit/graph/badge.svg?token=HQ5FMLD91F" alt="Codecov"></a>  
 <a href="https://doi.org/10.48550/arXiv.2506.01868"><img src="https://img.shields.io/badge/arXiv-2506.01868-b31b1b.svg" alt="arXiv"></a>
-<a href="https://github.com/aboys-cb/NepTrainKit/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License"></a>
+<a href="https://github.com/aboys-cb/NepTrainKit/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue" alt="License"></a>
 </div>
 
 
@@ -96,6 +96,7 @@ For detailed usage documentation and examples, please refer to the official docu
     https://github.com/brucefan1983/GPUMD (GPL‑3.0‑or‑later)
 - Directory‑level notes: See `src/nep_cpu/README.md` and `src/nep_gpu/README.md` for
   file‑level provenance, what was modified or added, and links to the upstream projects.
+  A consolidated overview is also available in `THIRD_PARTY_NOTICES.md`.
 - Redistribution: Any modifications and redistributions must remain under the GPL and
   preserve copyright and license notices, per the GPL requirements.
 

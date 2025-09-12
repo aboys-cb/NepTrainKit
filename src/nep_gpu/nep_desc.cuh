@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
 /*
     Minimal descriptor interfaces built from GPUMD NEP kernels
     Copyright (C) 2025 NepTrainKit contributors

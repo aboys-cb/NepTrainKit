@@ -73,9 +73,19 @@ class ViewBoxWidget(scene.Widget):
 
 
         self.data=np.array([])
+        # For very large datasets, render a decimated subset to keep GPU happy
+        # Can be overridden via env var NEPKIT_VISPY_MAX_POINTS
+        try:
+            self.max_points = int(os.environ.get("NEPKIT_VISPY_MAX_POINTS", "2000000"))
+        except Exception:
+            self.max_points = 2000000
         self.picking_filter = MarkerPickingFilter()
 
         self._scatter=None
+        # Overlay marker layers by name (e.g., 'selected', 'show')
+        self._overlays = {}
+        # Track which indices are currently visualized in the base scatter (after decimation)
+        self._scatter_visible_indices = None
         self._diagonal=None
         self.current_point=None
         self.freeze()
@@ -133,12 +143,11 @@ class ViewBoxWidget(scene.Widget):
         # self._view.camera.set_range( )
         #
         if "descriptor"!=self.title:
-
             real_range=(min(x_range[0],y_range[0]),max(x_range[1],y_range[1]))
-
-            self._view.camera.set_range( real_range,  real_range)
+            # Provide z-range to avoid VisPy querying scene bounds for z (empty visuals would error)
+            self._view.camera.set_range(x=real_range, y=real_range, z=(0, 0))
         else:
-            self._view.camera.set_range( x_range,  y_range)
+            self._view.camera.set_range(x=x_range, y=y_range, z=(0, 0))
 
     def set_current_point(self, x,y):
 
@@ -149,24 +158,31 @@ class ViewBoxWidget(scene.Widget):
 
             return
         if self.current_point is None:
-            self.current_point=scene.visuals.Markers()
-            self.current_point.order=0
-
+            # Create a top-most marker layer for current structure
+            self.current_point = scene.visuals.Markers(antialias=1)
+            # Ensure it renders above all other markers/overlays
+            self.current_point.order = 100
+            # Disable depth testing so nothing can occlude it
+            self.current_point.update_gl_state(depth_test=False)
             self._view.add(self.current_point)
 
         z=np.full(x.shape,2)
-        self.current_point.set_data(np.vstack([x, y,z]).T,face_color=self.convert_color(Brushes.Current) ,edge_color=self.convert_color(Pens.Current),
-                                      symbol='star',size=20 )
+        self.current_point.set_data(
+            np.vstack([x, y, z]).T,
+            face_color=self.convert_color(Brushes.Current),
+            edge_color=self.convert_color(Pens.Current),
+            symbol='star',
+            size=20,
+        )
 
     def scatter(self,x,y,data,brush=None,pen=None ,**kwargs):
         if self._scatter is None:
-            self._scatter = scene.visuals.Markers()
+            # Reduce fragment work by disabling antialias; keep style via edges/colors
+            self._scatter = scene.visuals.Markers(antialias=0)
             self._scatter.order=1
             self._scatter.attach(self.picking_filter)
 
             self._view.add(self._scatter)
-
-
 
         self.data=data
 
@@ -177,7 +193,23 @@ class ViewBoxWidget(scene.Widget):
 
             kwargs["edge_color"]=self.convert_color(pen)
         if x.size != 0:
-            self._scatter.set_data(np.vstack([x, y]).T, **kwargs)
+            # Decimate to avoid uploading tens of millions of points to the GPU
+            n = int(x.size)
+            if self.max_points and n > self.max_points:
+                step = max(1, int(np.ceil(n / float(self.max_points))))
+                idx = np.arange(0, n, step, dtype=np.int64)
+                self._scatter_visible_indices = idx
+                x_vis = np.asarray(x, dtype=np.float32)[idx]
+                y_vis = np.asarray(y, dtype=np.float32)[idx]
+                data_vis = np.asarray(data)[idx]
+                self.data = data_vis  # keep mapping aligned with what is rendered
+                pos = np.vstack([x_vis, y_vis], dtype=np.float32).T
+            else:
+                self._scatter_visible_indices = np.arange(0, n, dtype=np.int64)
+                pos = np.vstack([x, y], dtype=np.float32).T
+            # Fixed-size in pixels and no depth test for 2D scatter improves perf
+            self._scatter.update_gl_state(depth_test=False)
+            self._scatter.set_data(pos, **kwargs)
             self.auto_range()
         else:
             self._scatter.set_data(np.empty((0, 3)), **kwargs)
@@ -213,6 +245,42 @@ class ViewBoxWidget(scene.Widget):
     def view(self):
         return self._view
 
+    def _ensure_overlay(self, name:str, color, size:int=9, symbol:str='o'):
+        if name in self._overlays and self._overlays[name] is not None:
+            return self._overlays[name]
+        ov = scene.visuals.Markers(antialias=1)
+        ov.order = 4  # above base scatter and diagonal
+        # keep same scene/camera
+        self._view.add(ov)
+        # overlays are 2D; no need for depth test
+        ov.update_gl_state(depth_test=False)
+        # initialize with empty data and hide from bounds
+        ov.set_data(np.empty((0, 2), dtype=np.float32), face_color=self.convert_color(color), edge_width=0, symbol=symbol, size=size)
+        ov.visible = False
+        self._overlays[name] = ov
+        return ov
+
+    def set_overlay_positions(self, name:str, pos:np.ndarray, color=None, size:int=9, symbol:str='o'):
+        """Replace an overlay layer's geometry in one call."""
+        if pos is None:
+            pos = np.empty((0, 2), dtype=np.float32)
+        ov = self._ensure_overlay(name, color=color if color is not None else Brushes.Selected, size=size, symbol=symbol)
+        kwargs = {}
+        if color is not None:
+            kwargs['face_color'] = self.convert_color(color)
+        # Use face fill for highlight; no edge for lower cost
+        pos = np.asarray(pos, dtype=np.float32)
+        ov.set_data(pos=pos, edge_width=0, symbol=symbol, size=size, **kwargs)
+        ov.visible = bool(pos.size)
+        return ov
+
+    def clear_overlays(self):
+        """Hide and clear all overlay layers for this view."""
+        empty = np.empty((0, 2), dtype=np.float32)
+        for ov in self._overlays.values():
+            ov.set_data(pos=empty, edge_width=0, symbol='o', size=9)
+            ov.visible = False
+
     @property
     def title(self):
         return self.title_label._text_visual.text
@@ -246,13 +314,18 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         self.unfreeze()
         self.nep_result_data = None
 
+        # Per-axes overlay state: track indices to render in overlays without touching base VBO
+        self._selected_by_plot = {}
+        self._show_by_plot = {}
+
 
         self.grid = self.central_widget.add_grid(margin=0, spacing=0)
         self.grid.spacing = 0
 
 
         self.events.mouse_double_click.connect(self.switch_view_box)
-        self.path_line = scene.visuals.Line(color='red', method='gl' )
+        self.path_line = scene.visuals.Line(color='red', method='gl', antialias=False)
+        self._path_update_step = 3
         # Use filters to affect the rendering of the mesh.
 
     def clear_axes(self):
@@ -282,12 +355,32 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         # render a small patch around the mouse cursor
         restore_state = not current_axes.picking_filter.enabled
         current_axes.picking_filter.enabled = True
+        # Temporarily hide overlays and current-point so picking only sees base scatter
+        hidden = []
+        if hasattr(current_axes, '_overlays'):
+            for ov in current_axes._overlays.values():
+                if ov is not None and ov.visible:
+                    hidden.append(ov)
+                    ov.visible = False
+        if getattr(current_axes, 'current_point', None) is not None and current_axes.current_point.visible:
+            hidden.append(current_axes.current_point)
+            current_axes.current_point.visible = False
+        # Also hide drawing path line to avoid contaminating the pick render
+        path_was_visible = False
+        if getattr(self, 'path_line', None) is not None and self.path_line.parent is not None:
+            path_was_visible = getattr(self.path_line, 'visible', True)
+            self.path_line.visible = False
         current_axes._scatter.update_gl_state(blend=False)
         picking_render = self.render(
             crop=(x_pos - 2, y_pos - 2, 5, 5),
             bgcolor=(0, 0, 0, 0),
             alpha=True,
         )
+        # Restore previously hidden visuals
+        for v in hidden:
+            v.visible = True
+        if getattr(self, 'path_line', None) is not None and self.path_line.parent is not None:
+            self.path_line.visible = path_was_visible
         if restore_state:
             current_axes.picking_filter.enabled = False
         current_axes._scatter.update_gl_state(blend=not current_axes.picking_filter.enabled)
@@ -341,7 +434,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             self.mouse_path.append([x,y])
 
             # 更新轨迹线
-            self.path_line.set_data(pos=np.array(self.mouse_path))
+            if (len(self.mouse_path) % getattr(self, '_path_update_step', 3)) == 0:
+                self.path_line.set_data(pos=np.array(self.mouse_path))
 
     def on_mouse_release(self, event):
         """鼠标释放事件，结束记录"""
@@ -440,6 +534,14 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
     def plot_nep_result(self):
         self.nep_result_data.select_index.clear()
+        # Clear all overlays so deleted selections do not persist visually
+        for plot in self.axes_list:
+            if hasattr(plot, 'clear_overlays'):
+                plot.clear_overlays()
+            if plot in self._selected_by_plot:
+                self._selected_by_plot[plot].clear()
+            if plot in self._show_by_plot:
+                self._show_by_plot[plot].clear()
 
         for index,_dataset in enumerate(self.nep_result_data.datasets):
 
@@ -497,27 +599,69 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 plot.set_current_point([], [])
     @utils.timeit
     def update_scatter_color(self,structure_index,color=Brushes.Selected):
-        structure_index = np.asarray(structure_index)
-        if structure_index.size == 0:
+        # Switch to overlay layers so we don't reupload the entire base VBO
+        idx = np.atleast_1d(np.asarray(structure_index)).astype(np.int64)
+        if idx.size == 0:
             return
-        new_color = ColorArray(self.axes_list[0].convert_color(color)).rgba
 
         for plot in self.axes_list:
             if not plot._scatter:
                 continue
-            mask = np.isin(plot.data, structure_index)
-            if not np.any(mask):
+            # init overlay sets for this plot
+            if plot not in self._selected_by_plot:
+                self._selected_by_plot[plot] = set()
+            if plot not in self._show_by_plot:
+                self._show_by_plot[plot] = set()
+
+            if color is Brushes.Default:
+                # remove from both overlays
+                self._selected_by_plot[plot].difference_update(idx.tolist())
+                self._show_by_plot[plot].difference_update(idx.tolist())
+            elif color is Brushes.Selected:
+                # add to selected, remove from show to avoid duplicates
+                self._selected_by_plot[plot].update(idx.tolist())
+                self._show_by_plot[plot].difference_update(idx.tolist())
+            elif color is Brushes.Show:
+                self._show_by_plot[plot].update(idx.tolist())
+            else:
+                # Fallback: treat as selected
+                self._selected_by_plot[plot].update(idx.tolist())
+
+            # Recompute overlay positions lazily from dataset (handles decimation of base)
+            dataset = self.get_axes_dataset(plot)
+            if dataset is None:
                 continue
-            plot._scatter._data["a_bg_color"][mask] = new_color
-            plot._scatter.set_data(
-                pos=plot._scatter._data["a_position"],
-                size=plot._scatter._data["a_size"],
-                edge_width=None,
-                edge_width_rel=None,
-                edge_color=plot._scatter._data["a_fg_color"],
-                face_color=plot._scatter._data["a_bg_color"],
-                symbol="o",
-            )
+
+            def _indices_to_positions(indices:set[int]):
+                if not indices:
+                    return np.empty((0, 2), dtype=np.float32)
+                indices_arr = np.fromiter(indices, dtype=np.int64)
+                # Only consider currently visible (active) structures
+                # The scatter uses flattened x/y; structure_index aligns with those
+                try:
+                    sidx = dataset.structure_index
+                    mask = np.isin(sidx, indices_arr)
+                    if not np.any(mask):
+                        return np.empty((0, 2), dtype=np.float32)
+                    x = dataset.x[mask]
+                    y = dataset.y[mask]
+                    return np.vstack([x, y], dtype=np.float32).T
+                except Exception:
+                    return np.empty((0, 2), dtype=np.float32)
+
+            sel_pos = _indices_to_positions(self._selected_by_plot[plot])
+            show_pos = _indices_to_positions(self._show_by_plot[plot])
+
+            # Update overlays (filled squares, no edges for perf)
+            if sel_pos.size:
+                plot.set_overlay_positions('selected', sel_pos, color=Brushes.Selected, size=10, symbol='o')
+            else:
+                plot.set_overlay_positions('selected', np.empty((0, 2), dtype=np.float32), color=Brushes.Selected, size=10, symbol='o')
+
+            if show_pos.size:
+                plot.set_overlay_positions('show', show_pos, color=Brushes.Show, size=10, symbol='o')
+            else:
+                plot.set_overlay_positions('show', np.empty((0, 2), dtype=np.float32), color=Brushes.Show, size=10, symbol='o')
 
 
     def select_point_from_polygon(self,polygon_xy,reverse ):

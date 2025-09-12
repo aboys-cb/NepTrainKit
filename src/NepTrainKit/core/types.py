@@ -95,7 +95,8 @@ class Base:
             return getattr(cls,"Default")
 
 class Pens(Base):
-    Default=mkPen(color="blue", width=0.5)
+    # Use a lighter blue for default edges to make points look less saturated
+    Default=mkPen(color=QColor(7, 81, 156), width=0.5)  # LightSkyBlue
     Energy = Default
     Force = Default
     Virial = Default

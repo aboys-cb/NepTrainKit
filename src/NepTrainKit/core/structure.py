@@ -794,7 +794,7 @@ def process_organic_clusters(structure, new_structure, clusters, is_organic_list
 
 
 
-def _load_npy_structure(folder):
+def _load_npy_structure(folder, cancel_event=None):
     structures = []
     type_map_path = os.path.join(folder, "type_map.raw")
     type_path = os.path.join(folder, "type.raw")
@@ -823,7 +823,11 @@ def _load_npy_structure(folder):
 
     # Load data from files and use np.concatenate instead of vstack
     for _set in sets:
+        if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
+            return structures
         for data_path in Path(_set).iterdir():
+            if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
+                return structures
             key = data_path.stem
             data = np.load(data_path)
             if data.ndim == 1:
@@ -840,6 +844,8 @@ def _load_npy_structure(folder):
         dataset_dict[key] = np.concatenate(dataset_dict[key], axis=0)
     logger.debug(f"load {dataset_dict['box'].shape[0]} structures from {folder}" )
     for index in range(dataset_dict["box"].shape[0]):
+        if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
+            break
         box = dataset_dict["box"][index].reshape(3, 3)
         coords = dataset_dict["coord"][index].reshape(-1, 3)
 
@@ -879,14 +885,16 @@ def _load_npy_structure(folder):
     return structures
 
 
-def load_npy_structure(folders):
+def load_npy_structure(folders, cancel_event=None):
     if os.path.exists(os.path.join(folders, "type.raw")):
-        return _load_npy_structure(folders)
+        return _load_npy_structure(folders, cancel_event=cancel_event)
     else:
         structures = []
         if os.path.isdir(folders):
             for folder in Path(folders).iterdir():
-                structures.extend(load_npy_structure(folder))
+                if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
+                    break
+                structures.extend(load_npy_structure(folder, cancel_event=cancel_event))
 
         return structures
 

@@ -9,6 +9,7 @@ from .random_doping_card import RandomDopingCard
 from .random_vacancy_card import RandomVacancyCard
 from .vacancy_defect_card import VacancyDefectCard
 from .stacking_fault_card import StackingFaultCard
+from .organic_mol_config_pbc_card import OrganicMolConfigPBCCard
 
 from .fps_filter_card import FilterDataCard
 from .card_group import CardGroup
@@ -26,9 +27,9 @@ __all__ = [
     "RandomVacancyCard",
     "VacancyDefectCard",
     "StackingFaultCard",
+    "OrganicMolConfigPBCCard",
 
     "FilterDataCard",
     "CardGroup"
 
 ]
-

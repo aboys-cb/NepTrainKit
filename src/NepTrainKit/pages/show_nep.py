@@ -13,7 +13,7 @@ from loguru import logger
 import numpy as np
 from PySide6.QtCore import QUrl, QTimer, Qt, Signal, QThread
 from PySide6.QtGui import QIcon, QFont
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame, QSizePolicy
 from qfluentwidgets import HyperlinkLabel, MessageBox, SpinBox, \
     StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
     Action, StateToolTip, CheckBox
@@ -163,8 +163,10 @@ class ShowNepWidget(QWidget):
         self.plot_widget = QWidget(self)
 
         self.plot_widget_layout = QGridLayout(self.plot_widget)
-
+        self.plot_widget_layout.setSpacing(1)
+        self.plot_widget_layout.setContentsMargins(0, 0, 0, 0)
         self.graph_widget = NepResultPlotWidget(self  )
+        self.graph_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self.graph_widget.canvas.structureIndexChanged.connect(self.struct_index_spinbox.setValue)
 
@@ -187,7 +189,6 @@ class ShowNepWidget(QWidget):
         frame_layout.addWidget(switch_config_checkbox)
 
         frame_layout.addWidget(self.search_lineEdit)
-
         # 创建状态栏
         self.path_label = HyperlinkLabel(self.plot_widget)
         self.path_label.setFixedHeight(30)  # 设置状态栏的高度

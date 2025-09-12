@@ -552,7 +552,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
             plot.scatter(_dataset.x,_dataset.y,data=_dataset.structure_index,
                                       brush=Brushes.get(_dataset.title.upper()) ,pen=Pens.get(_dataset.title.upper()),
-                                      symbol='o',size=7,
+                                      symbol='o',size=6,
 
                                       )
 
@@ -654,14 +654,14 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
             # Update overlays (filled squares, no edges for perf)
             if sel_pos.size:
-                plot.set_overlay_positions('selected', sel_pos, color=Brushes.Selected, size=10, symbol='o')
+                plot.set_overlay_positions('selected', sel_pos, color=Brushes.Selected, size=6, symbol='o')
             else:
-                plot.set_overlay_positions('selected', np.empty((0, 2), dtype=np.float32), color=Brushes.Selected, size=10, symbol='o')
+                plot.set_overlay_positions('selected', np.empty((0, 2), dtype=np.float32), color=Brushes.Selected, size=6, symbol='o')
 
             if show_pos.size:
-                plot.set_overlay_positions('show', show_pos, color=Brushes.Show, size=10, symbol='o')
+                plot.set_overlay_positions('show', show_pos, color=Brushes.Show, size=6, symbol='o')
             else:
-                plot.set_overlay_positions('show', np.empty((0, 2), dtype=np.float32), color=Brushes.Show, size=10, symbol='o')
+                plot.set_overlay_positions('show', np.empty((0, 2), dtype=np.float32), color=Brushes.Show, size=6, symbol='o')
 
 
     def select_point_from_polygon(self,polygon_xy,reverse ):

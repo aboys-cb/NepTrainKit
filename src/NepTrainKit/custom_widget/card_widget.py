@@ -204,7 +204,7 @@ class MakeDataCard(MakeDataCardWidget):
         self.update_dataset_info()
 
     def write_result_dataset(self, file,**kwargs):
-        ase_write(file,self.result_dataset,**kwargs)
+        ase_write(file,self.result_dataset,format="extxyz",**kwargs)
 
     def export_data(self):
 

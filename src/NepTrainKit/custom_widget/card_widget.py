@@ -204,13 +204,13 @@ class MakeDataCard(MakeDataCardWidget):
         self.update_dataset_info()
 
     def write_result_dataset(self, file,**kwargs):
-        ase_write(file,self.result_dataset,**kwargs)
+        ase_write(file,self.result_dataset,format="extxyz",**kwargs)
 
     def export_data(self):
 
         if self.dataset is not None:
 
-            path = utils.call_path_dialog(self, "Choose a file save location", "file",f"export_{self.getTitle().replace(' ', '_')}_structure.xyz")
+            path = utils.call_path_dialog(self, "Choose a file save location", "file",f"export_{self.card_name.replace(' ', '_')}_structure.xyz")
             if not path:
                 return
             thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")

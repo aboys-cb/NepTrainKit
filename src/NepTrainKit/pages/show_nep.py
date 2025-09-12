@@ -13,7 +13,7 @@ from loguru import logger
 import numpy as np
 from PySide6.QtCore import QUrl, QTimer, Qt, Signal, QThread
 from PySide6.QtGui import QIcon, QFont
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame, QSizePolicy
 from qfluentwidgets import HyperlinkLabel, MessageBox, SpinBox, \
     StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
     Action, StateToolTip, CheckBox
@@ -163,8 +163,10 @@ class ShowNepWidget(QWidget):
         self.plot_widget = QWidget(self)
 
         self.plot_widget_layout = QGridLayout(self.plot_widget)
-
+        self.plot_widget_layout.setSpacing(1)
+        self.plot_widget_layout.setContentsMargins(0, 0, 0, 0)
         self.graph_widget = NepResultPlotWidget(self  )
+        self.graph_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self.graph_widget.canvas.structureIndexChanged.connect(self.struct_index_spinbox.setValue)
 
@@ -187,7 +189,6 @@ class ShowNepWidget(QWidget):
         frame_layout.addWidget(switch_config_checkbox)
 
         frame_layout.addWidget(self.search_lineEdit)
-
         # 创建状态栏
         self.path_label = HyperlinkLabel(self.plot_widget)
         self.path_label.setFixedHeight(30)  # 设置状态栏的高度
@@ -304,30 +305,18 @@ class ShowNepWidget(QWidget):
         :return:
         """
 
-        if os.path.isdir(path):
-            file_name = os.path.basename(path)
-            if is_deepmd_path(path):
-                self.nep_result_data = DeepmdResultData.from_path(path)
-            else:
-                self.nep_result_data = None   # pyright:ignore
-        else:
-            dir_path = os.path.dirname(path)
-            file_name = os.path.basename(path)
-            model_type = get_nep_type(os.path.join(dir_path, "nep.txt"))
-            logger.info(f"NEP model type: {model_type}")
-            if model_type == 0 or  model_type == 3:
-                self.nep_result_data = NepTrainResultData.from_path(path,model_type=model_type)
-            elif model_type == 1:
-                self.nep_result_data = NepDipoleResultData.from_path(path)
-            elif model_type == 2:
-                self.nep_result_data = NepPolarizabilityResultData.from_path(path)
-            else:
-                self.nep_result_data = None   # pyright:ignore
+        file_name = os.path.basename(path)
+        try:
+            from NepTrainKit.core.io import load_result_data
+            self.nep_result_data = load_result_data(path)  # type: ignore
+        except Exception:
+            logger.debug(traceback.format_exc())
+            self.nep_result_data = None   # pyright:ignore
 
         if self.nep_result_data is None:
             return
 
-        self.path_label.setText(f"Current file: {file_name}")
+        self.path_label.setText(f"Current file: {file_name} ({self.nep_result_data.nep_txt_path.name})")
         show_path = path if os.path.isdir(path) else os.path.dirname(path)
         self.path_label.setUrl(QUrl.fromLocalFile(show_path))
         # self.graph_widget.set_dataset(self.dataset)

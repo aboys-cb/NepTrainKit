@@ -809,10 +809,10 @@ def _load_npy_structure(folder):
     if   os.path.exists(type_map_path) :
         type_map = np.loadtxt(type_map_path, dtype=str, ndmin=1)
     else:
-        type_map=np.array([f"Type_{i+1}" for i in np.unique(type_)], dtype=str, ndmin=1)
+        type_map=np.array([f"Type_{i+1}" for i in range(np.max(type_)+1)], dtype=str, ndmin=1)
     # Use np.array and list comprehension for faster element mapping
 
-
+    # print(type_path,type_map,type_)
     elem_list = type_map[type_]
 
     atoms_num = len(elem_list)

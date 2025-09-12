@@ -47,6 +47,7 @@ class NepCalculator():
         super().__init__()
         if not isinstance(model_file, str):
             model_file = str(model_file )
+        # print(model_file,backend,batch_size)
         self.initialized = False
         if backend is   None:
             self.backend=NepBackend.AUTO
@@ -72,7 +73,8 @@ class NepCalculator():
         else:
             self.initialized = False
 
-
+    def cancel(self):
+        self.nep3.cancel()
 
     def load_nep(self):
         if self.backend == NepBackend.AUTO:
@@ -132,6 +134,7 @@ class NepCalculator():
         if not self.initialized:
             return np.array([]),np.array([]),np.array([])
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
+        self.nep3.reset_cancel()
         potentials, forces, virials = self.nep3.calculate(_types, _boxs, _positions)
         split_indices = np.cumsum(group_size)[:-1]
         #
@@ -161,6 +164,8 @@ class NepCalculator():
         if not self.initialized:
             return np.array([]),np.array([]),np.array([])
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
+        self.nep3.reset_cancel()
+
         potentials, forces, virials = self.nep3.calculate_dftd3(functional,cutoff,cutoff_cn,_types, _boxs, _positions)
         split_indices = np.cumsum(group_size)[:-1]
         #
@@ -189,6 +194,8 @@ class NepCalculator():
         if not self.initialized:
             return np.array([]),np.array([]),np.array([])
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
+        self.nep3.reset_cancel()
+
         potentials, forces, virials = self.nep3.calculate_with_dftd3( functional,cutoff,cutoff_cn,_types, _boxs, _positions)
         split_indices = np.cumsum(group_size)[:-1]
         #
@@ -220,6 +227,7 @@ class NepCalculator():
         _box = structure.cell.transpose(1, 0).reshape(-1).tolist()
 
         _position = structure.positions.transpose(1, 0).reshape(-1).tolist()
+        self.nep3.reset_cancel()
 
         descriptor = self.nep3.get_descriptor(_type, _box, _position)
 
@@ -237,6 +245,7 @@ class NepCalculator():
         if not self.initialized:
             return np.array([])
         _types, _boxs, _positions, group_size = self.compose_structures(structures)
+        self.nep3.reset_cancel()
 
         descriptor = self.nep3.get_structures_descriptor(_types, _boxs, _positions)
 
@@ -249,6 +258,8 @@ class NepCalculator():
         if not self.initialized:
             return np.array([])
         _types, _boxs, _positions, group_size = self.compose_structures(structures)
+        self.nep3.reset_cancel()
+
         polarizability = self.nep3.get_structures_polarizability(_types, _boxs, _positions)
 
         return np.array(polarizability,dtype=np.float32)
@@ -258,6 +269,8 @@ class NepCalculator():
                               )->npt.NDArray[np.float32]:
         if not self.initialized:
             return np.array([])
+        self.nep3.reset_cancel()
+
         _types, _boxs, _positions, group_size = self.compose_structures(structures)
 
         dipole = self.nep3.get_structures_dipole(_types, _boxs, _positions)
@@ -314,13 +327,15 @@ class NEPProcess(QObject):
             "cls_kwargs":cls_kwargs,
 
         }
-        if len(structures) < 2000:
-            self.use_process=False
-            self.input_kwargs["queue"] =  None
-        else:
-            self.input_kwargs["queue"] = self.queue
-            self.use_process=True
-
+        #好像在dll释放下gil就不会卡了  这里先统一不使用进程了
+        # if len(structures) < 2000:
+        #     self.use_process=False
+        #     self.input_kwargs["queue"] =  None
+        # else:
+        #     self.input_kwargs["queue"] = self.queue
+        #     self.use_process=True
+        # self.use_process=False
+        self.input_kwargs["queue"] =  None
         self.input_args=()
         self.func_result:tuple
         self.run()
@@ -354,7 +369,9 @@ class NEPProcess(QObject):
 
     def stop(self):
         """强制终止进程并清理资源"""
+        return
         try:
+
             if self.process is not None:
                 if self.process.is_alive():
 

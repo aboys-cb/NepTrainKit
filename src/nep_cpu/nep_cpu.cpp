@@ -6,6 +6,7 @@
 #include <windows.h>
 #endif
 #include <tuple>
+#include <atomic>
 
 namespace py = pybind11;
 
@@ -113,6 +114,20 @@ public:
     init_from_file(utf8_path, false);
     }
 
+private:
+    std::atomic<bool> canceled_{false};
+
+    inline void check_canceled() const {
+        if (canceled_.load(std::memory_order_relaxed)) {
+            throw std::runtime_error("Canceled by user");
+        }
+    }
+
+public:
+    void cancel() { canceled_.store(true, std::memory_order_relaxed); }
+    void reset_cancel() { canceled_.store(false, std::memory_order_relaxed); }
+    bool is_canceled() const { return canceled_.load(std::memory_order_relaxed); }
+
 
 
 
@@ -122,6 +137,7 @@ std::tuple<std::vector<std::vector<double>>,
 calculate(const std::vector<std::vector<int>>& type,
           const std::vector<std::vector<double>>& box,
           const std::vector<std::vector<double>>& position) {
+    py::gil_scoped_release _gil_release;
 
     size_t type_size = type.size();
     std::vector<std::vector<double>> potentials(type_size);  // 预分配空间
@@ -130,6 +146,7 @@ calculate(const std::vector<std::vector<int>>& type,
     // OpenMP 并行化报错
 
     for (int i = 0; i < type_size; ++i) {
+        check_canceled();
 
         potentials[i].resize(type[i].size());
         forces[i].resize(type[i].size() * 3);  // 假设 force 是 3D 向量
@@ -154,6 +171,7 @@ calculate_dftd3(
 const std::vector<std::vector<int>>& type,
           const std::vector<std::vector<double>>& box,
           const std::vector<std::vector<double>>& position) {
+    py::gil_scoped_release _gil_release;
 
     size_t type_size = type.size();
     std::vector<std::vector<double>> potentials(type_size);  // 预分配空间
@@ -162,6 +180,7 @@ const std::vector<std::vector<int>>& type,
     // OpenMP 并行化报错
 
     for (int i = 0; i < type_size; ++i) {
+        check_canceled();
 
         potentials[i].resize(type[i].size());
         forces[i].resize(type[i].size() * 3);  // 假设 force 是 3D 向量
@@ -189,6 +208,7 @@ const std::vector<std::vector<int>>& type,
 
           const std::vector<std::vector<double>>& box,
           const std::vector<std::vector<double>>& position) {
+    py::gil_scoped_release _gil_release;
 
     size_t type_size = type.size();
     std::vector<std::vector<double>> potentials(type_size);  // 预分配空间
@@ -197,6 +217,7 @@ const std::vector<std::vector<int>>& type,
     // OpenMP 并行化报错
 
     for (int i = 0; i < type_size; ++i) {
+        check_canceled();
 
         potentials[i].resize(type[i].size());
         forces[i].resize(type[i].size() * 3);  // 假设 force 是 3D 向量
@@ -216,6 +237,8 @@ const std::vector<std::vector<int>>& type,
     std::vector<double> get_descriptor(const std::vector<int>& type,
                                        const std::vector<double>& box,
                                        const std::vector<double>& position) {
+        py::gil_scoped_release _gil_release;
+
         std::vector<double> descriptor(type.size() * annmb.dim);
         find_descriptor(type, box, position, descriptor);
         return descriptor;
@@ -230,11 +253,13 @@ const std::vector<std::vector<int>>& type,
     std::vector<std::vector<double>> get_structures_descriptor(const std::vector<std::vector<int>>& type,
                                                      const std::vector<std::vector<double>>& box,
                                                      const std::vector<std::vector<double>>& position) {
+    py::gil_scoped_release _gil_release;
 
         size_t type_size = type.size();
         std::vector<std::vector<double>> all_descriptors(type_size, std::vector<double>(annmb.dim));
 
         for (int i = 0; i < type_size; ++i) {
+            check_canceled();
             std::vector<double> struct_des(type[i].size() * annmb.dim);
             find_descriptor(type[i], box[i], position[i], struct_des);
 //
@@ -252,11 +277,13 @@ const std::vector<std::vector<int>>& type,
     std::vector<std::vector<double>> get_structures_polarizability(const std::vector<std::vector<int>>& type,
                                                      const std::vector<std::vector<double>>& box,
                                                      const std::vector<std::vector<double>>& position) {
+    py::gil_scoped_release _gil_release;
 
         size_t type_size = type.size();
         std::vector<std::vector<double>> all_polarizability(type_size, std::vector<double>(6));
 
         for (int i = 0; i < type_size; ++i) {
+            check_canceled();
             std::vector<double> struct_pol(6);
             find_polarizability(type[i], box[i], position[i], struct_pol);
 
@@ -270,11 +297,13 @@ const std::vector<std::vector<int>>& type,
     std::vector<std::vector<double>> get_structures_dipole(const std::vector<std::vector<int>>& type,
                                                      const std::vector<std::vector<double>>& box,
                                                      const std::vector<std::vector<double>>& position) {
+    py::gil_scoped_release _gil_release;
 
         size_t type_size = type.size();
         std::vector<std::vector<double>> all_dipole(type_size, std::vector<double>(3));
 
         for (int i = 0; i < type_size; ++i) {
+            check_canceled();
             std::vector<double> struct_dipole(3);
             find_dipole(type[i], box[i], position[i], struct_dipole);
 
@@ -294,6 +323,10 @@ PYBIND11_MODULE(nep_cpu, m) {
         .def("calculate", &CpuNep::calculate)
         .def("calculate_with_dftd3", &CpuNep::calculate_with_dftd3)
         .def("calculate_dftd3", &CpuNep::calculate_dftd3)
+
+        .def("cancel", &CpuNep::cancel)
+        .def("reset_cancel", &CpuNep::reset_cancel)
+        .def("is_canceled", &CpuNep::is_canceled)
 
         .def("get_descriptor", &CpuNep::get_descriptor)
 

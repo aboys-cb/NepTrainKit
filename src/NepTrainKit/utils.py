@@ -150,7 +150,7 @@ class LoadingThread(QThread):
             self.tip = StateToolTip(self.title, 'Please wait patiently~~', self._parent)
             self.tip.show()
             self.finished.connect(self.__finished_work)
-            self.tip.closedSignal.connect(self.quit)
+            self.tip.closedSignal.connect(self.stop_work)
             time.sleep(0.0001)
         else:
             self.tip=None   # pyright:ignore

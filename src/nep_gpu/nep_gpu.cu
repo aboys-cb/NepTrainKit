@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <fstream>
 #include <ctime>
+#include <atomic>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -103,7 +104,15 @@ class GpuNep {
 private:
     NepParameters para;
     std::vector<float> elite;
-    
+    std::unique_ptr<Potential> potential;
+    std::atomic<bool> canceled_{false};
+
+    inline void check_canceled() const {
+        if (canceled_.load(std::memory_order_relaxed)) {
+            throw std::runtime_error("Canceled by user");
+        }
+    }
+
     
 
 public:
@@ -126,6 +135,10 @@ public:
         para.output_descriptor = 0;
 //         std::printf("[nep_gpu] init done.\n");
     }
+
+    void cancel() { canceled_.store(true, std::memory_order_relaxed); }
+    void reset_cancel() { canceled_.store(false, std::memory_order_relaxed); }
+    bool is_canceled() const { return canceled_.load(std::memory_order_relaxed); }
 
     std::vector<std::string> get_element_list() const {
         return para.elements;
@@ -154,6 +167,18 @@ public:
 
     // Per-structure averaged descriptors (scaled), length = dim per frame
     std::vector<std::vector<double>> calculate_descriptors_avg(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position);
+
+    // Structure-level dipole (3 comps per frame) for dipole models (train_mode==1)
+    std::vector<std::vector<double>> get_structures_dipole(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position);
+
+    // Structure-level polarizability (6 comps per frame) for polarizability models (train_mode==2)
+    std::vector<std::vector<double>> get_structures_polarizability(
         const std::vector<std::vector<int>>& type,
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position);
@@ -254,7 +279,10 @@ std::vector<Structure> create_structures(const std::vector<std::vector<int>>& ty
         // std::printf("[nep_gpu] calculate() enter\n");
 
         // Release the Python GIL during heavy GPU/CPU work to allow concurrency
-        // py::gil_scoped_release _gil_release;
+        py::gil_scoped_release _gil_release;
+        if (canceled_.load(std::memory_order_relaxed)) {
+            throw std::runtime_error("Canceled by user");
+        }
  
  
 
@@ -283,41 +311,43 @@ std::vector<Structure> create_structures(const std::vector<std::vector<int>>& ty
         const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
         const int Nc_max = std::min(bs, structure_num);
 
-        // Pass 1: scan slices to compute maximum allocation requirements
-        int N_max = 0;
-        int N_times_max_NN_radial = -1;
-        int N_times_max_NN_angular = -1;
-        {
-            std::vector<Dataset> dataset_scan_vec(1);
-            for (int start = 0; start < structure_num; start += bs) {
-                int end = std::min(start + bs, structure_num);
-                dataset_scan_vec[0].construct(para, structures, start, end, 0 /*device id*/);
-                const int Nslice = dataset_scan_vec[0].N;
-                if (Nslice > N_max) N_max = Nslice;
-                int prod_r = Nslice * dataset_scan_vec[0].max_NN_radial;
-                int prod_a = Nslice * dataset_scan_vec[0].max_NN_angular;
-                if (prod_r > N_times_max_NN_radial) N_times_max_NN_radial = prod_r;
-                if (prod_a > N_times_max_NN_angular) N_times_max_NN_angular = prod_a;
-            }
-        }
 
-        // Create a single Potential instance sized for the worst case
-        std::unique_ptr<Potential> potential;
-        if (para.train_mode == 1 || para.train_mode == 2) {
-            potential.reset(new TNEP(para, N_max, N_times_max_NN_radial, N_times_max_NN_angular, para.version, 1));
-        } else if (para.charge_mode) {
-            potential.reset(new NEP_Charge(para, N_max, Nc_max, N_times_max_NN_radial, N_times_max_NN_angular, para.version, 1));
-        } else {
-            potential.reset(new NEP(para, N_max, N_times_max_NN_radial, N_times_max_NN_angular, para.version, 1));
-        }
+
 
         // Pass 2: run each slice using the reusable Potential
 
         std::vector<Dataset> dataset_vec(1);
-
         for (int start = 0; start < structure_num; start += bs) {
+            if (canceled_.load(std::memory_order_relaxed)) {
+                throw std::runtime_error("Canceled by user");
+            }
             int end = std::min(start + bs, structure_num);
             dataset_vec[0].construct(para, structures, start, end, 0 /*device id*/);
+            if (para.train_mode == 1 || para.train_mode == 2) {
+                potential.reset(new TNEP(para,
+                                           dataset_vec[0].N,
+                                           dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                           dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                           para.version,
+                                           1));
+            } else {
+              if (para.charge_mode) {
+                potential.reset(new NEP_Charge(para,
+                                               dataset_vec[0].N,
+                                               dataset_vec[0].Nc,
+                                               dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                               dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                               para.version,
+                                               1));
+              } else {
+                potential.reset(new NEP(para,
+                                        dataset_vec[0].N,
+                                        dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                        dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                        para.version,
+                                        1));
+              }
+            }
             potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
             CHECK(gpuDeviceSynchronize());
             dataset_vec[0].energy.copy_to_host(dataset_vec[0].energy_cpu.data());
@@ -372,6 +402,9 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors(
         const std::vector<std::vector<double>>& position)
 {
     py::gil_scoped_release _gil_release;
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
 
     int devCount = 0; auto devErr = gpuGetDeviceCount(&devCount);
     if (devErr != gpuSuccess || devCount <= 0) {
@@ -387,32 +420,26 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors(
     }
 
     const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
-    int N_max = 0, N_times_max_NN_radial = -1, N_times_max_NN_angular = -1;
 
 
-    {   
-        std::vector<Dataset> dataset_scan(1);
-        for (int start = 0; start < structure_num; start += bs) {
-            int end = std::min(start + bs, structure_num);
-            dataset_scan[0].construct(para, structures, start, end, 0);
-
-            const int Nslice = dataset_scan[0].N;
-            if (Nslice > N_max) N_max = Nslice;
-            int prod_r = Nslice * dataset_scan[0].max_NN_radial;
-            int prod_a = Nslice * dataset_scan[0].max_NN_angular;
-            if (prod_r > N_times_max_NN_radial) N_times_max_NN_radial = prod_r;
-            if (prod_a > N_times_max_NN_angular) N_times_max_NN_angular = prod_a;
-        }
-    }
-
-    NEP_Descriptors desc_engine(para, N_max, N_times_max_NN_radial, N_times_max_NN_angular, para.version);
-    desc_engine.update_parameters_from_host(elite.data());
 
     std::vector<Dataset> dataset_vec(1);
     std::vector<float> desc_host;
     for (int start = 0; start < structure_num; start += bs) {
+        if (canceled_.load(std::memory_order_relaxed)) {
+            throw std::runtime_error("Canceled by user");
+        }
         int end = std::min(start + bs, structure_num);
         dataset_vec[0].construct(para, structures, start, end, 0);
+        NEP_Descriptors desc_engine(para,
+        dataset_vec[0].N,
+        dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+        dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+        para.version
+         );
+
+        desc_engine.update_parameters_from_host(elite.data());
+
         desc_engine.compute_descriptors(para, dataset_vec[0]);
         desc_engine.copy_descriptors_to_host(desc_host);
     const int Nslice = dataset_vec[0].N;
@@ -449,6 +476,9 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors_scaled(
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position)
 {
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
     auto raw = calculate_descriptors(type, box, position);
     const int dim = para.dim;
     const bool have_scaler = (int)para.q_scaler_cpu.size() == dim;
@@ -476,6 +506,9 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors_avg(
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position)
 {
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
     auto raw = calculate_descriptors(type, box, position);
     const int dim = para.dim;
     const bool have_scaler = (int)para.q_scaler_cpu.size() == dim;
@@ -496,6 +529,131 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors_avg(
     return avg;
 }
 
+// ---- Structure dipole (3 comps) ----
+std::vector<std::vector<double>> GpuNep::get_structures_dipole(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position)
+{
+    py::gil_scoped_release _gil_release;
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
+    if (para.train_mode != 1) {
+        throw std::runtime_error("Model is not a dipole NEP (train_mode!=1)");
+    }
+
+    int devCount = 0; auto devErr = gpuGetDeviceCount(&devCount);
+    if (devErr != gpuSuccess || devCount <= 0) {
+        throw std::runtime_error("CUDA device not available");
+    }
+
+    std::vector<Structure> structures = create_structures(type, box, position);
+    const int structure_num = static_cast<int>(structures.size());
+    std::vector<std::vector<double>> dipoles(structure_num, std::vector<double>(3, 0.0));
+    const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
+
+    std::vector<Dataset> dataset_vec(1);
+    for (int start = 0; start < structure_num; start += bs) {
+        if (canceled_.load(std::memory_order_relaxed)) {
+            throw std::runtime_error("Canceled by user");
+        }
+        int end = std::min(start + bs, structure_num);
+        dataset_vec[0].construct(para, structures, start, end, 0);
+        // For dipole/polarizability, use TNEP path
+        potential.reset(new TNEP(para,
+                                 dataset_vec[0].N,
+                                 dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                 dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                 para.version,
+                                 1));
+        potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
+        CHECK(gpuDeviceSynchronize());
+        dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
+        const int Nslice = dataset_vec[0].N;
+        for (int gi = start; gi < end; ++gi) {
+            int li = gi - start;
+            const int Na = dataset_vec[0].Na_cpu[li];
+            const int offset = dataset_vec[0].Na_sum_cpu[li];
+            double dx = 0.0, dy = 0.0, dz = 0.0;
+            for (int m = 0; m < Na; ++m) {
+                dx += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 0]);
+                dy += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 1]);
+                dz += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 2]);
+            }
+            dipoles[gi][0] = dx;
+            dipoles[gi][1] = dy;
+            dipoles[gi][2] = dz;
+        }
+    }
+    return dipoles;
+}
+
+// ---- Structure polarizability (6 comps) ----
+std::vector<std::vector<double>> GpuNep::get_structures_polarizability(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position)
+{
+    py::gil_scoped_release _gil_release;
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
+    if (para.train_mode != 2) {
+        throw std::runtime_error("Model is not a polarizability NEP (train_mode!=2)");
+    }
+
+    int devCount = 0; auto devErr = gpuGetDeviceCount(&devCount);
+    if (devErr != gpuSuccess || devCount <= 0) {
+        throw std::runtime_error("CUDA device not available");
+    }
+
+    std::vector<Structure> structures = create_structures(type, box, position);
+    const int structure_num = static_cast<int>(structures.size());
+    std::vector<std::vector<double>> pols(structure_num, std::vector<double>(6, 0.0));
+    const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
+
+    std::vector<Dataset> dataset_vec(1);
+    for (int start = 0; start < structure_num; start += bs) {
+        if (canceled_.load(std::memory_order_relaxed)) {
+            throw std::runtime_error("Canceled by user");
+        }
+        int end = std::min(start + bs, structure_num);
+        dataset_vec[0].construct(para, structures, start, end, 0);
+        potential.reset(new TNEP(para,
+                                 dataset_vec[0].N,
+                                 dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                 dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                 para.version,
+                                 1));
+        potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
+        CHECK(gpuDeviceSynchronize());
+        dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
+        const int Nslice = dataset_vec[0].N;
+        for (int gi = start; gi < end; ++gi) {
+            int li = gi - start;
+            const int Na = dataset_vec[0].Na_cpu[li];
+            const int offset = dataset_vec[0].Na_sum_cpu[li];
+            double xx=0.0, yy=0.0, zz=0.0, xy=0.0, yz=0.0, zx=0.0;
+            for (int m = 0; m < Na; ++m) {
+                xx += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 0]);
+                yy += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 1]);
+                zz += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 2]);
+                xy += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 3]);
+                yz += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 4]);
+                zx += static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 5]);
+            }
+            pols[gi][0] = xx;
+            pols[gi][1] = yy;
+            pols[gi][2] = zz;
+            pols[gi][3] = xy;
+            pols[gi][4] = yz;
+            pols[gi][5] = zx;
+        }
+    }
+    return pols;
+}
+
 PYBIND11_MODULE(nep_gpu, m) {
     m.doc() = "GPU-accelerated NEP bindings";
     py::class_<GpuNep>(m, "GpuNep")
@@ -503,9 +661,14 @@ PYBIND11_MODULE(nep_gpu, m) {
         .def("get_element_list", &GpuNep::get_element_list)
         .def("set_batch_size", &GpuNep::set_batch_size)
         .def("calculate", &GpuNep::calculate)
+        .def("cancel", &GpuNep::cancel)
+        .def("reset_cancel", &GpuNep::reset_cancel)
+        .def("is_canceled", &GpuNep::is_canceled)
         .def("get_descriptor", &GpuNep::calculate_descriptors)
         .def("calculate_descriptors_scaled", &GpuNep::calculate_descriptors_scaled)
-        .def("get_structures_descriptor", &GpuNep::calculate_descriptors_avg);
+        .def("get_structures_descriptor", &GpuNep::calculate_descriptors_avg)
+        .def("get_structures_dipole", &GpuNep::get_structures_dipole)
+        .def("get_structures_polarizability", &GpuNep::get_structures_polarizability);
 
     m.def("_version_tag", [](){ return std::string("nep_gpu_ext_desc_1"); });
 }

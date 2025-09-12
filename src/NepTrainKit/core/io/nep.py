@@ -14,7 +14,7 @@ from NepTrainKit import module_path,utils
 from NepTrainKit.core import MessageManager, Structure
 from NepTrainKit.config import Config
 
-from NepTrainKit.core.calculator import NEPProcess
+from NepTrainKit.core.calculator import NEPProcess, run_nep_calculator, NepCalculator
 
 from NepTrainKit.core.io.base import NepPlotData, StructureData, ResultData
 
@@ -223,15 +223,8 @@ class NepTrainResultData(ResultData):
     def _recalculate_and_save(self ):
 
         try:
-            self.nep_calc_thread.run_nep3_calculator_process(
-                self.nep_txt_path.as_posix(),
-                self.structure.now_data,
-                cls_kwargs={
-                "backend":NepBackend(Config.get("nep", "backend", "auto")),
-                    "batch_size": Config.getint("nep", "gpu_batch_size", 1000)
-                },
-                calculator_type="calculate" ,wait=True)
-            nep_potentials_array, nep_forces_array, nep_virials_array=self.nep_calc_thread.func_result
+            nep_potentials_array, nep_forces_array, nep_virials_array=   self.nep_calc.calculate(self.structure.now_data.tolist())
+            # nep_potentials_array, nep_forces_array, nep_virials_array=self.nep_calc_thread.func_result
 
 
             # nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(
@@ -273,7 +266,10 @@ class NepPolarizabilityResultData(ResultData):
                  ):
         super().__init__(nep_txt_path,data_xyz_path,descriptor_path)
         self.polarizability_out_path = Path(polarizability_out_path)
-
+        # self.nep_calc = NepCalculator(model_file=self.nep_txt_path.as_posix(),
+        #                               backend=NepBackend.CPU,
+        #                               batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+        #                               )
     @property
     def datasets(self):
 
@@ -317,13 +313,10 @@ class NepPolarizabilityResultData(ResultData):
         try:
             # nep_polarizability_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
             #                                                        self.structure.now_data, "polarizability")
-            self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
-                self.structure.now_data,cls_kwargs={
-                "backend":NepBackend.CPU,
-                    "batch_size": Config.getint("nep", "gpu_batch_size", 1000)
-                },
-                calculator_type="polarizability" ,wait=True)
-            nep_polarizability_array=self.nep_calc_thread.func_result
+            nep_polarizability_array = self.nep_calc.get_structures_polarizability(self.structure.now_data.tolist())
+
+
+            # nep_polarizability_array=self.nep_calc_thread.func_result
             if nep_polarizability_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the polarizability, use the original polarizability instead.")
             nep_polarizability_array = self._save_polarizability_data(  nep_polarizability_array)
@@ -386,6 +379,10 @@ class NepDipoleResultData(ResultData):
         super().__init__(nep_txt_path, data_xyz_path, descriptor_path)
 
         self.dipole_out_path = Path(dipole_out_path)
+        # self.nep_calc = NepCalculator(model_file=self.nep_txt_path.as_posix(),
+        #                      backend=NepBackend.CPU,
+        #                      batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+        #                      )
     @property
     def datasets(self):
         return [self.dipole , self.descriptor]
@@ -429,13 +426,10 @@ class NepDipoleResultData(ResultData):
         try:
             # nep_dipole_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
             #                                                self.structure.now_data, "dipole")
-            self.nep_calc_thread.run_nep3_calculator_process(self.nep_txt_path.as_posix(),
-                self.structure.now_data,cls_kwargs={
-                "backend":NepBackend.CPU,
-                    "batch_size": Config.getint("nep", "gpu_batch_size", 1000)
-                },
-                calculator_type="dipole" ,wait=True)
-            nep_dipole_array=self.nep_calc_thread.func_result
+            nep_dipole_array = self.nep_calc.get_structures_dipole(self.structure.now_data.tolist())
+
+
+            # nep_dipole_array=self.nep_calc_thread.func_result
 
             if nep_dipole_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the dipole, use the original dipole instead.")

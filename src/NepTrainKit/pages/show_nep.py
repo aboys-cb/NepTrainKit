@@ -305,25 +305,13 @@ class ShowNepWidget(QWidget):
         :return:
         """
 
-        if os.path.isdir(path):
-            file_name = os.path.basename(path)
-            if is_deepmd_path(path):
-                self.nep_result_data = DeepmdResultData.from_path(path)
-            else:
-                self.nep_result_data = None   # pyright:ignore
-        else:
-            dir_path = os.path.dirname(path)
-            file_name = os.path.basename(path)
-            model_type = get_nep_type(os.path.join(dir_path, "nep.txt"))
-            logger.info(f"NEP model type: {model_type}")
-            if model_type == 0 or  model_type == 3:
-                self.nep_result_data = NepTrainResultData.from_path(path,model_type=model_type)
-            elif model_type == 1:
-                self.nep_result_data = NepDipoleResultData.from_path(path)
-            elif model_type == 2:
-                self.nep_result_data = NepPolarizabilityResultData.from_path(path)
-            else:
-                self.nep_result_data = None   # pyright:ignore
+        file_name = os.path.basename(path)
+        try:
+            from NepTrainKit.core.io import load_result_data
+            self.nep_result_data = load_result_data(path)  # type: ignore
+        except Exception:
+            logger.debug(traceback.format_exc())
+            self.nep_result_data = None   # pyright:ignore
 
         if self.nep_result_data is None:
             return

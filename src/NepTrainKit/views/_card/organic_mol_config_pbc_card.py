@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# 抄的陈博卡片
 from __future__ import annotations
 
 from typing import Any, List
@@ -25,7 +26,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Organic Molecular Configuration")
+        self.setTitle("Organic Molecular Configuration(Zherui Chen)")
         self._init_ui()
 
     # ---------- UI ----------
@@ -63,7 +64,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.max_torsions_label.setToolTip("Maximum number of torsions applied per conformation")
         self.max_torsions_label.installEventFilter(ToolTipFilter(self.max_torsions_label, 300, ToolTipPosition.TOP))
         self.max_torsions_frame = SpinBoxUnitInputFrame(self)
-        self.max_torsions_frame.set_input("bonds", 1, "int")
+        self.max_torsions_frame.set_input("", 1, "int")
         self.max_torsions_frame.setRange(0, 100)
         self.max_torsions_frame.set_input_value([5])
         self.settingLayout.addWidget(self.max_torsions_label, row, 0, 1, 1)

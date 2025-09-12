@@ -12,7 +12,7 @@ from pathlib import Path
 import numpy as np
 from PySide6.QtCore import QObject, Signal
 from loguru import logger
-from typing import Any
+from typing import Any, Callable, Optional
 from numpy import bool_
 import numpy.typing as npt
 from NepTrainKit import utils
@@ -370,7 +370,8 @@ class ResultData(QObject):
     def __init__(self,
                  nep_txt_path:Path|str,
                  data_xyz_path:Path|str,
-                 descriptor_path:Path|str):
+                 descriptor_path:Path|str,
+                 calculator_factory: Optional[Callable[[str], Any]] = None):
         super().__init__()
         self.load_flag=False
         # cooperative cancel for long-running loads
@@ -382,11 +383,25 @@ class ResultData(QObject):
         #存储选中结构的真实下标
         self.select_index=set()
 
-        # _thread = NEPProcess()
-        self.nep_calc = NepCalculator(model_file=self.nep_txt_path.as_posix(),
-                             backend=NepBackend(Config.get("nep", "backend", "auto")),
-                             batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-                             )
+        # Calculator injection (default to NEP). Subclasses can pass in a factory for other ML potentials.
+        if calculator_factory is None:
+            self.nep_calc = NepCalculator(
+                model_file=self.nep_txt_path.as_posix(),
+                backend=NepBackend(Config.get("nep", "backend", "auto")),
+                batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+            )
+        else:
+            # Factory is responsible for creating a calculator compatible with this ResultData subclass
+            try:
+                self.nep_calc = calculator_factory(self.nep_txt_path.as_posix())
+            except Exception:
+                logger.debug(traceback.format_exc())
+                MessageManager.send_warning_message("Failed to create custom calculator; falling back to NEP.")
+                self.nep_calc = NepCalculator(
+                    model_file=self.nep_txt_path.as_posix(),
+                    backend=NepBackend(Config.get("nep", "backend", "auto")),
+                    batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+                )
 
     def request_cancel(self):
         """Request cooperative cancel during load. Also forward to calculator."""

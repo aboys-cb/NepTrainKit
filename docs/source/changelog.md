@@ -11,7 +11,7 @@ All notable changes between v2.5.4 and v2.6.1.
 - Added — Data Management module:
   - Projects, versions (models), tags, notes, quick search, and open-folder
 - Added — Make Dataset cards:
-  - Organic perturbation option/card for treating organics as rigid clusters
+  - Organic molecular rotation (TorsionGuard, PBC-aware) for conformer generation
 - Added — Display tools:
   - Energy baseline alignment and DFT-D3 integration
   - Edit Info to batch edit selected structure metadata

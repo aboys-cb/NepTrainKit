@@ -8,7 +8,7 @@ from typing import Callable, Optional, Protocol
 from loguru import logger
 from . import deepmd, nep
 from .utils import get_nep_type
-from .importers import import_structures, write_extxyz
+from .importers import import_structures, write_extxyz,   is_parseable
 from NepTrainKit import get_user_config_path
 
 
@@ -31,8 +31,14 @@ _RESULT_LOADERS: list[ResultLoader] = []
 def register_result_loader(loader: ResultLoader):
     _RESULT_LOADERS.append(loader)
     return loader
-
-
+def matches_result_loader(path)->bool:
+    for loader in _RESULT_LOADERS:
+        try:
+            if loader.matches(path):
+                return True
+        except:
+            pass
+    return False
 def load_result_data(path: str):
     for loader in _RESULT_LOADERS:
         try:
@@ -67,6 +73,7 @@ class DeepmdFolderLoader:
         return deepmd.DeepmdResultData.from_path(path)
 
 
+
 class NepModelTypeLoader:
     def __init__(self, name: str, model_types: set[int], factory: ResultDataProtocol):
         self.name = name
@@ -89,8 +96,24 @@ class NepModelTypeLoader:
         return self._factory.from_path(path)
 
 
+
+class OtherLoader:
+    def matches(self,path: str) -> bool:
+        return is_parseable(path)
+    def load(self, path: str):
+        # Defer heavy parsing to the worker thread via ResultData.load_structures
+        try:
+            return nep.NepTrainResultData.from_path(path)
+        except Exception:
+            logger.debug(f"OtherLoader failed to prepare loader for {path}")
+            return None
+
+
 # Register defaults immediately
+
 register_result_loader(DeepmdFolderLoader())
+
 register_result_loader(NepModelTypeLoader("nep_train", {0, 3}, nep.NepTrainResultData))
 register_result_loader(NepModelTypeLoader("nep_dipole", {1}, nep.NepDipoleResultData))
 register_result_loader(NepModelTypeLoader("nep_polar", {2}, nep.NepPolarizabilityResultData))
+register_result_loader(OtherLoader())

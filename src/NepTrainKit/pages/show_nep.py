@@ -22,9 +22,10 @@ from NepTrainKit import utils
 from NepTrainKit.config import Config
 
 from NepTrainKit.core import MessageManager
+
 from NepTrainKit.custom_widget import ConfigTypeSearchLineEdit, ArrowMessageBox
 from NepTrainKit.core.io import (NepTrainResultData, DeepmdResultData,is_deepmd_path, NepPolarizabilityResultData,
-                                 NepDipoleResultData,ResultData,get_nep_type)
+                                 NepDipoleResultData,ResultData,get_nep_type,load_result_data,matches_result_loader)
 
 from NepTrainKit.core.structure import table_info, atomic_numbers
 from NepTrainKit.core.types import Brushes, CanvasMode, SearchType
@@ -259,19 +260,11 @@ class ShowNepWidget(QWidget):
             thread.start_work(self.nep_result_data.export_selected_xyz, path)
 
     def set_work_path(self, path:str):
-
-        if os.path.isdir(path):
-            if os.path.exists(os.path.join(path, "train.xyz")):
-                path = os.path.join(path, "train.xyz")
-            elif is_deepmd_path(path):
-                pass
-            else:
-                MessageManager.send_info_message(
-                    "The directory does not contain a train.xyz or type.raw file!")
-                return
-        if not path.endswith(".xyz") and not is_deepmd_path(path):
-            MessageManager.send_info_message(f"Please choose a xyz file or deepmd directory, not {path}!")
+        if not matches_result_loader(path):
+            MessageManager.send_info_message("unsupported file format")
             return
+
+
         url=self.path_label.getUrl().toString()
         old_path=url.replace("file://","")
         if sys.platform == "win32":
@@ -308,7 +301,6 @@ class ShowNepWidget(QWidget):
 
         file_name = os.path.basename(path)
         try:
-            from NepTrainKit.core.io import load_result_data
             self.nep_result_data = load_result_data(path)  # type: ignore
         except Exception:
             logger.debug(traceback.format_exc())

@@ -45,7 +45,7 @@ class DeepmdResultData(ResultData):
 
 
     @classmethod
-    def from_path(cls, path):
+    def from_path(cls, path, *, structures: list[Structure] | None = None):
         dataset_path = Path(path)
 
         # file_name=dataset_path.name
@@ -74,7 +74,9 @@ class DeepmdResultData(ResultData):
         spin_out_path=  dataset_path.with_name(f"{suffix}.fm.out")
         if not spin_out_path.exists():
             spin_out_path = None
-        return cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,virial_out_path,descriptor_path,spin_out_path=spin_out_path)
+        inst = cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,virial_out_path,descriptor_path,spin_out_path=spin_out_path)
+        # DeepMD loader ignores in-memory structures; it reads its own format.
+        return inst
 
     def load_structures(self):
         """

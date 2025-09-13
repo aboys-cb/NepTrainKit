@@ -383,6 +383,8 @@ class ResultData(QObject):
         self.nep_txt_path=Path(nep_txt_path)
         #存储选中结构的真实下标
         self.select_index=set()
+        # Optional pre-fetched structures to skip IO in load_structures
+        self._prefetched_structures: Optional[list[Structure]] = None
 
         # Calculator injection (default to NEP). Subclasses can pass in a factory for other ML potentials.
         if calculator_factory is None:
@@ -421,13 +423,21 @@ class ResultData(QObject):
         加载结构xyz文件
         :return:
         """
-
-        #
-        structures=[]
-        for s in Structure.iter_read_multiple(self.data_xyz_path.as_posix(), cancel_event=self.cancel_event):
-            structures.append(s)
+        # If structures were provided upfront, use them; otherwise parse from file
+        if self._prefetched_structures is not None:
+            structures = self._prefetched_structures
+        else:
+            # Unified path: delegate to importers for all formats, including EXTXYZ.
+            # ExtxyzImporter internally uses Structure.iter_read_multiple with cancel support.
+            structures = import_structures(self.data_xyz_path.as_posix(), cancel_event=self.cancel_event)
         self._atoms_dataset = StructureData(structures)
         self.atoms_num_list = np.array([len(struct) for struct in self.structure.now_data])
+
+    def set_structures(self, structures: list[Structure]):
+        """
+        Provide pre-parsed structures so load_structures can skip file IO.
+        """
+        self._prefetched_structures = list(structures)
 
     def write_prediction(self):
         """

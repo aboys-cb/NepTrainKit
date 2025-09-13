@@ -173,7 +173,7 @@ class CardGroup(MakeDataCardWidget):
 
     def export_data(self):
         if self.dataset is not None:
-            path = utils.call_path_dialog(self, "Choose a file save location", "file",f"export_{self.getTitle()}_structure.xyz")
+            path = utils.call_path_dialog(self, "Choose a file save location", "file",f"export_{self.getTitle()}_structure.xyz",file_filter="XYZ Files (*.xyz)")
             if not path:
                 return
             thread=utils.LoadingThread(self,show_tip=True,title="Exporting data")

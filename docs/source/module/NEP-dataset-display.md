@@ -24,6 +24,9 @@ Currently, the software supports:
 - DeepMD training directory (auto‑detected)
 :::
 
+Note:
+- If the expected `*.out` files are missing or incomplete, NepTrainKit can recompute predictions using the selected NEP backend (CPU/GPU) and write fresh outputs. Choose the backend in Settings → NEP Backend; Auto tries GPU first and falls back to CPU.
+
  
 ### Data Export
 

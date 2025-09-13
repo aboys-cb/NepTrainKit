@@ -74,7 +74,16 @@ A standalone executable is available for Windows users.
 - Visit the [Releases](https://github.com/aboys-cb/NepTrainKit/releases) page
 - Download `NepTrainKit.win32.zip`
 
-> Note: Only supported on Windows platforms.
+ > Note: Only supported on Windows platforms.
+
+### GPU Acceleration (optional)
+
+- NepTrainKit includes an optional GPU‑accelerated NEP backend.
+- Requirements: NVIDIA GPU/driver compatible with CUDA 12.4 runtime.
+- Selection: In the app, go to Settings → NEP Backend and choose Auto/CPU/GPU.
+  - Auto tries GPU first and falls back to CPU if unavailable.
+  - Adjust GPU Batch Size to balance speed and memory.
+  - If you see “CUDA driver version is insufficient for CUDA runtime version”, switch to CPU.
 
 ---
 
@@ -82,6 +91,8 @@ A standalone executable is available for Windows users.
 
 For detailed usage documentation and examples, please refer to the official documentation:  
 [https://neptrainkit.readthedocs.io/en/latest/index.html](https://neptrainkit.readthedocs.io/en/latest/index.html)
+
+- What's new: see `docs/source/changelog.md` or the Documentation "Changelog" page.
 
 ---
 

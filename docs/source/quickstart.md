@@ -50,8 +50,13 @@ NepTrainKit
 ## 6. Settings
 
 - Choose plotting force mode (Raw vs Norm) and canvas engine (PyQtGraph vs Vispy).
+- NEP Backend: select CPU/GPU/Auto for NEP calculations; Auto tries GPU first and falls back to CPU
+- GPU Batch Size: adjust the number of frames per GPU slice to balance speed and memory
 - Enable Auto loading, adjust covalent radius threshold, sorting, and menu grouping.
 - Check app updates and NEP89 model, open help and feedback.
+
+Note:
+- GPU backend requires a compatible NVIDIA driver and CUDA 12.4 runtime. If you see “CUDA driver version is insufficient for CUDA runtime version”, switch NEP Backend to CPU in Settings.
 
 ## 7. Tips
 

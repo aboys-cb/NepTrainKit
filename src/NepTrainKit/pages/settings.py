@@ -33,10 +33,11 @@ class SettingsWidget(ScrollArea):
         self.nep_group = SettingCardGroup(
              'NEP Settings' , self.scrollWidget)
 
-        default_forces = Config.get("widget","forces_data",ForcesMode.Raw)
+        default_forces = Config.get("widget","forces_data",str(ForcesMode.Raw.value))
         if default_forces=="Row":
             #没什么用 替换以前的坑 之前写错单词了
             default_forces="Raw"
+
         self.optimization_forces_card = MyComboBoxSettingCard(
             OptionsConfigItem("forces","forces",ForcesMode(default_forces),OptionsValidator(ForcesMode), EnumSerializer(ForcesMode)),
             FluentIcon.BRUSH,
@@ -48,7 +49,7 @@ class SettingsWidget(ScrollArea):
             default=default_forces,
             parent=self.personal_group
         )
-        canvas_type = Config.get("widget","canvas_type",CanvasMode.PYQTGRAPH)
+        canvas_type = Config.get("widget","canvas_type",str(CanvasMode.PYQTGRAPH.value))
 
         self.canvas_card = MyComboBoxSettingCard(
             OptionsConfigItem("canvas","canvas",CanvasMode(canvas_type),OptionsValidator(CanvasMode), EnumSerializer(CanvasMode)),

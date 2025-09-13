@@ -26,7 +26,7 @@ from NepTrainKit.custom_widget import (
     ShiftEnergyMessageBox,
     DFTD3MessageBox,
 )
-from NepTrainKit.core.types import NepBackend, SearchType
+from NepTrainKit.core.types import NepBackend, SearchType, CanvasMode
 from NepTrainKit.core.io.select import farthest_point_sampling
 from NepTrainKit.views.toolbar import NepDisplayGraphicsToolBar
 from NepTrainKit.core.energy_shift import shift_dataset_energy, suggest_group_patterns
@@ -41,18 +41,19 @@ class NepResultPlotWidget(QWidget):
         # self.setRenderHint(QPainter.Antialiasing, False)
         self._layout = QHBoxLayout(self)
         self.setLayout(self._layout)
-        canvas_type = Config.get("widget","canvas_type","pyqtgraph")
+        canvas_type = Config.get("widget","canvas_type",CanvasMode.PYQTGRAPH)
+
         self.last_figure_num=None
         self.swith_canvas(canvas_type)
 
-    def swith_canvas(self,canvas_type="pyqtgraph"):
+    def swith_canvas(self,canvas_type:CanvasMode="pyqtgraph"):
 
-        if canvas_type == "pyqtgraph":
+        if canvas_type == CanvasMode.PYQTGRAPH:
             from NepTrainKit.core.canvas.pyqtgraph import PyqtgraphCanvas
             self.canvas = PyqtgraphCanvas(self)
             self._layout.addWidget(self.canvas)
 
-        elif canvas_type == "vispy":
+        elif canvas_type == CanvasMode.VISPY:
 
 
             from NepTrainKit.core.canvas.vispy import VispyCanvas

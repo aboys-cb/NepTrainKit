@@ -87,7 +87,7 @@ class ShowNepWidget(QWidget):
 
         self.struct_widget = QWidget(self)
         self.struct_widget_layout = QGridLayout(self.struct_widget)
-        canvas_type = Config.get("widget", "canvas_type",  CanvasMode.PYQTGRAPH)
+        canvas_type = Config.get("widget", "canvas_type",  str(CanvasMode.PYQTGRAPH.value))
         if canvas_type == CanvasMode.PYQTGRAPH:
             from NepTrainKit.core.canvas.pyqtgraph import StructurePlotWidget
             self.show_struct_widget = StructurePlotWidget(self.struct_widget)
@@ -95,6 +95,7 @@ class ShowNepWidget(QWidget):
             self.struct_widget_layout.addWidget(self.show_struct_widget, 1, 0, 1, 1)
 
         else:
+
             from NepTrainKit.core.canvas.vispy import StructurePlotWidget
             self.show_struct_widget = StructurePlotWidget( parent=self.struct_widget)
 

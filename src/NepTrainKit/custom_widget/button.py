@@ -29,6 +29,7 @@ class CloseWidgetBase(QWidget):
         self.closeButton.clicked.connect(self.closeClicked)
         self.borderRadius=3
         self.backgroundColor="#FFFFFF"
+        self.setBackgroundColor(self.backgroundColor)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
@@ -47,7 +48,7 @@ class CloseWidgetBase(QWidget):
 
         self.hBoxLayout.addWidget(button)
     def setBackgroundColor(self,color):
-        self.backgroundColor=color
+        self.backgroundColor= color
         self.update()
     def setWidget(self, widget: QWidget):
         """ set the widget on left side """

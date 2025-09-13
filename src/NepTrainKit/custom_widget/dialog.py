@@ -67,7 +67,7 @@ class SparseMessageBox(MessageBoxBase):
         self.intSpinBox.setMaximum(9999999)
         self.intSpinBox.setMinimum(0)
         self.doubleSpinBox = DoubleSpinBox(self)
-        self.doubleSpinBox.setDecimals(3)
+        self.doubleSpinBox.setDecimals(5)
         self.doubleSpinBox.setMinimum(0)
         self.doubleSpinBox.setMaximum(10)
 

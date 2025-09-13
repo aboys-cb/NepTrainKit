@@ -75,7 +75,7 @@ class ForcesMode(StrEnum):
 
 class CanvasMode(StrEnum):
     VISPY= "vispy"
-    PYQTGRAPH= "pyqtgraph"
+    PYQTGRAPH = "pyqtgraph"
 
 class SearchType(StrEnum):
     TAG="Config_type"

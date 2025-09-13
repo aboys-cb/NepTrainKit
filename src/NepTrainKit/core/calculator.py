@@ -66,6 +66,10 @@ class NepCalculator():
         if os.path.exists(model_file):
 
             self.load_nep()
+            if isinstance(self.nep3,GpuNep):
+                MessageManager.send_info_message('If you encounter the problem "CUDA driver version is insufficient for CUDA runtime version" when using GpuNep, please switch to CPU in the settings.')
+            else:
+                MessageManager.send_info_message("using CpuNep")
             self.element_list=self.nep3.get_element_list()
             self.type_dict = {e: i for i, e in enumerate(self.element_list)}
 

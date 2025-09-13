@@ -6,7 +6,7 @@
 import time
 import json
 
-from NepTrainKit.core.calculator import NEPProcess
+from NepTrainKit.core.calculator import NEPProcess, NepCalculator
 
 start = time.time()
 import numpy as np
@@ -309,35 +309,46 @@ class NepResultPlotWidget(QWidget):
     def _calc_dft_d3(self,mode,functional,cutoff,cutoff_cn):
         nep_result_data = self.canvas.nep_result_data
         nep_txt_path = nep_result_data.nep_txt_path
+
+
+
+
         if mode == 0:
-            calculate_type = "calculate"
-            func_kwargs = {}
-            cls_kwargs = { }
+            nep_calc = NepCalculator(
+                model_file=nep_txt_path.as_posix(),
+                backend=NepBackend(Config.get("nep", "backend", "auto")),
+                batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+            )
+            nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate(nep_result_data.structure.now_data.tolist())
+
         elif mode == 2:
-            calculate_type = "calculate_with_dftd3"
-            func_kwargs = {
-                "functional":functional,
-                "cutoff": cutoff,
-                "cutoff_cn": cutoff_cn,
 
-            }
-            cls_kwargs={"backend":NepBackend.CPU}
+            nep_calc = NepCalculator(
+                model_file=nep_txt_path.as_posix(),
+                backend=NepBackend.CPU,
+                batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+            )
+            nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate_with_dftd3(
+                nep_result_data.structure.now_data.tolist(),
+                functional=functional,
+                cutoff= cutoff,
+                cutoff_cn= cutoff_cn
+
+            )
+
         else:
-            calculate_type = "calculate_dftd3"
-            func_kwargs = {
-                "functional":functional,
-                "cutoff": cutoff,
-                "cutoff_cn": cutoff_cn,
+            nep_calc = NepCalculator(
+                model_file=nep_txt_path.as_posix(),
+                backend=NepBackend.CPU,
+                batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+            )
+            nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate_dftd3(
+                nep_result_data.structure.now_data.tolist(),
+                functional=functional,
+                cutoff=cutoff,
+                cutoff_cn=cutoff_cn
 
-            }
-            cls_kwargs={"backend":NepBackend.CPU}
-
-
-        nep_calc_thread = NEPProcess()
-        nep_calc_thread.run_nep3_calculator_process(nep_txt_path.as_posix(),
-                                                    nep_result_data.structure.now_data,
-                                                    calculate_type, func_kwargs=func_kwargs,cls_kwargs=cls_kwargs, wait=True)
-        nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc_thread.func_result
+            )
         split_indices = np.cumsum(nep_result_data.atoms_num_list)[:-1]
         nep_forces_array = np.split(nep_forces_array, split_indices)
         nep_virials_array=nep_virials_array*nep_result_data.atoms_num_list[:, np.newaxis]

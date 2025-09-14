@@ -97,7 +97,8 @@ class NepCalculator():
                                 self.nep3 = GpuNep(self.model_file)
 
                             except RuntimeError as e:
-                                MessageManager.send_error_message(e)
+                                logger.error( e)
+                                MessageManager.send_warning_message(str(e))
                                 return False
                             self.nep3.set_batch_size(self.batch_size)
                         else:

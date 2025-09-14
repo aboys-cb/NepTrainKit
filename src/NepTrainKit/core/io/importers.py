@@ -10,7 +10,7 @@ from typing import Iterable, Protocol, List
 from loguru import logger
 
 from NepTrainKit import utils
-from NepTrainKit.core.structure import Structure
+from NepTrainKit.core.structure import Structure, atomic_numbers
 import numpy as np
 
 
@@ -581,82 +581,6 @@ class LammpsDumpImporter:
         except Exception:
             pass
 
-        def parse_infile_for_mapping(infile: str) -> tuple[dict[int, str], list[str]]:
-            import re
-            type_map: dict[int, str] = {}
-            datafiles: list[str] = []
-            try:
-                with open(infile, "r", encoding="utf8", errors="ignore") as fi:
-                    for line in fi:
-                        if cancelled():
-                            break
-                        # mass <type> <mass>  # Element
-                        m = re.match(r"\s*mass\s+(\d+)\s+([^#\s]+)\s*(?:#\s*([A-Za-z][A-Za-z0-9_\-]*))?", line)
-                        if m:
-                            t = int(m.group(1))
-                            name = m.group(3)
-                            if name:
-                                type_map.setdefault(t, name)
-                            continue
-                        # set type <type> element <Elem>
-                        m3 = re.match(r"\s*set\s+type\s+(\d+)\s+element\s+([A-Za-z][A-Za-z0-9_\-]*)", line)
-                        if m3:
-                            t = int(m3.group(1))
-                            name = m3.group(2)
-                            type_map.setdefault(t, name)
-                            continue
-                        # pair_coeff * * <file> Elem1 Elem2 ... (NULL skipped)
-                        pc = re.match(r"\s*pair_coeff\s+\*\s+\*\s+([^#\s]+)\s+(.+)$", line)
-                        if pc:
-                            elems_part = pc.group(2).split('#', 1)[0]
-                            elems = [tok for tok in elems_part.split() if tok.upper() != 'NULL']
-                            # Map by order: type 1..N -> elems[0..N-1]
-                            for i, el in enumerate(elems, start=1):
-                                if re.match(r"^[A-Za-z][A-Za-z0-9_\-]*$", el):
-                                    type_map.setdefault(i, el)
-                            continue
-                        m2 = re.match(r"\s*read_data\s+([^#\s]+)", line)
-                        if m2:
-                            datafiles.append(m2.group(1).strip().strip('"\''))
-            except Exception:
-                pass
-            return type_map, datafiles
-
-        def parse_datafile_masses(datafile: str) -> dict[int, str]:
-            import re
-            d: dict[int, str] = {}
-            full = datafile if os.path.isabs(datafile) else os.path.join(dirp, datafile)
-            try:
-                with open(full, "r", encoding="utf8", errors="ignore") as fd:
-                    lines = fd.readlines()
-                i = 0
-                while i < len(lines):
-                    if cancelled():
-                        break
-                    if lines[i].strip().lower().startswith("masses"):
-                        # Skip optional blank line after section header
-                        i += 1
-                        if i < len(lines) and lines[i].strip() == "":
-                            i += 1
-                        # Parse until blank line or next section header (all caps word)
-                        while i < len(lines):
-                            s = lines[i].strip()
-                            if s == "" or s.lower() in {"atoms", "atom types", "bond types", "angles", "velocities", "pairs", "pair coeffs", "pair_coeffs"}:
-                                break
-                            # pattern: <type> <mass> # Element
-                            m = re.match(r"(\d+)\s+([^#\s]+)\s*(?:#\s*([A-Za-z][A-Za-z0-9_\-]*))?", s)
-                            if m:
-                                t = int(m.group(1))
-                                name = m.group(3)
-                                if name:
-                                    d.setdefault(t, name)
-                            i += 1
-                        break
-                    i += 1
-            except Exception:
-                pass
-            return d
-
         type_to_elem: dict[int, str] = {}
         if isinstance(element_map_arg, dict):
             # seed with user-provided mapping first
@@ -665,13 +589,7 @@ class LammpsDumpImporter:
                     type_to_elem[int(k)] = str(v)
                 except Exception:
                     pass
-        datafiles: list[str] = []
-        for inf in input_files:
-            m, dfs = parse_infile_for_mapping(inf)
-            type_to_elem.update(m)
-            datafiles.extend(dfs)
-        for df in datafiles:
-            type_to_elem.update(parse_datafile_masses(df))
+
 
         with open(path, "r", encoding="utf8", errors="ignore") as f:
             while True:
@@ -882,6 +800,128 @@ class Cp2kOutputImporter:
         #  - cell vectors from "CELL| Vector a/b/c"
         raise NotImplementedError("Cp2kOutputImporter.iter_structures not implemented")
 
+
+
+
+
+
+
+
+
+
+# ASE trajectory importer (uses ASE to read, converts to Structure)
+class AseTrajectoryImporter:
+    name = "ase_traj"
+
+    def matches(self, path: str) -> bool:
+        if not os.path.isfile(path):
+            return False
+        ext = os.path.splitext(path)[1].lower()
+        # Target ASE formats that are not already handled by dedicated importers
+        return ext in {".traj", ".json"}
+
+    def _ase_atoms_to_structure(self, atoms) -> Structure | None:
+        try:
+            # Lattice/cell
+            cell = getattr(atoms, 'cell', None)
+            if cell is None:
+                lattice = np.eye(3, dtype=np.float32)
+            else:
+                arr = np.array(cell.array if hasattr(cell, 'array') else cell, dtype=np.float32)
+                if arr.size != 9:
+                    lattice = np.eye(3, dtype=np.float32)
+                else:
+                    lattice = arr.reshape(3, 3)
+
+            # Species and positions
+            symbols = np.array(atoms.get_chemical_symbols(), dtype=np.str_)
+            positions = np.array(atoms.get_positions(), dtype=np.float32)
+
+            properties = [
+                {"name": "species", "type": "S", "count": 1},
+                {"name": "pos", "type": "R", "count": 3},
+            ]
+            atomic_props: dict[str, np.ndarray] = {
+                "species": symbols,
+                "pos": positions,
+            }
+
+
+
+            # Additional fields
+            info = getattr(atoms, 'info', {}) or {}
+
+            cfg = str(info.get('comment', info.get('Config_type', 'ASE_traj')))
+            pbc_val = getattr(atoms, 'pbc', False)
+            if isinstance(pbc_val, (list, tuple, np.ndarray)):
+                pbc_text = " ".join(["T" if bool(x) else "F" for x in list(pbc_val)[:3]])
+            else:
+                pbc_text = "T T T" if bool(pbc_val) else "F F F"
+
+            add = {
+                "Config_type": cfg,
+                "pbc": pbc_text,
+            }
+
+            calc_result=atoms.calc.results
+            if "energy" in calc_result:
+                add["energy"]=calc_result["energy"]
+
+            # Optional forces from arrays to avoid calculator call
+            forces = None
+            try:
+                if hasattr(atoms, 'arrays') and isinstance(atoms.arrays, dict):
+                    if 'forces' in atoms.arrays:
+                        forces = np.array(atoms.arrays['forces'], dtype=np.float32)
+                if "forces" in calc_result:
+                    forces = np.array(calc_result['forces'], dtype=np.float32)
+
+            except Exception:
+                forces = None
+            if isinstance(forces, np.ndarray) and forces.shape == positions.shape:
+                properties.append({"name": "forces", "type": "R", "count": 3})
+                atomic_props["forces"] = forces
+
+            # Optional stress/virial if present in info with common keys
+            try:
+                if 'stress' in calc_result:
+                    s = np.array(calc_result['stress'], dtype=np.float32)
+                    if s.size == 9:
+                        add['stress'] = s.reshape(3, 3).reshape(-1)
+                    elif s.size == 6:
+                        # voigt -> symmetric
+                        sxx, syy, szz, syz, sxz, sxy = s.tolist()
+                        S = np.array([[sxx, sxy, sxz], [sxy, syy, syz], [sxz, syz, szz]], dtype=np.float32)
+                        add['stress'] = S.reshape(-1)
+                if 'virial' in info:
+                    v = np.array(info['virial'], dtype=np.float32)
+                    if v.size == 9:
+                        add['virial'] = v.reshape(-1)
+            except Exception:
+                pass
+
+            return Structure(lattice=lattice, atomic_properties=atomic_props, properties=properties, additional_fields=add)
+        except Exception:
+            return None
+
+    def iter_structures(self, path: str, **kwargs):
+        cancel_event = kwargs.get("cancel_event")
+        try:
+            from ase.io import iread
+        except Exception:
+            return
+        try:
+            for atoms in iread(path, index=":"):
+                if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
+                    return
+                st = self._ase_atoms_to_structure(atoms)
+                if st is not None:
+                    yield st
+        except Exception:
+            return
+
+
+register_importer(AseTrajectoryImporter())
 
 
 

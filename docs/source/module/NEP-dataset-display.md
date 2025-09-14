@@ -18,8 +18,9 @@ Users can import files in the following two ways:
 - Drag and drop the file directly into the software interface for import.
 :::{important}
 software will automatically detect the `nep.txt` file type and import it, including the `norm`、`dipole` and `polarizability`.
-Currently, the software supports:
-- `train.xyz` and matching `*.out` files
+Currently supported formats are documented here: [Supported Formats](../formats.md).
+Common cases include:
+- `train.xyz` with matching `*.out` files
 - `nep.txt` (optional; falls back to NEP89 if absent) + `train.xyz`
 - DeepMD training directory (auto‑detected)
 :::

@@ -96,7 +96,7 @@ class Structure:
 
     @classmethod
     def read_xyz(cls, filename:str) -> Structure:
-        with open(filename, 'r') as f:
+        with open(filename, 'r',encoding="utf8") as f:
             structure = cls.parse_xyz(f.read())
         return structure
 

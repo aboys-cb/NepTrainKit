@@ -128,7 +128,7 @@ def get_nep_type(file_path:Path|str)->int:
 
 def get_xyz_nframe(path):
     if os.path.exists(path):
-        with open(path, 'r') as file:
+        with open(path, 'r',encoding="utf8") as file:
             nums = re.findall("^(\d+)$", file.read(), re.MULTILINE)
             return len(nums)
     return 0

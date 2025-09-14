@@ -238,7 +238,7 @@ class NepResultPlotWidget(QWidget):
             energy_data = self.canvas.nep_result_data.energy.now_data[select_index,1]
             descriptor_data = np.column_stack((descriptor_data,energy_data))
 
-        with open(path, "w") as f:
+        with open(path, "w",encoding="utf8") as f:
             np.savetxt(f,descriptor_data,fmt='%.6g',delimiter='\t')
 
 

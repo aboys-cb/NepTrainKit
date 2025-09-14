@@ -4,6 +4,8 @@
 ## Data Import
 In this section, we will use only the `nep.txt` and `train.xyz` files. You can simply drag any file into the software window to load it.
 
+For a list of supported file formats and details (e.g., VASP OUTCAR/XDATCAR, LAMMPS dump, ASE trajectories), see: [Supported Formats](../formats.md).
+
 Once loaded, the interface will appear as shown below, with red stars indicating the position of the structure in the training set.  
 ![GIF Image](../_static/image/example/display/import.gif)
 

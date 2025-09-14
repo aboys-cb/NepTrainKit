@@ -157,7 +157,7 @@ class MakeDataWidget(QWidget):
     def _export_file(self,path):
         if os.path.exists(path):
             os.remove(path)
-        with open(path, "w") as file:
+        with open(path, "w",encoding="utf8") as file:
             for card in self.workspace_card_widget.cards:
                 if card.check_state:
 

@@ -30,8 +30,7 @@ NepTrainKit can load and convert multiple common output formats into its interna
 - `dump` / `lammpstrj`
   - Loader: LAMMPS dump importer (streaming)
   - Supports orthogonal and triclinic boxes (xy/xz/yz tilts), columns `x y z` or `xs ys zs` (xu/yu/zu), optional `fx fy fz`
-  - Species: if `element` column present, uses it；否则会弹窗让用户输入元素列表（对应 type 1..N），不依赖 mass/pair_coeff/read_data 自动解析。
-  - 框选在全量数据上执行，即使渲染抽样也不影响选择结果。
+  - Species: If `element` column is present, uses it; otherwise a popup window will be displayed to let the user enter the element list (corresponding to type 1..N).
 
 ## ASE trajectories
 

@@ -458,6 +458,7 @@ class ShowNepWidget(QWidget):
         bond_text = ""
         radius_coefficient_config = Config.getfloat("widget","radius_coefficient",0.7)
         unreasonable = False
+
         for elems,bond_length in distance_info.items():
             elem0_info = table_info[str(atomic_numbers[elems[0]])]
             elem1_info = table_info[str(atomic_numbers[elems[1]])]

@@ -89,6 +89,8 @@ class NepTrainResultData(ResultData):
             descriptor_path = dataset_path.with_name(f"descriptor.out")
         else:
             descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
+
+
         inst = cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,stress_out_path,virial_out_path,descriptor_path)
         if structures is not None:
             try:

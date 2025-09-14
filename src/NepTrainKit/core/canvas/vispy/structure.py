@@ -468,6 +468,7 @@ class StructurePlotWidget(scene.SceneCanvas):
         radius_coefficient = Config.getfloat("widget", "radius_coefficient", 0.7)
 
         bond_pairs = structure.get_bad_bond_pairs(radius_coefficient)
+
         for pair in bond_pairs:
             self.highlight_atom(pair[0])
             self.highlight_atom(pair[1])

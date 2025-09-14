@@ -34,7 +34,7 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit import module_path
 
 from NepTrainKit.utils import LoadingThread,call_path_dialog
-from ..core.io.utils import get_xyz_nframe, read_nep_in, read_nep_out_file, get_rmse
+from ..core.io.utils import get_xyz_nframe,  read_nep_out_file, get_rmse
 
 
 class GetIntMessageBox(MessageBoxBase):
@@ -51,6 +51,22 @@ class GetIntMessageBox(MessageBoxBase):
 
         self.widget.setMinimumWidth(100 )
         self.intSpinBox.setMaximum(100000000)
+
+class GetStrMessageBox(MessageBoxBase):
+    """ Custom message box """
+
+    def __init__(self, parent=None,tip=""):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel.setWordWrap(True)
+        self.lineEdit = LineEdit(self)
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.lineEdit)
+
+        self.widget.setMinimumWidth(100 )
+
+
 class SparseMessageBox(MessageBoxBase):
     """用于最远点取样的弹窗 """
 

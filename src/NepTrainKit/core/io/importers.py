@@ -8,6 +8,7 @@ from typing import Iterable, Protocol, List
 
 from loguru import logger
 
+from NepTrainKit import utils
 from NepTrainKit.core.structure import Structure
 import numpy as np
 
@@ -41,6 +42,7 @@ def is_parseable(path: str) -> bool:
         except Exception:
             pass
     return False
+
 
 def import_structures(path: Path|str,**kwargs) -> List[Structure]:
     """Try all registered importers to load structures from path.
@@ -89,6 +91,7 @@ class XdatcarImporter:
 
     def iter_structures(self, path: str, **kwargs):
         cancel_event = kwargs.get("cancel_event")
+
         """Parse VASP XDATCAR trajectory into Structure frames.
 
         Notes:
@@ -533,6 +536,328 @@ class OutcarImporter:
 
 
 register_importer(OutcarImporter())
+
+
+# LAMMPS dump importer
+
+
+class LammpsDumpImporter:
+    name = "lammps_dump"
+
+    def matches(self, path: str) -> bool:
+        base = os.path.basename(path).lower()
+        ext = os.path.splitext(path)[1].lower()
+        if not os.path.isfile(path):
+            return False
+        # Check dump signature/extension
+        if ext in {".dump", ".lammpstrj", ".lammpstraj"} or base.endswith(".dump"):
+            return True
+        try:
+            with open(path, "r", encoding="utf8", errors="ignore") as f:
+                head = f.readline()
+            return head.strip().startswith("ITEM: TIMESTEP")
+        except Exception:
+            return False
+
+    def iter_structures(self, path: str, **kwargs):
+        cancel_event = kwargs.get("cancel_event")
+        element_resolver = kwargs.get(
+            "element_resolver")  # Optional callable(missing_types:list[int], context:dict)->dict[int,str]
+        element_map_arg = kwargs.get("element_map")  # Optional pre-supplied {type:int -> element:str}
+
+        def cancelled():
+            return cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set()
+
+        # Build element mapping from LAMMPS in-file or referenced data file (Masses section)
+        dirp = os.path.dirname(path) or "."
+        input_files: list[str] = []
+        try:
+            for fname in os.listdir(dirp):
+                lower = fname.lower()
+                if os.path.isfile(os.path.join(dirp, fname)) and (lower.startswith("in") or lower.endswith("in") or lower.endswith(".in")):
+                    input_files.append(os.path.join(dirp, fname))
+        except Exception:
+            pass
+
+        def parse_infile_for_mapping(infile: str) -> tuple[dict[int, str], list[str]]:
+            import re
+            type_map: dict[int, str] = {}
+            datafiles: list[str] = []
+            try:
+                with open(infile, "r", encoding="utf8", errors="ignore") as fi:
+                    for line in fi:
+                        if cancelled():
+                            break
+                        # mass <type> <mass>  # Element
+                        m = re.match(r"\s*mass\s+(\d+)\s+([^#\s]+)\s*(?:#\s*([A-Za-z][A-Za-z0-9_\-]*))?", line)
+                        if m:
+                            t = int(m.group(1))
+                            name = m.group(3)
+                            if name:
+                                type_map.setdefault(t, name)
+                            continue
+                        # set type <type> element <Elem>
+                        m3 = re.match(r"\s*set\s+type\s+(\d+)\s+element\s+([A-Za-z][A-Za-z0-9_\-]*)", line)
+                        if m3:
+                            t = int(m3.group(1))
+                            name = m3.group(2)
+                            type_map.setdefault(t, name)
+                            continue
+                        # pair_coeff * * <file> Elem1 Elem2 ... (NULL skipped)
+                        pc = re.match(r"\s*pair_coeff\s+\*\s+\*\s+([^#\s]+)\s+(.+)$", line)
+                        if pc:
+                            elems_part = pc.group(2).split('#', 1)[0]
+                            elems = [tok for tok in elems_part.split() if tok.upper() != 'NULL']
+                            # Map by order: type 1..N -> elems[0..N-1]
+                            for i, el in enumerate(elems, start=1):
+                                if re.match(r"^[A-Za-z][A-Za-z0-9_\-]*$", el):
+                                    type_map.setdefault(i, el)
+                            continue
+                        m2 = re.match(r"\s*read_data\s+([^#\s]+)", line)
+                        if m2:
+                            datafiles.append(m2.group(1).strip().strip('"\''))
+            except Exception:
+                pass
+            return type_map, datafiles
+
+        def parse_datafile_masses(datafile: str) -> dict[int, str]:
+            import re
+            d: dict[int, str] = {}
+            full = datafile if os.path.isabs(datafile) else os.path.join(dirp, datafile)
+            try:
+                with open(full, "r", encoding="utf8", errors="ignore") as fd:
+                    lines = fd.readlines()
+                i = 0
+                while i < len(lines):
+                    if cancelled():
+                        break
+                    if lines[i].strip().lower().startswith("masses"):
+                        # Skip optional blank line after section header
+                        i += 1
+                        if i < len(lines) and lines[i].strip() == "":
+                            i += 1
+                        # Parse until blank line or next section header (all caps word)
+                        while i < len(lines):
+                            s = lines[i].strip()
+                            if s == "" or s.lower() in {"atoms", "atom types", "bond types", "angles", "velocities", "pairs", "pair coeffs", "pair_coeffs"}:
+                                break
+                            # pattern: <type> <mass> # Element
+                            m = re.match(r"(\d+)\s+([^#\s]+)\s*(?:#\s*([A-Za-z][A-Za-z0-9_\-]*))?", s)
+                            if m:
+                                t = int(m.group(1))
+                                name = m.group(3)
+                                if name:
+                                    d.setdefault(t, name)
+                            i += 1
+                        break
+                    i += 1
+            except Exception:
+                pass
+            return d
+
+        type_to_elem: dict[int, str] = {}
+        if isinstance(element_map_arg, dict):
+            # seed with user-provided mapping first
+            for k, v in element_map_arg.items():
+                try:
+                    type_to_elem[int(k)] = str(v)
+                except Exception:
+                    pass
+        datafiles: list[str] = []
+        for inf in input_files:
+            m, dfs = parse_infile_for_mapping(inf)
+            type_to_elem.update(m)
+            datafiles.extend(dfs)
+        for df in datafiles:
+            type_to_elem.update(parse_datafile_masses(df))
+
+        with open(path, "r", encoding="utf8", errors="ignore") as f:
+            while True:
+                if cancelled():
+                    return
+                line = f.readline()
+                if not line:
+                    break
+                line = line.strip()
+                if not line:
+                    continue
+                if not line.startswith("ITEM: TIMESTEP"):
+                    continue
+
+                # TIMESTEP
+                ts_line = f.readline()
+                if not ts_line:
+                    break
+                try:
+                    timestep = int(ts_line.strip().split()[0])
+                except Exception:
+                    timestep = 0
+
+                # NUMBER OF ATOMS
+                hdr = f.readline()  # ITEM: NUMBER OF ATOMS
+                if not hdr or not hdr.strip().startswith("ITEM: NUMBER OF ATOMS"):
+                    break
+                nat_line = f.readline()
+                if not nat_line:
+                    break
+                try:
+                    n_atoms = int(nat_line.strip().split()[0])
+                except Exception:
+                    continue
+
+                # BOX BOUNDS
+                bounds_hdr = f.readline()
+                if not bounds_hdr or not bounds_hdr.strip().startswith("ITEM: BOX BOUNDS"):
+                    break
+                bounds_tokens = bounds_hdr.strip().split()
+                tilt_flags = {t for t in bounds_tokens if t in {"xy", "xz", "yz"}}
+
+                def _read_bounds_line():
+                    l = f.readline()
+                    return [float(x) for x in l.strip().split()] if l else []
+
+                b1 = _read_bounds_line(); b2 = _read_bounds_line(); b3 = _read_bounds_line()
+                if not b1 or not b2 or not b3:
+                    break
+                if tilt_flags:
+                    # triclinic: xlo xhi xy; ylo yhi xz; zlo zhi yz
+                    xlo, xhi, xy = b1[0], b1[1], b1[2]
+                    ylo, yhi, xz = b2[0], b2[1], b2[2]
+                    zlo, zhi, yz = b3[0], b3[1], b3[2]
+                else:
+                    xlo, xhi = b1[0], b1[1]
+                    ylo, yhi = b2[0], b2[1]
+                    zlo, zhi = b3[0], b3[1]
+                    xy = xz = yz = 0.0
+
+                lx = float(xhi - xlo)
+                ly = float(yhi - ylo)
+                lz = float(zhi - zlo)
+                a = np.array([lx, 0.0, 0.0], dtype=np.float32)
+                b = np.array([xy, ly, 0.0], dtype=np.float32)
+                c = np.array([xz, yz, lz], dtype=np.float32)
+                lattice = np.vstack([a, b, c]).reshape(3, 3)
+
+                # ATOMS header
+                atoms_hdr = f.readline()
+                if not atoms_hdr or not atoms_hdr.strip().startswith("ITEM: ATOMS"):
+                    break
+                cols = atoms_hdr.strip().split()[2:]
+                idx = {name: i for i, name in enumerate(cols)}
+
+                has_scaled = all(k in idx for k in ("xs", "ys", "zs"))
+                has_cart = all(k in idx for k in ("x", "y", "z"))
+                has_unwrapped = all(k in idx for k in ("xu", "yu", "zu"))
+                has_forces = all(k in idx for k in ("fx", "fy", "fz"))
+                species_col = "element" if "element" in idx else ("type" if "type" in idx else None)
+
+                positions = np.zeros((n_atoms, 3), dtype=np.float32)
+                forces = np.zeros((n_atoms, 3), dtype=np.float32) if has_forces else None
+                species_list: list[str] = []
+                types_buffer = np.zeros((n_atoms,), dtype=np.int32) if species_col == "type" else None
+
+                for i in range(n_atoms):
+                    if cancelled():
+                        return
+                    l = f.readline()
+                    if not l:
+                        break
+                    parts = l.split()
+                    # species
+                    if species_col is None:
+                        species_list.append("X")
+                    else:
+                        val = parts[idx[species_col]]
+                        if species_col == "type":
+                            try:
+                                tnum = int(float(val))
+                            except Exception:
+                                tnum = -1
+                            if types_buffer is not None:
+                                types_buffer[i] = tnum
+                            # placeholder; will resolve after reading all atoms
+                            species_list.append("")
+                        else:
+                            species_list.append(val)
+
+                    # fractional
+                    if has_scaled:
+                        fx = float(parts[idx["xs"]]); fy = float(parts[idx["ys"]]); fz = float(parts[idx["zs"]])
+                    elif has_cart:
+                        x = float(parts[idx["x"]]); y = float(parts[idx["y"]]); z = float(parts[idx["z"]])
+                        fx = (x - xlo) / lx if lx != 0 else 0.0
+                        fy = (y - ylo) / ly if ly != 0 else 0.0
+                        fz = (z - zlo) / lz if lz != 0 else 0.0
+                    elif has_unwrapped:
+                        x = float(parts[idx["xu"]]); y = float(parts[idx["yu"]]); z = float(parts[idx["zu"]])
+                        fx = (x - xlo) / lx if lx != 0 else 0.0
+                        fy = (y - ylo) / ly if ly != 0 else 0.0
+                        fz = (z - zlo) / lz if lz != 0 else 0.0
+                    else:
+                        fx = fy = fz = 0.0
+
+                    pos = fx * a + fy * b + fz * c
+                    positions[i, :] = pos
+
+                    if has_forces and forces is not None:
+                        forces[i, 0] = float(parts[idx["fx"]])
+                        forces[i, 1] = float(parts[idx["fy"]])
+                        forces[i, 2] = float(parts[idx["fz"]])
+
+                # Resolve missing type->element mapping if needed
+                if species_col == "type" and types_buffer is not None:
+                    missing = sorted({int(t) for t in types_buffer.tolist() if int(t) >= 1 and int(t) not in type_to_elem})
+                    if missing and callable(element_resolver):
+                        try:
+                            ctx = {
+                                "path": path,
+                                "n_atoms": n_atoms,
+                                "timestep": timestep,
+                                "present_types": missing,
+                            }
+                            ret = element_resolver(missing, ctx)
+                            if isinstance(ret, dict):
+                                for k, v in ret.items():
+                                    try:
+                                        type_to_elem[int(k)] = str(v)
+                                    except Exception:
+                                        pass
+                        except Exception:
+                            # ignore resolver errors, will fallback
+                            pass
+                    # fill species_list based on mapping (fallback to X<type>)
+                    for i in range(n_atoms):
+                        t = int(types_buffer[i])
+                        species_list[i] = type_to_elem.get(t, f"X{t}") if t > 0 else "X"
+
+                species_arr = np.array(species_list, dtype=np.str_)
+                properties = [
+                    {"name": "species", "type": "S", "count": 1},
+                    {"name": "pos", "type": "R", "count": 3},
+                ]
+                atom_props = {
+                    "species": species_arr,
+                    "pos": positions,
+                }
+                if has_forces and forces is not None:
+                    properties.append({"name": "forces", "type": "R", "count": 3})
+                    atom_props["forces"] = forces
+
+                additional_fields = {
+                    "Config_type": f"LAMMPS_{timestep}",
+                    "pbc": "T T T",
+                }
+
+                yield Structure(lattice=lattice,
+                                atomic_properties=atom_props,
+                                properties=properties,
+                                additional_fields=additional_fields)
+
+
+register_importer(LammpsDumpImporter())
+
+
+
 
 
 

@@ -47,6 +47,9 @@ class TorsionGuardParams:
     max_retries_per_frame: int = 12
     mult_bond_factor: float = 0.87
     nonpbc_box_size: float = 100.0
+    # Pauling bond order parameters
+    bo_c_const: float = 0.3
+    bo_threshold: float = 0.2
 
 
 # ---------- Geometry and PBC helpers ----------
@@ -101,7 +104,8 @@ def _grid_key(p: np.ndarray, inv_h: float, origin: np.ndarray) -> Tuple[int, int
 
 # ---------- Topology (built once per frame) ----------
 
-def build_adjacency_nonpbc(symbols: Sequence[str], coords: np.ndarray, bond_detect_factor: float):
+def build_adjacency_nonpbc(symbols: Sequence[str], coords: np.ndarray, bond_detect_factor: float,
+                           c_const: float = 0.3, bo_threshold: float = 0.2):
     N = len(symbols)
     radii = np.array([COVALENT_RADII.get(s, 0.77) for s in symbols], dtype=float)
     if N == 0:
@@ -120,6 +124,7 @@ def build_adjacency_nonpbc(symbols: Sequence[str], coords: np.ndarray, bond_dete
 
     adj: List[set[int]] = [set() for _ in range(N)]
     edge_len: dict[Tuple[int, int], float] = {}
+    edge_order: dict[Tuple[int, int], int] = {}
     neighbor_offsets = [(dx, dy, dz) for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1)]
     for i in range(N):
         ri = radii[i]
@@ -135,15 +140,24 @@ def build_adjacency_nonpbc(symbols: Sequence[str], coords: np.ndarray, bond_dete
                 rj = radii[j]
                 pj = coords[j]
                 rij2 = float(np.dot(pj - pi, pj - pi))
-                cutoff = bond_detect_factor * (ri + rj)
-                if rij2 <= cutoff * cutoff:
-                    adj[i].add(j)
-                    adj[j].add(i)
-                    edge_len[(i, j)] = math.sqrt(rij2)
-    return adj, edge_len, radii
+                rx = math.sqrt(rij2)
+                r0 = (ri + rj)
+                # Linus Pauling bond order
+                bo = math.exp((r0 - rx) / float(c_const))
+                if bo <= bo_threshold:
+                    continue
+                # classify bond order
+                rounded = int(math.floor(bo + 0.5))
+                order = 1 if rounded <= 1 else min(3, rounded)
+                adj[i].add(j)
+                adj[j].add(i)
+                edge_len[(i, j)] = rx
+                edge_order[(i, j)] = order
+    return adj, edge_len, radii, edge_order
 
 
-def build_adjacency_pbc(symbols: Sequence[str], coords: np.ndarray, cell: np.ndarray, bond_detect_factor: float):
+def build_adjacency_pbc(symbols: Sequence[str], coords: np.ndarray, cell: np.ndarray, bond_detect_factor: float,
+                        c_const: float = 0.3, bo_threshold: float = 0.2):
     N = len(symbols)
     radii = np.array([COVALENT_RADII.get(s, 0.77) for s in symbols], dtype=float)
     if N == 0:
@@ -151,6 +165,7 @@ def build_adjacency_pbc(symbols: Sequence[str], coords: np.ndarray, cell: np.nda
     inv_cell_T = np.linalg.inv(cell).T
     adj: List[set[int]] = [set() for _ in range(N)]
     edge_len: dict[Tuple[int, int], float] = {}
+    edge_order: dict[Tuple[int, int], int] = {}
     for i in range(N):
         ri = radii[i]
         for j in range(i + 1, N):
@@ -158,12 +173,18 @@ def build_adjacency_pbc(symbols: Sequence[str], coords: np.ndarray, cell: np.nda
             dvec = coords[j] - coords[i]
             dvec = mic_delta(dvec, cell, inv_cell_T)
             d2 = float(np.dot(dvec, dvec))
-            cutoff = bond_detect_factor * (ri + rj)
-            if d2 <= cutoff * cutoff:
-                adj[i].add(j)
-                adj[j].add(i)
-                edge_len[(i, j)] = math.sqrt(d2)
-    return adj, edge_len, radii
+            rx = math.sqrt(d2)
+            r0 = (ri + rj)
+            bo = math.exp((r0 - rx) / float(c_const))
+            if bo <= bo_threshold:
+                continue
+            rounded = int(math.floor(bo + 0.5))
+            order = 1 if rounded <= 1 else min(3, rounded)
+            adj[i].add(j)
+            adj[j].add(i)
+            edge_len[(i, j)] = rx
+            edge_order[(i, j)] = order
+    return adj, edge_len, radii, edge_order
 
 
 # ---------- Fast torsion detection ----------
@@ -209,7 +230,8 @@ def _prefer_neighbor(a: int, exclude_b: int, adj: Sequence[set[int]], symbols: S
 
 
 def get_rotatable_torsions_fast(adj: Sequence[set[int]], edge_len: dict[Tuple[int, int], float],
-                                radii: np.ndarray, symbols: Sequence[str], mult_bond_factor: float):
+                                radii: np.ndarray, symbols: Sequence[str], mult_bond_factor: float,
+                                edge_order: Optional[dict[Tuple[int, int], int]] = None):
     """
     Prefer bridge edges; if none, fall back to all internal bonds (deg>1) excluding suspected multiple bonds.
     Returns List[(n1,a,b,n2)]
@@ -228,8 +250,13 @@ def get_rotatable_torsions_fast(adj: Sequence[set[int]], edge_len: dict[Tuple[in
                 continue
             if deg[a] <= 1 or deg[b] <= 1:
                 continue
-            if d < mult_bond_factor * (radii[a] + radii[b]):
-                continue
+            # Exclude multiple bonds: prefer bond order if available, otherwise fallback to distance heuristic
+            if edge_order is not None:
+                if edge_order.get((a, b), 1) >= 2:
+                    continue
+            else:
+                if d < mult_bond_factor * (radii[a] + radii[b]):
+                    continue
             n1 = _prefer_neighbor(a, b, adj, symbols)
             n2 = _prefer_neighbor(b, a, adj, symbols)
             if n1 is None or n2 is None:
@@ -384,7 +411,6 @@ def perturb_coords_fast(coords: np.ndarray, adj: Sequence[set[int]], torsions: S
 
 def process_single(symbols: Sequence[str],
                    coords: np.ndarray,
-                   comment: str,
                    cell: Optional[np.ndarray],
                    params: TorsionGuardParams) -> list[tuple]:
 
@@ -404,15 +430,23 @@ def process_single(symbols: Sequence[str],
     # Build topology once (fixed for this frame). Multiple disconnected molecules are allowed.
     if pbc_active:
         assert cell is not None
-        adj, edge_len, radii = build_adjacency_pbc(symbols, coords, cell, bond_detect_factor=params.bond_detect_factor)
+        adj, edge_len, radii, edge_order = build_adjacency_pbc(
+            symbols, coords, cell,
+            bond_detect_factor=params.bond_detect_factor,
+            c_const=float(params.bo_c_const), bo_threshold=float(params.bo_threshold)
+        )
     else:
-        adj, edge_len, radii = build_adjacency_nonpbc(symbols, coords, bond_detect_factor=params.bond_detect_factor)
+        adj, edge_len, radii, edge_order = build_adjacency_nonpbc(
+            symbols, coords,
+            bond_detect_factor=params.bond_detect_factor,
+            c_const=float(params.bo_c_const), bo_threshold=float(params.bo_threshold)
+        )
 
     bond_pairs = [(a, b) if a < b else (b, a) for (a, b) in edge_len.keys()]
     bonded_set = set(bond_pairs)
 
     # Torsion set (always fast method with fallback to internal bonds)
-    torsions = get_rotatable_torsions_fast(adj, edge_len, radii, symbols, params.mult_bond_factor)
+    torsions = get_rotatable_torsions_fast(adj, edge_len, radii, symbols, params.mult_bond_factor, edge_order=edge_order)
     local_mode_flag = len(symbols) > params.local_mode_cutoff_atoms
 
     results: list[tuple] = []
@@ -468,7 +502,7 @@ def process_single(symbols: Sequence[str],
         else:
             new_coords = center_in_box(new_coords, float(params.nonpbc_box_size))
 
-        results.append((list(symbols), new_coords, comment, cell, pbc_active))
+        results.append((list(symbols), new_coords, cell, pbc_active))
 
     return results
 

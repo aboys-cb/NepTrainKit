@@ -34,16 +34,12 @@ NepTrainKit can load and convert multiple common output formats into its interna
 
 ## ASE trajectories
 
-- `.traj` / `.json` (ASE)
+- `.traj`
   - Loader: ASE trajectory importer (requires ASE)
   - Uses `ase.io.iread()` to iterate frames and converts each Atoms to `Structure`
-  - Captures lattice, species, positions, optional forces (`atoms.arrays['forces']`), pbc flags, and stress/virial if present in `atoms.info`
+  - Captures lattice, species, positions, optional forces, pbc flags, and stress/virial if present in `atoms`
 
-- `.traj` / `.json` / `.ndjson` (without ASE)
-  - Loader: ASE JSON importer (no ASE dependency)
-  - NDJSON (one JSON object per line) and single JSON array formats supported
-  - Expects atoms dict (or nested under `atoms`) with `numbers` or `symbols`, `positions`, optional `cell`, `pbc`, and `forces`
-
+ 
 ## Fallback conversion
 
 When an unrecognized format is selected, NepTrainKit attempts to detect if any registered importer can parse it. If not, no loading occurs. You can always convert your data to EXTXYZ to ensure compatibility.

@@ -95,8 +95,7 @@ class NepCalculator():
                         if GpuNep is not None:
                             try:
                                 self.nep3 = GpuNep(self.model_file)
-                                print(self.nep3.ok)
-                                print(self.nep3.error_msg)
+
                             except RuntimeError as e:
                                 MessageManager.send_error_message(e)
                                 return False

@@ -55,6 +55,12 @@
 
 
 namespace py = pybind11;
+struct InitResult {
+    bool ok;
+    std::string error_msg;
+};
+
+
 
 static std::string convert_path(const std::string& utf8_path) {
 #ifdef _WIN32
@@ -132,6 +138,8 @@ private:
     std::unique_ptr<Potential> potential;
     std::atomic<bool> canceled_{false};
 
+    bool ok_;
+    std::string error_msg_;
     inline void check_canceled() const {
         if (canceled_.load(std::memory_order_relaxed)) {
             throw std::runtime_error("Canceled by user");
@@ -142,6 +150,21 @@ private:
 
 public:
     GpuNep(const std::string& potential_filename)   {
+
+                // 1. 先检测 CUDA
+        cudaError_t err = cudaFree(0);
+        ok_ = (err == cudaSuccess);
+        error_msg_ = ok_ ? "" : cudaGetErrorString(err);
+
+
+
+        // 3. 如果后面有 **必须 CUDA** 的步骤，再判断
+        if (!ok_) {
+            // 可选：直接抛异常，让 Python 立刻知道
+            throw std::runtime_error("GpuNep: " + error_msg_);
+        }
+
+
         std::string path = convert_path(potential_filename);
         // std::printf("[nep_gpu] GpuNep init: potential='%s'\n", path.c_str());
         
@@ -677,12 +700,29 @@ std::vector<std::vector<double>> GpuNep::get_structures_polarizability(
         }
     }
     return pols;
+
+    InitResult check_cuda_init() {
+    InitResult r{};
+    // 强制初始化 CUDA 上下文
+    cudaError_t err = cudaFree(0);
+
+    if (err == cudaSuccess) {
+        r.ok = true;
+        r.error_msg = "";
+    } else {
+        r.ok = false;
+        r.error_msg = cudaGetErrorString(err);  // 如 insufficient driver ...
+    }
+    return r;
+}
 }
 
 PYBIND11_MODULE(nep_gpu, m) {
     m.doc() = "GPU-accelerated NEP bindings";
     py::class_<GpuNep>(m, "GpuNep")
         .def(py::init<const std::string&>())
+         .def_readonly("ok",        &GpuNep::ok_)
+        .def_readonly("error_msg", &GpuNep::error_msg_)
         .def("get_element_list", &GpuNep::get_element_list)
         .def("set_batch_size", &GpuNep::set_batch_size)
         .def("calculate", &GpuNep::calculate)

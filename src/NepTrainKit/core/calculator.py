@@ -67,25 +67,10 @@ class NepCalculator():
 
             self.load_nep()
             # Probe backend viability and fall back to CPU if GPU is not usable
-            try:
-                self.element_list = self.nep3.get_element_list()
-                self.type_dict = {e: i for i, e in enumerate(self.element_list)}
-                MessageManager.send_info_message("using GpuNep" if GpuNep is not None and isinstance(self.nep3, GpuNep) else "using CpuNep")
-                self.initialized = True
-            except Exception:
-                logger.debug(traceback.format_exc())
-                MessageManager.send_warning_message("GPU backend unavailable (CUDA/driver mismatch). Switching to CPU backend.")
-                if self._load_nep_backend(NepBackend.CPU):
-                    try:
-                        self.element_list = self.nep3.get_element_list()
-                        self.type_dict = {e: i for i, e in enumerate(self.element_list)}
-                        self.initialized = True
-                        MessageManager.send_info_message("using CpuNep")
-                    except Exception:
-                        logger.debug(traceback.format_exc())
-                        self.initialized = False
-                else:
-                    self.initialized = False
+
+            self.element_list = self.nep3.get_element_list()
+            self.type_dict = {e: i for i, e in enumerate(self.element_list)}
+
         else:
             self.initialized = False
 
@@ -108,7 +93,13 @@ class NepCalculator():
                 with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
                     if backend==NepBackend.GPU:
                         if GpuNep is not None:
-                            self.nep3 = GpuNep(self.model_file)
+                            try:
+                                self.nep3 = GpuNep(self.model_file)
+                                print(self.nep3.ok)
+                                print(self.nep3.error_msg)
+                            except RuntimeError as e:
+                                MessageManager.send_error_message(e)
+                                return False
                             self.nep3.set_batch_size(self.batch_size)
                         else:
                             return False

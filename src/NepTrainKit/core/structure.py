@@ -106,7 +106,7 @@ class Structure:
         Incrementally read a multi-structure XYZ file and yield Structure objects.
         If cancel_event is provided and set(), stop early.
         """
-        with open(filename, "r") as file:
+        with open(filename, "r",encoding="utf8") as file:
             while True:
                 if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
                     return
@@ -550,7 +550,7 @@ class Structure:
         # data_to_process = []
         structures = []
 
-        with open(filename, "r") as file:
+        with open(filename, "r",encoding="utf8") as file:
             while True:
                 num_atoms_line = file.readline()
                 if not num_atoms_line:

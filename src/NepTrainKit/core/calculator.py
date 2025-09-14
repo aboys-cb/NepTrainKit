@@ -70,7 +70,7 @@ class NepCalculator():
 
             self.element_list = self.nep3.get_element_list()
             self.type_dict = {e: i for i, e in enumerate(self.element_list)}
-
+            self.initialized=True
         else:
             self.initialized = False
 

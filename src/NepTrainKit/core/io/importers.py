@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import traceback
 from pathlib import Path
 from typing import Iterable, Protocol, List
 
@@ -56,7 +57,8 @@ def import_structures(path: Path|str,**kwargs) -> List[Structure]:
             if imp.matches(path):
                 return list(imp.iter_structures(path,**kwargs))
         except Exception:
-            logger.debug(f"Importer {imp.__class__.__name__} failed on {path}")
+            logger.error(f"Importer {imp.__class__.__name__} failed on {traceback.format_exc()}")
+
             continue
     return []
 

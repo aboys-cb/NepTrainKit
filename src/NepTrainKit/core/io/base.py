@@ -469,13 +469,19 @@ class ResultData(QObject):
             # If subclass overrides load_structures, defer to it; otherwise do cancel-aware read
 
             self.load_structures()
+            if self._atoms_dataset.num!=0:
 
-            if not self.cancel_event.is_set():
-                self._load_descriptors()
-            if not self.cancel_event.is_set():
-                self._load_dataset()
-            if not self.cancel_event.is_set():
-                self.load_flag=True
+
+
+                if not self.cancel_event.is_set():
+                    self._load_descriptors()
+                if not self.cancel_event.is_set():
+                    self._load_dataset()
+                if not self.cancel_event.is_set():
+                    self.load_flag=True
+            else:
+                MessageManager.send_warning_message("No structures were loaded.")
+
         except:
             logger.error(traceback.format_exc())
 

@@ -29,6 +29,11 @@ Added
 - OrganicMolConfigPBCCard
   - Bond detection now uses Linus Pauling bond‑order formula `BO = exp((r0 − r)/c)`; `c` and `BO` threshold exposed in UI (defaults 0.3/0.2).
   - Multiple bonds (order ≥ 2) excluded from rotatable torsions; optional “Center molecule in non‑PBC box” switch.
+- Plot Settings
+  - New Settings page group to control plotting details across both PyQtGraph and VisPy canvases.
+  - Adjustable scatter point size for PyQtGraph and VisPy.
+  - Configurable default scatter colors: edge and face (with alpha).
+  - Adjustable colors for Selected/Show/Current markers and current-marker size.
 
 Changed
 - Result loading

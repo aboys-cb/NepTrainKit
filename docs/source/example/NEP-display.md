@@ -29,6 +29,8 @@ First, we select and delete the top 10 points based on the maximum energy error.
 
 ### Sparse Sampling of Furthest Points
 This training set contains about 200 structures. We set the minimum distance to 0.01 and retain a maximum of 100 structures.  
+
+Tip: You can pre‑select a region (by mouse) and then enable "Use current selection as region" in the FPS dialog to restrict sampling to that region only.
 ![GIF Image](../_static/image/example/display/fps.gif)
 
 ### Manual Selection

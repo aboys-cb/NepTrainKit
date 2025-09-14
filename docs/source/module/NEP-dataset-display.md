@@ -53,8 +53,11 @@ In the export menu, you can click "Export Selected Structures" to export the cur
   - Input: `N` (count of structures).
   - Behavior: on the active subplot, computes per-structure error (sum of absolute residuals) and selects top-`N` unique structures.
 - <img src="../_static/image/sparse.svg" alt="sparse" width='30' height='30' /> Sparse samples (FPS):
-  - Input: `Max num`, `Min distance` (in descriptor space, unitless).
-  - Behavior: computes descriptors then runs farthest-point sampling; selects retained structures.
+  - Inputs: `Max num`, `Min distance` (in descriptor space), and optional `Use current selection as region`.
+  - Behavior:
+    - If the region option is checked, FPS runs only on the subset of points that correspond to the currently selected structures (mapped onto the active subplot). When FPS sampling is performed in the designated area, the program will automatically deselect it, just click to delete! If no selection is present or it does not map to any points, the tool falls back to global FPS.
+    - Otherwise, FPS runs globally on all points in the active subplot.
+
 - <img src="../_static/image/pen.svg" alt="pen" width='30' height='30' /> Mouse Selection: Toggle selection mode; left-drag to select, right-click to deselect.
 - <img src="../_static/image/discovery.svg" alt="nonphysical" width='30' height='30' /> Find non-physical structures:
   - Parameter: uses Settings → “Covalent radius coefficient” to detect too-short bonds.

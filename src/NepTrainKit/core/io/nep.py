@@ -160,7 +160,7 @@ class NepTrainResultData(ResultData):
             else:
                 energy_array = np.column_stack([potentials / self.atoms_num_list, ref_energies])
         except Exception:
-            logger.debug(traceback.format_exc())
+            # logger.debug(traceback.format_exc())
             if potentials.size == 0:
                 # 计算失败 空数组
                 energy_array = np.column_stack([potentials, potentials])
@@ -187,7 +187,7 @@ class NepTrainResultData(ResultData):
             forces_array = np.column_stack([forces, forces])
 
         except Exception:
-            logger.debug(traceback.format_exc())
+            # logger.debug(traceback.format_exc())
             forces_array = np.column_stack([forces, forces])
             MessageManager.send_error_message("an error occurred while calculating forces. Please check the input file.")
         if forces_array.size != 0:
@@ -214,7 +214,7 @@ class NepTrainResultData(ResultData):
 
         except Exception:
             MessageManager.send_error_message(f"An error occurred while calculating virial and stress. Please check the input file.")
-            logger.debug(traceback.format_exc())
+            # logger.debug(traceback.format_exc())
             virials_array = np.column_stack([virials, virials])
 
         stress_array = virials_array * coefficient  * 160.21766208  # 单位转换\
@@ -250,7 +250,7 @@ class NepTrainResultData(ResultData):
             self.write_prediction()
             return energy_array,force_array,virial_array, stress_array
         except Exception as e:
-            logger.debug(traceback.format_exc())
+            # logger.debug(traceback.format_exc())
             MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
             return np.array([]), np.array([]), np.array([]), np.array([])
 
@@ -337,7 +337,7 @@ class NepPolarizabilityResultData(ResultData):
             self.write_prediction()
 
         except Exception as e:
-            logger.debug(traceback.format_exc())
+            # logger.debug(traceback.format_exc())
             MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
 
             nep_polarizability_array = np.array([])
@@ -359,7 +359,7 @@ class NepPolarizabilityResultData(ResultData):
                                                         ])
 
         except Exception:
-            logger.debug(traceback.format_exc())
+            # logger.debug(traceback.format_exc())
             polarizability_array = np.column_stack([polarizability, polarizability])
         polarizability_array = polarizability_array.astype(np.float32)
         if polarizability_array.size != 0:
@@ -457,7 +457,7 @@ class NepDipoleResultData(ResultData):
             self.write_prediction()
 
         except Exception as e:
-            logger.debug(traceback.format_exc())
+            # logger.debug(traceback.format_exc())
             MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
 
             nep_dipole_array = np.array([])
@@ -478,7 +478,7 @@ class NepDipoleResultData(ResultData):
                                                     ])
 
         except Exception:
-            logger.debug(traceback.format_exc())
+            # logger.debug(traceback.format_exc())
             dipole_array = np.column_stack([nep_dipole_array, nep_dipole_array])
         dipole_array = dipole_array.astype(np.float32)
         if dipole_array.size != 0:

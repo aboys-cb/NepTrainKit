@@ -177,7 +177,7 @@ class DeepmdResultData(ResultData):
             else:
                 energy_array = np.column_stack([ref_energies,potentials / self.atoms_num_list  ])
         except Exception:
-            logger.debug(traceback.format_exc())
+            # logger.debug(traceback.format_exc())
             if potentials.size == 0:
                 # 计算失败 空数组
                 energy_array = np.column_stack([potentials, potentials])
@@ -204,7 +204,7 @@ class DeepmdResultData(ResultData):
             forces_array = np.column_stack([forces, forces])
 
         except Exception:
-            logger.debug(traceback.format_exc())
+            # logger.debug(traceback.format_exc())
             forces_array = np.column_stack([forces, forces])
             MessageManager.send_error_message("an error occurred while calculating forces. Please check the input file.")
         if forces_array.size != 0:
@@ -233,7 +233,7 @@ class DeepmdResultData(ResultData):
 
         except Exception:
             MessageManager.send_error_message(f"An error occurred while calculating virial and stress. Please check the input file.")
-            logger.debug(traceback.format_exc())
+            # logger.debug(traceback.format_exc())
             virials_array = np.column_stack([virials, virials])
 
         if virials_array.size != 0:
@@ -261,7 +261,7 @@ class DeepmdResultData(ResultData):
             virial_array = self._save_virial_and_data(nep_virials_array[:, [0, 4, 8, 1, 5, 6]])
             return energy_array,force_array,virial_array
         except Exception as e:
-            logger.debug(traceback.format_exc())
+            # logger.debug(traceback.format_exc())
             MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
             return np.array([]), np.array([]), np.array([])
 

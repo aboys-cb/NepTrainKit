@@ -20,9 +20,9 @@ from qfluentwidgets import (
     ProgressBar,
     ComboBox,
     FluentStyleSheet,
-    FluentTitleBar,CompactDoubleSpinBox,TransparentToolButton,Dialog,ColorDialog,
+    FluentTitleBar, CompactDoubleSpinBox, TransparentToolButton, Dialog, ColorDialog,
     TitleLabel, HyperlinkLabel, RadioButton, LineEdit, FlowLayout, EditableComboBox, PrimaryDropDownPushButton,
-    PrimaryPushButton, Flyout, InfoBarIcon, MessageBox,TextEdit,FluentIcon, PushButton
+    PrimaryPushButton, Flyout, InfoBarIcon, MessageBox, TextEdit, FluentIcon, PushButton, ToolTipFilter, ToolTipPosition
 )
 from qframelesswindow import FramelessDialog
 import json
@@ -94,8 +94,14 @@ class SparseMessageBox(MessageBoxBase):
 
         self.frame_layout.addWidget(self.doubleSpinBox,1,1,1,2)
 
+        # region option: use current selection as FPS region
+        self.regionCheck = CheckBox("Use current selection as region", self)
+        self.regionCheck.setToolTip("When FPS sampling is performed in the designated area, the program will automatically deselect it, just click to delete!")
+        self.regionCheck.installEventFilter(ToolTipFilter(self.regionCheck, 300, ToolTipPosition.TOP))
+
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame )
+        self.viewLayout.addWidget(self.regionCheck)
 
         self.yesButton.setText('Ok')
         self.cancelButton.setText('Cancel')

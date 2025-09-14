@@ -14,6 +14,7 @@ from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCa
 
 from NepTrainKit.config import Config
 from NepTrainKit.custom_widget import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
+from NepTrainKit.custom_widget.settingscard import ColorSettingCard
 from NepTrainKit.core.types import ForcesMode, CanvasMode, NepBackend
 from NepTrainKit.core.update import UpdateWoker,UpdateNEP89Woker
 from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR
@@ -32,6 +33,8 @@ class SettingsWidget(ScrollArea):
              'Personalization' , self.scrollWidget)
         self.nep_group = SettingCardGroup(
              'NEP Settings' , self.scrollWidget)
+        self.plot_group = SettingCardGroup(
+             'Plot Settings' , self.scrollWidget)
 
         default_forces = Config.get("widget","forces_data",str(ForcesMode.Raw.value))
         if default_forces=="Row":
@@ -131,6 +134,103 @@ class SettingsWidget(ScrollArea):
         self.gpu_bs_card.setRange(0, 10000000)
         self.gpu_bs_card.setValue(float(gpu_bs_default))
 
+        # Plot settings defaults
+        edge_color = Config.get("plot", "marker_edge_color", "#07519C")
+        face_color = Config.get("plot", "marker_face_color", "#FFFFFF")
+        face_alpha = Config.getint("plot", "marker_face_alpha", 0) or 0
+        selected_color = Config.get("plot", "selected_color", "#FF0000")
+        show_color = Config.get("plot", "show_color", "#00FF00")
+        current_color = Config.get("plot", "current_color", "#FF0000")
+        pg_size = Config.getint("widget", "pg_marker_size", 7) or 7
+        vispy_size = Config.getint("widget", "vispy_marker_size", 6) or 6
+        vispy_aa = Config.getfloat("widget", "vispy_marker_antialias", 0.5) or 0.5
+        current_size = Config.getint("plot", "current_marker_size", 20) or 20
+
+        self.edge_color_card = ColorSettingCard(
+            FluentIcon.BRUSH,
+            'Scatter edge color',
+            'Default edge color for points',
+            self.plot_group
+        )
+        self.edge_color_card.setValue(edge_color)
+
+        self.face_color_card = ColorSettingCard(
+            FluentIcon.BRUSH,
+            'Scatter face color',
+            'Default fill color for points',
+            self.plot_group
+        )
+        self.face_color_card.setValue(face_color)
+
+        self.face_alpha_card = DoubleSpinBoxSettingCard(
+            FluentIcon.ALBUM,
+            'Face alpha (0-255)',
+            'Alpha channel for fill color',
+            self.plot_group
+        )
+        self.face_alpha_card.setRange(0, 255)
+        self.face_alpha_card.setValue(float(face_alpha))
+
+        self.pg_size_card = DoubleSpinBoxSettingCard(
+            FluentIcon.ALBUM,
+            'PyQtGraph scatter size',
+            'Marker size for PyQtGraph canvas',
+            self.plot_group
+        )
+        self.pg_size_card.setRange(1, 100)
+        self.pg_size_card.setValue(float(pg_size))
+
+        self.vispy_size_card = DoubleSpinBoxSettingCard(
+            FluentIcon.ALBUM,
+            'VisPy scatter size',
+            'Marker size for VisPy canvas',
+            self.plot_group
+        )
+        self.vispy_size_card.setRange(1, 100)
+        self.vispy_size_card.setValue(float(vispy_size))
+
+        self.vispy_aa_card = DoubleSpinBoxSettingCard(
+            FluentIcon.BRUSH,
+            'VisPy antialias',
+            'Marker antialias value for VisPy (0-2)',
+            self.plot_group
+        )
+        self.vispy_aa_card.setRange(0.0, 2.0)
+        self.vispy_aa_card.setValue(float(vispy_aa))
+
+        self.selected_color_card = ColorSettingCard(
+            FluentIcon.BRUSH,
+            'Selected color',
+            'Color for selected points',
+            self.plot_group
+        )
+        self.selected_color_card.setValue(selected_color)
+
+        self.show_color_card = ColorSettingCard(
+            FluentIcon.BRUSH,
+            'Show color',
+            'Color for highlighted "show" points',
+            self.plot_group
+        )
+        self.show_color_card.setValue(show_color)
+
+        self.current_color_card = ColorSettingCard(
+            FluentIcon.BRUSH,
+            'Current marker color',
+            'Color for current star marker',
+            self.plot_group
+        )
+        self.current_color_card.setValue(current_color)
+
+        self.current_size_card = DoubleSpinBoxSettingCard(
+            FluentIcon.ALBUM,
+            'Current marker size',
+            'Size of current star marker',
+            self.plot_group
+        )
+        self.current_size_card.setRange(5, 100)
+        self.current_size_card.setValue(float(current_size))
+
 
         self.about_group = SettingCardGroup("About", self.scrollWidget)
         self.help_card = HyperlinkCard(
@@ -185,13 +285,28 @@ class SettingsWidget(ScrollArea):
         self.nep_group.addSettingCard(self.nep_backend_card)
         self.nep_group.addSettingCard(self.gpu_bs_card)
 
+ 
+
         self.about_group.addSettingCard(self.about_nep89_card)
         self.about_group.addSettingCard(self.help_card)
         self.about_group.addSettingCard(self.feedback_card)
         self.about_group.addSettingCard(self.about_card)
 
 
+
         self.expand_layout.addWidget(self.personal_group)
+        # add plot setting cards into group before adding to layout
+        self.plot_group.addSettingCard(self.edge_color_card)
+        self.plot_group.addSettingCard(self.face_color_card)
+        self.plot_group.addSettingCard(self.face_alpha_card)
+        self.plot_group.addSettingCard(self.pg_size_card)
+        self.plot_group.addSettingCard(self.vispy_size_card)
+        self.plot_group.addSettingCard(self.vispy_aa_card)
+        self.plot_group.addSettingCard(self.selected_color_card)
+        self.plot_group.addSettingCard(self.show_color_card)
+        self.plot_group.addSettingCard(self.current_color_card)
+        self.plot_group.addSettingCard(self.current_size_card)
+        self.expand_layout.addWidget(self.plot_group)
         self.expand_layout.addWidget(self.nep_group)
 
         self.expand_layout.addWidget(self.about_group)
@@ -209,6 +324,24 @@ class SettingsWidget(ScrollArea):
         self.auto_load_card.checkedChanged.connect(lambda state:Config.set("widget","auto_load",state))
         self.sort_atoms_card.checkedChanged.connect(lambda state:Config.set("widget","sort_atoms",state))
         self.use_group_menu_card.checkedChanged.connect(lambda state:Config.set("widget","use_group_menu",state))
+        # plot settings
+        from NepTrainKit.core.types import Pens, Brushes
+        def refresh_styles():
+            Pens.update_from_config()
+            Brushes.update_from_config()
+
+        self.edge_color_card.colorChanged.connect(lambda v: (Config.set("plot", "marker_edge_color", v), refresh_styles()))
+        self.face_color_card.colorChanged.connect(lambda v: (Config.set("plot", "marker_face_color", v), refresh_styles()))
+        self.face_alpha_card.valueChanged.connect(lambda v: (Config.set("plot", "marker_face_alpha", int(v)), refresh_styles()))
+
+        self.pg_size_card.valueChanged.connect(lambda v: Config.set("widget", "pg_marker_size", int(v)))
+        self.vispy_size_card.valueChanged.connect(lambda v: Config.set("widget", "vispy_marker_size", int(v)))
+        self.vispy_aa_card.valueChanged.connect(lambda v: Config.set("widget", "vispy_marker_antialias", float(v)))
+
+        self.selected_color_card.colorChanged.connect(lambda v: (Config.set("plot", "selected_color", v), refresh_styles()))
+        self.show_color_card.colorChanged.connect(lambda v: (Config.set("plot", "show_color", v), refresh_styles()))
+        self.current_color_card.colorChanged.connect(lambda v: (Config.set("plot", "current_color", v), refresh_styles()))
+        self.current_size_card.valueChanged.connect(lambda v: Config.set("plot", "current_marker_size", int(v)))
         # self.about_card.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(RELEASES_URL)))
         self.feedback_card.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl(FEEDBACK_URL)))

@@ -154,6 +154,7 @@ class NepResultPlotWidget(QWidget):
             return
         n_samples= box.intSpinBox.value()
         distance= box.doubleSpinBox.value()
+        use_selection_region = bool(getattr(box, 'regionCheck', None) and box.regionCheck.isChecked())
 
         Config.set("widget","sparse_num_value",n_samples)
         Config.set("widget","sparse_distance_value",distance)
@@ -162,15 +163,41 @@ class NepResultPlotWidget(QWidget):
         if dataset.now_data.size ==0:
             MessageManager.send_message_box("No descriptor data available","Error")
             return
-        remaining_indices = farthest_point_sampling(dataset.now_data,n_samples=n_samples,min_dist=distance)
+        # Build region mask
+        reverse=False
 
+        points = dataset.now_data
+        mask = np.ones(points.shape[0], dtype=bool)
+        if use_selection_region:
+            sel = np.asarray(list(self.canvas.nep_result_data.select_index), dtype=np.int64)
+            if sel.size == 0:
+                MessageManager.send_info_message("No selection found; FPS will run on full data.")
+            else:
+                # Map structure selection to descriptor rows via group_array
+                struct_ids = dataset.group_array.now_data
+                mask = np.isin(struct_ids, sel)
+                if not np.any(mask):
+                    MessageManager.send_info_message("Current selection has no points on this plot; FPS will run on full data.")
+                    mask = np.ones(points.shape[0], dtype=bool)
+                else:
+                    reverse = True
+                    MessageManager.send_info_message("When FPS sampling is performed in the designated area, the program will automatically deselect it, just click to delete!")
+
+        if np.any(mask):
+            subset = points[mask]
+            idx_local = farthest_point_sampling(subset, n_samples=n_samples, min_dist=distance)
+            # Map back to global row indices
+            global_rows = np.where(mask)[0][np.asarray(idx_local, dtype=np.int64)]
+        else:
+            idx_local = []
+            global_rows = np.array([], dtype=np.int64)
         # 获取所有索引（从 0 到 len(arr)-1）
         # all_indices = np.arange(dataset.now_data.shape[0])
 
         # 使用 setdiff1d 获取不在 indices_to_remove 中的索引
         # remove_indices = np.setdiff1d(all_indices, remaining_indices)
-        structures = dataset.group_array[remaining_indices]
-        self.canvas.select_index(structures.tolist(),False)
+        structures = dataset.group_array[global_rows]
+        self.canvas.select_index(structures.tolist(),reverse)
 
     def edit_structure_info(self):
         data = self.canvas.nep_result_data

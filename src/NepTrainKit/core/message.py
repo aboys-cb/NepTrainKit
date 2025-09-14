@@ -75,7 +75,7 @@ class MessageManager(QObject):
         elif msg_type==InfoBarIcon.WARNING:
             duration=8000
         else:
-            duration=2000
+            duration=3000
         InfoBar.new(msg_type,
             title=title,
             content=msg,

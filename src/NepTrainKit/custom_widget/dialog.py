@@ -832,7 +832,7 @@ class AdvancedModelSearchDialog(MessageBoxBase):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Advanced Search - Models")
-        self.setDraggable(True)
+        # self.setDraggable(True)
         self.setModal(False)
         # self.resize(640, 520)
         self._build_ui()

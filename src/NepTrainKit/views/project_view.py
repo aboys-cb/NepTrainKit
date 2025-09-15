@@ -31,18 +31,18 @@ class ProjectWidget(QWidget,DatasetManager):
         self._view.clicked.connect(self.item_clicked)
         self._view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
 
-        self._view.setIndentation(10)
+        # self._view.setIndentation(10)
         self._view.header().setDefaultSectionSize(5)
         self._view.header().setStretchLastSection(True)
         self._model=TreeModel()
 
         self._view.setModel(self._model)
-        self._model.setHeader(["Project Name","ID",""])
+        self._model.setHeader(["(ID) Project Name","ID",""])
         # self._model.count_column=2
 
 
         self._view.setColumnHidden(1,True)
-        self._view.setColumnWidth(0,140)
+        self._view.setColumnWidth(0,150)
 
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
@@ -85,8 +85,10 @@ class ProjectWidget(QWidget,DatasetManager):
 
         if index.row()!=-1:
             item=index.internalPointer()
-            box.parent_combox.setCurrentText(item.data(0))
             project_id=item.data(1)
+            project=self.project_item_dict[project_id]
+
+            box.parent_combox.setCurrentText(project.name)
         else:
             box.parent_combox.setCurrentText("Top Project")
             if modify:
@@ -159,7 +161,7 @@ class ProjectWidget(QWidget,DatasetManager):
 
 
     def _build_tree(self,project,parent:TreeItem):
-        child = TreeItem((project.name, project.project_id,project.model_num))
+        child = TreeItem((f"({project.project_id}){project.name}", project.project_id,project.model_num))
         child.icon=FluentIcon.FOLDER.icon()
 
         self.project_item_dict[project.project_id] = project

@@ -6,7 +6,7 @@
 <a href="https://python.org/downloads"><img src="https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white" alt="Python Version"></a>  
 <a href="https://codecov.io/github/aboys-cb/NepTrainKit"><img src="https://codecov.io/github/aboys-cb/NepTrainKit/graph/badge.svg?token=HQ5FMLD91F" alt="Codecov"></a>  
 <a href="https://doi.org/10.48550/arXiv.2506.01868"><img src="https://img.shields.io/badge/arXiv-2506.01868-b31b1b.svg" alt="arXiv"></a>
-<a href="https://github.com/aboys-cb/NepTrainKit/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-blue" alt="License"></a>
+<a href="https://github.com/aboys-cb/NepTrainKit/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue" alt="License"></a>
 </div>
 
 
@@ -74,7 +74,16 @@ A standalone executable is available for Windows users.
 - Visit the [Releases](https://github.com/aboys-cb/NepTrainKit/releases) page
 - Download `NepTrainKit.win32.zip`
 
-> Note: Only supported on Windows platforms.
+ > Note: Only supported on Windows platforms.
+
+### GPU Acceleration (optional)
+
+- NepTrainKit includes an optional GPU‑accelerated NEP backend.
+- Requirements: NVIDIA GPU/driver compatible with CUDA 12.4 runtime.
+- Selection: In the app, go to Settings → NEP Backend and choose Auto/CPU/GPU.
+  - Auto tries GPU first and falls back to CPU if unavailable.
+  - Adjust GPU Batch Size to balance speed and memory.
+  - If you see “CUDA driver version is insufficient for CUDA runtime version”, switch to CPU.
 
 ---
 
@@ -83,4 +92,24 @@ A standalone executable is available for Windows users.
 For detailed usage documentation and examples, please refer to the official documentation:  
 [https://neptrainkit.readthedocs.io/en/latest/index.html](https://neptrainkit.readthedocs.io/en/latest/index.html)
 
+- What's new: see `docs/source/changelog.md` or the Documentation "Changelog" page.
+
 ---
+
+## Licensing and Attribution
+
+- License: This repository is licensed under the GNU General Public License v3.0
+  (or, at your option, any later version). See `LICENSE` at the repository root.
+- Third‑party code: NepTrainKit incorporates source files and adapted logic from:
+  - NEP_CPU (by Zheyong Fan, Junjie Wang, Eric Lindgren, and contributors):
+    https://github.com/brucefan1983/NEP_CPU (GPL‑3.0‑or‑later)
+  - GPUMD (by Zheyong Fan and the GPUMD development team):
+    https://github.com/brucefan1983/GPUMD (GPL‑3.0‑or‑later)
+- Directory‑level notes: See `src/nep_cpu/README.md` and `src/nep_gpu/README.md` for
+  file‑level provenance, what was modified or added, and links to the upstream projects.
+  A consolidated overview is also available in `THIRD_PARTY_NOTICES.md`.
+- Redistribution: Any modifications and redistributions must remain under the GPL and
+  preserve copyright and license notices, per the GPL requirements.
+
+If you use NepTrainKit in academic work, please cite the project and also acknowledge
+NEP_CPU and/or GPUMD as appropriate.

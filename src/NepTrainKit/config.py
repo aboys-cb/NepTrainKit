@@ -160,4 +160,5 @@ class Config:
         with cfg.engine.begin() as conn:
             stmt = update(table).where(table.c.section == old).values(section=new)
             conn.execute(stmt)
+Config()
 

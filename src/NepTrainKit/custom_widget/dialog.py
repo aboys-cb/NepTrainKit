@@ -20,9 +20,9 @@ from qfluentwidgets import (
     ProgressBar,
     ComboBox,
     FluentStyleSheet,
-    FluentTitleBar,CompactDoubleSpinBox,TransparentToolButton,Dialog,ColorDialog,
+    FluentTitleBar, CompactDoubleSpinBox, TransparentToolButton, Dialog, ColorDialog,
     TitleLabel, HyperlinkLabel, RadioButton, LineEdit, FlowLayout, EditableComboBox, PrimaryDropDownPushButton,
-    PrimaryPushButton, Flyout, InfoBarIcon, MessageBox,TextEdit,FluentIcon, PushButton
+    PrimaryPushButton, Flyout, InfoBarIcon, MessageBox, TextEdit, FluentIcon, PushButton, ToolTipFilter, ToolTipPosition
 )
 from qframelesswindow import FramelessDialog
 import json
@@ -34,7 +34,7 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit import module_path
 
 from NepTrainKit.utils import LoadingThread,call_path_dialog
-from ..core.io.utils import get_xyz_nframe, read_nep_in, read_nep_out_file, get_rmse
+from ..core.io.utils import get_xyz_nframe,  read_nep_out_file, get_rmse
 
 
 class GetIntMessageBox(MessageBoxBase):
@@ -51,6 +51,22 @@ class GetIntMessageBox(MessageBoxBase):
 
         self.widget.setMinimumWidth(100 )
         self.intSpinBox.setMaximum(100000000)
+
+class GetStrMessageBox(MessageBoxBase):
+    """ Custom message box """
+
+    def __init__(self, parent=None,tip=""):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel.setWordWrap(True)
+        self.lineEdit = LineEdit(self)
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.lineEdit)
+
+        self.widget.setMinimumWidth(100 )
+
+
 class SparseMessageBox(MessageBoxBase):
     """用于最远点取样的弹窗 """
 
@@ -67,7 +83,7 @@ class SparseMessageBox(MessageBoxBase):
         self.intSpinBox.setMaximum(9999999)
         self.intSpinBox.setMinimum(0)
         self.doubleSpinBox = DoubleSpinBox(self)
-        self.doubleSpinBox.setDecimals(3)
+        self.doubleSpinBox.setDecimals(5)
         self.doubleSpinBox.setMinimum(0)
         self.doubleSpinBox.setMaximum(10)
 
@@ -78,8 +94,14 @@ class SparseMessageBox(MessageBoxBase):
 
         self.frame_layout.addWidget(self.doubleSpinBox,1,1,1,2)
 
+        # region option: use current selection as FPS region
+        self.regionCheck = CheckBox("Use current selection as region", self)
+        self.regionCheck.setToolTip("When FPS sampling is performed in the designated area, the program will automatically deselect it, just click to delete!")
+        self.regionCheck.installEventFilter(ToolTipFilter(self.regionCheck, 300, ToolTipPosition.TOP))
+
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame )
+        self.viewLayout.addWidget(self.regionCheck)
 
         self.yesButton.setText('Ok')
         self.cancelButton.setText('Cancel')

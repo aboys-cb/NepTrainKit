@@ -65,8 +65,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.max_torsions_label.installEventFilter(ToolTipFilter(self.max_torsions_label, 300, ToolTipPosition.TOP))
         self.max_torsions_frame = SpinBoxUnitInputFrame(self)
         self.max_torsions_frame.set_input("", 1, "int")
-        self.max_torsions_frame.setRange(0, 100)
-        self.max_torsions_frame.set_input_value([5])
+        self.max_torsions_frame.setRange(0, 10000)
+        self.max_torsions_frame.set_input_value([50])
         self.settingLayout.addWidget(self.max_torsions_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.max_torsions_frame, row, 1, 1, 2)
         row += 1
@@ -102,7 +102,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.local_cut_frame = SpinBoxUnitInputFrame(self)
         self.local_cut_frame.set_input("atoms", 1, "int")
         self.local_cut_frame.setRange(0, 1000000)
-        self.local_cut_frame.set_input_value([150])
+        self.local_cut_frame.set_input_value([200])
         self.settingLayout.addWidget(self.local_cut_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.local_cut_frame, row, 1, 1, 2)
         row += 1
@@ -114,7 +114,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.local_sub_frame = SpinBoxUnitInputFrame(self)
         self.local_sub_frame.set_input("atoms", 1, "int")
         self.local_sub_frame.setRange(1, 100000)
-        self.local_sub_frame.set_input_value([40])
+        self.local_sub_frame.set_input_value([100])
         self.settingLayout.addWidget(self.local_sub_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.local_sub_frame, row, 1, 1, 2)
         row += 1
@@ -141,6 +141,29 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.bond_min_frame.set_input_value([0.60])
         self.settingLayout.addWidget(self.bond_min_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.bond_min_frame, row, 1, 1, 2)
+        row += 1
+
+        # Pauling bond-order params
+        self.bo_c_label = BodyLabel("Pauling c constant:", self.setting_widget)
+        self.bo_c_label.setToolTip("Bond order constant c in exp((r0-r)/c)")
+        self.bo_c_label.installEventFilter(ToolTipFilter(self.bo_c_label, 300, ToolTipPosition.TOP))
+        self.bo_c_frame = SpinBoxUnitInputFrame(self)
+        self.bo_c_frame.set_input("", 1, "float")
+        self.bo_c_frame.setRange(0.01, 2.0)
+        self.bo_c_frame.set_input_value([0.3])
+        self.settingLayout.addWidget(self.bo_c_label, row, 0, 1, 1)
+        self.settingLayout.addWidget(self.bo_c_frame, row, 1, 1, 2)
+        row += 1
+
+        self.bo_thr_label = BodyLabel("BondOrder threshold:", self.setting_widget)
+        self.bo_thr_label.setToolTip("Minimum bond order to form bond (default 0.2)")
+        self.bo_thr_label.installEventFilter(ToolTipFilter(self.bo_thr_label, 300, ToolTipPosition.TOP))
+        self.bo_thr_frame = SpinBoxUnitInputFrame(self)
+        self.bo_thr_frame.set_input("", 1, "float")
+        self.bo_thr_frame.setRange(0.0, 1.0)
+        self.bo_thr_frame.set_input_value([0.2])
+        self.settingLayout.addWidget(self.bo_thr_label, row, 0, 1, 1)
+        self.settingLayout.addWidget(self.bo_thr_frame, row, 1, 1, 2)
         row += 1
 
         # bond_keep_max_factor (optional)
@@ -242,12 +265,14 @@ class OrganicMolConfigPBCCard(MakeDataCard):
             max_retries_per_frame=int(self.retries_frame.get_input_value()[0]),
             mult_bond_factor=float(self.multbond_frame.get_input_value()[0]),
             nonpbc_box_size=float(self.box_frame.get_input_value()[0]),
+            bo_c_const=float(self.bo_c_frame.get_input_value()[0]),
+            bo_threshold=float(self.bo_thr_frame.get_input_value()[0]),
         )
 
-        result_list = tg_process_single(symbols, coords, structure.info.get("Config_type", ""), cell_mat, params)
+        result_list = tg_process_single(symbols, coords, cell_mat, params)
 
         structures_out: list[Atoms] = []
-        for sym, new_coords, _comment, cell, pbc_active in result_list:
+        for sym, new_coords, cell, pbc_active in result_list:
             new_atoms: Atoms = structure.copy()
             new_atoms.set_positions(np.array(new_coords, dtype=float))
 
@@ -293,6 +318,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
             "max_retries": self.retries_frame.get_input_value(),
             "mult_bond_factor": self.multbond_frame.get_input_value(),
             "nonpbc_box_size": self.box_frame.get_input_value(),
+            "bo_c_const": self.bo_c_frame.get_input_value(),
+            "bo_threshold": self.bo_thr_frame.get_input_value(),
         })
         return data
 
@@ -317,3 +344,5 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.retries_frame.set_input_value(data_dict.get("max_retries", [12]))
         self.multbond_frame.set_input_value(data_dict.get("mult_bond_factor", [0.87]))
         self.box_frame.set_input_value(data_dict.get("nonpbc_box_size", [100.0]))
+        self.bo_c_frame.set_input_value(data_dict.get("bo_c_const", [0.3]))
+        self.bo_thr_frame.set_input_value(data_dict.get("bo_threshold", [0.2]))

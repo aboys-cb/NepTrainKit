@@ -35,7 +35,6 @@ class NepTrainKitMainWindow(FluentWindow):
     def init_ui(self):
         # create sub interface
         MessageManager._createInstance(self)
-        Config()
         self.init_menu()
         self.init_widget()
         self.init_navigation()

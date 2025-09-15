@@ -1,3 +1,28 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+/*
+    NepTrainKit GPU bindings for NEP (descriptor I/O and utilities)
+    Copyright (C) 2025 NepTrainKit contributors
+
+    This file adapts and interfaces with GPUMD
+    (https://github.com/brucefan1983/GPUMD) by Zheyong Fan and the
+    GPUMD development team, licensed under the GNU General Public License
+    version 3 (or later). Portions of logic and data structures are derived
+    from GPUMD source files.
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -30,6 +55,9 @@
 
 
 namespace py = pybind11;
+
+
+
 
 static std::string convert_path(const std::string& utf8_path) {
 #ifdef _WIN32
@@ -107,6 +135,7 @@ private:
     std::unique_ptr<Potential> potential;
     std::atomic<bool> canceled_{false};
 
+
     inline void check_canceled() const {
         if (canceled_.load(std::memory_order_relaxed)) {
             throw std::runtime_error("Canceled by user");
@@ -117,6 +146,21 @@ private:
 
 public:
     GpuNep(const std::string& potential_filename)   {
+
+                // 1. 先检测 CUDA
+        cudaError_t err = cudaFree(0);
+        bool ok_ = (err == cudaSuccess);
+        std::string error_msg_ = ok_ ? "" : cudaGetErrorString(err);
+
+
+
+        // 3. 如果后面有 **必须 CUDA** 的步骤，再判断
+        if (!ok_) {
+            // 可选：直接抛异常，让 Python 立刻知道
+            throw std::runtime_error("GpuNep: " + error_msg_);
+        }
+
+
         std::string path = convert_path(potential_filename);
         // std::printf("[nep_gpu] GpuNep init: potential='%s'\n", path.c_str());
         
@@ -652,12 +696,15 @@ std::vector<std::vector<double>> GpuNep::get_structures_polarizability(
         }
     }
     return pols;
+
+
 }
 
 PYBIND11_MODULE(nep_gpu, m) {
     m.doc() = "GPU-accelerated NEP bindings";
     py::class_<GpuNep>(m, "GpuNep")
         .def(py::init<const std::string&>())
+
         .def("get_element_list", &GpuNep::get_element_list)
         .def("set_batch_size", &GpuNep::set_batch_size)
         .def("calculate", &GpuNep::calculate)

@@ -6,7 +6,7 @@
 import time
 import json
 
-from NepTrainKit.core.calculator import NEPProcess
+from NepTrainKit.core.calculator import NEPProcess, NepCalculator
 
 start = time.time()
 import numpy as np
@@ -26,7 +26,7 @@ from NepTrainKit.custom_widget import (
     ShiftEnergyMessageBox,
     DFTD3MessageBox,
 )
-from NepTrainKit.core.types import NepBackend, SearchType
+from NepTrainKit.core.types import NepBackend, SearchType, CanvasMode
 from NepTrainKit.core.io.select import farthest_point_sampling
 from NepTrainKit.views.toolbar import NepDisplayGraphicsToolBar
 from NepTrainKit.core.energy_shift import shift_dataset_energy, suggest_group_patterns
@@ -41,18 +41,19 @@ class NepResultPlotWidget(QWidget):
         # self.setRenderHint(QPainter.Antialiasing, False)
         self._layout = QHBoxLayout(self)
         self.setLayout(self._layout)
-        canvas_type = Config.get("widget","canvas_type","pyqtgraph")
+        canvas_type = Config.get("widget","canvas_type",CanvasMode.PYQTGRAPH)
+
         self.last_figure_num=None
         self.swith_canvas(canvas_type)
 
-    def swith_canvas(self,canvas_type="pyqtgraph"):
+    def swith_canvas(self,canvas_type:CanvasMode="pyqtgraph"):
 
-        if canvas_type == "pyqtgraph":
+        if canvas_type == CanvasMode.PYQTGRAPH:
             from NepTrainKit.core.canvas.pyqtgraph import PyqtgraphCanvas
             self.canvas = PyqtgraphCanvas(self)
             self._layout.addWidget(self.canvas)
 
-        elif canvas_type == "vispy":
+        elif canvas_type == CanvasMode.VISPY:
 
 
             from NepTrainKit.core.canvas.vispy import VispyCanvas
@@ -153,6 +154,7 @@ class NepResultPlotWidget(QWidget):
             return
         n_samples= box.intSpinBox.value()
         distance= box.doubleSpinBox.value()
+        use_selection_region = bool(getattr(box, 'regionCheck', None) and box.regionCheck.isChecked())
 
         Config.set("widget","sparse_num_value",n_samples)
         Config.set("widget","sparse_distance_value",distance)
@@ -161,15 +163,41 @@ class NepResultPlotWidget(QWidget):
         if dataset.now_data.size ==0:
             MessageManager.send_message_box("No descriptor data available","Error")
             return
-        remaining_indices = farthest_point_sampling(dataset.now_data,n_samples=n_samples,min_dist=distance)
+        # Build region mask
+        reverse=False
 
+        points = dataset.now_data
+        mask = np.ones(points.shape[0], dtype=bool)
+        if use_selection_region:
+            sel = np.asarray(list(self.canvas.nep_result_data.select_index), dtype=np.int64)
+            if sel.size == 0:
+                MessageManager.send_info_message("No selection found; FPS will run on full data.")
+            else:
+                # Map structure selection to descriptor rows via group_array
+                struct_ids = dataset.group_array.now_data
+                mask = np.isin(struct_ids, sel)
+                if not np.any(mask):
+                    MessageManager.send_info_message("Current selection has no points on this plot; FPS will run on full data.")
+                    mask = np.ones(points.shape[0], dtype=bool)
+                else:
+                    reverse = True
+                    MessageManager.send_info_message("When FPS sampling is performed in the designated area, the program will automatically deselect it, just click to delete!")
+
+        if np.any(mask):
+            subset = points[mask]
+            idx_local = farthest_point_sampling(subset, n_samples=n_samples, min_dist=distance)
+            # Map back to global row indices
+            global_rows = np.where(mask)[0][np.asarray(idx_local, dtype=np.int64)]
+        else:
+            idx_local = []
+            global_rows = np.array([], dtype=np.int64)
         # 获取所有索引（从 0 到 len(arr)-1）
         # all_indices = np.arange(dataset.now_data.shape[0])
 
         # 使用 setdiff1d 获取不在 indices_to_remove 中的索引
         # remove_indices = np.setdiff1d(all_indices, remaining_indices)
-        structures = dataset.group_array[remaining_indices]
-        self.canvas.select_index(structures.tolist(),False)
+        structures = dataset.group_array[global_rows]
+        self.canvas.select_index(structures.tolist(),reverse)
 
     def edit_structure_info(self):
         data = self.canvas.nep_result_data
@@ -237,7 +265,7 @@ class NepResultPlotWidget(QWidget):
             energy_data = self.canvas.nep_result_data.energy.now_data[select_index,1]
             descriptor_data = np.column_stack((descriptor_data,energy_data))
 
-        with open(path, "w") as f:
+        with open(path, "w",encoding="utf8") as f:
             np.savetxt(f,descriptor_data,fmt='%.6g',delimiter='\t')
 
 
@@ -309,35 +337,46 @@ class NepResultPlotWidget(QWidget):
     def _calc_dft_d3(self,mode,functional,cutoff,cutoff_cn):
         nep_result_data = self.canvas.nep_result_data
         nep_txt_path = nep_result_data.nep_txt_path
+
+
+
+
         if mode == 0:
-            calculate_type = "calculate"
-            func_kwargs = {}
-            cls_kwargs = { }
+            nep_calc = NepCalculator(
+                model_file=nep_txt_path.as_posix(),
+                backend=NepBackend(Config.get("nep", "backend", "auto")),
+                batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+            )
+            nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate(nep_result_data.structure.now_data.tolist())
+
         elif mode == 2:
-            calculate_type = "calculate_with_dftd3"
-            func_kwargs = {
-                "functional":functional,
-                "cutoff": cutoff,
-                "cutoff_cn": cutoff_cn,
 
-            }
-            cls_kwargs={"backend":NepBackend.CPU}
+            nep_calc = NepCalculator(
+                model_file=nep_txt_path.as_posix(),
+                backend=NepBackend.CPU,
+                batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+            )
+            nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate_with_dftd3(
+                nep_result_data.structure.now_data.tolist(),
+                functional=functional,
+                cutoff= cutoff,
+                cutoff_cn= cutoff_cn
+
+            )
+
         else:
-            calculate_type = "calculate_dftd3"
-            func_kwargs = {
-                "functional":functional,
-                "cutoff": cutoff,
-                "cutoff_cn": cutoff_cn,
+            nep_calc = NepCalculator(
+                model_file=nep_txt_path.as_posix(),
+                backend=NepBackend.CPU,
+                batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+            )
+            nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate_dftd3(
+                nep_result_data.structure.now_data.tolist(),
+                functional=functional,
+                cutoff=cutoff,
+                cutoff_cn=cutoff_cn
 
-            }
-            cls_kwargs={"backend":NepBackend.CPU}
-
-
-        nep_calc_thread = NEPProcess()
-        nep_calc_thread.run_nep3_calculator_process(nep_txt_path.as_posix(),
-                                                    nep_result_data.structure.now_data,
-                                                    calculate_type, func_kwargs=func_kwargs,cls_kwargs=cls_kwargs, wait=True)
-        nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc_thread.func_result
+            )
         split_indices = np.cumsum(nep_result_data.atoms_num_list)[:-1]
         nep_forces_array = np.split(nep_forces_array, split_indices)
         nep_virials_array=nep_virials_array*nep_result_data.atoms_num_list[:, np.newaxis]

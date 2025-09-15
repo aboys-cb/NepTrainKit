@@ -238,6 +238,50 @@ structure.info["Config_type"] += f" Strain({axis1}:{value1}%, {axis2}:{value2}%)
 - **Doping algorithm**: `Random` (sample dopants by probability) or `Exact` (follow ratios exactly)
 - **Max structures**: number of structures to generate
 
+### 2.7 Organic Molecular Rotation (TorsionGuard, PBC-aware)
+**Function**: Generate organic molecular conformations by rotating torsional subtrees around rotatable bonds, with physical guards to keep bonded distances reasonable and avoid non‑bonded clashes. Supports PBC or non‑PBC frames and adds optional Gaussian noise.
+
+**Key Parameters**:
+- Confs per structure (`perturb_per_frame`): number of conformations generated per input structure
+- Torsion range (`torsion_range_deg`): angle range in degrees, e.g., [-180, 180]
+- Max torsions/conf (`max_torsions_per_conf`): maximum different torsion bonds to rotate per conformation
+- Gaussian sigma (`gaussian_sigma`): standard deviation (Å) of added positional noise
+- PBC mode (`pbc_mode`): `auto` (use cell if present), `yes` (force PBC if lattice exists), `no` (non‑PBC)
+- Local‑mode cutoff atoms (`local_mode_cutoff_atoms`): if atom count exceeds this, rotate only a local subtree for efficiency
+- Local torsion max subtree (`local_torsion_max_subtree`): max atoms in the rotated local subtree
+- Bond detect factor (`bond_detect_factor`): scale on (r_i + r_j) to detect bonded pairs when building the graph
+- Bond keep min/max factor (`bond_keep_min_factor`, `bond_keep_max_factor`): allowed bonded distance window as factors of (r_i + r_j); if max is None, uses detect factor
+- Non‑bond min factor (`nonbond_min_factor`): minimum separation factor for non‑bonded pairs to avoid clashes
+- Max retries/conf (`max_retries_per_frame`): retries with smaller angle/noise scales if guards fail
+- Multi‑bond factor (`mult_bond_factor`): skip “short” edges (likely multiple bonds) from torsion set
+- Non‑PBC box size (`nonpbc_box_size`): cubic box length used to center non‑PBC outputs for visualization
+
+**Algorithm**:
+- Build adjacency from covalent radii using `bond_detect_factor`; find rotatable torsions via graph analysis (prefer bridges; fall back to internal bonds)
+- For each conformation:
+  - Randomly pick up to `max_torsions_per_conf` torsion axes
+  - For each, collect a local subtree to rotate; in PBC use MIC to define the bond axis
+  - Apply a random rotation within `torsion_range_deg`, then add Gaussian noise (`gaussian_sigma`)
+  - Enforce guards: keep bonded pairs within [min,max] factors; ensure non‑bonded distances above `nonbond_min_factor`
+  - If a guard fails, retry up to `max_retries_per_frame` times with halved ranges/noise each attempt
+  - Wrap to cell for PBC; otherwise center to a cubic box (`nonpbc_box_size`)
+
+**Tagging**:
+```python
+structure.info["Config_type"] += f" TorsionGuard(n={perturb_per_frame}, sigma={gaussian_sigma}, pbc={pbc_mode})"
+```
+
+**Caveats**:
+- Ensure a valid lattice for PBC frames; otherwise prefer `auto` or `no`
+- Large angle ranges with high `max_torsions_per_conf` can raise rejection rate; consider reducing ranges or enabling local mode
+- `bond_keep_max_factor=None` uses `bond_detect_factor` as the upper bound
+- Very large molecules: increase `local_mode_cutoff_atoms` and adjust `local_torsion_max_subtree`
+
+**Best Practices**:
+- Start with `torsion_range_deg = [-60, 60]` and `gaussian_sigma = 0.02–0.05 Å`
+- Enable local mode on big organics for faster, safer rotations
+- Combine with FPS/filters downstream to curate diverse yet non‑redundant conformers
+
 **Structure Tagging**:
 ```python
 structure.info["Config_type"] += f" Doping(num={dopant_count})"

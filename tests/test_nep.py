@@ -26,6 +26,8 @@ class TestNepTrainResultData( unittest.TestCase):
     def test_load_train(self):
         """测试结构加载功能"""
         result = NepTrainResultData.from_path(self.train_path)
+
+
         result.load()
         self.assertEqual(result.energy.num, 25)
         self.assertEqual(result.force.num, 6250)
@@ -89,6 +91,8 @@ class TestNepPolarizabilityResultData( unittest.TestCase):
     def tearDown(self):
         pass
     def test_load_train(self):
+
+
         """测试结构加载功能"""
         result = NepPolarizabilityResultData.from_path(self.train_path)
         result.load()
@@ -116,12 +120,15 @@ class TestNepPolarizabilityResultData( unittest.TestCase):
         os.remove(os.path.join(self.data_dir,"export_remove_model.xyz"))
 
     def test_load_train2(self):
+
+
         result = NepPolarizabilityResultData.from_path(self.train_path)
         result.load()
         os.remove(os.path.join(self.data_dir,"polarizability_train.out"))
         os.remove(os.path.join(self.data_dir,"descriptor.out"))
 
     def test_inverse_select(self):
+
         result = NepPolarizabilityResultData.from_path(self.train_path)
         result.load()
         result.select([0,1,3])

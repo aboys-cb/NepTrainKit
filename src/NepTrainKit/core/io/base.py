@@ -19,7 +19,6 @@ from NepTrainKit import utils
 from NepTrainKit.config import Config
 from NepTrainKit.core import Structure, MessageManager
 from NepTrainKit.core.calculator import NEPProcess, run_nep_calculator, NepCalculator
-from NepTrainKit.core.io.importers import import_structures
 from NepTrainKit.core.io.utils import read_nep_out_file, parse_array_by_atomnum,get_rmse
 from NepTrainKit.core.types import Brushes, SearchType, NepBackend
 
@@ -372,7 +371,8 @@ class ResultData(QObject):
                  nep_txt_path:Path|str,
                  data_xyz_path:Path|str,
                  descriptor_path:Path|str,
-                 calculator_factory: Optional[Callable[[str], Any]] = None):
+                 calculator_factory: Optional[Callable[[str], Any]] = None,
+                 import_options: Optional[dict] = None):
         super().__init__()
         self.load_flag=False
         # cooperative cancel for long-running loads
@@ -383,26 +383,11 @@ class ResultData(QObject):
         self.nep_txt_path=Path(nep_txt_path)
         #存储选中结构的真实下标
         self.select_index=set()
-
-        # Calculator injection (default to NEP). Subclasses can pass in a factory for other ML potentials.
-        if calculator_factory is None:
-            self.nep_calc = NepCalculator(
-                model_file=self.nep_txt_path.as_posix(),
-                backend=NepBackend(Config.get("nep", "backend", "auto")),
-                batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-            )
-        else:
-            # Factory is responsible for creating a calculator compatible with this ResultData subclass
-            try:
-                self.nep_calc = calculator_factory(self.nep_txt_path.as_posix())
-            except Exception:
-                logger.debug(traceback.format_exc())
-                MessageManager.send_warning_message("Failed to create custom calculator; falling back to NEP.")
-                self.nep_calc = NepCalculator(
-                    model_file=self.nep_txt_path.as_posix(),
-                    backend=NepBackend(Config.get("nep", "backend", "auto")),
-                    batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-                )
+        # Optional pre-fetched structures to skip IO in load_structures
+        self._prefetched_structures: Optional[list[Structure]] = None
+        # Optional importer options forwarded to importers.import_structures
+        self._import_options: dict = dict(import_options or {})
+        self.calculator_factory=calculator_factory
 
     def request_cancel(self):
         """Request cooperative cancel during load. Also forward to calculator."""
@@ -421,13 +406,24 @@ class ResultData(QObject):
         加载结构xyz文件
         :return:
         """
-
-        #
-        structures=[]
-        for s in Structure.iter_read_multiple(self.data_xyz_path.as_posix(), cancel_event=self.cancel_event):
-            structures.append(s)
+        # If structures were provided upfront, use them; otherwise parse from file
+        if self._prefetched_structures is not None:
+            structures = self._prefetched_structures
+        else:
+            # Unified path: delegate to importers for all formats, including EXTXYZ.
+            # ExtxyzImporter internally uses Structure.iter_read_multiple with cancel support.
+            from NepTrainKit.core.io import importers as _imps
+            opts = dict(self._import_options)
+            opts.setdefault("cancel_event", self.cancel_event)
+            structures = _imps.import_structures(self.data_xyz_path.as_posix(), **opts)
         self._atoms_dataset = StructureData(structures)
         self.atoms_num_list = np.array([len(struct) for struct in self.structure.now_data])
+
+    def set_structures(self, structures: list[Structure]):
+        """
+        Provide pre-parsed structures so load_structures can skip file IO.
+        """
+        self._prefetched_structures = list(structures)
 
     def write_prediction(self):
         """
@@ -449,18 +445,43 @@ class ResultData(QObject):
         :return:
         """
         try:
-            # fresh start and cooperative cancel
-            self.reset_cancel()
+            # Calculator injection (default to NEP). Subclasses can pass in a factory for other ML potentials.
+            if self.calculator_factory is None:
+                self.nep_calc = NepCalculator(
+                    model_file=self.nep_txt_path.as_posix(),
+                    backend=NepBackend(Config.get("nep", "backend", "auto")),
+                    batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+                )
+            else:
+                # Factory is responsible for creating a calculator compatible with this ResultData subclass
+                try:
+                    self.nep_calc = self.calculator_factory(self.nep_txt_path.as_posix())
+                except Exception:
+                    logger.debug(traceback.format_exc())
+                    MessageManager.send_warning_message("Failed to create custom calculator; falling back to NEP.")
+                    self.nep_calc = NepCalculator(
+                        model_file=self.nep_txt_path.as_posix(),
+                        backend=NepBackend(Config.get("nep", "backend", "auto")),
+                        batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+                    )
+
+
             # If subclass overrides load_structures, defer to it; otherwise do cancel-aware read
 
             self.load_structures()
+            if self._atoms_dataset.num!=0:
 
-            if not self.cancel_event.is_set():
-                self._load_descriptors()
-            if not self.cancel_event.is_set():
-                self._load_dataset()
-            if not self.cancel_event.is_set():
-                self.load_flag=True
+
+
+                if not self.cancel_event.is_set():
+                    self._load_descriptors()
+                if not self.cancel_event.is_set():
+                    self._load_dataset()
+                if not self.cancel_event.is_set():
+                    self.load_flag=True
+            else:
+                MessageManager.send_warning_message("No structures were loaded.")
+
         except:
             logger.error(traceback.format_exc())
 

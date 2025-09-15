@@ -16,6 +16,7 @@ from typing import Any,IO
 import numpy as np
 import numpy.typing as npt
 from ase import neighborlist
+from ase import Atoms as _ASEAtoms
 from ase.geometry import find_mic
 from loguru import logger
 from scipy.sparse.csgraph import connected_components
@@ -95,7 +96,7 @@ class Structure:
 
     @classmethod
     def read_xyz(cls, filename:str) -> Structure:
-        with open(filename, 'r') as f:
+        with open(filename, 'r',encoding="utf8") as f:
             structure = cls.parse_xyz(f.read())
         return structure
 
@@ -105,7 +106,7 @@ class Structure:
         Incrementally read a multi-structure XYZ file and yield Structure objects.
         If cancel_event is provided and set(), stop early.
         """
-        with open(filename, "r") as file:
+        with open(filename, "r",encoding="utf8") as file:
             while True:
                 if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
                     return
@@ -549,7 +550,7 @@ class Structure:
         # data_to_process = []
         structures = []
 
-        with open(filename, "r") as file:
+        with open(filename, "r",encoding="utf8") as file:
             while True:
                 num_atoms_line = file.readline()
                 if not num_atoms_line:
@@ -617,50 +618,101 @@ class Structure:
             file.write(line.strip() + "\n")
 
     def get_all_distances(self):
-        return  calculate_pairwise_distances(self.cell, self.positions,False)
+        return  calculate_pairwise_distances(self.cell, self.positions, False)
 
     def get_mini_distance_info(self):
         """
         返回原子对之间的最小距离
         """
-        dist_matrix = calculate_pairwise_distances(self.cell, self.positions,False)
-        symbols=self.elements
-        # 提取上三角矩阵（排除对角线）
-        i, j = np.triu_indices(len(self), k=1)
-        # 用字典来存储每种元素对的最小键长
-        bond_lengths = {}
-        # 遍历所有原子对，计算每一对元素的最小键长
-        for idx in range(len(i)):
-            atom_i, atom_j = str(symbols[i[idx]]), str(symbols[j[idx]])
-            # if atom_i==atom_j:
-            #     continue
-            # 获取当前键长
-            bond_length = float(dist_matrix[i[idx], j[idx]])
-            # if bond_length>5:
-            #     continue
-            # 确保元素对按字母顺序排列，避免 Cs-Ag 和 Ag-Cs 视为不同
-            element_pair = tuple(sorted([atom_i, atom_j]))
-            # 如果该元素对尚未存在于字典中，初始化其最小键长
-            if element_pair not in bond_lengths:
-                bond_lengths[element_pair] = bond_length
-            else:
-                # 更新最小键长
-                bond_lengths[element_pair] = min(bond_lengths[element_pair], bond_length)
+        # 使用分块 + 最小镜像向量，避免 NxN 全矩阵占用
+        cell = np.asarray(self.cell, dtype=np.float32).reshape(3, 3)
+        inv_cell = np.linalg.inv(cell)
+        coords = np.asarray(self.positions, dtype=np.float32).reshape(-1, 3)
+        frac = coords @ inv_cell  # 转为分数坐标
 
-        return bond_lengths
+        symbols = np.asarray([str(s) for s in self.elements])
+        # 对元素做编码，便于聚合
+        uniq_elems, codes = np.unique(symbols, return_inverse=True)
+        E = uniq_elems.shape[0]
+        # 每个元素的原子下标列表
+        indices_by_code: list[np.ndarray] = [np.where(codes == c)[0] for c in range(E)]
+
+        # 上三角最小距离矩阵（元素对）
+        min_mat = np.full((E, E), np.inf, dtype=np.float32)
+
+        # 预先计算度量张量，避免构造笛卡尔位移
+        metric = cell @ cell.T  # 3x3
+
+        N = frac.shape[0]
+        # 自适应分块，尽量控制内存（~80MB 级别）
+        # 估算单块开销 ~ (bs*N*3 + bs*N) * 4 bytes
+        if N == 0:
+            return {}
+        target_bytes = 80 * 1024 * 1024
+        per_pair_bytes = 4.0 * (3.0 + 1.0)  # df(3) + d(1)
+        block_size = int(max(128, min(1024, target_bytes / (per_pair_bytes * N))))
+
+        for i0 in range(0, N, block_size):
+            i1 = min(N, i0 + block_size)
+            df = frac[i0:i1, None, :] - frac[None, :, :]  # (bs, N, 3)
+            # 最小镜像 [-0.5,0.5)
+            df -= np.round(df)
+            # d^2 = df @ metric @ df^T （逐元素）
+            # (bs,N,3) x (3,3) -> (bs,N,3) ，再与 df 做 Einstein 求和
+            tmp = df @ metric  # (bs,N,3)
+            d2 = np.einsum('ijk,ijk->ij', df, tmp, dtype=np.float32)
+            # 清除对角线（自身距离）
+            for row, ii in enumerate(range(i0, i1)):
+                d2[row, ii] = np.inf
+            # 对每一行（固定 i）聚合到对应元素对的最小值
+            for row, ii in enumerate(range(i0, i1)):
+                ci = int(codes[ii])
+                drow = d2[row]
+                # 针对每个元素代码聚合最小值
+                for cj in range(E):
+                    idxs = indices_by_code[cj]
+                    if idxs.size == 0:
+                        continue
+                    # 最小距离
+                    m = float(np.min(drow[idxs]))
+                    if not np.isfinite(m):
+                        continue
+                    # 归入有序的 (min,max) 上三角
+                    a, b = (ci, cj) if ci <= cj else (cj, ci)
+                    if m < min_mat[a, b]:
+                        min_mat[a, b] = m
+
+        # 组装结果：以元素对字符串元组为键，最小距离为值
+        out: dict[tuple[str, str], float] = {}
+        for a in range(E):
+            for b in range(a, E):
+                val = float(min_mat[a, b])
+                if np.isfinite(val):
+                    out[(str(uniq_elems[a]), str(uniq_elems[b]))] = np.sqrt(val, dtype=np.float32).item()
+        return out
     def get_bond_pairs(self):
         """
-        返回在范围内的所有键长
+        返回在范围内的所有键对（考虑 PBC），使用邻居列表避免 O(N^2) 内存。
+        阈值使用 1.15 倍共价半径之和。
         """
-        i, j = np.triu_indices(len(self), k=1)
-        pos = np.array(self.positions)
-        diff = pos[i] - pos[j]
-        upper_distances = np.linalg.norm(diff, axis=1)
-        covalent_radii = np.array([table_info[str(n)]["radii"] / 100 for n in self.numbers])
-        radius_sum = covalent_radii[i] + covalent_radii[j]
-        bond_mask = (upper_distances < radius_sum * 1.15)
-        bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
+        N = len(self)
+        if N == 0:
+            return []
+        covalent_radii = np.array([table_info[str(n)]["radii"] / 100 for n in self.numbers], dtype=np.float32)
+        cutoffs = covalent_radii * 1.15
+        atoms = _ASEAtoms(symbols=[str(s) for s in self.elements],
+                          positions=np.asarray(self.positions, dtype=np.float32),
+                          cell=np.asarray(self.cell, dtype=np.float32),
+                          pbc=True)
+        nl = neighborlist.NeighborList(cutoffs, self_interaction=False, bothways=False)
+        nl.update(atoms)
+        bond_pairs: list[tuple[int, int]] = []
+        for a in range(N):
+            indices, offsets = nl.get_neighbors(a)
+            for b in indices:
+                bond_pairs.append((a, int(b)))
         return bond_pairs
+
 
     def get_bad_bond_pairs(self, coefficient=0.8):
         """
@@ -673,13 +725,15 @@ class Structure:
         covalent_radii = np.array([table_info[str(n)]["radii"] / 100 for n in self.numbers])
         radius_sum = covalent_radii[i] + covalent_radii[j]
         bond_mask = (upper_distances < radius_sum * coefficient)
-
         bad_bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
         return bad_bond_pairs
 
+
+
 def calculate_pairwise_distances(lattice_params:npt.NDArray[np.float32],
                                  atom_coords:npt.NDArray[np.float32],
-                                 fractional=True
+                                 fractional=True,
+                                 block_size:int=2048
                                  )->npt.NDArray[np.float32]:
     """
     计算晶体中所有原子对之间的距离，考虑周期性边界条件
@@ -694,17 +748,30 @@ def calculate_pairwise_distances(lattice_params:npt.NDArray[np.float32],
     """
 
 
+    # Convert to fractional coordinates for minimum image without enumerating 27 images
+    cell = np.asarray(lattice_params, dtype=np.float32).reshape(3, 3)
+    coords = np.asarray(atom_coords, dtype=np.float32).reshape(-1, 3)
     if fractional:
-        atom_coords = np.dot(atom_coords, lattice_params)
+        frac = coords.astype(np.float32)
+    else:
+        # frac = cart @ inv(cell)
+        inv_cell = np.linalg.inv(cell)
+        frac = coords @ inv_cell
 
-    diff = atom_coords[np.newaxis, :, :] - atom_coords[:, np.newaxis, :]
-    shifts = np.array(np.meshgrid([-1, 0, 1], [-1, 0, 1], [-1, 0, 1]), dtype=np.int8).T.reshape(-1, 3)
-    lattice_shifts = np.dot(shifts, lattice_params)
-    all_diffs = diff[:, :, np.newaxis, :] + lattice_shifts[np.newaxis, np.newaxis, :, :]
-    all_distances = np.sqrt(np.sum(all_diffs ** 2, axis=-1))
-    distances = np.min(all_distances, axis=-1)
-    np.fill_diagonal(distances, 0)
-    return distances
+    N = frac.shape[0]
+    dmat = np.empty((N, N), dtype=np.float32)
+    # Process in row blocks to reduce peak memory from O(N^2*27)
+    for i0 in range(0, N, max(1, int(block_size))):
+        i1 = min(N, i0 + int(block_size))
+        # fractional differences with MIC wrapping into [-0.5, 0.5)
+        df = frac[i0:i1, None, :] - frac[None, :, :]
+        df -= np.round(df)
+        # back to Cartesian and compute norms
+        dr = df @ cell
+        d = np.sqrt(np.sum(dr * dr, axis=2), dtype=np.float32)
+        dmat[i0:i1, :] = d
+    np.fill_diagonal(dmat, 0.0)
+    return dmat
 
 
 

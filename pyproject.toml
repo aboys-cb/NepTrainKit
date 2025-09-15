@@ -19,7 +19,7 @@ NepTrainKit is a Python package for visualizing and manipulating training datase
 """
 readme = "README.md"
 requires-python = ">=3.10"
-license= { "text"="GPL-3.0" }
+license = { file = "LICENSE" }
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
@@ -28,13 +28,14 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Topic :: Scientific/Engineering :: Chemistry",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Scientific/Engineering :: Physics",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-"PySide6<=6.9.0",
+"PySide6==6.9.0",
 "PySide6-Fluent-Widgets>=1.7.0",
 "loguru>=0.7.2",
 "requests>=2.32.3",

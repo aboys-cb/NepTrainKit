@@ -15,6 +15,7 @@ from pyqtgraph import GraphicsLayoutWidget, ScatterPlotItem, PlotItem, ViewBox, 
 
 from NepTrainKit import utils
 from NepTrainKit.core.types import Brushes, Pens
+from NepTrainKit.config import Config
 from ..base.canvas import CanvasLayoutBase
 from ...io import NepTrainResultData
 
@@ -45,8 +46,9 @@ class MyPlotItem(PlotItem):
 
     def set_current_point(self, x, y):
 
+        current_size = Config.getint("plot", "current_marker_size", 20) or 20
         self.current_point.setData(x, y, brush=Brushes.Current, pen=Pens.Current,
-                                   symbol='star', size=15)
+                                   symbol='star', size=current_size)
         if self.current_point not in self.items:
             self.addItem(self.current_point)
 
@@ -150,9 +152,10 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         for index, _dataset in enumerate(self.nep_result_data.datasets):
             plot = self.axes_list[index]
             plot.title = _dataset.title
+            pg_size = Config.getint("widget", "pg_marker_size", 7) or 7
             plot.scatter(_dataset.x, _dataset.y, data=_dataset.structure_index,
                          brush=Brushes.get(_dataset.title.upper()), pen=Pens.get(_dataset.title.upper()),
-                         symbol='o', size=7,
+                         symbol='o', size=pg_size,
 
                          )
             # 设置视图框更新模式

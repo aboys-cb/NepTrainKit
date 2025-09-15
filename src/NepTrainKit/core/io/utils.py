@@ -119,7 +119,8 @@ def get_nep_type(file_path:Path|str)->int:
             nep_type=parts[0]
             model_type = nep_type_to_model_type.get(nep_type )
     except FileNotFoundError:
-        logger.warning(f"Error: File {file_path} not found. Default model_type is 0")
+        pass
+        # logger.warning(f"Error: File {file_path} not found. Default model_type is 0")
     except Exception as e:
         logger.warning(f"An error occurred while parsing the file: {e}")
 
@@ -127,7 +128,7 @@ def get_nep_type(file_path:Path|str)->int:
 
 def get_xyz_nframe(path):
     if os.path.exists(path):
-        with open(path, 'r') as file:
+        with open(path, 'r',encoding="utf8") as file:
             nums = re.findall("^(\d+)$", file.read(), re.MULTILINE)
             return len(nums)
     return 0

@@ -15,6 +15,16 @@ Personalize behavior and performance trade‑offs. Changes take effect immediate
 - Sort atoms: Normalize atom ordering when processing structures in Make Dataset
 - Use card group menu: Group console cards by category in the add‑card menu
 
+## NEP Settings
+
+- NEP Backend: Select CPU, GPU, or Auto
+  - Auto: Tries GPU first; falls back to CPU if GPU is unavailable
+  - GPU: Requires a supported NVIDIA driver and CUDA 12.4 runtime; otherwise an in‑app warning will appear and the app switches to CPU
+  - CPU: Always use the CPU backend
+- GPU Batch Size: Number of frames per GPU slice when running NEP calculations
+  - Larger batches improve throughput but use more GPU memory
+  - Reduce if you encounter out‑of‑memory errors
+
 ## About
 
 - About NEP89: Check and download the official NEP89 model
@@ -27,4 +37,5 @@ Personalize behavior and performance trade‑offs. Changes take effect immediate
 - Switching Canvas to Vispy requires a functional OpenGL environment.
 - “Norm” force mode reduces data size for plotting and improves responsiveness.
 - Auto loading aims to streamline repetitive workflows when working in a project directory.
+- GPU backend availability depends on your platform and package build. On systems without the GPU binary or compatible drivers, NepTrainKit automatically uses the CPU backend.
 

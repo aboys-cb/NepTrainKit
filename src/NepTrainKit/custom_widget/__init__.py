@@ -8,6 +8,7 @@ from .label import ProcessLabel
 from .completer import CompleterModel, JoinDelegate, ConfigCompleter
 from .dialog import (
     GetIntMessageBox,
+GetStrMessageBox,
     SparseMessageBox,
     IndexSelectMessageBox,
     RangeSelectMessageBox,
@@ -38,6 +39,7 @@ __all__ = [
     "JoinDelegate",
     "ConfigCompleter",
     "GetIntMessageBox",
+    "GetStrMessageBox",
     "SparseMessageBox",
     "IndexSelectMessageBox",
     "RangeSelectMessageBox",

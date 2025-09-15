@@ -8,6 +8,7 @@ from enum import Enum
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QBrush, QColor, QPen, QIcon
+from NepTrainKit.config import Config
 
 if sys.version_info >= (3, 11):
     from enum import StrEnum          # 3.11+
@@ -75,7 +76,7 @@ class ForcesMode(StrEnum):
 
 class CanvasMode(StrEnum):
     VISPY= "vispy"
-    PYQTGRAPH= "pyqtgraph"
+    PYQTGRAPH = "pyqtgraph"
 
 class SearchType(StrEnum):
     TAG="Config_type"
@@ -94,35 +95,69 @@ class Base:
         else:
             return getattr(cls,"Default")
 
+def _get_color(section: str, option: str, default_hex: str) -> QColor:
+    val = Config.get(section, option, default_hex)
+    try:
+        c = QColor(val)
+        if c.isValid():
+            return c
+        return QColor(default_hex)
+    except Exception:
+        return QColor(default_hex)
+
+
 class Pens(Base):
-    # Use a lighter blue for default edges to make points look less saturated
-    Default=mkPen(color=QColor(7, 81, 156), width=0.5)  # LightSkyBlue
-    Energy = Default
-    Force = Default
-    Virial = Default
-    Stress = Default
-    Descriptor = Default
-    Current=mkPen(color="red", width=1)
-    Line = mkPen(color="red", width=2)
+    # Initialize from config with sensible defaults
+    @classmethod
+    def update_from_config(cls):
+        edge = _get_color("plot", "marker_edge_color", "#07519C")
+        current = _get_color("plot", "current_color", "#FF0000")
+        line = _get_color("plot", "line_color", "#FF0000")
+
+        cls.Default = mkPen(color=edge, width=0.8)
+        cls.Energy = cls.Default
+        cls.Force = cls.Default
+        cls.Virial = cls.Default
+        cls.Stress = cls.Default
+        cls.Descriptor = cls.Default
+        cls.Current = mkPen(color=current, width=1)
+        cls.Line = mkPen(color=line, width=2)
+
     def __getattr__(self, item):
         return getattr(self.Default, item)
 
 class Brushes(Base):
-    # 基本颜色刷子
-    BlueBrush = QBrush(QColor(0, 0, 255))   # 蓝色
-    YellowBrush = QBrush(QColor(255, 255, 0))  # 黄色
-    Default = QBrush(QColor(255, 255, 255,0))  # 黄色
-    Energy = Default
-    Force =Default
-    Virial =Default
-    Stress = Default
-    Descriptor = Default
-    Show=QBrush(QColor(0, 255, 0))  # 绿色
-    Selected=QBrush(QColor(255, 0, 0))
-    Current=QBrush(QColor(255, 0,0 ))
+    # Initialize from config
+    @classmethod
+    def update_from_config(cls):
+        face = _get_color("plot", "marker_face_color", "#FFFFFF")
+        # optional alpha channel from separate setting
+        alpha = Config.getint("plot", "marker_face_alpha", 0) or 0
+        face.setAlpha(int(max(0, min(255, alpha))))
+
+        show = _get_color("plot", "show_color", "#00FF00")
+        selected = _get_color("plot", "selected_color", "#FF0000")
+        current = _get_color("plot", "current_color", "#FF0000")
+
+        cls.BlueBrush = QBrush(QColor(0, 0, 255))
+        cls.YellowBrush = QBrush(QColor(255, 255, 0))
+        cls.Default = QBrush(face)
+        cls.Energy = cls.Default
+        cls.Force = cls.Default
+        cls.Virial = cls.Default
+        cls.Stress = cls.Default
+        cls.Descriptor = cls.Default
+        cls.Show = QBrush(show)
+        cls.Selected = QBrush(selected)
+        cls.Current = QBrush(current)
+
     def __getattr__(self, item):
         return getattr(self.Default, item)
 
 class ModelTypeIcon(Base):
 
     NEP=':/images/src/images/gpumd_new.png'
+
+# Initialize pens/brushes on import
+Pens.update_from_config()
+Brushes.update_from_config()

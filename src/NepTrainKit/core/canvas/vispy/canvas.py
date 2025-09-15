@@ -16,6 +16,7 @@ from vispy import scene
 from vispy.color import ColorArray
 from vispy.visuals.filters import MarkerPickingFilter
 from NepTrainKit import utils
+from NepTrainKit.config import Config
 from NepTrainKit.core.canvas.base.canvas import VispyCanvasLayoutBase
 from NepTrainKit.core.io import NepTrainResultData
 from NepTrainKit.core.types import Brushes, Pens
@@ -73,19 +74,23 @@ class ViewBoxWidget(scene.Widget):
 
 
         self.data=np.array([])
-        # For very large datasets, render a decimated subset to keep GPU happy
-        # Can be overridden via env var NEPKIT_VISPY_MAX_POINTS
+
+        # Configurable marker antialias and size
         try:
-            self.max_points = int(os.environ.get("NEPKIT_VISPY_MAX_POINTS", "2000000"))
+            self.marker_antialias = Config.getfloat("widget", "vispy_marker_antialias", 0.5)
         except Exception:
-            self.max_points = 2000000
+            self.marker_antialias = 0.5
+        try:
+            self.marker_size_default = Config.getint("widget", "vispy_marker_size", 6)
+        except Exception:
+            self.marker_size_default = 6
+
         self.picking_filter = MarkerPickingFilter()
 
         self._scatter=None
         # Overlay marker layers by name (e.g., 'selected', 'show')
         self._overlays = {}
-        # Track which indices are currently visualized in the base scatter (after decimation)
-        self._scatter_visible_indices = None
+
         self._diagonal=None
         self.current_point=None
         self.freeze()
@@ -167,18 +172,19 @@ class ViewBoxWidget(scene.Widget):
             self._view.add(self.current_point)
 
         z=np.full(x.shape,2)
+        current_size = Config.getint("plot", "current_marker_size", 20) or 20
         self.current_point.set_data(
             np.vstack([x, y, z]).T,
             face_color=self.convert_color(Brushes.Current),
             edge_color=self.convert_color(Pens.Current),
             symbol='star',
-            size=20,
+            size=current_size,
         )
 
     def scatter(self,x,y,data,brush=None,pen=None ,**kwargs):
         if self._scatter is None:
-            # Reduce fragment work by disabling antialias; keep style via edges/colors
-            self._scatter = scene.visuals.Markers(antialias=0)
+            # Use configurable antialias level (default 0.5)
+            self._scatter = scene.visuals.Markers(antialias=self.marker_antialias)
             self._scatter.order=1
             self._scatter.attach(self.picking_filter)
 
@@ -193,22 +199,12 @@ class ViewBoxWidget(scene.Widget):
 
             kwargs["edge_color"]=self.convert_color(pen)
         if x.size != 0:
-            # Decimate to avoid uploading tens of millions of points to the GPU
-            n = int(x.size)
-            if self.max_points and n > self.max_points:
-                step = max(1, int(np.ceil(n / float(self.max_points))))
-                idx = np.arange(0, n, step, dtype=np.int64)
-                self._scatter_visible_indices = idx
-                x_vis = np.asarray(x, dtype=np.float32)[idx]
-                y_vis = np.asarray(y, dtype=np.float32)[idx]
-                data_vis = np.asarray(data)[idx]
-                self.data = data_vis  # keep mapping aligned with what is rendered
-                pos = np.vstack([x_vis, y_vis], dtype=np.float32).T
-            else:
-                self._scatter_visible_indices = np.arange(0, n, dtype=np.int64)
-                pos = np.vstack([x, y], dtype=np.float32).T
-            # Fixed-size in pixels and no depth test for 2D scatter improves perf
-            self._scatter.update_gl_state(depth_test=False)
+
+            pos = np.vstack([x, y], dtype=np.float32).T
+            # Ensure a default size if caller didn't provide one
+            if 'size' not in kwargs or kwargs.get('size') is None:
+                kwargs['size'] = self.marker_size_default
+            # self._scatter.update_gl_state(depth_test=False)
             self._scatter.set_data(pos, **kwargs)
             self.auto_range()
         else:
@@ -348,9 +344,9 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if current_axes is None:
             return None
         # adjust the event position for hidpi screens
-        render_size = tuple(d * self.pixel_scale for d in self.size)
-        x_pos = pos[0] * self.pixel_scale
-        y_pos = render_size[1] - (pos[1] * self.pixel_scale)
+        render_size = tuple(int(round(d * self.pixel_scale)) for d in self.size)
+        x_pos = int(round(pos[0] * self.pixel_scale))
+        y_pos = int(round(render_size[1] - (pos[1] * self.pixel_scale)))
         # print(canvas.pixel_scale)
         # render a small patch around the mouse cursor
         restore_state = not current_axes.picking_filter.enabled
@@ -365,14 +361,18 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if getattr(current_axes, 'current_point', None) is not None and current_axes.current_point.visible:
             hidden.append(current_axes.current_point)
             current_axes.current_point.visible = False
-        # Also hide drawing path line to avoid contaminating the pick render
+        # Also hide drawing helpers to avoid contaminating the pick render
         path_was_visible = False
         if getattr(self, 'path_line', None) is not None and self.path_line.parent is not None:
             path_was_visible = getattr(self.path_line, 'visible', True)
             self.path_line.visible = False
+        diag_was_visible = False
+        if getattr(current_axes, '_diagonal', None) is not None:
+            diag_was_visible = getattr(current_axes._diagonal, 'visible', False)
+            current_axes._diagonal.visible = False
         current_axes._scatter.update_gl_state(blend=False)
         picking_render = self.render(
-            crop=(x_pos - 2, y_pos - 2, 5, 5),
+            crop=(x_pos - 3, y_pos - 3, 7, 7),
             bgcolor=(0, 0, 0, 0),
             alpha=True,
         )
@@ -381,18 +381,30 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             v.visible = True
         if getattr(self, 'path_line', None) is not None and self.path_line.parent is not None:
             self.path_line.visible = path_was_visible
+        if getattr(current_axes, '_diagonal', None) is not None:
+            current_axes._diagonal.visible = diag_was_visible
         if restore_state:
             current_axes.picking_filter.enabled = False
         current_axes._scatter.update_gl_state(blend=not current_axes.picking_filter.enabled)
 
-        # unpack the face index from the color in the center pixel
-        marker_idx = (picking_render.view(np.uint32) - 1)[2, 2, 0]
-        if current_axes.data.size!=0:
-
-            if marker_idx>=current_axes.data.size:
-                return None
-        else:
+        # unpack indices in patch and pick the nearest valid marker index
+        patch = (picking_render.view(np.uint32) - 1)[:, :, 0]
+        if current_axes.data.size == 0:
             return None
+        # valid indices are in [0, data_size)
+        valid_mask = patch < int(current_axes.data.size)
+        if not np.any(valid_mask):
+            return None
+        # compute distance to center for valid pixels and choose nearest
+        h, w = patch.shape
+        yy, xx = np.mgrid[0:h, 0:w]
+        cy = (h - 1) / 2.0
+        cx = (w - 1) / 2.0
+        dist2 = (yy - cy) ** 2 + (xx - cx) ** 2
+        # set invalid distances to large
+        dist2 = np.where(valid_mask, dist2, 1e9)
+        iy, ix = np.unravel_index(np.argmin(dist2), dist2.shape)
+        marker_idx = int(patch[iy, ix])
         return marker_idx
     def on_mouse_press(self, event):
         """鼠标按下事件，开始记录轨迹"""
@@ -550,9 +562,14 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
             plot.title= _dataset.title
 
-            plot.scatter(_dataset.x,_dataset.y,data=_dataset.structure_index,
-                                      brush=Brushes.get(_dataset.title.upper()) ,pen=Pens.get(_dataset.title.upper()),
-                                      symbol='o',size=6,
+            marker_size = Config.getint("widget", "vispy_marker_size", 6) or 6
+            plot.scatter(_dataset.x,
+                         _dataset.y,
+                         data=_dataset.structure_index,
+                         brush=Brushes.get(_dataset.title.upper()) ,
+                         pen=Pens.get(_dataset.title.upper()),
+                         symbol='o',
+                         size=marker_size,
 
                                       )
 
@@ -653,15 +670,16 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             show_pos = _indices_to_positions(self._show_by_plot[plot])
 
             # Update overlays (filled squares, no edges for perf)
+            overlay_size = Config.getint("widget", "vispy_marker_size", 6) or 6
             if sel_pos.size:
-                plot.set_overlay_positions('selected', sel_pos, color=Brushes.Selected, size=6, symbol='o')
+                plot.set_overlay_positions('selected', sel_pos, color=Brushes.Selected, size=overlay_size, symbol='o')
             else:
-                plot.set_overlay_positions('selected', np.empty((0, 2), dtype=np.float32), color=Brushes.Selected, size=6, symbol='o')
+                plot.set_overlay_positions('selected', np.empty((0, 2), dtype=np.float32), color=Brushes.Selected, size=overlay_size, symbol='o')
 
             if show_pos.size:
-                plot.set_overlay_positions('show', show_pos, color=Brushes.Show, size=6, symbol='o')
+                plot.set_overlay_positions('show', show_pos, color=Brushes.Show, size=overlay_size, symbol='o')
             else:
-                plot.set_overlay_positions('show', np.empty((0, 2), dtype=np.float32), color=Brushes.Show, size=6, symbol='o')
+                plot.set_overlay_positions('show', np.empty((0, 2), dtype=np.float32), color=Brushes.Show, size=overlay_size, symbol='o')
 
 
     def select_point_from_polygon(self,polygon_xy,reverse ):

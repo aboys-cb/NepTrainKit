@@ -8,6 +8,9 @@ from typing import Union
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QIcon, Qt
 from qfluentwidgets import OptionsConfigItem, FluentIconBase, ComboBox, SettingCard, DoubleSpinBox
+from PySide6.QtWidgets import QPushButton
+from PySide6.QtGui import QColor
+from PySide6.QtWidgets import QColorDialog
 
 
 class MyComboBoxSettingCard(SettingCard):
@@ -102,3 +105,43 @@ class DoubleSpinBoxSettingCard(SettingCard):
         self.doubleSpinBox.setValue(value)
     def setRange(self, min, max):
         self.doubleSpinBox.setRange(min, max)
+
+
+class ColorSettingCard(SettingCard):
+    """Setting card with a color picker button"""
+
+    colorChanged = Signal(str)
+
+    def __init__(self, icon: Union[str, QIcon, FluentIconBase], title: str, content: str | None = None,
+                 parent=None):
+        super().__init__(icon, title, content, parent)
+        self._color = QColor("#000000")
+        self.button = QPushButton(self)
+        self.button.setFixedSize(64, 24)
+        self.button.clicked.connect(self._choose_color)
+        self.hBoxLayout.addWidget(self.button, 0, Qt.AlignmentFlag.AlignRight)
+        self.hBoxLayout.addSpacing(16)
+        self._apply_button_style()
+
+    def _apply_button_style(self):
+        # show current color as button background
+        self.button.setStyleSheet(
+            f"QPushButton {{ background-color: {self._color.name()}; border: 1px solid #999; border-radius: 4px; }}"
+        )
+
+    def _choose_color(self):
+        col = QColorDialog.getColor(self._color, self)
+        if col.isValid():
+            self._color = col
+            self._apply_button_style()
+            # emit as hex RGB string
+            self.colorChanged.emit(self._color.name())
+
+    def setValue(self, value: str):
+        try:
+            col = QColor(value)
+            if col.isValid():
+                self._color = col
+                self._apply_button_style()
+        except Exception:
+            pass

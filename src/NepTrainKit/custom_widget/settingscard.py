@@ -7,7 +7,7 @@ from typing import Union
 
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QIcon, Qt
-from qfluentwidgets import OptionsConfigItem, FluentIconBase, ComboBox, SettingCard, DoubleSpinBox
+from qfluentwidgets import OptionsConfigItem, FluentIconBase, ComboBox, SettingCard, DoubleSpinBox, LineEdit
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QColorDialog
@@ -145,3 +145,24 @@ class ColorSettingCard(SettingCard):
                 self._apply_button_style()
         except Exception:
             pass
+
+
+class LineEditSettingCard(SettingCard):
+    """Setting card with a single-line text input"""
+
+    textChanged = Signal(str)
+
+    def __init__(self, icon: Union[str, QIcon, FluentIconBase], title: str, content: str | None = None,
+                 parent=None):
+        super().__init__(icon, title, content, parent)
+        self.lineEdit = LineEdit(self)
+        self.lineEdit.setMinimumWidth(220)
+        self.hBoxLayout.addWidget(self.lineEdit, 0, Qt.AlignmentFlag.AlignRight)
+        self.hBoxLayout.addSpacing(16)
+        self.lineEdit.textChanged.connect(self.textChanged)
+
+    def setValue(self, text: str):
+        self.lineEdit.setText(str(text) if text is not None else "")
+
+    def value(self) -> str:
+        return self.lineEdit.text()

@@ -135,7 +135,6 @@ class SuperCellCard(MakeDataCard):
     def _generate_structures(self, structure, expansion_factors, super_cell_type) :
         """根据超胞类型和扩包比例生成结构列表"""
         structure_list = []
-
         if super_cell_type == 0:  # 最大扩包
             na, nb, nc = expansion_factors[-1]  # 取最大的扩包比例
 
@@ -145,7 +144,7 @@ class SuperCellCard(MakeDataCard):
                 return [structure.copy()]  # 直接返回原始结构
 
             supercell = make_supercell(structure,np.diag([na, nb, nc]),order="atom-major")
-            supercell.info["Config_type"] = supercell.info.get("Config_type","") + f" supercell({na, nb, nc})"
+            supercell.info["Config_type"] = structure.info.get("Config_type","") + f" supercell({na, nb, nc})"
 
             structure_list.append(supercell)
 
@@ -161,7 +160,7 @@ class SuperCellCard(MakeDataCard):
 
                     else:
                         supercell = make_supercell(structure, np.diag([na, nb, nc]),order="atom-major")
-                        supercell.info["Config_type"] = supercell.info.get("Config_type","") + f" supercell({na, nb, nc})"
+                        supercell.info["Config_type"] = structure.info.get("Config_type","") + f" supercell({na, nb, nc})"
 
                         # supercell = structure.supercell([na, nb, nc])
                     structure_list.append(supercell)
@@ -176,10 +175,11 @@ class SuperCellCard(MakeDataCard):
                                 supercell = structure.copy()
                             else:
                                 supercell = make_supercell(structure, np.diag([i, j, k]),order="atom-major")
-                                supercell.info["Config_type"]=supercell.info.get("Config_type","") +f" supercell({i,j,k})"
+                                supercell.info["Config_type"]=structure.info.get("Config_type","") +f" supercell({i,j,k})"
                                 # supercell = structure.supercell((i, j, k))
 
                             structure_list.append(supercell)
+
 
         # super_cell_type == 2 的情况未实现，保持为空
         return structure_list

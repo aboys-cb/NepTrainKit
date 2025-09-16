@@ -13,7 +13,7 @@ from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCa
     OptionsValidator, EnumSerializer, SwitchSettingCard,FluentIcon  , ScrollArea
 
 from NepTrainKit.config import Config
-from NepTrainKit.custom_widget import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
+from NepTrainKit.custom_widget import MyComboBoxSettingCard, DoubleSpinBoxSettingCard, LineEditSettingCard
 from NepTrainKit.custom_widget.settingscard import ColorSettingCard
 from NepTrainKit.core.types import ForcesMode, CanvasMode, NepBackend
 from NepTrainKit.core.update import UpdateWoker,UpdateNEP89Woker
@@ -98,6 +98,15 @@ class SettingsWidget(ScrollArea):
             parent=self.personal_group
         )
         self.use_group_menu_card.setValue(use_group_menu_config)
+        # Default Config_type text
+        default_cfg_type = Config.get("widget", "default_config_type", "neptrainkit")
+        self.default_cfg_type_card = LineEditSettingCard(
+            FluentIcon.TAG,
+            'Default Config_type',
+            'Tag assigned when source has no Config_type',
+            self.personal_group
+        )
+        self.default_cfg_type_card.setValue(default_cfg_type)
         radius_coefficient_config=Config.getfloat("widget","radius_coefficient",0.7)
 
         self.radius_coefficient_Card = DoubleSpinBoxSettingCard(
@@ -281,6 +290,7 @@ class SettingsWidget(ScrollArea):
         self.personal_group.addSettingCard(self.radius_coefficient_Card)
         self.personal_group.addSettingCard(self.sort_atoms_card)
         self.personal_group.addSettingCard(self.use_group_menu_card)
+        self.personal_group.addSettingCard(self.default_cfg_type_card)
 
         self.nep_group.addSettingCard(self.nep_backend_card)
         self.nep_group.addSettingCard(self.gpu_bs_card)
@@ -324,6 +334,7 @@ class SettingsWidget(ScrollArea):
         self.auto_load_card.checkedChanged.connect(lambda state:Config.set("widget","auto_load",state))
         self.sort_atoms_card.checkedChanged.connect(lambda state:Config.set("widget","sort_atoms",state))
         self.use_group_menu_card.checkedChanged.connect(lambda state:Config.set("widget","use_group_menu",state))
+        self.default_cfg_type_card.textChanged.connect(lambda v: Config.set("widget", "default_config_type", v))
         # plot settings
         from NepTrainKit.core.types import Pens, Brushes
         def refresh_styles():

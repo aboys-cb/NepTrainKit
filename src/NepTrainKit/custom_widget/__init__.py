@@ -29,7 +29,7 @@ from .vacancy_rule import VacancyRulesWidget
 
 from .docker import MakeWorkflowArea
 from .search_widget import ConfigTypeSearchLineEdit
-from .settingscard import MyComboBoxSettingCard, DoubleSpinBoxSettingCard
+from .settingscard import MyComboBoxSettingCard, DoubleSpinBoxSettingCard, LineEditSettingCard
 from .table import IdNameTableModel
 from .tree import  TreeModel,TreeItem,TagDelegate
 __all__ = [
@@ -56,6 +56,7 @@ __all__ = [
     "ConfigTypeSearchLineEdit",
     "MyComboBoxSettingCard",
     "DoubleSpinBoxSettingCard",
+    "LineEditSettingCard",
     "DopingRulesWidget",
     "VacancyRulesWidget",
     "DFTD3MessageBox",

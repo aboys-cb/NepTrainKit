@@ -190,7 +190,7 @@ class NepData:
         输入[np.int64(98), np.int64(9), np.int64(42), np.int64(141), np.int64(79), np.int64(56)]
         输出[  9  42  56  79  98 141]
         """
-        if isinstance(index_list,int):
+        if isinstance(index_list,(int,np.number)):
             index_list=[index_list]
         return np.where(np.isin(self.group_array.all_data,index_list))[0]
 
@@ -540,7 +540,7 @@ class ResultData(QObject):
         :param _list:
         :return:
         """
-        if isinstance(_list,int):
+        if isinstance(_list,(int,np.number)):
             _list=[_list]
         for i in _list:
             if i in self.select_index:

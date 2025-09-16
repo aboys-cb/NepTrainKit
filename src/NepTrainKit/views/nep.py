@@ -377,9 +377,10 @@ class NepResultPlotWidget(QWidget):
             cutoff_cn=cutoff_cn
 
         )
-        split_indices = np.cumsum(nep_result_data.atoms_num_list)[:-1]
+        now_atoms_num_list=nep_result_data.atoms_num_list[nep_result_data.structure.now_indices]
+        split_indices = np.cumsum(now_atoms_num_list)[:-1]
         nep_forces_array = np.split(nep_forces_array, split_indices)
-        nep_virials_array=nep_virials_array*nep_result_data.atoms_num_list[:, np.newaxis]
+        nep_virials_array=nep_virials_array*now_atoms_num_list[:, np.newaxis]
         #
         # if mode < 3:
         #     for index, structure in enumerate(nep_result_data.structure.now_data):
@@ -416,7 +417,7 @@ class NepResultPlotWidget(QWidget):
 
             # print(nep_result_data.virial.data._data.tolist())
             if hasattr(nep_result_data, "stress") and nep_result_data.stress.num != 0:
-                coefficient = (nep_result_data.atoms_num_list / np.array(
+                coefficient = (now_atoms_num_list / np.array(
                     [s.volume for s in nep_result_data.structure.now_data]))[:, np.newaxis]
                 stress_array = ref_virials * coefficient * 160.21766208  # 单位转换\
                 stress_array = stress_array.astype(np.float32)

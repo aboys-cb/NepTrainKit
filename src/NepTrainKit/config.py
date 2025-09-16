@@ -161,4 +161,3 @@ class Config:
             stmt = update(table).where(table.c.section == old).values(section=new)
             conn.execute(stmt)
 Config()
-

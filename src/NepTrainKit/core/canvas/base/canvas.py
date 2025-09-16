@@ -141,7 +141,7 @@ class CanvasLayoutBase(CanvasBase):
         else:
             MessageManager.send_info_message("No undoable deletion!")
     def select_index(self,structure_index,reverse):
-        if isinstance(structure_index,(int,np.int64,np.int32,np.uint32,np.uint64)):
+        if isinstance(structure_index,(int,np.number)):
             structure_index=[structure_index]
         elif isinstance(structure_index,np.ndarray):
             structure_index=structure_index.tolist()

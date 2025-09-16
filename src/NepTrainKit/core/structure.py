@@ -22,6 +22,7 @@ from loguru import logger
 from scipy.sparse.csgraph import connected_components
 from collections import defaultdict, Counter
 from NepTrainKit import utils, module_path
+from NepTrainKit.config import Config
 
 
 
@@ -55,7 +56,7 @@ class Structure:
         self.atomic_properties = atomic_properties
         self.additional_fields = additional_fields
         if "Config_type" not in self.additional_fields.keys():
-            self.additional_fields["Config_type"] = ""
+            self.additional_fields["Config_type"] = Config.get("widget", "default_config_type", "neptrainkit")
         if "force" in self.atomic_properties.keys():
             self.force_label="force"
         else:
@@ -589,13 +590,11 @@ class Structure:
         global_line.append(f"Properties={props}")
         for key, value in self.additional_fields.items():
 
-            if isinstance(value, (float, int)):
+            if isinstance(value, (float, int,np.number)):
                 global_line.append(f"{key}={value}")
             elif isinstance(value, np.ndarray):
                 value_str = " ".join(map(str, value.flatten()))
                 global_line.append(f'{key}="{value_str}"')
-
-
             else:
                 global_line.append(f'{key}="{value}"')
         file.write(" ".join(global_line) + "\n")

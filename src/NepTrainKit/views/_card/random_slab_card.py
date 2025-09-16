@@ -113,7 +113,7 @@ class RandomSlabCard(MakeDataCard):
                                     vac=None
                                 slab = surface(structure, (int(h), int(k), int(l)), int(layers), vacuum=vac,periodic=True)
                                 slab.wrap()
-                                slab.info["Config_type"] = slab.info.get("Config_type", "") + f" Slab(hkl={int(h)}{int(k)}{int(l)},layers={int(layers)},vacuum={vac})"
+                                slab.info["Config_type"] = structure.info.get("Config_type", "") + f" Slab(hkl={int(h)}{int(k)}{int(l)},layers={int(layers)},vacuum={vac})"
                                 structure_list.append(slab)
                             except Exception as e:
                                 logger.error(f"Failed to build slab {(h, k, l)}: {e}")

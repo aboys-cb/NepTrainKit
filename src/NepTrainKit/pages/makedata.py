@@ -14,6 +14,7 @@ from ase import Atoms, Atom
 from qfluentwidgets import HyperlinkLabel, BodyLabel, SubtitleLabel
 
 from NepTrainKit.core import MessageManager, CardManager
+from NepTrainKit.config import Config
 from NepTrainKit.custom_widget import MakeWorkflowArea
 
 from NepTrainKit.views import   ConsoleWidget
@@ -137,12 +138,13 @@ class MakeDataWidget(QWidget):
                 if isinstance(atom.info.get("Config_type"),np.ndarray):
                     if atom.info["Config_type"].size==0:
 
-                        atom.info["Config_type"] = ""
+                        atom.info["Config_type"] = Config.get("widget", "default_config_type", "neptrainkit")
                     else:
                         atom.info["Config_type"]=" ".join(atom.info["Config_type"])
 
                 else:
-                    atom.info["Config_type"]=str(atom.info.get("Config_type",""))
+                    atom.info["Config_type"]=str(atom.info.get("Config_type", Config.get("widget", "default_config_type", "neptrainkit")))
+
                 structures_list.append(atom)
 
         self.dataset=structures_list

@@ -79,7 +79,7 @@ class DataManagerWidget(QWidget):
         self.splitter.addWidget(self.data_item_widget)
         # self.splitter.addWidget(self.data_info_widget)
 
-        self.splitter.setSizes([160,800,200])
+        self.splitter.setSizes([170,800,200])
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 8)
         # self.splitter.setStretchFactor(2, 2)

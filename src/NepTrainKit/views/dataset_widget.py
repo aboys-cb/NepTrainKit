@@ -37,7 +37,7 @@ class ModelItemWidget(QWidget,DatasetManager):
         self._view.clicked.connect(self.item_clicked)
         self._view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
 
-        self._view.setIndentation(10)
+        # self._view.setIndentation(10)
         self._view.header().setDefaultSectionSize(50)
 
 

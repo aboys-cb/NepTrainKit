@@ -340,58 +340,58 @@ class NepResultPlotWidget(QWidget):
 
 
 
+        #
+        # if mode == 0:
+        #     nep_calc = NepCalculator(
+        #         model_file=nep_txt_path.as_posix(),
+        #         backend=NepBackend(Config.get("nep", "backend", "auto")),
+        #         batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+        #     )
+        #     nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate(nep_result_data.structure.now_data.tolist())
+        #
+        # elif mode == 2:
+        #
+        #     nep_calc = NepCalculator(
+        #         model_file=nep_txt_path.as_posix(),
+        #         backend=NepBackend.CPU,
+        #         batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+        #     )
+        #     nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate_with_dftd3(
+        #         nep_result_data.structure.now_data.tolist(),
+        #         functional=functional,
+        #         cutoff= cutoff,
+        #         cutoff_cn= cutoff_cn
+        #
+        #     )
+        #
+        # else:
+        nep_calc = NepCalculator(
+            model_file=nep_txt_path.as_posix(),
+            backend=NepBackend.CPU,
+            batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+        )
+        nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate_dftd3(
+            nep_result_data.structure.now_data.tolist(),
+            functional=functional,
+            cutoff=cutoff,
+            cutoff_cn=cutoff_cn
 
-        if mode == 0:
-            nep_calc = NepCalculator(
-                model_file=nep_txt_path.as_posix(),
-                backend=NepBackend(Config.get("nep", "backend", "auto")),
-                batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-            )
-            nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate(nep_result_data.structure.now_data.tolist())
-
-        elif mode == 2:
-
-            nep_calc = NepCalculator(
-                model_file=nep_txt_path.as_posix(),
-                backend=NepBackend.CPU,
-                batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-            )
-            nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate_with_dftd3(
-                nep_result_data.structure.now_data.tolist(),
-                functional=functional,
-                cutoff= cutoff,
-                cutoff_cn= cutoff_cn
-
-            )
-
-        else:
-            nep_calc = NepCalculator(
-                model_file=nep_txt_path.as_posix(),
-                backend=NepBackend.CPU,
-                batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-            )
-            nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate_dftd3(
-                nep_result_data.structure.now_data.tolist(),
-                functional=functional,
-                cutoff=cutoff,
-                cutoff_cn=cutoff_cn
-
-            )
+        )
         split_indices = np.cumsum(nep_result_data.atoms_num_list)[:-1]
         nep_forces_array = np.split(nep_forces_array, split_indices)
         nep_virials_array=nep_virials_array*nep_result_data.atoms_num_list[:, np.newaxis]
-
-        if mode < 3:
-            for index, structure in enumerate(nep_result_data.structure.now_data):
-                structure.energy = nep_potentials_array[index]
-                structure.forces = nep_forces_array[index]
-                structure.virial = nep_virials_array[index]
-        else:
-            factor = 1 if mode == 3 else -1
-            for index, structure in enumerate(nep_result_data.structure.now_data):
-                structure.energy += nep_potentials_array[index] * factor
-                structure.forces += nep_forces_array[index] * factor
-                structure.virial += nep_virials_array[index] * factor
+        #
+        # if mode < 3:
+        #     for index, structure in enumerate(nep_result_data.structure.now_data):
+        #         structure.energy = nep_potentials_array[index]
+        #         structure.forces = nep_forces_array[index]
+        #         structure.virial = nep_virials_array[index]
+        # else:
+        factor = 1 if mode == 0 else -1
+        for index, structure in enumerate(nep_result_data.structure.now_data):
+            structure.energy += nep_potentials_array[index] * factor
+            structure.forces += nep_forces_array[index] * factor
+            structure.virial += nep_virials_array[index] * factor
 
         now_indices = nep_result_data.structure.now_indices
 

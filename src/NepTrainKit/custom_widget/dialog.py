@@ -556,9 +556,9 @@ class DFTD3MessageBox(MessageBoxBase):
 
         self.modeCombo = ComboBox(self)
         self.modeCombo.addItems([
-            "NEP Only",
-            "DFT-D3 only",
-            "NEP with DFT-D3",
+            # "NEP Only",
+            # "DFT-D3 only",
+            # "NEP with DFT-D3",
             "Add DFT-D3",
             "Subtract DFT-D3",
 

@@ -790,15 +790,233 @@ class Cp2kOutputImporter:
     name = "cp2k_output"
 
     def matches(self, path: str) -> bool:
+        if not os.path.isfile(path):
+            return False
+        base = os.path.basename(path).lower()
         ext = os.path.splitext(path)[1].lower()
-        return os.path.isfile(path) and ext in {".out", ".log"}
+        likely = base.endswith('.log') or base.endswith('.out') or ext in {'.log', '.out'}
+        try:
+            with open(path, 'r', encoding='utf8', errors='ignore') as f:
+                head = f.read(4000)
+            sig = ("CP2K|" in head) or ("MODULE QUICKSTEP: ATOMIC COORDINATES" in head) or ("ENERGY| Total FORCE_EVAL" in head)
+            return sig
+        except Exception:
+            return False
 
-    def iter_structures(self, path: str):
-        # TODO: Implement CP2K output parsing
-        # Typical markers:
-        #  - "ATOMIC COORDINATES in angstrom" blocks
-        #  - cell vectors from "CELL| Vector a/b/c"
-        raise NotImplementedError("Cp2kOutputImporter.iter_structures not implemented")
+    def iter_structures(self, path: str, **kwargs):
+        """Parse a CP2K output into one Structure.
+
+        Extracts:
+        - Lattice from CELL| Vector a/b/c [angstrom]
+        - Atomic coordinates from "MODULE QUICKSTEP: ATOMIC COORDINATES IN ANGSTROM"
+        - Forces from "ATOMIC FORCES in [a.u.]" (converted to eV/Å)
+        - Total energy from "ENERGY| Total FORCE_EVAL ( QS ) energy [a.u.]" (converted to eV)
+        - Stress tensor from "STRESS| Analytical stress tensor [GPa]" (converted to eV/Å^3)
+        """
+        cancel_event = kwargs.get("cancel_event")
+
+        def cancelled():
+            return cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set()
+
+        # unit conversions
+        HARTREE_TO_EV = 27.211386245988
+        AU_FORCE_TO_EV_PER_ANG = 27.211386245988 / 0.52917721067  # Eh/Bohr -> eV/Å
+        GPA_TO_EV_PER_ANG3 = 1.0 / 160.21766208
+
+        # accumulators
+        a_vec = b_vec = c_vec = None
+        positions: list[list[float]] = []
+        species: list[str] = []
+        forces: list[list[float]] = []
+        energy_ev: float | None = None
+        stress_gpa: np.ndarray | None = None
+
+        # state flags
+        in_coords = False
+        coords_started = False  # started reading numeric atom lines
+        in_forces = False
+        read_forces_header_skipped = False
+
+        def parse_floats_from_line(line: str) -> list[float]:
+            vals: list[float] = []
+            for t in line.replace('D', 'E').split():
+                try:
+                    vals.append(float(t))
+                except Exception:
+                    pass
+            return vals
+
+        with open(path, 'r', encoding='utf8', errors='ignore') as f:
+            for raw in f:
+                if cancelled():
+                    return
+                line = raw.rstrip('\n')
+                lstrip = line.lstrip()
+
+                # Lattice vectors (prefer the current CELL| over *_TOP or *_REF)
+                if lstrip.startswith('CELL|') and 'Vector a' in lstrip and '[angstrom' in lstrip:
+                    nums = parse_floats_from_line(line)
+                    if len(nums) >= 3:
+                        a_vec = [nums[0], nums[1], nums[2]]
+                    continue
+                if lstrip.startswith('CELL|') and 'Vector b' in lstrip and '[angstrom' in lstrip:
+                    nums = parse_floats_from_line(line)
+                    if len(nums) >= 3:
+                        b_vec = [nums[0], nums[1], nums[2]]
+                    continue
+                if lstrip.startswith('CELL|') and 'Vector c' in lstrip and '[angstrom' in lstrip:
+                    nums = parse_floats_from_line(line)
+                    if len(nums) >= 3:
+                        c_vec = [nums[0], nums[1], nums[2]]
+                    continue
+
+                # Coordinates block begin
+                if 'MODULE QUICKSTEP: ATOMIC COORDINATES IN ANGSTROM' in line:
+                    in_coords = True
+                    coords_started = False
+                    continue
+
+                if in_coords:
+                    # skip blank lines until data starts
+                    if line.strip() == '':
+                        if coords_started:
+                            # blank after data -> end of block
+                            in_coords = False
+                        continue
+                    parts = line.split()
+                    # skip section header row
+                    if len(parts) >= 3 and parts[0].lower() == 'atom' and parts[1].lower() == 'kind':
+                        continue
+                    # Expect numeric rows: idx kind Element Z X Y Z Z(eff) Mass
+                    def _is_int(s: str) -> bool:
+                        try:
+                            int(float(s))
+                            return True
+                        except Exception:
+                            return False
+                    if len(parts) >= 7 and _is_int(parts[0]) and _is_int(parts[1]):
+                        try:
+                            elem = parts[2]
+                            x = float(parts[4]); y = float(parts[5]); z = float(parts[6])
+                            species.append(elem)
+                            positions.append([x, y, z])
+                            coords_started = True
+                            continue
+                        except Exception:
+                            # tolerate and keep scanning within block
+                            pass
+                    # Non-parsable line while in block; if we already collected atoms, end block on format change
+                    if coords_started:
+                        in_coords = False
+                    continue
+
+                # Forces block begin
+                if lstrip.startswith('ATOMIC FORCES in [a.u.]'):
+                    in_forces = True
+                    read_forces_header_skipped = False
+                    continue
+
+                if in_forces:
+                    # skip header line that starts with '#'
+                    if not read_forces_header_skipped:
+                        if line.strip() == '' or line.strip().startswith('#'):
+                            if line.strip().startswith('#'):
+                                read_forces_header_skipped = True
+                            continue
+                        else:
+                            read_forces_header_skipped = True
+
+                    if line.strip() == '' or line.strip().startswith('SUM OF ATOMIC FORCES'):
+                        in_forces = False
+                        continue
+
+                    parts = line.split()
+                    if len(parts) >= 6:
+                        try:
+                            fx = float(parts[-3]) * AU_FORCE_TO_EV_PER_ANG
+                            fy = float(parts[-2]) * AU_FORCE_TO_EV_PER_ANG
+                            fz = float(parts[-1]) * AU_FORCE_TO_EV_PER_ANG
+                            forces.append([fx, fy, fz])
+                        except Exception:
+                            pass
+                    continue
+
+                # Energy (a.u. -> eV)
+                if 'ENERGY| Total FORCE_EVAL' in line and '[a.u.]' in line and ':' in line:
+                    try:
+                        val = float(line.split(':')[-1].split()[0])
+                        energy_ev = val * HARTREE_TO_EV
+                    except Exception:
+                        pass
+                    continue
+                # Fallback energy line
+                if lstrip.startswith('Total energy:'):
+                    try:
+                        val = float(lstrip.split(':')[-1].split()[0])
+                        energy_ev = val * HARTREE_TO_EV
+                    except Exception:
+                        pass
+                    continue
+
+                # Stress tensor in GPa
+                if lstrip.startswith('STRESS| Analytical stress tensor'):
+                    _ = next(f, '')  # header line
+                    rowx = next(f, '')
+                    rowy = next(f, '')
+                    rowz = next(f, '')
+                    try:
+                        vx = parse_floats_from_line(rowx)
+                        vy = parse_floats_from_line(rowy)
+                        vz = parse_floats_from_line(rowz)
+                        if len(vx) >= 3 and len(vy) >= 3 and len(vz) >= 3:
+                            stress_gpa = np.array([[vx[-3], vx[-2], vx[-1]],
+                                                   [vy[-3], vy[-2], vy[-1]],
+                                                   [vz[-3], vz[-2], vz[-1]]], dtype=np.float32)
+                    except Exception:
+                        pass
+                    continue
+
+        # Assemble lattice
+        if a_vec is None or b_vec is None or c_vec is None:
+            lattice = np.eye(3, dtype=np.float32)
+        else:
+            lattice = np.array([a_vec, b_vec, c_vec], dtype=np.float32)
+
+        # Compose atomic data
+        properties = [
+            {"name": "species", "type": "S", "count": 1},
+            {"name": "pos", "type": "R", "count": 3},
+        ]
+        atomic_properties: dict[str, np.ndarray] = {
+            "species": np.array(species, dtype=np.str_),
+            "pos": np.array(positions, dtype=np.float32),
+        }
+        if forces and len(forces) == len(positions):
+            properties.append({"name": "forces", "type": "R", "count": 3})
+            atomic_properties["forces"] = np.array(forces, dtype=np.float32)
+
+        additional_fields: dict[str, object] = {
+            "Config_type": "CP2K_1",
+            "pbc": "T T T",
+        }
+        if energy_ev is not None:
+            additional_fields["energy"] = float(energy_ev)
+
+        if stress_gpa is not None:
+            s = (stress_gpa * GPA_TO_EV_PER_ANG3).astype(np.float32)
+            stress9 = np.array([s[0, 0], s[0, 1], s[0, 2],
+                                s[1, 0], s[1, 1], s[1, 2],
+                                s[2, 0], s[2, 1], s[2, 2]], dtype=np.float32)
+            additional_fields["stress"] = stress9
+
+        if len(positions) > 0:
+            yield Structure(lattice=lattice,
+                            atomic_properties=atomic_properties,
+                            properties=properties,
+                            additional_fields=additional_fields)
+
+
+register_importer(Cp2kOutputImporter())
 
 
 
@@ -818,7 +1036,7 @@ class AseTrajectoryImporter:
             return False
         ext = os.path.splitext(path)[1].lower()
         # Target ASE formats that are not already handled by dedicated importers
-        return ext in {".traj", ".json"}
+        return ext in {".traj"}
 
     def _ase_atoms_to_structure(self, atoms) -> Structure | None:
         try:

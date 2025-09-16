@@ -1019,6 +1019,213 @@ class Cp2kOutputImporter:
 register_importer(Cp2kOutputImporter())
 
 
+# n2p2 CFG/input.data importer
+
+
+class N2p2CfgImporter:
+    name = "n2p2_cfg"
+
+    def matches(self, path: str) -> bool:
+        if not os.path.isfile(path):
+            return False
+        base = os.path.basename(path).lower()
+        ext = os.path.splitext(path)[1].lower()
+        likely = (base.endswith('input.data') or ext in {'.data', '.cfg'})
+        try:
+            with open(path, 'r', encoding='utf8', errors='ignore') as f:
+                head = f.read(4096)
+            # Simple signature: blocks delimited by 'begin'/'end' and lines starting with atom/lattice
+            sig = ("\nbegin\n" in head or head.strip().startswith("begin")) and (
+                "\natom" in head or "\nlattice" in head)
+            return sig or likely
+        except Exception:
+            return likely
+
+    def iter_structures(self, path: str, **kwargs):
+        """Parse n2p2 CFG file (input.data) into Structure frames.
+
+        Format reference: https://compphysvienna.github.io/n2p2/topics/cfg_file.html
+        Block between 'begin' ... 'end'. Within a block:
+          - lattice ax ay az (3 lines, optional)
+          - atom x y z elem c n fx fy fz (repeat n times)
+          - comment <text> (optional)
+          - energy <E> (optional)
+          - charge <Q> (optional)
+        """
+        cancel_event = kwargs.get("cancel_event")
+
+        # ---- Units handling (forced Bohr/Hartree -> Å/eV) ----
+        # Per request, input.data (n2p2 CFG) is always given in Bohr/Hartree.
+        # Convert to internal units: Å for length, eV for energy, eV/Å for force.
+        # Constants from n2p2 docs (pair_nnp):
+        #   1 Å = 1.8897261328 Bohr  => Bohr -> Å is 1 / 1.8897261328
+        #   1 eV = 0.0367493254 Hartree => Hartree -> eV is 1 / 0.0367493254
+        length_to_ang = 1.0 / 1.8897261328
+        energy_to_ev = 1.0 / 0.0367493254
+        force_to_ev_per_ang = energy_to_ev / length_to_ang
+
+        def cancelled():
+            return cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set()
+
+        # per-block accumulators
+        block_idx = 0
+        in_block = False
+        lattice_vecs: list[list[float]] | None = None
+        positions: list[list[float]] | None = None
+        species: list[str] | None = None
+        forces: list[list[float]] | None = None
+        energy_val: float | None = None
+        charge_val: float | None = None
+        comment_txt: str | None = None
+
+        def emit_if_ready():
+            nonlocal block_idx
+            if positions is None or species is None or len(positions) == 0:
+                return
+            # lattice
+            if lattice_vecs and len(lattice_vecs) == 3:
+                lattice = (np.array(lattice_vecs, dtype=np.float32) * float(length_to_ang)).reshape(3, 3)
+                pbc_txt = "T T T"
+            else:
+                lattice = np.eye(3, dtype=np.float32)
+                pbc_txt = "F F F"
+
+            props = [
+                {"name": "species", "type": "S", "count": 1},
+                {"name": "pos", "type": "R", "count": 3},
+            ]
+            atom_props: dict[str, np.ndarray] = {
+                "species": np.array(species, dtype=np.str_),
+                "pos": (np.array(positions, dtype=np.float32) * float(length_to_ang)),
+            }
+            if forces is not None and len(forces) == len(positions):
+                props.append({"name": "forces", "type": "R", "count": 3})
+                atom_props["forces"] = (np.array(forces, dtype=np.float32) * float(force_to_ev_per_ang))
+
+            add = {
+                "Config_type": (comment_txt or f"N2P2_CFG_{block_idx}"),
+                "pbc": pbc_txt,
+            }
+            if energy_val is not None:
+                add["energy"] = float(energy_val) * float(energy_to_ev)
+            if charge_val is not None:
+                add["charge"] = float(charge_val)
+
+            yield Structure(lattice=lattice,
+                            atomic_properties=atom_props,
+                            properties=props,
+                            additional_fields=add)
+
+        # Streaming parse
+        with open(path, 'r', encoding='utf8', errors='ignore') as f:
+            for raw in f:
+                if cancelled():
+                    return
+                line = raw.strip()
+                if not line:
+                    continue
+                low = line.lower()
+
+                if low == 'begin':
+                    # start new block
+                    in_block = True
+                    block_idx += 1
+                    lattice_vecs = []
+                    positions = []
+                    species = []
+                    forces = []
+                    energy_val = None
+                    charge_val = None
+                    comment_txt = None
+                    continue
+                if low == 'end':
+                    if in_block:
+                        # emit block
+                        for st in emit_if_ready():
+                            yield st
+                    in_block = False
+                    lattice_vecs = positions = species = forces = None
+                    energy_val = charge_val = None
+                    comment_txt = None
+                    continue
+
+                if not in_block:
+                    # ignore content outside blocks
+                    continue
+
+                # Parse block lines
+                if low.startswith('comment'):
+                    # everything after first space
+                    parts = raw.split(None, 1)
+                    if len(parts) == 2:
+                        comment_txt = parts[1].strip()
+                    else:
+                        comment_txt = ''
+                    continue
+
+                if low.startswith('lattice'):
+                    toks = line.split()
+                    # lattice ax ay az
+                    if len(toks) >= 4:
+                        try:
+                            vec = [float(toks[1]), float(toks[2]), float(toks[3])]
+                            if lattice_vecs is not None:
+                                lattice_vecs.append(vec)
+                        except Exception:
+                            pass
+                    continue
+
+                if low.startswith('atom'):
+                    # atom x y z elem c n fx fy fz
+                    # Support possible extra whitespace in element column
+                    toks = raw.split()
+                    if len(toks) >= 10:
+                        try:
+                            x = float(toks[1]); y = float(toks[2]); z = float(toks[3])
+                            elem = toks[4]
+                            fx = float(toks[-3]); fy = float(toks[-2]); fz = float(toks[-1])
+                            if positions is not None and species is not None and forces is not None:
+                                positions.append([x, y, z])
+                                species.append(elem)
+                                forces.append([fx, fy, fz])
+                        except Exception:
+                            # Be tolerant: try minimal variant without forces (x y z elem)
+                            try:
+                                x = float(toks[1]); y = float(toks[2]); z = float(toks[3])
+                                elem = toks[4]
+                                if positions is not None and species is not None:
+                                    positions.append([x, y, z])
+                                    species.append(elem)
+                            except Exception:
+                                pass
+                    continue
+
+                if low.startswith('energy'):
+                    # energy E
+                    toks = line.split()
+                    if len(toks) >= 2:
+                        try:
+                            energy_val = float(toks[1])
+                        except Exception:
+                            pass
+                    continue
+
+                if low.startswith('charge'):
+                    toks = line.split()
+                    if len(toks) >= 2:
+                        try:
+                            charge_val = float(toks[1])
+                        except Exception:
+                            pass
+                    continue
+
+        # No trailing 'end': emit last block if we were inside one
+        if in_block:
+            for st in emit_if_ready():
+                yield st
+
+
+register_importer(N2p2CfgImporter())
 
 
 

@@ -689,29 +689,20 @@ class Structure:
                 if np.isfinite(val):
                     out[(str(uniq_elems[a]), str(uniq_elems[b]))] = np.sqrt(val, dtype=np.float32).item()
         return out
+
     def get_bond_pairs(self):
         """
-        返回在范围内的所有键对（考虑 PBC），使用邻居列表避免 O(N^2) 内存。
-        阈值使用 1.15 倍共价半径之和。
+        返回在范围内的所有键长
         """
-        N = len(self)
-        if N == 0:
-            return []
-        covalent_radii = np.array([table_info[str(n)]["radii"] / 100 for n in self.numbers], dtype=np.float32)
-        cutoffs = covalent_radii * 1.15
-        atoms = _ASEAtoms(symbols=[str(s) for s in self.elements],
-                          positions=np.asarray(self.positions, dtype=np.float32),
-                          cell=np.asarray(self.cell, dtype=np.float32),
-                          pbc=True)
-        nl = neighborlist.NeighborList(cutoffs, self_interaction=False, bothways=False)
-        nl.update(atoms)
-        bond_pairs: list[tuple[int, int]] = []
-        for a in range(N):
-            indices, offsets = nl.get_neighbors(a)
-            for b in indices:
-                bond_pairs.append((a, int(b)))
+        i, j = np.triu_indices(len(self), k=1)
+        pos = np.array(self.positions)
+        diff = pos[i] - pos[j]
+        upper_distances = np.linalg.norm(diff, axis=1)
+        covalent_radii = np.array([table_info[str(n)]["radii"] / 100 for n in self.numbers])
+        radius_sum = covalent_radii[i] + covalent_radii[j]
+        bond_mask = (upper_distances < radius_sum * 1.15)
+        bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
         return bond_pairs
-
 
     def get_bad_bond_pairs(self, coefficient=0.8):
         """

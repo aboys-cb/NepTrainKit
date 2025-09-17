@@ -36,6 +36,7 @@ class VacancyDefectCard(MakeDataCard):
         self.engine_type_combo=ComboBox(self.setting_widget)
         self.engine_type_combo.addItem("Sobol")
         self.engine_type_combo.addItem("Uniform")
+        self.engine_type_combo.addItem("Gaussian")
         self.engine_type_combo.setCurrentIndex(1)
 
         self.num_radio_button = RadioButton("Vacancy num",self.setting_widget)
@@ -98,9 +99,17 @@ class VacancyDefectCard(MakeDataCard):
             # 为数量和位置分配维度：1 维用于数量，n_atoms 维用于位置
             sobol_engine = Sobol(d=n_atoms + 1, scramble=True)
             sobol_seq = sobol_engine.random(max_num)  # 生成 [0, 1] 的序列
-        else:
+        elif engine_type == 1:
             # Uniform 模式下分开处理
             defect_counts = np.random.randint(1, max_defects + 1, max_num)
+        else:
+            mean = max_defects / 2
+            std = max(1, max_defects / 6)
+            defect_counts = np.clip(
+                np.random.normal(mean, std, max_num).round().astype(int),
+                1,
+                max_defects,
+            )
 
         for i in range(max_num):
             new_structure =structure.copy()

@@ -32,6 +32,7 @@ class CellScalingCard(MakeDataCard):
         self.engine_type_combo=ComboBox(self.setting_widget)
         self.engine_type_combo.addItem("Sobol")
         self.engine_type_combo.addItem("Uniform")
+        self.engine_type_combo.addItem("Gaussian")
         self.engine_type_combo.setCurrentIndex(1)
         self.engine_label.setToolTip("Select random engine")
         self.engine_label.installEventFilter(ToolTipFilter(self.engine_label, 300, ToolTipPosition.TOP))
@@ -106,8 +107,10 @@ class CellScalingCard(MakeDataCard):
             sobol_engine = Sobol(d=dim, scramble=True)
             sobol_seq = sobol_engine.random(max_num)  # 生成 [0, 1] 的序列
             perturbation_factors = 1 + (sobol_seq - 0.5) * 2 * max_scaling
-        else:
+        elif engine_type == 1:
             perturbation_factors = 1 + np.random.uniform(-max_scaling, max_scaling, (max_num, dim))
+        else:
+            perturbation_factors = 1 + np.random.normal(0, max_scaling / 2, (max_num, dim))
 
         orig_lattice = structure.cell.array
         orig_lengths = np.linalg.norm(orig_lattice, axis=1)
@@ -145,7 +148,13 @@ class CellScalingCard(MakeDataCard):
 
             # 缩放原子位置
 
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type","") + f" Scaling(scaling={max_scaling},{'uniform' if engine_type==1 else 'Sobol'  })"
+            if engine_type == 0:
+                engine = 'Sobol'
+            elif engine_type == 1:
+                engine = 'uniform'
+            else:
+                engine = 'gaussian'
+            new_structure.info["Config_type"] = new_structure.info.get("Config_type","") + f" Scaling(scaling={max_scaling},{engine})"
 
             new_structure.set_cell(new_lattice,  scale_atoms=True)
             if identify_organic:

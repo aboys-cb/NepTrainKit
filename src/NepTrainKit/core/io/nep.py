@@ -42,7 +42,7 @@ class NepTrainResultData(ResultData):
         self.force_out_path = Path(force_out_path)
         self.stress_out_path = Path(stress_out_path)
         self.virial_out_path = Path(virial_out_path)
-
+        self.has_virial_structure_index_list = None
     @property
     def datasets(self):
         # return [self.energy, self.stress,self.virial, self.descriptor]
@@ -67,7 +67,6 @@ class NepTrainResultData(ResultData):
     @classmethod
     def from_path(cls, path ,model_type=0, *, structures: list[Structure] | None = None):
         dataset_path = Path(path)
-
         file_name=dataset_path.stem
 
         nep_txt_path = dataset_path.with_name(f"nep.txt")
@@ -130,9 +129,9 @@ class NepTrainResultData(ResultData):
             self._force_dataset = NepPlotData(force_array, group_list=self.atoms_num_list, title="force")
 
         if float(nep_in.get("lambda_v", 1)) != 0:
-            self._stress_dataset = NepPlotData(stress_array, title="stress")
+            self._stress_dataset = NepPlotData(stress_array,index_list=self.has_virial_structure_index_list, title="stress")
 
-            self._virial_dataset = NepPlotData(virial_array, title="virial")
+            self._virial_dataset = NepPlotData(virial_array,index_list=self.has_virial_structure_index_list, title="virial")
         else:
             self._stress_dataset = NepPlotData([], title="stress")
 
@@ -198,20 +197,19 @@ class NepTrainResultData(ResultData):
 
 
 
-    def _save_virial_and_stress_data(self, virials: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    def _save_virial_and_stress_data(self, virials: npt.NDArray[np.float32]) -> tuple[npt.NDArray[np.float32],npt.NDArray[np.float32]]:
         """保存维里和应力数据到文件。"""
-        coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data]))[:, np.newaxis]
+        coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data ]))[:, np.newaxis]
         try:
-            ref_virials = np.vstack([s.nep_virial for s in self.structure.now_data], dtype=np.float32)
+            ref_virials = np.vstack([s.nep_virial if s.has_virial else [np.nan]*6 for s in self.structure.now_data ], dtype=np.float32)
             if virials.size == 0:
                 # 计算失败 空数组
+                np.nan_to_num(ref_virials, copy=False, nan=0.0)
                 virials_array = np.column_stack([ref_virials, ref_virials])
             else:
+                mask = np.isnan(ref_virials)
+                ref_virials[mask] = virials[mask]  # 对应位置用 virials 的值填充
                 virials_array = np.column_stack([virials, ref_virials])
-        except ValueError:
-            MessageManager.send_warning_message("use nep3 calculator to calculate virial replace the original virial")
-            virials_array = np.column_stack([virials, virials])
-
         except Exception:
             MessageManager.send_error_message(f"An error occurred while calculating virial and stress. Please check the input file.")
             # logger.debug(traceback.format_exc())
@@ -225,19 +223,13 @@ class NepTrainResultData(ResultData):
         if stress_array.size != 0:
             np.savetxt(self.stress_out_path, stress_array, fmt='%10.8f')
 
-
         return virials_array, stress_array
 
     def _recalculate_and_save(self ):
 
         try:
             nep_potentials_array, nep_forces_array, nep_virials_array=   self.nep_calc.calculate(self.structure.now_data.tolist())
-            # nep_potentials_array, nep_forces_array, nep_virials_array=self.nep_calc_thread.func_result
 
-
-            # nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(
-            #     self.nep_txt_path.as_posix(),
-            #     self.structure.now_data,"calculate")
             if nep_potentials_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the potentials, use the original potentials instead.")
 

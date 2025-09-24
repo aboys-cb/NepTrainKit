@@ -214,6 +214,8 @@ class BuildExtNVCC(build_ext):
             nvcc_flags += ["-gencode", "arch=compute_86,code=sm_86"]
             nvcc_flags += ["-gencode", "arch=compute_89,code=sm_89"]
             nvcc_flags += ["-gencode", "arch=compute_90,code=sm_90"]
+            nvcc_flags += ["-gencode", "arch=compute_100,code=sm_100"]
+            nvcc_flags += ["-gencode", "arch=compute_120,code=sm_120"]
 
         # Optional: silence warnings for older architectures on newer toolchains
         if os.environ.get("NEP_GPU_SILENCE_DEPRECATED", "1") == "1":

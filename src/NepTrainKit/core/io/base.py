@@ -133,18 +133,23 @@ class NepData:
     def __init__(self,
                  data_list:list[Any]|npt.NDArray[Any],
                  group_list:int|list[int]=1,
+                 index_list:list|npt.NDArray[Any]=None,
                  **kwargs ):
         if isinstance(data_list,(list )):
             data_list=np.array(data_list)
-
         self.data = DataBase(data_list)
-        if isinstance(group_list,int):
-            group = np.arange(data_list.shape[0],dtype=np.uint32)
-            self.group_array=DataBase(group)
+        if index_list is  None:
+            if isinstance(group_list, int):
+                group = np.arange(data_list.shape[0], dtype=np.uint32)
+            else:
+                group = np.arange(len(group_list), dtype=np.uint32)
+                group = group.repeat(group_list)
         else:
-            group = np.arange(len(group_list),dtype=np.uint32 )
-            self.group_array=DataBase(group.repeat(group_list))
+            group = np.array(index_list, dtype=np.uint32)
+            if not isinstance(group_list, int):
+                group = group.repeat(group_list)
 
+        self.group_array = DataBase(group)
         for key,value in kwargs.items():
             setattr(self,key,value)
     @property

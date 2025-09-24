@@ -247,6 +247,9 @@ class Structure:
             self.properties.append({'name': self.force_label, 'type': 'R', 'count': 3})
 
         self.atomic_properties[self.force_label] = arr
+    @property
+    def has_virial(self):
+        return "virial" in self.additional_fields or "stress" in self.additional_fields
 
     @property
     def virial(self):

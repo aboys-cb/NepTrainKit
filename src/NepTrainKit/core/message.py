@@ -6,6 +6,8 @@
 
 from PySide6.QtCore import QObject, Signal, Qt
 from qfluentwidgets import   InfoBar, InfoBarIcon, InfoBarPosition,MessageBox
+from loguru import logger
+
 
 class MessageManager(QObject):
     """
@@ -30,38 +32,51 @@ class MessageManager(QObject):
     @classmethod
     def _createInstance(cls,parent=None):
         # 创建实例
+
         if not cls._instance:
             cls._instance = MessageManager(parent)
 
     @classmethod
     def get_instance(cls):
-        cls._createInstance()
+
         return cls._instance
 
     @classmethod
     def send_info_message(cls,message,title="Tip"):
-        cls._createInstance()
-        cls._instance.showMessageSignal.emit(InfoBarIcon.INFORMATION, message, title)
+        if cls._instance is None:
+            logger.info(message)
+        else:
+            cls._instance.showMessageSignal.emit(InfoBarIcon.INFORMATION, message, title)
 
     @classmethod
     def send_success_message(cls,message,title="Success"):
-        cls._createInstance()
-        cls._instance.showMessageSignal.emit(InfoBarIcon.SUCCESS, message, title)
+        if cls._instance is None:
+            logger.success(message)
+        else:
+            cls._instance.showMessageSignal.emit(InfoBarIcon.SUCCESS, message, title)
 
     @classmethod
     def send_warning_message(cls,message,title="Warning"):
-        cls._createInstance()
-        cls._instance.showMessageSignal.emit(InfoBarIcon.WARNING, message, title)
+        if cls._instance is None:
+            logger.warning(message)
+        else:
+
+            cls._instance.showMessageSignal.emit(InfoBarIcon.WARNING, message, title)
 
     @classmethod
     def send_error_message(cls, message,title="Error"):
-        cls._createInstance()
-        cls._instance.showMessageSignal.emit(InfoBarIcon.ERROR, message, title)
+        if cls._instance is None:
+            logger.error(message)
+        else:
+            cls._instance.showMessageSignal.emit(InfoBarIcon.ERROR, message, title)
 
     @classmethod
     def send_message_box(cls,message,title="Tip"):
-        cls._createInstance()
-        cls._instance.showBoxSignal.emit(message, title)
+        if cls._instance is None:
+            logger.info(message)
+        else:
+
+            cls._instance.showBoxSignal.emit(message, title)
 
     def _show_box(self,message,title ):
         w = MessageBox(title, message, self._parent)
@@ -76,6 +91,8 @@ class MessageManager(QObject):
             duration=8000
         else:
             duration=3000
+
+
         InfoBar.new(msg_type,
             title=title,
             content=msg,

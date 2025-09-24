@@ -144,23 +144,9 @@ class NepCalculator():
             return np.array([]),np.array([]),np.array([])
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
         self.nep3.reset_cancel()
-        try:
-            potentials, forces, virials = self.nep3.calculate(_types, _boxs, _positions)
-        except Exception:
-            logger.debug(traceback.format_exc())
-            # If GPU runtime fails, switch to CPU and retry once
-            if GpuNep is not None and isinstance(self.nep3, GpuNep):
-                MessageManager.send_warning_message("GPU calculation failed; switching to CPU backend.")
-                if self._load_nep_backend(NepBackend.CPU):
-                    try:
-                        potentials, forces, virials = self.nep3.calculate(_types, _boxs, _positions)
-                    except Exception:
-                        logger.debug(traceback.format_exc())
-                        return np.array([]),np.array([]),np.array([])
-                else:
-                    return np.array([]),np.array([]),np.array([])
-            else:
-                return np.array([]),np.array([]),np.array([])
+
+        potentials, forces, virials = self.nep3.calculate(_types, _boxs, _positions)
+
         split_indices = np.cumsum(group_size)[:-1]
         #
         potentials=np.hstack(potentials)
@@ -191,22 +177,9 @@ class NepCalculator():
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
         self.nep3.reset_cancel()
 
-        try:
-            potentials, forces, virials = self.nep3.calculate_dftd3(functional,cutoff,cutoff_cn,_types, _boxs, _positions)
-        except Exception:
-            logger.debug(traceback.format_exc())
-            if GpuNep is not None and isinstance(self.nep3, GpuNep):
-                MessageManager.send_warning_message("GPU DFT-D3 failed; switching to CPU backend.")
-                if self._load_nep_backend(NepBackend.CPU):
-                    try:
-                        potentials, forces, virials = self.nep3.calculate_dftd3(functional,cutoff,cutoff_cn,_types, _boxs, _positions)
-                    except Exception:
-                        logger.debug(traceback.format_exc())
-                        return np.array([]),np.array([]),np.array([])
-                else:
-                    return np.array([]),np.array([]),np.array([])
-            else:
-                return np.array([]),np.array([]),np.array([])
+        potentials, forces, virials = self.nep3.calculate_dftd3(functional,cutoff,cutoff_cn,_types, _boxs, _positions)
+
+
         split_indices = np.cumsum(group_size)[:-1]
         #
         potentials=np.hstack(potentials)
@@ -236,22 +209,8 @@ class NepCalculator():
         _types, _boxs, _positions,group_size = self.compose_structures(structures)
         self.nep3.reset_cancel()
 
-        try:
-            potentials, forces, virials = self.nep3.calculate_with_dftd3( functional,cutoff,cutoff_cn,_types, _boxs, _positions)
-        except Exception:
-            logger.debug(traceback.format_exc())
-            if GpuNep is not None and isinstance(self.nep3, GpuNep):
-                MessageManager.send_warning_message("GPU calculation failed; switching to CPU backend.")
-                if self._load_nep_backend(NepBackend.CPU):
-                    try:
-                        potentials, forces, virials = self.nep3.calculate_with_dftd3( functional,cutoff,cutoff_cn,_types, _boxs, _positions)
-                    except Exception:
-                        logger.debug(traceback.format_exc())
-                        return np.array([]),np.array([]),np.array([])
-                else:
-                    return np.array([]),np.array([]),np.array([])
-            else:
-                return np.array([]),np.array([]),np.array([])
+        potentials, forces, virials = self.nep3.calculate_with_dftd3( functional,cutoff,cutoff_cn,_types, _boxs, _positions)
+
         split_indices = np.cumsum(group_size)[:-1]
         #
         potentials=np.hstack(potentials)

@@ -57,11 +57,13 @@ class NepResultPlotWidget(QWidget):
 
 
             from NepTrainKit.core.canvas.vispy import VispyCanvas
-
-
             self.canvas = VispyCanvas(parent=self, bgcolor='white')
             self._layout.addWidget(self.canvas.native)
             # self.window().windowHandle().screenChanged.connect(self.canvas.native.screen_changed)
+        else:
+            from NepTrainKit.core.canvas.vispy import VispyCanvas
+            self.canvas = VispyCanvas(parent=self, bgcolor='white')
+            self._layout.addWidget(self.canvas.native)
 
 
 
@@ -338,33 +340,6 @@ class NepResultPlotWidget(QWidget):
         nep_result_data = self.canvas.nep_result_data
         nep_txt_path = nep_result_data.nep_txt_path
 
-
-
-        #
-        # if mode == 0:
-        #     nep_calc = NepCalculator(
-        #         model_file=nep_txt_path.as_posix(),
-        #         backend=NepBackend(Config.get("nep", "backend", "auto")),
-        #         batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-        #     )
-        #     nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate(nep_result_data.structure.now_data.tolist())
-        #
-        # elif mode == 2:
-        #
-        #     nep_calc = NepCalculator(
-        #         model_file=nep_txt_path.as_posix(),
-        #         backend=NepBackend.CPU,
-        #         batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-        #     )
-        #     nep_potentials_array, nep_forces_array, nep_virials_array = nep_calc.calculate_with_dftd3(
-        #         nep_result_data.structure.now_data.tolist(),
-        #         functional=functional,
-        #         cutoff= cutoff,
-        #         cutoff_cn= cutoff_cn
-        #
-        #     )
-        #
-        # else:
         nep_calc = NepCalculator(
             model_file=nep_txt_path.as_posix(),
             backend=NepBackend.CPU,
@@ -377,52 +352,60 @@ class NepResultPlotWidget(QWidget):
             cutoff_cn=cutoff_cn
 
         )
+
         now_atoms_num_list=nep_result_data.atoms_num_list[nep_result_data.structure.now_indices]
         split_indices = np.cumsum(now_atoms_num_list)[:-1]
         nep_forces_array = np.split(nep_forces_array, split_indices)
         nep_virials_array=nep_virials_array*now_atoms_num_list[:, np.newaxis]
         #
-        # if mode < 3:
-        #     for index, structure in enumerate(nep_result_data.structure.now_data):
-        #         structure.energy = nep_potentials_array[index]
-        #         structure.forces = nep_forces_array[index]
-        #         structure.virial = nep_virials_array[index]
-        # else:
+
         factor = 1 if mode == 0 else -1
+
         for index, structure in enumerate(nep_result_data.structure.now_data):
-            structure.energy += nep_potentials_array[index] * factor
-            structure.forces += nep_forces_array[index] * factor
-            structure.virial += nep_virials_array[index] * factor
+            try:
+                structure.energy += nep_potentials_array[index] * factor
+            except:
+                pass
+            try:
+                structure.forces += nep_forces_array[index] * factor
+            except:
+                pass
+            if structure.has_virial:
+                try:
+                    structure.virial += nep_virials_array[index] * factor
+                except:
+                    pass
+
 
         now_indices = nep_result_data.structure.now_indices
 
 
         if hasattr(nep_result_data, "energy") and  nep_result_data.energy.num != 0:
-            # print(s.per_atom_energy)
-            ref_energies = np.array([s.per_atom_energy for s in nep_result_data.structure.now_data], dtype=np.float32).reshape(-1, 1)
 
+            ref_energies = np.array([s.per_atom_energy for s in nep_result_data.structure.now_data], dtype=np.float32).reshape(-1, 1)
             nep_result_data.energy.data._data[now_indices,  nep_result_data.energy.x_cols] = ref_energies
+
         if hasattr(nep_result_data, "force") and nep_result_data.force.num != 0:
             force_index=nep_result_data.force.convert_index(now_indices)
             ref_forces = np.vstack([s.forces for s in nep_result_data.structure.now_data], dtype=np.float32)
-
             nep_result_data.force.data._data[force_index,  nep_result_data.force.x_cols] = ref_forces
-        if hasattr(nep_result_data, "virial") and nep_result_data.virial.num != 0:
-            ref_virials = np.vstack([s.nep_virial for s in nep_result_data.structure.now_data], dtype=np.float32)
-            # print(nep_result_data.structure.now_data[0].virial)
-            # print(nep_result_data.structure.now_data[0].nep_virial)
-            #
-            # print(ref_virials[0])
-            nep_result_data.virial.data._data[now_indices, nep_result_data.virial.x_cols] = ref_virials
 
-            # print(nep_result_data.virial.data._data.tolist())
+        if hasattr(nep_result_data, "virial") and nep_result_data.virial.num != 0:
+            #TODO:还需要处理下逻辑
+            now_has_virial_indices=[i for i,s in zip(now_indices,nep_result_data.structure.now_data) if  s.has_virial ]
+            now_atoms_num_list=nep_result_data.atoms_num_list[now_has_virial_indices]
+
+            ref_virials = np.vstack([s.nep_virial  for s in nep_result_data.structure.now_data if s.has_virial], dtype=np.float32)
+
+            nep_result_data.virial.data._data[now_has_virial_indices, nep_result_data.virial.x_cols] = ref_virials
+
             if hasattr(nep_result_data, "stress") and nep_result_data.stress.num != 0:
                 coefficient = (now_atoms_num_list / np.array(
-                    [s.volume for s in nep_result_data.structure.now_data]))[:, np.newaxis]
+                    [s.volume for s in nep_result_data.structure.now_data  if s.has_virial]))[:, np.newaxis]
                 stress_array = ref_virials * coefficient * 160.21766208  # 单位转换\
                 stress_array = stress_array.astype(np.float32)
 
-                nep_result_data.stress.data._data[now_indices, nep_result_data.stress.x_cols] = stress_array
+                nep_result_data.stress.data._data[now_has_virial_indices, nep_result_data.stress.x_cols] = stress_array
 
 
 

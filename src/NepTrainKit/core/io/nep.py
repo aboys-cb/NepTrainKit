@@ -16,7 +16,7 @@ from NepTrainKit.config import Config
 
 from NepTrainKit.core.calculator import NEPProcess, run_nep_calculator, NepCalculator
 
-from NepTrainKit.core.io.base import NepPlotData, StructureData, ResultData
+from NepTrainKit.core.io.base import NepPlotData, StructureData, ResultData, StructureSyncRule
 
 from NepTrainKit.core.io.utils import read_nep_out_file, check_fullbatch, read_nep_in, parse_array_by_atomnum
 from NepTrainKit.core.types import ForcesMode, NepBackend
@@ -27,6 +27,85 @@ class NepTrainResultData(ResultData):
     _force_dataset: NepPlotData
     _stress_dataset: NepPlotData
     _virial_dataset: NepPlotData
+
+    @staticmethod
+    def _collect_energy_sync(result_data: 'NepTrainResultData', dataset: NepPlotData, structure_indices):
+        total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
+        target_width = max(total_cols - dataset.cols, 0)
+        if target_width == 0:
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float32)
+        indices = result_data._normalize_structure_indices(structure_indices)
+        if indices.size == 0:
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+        structures = [result_data.structure.all_data[i] for i in indices]
+        values = np.array([s.per_atom_energy for s in structures], dtype=np.float32).reshape(-1, target_width)
+        return indices, values
+
+    @staticmethod
+    def _collect_force_sync(result_data: 'NepTrainResultData', dataset: NepPlotData, structure_indices):
+        total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
+        target_width = max(total_cols - dataset.cols, 0)
+        if target_width == 0:
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float32)
+        indices = result_data._normalize_structure_indices(structure_indices)
+        if indices.size == 0:
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+        group_vals = dataset.group_array.all_data
+        per_atom = bool(group_vals.size and np.unique(group_vals).size != group_vals.size)
+        structures = [result_data.structure.all_data[i] for i in indices]
+        if per_atom:
+            row_idx = dataset.convert_index(indices)
+            values = np.vstack([s.forces for s in structures]).astype(np.float32, copy=False)
+        else:
+            row_idx = indices
+            values = np.array([np.linalg.norm(s.forces, axis=0) for s in structures], dtype=np.float32)
+        return row_idx, values
+
+    @staticmethod
+    def _collect_virial_sync(result_data: 'NepTrainResultData', dataset: NepPlotData, structure_indices):
+        total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
+        target_width = max(total_cols - dataset.cols, 0)
+        if target_width == 0:
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float32)
+        indices = result_data._normalize_structure_indices(structure_indices)
+        if indices.size == 0:
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+        structures = [result_data.structure.all_data[i] for i in indices]
+        mask = np.array([s.has_virial for s in structures], dtype=bool)
+        if not mask.any():
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+        selected_indices = indices[mask]
+        values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(np.float32, copy=False)
+        return selected_indices, values
+
+    @staticmethod
+    def _collect_stress_sync(result_data: 'NepTrainResultData', dataset: NepPlotData, structure_indices):
+        total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
+        target_width = max(total_cols - dataset.cols, 0)
+        if target_width == 0:
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float32)
+        indices = result_data._normalize_structure_indices(structure_indices)
+        if indices.size == 0:
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+        structures = [result_data.structure.all_data[i] for i in indices]
+        mask = np.array([s.has_virial for s in structures], dtype=bool)
+        if not mask.any():
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+        selected_indices = indices[mask]
+        virial_values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(np.float32, copy=False)
+        atoms = result_data.atoms_num_list[selected_indices].astype(np.float32)
+        volumes = np.array([structures[i].volume for i, flag in enumerate(mask) if flag], dtype=np.float32)
+        coeff = np.divide(atoms, volumes, out=np.zeros_like(atoms, dtype=np.float32), where=volumes != 0)[:, np.newaxis]
+        stress_values = virial_values * coeff * 160.21766208
+        return selected_indices, stress_values.astype(np.float32, copy=False)
+
+    STRUCTURE_SYNC_RULES = {
+        'energy': StructureSyncRule('energy', 'x_cols', _collect_energy_sync),
+        'force': StructureSyncRule('force', 'x_cols', _collect_force_sync),
+        'virial': StructureSyncRule('virial', 'x_cols', _collect_virial_sync),
+        'stress': StructureSyncRule('stress', 'x_cols', _collect_stress_sync),
+    }
+
     def __init__(self,
                  nep_txt_path: Path|str,
                  data_xyz_path: Path|str,

@@ -331,10 +331,7 @@ class NepResultPlotWidget(QWidget):
             nep_energy_array=data.energy.y,
         )
         progress_diag.exec()
-        if hasattr(data, "energy") and data.energy.num != 0:
-            for i, s in enumerate(data.structure.all_data):
-                # print(s.per_atom_energy)
-                data.energy.data._data[i, data.energy.x_cols] = s.per_atom_energy
+        data.sync_structures(["energy"])
         self.canvas.plot_nep_result()
     def _calc_dft_d3(self,mode,functional,cutoff,cutoff_cn):
         nep_result_data = self.canvas.nep_result_data
@@ -377,37 +374,7 @@ class NepResultPlotWidget(QWidget):
                     pass
 
 
-        now_indices = nep_result_data.structure.now_indices
-
-
-        if hasattr(nep_result_data, "energy") and  nep_result_data.energy.num != 0:
-
-            ref_energies = np.array([s.per_atom_energy for s in nep_result_data.structure.now_data], dtype=np.float32).reshape(-1, 1)
-            nep_result_data.energy.data._data[now_indices,  nep_result_data.energy.x_cols] = ref_energies
-
-        if hasattr(nep_result_data, "force") and nep_result_data.force.num != 0:
-            force_index=nep_result_data.force.convert_index(now_indices)
-            ref_forces = np.vstack([s.forces for s in nep_result_data.structure.now_data], dtype=np.float32)
-            nep_result_data.force.data._data[force_index,  nep_result_data.force.x_cols] = ref_forces
-
-        if hasattr(nep_result_data, "virial") and nep_result_data.virial.num != 0:
-            #TODO:还需要处理下逻辑
-            now_has_virial_indices=[i for i,s in zip(now_indices,nep_result_data.structure.now_data) if  s.has_virial ]
-            now_atoms_num_list=nep_result_data.atoms_num_list[now_has_virial_indices]
-
-            ref_virials = np.vstack([s.nep_virial  for s in nep_result_data.structure.now_data if s.has_virial], dtype=np.float32)
-
-            nep_result_data.virial.data._data[now_has_virial_indices, nep_result_data.virial.x_cols] = ref_virials
-
-            if hasattr(nep_result_data, "stress") and nep_result_data.stress.num != 0:
-                coefficient = (now_atoms_num_list / np.array(
-                    [s.volume for s in nep_result_data.structure.now_data  if s.has_virial]))[:, np.newaxis]
-                stress_array = ref_virials * coefficient * 160.21766208  # 单位转换\
-                stress_array = stress_array.astype(np.float32)
-
-                nep_result_data.stress.data._data[now_has_virial_indices, nep_result_data.stress.x_cols] = stress_array
-
-
+        nep_result_data.sync_structures(["energy", "force", "virial", "stress"])
 
     def calc_dft_d3(self):
 

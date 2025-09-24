@@ -9,10 +9,11 @@ import re
 import traceback
 from functools import cached_property
 from pathlib import Path
+from dataclasses import dataclass
 import numpy as np
 from PySide6.QtCore import QObject, Signal
 from loguru import logger
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Iterable, Optional, Sequence
 from numpy import bool_
 import numpy.typing as npt
 from NepTrainKit import utils
@@ -187,7 +188,7 @@ class NepData:
 
         return self.data.remove_data
 
-    def convert_index(self,index_list:list[int]|int) -> npt.NDArray[np.int32]:
+    def convert_index(self,index_list:list[int]|npt.NDArray[np.number]|int) -> npt.NDArray[np.int32]:
         """
         传入结构的原始下标 然后转换成现在已有的
         这个主要是映射force等性质的下标 或者其他一对多的性质
@@ -364,7 +365,42 @@ class StructureData(NepData):
         return self.group_array[result_index].tolist()
 
 
+@dataclass(frozen=True)
+class StructureSyncRule:
+    dataset_attr: str
+    target: str | slice | Callable[[Any], Any]
+    collector: Callable[['ResultData', Any, Optional[np.ndarray]], tuple[np.ndarray, npt.NDArray[np.float32]]]
+    precondition: Callable[['ResultData'], bool] = lambda _: True
+    dtype: Any = np.float32
+
+    def _resolve_target(self, dataset: Any):
+        if callable(self.target):
+            return self.target(dataset)
+        if isinstance(self.target, str):
+            return getattr(dataset, self.target)
+        return self.target
+
+    def apply(self, result_data: 'ResultData', structure_indices: Optional[np.ndarray] = None) -> None:
+        dataset = getattr(result_data, self.dataset_attr, None)
+        if dataset is None or getattr(dataset, 'num', 0) == 0:
+            return
+        if not self.precondition(result_data):
+            return
+        row_idx, values = self.collector(result_data, dataset, structure_indices)
+        if row_idx is None or values is None:
+            return
+        row_idx = np.asarray(row_idx, dtype=np.int64)
+        if row_idx.size == 0:
+            return
+        values = np.asarray(values, dtype=self.dtype)
+        if values.size == 0:
+            return
+        target = self._resolve_target(dataset)
+        dataset.data._data[row_idx, target] = values
+
+
 class ResultData(QObject):
+    STRUCTURE_SYNC_RULES: dict[str, StructureSyncRule] = {}
     #通知界面更新训练集的数量情况
     updateInfoSignal = Signal( )
     #加载训练集结束后发出的信号
@@ -393,6 +429,7 @@ class ResultData(QObject):
         # Optional importer options forwarded to importers.import_structures
         self._import_options: dict = dict(import_options or {})
         self.calculator_factory=calculator_factory
+        self._structure_sync_rules = dict(getattr(self, "STRUCTURE_SYNC_RULES", {}))
 
     def request_cancel(self):
         """Request cooperative cancel during load. Also forward to calculator."""
@@ -429,6 +466,37 @@ class ResultData(QObject):
         Provide pre-parsed structures so load_structures can skip file IO.
         """
         self._prefetched_structures = list(structures)
+
+    def _normalize_structure_indices(self, structure_indices: Sequence[int] | npt.NDArray[Any] | None) -> npt.NDArray[np.int64]:
+        dataset = getattr(self, '_atoms_dataset', None)
+        if dataset is None or dataset.num == 0:
+            return np.array([], dtype=np.int64)
+        active_indices = dataset.now_indices
+        if structure_indices is None:
+            return active_indices.copy()
+        idx = np.asarray(structure_indices, dtype=np.int64).ravel()
+        if idx.size == 0:
+            return np.array([], dtype=np.int64)
+        return np.intersect1d(active_indices, idx, assume_unique=False)
+
+    def sync_structures(self, fields: Iterable[str] | None = None, structure_indices: Sequence[int] | None = None) -> None:
+        if not getattr(self, '_structure_sync_rules', None):
+            return
+        dataset = getattr(self, '_atoms_dataset', None)
+        if dataset is None or dataset.num == 0:
+            return
+        indices = self._normalize_structure_indices(structure_indices)
+        if isinstance(fields, str):
+            field_iter = [fields]
+        elif fields is None:
+            field_iter = list(self._structure_sync_rules.keys())
+        else:
+            field_iter = list(fields)
+        for name in field_iter:
+            rule = self._structure_sync_rules.get(name)
+            if rule is None:
+                continue
+            rule.apply(self, indices)
 
     def write_prediction(self):
         """

@@ -24,10 +24,36 @@ from NepTrainKit.core.io.utils import read_nep_out_file, parse_array_by_atomnum,
 from NepTrainKit.core.types import Brushes, SearchType, NepBackend
 
 
-def pca(X, n_components=None):
+def pca(X: npt.NDArray[np.float32], n_components: Optional[int] = None) -> npt.NDArray[np.float32]:
+    """Reduce the dimensionality of a data matrix with principal component analysis.
+
+    Parameters
+    ----------
+    X : numpy.ndarray
+        Two-dimensional array containing observations by row and features by column.
+    n_components : int, optional
+        Number of principal components to retain. ``None`` keeps all components.
+
+    Returns
+    -------
+    numpy.ndarray
+        Projection of ``X`` with shape ``(n_samples, n_components)`` and dtype ``float32``.
+
+    Raises
+    ------
+    ValueError
+        Raised when ``X`` is not two dimensional.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> data = np.arange(12, dtype=np.float32).reshape(4, 3)
+    >>> pca(data, n_components=2).shape
+    (4, 2)
     """
-    执行主成分分析 (PCA)，只返回降维后的数据
-    """
+    if X.ndim != 2:
+        raise ValueError('pca expects a two-dimensional array')
+
     n_samples, n_features = X.shape
 
     # 1. 计算均值并中心化数据
@@ -62,327 +88,392 @@ def pca(X, n_components=None):
 
 
 
+
 class DataBase:
+    """Container that tracks active rows and supports undo operations.
+
+    Parameters
+    ----------
+    data_list : Sequence[Any] or numpy.ndarray
+        Initial payload. The input is coerced to ``numpy.ndarray`` so that
+        masking operations stay ``O(1)``.
     """
-    优化后的 DataBase 类，对列表进行封装，支持根据索引删除结构和回退。
-    使用布尔掩码管理活动/删除状态，减少列表操作开销。
-    """
-    def __init__(self, data_list:list[Any]|npt.NDArray[Any]):
-        """Initialize with a NumPy array."""
+
+    def __init__(self, data_list: Sequence[Any] | npt.NDArray[Any]):
+        """Initialise the container with ``data_list``.
+
+        Notes
+        -----
+        A boolean mask is initialised with all entries marked as active.
+        Each call to :meth:`remove` pushes the affected indices onto an
+        undo stack which can later be restored with :meth:`revoke`.
+        """
         self._data = np.asarray(data_list)
-        # 布尔掩码：True 表示活跃，False 表示已删除
         self._active_mask = np.ones(len(self._data), dtype=bool)
-        # 历史记录栈，存储每次删除的掩码变化
-        self._history = []
+        self._history: list[npt.NDArray[np.int_]] = []
+
     @property
-    def mask_array(self):
+    def mask_array(self) -> npt.NDArray[np.bool_]:
+        """Boolean mask highlighting the active rows."""
         return self._active_mask
 
     @property
     def num(self) -> int:
-        """返回当前活跃数据的数量"""
-        return np.sum(self._active_mask)
+        """Number of rows currently marked as active."""
+        return int(np.sum(self._active_mask))
+
     @property
     def all_data(self) -> npt.NDArray[Any]:
+        """Return the unmanaged backing array."""
         return self._data
+
     @property
     def now_data(self) -> npt.NDArray[Any]:
-        """返回当前活跃数据"""
+        """Return a view that only exposes active rows."""
         return self._data[self._active_mask]
 
     @property
     def remove_data(self) -> npt.NDArray[Any]:
-        """返回所有已删除的数据"""
+        """Return rows that were deactivated via :meth:`remove`."""
         return self._data[~self._active_mask]
 
     @property
     def now_indices(self) -> npt.NDArray[np.int32]:
-        """返回当前活跃数据的索引下标"""
+        """Indices of the rows that remain active."""
         return np.where(self._active_mask)[0]
 
     @property
     def remove_indices(self) -> npt.NDArray[np.int32]:
-        """返回已删除数据的索引下标"""
+        """Indices of rows that were marked inactive."""
         return np.where(~self._active_mask)[0]
 
-    def remove(self, indices)->None:
-        idx = np.unique(np.asarray(indices, dtype=int) if not isinstance(indices, int) else [indices])
+    def remove(self, indices: Sequence[int] | int) -> None:
+        """Deactivate items denoted by ``indices``.
+
+        Parameters
+        ----------
+        indices : int or Sequence[int]
+            Positions in :attr:`all_data` that should be marked inactive.
+            Invalid indices are ignored silently.
+        """
+        if isinstance(indices, Sequence) and not isinstance(indices, (str, bytes)):
+            idx = np.asarray(indices, dtype=int).ravel()
+        else:
+            idx = np.asarray([indices], dtype=int)
+        idx = np.unique(idx)
         idx = idx[(idx >= 0) & (idx < len(self._data))]
-        if len(idx) == 0:
+        if idx.size == 0:
             return
-        self._history.append(idx)  # 存储删除的索引
+        self._history.append(idx)
         self._active_mask[idx] = False
 
-    def revoke(self)->None:
+    def revoke(self) -> None:
+        """Undo the most recent :meth:`remove` call, if any."""
         if self._history:
             last_indices = self._history.pop()
             self._active_mask[last_indices] = True
 
-    def __getitem__(self, item):
-        """直接索引活跃数据集"""
+    def __getitem__(self, item: Any) -> Any:
+        """Return a slice or element from the active view."""
         return self.now_data[item]
 
 
-class NepData:
-    """
-    structure_data 结构性质数据点
-    group_array 结构的组号 标记数据点对应结构在train.xyz中的下标
-    title 能量 力 等 用于画图axes的标题
 
+class NepData:
+    """Base accessor that pairs a data matrix with structure group metadata.
+
+    Parameters
+    ----------
+    data_list : Sequence[Any] or numpy.ndarray
+        Array-like object that stores the target/property values. The input is
+        converted to ``numpy.ndarray``.
+    group_list : int or Sequence[int], default=1
+        Describes how property rows map onto structures. A scalar means
+        one-to-one, while a sequence contains repetition counts for each
+        structure.
+    index_list : Sequence[int] or numpy.ndarray, optional
+        Custom index map used when ``group_list`` is already expanded.
+    **kwargs
+        Arbitrary attributes that should be attached to the instance.
     """
-    title:str
-    def __init__(self,
-                 data_list:list[Any]|npt.NDArray[Any],
-                 group_list:int|list[int]=1,
-                 index_list:list|npt.NDArray[Any]=None,
-                 **kwargs ):
-        if isinstance(data_list,(list )):
-            data_list=np.array(data_list)
-        self.data = DataBase(data_list)
-        if index_list is  None:
+
+    title: str
+
+    def __init__(
+        self,
+        data_list: Sequence[Any] | npt.NDArray[Any],
+        group_list: int | Sequence[int] = 1,
+        index_list: Sequence[int] | npt.NDArray[Any] | None = None,
+        **kwargs: Any,
+    ) -> None:
+        data = np.asarray(data_list)
+        self.data = DataBase(data)
+
+        if index_list is None:
             if isinstance(group_list, int):
-                group = np.arange(data_list.shape[0], dtype=np.uint32)
+                group = np.arange(data.shape[0], dtype=np.uint32)
             else:
-                group = np.arange(len(group_list), dtype=np.uint32)
-                group = group.repeat(group_list)
+                counts = np.asarray(group_list, dtype=np.int64)
+                if counts.ndim != 1:
+                    raise ValueError("group_list must be one dimensional")
+                group = np.arange(len(counts), dtype=np.uint32).repeat(counts)
         else:
-            group = np.array(index_list, dtype=np.uint32)
+            group = np.asarray(index_list, dtype=np.uint32)
             if not isinstance(group_list, int):
                 group = group.repeat(group_list)
 
         self.group_array = DataBase(group)
-        for key,value in kwargs.items():
-            setattr(self,key,value)
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
     @property
-    def num(self)->int:
+    def num(self) -> int:
+        """Return the number of active rows in :attr:`data`."""
         return self.data.num
+
     @cached_property
-    def cols(self)->int:
-        """
-        将列数除以2 前面是nep 后面是dft
-        """
-        if self.now_data.shape[0]==0:
-            #数据为0
+    def cols(self) -> int:
+        """Half the number of columns, assuming NEP/DFT pairs."""
+        if self.now_data.size == 0:
             return 0
-        index = self.now_data.shape[1] // 2
-        return index
+        return self.now_data.shape[1] // 2
+
     @property
     def now_data(self) -> npt.NDArray[Any]:
-        """
-        返回当前数据
-        """
+        """Active slices of the underlying data matrix."""
         return self.data.now_data
+
     @property
     def now_indices(self) -> npt.NDArray[np.int32]:
+        """Indices of active items relative to :attr:`all_data`."""
         return self.data.now_indices
+
     @property
     def all_data(self) -> npt.NDArray[Any]:
+        """Return the full (unmasked) data matrix."""
         return self.data.all_data
-    def is_visible(self,index) -> bool:
+
+    def is_visible(self, index: int) -> bool:
+        """Return ``True`` if the row referenced by ``index`` is active."""
         if self.data.all_data.size == 0:
             return False
-        return self.data.mask_array[index].all()
+        return bool(self.data.mask_array[index].all())
+
     @property
     def remove_data(self) -> npt.NDArray[Any]:
-        """返回删除的数据"""
-
+        """Return rows that were removed from the active view."""
         return self.data.remove_data
 
-    def convert_index(self,index_list:list[int]|npt.NDArray[np.number]|int) -> npt.NDArray[np.int32]:
-        """
-        传入结构的原始下标 然后转换成现在已有的
-        这个主要是映射force等性质的下标 或者其他一对多的性质
-        对于一对一的比如，转换后会将index_list按照原始下标排序
-        输入[np.int64(98), np.int64(9), np.int64(42), np.int64(141), np.int64(79), np.int64(56)]
-        输出[  9  42  56  79  98 141]
-        """
-        if isinstance(index_list,(int,np.number)):
-            index_list=[index_list]
-        return np.where(np.isin(self.group_array.all_data,index_list))[0]
+    def convert_index(self, index_list: Sequence[int] | npt.NDArray[np.number] | int) -> npt.NDArray[np.int32]:
+        """Translate original structure indices to positions in the dataset.
 
+        Parameters
+        ----------
+        index_list : int or Sequence[int]
+            Original structure indices.
 
-
-    def remove(self,remove_index:list[int]|int):
+        Returns
+        -------
+        numpy.ndarray
+            Positions in :attr:`group_array` that match the supplied indices.
         """
-        根据index删除
-        remove_index 结构的原始下标
-        """
-        remove_indices=self.convert_index(remove_index)
+        if isinstance(index_list, (int, np.number)):
+            index_array = np.array([int(index_list)], dtype=np.int64)
+        else:
+            index_array = np.asarray(index_list, dtype=np.int64)
+        mask = np.isin(self.group_array.all_data, index_array)
+        return np.nonzero(mask)[0].astype(np.int32)
 
+    def remove(self, remove_index: Sequence[int] | int) -> None:
+        """Remove rows associated with the provided structure indices."""
+        remove_indices = self.convert_index(remove_index)
         self.data.remove(remove_indices)
         self.group_array.remove(remove_indices)
 
-    def revoke(self):
-        """将上一次删除的数据恢复"""
+    def revoke(self) -> None:
+        """Restore the last removal across data and grouping arrays."""
         self.data.revoke()
         self.group_array.revoke()
 
-    def get_rmse(self)->float:
+    def get_rmse(self) -> float:
+        """Return the RMSE between NEP and reference columns."""
         if not self.cols:
-            return 0
-        return get_rmse(self.now_data[:, 0:self.cols],self.now_data[:, self.cols: ])
-        # return np.sqrt(((self.now_data[:, 0:self.cols] - self.now_data[:, self.cols: ]) ** 2).mean( ))
+            return 0.0
+        return float(get_rmse(self.now_data[:, : self.cols], self.now_data[:, self.cols :]))
 
-    def get_formart_rmse(self)->str:
-        rmse=self.get_rmse()
-        if self.title =="energy":
-            unit="meV/atom"
-            rmse*=1000
-        elif self.title =="force":
-            unit="meV/Å"
-            rmse*=1000
-        elif self.title =="virial":
-            unit="meV/atom"
-            rmse*=1000
-        elif self.title =="stress":
-            unit="MPa"
-            rmse*=1000
+    def get_formart_rmse(self) -> str:  # noqa: D401 - keep legacy name
+        """Return the formatted RMSE string with units inferred from ``title``."""
+        rmse = self.get_rmse()
+        unit = ""
+        scale = 1.0
+        if self.title == "energy":
+            unit, scale = "meV/atom", 1000
+        elif self.title == "force":
+            unit, scale = "meV/Å", 1000
+        elif self.title == "virial":
+            unit, scale = "meV/atom", 1000
+        elif self.title == "stress":
+            unit, scale = "MPa", 1000
         elif "Polar" in self.title:
-            unit="(m.a.u./atom)"
-            rmse*=1000
-        elif "dipole" == self.title:
-            unit="(m.a.u./atom)"
-            rmse*=1000
-        elif "spin" ==self.title:
-            unit = "meV/μB"
-            rmse*=1000
+            unit, scale = "(m.a.u./atom)", 1000
+        elif self.title == "dipole":
+            unit, scale = "(m.a.u./atom)", 1000
+        elif self.title == "spin":
+            unit, scale = "meV/μB", 1000
         else:
             return ""
-        return f"{rmse:.2f} {unit}"
+        return f"{rmse * scale:.2f} {unit}"
 
-    def get_max_error_index(self,nmax)->list[int]:
-        """
-        返回nmax个最大误差的下标
-        这个下标是结构的原始下标
-        """
-        error = np.sum(np.abs(self.now_data[:, 0:self.cols] - self.now_data[:, self.cols: ]), axis=1)
-        rmse_max_ids = np.argsort(-error)
-        structure_index =self.group_array.now_data[rmse_max_ids]
-        index,indices=np.unique(structure_index,return_index=True)
-
-        return structure_index[np.sort(indices)][:nmax].tolist()
-
+    def get_max_error_index(self, nmax: int) -> list[int]:
+        """Return the ``nmax`` structure indices with the largest absolute error."""
+        if not self.cols:
+            return []
+        error = np.sum(np.abs(self.now_data[:, : self.cols] - self.now_data[:, self.cols :]), axis=1)
+        sorted_idx = np.argsort(-error)
+        structure_index = self.group_array.now_data[sorted_idx]
+        _, unique_indices = np.unique(structure_index, return_index=True)
+        return structure_index[np.sort(unique_indices)][:nmax].tolist()
 
 
 
 class NepPlotData(NepData):
+    """Two-column plot helper that separates NEP predictions from references."""
 
-    def __init__(self,data_list,**kwargs ):
-        super().__init__(data_list,**kwargs )
-        self.x_cols=slice(self.cols,None)
-        self.y_cols=slice(None,self.cols )
+    def __init__(self, data_list: Sequence[Any] | npt.NDArray[Any], **kwargs: Any) -> None:
+        """Initialise the plot dataset and cache column slices."""
+        super().__init__(data_list, **kwargs)
+        self.x_cols = slice(self.cols, None)
+        self.y_cols = slice(None, self.cols)
 
     @property
     def x(self) -> npt.NDArray[Any]:
-        """
-        这里返回的是展平之后的数据 方便直接画图
-        """
-        if self.cols==0:
+        """Flattened NEP predictions suitable for scatter plots."""
+        if self.cols == 0:
             return self.now_data
-        return self.now_data[ : ,self.x_cols].ravel()
+        return self.now_data[:, self.x_cols].ravel()
+
     @property
     def y(self) -> npt.NDArray[Any]:
-        if self.cols==0:
+        """Flattened reference values."""
+        if self.cols == 0:
             return self.now_data
-        return self.now_data[ : , self.y_cols].ravel()
-
+        return self.now_data[:, self.y_cols].ravel()
 
     @property
-    def structure_index(self):
-        """
-        这里根据列数 将group做一个扩充 传入到画图的data里
-        为了将散点将结构下标映射起来
-        """
-        return self.group_array[ : ].repeat(self.cols)
+    def structure_index(self) -> npt.NDArray[np.int32]:
+        """Map each flattened point back to its parent structure index."""
+        if self.cols == 0:
+            return self.group_array.now_data.astype(np.int32)
+        return self.group_array[:].repeat(self.cols).astype(np.int32)
+
+
+
 class DPPlotData(NepData):
+    """Plot helper for DP datasets where columns are ordered differently."""
 
-
-    def __init__(self,data_list,**kwargs ):
-        super().__init__(data_list,**kwargs )
-        self.x_cols=slice(None,self.cols)
-        self.y_cols=slice(self.cols,None)
+    def __init__(self, data_list: Sequence[Any] | npt.NDArray[Any], **kwargs: Any) -> None:
+        """Initialise slices for DP-format data (reference first)."""
+        super().__init__(data_list, **kwargs)
+        self.x_cols = slice(None, self.cols)
+        self.y_cols = slice(self.cols, None)
 
     @property
-    def x(self):
-        if self.cols==0:
+    def x(self) -> npt.NDArray[Any]:
+        """Flattened reference values."""
+        if self.cols == 0:
             return self.now_data
-        return self.now_data[ : ,self.x_cols].ravel()
+        return self.now_data[:, self.x_cols].ravel()
+
     @property
-    def y(self):
-        if self.cols==0:
+    def y(self) -> npt.NDArray[Any]:
+        """Flattened DP predictions."""
+        if self.cols == 0:
             return self.now_data
-        return self.now_data[ : , self.y_cols].ravel()
+        return self.now_data[:, self.y_cols].ravel()
 
-
-
-    # def all_x(self):
-    #     if self.cols==0:
-    #         return self.all_data
-    #     return self.all_data[ : ,:self.cols].ravel()
-    # @property
-    # def all_y(self):
-    #     if self.cols==0:
-    #         return self.all_data
-    #     return self.all_data[ : , self.cols:].ravel()
     @property
-    def structure_index(self):
-        return self.group_array[ : ].repeat(self.cols)
+    def structure_index(self) -> npt.NDArray[np.int32]:
+        """Return structure indices replicated per column pair."""
+        if self.cols == 0:
+            return self.group_array.now_data.astype(np.int32)
+        return self.group_array[:].repeat(self.cols).astype(np.int32)
+
+
 
 class StructureData(NepData):
+    """Utility mixin for structure-level queries."""
 
     @utils.timeit
-    def get_all_config(self,search_type:SearchType=None)->list[str]:
-        """
-        获取所有结构的某个属性 用于搜索
-        :param search_type:SearchType
-        :return:每个结构的属性值
+    def get_all_config(self, search_type: SearchType | None = None) -> list[str]:
+        """Return structure metadata used for filtering.
+
+        Parameters
+        ----------
+        search_type : SearchType, optional
+            Metadata selector. Defaults to :data:`SearchType.TAG`.
+
+        Returns
+        -------
+        list[str]
+            Value per active structure matching ``search_type``.
         """
         if search_type is None:
-            search_type=SearchType.TAG
-        if search_type==SearchType.TAG:
+            search_type = SearchType.TAG
+        if search_type == SearchType.TAG:
             return [structure.tag for structure in self.now_data]
-        elif search_type==SearchType.FORMULA:
+        if search_type == SearchType.FORMULA:
             return [structure.formula for structure in self.now_data]
-        else:
-            MessageManager.send_warning_message(f"no such search_type:{search_type}")
-            return []
-    def search_config(self,config:str,search_type:SearchType):
-        """
-        根据传入的config 对结构的属性值进行匹配
-        这里使用了正则 可以使用正则支持的语法
-        :param config:
-        :param search_type:
-        :return:符合搜索的结构的下标
-        """
-        if search_type==SearchType.TAG:
+        MessageManager.send_warning_message(f"Unsupported search type: {search_type}")
+        return []
 
-            result_index=[i for i ,structure in enumerate(self.now_data) if re.search(config, structure.tag)]
-        elif search_type==SearchType.FORMULA:
-            result_index=[i for i ,structure in enumerate(self.now_data) if re.search(config, structure.formula)]
+    def search_config(self, config: str, search_type: SearchType) -> list[int]:
+        """Return structure indices whose metadata match ``config``.
+
+        Parameters
+        ----------
+        config : str
+            Regular expression used for matching.
+        search_type : SearchType
+            Attribute family to inspect.
+
+        Returns
+        -------
+        list[int]
+            Structure indices satisfying the pattern; empty on failure.
+        """
+        if search_type == SearchType.TAG:
+            result_index = [i for i, structure in enumerate(self.now_data) if re.search(config, structure.tag)]
+        elif search_type == SearchType.FORMULA:
+            result_index = [i for i, structure in enumerate(self.now_data) if re.search(config, structure.formula)]
         else:
-            MessageManager.send_warning_message(f"no such search_type:{search_type}")
+            MessageManager.send_warning_message(f"Unsupported search type: {search_type}")
             return []
         return self.group_array[result_index].tolist()
 
 
+
 @dataclass(frozen=True)
 class StructureSyncRule:
+    """Declarative instruction that synchronises structure attributes into datasets."""
+
     dataset_attr: str
     target: str | slice | Callable[[Any], Any]
-    collector: Callable[['ResultData', Any, Optional[np.ndarray]], tuple[np.ndarray, npt.NDArray[np.float32]]]
-    precondition: Callable[['ResultData'], bool] = lambda _: True
+    collector: Callable[["ResultData", Any, Optional[np.ndarray]], tuple[np.ndarray, npt.NDArray[np.float32]]]
+    precondition: Callable[["ResultData"], bool] = lambda _: True
     dtype: Any = np.float32
 
-    def _resolve_target(self, dataset: Any):
+    def _resolve_target(self, dataset: Any) -> Any:
+        """Return the concrete column selector for ``dataset``."""
         if callable(self.target):
             return self.target(dataset)
         if isinstance(self.target, str):
             return getattr(dataset, self.target)
         return self.target
 
-    def apply(self, result_data: 'ResultData', structure_indices: Optional[np.ndarray] = None) -> None:
+    def apply(self, result_data: "ResultData", structure_indices: Optional[np.ndarray] = None) -> None:
+        """Execute the rule on ``result_data`` if the precondition passes."""
         dataset = getattr(result_data, self.dataset_attr, None)
-        if dataset is None or getattr(dataset, 'num', 0) == 0:
+        if dataset is None or getattr(dataset, "num", 0) == 0:
             return
         if not self.precondition(result_data):
             return
@@ -399,7 +490,14 @@ class StructureSyncRule:
         dataset.data._data[row_idx, target] = values
 
 
+
 class ResultData(QObject):
+    """Manage structures, descriptors, and plots for NEP result files.
+
+    Subclasses implement :meth:`_load_dataset` and expose their plot datasets
+    through :pyattr:`datasets`. The class also centralises selection and
+    synchronisation utilities shared by the GUI.
+    """
     STRUCTURE_SYNC_RULES: dict[str, StructureSyncRule] = {}
     #通知界面更新训练集的数量情况
     updateInfoSignal = Signal( )
@@ -409,11 +507,27 @@ class ResultData(QObject):
     _atoms_dataset: StructureData
 
     def __init__(self,
-                 nep_txt_path:Path|str,
-                 data_xyz_path:Path|str,
-                 descriptor_path:Path|str,
+                 nep_txt_path: Path | str,
+                 data_xyz_path: Path | str,
+                 descriptor_path: Path | str,
                  calculator_factory: Optional[Callable[[str], Any]] = None,
                  import_options: Optional[dict] = None):
+        """Initialise the result container with file locations and factories.
+
+        Parameters
+        ----------
+        nep_txt_path : str or pathlib.Path
+            Path to the NEP model file.
+        data_xyz_path : str or pathlib.Path
+            Path to the trajectory/structure file.
+        descriptor_path : str or pathlib.Path
+            Destination of cached descriptor values.
+        calculator_factory : Callable[[str], Any], optional
+            Factory returning a calculator compatible with the subclass.
+            Defaults to :class:`NepCalculator`.
+        import_options : dict, optional
+            Extra keyword arguments forwarded to :func:`import_structures`.
+        """
         super().__init__()
         self.load_flag=False
         # cooperative cancel for long-running loads
@@ -441,12 +555,14 @@ class ResultData(QObject):
             pass
 
     def reset_cancel(self):
+        """Clear the cancellation flag so future operations proceed."""
         self.cancel_event.clear()
     @utils.timeit
     def load_structures(self):
-        """
-        加载结构xyz文件
-        :return:
+        """Populate :attr:`structure` from disk or a prefetched cache.
+
+        The method honours :attr:`_prefetched_structures` first; otherwise it
+        delegates to the importer registry and honours ``import_options``.
         """
         # If structures were provided upfront, use them; otherwise parse from file
         if self._prefetched_structures is not None:
@@ -468,6 +584,19 @@ class ResultData(QObject):
         self._prefetched_structures = list(structures)
 
     def _normalize_structure_indices(self, structure_indices: Sequence[int] | npt.NDArray[Any] | None) -> npt.NDArray[np.int64]:
+        """Return indices intersected with the currently active structure set.
+
+        Parameters
+        ----------
+        structure_indices : Sequence[int] or numpy.ndarray, optional
+            Candidate indices referring to :attr:`structure`. ``None`` means
+            all active indices.
+
+        Returns
+        -------
+        numpy.ndarray
+            Sorted indices that are active within :attr:`structure`.
+        """
         dataset = getattr(self, '_atoms_dataset', None)
         if dataset is None or dataset.num == 0:
             return np.array([], dtype=np.int64)
@@ -480,6 +609,16 @@ class ResultData(QObject):
         return np.intersect1d(active_indices, idx, assume_unique=False)
 
     def sync_structures(self, fields: Iterable[str] | None = None, structure_indices: Sequence[int] | None = None) -> None:
+        """Apply registered :class:`StructureSyncRule` objects to datasets.
+
+        Parameters
+        ----------
+        fields : Iterable[str] or str, optional
+            Subset of rule names to apply. ``None`` means all registered rules.
+        structure_indices : Sequence[int], optional
+            Visible structure indices affected by the update. ``None`` uses all
+            active structures.
+        """
         if not getattr(self, '_structure_sync_rules', None):
             return
         dataset = getattr(self, '_atoms_dataset', None)
@@ -499,11 +638,10 @@ class ResultData(QObject):
             rule.apply(self, indices)
 
     def write_prediction(self):
-        """
-        程序将严格检测batch和结构数的关系，如果不是fullbatch，
-        就会触发计算，通过写入一个nep.in文件 可以避免这种情况。
-        在nep_cpu计算后，回调用该函数
-        :return:
+        """Create a ``nep.in`` stub when large datasets require prediction mode.
+
+        The GUI expects a ``nep.in`` file to mark prediction runs for large
+        (>1000) structure collections.
         """
         if self.atoms_num_list.shape[0] > 1000:
             #
@@ -512,10 +650,12 @@ class ResultData(QObject):
                           "w", encoding="utf8") as f:
                     f.write("prediction 1 ")
 
-    def load(self ):
-        """
-        加载数据集的主函数
-        :return:
+    def load(self):
+        """Load structures, descriptors, and dataset arrays in sequence.
+
+        The routine instantiates a calculator (optionally via ``calculator_factory``),
+        parses structures, and then delegates to subclass hooks for descriptors and
+        dataset-specific properties.
         """
         try:
             # Calculator injection (default to NEP). Subclasses can pass in a factory for other ML potentials.
@@ -562,178 +702,142 @@ class ResultData(QObject):
 
         self.loadFinishedSignal.emit()
     def _load_dataset(self):
-        """
-        不同类型的势函数通过重写该函数实现不同的加载逻辑
-        主要是加载结构性质
-        :return:
-        """
+        """Populate subclass-specific datasets (must be implemented by subclasses)."""
         raise NotImplementedError()
 
     @property
     def datasets(self) -> list["NepPlotData"]:
+        """Return the plot datasets exposed by the subclass."""
         raise NotImplementedError()
 
     @property
     def descriptor(self):
+        """Return the descriptor dataset prepared in :meth:`_load_descriptors`."""
         return self._descriptor_dataset
 
     @property
     def num(self):
+        """Return the number of active structures in the dataset."""
         return self._atoms_dataset.num
     @property
     def structure(self):
+        """Return the :class:`StructureData` wrapper for the active structures."""
         return self._atoms_dataset
 
-    def is_select(self,i):
+    def is_select(self, i: int) -> bool:
+        """Return ``True`` if the structure index is marked as selected."""
         return i in self.select_index
 
-    def select(self,indices:list[int]|int):
-        """
-        传入一个索引列表，将索引对应的结构标记为选中状态
-        这个下标是结构在train.xyz中的索引
-        :param indices: 索引
-        :return:
-        """
 
 
-        # 统一转换为 NumPy 数组
-        idx = np.asarray(indices, dtype=int) if not isinstance(indices, int) else np.array([indices])
-        # 去重并过滤有效索引（在数据范围内且为活跃数据）
+    def select(self, indices: Sequence[int] | int) -> None:
+        """Mark structures denoted by ``indices`` as selected."""
+        if isinstance(indices, (int, np.integer)):
+            idx = np.array([int(indices)], dtype=int)
+        else:
+            idx = np.asarray(indices, dtype=int).ravel()
         idx = np.unique(idx)
-        idx = idx[(idx >= 0) & (idx < len(self.structure.all_data)) & (self.structure.data.mask_array[idx])]
-        # 批量添加到选中集合
-        self.select_index.update(idx)
-
+        valid = (idx >= 0) & (idx < len(self.structure.all_data))
+        valid &= self.structure.data.mask_array[idx]
+        idx = idx[valid]
+        self.select_index.update(idx.tolist())
         self.updateInfoSignal.emit()
 
-    def uncheck(self,_list:list[int]|int):
-        """
-        check_list 传入一个索引列表，将索引对应的结构标记为未选中状态
-        这个下标是结构在train.xyz中的索引
-        :param _list:
-        :return:
-        """
-        if isinstance(_list,(int,np.number)):
-            _list=[_list]
-        for i in _list:
-            if i in self.select_index:
-                self.select_index.remove(i)
-
+    def uncheck(self, indices: Sequence[int] | int) -> None:
+        """Remove structures denoted by ``indices`` from the selection set."""
+        if isinstance(indices, (int, np.integer)):
+            iter_indices = [int(indices)]
+        else:
+            iter_indices = (int(i) for i in np.asarray(indices).ravel())
+        for idx in iter_indices:
+            self.select_index.discard(idx)
         self.updateInfoSignal.emit()
 
-    def inverse_select(self):
-        """
-        根据现在选择的结构对先有训练集进行一个反选的操作
-        :return:
-        """
+    def inverse_select(self) -> None:
+        """Invert the current selection over the active structure set."""
         active_indices = set(self.structure.data.now_indices.tolist())
         selected_indices = set(self.select_index)
-        unselect = list(selected_indices)
-        select = list(active_indices - selected_indices)
-        if unselect:
-            self.uncheck(unselect)
-        if select:
-            self.select(select)
-    def get_selected_structures(self)->list[Structure]:
-        """
-        获取选中结构的list
-        :return: list[Structure]
-        """
-        index=list(self.select_index)
-        index = self.structure.convert_index(index)
+        to_unselect = list(selected_indices)
+        to_select = list(active_indices - selected_indices)
+        if to_unselect:
+            self.uncheck(to_unselect)
+        if to_select:
+            self.select(to_select)
 
-        return self.structure.all_data[index].tolist()
+    def get_selected_structures(self) -> list[Structure]:
+        """Return the selected structures in the order of their raw index."""
+        indices = list(self.select_index)
+        mapped = self.structure.convert_index(indices)
+        return self.structure.all_data[mapped].tolist()
 
-    def export_selected_xyz(self,save_file_path):
-        """
-        导出当前选中的结构
-        :param save_file_path: 保存文件路径，具体到文件 例如~/select.xyz
-        :return:
-        """
-        index=list(self.select_index)
+
+
+    def export_selected_xyz(self, save_file_path: str | Path) -> None:
+        """Write the currently selected structures to ``save_file_path``."""
+        indices = list(self.select_index)
         try:
-            with open(save_file_path,"w",encoding="utf8") as f:
-
-                index=self.structure.convert_index(index)
-                for structure in self.structure.all_data[index]:
-                    structure.write(f)
+            with open(save_file_path, "w", encoding="utf8") as handle:
+                mapped = self.structure.convert_index(indices)
+                for structure in self.structure.all_data[mapped]:
+                    structure.write(handle)
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
-        except:
-            MessageManager.send_info_message(f"An unknown error occurred while saving. The error message has been output to the log!")
+        except Exception:
+            MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
             logger.error(traceback.format_exc())
 
-    def export_model_xyz(self,save_path):
-        """
-        导出当前结构
-        :param save_path: 保存路径
-        被删除的导出到export_remove_model.xyz
-        被保留的导出到export_good_model.xyz
-        """
+    def export_model_xyz(self, save_path: str | Path) -> None:
+        """Export active and removed structures into ``save_path`` folder."""
         try:
-
-            with open(Path(save_path).joinpath("export_good_model.xyz"),"w",encoding="utf8") as f:
+            good_path = Path(save_path).joinpath("export_good_model.xyz")
+            with open(good_path, "w", encoding="utf8") as handle:
                 for structure in self.structure.now_data:
-                    structure.write(f)
+                    structure.write(handle)
 
-            with open(Path(save_path).joinpath("export_remove_model.xyz"),"w",encoding="utf8") as f:
+            removed_path = Path(save_path).joinpath("export_remove_model.xyz")
+            with open(removed_path, "w", encoding="utf8") as handle:
                 for structure in self.structure.remove_data:
-                    structure.write(f)
-
+                    structure.write(handle)
 
             MessageManager.send_info_message(f"File exported to: {save_path}")
-        except:
-            MessageManager.send_info_message(f"An unknown error occurred while saving. The error message has been output to the log!")
+        except Exception:
+            MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
             logger.error(traceback.format_exc())
 
 
-    def get_atoms(self,index ):
-        """根据原始索引获取原子结构对象"""
-        index=self.structure.convert_index(index)
-        return self.structure.all_data[index][0]
+    def get_atoms(self, index: int):
+        """Return the ASE atoms object for the original ``index``."""
+        mapped = self.structure.convert_index(index)
+        return self.structure.all_data[mapped][0]
 
-
-
-    def remove(self,i):
-
-        """
-        在所有的dataset中删除某个索引对应的结构
-        i是原始下标
-        """
+    def remove(self, i: int) -> None:
+        """Remove the structure ``i`` across all datasets."""
         self.structure.remove(i)
         for dataset in self.datasets:
             dataset.remove(i)
         self.updateInfoSignal.emit()
 
     @property
-    def is_revoke(self):
-        """
-        判断是否有被删除的结构
-        """
-        return self.structure.remove_data.size!=0
-    def revoke(self):
-        """
-        撤销到上一次的删除
-        """
+    def is_revoke(self) -> bool:
+        """Return ``True`` if any structures have been removed."""
+        return self.structure.remove_data.size != 0
+
+    def revoke(self) -> None:
+        """Undo the most recent removal across structures and datasets."""
         self.structure.revoke()
         for dataset in self.datasets:
-            dataset.revoke( )
+            dataset.revoke()
         self.updateInfoSignal.emit()
 
     @utils.timeit
-    def delete_selected(self ):
-        """
-        删除所有selected的结构
-        """
+    def delete_selected(self):
+        """Remove and clear all currently selected structures."""
         self.remove(list(self.select_index))
         self.select_index.clear()
         self.updateInfoSignal.emit()
 
 
     def _load_descriptors(self):
-        """
-        加载训练集的描述符
-        :return:
-        """
+        """Load cached descriptors or generate them with the calculator."""
 
         if os.path.exists(self.descriptor_path):
             desc_array = read_nep_out_file(self.descriptor_path,dtype=np.float32,ndmin=2)

@@ -14,7 +14,6 @@ from NepTrainKit import module_path,utils
 from NepTrainKit.core import MessageManager, Structure
 from NepTrainKit.config import Config
 
-from NepTrainKit.core.calculator import NEPProcess, run_nep_calculator, NepCalculator
 
 from NepTrainKit.core.io.base import NepPlotData, StructureData, ResultData, StructureSyncRule
 

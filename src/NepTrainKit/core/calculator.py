@@ -250,7 +250,6 @@ class NepCalculator:
             boxes,
             positions,
         )
-        print(1)
         split_indices = np.cumsum(group_sizes)[:-1]
         potentials = np.hstack(potentials)
         split_potential_arrays = np.split(potentials, split_indices) if split_indices.size else [potentials]

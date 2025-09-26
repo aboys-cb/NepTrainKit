@@ -329,8 +329,8 @@ class NepTrainResultData(ResultData):
         else:
             self._force_dataset = NepPlotData(force_array, group_list=self.atoms_num_list, title="force")
         if float(nep_in.get("lambda_v", 1)) != 0:
-            self._stress_dataset = NepPlotData(stress_array,index_list=self.has_virial_structure_index_list, title="stress")
-            self._virial_dataset = NepPlotData(virial_array,index_list=self.has_virial_structure_index_list, title="virial")
+            self._stress_dataset = NepPlotData(stress_array,  title="stress")
+            self._virial_dataset = NepPlotData(virial_array, title="virial")
         else:
             self._stress_dataset = NepPlotData([], title="stress")
             self._virial_dataset = NepPlotData([], title="virial")

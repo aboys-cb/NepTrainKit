@@ -1,18 +1,21 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Torsion-based coordinate perturbations with fast bonding guards.
+This module provides topology construction (with/without PBC), efficient
+rotatable torsion detection, and guarded perturbations suitable for generating
+physically plausible local conformations.
+Examples
+--------
+>>> # See process_single for the main entrypoint
+"""
 from __future__ import annotations
-
 import sys
 import math
 import random
 from dataclasses import dataclass
 from typing import Iterable, List, Optional, Sequence, Tuple
-
 import numpy as np
 from collections import deque, defaultdict
-
-
-# Covalent radii (Å) — copied from the original script
 COVALENT_RADII = {
     'H': 0.31, 'He': 0.28, 'Li': 1.28, 'Be': 0.96, 'B': 0.84, 'C': 0.76, 'N': 0.71, 'O': 0.66, 'F': 0.57, 'Ne': 0.58,
     'Na': 1.66, 'Mg': 1.41, 'Al': 1.21, 'Si': 1.11, 'P': 1.07, 'S': 1.05, 'Cl': 1.02, 'Ar': 1.06,
@@ -26,8 +29,6 @@ COVALENT_RADII = {
     'Tl': 1.45, 'Pb': 1.46, 'Bi': 1.48, 'Po': 1.40, 'At': 1.50, 'Rn': 1.50,
     'Fr': 2.60, 'Ra': 2.21, 'Ac': 2.15, 'Th': 2.06, 'Pa': 2.00, 'U': 1.96, 'Np': 1.90, 'Pu': 1.87, 'Am': 1.80, 'Cm': 1.69
 }
-
-
 @dataclass
 class TorsionGuardParams:
     perturb_per_frame: int = 100
@@ -35,25 +36,19 @@ class TorsionGuardParams:
     max_torsions_per_conf: int = 5
     gaussian_sigma: float = 0.03
     pbc_mode: str = "auto"  # "auto" | "yes" | "no"
-
     local_mode_cutoff_atoms: int = 150
     local_torsion_max_subtree: int = 40
-
     bond_detect_factor: float = 1.15
     bond_keep_min_factor: float = 0.60
     bond_keep_max_factor: Optional[float] = None
     nonbond_min_factor: float = 0.80
-
     max_retries_per_frame: int = 12
     mult_bond_factor: float = 0.87
     nonpbc_box_size: float = 100.0
     # Pauling bond order parameters
     bo_c_const: float = 0.3
     bo_threshold: float = 0.2
-
-
 # ---------- Geometry and PBC helpers ----------
-
 def rotate_coords(coords: np.ndarray, atom_indices: Iterable[int], axis_point1: np.ndarray,
                   axis_point2: np.ndarray, angle_deg: float) -> np.ndarray:
     axis = np.array(axis_point2) - np.array(axis_point1)
@@ -73,8 +68,6 @@ def rotate_coords(coords: np.ndarray, atom_indices: Iterable[int], axis_point1: 
     shifted = coords[idx] - axis_point1
     coords[idx] = shifted.dot(R.T) + axis_point1
     return coords
-
-
 def center_in_box(coords: np.ndarray, box_size: float) -> np.ndarray:
     min_xyz = coords.min(axis=0)
     max_xyz = coords.max(axis=0)
@@ -82,28 +75,18 @@ def center_in_box(coords: np.ndarray, box_size: float) -> np.ndarray:
     box_center = np.array([box_size / 2.0] * 3)
     shift = box_center - center
     return coords + shift
-
-
 def wrap_to_cell(coords: np.ndarray, cell: np.ndarray, inv_cell_T: np.ndarray) -> np.ndarray:
     frac = coords @ inv_cell_T
     frac = frac - np.floor(frac)
     return frac @ cell
-
-
 def mic_delta(delta: np.ndarray, cell: np.ndarray, inv_cell_T: np.ndarray) -> np.ndarray:
     dfrac = delta @ inv_cell_T
     dfrac -= np.round(dfrac)
     return dfrac @ cell
-
-
 # ---------- Grid utils (non-PBC only) ----------
-
 def _grid_key(p: np.ndarray, inv_h: float, origin: np.ndarray) -> Tuple[int, int, int]:
     return tuple(((p - origin) * inv_h).astype(np.int64))  # type: ignore[return-value]
-
-
 # ---------- Topology (built once per frame) ----------
-
 def build_adjacency_nonpbc(symbols: Sequence[str], coords: np.ndarray, bond_detect_factor: float,
                            c_const: float = 0.3, bo_threshold: float = 0.2):
     N = len(symbols)
@@ -114,14 +97,12 @@ def build_adjacency_nonpbc(symbols: Sequence[str], coords: np.ndarray, bond_dete
     h = bond_detect_factor * 2.0 * max_r + 1e-6
     inv_h = 1.0 / h
     origin = coords.min(axis=0) - 1e-6
-
     buckets: dict[Tuple[int, int, int], List[int]] = defaultdict(list)
     keys = np.empty((N, 3), dtype=np.int64)
     for i in range(N):
         k = _grid_key(coords[i], inv_h, origin)
         keys[i] = k
         buckets[k].append(i)
-
     adj: List[set[int]] = [set() for _ in range(N)]
     edge_len: dict[Tuple[int, int], float] = {}
     edge_order: dict[Tuple[int, int], int] = {}
@@ -154,8 +135,6 @@ def build_adjacency_nonpbc(symbols: Sequence[str], coords: np.ndarray, bond_dete
                 edge_len[(i, j)] = rx
                 edge_order[(i, j)] = order
     return adj, edge_len, radii, edge_order
-
-
 def build_adjacency_pbc(symbols: Sequence[str], coords: np.ndarray, cell: np.ndarray, bond_detect_factor: float,
                         c_const: float = 0.3, bo_threshold: float = 0.2):
     N = len(symbols)
@@ -185,10 +164,7 @@ def build_adjacency_pbc(symbols: Sequence[str], coords: np.ndarray, cell: np.nda
             edge_len[(i, j)] = rx
             edge_order[(i, j)] = order
     return adj, edge_len, radii, edge_order
-
-
 # ---------- Fast torsion detection ----------
-
 def get_bridges(adj: Sequence[set[int]]):
     sys.setrecursionlimit(max(100000, 10 * len(adj) + 100))
     n = len(adj)
@@ -196,7 +172,6 @@ def get_bridges(adj: Sequence[set[int]]):
     tin = [-1] * n
     low = [-1] * n
     bridges: set[Tuple[int, int]] = set()
-
     def dfs(v: int, p: int):
         nonlocal timer
         tin[v] = low[v] = timer
@@ -212,13 +187,10 @@ def get_bridges(adj: Sequence[set[int]]):
                 if low[to] > tin[v]:
                     a, b = (v, to) if v < to else (to, v)
                     bridges.add((a, b))
-
     for v in range(n):
         if tin[v] == -1:
             dfs(v, -1)
     return bridges
-
-
 def _prefer_neighbor(a: int, exclude_b: int, adj: Sequence[set[int]], symbols: Sequence[str]) -> Optional[int]:
     heavy = [n for n in adj[a] if n != exclude_b and symbols[n] != 'H']
     if heavy:
@@ -227,8 +199,6 @@ def _prefer_neighbor(a: int, exclude_b: int, adj: Sequence[set[int]], symbols: S
         if n != exclude_b:
             return n
     return None
-
-
 def get_rotatable_torsions_fast(adj: Sequence[set[int]], edge_len: dict[Tuple[int, int], float],
                                 radii: np.ndarray, symbols: Sequence[str], mult_bond_factor: float,
                                 edge_order: Optional[dict[Tuple[int, int], int]] = None):
@@ -239,7 +209,6 @@ def get_rotatable_torsions_fast(adj: Sequence[set[int]], edge_len: dict[Tuple[in
     N = len(adj)
     deg = [len(adj[i]) for i in range(N)]
     bridges = get_bridges(adj)
-
     def build_from_edges(edges: Iterable[Tuple[int, int]]):
         torsions: list[Tuple[int, int, int, int]] = []
         for (a, b) in edges:
@@ -263,13 +232,10 @@ def get_rotatable_torsions_fast(adj: Sequence[set[int]], edge_len: dict[Tuple[in
                 continue
             torsions.append((n1, a, b, n2))
         return torsions
-
     torsions = build_from_edges(bridges)
     if not torsions:
         torsions = build_from_edges(edge_len.keys())
     return torsions
-
-
 def get_local_subtree_adj(adj: Sequence[set[int]], start_atom: int, exclude_atom: int,
                           max_subtree_atoms: Optional[int] = None) -> set[int]:
     visited: set[int] = set()
@@ -286,10 +252,7 @@ def get_local_subtree_adj(adj: Sequence[set[int]], start_atom: int, exclude_atom
                 return visited
             queue.append(ni)
     return visited
-
-
 # ---------- Guards ----------
-
 def bonds_within_range_nonpbc(coords: np.ndarray, bond_pairs: Sequence[Tuple[int, int]], radii: np.ndarray,
                               min_factor: float, max_factor: Optional[float], detect_factor: float) -> bool:
     maxf = detect_factor if max_factor is None else float(max_factor)
@@ -302,8 +265,6 @@ def bonds_within_range_nonpbc(coords: np.ndarray, bond_pairs: Sequence[Tuple[int
         if minf > 0.0 and d < minf * ref:
             return False
     return True
-
-
 def bonds_within_range_pbc(coords: np.ndarray, bond_pairs: Sequence[Tuple[int, int]], radii: np.ndarray,
                            min_factor: float, max_factor: Optional[float], detect_factor: float,
                            cell: np.ndarray, inv_cell_T: np.ndarray) -> bool:
@@ -318,8 +279,6 @@ def bonds_within_range_pbc(coords: np.ndarray, bond_pairs: Sequence[Tuple[int, i
         if minf > 0.0 and d < minf * ref:
             return False
     return True
-
-
 def nonbond_clash_free_fast_nonpbc(coords: np.ndarray, radii: np.ndarray, bonded_set: set[Tuple[int, int]],
                                    min_factor: float) -> bool:
     N = coords.shape[0]
@@ -329,14 +288,12 @@ def nonbond_clash_free_fast_nonpbc(coords: np.ndarray, radii: np.ndarray, bonded
     h = min_factor * 2.0 * max_r + 1e-6
     inv_h = 1.0 / h
     origin = coords.min(axis=0) - 1e-6
-
     buckets: dict[Tuple[int, int, int], List[int]] = defaultdict(list)
     keys = np.empty((N, 3), dtype=np.int64)
     for i in range(N):
         k = _grid_key(coords[i], inv_h, origin)
         keys[i] = k
         buckets[k].append(i)
-
     neighbor_offsets = [(dx, dy, dz) for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1)]
     for i in range(N):
         ri = radii[i]
@@ -358,8 +315,6 @@ def nonbond_clash_free_fast_nonpbc(coords: np.ndarray, radii: np.ndarray, bonded
                 if rij2 < cutoff * cutoff:
                     return False
     return True
-
-
 def nonbond_clash_free_fast_pbc(coords: np.ndarray, radii: np.ndarray, bonded_set: set[Tuple[int, int]],
                                 min_factor: float, cell: np.ndarray, inv_cell_T: np.ndarray) -> bool:
     N = coords.shape[0]
@@ -377,10 +332,7 @@ def nonbond_clash_free_fast_pbc(coords: np.ndarray, radii: np.ndarray, bonded_se
             if d2 < cutoff * cutoff:
                 return False
     return True
-
-
 # ---------- Perturbation ----------
-
 def perturb_coords_fast(coords: np.ndarray, adj: Sequence[set[int]], torsions: Sequence[Tuple[int, int, int, int]],
                         degrees_range: Tuple[float, float], num_torsions: int,
                         sigma: float, local_mode: bool, max_subtree_atoms: Optional[int],
@@ -405,15 +357,11 @@ def perturb_coords_fast(coords: np.ndarray, adj: Sequence[set[int]], torsions: S
     if sigma > 0:
         coords = coords + np.random.normal(0.0, sigma, size=coords.shape)
     return coords
-
-
 # ---------- Public API ----------
-
 def process_single(symbols: Sequence[str],
                    coords: np.ndarray,
                    cell: Optional[np.ndarray],
                    params: TorsionGuardParams) -> list[tuple]:
-
     # Decide PBC activation for this frame
     has_cell = cell is not None
     if params.pbc_mode == "yes":
@@ -424,9 +372,7 @@ def process_single(symbols: Sequence[str],
         pbc_active = False
     else:  # "auto"
         pbc_active = bool(has_cell)
-
     inv_cell_T = np.linalg.inv(cell).T if (pbc_active and has_cell and cell is not None) else None
-
     # Build topology once (fixed for this frame). Multiple disconnected molecules are allowed.
     if pbc_active:
         assert cell is not None
@@ -441,14 +387,11 @@ def process_single(symbols: Sequence[str],
             bond_detect_factor=params.bond_detect_factor,
             c_const=float(params.bo_c_const), bo_threshold=float(params.bo_threshold)
         )
-
     bond_pairs = [(a, b) if a < b else (b, a) for (a, b) in edge_len.keys()]
     bonded_set = set(bond_pairs)
-
     # Torsion set (always fast method with fallback to internal bonds)
     torsions = get_rotatable_torsions_fast(adj, edge_len, radii, symbols, params.mult_bond_factor, edge_order=edge_order)
     local_mode_flag = len(symbols) > params.local_mode_cutoff_atoms
-
     results: list[tuple] = []
     for _ in range(int(params.perturb_per_frame)):
         new_coords = coords.copy()
@@ -458,7 +401,6 @@ def process_single(symbols: Sequence[str],
             ang_lo, ang_hi = params.torsion_range_deg
             angle_range = (float(ang_lo) * scale, float(ang_hi) * scale)
             sigma_scaled = float(params.gaussian_sigma) * scale
-
             new_coords = coords.copy()
             new_coords = perturb_coords_fast(
                 new_coords, adj, torsions,
@@ -466,7 +408,6 @@ def process_single(symbols: Sequence[str],
                 sigma_scaled, local_mode_flag, int(params.local_torsion_max_subtree),
                 pbc_active, cell if cell is not None else None, inv_cell_T
             )
-
             # Guards: only original bonded pairs are enforced; non-bonded pairs kept apart
             if pbc_active and cell is not None and inv_cell_T is not None:
                 if not bonds_within_range_pbc(
@@ -490,19 +431,13 @@ def process_single(symbols: Sequence[str],
                     new_coords, radii, bonded_set, float(params.nonbond_min_factor)
                 ):
                     continue
-
             success = True
             break
-
         if not success:
             new_coords = coords.copy()
-
         if pbc_active and cell is not None and inv_cell_T is not None:
             new_coords = wrap_to_cell(new_coords, cell, inv_cell_T)
         else:
             new_coords = center_in_box(new_coords, float(params.nonpbc_box_size))
-
         results.append((list(symbols), new_coords, cell, pbc_active))
-
     return results
-

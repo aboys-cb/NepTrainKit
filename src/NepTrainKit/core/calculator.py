@@ -1,20 +1,20 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
-# @Time    : 2024/11/21 14:22
-# @Author  : 兵
-# @email    : 1747193328@qq.com
+"""Runtime NEP calculator wrapper handling CPU/GPU backends."""
 import contextlib
-import os
+import io
+import sys
 import traceback
+from collections.abc import Iterable
+from pathlib import Path
 import numpy as np
 import numpy.typing as npt
-from PySide6.QtCore import QThread, Signal, QObject
+from ase import Atoms
+from ase.stress import full_3x3_to_voigt_6_stress
 from loguru import logger
-from multiprocessing import Process, JoinableQueue, Event
-
-from NepTrainKit import utils
-from NepTrainKit.config import Config
+from NepTrainKit.utils import timeit
 from NepTrainKit.core import Structure, MessageManager
+from NepTrainKit.paths import PathLike, as_path
 from NepTrainKit.core.types import NepBackend
 
 try:
@@ -28,56 +28,79 @@ except ImportError:
         logger.debug("no found nep_cpu")
 
 
-        CpuNep=None
+        CpuNep = None
 try:
     from NepTrainKit.nep_gpu import GpuNep
 except ImportError:
     logger.debug("no found NepTrainKit.nep_gpu")
-    logger.debug(traceback.format_exc())
     try:
         from nep_gpu import GpuNep
     except ImportError:
-        logger.debug(traceback.format_exc())
-
         logger.debug("no found nep_gpu")
-        GpuNep=None
-class NepCalculator():
+        GpuNep = None
 
-    def __init__(self, model_file="nep.txt",backend:NepBackend=None,batch_size:int=None):
+class NepCalculator:
+
+    def __init__(
+        self,
+        model_file: PathLike = "nep.txt",
+        backend: NepBackend | None = None,
+        batch_size: int | None = None,
+    ) -> None:
+        """Initialise the NEP calculator and load a CPU/GPU backend.
+
+        Parameters
+        ----------
+        model_file : str or pathlib.Path, default="nep.txt"
+            Path to the NEP model file.
+        backend : NepBackend or None, optional
+            Preferred backend; ``AUTO`` tries GPU then CPU.
+        batch_size : int or None, optional
+            NEP backend batch size. Defaults to 1000 when not specified.
+
+        Notes
+        -----
+        If neither CPU nor GPU backends are importable, a message box will be
+        shown via :class:`MessageManager` and the instance remains uninitialised.
+
+        Examples
+        --------
+        >>> c = NepCalculator("nep.txt","gpu")  # doctest: +SKIP
+        >>> structure_list=Structure.read_multiple("train.xyz") # doctest: +SKIP
+        >>> energy,forces,virial = c.calculate(structure_list) # doctest: +SKIP
+        >>> structures_desc = c.get_structures_descriptor(structure_list) # doctest: +SKIP
+        """
         super().__init__()
-        if not isinstance(model_file, str):
-            model_file = str(model_file )
-        # print(model_file,backend,batch_size)
+        self.model_path = as_path(model_file)
+        if isinstance(backend,str):
+            backend = NepBackend(backend)
+        self.backend = backend or NepBackend.AUTO
+        self.batch_size = batch_size or 1000
         self.initialized = False
-        if backend is   None:
-            self.backend=NepBackend.AUTO
-        else:
-            self.backend:NepBackend=backend
-        if batch_size is None:
-            self.batch_size= 1000
-        else:
-
-            self.batch_size:int = batch_size
-        self.model_file=model_file
+        self.nep3 = None
+        self.element_list: list[str] = []
+        self.type_dict: dict[str, int] = {}
         if CpuNep is None and GpuNep is None:
-            MessageManager.send_message_box("Failed to import NEP.\n To use the display functionality normally, please prepare the *.out and descriptor.out files.","Error")
+            MessageManager.send_message_box(
+                "Failed to import NEP.\n To use the display functionality normally, please prepare the *.out and descriptor.out files.",
+                "Error",
+            )
             return
-
-        if os.path.exists(model_file):
-
+        if self.model_path.exists():
             self.load_nep()
-            # Probe backend viability and fall back to CPU if GPU is not usable
-
-            self.element_list = self.nep3.get_element_list()
-            self.type_dict = {e: i for i, e in enumerate(self.element_list)}
-            self.initialized=True
+            if getattr(self, "nep3", None) is not None:
+                self.element_list = self.nep3.get_element_list()
+                self.type_dict = {element: index for index, element in enumerate(self.element_list)}
+                self.initialized = True
         else:
-            self.initialized = False
+            logger.warning("NEP model file not found: %s", self.model_path)
 
-    def cancel(self):
+    def cancel(self) -> None:
+        """Forward a cancel request to the underlying NEP backend."""
         self.nep3.cancel()
 
-    def load_nep(self):
+    def load_nep(self) -> None:
+        """Attempt to load the NEP backend using the configured preference."""
         if self.backend == NepBackend.AUTO:
             if not self._load_nep_backend(NepBackend.GPU):
                 self._load_nep_backend(NepBackend.CPU)
@@ -87,357 +110,326 @@ class NepCalculator():
                 self._load_nep_backend(NepBackend.CPU)
         else:
             self._load_nep_backend(NepBackend.CPU)
-    def _load_nep_backend(self,backend):
+    def _load_nep_backend(self, backend: NepBackend) -> bool:
+        """Attempt to initialise ``backend`` and return ``True`` when successful."""
         try:
-            with open(os.devnull, 'w') as devnull:
-                with contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
-                    if backend==NepBackend.GPU:
-                        if GpuNep is not None:
-                            try:
-                                self.nep3 = GpuNep(self.model_file)
-
-                            except RuntimeError as e:
-                                logger.error( e)
-                                MessageManager.send_warning_message(str(e))
-                                return False
-                            self.nep3.set_batch_size(self.batch_size)
-                        else:
-                            return False
-                    else:
-                        # backend==NepBackend.CPU
-                        if CpuNep is not None:
-
-                            self.nep3 = CpuNep(self.model_file)
-                        else:
-                            return False
-                    # track the active backend
-                    self.backend = backend
-                    return True
-        except:
+            sink = io.StringIO()
+            with contextlib.redirect_stdout(sink), contextlib.redirect_stderr(sink):
+                if backend == NepBackend.GPU:
+                    if GpuNep is None:
+                        return False
+                    try:
+                        self.nep3 = GpuNep(str(self.model_path))
+                        self.nep3.set_batch_size(self.batch_size)
+                    except RuntimeError as exc:
+                        logger.error(exc)
+                        MessageManager.send_warning_message(str(exc))
+                        return False
+                else:
+                    if CpuNep is None:
+                        return False
+                    self.nep3 = CpuNep(str(self.model_path))
+                self.backend = backend
+                return True
+        except Exception:
             logger.debug(traceback.format_exc())
             return False
 
-
-    def compose_structures(self, structures:list[Structure]):
-        group_size = []
-        _types = []
-        _boxs = []
-        _positions = []
-        if  not isinstance(structures,(list,np.ndarray)):
-            structures = [structures]
-        for structure in structures:
+    @staticmethod
+    def _ensure_structure_list(
+        structures: Iterable[Structure] | Structure,
+    ) -> list[Structure]:
+        """Normalise ``structures`` to a list of ``Structure`` instances."""
+        if isinstance(structures, (Structure,Atoms)):
+            return [structures]
+        if isinstance(structures, list):
+            return structures
+        return list(structures)
+    def compose_structures(
+        self,
+        structures: Iterable[Structure] | Structure,
+    ) -> tuple[list[list[int]], list[list[float]], list[list[float]], list[int]]:
+        """Convert ``structures`` into backend-ready arrays of types, boxes, and positions."""
+        structure_list = self._ensure_structure_list(structures)
+        group_sizes: list[int] = []
+        atom_types: list[list[int]] = []
+        boxes: list[list[float]] = []
+        positions: list[list[float]] = []
+        for structure in structure_list:
             symbols = structure.get_chemical_symbols()
-            _type = [self.type_dict[k] for k in symbols]
-            _box = structure.cell.transpose(1, 0).reshape(-1).tolist()
-            _position = structure.positions.transpose(1, 0).reshape(-1).tolist()
-            _types.append(_type)
-            _boxs.append(_box)
-            _positions.append(_position)
-            group_size.append(len(_type))
-        return  _types, _boxs, _positions,group_size
+            mapped_types = [self.type_dict[symbol] for symbol in symbols]
+            box = structure.cell.transpose(1, 0).reshape(-1).tolist()
+            coords = structure.positions.transpose(1, 0).reshape(-1).tolist()
+            atom_types.append(mapped_types)
+            boxes.append(box)
+            positions.append(coords)
+            group_sizes.append(len(mapped_types))
+        return atom_types, boxes, positions, group_sizes
+    @timeit
+    def calculate(
+        self,
+        structures: Iterable[Structure] | Structure,
+    ) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32], npt.NDArray[np.float32]]:
+        """Compute energies, forces, and virials for one or more structures.
 
-    @utils.timeit
-    def calculate(self,
-                  structures:list[Structure]
-                  )->tuple[npt.NDArray[np.float32],npt.NDArray[np.float32],npt.NDArray[np.float32]]:
-        if not self.initialized:
-            return np.array([]),np.array([]),np.array([])
-        _types, _boxs, _positions,group_size = self.compose_structures(structures)
-        self.nep3.reset_cancel()
-        try:
-            potentials, forces, virials = self.nep3.calculate(_types, _boxs, _positions)
-        except Exception:
-            logger.debug(traceback.format_exc())
-            # If GPU runtime fails, switch to CPU and retry once
-            if GpuNep is not None and isinstance(self.nep3, GpuNep):
-                MessageManager.send_warning_message("GPU calculation failed; switching to CPU backend.")
-                if self._load_nep_backend(NepBackend.CPU):
-                    try:
-                        potentials, forces, virials = self.nep3.calculate(_types, _boxs, _positions)
-                    except Exception:
-                        logger.debug(traceback.format_exc())
-                        return np.array([]),np.array([]),np.array([])
-                else:
-                    return np.array([]),np.array([]),np.array([])
-            else:
-                return np.array([]),np.array([]),np.array([])
-        split_indices = np.cumsum(group_size)[:-1]
-        #
-        potentials=np.hstack(potentials)
-        split_potential_arrays = np.split(potentials, split_indices)
-        potentials_array = np.array(list(map(np.sum, split_potential_arrays)), dtype=np.float32)
-        # print(potentials_array)
-        # 处理每个force数组：reshape (3, -1) 和 transpose(1, 0)
-        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
+        Parameters
+        ----------
+        structures : Structure or Iterable[Structure]
+            Single structure or an iterable of structures to evaluate.
 
-        forces_array = np.vstack(reshaped_forces,dtype=np.float32)
-        # print(forces_array)
+        Returns
+        -------
+        tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
+            ``(potentials, forces, virials)`` arrays with ``float32`` dtype.
+            Potentials are per-structure, forces per-atom, and virials per-structure.
 
-        reshaped_virials = np.vstack([np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials],dtype=np.float32)
-
-        # virials_array = reshaped_virials[:,[0,4,8,1,5,6]]
-
-        return potentials_array,forces_array,reshaped_virials
-
-
-    @utils.timeit
-    def calculate_dftd3(self,
-                        structures:list[Structure],
-                        functional,
-                        cutoff,
-                        cutoff_cn)->tuple[npt.NDArray[np.float32],npt.NDArray[np.float32],npt.NDArray[np.float32]]:
-        if not self.initialized:
-            return np.array([]),np.array([]),np.array([])
-        _types, _boxs, _positions,group_size = self.compose_structures(structures)
-        self.nep3.reset_cancel()
-
-        try:
-            potentials, forces, virials = self.nep3.calculate_dftd3(functional,cutoff,cutoff_cn,_types, _boxs, _positions)
-        except Exception:
-            logger.debug(traceback.format_exc())
-            if GpuNep is not None and isinstance(self.nep3, GpuNep):
-                MessageManager.send_warning_message("GPU DFT-D3 failed; switching to CPU backend.")
-                if self._load_nep_backend(NepBackend.CPU):
-                    try:
-                        potentials, forces, virials = self.nep3.calculate_dftd3(functional,cutoff,cutoff_cn,_types, _boxs, _positions)
-                    except Exception:
-                        logger.debug(traceback.format_exc())
-                        return np.array([]),np.array([]),np.array([])
-                else:
-                    return np.array([]),np.array([]),np.array([])
-            else:
-                return np.array([]),np.array([]),np.array([])
-        split_indices = np.cumsum(group_size)[:-1]
-        #
-        potentials=np.hstack(potentials)
-        split_potential_arrays = np.split(potentials, split_indices)
-        potentials_array = np.array(list(map(np.sum, split_potential_arrays)), dtype=np.float32)
-        # print(potentials_array)
-        # 处理每个force数组：reshape (3, -1) 和 transpose(1, 0)
-        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
-
-        forces_array = np.vstack(reshaped_forces,dtype=np.float32)
-        # print(forces_array)
-
-        reshaped_virials = np.vstack([np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials],dtype=np.float32)
-
-        # virials_array = reshaped_virials[:,[0,4,8,1,5,6]]
-
-        return potentials_array,forces_array,reshaped_virials
-
-    @utils.timeit
-    def calculate_with_dftd3(self,
-                             structures:list[Structure],
-                             functional,
-                             cutoff,
-                             cutoff_cn)->tuple[npt.NDArray[np.float32],npt.NDArray[np.float32],npt.NDArray[np.float32]]:
-        if not self.initialized:
-            return np.array([]),np.array([]),np.array([])
-        _types, _boxs, _positions,group_size = self.compose_structures(structures)
-        self.nep3.reset_cancel()
-
-        try:
-            potentials, forces, virials = self.nep3.calculate_with_dftd3( functional,cutoff,cutoff_cn,_types, _boxs, _positions)
-        except Exception:
-            logger.debug(traceback.format_exc())
-            if GpuNep is not None and isinstance(self.nep3, GpuNep):
-                MessageManager.send_warning_message("GPU calculation failed; switching to CPU backend.")
-                if self._load_nep_backend(NepBackend.CPU):
-                    try:
-                        potentials, forces, virials = self.nep3.calculate_with_dftd3( functional,cutoff,cutoff_cn,_types, _boxs, _positions)
-                    except Exception:
-                        logger.debug(traceback.format_exc())
-                        return np.array([]),np.array([]),np.array([])
-                else:
-                    return np.array([]),np.array([]),np.array([])
-            else:
-                return np.array([]),np.array([]),np.array([])
-        split_indices = np.cumsum(group_size)[:-1]
-        #
-        potentials=np.hstack(potentials)
-        split_potential_arrays = np.split(potentials, split_indices)
-        potentials_array = np.array(list(map(np.sum, split_potential_arrays)), dtype=np.float32)
-        # print(potentials_array)
-        # 处理每个force数组：reshape (3, -1) 和 transpose(1, 0)
-        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
-
-        forces_array = np.vstack(reshaped_forces,dtype=np.float32)
-        # print(forces_array)
-
-        reshaped_virials = np.vstack([np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials],dtype=np.float32)
-
-        # virials_array = reshaped_virials[:,[0,4,8,1,5,6]]
-
-        return potentials_array,forces_array,reshaped_virials
-
-
-    def get_descriptor(self,structure:Structure)->npt.NDArray[np.float32]:
+        Examples
+        --------
+        >>> # c = NepCalculator(...); e, f, v = c.calculate(structs)  # doctest: +SKIP
         """
-        获取单个结构的所有原子描述符
+        structure_list = self._ensure_structure_list(structures)
+        if not self.initialized or not structure_list:
+            empty = np.array([], dtype=np.float32)
+            return empty, empty, empty
+        atom_types, boxes, positions, group_sizes = self.compose_structures(structure_list)
+        self.nep3.reset_cancel()
+        potentials, forces, virials = self.nep3.calculate(atom_types, boxes, positions)
+        split_indices = np.cumsum(group_sizes)[:-1]
+        potentials = np.hstack(potentials)
+        split_potential_arrays = np.split(potentials, split_indices) if split_indices.size else [potentials]
+        potentials_array = np.array([np.sum(chunk) for chunk in split_potential_arrays], dtype=np.float32)
+        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
+        if reshaped_forces:
+            forces_array = np.vstack(reshaped_forces).astype(np.float32, copy=False)
+        else:
+            forces_array = np.empty((0, 3), dtype=np.float32)
+        reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
+        if reshaped_virials:
+            virials_array = np.vstack(reshaped_virials).astype(np.float32, copy=False)
+        else:
+            virials_array = np.empty((0, 9), dtype=np.float32)
+        return potentials_array, forces_array, virials_array
+
+    @timeit
+    def calculate_dftd3(
+        self,
+        structures: Iterable[Structure] | Structure,
+        functional: str,
+        cutoff: float,
+        cutoff_cn: float,
+    ) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32], npt.NDArray[np.float32]]:
+        """Evaluate structures using the DFT-D3 variant of the NEP backend.
+
+        Parameters
+        ----------
+        structures : Structure or Iterable[Structure]
+            Structures to evaluate.
+        functional : str
+            Exchange-correlation functional identifier.
+        cutoff : float
+            Real-space cutoff for dispersion corrections.
+        cutoff_cn : float
+            Coordination number cutoff.
+
+        Returns
+        -------
+        tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
+            ``(potentials, forces, virials)`` arrays with ``float32`` dtype.
         """
+        structure_list = self._ensure_structure_list(structures)
+        if not self.initialized or not structure_list:
+            empty = np.array([], dtype=np.float32)
+            return empty, empty, empty
+        atom_types, boxes, positions, group_sizes = self.compose_structures(structure_list)
+        self.nep3.reset_cancel()
+        potentials, forces, virials = self.nep3.calculate_dftd3(
+            functional,
+            cutoff,
+            cutoff_cn,
+            atom_types,
+            boxes,
+            positions,
+        )
+        print(1)
+        split_indices = np.cumsum(group_sizes)[:-1]
+        potentials = np.hstack(potentials)
+        split_potential_arrays = np.split(potentials, split_indices) if split_indices.size else [potentials]
+        potentials_array = np.array([np.sum(chunk) for chunk in split_potential_arrays], dtype=np.float32)
+        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
+        if reshaped_forces:
+            forces_array = np.vstack(reshaped_forces).astype(np.float32, copy=False)
+        else:
+            forces_array = np.empty((0, 3), dtype=np.float32)
+        reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
+        if reshaped_virials:
+            virials_array = np.vstack(reshaped_virials).astype(np.float32, copy=False)
+        else:
+            virials_array = np.empty((0, 9), dtype=np.float32)
+        return potentials_array, forces_array, virials_array
+    @timeit
+    def calculate_with_dftd3(
+        self,
+        structures: Iterable[Structure] | Structure,
+        functional: str,
+        cutoff: float,
+        cutoff_cn: float,
+    ) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32], npt.NDArray[np.float32]]:
+        """Run coupled NEP + DFT-D3 calculation and return results.
+
+        Parameters
+        ----------
+        structures : Structure or Iterable[Structure]
+            Structures to evaluate.
+        functional : str
+            Exchange-correlation functional identifier.
+        cutoff : float
+            Real-space cutoff for dispersion corrections.
+        cutoff_cn : float
+            Coordination number cutoff.
+
+        Returns
+        -------
+        tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
+            ``(potentials, forces, virials)`` arrays with ``float32`` dtype.
+        """
+        structure_list = self._ensure_structure_list(structures)
+        if not self.initialized or not structure_list:
+            empty = np.array([], dtype=np.float32)
+            return empty, empty, empty
+        atom_types, boxes, positions, group_sizes = self.compose_structures(structure_list)
+        self.nep3.reset_cancel()
+        potentials, forces, virials = self.nep3.calculate_with_dftd3(
+            functional,
+            cutoff,
+            cutoff_cn,
+            atom_types,
+            boxes,
+            positions,
+        )
+        split_indices = np.cumsum(group_sizes)[:-1]
+        potentials = np.hstack(potentials)
+        split_potential_arrays = np.split(potentials, split_indices) if split_indices.size else [potentials]
+        potentials_array = np.array([np.sum(chunk) for chunk in split_potential_arrays], dtype=np.float32)
+        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
+        if reshaped_forces:
+            forces_array = np.vstack(reshaped_forces).astype(np.float32, copy=False)
+        else:
+            forces_array = np.empty((0, 3), dtype=np.float32)
+        reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
+        if reshaped_virials:
+            virials_array = np.vstack(reshaped_virials).astype(np.float32, copy=False)
+        else:
+            virials_array = np.empty((0, 9), dtype=np.float32)
+        return potentials_array, forces_array, virials_array
+
+    def get_descriptor(self, structure: Structure) -> npt.NDArray[np.float32]:
+        """Return the per-atom descriptor matrix for a single ``structure``."""
         if not self.initialized:
             return np.array([])
         symbols = structure.get_chemical_symbols()
-        _type = [self.type_dict[k] for k in symbols]
-        _box = structure.cell.transpose(1, 0).reshape(-1).tolist()
-
-        _position = structure.positions.transpose(1, 0).reshape(-1).tolist()
+        mapped_types = [self.type_dict[symbol] for symbol in symbols]
+        box = structure.cell.transpose(1, 0).reshape(-1).tolist()
+        positions = structure.positions.transpose(1, 0).reshape(-1).tolist()
         self.nep3.reset_cancel()
-
-        descriptor = self.nep3.get_descriptor(_type, _box, _position)
-
-        descriptors_per_atom = np.array(descriptor,dtype=np.float32).reshape(-1, len(structure)).T
-
+        descriptor = self.nep3.get_descriptor(mapped_types, box, positions)
+        descriptors_per_atom = np.array(descriptor, dtype=np.float32).reshape(-1, len(structure)).T
         return descriptors_per_atom
-    @utils.timeit
-    def get_structures_descriptor(self,
-                                  structures:list[Structure]
-                                  )->npt.NDArray[np.float32]:
-        """
-        获取结构描述符：原子平均
-        返回的已经结构的描述符了 无需平均
-        """
+    @timeit
+    def get_structures_descriptor(
+        self,
+        structures: list[Structure],
+    ) -> npt.NDArray[np.float32]:
+        """Return descriptors for multiple structures without additional averaging."""
         if not self.initialized:
             return np.array([])
-        _types, _boxs, _positions, group_size = self.compose_structures(structures)
+        types, boxes, positions, _ = self.compose_structures(structures)
         self.nep3.reset_cancel()
 
-        descriptor = self.nep3.get_structures_descriptor(_types, _boxs, _positions)
+        descriptor = self.nep3.get_structures_descriptor(types, boxes, positions)
+        return np.array(descriptor, dtype=np.float32)
 
-        return np.array(descriptor,dtype=np.float32)
-
-    @utils.timeit
-    def get_structures_polarizability(self,
-                                      structures:list[Structure]
-                                      )->npt.NDArray[np.float32]:
+    @timeit
+    def get_structures_polarizability(
+        self,
+        structures: list[Structure],
+    ) -> npt.NDArray[np.float32]:
+        """Compute polarizability tensors for each structure."""
         if not self.initialized:
             return np.array([])
-        _types, _boxs, _positions, group_size = self.compose_structures(structures)
+        types, boxes, positions, _ = self.compose_structures(structures)
         self.nep3.reset_cancel()
 
-        polarizability = self.nep3.get_structures_polarizability(_types, _boxs, _positions)
+        polarizability = self.nep3.get_structures_polarizability(types, boxes, positions)
+        return np.array(polarizability, dtype=np.float32)
 
-        return np.array(polarizability,dtype=np.float32)
-
-    def get_structures_dipole(self,
-                              structures:list[Structure]
-                              )->npt.NDArray[np.float32]:
+    def get_structures_dipole(
+        self,
+        structures: list[Structure],
+    ) -> npt.NDArray[np.float32]:
+        """Compute dipole vectors for each structure."""
         if not self.initialized:
             return np.array([])
         self.nep3.reset_cancel()
 
-        _types, _boxs, _positions, group_size = self.compose_structures(structures)
-
-        dipole = self.nep3.get_structures_dipole(_types, _boxs, _positions)
-
-        return np.array(dipole,dtype=np.float32)
+        types, boxes, positions, _ = self.compose_structures(structures)
+        dipole = self.nep3.get_structures_dipole(types, boxes, positions)
+        return np.array(dipole, dtype=np.float32)
 
 Nep3Calculator = NepCalculator
 
-def run_nep_calculator(nep_txt, structures, calculator_type, func_kwargs={},cls_kwargs={},queue=None):
-    try:
+from ase.calculators.calculator import Calculator, all_changes
 
-        nep3 = NepCalculator(nep_txt,**cls_kwargs)
-        if calculator_type == 'polarizability':
-            result = nep3.get_structures_polarizability(structures)
-        elif calculator_type == 'descriptor':
-            result = nep3.get_structures_descriptor(structures)
-        elif calculator_type == 'dipole':
-            result = nep3.get_structures_dipole(structures)
-        elif  calculator_type == 'calculate_with_dftd3':
-            result = nep3.calculate_with_dftd3(structures,**func_kwargs)
-        elif  calculator_type == 'calculate_dftd3':
-            result = nep3.calculate_dftd3(structures,**func_kwargs)
-        else:
-            result = nep3.calculate(structures)
-        if queue:
-            queue.put(result)  # 将结果通过管道发送给主进程
-    except Exception as e:
-        logger.error(traceback.format_exc())
-        result = np.array([])
-        if queue:
-            queue.put(result)
-    if   queue is  None:
-        return result
 
-class NEPProcess(QObject):
-    result_signal = Signal( )  # 信号，用于传递进程结果
-    error_signal = Signal(str )  # 信号，用于传递错误信息
+class NepAseCalculator(Calculator):
+    """
+    Encapsulated ase calculator, the input parameters are the same as NepCalculator
 
-    def __init__(self ):
-        super().__init__()
+    Examples
+    --------
+    >>>from ase.io import read
+    >>>from NepTrainKit.core.calculator import NepAseCalculator
+    >>>atoms=read('9.vasp')
+    >>>calc = NepAseCalculator("./Config/nep89.txt","gpu")
+    >>>atoms.calc=calc
+    >>>print('Energy (eV):', atoms.get_potential_energy())
+    >>>print('Forces (eV/Å):\n', atoms.get_forces())
+    >>>print('Stress (eV/Å^3):\n', atoms.get_stress())
+    """
+    implemented_properties=[
+        "energy",
+        "energies",
+        "forces",
+        "stress",
+        "descriptor",
+    ]
+    def __init__(self,
+                 model_file: PathLike = "nep.txt",
+                backend: NepBackend | None = None,
+                batch_size: int | None = None,*args,**kwargs) -> None:
 
-        self.process = None
-        self.use_process = False
-        self.func_result = None
-    def run_nep3_calculator_process(self,nep_txt, structures, calculator_type="calculate",func_kwargs={},cls_kwargs={},wait=False):
-        self.func=run_nep_calculator
-        self.queue = JoinableQueue()
+        self._calc=NepCalculator(model_file,backend,batch_size)
+        Calculator.__init__(self,*args,**kwargs)
 
-        self.input_kwargs={
-            "nep_txt": nep_txt,
-            "calculator_type": calculator_type,
-            "structures": structures,
-            "func_kwargs":func_kwargs,
-            "cls_kwargs":cls_kwargs,
+    def calculate(
+        self, atoms=None, properties=['energy'], system_changes=all_changes
+    ):
 
-        }
-        #好像在dll释放下gil就不会卡了  这里先统一不使用进程了
-        # if len(structures) < 2000:
-        #     self.use_process=False
-        #     self.input_kwargs["queue"] =  None
-        # else:
-        #     self.input_kwargs["queue"] = self.queue
-        #     self.use_process=True
-        # self.use_process=False
-        self.input_kwargs["queue"] =  None
-        self.input_args=()
-        self.func_result:tuple
-        self.run()
+        if properties is None:
+            properties = self.implemented_properties
+        super().calculate(atoms,properties,system_changes)
+        if "descriptor" in properties:
+            descriptor = self._calc.get_descriptor(atoms)
+            self.results["descriptor"]=descriptor
+        energy,forces,virial = self._calc.calculate(atoms)
 
-    def run(self):
-        try:
-            if self.use_process:
-                # 创建并启动进程
-                self.process = Process(target=self.func, args= self.input_args ,kwargs = self.input_kwargs,daemon=True)
-                self.process.start()
-                # 获取结果
-                self.func_result = self.queue.get()
-            else:
-                self.func_result=self.func(*self.input_args,**self.input_kwargs)
-            if len(self.func_result) !=0:
-                self.result_signal.emit( )
-            else:
-                self.error_signal.emit("No result returned from process")
+        self.results["energy"]=energy[0]
+        self.results["forces"]=forces
+        virial=virial[0].reshape(3,3)*len(atoms)
+        stress = virial/atoms.get_volume()
+        self.results["stress"]=full_3x3_to_voigt_6_stress(stress)
 
-        except Exception as e:
-            logger.error(traceback.format_exc())
-            self.error_signal.emit(f"Error: {str(e)}")
-        finally:
-            self.queue.close()  # 关闭队列
-            # self.queue.join()  # 等待队列任务完成
-            if self.process is not None :
-                self.process.terminate()  # 确保进程被终止
 
-                self.process.join()
-                # self.process.close()
-
-    def stop(self):
-        """强制终止进程并清理资源"""
-        return
-        try:
-
-            if self.process is not None:
-                if self.process.is_alive():
-
-                    self.process.terminate()
-
-                    self.process.join()
-            self.queue.cancel_join_thread()
-        except Exception as e:
-            logger.error(traceback.format_exc())
-
-if __name__ == '__main__':
-    structures = Structure.read_multiple(r"D:\Desktop\nep\nep-data-main\2023_Zhao_PdCuNiP\train.xyz")
-    nep = NepCalculator(r"D:\Desktop\nep\nep-data-main\2023_Zhao_PdCuNiP\nep.txt")
+if __name__ == "__main__":
+    structures = Structure.read_multiple(Path("D:/Desktop/nep/nep-data-main/2023_Zhao_PdCuNiP/train.xyz"))
+    nep = NepCalculator(Path("D:/Desktop/nep/nep-data-main/2023_Zhao_PdCuNiP/nep.txt"))
     nep.calculate(structures)

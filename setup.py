@@ -157,14 +157,19 @@ class BuildExtNVCC(build_ext):
     are compiled with nvcc and linked against CUDA libs.
     """
     def _cuda_paths(self):
-        cuda_path = os.environ.get("CUDA_PATH") or os.environ.get("CUDA_HOME")
-        if cuda_path:
-            cuda_bin = os.path.join(cuda_path, "bin")
-            nvcc = os.path.join(cuda_bin, "nvcc.exe" if os.name == 'nt' else "nvcc")
-            include = os.path.join(cuda_path, "include")
-            lib64 = os.path.join(cuda_path, "lib", "x64") if os.name == 'nt' else os.path.join(cuda_path, "lib64")
-            return (nvcc if os.path.exists(nvcc) else shutil.which("nvcc"), include, lib64)
-        return (shutil.which("nvcc"), None, None)
+        cuda_env = os.environ.get("CUDA_PATH") or os.environ.get("CUDA_HOME")
+        if cuda_env:
+            cuda_root = Path(cuda_env)
+            cuda_bin = cuda_root / "bin"
+            nvcc_path = cuda_bin / ("nvcc.exe" if os.name == 'nt' else "nvcc")
+            include = cuda_root / "include"
+            lib64 = (cuda_root / "lib" / "x64") if os.name == 'nt' else (cuda_root / "lib64")
+            nvcc_cmd = nvcc_path if nvcc_path.exists() else shutil.which("nvcc")
+            if isinstance(nvcc_cmd, str):
+                nvcc_cmd = Path(nvcc_cmd)
+            return (nvcc_cmd, include, lib64)
+        nvcc_cmd = shutil.which("nvcc")
+        return (Path(nvcc_cmd) if nvcc_cmd else None, None, None)
 
     def build_extension(self, ext):
         if ext.name != "NepTrainKit.nep_gpu":
@@ -215,6 +220,7 @@ class BuildExtNVCC(build_ext):
             nvcc_flags += ["-gencode", "arch=compute_89,code=sm_89"]
             nvcc_flags += ["-gencode", "arch=compute_90,code=sm_90"]
 
+
         # Optional: silence warnings for older architectures on newer toolchains
         if os.environ.get("NEP_GPU_SILENCE_DEPRECATED", "1") == "1":
             nvcc_flags += ["-Wno-deprecated-gpu-targets"]
@@ -230,9 +236,9 @@ class BuildExtNVCC(build_ext):
 
         incs = []
         for inc in (ext.include_dirs or []):
-            incs += ["-I", inc]
+            incs += ["-I", str(inc)]
         if cuda_include:
-            incs += ["-I", cuda_include]
+            incs += ["-I", str(cuda_include)]
 
         # Add Python.h include dirs for NVCC (pybind11 needs it)
         try:
@@ -252,20 +258,23 @@ class BuildExtNVCC(build_ext):
 
         Path(self.build_temp).mkdir(parents=True, exist_ok=True)
 
+        build_temp = Path(self.build_temp)
+        build_temp.mkdir(parents=True, exist_ok=True)
+
         for src in cu_srcs:
-            base = os.path.basename(src)
-            obj = os.path.join(self.build_temp, base + (".obj" if os.name == 'nt' else ".o"))
-            cmd = [nvcc, "-c", src, "-o", obj] + nvcc_flags + incs
+            src_path = Path(src)
+            obj_path = build_temp / (src_path.stem + (".obj" if os.name == 'nt' else ".o"))
+            cmd = [str(nvcc), "-c", str(src_path), "-o", str(obj_path)] + nvcc_flags + incs
             try:
                 subprocess.check_call(cmd)
             except Exception as e:
                 print(f"WARNING: NVCC failed on {src}: {e}")
                 return
-            objects.append(obj)
+            objects.append(str(obj_path))
 
         lib_dirs = []
         if cuda_lib:
-            lib_dirs.append(cuda_lib)
+            lib_dirs.append(str(cuda_lib))
         libs = ["cudart", "cublas", "cusolver", "curand"]
 
 

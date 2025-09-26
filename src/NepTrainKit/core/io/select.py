@@ -1,84 +1,101 @@
-#!/usr/bin/env python 
+﻿#!/usr/bin/env python 
 # -*- coding: utf-8 -*-
-# @Time    : 2024/11/29 00:24
-# @Author  : 兵
-# @email    : 1747193328@qq.com
+"""Selection helpers for descriptor/embedding downsampling.
+
+Includes a NumPy implementation of pairwise distances and a farthest-point
+sampling routine that can be warm-started from an existing selection.
+
+Examples
+--------
+>>> import numpy as np
+>>> pts = np.random.rand(10, 2).astype(np.float32)
+>>> idx = farthest_point_sampling(pts, 3)
+>>> len(idx) <= 3
+True
+"""
 
 import numpy as np
 import numpy.typing as npt
-def numpy_cdist(X:npt.NDArray[np.float32], Y:npt.NDArray[np.float32])->int:
-    """
-    使用 NumPy 计算两个数组之间的成对欧几里得距离
 
-    参数:
-        X (numpy.ndarray): 第一个数据集，形状为 (m, d)
-        Y (numpy.ndarray): 第二个数据集，形状为 (n, d)
+def numpy_cdist(X: npt.NDArray[np.float32], Y: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    """Compute pairwise Euclidean distances using broadcasting.
 
-    返回:
-        numpy.ndarray: 形状为 (m, n)，每个元素是 X 中的样本与 Y 中的样本之间的距离
+    Parameters
+    ----------
+    X : numpy.ndarray
+        Array of shape ``(m, d)``.
+    Y : numpy.ndarray
+        Array of shape ``(n, d)``.
+
+    Returns
+    -------
+    numpy.ndarray
+        Distance matrix of shape ``(m, n)`` where entry ``(i, j)`` is the
+        Euclidean distance between ``X[i]`` and ``Y[j]``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> X = np.zeros((2, 3), dtype=np.float32)
+    >>> Y = np.ones((3, 3), dtype=np.float32)
+    >>> numpy_cdist(X, Y).shape
+    (2, 3)
     """
-    # 计算每个点与每个点之间的差的平方
     diff = X[:, np.newaxis, :] - Y[np.newaxis, :, :]
-
-    # 计算差的平方和
     squared_dist = np.sum(np.square(diff), axis=2)
-
-    # 返回距离（平方根）
     return np.sqrt(squared_dist)
 
-def farthest_point_sampling(points, n_samples, min_dist=0.1, selected_data=None)->list[int]:
-    """
-    最远点采样：支持已有样本扩展，并加入最小距离限制。
 
-    参数:
-        points (ndarray): 点集，形状为 (N, D)。
-        n_samples (int): 最大采样点的数量。
-        min_dist (float): 最小距离阈值。
-        initial_indices (list or None): 已选择的样本索引列表，默认无。
+def farthest_point_sampling(points, n_samples, min_dist=0.1, selected_data=None) -> list[int]:
+    """Greedy FPS with optional warm-start and minimum-distance constraint.
 
-    返回:
-        sampled_indices (list): 采样点的索引。
+    Parameters
+    ----------
+    points : numpy.ndarray
+        Input point set of shape ``(N, D)``.
+    n_samples : int
+        Maximum number of samples to select.
+    min_dist : float, default=0.1
+        Minimum allowed distance to any already selected point.
+    selected_data : numpy.ndarray or None, optional
+        Warm-start set with shape ``(M, D)``. If provided, selection respects
+        the minimum distance from this set.
+
+    Returns
+    -------
+    list[int]
+        Indices of selected points.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> P = np.random.rand(100, 3).astype(np.float32)
+    >>> idx = farthest_point_sampling(P, 5, min_dist=0.0)
+    >>> len(idx) <= 5
+    True
     """
     n_points = points.shape[0]
 
     if isinstance(selected_data, np.ndarray) and selected_data.size == 0:
-        selected_data=None
-    # 初始化采样点列表
-    sampled_indices = []
+        selected_data = None
 
-    # 如果已有采样点，则计算到所有点的最小距离
-    if selected_data is not None :
-        # 使用 cdist 计算已有点与所有点之间的距离，返回形状为 (n_points, len(sampled_indices)) 的矩阵
+    sampled_indices: list[int] = []
+
+    if selected_data is not None:
         distances_to_samples = numpy_cdist(points, selected_data)
-        min_distances = np.min(distances_to_samples, axis=1)  # 每个点到现有采样点集的最小距离
+        min_distances = np.min(distances_to_samples, axis=1)
 
     else:
-        # 如果没有初始点，则随机选择一个作为第一个点
         first_index = 0
         sampled_indices.append(first_index)
-        # 计算所有点到第一个点的距离
         min_distances = np.linalg.norm(points - points[first_index], axis=1)
 
-    # 进行最远点采样
     while len(sampled_indices) < n_samples:
-        # 找到距离采样点集最远的点
-        current_index = np.argmax(min_distances)
-
-        # 如果没有点能满足最小距离要求，则提前终止
-        if min_distances[current_index] < min_dist:
+        current_index = int(np.argmax(min_distances))
+        if min_distances[current_index] < float(min_dist):
             break
-
-        # 添加当前点到采样集
         sampled_indices.append(int(current_index))
-
-        # 更新最小距离：仅计算当前点到新选择点的距离
-        # 获取当前点到所有其他点的距离
         new_point = points[current_index]
         new_distances = np.linalg.norm(points - new_point, axis=1)
-
-        # 更新每个点到现有样本点集的最小距离
         min_distances = np.minimum(min_distances, new_distances)
     return sampled_indices
-
-
-

@@ -4,11 +4,10 @@
 # @Author  :
 # @email    : 1747193328@qq.com
 
-import os
-import platform
 import sys
+from pathlib import Path
 from loguru import logger
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(str(Path(__file__).resolve().parent))
 from NepTrainKit import src_rc
 
 try:
@@ -20,26 +19,11 @@ try:
 except NameError:
     is_nuitka_compiled = False
 
-
-
 if is_nuitka_compiled:
-
-
     logger.add("./Log/{time:%Y-%m}.log",
                level="DEBUG",
                 )
-    module_path="./"
+    module_path = Path("./").resolve()
 else:
+    module_path = Path(__file__).resolve().parent
 
-    module_path = os.path.dirname(__file__)
-
-def get_user_config_path():
-    if platform.system() == 'Windows':
-        # Windows 系统通常使用 AppData 路径存放应用数据
-        local_path = os.getenv('LOCALAPPDATA', None)
-        if local_path is None:
-            local_path = os.getenv('USERPROFILE', '') + '\\AppData\\Local '
-        user_config_path = os.path.join(local_path, 'NepTrainKit')
-    else:
-        user_config_path = os.path.expanduser("~/.config/NepTrainKit")
-    return user_config_path

@@ -1,159 +1,178 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+"""Registry for mapping result artifacts to loader implementations."""
 from __future__ import annotations
 
-import os
-import traceback
-from dataclasses import dataclass
-from typing import Callable, Optional, Protocol
-from loguru import logger
 import importlib
-from .utils import get_nep_type
-from NepTrainKit import get_user_config_path, utils
+import traceback
+from typing import Protocol
+
+from loguru import logger
+
+from NepTrainKit.core.io.utils import get_nep_type
+from NepTrainKit.paths import PathLike, as_path
 
 
 class ResultDataProtocol(Protocol):
+    """Protocol describing the subset of result data objects we rely on."""
+
     load_flag: bool
+
     @classmethod
-    def from_path(cls, path: str, *args, **kwargs):
+    def from_path(cls, path: PathLike, *args, **kwargs):  # pragma: no cover - protocol
+        """Create an instance from ``path`` using implementation-specific logic."""
         ...
 
 
 class ResultLoader(Protocol):
+    """Loader interface used to discover and materialise result data."""
+
     name: str
-    def matches(self, path: str) -> bool: ...
-    def load(self, path: str): ...
+
+    def matches(self, path: PathLike) -> bool:  # pragma: no cover - protocol
+        """Return ``True`` when this loader can handle ``path``."""
+        ...
+
+    def load(self, path: PathLike):  # pragma: no cover - protocol
+        """Materialise a result object from ``path``."""
+        ...
 
 
 _RESULT_LOADERS: list[ResultLoader] = []
 
 
-def register_result_loader(loader: ResultLoader):
+def register_result_loader(loader: ResultLoader) -> ResultLoader:
+    """Register ``loader`` so it participates in result discovery."""
+
     _RESULT_LOADERS.append(loader)
     return loader
 
 
-def matches_result_loader(path)->bool:
+def matches_result_loader(path: PathLike) -> bool:
+    """Return ``True`` if any registered loader recognises ``path``."""
+
+    candidate = as_path(path)
     for loader in _RESULT_LOADERS:
         try:
-            if loader.matches(path):
+            if loader.matches(candidate):
                 return True
-        except:
-            pass
+        except Exception:  # pragma: no cover - defensive
+            continue
     return False
 
-def load_result_data(path: str):
+
+def load_result_data(path: PathLike):
+    """Load result data for ``path`` via the first matching loader."""
+
+    candidate = as_path(path)
     for loader in _RESULT_LOADERS:
         try:
-            if loader.matches(path):
-
-                return loader.load(path)
-        except Exception:
-            # Fail soft per loader
-            logger.debug(f"{loader.name}failed to load {path}")
+            if loader.matches(candidate):
+                return loader.load(candidate)
+        except Exception:  # pragma: no cover - defensive
+            logger.debug("%s failed to load %s", loader.name, candidate)
             continue
-
-    # Fallback: try format importers to convert to EXTXYZ and load as NEP dataset
-    # try:
-    #     structures = import_structures(path)
-    #     if structures:
-    #         base = os.path.basename(path.rstrip("/\\"))
-    #         base_noext = os.path.splitext(base)[0]
-    #         target_dir = os.path.join(get_user_config_path(), "imported")
-    #         os.makedirs(target_dir, exist_ok=True)
-    #         target_xyz = os.path.join(target_dir, f"{base_noext}.xyz")
-    #         write_extxyz(target_xyz, structures)
-    #         return nep.NepTrainResultData.from_path(target_xyz)
-    # except Exception:
-    #     pass
     return None
 
 
 class DeepmdFolderLoader:
+    """Loader for DeepMD training folders."""
+
     name = "deepmd_folder"
-    def matches(self, path: str) -> bool:
-        if not os.path.isdir(path):
+
+    def matches(self, path: PathLike) -> bool:
+        """Return ``True`` if ``path`` contains a DeepMD training directory."""
+        candidate = as_path(path)
+        if not candidate.is_dir():
             return False
         try:
             mod = importlib.import_module('.deepmd', __package__)
-            return mod.is_deepmd_path(path)
+            return mod.is_deepmd_path(str(candidate))
         except Exception:
             return False
-    def load(self, path: str):
-        mod = importlib.import_module('.deepmd', __package__)
-        return mod.DeepmdResultData.from_path(path)
 
+    def load(self, path: PathLike):
+        """Instantiate :class:`DeepmdResultData` for ``path``."""
+        mod = importlib.import_module('.deepmd', __package__)
+        return mod.DeepmdResultData.from_path(str(as_path(path)))
 
 
 class NepModelTypeLoader:
+    """Loader that selects NEP result data based on associated model type."""
+
     def __init__(self, name: str, model_types: set[int], factory_path: str):
+        """Bind a NEP model-type loader to ``model_types`` and ``factory_path``."""
         self.name = name
         self._types = set(model_types)
         self._factory_path = factory_path
         self._factory = None
-        self.model_type=None
+        self.model_type: int | None = None
 
-    def matches(self, path: str) -> bool:
-        if os.path.isdir(path):
+    def matches(self, path: PathLike) -> bool:
+        """Return ``True`` when ``path`` is an XYZ file associated with target NEP types."""
+        candidate = as_path(path)
+        if candidate.is_dir():
             return False
-        dir_path = os.path.dirname(path)
-        self.model_type = get_nep_type(os.path.join(dir_path, "nep.txt"))
-        return self.model_type in self._types and path.endswith(".xyz")
+        dir_path = candidate.parent
+        self.model_type = get_nep_type(dir_path / 'nep.txt')
+        return self.model_type in self._types and candidate.suffix.lower() == '.xyz'
 
-    def load(self, path: str):
-        # Resolve factory lazily
+    def load(self, path: PathLike):
+        """Materialise the configured NEP result loader for ``path``."""
         if self._factory is None:
             module_name, cls_name = self._factory_path.split(':', 1)
             mod = importlib.import_module(module_name)
             self._factory = getattr(mod, cls_name)
-        # Pass through model_type for NepTrainResultData to keep behavior parity
+        loader = self._factory
+        candidate = as_path(path)
         if self._factory_path.endswith(':NepTrainResultData'):
-            return self._factory.from_path(path, model_type=self.model_type)
-        return self._factory.from_path(path)
-
+            return loader.from_path(str(candidate), model_type=self.model_type)
+        return loader.from_path(str(candidate))
 
 
 class OtherLoader:
-    def matches(self,path: str) -> bool:
+    """Fallback loader that delegates to registered importers."""
+
+    def matches(self, path: PathLike) -> bool:
+        """Return ``True`` when a registered importer can parse ``path``."""
+        candidate = as_path(path)
         try:
             imp_mod = importlib.import_module('.importers', __package__)
-            return imp_mod.is_parseable(path)
+            return imp_mod.is_parseable(candidate)
         except Exception:
             return False
 
-    def load(self, path: str):
-        # Defer heavy parsing to the worker thread via ResultData.load_structures
-
+    def load(self, path: PathLike):
+        """Load NEP results for ``path`` and prompt for importer options if needed."""
+        candidate = as_path(path)
         nep_mod = importlib.import_module('.nep', __package__)
-        inst = nep_mod.NepTrainResultData.from_path(path)
-        # If this is a LAMMPS dump, optionally prompt for element map
+        inst = nep_mod.NepTrainResultData.from_path(str(candidate))
 
         imp_mod = importlib.import_module('.importers', __package__)
         lmp_imp = getattr(imp_mod, 'LammpsDumpImporter', None)
-        if lmp_imp is not None and lmp_imp().matches(path):
-            # Prompt user for an optional element list mapping type 1..N
-
+        if lmp_imp is not None and lmp_imp().matches(candidate):
             from PySide6.QtWidgets import QInputDialog
-            prompt = "Please enter a list of elements (corresponding to type 1..N), separated by commas or spaces. \nFor example: Si O or Si,O"
+
+            prompt = (
+                "Please enter a list of elements (corresponding to type 1..N), separated by commas or spaces. \\n"
+                "For example: Si O or Si,O"
+            )
             text, ok = QInputDialog.getText(None, "Element Mapping", prompt)
 
             if ok and text:
                 raw = [t.strip() for t in str(text).replace(',', ' ').split() if t.strip()]
                 if raw:
                     element_map = {i + 1: raw[i] for i in range(len(raw))}
-                    # Attach to importer options so worker thread uses it
-                    setattr(inst, '_import_options', {**getattr(inst, '_import_options', {}), 'element_map': element_map})
+                    existing = getattr(inst, '_import_options', {})
+                    setattr(inst, '_import_options', {**existing, 'element_map': element_map})
             else:
                 return None
 
         return inst
 
 
-
-# Register defaults immediately
-
 register_result_loader(DeepmdFolderLoader())
-
 register_result_loader(NepModelTypeLoader("nep_train", {0, 3}, 'NepTrainKit.core.io.nep:NepTrainResultData'))
 register_result_loader(NepModelTypeLoader("nep_dipole", {1}, 'NepTrainKit.core.io.nep:NepDipoleResultData'))
 register_result_loader(NepModelTypeLoader("nep_polar", {2}, 'NepTrainKit.core.io.nep:NepPolarizabilityResultData'))

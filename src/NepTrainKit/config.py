@@ -1,7 +1,8 @@
-import os
+﻿import os
 import platform
 import shutil
 from typing import Any
+from pathlib import Path
 
 from sqlalchemy import (
     create_engine, MetaData, Table, Column, String, select, update, inspect
@@ -9,13 +10,13 @@ from sqlalchemy import (
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
 
-from NepTrainKit import module_path, get_user_config_path
+from NepTrainKit import module_path
+from NepTrainKit.paths import get_user_config_path
+
 
 
 class Config:
-    """
-使用数据库保存软件配置
-    """
+
     _instance = None
     init_flag = False
 
@@ -33,14 +34,13 @@ class Config:
     def connect_db(self):
         user_config_path = get_user_config_path()
 
-        db_file = os.path.join(user_config_path, "config.sqlite")
-        if not os.path.exists(db_file):
-            if not os.path.exists(user_config_path):
-                os.makedirs(user_config_path)
-            shutil.copy(os.path.join(module_path, 'Config/config.sqlite'), db_file)
+        db_file = user_config_path / "config.sqlite"
+        if not db_file.exists():
+            user_config_path.mkdir(parents=True, exist_ok=True)
+            shutil.copy(module_path / "Config/config.sqlite", db_file)
 
         # Initialize SQLAlchemy engine for SQLite
-        url = f"sqlite:///{db_file}"
+        url = f"sqlite:///{db_file.as_posix()}"
         # check_same_thread=False to be safe with GUI contexts
         self.engine: Engine = create_engine(url, future=True)
 
@@ -59,18 +59,14 @@ class Config:
             self._metadata.create_all(self.engine)
 
     @classmethod
-    def get_path(cls,section="setting", option="last_path")->str:
-        """
-        获取上一次文件交互的路径
-        :param section:
-        :param option:
-        :return:
-        """
-        path = cls.get(section, option)
-        if path:
-            if os.path.exists(path):
-                return path
-        return "./"
+    def get_path(cls, section="setting", option="last_path") -> Path:
+        """Return the last-used path as a :class:`Path` instance."""
+        raw = cls.get(section, option)
+        if raw:
+            candidate = Path(raw)
+            if candidate.exists():
+                return candidate
+        return Path("./")
 
     @classmethod
     def has_option(cls,section, option) ->bool:
@@ -80,40 +76,45 @@ class Config:
 
     @classmethod
     def getboolean(cls, section, option, fallback=None)->bool|None:
-        v = cls.get(section, option,fallback)
-        try:
-            v = eval(v)
-        except:
-            v = None
-        if v is None:
+        raw = cls.get(section, option, fallback)
+        if isinstance(raw, bool):
+            return raw
+        if raw is None:
             return fallback
-        return v
+        if isinstance(raw, (int, float)):
+            return bool(raw)
+        if isinstance(raw, str):
+            s = raw.strip().lower()
+            if s in {"1", "true", "yes", "on"}:
+                return True
+            if s in {"0", "false", "no", "off"}:
+                return False
+        return fallback
 
     @classmethod
     def getint(cls, section, option, fallback=None) ->int|None:
-        v = cls.get(section, option,fallback)
-
-        try:
-            v = int(v)
-        except:
-
-            v = None
-        if v is None:
+        raw = cls.get(section, option, fallback)
+        if isinstance(raw, int):
+            return raw
+        if raw is None:
             return fallback
-
-        return v
+        try:
+            return int(str(raw).strip())
+        except Exception:
+            return fallback
     @classmethod
     def getfloat(cls,section,option,fallback=None)->float|None:
-        v=    cls.get(section,option,fallback)
-
-        try:
-            v=float(v)
-        except:
-
-            v=None
-        if v is None:
+        raw = cls.get(section, option, fallback)
+        if isinstance(raw, float):
+            return raw
+        if isinstance(raw, int):
+            return float(raw)
+        if raw is None:
             return fallback
-        return v
+        try:
+            return float(str(raw).strip())
+        except Exception:
+            return fallback
     @classmethod
     def get(cls,section,option,fallback=None)->Any:
         try:
@@ -161,3 +162,5 @@ class Config:
             stmt = update(table).where(table.c.section == old).values(section=new)
             conn.execute(stmt)
 Config()
+
+

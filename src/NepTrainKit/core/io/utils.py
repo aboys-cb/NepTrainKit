@@ -1,101 +1,78 @@
-#!/usr/bin/env python 
+﻿#!/usr/bin/env python 
 # -*- coding: utf-8 -*-
-# @Time    : 2024/10/18 17:14
-# @Author  : 兵
-# @email    : 1747193328@qq.com
-import os
+"""Utilities shared by NEP file importers."""
+
 import re
 import traceback
 from functools import partial
 from pathlib import Path
+from typing import Iterable
+
 import numpy as np
 import numpy.typing as npt
 from loguru import logger
+
 from NepTrainKit.core import MessageManager
 
 
-def get_rmse(array1, array2):
-    return np.sqrt(((array1 - array2) ** 2).mean())
+def get_rmse(array1: npt.NDArray[np.floating], array2: npt.NDArray[np.floating]) -> float:
+    """Return the root mean squared error between two arrays."""
+    return float(np.sqrt(((array1 - array2) ** 2).mean()))
 
-def read_nep_in(file_name: str|Path) ->dict[str,str]:
-    """
-    将nep.in的内容解析成dict
-    :param file_name: nep.in的路径
-    :return:
-    """
-    run_in={}
 
-    if  not os.path.exists(file_name):
-        return run_in
+def read_nep_in(file_name: str | Path) -> dict[str, str]:
+    """Parse ``nep.in`` key-value pairs into a dictionary."""
+    file_path = Path(file_name)
+    if not file_path.exists():
+        return {}
+    run_in: dict[str, str] = {}
     try:
-        with open(file_name, 'r', encoding="utf8") as f:
-
-            groups = re.findall(r"^([A-Za-z_]+)\s+([^\#\n]*)", f.read(), re.MULTILINE)
-
-            for group in groups:
-
-                run_in[group[0].strip()] = group[1].strip()
-    except:
+        content = file_path.read_text(encoding="utf8")
+        groups = re.findall(r"^([A-Za-z_]+)\s+([^#\n]*)", content, re.MULTILINE)
+        for key, value in groups:
+            run_in[key.strip()] = value.strip()
+    except Exception:  # noqa: BLE001
         logger.debug(traceback.format_exc())
         MessageManager.send_warning_message("read nep.in file error")
-        nep_in = {}
+        run_in = {}
     return run_in
 
-def check_fullbatch(run_in:dict[str,str],structure_num:int)->bool:
 
-    if run_in.get("prediction")=="1":
+def check_fullbatch(run_in: dict[str, str], structure_num: int) -> bool:
+    """Return ``True`` when configuration implies full-batch prediction."""
+    if run_in.get("prediction") == "1":
         return True
-    if int(run_in.get("batch",1000))>=structure_num:
-        return True
-    return False
+    return int(run_in.get("batch", 1000)) >= structure_num
 
-def read_nep_out_file(file_path:Path|str,**kwargs)->npt.NDArray[np.float32]:
-    """
-    读取out数值文件
-    :param file_path: energy_train.out
-    :param kwargs:
-    :return:
-    """
-    if os.path.exists(file_path):
 
-        data = np.loadtxt(file_path,**kwargs)
-        logger.info("Reading file: {},shape:{}".format(file_path,data.shape))
-
+def read_nep_out_file(file_path: Path | str, **kwargs) -> npt.NDArray[np.float32]:
+    """Load ``nep`` output data if the file exists, otherwise return empty array."""
+    path = Path(file_path)
+    if path.exists():
+        data = np.loadtxt(path, **kwargs)
+        logger.info("Reading file: {}, shape: {}", path, data.shape)
         return data
-    else:
-        return np.array([])
+    return np.array([])
 
-def parse_array_by_atomnum(array: npt.NDArray[np.float32],
-                           atoms_num_list: npt.NDArray[np.float32],
-                           map_func=np.linalg.norm,
-                           axis:int=0
-                           )->npt.NDArray[np.float32]:
-    """
-    根据一个映射列表，将原数组按照原子数列表拆分，
-    这个主要是处理文件中原子数不一致的情况，比如力 描述符等文件是按照原子数的 把他们转换成结构的
-    :param array: 原数组
-    :param atoms_num_list: 原子数列表
-    :param map_func: 需要对每个结构的数据进行处理的函数 比如求平均 求和等
-    :param axis: 映射轴
-    :return: 映射后的数组
 
-    """
-    if len(array)==0:
+def parse_array_by_atomnum(
+    array: npt.NDArray[np.float32],
+    atoms_num_list: Iterable[int],
+    map_func=np.linalg.norm,
+    axis: int = 0,
+) -> npt.NDArray[np.float32]:
+    """Aggregate per-atom data into per-structure values based on atom counts."""
+    if array.size == 0:
         return array
-    # 使用 np.cumsum() 计算每个分组的结束索引
-    split_indices = np.cumsum(atoms_num_list)[:-1]
-    # 使用 np.split() 按照分组拆分数组
+    counts = np.asarray(list(atoms_num_list), dtype=int)
+    split_indices = np.cumsum(counts)[:-1]
     split_arrays = np.split(array, split_indices)
     func = partial(map_func, axis=axis)
+    return np.array(list(map(func, split_arrays)))
 
-    # 对每个分组求和，使用 np.vectorize 进行向量化
-    new_array = np.array(list(map(func, split_arrays)))
-    return new_array
 
-def get_nep_type(file_path:Path|str)->int:
-    """
-    根据nep.txt 判断势函数类别
-    """
+def get_nep_type(file_path: Path | str) -> int:
+    """Return the NEP type identifier encoded within ``nep.txt``."""
     nep_type_to_model_type = {
         "nep3": 0,
         "nep3_zbl": 0,
@@ -105,31 +82,28 @@ def get_nep_type(file_path:Path|str)->int:
         "nep4_zbl": 0,
         "nep4_dipole": 1,
         "nep4_polarizability": 2,
-        "nep4_zbl_temperature":3,
-        "nep4_temperature":3,
+        "nep4_zbl_temperature": 3,
+        "nep4_temperature": 3,
         "nep5": 0,
-        "nep5_zbl": 0
+        "nep5_zbl": 0,
     }
-    model_type=0
+    path = Path(file_path)
     try:
-        with open(file_path, 'r') as file:
-            # 读取第一行
-            first_line = file.readline().strip()
-            parts = first_line.split()
-            nep_type=parts[0]
-            model_type = nep_type_to_model_type.get(nep_type )
-    except FileNotFoundError:
-        pass
-        # logger.warning(f"Error: File {file_path} not found. Default model_type is 0")
-    except Exception as e:
-        logger.warning(f"An error occurred while parsing the file: {e}")
+        first_line = path.read_text().splitlines()[0]
+        nep_type = first_line.split()[0]
+        return nep_type_to_model_type.get(nep_type, 0)
+    except (IndexError, FileNotFoundError):
+        return 0
+    except Exception as error:  # noqa: BLE001
+        logger.warning("An error occurred while parsing %s: %s", path, error)
+        return 0
 
-    return model_type
 
-def get_xyz_nframe(path):
-    if os.path.exists(path):
-        with open(path, 'r',encoding="utf8") as file:
-            nums = re.findall("^(\d+)$", file.read(), re.MULTILINE)
-            return len(nums)
-    return 0
-
+def get_xyz_nframe(path: Path | str) -> int:
+    """Return the frame count of an ``.xyz`` file."""
+    file_path = Path(path)
+    if not file_path.exists():
+        return 0
+    content = file_path.read_text(encoding="utf8")
+    nums = re.findall(r"^(\d+)$", content, re.MULTILINE)
+    return len(nums)

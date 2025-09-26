@@ -4,20 +4,19 @@ from __future__ import annotations
 import datetime
 import hashlib
 import json
-import os
 import shutil
 from decimal import Decimal
 from pathlib import Path
 
 from typing import Iterable
-from dataclasses import dataclass,field
+from dataclasses import dataclass, field
 
 from loguru import logger
 from sqlalchemy import select, func, distinct
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
 
-from NepTrainKit import utils
+from NepTrainKit.utils import sha256_file
 
 from .database import Database
 from .models import (
@@ -33,6 +32,7 @@ from NepTrainKit.core.io.utils import read_nep_in, read_nep_out_file, get_rmse, 
 
 @dataclass
 class ProjectItem:
+    """Hierarchical project node used in dataset navigation."""
     project_id: int
     name:str
     parent_id:int
@@ -43,6 +43,7 @@ class ProjectItem:
 
 @dataclass
 class TagItem:
+    """Lightweight tag representation returned to callers."""
     name:str
     tag_id:int
     color:str
@@ -50,6 +51,7 @@ class TagItem:
 
 @dataclass
 class ModelItem:
+    """Aggregated metadata describing a stored NEP model."""
     model_id: int
     model_type:str
     name:str
@@ -114,6 +116,7 @@ class TagService:
             return [TagItem(name=t.name, tag_id=t.id, color=t.color, notes=t.notes) for t in tags]
 
 def query_set_to_dict(func):
+    """Decorator that converts SQLAlchemy ORM objects to plain dicts."""
     def wrapper(*args, **kwargs):
         objs = func(*args, **kwargs)
         if not isinstance(objs, (list, tuple)):
@@ -144,6 +147,7 @@ def _hash_file(path: str) -> str:
             h.update(chunk)
     return h.hexdigest()
 def _stat_path(p: Path) -> tuple[int | None, datetime.datetime | None, bool]:
+    """Return size, modification time, and existence flag for a path."""
     try:
         st = p.stat()
         return st.st_size, datetime.datetime.fromtimestamp(st.st_mtime), True
@@ -151,16 +155,17 @@ def _stat_path(p: Path) -> tuple[int | None, datetime.datetime | None, bool]:
         return None, None, False
 
 def _create_storage(session, path: str, scheme: str = "file") -> StorageRef:
+    """Persist a storage reference for the given filesystem path."""
     p = Path(path).expanduser().resolve()
     size, mtime, ok = _stat_path(p)
 
     if scheme == "file":
         uri =  str(p)
-        content_hash = utils.sha256_file(p)
+        content_hash = sha256_file(p)
     else:
-        # cas 策略
-        content_hash = utils.sha256_file(p)
-        #TODO: 如果拷贝文件 放在那里
+        # CAS storage placeholder
+        content_hash = sha256_file(p)
+        # TODO: Implement content-addressable storage handling
         cas_dir = settings.cas_root.expanduser().resolve()
         cas_dir.mkdir(parents=True, exist_ok=True)
         dst = cas_dir / content_hash
@@ -180,30 +185,27 @@ def _create_storage(session, path: str, scheme: str = "file") -> StorageRef:
     return storage
 @dataclass
 class ProjectService:
-    """
-    项目的service
-    """
+    """Manage creation and traversal of project hierarchies."""
     db: Database
 
     def _build_tree(self, node: Project) -> ProjectItem:
-        """递归地把 ORM 对象转成 ProjectItem"""
+        """Recursively convert ORM project records into ProjectItem dataclasses."""
         item = ProjectItem(
             project_id=node.id,
             name=node.name,
             notes=node.notes,
             parent_id=node.parent_id,
-            model_num=node.model_num  # 前面 column_property
+            model_num=node.model_num,
         )
-        # 关键：继续递归
-
         for child in node.children:
-            child_item=self._build_tree(child)
-            item.model_num+=child_item.model_num
+            child_item = self._build_tree(child)
+            item.model_num += child_item.model_num
             item.children.append(child_item)
         return item
 
     # @query_set_to_dict
     def search_projects(self,**kwargs) -> list[ProjectItem]:
+        """Return ProjectItem nodes matching the provided ORM filters."""
         with self.db.session() as session:
             projects= (session.query(Project)
                         .filter_by(**kwargs)
@@ -215,12 +217,14 @@ class ProjectService:
 
 
     def get_project_by_id(self, project_id: int) -> ProjectItem|None:
+        """Return a single project by id or ``None`` when not found."""
         projects = self.search_projects(id=project_id)
         if len(projects) == 0:
             return None
         return projects[0]
 
     def create_project(self,  name: str, notes: str = "", parent_id: int = None   ) -> Project|None:
+        """Create a project record and return the ORM instance."""
         try:
             with self.db.session() as session:
                 family = Project(name=name, notes=notes,parent_id=parent_id )
@@ -231,6 +235,7 @@ class ProjectService:
             logger.error(e)
             return None
     def modify_project(self, project_id: int, name: str, notes: str = "", parent_id: int = None ) -> Project|None:
+        """Update project attributes and persist the changes."""
 
 
         with self.db.session() as session:
@@ -243,6 +248,7 @@ class ProjectService:
 
 
     def remove_project(self, project_id: int) -> Project|None:
+        """Delete a project by id."""
         with self.db.session() as session:
             session.query(Project).filter_by(id=project_id).delete()
 
@@ -252,24 +258,22 @@ class ProjectService:
 
 @dataclass
 class ModelService:
+    """Query and mutate model metadata with advanced filters."""
     db: Database
 
     def _project_ids_with_descendants_subq(self, session, root_ids: list[int]):
-        """
-        返回一个可用于 IN (...) 的子查询，包含 root_ids 以及它们的全部子项目 id。
-        支持传入单个或多个 root id。
-        """
+        """Return a subquery selecting project ids including all descendants."""
         P = aliased(Project)
 
-        # 支持多根：先用一个临时表 roots 装入起点
+        # Support both single and multiple root project ids
         roots = select(Project.id).where(Project.id.in_(root_ids)).cte("roots")
 
-        # 递归：从根出发向下找 children
+        # Recursive CTE to collect descendant projects
         desc = select(roots.c.id.label("id")).cte("desc", recursive=True)
         desc = desc.union_all(
             select(P.id).where(P.parent_id == desc.c.id)
         )
-        # 用 select(desc.c.id) 作为 IN 子查询即可
+        # Return the descendant ids subquery for use in IN clauses
         return select(desc.c.id)
     def search_models_advanced(
             self,
@@ -287,6 +291,7 @@ class ModelService:
             limit: int | None = None,
             offset: int | None = None,
     ) -> list[ModelItem]:
+        """Advanced filtering interface for model listings."""
         names_all = self._normalize_names(tags_all) if tags_all else []
         names_any = self._normalize_names(tags_any) if tags_any else []
         names_none = self._normalize_names(tags_none) if tags_none else []
@@ -298,7 +303,7 @@ class ModelService:
 
             q = session.query(mv)
 
-            # ------------ 关键：项目 + 子项目 ------------
+            # Filter by project roots and optionally include descendants
             if project_id is not None:
                 if isinstance(project_id, int):
                     roots = [project_id]
@@ -310,7 +315,7 @@ class ModelService:
                 else:
                     q = q.filter(mv.project_id.in_(roots))
 
-            # 其他常规过滤
+            # Optionally filter by parent model id
             if parent_id is not None:
                 if parent_id<0:
                     q = q.filter(mv.parent_id == None)
@@ -325,18 +330,18 @@ class ModelService:
             if notes_contains:
                 q = q.filter(mv.notes.like(f"%{notes_contains}%"))
 
-            # 标签 OR（任一）
+            # Tag filter: match any of the provided tags
             if names_any:
                 q = q.join(mv.tags).filter(tg.name.in_(names_any)).distinct()
 
-            # 标签 AND（全部）
+            # Tag filter: require all provided tags
             if names_all:
                 q = (q.join(mv.tags)
                      .filter(tg.name.in_(names_all))
                      .group_by(mv.id)
                      .having(func.count(distinct(tg.id)) == len(names_all)))
 
-            # 标签 NOT（排除）
+            # Tag filter: exclude models containing forbidden tags
             if names_none:
                 sub_exists = (
                     session.query(mvt.model_version_id)
@@ -354,10 +359,11 @@ class ModelService:
             models = q.all()
             return [self._build_tree(m) for m in models]
 
-    # --- 内部工具：归一化输入标签 ---
+    # --- Tag helpers ---
     @staticmethod
     def _normalize_names(names: Iterable[str]) -> list[str]:
-        # 去空白、去空字符串、去重（大小写不敏感，保留首次出现的原样式）
+        """Canonicalise tag names by trimming, deduplicating, and normalising case."""
+        # Trim whitespace, normalise case, and remove duplicates while preserving order
         seen = set()
         result = []
         for n in names or []:
@@ -373,18 +379,19 @@ class ModelService:
             result.append(s)
         return result
 
-    # --- 内部工具：获取或创建标签（大小写不敏感唯一） ---
+    # --- Tag helpers ---
     def _get_or_create_tags(self, names: Iterable[str]) -> list["Tag"]:
+        """Fetch existing tags or create new ones for the provided names."""
         names = self._normalize_names(names)
         if not names:
             return []
         with self.db.session() as session:
 
-            # 先查已有的（Tag.name 建议使用 sqlite_collate="NOCASE" 唯一约束）
+            # Query existing rows; Tag.name uses a NOCASE unique constraint.
             existing = session.query(Tag).where(Tag.name.in_(names)).all()
             have_lower = {t.name.lower(): t for t in existing}
 
-            # 需要新建的
+            # Create any tags that do not already exist.
             to_create = [Tag(name=n) for n in names if n.lower() not in have_lower]
             if to_create:
                 session.add_all(to_create)
@@ -393,26 +400,26 @@ class ModelService:
 
 
         return list(have_lower.values())
-    def _get_or_create_tags_simple(self, names: Iterable[str],session) -> list["Tag"]:
-        """单机简化版：查已有 -> 插入缺失 -> flush -> 返回全部"""
+    def _get_or_create_tags_simple(self, names: Iterable[str], session) -> list["Tag"]:
+        """Simplified helper that ensures tags exist within the current session."""
         names = self._normalize_names(names)
         if not names:
             return []
-        # 1) 已有
+        # Step 1: query all existing tags
 
 
         existing = session.query(Tag).where(Tag.name.in_(names)).all()
 
         have_lower = {t.name.lower(): t for t in existing}
-        # 2) 缺失则创建
+        # Step 2: create any missing tags within the same session
         to_create = [Tag(name=n) for n in names if n.lower() not in have_lower]
         if to_create:
             session.add_all(to_create)
-            session.flush()  # 拿到 id
+            session.flush()  # obtain generated primary keys
             session.commit()
         return existing + to_create
     def _build_tree(self, node: ModelVersion) -> ModelItem:
-        """递归地把 ORM 对象转成 ModelItem"""
+        """Recursively map ORM model hierarchy into ``ModelItem`` objects."""
 
         item = ModelItem(
             model_id=node.id,
@@ -434,7 +441,7 @@ class ModelService:
         )
         for tag in node.tags:
             item.tags.append(TagItem(name=tag.name, tag_id=tag.id,notes=tag.notes,color=tag.color))
-        # 关键：继续递归
+        # Recursive CTE to collect descendant projects
         for child in node.children:
             item.children.append(self._build_tree(child))
         return item
@@ -559,16 +566,16 @@ class ModelService:
             return version
     def modify_model(self,model_id:int,**kwargs):
         with self.db.session() as session:
-            mv = session.get(ModelVersion, model_id)  # 取对象
+            mv = session.get(ModelVersion, model_id)  # Load the model version
             if not mv:
                 raise ValueError(f"ModelVersion {model_id} not found")
             tag_objs = self._get_or_create_tags_simple(kwargs.pop("tags", []) or [],session)
 
-            # 先更新普通字段
+            # Update basic scalar fields
             for key, value in kwargs.items():
                 setattr(mv, key, value)
 
-            # 单独更新关系字段
+            # Update relationship fields
             if tag_objs:
                 mv.tags = set(tag_objs)
             session.commit()

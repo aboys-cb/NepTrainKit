@@ -1,115 +1,140 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""Importer registry for converting simulation outputs into Structure objects."""
 from __future__ import annotations
-
-import os
 import traceback
 from pathlib import Path
 from typing import Iterable, Protocol, List
-
 from loguru import logger
-
-from NepTrainKit import utils
+from NepTrainKit.paths import PathLike, as_path
 from NepTrainKit.core.structure import Structure, atomic_numbers
 import numpy as np
-
-
 class FormatImporter(Protocol):
     """Importer interface for converting various outputs into Structure objects."""
-
     name: str
-
-    def matches(self, path: str) -> bool:
-        """Return True if this importer can handle the given file/directory."""
+    def matches(self, path: PathLike) -> bool:
+        """Return True if this importer can handle the given file or directory."""
         ...
-
-    def iter_structures(self, path: str,**kwargs) -> Iterable[Structure]:
+    def iter_structures(self, path: PathLike, **kwargs) -> Iterable[Structure]:
         """Yield Structure objects from the given path."""
         ...
-
-
 _IMPORTERS: list[FormatImporter] = []
+def register_importer(importer: FormatImporter) -> FormatImporter:
+    """Register a format importer in the global registry.
 
+    Parameters
+    ----------
+    importer : FormatImporter
+        Importer instance to expose through convenience helpers.
 
-def register_importer(importer: FormatImporter):
+    Returns
+    -------
+    FormatImporter
+        The same importer, enabling decorator usage.
+    """
     _IMPORTERS.append(importer)
     return importer
-
-def is_parseable(path: str) -> bool:
+def is_parseable(path: PathLike) -> bool:
+    """Return ``True`` if any registered importer recognises ``path``."""
+    candidate = as_path(path)
     for imp in _IMPORTERS:
         try:
-            if imp.matches(path):
+            if imp.matches(candidate):
                 return True
         except Exception:
-            pass
+            continue
     return False
-
-
-def import_structures(path: Path|str,**kwargs) -> List[Structure]:
-    """Try all registered importers to load structures from path.
-
-    Returns a list of Structure or an empty list if no importer matched.
-    """
-    if isinstance(path, Path):
-        path = path.as_posix()
+def import_structures(path: PathLike, **kwargs) -> List[Structure]:
+    """Try each registered importer until one yields structures."""
+    candidate = as_path(path)
     for imp in _IMPORTERS:
         try:
-            if imp.matches(path):
-                return list(imp.iter_structures(path,**kwargs))
+            if imp.matches(candidate):
+                return list(imp.iter_structures(candidate, **kwargs))
         except Exception:
-            logger.error(f"Importer {imp.__class__.__name__} failed on {traceback.format_exc()}")
-
+            logger.error(
+                "Importer %s failed for %s: %s",
+                imp.__class__.__name__,
+                candidate,
+                traceback.format_exc(),
+            )
             continue
     return []
-
-
 # ----------- Built-in importers -----------
-
-
-
 class ExtxyzImporter:
+    """Importer for standard and extended XYZ trajectory files."""
     name = "extxyz"
+    def matches(self, path: PathLike) -> bool:
+        """Return ``True`` when ``path`` points to an XYZ or EXTXYZ file.
 
-    def matches(self, path: str) -> bool:
-        return os.path.isfile(path) and os.path.splitext(path)[1].lower() in {".xyz", ".extxyz"}
+        Parameters
+        ----------
+        path : PathLike
+            Candidate file to inspect.
 
-    def iter_structures(self, path: str,**kwargs):
-        yield from Structure.iter_read_multiple(path,**kwargs)
-
-
-register_importer(ExtxyzImporter())
-
-
-# VASP XDATCAR importer
-
-
-class XdatcarImporter:
-    name = "vasp_xdatcar"
-
-    def matches(self, path: str) -> bool:
-        base = os.path.basename(path).lower()
-        ext = os.path.splitext(path)[1].lower()
-        return os.path.isfile(path) and (base == "xdatcar" or ext == ".xdatcar")
-
-    def iter_structures(self, path: str, **kwargs):
-        cancel_event = kwargs.get("cancel_event")
-
-        """Parse VASP XDATCAR trajectory into Structure frames.
-
-        Notes:
-        - Supports variable cell per frame (XDATCAR-style headers before each config).
-        - Coordinates are converted to Cartesian and stored under "pos".
-        - Species are taken from header; if absent, falls back to dummy X1/X2...
+        Returns
+        -------
+        bool
+            ``True`` if the suffix matches ``.xyz`` or ``.extxyz``.
         """
+        candidate = as_path(path)
+        return candidate.is_file() and candidate.suffix.lower() in {".xyz", ".extxyz"}
+    def iter_structures(self, path: PathLike, **kwargs):
+        """Yield structures parsed from an XYZ or EXTXYZ file.
 
+        Parameters
+        ----------
+        path : PathLike
+            Path to the trajectory file.
+        **kwargs
+            Forwarded to :meth:`Structure.iter_read_multiple`.
+
+        Yields
+        ------
+        Structure
+            Parsed configurations in file order.
+        """
+        candidate = as_path(path)
+        yield from Structure.iter_read_multiple(str(candidate), **kwargs)
+register_importer(ExtxyzImporter())
+# VASP XDATCAR importer
+class XdatcarImporter:
+    """Importer for VASP XDATCAR trajectory files."""
+    name = "vasp_xdatcar"
+    def matches(self, path: PathLike) -> bool:
+        """Return ``True`` when ``path`` resembles a VASP XDATCAR file.
+
+        Parameters
+        ----------
+        path : PathLike
+            Candidate file or directory to inspect.
+
+        Returns
+        -------
+        bool
+            ``True`` if the filename or suffix matches XDATCAR conventions.
+        """
+        candidate = as_path(path)
+        ext = candidate.suffix.lower()
+        return candidate.is_file() and (candidate.name.lower() == "xdatcar" or ext == ".xdatcar")
+    def iter_structures(self, path: PathLike, **kwargs):
+        """Parse VASP XDATCAR trajectory into :class:`Structure` frames.
+        Notes
+        -----
+        - Supports variable cell per frame (XDATCAR-style headers before each config).
+        - Coordinates are converted to Cartesian and stored under ``pos``.
+        - Species are taken from header; if absent, falls back to dummy ``X1``/``X2``.
+        """
+        candidate = as_path(path)
+        cancel_event = kwargs.get("cancel_event")
         def _is_number(s: str) -> bool:
+            """Return ``True`` if ``s`` can be parsed as a floating-point number."""
             try:
                 float(s)
                 return True
             except Exception:
                 return False
-
-        with open(path, "r", encoding="utf8", errors="ignore") as f:
+        with candidate.open("r", encoding="utf8", errors="ignore") as f:
             while True:
                 if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
                     return
@@ -123,7 +148,6 @@ class XdatcarImporter:
                     title = f.readline()
                     if not title:
                         return
-
                 scale_line = f.readline()
                 if not scale_line:
                     break
@@ -136,7 +160,6 @@ class XdatcarImporter:
                 except Exception:
                     # Not a valid frame start; try to continue scanning
                     continue
-
                 # Lattice 3 lines
                 latt = []
                 ok = True
@@ -160,7 +183,6 @@ class XdatcarImporter:
                 if not ok:
                     break
                 lattice = (scale * np.array(latt, dtype=np.float32)).reshape(3, 3)
-
                 # Species line or counts line
                 line = f.readline()
                 if not line:
@@ -187,16 +209,13 @@ class XdatcarImporter:
                     if len(counts) != len(symbols):
                         # Some XDATCARs repeat header; be permissive
                         counts = counts[: len(symbols)]
-
                 n_atoms = int(sum(counts))
-
                 # Next line indicates coordinate mode
                 mode_line = f.readline()
                 if not mode_line:
                     break
                 mode_l = mode_line.strip().lower()
                 use_direct = ("direct" in mode_l)
-
                 # Read n_atoms coordinate lines
                 coords = np.zeros((n_atoms, 3), dtype=np.float32)
                 read_ok = True
@@ -220,19 +239,16 @@ class XdatcarImporter:
                         break
                 if not read_ok:
                     break
-
                 # Expand species list in-order
                 species_list = np.concatenate([
                     np.array([sym] * cnt, dtype=np.str_)
                     for sym, cnt in zip(symbols, counts)
                 ])
-
                 # Convert to Cartesian if in direct (fractional) coords
                 if use_direct:
                     positions = coords @ lattice
                 else:
                     positions = coords.astype(np.float32)
-
                 properties = [
                     {"name": "species", "type": "S", "count": 1},
                     {"name": "pos", "type": "R", "count": 3},
@@ -245,27 +261,25 @@ class XdatcarImporter:
                     "Config_type": title.strip(),
                     "pbc": "T T T",
                 }
-
                 yield Structure(lattice=lattice,
                                 atomic_properties=atomic_properties,
                                 properties=properties,
                                 additional_fields=additional_fields)
-
 register_importer(XdatcarImporter())
-
 # VASP OUTCAR importer
-
-
 class OutcarImporter:
+    """Importer that streams configurations from VASP OUTCAR files."""
     name = "vasp_outcar"
-
-    def matches(self, path: str) -> bool:
-        base = os.path.basename(path).lower()
-        ext = os.path.splitext(path)[1].lower()
-        return os.path.isfile(path) and (base == "outcar" or ext == ".outcar")
-
-    def iter_structures(self, path: str, cancel_event=None,**kwargs):
+    def matches(self, path: PathLike) -> bool:
+        """Return ``True`` when ``path`` looks like a VASP OUTCAR file."""
+        candidate = as_path(path)
+        ext = candidate.suffix.lower()
+        return candidate.is_file() and (candidate.name.lower() == "outcar" or ext == ".outcar")
+    def iter_structures(self, path: PathLike, cancel_event=None, **kwargs):
+        """Stream VASP OUTCAR configurations as :class:`Structure` objects."""
+        candidate = as_path(path)
         def parse_floats(line: str) -> list[float]:
+            """Return floats parsed from ``line`` while tolerating Fortran notation."""
             parts = line.replace("D", "E").split()
             vals = []
             for p in parts:
@@ -274,19 +288,18 @@ class OutcarImporter:
                 except Exception:
                     pass
             return vals
-
         species_by_type: list[str] | None = None
         counts_by_type: list[int] | None = None
         latest_lattice: np.ndarray | None = None  # last seen lattice (for reference)
         pending_lattice: np.ndarray | None = None  # lattice to apply to next POSITION block
         # pending tensors for the next POSITION block
-        pending_stress: np.ndarray | None = None  # eV/Å^3, 9 comps row-major
+        pending_stress: np.ndarray | None = None
         pending_virial: np.ndarray | None = None  # eV, 9 comps row-major
         last_force_is_ml: bool | None = None
         frames: list[dict] = []
-
         # helpers for species mapping
         def finalize_species_list(n_atoms: int) -> np.ndarray:
+            """Expand type-wise species metadata into a per-atom array."""
             nonlocal species_by_type, counts_by_type
             if counts_by_type is None:
                 # fallback: unknown composition
@@ -304,14 +317,12 @@ class OutcarImporter:
                 # fall back to generic X if mismatch
                 return np.array(["X"] * n_atoms, dtype=np.str_)
             return np.array(expanded, dtype=np.str_)
-
         # Parse file sequentially
-        with open(path, "r", encoding="utf8", errors="ignore") as f:
+        with candidate.open("r", encoding="utf8", errors="ignore") as f:
             for raw in f:
                 if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
                     break
                 line = raw.rstrip("\n")
-
                 # ions per type
                 if "ions per type" in line:
                     try:
@@ -320,7 +331,6 @@ class OutcarImporter:
                     except Exception:
                         counts_by_type = None
                     continue
-
                 # Try to collect species by type via VRHFIN or TITEL blocks
                 lt = line.lstrip()
                 if lt.startswith("VRHFIN") and ":" in lt and "=" in lt:
@@ -356,7 +366,6 @@ class OutcarImporter:
                     except Exception:
                         pass
                     continue
-
                 # direct lattice vectors (use the three next lines)
                 if "direct lattice vectors" in line and "reciprocal" in line:
                     try:
@@ -370,7 +379,6 @@ class OutcarImporter:
                     except Exception:
                         latest_lattice = latest_lattice
                     continue
-
                 # Track header indicating whether next 'in kB' belongs to ML or DFT
                 if line.strip().startswith("ML FORCE on cell") and "-STRESS" in line:
                     # We currently skip ML frames; mark and continue without capturing
@@ -396,7 +404,6 @@ class OutcarImporter:
                         except Exception:
                             pass
                     continue
-
                 # Stress in kB -> assign to next frame of matching type (ML or DFT)
                 if line.strip().startswith("in kB"):
                     # Ignore ML stress to avoid mismatching with DFT POSITION blocks
@@ -406,7 +413,6 @@ class OutcarImporter:
                     # format: in kB  xx yy zz xy yz zx
                     if len(vals) >= 6:
                         xx, yy, zz, xy, yz, xz = vals[-6:]
-                        # convert kB -> GPa -> eV/Å^3
                         to_ev_a3 = 0.1 / 160.21766208
                         xx *= to_ev_a3
                         yy *= to_ev_a3
@@ -425,7 +431,6 @@ class OutcarImporter:
                         # assign to next POSITION block (we track ML/DFT via last_force_is_ml)
                         pending_stress = stress.reshape(-1)
                     continue
-
                 # Energy line (free  energy   TOTEN  = ... eV)
                 if "free  energy   TOTEN" in line:
                     try:
@@ -435,7 +440,6 @@ class OutcarImporter:
                     except Exception:
                         pass
                     continue
-
                 # Position + forces block
                 if line.strip().startswith("POSITION") and "TOTAL-FORCE" in line:
                     is_ml_block = "(ML)" in line
@@ -500,7 +504,6 @@ class OutcarImporter:
                         **({"virial": virial_next} if virial_next is not None else {}),
                         **({"stress": stress_next} if stress_next is not None else {}),
                     })
-
         # Emit frames as Structure objects
         for i, fr in enumerate(frames):
             add = fr["additional_fields"].copy()
@@ -535,52 +538,46 @@ class OutcarImporter:
                             atomic_properties=fr["atomic_properties"],
                             properties=fr["properties"],
                             additional_fields=add)
-
-
 register_importer(OutcarImporter())
-
-
 # LAMMPS dump importer
-
-
 class LammpsDumpImporter:
+    """Importer for LAMMPS dump trajectory files."""
     name = "lammps_dump"
-
-    def matches(self, path: str) -> bool:
-        base = os.path.basename(path).lower()
-        ext = os.path.splitext(path)[1].lower()
-        if not os.path.isfile(path):
+    def matches(self, path: PathLike) -> bool:
+        """Return ``True`` when ``path`` appears to be a LAMMPS dump file."""
+        candidate = as_path(path)
+        ext = candidate.suffix.lower()
+        if not candidate.is_file():
             return False
         # Check dump signature/extension
-        if ext in {".dump", ".lammpstrj", ".lammpstraj"} or base.endswith(".dump"):
+        if ext in {".dump", ".lammpstrj", ".lammpstraj"} or candidate.name.lower().endswith(".dump"):
             return True
         try:
-            with open(path, "r", encoding="utf8", errors="ignore") as f:
+            with candidate.open("r", encoding="utf8", errors="ignore") as f:
                 head = f.readline()
             return head.strip().startswith("ITEM: TIMESTEP")
         except Exception:
             return False
-
-    def iter_structures(self, path: str, **kwargs):
+    def iter_structures(self, path: PathLike, **kwargs):
+        """Iterate over LAMMPS dump trajectory frames."""
+        candidate = as_path(path)
         cancel_event = kwargs.get("cancel_event")
         element_resolver = kwargs.get(
             "element_resolver")  # Optional callable(missing_types:list[int], context:dict)->dict[int,str]
         element_map_arg = kwargs.get("element_map")  # Optional pre-supplied {type:int -> element:str}
-
         def cancelled():
+            """Return ``True`` if an optional cancellation event is set."""
             return cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set()
-
         # Build element mapping from LAMMPS in-file or referenced data file (Masses section)
-        dirp = os.path.dirname(path) or "."
-        input_files: list[str] = []
+        source_dir = candidate.parent
+        input_files: list[Path] = []
         try:
-            for fname in os.listdir(dirp):
-                lower = fname.lower()
-                if os.path.isfile(os.path.join(dirp, fname)) and (lower.startswith("in") or lower.endswith("in") or lower.endswith(".in")):
-                    input_files.append(os.path.join(dirp, fname))
+            for child in source_dir.iterdir():
+                lower = child.name.lower()
+                if child.is_file() and (lower.startswith("in") or lower.endswith("in") or lower.endswith(".in")):
+                    input_files.append(child)
         except Exception:
             pass
-
         type_to_elem: dict[int, str] = {}
         if isinstance(element_map_arg, dict):
             # seed with user-provided mapping first
@@ -589,9 +586,7 @@ class LammpsDumpImporter:
                     type_to_elem[int(k)] = str(v)
                 except Exception:
                     pass
-
-
-        with open(path, "r", encoding="utf8", errors="ignore") as f:
+        with candidate.open("r", encoding="utf8", errors="ignore") as f:
             while True:
                 if cancelled():
                     return
@@ -603,7 +598,6 @@ class LammpsDumpImporter:
                     continue
                 if not line.startswith("ITEM: TIMESTEP"):
                     continue
-
                 # TIMESTEP
                 ts_line = f.readline()
                 if not ts_line:
@@ -612,7 +606,6 @@ class LammpsDumpImporter:
                     timestep = int(ts_line.strip().split()[0])
                 except Exception:
                     timestep = 0
-
                 # NUMBER OF ATOMS
                 hdr = f.readline()  # ITEM: NUMBER OF ATOMS
                 if not hdr or not hdr.strip().startswith("ITEM: NUMBER OF ATOMS"):
@@ -624,18 +617,16 @@ class LammpsDumpImporter:
                     n_atoms = int(nat_line.strip().split()[0])
                 except Exception:
                     continue
-
                 # BOX BOUNDS
                 bounds_hdr = f.readline()
                 if not bounds_hdr or not bounds_hdr.strip().startswith("ITEM: BOX BOUNDS"):
                     break
                 bounds_tokens = bounds_hdr.strip().split()
                 tilt_flags = {t for t in bounds_tokens if t in {"xy", "xz", "yz"}}
-
                 def _read_bounds_line():
+                    """Read a bounds line from the dump header and return floats."""
                     l = f.readline()
                     return [float(x) for x in l.strip().split()] if l else []
-
                 b1 = _read_bounds_line(); b2 = _read_bounds_line(); b3 = _read_bounds_line()
                 if not b1 or not b2 or not b3:
                     break
@@ -649,7 +640,6 @@ class LammpsDumpImporter:
                     ylo, yhi = b2[0], b2[1]
                     zlo, zhi = b3[0], b3[1]
                     xy = xz = yz = 0.0
-
                 lx = float(xhi - xlo)
                 ly = float(yhi - ylo)
                 lz = float(zhi - zlo)
@@ -657,25 +647,21 @@ class LammpsDumpImporter:
                 b = np.array([xy, ly, 0.0], dtype=np.float32)
                 c = np.array([xz, yz, lz], dtype=np.float32)
                 lattice = np.vstack([a, b, c]).reshape(3, 3)
-
                 # ATOMS header
                 atoms_hdr = f.readline()
                 if not atoms_hdr or not atoms_hdr.strip().startswith("ITEM: ATOMS"):
                     break
                 cols = atoms_hdr.strip().split()[2:]
                 idx = {name: i for i, name in enumerate(cols)}
-
                 has_scaled = all(k in idx for k in ("xs", "ys", "zs"))
                 has_cart = all(k in idx for k in ("x", "y", "z"))
                 has_unwrapped = all(k in idx for k in ("xu", "yu", "zu"))
                 has_forces = all(k in idx for k in ("fx", "fy", "fz"))
                 species_col = "element" if "element" in idx else ("type" if "type" in idx else None)
-
                 positions = np.zeros((n_atoms, 3), dtype=np.float32)
                 forces = np.zeros((n_atoms, 3), dtype=np.float32) if has_forces else None
                 species_list: list[str] = []
                 types_buffer = np.zeros((n_atoms,), dtype=np.int32) if species_col == "type" else None
-
                 for i in range(n_atoms):
                     if cancelled():
                         return
@@ -699,7 +685,6 @@ class LammpsDumpImporter:
                             species_list.append("")
                         else:
                             species_list.append(val)
-
                     # fractional
                     if has_scaled:
                         fx = float(parts[idx["xs"]]); fy = float(parts[idx["ys"]]); fz = float(parts[idx["zs"]])
@@ -715,15 +700,12 @@ class LammpsDumpImporter:
                         fz = (z - zlo) / lz if lz != 0 else 0.0
                     else:
                         fx = fy = fz = 0.0
-
                     pos = fx * a + fy * b + fz * c
                     positions[i, :] = pos
-
                     if has_forces and forces is not None:
                         forces[i, 0] = float(parts[idx["fx"]])
                         forces[i, 1] = float(parts[idx["fy"]])
                         forces[i, 2] = float(parts[idx["fz"]])
-
                 # Resolve missing type->element mapping if needed
                 if species_col == "type" and types_buffer is not None:
                     missing = sorted({int(t) for t in types_buffer.tolist() if int(t) >= 1 and int(t) not in type_to_elem})
@@ -749,7 +731,6 @@ class LammpsDumpImporter:
                     for i in range(n_atoms):
                         t = int(types_buffer[i])
                         species_list[i] = type_to_elem.get(t, f"X{t}") if t > 0 else "X"
-
                 species_arr = np.array(species_list, dtype=np.str_)
                 properties = [
                     {"name": "species", "type": "S", "count": 1},
@@ -762,67 +743,53 @@ class LammpsDumpImporter:
                 if has_forces and forces is not None:
                     properties.append({"name": "forces", "type": "R", "count": 3})
                     atom_props["forces"] = forces
-
                 additional_fields = {
                     "Config_type": f"LAMMPS_{timestep}",
                     "pbc": "T T T",
                 }
-
                 yield Structure(lattice=lattice,
                                 atomic_properties=atom_props,
                                 properties=properties,
                                 additional_fields=additional_fields)
-
-
 register_importer(LammpsDumpImporter())
-
-
-
-
-
-
-
-
 # Skeleton for CP2K output importer (optional)
-
-
 class Cp2kOutputImporter:
+    """Importer for CP2K output log files."""
     name = "cp2k_output"
-
-    def matches(self, path: str) -> bool:
-        if not os.path.isfile(path):
+    def matches(self, path: PathLike) -> bool:
+        """Return ``True`` when ``path`` looks like a CP2K output log."""
+        candidate = as_path(path)
+        if not candidate.is_file():
             return False
-        base = os.path.basename(path).lower()
-        ext = os.path.splitext(path)[1].lower()
-        likely = base.endswith('.log') or base.endswith('.out') or ext in {'.log', '.out'}
+        base = candidate.name.lower()
+        ext = candidate.suffix.lower()
+        likely = base.endswith(".log") or base.endswith(".out") or ext in {".log", ".out"}
         try:
-            with open(path, 'r', encoding='utf8', errors='ignore') as f:
+            with candidate.open('r', encoding='utf8', errors='ignore') as f:
                 head = f.read(4000)
             sig = ("CP2K|" in head) or ("MODULE QUICKSTEP: ATOMIC COORDINATES" in head) or ("ENERGY| Total FORCE_EVAL" in head)
             return sig
         except Exception:
             return False
-
-    def iter_structures(self, path: str, **kwargs):
+    def iter_structures(self, path: PathLike, **kwargs):
         """Parse a CP2K output into one Structure.
-
         Extracts:
         - Lattice from CELL| Vector a/b/c [angstrom]
         - Atomic coordinates from "MODULE QUICKSTEP: ATOMIC COORDINATES IN ANGSTROM"
-        - Forces from "ATOMIC FORCES in [a.u.]" (converted to eV/Å)
+        - Forces from "ATOMIC FORCES in [a.u.]" (converted to eV/脜)
         - Total energy from "ENERGY| Total FORCE_EVAL ( QS ) energy [a.u.]" (converted to eV)
-        - Stress tensor from "STRESS| Analytical stress tensor [GPa]" (converted to eV/Å^3)
+        - Stress tensor from "STRESS| Analytical stress tensor [GPa]" (converted to eV/脜^3)
         """
+        candidate = as_path(path)
+
         cancel_event = kwargs.get("cancel_event")
-
         def cancelled():
+            """Return ``True`` if an optional cancellation event is set."""
             return cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set()
-
         # unit conversions
         HARTREE_TO_EV = 27.211386245988
-        AU_FORCE_TO_EV_PER_ANG = 27.211386245988 / 0.52917721067  # Eh/Bohr -> eV/Å
+        AU_FORCE_TO_EV_PER_ANG = 27.211386245988 / 0.52917721067
         GPA_TO_EV_PER_ANG3 = 1.0 / 160.21766208
-
         # accumulators
         a_vec = b_vec = c_vec = None
         positions: list[list[float]] = []
@@ -830,14 +797,13 @@ class Cp2kOutputImporter:
         forces: list[list[float]] = []
         energy_ev: float | None = None
         stress_gpa: np.ndarray | None = None
-
         # state flags
         in_coords = False
         coords_started = False  # started reading numeric atom lines
         in_forces = False
         read_forces_header_skipped = False
-
         def parse_floats_from_line(line: str) -> list[float]:
+            """Return floats parsed from ``line`` with Fortran ``D`` exponents."""
             vals: list[float] = []
             for t in line.replace('D', 'E').split():
                 try:
@@ -845,14 +811,12 @@ class Cp2kOutputImporter:
                 except Exception:
                     pass
             return vals
-
-        with open(path, 'r', encoding='utf8', errors='ignore') as f:
+        with candidate.open('r', encoding='utf8', errors='ignore') as f:
             for raw in f:
                 if cancelled():
                     return
                 line = raw.rstrip('\n')
                 lstrip = line.lstrip()
-
                 # Lattice vectors (prefer the current CELL| over *_TOP or *_REF)
                 if lstrip.startswith('CELL|') and 'Vector a' in lstrip and '[angstrom' in lstrip:
                     nums = parse_floats_from_line(line)
@@ -869,13 +833,11 @@ class Cp2kOutputImporter:
                     if len(nums) >= 3:
                         c_vec = [nums[0], nums[1], nums[2]]
                     continue
-
                 # Coordinates block begin
                 if 'MODULE QUICKSTEP: ATOMIC COORDINATES IN ANGSTROM' in line:
                     in_coords = True
                     coords_started = False
                     continue
-
                 if in_coords:
                     # skip blank lines until data starts
                     if line.strip() == '':
@@ -889,6 +851,7 @@ class Cp2kOutputImporter:
                         continue
                     # Expect numeric rows: idx kind Element Z X Y Z Z(eff) Mass
                     def _is_int(s: str) -> bool:
+                        """Return ``True`` when ``s`` can be interpreted as an integer."""
                         try:
                             int(float(s))
                             return True
@@ -909,13 +872,11 @@ class Cp2kOutputImporter:
                     if coords_started:
                         in_coords = False
                     continue
-
                 # Forces block begin
                 if lstrip.startswith('ATOMIC FORCES in [a.u.]'):
                     in_forces = True
                     read_forces_header_skipped = False
                     continue
-
                 if in_forces:
                     # skip header line that starts with '#'
                     if not read_forces_header_skipped:
@@ -925,11 +886,9 @@ class Cp2kOutputImporter:
                             continue
                         else:
                             read_forces_header_skipped = True
-
                     if line.strip() == '' or line.strip().startswith('SUM OF ATOMIC FORCES'):
                         in_forces = False
                         continue
-
                     parts = line.split()
                     if len(parts) >= 6:
                         try:
@@ -940,7 +899,6 @@ class Cp2kOutputImporter:
                         except Exception:
                             pass
                     continue
-
                 # Energy (a.u. -> eV)
                 if 'ENERGY| Total FORCE_EVAL' in line and '[a.u.]' in line and ':' in line:
                     try:
@@ -957,7 +915,6 @@ class Cp2kOutputImporter:
                     except Exception:
                         pass
                     continue
-
                 # Stress tensor in GPa
                 if lstrip.startswith('STRESS| Analytical stress tensor'):
                     _ = next(f, '')  # header line
@@ -975,13 +932,11 @@ class Cp2kOutputImporter:
                     except Exception:
                         pass
                     continue
-
         # Assemble lattice
         if a_vec is None or b_vec is None or c_vec is None:
             lattice = np.eye(3, dtype=np.float32)
         else:
             lattice = np.array([a_vec, b_vec, c_vec], dtype=np.float32)
-
         # Compose atomic data
         properties = [
             {"name": "species", "type": "S", "count": 1},
@@ -994,45 +949,38 @@ class Cp2kOutputImporter:
         if forces and len(forces) == len(positions):
             properties.append({"name": "forces", "type": "R", "count": 3})
             atomic_properties["forces"] = np.array(forces, dtype=np.float32)
-
         additional_fields: dict[str, object] = {
             "Config_type": "CP2K_1",
             "pbc": "T T T",
         }
         if energy_ev is not None:
             additional_fields["energy"] = float(energy_ev)
-
         if stress_gpa is not None:
             s = (stress_gpa * GPA_TO_EV_PER_ANG3).astype(np.float32)
             stress9 = np.array([s[0, 0], s[0, 1], s[0, 2],
                                 s[1, 0], s[1, 1], s[1, 2],
                                 s[2, 0], s[2, 1], s[2, 2]], dtype=np.float32)
             additional_fields["stress"] = stress9
-
         if len(positions) > 0:
             yield Structure(lattice=lattice,
                             atomic_properties=atomic_properties,
                             properties=properties,
                             additional_fields=additional_fields)
-
-
 register_importer(Cp2kOutputImporter())
-
-
 # n2p2 CFG/input.data importer
-
-
 class N2p2CfgImporter:
+    """Importer for n2p2 CFG datasets (input.data format)."""
     name = "n2p2_cfg"
-
-    def matches(self, path: str) -> bool:
-        if not os.path.isfile(path):
+    def matches(self, path: PathLike) -> bool:
+        """Return ``True`` when ``path`` resembles an n2p2 CFG file."""
+        candidate = as_path(path)
+        if not candidate.is_file():
             return False
-        base = os.path.basename(path).lower()
-        ext = os.path.splitext(path)[1].lower()
+        base = candidate.name.lower()
+        ext = candidate.suffix.lower()
         likely = (base.endswith('input.data') or ext in {'.data', '.cfg'})
         try:
-            with open(path, 'r', encoding='utf8', errors='ignore') as f:
+            with candidate.open('r', encoding='utf8', errors='ignore') as f:
                 head = f.read(4096)
             # Simple signature: blocks delimited by 'begin'/'end' and lines starting with atom/lattice
             sig = ("\nbegin\n" in head or head.strip().startswith("begin")) and (
@@ -1040,10 +988,8 @@ class N2p2CfgImporter:
             return sig or likely
         except Exception:
             return likely
-
-    def iter_structures(self, path: str, **kwargs):
+    def iter_structures(self, path: PathLike, **kwargs):
         """Parse n2p2 CFG file (input.data) into Structure frames.
-
         Format reference: https://compphysvienna.github.io/n2p2/topics/cfg_file.html
         Block between 'begin' ... 'end'. Within a block:
           - lattice ax ay az (3 lines, optional)
@@ -1052,21 +998,18 @@ class N2p2CfgImporter:
           - energy <E> (optional)
           - charge <Q> (optional)
         """
-        cancel_event = kwargs.get("cancel_event")
+        candidate = as_path(path)
 
-        # ---- Units handling (forced Bohr/Hartree -> Å/eV) ----
+        cancel_event = kwargs.get("cancel_event")
         # Per request, input.data (n2p2 CFG) is always given in Bohr/Hartree.
-        # Convert to internal units: Å for length, eV for energy, eV/Å for force.
         # Constants from n2p2 docs (pair_nnp):
-        #   1 Å = 1.8897261328 Bohr  => Bohr -> Å is 1 / 1.8897261328
         #   1 eV = 0.0367493254 Hartree => Hartree -> eV is 1 / 0.0367493254
         length_to_ang = 1.0 / 1.8897261328
         energy_to_ev = 1.0 / 0.0367493254
         force_to_ev_per_ang = energy_to_ev / length_to_ang
-
         def cancelled():
+            """Return ``True`` if optional cancellation has been requested."""
             return cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set()
-
         # per-block accumulators
         block_idx = 0
         in_block = False
@@ -1077,8 +1020,8 @@ class N2p2CfgImporter:
         energy_val: float | None = None
         charge_val: float | None = None
         comment_txt: str | None = None
-
         def emit_if_ready():
+            """Emit the current block as a Structure when all fields are populated."""
             nonlocal block_idx
             if positions is None or species is None or len(positions) == 0:
                 return
@@ -1089,7 +1032,6 @@ class N2p2CfgImporter:
             else:
                 lattice = np.eye(3, dtype=np.float32)
                 pbc_txt = "F F F"
-
             props = [
                 {"name": "species", "type": "S", "count": 1},
                 {"name": "pos", "type": "R", "count": 3},
@@ -1101,7 +1043,6 @@ class N2p2CfgImporter:
             if forces is not None and len(forces) == len(positions):
                 props.append({"name": "forces", "type": "R", "count": 3})
                 atom_props["forces"] = (np.array(forces, dtype=np.float32) * float(force_to_ev_per_ang))
-
             add = {
                 "Config_type": (comment_txt or f"N2P2_CFG_{block_idx}"),
                 "pbc": pbc_txt,
@@ -1110,14 +1051,12 @@ class N2p2CfgImporter:
                 add["energy"] = float(energy_val) * float(energy_to_ev)
             if charge_val is not None:
                 add["charge"] = float(charge_val)
-
             yield Structure(lattice=lattice,
                             atomic_properties=atom_props,
                             properties=props,
                             additional_fields=add)
-
         # Streaming parse
-        with open(path, 'r', encoding='utf8', errors='ignore') as f:
+        with candidate.open('r', encoding='utf8', errors='ignore') as f:
             for raw in f:
                 if cancelled():
                     return
@@ -1125,7 +1064,6 @@ class N2p2CfgImporter:
                 if not line:
                     continue
                 low = line.lower()
-
                 if low == 'begin':
                     # start new block
                     in_block = True
@@ -1148,11 +1086,9 @@ class N2p2CfgImporter:
                     energy_val = charge_val = None
                     comment_txt = None
                     continue
-
                 if not in_block:
                     # ignore content outside blocks
                     continue
-
                 # Parse block lines
                 if low.startswith('comment'):
                     # everything after first space
@@ -1162,7 +1098,6 @@ class N2p2CfgImporter:
                     else:
                         comment_txt = ''
                     continue
-
                 if low.startswith('lattice'):
                     toks = line.split()
                     # lattice ax ay az
@@ -1174,7 +1109,6 @@ class N2p2CfgImporter:
                         except Exception:
                             pass
                     continue
-
                 if low.startswith('atom'):
                     # atom x y z elem c n fx fy fz
                     # Support possible extra whitespace in element column
@@ -1199,7 +1133,6 @@ class N2p2CfgImporter:
                             except Exception:
                                 pass
                     continue
-
                 if low.startswith('energy'):
                     # energy E
                     toks = line.split()
@@ -1209,7 +1142,6 @@ class N2p2CfgImporter:
                         except Exception:
                             pass
                     continue
-
                 if low.startswith('charge'):
                     toks = line.split()
                     if len(toks) >= 2:
@@ -1218,34 +1150,25 @@ class N2p2CfgImporter:
                         except Exception:
                             pass
                     continue
-
         # No trailing 'end': emit last block if we were inside one
         if in_block:
             for st in emit_if_ready():
                 yield st
-
-
 register_importer(N2p2CfgImporter())
-
-
-
-
-
-
-
-
 # ASE trajectory importer (uses ASE to read, converts to Structure)
 class AseTrajectoryImporter:
+    """Importer for ASE ``.traj`` trajectory files."""
     name = "ase_traj"
-
-    def matches(self, path: str) -> bool:
-        if not os.path.isfile(path):
+    def matches(self, path: PathLike) -> bool:
+        """Return ``True`` when ``path`` is an ASE ``.traj`` file."""
+        candidate = as_path(path)
+        if not candidate.is_file():
             return False
-        ext = os.path.splitext(path)[1].lower()
+        ext = candidate.suffix.lower()
         # Target ASE formats that are not already handled by dedicated importers
         return ext in {".traj"}
-
     def _ase_atoms_to_structure(self, atoms) -> Structure | None:
+        """Convert an ASE ``Atoms`` object into a :class:`Structure`."""
         try:
             # Lattice/cell
             cell = getattr(atoms, 'cell', None)
@@ -1257,11 +1180,9 @@ class AseTrajectoryImporter:
                     lattice = np.eye(3, dtype=np.float32)
                 else:
                     lattice = arr.reshape(3, 3)
-
             # Species and positions
             symbols = np.array(atoms.get_chemical_symbols(), dtype=np.str_)
             positions = np.array(atoms.get_positions(), dtype=np.float32)
-
             properties = [
                 {"name": "species", "type": "S", "count": 1},
                 {"name": "pos", "type": "R", "count": 3},
@@ -1270,28 +1191,21 @@ class AseTrajectoryImporter:
                 "species": symbols,
                 "pos": positions,
             }
-
-
-
             # Additional fields
             info = getattr(atoms, 'info', {}) or {}
-
             cfg = str(info.get('comment', info.get('Config_type', 'ASE_traj')))
             pbc_val = getattr(atoms, 'pbc', False)
             if isinstance(pbc_val, (list, tuple, np.ndarray)):
                 pbc_text = " ".join(["T" if bool(x) else "F" for x in list(pbc_val)[:3]])
             else:
                 pbc_text = "T T T" if bool(pbc_val) else "F F F"
-
             add = {
                 "Config_type": cfg,
                 "pbc": pbc_text,
             }
-
             calc_result=atoms.calc.results
             if "energy" in calc_result:
                 add["energy"]=calc_result["energy"]
-
             # Optional forces from arrays to avoid calculator call
             forces = None
             try:
@@ -1300,13 +1214,11 @@ class AseTrajectoryImporter:
                         forces = np.array(atoms.arrays['forces'], dtype=np.float32)
                 if "forces" in calc_result:
                     forces = np.array(calc_result['forces'], dtype=np.float32)
-
             except Exception:
                 forces = None
             if isinstance(forces, np.ndarray) and forces.shape == positions.shape:
                 properties.append({"name": "forces", "type": "R", "count": 3})
                 atomic_props["forces"] = forces
-
             # Optional stress/virial if present in info with common keys
             try:
                 if 'stress' in calc_result:
@@ -1324,19 +1236,19 @@ class AseTrajectoryImporter:
                         add['virial'] = v.reshape(-1)
             except Exception:
                 pass
-
             return Structure(lattice=lattice, atomic_properties=atomic_props, properties=properties, additional_fields=add)
         except Exception:
             return None
-
-    def iter_structures(self, path: str, **kwargs):
+    def iter_structures(self, path: PathLike, **kwargs):
+        """Yield structures from ASE trajectory files."""
+        candidate = as_path(path)
         cancel_event = kwargs.get("cancel_event")
         try:
             from ase.io import iread
         except Exception:
             return
         try:
-            for atoms in iread(path, index=":"):
+            for atoms in iread(str(candidate), index=":"):
                 if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
                     return
                 st = self._ase_atoms_to_structure(atoms)
@@ -1344,12 +1256,7 @@ class AseTrajectoryImporter:
                     yield st
         except Exception:
             return
-
-
 register_importer(AseTrajectoryImporter())
-
-
-
 def write_extxyz(file_path: str, structures: List[Structure]) -> str:
     """Write structures to an EXTXYZ file using Structure.write()."""
     with open(file_path, "w", encoding="utf8") as f:

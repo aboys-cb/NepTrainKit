@@ -1,5 +1,21 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
+"""Core domain models and utilities for NEP workflows.
+
+This package exposes lightweight, lazily-loaded entry points for the rest of
+NepTrainKit to avoid heavy imports at startup and keep UI responsiveness high.
+
+Notes
+-----
+- Public symbols are exported via ``__getattr__`` to defer imports.
+- Modules in this package cover structures, messaging, dataset IO, and helpers.
+
+Examples
+--------
+>>> from NepTrainKit.core import Structure
+>>> Structure  # doctest: +ELLIPSIS
+<class '...Structure'>
+"""
 # Lightweight, lazy exports to avoid heavy imports at startup.
 from __future__ import annotations
 
@@ -11,15 +27,6 @@ __all__ = [
     'CardManager', 'load_cards_from_directory',
 ]
 
-
-def __getattr__(name: str) -> Any:
-    if name == 'MessageManager':
-        from .message import MessageManager as _M
-        return _M
-    if name in ('Structure', 'process_organic_clusters', 'get_clusters'):
-        from .structure import Structure as _S, process_organic_clusters as _P, get_clusters as _G
-        return {'Structure': _S, 'process_organic_clusters': _P, 'get_clusters': _G}[name]
-    if name in ('CardManager', 'load_cards_from_directory'):
-        from .card_manager import CardManager as _C, load_cards_from_directory as _L
-        return {'CardManager': _C, 'load_cards_from_directory': _L}[name]
-    raise AttributeError(name)
+from .card_manager import CardManager, load_cards_from_directory
+from .message import MessageManager
+from .structure import Structure, process_organic_clusters, get_clusters

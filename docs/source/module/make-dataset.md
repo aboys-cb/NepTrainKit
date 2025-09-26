@@ -619,4 +619,4 @@ def from_dict(self, data):
 ```
 
 ## Appendix: Complete Example Card
-https://github.com/aboys-cb/NepTrainKit/tree/dev/src/NepTrainKit/views/_card
+https://github.com/aboys-cb/NepTrainKit/tree/dev/src/NepTrainKit/ui/views/_card

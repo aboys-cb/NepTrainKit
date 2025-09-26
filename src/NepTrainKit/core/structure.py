@@ -1003,7 +1003,7 @@ def load_npy_structure(folders: PathLike, cancel_event=None):
             structures.extend(load_npy_structure(child, cancel_event=cancel_event))
     return structures
 @timeit
-def save_npy_structure(folder: PathLike, structures: list[Structure]):
+def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:list[str]|None=None):
 
 
     """Save structures to a DeepMD-style .npy dataset layout.
@@ -1015,15 +1015,25 @@ def save_npy_structure(folder: PathLike, structures: list[Structure]):
     structures : list[Structure]
         Structures to persist. Per-atom arrays are saved under set.000 and
         per-frame values under the config folder.
+    type_map: list[str]
     """
     target_root = as_path(folder)
     ensure_directory(target_root)
 
     dataset_dict = defaultdict(lambda: defaultdict(list))
-
+    global_type_map=set()
     for structure in structures:
-        config_type=structure.tag
-        dataset_dict[config_type]["type_map"].append(structure.additional_fields["type_map"])
+        # config_type=structure.tag
+        config_type=structure.formula
+        if type_map is not None:
+            dataset_dict[config_type]["type_map"]=type_map
+        else:
+            if "type_map" in structure.additional_fields:
+                dataset_dict[config_type]["type_map"] = structure.additional_fields["type_map"]
+            else:
+                for elem in structure.atomic_properties["species"]:
+                    global_type_map.add(str(elem))
+
 
         dataset_dict[config_type]["box"].append(structure.lattice.flatten())
         dataset_dict[config_type]["coord"].append(structure.atomic_properties["pos"].flatten())
@@ -1043,8 +1053,10 @@ def save_npy_structure(folder: PathLike, structures: list[Structure]):
     for config, data in dataset_dict.items():
         save_path = ensure_directory(target_root / config / 'set.000')
         species = data['species'][0]
-        type_map = data['type_map'][0]
-
+        if len(global_type_map)!=0:
+            type_map=list(global_type_map)
+        else:
+            type_map = data['type_map']
 
         np.savetxt(target_root / config / 'type_map.raw', type_map, fmt='%s')
         type_data = np.array([type_map.index(item) for item in species]).flatten()

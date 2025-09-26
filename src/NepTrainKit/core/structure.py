@@ -488,7 +488,7 @@ class Structure:
             elif prop["type"] == "L":
                 _info=_info.astype( np.bool_)
             elif  prop["type"] == "I":
-                _info=_info.astype( np.int8)
+                _info=_info.astype( np.int32)
 
             else:
                 pass
@@ -618,6 +618,9 @@ class Structure:
                 global_line.append(f"{key}={value}")
             elif isinstance(value, np.ndarray):
                 value_str = " ".join(map(str, value.flatten()))
+                global_line.append(f'{key}="{value_str}"')
+            elif isinstance(value, (list,set,tuple)):
+                value_str = " ".join(map(str, value ))
                 global_line.append(f'{key}="{value_str}"')
             else:
                 global_line.append(f'{key}="{value}"')
@@ -931,6 +934,7 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
         type_map = np.loadtxt(type_map_path, dtype=str, ndmin=1)
     else:
         type_map = np.array([f'Type_{i + 1}' for i in range(np.max(type_) + 1)], dtype=str, ndmin=1)
+
     elem_list = type_map[type_]
     atoms_num = len(elem_list)
     nopbc = (folder_path / 'nopbc').is_file()
@@ -962,7 +966,7 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
             {'name': 'pos', 'type': 'R', 'count': 3},
         ]
         info = {'species': elem_list, 'pos': coords}
-        additional_fields = {'Config_type': config_type, 'pbc': 'F F F' if nopbc else 'T T T'}
+        additional_fields = {'Config_type': config_type, 'pbc': 'F F F' if nopbc else 'T T T',"type_map": type_map.tolist()}
         for key, value in dataset_dict.items():
             if key in {'box', 'coord'}:
                 continue
@@ -1019,6 +1023,8 @@ def save_npy_structure(folder: PathLike, structures: list[Structure]):
 
     for structure in structures:
         config_type=structure.tag
+        dataset_dict[config_type]["type_map"].append(structure.additional_fields["type_map"])
+
         dataset_dict[config_type]["box"].append(structure.lattice.flatten())
         dataset_dict[config_type]["coord"].append(structure.atomic_properties["pos"].flatten())
         dataset_dict[config_type]["species"].append(structure.atomic_properties["species"])
@@ -1037,9 +1043,11 @@ def save_npy_structure(folder: PathLike, structures: list[Structure]):
     for config, data in dataset_dict.items():
         save_path = ensure_directory(target_root / config / 'set.000')
         species = data['species'][0]
-        unique_species = list({value for value in species})
-        np.savetxt(target_root / config / 'type_map.raw', unique_species, fmt='%s')
-        type_data = np.array([unique_species.index(item) for item in species]).flatten()
+        type_map = data['type_map'][0]
+
+
+        np.savetxt(target_root / config / 'type_map.raw', type_map, fmt='%s')
+        type_data = np.array([type_map.index(item) for item in species]).flatten()
         np.savetxt(target_root / config / 'type.raw', type_data, fmt='%d')
         for key, value in data.items():
             if key == 'species':

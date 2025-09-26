@@ -4,8 +4,7 @@
 </a><br>    
 <a href="https://pypi.org/project/NepTrainKit"><img src="https://img.shields.io/pypi/dm/NepTrainKit?logo=pypi&logoColor=white&color=blue&label=PyPI" alt="PyPI Downloads"></a>   
 <a href="https://python.org/downloads"><img src="https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white" alt="Python Version"></a>  
-<a href="https://codecov.io/github/aboys-cb/NepTrainKit"><img src="https://codecov.io/github/aboys-cb/NepTrainKit/graph/badge.svg?token=HQ5FMLD91F" alt="Codecov"></a>  
-<a href="https://doi.org/10.48550/arXiv.2506.01868"><img src="https://img.shields.io/badge/arXiv-2506.01868-b31b1b.svg" alt="arXiv"></a>
+<a href="https://codecov.io/github/aboys-cb/NepTrainKit"><img src="https://codecov.io/github/aboys-cb/NepTrainKit/graph/badge.svg?token=HQ5FMLD91F" alt="Codecov"></a>
 <a href="https://github.com/aboys-cb/NepTrainKit/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue" alt="License"></a>
 </div>
 
@@ -57,6 +56,8 @@ If you are using Python 3.10 or a later version, you can install `NepTrainKit` u
   pip install NepTrainKit
   ```
 
+  > **Linux note:** When you install NepTrainKit via pip on Linux, the build auto-detects CUDA. If a compatible CUDA toolkit is present, the NEP backend is compiled with GPU acceleration; otherwise, it falls back to a CPU-only build.
+
   After installation, you can call the program using either `NepTrainKit` or `nepkit`.
 
 - For the **latest version** (from GitHub):
@@ -96,7 +97,26 @@ For detailed usage documentation and examples, please refer to the official docu
 
 ---
 
+## Citation
+
+If you use NepTrainKit in academic work, please cite the following publication and acknowledge the upstream projects where appropriate:
+
+```bibtex
+@article{CHEN2025109859,
+title = {NepTrain and NepTrainKit: Automated active learning and visualization toolkit for neuroevolution potentials},
+journal = {Computer Physics Communications},
+volume = {317},
+pages = {109859},
+year = {2025},
+issn = {0010-4655},
+doi = {https://doi.org/10.1016/j.cpc.2025.109859},
+url = {https://www.sciencedirect.com/science/article/pii/S0010465525003613},
+author = {Chengbing Chen and Yutong Li and Rui Zhao and Zhoulin Liu and Zheyong Fan and Gang Tang and Zhiyong Wang},
+}
+```
+
 ## Licensing and Attribution
+
 
 - License: This repository is licensed under the GNU General Public License v3.0
   (or, at your option, any later version). See `LICENSE` at the repository root.
@@ -111,5 +131,5 @@ For detailed usage documentation and examples, please refer to the official docu
 - Redistribution: Any modifications and redistributions must remain under the GPL and
   preserve copyright and license notices, per the GPL requirements.
 
-If you use NepTrainKit in academic work, please cite the project and also acknowledge
+For academic use, cite NepTrainKit as shown above and acknowledge
 NEP_CPU and/or GPUMD as appropriate.

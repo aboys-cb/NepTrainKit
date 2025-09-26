@@ -13,6 +13,8 @@ conda activate nepkit
 pip install NepTrainKit
 ```
 
+> **Linux note:** On Linux, installing via pip will auto-detect CUDA. If a compatible CUDA toolkit is found, NepTrainKit builds the NEP backend with GPU acceleration; otherwise, it compiles a CPU-only backend.
+
 Windows portable: download `NepTrainKit.win32.zip` from Releases and run the executable.
 
 ## 2. Launch
@@ -63,4 +65,21 @@ Note:
 - Use Vispy for large scenes if your GPU supports OpenGL.
 - Toggle formula search to match by composition rather than tags.
 - Use the structure toolbar to export descriptors or mark non‑physical bonds.
+## Cite NepTrainKit
+
+If you publish results that rely on NepTrainKit, cite the following paper and acknowledge upstream NEP projects where relevant:
+
+```bibtex
+@article{CHEN2025109859,
+title = {NepTrain and NepTrainKit: Automated active learning and visualization toolkit for neuroevolution potentials},
+journal = {Computer Physics Communications},
+volume = {317},
+pages = {109859},
+year = {2025},
+issn = {0010-4655},
+doi = {https://doi.org/10.1016/j.cpc.2025.109859},
+url = {https://www.sciencedirect.com/science/article/pii/S0010465525003613},
+author = {Chengbing Chen and Yutong Li and Rui Zhao and Zhoulin Liu and Zheyong Fan and Gang Tang and Zhiyong Wang},
+}
+```
 

@@ -1001,9 +1001,7 @@ class ResultData(QObject):
             desc_array = np.array([])
         if desc_array.size == 0:
             desc_array = self.nep_calc.get_structures_descriptor(self.structure.now_data.tolist())
-            # desc_array=self.nep_calc_thread.func_result
-            # desc_array = run_nep3_calculator_process(
-            #     )
+
             if desc_array.size != 0:
                 np.savetxt(self.descriptor_path, desc_array, fmt='%.6g')
         else:

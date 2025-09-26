@@ -3,6 +3,7 @@
 """Runtime NEP calculator wrapper handling CPU/GPU backends."""
 import contextlib
 import io
+import sys
 import traceback
 from collections.abc import Iterable
 from pathlib import Path
@@ -249,6 +250,7 @@ class NepCalculator:
             boxes,
             positions,
         )
+        print(1)
         split_indices = np.cumsum(group_sizes)[:-1]
         potentials = np.hstack(potentials)
         split_potential_arrays = np.split(potentials, split_indices) if split_indices.size else [potentials]

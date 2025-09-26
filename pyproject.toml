@@ -45,8 +45,8 @@ dependencies = [
 "vispy>=0.14.3",
 "ase",
 "scipy>=1.15.0",
-    "pybind11",
-    "SQLAlchemy>=2.0.0"
+"pybind11",
+"SQLAlchemy>=2.0.0"
 ]
 [project.optional-dependencies]
 test = [

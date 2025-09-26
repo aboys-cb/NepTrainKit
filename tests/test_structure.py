@@ -76,14 +76,14 @@ class TestStructure(unittest.TestCase):
 
     def test_xyz2npy(self):
         # 测试xyz文件读写
-        save_npy_structure("./npy",[self.structure ])
+        save_npy_structure("./npy",[self.structure ] )
         read_structure = load_npy_structure("./npy")[0]
         np.testing.assert_array_equal(read_structure.lattice, self.lattice)
         np.testing.assert_array_equal(read_structure.positions, self.structure_info['pos'])
         np.testing.assert_array_equal(read_structure.elements, self.structure_info['species'])
  
         import shutil
-        shutil.rmtree("./npy")
+        # shutil.rmtree("./npy")
 
 if __name__ == '__main__':
     unittest.main()

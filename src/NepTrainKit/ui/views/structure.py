@@ -82,5 +82,5 @@ class StructureInfoWidget(QWidget):
         self.formula_text.setText(structure.html_formula)
         self.lattice_text.setText(str(np.round(structure.lattice, 3)))
         self.length_text.setText(" ".join(f"{x:.3f}" for x in structure.abc))
-        self.angle_text.setText(" ".join(f"{x:.2f} deg" for x in structure.angles))
+        self.angle_text.setText(" ".join(f"{x:.2f} °" for x in structure.angles))
         self.config_text.setText('\n'.join(structure.tag[i:i + 50] for i in range(0, len(structure.tag), 50)))

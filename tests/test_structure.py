@@ -83,7 +83,7 @@ class TestStructure(unittest.TestCase):
         np.testing.assert_array_equal(read_structure.elements, self.structure_info['species'])
  
         import shutil
-        # shutil.rmtree("./npy")
+        shutil.rmtree("./npy")
 
 if __name__ == '__main__':
     unittest.main()

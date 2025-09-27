@@ -21,7 +21,7 @@ from typing import List, Dict
 import re
 from NepTrainKit.utils import timeit
 from .structure import Structure
-from .calculator import NepCalculator
+
 
 REF_GROUP_ALIGNMENT = "REF_GROUP"
 ZERO_BASELINE_ALIGNMENT = "ZERO_BASELINE"

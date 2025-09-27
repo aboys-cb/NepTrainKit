@@ -37,7 +37,7 @@ class DataManagerWidget(QWidget):
         self.setObjectName("DataManagerWidget")
         self.setAcceptDrops(True)
         user_path = get_user_config_path()
-        self._db = Database(os.path.join(user_path, "mlpman.db"))
+        self._db = Database(user_path / "mlpman.db")
         self.model_service = ModelService(self._db)
         self.project_service = ProjectService(self._db)
         self.tag_service = TagService(self._db)

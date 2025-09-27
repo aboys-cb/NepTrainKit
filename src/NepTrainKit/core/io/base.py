@@ -29,11 +29,12 @@ import numpy.typing as npt
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import Structure, MessageManager
-from NepTrainKit.core.calculator import   NepCalculator
-from NepTrainKit.core.io.utils import read_nep_out_file, parse_array_by_atomnum,get_rmse
+from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
 from NepTrainKit.core.io.select import farthest_point_sampling
 from NepTrainKit.core.types import Brushes, SearchType, NepBackend
 from NepTrainKit.core.energy_shift import shift_dataset_energy
+from NepTrainKit.core.calculator import   NepCalculator
+
 def pca(X: npt.NDArray[np.float32], n_components: Optional[int] = None) -> npt.NDArray[np.float32]:
     """Project a feature matrix onto its leading principal components.
 
@@ -555,6 +556,7 @@ class ResultData(QObject):
             Visible structure indices affected by the update. ``None`` uses all
             active structures.
         """
+
         if not getattr(self, '_structure_sync_rules', None):
             return
         dataset = getattr(self, '_atoms_dataset', None)
@@ -965,17 +967,7 @@ class ResultData(QObject):
 
         if self.structure.now_data.size == 0:
             return
-
-        now_atoms_num_list = self.atoms_num_list[self.structure.now_indices]
-        if now_atoms_num_list.size == 0:
-            return
-
-        split_indices = np.cumsum(now_atoms_num_list)[:-1]
-        forces = np.split(forces, split_indices) if forces.size else []
-        virials = virials * now_atoms_num_list[:, np.newaxis]
-
         factor = 1 if mode == 0 else -1
-
         for idx, structure in enumerate(self.structure.now_data):
             try:
                 structure.energy += potentials[idx] * factor
@@ -987,7 +979,7 @@ class ResultData(QObject):
                 pass
             if getattr(structure, "has_virial", False):
                 try:
-                    structure.virial += virials[idx] * factor
+                    structure.virial += virials[idx]*len(structure) * factor
                 except Exception:
                     pass
 
@@ -1006,7 +998,7 @@ class ResultData(QObject):
                 np.savetxt(self.descriptor_path, desc_array, fmt='%.6g')
         else:
             if desc_array.shape[0] == np.sum(self.atoms_num_list):
-                desc_array = parse_array_by_atomnum(desc_array, self.atoms_num_list, map_func=np.mean, axis=0)
+                desc_array = aggregate_per_atom_to_structure(desc_array, self.atoms_num_list, map_func=np.mean, axis=0)
             elif desc_array.shape[0] == self.atoms_num_list.shape[0]:
                 pass
             else:

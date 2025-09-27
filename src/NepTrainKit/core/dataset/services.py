@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import datetime
 import hashlib
-import json
 import shutil
 from decimal import Decimal
 from pathlib import Path
@@ -21,13 +20,12 @@ from NepTrainKit.utils import sha256_file
 from .database import Database
 from .models import (
 
-    Event,
-Tag,ModelVersionTag,
+    Tag,ModelVersionTag,
     Project,
     ModelVersion,
     StorageRef,
 )
-from NepTrainKit.core.io.utils import read_nep_in, read_nep_out_file, get_rmse, get_xyz_nframe
+from NepTrainKit.core.utils import read_nep_in, read_nep_out_file, get_rmse, get_xyz_nframe
 
 
 @dataclass

@@ -5,12 +5,11 @@
 from __future__ import annotations
 
 import importlib
-import traceback
 from typing import Protocol
 
 from loguru import logger
 
-from NepTrainKit.core.io.utils import get_nep_type
+from NepTrainKit.core.utils import get_nep_type
 from NepTrainKit.paths import PathLike, as_path
 
 

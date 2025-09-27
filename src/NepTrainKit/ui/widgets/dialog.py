@@ -3,13 +3,12 @@
 # @Time    : 2024/11/28 22:45
 # @Author  : 兵
 # @email    : 1747193328@qq.com
-import sys
 from pathlib import Path
 from typing import Any, Dict
 
 from PySide6.QtGui import QIcon, QDoubleValidator, QIntValidator, QColor
 from PySide6.QtWidgets import (QVBoxLayout, QFrame, QGridLayout,
-                               QPushButton, QLineEdit, QWidget, QHBoxLayout, QFormLayout, QSizePolicy, QComboBox, QColorDialog)
+                               QPushButton, QWidget, QHBoxLayout, QFormLayout, QSizePolicy)
 from PySide6.QtCore import Signal, Qt, QUrl, QEvent
 from qfluentwidgets import (
     MessageBoxBase,
@@ -20,9 +19,9 @@ from qfluentwidgets import (
     ProgressBar,
     ComboBox,
     FluentStyleSheet,
-    FluentTitleBar, CompactDoubleSpinBox, TransparentToolButton, Dialog, ColorDialog,
-    TitleLabel, HyperlinkLabel, RadioButton, LineEdit, FlowLayout, EditableComboBox, PrimaryDropDownPushButton,
-    PrimaryPushButton, Flyout, InfoBarIcon, MessageBox, TextEdit, FluentIcon, PushButton, ToolTipFilter, ToolTipPosition
+    FluentTitleBar, TransparentToolButton, ColorDialog,
+    TitleLabel, HyperlinkLabel, LineEdit, EditableComboBox, PrimaryPushButton, Flyout, InfoBarIcon, MessageBox, TextEdit, FluentIcon,
+    ToolTipFilter, ToolTipPosition
 )
 from qframelesswindow import FramelessDialog
 import json
@@ -34,7 +33,7 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit import module_path
 
 from NepTrainKit.utils import LoadingThread,call_path_dialog
-from NepTrainKit.core.io.utils import get_xyz_nframe,  read_nep_out_file, get_rmse
+from NepTrainKit.core.utils import get_xyz_nframe,  read_nep_out_file, get_rmse
 
 
 class GetIntMessageBox(MessageBoxBase):
@@ -415,7 +414,7 @@ class PeriodicTableDialog(FramelessDialog):
         self.resize(400, 350)
 
 
-        with open(os.path.join(module_path, "Config/ptable.json"), "r", encoding="utf-8") as f:
+        with open(module_path / "Config/ptable.json" , "r", encoding="utf-8") as f:
             self.table_data = {int(k): v for k, v in json.load(f).items()}
 
         self.group_colors = {}

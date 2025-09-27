@@ -54,19 +54,22 @@ def read_nep_out_file(file_path: Path | str, **kwargs) -> npt.NDArray[np.float32
         return data
     return np.array([])
 
-
-def parse_array_by_atomnum(
+def split_by_natoms(array, natoms_list:list[int]) -> list[npt.NDArray]:
+    """Split a flat array into sub-arrays according to the number of atoms in each structure."""
+    if array.size == 0:
+        return array
+    counts = np.asarray(list(natoms_list), dtype=int)
+    split_indices = np.cumsum(counts)[:-1]
+    split_arrays = np.split(array, split_indices)
+    return split_arrays
+def aggregate_per_atom_to_structure(
     array: npt.NDArray[np.float32],
     atoms_num_list: Iterable[int],
     map_func=np.linalg.norm,
     axis: int = 0,
 ) -> npt.NDArray[np.float32]:
     """Aggregate per-atom data into per-structure values based on atom counts."""
-    if array.size == 0:
-        return array
-    counts = np.asarray(list(atoms_num_list), dtype=int)
-    split_indices = np.cumsum(counts)[:-1]
-    split_arrays = np.split(array, split_indices)
+    split_arrays = split_by_natoms(array, atoms_num_list)
     func = partial(map_func, axis=axis)
     return np.array(list(map(func, split_arrays)))
 

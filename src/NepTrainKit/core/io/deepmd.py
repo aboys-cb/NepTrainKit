@@ -5,15 +5,13 @@ import traceback
 from pathlib import Path
 import numpy as np
 import numpy.typing as npt
-from PySide6.QtCore import QObject, Signal
 from loguru import logger
-from .base import NepPlotData, StructureData, ResultData,DPPlotData
+from .base import StructureData, ResultData,DPPlotData
 from NepTrainKit.core.structure import Structure, load_npy_structure,save_npy_structure
 from NepTrainKit.paths import PathLike, as_path
-from .utils import parse_array_by_atomnum,read_nep_out_file
+from NepTrainKit.core.utils import aggregate_per_atom_to_structure,read_nep_out_file
 from NepTrainKit.config import Config
 from .. import   MessageManager
-from ..types import NepBackend
 from ... import module_path
 def is_deepmd_path(folder: PathLike) -> bool:
     """Return ``True`` when ``folder`` looks like a DeepMD dataset directory."""
@@ -159,7 +157,7 @@ class DeepmdResultData(ResultData):
         self._energy_dataset = DPPlotData(energy_array, title="energy")
         default_forces = Config.get("widget", "forces_data", "Row")
         if force_array.size != 0 and default_forces == "Norm":
-            force_array = parse_array_by_atomnum(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
+            force_array = aggregate_per_atom_to_structure(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
             self._force_dataset = DPPlotData(force_array, title="force")
         else:
             self._force_dataset = DPPlotData(force_array, group_list=self.atoms_num_list, title="force")
@@ -281,11 +279,10 @@ class DeepmdResultData(ResultData):
             Energy, force, and virial arrays that were written to disk.
         """
         try:
-            nep_potentials_array, nep_forces_array, nep_virials_array=   self.nep_calc.calculate(self.structure.now_data.tolist())
-            # nep_potentials_array, nep_forces_array, nep_virials_array=self.nep_calc_thread.func_result
-            # nep_potentials_array, nep_forces_array, nep_virials_array = run_nep3_calculator_process(
-            #     self.nep_txt_path.as_posix(),
-            #     self.structure.now_data,"calculate")
+            nep_potentials_list, nep_forces_list, nep_virials_list = self.nep_calc.calculate(self.structure.now_data.tolist())
+            nep_potentials_array=np.array(nep_potentials_list)
+            nep_forces_array=np.vstack(nep_forces_list)
+            nep_virials_array=np.vstack(nep_virials_list)
             if nep_potentials_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the potentials, use the original potentials instead.")
             energy_array = self._save_energy_data(nep_potentials_array)

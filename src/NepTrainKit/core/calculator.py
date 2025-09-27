@@ -11,11 +11,14 @@ import numpy as np
 import numpy.typing as npt
 from ase import Atoms
 from ase.stress import full_3x3_to_voigt_6_stress
+from ase.calculators.calculator import Calculator, all_changes
+from ase.calculators.singlepoint import SinglePointCalculator
 from loguru import logger
 from NepTrainKit.utils import timeit
 from NepTrainKit.core import Structure, MessageManager
 from NepTrainKit.paths import PathLike, as_path
 from NepTrainKit.core.types import NepBackend
+from NepTrainKit.core.utils import split_by_natoms,aggregate_per_atom_to_structure
 
 try:
     from NepTrainKit.nep_cpu import CpuNep
@@ -169,7 +172,7 @@ class NepCalculator:
     def calculate(
         self,
         structures: Iterable[Structure] | Structure,
-    ) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32], npt.NDArray[np.float32]]:
+    ) -> tuple[list[np.float32], list[npt.NDArray[np.float32]], list[npt.NDArray[np.float32]]]:
         """Compute energies, forces, and virials for one or more structures.
 
         Parameters
@@ -179,7 +182,7 @@ class NepCalculator:
 
         Returns
         -------
-        tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
+        tuple[list, list, list]
             ``(potentials, forces, virials)`` arrays with ``float32`` dtype.
             Potentials are per-structure, forces per-atom, and virials per-structure.
 
@@ -194,21 +197,12 @@ class NepCalculator:
         atom_types, boxes, positions, group_sizes = self.compose_structures(structure_list)
         self.nep3.reset_cancel()
         potentials, forces, virials = self.nep3.calculate(atom_types, boxes, positions)
-        split_indices = np.cumsum(group_sizes)[:-1]
         potentials = np.hstack(potentials)
-        split_potential_arrays = np.split(potentials, split_indices) if split_indices.size else [potentials]
-        potentials_array = np.array([np.sum(chunk) for chunk in split_potential_arrays], dtype=np.float32)
+        potentials_array = aggregate_per_atom_to_structure(potentials,group_sizes,map_func=np.sum,axis=None)
         reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
-        if reshaped_forces:
-            forces_array = np.vstack(reshaped_forces).astype(np.float32, copy=False)
-        else:
-            forces_array = np.empty((0, 3), dtype=np.float32)
         reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
-        if reshaped_virials:
-            virials_array = np.vstack(reshaped_virials).astype(np.float32, copy=False)
-        else:
-            virials_array = np.empty((0, 9), dtype=np.float32)
-        return potentials_array, forces_array, virials_array
+
+        return potentials_array.tolist(), reshaped_forces, reshaped_virials
 
     @timeit
     def calculate_dftd3(
@@ -217,7 +211,7 @@ class NepCalculator:
         functional: str,
         cutoff: float,
         cutoff_cn: float,
-    ) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32], npt.NDArray[np.float32]]:
+    ) -> tuple[list[np.float32], list[npt.NDArray[np.float32]], list[npt.NDArray[np.float32]]]:
         """Evaluate structures using the DFT-D3 variant of the NEP backend.
 
         Parameters
@@ -233,7 +227,7 @@ class NepCalculator:
 
         Returns
         -------
-        tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
+        tuple[list, list, list]
             ``(potentials, forces, virials)`` arrays with ``float32`` dtype.
         """
         structure_list = self._ensure_structure_list(structures)
@@ -250,21 +244,12 @@ class NepCalculator:
             boxes,
             positions,
         )
-        split_indices = np.cumsum(group_sizes)[:-1]
         potentials = np.hstack(potentials)
-        split_potential_arrays = np.split(potentials, split_indices) if split_indices.size else [potentials]
-        potentials_array = np.array([np.sum(chunk) for chunk in split_potential_arrays], dtype=np.float32)
+        potentials_array = aggregate_per_atom_to_structure(potentials, group_sizes, map_func=np.sum, axis=None)
         reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
-        if reshaped_forces:
-            forces_array = np.vstack(reshaped_forces).astype(np.float32, copy=False)
-        else:
-            forces_array = np.empty((0, 3), dtype=np.float32)
         reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
-        if reshaped_virials:
-            virials_array = np.vstack(reshaped_virials).astype(np.float32, copy=False)
-        else:
-            virials_array = np.empty((0, 9), dtype=np.float32)
-        return potentials_array, forces_array, virials_array
+
+        return potentials_array.tolist(), reshaped_forces, reshaped_virials
     @timeit
     def calculate_with_dftd3(
         self,
@@ -272,7 +257,7 @@ class NepCalculator:
         functional: str,
         cutoff: float,
         cutoff_cn: float,
-    ) -> tuple[npt.NDArray[np.float32], npt.NDArray[np.float32], npt.NDArray[np.float32]]:
+    ) -> tuple[list[np.float32], list[npt.NDArray[np.float32]], list[npt.NDArray[np.float32]]]:
         """Run coupled NEP + DFT-D3 calculation and return results.
 
         Parameters
@@ -288,7 +273,7 @@ class NepCalculator:
 
         Returns
         -------
-        tuple[numpy.ndarray, numpy.ndarray, numpy.ndarray]
+        tuple[list, list, list]
             ``(potentials, forces, virials)`` arrays with ``float32`` dtype.
         """
         structure_list = self._ensure_structure_list(structures)
@@ -305,21 +290,12 @@ class NepCalculator:
             boxes,
             positions,
         )
-        split_indices = np.cumsum(group_sizes)[:-1]
         potentials = np.hstack(potentials)
-        split_potential_arrays = np.split(potentials, split_indices) if split_indices.size else [potentials]
-        potentials_array = np.array([np.sum(chunk) for chunk in split_potential_arrays], dtype=np.float32)
+        potentials_array = aggregate_per_atom_to_structure(potentials, group_sizes, map_func=np.sum, axis=None)
         reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
-        if reshaped_forces:
-            forces_array = np.vstack(reshaped_forces).astype(np.float32, copy=False)
-        else:
-            forces_array = np.empty((0, 3), dtype=np.float32)
         reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
-        if reshaped_virials:
-            virials_array = np.vstack(reshaped_virials).astype(np.float32, copy=False)
-        else:
-            virials_array = np.empty((0, 9), dtype=np.float32)
-        return potentials_array, forces_array, virials_array
+
+        return potentials_array.tolist(), reshaped_forces, reshaped_virials
 
     def get_descriptor(self, structure: Structure) -> npt.NDArray[np.float32]:
         """Return the per-atom descriptor matrix for a single ``structure``."""
@@ -343,7 +319,6 @@ class NepCalculator:
             return np.array([])
         types, boxes, positions, _ = self.compose_structures(structures)
         self.nep3.reset_cancel()
-
         descriptor = self.nep3.get_structures_descriptor(types, boxes, positions)
         return np.array(descriptor, dtype=np.float32)
 
@@ -374,9 +349,66 @@ class NepCalculator:
         dipole = self.nep3.get_structures_dipole(types, boxes, positions)
         return np.array(dipole, dtype=np.float32)
 
+    def calculate_to_ase(
+            self,
+            atoms_list: Atoms | Iterable[Atoms],
+            calc_descriptor=False,
+
+    ):
+        """
+        Perform single-point calculations for one or many ASE Atoms objects **in-place**
+        and attach a ``SinglePointCalculator`` holding the results.
+
+        Parameters
+        ----------
+        atoms_list : Atoms or iterable of Atoms
+            Atomic structure(s) to be evaluated.  The **same** object(s) are
+            modified in place; no copy is returned.
+        calc_descriptor : bool, optional
+            If True the descriptor vector is also computed and stored in
+            ``atoms.calc.results['descriptor']``.
+
+        Returns
+        -------
+        None
+            Results are attached to the original ``atoms`` object(s) under
+            ``atoms.calc.results``.
+
+        Examples
+        --------
+        >>> from ase.io import read
+        >>> from NepTrainKit.core.calculator import NepCalculator
+        >>> frames = read('train.xyz', index=':')   # list[Atoms]
+        >>> NepCalculator("nep.txt","gpu").calculate_to_ase(frames)
+        >>> for atoms in frames:
+        ...     print(atoms.get_potential_energy(), atoms.get_forces())
+        """
+        if isinstance(atoms_list, Atoms):
+            atoms_list = [atoms_list]
+        if calc_descriptor:
+            _descriptor = self.get_structures_descriptor(atoms_list)
+
+        energy,forces,virial = self.calculate(atoms_list)
+
+        for index,atoms in enumerate(atoms_list):
+            _e= energy[index]
+            _f= forces[index]
+            _vi= virial[index]
+            _s = _vi.reshape(3, 3) * len(atoms) / atoms.get_volume()
+            spc = SinglePointCalculator(
+                atoms,
+                energy=_e,
+                forces=_f,
+                stress=full_3x3_to_voigt_6_stress(_s),
+
+            )
+            if calc_descriptor:
+                spc.results["descriptor"]=_descriptor[index]
+            atoms.calc = spc
+
+
 Nep3Calculator = NepCalculator
 
-from ase.calculators.calculator import Calculator, all_changes
 
 
 class NepAseCalculator(Calculator):
@@ -422,13 +454,9 @@ class NepAseCalculator(Calculator):
         energy,forces,virial = self._calc.calculate(atoms)
 
         self.results["energy"]=energy[0]
-        self.results["forces"]=forces
+        self.results["forces"]=forces[0]
         virial=virial[0].reshape(3,3)*len(atoms)
         stress = virial/atoms.get_volume()
         self.results["stress"]=full_3x3_to_voigt_6_stress(stress)
 
 
-if __name__ == "__main__":
-    structures = Structure.read_multiple(Path("D:/Desktop/nep/nep-data-main/2023_Zhao_PdCuNiP/train.xyz"))
-    nep = NepCalculator(Path("D:/Desktop/nep/nep-data-main/2023_Zhao_PdCuNiP/nep.txt"))
-    nep.calculate(structures)

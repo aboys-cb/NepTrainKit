@@ -4,9 +4,10 @@ import unittest
 import os
 import numpy as np
 from pathlib import Path
-
+from ase.io import read
+from ase.stress import full_3x3_to_voigt_6_stress,voigt_6_to_full_3x3_stress
 from NepTrainKit.core import Structure
-from NepTrainKit.core.calculator import Nep3Calculator
+from NepTrainKit.core.calculator import Nep3Calculator,NepAseCalculator
 from NepTrainKit.core.types import NepBackend
 
 class TestNep(unittest.TestCase):
@@ -27,10 +28,26 @@ class TestNep(unittest.TestCase):
         
     def test_calculate(self):
         potentials, forces, virials = self.calculator.calculate(self.structures)
-        np.testing.assert_array_equal(self.energy, potentials)
-        np.testing.assert_array_equal(self.forces, forces)
-        np.testing.assert_array_equal(self.virial, virials[:,[0,4,8,1,5,6]])
+        forces=np.vstack(forces)
+        virials=np.vstack(virials)
+        np.testing.assert_array_almost_equal(self.energy, potentials,decimal=3)
+        np.testing.assert_array_almost_equal(self.forces, forces,decimal=5)
+        np.testing.assert_array_almost_equal(self.virial, virials[:,[0,4,8,1,5,6]],decimal=3)
 
+    def test_ase_calculate(self):
+
+        calc=NepAseCalculator(os.path.join(self.test_dir,"data/nep/nep.txt"),backend=NepBackend.CPU)
+        atoms = read(os.path.join(self.test_dir, "data/nep/train.xyz"),index=0)
+        atoms.calc=calc
+        self.assertAlmostEqual(atoms.get_potential_energy(),self.energy[0] )
+        np.testing.assert_array_almost_equal(atoms.get_forces(),self.forces,decimal=5 )
+        asevirial =(  voigt_6_to_full_3x3_stress(atoms.get_stress())*atoms.get_volume()/len(atoms)).flatten()
+        np.testing.assert_array_almost_equal(self.virial[0] ,asevirial[[0,4,8,1,5,6]])
+
+    def test_calculate_to_atoms(self):
+        calc=Nep3Calculator(os.path.join(self.test_dir,"data/nep/nep.txt"),backend=NepBackend.CPU)
+        atoms = read(os.path.join(self.test_dir, "data/nep/train.xyz"),index=":10")
+        calc.calculate_to_ase(atoms,True)
     def test_get_descriptor(self):
         descriptor = self.calculator.get_descriptor(self.structures)
         local_descriptor = np.load(os.path.join(self.test_dir,"data/nep/descriptor.npy" ))

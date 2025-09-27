@@ -556,14 +556,13 @@ class ResultData(QObject):
             Visible structure indices affected by the update. ``None`` uses all
             active structures.
         """
-        print(getattr(self, '_structure_sync_rules', None))
+
         if not getattr(self, '_structure_sync_rules', None):
             return
         dataset = getattr(self, '_atoms_dataset', None)
         if dataset is None or dataset.num == 0:
             return
         indices = self._normalize_structure_indices(structure_indices)
-        print(indices)
         if isinstance(fields, str):
             field_iter = [fields]
         elif fields is None:

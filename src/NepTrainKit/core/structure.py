@@ -970,6 +970,7 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
         for key, value in dataset_dict.items():
             if key in {'box', 'coord'}:
                 continue
+
             prop = value[index]
             count = prop.shape[0]
             if count > atoms_num and key != 'virial':
@@ -1002,6 +1003,14 @@ def load_npy_structure(folders: PathLike, cancel_event=None):
                 break
             structures.extend(load_npy_structure(child, cancel_event=cancel_event))
     return structures
+
+def get_type_map(structures: list[Structure]) -> list[str]:
+    global_type_map = []
+    for structure in structures:
+        type_map = structure.additional_fields.get("type_map", structure.atomic_properties["species"])
+        global_type_map.extend(map(str, type_map))
+    return list(dict.fromkeys(global_type_map))
+
 @timeit
 def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:list[str]|None=None):
 
@@ -1021,28 +1030,24 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
     ensure_directory(target_root)
 
     dataset_dict = defaultdict(lambda: defaultdict(list))
-    global_type_map=set()
+    if type_map is None:
+        type_map = get_type_map(structures)
+
     for structure in structures:
         # config_type=structure.tag
         config_type=structure.formula
-        if type_map is not None:
-            dataset_dict[config_type]["type_map"]=type_map
-        else:
-            if "type_map" in structure.additional_fields:
-                dataset_dict[config_type]["type_map"] = structure.additional_fields["type_map"]
-            else:
-                for elem in structure.atomic_properties["species"]:
-                    global_type_map.add(str(elem))
-
-
+        species=structure.atomic_properties["species"]
+        type_data = np.array([type_map.index(item) for item in species]).flatten()
+        sort_index = np.argsort(type_data)
+        dataset_dict[config_type]["type"] = type_data[sort_index]
         dataset_dict[config_type]["box"].append(structure.lattice.flatten())
-        dataset_dict[config_type]["coord"].append(structure.atomic_properties["pos"].flatten())
-        dataset_dict[config_type]["species"].append(structure.atomic_properties["species"])
+        dataset_dict[config_type]["coord"].append(structure.atomic_properties["pos"][sort_index].flatten())
+
 
         for prop_info  in structure.properties:
             name=prop_info["name"]
             if name not in [  "species", "pos"]:
-                dataset_dict[config_type][name].append(structure.atomic_properties[name].flatten())
+                dataset_dict[config_type][name].append(structure.atomic_properties[name][sort_index].flatten())
         if "virial" in structure.additional_fields:
             virial = structure.additional_fields["virial"]
             dataset_dict[config_type]["virial"].append(virial)
@@ -1052,17 +1057,12 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
 
     for config, data in dataset_dict.items():
         save_path = ensure_directory(target_root / config / 'set.000')
-        species = data['species'][0]
-        if len(global_type_map)!=0:
-            type_map=list(global_type_map)
-        else:
-            type_map = data['type_map']
 
         np.savetxt(target_root / config / 'type_map.raw', type_map, fmt='%s')
-        type_data = np.array([type_map.index(item) for item in species]).flatten()
-        np.savetxt(target_root / config / 'type.raw', type_data, fmt='%d')
+
+        np.savetxt(target_root / config / 'type.raw', data['type'], fmt='%d')
         for key, value in data.items():
-            if key == 'species':
+            if key == 'type':
                 continue
             np.save(save_path / f'{key}.npy', np.vstack(value))
 

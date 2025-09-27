@@ -68,7 +68,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.torsion_label.setToolTip("Torsion angle range (degrees)")
         self.torsion_label.installEventFilter(ToolTipFilter(self.torsion_label, 300, ToolTipPosition.TOP))
         self.torsion_frame = SpinBoxUnitInputFrame(self)
-        self.torsion_frame.set_input(["deg", "deg"], 2, ["float", "float"])
+        self.torsion_frame.set_input(["°", "°"], 2, ["float", "float"])
         self.torsion_frame.setRange(-360, 360)
         self.torsion_frame.set_input_value([-180.0, 180.0])
         self.settingLayout.addWidget(self.torsion_label, row, 0, 1, 1)

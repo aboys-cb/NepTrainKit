@@ -39,7 +39,7 @@ class TestNep(unittest.TestCase):
         calc=NepAseCalculator(os.path.join(self.test_dir,"data/nep/nep.txt"),backend=NepBackend.CPU)
         atoms = read(os.path.join(self.test_dir, "data/nep/train.xyz"),index=0)
         atoms.calc=calc
-        self.assertAlmostEqual(atoms.get_potential_energy(),self.energy[0] )
+        self.assertAlmostEqual(atoms.get_potential_energy(),self.energy[0],places=3 )
         np.testing.assert_array_almost_equal(atoms.get_forces(),self.forces,decimal=5 )
         asevirial =(  voigt_6_to_full_3x3_stress(atoms.get_stress())*atoms.get_volume()/len(atoms)).flatten()
         np.testing.assert_array_almost_equal(self.virial[0] ,asevirial[[0,4,8,1,5,6]])

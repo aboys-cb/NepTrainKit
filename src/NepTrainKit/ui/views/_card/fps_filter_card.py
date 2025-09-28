@@ -10,9 +10,9 @@ from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, 
 from NepTrainKit import module_path
 from NepTrainKit.ui.threads import FilterProcessingThread
 from NepTrainKit.config import Config
-from NepTrainKit.core import CardManager, process_organic_clusters, get_clusters, MessageManager
+from NepTrainKit.core import CardManager,   MessageManager
 from NepTrainKit.core.calculator import  NepCalculator
-from NepTrainKit.core.io.select import farthest_point_sampling
+from NepTrainKit.core.io import farthest_point_sampling
 from NepTrainKit.core.types import NepBackend
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard, FilterDataCard

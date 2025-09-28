@@ -5,10 +5,11 @@ from pathlib import Path
 import numpy.typing as npt
 import numpy as np
 from NepTrainKit import module_path
-from NepTrainKit.core import MessageManager, Structure
+from NepTrainKit.core import MessageManager
+from NepTrainKit.core.structure import Structure
 from NepTrainKit.paths import as_path
 from NepTrainKit.config import Config
-from NepTrainKit.core.io.base import NepPlotData, ResultData, StructureSyncRule
+from .base import NepPlotData, ResultData, StructureSyncRule
 from NepTrainKit.core.utils import read_nep_out_file, check_fullbatch, read_nep_in, aggregate_per_atom_to_structure
 from NepTrainKit.core.types import ForcesMode
 
@@ -22,49 +23,37 @@ class NepTrainResultData(ResultData):
     Examples
     --------
     >>> from NepTrainKit.core.io import NepTrainResultData
-
     # Load the xyz file
-    >>> result_dataset = NepTrainResultData.from_path(r"D:\Desktop\dataset3635-addD3\train.xyz")
+    >>> result_dataset = NepTrainResultData.from_path(r"D:/Desktop/dataset3635-addD3/train.xyz")
     >>> result_dataset.load()
     >>> print(result_dataset)
-
     # Select structures at indices 0 and 10
     >>> result_dataset.select([0, 10])
     >>> print(result_dataset)
-
     # Delete the selected structures
     >>> result_dataset.delete_selected()
     >>> print(result_dataset)
-
     # Get the indices of the 10 points with the largest energy error
     >>> index = result_dataset.energy.get_max_error_index(10)
-
     # Select the 10 points with the largest energy error and delete them
     >>> result_dataset.select(index)
     >>> result_dataset.delete_selected()
     >>> print(result_dataset)
-
     # Revoke the last deletion
     >>> result_dataset.revoke()
-
     # Perform farthest point sampling (normal global sampling)
     >>> index, reverse = result_dataset.sparse_descriptor_selection(100, 0.001, False)
-
     # Perform sampling within a region (select the first 300 structures)
     >>> index = result_dataset.select_structures_by_index(":300")
     >>> result_dataset.select(index)
     >>> index, reverse = result_dataset.sparse_descriptor_selection(100, 0.001, True)
-
     # Uncheck or inverse select based on the reverse flag
     >>> if reverse:
     >>>     result_dataset.uncheck(index)
     >>> else:
     >>>     result_dataset.select(index)
     >>>     result_dataset.inverse_select()
-
     >>> print(result_dataset)
-
-
 
     """
     _energy_dataset: NepPlotData

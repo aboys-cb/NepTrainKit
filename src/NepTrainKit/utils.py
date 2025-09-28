@@ -25,11 +25,18 @@ from NepTrainKit.paths import (
  
 
 def timeit(func):
-    """
+    """Decorator that logs execution time via Loguru.
 
-        @timeit
-        def demo():
-            pass
+    Parameters
+    ----------
+    func : Callable
+        Function to wrap.
+
+    Examples
+    --------
+    >>> @timeit
+    ... def demo():
+    ...     pass
     """
     def wrapper(*args, **kwargs):
         start_time = time.time()

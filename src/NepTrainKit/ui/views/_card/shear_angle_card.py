@@ -5,7 +5,8 @@ from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ToolTipFilter, ToolTipPosition, CheckBox
 from ase.geometry import cell_to_cellpar, cellpar_to_cell
 
-from NepTrainKit.core import CardManager, process_organic_clusters, get_clusters
+from NepTrainKit.core import CardManager
+from NepTrainKit.core.structure import get_clusters
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
 

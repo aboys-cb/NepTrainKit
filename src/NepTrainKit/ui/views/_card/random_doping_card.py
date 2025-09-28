@@ -7,7 +7,7 @@ import numpy as np
 from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
 
-from NepTrainKit.core import CardManager, process_organic_clusters, get_clusters
+from NepTrainKit.core import CardManager
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame, DopingRulesWidget
 from NepTrainKit.ui.widgets import MakeDataCard
 from scipy.stats.qmc import Sobol

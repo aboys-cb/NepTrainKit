@@ -8,7 +8,7 @@ from ase.build import surface
 from loguru import logger
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
 
-from NepTrainKit.core import CardManager, process_organic_clusters, get_clusters
+from NepTrainKit.core import CardManager
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
 from scipy.stats.qmc import Sobol

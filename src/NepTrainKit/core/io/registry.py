@@ -42,14 +42,60 @@ _RESULT_LOADERS: list[ResultLoader] = []
 
 
 def register_result_loader(loader: ResultLoader) -> ResultLoader:
-    """Register ``loader`` so it participates in result discovery."""
+    """Register a loader so that it participates in result discovery.
+
+    Parameters
+    ----------
+    loader : ResultLoader
+        An instance of a concrete `ResultLoader` subclass.
+
+    Returns
+    -------
+    ResultLoader
+        The same `loader` instance, allowing use as a decorator.
+
+    Examples
+    --------
+    >>> from NepTrainKit.core.io.registry import DeepmdFolderLoader, NepModelTypeLoader
+    >>> register_result_loader(DeepmdFolderLoader())
+    >>> register_result_loader(
+    ...     NepModelTypeLoader("nep_train", {0, 3},
+    ...                        'NepTrainKit.core.io:NepTrainResultData')
+    ... )
+    >>> register_result_loader(
+    ...     NepModelTypeLoader("nep_dipole", {1},
+    ...                        'NepTrainKit.core.io:NepDipoleResultData')
+    ... )
+    >>> register_result_loader(
+    ...     NepModelTypeLoader("nep_polar", {2},
+    ...                        'NepTrainKit.core.io:NepPolarizabilityResultData')
+    ... )
+    >>> register_result_loader(OtherLoader())
+    """
 
     _RESULT_LOADERS.append(loader)
     return loader
 
 
 def matches_result_loader(path: PathLike) -> bool:
-    """Return ``True`` if any registered loader recognises ``path``."""
+    """
+       Return ``True`` if any registered loader recognises ``path``.
+
+       Parameters
+       ----------
+       path : str or os.PathLike
+           File or directory to be examined.
+
+       Returns
+       -------
+       bool
+           ``True`` if *path* is recognised by at least one loader.
+
+       Examples
+       --------
+       >>> matches_result_loader("./train.xyz")
+       True
+       """
 
     candidate = as_path(path)
     for loader in _RESULT_LOADERS:
@@ -61,8 +107,26 @@ def matches_result_loader(path: PathLike) -> bool:
     return False
 
 
-def load_result_data(path: PathLike):
-    """Load result data for ``path`` via the first matching loader."""
+def load_result_data(path: PathLike)->"ResultData"|None:
+    """
+        Load result data for *path* via the first matching loader.
+
+        Parameters
+        ----------
+        path : PathLike
+            File or directory to be loaded.
+
+        Returns
+        -------
+        ResultData or None
+            The loaded dataset if any loader recognises *path*, else ``None``.
+
+        Examples
+        --------
+        >>> dataset = load_result_data("./train.xyz")
+        >>> dataset.load()
+        >>> print(dataset)
+        """
 
     candidate = as_path(path)
     for loader in _RESULT_LOADERS:
@@ -172,7 +236,7 @@ class OtherLoader:
 
 
 register_result_loader(DeepmdFolderLoader())
-register_result_loader(NepModelTypeLoader("nep_train", {0, 3}, 'NepTrainKit.core.io.nep:NepTrainResultData'))
-register_result_loader(NepModelTypeLoader("nep_dipole", {1}, 'NepTrainKit.core.io.nep:NepDipoleResultData'))
-register_result_loader(NepModelTypeLoader("nep_polar", {2}, 'NepTrainKit.core.io.nep:NepPolarizabilityResultData'))
+register_result_loader(NepModelTypeLoader("nep_train", {0, 3}, 'NepTrainKit.core.io:NepTrainResultData'))
+register_result_loader(NepModelTypeLoader("nep_dipole", {1}, 'NepTrainKit.core.io:NepDipoleResultData'))
+register_result_loader(NepModelTypeLoader("nep_polar", {2}, 'NepTrainKit.core.io:NepPolarizabilityResultData'))
 register_result_loader(OtherLoader())

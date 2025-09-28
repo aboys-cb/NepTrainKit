@@ -7,11 +7,7 @@ includes a PCA helper, dataset containers with masking/undo support, and an
 abstract :class:`ResultData` class centralising structure IO, selection, and
 dataset synchronisation.
 
-Examples
---------
->>> import numpy as np
->>> pca(np.eye(3, dtype=np.float32), n_components=2).shape
-(3, 2)
+
 """
 import os
 import json
@@ -28,9 +24,10 @@ from typing import Any, Callable, Iterable, Mapping, Optional, Sequence
 import numpy.typing as npt
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
-from NepTrainKit.core import Structure, MessageManager
+from NepTrainKit.core import   MessageManager
+from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
-from NepTrainKit.core.io.select import farthest_point_sampling
+from .select import farthest_point_sampling
 from NepTrainKit.core.types import Brushes, SearchType, NepBackend
 from NepTrainKit.core.energy_shift import shift_dataset_energy
 from NepTrainKit.core.calculator import   NepCalculator
@@ -443,7 +440,7 @@ class StructureSyncRule:
 class ResultData(QObject):
     """Manage structures, descriptors, and plots for NEP result files.
     Subclasses implement :meth:`_load_dataset` and expose their plot datasets
-    through :pyattr:`datasets`. The class also centralises selection and
+    through :py:attr:`datasets`. The class also centralises selection and
     synchronisation utilities shared by the GUI.
     """
     STRUCTURE_SYNC_RULES: dict[str, StructureSyncRule] = {}

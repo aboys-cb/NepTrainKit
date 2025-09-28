@@ -288,7 +288,7 @@ structure.info["Config_type"] += f" Doping(num={dopant_count})"
 ```
 When using grouping (`group`), you must use files in XYZ format and specify the `group` column. For example:
 
-```xyz
+```text
 5
 Lattice="6.383697472927415 0.0 0.0 0.0 6.383697472927415 1.4e-15 0.0 8e-16 6.383697472927415" Properties=species:S:1:pos:R:3:group:S:1 pbc="T T T"
 Cs       0.00000000       0.00000000       0.00000000 a

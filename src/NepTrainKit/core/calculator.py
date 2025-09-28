@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+﻿#!/usr/bin/env python 
 # -*- coding: utf-8 -*-
 """Runtime NEP calculator wrapper handling CPU/GPU backends."""
 import contextlib
@@ -15,7 +15,8 @@ from ase.calculators.calculator import Calculator, all_changes
 from ase.calculators.singlepoint import SinglePointCalculator
 from loguru import logger
 from NepTrainKit.utils import timeit
-from NepTrainKit.core import Structure, MessageManager
+from NepTrainKit.core import   MessageManager
+from NepTrainKit.core.structure import Structure
 from NepTrainKit.paths import PathLike, as_path
 from NepTrainKit.core.types import NepBackend
 from NepTrainKit.core.utils import split_by_natoms,aggregate_per_atom_to_structure
@@ -43,36 +44,37 @@ except ImportError:
         GpuNep = None
 
 class NepCalculator:
+    """Initialise the NEP calculator and load a CPU/GPU backend.
 
+    Parameters
+    ----------
+    model_file : str or pathlib.Path, default="nep.txt"
+        Path to the NEP model file.
+    backend : NepBackend or None, optional
+        Preferred backend; ``AUTO`` tries GPU then CPU.
+    batch_size : int or None, optional
+        NEP backend batch size. Defaults to 1000 when not specified.
+
+    Notes
+    -----
+    If neither CPU nor GPU backends are importable, a message box will be
+    shown via :class:`MessageManager` and the instance remains uninitialised.
+
+    Examples
+    --------
+    >>> from NepTrainKit.core.structure import Structure
+    >>> c = NepCalculator("nep.txt","gpu")
+    >>> structure_list=Structure.read_multiple("train.xyz")
+    >>> energy,forces,virial = c.calculate(structure_list)
+    >>> structures_desc = c.get_structures_descriptor(structure_list)
+    """
     def __init__(
         self,
         model_file: PathLike = "nep.txt",
         backend: NepBackend | None = None,
         batch_size: int | None = None,
     ) -> None:
-        """Initialise the NEP calculator and load a CPU/GPU backend.
 
-        Parameters
-        ----------
-        model_file : str or pathlib.Path, default="nep.txt"
-            Path to the NEP model file.
-        backend : NepBackend or None, optional
-            Preferred backend; ``AUTO`` tries GPU then CPU.
-        batch_size : int or None, optional
-            NEP backend batch size. Defaults to 1000 when not specified.
-
-        Notes
-        -----
-        If neither CPU nor GPU backends are importable, a message box will be
-        shown via :class:`MessageManager` and the instance remains uninitialised.
-
-        Examples
-        --------
-        >>> c = NepCalculator("nep.txt","gpu")  # doctest: +SKIP
-        >>> structure_list=Structure.read_multiple("train.xyz") # doctest: +SKIP
-        >>> energy,forces,virial = c.calculate(structure_list) # doctest: +SKIP
-        >>> structures_desc = c.get_structures_descriptor(structure_list) # doctest: +SKIP
-        """
         super().__init__()
         self.model_path = as_path(model_file)
         if isinstance(backend,str):
@@ -412,19 +414,24 @@ Nep3Calculator = NepCalculator
 
 
 class NepAseCalculator(Calculator):
-    """
-    Encapsulated ase calculator, the input parameters are the same as NepCalculator
+    """Encapsulated ASE calculator mirroring the :class:`NepCalculator` interface.
+
+    :param model_file: Path to the NEP model file. Defaults to ``"nep.txt"``.
+    :param backend: Preferred backend; ``AUTO`` tries GPU then CPU.
+    :param batch_size: Optional NEP backend batch size. Defaults to ``1000``.
 
     Examples
     --------
-    >>>from ase.io import read
-    >>>from NepTrainKit.core.calculator import NepAseCalculator
-    >>>atoms=read('9.vasp')
-    >>>calc = NepAseCalculator("./Config/nep89.txt","gpu")
-    >>>atoms.calc=calc
-    >>>print('Energy (eV):', atoms.get_potential_energy())
-    >>>print('Forces (eV/Å):\n', atoms.get_forces())
-    >>>print('Stress (eV/Å^3):\n', atoms.get_stress())
+
+    >>> from ase.io import read
+    >>> from NepTrainKit.core.calculator import NepAseCalculator
+    >>> atoms = read('9.vasp')
+    >>> calc = NepAseCalculator('./Config/nep89.txt', 'gpu')
+    >>> atoms.calc = calc
+    >>> print('Energy (eV):', atoms.get_potential_energy())
+    >>> print('Forces (eV/Angstrom):', atoms.get_forces())
+    >>> print('Stress (eV/Angstrom^3):', atoms.get_stress())
+
     """
     implemented_properties=[
         "energy",

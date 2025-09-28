@@ -6,14 +6,14 @@ from pathlib import Path
 import os
 import shutil
 import tempfile
-from NepTrainKit.core.io.nep import NepTrainResultData,NepPolarizabilityResultData,NepDipoleResultData
+from NepTrainKit.core.io import NepTrainResultData,NepPolarizabilityResultData,NepDipoleResultData
 from numpy.testing import assert_allclose
-from NepTrainKit.core import Structure
+from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.types import ForcesMode
 from NepTrainKit.config import  Config
 from PySide6.QtWidgets import QApplication
 
-app = QApplication()
+
 Config()
 Config.set("nep", "backend","cpu")
 
@@ -311,4 +311,3 @@ class TestNepDipoleResultData(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-    app.exit()

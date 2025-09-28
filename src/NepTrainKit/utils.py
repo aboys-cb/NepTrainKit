@@ -3,6 +3,7 @@
 # @Time    : 2024/10/17 13:14
 # @Author  : 鍏?
 # @email    : 1747193328@qq.com
+import functools
 import re
 import time
 from typing import Any
@@ -25,12 +26,21 @@ from NepTrainKit.paths import (
  
 
 def timeit(func):
+    """Decorator that logs execution time via Loguru.
+
+    Parameters
+    ----------
+    func : Callable
+        Function to wrap.
+
+    Examples
+    --------
+    >>> @timeit
+    ... def demo():
+    ...     pass
     """
 
-        @timeit
-        def demo():
-            pass
-    """
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
         start_time = time.time()
         result = func(*args, **kwargs)

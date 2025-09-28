@@ -38,6 +38,14 @@ class Structure:
     -----
     - Coordinates are stored in Cartesian Angstroms under ``pos``.
     - Frame-level attributes like ``energy``, ``pbc``, and ``virial`` live in ``additional_fields``.
+    Examples
+    ------
+    >>> from NepTrainKit.core.structure import Structure
+    # read structure from file by iterating over it
+    >>> for structure in  Structure.iter_read_multiple(filename="train.xyz"):
+    ...     print(structure)
+    # read structure from file
+    >>> structure_list = Structure.read_multiple(filename="train.xyz")
     """
 
     def __init__(self,
@@ -100,6 +108,13 @@ class Structure:
             keys.extend(self.atomic_properties.keys())
         return keys
     def remove_atomic_properties(self,key:str):
+        """Remove an atomic array property.
+
+        Parameters
+        ----------
+        key : str
+            Name of the property to delete.
+        """
         if key in self.atomic_properties:
             self.atomic_properties.pop(key)
             for prop in self.properties:
@@ -144,6 +159,11 @@ class Structure:
         ------
         Structure
             Parsed structures one by one.
+        Examples
+        ------
+        >>> from NepTrainKit.core.structure import Structure
+        >>> for structure in  Structure.iter_read_multiple(filename="train.xyz"):
+        ...     print(structure)
         """
         with open(filename, "r",encoding="utf8") as file:
             while True:
@@ -172,25 +192,48 @@ class Structure:
 
                 yield Structure.parse_xyz(structure_lines)
 
-
-
-
     @property
     def cell(self):
+        """Simulation cell lattice vectors.
+
+        Returns
+        -------
+        ndarray, shape (3, 3)
+            Row-wise lattice vectors ``[a, b, c]``.
+        """
         return self.lattice
 
     @property
     def volume(self):
+        """Cell volume.
+
+        Returns
+        -------
+        float
+            Volume of the simulation cell.
+        """
         return np.abs(np.linalg.det(self.lattice))
 
     @property
     def abc(self):
-        """Return lattice vector lengths (a, b, c)."""
+        """Lattice vector lengths (a, b, c).
+
+        Returns
+        -------
+        ndarray, shape (3,), dtype float
+            Lengths of the three lattice vectors in Å.
+        """
         return np.linalg.norm(self.lattice, axis=1)
 
     @property
     def angles(self):
-        """Return lattice angles (alpha, beta, gamma) in degrees."""
+        """Lattice angles (alpha, beta, gamma) in degrees.
+
+        Returns
+        -------
+        ndarray, shape (3,), dtype float
+            Angles α, β, γ in degrees.
+        """
         a_vec, b_vec, c_vec = self.lattice
 
         def _angle(v1, v2):
@@ -205,9 +248,24 @@ class Structure:
 
     @property
     def numbers(self):
+        """Atomic numbers of all atoms in the cell.
+
+        Returns
+        -------
+        list[int]
+            List of atomic numbers in the same order as :attr:`elements`.
+        """
         return [atomic_numbers[element] for element in self.elements ]
     @property
     def spin_num(self)->int:
+        """Number of atoms with non-zero magnetic moment.
+
+        Returns
+        -------
+        int
+            Count of atoms whose ``force_mag`` entry is **not** [0, 0, 0].
+            Returns 0 if ``force_mag`` is absent.
+        """
         if  "force_mag" not in self.atomic_properties :
             return 0
         mag=self.atomic_properties["force_mag"]
@@ -215,28 +273,24 @@ class Structure:
         return count
     @cached_property
     def formula(self):
-        # diffs = np.diff(self.numbers)
-        # change_points = np.where(diffs != 0)[0] + 1
-        # segments = np.split(self.elements, change_points)
-        # result = [f"{segment[0]}{len(segment)}" for segment in segments]
-        # return "".join(result)
-        # formula = ""
-        # elems={}
-        # for element in self.elements:
-        #     if element in elems.keys():
-        #         elems[element]+=1
-        #     else:
-        #         elems[element]=1
-        # for element,count in elems.items():
-        #     formula+=element+str(count)
-        # return formula
+        """Chemical formula string (plain text).
+
+        Returns
+        -------
+        str
+            Formula like ``H2O``, ``Fe3O4`` without sub-scripts.
+        """
         return self.__get_formula(sub=False)
-
-
 
     @cached_property
     def html_formula(self)->str:
+        """Chemical formula string with HTML sub-scripts.
 
+        Returns
+        -------
+        str
+            Formula like ``H<sub>2</sub>O`` for direct HTML rendering.
+        """
         return self.__get_formula(sub=True)
 
     def __get_formula(self, sub=False)->str:
@@ -262,21 +316,41 @@ class Structure:
         return formula
     @property
     def per_atom_energy(self):
-        """Energy per atom (same units as energy)."""
+        """Energy per atom.
+
+        Returns
+        -------
+        float
+            Total energy divided by the number of atoms (same units as :attr:`energy`).
+        """
         return self.energy/self.num_atoms
     @property
     def energy(self):
-        """Total energy stored in additional_fields['energy']."""
+        """Total energy of the structure.
+
+        Returns
+        -------
+        float
+            Value stored in ``additional_fields['energy']``.
+        """
         return self.additional_fields["energy"]
     @energy.setter
     def energy(self,new_energy:float):
+        """Set total energy."""
         self.additional_fields["energy"] = new_energy
     @property
     def forces(self):
-        """Per-atom forces array with shape (N, 3)."""
+        """Per-atom force array.
+
+        Returns
+        -------
+        ndarray, shape (N, 3), dtype float32
+            Forces in eV/Å for each atom.
+        """
         return self.atomic_properties[self.force_label]
     @forces.setter
     def forces(self,arr:npt.NDArray[np.float32]):
+        """Assign per-atom forces and ensure metadata exists."""
         has_forces=[i["name"]==self.force_label for i in self.properties]
         if not any(has_forces):
             self.properties.append({'name': self.force_label, 'type': 'R', 'count': 3})
@@ -284,18 +358,30 @@ class Structure:
         self.atomic_properties[self.force_label] = arr
     @property
     def has_virial(self):
-        """Whether virial or stress data is available."""
+        """Check if virial or stress data is available.
+
+        Returns
+        -------
+        bool
+            ``True`` if ``additional_fields`` contains ``virial`` or ``stress``.
+        """
         return "virial" in self.additional_fields or "stress" in self.additional_fields
 
     @property
     def virial(self):
-        """Return virial; convert stress to virial when only stress is present.
+        r"""Virial vector (flattened).
+
+        If only stress is present, convert via :math:`\mathrm{virial} = -\mathrm{stress} \times V`.
 
         Returns
         -------
-        numpy.ndarray
-            Virial vector/matrix flattened. If only stress is present, uses
-            virial = -stress * volume.
+        ndarray, shape (9,), dtype float
+            Flattened virial in eV; ordering: ``[xx, xy, xz, yx, yy, yz, zx, zy, zz]``.
+
+        Raises
+        ------
+        ValueError
+            If neither virial nor stress is available.
         """
         try:
             vir =self.additional_fields["virial"]
@@ -307,47 +393,95 @@ class Structure:
         return vir
     @virial.setter
     def virial(self,new_virial:npt.NDArray[np.float32]):
+        """Set virial array."""
         self.additional_fields["virial"] = new_virial
 
     @property
     def nep_virial(self):
+        """Virial in NEP 6-component order per atom.
 
-        """Virial in NEP 6-component order per atom: [xx, yy, zz, xy, yz, zx]."""
+        Returns
+        -------
+        ndarray, shape (6,), dtype float
+            [xx, yy, zz, xy, yz, zx] components in eV/atom.
+        """
         vir=self.virial
         return vir[[0,4,8,1,5,6]]/self.num_atoms
 
     @property
     def nep_dipole(self):
-        """Dipole moment per atom parsed from additional_fields['dipole']."""
+        """Dipole moment per atom in NEP format.
+
+        Returns
+        -------
+        ndarray, shape (3,), dtype float32
+            Dipole vector in e·Å/atom, parsed from ``additional_fields['dipole']``.
+        """
         dipole=np.array(self.dipole.split(" "),dtype=np.float32)
         return dipole/self.num_atoms
 
     @property
     def nep_polarizability(self):
-        """Polarizability in NEP 6-component order per atom from additional_fields['pol']."""
+        """Polarizability tensor per atom in NEP 6-component order.
+
+        Returns
+        -------
+        ndarray, shape (6,), dtype float32
+            [xx, yy, zz, xy, yz, zx] components in Å³/atom.
+        """
         vir = np.array(self.pol.split(" "), dtype=np.float32)
         return vir[[0,4,8,1,5,6]] / self.num_atoms
 
     def get_chemical_symbols(self):
+        """Return chemical symbols for all atoms.
+
+        Returns
+        -------
+        list[str]
+            Same as :attr:`elements`.
+        """
         return self.elements
 
     @property
     def elements(self):
-        """Per-atom chemical symbols (shape (N,))."""
+        """Chemical symbols of all atoms.
+
+        Returns
+        -------
+        ndarray, shape (N,), dtype str
+            Symbol for each atom.
+        """
         return self.atomic_properties['species']
 
     @property
     def positions(self):
-        """Cartesian positions in Angstroms with shape (N, 3)."""
+        """Cartesian coordinates of all atoms.
+
+        Returns
+        -------
+        ndarray, shape (N, 3), dtype float
+            Positions in Å.
+        """
         return self.atomic_properties['pos']
 
     @property
     def num_atoms(self):
-        """Number of atoms in the structure."""
+        """Number of atoms in the structure.
+
+        Returns
+        -------
+        int
+        """
         return len(self.elements)
 
     def copy(self):
-        """Deep copy the structure and its arrays."""
+        """Return a deep copy of the structure and all its arrays.
+
+        Returns
+        -------
+        Structure
+            Independent duplicate of the current instance.
+        """
         return deepcopy(self)
 
     def set_lattice(self, new_lattice: npt.NDArray[np.float32],in_place=False):
@@ -427,6 +561,24 @@ class Structure:
 
         return Structure(new_lattice, atomic_properties, properties, additional_fields)
     def adjust_reasonable(self, coefficient=0.7)->bool:
+        """
+        Check whether the structure is physically reasonable based on covalent radii.
+
+        For each pair of nearest-neighbour atoms, the actual bond length is compared
+        with ``coefficient * (R_cov1 + R_cov2)``. If any bond is shorter than this
+        threshold, the structure is considered non-physical.
+
+        Parameters
+        ----------
+        coefficient : float, optional
+            Scaling factor for the sum of covalent radii. Default is 0.7.
+
+        Returns
+        -------
+        bool
+            ``True``  if the structure passes the check,
+            ``False`` if any bond is unphysically short.
+        """
         distance_info = self.get_mini_distance_info()
         for elems, bond_length in distance_info.items():
             elem0_info = table_info[str(atomic_numbers[elems[0]])]
@@ -435,9 +587,6 @@ class Structure:
             if (elem0_info["radii"] + elem1_info["radii"]) * coefficient > bond_length * 100:
                 return False
         return True
-
-
-
 
 
     def __getstate__(self):
@@ -461,7 +610,31 @@ class Structure:
 
     @classmethod
     def parse_xyz(cls, lines:list[str]|str)->Structure:
-        
+        """
+            Parse an extended XYZ block into a Structure instance.
+
+            Parameters
+            ----------
+            lines : list[str] or str
+                Raw XYZ content.  If a single string is provided it is split on
+                newlines internally.
+
+            Returns
+            -------
+            Structure
+                New object with lattice, atomic properties and global metadata
+                extracted from the comment line.
+
+            Examples
+            --------
+            >>> xyz = '''2
+            ... Lattice="4.0 0.0 0.0 0.0 4.0 0.0 0.0 0.0 4.0" Properties=species:S:1:pos:R:3
+            ... H 0.0 0.0 0.0
+            ... H 1.0 0.0 0.0'''
+            >>> struct = Structure.parse_xyz(xyz)
+            >>> struct.num_atoms
+            2
+            """
         if isinstance(lines, str):
             lines = lines.strip().split('\n')
         # Parse the second line (global properties)
@@ -560,13 +733,29 @@ class Structure:
             i += 3
         return parsed_properties
 
-    @staticmethod
+    @classmethod
     @timeit
-    def read_multiple(filename:str ):
-        """Read a multi-structure XYZ file and return a list of Structure objects."""
+    def read_multiple(cls,filename:str ):
+        """
+            Read a multi-structure XYZ file and return a list of Structure objects.
 
+            Parameters
+            ----------
+            filename : str or os.PathLike
+                Path to a multi-frame .xyz file.
 
+            Returns
+            -------
+            list[Structure]
+                List of `Structure` instances, one per frame.
 
+            Examples
+            --------
+            >>> from NepTrainKit.core.structure import Structure
+            >>> structure_list = Structure.read_multiple("train.xyz")
+            >>> len(structure_list)
+            42
+        """
         # data_to_process = []
         structures = []
 
@@ -586,7 +775,7 @@ class Structure:
                         break
                     structure_lines.append(line.rstrip())
 
-                structure = Structure.parse_xyz(structure_lines)
+                structure = cls.parse_xyz(structure_lines)
                 structures.append(structure)
                 del structure_lines
 

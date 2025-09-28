@@ -204,7 +204,11 @@ class MakeDataWidget(QWidget):
 
         structures_list = []
         for path  in paths:
-            atoms  = ase_read(path,":")
+            try:
+                atoms  = ase_read(path,":")
+            except:
+                MessageManager.send_warning_message(f"load structure failed:{path}")
+                continue
             for atom in atoms:
                 if isinstance(atom, Atom):
                     continue
@@ -226,7 +230,8 @@ class MakeDataWidget(QWidget):
                     atom.info["Config_type"]=str(atom.info.get("Config_type", Config.get("widget", "default_config_type", "neptrainkit")))
 
                 structures_list.append(atom)
-
+        if len(structures_list)==0:
+            return
         self.dataset=structures_list
         MessageManager.send_success_message(f"success load {len(structures_list)} structures.")
         self.dataset_info_label.setText(f" Success load {len(structures_list)} structures.")

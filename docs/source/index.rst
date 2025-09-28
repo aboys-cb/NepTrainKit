@@ -35,6 +35,7 @@ If you rely on NepTrainKit for published research, please cite the following art
 
    Quickstart <quickstart>
    Supported Formats <formats>
-   module    <module/index>
-   example    <example/index>
+   Module    <module/index>
+   Example    <example/index>
+   API Reference <api/index>
    Changelog <changelog>

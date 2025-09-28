@@ -5,23 +5,16 @@
 from __future__ import annotations
 
 import importlib
+import traceback
 from typing import Protocol
 
 from loguru import logger
 
+from NepTrainKit.core.io import ResultData, NepTrainResultData, NepDipoleResultData, NepPolarizabilityResultData
 from NepTrainKit.core.utils import get_nep_type
 from NepTrainKit.paths import PathLike, as_path
 
 
-class ResultDataProtocol(Protocol):
-    """Protocol describing the subset of result data objects we rely on."""
-
-    load_flag: bool
-
-    @classmethod
-    def from_path(cls, path: PathLike, *args, **kwargs):  # pragma: no cover - protocol
-        """Create an instance from ``path`` using implementation-specific logic."""
-        ...
 
 
 class ResultLoader(Protocol):
@@ -134,12 +127,13 @@ def load_result_data(path: PathLike)->"ResultData"|None:
             if loader.matches(candidate):
                 return loader.load(candidate)
         except Exception:  # pragma: no cover - defensive
-            logger.debug("%s failed to load %s", loader.name, candidate)
+            print(traceback.format_exc())
+            logger.debug(f"{ loader.name} failed to load {candidate}")
             continue
     return None
 
 
-class DeepmdFolderLoader:
+class DeepmdFolderLoader(ResultLoader):
     """Loader for DeepMD training folders."""
 
     name = "deepmd_folder"
@@ -161,15 +155,15 @@ class DeepmdFolderLoader:
         return mod.DeepmdResultData.from_path(str(as_path(path)))
 
 
-class NepModelTypeLoader:
+class NepModelTypeLoader(ResultLoader):
     """Loader that selects NEP result data based on associated model type."""
 
-    def __init__(self, name: str, model_types: set[int], factory_path: str):
+    def __init__(self, name: str, model_types: set[int], factory: NepTrainResultData|NepDipoleResultData|NepPolarizabilityResultData):
         """Bind a NEP model-type loader to ``model_types`` and ``factory_path``."""
         self.name = name
         self._types = set(model_types)
-        self._factory_path = factory_path
-        self._factory = None
+
+        self._factory = factory
         self.model_type: int | None = None
 
     def matches(self, path: PathLike) -> bool:
@@ -183,18 +177,14 @@ class NepModelTypeLoader:
 
     def load(self, path: PathLike):
         """Materialise the configured NEP result loader for ``path``."""
-        if self._factory is None:
-            module_name, cls_name = self._factory_path.split(':', 1)
-            mod = importlib.import_module(module_name)
-            self._factory = getattr(mod, cls_name)
-        loader = self._factory
+
         candidate = as_path(path)
-        if self._factory_path.endswith(':NepTrainResultData'):
-            return loader.from_path(str(candidate), model_type=self.model_type)
-        return loader.from_path(str(candidate))
+
+        return self._factory.from_path(str(candidate), model_type=self.model_type)
 
 
-class OtherLoader:
+
+class OtherLoader(ResultLoader):
     """Fallback loader that delegates to registered importers."""
 
     def matches(self, path: PathLike) -> bool:
@@ -236,7 +226,7 @@ class OtherLoader:
 
 
 register_result_loader(DeepmdFolderLoader())
-register_result_loader(NepModelTypeLoader("nep_train", {0, 3}, 'NepTrainKit.core.io:NepTrainResultData'))
-register_result_loader(NepModelTypeLoader("nep_dipole", {1}, 'NepTrainKit.core.io:NepDipoleResultData'))
-register_result_loader(NepModelTypeLoader("nep_polar", {2}, 'NepTrainKit.core.io:NepPolarizabilityResultData'))
+register_result_loader(NepModelTypeLoader("nep_train", {0, 3}, NepTrainResultData))
+register_result_loader(NepModelTypeLoader("nep_dipole", {1}, NepDipoleResultData))
+register_result_loader(NepModelTypeLoader("nep_polar", {2}, NepPolarizabilityResultData))
 register_result_loader(OtherLoader())

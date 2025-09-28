@@ -385,6 +385,7 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         tuple of float
             Converted coordinate in plot space.
         """
+        view_range = plot.viewRange()
         x_range = view_range[0]  # x-axis span [xmin, xmax]
         y_range = view_range[1]  # y-axis span [ymin, ymax]
         y_range = view_range[1]

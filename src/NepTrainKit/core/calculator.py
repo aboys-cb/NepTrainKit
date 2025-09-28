@@ -62,6 +62,7 @@ class NepCalculator:
 
     Examples
     --------
+    >>> from NepTrainKit.core.structure import Structure
     >>> c = NepCalculator("nep.txt","gpu")
     >>> structure_list=Structure.read_multiple("train.xyz")
     >>> energy,forces,virial = c.calculate(structure_list)

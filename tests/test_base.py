@@ -4,7 +4,7 @@ import pytest
 import numpy as np
 from pathlib import Path
 import os
-from NepTrainKit.core.io.base import NepPlotData, StructureData
+from NepTrainKit.core.io import NepPlotData, StructureData
 from NepTrainKit.core.structure import Structure
 
 @pytest.fixture

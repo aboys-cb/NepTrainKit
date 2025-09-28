@@ -3,6 +3,7 @@
 # @Time    : 2024/10/17 13:14
 # @Author  : 鍏?
 # @email    : 1747193328@qq.com
+import functools
 import re
 import time
 from typing import Any
@@ -38,6 +39,8 @@ def timeit(func):
     ... def demo():
     ...     pass
     """
+
+    @functools.wraps(func)
     def wrapper(*args, **kwargs):
         start_time = time.time()
         result = func(*args, **kwargs)

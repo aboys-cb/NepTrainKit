@@ -51,7 +51,7 @@ class CardGroup(MakeDataCardWidget):
         self.vBoxLayout.addWidget(self.filter_widget)
         self.run_card_num:int
         self.filter_card=None
-        self.dataset:Any
+        self.dataset:Any=None
         self.result_dataset=[]
         self.cards_to_run = []
         self.current_index = 0

@@ -179,9 +179,9 @@ class NepModelTypeLoader(ResultLoader):
         """Materialise the configured NEP result loader for ``path``."""
 
         candidate = as_path(path)
-
-        return self._factory.from_path(str(candidate), model_type=self.model_type)
-
+        if isinstance(self._factory, NepTrainResultData):
+            return self._factory.from_path(str(candidate), model_type=self.model_type)
+        return self._factory.from_path(str(candidate))
 
 
 class OtherLoader(ResultLoader):
@@ -199,8 +199,8 @@ class OtherLoader(ResultLoader):
     def load(self, path: PathLike):
         """Load NEP results for ``path`` and prompt for importer options if needed."""
         candidate = as_path(path)
-        nep_mod = importlib.import_module('.nep', __package__)
-        inst = nep_mod.NepTrainResultData.from_path(str(candidate))
+
+        inst = NepTrainResultData.from_path(str(candidate))
 
         imp_mod = importlib.import_module('.importers', __package__)
         lmp_imp = getattr(imp_mod, 'LammpsDumpImporter', None)

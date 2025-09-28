@@ -175,11 +175,11 @@ class NepModelTypeLoader(ResultLoader):
         self.model_type = get_nep_type(dir_path / 'nep.txt')
         return self.model_type in self._types and candidate.suffix.lower() == '.xyz'
 
-    def load(self, path: PathLike):
+    def load(self, path: PathLike,*args, **kwargs):
         """Materialise the configured NEP result loader for ``path``."""
 
         candidate = as_path(path)
-        if isinstance(self._factory, NepTrainResultData):
+        if self._factory is  NepTrainResultData :
             return self._factory.from_path(str(candidate), model_type=self.model_type)
         return self._factory.from_path(str(candidate))
 

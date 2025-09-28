@@ -216,5 +216,75 @@ class CardGroup(MakeDataCardWidget):
             self.filter_card.stop()
 
     def run(self):
-        """Execute selected child cards sequentially and emit when finished.
-        """
+        """Run all child cards sequentially while sharing the same input dataset."""
+        self.cards_to_run = [card for card in self.card_list if card.check_state]
+        self.run_card_num = len(self.cards_to_run)
+        self.current_index = 0
+
+        if self.check_state and self.run_card_num > 0:
+            self.result_dataset = []
+            self.start_next_card()
+        else:
+            self.result_dataset = self.dataset
+            self.runFinishedSignal.emit(self.index)
+
+    def start_next_card(self):
+        if self.current_index < len(self.cards_to_run):
+            card = self.cards_to_run[self.current_index]
+            card.set_dataset(self.dataset)
+            card.index = self.current_index
+            card.runFinishedSignal.connect(self.on_card_finished)
+            card.run()
+        else:
+            self.runFinishedSignal.emit(self.index)
+            if self.filter_card and isValid(self.filter_card) and self.filter_card.check_state:
+                self.filter_card.set_dataset(self.result_dataset)
+                self.filter_card.run()
+
+    def write_result_dataset(self, file,**kwargs):
+        if self.filter_card and isValid(self.filter_card) and  self.filter_card.check_state:
+            self.filter_card.write_result_dataset(file,**kwargs)
+            return
+
+        for index,card in enumerate(self.card_list):
+            if index==0:
+                if "append" not in kwargs:
+                    kwargs["append"] = False
+            else:
+                kwargs["append"] = True
+            if card.check_state:
+                card.write_result_dataset(file,**kwargs)
+
+    def export_data(self):
+        if self.dataset is not None:
+            path = call_path_dialog(self, "Choose a file save location", "file",f"export_{self.getTitle()}_structure.xyz")
+            if not path:
+                return
+            thread=LoadingThread(self,show_tip=True,title="Exporting data")
+            thread.start_work(self.write_result_dataset, path)
+    def to_dict(self):
+        data_dict = super().to_dict()
+
+        data_dict["card_list"]=[]
+
+        for card in self.card_list:
+            data_dict["card_list"].append(card.to_dict())
+        if self.filter_card and isValid(self.filter_card)  :
+            data_dict["filter_card"]=self.filter_card.to_dict()
+        else:
+            data_dict["filter_card"]=None
+
+        return data_dict
+    def from_dict(self,data_dict):
+        self.state_checkbox.setChecked(data_dict['check_state'])
+        for sub_card in data_dict.get("card_list",[]):
+            card_name=sub_card["class"]
+            card  = CardManager.card_info_dict[card_name](self)
+            self.add_card(card)
+            card.from_dict(sub_card)
+
+        if data_dict.get("filter_card"):
+            card_name=data_dict["filter_card"]["class"]
+            filter_card  = CardManager.card_info_dict[card_name](self)
+            filter_card.from_dict(data_dict["filter_card"])
+            self.set_filter_card(filter_card)

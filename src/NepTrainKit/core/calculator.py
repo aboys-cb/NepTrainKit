@@ -98,7 +98,7 @@ class NepCalculator:
                 self.type_dict = {element: index for index, element in enumerate(self.element_list)}
                 self.initialized = True
         else:
-            logger.warning("NEP model file not found: %s", self.model_path)
+            logger.warning(f"NEP model file not found: { self.model_path}" )
 
     def cancel(self) -> None:
         """Forward a cancel request to the underlying NEP backend."""

@@ -16,6 +16,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import aliased
 
 from NepTrainKit.utils import sha256_file
+from NepTrainKit.paths import get_user_config_path, ensure_directory
 
 from .database import Database
 from .models import (
@@ -161,11 +162,9 @@ def _create_storage(session, path: str, scheme: str = "file") -> StorageRef:
         uri =  str(p)
         content_hash = sha256_file(p)
     else:
-        # CAS storage placeholder
+        # Persist content-addressable storage copy under the user cache directory.
         content_hash = sha256_file(p)
-        # TODO: Implement content-addressable storage handling
-        cas_dir = settings.cas_root.expanduser().resolve()
-        cas_dir.mkdir(parents=True, exist_ok=True)
+        cas_dir = ensure_directory(get_user_config_path() / 'cas')
         dst = cas_dir / content_hash
         if not dst.exists():
             shutil.copy2(p, dst)

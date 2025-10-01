@@ -68,7 +68,7 @@ class Structure:
         """
         super().__init__()
         self.properties = properties
-        self.lattice = np.array(lattice,dtype=np.float32).reshape((3,3))  # Optional: Lattice vectors
+        self.lattice = np.array(lattice,dtype=np.float64).reshape((3,3))  # Optional: Lattice vectors
         self.atomic_properties = atomic_properties
         self.additional_fields = additional_fields
         if "Config_type" not in self.additional_fields.keys():
@@ -873,12 +873,29 @@ class Structure:
         per_pair_bytes = 4.0 * (3.0 + 1.0)  # df(3) + d(1)
         block_size = int(max(128, min(1024, target_bytes / (per_pair_bytes * N))))
 
+        # Prepare neighbor shifts for triclinic MIC (including zero shift first)
+        neighbor_shifts = np.array(
+            [[i, j, k] for i in (-1, 0, 1) for j in (-1, 0, 1) for k in (-1, 0, 1)],
+            dtype=np.float32
+        )
+        zero_idx = 13 if (neighbor_shifts[13] == 0).all() else int(np.where((neighbor_shifts == 0).all(axis=1))[0][0])
+        order = [zero_idx] + [i for i in range(27) if i != zero_idx]
+        neighbor_shifts = neighbor_shifts[order]
+
         for i0 in range(0, N, block_size):
             i1 = min(N, i0 + block_size)
             df = frac[i0:i1, None, :] - frac[None, :, :]  # (bs, N, 3)
             df -= np.round(df)
-            tmp = df @ metric  # (bs,N,3)
+
+            # Start with zero shift as initial minimum
+            tmp = df @ metric
             d2 = np.einsum('ijk,ijk->ij', df, tmp, dtype=np.float32)
+
+            for s in neighbor_shifts[1:]:  # check remaining 26 image shifts
+                dfk = df + s
+                tmpk = dfk @ metric
+                d2k = np.einsum('ijk,ijk->ij', dfk, tmpk, dtype=np.float32)
+                d2 = np.minimum(d2, d2k)
             for row, ii in enumerate(range(i0, i1)):
                 d2[row, ii] = np.inf
             for row, ii in enumerate(range(i0, i1)):
@@ -947,17 +964,22 @@ class Structure:
 
 
 
-def calculate_pairwise_distances(lattice_params:npt.NDArray[np.float32],
-                                 atom_coords:npt.NDArray[np.float32],
-                                 fractional=True,
-                                 block_size:int=2048
-                                 )->npt.NDArray[np.float32]:
+def calculate_pairwise_distances(lattice_params: npt.NDArray[np.float32],
+                                 atom_coords: npt.NDArray[np.float32],
+                                 fractional: bool = True,
+                                 block_size: int = 2048
+                                 ) -> npt.NDArray[np.float32]:
     """All-pairs distances under periodic minimum-image convention.
+
+    This implementation is robust for triclinic (skewed) cells. It first
+    reduces fractional deltas into [-0.5, 0.5) and then checks the 26
+    neighboring image shifts to ensure the true shortest image vector is
+    selected under the lattice metric.
 
     Parameters
     ----------
     lattice_params : numpy.ndarray
-        Lattice matrix with shape (3, 3).
+        Lattice matrix with shape (3, 3). Row-wise lattice vectors [a, b, c].
     atom_coords : numpy.ndarray
         Coordinates with shape (N, 3).
     fractional : bool, default=True
@@ -971,29 +993,52 @@ def calculate_pairwise_distances(lattice_params:npt.NDArray[np.float32],
         Distance matrix of shape (N, N).
     """
 
-
-    # Convert to fractional coordinates for minimum image without enumerating 27 images
     cell = np.asarray(lattice_params, dtype=np.float32).reshape(3, 3)
     coords = np.asarray(atom_coords, dtype=np.float32).reshape(-1, 3)
     if fractional:
         frac = coords.astype(np.float32)
     else:
-        # frac = cart @ inv(cell)
         inv_cell = np.linalg.inv(cell)
         frac = coords @ inv_cell
 
+    # Lattice metric for fractional vectors: r^2 = f G f^T, with G = cell @ cell.T
+    metric = cell @ cell.T
+
+    # Precompute 26 neighbor offsets in fractional space (excluding [0,0,0]).
+    neighbor_shifts = np.array(
+        [[i, j, k] for i in (-1, 0, 1) for j in (-1, 0, 1) for k in (-1, 0, 1)],
+        dtype=np.float32
+    )
+    # Ensure [0,0,0] is first for a good initial bound, remaining are checked subsequently
+    # Known index when iterating (-1..1) lexicographically is 13; fall back to search if not.
+    zero_idx = 13 if (neighbor_shifts[13] == 0).all() else int(np.where((neighbor_shifts == 0).all(axis=1))[0][0])
+    order = [zero_idx] + [i for i in range(27) if i != zero_idx]
+    neighbor_shifts = neighbor_shifts[order]
+
     N = frac.shape[0]
     dmat = np.empty((N, N), dtype=np.float32)
-    # Process in row blocks to reduce peak memory from O(N^2*27)
-    for i0 in range(0, N, max(1, int(block_size))):
-        i1 = min(N, i0 + int(block_size))
-        # fractional differences with MIC wrapping into [-0.5, 0.5)
+
+    bs = max(1, int(block_size))
+    for i0 in range(0, N, bs):
+        i1 = min(N, i0 + bs)
+        # Base fractional differences, wrapped into [-0.5, 0.5)
         df = frac[i0:i1, None, :] - frac[None, :, :]
         df -= np.round(df)
-        # back to Cartesian and compute norms
-        dr = df @ cell
-        d = np.sqrt(np.sum(dr * dr, axis=2), dtype=np.float32)
-        dmat[i0:i1, :] = d
+
+        # Compute squared distances using metric and check neighbor shifts to
+        # capture Wigner–Seitz minimum for skewed cells.
+        # Start with zero-shift (already wrapped) as initial minimum.
+        tmp = df @ metric
+        min_d2 = np.einsum('ijk,ijk->ij', df, tmp, dtype=np.float32)
+
+        for s in neighbor_shifts[1:]:  # skip the [0,0,0] shift we already used
+            dfk = df + s  # broadcast over (bs, N, 3)
+            tmpk = dfk @ metric
+            d2k = np.einsum('ijk,ijk->ij', dfk, tmpk, dtype=np.float32)
+            min_d2 = np.minimum(min_d2, d2k)
+
+        dmat[i0:i1, :] = np.sqrt(min_d2, dtype=np.float32)
+
     np.fill_diagonal(dmat, 0.0)
     return dmat
 

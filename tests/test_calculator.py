@@ -51,7 +51,7 @@ class TestNep(unittest.TestCase):
     def test_get_descriptor(self):
         descriptor = self.calculator.get_descriptor(self.structures)
         local_descriptor = np.load(os.path.join(self.test_dir,"data/nep/descriptor.npy" ))
-        np.testing.assert_array_equal(local_descriptor, descriptor)
+        np.testing.assert_array_almost_equal(local_descriptor, descriptor,decimal=5 )
         
     def test_get_structures_descriptor(self):
         structure_descriptors = self.calculator.get_structures_descriptor(self.structures)

@@ -1,7 +1,8 @@
-"""Expose registered card classes for the NEP UI."""
+﻿"""Expose registered card classes for the NEP UI."""
 
 from .super_cell_card import SuperCellCard
 from .perturb_card import PerturbCard
+from .magmom_rotation_card import MagneticMomentRotationCard
 from .cell_strain_card import CellStrainCard
 from .cell_scaling_card import CellScalingCard
 from .shear_matrix_card import ShearMatrixCard
@@ -19,6 +20,7 @@ from .card_group import CardGroup
 __all__ = [
     "SuperCellCard",
     "PerturbCard",
+    "MagneticMomentRotationCard",
     "CellStrainCard",
     "ShearMatrixCard",
     "ShearAngleCard",

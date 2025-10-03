@@ -98,7 +98,7 @@ def get_nep_type(file_path: Path | str) -> int:
     except (IndexError, FileNotFoundError):
         return 0
     except Exception as error:  # noqa: BLE001
-        logger.warning("An error occurred while parsing %s: %s", path, error)
+        logger.warning(f"An error occurred while parsing {path}: {error}")
         return 0
 
 

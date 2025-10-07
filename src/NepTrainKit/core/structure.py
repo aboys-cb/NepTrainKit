@@ -1207,7 +1207,7 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
 
             prop = value[index]
             count = prop.shape[0]
-            if count > atoms_num and key != 'virial':
+            if count >= atoms_num and key != 'virial':
                 col = count // atoms_num
                 info[key] = prop.reshape((-1, col))
                 properties.append({'name': key, 'type': 'R', 'count': col})

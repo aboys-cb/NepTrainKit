@@ -4,6 +4,8 @@
 
 import os
 import sys
+if sys.platform == "darwin":
+    os.environ["OPENBLAS_NUM_THREADS"] = "1"
 import traceback
 from pathlib import Path
 import warnings
@@ -30,8 +32,7 @@ from NepTrainKit.paths import as_path
 
 warnings.filterwarnings("ignore")
 
-if sys.platform == "darwin":
-    os.environ["OPENBLAS_NUM_THREADS"] = "1"
+
 
 
 class NepTrainKitMainWindow(FluentWindow):

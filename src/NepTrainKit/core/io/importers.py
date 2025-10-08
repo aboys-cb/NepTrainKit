@@ -53,10 +53,7 @@ def import_structures(path: PathLike, **kwargs) -> List[Structure]:
                 return list(imp.iter_structures(candidate, **kwargs))
         except Exception:
             logger.error(
-                "Importer %s failed for %s: %s",
-                imp.__class__.__name__,
-                candidate,
-                traceback.format_exc(),
+                f"Importer {imp.__class__.__name__} failed for {candidate}: {traceback.format_exc()}"
             )
             continue
     return []

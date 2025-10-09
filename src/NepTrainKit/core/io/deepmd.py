@@ -113,7 +113,7 @@ class DeepmdResultData(ResultData):
         --------
         >>> # Constructed via DeepmdResultData.from_path(...)  # doctest: +SKIP
         """
-        structures = load_npy_structure(self.data_xyz_path, cancel_event=self.cancel_event)
+        structures = load_npy_structure(self.data_xyz_path,order_file=self.energy_out_path, cancel_event=self.cancel_event)
         self._atoms_dataset = StructureData(structures)
         self.atoms_num_list = np.array([len(s) for s in structures])
     @property

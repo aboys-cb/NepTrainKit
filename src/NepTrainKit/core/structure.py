@@ -334,10 +334,22 @@ class Structure:
             Value stored in ``additional_fields['energy']``.
         """
         return self.additional_fields["energy"]
+
     @energy.setter
     def energy(self,new_energy:float):
         """Set total energy."""
         self.additional_fields["energy"] = new_energy
+    @property
+    def has_energy(self):
+        """Check if energy or stress data is available.
+
+        Returns
+        -------
+        bool
+            ``True`` if ``additional_fields`` contains ``energy`` .
+        """
+        return "energy" in self.additional_fields.keys()
+
     @property
     def forces(self):
         """Per-atom force array.
@@ -354,8 +366,19 @@ class Structure:
         has_forces=[i["name"]==self.force_label for i in self.properties]
         if not any(has_forces):
             self.properties.append({'name': self.force_label, 'type': 'R', 'count': 3})
-
         self.atomic_properties[self.force_label] = arr
+
+    @property
+    def has_forces(self):
+        """Check if forces or stress data is available.
+
+        Returns
+        -------
+        bool
+            ``True`` if ``atomic_properties`` contains ``self.force_label``.
+        """
+        return self.force_label in self.atomic_properties.keys()
+
     @property
     def has_virial(self):
         """Check if virial or stress data is available.
@@ -365,7 +388,7 @@ class Structure:
         bool
             ``True`` if ``additional_fields`` contains ``virial`` or ``stress``.
         """
-        return "virial" in self.additional_fields or "stress" in self.additional_fields
+        return "virial" in self.additional_fields.keys() or "stress" in self.additional_fields.keys()
 
     @property
     def virial(self):

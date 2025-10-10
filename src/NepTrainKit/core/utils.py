@@ -110,3 +110,22 @@ def get_xyz_nframe(path: Path | str) -> int:
     content = file_path.read_text(encoding="utf8")
     nums = re.findall(r"^(\d+)$", content, re.MULTILINE)
     return len(nums)
+
+def concat_nep_dft_array(nep_array: npt.NDArray[np.float32],dft_array:npt.NDArray[np.float32],deepmd=False) -> npt.NDArray[np.float32]:
+    """Concatenate ``nep_array`` with ``dft_array``."""
+
+    if nep_array.size == 0:
+        np.nan_to_num(dft_array, copy=False, nan=0.0)
+        nep_dft_array = np.column_stack([dft_array, dft_array])
+    else:
+        mask = np.isnan(dft_array)
+        if mask.any():
+            MessageManager.send_warning_message("use nep3 calculator to calculate result replace the original result")
+
+        dft_array[mask] = nep_array[mask]
+        if deepmd:
+            nep_dft_array = np.column_stack([dft_array, nep_array])
+        else:
+            nep_dft_array = np.column_stack([nep_array, dft_array])
+
+    return nep_dft_array

@@ -1,6 +1,8 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
 """Core NEP result data loaders and helpers."""
+import traceback
+from loguru import logger
 from pathlib import Path
 import numpy.typing as npt
 import numpy as np
@@ -10,7 +12,7 @@ from NepTrainKit.core.structure import Structure
 from NepTrainKit.paths import as_path
 from NepTrainKit.config import Config
 from .base import NepPlotData, ResultData, StructureSyncRule
-from NepTrainKit.core.utils import read_nep_out_file, check_fullbatch, read_nep_in, aggregate_per_atom_to_structure
+from NepTrainKit.core.utils import read_nep_out_file, check_fullbatch, read_nep_in, aggregate_per_atom_to_structure,concat_nep_dft_array
 from NepTrainKit.core.types import ForcesMode
 
 
@@ -357,18 +359,11 @@ class NepTrainResultData(ResultData):
         numpy.ndarray
             Two-column array with predicted and reference energies per structure.
         """
-        try:
-            ref_energies = np.array([s.per_atom_energy for s in self.structure.now_data], dtype=np.float32)
-            if potentials.size  == 0:
-                energy_array = np.column_stack([ref_energies, ref_energies])
-            else:
-                energy_array = np.column_stack([potentials / self.atoms_num_list, ref_energies])
-        except Exception:
-            # logger.debug(traceback.format_exc())
-            if potentials.size == 0:
-                energy_array = np.column_stack([potentials, potentials])
-            else:
-                energy_array = np.column_stack([potentials / self.atoms_num_list, potentials / self.atoms_num_list])
+
+        ref_energies = np.array([s.energy if s.has_energy else np.nan for s in self.structure.now_data], dtype=np.float32)
+        energy_array = concat_nep_dft_array(potentials,ref_energies)
+
+        energy_array=energy_array/ self.atoms_num_list.reshape(-1, 1)
         energy_array = energy_array.astype(np.float32)
         if energy_array.size != 0:
             np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
@@ -386,19 +381,10 @@ class NepTrainResultData(ResultData):
         numpy.ndarray
             Two-column array containing reference and predicted forces.
         """
-        try:
-            ref_forces = np.vstack([s.forces for s in self.structure.now_data], dtype=np.float32)
-            if forces.size == 0:
-                forces_array = np.column_stack([ref_forces, ref_forces])
-            else:
-                forces_array = np.column_stack([forces, ref_forces])
-        except KeyError:
-            MessageManager.send_warning_message("use nep3 calculator to calculate forces replace the original forces")
-            forces_array = np.column_stack([forces, forces])
-        except Exception:
-            # logger.debug(traceback.format_exc())
-            forces_array = np.column_stack([forces, forces])
-            MessageManager.send_error_message("an error occurred while calculating forces. Please check the input file.")
+
+        ref_forces = np.vstack([s.forces if s.has_forces else np.full((len(s),3 ), np.nan) for s in self.structure.now_data], dtype=np.float32)
+        forces_array = concat_nep_dft_array(forces,ref_forces)
+
         if forces_array.size != 0:
             np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
         return forces_array
@@ -416,19 +402,10 @@ class NepTrainResultData(ResultData):
             Tuple of (virial_array, stress_array) stored for later plotting.
         """
         coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data ]))[:, np.newaxis]
-        try:
-            ref_virials = np.vstack([s.nep_virial if s.has_virial else [np.nan]*6 for s in self.structure.now_data ], dtype=np.float32)
-            if virials.size == 0:
-                np.nan_to_num(ref_virials, copy=False, nan=0.0)
-                virials_array = np.column_stack([ref_virials, ref_virials])
-            else:
-                mask = np.isnan(ref_virials)
-                ref_virials[mask] = virials[mask]
-                virials_array = np.column_stack([virials, ref_virials])
-        except Exception:
-            MessageManager.send_error_message(f"An error occurred while calculating virial and stress. Please check the input file.")
-            # logger.debug(traceback.format_exc())
-            virials_array = np.column_stack([virials, virials])
+
+        ref_virials = np.vstack([s.nep_virial if s.has_virial else [np.nan]*6 for s in self.structure.now_data ], dtype=np.float32)
+        virials_array = concat_nep_dft_array(virials,ref_virials)
+
         stress_array = virials_array * coefficient * 160.21766208  # Unit conversion to MPa
         stress_array = stress_array.astype(np.float32)
         if virials_array.size != 0:
@@ -457,7 +434,8 @@ class NepTrainResultData(ResultData):
             self.write_prediction()
             return energy_array,force_array,virial_array, stress_array
         except Exception as e:
-            # logger.debug(traceback.format_exc())
+
+            logger.debug(traceback.format_exc())
             MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
             return np.array([]), np.array([]), np.array([]), np.array([])
 class NepPolarizabilityResultData(ResultData):

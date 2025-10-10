@@ -334,10 +334,22 @@ class Structure:
             Value stored in ``additional_fields['energy']``.
         """
         return self.additional_fields["energy"]
+
     @energy.setter
     def energy(self,new_energy:float):
         """Set total energy."""
         self.additional_fields["energy"] = new_energy
+    @property
+    def has_energy(self):
+        """Check if energy or stress data is available.
+
+        Returns
+        -------
+        bool
+            ``True`` if ``additional_fields`` contains ``energy`` .
+        """
+        return "energy" in self.additional_fields.keys()
+
     @property
     def forces(self):
         """Per-atom force array.
@@ -354,8 +366,19 @@ class Structure:
         has_forces=[i["name"]==self.force_label for i in self.properties]
         if not any(has_forces):
             self.properties.append({'name': self.force_label, 'type': 'R', 'count': 3})
-
         self.atomic_properties[self.force_label] = arr
+
+    @property
+    def has_forces(self):
+        """Check if forces or stress data is available.
+
+        Returns
+        -------
+        bool
+            ``True`` if ``atomic_properties`` contains ``self.force_label``.
+        """
+        return self.force_label in self.atomic_properties.keys()
+
     @property
     def has_virial(self):
         """Check if virial or stress data is available.
@@ -365,7 +388,7 @@ class Structure:
         bool
             ``True`` if ``additional_fields`` contains ``virial`` or ``stress``.
         """
-        return "virial" in self.additional_fields or "stress" in self.additional_fields
+        return "virial" in self.additional_fields.keys() or "stress" in self.additional_fields.keys()
 
     @property
     def virial(self):
@@ -1225,17 +1248,122 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
         structures.append(structure)
     return structures
 
-def load_npy_structure(folders: PathLike, cancel_event=None):
+def _normalise_comment_path_parts(raw_path: str) -> list[str]:
+    """Convert DeepMD output comment paths into clean path segments."""
+    normalised: list[str] = []
+    for part in raw_path.replace("\\", "/").split("/"):
+        part = part.strip()
+        if not part or part == ".":
+            continue
+        if part == "..":
+            if normalised:
+                normalised.pop()
+            continue
+        normalised.append(part)
+    return normalised
+
+def _resolve_comment_path(raw_path: str, base_path: Path) -> Path | None:
+    """Resolve a DeepMD comment path to a local directory containing type.raw."""
+    parts = _normalise_comment_path_parts(raw_path)
+    if not parts:
+        return None
+    candidate_bases = [base_path, *base_path.parents]
+    for candidate_base in candidate_bases:
+        for start in range(len(parts)):
+            candidate = candidate_base.joinpath(*parts[start:])
+            if candidate.is_dir():
+                type_file = candidate / "type.raw"
+                if type_file.exists():
+                    try:
+                        candidate.resolve().relative_to(base_path.resolve())
+                    except ValueError:
+                        continue
+                    return candidate
+    last_segment = parts[-1]
+    if last_segment:
+        for match in base_path.rglob(last_segment):
+            if match.is_dir() and (match / "type.raw").exists():
+                try:
+                    match.resolve().relative_to(base_path.resolve())
+                except ValueError:
+                    continue
+                return match
+    return None
+
+def _extract_ordered_type_dirs(order_file: Path, base_path: Path) -> list[Path]:
+    """Parse ``*.e_peratom.out`` comments and map them to local leaf directories."""
+    ordered_dirs: list[Path] = []
+    seen: set[Path] = set()
+    try:
+        lines = order_file.read_text(encoding="utf-8", errors="ignore").splitlines()
+    except OSError as exc:
+        logger.warning(f"failed to read {order_file}: {exc}")
+        return ordered_dirs
+    for line in lines:
+        stripped = line.strip()
+        if not stripped.startswith("#"):
+            continue
+        comment_path = stripped[1:].split(":", 1)[0].strip()
+        if not comment_path:
+            continue
+        resolved = _resolve_comment_path(comment_path, base_path)
+        if resolved is None:
+            logger.debug(f"ignore unmatched DeepMD path '{comment_path}' for {base_path}")
+            continue
+        resolved_real = resolved.resolve()
+        if resolved_real in seen:
+            continue
+        ordered_dirs.append(resolved)
+        seen.add(resolved_real)
+    return ordered_dirs
+
+def load_npy_structure(folders: PathLike,order_file=None, cancel_event=None):
     """Recursively load DeepMD datasets beneath ``folders``."""
     folder_path = as_path(folders)
     if (folder_path / 'type.raw').exists():
         return _load_npy_structure(folder_path, cancel_event=cancel_event)
-    structures: list[Structure] = []
-    if folder_path.is_dir():
-        for child in folder_path.iterdir():
-            if cancel_event is not None and getattr(cancel_event, 'is_set', None) and cancel_event.is_set():
+    if not folder_path.is_dir():
+        return []
+    if order_file is not None:
+        order_file = as_path(order_file)
+        if not order_file.is_file():
+            order_file = None
+
+    if order_file is not None:
+        structures: list[Structure] = []
+        processed_dirs: set[Path] = set()
+        ordered_dirs = _extract_ordered_type_dirs(order_file, folder_path)
+
+        for target_dir in ordered_dirs:
+            if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
+                return structures
+            resolved_target = target_dir.resolve()
+            if resolved_target in processed_dirs:
+                continue
+            structures.extend(load_npy_structure(target_dir, cancel_event=cancel_event))
+            processed_dirs.add(resolved_target)
+        if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
+            return structures
+        base_resolved = folder_path.resolve()
+        remaining_dirs = sorted(
+            {type_file.parent.resolve() for type_file in folder_path.rglob("type.raw")},
+            key=lambda p: p.relative_to(base_resolved).as_posix()
+        )
+
+        for directory in remaining_dirs:
+            if directory in processed_dirs:
+                continue
+            if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
                 break
-            structures.extend(load_npy_structure(child, cancel_event=cancel_event))
+            structures.extend(_load_npy_structure(directory, cancel_event=cancel_event))
+            processed_dirs.add(directory)
+        return structures
+    structures: list[Structure] = []
+    for child in sorted(folder_path.iterdir(), key=lambda p: p.name):
+        if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
+            break
+
+        structures.extend(load_npy_structure(child, cancel_event=cancel_event))
     return structures
 
 def get_type_map(structures: list[Structure]) -> list[str]:

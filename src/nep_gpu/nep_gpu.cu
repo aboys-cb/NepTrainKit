@@ -35,6 +35,7 @@
 #include <fstream>
 #include <ctime>
 #include <atomic>
+#include <utility>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -209,7 +210,7 @@ public:
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position);
 
-    // Per-structure averaged descriptors (scaled), length = dim per frame
+    // Per-atom descriptors (scaled); each inner vector has length dim
     std::vector<std::vector<double>> calculate_descriptors_avg(
         const std::vector<std::vector<int>>& type,
         const std::vector<std::vector<double>>& box,
@@ -526,52 +527,36 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors_scaled(
     auto raw = calculate_descriptors(type, box, position);
     const int dim = para.dim;
     const bool have_scaler = (int)para.q_scaler_cpu.size() == dim;
-    if (!have_scaler) {
-        return raw;
+    size_t total_atoms = 0;
+    for (const auto& t : type) {
+        total_atoms += t.size();
     }
     int num_L = para.L_max;
     if (para.L_max_4body == 2) num_L += 1;
     if (para.L_max_5body == 1) num_L += 1;
     const int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L;
-    for (auto &frame : raw) {
-        const int Na = static_cast<int>(frame.size() / dim);
-        for (int m = 0; m < Na; ++m) {
-            double* row = frame.data() + static_cast<size_t>(m) * dim;
-            for (int d = 0; d < dim_desc; ++d) row[d] *= static_cast<double>(para.q_scaler_cpu[d]);
-            for (int d = dim_desc; d < dim; ++d) row[d] = 0.0;
+    std::vector<std::vector<double>> per_atom;
+    per_atom.reserve(total_atoms);
+    for (size_t frame_idx = 0; frame_idx < raw.size(); ++frame_idx) {
+        const auto& frame = raw[frame_idx];
+        const size_t Na = type[frame_idx].size();
+        for (size_t atom_idx = 0; atom_idx < Na; ++atom_idx) {
+            const double* src = frame.data() + atom_idx * static_cast<size_t>(dim);
+            std::vector<double> atom(src, src + dim);
+            if (have_scaler) {
+                for (int d = 0; d < dim_desc; ++d) {
+                    atom[static_cast<size_t>(d)] *= static_cast<double>(para.q_scaler_cpu[d]);
+                }
+            }
+            for (int d = dim_desc; d < dim; ++d) {
+                atom[static_cast<size_t>(d)] = 0.0;
+            }
+            per_atom.emplace_back(std::move(atom));
         }
     }
-    return raw;
+    return per_atom;
 }
 
-// Structure-averaged, scaled descriptors (matches vendor output_descriptor=1)
-std::vector<std::vector<double>> GpuNep::calculate_descriptors_avg(
-        const std::vector<std::vector<int>>& type,
-        const std::vector<std::vector<double>>& box,
-        const std::vector<std::vector<double>>& position)
-{
-    if (canceled_.load(std::memory_order_relaxed)) {
-        throw std::runtime_error("Canceled by user");
-    }
-    auto raw = calculate_descriptors(type, box, position);
-    const int dim = para.dim;
-    const bool have_scaler = (int)para.q_scaler_cpu.size() == dim;
-    std::vector<std::vector<double>> avg(raw.size(), std::vector<double>(dim, 0.0));
-    for (size_t i = 0; i < raw.size(); ++i) {
-        const int Na = static_cast<int>(raw[i].size() / dim);
-        const double invNa = Na > 0 ? 1.0 / Na : 0.0;
-        for (int m = 0; m < Na; ++m) {
-            const double* row = raw[i].data() + static_cast<size_t>(m) * dim;
-            for (int d = 0; d < dim; ++d) {
-                double val = row[d];
-                if (have_scaler) val *= static_cast<double>(para.q_scaler_cpu[d]);
-                avg[i][d] += val;
-            }
-        }
-        for (int d = 0; d < dim; ++d) avg[i][d] *= invNa;
-    }
-    return avg;
-}
 
 // ---- Structure dipole (3 comps) ----
 std::vector<std::vector<double>> GpuNep::get_structures_dipole(
@@ -712,8 +697,9 @@ PYBIND11_MODULE(nep_gpu, m) {
         .def("reset_cancel", &GpuNep::reset_cancel)
         .def("is_canceled", &GpuNep::is_canceled)
         .def("get_descriptor", &GpuNep::calculate_descriptors)
-        .def("calculate_descriptors_scaled", &GpuNep::calculate_descriptors_scaled)
-        .def("get_structures_descriptor", &GpuNep::calculate_descriptors_avg)
+
+        .def("get_structures_descriptor", &GpuNep::calculate_descriptors_scaled,
+             py::arg("type"), py::arg("box"), py::arg("position"))
         .def("get_structures_dipole", &GpuNep::get_structures_dipole)
         .def("get_structures_polarizability", &GpuNep::get_structures_polarizability);
 

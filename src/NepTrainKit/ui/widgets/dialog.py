@@ -76,7 +76,7 @@ class SparseMessageBox(MessageBoxBase):
         self._frame = QFrame(self)
         self.frame_layout=QGridLayout(self._frame)
         self.frame_layout.setContentsMargins(0,0,0,0)
-        self.frame_layout.setSpacing(0)
+        self.frame_layout.setSpacing(4)
         self.intSpinBox = SpinBox(self)
 
         self.intSpinBox.setMaximum(9999999)
@@ -93,6 +93,37 @@ class SparseMessageBox(MessageBoxBase):
 
         self.frame_layout.addWidget(self.doubleSpinBox,1,1,1,2)
 
+
+
+        self.descriptorCombo = ComboBox(self)
+        self.descriptorCombo.addItems(["Reduced (PCA)", "Raw descriptor"])
+        self.frame_layout.addWidget(CaptionLabel("Descriptor source", self),3,0,1,1)
+        self.frame_layout.addWidget(self.descriptorCombo,3,1,1,2)
+
+        self.advancedFrame = QFrame(self)
+        self.advancedFrame.setVisible(False)
+        self.advancedLayout = QGridLayout(self.advancedFrame)
+        self.advancedLayout.setContentsMargins(0,0,0,0)
+        self.advancedLayout.setSpacing(4)
+
+
+
+        self.trainingPathEdit = LineEdit(self)
+        self.trainingPathEdit.setPlaceholderText("Optional training dataset path (.xyz or folder)")
+        self.trainingPathEdit.setClearButtonEnabled(True)
+        trainingPathWidget = QWidget(self)
+        trainingPathLayout = QHBoxLayout(trainingPathWidget)
+        trainingPathLayout.setContentsMargins(0, 0, 0, 0)
+        trainingPathLayout.setSpacing(4)
+        trainingPathLayout.addWidget(self.trainingPathEdit, 1)
+        self.trainingBrowseButton = TransparentToolButton(FluentIcon.FOLDER_ADD, trainingPathWidget)
+        trainingPathLayout.addWidget(self.trainingBrowseButton, 0)
+        self.trainingBrowseButton.clicked.connect(self._pick_training_path)
+        self.trainingBrowseButton.setToolTip("Browse for an existing training dataset")
+
+        self.advancedLayout.addWidget(CaptionLabel("Training dataset", self),1,0)
+        self.advancedLayout.addWidget(trainingPathWidget,1,1)
+
         # region option: use current selection as FPS region
         self.regionCheck = CheckBox("Use current selection as region", self)
         self.regionCheck.setToolTip("When FPS sampling is performed in the designated area, the program will automatically deselect it, just click to delete!")
@@ -100,12 +131,29 @@ class SparseMessageBox(MessageBoxBase):
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame )
+        self.viewLayout.addWidget(self.advancedFrame)
         self.viewLayout.addWidget(self.regionCheck)
 
         self.yesButton.setText('Ok')
         self.cancelButton.setText('Cancel')
 
         self.widget.setMinimumWidth(200)
+        self.advancedFrame.setVisible(True)
+
+
+
+    def _pick_training_path(self):
+        """Prompt the user to choose a training dataset path."""
+        path = call_path_dialog(
+            self,
+            "Select training dataset",
+            "select",
+            file_filter="XYZ files (*.xyz);;All files (*.*)",
+        )
+        if not path:
+            path = call_path_dialog(self, "Select training dataset folder", "directory")
+        if path:
+            self.trainingPathEdit.setText(path)
 
 
 class IndexSelectMessageBox(MessageBoxBase):

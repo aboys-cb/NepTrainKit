@@ -167,6 +167,22 @@ structure.info["Config_type"] += f" Perturb(distance={max_displacement}, {engine
 - Start small (0.1–0.3 Å) and inspect min interatomic distances.
 - Combine with FPS Filter to keep diverse displacements while avoiding redundancy.
 
+
+
+#### Vibrational Mode Perturb Card
+- **Purpose**: reuse precomputed vibrational eigenmodes (or normal modes) to introduce physically guided displacements.
+- **Data expectation**: modes and frequencies are stored as per-atom arrays (EXTXYZ columns). Columns should follow the pattern `vibration_mode_<index>_x/y/z`, with optional `vibration_frequency_<index>` (constant per atom). Packed arrays named `vibration_modes` or `normal_modes` with shape `(natoms, 3 * nmodes)` are also recognised.
+- **Processing**:
+  1. Assemble each mode matrix from the available columns.
+  2. Sample a configurable number of modes and random coefficients (Normal or Uniform).
+  3. Optionally divide coefficients by `sqrt(|frequency|)` and drop near-zero-frequency modes.
+  4. Sum the weighted displacements, scale by the requested amplitude, update positions, and wrap.
+- **Usage tips**:
+  - Ensure the upstream exporter writes the mode columns; missing data results in no generated structures.
+  - Keep amplitudes modest (≤0.05 Å) to remain in the harmonic regime.
+  - Frequencies are optional but recommended when enabling frequency-based scaling.
+
+
 ### 2.4 Lattice Scaling
 **Function**: Randomly scales lattice vectors
 
@@ -443,6 +459,26 @@ Generates stacking faults (or twins) along a specified Miller plane.
 
 #### Best Practices
 - Use small step sizes and validate resulting interlayer distances.
+
+### 2.12 Interstitial & Adsorbate Insertion
+Introduces interstitial atoms inside the cell or adsorbates above a surface.
+
+**Parameters**: Mode (Interstitial/Adsorption), Species list (optional weights), Atoms per structure, Minimum distance, Surface axis (adsorption), Offset distance (adsorption).
+
+#### Algorithm
+- Interstitial mode samples random fractional coordinates, converts to Cartesian positions, and enforces a minimum-distance constraint via the minimum image convention.
+- Adsorption mode locates the topmost fractional coordinate along the selected axis, samples in-plane coordinates randomly, offsets the point outward by the requested distance, and validates separation before insertion.
+- Species are drawn according to user-supplied weights (default uniform) and appended to the structure.
+
+#### Caveats
+- Offsets must remain within the available vacuum thickness; exceeding the cell length along the chosen axis will wrap under periodic boundary conditions.
+- Dense host lattices may require either lower distance thresholds or higher trial counts to find feasible sites.
+- Newly inserted atoms inherit zero-valued per-atom arrays (forces, magmoms, etc.); regenerate properties before training.
+
+#### Best Practices
+- Run multiple configurations with different random seeds to diversify interstitial placements.
+- Combine with vacancy or stacking-fault cards inside a `CardGroup` to cover complementary defect families.
+- Apply FPS or energy-based screening afterwards to curate physically relevant insertions.
 
 ## 3. Filter Cards
 

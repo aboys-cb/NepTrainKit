@@ -27,56 +27,12 @@ from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
-from .select import farthest_point_sampling
+
+from .sampler import SparseSampler,farthest_point_sampling,pca
 from NepTrainKit.core.types import Brushes, SearchType, NepBackend
 from NepTrainKit.core.energy_shift import shift_dataset_energy
 from NepTrainKit.core.calculator import   NepCalculator
 
-def pca(X: npt.NDArray[np.float32], n_components: Optional[int] = None) -> npt.NDArray[np.float32]:
-    """Project a feature matrix onto its leading principal components.
-
-
-    Parameters
-    ----------
-    X : numpy.ndarray
-        Two-dimensional array containing observations by row and features by column.
-    n_components : int, optional
-        Number of principal components to retain. ``None`` keeps all components.
-
-    Returns
-    -------
-    numpy.ndarray
-        Projection of ``X`` with shape ``(n_samples, n_components)`` and dtype ``float32``.
-
-    Raises
-    ------
-    ValueError
-        If ``X`` is not two dimensional.
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> data = np.arange(12, dtype=np.float32).reshape(4, 3)
-    >>> pca(data, n_components=2).shape
-    (4, 2)
-    """
-    if X.ndim != 2:
-        raise ValueError('pca expects a two-dimensional array')
-    n_samples, n_features = X.shape
-    mean = np.mean(X, axis=0)
-    X_centered = X - mean
-    # X_centered = X
-    cov_matrix = np.dot(X_centered.T, X_centered) / (n_samples - 1)
-    eigenvalues, eigenvectors = np.linalg.eigh(cov_matrix)
-    idx = np.argsort(eigenvalues)[::-1]
-    eigenvalues = eigenvalues[idx]
-    eigenvectors = eigenvectors[:, idx]
-    if n_components is None:
-        n_components = n_features
-    elif n_components > n_features:
-        n_components = n_features
-    X_pca = np.dot(X_centered, eigenvectors[:, :n_components])
-    return X_pca.astype(np.float32)
 class DataBase:
     """Container that tracks active rows and supports undo operations.
 
@@ -485,6 +441,7 @@ class ResultData(QObject):
         self.calculator_factory=calculator_factory
         self._structure_sync_rules = dict(getattr(self, "STRUCTURE_SYNC_RULES", {}))
         self._pending_non_physical_indices: list[int] = []
+        self._sampler = SparseSampler(self)
     def request_cancel(self):
         """Request cooperative cancel during load. Also forward to calculator."""
         self.cancel_event.set()
@@ -502,6 +459,7 @@ class ResultData(QObject):
         The method honours :attr:`_prefetched_structures` first; otherwise it
         delegates to the importer registry and honours ``import_options``.
         """
+
         # If structures were provided upfront, use them; otherwise parse from file
         if self._prefetched_structures is not None:
             structures = self._prefetched_structures
@@ -839,6 +797,26 @@ class ResultData(QObject):
         structures = dataset.group_array[global_rows]
         return structures.tolist(), reverse
 
+
+
+
+    def sparse_point_selection(
+        self,
+        n_samples: int,
+        distance: float,
+        descriptor_source: str = "reduced",
+        restrict_to_selection: bool = False,
+        training_path: str | None = None,
+    ) -> tuple[list[int], bool]:
+        """Delegate sparse sampling to the sampler helper."""
+        return self._sampler.sparse_point_selection(
+            n_samples=n_samples,
+            distance=distance,
+            descriptor_source=descriptor_source,
+            restrict_to_selection=restrict_to_selection,
+            training_path=training_path,
+        )
+
     def export_descriptor_data(self, path: str | Path) -> None:
         """Write descriptor values for the current selection to ``path``."""
         if len(self.select_index) == 0:
@@ -1001,14 +979,23 @@ class ResultData(QObject):
             else:
                 self.descriptor_path.unlink(True)
                 return self._load_descriptors()
+        # Cache raw (pre-PCA) per-structure descriptors to avoid reloading later
+        # This enables advanced sampling to use original descriptor space when requested.
         if desc_array.size != 0:
-            if desc_array.shape[1] > 2:
-                try:
-                    desc_array = pca(desc_array, 2)
-                except:
-                    MessageManager.send_error_message("PCA dimensionality reduction fails")
-                    desc_array = np.array([])
-        self._descriptor_dataset = NepPlotData(desc_array, title="descriptor")
+            # Ensure float32 and store an immutable copy for later masking
+            self._descriptor_raw_all = np.asarray(desc_array, dtype=np.float32)
+        else:
+            self._descriptor_raw_all = np.array([], dtype=np.float32)
+
+        # Prepare reduced (PCA) descriptors for plotting
+        reduced = self._descriptor_raw_all
+        if reduced.size != 0 and reduced.shape[1] > 2:
+            try:
+                reduced = pca(reduced, 2)
+            except Exception:
+                MessageManager.send_error_message("PCA dimensionality reduction fails")
+                reduced = np.array([], dtype=np.float32)
+        self._descriptor_dataset = NepPlotData(reduced, title="descriptor")
     def __repr__(self):
         info = f"{self.__class__.__name__}(Orig: {self.atoms_num_list.shape[0]} Now: {self.structure.now_data.shape[0]} " \
                f"Rm: {self.structure.remove_data.shape[0]} Sel: {len(self.select_index)} Unsel: {self.structure.now_data.shape[0] - len(self.select_index)})"

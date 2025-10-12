@@ -164,28 +164,53 @@ class NepResultPlotWidget(QWidget):
         self.canvas.select_index(index,False)
 
     def sparse_point(self):
-        """Run farthest point sampling to down-sample descriptors while preserving coverage."""
+        """Run farthest point sampling with simple and advanced strategies."""
         data = self.canvas.nep_result_data
         if data is None:
             return
-        box = SparseMessageBox(self._parent, "Please specify the maximum number of structures and minimum distance")
-        n_samples = Config.getint("widget", "sparse_num_value", 10)
-        distance = Config.getfloat("widget", "sparse_distance_value", 0.01)
 
-        box.intSpinBox.setValue(n_samples)
-        box.doubleSpinBox.setValue(distance)
+        box = SparseMessageBox(self._parent, "Configure farthest point sampling")
+        n_samples_default = Config.getint("widget", "sparse_num_value", 10)
+        distance_default = Config.getfloat("widget", "sparse_distance_value", 0.01)
+
+        descriptor_source_default = Config.get("widget", "sparse_descriptor_source", "reduced").lower()
+
+        training_path_default = Config.get("widget", "sparse_training_path", "")
+
+        box.intSpinBox.setValue(n_samples_default)
+        box.doubleSpinBox.setValue(distance_default)
+
+        box.descriptorCombo.setCurrentIndex(1 if descriptor_source_default == "raw" else 0)
+
+        box.trainingPathEdit.setText(training_path_default)
 
         if not box.exec():
             return
+
         n_samples = box.intSpinBox.value()
         distance = box.doubleSpinBox.value()
-        use_selection_region = bool(getattr(box, 'regionCheck', None) and box.regionCheck.isChecked())
+        use_selection_region = bool(getattr(box, "regionCheck", None) and box.regionCheck.isChecked())
+
+        descriptor_source = "raw" if box.descriptorCombo.currentIndex() == 1 else "reduced"
+
+        training_path = box.trainingPathEdit.text().strip()
 
         Config.set("widget", "sparse_num_value", n_samples)
         Config.set("widget", "sparse_distance_value", distance)
 
-        structures, reverse = data.sparse_descriptor_selection(n_samples, distance, use_selection_region)
-        self.canvas.select_index(structures, reverse)
+        Config.set("widget", "sparse_descriptor_source", descriptor_source)
+
+        Config.set("widget", "sparse_training_path", training_path)
+
+        structures, reverse = data.sparse_point_selection(
+            n_samples=n_samples,
+            distance=distance,
+            descriptor_source=descriptor_source,
+            restrict_to_selection=use_selection_region,
+            training_path=training_path or None,
+        )
+        if structures:
+            self.canvas.select_index(structures, reverse)
 
     def edit_structure_info(self):
         """Open the metadata editor for the current selection and apply the changes."""

@@ -57,8 +57,7 @@ class TestNep(unittest.TestCase):
         structure_descriptors = self.calculator.get_structures_descriptor(self.structures)
 
         local_descriptor = np.load(os.path.join(self.test_dir,"data/nep/descriptor.npy" ))
-        local_structure_descriptor = np.mean(local_descriptor,axis=0).reshape(-1,structure_descriptors.shape[1])
-        np.testing.assert_array_almost_equal(local_structure_descriptor, structure_descriptors,decimal=6)
+        np.testing.assert_array_almost_equal(local_descriptor, structure_descriptors,decimal=6)
 
 
 class TestDipole(unittest.TestCase):

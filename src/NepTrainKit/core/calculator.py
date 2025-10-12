@@ -25,7 +25,7 @@ try:
     from NepTrainKit.nep_cpu import CpuNep
 except ImportError:
     logger.debug("no found NepTrainKit.nep_cpu")
-
+    logger.error(traceback.format_exc())
     try:
         from nep_cpu import CpuNep
     except ImportError:
@@ -315,14 +315,19 @@ class NepCalculator:
     def get_structures_descriptor(
         self,
         structures: list[Structure],
+        mean_descriptor: bool=True
     ) -> npt.NDArray[np.float32]:
-        """Return descriptors for multiple structures without additional averaging."""
+        """Return per-atom NEP descriptors stacked across ``structures``."""
         if not self.initialized:
             return np.array([])
-        types, boxes, positions, _ = self.compose_structures(structures)
+        types, boxes, positions, group_sizes = self.compose_structures(structures)
         self.nep3.reset_cancel()
         descriptor = self.nep3.get_structures_descriptor(types, boxes, positions)
-        return np.array(descriptor, dtype=np.float32)
+        descriptor=np.array(descriptor, dtype=np.float32)
+        if not mean_descriptor:
+            return descriptor
+        structure_descriptor = aggregate_per_atom_to_structure(descriptor, group_sizes, map_func=np.mean, axis=0)
+        return structure_descriptor
 
     @timeit
     def get_structures_polarizability(
@@ -387,8 +392,11 @@ class NepCalculator:
         """
         if isinstance(atoms_list, Atoms):
             atoms_list = [atoms_list]
+        descriptor_blocks: list[np.ndarray] | None = None
         if calc_descriptor:
-            _descriptor = self.get_structures_descriptor(atoms_list)
+            per_atom_descriptor = self.get_structures_descriptor(atoms_list)
+            atom_counts = [len(atoms) for atoms in atoms_list]
+            descriptor_blocks = split_by_natoms(per_atom_descriptor, atom_counts)
 
         energy,forces,virial = self.calculate(atoms_list)
 
@@ -405,7 +413,7 @@ class NepCalculator:
 
             )
             if calc_descriptor:
-                spc.results["descriptor"]=_descriptor[index]
+                spc.results["descriptor"]=descriptor_blocks[index]
             atoms.calc = spc
 
 

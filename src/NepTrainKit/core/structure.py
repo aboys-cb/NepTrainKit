@@ -1076,6 +1076,156 @@ def is_organic_cluster(symbols:list[str]) -> bool:
 
 
 
+def get_vibration_modes(
+    structure,
+    min_frequency: float = 0.0,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    """Extract vibrational modes stored in per-atom arrays on an ASE ``Atoms`` object.
+
+    Parameters
+    ----------
+    structure : ase.Atoms
+        Atomic structure that potentially carries vibrational mode information.
+    min_frequency : float, optional
+        Absolute frequency threshold (in the same units as the stored data)
+        used to filter out near-zero translational modes. Set to 0.0 to keep
+        all provided modes. Defaults to ``0.0``.
+
+    Returns
+    -------
+    tuple(ndarray, ndarray)
+        Pair of ``(frequencies, modes)`` where ``modes`` has shape
+        ``(n_modes, n_atoms, 3)``. Missing frequencies are returned as ``nan``.
+        When no data is attached to the structure the function returns two
+        empty arrays.
+    """
+
+    def _coerce_modes(raw) -> npt.NDArray[np.float64] | None:
+        if raw is None:
+            return None
+        modes_arr = np.asarray(raw, dtype=np.float64)
+        natoms = len(structure)
+
+        if modes_arr.ndim == 3 and modes_arr.shape[1:] == (natoms, 3):
+            return modes_arr
+        if modes_arr.ndim == 3 and modes_arr.shape[0] == natoms and modes_arr.shape[1] == 3:
+            return np.transpose(modes_arr, (2, 0, 1))
+        if modes_arr.ndim == 2 and modes_arr.shape[0] == natoms and modes_arr.shape[1] % 3 == 0:
+            n_modes = modes_arr.shape[1] // 3
+            reshaped = modes_arr.reshape(natoms, n_modes, 3)
+            return np.transpose(reshaped, (1, 0, 2))
+        if modes_arr.ndim == 2 and modes_arr.shape == (natoms, 3):
+            return modes_arr[np.newaxis, :, :]
+        if modes_arr.ndim == 2 and modes_arr.shape[1] == natoms * 3:
+            return modes_arr.reshape(modes_arr.shape[0], natoms, 3)
+        if modes_arr.ndim == 2 and modes_arr.shape[0] == natoms * 3:
+            return modes_arr.reshape(-1, natoms, 3)
+        if modes_arr.ndim == 1 and modes_arr.size == natoms * 3:
+            return modes_arr.reshape(1, natoms, 3)
+        return None
+
+    arrays = getattr(structure, "arrays", None)
+    if not arrays:
+        return (
+            np.empty((0,), dtype=np.float64),
+            np.empty((0, len(structure), 3), dtype=np.float64),
+        )
+
+    modes_source: Any | None = None
+    mode_indices: list[int] | None = None
+
+    for key in ("vibration_modes", "normal_modes", "modes"):
+        if key in arrays:
+            modes_source = arrays[key]
+            break
+
+    if modes_source is None:
+        component_pattern = re.compile(r"(?:vibration|normal)?[_-]?mode[_-]?(\d+)[_-]?([xyz])$", re.IGNORECASE)
+        component_store: dict[int, dict[str, npt.NDArray[np.float64]]] = defaultdict(dict)
+        for name, values in arrays.items():
+            match = component_pattern.match(name)
+            if not match:
+                continue
+            mode_idx = int(match.group(1))
+            axis = match.group(2).lower()
+            array = np.asarray(values, dtype=np.float64)
+            if array.shape[0] != len(structure):
+                continue
+            component_store[mode_idx][axis] = array
+
+        ordered_modes: list[npt.NDArray[np.float64]] = []
+        ordered_indices: list[int] = []
+        for idx in sorted(component_store.keys()):
+            comp = component_store[idx]
+            if not {"x", "y", "z"}.issubset(comp.keys()):
+                continue
+            mode = np.stack([comp["x"], comp["y"], comp["z"]], axis=1)
+            ordered_modes.append(mode)
+            ordered_indices.append(idx)
+
+        if ordered_modes:
+            modes_source = np.stack(ordered_modes, axis=0)
+            mode_indices = ordered_indices
+
+    coerced = _coerce_modes(modes_source)
+    if coerced is None:
+        return (
+            np.empty((0,), dtype=np.float64),
+            np.empty((0, len(structure), 3), dtype=np.float64),
+        )
+
+    modes = coerced
+    if mode_indices is None:
+        mode_indices = list(range(modes.shape[0]))
+
+    freq_array: npt.NDArray[np.float64] | None = None
+
+    for key in ("vibration_frequencies", "normal_mode_frequencies", "frequencies", "freqs"):
+        if key not in arrays:
+            continue
+        freq_raw = np.asarray(arrays[key], dtype=np.float64)
+        if freq_raw.ndim == 1:
+            freq_array = freq_raw
+        elif freq_raw.ndim >= 2:
+            freq_array = freq_raw[0]
+        break
+
+    if freq_array is None:
+        freq_pattern = re.compile(r"(?:vibration|normal)?[_-]?frequency[_-]?(\d+)$", re.IGNORECASE)
+        freq_map: dict[int, float] = {}
+        for name, values in arrays.items():
+            match = freq_pattern.match(name)
+            if not match:
+                continue
+            idx = int(match.group(1))
+            array = np.asarray(values, dtype=np.float64)
+            if array.shape[0] != len(structure):
+                continue
+            freq_map[idx] = float(array[0])
+        if freq_map:
+            freq_array = np.array([freq_map.get(idx, np.nan) for idx in mode_indices], dtype=np.float64)
+
+    if freq_array is None:
+        freq_array = np.full(modes.shape[0], np.nan, dtype=np.float64)
+    else:
+        freq_array = np.asarray(freq_array, dtype=np.float64).reshape(-1)
+        if freq_array.size != modes.shape[0]:
+            if freq_array.size > modes.shape[0]:
+                freq_array = freq_array[: modes.shape[0]]
+            else:
+                pad = np.full(modes.shape[0] - freq_array.size, np.nan, dtype=np.float64)
+                freq_array = np.concatenate([freq_array, pad])
+
+    if min_frequency > 0.0:
+        finite_mask = np.isfinite(freq_array)
+        keep_mask = np.ones_like(freq_array, dtype=bool)
+        keep_mask[finite_mask] = np.abs(freq_array[finite_mask]) >= min_frequency
+        modes = modes[keep_mask]
+        freq_array = freq_array[keep_mask]
+
+    return freq_array, modes
+
+
 def get_clusters(structure):
     """Connected-atom clusters under ASE natural cutoffs.
 

@@ -319,7 +319,6 @@ class BuildExtNVCC(build_ext):
         return super().build_extensions()
 # preserve previously defined extensions
 # Register fast EXTXYZ parser extension for core
-
 _fastxyz_compile_args = list(extra_compile_args)
 # if sys.platform == "win32":
 #     # Prefer C++17 for from_chars fast float parsing on MSVC

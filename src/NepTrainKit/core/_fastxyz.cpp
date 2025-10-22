@@ -503,8 +503,8 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
 
         // ensure essential props exist; if none, synthesize species:S:1 pos:R:3
         if (p.props.empty()) {
-            p.props.push_back({"species", 'S', 1});
-            p.props.push_back({"pos", 'R', 3});
+            PropDesc d1; d1.name = "species"; d1.dtype = 'S'; d1.count = 1; p.props.push_back(d1);
+            PropDesc d2; d2.name = "pos";     d2.dtype = 'R'; d2.count = 3; p.props.push_back(d2);
         }
         if (dbg) {
             std::fprintf(stderr, "[fastxyz] frame %lld props=%zu\n", (long long)i, p.props.size());

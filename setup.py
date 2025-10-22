@@ -319,18 +319,18 @@ class BuildExtNVCC(build_ext):
 # preserve previously defined extensions
 # Register fast EXTXYZ parser extension for core
 
-# _fastxyz_compile_args = list(extra_compile_args)
-# if sys.platform == "win32":
-#     # Prefer C++17 for from_chars fast float parsing on MSVC
-#     # Remove older standard flag if present and add /std:c++17
-#     _fastxyz_compile_args = [flag for flag in _fastxyz_compile_args if not flag.startswith('/std:')]
-#     _fastxyz_compile_args.append('/std:c++17')
-#     # Enforce UTF-8 on MSVC to silence C4819
-#     if '/utf-8' not in _fastxyz_compile_args:
-#         _fastxyz_compile_args.append('/utf-8')
-# else:
-#     _fastxyz_compile_args = [flag for flag in _fastxyz_compile_args if not flag.startswith('-std=')]
-#     _fastxyz_compile_args.append('-std=c++17')
+_fastxyz_compile_args = list(extra_compile_args)
+if sys.platform == "win32":
+    # Prefer C++17 for from_chars fast float parsing on MSVC
+    # Remove older standard flag if present and add /std:c++17
+    _fastxyz_compile_args = [flag for flag in _fastxyz_compile_args if not flag.startswith('/std:')]
+    _fastxyz_compile_args.append('/std:c++17')
+    # Enforce UTF-8 on MSVC to silence C4819
+    if '/utf-8' not in _fastxyz_compile_args:
+        _fastxyz_compile_args.append('/utf-8')
+else:
+    _fastxyz_compile_args = [flag for flag in _fastxyz_compile_args if not flag.startswith('-std=')]
+    _fastxyz_compile_args.append('-std=c++17')
 
 ext_modules.append(
     Extension(
@@ -339,7 +339,7 @@ ext_modules.append(
         include_dirs=[
             pybind11_include,
         ],
-        extra_compile_args=extra_compile_args,
+        extra_compile_args=_fastxyz_compile_args,
         extra_link_args=extra_link_args,
         language="c++",
     )

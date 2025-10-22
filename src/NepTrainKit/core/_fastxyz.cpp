@@ -17,10 +17,11 @@
 #include <chrono>
 #include <cstdio>
 #include <memory>
-#if __cplusplus >= 201703L || defined(_MSC_VER)
-#  include <charconv>
-#endif
 #include <system_error>
+
+// Use single-header fast_float colocated in this directory
+#include "fast_float.h"
+#define NEPKIT_HAVE_FAST_FLOAT 1
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -70,12 +71,12 @@ inline bool parse_int(const char* p, const char* end, int& out, const char** nex
 inline double parse_double(const char*& p, const char* end) {
     const char* q = p;
     while (q < end && !std::isspace(static_cast<unsigned char>(*q))) ++q;
-#if __cplusplus >= 201703L || defined(_MSC_VER)
-    double v_fc = 0.0;
-    auto res = std::from_chars(p, q, v_fc, std::chars_format::general);
-    if (res.ec == std::errc()) {
+#if defined(NEPKIT_HAVE_FAST_FLOAT)
+    double v_ff = 0.0;
+    auto ffres = fast_float::from_chars(p, q, v_ff, fast_float::chars_format::general);
+    if (ffres.ec == std::errc()) {
         p = q;
-        return v_fc;
+        return v_ff;
     }
 #endif
     std::string token(p, q);

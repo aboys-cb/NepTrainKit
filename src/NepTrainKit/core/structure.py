@@ -1425,13 +1425,15 @@ def process_organic_clusters(structure, new_structure, clusters, is_organic_list
 
 
 def _load_npy_structure(folder: PathLike, cancel_event=None):
-    
     """Load a DeepMD-style dataset from numpy files into Structure objects.
+
+    Supports both standard deepmd/npy and dpdata's mixed npy format
+    (where per-frame ``real_atom_types.npy`` is present in ``set.*``).
 
     Parameters
     ----------
     folder : PathLike
-        Root folder containing type.raw, optional type_map.raw, and set.* subfolders.
+        Root folder containing ``type.raw``, optional ``type_map.raw``, and ``set.*`` subfolders.
     cancel_event : threading.Event or None, optional
         If provided and is_set(), stop early.
 
@@ -1454,8 +1456,6 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
     else:
         type_map = np.array([f'Type_{i + 1}' for i in range(np.max(type_) + 1)], dtype=str, ndmin=1)
 
-    elem_list = type_map[type_]
-    atoms_num = len(elem_list)
     nopbc = (folder_path / 'nopbc').is_file()
     sets = sorted(folder_path.glob('set.*'))
     dataset_dict: dict[str, list[np.ndarray]] = {}
@@ -1467,6 +1467,7 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
                 return structures
             key = data_path.stem
             data = np.load(data_path)
+            # Ensure 2D [nframes, -1]
             if data.ndim == 1:
                 data = data.reshape(data.shape[0], -1)
             dataset_dict.setdefault(key, []).append(data)
@@ -1474,33 +1475,56 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
     config_type = folder_path.name
     for key in list(dataset_dict.keys()):
         dataset_dict[key] = np.concatenate(dataset_dict[key], axis=0)
-    logger.debug(f"load {dataset_dict['box'].shape[0]} structures from {folder_path}" )
-    for index in range(dataset_dict['box'].shape[0]):
+
+    if 'box' not in dataset_dict or 'coord' not in dataset_dict:
+        return structures
+
+    total_frames = int(dataset_dict['box'].shape[0])
+    is_mixed = 'real_atom_types' in dataset_dict
+
+    logger.debug(f"load {total_frames} structures from {folder_path}")
+    for index in range(total_frames):
         if cancel_event is not None and getattr(cancel_event, 'is_set', None) and cancel_event.is_set():
             break
+
         box = dataset_dict['box'][index].reshape(3, 3)
         coords = dataset_dict['coord'][index].reshape(-1, 3)
+        atoms_num = int(coords.shape[0])
+
+        # species per frame: dpdata mixed uses real_atom_types per frame
+        if is_mixed:
+            real_types = dataset_dict['real_atom_types'][index].astype(int).reshape(-1)
+            species = type_map[real_types]
+        else:
+            species = type_map[type_]
+
         properties = [
             {'name': 'species', 'type': 'S', 'count': 1},
             {'name': 'pos', 'type': 'R', 'count': 3},
         ]
-        info = {'species': elem_list, 'pos': coords}
-        additional_fields = {'Config_type': config_type, 'pbc': 'F F F' if nopbc else 'T T T',"type_map": type_map.tolist()}
+        info = {'species': species, 'pos': coords}
+        additional_fields = {
+            'Config_type': config_type,
+            'pbc': 'F F F' if nopbc else 'T T T',
+            'type_map': type_map.tolist(),
+        }
+
         for key, value in dataset_dict.items():
-            if key in {'box', 'coord'}:
+            if key in {'box', 'coord', 'real_atom_types'}:
                 continue
 
             prop = value[index]
-            count = prop.shape[0]
+            count = int(prop.shape[0])
             if count >= atoms_num and key != 'virial':
                 col = count // atoms_num
                 info[key] = prop.reshape((-1, col))
-                properties.append({'name': key, 'type': 'R', 'count': col})
+                properties.append({'name': key, 'type': 'R', 'count': int(col)})
             else:
                 if count == 1:
                     additional_fields[key] = prop[0]
                 else:
                     additional_fields[key] = prop.flatten()
+
         structure = Structure(
             lattice=box,
             atomic_properties=info,

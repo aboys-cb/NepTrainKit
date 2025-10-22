@@ -68,16 +68,20 @@ class Structure:
         """
         super().__init__()
         self.properties = properties
-        self.lattice = np.array(lattice,dtype=np.float64).reshape((3,3))  # Optional: Lattice vectors
+        # Avoid unnecessary copies for already-shaped numpy arrays
+        if isinstance(lattice, np.ndarray) :
+            self.lattice = lattice.reshape((3, 3))
+        else:
+            self.lattice = np.array(lattice, dtype=np.float32).reshape((3, 3))
         self.atomic_properties = atomic_properties
         self.additional_fields = additional_fields
-        if "Config_type" not in self.additional_fields.keys():
-            self.additional_fields["Config_type"] = Config.get("widget", "default_config_type", "neptrainkit")
+
         if "force" in self.atomic_properties.keys():
             self.force_label="force"
         else:
             self.force_label = "forces"
-        self.formula
+        # Defer formula computation; cached_property will compute lazily on first access
+        # self.formula
     @property
     def tag(self)->str:
         """Alias for the ``Config_type`` additional field."""
@@ -123,7 +127,8 @@ class Structure:
                     break
 
     def __len__(self):
-        return len(self.elements)
+        # Delegate to num_atoms to avoid forcing symbol construction
+        return self.num_atoms
 
     @classmethod
     def read_xyz(cls, filename:str) -> Structure:
@@ -255,7 +260,19 @@ class Structure:
         list[int]
             List of atomic numbers in the same order as :attr:`elements`.
         """
-        return [atomic_numbers[element] for element in self.elements ]
+        ap = self.atomic_properties
+        # Fast path: map species_id -> atomic number using type_map
+        sid = ap.get("species_id")
+        tmap = self.additional_fields.get("type_map") if hasattr(self, "additional_fields") else None
+        if sid is not None and tmap is not None:
+            # Build per-structure mapping once
+            try:
+                map_arr = np.array([atomic_numbers[str(sym)] for sym in tmap], dtype=np.int32)
+                return map_arr[np.asarray(sid, dtype=np.int32)].tolist()
+            except Exception:
+                pass
+        # Fallback: derive from string symbols
+        return [atomic_numbers[element] for element in self.elements]
     @property
     def spin_num(self)->int:
         """Number of atoms with non-zero magnetic moment.
@@ -474,7 +491,20 @@ class Structure:
         ndarray, shape (N,), dtype str
             Symbol for each atom.
         """
-        return self.atomic_properties['species']
+        ap = self.atomic_properties
+        if 'species' in ap:
+            return ap['species']
+        # Lazily map numeric species_id to string symbols using type_map if available
+        sid = ap.get('species_id')
+        tmap = self.additional_fields.get('type_map') if hasattr(self, 'additional_fields') else None
+        if sid is not None and tmap is not None:
+            elems = np.asarray(tmap, dtype=object)[np.asarray(sid, dtype=np.int32)]
+            # Cache for subsequent accesses and ensure metadata has species
+            self.atomic_properties['species'] = elems
+            if not any(p.get('name') == 'species' for p in self.properties):
+                self.properties.insert(0, {'name': 'species', 'type': 'S', 'count': 1})
+            return elems
+        raise KeyError("'species' not found in atomic_properties and no usable 'species_id'/'type_map'")
 
     @property
     def positions(self):
@@ -495,6 +525,14 @@ class Structure:
         -------
         int
         """
+        # Avoid touching elements to skip expensive string creation on fast path
+        pos = self.atomic_properties.get('pos')
+        if pos is not None:
+            try:
+                return int(np.asarray(pos).shape[0])
+            except Exception:
+                pass
+        # Fallback: use species array length
         return len(self.elements)
 
     def copy(self):
@@ -804,6 +842,69 @@ class Structure:
 
         return structures
 
+    @classmethod
+    @timeit
+    def read_multiple_fast(cls, filename: str, max_workers: int | None = None,**kwargs):
+        """
+        High-performance multi-frame EXTXYZ reader backed by a C++ parser.
+
+        This uses a pybind11 extension (NepTrainKit.core._fastxyz) and Python mmap
+        to index and parse frames in native code, then constructs Structure objects.
+        Falls back to read_multiple on error or if the extension is unavailable.
+        """
+        try:
+            from NepTrainKit.core import _fastxyz as _fx
+        except Exception:
+            logger.warning("_fastxyz extension not available; falling back to Python reader")
+
+            return cls.read_multiple(filename)
+
+        import mmap as _mmap
+        import os as _os
+        # Allow disabling fast path at runtime for stability/debugging
+        if _os.environ.get("NEPKIT_DISABLE_FASTXYZ", "0") in ("1", "true", "True"):
+            logger.warning("NEPKIT_DISABLE_FASTXYZ=1 set; using Python reader")
+            return cls.read_multiple(filename)
+        results = []
+        workers = -1 if max_workers is None else int(max_workers)
+        # Prefer numeric species IDs to avoid constructing many Python strings up front.
+        # Respect an existing env setting if the user configured it.
+        reset_species_env = False
+        if "NEPKIT_FASTXYZ_SPECIES_MODE" not in _os.environ:
+            _os.environ["NEPKIT_FASTXYZ_SPECIES_MODE"] = "id"
+            reset_species_env = True
+        with open(filename, "rb") as f:
+            with _mmap.mmap(f.fileno(), 0, access=_mmap.ACCESS_READ) as mm:
+                try:
+                    frames = _fx.parse_all(mm, workers)
+                except Exception as e:
+                    logger.warning(f"fast parse failed: {e}; falling back to Python reader")
+                    return cls.read_multiple(filename)
+                finally:
+                    if reset_species_env:
+                        try:
+                            del _os.environ["NEPKIT_FASTXYZ_SPECIES_MODE"]
+                        except Exception:
+                            pass
+
+        default_config_type = Config.get("widget", "default_config_type", "neptrainkit")
+        for fr in frames:
+            ap = fr.get("atomic_properties", {})
+            additional_fields = fr.get("additional_fields", {})
+            if "Config_type" not in additional_fields.keys():
+                additional_fields["Config_type"] = default_config_type
+
+            results.append(Structure(
+                lattice=fr.get("lattice"),
+                atomic_properties=ap,
+                properties=fr.get("properties", []),
+                additional_fields=additional_fields,
+            ))
+        return results
+
+
+
+
     def write(self, file:IO):
         """Write the structure as an EXTXYZ frame to a file-like object.
 
@@ -825,7 +926,8 @@ class Structure:
         props = ":".join(f"{p['name']}:{p['type']}:{p['count']}" for p in self.properties)
         global_line.append(f"Properties={props}")
         for key, value in self.additional_fields.items():
-
+            if key =="type_map":
+                continue
             if isinstance(value, (float, int,np.number)):
                 global_line.append(f"{key}={value}")
             elif isinstance(value, np.ndarray):
@@ -841,15 +943,25 @@ class Structure:
         for row in range(self.num_atoms):
             line = ""
             for prop  in self.properties :
-                if prop["count"] == 1:
-                    values=[self.atomic_properties[prop["name"]][row]]
+                pname = prop["name"]
+                ptype = prop["type"]
+                if pname == "species_id":
+                    continue
+                # Special-case: species may be represented as species_id for fast path
+                if pname == 'species' and 'species' not in self.atomic_properties and 'species_id' in self.atomic_properties:
+                    sid = int(self.atomic_properties['species_id'][row])
+                    type_map = self.additional_fields.get('type_map', [])
+                    sym = type_map[sid] if 0 <= sid < len(type_map) else 'X'
+                    values = [sym]
                 else:
-                    values= self.atomic_properties[prop["name"]][row, :]
+                    if prop["count"] == 1:
+                        values=[self.atomic_properties[pname][row]]
+                    else:
+                        values= self.atomic_properties[pname][row, :]
 
-                if prop["type"] == 'S':
-                    line += " ".join([f"{x }" for x in values]) + " "
-
-                elif prop["type"] == 'R':
+                if ptype == 'S':
+                    line += " ".join([f"{x}" for x in values]) + " "
+                elif ptype == 'R':
                     line += " ".join([f"{x:.10g}" for x in values]) + " "
                 else:
                     line += " ".join([f"{x}" for x in values]) + " "
@@ -1581,3 +1693,12 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
 
 
 
+class FastStructure(Structure):
+    """Structure subclass that uses a C++-accelerated parser for EXTXYZ IO."""
+    @classmethod
+    def read_multiple(cls, filename: str, max_workers: int | None = None):
+        return super(FastStructure, cls).read_multiple_fast(filename, max_workers=max_workers)
+
+    @classmethod
+    def iter_read_multiple(cls, filename: str, max_workers: int | None = None):
+        yield from super(FastStructure, cls).iter_read_multiple_fast(filename, max_workers=max_workers)

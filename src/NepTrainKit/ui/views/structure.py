@@ -51,7 +51,7 @@ class StructureInfoWidget(QWidget):
         self.angle_text = BodyLabel(self)
 
         self.config_label = BodyLabel(self)
-        self.config_label.setText("Config Type:")
+        self.config_label.setText("Config_type:")
         self.config_text = BodyLabel(self)
         self.config_text.setMaximumWidth(400)
         self.config_text.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)

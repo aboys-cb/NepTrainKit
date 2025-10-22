@@ -92,7 +92,8 @@ class ExtxyzImporter:
             Parsed configurations in file order.
         """
         candidate = as_path(path)
-        yield from Structure.iter_read_multiple(str(candidate), **kwargs)
+
+        return Structure.read_multiple_fast(str(candidate), **kwargs)
 register_importer(ExtxyzImporter())
 # VASP XDATCAR importer
 class XdatcarImporter:

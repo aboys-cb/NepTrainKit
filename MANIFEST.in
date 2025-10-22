@@ -15,6 +15,7 @@ global-exclude *.log
 global-exclude *upx.exe
 global-exclude *update.exe
 global-exclude *nep_cpu*.pyd
+global-exclude *_fastxyz*.pyd
 global-exclude *nep_gpu*.pyd
 global-exclude *cuda*.dll
 global-exclude *vcomp140*.dll

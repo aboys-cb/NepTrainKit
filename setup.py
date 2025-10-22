@@ -31,17 +31,22 @@ pybind11_include = pybind11.get_include()
 
 extra_link_args = [ ]
 extra_compile_args=[ ]
+# OpenMP 控制：NEPKIT_OPENMP=auto(默认)/1/0；为0时禁用OpenMP
+omp_mode = os.environ.get("NEPKIT_OPENMP", "auto").strip().lower()
+use_openmp = omp_mode not in ("0", "false", "off", "no")
 # 检查平台并设置相应的 OpenMP 编译标志
 
 if sys.platform == "win32":
     # 对于 Windows 使用 MSVC 编译器时，需要使用 /openmp
-    extra_compile_args.append('/openmp' )
+    if use_openmp:
+        extra_compile_args.append('/openmp' )
     extra_compile_args.append('/O2' )
     extra_compile_args.append('/std:c++11' )
 
 
 
-    extra_link_args.append('/openmp')
+    if use_openmp:
+        extra_link_args.append('/openmp')
     extra_link_args.append('/O2' )
     extra_link_args.append('/std:c++11' )
 
@@ -66,20 +71,23 @@ elif sys.platform == "darwin":
 
     omp_include = os.getenv("OMP_INCLUDE_PATH", "/opt/homebrew/opt/libomp/include")
     omp_lib = os.getenv("OMP_LIB_PATH", "/opt/homebrew/opt/libomp/lib")
-    extra_compile_args.extend(["-Xpreprocessor", "-fopenmp", f"-I{omp_include}"])
-    extra_link_args.extend(["-lomp", f"-L{omp_lib}"])
+    if use_openmp and os.path.isdir(omp_include) and os.path.isdir(omp_lib):
+        extra_compile_args.extend(["-Xpreprocessor", "-fopenmp", f"-I{omp_include}"])
+        extra_link_args.extend(["-lomp", f"-L{omp_lib}"])
 
     pass
 
 else:
     # 对于 Linux 和 GCC 使用 -fopenmp 编译标志
 
-    extra_compile_args.append('-fopenmp' )
+    if use_openmp:
+        extra_compile_args.append('-fopenmp' )
     extra_compile_args.append('-O3')
     extra_compile_args.append('-std=c++11')
 
 
-    extra_link_args.append('-fopenmp')
+    if use_openmp:
+        extra_link_args.append('-fopenmp')
     extra_link_args.append('-O3')
     extra_link_args.append('-std=c++11')
 
@@ -228,11 +236,16 @@ class BuildExtNVCC(build_ext):
         # if os.environ.get("NEP_GPU_STRONG_DEBUG"):
         #     nvcc_flags += ["-DSTRONG_DEBUG"]
         if os.name == 'nt':
-            # Enable OpenMP (SIMD) and typical MSVC flags for host compilation
-            nvcc_flags += ["-Xcompiler", "/openmp:experimental,/MD,/O2,/EHsc"]
+            # Typical MSVC flags for host compilation; OpenMP optional
+            if use_openmp:
+                nvcc_flags += ["-Xcompiler", "/openmp:experimental,/MD,/O2,/EHsc"]
+            else:
+                nvcc_flags += ["-Xcompiler", "/MD,/O2,/EHsc"]
         else:
-            # PIC for shared lib, enable OpenMP on host compiler
-            nvcc_flags += ["-Xcompiler", "-fPIC", "-Xcompiler", "-fopenmp"]
+            # PIC for shared lib; enable OpenMP on host compiler only if requested
+            nvcc_flags += ["-Xcompiler", "-fPIC"]
+            if use_openmp:
+                nvcc_flags += ["-Xcompiler", "-fopenmp"]
 
         incs = []
         for inc in (ext.include_dirs or []):
@@ -303,6 +316,35 @@ class BuildExtNVCC(build_ext):
             print("WARNING: nvcc not found; skipping NepTrainKit.nep_gpu build.")
             self.extensions = [e for e in self.extensions if e.name != "NepTrainKit.nep_gpu"]
         return super().build_extensions()
+# preserve previously defined extensions
+# Register fast EXTXYZ parser extension for core
+
+# _fastxyz_compile_args = list(extra_compile_args)
+# if sys.platform == "win32":
+#     # Prefer C++17 for from_chars fast float parsing on MSVC
+#     # Remove older standard flag if present and add /std:c++17
+#     _fastxyz_compile_args = [flag for flag in _fastxyz_compile_args if not flag.startswith('/std:')]
+#     _fastxyz_compile_args.append('/std:c++17')
+#     # Enforce UTF-8 on MSVC to silence C4819
+#     if '/utf-8' not in _fastxyz_compile_args:
+#         _fastxyz_compile_args.append('/utf-8')
+# else:
+#     _fastxyz_compile_args = [flag for flag in _fastxyz_compile_args if not flag.startswith('-std=')]
+#     _fastxyz_compile_args.append('-std=c++17')
+
+ext_modules.append(
+    Extension(
+        "NepTrainKit.core._fastxyz",
+        ["src/NepTrainKit/core/_fastxyz.cpp"],
+        include_dirs=[
+            pybind11_include,
+        ],
+        extra_compile_args=extra_compile_args,
+        extra_link_args=extra_link_args,
+        language="c++",
+    )
+)
+
 setup(
     author="Chen Cheng bing",
 cmdclass={'build_ext': BuildExtNVCC},

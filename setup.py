@@ -140,23 +140,7 @@ ext_modules.append(
     )
 )
 
-# 自定义 build_ext 命令，确保兼容性
-class BuildExt(build_ext):
-    def build_extensions(self):
-        # 设置编译器标准为 C++17
-        ct = self.compiler.compiler_type
-        opts = [ ]
-        for ext in self.extensions:
-            ext.extra_compile_args = opts + ext.extra_compile_args
-        try:
-            # 尝试构建扩展模块
-            build_ext.build_extensions(self)
-        except Exception as e:
-            # 捕获编译错误并打印警告
-            print(f"WARNING: Failed to build extension module: {e}")
-            print("WARNING: Skipping nep_cpu module build. The package will be installed without it.")
-            # 清空 ext_modules，跳过扩展模块的构建
-            self.ext_modules = []
+
 
 
 
@@ -307,30 +291,67 @@ class BuildExtNVCC(build_ext):
         except Exception as e:
             print(f"WARNING: Linking nep_gpu failed: {e}")
             return
+    def _should_skip_gpu(self) -> bool:
+        mode = os.environ.get("NEPKIT_BUILD_GPU", "auto").strip().lower()
+        if mode in ("0", "false", "off", "no", "skip"):
+            print("INFO: NEPKIT_BUILD_GPU is disabled; skipping NepTrainKit.nep_gpu.")
+            return True
+        return False
     def build_extensions(self):
-        # If nvcc is unavailable, drop the GPU extension so copy stage won't fail
+        # Optionally drop the GPU extension so copy stage won't fail
+        if self._should_skip_gpu():
+            self.extensions = [e for e in self.extensions if e.name != "NepTrainKit.nep_gpu"]
+        else:
+            try:
+                nvcc, _, _ = self._cuda_paths()
+            except Exception:
+                nvcc = None
+            if not nvcc:
+                print("WARNING: nvcc not found; skipping NepTrainKit.nep_gpu build.")
+                self.extensions = [e for e in self.extensions if e.name != "NepTrainKit.nep_gpu"]
+        return super().build_extensions()
+    def run(self):
+        # Build non-GPU extensions first, then try GPU in isolation so failures don't block others.
+        all_exts = list(self.extensions)
+        gpu_exts = [e for e in all_exts if e.name == "NepTrainKit.nep_gpu"]
+        other_exts = [e for e in all_exts if e.name != "NepTrainKit.nep_gpu"]
+
+        # 1) Build CPU/fastxyz, etc.
+        if other_exts:
+            orig = self.extensions
+            try:
+                self.extensions = other_exts
+                super().run()
+            finally:
+                self.extensions = orig
+
+        # 2) Try GPU separately
+        if not gpu_exts:
+            return
+        if self._should_skip_gpu():
+            return
         try:
             nvcc, _, _ = self._cuda_paths()
         except Exception:
             nvcc = None
         if not nvcc:
             print("WARNING: nvcc not found; skipping NepTrainKit.nep_gpu build.")
-            self.extensions = [e for e in self.extensions if e.name != "NepTrainKit.nep_gpu"]
-        return super().build_extensions()
+            return
+
+        orig = self.extensions
+        try:
+            self.extensions = gpu_exts
+            try:
+                super().run()
+            except Exception as e:
+                # Swallow any GPU build/copy errors to keep CPU/fastxyz independent
+                print(f"WARNING: nep_gpu build failed and was skipped: {e}")
+        finally:
+            self.extensions = orig
 # preserve previously defined extensions
 # Register fast EXTXYZ parser extension for core
 _fastxyz_compile_args = list(extra_compile_args)
-# if sys.platform == "win32":
-#     # Prefer C++17 for from_chars fast float parsing on MSVC
-#     # Remove older standard flag if present and add /std:c++17
-#     _fastxyz_compile_args = [flag for flag in _fastxyz_compile_args if not flag.startswith('/std:')]
-#     _fastxyz_compile_args.append('/std:c++17')
-#     # Enforce UTF-8 on MSVC to silence C4819
-#     if '/utf-8' not in _fastxyz_compile_args:
-#         _fastxyz_compile_args.append('/utf-8')
-# else:
-#     _fastxyz_compile_args = [flag for flag in _fastxyz_compile_args if not flag.startswith('-std=')]
-#     _fastxyz_compile_args.append('-std=c++17')
+
 
 _fastxyz_include_dirs = [pybind11_include, "src/NepTrainKit/core"]
 

@@ -125,17 +125,12 @@ jobs:
       with:
         arch: x86
 
-#    - name: Setup MSVC (x64)
-#      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-#      uses: ilammy/msvc-dev-cmd@v1
-#      with:
-#        arch: x64
-    - name: Add MSVC 2019
-      if: ${{ matrix.buildplat[1] == 'win32' }}
-      uses: microsoft/setup-msbuild@v1.1
+    - name: Setup MSVC (x64)
+      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
+      uses: ilammy/msvc-dev-cmd@v1
       with:
-        msbuild-architecture: x64
-        vs-version: '[16.11,17)'   # 锁定 VS2019
+        arch: x64
+ 
     - name: Setup CUDA (Windows)
       if: runner.os == 'Windows'
       id: cuda-toolkit

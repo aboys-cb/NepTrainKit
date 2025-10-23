@@ -184,8 +184,8 @@ jobs:
           find {wheel} -name '*.so*' -exec strip --strip-unneeded {} \;
           auditwheel repair -w {dest_dir} {wheel} || cp {wheel} {dest_dir}/
 
-        CIBW_ENVIRONMENT_WINDOWS: >
-          CUDA_PATH=${{steps.cuda-toolkit.outputs.CUDA_PATH}} CUDA_HOME=${{steps.cuda-toolkit.outputs.CUDA_PATH}}
+#        CIBW_ENVIRONMENT_WINDOWS: >
+#          CUDA_PATH=${{steps.cuda-toolkit.outputs.CUDA_PATH}} CUDA_HOME=${{steps.cuda-toolkit.outputs.CUDA_PATH}}
 
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=13.0' }}

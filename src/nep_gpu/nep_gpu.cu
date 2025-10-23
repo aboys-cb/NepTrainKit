@@ -41,7 +41,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
-
+#include <cstddef>  // 引入 std::ptrdiff_t
 // GPUMD NEP headers (resolved via include_dirs set in setup.py)
 // Relax access locally to read descriptor buffers (no IO) without touching core
 
@@ -580,8 +580,8 @@ py::array GpuNep::calculate_descriptors_scaled(
     });
 
     // shape = [total_atoms, dim], strides in bytes
-    std::vector<ssize_t> shape{static_cast<ssize_t>(total_atoms), static_cast<ssize_t>(dim)};
-    std::vector<ssize_t> strides{static_cast<ssize_t>(dim * sizeof(float)), static_cast<ssize_t>(sizeof(float))};
+    std::vector<std::ptrdiff_t> shape{static_cast<std::ptrdiff_t>(total_atoms), static_cast<std::ptrdiff_t>(dim)};
+    std::vector<std::ptrdiff_t> strides{static_cast<std::ptrdiff_t>(dim * sizeof(float)), static_cast<std::ptrdiff_t>(sizeof(float))};
     return py::array(py::buffer_info(
         data,                            // ptr
         sizeof(float),                   // itemsize

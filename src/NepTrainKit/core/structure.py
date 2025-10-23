@@ -855,9 +855,11 @@ class Structure:
         try:
             from NepTrainKit.core import _fastxyz as _fx
         except Exception:
-            logger.warning("_fastxyz extension not available; falling back to Python reader")
-
-            return cls.read_multiple(filename)
+            try:
+                import _fastxyz as _fx
+            except Exception:
+                logger.warning("_fastxyz extension not available; falling back to Python reader")
+                return cls.read_multiple(filename)
 
         import mmap as _mmap
         import os as _os

@@ -164,6 +164,19 @@ class BuildExtNVCC(build_ext):
         nvcc_cmd = shutil.which("nvcc")
         return (Path(nvcc_cmd) if nvcc_cmd else None, None, None)
 
+    def _host_compiler_ready(self) -> bool:
+        """On Windows, ensure MSVC host compiler is available for NVCC.
+        On other platforms return True.
+        """
+        if os.name != 'nt':
+            return True
+        # Basic checks for cl.exe presence or VS env being set
+        if shutil.which('cl.exe'):
+            return True
+        if os.environ.get('VCToolsInstallDir') or os.environ.get('VSINSTALLDIR'):
+            return True
+        return False
+
     def build_extension(self, ext):
         if ext.name != "NepTrainKit.nep_gpu":
             return super().build_extension(ext)
@@ -299,8 +312,9 @@ class BuildExtNVCC(build_ext):
         return False
     def build_extensions(self):
         # Optionally drop the GPU extension so copy stage won't fail
+        drop_gpu = False
         if self._should_skip_gpu():
-            self.extensions = [e for e in self.extensions if e.name != "NepTrainKit.nep_gpu"]
+            drop_gpu = True
         else:
             try:
                 nvcc, _, _ = self._cuda_paths()
@@ -308,10 +322,15 @@ class BuildExtNVCC(build_ext):
                 nvcc = None
             if not nvcc:
                 print("WARNING: nvcc not found; skipping NepTrainKit.nep_gpu build.")
-                self.extensions = [e for e in self.extensions if e.name != "NepTrainKit.nep_gpu"]
+                drop_gpu = True
+            elif not self._host_compiler_ready():
+                print("WARNING: MSVC (cl.exe) not found; skipping NepTrainKit.nep_gpu build on Windows.")
+                drop_gpu = True
+        if drop_gpu:
+            self.extensions = [e for e in self.extensions if e.name != "NepTrainKit.nep_gpu"]
         return super().build_extensions()
     def run(self):
-        # Build non-GPU extensions first, then try GPU in isolation so failures don't block others.
+        # Build non-GPU extensions first, then try GPU in isolation via direct method
         all_exts = list(self.extensions)
         gpu_exts = [e for e in all_exts if e.name == "NepTrainKit.nep_gpu"]
         other_exts = [e for e in all_exts if e.name != "NepTrainKit.nep_gpu"]
@@ -325,7 +344,7 @@ class BuildExtNVCC(build_ext):
             finally:
                 self.extensions = orig
 
-        # 2) Try GPU separately
+        # 2) Try GPU separately, avoiding base run() to prevent source-type assumptions
         if not gpu_exts:
             return
         if self._should_skip_gpu():
@@ -337,17 +356,17 @@ class BuildExtNVCC(build_ext):
         if not nvcc:
             print("WARNING: nvcc not found; skipping NepTrainKit.nep_gpu build.")
             return
+        if not self._host_compiler_ready():
+            print("WARNING: MSVC (cl.exe) not found; skipping NepTrainKit.nep_gpu build on Windows.")
+            return
 
-        orig = self.extensions
-        try:
-            self.extensions = gpu_exts
+        # Ensure compiler is initialized (super().run initializes it, but after step 1 it's ready)
+        # Build the GPU extension directly using our overridden build_extension
+        for ge in gpu_exts:
             try:
-                super().run()
+                self.build_extension(ge)
             except Exception as e:
-                # Swallow any GPU build/copy errors to keep CPU/fastxyz independent
                 print(f"WARNING: nep_gpu build failed and was skipped: {e}")
-        finally:
-            self.extensions = orig
 # preserve previously defined extensions
 # Register fast EXTXYZ parser extension for core
 _fastxyz_compile_args = list(extra_compile_args)

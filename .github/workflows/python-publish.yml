@@ -130,13 +130,20 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
+    - name: Setup CUDA (Windows)
+      if: runner.os == 'Windows'
+      id: cuda-toolkit
+      uses: Jimver/cuda-toolkit@v0.2.28
+      with:
+        cuda: '12.4.0'
+        method: 'network'          # 首次会下载，后续命中缓存
+        sub-packages: '["nvcc", "cudart", "cublas"]'
 
 
-
-    - name: Install CUDA
-      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-      run: |
-        choco install cuda --version=12.4.0.551 --no-progress --yes
+#    - name: Install CUDA
+#      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
+#      run: |
+#        choco install cuda --version=12.4.0.551 --no-progress --yes
 #
 
     - name: Build wheels
@@ -177,7 +184,7 @@ jobs:
           auditwheel repair -w {dest_dir} {wheel} || cp {wheel} {dest_dir}/
 
         CIBW_ENVIRONMENT_WINDOWS: >
-          CUDA_PATH="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.4" CUDA_HOME="C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.4"
+          CUDA_PATH=${{steps.cuda-toolkit.outputs.CUDA_PATH}} CUDA_HOME=${{steps.cuda-toolkit.outputs.CUDA_PATH}}
 
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=13.0' }}

@@ -139,7 +139,13 @@ jobs:
         method: 'network'          # 首次会下载，后续命中缓存
         sub-packages: '["nvcc", "cudart", "cublas","cusolver","curand"]'
         use-github-cache: false
-
+    - name: 列举 12.4 include 目录下所有文件
+      shell: pwsh
+      run: |
+        Get-ChildItem -Path "${env:ProgramFiles}\NVIDIA GPU Computing Toolkit\CUDA\v12.4\include" `
+                      -Recurse -File -ErrorAction SilentlyContinue |
+        Sort-Object FullName |
+        ForEach-Object { Write-Host $_.FullName }
 
 #    - name: Install CUDA
 #      if: ${{ matrix.buildplat[1] == 'win_amd64' }}

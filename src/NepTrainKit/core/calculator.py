@@ -150,6 +150,7 @@ class NepCalculator:
         if isinstance(structures, list):
             return structures
         return list(structures)
+    @timeit
     def compose_structures(
         self,
         structures: Iterable[Structure] | Structure,
@@ -323,7 +324,8 @@ class NepCalculator:
         types, boxes, positions, group_sizes = self.compose_structures(structures)
         self.nep3.reset_cancel()
         descriptor = self.nep3.get_structures_descriptor(types, boxes, positions)
-        descriptor=np.array(descriptor, dtype=np.float32)
+        # Ensure numpy array without unnecessary copy when already ndarray
+        descriptor = np.asarray(descriptor, dtype=np.float32)
         if not mean_descriptor:
             return descriptor
         structure_descriptor = aggregate_per_atom_to_structure(descriptor, group_sizes, map_func=np.mean, axis=0)

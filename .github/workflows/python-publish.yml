@@ -136,9 +136,9 @@ jobs:
       uses: Jimver/cuda-toolkit@v0.2.24
       with:
         cuda: '12.4.0'
-        method: 'network'          # 首次会下载，后续命中缓存
-        sub-packages: '["nvcc", "cudart", "cublas","cusolver","curand"]'
-        use-github-cache: false
+        method: 'local'          # 首次会下载，后续命中缓存
+#        sub-packages: '["nvcc", "cudart", "cublas","cusolver","curand"]'
+        use-github-cache: true
     - name: 列举 12.4 include 目录下所有文件
       shell: pwsh
       run: |

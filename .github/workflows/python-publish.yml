@@ -125,11 +125,17 @@ jobs:
       with:
         arch: x86
 
-    - name: Setup MSVC (x64)
-      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-      uses: ilammy/msvc-dev-cmd@v1
+#    - name: Setup MSVC (x64)
+#      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
+#      uses: ilammy/msvc-dev-cmd@v1
+#      with:
+#        arch: x64
+    - name: Add MSVC 2019
+      if: ${{ matrix.buildplat[1] == 'win32' }}
+      uses: microsoft/setup-msbuild@v1.1
       with:
-        arch: x64
+        msbuild-architecture: x64
+        vs-version: '[16.11,17)'   # 锁定 VS2019
     - name: Setup CUDA (Windows)
       if: runner.os == 'Windows'
       id: cuda-toolkit
@@ -137,7 +143,7 @@ jobs:
       with:
         cuda: '12.4.0'
         method: 'local'          # 首次会下载，后续命中缓存
-#        sub-packages: '["nvcc", "cudart", "cublas","cusolver","curand"]'
+        sub-packages: '["nvcc", "cudart", "cublas","cusolver","curand"]'
         use-github-cache: true
     - name: 列举 12.4 include 目录下所有文件
       shell: pwsh

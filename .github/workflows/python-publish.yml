@@ -138,7 +138,7 @@ jobs:
       with:
         cuda: '12.4.0'
         method: 'local'          # 首次会下载，后续命中缓存
-        sub-packages: '["nvcc", "cudart", "cublas","cusolver","curand"]'
+#        sub-packages: '["nvcc", "cudart", "cublas","cusolver","curand"]'
         use-github-cache: true
  
 

@@ -134,7 +134,7 @@ jobs:
     - name: Setup CUDA (Windows)
       if: runner.os == 'Windows'
       id: cuda-toolkit
-      uses: Jimver/cuda-toolkit@v0.2.28
+      uses: N-Storm/cuda-toolkit@master
       with:
         cuda: '12.4.0'
         method: 'local'          # 首次会下载，后续命中缓存

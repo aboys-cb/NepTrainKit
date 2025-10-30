@@ -1151,8 +1151,136 @@ void find_force_radial_small_box(
   double* g_fy,
   double* g_fz,
   double* g_virial,
-  bool accumulate_on_center = false)
+  bool accumulate_on_center = false,
+  // spin-optimized extras (optional): if provided, treat n2>=pseudo_start as pseudo
+  int pseudo_start = -1,
+  const int* pseudo_to_host = nullptr,
+  double* g_pseudo_fx = nullptr,
+  double* g_pseudo_fy = nullptr,
+  double* g_pseudo_fz = nullptr,
+  bool enable_parallel_center_only = false)
 {
+  const bool pseudo_mode = (pseudo_to_host && pseudo_start >= 0 && g_pseudo_fx && g_pseudo_fy && g_pseudo_fz);
+  // Fast path: in spin mode, if requested, parallelize across centers and avoid neighbor writes
+#if defined(_OPENMP)
+  if (enable_parallel_center_only && pseudo_mode && !is_dipole) {
+    int nthreads = omp_get_max_threads();
+    std::vector<double> tls_pfx(static_cast<size_t>(nthreads) * N, 0.0);
+    std::vector<double> tls_pfy(static_cast<size_t>(nthreads) * N, 0.0);
+    std::vector<double> tls_pfz(static_cast<size_t>(nthreads) * N, 0.0);
+
+    #pragma omp parallel
+    {
+      int tid = omp_get_thread_num();
+      double* pfx = tls_pfx.data() + static_cast<size_t>(tid) * N;
+      double* pfy = tls_pfy.data() + static_cast<size_t>(tid) * N;
+      double* pfz = tls_pfz.data() + static_cast<size_t>(tid) * N;
+
+      const double tiny = 1e-12;
+      #pragma omp for schedule(static)
+      for (int n1 = 0; n1 < N; ++n1) {
+        int t1 = g_type[n1];
+        for (int i1 = 0; i1 < g_NN[n1]; ++i1) {
+          int index = i1 * N + n1;
+          int n2 = g_NL[index];
+          int t2 = g_type[n2];
+          double r12[3] = {g_x12[index], g_y12[index], g_z12[index]};
+          double d12 = sqrt(r12[0] * r12[0] + r12[1] * r12[1] + r12[2] * r12[2]);
+          if (d12 <= tiny) continue; // avoid singularities
+          double d12inv = 1.0 / d12;
+          double f12[3] = {0.0};
+#ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
+          int t12 = t1 * ((paramb.spin_mode == 1) ? paramb.num_types_total : paramb.num_types) + t2;
+          int index_left, index_right; double weight_left, weight_right;
+          find_index_and_weight(d12 * paramb.rcinv_radial, index_left, index_right, weight_left, weight_right);
+          for (int n = 0; n <= paramb.n_max_radial; ++n) {
+            double gnp12 =
+              g_gnp_radial[(index_left * ((paramb.spin_mode == 1) ? paramb.num_types_sq_total : paramb.num_types_sq) + t12) * (paramb.n_max_radial + 1) + n] * weight_left +
+              g_gnp_radial[(index_right * ((paramb.spin_mode == 1) ? paramb.num_types_sq_total : paramb.num_types_sq) + t12) * (paramb.n_max_radial + 1) + n] * weight_right;
+            double tmp12 = g_Fp[n1 + n * N] * gnp12 * d12inv;
+            f12[0] += tmp12 * r12[0];
+            f12[1] += tmp12 * r12[1];
+            f12[2] += tmp12 * r12[2];
+          }
+#else
+          double fc12, fcp12;
+          double rc = paramb.rc_radial; double rcinv = paramb.rcinv_radial;
+          if (paramb.use_typewise_cutoff) {
+            int tr1 = (paramb.spin_mode == 1) ? (t1 % paramb.num_types_real) : t1;
+            int tr2 = (paramb.spin_mode == 1) ? (t2 % paramb.num_types_real) : t2;
+            rc = std::min((COVALENT_RADIUS[paramb.atomic_numbers[tr1]] + COVALENT_RADIUS[paramb.atomic_numbers[tr2]]) * paramb.typewise_cutoff_radial_factor, rc);
+            rcinv = 1.0 / rc;
+          }
+          find_fc_and_fcp(rc, rcinv, d12, fc12, fcp12);
+          double fn12[MAX_NUM_N]; double fnp12[MAX_NUM_N];
+          find_fn_and_fnp(paramb.basis_size_radial, rcinv, d12, fc12, fcp12, fn12, fnp12);
+          const int NT2 = (paramb.spin_mode == 1) ? paramb.num_types_sq_total : paramb.num_types_sq;
+          const int NT  = (paramb.spin_mode == 1) ? paramb.num_types_total    : paramb.num_types;
+          for (int n = 0; n <= paramb.n_max_radial; ++n) {
+            double gnp12 = 0.0;
+            for (int k = 0; k <= paramb.basis_size_radial; ++k) {
+              int c_index = (n * (paramb.basis_size_radial + 1) + k) * NT2;
+              c_index += t1 * NT + t2;
+              gnp12 += fnp12[k] * annmb.c[c_index];
+            }
+            double tmp12 = g_Fp[n1 + n * N] * gnp12 * d12inv;
+            f12[0] += tmp12 * r12[0];
+            f12[1] += tmp12 * r12[1];
+            f12[2] += tmp12 * r12[2];
+          }
+#endif
+          // Updates: center write is thread-unique; neighbor write uses atomics; pseudo to TLS
+          g_fx[n1] += f12[0];
+          g_fy[n1] += f12[1];
+          g_fz[n1] += f12[2];
+
+          const bool is_pseudo = (n2 >= pseudo_start);
+          if (is_pseudo) {
+            int host = pseudo_to_host[n2];
+            if (host >= 0) {
+              pfx[host] -= f12[0];
+              pfy[host] -= f12[1];
+              pfz[host] -= f12[2];
+            }
+          } else {
+            #pragma omp atomic
+            g_fx[n2] -= f12[0];
+            #pragma omp atomic
+            g_fy[n2] -= f12[1];
+            #pragma omp atomic
+            g_fz[n2] -= f12[2];
+          }
+
+          // virial: accumulate on center only (spin path provides accumulate_on_center=true)
+          int idx = n1;
+          g_virial[idx + 0 * N] -= r12[0] * f12[0];
+          g_virial[idx + 1 * N] -= r12[0] * f12[1];
+          g_virial[idx + 2 * N] -= r12[0] * f12[2];
+          g_virial[idx + 3 * N] -= r12[1] * f12[0];
+          g_virial[idx + 4 * N] -= r12[1] * f12[1];
+          g_virial[idx + 5 * N] -= r12[1] * f12[2];
+          g_virial[idx + 6 * N] -= r12[2] * f12[0];
+          g_virial[idx + 7 * N] -= r12[2] * f12[1];
+          g_virial[idx + 8 * N] -= r12[2] * f12[2];
+        }
+      }
+    }
+
+    // reduction of TLS pseudo reactions
+    for (int i = 0; i < N; ++i) {
+      double sx = 0.0, sy = 0.0, sz = 0.0;
+      for (int t = 0; t < nthreads; ++t) {
+        sx += tls_pfx[static_cast<size_t>(t) * N + i];
+        sy += tls_pfy[static_cast<size_t>(t) * N + i];
+        sz += tls_pfz[static_cast<size_t>(t) * N + i];
+      }
+      g_pseudo_fx[i] += sx;
+      g_pseudo_fy[i] += sy;
+      g_pseudo_fz[i] += sz;
+    }
+    return;
+  }
+#endif
   const int NT  = (paramb.spin_mode == 1) ? paramb.num_types_total : paramb.num_types;
   const int NT2 = (paramb.spin_mode == 1) ? paramb.num_types_sq_total : paramb.num_types_sq;
   const double tiny = 1e-12;
@@ -1220,19 +1348,27 @@ void find_force_radial_small_box(
       }
 #endif
 
-      if (g_fx) {
-        g_fx[n1] += f12[0];
-        g_fx[n2] -= f12[0];
-      }
-
-      if (g_fy) {
-        g_fy[n1] += f12[1];
-        g_fy[n2] -= f12[1];
-      }
-
-      if (g_fz) {
-        g_fz[n1] += f12[2];
-        g_fz[n2] -= f12[2];
+      if (!pseudo_mode) {
+        if (g_fx) { g_fx[n1] += f12[0]; g_fx[n2] -= f12[0]; }
+        if (g_fy) { g_fy[n1] += f12[1]; g_fy[n2] -= f12[1]; }
+        if (g_fz) { g_fz[n1] += f12[2]; g_fz[n2] -= f12[2]; }
+      } else {
+        const bool is_pseudo = (n2 >= pseudo_start);
+        if (g_fx) {
+          g_fx[n1] += f12[0];
+          if (is_pseudo) { int host = pseudo_to_host[n2]; if (host >= 0) g_pseudo_fx[host] -= f12[0]; }
+          else { g_fx[n2] -= f12[0]; }
+        }
+        if (g_fy) {
+          g_fy[n1] += f12[1];
+          if (is_pseudo) { int host = pseudo_to_host[n2]; if (host >= 0) g_pseudo_fy[host] -= f12[1]; }
+          else { g_fy[n2] -= f12[1]; }
+        }
+        if (g_fz) {
+          g_fz[n1] += f12[2];
+          if (is_pseudo) { int host = pseudo_to_host[n2]; if (host >= 0) g_pseudo_fz[host] -= f12[2]; }
+          else { g_fz[n2] -= f12[2]; }
+        }
       }
 
       if (!is_dipole) {
@@ -1278,8 +1414,139 @@ void find_force_angular_small_box(
   double* g_fy,
   double* g_fz,
   double* g_virial,
-  bool accumulate_on_center = false)
+  bool accumulate_on_center = false,
+  // spin-optimized extras (optional): if provided, treat n2>=pseudo_start as pseudo
+  int pseudo_start = -1,
+  const int* pseudo_to_host = nullptr,
+  double* g_pseudo_fx = nullptr,
+  double* g_pseudo_fy = nullptr,
+  double* g_pseudo_fz = nullptr,
+  bool enable_parallel_center_only = false)
 {
+  const bool pseudo_mode = (pseudo_to_host && pseudo_start >= 0 && g_pseudo_fx && g_pseudo_fy && g_pseudo_fz);
+  // Fast path: in spin mode, if requested, parallelize across centers and avoid neighbor writes
+#if defined(_OPENMP)
+  if (enable_parallel_center_only && pseudo_mode && !is_dipole) {
+    int nthreads = omp_get_max_threads();
+    std::vector<double> tls_pfx(static_cast<size_t>(nthreads) * N, 0.0);
+    std::vector<double> tls_pfy(static_cast<size_t>(nthreads) * N, 0.0);
+    std::vector<double> tls_pfz(static_cast<size_t>(nthreads) * N, 0.0);
+
+    #pragma omp parallel
+    {
+      int tid = omp_get_thread_num();
+      double* pfx = tls_pfx.data() + static_cast<size_t>(tid) * N;
+      double* pfy = tls_pfy.data() + static_cast<size_t>(tid) * N;
+      double* pfz = tls_pfz.data() + static_cast<size_t>(tid) * N;
+
+      const double tiny = 1e-12;
+      #pragma omp for schedule(static)
+      for (int n1 = 0; n1 < N; ++n1) {
+        double Fp[MAX_DIM_ANGULAR] = {0.0};
+        double sum_fxyz[NUM_OF_ABC * MAX_NUM_N];
+        for (int d = 0; d < paramb.dim_angular; ++d) {
+          Fp[d] = g_Fp[(paramb.n_max_radial + 1 + d) * N + n1];
+        }
+        for (int d = 0; d < (paramb.n_max_angular + 1) * NUM_OF_ABC; ++d) {
+          sum_fxyz[d] = g_sum_fxyz[d * N + n1];
+        }
+
+        int t1 = g_type[n1];
+
+        for (int i1 = 0; i1 < g_NN_angular[n1]; ++i1) {
+          int index = i1 * N + n1;
+          int n2 = g_NL_angular[index];
+          double r12[3] = {g_x12[index], g_y12[index], g_z12[index]};
+          double d12 = sqrt(r12[0] * r12[0] + r12[1] * r12[1] + r12[2] * r12[2]);
+          if (d12 <= tiny) continue; // avoid singularities
+          double f12[3] = {0.0};
+#ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
+          int t12 = t1 * ((paramb.spin_mode == 1) ? paramb.num_types_total : paramb.num_types) + g_type[n2];
+          int index_left, index_right; double weight_left, weight_right;
+          find_index_and_weight(d12 * paramb.rcinv_angular, index_left, index_right, weight_left, weight_right);
+          for (int n = 0; n <= paramb.n_max_angular; ++n) {
+            int index_left_all  = (index_left  * ((paramb.spin_mode == 1) ? paramb.num_types_sq_total : paramb.num_types_sq) + t12) * (paramb.n_max_angular + 1) + n;
+            int index_right_all = (index_right * ((paramb.spin_mode == 1) ? paramb.num_types_sq_total : paramb.num_types_sq) + t12) * (paramb.n_max_angular + 1) + n;
+            double gn12  = g_gn_angular[index_left_all]  * weight_left + g_gn_angular[index_right_all]  * weight_right;
+            double gnp12 = g_gnp_angular[index_left_all] * weight_left + g_gnp_angular[index_right_all] * weight_right;
+            accumulate_f12(paramb.L_max, paramb.num_L, n, paramb.n_max_angular + 1, d12, r12, gn12, gnp12, Fp, sum_fxyz, f12);
+          }
+#else
+          int t2 = g_type[n2];
+          double fc12, fcp12;
+          double rc = paramb.rc_angular; double rcinv = paramb.rcinv_angular;
+          if (paramb.use_typewise_cutoff) {
+            int tr1 = (paramb.spin_mode == 1) ? (t1 % paramb.num_types_real) : t1;
+            int tr2 = (paramb.spin_mode == 1) ? (t2 % paramb.num_types_real) : t2;
+            rc = std::min((COVALENT_RADIUS[paramb.atomic_numbers[tr1]] + COVALENT_RADIUS[paramb.atomic_numbers[tr2]]) * paramb.typewise_cutoff_angular_factor, rc);
+            rcinv = 1.0 / rc;
+          }
+          find_fc_and_fcp(rc, rcinv, d12, fc12, fcp12);
+          double fn12[MAX_NUM_N]; double fnp12[MAX_NUM_N];
+          find_fn_and_fnp(paramb.basis_size_angular, rcinv, d12, fc12, fcp12, fn12, fnp12);
+          const int NT2 = (paramb.spin_mode == 1) ? paramb.num_types_sq_total : paramb.num_types_sq;
+          const int NT  = (paramb.spin_mode == 1) ? paramb.num_types_total    : paramb.num_types;
+          for (int n = 0; n <= paramb.n_max_angular; ++n) {
+            double gn12 = 0.0, gnp12 = 0.0;
+            for (int k = 0; k <= paramb.basis_size_angular; ++k) {
+              int c_index = (n * (paramb.basis_size_angular + 1) + k) * NT2;
+              c_index += t1 * NT + t2 + paramb.num_c_radial;
+              gn12  += fn12[k]  * annmb.c[c_index];
+              gnp12 += fnp12[k] * annmb.c[c_index];
+            }
+            accumulate_f12(paramb.L_max, paramb.num_L, n, paramb.n_max_angular + 1, d12, r12, gn12, gnp12, Fp, sum_fxyz, f12);
+          }
+#endif
+          // Updates: center write is thread-unique; neighbor write uses atomics; pseudo to TLS
+          g_fx[n1] += f12[0];
+          g_fy[n1] += f12[1];
+          g_fz[n1] += f12[2];
+
+          const bool is_pseudo = (n2 >= pseudo_start);
+          if (is_pseudo) {
+            int host = pseudo_to_host[n2];
+            if (host >= 0) {
+              pfx[host] -= f12[0];
+              pfy[host] -= f12[1];
+              pfz[host] -= f12[2];
+            }
+          } else {
+            #pragma omp atomic
+            g_fx[n2] -= f12[0];
+            #pragma omp atomic
+            g_fy[n2] -= f12[1];
+            #pragma omp atomic
+            g_fz[n2] -= f12[2];
+          }
+
+          int idx = n1; // accumulate_on_center expected true
+          g_virial[idx + 0 * N] -= r12[0] * f12[0];
+          g_virial[idx + 1 * N] -= r12[0] * f12[1];
+          g_virial[idx + 2 * N] -= r12[0] * f12[2];
+          g_virial[idx + 3 * N] -= r12[1] * f12[0];
+          g_virial[idx + 4 * N] -= r12[1] * f12[1];
+          g_virial[idx + 5 * N] -= r12[1] * f12[2];
+          g_virial[idx + 6 * N] -= r12[2] * f12[0];
+          g_virial[idx + 7 * N] -= r12[2] * f12[1];
+          g_virial[idx + 8 * N] -= r12[2] * f12[2];
+        }
+      }
+    }
+
+    for (int i = 0; i < N; ++i) {
+      double sx = 0.0, sy = 0.0, sz = 0.0;
+      for (int t = 0; t < nthreads; ++t) {
+        sx += tls_pfx[static_cast<size_t>(t) * N + i];
+        sy += tls_pfy[static_cast<size_t>(t) * N + i];
+        sz += tls_pfz[static_cast<size_t>(t) * N + i];
+      }
+      g_pseudo_fx[i] += sx;
+      g_pseudo_fy[i] += sy;
+      g_pseudo_fz[i] += sz;
+    }
+    return;
+  }
+#endif
   const int NT  = (paramb.spin_mode == 1) ? paramb.num_types_total : paramb.num_types;
   const int NT2 = (paramb.spin_mode == 1) ? paramb.num_types_sq_total : paramb.num_types_sq;
   const double tiny = 1e-12;
@@ -1361,19 +1628,27 @@ void find_force_angular_small_box(
       }
 #endif
 
-      if (g_fx) {
-        g_fx[n1] += f12[0];
-        g_fx[n2] -= f12[0];
-      }
-
-      if (g_fy) {
-        g_fy[n1] += f12[1];
-        g_fy[n2] -= f12[1];
-      }
-
-      if (g_fz) {
-        g_fz[n1] += f12[2];
-        g_fz[n2] -= f12[2];
+      if (!pseudo_mode) {
+        if (g_fx) { g_fx[n1] += f12[0]; g_fx[n2] -= f12[0]; }
+        if (g_fy) { g_fy[n1] += f12[1]; g_fy[n2] -= f12[1]; }
+        if (g_fz) { g_fz[n1] += f12[2]; g_fz[n2] -= f12[2]; }
+      } else {
+        const bool is_pseudo = (n2 >= pseudo_start);
+        if (g_fx) {
+          g_fx[n1] += f12[0];
+          if (is_pseudo) { int host = pseudo_to_host[n2]; if (host >= 0) g_pseudo_fx[host] -= f12[0]; }
+          else { g_fx[n2] -= f12[0]; }
+        }
+        if (g_fy) {
+          g_fy[n1] += f12[1];
+          if (is_pseudo) { int host = pseudo_to_host[n2]; if (host >= 0) g_pseudo_fy[host] -= f12[1]; }
+          else { g_fy[n2] -= f12[1]; }
+        }
+        if (g_fz) {
+          g_fz[n1] += f12[2];
+          if (is_pseudo) { int host = pseudo_to_host[n2]; if (host >= 0) g_pseudo_fz[host] -= f12[2]; }
+          else { g_fz[n2] -= f12[2]; }
+        }
       }
 
       if (!is_dipole) {
@@ -1414,8 +1689,15 @@ void find_force_ZBL_small_box(
   double* g_virial,
   double* g_pe,
   bool skip_pseudo_pairs = false,
-  bool accumulate_on_center = false)
+  bool accumulate_on_center = false,
+  // spin-optimized extras
+  int pseudo_start = -1,
+  const int* pseudo_to_host = nullptr,
+  double* g_pseudo_fx = nullptr,
+  double* g_pseudo_fy = nullptr,
+  double* g_pseudo_fz = nullptr)
 {
+  const bool pseudo_mode = (pseudo_to_host && pseudo_start >= 0 && g_pseudo_fx && g_pseudo_fy && g_pseudo_fz);
   for (int n1 = 0; n1 < N; ++n1) {
     int type1_all = g_type[n1];
     int type1 = (paramb.spin_mode == 1) ? (type1_all % paramb.num_types_real) : type1_all;
@@ -1466,12 +1748,31 @@ void find_force_ZBL_small_box(
       }
       double f2 = fp * d12inv * 0.5;
       double f12[3] = {r12[0] * f2, r12[1] * f2, r12[2] * f2};
-      g_fx[n1] += f12[0];
-      g_fy[n1] += f12[1];
-      g_fz[n1] += f12[2];
-      g_fx[n2] -= f12[0];
-      g_fy[n2] -= f12[1];
-      g_fz[n2] -= f12[2];
+      if (!pseudo_mode) {
+        g_fx[n1] += f12[0];
+        g_fy[n1] += f12[1];
+        g_fz[n1] += f12[2];
+        g_fx[n2] -= f12[0];
+        g_fy[n2] -= f12[1];
+        g_fz[n2] -= f12[2];
+      } else {
+        const bool is_pseudo = (n2 >= pseudo_start);
+        g_fx[n1] += f12[0];
+        g_fy[n1] += f12[1];
+        g_fz[n1] += f12[2];
+        if (is_pseudo) {
+          int host = pseudo_to_host[n2];
+          if (host >= 0) {
+            g_pseudo_fx[host] -= f12[0];
+            g_pseudo_fy[host] -= f12[1];
+            g_pseudo_fz[host] -= f12[2];
+          }
+        } else {
+          g_fx[n2] -= f12[0];
+          g_fy[n2] -= f12[1];
+          g_fz[n2] -= f12[2];
+        }
+      }
       {
         int idx = accumulate_on_center ? n1 : n2;
         g_virial[idx + 0 * N] -= r12[0] * f12[0];
@@ -3041,15 +3342,18 @@ void NEP3::compute(
 
   allocate_memory(N);
 
-  for (int n = 0; n < potential.size(); ++n) {
-    potential[n] = 0.0;
-  }
-  for (int n = 0; n < force.size(); ++n) {
-    force[n] = 0.0;
-  }
-  for (int n = 0; n < virial.size(); ++n) {
-    virial[n] = 0.0;
-  }
+  ComputeWorkspace& W = compute_workspace_;
+  W.potential.resize(N);
+  W.fx.resize(N);
+  W.fy.resize(N);
+  W.fz.resize(N);
+  W.virial.resize(static_cast<size_t>(N) * 9);
+
+  std::fill(W.potential.begin(), W.potential.end(), 0.0);
+  std::fill(W.fx.begin(), W.fx.end(), 0.0);
+  std::fill(W.fy.begin(), W.fy.end(), 0.0);
+  std::fill(W.fz.begin(), W.fz.end(), 0.0);
+  std::fill(W.virial.begin(), W.virial.end(), 0.0);
 
   find_neighbor_list_small_box(
     paramb.rc_radial, paramb.rc_angular, N, box, position, num_cells, ebox, NN_radial, NL_radial,
@@ -3063,7 +3367,7 @@ void NEP3::compute(
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
     gn_radial.data(), gn_angular.data(),
 #endif
-    Fp.data(), sum_fxyz.data(), potential.data(), nullptr, nullptr, nullptr, false, nullptr);
+    Fp.data(), sum_fxyz.data(), W.potential.data(), nullptr, nullptr, nullptr, false, nullptr);
 
   find_force_radial_small_box(
     false, paramb, annmb, N, NN_radial.data(), NL_radial.data(), type.data(), r12.data(),
@@ -3071,7 +3375,7 @@ void NEP3::compute(
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
     gnp_radial.data(),
 #endif
-    force.data(), force.data() + N, force.data() + N * 2, virial.data());
+    W.fx.data(), W.fy.data(), W.fz.data(), W.virial.data());
 
   find_force_angular_small_box(
     false, paramb, annmb, N, NN_angular.data(), NL_angular.data(), type.data(),
@@ -3080,13 +3384,21 @@ void NEP3::compute(
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
     gn_angular.data(), gnp_angular.data(),
 #endif
-    force.data(), force.data() + N, force.data() + N * 2, virial.data());
+    W.fx.data(), W.fy.data(), W.fz.data(), W.virial.data());
 
   if (zbl.enabled) {
     find_force_ZBL_small_box(
       N, paramb, zbl, NN_angular.data(), NL_angular.data(), type.data(), r12.data() + size_x12 * 3,
-      r12.data() + size_x12 * 4, r12.data() + size_x12 * 5, force.data(), force.data() + N,
-      force.data() + N * 2, virial.data(), potential.data());
+      r12.data() + size_x12 * 4, r12.data() + size_x12 * 5, W.fx.data(), W.fy.data(),
+      W.fz.data(), W.virial.data(), W.potential.data());
+  }
+
+  std::copy_n(W.potential.data(), N, potential.data());
+  std::copy_n(W.fx.data(), N, force.data());
+  std::copy_n(W.fy.data(), N, force.data() + N);
+  std::copy_n(W.fz.data(), N, force.data() + 2 * N);
+  for (int c = 0; c < 9; ++c) {
+    std::copy_n(W.virial.data() + static_cast<size_t>(c) * N, N, virial.data() + static_cast<size_t>(c) * N);
   }
 }
 
@@ -3221,36 +3533,48 @@ void NEP3::find_descriptor(
     Fp.data(), sum_fxyz.data(), nullptr, descriptor.data(), nullptr, nullptr, false, nullptr);
 }
 
-namespace {
-struct SpinAugmentedData {
-  int N_real = 0;
-  int N_total = 0;
-  std::vector<int> host2pseudo;      // size N_real, -1 if none, else index in [N_real, N_total)
-  std::vector<double> alpha;         // size N_real, per-real-atom scaling
-  std::vector<int> type_total;       // size N_total
-  std::vector<double> rx, ry, rz;    // size N_total each
-  // center-coded neighbor lists (filled for centers 0..N_real-1)
-  std::vector<int> NN_radial, NL_radial;     // NL_* size N_total*MN
-  std::vector<int> NN_angular, NL_angular;   // NL_* size N_total*MN
-  std::vector<double> x12_radial, y12_radial, z12_radial; // size N_total*MN each
-  std::vector<double> x12_angular, y12_angular, z12_angular; // size N_total*MN each
-};
-
-// Build spin-augmented neighbor lists for small-box kernels (centers are real atoms only).
-static void build_spin_augmented_small_box(
-  const NEP3::ParaMB& paramb,
+void NEP3::build_spin_augmented_small_box(
   const std::vector<int>& type,
   const std::vector<double>& box,
   const std::vector<double>& position,
   const std::vector<double>& spin,
-  SpinAugmentedData& S)
+  SpinWorkspace& S)
 {
-  const int N_real = (int)type.size();
+  const int N_real = static_cast<int>(type.size());
   S.N_real = N_real;
 
-  // Prepare per-atom alpha scaling
-  S.alpha.assign(N_real, 0.0);
-  const bool has_alpha_table = (int)paramb.virtual_scale_by_type.size() == paramb.num_types_real;
+  if (N_real == 0) {
+    S.N_total = 0;
+    S.host2pseudo.clear();
+    S.pseudo2host.clear();
+    S.alpha.clear();
+    S.type_total.clear();
+    S.rx.clear();
+    S.ry.clear();
+    S.rz.clear();
+    S.NN_radial.clear();
+    S.NN_angular.clear();
+    S.NL_radial.clear();
+    S.NL_angular.clear();
+    S.x12_radial.clear();
+    S.y12_radial.clear();
+    S.z12_radial.clear();
+    S.x12_angular.clear();
+    S.y12_angular.clear();
+    S.z12_angular.clear();
+    S.NN_radial_base.clear();
+    S.NL_radial_base.clear();
+    S.NN_angular_base.clear();
+    S.NL_angular_base.clear();
+    S.r12_base.clear();
+    S.pos_real.clear();
+    return;
+  }
+
+  S.alpha.resize(N_real);
+  std::fill(S.alpha.begin(), S.alpha.end(), 0.0);
+  const bool has_alpha_table =
+    static_cast<int>(paramb.virtual_scale_by_type.size()) == paramb.num_types_real;
   if (has_alpha_table) {
     for (int i = 0; i < N_real; ++i) {
       int t = type[i];
@@ -3262,12 +3586,14 @@ static void build_spin_augmented_small_box(
     }
   }
 
-  // Decide pseudo presence per real atom
-  S.host2pseudo.assign(N_real, -1);
+  S.host2pseudo.resize(N_real);
+  std::fill(S.host2pseudo.begin(), S.host2pseudo.end(), -1);
+
   int pseudo_count = 0;
-  for (int i = 0; i < N_real; ++i) {
-    double a = S.alpha[i];
-    if (paramb.spin_mode == 1 && a != 0.0) {
+  if (paramb.spin_mode == 1) {
+    for (int i = 0; i < N_real; ++i) {
+      double a = S.alpha[i];
+      if (a == 0.0) continue;
       double sx = spin[i];
       double sy = spin[i + N_real];
       double sz = spin[i + 2 * N_real];
@@ -3278,11 +3604,21 @@ static void build_spin_augmented_small_box(
       }
     }
   }
-  S.N_total = N_real + pseudo_count;
 
-  // Compose combined types and positions
-  S.type_total.assign(S.N_total, 0);
-  S.rx.resize(S.N_total); S.ry.resize(S.N_total); S.rz.resize(S.N_total);
+  S.N_total = N_real + pseudo_count;
+  S.pseudo2host.resize(S.N_total);
+  std::fill(S.pseudo2host.begin(), S.pseudo2host.end(), -1);
+  for (int i = 0; i < N_real; ++i) {
+    int p = S.host2pseudo[i];
+    if (p >= 0) {
+      S.pseudo2host[p] = i;
+    }
+  }
+
+  S.type_total.resize(S.N_total);
+  S.rx.resize(S.N_total);
+  S.ry.resize(S.N_total);
+  S.rz.resize(S.N_total);
   for (int i = 0; i < N_real; ++i) {
     S.type_total[i] = type[i];
     S.rx[i] = position[i];
@@ -3292,7 +3628,7 @@ static void build_spin_augmented_small_box(
   for (int i = 0; i < N_real; ++i) {
     int p = S.host2pseudo[i];
     if (p >= 0) {
-      S.type_total[p] = type[i] + paramb.num_types_real; // virtual type id
+      S.type_total[p] = type[i] + paramb.num_types_real;
       double a = S.alpha[i];
       double sx = spin[i];
       double sy = spin[i + N_real];
@@ -3303,131 +3639,154 @@ static void build_spin_augmented_small_box(
     }
   }
 
-  // Build base neighbor list on real atoms only
-  std::vector<double> pos_real(3 * N_real);
+  S.pos_real.resize(static_cast<size_t>(3) * N_real);
   for (int i = 0; i < N_real; ++i) {
-    pos_real[i] = S.rx[i];
-    pos_real[i + N_real] = S.ry[i];
-    pos_real[i + 2 * N_real] = S.rz[i];
+    S.pos_real[i] = S.rx[i];
+    S.pos_real[i + N_real] = S.ry[i];
+    S.pos_real[i + 2 * N_real] = S.rz[i];
   }
-  std::vector<int> NN_radial_base(N_real), NL_radial_base(N_real * MN);
-  std::vector<int> NN_angular_base(N_real), NL_angular_base(N_real * MN);
-  std::vector<double> r12_base(N_real * MN * 6);
-  int num_cells_base[3];
-  double ebox_base[18];
+
+  const size_t neigh_stride = static_cast<size_t>(N_real) * MN;
+  S.NN_radial_base.resize(N_real);
+  S.NL_radial_base.resize(neigh_stride);
+  S.NN_angular_base.resize(N_real);
+  S.NL_angular_base.resize(neigh_stride);
+  S.r12_base.resize(neigh_stride * 6);
+
   find_neighbor_list_small_box(
-    paramb.rc_radial, paramb.rc_angular, N_real, box, pos_real, num_cells_base, ebox_base,
-    NN_radial_base, NL_radial_base, NN_angular_base, NL_angular_base, r12_base);
+    paramb.rc_radial,
+    paramb.rc_angular,
+    N_real,
+    box,
+    S.pos_real,
+    S.num_cells_base,
+    S.ebox_base,
+    S.NN_radial_base,
+    S.NL_radial_base,
+    S.NN_angular_base,
+    S.NL_angular_base,
+    S.r12_base);
 
-  // Prepare spin-aware neighbor lists on N_total, fill for real centers only
-  const int size_x12_total = S.N_total * MN;
-  S.NN_radial.assign(S.N_total, 0);
-  S.NN_angular.assign(S.N_total, 0);
-  S.NL_radial.assign(size_x12_total, 0);
-  S.NL_angular.assign(size_x12_total, 0);
-  S.x12_radial.assign(size_x12_total, 0.0);
-  S.y12_radial.assign(size_x12_total, 0.0);
-  S.z12_radial.assign(size_x12_total, 0.0);
-  S.x12_angular.assign(size_x12_total, 0.0);
-  S.y12_angular.assign(size_x12_total, 0.0);
-  S.z12_angular.assign(size_x12_total, 0.0);
+  const int size_x12_center = S.N_real * MN;
+  S.NN_radial.resize(S.N_real);
+  S.NN_angular.resize(S.N_real);
+  S.NL_radial.resize(size_x12_center);
+  S.NL_angular.resize(size_x12_center);
+  S.x12_radial.resize(size_x12_center);
+  S.y12_radial.resize(size_x12_center);
+  S.z12_radial.resize(size_x12_center);
+  S.x12_angular.resize(size_x12_center);
+  S.y12_angular.resize(size_x12_center);
+  S.z12_angular.resize(size_x12_center);
 
-  const double* ebox = ebox_base; // for MIC with pseudo shifts
   const int size_x12_base = N_real * MN;
-  const double* x12r_base = r12_base.data() + 0 * size_x12_base;
-  const double* y12r_base = r12_base.data() + 1 * size_x12_base;
-  const double* z12r_base = r12_base.data() + 2 * size_x12_base;
-  const double* x12a_base = r12_base.data() + 3 * size_x12_base;
-  const double* y12a_base = r12_base.data() + 4 * size_x12_base;
-  const double* z12a_base = r12_base.data() + 5 * size_x12_base;
+  const double* x12r_base = S.r12_base.data() + 0 * size_x12_base;
+  const double* y12r_base = S.r12_base.data() + 1 * size_x12_base;
+  const double* z12r_base = S.r12_base.data() + 2 * size_x12_base;
+  const double* x12a_base = S.r12_base.data() + 3 * size_x12_base;
+  const double* y12a_base = S.r12_base.data() + 4 * size_x12_base;
+  const double* z12a_base = S.r12_base.data() + 5 * size_x12_base;
+  const double* ebox = S.ebox_base;
 
   auto append_neighbor = [&](int n1, int& write_count, int n2, double dx, double dy, double dz,
                              bool radial) {
     if (write_count >= MN) return;
-    int idx = write_count * S.N_total + n1;
+    int idx = write_count * S.N_real + n1;
     if (radial) {
       S.NL_radial[idx] = n2;
-      S.x12_radial[idx] = dx; S.y12_radial[idx] = dy; S.z12_radial[idx] = dz;
+      S.x12_radial[idx] = dx;
+      S.y12_radial[idx] = dy;
+      S.z12_radial[idx] = dz;
     } else {
       S.NL_angular[idx] = n2;
-      S.x12_angular[idx] = dx; S.y12_angular[idx] = dy; S.z12_angular[idx] = dz;
+      S.x12_angular[idx] = dx;
+      S.y12_angular[idx] = dy;
+      S.z12_angular[idx] = dz;
     }
     ++write_count;
   };
 
   const double eps2 = 1e-24;
+#if defined(_OPENMP)
+#pragma omp parallel for
+#endif
   for (int n1 = 0; n1 < N_real; ++n1) {
     int p1 = S.host2pseudo[n1];
-    // radial real->real
-    int base_cr = NN_radial_base[n1];
+    int base_cr = S.NN_radial_base[n1];
     int wr = 0;
     for (int i = 0; i < base_cr; ++i) {
       int idx_b = i * N_real + n1;
-      int n2 = NL_radial_base[idx_b];
+      int n2 = S.NL_radial_base[idx_b];
       double dx = x12r_base[idx_b];
       double dy = y12r_base[idx_b];
       double dz = z12r_base[idx_b];
-      if (dx * dx + dy * dy + dz * dz > eps2) append_neighbor(n1, wr, n2, dx, dy, dz, true);
+      if (dx * dx + dy * dy + dz * dz > eps2) {
+        append_neighbor(n1, wr, n2, dx, dy, dz, true);
+      }
     }
-    // radial center pseudo
     if (p1 >= 0) {
       double dx = S.rx[p1] - S.rx[n1];
       double dy = S.ry[p1] - S.ry[n1];
       double dz = S.rz[p1] - S.rz[n1];
       apply_mic_small_box(ebox, dx, dy, dz);
-      if (dx * dx + dy * dy + dz * dz > eps2) append_neighbor(n1, wr, p1, dx, dy, dz, true);
+      if (dx * dx + dy * dy + dz * dz > eps2) {
+        append_neighbor(n1, wr, p1, dx, dy, dz, true);
+      }
     }
-    // radial neighbor pseudo
     for (int i = 0; i < base_cr; ++i) {
       int idx_b = i * N_real + n1;
-      int n2 = NL_radial_base[idx_b];
+      int n2 = S.NL_radial_base[idx_b];
       int p2 = S.host2pseudo[n2];
       if (p2 >= 0) {
         double dx = x12r_base[idx_b] + (S.rx[p2] - S.rx[n2]);
         double dy = y12r_base[idx_b] + (S.ry[p2] - S.ry[n2]);
         double dz = z12r_base[idx_b] + (S.rz[p2] - S.rz[n2]);
         apply_mic_small_box(ebox, dx, dy, dz);
-        if (dx * dx + dy * dy + dz * dz > eps2) append_neighbor(n1, wr, p2, dx, dy, dz, true);
+        if (dx * dx + dy * dy + dz * dz > eps2) {
+          append_neighbor(n1, wr, p2, dx, dy, dz, true);
+        }
       }
     }
     S.NN_radial[n1] = wr;
 
-    // angular real->real
-    int base_ca = NN_angular_base[n1];
+    int base_ca = S.NN_angular_base[n1];
     int wa = 0;
     for (int i = 0; i < base_ca; ++i) {
       int idx_b = i * N_real + n1;
-      int n2 = NL_angular_base[idx_b];
+      int n2 = S.NL_angular_base[idx_b];
       double dx = x12a_base[idx_b];
       double dy = y12a_base[idx_b];
       double dz = z12a_base[idx_b];
-      if (dx * dx + dy * dy + dz * dz > eps2) append_neighbor(n1, wa, n2, dx, dy, dz, false);
+      if (dx * dx + dy * dy + dz * dz > eps2) {
+        append_neighbor(n1, wa, n2, dx, dy, dz, false);
+      }
     }
-    // angular center pseudo
     if (p1 >= 0) {
       double dx = S.rx[p1] - S.rx[n1];
       double dy = S.ry[p1] - S.ry[n1];
       double dz = S.rz[p1] - S.rz[n1];
       apply_mic_small_box(ebox, dx, dy, dz);
-      if (dx * dx + dy * dy + dz * dz > eps2) append_neighbor(n1, wa, p1, dx, dy, dz, false);
+      if (dx * dx + dy * dy + dz * dz > eps2) {
+        append_neighbor(n1, wa, p1, dx, dy, dz, false);
+      }
     }
-    // angular neighbor pseudo
     for (int i = 0; i < base_ca; ++i) {
       int idx_b = i * N_real + n1;
-      int n2 = NL_angular_base[idx_b];
+      int n2 = S.NL_angular_base[idx_b];
       int p2 = S.host2pseudo[n2];
       if (p2 >= 0) {
         double dx = x12a_base[idx_b] + (S.rx[p2] - S.rx[n2]);
         double dy = y12a_base[idx_b] + (S.ry[p2] - S.ry[n2]);
         double dz = z12a_base[idx_b] + (S.rz[p2] - S.rz[n2]);
         apply_mic_small_box(ebox, dx, dy, dz);
-        if (dx * dx + dy * dy + dz * dz > eps2) append_neighbor(n1, wa, p2, dx, dy, dz, false);
+        if (dx * dx + dy * dy + dz * dz > eps2) {
+          append_neighbor(n1, wa, p2, dx, dy, dz, false);
+        }
       }
     }
     S.NN_angular[n1] = wa;
   }
 }
-} // namespace
 
 void NEP3::find_descriptor(
   const std::vector<int>& type,
@@ -3455,27 +3814,36 @@ void NEP3::find_descriptor(
     return;
   }
 
-  SpinAugmentedData S;
-  build_spin_augmented_small_box(paramb, type, box, position, spin, S);
+  SpinWorkspace& S = spin_workspace_;
+  build_spin_augmented_small_box(type, box, position, spin, S);
 
-  std::vector<double> Fp_tmp(S.N_total * annmb.dim, 0.0);
-  std::vector<double> sum_fxyz_tmp(S.N_total * (paramb.n_max_angular + 1) * NUM_OF_ABC, 0.0);
-  std::vector<double> descriptor_all(S.N_total * annmb.dim, 0.0);
+  const size_t fp_size = static_cast<size_t>(S.N_real) * annmb.dim;
+  const size_t sum_size =
+    static_cast<size_t>(S.N_real) * (paramb.n_max_angular + 1) * NUM_OF_ABC;
+
+  S.Fp_tot.resize(fp_size);
+  std::fill(S.Fp_tot.begin(), S.Fp_tot.end(), 0.0);
+
+  S.sum_fxyz_tot.resize(sum_size);
+  std::fill(S.sum_fxyz_tot.begin(), S.sum_fxyz_tot.end(), 0.0);
+
+  S.descriptor_buffer.resize(fp_size);
+  std::fill(S.descriptor_buffer.begin(), S.descriptor_buffer.end(), 0.0);
 
   find_descriptor_small_box(
-    false, true, false, false, paramb, annmb, S.N_total, S.NN_radial.data(), S.NL_radial.data(),
+    false, true, false, false, paramb, annmb, S.N_real, S.NN_radial.data(), S.NL_radial.data(),
     S.NN_angular.data(), S.NL_angular.data(), S.type_total.data(), S.x12_radial.data(),
     S.y12_radial.data(), S.z12_radial.data(), S.x12_angular.data(), S.y12_angular.data(),
     S.z12_angular.data(),
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
     gn_radial.data(), gn_angular.data(),
 #endif
-    Fp_tmp.data(), sum_fxyz_tmp.data(), nullptr, descriptor_all.data(), nullptr, nullptr, false,
-    nullptr);
+    S.Fp_tot.data(), S.sum_fxyz_tot.data(), nullptr, S.descriptor_buffer.data(), nullptr, nullptr,
+    false, nullptr);
 
   for (int d = 0; d < annmb.dim; ++d) {
     for (int i = 0; i < N_real; ++i) {
-      descriptor[d * N_real + i] = descriptor_all[d * S.N_total + i];
+      descriptor[d * N_real + i] = S.descriptor_buffer[d * S.N_real + i];
     }
   }
 }
@@ -3554,83 +3922,111 @@ void NEP3::compute(
     return;
   }
 
-  SpinAugmentedData S;
-  build_spin_augmented_small_box(paramb, type, box, position, spin, S);
+  SpinWorkspace& S = spin_workspace_;
+  build_spin_augmented_small_box(type, box, position, spin, S);
 
-  std::vector<double> Fp_tot(S.N_total * annmb.dim, 0.0);
-  std::vector<double> sum_fxyz_tot(S.N_total * (paramb.n_max_angular + 1) * NUM_OF_ABC, 0.0);
-  std::vector<double> potential_tot(S.N_total, 0.0);
-  std::vector<double> fx(S.N_total, 0.0), fy(S.N_total, 0.0), fz(S.N_total, 0.0);
-  std::vector<double> virial_tot(S.N_total * 9, 0.0);
+  const size_t fp_size = static_cast<size_t>(S.N_real) * annmb.dim;
+  const size_t sum_size =
+    static_cast<size_t>(S.N_real) * (paramb.n_max_angular + 1) * NUM_OF_ABC;
+
+  S.Fp_tot.resize(fp_size);
+
+  S.sum_fxyz_tot.resize(sum_size);
+
+  S.potential_tot.resize(S.N_real);
+  std::fill(S.potential_tot.begin(), S.potential_tot.end(), 0.0);
+
+  S.fx.resize(S.N_real);
+  S.fy.resize(S.N_real);
+  S.fz.resize(S.N_real);
+  std::fill(S.fx.begin(), S.fx.end(), 0.0);
+  std::fill(S.fy.begin(), S.fy.end(), 0.0);
+  std::fill(S.fz.begin(), S.fz.end(), 0.0);
+
+  S.virial_tot.resize(static_cast<size_t>(S.N_real) * 9);
+  std::fill(S.virial_tot.begin(), S.virial_tot.end(), 0.0);
+
+  S.pseudo_fx.resize(S.N_real);
+  S.pseudo_fy.resize(S.N_real);
+  S.pseudo_fz.resize(S.N_real);
+  std::fill(S.pseudo_fx.begin(), S.pseudo_fx.end(), 0.0);
+  std::fill(S.pseudo_fy.begin(), S.pseudo_fy.end(), 0.0);
+  std::fill(S.pseudo_fz.begin(), S.pseudo_fz.end(), 0.0);
 
   find_descriptor_small_box(
-    true, false, false, false, paramb, annmb, S.N_total, S.NN_radial.data(), S.NL_radial.data(),
+    true, false, false, false, paramb, annmb, S.N_real, S.NN_radial.data(), S.NL_radial.data(),
     S.NN_angular.data(), S.NL_angular.data(), S.type_total.data(), S.x12_radial.data(),
     S.y12_radial.data(), S.z12_radial.data(), S.x12_angular.data(), S.y12_angular.data(),
     S.z12_angular.data(),
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
     gn_radial.data(), gn_angular.data(),
 #endif
-    Fp_tot.data(), sum_fxyz_tot.data(), potential_tot.data(), nullptr, nullptr, nullptr, false,
-    nullptr);
+    S.Fp_tot.data(), S.sum_fxyz_tot.data(), S.potential_tot.data(), nullptr, nullptr, nullptr,
+    false, nullptr);
 
+  // Radial forces: accumulate on center (real) and record pseudo reactions
   find_force_radial_small_box(
-    false, paramb, annmb, S.N_total, S.NN_radial.data(), S.NL_radial.data(), S.type_total.data(),
-    S.x12_radial.data(), S.y12_radial.data(), S.z12_radial.data(), Fp_tot.data(),
+    false, paramb, annmb, S.N_real, S.NN_radial.data(), S.NL_radial.data(), S.type_total.data(),
+    S.x12_radial.data(), S.y12_radial.data(), S.z12_radial.data(), S.Fp_tot.data(),
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
     gnp_radial.data(),
 #endif
-    fx.data(), fy.data(), fz.data(), virial_tot.data(), true);
+    S.fx.data(), S.fy.data(), S.fz.data(), S.virial_tot.data(), true,
+    /*pseudo_start*/ S.N_real, /*pseudo_to_host*/ S.pseudo2host.data(),
+    S.pseudo_fx.data(), S.pseudo_fy.data(), S.pseudo_fz.data(),
+    /*enable_parallel_center_only*/ true);
 
+  // Angular forces: accumulate on center (real) and record pseudo reactions
   find_force_angular_small_box(
-    false, paramb, annmb, S.N_total, S.NN_angular.data(), S.NL_angular.data(), S.type_total.data(),
-    S.x12_angular.data(), S.y12_angular.data(), S.z12_angular.data(), Fp_tot.data(),
-    sum_fxyz_tot.data(),
+    false, paramb, annmb, S.N_real, S.NN_angular.data(), S.NL_angular.data(), S.type_total.data(),
+    S.x12_angular.data(), S.y12_angular.data(), S.z12_angular.data(), S.Fp_tot.data(),
+    S.sum_fxyz_tot.data(),
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
     gn_angular.data(), gnp_angular.data(),
 #endif
-    fx.data(), fy.data(), fz.data(), virial_tot.data(), true);
+    S.fx.data(), S.fy.data(), S.fz.data(), S.virial_tot.data(), true,
+    /*pseudo_start*/ S.N_real, /*pseudo_to_host*/ S.pseudo2host.data(),
+    S.pseudo_fx.data(), S.pseudo_fy.data(), S.pseudo_fz.data(),
+    /*enable_parallel_center_only*/ true);
 
   if (zbl.enabled) {
     find_force_ZBL_small_box(
-      S.N_total, paramb, zbl, S.NN_angular.data(), S.NL_angular.data(), S.type_total.data(),
-      S.x12_angular.data(), S.y12_angular.data(), S.z12_angular.data(), fx.data(), fy.data(),
-      fz.data(), virial_tot.data(), potential_tot.data(), true, true);
+      S.N_real, paramb, zbl, S.NN_angular.data(), S.NL_angular.data(), S.type_total.data(),
+      S.x12_angular.data(), S.y12_angular.data(), S.z12_angular.data(), S.fx.data(), S.fy.data(),
+      S.fz.data(), S.virial_tot.data(), S.potential_tot.data(), /*skip_pseudo_pairs=*/false,
+      /*accumulate_on_center=*/true,
+      /*pseudo_start*/ S.N_real, /*pseudo_to_host*/ S.pseudo2host.data(),
+      S.pseudo_fx.data(), S.pseudo_fy.data(), S.pseudo_fz.data());
   }
 
   for (int i = 0; i < N_real; ++i) {
-    potential[i] = potential_tot[i];
-    double fm_x = 0.0, fm_y = 0.0, fm_z = 0.0;
-    int p = S.host2pseudo[i];
-    if (p >= 0) {
-      fx[i] += fx[p]; fy[i] += fy[p]; fz[i] += fz[p];
-      if (S.alpha[i] != 0.0) {
-        fm_x = S.alpha[i] * fx[p];
-        fm_y = S.alpha[i] * fy[p];
-        fm_z = S.alpha[i] * fz[p];
-        double drx = -S.alpha[i] * spin[i];
-        double dry = -S.alpha[i] * spin[i + N_real];
-        double drz = -S.alpha[i] * spin[i + 2 * N_real];
-        double Fpx = fx[p], Fpy = fy[p], Fpz = fz[p];
-        virial_tot[i + 0 * S.N_total] += drx * Fpx;
-        virial_tot[i + 1 * S.N_total] += drx * Fpy;
-        virial_tot[i + 2 * S.N_total] += drx * Fpz;
-        virial_tot[i + 3 * S.N_total] += dry * Fpx;
-        virial_tot[i + 4 * S.N_total] += dry * Fpy;
-        virial_tot[i + 5 * S.N_total] += dry * Fpz;
-        virial_tot[i + 6 * S.N_total] += drz * Fpx;
-        virial_tot[i + 7 * S.N_total] += drz * Fpy;
-        virial_tot[i + 8 * S.N_total] += drz * Fpz;
-      }
+    potential[i] = S.potential_tot[i];
+    force[i] = S.fx[i] + S.pseudo_fx[i];
+    force[i + N_real] = S.fy[i] + S.pseudo_fy[i];
+    force[i + 2 * N_real] = S.fz[i] + S.pseudo_fz[i];
+    mforce[i] = S.alpha[i] * S.pseudo_fx[i];
+    mforce[i + N_real] = S.alpha[i] * S.pseudo_fy[i];
+    mforce[i + 2 * N_real] = S.alpha[i] * S.pseudo_fz[i];
+    // extra virial contribution from pseudo displacement
+    if (S.host2pseudo[i] >= 0 && S.alpha[i] != 0.0) {
+      double drx = -S.alpha[i] * spin[i];
+      double dry = -S.alpha[i] * spin[i + N_real];
+      double drz = -S.alpha[i] * spin[i + 2 * N_real];
+      double Fpx = S.pseudo_fx[i];
+      double Fpy = S.pseudo_fy[i];
+      double Fpz = S.pseudo_fz[i];
+      S.virial_tot[i + 0 * S.N_real] += drx * Fpx;
+      S.virial_tot[i + 1 * S.N_real] += drx * Fpy;
+      S.virial_tot[i + 2 * S.N_real] += drx * Fpz;
+      S.virial_tot[i + 3 * S.N_real] += dry * Fpx;
+      S.virial_tot[i + 4 * S.N_real] += dry * Fpy;
+      S.virial_tot[i + 5 * S.N_real] += dry * Fpz;
+      S.virial_tot[i + 6 * S.N_real] += drz * Fpx;
+      S.virial_tot[i + 7 * S.N_real] += drz * Fpy;
+      S.virial_tot[i + 8 * S.N_real] += drz * Fpz;
     }
-    force[i] = fx[i];
-    force[i + N_real] = fy[i];
-    force[i + 2 * N_real] = fz[i];
-    mforce[i] = fm_x;
-    mforce[i + N_real] = fm_y;
-    mforce[i + 2 * N_real] = fm_z;
     for (int c = 0; c < 9; ++c) {
-      virial[i + c * N_real] = virial_tot[i + c * S.N_total];
+      virial[i + c * N_real] = S.virial_tot[i + c * S.N_real];
     }
   }
 }

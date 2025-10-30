@@ -26,6 +26,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
+#include <Python.h>
 
 #include <tuple>
 #include <vector>
@@ -63,6 +64,22 @@ namespace py = pybind11;
 
 
 
+// Release the GIL only if currently held by this thread.
+struct ScopedReleaseIfHeld {
+    PyThreadState* state{nullptr};
+    ScopedReleaseIfHeld() {
+        if (PyGILState_Check()) {
+            state = PyEval_SaveThread();
+        }
+    }
+    ~ScopedReleaseIfHeld() {
+        if (state) {
+            PyEval_RestoreThread(state);
+        }
+    }
+    ScopedReleaseIfHeld(const ScopedReleaseIfHeld&) = delete;
+    ScopedReleaseIfHeld& operator=(const ScopedReleaseIfHeld&) = delete;
+};
 static std::string convert_path(const std::string& utf8_path) {
 #ifdef _WIN32
     int wstr_size = MultiByteToWideChar(CP_UTF8, 0, utf8_path.c_str(), -1, nullptr, 0);
@@ -431,7 +448,7 @@ std::vector<Structure> create_structures(
         // std::printf("[nep_gpu] calculate() enter\n");
 
         // Release the Python GIL during heavy GPU/CPU work to allow concurrency
-        py::gil_scoped_release _gil_release;
+        ScopedReleaseIfHeld _gil_release;
         if (canceled_.load(std::memory_order_relaxed)) {
             throw std::runtime_error("Canceled by user");
         }
@@ -554,7 +571,7 @@ py::array GpuNep::calculate_descriptors(
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position)
 {
-    py::gil_scoped_release _gil_release;
+    ScopedReleaseIfHeld _gil_release;
     if (canceled_.load(std::memory_order_relaxed)) {
         throw std::runtime_error("Canceled by user");
     }
@@ -658,7 +675,7 @@ py::array GpuNep::calculate_descriptors_scaled(
     float* out = nullptr;
     try { out = new float[total_elems]; } catch (...) { throw std::runtime_error("Out of host memory allocating descriptor array"); }
     {
-        py::gil_scoped_release _gil_release;
+        ScopedReleaseIfHeld _gil_release;
         const float* src = static_cast<const float*>(buf.ptr);
         const size_t dim_sz = static_cast<size_t>(dim);
         for (size_t i = 0; i < static_cast<size_t>(buf.shape[0]); ++i) {
@@ -685,7 +702,7 @@ py::array GpuNep::get_structures_dipole(
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position)
 {
-    py::gil_scoped_release _gil_release;
+    ScopedReleaseIfHeld _gil_release;
     if (canceled_.load(std::memory_order_relaxed)) {
         throw std::runtime_error("Canceled by user");
     }
@@ -748,7 +765,7 @@ py::array GpuNep::get_structures_polarizability(
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position)
 {
-    py::gil_scoped_release _gil_release;
+    ScopedReleaseIfHeld _gil_release;
     if (canceled_.load(std::memory_order_relaxed)) {
         throw std::runtime_error("Canceled by user");
     }
@@ -821,7 +838,7 @@ GpuNep::calculate_spin(
     const std::vector<std::vector<double>>& position,
     const std::vector<std::vector<double>>& spin)
 {
-    py::gil_scoped_release _gil_release;
+    ScopedReleaseIfHeld _gil_release;
     if (canceled_.load(std::memory_order_relaxed)) {
         throw std::runtime_error("Canceled by user");
     }
@@ -929,7 +946,7 @@ py::array GpuNep::calculate_descriptors_spin(
         const std::vector<std::vector<double>>& position,
         const std::vector<std::vector<double>>& spin)
 {
-    py::gil_scoped_release _gil_release;
+    ScopedReleaseIfHeld _gil_release;
     if (canceled_.load(std::memory_order_relaxed)) {
         throw std::runtime_error("Canceled by user");
     }
@@ -1017,7 +1034,7 @@ pybind11::array GpuNep::calculate_descriptors_scaled_spin(
 
     float* data = nullptr;
     {
-        py::gil_scoped_release _gil_release;
+        ScopedReleaseIfHeld _gil_release;
         data = new float[total_real_atoms * static_cast<size_t>(dim)];
         const float* src = static_cast<const float*>(buf.ptr);
         for (size_t i = 0; i < total_real_atoms; ++i) {

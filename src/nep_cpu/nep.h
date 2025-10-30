@@ -264,8 +264,49 @@ public:
   std::vector<double> sum_fxyz;
   std::vector<double> parameters;
   std::vector<std::string> element_list;
+  struct ComputeWorkspace {
+    std::vector<double> potential;
+    std::vector<double> fx;
+    std::vector<double> fy;
+    std::vector<double> fz;
+    std::vector<double> virial;
+  };
+  ComputeWorkspace compute_workspace_;
+  struct SpinWorkspace {
+    int N_real = 0;
+    int N_total = 0;
+    std::vector<int> host2pseudo;
+    std::vector<int> pseudo2host;
+    std::vector<double> alpha;
+    std::vector<int> type_total;
+    std::vector<double> rx, ry, rz;
+    std::vector<int> NN_radial, NL_radial;
+    std::vector<int> NN_angular, NL_angular;
+    std::vector<double> x12_radial, y12_radial, z12_radial;
+    std::vector<double> x12_angular, y12_angular, z12_angular;
+    std::vector<int> NN_radial_base, NL_radial_base;
+    std::vector<int> NN_angular_base, NL_angular_base;
+    std::vector<double> r12_base;
+    std::vector<double> pos_real;
+    int num_cells_base[3] = {0, 0, 0};
+    double ebox_base[18] = {0.0};
+    std::vector<double> Fp_tot;
+    std::vector<double> sum_fxyz_tot;
+    std::vector<double> potential_tot;
+    std::vector<double> fx, fy, fz;
+    std::vector<double> virial_tot;
+    std::vector<double> pseudo_fx, pseudo_fy, pseudo_fz;
+    std::vector<double> descriptor_buffer;
+  };
+  SpinWorkspace spin_workspace_;
   void update_potential(double* parameters, ANN& ann);
   void allocate_memory(const int N);
+  void build_spin_augmented_small_box(
+    const std::vector<int>& type,
+    const std::vector<double>& box,
+    const std::vector<double>& position,
+    const std::vector<double>& spin,
+    SpinWorkspace& S);
 
 #ifdef USE_TABLE_FOR_RADIAL_FUNCTIONS
   std::vector<double> gn_radial;   // tabulated gn_radial functions

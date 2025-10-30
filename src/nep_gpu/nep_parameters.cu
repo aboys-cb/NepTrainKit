@@ -99,30 +99,25 @@ void NepParameters::load_from_nep_txt(const std::string& filename, std::vector<f
     tokens = get_tokens(input);
   }
 
-  // Optional: virtual_scale per type (spin mode only), before cutoff line
-  if (spin_mode == 1) {
-    // Peek next line; consume only if it begins with "virtual_scale"
-    std::streampos pos = input.tellg();
-    std::vector<std::string> peek = get_tokens(input);
-    if (!peek.empty() && peek[0] == "virtual_scale") {
-      if ((int)peek.size() != 1 + num_types) {
-        PRINT_INPUT_ERROR("virtual_scale expects num_types values.");
-      }
-      virtual_scale_by_type.resize(num_types);
-      for (int i = 0; i < num_types; ++i) {
-        virtual_scale_by_type[i] = get_double_from_token(peek[1 + i], __FILE__, __LINE__);
-      }
-      is_virtual_scale_set = true;
-    } else {
-      // rewind if not virtual_scale
-      input.clear();
-      input.seekg(pos);
-      is_virtual_scale_set = false;
-      virtual_scale_by_type.clear();
+  // Optional: virtual_scale per type (spin mode only), before cutoff line.
+  // Consume the current tokens if it is the virtual_scale line; otherwise leave as-is.
+  if (spin_mode == 1 && !tokens.empty() && tokens[0] == "virtual_scale") {
+    if ((int)tokens.size() != 1 + num_types) {
+      PRINT_INPUT_ERROR("virtual_scale expects num_types values.");
     }
+    virtual_scale_by_type.resize(num_types);
+    for (int i = 0; i < num_types; ++i) {
+      virtual_scale_by_type[i] = get_double_from_token(tokens[1 + i], __FILE__, __LINE__);
+    }
+    is_virtual_scale_set = true;
+    tokens = get_tokens(input); // advance to cutoff line
+  } else {
+    is_virtual_scale_set = false;
+    virtual_scale_by_type.clear();
   }
 
-  if (tokens[0] == "cutoff") {
+  // cutoff line
+  if (!tokens.empty() && tokens[0] == "cutoff") {
     rc_radial = get_double_from_token(tokens[1], __FILE__, __LINE__);
     rc_angular = get_double_from_token(tokens[2], __FILE__, __LINE__);
   }

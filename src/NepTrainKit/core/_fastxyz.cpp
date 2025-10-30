@@ -5,6 +5,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 #include <pybind11/functional.h>
+#include <Python.h>
 
 #include <string>
 #include <vector>
@@ -29,6 +30,22 @@
 
 namespace py = pybind11;
 
+// Release the GIL only if currently held by this thread.
+struct ScopedReleaseIfHeld {
+    PyThreadState* state{nullptr};
+    ScopedReleaseIfHeld() {
+        if (PyGILState_Check()) {
+            state = PyEval_SaveThread();
+        }
+    }
+    ~ScopedReleaseIfHeld() {
+        if (state) {
+            PyEval_RestoreThread(state);
+        }
+    }
+    ScopedReleaseIfHeld(const ScopedReleaseIfHeld&) = delete;
+    ScopedReleaseIfHeld& operator=(const ScopedReleaseIfHeld&) = delete;
+};
 struct PropDesc {
     std::string name;
     char dtype{'S'}; // 'S','R','I','L'
@@ -437,7 +454,7 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
     std::vector<FrameIndex> frames;
     {
         // Indexing is pure C++; release the GIL here as well.
-        py::gil_scoped_release _nogil_idx;
+        ScopedReleaseIfHeld _nogil_idx;
         frames = index_frames_parallel(base, nbytes, max_workers);
     }
     auto t_idx1 = clock::now();
@@ -470,7 +487,7 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
     // First, parse all frames in parallel into plain C++ storage
     auto t_par0 = clock::now();
     {
-    py::gil_scoped_release _nogil;
+    ScopedReleaseIfHeld _nogil;
 
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic) num_threads(nthreads)

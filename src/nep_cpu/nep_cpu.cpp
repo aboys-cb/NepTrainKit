@@ -24,6 +24,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <Python.h>
 #include "nep.h"
 #include "nep.cpp"
 #ifdef _WIN32
@@ -35,6 +36,22 @@
 
 namespace py = pybind11;
 
+// Release the GIL only if currently held by this thread.
+struct ScopedReleaseIfHeld {
+    PyThreadState* state{nullptr};
+    ScopedReleaseIfHeld() {
+        if (PyGILState_Check()) {
+            state = PyEval_SaveThread();
+        }
+    }
+    ~ScopedReleaseIfHeld() {
+        if (state) {
+            PyEval_RestoreThread(state);
+        }
+    }
+    ScopedReleaseIfHeld(const ScopedReleaseIfHeld&) = delete;
+    ScopedReleaseIfHeld& operator=(const ScopedReleaseIfHeld&) = delete;
+};
 // 计算列的平均值
 std::vector<double> calculate_column_averages(const std::vector<std::vector<double>>& arr) {
     std::vector<double> averages;
@@ -162,7 +179,7 @@ std::tuple<std::vector<std::vector<double>>,
 calculate(const std::vector<std::vector<int>>& type,
           const std::vector<std::vector<double>>& box,
           const std::vector<std::vector<double>>& position) {
-    py::gil_scoped_release _gil_release;
+    ScopedReleaseIfHeld _gil_release;
 
     size_t type_size = type.size();
     std::vector<std::vector<double>> potentials(type_size);  // 预分配空间
@@ -195,7 +212,7 @@ calculate(const std::vector<std::vector<int>>& type,
           const std::vector<std::vector<double>>& position,
           const std::vector<std::vector<double>>& spin
           ) {
-    py::gil_scoped_release _gil_release;
+    ScopedReleaseIfHeld _gil_release;
 
     size_t type_size = type.size();
     std::vector<std::vector<double>> potentials(type_size);  // 预分配空间
@@ -233,7 +250,7 @@ calculate_dftd3(
 const std::vector<std::vector<int>>& type,
           const std::vector<std::vector<double>>& box,
           const std::vector<std::vector<double>>& position) {
-    py::gil_scoped_release _gil_release;
+    ScopedReleaseIfHeld _gil_release;
 
     size_t type_size = type.size();
     std::vector<std::vector<double>> potentials(type_size);  // 预分配空间
@@ -270,7 +287,7 @@ const std::vector<std::vector<int>>& type,
 
           const std::vector<std::vector<double>>& box,
           const std::vector<std::vector<double>>& position) {
-    py::gil_scoped_release _gil_release;
+    ScopedReleaseIfHeld _gil_release;
 
     size_t type_size = type.size();
     std::vector<std::vector<double>> potentials(type_size);  // 预分配空间
@@ -299,7 +316,7 @@ const std::vector<std::vector<int>>& type,
     std::vector<double> get_descriptor(const std::vector<int>& type,
                                        const std::vector<double>& box,
                                        const std::vector<double>& position) {
-        py::gil_scoped_release _gil_release;
+        ScopedReleaseIfHeld _gil_release;
 
         std::vector<double> descriptor(type.size() * annmb.dim);
         find_descriptor(type, box, position, descriptor);
@@ -316,7 +333,7 @@ const std::vector<std::vector<int>>& type,
             const std::vector<std::vector<int>>& type,
             const std::vector<std::vector<double>>& box,
             const std::vector<std::vector<double>>& position) {
-        py::gil_scoped_release _gil_release;
+        ScopedReleaseIfHeld _gil_release;
 
         const size_t type_size = type.size();
         size_t total_atoms = 0;
@@ -348,7 +365,7 @@ const std::vector<std::vector<int>>& type,
     std::vector<std::vector<double>> get_structures_polarizability(const std::vector<std::vector<int>>& type,
                                                      const std::vector<std::vector<double>>& box,
                                                      const std::vector<std::vector<double>>& position) {
-    py::gil_scoped_release _gil_release;
+    ScopedReleaseIfHeld _gil_release;
 
         size_t type_size = type.size();
         std::vector<std::vector<double>> all_polarizability(type_size, std::vector<double>(6));
@@ -368,7 +385,7 @@ const std::vector<std::vector<int>>& type,
     std::vector<std::vector<double>> get_structures_dipole(const std::vector<std::vector<int>>& type,
                                                      const std::vector<std::vector<double>>& box,
                                                      const std::vector<std::vector<double>>& position) {
-    py::gil_scoped_release _gil_release;
+    ScopedReleaseIfHeld _gil_release;
 
         size_t type_size = type.size();
         std::vector<std::vector<double>> all_dipole(type_size, std::vector<double>(3));

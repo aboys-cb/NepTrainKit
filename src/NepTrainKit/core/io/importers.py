@@ -584,6 +584,7 @@ class LammpsDumpImporter:
                     type_to_elem[int(k)] = str(v)
                 except Exception:
                     pass
+        print(type_to_elem)
         with candidate.open("r", encoding="utf8", errors="ignore") as f:
             while True:
                 if cancelled():
@@ -655,9 +656,12 @@ class LammpsDumpImporter:
                 has_cart = all(k in idx for k in ("x", "y", "z"))
                 has_unwrapped = all(k in idx for k in ("xu", "yu", "zu"))
                 has_forces = all(k in idx for k in ("fx", "fy", "fz"))
+                has_spin = all(k in idx for k in ("c_spin[1]", "c_spin[2]", "c_spin[3]","c_spin[4]"))
                 species_col = "element" if "element" in idx else ("type" if "type" in idx else None)
                 positions = np.zeros((n_atoms, 3), dtype=np.float32)
                 forces = np.zeros((n_atoms, 3), dtype=np.float32) if has_forces else None
+                spins = np.zeros((n_atoms, 3), dtype=np.float32) if has_spin else None
+
                 species_list: list[str] = []
                 types_buffer = np.zeros((n_atoms,), dtype=np.int32) if species_col == "type" else None
                 for i in range(n_atoms):
@@ -698,12 +702,17 @@ class LammpsDumpImporter:
                         fz = (z - zlo) / lz if lz != 0 else 0.0
                     else:
                         fx = fy = fz = 0.0
+
                     pos = fx * a + fy * b + fz * c
                     positions[i, :] = pos
                     if has_forces and forces is not None:
                         forces[i, 0] = float(parts[idx["fx"]])
                         forces[i, 1] = float(parts[idx["fy"]])
                         forces[i, 2] = float(parts[idx["fz"]])
+                    if has_spin and spins is not None:
+                        spins[i, 0] = float(parts[idx["c_spin[1]"]])*float(parts[idx["c_spin[2]"]])
+                        spins[i, 1] = float(parts[idx["c_spin[1]"]])*float(parts[idx["c_spin[3]"]])
+                        spins[i, 2] = float(parts[idx["c_spin[1]"]])*float(parts[idx["c_spin[4]"]])
                 # Resolve missing type->element mapping if needed
                 if species_col == "type" and types_buffer is not None:
                     missing = sorted({int(t) for t in types_buffer.tolist() if int(t) >= 1 and int(t) not in type_to_elem})
@@ -741,6 +750,9 @@ class LammpsDumpImporter:
                 if has_forces and forces is not None:
                     properties.append({"name": "forces", "type": "R", "count": 3})
                     atom_props["forces"] = forces
+                if has_spin and spins is not None:
+                    properties.append({"name": "spin", "type": "R", "count": 3})
+                    atom_props["spin"] = spins
                 additional_fields = {
                     "Config_type": f"LAMMPS_{timestep}",
                     "pbc": "T T T",

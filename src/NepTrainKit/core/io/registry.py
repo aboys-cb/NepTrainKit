@@ -212,7 +212,6 @@ class OtherLoader(ResultLoader):
                 "For example: Si O or Si,O"
             )
             text, ok = QInputDialog.getText(None, "Element Mapping", prompt)
-
             if ok and text:
                 raw = [t.strip() for t in str(text).replace(',', ' ').split() if t.strip()]
                 if raw:

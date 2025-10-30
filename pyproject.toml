@@ -13,13 +13,11 @@ build-backend = "setuptools.build_meta"
 name = "NepTrainKit"
 authors = [{ name = "Chen Cheng bing", email = "1747193328@qq.com" }]
 dynamic = ["version"]
-
-description = """
-NepTrainKit is a Python package for visualizing and manipulating training datasets for NEP.
-"""
+license = "GPL-3.0-or-later"
+description = """NepTrainKit is a Python package for visualizing and manipulating training datasets for NEP."""
 readme = "README.md"
 requires-python = ">=3.10"
-license = { "text"="GPL-3.0" }
+
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
@@ -28,7 +26,6 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Topic :: Scientific/Engineering :: Chemistry",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Scientific/Engineering :: Physics",

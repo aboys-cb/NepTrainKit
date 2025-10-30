@@ -188,6 +188,43 @@ calculate(const std::vector<std::vector<int>>& type,
 
 std::tuple<std::vector<std::vector<double>>,
            std::vector<std::vector<double>>,
+           std::vector<std::vector<double>>,
+           std::vector<std::vector<double>>>
+calculate(const std::vector<std::vector<int>>& type,
+          const std::vector<std::vector<double>>& box,
+          const std::vector<std::vector<double>>& position,
+          const std::vector<std::vector<double>>& spin
+          ) {
+    py::gil_scoped_release _gil_release;
+
+    size_t type_size = type.size();
+    std::vector<std::vector<double>> potentials(type_size);  // 预分配空间
+    std::vector<std::vector<double>> forces(type_size);      // 预分配空间
+    std::vector<std::vector<double>> mforces(type_size);      // 预分配空间
+
+    std::vector<std::vector<double>> virials(type_size);     // 预分配空间
+    // OpenMP 并行化报错
+
+    for (int i = 0; i < type_size; ++i) {
+        check_canceled();
+
+        potentials[i].resize(type[i].size());
+        forces[i].resize(type[i].size() * 3);  // 假设 force 是 3D 向量
+        mforces[i].resize(type[i].size() * 3);  // 假设 force 是 3D 向量
+        virials[i].resize(type[i].size() * 9);  // 假设 virial 是 3x3 矩阵
+
+        // 调用计算函数
+        compute(type[i], box[i], position[i],spin[i],
+                potentials[i], forces[i], virials[i],mforces[i]);
+
+    }
+
+    return std::make_tuple(potentials, forces, virials,mforces);
+}
+
+
+std::tuple<std::vector<std::vector<double>>,
+           std::vector<std::vector<double>>,
            std::vector<std::vector<double>>>
 calculate_dftd3(
   const std::string& functional,
@@ -354,7 +391,9 @@ PYBIND11_MODULE(nep_cpu, m) {
 
     py::class_<CpuNep>(m, "CpuNep")
         .def(py::init<const std::string&>(), py::arg("potential_filename"))
-        .def("calculate", &CpuNep::calculate)
+        .def("calculate", py::overload_cast<const std::vector<std::vector<int>>&, const std::vector<std::vector<double>>&, const std::vector<std::vector<double>>&>(&CpuNep::calculate))
+        .def("calculate", py::overload_cast<const std::vector<std::vector<int>>&, const std::vector<std::vector<double>>&, const std::vector<std::vector<double>>&, const std::vector<std::vector<double>>&>(&CpuNep::calculate))
+
         .def("calculate_with_dftd3", &CpuNep::calculate_with_dftd3)
         .def("calculate_dftd3", &CpuNep::calculate_dftd3)
 

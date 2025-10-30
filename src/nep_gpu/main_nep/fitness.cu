@@ -1,4 +1,4 @@
-/*
+﻿/*
     Copyright 2017 Zheyong Fan and GPUMD development team
     This file is part of GPUMD.
     GPUMD is free software: you can redistribute it and/or modify
@@ -20,6 +20,7 @@ Get the fitness
 #include "fitness.cuh"
 #include "nep.cuh"
 #include "nep_charge.cuh"
+#include "nep_spin.cuh"
 #include "tnep.cuh"
 #include "parameters.cuh"
 #include "structure.cuh"
@@ -34,6 +35,8 @@ Get the fitness
 #include <sstream>
 #include <vector>
 #include <cstring>
+#include <cmath>
+#include <limits>
 
 Fitness::Fitness(Parameters& para)
 {
@@ -127,13 +130,18 @@ Fitness::Fitness(Parameters& para)
     potential.reset(
       new TNEP(para, N, N_times_max_NN_radial, N_times_max_NN_angular, para.version, deviceCount));
   } else {
-    if (para.charge_mode) {
-      potential.reset(
-        new NEP_Charge(para, N, Nc, N_times_max_NN_radial, N_times_max_NN_angular, para.version, deviceCount));
-    } else {
-      potential.reset(
-        new NEP(para, N, N_times_max_NN_radial, N_times_max_NN_angular, para.version, deviceCount));
-    }
+      if (para.charge_mode) {
+        potential.reset(
+          new NEP_Charge(para, N, Nc, N_times_max_NN_radial, N_times_max_NN_angular, para.version, deviceCount));
+      } else {
+        if (para.spin_mode == 1) {
+          potential.reset(
+            new NEP_Spin(para, N, N_times_max_NN_radial, N_times_max_NN_angular, para.version, deviceCount));
+        } else {
+          potential.reset(
+            new NEP(para, N, N_times_max_NN_radial, N_times_max_NN_angular, para.version, deviceCount));
+        }
+      }
   }
 
   if (para.prediction == 0) {
@@ -180,6 +188,10 @@ void Fitness::compute(
         auto rmse_force_array = train_set[batch_id][m].get_rmse_force(para, true, m);
         auto rmse_virial_array = train_set[batch_id][m].get_rmse_virial(para, true, m);
         auto rmse_charge_array = train_set[batch_id][m].get_rmse_charge(para, m);
+        std::vector<float> rmse_mforce_array;
+        if (para.spin_mode == 1 && para.lambda_mf > 0.0f && para.charge_mode == 0) {
+          rmse_mforce_array = train_set[batch_id][m].get_rmse_magnetic_force(para, true, m);
+        }
 
         for (int t = 0; t <= para.num_types; ++t) {
           fitness[deviceCount * n + m + (7 * t + 3) * para.population_size] =
@@ -191,6 +203,9 @@ void Fitness::compute(
           if (para.charge_mode) {
             fitness[deviceCount * n + m + (7 * t + 6) * para.population_size] =
               para.lambda_q * rmse_charge_array[t];
+          } else if (para.spin_mode == 1 && para.lambda_mf > 0.0f) {
+            fitness[deviceCount * n + m + (7 * t + 6) * para.population_size] =
+              para.lambda_mf * rmse_mforce_array[t];
           } else {
             fitness[deviceCount * n + m + (7 * t + 6) * para.population_size] = 0.0f;
           }
@@ -216,6 +231,10 @@ void Fitness::compute(
             auto rmse_force_array = train_set[batch_id][m].get_rmse_force(para, true, m);
             auto rmse_virial_array = train_set[batch_id][m].get_rmse_virial(para, true, m);
             auto rmse_charge_array = train_set[batch_id][m].get_rmse_charge(para, m);
+            std::vector<float> rmse_mforce_array;
+            if (para.spin_mode == 1 && para.lambda_mf > 0.0f && para.charge_mode == 0) {
+              rmse_mforce_array = train_set[batch_id][m].get_rmse_magnetic_force(para, true, m);
+            }
             for (int t = 0; t <= para.num_types; ++t) {
               // energy
               float old_value = fitness[deviceCount * n + m + (7 * t + 3) * para.population_size];
@@ -235,10 +254,16 @@ void Fitness::compute(
               new_value = old_value * old_value * count_batch + new_value * new_value;
               new_value = sqrt(new_value / (count_batch + 1));
               fitness[deviceCount * n + m + (7 * t + 5) * para.population_size] = new_value;
-              // charge
+              // charge or magnetic force (slot 6)
               if (para.charge_mode) {
                 old_value = fitness[deviceCount * n + m + (7 * t + 6) * para.population_size];
                 new_value = para.lambda_q * rmse_charge_array[t];
+                new_value = old_value * old_value * count_batch + new_value * new_value;
+                new_value = sqrt(new_value / (count_batch + 1));
+                fitness[deviceCount * n + m + (7 * t + 6) * para.population_size] = new_value;
+              } else if (para.spin_mode == 1 && para.lambda_mf > 0.0f) {
+                old_value = fitness[deviceCount * n + m + (7 * t + 6) * para.population_size];
+                new_value = para.lambda_mf * rmse_mforce_array[t];
                 new_value = old_value * old_value * count_batch + new_value * new_value;
                 new_value = sqrt(new_value / (count_batch + 1));
                 fitness[deviceCount * n + m + (7 * t + 6) * para.population_size] = new_value;
@@ -259,15 +284,31 @@ void Fitness::output(
   float* reference,
   Dataset& dataset)
 {
+  // Unified rule for energy/virial aggregation:
+  // - Always sum predicted values over all atoms present in Dataset (real + pseudo),
+  //   with pseudo energies already zeroed in spin mode.
+  // - Normalize per-atom extensive quantities by the real-atom count when spin mode is on,
+  //   which matches how references are stored (energy already divided by num_real atoms).
   for (int nc = 0; nc < dataset.Nc; ++nc) {
     for (int n = 0; n < num_components; ++n) {
       int offset = n * dataset.N + dataset.Na_sum_cpu[nc];
       float data_nc = 0.0f;
-      for (int m = 0; m < dataset.Na_cpu[nc]; ++m) {
+      const bool is_energy = (!is_stress && num_components == 1);
+      // Sum range: for energy, sum all atoms; for non-energy, sum real atoms only.
+      int sum_count = dataset.Na_cpu[nc];
+      if (!is_energy) {
+        sum_count = dataset.structures[nc].num_atom;
+      }
+      for (int m = 0; m < sum_count; ++m) {
         data_nc += prediction[offset + m];
       }
       if (!is_stress) {
-        fprintf(fid, "%g ", data_nc / dataset.Na_cpu[nc]);
+        int den = dataset.Na_cpu[nc];
+        if (dataset.N_real > 0) {
+          den = dataset.structures[nc].num_atom; // normalize by real atom count in spin mode
+          if (den <= 0) den = dataset.Na_cpu[nc];
+        }
+        fprintf(fid, "%g ", data_nc / den);
       } else {
         fprintf(fid, "%g ", data_nc / dataset.structures[nc].volume * PRESSURE_UNIT_CONVERSION);
       }
@@ -275,7 +316,11 @@ void Fitness::output(
     for (int n = 0; n < num_components; ++n) {
       float ref_value = reference[n * dataset.Nc + nc];
       if (is_stress) {
-        ref_value *= dataset.Na_cpu[nc] / dataset.structures[nc].volume * PRESSURE_UNIT_CONVERSION;
+        float count = (float)dataset.Na_cpu[nc];
+        if (dataset.N_real > 0) {
+          count = (float)dataset.structures[nc].num_atom;
+        }
+        ref_value *= count / dataset.structures[nc].volume * PRESSURE_UNIT_CONVERSION;
       }
       if (n == num_components - 1) {
         fprintf(fid, "%g\n", ref_value);
@@ -316,19 +361,28 @@ void Fitness::write_nep_txt(FILE* fid_nep, Parameters& para, float* elite)
 {
   if (para.train_mode == 0) { // potential model
     if (!para.charge_mode) {
-      if (para.version == 3) {
+      // spin 模式下固定输出 NEP4 家族的 spin 头标记
+      if (para.spin_mode == 1) {
         if (para.enable_zbl) {
-          fprintf(fid_nep, "nep3_zbl %d ", para.num_types);
+          fprintf(fid_nep, "nep4_zbl_spin %d ", para.num_types);
         } else {
-          fprintf(fid_nep, "nep3 %d ", para.num_types);
+          fprintf(fid_nep, "nep4_spin %d ", para.num_types);
         }
-      } else if (para.version == 4) {
-        if (para.enable_zbl) {
-          fprintf(fid_nep, "nep4_zbl %d ", para.num_types);
-        } else {
-          fprintf(fid_nep, "nep4 %d ", para.num_types);
+      } else {
+        if (para.version == 3) {
+          if (para.enable_zbl) {
+            fprintf(fid_nep, "nep3_zbl %d ", para.num_types);
+          } else {
+            fprintf(fid_nep, "nep3 %d ", para.num_types);
+          }
+        } else if (para.version == 4) {
+          if (para.enable_zbl) {
+            fprintf(fid_nep, "nep4_zbl %d ", para.num_types);
+          } else {
+            fprintf(fid_nep, "nep4 %d ", para.num_types);
+          }
         }
-      } 
+      }
     } else {
       if (para.enable_zbl) {
         fprintf(fid_nep, "nep4_zbl_charge%d %d ", para.charge_mode, para.num_types);
@@ -375,6 +429,19 @@ void Fitness::write_nep_txt(FILE* fid_nep, Parameters& para, float* elite)
       fprintf(fid_nep, "zbl %g %g\n", para.zbl_rc_inner, para.zbl_rc_outer);
     }
   }
+  // Write virtual_scale right after zbl (spin model only, aligned with elements order)
+  if (para.spin_mode == 1 && para.charge_mode == 0) {
+    fprintf(fid_nep, "virtual_scale ");
+    int ntypes = para.num_types;
+    // Ensure vector size; default to 0 if not set
+    for (int i = 0; i < ntypes; ++i) {
+      float v = 0.0f;
+      if ((int)para.virtual_scale_by_type.size() == ntypes) {
+        v = para.virtual_scale_by_type[i];
+      }
+      fprintf(fid_nep, "%g%s", v, (i == ntypes - 1) ? "\n" : " ");
+    }
+  }
   if (para.use_typewise_cutoff || para.use_typewise_cutoff_zbl) {
     fprintf(
       fid_nep,
@@ -415,6 +482,19 @@ void Fitness::write_nep_txt(FILE* fid_nep, Parameters& para, float* elite)
   }
 }
 
+void Fitness::get_save_potential_label(Parameters& para, const int generation, std::string& label) {
+    if (para.save_potential_format == 1) {
+      time_t rawtime;
+      time(&rawtime);
+      struct tm* timeinfo = localtime(&rawtime);
+      char buffer[200];
+      strftime(buffer, sizeof(buffer), "nep_y%Y_m%m_d%d_h%H_m%M_s%S_generation", timeinfo);
+      label = std::string(buffer) + std::to_string(generation + 1);
+    } else {
+      label = "nep_gen" + std::to_string(generation + 1);
+    }
+}
+
 void Fitness::report_error(
   Parameters& para,
   const int generation,
@@ -436,7 +516,11 @@ void Fitness::report_error(
     float rmse_force_train = rmse_force_train_array.back();
     float rmse_virial_train = rmse_virial_train_array.back();
 
-    // correct the last bias parameter in the NN
+    // Correct the last bias parameter in the NN.
+    // In forward pass, energy uses "energy -= b1[0]" (see nep_utilities.cuh),
+    // so adding shift to b1 effectively subtracts shift from predicted energy:
+    //   E' = E_raw - (b1 + shift) = (E_raw - b1) - shift.
+    // With shift = mean(pred_per_atom - ref_per_atom), this aligns prediction to reference.
     if (para.train_mode == 0 || para.train_mode == 3) {
       elite[para.number_of_variables_ann - 1] += energy_shift_per_structure;
     }
@@ -444,6 +528,13 @@ void Fitness::report_error(
     float rmse_energy_test = 0.0f;
     float rmse_force_test = 0.0f;
     float rmse_virial_test = 0.0f;
+    float rmse_mforce_train = 0.0f;
+    float rmse_mforce_test = 0.0f;
+    bool has_mforce = (para.spin_mode == 1 && para.lambda_mf > 0.0f && para.charge_mode == 0);
+    if (has_mforce) {
+      auto rmse_mforce_train_array = train_set[batch_id][0].get_rmse_magnetic_force(para, false, 0);
+      rmse_mforce_train = rmse_mforce_train_array.back();
+    }
     if (has_test_set) {
       potential->find_force(para, elite, test_set, false, true, 1);
       float energy_shift_per_structure_not_used;
@@ -454,6 +545,10 @@ void Fitness::report_error(
       rmse_energy_test = rmse_energy_test_array.back();
       rmse_force_test = rmse_force_test_array.back();
       rmse_virial_test = rmse_virial_test_array.back();
+      if (has_mforce) {
+        auto rmse_mforce_test_array = test_set[0].get_rmse_magnetic_force(para, false, 0);
+        rmse_mforce_test = rmse_mforce_test_array.back();
+      }
     }
 
     FILE* fid_nep = my_fopen("nep.txt", "w");
@@ -462,16 +557,8 @@ void Fitness::report_error(
 
     if (0 == (generation + 1) % para.save_potential) {
       std::string filename;
-      if (para.save_potential_format == 1) {
-        time_t rawtime;
-        time(&rawtime);
-        struct tm* timeinfo = localtime(&rawtime);
-        char buffer[200];
-        strftime(buffer, sizeof(buffer), "nep_y%Y_m%m_d%d_h%H_m%M_s%S_generation", timeinfo);
-        filename = std::string(buffer) + std::to_string(generation + 1) + ".txt";
-      } else {
-        filename = "nep_gen" + std::to_string(generation + 1) + ".txt";
-      }
+      get_save_potential_label(para, generation, filename);
+      filename += ".txt";
 
       FILE* fid_nep = my_fopen(filename.c_str(), "w");
       write_nep_txt(fid_nep, para, elite);
@@ -479,31 +566,63 @@ void Fitness::report_error(
     }
 
     if (para.train_mode == 0 || para.train_mode == 3) {
-      printf(
-        "%-8d%-11.5f%-11.5f%-11.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f\n",
-        generation + 1,
-        loss_total,
-        loss_L1,
-        loss_L2,
-        rmse_energy_train,
-        rmse_force_train,
-        rmse_virial_train,
-        rmse_energy_test,
-        rmse_force_test,
-        rmse_virial_test);
-      fprintf(
-        fid_loss_out,
-        "%-8d%-11.5f%-11.5f%-11.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f\n",
-        generation + 1,
-        loss_total,
-        loss_L1,
-        loss_L2,
-        rmse_energy_train,
-        rmse_force_train,
-        rmse_virial_train,
-        rmse_energy_test,
-        rmse_force_test,
-        rmse_virial_test);
+      if (has_mforce) {
+        printf(
+          "%-8d%-11.5f%-11.5f%-11.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f\n",
+          generation + 1,
+          loss_total,
+          loss_L1,
+          loss_L2,
+          rmse_energy_train,
+          rmse_force_train,
+          rmse_virial_train,
+          rmse_mforce_train,
+          rmse_energy_test,
+          rmse_force_test,
+          rmse_virial_test,
+          rmse_mforce_test);
+        fprintf(
+          fid_loss_out,
+          "%-8d%-11.5f%-11.5f%-11.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f\n",
+          generation + 1,
+          loss_total,
+          loss_L1,
+          loss_L2,
+          rmse_energy_train,
+          rmse_force_train,
+          rmse_virial_train,
+          rmse_mforce_train,
+          rmse_energy_test,
+          rmse_force_test,
+          rmse_virial_test,
+          rmse_mforce_test);
+      } else {
+        printf(
+          "%-8d%-11.5f%-11.5f%-11.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f\n",
+          generation + 1,
+          loss_total,
+          loss_L1,
+          loss_L2,
+          rmse_energy_train,
+          rmse_force_train,
+          rmse_virial_train,
+          rmse_energy_test,
+          rmse_force_test,
+          rmse_virial_test);
+        fprintf(
+          fid_loss_out,
+          "%-8d%-11.5f%-11.5f%-11.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f\n",
+          generation + 1,
+          loss_total,
+          loss_L1,
+          loss_L2,
+          rmse_energy_train,
+          rmse_force_train,
+          rmse_virial_train,
+          rmse_energy_test,
+          rmse_force_test,
+          rmse_virial_test);
+      }
     } else {
       printf(
         "%-8d%-11.5f%-11.5f%-11.5f%-13.5f%-13.5f\n",
@@ -528,23 +647,30 @@ void Fitness::report_error(
 
     if (has_test_set) {
       if (para.train_mode == 0 || para.train_mode == 3) {
-        FILE* fid_force = my_fopen("force_test.out", "w");
-        FILE* fid_energy = my_fopen("energy_test.out", "w");
-        FILE* fid_virial = my_fopen("virial_test.out", "w");
-        FILE* fid_stress = my_fopen("stress_test.out", "w");
-        update_energy_force_virial(fid_energy, fid_force, fid_virial, fid_stress, test_set[0]);
-        fclose(fid_energy);
-        fclose(fid_force);
-        fclose(fid_virial);
-        fclose(fid_stress);
-        if (para.charge_mode) {
-          FILE* fid_charge = my_fopen("charge_test.out", "w");
-          update_charge(fid_charge, test_set[0]);
-          fclose(fid_charge);
+      FILE* fid_force = my_fopen("force_test.out", "w");
+      FILE* fid_energy = my_fopen("energy_test.out", "w");
+      FILE* fid_virial = my_fopen("virial_test.out", "w");
+      FILE* fid_stress = my_fopen("stress_test.out", "w");
+        update_energy_force_virial(para, fid_energy, fid_force, fid_virial, fid_stress, test_set[0]);
+      fclose(fid_energy);
+      fclose(fid_force);
+      fclose(fid_virial);
+      fclose(fid_stress);
+      if (para.spin_mode == 1 && para.lambda_mf > 0.0f && para.charge_mode == 0) {
+        FILE* fid_mforce = my_fopen("mforce_test.out", "w");
+        update_mforce(fid_mforce, test_set[0]);
+        fclose(fid_mforce);
+      }
+      if (para.charge_mode) {
+        FILE* fid_charge = my_fopen("charge_test.out", "w");
+        update_charge(fid_charge, test_set[0]);
+        fclose(fid_charge);
+        if (para.has_bec) {
           FILE* fid_bec = my_fopen("bec_test.out", "w");
           update_bec(fid_bec, test_set[0]);
           fclose(fid_bec);
         }
+      }
       } else if (para.train_mode == 1) {
         FILE* fid_dipole = my_fopen("dipole_test.out", "w");
         update_dipole(fid_dipole, test_set[0], para.atomic_v);
@@ -563,6 +689,7 @@ void Fitness::report_error(
 }
 
 void Fitness::update_energy_force_virial(
+  Parameters& para,
   FILE* fid_energy, FILE* fid_force, FILE* fid_virial, FILE* fid_stress, Dataset& dataset)
 {
   dataset.energy.copy_to_host(dataset.energy_cpu.data());
@@ -583,12 +710,14 @@ void Fitness::update_energy_force_virial(
         dataset.force_ref_cpu[n + dataset.N],
         dataset.force_ref_cpu[n + dataset.N * 2]);
     }
+    
   }
-
   output(false, 1, fid_energy, dataset.energy_cpu.data(), dataset.energy_ref_cpu.data(), dataset);
 
   output(false, 6, fid_virial, dataset.virial_cpu.data(), dataset.virial_ref_cpu.data(), dataset);
   output(true, 6, fid_stress, dataset.virial_cpu.data(), dataset.virial_ref_cpu.data(), dataset);
+
+  
 }
 
 void Fitness::update_charge(FILE* fid_charge, Dataset& dataset)
@@ -607,6 +736,36 @@ void Fitness::update_bec(FILE* fid_bec, Dataset& dataset)
   output_atomic(9, fid_bec, dataset.bec_cpu.data(), dataset.bec_ref_cpu.data(), dataset);
 }
 
+void Fitness::update_mforce(FILE* fid_mforce, Dataset& dataset)
+{
+  if (dataset.N_real <= 0) {
+    return;
+  }
+  std::vector<float> fm_pred_cpu(dataset.N_real * 3);
+  std::vector<float> mforce_ref_cpu(dataset.N_real * 3);
+  dataset.fm_pred.copy_to_host(fm_pred_cpu.data());
+  dataset.mforce_ref.copy_to_host(mforce_ref_cpu.data());
+
+  for (int nc = 0; nc < dataset.Nc; ++nc) {
+    int offset_r = (nc < (int)dataset.Na_real_sum_cpu.size()) ? dataset.Na_real_sum_cpu[nc] : 0;
+    int count_r = (nc < (int)dataset.Na_real_cpu.size()) ? dataset.Na_real_cpu[nc] : dataset.structures[nc].num_atom;
+    for (int m = 0; m < count_r; ++m) {
+      int r = offset_r + m;
+      fprintf(
+        fid_mforce,
+        "%g %g %g %g %g %g\n",
+        fm_pred_cpu[r],
+        fm_pred_cpu[r + dataset.N_real],
+        fm_pred_cpu[r + 2 * dataset.N_real],
+        mforce_ref_cpu[r],
+        mforce_ref_cpu[r + dataset.N_real],
+        mforce_ref_cpu[r + 2 * dataset.N_real]);
+    }
+  }
+}
+
+ 
+
 void Fitness::update_dipole(FILE* fid_dipole, Dataset& dataset, bool atomic)
 {
   dataset.virial.copy_to_host(dataset.virial_cpu.data());
@@ -616,6 +775,8 @@ void Fitness::update_dipole(FILE* fid_dipole, Dataset& dataset, bool atomic)
     output_atomic(3, fid_dipole, dataset.virial_cpu.data(), dataset.avirial_ref_cpu.data(), dataset);
   }
 }
+
+ 
 
 void Fitness::update_polarizability(FILE* fid_polarizability, Dataset& dataset, bool atomic)
 {
@@ -629,47 +790,114 @@ void Fitness::update_polarizability(FILE* fid_polarizability, Dataset& dataset, 
 
 void Fitness::predict(Parameters& para, float* elite)
 {
+  const bool in_prediction_mode = (para.prediction == 1);
+  const bool can_use_test = (in_prediction_mode && has_test_set);
+
   if (para.train_mode == 0 || para.train_mode == 3) {
-    FILE* fid_force = my_fopen("force_train.out", "w");
-    FILE* fid_energy = my_fopen("energy_train.out", "w");
-    FILE* fid_virial = my_fopen("virial_train.out", "w");
-    FILE* fid_stress = my_fopen("stress_train.out", "w");
-    FILE* fid_charge;
-    FILE* fid_bec;
-    if (para.charge_mode) {
-      fid_charge = my_fopen("charge_train.out", "w");
-      fid_bec = my_fopen("bec_train.out", "w");
-    }
-    for (int batch_id = 0; batch_id < num_batches; ++batch_id) {
-      potential->find_force(para, elite, train_set[batch_id], false, true, 1);
-      update_energy_force_virial(
-        fid_energy, fid_force, fid_virial, fid_stress, train_set[batch_id][0]);
-      if (para.charge_mode) {
-        update_charge(fid_charge, train_set[batch_id][0]);
-        update_bec(fid_bec, train_set[batch_id][0]);
+    if (can_use_test) {
+      // Use test_set and write *_test.out when running in prediction mode with test.xyz available
+      potential->find_force(para, elite, test_set, false, true, 1);
+      FILE* fid_force = my_fopen("force_test.out", "w");
+      FILE* fid_energy = my_fopen("energy_test.out", "w");
+      FILE* fid_virial = my_fopen("virial_test.out", "w");
+      FILE* fid_stress = my_fopen("stress_test.out", "w");
+      update_energy_force_virial(para, fid_energy, fid_force, fid_virial, fid_stress, test_set[0]);
+      fclose(fid_energy);
+      fclose(fid_force);
+      fclose(fid_virial);
+      fclose(fid_stress);
+      if (para.spin_mode == 1 && para.lambda_mf > 0.0f && para.charge_mode == 0) {
+        FILE* fid_mforce = my_fopen("mforce_test.out", "w");
+        update_mforce(fid_mforce, test_set[0]);
+        fclose(fid_mforce);
       }
-    }
-    fclose(fid_energy);
-    fclose(fid_force);
-    fclose(fid_virial);
-    fclose(fid_stress);
-    if (para.charge_mode) {
-      fclose(fid_charge);
-      fclose(fid_bec);
+      if (para.charge_mode) {
+        FILE* fid_charge = my_fopen("charge_test.out", "w");
+        update_charge(fid_charge, test_set[0]);
+        fclose(fid_charge);
+        if (para.has_bec) {
+          FILE* fid_bec = my_fopen("bec_test.out", "w");
+          update_bec(fid_bec, test_set[0]);
+          fclose(fid_bec);
+        }
+      }
+    } else {
+      // Default behavior: iterate over train_set batches and write *_train.out
+      FILE* fid_force = my_fopen("force_train.out", "w");
+      FILE* fid_energy = my_fopen("energy_train.out", "w");
+      FILE* fid_virial = my_fopen("virial_train.out", "w");
+      FILE* fid_stress = my_fopen("stress_train.out", "w");
+      FILE* fid_charge;
+      FILE* fid_bec;
+      FILE* fid_mforce = NULL;
+      if (para.charge_mode) {
+        fid_charge = my_fopen("charge_train.out", "w");
+        if (para.has_bec) {
+          fid_bec = my_fopen("bec_train.out", "w");
+        }
+      }
+      if (para.spin_mode == 1 && para.lambda_mf > 0.0f && para.charge_mode == 0) {
+        fid_mforce = my_fopen("mforce_train.out", "w");
+      }
+      for (int batch_id = 0; batch_id < num_batches; ++batch_id) {
+        potential->find_force(para, elite, train_set[batch_id], false, true, 1);
+        update_energy_force_virial(
+          para, fid_energy, fid_force, fid_virial, fid_stress, train_set[batch_id][0]);
+        // update_energy_force_virial already writes shift-corrected energy
+        if (para.charge_mode) {
+          update_charge(fid_charge, train_set[batch_id][0]);
+          if (para.has_bec) {
+            update_bec(fid_bec, train_set[batch_id][0]);
+          }
+        }
+        if (fid_mforce) {
+          update_mforce(fid_mforce, train_set[batch_id][0]);
+        }
+      }
+      fclose(fid_energy);
+      fclose(fid_force);
+      fclose(fid_virial);
+      fclose(fid_stress);
+      if (para.charge_mode) {
+        fclose(fid_charge);
+        if (para.has_bec) {
+          fclose(fid_bec);
+        }
+      }
+      if (fid_mforce) {
+        fclose(fid_mforce);
+      }
+      // train loop end
     }
   } else if (para.train_mode == 1) {
-    FILE* fid_dipole = my_fopen("dipole_train.out", "w");
-    for (int batch_id = 0; batch_id < num_batches; ++batch_id) {
-      potential->find_force(para, elite, train_set[batch_id], false, true, 1);
-      update_dipole(fid_dipole, train_set[batch_id][0], para.atomic_v);
+    if (can_use_test) {
+      potential->find_force(para, elite, test_set, false, true, 1);
+      FILE* fid_dipole = my_fopen("dipole_test.out", "w");
+      update_dipole(fid_dipole, test_set[0], para.atomic_v);
+      fclose(fid_dipole);
+    } else {
+      FILE* fid_dipole = my_fopen("dipole_train.out", "w");
+      for (int batch_id = 0; batch_id < num_batches; ++batch_id) {
+        potential->find_force(para, elite, train_set[batch_id], false, true, 1);
+        update_dipole(fid_dipole, train_set[batch_id][0], para.atomic_v);
+      }
+      fclose(fid_dipole);
     }
-    fclose(fid_dipole);
   } else if (para.train_mode == 2) {
-    FILE* fid_polarizability = my_fopen("polarizability_train.out", "w");
-    for (int batch_id = 0; batch_id < num_batches; ++batch_id) {
-      potential->find_force(para, elite, train_set[batch_id], false, true, 1);
-      update_polarizability(fid_polarizability, train_set[batch_id][0], para.atomic_v);
+    if (can_use_test) {
+      potential->find_force(para, elite, test_set, false, true, 1);
+      FILE* fid_polarizability = my_fopen("polarizability_test.out", "w");
+      update_polarizability(fid_polarizability, test_set[0], para.atomic_v);
+      fclose(fid_polarizability);
+    } else {
+      FILE* fid_polarizability = my_fopen("polarizability_train.out", "w");
+      for (int batch_id = 0; batch_id < num_batches; ++batch_id) {
+        potential->find_force(para, elite, train_set[batch_id], false, true, 1);
+        update_polarizability(fid_polarizability, train_set[batch_id][0], para.atomic_v);
+      }
+      fclose(fid_polarizability);
     }
-    fclose(fid_polarizability);
   }
 }
+
+

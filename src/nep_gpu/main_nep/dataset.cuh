@@ -23,7 +23,8 @@ class Dataset
 {
 public:
   int Nc;             // number of configurations
-  int N;              // total number of atoms (sum of Na[])
+  int N;              // total number of atoms (sum of Na[]); when spin_mode==1, includes pseudo atoms
+  int N_real;         // number of real atoms (excluding pseudo atoms)
   int max_Na;         // number of atoms in the largest configuration
   int max_NN_radial;  // radial neighbor list size
   int max_NN_angular; // angular neighbor list size
@@ -32,6 +33,11 @@ public:
   GPU_Vector<int> Na_sum;      // prefix sum of Na
   std::vector<int> Na_cpu;     // number of atoms in each configuration
   std::vector<int> Na_sum_cpu; // prefix sum of Na_cpu
+  // real-atom counters per configuration (for energy normalization when spin_mode==1)
+  std::vector<int> Na_real_cpu;     // number of real atoms (exclude pseudo) per configuration
+  std::vector<int> Na_real_sum_cpu; // prefix sum of Na_real_cpu
+  GPU_Vector<int> Na_real;          // GPU copy of Na_real_cpu
+  GPU_Vector<int> Na_real_sum;      // GPU copy of Na_real_sum_cpu
 
   GPU_Vector<int> type;           // atom type (0, 1, 2, 3, ...)
   GPU_Vector<float> r;            // position
@@ -80,6 +86,18 @@ public:
 
   std::vector<Structure> structures;
 
+  // spin extension buffers (only used when spin_mode==1)
+  GPU_Vector<float> spin;        // N_real*3, layout [x...][y...][z...]
+  GPU_Vector<float> mforce_ref;  // N_real*3
+  GPU_Vector<float> fm_pred;     // N_real*3
+  GPU_Vector<int> host2pseudo;   // N_real
+  GPU_Vector<int> host2real;     // N_real: map real-running index -> global real index
+  GPU_Vector<int> is_pseudo;     // N_total: 0 for real, 1 for pseudo
+  GPU_Vector<float> alpha;       // N_real: alpha_i = virtual_scale_by_type[type_i] (0 if unspecified)
+  // Aux for magnetic-force masking (active real atoms per configuration)
+  GPU_Vector<int> mforce_active_count_gpu; // Nc
+  std::vector<int> mforce_active_count_cpu; // Nc
+
   void
   construct(Parameters& para, std::vector<Structure>& structures, int n1, int n2, int device_id);
   std::vector<float> get_rmse_force(Parameters& para, const bool use_weight, int device_id);
@@ -92,6 +110,8 @@ public:
   std::vector<float> get_rmse_virial(Parameters& para, const bool use_weight, int device_id);
   std::vector<float> get_rmse_avirial(Parameters& para, const bool use_weight, int device_id);
   std::vector<float> get_rmse_charge(Parameters& para, int device_id);
+  // spin: RMSE of magnetic force (Fm) over real atoms only
+  std::vector<float> get_rmse_magnetic_force(Parameters& para, const bool use_weight, int device_id);
 
 private:
   void copy_structures(std::vector<Structure>& structures_input, int n1, int n2);

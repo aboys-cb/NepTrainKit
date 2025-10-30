@@ -55,6 +55,8 @@ void NepParameters::load_from_nep_txt(const std::string& filename, std::vector<f
 
   version = (head.find("nep3") != std::string::npos) ? 3 : 4;
   enable_zbl = (head.find("zbl") != std::string::npos);
+  // spin flavor in header: nep4_spin / nep4_zbl_spin
+  spin_mode = (head.find("spin") != std::string::npos) ? 1 : 0;
 
   if (head.find("dipole") != std::string::npos) {
     train_mode = 1;
@@ -95,6 +97,29 @@ void NepParameters::load_from_nep_txt(const std::string& filename, std::vector<f
     zbl_rc_outer = get_double_from_token(tokens[2], __FILE__, __LINE__);
     flexible_zbl = (zbl_rc_inner == 0.0f && zbl_rc_outer == 0.0f);
     tokens = get_tokens(input);
+  }
+
+  // Optional: virtual_scale per type (spin mode only), before cutoff line
+  if (spin_mode == 1) {
+    // Peek next line; consume only if it begins with "virtual_scale"
+    std::streampos pos = input.tellg();
+    std::vector<std::string> peek = get_tokens(input);
+    if (!peek.empty() && peek[0] == "virtual_scale") {
+      if ((int)peek.size() != 1 + num_types) {
+        PRINT_INPUT_ERROR("virtual_scale expects num_types values.");
+      }
+      virtual_scale_by_type.resize(num_types);
+      for (int i = 0; i < num_types; ++i) {
+        virtual_scale_by_type[i] = get_double_from_token(peek[1 + i], __FILE__, __LINE__);
+      }
+      is_virtual_scale_set = true;
+    } else {
+      // rewind if not virtual_scale
+      input.clear();
+      input.seekg(pos);
+      is_virtual_scale_set = false;
+      virtual_scale_by_type.clear();
+    }
   }
 
   if (tokens[0] == "cutoff") {

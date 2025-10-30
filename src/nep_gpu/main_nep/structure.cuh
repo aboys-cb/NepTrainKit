@@ -26,6 +26,7 @@ struct Structure {
   int atomic_virial_diag_only;
   int has_bec;
   int has_temperature;
+  int has_spin;
   float weight;
   float charge = 0.0f;
   float energy = 0.0f;
@@ -49,6 +50,13 @@ struct Structure {
   std::vector<float> avirialyz;
   std::vector<float> avirialzx;
   std::vector<float> bec;
+  // spin extension (only used when spin_mode==1)
+  std::vector<float> spinx;
+  std::vector<float> spiny;
+  std::vector<float> spinz;
+  std::vector<float> mforce_mx;
+  std::vector<float> mforce_my;
+  std::vector<float> mforce_mz;
 };
 
 bool read_structures(bool is_train, Parameters& para, std::vector<Structure>& structures);

@@ -23,6 +23,7 @@ class NEP3
 {
 public:
   struct ParaMB {
+    // typewise cutoff control
     bool use_typewise_cutoff = false;
     bool use_typewise_cutoff_zbl = false;
     double typewise_cutoff_radial_factor = 2.5;
@@ -42,11 +43,22 @@ public:
     int num_L;
     int basis_size_radial = 8;
     int basis_size_angular = 8;
-    int num_types_sq = 0;
-    int num_c_radial = 0;
-    int num_types = 0;
+    // element type information
+    int num_types = 0;              // real types (from nep.txt first line)
+    int num_types_real = 0;         // alias to num_types for clarity
+    int num_types_total = 0;        // real + virtual (spin mode)
+    int num_types_sq = 0;           // kept for backward compatibility (real-only square)
+    int num_types_sq_total = 0;     // square of total types (spin mode)
+    int num_c_radial = 0;           // offset for angular c's
     double q_scaler[140];
     int atomic_numbers[94];
+    // spin extension flags/params (read from nep.txt or default zeros)
+    int spin_mode = 0;                        // 0=off, 1=on
+    // Compatibility aliases for external code
+    int has_spin = 0;                         // alias of (spin_mode==1)
+    std::vector<double> virtual_scale;        // alias of virtual_scale_by_type
+    std::vector<double> virtual_scale_by_type; // size=num_types (per real element)
+    bool is_virtual_scale_set = false;
   };
 
   struct ANN {
@@ -113,6 +125,47 @@ public:
     std::vector<double>& force,
     std::vector<double>& virial);
 
+  // Spin-enabled small-box compute API
+  // Inputs:
+  //   type: N_real length (real atom types, 0..num_types-1)
+  //   box: 9 values (ax,bx,cx, ay,by,cy, az,bz,cz)
+  //   position: length N_real*3, layout [x...][y...][z...]
+  //   spin: length N_real*3, layout [sx...][sy...][sz...]
+  // Outputs (real atoms only):
+  //   potential: N_real, per-atom energy contribution
+  //   force: N_real*3, layout matches position
+  //   virial: N_real*9, layout [xx][xy][xz][yx][yy][yz][zx][zy][zz]
+  //   mforce: N_real*3, magnetic force Fm = alpha*F_pseudo on real atoms
+  void compute(
+    const std::vector<int>& type,
+    const std::vector<double>& box,
+    const std::vector<double>& position,
+    const std::vector<double>& spin,
+    std::vector<double>& potential,
+    std::vector<double>& force,
+    std::vector<double>& virial,
+    std::vector<double>& mforce);
+
+  // Spin-enabled LAMMPS interface
+  void compute_spin_for_lammps(
+    int nlocal,
+    int nall,
+    int inum,
+    int* ilist,
+    int* numneigh,
+    int** firstneigh,
+    int* type,
+    int* type_map,
+    double** x,
+    double** sp,
+    const double box[9],
+    double& total_potential,
+    double total_virial[6],
+    double* potential,
+    double** force,
+    double** virial,
+    double** mforce);
+
   void compute_with_dftd3(
     const std::string& xc,
     const double rc_potential,
@@ -139,6 +192,21 @@ public:
     const std::vector<int>& type,
     const std::vector<double>& box,
     const std::vector<double>& position,
+    std::vector<double>& descriptor);
+
+  // Spin-enabled descriptor (centers = real atoms only)
+  // Inputs:
+  //   type: N_real length (real atom types)
+  //   box: 9 values (ax,bx,cx, ay,by,cy, az,bz,cz)
+  //   position: length N_real*3, layout [x...][y...][z...]
+  //   spin: length N_real*3, layout [sx...][sy...][sz...]
+  // Output:
+  //   descriptor: length N_real * dim, ordered as d0[N] d1[N] ... with N=N_real
+  void find_descriptor(
+    const std::vector<int>& type,
+    const std::vector<double>& box,
+    const std::vector<double>& position,
+    const std::vector<double>& spin,
     std::vector<double>& descriptor);
 
   void find_latent_space(

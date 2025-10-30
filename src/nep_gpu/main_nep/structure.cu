@@ -89,6 +89,8 @@ static void read_force(
   const int force_offset,
   const int avirial_offset,
   const int bec_offset,
+  const int spin_offset,
+  const int mforce_offset,
   std::ifstream& input,
   const Parameters& para,
   Structure& structure,
@@ -104,6 +106,17 @@ static void read_force(
   structure.fy.resize(structure.num_atom);
   structure.fz.resize(structure.num_atom);
   structure.bec.resize(structure.num_atom * 9);
+  // spin extension (allocate only if properties contain columns)
+  if (spin_offset >= 0) {
+    structure.spinx.resize(structure.num_atom);
+    structure.spiny.resize(structure.num_atom);
+    structure.spinz.resize(structure.num_atom);
+  }
+  if (mforce_offset >= 0) {
+    structure.mforce_mx.resize(structure.num_atom);
+    structure.mforce_my.resize(structure.num_atom);
+    structure.mforce_mz.resize(structure.num_atom);
+  }
   if (structure.has_atomic_virial) {
     structure.avirialxx.resize(structure.num_atom);
     structure.avirialyy.resize(structure.num_atom);
@@ -120,6 +133,7 @@ static void read_force(
     line_number++;
 
     if (tokens.size() != num_columns) {
+      std::cout<< line_number << std::endl;
       PRINT_INPUT_ERROR("Number of items for an atom line mismatches properties.");
     }
     std::string atom_symbol(tokens[0 + species_offset]);
@@ -129,7 +143,7 @@ static void read_force(
       get_double_from_token(tokens[1 + pos_offset], xyz_filename.c_str(), line_number);
     structure.z[na] =
       get_double_from_token(tokens[2 + pos_offset], xyz_filename.c_str(), line_number);
-    if (num_columns > 4 && train_mode == 0) {
+    if (num_columns > 4 && (train_mode == 0 || train_mode == 3)) {
       structure.fx[na] =
         get_double_from_token(tokens[0 + force_offset], xyz_filename.c_str(), line_number);
       structure.fy[na] =
@@ -169,6 +183,25 @@ static void read_force(
       }
     }
 
+    // spin (optional): three columns starting at spin_offset
+    if (spin_offset >= 0) {
+      structure.spinx[na] =
+        get_double_from_token(tokens[0 + spin_offset], xyz_filename.c_str(), line_number);
+      structure.spiny[na] =
+        get_double_from_token(tokens[1 + spin_offset], xyz_filename.c_str(), line_number);
+      structure.spinz[na] =
+        get_double_from_token(tokens[2 + spin_offset], xyz_filename.c_str(), line_number);
+    }
+    // magnetic force reference (optional): three columns starting at mforce_offset
+    if (mforce_offset >= 0) {
+      structure.mforce_mx[na] =
+        get_double_from_token(tokens[0 + mforce_offset], xyz_filename.c_str(), line_number);
+      structure.mforce_my[na] =
+        get_double_from_token(tokens[1 + mforce_offset], xyz_filename.c_str(), line_number);
+      structure.mforce_mz[na] =
+        get_double_from_token(tokens[2 + mforce_offset], xyz_filename.c_str(), line_number);
+    }
+
     bool is_allowed_element = false;
     for (int n = 0; n < para.elements.size(); ++n) {
       if (atom_symbol == para.elements[n]) {
@@ -183,7 +216,7 @@ static void read_force(
 }
 
 static void read_one_structure(
-  const Parameters& para,
+  Parameters& para,
   std::ifstream& input,
   Structure& structure,
   std::string& xyz_filename,
@@ -220,7 +253,7 @@ static void read_one_structure(
       structure.energy /= structure.num_atom;
     }
   }
-  if (para.train_mode == 0 && !has_energy_in_exyz) {
+  if ((para.train_mode == 0 || para.train_mode == 3) && !has_energy_in_exyz) {
     PRINT_INPUT_ERROR("'energy' is missing in the second line of a frame.");
   }
 
@@ -415,10 +448,13 @@ static void read_one_structure(
   int force_offset = 0;
   int avirial_offset = 0;
   int bec_offset = 0;
+  int spin_offset = 0;
+  int mforce_offset = 0;
   int num_columns = 0;
   structure.has_atomic_virial = false;
   structure.atomic_virial_diag_only = false;
   structure.has_bec = false;
+  structure.has_spin = false;
   for (int n = 0; n < tokens.size(); ++n) {
     const std::string properties_string = "properties=";
     if (tokens[n].substr(0, properties_string.length()) == properties_string) {
@@ -434,6 +470,11 @@ static void read_one_structure(
       int force_position = -1;
       int avirial_position = -1;
       int bec_position = -1;
+      int spin_position = -1;
+      int mforce_position = -1;
+
+ 
+
       for (int k = 0; k < sub_tokens.size() / 3; ++k) {
         if (sub_tokens[k * 3] == "species") {
           species_position = k;
@@ -444,6 +485,13 @@ static void read_one_structure(
         if (sub_tokens[k * 3] == "force" || sub_tokens[k * 3] == "forces") {
           force_position = k;
         }   
+        if (sub_tokens[k * 3] == "spin") {
+          spin_position = k;
+        }
+        if (sub_tokens[k * 3] == "mforce" || sub_tokens[k * 3] == "force_mag") {
+          mforce_position = k;
+          structure.has_spin = true;
+        }
         if (sub_tokens[k * 3] == "adipole" || sub_tokens[k * 3] == "atomic_dipole") {
           avirial_position = k;
           structure.has_atomic_virial = true;
@@ -457,6 +505,7 @@ static void read_one_structure(
         if (sub_tokens[k * 3] == "bec") {
           bec_position = k;
           structure.has_bec = true;
+          para.has_bec = true;
         }
       }
       if (species_position < 0) {
@@ -465,7 +514,7 @@ static void read_one_structure(
       if (pos_position < 0) {
         PRINT_INPUT_ERROR("'pos' is missing in properties.");
       }
-      if (force_position < 0 && para.train_mode == 0) {
+      if (force_position < 0 && (para.train_mode == 0 || para.train_mode == 3)) {
         PRINT_INPUT_ERROR("'force' or 'forces' is missing in properties.");
       }
       if (avirial_position < 0 && para.train_mode == 1 && para.atomic_v == 1) {
@@ -473,6 +522,9 @@ static void read_one_structure(
       }
       if (avirial_position < 0 && para.train_mode == 2 && para.atomic_v == 1) {
         PRINT_INPUT_ERROR("'apol' or 'atomic_polarizability' is missing in properties.");
+      }
+      if (mforce_position < 0 && (para.train_mode == 0 || para.train_mode == 3)  && para.spin_mode == 1){
+        PRINT_INPUT_ERROR("'mforce' or 'force_mag' is missing in properties.");
       }
       for (int k = 0; k < sub_tokens.size() / 3; ++k) {
         if (k < species_position) {
@@ -487,6 +539,14 @@ static void read_one_structure(
           force_offset +=
             get_int_from_token(sub_tokens[k * 3 + 2], xyz_filename.c_str(), line_number);
         }
+        if (spin_position >= 0 && k < spin_position) {
+          spin_offset +=
+            get_int_from_token(sub_tokens[k * 3 + 2], xyz_filename.c_str(), line_number);
+        }
+        if (mforce_position >= 0 && k < mforce_position) {
+          mforce_offset +=
+            get_int_from_token(sub_tokens[k * 3 + 2], xyz_filename.c_str(), line_number);
+        }
         if (k < avirial_position) {
           avirial_offset +=
             get_int_from_token(sub_tokens[k * 3 + 2], xyz_filename.c_str(), line_number);
@@ -497,6 +557,7 @@ static void read_one_structure(
         }
         num_columns += get_int_from_token(sub_tokens[k * 3 + 2], xyz_filename.c_str(), line_number);
       }
+ 
     }
   }
 
@@ -507,6 +568,8 @@ static void read_one_structure(
     force_offset,
     avirial_offset,
     bec_offset,
+    spin_offset,
+    mforce_offset,
     input,
     para,
     structure,
@@ -516,7 +579,7 @@ static void read_one_structure(
 }
 
 static void read_exyz(
-  const Parameters& para,
+  Parameters& para,
   std::ifstream& input,
   std::vector<Structure>& structures,
   std::string& xyz_filename)
@@ -545,7 +608,7 @@ static void read_exyz(
 
   for (const auto& s : structures) {
     if (s.energy < -100.0f) {
-      std::cout << "Warning: \n";
+      std::cout << "Warning: \n"<<s.energy;
       std::cout << "    There is energy < -100 eV/atom in the data set.\n";
       std::cout << "    Because we use single precision in NEP training\n";
       std::cout << "    it means that the reference and calculated energies\n";

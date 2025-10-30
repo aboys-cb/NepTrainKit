@@ -32,22 +32,21 @@ const std::string ELEMENTS[NUM_ELEMENTS] = {
 
 Parameters::Parameters()
 {
+/*   print_line_1();
+  printf("Started reading nep.in.\n");
+  print_line_2();
 
-//   print_line_1();
-//   printf("Started reading nep.in.\n");
-//   print_line_2();
-//
-//   set_default_parameters();
-//   read_nep_in();
-//   if (is_zbl_set) {
-//     read_zbl_in();
-//   }
-//   calculate_parameters();
-//   report_inputs();
-//
-//   print_line_1();
-//   printf("Finished reading nep.in.\n");
-//   print_line_2();
+  set_default_parameters();
+  read_nep_in();
+  if (is_zbl_set) {
+    read_zbl_in();
+  }
+  calculate_parameters();
+  report_inputs();
+
+  print_line_1();
+  printf("Finished reading nep.in.\n");
+  print_line_2(); */
 }
 
 void Parameters::set_default_parameters()
@@ -77,6 +76,12 @@ void Parameters::set_default_parameters()
   is_use_typewise_cutoff_set = false;
   is_use_typewise_cutoff_zbl_set = false;
   is_charge_mode_set = false;
+  is_spin_mode_set = false;
+  is_lambda_mf_set = false;
+  // debug flags do not have is_set tracking
+  
+  
+  
 
   train_mode = 0;              // potential
   prediction = 0;              // not prediction mode
@@ -113,6 +118,17 @@ void Parameters::set_default_parameters()
   typewise_cutoff_zbl_factor = -1.0f;
   output_descriptor = false;
   charge_mode = 0;
+  // spin extension defaults (gated by spin_mode)
+  spin_mode = 0;
+  lambda_mf = 0.0f;
+  virtual_scale_by_type.clear();
+  is_virtual_scale_set = false;
+  // debug/self-check defaults
+  debug_dump_spin_descriptor = 0;
+  debug_spin_flip_mode = 1;
+  debug_disable_type_fold_for_ann = 0;
+  debug_spin_desc_prefix = "debug_spin_q";
+  
 
   type_weight_cpu.resize(NUM_ELEMENTS);
   zbl_para.resize(550); // Maximum number of zbl parameters
@@ -215,22 +231,34 @@ void Parameters::calculate_parameters()
   }
 
   if (version == 3) {
+    number_of_variables_ann_1 = (dim + 2) * num_neurons1;
     number_of_variables_ann = (dim + 2) * num_neurons1 + 1;
   } else if (version == 4) {
+    number_of_variables_ann_1 = (dim + 2) * num_neurons1;
     number_of_variables_ann = (dim + 2) * num_neurons1 * num_types + 1;
     if (charge_mode) {
+      number_of_variables_ann_1 += num_neurons1;
       number_of_variables_ann += num_neurons1 * num_types + 1;
+      if (charge_mode >= 4) {
+        number_of_variables_ann_1 += num_neurons1;
+        number_of_variables_ann += num_neurons1 * num_types;
+      }
     }
   }
 
-  number_of_variables_descriptor =
-    num_types * num_types *
-    (dim_radial * (basis_size_radial + 1) + (n_max_angular + 1) * (basis_size_angular + 1));
+  {
+    int num_types_total = (spin_mode == 1 ? num_types * 2 : num_types);
+    number_of_variables_descriptor =
+      num_types_total * num_types_total *
+      (dim_radial * (basis_size_radial + 1) + (n_max_angular + 1) * (basis_size_angular + 1));
+  }
 
   number_of_variables = number_of_variables_ann + number_of_variables_descriptor;
   if (train_mode == 2) {
     number_of_variables += number_of_variables_ann;
   }
+
+  // Legacy spin onsite terms removed; no extra variables are appended.
 
   if (version != 3) {
     if (!is_lambda_1_set) {
@@ -256,8 +284,7 @@ void Parameters::calculate_parameters()
     }
     std::vector<std::string> tokens;
     const int NUM89 = 89;
-    const int num_ann_per_element = (dim + (charge_mode ? 3 : 2)) * num_neurons1;
-    const int num_ann = NUM89 * num_ann_per_element + (charge_mode ? 2 : 1);
+    const int num_ann = NUM89 * number_of_variables_ann_1 + (charge_mode ? 2 : 1);
     const int num_cnk_radial = NUM89 * NUM89 * (n_max_radial + 1) * (basis_size_radial + 1);
     const int num_cnk_angular = NUM89 * NUM89 * (n_max_angular + 1) * (basis_size_angular + 1);
     const int num_tot = num_ann + num_cnk_radial + num_cnk_angular;
@@ -452,6 +479,32 @@ void Parameters::report_inputs()
       printf("    (input)   use NEP-Charge and include k-space only; lambda_q = %g.\n", lambda_q);
     } else if (charge_mode == 3) {
       printf("    (input)   use NEP-Charge and include real-space only; lambda_q = %g.\n", lambda_q);
+    } else if (charge_mode == 4) {
+      printf("    (input)   use NEP-Charge-VdW and include k-space only; lambda_q = %g.\n", lambda_q);
+    } else if (charge_mode == 5) {
+      printf("    (input)   use NEP-Charge-VdW and include real-space only; lambda_q = %g.\n", lambda_q);
+    }
+  }
+
+  // ---- Spin extension reporting ----
+  if (is_spin_mode_set) {
+    printf("    (input)   spin_mode = %d.\n", spin_mode);
+  } else {
+    printf("    (default) spin_mode = %d.\n", spin_mode);
+  }
+  if (spin_mode == 1) {
+    // print per-type virtual_scale (default=0.0 if unspecified)
+    if ((int)virtual_scale_by_type.size() == num_types) {
+      for (int n = 0; n < num_types; ++n) {
+        printf("        (%s)   virtual_scale_by_type %s = %g.\n",
+               is_virtual_scale_set ? "input" : "default",
+               elements[n].c_str(),
+               virtual_scale_by_type[n]);
+      }
+    } else {
+      for (int n = 0; n < num_types; ++n) {
+        printf("        (default) virtual_scale_by_type %s = %g.\n", elements[n].c_str(), 0.0f);
+      }
     }
   }
 
@@ -540,6 +593,14 @@ void Parameters::report_inputs()
     printf("    (input)   lambda_v = %g.\n", lambda_v);
   } else {
     printf("    (default) lambda_v = %g.\n", lambda_v);
+  }
+  // magnetic force weight (print together with other weights)
+  if (spin_mode == 1 && charge_mode == 0) {
+    if (is_lambda_mf_set) {
+      printf("    (input)   lambda_mf = %g.\n", lambda_mf);
+    } else {
+      printf("    (default) lambda_mf = %g.\n", lambda_mf);
+    }
   }
 
   if (is_atomic_v_set) {
@@ -675,9 +736,112 @@ void Parameters::parse_one_keyword(std::vector<std::string>& tokens)
     parse_fine_tune(param, num_param);
   } else if (strcmp(param[0], "save_potential") == 0) {
     parse_save_potential(param, num_param);
+  } else if (strcmp(param[0], "spin_mode") == 0) {
+    parse_spin_mode(param, num_param);
+  } else if (strcmp(param[0], "lambda_mf") == 0) {
+    parse_lambda_mf(param, num_param);
+  } else if (strcmp(param[0], "virtual_scale") == 0) {
+    parse_virtual_scale(param, num_param);
+  } else if (strcmp(param[0], "debug_dump_spin_descriptor") == 0) {
+    parse_debug_dump_spin_descriptor(param, num_param);
+  } else if (strcmp(param[0], "debug_spin_flip_mode") == 0) {
+    parse_debug_spin_flip_mode(param, num_param);
+  } else if (strcmp(param[0], "debug_disable_type_fold_for_ann") == 0) {
+    parse_debug_disable_type_fold_for_ann(param, num_param);
+  } else if (strcmp(param[0], "debug_spin_desc_prefix") == 0) {
+    parse_debug_spin_desc_prefix(param, num_param);
   } else {
     PRINT_KEYWORD_ERROR(param[0]);
   }
+}
+
+void Parameters::parse_spin_mode(const char** param, int num_param)
+{
+  is_spin_mode_set = true;
+  if (num_param != 2) {
+    PRINT_INPUT_ERROR("spin_mode should have 1 parameter.\n");
+  }
+  if (!is_valid_int(param[1], &spin_mode)) {
+    PRINT_INPUT_ERROR("spin_mode should be an integer.\n");
+  }
+  if (spin_mode != 0 && spin_mode != 1) {
+    PRINT_INPUT_ERROR("spin_mode should be 0 or 1.\n");
+  }
+}
+
+void Parameters::parse_lambda_mf(const char** param, int num_param)
+{
+  is_lambda_mf_set = true;
+  if (num_param != 2) {
+    PRINT_INPUT_ERROR("lambda_mf should have 1 parameter.\n");
+  }
+  lambda_mf = get_double_from_token(param[1], __FILE__, __LINE__);
+}
+
+
+// removed: include_spin_energy_in_E parser; behavior aligns with deepspin (exclude pseudo energy)
+
+// removed: legacy spin onsite parsers (onsite energy / anisotropy)
+
+ 
+
+void Parameters::parse_virtual_scale(const char** param, int num_param)
+{
+  // Expect: virtual_scale v1 v2 ... vN (N = num_types)
+  if (!is_type_set || num_types <= 0) {
+    PRINT_INPUT_ERROR("virtual_scale specified before type definition.\n");
+  }
+  if (num_param != 1 + num_types) {
+    PRINT_INPUT_ERROR("virtual_scale should have num_types float values.\n");
+  }
+  virtual_scale_by_type.assign(num_types, 0.0f);
+  for (int i = 0; i < num_types; ++i) {
+    float v = get_double_from_token(param[1 + i], __FILE__, __LINE__);
+    virtual_scale_by_type[i] = v;
+  }
+  is_virtual_scale_set = true;
+}
+
+// Debug/self-check options
+void Parameters::parse_debug_dump_spin_descriptor(const char** param, int num_param)
+{
+  if (num_param != 2) {
+    PRINT_INPUT_ERROR("debug_dump_spin_descriptor should have 1 parameter.\n");
+  }
+  if (!is_valid_int(param[1], &debug_dump_spin_descriptor)) {
+    PRINT_INPUT_ERROR("debug_dump_spin_descriptor should be an integer (0/1).\n");
+  }
+}
+
+void Parameters::parse_debug_spin_flip_mode(const char** param, int num_param)
+{
+  if (num_param != 2) {
+    PRINT_INPUT_ERROR("debug_spin_flip_mode should have 1 parameter.\n");
+  }
+  if (!is_valid_int(param[1], &debug_spin_flip_mode)) {
+    PRINT_INPUT_ERROR("debug_spin_flip_mode should be an integer.\n");
+  }
+  if (debug_spin_flip_mode != 1) {
+    PRINT_INPUT_ERROR("debug_spin_flip_mode currently supports only 1 (sign flip).\n");
+  }
+}
+
+void Parameters::parse_debug_disable_type_fold_for_ann(const char** param, int num_param)
+{
+  if (num_param != 2) {
+    PRINT_INPUT_ERROR("debug_disable_type_fold_for_ann should have 1 parameter.\n");
+  }
+  if (!is_valid_int(param[1], &debug_disable_type_fold_for_ann)) {
+    PRINT_INPUT_ERROR("debug_disable_type_fold_for_ann should be an integer (0/1).\n");
+  }
+}
+
+void Parameters::parse_debug_spin_desc_prefix(const char** param, int num_param)
+{
+  if (num_param != 2) {
+    PRINT_INPUT_ERROR("debug_spin_desc_prefix should have 1 parameter.\n");
+  }
+  debug_spin_desc_prefix = std::string(param[1]);
 }
 
 void Parameters::parse_mode(const char** param, int num_param)
@@ -1290,14 +1454,22 @@ void Parameters::parse_charge_mode(const char** param, int num_param)
 {
   is_charge_mode_set = true;
 
-  if (num_param != 2) {
-    PRINT_INPUT_ERROR("charge_mode should have one parameter.\n");
+  if (num_param != 2 && num_param != 3) {
+    PRINT_INPUT_ERROR("charge_mode should have one or two parameters.\n");
   }
   if (!is_valid_int(param[1], &charge_mode)) {
     PRINT_INPUT_ERROR("charge mode should be an integer.\n");
   }
-  if (charge_mode != 0 && charge_mode != 1 && charge_mode != 2 && charge_mode != 3) {
-    PRINT_INPUT_ERROR("charge mode should be 0 or 1 or 2 or 3.");
+  if (charge_mode < 0 || charge_mode > 5) {
+    PRINT_INPUT_ERROR("charge mode should be 0 or 1 or 2 or 3 or 4 or 5.");
+  }
+  if (num_param == 3) {
+    if (!is_valid_int(param[2], &flip_charge)) {
+      PRINT_INPUT_ERROR("flip_charge should be an integer.\n");
+    }
+    if (flip_charge < 0 || flip_charge > 1) {
+      PRINT_INPUT_ERROR("flip_charge should be 0 or 1.");
+    }
   }
 }
 
@@ -1317,8 +1489,8 @@ void Parameters::parse_save_potential(const char** param, int num_param)
 {
   is_save_potential_set = true;
 
-  if (num_param != 3) {
-    PRINT_INPUT_ERROR("save_potential should have 2 parameters.\n");
+  if (num_param != 4) {
+    PRINT_INPUT_ERROR("save_potential should have 3 parameters.\n");
   }
   if (!is_valid_int(param[1], &save_potential)) {
     PRINT_INPUT_ERROR("save_potential interval should be an integer.\n");
@@ -1331,5 +1503,11 @@ void Parameters::parse_save_potential(const char** param, int num_param)
   }
   if (save_potential_format != 0 && save_potential_format != 1) {
     PRINT_INPUT_ERROR("save_potential format should be 0 or 1.");
+  }  
+  if (!is_valid_int(param[3], &save_potential_restart)) {
+    PRINT_INPUT_ERROR("save_potential save restart should be an integer.\n");
+  }
+  if (save_potential_restart != 0 && save_potential_restart != 1) {
+    PRINT_INPUT_ERROR("save_potential save restart should be 0 or 1.");
   }  
 }

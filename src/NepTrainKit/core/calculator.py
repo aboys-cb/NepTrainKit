@@ -37,6 +37,7 @@ try:
     from NepTrainKit.nep_gpu import GpuNep
 except ImportError:
     logger.debug("no found NepTrainKit.nep_gpu")
+    print(traceback.format_exc())
     try:
         from nep_gpu import GpuNep
     except ImportError:
@@ -153,13 +154,14 @@ class NepCalculator:
     @timeit
     def compose_structures(
         self,
-        structures: Iterable[Structure] | Structure,
-    ) -> tuple[list[list[int]], list[list[float]], list[list[float]], list[int]]:
+        structures: Iterable[Structure] | Structure,has_spin=False
+    ) -> tuple[list[list[int]], list[list[float]], list[list[float]], list[int]] | tuple[list[list[int]], list[list[float]], list[list[float]], list[list[float]],list[int]]:
         """Convert ``structures`` into backend-ready arrays of types, boxes, and positions."""
         structure_list = self._ensure_structure_list(structures)
         group_sizes: list[int] = []
         atom_types: list[list[int]] = []
         boxes: list[list[float]] = []
+        spins: list[list[float]] = []
         positions: list[list[float]] = []
         for structure in structure_list:
             symbols = structure.get_chemical_symbols()
@@ -169,8 +171,14 @@ class NepCalculator:
             atom_types.append(mapped_types)
             boxes.append(box)
             positions.append(coords)
+            if has_spin:
+                spins.append(structure.atomic_properties["spin"].transpose(1, 0).reshape(-1).tolist())
             group_sizes.append(len(mapped_types))
-        return atom_types, boxes, positions, group_sizes
+        if has_spin:
+            return atom_types, boxes, positions,spins, group_sizes
+        else:
+            return atom_types, boxes, positions, group_sizes
+
     @timeit
     def calculate(
         self,
@@ -195,8 +203,7 @@ class NepCalculator:
         """
         structure_list = self._ensure_structure_list(structures)
         if not self.initialized or not structure_list:
-            empty = np.array([], dtype=np.float32)
-            return empty, empty, empty
+            return [], [], []
         atom_types, boxes, positions, group_sizes = self.compose_structures(structure_list)
         self.nep3.reset_cancel()
         potentials, forces, virials = self.nep3.calculate(atom_types, boxes, positions)
@@ -206,6 +213,47 @@ class NepCalculator:
         reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
 
         return potentials_array.tolist(), reshaped_forces, reshaped_virials
+
+    @timeit
+    def calculate_spin(
+        self,
+        structures: Iterable[Structure] | Structure,
+    ) -> tuple[list[np.float32], list[npt.NDArray[np.float32]], list[npt.NDArray[np.float32]]]:
+        """Compute energies, forces, and virials for one or more structures.
+
+        Parameters
+        ----------
+        structures : Structure or Iterable[Structure]
+            Single structure or an iterable of structures to evaluate.
+
+        Returns
+        -------
+        tuple[list, list, list]
+            ``(potentials, forces, virials)`` arrays with ``float32`` dtype.
+            Potentials are per-structure, forces per-atom, and virials per-structure.
+
+        Examples
+        --------
+        >>> # c = NepCalculator(...); e, f, v = c.calculate(structs)  # doctest: +SKIP
+        """
+        structure_list = self._ensure_structure_list(structures)
+        if not self.initialized or not structure_list:
+            empty = np.array([], dtype=np.float32)
+            return empty, empty, empty
+        atom_types, boxes, positions,spins, group_sizes = self.compose_structures(structure_list,True)
+        self.nep3.reset_cancel()
+        potentials, forces, virials,mforce = self.nep3.calculate(atom_types, boxes, positions,spins)
+
+        potentials = np.hstack(potentials)
+        potentials_array = aggregate_per_atom_to_structure(potentials,group_sizes,map_func=np.sum,axis=None)
+        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
+        reshaped_mforce = [np.array(mforce).reshape(3, -1).T for force in mforce]
+
+        reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
+
+        return potentials_array.tolist(), reshaped_forces,reshaped_mforce, reshaped_virials
+
+
 
     @timeit
     def calculate_dftd3(

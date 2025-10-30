@@ -42,14 +42,14 @@ if sys.platform == "win32":
     if use_openmp:
         extra_compile_args.append('/openmp' )
     extra_compile_args.append('/O2' )
-    extra_compile_args.append('/std:c++11' )
+    extra_compile_args.append('/std:c++14' )
 
 
 
     if use_openmp:
         extra_link_args.append('/openmp')
     extra_link_args.append('/O2' )
-    extra_link_args.append('/std:c++11' )
+    extra_link_args.append('/std:c++14' )
 
 
 elif sys.platform == "darwin":
@@ -64,11 +64,11 @@ elif sys.platform == "darwin":
     # extra_link_args.append(f'-arch {target_arch}')
 
     extra_compile_args.append('-O3')
-    extra_compile_args.append('-std=c++11')
+    extra_compile_args.append('-std=c++14')
 
 
     extra_link_args.append('-O3')
-    extra_link_args.append('-std=c++11')
+    extra_link_args.append('-std=c++14')
 
     omp_include = os.getenv("OMP_INCLUDE_PATH", "/opt/homebrew/opt/libomp/include")
     omp_lib = os.getenv("OMP_LIB_PATH", "/opt/homebrew/opt/libomp/lib")
@@ -84,13 +84,13 @@ else:
     if use_openmp:
         extra_compile_args.append('-fopenmp' )
     extra_compile_args.append('-O3')
-    extra_compile_args.append('-std=c++11')
+    extra_compile_args.append('-std=c++14')
 
 
     if use_openmp:
         extra_link_args.append('-fopenmp')
     extra_link_args.append('-O3')
-    extra_link_args.append('-std=c++11')
+    extra_link_args.append('-std=c++14')
 
 
 # 定义扩展模块
@@ -113,6 +113,7 @@ gpu_sources_cu = [
     "src/nep_gpu/main_nep/dataset.cu",
     "src/nep_gpu/main_nep/nep.cu",
     "src/nep_gpu/main_nep/nep_charge.cu",
+    "src/nep_gpu/main_nep/nep_spin.cu",
     "src/nep_gpu/main_nep/parameters.cu",
     "src/nep_gpu/main_nep/structure.cu",
     "src/nep_gpu/main_nep/tnep.cu",

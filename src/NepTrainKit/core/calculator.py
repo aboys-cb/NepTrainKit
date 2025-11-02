@@ -20,6 +20,8 @@ from NepTrainKit.core.structure import Structure
 from NepTrainKit.paths import PathLike, as_path
 from NepTrainKit.core.types import NepBackend
 from NepTrainKit.core.utils import split_by_natoms,aggregate_per_atom_to_structure
+from NepTrainKit.core.cstdio_redirect import redirect_c_stdout_stderr
+from typing import Literal
 
 try:
     from NepTrainKit.nep_cpu import CpuNep
@@ -37,7 +39,7 @@ try:
     from NepTrainKit.nep_gpu import GpuNep
 except ImportError:
     logger.debug("no found NepTrainKit.nep_gpu")
-    print(traceback.format_exc())
+    logger.debug(traceback.format_exc())
     try:
         from nep_gpu import GpuNep
     except ImportError:
@@ -74,6 +76,7 @@ class NepCalculator:
         model_file: PathLike = "nep.txt",
         backend: NepBackend | None = None,
         batch_size: int | None = None,
+        native_stdio: str | Path | Literal["inherit", "silent"] | None = "silent",
     ) -> None:
 
         super().__init__()
@@ -86,6 +89,19 @@ class NepCalculator:
         self.nep3 = None
         self.element_list: list[str] = []
         self.type_dict: dict[str, int] = {}
+        # Native stdio behavior for C/C++ (printf) in backends
+        #   - "silent": suppress to devnull (default)
+        #   - "inherit": leave as-is (print to terminal)
+        #   - path-like: redirect native prints to this file
+        self._native_stdio = native_stdio
+        self._persistent_stdio_guard = None
+        # Install process-wide C stdio redirection early to catch any async prints
+        if self._native_stdio != "inherit":
+            target = None if self._native_stdio in (None, "silent") else as_path(self._native_stdio)
+            self._persistent_stdio_guard = redirect_c_stdout_stderr(target)
+            # Activate and keep until object deletion
+            self._persistent_stdio_guard.__enter__()
+
         if CpuNep is None and GpuNep is None:
             MessageManager.send_message_box(
                 "Failed to import NEP.\n To use the display functionality normally, please prepare the *.out and descriptor.out files.",
@@ -113,14 +129,22 @@ class NepCalculator:
         elif self.backend == NepBackend.GPU:
             if not self._load_nep_backend(NepBackend.GPU):
                 MessageManager.send_warning_message("The NEP backend you selected is GPU, but it failed to load on your device; the program has switched to the CPU backend.")
-                self._load_nep_backend(NepBackend.CPU)
+            self._load_nep_backend(NepBackend.CPU)
         else:
             self._load_nep_backend(NepBackend.CPU)
+
+    def __del__(self):
+        # Restore stdio on deletion if we installed a persistent guard
+        try:
+            if getattr(self, "_persistent_stdio_guard", None) is not None:
+                self._persistent_stdio_guard.__exit__(None, None, None)
+        except Exception:
+            pass
     def _load_nep_backend(self, backend: NepBackend) -> bool:
         """Attempt to initialise ``backend`` and return ``True`` when successful."""
         try:
             sink = io.StringIO()
-            with contextlib.redirect_stdout(sink), contextlib.redirect_stderr(sink):
+            with self._native_stdio_ctx(), contextlib.redirect_stdout(sink), contextlib.redirect_stderr(sink):
                 if backend == NepBackend.GPU:
                     if GpuNep is None:
                         return False
@@ -140,6 +164,13 @@ class NepCalculator:
         except Exception:
             logger.debug(traceback.format_exc())
             return False
+
+    def _native_stdio_ctx(self):
+        if self._native_stdio == "inherit":
+            return contextlib.nullcontext()
+        if self._native_stdio in (None, "silent"):
+            return redirect_c_stdout_stderr()
+        return redirect_c_stdout_stderr(as_path(self._native_stdio))
 
     @staticmethod
     def _ensure_structure_list(
@@ -180,6 +211,55 @@ class NepCalculator:
             return atom_types, boxes, positions, group_sizes
 
     @timeit
+    def calculate_flat(
+        self,
+        structures: Iterable[Structure] | Structure,
+    ) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray]:
+        """Return atom-level arrays across all frames.
+
+        Returns (potentials_atom, forces, virials) with shapes:
+        - potentials_atom: (total_atoms,)
+        - forces: (total_atoms, 3)
+        - virials: (total_atoms, 9)
+        """
+        structure_list = self._ensure_structure_list(structures)
+        if not self.initialized or not structure_list:
+            empty = np.array([], dtype=np.float64)
+            return empty, empty, empty
+        atom_types, boxes, positions, _ = self.compose_structures(structure_list)
+        self.nep3.reset_cancel()
+        with self._native_stdio_ctx():
+            potentials, forces, virials = self.nep3.calculate(atom_types, boxes, positions)
+        # Ensure numpy arrays; keep dtype from backend (GPU: float32, CPU: float64)
+        potentials = np.asarray(potentials)
+        forces = np.asarray(forces)
+        virials = np.asarray(virials)
+        return potentials, forces, virials
+
+    @timeit
+    def calculate_spin_flat(
+        self,
+        structures: Iterable[Structure] | Structure,
+    ) -> tuple[npt.NDArray, npt.NDArray, npt.NDArray, npt.NDArray]:
+        """Return atom-level arrays across all frames for spin models.
+
+        Returns (potentials_atom, forces, mforces, virials) with shapes:
+        - potentials_atom: (total_atoms,)
+        - forces: (total_atoms, 3)
+        - mforces: (total_atoms, 3)
+        - virials: (total_atoms, 9)
+        """
+        structure_list = self._ensure_structure_list(structures)
+        if not self.initialized or not structure_list:
+            empty = np.array([], dtype=np.float64)
+            return empty, empty, empty, empty
+        atom_types, boxes, positions, spins, _ = self.compose_structures(structure_list, True)
+        self.nep3.reset_cancel()
+        with self._native_stdio_ctx():
+            potentials, forces, mforce, virials = self.nep3.calculate(atom_types, boxes, positions, spins)
+        return np.asarray(potentials), np.asarray(forces), np.asarray(mforce), np.asarray(virials)
+
+    @timeit
     def calculate(
         self,
         structures: Iterable[Structure] | Structure,
@@ -206,19 +286,37 @@ class NepCalculator:
             return [], [], []
         atom_types, boxes, positions, group_sizes = self.compose_structures(structure_list)
         self.nep3.reset_cancel()
-        potentials, forces, virials = self.nep3.calculate(atom_types, boxes, positions)
-        potentials = np.hstack(potentials)
-        potentials_array = aggregate_per_atom_to_structure(potentials,group_sizes,map_func=np.sum,axis=None)
-        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
-        reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
+        with self._native_stdio_ctx():
+            potentials, forces, virials = self.nep3.calculate(atom_types, boxes, positions)
 
-        return potentials_array.tolist(), reshaped_forces, reshaped_virials
+        # Handle GPU (np.ndarray) vs CPU (list of arrays) outputs uniformly
+        if isinstance(potentials, np.ndarray):
+            pot_concat = potentials
+        else:
+            pot_concat = np.hstack(potentials).astype(np.float32, copy=False)
+        potentials_array = aggregate_per_atom_to_structure(pot_concat, group_sizes, map_func=np.sum, axis=None)
+
+        if isinstance(forces, np.ndarray):
+            # GPU/CPU: forces is (total_atoms, 3); split per structure
+            forces_blocks = split_by_natoms(forces, group_sizes)
+        else:
+            # CPU: per-structure flat 3N; reshape each to (N, 3)
+            forces_blocks = [np.array(block, dtype=np.float32).reshape(3, -1).T for block in forces]
+
+        # if isinstance(virials, np.ndarray):
+        #     # Keep atom-level virials per structure: (Ni, 9)
+        #     virials_blocks = split_by_natoms(virials, group_sizes)
+        # else:
+            # CPU legacy list: per-structure flat 9N; reshape to (Ni, 9)
+        virials_blocks = [np.array(block, dtype=np.float32).reshape(9, -1).mean(axis=1).T for block in virials]
+
+        return potentials_array.tolist(), forces_blocks, virials_blocks
 
     @timeit
     def calculate_spin(
         self,
         structures: Iterable[Structure] | Structure,
-    ) -> tuple[list[np.float32], list[npt.NDArray[np.float32]], list[npt.NDArray[np.float32]]]:
+    ) -> tuple[list[np.float32], list[npt.NDArray[np.float32]], list[npt.NDArray[np.float32]], list[npt.NDArray[np.float32]]]:
         """Compute energies, forces, and virials for one or more structures.
 
         Parameters
@@ -239,19 +337,29 @@ class NepCalculator:
         structure_list = self._ensure_structure_list(structures)
         if not self.initialized or not structure_list:
             empty = np.array([], dtype=np.float32)
-            return empty, empty, empty
+            return empty, empty, empty, empty
         atom_types, boxes, positions,spins, group_sizes = self.compose_structures(structure_list,True)
         self.nep3.reset_cancel()
-        potentials, forces, virials,mforce = self.nep3.calculate(atom_types, boxes, positions,spins)
+        # Order from GPU extension: potentials, forces, magnetic-forces, virials
+        with self._native_stdio_ctx():
+            potentials, forces, mforce, virials = self.nep3.calculate(atom_types, boxes, positions,spins)
 
-        potentials = np.hstack(potentials)
-        potentials_array = aggregate_per_atom_to_structure(potentials,group_sizes,map_func=np.sum,axis=None)
-        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
-        reshaped_mforce = [np.array(mforce).reshape(3, -1).T for force in mforce]
 
-        reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
 
-        return potentials_array.tolist(), reshaped_forces,reshaped_mforce, reshaped_virials
+
+        potentials_array = aggregate_per_atom_to_structure(potentials, group_sizes, map_func=np.sum, axis=None)
+
+
+        forces_blocks = split_by_natoms(forces, group_sizes)
+
+
+
+        mforce_blocks = split_by_natoms(mforce, group_sizes)
+
+        # Keep atom-level virials per structure: (Ni, 9)
+        virials_blocks = split_by_natoms(virials, group_sizes)
+
+        return potentials_array.tolist(), forces_blocks, mforce_blocks, virials_blocks
 
 
 
@@ -287,7 +395,8 @@ class NepCalculator:
             return empty, empty, empty
         atom_types, boxes, positions, group_sizes = self.compose_structures(structure_list)
         self.nep3.reset_cancel()
-        potentials, forces, virials = self.nep3.calculate_dftd3(
+        with self._native_stdio_ctx():
+            potentials, forces, virials = self.nep3.calculate_dftd3(
             functional,
             cutoff,
             cutoff_cn,
@@ -295,12 +404,25 @@ class NepCalculator:
             boxes,
             positions,
         )
-        potentials = np.hstack(potentials)
-        potentials_array = aggregate_per_atom_to_structure(potentials, group_sizes, map_func=np.sum, axis=None)
-        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
-        reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
+        # Unify ndarray/list returns
+        if isinstance(potentials, np.ndarray):
+            pot_concat = potentials
+        else:
+            pot_concat = np.hstack(potentials).astype(np.float32, copy=False)
+        potentials_array = aggregate_per_atom_to_structure(pot_concat, group_sizes, map_func=np.sum, axis=None)
 
-        return potentials_array.tolist(), reshaped_forces, reshaped_virials
+        if isinstance(forces, np.ndarray):
+            forces_blocks = split_by_natoms(forces, group_sizes)
+        else:
+            forces_blocks = [np.array(force).reshape(3, -1).T for force in forces]
+
+        if isinstance(virials, np.ndarray):
+            vir_blocks = split_by_natoms(virials, group_sizes)
+            virials_blocks = [vb.mean(axis=0) for vb in vir_blocks]
+        else:
+            virials_blocks = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
+
+        return potentials_array.tolist(), forces_blocks, virials_blocks
     @timeit
     def calculate_with_dftd3(
         self,
@@ -333,7 +455,8 @@ class NepCalculator:
             return empty, empty, empty
         atom_types, boxes, positions, group_sizes = self.compose_structures(structure_list)
         self.nep3.reset_cancel()
-        potentials, forces, virials = self.nep3.calculate_with_dftd3(
+        with self._native_stdio_ctx():
+            potentials, forces, virials = self.nep3.calculate_with_dftd3(
             functional,
             cutoff,
             cutoff_cn,
@@ -341,12 +464,24 @@ class NepCalculator:
             boxes,
             positions,
         )
-        potentials = np.hstack(potentials)
-        potentials_array = aggregate_per_atom_to_structure(potentials, group_sizes, map_func=np.sum, axis=None)
-        reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
-        reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
+        if isinstance(potentials, np.ndarray):
+            pot_concat = potentials
+        else:
+            pot_concat = np.hstack(potentials).astype(np.float32, copy=False)
+        potentials_array = aggregate_per_atom_to_structure(pot_concat, group_sizes, map_func=np.sum, axis=None)
 
-        return potentials_array.tolist(), reshaped_forces, reshaped_virials
+        if isinstance(forces, np.ndarray):
+            forces_blocks = split_by_natoms(forces, group_sizes)
+        else:
+            forces_blocks = [np.array(force).reshape(3, -1).T for force in forces]
+
+        if isinstance(virials, np.ndarray):
+            vir_blocks = split_by_natoms(virials, group_sizes)
+            virials_blocks = [vb.mean(axis=0) for vb in vir_blocks]
+        else:
+            virials_blocks = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
+
+        return potentials_array.tolist(), forces_blocks, virials_blocks
 
     def get_descriptor(self, structure: Structure) -> npt.NDArray[np.float32]:
         """Return the per-atom descriptor matrix for a single ``structure``."""
@@ -357,7 +492,8 @@ class NepCalculator:
         box = structure.cell.transpose(1, 0).reshape(-1).tolist()
         positions = structure.positions.transpose(1, 0).reshape(-1).tolist()
         self.nep3.reset_cancel()
-        descriptor = self.nep3.get_descriptor(mapped_types, box, positions)
+        with self._native_stdio_ctx():
+            descriptor = self.nep3.get_descriptor(mapped_types, box, positions)
         descriptors_per_atom = np.array(descriptor, dtype=np.float32).reshape(-1, len(structure)).T
         return descriptors_per_atom
     @timeit
@@ -371,7 +507,8 @@ class NepCalculator:
             return np.array([])
         types, boxes, positions, group_sizes = self.compose_structures(structures)
         self.nep3.reset_cancel()
-        descriptor = self.nep3.get_structures_descriptor(types, boxes, positions)
+        with self._native_stdio_ctx():
+            descriptor = self.nep3.get_structures_descriptor(types, boxes, positions)
         # Ensure numpy array without unnecessary copy when already ndarray
         descriptor = np.asarray(descriptor, dtype=np.float32)
         if not mean_descriptor:
@@ -389,8 +526,8 @@ class NepCalculator:
             return np.array([])
         types, boxes, positions, _ = self.compose_structures(structures)
         self.nep3.reset_cancel()
-
-        polarizability = self.nep3.get_structures_polarizability(types, boxes, positions)
+        with self._native_stdio_ctx():
+            polarizability = self.nep3.get_structures_polarizability(types, boxes, positions)
         return np.array(polarizability, dtype=np.float32)
 
     def get_structures_dipole(
@@ -403,7 +540,8 @@ class NepCalculator:
         self.nep3.reset_cancel()
 
         types, boxes, positions, _ = self.compose_structures(structures)
-        dipole = self.nep3.get_structures_dipole(types, boxes, positions)
+        with self._native_stdio_ctx():
+            dipole = self.nep3.get_structures_dipole(types, boxes, positions)
         return np.array(dipole, dtype=np.float32)
 
     def calculate_to_ase(
@@ -453,8 +591,12 @@ class NepCalculator:
         for index,atoms in enumerate(atoms_list):
             _e= energy[index]
             _f= forces[index]
-            _vi= virial[index]
-            _s = _vi.reshape(3, 3) * len(atoms) / atoms.get_volume()
+            _vi = np.asarray(virial[index])  # (Ni, 9)
+            if _vi.ndim == 2 and _vi.shape[1] == 9:
+                _vi_avg = _vi.mean(axis=0)
+            else:
+                _vi_avg = np.asarray(_vi).reshape(9)
+            _s = _vi_avg.reshape(3, 3) * len(atoms) / atoms.get_volume()
             spc = SinglePointCalculator(
                 atoms,
                 energy=_e,

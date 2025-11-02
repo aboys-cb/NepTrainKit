@@ -33,6 +33,9 @@ public:
 //   explicit NepParameters(bool skip_nep_in);
 
   void load_from_nep_txt(const std::string& filename, std::vector<float>& elite);
+  // For Python bindings: suppress verbose printing
+  void report_inputs();
+
 
 };
 

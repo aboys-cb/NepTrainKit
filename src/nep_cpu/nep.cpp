@@ -1168,13 +1168,19 @@ void find_force_radial_small_box(
     std::vector<double> tls_pfx(static_cast<size_t>(nthreads) * N, 0.0);
     std::vector<double> tls_pfy(static_cast<size_t>(nthreads) * N, 0.0);
     std::vector<double> tls_pfz(static_cast<size_t>(nthreads) * N, 0.0);
-
+    // TLS for deterministic accumulation of atom forces (center + neighbors)
+    std::vector<double> tls_fx(static_cast<size_t>(nthreads) * N, 0.0);
+    std::vector<double> tls_fy(static_cast<size_t>(nthreads) * N, 0.0);
+    std::vector<double> tls_fz(static_cast<size_t>(nthreads) * N, 0.0);
     #pragma omp parallel
     {
       int tid = omp_get_thread_num();
       double* pfx = tls_pfx.data() + static_cast<size_t>(tid) * N;
       double* pfy = tls_pfy.data() + static_cast<size_t>(tid) * N;
       double* pfz = tls_pfz.data() + static_cast<size_t>(tid) * N;
+      double* lfx = tls_fx.data() + static_cast<size_t>(tid) * N;
+      double* lfy = tls_fy.data() + static_cast<size_t>(tid) * N;
+      double* lfz = tls_fz.data() + static_cast<size_t>(tid) * N;
 
       const double tiny = 1e-12;
       #pragma omp for schedule(static)
@@ -1229,10 +1235,10 @@ void find_force_radial_small_box(
             f12[2] += tmp12 * r12[2];
           }
 #endif
-          // Updates: center write is thread-unique; neighbor write uses atomics; pseudo to TLS
-          g_fx[n1] += f12[0];
-          g_fy[n1] += f12[1];
-          g_fz[n1] += f12[2];
+          // Deterministic TLS accumulation: center and neighbor contributions into TLS
+          lfx[n1] += f12[0];
+          lfy[n1] += f12[1];
+          lfz[n1] += f12[2];
 
           const bool is_pseudo = (n2 >= pseudo_start);
           if (is_pseudo) {
@@ -1243,12 +1249,9 @@ void find_force_radial_small_box(
               pfz[host] -= f12[2];
             }
           } else {
-            #pragma omp atomic
-            g_fx[n2] -= f12[0];
-            #pragma omp atomic
-            g_fy[n2] -= f12[1];
-            #pragma omp atomic
-            g_fz[n2] -= f12[2];
+            lfx[n2] -= f12[0];
+            lfy[n2] -= f12[1];
+            lfz[n2] -= f12[2];
           }
 
           // virial: accumulate on center only (spin path provides accumulate_on_center=true)
@@ -1264,6 +1267,19 @@ void find_force_radial_small_box(
           g_virial[idx + 8 * N] -= r12[2] * f12[2];
         }
       }
+    }
+
+    // reduction of TLS atom forces (deterministic)
+    for (int i = 0; i < N; ++i) {
+      double sx = 0.0, sy = 0.0, sz = 0.0;
+      for (int t = 0; t < nthreads; ++t) {
+        sx += tls_fx[static_cast<size_t>(t) * N + i];
+        sy += tls_fy[static_cast<size_t>(t) * N + i];
+        sz += tls_fz[static_cast<size_t>(t) * N + i];
+      }
+      if (g_fx) g_fx[i] += sx;
+      if (g_fy) g_fy[i] += sy;
+      if (g_fz) g_fz[i] += sz;
     }
 
     // reduction of TLS pseudo reactions
@@ -1431,6 +1447,9 @@ void find_force_angular_small_box(
     std::vector<double> tls_pfx(static_cast<size_t>(nthreads) * N, 0.0);
     std::vector<double> tls_pfy(static_cast<size_t>(nthreads) * N, 0.0);
     std::vector<double> tls_pfz(static_cast<size_t>(nthreads) * N, 0.0);
+    std::vector<double> tls_fx(static_cast<size_t>(nthreads) * N, 0.0);
+    std::vector<double> tls_fy(static_cast<size_t>(nthreads) * N, 0.0);
+    std::vector<double> tls_fz(static_cast<size_t>(nthreads) * N, 0.0);
 
     #pragma omp parallel
     {
@@ -1438,6 +1457,9 @@ void find_force_angular_small_box(
       double* pfx = tls_pfx.data() + static_cast<size_t>(tid) * N;
       double* pfy = tls_pfy.data() + static_cast<size_t>(tid) * N;
       double* pfz = tls_pfz.data() + static_cast<size_t>(tid) * N;
+      double* lfx = tls_fx.data() + static_cast<size_t>(tid) * N;
+      double* lfy = tls_fy.data() + static_cast<size_t>(tid) * N;
+      double* lfz = tls_fz.data() + static_cast<size_t>(tid) * N;
 
       const double tiny = 1e-12;
       #pragma omp for schedule(static)
@@ -1497,10 +1519,10 @@ void find_force_angular_small_box(
             accumulate_f12(paramb.L_max, paramb.num_L, n, paramb.n_max_angular + 1, d12, r12, gn12, gnp12, Fp, sum_fxyz, f12);
           }
 #endif
-          // Updates: center write is thread-unique; neighbor write uses atomics; pseudo to TLS
-          g_fx[n1] += f12[0];
-          g_fy[n1] += f12[1];
-          g_fz[n1] += f12[2];
+          // Deterministic TLS accumulation
+          lfx[n1] += f12[0];
+          lfy[n1] += f12[1];
+          lfz[n1] += f12[2];
 
           const bool is_pseudo = (n2 >= pseudo_start);
           if (is_pseudo) {
@@ -1511,12 +1533,9 @@ void find_force_angular_small_box(
               pfz[host] -= f12[2];
             }
           } else {
-            #pragma omp atomic
-            g_fx[n2] -= f12[0];
-            #pragma omp atomic
-            g_fy[n2] -= f12[1];
-            #pragma omp atomic
-            g_fz[n2] -= f12[2];
+            lfx[n2] -= f12[0];
+            lfy[n2] -= f12[1];
+            lfz[n2] -= f12[2];
           }
 
           int idx = n1; // accumulate_on_center expected true
@@ -1533,6 +1552,20 @@ void find_force_angular_small_box(
       }
     }
 
+    // reduction of TLS atom forces (deterministic)
+    for (int i = 0; i < N; ++i) {
+      double sx = 0.0, sy = 0.0, sz = 0.0;
+      for (int t = 0; t < nthreads; ++t) {
+        sx += tls_fx[static_cast<size_t>(t) * N + i];
+        sy += tls_fy[static_cast<size_t>(t) * N + i];
+        sz += tls_fz[static_cast<size_t>(t) * N + i];
+      }
+      if (g_fx) g_fx[i] += sx;
+      if (g_fy) g_fy[i] += sy;
+      if (g_fz) g_fz[i] += sz;
+    }
+
+    // reduction of TLS pseudo reactions
     for (int i = 0; i < N; ++i) {
       double sx = 0.0, sy = 0.0, sz = 0.0;
       for (int t = 0; t < nthreads; ++t) {
@@ -3714,6 +3747,25 @@ void NEP3::build_spin_augmented_small_box(
     int p1 = S.host2pseudo[n1];
     int base_cr = S.NN_radial_base[n1];
     int wr = 0;
+    // cutoff helpers: respect typewise cutoffs when enabled
+    auto rc2_radial = [&](int t1_total, int t2_total) -> double {
+      double rc = paramb.rc_radial;
+      if (paramb.use_typewise_cutoff) {
+        int z1 = paramb.atomic_numbers[(t1_total % paramb.num_types_real)];
+        int z2 = paramb.atomic_numbers[(t2_total % paramb.num_types_real)];
+        rc = std::min((COVALENT_RADIUS[z1] + COVALENT_RADIUS[z2]) * paramb.typewise_cutoff_radial_factor, rc);
+      }
+      return rc * rc;
+    };
+    auto rc2_angular = [&](int t1_total, int t2_total) -> double {
+      double rc = paramb.rc_angular;
+      if (paramb.use_typewise_cutoff) {
+        int z1 = paramb.atomic_numbers[(t1_total % paramb.num_types_real)];
+        int z2 = paramb.atomic_numbers[(t2_total % paramb.num_types_real)];
+        rc = std::min((COVALENT_RADIUS[z1] + COVALENT_RADIUS[z2]) * paramb.typewise_cutoff_angular_factor, rc);
+      }
+      return rc * rc;
+    };
     for (int i = 0; i < base_cr; ++i) {
       int idx_b = i * N_real + n1;
       int n2 = S.NL_radial_base[idx_b];
@@ -3729,8 +3781,13 @@ void NEP3::build_spin_augmented_small_box(
       double dy = S.ry[p1] - S.ry[n1];
       double dz = S.rz[p1] - S.rz[n1];
       apply_mic_small_box(ebox, dx, dy, dz);
-      if (dx * dx + dy * dy + dz * dz > eps2) {
-        append_neighbor(n1, wr, p1, dx, dy, dz, true);
+      double d2 = dx * dx + dy * dy + dz * dz;
+      if (d2 > eps2) {
+        int t1_total = S.type_total[n1];
+        int t2_total = S.type_total[p1];
+        if (d2 <= rc2_radial(t1_total, t2_total)) {
+          append_neighbor(n1, wr, p1, dx, dy, dz, true);
+        }
       }
     }
     for (int i = 0; i < base_cr; ++i) {
@@ -3742,8 +3799,13 @@ void NEP3::build_spin_augmented_small_box(
         double dy = y12r_base[idx_b] + (S.ry[p2] - S.ry[n2]);
         double dz = z12r_base[idx_b] + (S.rz[p2] - S.rz[n2]);
         apply_mic_small_box(ebox, dx, dy, dz);
-        if (dx * dx + dy * dy + dz * dz > eps2) {
-          append_neighbor(n1, wr, p2, dx, dy, dz, true);
+        double d2 = dx * dx + dy * dy + dz * dz;
+        if (d2 > eps2) {
+          int t1_total = S.type_total[n1];
+          int t2_total = S.type_total[p2];
+          if (d2 <= rc2_radial(t1_total, t2_total)) {
+            append_neighbor(n1, wr, p2, dx, dy, dz, true);
+          }
         }
       }
     }
@@ -3766,8 +3828,13 @@ void NEP3::build_spin_augmented_small_box(
       double dy = S.ry[p1] - S.ry[n1];
       double dz = S.rz[p1] - S.rz[n1];
       apply_mic_small_box(ebox, dx, dy, dz);
-      if (dx * dx + dy * dy + dz * dz > eps2) {
-        append_neighbor(n1, wa, p1, dx, dy, dz, false);
+      double d2 = dx * dx + dy * dy + dz * dz;
+      if (d2 > eps2) {
+        int t1_total = S.type_total[n1];
+        int t2_total = S.type_total[p1];
+        if (d2 <= rc2_angular(t1_total, t2_total)) {
+          append_neighbor(n1, wa, p1, dx, dy, dz, false);
+        }
       }
     }
     for (int i = 0; i < base_ca; ++i) {
@@ -3779,8 +3846,13 @@ void NEP3::build_spin_augmented_small_box(
         double dy = y12a_base[idx_b] + (S.ry[p2] - S.ry[n2]);
         double dz = z12a_base[idx_b] + (S.rz[p2] - S.rz[n2]);
         apply_mic_small_box(ebox, dx, dy, dz);
-        if (dx * dx + dy * dy + dz * dz > eps2) {
-          append_neighbor(n1, wa, p2, dx, dy, dz, false);
+        double d2 = dx * dx + dy * dy + dz * dz;
+        if (d2 > eps2) {
+          int t1_total = S.type_total[n1];
+          int t2_total = S.type_total[p2];
+          if (d2 <= rc2_angular(t1_total, t2_total)) {
+            append_neighbor(n1, wa, p2, dx, dy, dz, false);
+          }
         }
       }
     }
@@ -3993,7 +4065,7 @@ void NEP3::compute(
     find_force_ZBL_small_box(
       S.N_real, paramb, zbl, S.NN_angular.data(), S.NL_angular.data(), S.type_total.data(),
       S.x12_angular.data(), S.y12_angular.data(), S.z12_angular.data(), S.fx.data(), S.fy.data(),
-      S.fz.data(), S.virial_tot.data(), S.potential_tot.data(), /*skip_pseudo_pairs=*/false,
+      S.fz.data(), S.virial_tot.data(), S.potential_tot.data(), /*skip_pseudo_pairs=*/true,
       /*accumulate_on_center=*/true,
       /*pseudo_start*/ S.N_real, /*pseudo_to_host*/ S.pseudo2host.data(),
       S.pseudo_fx.data(), S.pseudo_fy.data(), S.pseudo_fz.data());

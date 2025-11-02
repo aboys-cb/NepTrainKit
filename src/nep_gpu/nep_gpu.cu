@@ -249,12 +249,12 @@ public:
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position);
 
-    // Spin-enabled compute: per-atom potential/force/virial on real atoms, plus magnetic force
+    // Spin-enabled compute: per-atom potential/force/magnetic-force/virial on real atoms
     // spin component arrays are component-major per frame: [sx[N], sy[N], sz[N]]
     std::tuple<pybind11::array, // potentials [total_real_atoms]
                pybind11::array, // forces [total_real_atoms, 3]
-               pybind11::array, // virials [total_real_atoms, 9]
-               pybind11::array  // magnetic forces [total_real_atoms, 3]
+               pybind11::array, // magnetic forces [total_real_atoms, 3]
+               pybind11::array  // virials [total_real_atoms, 9]
               >
     calculate_spin(
         const std::vector<std::vector<int>>& type,
@@ -446,9 +446,6 @@ std::vector<Structure> create_structures(
 
     {
         // std::printf("[nep_gpu] calculate() enter\n");
-
-        // Release the Python GIL during heavy GPU/CPU work to allow concurrency
-        ScopedReleaseIfHeld _gil_release;
         if (canceled_.load(std::memory_order_relaxed)) {
             throw std::runtime_error("Canceled by user");
         }
@@ -469,86 +466,82 @@ std::vector<Structure> create_structures(
 
         // Prepare outputs as contiguous buffers [total_atoms], [total_atoms,3], [total_atoms,9]
         size_t total_atoms = 0; for (const auto& t : type) total_atoms += t.size();
-        float* pot_buf = new float[total_atoms];
-        float* frc_buf = new float[total_atoms * 3];
-        float* vir_buf = new float[total_atoms * 9];
+        float* pot_buf = nullptr;
+        float* frc_buf = nullptr;
+        float* vir_buf = nullptr;
         size_t cursor = 0; // atom index across frames
         const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
-        const int Nc_max = std::min(bs, structure_num);
-
-
-
-
-        // Pass 2: run each slice using the reusable Potential
-
-        std::vector<Dataset> dataset_vec(1);
-        for (int start = 0; start < structure_num; start += bs) {
-            if (canceled_.load(std::memory_order_relaxed)) {
-                throw std::runtime_error("Canceled by user");
-            }
-            int end = std::min(start + bs, structure_num);
-            dataset_vec[0].construct(para, structures, start, end, 0 /*device id*/);
-            if (para.train_mode == 1 || para.train_mode == 2) {
-                potential.reset(new TNEP(para,
-                                           dataset_vec[0].N,
-                                           dataset_vec[0].N * dataset_vec[0].max_NN_radial,
-                                           dataset_vec[0].N * dataset_vec[0].max_NN_angular,
-                                           para.version,
-                                           1));
-            } else {
-              if (para.charge_mode) {
-                potential.reset(new NEP_Charge(para,
+        {
+            // Heavy compute work without holding the GIL
+            ScopedReleaseIfHeld _gil_release;
+            std::vector<Dataset> dataset_vec(1);
+            pot_buf = new float[total_atoms];
+            frc_buf = new float[total_atoms * 3];
+            vir_buf = new float[total_atoms * 9];
+            for (int start = 0; start < structure_num; start += bs) {
+                if (canceled_.load(std::memory_order_relaxed)) {
+                    throw std::runtime_error("Canceled by user");
+                }
+                int end = std::min(start + bs, structure_num);
+                dataset_vec[0].construct(para, structures, start, end, 0 /*device id*/);
+                if (para.train_mode == 1 || para.train_mode == 2) {
+                    potential.reset(new TNEP(para,
                                                dataset_vec[0].N,
-                                               dataset_vec[0].Nc,
                                                dataset_vec[0].N * dataset_vec[0].max_NN_radial,
                                                dataset_vec[0].N * dataset_vec[0].max_NN_angular,
                                                para.version,
                                                1));
-              } else {
-                potential.reset(new NEP(para,
-                                        dataset_vec[0].N,
-                                        dataset_vec[0].N * dataset_vec[0].max_NN_radial,
-                                        dataset_vec[0].N * dataset_vec[0].max_NN_angular,
-                                        para.version,
-                                        1));
-              }
-            }
-            potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
-            CHECK(gpuDeviceSynchronize());
-            dataset_vec[0].energy.copy_to_host(dataset_vec[0].energy_cpu.data());
-            dataset_vec[0].force.copy_to_host(dataset_vec[0].force_cpu.data());
-            dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
-            const int Nslice = dataset_vec[0].N;
-            for (int gi = start; gi < end; ++gi) {
-                int li = gi - start;
-                const int Na = dataset_vec[0].Na_cpu[li];
-                const int offset = dataset_vec[0].Na_sum_cpu[li];
-                for (int m = 0; m < Na; ++m) {
-                    pot_buf[cursor + m] = dataset_vec[0].energy_cpu[offset + m];
-                    float fx = dataset_vec[0].force_cpu[offset + m];
-                    float fy = dataset_vec[0].force_cpu[offset + m + Nslice];
-                    float fz = dataset_vec[0].force_cpu[offset + m + Nslice * 2];
-                    frc_buf[(cursor + m) * 3 + 0] = fx;
-                    frc_buf[(cursor + m) * 3 + 1] = fy;
-                    frc_buf[(cursor + m) * 3 + 2] = fz;
-                    float v_xx = dataset_vec[0].virial_cpu[offset + m + Nslice * 0];
-                    float v_yy = dataset_vec[0].virial_cpu[offset + m + Nslice * 1];
-                    float v_zz = dataset_vec[0].virial_cpu[offset + m + Nslice * 2];
-                    float v_xy = dataset_vec[0].virial_cpu[offset + m + Nslice * 3];
-                    float v_yz = dataset_vec[0].virial_cpu[offset + m + Nslice * 4];
-                    float v_zx = dataset_vec[0].virial_cpu[offset + m + Nslice * 5];
-                    float* row = vir_buf + (cursor + m) * 9;
-                    row[0] = v_xx; row[1] = v_xy; row[2] = v_zx;
-                    row[3] = v_xy; row[4] = v_yy; row[5] = v_yz;
-                    row[6] = v_zx; row[7] = v_yz; row[8] = v_zz;
+                } else {
+                  if (para.charge_mode) {
+                    potential.reset(new NEP_Charge(para,
+                                                   dataset_vec[0].N,
+                                                   dataset_vec[0].Nc,
+                                                   dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                                   dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                                   para.version,
+                                                   1));
+                  } else {
+                    potential.reset(new NEP(para,
+                                            dataset_vec[0].N,
+                                            dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                            dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                            para.version,
+                                            1));
+                  }
                 }
-                cursor += static_cast<size_t>(Na);
+                potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
+                CHECK(gpuDeviceSynchronize());
+                dataset_vec[0].energy.copy_to_host(dataset_vec[0].energy_cpu.data());
+                dataset_vec[0].force.copy_to_host(dataset_vec[0].force_cpu.data());
+                dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
+                const int Nslice = dataset_vec[0].N;
+                for (int gi = start; gi < end; ++gi) {
+                    int li = gi - start;
+                    const int Na = dataset_vec[0].Na_cpu[li];
+                    const int offset = dataset_vec[0].Na_sum_cpu[li];
+                    for (int m = 0; m < Na; ++m) {
+                        pot_buf[cursor + m] = dataset_vec[0].energy_cpu[offset + m];
+                        float fx = dataset_vec[0].force_cpu[offset + m];
+                        float fy = dataset_vec[0].force_cpu[offset + m + Nslice];
+                        float fz = dataset_vec[0].force_cpu[offset + m + Nslice * 2];
+                        frc_buf[(cursor + m) * 3 + 0] = fx;
+                        frc_buf[(cursor + m) * 3 + 1] = fy;
+                        frc_buf[(cursor + m) * 3 + 2] = fz;
+                        float v_xx = dataset_vec[0].virial_cpu[offset + m + Nslice * 0];
+                        float v_yy = dataset_vec[0].virial_cpu[offset + m + Nslice * 1];
+                        float v_zz = dataset_vec[0].virial_cpu[offset + m + Nslice * 2];
+                        float v_xy = dataset_vec[0].virial_cpu[offset + m + Nslice * 3];
+                        float v_yz = dataset_vec[0].virial_cpu[offset + m + Nslice * 4];
+                        float v_zx = dataset_vec[0].virial_cpu[offset + m + Nslice * 5];
+                        float* row = vir_buf + (cursor + m) * 9;
+                        row[0] = v_xx; row[1] = v_xy; row[2] = v_zx;
+                        row[3] = v_xy; row[4] = v_yy; row[5] = v_yz;
+                        row[6] = v_zx; row[7] = v_yz; row[8] = v_zz;
+                    }
+                    cursor += static_cast<size_t>(Na);
+                }
             }
-
         }
-        
-        
-        
         // Wrap arrays for Python
         auto cap1 = py::capsule(pot_buf, [](void* f){ delete[] reinterpret_cast<float*>(f); });
         auto cap2 = py::capsule(frc_buf, [](void* f){ delete[] reinterpret_cast<float*>(f); });
@@ -571,7 +564,6 @@ py::array GpuNep::calculate_descriptors(
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position)
 {
-    ScopedReleaseIfHeld _gil_release;
     if (canceled_.load(std::memory_order_relaxed)) {
         throw std::runtime_error("Canceled by user");
     }
@@ -599,43 +591,46 @@ py::array GpuNep::calculate_descriptors(
     std::vector<Dataset> dataset_vec(1);
     std::vector<float> desc_host;
     size_t base_cursor = 0; // cumulative atom index across frames
-    for (int start = 0; start < structure_num; start += bs) {
-        if (canceled_.load(std::memory_order_relaxed)) {
-            delete[] data;
-            throw std::runtime_error("Canceled by user");
-        }
-        int end = std::min(start + bs, structure_num);
-        dataset_vec[0].construct(para, structures, start, end, 0);
-        NEP_Descriptors desc_engine(para,
-            dataset_vec[0].N,
-            dataset_vec[0].N * dataset_vec[0].max_NN_radial,
-            dataset_vec[0].N * dataset_vec[0].max_NN_angular,
-            para.version);
-
-        desc_engine.update_parameters_from_host(elite.data());
-        desc_engine.compute_descriptors(para, dataset_vec[0]);
-        desc_engine.copy_descriptors_to_host(desc_host);
-
-        const int Nslice = dataset_vec[0].N;
-        int num_L = para.L_max;
-        if (para.L_max_4body == 2) num_L += 1;
-        if (para.L_max_5body == 1) num_L += 1;
-        const int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L; // filled by kernels
-
-        for (int gi = start; gi < end; ++gi) {
-            const int li = gi - start;
-            const int Na = dataset_vec[0].Na_cpu[li];
-            const int offset = dataset_vec[0].Na_sum_cpu[li];
-            for (int m = 0; m < Na; ++m) {
-                float* row = data + (base_cursor + static_cast<size_t>(m)) * dim;
-                // valid dims
-                for (int d = 0; d < dim_desc; ++d) {
-                    row[d] = desc_host[offset + m + static_cast<size_t>(d) * Nslice];
-                }
-                // zero pad
-                for (int d = dim_desc; d < dim; ++d) row[d] = 0.0f;
+    {
+        ScopedReleaseIfHeld _gil_release;
+        for (int start = 0; start < structure_num; start += bs) {
+            if (canceled_.load(std::memory_order_relaxed)) {
+                delete[] data;
+                throw std::runtime_error("Canceled by user");
             }
-            base_cursor += static_cast<size_t>(Na);
+            int end = std::min(start + bs, structure_num);
+            dataset_vec[0].construct(para, structures, start, end, 0);
+            NEP_Descriptors desc_engine(para,
+                dataset_vec[0].N,
+                dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                para.version);
+
+            desc_engine.update_parameters_from_host(elite.data());
+            desc_engine.compute_descriptors(para, dataset_vec[0]);
+            desc_engine.copy_descriptors_to_host(desc_host);
+
+            const int Nslice = dataset_vec[0].N;
+            int num_L = para.L_max;
+            if (para.L_max_4body == 2) num_L += 1;
+            if (para.L_max_5body == 1) num_L += 1;
+            const int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L; // filled by kernels
+
+            for (int gi = start; gi < end; ++gi) {
+                const int li = gi - start;
+                const int Na = dataset_vec[0].Na_cpu[li];
+                const int offset = dataset_vec[0].Na_sum_cpu[li];
+                for (int m = 0; m < Na; ++m) {
+                    float* row = data + (base_cursor + static_cast<size_t>(m)) * dim;
+                    // valid dims
+                    for (int d = 0; d < dim_desc; ++d) {
+                        row[d] = desc_host[offset + m + static_cast<size_t>(d) * Nslice];
+                    }
+                    // zero pad
+                    for (int d = dim_desc; d < dim; ++d) row[d] = 0.0f;
+                }
+                base_cursor += static_cast<size_t>(Na);
+            }
         }
     }
 
@@ -702,7 +697,6 @@ py::array GpuNep::get_structures_dipole(
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position)
 {
-    ScopedReleaseIfHeld _gil_release;
     if (canceled_.load(std::memory_order_relaxed)) {
         throw std::runtime_error("Canceled by user");
     }
@@ -717,40 +711,43 @@ py::array GpuNep::get_structures_dipole(
 
     std::vector<Structure> structures = create_structures(type, box, position);
     const int structure_num = static_cast<int>(structures.size());
-    // contiguous [structure_num, 3]
-    float* buf = new float[static_cast<size_t>(structure_num) * 3];
+    float* buf = nullptr;
     const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
 
-    std::vector<Dataset> dataset_vec(1);
-    for (int start = 0; start < structure_num; start += bs) {
-        if (canceled_.load(std::memory_order_relaxed)) {
-            throw std::runtime_error("Canceled by user");
-        }
-        int end = std::min(start + bs, structure_num);
-        dataset_vec[0].construct(para, structures, start, end, 0);
-        // For dipole/polarizability, use TNEP path
-        potential.reset(new TNEP(para,
-                                 dataset_vec[0].N,
-                                 dataset_vec[0].N * dataset_vec[0].max_NN_radial,
-                                 dataset_vec[0].N * dataset_vec[0].max_NN_angular,
-                                 para.version,
-                                 1));
-        potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
-        CHECK(gpuDeviceSynchronize());
-        dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
-        const int Nslice = dataset_vec[0].N;
-        for (int gi = start; gi < end; ++gi) {
-            int li = gi - start;
-            const int Na = dataset_vec[0].Na_cpu[li];
-            const int offset = dataset_vec[0].Na_sum_cpu[li];
-            float dx = 0.0f, dy = 0.0f, dz = 0.0f;
-            for (int m = 0; m < Na; ++m) {
-                dx += dataset_vec[0].virial_cpu[offset + m + Nslice * 0];
-                dy += dataset_vec[0].virial_cpu[offset + m + Nslice * 1];
-                dz += dataset_vec[0].virial_cpu[offset + m + Nslice * 2];
+    {
+        ScopedReleaseIfHeld _gil_release;
+        buf = new float[static_cast<size_t>(structure_num) * 3];
+        std::vector<Dataset> dataset_vec(1);
+        for (int start = 0; start < structure_num; start += bs) {
+            if (canceled_.load(std::memory_order_relaxed)) {
+                throw std::runtime_error("Canceled by user");
             }
-            float* row = buf + static_cast<size_t>(gi) * 3;
-            row[0] = dx; row[1] = dy; row[2] = dz;
+            int end = std::min(start + bs, structure_num);
+            dataset_vec[0].construct(para, structures, start, end, 0);
+            // For dipole/polarizability, use TNEP path
+            potential.reset(new TNEP(para,
+                                     dataset_vec[0].N,
+                                     dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                     dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                     para.version,
+                                     1));
+            potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
+            CHECK(gpuDeviceSynchronize());
+            dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
+            const int Nslice = dataset_vec[0].N;
+            for (int gi = start; gi < end; ++gi) {
+                int li = gi - start;
+                const int Na = dataset_vec[0].Na_cpu[li];
+                const int offset = dataset_vec[0].Na_sum_cpu[li];
+                float dx = 0.0f, dy = 0.0f, dz = 0.0f;
+                for (int m = 0; m < Na; ++m) {
+                    dx += dataset_vec[0].virial_cpu[offset + m + Nslice * 0];
+                    dy += dataset_vec[0].virial_cpu[offset + m + Nslice * 1];
+                    dz += dataset_vec[0].virial_cpu[offset + m + Nslice * 2];
+                }
+                float* row = buf + static_cast<size_t>(gi) * 3;
+                row[0] = dx; row[1] = dy; row[2] = dz;
+            }
         }
     }
     auto cap = py::capsule(buf, [](void* f){ delete[] reinterpret_cast<float*>(f); });
@@ -765,7 +762,6 @@ py::array GpuNep::get_structures_polarizability(
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position)
 {
-    ScopedReleaseIfHeld _gil_release;
     if (canceled_.load(std::memory_order_relaxed)) {
         throw std::runtime_error("Canceled by user");
     }
@@ -780,42 +776,46 @@ py::array GpuNep::get_structures_polarizability(
 
     std::vector<Structure> structures = create_structures(type, box, position);
     const int structure_num = static_cast<int>(structures.size());
-    float* buf = new float[static_cast<size_t>(structure_num) * 6];
+    float* buf = nullptr;
     const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
 
-    std::vector<Dataset> dataset_vec(1);
-    for (int start = 0; start < structure_num; start += bs) {
-        if (canceled_.load(std::memory_order_relaxed)) {
-            throw std::runtime_error("Canceled by user");
-        }
-        int end = std::min(start + bs, structure_num);
-        dataset_vec[0].construct(para, structures, start, end, 0);
-        potential.reset(new TNEP(para,
-                                 dataset_vec[0].N,
-                                 dataset_vec[0].N * dataset_vec[0].max_NN_radial,
-                                 dataset_vec[0].N * dataset_vec[0].max_NN_angular,
-                                 para.version,
-                                 1));
-        potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
-        CHECK(gpuDeviceSynchronize());
-        dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
-        const int Nslice = dataset_vec[0].N;
-        for (int gi = start; gi < end; ++gi) {
-            int li = gi - start;
-            const int Na = dataset_vec[0].Na_cpu[li];
-            const int offset = dataset_vec[0].Na_sum_cpu[li];
-            float xx=0.0f, yy=0.0f, zz=0.0f, xy=0.0f, yz=0.0f, zx=0.0f;
-            for (int m = 0; m < Na; ++m) {
-                xx += dataset_vec[0].virial_cpu[offset + m + Nslice * 0];
-                yy += dataset_vec[0].virial_cpu[offset + m + Nslice * 1];
-                zz += dataset_vec[0].virial_cpu[offset + m + Nslice * 2];
-                xy += dataset_vec[0].virial_cpu[offset + m + Nslice * 3];
-                yz += dataset_vec[0].virial_cpu[offset + m + Nslice * 4];
-                zx += dataset_vec[0].virial_cpu[offset + m + Nslice * 5];
+    {
+        ScopedReleaseIfHeld _gil_release;
+        buf = new float[static_cast<size_t>(structure_num) * 6];
+        std::vector<Dataset> dataset_vec(1);
+        for (int start = 0; start < structure_num; start += bs) {
+            if (canceled_.load(std::memory_order_relaxed)) {
+                throw std::runtime_error("Canceled by user");
             }
-            float* row = buf + static_cast<size_t>(gi) * 6;
-            row[0] = xx; row[1] = yy; row[2] = zz;
-            row[3] = xy; row[4] = yz; row[5] = zx;
+            int end = std::min(start + bs, structure_num);
+            dataset_vec[0].construct(para, structures, start, end, 0);
+            potential.reset(new TNEP(para,
+                                     dataset_vec[0].N,
+                                     dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                     dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                     para.version,
+                                     1));
+            potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
+            CHECK(gpuDeviceSynchronize());
+            dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
+            const int Nslice = dataset_vec[0].N;
+            for (int gi = start; gi < end; ++gi) {
+                int li = gi - start;
+                const int Na = dataset_vec[0].Na_cpu[li];
+                const int offset = dataset_vec[0].Na_sum_cpu[li];
+                float xx=0.0f, yy=0.0f, zz=0.0f, xy=0.0f, yz=0.0f, zx=0.0f;
+                for (int m = 0; m < Na; ++m) {
+                    xx += dataset_vec[0].virial_cpu[offset + m + Nslice * 0];
+                    yy += dataset_vec[0].virial_cpu[offset + m + Nslice * 1];
+                    zz += dataset_vec[0].virial_cpu[offset + m + Nslice * 2];
+                    xy += dataset_vec[0].virial_cpu[offset + m + Nslice * 3];
+                    yz += dataset_vec[0].virial_cpu[offset + m + Nslice * 4];
+                    zx += dataset_vec[0].virial_cpu[offset + m + Nslice * 5];
+                }
+                float* row = buf + static_cast<size_t>(gi) * 6;
+                row[0] = xx; row[1] = yy; row[2] = zz;
+                row[3] = xy; row[4] = yz; row[5] = zx;
+            }
         }
     }
     auto cap2 = py::capsule(buf, [](void* f){ delete[] reinterpret_cast<float*>(f); });
@@ -838,7 +838,6 @@ GpuNep::calculate_spin(
     const std::vector<std::vector<double>>& position,
     const std::vector<std::vector<double>>& spin)
 {
-    ScopedReleaseIfHeld _gil_release;
     if (canceled_.load(std::memory_order_relaxed)) {
         throw std::runtime_error("Canceled by user");
     }
@@ -853,76 +852,80 @@ GpuNep::calculate_spin(
     std::vector<Structure> structures = create_structures(type, box, position, spin);
     const int structure_num = static_cast<int>(structures.size());
     const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
-    // total real atoms across frames
+    // total real atoms across frames (upper bound)
     size_t total_real_atoms = 0;
-    {
-        // Rough pass: sum lengths from input; actual real atoms equal to per-frame Na_real
-        for (const auto& t : type) total_real_atoms += t.size();
-    }
-    float* pot_buf = new float[total_real_atoms];
-    float* frc_buf = new float[total_real_atoms * 3];
-    float* vir_buf = new float[total_real_atoms * 9];
-    float* mf_buf  = new float[total_real_atoms * 3];
+    for (const auto& t : type) total_real_atoms += t.size();
+    float* pot_buf = nullptr;
+    float* frc_buf = nullptr;
+    float* vir_buf = nullptr;
+    float* mf_buf  = nullptr;
     size_t cursor = 0;
 
-    std::vector<Dataset> dataset_vec(1);
-    for (int start = 0; start < structure_num; start += bs) {
-        if (canceled_.load(std::memory_order_relaxed)) {
-            throw std::runtime_error("Canceled by user");
-        }
-        int end = std::min(start + bs, structure_num);
-        dataset_vec[0].construct(para, structures, start, end, 0);
-
-        // Use spin pipeline
-        NEP_Spin spin_engine(
-            para,
-            dataset_vec[0].N,
-            dataset_vec[0].N * dataset_vec[0].max_NN_radial,
-            dataset_vec[0].N * dataset_vec[0].max_NN_angular,
-            para.version,
-            1);
-        spin_engine.find_force(para, elite.data(), dataset_vec, false, true, 1);
-        CHECK(gpuDeviceSynchronize());
-        // copy results to host
-        dataset_vec[0].energy.copy_to_host(dataset_vec[0].energy_cpu.data());
-        dataset_vec[0].force.copy_to_host(dataset_vec[0].force_cpu.data());
-        dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
-        std::vector<float> fm_host(dataset_vec[0].N_real * 3, 0.0f);
-        dataset_vec[0].fm_pred.copy_to_host(fm_host.data());
-
-        const int Nslice = dataset_vec[0].N;
-        const int Nreal_slice = dataset_vec[0].N_real;
-        for (int gi = start; gi < end; ++gi) {
-            int li = gi - start;
-            const int Na_total = dataset_vec[0].Na_cpu[li];
-            const int Na_real  = dataset_vec[0].Na_real_cpu[li];
-            const int off_total = dataset_vec[0].Na_sum_cpu[li];
-            const int off_real  = dataset_vec[0].Na_real_sum_cpu[li];
-            for (int m = 0; m < Na_real; ++m) {
-                int idx = off_total + m; // real atoms first in each config
-                // potential
-                pot_buf[cursor + m] = dataset_vec[0].energy_cpu[idx];
-                // force
-                frc_buf[(cursor + m) * 3 + 0] = dataset_vec[0].force_cpu[idx];
-                frc_buf[(cursor + m) * 3 + 1] = dataset_vec[0].force_cpu[idx + Nslice];
-                frc_buf[(cursor + m) * 3 + 2] = dataset_vec[0].force_cpu[idx + 2 * Nslice];
-                // virial: expand 6 -> 9 in row-major [xx,xy,xz,yx,yy,yz,zx,zy,zz]
-                float vxx = dataset_vec[0].virial_cpu[idx + 0 * Nslice];
-                float vyy = dataset_vec[0].virial_cpu[idx + 1 * Nslice];
-                float vzz = dataset_vec[0].virial_cpu[idx + 2 * Nslice];
-                float vxy = dataset_vec[0].virial_cpu[idx + 3 * Nslice];
-                float vyz = dataset_vec[0].virial_cpu[idx + 4 * Nslice];
-                float vzx = dataset_vec[0].virial_cpu[idx + 5 * Nslice];
-                float* row = vir_buf + (cursor + m) * 9;
-                row[0] = vxx; row[1] = vxy; row[2] = vzx;
-                row[3] = vxy; row[4] = vyy; row[5] = vyz;
-                row[6] = vzx; row[7] = vyz; row[8] = vzz;
-                // magnetic force from slice-contiguous fm_host (component-major)
-                mf_buf[(cursor + m) * 3 + 0] = fm_host[off_real + m];
-                mf_buf[(cursor + m) * 3 + 1] = fm_host[off_real + m + Nreal_slice];
-                mf_buf[(cursor + m) * 3 + 2] = fm_host[off_real + m + 2 * Nreal_slice];
+    {
+        ScopedReleaseIfHeld _gil_release;
+        std::vector<Dataset> dataset_vec(1);
+        pot_buf = new float[total_real_atoms];
+        frc_buf = new float[total_real_atoms * 3];
+        vir_buf = new float[total_real_atoms * 9];
+        mf_buf  = new float[total_real_atoms * 3];
+        for (int start = 0; start < structure_num; start += bs) {
+            if (canceled_.load(std::memory_order_relaxed)) {
+                throw std::runtime_error("Canceled by user");
             }
-            cursor += static_cast<size_t>(Na_real);
+            int end = std::min(start + bs, structure_num);
+            dataset_vec[0].construct(para, structures, start, end, 0);
+
+            // Use spin pipeline
+            NEP_Spin spin_engine(
+                para,
+                dataset_vec[0].N,
+                dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                para.version,
+                1);
+            spin_engine.find_force(para, elite.data(), dataset_vec, false, true, 1);
+            CHECK(gpuDeviceSynchronize());
+            // copy results to host
+            dataset_vec[0].energy.copy_to_host(dataset_vec[0].energy_cpu.data());
+            dataset_vec[0].force.copy_to_host(dataset_vec[0].force_cpu.data());
+            dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
+            std::vector<float> fm_host(dataset_vec[0].N_real * 3, 0.0f);
+            dataset_vec[0].fm_pred.copy_to_host(fm_host.data());
+
+            const int Nslice = dataset_vec[0].N;
+            const int Nreal_slice = dataset_vec[0].N_real;
+            for (int gi = start; gi < end; ++gi) {
+                int li = gi - start;
+                const int Na_total = dataset_vec[0].Na_cpu[li];
+                const int Na_real  = dataset_vec[0].Na_real_cpu[li];
+                const int off_total = dataset_vec[0].Na_sum_cpu[li];
+                const int off_real  = dataset_vec[0].Na_real_sum_cpu[li];
+                for (int m = 0; m < Na_real; ++m) {
+                    int idx = off_total + m; // real atoms first in each config
+                    // potential
+                    pot_buf[cursor + m] = dataset_vec[0].energy_cpu[idx];
+                    // force
+                    frc_buf[(cursor + m) * 3 + 0] = dataset_vec[0].force_cpu[idx];
+                    frc_buf[(cursor + m) * 3 + 1] = dataset_vec[0].force_cpu[idx + Nslice];
+                    frc_buf[(cursor + m) * 3 + 2] = dataset_vec[0].force_cpu[idx + 2 * Nslice];
+                    // virial: expand 6 -> 9 in row-major [xx,xy,xz,yx,yy,yz,zx,zy,zz]
+                    float vxx = dataset_vec[0].virial_cpu[idx + 0 * Nslice];
+                    float vyy = dataset_vec[0].virial_cpu[idx + 1 * Nslice];
+                    float vzz = dataset_vec[0].virial_cpu[idx + 2 * Nslice];
+                    float vxy = dataset_vec[0].virial_cpu[idx + 3 * Nslice];
+                    float vyz = dataset_vec[0].virial_cpu[idx + 4 * Nslice];
+                    float vzx = dataset_vec[0].virial_cpu[idx + 5 * Nslice];
+                    float* row = vir_buf + (cursor + m) * 9;
+                    row[0] = vxx; row[1] = vxy; row[2] = vzx;
+                    row[3] = vxy; row[4] = vyy; row[5] = vyz;
+                    row[6] = vzx; row[7] = vyz; row[8] = vzz;
+                    // magnetic force from slice-contiguous fm_host (component-major)
+                    mf_buf[(cursor + m) * 3 + 0] = fm_host[off_real + m];
+                    mf_buf[(cursor + m) * 3 + 1] = fm_host[off_real + m + Nreal_slice];
+                    mf_buf[(cursor + m) * 3 + 2] = fm_host[off_real + m + 2 * Nreal_slice];
+                }
+                cursor += static_cast<size_t>(Na_real);
+            }
         }
     }
     auto c1 = py::capsule(pot_buf, [](void* f){ delete[] reinterpret_cast<float*>(f); });
@@ -936,7 +939,8 @@ GpuNep::calculate_spin(
     py::array af(py::dtype::of<float>(), shp_f, std::vector<std::ptrdiff_t>{static_cast<py::ssize_t>(3*sizeof(float)), static_cast<py::ssize_t>(sizeof(float))}, static_cast<void*>(frc_buf), c2);
     py::array av(py::dtype::of<float>(), shp_v, std::vector<std::ptrdiff_t>{static_cast<py::ssize_t>(9*sizeof(float)), static_cast<py::ssize_t>(sizeof(float))}, static_cast<void*>(vir_buf), c3);
     py::array am(py::dtype::of<float>(), shp_f, std::vector<std::ptrdiff_t>{static_cast<py::ssize_t>(3*sizeof(float)), static_cast<py::ssize_t>(sizeof(float))}, static_cast<void*>(mf_buf),  c4);
-    return {ap, af, av, am};
+    // Return order: potentials, forces, magnetic-forces, virials
+    return {ap, af, am, av};
 }
 
 // ---- Spin descriptors (per real atom) ----
@@ -946,7 +950,6 @@ py::array GpuNep::calculate_descriptors_spin(
         const std::vector<std::vector<double>>& position,
         const std::vector<std::vector<double>>& spin)
 {
-    ScopedReleaseIfHeld _gil_release;
     if (canceled_.load(std::memory_order_relaxed)) {
         throw std::runtime_error("Canceled by user");
     }
@@ -959,53 +962,55 @@ py::array GpuNep::calculate_descriptors_spin(
     }
     std::vector<Structure> structures = create_structures(type, box, position, spin);
     const int structure_num = static_cast<int>(structures.size());
-    // Pre-allocate contiguous buffer using upper bound (sum of Na across frames)
     size_t total_upper = 0; for (const auto& t : type) total_upper += t.size();
     const int dim = para.dim;
-    float* data = new float[total_upper * static_cast<size_t>(dim)];
+    float* data = nullptr;
     size_t cursor = 0;
     const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
 
-    std::vector<Dataset> dataset_vec(1);
-    for (int start = 0; start < structure_num; start += bs) {
-        if (canceled_.load(std::memory_order_relaxed)) {
-            throw std::runtime_error("Canceled by user");
-        }
-        int end = std::min(start + bs, structure_num);
-        dataset_vec[0].construct(para, structures, start, end, 0);
-        // run spin NEP to fill descriptors (heavy but consistent)
-        NEP_Spin spin_engine(
-            para,
-            dataset_vec[0].N,
-            dataset_vec[0].N * dataset_vec[0].max_NN_radial,
-            dataset_vec[0].N * dataset_vec[0].max_NN_angular,
-            para.version,
-            1);
-        spin_engine.find_force(para, elite.data(), dataset_vec, false, true, 1);
-        CHECK(gpuDeviceSynchronize());
-        // copy descriptors (N * dim)
-        auto& dvec = spin_engine.get_descriptors(0);
-        std::vector<float> desc_host;
-        desc_host.resize(dvec.size());
-        dvec.copy_to_host(desc_host.data());
-
-        const int Nslice = dataset_vec[0].N;
-        const int Nreal_slice = dataset_vec[0].N_real;
-        int num_L = para.L_max; if (para.L_max_4body == 2) num_L += 1; if (para.L_max_5body == 1) num_L += 1;
-        const int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L;
-
-        for (int gi = start; gi < end; ++gi) {
-            const int li = gi - start;
-            const int Na_real = dataset_vec[0].Na_real_cpu[li];
-            const int off_total = dataset_vec[0].Na_sum_cpu[li];
-            for (int m = 0; m < Na_real; ++m) {
-                float* row = data + (cursor + m) * static_cast<size_t>(dim);
-                for (int d = 0; d < dim_desc; ++d) {
-                    row[d] = desc_host[off_total + m + static_cast<size_t>(d) * Nslice];
-                }
-                for (int d = dim_desc; d < dim; ++d) row[d] = 0.0f;
+    {
+        ScopedReleaseIfHeld _gil_release;
+        data = new float[total_upper * static_cast<size_t>(dim)];
+        std::vector<Dataset> dataset_vec(1);
+        for (int start = 0; start < structure_num; start += bs) {
+            if (canceled_.load(std::memory_order_relaxed)) {
+                throw std::runtime_error("Canceled by user");
             }
-            cursor += static_cast<size_t>(Na_real);
+            int end = std::min(start + bs, structure_num);
+            dataset_vec[0].construct(para, structures, start, end, 0);
+            // run spin NEP to fill descriptors (heavy but consistent)
+            NEP_Spin spin_engine(
+                para,
+                dataset_vec[0].N,
+                dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                para.version,
+                1);
+            spin_engine.find_force(para, elite.data(), dataset_vec, false, true, 1);
+            CHECK(gpuDeviceSynchronize());
+            // copy descriptors (N * dim)
+            auto& dvec = spin_engine.get_descriptors(0);
+            std::vector<float> desc_host;
+            desc_host.resize(dvec.size());
+            dvec.copy_to_host(desc_host.data());
+
+            const int Nslice = dataset_vec[0].N;
+            int num_L = para.L_max; if (para.L_max_4body == 2) num_L += 1; if (para.L_max_5body == 1) num_L += 1;
+            const int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L;
+
+            for (int gi = start; gi < end; ++gi) {
+                const int li = gi - start;
+                const int Na_real = dataset_vec[0].Na_real_cpu[li];
+                const int off_total = dataset_vec[0].Na_sum_cpu[li];
+                for (int m = 0; m < Na_real; ++m) {
+                    float* row = data + (cursor + m) * static_cast<size_t>(dim);
+                    for (int d = 0; d < dim_desc; ++d) {
+                        row[d] = desc_host[off_total + m + static_cast<size_t>(d) * Nslice];
+                    }
+                    for (int d = dim_desc; d < dim; ++d) row[d] = 0.0f;
+                }
+                cursor += static_cast<size_t>(Na_real);
+            }
         }
     }
     auto cap = py::capsule(data, [](void* f){ delete[] reinterpret_cast<float*>(f); });

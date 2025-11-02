@@ -39,6 +39,13 @@ const std::string ELEMENTS[NUM_ELEMENTS] = {
   "Tl", "Pb", "Bi", "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U",  "Np", "Pu"};
 
 
+// Suppress printing for Python-facing usage
+void NepParameters::report_inputs()
+{
+  // no-op: Python caller does not need stdout logs here
+}
+
+
 void NepParameters::load_from_nep_txt(const std::string& filename, std::vector<float>& elite)
 {
   set_default_parameters();

@@ -68,16 +68,20 @@ class Structure:
         """
         super().__init__()
         self.properties = properties
-        self.lattice = np.array(lattice,dtype=np.float64).reshape((3,3))  # Optional: Lattice vectors
+        # Avoid unnecessary copies for already-shaped numpy arrays
+        if isinstance(lattice, np.ndarray) :
+            self.lattice = lattice.reshape((3, 3))
+        else:
+            self.lattice = np.array(lattice, dtype=np.float32).reshape((3, 3))
         self.atomic_properties = atomic_properties
         self.additional_fields = additional_fields
-        if "Config_type" not in self.additional_fields.keys():
-            self.additional_fields["Config_type"] = Config.get("widget", "default_config_type", "neptrainkit")
+        self.filter_list = ["species_id"]
         if "force" in self.atomic_properties.keys():
             self.force_label="force"
         else:
             self.force_label = "forces"
-        self.formula
+        # Defer formula computation; cached_property will compute lazily on first access
+        # self.formula
     @property
     def tag(self)->str:
         """Alias for the ``Config_type`` additional field."""
@@ -123,7 +127,8 @@ class Structure:
                     break
 
     def __len__(self):
-        return len(self.elements)
+        # Delegate to num_atoms to avoid forcing symbol construction
+        return self.num_atoms
 
     @classmethod
     def read_xyz(cls, filename:str) -> Structure:
@@ -255,7 +260,19 @@ class Structure:
         list[int]
             List of atomic numbers in the same order as :attr:`elements`.
         """
-        return [atomic_numbers[element] for element in self.elements ]
+        ap = self.atomic_properties
+        # Fast path: map species_id -> atomic number using type_map
+        sid = ap.get("species_id")
+        tmap = self.additional_fields.get("type_map") if hasattr(self, "additional_fields") else None
+        if sid is not None and tmap is not None:
+            # Build per-structure mapping once
+            try:
+                map_arr = np.array([atomic_numbers[str(sym)] for sym in tmap], dtype=np.int32)
+                return map_arr[np.asarray(sid, dtype=np.int32)].tolist()
+            except Exception:
+                pass
+        # Fallback: derive from string symbols
+        return [atomic_numbers[element] for element in self.elements]
     @property
     def spin_num(self)->int:
         """Number of atoms with non-zero magnetic moment.
@@ -474,7 +491,20 @@ class Structure:
         ndarray, shape (N,), dtype str
             Symbol for each atom.
         """
-        return self.atomic_properties['species']
+        ap = self.atomic_properties
+        if 'species' in ap:
+            return ap['species']
+        # Lazily map numeric species_id to string symbols using type_map if available
+        sid = ap.get('species_id')
+        tmap = self.additional_fields.get('type_map') if hasattr(self, 'additional_fields') else None
+        if sid is not None and tmap is not None:
+            elems = np.asarray(tmap, dtype=object)[np.asarray(sid, dtype=np.int32)]
+            # Cache for subsequent accesses and ensure metadata has species
+            self.atomic_properties['species'] = elems
+            if not any(p.get('name') == 'species' for p in self.properties):
+                self.properties.insert(0, {'name': 'species', 'type': 'S', 'count': 1})
+            return elems
+        raise KeyError("'species' not found in atomic_properties and no usable 'species_id'/'type_map'")
 
     @property
     def positions(self):
@@ -495,6 +525,14 @@ class Structure:
         -------
         int
         """
+        # Avoid touching elements to skip expensive string creation on fast path
+        pos = self.atomic_properties.get('pos')
+        if pos is not None:
+            try:
+                return int(np.asarray(pos).shape[0])
+            except Exception:
+                pass
+        # Fallback: use species array length
         return len(self.elements)
 
     def copy(self):
@@ -804,6 +842,71 @@ class Structure:
 
         return structures
 
+    @classmethod
+    @timeit
+    def read_multiple_fast(cls, filename: str, max_workers: int | None = None,**kwargs):
+        """
+        High-performance multi-frame EXTXYZ reader backed by a C++ parser.
+
+        This uses a pybind11 extension (NepTrainKit.core._fastxyz) and Python mmap
+        to index and parse frames in native code, then constructs Structure objects.
+        Falls back to read_multiple on error or if the extension is unavailable.
+        """
+        try:
+            from NepTrainKit.core import _fastxyz as _fx
+        except Exception:
+            try:
+                import _fastxyz as _fx
+            except Exception:
+                logger.warning("_fastxyz extension not available; falling back to Python reader")
+                return cls.read_multiple(filename)
+
+        import mmap as _mmap
+        import os as _os
+        # Allow disabling fast path at runtime for stability/debugging
+        if _os.environ.get("NEPKIT_DISABLE_FASTXYZ", "0") in ("1", "true", "True"):
+            logger.warning("NEPKIT_DISABLE_FASTXYZ=1 set; using Python reader")
+            return cls.read_multiple(filename)
+        results = []
+        workers = -1 if max_workers is None else int(max_workers)
+        # Prefer numeric species IDs to avoid constructing many Python strings up front.
+        # Respect an existing env setting if the user configured it.
+        reset_species_env = False
+        if "NEPKIT_FASTXYZ_SPECIES_MODE" not in _os.environ:
+            _os.environ["NEPKIT_FASTXYZ_SPECIES_MODE"] = "id"
+            reset_species_env = True
+        with open(filename, "rb") as f:
+            with _mmap.mmap(f.fileno(), 0, access=_mmap.ACCESS_READ) as mm:
+                try:
+                    frames = _fx.parse_all(mm, workers)
+                except Exception as e:
+                    logger.warning(f"fast parse failed: {e}; falling back to Python reader")
+                    return cls.read_multiple(filename)
+                finally:
+                    if reset_species_env:
+                        try:
+                            del _os.environ["NEPKIT_FASTXYZ_SPECIES_MODE"]
+                        except Exception:
+                            pass
+
+        default_config_type = Config.get("widget", "default_config_type", "neptrainkit")
+        for fr in frames:
+            ap = fr.get("atomic_properties", {})
+            additional_fields = fr.get("additional_fields", {})
+            if "Config_type" not in additional_fields.keys():
+                additional_fields["Config_type"] = default_config_type
+
+            results.append(Structure(
+                lattice=fr.get("lattice"),
+                atomic_properties=ap,
+                properties=fr.get("properties", []),
+                additional_fields=additional_fields,
+            ))
+        return results
+
+
+
+
     def write(self, file:IO):
         """Write the structure as an EXTXYZ frame to a file-like object.
 
@@ -822,10 +925,11 @@ class Structure:
         if self.lattice.size!=0:
             global_line.append(f'Lattice="' + ' '.join(f"{x}" for x in self.cell.flatten()) + '"')
 
-        props = ":".join(f"{p['name']}:{p['type']}:{p['count']}" for p in self.properties)
+        props = ":".join(f"{p['name']}:{p['type']}:{p['count']}" for p in self.properties if p["name"] not in self.filter_list)
         global_line.append(f"Properties={props}")
         for key, value in self.additional_fields.items():
-
+            if key =="type_map":
+                continue
             if isinstance(value, (float, int,np.number)):
                 global_line.append(f"{key}={value}")
             elif isinstance(value, np.ndarray):
@@ -841,15 +945,25 @@ class Structure:
         for row in range(self.num_atoms):
             line = ""
             for prop  in self.properties :
-                if prop["count"] == 1:
-                    values=[self.atomic_properties[prop["name"]][row]]
+                pname = prop["name"]
+                ptype = prop["type"]
+                if pname in self.filter_list:
+                    continue
+                # Special-case: species may be represented as species_id for fast path
+                if pname == 'species' and 'species' not in self.atomic_properties and 'species_id' in self.atomic_properties:
+                    sid = int(self.atomic_properties['species_id'][row])
+                    type_map = self.additional_fields.get('type_map', [])
+                    sym = type_map[sid] if 0 <= sid < len(type_map) else 'X'
+                    values = [sym]
                 else:
-                    values= self.atomic_properties[prop["name"]][row, :]
+                    if prop["count"] == 1:
+                        values=[self.atomic_properties[pname][row]]
+                    else:
+                        values= self.atomic_properties[pname][row, :]
 
-                if prop["type"] == 'S':
-                    line += " ".join([f"{x }" for x in values]) + " "
-
-                elif prop["type"] == 'R':
+                if ptype == 'S':
+                    line += " ".join([f"{x}" for x in values]) + " "
+                elif ptype == 'R':
                     line += " ".join([f"{x:.10g}" for x in values]) + " "
                 else:
                     line += " ".join([f"{x}" for x in values]) + " "
@@ -1076,6 +1190,156 @@ def is_organic_cluster(symbols:list[str]) -> bool:
 
 
 
+def get_vibration_modes(
+    structure,
+    min_frequency: float = 0.0,
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
+    """Extract vibrational modes stored in per-atom arrays on an ASE ``Atoms`` object.
+
+    Parameters
+    ----------
+    structure : ase.Atoms
+        Atomic structure that potentially carries vibrational mode information.
+    min_frequency : float, optional
+        Absolute frequency threshold (in the same units as the stored data)
+        used to filter out near-zero translational modes. Set to 0.0 to keep
+        all provided modes. Defaults to ``0.0``.
+
+    Returns
+    -------
+    tuple(ndarray, ndarray)
+        Pair of ``(frequencies, modes)`` where ``modes`` has shape
+        ``(n_modes, n_atoms, 3)``. Missing frequencies are returned as ``nan``.
+        When no data is attached to the structure the function returns two
+        empty arrays.
+    """
+
+    def _coerce_modes(raw) -> npt.NDArray[np.float64] | None:
+        if raw is None:
+            return None
+        modes_arr = np.asarray(raw, dtype=np.float64)
+        natoms = len(structure)
+
+        if modes_arr.ndim == 3 and modes_arr.shape[1:] == (natoms, 3):
+            return modes_arr
+        if modes_arr.ndim == 3 and modes_arr.shape[0] == natoms and modes_arr.shape[1] == 3:
+            return np.transpose(modes_arr, (2, 0, 1))
+        if modes_arr.ndim == 2 and modes_arr.shape[0] == natoms and modes_arr.shape[1] % 3 == 0:
+            n_modes = modes_arr.shape[1] // 3
+            reshaped = modes_arr.reshape(natoms, n_modes, 3)
+            return np.transpose(reshaped, (1, 0, 2))
+        if modes_arr.ndim == 2 and modes_arr.shape == (natoms, 3):
+            return modes_arr[np.newaxis, :, :]
+        if modes_arr.ndim == 2 and modes_arr.shape[1] == natoms * 3:
+            return modes_arr.reshape(modes_arr.shape[0], natoms, 3)
+        if modes_arr.ndim == 2 and modes_arr.shape[0] == natoms * 3:
+            return modes_arr.reshape(-1, natoms, 3)
+        if modes_arr.ndim == 1 and modes_arr.size == natoms * 3:
+            return modes_arr.reshape(1, natoms, 3)
+        return None
+
+    arrays = getattr(structure, "arrays", None)
+    if not arrays:
+        return (
+            np.empty((0,), dtype=np.float64),
+            np.empty((0, len(structure), 3), dtype=np.float64),
+        )
+
+    modes_source: Any | None = None
+    mode_indices: list[int] | None = None
+
+    for key in ("vibration_modes", "normal_modes", "modes"):
+        if key in arrays:
+            modes_source = arrays[key]
+            break
+
+    if modes_source is None:
+        component_pattern = re.compile(r"(?:vibration|normal)?[_-]?mode[_-]?(\d+)[_-]?([xyz])$", re.IGNORECASE)
+        component_store: dict[int, dict[str, npt.NDArray[np.float64]]] = defaultdict(dict)
+        for name, values in arrays.items():
+            match = component_pattern.match(name)
+            if not match:
+                continue
+            mode_idx = int(match.group(1))
+            axis = match.group(2).lower()
+            array = np.asarray(values, dtype=np.float64)
+            if array.shape[0] != len(structure):
+                continue
+            component_store[mode_idx][axis] = array
+
+        ordered_modes: list[npt.NDArray[np.float64]] = []
+        ordered_indices: list[int] = []
+        for idx in sorted(component_store.keys()):
+            comp = component_store[idx]
+            if not {"x", "y", "z"}.issubset(comp.keys()):
+                continue
+            mode = np.stack([comp["x"], comp["y"], comp["z"]], axis=1)
+            ordered_modes.append(mode)
+            ordered_indices.append(idx)
+
+        if ordered_modes:
+            modes_source = np.stack(ordered_modes, axis=0)
+            mode_indices = ordered_indices
+
+    coerced = _coerce_modes(modes_source)
+    if coerced is None:
+        return (
+            np.empty((0,), dtype=np.float64),
+            np.empty((0, len(structure), 3), dtype=np.float64),
+        )
+
+    modes = coerced
+    if mode_indices is None:
+        mode_indices = list(range(modes.shape[0]))
+
+    freq_array: npt.NDArray[np.float64] | None = None
+
+    for key in ("vibration_frequencies", "normal_mode_frequencies", "frequencies", "freqs"):
+        if key not in arrays:
+            continue
+        freq_raw = np.asarray(arrays[key], dtype=np.float64)
+        if freq_raw.ndim == 1:
+            freq_array = freq_raw
+        elif freq_raw.ndim >= 2:
+            freq_array = freq_raw[0]
+        break
+
+    if freq_array is None:
+        freq_pattern = re.compile(r"(?:vibration|normal)?[_-]?frequency[_-]?(\d+)$", re.IGNORECASE)
+        freq_map: dict[int, float] = {}
+        for name, values in arrays.items():
+            match = freq_pattern.match(name)
+            if not match:
+                continue
+            idx = int(match.group(1))
+            array = np.asarray(values, dtype=np.float64)
+            if array.shape[0] != len(structure):
+                continue
+            freq_map[idx] = float(array[0])
+        if freq_map:
+            freq_array = np.array([freq_map.get(idx, np.nan) for idx in mode_indices], dtype=np.float64)
+
+    if freq_array is None:
+        freq_array = np.full(modes.shape[0], np.nan, dtype=np.float64)
+    else:
+        freq_array = np.asarray(freq_array, dtype=np.float64).reshape(-1)
+        if freq_array.size != modes.shape[0]:
+            if freq_array.size > modes.shape[0]:
+                freq_array = freq_array[: modes.shape[0]]
+            else:
+                pad = np.full(modes.shape[0] - freq_array.size, np.nan, dtype=np.float64)
+                freq_array = np.concatenate([freq_array, pad])
+
+    if min_frequency > 0.0:
+        finite_mask = np.isfinite(freq_array)
+        keep_mask = np.ones_like(freq_array, dtype=bool)
+        keep_mask[finite_mask] = np.abs(freq_array[finite_mask]) >= min_frequency
+        modes = modes[keep_mask]
+        freq_array = freq_array[keep_mask]
+
+    return freq_array, modes
+
+
 def get_clusters(structure):
     """Connected-atom clusters under ASE natural cutoffs.
 
@@ -1163,13 +1427,15 @@ def process_organic_clusters(structure, new_structure, clusters, is_organic_list
 
 
 def _load_npy_structure(folder: PathLike, cancel_event=None):
-    
     """Load a DeepMD-style dataset from numpy files into Structure objects.
+
+    Supports both standard deepmd/npy and dpdata's mixed npy format
+    (where per-frame ``real_atom_types.npy`` is present in ``set.*``).
 
     Parameters
     ----------
     folder : PathLike
-        Root folder containing type.raw, optional type_map.raw, and set.* subfolders.
+        Root folder containing ``type.raw``, optional ``type_map.raw``, and ``set.*`` subfolders.
     cancel_event : threading.Event or None, optional
         If provided and is_set(), stop early.
 
@@ -1192,8 +1458,6 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
     else:
         type_map = np.array([f'Type_{i + 1}' for i in range(np.max(type_) + 1)], dtype=str, ndmin=1)
 
-    elem_list = type_map[type_]
-    atoms_num = len(elem_list)
     nopbc = (folder_path / 'nopbc').is_file()
     sets = sorted(folder_path.glob('set.*'))
     dataset_dict: dict[str, list[np.ndarray]] = {}
@@ -1205,6 +1469,7 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
                 return structures
             key = data_path.stem
             data = np.load(data_path)
+            # Ensure 2D [nframes, -1]
             if data.ndim == 1:
                 data = data.reshape(data.shape[0], -1)
             dataset_dict.setdefault(key, []).append(data)
@@ -1212,33 +1477,56 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
     config_type = folder_path.name
     for key in list(dataset_dict.keys()):
         dataset_dict[key] = np.concatenate(dataset_dict[key], axis=0)
-    logger.debug(f"load {dataset_dict['box'].shape[0]} structures from {folder_path}" )
-    for index in range(dataset_dict['box'].shape[0]):
+
+    if 'box' not in dataset_dict or 'coord' not in dataset_dict:
+        return structures
+
+    total_frames = int(dataset_dict['box'].shape[0])
+    is_mixed = 'real_atom_types' in dataset_dict
+
+    logger.debug(f"load {total_frames} structures from {folder_path}")
+    for index in range(total_frames):
         if cancel_event is not None and getattr(cancel_event, 'is_set', None) and cancel_event.is_set():
             break
+
         box = dataset_dict['box'][index].reshape(3, 3)
         coords = dataset_dict['coord'][index].reshape(-1, 3)
+        atoms_num = int(coords.shape[0])
+
+        # species per frame: dpdata mixed uses real_atom_types per frame
+        if is_mixed:
+            real_types = dataset_dict['real_atom_types'][index].astype(int).reshape(-1)
+            species = type_map[real_types]
+        else:
+            species = type_map[type_]
+
         properties = [
             {'name': 'species', 'type': 'S', 'count': 1},
             {'name': 'pos', 'type': 'R', 'count': 3},
         ]
-        info = {'species': elem_list, 'pos': coords}
-        additional_fields = {'Config_type': config_type, 'pbc': 'F F F' if nopbc else 'T T T',"type_map": type_map.tolist()}
+        info = {'species': species, 'pos': coords}
+        additional_fields = {
+            'Config_type': config_type,
+            'pbc': 'F F F' if nopbc else 'T T T',
+            'type_map': type_map.tolist(),
+        }
+
         for key, value in dataset_dict.items():
-            if key in {'box', 'coord'}:
+            if key in {'box', 'coord', 'real_atom_types'}:
                 continue
 
             prop = value[index]
-            count = prop.shape[0]
+            count = int(prop.shape[0])
             if count >= atoms_num and key != 'virial':
                 col = count // atoms_num
                 info[key] = prop.reshape((-1, col))
-                properties.append({'name': key, 'type': 'R', 'count': col})
+                properties.append({'name': key, 'type': 'R', 'count': int(col)})
             else:
                 if count == 1:
                     additional_fields[key] = prop[0]
                 else:
                     additional_fields[key] = prop.flatten()
+
         structure = Structure(
             lattice=box,
             atomic_properties=info,
@@ -1431,3 +1719,12 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
 
 
 
+class FastStructure(Structure):
+    """Structure subclass that uses a C++-accelerated parser for EXTXYZ IO."""
+    @classmethod
+    def read_multiple(cls, filename: str, max_workers: int | None = None):
+        return super(FastStructure, cls).read_multiple_fast(filename, max_workers=max_workers)
+
+    @classmethod
+    def iter_read_multiple(cls, filename: str, max_workers: int | None = None):
+        yield from super(FastStructure, cls).iter_read_multiple_fast(filename, max_workers=max_workers)

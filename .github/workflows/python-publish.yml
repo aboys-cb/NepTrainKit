@@ -130,15 +130,18 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
+
+ 
     - name: Setup CUDA (Windows)
       if: runner.os == 'Windows'
       id: cuda-toolkit
-      uses: Jimver/cuda-toolkit@v0.2.24
+      uses: N-Storm/cuda-toolkit@master
       with:
         cuda: '12.4.0'
-        method: 'network'          # 首次会下载，后续命中缓存
-        sub-packages: '["nvcc", "cudart", "cublas","cusolver","curand"]'
+        method: 'local'          # 首次会下载，后续命中缓存
+#        sub-packages: '["nvcc", "cudart", "cublas","cusolver","curand"]'
         use-github-cache: true
+ 
 
 
 #    - name: Install CUDA

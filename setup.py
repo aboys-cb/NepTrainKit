@@ -22,6 +22,7 @@ import sysconfig
 import shutil
 from pathlib import Path
 
+
 # 获取 pybind11 的 include 路径
 pybind11_include = pybind11.get_include()
 
@@ -31,17 +32,22 @@ pybind11_include = pybind11.get_include()
 
 extra_link_args = [ ]
 extra_compile_args=[ ]
+# OpenMP 控制：NEPKIT_OPENMP=auto(默认)/1/0；为0时禁用OpenMP
+omp_mode = os.environ.get("NEPKIT_OPENMP", "auto").strip().lower()
+use_openmp = omp_mode not in ("0", "false", "off", "no")
 # 检查平台并设置相应的 OpenMP 编译标志
 
 if sys.platform == "win32":
     # 对于 Windows 使用 MSVC 编译器时，需要使用 /openmp
-    extra_compile_args.append('/openmp' )
+    if use_openmp:
+        extra_compile_args.append('/openmp' )
     extra_compile_args.append('/O2' )
     extra_compile_args.append('/std:c++11' )
 
 
 
-    extra_link_args.append('/openmp')
+    if use_openmp:
+        extra_link_args.append('/openmp')
     extra_link_args.append('/O2' )
     extra_link_args.append('/std:c++11' )
 
@@ -66,20 +72,23 @@ elif sys.platform == "darwin":
 
     omp_include = os.getenv("OMP_INCLUDE_PATH", "/opt/homebrew/opt/libomp/include")
     omp_lib = os.getenv("OMP_LIB_PATH", "/opt/homebrew/opt/libomp/lib")
-    extra_compile_args.extend(["-Xpreprocessor", "-fopenmp", f"-I{omp_include}"])
-    extra_link_args.extend(["-lomp", f"-L{omp_lib}"])
+    if use_openmp and os.path.isdir(omp_include) and os.path.isdir(omp_lib):
+        extra_compile_args.extend(["-Xpreprocessor", "-fopenmp", f"-I{omp_include}"])
+        extra_link_args.extend(["-lomp", f"-L{omp_lib}"])
 
     pass
 
 else:
     # 对于 Linux 和 GCC 使用 -fopenmp 编译标志
 
-    extra_compile_args.append('-fopenmp' )
+    if use_openmp:
+        extra_compile_args.append('-fopenmp' )
     extra_compile_args.append('-O3')
     extra_compile_args.append('-std=c++11')
 
 
-    extra_link_args.append('-fopenmp')
+    if use_openmp:
+        extra_link_args.append('-fopenmp')
     extra_link_args.append('-O3')
     extra_link_args.append('-std=c++11')
 
@@ -131,23 +140,7 @@ ext_modules.append(
     )
 )
 
-# 自定义 build_ext 命令，确保兼容性
-class BuildExt(build_ext):
-    def build_extensions(self):
-        # 设置编译器标准为 C++17
-        ct = self.compiler.compiler_type
-        opts = [ ]
-        for ext in self.extensions:
-            ext.extra_compile_args = opts + ext.extra_compile_args
-        try:
-            # 尝试构建扩展模块
-            build_ext.build_extensions(self)
-        except Exception as e:
-            # 捕获编译错误并打印警告
-            print(f"WARNING: Failed to build extension module: {e}")
-            print("WARNING: Skipping nep_cpu module build. The package will be installed without it.")
-            # 清空 ext_modules，跳过扩展模块的构建
-            self.ext_modules = []
+
 
 
 
@@ -170,6 +163,19 @@ class BuildExtNVCC(build_ext):
             return (nvcc_cmd, include, lib64)
         nvcc_cmd = shutil.which("nvcc")
         return (Path(nvcc_cmd) if nvcc_cmd else None, None, None)
+
+    def _host_compiler_ready(self) -> bool:
+        """On Windows, ensure MSVC host compiler is available for NVCC.
+        On other platforms return True.
+        """
+        if os.name != 'nt':
+            return True
+        # Basic checks for cl.exe presence or VS env being set
+        if shutil.which('cl.exe'):
+            return True
+        if os.environ.get('VCToolsInstallDir') or os.environ.get('VSINSTALLDIR'):
+            return True
+        return False
 
     def build_extension(self, ext):
         if ext.name != "NepTrainKit.nep_gpu":
@@ -228,11 +234,16 @@ class BuildExtNVCC(build_ext):
         # if os.environ.get("NEP_GPU_STRONG_DEBUG"):
         #     nvcc_flags += ["-DSTRONG_DEBUG"]
         if os.name == 'nt':
-            # Enable OpenMP (SIMD) and typical MSVC flags for host compilation
-            nvcc_flags += ["-Xcompiler", "/openmp:experimental,/MD,/O2,/EHsc"]
+            # Typical MSVC flags for host compilation; OpenMP optional
+            if use_openmp:
+                nvcc_flags += ["-Xcompiler", "/openmp:experimental,/MD,/O2,/EHsc"]
+            else:
+                nvcc_flags += ["-Xcompiler", "/MD,/O2,/EHsc"]
         else:
-            # PIC for shared lib, enable OpenMP on host compiler
-            nvcc_flags += ["-Xcompiler", "-fPIC", "-Xcompiler", "-fopenmp"]
+            # PIC for shared lib; enable OpenMP on host compiler only if requested
+            nvcc_flags += ["-Xcompiler", "-fPIC"]
+            if use_openmp:
+                nvcc_flags += ["-Xcompiler", "-fopenmp"]
 
         incs = []
         for inc in (ext.include_dirs or []):
@@ -293,16 +304,87 @@ class BuildExtNVCC(build_ext):
         except Exception as e:
             print(f"WARNING: Linking nep_gpu failed: {e}")
             return
+    def _should_skip_gpu(self) -> bool:
+        mode = os.environ.get("NEPKIT_BUILD_GPU", "auto").strip().lower()
+        if mode in ("0", "false", "off", "no", "skip"):
+            print("INFO: NEPKIT_BUILD_GPU is disabled; skipping NepTrainKit.nep_gpu.")
+            return True
+        return False
     def build_extensions(self):
-        # If nvcc is unavailable, drop the GPU extension so copy stage won't fail
+        # Optionally drop the GPU extension so copy stage won't fail
+        drop_gpu = False
+        if self._should_skip_gpu():
+            drop_gpu = True
+        else:
+            try:
+                nvcc, _, _ = self._cuda_paths()
+            except Exception:
+                nvcc = None
+            if not nvcc:
+                print("WARNING: nvcc not found; skipping NepTrainKit.nep_gpu build.")
+                drop_gpu = True
+            elif not self._host_compiler_ready():
+                print("WARNING: MSVC (cl.exe) not found; skipping NepTrainKit.nep_gpu build on Windows.")
+                drop_gpu = True
+        if drop_gpu:
+            self.extensions = [e for e in self.extensions if e.name != "NepTrainKit.nep_gpu"]
+        return super().build_extensions()
+    def run(self):
+        # Build non-GPU extensions first, then try GPU in isolation via direct method
+        all_exts = list(self.extensions)
+        gpu_exts = [e for e in all_exts if e.name == "NepTrainKit.nep_gpu"]
+        other_exts = [e for e in all_exts if e.name != "NepTrainKit.nep_gpu"]
+
+        # 1) Build CPU/fastxyz, etc.
+        if other_exts:
+            orig = self.extensions
+            try:
+                self.extensions = other_exts
+                super().run()
+            finally:
+                self.extensions = orig
+
+        # 2) Try GPU separately, avoiding base run() to prevent source-type assumptions
+        if not gpu_exts:
+            return
+        if self._should_skip_gpu():
+            return
         try:
             nvcc, _, _ = self._cuda_paths()
         except Exception:
             nvcc = None
         if not nvcc:
             print("WARNING: nvcc not found; skipping NepTrainKit.nep_gpu build.")
-            self.extensions = [e for e in self.extensions if e.name != "NepTrainKit.nep_gpu"]
-        return super().build_extensions()
+            return
+        if not self._host_compiler_ready():
+            print("WARNING: MSVC (cl.exe) not found; skipping NepTrainKit.nep_gpu build on Windows.")
+            return
+
+        # Ensure compiler is initialized (super().run initializes it, but after step 1 it's ready)
+        # Build the GPU extension directly using our overridden build_extension
+        for ge in gpu_exts:
+            try:
+                self.build_extension(ge)
+            except Exception as e:
+                print(f"WARNING: nep_gpu build failed and was skipped: {e}")
+# preserve previously defined extensions
+# Register fast EXTXYZ parser extension for core
+_fastxyz_compile_args = list(extra_compile_args)
+
+
+_fastxyz_include_dirs = [pybind11_include, "src/NepTrainKit/core"]
+
+ext_modules.append(
+    Extension(
+        "NepTrainKit.core._fastxyz",
+        ["src/NepTrainKit/core/_fastxyz.cpp"],
+        include_dirs=_fastxyz_include_dirs,
+        extra_compile_args=_fastxyz_compile_args,
+        extra_link_args=extra_link_args,
+        language="c++",
+    )
+)
+
 setup(
     author="Chen Cheng bing",
 cmdclass={'build_ext': BuildExtNVCC},

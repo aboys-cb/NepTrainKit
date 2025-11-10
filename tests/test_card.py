@@ -28,6 +28,7 @@ from NepTrainKit.ui.views._card import (
     VacancyDefectCard,
     StackingFaultCard,
     OrganicMolConfigPBCCard,
+    # VibrationModePerturbCard,
 )
 
 
@@ -272,6 +273,42 @@ class TestCard(unittest.TestCase):
         for atoms in results:
             self.assertEqual(len(atoms), len(structure))
             self.assertFalse(np.allclose(atoms.get_positions(), structure.get_positions()))
+
+    def test_vibration_mode_perturb_card(self):
+        return 
+        card = VibrationModePerturbCard()
+        structure = self.structure.copy()
+        natoms = len(structure)
+        n_modes = min(3 * natoms, 6)
+        mode_vectors = np.zeros((n_modes, natoms, 3))
+        for idx in range(n_modes):
+            atom_index = idx % natoms
+            component = idx % 3
+            mode_vectors[idx, atom_index, component] = 1.0
+        freq_values = np.linspace(50.0, 300.0, n_modes)
+        for mode_idx in range(n_modes):
+            structure.new_array(f"vibration_mode_{mode_idx}_x", mode_vectors[mode_idx, :, 0])
+            structure.new_array(f"vibration_mode_{mode_idx}_y", mode_vectors[mode_idx, :, 1])
+            structure.new_array(f"vibration_mode_{mode_idx}_z", mode_vectors[mode_idx, :, 2])
+            structure.new_array(
+                f"vibration_frequency_{mode_idx}",
+                np.full(natoms, freq_values[mode_idx], dtype=float),
+            )
+
+        card.amplitude_frame.set_input_value([0.05])
+        card.modes_frame.set_input_value([2])
+        card.min_freq_frame.set_input_value([1.0])
+        card.num_condition_frame.set_input_value([3])
+
+        results = card.process_structure(structure)
+        self.assertEqual(len(results), 3)
+        base_positions = structure.get_positions()
+        displacements = [
+            np.linalg.norm(atoms.get_positions() - base_positions, axis=1).max()
+            for atoms in results
+        ]
+        self.assertTrue(all(delta > 0 for delta in displacements))
+        self.assertTrue(all(len(atoms) == len(structure) for atoms in results))
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@
 """Runtime NEP calculator wrapper handling CPU/GPU backends."""
 import contextlib
 import io
+import os
 import sys
 import traceback
 from collections.abc import Iterable
@@ -25,13 +26,11 @@ try:
     from NepTrainKit.nep_cpu import CpuNep
 except ImportError:
     logger.debug("no found NepTrainKit.nep_cpu")
-
+    #logger.error(traceback.format_exc())
     try:
         from nep_cpu import CpuNep
     except ImportError:
         logger.debug("no found nep_cpu")
-
-
         CpuNep = None
 try:
     from NepTrainKit.nep_gpu import GpuNep
@@ -42,6 +41,9 @@ except ImportError:
     except ImportError:
         logger.debug("no found nep_gpu")
         GpuNep = None
+if GpuNep is not None:
+    if "CUDA_VISIBLE_DEVICES" not in os.environ:
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 class NepCalculator:
     """Initialise the NEP calculator and load a CPU/GPU backend.
@@ -150,6 +152,7 @@ class NepCalculator:
         if isinstance(structures, list):
             return structures
         return list(structures)
+    @timeit
     def compose_structures(
         self,
         structures: Iterable[Structure] | Structure,
@@ -303,26 +306,25 @@ class NepCalculator:
         """Return the per-atom descriptor matrix for a single ``structure``."""
         if not self.initialized:
             return np.array([])
-        symbols = structure.get_chemical_symbols()
-        mapped_types = [self.type_dict[symbol] for symbol in symbols]
-        box = structure.cell.transpose(1, 0).reshape(-1).tolist()
-        positions = structure.positions.transpose(1, 0).reshape(-1).tolist()
-        self.nep3.reset_cancel()
-        descriptor = self.nep3.get_descriptor(mapped_types, box, positions)
-        descriptors_per_atom = np.array(descriptor, dtype=np.float32).reshape(-1, len(structure)).T
-        return descriptors_per_atom
+        return self.get_structures_descriptor(structure,mean_descriptor=False)
     @timeit
     def get_structures_descriptor(
         self,
         structures: list[Structure],
+        mean_descriptor: bool=True
     ) -> npt.NDArray[np.float32]:
-        """Return descriptors for multiple structures without additional averaging."""
+        """Return per-atom NEP descriptors stacked across ``structures``."""
         if not self.initialized:
             return np.array([])
-        types, boxes, positions, _ = self.compose_structures(structures)
+        types, boxes, positions, group_sizes = self.compose_structures(structures)
         self.nep3.reset_cancel()
         descriptor = self.nep3.get_structures_descriptor(types, boxes, positions)
-        return np.array(descriptor, dtype=np.float32)
+        # Ensure numpy array without unnecessary copy when already ndarray
+        descriptor = np.asarray(descriptor, dtype=np.float32)
+        if not mean_descriptor:
+            return descriptor
+        structure_descriptor = aggregate_per_atom_to_structure(descriptor, group_sizes, map_func=np.mean, axis=0)
+        return structure_descriptor
 
     @timeit
     def get_structures_polarizability(
@@ -387,8 +389,11 @@ class NepCalculator:
         """
         if isinstance(atoms_list, Atoms):
             atoms_list = [atoms_list]
+        descriptor_blocks: list[np.ndarray] | None = None
         if calc_descriptor:
-            _descriptor = self.get_structures_descriptor(atoms_list)
+            per_atom_descriptor = self.get_structures_descriptor(atoms_list,mean_descriptor=False)
+            atom_counts = [len(atoms) for atoms in atoms_list]
+            descriptor_blocks = split_by_natoms(per_atom_descriptor, atom_counts)
 
         energy,forces,virial = self.calculate(atoms_list)
 
@@ -405,7 +410,7 @@ class NepCalculator:
 
             )
             if calc_descriptor:
-                spc.results["descriptor"]=_descriptor[index]
+                spc.results["descriptor"]=descriptor_blocks[index]
             atoms.calc = spc
 
 

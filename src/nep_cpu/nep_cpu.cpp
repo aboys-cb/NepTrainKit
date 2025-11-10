@@ -31,6 +31,7 @@
 #endif
 #include <tuple>
 #include <atomic>
+#include <utility>
 
 namespace py = pybind11;
 
@@ -274,25 +275,34 @@ const std::vector<std::vector<int>>& type,
     }
 
     // 获取所有结构的 descriptor
-    std::vector<std::vector<double>> get_structures_descriptor(const std::vector<std::vector<int>>& type,
-                                                     const std::vector<std::vector<double>>& box,
-                                                     const std::vector<std::vector<double>>& position) {
-    py::gil_scoped_release _gil_release;
+    std::vector<std::vector<double>> get_structures_descriptor(
+            const std::vector<std::vector<int>>& type,
+            const std::vector<std::vector<double>>& box,
+            const std::vector<std::vector<double>>& position) {
+        py::gil_scoped_release _gil_release;
 
-        size_t type_size = type.size();
-        std::vector<std::vector<double>> all_descriptors(type_size, std::vector<double>(annmb.dim));
+        const size_t type_size = type.size();
+        size_t total_atoms = 0;
+        for (const auto& t : type) {
+            total_atoms += t.size();
+        }
+        std::vector<std::vector<double>> all_descriptors;
+        all_descriptors.reserve(total_atoms);
 
-        for (int i = 0; i < type_size; ++i) {
+        for (size_t i = 0; i < type_size; ++i) {
             check_canceled();
             std::vector<double> struct_des(type[i].size() * annmb.dim);
             find_descriptor(type[i], box[i], position[i], struct_des);
-//
-            // 重塑 descriptor 以适应矩阵
-            std::vector<std::vector<double>> struct_des_reshaped;
-            reshape(struct_des, annmb.dim, type[i].size(), struct_des_reshaped);
 
-            // 计算行平均
-            all_descriptors[i] = calculate_row_averages(struct_des_reshaped);
+            const size_t atom_count = type[i].size();
+            for (size_t atom_idx = 0; atom_idx < atom_count; ++atom_idx) {
+                std::vector<double> atom_descriptor(static_cast<size_t>(annmb.dim));
+                for (int dim_idx = 0; dim_idx < annmb.dim; ++dim_idx) {
+                    const size_t offset = static_cast<size_t>(dim_idx) * atom_count + atom_idx;
+                    atom_descriptor[static_cast<size_t>(dim_idx)] = struct_des[offset];
+                }
+                all_descriptors.emplace_back(std::move(atom_descriptor));
+            }
         }
 
         return all_descriptors;
@@ -358,6 +368,7 @@ PYBIND11_MODULE(nep_cpu, m) {
         .def("get_structures_polarizability", &CpuNep::get_structures_polarizability)
         .def("get_structures_dipole", &CpuNep::get_structures_dipole)
 
-        .def("get_structures_descriptor", &CpuNep::get_structures_descriptor);
+        .def("get_structures_descriptor", &CpuNep::get_structures_descriptor,
+             py::arg("type"), py::arg("box"), py::arg("position"));
 
 }

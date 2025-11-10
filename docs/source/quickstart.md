@@ -13,7 +13,26 @@ conda activate nepkit
 pip install NepTrainKit
 ```
 
-> **Linux note:** On Linux, installing via pip will auto-detect CUDA. If a compatible CUDA toolkit is found, NepTrainKit builds the NEP backend with GPU acceleration; otherwise, it compiles a CPU-only backend.
+> **GPU build note (Linux/WSL2):** `pip install` auto‑detects CUDA. If CUDA is not
+> detected, export one of `CUDA_HOME` or `CUDA_PATH` and ensure `lib64` is on your loader path
+> before running `pip install`:
+
+```bash
+# choose your installed CUDA version/path
+export CUDA_HOME=/usr/local/cuda-12.4
+export PATH="$CUDA_HOME/bin:$PATH"
+export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH}"
+pip install NepTrainKit
+```
+
+> **GPU build note (Windows PowerShell):** Set `CUDA_PATH` (or `CUDA_HOME`) and add `bin`
+> to `Path` before `pip install`:
+
+```powershell
+$env:CUDA_PATH = "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.4"
+$env:Path = "$env:CUDA_PATH\\bin;" + $env:Path
+pip install NepTrainKit
+```
 
 Windows portable: download `NepTrainKit.win32.zip` from Releases and run the executable.
 

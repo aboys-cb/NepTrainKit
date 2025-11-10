@@ -9,7 +9,24 @@ NepTrainKit is a toolkit focused on the operation and visualization of neuroevol
 
 .. note::
 
-   When installing NepTrainKit via pip on Linux, the build auto-detects CUDA. If a compatible CUDA toolkit is available, the NEP backend is compiled with GPU acceleration; otherwise, a CPU-only backend is built.
+   Installing via ``pip`` auto-detects CUDA. If a compatible CUDA toolkit
+   is available, the NEP backend is compiled with GPU acceleration; otherwise,
+   a CPU-only backend is built. If CUDA is not detected automatically, set
+   one of ``CUDA_HOME`` or ``CUDA_PATH`` and update your loader path before running
+   ``pip install``.
+
+   Linux/WSL2 example::
+
+      export CUDA_HOME=/usr/local/cuda-12.4
+      export PATH="$CUDA_HOME/bin:$PATH"
+      export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH}"
+      pip install NepTrainKit
+
+   Windows (PowerShell) example::
+
+      $env:CUDA_PATH = "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.4"
+      $env:Path = "$env:CUDA_PATH\\bin;" + $env:Path
+      pip install NepTrainKit
 
 Citing NepTrainKit
 -------------------

@@ -75,7 +75,7 @@ class Structure:
             self.lattice = np.array(lattice, dtype=np.float32).reshape((3, 3))
         self.atomic_properties = atomic_properties
         self.additional_fields = additional_fields
-
+        self.filter_list = ["species_id"]
         if "force" in self.atomic_properties.keys():
             self.force_label="force"
         else:
@@ -925,7 +925,7 @@ class Structure:
         if self.lattice.size!=0:
             global_line.append(f'Lattice="' + ' '.join(f"{x}" for x in self.cell.flatten()) + '"')
 
-        props = ":".join(f"{p['name']}:{p['type']}:{p['count']}" for p in self.properties)
+        props = ":".join(f"{p['name']}:{p['type']}:{p['count']}" for p in self.properties if p["name"] not in self.filter_list)
         global_line.append(f"Properties={props}")
         for key, value in self.additional_fields.items():
             if key =="type_map":
@@ -947,7 +947,7 @@ class Structure:
             for prop  in self.properties :
                 pname = prop["name"]
                 ptype = prop["type"]
-                if pname == "species_id":
+                if pname in self.filter_list:
                     continue
                 # Special-case: species may be represented as species_id for fast path
                 if pname == 'species' and 'species' not in self.atomic_properties and 'species_id' in self.atomic_properties:

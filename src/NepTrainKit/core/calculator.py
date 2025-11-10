@@ -3,6 +3,7 @@
 """Runtime NEP calculator wrapper handling CPU/GPU backends."""
 import contextlib
 import io
+import os
 import sys
 import traceback
 from collections.abc import Iterable
@@ -25,13 +26,11 @@ try:
     from NepTrainKit.nep_cpu import CpuNep
 except ImportError:
     logger.debug("no found NepTrainKit.nep_cpu")
-    logger.error(traceback.format_exc())
+    #logger.error(traceback.format_exc())
     try:
         from nep_cpu import CpuNep
     except ImportError:
         logger.debug("no found nep_cpu")
-
-
         CpuNep = None
 try:
     from NepTrainKit.nep_gpu import GpuNep
@@ -42,6 +41,9 @@ except ImportError:
     except ImportError:
         logger.debug("no found nep_gpu")
         GpuNep = None
+if GpuNep is not None:
+    if "CUDA_VISIBLE_DEVICES" not in os.environ:
+        os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 class NepCalculator:
     """Initialise the NEP calculator and load a CPU/GPU backend.
@@ -304,14 +306,7 @@ class NepCalculator:
         """Return the per-atom descriptor matrix for a single ``structure``."""
         if not self.initialized:
             return np.array([])
-        symbols = structure.get_chemical_symbols()
-        mapped_types = [self.type_dict[symbol] for symbol in symbols]
-        box = structure.cell.transpose(1, 0).reshape(-1).tolist()
-        positions = structure.positions.transpose(1, 0).reshape(-1).tolist()
-        self.nep3.reset_cancel()
-        descriptor = self.nep3.get_descriptor(mapped_types, box, positions)
-        descriptors_per_atom = np.array(descriptor, dtype=np.float32).reshape(-1, len(structure)).T
-        return descriptors_per_atom
+        return self.get_structures_descriptor(structure,mean_descriptor=False)
     @timeit
     def get_structures_descriptor(
         self,

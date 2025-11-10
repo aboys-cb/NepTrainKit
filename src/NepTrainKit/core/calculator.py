@@ -391,7 +391,7 @@ class NepCalculator:
             atoms_list = [atoms_list]
         descriptor_blocks: list[np.ndarray] | None = None
         if calc_descriptor:
-            per_atom_descriptor = self.get_structures_descriptor(atoms_list)
+            per_atom_descriptor = self.get_structures_descriptor(atoms_list,mean_descriptor=False)
             atom_counts = [len(atoms) for atoms in atoms_list]
             descriptor_blocks = split_by_natoms(per_atom_descriptor, atom_counts)
 

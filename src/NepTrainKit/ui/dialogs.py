@@ -53,7 +53,7 @@ def call_path_dialog(
     if not select_path:
         return None
 
-    selected = Path(select_path)
+    selected = Path(select_path) if isinstance(select_path, str) else  Path(select_path[0])
     last_dir = selected.parent if check_path_type(selected) == "file" else selected
     Config.set("setting", "last_path", str(last_dir))
     return select_path

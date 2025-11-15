@@ -1,8 +1,9 @@
 """Visualization widgets and analysis helpers for NEP evaluation results."""
+import traceback
 
 import numpy as np
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
-
+from loguru import logger
 
 from NepTrainKit.ui.threads import LoadingThread
 from NepTrainKit.ui.dialogs import call_path_dialog
@@ -18,6 +19,7 @@ from NepTrainKit.ui.widgets import (
     EditInfoMessageBox,
     ShiftEnergyMessageBox,
     DFTD3MessageBox,
+    DatasetSummaryMessageBox,
 )
 from NepTrainKit.core.types import SearchType, CanvasMode
 from NepTrainKit.ui.views import NepDisplayGraphicsToolBar
@@ -335,17 +337,41 @@ class NepResultPlotWidget(QWidget):
         thread.finished.connect(self.canvas.plot_nep_result)
 
     def show_dataset_summary(self):
-        """Placeholder for a future dataset summary dialog hook."""
-        # Currently reserved for the planned dataset summary panel.
-        # Implementation can reuse LoadingThread + QProgressDialog to scan
-        # self.canvas.nep_result_data and then show a frameless dialog.
+        """Compute and display dataset-wide summary statistics."""
         data = self.canvas.nep_result_data
         if data is None:
             MessageManager.send_info_message("NEP data has not been loaded yet!")
             return
-        MessageManager.send_info_message(
-            "Dataset summary view is not implemented yet in this build."
-        )
+        structures = getattr(data, "structure", None)
+        if structures is None or structures.now_data.size == 0:
+            MessageManager.send_info_message("No active structures to summarise.")
+            return
+        total_structures = int(structures.now_data.shape[0])
+
+        progress_diag = QProgressDialog("", "Cancel", 0, total_structures, self._parent)
+        progress_diag.setFixedSize(300, 100)
+        progress_diag.setWindowTitle("Summarising dataset")
+        thread = LoadingThread(self._parent, show_tip=False)
+        thread.progressSignal.connect(progress_diag.setValue)
+        thread.finished.connect(progress_diag.accept)
+        thread.finished.connect(lambda: self._show_dataset_summary_dialog(data))
+        progress_diag.canceled.connect(thread.stop_work)
+        thread.start_work(data.iter_dataset_summary)
+        progress_diag.exec()
+
+    def _show_dataset_summary_dialog(self, data):
+        """Instantiate and execute the dataset summary dialog."""
+        try:
+            summary = data.get_dataset_summary()
+        except Exception:  # noqa: BLE001
+            MessageManager.send_warning_message("Failed to build dataset summary.")
+            logger.debug(traceback.format_exc())
+            return
+        if not summary:
+            MessageManager.send_info_message("Dataset summary is empty.")
+            return
+        dlg = DatasetSummaryMessageBox(self._parent, summary)
+        dlg.exec()
 
     def inverse_select(self):
         """Invert the current structure selection on the canvas.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
 # @Time    : 2024/11/28 22:45
-# @Author  : 兵
+# @Author  : Bing
 # @email    : 1747193328@qq.com
 from pathlib import Path
 from typing import Any, Dict
@@ -20,8 +20,9 @@ from qfluentwidgets import (
     ComboBox,
     FluentStyleSheet,
     FluentTitleBar, TransparentToolButton, ColorDialog,
-    TitleLabel, HyperlinkLabel, LineEdit, EditableComboBox, PrimaryPushButton, Flyout, InfoBarIcon, MessageBox, TextEdit, FluentIcon,
-    ToolTipFilter, ToolTipPosition
+    TitleLabel, HyperlinkLabel, LineEdit, EditableComboBox, PrimaryPushButton, Flyout, InfoBarIcon, MessageBox,
+    TextEdit, FluentIcon,
+    ToolTipFilter, ToolTipPosition, BodyLabel
 )
 from qframelesswindow import FramelessDialog
 import json
@@ -67,6 +68,132 @@ class GetFloatMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.doubleSpinBox)
         self.widget.setMinimumWidth(160)
 
+
+class DatasetSummaryMessageBox(MessageBoxBase):
+    """Frameless dialog that presents dataset-wide summary statistics."""
+
+    def __init__(self, parent=None, summary: dict | None = None):
+        super().__init__(parent)
+        self._summary: dict[str, Any] = summary or {}
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+        self.viewLayout.addLayout(layout)
+
+        title = TitleLabel("Dataset Summary", self)
+        layout.addWidget(title)
+
+        # Source info
+        source_row = QHBoxLayout()
+        data_file = self._summary.get("data_file", "")
+        model_file = self._summary.get("model_file", "")
+        data_label = CaptionLabel(f"Data: {data_file}", self)
+        model_label = CaptionLabel(f"Model: {model_file}", self)
+        source_row.addWidget(data_label)
+        source_row.addWidget(model_label)
+        layout.addLayout(source_row)
+
+        # Basic counts and atom statistics
+        counts = self._summary.get("counts", {})
+        atoms = self._summary.get("atoms", {})
+        elements = self._summary.get("elements", [])
+        energy = self._summary.get("energy", {})
+
+        # Top summary cards
+        card_row = QHBoxLayout()
+        card_row.setContentsMargins(0, 0, 0, 0)
+        card_row.setSpacing(8)
+
+        def _add_card(caption: str, value: str) -> None:
+            frame = QFrame(self)
+            frame.setFrameShape(QFrame.Shape.StyledPanel)
+            frame_layout = QVBoxLayout(frame)
+            frame_layout.setContentsMargins(8, 4, 8, 4)
+            frame_layout.setSpacing(2)
+            value_label = TitleLabel(value, frame)
+            value_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            cap_label = CaptionLabel(caption, frame)
+            cap_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            frame_layout.addWidget(value_label)
+            frame_layout.addWidget(cap_label)
+            card_row.addWidget(frame)
+
+        active_structures = counts.get("active_structures", 0)
+        total_atoms_active = atoms.get("total_atoms_active", 0)
+        num_elements = len(elements)
+
+        _add_card("Orig structures", str(counts.get("orig_structures", 0)))
+        _add_card("Active structures", str(active_structures))
+        _add_card("Removed structures", str(counts.get("removed_structures", 0)))
+        _add_card("Selected structures", str(counts.get("selected_structures", 0)))
+        layout.addLayout(card_row)
+
+        atoms_row = QHBoxLayout()
+        atoms_row.setContentsMargins(0, 0, 0, 0)
+        atoms_row.setSpacing(12)
+        atoms_row.addWidget(CaptionLabel(f"Total atoms (active): {total_atoms_active}", self))
+        atoms_row.addWidget(
+            CaptionLabel(
+                f"Atoms per structure: min={atoms.get('min_atoms', 0)}, "
+                f"max={atoms.get('max_atoms', 0)}, "
+                f"mean={atoms.get('mean_atoms', 0.0):.1f}, "
+                f"median={atoms.get('median_atoms', 0.0):.1f}",
+                self,
+            )
+        )
+        layout.addLayout(atoms_row)
+
+        # Element distribution
+        elements = self._summary.get("elements", [])
+        if elements:
+            elem_title = CaptionLabel("Element distribution (active structures):", self)
+            layout.addWidget(elem_title)
+            elem_grid = QGridLayout()
+            elem_grid.setContentsMargins(0, 0, 0, 0)
+            elem_grid.setSpacing(4)
+            headers = ["Element", "Atoms", "Structures", "Fraction", ""]
+            for c, h in enumerate(headers):
+                elem_grid.addWidget(CaptionLabel(h, self), 0, c)
+            for r, elem in enumerate(elements, start=1):
+                elem_grid.addWidget(CaptionLabel(str(elem.get("symbol", "")), self), r, 0)
+                elem_grid.addWidget(CaptionLabel(str(elem.get("atoms", 0)), self), r, 1)
+                elem_grid.addWidget(CaptionLabel(str(elem.get("structures", 0)), self), r, 2)
+                frac = elem.get("fraction", 0.0) * 100.0
+                elem_grid.addWidget(CaptionLabel(f"{frac:.1f} %", self), r, 3)
+                bar = ProgressBar(self)
+                bar.setRange(0, 100)
+                bar.setValue(int(max(0, min(100, frac))))
+                bar.setFixedWidth(120)
+                elem_grid.addWidget(bar, r, 4)
+            layout.addLayout(elem_grid)
+
+        # Config_type distribution (Top-N rows)
+        cfg = self._summary.get("config_types", [])
+        if cfg:
+            cfg_title = CaptionLabel("Config_type distribution (active structures):", self)
+            layout.addWidget(cfg_title)
+            cfg_grid = QGridLayout()
+            cfg_grid.setContentsMargins(0, 0, 0, 0)
+            cfg_grid.setSpacing(4)
+            headers = ["Config_type", "Count", "Fraction", ""]
+            for c, h in enumerate(headers):
+                cfg_grid.addWidget(CaptionLabel(h, self), 0, c)
+            max_rows = 8
+            for r, item in enumerate(cfg[:max_rows], start=1):
+                cfg_grid.addWidget(CaptionLabel(str(item.get("name", "")), self), r, 0)
+                cfg_grid.addWidget(CaptionLabel(str(item.get("count", 0)), self), r, 1)
+                frac = item.get("fraction", 0.0) * 100.0
+                cfg_grid.addWidget(CaptionLabel(f"{frac:.1f} %", self), r, 2)
+                bar = ProgressBar(self)
+                bar.setRange(0, 100)
+                bar.setValue(int(max(0, min(100, frac))))
+                bar.setFixedWidth(120)
+                cfg_grid.addWidget(bar, r, 3)
+            layout.addLayout(cfg_grid)
+
+            self.widget.setMinimumWidth(460)
+
 class GetStrMessageBox(MessageBoxBase):
     """ Custom message box """
 
@@ -83,7 +210,7 @@ class GetStrMessageBox(MessageBoxBase):
 
 
 class SparseMessageBox(MessageBoxBase):
-    """用于最远点取样的弹窗 """
+    """Dialog for configuring sparsity-related parameters."""
 
     def __init__(self, parent=None,tip=""):
         super().__init__(parent)
@@ -435,7 +562,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
 
 
 class ProgressDialog(FramelessDialog):
-    """进度条弹窗"""
+
     def __init__(self,parent=None,title=""):
         pass
         super().__init__(parent)
@@ -691,14 +818,14 @@ class ModelInfoMessageBox(MessageBoxBase):
         super().__init__(parent)
         self.setAcceptDrops(True)
 
-        # ===== 根容器 =====
+
         self._widget = QWidget(self)
         self.viewLayout.addWidget(self._widget)
         root = QVBoxLayout(self._widget)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(2)
 
-        # ===== 顶部 Title =====
+
         titleBar = QFrame(self._widget)
         tLayout = QHBoxLayout(titleBar)
         tLayout.setContentsMargins(0, 0, 0, 0)
@@ -709,7 +836,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         tLayout.addWidget(self.titleLabel)
         root.addWidget(titleBar)
 
-        # ===== 基本信息（左） =====
+
         infoCard = QFrame(self._widget)
         info = QFormLayout(infoCard)
         info.setLabelAlignment(Qt.AlignRight)
@@ -726,7 +853,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         info.addRow(CaptionLabel("Type", self), self.model_type_combox)
         info.addRow(CaptionLabel("Name", self), self.model_name_edit)
 
-        # ===== RMSE（右）——就是 energy/force/virial 三个输入 =====
+
         rmseCard = QFrame(self._widget)
         rmse = QGridLayout(rmseCard)
         rmse.setContentsMargins(0, 0, 0, 0)
@@ -768,7 +895,6 @@ class ModelInfoMessageBox(MessageBoxBase):
         r += 1
         rmse.setColumnStretch(1, 1)
 
-        # ===== 第一行：基本信息 + RMSE 并排 =====
         row1 = QHBoxLayout()
         row1.setContentsMargins(0, 0, 0, 0)
         row1.setSpacing(2)
@@ -776,7 +902,6 @@ class ModelInfoMessageBox(MessageBoxBase):
         row1.addWidget(rmseCard, 1)
         root.addLayout(row1)
 
-        # ===== 文件路径（整行） =====
         pathCard = QFrame(self._widget)
         path = QFormLayout(pathCard)
         path.setLabelAlignment(Qt.AlignRight)
@@ -803,7 +928,6 @@ class ModelInfoMessageBox(MessageBoxBase):
 
         root.addWidget(pathCard)
 
-        # ===== Tags（Notes 之前） =====
         tagsCard = QFrame(self._widget)
         tags = QFormLayout(tagsCard)
         tags.setLabelAlignment(Qt.AlignRight)
@@ -816,10 +940,9 @@ class ModelInfoMessageBox(MessageBoxBase):
         self.tag_group = TagGroup(parent=self)
 
         tags.addRow(CaptionLabel("Tags", self), self.new_tag_edit )
-        tags.addRow(CaptionLabel(""), self.tag_group)  # 让 TagGroup 独占一行
+        tags.addRow(CaptionLabel(""), self.tag_group)  # 鐠?TagGroup 閻欘剙宕版稉鈧悰?
         root.addWidget(tagsCard)
 
-        # ===== Notes（最后） =====
         notesCard = QFrame(self._widget)
         notes = QFormLayout(notesCard)
         notes.setLabelAlignment(Qt.AlignRight)
@@ -834,12 +957,10 @@ class ModelInfoMessageBox(MessageBoxBase):
         notes.addRow(CaptionLabel("Notes", self), self.model_note_edit)
         root.addWidget(notesCard)
 
-        # 允许底部区域伸展
         root.addStretch(1)
 
 
 
-    # 简单文件选择器
     def _pick_file(self):
         path=call_path_dialog(self,"Select the model folder path","directory")
 
@@ -905,14 +1026,8 @@ class ModelInfoMessageBox(MessageBoxBase):
             parent_id=self.parent_combox.currentData()
         )
 class AdvancedModelSearchDialog(MessageBoxBase):
-    """
-    仅负责收集搜索条件并发送信号，不执行查询。
-    使用：
-        dlg = AdvancedModelSearchDialog(parent)
-        dlg.searchRequested.connect(handle_search_params_dict)
-        dlg.show()
-    """
-    searchRequested = Signal(dict)  # 发出参数字典
+
+    searchRequested = Signal(dict)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -939,11 +1054,9 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         tLay.addWidget(self.titleLabel)
         root.addWidget(titleBar)
 
-        # 表单
         formCard = QFrame(self); form = QFormLayout(formCard)
         form.setLabelAlignment(Qt.AlignRight); form.setHorizontalSpacing(3); form.setVerticalSpacing(3)
 
-        # Project IDs（逗号分隔）
         self.projectIdsEdit = LineEdit(formCard)
         self.projectIdsEdit.setPlaceholderText("e.g. 1 or 1,3,5")
         self.includeDescendantsChk = CheckBox("Include sub-projects", formCard)
@@ -954,28 +1067,23 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         self.parentIdEdit.setPlaceholderText("None or integer")
         self.parentIdEdit.setValidator(QIntValidator())
 
-        # 模糊
         self.nameContainsEdit = LineEdit(formCard)
         self.nameContainsEdit.setPlaceholderText("contains in name")
         self.notesContainsEdit = LineEdit(formCard)
         self.notesContainsEdit.setPlaceholderText("contains in notes")
 
-        # 类型
         self.modelTypeCombo = ComboBox(formCard)
         self.modelTypeCombo.addItems(["<Any>", "NEP", "DeepMD", "Other"])
 
-        # 标签
         self.tagsAllEdit  = LineEdit(formCard); self.tagsAllEdit.setPlaceholderText("tag1, tag2 (AND)")
         self.tagsAnyEdit  = LineEdit(formCard); self.tagsAnyEdit.setPlaceholderText("tag1, tag2 (OR)")
         self.tagsNoneEdit = LineEdit(formCard); self.tagsNoneEdit.setPlaceholderText("tag1, tag2 (NOT)")
 
-        # 排序与分页
         self.orderAscChk = CheckBox("Order by created_at ascending", formCard)
         self.orderAscChk.setChecked(True)
         self.limitEdit  = LineEdit(formCard); self.limitEdit.setPlaceholderText("e.g. 100"); self.limitEdit.setValidator(QIntValidator(0, 10**9))
         self.offsetEdit = LineEdit(formCard); self.offsetEdit.setPlaceholderText("e.g. 0");   self.offsetEdit.setValidator(QIntValidator(0, 10**9))
 
-        # 加入表单
         form.addRow(CaptionLabel("Project ID(s):",self), self.projectIdsEdit)
         form.addRow(CaptionLabel("",self), self.includeDescendantsChk)
         form.addRow(CaptionLabel("Parent ID:",self), self.parentIdEdit)
@@ -991,7 +1099,6 @@ class AdvancedModelSearchDialog(MessageBoxBase):
 
         root.addWidget(formCard)
 
-        # 按钮区
 
         self.buttonLayout.removeWidget(self.yesButton)
         self.buttonLayout.removeWidget(self.cancelButton)
@@ -1008,12 +1115,10 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         root.addStretch(1)
 
 
-    # ---------- 事件 ----------
     def _wire_events(self):
         self.searchBtn.clicked.connect(self._emit_params)
         self.resetBtn.clicked.connect(self._on_reset)
         self.closeBtn.clicked.connect(self.reject)
-        # Enter 键触发搜索
         self.projectIdsEdit.returnPressed.connect(self._emit_params)
         self.nameContainsEdit.returnPressed.connect(self._emit_params)
         self.notesContainsEdit.returnPressed.connect(self._emit_params)
@@ -1021,7 +1126,6 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         self.tagsAnyEdit.returnPressed.connect(self._emit_params)
         self.tagsNoneEdit.returnPressed.connect(self._emit_params)
 
-    # ---------- 参数构造 ----------
     @staticmethod
     def _split_csv(text: str) -> list[str]:
         if not text:
@@ -1087,12 +1191,10 @@ class AdvancedModelSearchDialog(MessageBoxBase):
 
         return params
 
-    # ---------- 对外：发出信号 ----------
     def _emit_params(self):
         params = self.build_params()
         self.searchRequested.emit(params)
 
-    # ---------- 重置 ----------
     def _on_reset(self):
         self.projectIdsEdit.clear()
         self.includeDescendantsChk.setChecked(True)

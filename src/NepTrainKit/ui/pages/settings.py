@@ -276,7 +276,7 @@ class SettingsWidget(ScrollArea):
             'Check for Updates',
             FluentIcon.INFO,
             "About",
-            'Copyright 漏' + f" {YEAR}, {AUTHOR}. " +
+            'Copyright @' + f" {YEAR}, {AUTHOR}. " +
             "Version" + f" {__version__}",
             self.about_group
         )

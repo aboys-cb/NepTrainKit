@@ -225,6 +225,7 @@ class BuildExtNVCC(build_ext):
             nvcc_flags += ["-gencode", "arch=compute_86,code=sm_86"]
             nvcc_flags += ["-gencode", "arch=compute_89,code=sm_89"]
             nvcc_flags += ["-gencode", "arch=compute_90,code=sm_90"]
+            nvcc_flags += ["-gencode", "arch=compute_90,code=compute_90"]
 
 
         # Optional: silence warnings for older architectures on newer toolchains

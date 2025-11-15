@@ -785,6 +785,198 @@ class ResultData(QObject):
         self._pending_unbalanced_force_indices = []
         return list(indices)
 
+    def iter_dataset_summary(self):
+        """Aggregate dataset-wide statistics for use in summary dialogs.
+
+        Notes
+        -----
+        This generator yields a progress unit after each structure so that
+        callers can drive a progress dialog. Results are cached on the
+        instance and later returned by :meth:`get_dataset_summary`.
+        """
+        summary: dict[str, Any] = {}
+        structures = getattr(self, "structure", None)
+        if structures is None or structures.now_data.size == 0:
+            self._dataset_summary = {}
+            return
+
+        active_structures = int(structures.now_data.shape[0])
+        orig_structures = int(self.atoms_num_list.shape[0]) if hasattr(self, "atoms_num_list") else active_structures
+        removed_structures = int(structures.remove_data.shape[0])
+        selected_structures = len(self.select_index)
+        unselected_structures = max(0, active_structures - selected_structures)
+
+        atoms_per_struct: list[int] = []
+        total_atoms_active = 0
+        element_atom_counts: dict[str, int] = {}
+        element_structure_counts: dict[str, int] = {}
+        config_counts: dict[str, int] = {}
+
+        energy_values: list[float] = []
+        energy_indices: list[int] = []
+
+        for s, idx in zip(structures.now_data, structures.group_array.now_data):
+            try:
+                n_atoms = int(len(s))
+            except Exception:
+                n_atoms = 0
+            atoms_per_struct.append(n_atoms)
+            total_atoms_active += n_atoms
+
+            # Element statistics
+            try:
+                elems = [str(e) for e in s.elements]
+            except Exception:
+                elems = []
+            if elems:
+                # atom counts
+                for e in elems:
+                    element_atom_counts[e] = element_atom_counts.get(e, 0) + 1
+                # per-structure presence counts
+                for e in set(elems):
+                    element_structure_counts[e] = element_structure_counts.get(e, 0) + 1
+
+            # Config_type statistics via Structure.tag
+            tag = getattr(s, "tag", "") or ""
+            if isinstance(tag, str) and tag:
+                config_counts[tag] = config_counts.get(tag, 0) + 1
+
+            # Energy statistics (per-atom)
+            if getattr(s, "has_energy", False):
+                try:
+                    energy_values.append(float(s.per_atom_energy))
+                    energy_indices.append(int(idx))
+                except Exception:
+                    pass
+
+            # Yield a progress unit for UI hooks
+            yield 1
+
+        # Prepare counts section
+        summary_counts = {
+            "orig_structures": orig_structures,
+            "active_structures": active_structures,
+            "removed_structures": removed_structures,
+            "selected_structures": selected_structures,
+            "unselected_structures": unselected_structures,
+        }
+
+        # Atom statistics
+        atoms_array = np.asarray(atoms_per_struct, dtype=float) if atoms_per_struct else np.array([], dtype=float)
+        if atoms_array.size:
+            atoms_stats = {
+                "total_atoms_active": int(total_atoms_active),
+                "min_atoms": int(atoms_array.min()),
+                "max_atoms": int(atoms_array.max()),
+                "mean_atoms": float(atoms_array.mean()),
+                "median_atoms": float(np.median(atoms_array)),
+            }
+        else:
+            atoms_stats = {
+                "total_atoms_active": 0,
+                "min_atoms": 0,
+                "max_atoms": 0,
+                "mean_atoms": 0.0,
+                "median_atoms": 0.0,
+            }
+
+        # Element statistics table
+        elements_table: list[dict[str, Any]] = []
+        if element_atom_counts:
+            total_atoms = float(sum(element_atom_counts.values())) or 1.0
+            for symbol in sorted(element_atom_counts.keys()):
+                atoms = int(element_atom_counts[symbol])
+                structs = int(element_structure_counts.get(symbol, 0))
+                frac = atoms / total_atoms
+                elements_table.append(
+                    {
+                        "symbol": symbol,
+                        "atoms": atoms,
+                        "structures": structs,
+                        "fraction": frac,
+                    }
+                )
+
+        # Config_type distribution (sorted by count desc)
+        config_table: list[dict[str, Any]] = []
+        if config_counts:
+            total_cfg = float(sum(config_counts.values())) or 1.0
+            for name, count in sorted(config_counts.items(), key=lambda kv: kv[1], reverse=True):
+                frac = count / total_cfg
+                config_table.append(
+                    {
+                        "name": name,
+                        "count": int(count),
+                        "fraction": frac,
+                    }
+                )
+
+        # Energy statistics
+        energy_stats: dict[str, Any] = {}
+        if energy_values:
+            e_arr = np.asarray(energy_values, dtype=float)
+            energy_stats = {
+                "count": int(e_arr.size),
+                "min": float(e_arr.min()),
+                "max": float(e_arr.max()),
+                "mean": float(e_arr.mean()),
+                "std": float(e_arr.std()),
+                "median": float(np.median(e_arr)),
+            }
+            # Track indices of extremal structures for reference
+            e_min_idx = int(energy_indices[int(np.argmin(e_arr))])
+            e_max_idx = int(energy_indices[int(np.argmax(e_arr))])
+            energy_stats["min_index"] = e_min_idx
+            energy_stats["max_index"] = e_max_idx
+        else:
+            energy_stats = {"count": 0}
+
+        # Health diagnostics
+        health_messages: list[str] = []
+        # Missing energy structures
+        missing_energy = active_structures - energy_stats.get("count", 0)
+        if missing_energy > 0:
+            health_messages.append(
+                f"{missing_energy} active structures are missing energy; they are ignored in energy statistics."
+            )
+        # Element coverage
+        low_elements = [e for e in elements_table if e["fraction"] < 0.05]
+        if low_elements:
+            names = ", ".join(f"{e['symbol']} ({e['fraction']*100:.1f}%)" for e in low_elements[:5])
+            health_messages.append(f"Elements with low atomic fraction (<5%): {names}.")
+        # Dominant config type
+        if config_table:
+            top_cfg = config_table[0]
+            if top_cfg["fraction"] > 0.7:
+                health_messages.append(
+                    f"Config_type '{top_cfg['name']}' dominates {top_cfg['fraction']*100:.1f}% of active structures."
+                )
+        # Atom-count diversity
+        if atoms_stats["min_atoms"] == atoms_stats["max_atoms"] and atoms_stats["min_atoms"] > 0:
+            health_messages.append(
+                "All active structures have the same atom count; consider adding systems with different sizes."
+            )
+        # Small dataset warning
+        if active_structures < 100:
+            health_messages.append(
+                f"Only {active_structures} active structures; model training may be prone to overfitting."
+            )
+
+        summary["counts"] = summary_counts
+        summary["atoms"] = atoms_stats
+        summary["elements"] = elements_table
+        summary["config_types"] = config_table
+        summary["energy"] = energy_stats
+        summary["health"] = health_messages
+        summary["data_file"] = str(self.data_xyz_path.name)
+        summary["model_file"] = str(self.nep_txt_path.name)
+
+        self._dataset_summary = summary
+
+    def get_dataset_summary(self) -> dict[str, Any]:
+        """Return the most recently computed dataset summary."""
+        return dict(getattr(self, "_dataset_summary", {}) or {})
+
     def sparse_descriptor_selection(
         self,
         n_samples: int,

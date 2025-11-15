@@ -77,6 +77,8 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     selectIndexSignal = Signal()
     rangeSignal = Signal()
     dftd3Signal = Signal()
+    summarySignal = Signal()
+    forceBalanceSignal = Signal()
 
     def __init__(self, parent=None):
         """Initialise toolbar actions and keep a reference to the action group."""
@@ -167,6 +169,17 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             "DFT D3",
             QIcon(":/images/src/images/dft_d3.png"),
             self.dftd3Signal,
+        )
+        self.addSeparator()
+        self.addButton(
+            "Dataset Summary",
+            QIcon(":/images/src/images/dataset.svg"),
+            self.summarySignal,
+        )
+        self.addButton(
+            "Check Net Force",
+            QIcon(":/images/src/images/auto_distance.svg"),
+            self.forceBalanceSignal,
         )
 
     def reset(self) -> None:

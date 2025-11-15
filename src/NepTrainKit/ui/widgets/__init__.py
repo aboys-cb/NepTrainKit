@@ -13,6 +13,7 @@ from .completer import CompleterModel, JoinDelegate, ConfigCompleter
 from .dialog import (
     GetIntMessageBox,
     GetStrMessageBox,
+    GetFloatMessageBox,
     SparseMessageBox,
     IndexSelectMessageBox,
     RangeSelectMessageBox,
@@ -51,6 +52,7 @@ __all__ = [
     'ConfigCompleter',
     'GetIntMessageBox',
     'GetStrMessageBox',
+    'GetFloatMessageBox',
     'SparseMessageBox',
     'IndexSelectMessageBox',
     'RangeSelectMessageBox',

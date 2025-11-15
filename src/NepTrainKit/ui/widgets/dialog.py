@@ -51,6 +51,22 @@ class GetIntMessageBox(MessageBoxBase):
         self.widget.setMinimumWidth(100 )
         self.intSpinBox.setMaximum(100000000)
 
+
+class GetFloatMessageBox(MessageBoxBase):
+    """Message box that lets the user input a floating-point value."""
+
+    def __init__(self, parent=None, tip: str = ""):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel.setWordWrap(True)
+        self.doubleSpinBox = DoubleSpinBox(self)
+        self.doubleSpinBox.setDecimals(10)
+        self.doubleSpinBox.setMinimum(0.0)
+        self.doubleSpinBox.setMaximum(1e6)
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.doubleSpinBox)
+        self.widget.setMinimumWidth(160)
+
 class GetStrMessageBox(MessageBoxBase):
     """ Custom message box """
 

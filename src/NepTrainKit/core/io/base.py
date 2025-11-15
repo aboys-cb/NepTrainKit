@@ -750,6 +750,41 @@ class ResultData(QObject):
         self._pending_non_physical_indices = []
         return list(indices)
 
+    def iter_unbalanced_force_indices(self, threshold: float):
+        """Yield progress units while collecting structures with non-zero net force.
+
+        Parameters
+        ----------
+        threshold : float
+            Minimum allowed magnitude of the summed force vector |ΣF|. Structures
+            whose net force exceeds this value are recorded for later selection.
+        """
+        structures = self.structure.now_data
+        group_array = self.structure.group_array.now_data
+        pending: list[int] = []
+        if structures.size == 0:
+            return
+        thr = float(threshold)
+        for structure, index in zip(structures, group_array):
+            if getattr(structure, "has_forces", False):
+                try:
+                    forces = np.asarray(structure.forces, dtype=np.float64)
+                    if forces.size != 0:
+                        net = forces.sum(axis=0)
+                        norm = float(np.linalg.norm(net))
+                        if norm > thr:
+                            pending.append(int(index))
+                except Exception:
+                    logger.debug(traceback.format_exc())
+            yield 1
+        self._pending_unbalanced_force_indices = pending
+
+    def consume_unbalanced_force_indices(self) -> list[int]:
+        """Return and clear indices collected by the net-force scan."""
+        indices = getattr(self, "_pending_unbalanced_force_indices", [])
+        self._pending_unbalanced_force_indices = []
+        return list(indices)
+
     def sparse_descriptor_selection(
         self,
         n_samples: int,

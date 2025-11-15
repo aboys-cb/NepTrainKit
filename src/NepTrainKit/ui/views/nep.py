@@ -11,6 +11,7 @@ from NepTrainKit.config import Config
 
 from NepTrainKit.ui.widgets import (
     GetIntMessageBox,
+    GetFloatMessageBox,
     SparseMessageBox,
     IndexSelectMessageBox,
     RangeSelectMessageBox,
@@ -114,6 +115,8 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.rangeSignal.connect(self.select_by_range)
         self.tool_bar.dftd3Signal.connect(self.calc_dft_d3)
         self.tool_bar.editInfoSignal.connect(self.edit_structure_info)
+        self.tool_bar.summarySignal.connect(self.show_dataset_summary)
+        self.tool_bar.forceBalanceSignal.connect(self.check_force_balance)
         self.canvas.tool_bar = self.tool_bar
 
 
@@ -331,6 +334,19 @@ class NepResultPlotWidget(QWidget):
         )
         thread.finished.connect(self.canvas.plot_nep_result)
 
+    def show_dataset_summary(self):
+        """Placeholder for a future dataset summary dialog hook."""
+        # Currently reserved for the planned dataset summary panel.
+        # Implementation can reuse LoadingThread + QProgressDialog to scan
+        # self.canvas.nep_result_data and then show a frameless dialog.
+        data = self.canvas.nep_result_data
+        if data is None:
+            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            return
+        MessageManager.send_info_message(
+            "Dataset summary view is not implemented yet in this build."
+        )
+
     def inverse_select(self):
         """Invert the current structure selection on the canvas.
         """
@@ -371,6 +387,60 @@ class NepResultPlotWidget(QWidget):
         indices = data.select_structures_by_range( dataset, x_min, x_max, y_min, y_max, logic_and)
         if indices:
             self.canvas.select_index(indices, False)
+
+    def check_force_balance(self):
+        """Scan for structures whose net force exceeds a configurable threshold.
+
+        The user is prompted for the |ΣF| threshold; the value is persisted
+        under the ``widget.force_balance_threshold`` config key. Structures
+        with net force above this threshold are selected on the scatter plot.
+        """
+        data = self.canvas.nep_result_data
+        if data is None:
+            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            return
+        default_threshold = Config.getfloat("widget", "force_balance_threshold", 1e-3)
+        box = GetFloatMessageBox(self._parent, "Threshold for |ΣF| (eV/Å):")
+        box.doubleSpinBox.setValue(default_threshold)
+        if not box.exec():
+            return
+        threshold = float(box.doubleSpinBox.value())
+        if threshold <= 0.0:
+            MessageManager.send_warning_message("Threshold must be positive.")
+            return
+        Config.set("widget", "force_balance_threshold", threshold)
+
+        total_structures = int(getattr(data.structure, "num", 0) or data.structure.now_data.shape[0])
+        if total_structures == 0:
+            MessageManager.send_info_message("No active structures to scan.")
+            return
+
+        progress_diag = QProgressDialog("", "Cancel", 0, total_structures, self._parent)
+        progress_diag.setFixedSize(300, 100)
+        progress_diag.setWindowTitle("Checking net forces")
+        thread = LoadingThread(self._parent, show_tip=False)
+        thread.progressSignal.connect(progress_diag.setValue)
+        thread.finished.connect(progress_diag.accept)
+        thread.finished.connect(lambda: self._apply_force_balance_selection(data, threshold))
+        progress_diag.canceled.connect(thread.stop_work)
+        thread.start_work(data.iter_unbalanced_force_indices, threshold=threshold)
+        progress_diag.exec()
+
+    def _apply_force_balance_selection(self, data, threshold: float):
+        """Select structures flagged by the net-force scan and report counts."""
+        try:
+            indices = data.consume_unbalanced_force_indices()
+        except Exception:  # noqa: BLE001
+            logger.debug(traceback.format_exc())
+            MessageManager.send_warning_message("Failed to consume force-balance results.")
+            return
+        if indices:
+            self.canvas.select_index(indices, False)
+            MessageManager.send_info_message(
+                f"{len(indices)} structures with |ΣF| > {threshold:g}"
+            )
+        else:
+            MessageManager.send_info_message("All scanned structures satisfy the net-force threshold.")
 
     def set_dataset(self,dataset):
         """Attach a NEP result dataset to the canvas and refresh the plots.

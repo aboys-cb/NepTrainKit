@@ -7,6 +7,7 @@
 from __future__ import annotations
 import json
 import re
+import traceback
 from copy import deepcopy
 from pathlib import Path
 from functools import cached_property
@@ -855,6 +856,7 @@ class Structure:
         try:
             from NepTrainKit.core import _fastxyz as _fx
         except Exception:
+            print(traceback.format_exc())
             try:
                 import _fastxyz as _fx
             except Exception:

@@ -234,6 +234,10 @@ static void parse_header_line(const char* b, const char* e,
                 } else if (key == "config_type" || key == "Config_type" ) {
                     AddValue v; v.type = AddType::STRING; v.s = value;
                     add_out["Config_type"] = std::move(v);
+                } else if (key == "Weight" || key == "weight") {
+                   AddValue v; v.type = AddType::DOUBLE;
+                    try { v.d = std::stod(value); } catch (...) { v.type = AddType::STRING; v.s = value; }
+                    add_out["weight"] = std::move(v);
                 } else {
                     AddValue v; v.type = AddType::STRING; v.s = value;
                     add_out[key] = std::move(v);

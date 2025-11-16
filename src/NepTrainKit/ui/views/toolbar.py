@@ -20,7 +20,7 @@ class KitToolBarBase(CommandBarView):
         self._parent = parent
         self._actions: dict[str, Action] = {}
         self.setIconSize(QSize(24, 24))
-        self.setSpaing(2)
+        self.setSpaing(0)
         self.init_actions()
 
     def addButton(self, name, icon, callback, checkable: bool = False):
@@ -132,6 +132,11 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             QIcon(":/images/src/images/discovery.svg"),
             self.discoverySignal,
         )
+        self.addButton(
+            "Check Net Force",
+            QIcon(":/images/src/images/inspect.svg"),
+            self.forceBalanceSignal,
+        )
         inverse_action = self.addButton(
             "Inverse Selection",
             QIcon(":/images/src/images/inverse.svg"),
@@ -173,14 +178,10 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         self.addSeparator()
         self.addButton(
             "Dataset Summary",
-            QIcon(":/images/src/images/dataset.svg"),
+            QIcon(":/images/src/images/summary.svg"),
             self.summarySignal,
         )
-        self.addButton(
-            "Check Net Force",
-            QIcon(":/images/src/images/auto_distance.svg"),
-            self.forceBalanceSignal,
-        )
+
 
     def reset(self) -> None:
         """Clear any mutually exclusive toggle that is still checked."""

@@ -220,7 +220,7 @@ static void parse_header_line(const char* b, const char* e,
                 } else if (key == "pbc" || key == "PBC") {
                     AddValue v; v.type = AddType::STRING; v.s = value;
                     add_out["pbc"] = std::move(v);
-                } else if (key == "virial" || key == "stress" || key == "VIRIAL" || key == "STRESS") {
+                } else if (key == "virial" || key == "stress" || key == "Virial" || key == "Stress"  || key == "VIRIAL" || key == "STRESS") {
                     AddValue v; v.type = AddType::FLOATS;
                     const char* vp = value.data();
                     const char* ve = value.data() + value.size();

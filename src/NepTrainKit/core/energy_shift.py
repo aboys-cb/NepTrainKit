@@ -15,10 +15,15 @@ Examples
 
 from __future__ import annotations
 
-import numpy as np
-from collections import Counter
-from typing import List, Dict
+import json
 import re
+from dataclasses import dataclass, field
+from typing import Any, Dict, List
+from collections import Counter
+
+import numpy as np
+
+from NepTrainKit.config import Config
 from NepTrainKit.utils import timeit
 from .structure import Structure
 
@@ -26,6 +31,87 @@ from .structure import Structure
 REF_GROUP_ALIGNMENT = "REF_GROUP"
 ZERO_BASELINE_ALIGNMENT = "ZERO_BASELINE"
 DFT_TO_NEP_ALIGNMENT = "DFT_TO_NEP"
+BASELINE_PRESET_SECTION = "energy_baseline_preset"
+
+
+@dataclass
+class EnergyBaselinePreset:
+    """Serializable container for per-group atomic reference baselines."""
+
+    version: int = 1
+    alignment_mode: str = REF_GROUP_ALIGNMENT
+    elements: list[str] = field(default_factory=list)
+    group_to_ref: dict[str, list[float]] = field(default_factory=dict)
+    group_patterns: list[str] = field(default_factory=list)
+    config_to_group: dict[str, str] = field(default_factory=dict)
+    optimizer: dict[str, Any] = field(default_factory=dict)
+    metadata: dict[str, Any] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "version": self.version,
+            "alignment_mode": self.alignment_mode,
+            "elements": list(self.elements),
+            "group_to_ref": {k: list(v) for k, v in self.group_to_ref.items()},
+            "group_patterns": list(self.group_patterns),
+            "config_to_group": dict(self.config_to_group),
+            "optimizer": dict(self.optimizer),
+            "metadata": dict(self.metadata),
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "EnergyBaselinePreset":
+        return cls(
+            version=int(data.get("version", 1)),
+            alignment_mode=data.get("alignment_mode", REF_GROUP_ALIGNMENT),
+            elements=list(data.get("elements", [])),
+            group_to_ref={k: list(v) for k, v in (data.get("group_to_ref", {}) or {}).items()},
+            group_patterns=list(data.get("group_patterns", [])),
+            config_to_group=dict(data.get("config_to_group", {}) or {}),
+            optimizer=dict(data.get("optimizer", {}) or {}),
+            metadata=dict(data.get("metadata", {}) or {}),
+        )
+
+
+def save_energy_baseline_preset(name: str, baseline: EnergyBaselinePreset) -> None:
+    """Persist a baseline preset in the config database."""
+    Config.set(BASELINE_PRESET_SECTION, name, json.dumps(baseline.to_dict()))
+
+
+def load_energy_baseline_preset(name: str) -> EnergyBaselinePreset | None:
+    """Load a baseline preset by name."""
+    raw = Config.get(BASELINE_PRESET_SECTION, name)
+    if not raw:
+        return None
+    try:
+        data = json.loads(raw)
+        return EnergyBaselinePreset.from_dict(data)
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def list_energy_baseline_preset_names() -> list[str]:
+    """Return available baseline preset names."""
+    return Config.list_options(BASELINE_PRESET_SECTION)
+
+
+def apply_energy_baseline(structures: List[Structure], baseline: EnergyBaselinePreset) -> None:
+    """Apply a precomputed baseline to structures in-place."""
+    elements = list(baseline.elements)
+    if not elements or not baseline.group_to_ref:
+        return
+    for structure in structures:
+        if not getattr(structure, "has_energy", False):
+            continue
+        config_type = str(structure.tag)
+        group = baseline.config_to_group.get(config_type, config_type)
+        ref_vec = baseline.group_to_ref.get(group)
+        if ref_vec is None:
+            continue
+        cnt = Counter(structure.elements)
+        count_vec = np.array([cnt.get(e, 0) for e in elements], dtype=float)
+        shift = float(np.dot(count_vec, np.asarray(ref_vec, dtype=float)))
+        structure.energy = float(structure.energy) - shift
 
 def longest_common_prefix(strs: List[str]) -> str:
     """Return the longest common prefix among strings.
@@ -220,7 +306,10 @@ def shift_dataset_energy(
         random_seed: int = 42,
         group_patterns: List[str] | None = None,
         alignment_mode: str = REF_GROUP_ALIGNMENT,
-        nep_energy_array: np.ndarray | None = None):
+        nep_energy_array: np.ndarray | None = None,
+        precomputed_baseline: EnergyBaselinePreset | Dict[str, Any] | None = None,
+        baseline_store: Dict[str, EnergyBaselinePreset] | None = None,
+        source_summary: Dict[str, Any] | None = None):
     """Shift dataset energies using group-wise atomic baseline alignment.
 
     Parameters
@@ -247,6 +336,12 @@ def shift_dataset_energy(
     nep_energy_array : numpy.ndarray or None
         Per-structure NEP energies used when ``alignment_mode`` is
         ``DFT_TO_NEP_ALIGNMENT`` (units must match ``structures`` input).
+    precomputed_baseline : EnergyBaselinePreset or dict or None
+        When provided, apply the baseline directly without recomputing.
+    baseline_store : dict or None
+        Optional mutable container to receive the baseline used.
+    source_summary : dict or None
+        Optional metadata to embed in the stored baseline.
 
     Yields
     ------
@@ -256,10 +351,6 @@ def shift_dataset_energy(
     Notes
     -----
     The function updates ``Structure.energy`` in-place.
-
-    Examples
-    --------
-    >>> # Example usage can be filled later
     """
     frames = []
     for s in structures:
@@ -272,6 +363,16 @@ def shift_dataset_energy(
     all_elements = sorted({e for f in frames for e in f["elem_counts"]})
     num_elements = len(all_elements)
 
+    # Apply preset directly when supplied
+    if precomputed_baseline is not None:
+        if isinstance(precomputed_baseline, dict):
+            baseline = EnergyBaselinePreset.from_dict(precomputed_baseline)
+        else:
+            baseline = precomputed_baseline
+        apply_energy_baseline(structures, baseline)
+        if baseline_store is not None:
+            baseline_store["baseline"] = baseline
+        return
 
     ref_mean = None
     if alignment_mode == REF_GROUP_ALIGNMENT:
@@ -336,13 +437,27 @@ def shift_dataset_energy(
         group_to_atomic_ref[group] = atomic_ref
         # Update UI progress incrementally
         yield 1
-    # apply shift
-    for s, frame in zip(structures, frames):
-        group = config_to_group[frame["config_type"]]
-        if group in group_to_atomic_ref:
-            count_vec = np.array([frame["elem_counts"].get(e, 0) for e in all_elements], dtype=float)
-            shift = np.dot(count_vec, group_to_atomic_ref[group])
-            new_energy = frame["energy"] - shift
-            # print( frame["energy"],shift,new_energy)
-            s.energy = new_energy
-    # return group_to_atomic_ref
+
+    baseline = EnergyBaselinePreset(
+        version=1,
+        alignment_mode=alignment_mode,
+        elements=all_elements,
+        group_to_ref={k: v.tolist() for k, v in group_to_atomic_ref.items()},
+        group_patterns=list(group_patterns) if group_patterns else [],
+        config_to_group=config_to_group,
+        optimizer={
+            "max_generations": max_generations,
+            "population_size": population_size,
+            "convergence_tol": convergence_tol,
+            "random_seed": random_seed,
+        },
+        metadata={
+            "struct_count": len(structures),
+            "ref_count": len(reference_structures) if reference_structures is not None else 0,
+            "source_summary": source_summary or {},
+        },
+    )
+    if baseline_store is not None:
+        baseline_store["baseline"] = baseline
+
+    apply_energy_baseline(structures, baseline)

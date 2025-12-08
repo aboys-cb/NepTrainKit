@@ -1120,6 +1120,9 @@ class ResultData(QObject):
         population_size: int,
         convergence_tol: float,
         reference_indices: Optional[Sequence[int]] = None,
+        precomputed_baseline=None,
+        baseline_store: Optional[dict] = None,
+        source_summary: Optional[dict] = None,
     ):
         """Shift dataset energies and yield progress units for UI hooks."""
         if reference_indices is None:
@@ -1141,6 +1144,9 @@ class ResultData(QObject):
             group_patterns=list(group_patterns),
             alignment_mode=alignment_mode,
             nep_energy_array=nep_energy_array,
+            precomputed_baseline=precomputed_baseline,
+            baseline_store=baseline_store,
+            source_summary=source_summary,
         ):
             yield progress
 

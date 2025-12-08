@@ -1,5 +1,7 @@
 """Visualization widgets and analysis helpers for NEP evaluation results."""
+import json
 import traceback
+from pathlib import Path
 
 import numpy as np
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
@@ -23,7 +25,13 @@ from NepTrainKit.ui.widgets import (
 )
 from NepTrainKit.core.types import SearchType, CanvasMode
 from NepTrainKit.ui.views import NepDisplayGraphicsToolBar
-from NepTrainKit.core.energy_shift import suggest_group_patterns
+from NepTrainKit.core.energy_shift import (
+    EnergyBaselinePreset,
+    list_energy_baseline_preset_names,
+    load_energy_baseline_preset,
+    save_energy_baseline_preset,
+    suggest_group_patterns,
+)
 
 
 class NepResultPlotWidget(QWidget):
@@ -263,7 +271,66 @@ class NepResultPlotWidget(QWidget):
         box.genSpinBox.setValue(max_generations)
         box.sizeSpinBox.setValue(population_size)
         box.tolSpinBox.setValue(convergence_tol)
+        preset_placeholder = "None"
 
+        def _refresh_presets() -> None:
+            box.presetCombo.clear()
+            box.presetCombo.addItem(preset_placeholder)
+            for name in list_energy_baseline_preset_names():
+                box.presetCombo.addItem(name)
+
+        def _import_preset() -> None:
+            path = call_path_dialog(
+                self,
+                "Import baseline preset",
+                "file",
+                file_filter="JSON files (*.json);;All files (*.*)",
+            )
+            if not path:
+                return
+            try:
+                with open(path, "r", encoding="utf-8") as handle:
+                    preset_data = json.load(handle)
+                preset = EnergyBaselinePreset.from_dict(preset_data)
+                preset_name = preset.metadata.get("name") or Path(path).stem
+                save_energy_baseline_preset(preset_name, preset)
+                _refresh_presets()
+                box.presetCombo.setCurrentText(preset_name)
+                MessageManager.send_info_message(f"Imported preset: {preset_name}")
+            except Exception:  # noqa: BLE001
+                MessageManager.send_warning_message("Failed to import baseline preset.")
+
+        def _export_preset() -> None:
+            selected = box.presetCombo.currentText().strip()
+            if selected in {"", preset_placeholder}:
+                MessageManager.send_info_message("Please select a preset to export.")
+                return
+            preset = load_energy_baseline_preset(selected)
+            if preset is None:
+                MessageManager.send_warning_message("Preset not found.")
+                return
+            default_name = f"{selected}.json"
+            path = call_path_dialog(
+                self,
+                "Export baseline preset",
+                "file",
+                default_filename=default_name,
+                file_filter="JSON files (*.json);;All files (*.*)",
+            )
+            if not path:
+                return
+            try:
+                with open(path, "w", encoding="utf-8") as handle:
+                    json.dump(preset.to_dict(), handle, indent=2)
+                MessageManager.send_info_message(f"Preset exported to {path}")
+            except Exception:  # noqa: BLE001
+                MessageManager.send_warning_message("Failed to export preset.")
+
+        _refresh_presets()
+        box.importButton.clicked.connect(_import_preset)
+        box.exportButton.clicked.connect(_export_preset)
+        box.presetNameEdit.setText("")
+        box.savePresetCheck.setChecked(False)
         if not box.exec():
             return
 
@@ -273,6 +340,13 @@ class NepResultPlotWidget(QWidget):
         max_generations = box.genSpinBox.value()
         population_size = box.sizeSpinBox.value()
         convergence_tol = box.tolSpinBox.value()
+        selected_preset_name = box.presetCombo.currentText().strip()
+        selected_preset = None
+        if selected_preset_name and selected_preset_name != preset_placeholder:
+            selected_preset = load_energy_baseline_preset(selected_preset_name)
+            if selected_preset is None:
+                MessageManager.send_warning_message("Selected preset unavailable.")
+                return
 
         Config.set("widget", "max_generation_value", max_generations)
         Config.set("widget", "population_size", population_size)
@@ -286,6 +360,12 @@ class NepResultPlotWidget(QWidget):
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
         progress_diag.canceled.connect(thread.stop_work)
+        baseline_store: dict[str, EnergyBaselinePreset] = {}
+        source_summary = {
+            "config_types": list(config_set),
+            "selected_refs": len(ref_index),
+            "total_structures": len(data.structure.now_data),
+        }
         thread.start_work(
             data.iter_shift_energy_baseline,
             group_patterns,
@@ -294,8 +374,18 @@ class NepResultPlotWidget(QWidget):
             population_size,
             convergence_tol,
             reference_indices=ref_index,
+            precomputed_baseline=selected_preset,
+            baseline_store=baseline_store,
+            source_summary=source_summary,
         )
         progress_diag.exec()
+        if selected_preset is None and box.savePresetCheck.isChecked():
+            baseline = baseline_store.get("baseline")
+            if baseline is not None:
+                preset_name = box.presetNameEdit.text().strip() or f"baseline_{len(list_energy_baseline_preset_names()) + 1}"
+                baseline.metadata.setdefault("name", preset_name)
+                save_energy_baseline_preset(preset_name, baseline)
+                MessageManager.send_info_message(f"Baseline preset saved: {preset_name}")
         self.canvas.plot_nep_result()
 
 

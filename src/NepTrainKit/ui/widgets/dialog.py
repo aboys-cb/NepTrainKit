@@ -7,8 +7,10 @@ from pathlib import Path
 from typing import Any, Dict
 
 from PySide6.QtGui import QIcon, QDoubleValidator, QIntValidator, QColor
-from PySide6.QtWidgets import (QVBoxLayout, QFrame, QGridLayout,
-                               QPushButton, QWidget, QHBoxLayout, QFormLayout, QSizePolicy)
+from PySide6.QtWidgets import (
+    QVBoxLayout, QFrame, QGridLayout,
+    QPushButton, QWidget, QHBoxLayout, QFormLayout, QSizePolicy,
+)
 from PySide6.QtCore import Signal, Qt, QUrl, QEvent
 from qfluentwidgets import (
     MessageBoxBase,
@@ -22,7 +24,7 @@ from qfluentwidgets import (
     FluentTitleBar, TransparentToolButton, ColorDialog,
     TitleLabel, HyperlinkLabel, LineEdit, EditableComboBox, PrimaryPushButton, Flyout, InfoBarIcon, MessageBox,
     TextEdit, FluentIcon,
-    ToolTipFilter, ToolTipPosition, BodyLabel
+    ToolTipFilter, ToolTipPosition
 )
 from qframelesswindow import FramelessDialog
 import json
@@ -76,13 +78,23 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         super().__init__(parent)
         self._summary: dict[str, Any] = summary or {}
 
+        self.widget.setMinimumWidth(460)
+        max_rows_display = 10  # limit rows shown in dialog to keep it compact
+
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
         self.viewLayout.addLayout(layout)
-
+        heager_row =   QHBoxLayout()
         title = TitleLabel("Dataset Summary", self)
-        layout.addWidget(title)
+
+        # Export HTML button
+        self.exportButton = TransparentToolButton(":/images/src/images/export1.svg", self)
+
+        self.exportButton.clicked.connect(self._export_html)
+        heager_row.addWidget(title)
+        heager_row.addWidget(self.exportButton,alignment=Qt.AlignmentFlag.AlignRight)
+        layout.addLayout(heager_row)
 
         # Source info
         source_row = QHBoxLayout()
@@ -90,15 +102,17 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         model_file = self._summary.get("model_file", "")
         data_label = CaptionLabel(f"Data: {data_file}", self)
         model_label = CaptionLabel(f"Model: {model_file}", self)
-        source_row.addWidget(data_label)
-        source_row.addWidget(model_label)
+        for lbl in (data_label, model_label):
+            lbl.setWordWrap(True)
+            lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        source_row.addWidget(data_label, 1)
+        source_row.addWidget(model_label, 1)
         layout.addLayout(source_row)
 
         # Basic counts and atom statistics
         counts = self._summary.get("counts", {})
         atoms = self._summary.get("atoms", {})
         elements = self._summary.get("elements", [])
-        energy = self._summary.get("energy", {})
 
         # Top summary cards
         card_row = QHBoxLayout()
@@ -121,7 +135,6 @@ class DatasetSummaryMessageBox(MessageBoxBase):
 
         active_structures = counts.get("active_structures", 0)
         total_atoms_active = atoms.get("total_atoms_active", 0)
-        num_elements = len(elements)
 
         _add_card("Orig structures", str(counts.get("orig_structures", 0)))
         _add_card("Active structures", str(active_structures))
@@ -145,7 +158,7 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         layout.addLayout(atoms_row)
 
         # Element distribution
-        elements = self._summary.get("elements", [])
+        elements = sorted(self._summary.get("elements", []), key=lambda x: x.get("fraction", 0.0), reverse=True)
         if elements:
             elem_title = CaptionLabel("Element distribution (active structures):", self)
             layout.addWidget(elem_title)
@@ -155,7 +168,7 @@ class DatasetSummaryMessageBox(MessageBoxBase):
             headers = ["Element", "Atoms", "Structures", "Fraction", ""]
             for c, h in enumerate(headers):
                 elem_grid.addWidget(CaptionLabel(h, self), 0, c)
-            for r, elem in enumerate(elements, start=1):
+            for r, elem in enumerate(elements[:max_rows_display], start=1):
                 elem_grid.addWidget(CaptionLabel(str(elem.get("symbol", "")), self), r, 0)
                 elem_grid.addWidget(CaptionLabel(str(elem.get("atoms", 0)), self), r, 1)
                 elem_grid.addWidget(CaptionLabel(str(elem.get("structures", 0)), self), r, 2)
@@ -168,7 +181,7 @@ class DatasetSummaryMessageBox(MessageBoxBase):
                 elem_grid.addWidget(bar, r, 4)
             layout.addLayout(elem_grid)
 
-        # Config_type distribution (Top-N rows)
+        # Config_type distribution
         cfg = self._summary.get("config_types", [])
         if cfg:
             cfg_title = CaptionLabel("Config_type distribution (active structures):", self)
@@ -179,8 +192,7 @@ class DatasetSummaryMessageBox(MessageBoxBase):
             headers = ["Config_type", "Count", "Fraction", ""]
             for c, h in enumerate(headers):
                 cfg_grid.addWidget(CaptionLabel(h, self), 0, c)
-            max_rows = 8
-            for r, item in enumerate(cfg[:max_rows], start=1):
+            for r, item in enumerate(cfg[:max_rows_display], start=1):
                 cfg_grid.addWidget(CaptionLabel(str(item.get("name", "")), self), r, 0)
                 cfg_grid.addWidget(CaptionLabel(str(item.get("count", 0)), self), r, 1)
                 frac = item.get("fraction", 0.0) * 100.0
@@ -192,7 +204,92 @@ class DatasetSummaryMessageBox(MessageBoxBase):
                 cfg_grid.addWidget(bar, r, 3)
             layout.addLayout(cfg_grid)
 
-            self.widget.setMinimumWidth(460)
+
+
+    def _export_html(self) -> None:
+        """Export the full summary (all rows) to an HTML file."""
+        path = call_path_dialog(
+            self,
+            "Export dataset summary",
+            "file",
+            default_filename="dataset_summary.html",
+            file_filter="HTML files (*.html);;All files (*.*)",
+        )
+        if not path:
+            return
+        try:
+            html = self._build_html()
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write(html)
+            MessageManager.send_info_message(f"Exported dataset summary to: {path}")
+        except Exception:  # noqa: BLE001
+            MessageManager.send_warning_message("Failed to export dataset summary.")
+
+    def _build_html(self) -> str:
+        """Render the summary into a simple HTML table layout."""
+        counts = self._summary.get("counts", {})
+        atoms = self._summary.get("atoms", {})
+        elements = sorted(self._summary.get("elements", []) or [], key=lambda x: x.get("fraction", 0.0), reverse=True)
+        cfg = self._summary.get("config_types", []) or []
+        data_file = self._summary.get("data_file", "")
+        model_file = self._summary.get("model_file", "")
+        def _table(rows: list[dict], headers: list[str], cols: list[str]) -> str:
+            if not rows:
+                return "<p>No data.</p>"
+            body = "\n".join(
+                "<tr>" + "".join(f"<td>{item.get(k, '')}</td>" for k in cols) + "</tr>"
+                for item in rows
+            )
+            head = "".join(f"<th>{h}</th>" for h in headers)
+            return f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
+        style = """
+        <style>
+        body{font-family:Arial, sans-serif; margin:16px;}
+        h1{margin-bottom:8px;}
+        table{border-collapse:collapse; width:100%; margin:8px 0;}
+        th,td{border:1px solid #ccc; padding:6px 8px; text-align:left;}
+        th{background:#f6f6f6;}
+        </style>
+        """
+        counts_html = f"""
+        <p>Data: {data_file}<br/>Model: {model_file}</p>
+        <table>
+          <tbody>
+            <tr><th>Orig structures</th><td>{counts.get('orig_structures', 0)}</td></tr>
+            <tr><th>Active structures</th><td>{counts.get('active_structures', 0)}</td></tr>
+            <tr><th>Removed structures</th><td>{counts.get('removed_structures', 0)}</td></tr>
+            <tr><th>Selected structures</th><td>{counts.get('selected_structures', 0)}</td></tr>
+            <tr><th>Total atoms (active)</th><td>{atoms.get('total_atoms_active', 0)}</td></tr>
+            <tr><th>Atoms per structure</th><td>min={atoms.get('min_atoms', 0)}, max={atoms.get('max_atoms', 0)}, mean={atoms.get('mean_atoms', 0.0):.1f}, median={atoms.get('median_atoms', 0.0):.1f}</td></tr>
+          </tbody>
+        </table>
+        """
+        elements_html = _table(
+            [
+                {
+                    "Element": item.get("symbol", ""),
+                    "Atoms": item.get("atoms", 0),
+                    "Structures": item.get("structures", 0),
+                    "Fraction (%)": f"{item.get('fraction', 0.0) * 100.0:.1f}",
+                }
+                for item in elements
+            ],
+            ["Element", "Atoms", "Structures", "Fraction (%)"],
+            ["Element", "Atoms", "Structures", "Fraction (%)"],
+        )
+        cfg_html = _table(
+            [
+                {
+                    "Config_type": item.get("name", ""),
+                    "Count": item.get("count", 0),
+                    "Fraction (%)": f"{item.get('fraction', 0.0) * 100.0:.1f}",
+                }
+                for item in cfg
+            ],
+            ["Config_type", "Count", "Fraction (%)"],
+            ["Config_type", "Count", "Fraction (%)"],
+        )
+        return f"<!doctype html><html><head><meta charset='utf-8'><title>Dataset summary</title>{style}</head><body><h1>Dataset Summary</h1>{counts_html}<h2>Elements</h2>{elements_html}<h2>Config Types</h2>{cfg_html}</body></html>"
 
 class GetStrMessageBox(MessageBoxBase):
     """ Custom message box """

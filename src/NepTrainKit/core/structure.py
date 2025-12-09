@@ -1428,7 +1428,7 @@ def process_organic_clusters(structure, new_structure, clusters, is_organic_list
 
 
 
-def _load_npy_structure(folder: PathLike, cancel_event=None):
+def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_event=None):
     """Load a DeepMD-style dataset from numpy files into Structure objects.
 
     Supports both standard deepmd/npy and dpdata's mixed npy format
@@ -1444,10 +1444,13 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
     Returns
     -------
     list[Structure]
-        Loaded structures labeled by Config_type from the folder name.
+        Loaded structures labeled by Config_type from the folder hierarchy.
     """
     structures: list[Structure] = []
     folder_path = as_path(folder)
+    base_root_path = as_path(base_root) if base_root is not None else None
+    if base_root_path is None:
+        base_root_path = folder_path.parent if (folder_path / 'type.raw').exists() else folder_path
     type_map_path = folder_path / 'type_map.raw'
     type_path = folder_path / 'type.raw'
 
@@ -1477,6 +1480,14 @@ def _load_npy_structure(folder: PathLike, cancel_event=None):
             dataset_dict.setdefault(key, []).append(data)
 
     config_type = folder_path.name
+    try:
+        rel_path = folder_path.resolve().relative_to(base_root_path.resolve())
+        rel_str = rel_path.as_posix()
+        if rel_str and rel_str != ".":
+            config_type = rel_str
+    except Exception:
+        # Fall back to folder name when relative path resolution fails
+        pass
     for key in list(dataset_dict.keys()):
         dataset_dict[key] = np.concatenate(dataset_dict[key], axis=0)
 
@@ -1607,11 +1618,25 @@ def _extract_ordered_type_dirs(order_file: Path, base_path: Path) -> list[Path]:
         seen.add(resolved_real)
     return ordered_dirs
 
-def load_npy_structure(folders: PathLike,order_file=None, cancel_event=None):
+
+def _normalise_config_type_parts(config_type: str) -> list[str]:
+    """Split a Config_type string into safe path parts, dropping empty/parent markers."""
+    parts: list[str] = []
+    for part in Path(config_type.replace("\\", "/")).parts:
+        clean = part.strip()
+        if not clean or clean in {".", ".."}:
+            continue
+        parts.append(clean)
+    return parts
+
+def load_npy_structure(folders: PathLike,order_file=None, cancel_event=None, base_root: PathLike | None = None):
     """Recursively load DeepMD datasets beneath ``folders``."""
     folder_path = as_path(folders)
+    base_root_path = as_path(base_root) if base_root is not None else None
+    if base_root_path is None:
+        base_root_path = folder_path if not (folder_path / 'type.raw').exists() else folder_path.parent
     if (folder_path / 'type.raw').exists():
-        return _load_npy_structure(folder_path, cancel_event=cancel_event)
+        return _load_npy_structure(folder_path, base_root_path, cancel_event=cancel_event)
     if not folder_path.is_dir():
         return []
     if order_file is not None:
@@ -1630,7 +1655,7 @@ def load_npy_structure(folders: PathLike,order_file=None, cancel_event=None):
             resolved_target = target_dir.resolve()
             if resolved_target in processed_dirs:
                 continue
-            structures.extend(load_npy_structure(target_dir, cancel_event=cancel_event))
+            structures.extend(load_npy_structure(target_dir, cancel_event=cancel_event, base_root=base_root_path))
             processed_dirs.add(resolved_target)
         if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
             return structures
@@ -1645,7 +1670,7 @@ def load_npy_structure(folders: PathLike,order_file=None, cancel_event=None):
                 continue
             if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
                 break
-            structures.extend(_load_npy_structure(directory, cancel_event=cancel_event))
+            structures.extend(_load_npy_structure(directory, base_root_path, cancel_event=cancel_event))
             processed_dirs.add(directory)
         return structures
     structures: list[Structure] = []
@@ -1653,7 +1678,7 @@ def load_npy_structure(folders: PathLike,order_file=None, cancel_event=None):
         if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
             break
 
-        structures.extend(load_npy_structure(child, cancel_event=cancel_event))
+        structures.extend(load_npy_structure(child, cancel_event=cancel_event, base_root=base_root_path))
     return structures
 
 def get_type_map(structures: list[Structure]) -> list[str]:
@@ -1682,37 +1707,51 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
     ensure_directory(target_root)
 
     dataset_dict = defaultdict(lambda: defaultdict(list))
+    config_parts_map: dict[str, list[str]] = {}
     if type_map is None:
         type_map = get_type_map(structures)
+    use_hierarchy = Config.getboolean("widget", "deepmd_preserve_subfolders", True)
 
     for structure in structures:
-        # config_type=structure.tag
-        config_type=structure.formula
+        if use_hierarchy:
+            tag_parts = _normalise_config_type_parts(structure.tag)
+            if not tag_parts:
+                tag_parts = _normalise_config_type_parts(structure.formula)
+            if not tag_parts:
+                tag_parts = ["default"]
+            config_key = "/".join(tag_parts)
+            config_parts_map.setdefault(config_key, tag_parts)
+        else:
+            config_key = structure.formula or "default"
+            config_parts_map.setdefault(config_key, [config_key] if config_key else ["default"])
+
         species=structure.atomic_properties["species"]
         type_data = np.array([type_map.index(item) for item in species]).flatten()
         sort_index = np.argsort(type_data)
-        dataset_dict[config_type]["type"] = type_data[sort_index]
-        dataset_dict[config_type]["box"].append(structure.lattice.flatten())
-        dataset_dict[config_type]["coord"].append(structure.atomic_properties["pos"][sort_index].flatten())
+        dataset_dict[config_key]["type"] = type_data[sort_index]
+        dataset_dict[config_key]["box"].append(structure.lattice.flatten())
+        dataset_dict[config_key]["coord"].append(structure.atomic_properties["pos"][sort_index].flatten())
 
 
         for prop_info  in structure.properties:
             name=prop_info["name"]
             if name not in [  "species", "pos"]:
-                dataset_dict[config_type][name].append(structure.atomic_properties[name][sort_index].flatten())
+                dataset_dict[config_key][name].append(structure.atomic_properties[name][sort_index].flatten())
         if "virial" in structure.additional_fields:
             virial = structure.additional_fields["virial"]
-            dataset_dict[config_type]["virial"].append(virial)
+            dataset_dict[config_key]["virial"].append(virial)
         if "energy" in structure.additional_fields:
-            dataset_dict[config_type]["energy"].append(structure.energy)
+            dataset_dict[config_key]["energy"].append(structure.energy)
 
 
     for config, data in dataset_dict.items():
-        save_path = ensure_directory(target_root / config / 'set.000')
+        config_parts = config_parts_map.get(config, [config] if config else ["default"])
+        config_dir = target_root.joinpath(*config_parts)
+        save_path = ensure_directory(config_dir / 'set.000')
 
-        np.savetxt(target_root / config / 'type_map.raw', type_map, fmt='%s')
+        np.savetxt(config_dir / 'type_map.raw', type_map, fmt='%s')
 
-        np.savetxt(target_root / config / 'type.raw', data['type'], fmt='%d')
+        np.savetxt(config_dir / 'type.raw', data['type'], fmt='%d')
         for key, value in data.items():
             if key == 'type':
                 continue

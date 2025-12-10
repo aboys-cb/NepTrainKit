@@ -187,6 +187,8 @@ class NepResultPlotWidget(QWidget):
         distance_default = Config.getfloat("widget", "sparse_distance_value", 0.01)
 
         descriptor_source_default = Config.get("widget", "sparse_descriptor_source", "reduced").lower()
+        sampling_mode_default = Config.get("widget", "sparse_sampling_mode", "count").lower()
+        r2_threshold_default = Config.getfloat("widget", "sparse_r2_threshold", 0.9)
 
         training_path_default = Config.get("widget", "sparse_training_path", "")
 
@@ -194,6 +196,8 @@ class NepResultPlotWidget(QWidget):
         box.doubleSpinBox.setValue(distance_default)
 
         box.descriptorCombo.setCurrentIndex(1 if descriptor_source_default == "raw" else 0)
+        box.modeCombo.setCurrentIndex(1 if sampling_mode_default == "r2" else 0)
+        box.r2SpinBox.setValue(r2_threshold_default if r2_threshold_default is not None else 0.9)
 
         box.trainingPathEdit.setText(training_path_default)
 
@@ -205,6 +209,8 @@ class NepResultPlotWidget(QWidget):
         use_selection_region = bool(getattr(box, "regionCheck", None) and box.regionCheck.isChecked())
 
         descriptor_source = "raw" if box.descriptorCombo.currentIndex() == 1 else "reduced"
+        sampling_mode = "r2" if box.modeCombo.currentIndex() == 1 else "count"
+        r2_threshold = box.r2SpinBox.value()
 
         training_path = box.trainingPathEdit.text().strip()
 
@@ -212,6 +218,8 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget", "sparse_distance_value", distance)
 
         Config.set("widget", "sparse_descriptor_source", descriptor_source)
+        Config.set("widget", "sparse_sampling_mode", sampling_mode)
+        Config.set("widget", "sparse_r2_threshold", r2_threshold)
 
         Config.set("widget", "sparse_training_path", training_path)
 
@@ -221,6 +229,8 @@ class NepResultPlotWidget(QWidget):
             descriptor_source=descriptor_source,
             restrict_to_selection=use_selection_region,
             training_path=training_path or None,
+            sampling_mode=sampling_mode,
+            r2_threshold=r2_threshold,
         )
         if structures:
             self.canvas.select_index(structures, reverse)

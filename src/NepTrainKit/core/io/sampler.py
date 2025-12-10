@@ -149,6 +149,86 @@ def farthest_point_sampling(points, n_samples, min_dist=0.1, selected_data=None)
     return sampled_indices
 
 
+def incremental_fps_with_r2(
+    points: npt.NDArray[np.float32],
+    r2_threshold: float,
+    n_samples: int | None = None,
+    min_dist: float = 0.1,
+    selected_data: npt.NDArray[np.float32] | None = None,
+) -> tuple[list[int], float]:
+    """Farthest point sampling that stops early once the selected set explains enough variance.
+
+    Parameters
+    ----------
+    points : numpy.ndarray
+        Candidate point set of shape ``(N, D)``.
+    r2_threshold : float
+        Target R² value; sampling stops when explained variance / total variance meets this.
+    n_samples : int or None, optional
+        Maximum number of samples to draw; ``None`` or ``<=0`` defaults to ``N``.
+    min_dist : float, default=0.1
+        Minimum allowed distance to any already selected point.
+    selected_data : numpy.ndarray or None, optional
+        Warm-start set; only used for distance seeding (not in the R² calculation).
+
+    Returns
+    -------
+    (list[int], float)
+        Selected indices and the final R² value.
+    """
+    n_points = int(points.shape[0])
+    if n_points == 0:
+        return [], 0.0
+    if n_samples is None or n_samples <= 0 or n_samples > n_points:
+        n_samples = n_points
+
+    overall_mean = np.mean(points, axis=0)
+    total_variance = float(np.sum((points - overall_mean) ** 2))
+
+    # Initialise distance field, optionally warm-started
+    sampled_indices: list[int] = []
+    if isinstance(selected_data, np.ndarray) and selected_data.size != 0:
+        distances_to_samples = numpy_cdist(points, selected_data)
+        min_distances = np.min(distances_to_samples, axis=1)
+    else:
+        first_index = 0
+        sampled_indices.append(first_index)
+        min_distances = np.linalg.norm(points - points[first_index], axis=1)
+
+    def _current_r2() -> float:
+        if total_variance <= 0.0:
+            return 1.0
+        if len(sampled_indices) == 0:
+            return 0.0
+        explained_variance = float(np.sum((points[sampled_indices] - overall_mean) ** 2))
+        return explained_variance / total_variance
+
+    # Early exit if variance is degenerate but we still want one representative
+    if total_variance <= 0.0 and len(sampled_indices) == 0:
+        first_idx = int(np.argmax(min_distances))
+        if min_distances[first_idx] >= float(min_dist):
+            sampled_indices.append(first_idx)
+        return sampled_indices, 1.0
+
+    r2 = _current_r2()
+    if r2 >= r2_threshold or len(sampled_indices) >= n_samples:
+        return sampled_indices, r2
+
+    while len(sampled_indices) < n_samples:
+        current_index = int(np.argmax(min_distances))
+        if min_distances[current_index] < float(min_dist):
+            break
+        sampled_indices.append(current_index)
+        new_point = points[current_index]
+        new_distances = np.linalg.norm(points - new_point, axis=1)
+        min_distances = np.minimum(min_distances, new_distances)
+        r2 = _current_r2()
+        if r2 >= r2_threshold:
+            break
+
+    return sampled_indices, r2
+
+
 
 
 class SparseSampler:
@@ -167,6 +247,8 @@ class SparseSampler:
         descriptor_source: str = "reduced",
         restrict_to_selection: bool = False,
         training_path: str | None = None,
+        sampling_mode: str = "count",
+        r2_threshold: float = 0.9,
     ) -> tuple[list[int], bool]:
         """Return structure indices selected by sparse sampling strategies.
 
@@ -183,6 +265,11 @@ class SparseSampler:
         training_path : str or None, optional
             Optional path to an external training dataset (XYZ file or directory)
             that seeds the distance-to-training computation in advanced mode.
+        sampling_mode : {"count", "r2"}, optional
+            ``"count"`` performs standard fixed-count FPS, ``"r2"`` stops early once the
+            selected set reaches the target R² on the candidate points.
+        r2_threshold : float, optional
+            Target R² used when ``sampling_mode`` is ``"r2"``.
         """
         # Validate descriptor availability
         dataset = getattr(self._result, "descriptor", None)
@@ -329,7 +416,23 @@ class SparseSampler:
         if points_effective.size == 0:
             global_rows = np.array([], dtype=np.int64)
         else:
-            idx_local = farthest_point_sampling(points_effective, n_samples=n_samples, min_dist=distance, selected_data=selected_data)
+            mode = (sampling_mode or "count").lower()
+            if mode == "r2":
+                max_samples = n_samples if n_samples > 0 else points_effective.shape[0]
+                idx_local, _ = incremental_fps_with_r2(
+                    points_effective,
+                    r2_threshold=float(r2_threshold),
+                    n_samples=max_samples,
+                    min_dist=distance,
+                    selected_data=selected_data,
+                )
+            else:
+                idx_local = farthest_point_sampling(
+                    points_effective,
+                    n_samples=n_samples,
+                    min_dist=distance,
+                    selected_data=selected_data,
+                )
             if len(idx_local) == 0:
                 global_rows = np.array([], dtype=np.int64)
             else:

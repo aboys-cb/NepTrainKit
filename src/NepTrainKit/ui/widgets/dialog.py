@@ -326,19 +326,32 @@ class SparseMessageBox(MessageBoxBase):
         self.doubleSpinBox.setMinimum(0)
         self.doubleSpinBox.setMaximum(10)
 
-        self.frame_layout.addWidget(CaptionLabel("Max num", self),0,0,1,1)
+        self.modeCombo = ComboBox(self)
+        self.modeCombo.addItems(["Fixed count (FPS)", "R^2 stop (FPS)"])
+        self.frame_layout.addWidget(CaptionLabel("Sampling mode", self),0,0,1,1)
+        self.frame_layout.addWidget(self.modeCombo,0,1,1,2)
 
-        self.frame_layout.addWidget(self.intSpinBox,0,1,1,2)
-        self.frame_layout.addWidget(CaptionLabel("Min distance", self),1,0,1,1)
+        self.maxNumLabel = CaptionLabel("Max num", self)
+        self.frame_layout.addWidget(self.maxNumLabel,1,0,1,1)
+        self.frame_layout.addWidget(self.intSpinBox,1,1,1,2)
+        self.frame_layout.addWidget(CaptionLabel("Min distance", self),2,0,1,1)
 
-        self.frame_layout.addWidget(self.doubleSpinBox,1,1,1,2)
+        self.frame_layout.addWidget(self.doubleSpinBox,2,1,1,2)
+
+        self.r2Label = CaptionLabel("R^2 threshold", self)
+        self.r2SpinBox = DoubleSpinBox(self)
+        self.r2SpinBox.setDecimals(4)
+        self.r2SpinBox.setRange(0.0, 1.0)
+        self.r2SpinBox.setSingleStep(0.01)
+        self.frame_layout.addWidget(self.r2Label,3,0,1,1)
+        self.frame_layout.addWidget(self.r2SpinBox,3,1,1,2)
 
 
 
         self.descriptorCombo = ComboBox(self)
         self.descriptorCombo.addItems(["Reduced (PCA)", "Raw descriptor"])
-        self.frame_layout.addWidget(CaptionLabel("Descriptor source", self),3,0,1,1)
-        self.frame_layout.addWidget(self.descriptorCombo,3,1,1,2)
+        self.frame_layout.addWidget(CaptionLabel("Descriptor source", self),4,0,1,1)
+        self.frame_layout.addWidget(self.descriptorCombo,4,1,1,2)
 
         self.advancedFrame = QFrame(self)
         self.advancedFrame.setVisible(False)
@@ -379,6 +392,8 @@ class SparseMessageBox(MessageBoxBase):
 
         self.widget.setMinimumWidth(200)
         self.advancedFrame.setVisible(True)
+        self.modeCombo.currentIndexChanged.connect(self._update_mode_visibility)
+        self._update_mode_visibility()
 
 
 
@@ -394,6 +409,14 @@ class SparseMessageBox(MessageBoxBase):
             path = call_path_dialog(self, "Select training dataset folder", "directory")
         if path:
             self.trainingPathEdit.setText(path)
+
+    def _update_mode_visibility(self):
+        """Toggle UI elements based on sampling mode selection."""
+        r2_mode = self.modeCombo.currentIndex() == 1
+        self.maxNumLabel.setVisible(not r2_mode)
+        self.intSpinBox.setVisible(not r2_mode)
+        self.r2Label.setVisible(r2_mode)
+        self.r2SpinBox.setVisible(r2_mode)
 
 
 class IndexSelectMessageBox(MessageBoxBase):

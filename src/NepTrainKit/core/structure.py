@@ -1703,7 +1703,7 @@ def load_npy_structure(folders: PathLike,order_file=None, cancel_event=None, bas
 def get_type_map(structures: list[Structure]) -> list[str]:
     global_type_map = []
     for structure in structures:
-        type_map = structure.additional_fields.get("type_map", structure.atomic_properties["species"])
+        type_map = structure.additional_fields.get("type_map", structure.elements)
         global_type_map.extend(map(str, type_map))
     return list(dict.fromkeys(global_type_map))
 
@@ -1744,7 +1744,8 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
             config_key = structure.formula or "default"
             config_parts_map.setdefault(config_key, [config_key] if config_key else ["default"])
 
-        species=structure.atomic_properties["species"]
+
+        species=structure.elements
         type_data = np.array([type_map.index(item) for item in species]).flatten()
         sort_index = np.argsort(type_data)
         dataset_dict[config_key]["type"] = type_data[sort_index]

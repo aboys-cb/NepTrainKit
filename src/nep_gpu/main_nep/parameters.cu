@@ -32,21 +32,21 @@ const std::string ELEMENTS[NUM_ELEMENTS] = {
 
 Parameters::Parameters()
 {
-  print_line_1();
-  printf("Started reading nep.in.\n");
-  print_line_2();
-
-  set_default_parameters();
-  read_nep_in();
-  if (is_zbl_set) {
-    read_zbl_in();
-  }
-  calculate_parameters();
-  report_inputs();
-
-  print_line_1();
-  printf("Finished reading nep.in.\n");
-  print_line_2();
+//   print_line_1();
+//   printf("Started reading nep.in.\n");
+//   print_line_2();
+//
+//   set_default_parameters();
+//   read_nep_in();
+//   if (is_zbl_set) {
+//     read_zbl_in();
+//   }
+//   calculate_parameters();
+//   report_inputs();
+//
+//   print_line_1();
+//   printf("Finished reading nep.in.\n");
+//   print_line_2();
 }
 
 void Parameters::set_default_parameters()

@@ -253,8 +253,9 @@ class NepData:
             unit, scale = "(m.a.u./atom)", 1000
         elif self.title == "spin":
             unit, scale = "meV/μB", 1000
-        else:
-            return ""
+        elif self.title == "bec":
+            unit, scale = "e", 1000
+
         return f"{rmse * scale:.2f} {unit}"
     def get_max_error_index(self, nmax: int) -> list[int]:
         """Return the ``nmax`` structure indices with the largest absolute error."""

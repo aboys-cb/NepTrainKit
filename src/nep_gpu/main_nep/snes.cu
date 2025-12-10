@@ -108,19 +108,31 @@ void SNES::initialize_mu_and_sigma(Parameters& para)
     }
     // make sure the initial charges are zero
     if (para.charge_mode) {
-      const int num_full = (para.dim + 3) * para.num_neurons1;
       const int num_part = (para.dim + 2) * para.num_neurons1;
       for (int t = 0; t < para.num_types; ++t) {
-        for (int n = num_full * t + num_part; n < num_full * (t + 1); ++n) {
+        for (int n = para.number_of_variables_ann_1 * t + num_part; n < para.number_of_variables_ann_1 * (t + 1); ++n) {
           mu[n] = 0.0f;
         }
       }
-      mu[num_full * para.num_types] = 2.0f; // make sure initial sqrt(epsilon_inf) > 0
+      mu[para.number_of_variables_ann_1 * para.num_types] = 2.0f; // make sure initial sqrt(epsilon_inf) > 0
     }
   } else {
     for (int n = 0; n < number_of_variables; ++n) {
       int count = fscanf(fid_restart, "%f%f", &mu[n], &sigma[n]);
       PRINT_SCANF_ERROR(count, 2, "Reading error for nep.restart.");
+    }
+    // flip the charges if needed
+    if (para.charge_mode && para.flip_charge) {
+      const int num1 = (para.dim + 2) * para.num_neurons1;
+      int num2 = 0;
+      if (para.charge_mode >= 4) {
+        num2 = para.num_neurons1;
+      }
+      for (int t = 0; t < para.num_types; ++t) {
+        for (int n = para.number_of_variables_ann_1 * t + num1; n < para.number_of_variables_ann_1 * (t + 1) - num2; ++n) {
+          mu[n] = -mu[n];
+        }
+      }
     }
     fclose(fid_restart);
   }
@@ -141,8 +153,7 @@ void SNES::initialize_mu_and_sigma_fine_tune(Parameters& para)
   };
   // read in the whole foundation file first
   const int NUM89 = 89;
-  const int num_ann_per_element = (para.dim + (para.charge_mode ? 3 : 2)) * para.num_neurons1;
-  const int num_ann = NUM89 * num_ann_per_element + (para.charge_mode ? 2 : 1);
+  const int num_ann = NUM89 * para.number_of_variables_ann_1 + (para.charge_mode ? 2 : 1);
   const int num_cnk_radial = NUM89 * NUM89 * (para.n_max_radial + 1) * (para.basis_size_radial + 1);
   const int num_cnk_angular = NUM89 * NUM89 * (para.n_max_angular + 1) * (para.basis_size_angular + 1);
   const int num_tot = num_ann + num_cnk_radial + num_cnk_angular;
@@ -170,9 +181,9 @@ void SNES::initialize_mu_and_sigma_fine_tune(Parameters& para)
   int count = 0;
   for (int i = 0; i < para.num_types; ++ i) {
     int element_index = element_map[para.atomic_numbers[i] - 1];
-    for (int j = 0; j < num_ann_per_element; ++j) {
-      mu[count] = restart_mu[element_index * num_ann_per_element + j];
-      sigma[count] = restart_sigma[element_index * num_ann_per_element + j];
+    for (int j = 0; j < para.number_of_variables_ann_1; ++j) {
+      mu[count] = restart_mu[element_index * para.number_of_variables_ann_1 + j];
+      sigma[count] = restart_sigma[element_index * para.number_of_variables_ann_1 + j];
       ++count;
     }
   }
@@ -240,11 +251,6 @@ void SNES::calculate_utility()
 
 void SNES::find_type_of_variable(Parameters& para)
 {
-  int num_para_ann_per_type = (para.dim + 2) * para.num_neurons1;
-  if (para.charge_mode) {
-    num_para_ann_per_type += para.num_neurons1;
-  }
-
   int offset = 0;
 
   // NN part
@@ -252,15 +258,15 @@ void SNES::find_type_of_variable(Parameters& para)
     int num_ann = (para.train_mode == 2) ? 2 : 1;
     for (int ann = 0; ann < num_ann; ++ann) {
       for (int t = 0; t < para.num_types; ++t) {
-        for (int n = 0; n < num_para_ann_per_type; ++n) {
+        for (int n = 0; n < para.number_of_variables_ann_1; ++n) {
           type_of_variable[n + offset] = t;
         }
-        offset += num_para_ann_per_type;
+        offset += para.number_of_variables_ann_1;
       }
       offset += para.charge_mode ? 2 : 1; // the bias
     }
   } else {
-    offset += num_para_ann_per_type + 1;
+    offset += para.number_of_variables_ann_1 + 1;
   }
 
   // descriptor part
@@ -356,7 +362,15 @@ void SNES::compute(Parameters& para, Fitness* fitness_function)
 
       update_mu_and_sigma(para);
       if (0 == (n + 1) % 100) {
-        output_mu_and_sigma(para);
+        const char* filename = "nep.restart";
+        output_mu_and_sigma(para, filename);
+      }
+      // Optionally save the nep.restart file at the same time as save_potential
+      if (0 == (n + 1) % para.save_potential && para.save_potential_restart) {
+        std::string restart_file;
+        fitness_function->get_save_potential_label(para, n, restart_file);
+        restart_file += ".restart";
+        output_mu_and_sigma(para, restart_file.c_str());
       }
     }
   } else {
@@ -372,12 +386,11 @@ void SNES::compute(Parameters& para, Fitness* fitness_function)
       tokens[0] == "nep4_zbl" || 
       tokens[0] == "nep3_zbl_temperature" ||
       tokens[0] == "nep4_zbl_temperature" || 
-      tokens[0] == "nep3_zbl_charge1" ||
-      tokens[0] == "nep3_zbl_charge2" ||
-      tokens[0] == "nep3_zbl_charge3" ||
       tokens[0] == "nep4_zbl_charge1" ||
       tokens[0] == "nep4_zbl_charge2" ||
-      tokens[0] == "nep4_zbl_charge3") {
+      tokens[0] == "nep4_zbl_charge3" ||
+      tokens[0] == "nep4_zbl_charge4" ||
+      tokens[0] == "nep4_zbl_charge5") {
       num_lines_to_be_skipped = 6;
     }
 
@@ -450,7 +463,8 @@ static __global__ void gpu_find_L1_L2_NEP4(
   s_cost_L2reg[tid] = 0.0f;
   for (int v = tid; v < number_of_variables; v += blockDim.x) {
     const float para = g_population[bid * number_of_variables + v];
-    if (g_type_of_variable[v] == g_type || g_type == g_num_types) {
+    if ((g_type_of_variable[v] == g_type) && (g_type != g_num_types) || 
+        (g_type_of_variable[v] != g_type) && (g_type == g_num_types))  {
       s_cost_L1reg[tid] += abs(para);
       s_cost_L2reg[tid] += para * para;
     }
@@ -597,7 +611,6 @@ static __global__ void gpu_update_mu_and_sigma(
   const int population_size,
   const int number_of_variables,
   const float eta_sigma,
-  const float simga0,
   const int* g_type_of_variable,
   const int* g_index,
   const float* g_utility,
@@ -618,7 +631,7 @@ static __global__ void gpu_update_mu_and_sigma(
     }
     const float sigma = g_sigma[v];
     g_mu[v] += sigma * gradient_mu;
-    g_sigma[v] = min(simga0, sigma * exp(eta_sigma * gradient_sigma));
+    g_sigma[v] = sigma * exp(eta_sigma * gradient_sigma);
   }
 }
 
@@ -632,7 +645,6 @@ void SNES::update_mu_and_sigma(Parameters& para)
     population_size,
     number_of_variables,
     eta_sigma,
-    para.sigma0,
     gpu_type_of_variable.data(),
     gpu_index.data(),
     gpu_utility.data(),
@@ -642,12 +654,12 @@ void SNES::update_mu_and_sigma(Parameters& para)
   GPU_CHECK_KERNEL;
 }
 
-void SNES::output_mu_and_sigma(Parameters& para)
+void SNES::output_mu_and_sigma(Parameters& para, const char* filename)
 {
   gpuSetDevice(0); // normally use GPU-0
   gpu_mu.copy_to_host(mu.data());
   gpu_sigma.copy_to_host(sigma.data());
-  FILE* fid_restart = my_fopen("nep.restart", "w");
+  FILE* fid_restart = my_fopen(filename, "w");
   for (int n = 0; n < number_of_variables; ++n) {
     fprintf(fid_restart, "%15.7e %15.7e\n", mu[n], sigma[n]);
   }

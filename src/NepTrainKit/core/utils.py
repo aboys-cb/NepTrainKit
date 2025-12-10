@@ -129,3 +129,33 @@ def concat_nep_dft_array(nep_array: npt.NDArray[np.float32],dft_array:npt.NDArra
             nep_dft_array = np.column_stack([nep_array, dft_array])
 
     return nep_dft_array
+
+
+def is_charge_model(potential_path: str | Path) -> bool:
+    """Quickly判断 nep.txt 是否为带电荷/NEP_Charge 模型。
+
+    规则：优先检查首行是否包含 ``charge``；若未找到，再在后续少量行中查找
+    ``charge_mode`` 关键字并解析到大于 0 的数值。
+    """
+    path = Path(potential_path)
+    if not path.exists():
+        return False
+    try:
+        with path.open("r", encoding="utf8", errors="ignore") as f:
+            first = f.readline().strip().lower()
+            if "charge" in first:
+                return True
+            # 向后扫有限行，避免读取完整大文件
+            for _ in range(32):
+                line = f.readline()
+                if not line:
+                    break
+                lower = line.lower()
+                if "charge_mode" in lower:
+                    match = re.search(r"charge_mode\\s+(-?\\d+)", lower)
+                    if match and int(match.group(1)) > 0:
+                        return True
+    except Exception:  # noqa: BLE001
+        logger.debug(traceback.format_exc())
+        return False
+    return False

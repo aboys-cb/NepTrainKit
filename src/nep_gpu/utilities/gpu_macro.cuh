@@ -16,7 +16,7 @@
 #pragma once
 
 #ifdef USE_HIP // HIP for AMD card
-
+#include <hipfft/hipfft.h>
 #include <hip/hip_runtime.h>
 
 // memory manipulation
@@ -92,6 +92,18 @@
 #define gpusolverDnDsyevj hipsolverDnDsyevj
 #define gpusolverDnZheevjBatched_bufferSize hipsolverDnZheevjBatched_bufferSize
 #define gpusolverDnZheevjBatched hipsolverDnZheevjBatched
+
+// FFT
+#define gpufftHandle hipfftHandle
+#define gpufftComplex hipfftComplex
+#define gpufftExecC2C hipfftExecC2C
+#define gpufftPlan3d hipfftPlan3d 
+#define gpufftPlanMany hipfftPlanMany
+#define gpufftDestroy hipfftDestroy
+#define GPUFFT_SUCCESS HIPFFT_SUCCESS
+#define GPUFFT_C2C HIPFFT_C2C
+#define GPUFFT_FORWARD HIPFFT_FORWARD
+#define GPUFFT_INVERSE HIPFFT_BACKWARD
 
 #else // CUDA for Nvidia card
 
@@ -171,5 +183,17 @@
 #define gpusolverDnDsyevj cusolverDnDsyevj
 #define gpusolverDnZheevjBatched_bufferSize cusolverDnZheevjBatched_bufferSize
 #define gpusolverDnZheevjBatched cusolverDnZheevjBatched
+
+// FFT
+#define gpufftHandle cufftHandle
+#define gpufftComplex cufftComplex
+#define gpufftExecC2C cufftExecC2C
+#define gpufftPlan3d cufftPlan3d 
+#define gpufftPlanMany cufftPlanMany
+#define gpufftDestroy cufftDestroy
+#define GPUFFT_SUCCESS CUFFT_SUCCESS
+#define GPUFFT_C2C CUFFT_C2C
+#define GPUFFT_FORWARD CUFFT_FORWARD
+#define GPUFFT_INVERSE CUFFT_INVERSE
 
 #endif

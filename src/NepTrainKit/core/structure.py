@@ -398,6 +398,25 @@ class Structure:
         return self.force_label in self.atomic_properties.keys()
 
     @property
+    def bec(self) -> npt.NDArray[np.float32]:
+        """Per-atom Born effective charge tensor as (N, 9)."""
+        return self.atomic_properties["bec"]
+
+    @bec.setter
+    def bec(self, arr: npt.NDArray[np.float32]):
+        """Assign per-atom BEC and ensure metadata exists."""
+        bec_arr = np.asarray(arr, dtype=np.float32).reshape(-1, 9)
+        has_bec = any(p.get("name") == "bec" for p in self.properties)
+        if not has_bec:
+            self.properties.append({"name": "bec", "type": "R", "count": 9})
+        self.atomic_properties["bec"] = bec_arr
+
+    @property
+    def has_bec(self) -> bool:
+        """Return True when BEC data is present."""
+        return "bec" in self.atomic_properties
+
+    @property
     def has_virial(self):
         """Check if virial or stress data is available.
 

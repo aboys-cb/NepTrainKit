@@ -413,8 +413,8 @@ class SparseMessageBox(MessageBoxBase):
     def _update_mode_visibility(self):
         """Toggle UI elements based on sampling mode selection."""
         r2_mode = self.modeCombo.currentIndex() == 1
-        self.maxNumLabel.setVisible(not r2_mode)
-        self.intSpinBox.setVisible(not r2_mode)
+        self.maxNumLabel.setVisible(True)
+        self.intSpinBox.setVisible(True)
         self.r2Label.setVisible(r2_mode)
         self.r2SpinBox.setVisible(r2_mode)
 

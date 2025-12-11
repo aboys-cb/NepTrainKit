@@ -191,7 +191,7 @@ jobs:
 #          CUDA_PATH=${{steps.cuda-toolkit.outputs.CUDA_PATH}} CUDA_HOME=${{steps.cuda-toolkit.outputs.CUDA_PATH}}
 
         CIBW_ENVIRONMENT_MACOS: >
-            ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=14.0' || 'MACOSX_DEPLOYMENT_TARGET=13.0' }}
+            ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=15.0' || 'MACOSX_DEPLOYMENT_TARGET=15.0' }}
 
         CIBW_BEFORE_BUILD_WINDOWS: |
           pip install delvewheel

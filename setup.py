@@ -108,6 +108,25 @@ ext_modules = [
     )
 ]
 
+# qNEP CPU 扩展
+ext_modules.append(
+    Extension(
+        "NepTrainKit.qnep_cpu",
+        [
+            "src/nep_cpu/qnep_cpu.cpp",
+            "src/nep_cpu/qnep/qnep.cpp",
+            "src/nep_cpu/qnep/ewald.cpp",
+        ],
+        include_dirs=[
+            pybind11_include,
+            "src/nep_cpu/qnep",
+        ],
+        extra_compile_args=extra_compile_args,
+        extra_link_args=extra_link_args,
+        language="c++",
+    )
+)
+
 # ---- CUDA-based nep_gpu extension (built via custom NVCC flow) ----
 gpu_sources_cu = [
     "src/nep_gpu/main_nep/dataset.cu",
@@ -149,6 +168,10 @@ class BuildExtNVCC(build_ext):
     CPU extensions build normally; for NepTrainKit.nep_gpu, .cu files
     are compiled with nvcc and linked against CUDA libs.
     """
+    def _ensure_output_dir(self, ext):
+        out = Path(self.get_ext_fullpath(ext.name)).parent
+        out.mkdir(parents=True, exist_ok=True)
+
     def _cuda_paths(self):
         cuda_env = os.environ.get("CUDA_PATH") or os.environ.get("CUDA_HOME")
         if cuda_env:
@@ -179,12 +202,14 @@ class BuildExtNVCC(build_ext):
 
     def build_extension(self, ext):
         if ext.name != "NepTrainKit.nep_gpu":
+            self._ensure_output_dir(ext)
             return super().build_extension(ext)
 
         nvcc, cuda_include, cuda_lib = self._cuda_paths()
         if not nvcc:
             print("WARNING: nvcc not found; skipping NepTrainKit.nep_gpu build.")
             return
+        self._ensure_output_dir(ext)
 
         cu_srcs = [s for s in ext.sources if s.endswith('.cu')]
         cpp_srcs = [s for s in ext.sources if not s.endswith('.cu')]
@@ -225,6 +250,7 @@ class BuildExtNVCC(build_ext):
             nvcc_flags += ["-gencode", "arch=compute_86,code=sm_86"]
             nvcc_flags += ["-gencode", "arch=compute_89,code=sm_89"]
             nvcc_flags += ["-gencode", "arch=compute_90,code=sm_90"]
+            nvcc_flags += ["-gencode", "arch=compute_90,code=compute_90"]
 
 
         # Optional: silence warnings for older architectures on newer toolchains

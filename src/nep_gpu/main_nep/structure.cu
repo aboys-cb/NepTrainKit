@@ -129,7 +129,7 @@ static void read_force(
       get_double_from_token(tokens[1 + pos_offset], xyz_filename.c_str(), line_number);
     structure.z[na] =
       get_double_from_token(tokens[2 + pos_offset], xyz_filename.c_str(), line_number);
-    if (num_columns > 4 && train_mode == 0) {
+    if (num_columns > 4 && (train_mode == 0 || train_mode == 3)) {
       structure.fx[na] =
         get_double_from_token(tokens[0 + force_offset], xyz_filename.c_str(), line_number);
       structure.fy[na] =
@@ -183,7 +183,7 @@ static void read_force(
 }
 
 static void read_one_structure(
-  const Parameters& para,
+  Parameters& para,
   std::ifstream& input,
   Structure& structure,
   std::string& xyz_filename,
@@ -220,7 +220,7 @@ static void read_one_structure(
       structure.energy /= structure.num_atom;
     }
   }
-  if (para.train_mode == 0 && !has_energy_in_exyz) {
+  if ((para.train_mode == 0 || para.train_mode == 3) && !has_energy_in_exyz) {
     PRINT_INPUT_ERROR("'energy' is missing in the second line of a frame.");
   }
 
@@ -457,6 +457,7 @@ static void read_one_structure(
         if (sub_tokens[k * 3] == "bec") {
           bec_position = k;
           structure.has_bec = true;
+          para.has_bec = true;
         }
       }
       if (species_position < 0) {
@@ -465,7 +466,7 @@ static void read_one_structure(
       if (pos_position < 0) {
         PRINT_INPUT_ERROR("'pos' is missing in properties.");
       }
-      if (force_position < 0 && para.train_mode == 0) {
+      if (force_position < 0 && (para.train_mode == 0 || para.train_mode == 3)) {
         PRINT_INPUT_ERROR("'force' or 'forces' is missing in properties.");
       }
       if (avirial_position < 0 && para.train_mode == 1 && para.atomic_v == 1) {
@@ -516,7 +517,7 @@ static void read_one_structure(
 }
 
 static void read_exyz(
-  const Parameters& para,
+  Parameters& para,
   std::ifstream& input,
   std::vector<Structure>& structures,
   std::string& xyz_filename)

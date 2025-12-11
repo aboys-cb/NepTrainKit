@@ -1,14 +1,16 @@
 #!/usr/bin/env python 
 # -*- coding: utf-8 -*-
 # @Time    : 2024/11/28 22:45
-# @Author  : 兵
+# @Author  : Bing
 # @email    : 1747193328@qq.com
 from pathlib import Path
 from typing import Any, Dict
 
 from PySide6.QtGui import QIcon, QDoubleValidator, QIntValidator, QColor
-from PySide6.QtWidgets import (QVBoxLayout, QFrame, QGridLayout,
-                               QPushButton, QWidget, QHBoxLayout, QFormLayout, QSizePolicy)
+from PySide6.QtWidgets import (
+    QVBoxLayout, QFrame, QGridLayout,
+    QPushButton, QWidget, QHBoxLayout, QFormLayout, QSizePolicy,
+)
 from PySide6.QtCore import Signal, Qt, QUrl, QEvent
 from qfluentwidgets import (
     MessageBoxBase,
@@ -20,7 +22,8 @@ from qfluentwidgets import (
     ComboBox,
     FluentStyleSheet,
     FluentTitleBar, TransparentToolButton, ColorDialog,
-    TitleLabel, HyperlinkLabel, LineEdit, EditableComboBox, PrimaryPushButton, Flyout, InfoBarIcon, MessageBox, TextEdit, FluentIcon,
+    TitleLabel, HyperlinkLabel, LineEdit, EditableComboBox, PrimaryPushButton, Flyout, InfoBarIcon, MessageBox,
+    TextEdit, FluentIcon,
     ToolTipFilter, ToolTipPosition
 )
 from qframelesswindow import FramelessDialog
@@ -51,6 +54,243 @@ class GetIntMessageBox(MessageBoxBase):
         self.widget.setMinimumWidth(100 )
         self.intSpinBox.setMaximum(100000000)
 
+
+class GetFloatMessageBox(MessageBoxBase):
+    """Message box that lets the user input a floating-point value."""
+
+    def __init__(self, parent=None, tip: str = ""):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel.setWordWrap(True)
+        self.doubleSpinBox = DoubleSpinBox(self)
+        self.doubleSpinBox.setDecimals(10)
+        self.doubleSpinBox.setMinimum(0.0)
+        self.doubleSpinBox.setMaximum(1e6)
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.doubleSpinBox)
+        self.widget.setMinimumWidth(160)
+
+
+class DatasetSummaryMessageBox(MessageBoxBase):
+    """Frameless dialog that presents dataset-wide summary statistics."""
+
+    def __init__(self, parent=None, summary: dict | None = None):
+        super().__init__(parent)
+        self._summary: dict[str, Any] = summary or {}
+
+        self.widget.setMinimumWidth(460)
+        max_rows_display = 10  # limit rows shown in dialog to keep it compact
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+        self.viewLayout.addLayout(layout)
+        heager_row =   QHBoxLayout()
+        title = TitleLabel("Dataset Summary", self)
+
+        # Export HTML button
+        self.exportButton = TransparentToolButton(":/images/src/images/export1.svg", self)
+
+        self.exportButton.clicked.connect(self._export_html)
+        heager_row.addWidget(title)
+        heager_row.addWidget(self.exportButton,alignment=Qt.AlignmentFlag.AlignRight)
+        layout.addLayout(heager_row)
+
+        # Source info
+        source_row = QHBoxLayout()
+        data_file = self._summary.get("data_file", "")
+        model_file = self._summary.get("model_file", "")
+        data_label = CaptionLabel(f"Data: {data_file}", self)
+        model_label = CaptionLabel(f"Model: {model_file}", self)
+        for lbl in (data_label, model_label):
+            lbl.setWordWrap(True)
+            lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        source_row.addWidget(data_label, 1)
+        source_row.addWidget(model_label, 1)
+        layout.addLayout(source_row)
+
+        # Basic counts and atom statistics
+        counts = self._summary.get("counts", {})
+        atoms = self._summary.get("atoms", {})
+        elements = self._summary.get("elements", [])
+
+        # Top summary cards
+        card_row = QHBoxLayout()
+        card_row.setContentsMargins(0, 0, 0, 0)
+        card_row.setSpacing(8)
+
+        def _add_card(caption: str, value: str) -> None:
+            frame = QFrame(self)
+            frame.setFrameShape(QFrame.Shape.StyledPanel)
+            frame_layout = QVBoxLayout(frame)
+            frame_layout.setContentsMargins(8, 4, 8, 4)
+            frame_layout.setSpacing(2)
+            value_label = TitleLabel(value, frame)
+            value_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            cap_label = CaptionLabel(caption, frame)
+            cap_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            frame_layout.addWidget(value_label)
+            frame_layout.addWidget(cap_label)
+            card_row.addWidget(frame)
+
+        active_structures = counts.get("active_structures", 0)
+        total_atoms_active = atoms.get("total_atoms_active", 0)
+
+        _add_card("Orig structures", str(counts.get("orig_structures", 0)))
+        _add_card("Active structures", str(active_structures))
+        _add_card("Removed structures", str(counts.get("removed_structures", 0)))
+        _add_card("Selected structures", str(counts.get("selected_structures", 0)))
+        layout.addLayout(card_row)
+
+        atoms_row = QHBoxLayout()
+        atoms_row.setContentsMargins(0, 0, 0, 0)
+        atoms_row.setSpacing(12)
+        atoms_row.addWidget(CaptionLabel(f"Total atoms (active): {total_atoms_active}", self))
+        atoms_row.addWidget(
+            CaptionLabel(
+                f"Atoms per structure: min={atoms.get('min_atoms', 0)}, "
+                f"max={atoms.get('max_atoms', 0)}, "
+                f"mean={atoms.get('mean_atoms', 0.0):.1f}, "
+                f"median={atoms.get('median_atoms', 0.0):.1f}",
+                self,
+            )
+        )
+        layout.addLayout(atoms_row)
+
+        # Element distribution
+        elements = sorted(self._summary.get("elements", []), key=lambda x: x.get("fraction", 0.0), reverse=True)
+        if elements:
+            elem_title = CaptionLabel("Element distribution (active structures):", self)
+            layout.addWidget(elem_title)
+            elem_grid = QGridLayout()
+            elem_grid.setContentsMargins(0, 0, 0, 0)
+            elem_grid.setSpacing(4)
+            headers = ["Element", "Atoms", "Structures", "Fraction", ""]
+            for c, h in enumerate(headers):
+                elem_grid.addWidget(CaptionLabel(h, self), 0, c)
+            for r, elem in enumerate(elements[:max_rows_display], start=1):
+                elem_grid.addWidget(CaptionLabel(str(elem.get("symbol", "")), self), r, 0)
+                elem_grid.addWidget(CaptionLabel(str(elem.get("atoms", 0)), self), r, 1)
+                elem_grid.addWidget(CaptionLabel(str(elem.get("structures", 0)), self), r, 2)
+                frac = elem.get("fraction", 0.0) * 100.0
+                elem_grid.addWidget(CaptionLabel(f"{frac:.1f} %", self), r, 3)
+                bar = ProgressBar(self)
+                bar.setRange(0, 100)
+                bar.setValue(int(max(0, min(100, frac))))
+                bar.setFixedWidth(120)
+                elem_grid.addWidget(bar, r, 4)
+            layout.addLayout(elem_grid)
+
+        # Config_type distribution
+        cfg = self._summary.get("config_types", [])
+        if cfg:
+            cfg_title = CaptionLabel("Config_type distribution (active structures):", self)
+            layout.addWidget(cfg_title)
+            cfg_grid = QGridLayout()
+            cfg_grid.setContentsMargins(0, 0, 0, 0)
+            cfg_grid.setSpacing(4)
+            headers = ["Config_type", "Count", "Fraction", ""]
+            for c, h in enumerate(headers):
+                cfg_grid.addWidget(CaptionLabel(h, self), 0, c)
+            for r, item in enumerate(cfg[:max_rows_display], start=1):
+                cfg_grid.addWidget(CaptionLabel(str(item.get("name", "")), self), r, 0)
+                cfg_grid.addWidget(CaptionLabel(str(item.get("count", 0)), self), r, 1)
+                frac = item.get("fraction", 0.0) * 100.0
+                cfg_grid.addWidget(CaptionLabel(f"{frac:.1f} %", self), r, 2)
+                bar = ProgressBar(self)
+                bar.setRange(0, 100)
+                bar.setValue(int(max(0, min(100, frac))))
+                bar.setFixedWidth(120)
+                cfg_grid.addWidget(bar, r, 3)
+            layout.addLayout(cfg_grid)
+
+
+
+    def _export_html(self) -> None:
+        """Export the full summary (all rows) to an HTML file."""
+        path = call_path_dialog(
+            self,
+            "Export dataset summary",
+            "file",
+            default_filename="dataset_summary.html",
+            file_filter="HTML files (*.html);;All files (*.*)",
+        )
+        if not path:
+            return
+        try:
+            html = self._build_html()
+            with open(path, "w", encoding="utf-8") as handle:
+                handle.write(html)
+            MessageManager.send_info_message(f"Exported dataset summary to: {path}")
+        except Exception:  # noqa: BLE001
+            MessageManager.send_warning_message("Failed to export dataset summary.")
+
+    def _build_html(self) -> str:
+        """Render the summary into a simple HTML table layout."""
+        counts = self._summary.get("counts", {})
+        atoms = self._summary.get("atoms", {})
+        elements = sorted(self._summary.get("elements", []) or [], key=lambda x: x.get("fraction", 0.0), reverse=True)
+        cfg = self._summary.get("config_types", []) or []
+        data_file = self._summary.get("data_file", "")
+        model_file = self._summary.get("model_file", "")
+        def _table(rows: list[dict], headers: list[str], cols: list[str]) -> str:
+            if not rows:
+                return "<p>No data.</p>"
+            body = "\n".join(
+                "<tr>" + "".join(f"<td>{item.get(k, '')}</td>" for k in cols) + "</tr>"
+                for item in rows
+            )
+            head = "".join(f"<th>{h}</th>" for h in headers)
+            return f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
+        style = """
+        <style>
+        body{font-family:Arial, sans-serif; margin:16px;}
+        h1{margin-bottom:8px;}
+        table{border-collapse:collapse; width:100%; margin:8px 0;}
+        th,td{border:1px solid #ccc; padding:6px 8px; text-align:left;}
+        th{background:#f6f6f6;}
+        </style>
+        """
+        counts_html = f"""
+        <p>Data: {data_file}<br/>Model: {model_file}</p>
+        <table>
+          <tbody>
+            <tr><th>Orig structures</th><td>{counts.get('orig_structures', 0)}</td></tr>
+            <tr><th>Active structures</th><td>{counts.get('active_structures', 0)}</td></tr>
+            <tr><th>Removed structures</th><td>{counts.get('removed_structures', 0)}</td></tr>
+            <tr><th>Selected structures</th><td>{counts.get('selected_structures', 0)}</td></tr>
+            <tr><th>Total atoms (active)</th><td>{atoms.get('total_atoms_active', 0)}</td></tr>
+            <tr><th>Atoms per structure</th><td>min={atoms.get('min_atoms', 0)}, max={atoms.get('max_atoms', 0)}, mean={atoms.get('mean_atoms', 0.0):.1f}, median={atoms.get('median_atoms', 0.0):.1f}</td></tr>
+          </tbody>
+        </table>
+        """
+        elements_html = _table(
+            [
+                {
+                    "Element": item.get("symbol", ""),
+                    "Atoms": item.get("atoms", 0),
+                    "Structures": item.get("structures", 0),
+                    "Fraction (%)": f"{item.get('fraction', 0.0) * 100.0:.1f}",
+                }
+                for item in elements
+            ],
+            ["Element", "Atoms", "Structures", "Fraction (%)"],
+            ["Element", "Atoms", "Structures", "Fraction (%)"],
+        )
+        cfg_html = _table(
+            [
+                {
+                    "Config_type": item.get("name", ""),
+                    "Count": item.get("count", 0),
+                    "Fraction (%)": f"{item.get('fraction', 0.0) * 100.0:.1f}",
+                }
+                for item in cfg
+            ],
+            ["Config_type", "Count", "Fraction (%)"],
+            ["Config_type", "Count", "Fraction (%)"],
+        )
+        return f"<!doctype html><html><head><meta charset='utf-8'><title>Dataset summary</title>{style}</head><body><h1>Dataset Summary</h1>{counts_html}<h2>Elements</h2>{elements_html}<h2>Config Types</h2>{cfg_html}</body></html>"
+
 class GetStrMessageBox(MessageBoxBase):
     """ Custom message box """
 
@@ -67,7 +307,7 @@ class GetStrMessageBox(MessageBoxBase):
 
 
 class SparseMessageBox(MessageBoxBase):
-    """用于最远点取样的弹窗 """
+    """Dialog for configuring sparsity-related parameters."""
 
     def __init__(self, parent=None,tip=""):
         super().__init__(parent)
@@ -86,19 +326,32 @@ class SparseMessageBox(MessageBoxBase):
         self.doubleSpinBox.setMinimum(0)
         self.doubleSpinBox.setMaximum(10)
 
-        self.frame_layout.addWidget(CaptionLabel("Max num", self),0,0,1,1)
+        self.modeCombo = ComboBox(self)
+        self.modeCombo.addItems(["Fixed count (FPS)", "R^2 stop (FPS)"])
+        self.frame_layout.addWidget(CaptionLabel("Sampling mode", self),0,0,1,1)
+        self.frame_layout.addWidget(self.modeCombo,0,1,1,2)
 
-        self.frame_layout.addWidget(self.intSpinBox,0,1,1,2)
-        self.frame_layout.addWidget(CaptionLabel("Min distance", self),1,0,1,1)
+        self.maxNumLabel = CaptionLabel("Max num", self)
+        self.frame_layout.addWidget(self.maxNumLabel,1,0,1,1)
+        self.frame_layout.addWidget(self.intSpinBox,1,1,1,2)
+        self.frame_layout.addWidget(CaptionLabel("Min distance", self),2,0,1,1)
 
-        self.frame_layout.addWidget(self.doubleSpinBox,1,1,1,2)
+        self.frame_layout.addWidget(self.doubleSpinBox,2,1,1,2)
+
+        self.r2Label = CaptionLabel("R^2 threshold", self)
+        self.r2SpinBox = DoubleSpinBox(self)
+        self.r2SpinBox.setDecimals(4)
+        self.r2SpinBox.setRange(0.0, 1.0)
+        self.r2SpinBox.setSingleStep(0.01)
+        self.frame_layout.addWidget(self.r2Label,3,0,1,1)
+        self.frame_layout.addWidget(self.r2SpinBox,3,1,1,2)
 
 
 
         self.descriptorCombo = ComboBox(self)
         self.descriptorCombo.addItems(["Reduced (PCA)", "Raw descriptor"])
-        self.frame_layout.addWidget(CaptionLabel("Descriptor source", self),3,0,1,1)
-        self.frame_layout.addWidget(self.descriptorCombo,3,1,1,2)
+        self.frame_layout.addWidget(CaptionLabel("Descriptor source", self),4,0,1,1)
+        self.frame_layout.addWidget(self.descriptorCombo,4,1,1,2)
 
         self.advancedFrame = QFrame(self)
         self.advancedFrame.setVisible(False)
@@ -139,6 +392,8 @@ class SparseMessageBox(MessageBoxBase):
 
         self.widget.setMinimumWidth(200)
         self.advancedFrame.setVisible(True)
+        self.modeCombo.currentIndexChanged.connect(self._update_mode_visibility)
+        self._update_mode_visibility()
 
 
 
@@ -154,6 +409,14 @@ class SparseMessageBox(MessageBoxBase):
             path = call_path_dialog(self, "Select training dataset folder", "directory")
         if path:
             self.trainingPathEdit.setText(path)
+
+    def _update_mode_visibility(self):
+        """Toggle UI elements based on sampling mode selection."""
+        r2_mode = self.modeCombo.currentIndex() == 1
+        self.maxNumLabel.setVisible(not r2_mode)
+        self.intSpinBox.setVisible(not r2_mode)
+        self.r2Label.setVisible(r2_mode)
+        self.r2SpinBox.setVisible(r2_mode)
 
 
 class IndexSelectMessageBox(MessageBoxBase):
@@ -374,6 +637,21 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.titleLabel = CaptionLabel(tip, self)
         self.titleLabel.setWordWrap(True)
         self.groupEdit = LineEdit(self)
+        self.presetCombo = ComboBox(self)
+        # self.presetCombo.setEnabled(False)
+        self.importButton = TransparentToolButton(FluentIcon.FOLDER_ADD, self)
+        self.exportButton = TransparentToolButton(FluentIcon.SAVE, self)
+        preset_row = QHBoxLayout()
+        preset_row.setContentsMargins(0, 0, 0, 0)
+        preset_row.setSpacing(4)
+        preset_row.addWidget(self.presetCombo, 1)
+        preset_row.addWidget(self.importButton, 0)
+        preset_row.addWidget(self.exportButton, 0)
+        self.savePresetCheck = CheckBox("Save baseline as preset", self)
+        self.presetNameEdit = LineEdit(self)
+        self.presetNameEdit.setPlaceholderText("Preset name")
+        self.presetNameEdit.setEnabled(False)
+        self.savePresetCheck.toggled.connect(self.presetNameEdit.setEnabled)
 
         self._frame = QFrame(self)
         self.frame_layout = QGridLayout(self._frame)
@@ -408,6 +686,14 @@ class ShiftEnergyMessageBox(MessageBoxBase):
 
 
         self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(CaptionLabel("Use existing preset (optional)", self))
+        self.viewLayout.addLayout(preset_row)
+        save_row = QHBoxLayout()
+        save_row.setContentsMargins(0, 0, 0, 0)
+        save_row.setSpacing(4)
+        save_row.addWidget(self.savePresetCheck)
+        save_row.addWidget(self.presetNameEdit)
+        self.viewLayout.addLayout(save_row)
         self.viewLayout.addWidget(self.groupEdit)
         self.viewLayout.addWidget(self._frame)
 
@@ -419,7 +705,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
 
 
 class ProgressDialog(FramelessDialog):
-    """进度条弹窗"""
+
     def __init__(self,parent=None,title=""):
         pass
         super().__init__(parent)
@@ -675,14 +961,14 @@ class ModelInfoMessageBox(MessageBoxBase):
         super().__init__(parent)
         self.setAcceptDrops(True)
 
-        # ===== 根容器 =====
+
         self._widget = QWidget(self)
         self.viewLayout.addWidget(self._widget)
         root = QVBoxLayout(self._widget)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(2)
 
-        # ===== 顶部 Title =====
+
         titleBar = QFrame(self._widget)
         tLayout = QHBoxLayout(titleBar)
         tLayout.setContentsMargins(0, 0, 0, 0)
@@ -693,7 +979,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         tLayout.addWidget(self.titleLabel)
         root.addWidget(titleBar)
 
-        # ===== 基本信息（左） =====
+
         infoCard = QFrame(self._widget)
         info = QFormLayout(infoCard)
         info.setLabelAlignment(Qt.AlignRight)
@@ -710,7 +996,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         info.addRow(CaptionLabel("Type", self), self.model_type_combox)
         info.addRow(CaptionLabel("Name", self), self.model_name_edit)
 
-        # ===== RMSE（右）——就是 energy/force/virial 三个输入 =====
+
         rmseCard = QFrame(self._widget)
         rmse = QGridLayout(rmseCard)
         rmse.setContentsMargins(0, 0, 0, 0)
@@ -752,7 +1038,6 @@ class ModelInfoMessageBox(MessageBoxBase):
         r += 1
         rmse.setColumnStretch(1, 1)
 
-        # ===== 第一行：基本信息 + RMSE 并排 =====
         row1 = QHBoxLayout()
         row1.setContentsMargins(0, 0, 0, 0)
         row1.setSpacing(2)
@@ -760,7 +1045,6 @@ class ModelInfoMessageBox(MessageBoxBase):
         row1.addWidget(rmseCard, 1)
         root.addLayout(row1)
 
-        # ===== 文件路径（整行） =====
         pathCard = QFrame(self._widget)
         path = QFormLayout(pathCard)
         path.setLabelAlignment(Qt.AlignRight)
@@ -787,7 +1071,6 @@ class ModelInfoMessageBox(MessageBoxBase):
 
         root.addWidget(pathCard)
 
-        # ===== Tags（Notes 之前） =====
         tagsCard = QFrame(self._widget)
         tags = QFormLayout(tagsCard)
         tags.setLabelAlignment(Qt.AlignRight)
@@ -800,10 +1083,9 @@ class ModelInfoMessageBox(MessageBoxBase):
         self.tag_group = TagGroup(parent=self)
 
         tags.addRow(CaptionLabel("Tags", self), self.new_tag_edit )
-        tags.addRow(CaptionLabel(""), self.tag_group)  # 让 TagGroup 独占一行
+        tags.addRow(CaptionLabel(""), self.tag_group)  # 鐠?TagGroup 閻欘剙宕版稉鈧悰?
         root.addWidget(tagsCard)
 
-        # ===== Notes（最后） =====
         notesCard = QFrame(self._widget)
         notes = QFormLayout(notesCard)
         notes.setLabelAlignment(Qt.AlignRight)
@@ -818,12 +1100,10 @@ class ModelInfoMessageBox(MessageBoxBase):
         notes.addRow(CaptionLabel("Notes", self), self.model_note_edit)
         root.addWidget(notesCard)
 
-        # 允许底部区域伸展
         root.addStretch(1)
 
 
 
-    # 简单文件选择器
     def _pick_file(self):
         path=call_path_dialog(self,"Select the model folder path","directory")
 
@@ -889,14 +1169,8 @@ class ModelInfoMessageBox(MessageBoxBase):
             parent_id=self.parent_combox.currentData()
         )
 class AdvancedModelSearchDialog(MessageBoxBase):
-    """
-    仅负责收集搜索条件并发送信号，不执行查询。
-    使用：
-        dlg = AdvancedModelSearchDialog(parent)
-        dlg.searchRequested.connect(handle_search_params_dict)
-        dlg.show()
-    """
-    searchRequested = Signal(dict)  # 发出参数字典
+
+    searchRequested = Signal(dict)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -923,11 +1197,9 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         tLay.addWidget(self.titleLabel)
         root.addWidget(titleBar)
 
-        # 表单
         formCard = QFrame(self); form = QFormLayout(formCard)
         form.setLabelAlignment(Qt.AlignRight); form.setHorizontalSpacing(3); form.setVerticalSpacing(3)
 
-        # Project IDs（逗号分隔）
         self.projectIdsEdit = LineEdit(formCard)
         self.projectIdsEdit.setPlaceholderText("e.g. 1 or 1,3,5")
         self.includeDescendantsChk = CheckBox("Include sub-projects", formCard)
@@ -938,28 +1210,23 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         self.parentIdEdit.setPlaceholderText("None or integer")
         self.parentIdEdit.setValidator(QIntValidator())
 
-        # 模糊
         self.nameContainsEdit = LineEdit(formCard)
         self.nameContainsEdit.setPlaceholderText("contains in name")
         self.notesContainsEdit = LineEdit(formCard)
         self.notesContainsEdit.setPlaceholderText("contains in notes")
 
-        # 类型
         self.modelTypeCombo = ComboBox(formCard)
         self.modelTypeCombo.addItems(["<Any>", "NEP", "DeepMD", "Other"])
 
-        # 标签
         self.tagsAllEdit  = LineEdit(formCard); self.tagsAllEdit.setPlaceholderText("tag1, tag2 (AND)")
         self.tagsAnyEdit  = LineEdit(formCard); self.tagsAnyEdit.setPlaceholderText("tag1, tag2 (OR)")
         self.tagsNoneEdit = LineEdit(formCard); self.tagsNoneEdit.setPlaceholderText("tag1, tag2 (NOT)")
 
-        # 排序与分页
         self.orderAscChk = CheckBox("Order by created_at ascending", formCard)
         self.orderAscChk.setChecked(True)
         self.limitEdit  = LineEdit(formCard); self.limitEdit.setPlaceholderText("e.g. 100"); self.limitEdit.setValidator(QIntValidator(0, 10**9))
         self.offsetEdit = LineEdit(formCard); self.offsetEdit.setPlaceholderText("e.g. 0");   self.offsetEdit.setValidator(QIntValidator(0, 10**9))
 
-        # 加入表单
         form.addRow(CaptionLabel("Project ID(s):",self), self.projectIdsEdit)
         form.addRow(CaptionLabel("",self), self.includeDescendantsChk)
         form.addRow(CaptionLabel("Parent ID:",self), self.parentIdEdit)
@@ -975,7 +1242,6 @@ class AdvancedModelSearchDialog(MessageBoxBase):
 
         root.addWidget(formCard)
 
-        # 按钮区
 
         self.buttonLayout.removeWidget(self.yesButton)
         self.buttonLayout.removeWidget(self.cancelButton)
@@ -992,12 +1258,10 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         root.addStretch(1)
 
 
-    # ---------- 事件 ----------
     def _wire_events(self):
         self.searchBtn.clicked.connect(self._emit_params)
         self.resetBtn.clicked.connect(self._on_reset)
         self.closeBtn.clicked.connect(self.reject)
-        # Enter 键触发搜索
         self.projectIdsEdit.returnPressed.connect(self._emit_params)
         self.nameContainsEdit.returnPressed.connect(self._emit_params)
         self.notesContainsEdit.returnPressed.connect(self._emit_params)
@@ -1005,7 +1269,6 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         self.tagsAnyEdit.returnPressed.connect(self._emit_params)
         self.tagsNoneEdit.returnPressed.connect(self._emit_params)
 
-    # ---------- 参数构造 ----------
     @staticmethod
     def _split_csv(text: str) -> list[str]:
         if not text:
@@ -1071,12 +1334,10 @@ class AdvancedModelSearchDialog(MessageBoxBase):
 
         return params
 
-    # ---------- 对外：发出信号 ----------
     def _emit_params(self):
         params = self.build_params()
         self.searchRequested.emit(params)
 
-    # ---------- 重置 ----------
     def _on_reset(self):
         self.projectIdsEdit.clear()
         self.includeDescendantsChk.setChecked(True)

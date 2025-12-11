@@ -31,7 +31,8 @@ public:
   int population_size;    // population size for SNES
   int maximum_generation; // maximum number of generations for SNES;
   int save_potential;     // number of generations between writing a checkpoint nep.txt file. 
-  int save_potential_format;  // format of checkpoint nep.txt file name
+  int save_potential_format;   // format of checkpoint nep.txt file name
+  int save_potential_restart;  // if restart files should be written or not. 0=no, 1=yes
   int num_neurons1;       // number of nuerons in the 1st hidden layer (only one hidden layer)
   int basis_size_radial;  // for nep3
   int basis_size_angular; // for nep3
@@ -66,6 +67,8 @@ public:
   float typewise_cutoff_zbl_factor;
   int output_descriptor;
   int charge_mode; // add dynamic charge to NEP potential model
+  bool has_bec = false; // check if there are target BEC values
+  int flip_charge = 0; // 1 for flipping charges upon restarting
   int fine_tune = 0; // fine_tune option; 0=no, 1=yes
   std::string fine_tune_nep_txt = "";
   std::string fine_tune_nep_restart = "";
@@ -104,6 +107,7 @@ public:
   int dim_angular;                    // number of angular descriptor components
   int number_of_variables;            // total number of parameters (NN and descriptor)
   int number_of_variables_ann;        // number of parameters in the ANN only
+  int number_of_variables_ann_1;      // number of parameters in the ANN for one element
   int number_of_variables_descriptor; // number of parameters in the descriptor only
 
   // some arrays

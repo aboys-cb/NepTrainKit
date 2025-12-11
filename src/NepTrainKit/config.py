@@ -136,6 +136,32 @@ class Config:
             return fallback
 
     @classmethod
+    def list_options(cls, section: str) -> list[str]:
+        """Return all option keys under a section."""
+        try:
+            cfg = cls._instance
+            table = cfg._config_table
+            with cfg.engine.begin() as conn:
+                stmt = select(table.c.option).where(table.c.section == section)
+                result = conn.execute(stmt).scalars().all()
+            return list(result)
+        except SQLAlchemyError:
+            return []
+
+    @classmethod
+    def get_section(cls, section: str) -> dict[str, Any]:
+        """Return a mapping of option->value for a section."""
+        try:
+            cfg = cls._instance
+            table = cfg._config_table
+            with cfg.engine.begin() as conn:
+                stmt = select(table.c.option, table.c.value).where(table.c.section == section)
+                result = conn.execute(stmt).fetchall()
+            return {row[0]: row[1] for row in result}
+        except SQLAlchemyError:
+            return {}
+
+    @classmethod
     def set(cls,section,option,value):
         if option == "theme":
             cls.theme = value

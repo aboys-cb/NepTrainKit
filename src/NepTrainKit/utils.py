@@ -1,64 +1,52 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time    : 2024/10/17 13:14
-# @Author  : 鍏?
-# @email    : 1747193328@qq.com
+# @Author  : Bing
+# @email   : 1747193328@qq.com
+
 import functools
+import hashlib
 import re
 import time
-from typing import Any
-from loguru import logger
-import hashlib
 from pathlib import Path
+from typing import Any, Callable
+
+from loguru import logger
+
 from NepTrainKit.paths import (
     PathLike,
     as_path,
+    check_path_type,
     ensure_directory,
     ensure_suffix,
-    iter_files,
-    check_path_type,
     get_user_config_path,
+    iter_files,
 )
- 
 
- 
 
- 
-
-def timeit(func):
-    """Decorator that logs execution time via Loguru.
-
-    Parameters
-    ----------
-    func : Callable
-        Function to wrap.
-
-    Examples
-    --------
-    >>> @timeit
-    ... def demo():
-    ...     pass
-    """
+def timeit(func: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorator that logs execution time via Loguru."""
 
     @functools.wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(*args: Any, **kwargs: Any) -> Any:
         start_time = time.time()
         result = func(*args, **kwargs)
         end_time = time.time()
         logger.debug(f"Function '{func.__name__}' executed in {end_time - start_time:.4f} seconds")
         return result
+
     return wrapper
 
- 
 
-
-def call_path_dialog(*args, **kwargs):
+def call_path_dialog(*args: Any, **kwargs: Any) -> Any:
     """Adapter to ``NepTrainKit.ui.dialogs.call_path_dialog`` to avoid GUI imports at module import time."""
     from NepTrainKit.ui.dialogs import call_path_dialog as _call
+
     return _call(*args, **kwargs)
 
 
 def sha256_file(path: str | Path, chunk: int = 8 * 1024 * 1024) -> str:
+    """Compute the SHA256 hash of a file."""
     p = Path(path)
     h = hashlib.sha256()
     with p.open("rb") as f:
@@ -68,29 +56,39 @@ def sha256_file(path: str | Path, chunk: int = 8 * 1024 * 1024) -> str:
                 break
             h.update(b)
     return h.hexdigest()
-def unzip():
+
+
+def unzip() -> Any:
     """Adapter to ``NepTrainKit.ui.updater.unzip`` to avoid GUI imports at module import time."""
     from NepTrainKit.ui.updater import unzip as _unzip
+
     return _unzip()
+
 
 class LoadingThread:
     """Proxy class that instantiates the real Qt thread on demand."""
-    def __new__(cls, *args, **kwargs):
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
         from NepTrainKit.ui.threads import LoadingThread as _LT
+
         return _LT(*args, **kwargs)
 
 
-
-
 class DataProcessingThread:
-    def __new__(cls, *args, **kwargs):
+    """Proxy for ``NepTrainKit.ui.threads.DataProcessingThread`` created on demand."""
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
         from NepTrainKit.ui.threads import DataProcessingThread as _T
+
         return _T(*args, **kwargs)
 
 
 class FilterProcessingThread:
-    def __new__(cls, *args, **kwargs):
+    """Proxy for ``NepTrainKit.ui.threads.FilterProcessingThread`` created on demand."""
+
+    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
         from NepTrainKit.ui.threads import FilterProcessingThread as _T
+
         return _T(*args, **kwargs)
 
 
@@ -100,7 +98,7 @@ def parse_index_string(s: str, total: int) -> list[int]:
     Parameters
     ----------
     s : str
-        Index expression like ``"1:10"``, ``":100"`` or ``"::3"``.
+        Index expression like ``\"1:10\"``, ``\":100\"`` or ``\"::3\"``.
         Multiple expressions can be separated by comma or whitespace.
     total : int
         Maximum length of the dataset for bounds checking.
@@ -133,5 +131,3 @@ def parse_index_string(s: str, total: int) -> list[int]:
                 indices.append(idx)
     return sorted(set(indices))
 
-
- 

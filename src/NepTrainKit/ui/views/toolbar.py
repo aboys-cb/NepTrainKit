@@ -20,7 +20,7 @@ class KitToolBarBase(CommandBarView):
         self._parent = parent
         self._actions: dict[str, Action] = {}
         self.setIconSize(QSize(24, 24))
-        self.setSpaing(2)
+        self.setSpaing(0)
         self.init_actions()
 
     def addButton(self, name, icon, callback, checkable: bool = False):
@@ -77,6 +77,8 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     selectIndexSignal = Signal()
     rangeSignal = Signal()
     dftd3Signal = Signal()
+    summarySignal = Signal()
+    forceBalanceSignal = Signal()
 
     def __init__(self, parent=None):
         """Initialise toolbar actions and keep a reference to the action group."""
@@ -130,6 +132,11 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             QIcon(":/images/src/images/discovery.svg"),
             self.discoverySignal,
         )
+        self.addButton(
+            "Check Net Force",
+            QIcon(":/images/src/images/inspect.svg"),
+            self.forceBalanceSignal,
+        )
         inverse_action = self.addButton(
             "Inverse Selection",
             QIcon(":/images/src/images/inverse.svg"),
@@ -168,6 +175,13 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             QIcon(":/images/src/images/dft_d3.png"),
             self.dftd3Signal,
         )
+        self.addSeparator()
+        self.addButton(
+            "Dataset Summary",
+            QIcon(":/images/src/images/summary.svg"),
+            self.summarySignal,
+        )
+
 
     def reset(self) -> None:
         """Clear any mutually exclusive toggle that is still checked."""

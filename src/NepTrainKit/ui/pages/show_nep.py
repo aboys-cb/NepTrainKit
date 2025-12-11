@@ -196,11 +196,16 @@ class ShowNepWidget(QWidget):
 
         self.struct_widget_layout.addWidget(self.structure_toolbar, 0, 0, 1, 1)
 
+        self.force_label = StrongBodyLabel(self.struct_widget)
+        self.force_label.setWordWrap(True)
+        self.force_label.setToolTip("Net force of the current structure (sum of all atomic forces).")
+
         # self.struct_widget_layout.addWidget(self.export_single_struct_button, 1, 0, 1, 1, alignment=Qt.AlignRight)
         self.struct_widget_layout.addWidget(self.struct_info_widget, 2, 0, 1, 1)
         self.struct_widget_layout.addWidget(self.bond_label,3, 0, 1, 1)
+        self.struct_widget_layout.addWidget(self.force_label,4, 0, 1, 1)
 
-        self.struct_widget_layout.addWidget(self.struct_index_widget, 4, 0, 1, 1)
+        self.struct_widget_layout.addWidget(self.struct_index_widget, 5, 0, 1, 1)
 
         self.struct_widget_layout.setRowStretch(0, 3)
         self.struct_widget_layout.setRowStretch(1, 1)
@@ -631,6 +636,22 @@ class ShowNepWidget(QWidget):
         self.show_struct_widget.show_structure(atoms)
         self.update_structure_bond_info(atoms)
         self.struct_info_widget.show_structure_info(atoms)
+
+        # Update net force label for the current structure
+        force_text = "Net force: N/A"
+        try:
+            if getattr(atoms, "has_forces", False):
+                forces = np.asarray(atoms.forces, dtype=np.float64)
+                if forces.size != 0:
+                    net = forces.sum(axis=0)
+                    norm = float(np.linalg.norm(net))
+                    force_text = (
+                        f"Net force: ({net[0]:.3e}, {net[1]:.3e}, {net[2]:.3e}) | "
+                        f"|ΣF| = {norm:.3e}"
+                    )
+        except Exception:
+            logger.debug(traceback.format_exc())
+        self.force_label.setText(force_text)
 
     def update_structure_bond_info(self,atoms):
         """Schedule bond statistics computation for the displayed structure.

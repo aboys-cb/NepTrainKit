@@ -58,6 +58,8 @@
         <file>src/images/gpumd_new.png</file>
         <file>src/images/dataset.svg</file>
         <file>src/images/gpu.svg</file>
+        <file>src/images/inspect.svg</file>
+        <file>src/images/summary.svg</file>
 
   </qresource>
   <qresource prefix="/theme">

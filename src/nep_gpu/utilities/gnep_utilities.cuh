@@ -135,7 +135,52 @@ const int SIZE_BOX_AND_INVERSE_BOX = 18; // (3 * 3) * 2
 const int MAX_NUM_N = 20;                // n_max+1 = 19+1
 const int MAX_DIM = MAX_NUM_N * 7;
 const int MAX_DIM_ANGULAR = MAX_NUM_N * 6;
-const int MAX_LN = MAX_NUM_N * 8; 
+const int MAX_LN = MAX_NUM_N * 8;
+
+// Template specialization to replace switch statement for Z_COEFFICIENT lookup
+template <int L>
+static __device__ __forceinline__ float get_z_coefficient(const int n1, const int n2);
+
+template <>
+__device__ __forceinline__ float get_z_coefficient<1>(const int n1, const int n2) {
+  return Z_COEFFICIENT_1[n1][n2];
+}
+
+template <>
+__device__ __forceinline__ float get_z_coefficient<2>(const int n1, const int n2) {
+  return Z_COEFFICIENT_2[n1][n2];
+}
+
+template <>
+__device__ __forceinline__ float get_z_coefficient<3>(const int n1, const int n2) {
+  return Z_COEFFICIENT_3[n1][n2];
+}
+
+template <>
+__device__ __forceinline__ float get_z_coefficient<4>(const int n1, const int n2) {
+  return Z_COEFFICIENT_4[n1][n2];
+}
+
+template <>
+__device__ __forceinline__ float get_z_coefficient<5>(const int n1, const int n2) {
+  return Z_COEFFICIENT_5[n1][n2];
+}
+
+template <>
+__device__ __forceinline__ float get_z_coefficient<6>(const int n1, const int n2) {
+  return Z_COEFFICIENT_6[n1][n2];
+}
+
+template <>
+__device__ __forceinline__ float get_z_coefficient<7>(const int n1, const int n2) {
+  return Z_COEFFICIENT_7[n1][n2];
+}
+
+template <>
+__device__ __forceinline__ float get_z_coefficient<8>(const int n1, const int n2) {
+  return Z_COEFFICIENT_8[n1][n2];
+}
+
 
 static __device__ __forceinline__ void
 complex_product(const float a, const float b, float& real_part, float& imag_part)
@@ -541,14 +586,15 @@ static __device__ __forceinline__ void calculate_ec_one(
   (*ec) += sum_fxyz[index_0] * base_factor_s_c;
   s[0] = sum_fxyz[index_0] * base_factor;
   f[0] = sum_s2xyz[index_1] * base_factor_s_c;
-  f[1] = sum_s2xyz[index_1 + N * 1] * base_factor_s_c;
+  f[1] = sum_s2xyz[index_1 + N] * base_factor_s_c;
   f[2] = sum_s2xyz[index_1 + N * 2] * base_factor_s_c;
-  f123[0] = sum_s2xyz123[index_123] * base_factor_s_c; 
-  f123[1] = sum_s2xyz123[index_123 + N * 1] * base_factor_s_c;
+  f123[0] = sum_s2xyz123[index_123] * base_factor_s_c;
+  f123[1] = sum_s2xyz123[index_123 + N] * base_factor_s_c;
   f123[2] = sum_s2xyz123[index_123 + N * 2] * base_factor_s_c;
   f123[3] = sum_s2xyz123[index_123 + N * 3] * base_factor_s_c;
   f123[4] = sum_s2xyz123[index_123 + N * 4] * base_factor_s_c;
   f123[5] = sum_s2xyz123[index_123 + N * 5] * base_factor_s_c;
+
   Fp_factor *= 2.0f;
   for (int k = 1; k < L_twice_plus_1; ++k) {
     int index_s = index_base + k;
@@ -560,10 +606,10 @@ static __device__ __forceinline__ void calculate_ec_one(
     (*ec) += sum_fxyz[index_s0] * s_c_val;
     s[k] = sum_fxyz[index_s0] * c3b_val;
     f[0] += sum_s2xyz[index_s1] * s_c_val;
-    f[1] += sum_s2xyz[index_s1 + N * 1] * s_c_val;
+    f[1] += sum_s2xyz[index_s1 + N] * s_c_val;
     f[2] += sum_s2xyz[index_s1 + N * 2] * s_c_val;
     f123[0] += sum_s2xyz123[index_s123] * s_c_val;
-    f123[1] += sum_s2xyz123[index_s123 + N * 1] * s_c_val;
+    f123[1] += sum_s2xyz123[index_s123 + N] * s_c_val;
     f123[2] += sum_s2xyz123[index_s123 + N * 2] * s_c_val;
     f123[3] += sum_s2xyz123[index_s123 + N * 3] * s_c_val;
     f123[4] += sum_s2xyz123[index_s123 + N * 4] * s_c_val;
@@ -594,6 +640,7 @@ static __device__ __forceinline__ void calculate_fc_one(
   f[0] += sum_s2xyz[index_1] * base_factor_s_c;
   f[1] += sum_s2xyz[index_1 + 1] * base_factor_s_c;
   f[2] += sum_s2xyz[index_1 + 2] * base_factor_s_c;
+
   Fp_factor *= 2.0f;
   for (int k = 1; k < L_twice_plus_1; ++k) {
     int index_s = L_square_minus_1 + k;
@@ -654,17 +701,7 @@ static __device__ __forceinline__ void accumulate_f12_one(
     float z_factor = 0.0f;
     float dz_factor = 0.0f;
     for (int n2 = n2_start; n2 <= L - n1; n2 += 2) {
-      float coeff;
-      switch(L) {
-        case 1: coeff = Z_COEFFICIENT_1[n1][n2]; break;
-        case 2: coeff = Z_COEFFICIENT_2[n1][n2]; break;
-        case 3: coeff = Z_COEFFICIENT_3[n1][n2]; break;
-        case 4: coeff = Z_COEFFICIENT_4[n1][n2]; break;
-        case 5: coeff = Z_COEFFICIENT_5[n1][n2]; break;
-        case 6: coeff = Z_COEFFICIENT_6[n1][n2]; break;
-        case 7: coeff = Z_COEFFICIENT_7[n1][n2]; break;
-        case 8: coeff = Z_COEFFICIENT_8[n1][n2]; break;
-      }
+      const float coeff = get_z_coefficient<L>(n1, n2);
       z_factor += coeff * z_pow[n2];
       if (n2 > 0) {
         dz_factor += coeff * n2 * z_pow[n2 - 1];
@@ -724,17 +761,7 @@ static __device__ __forceinline__ void accumulate_f12_one(
     float z_factor = 0.0f;
     float dz_factor = 0.0f;
     for (int n2 = n2_start; n2 <= L - n1; n2 += 2) {
-      float coeff;
-      switch(L) {
-        case 1: coeff = Z_COEFFICIENT_1[n1][n2]; break;
-        case 2: coeff = Z_COEFFICIENT_2[n1][n2]; break;
-        case 3: coeff = Z_COEFFICIENT_3[n1][n2]; break;
-        case 4: coeff = Z_COEFFICIENT_4[n1][n2]; break;
-        case 5: coeff = Z_COEFFICIENT_5[n1][n2]; break;
-        case 6: coeff = Z_COEFFICIENT_6[n1][n2]; break;
-        case 7: coeff = Z_COEFFICIENT_7[n1][n2]; break;
-        case 8: coeff = Z_COEFFICIENT_8[n1][n2]; break;
-      }
+      const float coeff = get_z_coefficient<L>(n1, n2);
       z_factor += coeff * z_pow[n2];
       if (n2 > 0) {
         dz_factor += coeff * n2 * z_pow[n2 - 1];
@@ -784,8 +811,7 @@ static __device__ __forceinline__ void calculate_fxyz_one(
   const float* s,
   const float* r12,
   const float* r12_original,
-  float* f12,
-  float* f123)
+  float* f12)
 {
   const float dx[3] = {(1.0f - r12[0] * r12[0]) * d12inv, -r12[0] * r12[1] * d12inv, -r12[0] * r12[2] * d12inv};
   const float dy[3] = {-r12[0] * r12[1] * d12inv, (1.0f - r12[1] * r12[1]) * d12inv, -r12[1] * r12[2] * d12inv};
@@ -802,17 +828,7 @@ static __device__ __forceinline__ void calculate_fxyz_one(
     float z_factor = 0.0f;
     float dz_factor = 0.0f;
     for (int n2 = n2_start; n2 <= L - n1; n2 += 2) {
-      float coeff;
-      switch(L) {
-        case 1: coeff = Z_COEFFICIENT_1[n1][n2]; break;
-        case 2: coeff = Z_COEFFICIENT_2[n1][n2]; break;
-        case 3: coeff = Z_COEFFICIENT_3[n1][n2]; break;
-        case 4: coeff = Z_COEFFICIENT_4[n1][n2]; break;
-        case 5: coeff = Z_COEFFICIENT_5[n1][n2]; break;
-        case 6: coeff = Z_COEFFICIENT_6[n1][n2]; break;
-        case 7: coeff = Z_COEFFICIENT_7[n1][n2]; break;
-        case 8: coeff = Z_COEFFICIENT_8[n1][n2]; break;
-      }
+      const float coeff = get_z_coefficient<L>(n1, n2);
       z_factor += coeff * z_pow[n2];
       if (n2 > 0) {
         dz_factor += coeff * n2 * z_pow[n2 - 1];
@@ -822,33 +838,24 @@ static __device__ __forceinline__ void calculate_fxyz_one(
       float factor1 = z_factor * fnp;
       float factor2 = fn * dz_factor;
       for (int d = 0; d < 3; ++d) {
-        int d1 = (d + 2) % 3; // 0 -> 2, 1 -> 0, 2 -> 1
         f12[d] += s[0] * (factor1 * r12[d] + factor2 * dz[d]);
-        f123[d] += s[0] * r12_original[d] * (factor1 * r12[d] + factor2 * dz[d]);
-        f123[d1+3] += s[0] * r12_original[d1] * (factor1 * r12[d] + factor2 * dz[d]);
       }
     } else {
       float real_part_n1 = n1 * real_part;
       float imag_part_n1 = n1 * imag_part;
       float z_factor_fn = z_factor * fn;
       for (int d = 0; d < 3; ++d) {
-        int d1 = (d + 2) % 3; // 0 -> 2, 1 -> 0, 2 -> 1
         float real_part_dx = dx[d];
         float imag_part_dy = dy[d];
         complex_product(real_part_n1, imag_part_n1, real_part_dx, imag_part_dy);
         f12[d] += (s[2 * n1 - 1] * real_part_dx + s[2 * n1 - 0] * imag_part_dy) * z_factor_fn;
-        f123[d] += (s[2 * n1 - 1] * real_part_dx + s[2 * n1 - 0] * imag_part_dy) * z_factor_fn * r12_original[d];
-        f123[d1+3] += (s[2 * n1 - 1] * real_part_dx + s[2 * n1 - 0] * imag_part_dy) * z_factor_fn * r12_original[d1];
       }
       complex_product(r12[0], r12[1], real_part, imag_part);
       float xy_temp = s[2 * n1 - 1] * real_part + s[2 * n1 - 0] * imag_part;
       float factor1 = z_factor * fnp;
       float factor2 = fn * dz_factor;
       for (int d = 0; d < 3; ++d) {
-        int d1 = (d + 2) % 3; // 0 -> 2, 1 -> 0, 2 -> 1
         f12[d] += xy_temp * (factor1 * r12[d] + factor2 * dz[d]);
-        f123[d] += xy_temp * (factor1 * r12[d] + factor2 * dz[d]) * r12_original[d];
-        f123[d1+3] += xy_temp * (factor1 * r12[d] + factor2 * dz[d]) * r12_original[d1];
       }
     }
   }
@@ -884,17 +891,7 @@ static __device__ __forceinline__ void calculate_s_i1_one(
     float dz_factor = 0.0f;
     float z_factor_i1 = 0.0f;
     for (int n2 = n2_start; n2 <= L - n1; n2 += 2) {
-      float coeff;
-      switch(L) {
-        case 1: coeff = Z_COEFFICIENT_1[n1][n2]; break;
-        case 2: coeff = Z_COEFFICIENT_2[n1][n2]; break;
-        case 3: coeff = Z_COEFFICIENT_3[n1][n2]; break;
-        case 4: coeff = Z_COEFFICIENT_4[n1][n2]; break;
-        case 5: coeff = Z_COEFFICIENT_5[n1][n2]; break;
-        case 6: coeff = Z_COEFFICIENT_6[n1][n2]; break;
-        case 7: coeff = Z_COEFFICIENT_7[n1][n2]; break;
-        case 8: coeff = Z_COEFFICIENT_8[n1][n2]; break;
-      }
+      const float coeff = get_z_coefficient<L>(n1, n2);
       z_factor += coeff * z_pow[n2];
       if (n2 > 0) {
         dz_factor += coeff * n2 * z_pow[n2 - 1];
@@ -1012,17 +1009,7 @@ static __device__ __forceinline__ void accumulate_f12_one(
     float z_factor = 0.0f;
     float dz_factor = 0.0f;
     for (int n2 = n2_start; n2 <= L - n1; n2 += 2) {
-      float coeff;
-      switch(L) {
-        case 1: coeff = Z_COEFFICIENT_1[n1][n2]; break;
-        case 2: coeff = Z_COEFFICIENT_2[n1][n2]; break;
-        case 3: coeff = Z_COEFFICIENT_3[n1][n2]; break;
-        case 4: coeff = Z_COEFFICIENT_4[n1][n2]; break;
-        case 5: coeff = Z_COEFFICIENT_5[n1][n2]; break;
-        case 6: coeff = Z_COEFFICIENT_6[n1][n2]; break;
-        case 7: coeff = Z_COEFFICIENT_7[n1][n2]; break;
-        case 8: coeff = Z_COEFFICIENT_8[n1][n2]; break;
-      }
+      const float coeff = get_z_coefficient<L>(n1, n2);
       z_factor += coeff * z_pow[n2];
       if (n2 > 0) {
         dz_factor += coeff * n2 * z_pow[n2 - 1];
@@ -1094,13 +1081,7 @@ static __device__ __forceinline__ void accumulate_dfe(
   const float* sum_fxyz,
   float* feat_x,
   float* feat_y,
-  float* feat_z,
-  float* feat_123_xx,
-  float* feat_123_yy,
-  float* feat_123_zz,
-  float* feat_123_xy,
-  float* feat_123_yz,
-  float* feat_123_zx)
+  float* feat_z)
 {
   const float d12inv = 1.0f / d12;
   const float r12unit[3] = {r12[0]*d12inv, r12[1]*d12inv, r12[2]*d12inv};
@@ -1109,137 +1090,81 @@ static __device__ __forceinline__ void accumulate_dfe(
   if (L_max >= 1) {
     float s1[3];
     float f[3] = {0.0f};
-    float f123[6] = {0.0f};
     calculate_s_one<1>(N, n, n_max_angular_plus_1, sum_fxyz, s1);
-    calculate_fxyz_one<1>(d12inv, fn, fnp, s1, r12unit, r12, f, f123);
+    calculate_fxyz_one<1>(d12inv, fn, fnp, s1, r12unit, r12, f);
     feat_x[0] = f[0];
     feat_y[0] = f[1];
     feat_z[0] = f[2];
-    feat_123_xx[0] = f123[0];
-    feat_123_yy[0] = f123[1];
-    feat_123_zz[0] = f123[2];
-    feat_123_xy[0] = f123[3];
-    feat_123_yz[0] = f123[4];
-    feat_123_zx[0] = f123[5];
   }
 
   if (L_max >= 2) {
     float s2[5];
     float f[3] = {0.0f};
-    float f123[6] = {0.0f};
     calculate_s_one<2>(N, n, n_max_angular_plus_1, sum_fxyz, s2);
-    calculate_fxyz_one<2>(d12inv, fn, fnp, s2, r12unit, r12, f, f123);
+    calculate_fxyz_one<2>(d12inv, fn, fnp, s2, r12unit, r12, f);
     feat_x[n_max_angular_plus_1] = f[0];
     feat_y[n_max_angular_plus_1] = f[1];
     feat_z[n_max_angular_plus_1] = f[2];
-    feat_123_xx[n_max_angular_plus_1] = f123[0];
-    feat_123_yy[n_max_angular_plus_1] = f123[1];
-    feat_123_zz[n_max_angular_plus_1] = f123[2];
-    feat_123_xy[n_max_angular_plus_1] = f123[3];
-    feat_123_yz[n_max_angular_plus_1] = f123[4];
-    feat_123_zx[n_max_angular_plus_1] = f123[5];
   }
 
   if (L_max >= 3) {
     float s3[7];
     float f[3] = {0.0f};
-    float f123[6] = {0.0f};
     calculate_s_one<3>(N, n, n_max_angular_plus_1, sum_fxyz, s3);
-    calculate_fxyz_one<3>(d12inv, fn, fnp, s3, r12unit, r12, f, f123);
+    calculate_fxyz_one<3>(d12inv, fn, fnp, s3, r12unit, r12, f);
     feat_x[2 * n_max_angular_plus_1] = f[0];
     feat_y[2 * n_max_angular_plus_1] = f[1];
     feat_z[2 * n_max_angular_plus_1] = f[2];
-    feat_123_xx[2 * n_max_angular_plus_1] = f123[0];
-    feat_123_yy[2 * n_max_angular_plus_1] = f123[1];
-    feat_123_zz[2 * n_max_angular_plus_1] = f123[2];
-    feat_123_xy[2 * n_max_angular_plus_1] = f123[3];
-    feat_123_yz[2 * n_max_angular_plus_1] = f123[4];
-    feat_123_zx[2 * n_max_angular_plus_1] = f123[5];
   }
 
   if (L_max >= 4) {
     float s4[9];
     float f[3] = {0.0f};
-    float f123[6] = {0.0f};
     calculate_s_one<4>(N, n, n_max_angular_plus_1, sum_fxyz, s4);
-    calculate_fxyz_one<4>(d12inv, fn, fnp, s4, r12unit, r12, f, f123);
+    calculate_fxyz_one<4>(d12inv, fn, fnp, s4, r12unit, r12, f);
     feat_x[3 * n_max_angular_plus_1] = f[0];
     feat_y[3 * n_max_angular_plus_1] = f[1];
     feat_z[3 * n_max_angular_plus_1] = f[2];
-    feat_123_xx[3 * n_max_angular_plus_1] = f123[0];
-    feat_123_yy[3 * n_max_angular_plus_1] = f123[1];
-    feat_123_zz[3 * n_max_angular_plus_1] = f123[2];
-    feat_123_xy[3 * n_max_angular_plus_1] = f123[3];
-    feat_123_yz[3 * n_max_angular_plus_1] = f123[4];
-    feat_123_zx[3 * n_max_angular_plus_1] = f123[5];
   }
 
   if (L_max >= 5) {
     float s5[11];
     float f[3] = {0.0f};
-    float f123[6] = {0.0f};
     calculate_s_one<5>(N, n, n_max_angular_plus_1, sum_fxyz, s5);
-    calculate_fxyz_one<5>(d12inv, fn, fnp, s5, r12unit, r12, f, f123);
+    calculate_fxyz_one<5>(d12inv, fn, fnp, s5, r12unit, r12, f);
     feat_x[4 * n_max_angular_plus_1] = f[0];
     feat_y[4 * n_max_angular_plus_1] = f[1];
     feat_z[4 * n_max_angular_plus_1] = f[2];
-    feat_123_xx[4 * n_max_angular_plus_1] = f123[0];
-    feat_123_yy[4 * n_max_angular_plus_1] = f123[1];
-    feat_123_zz[4 * n_max_angular_plus_1] = f123[2];
-    feat_123_xy[4 * n_max_angular_plus_1] = f123[3];
-    feat_123_yz[4 * n_max_angular_plus_1] = f123[4];
-    feat_123_zx[4 * n_max_angular_plus_1] = f123[5];
   }
 
   if (L_max >= 6) {
     float s6[13];
     float f[3] = {0.0f};
-    float f123[6] = {0.0f};
     calculate_s_one<6>(N, n, n_max_angular_plus_1, sum_fxyz, s6);
-    calculate_fxyz_one<6>(d12inv, fn, fnp, s6, r12unit, r12, f, f123);
+    calculate_fxyz_one<6>(d12inv, fn, fnp, s6, r12unit, r12, f);
     feat_x[5 * n_max_angular_plus_1] = f[0];
     feat_y[5 * n_max_angular_plus_1] = f[1];
     feat_z[5 * n_max_angular_plus_1] = f[2];
-    feat_123_xx[5 * n_max_angular_plus_1] = f123[0];
-    feat_123_yy[5 * n_max_angular_plus_1] = f123[1];
-    feat_123_zz[5 * n_max_angular_plus_1] = f123[2];
-    feat_123_xy[5 * n_max_angular_plus_1] = f123[3];
-    feat_123_yz[5 * n_max_angular_plus_1] = f123[4];
-    feat_123_zx[5 * n_max_angular_plus_1] = f123[5];
   }
 
   if (L_max >= 7) {
     float s7[15];
     float f[3] = {0.0f};
-    float f123[6] = {0.0f};
     calculate_s_one<7>(N, n, n_max_angular_plus_1, sum_fxyz, s7);
-    calculate_fxyz_one<7>(d12inv, fn, fnp, s7, r12unit, r12, f, f123);
+    calculate_fxyz_one<7>(d12inv, fn, fnp, s7, r12unit, r12, f);
     feat_x[6 * n_max_angular_plus_1] = f[0];
     feat_y[6 * n_max_angular_plus_1] = f[1];
     feat_z[6 * n_max_angular_plus_1] = f[2];
-    feat_123_xx[6 * n_max_angular_plus_1] = f123[0];
-    feat_123_yy[6 * n_max_angular_plus_1] = f123[1];
-    feat_123_zz[6 * n_max_angular_plus_1] = f123[2];
-    feat_123_xy[6 * n_max_angular_plus_1] = f123[3];
-    feat_123_yz[6 * n_max_angular_plus_1] = f123[4];
-    feat_123_zx[6 * n_max_angular_plus_1] = f123[5];
   }
 
   if (L_max >= 8) {
     float s8[17];
     float f[3] = {0.0f};
-    float f123[6] = {0.0f};
     calculate_s_one<8>(N, n, n_max_angular_plus_1, sum_fxyz, s8);
-    calculate_fxyz_one<8>(d12inv, fn, fnp, s8, r12unit, r12, f, f123);
+    calculate_fxyz_one<8>(d12inv, fn, fnp, s8, r12unit, r12, f);
     feat_x[7 * n_max_angular_plus_1] = f[0];
     feat_y[7 * n_max_angular_plus_1] = f[1];
     feat_z[7 * n_max_angular_plus_1] = f[2];
-    feat_123_xx[7 * n_max_angular_plus_1] = f123[0];
-    feat_123_yy[7 * n_max_angular_plus_1] = f123[1];
-    feat_123_zz[7 * n_max_angular_plus_1] = f123[2];
-    feat_123_xy[7 * n_max_angular_plus_1] = f123[3];
-    feat_123_yz[7 * n_max_angular_plus_1] = f123[4];
-    feat_123_zx[7 * n_max_angular_plus_1] = f123[5];
   }
 }
 
@@ -1364,16 +1289,7 @@ calculate_sc_one(
     int n2_start = (L + n1) % 2 == 0 ? 0 : 1;
     float z_factor = 0.0f;
     for (int n2 = n2_start; n2 <= L - n1; n2 += 2) {
-      switch(L) {
-        case 1: z_factor += Z_COEFFICIENT_1[n1][n2] * z_pow[n2]; break;
-        case 2: z_factor += Z_COEFFICIENT_2[n1][n2] * z_pow[n2]; break;
-        case 3: z_factor += Z_COEFFICIENT_3[n1][n2] * z_pow[n2]; break;
-        case 4: z_factor += Z_COEFFICIENT_4[n1][n2] * z_pow[n2]; break;
-        case 5: z_factor += Z_COEFFICIENT_5[n1][n2] * z_pow[n2]; break;
-        case 6: z_factor += Z_COEFFICIENT_6[n1][n2] * z_pow[n2]; break;
-        case 7: z_factor += Z_COEFFICIENT_7[n1][n2] * z_pow[n2]; break;
-        case 8: z_factor += Z_COEFFICIENT_8[n1][n2] * z_pow[n2]; break;
-      }
+      z_factor += get_z_coefficient<L>(n1, n2) * z_pow[n2];
     }
     z_factor *= fn;
     if (n1 == 0) {

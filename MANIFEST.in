@@ -1,4 +1,4 @@
-# MANIFEST.in 文件
+# MANIFEST.in file
 include requirements.txt
 include README.md
 include LICENSE

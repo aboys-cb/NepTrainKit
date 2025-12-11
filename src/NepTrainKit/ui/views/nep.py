@@ -1,8 +1,11 @@
 """Visualization widgets and analysis helpers for NEP evaluation results."""
+import json
+import traceback
+from pathlib import Path
 
 import numpy as np
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
-
+from loguru import logger
 
 from NepTrainKit.ui.threads import LoadingThread
 from NepTrainKit.ui.dialogs import call_path_dialog
@@ -11,16 +14,24 @@ from NepTrainKit.config import Config
 
 from NepTrainKit.ui.widgets import (
     GetIntMessageBox,
+    GetFloatMessageBox,
     SparseMessageBox,
     IndexSelectMessageBox,
     RangeSelectMessageBox,
     EditInfoMessageBox,
     ShiftEnergyMessageBox,
     DFTD3MessageBox,
+    DatasetSummaryMessageBox,
 )
 from NepTrainKit.core.types import SearchType, CanvasMode
 from NepTrainKit.ui.views import NepDisplayGraphicsToolBar
-from NepTrainKit.core.energy_shift import suggest_group_patterns
+from NepTrainKit.core.energy_shift import (
+    EnergyBaselinePreset,
+    list_energy_baseline_preset_names,
+    load_energy_baseline_preset,
+    save_energy_baseline_preset,
+    suggest_group_patterns,
+)
 
 
 class NepResultPlotWidget(QWidget):
@@ -114,6 +125,8 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.rangeSignal.connect(self.select_by_range)
         self.tool_bar.dftd3Signal.connect(self.calc_dft_d3)
         self.tool_bar.editInfoSignal.connect(self.edit_structure_info)
+        self.tool_bar.summarySignal.connect(self.show_dataset_summary)
+        self.tool_bar.forceBalanceSignal.connect(self.check_force_balance)
         self.canvas.tool_bar = self.tool_bar
 
 
@@ -174,6 +187,8 @@ class NepResultPlotWidget(QWidget):
         distance_default = Config.getfloat("widget", "sparse_distance_value", 0.01)
 
         descriptor_source_default = Config.get("widget", "sparse_descriptor_source", "reduced").lower()
+        sampling_mode_default = Config.get("widget", "sparse_sampling_mode", "count").lower()
+        r2_threshold_default = Config.getfloat("widget", "sparse_r2_threshold", 0.9)
 
         training_path_default = Config.get("widget", "sparse_training_path", "")
 
@@ -181,6 +196,8 @@ class NepResultPlotWidget(QWidget):
         box.doubleSpinBox.setValue(distance_default)
 
         box.descriptorCombo.setCurrentIndex(1 if descriptor_source_default == "raw" else 0)
+        box.modeCombo.setCurrentIndex(1 if sampling_mode_default == "r2" else 0)
+        box.r2SpinBox.setValue(r2_threshold_default if r2_threshold_default is not None else 0.9)
 
         box.trainingPathEdit.setText(training_path_default)
 
@@ -192,6 +209,8 @@ class NepResultPlotWidget(QWidget):
         use_selection_region = bool(getattr(box, "regionCheck", None) and box.regionCheck.isChecked())
 
         descriptor_source = "raw" if box.descriptorCombo.currentIndex() == 1 else "reduced"
+        sampling_mode = "r2" if box.modeCombo.currentIndex() == 1 else "count"
+        r2_threshold = box.r2SpinBox.value()
 
         training_path = box.trainingPathEdit.text().strip()
 
@@ -199,6 +218,8 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget", "sparse_distance_value", distance)
 
         Config.set("widget", "sparse_descriptor_source", descriptor_source)
+        Config.set("widget", "sparse_sampling_mode", sampling_mode)
+        Config.set("widget", "sparse_r2_threshold", r2_threshold)
 
         Config.set("widget", "sparse_training_path", training_path)
 
@@ -208,6 +229,8 @@ class NepResultPlotWidget(QWidget):
             descriptor_source=descriptor_source,
             restrict_to_selection=use_selection_region,
             training_path=training_path or None,
+            sampling_mode=sampling_mode,
+            r2_threshold=r2_threshold,
         )
         if structures:
             self.canvas.select_index(structures, reverse)
@@ -258,7 +281,66 @@ class NepResultPlotWidget(QWidget):
         box.genSpinBox.setValue(max_generations)
         box.sizeSpinBox.setValue(population_size)
         box.tolSpinBox.setValue(convergence_tol)
+        preset_placeholder = "None"
 
+        def _refresh_presets() -> None:
+            box.presetCombo.clear()
+            box.presetCombo.addItem(preset_placeholder)
+            for name in list_energy_baseline_preset_names():
+                box.presetCombo.addItem(name)
+
+        def _import_preset() -> None:
+            path = call_path_dialog(
+                self,
+                "Import baseline preset",
+                "file",
+                file_filter="JSON files (*.json);;All files (*.*)",
+            )
+            if not path:
+                return
+            try:
+                with open(path, "r", encoding="utf-8") as handle:
+                    preset_data = json.load(handle)
+                preset = EnergyBaselinePreset.from_dict(preset_data)
+                preset_name = preset.metadata.get("name") or Path(path).stem
+                save_energy_baseline_preset(preset_name, preset)
+                _refresh_presets()
+                box.presetCombo.setCurrentText(preset_name)
+                MessageManager.send_info_message(f"Imported preset: {preset_name}")
+            except Exception:  # noqa: BLE001
+                MessageManager.send_warning_message("Failed to import baseline preset.")
+
+        def _export_preset() -> None:
+            selected = box.presetCombo.currentText().strip()
+            if selected in {"", preset_placeholder}:
+                MessageManager.send_info_message("Please select a preset to export.")
+                return
+            preset = load_energy_baseline_preset(selected)
+            if preset is None:
+                MessageManager.send_warning_message("Preset not found.")
+                return
+            default_name = f"{selected}.json"
+            path = call_path_dialog(
+                self,
+                "Export baseline preset",
+                "file",
+                default_filename=default_name,
+                file_filter="JSON files (*.json);;All files (*.*)",
+            )
+            if not path:
+                return
+            try:
+                with open(path, "w", encoding="utf-8") as handle:
+                    json.dump(preset.to_dict(), handle, indent=2)
+                MessageManager.send_info_message(f"Preset exported to {path}")
+            except Exception:  # noqa: BLE001
+                MessageManager.send_warning_message("Failed to export preset.")
+
+        _refresh_presets()
+        box.importButton.clicked.connect(_import_preset)
+        box.exportButton.clicked.connect(_export_preset)
+        box.presetNameEdit.setText("")
+        box.savePresetCheck.setChecked(False)
         if not box.exec():
             return
 
@@ -268,6 +350,13 @@ class NepResultPlotWidget(QWidget):
         max_generations = box.genSpinBox.value()
         population_size = box.sizeSpinBox.value()
         convergence_tol = box.tolSpinBox.value()
+        selected_preset_name = box.presetCombo.currentText().strip()
+        selected_preset = None
+        if selected_preset_name and selected_preset_name != preset_placeholder:
+            selected_preset = load_energy_baseline_preset(selected_preset_name)
+            if selected_preset is None:
+                MessageManager.send_warning_message("Selected preset unavailable.")
+                return
 
         Config.set("widget", "max_generation_value", max_generations)
         Config.set("widget", "population_size", population_size)
@@ -281,6 +370,12 @@ class NepResultPlotWidget(QWidget):
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
         progress_diag.canceled.connect(thread.stop_work)
+        baseline_store: dict[str, EnergyBaselinePreset] = {}
+        source_summary = {
+            "config_types": list(config_set),
+            "selected_refs": len(ref_index),
+            "total_structures": len(data.structure.now_data),
+        }
         thread.start_work(
             data.iter_shift_energy_baseline,
             group_patterns,
@@ -289,8 +384,18 @@ class NepResultPlotWidget(QWidget):
             population_size,
             convergence_tol,
             reference_indices=ref_index,
+            precomputed_baseline=selected_preset,
+            baseline_store=baseline_store,
+            source_summary=source_summary,
         )
         progress_diag.exec()
+        if selected_preset is None and box.savePresetCheck.isChecked():
+            baseline = baseline_store.get("baseline")
+            if baseline is not None:
+                preset_name = box.presetNameEdit.text().strip() or f"baseline_{len(list_energy_baseline_preset_names()) + 1}"
+                baseline.metadata.setdefault("name", preset_name)
+                save_energy_baseline_preset(preset_name, baseline)
+                MessageManager.send_info_message(f"Baseline preset saved: {preset_name}")
         self.canvas.plot_nep_result()
 
 
@@ -330,6 +435,46 @@ class NepResultPlotWidget(QWidget):
             mode, functional, d3_cutoff, d3_cutoff_cn
         )
         thread.finished.connect(self.canvas.plot_nep_result)
+
+    def show_dataset_summary(self):
+        """Compute and display dataset-wide summary statistics."""
+        data = self.canvas.nep_result_data
+        if data is None:
+            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            return
+        structures = getattr(data, "structure", None)
+        if structures is None or structures.now_data.size == 0:
+            MessageManager.send_info_message("No active structures to summarise.")
+            return
+        total_structures = int(structures.now_data.shape[0])
+
+        progress_diag = QProgressDialog("", "Cancel", 0, total_structures, self._parent)
+        progress_diag.setFixedSize(300, 100)
+        progress_diag.setWindowTitle("Summarising dataset")
+        progress_diag.setAutoClose(True)
+        progress_diag.setAutoReset(True)
+        thread = LoadingThread(self._parent, show_tip=False)
+        thread.progressSignal.connect(progress_diag.setValue)
+        thread.finished.connect(lambda: progress_diag.setValue(total_structures))
+        thread.finished.connect(progress_diag.accept)
+        thread.finished.connect(lambda: self._show_dataset_summary_dialog(data))
+        progress_diag.canceled.connect(thread.stop_work)
+        thread.start_work(data.iter_dataset_summary)
+        progress_diag.exec()
+
+    def _show_dataset_summary_dialog(self, data):
+        """Instantiate and execute the dataset summary dialog."""
+        try:
+            summary = data.get_dataset_summary()
+        except Exception:  # noqa: BLE001
+            MessageManager.send_warning_message("Failed to build dataset summary.")
+            logger.debug(traceback.format_exc())
+            return
+        if not summary:
+            MessageManager.send_info_message("Dataset summary is empty.")
+            return
+        dlg = DatasetSummaryMessageBox(self._parent, summary)
+        dlg.exec()
 
     def inverse_select(self):
         """Invert the current structure selection on the canvas.
@@ -371,6 +516,60 @@ class NepResultPlotWidget(QWidget):
         indices = data.select_structures_by_range( dataset, x_min, x_max, y_min, y_max, logic_and)
         if indices:
             self.canvas.select_index(indices, False)
+
+    def check_force_balance(self):
+        """Scan for structures whose net force exceeds a configurable threshold.
+
+        The user is prompted for the |ΣF| threshold; the value is persisted
+        under the ``widget.force_balance_threshold`` config key. Structures
+        with net force above this threshold are selected on the scatter plot.
+        """
+        data = self.canvas.nep_result_data
+        if data is None:
+            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            return
+        default_threshold = Config.getfloat("widget", "force_balance_threshold", 1e-3)
+        box = GetFloatMessageBox(self._parent, "Threshold for |ΣF| (eV/Å):")
+        box.doubleSpinBox.setValue(default_threshold)
+        if not box.exec():
+            return
+        threshold = float(box.doubleSpinBox.value())
+        if threshold <= 0.0:
+            MessageManager.send_warning_message("Threshold must be positive.")
+            return
+        Config.set("widget", "force_balance_threshold", threshold)
+
+        total_structures = int(getattr(data.structure, "num", 0) or data.structure.now_data.shape[0])
+        if total_structures == 0:
+            MessageManager.send_info_message("No active structures to scan.")
+            return
+
+        progress_diag = QProgressDialog("", "Cancel", 0, total_structures, self._parent)
+        progress_diag.setFixedSize(300, 100)
+        progress_diag.setWindowTitle("Checking net forces")
+        thread = LoadingThread(self._parent, show_tip=False)
+        thread.progressSignal.connect(progress_diag.setValue)
+        thread.finished.connect(progress_diag.accept)
+        thread.finished.connect(lambda: self._apply_force_balance_selection(data, threshold))
+        progress_diag.canceled.connect(thread.stop_work)
+        thread.start_work(data.iter_unbalanced_force_indices, threshold=threshold)
+        progress_diag.exec()
+
+    def _apply_force_balance_selection(self, data, threshold: float):
+        """Select structures flagged by the net-force scan and report counts."""
+        try:
+            indices = data.consume_unbalanced_force_indices()
+        except Exception:  # noqa: BLE001
+            logger.debug(traceback.format_exc())
+            MessageManager.send_warning_message("Failed to consume force-balance results.")
+            return
+        if indices:
+            self.canvas.select_index(indices, False)
+            MessageManager.send_info_message(
+                f"{len(indices)} structures with |ΣF| > {threshold:g}"
+            )
+        else:
+            MessageManager.send_info_message("All scanned structures satisfy the net-force threshold.")
 
     def set_dataset(self,dataset):
         """Attach a NEP result dataset to the canvas and refresh the plots.

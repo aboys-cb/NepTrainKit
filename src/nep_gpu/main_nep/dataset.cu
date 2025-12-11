@@ -143,10 +143,10 @@ void Dataset::find_Na(Parameters& para)
     Na_sum_cpu[nc] = Na_sum_cpu[nc - 1] + Na_cpu[nc - 1];
   }
 
-  //printf("Total number of atoms = %d.\n", N);
-  //printf("Number of atoms in the largest configuration = %d.\n", max_Na);
+  printf("Total number of atoms = %d.\n", N);
+  printf("Number of atoms in the largest configuration = %d.\n", max_Na);
   if (para.train_mode == 0 || para.train_mode == 3) {
-    //printf("Number of configurations having virial = %d.\n", num_virial_configurations);
+    printf("Number of configurations having virial = %d.\n", num_virial_configurations);
   }
 
   Na.resize(Nc);
@@ -403,12 +403,12 @@ void Dataset::find_neighbor(Parameters& para)
     }
   }
 
-  //printf("Radial descriptor with a cutoff of %g A:\n", para.rc_radial);
-  //printf("    Minimum number of neighbors for one atom = %d.\n", min_NN_radial);
-  //printf("    Maximum number of neighbors for one atom = %d.\n", max_NN_radial);
-  //printf("Angular descriptor with a cutoff of %g A:\n", para.rc_angular);
-  //printf("    Minimum number of neighbors for one atom = %d.\n", min_NN_angular);
-  //printf("    Maximum number of neighbors for one atom = %d.\n", max_NN_angular);
+  printf("Radial descriptor with a cutoff of %g A:\n", para.rc_radial);
+  printf("    Minimum number of neighbors for one atom = %d.\n", min_NN_radial);
+  printf("    Maximum number of neighbors for one atom = %d.\n", max_NN_radial);
+  printf("Angular descriptor with a cutoff of %g A:\n", para.rc_angular);
+  printf("    Minimum number of neighbors for one atom = %d.\n", min_NN_angular);
+  printf("    Maximum number of neighbors for one atom = %d.\n", max_NN_angular);
 }
 
 void Dataset::construct(
@@ -992,21 +992,23 @@ std::vector<float> Dataset::get_rmse_charge(Parameters& para, int device_id)
       }
   }
 
-  gpu_sum_bec_error<<<Nc, block_size, sizeof(float) * block_size>>>(
-    N,
-    Na.data(),
-    Na_sum.data(),
-    bec.data(),
-    bec_ref_gpu.data(),
-    error_gpu.data());
-  CHECK(gpuMemcpy(error_cpu.data(), error_gpu.data(), mem, gpuMemcpyDeviceToHost));
-  for (int n = 0; n < Nc; ++n) {
-    if (structures[n].has_bec) {
-      float rmse_temp = error_cpu[n];
-      for (int t = 0; t < para.num_types + 1; ++t) {
-        if (has_type[t * Nc + n]) {
-          rmse_array[t] += rmse_temp / (Na_cpu[n]);
-          count_array[t] += 9;
+  if (para.has_bec) {
+    gpu_sum_bec_error<<<Nc, block_size, sizeof(float) * block_size>>>(
+      N,
+      Na.data(),
+      Na_sum.data(),
+      bec.data(),
+      bec_ref_gpu.data(),
+      error_gpu.data());
+    CHECK(gpuMemcpy(error_cpu.data(), error_gpu.data(), mem, gpuMemcpyDeviceToHost));
+    for (int n = 0; n < Nc; ++n) {
+      if (structures[n].has_bec) {
+        float rmse_temp = error_cpu[n];
+        for (int t = 0; t < para.num_types + 1; ++t) {
+          if (has_type[t * Nc + n]) {
+            rmse_array[t] += rmse_temp / (Na_cpu[n]);
+            count_array[t] += 9;
+          }
         }
       }
     }

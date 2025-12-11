@@ -112,6 +112,14 @@ class SettingsWidget(ScrollArea):
             parent=self.personal_group
         )
         self.use_group_menu_card.setValue(use_group_menu_config)
+        preserve_deepmd = Config.getboolean("widget", "deepmd_preserve_subfolders", True)
+        self.deepmd_preserve_card = SwitchSettingCard(
+            FluentIcon.FOLDER,
+            'Keep DeepMD subfolders',
+            'Preserve imported folder hierarchy when exporting deepmd/npy',
+            parent=self.personal_group
+        )
+        self.deepmd_preserve_card.setValue(preserve_deepmd)
         # Default Config_type text
         default_cfg_type = Config.get("widget", "default_config_type", "neptrainkit")
         self.default_cfg_type_card = LineEditSettingCard(
@@ -276,7 +284,7 @@ class SettingsWidget(ScrollArea):
             'Check for Updates',
             FluentIcon.INFO,
             "About",
-            'Copyright 漏' + f" {YEAR}, {AUTHOR}. " +
+            'Copyright @' + f" {YEAR}, {AUTHOR}. " +
             "Version" + f" {__version__}",
             self.about_group
         )
@@ -312,6 +320,7 @@ class SettingsWidget(ScrollArea):
         self.personal_group.addSettingCard(self.radius_coefficient_Card)
         self.personal_group.addSettingCard(self.sort_atoms_card)
         self.personal_group.addSettingCard(self.use_group_menu_card)
+        self.personal_group.addSettingCard(self.deepmd_preserve_card)
         self.personal_group.addSettingCard(self.default_cfg_type_card)
 
         self.nep_group.addSettingCard(self.nep_backend_card)
@@ -363,6 +372,7 @@ class SettingsWidget(ScrollArea):
         self.auto_load_card.checkedChanged.connect(lambda state:Config.set("widget","auto_load",state))
         self.sort_atoms_card.checkedChanged.connect(lambda state:Config.set("widget","sort_atoms",state))
         self.use_group_menu_card.checkedChanged.connect(lambda state:Config.set("widget","use_group_menu",state))
+        self.deepmd_preserve_card.checkedChanged.connect(lambda state: Config.set("widget", "deepmd_preserve_subfolders", state))
         self.default_cfg_type_card.textChanged.connect(lambda v: Config.set("widget", "default_config_type", v))
         # plot settings
         from NepTrainKit.core.types import Pens, Brushes

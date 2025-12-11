@@ -80,11 +80,11 @@ include = ["NepTrainKit", "NepTrainKit.*" ]
 
 [tool.setuptools_scm]
 
-# 可选配置（根据需求调整）：
-# - 指定 Git 标签格式（默认匹配 v*）
+# Optional configuration (adjust as needed):
+# - Set Git tag format (default matches v*)
 tag_regex = "^v(?P<version>[0-9.]+(?:b[0-9]+)?)$"
-# - 启用本地版本号（开发时生成 dev 版本）
-local_scheme = "no-local-version"  # 或 "node-and-date"
+# - Enable local version (generate dev version during development)
+local_scheme = "no-local-version"  # or "node-and-date"
 
 write_to = "src/NepTrainKit/_version.py"
 

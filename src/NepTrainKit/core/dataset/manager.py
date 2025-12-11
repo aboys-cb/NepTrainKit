@@ -64,8 +64,8 @@ class DatasetManager:
 
     def gen_test(self):
         try:
-            project = self.project_service.create_project(f"Test{random.random()}","测试1")
-            project = self.project_service.create_project(f"Test{random.random()}","测试1",parent_id=project.id)
+            project = self.project_service.create_project(f"Test{random.random()}", "Test 1")
+            project = self.project_service.create_project(f"Test{random.random()}", "Test 1", parent_id=project.id)
 
             self.model_service.add_version_from_path(
                 name="第1代",

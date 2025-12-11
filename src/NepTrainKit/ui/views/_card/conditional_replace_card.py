@@ -8,10 +8,11 @@ from typing import Any
 
 import numpy as np
 from PySide6.QtWidgets import QGridLayout
-from qfluentwidgets import BodyLabel, LineEdit, ToolTipFilter, ToolTipPosition
+from qfluentwidgets import BodyLabel, LineEdit, ToolTipFilter, ToolTipPosition, ComboBox
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+import json
 
 
 def _normalize_condition_expr(expr: str) -> str:
@@ -178,6 +179,7 @@ def replace_atoms_with_conditions(
     probabilities: list[float],
     condition: str,
     seed: int | None = None,
+    exact: bool = False,
 ):
     """Replace atoms in a structure using a probability distribution and coordinate condition."""
     rng = np.random.default_rng(seed)
@@ -202,12 +204,86 @@ def replace_atoms_with_conditions(
     probs = probs / probs.sum()
 
     shuffled = rng.permutation(target_indices)
-    sampled = rng.choice(new_atoms, size=len(shuffled), p=probs, replace=True)
+
+    if exact:
+        total = len(shuffled)
+        # allocate counts proportional to probs with remainder to largest residuals
+        raw_counts = probs * total
+        counts = np.floor(raw_counts).astype(int)
+        remainder = total - counts.sum()
+        if remainder > 0:
+            residuals = raw_counts - counts
+            order = np.argsort(-residuals)
+            for i in range(remainder):
+                counts[order[i % len(order)]] += 1
+        # If still zero because of tiny probs, fallback to random
+        if counts.sum() == 0:
+            sampled = rng.choice(new_atoms, size=total, p=probs, replace=True)
+        else:
+            sampled = []
+            start = 0
+            for name, cnt in zip(new_atoms, counts):
+                end = start + int(cnt)
+                sampled.extend([name] * int(cnt))
+                start = end
+            # If rounding caused deficit, fill randomly
+            deficit = total - len(sampled)
+            if deficit > 0:
+                sampled.extend(list(rng.choice(new_atoms, size=deficit, p=probs, replace=True)))
+            rng.shuffle(sampled)
+            sampled = np.array(sampled, dtype=object)
+    else:
+        sampled = rng.choice(new_atoms, size=len(shuffled), p=probs, replace=True)
 
     new_structure = structure.copy()
     for idx, elem in zip(shuffled, sampled):
         new_structure[idx].symbol = elem
     return new_structure, len(shuffled)
+
+
+def _parse_replacements(text: str) -> tuple[list[str], list[float]]:
+    """Parse replacement spec like 'Cs:0.6,Na:0.4' into names and ratios."""
+    names: list[str] = []
+    ratios: list[float] = []
+    text = (text or "").strip()
+    if not text:
+        return names, ratios
+    # Accept JSON dict or comma-separated tokens
+    try:
+        if text.startswith("{") and text.endswith("}"):
+            data = json.loads(text)
+            if isinstance(data, dict):
+                for k, v in data.items():
+                    k = str(k).strip()
+                    try:
+                        val = float(v)
+                    except Exception:
+                        continue
+                    if k and val >= 0:
+                        names.append(k)
+                        ratios.append(val)
+                return names, ratios
+    except Exception:
+        pass
+
+    tokens = [t for t in text.split(",") if t.strip()]
+    for token in tokens:
+        if ":" in token:
+            key, val = token.split(":", 1)
+            key = key.strip()
+            try:
+                val_f = float(val)
+            except Exception:
+                continue
+            if key and val_f >= 0:
+                names.append(key)
+                ratios.append(val_f)
+        else:
+            key = token.strip()
+            if key:
+                names.append(key)
+                ratios.append(1.0)
+    return names, ratios
 
 
 @CardManager.register_card
@@ -228,13 +304,17 @@ class ConditionalReplaceCard(MakeDataCard):
         self.target_edit = LineEdit(self.setting_widget)
         self.target_edit.setPlaceholderText("e.g., O")
 
-        self.new_atoms_label = BodyLabel("New elements", self.setting_widget)
-        self.new_atoms_edit = LineEdit(self.setting_widget)
-        self.new_atoms_edit.setPlaceholderText("Comma-separated, e.g., F,K,C")
+        self.replacements_label = BodyLabel("Replacements", self.setting_widget)
+        self.replacements_edit = LineEdit(self.setting_widget)
+        self.replacements_edit.setPlaceholderText("Cs:0.6,Na:0.4 or Ni")
+        self.replacements_label.setToolTip("Use element:ratio pairs, comma-separated. Ratio defaults to 1.0 when omitted.")
+        self.replacements_label.installEventFilter(ToolTipFilter(self.replacements_label, 300, ToolTipPosition.TOP))
 
-        self.ratio_label = BodyLabel("Ratios", self.setting_widget)
-        self.ratio_edit = LineEdit(self.setting_widget)
-        self.ratio_edit.setPlaceholderText("Comma-separated, same length as new elements, e.g., 0.1,0.1,0.1")
+        self.mode_label = BodyLabel("Mode", self.setting_widget)
+        self.mode_combo = ComboBox(self.setting_widget)
+        self.mode_combo.addItems(["Random", "Exact ratio"])
+        self.mode_label.setToolTip("Random: sample each atom by probability. Exact ratio: allocate counts by ratio then assign.")
+        self.mode_label.installEventFilter(ToolTipFilter(self.mode_label, 300, ToolTipPosition.TOP))
 
         self.condition_label = BodyLabel("Condition", self.setting_widget)
         self.condition_edit = LineEdit(self.setting_widget)
@@ -252,10 +332,10 @@ class ConditionalReplaceCard(MakeDataCard):
         layout: QGridLayout = self.settingLayout
         layout.addWidget(self.target_label, 0, 0, 1, 1)
         layout.addWidget(self.target_edit, 0, 1, 1, 2)
-        layout.addWidget(self.new_atoms_label, 1, 0, 1, 1)
-        layout.addWidget(self.new_atoms_edit, 1, 1, 1, 2)
-        layout.addWidget(self.ratio_label, 2, 0, 1, 1)
-        layout.addWidget(self.ratio_edit, 2, 1, 1, 2)
+        layout.addWidget(self.replacements_label, 1, 0, 1, 1)
+        layout.addWidget(self.replacements_edit, 1, 1, 1, 2)
+        layout.addWidget(self.mode_label, 2, 0, 1, 1)
+        layout.addWidget(self.mode_combo, 2, 1, 1, 2)
         layout.addWidget(self.condition_label, 3, 0, 1, 1)
         layout.addWidget(self.condition_edit, 3, 1, 1, 2)
         layout.addWidget(self.seed_label, 4, 0, 1, 1)
@@ -280,14 +360,15 @@ class ConditionalReplaceCard(MakeDataCard):
         target = self.target_edit.text().strip()
         if not target:
             return [structure]
-        new_atoms = self._parse_list(self.new_atoms_edit.text())
-        ratios = self._parse_float_list(self.ratio_edit.text())
+        replacements_text = self.replacements_edit.text().strip()
+        new_atoms, ratios = _parse_replacements(replacements_text)
         condition = self.condition_edit.text().strip() or "all"
         seed_val = int(self.seed_frame.get_input_value()[0])
         seed = seed_val if seed_val != 0 else None
+        exact_mode = self.mode_combo.currentIndex() == 1
 
         if not new_atoms or len(ratios) != len(new_atoms):
-            MessageManager.send_warning_message("Please provide new elements and matching ratios.")
+            MessageManager.send_warning_message("Please provide replacements in the form elem:ratio, e.g., Cs:0.6,Na:0.4")
             return [structure]
 
         symbols = structure.get_chemical_symbols()
@@ -314,17 +395,18 @@ class ConditionalReplaceCard(MakeDataCard):
             probabilities=ratios,
             condition=condition,
             seed=seed,
+            exact=exact_mode,
         )
         if replaced == 0:
             MessageManager.send_info_message(
                 f"No atoms matched target='{target}' with condition '{condition}'. "
-                f"Target count: {target_count}, matched: {matched}, x-range=({x_min:.4f}, {x_max:.4f})."
+                # f"Target count: {target_count}, matched: {matched}, x-range=({x_min:.4f}, {x_max:.4f})."
             )
         if replaced:
             new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Replace({target}->{','.join(new_atoms)})"
-            MessageManager.send_info_message(
-                f"ConditionalReplace: target='{target}', matched={matched}, replaced={replaced}, condition='{condition}', x-range=({x_min:.4f}, {x_max:.4f})."
-            )
+            # MessageManager.send_info_message(
+            #     f"ConditionalReplace: target='{target}', matched={matched}, replaced={replaced}, condition='{condition}', x-range=({x_min:.4f}, {x_max:.4f})."
+            # )
         return [new_structure]
 
     def to_dict(self) -> dict[str, Any]:
@@ -332,10 +414,10 @@ class ConditionalReplaceCard(MakeDataCard):
         data.update(
             {
                 "target": self.target_edit.text(),
-                "new_atoms": self.new_atoms_edit.text(),
-                "ratios": self.ratio_edit.text(),
+                "replacements": self.replacements_edit.text(),
                 "condition": self.condition_edit.text(),
                 "seed": self.seed_frame.get_input_value(),
+                "mode": self.mode_combo.currentIndex(),
             }
         )
         return data
@@ -343,8 +425,22 @@ class ConditionalReplaceCard(MakeDataCard):
     def from_dict(self, data_dict: dict[str, Any]) -> None:
         super().from_dict(data_dict)
         self.target_edit.setText(data_dict.get("target", ""))
-        self.new_atoms_edit.setText(data_dict.get("new_atoms", ""))
-        self.ratio_edit.setText(data_dict.get("ratios", ""))
+        repl = data_dict.get("replacements", "")
+        if not repl:
+            # backward compatibility
+            na = data_dict.get("new_atoms", "")
+            ra = data_dict.get("ratios", "")
+            if na and ra:
+                na_list = [s.strip() for s in str(na).split(",") if s.strip()]
+                ra_list = [s.strip() for s in str(ra).split(",") if s.strip()]
+                combined = ",".join(f"{a}:{b}" for a, b in zip(na_list, ra_list))
+                repl = combined
+        self.replacements_edit.setText(repl)
         self.condition_edit.setText(data_dict.get("condition", ""))
         seed_val = data_dict.get("seed", [0])
         self.seed_frame.set_input_value(seed_val if isinstance(seed_val, (list, tuple)) else [seed_val])
+        mode_idx = data_dict.get("mode", 0)
+        try:
+            self.mode_combo.setCurrentIndex(int(mode_idx))
+        except Exception:
+            self.mode_combo.setCurrentIndex(0)

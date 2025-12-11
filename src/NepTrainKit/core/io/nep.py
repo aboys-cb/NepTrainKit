@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Core NEP result data loaders and helpers."""
 import traceback
+import json
 from loguru import logger
 from pathlib import Path
 import numpy.typing as npt
@@ -62,6 +63,7 @@ class NepTrainResultData(ResultData):
     _force_dataset: NepPlotData
     _stress_dataset: NepPlotData
     _virial_dataset: NepPlotData
+    _spin_force_dataset: NepPlotData | None
     @staticmethod
     def _collect_energy_sync(result_data: 'NepTrainResultData', dataset: NepPlotData, structure_indices):
         """Collect reference energies for the provided structure indices.
@@ -211,6 +213,7 @@ class NepTrainResultData(ResultData):
                  charge_out_path: Path|str|None = None,
                  bec_out_path: Path|str|None = None,
                  charge_model: bool | None = None,
+                 spin_force_out_path: Path|str|None = None,
                  ):
         """Initialise NEP training result paths and metadata.
         
@@ -230,6 +233,8 @@ class NepTrainResultData(ResultData):
             Output file capturing NEP versus reference virials.
         descriptor_path : Path or str
             Descriptor file produced alongside the dataset.
+        spin_force_out_path : Path or str, optional
+            Optional file capturing magnetic forces (mforce) when available.
         """
         super().__init__(nep_txt_path,data_xyz_path,descriptor_path)
         self.energy_out_path = Path(energy_out_path)
@@ -239,12 +244,16 @@ class NepTrainResultData(ResultData):
         self.charge_out_path = Path(charge_out_path) if charge_out_path else None
         self.bec_out_path = Path(bec_out_path) if bec_out_path else None
         self.is_charge_model = bool(charge_model) if charge_model is not None else is_charge_model(self.nep_txt_path)
+        self.spin_force_out_path = Path(spin_force_out_path) if spin_force_out_path else None
         self.has_virial_structure_index_list = None
         self._bec_dataset = None
+        self._spin_force_dataset = None
     @property
     def datasets(self):
         """Return datasets exposed to the UI in display order."""
         items = [self.energy, self.force, self.stress, self.virial]
+        if getattr(self, "_spin_force_dataset", None) is not None:
+            items.append(self.spin_force)
         if getattr(self, "_bec_dataset", None) is not None:
             items.append(self.bec)
         items.append(self.descriptor)
@@ -269,6 +278,10 @@ class NepTrainResultData(ResultData):
     def bec(self):
         """Return the per-atom Born effective charge dataset when available."""
         return self._bec_dataset
+    @property
+    def spin_force(self):
+        """Return the magnetic force dataset when available."""
+        return self._spin_force_dataset
     @classmethod
     def from_path(cls, path ,model_type=0, *, structures: list[Structure] | None = None)->"NepTrainResultData":
         """Create an instance from a NEP result directory.
@@ -296,10 +309,25 @@ class NepTrainResultData(ResultData):
         elif model_type>2:
             nep_txt_path = module_path/ "Config/nep89.txt"
             MessageManager.send_warning_message(f"NEPKit currently does not support model_type={model_type}; the program will use nep89 instead.")
+        # detect spin model marker in nep.txt
+        has_spin = False
+        try:
+            content = nep_txt_path.read_text(encoding="utf-8", errors="ignore").lower()
+            has_spin = "nep4_spin" in content
+        except Exception:
+            has_spin = False
         energy_out_path = dataset_path.with_name(f"energy_{file_name}.out")
         force_out_path = dataset_path.with_name(f"force_{file_name}.out")
         stress_out_path = dataset_path.with_name(f"stress_{file_name}.out")
         virial_out_path = dataset_path.with_name(f"virial_{file_name}.out")
+        # optional spin force output (magnetic)
+        spin_force_out_path = None
+        if has_spin:
+            candidate_spin = dataset_path.with_name(f"mforce_{file_name}.out")
+            if candidate_spin.exists():
+                spin_force_out_path = candidate_spin
+            nep_txt_path = module_path/ "Config/nep89.txt"
+            MessageManager.send_warning_message(f"NEPKit currently does not support model_type={model_type}; the program will use nep89 instead.")
         if file_name=="train":
             descriptor_path = dataset_path.with_name(f"descriptor.out")
         else:
@@ -317,6 +345,7 @@ class NepTrainResultData(ResultData):
             charge_out_path,
             bec_out_path,
             is_charge_model(nep_txt_path),
+            spin_force_out_path,
         )
         if structures is not None:
             try:
@@ -329,6 +358,7 @@ class NepTrainResultData(ResultData):
         nep_in = read_nep_in(self.data_xyz_path.with_name("nep.in"))
         bec_array = np.array([])
         charge_array = np.array([])
+        spin_force_array = np.array([])
         if self._should_recalculate(nep_in):
             results = self._recalculate_and_save()
             if getattr(self, "is_charge_model", False):
@@ -340,13 +370,15 @@ class NepTrainResultData(ResultData):
             force_array = read_nep_out_file(self.force_out_path, dtype=np.float32, ndmin=2)
             virial_array = read_nep_out_file(self.virial_out_path, dtype=np.float32, ndmin=2)
             stress_array = read_nep_out_file(self.stress_out_path, dtype=np.float32, ndmin=2)
+            if self.spin_force_out_path:
+                spin_force_array = read_nep_out_file(self.spin_force_out_path, dtype=np.float32, ndmin=2)
             if getattr(self, "is_charge_model", False):
                 if self.charge_out_path:
                     charge_array = read_nep_out_file(self.charge_out_path, dtype=np.float32, ndmin=2)
                 if self.bec_out_path:
                     bec_array = read_nep_out_file(self.bec_out_path, dtype=np.float32, ndmin=2)
             if energy_array.shape[0] != self.atoms_num_list.shape[0]:
-                for p in [self.energy_out_path, self.force_out_path, self.virial_out_path, self.stress_out_path, getattr(self, "charge_out_path", None), getattr(self, "bec_out_path", None)]:
+                for p in [self.energy_out_path, self.force_out_path, self.virial_out_path, self.stress_out_path, self.spin_force_out_path, getattr(self, "charge_out_path", None), getattr(self, "bec_out_path", None)]:
                     if p:
                         Path(p).unlink(True)
                 return self._load_dataset()
@@ -357,6 +389,11 @@ class NepTrainResultData(ResultData):
             self._force_dataset = NepPlotData(force_array, title="force")
         else:
             self._force_dataset = NepPlotData(force_array, group_list=self.atoms_num_list, title="force")
+        # Spin force (magnetic force) dataset, display only
+        if spin_force_array.size != 0:
+            self._spin_force_dataset = NepPlotData(spin_force_array, group_list=self.atoms_num_list, title="mforce")
+        else:
+            self._spin_force_dataset = None
         if float(nep_in.get("lambda_v", 1)) != 0:
             self._stress_dataset = NepPlotData(stress_array,  title="stress")
             self._virial_dataset = NepPlotData(virial_array, title="virial")

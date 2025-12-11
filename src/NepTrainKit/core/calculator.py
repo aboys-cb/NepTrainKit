@@ -66,7 +66,7 @@ class NepCalculator:
         model_file: PathLike = "nep.txt",
         backend: NepBackend | None = None,
         batch_size: int | None = None,
-        native_stdio: str | Path | Literal["inherit", "silent"] | None = "inherit",
+        native_stdio: str | Path | Literal["inherit", "silent"] | None = "silent",
     ) -> None:
 
         super().__init__()

@@ -277,7 +277,8 @@ class NepResultPlotWidget(QWidget):
             self._parent,
             "Specify regex groups for Config_type (comma separated)"
         )
-        box.groupEdit.setText(";".join(suggested))
+        suggested_text = ";".join(suggested)
+        box.groupEdit.setText(suggested_text)
         box.genSpinBox.setValue(max_generations)
         box.sizeSpinBox.setValue(population_size)
         box.tolSpinBox.setValue(convergence_tol)
@@ -341,6 +342,32 @@ class NepResultPlotWidget(QWidget):
         box.exportButton.clicked.connect(_export_preset)
         box.presetNameEdit.setText("")
         box.savePresetCheck.setChecked(False)
+
+        def _apply_preset_to_inputs(selected_name: str) -> None:
+            selected_name = (selected_name or "").strip()
+            if not selected_name or selected_name == preset_placeholder:
+                box.groupEdit.setText(suggested_text)
+                return
+            preset = load_energy_baseline_preset(selected_name)
+            if preset is None:
+                return
+            patterns = preset.group_patterns or []
+            if patterns:
+                box.groupEdit.setText(";".join(patterns))
+            if getattr(preset, "alignment_mode", None):
+                box.modeCombo.setCurrentText(preset.alignment_mode)
+            opt = getattr(preset, "optimizer", None) or {}
+            try:
+                if "max_generations" in opt:
+                    box.genSpinBox.setValue(int(opt["max_generations"]))
+                if "population_size" in opt:
+                    box.sizeSpinBox.setValue(int(opt["population_size"]))
+                if "convergence_tol" in opt:
+                    box.tolSpinBox.setValue(float(opt["convergence_tol"]))
+            except Exception:
+                pass
+
+        box.presetCombo.currentTextChanged.connect(_apply_preset_to_inputs)
         if not box.exec():
             return
 
@@ -370,7 +397,7 @@ class NepResultPlotWidget(QWidget):
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
         progress_diag.canceled.connect(thread.stop_work)
-        baseline_store: dict[str, EnergyBaselinePreset] = {}
+        baseline_store: dict[str, object] = {}
         source_summary = {
             "config_types": list(config_set),
             "selected_refs": len(ref_index),
@@ -389,6 +416,24 @@ class NepResultPlotWidget(QWidget):
             source_summary=source_summary,
         )
         progress_diag.exec()
+        apply_stats = baseline_store.get("apply_stats")
+        if selected_preset is not None and isinstance(apply_stats, dict):
+            shifted = int(apply_stats.get("shifted_structures", 0) or 0)
+            total = int(apply_stats.get("total_structures", len(data.structure.now_data)) or 0)
+            unmatched = apply_stats.get("unmatched_config_types") or []
+            if not isinstance(unmatched, list):
+                unmatched = []
+            if shifted == 0 and total > 0:
+                examples = ", ".join(map(str, unmatched[:5]))
+                suffix = f" Unmatched examples: {examples}" if examples else ""
+                MessageManager.send_warning_message(
+                    f"Preset did not match current dataset (0/{total} structures shifted).{suffix}"
+                )
+            elif unmatched:
+                examples = ", ".join(map(str, unmatched[:5]))
+                MessageManager.send_info_message(
+                    f"Preset shifted {shifted}/{total} structures; unmatched examples: {examples}"
+                )
         if selected_preset is None and box.savePresetCheck.isChecked():
             baseline = baseline_store.get("baseline")
             if baseline is not None:

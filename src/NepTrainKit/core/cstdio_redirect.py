@@ -50,6 +50,17 @@ if _IS_WINDOWS:
 PathLike = Union[str, os.PathLike[str], Path]
 
 
+def _is_valid_fd(fd: int) -> bool:
+    try:
+        if _IS_WINDOWS:
+            handle = msvcrt.get_osfhandle(fd)
+            return handle not in (-1, 0, INVALID_HANDLE_VALUE)
+        os.fstat(fd)
+        return True
+    except Exception:
+        return False
+
+
 class redirect_c_stdout_stderr(ContextDecorator):
     """Temporarily redirect C-level stdout/stderr to file or devnull.
 
@@ -85,12 +96,26 @@ class redirect_c_stdout_stderr(ContextDecorator):
 
         self._py_stdout_old = sys.stdout
         self._py_stderr_old = sys.stderr
-        self._saved_out_fd = os.dup(1)
-        self._saved_err_fd = os.dup(2)
+        try:
+            self._saved_out_fd = os.dup(1)
+            if not _is_valid_fd(self._saved_out_fd):
+                os.close(self._saved_out_fd)
+                self._saved_out_fd = None
+        except Exception:
+            self._saved_out_fd = None
+        try:
+            self._saved_err_fd = os.dup(2)
+            if not _is_valid_fd(self._saved_err_fd):
+                os.close(self._saved_err_fd)
+                self._saved_err_fd = None
+        except Exception:
+            self._saved_err_fd = None
 
         if _IS_WINDOWS:
             self._saved_out_os = GetStdHandle(STD_OUTPUT_HANDLE)
             self._saved_err_os = GetStdHandle(STD_ERROR_HANDLE)
+            manage_out_os = self._saved_out_os not in (None, 0, INVALID_HANDLE_VALUE)
+            manage_err_os = self._saved_err_os not in (None, 0, INVALID_HANDLE_VALUE)
             if self._to is None:
                 target_path = 'NUL'
                 create_disp = OPEN_ALWAYS
@@ -116,8 +141,10 @@ class redirect_c_stdout_stderr(ContextDecorator):
             if self._append and self._to is not None:
                 pos = ctypes.c_longlong(0)
                 SetFilePointerEx(handle, 0, ctypes.byref(pos), 2)  # FILE_END
-            SetStdHandle(STD_OUTPUT_HANDLE, handle)
-            SetStdHandle(STD_ERROR_HANDLE, handle)
+            if manage_out_os:
+                SetStdHandle(STD_OUTPUT_HANDLE, handle)
+            if manage_err_os:
+                SetStdHandle(STD_ERROR_HANDLE, handle)
             fd = msvcrt.open_osfhandle(int(handle), 0)
             self._target_fd = fd
             os.dup2(fd, 1)
@@ -138,18 +165,44 @@ class redirect_c_stdout_stderr(ContextDecorator):
         try:
             enc = getattr(self._py_stdout_old, 'encoding', None) or 'utf-8'
             errh = getattr(self._py_stdout_old, 'errors', None) or 'replace'
-            self._py_stdout_new = os.fdopen(self._saved_out_fd, 'w', buffering=1, encoding=enc, errors=errh, closefd=False)
+            if self._saved_out_fd is not None:
+                self._py_stdout_new = os.fdopen(
+                    self._saved_out_fd,
+                    'w',
+                    buffering=1,
+                    encoding=enc,
+                    errors=errh,
+                    closefd=False,
+                )
         except Exception:
-            self._py_stdout_new = os.fdopen(self._saved_out_fd, 'w', buffering=1, closefd=False)
+            try:
+                if self._saved_out_fd is not None:
+                    self._py_stdout_new = os.fdopen(self._saved_out_fd, 'w', buffering=1, closefd=False)
+            except Exception:
+                self._py_stdout_new = None
         try:
             enc = getattr(self._py_stderr_old, 'encoding', None) or 'utf-8'
             errh = getattr(self._py_stderr_old, 'errors', None) or 'replace'
-            self._py_stderr_new = os.fdopen(self._saved_err_fd, 'w', buffering=1, encoding=enc, errors=errh, closefd=False)
+            if self._saved_err_fd is not None:
+                self._py_stderr_new = os.fdopen(
+                    self._saved_err_fd,
+                    'w',
+                    buffering=1,
+                    encoding=enc,
+                    errors=errh,
+                    closefd=False,
+                )
         except Exception:
-            self._py_stderr_new = os.fdopen(self._saved_err_fd, 'w', buffering=1, closefd=False)
+            try:
+                if self._saved_err_fd is not None:
+                    self._py_stderr_new = os.fdopen(self._saved_err_fd, 'w', buffering=1, closefd=False)
+            except Exception:
+                self._py_stderr_new = None
 
-        sys.stdout = self._py_stdout_new
-        sys.stderr = self._py_stderr_new
+        if self._py_stdout_new is not None:
+            sys.stdout = self._py_stdout_new
+        if self._py_stderr_new is not None:
+            sys.stderr = self._py_stderr_new
         return self
 
     def __exit__(self, exc_type, exc, tb):
@@ -166,15 +219,27 @@ class redirect_c_stdout_stderr(ContextDecorator):
                     self._py_stderr_new.flush()
             except Exception:
                 pass
-            if self._saved_out_fd is not None:
-                os.dup2(self._saved_out_fd, 1)
-            if self._saved_err_fd is not None:
-                os.dup2(self._saved_err_fd, 2)
+            try:
+                if self._saved_out_fd is not None:
+                    os.dup2(self._saved_out_fd, 1)
+            except Exception:
+                pass
+            try:
+                if self._saved_err_fd is not None:
+                    os.dup2(self._saved_err_fd, 2)
+            except Exception:
+                pass
             if _IS_WINDOWS:
-                if self._saved_out_os is not None:
-                    SetStdHandle(STD_OUTPUT_HANDLE, self._saved_out_os)
-                if self._saved_err_os is not None:
-                    SetStdHandle(STD_ERROR_HANDLE, self._saved_err_os)
+                try:
+                    if self._saved_out_os not in (None, 0, INVALID_HANDLE_VALUE):
+                        SetStdHandle(STD_OUTPUT_HANDLE, self._saved_out_os)
+                except Exception:
+                    pass
+                try:
+                    if self._saved_err_os not in (None, 0, INVALID_HANDLE_VALUE):
+                        SetStdHandle(STD_ERROR_HANDLE, self._saved_err_os)
+                except Exception:
+                    pass
             if self._py_stdout_old is not None:
                 sys.stdout = self._py_stdout_old
             if self._py_stderr_old is not None:

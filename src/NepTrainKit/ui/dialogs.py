@@ -21,7 +21,7 @@ def call_path_dialog(
 ) -> Any:
     """Invoke a Qt file dialog and persist the chosen directory in config.
 
-    Returns the selected path string or None.
+    Returns the selected path string, list of paths (for ``selects``), or ``None``.
     """
     base_path = Config.get_path()
     dialog_map = {
@@ -43,12 +43,19 @@ def call_path_dialog(
 
     select_path = dialog_func()
 
+    # Qt returns:
+    # - getSaveFileName/getOpenFileName: (str, filter)
+    # - getOpenFileNames: (list[str], filter)
     if isinstance(select_path, tuple):
         select_path = select_path[0]
-    elif isinstance(select_path, list):
+
+    if isinstance(select_path, list):
         if not select_path:
             return None
-        select_path = select_path[0]
+        selected = Path(select_path[0])
+        last_dir = selected.parent
+        Config.set("setting", "last_path", str(last_dir))
+        return select_path
 
     if not select_path:
         return None

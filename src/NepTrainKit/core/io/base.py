@@ -786,7 +786,7 @@ class ResultData(QObject):
         self._pending_unbalanced_force_indices = []
         return list(indices)
 
-    def iter_dataset_summary(self):
+    def iter_dataset_summary(self, group_by: SearchType = SearchType.TAG):
         """Aggregate dataset-wide statistics for use in summary dialogs.
 
         Notes
@@ -794,6 +794,13 @@ class ResultData(QObject):
         This generator yields a progress unit after each structure so that
         callers can drive a progress dialog. Results are cached on the
         instance and later returned by :meth:`get_dataset_summary`.
+
+        Parameters
+        ----------
+        group_by : SearchType, default=SearchType.TAG
+            Attribute used for grouping the distribution table. ``TAG`` uses
+            ``Structure.tag`` (Config_type), while ``FORMULA`` uses
+            ``Structure.formula``.
         """
         summary: dict[str, Any] = {}
         structures = getattr(self, "structure", None)
@@ -811,7 +818,7 @@ class ResultData(QObject):
         total_atoms_active = 0
         element_atom_counts: dict[str, int] = {}
         element_structure_counts: dict[str, int] = {}
-        config_counts: dict[str, int] = {}
+        group_counts: dict[str, int] = {}
 
         energy_values: list[float] = []
         energy_indices: list[int] = []
@@ -837,10 +844,13 @@ class ResultData(QObject):
                 for e in set(elems):
                     element_structure_counts[e] = element_structure_counts.get(e, 0) + 1
 
-            # Config_type statistics via Structure.tag
-            tag = getattr(s, "tag", "") or ""
-            if isinstance(tag, str) and tag:
-                config_counts[tag] = config_counts.get(tag, 0) + 1
+            # Group distribution (Config_type via tag, or formula)
+            if group_by == SearchType.FORMULA:
+                group_value = getattr(s, "formula", "") or ""
+            else:
+                group_value = getattr(s, "tag", "") or ""
+            if isinstance(group_value, str) and group_value:
+                group_counts[group_value] = group_counts.get(group_value, 0) + 1
 
             # Energy statistics (per-atom)
             if getattr(s, "has_energy", False):
@@ -898,13 +908,13 @@ class ResultData(QObject):
                     }
                 )
 
-        # Config_type distribution (sorted by count desc)
-        config_table: list[dict[str, Any]] = []
-        if config_counts:
-            total_cfg = float(sum(config_counts.values())) or 1.0
-            for name, count in sorted(config_counts.items(), key=lambda kv: kv[1], reverse=True):
-                frac = count / total_cfg
-                config_table.append(
+        # Group distribution (sorted by count desc)
+        group_table: list[dict[str, Any]] = []
+        if group_counts:
+            total_groups = float(sum(group_counts.values())) or 1.0
+            for name, count in sorted(group_counts.items(), key=lambda kv: kv[1], reverse=True):
+                frac = count / total_groups
+                group_table.append(
                     {
                         "name": name,
                         "count": int(count),
@@ -945,12 +955,13 @@ class ResultData(QObject):
         if low_elements:
             names = ", ".join(f"{e['symbol']} ({e['fraction']*100:.1f}%)" for e in low_elements[:5])
             health_messages.append(f"Elements with low atomic fraction (<5%): {names}.")
-        # Dominant config type
-        if config_table:
-            top_cfg = config_table[0]
+        # Dominant group label (Config_type or formula)
+        if group_table:
+            top_cfg = group_table[0]
             if top_cfg["fraction"] > 0.7:
+                group_label = "Formula" if group_by == SearchType.FORMULA else "Config_type"
                 health_messages.append(
-                    f"Config_type '{top_cfg['name']}' dominates {top_cfg['fraction']*100:.1f}% of active structures."
+                    f"{group_label} '{top_cfg['name']}' dominates {top_cfg['fraction']*100:.1f}% of active structures."
                 )
         # Atom-count diversity
         if atoms_stats["min_atoms"] == atoms_stats["max_atoms"] and atoms_stats["min_atoms"] > 0:
@@ -966,11 +977,12 @@ class ResultData(QObject):
         summary["counts"] = summary_counts
         summary["atoms"] = atoms_stats
         summary["elements"] = elements_table
-        summary["config_types"] = config_table
+        summary["config_types"] = group_table
         summary["energy"] = energy_stats
         summary["health"] = health_messages
         summary["data_file"] = str(self.data_xyz_path.name)
         summary["model_file"] = str(self.nep_txt_path.name)
+        summary["group_by"] = group_by.value
 
         self._dataset_summary = summary
 

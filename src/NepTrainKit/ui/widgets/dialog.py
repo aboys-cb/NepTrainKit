@@ -32,6 +32,7 @@ import os
 from .button import TagPushButton, TagGroup
 
 from NepTrainKit.core import MessageManager
+from NepTrainKit.core.types import SearchType
 
 from NepTrainKit import module_path
 
@@ -77,6 +78,13 @@ class DatasetSummaryMessageBox(MessageBoxBase):
     def __init__(self, parent=None, summary: dict | None = None):
         super().__init__(parent)
         self._summary: dict[str, Any] = summary or {}
+        group_by = self._summary.get("group_by", SearchType.TAG.value)
+        group_by_value = group_by.value if isinstance(group_by, SearchType) else str(group_by)
+        try:
+            group_by_enum = SearchType(group_by_value)
+        except Exception:
+            group_by_enum = SearchType.FORMULA if group_by_value.endswith(".FORMULA") else SearchType.TAG
+        group_label = "Formula" if group_by_enum == SearchType.FORMULA else "Config_type"
 
         self.widget.setMinimumWidth(460)
         max_rows_display = 10  # limit rows shown in dialog to keep it compact
@@ -184,12 +192,12 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         # Config_type distribution
         cfg = self._summary.get("config_types", [])
         if cfg:
-            cfg_title = CaptionLabel("Config_type distribution (active structures):", self)
+            cfg_title = CaptionLabel(f"{group_label} distribution (active structures):", self)
             layout.addWidget(cfg_title)
             cfg_grid = QGridLayout()
             cfg_grid.setContentsMargins(0, 0, 0, 0)
             cfg_grid.setSpacing(4)
-            headers = ["Config_type", "Count", "Fraction", ""]
+            headers = [group_label, "Count", "Fraction", ""]
             for c, h in enumerate(headers):
                 cfg_grid.addWidget(CaptionLabel(h, self), 0, c)
             for r, item in enumerate(cfg[:max_rows_display], start=1):
@@ -231,6 +239,14 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         atoms = self._summary.get("atoms", {})
         elements = sorted(self._summary.get("elements", []) or [], key=lambda x: x.get("fraction", 0.0), reverse=True)
         cfg = self._summary.get("config_types", []) or []
+        group_by = self._summary.get("group_by", SearchType.TAG.value)
+        group_by_value = group_by.value if isinstance(group_by, SearchType) else str(group_by)
+        try:
+            group_by_enum = SearchType(group_by_value)
+        except Exception:
+            group_by_enum = SearchType.FORMULA if group_by_value.endswith(".FORMULA") else SearchType.TAG
+        group_label = "Formula" if group_by_enum == SearchType.FORMULA else "Config_type"
+        group_section_title = "Formulas" if group_by_enum == SearchType.FORMULA else "Config Types"
         data_file = self._summary.get("data_file", "")
         model_file = self._summary.get("model_file", "")
         def _table(rows: list[dict], headers: list[str], cols: list[str]) -> str:
@@ -280,16 +296,16 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         cfg_html = _table(
             [
                 {
-                    "Config_type": item.get("name", ""),
+                    group_label: item.get("name", ""),
                     "Count": item.get("count", 0),
                     "Fraction (%)": f"{item.get('fraction', 0.0) * 100.0:.1f}",
                 }
                 for item in cfg
             ],
-            ["Config_type", "Count", "Fraction (%)"],
-            ["Config_type", "Count", "Fraction (%)"],
+            [group_label, "Count", "Fraction (%)"],
+            [group_label, "Count", "Fraction (%)"],
         )
-        return f"<!doctype html><html><head><meta charset='utf-8'><title>Dataset summary</title>{style}</head><body><h1>Dataset Summary</h1>{counts_html}<h2>Elements</h2>{elements_html}<h2>Config Types</h2>{cfg_html}</body></html>"
+        return f"<!doctype html><html><head><meta charset='utf-8'><title>Dataset summary</title>{style}</head><body><h1>Dataset Summary</h1>{counts_html}<h2>Elements</h2>{elements_html}<h2>{group_section_title}</h2>{cfg_html}</body></html>"
 
 class GetStrMessageBox(MessageBoxBase):
     """ Custom message box """

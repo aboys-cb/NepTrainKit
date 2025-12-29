@@ -487,6 +487,12 @@ class NepResultPlotWidget(QWidget):
         if data is None:
             MessageManager.send_info_message("NEP data has not been loaded yet!")
             return
+        group_by = SearchType.TAG
+        parent = getattr(self, "_parent", None)
+        search = getattr(parent, "search_lineEdit", None) if parent is not None else None
+        search_type = getattr(search, "search_type", None)
+        if isinstance(search_type, SearchType):
+            group_by = search_type
         structures = getattr(data, "structure", None)
         if structures is None or structures.now_data.size == 0:
             MessageManager.send_info_message("No active structures to summarise.")
@@ -504,7 +510,7 @@ class NepResultPlotWidget(QWidget):
         thread.finished.connect(progress_diag.accept)
         thread.finished.connect(lambda: self._show_dataset_summary_dialog(data))
         progress_diag.canceled.connect(thread.stop_work)
-        thread.start_work(data.iter_dataset_summary)
+        thread.start_work(data.iter_dataset_summary, group_by=group_by)
         progress_diag.exec()
 
     def _show_dataset_summary_dialog(self, data):

@@ -18,6 +18,7 @@ from NepTrainKit.ui.widgets import (
     SparseMessageBox,
     IndexSelectMessageBox,
     RangeSelectMessageBox,
+    LatticeRangeSelectMessageBox,
     EditInfoMessageBox,
     ShiftEnergyMessageBox,
     DFTD3MessageBox,
@@ -123,6 +124,7 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.inverseSignal.connect(self.inverse_select)
         self.tool_bar.selectIndexSignal.connect(self.select_by_index)
         self.tool_bar.rangeSignal.connect(self.select_by_range)
+        self.tool_bar.latticeRangeSignal.connect(self.select_by_lattice_range)
         self.tool_bar.dftd3Signal.connect(self.calc_dft_d3)
         self.tool_bar.editInfoSignal.connect(self.edit_structure_info)
         self.tool_bar.summarySignal.connect(self.show_dataset_summary)
@@ -514,6 +516,50 @@ class NepResultPlotWidget(QWidget):
         y_min, y_max = box.yMinSpin.value(), box.yMaxSpin.value()
         logic_and = box.logicCombo.currentText() == "AND"
         indices = data.select_structures_by_range( dataset, x_min, x_max, y_min, y_max, logic_and)
+        if indices:
+            self.canvas.select_index(indices, False)
+
+    def select_by_lattice_range(self):
+        """Select structures by lattice parameters range."""
+        data = self.canvas.nep_result_data
+        if data is None:
+            return
+        structures = data.structure.now_data
+        if structures.size == 0:
+            return
+
+        # Pre-calculate ranges for initialization
+        abcs = np.array([s.abc for s in structures])
+        angles = np.array([s.angles for s in structures])
+
+        box = LatticeRangeSelectMessageBox(self._parent, "Select structures by lattice range")
+        box.aMinSpin.setValue(float(np.min(abcs[:, 0])))
+        box.aMaxSpin.setValue(float(np.max(abcs[:, 0])))
+        box.bMinSpin.setValue(float(np.min(abcs[:, 1])))
+        box.bMaxSpin.setValue(float(np.max(abcs[:, 1])))
+        box.cMinSpin.setValue(float(np.min(abcs[:, 2])))
+        box.cMaxSpin.setValue(float(np.max(abcs[:, 2])))
+
+        box.alphaMinSpin.setValue(float(np.min(angles[:, 0])))
+        box.alphaMaxSpin.setValue(float(np.max(angles[:, 0])))
+        box.betaMinSpin.setValue(float(np.min(angles[:, 1])))
+        box.betaMaxSpin.setValue(float(np.max(angles[:, 1])))
+        box.gammaMinSpin.setValue(float(np.min(angles[:, 2])))
+        box.gammaMaxSpin.setValue(float(np.max(angles[:, 2])))
+
+        if not box.exec():
+            return
+
+        a_range = (box.aMinSpin.value(), box.aMaxSpin.value())
+        b_range = (box.bMinSpin.value(), box.bMaxSpin.value())
+        c_range = (box.cMinSpin.value(), box.cMaxSpin.value())
+        alpha_range = (box.alphaMinSpin.value(), box.alphaMaxSpin.value())
+        beta_range = (box.betaMinSpin.value(), box.betaMaxSpin.value())
+        gamma_range = (box.gammaMinSpin.value(), box.gammaMaxSpin.value())
+
+        indices = data.select_structures_by_lattice_range(
+            a_range, b_range, c_range, alpha_range, beta_range, gamma_range
+        )
         if indices:
             self.canvas.select_index(indices, False)
 

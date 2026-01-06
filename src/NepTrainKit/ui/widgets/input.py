@@ -83,6 +83,18 @@ class SpinBoxUnitInputFrame(QFrame):
         for input_object in self.object_list:
             input_object.setRange(min_value, max_value)
 
+    def setDecimals(self, decimals: int):
+        """Set the number of decimals for every double spin box.
+
+        Parameters
+        ----------
+        decimals : int
+            Number of decimal places.
+        """
+        for input_object in self.object_list:
+            if isinstance(input_object, QDoubleSpinBox):
+                input_object.setDecimals(decimals)
+
     def get_input_value(self) -> list[int | float]:
         """Return the numeric values from each input widget.
 

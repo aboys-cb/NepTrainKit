@@ -773,6 +773,33 @@ class ResultData(QObject):
             return []
         return np.unique(dataset.structure_index[mask]).astype(int).tolist()
 
+    def select_structures_by_lattice_range(
+        self,
+        a_range: tuple[float, float],
+        b_range: tuple[float, float],
+        c_range: tuple[float, float],
+        alpha_range: tuple[float, float],
+        beta_range: tuple[float, float],
+        gamma_range: tuple[float, float],
+    ) -> list[int]:
+        """Return structure indices whose lattice parameters fall within the given ranges."""
+        structures = self.structure.now_data
+        indices = self.structure.group_array.now_data
+
+        result_indices = []
+        for struct, idx in zip(structures, indices):
+            abc = struct.abc
+            angles = struct.angles
+
+            if (a_range[0] <= abc[0] <= a_range[1] and
+                b_range[0] <= abc[1] <= b_range[1] and
+                c_range[0] <= abc[2] <= c_range[1] and
+                alpha_range[0] <= angles[0] <= alpha_range[1] and
+                beta_range[0] <= angles[1] <= beta_range[1] and
+                gamma_range[0] <= angles[2] <= gamma_range[1]):
+                result_indices.append(int(idx))
+        return result_indices
+
     def get_selected_structures(self) -> list[Structure]:
         """Return the selected structures in the order of their raw index."""
         indices = list(self.select_index)

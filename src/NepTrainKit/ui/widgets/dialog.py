@@ -503,6 +503,81 @@ class RangeSelectMessageBox(MessageBoxBase):
         self.widget.setMinimumWidth(300)
 
 
+class LatticeRangeSelectMessageBox(MessageBoxBase):
+    """Dialog for selecting structures by lattice parameters range."""
+
+    def __init__(self, parent=None, tip="Specify lattice parameters range"):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel.setWordWrap(True)
+
+        self._frame = QFrame(self)
+        self.frame_layout = QGridLayout(self._frame)
+        self.frame_layout.setContentsMargins(0, 0, 0, 0)
+        self.frame_layout.setSpacing(2)
+
+        self.aMinSpin = DoubleSpinBox(self)
+        self.aMaxSpin = DoubleSpinBox(self)
+        self.bMinSpin = DoubleSpinBox(self)
+        self.bMaxSpin = DoubleSpinBox(self)
+        self.cMinSpin = DoubleSpinBox(self)
+        self.cMaxSpin = DoubleSpinBox(self)
+
+        self.alphaMinSpin = DoubleSpinBox(self)
+        self.alphaMaxSpin = DoubleSpinBox(self)
+        self.betaMinSpin = DoubleSpinBox(self)
+        self.betaMaxSpin = DoubleSpinBox(self)
+        self.gammaMinSpin = DoubleSpinBox(self)
+        self.gammaMaxSpin = DoubleSpinBox(self)
+
+        spins = [
+            self.aMinSpin, self.aMaxSpin, self.bMinSpin, self.bMaxSpin, self.cMinSpin, self.cMaxSpin,
+            self.alphaMinSpin, self.alphaMaxSpin, self.betaMinSpin, self.betaMaxSpin, self.gammaMinSpin, self.gammaMaxSpin
+        ]
+        for spin in spins:
+            spin.setDecimals(4)
+            spin.setRange(0, 1e6)
+
+        # Lattice constants labels
+        self.frame_layout.addWidget(CaptionLabel("a min", self), 0, 0)
+        self.frame_layout.addWidget(self.aMinSpin, 0, 1)
+        self.frame_layout.addWidget(CaptionLabel("a max", self), 0, 2)
+        self.frame_layout.addWidget(self.aMaxSpin, 0, 3)
+
+        self.frame_layout.addWidget(CaptionLabel("b min", self), 1, 0)
+        self.frame_layout.addWidget(self.bMinSpin, 1, 1)
+        self.frame_layout.addWidget(CaptionLabel("b max", self), 1, 2)
+        self.frame_layout.addWidget(self.bMaxSpin, 1, 3)
+
+        self.frame_layout.addWidget(CaptionLabel("c min", self), 2, 0)
+        self.frame_layout.addWidget(self.cMinSpin, 2, 1)
+        self.frame_layout.addWidget(CaptionLabel("c max", self), 2, 2)
+        self.frame_layout.addWidget(self.cMaxSpin, 2, 3)
+
+        # Lattice angles labels
+        self.frame_layout.addWidget(CaptionLabel("α min", self), 3, 0)
+        self.frame_layout.addWidget(self.alphaMinSpin, 3, 1)
+        self.frame_layout.addWidget(CaptionLabel("α max", self), 3, 2)
+        self.frame_layout.addWidget(self.alphaMaxSpin, 3, 3)
+
+        self.frame_layout.addWidget(CaptionLabel("β min", self), 4, 0)
+        self.frame_layout.addWidget(self.betaMinSpin, 4, 1)
+        self.frame_layout.addWidget(CaptionLabel("β max", self), 4, 2)
+        self.frame_layout.addWidget(self.betaMaxSpin, 4, 3)
+
+        self.frame_layout.addWidget(CaptionLabel("γ min", self), 5, 0)
+        self.frame_layout.addWidget(self.gammaMinSpin, 5, 1)
+        self.frame_layout.addWidget(CaptionLabel("γ max", self), 5, 2)
+        self.frame_layout.addWidget(self.gammaMaxSpin, 5, 3)
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self._frame)
+
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
+        self.widget.setMinimumWidth(400)
+
+
 class ArrowMessageBox(MessageBoxBase):
     """Dialog for selecting arrow display options."""
 

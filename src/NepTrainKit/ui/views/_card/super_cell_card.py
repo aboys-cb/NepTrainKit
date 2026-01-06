@@ -47,6 +47,7 @@ class SuperCellCard(MakeDataCard):
         self.behavior_type_combo=ComboBox(self.setting_widget)
         self.behavior_type_combo.addItem("Maximum")
         self.behavior_type_combo.addItem("Iteration")
+        self.behavior_type_combo.addItem("Minimum")
 
         self.combo_label=BodyLabel("Behavior:",self.setting_widget)
         self.combo_label.setToolTip("Select supercell generation method")
@@ -56,7 +57,7 @@ class SuperCellCard(MakeDataCard):
         self.super_scale_radio_button.setChecked(True)
         self.super_scale_condition_frame = SpinBoxUnitInputFrame(self)
         self.super_scale_condition_frame.set_input("",3)
-        self.super_scale_condition_frame.setRange(1,100)
+        self.super_scale_condition_frame.setRange(1,999)
         self.super_scale_condition_frame.set_input_value([3,3,3])
         self.super_scale_radio_button.setToolTip("Scale factors along axes")
         self.super_scale_radio_button.installEventFilter(ToolTipFilter(self.super_scale_radio_button, 300, ToolTipPosition.TOP))
@@ -64,7 +65,7 @@ class SuperCellCard(MakeDataCard):
         self.super_cell_radio_button = RadioButton("Super cell",self.setting_widget)
         self.super_cell_condition_frame = SpinBoxUnitInputFrame(self)
         self.super_cell_condition_frame.set_input("Å",3)
-        self.super_cell_condition_frame.setRange(1,100)
+        self.super_cell_condition_frame.setRange(1,9999)
         self.super_cell_condition_frame.set_input_value([20,20,20])
 
         self.super_cell_radio_button.setToolTip("Target lattice constant in Å")
@@ -102,39 +103,43 @@ class SuperCellCard(MakeDataCard):
         na, nb, nc = self.super_scale_condition_frame.get_input_value()
         return [(int(na), int(nb), int(nc))]
 
-    def _get_max_cell_factors(self, structure) -> List[Tuple[int, int, int]]:
-        """Calculate expansion factors that keep lattice lengths below the configured maxima.
+    def _get_cell_factors(self, structure, behavior_type) -> List[Tuple[int, int, int]]:
+        """Calculate expansion factors based on target lattice lengths and behavior mode.
         
         Parameters
         ----------
         structure : ase.Atoms
             Structure whose cell metrics are analysed.
+        behavior_type : int
+            0: Maximum (lengths <= inputs), 2: Minimum (lengths > inputs).
         
         Returns
         -------
         list[tuple[int, int, int]]
-            Candidate scale factors that satisfy the length limits.
+            Scale factors that satisfy the length constraints.
         """
-        max_a, max_b, max_c = self.super_cell_condition_frame.get_input_value()
+        target_a, target_b, target_c = self.super_cell_condition_frame.get_input_value()
         lattice = structure.cell.array
-
 
         a_len = np.linalg.norm(lattice[0])
         b_len = np.linalg.norm(lattice[1])
         c_len = np.linalg.norm(lattice[2])
 
+        if behavior_type == 2:  # Minimum: cell_length > target
+            # Use int(target/len) + 1 to ensure it is strictly greater than the parameter
+            na = int(target_a / a_len) + 1 if a_len > 0 else 1
+            nb = int(target_b / b_len) + 1 if b_len > 0 else 1
+            nc = int(target_c / c_len) + 1 if c_len > 0 else 1
+        else:  # Maximum or Iteration: cell_length <= target
+            na = max(int(target_a / a_len) if a_len > 0 else 0, 1)
+            nb = max(int(target_b / b_len) if b_len > 0 else 0, 1)
+            nc = max(int(target_c / c_len) if c_len > 0 else 0, 1)
 
-        na = max(int(max_a / a_len) if a_len > 0 else 0, 1)
-        nb = max(int(max_b / b_len) if b_len > 0 else 0, 1)
-        nc = max(int(max_c / c_len) if c_len > 0 else 0, 1)
-
-
-        na = na - 1 if na * a_len > max_a else na
-        nb = nb - 1 if nb * b_len > max_b else nb
-        nc = nc - 1 if nc * c_len > max_c else nc
+            na = na - 1 if na * a_len > target_a and na > 1 else na
+            nb = nb - 1 if nb * b_len > target_b and nb > 1 else nb
+            nc = nc - 1 if nc * c_len > target_c and nc > 1 else nc
 
         return [(max(na, 1), max(nb, 1), max(nc, 1))]
-
 
     def _get_max_atoms_factors(self, structure) -> List[Tuple[int, int, int]]:
         """Enumerate expansion factors that keep the total atom count within the configured limit.
@@ -170,6 +175,54 @@ class SuperCellCard(MakeDataCard):
 
         return expansion_factors
 
+    def _get_min_atoms_factors(self, structure) -> List[Tuple[int, int, int]]:
+        """Enumerate expansion factors that ensure the total atom count meets the minimum requirement.
+        
+        Parameters
+        ----------
+        structure : ase.Atoms
+            Structure providing the base atom count.
+        
+        Returns
+        -------
+        list[tuple[int, int, int]]
+            Sorted list of scale factors ordered by resulting atom count that meet the minimum requirement.
+        """
+        min_atoms = self.min_atoms_condition_frame.get_input_value()[0]
+        num_atoms_orig = len(structure)
+        
+        # Calculate minimum required scale factors
+        min_n = max(int(min_atoms / num_atoms_orig), 1)
+        
+        # Find all combinations that meet or exceed the minimum
+        expansion_factors = []
+        for na in range(1, min_n + 5):  # Allow up to 5x beyond minimum to give options
+            for nb in range(1, min_n + 5):
+                for nc in range(1, min_n + 5):
+                    total_atoms = num_atoms_orig * na * nb * nc
+                    if total_atoms >= min_atoms:
+                        expansion_factors.append((na, nb, nc))
+        
+        # Sort by total atom count (ascending)
+        expansion_factors.sort(key=lambda x: num_atoms_orig * x[0] * x[1] * x[2])
+        
+        if len(expansion_factors) == 0:
+            # If no factors meet the minimum, return the smallest that does
+            na = nb = nc = int(round(min_n ** (1/3))) or 1
+            while num_atoms_orig * na * nb * nc < min_atoms:
+                nc += 1
+                if num_atoms_orig * na * nb * nc >= min_atoms:
+                    break
+            else:
+                nb += 1
+                nc = 1
+                if num_atoms_orig * na * nb * nc < min_atoms:
+                    na += 1
+                    nb = nc = 1
+            expansion_factors = [(na, nb, nc)]
+
+        return expansion_factors
+
     def _generate_structures(self, structure, expansion_factors, super_cell_type) :
         """Build supercells using the supplied expansion factors and behaviour mode.
         
@@ -188,7 +241,7 @@ class SuperCellCard(MakeDataCard):
             Generated supercell structures.
         """
         structure_list = []
-        if super_cell_type == 0:
+        if super_cell_type == 0:  # Maximum
             na, nb, nc = expansion_factors[-1]
 
             if na == 1 and nb == 1 and nc == 1:
@@ -201,7 +254,7 @@ class SuperCellCard(MakeDataCard):
 
             structure_list.append(supercell)
 
-        elif super_cell_type == 1:
+        elif super_cell_type == 1:  # Iteration
             if self.max_atoms_radio_button.isChecked():
 
                 for na, nb, nc in expansion_factors:
@@ -233,12 +286,25 @@ class SuperCellCard(MakeDataCard):
 
                             structure_list.append(supercell)
 
+        elif super_cell_type == 2:  # Minimum
+            if expansion_factors:
+                na, nb, nc = expansion_factors[0]  # Take the first/smallest expansion factor
 
-        # super_cell_type == 2
+                if na == 1 and nb == 1 and nc == 1:
+                    return [structure.copy()]
+
+                supercell = make_supercell(structure, np.diag([na, nb, nc]),order="atom-major")
+                supercell.info["Config_type"] = structure.info.get("Config_type","") + f" supercell({na, nb, nc})"
+
+                structure_list.append(supercell)
+            else:
+                # If no valid factors, return original structure
+                return [structure.copy()]
+
         return structure_list
 
     def process_structure(self,structure):
-        """Generate supercells according to the selected behaviour (maximum, iteration, or atom limit).
+        """Generate supercells according to the selected behaviour (maximum, iteration, or minimum).
         
         Parameters
         ----------
@@ -255,7 +321,7 @@ class SuperCellCard(MakeDataCard):
         if self.super_scale_radio_button.isChecked():
             expansion_factors = self._get_scale_factors()
         elif self.super_cell_radio_button.isChecked():
-            expansion_factors = self._get_max_cell_factors(structure)
+            expansion_factors = self._get_cell_factors(structure, super_cell_type)
         elif self.max_atoms_radio_button.isChecked():
             expansion_factors = self._get_max_atoms_factors(structure)
         else:

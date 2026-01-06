@@ -76,6 +76,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     inverseSignal = Signal()
     selectIndexSignal = Signal()
     rangeSignal = Signal()
+    latticeRangeSignal = Signal()
     dftd3Signal = Signal()
     summarySignal = Signal()
     forceBalanceSignal = Signal()
@@ -103,6 +104,11 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             "Select by Range",
             QIcon(":/images/src/images/data_range.svg"),
             self.rangeSignal,
+        )
+        self.addButton(
+            "Select by Lattice",
+            QIcon(":/images/src/images/supercell.svg"),
+            self.latticeRangeSignal,
         )
         find_max_action = self.addButton(
             "Find Max Error Point",

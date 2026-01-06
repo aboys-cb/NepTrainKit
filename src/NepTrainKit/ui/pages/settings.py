@@ -120,6 +120,15 @@ class SettingsWidget(ScrollArea):
             parent=self.personal_group
         )
         self.deepmd_preserve_card.setValue(preserve_deepmd)
+
+        cache_outputs = Config.getboolean("io", "cache_outputs", True)
+        self.cache_outputs_card = SwitchSettingCard(
+            FluentIcon.SAVE,
+            'Cache output files',
+            'Cache *.out and descriptor.out for faster reload (NEP & DeepMD)',
+            parent=self.personal_group
+        )
+        self.cache_outputs_card.setValue(cache_outputs)
         # Default Config_type text
         default_cfg_type = Config.get("widget", "default_config_type", "neptrainkit")
         self.default_cfg_type_card = LineEditSettingCard(
@@ -172,6 +181,8 @@ class SettingsWidget(ScrollArea):
         selected_color = Config.get("plot", "selected_color", "#FF0000")
         show_color = Config.get("plot", "show_color", "#00FF00")
         current_color = Config.get("plot", "current_color", "#FF0000")
+        structure_bg_color = Config.get("widget", "structure_bg_color", "#FFFFFF")
+        structure_lattice_color = Config.get("widget", "structure_lattice_color", "#000000")
         pg_size = Config.getint("widget", "pg_marker_size", 7) or 7
         vispy_size = Config.getint("widget", "vispy_marker_size", 6) or 6
         vispy_aa = Config.getfloat("widget", "vispy_marker_antialias", 0.5) or 0.5
@@ -228,6 +239,22 @@ class SettingsWidget(ScrollArea):
         )
         self.vispy_aa_card.setRange(0.0, 2.0)
         self.vispy_aa_card.setValue(float(vispy_aa))
+
+        self.structure_bg_color_card = ColorSettingCard(
+            FluentIcon.BRUSH,
+            'Structure background',
+            'Background color for lattice/structure viewer',
+            self.plot_group
+        )
+        self.structure_bg_color_card.setValue(structure_bg_color)
+
+        self.structure_lattice_color_card = ColorSettingCard(
+            FluentIcon.BRUSH,
+            'Lattice line color',
+            'Line color for lattice edges in structure viewer',
+            self.plot_group
+        )
+        self.structure_lattice_color_card.setValue(structure_lattice_color)
 
         self.selected_color_card = ColorSettingCard(
             FluentIcon.BRUSH,
@@ -321,6 +348,7 @@ class SettingsWidget(ScrollArea):
         self.personal_group.addSettingCard(self.sort_atoms_card)
         self.personal_group.addSettingCard(self.use_group_menu_card)
         self.personal_group.addSettingCard(self.deepmd_preserve_card)
+        self.personal_group.addSettingCard(self.cache_outputs_card)
         self.personal_group.addSettingCard(self.default_cfg_type_card)
 
         self.nep_group.addSettingCard(self.nep_backend_card)
@@ -343,6 +371,8 @@ class SettingsWidget(ScrollArea):
         self.plot_group.addSettingCard(self.pg_size_card)
         self.plot_group.addSettingCard(self.vispy_size_card)
         self.plot_group.addSettingCard(self.vispy_aa_card)
+        self.plot_group.addSettingCard(self.structure_bg_color_card)
+        self.plot_group.addSettingCard(self.structure_lattice_color_card)
         self.plot_group.addSettingCard(self.selected_color_card)
         self.plot_group.addSettingCard(self.show_color_card)
         self.plot_group.addSettingCard(self.current_color_card)
@@ -373,6 +403,7 @@ class SettingsWidget(ScrollArea):
         self.sort_atoms_card.checkedChanged.connect(lambda state:Config.set("widget","sort_atoms",state))
         self.use_group_menu_card.checkedChanged.connect(lambda state:Config.set("widget","use_group_menu",state))
         self.deepmd_preserve_card.checkedChanged.connect(lambda state: Config.set("widget", "deepmd_preserve_subfolders", state))
+        self.cache_outputs_card.checkedChanged.connect(lambda state: Config.set("io", "cache_outputs", state))
         self.default_cfg_type_card.textChanged.connect(lambda v: Config.set("widget", "default_config_type", v))
         # plot settings
         from NepTrainKit.core.types import Pens, Brushes
@@ -387,6 +418,8 @@ class SettingsWidget(ScrollArea):
         self.pg_size_card.valueChanged.connect(lambda v: Config.set("widget", "pg_marker_size", int(v)))
         self.vispy_size_card.valueChanged.connect(lambda v: Config.set("widget", "vispy_marker_size", int(v)))
         self.vispy_aa_card.valueChanged.connect(lambda v: Config.set("widget", "vispy_marker_antialias", float(v)))
+        self.structure_bg_color_card.colorChanged.connect(lambda v: Config.set("widget", "structure_bg_color", v))
+        self.structure_lattice_color_card.colorChanged.connect(lambda v: Config.set("widget", "structure_lattice_color", v))
 
         self.selected_color_card.colorChanged.connect(lambda v: (Config.set("plot", "selected_color", v), refresh_styles()))
         self.show_color_card.colorChanged.connect(lambda v: (Config.set("plot", "show_color", v), refresh_styles()))

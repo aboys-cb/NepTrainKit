@@ -22,6 +22,12 @@ pip install NepTrainKit
 export CUDA_HOME=/usr/local/cuda-12.4
 export PATH="$CUDA_HOME/bin:$PATH"
 export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH}"
+
+# (optional) explicitly target your GPU compute capability (SM) when compiling nep_gpu
+# e.g. for Turing (7.5):
+export NEP_GPU_GENCODE="arch=compute_75,code=sm_75"
+# or multiple targets:
+# export NEP_GPU_GENCODE="-gencode arch=compute_75,code=sm_75 -gencode arch=compute_86,code=sm_86"
 pip install NepTrainKit
 ```
 
@@ -51,7 +57,7 @@ NepTrainKit
   - `train.xyz` + corresponding `*.out` files
   - `nep.txt` (optional; uses NEP89 if absent) + `train.xyz`
   - DeepMD directory (auto‑detected)
-- Interact with plots, search by `Config_type` or formula, select, delete, and export:
+- Interact with plots, search by `tag`/`formula`/`elements`, select, delete, and export:
   - Export menu → “Export Selected Structures” for chosen frames
   - Save button exports `export_remove_model.xyz` and `export_good_model.xyz`
 
@@ -82,7 +88,8 @@ Note:
 ## 7. Tips
 
 - Use Vispy for large scenes if your GPU supports OpenGL.
-- Toggle formula search to match by composition rather than tags.
+- Switch search mode to `formula` to match by composition rather than tags.
+- Switch search mode to `elements` to filter by element set, e.g. `Fe,O` (only Fe/O present) or `+Fe` (must contain Fe).
 - Use the structure toolbar to export descriptors or mark non‑physical bonds.
 ## Cite NepTrainKit
 

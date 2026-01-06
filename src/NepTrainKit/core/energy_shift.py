@@ -95,6 +95,19 @@ def list_energy_baseline_preset_names() -> list[str]:
     return Config.list_options(BASELINE_PRESET_SECTION)
 
 
+def delete_energy_baseline_preset(name: str) -> bool:
+    """Delete a baseline preset by name."""
+    name = (name or "").strip()
+    if not name:
+        return False
+    return Config.delete(BASELINE_PRESET_SECTION, name) > 0
+
+
+def clear_energy_baseline_presets() -> int:
+    """Delete all stored baseline presets and return the number removed."""
+    return Config.delete_section(BASELINE_PRESET_SECTION)
+
+
 def apply_energy_baseline(structures: List[Structure], baseline: EnergyBaselinePreset) -> dict[str, Any]:
     """Apply a precomputed baseline to structures in-place.
 

@@ -15,7 +15,7 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
     searchSignal = Signal(str, SearchType)
     checkSignal = Signal(str, SearchType)
     uncheckSignal = Signal(str, SearchType)
-    typeChangeSignal = Signal(str)
+    typeChangeSignal = Signal(object)
 
     def __init__(self, parent):
         """Initialize line-edit controls and completer support.
@@ -31,7 +31,6 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
 
     def init(self):
         """Configure buttons, tooltips, and completer delegates."""
-        self.searchButton.setToolTip("Searching for structures based on Config_type")
         self.searchButton.installEventFilter(ToolTipFilter(self.searchButton, 300, ToolTipPosition.TOP))
 
         self.checkButton = LineEditButton(":/images/src/images/check.svg", self)
@@ -75,7 +74,7 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
         else:
             self.clearSignal.emit()
 
-    def set_search_type(self, search_type: SearchType):
+    def set_search_type(self, search_type: SearchType | str):
         """Update the active search type and refresh placeholders.
 
         Parameters
@@ -83,8 +82,30 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
         search_type : SearchType
             Category applied to subsequent search requests.
         """
+        if not isinstance(search_type, SearchType):
+            try:
+                search_type = SearchType(str(search_type))
+            except Exception:
+                search_type = SearchType.TAG
         self.search_type = search_type
-        self.setPlaceholderText(f"Mark structure according to {search_type}")
+
+        if search_type == SearchType.TAG:
+            label = "Config_type"
+            example = ""
+        elif search_type == SearchType.FORMULA:
+            label = "formula (regex)"
+            example = " e.g. Fe.*O"
+        elif search_type == SearchType.ELEMENTS:
+            label = "elements"
+            example = " e.g. Fe,O  or  +Fe,-H"
+        else:
+            label = str(search_type)
+            example = ""
+
+        self.searchButton.setToolTip(f"Searching for structures based on {label}")
+        self.checkButton.setToolTip(f"Mark structure according to {label}")
+        self.uncheckButton.setToolTip(f"Unmark structure according to {label}")
+        self.setPlaceholderText(f"Mark structure according to {label}{example}")
         self.typeChangeSignal.emit(search_type)
 
     def _checked(self):

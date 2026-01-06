@@ -67,6 +67,12 @@ If you are using Python 3.10 or a later version, you can install `NepTrainKit` u
   export CUDA_HOME=/usr/local/cuda-12.4
   export PATH="$CUDA_HOME/bin:$PATH"
   export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH}"
+
+  # (optional) if you need to explicitly target your GPU compute capability (SM),
+  # set NEP_GPU_GENCODE before pip install, e.g. for Turing (7.5):
+  export NEP_GPU_GENCODE="arch=compute_75,code=sm_75"
+  # or multiple targets:
+  # export NEP_GPU_GENCODE="-gencode arch=compute_75,code=sm_75 -gencode arch=compute_86,code=sm_86"
   # now install
   pip install NepTrainKit
   ```

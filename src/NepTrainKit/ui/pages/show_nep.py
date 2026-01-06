@@ -15,7 +15,7 @@ from PySide6.QtGui import QIcon, QFont
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame, QSizePolicy
 from qfluentwidgets import HyperlinkLabel, MessageBox, SpinBox, \
     StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
-    Action, StateToolTip, CheckBox
+    Action, StateToolTip,ComboBox
 
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import LoadingThread
@@ -85,6 +85,14 @@ class ShowNepWidget(QWidget):
         """
         if hasattr(self._parent,"save_menu"):
             self._parent.save_menu.addAction(self.export_selected_action)   # pyright:ignore
+
+        # Refresh structure viewer style (background/lattice colors) from settings.
+        if hasattr(self, "show_struct_widget") and hasattr(self.show_struct_widget, "apply_style_from_config"):
+            try:
+                self.show_struct_widget.apply_style_from_config()
+            except Exception:
+                logger.debug(traceback.format_exc())
+
         auto_load_config = Config.getboolean("widget","auto_load",False)
         if not auto_load_config:
             return
@@ -121,6 +129,20 @@ class ShowNepWidget(QWidget):
         """
         self.export_selected_action=Action(QIcon(":/images/src/images/export1.svg"),"Export Selected Structures")
         self.export_selected_action.triggered.connect(self.export_selected_structures)
+
+    def _on_search_mode_changed(self, index):
+        """Sync the search mode combo-box with the search line-edit."""
+        try:
+            idx = int(index)
+        except Exception:
+            idx = int(getattr(self.search_mode_combo, "currentIndex", lambda: 0)())
+
+        mapping = {
+            0: SearchType.TAG,
+            1: SearchType.FORMULA,
+            2: SearchType.ELEMENTS,
+        }
+        self.search_lineEdit.set_search_type(mapping.get(idx, SearchType.TAG))
 
     def init_ui(self):
         """Construct canvases, toolbars, and datasets controls for the viewer.
@@ -234,12 +256,16 @@ class ShowNepWidget(QWidget):
         self.search_lineEdit.typeChangeSignal.connect(lambda search_type:self.search_lineEdit.setCompleterKeyWord(self.nep_result_data.structure.get_all_config(search_type)) if self.nep_result_data is not None else None)
 
 
-        switch_config_checkbox= CheckBox("formula",frame)
-        switch_config_checkbox.setToolTip("switch search formula")
-        switch_config_checkbox.installEventFilter(ToolTipFilter(switch_config_checkbox, 300, ToolTipPosition.TOP))
-
-        switch_config_checkbox.checkStateChanged.connect(lambda state:self.search_lineEdit.set_search_type(SearchType.FORMULA) if state == Qt.CheckState.Checked else self.search_lineEdit.set_search_type(SearchType.TAG))
-        frame_layout.addWidget(switch_config_checkbox)
+        self.search_mode_combo = ComboBox(frame)
+        self.search_mode_combo.addItem("tag")
+        self.search_mode_combo.addItem("formula")
+        self.search_mode_combo.addItem("elements")
+        self.search_mode_combo.setToolTip("switch search mode")
+        self.search_mode_combo.installEventFilter(ToolTipFilter(self.search_mode_combo, 300, ToolTipPosition.TOP))
+        self.search_mode_combo.currentIndexChanged.connect(self._on_search_mode_changed)
+        if hasattr(self.search_mode_combo, "activated"):
+            self.search_mode_combo.activated.connect(self._on_search_mode_changed)
+        frame_layout.addWidget(self.search_mode_combo)
 
         frame_layout.addWidget(self.search_lineEdit)
         self.path_label = HyperlinkLabel(self.plot_widget)

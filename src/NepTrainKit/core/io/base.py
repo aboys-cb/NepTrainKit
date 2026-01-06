@@ -25,7 +25,7 @@ import numpy.typing as npt
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
-from NepTrainKit.core.structure import Structure
+from NepTrainKit.core.structure import Structure, atomic_numbers
 from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
 
 from .sampler import SparseSampler,farthest_point_sampling,pca
@@ -318,6 +318,77 @@ class DPPlotData(NepData):
         return self.group_array[:].repeat(self.cols).astype(np.int32)
 class StructureData(NepData):
     """Utility mixin for structure-level queries."""
+
+    @staticmethod
+    def _normalise_search_type(search_type: SearchType | str | None) -> SearchType:
+        if search_type is None:
+            return SearchType.TAG
+        if isinstance(search_type, SearchType):
+            return search_type
+        val = str(search_type).strip()
+        if val.startswith(f"{SearchType.__name__}.") and "." in val:
+            name = val.split(".")[-1]
+            try:
+                return SearchType[name]
+            except Exception:
+                pass
+        try:
+            return SearchType(val)
+        except Exception:
+            MessageManager.send_warning_message(f"Unsupported search type: {search_type}")
+            return SearchType.TAG
+
+    @staticmethod
+    def _normalise_element_symbol(symbol: str) -> str:
+        symbol = symbol.strip()
+        if not symbol:
+            return ""
+        if len(symbol) == 1:
+            return symbol.upper()
+        return symbol[0].upper() + symbol[1:].lower()
+
+    @classmethod
+    def _parse_elements_query(cls, config: str) -> tuple[set[str], set[str], set[str]]:
+        """Parse an element query into (allowed, required, excluded) sets.
+
+        Query syntax
+        ------------
+        - ``Fe,O``: only elements from this set (subset constraint)
+        - ``+Fe,+O``: must include these elements (no subset constraint)
+        - ``-H`` / ``!H``: must not include this element
+
+        Tokens can be separated by commas or whitespace, e.g. ``Fe O -H``.
+        """
+        allowed: set[str] = set()
+        required: set[str] = set()
+        excluded: set[str] = set()
+
+        if not config:
+            return allowed, required, excluded
+
+        raw_tokens = re.split(r"[,\s]+", config.strip())
+        for raw in raw_tokens:
+            if not raw:
+                continue
+            op = ""
+            token = raw.strip()
+            if token[:1] in {"+", "-", "!"}:
+                op = token[0]
+                token = token[1:]
+            token = cls._normalise_element_symbol(token)
+            if not token:
+                continue
+            if token not in atomic_numbers:
+                MessageManager.send_warning_message(f"Unknown element symbol: {token}")
+                continue
+            if op == "+":
+                required.add(token)
+            elif op in {"-", "!"}:
+                excluded.add(token)
+            else:
+                allowed.add(token)
+        return allowed, required, excluded
+
     @timeit
     def get_all_config(self, search_type: SearchType | None = None) -> list[str]:
         """Return structure metadata used for filtering.
@@ -331,13 +402,19 @@ class StructureData(NepData):
         list[str]
             Value per active structure matching ``search_type``.
         """
-        if search_type is None:
-            search_type = SearchType.TAG
+        search_type = self._normalise_search_type(search_type)
         if search_type == SearchType.TAG:
             return [structure.tag for structure in self.now_data]
         if search_type == SearchType.FORMULA:
             return [structure.formula for structure in self.now_data]
-        MessageManager.send_warning_message(f"Unsupported search type: {search_type}")
+        if search_type == SearchType.ELEMENTS:
+            words: list[str] = []
+            for structure in self.now_data:
+                try:
+                    words.extend(sorted(set(map(str, structure.elements))))
+                except Exception:
+                    continue
+            return words
         return []
     def search_config(self, config: str, search_type: SearchType) -> list[int]:
         """Return structure indices whose metadata match ``config``.
@@ -353,13 +430,26 @@ class StructureData(NepData):
         list[int]
             Structure indices satisfying the pattern; empty on failure.
         """
+        search_type = self._normalise_search_type(search_type)
         if search_type == SearchType.TAG:
             result_index = [i for i, structure in enumerate(self.now_data) if re.search(config, structure.tag)]
         elif search_type == SearchType.FORMULA:
             result_index = [i for i, structure in enumerate(self.now_data) if re.search(config, structure.formula)]
-        else:
-            MessageManager.send_warning_message(f"Unsupported search type: {search_type}")
-            return []
+        elif search_type == SearchType.ELEMENTS:
+            allowed, required, excluded = self._parse_elements_query(config)
+            result_index = []
+            for i, structure in enumerate(self.now_data):
+                try:
+                    elem_set = set(map(str, structure.elements))
+                except Exception:
+                    continue
+                if excluded and elem_set.intersection(excluded):
+                    continue
+                if required and not required.issubset(elem_set):
+                    continue
+                if allowed and not elem_set.issubset(allowed):
+                    continue
+                result_index.append(i)
         return self.group_array[result_index].tolist()
 @dataclass(frozen=True)
 class StructureSyncRule:
@@ -535,12 +625,19 @@ class ResultData(QObject):
         The GUI expects a ``nep.in`` file to mark prediction runs for large
         (>1000) structure collections.
         """
+        if not self.cache_outputs_enabled():
+            return
         if self.atoms_num_list.shape[0] > 1000:
             #
             if not self.data_xyz_path.with_name("nep.in").exists():
                 with open(self.data_xyz_path.with_name("nep.in"),
                           "w", encoding="utf8") as f:
                     f.write("prediction 1 ")
+
+    @staticmethod
+    def cache_outputs_enabled() -> bool:
+        """Return whether loader-generated cache files should be written."""
+        return bool(Config.getboolean("io", "cache_outputs", True))
     def load(self):
         """Load structures, descriptors, and dataset arrays in sequence.
         The routine instantiates a calculator (optionally via ``calculator_factory``),
@@ -1212,23 +1309,28 @@ class ResultData(QObject):
 
     def _load_descriptors(self):
         """Load cached descriptors or generate them with the calculator."""
+        desc_array = np.array([])
         if self.descriptor_path.exists():
-            desc_array = read_nep_out_file(self.descriptor_path,dtype=np.float32,ndmin=2)
-        else:
-            desc_array = np.array([])
-        if desc_array.size == 0:
-            desc_array = self.nep_calc.get_structures_descriptor(self.structure.now_data.tolist())
+            try:
+                desc_array = read_nep_out_file(self.descriptor_path, dtype=np.float32, ndmin=2)
+            except Exception:
+                desc_array = np.array([])
 
-            if desc_array.size != 0:
-                np.savetxt(self.descriptor_path, desc_array, fmt='%.6g')
-        else:
+        if desc_array.size != 0:
             if desc_array.shape[0] == np.sum(self.atoms_num_list):
                 desc_array = aggregate_per_atom_to_structure(desc_array, self.atoms_num_list, map_func=np.mean, axis=0)
             elif desc_array.shape[0] == self.atoms_num_list.shape[0]:
                 pass
             else:
-                self.descriptor_path.unlink(True)
-                return self._load_descriptors()
+                if self.cache_outputs_enabled():
+                    self.descriptor_path.unlink(True)
+                    return self._load_descriptors()
+                desc_array = np.array([])
+
+        if desc_array.size == 0:
+            desc_array = self.nep_calc.get_structures_descriptor(self.structure.now_data.tolist())
+            if desc_array.size != 0 and self.cache_outputs_enabled():
+                np.savetxt(self.descriptor_path, desc_array, fmt='%.6g')
         # Cache raw (pre-PCA) per-structure descriptors to avoid reloading later
         # This enables advanced sampling to use original descriptor space when requested.
         if desc_array.size != 0:

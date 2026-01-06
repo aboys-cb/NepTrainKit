@@ -213,8 +213,9 @@ class StructurePlotWidget(scene.SceneCanvas):
         """
         super().__init__( *args, **kwargs)
         self.unfreeze()
-
-        self.bgcolor = 'white'  # Set background to white
+        self._lattice_color = (0.0, 0.0, 0.0, 1.0)
+        self._lattice_lines_pos = None
+        self.apply_style_from_config(redraw_lattice=False)
 
         self.grid = self.central_widget.add_grid(margin=5
                                                  )
@@ -357,6 +358,33 @@ class StructurePlotWidget(scene.SceneCanvas):
         return
 
 
+    def apply_style_from_config(self, redraw_lattice: bool = True):
+        """Apply background and lattice line styles from persisted configuration."""
+        bg = Config.get("widget", "structure_bg_color", "#FFFFFF")
+        try:
+            self.bgcolor = tuple(Color(str(bg)).rgba)
+        except Exception:
+            self.bgcolor = "white"
+
+        lattice = Config.get("widget", "structure_lattice_color", "#000000")
+        try:
+            self._lattice_color = tuple(Color(str(lattice)).rgba)
+        except Exception:
+            self._lattice_color = (0.0, 0.0, 0.0, 1.0)
+
+        lattice_item = getattr(self, "lattice_item", None)
+        if redraw_lattice and lattice_item is not None and self._lattice_lines_pos is not None:
+            try:
+                lattice_item.set_data(
+                    pos=self._lattice_lines_pos,
+                    color=self._lattice_color,
+                    connect="segments",
+                )
+            except Exception:
+                pass
+
+        self.update()
+
     def show_lattice(self, structure):
         """Draw the crystal lattice as line segments.
         
@@ -377,9 +405,10 @@ class StructurePlotWidget(scene.SceneCanvas):
             [2, 6], [3, 7], [4, 5], [4, 6], [5, 7], [6, 7]
         ]
         lines = np.array([vertices[edge] for edge in edges]).reshape(-1, 3)
+        self._lattice_lines_pos = lines
         self.lattice_item = Line(
             pos=lines,
-            color=(0, 0, 0, 1),
+            color=self._lattice_color,
             width=1.5,
             connect='segments',
             method='gl',
@@ -738,6 +767,7 @@ class StructurePlotWidget(scene.SceneCanvas):
             Structure object with ``cell`` and ``positions`` attributes.
         """
         self.structure = structure
+        self.apply_style_from_config(redraw_lattice=False)
         if self.axes is not None:
             self.axes.axis_root.parent = None
 

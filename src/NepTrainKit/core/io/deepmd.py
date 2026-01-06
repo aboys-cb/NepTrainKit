@@ -293,12 +293,14 @@ class DeepmdResultData(ResultData):
             force_array=read_nep_out_file(self.force_out_path,ndmin=2)
             virial_array=read_nep_out_file(self.virial_out_path,ndmin=2)
             if energy_array.shape[0]!=self.atoms_num_list.shape[0]:
-                self.energy_out_path.unlink(True)
-                self.force_out_path.unlink(True)
-                if self.spin_out_path is not None:
-                    self.spin_out_path.unlink(True)
-                self.virial_out_path.unlink(True)
-                return self._load_dataset()
+                if self.cache_outputs_enabled():
+                    self.energy_out_path.unlink(True)
+                    self.force_out_path.unlink(True)
+                    if self.spin_out_path is not None:
+                        self.spin_out_path.unlink(True)
+                    self.virial_out_path.unlink(True)
+                    return self._load_dataset()
+                energy_array, force_array, virial_array = self._recalculate_and_save()
         self._energy_dataset = DPPlotData(energy_array, title="energy")
         default_forces = Config.get("widget", "forces_data", "Row")
         if force_array.size != 0 and default_forces == "Norm":
@@ -348,7 +350,7 @@ class DeepmdResultData(ResultData):
 
         energy_array=energy_array/ self.atoms_num_list.reshape(-1, 1)
         energy_array = energy_array.astype(np.float32)
-        if energy_array.size != 0:
+        if energy_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
         return energy_array
     def _save_force_data(self, forces: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
@@ -367,7 +369,7 @@ class DeepmdResultData(ResultData):
         ref_forces = np.vstack([s.forces if s.has_forces else np.full((len(s),3 ), np.nan) for s in self.structure.now_data], dtype=np.float32)
 
         forces_array = concat_nep_dft_array(forces,ref_forces,deepmd=True)
-        if forces_array.size != 0:
+        if forces_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
         return forces_array
     def _save_virial_and_data(self, virials: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
@@ -386,7 +388,7 @@ class DeepmdResultData(ResultData):
         ref_virials = np.vstack([s.nep_virial if s.has_virial else [np.nan]*6 for s in self.structure.now_data ], dtype=np.float32)
         virials_array = concat_nep_dft_array(virials,ref_virials,deepmd=True)
 
-        if virials_array.size != 0:
+        if virials_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
         return virials_array
     def _recalculate_and_save(self ):

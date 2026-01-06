@@ -6,6 +6,7 @@ from pathlib import Path
 import numpy as np
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 from loguru import logger
+from qfluentwidgets import MessageBox
 
 from NepTrainKit.ui.threads import LoadingThread
 from NepTrainKit.ui.dialogs import call_path_dialog
@@ -27,6 +28,7 @@ from NepTrainKit.core.types import SearchType, CanvasMode
 from NepTrainKit.ui.views import NepDisplayGraphicsToolBar
 from NepTrainKit.core.energy_shift import (
     EnergyBaselinePreset,
+    delete_energy_baseline_preset,
     list_energy_baseline_preset_names,
     load_energy_baseline_preset,
     save_energy_baseline_preset,
@@ -337,9 +339,27 @@ class NepResultPlotWidget(QWidget):
             except Exception:  # noqa: BLE001
                 MessageManager.send_warning_message("Failed to export preset.")
 
+        def _delete_preset() -> None:
+            selected = box.presetCombo.currentText().strip()
+            if selected in {"", preset_placeholder}:
+                MessageManager.send_info_message("Please select a preset to delete.")
+                return
+            w = MessageBox("Delete baseline preset", f"Delete preset '{selected}'?", box)
+            w.setClosableOnMaskClicked(True)
+            if not w.exec():
+                return
+            if delete_energy_baseline_preset(selected):
+                _refresh_presets()
+                box.presetCombo.setCurrentText(preset_placeholder)
+                MessageManager.send_info_message(f"Deleted preset: {selected}")
+            else:
+                MessageManager.send_warning_message("Failed to delete preset.")
+
         _refresh_presets()
         box.importButton.clicked.connect(_import_preset)
         box.exportButton.clicked.connect(_export_preset)
+        if hasattr(box, "deleteButton"):
+            box.deleteButton.clicked.connect(_delete_preset)
         box.presetNameEdit.setText("")
         box.savePresetCheck.setChecked(False)
 

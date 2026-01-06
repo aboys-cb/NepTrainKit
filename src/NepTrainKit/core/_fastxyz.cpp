@@ -234,10 +234,15 @@ static void parse_header_line(const char* b, const char* e,
                     AddValue v; v.type = AddType::DOUBLE;
                     try { v.d = std::stod(value); } catch (...) { v.type = AddType::STRING; v.s = value; }
                     add_out["energy"] = std::move(v);
+                } else if (key == "weight" || key == "Weight" || key == "WEIGHT") {
+                    AddValue v; v.type = AddType::DOUBLE;
+                    try { v.d = std::stod(value); } catch (...) { v.type = AddType::STRING; v.s = value; }
+                    add_out["weight"] = std::move(v);
+
                 } else if (key == "pbc" || key == "PBC") {
                     AddValue v; v.type = AddType::STRING; v.s = value;
                     add_out["pbc"] = std::move(v);
-                } else if (key == "virial" || key == "stress" || key == "VIRIAL" || key == "STRESS") {
+                } else if (key == "virial" || key == "stress" || key == "VIRIAL" || key == "STRESS" || key == "Virial" || key == "Stress") {
                     AddValue v; v.type = AddType::FLOATS;
                     const char* vp = value.data();
                     const char* ve = value.data() + value.size();

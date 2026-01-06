@@ -126,10 +126,8 @@ class NepCalculator:
                     MessageManager.send_warning_message(str(exc))
                     return False
             else:
-                if self.is_charge_model and CpuNep is not None and hasattr(CpuNep, "calculate_qnep"):
-                    target_cls = CpuNep
-                else:
-                    target_cls = CpuQNep if self.is_charge_model else CpuNep
+
+                target_cls=CpuNep
                 if target_cls is None:
                     return False
                 with self._native_stdio_ctx():

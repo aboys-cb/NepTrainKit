@@ -16,11 +16,11 @@
 #pragma once
 #include <vector>
 
-class Ewald
+class EwaldNep
 {
 public:
-  Ewald();
-  ~Ewald();
+  EwaldNep();
+  ~EwaldNep();
   void initialize(const double alpha_input);
   void find_force(
     const int N,

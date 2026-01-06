@@ -9,6 +9,8 @@
 #include <Python.h>
 #include "nep.h"
 #include "nep.cpp"
+#include "neighbor_nep.cpp"
+#include "ewald_nep.cpp"
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -38,7 +40,7 @@ struct ScopedReleaseIfHeld {
     ScopedReleaseIfHeld& operator=(const ScopedReleaseIfHeld&) = delete;
 };
 
-// 转换函数：UTF-8 到系统编码
+// Convert path: UTF-8 -> system encoding (Windows ACP)
 std::string convert_path(const std::string& utf8_path) {
 #ifdef _WIN32
     int wstr_size = MultiByteToWideChar(CP_UTF8, 0, utf8_path.c_str(), -1, nullptr, 0);
@@ -55,7 +57,7 @@ std::string convert_path(const std::string& utf8_path) {
 }
 
 
-class CpuNep : public NEP3 {
+class CpuNep : public NEP {
 public:
     explicit CpuNep(const std::string& potential_filename)  {
         std::string utf8_path  = convert_path(potential_filename);
@@ -139,6 +141,102 @@ calculate(const std::vector<std::vector<int>>& type,
                        std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(9*sizeof(double)), static_cast<pybind11::ssize_t>(sizeof(double))},
                        static_cast<void*>(vir_buf), c3);
     return std::make_tuple(ap, af, av);
+}
+
+std::tuple<pybind11::array, pybind11::array, pybind11::array, pybind11::array, pybind11::array>
+calculate_qnep(const std::vector<std::vector<int>>& type,
+               const std::vector<std::vector<double>>& box,
+               const std::vector<std::vector<double>>& position) {
+    const size_t nframes = type.size();
+    size_t total_atoms = 0;
+    for (const auto& t : type) total_atoms += t.size();
+
+    if (paramb.charge_mode == 0) {
+        throw std::runtime_error("Charge model not enabled in this NEP.");
+    }
+
+    double* pot_buf = nullptr;
+    double* frc_buf = nullptr;
+    double* vir_buf = nullptr;
+    double* chg_buf = nullptr;
+    double* bec_buf = nullptr;
+    size_t cursor = 0;
+
+    {
+        ScopedReleaseIfHeld _gil_release;
+        pot_buf = new double[total_atoms];
+        frc_buf = new double[total_atoms * 3];
+        vir_buf = new double[total_atoms * 9];
+        chg_buf = new double[total_atoms];
+        bec_buf = new double[total_atoms * 9];
+
+        for (size_t i = 0; i < nframes; ++i) {
+            check_canceled();
+            const size_t Ni = type[i].size();
+            std::vector<double> p(Ni);
+            std::vector<double> f(Ni * 3);
+            std::vector<double> v(Ni * 9);
+            std::vector<double> q(Ni);
+            std::vector<double> b(Ni * 9);
+            compute(type[i], box[i], position[i], p, f, v, q, b);
+            for (size_t m = 0; m < Ni; ++m) {
+                pot_buf[cursor + m] = p[m];
+                frc_buf[(cursor + m) * 3 + 0] = f[m + 0 * Ni];
+                frc_buf[(cursor + m) * 3 + 1] = f[m + 1 * Ni];
+                frc_buf[(cursor + m) * 3 + 2] = f[m + 2 * Ni];
+                double* row_v = vir_buf + (cursor + m) * 9;
+                row_v[0] = v[m + 0 * Ni];
+                row_v[1] = v[m + 1 * Ni];
+                row_v[2] = v[m + 2 * Ni];
+                row_v[3] = v[m + 3 * Ni];
+                row_v[4] = v[m + 4 * Ni];
+                row_v[5] = v[m + 5 * Ni];
+                row_v[6] = v[m + 6 * Ni];
+                row_v[7] = v[m + 7 * Ni];
+                row_v[8] = v[m + 8 * Ni];
+                chg_buf[cursor + m] = q[m];
+                double* row_b = bec_buf + (cursor + m) * 9;
+                row_b[0] = b[m + 0 * Ni];
+                row_b[1] = b[m + 1 * Ni];
+                row_b[2] = b[m + 2 * Ni];
+                row_b[3] = b[m + 3 * Ni];
+                row_b[4] = b[m + 4 * Ni];
+                row_b[5] = b[m + 5 * Ni];
+                row_b[6] = b[m + 6 * Ni];
+                row_b[7] = b[m + 7 * Ni];
+                row_b[8] = b[m + 8 * Ni];
+            }
+            cursor += Ni;
+        }
+    }
+
+    auto c1 = pybind11::capsule(pot_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+    auto c2 = pybind11::capsule(frc_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+    auto c3 = pybind11::capsule(vir_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+    auto c4 = pybind11::capsule(chg_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+    auto c5 = pybind11::capsule(bec_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+
+    std::vector<std::ptrdiff_t> shp_p{static_cast<pybind11::ssize_t>(cursor)};
+    std::vector<std::ptrdiff_t> shp_f{static_cast<pybind11::ssize_t>(cursor), 3};
+    std::vector<std::ptrdiff_t> shp_v{static_cast<pybind11::ssize_t>(cursor), 9};
+    std::vector<std::ptrdiff_t> shp_c{static_cast<pybind11::ssize_t>(cursor)};
+    std::vector<std::ptrdiff_t> shp_b{static_cast<pybind11::ssize_t>(cursor), 9};
+    pybind11::array ap(pybind11::dtype::of<double>(), shp_p,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(pot_buf), c1);
+    pybind11::array af(pybind11::dtype::of<double>(), shp_f,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(3*sizeof(double)), static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(frc_buf), c2);
+    pybind11::array av(pybind11::dtype::of<double>(), shp_v,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(9*sizeof(double)), static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(vir_buf), c3);
+    pybind11::array aq(pybind11::dtype::of<double>(), shp_c,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(chg_buf), c4);
+    pybind11::array ab(pybind11::dtype::of<double>(), shp_b,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(9*sizeof(double)), static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(bec_buf), c5);
+    return std::make_tuple(ap, af, av, aq, ab);
 }
 
 std::tuple<pybind11::array, pybind11::array, pybind11::array>
@@ -276,7 +374,7 @@ const std::vector<std::vector<int>>& type,
     return std::make_tuple(ap, af, av);
 }
 
-    // 获取 descriptor
+    // Get per-atom descriptor (flattened)
     std::vector<double> get_descriptor(const std::vector<int>& type,
                                        const std::vector<double>& box,
                                        const std::vector<double>& position) {
@@ -287,12 +385,12 @@ const std::vector<std::vector<int>>& type,
         return descriptor;
     }
 
-    // 获取元素列表
+    // Get element list from the model
     std::vector<std::string> get_element_list() {
         return element_list;
     }
 
-    // 获取所有结构的 descriptor
+    // Get per-atom descriptors for all structures
     std::vector<std::vector<double>> get_structures_descriptor(
             const std::vector<std::vector<int>>& type,
             const std::vector<std::vector<double>>& box,
@@ -325,7 +423,7 @@ const std::vector<std::vector<int>>& type,
 
         return all_descriptors;
     }
-    // 获取所有结构的 polarizability
+    // Get structure polarizability for all structures
     std::vector<std::vector<double>> get_structures_polarizability(const std::vector<std::vector<int>>& type,
                                                      const std::vector<std::vector<double>>& box,
                                                      const std::vector<std::vector<double>>& position) {
@@ -345,7 +443,7 @@ const std::vector<std::vector<int>>& type,
         return all_polarizability;
     }
 
-        // 获取所有结构的 dipole
+        // Get structure dipole for all structures
     std::vector<std::vector<double>> get_structures_dipole(const std::vector<std::vector<int>>& type,
                                                      const std::vector<std::vector<double>>& box,
                                                      const std::vector<std::vector<double>>& position) {
@@ -366,13 +464,14 @@ const std::vector<std::vector<int>>& type,
     }
 };
 
-// pybind11 模块绑定
+// pybind11 module bindings
 PYBIND11_MODULE(nep_cpu, m) {
     m.doc() = "A pybind11 module for NEP";
 
-    py::class_<CpuNep>(m, "CpuNep")
+    auto cls = py::class_<CpuNep>(m, "CpuNep")
         .def(py::init<const std::string&>(), py::arg("potential_filename"))
         .def("calculate", &CpuNep::calculate)
+        .def("calculate_qnep", &CpuNep::calculate_qnep)
         .def("calculate_with_dftd3", &CpuNep::calculate_with_dftd3)
         .def("calculate_dftd3", &CpuNep::calculate_dftd3)
 
@@ -388,5 +487,8 @@ PYBIND11_MODULE(nep_cpu, m) {
 
         .def("get_structures_descriptor", &CpuNep::get_structures_descriptor,
              py::arg("type"), py::arg("box"), py::arg("position"));
+
+    // expose charge-capable alias (same pattern as nep_gpu)
+    m.attr("CpuQNep") = cls;
 
 }

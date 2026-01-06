@@ -106,9 +106,9 @@ static void fill_box_and_cells_from_original(const Parameters& para, Structure& 
     float det = get_det9(s.box_original);
     s.volume = std::abs(det);
 
-    s.num_cell[0] = int(std::ceil(2.0f * para.rc_radial / (s.volume / get_area(b, c))));
-    s.num_cell[1] = int(std::ceil(2.0f * para.rc_radial / (s.volume / get_area(c, a))));
-    s.num_cell[2] = int(std::ceil(2.0f * para.rc_radial / (s.volume / get_area(a, b))));
+    s.num_cell[0] = int(std::ceil(2.0f * para.rc_radial_max / (s.volume / get_area(b, c))));
+    s.num_cell[1] = int(std::ceil(2.0f * para.rc_radial_max / (s.volume / get_area(c, a))));
+    s.num_cell[2] = int(std::ceil(2.0f * para.rc_radial_max / (s.volume / get_area(a, b))));
 
     s.box[0] = s.box_original[0] * s.num_cell[0];
     s.box[3] = s.box_original[3] * s.num_cell[0];
@@ -906,7 +906,7 @@ std::vector<std::vector<double>> GpuNep::get_structures_polarizability(
 
 PYBIND11_MODULE(nep_gpu, m) {
     m.doc() = "GPU-accelerated NEP bindings";
-    auto cls = py::class_<GpuNep>(m, "GpuNep")
+    py::class_<GpuNep>(m, "GpuNep")
         .def(py::init<const std::string&>())
 
         .def("get_element_list", &GpuNep::get_element_list)
@@ -922,9 +922,6 @@ PYBIND11_MODULE(nep_gpu, m) {
              py::arg("type"), py::arg("box"), py::arg("position"))
         .def("get_structures_dipole", &GpuNep::get_structures_dipole)
         .def("get_structures_polarizability", &GpuNep::get_structures_polarizability);
-
-    // expose charge-capable alias
-    m.attr("GpuQNep") = cls;
 
     m.def("_version_tag", [](){ return std::string("nep_gpu_ext_desc_1"); });
 }

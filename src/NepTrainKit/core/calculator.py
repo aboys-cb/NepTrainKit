@@ -32,15 +32,7 @@ except ImportError:
     except ImportError:
         logger.debug("no found nep_cpu")
         CpuNep = None
-try:
-    from NepTrainKit.qnep_cpu import CpuQNep
-except ImportError:
-    logger.debug("no found NepTrainKit.qnep_cpu")
-    try:
-        from qnep_cpu import CpuQNep
-    except ImportError:
-        logger.debug("no found qnep_cpu")
-        CpuQNep = None
+
 try:
     from NepTrainKit.nep_gpu import GpuNep
 except ImportError:
@@ -50,10 +42,6 @@ except ImportError:
     except ImportError:
         logger.debug("no found nep_gpu")
         GpuNep = None
-try:
-    from NepTrainKit.nep_gpu import GpuQNep  # type: ignore[attr-defined]
-except ImportError:
-    GpuQNep = None
 if GpuNep is not None:
     if "CUDA_VISIBLE_DEVICES" not in os.environ:
         os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -125,7 +113,7 @@ class NepCalculator:
     def _load_nep_backend(self, backend: NepBackend) -> bool:
         try:
             if backend == NepBackend.GPU:
-                target_cls = GpuQNep if self.is_charge_model else GpuNep
+                target_cls = GpuNep
                 if target_cls is None:
                     return False
                 try:
@@ -138,7 +126,10 @@ class NepCalculator:
                     MessageManager.send_warning_message(str(exc))
                     return False
             else:
-                target_cls = CpuQNep if self.is_charge_model else CpuNep
+                if self.is_charge_model and CpuNep is not None and hasattr(CpuNep, "calculate_qnep"):
+                    target_cls = CpuNep
+                else:
+                    target_cls = CpuQNep if self.is_charge_model else CpuNep
                 if target_cls is None:
                     return False
                 with self._native_stdio_ctx():
@@ -197,7 +188,9 @@ class NepCalculator:
         self.nep3.reset_cancel()
         try:
             with self._native_stdio_ctx():
-                if self.is_charge_model and hasattr(self.nep3, "calculate_qnep"):
+                if self.is_charge_model:
+                    if not hasattr(self.nep3, "calculate_qnep"):
+                        raise RuntimeError("Charge model backend does not implement calculate_qnep().")
                     outputs = self.nep3.calculate_qnep(atom_types, boxes, positions)
                 else:
                     outputs = self.nep3.calculate(atom_types, boxes, positions)

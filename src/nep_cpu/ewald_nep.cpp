@@ -17,13 +17,13 @@
 The k-space part of the Ewald summation
 ------------------------------------------------------------------------------*/
 
-#include "ewald.h"
+#include "ewald_nep.h"
 #include <cmath>
 #include <vector>
 
 namespace {
 
-const double K_C_SP = 14.399645; // 1/(4*PI*epsilon_0)
+const double K_C_SP_ = 14.399645; // 1/(4*PI*epsilon_0)
 
 void cross_product(const double a[3], const double b[3], double c[3])
 {
@@ -122,18 +122,18 @@ void find_force_charge_reciprocal_space(
       temp_force_sum[1] += ky * imag_term;
       temp_force_sum[2] += kz * imag_term;
     }
-    g_pe[n] += K_C_SP * temp_energy_sum;
-    g_virial[n + 0 * N] += K_C_SP * temp_virial_sum[0];
-    g_virial[n + 1 * N] += K_C_SP * temp_virial_sum[3];
-    g_virial[n + 2 * N] += K_C_SP * temp_virial_sum[5];
-    g_virial[n + 3 * N] += K_C_SP * temp_virial_sum[3];
-    g_virial[n + 4 * N] += K_C_SP * temp_virial_sum[1];
-    g_virial[n + 5 * N] += K_C_SP * temp_virial_sum[4];
-    g_virial[n + 6 * N] += K_C_SP * temp_virial_sum[5];
-    g_virial[n + 7 * N] += K_C_SP * temp_virial_sum[4];
-    g_virial[n + 8 * N] += K_C_SP * temp_virial_sum[2];
-    g_D_real[n] = 2.0 * K_C_SP * temp_D_real_sum;
-    const double charge_factor = K_C_SP * 2.0 * q;
+    g_pe[n] += K_C_SP_ * temp_energy_sum;
+    g_virial[n + 0 * N] += K_C_SP_ * temp_virial_sum[0];
+    g_virial[n + 1 * N] += K_C_SP_ * temp_virial_sum[3];
+    g_virial[n + 2 * N] += K_C_SP_ * temp_virial_sum[5];
+    g_virial[n + 3 * N] += K_C_SP_ * temp_virial_sum[3];
+    g_virial[n + 4 * N] += K_C_SP_ * temp_virial_sum[1];
+    g_virial[n + 5 * N] += K_C_SP_ * temp_virial_sum[4];
+    g_virial[n + 6 * N] += K_C_SP_ * temp_virial_sum[5];
+    g_virial[n + 7 * N] += K_C_SP_ * temp_virial_sum[4];
+    g_virial[n + 8 * N] += K_C_SP_ * temp_virial_sum[2];
+    g_D_real[n] = 2.0 * K_C_SP_ * temp_D_real_sum;
+    const double charge_factor = K_C_SP_ * 2.0 * q;
     g_fx[n] += charge_factor * temp_force_sum[0];
     g_fy[n] += charge_factor * temp_force_sum[1];
     g_fz[n] += charge_factor * temp_force_sum[2];
@@ -142,17 +142,17 @@ void find_force_charge_reciprocal_space(
 
 }
 
-Ewald::Ewald()
+EwaldNep::EwaldNep()
 {
   // nothing
 }
 
-Ewald::~Ewald()
+EwaldNep::~EwaldNep()
 {
   // nothing
 }
 
-void Ewald::initialize(const double alpha_input)
+void EwaldNep::initialize(const double alpha_input)
 {
   alpha = alpha_input;
   alpha_factor = 0.25 / (alpha * alpha);
@@ -164,7 +164,7 @@ void Ewald::initialize(const double alpha_input)
   S_imag.resize(num_kpoints_max);
 }
 
-void Ewald::find_k_and_G(const double* box)
+void EwaldNep::find_k_and_G(const double* box)
 {
   double a1[3] = {0.0};
   double a2[3] = {0.0};
@@ -235,7 +235,7 @@ void Ewald::find_k_and_G(const double* box)
   }
 }
 
-void Ewald::find_force(
+void EwaldNep::find_force(
   const int N,
   const double* box,
   const std::vector<double>& charge,

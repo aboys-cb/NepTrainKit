@@ -98,8 +98,20 @@ void NepParameters::load_from_nep_txt(const std::string& filename, std::vector<f
   }
 
   if (tokens[0] == "cutoff") {
-    rc_radial = get_double_from_token(tokens[1], __FILE__, __LINE__);
-    rc_angular = get_double_from_token(tokens[2], __FILE__, __LINE__);
+    // NOTE: NepTrainKit NEP text files may include extra tokens after the
+    // cutoff radii (kept for compatibility); we only consume the first two.
+    const float rc_radial_val = static_cast<float>(get_double_from_token(tokens[1], __FILE__, __LINE__));
+    const float rc_angular_val = static_cast<float>(get_double_from_token(tokens[2], __FILE__, __LINE__));
+
+    if (static_cast<int>(rc_radial.size()) < num_types) rc_radial.resize(num_types);
+    if (static_cast<int>(rc_angular.size()) < num_types) rc_angular.resize(num_types);
+    for (int n = 0; n < num_types; ++n) {
+      rc_radial[n] = rc_radial_val;
+      rc_angular[n] = rc_angular_val;
+    }
+    rc_radial_max = rc_radial_val;
+    rc_angular_max = rc_angular_val;
+    has_multiple_cutoffs = false;
   }
 
   tokens = get_tokens(input); // n_max

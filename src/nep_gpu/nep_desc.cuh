@@ -41,7 +41,6 @@ __global__ void gpu_find_neighbor_list_desc(
   const int N,
   const int* Na,
   const int* Na_sum,
-  const bool use_typewise_cutoff,
   const int* g_type,
   const float g_rc_radial,
   const float g_rc_angular,
@@ -97,14 +96,7 @@ public:
   {
     // Setup paramb similar to NEP::NEP
     paramb.version = version;
-    paramb.rc_radial = para.rc_radial;
-    paramb.rcinv_radial = 1.0f / paramb.rc_radial;
-    paramb.rc_angular = para.rc_angular;
-    paramb.rcinv_angular = 1.0f / paramb.rc_angular;
-    paramb.use_typewise_cutoff = para.use_typewise_cutoff;
     paramb.use_typewise_cutoff_zbl = para.use_typewise_cutoff_zbl;
-    paramb.typewise_cutoff_radial_factor = para.typewise_cutoff_radial_factor;
-    paramb.typewise_cutoff_angular_factor = para.typewise_cutoff_angular_factor;
     paramb.typewise_cutoff_zbl_factor = para.typewise_cutoff_zbl_factor;
     paramb.num_types = para.num_types;
     paramb.n_max_radial = para.n_max_radial;
@@ -120,8 +112,9 @@ public:
     paramb.num_types_sq = para.num_types * para.num_types;
     paramb.num_c_radial = paramb.num_types_sq * (para.n_max_radial + 1) * (para.basis_size_radial + 1);
 
-    for (int n = 0; n < (int)para.atomic_numbers.size(); ++n) {
-      paramb.atomic_numbers[n] = para.atomic_numbers[n] - 1; // starting from 0
+    for (int n = 0; n < NUM_ELEMENTS; ++n) {
+      paramb.rc_radial[n] = para.rc_radial[n];
+      paramb.rc_angular[n] = para.rc_angular[n];
     }
 
     ann.dim = para.dim;
@@ -171,10 +164,9 @@ public:
       dset.N,
       dset.Na.data(),
       dset.Na_sum.data(),
-      para.use_typewise_cutoff,
       dset.type.data(),
-      para.rc_radial,
-      para.rc_angular,
+      para.rc_radial_max,
+      para.rc_angular_max,
       dset.box.data(),
       dset.box_original.data(),
       dset.num_cell.data(),

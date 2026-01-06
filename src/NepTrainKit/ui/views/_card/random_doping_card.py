@@ -105,7 +105,7 @@ class RandomDopingCard(MakeDataCard):
         self.max_atoms_label = BodyLabel("Max structures", self.setting_widget)
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_condition_frame.set_input("unit", 1)
-        self.max_atoms_condition_frame.setRange(1, 10000)
+        self.max_atoms_condition_frame.setRange(1, 999999)
         self.max_atoms_label.setToolTip("Number of structures to generate")
         self.max_atoms_label.installEventFilter(ToolTipFilter(self.max_atoms_label, 300, ToolTipPosition.TOP))
 

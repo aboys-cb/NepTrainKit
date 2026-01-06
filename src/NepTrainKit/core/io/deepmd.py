@@ -6,7 +6,7 @@ from pathlib import Path
 import numpy as np
 import numpy.typing as npt
 from loguru import logger
-from .base import StructureData, ResultData, DPPlotData, StructureSyncRule, NepPlotData
+from .base import StructureData, ResultData, DPPlotData, StructureSyncRule, NepPlotData, get_cache_path
 from NepTrainKit.core.structure import Structure, load_npy_structure,save_npy_structure
 from NepTrainKit.paths import PathLike, as_path
 from NepTrainKit.core.utils import aggregate_per_atom_to_structure, read_nep_out_file, concat_nep_dft_array
@@ -227,20 +227,23 @@ class DeepmdResultData(ResultData):
         nep_txt_path = dataset_path.with_name(f"nep.txt")
         if not nep_txt_path.exists():
             nep_txt_path = module_path/ "Config/nep89.txt"
-        descriptor_path = dataset_path.with_name(f"descriptor.out")
+        descriptor_path = get_cache_path(dataset_path.with_name(f"descriptor.out"))
         e_path = list(dataset_path.parent.glob("*.e_peratom.out") )
         if e_path:
             e_path = e_path[0]
             suffix = (e_path.name.replace(".e_peratom.out",""))
         else:
             suffix="detail"
-        energy_out_path = dataset_path.with_name(f"{suffix}.e_peratom.out")
-        force_out_path = dataset_path.with_name(f"{suffix}.fr.out")
-        if  not force_out_path.exists():
-            force_out_path = dataset_path.with_name(f"{suffix}.f.out")
-        # stress_out_path = dataset_path.with_name(f"{suffix}.v.out")
-        virial_out_path = dataset_path.with_name(f"{suffix}.v_peratom.out")
-        spin_out_path=  dataset_path.with_name(f"{suffix}.fm.out")
+        energy_out_path = get_cache_path(dataset_path.with_name(f"{suffix}.e_peratom.out"))
+        force_out_path = get_cache_path(dataset_path.with_name(f"{suffix}.fr.out"))
+        if not force_out_path.exists():
+            # Note: exists() check here will now look in the cache.
+            # However, for DeepMD we might want to check the original path first?
+            # Actually, the user wants to avoid local output.
+            force_out_path = get_cache_path(dataset_path.with_name(f"{suffix}.f.out"))
+        # stress_out_path = get_cache_path(dataset_path.with_name(f"{suffix}.v.out"))
+        virial_out_path = get_cache_path(dataset_path.with_name(f"{suffix}.v_peratom.out"))
+        spin_out_path = get_cache_path(dataset_path.with_name(f"{suffix}.fm.out"))
         if not spin_out_path.exists():
             spin_out_path = None
         inst = cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,virial_out_path,descriptor_path,spin_out_path=spin_out_path)

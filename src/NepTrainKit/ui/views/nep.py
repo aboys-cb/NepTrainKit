@@ -24,6 +24,7 @@ from NepTrainKit.ui.widgets import (
     ShiftEnergyMessageBox,
     DFTD3MessageBox,
     DatasetSummaryMessageBox,
+    SelectiveExportMessageBox,
 )
 from NepTrainKit.core.types import SearchType, CanvasMode
 from NepTrainKit.ui.views import NepDisplayGraphicsToolBar
@@ -255,15 +256,30 @@ class NepResultPlotWidget(QWidget):
         data.update_structure_metadata(box.remove_tag, box.new_tag_info)
 
     def export_descriptor_data(self):
-        """Prompt for a destination file and export the selected descriptor rows."""
+        """Prompt for a destination file and export selected dataset components."""
         data = self.canvas.nep_result_data
         if data is None:
             MessageManager.send_info_message("NEP data has not been loaded yet!")
             return
-        path = call_path_dialog(self, "Choose a file save ", "file", default_filename="export_descriptor_data.out")
+
+        box = SelectiveExportMessageBox(self._parent)
+        if not box.exec():
+            return
+
+        options = box.get_options()
+        if not any(options.values()):
+            MessageManager.send_info_message("No components selected for export.")
+            return
+
+        path = call_path_dialog(
+            self,
+            "Choose a file save ",
+            "file",
+            default_filename="export_data.out"
+        )
         if path:
-            thread = LoadingThread(self, show_tip=True, title="Exporting descriptor data")
-            thread.start_work(data.export_descriptor_data, path)
+            thread = LoadingThread(self, show_tip=True, title="Exporting data")
+            thread.start_work(data.export_descriptor_data, path, options=options)
 
 
     def shift_energy_baseline(self):

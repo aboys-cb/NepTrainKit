@@ -14,6 +14,10 @@ import json
 import threading
 import re
 import traceback
+import tempfile
+import atexit
+import shutil
+import hashlib
 from functools import cached_property
 from pathlib import Path
 from dataclasses import dataclass
@@ -484,6 +488,42 @@ class StructureSyncRule:
             return
         target = self._resolve_target(dataset)
         dataset.all_data[row_idx, target] = values
+# --- Global Cache Management ---
+_global_cache_dir_obj = None
+
+
+def get_global_cache_dir() -> Path:
+    """Return the global session-based temporary directory."""
+    global _global_cache_dir_obj
+    if _global_cache_dir_obj is None:
+        _global_cache_dir_obj = tempfile.TemporaryDirectory(prefix="neptrainkit_cache_")
+        # Ensure cleanup on normal exit, though TemporaryDirectory handles this.
+        atexit.register(_global_cache_dir_obj.cleanup)
+    return Path(_global_cache_dir_obj.name)
+
+
+def get_cache_path(original_path: Path | str) -> Path:
+    """Map a local output path to a path in the global temporary cache.
+
+    Parameters
+    ----------
+    original_path : Path or str
+        The original destination path (e.g. in the dataset directory).
+
+    Returns
+    -------
+    Path
+        A corresponding path inside the global temporary directory.
+    """
+    path = Path(original_path)
+    # We use a hash or a flattened name to avoid collisions if multiple datasets
+    # have files with the same name. Using the absolute path's hash is safest.
+    import hashlib
+    path_hash = hashlib.md5(str(path.absolute().parent).encode()).hexdigest()[:8]
+    cache_name = f"{path_hash}_{path.name}"
+    return get_global_cache_dir() / cache_name
+
+
 class ResultData(QObject):
     """Manage structures, descriptors, and plots for NEP result files.
     Subclasses implement :meth:`_load_dataset` and expose their plot datasets
@@ -500,7 +540,7 @@ class ResultData(QObject):
                  data_xyz_path: Path,
                  descriptor_path: Path,
                  calculator_factory: Optional[Callable[[str], Any]] = None,
-                 import_options: Optional[dict] = None):
+                 import_options: Optional[dict[str, Any]] = None):
         """Initialise the result container with file locations and factories.
 
         Parameters
@@ -528,9 +568,9 @@ class ResultData(QObject):
         # Optional pre-fetched structures to skip IO in load_structures
         self._prefetched_structures: Optional[list[Structure]] = None
         # Optional importer options forwarded to importers.import_structures
-        self._import_options: dict = dict(import_options or {})
+        self._import_options: dict[str, Any] = dict(import_options or {})
         self.calculator_factory=calculator_factory
-        self._structure_sync_rules = dict(getattr(self, "STRUCTURE_SYNC_RULES", {}))
+        self._structure_sync_rules: dict[str, list[str]] = dict(getattr(self, "STRUCTURE_SYNC_RULES", {}))
         self._pending_non_physical_indices: list[int] = []
         self._sampler = SparseSampler(self)
     def request_cancel(self):
@@ -1185,27 +1225,132 @@ class ResultData(QObject):
             r2_threshold=r2_threshold,
         )
 
-    def export_descriptor_data(self, path: str | Path) -> None:
-        """Write descriptor values for the current selection to ``path``."""
+    def export_descriptor_data(self, path: str | Path, options: Optional[dict[str, bool]] = None) -> None:
+        """Write selected dataset components for the current selection to separate files.
+
+        Parameters
+        ----------
+        path : str or Path
+            Base destination path. Individual files will be named using cache file names or recognizable defaults.
+        options : dict, optional
+            A mapping of component names (e.g. 'pca_descriptor', 'raw_descriptor', 'energy',
+            'force', 'virial', 'stress') to booleans indicating whether they should be included.
+            Defaults to 'pca_descriptor' and 'energy'.
+        """
         if len(self.select_index) == 0:
             MessageManager.send_info_message("No data selected!")
             return
 
-        descriptor = getattr(self, "descriptor", None)
-        if descriptor is None:
-            MessageManager.send_warning_message("Descriptor dataset is unavailable.")
-            return
+        if options is None:
+            options = {"pca_descriptor": True, "energy": True}
 
-        select_index = descriptor.convert_index(list(self.select_index))
-        descriptor_data = descriptor.all_data[select_index, :]
+        selected_indices = sorted(list(self.select_index))
+        base_path = Path(path)
+        export_dir = base_path.parent
+        exported_files = []
 
-        if hasattr(self, "energy") and getattr(self.energy, "num", 0) != 0:
-            energy_index = self.energy.convert_index(list(self.select_index))
-            energy_data = self.energy.all_data[energy_index, 1]
-            descriptor_data = np.column_stack((descriptor_data, energy_data))
+        def _get_export_name(attr_path_name, default_name):
+            path_obj = getattr(self, attr_path_name, None)
+            if path_obj:
+                name = Path(path_obj).name
+                # Strip hash if present: hash(8) + "_" + name
+                if len(name) > 9 and name[8] == '_':
+                    try:
+                        int(name[:8], 16)
+                        return name[9:]
+                    except ValueError:
+                        pass
+                return name
+            return default_name
 
-        with open(path, "w", encoding="utf8") as handle:
-            np.savetxt(handle, descriptor_data, fmt="%.6g", delimiter="\t")
+        def _get_dataset_data(attr_name):
+            ds = getattr(self, attr_name, None)
+            if ds is None or getattr(ds, "num", 0) == 0:
+                return None
+            # Map selected structure indices to dataset rows
+            mapped_rows = ds.convert_index(selected_indices)
+            return ds.all_data[mapped_rows]
+
+        # 0. nep.in
+        nep_in_src = self.data_xyz_path.with_name("nep.in")
+        nep_in_dest = export_dir / "nep.in"
+        if nep_in_src.exists():
+            try:
+                shutil.copy2(nep_in_src, nep_in_dest)
+                exported_files.append("nep.in")
+            except Exception as e:
+                logger.error(f"Failed to copy nep.in: {e}")
+        else:
+            # Create a stub nep.in in the export directory if dataset is being exported
+            try:
+                with open(nep_in_dest, "w", encoding="utf8") as f:
+                    f.write("prediction 1 ")
+                exported_files.append("nep.in")
+            except Exception as e:
+                logger.error(f"Failed to create nep.in stub: {e}")
+
+        # 1. PCA Descriptor
+        if options.get("pca_descriptor"):
+            data = _get_dataset_data("descriptor")
+            if data is not None:
+                out_path = export_dir / f"{base_path.stem}_pca.out"
+                np.savetxt(out_path, data, fmt="%.6g")
+                exported_files.append(out_path.name)
+
+        # 2. Raw Descriptor
+        if options.get("raw_descriptor"):
+            raw_desc = getattr(self, "_descriptor_raw_all", None)
+            if raw_desc is not None and raw_desc.size > 0:
+                try:
+                    # _descriptor_raw_all is full array, indexed by structure
+                    data = raw_desc[selected_indices]
+                    name = _get_export_name("descriptor_path", "descriptor.out")
+                    out_path = export_dir / name
+                    np.savetxt(out_path, data, fmt="%.6g")
+                    exported_files.append(out_path.name)
+                except Exception as e:
+                    logger.error(f"Failed to export raw_descriptor: {e}")
+
+        # 3. Energy
+        if options.get("energy"):
+            data = _get_dataset_data("energy")
+            if data is not None:
+                name = _get_export_name("energy_out_path", "energy.out")
+                out_path = export_dir / name
+                np.savetxt(out_path, data, fmt="%10.8f")
+                exported_files.append(out_path.name)
+
+        # 4. Force
+        if options.get("force"):
+            data = _get_dataset_data("force")
+            if data is not None:
+                name = _get_export_name("force_out_path", "force.out")
+                out_path = export_dir / name
+                np.savetxt(out_path, data, fmt="%10.8f")
+                exported_files.append(out_path.name)
+
+        # 5. Virial
+        if options.get("virial"):
+            data = _get_dataset_data("virial")
+            if data is not None:
+                name = _get_export_name("virial_out_path", "virial.out")
+                out_path = export_dir / name
+                np.savetxt(out_path, data, fmt="%10.8f")
+                exported_files.append(out_path.name)
+
+        # 6. Stress
+        if options.get("stress"):
+            data = _get_dataset_data("stress")
+            if data is not None:
+                name = _get_export_name("stress_out_path", "stress.out")
+                out_path = export_dir / name
+                np.savetxt(out_path, data, fmt="%10.8f")
+                exported_files.append(out_path.name)
+
+        if exported_files:
+            MessageManager.send_info_message(f"Files exported to {export_dir}:\n" + "\n".join(exported_files))
+        else:
+            MessageManager.send_warning_message("No components selected for export or no data available.")
 
     def get_editable_structure_tags(self) -> set[str]:
         """Return the editable tags for currently selected structures."""

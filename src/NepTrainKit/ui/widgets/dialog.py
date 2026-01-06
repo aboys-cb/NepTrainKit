@@ -1574,3 +1574,45 @@ class TagManageDialog(MessageBoxBase):
                     self._tag_map[new_name] = self._tag_map.pop(old_name)
             return True
         return super().eventFilter(obj, event)
+
+
+class SelectiveExportMessageBox(MessageBoxBase):
+    """Message box that allows users to select which output files to export."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Selective Export")
+        self.titleLabel = TitleLabel("Select components to export", self)
+        self.viewLayout.addWidget(self.titleLabel)
+
+        # Create checkboxes for different components
+        self.pcaDescriptorCheck = CheckBox("PCA Descriptor", self)
+        self.pcaDescriptorCheck.setChecked(True)
+        self.rawDescriptorCheck = CheckBox("Raw Descriptor", self)
+        self.rawDescriptorCheck.setChecked(False)
+        self.energyCheck = CheckBox("Energy", self)
+        self.energyCheck.setChecked(True)
+        self.forceCheck = CheckBox("Force", self)
+        self.forceCheck.setChecked(True)
+        self.virialCheck = CheckBox("Virial", self)
+        self.stressCheck = CheckBox("Stress", self)
+
+        self.viewLayout.addWidget(self.pcaDescriptorCheck)
+        self.viewLayout.addWidget(self.rawDescriptorCheck)
+        self.viewLayout.addWidget(self.energyCheck)
+        self.viewLayout.addWidget(self.forceCheck)
+        self.viewLayout.addWidget(self.virialCheck)
+        self.viewLayout.addWidget(self.stressCheck)
+
+        self.widget.setMinimumWidth(300)
+
+    def get_options(self) -> dict[str, bool]:
+        """Return a mapping of component names to their selection state."""
+        return {
+            "pca_descriptor": self.pcaDescriptorCheck.isChecked(),
+            "raw_descriptor": self.rawDescriptorCheck.isChecked(),
+            "energy": self.energyCheck.isChecked(),
+            "force": self.forceCheck.isChecked(),
+            "virial": self.virialCheck.isChecked(),
+            "stress": self.stressCheck.isChecked(),
+        }

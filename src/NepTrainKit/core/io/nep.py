@@ -12,7 +12,7 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.paths import as_path
 from NepTrainKit.config import Config
-from .base import NepPlotData, ResultData, StructureSyncRule
+from .base import NepPlotData, ResultData, StructureSyncRule, get_cache_path
 from NepTrainKit.core.utils import read_nep_out_file, check_fullbatch, read_nep_in, aggregate_per_atom_to_structure,concat_nep_dft_array, is_charge_model
 from NepTrainKit.core.types import ForcesMode
 
@@ -316,24 +316,25 @@ class NepTrainResultData(ResultData):
             has_spin = "nep4_spin" in content
         except Exception:
             has_spin = False
-        energy_out_path = dataset_path.with_name(f"energy_{file_name}.out")
-        force_out_path = dataset_path.with_name(f"force_{file_name}.out")
-        stress_out_path = dataset_path.with_name(f"stress_{file_name}.out")
-        virial_out_path = dataset_path.with_name(f"virial_{file_name}.out")
+        energy_out_path = get_cache_path(dataset_path.with_name(f"energy_{file_name}.out"))
+        force_out_path = get_cache_path(dataset_path.with_name(f"force_{file_name}.out"))
+        stress_out_path = get_cache_path(dataset_path.with_name(f"stress_{file_name}.out"))
+        virial_out_path = get_cache_path(dataset_path.with_name(f"virial_{file_name}.out"))
         # optional spin force output (magnetic)
         spin_force_out_path = None
         if has_spin:
-            candidate_spin = dataset_path.with_name(f"mforce_{file_name}.out")
+            candidate_spin = get_cache_path(dataset_path.with_name(f"mforce_{file_name}.out"))
+            # Note: exists() check on candidate_spin will now check the cache. 
+            # If it's not in cache, it will be recalculated.
             if candidate_spin.exists():
                 spin_force_out_path = candidate_spin
-            nep_txt_path = module_path/ "Config/nep89.txt"
-            MessageManager.send_warning_message(f"NEPKit currently does not support model_type={model_type}; the program will use nep89 instead.")
+        
         if file_name=="train":
-            descriptor_path = dataset_path.with_name(f"descriptor.out")
+            descriptor_path = get_cache_path(dataset_path.with_name(f"descriptor.out"))
         else:
-            descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
-        charge_out_path = dataset_path.with_name(f"charge_{file_name}.out")
-        bec_out_path = dataset_path.with_name(f"bec_{file_name}.out")
+            descriptor_path = get_cache_path(dataset_path.with_name(f"descriptor_{file_name}.out"))
+        charge_out_path = get_cache_path(dataset_path.with_name(f"charge_{file_name}.out"))
+        bec_out_path = get_cache_path(dataset_path.with_name(f"bec_{file_name}.out"))
         inst = cls(
             nep_txt_path,
             dataset_path,
@@ -628,11 +629,11 @@ class NepPolarizabilityResultData(ResultData):
         dataset_path = as_path(path)
         file_name = dataset_path.stem
         nep_txt_path = dataset_path.with_name(f"nep.txt")
-        polarizability_out_path = dataset_path.with_name(f"polarizability_{file_name}.out")
+        polarizability_out_path = get_cache_path(dataset_path.with_name(f"polarizability_{file_name}.out"))
         if file_name == "train":
-            descriptor_path = dataset_path.with_name(f"descriptor.out")
+            descriptor_path = get_cache_path(dataset_path.with_name(f"descriptor.out"))
         else:
-            descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
+            descriptor_path = get_cache_path(dataset_path.with_name(f"descriptor_{file_name}.out"))
         inst = cls(nep_txt_path, dataset_path, polarizability_out_path, descriptor_path)
         if structures is not None:
             try:
@@ -781,11 +782,11 @@ class NepDipoleResultData(ResultData):
         dataset_path = as_path(path)
         file_name = dataset_path.stem
         nep_txt_path = dataset_path.with_name(f"nep.txt")
-        polarizability_out_path = dataset_path.with_name(f"dipole_{file_name}.out")
+        polarizability_out_path = get_cache_path(dataset_path.with_name(f"dipole_{file_name}.out"))
         if file_name == "train":
-            descriptor_path = dataset_path.with_name(f"descriptor.out")
+            descriptor_path = get_cache_path(dataset_path.with_name(f"descriptor.out"))
         else:
-            descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
+            descriptor_path = get_cache_path(dataset_path.with_name(f"descriptor_{file_name}.out"))
         inst = cls(nep_txt_path, dataset_path, polarizability_out_path, descriptor_path)
         if structures is not None:
             try:

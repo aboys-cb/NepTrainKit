@@ -29,6 +29,7 @@ from .dialog import (
     TagManageDialog,
     ModelInfoMessageBox,
     AdvancedModelSearchDialog,
+    SelectiveExportMessageBox,
 )
 from .input import SpinBoxUnitInputFrame
 from .card_widget import (
@@ -68,6 +69,7 @@ __all__ = [
     'SpinBoxUnitInputFrame',
     'ModelInfoMessageBox',
     'AdvancedModelSearchDialog',
+    'SelectiveExportMessageBox',
     'CheckableHeaderCardWidget',
     'ShareCheckableHeaderCardWidget',
     'MakeDataCardWidget',

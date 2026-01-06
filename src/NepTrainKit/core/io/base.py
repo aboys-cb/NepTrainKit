@@ -1276,7 +1276,9 @@ class ResultData(QObject):
         nep_in_dest = export_dir / "nep.in"
         if nep_in_src.exists():
             try:
-                shutil.copy2(nep_in_src, nep_in_dest)
+                # Avoid shutil.SameFileError if source and destination are identical
+                if nep_in_src.resolve() != nep_in_dest.resolve():
+                    shutil.copy2(nep_in_src, nep_in_dest)
                 exported_files.append("nep.in")
             except Exception as e:
                 logger.error(f"Failed to copy nep.in: {e}")
@@ -1293,6 +1295,22 @@ class ResultData(QObject):
         if options.get("pca_descriptor"):
             data = _get_dataset_data("descriptor")
             if data is not None:
+                # Add DFT energy as the 3rd column if available
+                energy_ds = getattr(self, "energy", None)
+                if energy_ds is not None and energy_ds.num > 0:
+                    try:
+                        # Map selected structure indices to energy rows
+                        mapped_energy_rows = energy_ds.convert_index(selected_indices)
+                        # Reference (DFT) energy is typically in the second half of the columns
+                        # For energy, ds.cols is usually 1, so ref_y is column 1.
+                        ref_col_idx = energy_ds.cols
+                        if energy_ds.all_data.shape[1] > ref_col_idx:
+                            ref_energies = energy_ds.all_data[mapped_energy_rows, ref_col_idx : ref_col_idx + 1]
+                            if ref_energies.shape[0] == data.shape[0]:
+                                data = np.column_stack([data, ref_energies])
+                    except Exception as e:
+                        logger.error(f"Failed to add DFT energy to PCA export: {e}")
+
                 out_path = export_dir / f"{base_path.stem}_pca.out"
                 np.savetxt(out_path, data, fmt="%.6g")
                 exported_files.append(out_path.name)

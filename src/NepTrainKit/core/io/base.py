@@ -782,21 +782,28 @@ class ResultData(QObject):
         beta_range: tuple[float, float],
         gamma_range: tuple[float, float],
     ) -> list[int]:
-        """Return structure indices whose lattice parameters fall within the given ranges."""
+        """Return structure indices whose lattice parameters fall within the given ranges.
+        
+        Uses a fixed tolerance of 1e-4 to handle floating-point precision loss from
+        float32 storage of lattice vectors, independent of range size.
+        """
         structures = self.structure.now_data
         indices = self.structure.group_array.now_data
+        
+        # Fixed tolerance for float32 precision loss (not dependent on range size)
+        tolerance = 1e-4
 
         result_indices = []
         for struct, idx in zip(structures, indices):
             abc = struct.abc
             angles = struct.angles
 
-            if (a_range[0] <= abc[0] <= a_range[1] and
-                b_range[0] <= abc[1] <= b_range[1] and
-                c_range[0] <= abc[2] <= c_range[1] and
-                alpha_range[0] <= angles[0] <= alpha_range[1] and
-                beta_range[0] <= angles[1] <= beta_range[1] and
-                gamma_range[0] <= angles[2] <= gamma_range[1]):
+            if (a_range[0] - tolerance <= abc[0] <= a_range[1] + tolerance and
+                b_range[0] - tolerance <= abc[1] <= b_range[1] + tolerance and
+                c_range[0] - tolerance <= abc[2] <= c_range[1] + tolerance and
+                alpha_range[0] - tolerance <= angles[0] <= alpha_range[1] + tolerance and
+                beta_range[0] - tolerance <= angles[1] <= beta_range[1] + tolerance and
+                gamma_range[0] - tolerance <= angles[2] <= gamma_range[1] + tolerance):
                 result_indices.append(int(idx))
         return result_indices
 

@@ -599,9 +599,10 @@ class NepResultPlotWidget(QWidget):
         if structures.size == 0:
             return
 
-        # Pre-calculate ranges for initialization
-        abcs = np.array([s.abc for s in structures])
-        angles = np.array([s.angles for s in structures])
+        # Use cached lattice parameters from the dataset
+        now_indices = data.structure.now_indices
+        abcs = data.abcs[now_indices]
+        angles = data.angles[now_indices]
 
         box = LatticeRangeSelectMessageBox(self._parent, "Select structures by lattice range")
         box.aMinSpin.setValue(float(np.min(abcs[:, 0])))

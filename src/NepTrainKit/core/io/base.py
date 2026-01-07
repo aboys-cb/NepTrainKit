@@ -495,12 +495,14 @@ class ResultData(QObject):
     loadFinishedSignal = Signal()
     atoms_num_list: npt.NDArray
     _atoms_dataset: StructureData
+    _abcs: npt.NDArray[np.float32]
+    _angles: npt.NDArray[np.float32]
     def __init__(self,
                  nep_txt_path: Path,
                  data_xyz_path: Path,
                  descriptor_path: Path,
                  calculator_factory: Optional[Callable[[str], Any]] = None,
-                 import_options: Optional[dict] = None):
+                 import_options: Optional[dict[str, Any]] = None):
         """Initialise the result container with file locations and factories.
 
         Parameters
@@ -528,11 +530,13 @@ class ResultData(QObject):
         # Optional pre-fetched structures to skip IO in load_structures
         self._prefetched_structures: Optional[list[Structure]] = None
         # Optional importer options forwarded to importers.import_structures
-        self._import_options: dict = dict(import_options or {})
+        self._import_options: dict[str, Any] = dict(import_options or {})
         self.calculator_factory=calculator_factory
         self._structure_sync_rules = dict(getattr(self, "STRUCTURE_SYNC_RULES", {}))
         self._pending_non_physical_indices: list[int] = []
         self._sampler = SparseSampler(self)
+        self._abcs = np.empty((0, 3), dtype=np.float32)
+        self._angles = np.empty((0, 3), dtype=np.float32)
     def request_cancel(self):
         """Request cooperative cancel during load. Also forward to calculator."""
         self.cancel_event.set()
@@ -563,6 +567,9 @@ class ResultData(QObject):
             structures = _imps.import_structures(self.data_xyz_path.as_posix(), **opts)
         self._atoms_dataset = StructureData(structures)
         self.atoms_num_list = np.array([len(struct) for struct in self.structure.now_data])
+        # Cache lattice parameters for all structures to avoid repeated calculations
+        self._abcs = np.array([s.abc for s in structures], dtype=np.float32)
+        self._angles = np.array([s.angles for s in structures], dtype=np.float32)
     def set_structures(self, structures: list[Structure]):
         """
         Provide pre-parsed structures so load_structures can skip file IO.
@@ -698,6 +705,17 @@ class ResultData(QObject):
     def structure(self):
         """Return the :class:`StructureData` wrapper for the active structures."""
         return self._atoms_dataset
+
+    @property
+    def abcs(self) -> npt.NDArray[np.float32]:
+        """Return the cached lattice vector lengths (a, b, c) for all structures."""
+        return self._abcs
+
+    @property
+    def angles(self) -> npt.NDArray[np.float32]:
+        """Return the cached lattice angles (alpha, beta, gamma) for all structures."""
+        return self._angles
+
     def is_select(self, i: int) -> bool:
         """Return ``True`` if the structure index is marked as selected."""
         return i in self.select_index
@@ -787,25 +805,28 @@ class ResultData(QObject):
         Uses a fixed tolerance of 1e-4 to handle floating-point precision loss from
         float32 storage of lattice vectors, independent of range size.
         """
-        structures = self.structure.now_data
-        indices = self.structure.group_array.now_data
+        # Use vectorized comparison on cached lattice parameters for performance
+        now_indices = self.structure.now_indices
+        if now_indices.size == 0:
+            return []
+            
+        abcs = self._abcs[now_indices]
+        angles = self._angles[now_indices]
         
-        # Fixed tolerance for float32 precision loss (not dependent on range size)
+        # Fixed tolerance for float32 precision loss
         tolerance = 1e-4
 
-        result_indices = []
-        for struct, idx in zip(structures, indices):
-            abc = struct.abc
-            angles = struct.angles
-
-            if (a_range[0] - tolerance <= abc[0] <= a_range[1] + tolerance and
-                b_range[0] - tolerance <= abc[1] <= b_range[1] + tolerance and
-                c_range[0] - tolerance <= abc[2] <= c_range[1] + tolerance and
-                alpha_range[0] - tolerance <= angles[0] <= alpha_range[1] + tolerance and
-                beta_range[0] - tolerance <= angles[1] <= beta_range[1] + tolerance and
-                gamma_range[0] - tolerance <= angles[2] <= gamma_range[1] + tolerance):
-                result_indices.append(int(idx))
-        return result_indices
+        mask = (
+            (a_range[0] - tolerance <= abcs[:, 0]) & (abcs[:, 0] <= a_range[1] + tolerance) &
+            (b_range[0] - tolerance <= abcs[:, 1]) & (abcs[:, 1] <= b_range[1] + tolerance) &
+            (c_range[0] - tolerance <= abcs[:, 2]) & (abcs[:, 2] <= c_range[1] + tolerance) &
+            (alpha_range[0] - tolerance <= angles[:, 0]) & (angles[:, 0] <= alpha_range[1] + tolerance) &
+            (beta_range[0] - tolerance <= angles[:, 1]) & (angles[:, 1] <= beta_range[1] + tolerance) &
+            (gamma_range[0] - tolerance <= angles[:, 2]) & (angles[:, 2] <= gamma_range[1] + tolerance)
+        )
+        
+        indices = self.structure.group_array.now_data
+        return indices[mask].astype(int).tolist()
 
     def get_selected_structures(self) -> list[Structure]:
         """Return the selected structures in the order of their raw index."""

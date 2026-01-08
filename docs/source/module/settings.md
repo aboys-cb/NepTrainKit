@@ -11,6 +11,7 @@ Personalize behavior and performance trade‑offs. Changes take effect immediate
   - PyQtGraph (CPU): Default, broad compatibility
   - Vispy (GPU): Uses OpenGL, faster for large scenes (requires working GPU/driver)
 - Auto loading: On startup, if `./train.xyz` and `./nep.txt` exist, auto‑load the dataset
+- Cache output files: When enabled (default), NepTrainKit writes cached `*.out`, `descriptor.out`, and `nep.in` files to speed up the next load. Disable for temporary viewing to avoid creating/updating cache files (applies to both NEP and DeepMD loaders).
 - Covalent radius coefficient: Threshold for “non‑physical bond” detection in structure view
 - Sort atoms: Normalize atom ordering when processing structures in Make Dataset
 - Use card group menu: Group console cards by category in the add‑card menu

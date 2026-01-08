@@ -31,7 +31,6 @@ __global__ void gpu_find_neighbor_list_desc(
   const int N,
   const int* Na,
   const int* Na_sum,
-  const bool use_typewise_cutoff,
   const int* g_type,
   const float g_rc_radial,
   const float g_rc_angular,
@@ -80,14 +79,10 @@ __global__ void gpu_find_neighbor_list_desc(
             dev_apply_mic(box, x12, y12, z12);
             float distance_square = x12 * x12 + y12 * y12 + z12 * z12;
             int t2 = g_type[n2];
-            float rc_radial = g_rc_radial;
-            float rc_angular = g_rc_angular;
-            if (use_typewise_cutoff) {
-              int z1 = paramb.atomic_numbers[t1];
-              int z2 = paramb.atomic_numbers[t2];
-              rc_radial = min((COVALENT_RADIUS[z1] + COVALENT_RADIUS[z2]) * paramb.typewise_cutoff_radial_factor, rc_radial);
-              rc_angular = min((COVALENT_RADIUS[z1] + COVALENT_RADIUS[z2]) * paramb.typewise_cutoff_angular_factor, rc_angular);
-            }
+            float rc_radial = 0.5f * (paramb.rc_radial[t1] + paramb.rc_radial[t2]);
+            float rc_angular = 0.5f * (paramb.rc_angular[t1] + paramb.rc_angular[t2]);
+            rc_radial = min(rc_radial, g_rc_radial);
+            rc_angular = min(rc_angular, g_rc_angular);
             if (distance_square < rc_radial * rc_radial) {
               NL_radial[count_radial * N + n1] = n2;
               x12_radial[count_radial * N + n1] = x12;
@@ -137,10 +132,7 @@ __global__ void find_descriptors_radial_desc(
       float d12 = sqrtf(x12 * x12 + y12 * y12 + z12 * z12);
       float fc12;
       int t2 = g_type[n2];
-      float rc = paramb.rc_radial;
-      if (paramb.use_typewise_cutoff) {
-        rc = min((COVALENT_RADIUS[paramb.atomic_numbers[t1]] + COVALENT_RADIUS[paramb.atomic_numbers[t2]]) * paramb.typewise_cutoff_radial_factor, rc);
-      }
+      float rc = 0.5f * (paramb.rc_radial[t1] + paramb.rc_radial[t2]);
       float rcinv = 1.0f / rc;
       find_fc(rc, rcinv, d12, fc12);
 
@@ -192,10 +184,7 @@ __global__ void find_descriptors_angular_desc(
         float d12 = sqrtf(x12 * x12 + y12 * y12 + z12 * z12);
         float fc12;
         int t2 = g_type[n2];
-        float rc = paramb.rc_angular;
-        if (paramb.use_typewise_cutoff) {
-          rc = min((COVALENT_RADIUS[paramb.atomic_numbers[t1]] + COVALENT_RADIUS[paramb.atomic_numbers[t2]]) * paramb.typewise_cutoff_angular_factor, rc);
-        }
+        float rc = 0.5f * (paramb.rc_angular[t1] + paramb.rc_angular[t2]);
         float rcinv = 1.0f / rc;
         find_fc(rc, rcinv, d12, fc12);
         float fn12[MAX_NUM_N];

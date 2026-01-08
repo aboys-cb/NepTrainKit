@@ -81,8 +81,8 @@ class Structure:
             self.force_label="force"
         else:
             self.force_label = "forces"
-        # Defer formula computation; cached_property will compute lazily on first access
-        # self.formula
+
+
     @property
     def tag(self)->str:
         """Alias for the ``Config_type`` additional field."""

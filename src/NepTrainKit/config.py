@@ -5,7 +5,7 @@ from typing import Any
 from pathlib import Path
 
 from sqlalchemy import (
-    create_engine, MetaData, Table, Column, String, select, update, inspect
+    create_engine, MetaData, Table, Column, String, select, update, inspect, delete
 )
 from sqlalchemy.engine import Engine
 from sqlalchemy.exc import SQLAlchemyError
@@ -187,6 +187,32 @@ class Config:
         with cfg.engine.begin() as conn:
             stmt = update(table).where(table.c.section == old).values(section=new)
             conn.execute(stmt)
+
+    @classmethod
+    def delete(cls, section: str, option: str) -> int:
+        """Delete a single config entry and return the number of rows removed."""
+        try:
+            cfg = cls._instance
+            table = cfg._config_table
+            with cfg.engine.begin() as conn:
+                stmt = delete(table).where(table.c.section == section, table.c.option == option)
+                res = conn.execute(stmt)
+            return int(getattr(res, "rowcount", 0) or 0)
+        except SQLAlchemyError:
+            return 0
+
+    @classmethod
+    def delete_section(cls, section: str) -> int:
+        """Delete all entries under ``section`` and return rows removed."""
+        try:
+            cfg = cls._instance
+            table = cfg._config_table
+            with cfg.engine.begin() as conn:
+                stmt = delete(table).where(table.c.section == section)
+                res = conn.execute(stmt)
+            return int(getattr(res, "rowcount", 0) or 0)
+        except SQLAlchemyError:
+            return 0
 Config()
 
 

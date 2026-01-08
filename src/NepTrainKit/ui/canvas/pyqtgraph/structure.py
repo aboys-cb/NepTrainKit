@@ -30,7 +30,10 @@ class StructurePlotWidget(gl.GLViewWidget):
         """
         self.ortho=False
         super().__init__(*args, **kwargs)
-        self.setBackgroundColor('w')
+        self.lattice_item = None
+        self._lattice_lines_pos = None
+        self._lattice_width = 1.5
+        self.apply_style_from_config()
         self.setCameraPosition(distance=80, elevation=30, azimuth=30)
         self.atom_items = []
         self.auto_view=False
@@ -38,6 +41,43 @@ class StructurePlotWidget(gl.GLViewWidget):
         self.structure = None
         self.show_bond_flag = None
         self.scale_factor = 1
+
+    @staticmethod
+    def _rgba_from_config(value: str, fallback=(0.0, 0.0, 0.0, 1.0)):
+        """Return an RGBA tuple in [0, 1] from a config value."""
+        try:
+            col = QColor(str(value))
+            if not col.isValid():
+                return fallback
+            r, g, b, a = col.getRgbF()
+            return (float(r), float(g), float(b), float(a))
+        except Exception:
+            return fallback
+
+    def apply_style_from_config(self):
+        """Apply background and lattice style from persisted configuration."""
+        bg = Config.get("widget", "structure_bg_color", "#FFFFFF")
+        try:
+            bg_col = QColor(str(bg))
+            self.setBackgroundColor(bg_col if bg_col.isValid() else str(bg))
+        except Exception:
+            self.setBackgroundColor("#FFFFFF")
+
+        lattice_color = self._rgba_from_config(
+            Config.get("widget", "structure_lattice_color", "#000000"),
+            fallback=(0.0, 0.0, 0.0, 1.0),
+        )
+        if self.lattice_item is not None and self._lattice_lines_pos is not None:
+            try:
+                self.lattice_item.setData(
+                    pos=self._lattice_lines_pos,
+                    color=lattice_color,
+                    width=self._lattice_width,
+                    mode="lines",
+                )
+            except Exception:
+                pass
+        self.update()
 
     def set_auto_view(self, auto_view):
         """Toggle automatic camera framing when a structure is displayed.
@@ -242,17 +282,23 @@ class StructurePlotWidget(gl.GLViewWidget):
         vertices = np.array([origin, a1, a2, a3, a1 + a2, a1 + a3, a2 + a3, a1 + a2 + a3])
         edges = [[0, 1], [0, 2], [0, 3], [1, 4], [1, 5], [2, 4], [2, 6], [3, 5], [3, 6], [4, 7], [5, 7], [6, 7]]
         lines = np.array([vertices[edge] for edge in edges]).reshape(-1, 3)
+        self._lattice_lines_pos = lines
+        lattice_color = self._rgba_from_config(
+            Config.get("widget", "structure_lattice_color", "#000000"),
+            fallback=(0.0, 0.0, 0.0, 1.0),
+        )
         lattice_lines = gl.GLLinePlotItem(
             pos=lines,
-            color=(0, 0, 0, 1),
-            width=1.5,
+            color=lattice_color,
+            width=self._lattice_width,
             mode='lines',
             glOptions="translucent",
             antialias=True
         )
         # center = structure.cell.sum(axis=0) / 2
         # self.opts['center'] = pg.Vector(center[0], center[1], center[2])
-        self.addItem(lattice_lines)
+        self.lattice_item = lattice_lines
+        self.addItem(self.lattice_item)
 
     def show_bond(self,structure):
         """Create bond cylinders for the supplied structure when enabled.
@@ -437,7 +483,10 @@ class StructurePlotWidget(gl.GLViewWidget):
         """
         self.atom_items.clear()
         self.clear()
+        self.lattice_item = None
+        self._lattice_lines_pos = None
         self.structure = structure
+        self.apply_style_from_config()
         self.show_lattice(structure)
         self.show_elem(structure)
         self.show_bond(structure )

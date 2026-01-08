@@ -32,6 +32,7 @@ import os
 from .button import TagPushButton, TagGroup
 
 from NepTrainKit.core import MessageManager
+from NepTrainKit.core.types import SearchType
 
 from NepTrainKit import module_path
 
@@ -77,6 +78,13 @@ class DatasetSummaryMessageBox(MessageBoxBase):
     def __init__(self, parent=None, summary: dict | None = None):
         super().__init__(parent)
         self._summary: dict[str, Any] = summary or {}
+        group_by = self._summary.get("group_by", SearchType.TAG.value)
+        group_by_value = group_by.value if isinstance(group_by, SearchType) else str(group_by)
+        try:
+            group_by_enum = SearchType(group_by_value)
+        except Exception:
+            group_by_enum = SearchType.FORMULA if group_by_value.endswith(".FORMULA") else SearchType.TAG
+        group_label = "Formula" if group_by_enum == SearchType.FORMULA else "Config_type"
 
         self.widget.setMinimumWidth(460)
         max_rows_display = 10  # limit rows shown in dialog to keep it compact
@@ -184,12 +192,12 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         # Config_type distribution
         cfg = self._summary.get("config_types", [])
         if cfg:
-            cfg_title = CaptionLabel("Config_type distribution (active structures):", self)
+            cfg_title = CaptionLabel(f"{group_label} distribution (active structures):", self)
             layout.addWidget(cfg_title)
             cfg_grid = QGridLayout()
             cfg_grid.setContentsMargins(0, 0, 0, 0)
             cfg_grid.setSpacing(4)
-            headers = ["Config_type", "Count", "Fraction", ""]
+            headers = [group_label, "Count", "Fraction", ""]
             for c, h in enumerate(headers):
                 cfg_grid.addWidget(CaptionLabel(h, self), 0, c)
             for r, item in enumerate(cfg[:max_rows_display], start=1):
@@ -231,6 +239,14 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         atoms = self._summary.get("atoms", {})
         elements = sorted(self._summary.get("elements", []) or [], key=lambda x: x.get("fraction", 0.0), reverse=True)
         cfg = self._summary.get("config_types", []) or []
+        group_by = self._summary.get("group_by", SearchType.TAG.value)
+        group_by_value = group_by.value if isinstance(group_by, SearchType) else str(group_by)
+        try:
+            group_by_enum = SearchType(group_by_value)
+        except Exception:
+            group_by_enum = SearchType.FORMULA if group_by_value.endswith(".FORMULA") else SearchType.TAG
+        group_label = "Formula" if group_by_enum == SearchType.FORMULA else "Config_type"
+        group_section_title = "Formulas" if group_by_enum == SearchType.FORMULA else "Config Types"
         data_file = self._summary.get("data_file", "")
         model_file = self._summary.get("model_file", "")
         def _table(rows: list[dict], headers: list[str], cols: list[str]) -> str:
@@ -280,16 +296,16 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         cfg_html = _table(
             [
                 {
-                    "Config_type": item.get("name", ""),
+                    group_label: item.get("name", ""),
                     "Count": item.get("count", 0),
                     "Fraction (%)": f"{item.get('fraction', 0.0) * 100.0:.1f}",
                 }
                 for item in cfg
             ],
-            ["Config_type", "Count", "Fraction (%)"],
-            ["Config_type", "Count", "Fraction (%)"],
+            [group_label, "Count", "Fraction (%)"],
+            [group_label, "Count", "Fraction (%)"],
         )
-        return f"<!doctype html><html><head><meta charset='utf-8'><title>Dataset summary</title>{style}</head><body><h1>Dataset Summary</h1>{counts_html}<h2>Elements</h2>{elements_html}<h2>Config Types</h2>{cfg_html}</body></html>"
+        return f"<!doctype html><html><head><meta charset='utf-8'><title>Dataset summary</title>{style}</head><body><h1>Dataset Summary</h1>{counts_html}<h2>Elements</h2>{elements_html}<h2>{group_section_title}</h2>{cfg_html}</body></html>"
 
 class GetStrMessageBox(MessageBoxBase):
     """ Custom message box """
@@ -413,8 +429,8 @@ class SparseMessageBox(MessageBoxBase):
     def _update_mode_visibility(self):
         """Toggle UI elements based on sampling mode selection."""
         r2_mode = self.modeCombo.currentIndex() == 1
-        self.maxNumLabel.setVisible(not r2_mode)
-        self.intSpinBox.setVisible(not r2_mode)
+        self.maxNumLabel.setVisible(True)
+        self.intSpinBox.setVisible(True)
         self.r2Label.setVisible(r2_mode)
         self.r2SpinBox.setVisible(r2_mode)
 
@@ -485,6 +501,81 @@ class RangeSelectMessageBox(MessageBoxBase):
         self.yesButton.setText('Ok')
         self.cancelButton.setText('Cancel')
         self.widget.setMinimumWidth(300)
+
+
+class LatticeRangeSelectMessageBox(MessageBoxBase):
+    """Dialog for selecting structures by lattice parameters range."""
+
+    def __init__(self, parent=None, tip="Specify lattice parameters range"):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(tip, self)
+        self.titleLabel.setWordWrap(True)
+
+        self._frame = QFrame(self)
+        self.frame_layout = QGridLayout(self._frame)
+        self.frame_layout.setContentsMargins(0, 0, 0, 0)
+        self.frame_layout.setSpacing(2)
+
+        self.aMinSpin = DoubleSpinBox(self)
+        self.aMaxSpin = DoubleSpinBox(self)
+        self.bMinSpin = DoubleSpinBox(self)
+        self.bMaxSpin = DoubleSpinBox(self)
+        self.cMinSpin = DoubleSpinBox(self)
+        self.cMaxSpin = DoubleSpinBox(self)
+
+        self.alphaMinSpin = DoubleSpinBox(self)
+        self.alphaMaxSpin = DoubleSpinBox(self)
+        self.betaMinSpin = DoubleSpinBox(self)
+        self.betaMaxSpin = DoubleSpinBox(self)
+        self.gammaMinSpin = DoubleSpinBox(self)
+        self.gammaMaxSpin = DoubleSpinBox(self)
+
+        spins = [
+            self.aMinSpin, self.aMaxSpin, self.bMinSpin, self.bMaxSpin, self.cMinSpin, self.cMaxSpin,
+            self.alphaMinSpin, self.alphaMaxSpin, self.betaMinSpin, self.betaMaxSpin, self.gammaMinSpin, self.gammaMaxSpin
+        ]
+        for spin in spins:
+            spin.setDecimals(4)
+            spin.setRange(0, 1e6)
+
+        # Lattice constants labels
+        self.frame_layout.addWidget(CaptionLabel("a min", self), 0, 0)
+        self.frame_layout.addWidget(self.aMinSpin, 0, 1)
+        self.frame_layout.addWidget(CaptionLabel("a max", self), 0, 2)
+        self.frame_layout.addWidget(self.aMaxSpin, 0, 3)
+
+        self.frame_layout.addWidget(CaptionLabel("b min", self), 1, 0)
+        self.frame_layout.addWidget(self.bMinSpin, 1, 1)
+        self.frame_layout.addWidget(CaptionLabel("b max", self), 1, 2)
+        self.frame_layout.addWidget(self.bMaxSpin, 1, 3)
+
+        self.frame_layout.addWidget(CaptionLabel("c min", self), 2, 0)
+        self.frame_layout.addWidget(self.cMinSpin, 2, 1)
+        self.frame_layout.addWidget(CaptionLabel("c max", self), 2, 2)
+        self.frame_layout.addWidget(self.cMaxSpin, 2, 3)
+
+        # Lattice angles labels
+        self.frame_layout.addWidget(CaptionLabel("α min", self), 3, 0)
+        self.frame_layout.addWidget(self.alphaMinSpin, 3, 1)
+        self.frame_layout.addWidget(CaptionLabel("α max", self), 3, 2)
+        self.frame_layout.addWidget(self.alphaMaxSpin, 3, 3)
+
+        self.frame_layout.addWidget(CaptionLabel("β min", self), 4, 0)
+        self.frame_layout.addWidget(self.betaMinSpin, 4, 1)
+        self.frame_layout.addWidget(CaptionLabel("β max", self), 4, 2)
+        self.frame_layout.addWidget(self.betaMaxSpin, 4, 3)
+
+        self.frame_layout.addWidget(CaptionLabel("γ min", self), 5, 0)
+        self.frame_layout.addWidget(self.gammaMinSpin, 5, 1)
+        self.frame_layout.addWidget(CaptionLabel("γ max", self), 5, 2)
+        self.frame_layout.addWidget(self.gammaMaxSpin, 5, 3)
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self._frame)
+
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
+        self.widget.setMinimumWidth(400)
 
 
 class ArrowMessageBox(MessageBoxBase):
@@ -586,8 +677,11 @@ class EditInfoMessageBox(MessageBoxBase):
         self.yesButton.setText('Ok')
         self.cancelButton.setText('Cancel')
         self.widget.setMinimumWidth(600)
-        self.remove_tag=set()
-        self.new_tag_info={}
+        self.remove_tag = set()
+        self.new_tag_info = {}
+        self.rename_tag_map = {}
+        self._display_to_original = {}
+        self._suppress_tag_removed = False
     def new_tag(self):
         box = InputInfoMessageBox(self)
         if not box.exec():
@@ -599,8 +693,14 @@ class EditInfoMessageBox(MessageBoxBase):
             self.add_tag(key.strip(),value)
     def init_tags(self, tags):
         for tag in tags:
-            self.tag_group.add_tag(tag)
+            if tag == "species_id":
+                continue
+            btn = self.tag_group.add_tag(tag)
+            btn.installEventFilter(self)
+            self._display_to_original[tag] = tag
     def tag_removed(self,tag):
+        if self._suppress_tag_removed:
+            return
         if tag in self.new_tag_info.keys():
             self.new_tag_info.pop(tag)
         self.remove_tag.add(tag)
@@ -608,14 +708,104 @@ class EditInfoMessageBox(MessageBoxBase):
         if self.tag_group.has_tag(tag):
             MessageManager.send_message_box(f"{tag} already exists, please delete it first")
             return
+        self.remove_tag.discard(tag)
         self.new_tag_info[tag] = value
-        self.tag_group.add_tag(tag)
+        btn = self.tag_group.add_tag(tag)
+        btn.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if isinstance(obj, TagPushButton) and event.type() == QEvent.ContextMenu:
+            old_name = obj.text()
+            dlg = RenameTagMessageBox(old_name, self)
+            if dlg.exec():
+                new_name = dlg.nameEdit.text().strip()
+                if not new_name or new_name == old_name:
+                    return True
+                self._rename_tag(old_name, new_name, obj)
+            return True
+        return super().eventFilter(obj, event)
+
+    def _confirm_merge(self, title: str, content: str) -> bool:
+        w = MessageBox(title, content, self)
+        w.setClosableOnMaskClicked(True)
+        return bool(w.exec())
+
+    def _redirect_rename_targets(self, old_target: str, new_target: str) -> None:
+        if old_target == new_target:
+            return
+        for src, dst in list(self.rename_tag_map.items()):
+            if dst == old_target:
+                self.rename_tag_map[src] = new_target
+
+    def _remove_tag_silently(self, tag: str) -> None:
+        self._suppress_tag_removed = True
+        try:
+            self.tag_group.del_tag(tag)
+        finally:
+            self._suppress_tag_removed = False
+
+    def _rename_tag(self, old_name: str, new_name: str, obj: TagPushButton) -> None:
+        if old_name in self.new_tag_info:
+            value = self.new_tag_info[old_name]
+            if self.tag_group.has_tag(new_name):
+                content = (
+                    f"Merge rename detected because '{new_name}' already exists.\n\n"
+                    f"Effect after clicking Ok:\n"
+                    f"- The new tag '{old_name}' will be merged into '{new_name}'.\n"
+                    f"- On apply, key '{new_name}' will be set to the value entered for '{old_name}'.\n"
+                    f"- If '{new_name}' already has a value, it will be overwritten.\n"
+                    f"- The temporary key '{old_name}' will be discarded.\n"
+                )
+                if not self._confirm_merge("Merge rename confirmation", content):
+                    return
+                self.remove_tag.discard(new_name)
+                self.new_tag_info[new_name] = value
+                self.new_tag_info.pop(old_name, None)
+                self._remove_tag_silently(old_name)
+                return
+
+            self.new_tag_info.pop(old_name, None)
+            self.new_tag_info[new_name] = value
+            obj.setText(new_name)
+            self.tag_group.tags[new_name] = self.tag_group.tags.pop(old_name)
+            return
+
+        original_old = self._display_to_original.get(old_name, old_name)
+        if self.tag_group.has_tag(new_name):
+            content = (
+                f"Merge rename detected because '{new_name}' already exists.\n\n"
+                f"Effect after clicking Ok:\n"
+                f"- For each selected structure, value under key '{original_old}' will be moved to '{new_name}'.\n"
+                f"- If '{new_name}' already exists, it will be overwritten by the value from '{original_old}'.\n"
+                f"- Key '{original_old}' will be removed.\n"
+            )
+            if not self._confirm_merge("Merge rename confirmation", content):
+                return
+            self.remove_tag.discard(new_name)
+            self.rename_tag_map[original_old] = new_name
+            self._redirect_rename_targets(old_name, new_name)
+            self._display_to_original.pop(old_name, None)
+            self._remove_tag_silently(old_name)
+            return
+
+        self.remove_tag.discard(new_name)
+        self.rename_tag_map[original_old] = new_name
+        self._redirect_rename_targets(old_name, new_name)
+        obj.setText(new_name)
+        self.tag_group.tags[new_name] = self.tag_group.tags.pop(old_name)
+        self._display_to_original.pop(old_name, None)
+        self._display_to_original[new_name] = original_old
     def validate(self):
-        if len(self.new_tag_info)!=0 or len(self.remove_tag)!=0:
+        if len(self.new_tag_info)!=0 or len(self.remove_tag)!=0 or len(self.rename_tag_map)!=0:
             title = 'Modify information confirmation'
             remove_info=";".join(self.remove_tag)
             add_info="\n".join([f"{k}={v}" for k,v in self.new_tag_info.items()])
-            content = f"""You removed the following information from the structure: \n{remove_info}  \nadded the following information: \n{add_info}"""
+            rename_info = "\n".join([f"{k} -> {v}" for k, v in self.rename_tag_map.items()])
+            content = (
+                f"You removed the following information from the structure:\n{remove_info}\n\n"
+                f"You renamed the following information keys:\n{rename_info}\n\n"
+                f"You added the following information to the structure:\n{add_info}"
+            )
 
             w = MessageBox(title, content, self)
 
@@ -629,6 +819,33 @@ class EditInfoMessageBox(MessageBoxBase):
                 return False
         return True
 
+
+class RenameTagMessageBox(MessageBoxBase):
+    def __init__(self, old_name: str, parent=None):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(f"Rename tag: {old_name}", self)
+        self.titleLabel.setWordWrap(True)
+        self.nameEdit = LineEdit(self)
+        self.nameEdit.setText(old_name)
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.nameEdit)
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
+        self.widget.setMinimumWidth(320)
+
+    def validate(self):
+        if self.nameEdit.text().strip() != "":
+            return True
+        Flyout.create(
+            icon=InfoBarIcon.INFORMATION,
+            title='Tip',
+            content="A valid value must be entered",
+            target=self.nameEdit,
+            parent=self,
+            isClosable=True
+        )
+        return False
+
 class ShiftEnergyMessageBox(MessageBoxBase):
     """Dialog for energy baseline shift parameters."""
 
@@ -641,12 +858,16 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         # self.presetCombo.setEnabled(False)
         self.importButton = TransparentToolButton(FluentIcon.FOLDER_ADD, self)
         self.exportButton = TransparentToolButton(FluentIcon.SAVE, self)
+        self.deleteButton = TransparentToolButton(FluentIcon.DELETE, self)
+        self.deleteButton.setToolTip("Delete selected preset")
+        self.deleteButton.installEventFilter(ToolTipFilter(self.deleteButton, 300, ToolTipPosition.TOP))
         preset_row = QHBoxLayout()
         preset_row.setContentsMargins(0, 0, 0, 0)
         preset_row.setSpacing(4)
         preset_row.addWidget(self.presetCombo, 1)
         preset_row.addWidget(self.importButton, 0)
         preset_row.addWidget(self.exportButton, 0)
+        preset_row.addWidget(self.deleteButton, 0)
         self.savePresetCheck = CheckBox("Save baseline as preset", self)
         self.presetNameEdit = LineEdit(self)
         self.presetNameEdit.setPlaceholderText("Preset name")

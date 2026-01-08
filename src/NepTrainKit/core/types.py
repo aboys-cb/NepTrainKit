@@ -100,6 +100,7 @@ class SearchType(StrEnum):
     """Structure search attribute family."""
     TAG = "Config_type"
     FORMULA = "formula"
+    ELEMENTS = "elements"
 
 class NepBackend(StrEnum):
     """NEP calculator backend preference."""

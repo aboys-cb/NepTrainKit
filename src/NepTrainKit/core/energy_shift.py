@@ -95,23 +95,83 @@ def list_energy_baseline_preset_names() -> list[str]:
     return Config.list_options(BASELINE_PRESET_SECTION)
 
 
-def apply_energy_baseline(structures: List[Structure], baseline: EnergyBaselinePreset) -> None:
-    """Apply a precomputed baseline to structures in-place."""
+def delete_energy_baseline_preset(name: str) -> bool:
+    """Delete a baseline preset by name."""
+    name = (name or "").strip()
+    if not name:
+        return False
+    return Config.delete(BASELINE_PRESET_SECTION, name) > 0
+
+
+def clear_energy_baseline_presets() -> int:
+    """Delete all stored baseline presets and return the number removed."""
+    return Config.delete_section(BASELINE_PRESET_SECTION)
+
+
+def apply_energy_baseline(structures: List[Structure], baseline: EnergyBaselinePreset) -> dict[str, Any]:
+    """Apply a precomputed baseline to structures in-place.
+
+    Returns lightweight stats so callers (e.g. UI) can warn when a preset
+    doesn't match the current dataset (common when Config_type strings differ).
+    """
+    stats: dict[str, Any] = {
+        "total_structures": int(len(structures)),
+        "shifted_structures": 0,
+        "skipped_no_energy": 0,
+        "skipped_no_group_match": 0,
+        "skipped_no_elements_overlap": 0,
+        "unmatched_config_types": set(),
+        "used_pattern_fallback": 0,
+    }
+
     elements = list(baseline.elements)
     if not elements or not baseline.group_to_ref:
-        return
+        return {
+            **stats,
+            "unmatched_config_types": [],
+        }
+
+    compiled_patterns: list[tuple[str, Any]] = []
+    for pat in baseline.group_patterns or []:
+        try:
+            compiled_patterns.append((pat, re.compile(pat)))
+        except re.error:
+            continue
+
     for structure in structures:
         if not getattr(structure, "has_energy", False):
+            stats["skipped_no_energy"] += 1
             continue
+
         config_type = str(structure.tag)
-        group = baseline.config_to_group.get(config_type, config_type)
+        group = baseline.config_to_group.get(config_type)
+        if group is None and compiled_patterns:
+            for pat, regex in compiled_patterns:
+                if regex.match(config_type):
+                    group = pat
+                    stats["used_pattern_fallback"] += 1
+                    break
+        if group is None:
+            group = config_type
+
         ref_vec = baseline.group_to_ref.get(group)
         if ref_vec is None:
+            stats["skipped_no_group_match"] += 1
+            stats["unmatched_config_types"].add(config_type)
             continue
+
         cnt = Counter(structure.elements)
         count_vec = np.array([cnt.get(e, 0) for e in elements], dtype=float)
+        if float(np.sum(count_vec)) == 0.0:
+            stats["skipped_no_elements_overlap"] += 1
+            continue
+
         shift = float(np.dot(count_vec, np.asarray(ref_vec, dtype=float)))
         structure.energy = float(structure.energy) - shift
+        stats["shifted_structures"] += 1
+
+    stats["unmatched_config_types"] = sorted(stats["unmatched_config_types"])
+    return stats
 
 def longest_common_prefix(strs: List[str]) -> str:
     """Return the longest common prefix among strings.
@@ -308,7 +368,7 @@ def shift_dataset_energy(
         alignment_mode: str = REF_GROUP_ALIGNMENT,
         nep_energy_array: np.ndarray | None = None,
         precomputed_baseline: EnergyBaselinePreset | Dict[str, Any] | None = None,
-        baseline_store: Dict[str, EnergyBaselinePreset] | None = None,
+        baseline_store: Dict[str, Any] | None = None,
         source_summary: Dict[str, Any] | None = None):
     """Shift dataset energies using group-wise atomic baseline alignment.
 
@@ -369,9 +429,10 @@ def shift_dataset_energy(
             baseline = EnergyBaselinePreset.from_dict(precomputed_baseline)
         else:
             baseline = precomputed_baseline
-        apply_energy_baseline(structures, baseline)
+        apply_stats = apply_energy_baseline(structures, baseline)
         if baseline_store is not None:
             baseline_store["baseline"] = baseline
+            baseline_store["apply_stats"] = apply_stats
         return
 
     ref_mean = None
@@ -460,4 +521,6 @@ def shift_dataset_energy(
     if baseline_store is not None:
         baseline_store["baseline"] = baseline
 
-    apply_energy_baseline(structures, baseline)
+    apply_stats = apply_energy_baseline(structures, baseline)
+    if baseline_store is not None:
+        baseline_store["apply_stats"] = apply_stats

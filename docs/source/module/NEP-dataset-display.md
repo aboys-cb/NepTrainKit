@@ -96,7 +96,7 @@ In the export menu, you can click "Export Selected Structures" to export the cur
 
 ### Search and Select (with icons)
 
-- <img src="../_static/image/search.svg" alt="search" width='30' height='30' /> Search Tool: search a single Config_type for prefix/suffix/substring.
+- <img src="../_static/image/search.svg" alt="search" width='30' height='30' /> Search Tool: search structures using the selected search mode (`tag`/`formula`/`elements`).
 
 :::{important}
 After clicking Search, matched structures turn green but are not selected. Use Select/Deselect to change selection state.
@@ -104,21 +104,46 @@ After clicking Search, matched structures turn green but are not selected. Use S
 
 - <img src="../_static/image/check.svg" alt="select" width='30' height='30' /> Select Button: Select matched structures.
 - <img src="../_static/image/uncheck.svg" alt="deselect" width='30' height='30' /> Deselect Button: Deselect matched structures.
-- <img src="../_static/image/search.svg" alt="formula" width='30' height='30' /> Search by formula: toggle the small “formula” checkbox next to the search box to switch between searching by `Config_type` (default) and by chemical formula. Autocompletion updates to your available formulas.
-
-
-:::{important}
-After clicking the search button, the relevant structures will turn green to indicate the search results. However, at this point, the structures will not be selected. You will need to perform additional actions to complete the selection.
-:::
-
+- Search mode selector: choose `tag`, `formula`, or `elements` next to the search box. Autocompletion updates based on the selected mode.
 
 :::{important}
-If there are no **Config_type** available, clicking the **Select** button will select all visible items, and clicking the **Deselect** button will deselect all items.
+If the input query is empty, clicking **Select** will select all visible items, and clicking **Deselect** will deselect all visible items. (This also applies when there are no **Config_type** values.)
 :::
-### Search by formula
 
-- Toggle the small "formula" checkbox next to the search box to switch between searching by `Config_type` (default) and searching by chemical formula.
-- When formula mode is enabled, autocompletion updates to your available formulas.
+### Search modes
+
+#### `tag`
+
+- Matches against `Config_type` (structure tag).
+- Uses Python regular expressions (`re.search`), so an empty pattern matches everything.
+- Examples:
+  - `bulk` (substring match)
+  - `^liq` (prefix match)
+
+#### `formula`
+
+- Matches against the computed chemical formula (e.g. `Fe2O3`).
+- Uses Python regular expressions (`re.search`).
+- Examples:
+  - `Fe.*O` (any Fe-O containing formula string)
+  - `^SiO2$` (exact match)
+
+#### `elements`
+
+Element-set query language to filter structures by which elements appear (independent of stoichiometry).
+
+- Tokens are separated by commas or whitespace.
+- Element symbols are normalised (e.g. `fe` → `Fe`); unknown symbols are ignored with a warning.
+- Operators:
+  - `E` (no prefix): allowed set constraint. If you provide any such tokens, a structure matches only if its element set is a subset of the allowed set.
+  - `+E`: required element. The structure must contain `E`.
+  - `-E` or `!E`: excluded element. The structure must not contain `E`.
+- Examples:
+  - `Fe,O` → only elements from `{Fe, O}` (matches Fe-only, O-only, FeO, Fe2O3, ...)
+  - `Fe,O,+Fe,+O` → only Fe/O, and must contain both Fe and O
+  - `+Fe` → must contain Fe (other elements allowed)
+  - `+Fe,-H` → contains Fe and must not contain H (other elements allowed)
+  - `-H` → must not contain H (other elements allowed)
 ## 4.Result Visualization and Structure Display
 
 - The result visualization area consists of five subplots, displaying the descriptors, energy, force, pressure, and potential energy information of the dataset. We use the **pyqtgraph** library to encapsulate the plotting functions, and all five subplots support switching to the main plot by double-clicking.

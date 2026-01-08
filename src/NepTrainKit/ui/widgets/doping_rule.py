@@ -46,6 +46,7 @@ class DopingRuleItem(QFrame):
 
         self.concentration_frame = SpinBoxUnitInputFrame(self)
         self.concentration_frame.set_input(["-", ""], 2, "float")
+        self.concentration_frame.setDecimals(8)
         self.concentration_frame.setRange(0, 1)
         self.concentration_frame.set_input_value([1.0, 1.0])
 
@@ -53,7 +54,7 @@ class DopingRuleItem(QFrame):
         self.concentration_botton.setChecked(True)
         self.count_frame = SpinBoxUnitInputFrame(self)
         self.count_frame.set_input(["-", ""], 2, "int")
-        self.count_frame.setRange(0, 10000)
+        self.count_frame.setRange(0, 999999)
         self.count_frame.set_input_value([10, 10])
         self.count_botton = RadioButton("Count", self)
 

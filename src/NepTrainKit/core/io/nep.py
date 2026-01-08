@@ -378,10 +378,16 @@ class NepTrainResultData(ResultData):
                 if self.bec_out_path:
                     bec_array = read_nep_out_file(self.bec_out_path, dtype=np.float32, ndmin=2)
             if energy_array.shape[0] != self.atoms_num_list.shape[0]:
-                for p in [self.energy_out_path, self.force_out_path, self.virial_out_path, self.stress_out_path, self.spin_force_out_path, getattr(self, "charge_out_path", None), getattr(self, "bec_out_path", None)]:
-                    if p:
-                        Path(p).unlink(True)
-                return self._load_dataset()
+                if self.cache_outputs_enabled():
+                    for p in [self.energy_out_path, self.force_out_path, self.virial_out_path, self.stress_out_path, self.spin_force_out_path, getattr(self, "charge_out_path", None), getattr(self, "bec_out_path", None)]:
+                        if p:
+                            Path(p).unlink(True)
+                    return self._load_dataset()
+                results = self._recalculate_and_save()
+                if getattr(self, "is_charge_model", False):
+                    energy_array, force_array, virial_array, stress_array, charge_array, bec_array = results
+                else:
+                    energy_array, force_array, virial_array, stress_array = results
         self._energy_dataset = NepPlotData(energy_array, title="energy")
         default_forces = Config.get("widget", "forces_data", ForcesMode.Raw)
         if force_array.size != 0 and default_forces == ForcesMode.Norm:
@@ -451,7 +457,7 @@ class NepTrainResultData(ResultData):
 
         energy_array=energy_array/ self.atoms_num_list.reshape(-1, 1)
         energy_array = energy_array.astype(np.float32)
-        if energy_array.size != 0:
+        if energy_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
         return energy_array
     def _save_force_data(self, forces: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
@@ -471,7 +477,7 @@ class NepTrainResultData(ResultData):
         ref_forces = np.vstack([s.forces if s.has_forces else np.full((len(s),3 ), np.nan) for s in self.structure.now_data], dtype=np.float32)
         forces_array = concat_nep_dft_array(forces,ref_forces)
 
-        if forces_array.size != 0:
+        if forces_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
         return forces_array
     def _save_virial_and_stress_data(self, virials: npt.NDArray[np.float32]) -> tuple[npt.NDArray[np.float32],npt.NDArray[np.float32]]:
@@ -494,9 +500,9 @@ class NepTrainResultData(ResultData):
 
         stress_array = virials_array * coefficient * 160.21766208  # Unit conversion to MPa
         stress_array = stress_array.astype(np.float32)
-        if virials_array.size != 0:
+        if virials_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
-        if stress_array.size != 0:
+        if stress_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.stress_out_path, stress_array, fmt='%10.8f')
         return virials_array, stress_array
     def _save_charge_data(self, charges: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
@@ -504,7 +510,7 @@ class NepTrainResultData(ResultData):
         if charges.size == 0:
             return np.array([])
         charge_arr = charges.reshape(-1, 1).astype(np.float32, copy=False)
-        if getattr(self, "charge_out_path", None) and charge_arr.size != 0:
+        if getattr(self, "charge_out_path", None) and charge_arr.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.charge_out_path, charge_arr, fmt='%10.8f')
         return charge_arr
     def _save_bec_data(self, becs: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
@@ -519,7 +525,7 @@ class NepTrainResultData(ResultData):
         ])
 
         bec_array = concat_nep_dft_array(nep_bec, ref_bec)
-        if getattr(self, "bec_out_path", None) and bec_array.size != 0:
+        if getattr(self, "bec_out_path", None) and bec_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.bec_out_path, bec_array, fmt='%10.8f')
         return bec_array
     def _recalculate_and_save(self ):
@@ -699,7 +705,7 @@ class NepPolarizabilityResultData(ResultData):
             # logger.debug(traceback.format_exc())
             polarizability_array = np.column_stack([polarizability, polarizability])
         polarizability_array = polarizability_array.astype(np.float32)
-        if polarizability_array.size != 0:
+        if polarizability_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.polarizability_out_path, polarizability_array, fmt='%10.8f')
         return polarizability_array
     def _load_dataset(self) -> None:
@@ -710,8 +716,10 @@ class NepPolarizabilityResultData(ResultData):
         else:
             polarizability_array= read_nep_out_file(self.polarizability_out_path, dtype=np.float32,ndmin=2)
             if polarizability_array.shape[0]!=self.atoms_num_list.shape[0]:
-                self.polarizability_out_path.unlink()
-                return self._load_dataset()
+                if self.cache_outputs_enabled():
+                    self.polarizability_out_path.unlink()
+                    return self._load_dataset()
+                polarizability_array = self._recalculate_and_save()
         self._polarizability_diagonal_dataset = NepPlotData(polarizability_array[:, [0,1,2,6,7,8]], title="Polar Diag")
         self._polarizability_no_diagonal_dataset = NepPlotData(polarizability_array[:, [3,4,5,9,10,11]], title="Polar NoDiag")
 class NepDipoleResultData(ResultData):
@@ -850,7 +858,7 @@ class NepDipoleResultData(ResultData):
             # logger.debug(traceback.format_exc())
             dipole_array = np.column_stack([nep_dipole_array, nep_dipole_array])
         dipole_array = dipole_array.astype(np.float32)
-        if dipole_array.size != 0:
+        if dipole_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.dipole_out_path, dipole_array, fmt='%10.8f')
         return dipole_array
     def _load_dataset(self) -> None:
@@ -861,6 +869,8 @@ class NepDipoleResultData(ResultData):
         else:
             dipole_array= read_nep_out_file(self.dipole_out_path, dtype=np.float32,ndmin=2)
             if dipole_array.shape[0]!=self.atoms_num_list.shape[0]:
-                self.dipole_out_path.unlink()
-                return self._load_dataset()
+                if self.cache_outputs_enabled():
+                    self.dipole_out_path.unlink()
+                    return self._load_dataset()
+                dipole_array = self._recalculate_and_save()
         self._dipole_dataset = NepPlotData(dipole_array, title="dipole")

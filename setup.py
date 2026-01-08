@@ -108,25 +108,7 @@ ext_modules = [
     )
 ]
 
-# qNEP CPU 扩展
-ext_modules.append(
-    Extension(
-        "NepTrainKit.qnep_cpu",
-        [
-            "src/nep_cpu/qnep_cpu.cpp",
-            "src/nep_cpu/qnep/qnep.cpp",
-            "src/nep_cpu/qnep/ewald.cpp",
-        ],
-        include_dirs=[
-            pybind11_include,
-            "src/nep_cpu/qnep",
-        ],
-        extra_compile_args=extra_compile_args,
-        extra_link_args=extra_link_args,
-        language="c++",
-    )
-)
-
+ 
 # ---- CUDA-based nep_gpu extension (built via custom NVCC flow) ----
 gpu_sources_cu = [
     "src/nep_gpu/main_nep/dataset.cu",

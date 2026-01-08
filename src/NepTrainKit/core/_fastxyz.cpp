@@ -353,12 +353,17 @@ static std::vector<FrameIndex> index_frames_parallel(const char* buf, size_t nby
         }
         // Align chunk start to next line start (skip a partial line at the beginning)
         if (cs != buf) {
-            const void* nl = std::memchr(cs, '\n', static_cast<size_t>(ce - cs));
-            if (!nl) {
-                continue; // no newline in this window; nothing to do
-            }
-            cs = static_cast<const char*>(nl) + 1;
-        }
+			// Check if cs is already at start of a line.
+			if (*(cs - 1) != '\n') {
+				// cs is in the middle of a line → skip to next line
+				const void* nl = std::memchr(cs, '\n', static_cast<size_t>(ce - cs));
+				if (!nl) {
+					continue;
+				}
+				cs = static_cast<const char*>(nl) + 1;
+			}
+			// else: cs is already at line start, do nothing.
+		}
         std::vector<FrameIndex> local;
         const char* p = cs;
         while (p < ce) {

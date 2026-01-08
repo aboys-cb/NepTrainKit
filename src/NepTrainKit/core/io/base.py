@@ -1240,6 +1240,7 @@ class ResultData(QObject):
         selected = self.get_selected_structures()
         tags = {item for structure in selected for item in structure.get_prop_key(True, True)}
         tags.discard("species")
+        tags.discard("species_id")
         tags.discard("pos")
         return tags
 
@@ -1247,20 +1248,15 @@ class ResultData(QObject):
         self,
         remove_tags: Iterable[str],
         new_tag_info: Mapping[str, str],
+        rename_map: Mapping[str, str] | None = None,
     ) -> None:
-        """Apply metadata removals and additions to the selected structures."""
+        """Apply metadata removals, additions, and key renames to the selected structures."""
         selected_structures = self.get_selected_structures()
         if not selected_structures:
             MessageManager.send_info_message("No data selected!")
             return
 
         for structure in selected_structures:
-            for remove_tag in remove_tags:
-                if remove_tag in structure.additional_fields:
-                    structure.additional_fields.pop(remove_tag)
-                elif remove_tag in structure.atomic_properties:
-                    structure.remove_atomic_properties(remove_tag)
-
             for new_tag, value_text in new_tag_info.items():
                 if value_text is None:
                     continue
@@ -1277,6 +1273,38 @@ class ResultData(QObject):
                     except Exception:
                         value = value_text
                 structure.additional_fields[new_tag] = value
+
+            if rename_map:
+                for old_key, new_key in rename_map.items():
+                    if not new_key or old_key == new_key:
+                        continue
+
+                    if old_key in structure.additional_fields:
+                        value = structure.additional_fields.pop(old_key)
+                        structure.additional_fields[new_key] = value
+                        continue
+
+                    if old_key in structure.atomic_properties:
+                        value = structure.atomic_properties.pop(old_key)
+                        structure.atomic_properties[new_key] = value
+
+                        old_descriptor = None
+                        for prop in structure.properties:
+                            if prop.get("name") == old_key:
+                                old_descriptor = prop
+                                break
+                        if old_descriptor is not None:
+                            if new_key != old_key:
+                                structure.properties = [
+                                    prop for prop in structure.properties if prop.get("name") != new_key
+                                ]
+                            old_descriptor["name"] = new_key
+
+            for remove_tag in remove_tags:
+                if remove_tag in structure.additional_fields:
+                    structure.additional_fields.pop(remove_tag)
+                elif remove_tag in structure.atomic_properties:
+                    structure.remove_atomic_properties(remove_tag)
 
         MessageManager.send_info_message("Edit completed")
         self.updateInfoSignal.emit()

@@ -677,8 +677,11 @@ class EditInfoMessageBox(MessageBoxBase):
         self.yesButton.setText('Ok')
         self.cancelButton.setText('Cancel')
         self.widget.setMinimumWidth(600)
-        self.remove_tag=set()
-        self.new_tag_info={}
+        self.remove_tag = set()
+        self.new_tag_info = {}
+        self.rename_tag_map = {}
+        self._display_to_original = {}
+        self._suppress_tag_removed = False
     def new_tag(self):
         box = InputInfoMessageBox(self)
         if not box.exec():
@@ -690,8 +693,14 @@ class EditInfoMessageBox(MessageBoxBase):
             self.add_tag(key.strip(),value)
     def init_tags(self, tags):
         for tag in tags:
-            self.tag_group.add_tag(tag)
+            if tag == "species_id":
+                continue
+            btn = self.tag_group.add_tag(tag)
+            btn.installEventFilter(self)
+            self._display_to_original[tag] = tag
     def tag_removed(self,tag):
+        if self._suppress_tag_removed:
+            return
         if tag in self.new_tag_info.keys():
             self.new_tag_info.pop(tag)
         self.remove_tag.add(tag)
@@ -699,14 +708,104 @@ class EditInfoMessageBox(MessageBoxBase):
         if self.tag_group.has_tag(tag):
             MessageManager.send_message_box(f"{tag} already exists, please delete it first")
             return
+        self.remove_tag.discard(tag)
         self.new_tag_info[tag] = value
-        self.tag_group.add_tag(tag)
+        btn = self.tag_group.add_tag(tag)
+        btn.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if isinstance(obj, TagPushButton) and event.type() == QEvent.ContextMenu:
+            old_name = obj.text()
+            dlg = RenameTagMessageBox(old_name, self)
+            if dlg.exec():
+                new_name = dlg.nameEdit.text().strip()
+                if not new_name or new_name == old_name:
+                    return True
+                self._rename_tag(old_name, new_name, obj)
+            return True
+        return super().eventFilter(obj, event)
+
+    def _confirm_merge(self, title: str, content: str) -> bool:
+        w = MessageBox(title, content, self)
+        w.setClosableOnMaskClicked(True)
+        return bool(w.exec())
+
+    def _redirect_rename_targets(self, old_target: str, new_target: str) -> None:
+        if old_target == new_target:
+            return
+        for src, dst in list(self.rename_tag_map.items()):
+            if dst == old_target:
+                self.rename_tag_map[src] = new_target
+
+    def _remove_tag_silently(self, tag: str) -> None:
+        self._suppress_tag_removed = True
+        try:
+            self.tag_group.del_tag(tag)
+        finally:
+            self._suppress_tag_removed = False
+
+    def _rename_tag(self, old_name: str, new_name: str, obj: TagPushButton) -> None:
+        if old_name in self.new_tag_info:
+            value = self.new_tag_info[old_name]
+            if self.tag_group.has_tag(new_name):
+                content = (
+                    f"Merge rename detected because '{new_name}' already exists.\n\n"
+                    f"Effect after clicking Ok:\n"
+                    f"- The new tag '{old_name}' will be merged into '{new_name}'.\n"
+                    f"- On apply, key '{new_name}' will be set to the value entered for '{old_name}'.\n"
+                    f"- If '{new_name}' already has a value, it will be overwritten.\n"
+                    f"- The temporary key '{old_name}' will be discarded.\n"
+                )
+                if not self._confirm_merge("Merge rename confirmation", content):
+                    return
+                self.remove_tag.discard(new_name)
+                self.new_tag_info[new_name] = value
+                self.new_tag_info.pop(old_name, None)
+                self._remove_tag_silently(old_name)
+                return
+
+            self.new_tag_info.pop(old_name, None)
+            self.new_tag_info[new_name] = value
+            obj.setText(new_name)
+            self.tag_group.tags[new_name] = self.tag_group.tags.pop(old_name)
+            return
+
+        original_old = self._display_to_original.get(old_name, old_name)
+        if self.tag_group.has_tag(new_name):
+            content = (
+                f"Merge rename detected because '{new_name}' already exists.\n\n"
+                f"Effect after clicking Ok:\n"
+                f"- For each selected structure, value under key '{original_old}' will be moved to '{new_name}'.\n"
+                f"- If '{new_name}' already exists, it will be overwritten by the value from '{original_old}'.\n"
+                f"- Key '{original_old}' will be removed.\n"
+            )
+            if not self._confirm_merge("Merge rename confirmation", content):
+                return
+            self.remove_tag.discard(new_name)
+            self.rename_tag_map[original_old] = new_name
+            self._redirect_rename_targets(old_name, new_name)
+            self._display_to_original.pop(old_name, None)
+            self._remove_tag_silently(old_name)
+            return
+
+        self.remove_tag.discard(new_name)
+        self.rename_tag_map[original_old] = new_name
+        self._redirect_rename_targets(old_name, new_name)
+        obj.setText(new_name)
+        self.tag_group.tags[new_name] = self.tag_group.tags.pop(old_name)
+        self._display_to_original.pop(old_name, None)
+        self._display_to_original[new_name] = original_old
     def validate(self):
-        if len(self.new_tag_info)!=0 or len(self.remove_tag)!=0:
+        if len(self.new_tag_info)!=0 or len(self.remove_tag)!=0 or len(self.rename_tag_map)!=0:
             title = 'Modify information confirmation'
             remove_info=";".join(self.remove_tag)
             add_info="\n".join([f"{k}={v}" for k,v in self.new_tag_info.items()])
-            content = f"""You removed the following information from the structure: \n{remove_info}  \nadded the following information: \n{add_info}"""
+            rename_info = "\n".join([f"{k} -> {v}" for k, v in self.rename_tag_map.items()])
+            content = (
+                f"You removed the following information from the structure:\n{remove_info}\n\n"
+                f"You renamed the following information keys:\n{rename_info}\n\n"
+                f"You added the following information to the structure:\n{add_info}"
+            )
 
             w = MessageBox(title, content, self)
 
@@ -719,6 +818,33 @@ class EditInfoMessageBox(MessageBoxBase):
             else:
                 return False
         return True
+
+
+class RenameTagMessageBox(MessageBoxBase):
+    def __init__(self, old_name: str, parent=None):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel(f"Rename tag: {old_name}", self)
+        self.titleLabel.setWordWrap(True)
+        self.nameEdit = LineEdit(self)
+        self.nameEdit.setText(old_name)
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.nameEdit)
+        self.yesButton.setText('Ok')
+        self.cancelButton.setText('Cancel')
+        self.widget.setMinimumWidth(320)
+
+    def validate(self):
+        if self.nameEdit.text().strip() != "":
+            return True
+        Flyout.create(
+            icon=InfoBarIcon.INFORMATION,
+            title='Tip',
+            content="A valid value must be entered",
+            target=self.nameEdit,
+            parent=self,
+            isClosable=True
+        )
+        return False
 
 class ShiftEnergyMessageBox(MessageBoxBase):
     """Dialog for energy baseline shift parameters."""

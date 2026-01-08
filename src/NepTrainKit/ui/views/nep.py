@@ -252,7 +252,7 @@ class NepResultPlotWidget(QWidget):
         if not box.exec():
             return
 
-        data.update_structure_metadata(box.remove_tag, box.new_tag_info)
+        data.update_structure_metadata(box.remove_tag, box.new_tag_info, box.rename_tag_map)
 
     def export_descriptor_data(self):
         """Prompt for a destination file and export the selected descriptor rows."""

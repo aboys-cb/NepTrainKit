@@ -341,7 +341,7 @@ class TagGroup(QWidget):
         """
         button = TagPushButton(icon, tag, checkable, self)
         button.checkedSignal.connect(self.tagCheckedSignal)
-        button.closeClicked.connect(lambda _tag=tag: self.del_tag(_tag))
+        button.closeClicked.connect(lambda _btn=button: self.del_tag(_btn.text()))
         if color is not None:
             button.setBackgroundColor(color)
         self._layout.addWidget(button)
@@ -356,10 +356,20 @@ class TagGroup(QWidget):
         tag : str
             Label of the tag to remove.
         """
-        button = self.tags[tag]
+        button = self.tags.get(tag)
+        if button is None:
+            for key, candidate in self.tags.items():
+                if candidate.text() == tag:
+                    tag = key
+                    button = candidate
+                    break
+        if button is None:
+            return
+
+        display_tag = button.text()
         self._layout.removeWidget(button)
         button.deleteLater()
-        self.tagRemovedSignal.emit(tag)
+        self.tagRemovedSignal.emit(display_tag)
         del self.tags[tag]
         self._layout.update()
 

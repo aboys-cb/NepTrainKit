@@ -234,78 +234,176 @@ class DatasetSummaryMessageBox(MessageBoxBase):
             MessageManager.send_warning_message("Failed to export dataset summary.")
 
     def _build_html(self) -> str:
-        """Render the summary into a simple HTML table layout."""
+        """Render the summary into a highly decorated, professional HTML dashboard."""
         counts = self._summary.get("counts", {})
         atoms = self._summary.get("atoms", {})
         elements = sorted(self._summary.get("elements", []) or [], key=lambda x: x.get("fraction", 0.0), reverse=True)
         cfg = self._summary.get("config_types", []) or []
-        group_by = self._summary.get("group_by", SearchType.TAG.value)
-        group_by_value = group_by.value if isinstance(group_by, SearchType) else str(group_by)
-        try:
-            group_by_enum = SearchType(group_by_value)
-        except Exception:
-            group_by_enum = SearchType.FORMULA if group_by_value.endswith(".FORMULA") else SearchType.TAG
-        group_label = "Formula" if group_by_enum == SearchType.FORMULA else "Config_type"
-        group_section_title = "Formulas" if group_by_enum == SearchType.FORMULA else "Config Types"
-        data_file = self._summary.get("data_file", "")
-        model_file = self._summary.get("model_file", "")
-        def _table(rows: list[dict], headers: list[str], cols: list[str]) -> str:
-            if not rows:
-                return "<p>No data.</p>"
-            body = "\n".join(
-                "<tr>" + "".join(f"<td>{item.get(k, '')}</td>" for k in cols) + "</tr>"
-                for item in rows
-            )
-            head = "".join(f"<th>{h}</th>" for h in headers)
-            return f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
+        
+        # Handling Grouping Logic (Formula or Tag)
+        group_by = self._summary.get("group_by", "tag") # Default to tag
+        group_label = "Formula" if "FORMULA" in str(group_by).upper() else "Config ID"
+        group_section_title = "Formulas" if "FORMULA" in str(group_by).upper() else "Configuration Types"
+        
+        data_file = self._summary.get("data_file", "N/A")
+        model_file = self._summary.get("model_file", "N/A")
+
+        # CSS Styles for Decoration
         style = """
         <style>
-        body{font-family:Arial, sans-serif; margin:16px;}
-        h1{margin-bottom:8px;}
-        table{border-collapse:collapse; width:100%; margin:8px 0;}
-        th,td{border:1px solid #ccc; padding:6px 8px; text-align:left;}
-        th{background:#f6f6f6;}
+            :root {
+                --primary: #2563eb;
+                --primary-gradient: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+                --secondary: #64748b;
+                --bg: #f8fafc;
+                --card: #ffffff;
+                --border: #e2e8f0;
+                --text-dark: #0f172a;
+                --accent-green: #10b981;
+            }
+
+            body {
+                font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                background-color: var(--bg);
+                color: var(--text-dark);
+                line-height: 1.6;
+                margin: 0;
+                padding: 40px 20px;
+                background-image: radial-gradient(#e2e8f0 0.5px, transparent 0.5px);
+                background-size: 24px 24px;
+            }
+
+            .container { max-width: 1000px; margin: 0 auto; }
+
+            header { margin-bottom: 40px; padding-bottom: 20px; position: relative; }
+            header::before {
+                content: ""; position: absolute; left: -20px; top: 0; bottom: 20px;
+                width: 4px; background: var(--primary-gradient); border-radius: 4px;
+            }
+
+            h1 { margin: 0; font-size: 32px; letter-spacing: -0.8px; font-weight: 800; }
+            .subtitle { color: var(--secondary); font-size: 14px; margin-top: 8px; font-weight: 500; }
+
+            .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 30px; }
+            
+            .card {
+                background: var(--card); border-radius: 16px; padding: 24px;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+                border: 1px solid var(--border);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            .card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+            .card h2 { font-size: 14px; text-transform: uppercase; color: var(--secondary); margin: 0 0 20px 0; letter-spacing: 0.1em; display: flex; align-items: center; gap: 8px; }
+            .card h2::before { content: ""; display: inline-block; width: 8px; height: 8px; background: var(--primary); border-radius: 50%; }
+
+            table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+            th { text-align: left; padding: 12px; background: #f8fafc; color: var(--secondary); font-weight: 600; border-bottom: 2px solid var(--border); text-transform: uppercase; font-size: 12px; }
+            td { padding: 14px 12px; border-bottom: 1px solid var(--border); }
+            tr:last-child td { border-bottom: none; }
+            tr:hover { background-color: #fcfdfe; }
+
+            .bar-wrap { display: flex; align-items: center; gap: 12px; }
+            .bar-bg { flex-grow: 1; height: 8px; background: #f1f5f9; border-radius: 10px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+            .bar-fill { height: 100%; background: var(--primary-gradient); border-radius: 10px; }
+
+            .badge {
+                background: #f0f7ff; color: var(--primary); padding: 4px 10px; border-radius: 8px;
+                font-weight: 700; font-family: monospace; border: 1px solid #dbeafe;
+            }
+
+            .scroll-area { max-height: 400px; overflow-y: auto; padding-right: 4px; }
+            .scroll-area::-webkit-scrollbar { width: 6px; }
+            .scroll-area::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+            .stat-val { font-weight: 700; color: var(--text-dark); }
+            .stat-label { color: var(--secondary); }
         </style>
         """
-        counts_html = f"""
-        <p>Data: {data_file}<br/>Model: {model_file}</p>
-        <table>
-          <tbody>
-            <tr><th>Orig structures</th><td>{counts.get('orig_structures', 0)}</td></tr>
-            <tr><th>Active structures</th><td>{counts.get('active_structures', 0)}</td></tr>
-            <tr><th>Removed structures</th><td>{counts.get('removed_structures', 0)}</td></tr>
-            <tr><th>Selected structures</th><td>{counts.get('selected_structures', 0)}</td></tr>
-            <tr><th>Total atoms (active)</th><td>{atoms.get('total_atoms_active', 0)}</td></tr>
-            <tr><th>Atoms per structure</th><td>min={atoms.get('min_atoms', 0)}, max={atoms.get('max_atoms', 0)}, mean={atoms.get('mean_atoms', 0.0):.1f}, median={atoms.get('median_atoms', 0.0):.1f}</td></tr>
-          </tbody>
-        </table>
-        """
-        elements_html = _table(
-            [
-                {
-                    "Element": item.get("symbol", ""),
-                    "Atoms": item.get("atoms", 0),
-                    "Structures": item.get("structures", 0),
-                    "Fraction (%)": f"{item.get('fraction', 0.0) * 100.0:.1f}",
-                }
-                for item in elements
-            ],
-            ["Element", "Atoms", "Structures", "Fraction (%)"],
-            ["Element", "Atoms", "Structures", "Fraction (%)"],
-        )
-        cfg_html = _table(
-            [
-                {
-                    group_label: item.get("name", ""),
-                    "Count": item.get("count", 0),
-                    "Fraction (%)": f"{item.get('fraction', 0.0) * 100.0:.1f}",
-                }
-                for item in cfg
-            ],
-            [group_label, "Count", "Fraction (%)"],
-            [group_label, "Count", "Fraction (%)"],
-        )
-        return f"<!doctype html><html><head><meta charset='utf-8'><title>Dataset summary</title>{style}</head><body><h1>Dataset Summary</h1>{counts_html}<h2>Elements</h2>{elements_html}<h2>{group_section_title}</h2>{cfg_html}</body></html>"
+
+        # Elements Section
+        el_rows = []
+        for item in elements:
+            pct = item.get("fraction", 0.0) * 100.0
+            el_rows.append(f"""
+            <tr>
+                <td><span class="badge">{item.get("symbol", "")}</span></td>
+                <td>{item.get("atoms", 0):,}</td>
+                <td>{item.get("structures", 0)}</td>
+                <td width="45%">
+                    <div class="bar-wrap">
+                        <div class="bar-bg"><div class="bar-fill" style="width: {pct:.1f}%"></div></div>
+                        <span class="stat-val">{pct:.1f}%</span>
+                    </div>
+                </td>
+            </tr>""")
+
+        # Config Types Section
+        cfg_rows = []
+        for item in cfg:
+            cfg_rows.append(f"""
+            <tr>
+                <td style="color: var(--text-dark); font-family: monospace;">{item.get("name", "")}</td>
+                <td class="stat-val">{item.get("count", 0)}</td>
+                <td>{item.get("fraction", 0.0) * 100.0:.1f}%</td>
+            </tr>""")
+
+        # Full HTML Template
+        return f"""<!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset='utf-8'>
+        <title>Dataset Summary</title>
+        {style}
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <h1>Dataset Summary Report</h1>
+                <div class="subtitle">SOURCE: <strong>{data_file}</strong> &nbsp;&bull;&nbsp; MODEL: <strong>{model_file}</strong></div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="card">
+                    <h2>Structure Overview</h2>
+                    <table>
+                        <tr><td class="stat-label">Original Count</td><td class="stat-val">{counts.get('orig_structures', 0)}</td></tr>
+                        <tr><td class="stat-label">Active Structures</td><td class="stat-val" style="color: var(--accent-green);">{counts.get('active_structures', 0)}</td></tr>
+                        <tr><td class="stat-label">Removed / Selected</td><td class="stat-val">{counts.get('removed_structures', 0)} / {counts.get('selected_structures', 0)}</td></tr>
+                        <tr><td class="stat-label">Total Atoms (Active)</td><td class="stat-val">{atoms.get('total_atoms_active', 0):,}</td></tr>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h2>Atoms per Structure</h2>
+                    <table>
+                        <tr><td class="stat-label">Minimum</td><td class="stat-val">{atoms.get('min_atoms', 0)}</td></tr>
+                        <tr><td class="stat-label">Maximum</td><td class="stat-val">{atoms.get('max_atoms', 0)}</td></tr>
+                        <tr><td class="stat-label">Mean Value</td><td class="stat-val" style="font-size: 1.1em; color: var(--primary);">{atoms.get('mean_atoms', 0.0):.1f}</td></tr>
+                        <tr><td class="stat-label">Median Value</td><td class="stat-val">{atoms.get('median_atoms', 0.0):.1f}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 30px;">
+                <h2>Elemental Composition</h2>
+                <table>
+                    <thead><tr><th>Element</th><th>Atoms</th><th>Structures</th><th>Distribution (%)</th></tr></thead>
+                    <tbody>{"".join(el_rows)}</tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>{group_section_title}</h2>
+                <div class="scroll-area">
+                    <table>
+                        <thead><tr><th>{group_label}</th><th>Count</th><th>Fraction</th></tr></thead>
+                        <tbody>{"".join(cfg_rows)}</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>"""
 
 class GetStrMessageBox(MessageBoxBase):
     """ Custom message box """

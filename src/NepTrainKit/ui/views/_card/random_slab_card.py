@@ -23,7 +23,7 @@ class RandomSlabCard(MakeDataCard):
         Parent widget that owns the card controls.
     """
 
-    group = "Defect"
+    group = "Surface"
 
     card_name = "Random Slab"
     menu_icon = r":/images/src/images/defect.svg"

@@ -30,6 +30,7 @@ class CardGroup(MakeDataCardWidget):
     """
 
     separator=True
+    group = "Container"
     card_name= "Card Group"
     menu_icon=r":/images/src/images/group.svg"
     runFinishedSignal=Signal(int)

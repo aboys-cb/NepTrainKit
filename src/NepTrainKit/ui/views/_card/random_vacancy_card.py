@@ -56,10 +56,23 @@ class RandomVacancyCard(MakeDataCard):
         self.max_atoms_label.setToolTip("Number of structures to generate")
         self.max_atoms_label.installEventFilter(ToolTipFilter(self.max_atoms_label, 300, ToolTipPosition.TOP))
 
+        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox.setChecked(False)
+        self.seed_checkbox.setToolTip("Enable reproducible random sampling")
+        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
+        self.seed_frame = SpinBoxUnitInputFrame(self)
+        self.seed_frame.set_input("", 1, "int")
+        self.seed_frame.setRange(0, 2**31 - 1)
+        self.seed_frame.set_input_value([0])
+        self.seed_frame.setEnabled(False)
+        self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+
         self.settingLayout.addWidget(self.rules_label, 0, 0, 1, 1)
         self.settingLayout.addWidget(self.rules_widget, 0, 1, 1, 2)
         self.settingLayout.addWidget(self.max_atoms_label, 1, 0, 1, 1)
         self.settingLayout.addWidget(self.max_atoms_condition_frame, 1, 1, 1, 2)
+        self.settingLayout.addWidget(self.seed_checkbox, 2, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 2, 1, 1, 2)
 
     def process_structure(self, structure):
         """Create vacancy configurations by removing atoms that match the configured rules.
@@ -81,6 +94,8 @@ class RandomVacancyCard(MakeDataCard):
             return [structure]
 
         max_num = int(self.max_atoms_condition_frame.get_input_value()[0])
+        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
+        rng = np.random.default_rng(base_seed)
         for _ in range(max_num):
             new_structure = structure.copy()
             total_remove = 0
@@ -99,12 +114,12 @@ class RandomVacancyCard(MakeDataCard):
                 if not candidate_indices:
                     continue
 
-                remove_num = np.random.randint(int(count_min), int(count_max) + 1)
+                remove_num = int(rng.integers(int(count_min), int(count_max) + 1))
                 remove_num = min(remove_num, len(candidate_indices))
                 if remove_num <= 0:
                     continue
 
-                idxs = np.random.choice(candidate_indices, remove_num, replace=False)
+                idxs = rng.choice(candidate_indices, remove_num, replace=False)
                 for idx in sorted(idxs, reverse=True):
                     del new_structure[idx]
                 total_remove += remove_num
@@ -128,6 +143,8 @@ class RandomVacancyCard(MakeDataCard):
 
         data_dict['rules'] = json.dumps(self.rules_widget.to_rules(), ensure_ascii=False)
         data_dict['max_atoms_condition'] = self.max_atoms_condition_frame.get_input_value()
+        data_dict["use_seed"] = self.seed_checkbox.isChecked()
+        data_dict["seed"] = self.seed_frame.get_input_value()
         return data_dict
 
     def from_dict(self, data_dict):
@@ -148,5 +165,7 @@ class RandomVacancyCard(MakeDataCard):
                 rules = []
         self.rules_widget.from_rules(rules)
         self.max_atoms_condition_frame.set_input_value(data_dict.get('max_atoms_condition', [1]))
+        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
+        self.seed_frame.set_input_value(data_dict.get("seed", [0]))
 
 

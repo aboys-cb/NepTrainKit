@@ -11,7 +11,6 @@ Examples
 from __future__ import annotations
 import sys
 import math
-import random
 from dataclasses import dataclass
 from typing import Iterable, List, Optional, Sequence, Tuple
 import numpy as np
@@ -48,6 +47,7 @@ class TorsionGuardParams:
     # Pauling bond order parameters
     bo_c_const: float = 0.3
     bo_threshold: float = 0.2
+    seed: Optional[int] = None
 # ---------- Geometry and PBC helpers ----------
 def rotate_coords(coords: np.ndarray, atom_indices: Iterable[int], axis_point1: np.ndarray,
                   axis_point2: np.ndarray, angle_deg: float) -> np.ndarray:
@@ -336,15 +336,22 @@ def nonbond_clash_free_fast_pbc(coords: np.ndarray, radii: np.ndarray, bonded_se
 def perturb_coords_fast(coords: np.ndarray, adj: Sequence[set[int]], torsions: Sequence[Tuple[int, int, int, int]],
                         degrees_range: Tuple[float, float], num_torsions: int,
                         sigma: float, local_mode: bool, max_subtree_atoms: Optional[int],
-                        pbc_active: bool, cell: Optional[np.ndarray], inv_cell_T: Optional[np.ndarray]) -> np.ndarray:
+                        pbc_active: bool, cell: Optional[np.ndarray], inv_cell_T: Optional[np.ndarray],
+                        rng: np.random.Generator) -> np.ndarray:
     if torsions:
-        chosen = random.sample(list(torsions), min(len(torsions), num_torsions))
-        for (n1, a, b, n2) in chosen:
+        torsion_list = list(torsions)
+        k = min(len(torsion_list), int(num_torsions))
+        if k > 0:
+            chosen_idx = rng.choice(len(torsion_list), size=k, replace=False)
+        else:
+            chosen_idx = []
+        for idx in chosen_idx:
+            (n1, a, b, n2) = torsion_list[int(idx)]
             if local_mode:
                 subtree_atoms = get_local_subtree_adj(adj, b, a, max_subtree_atoms)
             else:
                 subtree_atoms = get_local_subtree_adj(adj, b, a, None)
-            angle = random.uniform(*degrees_range)
+            angle = float(rng.uniform(float(degrees_range[0]), float(degrees_range[1])))
             if subtree_atoms:
                 if pbc_active and cell is not None and inv_cell_T is not None:
                     dvec = mic_delta(coords[b] - coords[a], cell, inv_cell_T)
@@ -355,13 +362,14 @@ def perturb_coords_fast(coords: np.ndarray, adj: Sequence[set[int]], torsions: S
                     axis_p2 = coords[b]
                 coords = rotate_coords(coords, subtree_atoms, axis_p1, axis_p2, angle)
     if sigma > 0:
-        coords = coords + np.random.normal(0.0, sigma, size=coords.shape)
+        coords = coords + rng.normal(0.0, float(sigma), size=coords.shape)
     return coords
 # ---------- Public API ----------
 def process_single(symbols: Sequence[str],
                    coords: np.ndarray,
                    cell: Optional[np.ndarray],
                    params: TorsionGuardParams) -> list[tuple]:
+    rng = np.random.default_rng(params.seed)
     # Decide PBC activation for this frame
     has_cell = cell is not None
     if params.pbc_mode == "yes":
@@ -406,7 +414,8 @@ def process_single(symbols: Sequence[str],
                 new_coords, adj, torsions,
                 angle_range, int(params.max_torsions_per_conf),
                 sigma_scaled, local_mode_flag, int(params.local_torsion_max_subtree),
-                pbc_active, cell if cell is not None else None, inv_cell_T
+                pbc_active, cell if cell is not None else None, inv_cell_T,
+                rng=rng,
             )
             # Guards: only original bonded pairs are enforced; non-bonded pairs kept apart
             if pbc_active and cell is not None and inv_cell_T is not None:

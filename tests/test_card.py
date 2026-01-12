@@ -14,9 +14,11 @@ if str(SRC_PATH) not in sys.path:
 import numpy as np
 from ase.io import read
 from PySide6.QtWidgets import QApplication
+import json
 
 from NepTrainKit.ui.views._card import (
     SuperCellCard,
+    CrystalPrototypeBuilderCard,
     PerturbCard,
     CellScalingCard,
     CellStrainCard,
@@ -24,6 +26,11 @@ from NepTrainKit.ui.views._card import (
     ShearAngleCard,
     RandomSlabCard,
     RandomDopingCard,
+    CompositionSweepCard,
+    RandomOccupancyCard,
+    MagneticOrderCard,
+    MagneticMomentRotationCard,
+    GroupLabelCard,
     RandomVacancyCard,
     VacancyDefectCard,
     StackingFaultCard,
@@ -218,6 +225,209 @@ class TestCard(unittest.TestCase):
         self.assertEqual(len(results), 2)
         for atoms in results:
             self.assertIn("Ge", atoms.get_chemical_symbols())
+
+    def test_crystal_prototype_builder_card(self):
+        card = CrystalPrototypeBuilderCard()
+        card.structure_combo.setCurrentText("fcc")
+        card.element_edit.setText("Cu")
+        card.a_frame.set_input_value([3.6, 3.6, 0.1])
+        card.auto_supercell_button.setChecked(True)
+        card.manual_supercell_button.setChecked(False)
+        card.max_atoms_frame.set_input_value([64])
+        card.max_output_frame.set_input_value([10])
+
+        results = card.process_structure(self.structure.copy())
+        self.assertGreaterEqual(len(results), 1)
+        self.assertTrue(all(atoms.pbc.all() for atoms in results))
+        self.assertTrue(all(len(atoms) <= 64 for atoms in results))
+
+    def test_composition_sweep_and_random_occupancy_cards(self):
+        base = self.structure.copy()
+        base.info.setdefault("Config_type", "base")
+
+        sweep = CompositionSweepCard()
+        sweep.elements_edit.setText("Co,Ni")
+        sweep.order_combo.setCurrentText("2")
+        sweep.method_combo.setCurrentText("Grid")
+        sweep.step_frame.set_input_value([0.5])
+        sweep.include_endpoints_checkbox.setChecked(True)
+        sweep.minfrac_frame.set_input_value([0.0])
+        sweep.max_output_frame.set_input_value([10])
+
+        swept = sweep.process_structure(base)
+        self.assertEqual(len(swept), 3)
+        self.assertTrue(all("alloy_composition" in atoms.info for atoms in swept))
+
+        occ = RandomOccupancyCard()
+        occ.source_combo.setCurrentText("From info (alloy_composition)")
+        occ.mode_combo.setCurrentText("Exact")
+        occ.samples_frame.set_input_value([1])
+
+        occupied = []
+        for atoms in swept:
+            occupied.extend(occ.process_structure(atoms))
+        self.assertEqual(len(occupied), len(swept))
+        for atoms in occupied:
+            syms = set(atoms.get_chemical_symbols())
+            self.assertTrue(syms.issubset({"Co", "Ni"}))
+
+    def test_composition_sweep_quaternary_quinary(self):
+        base = self.structure.copy()
+        base.info.setdefault("Config_type", "base")
+
+        sweep4 = CompositionSweepCard()
+        sweep4.elements_edit.setText("Co,Cr,Ni,Al,Fe")
+        sweep4.order_combo.setCurrentText("4")
+        sweep4.method_combo.setCurrentText("Sobol")
+        sweep4.n_points_frame.set_input_value([8])
+        sweep4.max_output_frame.set_input_value([8])
+
+        swept4 = sweep4.process_structure(base)
+        self.assertEqual(len(swept4), 8)
+        for atoms in swept4:
+            comp = json.loads(atoms.info["alloy_composition"])
+            self.assertEqual(len(comp), 4)
+
+        sweep5 = CompositionSweepCard()
+        sweep5.elements_edit.setText("Co,Cr,Ni,Al,Fe")
+        sweep5.order_combo.setCurrentText("5")
+        sweep5.method_combo.setCurrentText("Sobol")
+        sweep5.n_points_frame.set_input_value([6])
+        sweep5.max_output_frame.set_input_value([6])
+
+        swept5 = sweep5.process_structure(base)
+        self.assertEqual(len(swept5), 6)
+        for atoms in swept5:
+            comp = json.loads(atoms.info["alloy_composition"])
+            self.assertEqual(len(comp), 5)
+
+    def test_magnetic_order_card_fm_afm(self):
+        proto = CrystalPrototypeBuilderCard()
+        proto.structure_combo.setCurrentText("bcc")
+        proto.element_edit.setText("Fe")
+        proto.a_frame.set_input_value([2.9, 2.9, 0.1])
+        proto.manual_supercell_button.setChecked(True)
+        proto.auto_supercell_button.setChecked(False)
+        proto.rep_frame.set_input_value([2, 2, 2])
+        proto.max_output_frame.set_input_value([1])
+        base = proto.process_structure(self.structure.copy())[0]
+
+        card = MagneticOrderCard()
+        card.map_edit.setText("Fe:2.2")
+        card.fm_checkbox.setChecked(True)
+        card.afm_checkbox.setChecked(True)
+        card.kvec_combo.setCurrentText("100")
+        card.pm_checkbox.setChecked(False)
+
+        results = card.process_structure(base)
+        self.assertEqual(len(results), 2)
+        fm = [a for a in results if a.info.get("mag_order") == "FM"][0]
+        afm = [a for a in results if str(a.info.get("mag_order", "")).startswith("AFM")][0]
+
+        fm_m = np.array(fm.get_initial_magnetic_moments(), dtype=float)
+        afm_m = np.array(afm.get_initial_magnetic_moments(), dtype=float)
+        self.assertTrue(np.all(fm_m >= 0))
+        self.assertTrue(np.any(afm_m > 0) and np.any(afm_m < 0))
+
+    def test_group_label_card_and_group_afm(self):
+        proto = CrystalPrototypeBuilderCard()
+        proto.structure_combo.setCurrentText("bcc")
+        proto.element_edit.setText("Fe")
+        proto.a_frame.set_input_value([2.9, 2.9, 0.1])
+        proto.manual_supercell_button.setChecked(True)
+        proto.auto_supercell_button.setChecked(False)
+        proto.rep_frame.set_input_value([2, 2, 2])
+        proto.max_output_frame.set_input_value([1])
+        base = proto.process_structure(self.structure.copy())[0]
+
+        gl = GroupLabelCard()
+        gl.mode_combo.setCurrentText("k-vector layers (recommended)")
+        gl.kvec_combo.setCurrentText("111")
+        gl.group_a_edit.setText("A")
+        gl.group_b_edit.setText("B")
+        labeled = gl.process_structure(base)[0]
+        self.assertIn("group", labeled.arrays)
+        groups = set(str(g) for g in labeled.arrays["group"])
+        self.assertTrue({"A", "B"}.issubset(groups))
+
+        mag = MagneticOrderCard()
+        mag.format_combo.setCurrentText("Collinear (scalar)")
+        mag.map_edit.setText("Fe:2.2")
+        mag.fm_checkbox.setChecked(False)
+        mag.afm_checkbox.setChecked(True)
+        mag.afm_mode_combo.setCurrentText("group A/B")
+        mag.group_a_edit.setText("A")
+        mag.group_b_edit.setText("B")
+        mag.pm_checkbox.setChecked(False)
+        res = mag.process_structure(labeled)
+        self.assertEqual(len(res), 1)
+        afm = res[0]
+        m = np.array(afm.get_initial_magnetic_moments(), dtype=float)
+        self.assertTrue(np.any(m > 0) and np.any(m < 0))
+
+    def test_magnetic_order_card_noncollinear_pm(self):
+        proto = CrystalPrototypeBuilderCard()
+        proto.structure_combo.setCurrentText("fcc")
+        proto.element_edit.setText("Ni")
+        proto.a_frame.set_input_value([3.5, 3.5, 0.1])
+        proto.manual_supercell_button.setChecked(True)
+        proto.auto_supercell_button.setChecked(False)
+        proto.rep_frame.set_input_value([2, 2, 2])
+        proto.max_output_frame.set_input_value([1])
+        base = proto.process_structure(self.structure.copy())[0]
+
+        card = MagneticOrderCard()
+        card.format_combo.setCurrentText("Non-collinear (vector)")
+        card.axis_frame.set_input_value([0.0, 0.0, 1.0])
+        card.map_edit.setText("Ni:0.6")
+        card.fm_checkbox.setChecked(False)
+        card.afm_checkbox.setChecked(False)
+        card.pm_checkbox.setChecked(True)
+        card.pm_count_frame.set_input_value([2])
+        card.pm_direction_combo.setCurrentText("sphere")
+        card.pm_balanced_checkbox.setChecked(True)
+        card.seed_checkbox.setChecked(True)
+        card.seed_frame.set_input_value([123])
+
+        results = card.process_structure(base)
+        self.assertEqual(len(results), 2)
+        for atoms in results:
+            m = np.array(atoms.get_initial_magnetic_moments(), dtype=float)
+            self.assertEqual(m.ndim, 2)
+            self.assertEqual(m.shape[1], 3)
+            self.assertTrue(np.any(np.linalg.norm(m, axis=1) > 0))
+            self.assertEqual(atoms.info.get("magmom_format"), "vector")
+
+    def test_magmom_rotation_lifts_scalar_to_vector(self):
+        proto = CrystalPrototypeBuilderCard()
+        proto.structure_combo.setCurrentText("bcc")
+        proto.element_edit.setText("Fe")
+        proto.a_frame.set_input_value([2.9, 2.9, 0.1])
+        proto.manual_supercell_button.setChecked(True)
+        proto.auto_supercell_button.setChecked(False)
+        proto.rep_frame.set_input_value([2, 2, 2])
+        proto.max_output_frame.set_input_value([1])
+        base = proto.process_structure(self.structure.copy())[0]
+
+        order = MagneticOrderCard()
+        order.format_combo.setCurrentText("Collinear (scalar)")
+        order.map_edit.setText("Fe:2.2")
+        order.fm_checkbox.setChecked(True)
+        order.afm_checkbox.setChecked(False)
+        order.pm_checkbox.setChecked(False)
+        fm = order.process_structure(base)[0]
+
+        rot = MagneticMomentRotationCard()
+        rot.elements_input.setText("Fe")
+        rot.angle_frame.set_input_value([45.0])
+        rot.lift_scalar_checkbox.setChecked(True)
+        rot.axis_frame.set_input_value([0.0, 0.0, 1.0])
+        rot.count_frame.set_input_value([1])
+
+        rotated = rot.process_structure(fm)[0]
+        m = np.array(rotated.get_initial_magnetic_moments(), dtype=float)
+        self.assertEqual(m.ndim, 2)
+        self.assertEqual(m.shape[1], 3)
 
     def test_random_vacancy_card(self):
         card = RandomVacancyCard()

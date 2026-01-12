@@ -90,6 +90,17 @@ class VibrationModePerturbCard(MakeDataCard):
         self.optional_frame_layout.addWidget(self.scale_checkbox, 0, 0, 1, 1)
         self.optional_frame_layout.addWidget(self.exclude_checkbox, 0, 1, 1, 1)
 
+        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox.setChecked(False)
+        self.seed_checkbox.setToolTip("Enable reproducible random sampling")
+        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
+        self.seed_frame = SpinBoxUnitInputFrame(self)
+        self.seed_frame.set_input("", 1, "int")
+        self.seed_frame.setRange(0, 2**31 - 1)
+        self.seed_frame.set_input_value([0])
+        self.seed_frame.setEnabled(False)
+        self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+
         self.settingLayout.addWidget(self.distribution_label, 0, 0, 1, 1)
         self.settingLayout.addWidget(self.distribution_combo, 0, 1, 1, 2)
         self.settingLayout.addWidget(self.amplitude_label, 1, 0, 1, 1)
@@ -102,6 +113,8 @@ class VibrationModePerturbCard(MakeDataCard):
         self.settingLayout.addWidget(self.num_condition_frame, 4, 1, 1, 2)
         self.settingLayout.addWidget(self.optional_label, 5, 0, 1, 1)
         self.settingLayout.addWidget(self.optional_frame, 5, 1, 1, 2)
+        self.settingLayout.addWidget(self.seed_checkbox, 6, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 6, 1, 1, 2)
 
     def process_structure(self, structure):
         """Create perturbed structures aligned with available vibrational modes."""
@@ -127,6 +140,9 @@ class VibrationModePerturbCard(MakeDataCard):
         distribution = self.distribution_combo.currentIndex()
         scale_by_frequency = self.scale_checkbox.isChecked()
 
+        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
+        rng = np.random.default_rng(base_seed)
+
         generated = []
         freq_for_scaling = np.abs(frequencies)
         freq_for_scaling[~np.isfinite(freq_for_scaling)] = 0.0
@@ -135,11 +151,11 @@ class VibrationModePerturbCard(MakeDataCard):
         orig_positions = structure.get_positions()
 
         for _ in range(max_samples):
-            indices = np.random.choice(modes.shape[0], size=modes_per_sample, replace=replace)
+            indices = rng.choice(modes.shape[0], size=modes_per_sample, replace=replace)
             if distribution == 0:
-                coeffs = np.random.normal(loc=0.0, scale=1.0, size=modes_per_sample)
+                coeffs = rng.normal(loc=0.0, scale=1.0, size=modes_per_sample)
             else:
-                coeffs = np.random.uniform(-1.0, 1.0, size=modes_per_sample)
+                coeffs = rng.uniform(-1.0, 1.0, size=modes_per_sample)
 
             if scale_by_frequency:
                 denominators = np.sqrt(np.clip(freq_for_scaling[indices], a_min=1e-12, a_max=None))
@@ -170,6 +186,8 @@ class VibrationModePerturbCard(MakeDataCard):
         data_dict["max_num"] = self.num_condition_frame.get_input_value()
         data_dict["scale_by_frequency"] = self.scale_checkbox.isChecked()
         data_dict["exclude_near_zero"] = self.exclude_checkbox.isChecked()
+        data_dict["use_seed"] = self.seed_checkbox.isChecked()
+        data_dict["seed"] = self.seed_frame.get_input_value()
         return data_dict
 
     def from_dict(self, data_dict):
@@ -187,3 +205,5 @@ class VibrationModePerturbCard(MakeDataCard):
             self.num_condition_frame.set_input_value(data_dict["max_num"])
         self.scale_checkbox.setChecked(data_dict.get("scale_by_frequency", True))
         self.exclude_checkbox.setChecked(data_dict.get("exclude_near_zero", True))
+        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
+        self.seed_frame.set_input_value(data_dict.get("seed", [0]))

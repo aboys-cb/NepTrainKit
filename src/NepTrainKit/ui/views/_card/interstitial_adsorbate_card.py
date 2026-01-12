@@ -2,14 +2,13 @@
 
 from __future__ import annotations
 
-import random
 from typing import List, Sequence, Tuple
 
 import numpy as np
 from loguru import logger
 from ase import Atom
 from ase.geometry import geometry
-from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
+from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
@@ -129,6 +128,20 @@ class InsertDefectCard(MakeDataCard):
         self.settingLayout.addWidget(self.max_attempts_frame, row, 1, 1, 2)
         row += 1
 
+        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox.setChecked(False)
+        self.seed_checkbox.setToolTip("Enable reproducible random sampling")
+        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
+        self.seed_frame = SpinBoxUnitInputFrame(self)
+        self.seed_frame.set_input("", 1, "int")
+        self.seed_frame.setRange(0, 2**31 - 1)
+        self.seed_frame.set_input_value([0])
+        self.seed_frame.setEnabled(False)
+        self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+        self.settingLayout.addWidget(self.seed_checkbox, row, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, row, 1, 1, 2)
+        row += 1
+
         # Adsorption-specific controls
         self.axis_label = BodyLabel("Surface axis", self.setting_widget)
         self.axis_label.setToolTip("Crystal axis treated as surface normal for adsorption")
@@ -178,6 +191,9 @@ class InsertDefectCard(MakeDataCard):
         axis = self.axis_combo.currentIndex()
         offset = float(self.offset_frame.get_input_value()[0])
 
+        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
+        rng = np.random.default_rng(base_seed)
+
         base_positions = structure.get_positions()
         cell = structure.cell.array
         pbc = structure.get_pbc()
@@ -193,9 +209,9 @@ class InsertDefectCard(MakeDataCard):
                 success = False
                 for attempt in range(max_attempts):
                     if mode == 0:
-                        candidate = self._sample_interstitial(positions_reference, cell, pbc)
+                        candidate = self._sample_interstitial(positions_reference, cell, pbc, rng=rng)
                     else:
-                        candidate = self._sample_adsorbate(structure, positions_reference, cell, axis, offset)
+                        candidate = self._sample_adsorbate(structure, positions_reference, cell, axis, offset, rng=rng)
 
                     if candidate is None:
                         continue
@@ -204,7 +220,7 @@ class InsertDefectCard(MakeDataCard):
                     if len(dists.ravel()) and np.min(dists) < max(min_distance, 0.0):
                         continue
 
-                    element = random.choices(species, weights=weights, k=1)[0]
+                    element = str(rng.choice(species, p=np.array(weights, dtype=float)))
                     new_structure.append(Atom(element, candidate))
                     positions_reference = np.vstack([positions_reference, candidate])
                     inserted += 1
@@ -229,9 +245,9 @@ class InsertDefectCard(MakeDataCard):
             results.append(new_structure)
         return results
 
-    def _sample_interstitial(self, positions: np.ndarray, cell: np.ndarray, pbc: Sequence[bool]) -> np.ndarray:
+    def _sample_interstitial(self, positions: np.ndarray, cell: np.ndarray, pbc: Sequence[bool], *, rng: np.random.Generator) -> np.ndarray:
         """Sample a random position inside the unit cell."""
-        frac = np.random.rand(3)
+        frac = rng.random(3)
         candidate = frac @ cell
         return candidate
 
@@ -242,6 +258,8 @@ class InsertDefectCard(MakeDataCard):
         cell: np.ndarray,
         axis: int,
         offset: float,
+        *,
+        rng: np.random.Generator,
     ) -> np.ndarray | None:
         """Sample a position above the surface along the selected axis."""
         if positions.size == 0:
@@ -250,7 +268,7 @@ class InsertDefectCard(MakeDataCard):
         scaled = structure.get_scaled_positions(wrap=False)
         top_frac = scaled[:, axis].max()
 
-        frac = np.random.rand(3)
+        frac = rng.random(3)
         frac[axis] = top_frac
         in_plane = frac @ cell
 
@@ -272,6 +290,8 @@ class InsertDefectCard(MakeDataCard):
                 "structure_count": self.structures_frame.get_input_value(),
                 "min_distance": self.min_distance_frame.get_input_value(),
                 "max_attempts": self.max_attempts_frame.get_input_value(),
+                "use_seed": self.seed_checkbox.isChecked(),
+                "seed": self.seed_frame.get_input_value(),
                 "axis": self.axis_combo.currentIndex(),
                 "offset": self.offset_frame.get_input_value(),
             }
@@ -286,6 +306,8 @@ class InsertDefectCard(MakeDataCard):
         self.structures_frame.set_input_value(data.get("structure_count", [10]))
         self.min_distance_frame.set_input_value(data.get("min_distance", [1.4]))
         self.max_attempts_frame.set_input_value(data.get("max_attempts", [200]))
+        self.seed_checkbox.setChecked(bool(data.get("use_seed", False)))
+        self.seed_frame.set_input_value(data.get("seed", [0]))
         self.axis_combo.setCurrentIndex(data.get("axis", 2))
         self.offset_frame.set_input_value(data.get("offset", [1.5]))
         self._update_mode_visibility(self.mode_combo.currentIndex())

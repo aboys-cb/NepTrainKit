@@ -294,13 +294,16 @@ class MakeDataWidget(QWidget):
         None
             Starts the card execution chain or reports missing data.
         """
-        if not  self.dataset  :
-            MessageManager.send_info_message("Please import the structure file first. You can drag it in directly or import it from the upper left corner!")
-            return
         self.stop_run_card()
         first_card=self._next_card(-1)
         if first_card:
-            first_card.dataset = self.dataset
+            needs_input = bool(getattr(first_card, "requires_input_dataset", True))
+            if not self.dataset and needs_input:
+                MessageManager.send_info_message(
+                    "Please import the structure file first. You can drag it in directly or import it from the upper left corner!"
+                )
+                return
+            first_card.dataset = self.dataset or []
 
             first_card.runFinishedSignal.connect(self._run_next_card)
             first_card.run()
@@ -369,10 +372,14 @@ class MakeDataWidget(QWidget):
         None
             Ensures no card continues executing in the background.
         """
+        import warnings
+
         for card in self.workspace_card_widget.cards:
             try:
-                card.runFinishedSignal.disconnect(self._run_next_card)
-            except:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", RuntimeWarning)
+                    card.runFinishedSignal.disconnect(self._run_next_card)
+            except Exception:
                 pass
             card.stop()
 

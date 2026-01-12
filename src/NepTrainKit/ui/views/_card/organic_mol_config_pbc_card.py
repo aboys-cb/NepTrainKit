@@ -27,7 +27,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         Parent widget that owns the configuration card.
     """
 
-    group = "Perturbation"
+    group = "Organic"
     card_name = "Organic Mol Config"
     menu_icon = r":/images/src/images/perturb.svg"
 
@@ -243,6 +243,20 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.box_frame.set_input_value([100.0])
         self.settingLayout.addWidget(self.box_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.box_frame, row, 1, 1, 2)
+        row += 1
+
+        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox.setChecked(False)
+        self.seed_checkbox.setToolTip("Enable reproducible torsion/noise sampling")
+        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
+        self.seed_frame = SpinBoxUnitInputFrame(self)
+        self.seed_frame.set_input("", 1, "int")
+        self.seed_frame.setRange(0, 2**31 - 1)
+        self.seed_frame.set_input_value([0])
+        self.seed_frame.setEnabled(False)
+        self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+        self.settingLayout.addWidget(self.seed_checkbox, row, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, row, 1, 1, 2)
 
     def _current_pbc_mode(self) -> str:
         """Return the currently selected periodic boundary mode.
@@ -302,6 +316,11 @@ class OrganicMolConfigPBCCard(MakeDataCard):
             nonpbc_box_size=float(self.box_frame.get_input_value()[0]),
             bo_c_const=float(self.bo_c_frame.get_input_value()[0]),
             bo_threshold=float(self.bo_thr_frame.get_input_value()[0]),
+            seed=(
+                int(self.seed_frame.get_input_value()[0]) + int(structure.info.get("_sweep_index", 0) or 0) * 1000003
+                if self.seed_checkbox.isChecked()
+                else None
+            ),
         )
 
         result_list = tg_process_single(symbols, coords, cell_mat, params)
@@ -362,6 +381,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
             "nonpbc_box_size": self.box_frame.get_input_value(),
             "bo_c_const": self.bo_c_frame.get_input_value(),
             "bo_threshold": self.bo_thr_frame.get_input_value(),
+            "use_seed": self.seed_checkbox.isChecked(),
+            "seed": self.seed_frame.get_input_value(),
         })
         return data
 
@@ -395,3 +416,5 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.box_frame.set_input_value(data_dict.get("nonpbc_box_size", [100.0]))
         self.bo_c_frame.set_input_value(data_dict.get("bo_c_const", [0.3]))
         self.bo_thr_frame.set_input_value(data_dict.get("bo_threshold", [0.2]))
+        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
+        self.seed_frame.set_input_value(data_dict.get("seed", [0]))

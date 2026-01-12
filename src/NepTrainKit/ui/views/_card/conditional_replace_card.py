@@ -290,7 +290,7 @@ def _parse_replacements(text: str) -> tuple[list[str], list[float]]:
 class ConditionalReplaceCard(MakeDataCard):
     """Replace atoms in the active structures using spatial conditions and ratios."""
 
-    group = "Defect"
+    group = "Alloy"
     card_name = "Conditional Replace"
     menu_icon = r":/images/src/images/defect.svg"
 

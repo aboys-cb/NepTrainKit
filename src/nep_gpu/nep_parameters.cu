@@ -56,6 +56,7 @@ void NepParameters::load_from_nep_txt(const std::string& filename, std::vector<f
     PRINT_INPUT_ERROR("nep.txt header line is empty.");
   }
   std::string head = tokens[0];
+  const bool header_is_spin = (head.find("_spin") != std::string::npos);
 
   if (head.find("nep3") != std::string::npos) {
     version = 3;
@@ -115,11 +116,66 @@ void NepParameters::load_from_nep_txt(const std::string& filename, std::vector<f
     }
   }
 
+  // Spin models are written as:
+  //   nep*_spin <num_types> <elements...>
+  //   spin_mode <0..3>
+  //   spin_feature <kmax_ex> <kmax_dmi> <kmax_ani> <kmax_sia> [pmax] [ex_phi_mode] [onsite_basis_mode] [mref]
+  // then the usual nep.txt fields ("cutoff", "n_max", ...).
+  //
+  // Default to spin_mode=1 if the header advertises *_spin but the explicit
+  // line is missing (for forward/backward compatibility).
+  if (header_is_spin && spin_mode == 0) {
+    spin_mode = 1;
+  }
+
   tokens = get_tokens(input);
   if (tokens.empty()) {
     PRINT_INPUT_ERROR("Unexpected EOF after nep.txt header.");
   }
+
+  // Optional spin lines (appear before cutoff, and before any zbl line).
+  while (!tokens.empty() && (tokens[0] == "spin_mode" || tokens[0] == "spin_feature")) {
+    if (tokens[0] == "spin_mode") {
+      if (tokens.size() != 2) {
+        PRINT_INPUT_ERROR("Invalid spin_mode line in nep.txt.");
+      }
+      spin_mode = get_int_from_token(tokens[1], __FILE__, __LINE__);
+      if (spin_mode < 0 || spin_mode > 3) {
+        PRINT_INPUT_ERROR("spin_mode should be 0, 1, 2 or 3.");
+      }
+    } else if (tokens[0] == "spin_feature") {
+      if (tokens.size() < 5 || tokens.size() > 9) {
+        PRINT_INPUT_ERROR(
+          "Invalid spin_feature line in nep.txt (expected: spin_feature <kmax_ex> <kmax_dmi> <kmax_ani> <kmax_sia> [onsite_pmax] [ex_phi_mode] [onsite_basis_mode] [mref]).");
+      }
+      spin_kmax_ex = get_int_from_token(tokens[1], __FILE__, __LINE__);
+      spin_kmax_dmi = get_int_from_token(tokens[2], __FILE__, __LINE__);
+      spin_kmax_ani = get_int_from_token(tokens[3], __FILE__, __LINE__);
+      spin_kmax_sia = get_int_from_token(tokens[4], __FILE__, __LINE__);
+      if (tokens.size() >= 6) {
+        spin_pmax = get_int_from_token(tokens[5], __FILE__, __LINE__);
+      }
+      if (tokens.size() >= 7) {
+        spin_ex_phi_mode = get_int_from_token(tokens[6], __FILE__, __LINE__);
+      }
+      if (tokens.size() >= 8) {
+        spin_onsite_basis_mode = get_int_from_token(tokens[7], __FILE__, __LINE__);
+      }
+      if (tokens.size() == 9) {
+        spin_mref = static_cast<float>(get_double_from_token(tokens[8], __FILE__, __LINE__));
+      }
+    }
+
+    tokens = get_tokens(input);
+    if (tokens.empty()) {
+      PRINT_INPUT_ERROR("Unexpected EOF after nep.txt spin lines.");
+    }
+  }
+
   if (tokens[0] == "zbl") {
+    if (header_is_spin) {
+      PRINT_INPUT_ERROR("ZBL is not supported for *_spin models.");
+    }
     enable_zbl = true;
     use_typewise_cutoff_zbl = false;
     if (tokens.size() < 3) {
@@ -164,8 +220,11 @@ void NepParameters::load_from_nep_txt(const std::string& filename, std::vector<f
     size_t cutoff_tokens_end = has_max_nn ? (tokens.size() - 2) : tokens.size();
     const size_t num_cutoff_values = cutoff_tokens_end - 1; // exclude "cutoff"
 
-    rc_radial.resize(num_types);
-    rc_angular.resize(num_types);
+    // Keep the same vector sizing as Parameters::set_default_parameters()
+    // (NUM_ELEMENTS), since downstream code assumes rc_* can be indexed by
+    // element/type slot without bounds checks.
+    if (static_cast<int>(rc_radial.size()) != NUM_ELEMENTS) rc_radial.resize(NUM_ELEMENTS);
+    if (static_cast<int>(rc_angular.size()) != NUM_ELEMENTS) rc_angular.resize(NUM_ELEMENTS);
     rc_radial_max = 0.0f;
     rc_angular_max = 0.0f;
 

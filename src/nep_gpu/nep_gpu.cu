@@ -49,6 +49,7 @@
 #include "dataset.cuh"
 #include "nep.cuh"
 #include "nep_charge.cuh"
+#include "nep_spin.cuh"
 #include "tnep.cuh"
 #include "utilities/error.cuh"
 #include "nep_desc.cuh"
@@ -185,10 +186,28 @@ public:
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position);
 
+    std::vector<std::vector<double>> calculate_descriptors_spin(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position,
+        const std::vector<std::vector<double>>& spin);
+
+    std::tuple<pybind11::array, pybind11::array, pybind11::array, pybind11::array> calculate_spin(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position,
+        const std::vector<std::vector<double>>& spin);
+
     pybind11::array calculate_descriptors_scaled(
         const std::vector<std::vector<int>>& type,
         const std::vector<std::vector<double>>& box,
         const std::vector<std::vector<double>>& position);
+
+    pybind11::array calculate_descriptors_scaled_spin(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position,
+        const std::vector<std::vector<double>>& spin);
 
     std::vector<std::vector<double>> calculate_descriptors_avg(
         const std::vector<std::vector<int>>& type,
@@ -237,6 +256,8 @@ std::vector<Structure> create_structures(const std::vector<std::vector<int>>& ty
             s.has_virial = 0;
             s.has_atomic_virial = 0;
             s.atomic_virial_diag_only = 1;
+            s.has_spin = 0;
+            s.has_mforce = 0;
             s.has_temperature = 0;
             s.has_bec = para.has_bec ? 1 : 0;
             s.weight = 1.0f;
@@ -271,6 +292,83 @@ std::vector<Structure> create_structures(const std::vector<std::vector<int>>& ty
 
 
 
+        }
+
+std::vector<Structure> create_structures_with_spin(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position,
+        const std::vector<std::vector<double>>& spin){
+        const size_t batch = type.size();
+        if (box.size() != batch || position.size() != batch || spin.size() != batch) {
+            throw std::runtime_error("Input lists must have the same outer length.");
+        }
+        std::vector<Structure> structures(batch);
+        for (size_t i = 0; i < batch; ++i) {
+            const auto& t = type[i];
+            const auto& b = box[i];
+            const auto& p = position[i];
+            const auto& s_in = spin[i];
+            const int Na = static_cast<int>(t.size());
+            if (b.size() != 9) {
+                throw std::runtime_error("Each box must have 9 components: ax,bx,cx, ay,by,cy, az,bz,cz.");
+            }
+            if (p.size() != static_cast<size_t>(Na) * 3) {
+                throw std::runtime_error("Each position must have 3*N components arranged as x[N],y[N],z[N].");
+            }
+            if (s_in.size() != static_cast<size_t>(Na) * 3) {
+                throw std::runtime_error("Each spin must have 3*N components arranged as sx[N],sy[N],sz[N].");
+            }
+
+            int tmin = 1e9, tmax = -1e9;
+            for (int n = 0; n < Na; ++n) { if (t[n] < tmin) tmin = t[n]; if (t[n] > tmax) tmax = t[n]; }
+            if (tmin < 0 || tmax >= para.num_types) {
+                throw std::runtime_error("type index out of range for this model");
+            }
+
+            Structure s;
+            s.num_atom = Na;
+            s.has_virial = 0;
+            s.has_atomic_virial = 0;
+            s.atomic_virial_diag_only = 1;
+            s.has_spin = 1;
+            s.has_mforce = 0;
+            s.has_temperature = 0;
+            s.has_bec = para.has_bec ? 1 : 0;
+            s.weight = 1.0f;
+            s.energy_weight = 1.0f;
+            for (int k = 0; k < 6; ++k) s.virial[k] = -1e6f;
+            for (int k = 0; k < 9; ++k) s.box_original[k] = static_cast<float>(b[k]);
+            s.bec.resize(Na * 9);
+            for (int k = 0; k < Na * 9; ++k) s.bec[k] = 0.0f;
+
+            s.type.resize(Na);
+            s.x.resize(Na);
+            s.y.resize(Na);
+            s.z.resize(Na);
+            s.fx.resize(Na);
+            s.fy.resize(Na);
+            s.fz.resize(Na);
+            s.sx.resize(Na);
+            s.sy.resize(Na);
+            s.sz.resize(Na);
+            for (int n = 0; n < Na; ++n) {
+                s.type[n] = t[n];
+                s.x[n] = static_cast<float>(p[n]);
+                s.y[n] = static_cast<float>(p[n + Na]);
+                s.z[n] = static_cast<float>(p[n + Na * 2]);
+                s.fx[n] = 0.0f;
+                s.fy[n] = 0.0f;
+                s.fz[n] = 0.0f;
+                s.sx[n] = static_cast<float>(s_in[n]);
+                s.sy[n] = static_cast<float>(s_in[n + Na]);
+                s.sz[n] = static_cast<float>(s_in[n + Na * 2]);
+            }
+
+            fill_box_and_cells_from_original(para, s);
+            structures[i] = std::move(s);
+        }
+        return structures;
         }
 
  
@@ -672,7 +770,29 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors(
     int num_L = para.L_max;
     if (para.L_max_4body == 2) num_L += 1;
     if (para.L_max_5body == 1) num_L += 1;
-    const int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L; // filled by kernels
+    int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L; // filled by kernels
+    if (para.spin_mode > 0) {
+        const int nspin = (para.n_max_radial + 1);
+        auto clamp_kmax = [](int kmax) {
+            if (kmax < -1) return -1;
+            if (kmax > 8) return 8;
+            return kmax;
+        };
+        auto clamp_pmax = [](int pmax) {
+            if (pmax < 0) return 0;
+            if (pmax > 8) return 8;
+            return pmax;
+        };
+        auto blocks_from_kmax = [](int kmax) { return (kmax >= 0) ? (kmax + 1) : 0; };
+        const int ex_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_ex));
+        const int dmi_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_dmi));
+        const int ani_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_ani));
+        const int sia_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_sia));
+        const int pair_blocks = ex_blocks + dmi_blocks + ani_blocks + sia_blocks;
+        dim_desc += nspin * pair_blocks;
+        dim_desc += clamp_pmax(para.spin_pmax);
+    }
+    if (dim_desc > dim) dim_desc = dim;
 
         #pragma omp parallel for schedule(static)
         for (int gi = start; gi < end; ++gi) {
@@ -693,6 +813,385 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors(
         }
     }
     return descriptors;
+}
+
+// Per-atom descriptors with spin vectors provided as sx[N],sy[N],sz[N] (per structure).
+std::vector<std::vector<double>> GpuNep::calculate_descriptors_spin(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position,
+        const std::vector<std::vector<double>>& spin)
+{
+    ScopedReleaseIfHeld _gil_release;
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
+
+    int devCount = 0; auto devErr = gpuGetDeviceCount(&devCount);
+    if (devErr != gpuSuccess || devCount <= 0) {
+        throw std::runtime_error("CUDA device not available");
+    }
+    std::vector<Structure> structures = create_structures_with_spin(type, box, position, spin);
+    const int structure_num = static_cast<int>(structures.size());
+
+    std::vector<std::vector<double>> descriptors(structure_num);
+    for (int i = 0; i < structure_num; ++i) {
+        const int Na = static_cast<int>(type[i].size());
+        descriptors[i].resize(static_cast<size_t>(Na) * static_cast<size_t>(para.dim));
+    }
+
+    const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
+
+    std::vector<Dataset> dataset_vec(1);
+    std::vector<float> desc_host;
+    for (int start = 0; start < structure_num; start += bs) {
+        if (canceled_.load(std::memory_order_relaxed)) {
+            throw std::runtime_error("Canceled by user");
+        }
+        int end = std::min(start + bs, structure_num);
+        dataset_vec[0].construct(para, structures, start, end, 0);
+        NEP_Descriptors desc_engine(para,
+        dataset_vec[0].N,
+        dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+        dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+        para.version
+         );
+
+        desc_engine.update_parameters_from_host(elite.data());
+
+        desc_engine.compute_descriptors(para, dataset_vec[0]);
+        desc_engine.copy_descriptors_to_host(desc_host);
+        const int Nslice = dataset_vec[0].N;
+        const int dim = para.dim;
+        int num_L = para.L_max;
+        if (para.L_max_4body == 2) num_L += 1;
+        if (para.L_max_5body == 1) num_L += 1;
+        int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L;
+        if (para.spin_mode > 0) {
+            const int nspin = (para.n_max_radial + 1);
+            auto clamp_kmax = [](int kmax) {
+                if (kmax < -1) return -1;
+                if (kmax > 8) return 8;
+                return kmax;
+            };
+            auto clamp_pmax = [](int pmax) {
+                if (pmax < 0) return 0;
+                if (pmax > 8) return 8;
+                return pmax;
+            };
+            auto blocks_from_kmax = [](int kmax) { return (kmax >= 0) ? (kmax + 1) : 0; };
+            const int ex_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_ex));
+            const int dmi_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_dmi));
+            const int ani_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_ani));
+            const int sia_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_sia));
+            const int pair_blocks = ex_blocks + dmi_blocks + ani_blocks + sia_blocks;
+            dim_desc += nspin * pair_blocks;
+            dim_desc += clamp_pmax(para.spin_pmax);
+        }
+        if (dim_desc > dim) dim_desc = dim;
+
+        #pragma omp parallel for schedule(static)
+        for (int gi = start; gi < end; ++gi) {
+            const int li = gi - start;
+            const int Na = dataset_vec[0].Na_cpu[li];
+            const int offset = dataset_vec[0].Na_sum_cpu[li];
+            double* out = descriptors[gi].data();
+            for (int m = 0; m < Na; ++m) {
+                double* row = out + static_cast<size_t>(m) * dim;
+                #pragma omp simd
+                for (int d = 0; d < dim_desc; ++d) {
+                    row[d] = static_cast<double>(desc_host[offset + m + static_cast<size_t>(d) * Nslice]);
+                }
+                for (int d = dim_desc; d < dim; ++d) row[d] = 0.0;
+            }
+        }
+    }
+    return descriptors;
+}
+
+// Spin-aware force evaluation: returns potentials/forces/virials plus magnetic forces (mforce).
+std::tuple<pybind11::array, pybind11::array, pybind11::array, pybind11::array> GpuNep::calculate_spin(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position,
+        const std::vector<std::vector<double>>& spin)
+{
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
+    if (para.charge_mode) {
+        throw std::runtime_error("Spin and charge_mode cannot be enabled together.");
+    }
+
+    int devCount = 0;
+    auto devErr = gpuGetDeviceCount(&devCount);
+    if (devErr != gpuSuccess || devCount <= 0) {
+        throw std::runtime_error("CUDA device not available");
+    }
+
+    std::vector<Structure> structures = create_structures_with_spin(type, box, position, spin);
+    const int structure_num = static_cast<int>(structures.size());
+
+    std::vector<std::vector<double>> potentials(structure_num);
+    std::vector<std::vector<double>> forces(structure_num);
+    std::vector<std::vector<double>> virials(structure_num);
+    std::vector<std::vector<double>> mforces(structure_num);
+    for (int i = 0; i < structure_num; ++i) {
+        const int Na = static_cast<int>(type[i].size());
+        potentials[i].resize(Na);
+        forces[i].resize(Na * 3);
+        virials[i].resize(Na * 9);
+        mforces[i].resize(Na * 3);
+    }
+
+    const int bs = para.batch_size > 0 ? para.batch_size : structure_num;
+    std::vector<Dataset> dataset_vec(1);
+
+    {
+        ScopedReleaseIfHeld _gil_release;
+        for (int start = 0; start < structure_num; start += bs) {
+            if (canceled_.load(std::memory_order_relaxed)) {
+                throw std::runtime_error("Canceled by user");
+            }
+            int end = std::min(start + bs, structure_num);
+            dataset_vec[0].construct(para, structures, start, end, 0 /*device id*/);
+
+            if (para.train_mode == 1 || para.train_mode == 2) {
+                // Dipole/polarizability modes do not use spin; keep behavior consistent.
+                potential.reset(new TNEP(para,
+                                           dataset_vec[0].N,
+                                           dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                           dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                           para.version,
+                                           1));
+            } else if (para.spin_mode > 0) {
+                potential.reset(new NEP_Spin(para,
+                                            dataset_vec[0].N,
+                                            dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                            dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                            para.version,
+                                            1));
+            } else {
+                potential.reset(new NEP(para,
+                                        dataset_vec[0].N,
+                                        dataset_vec[0].N * dataset_vec[0].max_NN_radial,
+                                        dataset_vec[0].N * dataset_vec[0].max_NN_angular,
+                                        para.version,
+                                        1));
+            }
+
+            potential->find_force(para, elite.data(), dataset_vec, false, true, 1);
+            auto err_sync = gpuDeviceSynchronize();
+            if (err_sync != gpuSuccess) {
+                throw std::runtime_error(std::string("CUDA sync failed: ") + gpuGetErrorString(err_sync));
+            }
+
+            dataset_vec[0].energy.copy_to_host(dataset_vec[0].energy_cpu.data());
+            dataset_vec[0].force.copy_to_host(dataset_vec[0].force_cpu.data());
+            dataset_vec[0].virial.copy_to_host(dataset_vec[0].virial_cpu.data());
+            if (para.spin_mode > 0) {
+                dataset_vec[0].mforce_cpu.resize(static_cast<size_t>(dataset_vec[0].N) * 3);
+                dataset_vec[0].mforce.copy_to_host(dataset_vec[0].mforce_cpu.data());
+            }
+
+            const int Nslice = dataset_vec[0].N;
+            for (int gi = start; gi < end; ++gi) {
+                int li = gi - start;
+                const int Na = dataset_vec[0].Na_cpu[li];
+                const int offset = dataset_vec[0].Na_sum_cpu[li];
+                for (int m = 0; m < Na; ++m) {
+                    potentials[gi][m] = static_cast<double>(dataset_vec[0].energy_cpu[offset + m]);
+
+                    double fx = static_cast<double>(dataset_vec[0].force_cpu[offset + m]);
+                    double fy = static_cast<double>(dataset_vec[0].force_cpu[offset + m + Nslice]);
+                    double fz = static_cast<double>(dataset_vec[0].force_cpu[offset + m + Nslice * 2]);
+                    forces[gi][m] = fx;
+                    forces[gi][m + Na] = fy;
+                    forces[gi][m + Na * 2] = fz;
+
+                    double v_xx = static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 0]);
+                    double v_yy = static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 1]);
+                    double v_zz = static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 2]);
+                    double v_xy = static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 3]);
+                    double v_yz = static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 4]);
+                    double v_zx = static_cast<double>(dataset_vec[0].virial_cpu[offset + m + Nslice * 5]);
+
+                    // Expand 6->9
+                    virials[gi][0 * Na + m] = v_xx;
+                    virials[gi][1 * Na + m] = v_xy;
+                    virials[gi][2 * Na + m] = v_zx;
+                    virials[gi][3 * Na + m] = v_xy;
+                    virials[gi][4 * Na + m] = v_yy;
+                    virials[gi][5 * Na + m] = v_yz;
+                    virials[gi][6 * Na + m] = v_zx;
+                    virials[gi][7 * Na + m] = v_yz;
+                    virials[gi][8 * Na + m] = v_zz;
+
+                    if (para.spin_mode > 0) {
+                        double mx = static_cast<double>(dataset_vec[0].mforce_cpu[offset + m]);
+                        double my = static_cast<double>(dataset_vec[0].mforce_cpu[offset + m + Nslice]);
+                        double mz = static_cast<double>(dataset_vec[0].mforce_cpu[offset + m + Nslice * 2]);
+                        mforces[gi][m] = mx;
+                        mforces[gi][m + Na] = my;
+                        mforces[gi][m + Na * 2] = mz;
+                    } else {
+                        mforces[gi][m] = 0.0;
+                        mforces[gi][m + Na] = 0.0;
+                        mforces[gi][m + Na * 2] = 0.0;
+                    }
+                }
+            }
+        }
+    }
+
+    size_t total_atoms = 0;
+    for (const auto& t : type) total_atoms += t.size();
+    double* pot_buf = new double[total_atoms];
+    double* frc_buf = new double[total_atoms * 3];
+    double* vir_buf = new double[total_atoms * 9];
+    double* mfc_buf = new double[total_atoms * 3];
+
+    size_t cursor = 0;
+    for (size_t i = 0; i < type.size(); ++i) {
+        const size_t Na = type[i].size();
+        const auto& p = potentials[i];
+        const auto& f = forces[i];
+        const auto& v = virials[i];
+        const auto& mf = mforces[i];
+        for (size_t m = 0; m < Na; ++m) {
+            pot_buf[cursor + m] = p[m];
+            frc_buf[(cursor + m) * 3 + 0] = f[m + 0 * Na];
+            frc_buf[(cursor + m) * 3 + 1] = f[m + 1 * Na];
+            frc_buf[(cursor + m) * 3 + 2] = f[m + 2 * Na];
+            mfc_buf[(cursor + m) * 3 + 0] = mf[m + 0 * Na];
+            mfc_buf[(cursor + m) * 3 + 1] = mf[m + 1 * Na];
+            mfc_buf[(cursor + m) * 3 + 2] = mf[m + 2 * Na];
+            double* row = vir_buf + (cursor + m) * 9;
+            row[0] = v[m + 0 * Na];
+            row[1] = v[m + 1 * Na];
+            row[2] = v[m + 2 * Na];
+            row[3] = v[m + 3 * Na];
+            row[4] = v[m + 4 * Na];
+            row[5] = v[m + 5 * Na];
+            row[6] = v[m + 6 * Na];
+            row[7] = v[m + 7 * Na];
+            row[8] = v[m + 8 * Na];
+        }
+        cursor += Na;
+    }
+
+    auto c1 = pybind11::capsule(pot_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+    auto c2 = pybind11::capsule(frc_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+    auto c3 = pybind11::capsule(vir_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+    auto c4 = pybind11::capsule(mfc_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+
+    std::vector<std::ptrdiff_t> shp_p{static_cast<pybind11::ssize_t>(cursor)};
+    std::vector<std::ptrdiff_t> shp_f{static_cast<pybind11::ssize_t>(cursor), 3};
+    std::vector<std::ptrdiff_t> shp_v{static_cast<pybind11::ssize_t>(cursor), 9};
+    std::vector<std::ptrdiff_t> shp_m{static_cast<pybind11::ssize_t>(cursor), 3};
+
+    pybind11::array ap(pybind11::dtype::of<double>(), shp_p,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(pot_buf), c1);
+    pybind11::array af(pybind11::dtype::of<double>(), shp_f,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(3*sizeof(double)), static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(frc_buf), c2);
+    pybind11::array av(pybind11::dtype::of<double>(), shp_v,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(9*sizeof(double)), static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(vir_buf), c3);
+    pybind11::array am(pybind11::dtype::of<double>(), shp_m,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(3*sizeof(double)), static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(mfc_buf), c4);
+    return std::make_tuple(ap, af, av, am);
+}
+
+// Scaled per-atom descriptors with spin vectors provided (sx/sy/sz per structure).
+py::array GpuNep::calculate_descriptors_scaled_spin(
+        const std::vector<std::vector<int>>& type,
+        const std::vector<std::vector<double>>& box,
+        const std::vector<std::vector<double>>& position,
+        const std::vector<std::vector<double>>& spin)
+{
+    if (canceled_.load(std::memory_order_relaxed)) {
+        throw std::runtime_error("Canceled by user");
+    }
+
+    // 1) Compute raw per-frame descriptors on GPU, returns [frames][Na*dim]
+    auto raw = calculate_descriptors_spin(type, box, position, spin);
+
+    // 2) Prepare a contiguous float32 buffer [total_atoms, dim]
+    const int dim = para.dim;
+    const bool have_scaler = static_cast<int>(para.q_scaler_cpu.size()) == dim;
+    size_t total_atoms = 0;
+    for (const auto& t : type) total_atoms += t.size();
+
+    int num_L = para.L_max;
+    if (para.L_max_4body == 2) num_L += 1;
+    if (para.L_max_5body == 1) num_L += 1;
+    int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L;
+    if (para.spin_mode > 0) {
+        const int nspin = (para.n_max_radial + 1);
+        auto clamp_kmax = [](int kmax) {
+            if (kmax < -1) return -1;
+            if (kmax > 8) return 8;
+            return kmax;
+        };
+        auto clamp_pmax = [](int pmax) {
+            if (pmax < 0) return 0;
+            if (pmax > 8) return 8;
+            return pmax;
+        };
+        auto blocks_from_kmax = [](int kmax) { return (kmax >= 0) ? (kmax + 1) : 0; };
+        const int ex_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_ex));
+        const int dmi_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_dmi));
+        const int ani_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_ani));
+        const int sia_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_sia));
+        const int pair_blocks = ex_blocks + dmi_blocks + ani_blocks + sia_blocks;
+        dim_desc += nspin * pair_blocks;
+        dim_desc += clamp_pmax(para.spin_pmax);
+    }
+    if (dim_desc > dim) dim_desc = dim;
+
+    float* data = nullptr;
+    {
+        ScopedReleaseIfHeld _gil_release;
+        try {
+            data = new float[total_atoms * static_cast<size_t>(dim)];
+        } catch (const std::bad_alloc&) {
+            throw std::runtime_error("Out of host memory allocating descriptor array");
+        }
+
+        size_t cursor = 0;
+        for (size_t frame_idx = 0; frame_idx < raw.size(); ++frame_idx) {
+            const auto& frame = raw[frame_idx];
+            const size_t Na = type[frame_idx].size();
+            for (size_t atom_idx = 0; atom_idx < Na; ++atom_idx, ++cursor) {
+                const double* src = frame.data() + atom_idx * static_cast<size_t>(dim);
+                float* row = data + cursor * static_cast<size_t>(dim);
+                for (int d = 0; d < dim_desc; ++d) {
+                    float v = static_cast<float>(src[d]);
+                    if (have_scaler) v *= static_cast<float>(para.q_scaler_cpu[d]);
+                    row[d] = v;
+                }
+                for (int d = dim_desc; d < dim; ++d) row[d] = 0.0f;
+            }
+        }
+    }
+
+    auto free_when_done = py::capsule(data, [](void* f) {
+        delete[] reinterpret_cast<float*>(f);
+    });
+
+    std::vector<std::ptrdiff_t> shape{static_cast<std::ptrdiff_t>(total_atoms), static_cast<std::ptrdiff_t>(dim)};
+    std::vector<std::ptrdiff_t> strides{static_cast<std::ptrdiff_t>(dim * sizeof(float)), static_cast<std::ptrdiff_t>(sizeof(float))};
+    return py::array(py::buffer_info(
+        data,
+        sizeof(float),
+        py::format_descriptor<float>::format(),
+        2,
+        shape,
+        strides
+    ), free_when_done);
 }
 
 // Scaled per-atom descriptors using para.q_scaler_cpu (if present)
@@ -718,7 +1217,29 @@ py::array GpuNep::calculate_descriptors_scaled(
     int num_L = para.L_max;
     if (para.L_max_4body == 2) num_L += 1;
     if (para.L_max_5body == 1) num_L += 1;
-    const int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L;
+    int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L;
+    if (para.spin_mode > 0) {
+        const int nspin = (para.n_max_radial + 1);
+        auto clamp_kmax = [](int kmax) {
+            if (kmax < -1) return -1;
+            if (kmax > 8) return 8;
+            return kmax;
+        };
+        auto clamp_pmax = [](int pmax) {
+            if (pmax < 0) return 0;
+            if (pmax > 8) return 8;
+            return pmax;
+        };
+        auto blocks_from_kmax = [](int kmax) { return (kmax >= 0) ? (kmax + 1) : 0; };
+        const int ex_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_ex));
+        const int dmi_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_dmi));
+        const int ani_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_ani));
+        const int sia_blocks = blocks_from_kmax(clamp_kmax(para.spin_kmax_sia));
+        const int pair_blocks = ex_blocks + dmi_blocks + ani_blocks + sia_blocks;
+        dim_desc += nspin * pair_blocks;
+        dim_desc += clamp_pmax(para.spin_pmax);
+    }
+    if (dim_desc > dim) dim_desc = dim;
 
     // Allocate plain heap memory so we can hand ownership to NumPy safely
     const size_t total_elems = total_atoms * static_cast<size_t>(dim);
@@ -912,14 +1433,20 @@ PYBIND11_MODULE(nep_gpu, m) {
         .def("get_element_list", &GpuNep::get_element_list)
         .def("set_batch_size", &GpuNep::set_batch_size)
         .def("calculate", &GpuNep::calculate)
+        .def("calculate_spin", &GpuNep::calculate_spin,
+             py::arg("type"), py::arg("box"), py::arg("position"), py::arg("spin"))
         .def("calculate_qnep", &GpuNep::calculate_qnep)
         .def("cancel", &GpuNep::cancel)
         .def("reset_cancel", &GpuNep::reset_cancel)
         .def("is_canceled", &GpuNep::is_canceled)
         .def("get_descriptor", &GpuNep::calculate_descriptors)
+        .def("get_descriptor_spin", &GpuNep::calculate_descriptors_spin,
+             py::arg("type"), py::arg("box"), py::arg("position"), py::arg("spin"))
 
         .def("get_structures_descriptor", &GpuNep::calculate_descriptors_scaled,
              py::arg("type"), py::arg("box"), py::arg("position"))
+        .def("get_structures_descriptor_spin", &GpuNep::calculate_descriptors_scaled_spin,
+             py::arg("type"), py::arg("box"), py::arg("position"), py::arg("spin"))
         .def("get_structures_dipole", &GpuNep::get_structures_dipole)
         .def("get_structures_polarizability", &GpuNep::get_structures_polarizability);
 

@@ -24,7 +24,10 @@
 
 #include "nep_desc.cuh"
 
-// This file duplicates a subset of NEP kernels to compute descriptors only.
+// This file duplicates a subset of NEP kernels to compute the lattice (non-spin)
+// descriptor block only. For *_spin models, the additional spin descriptor block
+// is computed by reusing the training-side kernels in src/nep_gpu/main_nep/nep_spin.cu,
+// dispatched from NEP_Descriptors::compute_descriptors (see nep_desc.cuh).
 
 __global__ void gpu_find_neighbor_list_desc(
   const NEP::ParaMB paramb,

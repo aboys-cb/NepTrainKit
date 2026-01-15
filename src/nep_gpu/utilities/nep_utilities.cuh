@@ -116,7 +116,7 @@ __constant__ float COVALENT_RADIUS[94] = {
 
 const int SIZE_BOX_AND_INVERSE_BOX = 18; // (3 * 3) * 2
 const int MAX_NUM_N = 17;                // basis_size_radial+1 = 16+1
-const int MAX_DIM = 103;                 // 13 + 9 * 10
+const int MAX_DIM = 160;                 // allow extra spin block and headroom
 const int MAX_DIM_ANGULAR = 90;          // 9 * 10
 
 static __device__ __forceinline__ void
@@ -611,6 +611,31 @@ static __device__ __forceinline__ void calculate_s_one(
   }
 }
 
+// Variant that reads sum_fxyz from a strided (packed) layout:
+// sum_fxyz_base[(n * sum_stride + abc) * N] corresponds to the value for atom n1.
+template <int L>
+static __device__ __forceinline__ void calculate_s_one_packed(
+  const int n,
+  const int n_max_angular_plus_1,
+  const float* Fp,
+  const float* sum_fxyz_base,
+  const int sum_stride,
+  const int N,
+  float* s)
+{
+  const int L_minus_1 = L - 1;
+  const int L_twice_plus_1 = 2 * L + 1;
+  const int L_square_minus_1 = L * L - 1;
+  float Fp_factor = 2.0f * Fp[L_minus_1 * n_max_angular_plus_1 + n];
+  s[0] =
+    sum_fxyz_base[(n * sum_stride + L_square_minus_1) * N] * C3B[L_square_minus_1] * Fp_factor;
+  Fp_factor *= 2.0f;
+  for (int k = 1; k < L_twice_plus_1; ++k) {
+    s[k] = sum_fxyz_base[(n * sum_stride + L_square_minus_1 + k) * N] * C3B[L_square_minus_1 + k] *
+           Fp_factor;
+  }
+}
+
 template <int L>
 static __device__ __forceinline__ void accumulate_f12_one(
   const float d12inv, const float fn, const float fnp, const float* s, const float* r12, float* f12)
@@ -788,6 +813,99 @@ static __device__ __forceinline__ void accumulate_f12(
   if (L_max >= 8) {
     float s8[17];
     calculate_s_one<8>(n, n_max_angular_plus_1, Fp, sum_fxyz, s8);
+    accumulate_f12_one<8>(d12inv, fn_original, fnp_original, s8, r12unit, f12);
+  }
+}
+
+// Variant of accumulate_f12() that reads sum_fxyz from the packed strided layout used by g_sum_fxyz
+// (SoA over atoms). This avoids having to expand/copy sum_fxyz to a padded per-thread buffer.
+static __device__ __forceinline__ void accumulate_f12_packed(
+  const int L_max,
+  const int num_L,
+  const int n,
+  const int n_max_angular_plus_1,
+  const float d12,
+  const float* r12,
+  float fn,
+  float fnp,
+  const float* Fp,
+  const float* sum_fxyz_base,
+  const int sum_stride,
+  const int N,
+  float* f12)
+{
+  const float fn_original = fn;
+  const float fnp_original = fnp;
+  const float d12inv = 1.0f / d12;
+  const float r12unit[3] = {r12[0] * d12inv, r12[1] * d12inv, r12[2] * d12inv};
+
+  fnp = fnp * d12inv - fn * d12inv * d12inv;
+  fn = fn * d12inv;
+  if (num_L >= L_max + 2) {
+    float s1[3] = {
+      sum_fxyz_base[(n * sum_stride + 0) * N],
+      sum_fxyz_base[(n * sum_stride + 1) * N],
+      sum_fxyz_base[(n * sum_stride + 2) * N]};
+    get_f12_5body(d12, d12inv, fn, fnp, Fp[(L_max + 1) * n_max_angular_plus_1 + n], s1, r12, f12);
+  }
+
+  if (L_max >= 1) {
+    float s1[3];
+    calculate_s_one_packed<1>(n, n_max_angular_plus_1, Fp, sum_fxyz_base, sum_stride, N, s1);
+    accumulate_f12_one<1>(d12inv, fn_original, fnp_original, s1, r12unit, f12);
+  }
+
+  fnp = fnp * d12inv - fn * d12inv * d12inv;
+  fn = fn * d12inv;
+  if (num_L >= L_max + 1) {
+    float s2[5] = {
+      sum_fxyz_base[(n * sum_stride + 3) * N],
+      sum_fxyz_base[(n * sum_stride + 4) * N],
+      sum_fxyz_base[(n * sum_stride + 5) * N],
+      sum_fxyz_base[(n * sum_stride + 6) * N],
+      sum_fxyz_base[(n * sum_stride + 7) * N]};
+    get_f12_4body(d12, d12inv, fn, fnp, Fp[L_max * n_max_angular_plus_1 + n], s2, r12, f12);
+  }
+
+  if (L_max >= 2) {
+    float s2[5];
+    calculate_s_one_packed<2>(n, n_max_angular_plus_1, Fp, sum_fxyz_base, sum_stride, N, s2);
+    accumulate_f12_one<2>(d12inv, fn_original, fnp_original, s2, r12unit, f12);
+  }
+
+  if (L_max >= 3) {
+    float s3[7];
+    calculate_s_one_packed<3>(n, n_max_angular_plus_1, Fp, sum_fxyz_base, sum_stride, N, s3);
+    accumulate_f12_one<3>(d12inv, fn_original, fnp_original, s3, r12unit, f12);
+  }
+
+  if (L_max >= 4) {
+    float s4[9];
+    calculate_s_one_packed<4>(n, n_max_angular_plus_1, Fp, sum_fxyz_base, sum_stride, N, s4);
+    accumulate_f12_one<4>(d12inv, fn_original, fnp_original, s4, r12unit, f12);
+  }
+
+  if (L_max >= 5) {
+    float s5[11];
+    calculate_s_one_packed<5>(n, n_max_angular_plus_1, Fp, sum_fxyz_base, sum_stride, N, s5);
+    accumulate_f12_one<5>(d12inv, fn_original, fnp_original, s5, r12unit, f12);
+  }
+
+  if (L_max >= 6) {
+    float s6[13];
+    calculate_s_one_packed<6>(n, n_max_angular_plus_1, Fp, sum_fxyz_base, sum_stride, N, s6);
+    accumulate_f12_one<6>(d12inv, fn_original, fnp_original, s6, r12unit, f12);
+  }
+
+  if (L_max >= 7) {
+    float s7[15];
+    calculate_s_one_packed<7>(n, n_max_angular_plus_1, Fp, sum_fxyz_base, sum_stride, N, s7);
+    accumulate_f12_one<7>(d12inv, fn_original, fnp_original, s7, r12unit, f12);
+  }
+
+  if (L_max >= 8) {
+    float s8[17];
+    calculate_s_one_packed<8>(n, n_max_angular_plus_1, Fp, sum_fxyz_base, sum_stride, N, s8);
     accumulate_f12_one<8>(d12inv, fn_original, fnp_original, s8, r12unit, f12);
   }
 }

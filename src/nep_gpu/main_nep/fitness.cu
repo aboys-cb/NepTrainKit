@@ -20,6 +20,7 @@ Get the fitness
 #include "fitness.cuh"
 #include "nep.cuh"
 #include "nep_charge.cuh"
+#include "nep_spin.cuh"
 #include "tnep.cuh"
 #include "parameters.cuh"
 #include "structure.cuh"
@@ -27,6 +28,8 @@ Get the fitness
 #include "utilities/gpu_macro.cuh"
 #include "utilities/gpu_vector.cuh"
 #include <algorithm>
+#include <cmath>
+#include <cstdlib>
 #include <chrono>
 #include <ctime>
 #include <iostream>
@@ -126,6 +129,9 @@ Fitness::Fitness(Parameters& para)
   if (para.train_mode == 1 || para.train_mode == 2) {
     potential.reset(
       new TNEP(para, N, N_times_max_NN_radial, N_times_max_NN_angular, para.version, deviceCount));
+  } else if (para.spin_mode > 0) {
+    potential.reset(
+      new NEP_Spin(para, N, N_times_max_NN_radial, N_times_max_NN_angular, para.version, deviceCount));
   } else {
     if (para.charge_mode) {
       potential.reset(
@@ -149,14 +155,16 @@ Fitness::~Fitness()
 }
 
 void Fitness::compute(
-  const int generation, 
-  Parameters& para, 
-  const float* population, 
+  const int generation,
+  Parameters& para,
+  const float* population,
   float* fitness_energy,
   float* fitness_force,
   float* fitness_virial,
   float* fitness_charge,
-  float* fitness_bec)
+  float* fitness_bec,
+  float* fitness_mforce
+  )
 {
   int deviceCount;
   CHECK(gpuGetDeviceCount(&deviceCount));
@@ -176,10 +184,36 @@ void Fitness::compute(
   } else {
     int batch_id = generation % num_batches;
     bool calculate_neighbor = (num_batches > 1) || (generation % 100 == 0);
+
+    // If q_scaler contains saturated entries (e.g., still at the initial 1e10),
+    // some descriptor components can blow up, saturating the NN so that Fp->0 and thus force->0.
+    // Detect this cheaply (dim is small) and update q_scaler at most once per generation by
+    // re-running find_max_min using the first evaluated individual of this generation.
+    const bool force_update_q_scaler = []() {
+      const char* s = std::getenv("NEP_UPDATE_Q_SCALER");
+      return s && s[0] != '\0' && s[0] != '0';
+    }();
+    bool want_update_q_scaler = force_update_q_scaler;
+    if (!want_update_q_scaler) {
+      CHECK(gpuSetDevice(0));
+      std::vector<float> q_cpu(para.q_scaler_cpu.size());
+      para.q_scaler_gpu[0].copy_to_host(q_cpu.data());
+      for (float v : q_cpu) {
+        if (v >= 1.0e8f) { // heuristic threshold; 1e10 indicates "never updated"
+          want_update_q_scaler = true;
+          break;
+        }
+      }
+    }
+    bool updated_q_scaler_this_generation = false;
     for (int n = 0; n < population_iter; ++n) {
       const float* individual = population + deviceCount * n * para.number_of_variables;
+      const bool calculate_q_scaler = want_update_q_scaler && (!updated_q_scaler_this_generation);
       potential->find_force(
-        para, individual, train_set[batch_id], false, calculate_neighbor, deviceCount);
+        para, individual, train_set[batch_id], calculate_q_scaler, calculate_neighbor, deviceCount);
+      if (calculate_q_scaler) {
+        updated_q_scaler_this_generation = true;
+      }
       for (int m = 0; m < deviceCount; ++m) {
         float energy_shift_per_structure_not_used;
         auto rmse_energy_array = train_set[batch_id][m].get_rmse_energy(
@@ -188,7 +222,11 @@ void Fitness::compute(
         auto rmse_virial_array = train_set[batch_id][m].get_rmse_virial(para, true, m);
         auto rmse_charge_array = train_set[batch_id][m].get_rmse_charge(para, m);
         auto rmse_bec_array = train_set[batch_id][m].get_rmse_bec(para, m);
-
+        std::vector<float> rmse_mforce_array(para.num_types + 1, 0.0f);
+        if (para.spin_mode > 0 &&
+            train_set[batch_id][m].mforce_ref_gpu.size() == (size_t)train_set[batch_id][m].N * 3) {
+          rmse_mforce_array = train_set[batch_id][m].get_rmse_mforce(para, true, m);
+        }
         for (int t = 0; t <= para.num_types; ++t) {
           fitness_energy[deviceCount * n + m + t * para.population_size] =
             para.lambda_e * rmse_energy_array[t];
@@ -200,7 +238,10 @@ void Fitness::compute(
             para.lambda_q * rmse_charge_array[t];
           fitness_bec[deviceCount * n + m + t * para.population_size] =
             para.lambda_z * rmse_bec_array[t];
-        }
+          fitness_mforce[deviceCount * n + m + t * para.population_size] =
+            para.lambda_m * rmse_mforce_array[t];
+
+      }
       }
     }
 
@@ -213,8 +254,12 @@ void Fitness::compute(
         ++count_batch;
         for (int n = 0; n < population_iter; ++n) {
           const float* individual = population + deviceCount * n * para.number_of_variables;
+          const bool calculate_q_scaler = want_update_q_scaler && (!updated_q_scaler_this_generation);
           potential->find_force(
-            para, individual, train_set[batch_id], false, calculate_neighbor, deviceCount);
+            para, individual, train_set[batch_id], calculate_q_scaler, calculate_neighbor, deviceCount);
+          if (calculate_q_scaler) {
+            updated_q_scaler_this_generation = true;
+          }
           for (int m = 0; m < deviceCount; ++m) {
             float energy_shift_per_structure_not_used;
             auto rmse_energy_array = train_set[batch_id][m].get_rmse_energy(
@@ -223,6 +268,11 @@ void Fitness::compute(
             auto rmse_virial_array = train_set[batch_id][m].get_rmse_virial(para, true, m);
             auto rmse_charge_array = train_set[batch_id][m].get_rmse_charge(para, m);
             auto rmse_bec_array = train_set[batch_id][m].get_rmse_bec(para, m);
+            std::vector<float> rmse_mforce_array(para.num_types + 1, 0.0f);
+            if (para.spin_mode > 0 &&
+                train_set[batch_id][m].mforce_ref_gpu.size() == (size_t)train_set[batch_id][m].N * 3) {
+              rmse_mforce_array = train_set[batch_id][m].get_rmse_mforce(para, true, m);
+            }
             for (int t = 0; t <= para.num_types; ++t) {
               // energy
               float old_value = fitness_energy[deviceCount * n + m + t * para.population_size];
@@ -254,7 +304,13 @@ void Fitness::compute(
               new_value = old_value * old_value * count_batch + new_value * new_value;
               new_value = sqrt(new_value / (count_batch + 1));
               fitness_bec[deviceCount * n + m + t * para.population_size] = new_value;
-            }
+              // mforce
+              old_value = fitness_mforce[deviceCount * n + m + t * para.population_size];
+              new_value = para.lambda_m * rmse_mforce_array[t];
+              new_value = old_value * old_value * count_batch + new_value * new_value;
+              new_value = sqrt(new_value / (count_batch + 1));
+              fitness_mforce[deviceCount * n + m + t * para.population_size] = new_value;
+           }
           }
         }
       }
@@ -325,7 +381,20 @@ for (int nc = 0; nc < dataset.Nc; ++nc) {
 
 void Fitness::write_nep_txt(FILE* fid_nep, Parameters& para, float* elite)
 {
-  if (para.train_mode == 0) { // potential model
+  const bool is_spin_model = (para.spin_mode > 0);
+
+  // Model header on first line
+  if (is_spin_model) {
+    // Spin model: use nep*_spin tag and do not advertise ZBL here.
+    if (para.version == 3) {
+      fprintf(fid_nep, "nep3_spin %d ", para.num_types);
+    } else if (para.version == 4) {
+      fprintf(fid_nep, "nep4_spin %d ", para.num_types);
+    } else {
+      // Fallback for future versions: still mark as *_spin but keep version number.
+      fprintf(fid_nep, "nep%d_spin %d ", para.version, para.num_types);
+    }
+  } else if (para.train_mode == 0) { // potential model
     if (!para.charge_mode) {
       if (para.version == 3) {
         if (para.enable_zbl) {
@@ -379,7 +448,29 @@ void Fitness::write_nep_txt(FILE* fid_nep, Parameters& para, float* elite)
     fprintf(fid_nep, "%s ", para.elements[n].c_str());
   }
   fprintf(fid_nep, "\n");
-  if (para.enable_zbl) {
+
+  // Optional spin_mode comments to help downstream readers
+  if (is_spin_model) {
+    fprintf(
+      fid_nep,
+      "spin_mode %d\n",
+      para.spin_mode);
+    fprintf(
+      fid_nep,
+      "spin_feature %d %d %d %d %d %d %d %g\n",
+      para.spin_kmax_ex,
+      para.spin_kmax_dmi,
+      para.spin_kmax_ani,
+      para.spin_kmax_sia,
+      para.spin_pmax,
+      para.spin_ex_phi_mode,
+      para.spin_onsite_basis_mode,
+      para.spin_mref);
+
+  }
+
+  // For now, do not export ZBL lines for spin models (NEP_Spin does not include ZBL).
+  if (para.enable_zbl && !is_spin_model) {
     if (para.flexible_zbl) {
       fprintf(fid_nep, "zbl 0 0\n");
     } else if (para.use_typewise_cutoff_zbl) {
@@ -410,7 +501,7 @@ void Fitness::write_nep_txt(FILE* fid_nep, Parameters& para, float* elite)
   for (int d = 0; d < para.q_scaler_cpu.size(); ++d) {
     fprintf(fid_nep, "%15.7e\n", para.q_scaler_cpu[d]);
   }
-  if (para.flexible_zbl) {
+  if (para.flexible_zbl && !is_spin_model) {
     for (int d = 0; d < 10 * (para.num_types * (para.num_types + 1) / 2); ++d) {
       fprintf(fid_nep, "%15.7e\n", para.zbl_para[d]);
     }
@@ -448,15 +539,24 @@ void Fitness::report_error(
     auto rmse_virial_train_array = train_set[batch_id][0].get_rmse_virial(para, false, 0);
     auto rmse_charge_train_array = train_set[batch_id][0].get_rmse_charge(para, 0);
     auto rmse_bec_train_array = train_set[batch_id][0].get_rmse_bec(para, 0);
+    std::vector<float> rmse_mforce_train_array;
+    const bool has_mforce_train_data =
+      (para.spin_mode > 0) &&
+      (train_set[batch_id][0].mforce_ref_gpu.size() == (size_t)train_set[batch_id][0].N * 3);
+    if (has_mforce_train_data) {
+      rmse_mforce_train_array = train_set[batch_id][0].get_rmse_mforce(para, false, 0);
+    }
 
     float rmse_energy_train = rmse_energy_train_array.back();
     float rmse_force_train = rmse_force_train_array.back();
     float rmse_virial_train = rmse_virial_train_array.back();
     float rmse_charge_train = rmse_charge_train_array.back();
     float rmse_bec_train = rmse_bec_train_array.back();
+    float rmse_mforce_train = rmse_mforce_train_array.empty() ? 0.0f : rmse_mforce_train_array.back();
 
     // correct the last bias parameter in the NN
-    if (para.train_mode == 0 || para.train_mode == 3) {
+    // Apply for potential(0), temperature(3), and spin so saved model energies are offset-free.
+    if (para.train_mode == 0 || para.train_mode == 3 || (para.spin_mode > 0)) {
       elite[para.number_of_variables_ann - 1] += energy_shift_per_structure;
     }
 
@@ -465,6 +565,8 @@ void Fitness::report_error(
     float rmse_virial_test = 0.0f;
     float rmse_charge_test = 0.0f;
     float rmse_bec_test = 0.0f;
+    float rmse_mforce_test = 0.0f;
+    bool has_mforce_test_data = false;
     if (has_test_set) {
       potential->find_force(para, elite, test_set, false, true, 1);
       float energy_shift_per_structure_not_used;
@@ -474,11 +576,16 @@ void Fitness::report_error(
       auto rmse_virial_test_array = test_set[0].get_rmse_virial(para, false, 0);
       auto rmse_charge_test_array = test_set[0].get_rmse_charge(para, 0);
       auto rmse_bec_test_array = test_set[0].get_rmse_bec(para, 0);
+      std::vector<float> rmse_mforce_test_array;
+      has_mforce_test_data =
+        (para.spin_mode > 0) && (test_set[0].mforce_ref_gpu.size() == (size_t)test_set[0].N * 3);
+      if (has_mforce_test_data) { rmse_mforce_test_array = test_set[0].get_rmse_mforce(para, false, 0); }
       rmse_energy_test = rmse_energy_test_array.back();
       rmse_force_test = rmse_force_test_array.back();
       rmse_virial_test = rmse_virial_test_array.back();
       rmse_charge_test = rmse_charge_test_array.back();
       rmse_bec_test = rmse_bec_test_array.back();
+      rmse_mforce_test = rmse_mforce_test_array.empty() ? 0.0f : rmse_mforce_test_array.back();
     }
 
     FILE* fid_nep = my_fopen("nep.txt", "w");
@@ -496,7 +603,39 @@ void Fitness::report_error(
     }
 
     if (para.train_mode == 0 || para.train_mode == 3) {
-      if (!para.charge_mode) {
+      if ((para.spin_mode > 0) && (has_mforce_train_data || has_mforce_test_data)) {
+      // Spin mode with mforce labels: report E/F/V and mforce for train and test
+      printf(
+        "%-8d%-11.5f%-11.5f%-11.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f\n",
+        generation + 1,
+        loss_total,
+        loss_L1,
+        loss_L2,
+        rmse_energy_train,
+        rmse_force_train,
+        rmse_virial_train,
+        rmse_mforce_train,
+        rmse_energy_test,
+        rmse_force_test,
+        rmse_virial_test,
+        rmse_mforce_test);
+      fprintf(
+        fid_loss_out,
+        "%-8d%-11.5f%-11.5f%-11.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f\n",
+        generation + 1,
+        loss_total,
+        loss_L1,
+        loss_L2,
+        rmse_energy_train,
+        rmse_force_train,
+        rmse_virial_train,
+        rmse_mforce_train,
+        rmse_energy_test,
+        rmse_force_test,
+        rmse_virial_test,
+        rmse_mforce_test);
+
+      }else if (!para.charge_mode) {
         // NEP models
         printf(
           "%-8d%-11.5f%-11.5f%-11.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f%-13.5f\n",
@@ -603,6 +742,13 @@ void Fitness::report_error(
             fclose(fid_bec);
           }
         }
+        // Only output mforce if reference data exists to avoid out-of-bounds
+        if (para.spin_mode) {
+          FILE* fid_mforce = my_fopen("mforce_test.out", "w");
+          update_mforce(fid_mforce, test_set[0]);
+          fclose(fid_mforce);
+        }
+
       } else if (para.train_mode == 1) {
         FILE* fid_dipole = my_fopen("dipole_test.out", "w");
         update_dipole(fid_dipole, test_set[0], para.atomic_v);
@@ -685,7 +831,22 @@ void Fitness::update_polarizability(FILE* fid_polarizability, Dataset& dataset, 
   }
 }
 
-void Fitness::predict(Parameters& para, float* elite)
+void Fitness::update_mforce(FILE* fid_mforce, Dataset& dataset)
+{
+  // Only output when reference magnetic force exists to avoid ambiguity
+  if (dataset.mforce_ref_cpu.size() != (size_t)dataset.N * 3) {
+    if (std::getenv("NEP_SPIN_LOG")) {
+      printf("[spin][write] skip mforce output: no reference present (size=%zu expected=%zu)\n",
+             dataset.mforce_ref_cpu.size(), (size_t)dataset.N * 3);
+    }
+    return;
+  }
+  dataset.mforce_cpu.resize(dataset.N * 3);
+  dataset.mforce.copy_to_host(dataset.mforce_cpu.data());
+  output_atomic(3, fid_mforce, dataset.mforce_cpu.data(), dataset.mforce_ref_cpu.data(), dataset);
+}
+
+ void Fitness::predict(Parameters& para, float* elite)
 {
   if (para.train_mode == 0 || para.train_mode == 3) {
     FILE* fid_force = my_fopen("force_train.out", "w");
@@ -694,11 +855,16 @@ void Fitness::predict(Parameters& para, float* elite)
     FILE* fid_stress = my_fopen("stress_train.out", "w");
     FILE* fid_charge;
     FILE* fid_bec;
+    FILE* fid_mforce;
     if (para.charge_mode) {
       fid_charge = my_fopen("charge_train.out", "w");
       if (para.has_bec) {
         fid_bec = my_fopen("bec_train.out", "w");
       }
+    }
+    if ((para.spin_mode > 0)) {
+      // Create mforce output file; writing is gated per-batch by reference presence
+      fid_mforce = my_fopen("mforce_train.out", "w");
     }
     for (int batch_id = 0; batch_id < num_batches; ++batch_id) {
       potential->find_force(para, elite, train_set[batch_id], false, true, 1);
@@ -710,6 +876,10 @@ void Fitness::predict(Parameters& para, float* elite)
           update_bec(fid_bec, train_set[batch_id][0]);
         }
       }
+      if ((para.spin_mode > 0) &&
+          (train_set[batch_id][0].mforce_ref_cpu.size() == (size_t)train_set[batch_id][0].N * 3)) {
+        update_mforce(fid_mforce, train_set[batch_id][0]);
+      }
     }
     fclose(fid_energy);
     fclose(fid_force);
@@ -720,6 +890,9 @@ void Fitness::predict(Parameters& para, float* elite)
       if (para.has_bec) {
         fclose(fid_bec);
       }
+    }
+    if ((para.spin_mode > 0)) {
+      fclose(fid_mforce);
     }
   } else if (para.train_mode == 1) {
     FILE* fid_dipole = my_fopen("dipole_train.out", "w");

@@ -37,6 +37,8 @@ void Dataset::copy_structures(std::vector<Structure>& structures_input, int n1, 
     structures[n].has_bec = structures_input[n_input].has_bec;
     structures[n].has_atomic_virial = structures_input[n_input].has_atomic_virial;
     structures[n].atomic_virial_diag_only = structures_input[n_input].atomic_virial_diag_only;
+    structures[n].has_spin = structures_input[n_input].has_spin;
+    structures[n].has_mforce = structures_input[n_input].has_mforce;
     structures[n].charge = structures_input[n_input].charge;
     structures[n].energy = structures_input[n_input].energy;
     structures[n].energy_weight = structures_input[n_input].energy_weight;
@@ -65,6 +67,18 @@ void Dataset::copy_structures(std::vector<Structure>& structures_input, int n1, 
     structures[n].fz.resize(structures[n].num_atom);
     structures[n].bec.resize(structures[n].num_atom * 9);
 
+    // allocate spin and mforce containers if present
+    if (structures_input[n_input].has_spin) {
+      structures[n].sx.resize(structures[n].num_atom);
+      structures[n].sy.resize(structures[n].num_atom);
+      structures[n].sz.resize(structures[n].num_atom);
+    }
+    if (structures_input[n_input].has_mforce) {
+      structures[n].mfx.resize(structures[n].num_atom);
+      structures[n].mfy.resize(structures[n].num_atom);
+      structures[n].mfz.resize(structures[n].num_atom);
+    }
+
     for (int na = 0; na < structures[n].num_atom; ++na) {
       structures[n].type[na] = structures_input[n_input].type[na];
       structures[n].x[na] = structures_input[n_input].x[na];
@@ -73,6 +87,16 @@ void Dataset::copy_structures(std::vector<Structure>& structures_input, int n1, 
       structures[n].fx[na] = structures_input[n_input].fx[na];
       structures[n].fy[na] = structures_input[n_input].fy[na];
       structures[n].fz[na] = structures_input[n_input].fz[na];
+      if (structures_input[n_input].has_spin) {
+        structures[n].sx[na] = structures_input[n_input].sx[na];
+        structures[n].sy[na] = structures_input[n_input].sy[na];
+        structures[n].sz[na] = structures_input[n_input].sz[na];
+      }
+      if (structures_input[n_input].has_mforce) {
+        structures[n].mfx[na] = structures_input[n_input].mfx[na];
+        structures[n].mfy[na] = structures_input[n_input].mfy[na];
+        structures[n].mfz[na] = structures_input[n_input].mfz[na];
+      }
       for (int d = 0; d < 9; ++d) {
         structures[n].bec[na * 9 + d] = structures_input[n_input].bec[na * 9 + d];
       }
@@ -190,6 +214,15 @@ void Dataset::initialize_gpu_data(Parameters& para)
     avirial_ref_cpu.resize(N * (structures[0].atomic_virial_diag_only ? 3 : 6));
   }
   temperature_ref_cpu.resize(N);
+  // Pre-allocate SoA buffers for optional fields when present
+  bool has_any_spin = false;
+  bool has_any_mforce = false;
+  for (int n = 0; n < Nc; ++n) {
+    has_any_spin = has_any_spin || (structures[n].has_spin != 0);
+    has_any_mforce = has_any_mforce || (structures[n].has_mforce != 0);
+  }
+  if (has_any_spin) { spin_cpu.resize(N * 3); }
+  if (has_any_mforce) { mforce_ref_cpu.resize(N * 3); }
 
   for (int n = 0; n < Nc; ++n) {
     weight_cpu[n] = structures[n].weight;
@@ -219,6 +252,18 @@ void Dataset::initialize_gpu_data(Parameters& para)
       force_ref_cpu[Na_sum_cpu[n] + na + N] = structures[n].fy[na];
       force_ref_cpu[Na_sum_cpu[n] + na + N * 2] = structures[n].fz[na];
       temperature_ref_cpu[Na_sum_cpu[n] + na] = structures[n].temperature;
+      if (structures[n].has_spin) {
+        int idx = Na_sum_cpu[n] + na;
+        spin_cpu[idx] = structures[n].sx[na];
+        spin_cpu[idx + N] = structures[n].sy[na];
+        spin_cpu[idx + N * 2] = structures[n].sz[na];
+      }
+      if (structures[n].has_mforce) {
+        int idx = Na_sum_cpu[n] + na;
+        mforce_ref_cpu[idx] = structures[n].mfx[na];
+        mforce_ref_cpu[idx + N] = structures[n].mfy[na];
+        mforce_ref_cpu[idx + N * 2] = structures[n].mfz[na];
+      }
       if (structures[n].has_atomic_virial) {
         avirial_ref_cpu[Na_sum_cpu[n] + na] = structures[n].avirialxx[na];
         avirial_ref_cpu[Na_sum_cpu[n] + na + N] = structures[n].avirialyy[na];
@@ -260,6 +305,18 @@ void Dataset::initialize_gpu_data(Parameters& para)
     avirial_ref_gpu.copy_from_host(avirial_ref_cpu.data());
   }
   temperature_ref_gpu.copy_from_host(temperature_ref_cpu.data());
+  if (spin_cpu.size() == (size_t)N * 3) {
+    spin.resize(N * 3);
+    spin.copy_from_host(spin_cpu.data());
+    // Allocate predicted magnetic force buffer once; it will be filled during NEP-Spin evaluation.
+    mforce.resize(N * 3);
+  }
+  if (mforce_ref_cpu.size() == (size_t)N * 3) {
+    mforce_ref_gpu.resize(N * 3);
+    mforce_ref_gpu.copy_from_host(mforce_ref_cpu.data());
+  }
+
+
 
   box.resize(Nc * 18);
   box_original.resize(Nc * 9);
@@ -472,6 +529,79 @@ static __global__ void gpu_sum_force_error(
   }
 }
 
+// Sum magnetic-force error over only atoms with non-zero spin |s|^2 > eps.
+// Also returns the per-configuration count of such atoms.
+static __global__ void gpu_sum_mforce_error_nzspin(
+  bool use_weight,
+  float force_delta,
+  int* g_Na,
+  int* g_Na_sum,
+  int* g_type,
+  float* g_type_weight,
+  const float eps,
+  const float* g_sx,
+  const float* g_sy,
+  const float* g_sz,
+  const float* g_mfx,
+  const float* g_mfy,
+  const float* g_mfz,
+  const float* g_mfx_ref,
+  const float* g_mfy_ref,
+  const float* g_mfz_ref,
+  float* error_gpu,
+  int* nz_count_gpu)
+{
+  int tid = threadIdx.x;
+  int bid = blockIdx.x;
+  int N1 = g_Na_sum[bid];
+  int N2 = N1 + g_Na[bid];
+  extern __shared__ float sdata[];
+  float* s_error = sdata;
+  float* s_count = sdata + blockDim.x; // store counts as float, cast later
+  s_error[tid] = 0.0f;
+  s_count[tid] = 0.0f;
+
+  for (int n = N1 + tid; n < N2; n += blockDim.x) {
+    float sx = g_sx[n];
+    float sy = g_sy[n];
+    float sz = g_sz[n];
+    float s2 = sx * sx + sy * sy + sz * sz;
+    if (s2 > eps) {
+      float rx = g_mfx_ref[n];
+      float ry = g_mfy_ref[n];
+      float rz = g_mfz_ref[n];
+      float dx = g_mfx[n] - rx;
+      float dy = g_mfy[n] - ry;
+      float dz = g_mfz[n] - rz;
+      float diff_square = dx * dx + dy * dy + dz * dz;
+      if (use_weight) {
+        float type_weight = g_type_weight[g_type[n]];
+        diff_square *= type_weight * type_weight;
+      }
+      if (use_weight && force_delta > 0.0f) {
+        float mag = sqrt(rx * rx + ry * ry + rz * rz);
+        diff_square *= force_delta / (force_delta + mag);
+      }
+      s_error[tid] += diff_square;
+      s_count[tid] += 1.0f;
+    }
+  }
+  __syncthreads();
+
+  for (int offset = blockDim.x >> 1; offset > 0; offset >>= 1) {
+    if (tid < offset) {
+      s_error[tid] += s_error[tid + offset];
+      s_count[tid] += s_count[tid + offset];
+    }
+    __syncthreads();
+  }
+
+  if (tid == 0) {
+    error_gpu[bid] = s_error[0];
+    nz_count_gpu[bid] = (int)(s_count[0] + 0.5f);
+  }
+}
+
 std::vector<float> Dataset::get_rmse_force(Parameters& para, const bool use_weight, int device_id)
 {
   CHECK(gpuSetDevice(device_id));
@@ -501,6 +631,96 @@ std::vector<float> Dataset::get_rmse_force(Parameters& para, const bool use_weig
       if (has_type[t * Nc + n]) {
         rmse_array[t] += rmse_temp;
         count_array[t] += Na_cpu[n];
+      }
+    }
+  }
+
+  for (int t = 0; t <= para.num_types; ++t) {
+    if (count_array[t] > 0) {
+      rmse_array[t] = sqrt(rmse_array[t] / (count_array[t] * 3));
+    }
+  }
+  return rmse_array;
+}
+
+std::vector<float> Dataset::get_rmse_mforce(Parameters& para, const bool use_weight, int device_id)
+{
+  CHECK(gpuSetDevice(device_id));
+  const int block_size = 256;
+  std::vector<float> rmse_array(para.num_types + 1, 0.0f);
+  std::vector<int> count_array(para.num_types + 1, 0);
+
+  // If there is no reference mforce (or no predicted buffer), mforce loss is undefined;
+  // return zeros so callers can safely include this term conditionally.
+  if (mforce_ref_gpu.size() != (size_t)N * 3 || mforce.size() != (size_t)N * 3) {
+    return rmse_array;
+  }
+
+  const bool has_spin = (spin_cpu.size() == (size_t)N * 3);
+  if (has_spin) {
+    GPU_Vector<int> nz_count_gpu;
+    nz_count_gpu.resize(Nc);
+    // two float arrays in shared memory: error + count
+    gpu_sum_mforce_error_nzspin<<<Nc, block_size, sizeof(float) * block_size * 2>>>(
+      use_weight,
+      para.force_delta,
+      Na.data(),
+      Na_sum.data(),
+      type.data(),
+      type_weight_gpu.data(),
+      1.0e-8f,
+      spin.data(),
+      spin.data() + N,
+      spin.data() + N * 2,
+      mforce.data(),
+      mforce.data() + N,
+      mforce.data() + N * 2,
+      mforce_ref_gpu.data(),
+      mforce_ref_gpu.data() + N,
+      mforce_ref_gpu.data() + N * 2,
+      error_gpu.data(),
+      nz_count_gpu.data());
+    int mem_err = sizeof(float) * Nc;
+    CHECK(gpuMemcpy(error_cpu.data(), error_gpu.data(), mem_err, gpuMemcpyDeviceToHost));
+    std::vector<int> nz_spin_count_per_conf(Nc, 0);
+    CHECK(gpuMemcpy(nz_spin_count_per_conf.data(), nz_count_gpu.data(), sizeof(int) * Nc, gpuMemcpyDeviceToHost));
+
+    for (int n = 0; n < Nc; ++n) {
+      int eff_count = nz_spin_count_per_conf[n];
+      if (eff_count <= 0) { continue; }
+      float rmse_temp = use_weight ? weight_cpu[n] * weight_cpu[n] * error_cpu[n] : error_cpu[n];
+      for (int t = 0; t < para.num_types + 1; ++t) {
+        if (has_type[t * Nc + n]) {
+          rmse_array[t] += rmse_temp;
+          count_array[t] += eff_count;
+        }
+      }
+    }
+  } else {
+    // Fallback: no spin present; use all atoms in configuration
+    gpu_sum_force_error<<<Nc, block_size, sizeof(float) * block_size>>>(
+      use_weight,
+      para.force_delta,
+      Na.data(),
+      Na_sum.data(),
+      type.data(),
+      type_weight_gpu.data(),
+      mforce.data(),
+      mforce.data() + N,
+      mforce.data() + N * 2,
+      mforce_ref_gpu.data(),
+      mforce_ref_gpu.data() + N,
+      mforce_ref_gpu.data() + N * 2,
+      error_gpu.data());
+    int mem = sizeof(float) * Nc;
+    CHECK(gpuMemcpy(error_cpu.data(), error_gpu.data(), mem, gpuMemcpyDeviceToHost));
+    for (int n = 0; n < Nc; ++n) {
+      float rmse_temp = use_weight ? weight_cpu[n] * weight_cpu[n] * error_cpu[n] : error_cpu[n];
+      for (int t = 0; t < para.num_types + 1; ++t) {
+        if (has_type[t * Nc + n]) {
+          rmse_array[t] += rmse_temp;
+          count_array[t] += Na_cpu[n];
+        }
       }
     }
   }

@@ -276,19 +276,26 @@ class Structure:
         return [atomic_numbers[element] for element in self.elements]
     @property
     def spin_num(self)->int:
-        """Number of atoms with non-zero magnetic moment.
+        """Number of atoms with non-zero spin/magnetic moment vectors.
 
         Returns
         -------
         int
-            Count of atoms whose ``force_mag`` entry is **not** [0, 0, 0].
-            Returns 0 if ``force_mag`` is absent.
+            Count of atoms whose spin-like entry is not all zeros.
+            Returns 0 if no spin-like field is present.
         """
-        if  "force_mag" not in self.atomic_properties :
-            return 0
-        mag=self.atomic_properties["force_mag"]
-        count = np.sum(~np.all(mag == 0, axis=1))
-        return count
+        ap = getattr(self, "atomic_properties", {}) or {}
+        for key in ("spin", "spins", "magmom", "magmoms", "initial_magmoms"):
+            if key in ap:
+                arr = np.asarray(ap[key])
+                if arr.size == 0:
+                    return 0
+                if arr.ndim == 1:
+                    return int(np.sum(arr != 0))
+                if arr.ndim == 2:
+                    return int(np.sum(~np.all(arr == 0, axis=1)))
+                return 0
+        return 0
     @cached_property
     def formula(self):
         """Chemical formula string (plain text).

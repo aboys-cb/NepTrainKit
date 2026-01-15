@@ -24,6 +24,8 @@ struct Structure {
   int has_virial;
   int has_atomic_virial;
   int atomic_virial_diag_only;
+  int has_spin;
+  int has_mforce;
   int has_bec;
   int has_temperature;
   float weight;
@@ -49,6 +51,14 @@ struct Structure {
   std::vector<float> avirialyz;
   std::vector<float> avirialzx;
   std::vector<float> bec;
+  // spin vectors per atom (optional)
+  std::vector<float> sx;
+  std::vector<float> sy;
+  std::vector<float> sz;
+  // magnetic force per atom (optional)
+  std::vector<float> mfx;
+  std::vector<float> mfy;
+  std::vector<float> mfz;
 };
 
 bool read_structures(bool is_train, Parameters& para, std::vector<Structure>& structures);

@@ -17,6 +17,7 @@
 #include "utilities/common.cuh"
 #include "utilities/error.cuh"
 #include "utilities/gpu_macro.cuh"
+#include "utilities/nep_utilities.cuh"
 #include "utilities/read_file.cuh"
 #include <cmath>
 #include <cstring>
@@ -65,6 +66,7 @@ void Parameters::set_default_parameters()
   is_lambda_e_set = false;
   is_lambda_f_set = false;
   is_lambda_v_set = false;
+  is_lambda_m_set = false;
   is_atomic_v_set = false;
   is_lambda_shear_set = false;
   is_batch_set = false;
@@ -75,9 +77,13 @@ void Parameters::set_default_parameters()
   is_force_delta_set = false;
   is_use_typewise_cutoff_zbl_set = false;
   is_charge_mode_set = false;
+  is_spin_mode_set = false;
+  is_spin_feature_set = false;
+
 
   train_mode = 0;              // potential
   prediction = 0;              // not prediction mode
+  spin_mode = 0;               // spin disabled by default
   version = 4;                 // NEP4 is the best
   basis_size_radial = 8;       // large enough in most cases
   basis_size_angular = 8;      // large enough in most cases
@@ -90,6 +96,7 @@ void Parameters::set_default_parameters()
   lambda_1 = lambda_2 = -1.0f; // automatic regularization
   lambda_e = lambda_f = 1.0f;  // energy and force are more important
   lambda_v = 0.1f;             // virial is less important
+  lambda_m = 0.0f;             // magnetic force loss is disabled by default
   lambda_shear = 1.0f;         // do not weight shear virial more by default
   lambda_q = 0.5f;             // close to optimal
   lambda_z = 0.5f;             // close to optimal
@@ -103,9 +110,22 @@ void Parameters::set_default_parameters()
   initial_para = 1.0f;
   sigma0 = 0.1f;
   atomic_v = 0;
+  // spin features (spherical is the only supported mode)
+  spin_kmax_ex = 2;          // default include k=0..2 exchange Chebyshev terms
+  spin_kmax_dmi = 0;
+  spin_kmax_ani = 0;
+  spin_kmax_sia = 0;
+  spin_pmax = 2;             // default include p=1..2 on-site longitudinal terms
+  spin_ex_phi_mode = 0;        // |mi||mj|
+  spin_onsite_basis_mode = 0;  // legacy power basis
+  spin_mref = 1.0f;
   use_typewise_cutoff_zbl = false;
   typewise_cutoff_zbl_factor = -1.0f;
   output_descriptor = false;
+  kernel_timing = 0;
+  kernel_timing_every = 200;
+  kernel_timing_skip = 5;
+  kernel_timing_topk = 20;
   charge_mode = 0;
 
   type_weight_cpu.resize(NUM_ELEMENTS);
@@ -191,9 +211,22 @@ void Parameters::calculate_parameters()
     }
   }
 
-  if (train_mode != 0 && train_mode != 3) {
-    // take virial as dipole or polarizability
-    lambda_e = lambda_f = 0.0f;
+  // spin_mode constraints
+  if (spin_mode > 0) {
+    if (train_mode != 0) {
+      PRINT_INPUT_ERROR("spin_mode>0 requires model_type=0 (potential).\n");
+    }
+    if (charge_mode) {
+      PRINT_INPUT_ERROR("spin_mode and charge_mode cannot be enabled together.\n");
+    }
+  }
+
+  // For dipole (1) and polarizability (2) models, we do not fit energy/force
+  // Spin model (4) should still fit E/F/V, so do NOT zero lambda_e/lambda_f there.
+  if (train_mode == 1 || train_mode == 2) {
+    // take virial as dipole or polarizability target
+    lambda_e = 0.0f;
+    lambda_f = 0.0f;
     enable_zbl = false;
     if (!is_lambda_v_set) {
       lambda_v = 1.0f; // by default, dipole or polarizability is fitted with global quantities
@@ -208,8 +241,56 @@ void Parameters::calculate_parameters()
     dim_angular += n_max_angular + 1;
   }
   dim = dim_radial + dim_angular;
+  if (spin_mode > 0) {
+    const int nspin = (n_max_radial + 1);
+
+    auto clamp_kmax = [](int kmax) {
+      if (kmax < -1) return -1;
+      if (kmax > 8) return 8;
+      return kmax;
+    };
+    auto clamp_pmax = [](int pmax) {
+      if (pmax < 0) return 0;
+      if (pmax > 8) return 8;
+      return pmax;
+    };
+
+    spin_kmax_ex = clamp_kmax(spin_kmax_ex);
+    spin_kmax_dmi = clamp_kmax(spin_kmax_dmi);
+    spin_kmax_ani = clamp_kmax(spin_kmax_ani);
+    spin_kmax_sia = clamp_kmax(spin_kmax_sia);
+    spin_pmax = clamp_pmax(spin_pmax);
+
+    auto blocks_from_kmax = [](int kmax) { return (kmax >= 0) ? (kmax + 1) : 0; };
+    const int ex_blocks = blocks_from_kmax(spin_kmax_ex);
+    const int dmi_blocks = blocks_from_kmax(spin_kmax_dmi);
+    const int ani_blocks = blocks_from_kmax(spin_kmax_ani);
+    const int sia_blocks = blocks_from_kmax(spin_kmax_sia);
+    const int pair_blocks = ex_blocks + dmi_blocks + ani_blocks + sia_blocks;
+    if (pair_blocks == 0 && spin_pmax == 0) {
+      PRINT_INPUT_ERROR("spin_mode>0 requires at least one spin block (kmax>=0) or spin_pmax>0.\n");
+    }
+
+    dim += nspin * pair_blocks;
+    dim += spin_pmax;
+  }
   if (train_mode == 3) {
     dim += 1; // concatenate temeprature with descriptors
+  }
+
+  // Validate against compile-time limits used by device-side scratch arrays
+  if (basis_size_radial + 1 > MAX_NUM_N) {
+    PRINT_INPUT_ERROR("basis_size_radial is too large for compiled MAX_NUM_N.");
+  }
+  if (basis_size_angular + 1 > MAX_NUM_N) {
+    PRINT_INPUT_ERROR("basis_size_angular is too large for compiled MAX_NUM_N.");
+  }
+  if (n_max_radial + 1 > MAX_NUM_N) {
+    PRINT_INPUT_ERROR("n_max_radial is too large for compiled MAX_NUM_N.");
+  }
+  if (dim > MAX_DIM) {
+    PRINT_INPUT_ERROR(
+      "total number of descriptor components (dim) exceeds compiled MAX_DIM; reduce n_max/basis_size/spin settings or recompile.\n");
   }
 
   if (version == 3) {
@@ -228,9 +309,37 @@ void Parameters::calculate_parameters()
     }
   }
 
-  number_of_variables_descriptor =
+  // Descriptor parameter count: baseline lattice c + optional spin c blocks
+  int base_desc_vars =
     num_types * num_types *
     (dim_radial * (basis_size_radial + 1) + (n_max_angular + 1) * (basis_size_angular + 1));
+
+  int num_c_spin = 0;
+  if (spin_mode == 2) {
+    int nspin = n_max_radial + 1;
+    auto blocks_from_kmax = [](int kmax) { return (kmax >= 0) ? (kmax + 1) : 0; };
+    int ex_blocks = blocks_from_kmax(spin_kmax_ex);
+    int dmi_blocks = blocks_from_kmax(spin_kmax_dmi);
+    int ani_blocks = blocks_from_kmax(spin_kmax_ani);
+    int sia_blocks = blocks_from_kmax(spin_kmax_sia);
+    int spin_blocks = ex_blocks + dmi_blocks + ani_blocks + sia_blocks;
+    if (spin_blocks > 0) {
+      num_c_spin = num_types * num_types * (nspin * (basis_size_radial + 1));
+    }
+  } else if (spin_mode == 3) {
+    auto blocks_from_kmax = [](int kmax) { return (kmax >= 0) ? (kmax + 1) : 0; };
+    int ex_blocks = blocks_from_kmax(spin_kmax_ex);
+    int dmi_blocks = blocks_from_kmax(spin_kmax_dmi);
+    int ani_blocks = blocks_from_kmax(spin_kmax_ani);
+    int sia_blocks = blocks_from_kmax(spin_kmax_sia);
+    int spin_blocks = ex_blocks + dmi_blocks + ani_blocks + sia_blocks;
+    int nspin = n_max_radial + 1;
+    int num_c_spin_per_block =
+      num_types * num_types * (nspin * (basis_size_radial + 1));
+    num_c_spin = num_c_spin_per_block * spin_blocks;
+  }
+
+  number_of_variables_descriptor = base_desc_vars + num_c_spin;
 
   number_of_variables = number_of_variables_ann + number_of_variables_descriptor;
   if (train_mode == 2) {
@@ -399,6 +508,10 @@ void Parameters::report_inputs()
     printf("    (default) model_type = %s.\n", train_mode_name.c_str());
   }
 
+  if (is_spin_mode_set || spin_mode) {
+    printf("    (%s)   spin_mode = %d.\n", is_spin_mode_set ? "input" : "default", spin_mode);
+  }
+
   std::string calculation_mode_name = "train";
   if (prediction == 1) {
     calculation_mode_name = "predict";
@@ -413,6 +526,15 @@ void Parameters::report_inputs()
     printf("    (input)   use NEP version %d.\n", version);
   } else {
     printf("    (default) use NEP version %d.\n", version);
+  }
+
+  if (kernel_timing) {
+    printf(
+      "    (input)   kernel_timing = %d (every=%d skip=%d topk=%d).\n",
+      kernel_timing,
+      kernel_timing_every,
+      kernel_timing_skip,
+      kernel_timing_topk);
   }
   printf("    (input)   number of atom types = %d.\n", num_types);
   for (int n = 0; n < num_types; ++n) {
@@ -524,7 +646,27 @@ void Parameters::report_inputs()
   if (is_lambda_v_set) {
     printf("    (input)   lambda_v = %g.\n", lambda_v);
   } else {
-    printf("    (default) lambda_v = %g.\n", lambda_v);
+  printf("    (default) lambda_v = %g.\n", lambda_v);
+  }
+
+  // Report spin-specific weights/settings when spin is enabled
+  if (spin_mode > 0) {
+    if (is_lambda_m_set) {
+      printf("    (input)   lambda_m = %g.\n", lambda_m);
+    } else {
+      printf("    (default) lambda_m = %g.\n", lambda_m);
+    }
+    printf(
+      "    (%s)   spin_feature = kmax_ex %d kmax_dmi %d kmax_ani %d kmax_sia %d onsite_pmax %d ex_phi_mode %d onsite_basis_mode %d mref %g.\n",
+      is_spin_feature_set ? "input" : "default",
+      spin_kmax_ex,
+      spin_kmax_dmi,
+      spin_kmax_ani,
+      spin_kmax_sia,
+      spin_pmax,
+      spin_ex_phi_mode,
+      spin_onsite_basis_mode,
+      spin_mref);
   }
 
   if (is_atomic_v_set) {
@@ -632,6 +774,8 @@ void Parameters::parse_one_keyword(std::vector<std::string>& tokens)
     parse_lambda_f(param, num_param);
   } else if (strcmp(param[0], "lambda_v") == 0) {
     parse_lambda_v(param, num_param);
+  } else if (strcmp(param[0], "lambda_m") == 0) {
+    parse_lambda_m(param, num_param);
   } else if (strcmp(param[0], "lambda_q") == 0) {
     parse_lambda_q(param, num_param);
   } else if (strcmp(param[0], "lambda_z") == 0) {
@@ -654,12 +798,18 @@ void Parameters::parse_one_keyword(std::vector<std::string>& tokens)
     parse_use_typewise_cutoff_zbl(param, num_param);
   } else if (strcmp(param[0], "output_descriptor") == 0) {
     parse_output_descriptor(param, num_param);
+  } else if (strcmp(param[0], "kernel_timing") == 0) {
+    parse_kernel_timing(param, num_param);
   } else if (strcmp(param[0], "charge_mode") == 0) {
     parse_charge_mode(param, num_param);
+  } else if (strcmp(param[0], "spin_mode") == 0) {
+    parse_spin_mode(param, num_param);
   } else if (strcmp(param[0], "fine_tune") == 0) {
     parse_fine_tune(param, num_param);
   } else if (strcmp(param[0], "save_potential") == 0) {
     parse_save_potential(param, num_param);
+  } else if (strcmp(param[0], "spin_feature") == 0) {
+    parse_spin_feature(param, num_param);
   } else {
     PRINT_KEYWORD_ERROR(param[0]);
   }
@@ -674,6 +824,9 @@ void Parameters::parse_mode(const char** param, int num_param)
   }
   if (!is_valid_int(param[1], &train_mode)) {
     PRINT_INPUT_ERROR("mode should be an integer.\n");
+  }
+  if (train_mode == 4) {
+    PRINT_INPUT_ERROR("spin model via model_type=4 is disabled; use spin_mode=1 with model_type=0.");
   }
   if (train_mode != 0 && train_mode != 1 && train_mode != 2 && train_mode != 3) {
     PRINT_INPUT_ERROR("model_type should = 0 or 1 or 2 or 3.");
@@ -1030,6 +1183,25 @@ void Parameters::parse_lambda_2(const char** param, int num_param)
   }
 }
 
+void Parameters::parse_lambda_m(const char** param, int num_param)
+{
+  is_lambda_m_set = true;
+
+  if (num_param != 2) {
+    PRINT_INPUT_ERROR("lambda_m should have 1 parameter.\n");
+  }
+
+  double lambda_m_tmp = 0.0;
+  if (!is_valid_real(param[1], &lambda_m_tmp)) {
+    PRINT_INPUT_ERROR("Magnetic-force loss weight should be a number.\n");
+  }
+  lambda_m = lambda_m_tmp;
+
+  if (lambda_m < 0.0f) {
+    PRINT_INPUT_ERROR("Magnetic-force loss weight should >= 0.\n");
+  }
+}
+
 void Parameters::parse_lambda_e(const char** param, int num_param)
 {
   is_lambda_e_set = true;
@@ -1101,6 +1273,66 @@ void Parameters::parse_lambda_q(const char** param, int num_param)
 
   if (lambda_q < 0.0f) {
     PRINT_INPUT_ERROR("Charge loss weight should >= 0.");
+  }
+}
+
+void Parameters::parse_spin_feature(const char** param, int num_param)
+{
+  is_spin_feature_set = true;
+
+  if (num_param < 5 || num_param > 9) {
+    PRINT_INPUT_ERROR(
+      "spin_feature should be: spin_feature <kmax_ex> <kmax_dmi> <kmax_ani> <kmax_sia> [onsite_pmax] [ex_phi_mode] [onsite_basis_mode] [mref].\n");
+  }
+
+  auto parse_kmax = [&](const char* s, int* out, const char* name) {
+    if (!is_valid_int(s, out)) {
+      PRINT_INPUT_ERROR((std::string(name) + " should be an integer.\n").c_str());
+    }
+    if (*out < -1 || *out > 8) {
+      PRINT_INPUT_ERROR((std::string(name) + " should be in [-1,8].\n").c_str());
+    }
+  };
+
+  parse_kmax(param[1], &spin_kmax_ex, "spin_feature kmax_ex");
+  parse_kmax(param[2], &spin_kmax_dmi, "spin_feature kmax_dmi");
+  parse_kmax(param[3], &spin_kmax_ani, "spin_feature kmax_ani");
+  parse_kmax(param[4], &spin_kmax_sia, "spin_feature kmax_sia");
+
+  // Optional overrides:
+  if (num_param >= 6) {
+    if (!is_valid_int(param[5], &spin_pmax)) {
+      PRINT_INPUT_ERROR("spin_feature onsite_pmax should be an integer.\n");
+    }
+    if (spin_pmax < 0 || spin_pmax > 8) {
+      PRINT_INPUT_ERROR("spin_feature onsite_pmax should be in [0,8].\n");
+    }
+  }
+  if (num_param >= 7) {
+    if (!is_valid_int(param[6], &spin_ex_phi_mode)) {
+      PRINT_INPUT_ERROR("spin_feature ex_phi_mode should be an integer.\n");
+    }
+    if (spin_ex_phi_mode < 0 || spin_ex_phi_mode > 3) {
+      PRINT_INPUT_ERROR("spin_feature ex_phi_mode should be in [0,3].\n");
+    }
+  }
+  if (num_param >= 8) {
+    if (!is_valid_int(param[7], &spin_onsite_basis_mode)) {
+      PRINT_INPUT_ERROR("spin_feature onsite_basis_mode should be an integer.\n");
+    }
+    if (spin_onsite_basis_mode < 0 || spin_onsite_basis_mode > 2) {
+      PRINT_INPUT_ERROR("spin_feature onsite_basis_mode should be in [0,2].\n");
+    }
+  }
+  if (num_param == 9) {
+    double mref_tmp = 0.0;
+    if (!is_valid_real(param[8], &mref_tmp)) {
+      PRINT_INPUT_ERROR("spin_feature mref should be a number.\n");
+    }
+    spin_mref = static_cast<float>(mref_tmp);
+    if (!(spin_mref > 0.0f)) {
+      PRINT_INPUT_ERROR("spin_feature mref should be > 0.\n");
+    }
   }
 }
 
@@ -1302,6 +1534,48 @@ void Parameters::parse_output_descriptor(const char** param, int num_param)
   }
 }
 
+void Parameters::parse_kernel_timing(const char** param, int num_param)
+{
+  // kernel_timing <enable> [every] [skip] [topk]
+  if (num_param < 2 || num_param > 5) {
+    PRINT_INPUT_ERROR("kernel_timing should be: kernel_timing <0|1> [every] [skip] [topk].\n");
+  }
+
+  int enable = 0;
+  if (!is_valid_int(param[1], &enable)) {
+    PRINT_INPUT_ERROR("kernel_timing enable should be an integer.\n");
+  }
+  if (enable != 0 && enable != 1) {
+    PRINT_INPUT_ERROR("kernel_timing enable should be 0 or 1.\n");
+  }
+  kernel_timing = enable;
+
+  if (num_param >= 3) {
+    if (!is_valid_int(param[2], &kernel_timing_every)) {
+      PRINT_INPUT_ERROR("kernel_timing every should be an integer.\n");
+    }
+    if (kernel_timing_every < 1) {
+      PRINT_INPUT_ERROR("kernel_timing every should be >= 1.\n");
+    }
+  }
+  if (num_param >= 4) {
+    if (!is_valid_int(param[3], &kernel_timing_skip)) {
+      PRINT_INPUT_ERROR("kernel_timing skip should be an integer.\n");
+    }
+    if (kernel_timing_skip < 0) {
+      PRINT_INPUT_ERROR("kernel_timing skip should be >= 0.\n");
+    }
+  }
+  if (num_param == 5) {
+    if (!is_valid_int(param[4], &kernel_timing_topk)) {
+      PRINT_INPUT_ERROR("kernel_timing topk should be an integer.\n");
+    }
+    if (kernel_timing_topk < 1) {
+      PRINT_INPUT_ERROR("kernel_timing topk should be >= 1.\n");
+    }
+  }
+}
+
 void Parameters::parse_charge_mode(const char** param, int num_param)
 {
   is_charge_mode_set = true;
@@ -1322,6 +1596,27 @@ void Parameters::parse_charge_mode(const char** param, int num_param)
     if (flip_charge < 0 || flip_charge > 1) {
       PRINT_INPUT_ERROR("flip_charge should be 0 or 1.");
     }
+  }
+}
+
+void Parameters::parse_spin_mode(const char** param, int num_param)
+{
+  is_spin_mode_set = true;
+
+  if (num_param != 2) {
+    PRINT_INPUT_ERROR("spin_mode should have 1 parameter.\n");
+  }
+  if (!is_valid_int(param[1], &spin_mode)) {
+    PRINT_INPUT_ERROR("spin_mode should be an integer.\n");
+  }
+  if (spin_mode < 0 || spin_mode > 3) {
+    PRINT_INPUT_ERROR("spin_mode should = 0, 1, 2 or 3.\n");
+  }
+  if (spin_mode > 0 && train_mode != 0) {
+    PRINT_INPUT_ERROR("spin_mode>0 requires model_type=0 (potential).\n");
+  }
+  if (spin_mode > 0 && charge_mode) {
+    PRINT_INPUT_ERROR("spin_mode and charge_mode cannot be enabled together.\n");
   }
 }
 

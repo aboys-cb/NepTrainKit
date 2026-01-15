@@ -49,6 +49,7 @@ public:
   float lambda_shear;     // extra weight parameter for shear virial
   float lambda_q;         // weight for global charge
   float lambda_z;         // weight for BEC
+  float lambda_m;         // weight for magnetic force loss
   float force_delta;      // a parameters used to modify the force loss
   bool enable_zbl;        // true for inlcuding the universal ZBL potential
   bool flexible_zbl;      // true for inlcuding the flexible ZBL potential
@@ -56,12 +57,37 @@ public:
   float zbl_rc_outer;     // outer cutoff for the universal ZBL potential
   int train_mode; // 0=potential, 1=dipole, 2=polarizability, 3=temperature-dependent free energy
   int prediction; // 0=no, 1=yes
+  // spin controls
+  int spin_mode;  // 0=off, 1=enable spin descriptors + magnetic force
+  // Spin feature controls (spherical is the only supported mode):
+  // kmax = -1 disables the block; kmax >= 0 enables and uses k=0..kmax.
+  // Exchange Chebyshev order (k=0..spin_kmax_ex).
+  int spin_kmax_ex;
+  // DMI / ANI / SIA Chebyshev orders (k=0..spin_kmax_*) for each block.
+  int spin_kmax_dmi;
+  int spin_kmax_ani;
+  int spin_kmax_sia;
+  // On-site longitudinal (Landau/Stoner-like) descriptor order (p=1..spin_pmax). 0 disables.
+  int spin_pmax;
+  // Exchange amplitude mode for exchange invariants:
+  // 0: |mi||mj| (legacy), 1: |mi|, 2: |mj|, 3: 1 (pure angle)
+  int spin_ex_phi_mode;
+  // On-site longitudinal basis mode:
+  // 0: legacy power basis m2^p, 1: Chebyshev on m2, 2: Chebyshev on |m|
+  int spin_onsite_basis_mode;
+  // Reference magnitude for mapping on-site variable to [-1,1] in Chebyshev basis.
+  float spin_mref;
   float initial_para;
   float sigma0;
   int atomic_v;
   bool use_typewise_cutoff_zbl;
   float typewise_cutoff_zbl_factor;
   int output_descriptor;
+  // Optional GPU kernel timing (debug/profiling).
+  int kernel_timing;       // 0=off, 1=on
+  int kernel_timing_every; // sample/report every N find_force calls
+  int kernel_timing_skip;  // skip first N find_force calls (warmup)
+  int kernel_timing_topk;  // print top-K kernels by time
   int charge_mode; // add dynamic charge to NEP potential model
   bool has_bec = false; // check if there are target BEC values
   int flip_charge = 0; // 1 for flipping charges upon restarting
@@ -85,6 +111,7 @@ public:
   bool is_lambda_e_set;
   bool is_lambda_f_set;
   bool is_lambda_v_set;
+  bool is_lambda_m_set;
   bool is_atomic_v_set;
   bool is_lambda_shear_set;
   bool is_batch_set;
@@ -96,6 +123,8 @@ public:
   bool is_zbl_set;
   bool is_use_typewise_cutoff_zbl_set;
   bool is_charge_mode_set;
+  bool is_spin_mode_set;
+  bool is_spin_feature_set;
 
   // other parameters
   int dim;                            // dimension of the descriptor vector
@@ -147,6 +176,7 @@ protected:
   void parse_lambda_e(const char** param, int num_param);
   void parse_lambda_f(const char** param, int num_param);
   void parse_lambda_v(const char** param, int num_param);
+  void parse_lambda_m(const char** param, int num_param);
   void parse_lambda_q(const char** param, int num_param);
   void parse_lambda_z(const char** param, int num_param);
   void parse_lambda_shear(const char** param, int num_param);
@@ -159,7 +189,10 @@ protected:
   void parse_atomic_v(const char** param, int num_param);
   void parse_use_typewise_cutoff_zbl(const char** param, int num_param);
   void parse_output_descriptor(const char** param, int num_param);
+  void parse_kernel_timing(const char** param, int num_param);
   void parse_charge_mode(const char** param, int num_param);
+  void parse_spin_mode(const char** param, int num_param);
+  void parse_spin_feature(const char** param, int num_param);
   void parse_fine_tune(const char** param, int num_param);
   void parse_save_potential(const char** param, int num_param);
 };

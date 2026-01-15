@@ -28,7 +28,7 @@ class Fitness
 public:
   Fitness(Parameters& para);
   ~Fitness();
-  void compute(const int generation, Parameters& para, const float*, float*, float*, float*, float*, float*);
+  void compute(const int generation, Parameters& para, const float*, float*, float*, float*, float*, float*,float* );
   void report_error(
     Parameters& para,
     const int generation,
@@ -65,6 +65,7 @@ protected:
     FILE* fid_energy, FILE* fid_force, FILE* fid_virial, FILE* fid_stress, Dataset& dataset);
   void update_charge(FILE* fid_charge, Dataset& dataset);
   void update_bec(FILE* fid_bec, Dataset& dataset);
+  void update_mforce(FILE* fid_mforce, Dataset& dataset);
   void update_dipole(FILE* fid_dipole, Dataset& dataset, bool atomic);
   void update_polarizability(FILE* fid_polarizability, Dataset& dataset, bool atomic);
   void write_nep_txt(FILE* fid_nep, Parameters& para, float* elite);

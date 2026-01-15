@@ -39,6 +39,10 @@ public:
   GPU_Vector<float> box_original; // (original) box (9 components)
   GPU_Vector<int> num_cell;       // number of cells in the expanded box (3 components)
 
+  // spin and magnetic force (optional)
+  GPU_Vector<float> spin;         // spin vectors [sx|sy|sz]
+  GPU_Vector<float> mforce;       // calculated magnetic force in GPU
+
   GPU_Vector<float> charge;      // calculated charge in GPU
   GPU_Vector<float> charge_shifted;      // shifted charge in GPU
   GPU_Vector<float> bec;         // Born effective charge in GPU
@@ -52,12 +56,15 @@ public:
   std::vector<float> virial_cpu; // calculated virial in CPU
   std::vector<float> force_cpu;  // calculated force in CPU
   std::vector<float> avirial_cpu;   // calculated atomic virial in CPU
+  std::vector<float> spin_cpu;       // spin in CPU [sx|sy|sz]
+  std::vector<float> mforce_cpu;     // calculated magnetic force in CPU
 
   GPU_Vector<float> energy_weight_gpu;    // energy weight in GPU
   GPU_Vector<float> charge_ref_gpu;       // reference charge in GPU
   GPU_Vector<float> energy_ref_gpu;       // reference energy in GPU
   GPU_Vector<float> virial_ref_gpu;       // reference virial in GPU
   GPU_Vector<float> force_ref_gpu;        // reference force in GPU
+  GPU_Vector<float> mforce_ref_gpu;       // reference magnetic force in GPU
   GPU_Vector<float> bec_ref_gpu;          // reference BEC in GPU
   GPU_Vector<float> avirial_ref_gpu;     // reference atomic virial in GPU
   GPU_Vector<float> temperature_ref_gpu;  // reference temperature in GPU
@@ -66,6 +73,7 @@ public:
   std::vector<float> energy_ref_cpu;      // reference energy in CPU
   std::vector<float> virial_ref_cpu;      // reference virial in CPU
   std::vector<float> force_ref_cpu;       // reference force in CPU
+  std::vector<float> mforce_ref_cpu;      // reference magnetic force in CPU
   std::vector<float> bec_ref_cpu;         // reference BEC in CPU
   std::vector<float> avirial_ref_cpu;      // reference atomic virial in CPU
   std::vector<float> weight_cpu;          // configuration weight in CPU
@@ -83,6 +91,7 @@ public:
   void
   construct(Parameters& para, std::vector<Structure>& structures, int n1, int n2, int device_id);
   std::vector<float> get_rmse_force(Parameters& para, const bool use_weight, int device_id);
+  std::vector<float> get_rmse_mforce(Parameters& para, const bool use_weight, int device_id);
   std::vector<float> get_rmse_energy(
     Parameters& para,
     float& energy_shift_per_structure,

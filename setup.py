@@ -114,6 +114,7 @@ gpu_sources_cu = [
     "src/nep_gpu/main_nep/dataset.cu",
     "src/nep_gpu/main_nep/nep.cu",
     "src/nep_gpu/main_nep/nep_charge.cu",
+    "src/nep_gpu/main_nep/nep_spin.cu",
     "src/nep_gpu/main_nep/parameters.cu",
     "src/nep_gpu/main_nep/structure.cu",
     "src/nep_gpu/main_nep/tnep.cu",

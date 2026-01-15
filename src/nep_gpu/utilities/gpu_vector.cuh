@@ -73,6 +73,9 @@ public:
   // only allocate memory
   void resize(const size_t size, const Memory_Type memory_type = Memory_Type::global)
   {
+    if (allocated_ && size == size_ && memory_type == memory_type_) {
+      return;
+    }
     size_ = size;
     memory_ = size_ * sizeof(T);
     memory_type_ = memory_type;
@@ -92,6 +95,10 @@ public:
   // allocate memory and initialize
   void resize(const size_t size, const T value, const Memory_Type memory_type = Memory_Type::global)
   {
+    if (allocated_ && size == size_ && memory_type == memory_type_) {
+      fill(value);
+      return;
+    }
     size_ = size;
     memory_ = size_ * sizeof(T);
     memory_type_ = memory_type;

@@ -359,7 +359,12 @@ static void __global__ find_max_min(const int N, const float* g_q, float* g_q_sc
     __syncthreads();
   }
   if (tid == 0) {
-    g_q_scaler[bid] = min(g_q_scaler[bid], 1.0f / (s_max[0] - s_min[0]));
+    float range = s_max[0] - s_min[0];
+    if (!(range > 1.0e-12f)) {
+      // Descriptor range is (near-)zero; avoid leaving scaler at its huge initialization value.
+      range = 1.0f;
+    }
+    g_q_scaler[bid] = min(g_q_scaler[bid], 1.0f / range);
   }
 }
 

@@ -20,13 +20,14 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.paths import PathLike, as_path
 from NepTrainKit.core.types import NepBackend
-from NepTrainKit.core.utils import split_by_natoms, aggregate_per_atom_to_structure, is_charge_model
+from NepTrainKit.core.utils import split_by_natoms, aggregate_per_atom_to_structure, is_charge_model, is_spin_model
 from NepTrainKit.core.cstdio_redirect import redirect_c_stdout_stderr
 
 try:
     from NepTrainKit.nep_cpu import CpuNep
 except ImportError:
     logger.debug("no found NepTrainKit.nep_cpu")
+    print(traceback.format_exc())
     try:
         from nep_cpu import CpuNep
     except ImportError:
@@ -36,6 +37,8 @@ except ImportError:
 try:
     from NepTrainKit.nep_gpu import GpuNep
 except ImportError:
+    print(traceback.format_exc())
+
     logger.debug("no found NepTrainKit.nep_gpu")
     try:
         from nep_gpu import GpuNep
@@ -54,7 +57,7 @@ class NepCalculator:
         model_file: PathLike = "nep.txt",
         backend: NepBackend | None = None,
         batch_size: int | None = None,
-        native_stdio: str | Path | Literal["inherit", "silent"] | None = "silent",
+        native_stdio: str | Path | Literal["inherit", "silent"] | None = "inherit",
     ) -> None:
 
         super().__init__()
@@ -66,6 +69,7 @@ class NepCalculator:
         self.initialized = False
         self.nep3 = None
         self.is_charge_model = is_charge_model(self.model_path)
+        self.is_spin_model = is_spin_model(self.model_path)
         self.element_list: list[str] = []
         self.type_dict: dict[str, int] = {}
         # Native stdio behavior for C/C++ (printf) in backends
@@ -100,6 +104,14 @@ class NepCalculator:
             self.nep3.cancel()
 
     def load_nep(self) -> None:
+        # Spin models currently require the GPU backend (NEP_Spin kernels).
+        if self.is_spin_model:
+            if not self._load_nep_backend(NepBackend.GPU):
+                MessageManager.send_warning_message(
+                    "Spin NEP model detected, but the GPU backend failed to load. "
+                    "Spin inference/descriptor requires the GPU backend."
+                )
+            return
         if self.backend == NepBackend.AUTO:
             if not self._load_nep_backend(NepBackend.GPU):
                 self._load_nep_backend(NepBackend.CPU)
@@ -169,11 +181,85 @@ class NepCalculator:
             group_sizes.append(len(mapped_types))
         return atom_types, boxes, positions, group_sizes
 
+    def _extract_spin_vectors(self, structure: Structure) -> npt.NDArray[np.float32]:
+        """Return per-atom spin vectors as shape (N,3) float32.
+
+        Input sources (first match wins):
+        - ASE Atoms: ``atoms.get_initial_magnetic_moments()`` or arrays ``spins``/``magmoms``/``initial_magmoms``.
+        - NepTrainKit Structure: atomic_properties keys like ``spin``, ``spins``, ``magmom``, ``magmoms``, ``initial_magmoms``.
+
+        Scalars (N,) or (N,1) are lifted onto the +Z axis.
+        Missing spins default to zeros.
+        """
+        n = len(structure)
+        axis = np.array([0.0, 0.0, 1.0], dtype=np.float32)
+
+        # ASE Atoms path
+        if hasattr(structure, "arrays"):
+            arrays = getattr(structure, "arrays", {}) or {}
+            for key in ("spins", "spin", "magmoms", "magmom", "initial_magmoms"):
+                if key in arrays:
+                    arr = np.asarray(arrays[key])
+                    break
+            else:
+                try:
+                    arr = np.asarray(structure.get_initial_magnetic_moments())
+                except Exception:
+                    arr = np.array([])
+        else:
+            # NepTrainKit Structure path
+            ap = getattr(structure, "atomic_properties", {}) or {}
+            arr = np.array([])
+            # NOTE: do NOT use magnetic-force labels (e.g. "force_mag"/"mforce") as spins.
+            for key in ("spin", "spins", "magmom", "magmoms", "initial_magmoms"):
+                if key in ap:
+                    arr = np.asarray(ap[key])
+                    break
+
+        if arr.size == 0:
+            return np.zeros((n, 3), dtype=np.float32)
+
+        if arr.ndim == 1 and arr.shape[0] == n:
+            return (arr.astype(np.float32).reshape(-1, 1) * axis.reshape(1, 3))
+        if arr.ndim == 2 and arr.shape[0] == n and arr.shape[1] == 1:
+            return (arr.astype(np.float32) * axis.reshape(1, 3))
+        if arr.ndim == 2 and arr.shape[0] == n and arr.shape[1] == 3:
+            return arr.astype(np.float32, copy=False)
+
+        # Unrecognized shape: fall back to zeros for stability.
+        return np.zeros((n, 3), dtype=np.float32)
+
+    @timeit
+    def compose_structures_spin(
+        self,
+        structures: Iterable[Structure] | Structure,
+    ) -> tuple[list[list[int]], list[list[float]], list[list[float]], list[list[float]], list[int]]:
+        structure_list = self._ensure_structure_list(structures)
+        group_sizes: list[int] = []
+        atom_types: list[list[int]] = []
+        boxes: list[list[float]] = []
+        positions: list[list[float]] = []
+        spins: list[list[float]] = []
+        for structure in structure_list:
+            symbols = structure.get_chemical_symbols()
+            mapped_types = [self.type_dict[symbol] for symbol in symbols]
+            box = structure.cell.transpose(1, 0).reshape(-1).tolist()
+            coords = structure.positions.transpose(1, 0).reshape(-1).tolist()
+            spin_vec = self._extract_spin_vectors(structure)
+            spin_flat = spin_vec.transpose(1, 0).reshape(-1).tolist()  # sx[N],sy[N],sz[N]
+            atom_types.append(mapped_types)
+            boxes.append(box)
+            positions.append(coords)
+            spins.append(spin_flat)
+            group_sizes.append(len(mapped_types))
+        return atom_types, boxes, positions, spins, group_sizes
+
     @timeit
     def calculate(
         self,
         structures: Iterable[Structure] | Structure,
         return_charge: bool = False,
+        return_mforce: bool = False,
         mean_virial: bool = True,
     ):
         structure_list = self._ensure_structure_list(structures)
@@ -181,8 +267,13 @@ class NepCalculator:
             empty = np.array([], dtype=np.float32)
             if self.is_charge_model and return_charge:
                 return empty, [], [], [], []
+            if return_mforce:
+                return empty, [], [], []
             return empty, [], []
-        atom_types, boxes, positions, group_sizes = self.compose_structures(structure_list)
+        if self.is_spin_model and not self.is_charge_model:
+            atom_types, boxes, positions, spins, group_sizes = self.compose_structures_spin(structure_list)
+        else:
+            atom_types, boxes, positions, group_sizes = self.compose_structures(structure_list)
         self.nep3.reset_cancel()
         try:
             with self._native_stdio_ctx():
@@ -191,13 +282,18 @@ class NepCalculator:
                         raise RuntimeError("Charge model backend does not implement calculate_qnep().")
                     outputs = self.nep3.calculate_qnep(atom_types, boxes, positions)
                 else:
-                    outputs = self.nep3.calculate(atom_types, boxes, positions)
+                    if self.is_spin_model and hasattr(self.nep3, "calculate_spin"):
+                        outputs = self.nep3.calculate_spin(atom_types, boxes, positions, spins)
+                    else:
+                        outputs = self.nep3.calculate(atom_types, boxes, positions)
         except Exception as exc:
             logger.error(exc)
             MessageManager.send_warning_message(str(exc))
             empty = np.array([], dtype=np.float32)
             if self.is_charge_model and return_charge:
                 return empty, [], [], [], []
+            if return_mforce:
+                return empty, [], [], []
             return empty, [], []
 
         if self.is_charge_model:
@@ -237,7 +333,11 @@ class NepCalculator:
                 becs_list = [np.asarray(bec, dtype=np.float32).reshape(9, -1).T for bec in (becs or [])]
                 return potentials_array.tolist(), reshaped_forces, reshaped_virials, charges_list, becs_list
 
-        potentials, forces, virials = outputs
+        mforces = None
+        if isinstance(outputs, tuple) and len(outputs) == 4:
+            potentials, forces, virials, mforces = outputs
+        else:
+            potentials, forces, virials = outputs
         potentials_arr = np.asarray(potentials, dtype=np.float32)
         forces_arr = np.asarray(forces, dtype=np.float32)
         virials_arr = np.asarray(virials, dtype=np.float32)
@@ -253,6 +353,15 @@ class NepCalculator:
             virials_blocks = aggregate_per_atom_to_structure(virials_arr, group_sizes, map_func=np.mean, axis=0).tolist()
         else:
             virials_blocks = split_by_natoms(virials_arr, group_sizes)
+
+        if return_mforce:
+            if mforces is None:
+                return potentials_array, forces_blocks, virials_blocks, []
+            mforces_arr = np.asarray(mforces, dtype=np.float32)
+            if mforces_arr.ndim == 1:
+                mforces_arr = mforces_arr.reshape(-1, 3)
+            mforces_blocks = split_by_natoms(mforces_arr, group_sizes)
+            return potentials_array, forces_blocks, virials_blocks, mforces_blocks
 
         return potentials_array, forces_blocks, virials_blocks
 
@@ -346,10 +455,16 @@ class NepCalculator:
     ) -> npt.NDArray[np.float32]:
         if not self.initialized:
             return np.array([])
-        types, boxes, positions, group_sizes = self.compose_structures(structures)
-        self.nep3.reset_cancel()
-        with self._native_stdio_ctx():
-            descriptor = self.nep3.get_structures_descriptor(types, boxes, positions)
+        if self.is_spin_model and hasattr(self.nep3, "get_structures_descriptor_spin"):
+            types, boxes, positions, spins, group_sizes = self.compose_structures_spin(structures)
+            self.nep3.reset_cancel()
+            with self._native_stdio_ctx():
+                descriptor = self.nep3.get_structures_descriptor_spin(types, boxes, positions, spins)
+        else:
+            types, boxes, positions, group_sizes = self.compose_structures(structures)
+            self.nep3.reset_cancel()
+            with self._native_stdio_ctx():
+                descriptor = self.nep3.get_structures_descriptor(types, boxes, positions)
         descriptor = np.asarray(descriptor, dtype=np.float32)
         if descriptor.size == 0:
             return descriptor

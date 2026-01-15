@@ -152,7 +152,37 @@ def is_charge_model(potential_path: str | Path) -> bool:
                     break
                 lower = line.lower()
                 if "charge_mode" in lower:
-                    match = re.search(r"charge_mode\\s+(-?\\d+)", lower)
+                    match = re.search(r"charge_mode\s+(-?\d+)", lower)
+                    if match and int(match.group(1)) > 0:
+                        return True
+    except Exception:  # noqa: BLE001
+        logger.debug(traceback.format_exc())
+        return False
+    return False
+
+
+def is_spin_model(potential_path: str | Path) -> bool:
+    """Quickly判断 nep.txt 是否为自旋/NEP_Spin 模型。
+
+    规则：
+    - 首行包含 ``_spin`` 直接认为是自旋模型（如 ``nep4_spin``）。
+    - 若首行未包含，则在后续少量行中查找 ``spin_mode`` 并解析到 >0。
+    """
+    path = Path(potential_path)
+    if not path.exists():
+        return False
+    try:
+        with path.open("r", encoding="utf8", errors="ignore") as f:
+            first = f.readline().strip().lower()
+            if "_spin" in first:
+                return True
+            for _ in range(32):
+                line = f.readline()
+                if not line:
+                    break
+                lower = line.lower()
+                if "spin_mode" in lower:
+                    match = re.search(r"spin_mode\s+(-?\d+)", lower)
                     if match and int(match.group(1)) > 0:
                         return True
     except Exception:  # noqa: BLE001

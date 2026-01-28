@@ -111,7 +111,7 @@ def get_xyz_nframe(path: Path | str) -> int:
     nums = re.findall(r"^(\d+)$", content, re.MULTILINE)
     return len(nums)
 
-def concat_nep_dft_array(nep_array: npt.NDArray[np.float32],dft_array:npt.NDArray[np.float32],deepmd=False) -> npt.NDArray[np.float32]:
+def concat_nep_dft_array(nep_array: npt.NDArray[np.float32], dft_array: npt.NDArray[np.float32], deepmd: bool = False, quantity: str = "values") -> npt.NDArray[np.float32]:
     """Concatenate ``nep_array`` with ``dft_array``."""
 
     if nep_array.size == 0:
@@ -120,7 +120,7 @@ def concat_nep_dft_array(nep_array: npt.NDArray[np.float32],dft_array:npt.NDArra
     else:
         mask = np.isnan(dft_array)
         if mask.any():
-            MessageManager.send_warning_message("use nep3 calculator to calculate result replace the original result")
+            MessageManager.send_warning_message(f"Missing DFT {quantity}; using NEP {quantity} instead.")
 
         dft_array[mask] = nep_array[mask]
         if deepmd:

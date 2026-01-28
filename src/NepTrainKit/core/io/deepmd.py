@@ -345,7 +345,7 @@ class DeepmdResultData(ResultData):
         """
 
         ref_energies = np.array([s.energy if s.has_energy else np.nan for s in self.structure.now_data], dtype=np.float32)
-        energy_array = concat_nep_dft_array(potentials,ref_energies,deepmd=True)
+        energy_array = concat_nep_dft_array(potentials, ref_energies, deepmd=True, quantity="energies")
 
 
         energy_array=energy_array/ self.atoms_num_list.reshape(-1, 1)
@@ -368,7 +368,7 @@ class DeepmdResultData(ResultData):
         """
         ref_forces = np.vstack([s.forces if s.has_forces else np.full((len(s),3 ), np.nan) for s in self.structure.now_data], dtype=np.float32)
 
-        forces_array = concat_nep_dft_array(forces,ref_forces,deepmd=True)
+        forces_array = concat_nep_dft_array(forces, ref_forces, deepmd=True, quantity="forces")
         if forces_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
         return forces_array
@@ -386,7 +386,7 @@ class DeepmdResultData(ResultData):
             Two-column array with reference and predicted virial components.
         """
         ref_virials = np.vstack([s.nep_virial if s.has_virial else [np.nan]*6 for s in self.structure.now_data ], dtype=np.float32)
-        virials_array = concat_nep_dft_array(virials,ref_virials,deepmd=True)
+        virials_array = concat_nep_dft_array(virials, ref_virials, deepmd=True, quantity="virials")
 
         if virials_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
@@ -412,7 +412,7 @@ class DeepmdResultData(ResultData):
             return energy_array,force_array,virial_array
         except Exception as e:
             # logger.debug(traceback.format_exc())
-            MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
+            MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
             return np.array([]), np.array([]), np.array([])
     def export_model_xyz(self, save_path: PathLike) -> None:
         """Export current and removed structures into dedicated directories.

@@ -453,7 +453,7 @@ class NepTrainResultData(ResultData):
         """
 
         ref_energies = np.array([s.energy if s.has_energy else np.nan for s in self.structure.now_data], dtype=np.float32)
-        energy_array = concat_nep_dft_array(potentials,ref_energies)
+        energy_array = concat_nep_dft_array(potentials, ref_energies, quantity="energies")
 
         energy_array=energy_array/ self.atoms_num_list.reshape(-1, 1)
         energy_array = energy_array.astype(np.float32)
@@ -474,8 +474,8 @@ class NepTrainResultData(ResultData):
             Two-column array containing reference and predicted forces.
         """
 
-        ref_forces = np.vstack([s.forces if s.has_forces else np.full((len(s),3 ), np.nan) for s in self.structure.now_data], dtype=np.float32)
-        forces_array = concat_nep_dft_array(forces,ref_forces)
+        ref_forces = np.vstack([s.forces if s.has_forces else np.full((len(s), 3), np.nan) for s in self.structure.now_data], dtype=np.float32)
+        forces_array = concat_nep_dft_array(forces, ref_forces, quantity="forces")
 
         if forces_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
@@ -495,8 +495,8 @@ class NepTrainResultData(ResultData):
         """
         coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data ]))[:, np.newaxis]
 
-        ref_virials = np.vstack([s.nep_virial if s.has_virial else [np.nan]*6 for s in self.structure.now_data ], dtype=np.float32)
-        virials_array = concat_nep_dft_array(virials,ref_virials)
+        ref_virials = np.vstack([s.nep_virial if s.has_virial else [np.nan] * 6 for s in self.structure.now_data], dtype=np.float32)
+        virials_array = concat_nep_dft_array(virials, ref_virials, quantity="virials")
 
         stress_array = virials_array * coefficient * 160.21766208  # Unit conversion to MPa
         stress_array = stress_array.astype(np.float32)
@@ -524,7 +524,7 @@ class NepTrainResultData(ResultData):
             for s in self.structure.now_data
         ])
 
-        bec_array = concat_nep_dft_array(nep_bec, ref_bec)
+        bec_array = concat_nep_dft_array(nep_bec, ref_bec, quantity="BEC values")
         if getattr(self, "bec_out_path", None) and bec_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.bec_out_path, bec_array, fmt='%10.8f')
         return bec_array
@@ -676,7 +676,7 @@ class NepPolarizabilityResultData(ResultData):
             self.write_prediction()
         except Exception as e:
             # logger.debug(traceback.format_exc())
-            MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
+            MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
             nep_polarizability_array = np.array([])
         return nep_polarizability_array
     def _save_polarizability_data(self, polarizability: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
@@ -829,7 +829,7 @@ class NepDipoleResultData(ResultData):
             self.write_prediction()
         except Exception as e:
             # logger.debug(traceback.format_exc())
-            MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
+            MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
             nep_dipole_array = np.array([])
         return nep_dipole_array
     def _save_dipole_data(self, dipole: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:

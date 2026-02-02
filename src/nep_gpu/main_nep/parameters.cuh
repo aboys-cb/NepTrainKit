@@ -50,6 +50,7 @@ public:
   float lambda_q;         // weight for global charge
   float lambda_z;         // weight for BEC
   float lambda_m;         // weight for magnetic force loss
+  float lambda_tau;       // weight for total spin-torque loss (tau_tot)
   float force_delta;      // a parameters used to modify the force loss
   bool enable_zbl;        // true for inlcuding the universal ZBL potential
   bool flexible_zbl;      // true for inlcuding the flexible ZBL potential
@@ -59,6 +60,9 @@ public:
   int prediction; // 0=no, 1=yes
   // spin controls
   int spin_mode;  // 0=off, 1=enable spin descriptors + magnetic force
+  // Spin radial order for each magnetic (pair) block: n = 0..spin_n_max.
+  // If not explicitly set, defaults to 1.
+  int spin_n_max;
   // Spin feature controls (spherical is the only supported mode):
   // kmax = -1 disables the block; kmax >= 0 enables and uses k=0..kmax.
   // Exchange Chebyshev order (k=0..spin_kmax_ex).
@@ -112,6 +116,7 @@ public:
   bool is_lambda_f_set;
   bool is_lambda_v_set;
   bool is_lambda_m_set;
+  bool is_lambda_tau_set;
   bool is_atomic_v_set;
   bool is_lambda_shear_set;
   bool is_batch_set;
@@ -125,6 +130,7 @@ public:
   bool is_charge_mode_set;
   bool is_spin_mode_set;
   bool is_spin_feature_set;
+  bool is_spin_n_max_set;
 
   // other parameters
   int dim;                            // dimension of the descriptor vector
@@ -177,6 +183,7 @@ protected:
   void parse_lambda_f(const char** param, int num_param);
   void parse_lambda_v(const char** param, int num_param);
   void parse_lambda_m(const char** param, int num_param);
+  void parse_lambda_tau(const char** param, int num_param);
   void parse_lambda_q(const char** param, int num_param);
   void parse_lambda_z(const char** param, int num_param);
   void parse_lambda_shear(const char** param, int num_param);
@@ -193,6 +200,7 @@ protected:
   void parse_charge_mode(const char** param, int num_param);
   void parse_spin_mode(const char** param, int num_param);
   void parse_spin_feature(const char** param, int num_param);
+  void parse_spin_n_max(const char** param, int num_param);
   void parse_fine_tune(const char** param, int num_param);
   void parse_save_potential(const char** param, int num_param);
 };

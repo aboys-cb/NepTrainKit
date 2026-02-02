@@ -105,7 +105,7 @@ __global__ void find_descriptors_radial_spin_spherical_ex_k(
 
     const int neighbor_number = __ldg(&g_NN[n1]);
     const int t1 = __ldg(&g_type[n1]);
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
 
     // KMAX clamping
     const int kmax_ex = (paramb.spin_kmax_ex < -1) ? -1 : (paramb.spin_kmax_ex > KMAX_PAIR ? KMAX_PAIR : paramb.spin_kmax_ex);
@@ -161,7 +161,7 @@ __global__ void find_descriptors_radial_spin_spherical_ex_k(
                 nep_spin_fill_ex_invariant<KMAX_PAIR>(phi, Tk, kmax_ex, ex_invariant);
 
                 // Accumulate
-                for (int n = 0; n <= paramb.n_max_radial; ++n) {
+                for (int n = 0; n < nspin; ++n) {
                     float gn_ex[KMAX_PAIR + 1] = {0.0f};
                     for (int kb = 0; kb <= bs_loc; ++kb) {
                         float fn_val = fn12[kb];
@@ -198,7 +198,7 @@ __global__ void find_descriptors_radial_spin_spherical_ex_k(
     // Write Ex descriptors
     for (int kk = 0; kk <= kmax_ex; ++kk) {
         int off = spin_offset + kk * nspin;
-        for (int n = 0; n <= paramb.n_max_radial; ++n) {
+        for (int n = 0; n < nspin; ++n) {
             g_descriptors[n1 + (off + n) * N] = q_ex[kk * MAX_NUM_N + n];
         }
     }
@@ -227,7 +227,7 @@ __global__ void find_descriptors_radial_spin_spherical_dmi_k(
 
     const int neighbor_number = __ldg(&g_NN[n1]);
     const int t1 = __ldg(&g_type[n1]);
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
 
     const int kmax_dmi = (paramb.spin_kmax_dmi < -1) ? -1 : (paramb.spin_kmax_dmi > KMAX_PAIR ? KMAX_PAIR : paramb.spin_kmax_dmi);
     if (kmax_dmi < 0) return;
@@ -285,7 +285,7 @@ __global__ void find_descriptors_radial_spin_spherical_dmi_k(
                 float Tk[KMAX_PAIR + 1] = {0.0f};
                 nep_spin_fill_Tk<KMAX_PAIR>(c, kmax_dmi, Tk);
 
-                for (int n = 0; n <= paramb.n_max_radial; ++n) {
+                for (int n = 0; n < nspin; ++n) {
                     float gn_dmi[KMAX_PAIR + 1] = {0.0f};
                     for (int kb = 0; kb <= bs_loc; ++kb) {
                         float fn_val = fn12[kb];
@@ -322,7 +322,7 @@ __global__ void find_descriptors_radial_spin_spherical_dmi_k(
     // Write DMI descriptors
     for (int kk = 0; kk <= kmax_dmi; ++kk) {
         int off = spin_offset + (dmi_block0 + kk) * nspin;
-        for (int n = 0; n <= paramb.n_max_radial; ++n) {
+        for (int n = 0; n < nspin; ++n) {
             g_descriptors[n1 + (off + n) * N] = q_dmi[kk * MAX_NUM_N + n];
         }
     }
@@ -354,7 +354,7 @@ __global__ void find_descriptors_radial_spin_spherical_ani_k(
 
     const int neighbor_number = __ldg(&g_NN[n1]);
     const int t1 = __ldg(&g_type[n1]);
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
 
     // Calculate offsets
     auto clamp = [](int k) { return (k < -1) ? -1 : (k > 8 ? 8 : k); };
@@ -412,7 +412,7 @@ __global__ void find_descriptors_radial_spin_spherical_ani_k(
                 float Tk[KMAX_PAIR + 1] = {0.0f};
                 nep_spin_fill_Tk<KMAX_PAIR>(c, kmax_ani, Tk);
 
-                for (int n = 0; n <= paramb.n_max_radial; ++n) {
+                for (int n = 0; n < nspin; ++n) {
                     float gn_ani[KMAX_PAIR + 1] = {0.0f};
                     for (int kb = 0; kb <= bs_loc; ++kb) {
                         float fn_val = fn12[kb];
@@ -449,7 +449,7 @@ __global__ void find_descriptors_radial_spin_spherical_ani_k(
     // Write ANI descriptors
     for (int kk = 0; kk <= kmax_ani; ++kk) {
         int off = spin_offset + (ani_block0 + kk) * nspin;
-        for (int n = 0; n <= paramb.n_max_radial; ++n) {
+        for (int n = 0; n < nspin; ++n) {
             g_descriptors[n1 + (off + n) * N] = q_ani[kk * MAX_NUM_N + n];
         }
     }
@@ -481,7 +481,7 @@ __global__ void find_descriptors_radial_spin_spherical_sia_k(
 
     const int neighbor_number = __ldg(&g_NN[n1]);
     const int t1 = __ldg(&g_type[n1]);
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
 
     // Calculate offsets
     auto clamp = [](int k) { return (k < -1) ? -1 : (k > 8 ? 8 : k); };
@@ -542,7 +542,7 @@ __global__ void find_descriptors_radial_spin_spherical_sia_k(
                 nep_spin_fill_Tk<KMAX_PAIR>(c, kmax_sia, Tk);
             }
 
-            for (int n = 0; n <= paramb.n_max_radial; ++n) {
+            for (int n = 0; n < nspin; ++n) {
                 float gn_sia[KMAX_PAIR + 1] = {0.0f};
                 for (int kb = 0; kb <= bs_loc; ++kb) {
                     float fn_val = fn12[kb];
@@ -580,7 +580,7 @@ __global__ void find_descriptors_radial_spin_spherical_sia_k(
     // Write SIA descriptors
     for (int kk = 0; kk <= kmax_sia; ++kk) {
         int off = spin_offset + (sia_block0 + kk) * nspin;
-        for (int n = 0; n <= paramb.n_max_radial; ++n) {
+        for (int n = 0; n < nspin; ++n) {
             g_descriptors[n1 + (off + n) * N] = q_sia[kk * MAX_NUM_N + n];
         }
     }
@@ -614,7 +614,7 @@ __global__ void find_descriptors_radial_spin_spherical_onsite_k(
     const int sia_blocks = (kmax_sia >= 0) ? (kmax_sia + 1) : 0;
     const int pair_blocks = ex_blocks + dmi_blocks + ani_blocks + sia_blocks;
 
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
     const int onsite_offset = spin_offset + nspin * pair_blocks;
 
     float si[3] = {__ldg(&g_spin[n1]), __ldg(&g_spin[n1 + N]), __ldg(&g_spin[n1 + N * 2])};
@@ -769,7 +769,7 @@ __global__ void find_force_radial_spin_spherical_ex_k(
     const int spin_offset)
 {
     int n1 = threadIdx.x + blockIdx.x * blockDim.x;
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
     const int kmax_ex = (paramb.spin_kmax_ex < -1) ? -1 : (paramb.spin_kmax_ex > KMAX_PAIR ? KMAX_PAIR : paramb.spin_kmax_ex);
     
     extern __shared__ float s_mem[];
@@ -916,7 +916,7 @@ __global__ void find_force_radial_spin_spherical_dmi_k(
     const int spin_offset)
 {
     int n1 = threadIdx.x + blockIdx.x * blockDim.x;
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
     const int kmax_dmi = (paramb.spin_kmax_dmi < -1) ? -1 : (paramb.spin_kmax_dmi > KMAX_PAIR ? KMAX_PAIR : paramb.spin_kmax_dmi);
     
     auto clamp = [](int k) { return (k < -1) ? -1 : (k > 8 ? 8 : k); };
@@ -1074,7 +1074,7 @@ __global__ void find_force_radial_spin_spherical_ani_k(
     const int spin_offset)
 {
     int n1 = threadIdx.x + blockIdx.x * blockDim.x;
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
     const int kmax_ani = (paramb.spin_kmax_ani < -1) ? -1 : (paramb.spin_kmax_ani > KMAX_PAIR ? KMAX_PAIR : paramb.spin_kmax_ani);
     
     auto clamp = [](int k) { return (k < -1) ? -1 : (k > 8 ? 8 : k); };
@@ -1235,7 +1235,7 @@ __global__ void find_force_radial_spin_spherical_sia_k(
     const int spin_offset)
 {
     int n1 = threadIdx.x + blockIdx.x * blockDim.x;
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
     const int kmax_sia = (paramb.spin_kmax_sia < -1) ? -1 : (paramb.spin_kmax_sia > KMAX_PAIR ? KMAX_PAIR : paramb.spin_kmax_sia);
     
     auto clamp = [](int k) { return (k < -1) ? -1 : (k > 8 ? 8 : k); };
@@ -1404,7 +1404,7 @@ __global__ void find_mforce_radial_spin_spherical_ex_k(
     const int spin_offset)
 {
     int n1 = threadIdx.x + blockIdx.x * blockDim.x;
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
     const int kmax_ex = (paramb.spin_kmax_ex < -1) ? -1 : (paramb.spin_kmax_ex > KMAX_PAIR ? KMAX_PAIR : paramb.spin_kmax_ex);
     
     extern __shared__ float s_mem[];
@@ -1571,7 +1571,7 @@ __global__ void find_mforce_radial_spin_spherical_dmi_k(
     const int spin_offset)
 {
     int n1 = threadIdx.x + blockIdx.x * blockDim.x;
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
     const int kmax_dmi = (paramb.spin_kmax_dmi < -1) ? -1 : (paramb.spin_kmax_dmi > KMAX_PAIR ? KMAX_PAIR : paramb.spin_kmax_dmi);
     
     auto clamp = [](int k) { return (k < -1) ? -1 : (k > 8 ? 8 : k); };
@@ -1731,7 +1731,7 @@ __global__ void find_mforce_radial_spin_spherical_ani_k(
     const int spin_offset)
 {
     int n1 = threadIdx.x + blockIdx.x * blockDim.x;
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
     const int kmax_ani = (paramb.spin_kmax_ani < -1) ? -1 : (paramb.spin_kmax_ani > KMAX_PAIR ? KMAX_PAIR : paramb.spin_kmax_ani);
     
     auto clamp = [](int k) { return (k < -1) ? -1 : (k > 8 ? 8 : k); };
@@ -1880,7 +1880,7 @@ __global__ void find_mforce_radial_spin_spherical_sia_k(
     const int spin_offset)
 {
     int n1 = threadIdx.x + blockIdx.x * blockDim.x;
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
     const int kmax_sia = (paramb.spin_kmax_sia < -1) ? -1 : (paramb.spin_kmax_sia > KMAX_PAIR ? KMAX_PAIR : paramb.spin_kmax_sia);
     
     auto clamp = [](int k) { return (k < -1) ? -1 : (k > 8 ? 8 : k); };
@@ -2047,7 +2047,7 @@ __global__ void find_mforce_radial_spin_spherical_onsite_k(
     const int sia_blocks = (kmax_sia >= 0) ? (kmax_sia + 1) : 0;
     const int pair_blocks = ex_blocks + dmi_blocks + ani_blocks + sia_blocks;
 
-    const int nspin = paramb.n_max_radial + 1;
+    const int nspin = nep_spin_nspin(paramb);
     const int onsite_offset = spin_offset + nspin * pair_blocks;
 
     float si[3] = {__ldg(&g_spin[n1]), __ldg(&g_spin[n1 + N]), __ldg(&g_spin[n1 + N * 2])};
@@ -2136,7 +2136,7 @@ void launch_find_force_radial_spin_spherical_full(
     int spin_offset, cudaStream_t stream)
 {
     auto clamp_kmax = [](int kmax) { return (kmax < -1) ? -1 : ((kmax > 8) ? 8 : kmax); };
-    auto get_smem = [&](int k) { return block.x * (k + 1) * (paramb.n_max_radial + 1) * sizeof(float); };
+    auto get_smem = [&](int k) { return block.x * (k + 1) * nep_spin_nspin(paramb) * sizeof(float); };
 
     int kmax_ex = clamp_kmax(paramb.spin_kmax_ex);
     if (kmax_ex >= 0) {
@@ -2168,7 +2168,7 @@ void launch_find_mforce_radial_spin_spherical_full(
     int spin_offset, cudaStream_t stream)
 {
     auto clamp_kmax = [](int kmax) { return (kmax < -1) ? -1 : ((kmax > 8) ? 8 : kmax); };
-    auto get_smem = [&](int k) { return block.x * (k + 1) * (paramb.n_max_radial + 1) * sizeof(float); };
+    auto get_smem = [&](int k) { return block.x * (k + 1) * nep_spin_nspin(paramb) * sizeof(float); };
 
     int kmax_ex = clamp_kmax(paramb.spin_kmax_ex);
     if (kmax_ex >= 0) {
@@ -2413,6 +2413,7 @@ NEP_Spin::NEP_Spin(
     paramb.rc_angular[t] = para.rc_angular[t];
   }
   paramb.n_max_radial = para.n_max_radial;
+  paramb.spin_n_max = (para.spin_n_max < 0) ? para.n_max_radial : para.spin_n_max;
   paramb.n_max_angular = para.n_max_angular;
   paramb.L_max = para.L_max;
   paramb.spin_kmax_ex = para.spin_kmax_ex;
@@ -2440,7 +2441,7 @@ NEP_Spin::NEP_Spin(
   int sia_blocks = blocks_from_kmax(para.spin_kmax_sia);
   paramb.spin_blocks = ex_blocks + dmi_blocks + ani_blocks + sia_blocks;
 
-  int nspin = para.n_max_radial + 1;
+  int nspin = paramb.spin_n_max + 1;
   paramb.c_spin_block_stride =
     paramb.num_types_sq * nspin * (para.basis_size_radial + 1);
 
@@ -2928,12 +2929,12 @@ void NEP_Spin::find_force(
 
     // Spin descriptor block starts after baseline [radial | angular].
     // Base dimension: dim_base = (n_max_r + 1) + dim_angular.
-    // Added spin dims = (pair_blocks * (n_max_r + 1) + spin_pmax), where pair_blocks is derived
+    // Added spin dims = (pair_blocks * (spin_n_max + 1) + spin_pmax), where pair_blocks is derived
     // from per-block kmax (ex/dmi/ani/sia).
     const int spin_offset = (paramb.n_max_radial + 1) + paramb.dim_angular;
     bool has_spin = (dataset[device_id].spin.size() == dataset[device_id].N * 3);
     // Compute blocks for spin features and assert the spin block fits into dim
-    int nspin = paramb.n_max_radial + 1;
+    int nspin = nep_spin_nspin(paramb);
 
     auto clamp_kmax = [](int kmax) {
       if (kmax < -1) return -1;

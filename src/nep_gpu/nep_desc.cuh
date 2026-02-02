@@ -132,7 +132,8 @@ public:
       spin_offset = (para.n_max_radial + 1) + (para.n_max_angular + 1) * paramb.num_L;
 
       // Spin descriptor dim matches Parameters::calculate_parameters().
-      const int nspin = (para.n_max_radial + 1);
+      const int spin_n_max_eff = (para.spin_n_max < 0) ? para.n_max_radial : para.spin_n_max;
+      const int nspin = (spin_n_max_eff + 1);
       const int kmax_ex = nep_spin_clamp_kmax(para.spin_kmax_ex);
       const int kmax_dmi = nep_spin_clamp_kmax(para.spin_kmax_dmi);
       const int kmax_ani = nep_spin_clamp_kmax(para.spin_kmax_ani);
@@ -158,6 +159,7 @@ public:
         spin_paramb.rc_angular[t] = para.rc_angular[t];
       }
       spin_paramb.n_max_radial = para.n_max_radial;
+      spin_paramb.spin_n_max = spin_n_max_eff;
       spin_paramb.n_max_angular = para.n_max_angular;
       spin_paramb.L_max = para.L_max;
       spin_paramb.spin_kmax_ex = para.spin_kmax_ex;

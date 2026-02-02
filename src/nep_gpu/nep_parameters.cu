@@ -118,8 +118,9 @@ void NepParameters::load_from_nep_txt(const std::string& filename, std::vector<f
 
   // Spin models are written as:
   //   nep*_spin <num_types> <elements...>
-  //   spin_mode <0..3>
-  //   spin_feature <kmax_ex> <kmax_dmi> <kmax_ani> <kmax_sia> [pmax] [ex_phi_mode] [onsite_basis_mode] [mref]
+  //   spin_mode <0..3> [num_spin_header_lines]
+  //   spin_feature <kmax_ex> <kmax_dmi> <kmax_ani> <kmax_sia> [pmax] [ex_phi_mode] [onsite_basis_mode] [mref] [spin_n_max]
+  //   spin_n_max <0..12>
   // then the usual nep.txt fields ("cutoff", "n_max", ...).
   //
   // Default to spin_mode=1 if the header advertises *_spin but the explicit
@@ -134,41 +135,139 @@ void NepParameters::load_from_nep_txt(const std::string& filename, std::vector<f
   }
 
   // Optional spin lines (appear before cutoff, and before any zbl line).
-  while (!tokens.empty() && (tokens[0] == "spin_mode" || tokens[0] == "spin_feature")) {
-    if (tokens[0] == "spin_mode") {
-      if (tokens.size() != 2) {
-        PRINT_INPUT_ERROR("Invalid spin_mode line in nep.txt.");
-      }
-      spin_mode = get_int_from_token(tokens[1], __FILE__, __LINE__);
-      if (spin_mode < 0 || spin_mode > 3) {
-        PRINT_INPUT_ERROR("spin_mode should be 0, 1, 2 or 3.");
-      }
-    } else if (tokens[0] == "spin_feature") {
-      if (tokens.size() < 5 || tokens.size() > 9) {
-        PRINT_INPUT_ERROR(
-          "Invalid spin_feature line in nep.txt (expected: spin_feature <kmax_ex> <kmax_dmi> <kmax_ani> <kmax_sia> [onsite_pmax] [ex_phi_mode] [onsite_basis_mode] [mref]).");
-      }
-      spin_kmax_ex = get_int_from_token(tokens[1], __FILE__, __LINE__);
-      spin_kmax_dmi = get_int_from_token(tokens[2], __FILE__, __LINE__);
-      spin_kmax_ani = get_int_from_token(tokens[3], __FILE__, __LINE__);
-      spin_kmax_sia = get_int_from_token(tokens[4], __FILE__, __LINE__);
-      if (tokens.size() >= 6) {
-        spin_pmax = get_int_from_token(tokens[5], __FILE__, __LINE__);
-      }
-      if (tokens.size() >= 7) {
-        spin_ex_phi_mode = get_int_from_token(tokens[6], __FILE__, __LINE__);
-      }
-      if (tokens.size() >= 8) {
-        spin_onsite_basis_mode = get_int_from_token(tokens[7], __FILE__, __LINE__);
-      }
-      if (tokens.size() == 9) {
-        spin_mref = static_cast<float>(get_double_from_token(tokens[8], __FILE__, __LINE__));
-      }
+  int advertised_spin_header_lines = -1;
+
+  auto require_spin_range = [&](bool ok, const char* msg) {
+    if (!ok) {
+      PRINT_INPUT_ERROR(msg);
+    }
+  };
+
+  auto parse_spin_mode_line = [&](const std::vector<std::string>& t) {
+    is_spin_mode_set = true;
+    if (t.size() != 2 && t.size() != 3) {
+      PRINT_INPUT_ERROR("Invalid spin_mode line in nep.txt.");
+    }
+    spin_mode = get_int_from_token(t[1], __FILE__, __LINE__);
+    require_spin_range(spin_mode >= 0 && spin_mode <= 3, "spin_mode should be 0, 1, 2 or 3.");
+    advertised_spin_header_lines = -1;
+    if (t.size() == 3) {
+      advertised_spin_header_lines = get_int_from_token(t[2], __FILE__, __LINE__);
+      require_spin_range(advertised_spin_header_lines >= 0, "spin_mode num_spin_header_lines should be >= 0.");
+    }
+  };
+
+  auto parse_spin_n_max_line = [&](const std::vector<std::string>& t) {
+    is_spin_n_max_set = true;
+    if (t.size() != 2) {
+      PRINT_INPUT_ERROR("Invalid spin_n_max line in nep.txt.");
+    }
+    spin_n_max = get_int_from_token(t[1], __FILE__, __LINE__);
+    require_spin_range(spin_n_max >= 0, "spin_n_max should >= 0.");
+    require_spin_range(spin_n_max <= 12, "spin_n_max should <= 12.");
+  };
+
+  auto parse_spin_feature_line = [&](const std::vector<std::string>& t) {
+    is_spin_feature_set = true;
+    if (t.size() < 5 || t.size() > 10) {
+      PRINT_INPUT_ERROR(
+        "Invalid spin_feature line in nep.txt (expected: spin_feature <kmax_ex> <kmax_dmi> <kmax_ani> <kmax_sia> [onsite_pmax] [ex_phi_mode] [onsite_basis_mode] [mref] [spin_n_max]).");
     }
 
+    auto parse_kmax = [&](const std::string& s, int* out, const char* name) {
+      *out = get_int_from_token(s, __FILE__, __LINE__);
+      if (*out < -1 || *out > 8) {
+        PRINT_INPUT_ERROR((std::string(name) + " should be in [-1,8].").c_str());
+      }
+    };
+
+    parse_kmax(t[1], &spin_kmax_ex, "spin_feature kmax_ex");
+    parse_kmax(t[2], &spin_kmax_dmi, "spin_feature kmax_dmi");
+    parse_kmax(t[3], &spin_kmax_ani, "spin_feature kmax_ani");
+    parse_kmax(t[4], &spin_kmax_sia, "spin_feature kmax_sia");
+
+    if (t.size() >= 6) {
+      spin_pmax = get_int_from_token(t[5], __FILE__, __LINE__);
+      require_spin_range(spin_pmax >= 0 && spin_pmax <= 8, "spin_feature onsite_pmax should be in [0,8].");
+    }
+    if (t.size() >= 7) {
+      spin_ex_phi_mode = get_int_from_token(t[6], __FILE__, __LINE__);
+      require_spin_range(spin_ex_phi_mode >= 0 && spin_ex_phi_mode <= 3, "spin_feature ex_phi_mode should be in [0,3].");
+    }
+    if (t.size() >= 8) {
+      spin_onsite_basis_mode = get_int_from_token(t[7], __FILE__, __LINE__);
+      require_spin_range(
+        spin_onsite_basis_mode >= 0 && spin_onsite_basis_mode <= 2,
+        "spin_feature onsite_basis_mode should be in [0,2].");
+    }
+    if (t.size() >= 9) {
+      spin_mref = static_cast<float>(get_double_from_token(t[8], __FILE__, __LINE__));
+      require_spin_range(spin_mref > 0.0f, "spin_feature mref should be > 0.");
+    }
+
+    // Optional trailing spin_n_max (compatibility with some writers).
+    if (t.size() == 10) {
+      const int tmp = get_int_from_token(t[9], __FILE__, __LINE__);
+      require_spin_range(tmp >= 0 && tmp <= 12, "spin_feature spin_n_max should be in [0,12].");
+      if (is_spin_n_max_set && spin_n_max != tmp) {
+        PRINT_INPUT_ERROR("spin_n_max conflicts with the value provided in spin_feature.");
+      }
+      spin_n_max = tmp;
+      is_spin_n_max_set = true;
+    }
+  };
+
+  auto parse_or_skip_spin_header_line = [&](const std::vector<std::string>& t) -> bool {
+    if (t.empty()) return false;
+    if (t[0] == "spin_mode") {
+      parse_spin_mode_line(t);
+      return true;
+    }
+    if (t[0] == "spin_feature") {
+      parse_spin_feature_line(t);
+      return true;
+    }
+    if (t[0] == "spin_n_max") {
+      parse_spin_n_max_line(t);
+      return true;
+    }
+    return false; // unknown header line; skip if advertised via spin_mode
+  };
+
+  // Newer writers may advertise how many spin header lines follow spin_mode.
+  if (!tokens.empty() && tokens[0] == "spin_mode") {
+    parse_spin_mode_line(tokens);
     tokens = get_tokens(input);
     if (tokens.empty()) {
-      PRINT_INPUT_ERROR("Unexpected EOF after nep.txt spin lines.");
+      PRINT_INPUT_ERROR("Unexpected EOF after nep.txt spin_mode line.");
+    }
+
+    if (advertised_spin_header_lines >= 0) {
+      for (int i = 0; i < advertised_spin_header_lines; ++i) {
+        (void)parse_or_skip_spin_header_line(tokens);
+        tokens = get_tokens(input);
+        if (tokens.empty()) {
+          PRINT_INPUT_ERROR("Unexpected EOF after nep.txt spin header lines.");
+        }
+      }
+    } else {
+      // Legacy format: consume known spin lines until the first non-spin keyword.
+      while (!tokens.empty() && (tokens[0] == "spin_feature" || tokens[0] == "spin_n_max")) {
+        (void)parse_or_skip_spin_header_line(tokens);
+        tokens = get_tokens(input);
+        if (tokens.empty()) {
+          PRINT_INPUT_ERROR("Unexpected EOF after nep.txt spin lines.");
+        }
+      }
+    }
+  } else {
+    // Very old files may omit spin_mode but still include spin_feature/spin_n_max lines.
+    while (!tokens.empty() && (tokens[0] == "spin_feature" || tokens[0] == "spin_n_max")) {
+      (void)parse_or_skip_spin_header_line(tokens);
+      tokens = get_tokens(input);
+      if (tokens.empty()) {
+        PRINT_INPUT_ERROR("Unexpected EOF after nep.txt spin lines.");
+      }
     }
   }
 

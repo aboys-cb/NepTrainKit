@@ -61,6 +61,7 @@ SNES::SNES(Parameters& para, Fitness* fitness_function)
   fitness_charge.resize(population_size * (para.num_types + 1));
   fitness_bec.resize(population_size * (para.num_types + 1));
   fitness_mforce.resize(population_size * (para.num_types + 1));
+  fitness_torque.resize(population_size * (para.num_types + 1));
   index.resize(population_size * (para.num_types + 1));
   population.resize(N);
   mu.resize(number_of_variables);
@@ -319,21 +320,41 @@ void SNES::compute(Parameters& para, Fitness* fitness_function)
   if (para.prediction == 0) {
 
     if (para.train_mode == 0 || para.train_mode == 3) {
-    if (para.spin_mode > 0) {
-      printf(
-        "%-8s%-11s%-11s%-11s%-13s%-13s%-13s%-13s%-13s%-13s%-13s\n",
-        "Step",
-        "Total-Loss",
-        "L1Reg-Loss",
-        "L2Reg-Loss",
-        "RMSE-E-Train",
-        "RMSE-F-Train",
-        "RMSE-V-Train",
-        "RMSE-M-Train",
-        "RMSE-E-Test",
-        "RMSE-F-Test",
-        "RMSE-M-Test");
-      }else if (!para.charge_mode) {
+      if (para.spin_mode > 0) {
+        if (para.lambda_tau > 0.0f) {
+          printf(
+            "%-8s%-11s%-11s%-11s%-13s%-13s%-13s%-13s%-13s%-13s%-13s%-13s%-13s%-13s\n",
+            "Step",
+            "Total-Loss",
+            "L1Reg-Loss",
+            "L2Reg-Loss",
+            "RMSE-E-Train",
+            "RMSE-F-Train",
+            "RMSE-V-Train",
+            "RMSE-M-Train",
+            "RMSE-Tau-Train",
+            "RMSE-E-Test",
+            "RMSE-F-Test",
+            "RMSE-V-Test",
+            "RMSE-M-Test",
+            "RMSE-Tau-Test");
+        } else {
+          printf(
+            "%-8s%-11s%-11s%-11s%-13s%-13s%-13s%-13s%-13s%-13s%-13s%-13s\n",
+            "Step",
+            "Total-Loss",
+            "L1Reg-Loss",
+            "L2Reg-Loss",
+            "RMSE-E-Train",
+            "RMSE-F-Train",
+            "RMSE-V-Train",
+            "RMSE-M-Train",
+            "RMSE-E-Test",
+            "RMSE-F-Test",
+            "RMSE-V-Test",
+            "RMSE-M-Test");
+        }
+      } else if (!para.charge_mode) {
         printf(
           "%-8s%-11s%-11s%-11s%-13s%-13s%-13s%-13s%-13s%-13s\n",
           "Step",
@@ -388,7 +409,8 @@ void SNES::compute(Parameters& para, Fitness* fitness_function)
         fitness_virial.data(),
         fitness_charge.data(),
         fitness_bec.data(),
-        fitness_mforce.data()
+        fitness_mforce.data(),
+        fitness_torque.data()
         );
 
       if (para.version != 3) {
@@ -443,20 +465,35 @@ void SNES::compute(Parameters& para, Fitness* fitness_function)
       tokens[0] == "nep4_zbl_charge1" ||
       tokens[0] == "nep4_zbl_charge2" ||
       tokens[0] == "nep4_zbl_charge3" ||
-      tokens[0] == "nep4_zbl_charge4" ||
-      tokens[0] == "nep4_zbl_charge5") {
+       tokens[0] == "nep4_zbl_charge4" ||
+       tokens[0] == "nep4_zbl_charge5") {
       num_lines_to_be_skipped = 6;
-    }else if (
-      tokens[0] == "nep3_spin" ||
-      tokens[0] == "nep4_spin"){
-      // Spin models add two extra header lines: spin_mode + spin_feature
-      num_lines_to_be_skipped = 7;
+    } else if (tokens[0] == "nep3_spin" || tokens[0] == "nep4_spin") {
+      // Spin models add a spin_mode line, followed by 1 or 2 spin header lines:
+      //   spin_feature
+      //   [spin_n_max]
+      std::vector<std::string> spin_mode_tokens = get_tokens(input);
+      if (
+        (spin_mode_tokens.size() != 2 && spin_mode_tokens.size() != 3) ||
+        spin_mode_tokens[0] != "spin_mode") {
+        PRINT_INPUT_ERROR("Second line of nep*_spin must be 'spin_mode <mode> [spin_header_lines]'.\n");
+      }
+      int spin_header_lines = 1; // backward compatible default
+      if (spin_mode_tokens.size() == 3) {
+        spin_header_lines = get_int_from_token(spin_mode_tokens[2], __FILE__, __LINE__);
+        if (spin_header_lines != 1 && spin_header_lines != 2) {
+          PRINT_INPUT_ERROR("spin_header_lines must be 1 or 2.\n");
+        }
+      }
 
+      // We already consumed the spin_mode line above. Now skip:
+      //   spin_header_lines + (cutoff, n_max, basis_size, l_max, ANN) = spin_header_lines + 5
+      num_lines_to_be_skipped = spin_header_lines + 5;
     }
 
 
 
-    // Skip fixed header lines (up to l_max and optional zbl)
+    // Skip fixed header lines (up to ANN)
     for (int n = 0; n < num_lines_to_be_skipped; ++n) {
       tokens = get_tokens(input);
     }
@@ -581,7 +618,8 @@ void SNES::regularize_NEP4(Parameters& para)
       fitness_total[p + t * population_size] =
         cost_L1 + cost_L2 + fitness_energy[p + t * population_size] +
         fitness_force[p + t * population_size] + fitness_virial[p + t * population_size] +
-        fitness_charge[p + t * population_size] + fitness_bec[p + t * population_size] + fitness_mforce[p + t * population_size];
+        fitness_charge[p + t * population_size] + fitness_bec[p + t * population_size] +
+        fitness_mforce[p + t * population_size] + fitness_torque[p + t * population_size];
       fitness_L1[p + t * population_size] = cost_L1;
       fitness_L2[p + t * population_size] = cost_L2;
     }
@@ -638,7 +676,8 @@ void SNES::regularize(Parameters& para)
       fitness_total[p + t * population_size] =
         cost_L1 + cost_L2 + fitness_energy[p + t * population_size] +
         fitness_force[p + t * population_size] + fitness_virial[p + t * population_size] +
-        fitness_charge[p + t * population_size] + fitness_bec[p + t * population_size] + fitness_mforce[p + t * population_size];
+        fitness_charge[p + t * population_size] + fitness_bec[p + t * population_size] +
+        fitness_mforce[p + t * population_size] + fitness_torque[p + t * population_size];
       fitness_L1[p + t * population_size] = cost_L1;
       fitness_L2[p + t * population_size] = cost_L2;
     }

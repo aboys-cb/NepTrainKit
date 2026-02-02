@@ -28,7 +28,17 @@ class Fitness
 public:
   Fitness(Parameters& para);
   ~Fitness();
-  void compute(const int generation, Parameters& para, const float*, float*, float*, float*, float*, float*,float* );
+  void compute(
+    const int generation,
+    Parameters& para,
+    const float* population,
+    float* fitness_energy,
+    float* fitness_force,
+    float* fitness_virial,
+    float* fitness_charge,
+    float* fitness_bec,
+    float* fitness_mforce,
+    float* fitness_torque);
   void report_error(
     Parameters& para,
     const int generation,

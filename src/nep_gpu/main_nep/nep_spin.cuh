@@ -49,6 +49,7 @@ public:
     int basis_size_radial = 0;
     int basis_size_angular = 0;
     int n_max_radial = 0;  // n = 0..n_max_radial
+    int spin_n_max = -1;   // spin-block radial order: n = 0..spin_n_max (defaults to n_max_radial)
     int n_max_angular = 0; // n = 0..n_max_angular
     int L_max = 0;         // l = 1..L_max
     int dim_angular;

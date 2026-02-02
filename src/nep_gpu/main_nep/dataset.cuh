@@ -92,6 +92,7 @@ public:
   construct(Parameters& para, std::vector<Structure>& structures, int n1, int n2, int device_id);
   std::vector<float> get_rmse_force(Parameters& para, const bool use_weight, int device_id);
   std::vector<float> get_rmse_mforce(Parameters& para, const bool use_weight, int device_id);
+  std::vector<float> get_rmse_torque(Parameters& para, const bool use_weight, int device_id);
   std::vector<float> get_rmse_energy(
     Parameters& para,
     float& energy_shift_per_structure,

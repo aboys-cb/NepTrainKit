@@ -772,7 +772,7 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors(
     if (para.L_max_5body == 1) num_L += 1;
     int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L; // filled by kernels
     if (para.spin_mode > 0) {
-        const int nspin = (para.n_max_radial + 1);
+        const int nspin = (para.spin_n_max >= 0) ? (para.spin_n_max + 1) : (para.n_max_radial + 1);
         auto clamp_kmax = [](int kmax) {
             if (kmax < -1) return -1;
             if (kmax > 8) return 8;
@@ -868,7 +868,7 @@ std::vector<std::vector<double>> GpuNep::calculate_descriptors_spin(
         if (para.L_max_5body == 1) num_L += 1;
         int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L;
         if (para.spin_mode > 0) {
-            const int nspin = (para.n_max_radial + 1);
+            const int nspin = (para.spin_n_max >= 0) ? (para.spin_n_max + 1) : (para.n_max_radial + 1);
             auto clamp_kmax = [](int kmax) {
                 if (kmax < -1) return -1;
                 if (kmax > 8) return 8;
@@ -1130,7 +1130,7 @@ py::array GpuNep::calculate_descriptors_scaled_spin(
     if (para.L_max_5body == 1) num_L += 1;
     int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L;
     if (para.spin_mode > 0) {
-        const int nspin = (para.n_max_radial + 1);
+        const int nspin = (para.spin_n_max >= 0) ? (para.spin_n_max + 1) : (para.n_max_radial + 1);
         auto clamp_kmax = [](int kmax) {
             if (kmax < -1) return -1;
             if (kmax > 8) return 8;
@@ -1219,7 +1219,7 @@ py::array GpuNep::calculate_descriptors_scaled(
     if (para.L_max_5body == 1) num_L += 1;
     int dim_desc = (para.n_max_radial + 1) + (para.n_max_angular + 1) * num_L;
     if (para.spin_mode > 0) {
-        const int nspin = (para.n_max_radial + 1);
+        const int nspin = (para.spin_n_max >= 0) ? (para.spin_n_max + 1) : (para.n_max_radial + 1);
         auto clamp_kmax = [](int kmax) {
             if (kmax < -1) return -1;
             if (kmax > 8) return 8;

@@ -602,6 +602,112 @@ static __global__ void gpu_sum_mforce_error_nzspin(
   }
 }
 
+// Per-configuration total spin-torque error (derived from mforce = -dE/ds):
+//   tau_tot = sum_i (s_i x mforce_i)
+// We compare the per-atom averaged torque vectors between prediction and reference:
+//   tau_bar = (1/Na) * sum_i (s_i x mforce_i)
+// and use ||tau_bar_pred - tau_bar_ref||^2 as the configuration error.
+// Only atoms with non-zero spin |s|^2 > eps contribute to the sum; nz_count is returned so the
+// host can ignore configurations with no magnetic atoms.
+static __global__ void gpu_sum_torque_error_nzspin(
+  bool use_weight,
+  float force_delta,
+  int* g_Na,
+  int* g_Na_sum,
+  int* g_type,
+  float* g_type_weight,
+  const float eps,
+  const float* g_sx,
+  const float* g_sy,
+  const float* g_sz,
+  const float* g_mfx,
+  const float* g_mfy,
+  const float* g_mfz,
+  const float* g_mfx_ref,
+  const float* g_mfy_ref,
+  const float* g_mfz_ref,
+  float* error_gpu,
+  int* nz_count_gpu)
+{
+  int tid = threadIdx.x;
+  int bid = blockIdx.x;
+  int N1 = g_Na_sum[bid];
+  int N2 = N1 + g_Na[bid];
+  // Use double for torque accumulation to reduce round-off when the net torque is
+  // a small residual after cancellation over many atoms.
+  extern __shared__ double s_torque[];
+  double* s_tx = s_torque;
+  double* s_ty = s_torque + blockDim.x;
+  double* s_tz = s_torque + blockDim.x * 2;
+  double* s_count = s_torque + blockDim.x * 3; // store counts as double, cast later
+  s_tx[tid] = 0.0;
+  s_ty[tid] = 0.0;
+  s_tz[tid] = 0.0;
+  s_count[tid] = 0.0;
+
+  for (int n = N1 + tid; n < N2; n += blockDim.x) {
+    float sx = g_sx[n];
+    float sy = g_sy[n];
+    float sz = g_sz[n];
+    float s2 = sx * sx + sy * sy + sz * sz;
+    if (s2 > eps) {
+      float rx = g_mfx_ref[n];
+      float ry = g_mfy_ref[n];
+      float rz = g_mfz_ref[n];
+      float dx = g_mfx[n] - rx;
+      float dy = g_mfy[n] - ry;
+      float dz = g_mfz[n] - rz;
+
+      // Optional per-atom weighting, aligned with the mforce loss semantics:
+      // type weighting + (optional) force_delta scaling based on the reference magnitude.
+      float w = 1.0f;
+      if (use_weight) {
+        w *= g_type_weight[g_type[n]];
+        if (force_delta > 0.0f) {
+          float mag = sqrt(rx * rx + ry * ry + rz * rz);
+          float fac = force_delta / (force_delta + mag);
+          if (fac > 0.0f) {
+            w *= sqrt(fac);
+          }
+        }
+      }
+      dx *= w;
+      dy *= w;
+      dz *= w;
+
+      // torque contribution: s x (mforce_pred - mforce_ref)
+      double tx = (double)sy * (double)dz - (double)sz * (double)dy;
+      double ty = (double)sz * (double)dx - (double)sx * (double)dz;
+      double tz = (double)sx * (double)dy - (double)sy * (double)dx;
+      s_tx[tid] += tx;
+      s_ty[tid] += ty;
+      s_tz[tid] += tz;
+      s_count[tid] += 1.0;
+    }
+  }
+  __syncthreads();
+
+  for (int offset = blockDim.x >> 1; offset > 0; offset >>= 1) {
+    if (tid < offset) {
+      s_tx[tid] += s_tx[tid + offset];
+      s_ty[tid] += s_ty[tid + offset];
+      s_tz[tid] += s_tz[tid + offset];
+      s_count[tid] += s_count[tid + offset];
+    }
+    __syncthreads();
+  }
+
+  if (tid == 0) {
+    const int Na = g_Na[bid];
+    double invNa = (Na > 0) ? (1.0 / (double)Na) : 0.0;
+    double tx = s_tx[0] * invNa;
+    double ty = s_ty[0] * invNa;
+    double tz = s_tz[0] * invNa;
+    error_gpu[bid] = (float)(tx * tx + ty * ty + tz * tz);
+    nz_count_gpu[bid] = (int)(s_count[0] + 0.5);
+  }
+}
+
 std::vector<float> Dataset::get_rmse_force(Parameters& para, const bool use_weight, int device_id)
 {
   CHECK(gpuSetDevice(device_id));
@@ -730,6 +836,75 @@ std::vector<float> Dataset::get_rmse_mforce(Parameters& para, const bool use_wei
       rmse_array[t] = sqrt(rmse_array[t] / (count_array[t] * 3));
     }
   }
+  return rmse_array;
+}
+
+std::vector<float> Dataset::get_rmse_torque(Parameters& para, const bool use_weight, int device_id)
+{
+  CHECK(gpuSetDevice(device_id));
+  const int block_size = 256;
+  std::vector<float> rmse_array(para.num_types + 1, 0.0f);
+  std::vector<double> rmse_sum(para.num_types + 1, 0.0);
+  std::vector<int> count_array(para.num_types + 1, 0);
+
+  // Need both reference and predicted mforce buffers plus spin to define torque.
+  if (mforce_ref_gpu.size() != (size_t)N * 3 || mforce.size() != (size_t)N * 3) {
+    return rmse_array;
+  }
+  const bool has_spin = (spin_cpu.size() == (size_t)N * 3);
+  if (!has_spin) {
+    return rmse_array;
+  }
+
+  GPU_Vector<int> nz_count_gpu;
+  nz_count_gpu.resize(Nc);
+  gpu_sum_torque_error_nzspin<<<Nc, block_size, sizeof(double) * block_size * 4>>>(
+    use_weight,
+    para.force_delta,
+    Na.data(),
+    Na_sum.data(),
+    type.data(),
+    type_weight_gpu.data(),
+    1.0e-8f,
+    spin.data(),
+    spin.data() + N,
+    spin.data() + N * 2,
+    mforce.data(),
+    mforce.data() + N,
+    mforce.data() + N * 2,
+    mforce_ref_gpu.data(),
+    mforce_ref_gpu.data() + N,
+    mforce_ref_gpu.data() + N * 2,
+    error_gpu.data(),
+    nz_count_gpu.data());
+
+  int mem_err = sizeof(float) * Nc;
+  CHECK(gpuMemcpy(error_cpu.data(), error_gpu.data(), mem_err, gpuMemcpyDeviceToHost));
+  std::vector<int> nz_spin_count_per_conf(Nc, 0);
+  CHECK(gpuMemcpy(
+    nz_spin_count_per_conf.data(), nz_count_gpu.data(), sizeof(int) * Nc, gpuMemcpyDeviceToHost));
+
+  for (int n = 0; n < Nc; ++n) {
+    if (nz_spin_count_per_conf[n] <= 0) {
+      continue;
+    }
+    const double rmse_temp =
+      use_weight ? (double)weight_cpu[n] * (double)weight_cpu[n] * (double)error_cpu[n]
+                 : (double)error_cpu[n];
+    for (int t = 0; t < para.num_types + 1; ++t) {
+      if (has_type[t * Nc + n]) {
+        rmse_sum[t] += rmse_temp;
+        count_array[t] += 1;
+      }
+    }
+  }
+
+  for (int t = 0; t <= para.num_types; ++t) {
+    if (count_array[t] > 0) {
+      rmse_array[t] = (float)sqrt(rmse_sum[t] / ((double)count_array[t] * 3.0));
+    }
+  }
+
   return rmse_array;
 }
 
@@ -898,11 +1073,13 @@ gpu_get_energy_shift(
   int Na = g_Na[bid];
   int N1 = g_Na_sum[bid];
   int N2 = N1 + Na;
-  extern __shared__ float s_pe[];
-  s_pe[tid] = 0.0f;
+  // Use double for per-configuration accumulation to reduce cancellation/round-off
+  // when the SOC-driven energy differences are very small.
+  extern __shared__ double s_pe[];
+  s_pe[tid] = 0.0;
 
   for (int n = N1 + tid; n < N2; n += blockDim.x) {
-    s_pe[tid] += g_pe[n];
+    s_pe[tid] += (double)g_pe[n];
   }
   __syncthreads();
 
@@ -914,8 +1091,8 @@ gpu_get_energy_shift(
   }
 
   if (tid == 0) {
-    float diff = s_pe[0] / Na - g_pe_ref[bid];
-    g_energy_shift[bid] = diff * g_pe_weight[bid];
+    double diff = s_pe[0] / (double)Na - (double)g_pe_ref[bid];
+    g_energy_shift[bid] = (float)(diff * (double)g_pe_weight[bid]);
   }
 }
 
@@ -933,11 +1110,12 @@ static __global__ void gpu_sum_pe_error(
   int Na = g_Na[bid];
   int N1 = g_Na_sum[bid];
   int N2 = N1 + Na;
-  extern __shared__ float s_pe[];
-  s_pe[tid] = 0.0f;
+  // Use double for per-configuration accumulation (see gpu_get_energy_shift).
+  extern __shared__ double s_pe[];
+  s_pe[tid] = 0.0;
 
   for (int n = N1 + tid; n < N2; n += blockDim.x) {
-    s_pe[tid] += g_pe[n];
+    s_pe[tid] += (double)g_pe[n];
   }
   __syncthreads();
 
@@ -949,8 +1127,9 @@ static __global__ void gpu_sum_pe_error(
   }
 
   if (tid == 0) {
-    float diff = s_pe[0] / Na - g_pe_ref[bid] - energy_shift;
-    error_gpu[bid] = diff * diff * g_pe_weight[bid];
+    double diff =
+      s_pe[0] / (double)Na - (double)g_pe_ref[bid] - (double)energy_shift;
+    error_gpu[bid] = (float)(diff * diff * (double)g_pe_weight[bid]);
   }
 }
 
@@ -968,7 +1147,7 @@ std::vector<float> Dataset::get_rmse_energy(
   int mem = sizeof(float) * Nc;
 
   if (do_shift) {
-    gpu_get_energy_shift<<<Nc, block_size, sizeof(float) * block_size>>>(
+    gpu_get_energy_shift<<<Nc, block_size, sizeof(double) * block_size>>>(
       Na.data(), 
       Na_sum.data(), 
       energy.data(), 
@@ -976,17 +1155,18 @@ std::vector<float> Dataset::get_rmse_energy(
       energy_weight_gpu.data(), 
       error_gpu.data());
     CHECK(gpuMemcpy(error_cpu.data(), error_gpu.data(), mem, gpuMemcpyDeviceToHost));
-    float Nc_with_weight = 0.0f;
+    double Nc_with_weight = 0.0;
+    double energy_shift_sum = 0.0;
     for (int n = 0; n < Nc; ++n) {
-      Nc_with_weight += energy_weight_cpu[n];
-      energy_shift_per_structure += error_cpu[n];
+      Nc_with_weight += (double)energy_weight_cpu[n];
+      energy_shift_sum += (double)error_cpu[n];
     }
     if (Nc_with_weight > 0.0f) {
-      energy_shift_per_structure /= Nc_with_weight;
+      energy_shift_per_structure = (float)(energy_shift_sum / Nc_with_weight);
     }
   }
 
-  gpu_sum_pe_error<<<Nc, block_size, sizeof(float) * block_size>>>(
+  gpu_sum_pe_error<<<Nc, block_size, sizeof(double) * block_size>>>(
     energy_shift_per_structure,
     Na.data(),
     Na_sum.data(),
@@ -997,19 +1177,22 @@ std::vector<float> Dataset::get_rmse_energy(
   CHECK(gpuMemcpy(error_cpu.data(), error_gpu.data(), mem, gpuMemcpyDeviceToHost));
 
   std::vector<float> rmse_array(para.num_types + 1, 0.0f);
+  std::vector<double> rmse_sum(para.num_types + 1, 0.0);
   std::vector<int> count_array(para.num_types + 1, 0);
   for (int n = 0; n < Nc; ++n) {
-    float rmse_temp = use_weight ? weight_cpu[n] * weight_cpu[n] * error_cpu[n] : error_cpu[n];
+    const double rmse_temp =
+      use_weight ? (double)weight_cpu[n] * (double)weight_cpu[n] * (double)error_cpu[n]
+                 : (double)error_cpu[n];
     for (int t = 0; t < para.num_types + 1; ++t) {
       if (has_type[t * Nc + n]) {
-        rmse_array[t] += rmse_temp;
+        rmse_sum[t] += rmse_temp;
         ++count_array[t];
       }
     }
   }
   for (int t = 0; t <= para.num_types; ++t) {
     if (count_array[t] > 0) {
-      rmse_array[t] = sqrt(rmse_array[t] / count_array[t]);
+      rmse_array[t] = (float)sqrt(rmse_sum[t] / (double)count_array[t]);
     }
   }
   return rmse_array;

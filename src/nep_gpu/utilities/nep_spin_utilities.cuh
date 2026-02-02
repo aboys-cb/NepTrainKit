@@ -287,7 +287,8 @@ static __host__ __device__ __forceinline__ NepSpinPairBlocks nep_spin_get_pair_b
 template <typename ParaMB>
 static __host__ __device__ __forceinline__ int nep_spin_nspin(const ParaMB& paramb)
 {
-  return paramb.n_max_radial + 1;
+  const int nmax = (paramb.spin_n_max >= 0) ? paramb.spin_n_max : paramb.n_max_radial;
+  return nmax + 1;
 }
 
 template <typename ParaMB>

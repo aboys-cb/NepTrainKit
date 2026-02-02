@@ -33,21 +33,21 @@ const std::string ELEMENTS[NUM_ELEMENTS] = {
 
 Parameters::Parameters()
 {
-//   print_line_1();
-//   printf("Started reading nep.in.\n");
-//   print_line_2();
-//
-//   set_default_parameters();
-//   read_nep_in();
-//   if (is_zbl_set) {
-//     read_zbl_in();
-//   }
-//   calculate_parameters();
-//   report_inputs();
-//
-//   print_line_1();
-//   printf("Finished reading nep.in.\n");
-//   print_line_2();
+  print_line_1();
+  printf("Started reading nep.in.\n");
+  print_line_2();
+
+  set_default_parameters();
+  read_nep_in();
+  if (is_zbl_set) {
+    read_zbl_in();
+  }
+  calculate_parameters();
+  report_inputs();
+
+  print_line_1();
+  printf("Finished reading nep.in.\n");
+  print_line_2();
 }
 
 void Parameters::set_default_parameters()
@@ -67,6 +67,7 @@ void Parameters::set_default_parameters()
   is_lambda_f_set = false;
   is_lambda_v_set = false;
   is_lambda_m_set = false;
+  is_lambda_tau_set = false;
   is_atomic_v_set = false;
   is_lambda_shear_set = false;
   is_batch_set = false;
@@ -79,6 +80,7 @@ void Parameters::set_default_parameters()
   is_charge_mode_set = false;
   is_spin_mode_set = false;
   is_spin_feature_set = false;
+  is_spin_n_max_set = false;
 
 
   train_mode = 0;              // potential
@@ -97,6 +99,7 @@ void Parameters::set_default_parameters()
   lambda_e = lambda_f = 1.0f;  // energy and force are more important
   lambda_v = 0.1f;             // virial is less important
   lambda_m = 0.0f;             // magnetic force loss is disabled by default
+  lambda_tau = 0.0f;           // total spin-torque loss is disabled by default
   lambda_shear = 1.0f;         // do not weight shear virial more by default
   lambda_q = 0.5f;             // close to optimal
   lambda_z = 0.5f;             // close to optimal
@@ -111,6 +114,7 @@ void Parameters::set_default_parameters()
   sigma0 = 0.1f;
   atomic_v = 0;
   // spin features (spherical is the only supported mode)
+  spin_n_max = 1;           // default spin radial order: n = 0..1
   spin_kmax_ex = 2;          // default include k=0..2 exchange Chebyshev terms
   spin_kmax_dmi = 0;
   spin_kmax_ani = 0;
@@ -242,7 +246,10 @@ void Parameters::calculate_parameters()
   }
   dim = dim_radial + dim_angular;
   if (spin_mode > 0) {
-    const int nspin = (n_max_radial + 1);
+    if (spin_n_max < 0) {
+      spin_n_max = n_max_radial;
+    }
+    const int nspin = (spin_n_max + 1);
 
     auto clamp_kmax = [](int kmax) {
       if (kmax < -1) return -1;
@@ -288,6 +295,9 @@ void Parameters::calculate_parameters()
   if (n_max_radial + 1 > MAX_NUM_N) {
     PRINT_INPUT_ERROR("n_max_radial is too large for compiled MAX_NUM_N.");
   }
+  if (spin_mode > 0 && (spin_n_max + 1 > MAX_NUM_N)) {
+    PRINT_INPUT_ERROR("spin_n_max is too large for compiled MAX_NUM_N.");
+  }
   if (dim > MAX_DIM) {
     PRINT_INPUT_ERROR(
       "total number of descriptor components (dim) exceeds compiled MAX_DIM; reduce n_max/basis_size/spin settings or recompile.\n");
@@ -316,7 +326,8 @@ void Parameters::calculate_parameters()
 
   int num_c_spin = 0;
   if (spin_mode == 2) {
-    int nspin = n_max_radial + 1;
+    if (spin_n_max < 0) spin_n_max = n_max_radial;
+    int nspin = spin_n_max + 1;
     auto blocks_from_kmax = [](int kmax) { return (kmax >= 0) ? (kmax + 1) : 0; };
     int ex_blocks = blocks_from_kmax(spin_kmax_ex);
     int dmi_blocks = blocks_from_kmax(spin_kmax_dmi);
@@ -333,7 +344,8 @@ void Parameters::calculate_parameters()
     int ani_blocks = blocks_from_kmax(spin_kmax_ani);
     int sia_blocks = blocks_from_kmax(spin_kmax_sia);
     int spin_blocks = ex_blocks + dmi_blocks + ani_blocks + sia_blocks;
-    int nspin = n_max_radial + 1;
+    if (spin_n_max < 0) spin_n_max = n_max_radial;
+    int nspin = spin_n_max + 1;
     int num_c_spin_per_block =
       num_types * num_types * (nspin * (basis_size_radial + 1));
     num_c_spin = num_c_spin_per_block * spin_blocks;
@@ -656,6 +668,11 @@ void Parameters::report_inputs()
     } else {
       printf("    (default) lambda_m = %g.\n", lambda_m);
     }
+    if (is_lambda_tau_set) {
+      printf("    (input)   lambda_tau = %g.\n", lambda_tau);
+    } else {
+      printf("    (default) lambda_tau = %g.\n", lambda_tau);
+    }
     printf(
       "    (%s)   spin_feature = kmax_ex %d kmax_dmi %d kmax_ani %d kmax_sia %d onsite_pmax %d ex_phi_mode %d onsite_basis_mode %d mref %g.\n",
       is_spin_feature_set ? "input" : "default",
@@ -667,6 +684,10 @@ void Parameters::report_inputs()
       spin_ex_phi_mode,
       spin_onsite_basis_mode,
       spin_mref);
+    printf(
+      "    (%s)   spin_n_max = %d.\n",
+      is_spin_n_max_set ? "input" : "default",
+      spin_n_max);
   }
 
   if (is_atomic_v_set) {
@@ -776,6 +797,8 @@ void Parameters::parse_one_keyword(std::vector<std::string>& tokens)
     parse_lambda_v(param, num_param);
   } else if (strcmp(param[0], "lambda_m") == 0) {
     parse_lambda_m(param, num_param);
+  } else if (strcmp(param[0], "lambda_tau") == 0) {
+    parse_lambda_tau(param, num_param);
   } else if (strcmp(param[0], "lambda_q") == 0) {
     parse_lambda_q(param, num_param);
   } else if (strcmp(param[0], "lambda_z") == 0) {
@@ -804,6 +827,8 @@ void Parameters::parse_one_keyword(std::vector<std::string>& tokens)
     parse_charge_mode(param, num_param);
   } else if (strcmp(param[0], "spin_mode") == 0) {
     parse_spin_mode(param, num_param);
+  } else if (strcmp(param[0], "spin_n_max") == 0) {
+    parse_spin_n_max(param, num_param);
   } else if (strcmp(param[0], "fine_tune") == 0) {
     parse_fine_tune(param, num_param);
   } else if (strcmp(param[0], "save_potential") == 0) {
@@ -1202,6 +1227,25 @@ void Parameters::parse_lambda_m(const char** param, int num_param)
   }
 }
 
+void Parameters::parse_lambda_tau(const char** param, int num_param)
+{
+  is_lambda_tau_set = true;
+
+  if (num_param != 2) {
+    PRINT_INPUT_ERROR("lambda_tau should have 1 parameter.\n");
+  }
+
+  double lambda_tau_tmp = 0.0;
+  if (!is_valid_real(param[1], &lambda_tau_tmp)) {
+    PRINT_INPUT_ERROR("Total spin-torque loss weight should be a number.\n");
+  }
+  lambda_tau = lambda_tau_tmp;
+
+  if (lambda_tau < 0.0f) {
+    PRINT_INPUT_ERROR("Total spin-torque loss weight should >= 0.\n");
+  }
+}
+
 void Parameters::parse_lambda_e(const char** param, int num_param)
 {
   is_lambda_e_set = true;
@@ -1280,9 +1324,9 @@ void Parameters::parse_spin_feature(const char** param, int num_param)
 {
   is_spin_feature_set = true;
 
-  if (num_param < 5 || num_param > 9) {
+  if (num_param < 5 || num_param > 10) {
     PRINT_INPUT_ERROR(
-      "spin_feature should be: spin_feature <kmax_ex> <kmax_dmi> <kmax_ani> <kmax_sia> [onsite_pmax] [ex_phi_mode] [onsite_basis_mode] [mref].\n");
+      "spin_feature should be: spin_feature <kmax_ex> <kmax_dmi> <kmax_ani> <kmax_sia> [onsite_pmax] [ex_phi_mode] [onsite_basis_mode] [mref] [spin_n_max].\n");
   }
 
   auto parse_kmax = [&](const char* s, int* out, const char* name) {
@@ -1324,7 +1368,7 @@ void Parameters::parse_spin_feature(const char** param, int num_param)
       PRINT_INPUT_ERROR("spin_feature onsite_basis_mode should be in [0,2].\n");
     }
   }
-  if (num_param == 9) {
+  if (num_param >= 9) {
     double mref_tmp = 0.0;
     if (!is_valid_real(param[8], &mref_tmp)) {
       PRINT_INPUT_ERROR("spin_feature mref should be a number.\n");
@@ -1333,6 +1377,38 @@ void Parameters::parse_spin_feature(const char** param, int num_param)
     if (!(spin_mref > 0.0f)) {
       PRINT_INPUT_ERROR("spin_feature mref should be > 0.\n");
     }
+  }
+
+  // Optional trailing spin_n_max for compatibility with nep*_spin headers generated by training.
+  if (num_param == 10) {
+    int tmp = 0;
+    if (!is_valid_int(param[9], &tmp)) {
+      PRINT_INPUT_ERROR("spin_feature spin_n_max should be an integer.\n");
+    }
+    if (tmp < 0 || tmp > 12) {
+      PRINT_INPUT_ERROR("spin_feature spin_n_max should be in [0,12].\n");
+    }
+    if (is_spin_n_max_set && spin_n_max != tmp) {
+      PRINT_INPUT_ERROR("spin_n_max conflicts with the value provided in spin_feature.\n");
+    }
+    spin_n_max = tmp;
+    is_spin_n_max_set = true;
+  }
+}
+
+void Parameters::parse_spin_n_max(const char** param, int num_param)
+{
+  is_spin_n_max_set = true;
+  if (num_param != 2) {
+    PRINT_INPUT_ERROR("spin_n_max should have 1 parameter.\n");
+  }
+  if (!is_valid_int(param[1], &spin_n_max)) {
+    PRINT_INPUT_ERROR("spin_n_max should be an integer.\n");
+  }
+  if (spin_n_max < 0) {
+    PRINT_INPUT_ERROR("spin_n_max should >= 0.\n");
+  } else if (spin_n_max > 12) {
+    PRINT_INPUT_ERROR("spin_n_max should <= 12.\n");
   }
 }
 

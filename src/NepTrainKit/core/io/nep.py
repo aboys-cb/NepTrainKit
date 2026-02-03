@@ -283,7 +283,7 @@ class NepTrainResultData(ResultData):
         """Return the magnetic force dataset when available."""
         return self._spin_force_dataset
     @classmethod
-    def from_path(cls, path ,model_type=0, *, structures: list[Structure] | None = None)->"NepTrainResultData":
+    def from_path(cls, path ,model_type=0, *, structures: list[Structure] | None = None, nep_txt_path: Path | str | None = None)->"NepTrainResultData":
         """Create an instance from a NEP result directory.
         
         Parameters
@@ -302,35 +302,42 @@ class NepTrainResultData(ResultData):
         """
         dataset_path = as_path(path)
         file_name=dataset_path.stem
-        
-        # Try to find nep.txt first
-        nep_txt_path = dataset_path.with_name(f"nep.txt")
-        
-        # If nep.txt not found, search for any txt file containing "nep" in filename
-        if not nep_txt_path.exists():
-            dir_path = dataset_path.parent
-            nep_files = []
-            for txt_file in dir_path.glob("*.txt"):
-                if "nep" in txt_file.stem.lower():
-                    nep_files.append(txt_file)
-            
-            # Sort: prefer files starting with "nep" and shorter names
-            if nep_files:
-                nep_files.sort(key=lambda p: (not p.stem.lower().startswith("nep"), len(p.stem), p.stem))
-                nep_txt_path = nep_files[0]
-                logger.info(f"Using detected NEP file: {nep_txt_path.name}")
-            else:
-                # No NEP file found, use fallback
-                nep_txt_path = module_path/ "Config/nep89.txt"
-                MessageManager.send_warning_message(f"No NEP model file found; the program will use nep89 instead.")
-        
+
+        # Normalise optional nep_txt_path
+        explicit_nep = Path(nep_txt_path) if nep_txt_path is not None else None
+
+        # Try to find nep.txt first when no explicit NEP file is provided
+        if explicit_nep is not None:
+            nep_txt_path = explicit_nep
+        else:
+            nep_txt_path = dataset_path.with_name("nep.txt")
+
+            # If nep.txt not found, search for any txt file containing "nep" in filename
+            if not nep_txt_path.exists():
+                dir_path = dataset_path.parent
+                nep_files: list[Path] = []
+                for txt_file in dir_path.glob("*.txt"):
+                    if "nep" in txt_file.stem.lower():
+                        nep_files.append(txt_file)
+
+                # Sort: prefer files starting with "nep" and shorter names
+                if nep_files:
+                    nep_files.sort(key=lambda p: (not p.stem.lower().startswith("nep"), len(p.stem), p.stem))
+                    nep_txt_path = nep_files[0]
+                    logger.info(f"Using detected NEP file: {Path(nep_txt_path).name}")
+                else:
+                    # No NEP file found, use fallback
+                    nep_txt_path = module_path / "Config/nep89.txt"
+                    MessageManager.send_warning_message("No NEP model file found; the program will use nep89 instead.")
+
+        # Coerce to Path for downstream logic
+        nep_txt_path = Path(nep_txt_path)
+
         if model_type>2:
-            nep_txt_path = module_path/ "Config/nep89.txt"
+            nep_txt_path = module_path / "Config/nep89.txt"
             MessageManager.send_warning_message(f"NEPKit currently does not support model_type={model_type}; the program will use nep89 instead.")
-        
+
         # Determine output directory based on NEP model filename
-        # For nep.txt: use current directory
-        # For nep1.txt, nep2.txt, etc.: use result_nep1, result_nep2, etc.
         nep_stem = nep_txt_path.stem
         if nep_stem == "nep":
             # Standard nep.txt, output to current directory

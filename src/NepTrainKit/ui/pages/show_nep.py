@@ -62,6 +62,9 @@ class ShowNepWidget(QWidget):
         self.setAcceptDrops(True)
         self.nep_result_data:ResultData
         self.nep_result_data=None  # pyright:ignore
+        # Cache for NEP result datasets keyed by NEP model path
+        self._nep_result_cache: dict[Path, ResultData] = {}
+        self._initial_loading = False
         self.init_action()
         self.init_ui()
         self.calculate_bond_thread:LoadingThread
@@ -149,20 +152,32 @@ class ShowNepWidget(QWidget):
         # Ignore during initial setup or programmatic updates
         if getattr(self, '_updating_nep_combo', False):
             return
-        
+
         # Ignore if still loading initial data
         if getattr(self, '_initial_loading', False):
             return
-        
+
+        # Try use cached dataset first
+        if hasattr(self, '_nep_result_cache') and hasattr(self, '_available_nep_files') and 0 <= index < len(self._available_nep_files):
+            nep_file = self._available_nep_files[index]
+            key = nep_file.resolve()
+            cached = self._nep_result_cache.get(key)
+            if cached is not None:
+                # Reuse cached result without reloading
+                self.stop_loading()
+                self.nep_result_data = cached
+                self.set_dataset()
+                return
+
         if not hasattr(self, 'nep_result_data') or self.nep_result_data is None:
             return
         if not hasattr(self, '_available_nep_files') or not self._available_nep_files:
             return
         if index < 0 or index >= len(self._available_nep_files):
             return
-        
+
         selected_nep_file = self._available_nep_files[index]
-        
+
         # Check if the selected file is already loaded
         if hasattr(self.nep_result_data, 'nep_txt_path'):
             try:
@@ -170,11 +185,11 @@ class ShowNepWidget(QWidget):
                     return  # Already using this model
             except Exception:
                 pass
-        
+
         current_path = self.path_label.getUrl().toLocalFile()
         if not current_path or not os.path.exists(current_path):
             return
-        
+
         # Reload data with the selected NEP file
         self._reload_with_nep_file(current_path, selected_nep_file)
 
@@ -263,70 +278,16 @@ class ShowNepWidget(QWidget):
         try:
             # Get the xyz file path
             xyz_file = self.nep_result_data.data_xyz_path if hasattr(self.nep_result_data, 'data_xyz_path') else xyz_path
-            xyz_path_obj = Path(xyz_file)
-            file_name = xyz_path_obj.stem
-            
-            # Import classes needed to create data object directly
             from NepTrainKit.core.io.nep import NepTrainResultData
-            from NepTrainKit.core.utils import is_charge_model
-            
-            # Determine the correct output directory for the selected NEP file
-            nep_stem = nep_file.stem
-            
-            if nep_stem == "nep":
-                # Standard nep.txt, output to current directory
-                output_dir = xyz_path_obj.parent
-            else:
-                # Other NEP files, use result_XXX directory
-                output_dir = xyz_path_obj.parent / f"result_{nep_stem}"
-                output_dir.mkdir(exist_ok=True)
-                logger.info(f"Output files will be saved to: {output_dir.name}/")
-            
-            # Build output paths for the selected NEP file
-            energy_out_path = output_dir / f"energy_{file_name}.out"
-            force_out_path = output_dir / f"force_{file_name}.out"
-            stress_out_path = output_dir / f"stress_{file_name}.out"
-            virial_out_path = output_dir / f"virial_{file_name}.out"
-            
-            if file_name == "train":
-                descriptor_path = output_dir / "descriptor.out"
-            else:
-                descriptor_path = output_dir / f"descriptor_{file_name}.out"
-            
-            charge_out_path = output_dir / f"charge_{file_name}.out"
-            bec_out_path = output_dir / f"bec_{file_name}.out"
-            
-            # Create new result data object directly (avoid auto-detection in from_path)
-            self.nep_result_data = NepTrainResultData(
-                nep_file,
+
+            # Rebuild result data via from_path so that IO logic stays centralised
+            model_type = getattr(self.nep_result_data, "model_type", 0)
+            self.nep_result_data = NepTrainResultData.from_path(
                 xyz_file,
-                energy_out_path,
-                force_out_path,
-                stress_out_path,
-                virial_out_path,
-                descriptor_path,
-                charge_out_path,
-                bec_out_path,
-                is_charge_model(nep_file),
-                None,  # spin_force_out_path
+                model_type=model_type,
+                nep_txt_path=nep_file,
             )
-            
-            # Reinitialize NEP calculator with the selected file
-            try:
-                from NepTrainKit.core.calculator import NepCalculator
-                from NepTrainKit.core.types import NepBackend
-                backend_config = Config.get("nep", "backend", NepBackend.AUTO.value)
-                batch_size = Config.getint("nep", "gpu_batch_size", 1000) or 1000
-                
-                self.nep_result_data.nep_calc = NepCalculator(
-                    model_file=nep_file.as_posix(),
-                    backend=NepBackend(backend_config),
-                    batch_size=batch_size
-                )
-                logger.info(f"NEP calculator initialized with {nep_file.name}")
-            except Exception:
-                logger.debug(f"Failed to initialize calculator: {traceback.format_exc()}")
-            
+
             # Start loading in a new thread
             self.load_thread = QThread(self)
             tip.closedSignal.connect(self.stop_loading)
@@ -334,11 +295,11 @@ class ShowNepWidget(QWidget):
             self.load_thread.finished.connect(self.set_dataset)
             self.load_thread.finished.connect(lambda: tip.setState(True))
             self.load_thread.finished.connect(lambda: self._restore_selection(selected_indices))
-            
+
             self.nep_result_data.loadFinishedSignal.connect(self.load_thread.quit)
             self.load_thread.started.connect(self.nep_result_data.load)
             self.load_thread.start()
-            
+
         except Exception:
             logger.debug(traceback.format_exc())
             tip.setState(False)
@@ -658,8 +619,18 @@ class ShowNepWidget(QWidget):
             return
         self.struct_index_spinbox.setMaximum(self.nep_result_data.num)
         self.graph_widget.set_dataset(self.nep_result_data)
-        self.nep_result_data.updateInfoSignal.connect(self.update_dataset_info)
+        # Avoid duplicate signal connections for cached datasets
+        if not getattr(self.nep_result_data, "_info_connected", False):
+            self.nep_result_data.updateInfoSignal.connect(self.update_dataset_info)
+            self.nep_result_data._info_connected = True
         self.nep_result_data.updateInfoSignal.emit()
+        # Cache current dataset by its NEP model path for fast switching
+        nep_path = getattr(self.nep_result_data, "nep_txt_path", None)
+        if isinstance(nep_path, Path):
+            try:
+                self._nep_result_cache[nep_path.resolve()] = self.nep_result_data
+            except Exception:
+                pass
         self.search_lineEdit.typeChangeSignal.emit(self.search_lineEdit.search_type)
         self.struct_index_spinbox.valueChanged.emit(0)
 

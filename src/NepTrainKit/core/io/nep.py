@@ -302,13 +302,47 @@ class NepTrainResultData(ResultData):
         """
         dataset_path = as_path(path)
         file_name=dataset_path.stem
+        
+        # Try to find nep.txt first
         nep_txt_path = dataset_path.with_name(f"nep.txt")
-        if not nep_txt_path.exists()  :
-            nep_txt_path = module_path/ "Config/nep89.txt"
-            MessageManager.send_warning_message(f"no find nep.txt; the program will use nep89 instead.")
-        elif model_type>2:
+        
+        # If nep.txt not found, search for any txt file containing "nep" in filename
+        if not nep_txt_path.exists():
+            dir_path = dataset_path.parent
+            nep_files = []
+            for txt_file in dir_path.glob("*.txt"):
+                if "nep" in txt_file.stem.lower():
+                    nep_files.append(txt_file)
+            
+            # Sort: prefer files starting with "nep" and shorter names
+            if nep_files:
+                nep_files.sort(key=lambda p: (not p.stem.lower().startswith("nep"), len(p.stem), p.stem))
+                nep_txt_path = nep_files[0]
+                logger.info(f"Using detected NEP file: {nep_txt_path.name}")
+            else:
+                # No NEP file found, use fallback
+                nep_txt_path = module_path/ "Config/nep89.txt"
+                MessageManager.send_warning_message(f"No NEP model file found; the program will use nep89 instead.")
+        
+        if model_type>2:
             nep_txt_path = module_path/ "Config/nep89.txt"
             MessageManager.send_warning_message(f"NEPKit currently does not support model_type={model_type}; the program will use nep89 instead.")
+        
+        # Determine output directory based on NEP model filename
+        # For nep.txt: use current directory
+        # For nep1.txt, nep2.txt, etc.: use result_nep1, result_nep2, etc.
+        nep_stem = nep_txt_path.stem
+        if nep_stem == "nep":
+            # Standard nep.txt, output to current directory
+            output_dir = dataset_path.parent
+            output_suffix = file_name
+        else:
+            # Other NEP files (nep1.txt, nep2.txt, etc.), create result_XXX directory
+            output_dir = dataset_path.parent / f"result_{nep_stem}"
+            output_dir.mkdir(exist_ok=True)
+            output_suffix = file_name
+            logger.info(f"Output files will be saved to: {output_dir.name}/")
+        
         # detect spin model marker in nep.txt
         has_spin = False
         try:
@@ -316,24 +350,30 @@ class NepTrainResultData(ResultData):
             has_spin = "nep4_spin" in content
         except Exception:
             has_spin = False
-        energy_out_path = dataset_path.with_name(f"energy_{file_name}.out")
-        force_out_path = dataset_path.with_name(f"force_{file_name}.out")
-        stress_out_path = dataset_path.with_name(f"stress_{file_name}.out")
-        virial_out_path = dataset_path.with_name(f"virial_{file_name}.out")
+        
+        # Build output paths in the appropriate directory
+        energy_out_path = output_dir / f"energy_{output_suffix}.out"
+        force_out_path = output_dir / f"force_{output_suffix}.out"
+        stress_out_path = output_dir / f"stress_{output_suffix}.out"
+        virial_out_path = output_dir / f"virial_{output_suffix}.out"
+        
         # optional spin force output (magnetic)
         spin_force_out_path = None
         if has_spin:
-            candidate_spin = dataset_path.with_name(f"mforce_{file_name}.out")
+            candidate_spin = output_dir / f"mforce_{output_suffix}.out"
             if candidate_spin.exists():
                 spin_force_out_path = candidate_spin
             nep_txt_path = module_path/ "Config/nep89.txt"
             MessageManager.send_warning_message(f"NEPKit currently does not support model_type={model_type}; the program will use nep89 instead.")
+        
         if file_name=="train":
-            descriptor_path = dataset_path.with_name(f"descriptor.out")
+            descriptor_path = output_dir / f"descriptor.out"
         else:
-            descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
-        charge_out_path = dataset_path.with_name(f"charge_{file_name}.out")
-        bec_out_path = dataset_path.with_name(f"bec_{file_name}.out")
+            descriptor_path = output_dir / f"descriptor_{output_suffix}.out"
+        
+        charge_out_path = output_dir / f"charge_{output_suffix}.out"
+        bec_out_path = output_dir / f"bec_{output_suffix}.out"
+        
         inst = cls(
             nep_txt_path,
             dataset_path,

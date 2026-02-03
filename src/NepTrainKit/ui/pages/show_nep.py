@@ -144,6 +144,221 @@ class ShowNepWidget(QWidget):
         }
         self.search_lineEdit.set_search_type(mapping.get(idx, SearchType.TAG))
 
+    def _on_nep_model_changed(self, index):
+        """Handle NEP model file switch in the combo box."""
+        # Ignore during initial setup or programmatic updates
+        if getattr(self, '_updating_nep_combo', False):
+            return
+        
+        # Ignore if still loading initial data
+        if getattr(self, '_initial_loading', False):
+            return
+        
+        if not hasattr(self, 'nep_result_data') or self.nep_result_data is None:
+            return
+        if not hasattr(self, '_available_nep_files') or not self._available_nep_files:
+            return
+        if index < 0 or index >= len(self._available_nep_files):
+            return
+        
+        selected_nep_file = self._available_nep_files[index]
+        
+        # Check if the selected file is already loaded
+        if hasattr(self.nep_result_data, 'nep_txt_path'):
+            try:
+                if selected_nep_file.samefile(self.nep_result_data.nep_txt_path):
+                    return  # Already using this model
+            except Exception:
+                pass
+        
+        current_path = self.path_label.getUrl().toLocalFile()
+        if not current_path or not os.path.exists(current_path):
+            return
+        
+        # Reload data with the selected NEP file
+        self._reload_with_nep_file(current_path, selected_nep_file)
+
+    def _detect_nep_files(self, directory):
+        """Detect all txt files containing 'nep' in the directory.
+        
+        Parameters
+        ----------
+        directory : str or Path
+            Directory to search for NEP model files.
+            
+        Returns
+        -------
+        list[Path]
+            List of Path objects for detected NEP files, sorted with 'nep.txt' first.
+        """
+        dir_path = Path(directory)
+        if not dir_path.exists() or not dir_path.is_dir():
+            return []
+        
+        # Find all txt files containing 'nep' in filename
+        nep_files = []
+        for txt_file in dir_path.glob("*.txt"):
+            if "nep" in txt_file.stem.lower():
+                nep_files.append(txt_file)
+        
+        # Sort: nep.txt first, then others alphabetically
+        def sort_key(path):
+            if path.name == "nep.txt":
+                return (0, path.name)
+            return (1, path.name)
+        
+        nep_files.sort(key=sort_key)
+        return nep_files
+
+    def _update_nep_model_combo(self, directory):
+        """Update the NEP model combo box with available model files.
+        
+        Parameters
+        ----------
+        directory : str or Path
+            Directory containing NEP model files.
+        """
+        self.nep_model_combo.clear()
+        self._available_nep_files = self._detect_nep_files(directory)
+        
+        if not self._available_nep_files:
+            self.nep_model_combo.setEnabled(False)
+            self.nep_model_combo.hide()
+            return
+        
+        # Add detected files to combo box (only text, no userData)
+        for nep_file in self._available_nep_files:
+            self.nep_model_combo.addItem(nep_file.name)
+        
+        # Show and enable combo if multiple files found, otherwise hide it
+        if len(self._available_nep_files) > 1:
+            self.nep_model_combo.setEnabled(True)
+            self.nep_model_combo.show()
+        else:
+            self.nep_model_combo.setEnabled(False)
+            self.nep_model_combo.hide()
+
+    def _reload_with_nep_file(self, xyz_path, nep_file):
+        """Reload the dataset using a specific NEP model file.
+        
+        Parameters
+        ----------
+        xyz_path : str
+            Path to the XYZ data file.
+        nep_file : Path
+            Path to the NEP model file to use.
+        """
+        if self.nep_result_data is None:
+            return
+        
+        # Stop any ongoing loading
+        self.stop_loading()
+        
+        # Store current selection state
+        selected_indices = list(self.nep_result_data.select_index) if hasattr(self.nep_result_data, 'select_index') else []
+        
+        tip = StateToolTip("Switching NEP model", 'Please wait...', self)
+        tip.show()
+        
+        try:
+            # Get the xyz file path
+            xyz_file = self.nep_result_data.data_xyz_path if hasattr(self.nep_result_data, 'data_xyz_path') else xyz_path
+            xyz_path_obj = Path(xyz_file)
+            file_name = xyz_path_obj.stem
+            
+            # Import classes needed to create data object directly
+            from NepTrainKit.core.io.nep import NepTrainResultData
+            from NepTrainKit.core.utils import is_charge_model
+            
+            # Determine the correct output directory for the selected NEP file
+            nep_stem = nep_file.stem
+            
+            if nep_stem == "nep":
+                # Standard nep.txt, output to current directory
+                output_dir = xyz_path_obj.parent
+            else:
+                # Other NEP files, use result_XXX directory
+                output_dir = xyz_path_obj.parent / f"result_{nep_stem}"
+                output_dir.mkdir(exist_ok=True)
+                logger.info(f"Output files will be saved to: {output_dir.name}/")
+            
+            # Build output paths for the selected NEP file
+            energy_out_path = output_dir / f"energy_{file_name}.out"
+            force_out_path = output_dir / f"force_{file_name}.out"
+            stress_out_path = output_dir / f"stress_{file_name}.out"
+            virial_out_path = output_dir / f"virial_{file_name}.out"
+            
+            if file_name == "train":
+                descriptor_path = output_dir / "descriptor.out"
+            else:
+                descriptor_path = output_dir / f"descriptor_{file_name}.out"
+            
+            charge_out_path = output_dir / f"charge_{file_name}.out"
+            bec_out_path = output_dir / f"bec_{file_name}.out"
+            
+            # Create new result data object directly (avoid auto-detection in from_path)
+            self.nep_result_data = NepTrainResultData(
+                nep_file,
+                xyz_file,
+                energy_out_path,
+                force_out_path,
+                stress_out_path,
+                virial_out_path,
+                descriptor_path,
+                charge_out_path,
+                bec_out_path,
+                is_charge_model(nep_file),
+                None,  # spin_force_out_path
+            )
+            
+            # Reinitialize NEP calculator with the selected file
+            try:
+                from NepTrainKit.core.calculator import NepCalculator
+                from NepTrainKit.core.types import NepBackend
+                backend_config = Config.get("nep", "backend", NepBackend.AUTO.value)
+                batch_size = Config.getint("nep", "gpu_batch_size", 1000) or 1000
+                
+                self.nep_result_data.nep_calc = NepCalculator(
+                    model_file=nep_file.as_posix(),
+                    backend=NepBackend(backend_config),
+                    batch_size=batch_size
+                )
+                logger.info(f"NEP calculator initialized with {nep_file.name}")
+            except Exception:
+                logger.debug(f"Failed to initialize calculator: {traceback.format_exc()}")
+            
+            # Start loading in a new thread
+            self.load_thread = QThread(self)
+            tip.closedSignal.connect(self.stop_loading)
+            self.nep_result_data.moveToThread(self.load_thread)
+            self.load_thread.finished.connect(self.set_dataset)
+            self.load_thread.finished.connect(lambda: tip.setState(True))
+            self.load_thread.finished.connect(lambda: self._restore_selection(selected_indices))
+            
+            self.nep_result_data.loadFinishedSignal.connect(self.load_thread.quit)
+            self.load_thread.started.connect(self.nep_result_data.load)
+            self.load_thread.start()
+            
+        except Exception:
+            logger.debug(traceback.format_exc())
+            tip.setState(False)
+            MessageManager.send_error_message(f"Failed to switch NEP model")
+    
+    def _restore_selection(self, indices):
+        """Restore previously selected structure indices after reload.
+        
+        Parameters
+        ----------
+        indices : list
+            List of structure indices to restore.
+        """
+        if indices and self.nep_result_data:
+            try:
+                self.nep_result_data.select(indices)
+            except Exception:
+                pass
+
+
     def init_ui(self):
         """Construct canvases, toolbars, and datasets controls for the viewer.
 
@@ -274,12 +489,27 @@ class ShowNepWidget(QWidget):
         self.dataset_info_label = BodyLabel(self.plot_widget)
         self.dataset_info_label.setFixedHeight(30)
 
+        # Create a container for path label and NEP model selector
+        self.path_container = QWidget(self.plot_widget)
+        self.path_container_layout = QHBoxLayout(self.path_container)
+        self.path_container_layout.setContentsMargins(0, 0, 0, 0)
+        self.path_container_layout.setSpacing(5)
+        
+        self.nep_model_combo = ComboBox(self.path_container)
+        self.nep_model_combo.setToolTip("Switch NEP model")
+        self.nep_model_combo.setFixedWidth(120)
+        self.nep_model_combo.installEventFilter(ToolTipFilter(self.nep_model_combo, 300, ToolTipPosition.TOP))
+        self.nep_model_combo.currentIndexChanged.connect(self._on_nep_model_changed)
+        
+        self.path_container_layout.addWidget(self.path_label)
+        self.path_container_layout.addWidget(self.nep_model_combo)
+        self.path_container_layout.addStretch()
 
         self.plot_widget_layout.addWidget(self.graph_toolbar, 0, 0, 1, 2)
 
         self.plot_widget_layout.addWidget(frame, 1, 0, 1, 2)
         self.plot_widget_layout.addWidget(self.graph_widget, 2, 0, 1, 2)
-        self.plot_widget_layout.addWidget(self.path_label , 3, 0, 1, 1)
+        self.plot_widget_layout.addWidget(self.path_container, 3, 0, 1, 1)
         self.plot_widget_layout.addWidget(self.dataset_info_label , 3, 1, 1, 1)
         self.plot_widget_layout.setContentsMargins(0,0,0,0)
 
@@ -446,8 +676,13 @@ class ShowNepWidget(QWidget):
         None
             Schedules dataset loading on a worker thread.
         """
+        
+        # Set flag to prevent model change during initial load
+        self._initial_loading = True
 
         file_name = os.path.basename(path)
+        show_path = path if os.path.isdir(path) else os.path.dirname(path)
+        
         try:
             self.nep_result_data = load_result_data(path)  # type: ignore
         except Exception:
@@ -455,11 +690,38 @@ class ShowNepWidget(QWidget):
             self.nep_result_data = None   # pyright:ignore
 
         if self.nep_result_data is None:
+            self._initial_loading = False
             return
 
-        self.path_label.setText(f"Current file: {file_name} ({self.nep_result_data.nep_txt_path.name})")
-        show_path = path if os.path.isdir(path) else os.path.dirname(path)
+        self.path_label.setText(f"Current file: {file_name}")
         self.path_label.setUrl(QUrl.fromLocalFile(show_path))
+        
+        # Detect and populate NEP model files for combo box
+        self._available_nep_files = self._detect_nep_files(show_path)
+        self._update_nep_model_combo(show_path)
+        
+        # Set the current model in combo box without triggering change event
+        if self._available_nep_files:
+            self._updating_nep_combo = True
+            current_nep = self.nep_result_data.nep_txt_path
+            
+            # Try to match current nep file
+            matched = False
+            for idx, nep_file in enumerate(self._available_nep_files):
+                try:
+                    if nep_file.samefile(current_nep):
+                        self.nep_model_combo.setCurrentIndex(idx)
+                        matched = True
+                        break
+                except Exception:
+                    pass
+            
+            # If no match found, use the first one (default)
+            if not matched:
+                self.nep_model_combo.setCurrentIndex(0)
+            
+            self._updating_nep_combo = False
+        
         # self.graph_widget.set_dataset(self.dataset)
         self.load_thread=QThread(self)
         tip = StateToolTip("Loading", 'Please wait patiently~~', self )
@@ -468,12 +730,17 @@ class ShowNepWidget(QWidget):
         self.nep_result_data.moveToThread(self.load_thread)
         self.load_thread.finished.connect(self.set_dataset)
         self.load_thread.finished.connect(lambda :tip.setState(True))
+        self.load_thread.finished.connect(self._on_initial_load_complete)
 
         self.nep_result_data.loadFinishedSignal.connect(self.load_thread.quit)
         self.load_thread.started.connect(self.nep_result_data.load)
         self.load_thread.start()
 
         # self.nep_result_data.load()
+    
+    def _on_initial_load_complete(self):
+        """Mark initial loading as complete, enable model switching."""
+        self._initial_loading = False
 
     def stop_loading(self):
         """Stop ongoing background loading threads safely.

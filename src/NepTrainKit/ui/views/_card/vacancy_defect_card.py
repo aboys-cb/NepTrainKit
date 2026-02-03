@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox, RadioButton
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame, VacancyRulesWidget
 from NepTrainKit.ui.widgets import MakeDataCard
 from scipy.stats.qmc import Sobol
@@ -165,7 +166,7 @@ class VacancyDefectCard(MakeDataCard):
             mask[defect_indices] = True
             n_vacancies = np.sum(mask)
             del new_structure[mask]
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type","") + f" Vacancy(num={n_vacancies})"
+            append_config_tag(new_structure, f"Vac(n={int(n_vacancies)})")
             structure_list.append(new_structure)
 
         return structure_list

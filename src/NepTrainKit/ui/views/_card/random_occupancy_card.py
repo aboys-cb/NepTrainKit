@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-import json
-
 import numpy as np
 from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.alloy import assign_random_occupancy, parse_composition
+from NepTrainKit.core.config_type import append_config_tag, stable_config_id
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -30,13 +29,13 @@ class RandomOccupancyCard(MakeDataCard):
 
         self.source_label = BodyLabel("Composition", self.setting_widget)
         self.source_combo = ComboBox(self.setting_widget)
-        self.source_combo.addItems(["From info (alloy_composition)", "Manual"])
-        self.source_label.setToolTip("Use composition stored by Composition Sweep or provide one manually")
+        self.source_combo.addItems(["Auto (Comp tag)", "Manual"])
+        self.source_label.setToolTip("Auto reads Comp(...) from Config_type")
         self.source_label.installEventFilter(ToolTipFilter(self.source_label, 300, ToolTipPosition.TOP))
 
         self.manual_label = BodyLabel("Manual comp", self.setting_widget)
         self.manual_edit = LineEdit(self.setting_widget)
-        self.manual_edit.setPlaceholderText('Co:0.33,Cr:0.33,Ni:0.34 or {"Co":0.33,"Cr":0.33,"Ni":0.34}')
+        self.manual_edit.setPlaceholderText("Co:0.33,Cr:0.33,Ni:0.34 (preferred) or JSON object")
         self.manual_label.setToolTip("Element fractions. Used when 'Manual' is selected or when info is missing.")
         self.manual_label.installEventFilter(ToolTipFilter(self.manual_label, 300, ToolTipPosition.TOP))
 
@@ -80,24 +79,24 @@ class RandomOccupancyCard(MakeDataCard):
         self.settingLayout.addWidget(self.seed_checkbox, 5, 0, 1, 1)
         self.settingLayout.addWidget(self.seed_frame, 5, 1, 1, 2)
 
+    @staticmethod
+    def _read_comp_from_config_type(structure) -> dict[str, float]:
+        cfg = str(structure.info.get("Config_type", "") or "")
+        if not cfg:
+            return {}
+        for token in cfg.split("|"):
+            token = token.strip()
+            if token.startswith("Comp(") and token.endswith(")"):
+                inner = token[5:-1].strip()
+                if not inner:
+                    continue
+                # Preferred format: Co=0.33,Cr=0.33,Ni=0.34 (also accepts ':').
+                return parse_composition(inner)
+        return {}
+
     def _read_composition(self, structure) -> dict[str, float]:
-        if self.source_combo.currentText().startswith("From info"):
-            raw = structure.info.get("alloy_composition")
-            if isinstance(raw, dict):
-                return {str(k): float(v) for k, v in raw.items()}
-            if isinstance(raw, str) and raw.strip():
-                try:
-                    if raw.strip().startswith("{"):
-                        data = json.loads(raw)
-                        if isinstance(data, dict):
-                            return {str(k): float(v) for k, v in data.items()}
-                except Exception:
-                    pass
-                try:
-                    return parse_composition(raw)
-                except Exception:
-                    return {}
-            # fall back to manual if present
+        if self.source_combo.currentText().lower().startswith("auto"):
+            return self._read_comp_from_config_type(structure)
         manual = self.manual_edit.text().strip()
         if not manual:
             return {}
@@ -130,7 +129,7 @@ class RandomOccupancyCard(MakeDataCard):
         indices = self._eligible_indices(structure)
 
         base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
-        sweep_index = int(structure.info.get("_sweep_index", 0) or 0)
+        cfg_id = stable_config_id(structure)
 
         out = []
         for sample_idx in range(max(n_samples, 1)):
@@ -138,9 +137,9 @@ class RandomOccupancyCard(MakeDataCard):
                 rng = np.random.default_rng()
                 seed_note = ""
             else:
-                derived_seed = int(base_seed + sweep_index * 1000003 + sample_idx)
+                derived_seed = int(base_seed + cfg_id * 1000003 + sample_idx)
                 rng = np.random.default_rng(derived_seed)
-                seed_note = f",seed={derived_seed}"
+                seed_note = f",s={derived_seed}"
 
             new_atoms = assign_random_occupancy(
                 structure,
@@ -149,7 +148,8 @@ class RandomOccupancyCard(MakeDataCard):
                 mode=mode,
                 rng=rng,
             )
-            new_atoms.info["Config_type"] = new_atoms.info.get("Config_type", "") + f" Occ(mode={mode}{seed_note})"
+            mode_tag = "E" if mode.lower().startswith("exact") else "R"
+            append_config_tag(new_atoms, f"Occ({mode_tag}{seed_note})")
             out.append(new_atoms)
         return out
 
@@ -166,7 +166,7 @@ class RandomOccupancyCard(MakeDataCard):
 
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
-        self.source_combo.setCurrentText(data_dict.get("source", "From info (alloy_composition)"))
+        self.source_combo.setCurrentText(data_dict.get("source", "Auto (Comp tag)"))
         self.manual_edit.setText(data_dict.get("manual", ""))
         self.mode_combo.setCurrentText(data_dict.get("mode", "Exact"))
         self.samples_frame.set_input_value(data_dict.get("samples", [1]))

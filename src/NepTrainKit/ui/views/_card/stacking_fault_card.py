@@ -3,6 +3,7 @@ from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition
 import numpy as np
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame,MakeDataCard
 
 
@@ -95,7 +96,7 @@ class StackingFaultCard(MakeDataCard):
 
             new_structure.set_positions(pos)
             new_structure.wrap()
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" StackingFault(hkl={h}{k}{l},step={d})"
+            append_config_tag(new_structure, f"SF(hkl={h}{k}{l},d={d:g})")
             structure_list.append(new_structure)
         return structure_list
 

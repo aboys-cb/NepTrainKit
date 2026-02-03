@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import ast
-import hashlib
 import math
 import re
 from typing import Any
@@ -22,8 +21,8 @@ from qfluentwidgets import (
     FluentIcon,
 )
 
-from NepTrainKit.core import CardManager
-from NepTrainKit.core import MessageManager
+from NepTrainKit.core import CardManager, MessageManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -417,13 +416,7 @@ class LayerCopyCard(MakeDataCard):
             except Exception:
                 pass
 
-        expr_hash = hashlib.sha1((expr + "\n" + params_text).encode("utf-8")).hexdigest()[:10]
-        combined.info["dz_expression"] = expr
-        combined.info["dz_params"] = params_text
-        combined.info["dz_hash"] = expr_hash
-
-        tag = combined.info.get("Config_type", "")
-        combined.info["Config_type"] = f"{tag} SurfaceWarpCopy(layers={num_layers},dz={layer_distance:g},expr={expr_hash})".strip()
+        append_config_tag(combined, f"SWC(L={num_layers},dz={layer_distance:g})")
         return [combined]
 
     def to_dict(self) -> dict[str, Any]:

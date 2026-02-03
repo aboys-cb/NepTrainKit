@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QGridLayout
 from qfluentwidgets import BodyLabel, LineEdit, ToolTipFilter, ToolTipPosition, ComboBox
 
 from NepTrainKit.core import CardManager, MessageManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 import json
 
@@ -403,7 +404,7 @@ class ConditionalReplaceCard(MakeDataCard):
                 # f"Target count: {target_count}, matched: {matched}, x-range=({x_min:.4f}, {x_max:.4f})."
             )
         if replaced:
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Replace({target}->{','.join(new_atoms)})"
+            append_config_tag(new_structure, f"Repl({target}->{','.join(new_atoms)})")
             # MessageManager.send_info_message(
             #     f"ConditionalReplace: target='{target}', matched={matched}, replaced={replaced}, condition='{condition}', x-range=({x_min:.4f}, {x_max:.4f})."
             # )

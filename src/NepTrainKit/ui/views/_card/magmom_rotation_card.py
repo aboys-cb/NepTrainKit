@@ -10,6 +10,7 @@ import numpy as np
 from qfluentwidgets import BodyLabel, CheckBox, LineEdit, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.magnetism import normalize_vector
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
@@ -228,16 +229,14 @@ class MagneticMomentRotationCard(MakeDataCard):
                 del new_structure.arrays["initial_magmoms"]
             new_structure.set_initial_magnetic_moments(moment_array)
 
-            label = "MagmomRotate" if can_rotate else "MagmomScale"
+            label = "MMR" if can_rotate else "MMS"
             details = []
             if can_rotate:
-                details.append(f"max={max_angle:.1f}deg")
+                details.append(f"a={max_angle:.1f}")
             if disturb_magnitude:
-                details.append(f"scale={min_factor:.2f}-{max_factor:.2f}")
-            suffix = f" {label}"
-            if details:
-                suffix += "(" + ", ".join(details) + ")"
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + suffix
+                details.append(f"s={min_factor:.2f}-{max_factor:.2f}")
+            tag = label + (("(" + ",".join(details) + ")") if details else "")
+            append_config_tag(new_structure, tag)
             results.append(new_structure)
 
         return results

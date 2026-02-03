@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame, DopingRulesWidget
 from NepTrainKit.ui.widgets import MakeDataCard
 from scipy.stats.qmc import Sobol
@@ -199,7 +200,7 @@ class RandomDopingCard(MakeDataCard):
                     new_structure[idx].symbol = elem
                 total_doping += doping_num
             if total_doping:
-                new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Doping(num={total_doping})"
+                append_config_tag(new_structure, f"Dop(n={total_doping})")
 
             structure_list.append(new_structure)
 

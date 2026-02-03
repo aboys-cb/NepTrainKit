@@ -6,6 +6,7 @@ from qfluentwidgets import BodyLabel, ToolTipFilter, ToolTipPosition, CheckBox
 from ase.geometry import cell_to_cellpar, cellpar_to_cell
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.structure import get_clusters,process_organic_clusters
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
@@ -127,13 +128,13 @@ class ShearAngleCard(MakeDataCard):
                         process_organic_clusters(structure, new_structure, clusters, is_organic_list)  # pyright:ignore
                     info_list = []
                     if abs(da) > 1e-8:
-                        info_list.append(f"alpha:{da}deg")
+                        info_list.append(f"a={da:g}")
                     if abs(db) > 1e-8:
-                        info_list.append(f"beta:{db}deg")
+                        info_list.append(f"b={db:g}")
                     if abs(dg) > 1e-8:
-                        info_list.append(f"gamma:{dg}deg")
-                    info_str = "|".join(info_list)
-                    new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" ShearAngle({info_str})"
+                        info_list.append(f"g={dg:g}")
+                    info_str = ",".join(info_list)
+                    append_config_tag(new_structure, f"Ang({info_str})")
                     structure_list.append(new_structure)
         return structure_list
 

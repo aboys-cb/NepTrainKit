@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame, VacancyRulesWidget
 from NepTrainKit.ui.widgets import MakeDataCard
 from scipy.stats.qmc import Sobol
@@ -125,7 +126,7 @@ class RandomVacancyCard(MakeDataCard):
                 total_remove += remove_num
 
             if total_remove:
-                new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Vacancy(num={total_remove})"
+                append_config_tag(new_structure, f"Vac(n={total_remove})")
 
             structure_list.append(new_structure)
 

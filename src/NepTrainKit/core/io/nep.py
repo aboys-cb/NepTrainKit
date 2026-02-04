@@ -11,6 +11,7 @@ from NepTrainKit import module_path
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.paths import as_path
+from NepTrainKit.paths import get_bundled_nep89_path
 from NepTrainKit.config import Config
 from .base import NepPlotData, ResultData, StructureSyncRule
 from NepTrainKit.core.utils import read_nep_out_file, check_fullbatch, read_nep_in, aggregate_per_atom_to_structure,concat_nep_dft_array, is_charge_model
@@ -327,14 +328,14 @@ class NepTrainResultData(ResultData):
                     logger.info(f"Using detected NEP file: {Path(nep_txt_path).name}")
                 else:
                     # No NEP file found, use fallback
-                    nep_txt_path = module_path / "Config/nep89.txt"
+                    nep_txt_path = get_bundled_nep89_path()
                     MessageManager.send_warning_message("No NEP model file found; the program will use nep89 instead.")
 
         # Coerce to Path for downstream logic
         nep_txt_path = Path(nep_txt_path)
 
         if model_type>2:
-            nep_txt_path = module_path / "Config/nep89.txt"
+            nep_txt_path = get_bundled_nep89_path()
             MessageManager.send_warning_message(f"NEPKit currently does not support model_type={model_type}; the program will use nep89 instead.")
 
         # Determine output directory based on NEP model filename
@@ -370,7 +371,7 @@ class NepTrainResultData(ResultData):
             candidate_spin = output_dir / f"mforce_{output_suffix}.out"
             if candidate_spin.exists():
                 spin_force_out_path = candidate_spin
-            nep_txt_path = module_path/ "Config/nep89.txt"
+            nep_txt_path = get_bundled_nep89_path()
             MessageManager.send_warning_message(f"NEPKit currently does not support model_type={model_type}; the program will use nep89 instead.")
         
         if file_name=="train":

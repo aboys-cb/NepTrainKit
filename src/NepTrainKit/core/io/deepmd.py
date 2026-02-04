@@ -8,7 +8,7 @@ import numpy.typing as npt
 from loguru import logger
 from .base import StructureData, ResultData, DPPlotData, StructureSyncRule, NepPlotData
 from NepTrainKit.core.structure import Structure, load_npy_structure,save_npy_structure
-from NepTrainKit.paths import PathLike, as_path
+from NepTrainKit.paths import PathLike, as_path, get_bundled_nep89_path
 from NepTrainKit.core.utils import aggregate_per_atom_to_structure, read_nep_out_file, concat_nep_dft_array
 from NepTrainKit.config import Config
 from .. import   MessageManager
@@ -207,7 +207,7 @@ class DeepmdResultData(ResultData):
     }
 
     @classmethod
-    def from_path(cls, path, *, structures: list[Structure] | None = None):
+    def from_path(cls, path, *, structures: list[Structure] | None = None, nep_txt_path: Path | str | None = None, model_type: int | None = None):
         """Create an instance from a DeepMD dataset directory.
 
         Parameters
@@ -216,6 +216,10 @@ class DeepmdResultData(ResultData):
             Directory that contains DeepMD ``set.*`` data and outputs.
         structures : list[Structure], optional
             Pre-loaded structures to attach instead of reading from disk.
+        nep_txt_path : Path or str, optional
+            Override the NEP model text file used for (re)calculation.
+        model_type : int, optional
+            Ignored. Accepted for API compatibility with NEP loaders.
 
         Returns
         -------
@@ -224,27 +228,42 @@ class DeepmdResultData(ResultData):
         """
         dataset_path = as_path(path)
         # file_name=dataset_path.name
-        nep_txt_path = dataset_path.with_name(f"nep.txt")
-        if not nep_txt_path.exists():
-            nep_txt_path = module_path/ "Config/nep89.txt"
-        descriptor_path = dataset_path.with_name(f"descriptor.out")
+        if nep_txt_path is None:
+            nep_txt_path = dataset_path.with_name("nep.txt")
+            if not Path(nep_txt_path).exists():
+                nep_txt_path = get_bundled_nep89_path()
+        nep_txt_path = Path(nep_txt_path)
+
+        # Match NEP loader behaviour: default nep.txt writes alongside dataset;
+        # alternate models write into result_<model> folders.
+        nep_stem = nep_txt_path.stem
+        if nep_stem == "nep":
+            output_dir = dataset_path.parent
+        else:
+            output_dir = dataset_path.parent / f"result_{nep_stem}"
+            output_dir.mkdir(exist_ok=True)
+        descriptor_path = output_dir / "descriptor.out"
         e_path = list(dataset_path.parent.glob("*.e_peratom.out") )
         if e_path:
             e_path = e_path[0]
             suffix = (e_path.name.replace(".e_peratom.out",""))
         else:
             suffix="detail"
-        energy_out_path = dataset_path.with_name(f"{suffix}.e_peratom.out")
-        force_out_path = dataset_path.with_name(f"{suffix}.fr.out")
+        energy_out_path = output_dir / f"{suffix}.e_peratom.out"
+        force_out_path = output_dir / f"{suffix}.fr.out"
         if  not force_out_path.exists():
-            force_out_path = dataset_path.with_name(f"{suffix}.f.out")
+            force_out_path = output_dir / f"{suffix}.f.out"
         # stress_out_path = dataset_path.with_name(f"{suffix}.v.out")
-        virial_out_path = dataset_path.with_name(f"{suffix}.v_peratom.out")
-        spin_out_path=  dataset_path.with_name(f"{suffix}.fm.out")
+        virial_out_path = output_dir / f"{suffix}.v_peratom.out"
+        spin_out_path=  output_dir / f"{suffix}.fm.out"
         if not spin_out_path.exists():
             spin_out_path = None
         inst = cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,virial_out_path,descriptor_path,spin_out_path=spin_out_path)
-        # DeepMD loader ignores in-memory structures; it reads its own format.
+        if structures is not None:
+            try:
+                inst.set_structures(structures)
+            except Exception:
+                pass
         return inst
     def load_structures(self):
         """Load structures from DeepMD numpy sets into the local dataset.
@@ -258,9 +277,14 @@ class DeepmdResultData(ResultData):
         --------
         >>> # Constructed via DeepmdResultData.from_path(...)  # doctest: +SKIP
         """
-        structures = load_npy_structure(self.data_xyz_path,order_file=self.energy_out_path, cancel_event=self.cancel_event)
+        if getattr(self, "_prefetched_structures", None) is not None:
+            structures = self._prefetched_structures
+        else:
+            structures = load_npy_structure(self.data_xyz_path,order_file=self.energy_out_path, cancel_event=self.cancel_event)
         self._atoms_dataset = StructureData(structures)
         self.atoms_num_list = np.array([len(s) for s in structures])
+        self._abcs = np.array([s.abc for s in structures], dtype=np.float32)
+        self._angles = np.array([s.angles for s in structures], dtype=np.float32)
     @property
     def datasets(self):
         """Return the datasets exposed to the UI in canonical order."""

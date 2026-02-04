@@ -74,6 +74,38 @@ class GetFloatMessageBox(MessageBoxBase):
         self.widget.setMinimumWidth(160)
 
 
+class ExportFormatMessageBox(MessageBoxBase):
+    """Message box that lets the user pick an export format (XYZ vs DeepMD/NPY)."""
+
+    def __init__(self, parent=None, default_format: str = "xyz"):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel("Choose export format", self)
+        self.titleLabel.setWordWrap(True)
+
+        self.formatCombo = ComboBox(self)
+        self.formatCombo.addItem("XYZ (.xyz / extxyz)", userData="xyz")
+        self.formatCombo.addItem("DeepMD/NPY (deepmd/npy)", userData="deepmd/npy")
+
+        default = (default_format or "xyz").strip().lower()
+        if default in {"deepmd", "deepmd/npy", "npy", "dp"}:
+            self.formatCombo.setCurrentIndex(1)
+        else:
+            self.formatCombo.setCurrentIndex(0)
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.formatCombo)
+
+        self.widget.setMinimumWidth(320)
+
+    def selected_format(self) -> str:
+        """Return the selected export format identifier."""
+        data = self.formatCombo.currentData()
+        if isinstance(data, str) and data:
+            return data
+        text = self.formatCombo.currentText().lower()
+        return "deepmd/npy" if "deepmd" in text or "npy" in text else "xyz"
+
+
 class DatasetSummaryMessageBox(MessageBoxBase):
     """Frameless dialog that presents dataset-wide summary statistics."""
 

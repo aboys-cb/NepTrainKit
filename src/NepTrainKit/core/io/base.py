@@ -25,7 +25,7 @@ import numpy.typing as npt
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
-from NepTrainKit.core.structure import Structure, atomic_numbers
+from NepTrainKit.core.structure import Structure, atomic_numbers, get_type_map, save_npy_structure
 from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
 
 from .sampler import SparseSampler,farthest_point_sampling,pca
@@ -844,6 +844,110 @@ class ResultData(QObject):
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
         except Exception:
             MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
+            logger.error(traceback.format_exc())
+
+    def export_selected_npy(self, save_path: str | Path) -> None:
+        """Export selected structures as a DeepMD-style ``deepmd/npy`` dataset."""
+        try:
+            selected = self.get_selected_structures()
+            if not selected:
+                MessageManager.send_info_message("Please select some structures first!")
+                return
+            target = Path(save_path).joinpath("export_selected_model")
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(target), selected, type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_removed_xyz(self, save_file_path: str | Path) -> None:
+        """Write removed structures (if any) to ``save_file_path``."""
+        try:
+            removed = self.structure.remove_data
+            if getattr(removed, "size", 0) == 0:
+                MessageManager.send_info_message("No removed structures to export.")
+                return
+            with open(save_file_path, "w", encoding="utf8") as handle:
+                for structure in removed:
+                    structure.write(handle)
+            MessageManager.send_info_message(f"File exported to: {save_file_path}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_removed_npy(self, save_path: str | Path) -> None:
+        """Export removed structures as a DeepMD-style ``deepmd/npy`` dataset."""
+        try:
+            removed = self.structure.remove_data.tolist()
+            if not removed:
+                MessageManager.send_info_message("No removed structures to export.")
+                return
+            target = Path(save_path).joinpath("export_remove_model")
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(target), removed, type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_current_npy(self, save_path: str | Path, index: int) -> None:
+        """Export a single structure as DeepMD-style ``deepmd/npy`` dataset."""
+        try:
+            mapped = self.structure.convert_index(index)
+            structure = self.structure.all_data[mapped][0]
+            target = Path(save_path).joinpath(f"structure_{int(index)}")
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(target), [structure], type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_model_extxyz(self, save_path: str | Path) -> None:
+        """Export active and removed structures into ``save_path`` folder as extxyz."""
+        try:
+            good_path = Path(save_path).joinpath("export_good_model.xyz")
+            with open(good_path, "w", encoding="utf8") as handle:
+                for structure in self.structure.now_data:
+                    structure.write(handle)
+            removed_path = Path(save_path).joinpath("export_remove_model.xyz")
+            with open(removed_path, "w", encoding="utf8") as handle:
+                for structure in self.structure.remove_data:
+                    structure.write(handle)
+            MessageManager.send_info_message(f"File exported to: {save_path}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_model_npy(self, save_path: str | Path) -> None:
+        """Export active and removed structures into ``save_path`` folder as deepmd/npy."""
+        try:
+            target = Path(save_path)
+            good_target = target / "export_good_model"
+            removed_target = target / "export_remove_model"
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(good_target), self.structure.now_data.tolist(), type_map=type_map)
+            save_npy_structure(str(removed_target), self.structure.remove_data.tolist(), type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
             logger.error(traceback.format_exc())
     def export_model_xyz(self, save_path: str | Path) -> None:
         """Export active and removed structures into ``save_path`` folder."""

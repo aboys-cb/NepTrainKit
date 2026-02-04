@@ -23,7 +23,7 @@ from NepTrainKit.config import Config
 
 from NepTrainKit.core import MessageManager
 
-from NepTrainKit.ui.widgets import ConfigTypeSearchLineEdit, ArrowMessageBox
+from NepTrainKit.ui.widgets import ConfigTypeSearchLineEdit, ArrowMessageBox, ExportFormatMessageBox
 from NepTrainKit.core.io import (ResultData, load_result_data, matches_result_loader)
 
 from NepTrainKit.core.structure import table_info, atomic_numbers
@@ -89,8 +89,27 @@ class ShowNepWidget(QWidget):
         None
             May trigger automatic loading when configured.
         """
-        if hasattr(self._parent,"save_menu"):
-            self._parent.save_menu.addAction(self.export_selected_action)   # pyright:ignore
+        if hasattr(self._parent, "save_menu"):
+            # Ensure we don't accumulate duplicates when the widget is shown repeatedly.
+            for act in (
+                self.export_all_action,
+                self.export_selected_action,
+                self.export_removed_action,
+                self.export_current_action,
+            ):
+                try:
+                    self._parent.save_menu.removeAction(act)  # pyright: ignore[attr-defined]
+                except Exception:
+                    pass
+                self._parent.save_menu.addAction(act)  # pyright:ignore
+
+        if hasattr(self._parent, "load_menu"):
+            for act in (self.open_file_action, self.open_folder_action):
+                try:
+                    self._parent.load_menu.removeAction(act)  # pyright: ignore[attr-defined]
+                except Exception:
+                    pass
+                self._parent.load_menu.addAction(act)  # pyright:ignore
 
         # Refresh structure viewer style (background/lattice colors) from settings.
         if hasattr(self, "show_struct_widget") and hasattr(self.show_struct_widget, "apply_style_from_config"):
@@ -122,8 +141,24 @@ class ShowNepWidget(QWidget):
         None
             Cleans up menu actions owned by the parent window.
         """
-        if hasattr(self._parent,"save_menu"):
-            self._parent.save_menu.removeAction(self.export_selected_action)   # pyright:ignore
+        if hasattr(self._parent, "save_menu"):
+            for act in (
+                self.export_all_action,
+                self.export_selected_action,
+                self.export_removed_action,
+                self.export_current_action,
+            ):
+                try:
+                    self._parent.save_menu.removeAction(act)  # pyright:ignore
+                except Exception:
+                    pass
+
+        if hasattr(self._parent, "load_menu"):
+            for act in (self.open_file_action, self.open_folder_action):
+                try:
+                    self._parent.load_menu.removeAction(act)  # pyright:ignore
+                except Exception:
+                    pass
 
     def init_action(self):
         """Create reusable actions shared with the host application.
@@ -133,8 +168,102 @@ class ShowNepWidget(QWidget):
         None
             Configures action callbacks for export operations.
         """
-        self.export_selected_action=Action(QIcon(":/images/src/images/export1.svg"),"Export Selected Structures")
+        self.open_file_action = Action(QIcon(':/images/src/images/open.svg'), "Open File…")
+        self.open_file_action.triggered.connect(self.open_file)
+
+        self.open_folder_action = Action(QIcon(':/images/src/images/open.svg'), "Open Folder…")
+        self.open_folder_action.triggered.connect(self.open_folder)
+
+        self.export_all_action = Action(QIcon(":/images/src/images/export1.svg"), "Export All…")
+        self.export_all_action.triggered.connect(self.export_all_structures)
+
+        self.export_selected_action = Action(QIcon(":/images/src/images/export1.svg"), "Export Selected (0)…")
         self.export_selected_action.triggered.connect(self.export_selected_structures)
+
+        self.export_removed_action = Action(QIcon(":/images/src/images/export1.svg"), "Export Removed (0)…")
+        self.export_removed_action.triggered.connect(self.export_removed_structures)
+
+        self.export_current_action = Action(QIcon(":/images/src/images/export1.svg"), "Export Current (0)…")
+        self.export_current_action.triggered.connect(self.export_current_structure)
+
+        self._refresh_export_actions()
+
+    def _is_busy(self) -> bool:
+        """Return True when loading threads are running and exports should be disabled."""
+        if getattr(self, "_initial_loading", False):
+            return True
+        try:
+            if getattr(self, "load_thread", None) is not None and self.load_thread.isRunning():
+                return True
+        except Exception:
+            pass
+        return False
+
+    def _dataset_ready(self) -> bool:
+        """Return True when a dataset is loaded and usable for export."""
+        data = getattr(self, "nep_result_data", None)
+        return bool(data is not None and getattr(data, "load_flag", False))
+
+    def _default_export_format(self) -> str:
+        """Infer a sensible default export format from the current dataset path."""
+        data_path = getattr(getattr(self, "nep_result_data", None), "data_xyz_path", None)
+        try:
+            candidate = data_path if isinstance(data_path, Path) else Path(str(data_path))
+            if candidate.exists() and candidate.is_dir():
+                return "deepmd/npy"
+        except Exception:
+            pass
+        return "xyz"
+
+    def _choose_export_format(self) -> str | None:
+        """Ask the user to pick an export format; return None if cancelled."""
+        remembered = Config.get("widget", "export_format", None)
+        default_format = remembered or self._default_export_format()
+        box = ExportFormatMessageBox(self, default_format=str(default_format))
+        if not box.exec():
+            return None
+        fmt = box.selected_format()
+        try:
+            Config.set("widget", "export_format", fmt)
+        except Exception:
+            pass
+        return fmt
+
+    def _refresh_export_actions(self) -> None:
+        """Refresh export action labels and enable states."""
+        busy = self._is_busy()
+        ready = self._dataset_ready()
+
+        selected = 0
+        removed = 0
+        current = 0
+        try:
+            current = int(self.struct_index_spinbox.value()) if hasattr(self, "struct_index_spinbox") else 0
+        except Exception:
+            current = 0
+
+        if ready:
+            try:
+                selected = len(self.nep_result_data.select_index)
+            except Exception:
+                selected = 0
+            try:
+                removed = int(self.nep_result_data.structure.remove_data.shape[0])
+            except Exception:
+                removed = 0
+
+        self.export_selected_action.setText(f"Export Selected ({selected})…")
+        self.export_removed_action.setText(f"Export Removed ({removed})…")
+        self.export_current_action.setText(f"Export Current ({current})…")
+
+        self.export_all_action.setEnabled(ready and not busy)
+        self.export_selected_action.setEnabled(ready and (selected > 0) and not busy)
+        self.export_removed_action.setEnabled(ready and (removed > 0) and not busy)
+        self.export_current_action.setEnabled(ready and not busy)
+
+        # Keep open actions usable but avoid re-entrant loads while busy.
+        self.open_file_action.setEnabled(not busy)
+        self.open_folder_action.setEnabled(not busy)
 
     def _on_search_mode_changed(self, index):
         """Sync the search mode combo-box with the search line-edit."""
@@ -368,6 +497,7 @@ class ShowNepWidget(QWidget):
             self.nep_result_data.loadFinishedSignal.connect(self.load_thread.quit)
             self.load_thread.started.connect(self.nep_result_data.load)
             self.load_thread.start()
+            self._refresh_export_actions()
 
         except Exception:
             logger.debug(traceback.format_exc())
@@ -551,6 +681,7 @@ class ShowNepWidget(QWidget):
         self.splitter.setStretchFactor(1, 2)
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
         self.updateBondInfoSignal.connect(self.bond_label.setText)
+        self._refresh_export_actions()
 
     def dragEnterEvent(self, event):
         """Accept drag events carrying file URLs for NEP datasets.
@@ -565,10 +696,16 @@ class ShowNepWidget(QWidget):
         None
             Updates the event acceptance state depending on payload.
         """
-        if event.mimeData().hasUrls():
-            event.acceptProposedAction()
-        else:
-            event.ignore()
+        urls = event.mimeData().urls() if event.mimeData().hasUrls() else []
+        for url in urls:
+            try:
+                path = url.toLocalFile()
+            except Exception:
+                continue
+            if path and matches_result_loader(path):
+                event.acceptProposedAction()
+                return
+        event.ignore()
 
     def dropEvent(self, event):
         """Handle dropped files by loading the first NEP-compatible path.
@@ -584,10 +721,22 @@ class ShowNepWidget(QWidget):
             Updates the working dataset path when a file is provided.
         """
         urls = event.mimeData().urls()
-        if urls:
-            file_path = urls[0].toLocalFile()
+        if not urls:
+            return
 
-            self.set_work_path(file_path)
+        candidates: list[str] = []
+        for url in urls:
+            try:
+                candidates.append(url.toLocalFile())
+            except Exception:
+                continue
+
+        for path in candidates:
+            if path and matches_result_loader(path):
+                self.set_work_path(path)
+                return
+
+        MessageManager.send_info_message("unsupported file format")
 
     def open_file(self):
         """Prompt the user to select an XYZ result file to display.
@@ -601,21 +750,32 @@ class ShowNepWidget(QWidget):
         if path:
             self.set_work_path(path)
 
-    def export_file(self):
-        """Export the entire NEP dataset to a directory asynchronously.
+    def open_folder(self):
+        """Prompt the user to select a dataset folder (e.g., DeepMD/NPY directory)."""
+        path = call_path_dialog(self, "Please choose the dataset folder", "directory")
+        if path:
+            self.set_work_path(path)
 
-        Returns
-        -------
-        None
-            Starts a background job that writes structures to disk.
-        """
-        if self.nep_result_data is None:
+    def export_file(self):
+        """Export the entire dataset (format chosen by the user)."""
+        self.export_all_structures()
+
+    def export_all_structures(self):
+        """Export active + removed structures in either XYZ or deepmd/npy format."""
+        if not self._dataset_ready():
             MessageManager.send_info_message("NEP data has not been loaded yet!")
             return
-        path=call_path_dialog(self,"Choose a file save location","directory")
-        if path:
-            thread=LoadingThread(self,show_tip=True,title="Exporting data")
-            thread.start_work(self.nep_result_data.export_model_xyz, path)
+        fmt = self._choose_export_format()
+        if fmt is None:
+            return
+        path = call_path_dialog(self, "Choose a folder save location", "directory")
+        if not path:
+            return
+        thread = LoadingThread(self, show_tip=True, title="Exporting data")
+        if fmt == "deepmd/npy":
+            thread.start_work(self.nep_result_data.export_model_npy, path)
+        else:
+            thread.start_work(self.nep_result_data.export_model_extxyz, path)
 
     def export_selected_structures(self):
         """Export the currently selected subset of structures.
@@ -625,16 +785,64 @@ class ShowNepWidget(QWidget):
         None
             Starts a background job to write selected atoms to disk.
         """
-        if self.nep_result_data is None:
+        if not self._dataset_ready():
             MessageManager.send_info_message("NEP data has not been loaded yet!")
             return
-        if len(self.nep_result_data.select_index)==0:
+        if len(self.nep_result_data.select_index) == 0:
             MessageManager.send_info_message("Please select some structures first!")
             return
-        path = call_path_dialog(self,"Please choose the XYZ file","file",file_filter="XYZ files (*.xyz)",default_filename="selected_structures.xyz")
-        if path:
-            thread=LoadingThread(self,show_tip=True,title="Exporting data")
+        fmt = self._choose_export_format()
+        if fmt is None:
+            return
+        if fmt == "deepmd/npy":
+            path = call_path_dialog(self, "Choose a folder save location", "directory")
+            if not path:
+                return
+            thread = LoadingThread(self, show_tip=True, title="Exporting data")
+            thread.start_work(self.nep_result_data.export_selected_npy, path)
+        else:
+            path = call_path_dialog(
+                self,
+                "Please choose the XYZ file",
+                "file",
+                file_filter="XYZ files (*.xyz)",
+                default_filename="selected_structures.xyz",
+            )
+            if not path:
+                return
+            thread = LoadingThread(self, show_tip=True, title="Exporting data")
             thread.start_work(self.nep_result_data.export_selected_xyz, path)
+
+    def export_removed_structures(self):
+        """Export removed structures in either XYZ or deepmd/npy format."""
+        if not self._dataset_ready():
+            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            return
+        removed = int(self.nep_result_data.structure.remove_data.shape[0])
+        if removed == 0:
+            MessageManager.send_info_message("No removed structures to export.")
+            return
+        fmt = self._choose_export_format()
+        if fmt is None:
+            return
+        if fmt == "deepmd/npy":
+            path = call_path_dialog(self, "Choose a folder save location", "directory")
+            if not path:
+                return
+            thread = LoadingThread(self, show_tip=True, title="Exporting data")
+            thread.start_work(self.nep_result_data.export_removed_npy, path)
+        else:
+            path = call_path_dialog(
+                self,
+                "Please choose the XYZ file",
+                "file",
+                file_filter="XYZ files (*.xyz)",
+                default_filename="removed_structures.xyz",
+            )
+            if not path:
+                return
+            thread = LoadingThread(self, show_tip=True, title="Exporting data")
+            thread.start_work(self.nep_result_data.export_removed_xyz, path)
 
     def set_work_path(self, path:str):
         """Validate and load a NEP dataset from the specified path.
@@ -719,6 +927,7 @@ class ShowNepWidget(QWidget):
         
         # Set flag to prevent model change during initial load
         self._initial_loading = True
+        self._refresh_export_actions()
 
         file_name = os.path.basename(path)
         show_path = path if os.path.isdir(path) else os.path.dirname(path)
@@ -796,6 +1005,7 @@ class ShowNepWidget(QWidget):
     def _on_initial_load_complete(self):
         """Mark initial loading as complete, enable model switching."""
         self._initial_loading = False
+        self._refresh_export_actions()
 
     def stop_loading(self):
         """Stop ongoing background loading threads safely.
@@ -823,6 +1033,7 @@ class ShowNepWidget(QWidget):
                 self.load_thread.wait()
         except Exception:
             pass
+        self._refresh_export_actions()
         #     self.nep_result_data.nep_calc_thread.stop()
 
     def to_last_structure(self):
@@ -901,24 +1112,44 @@ class ShowNepWidget(QWidget):
             self.auto_switch_button.click()
 
     def export_single_struct(self):
-        """Export the currently displayed structure to an XYZ file.
+        """Backward-compatible handler used by the structure toolbar export button."""
+        self.export_current_structure()
 
-        Returns
-        -------
-        None
-            Writes the selected structure when a path is chosen.
-        """
-        if self.nep_result_data is None:
+    def _export_current_xyz(self, save_file_path: str, index: int) -> None:
+        """Write a single structure to an XYZ file (runs in background thread)."""
+        atoms = self.nep_result_data.get_atoms(index)
+        with open(save_file_path, "w", encoding="utf-8") as handle:
+            atoms.write(handle)
+        MessageManager.send_info_message(f"File exported to: {save_file_path}")
+
+    def export_current_structure(self):
+        """Export the currently displayed structure in either XYZ or deepmd/npy."""
+        if not self._dataset_ready():
             MessageManager.send_info_message("NEP data has not been loaded yet!")
             return
-        index=self.struct_index_spinbox.value()
-        atoms=self.nep_result_data.get_atoms(index)
-        path=call_path_dialog(self,"Choose a file save location","file",
-                                    file_filter="XYZ files (*.xyz)",
-                                    default_filename=f"structure_{index}.xyz")
-        if path is not None:
-            with open(path,"w",encoding="utf-8") as f:
-                atoms.write(f)
+        index = int(self.struct_index_spinbox.value())
+        fmt = self._choose_export_format()
+        if fmt is None:
+            return
+        if fmt == "deepmd/npy":
+            path = call_path_dialog(self, "Choose a folder save location", "directory")
+            if not path:
+                return
+            thread = LoadingThread(self, show_tip=True, title="Exporting data")
+            thread.start_work(self.nep_result_data.export_current_npy, path, index)
+            return
+
+        path = call_path_dialog(
+            self,
+            "Choose a file save location",
+            "file",
+            file_filter="XYZ files (*.xyz)",
+            default_filename=f"structure_{index}.xyz",
+        )
+        if not path:
+            return
+        thread = LoadingThread(self, show_tip=True, title="Exporting data")
+        thread.start_work(self._export_current_xyz, path, index)
 
     def show_arrow_dialog(self):
         """Configure vector arrow overlays for the current structure.
@@ -1000,6 +1231,7 @@ class ShowNepWidget(QWidget):
         except Exception:
             logger.debug(traceback.format_exc())
         self.force_label.setText(force_text)
+        self._refresh_export_actions()
 
     def update_structure_bond_info(self,atoms):
         """Schedule bond statistics computation for the displayed structure.
@@ -1118,4 +1350,5 @@ class ShowNepWidget(QWidget):
         info=f"Data: Orig: {self.nep_result_data.atoms_num_list.shape[0]} Now: {self.nep_result_data.structure.now_data.shape[0]} "\
         f"Rm: {self.nep_result_data.structure.remove_data.shape[0]} Sel: {len(self.nep_result_data.select_index)} Unsel: {self.nep_result_data.structure.now_data.shape[0]-len(self.nep_result_data.select_index)}"
         self.dataset_info_label.setText(info)
+        self._refresh_export_actions()
 

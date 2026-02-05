@@ -6,13 +6,20 @@ from pathlib import Path
 import os
 import shutil
 import tempfile
+import uuid
+
+
+# Keep test config/database writes inside the repository sandbox.
+# This must run before importing NepTrainKit modules because NepTrainKit.config
+# initialises the database connection at import time.
+os.environ["LOCALAPPDATA"] = str(Path(__file__).resolve().parent / "_localappdata")
+
 from NepTrainKit.core.io import NepTrainResultData,NepPolarizabilityResultData,NepDipoleResultData
 from numpy.testing import assert_allclose
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.types import ForcesMode
 from NepTrainKit.config import  Config
 from PySide6.QtWidgets import QApplication
-
 
 Config()
 Config.set("nep", "backend","cpu")
@@ -75,7 +82,11 @@ class TestNepTrainResultData( unittest.TestCase):
         os.remove(os.path.join(self.data_dir,"descriptor.out"))
 
     def _make_nep_workdir(self) -> str:
-        tmp_dir = tempfile.mkdtemp(prefix="nep_test_")
+        base_tmp = Path(__file__).resolve().parent / "_sandbox_tmp"
+        base_tmp.mkdir(parents=True, exist_ok=True)
+        tmp_path = base_tmp / f"nep_test_{uuid.uuid4().hex}"
+        tmp_path.mkdir(parents=True, exist_ok=False)
+        tmp_dir = str(tmp_path)
         self._tmp_dirs.append(tmp_dir)
         for item in os.listdir(self.data_dir):
             src = os.path.join(self.data_dir, item)
@@ -85,6 +96,20 @@ class TestNepTrainResultData( unittest.TestCase):
             else:
                 shutil.copy2(src, dst)
         return tmp_dir
+
+    def test_export_active_xyz(self):
+        tmp_dir = self._make_nep_workdir()
+        local_train = os.path.join(tmp_dir, "train.xyz")
+        result = NepTrainResultData.from_path(local_train)
+        result.load()
+
+        result.select([0, 1])
+        result.delete_selected()
+
+        export_path = os.path.join(tmp_dir, "active_structures.xyz")
+        result.export_active_xyz(export_path)
+        exported = Structure.read_multiple(export_path)
+        self.assertEqual(len(exported), int(result.structure.now_data.shape[0]))
 
     def test_sync_structures_updates_all_fields(self):
         tmp_dir = self._make_nep_workdir()

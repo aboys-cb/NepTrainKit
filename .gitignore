@@ -6,3 +6,6 @@
 .idea/
 /src/NepTrainKit/?.py
 /src/NepTrainKit/Log/*.log
+.pytest_cache/
+tests/_sandbox_tmp/
+tests/_localappdata/

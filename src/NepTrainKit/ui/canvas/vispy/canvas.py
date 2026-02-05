@@ -255,7 +255,7 @@ class ViewBoxWidget(scene.Widget):
             kwargs["edge_color"]=self.convert_color(pen)
         if x.size != 0:
 
-            pos = np.vstack([x, y], dtype=np.float32).T
+            pos = np.column_stack([x, y]).astype(np.float32, copy=False)
             # Ensure a default size if caller didn't provide one
             if 'size' not in kwargs or kwargs.get('size') is None:
                 kwargs['size'] = self.marker_size_default
@@ -345,7 +345,12 @@ class ViewBoxWidget(scene.Widget):
         if name in self._overlays and self._overlays[name] is not None:
             return self._overlays[name]
         ov = scene.visuals.Markers(antialias=1)
-        ov.order = 4  # above base scatter and diagonal
+        order_map = {
+            "show": 4,
+            "reject": 5,
+            "selected": 6,
+        }
+        ov.order = order_map.get(name, 4)  # above base scatter and diagonal
         # keep same scene/camera
         self._view.add(ov)
         # overlays are 2D; no need for depth test
@@ -474,6 +479,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         # Per-axes overlay state: track indices to render in overlays without touching base VBO
         self._selected_by_plot = {}
         self._show_by_plot = {}
+        self._reject_by_plot = {}
 
 
         self.grid = self.central_widget.add_grid(margin=0, spacing=0)
@@ -799,6 +805,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 self._selected_by_plot[plot].clear()
             if plot in self._show_by_plot:
                 self._show_by_plot[plot].clear()
+            if plot in self._reject_by_plot:
+                self._reject_by_plot[plot].clear()
 
         for index,_dataset in enumerate(self.nep_result_data.datasets):
 
@@ -833,6 +841,11 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 text=f"rmse: {_dataset.get_formart_rmse()}"
                 plot.text.text=text
                 plot.text.pos=pos
+
+        # Restore reject highlights after a full replot.
+        reject = getattr(self.nep_result_data, "reject_index", None)
+        if reject:
+            self.set_reject_highlight(list(reject), True)
 
     def convert_pos(self,plot,pos):
         """Convert a relative position tuple to view coordinates.
@@ -894,6 +907,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if idx.size == 0:
             return
 
+        selected_global = set(getattr(self.nep_result_data, "select_index", set())) if self.nep_result_data is not None else set()
         for plot in self.axes_list:
             if not plot._scatter:
                 continue
@@ -947,7 +961,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                         return np.empty((0, 2), dtype=np.float32)
                     x = dataset.x[mask]
                     y = dataset.y[mask]
-                    return np.vstack([x, y], dtype=np.float32).T
+                    return np.column_stack([x, y]).astype(np.float32, copy=False)
                 except Exception:
                     return np.empty((0, 2), dtype=np.float32)
 
@@ -965,6 +979,85 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 plot.set_overlay_positions('show', show_pos, color=Brushes.Show, size=overlay_size, symbol='o')
             else:
                 plot.set_overlay_positions('show', np.empty((0, 2), dtype=np.float32), color=Brushes.Show, size=overlay_size, symbol='o')
+
+            # Keep reject overlay on top of show but below selected.
+            reject_set = self._reject_by_plot.get(plot, set())
+            display_reject = reject_set - selected_global if reject_set else set()
+            if display_reject:
+                rej_pos = _indices_to_positions(display_reject)
+                plot.set_overlay_positions('reject', rej_pos, color=Brushes.Reject, size=overlay_size, symbol='x')
+            else:
+                plot.set_overlay_positions('reject', np.empty((0, 2), dtype=np.float32), color=Brushes.Reject, size=overlay_size, symbol='x')
+
+    def set_reject_highlight(self, structure_indices, enabled: bool) -> None:
+        """Toggle the reject highlight overlay for the provided structure indices.
+
+        Notes
+        -----
+        Reject highlighting is independent from selection. Selected points are
+        removed from the reject overlay to keep selection visually dominant.
+        """
+        if self.nep_result_data is None:
+            return
+
+        idx = np.atleast_1d(np.asarray(structure_indices, dtype=np.int64)).ravel()
+        if idx.size == 0:
+            return
+
+        selected = set(getattr(self.nep_result_data, "select_index", set()))
+        indices = idx.tolist()
+
+        for plot in self.axes_list:
+            if not getattr(plot, "_scatter", None):
+                continue
+            if plot not in self._reject_by_plot:
+                self._reject_by_plot[plot] = set()
+
+            if enabled:
+                self._reject_by_plot[plot].update(indices)
+            else:
+                self._reject_by_plot[plot].difference_update(indices)
+
+            dataset = self.get_axes_dataset(plot)
+            if dataset is None:
+                continue
+
+            overlay_size = Config.getint("widget", "vispy_marker_size", 6) or 6
+
+            display_reject = self._reject_by_plot[plot] - selected if selected else set(self._reject_by_plot[plot])
+            if not display_reject:
+                plot.set_overlay_positions(
+                    "reject",
+                    np.empty((0, 2), dtype=np.float32),
+                    color=Brushes.Reject,
+                    size=overlay_size,
+                    symbol="x",
+                )
+                continue
+
+            indices_arr = np.fromiter(display_reject, dtype=np.int64)
+            sidx = dataset.structure_index
+            mask = np.isin(sidx, indices_arr)
+            if not np.any(mask):
+                plot.set_overlay_positions(
+                    "reject",
+                    np.empty((0, 2), dtype=np.float32),
+                    color=Brushes.Reject,
+                    size=overlay_size,
+                    symbol="x",
+                )
+                continue
+
+            x = dataset.x[mask]
+            y = dataset.y[mask]
+            pos = np.column_stack([x, y]).astype(np.float32, copy=False)
+            plot.set_overlay_positions(
+                "reject",
+                pos,
+                color=Brushes.Reject,
+                size=overlay_size,
+                symbol="x",
+            )
 
 
     def select_point_from_polygon(self,polygon_xy,reverse ):

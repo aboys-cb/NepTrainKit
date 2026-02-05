@@ -223,9 +223,12 @@ class StructureToolBar(KitToolBarBase):
     autoViewSignal = Signal(bool)
     exportSignal = Signal()
     arrowSignal = Signal()
+    rejectToggledSignal = Signal(bool)
+    dropRejectSignal = Signal()
 
     def init_actions(self):
         """Populate actions for camera control and structure export."""
+        self._reject_syncing = False
         view_action = self.addButton(
             "Ortho View",
             QIcon(":/images/src/images/view_change.svg"),
@@ -256,6 +259,35 @@ class StructureToolBar(KitToolBarBase):
             QIcon(":/images/src/images/export1.svg"),
             self.exportSignal,
         )
+        self.addSeparator()
+        self.addButton(
+            "Mark Bad (Reject)",
+            QIcon(":/images/src/images/defect.svg"),
+            self._reject_changed,
+            True,
+        )
+        self.addButton(
+            "Drop All Bad",
+            QIcon(":/images/src/images/delete.svg"),
+            self.dropRejectSignal,
+        )
+
+    def _reject_changed(self, checked: bool) -> None:
+        """Emit the reject toggle state for the current structure."""
+        if getattr(self, "_reject_syncing", False):
+            return
+        self.rejectToggledSignal.emit(bool(checked))
+
+    def set_reject_checked(self, checked: bool) -> None:
+        """Update the reject toggle without emitting signals."""
+        action = self._actions.get("Mark Bad (Reject)")
+        if action is None:
+            return
+        try:
+            self._reject_syncing = True
+            action.setChecked(bool(checked))
+        finally:
+            self._reject_syncing = False
 
     def view_changed(self, checked: bool) -> None:
         """Emit the orthographic view toggle state."""

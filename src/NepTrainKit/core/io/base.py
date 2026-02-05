@@ -527,6 +527,9 @@ class ResultData(QObject):
         self.data_xyz_path=Path(data_xyz_path)
         self.nep_txt_path=Path(nep_txt_path)
         self.select_index=set()
+        # Mark structures as "bad/reject" without interfering with selection.
+        # Uses original structure indices aligned with StructureData/group_array indices.
+        self.reject_index: set[int] = set()
         # Optional pre-fetched structures to skip IO in load_structures
         self._prefetched_structures: Optional[list[Structure]] = None
         # Optional importer options forwarded to importers.import_structures

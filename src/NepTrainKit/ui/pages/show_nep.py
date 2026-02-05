@@ -454,6 +454,7 @@ class ShowNepWidget(QWidget):
 
         # Store current selection state
         selected_indices = list(self.nep_result_data.select_index) if hasattr(self.nep_result_data, 'select_index') else []
+        reject_indices = list(getattr(self.nep_result_data, "reject_index", set()))
         
         tip = StateToolTip("Switching NEP model", 'Please wait...', self)
         tip.show()
@@ -492,6 +493,7 @@ class ShowNepWidget(QWidget):
             self.nep_result_data.moveToThread(self.load_thread)
             self.load_thread.finished.connect(self.set_dataset)
             self.load_thread.finished.connect(lambda: tip.setState(True))
+            self.load_thread.finished.connect(lambda: self._restore_reject(reject_indices))
             self.load_thread.finished.connect(lambda: self._restore_selection(selected_indices))
 
             self.nep_result_data.loadFinishedSignal.connect(self.load_thread.quit)
@@ -517,6 +519,23 @@ class ShowNepWidget(QWidget):
                 self.nep_result_data.select(indices)
             except Exception:
                 pass
+
+    def _restore_reject(self, indices):
+        """Restore previously rejected structure indices after reload."""
+        if not indices or not self.nep_result_data:
+            return
+        try:
+            if not hasattr(self.nep_result_data, "reject_index") or self.nep_result_data.reject_index is None:
+                self.nep_result_data.reject_index = set()
+            self.nep_result_data.reject_index.update(int(i) for i in indices)
+        except Exception:
+            return
+        try:
+            setter = getattr(self.graph_widget.canvas, "set_reject_highlight", None)
+            if setter is not None:
+                setter(list(indices), True)
+        except Exception:
+            pass
 
 
     def init_ui(self):
@@ -553,6 +572,10 @@ class ShowNepWidget(QWidget):
 
         self.structure_toolbar.exportSignal.connect(self.export_single_struct)
         self.structure_toolbar.arrowSignal.connect(self.show_arrow_dialog)
+        if hasattr(self.structure_toolbar, "rejectToggledSignal"):
+            self.structure_toolbar.rejectToggledSignal.connect(self._toggle_reject_current)
+        if hasattr(self.structure_toolbar, "dropRejectSignal"):
+            self.structure_toolbar.dropRejectSignal.connect(self._drop_all_reject)
 
         self.struct_info_widget = StructureInfoWidget(self.struct_widget)
         self.struct_index_widget = QWidget(self)
@@ -894,6 +917,8 @@ class ShowNepWidget(QWidget):
         if not self.nep_result_data.load_flag :
             self.nep_result_data=None   # pyright:ignore
             return
+        if not hasattr(self.nep_result_data, "reject_index") or self.nep_result_data.reject_index is None:
+            self.nep_result_data.reject_index = set()
         self.struct_index_spinbox.setMaximum(self.nep_result_data.num)
         self.graph_widget.set_dataset(self.nep_result_data)
         # Avoid duplicate signal connections for cached datasets
@@ -1203,6 +1228,12 @@ class ShowNepWidget(QWidget):
             Updates the 3D view, bond statistics, and info panel.
         """
 
+        # Sync reject toggle early so it updates even if rendering hits an exception.
+        try:
+            self._sync_reject_toolbar_state(int(current_index))
+        except Exception:
+            pass
+
         try:
             atoms=self.nep_result_data.get_atoms(current_index)
         except Exception:
@@ -1232,6 +1263,94 @@ class ShowNepWidget(QWidget):
             logger.debug(traceback.format_exc())
         self.force_label.setText(force_text)
         self._refresh_export_actions()
+
+    def _active_reject_indices(self) -> set[int]:
+        """Return rejected indices that are still active in the dataset."""
+        if not self._dataset_ready():
+            return set()
+        reject = set(getattr(self.nep_result_data, "reject_index", set()))
+        try:
+            active = set(int(i) for i in self.nep_result_data.structure.group_array.now_data.tolist())
+        except Exception:
+            active = set()
+        return reject & active
+
+    def _sync_reject_toolbar_state(self, structure_index: int) -> None:
+        """Update the structure toolbar reject toggle to match the current index."""
+        if not self._dataset_ready():
+            return
+        reject = set(getattr(self.nep_result_data, "reject_index", set()))
+        checked = int(structure_index) in reject
+        try:
+            if hasattr(self.structure_toolbar, "set_reject_checked"):
+                self.structure_toolbar.set_reject_checked(checked)
+        except Exception:
+            pass
+
+    def _toggle_reject_current(self, checked: bool) -> None:
+        """Mark/unmark the current structure as rejected without changing navigation."""
+        if not self._dataset_ready():
+            return
+        idx = int(self.struct_index_spinbox.value())
+        if not hasattr(self.nep_result_data, "reject_index") or self.nep_result_data.reject_index is None:
+            self.nep_result_data.reject_index = set()
+
+        if checked:
+            self.nep_result_data.reject_index.add(idx)
+        else:
+            try:
+                self.nep_result_data.reject_index.discard(idx)
+            except Exception:
+                pass
+
+        try:
+            setter = getattr(self.graph_widget.canvas, "set_reject_highlight", None)
+            if setter is not None:
+                setter([idx], bool(checked))
+        except Exception:
+            pass
+        self.update_dataset_info()
+
+    def _drop_all_reject(self) -> None:
+        """Delete all currently rejected active structures."""
+        if not self._dataset_ready():
+            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            return
+
+        reject_active = self._active_reject_indices()
+        if not reject_active:
+            MessageManager.send_info_message("No bad structures tagged.")
+            return
+
+        n = len(reject_active)
+        box = MessageBox(
+            "Confirm",
+            f"This will delete {n} structures marked as bad.\nDo you want to continue?",
+            self,
+        )
+        box.exec_()
+        if box.result() == 0:
+            return
+
+        try:
+            self.nep_result_data.remove(list(reject_active))
+        except Exception:
+            logger.debug(traceback.format_exc())
+            MessageManager.send_error_message("Failed to delete rejected structures.")
+            return
+
+        # Clear tags after delete (chosen default).
+        try:
+            self.nep_result_data.reject_index.clear()
+        except Exception:
+            self.nep_result_data.reject_index = set()
+
+        # Full refresh (keeps UI/spinbox in sync).
+        try:
+            self.graph_widget.canvas.plot_nep_result()
+        except Exception:
+            pass
+        self.update_dataset_info()
 
     def update_structure_bond_info(self,atoms):
         """Schedule bond statistics computation for the displayed structure.
@@ -1347,8 +1466,13 @@ class ShowNepWidget(QWidget):
         None
             Renders aggregated counts in the footer label.
         """
+        rej = 0
+        try:
+            rej = len(self._active_reject_indices())
+        except Exception:
+            rej = 0
         info=f"Data: Orig: {self.nep_result_data.atoms_num_list.shape[0]} Now: {self.nep_result_data.structure.now_data.shape[0]} "\
-        f"Rm: {self.nep_result_data.structure.remove_data.shape[0]} Sel: {len(self.nep_result_data.select_index)} Unsel: {self.nep_result_data.structure.now_data.shape[0]-len(self.nep_result_data.select_index)}"
+        f"Rm: {self.nep_result_data.structure.remove_data.shape[0]} Sel: {len(self.nep_result_data.select_index)} Unsel: {self.nep_result_data.structure.now_data.shape[0]-len(self.nep_result_data.select_index)} Rej: {rej}"
         self.dataset_info_label.setText(info)
         self._refresh_export_actions()
 

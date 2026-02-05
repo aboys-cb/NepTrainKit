@@ -867,6 +867,41 @@ class ResultData(QObject):
             )
             logger.error(traceback.format_exc())
 
+    def export_active_xyz(self, save_file_path: str | Path) -> None:
+        """Write active (non-removed) structures to ``save_file_path``."""
+        try:
+            active = self.structure.now_data
+            if getattr(active, "size", 0) == 0:
+                MessageManager.send_info_message("No active structures to export.")
+                return
+            with open(save_file_path, "w", encoding="utf8") as handle:
+                for structure in active:
+                    structure.write(handle)
+            MessageManager.send_info_message(f"File exported to: {save_file_path}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_active_npy(self, save_path: str | Path) -> None:
+        """Export active (non-removed) structures as a DeepMD-style ``deepmd/npy`` dataset."""
+        try:
+            active = self.structure.now_data.tolist()
+            if not active:
+                MessageManager.send_info_message("No active structures to export.")
+                return
+            target = Path(save_path).joinpath("export_active_model")
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(target), active, type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
     def export_removed_xyz(self, save_file_path: str | Path) -> None:
         """Write removed structures (if any) to ``save_file_path``."""
         try:

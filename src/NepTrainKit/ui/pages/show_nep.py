@@ -183,8 +183,8 @@ class ShowNepWidget(QWidget):
         self.export_removed_action = Action(QIcon(":/images/src/images/export1.svg"), "Export Removed (0)…")
         self.export_removed_action.triggered.connect(self.export_removed_structures)
 
-        self.export_current_action = Action(QIcon(":/images/src/images/export1.svg"), "Export Current (0)…")
-        self.export_current_action.triggered.connect(self.export_current_structure)
+        self.export_current_action = Action(QIcon(":/images/src/images/export1.svg"), "Export Active (0)…")
+        self.export_current_action.triggered.connect(self.export_active_structures)
 
         self._refresh_export_actions()
 
@@ -236,11 +236,7 @@ class ShowNepWidget(QWidget):
 
         selected = 0
         removed = 0
-        current = 0
-        try:
-            current = int(self.struct_index_spinbox.value()) if hasattr(self, "struct_index_spinbox") else 0
-        except Exception:
-            current = 0
+        active = 0
 
         if ready:
             try:
@@ -251,15 +247,19 @@ class ShowNepWidget(QWidget):
                 removed = int(self.nep_result_data.structure.remove_data.shape[0])
             except Exception:
                 removed = 0
+            try:
+                active = int(self.nep_result_data.structure.now_data.shape[0])
+            except Exception:
+                active = 0
 
         self.export_selected_action.setText(f"Export Selected ({selected})…")
         self.export_removed_action.setText(f"Export Removed ({removed})…")
-        self.export_current_action.setText(f"Export Current ({current})…")
+        self.export_current_action.setText(f"Export Active ({active})…")
 
         self.export_all_action.setEnabled(ready and not busy)
         self.export_selected_action.setEnabled(ready and (selected > 0) and not busy)
         self.export_removed_action.setEnabled(ready and (removed > 0) and not busy)
-        self.export_current_action.setEnabled(ready and not busy)
+        self.export_current_action.setEnabled(ready and (active > 0) and not busy)
 
         # Keep open actions usable but avoid re-entrant loads while busy.
         self.open_file_action.setEnabled(not busy)
@@ -799,6 +799,40 @@ class ShowNepWidget(QWidget):
             thread.start_work(self.nep_result_data.export_model_npy, path)
         else:
             thread.start_work(self.nep_result_data.export_model_extxyz, path)
+
+    def export_active_structures(self):
+        """Export active (non-removed) structures in either XYZ or deepmd/npy format."""
+        if not self._dataset_ready():
+            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            return
+        try:
+            active = int(self.nep_result_data.structure.now_data.shape[0])
+        except Exception:
+            active = 0
+        if active == 0:
+            MessageManager.send_info_message("No active structures to export.")
+            return
+        fmt = self._choose_export_format()
+        if fmt is None:
+            return
+        thread = LoadingThread(self, show_tip=True, title="Exporting data")
+        if fmt == "deepmd/npy":
+            path = call_path_dialog(self, "Choose a folder save location", "directory")
+            if not path:
+                return
+            thread.start_work(self.nep_result_data.export_active_npy, path)
+            return
+
+        path = call_path_dialog(
+            self,
+            "Choose a file save location",
+            "file",
+            file_filter="XYZ files (*.xyz)",
+            default_filename="active_structures.xyz",
+        )
+        if not path:
+            return
+        thread.start_work(self.nep_result_data.export_active_xyz, path)
 
     def export_selected_structures(self):
         """Export the currently selected subset of structures.

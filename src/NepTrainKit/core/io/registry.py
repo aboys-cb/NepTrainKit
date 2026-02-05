@@ -154,6 +154,40 @@ class DeepmdFolderLoader(ResultLoader):
         mod = importlib.import_module('.deepmd', __package__)
         return mod.DeepmdResultData.from_path(str(as_path(path)))
 
+class TaceXYZLoader(ResultLoader):
+    """Loader for TACE-prediction EXTXYZ files (fields prefixed with ``TACE_``)."""
+
+    name = "tace_xyz"
+
+    _keys = ("TACE_energy", "TACE_forces", "TACE_virials")
+
+    def matches(self, path: PathLike) -> bool:
+        candidate = as_path(path)
+        if candidate.is_dir():
+            return False
+        if candidate.suffix.lower() not in {".xyz", ".extxyz"}:
+            return False
+        try:
+            with candidate.open("r", encoding="utf8", errors="ignore") as f:
+                # Skip possible leading blank lines
+                first = ""
+                while True:
+                    first = f.readline()
+                    if not first:
+                        return False
+                    if first.strip():
+                        break
+                comment = f.readline()
+                if not comment:
+                    return False
+            return any(k in comment for k in self._keys)
+        except Exception:
+            return False
+
+    def load(self, path: PathLike):
+        from .tace import TaceResultData
+        return TaceResultData.from_path(str(as_path(path)))
+
 
 class NepModelTypeLoader(ResultLoader):
     """Loader that selects NEP result data based on associated model type."""
@@ -226,6 +260,7 @@ class OtherLoader(ResultLoader):
 
 
 register_result_loader(DeepmdFolderLoader())
+register_result_loader(TaceXYZLoader())
 register_result_loader(NepModelTypeLoader("nep_train", {0, 3}, NepTrainResultData))
 register_result_loader(NepModelTypeLoader("nep_dipole", {1}, NepDipoleResultData))
 register_result_loader(NepModelTypeLoader("nep_polar", {2}, NepPolarizabilityResultData))

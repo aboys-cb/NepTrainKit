@@ -27,7 +27,7 @@ from loguru import logger
 
 from NepTrainKit.config import Config
 from NepTrainKit.core.structure import Structure
-from NepTrainKit.core.types import ForcesMode
+from NepTrainKit.core.types import ForcesMode, parse_forces_mode
 from NepTrainKit.core.utils import aggregate_per_atom_to_structure, concat_nep_dft_array
 from NepTrainKit.paths import as_path, get_bundled_nep89_path
 
@@ -183,7 +183,7 @@ class TaceResultData(ResultData):
         pred_forces = np.vstack([_force_or_nan(s, "TACE_forces") for s in structures], dtype=np.float32)
         force_array = concat_nep_dft_array(pred_forces, ref_forces, quantity="forces")
 
-        default_forces = Config.get("widget", "forces_data", ForcesMode.Raw)
+        default_forces = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
         if force_array.size != 0 and default_forces == ForcesMode.Norm:
             force_array = aggregate_per_atom_to_structure(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
             self._force_dataset = NepPlotData(force_array, title="force")
@@ -237,4 +237,3 @@ class TaceResultData(ResultData):
         except Exception:
             logger.debug(traceback.format_exc())
             self._mforce_dataset = None
-

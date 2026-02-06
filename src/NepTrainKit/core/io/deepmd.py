@@ -10,6 +10,7 @@ from .base import StructureData, ResultData, DPPlotData, StructureSyncRule, NepP
 from NepTrainKit.core.structure import Structure, load_npy_structure,save_npy_structure
 from NepTrainKit.paths import PathLike, as_path, get_bundled_nep89_path
 from NepTrainKit.core.utils import aggregate_per_atom_to_structure, read_nep_out_file, concat_nep_dft_array
+from NepTrainKit.core.types import ForcesMode, parse_forces_mode
 from NepTrainKit.config import Config
 from .. import   MessageManager
 from ... import module_path
@@ -326,8 +327,8 @@ class DeepmdResultData(ResultData):
                     return self._load_dataset()
                 energy_array, force_array, virial_array = self._recalculate_and_save()
         self._energy_dataset = DPPlotData(energy_array, title="energy")
-        default_forces = Config.get("widget", "forces_data", "Row")
-        if force_array.size != 0 and default_forces == "Norm":
+        default_forces = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
+        if force_array.size != 0 and default_forces == ForcesMode.Norm:
             force_array = aggregate_per_atom_to_structure(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
             self._force_dataset = DPPlotData(force_array, title="force")
         else:

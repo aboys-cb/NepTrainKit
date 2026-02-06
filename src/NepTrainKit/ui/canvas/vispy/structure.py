@@ -830,12 +830,12 @@ if __name__ == '__main__':
     from NepTrainKit.core.structure import Structure
     app = QApplication([])
     view = StructurePlotWidget()
-    view.set_show_bonds(True)
+    # view.set_show_bonds(True)
     view.set_projection(True)
     view.show()
     import time
     start = time.time()
-    atoms = Structure.read_xyz("good.xyz")
+    atoms = Structure.read_xyz(r"D:\Desktop\benchmark\lammps-test\gpu\model.xyz")
     view.show_structure(atoms)
     print(time.time() - start)
     QApplication.instance().exec_()

@@ -9,6 +9,7 @@ from loguru import logger
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
 from scipy.stats.qmc import Sobol
@@ -23,7 +24,7 @@ class RandomSlabCard(MakeDataCard):
         Parent widget that owns the card controls.
     """
 
-    group = "Defect"
+    group = "Surface"
 
     card_name = "Random Slab"
     menu_icon = r":/images/src/images/defect.svg"
@@ -139,7 +140,8 @@ class RandomSlabCard(MakeDataCard):
                                     vac=None
                                 slab = surface(structure, (int(h), int(k), int(l)), int(layers), vacuum=vac,periodic=True)
                                 slab.wrap()
-                                slab.info["Config_type"] = structure.info.get("Config_type", "") + f" Slab(hkl={int(h)}{int(k)}{int(l)},layers={int(layers)},vacuum={vac})"
+                                slab.info["Config_type"] = structure.info.get("Config_type", "")
+                                append_config_tag(slab, f"Slab(hkl={int(h)}{int(k)}{int(l)},L={int(layers)},vac={vac})")
                                 structure_list.append(slab)
                             except Exception as e:
                                 logger.error(f"Failed to build slab {(h, k, l)}: {e}")

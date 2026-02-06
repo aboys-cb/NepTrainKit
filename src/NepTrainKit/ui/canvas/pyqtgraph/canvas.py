@@ -276,6 +276,11 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
                 plot.text.setText(text)
                 plot.text.setPos(*pos)
 
+        # Restore reject highlights after a full replot.
+        reject = getattr(self.nep_result_data, "reject_index", None)
+        if reject:
+            self.set_reject_highlight(list(reject), True)
+
     def plot_current_point(self, structure_index):
         """Highlight the selected structure across all axes.
         
@@ -369,6 +374,44 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             plot._scatter.data['sourceRect'][index_list] = (0, 0, 0, 0)
 
             plot._scatter.updateSpots()
+
+    def set_reject_highlight(self, structure_indices, enabled: bool) -> None:
+        """Toggle the reject highlight for the provided structure indices.
+
+        Notes
+        -----
+        Reject highlighting is independent from selection; selected points keep
+        :data:`Brushes.Selected` so they remain visually dominant.
+        """
+        if self.nep_result_data is None:
+            return
+
+        if isinstance(structure_indices, (int, np.integer, np.number)):
+            indices = [int(structure_indices)]
+        elif isinstance(structure_indices, np.ndarray):
+            indices = [int(v) for v in structure_indices.ravel().tolist()]
+        else:
+            indices = [int(v) for v in structure_indices] if structure_indices else []
+        if not indices:
+            return
+
+        selected = set(getattr(self.nep_result_data, "select_index", set()))
+        if enabled:
+            to_reject = [idx for idx in indices if idx not in selected]
+            if to_reject:
+                self.update_scatter_color(to_reject, Brushes.Reject)
+            if selected:
+                to_selected = [idx for idx in indices if idx in selected]
+                if to_selected:
+                    self.update_scatter_color(to_selected, Brushes.Selected)
+            return
+
+        to_default = [idx for idx in indices if idx not in selected]
+        if to_default:
+            self.update_scatter_color(to_default, Brushes.Default)
+        to_selected = [idx for idx in indices if idx in selected]
+        if to_selected:
+            self.update_scatter_color(to_selected, Brushes.Selected)
 
     def convert_pos(self, plot, pos):
         """Convert a relative position tuple to plot coordinates.

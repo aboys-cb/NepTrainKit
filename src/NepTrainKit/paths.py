@@ -81,6 +81,13 @@ def get_user_config_path() -> Path:
     return ensure_directory(Path.home() / '.config' / 'NepTrainKit')
 
 
+def get_bundled_nep89_path() -> Path:
+    """Return the bundled ``nep89`` model path shipped with the application."""
+    from NepTrainKit import module_path
+
+    return module_path / "Config" / "nep89.txt"
+
+
 __all__ = [
     'PathLike',
     'as_path',
@@ -89,5 +96,6 @@ __all__ = [
     'iter_files',
     'check_path_type',
     'get_user_config_path',
+    'get_bundled_nep89_path',
 ]
 

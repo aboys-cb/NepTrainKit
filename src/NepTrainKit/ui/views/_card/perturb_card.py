@@ -15,6 +15,7 @@ from qfluentwidgets import (
 )
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.structure import get_clusters
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
@@ -168,6 +169,17 @@ class PerturbCard(MakeDataCard):
 
         self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
 
+        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox.setChecked(False)
+        self.seed_checkbox.setToolTip("Enable reproducible random perturbations")
+        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
+        self.seed_frame = SpinBoxUnitInputFrame(self)
+        self.seed_frame.set_input("", 1, "int")
+        self.seed_frame.setRange(0, 2**31 - 1)
+        self.seed_frame.set_input_value([0])
+        self.seed_frame.setEnabled(False)
+        self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+
         self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
         self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
 
@@ -184,6 +196,9 @@ class PerturbCard(MakeDataCard):
         self.settingLayout.addWidget(self.num_label,4, 0, 1, 1)
 
         self.settingLayout.addWidget(self.num_condition_frame,4, 1, 1,2)
+
+        self.settingLayout.addWidget(self.seed_checkbox, 5, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 5, 1, 1, 2)
 
         self.add_element_button.clicked.connect(self._add_element_row)
         self.element_scaling_checkbox.toggled.connect(self._toggle_element_scaling_frame)
@@ -266,11 +281,14 @@ class PerturbCard(MakeDataCard):
             else np.full(n_atoms, max_scaling)
         )
 
+        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
+        rng = np.random.default_rng(base_seed)
+
         if engine_type == 0:
-            sobol_engine = Sobol(d=dim, scramble=True)
+            sobol_engine = Sobol(d=dim, scramble=True, seed=base_seed)
             perturbation_factors = (sobol_engine.random(max_num) - 0.5) * 2
         else:
-            perturbation_factors = np.random.uniform(-1, 1, (max_num, dim))
+            perturbation_factors = rng.uniform(-1, 1, (max_num, dim))
 
         if identify_organic:
             clusters, is_organic_list = get_clusters(structure)
@@ -297,8 +315,8 @@ class PerturbCard(MakeDataCard):
             new_structure = structure.copy()
             new_structure.set_positions(new_positions)
             new_structure.wrap()
-            config_str = f" Perturb(distance={max_scaling}, {'uniform' if engine_type == 1 else 'Sobol'})"
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + config_str
+            eng = "U" if engine_type == 1 else "S"
+            append_config_tag(new_structure, f"Pert(d={max_scaling},{eng})")
             structure_list.append(new_structure)
 
         return structure_list
@@ -321,6 +339,8 @@ class PerturbCard(MakeDataCard):
         data_dict['num_condition'] = self.num_condition_frame.get_input_value()
         data_dict["use_element_scaling"] = self.element_scaling_checkbox.isChecked()
         data_dict["element_scalings"] = self._collect_element_scalings()
+        data_dict["use_seed"] = self.seed_checkbox.isChecked()
+        data_dict["seed"] = self.seed_frame.get_input_value()
         return data_dict
 
     def from_dict(self, data_dict):
@@ -342,3 +362,5 @@ class PerturbCard(MakeDataCard):
         self.element_scaling_checkbox.setChecked(data_dict.get("use_element_scaling", False))
         self._load_element_scalings(data_dict.get("element_scalings", {}))
         self.element_rows_frame.setVisible(self.element_scaling_checkbox.isChecked())
+        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
+        self.seed_frame.set_input_value(data_dict.get("seed", [0]))

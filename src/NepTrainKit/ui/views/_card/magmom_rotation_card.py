@@ -10,6 +10,8 @@ import numpy as np
 from qfluentwidgets import BodyLabel, CheckBox, LineEdit, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
+from NepTrainKit.core.magnetism import normalize_vector
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -60,6 +62,34 @@ class MagneticMomentRotationCard(MakeDataCard):
         self.count_frame.setRange(1, 100)
         self.count_frame.set_input_value([5])
 
+        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox.setChecked(False)
+        self.seed_checkbox.setToolTip("Enable reproducible random sampling")
+        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
+        self.seed_frame = SpinBoxUnitInputFrame(self)
+        self.seed_frame.set_input("", 1, "int")
+        self.seed_frame.setRange(0, 2**31 - 1)
+        self.seed_frame.set_input_value([0])
+        self.seed_frame.setEnabled(False)
+        self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+
+        self.lift_scalar_checkbox = CheckBox("Rotate scalar magmoms (lift to vector)", self.setting_widget)
+        self.lift_scalar_checkbox.setChecked(True)
+        self.lift_scalar_checkbox.setToolTip("If magmoms are scalars, treat them as vectors along Axis before rotating")
+        self.lift_scalar_checkbox.installEventFilter(
+            ToolTipFilter(self.lift_scalar_checkbox, 300, ToolTipPosition.TOP)
+        )
+
+        self.axis_label = BodyLabel("Axis (x,y,z)", self.setting_widget)
+        self.axis_label.setToolTip("Axis used when lifting scalar magmoms to vectors")
+        self.axis_label.installEventFilter(ToolTipFilter(self.axis_label, 300, ToolTipPosition.TOP))
+        self.axis_frame = SpinBoxUnitInputFrame(self)
+        self.axis_frame.set_input("", 3, "float")
+        self.axis_frame.setRange(-1.0, 1.0)
+        for obj in self.axis_frame.object_list:
+            obj.setDecimals(3)  # pyright:ignore
+        self.axis_frame.set_input_value([0.0, 0.0, 1.0])
+
         self.magnitude_checkbox = CheckBox("Randomise magnitude", self.setting_widget)
         self.magnitude_checkbox.setChecked(True)
         self.magnitude_checkbox.setToolTip("Enable scaling of magnetic-moment magnitudes")
@@ -83,11 +113,17 @@ class MagneticMomentRotationCard(MakeDataCard):
         self.settingLayout.addWidget(self.angle_label, 1, 0, 1, 1)
         self.settingLayout.addWidget(self.angle_frame, 1, 1, 1, 2)
 
-        self.settingLayout.addWidget(self.magnitude_checkbox, 2, 0, 1, 3)
-        self.settingLayout.addWidget(self.min_factor_label, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.magnitude_factor_frame, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.count_label, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.count_frame, 4, 1, 1, 2)
+        self.settingLayout.addWidget(self.lift_scalar_checkbox, 2, 0, 1, 3)
+        self.settingLayout.addWidget(self.axis_label, 3, 0, 1, 1)
+        self.settingLayout.addWidget(self.axis_frame, 3, 1, 1, 2)
+
+        self.settingLayout.addWidget(self.magnitude_checkbox, 4, 0, 1, 3)
+        self.settingLayout.addWidget(self.min_factor_label, 5, 0, 1, 1)
+        self.settingLayout.addWidget(self.magnitude_factor_frame, 5, 1, 1, 2)
+        self.settingLayout.addWidget(self.count_label, 6, 0, 1, 1)
+        self.settingLayout.addWidget(self.count_frame, 6, 1, 1, 2)
+        self.settingLayout.addWidget(self.seed_checkbox, 7, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 7, 1, 1, 2)
 
         self._toggle_magnitude_inputs(self.magnitude_checkbox.checkState())
 
@@ -98,12 +134,12 @@ class MagneticMomentRotationCard(MakeDataCard):
 
 
     @staticmethod
-    def _rotate_vector(vector: np.ndarray, angle_deg: float) -> np.ndarray:
+    def _rotate_vector(vector: np.ndarray, angle_deg: float, rng: np.random.Generator) -> np.ndarray:
         vec = np.asarray(vector, dtype=float)
         if not np.any(vec) or angle_deg <= 0:
             return vec.copy()
 
-        axis = np.random.normal(size=3)
+        axis = rng.normal(size=3)
         axis_norm = np.linalg.norm(axis)
         if axis_norm == 0:
             axis = np.array([0.0, 0.0, 1.0])
@@ -148,7 +184,14 @@ class MagneticMomentRotationCard(MakeDataCard):
 
         base_magmoms = np.array(base_magmoms, dtype=float)
         is_vector = base_magmoms.ndim == 2
-        can_rotate = is_vector and max_angle > 0
+        lift_scalar = self.lift_scalar_checkbox.isChecked()
+        can_rotate = max_angle > 0 and (is_vector or lift_scalar)
+
+        axis = np.array([float(v) for v in self.axis_frame.get_input_value()], dtype=float)
+        axis = normalize_vector(axis)
+
+        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
+        rng = np.random.default_rng(base_seed)
 
         if not elements:
             symbols: Iterable[str] = structure.get_chemical_symbols()
@@ -159,37 +202,41 @@ class MagneticMomentRotationCard(MakeDataCard):
 
         for _ in range(num_structures):
             new_structure = structure.copy()
-            moment_array = np.array(base_magmoms, copy=True)
+            if is_vector:
+                moment_array = np.array(base_magmoms, copy=True)
+            else:
+                moment_array = np.array(base_magmoms, copy=True).reshape(-1, 1) * axis.reshape(1, 3)
 
             for idx, symbol in enumerate(symbols):
                 if symbol not in elements:
                     continue
 
                 if can_rotate:
-                    angle = np.random.uniform(0.0, max_angle)
-                    rotated = self._rotate_vector(base_magmoms[idx], angle)
+                    angle = float(rng.uniform(0.0, max_angle))
+                    base_vec = base_magmoms[idx] if is_vector else moment_array[idx]
+                    rotated = self._rotate_vector(base_vec, angle, rng=rng)
                     if disturb_magnitude:
-                        original_length = np.linalg.norm(base_magmoms[idx])
-                        scale = np.random.uniform(min_factor, max_factor)
+                        original_length = np.linalg.norm(base_vec)
+                        scale = float(rng.uniform(min_factor, max_factor))
                         target_length = original_length * scale
                         rotated = self._rescale_vector(rotated, target_length)
                     moment_array[idx] = rotated
                 elif disturb_magnitude:
-                    scale = np.random.uniform(min_factor, max_factor)
-                    moment_array[idx] = base_magmoms[idx] * scale
+                    scale = float(rng.uniform(min_factor, max_factor))
+                    moment_array[idx] = moment_array[idx] * scale
 
+            if "initial_magmoms" in new_structure.arrays and np.asarray(new_structure.arrays["initial_magmoms"]).shape != np.asarray(moment_array).shape:
+                del new_structure.arrays["initial_magmoms"]
             new_structure.set_initial_magnetic_moments(moment_array)
 
-            label = "MagmomRotate" if can_rotate else "MagmomScale"
+            label = "MMR" if can_rotate else "MMS"
             details = []
             if can_rotate:
-                details.append(f"max={max_angle:.1f}deg")
+                details.append(f"a={max_angle:.1f}")
             if disturb_magnitude:
-                details.append(f"scale={min_factor:.2f}-{max_factor:.2f}")
-            suffix = f" {label}"
-            if details:
-                suffix += "(" + ", ".join(details) + ")"
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + suffix
+                details.append(f"s={min_factor:.2f}-{max_factor:.2f}")
+            tag = label + (("(" + ",".join(details) + ")") if details else "")
+            append_config_tag(new_structure, tag)
             results.append(new_structure)
 
         return results
@@ -199,8 +246,12 @@ class MagneticMomentRotationCard(MakeDataCard):
         data_dict["elements"] = self.elements_input.text()
         data_dict["max_angle"] = self.angle_frame.get_input_value()
         data_dict["num_structures"] = self.count_frame.get_input_value()
+        data_dict["lift_scalar"] = self.lift_scalar_checkbox.isChecked()
+        data_dict["axis"] = self.axis_frame.get_input_value()
         data_dict["disturb_magnitude"] = self.magnitude_checkbox.isChecked()
         data_dict["magnitude_factor"] = self.magnitude_factor_frame.get_input_value()
+        data_dict["use_seed"] = self.seed_checkbox.isChecked()
+        data_dict["seed"] = self.seed_frame.get_input_value()
 
         return data_dict
 
@@ -211,8 +262,12 @@ class MagneticMomentRotationCard(MakeDataCard):
             self.angle_frame.set_input_value(data_dict["max_angle"])
         if "num_structures" in data_dict:
             self.count_frame.set_input_value(data_dict["num_structures"])
+        self.lift_scalar_checkbox.setChecked(bool(data_dict.get("lift_scalar", True)))
+        self.axis_frame.set_input_value(data_dict.get("axis", [0.0, 0.0, 1.0]))
         self.magnitude_checkbox.setChecked(data_dict.get("disturb_magnitude", True))
         if "magnitude_factor" in data_dict:
             self.magnitude_factor_frame.set_input_value(data_dict["magnitude_factor"])
+        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
+        self.seed_frame.set_input_value(data_dict.get("seed", [0]))
 
         self._toggle_magnitude_inputs(self.magnitude_checkbox.checkState())

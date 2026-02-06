@@ -91,6 +91,12 @@ write_to = "src/NepTrainKit/_version.py"
 [tool.cibuildwheel.linux]
 archs = ["auto64"]
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = ["tests/_tmp", "tests/_sandbox_tmp", "tests/_pytest_tmp", "tests/_localappdata", "pytest-cache-files-*"]
+cache_dir = "tests/_localappdata/pytest_cache"
+addopts = "-p no:cacheprovider"
+
 [tool.ruff]
 line-length = 120
 target-version = "py310"

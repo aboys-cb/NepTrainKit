@@ -4,6 +4,7 @@
 # @email    : 1747193328@qq.com
 import json
 import os.path
+import re
 
 import numpy as np
 from PySide6.QtCore import Qt
@@ -13,6 +14,7 @@ from ase import Atoms, Atom
 from qfluentwidgets import HyperlinkLabel, BodyLabel, SubtitleLabel
 
 from NepTrainKit.core import MessageManager, CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.config import Config
 from NepTrainKit.ui.widgets import MakeWorkflowArea
 
@@ -217,17 +219,20 @@ class MakeDataWidget(QWidget):
                     atom.info["Config_type"]=atom.info["config_type"]
                     del atom.info["config_type"]
 
-
-
-                if isinstance(atom.info.get("Config_type"),np.ndarray):
-                    if atom.info["Config_type"].size==0:
-
-                        atom.info["Config_type"] = Config.get("widget", "default_config_type", "neptrainkit")
-                    else:
-                        atom.info["Config_type"]=" ".join(atom.info["Config_type"])
-
+                default_cfg = Config.get("widget", "default_config_type", "neptrainkit")
+                raw_cfg = atom.info.get("Config_type", default_cfg)
+                if isinstance(raw_cfg, np.ndarray):
+                    tokens = [str(x) for x in raw_cfg.tolist() if str(x).strip()]
+                elif isinstance(raw_cfg, (list, tuple, set)):
+                    tokens = [str(x) for x in raw_cfg if str(x).strip()]
                 else:
-                    atom.info["Config_type"]=str(atom.info.get("Config_type", Config.get("widget", "default_config_type", "neptrainkit")))
+                    tokens = [t for t in re.split(r"[|\\s]+", str(raw_cfg).strip()) if t]
+
+                atom.info["Config_type"] = ""
+                for t in tokens:
+                    append_config_tag(atom, t)
+                if not atom.info.get("Config_type"):
+                    atom.info["Config_type"] = default_cfg
 
                 structures_list.append(atom)
         if len(structures_list)==0:
@@ -294,13 +299,16 @@ class MakeDataWidget(QWidget):
         None
             Starts the card execution chain or reports missing data.
         """
-        if not  self.dataset  :
-            MessageManager.send_info_message("Please import the structure file first. You can drag it in directly or import it from the upper left corner!")
-            return
         self.stop_run_card()
         first_card=self._next_card(-1)
         if first_card:
-            first_card.dataset = self.dataset
+            needs_input = bool(getattr(first_card, "requires_input_dataset", True))
+            if not self.dataset and needs_input:
+                MessageManager.send_info_message(
+                    "Please import the structure file first. You can drag it in directly or import it from the upper left corner!"
+                )
+                return
+            first_card.dataset = self.dataset or []
 
             first_card.runFinishedSignal.connect(self._run_next_card)
             first_card.run()
@@ -369,10 +377,14 @@ class MakeDataWidget(QWidget):
         None
             Ensures no card continues executing in the background.
         """
+        import warnings
+
         for card in self.workspace_card_widget.cards:
             try:
-                card.runFinishedSignal.disconnect(self._run_next_card)
-            except:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", RuntimeWarning)
+                    card.runFinishedSignal.disconnect(self._run_next_card)
+            except Exception:
                 pass
             card.stop()
 

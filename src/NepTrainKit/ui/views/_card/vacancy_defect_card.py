@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox, RadioButton
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame, VacancyRulesWidget
 from NepTrainKit.ui.widgets import MakeDataCard
 from scipy.stats.qmc import Sobol
@@ -80,6 +81,17 @@ class VacancyDefectCard(MakeDataCard):
 
         self.max_atoms_label.installEventFilter(ToolTipFilter(self.max_atoms_label, 300, ToolTipPosition.TOP))
 
+        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox.setChecked(False)
+        self.seed_checkbox.setToolTip("Enable reproducible random sampling")
+        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
+        self.seed_frame = SpinBoxUnitInputFrame(self)
+        self.seed_frame.set_input("", 1, "int")
+        self.seed_frame.setRange(0, 2**31 - 1)
+        self.seed_frame.set_input_value([0])
+        self.seed_frame.setEnabled(False)
+        self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+
         #
         self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
         self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
@@ -89,6 +101,8 @@ class VacancyDefectCard(MakeDataCard):
         self.settingLayout.addWidget(self.concentration_condition_frame, 2, 1, 1, 2)
         self.settingLayout.addWidget(self.max_atoms_label, 3, 0, 1, 1)
         self.settingLayout.addWidget(self.max_atoms_condition_frame, 3, 1, 1, 2)
+        self.settingLayout.addWidget(self.seed_checkbox, 4, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 4, 1, 1, 2)
 
     def process_structure(self,structure):
         """Create vacancy defect structures based on either fixed counts or concentrations.
@@ -110,6 +124,8 @@ class VacancyDefectCard(MakeDataCard):
         defect_num = int(self.num_condition_frame.get_input_value()[0])
 
         max_num = int(self.max_atoms_condition_frame.get_input_value()[0])
+        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
+        rng = np.random.default_rng(base_seed)
 
         n_atoms = len(structure)
         if self.concentration_radio_button.isChecked():
@@ -120,10 +136,10 @@ class VacancyDefectCard(MakeDataCard):
             max_defects=max_defects-1
 
         if engine_type == 0:
-            sobol_engine = Sobol(d=n_atoms + 1, scramble=True)
+            sobol_engine = Sobol(d=n_atoms + 1, scramble=True, seed=base_seed)
             sobol_seq = sobol_engine.random(max_num)
         else:
-            defect_counts = np.random.randint(1, max_defects + 1, max_num)
+            defect_counts = rng.integers(1, max_defects + 1, size=max_num)
 
         for i in range(max_num):
             new_structure =structure.copy()
@@ -145,12 +161,12 @@ class VacancyDefectCard(MakeDataCard):
                 defect_indices = sorted_indices[:target_defects]
             else:
 
-                defect_indices = np.random.choice(n_atoms, target_defects, replace=False)
+                defect_indices = rng.choice(n_atoms, target_defects, replace=False)
             mask = np.zeros(n_atoms, dtype=bool)
             mask[defect_indices] = True
             n_vacancies = np.sum(mask)
             del new_structure[mask]
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type","") + f" Vacancy(num={n_vacancies})"
+            append_config_tag(new_structure, f"Vac(n={int(n_vacancies)})")
             structure_list.append(new_structure)
 
         return structure_list
@@ -171,6 +187,8 @@ class VacancyDefectCard(MakeDataCard):
         data_dict["concentration_radio_button"]=self.concentration_radio_button.isChecked()
         data_dict['concentration_condition'] = self.concentration_condition_frame.get_input_value()
         data_dict['max_atoms_condition'] = self.max_atoms_condition_frame.get_input_value()
+        data_dict["use_seed"] = self.seed_checkbox.isChecked()
+        data_dict["seed"] = self.seed_frame.get_input_value()
 
         return data_dict
 
@@ -190,4 +208,6 @@ class VacancyDefectCard(MakeDataCard):
         self.max_atoms_condition_frame.set_input_value(data_dict['max_atoms_condition'])
         self.concentration_radio_button.setChecked(data_dict['concentration_radio_button'])
         self.num_radio_button.setChecked(data_dict['num_radio_button'])
+        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
+        self.seed_frame.set_input_value(data_dict.get("seed", [0]))
 

@@ -29,6 +29,7 @@ class FPSFilterDataCard(FilterDataCard):
         Parent widget managing the card lifecycle.
     """
     separator=True
+    group = "Filter"
     card_name= "FPS Filter"
     menu_icon=r":/images/src/images/fps.svg"
     def __init__(self, parent=None):

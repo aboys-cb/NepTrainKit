@@ -9,6 +9,7 @@ from ase.build import make_supercell
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox, RadioButton
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
@@ -250,7 +251,8 @@ class SuperCellCard(MakeDataCard):
                 return [structure.copy()]
 
             supercell = make_supercell(structure,np.diag([na, nb, nc]),order="atom-major")
-            supercell.info["Config_type"] = structure.info.get("Config_type","") + f" supercell({na, nb, nc})"
+            supercell.info["Config_type"] = structure.info.get("Config_type", "")
+            append_config_tag(supercell, f"SC({na}x{nb}x{nc})")
 
             structure_list.append(supercell)
 
@@ -266,7 +268,8 @@ class SuperCellCard(MakeDataCard):
 
                     else:
                         supercell = make_supercell(structure, np.diag([na, nb, nc]),order="atom-major")
-                        supercell.info["Config_type"] = structure.info.get("Config_type","") + f" supercell({na, nb, nc})"
+                        supercell.info["Config_type"] = structure.info.get("Config_type", "")
+                        append_config_tag(supercell, f"SC({na}x{nb}x{nc})")
 
                         # supercell = structure.supercell([na, nb, nc])
                     structure_list.append(supercell)
@@ -281,7 +284,8 @@ class SuperCellCard(MakeDataCard):
                                 supercell = structure.copy()
                             else:
                                 supercell = make_supercell(structure, np.diag([i, j, k]),order="atom-major")
-                                supercell.info["Config_type"]=structure.info.get("Config_type","") +f" supercell({i,j,k})"
+                                supercell.info["Config_type"] = structure.info.get("Config_type", "")
+                                append_config_tag(supercell, f"SC({i}x{j}x{k})")
                                 # supercell = structure.supercell((i, j, k))
 
                             structure_list.append(supercell)
@@ -294,7 +298,8 @@ class SuperCellCard(MakeDataCard):
                     return [structure.copy()]
 
                 supercell = make_supercell(structure, np.diag([na, nb, nc]),order="atom-major")
-                supercell.info["Config_type"] = structure.info.get("Config_type","") + f" supercell({na, nb, nc})"
+                supercell.info["Config_type"] = structure.info.get("Config_type", "")
+                append_config_tag(supercell, f"SC({na}x{nb}x{nc})")
 
                 structure_list.append(supercell)
             else:

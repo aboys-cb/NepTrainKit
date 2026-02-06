@@ -11,9 +11,18 @@ from NepTrainKit import module_path
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.paths import as_path
+from NepTrainKit.paths import get_bundled_nep89_path
 from NepTrainKit.config import Config
 from .base import NepPlotData, ResultData, StructureSyncRule
-from NepTrainKit.core.utils import read_nep_out_file, check_fullbatch, read_nep_in, aggregate_per_atom_to_structure,concat_nep_dft_array, is_charge_model
+from NepTrainKit.core.utils import (
+    aggregate_per_atom_to_structure,
+    check_fullbatch,
+    concat_nep_dft_array,
+    is_charge_model,
+    is_spin_model,
+    read_nep_in,
+    read_nep_out_file,
+)
 from NepTrainKit.core.types import ForcesMode
 
 
@@ -283,7 +292,7 @@ class NepTrainResultData(ResultData):
         """Return the magnetic force dataset when available."""
         return self._spin_force_dataset
     @classmethod
-    def from_path(cls, path ,model_type=0, *, structures: list[Structure] | None = None)->"NepTrainResultData":
+    def from_path(cls, path ,model_type=0, *, structures: list[Structure] | None = None, nep_txt_path: Path | str | None = None)->"NepTrainResultData":
         """Create an instance from a NEP result directory.
         
         Parameters
@@ -302,38 +311,80 @@ class NepTrainResultData(ResultData):
         """
         dataset_path = as_path(path)
         file_name=dataset_path.stem
-        nep_txt_path = dataset_path.with_name(f"nep.txt")
-        if not nep_txt_path.exists()  :
-            nep_txt_path = module_path/ "Config/nep89.txt"
-            MessageManager.send_warning_message(f"no find nep.txt; the program will use nep89 instead.")
-        elif model_type>2:
-            nep_txt_path = module_path/ "Config/nep89.txt"
+
+        # Normalise optional nep_txt_path
+        explicit_nep = Path(nep_txt_path) if nep_txt_path is not None else None
+
+        # Try to find nep.txt first when no explicit NEP file is provided
+        if explicit_nep is not None:
+            nep_txt_path = explicit_nep
+        else:
+            nep_txt_path = dataset_path.with_name("nep.txt")
+
+            # If nep.txt not found, search for any txt file containing "nep" in filename
+            if not nep_txt_path.exists():
+                dir_path = dataset_path.parent
+                nep_files: list[Path] = []
+                for txt_file in dir_path.glob("*.txt"):
+                    if "nep" in txt_file.stem.lower():
+                        nep_files.append(txt_file)
+
+                # Sort: prefer files starting with "nep" and shorter names
+                if nep_files:
+                    nep_files.sort(key=lambda p: (not p.stem.lower().startswith("nep"), len(p.stem), p.stem))
+                    nep_txt_path = nep_files[0]
+                    logger.info(f"Using detected NEP file: {Path(nep_txt_path).name}")
+                else:
+                    # No NEP file found, use fallback
+                    nep_txt_path = get_bundled_nep89_path()
+                    MessageManager.send_warning_message("No NEP model file found; the program will use nep89 instead.")
+
+        # Coerce to Path for downstream logic
+        nep_txt_path = Path(nep_txt_path)
+
+        if model_type>2:
+            nep_txt_path = get_bundled_nep89_path()
             MessageManager.send_warning_message(f"NEPKit currently does not support model_type={model_type}; the program will use nep89 instead.")
+
+        # Determine output directory based on NEP model filename
+        nep_stem = nep_txt_path.stem
+        if nep_stem == "nep":
+            # Standard nep.txt, output to current directory
+            output_dir = dataset_path.parent
+            output_suffix = file_name
+        else:
+            # Other NEP files (nep1.txt, nep2.txt, etc.), create result_XXX directory
+            output_dir = dataset_path.parent / f"result_{nep_stem}"
+            output_dir.mkdir(exist_ok=True)
+            output_suffix = file_name
+            logger.info(f"Output files will be saved to: {output_dir.name}/")
+        
         # detect spin model marker in nep.txt
-        has_spin = False
-        try:
-            content = nep_txt_path.read_text(encoding="utf-8", errors="ignore").lower()
-            has_spin = "nep4_spin" in content
-        except Exception:
-            has_spin = False
-        energy_out_path = dataset_path.with_name(f"energy_{file_name}.out")
-        force_out_path = dataset_path.with_name(f"force_{file_name}.out")
-        stress_out_path = dataset_path.with_name(f"stress_{file_name}.out")
-        virial_out_path = dataset_path.with_name(f"virial_{file_name}.out")
+        has_spin = is_spin_model(nep_txt_path)
+        
+        # Build output paths in the appropriate directory
+        energy_out_path = output_dir / f"energy_{output_suffix}.out"
+        force_out_path = output_dir / f"force_{output_suffix}.out"
+        stress_out_path = output_dir / f"stress_{output_suffix}.out"
+        virial_out_path = output_dir / f"virial_{output_suffix}.out"
+        
         # optional spin force output (magnetic)
         spin_force_out_path = None
         if has_spin:
-            candidate_spin = dataset_path.with_name(f"mforce_{file_name}.out")
+            candidate_spin = output_dir / f"mforce_{output_suffix}.out"
             if candidate_spin.exists():
                 spin_force_out_path = candidate_spin
-            nep_txt_path = module_path/ "Config/nep89.txt"
+            nep_txt_path = get_bundled_nep89_path()
             MessageManager.send_warning_message(f"NEPKit currently does not support model_type={model_type}; the program will use nep89 instead.")
+        
         if file_name=="train":
-            descriptor_path = dataset_path.with_name(f"descriptor.out")
+            descriptor_path = output_dir / f"descriptor.out"
         else:
-            descriptor_path = dataset_path.with_name(f"descriptor_{file_name}.out")
-        charge_out_path = dataset_path.with_name(f"charge_{file_name}.out")
-        bec_out_path = dataset_path.with_name(f"bec_{file_name}.out")
+            descriptor_path = output_dir / f"descriptor_{output_suffix}.out"
+        
+        charge_out_path = output_dir / f"charge_{output_suffix}.out"
+        bec_out_path = output_dir / f"bec_{output_suffix}.out"
+        
         inst = cls(
             nep_txt_path,
             dataset_path,
@@ -453,7 +504,7 @@ class NepTrainResultData(ResultData):
         """
 
         ref_energies = np.array([s.energy if s.has_energy else np.nan for s in self.structure.now_data], dtype=np.float32)
-        energy_array = concat_nep_dft_array(potentials,ref_energies)
+        energy_array = concat_nep_dft_array(potentials, ref_energies, quantity="energies")
 
         energy_array=energy_array/ self.atoms_num_list.reshape(-1, 1)
         energy_array = energy_array.astype(np.float32)
@@ -474,8 +525,8 @@ class NepTrainResultData(ResultData):
             Two-column array containing reference and predicted forces.
         """
 
-        ref_forces = np.vstack([s.forces if s.has_forces else np.full((len(s),3 ), np.nan) for s in self.structure.now_data], dtype=np.float32)
-        forces_array = concat_nep_dft_array(forces,ref_forces)
+        ref_forces = np.vstack([s.forces if s.has_forces else np.full((len(s), 3), np.nan) for s in self.structure.now_data], dtype=np.float32)
+        forces_array = concat_nep_dft_array(forces, ref_forces, quantity="forces")
 
         if forces_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
@@ -495,8 +546,8 @@ class NepTrainResultData(ResultData):
         """
         coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data ]))[:, np.newaxis]
 
-        ref_virials = np.vstack([s.nep_virial if s.has_virial else [np.nan]*6 for s in self.structure.now_data ], dtype=np.float32)
-        virials_array = concat_nep_dft_array(virials,ref_virials)
+        ref_virials = np.vstack([s.nep_virial if s.has_virial else [np.nan] * 6 for s in self.structure.now_data], dtype=np.float32)
+        virials_array = concat_nep_dft_array(virials, ref_virials, quantity="virials")
 
         stress_array = virials_array * coefficient * 160.21766208  # Unit conversion to MPa
         stress_array = stress_array.astype(np.float32)
@@ -524,7 +575,7 @@ class NepTrainResultData(ResultData):
             for s in self.structure.now_data
         ])
 
-        bec_array = concat_nep_dft_array(nep_bec, ref_bec)
+        bec_array = concat_nep_dft_array(nep_bec, ref_bec, quantity="BEC values")
         if getattr(self, "bec_out_path", None) and bec_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.bec_out_path, bec_array, fmt='%10.8f')
         return bec_array
@@ -676,7 +727,7 @@ class NepPolarizabilityResultData(ResultData):
             self.write_prediction()
         except Exception as e:
             # logger.debug(traceback.format_exc())
-            MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
+            MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
             nep_polarizability_array = np.array([])
         return nep_polarizability_array
     def _save_polarizability_data(self, polarizability: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
@@ -829,7 +880,7 @@ class NepDipoleResultData(ResultData):
             self.write_prediction()
         except Exception as e:
             # logger.debug(traceback.format_exc())
-            MessageManager.send_error_message(f"An error occurred while running NEP3 calculator: {e}")
+            MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
             nep_dipole_array = np.array([])
         return nep_dipole_array
     def _save_dipole_data(self, dipole: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:

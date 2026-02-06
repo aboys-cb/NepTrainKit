@@ -159,6 +159,7 @@ class Brushes(Base):
         show = _get_color("plot", "show_color", "#00FF00")
         selected = _get_color("plot", "selected_color", "#FF0000")
         current = _get_color("plot", "current_color", "#FF0000")
+        reject = _get_color("plot", "reject_color", "#FF8C00")
 
         cls.BlueBrush = QBrush(QColor(0, 0, 255))
         cls.YellowBrush = QBrush(QColor(255, 255, 0))
@@ -171,6 +172,7 @@ class Brushes(Base):
         cls.Show = QBrush(show)
         cls.Selected = QBrush(selected)
         cls.Current = QBrush(current)
+        cls.Reject = QBrush(reject)
 
     def __getattr__(self, item):
         return getattr(self.Default, item)

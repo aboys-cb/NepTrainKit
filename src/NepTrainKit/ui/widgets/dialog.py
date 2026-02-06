@@ -28,6 +28,8 @@ from qfluentwidgets import (
 )
 from qframelesswindow import FramelessDialog
 import json
+import html
+import math
 import os
 from .button import TagPushButton, TagGroup
 
@@ -70,6 +72,38 @@ class GetFloatMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.doubleSpinBox)
         self.widget.setMinimumWidth(160)
+
+
+class ExportFormatMessageBox(MessageBoxBase):
+    """Message box that lets the user pick an export format (XYZ vs DeepMD/NPY)."""
+
+    def __init__(self, parent=None, default_format: str = "xyz"):
+        super().__init__(parent)
+        self.titleLabel = CaptionLabel("Choose export format", self)
+        self.titleLabel.setWordWrap(True)
+
+        self.formatCombo = ComboBox(self)
+        self.formatCombo.addItem("XYZ (.xyz / extxyz)", userData="xyz")
+        self.formatCombo.addItem("DeepMD/NPY (deepmd/npy)", userData="deepmd/npy")
+
+        default = (default_format or "xyz").strip().lower()
+        if default in {"deepmd", "deepmd/npy", "npy", "dp"}:
+            self.formatCombo.setCurrentIndex(1)
+        else:
+            self.formatCombo.setCurrentIndex(0)
+
+        self.viewLayout.addWidget(self.titleLabel)
+        self.viewLayout.addWidget(self.formatCombo)
+
+        self.widget.setMinimumWidth(320)
+
+    def selected_format(self) -> str:
+        """Return the selected export format identifier."""
+        data = self.formatCombo.currentData()
+        if isinstance(data, str) and data:
+            return data
+        text = self.formatCombo.currentText().lower()
+        return "deepmd/npy" if "deepmd" in text or "npy" in text else "xyz"
 
 
 class DatasetSummaryMessageBox(MessageBoxBase):
@@ -234,78 +268,507 @@ class DatasetSummaryMessageBox(MessageBoxBase):
             MessageManager.send_warning_message("Failed to export dataset summary.")
 
     def _build_html(self) -> str:
-        """Render the summary into a simple HTML table layout."""
+        """Render the summary into a highly decorated, professional HTML dashboard."""
         counts = self._summary.get("counts", {})
         atoms = self._summary.get("atoms", {})
         elements = sorted(self._summary.get("elements", []) or [], key=lambda x: x.get("fraction", 0.0), reverse=True)
         cfg = self._summary.get("config_types", []) or []
-        group_by = self._summary.get("group_by", SearchType.TAG.value)
-        group_by_value = group_by.value if isinstance(group_by, SearchType) else str(group_by)
+        dist = self._summary.get("numeric_distributions", {}) or {}
+        dist_metrics = dist.get("metrics", []) or []
+        force_rms = self._summary.get("force_rms", {}) or {}
+        energy_stats = self._summary.get("energy", {}) or {}
+        
+        # Handling Grouping Logic (Formula or Tag)
+        group_by = self._summary.get("group_by", "tag") # Default to tag
+        group_label = "Formula" if "FORMULA" in str(group_by).upper() else "Config ID"
+        group_section_title = "Formulas" if "FORMULA" in str(group_by).upper() else "Configuration Types"
+        
+        data_file = self._summary.get("data_file", "N/A")
+        model_file = self._summary.get("model_file", "N/A")
+
+        force_rms_rows = ""
         try:
-            group_by_enum = SearchType(group_by_value)
-        except Exception:
-            group_by_enum = SearchType.FORMULA if group_by_value.endswith(".FORMULA") else SearchType.TAG
-        group_label = "Formula" if group_by_enum == SearchType.FORMULA else "Config_type"
-        group_section_title = "Formulas" if group_by_enum == SearchType.FORMULA else "Config Types"
-        data_file = self._summary.get("data_file", "")
-        model_file = self._summary.get("model_file", "")
-        def _table(rows: list[dict], headers: list[str], cols: list[str]) -> str:
-            if not rows:
-                return "<p>No data.</p>"
-            body = "\n".join(
-                "<tr>" + "".join(f"<td>{item.get(k, '')}</td>" for k in cols) + "</tr>"
-                for item in rows
-            )
-            head = "".join(f"<th>{h}</th>" for h in headers)
-            return f"<table><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>"
+            atoms_with_forces = int(force_rms.get("atoms_with_forces", 0) or 0)
+            if atoms_with_forces > 0:
+                rms_all = float(force_rms.get("rms_all_atoms", 0.0) or 0.0)
+                force_rms_rows = (
+                    f"<tr><td class='stat-label'>Force RMS(|F|) (all atoms)</td>"
+                    f"<td class='stat-val'>{rms_all:.4g} eV/Å</td></tr>"
+                )
+        except Exception:  # noqa: BLE001
+            force_rms_rows = ""
+
+        energy_rows = ""
+        try:
+            e_count = int(energy_stats.get("count", 0) or 0)
+            if e_count > 0:
+                e_mean = float(energy_stats.get("mean", 0.0) or 0.0)
+                e_std = float(energy_stats.get("std", 0.0) or 0.0)
+                energy_rows = (
+                    f"<tr><td class='stat-label'>Energy/atom stats</td>"
+                    f"<td class='stat-val'>{e_mean:.6g} ± {e_std:.3g} eV/atom</td></tr>"
+                )
+        except Exception:  # noqa: BLE001
+            energy_rows = ""
+
+        # CSS Styles for Decoration
         style = """
         <style>
-        body{font-family:Arial, sans-serif; margin:16px;}
-        h1{margin-bottom:8px;}
-        table{border-collapse:collapse; width:100%; margin:8px 0;}
-        th,td{border:1px solid #ccc; padding:6px 8px; text-align:left;}
-        th{background:#f6f6f6;}
+            :root {
+                --primary: #2563eb;
+                --primary-gradient: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+                --secondary: #64748b;
+                --bg: #f8fafc;
+                --card: #ffffff;
+                --border: #e2e8f0;
+                --text-dark: #0f172a;
+                --accent-green: #10b981;
+                --dist-fill: #2563eb;
+                --dist-fill-soft: rgba(37, 99, 235, 0.18);
+                --s1: #2563eb;
+                --s2: #10b981;
+                --s3: #f59e0b;
+                --s4: #ef4444;
+                --s5: #a855f7;
+                --s6: #06b6d4;
+            }
+
+            body {
+                font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                background-color: var(--bg);
+                color: var(--text-dark);
+                line-height: 1.6;
+                margin: 0;
+                padding: 40px 20px;
+                background-image: radial-gradient(#e2e8f0 0.5px, transparent 0.5px);
+                background-size: 24px 24px;
+            }
+
+            .container { max-width: 1000px; margin: 0 auto; }
+
+            header { margin-bottom: 40px; padding-bottom: 20px; position: relative; }
+            header::before {
+                content: ""; position: absolute; left: -20px; top: 0; bottom: 20px;
+                width: 4px; background: var(--primary-gradient); border-radius: 4px;
+            }
+
+            h1 { margin: 0; font-size: 32px; letter-spacing: -0.8px; font-weight: 800; }
+            .subtitle { color: var(--secondary); font-size: 14px; margin-top: 8px; font-weight: 500; }
+
+            .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 30px; }
+            
+            .card {
+                background: var(--card); border-radius: 16px; padding: 24px;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+                border: 1px solid var(--border);
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            .card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+            .card h2 { font-size: 14px; text-transform: uppercase; color: var(--secondary); margin: 0 0 20px 0; letter-spacing: 0.1em; display: flex; align-items: center; gap: 8px; }
+            .card h2::before { content: ""; display: inline-block; width: 8px; height: 8px; background: var(--primary); border-radius: 50%; }
+
+            table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+            th { text-align: left; padding: 12px; background: #f8fafc; color: var(--secondary); font-weight: 600; border-bottom: 2px solid var(--border); text-transform: uppercase; font-size: 12px; }
+            td { padding: 14px 12px; border-bottom: 1px solid var(--border); }
+            tr:last-child td { border-bottom: none; }
+            tr:hover { background-color: #fcfdfe; }
+
+            .bar-wrap { display: flex; align-items: center; gap: 12px; }
+            .bar-bg { flex-grow: 1; height: 8px; background: #f1f5f9; border-radius: 10px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+            .bar-fill { height: 100%; background: var(--primary-gradient); border-radius: 10px; }
+
+            .badge {
+                background: #f0f7ff; color: var(--primary); padding: 4px 10px; border-radius: 8px;
+                font-weight: 700; font-family: monospace; border: 1px solid #dbeafe;
+            }
+
+            .scroll-area { max-height: 400px; overflow-y: auto; padding-right: 4px; }
+            .scroll-area::-webkit-scrollbar { width: 6px; }
+            .scroll-area::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+
+            .stat-val { font-weight: 700; color: var(--text-dark); }
+            .stat-label { color: var(--secondary); }
+
+            .dist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
+            .dist-card {
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 14px 14px 12px 14px;
+                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            }
+            .dist-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+            .dist-title { font-weight: 800; font-size: 14px; letter-spacing: -0.2px; }
+            .dist-meta { color: var(--secondary); font-size: 12px; }
+            .dist-meta code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
+            .dist-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+            .dist-legend-item { display: inline-flex; align-items: center; gap: 6px; color: var(--secondary); font-size: 11px; }
+            .dist-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+            .dist-axis { display: flex; justify-content: space-between; margin-top: 6px; color: var(--secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
+            canvas.dist-canvas {
+                width: 100%;
+                height: 84px;
+                display: block;
+                border-radius: 10px;
+                background: #ffffff;
+            }
+            canvas.dist-canvas.dist-multi { height: 110px; }
         </style>
         """
-        counts_html = f"""
-        <p>Data: {data_file}<br/>Model: {model_file}</p>
-        <table>
-          <tbody>
-            <tr><th>Orig structures</th><td>{counts.get('orig_structures', 0)}</td></tr>
-            <tr><th>Active structures</th><td>{counts.get('active_structures', 0)}</td></tr>
-            <tr><th>Removed structures</th><td>{counts.get('removed_structures', 0)}</td></tr>
-            <tr><th>Selected structures</th><td>{counts.get('selected_structures', 0)}</td></tr>
-            <tr><th>Total atoms (active)</th><td>{atoms.get('total_atoms_active', 0)}</td></tr>
-            <tr><th>Atoms per structure</th><td>min={atoms.get('min_atoms', 0)}, max={atoms.get('max_atoms', 0)}, mean={atoms.get('mean_atoms', 0.0):.1f}, median={atoms.get('median_atoms', 0.0):.1f}</td></tr>
-          </tbody>
-        </table>
-        """
-        elements_html = _table(
-            [
-                {
-                    "Element": item.get("symbol", ""),
-                    "Atoms": item.get("atoms", 0),
-                    "Structures": item.get("structures", 0),
-                    "Fraction (%)": f"{item.get('fraction', 0.0) * 100.0:.1f}",
-                }
-                for item in elements
-            ],
-            ["Element", "Atoms", "Structures", "Fraction (%)"],
-            ["Element", "Atoms", "Structures", "Fraction (%)"],
-        )
-        cfg_html = _table(
-            [
-                {
-                    group_label: item.get("name", ""),
-                    "Count": item.get("count", 0),
-                    "Fraction (%)": f"{item.get('fraction', 0.0) * 100.0:.1f}",
-                }
-                for item in cfg
-            ],
-            [group_label, "Count", "Fraction (%)"],
-            [group_label, "Count", "Fraction (%)"],
-        )
-        return f"<!doctype html><html><head><meta charset='utf-8'><title>Dataset summary</title>{style}</head><body><h1>Dataset Summary</h1>{counts_html}<h2>Elements</h2>{elements_html}<h2>{group_section_title}</h2>{cfg_html}</body></html>"
+
+        # Elements Section
+        el_rows = []
+        for item in elements:
+            pct = item.get("fraction", 0.0) * 100.0
+            el_rows.append(f"""
+            <tr>
+                <td><span class="badge">{item.get("symbol", "")}</span></td>
+                <td>{item.get("atoms", 0):,}</td>
+                <td>{item.get("structures", 0)}</td>
+                <td width="45%">
+                    <div class="bar-wrap">
+                        <div class="bar-bg"><div class="bar-fill" style="width: {pct:.1f}%"></div></div>
+                        <span class="stat-val">{pct:.1f}%</span>
+                    </div>
+                </td>
+            </tr>""")
+
+        # Config Types Section
+        cfg_rows = []
+        for item in cfg:
+            cfg_rows.append(f"""
+            <tr>
+                <td style="color: var(--text-dark); font-family: monospace;">{item.get("name", "")}</td>
+                <td class="stat-val">{item.get("count", 0)}</td>
+                <td>{item.get("fraction", 0.0) * 100.0:.1f}%</td>
+            </tr>""")
+
+        # Numeric Distributions Section (histograms)
+        dist_cards = []
+        for m in dist_metrics:
+            key = str(m.get("key", ""))
+            label = str(m.get("label", key))
+            unit = str(m.get("unit", ""))
+            total = int(m.get("total", 0) or 0)
+            series = m.get("series", None)
+            mn = float(m.get("min", 0.0) or 0.0)
+            mx = float(m.get("max", 0.0) or 0.0)
+            mean = m.get("mean", None)
+            std = m.get("std", None)
+            bins = int(m.get("bins", 0) or 0)
+            if bins <= 0:
+                if isinstance(series, list) and series:
+                    bins = len(series[0].get("hist", []) or [])
+                else:
+                    bins = len(m.get("hist", []) or [])
+            unit_html = f"&nbsp;<code>{html.escape(unit)}</code>" if unit else ""
+            stats_html = ""
+            try:
+                if mean is not None:
+                    mu = float(mean)
+                    sigma = float(std) if std is not None else 0.0
+                    if math.isfinite(mu) and math.isfinite(sigma):
+                        stats_html = f" &nbsp; μ={mu:.6g}, σ={sigma:.3g}"
+            except Exception:  # noqa: BLE001
+                stats_html = ""
+
+            # Tick labels (more granular than just the two ends)
+            axis_left = float(m.get("hist_left", mn) or mn)
+            axis_right = float(m.get("hist_right", mx) or mx)
+            if axis_right == axis_left:
+                tick_vals = [axis_left, axis_left, axis_left, axis_left, axis_left]
+            else:
+                tick_vals = [
+                    axis_left,
+                    axis_left + 0.25 * (axis_right - axis_left),
+                    axis_left + 0.5 * (axis_right - axis_left),
+                    axis_left + 0.75 * (axis_right - axis_left),
+                    axis_right,
+                ]
+            ticks_html = "".join(f"<span>{v:.6g}</span>" for v in tick_vals)
+
+            legend_html = ""
+            canvas_class = "dist-canvas"
+            if isinstance(series, list) and series:
+                canvas_class = "dist-canvas dist-multi"
+                swatches = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6"]
+                parts = []
+                for i, s in enumerate(series[:6]):
+                    name = html.escape(str(s.get("name", f"s{i+1}")))
+                    color_var = swatches[i]
+                    parts.append(
+                        f"<span class='dist-legend-item'><span class='dist-swatch' style='background: var({color_var});'></span>{name}</span>"
+                    )
+                legend_html = f"<div class='dist-legend'>{''.join(parts)}</div>"
+            dist_cards.append(
+                f"""
+                <div class="dist-card">
+                    <div class="dist-head">
+                        <div class="dist-title">{html.escape(label)}</div>
+                        <div class="dist-meta"><code>{html.escape(key)}</code>{unit_html} &nbsp; range=[{mn:.6g}, {mx:.6g}] &nbsp; N={total:,} &nbsp; bins={bins:,}{stats_html}</div>
+                    </div>
+                    {legend_html}
+                    <canvas class="{canvas_class}" width="900" height="84" data-key="{html.escape(key)}"></canvas>
+                    <div class="dist-axis">{ticks_html}</div>
+                </div>
+                """
+            )
+
+        dist_block = ""
+        if dist_cards:
+            # Embed raw JSON for the canvas renderer; escape only the closing script tag sequence.
+            dist_json = json.dumps(dist, ensure_ascii=False).replace("</", "<\\/")
+            dist_block = f"""
+            <div class="card" style="margin-top: 30px;">
+                <h2>Numeric Distributions</h2>
+                <div class="dist-grid">
+                    {''.join(dist_cards)}
+                </div>
+            </div>
+
+            <script id="dist-data" type="application/json">{dist_json}</script>
+            <script>
+            (() => {{
+                const payloadEl = document.getElementById('dist-data');
+                if (!payloadEl) return;
+                let payload = null;
+                try {{
+                    payload = JSON.parse(payloadEl.textContent || '{{}}');
+                }} catch (e) {{
+                    return;
+                }}
+                const metrics = new Map((payload.metrics || []).map(m => [m.key, m]));
+
+                function clamp(v, lo, hi) {{ return Math.min(hi, Math.max(lo, v)); }}
+
+                function computeHistogram(vals, lo, hi, bins) {{
+                    const range = hi - lo;
+                    const counts = new Array(bins).fill(0);
+                    if (!(range > 0)) return counts;
+                    for (const v of vals) {{
+                        const t = (v - lo) / range;
+                        if (t < 0 || t > 1) continue;
+                        const i = clamp(Math.floor(t * bins), 0, bins - 1);
+                        counts[i] += 1;
+                    }}
+                    return counts;
+                }}
+
+                function toRgba(color, alpha) {{
+                    const c = (color || '').trim();
+                    const a = Number(alpha);
+                    if (!Number.isFinite(a)) return c;
+                    if (c.startsWith('#')) {{
+                        const h = c.slice(1);
+                        let r = 37, g = 99, b = 235;
+                        if (h.length === 3) {{
+                            r = parseInt(h[0] + h[0], 16);
+                            g = parseInt(h[1] + h[1], 16);
+                            b = parseInt(h[2] + h[2], 16);
+                        }} else if (h.length === 6) {{
+                            r = parseInt(h.slice(0, 2), 16);
+                            g = parseInt(h.slice(2, 4), 16);
+                            b = parseInt(h.slice(4, 6), 16);
+                        }}
+                        return `rgba(${{r}}, ${{g}}, ${{b}}, ${{a}})`;
+                    }}
+                    if (c.startsWith('rgba(')) {{
+                        return c.replace(/rgba\\(([^)]+)\\)/, (_m, inner) => `rgba(${{inner.split(',').slice(0,3).join(',')}}, ${{a}})`);
+                    }}
+                    if (c.startsWith('rgb(')) {{
+                        return c.replace('rgb(', 'rgba(').replace(')', `, ${{a}})`);
+                    }}
+                    return c;
+                }}
+
+                function drawHistogram(canvas, metric) {{
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) return;
+
+                    const rect = canvas.getBoundingClientRect();
+                    const dpr = window.devicePixelRatio || 1;
+                    const w = Math.max(1, rect.width);
+                    const h = Math.max(1, rect.height);
+                    const bw = Math.max(1, Math.round(w * dpr));
+                    const bh = Math.max(1, Math.round(h * dpr));
+                    if (canvas.width !== bw || canvas.height !== bh) {{
+                        canvas.width = bw;
+                        canvas.height = bh;
+                    }}
+                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                    ctx.clearRect(0, 0, w, h);
+
+                    let lo = Number(metric.min);
+                    let hi = Number(metric.max);
+                    if (!Number.isFinite(lo) || !Number.isFinite(hi)) return;
+                    if (hi === lo) {{ hi = lo + 1; lo = lo - 1; }}
+
+                    const css = getComputedStyle(document.documentElement);
+                    const fill = (css.getPropertyValue('--dist-fill') || '#2563eb').trim();
+                    const fillSoft = (css.getPropertyValue('--dist-fill-soft') || 'rgba(37, 99, 235, 0.18)').trim();
+                    const border = (css.getPropertyValue('--border') || '#e2e8f0').trim();
+                    const seriesColors = [
+                        (css.getPropertyValue('--s1') || '#2563eb').trim(),
+                        (css.getPropertyValue('--s2') || '#10b981').trim(),
+                        (css.getPropertyValue('--s3') || '#f59e0b').trim(),
+                        (css.getPropertyValue('--s4') || '#ef4444').trim(),
+                        (css.getPropertyValue('--s5') || '#a855f7').trim(),
+                        (css.getPropertyValue('--s6') || '#06b6d4').trim(),
+                    ];
+
+                    const padX = 10;
+                    const padY = 10;
+                    const barW = w - padX * 2;
+                    const barH = h - padY * 2;
+
+                    const series = Array.isArray(metric.series) ? metric.series : null;
+                    const singleHist = Array.isArray(metric.hist) ? metric.hist : null;
+                    const bins = (metric.bins && Number.isFinite(metric.bins) && metric.bins > 0)
+                        ? Math.max(1, Math.floor(metric.bins))
+                        : (singleHist ? singleHist.length : (series && series.length && Array.isArray(series[0].hist) ? series[0].hist.length : 60));
+
+                    // Vertical grid lines (x ticks)
+                    ctx.strokeStyle = 'rgba(100, 116, 139, 0.18)';
+                    ctx.lineWidth = 1;
+                    for (const t of [0, 0.25, 0.5, 0.75, 1]) {{
+                        const x = padX + t * barW + 0.5;
+                        ctx.beginPath();
+                        ctx.moveTo(x, padY);
+                        ctx.lineTo(x, padY + barH);
+                        ctx.stroke();
+                    }}
+                    // Baseline
+                    ctx.strokeStyle = 'rgba(100, 116, 139, 0.28)';
+                    ctx.beginPath();
+                    ctx.moveTo(padX, padY + barH + 0.5);
+                    ctx.lineTo(padX + barW, padY + barH + 0.5);
+                    ctx.stroke();
+
+                    if (series && series.length) {{
+                        // Overlay density curves for multiple series (same x-range)
+                        const countsBySeries = [];
+                        let maxC = 1;
+                        for (const s of series.slice(0, 6)) {{
+                            const counts = Array.isArray(s.hist) ? s.hist : computeHistogram((s.sample || []).map(Number).filter(v => Number.isFinite(v)), lo, hi, bins);
+                            countsBySeries.push(counts);
+                            for (const c of counts) maxC = Math.max(maxC, c);
+                        }}
+                        const dx = bins > 1 ? (barW / (bins - 1)) : 0;
+                        for (let si = 0; si < countsBySeries.length; si++) {{
+                            const counts = countsBySeries[si];
+                            const col = seriesColors[si] || fill;
+                            ctx.beginPath();
+                            for (let i = 0; i < bins; i++) {{
+                                const x = padX + i * dx;
+                                const yNorm = counts[i] / maxC;
+                                const y = padY + (1 - yNorm) * barH;
+                                if (i === 0) ctx.moveTo(x, y);
+                                else ctx.lineTo(x, y);
+                            }}
+                            ctx.lineTo(padX + barW, padY + barH);
+                            ctx.lineTo(padX, padY + barH);
+                            ctx.closePath();
+                            ctx.fillStyle = toRgba(col, 0.14) || fillSoft;
+                            ctx.fill();
+                            ctx.strokeStyle = col;
+                            ctx.lineWidth = 1.2;
+                            ctx.stroke();
+                        }}
+                    }} else {{
+                        // Single-series histogram bars
+                        const counts = singleHist ? singleHist : computeHistogram((metric.sample || []).map(Number).filter(v => Number.isFinite(v)), lo, hi, bins);
+                        let maxC = 1;
+                        for (const c of counts) maxC = Math.max(maxC, c);
+
+                        const bw = barW / bins;
+                        const grad = ctx.createLinearGradient(0, padY, 0, padY + barH);
+                        grad.addColorStop(0, fill);
+                        grad.addColorStop(1, fillSoft);
+                        ctx.fillStyle = grad;
+                        for (let i = 0; i < bins; i++) {{
+                            const density = counts[i] / maxC;
+                            const hBar = density * barH;
+                            const x0 = padX + i * bw;
+                            const y0 = padY + (barH - hBar);
+                            ctx.fillRect(x0, y0, Math.max(1, bw - 1), hBar);
+                        }}
+                    }}
+
+                    // Border
+                    ctx.strokeStyle = border;
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(padX + 0.5, padY + 0.5, barW - 1, barH - 1);
+                }}
+
+                document.querySelectorAll('canvas.dist-canvas').forEach((c) => {{
+                    const key = c.dataset.key || '';
+                    const metric = metrics.get(key);
+                    if (metric) drawHistogram(c, metric);
+                }});
+            }})();
+            </script>
+            """
+
+        # Full HTML Template
+        return f"""<!doctype html>
+    <html lang="en">
+    <head>
+        <meta charset='utf-8'>
+        <title>Dataset Summary</title>
+        {style}
+    </head>
+    <body>
+        <div class="container">
+            <header>
+                <h1>Dataset Summary Report</h1>
+                <div class="subtitle">SOURCE: <strong>{data_file}</strong> &nbsp;&bull;&nbsp; MODEL: <strong>{model_file}</strong></div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="card">
+                    <h2>Structure Overview</h2>
+                    <table>
+                        <tr><td class="stat-label">Original Count</td><td class="stat-val">{counts.get('orig_structures', 0)}</td></tr>
+                        <tr><td class="stat-label">Active Structures</td><td class="stat-val" style="color: var(--accent-green);">{counts.get('active_structures', 0)}</td></tr>
+                        <tr><td class="stat-label">Removed / Selected</td><td class="stat-val">{counts.get('removed_structures', 0)} / {counts.get('selected_structures', 0)}</td></tr>
+                        <tr><td class="stat-label">Total Atoms (Active)</td><td class="stat-val">{atoms.get('total_atoms_active', 0):,}</td></tr>
+                        {energy_rows}
+                        {force_rms_rows}
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h2>Atoms per Structure</h2>
+                    <table>
+                        <tr><td class="stat-label">Minimum</td><td class="stat-val">{atoms.get('min_atoms', 0)}</td></tr>
+                        <tr><td class="stat-label">Maximum</td><td class="stat-val">{atoms.get('max_atoms', 0)}</td></tr>
+                        <tr><td class="stat-label">Mean Value</td><td class="stat-val" style="font-size: 1.1em; color: var(--primary);">{atoms.get('mean_atoms', 0.0):.1f}</td></tr>
+                        <tr><td class="stat-label">Median Value</td><td class="stat-val">{atoms.get('median_atoms', 0.0):.1f}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            {dist_block}
+
+            <div class="card" style="margin-bottom: 30px;">
+                <h2>Elemental Composition</h2>
+                <table>
+                    <thead><tr><th>Element</th><th>Atoms</th><th>Structures</th><th>Distribution (%)</th></tr></thead>
+                    <tbody>{"".join(el_rows)}</tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>{group_section_title}</h2>
+                <div class="scroll-area">
+                    <table>
+                        <thead><tr><th>{group_label}</th><th>Count</th><th>Fraction</th></tr></thead>
+                        <tbody>{"".join(cfg_rows)}</tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>"""
 
 class GetStrMessageBox(MessageBoxBase):
     """ Custom message box """

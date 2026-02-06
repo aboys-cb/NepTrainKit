@@ -25,7 +25,7 @@ import numpy.typing as npt
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
-from NepTrainKit.core.structure import Structure, atomic_numbers
+from NepTrainKit.core.structure import Structure, atomic_numbers, get_type_map, save_npy_structure
 from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
 
 from .sampler import SparseSampler,farthest_point_sampling,pca
@@ -527,6 +527,9 @@ class ResultData(QObject):
         self.data_xyz_path=Path(data_xyz_path)
         self.nep_txt_path=Path(nep_txt_path)
         self.select_index=set()
+        # Mark structures as "bad/reject" without interfering with selection.
+        # Uses original structure indices aligned with StructureData/group_array indices.
+        self.reject_index: set[int] = set()
         # Optional pre-fetched structures to skip IO in load_structures
         self._prefetched_structures: Optional[list[Structure]] = None
         # Optional importer options forwarded to importers.import_structures
@@ -845,6 +848,145 @@ class ResultData(QObject):
         except Exception:
             MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
             logger.error(traceback.format_exc())
+
+    def export_selected_npy(self, save_path: str | Path) -> None:
+        """Export selected structures as a DeepMD-style ``deepmd/npy`` dataset."""
+        try:
+            selected = self.get_selected_structures()
+            if not selected:
+                MessageManager.send_info_message("Please select some structures first!")
+                return
+            target = Path(save_path).joinpath("export_selected_model")
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(target), selected, type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_active_xyz(self, save_file_path: str | Path) -> None:
+        """Write active (non-removed) structures to ``save_file_path``."""
+        try:
+            active = self.structure.now_data
+            if getattr(active, "size", 0) == 0:
+                MessageManager.send_info_message("No active structures to export.")
+                return
+            with open(save_file_path, "w", encoding="utf8") as handle:
+                for structure in active:
+                    structure.write(handle)
+            MessageManager.send_info_message(f"File exported to: {save_file_path}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_active_npy(self, save_path: str | Path) -> None:
+        """Export active (non-removed) structures as a DeepMD-style ``deepmd/npy`` dataset."""
+        try:
+            active = self.structure.now_data.tolist()
+            if not active:
+                MessageManager.send_info_message("No active structures to export.")
+                return
+            target = Path(save_path).joinpath("export_active_model")
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(target), active, type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_removed_xyz(self, save_file_path: str | Path) -> None:
+        """Write removed structures (if any) to ``save_file_path``."""
+        try:
+            removed = self.structure.remove_data
+            if getattr(removed, "size", 0) == 0:
+                MessageManager.send_info_message("No removed structures to export.")
+                return
+            with open(save_file_path, "w", encoding="utf8") as handle:
+                for structure in removed:
+                    structure.write(handle)
+            MessageManager.send_info_message(f"File exported to: {save_file_path}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_removed_npy(self, save_path: str | Path) -> None:
+        """Export removed structures as a DeepMD-style ``deepmd/npy`` dataset."""
+        try:
+            removed = self.structure.remove_data.tolist()
+            if not removed:
+                MessageManager.send_info_message("No removed structures to export.")
+                return
+            target = Path(save_path).joinpath("export_remove_model")
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(target), removed, type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_current_npy(self, save_path: str | Path, index: int) -> None:
+        """Export a single structure as DeepMD-style ``deepmd/npy`` dataset."""
+        try:
+            mapped = self.structure.convert_index(index)
+            structure = self.structure.all_data[mapped][0]
+            target = Path(save_path).joinpath(f"structure_{int(index)}")
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(target), [structure], type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_model_extxyz(self, save_path: str | Path) -> None:
+        """Export active and removed structures into ``save_path`` folder as extxyz."""
+        try:
+            good_path = Path(save_path).joinpath("export_good_model.xyz")
+            with open(good_path, "w", encoding="utf8") as handle:
+                for structure in self.structure.now_data:
+                    structure.write(handle)
+            removed_path = Path(save_path).joinpath("export_remove_model.xyz")
+            with open(removed_path, "w", encoding="utf8") as handle:
+                for structure in self.structure.remove_data:
+                    structure.write(handle)
+            MessageManager.send_info_message(f"File exported to: {save_path}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_model_npy(self, save_path: str | Path) -> None:
+        """Export active and removed structures into ``save_path`` folder as deepmd/npy."""
+        try:
+            target = Path(save_path)
+            good_target = target / "export_good_model"
+            removed_target = target / "export_remove_model"
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(good_target), self.structure.now_data.tolist(), type_map=type_map)
+            save_npy_structure(str(removed_target), self.structure.remove_data.tolist(), type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
     def export_model_xyz(self, save_path: str | Path) -> None:
         """Export active and removed structures into ``save_path`` folder."""
         try:
@@ -972,8 +1114,274 @@ class ResultData(QObject):
         element_structure_counts: dict[str, int] = {}
         group_counts: dict[str, int] = {}
 
-        energy_values: list[float] = []
-        energy_indices: list[int] = []
+        # Numeric distributions for HTML export (exact histograms, no sampling)
+        # We keep exact min/max/total stats and build histograms online.
+        dist_metrics: dict[str, dict[str, Any]] = {}
+        hist_bins_initial = 160
+        hist_bins_max = 2000
+
+        class _StreamHist:
+            def __init__(self, *, bins_initial: int, bins_max: int):
+                self._bins_initial = int(bins_initial)
+                self._bins_max = int(bins_max)
+                self.left: float | None = None
+                self.width: float | None = None
+                self.counts: npt.NDArray[np.int64] = np.zeros(0, dtype=np.int64)
+                self.total = 0
+                self.sum = 0.0
+                self.sum_sq = 0.0
+                self.min = float("inf")
+                self.max = float("-inf")
+
+            def _ensure_range(self, mn: float, mx: float) -> None:
+                if self.left is None or self.width is None:
+                    return
+                left = float(self.left)
+                width = float(self.width)
+                if not (np.isfinite(left) and np.isfinite(width) and width > 0.0):
+                    return
+                if self.counts.size == 0:
+                    self.counts = np.zeros(self._bins_initial, dtype=np.int64)
+                min_idx = int(np.floor((mn - left) / width))
+                max_idx = int(np.floor((mx - left) / width))
+                if min_idx < 0:
+                    add = -min_idx
+                    left -= float(add) * width
+                    self.counts = np.concatenate([np.zeros(add, dtype=np.int64), self.counts])
+                if max_idx >= self.counts.size:
+                    add = max_idx - int(self.counts.size) + 1
+                    self.counts = np.concatenate([self.counts, np.zeros(add, dtype=np.int64)])
+                self.left = left
+
+            def _shrink_if_needed(self) -> None:
+                if self.width is None:
+                    return
+                while self.counts.size > self._bins_max:
+                    if self.counts.size % 2 == 1:
+                        self.counts = np.concatenate([self.counts, np.zeros(1, dtype=np.int64)])
+                    self.counts = self.counts.reshape(-1, 2).sum(axis=1)
+                    self.width = float(self.width) * 2.0
+
+            def update(self, values: Any) -> None:
+                try:
+                    arr = np.asarray(values, dtype=np.float64).reshape(-1)
+                except Exception:
+                    return
+                if arr.size == 0:
+                    return
+                arr = arr[np.isfinite(arr)]
+                if arr.size == 0:
+                    return
+
+                self.total += int(arr.size)
+                self.sum += float(arr.sum())
+                self.sum_sq += float(np.square(arr).sum())
+
+                mn = float(arr.min())
+                mx = float(arr.max())
+                self.min = float(min(self.min, mn))
+                self.max = float(max(self.max, mx))
+
+                if self.left is None or self.width is None:
+                    rng = mx - mn
+                    width = float(rng / float(self._bins_initial)) if rng > 0 else 1.0
+                    if not np.isfinite(width) or width <= 0:
+                        width = 1.0
+                    width = max(width, 1e-12)
+                    self.width = width
+                    self.left = float(np.floor(mn / width) * width)
+                    self.counts = np.zeros(self._bins_initial, dtype=np.int64)
+
+                self._ensure_range(mn, mx)
+                if self.left is None or self.width is None or self.counts.size == 0:
+                    return
+                idx = np.floor((arr - float(self.left)) / float(self.width)).astype(np.int64)
+                mask = (idx >= 0) & (idx < self.counts.size)
+                if np.any(mask):
+                    bc = np.bincount(idx[mask], minlength=self.counts.size).astype(np.int64, copy=False)
+                    self.counts += bc
+                self._shrink_if_needed()
+
+            def export(self) -> dict[str, Any]:
+                if self.left is None or self.width is None:
+                    return {"hist": [], "hist_left": 0.0, "hist_right": 0.0, "bins": 0}
+                bins = int(self.counts.size)
+                left = float(self.left)
+                right = left + float(self.width) * float(bins)
+                return {
+                    "hist": self.counts.astype(np.int64, copy=False).tolist(),
+                    "hist_left": float(left),
+                    "hist_right": float(right),
+                    "bins": bins,
+                }
+
+        class _StreamHistMulti:
+            def __init__(self, names: Sequence[str], *, bins_initial: int, bins_max: int):
+                self.names = [str(n) for n in names]
+                self._bins_initial = int(bins_initial)
+                self._bins_max = int(bins_max)
+                self.left: float | None = None
+                self.width: float | None = None
+                self.counts: npt.NDArray[np.int64] = np.zeros((len(self.names), 0), dtype=np.int64)
+                self.total = 0
+                self.min = float("inf")
+                self.max = float("-inf")
+
+            def _ensure_range(self, mn: float, mx: float) -> None:
+                if self.left is None or self.width is None:
+                    return
+                left = float(self.left)
+                width = float(self.width)
+                if not (np.isfinite(left) and np.isfinite(width) and width > 0.0):
+                    return
+                if self.counts.shape[1] == 0:
+                    self.counts = np.zeros((len(self.names), self._bins_initial), dtype=np.int64)
+                min_idx = int(np.floor((mn - left) / width))
+                max_idx = int(np.floor((mx - left) / width))
+                if min_idx < 0:
+                    add = -min_idx
+                    left -= float(add) * width
+                    pad = np.zeros((len(self.names), add), dtype=np.int64)
+                    self.counts = np.concatenate([pad, self.counts], axis=1)
+                if max_idx >= self.counts.shape[1]:
+                    add = max_idx - int(self.counts.shape[1]) + 1
+                    pad = np.zeros((len(self.names), add), dtype=np.int64)
+                    self.counts = np.concatenate([self.counts, pad], axis=1)
+                self.left = left
+
+            def _shrink_if_needed(self) -> None:
+                if self.width is None:
+                    return
+                while self.counts.shape[1] > self._bins_max:
+                    if self.counts.shape[1] % 2 == 1:
+                        pad = np.zeros((len(self.names), 1), dtype=np.int64)
+                        self.counts = np.concatenate([self.counts, pad], axis=1)
+                    # merge adjacent bins
+                    self.counts = self.counts.reshape(len(self.names), -1, 2).sum(axis=2)
+                    self.width = float(self.width) * 2.0
+
+            def update(self, values: Any) -> None:
+                try:
+                    arr = np.asarray(values, dtype=np.float64).reshape(len(self.names))
+                except Exception:
+                    return
+                if arr.size != len(self.names):
+                    return
+                if not np.all(np.isfinite(arr)):
+                    return
+                self.total += 1
+                mn = float(arr.min())
+                mx = float(arr.max())
+                self.min = float(min(self.min, mn))
+                self.max = float(max(self.max, mx))
+
+                if self.left is None or self.width is None:
+                    rng = mx - mn
+                    width = float(rng / float(self._bins_initial)) if rng > 0 else 1.0
+                    if not np.isfinite(width) or width <= 0:
+                        width = 1.0
+                    width = max(width, 1e-12)
+                    self.width = width
+                    self.left = float(np.floor(mn / width) * width)
+                    self.counts = np.zeros((len(self.names), self._bins_initial), dtype=np.int64)
+
+                self._ensure_range(mn, mx)
+                if self.left is None or self.width is None or self.counts.shape[1] == 0:
+                    return
+                idx = np.floor((arr - float(self.left)) / float(self.width)).astype(np.int64)
+                for i in range(len(self.names)):
+                    j = int(idx[i])
+                    if 0 <= j < self.counts.shape[1]:
+                        self.counts[i, j] += 1
+                self._shrink_if_needed()
+
+            def update_many(self, values: Any) -> None:
+                try:
+                    arr2 = np.asarray(values, dtype=np.float64).reshape(-1, len(self.names))
+                except Exception:
+                    return
+                if arr2.size == 0:
+                    return
+                mask = np.all(np.isfinite(arr2), axis=1)
+                if not np.any(mask):
+                    return
+                arr2 = arr2[mask]
+                self.total += int(arr2.shape[0])
+                mn = float(arr2.min())
+                mx = float(arr2.max())
+                self.min = float(min(self.min, mn))
+                self.max = float(max(self.max, mx))
+
+                if self.left is None or self.width is None:
+                    rng = mx - mn
+                    width = float(rng / float(self._bins_initial)) if rng > 0 else 1.0
+                    if not np.isfinite(width) or width <= 0:
+                        width = 1.0
+                    width = max(width, 1e-12)
+                    self.width = width
+                    self.left = float(np.floor(mn / width) * width)
+                    self.counts = np.zeros((len(self.names), self._bins_initial), dtype=np.int64)
+
+                self._ensure_range(mn, mx)
+                if self.left is None or self.width is None or self.counts.shape[1] == 0:
+                    return
+                idx = np.floor((arr2 - float(self.left)) / float(self.width)).astype(np.int64)
+                for i in range(len(self.names)):
+                    col = idx[:, i]
+                    m2 = (col >= 0) & (col < self.counts.shape[1])
+                    if np.any(m2):
+                        bc = np.bincount(col[m2], minlength=self.counts.shape[1]).astype(np.int64, copy=False)
+                        self.counts[i] += bc
+                self._shrink_if_needed()
+
+            def export(self) -> dict[str, Any]:
+                if self.left is None or self.width is None:
+                    return {"bins": 0, "hist_left": 0.0, "hist_right": 0.0, "series": []}
+                bins = int(self.counts.shape[1])
+                left = float(self.left)
+                right = left + float(self.width) * float(bins)
+                series = []
+                for i, name in enumerate(self.names):
+                    series.append(
+                        {"name": name, "hist": self.counts[i].astype(np.int64, copy=False).tolist()}
+                    )
+                return {"bins": bins, "hist_left": float(left), "hist_right": float(right), "series": series}
+
+        def _update_metric(
+            key: str,
+            *,
+            label: str,
+            unit: str = "",
+            values: npt.NDArray[np.floating[Any]]
+            | npt.NDArray[np.integer[Any]]
+            | Sequence[float]
+            | float
+            | int,
+            sample_per_structure: int = 512,
+        ) -> None:
+            metric = dist_metrics.get(key)
+            if metric is None:
+                metric = {
+                    "key": key,
+                    "label": str(label),
+                    "unit": str(unit or ""),
+                    "hist": _StreamHist(bins_initial=hist_bins_initial, bins_max=hist_bins_max),
+                }
+                dist_metrics[key] = metric
+            metric["label"] = str(label)
+            metric["unit"] = str(unit or "")
+            try:
+                metric["hist"].update(values)
+            except Exception:
+                return
+
+        # Force RMS summary (text only; no plot)
+        force_sum_sq = 0.0
+        force_count = 0
+        force_rms_per_structure: list[float] = []
+        force_structures = 0
+
+        mag_key_re = re.compile(r"(mag|spin)", re.IGNORECASE)
 
         for s, idx in zip(structures.now_data, structures.group_array.now_data):
             try:
@@ -1004,16 +1412,137 @@ class ResultData(QObject):
             if isinstance(group_value, str) and group_value:
                 group_counts[group_value] = group_counts.get(group_value, 0) + 1
 
-            # Energy statistics (per-atom)
-            if getattr(s, "has_energy", False):
-                try:
-                    energy_values.append(float(s.per_atom_energy))
-                    energy_indices.append(int(idx))
-                except Exception:
-                    pass
+            # Magnetism/spin numeric arrays (DFT/extxyz per-atom fields)
+            try:
+                atomic_props = getattr(s, "atomic_properties", {}) or {}
+                for prop_key, prop_val in atomic_props.items():
+                    if prop_key in {"pos", "species", "species_id"}:
+                        continue
+                    # Avoid duplicating forces handled above
+                    if prop_key == getattr(s, "force_label", ""):
+                        continue
+                    if mag_key_re.search(str(prop_key)) is None:
+                        continue
+                    try:
+                        arr = np.asarray(prop_val)
+                    except Exception:
+                        continue
+                    if arr.size == 0:
+                        continue
+                    if not np.issubdtype(arr.dtype, np.number):
+                        continue
+                    arr = np.asarray(arr, dtype=np.float64)
+                    if arr.ndim == 1:
+                        _update_metric(
+                            f"mag.{prop_key}",
+                            label=f"{prop_key} (all atoms)",
+                            unit="",
+                            values=arr,
+                            sample_per_structure=1024,
+                        )
+                    elif arr.ndim == 2 and arr.shape[1] == 1:
+                        _update_metric(
+                            f"mag.{prop_key}",
+                            label=f"{prop_key} (all atoms)",
+                            unit="",
+                            values=arr.reshape(-1),
+                            sample_per_structure=1024,
+                        )
+                    elif arr.ndim == 2 and arr.shape[1] == 3:
+                        _update_metric(
+                            f"mag.{prop_key}.component",
+                            label=f"{prop_key} components (all atoms)",
+                            unit="",
+                            values=arr.reshape(-1),
+                            sample_per_structure=2048,
+                        )
+            except Exception:
+                logger.debug(traceback.format_exc())
 
             # Yield a progress unit for UI hooks
             yield 1
+
+        # ------------------------------------------------------------------
+        # Prefer plot datasets for numeric distributions.
+        # In this codebase, NepPlotData/DPPlotData `.x` corresponds to the DFT/reference axis.
+        # ------------------------------------------------------------------
+        try:
+            energy_ds = getattr(self, "energy", None)
+            if energy_ds is not None and getattr(energy_ds, "now_data", None) is not None:
+                e_vals = np.asarray(energy_ds.x, dtype=np.float64).reshape(-1)
+                e_vals = e_vals[np.isfinite(e_vals)]
+                if e_vals.size:
+                    _update_metric("energy.per_atom", label="Energy per atom", unit="eV/atom", values=e_vals)
+        except Exception:
+            logger.debug(traceback.format_exc())
+
+        try:
+            force_ds = getattr(self, "force", None)
+            if force_ds is not None and getattr(force_ds, "now_data", None) is not None:
+                # Use plotted x-axis directly (DFT/reference values).
+                f_vals = np.asarray(force_ds.x, dtype=np.float64).reshape(-1)
+                f_vals = f_vals[np.isfinite(f_vals)]
+                if f_vals.size:
+                    _update_metric("force.component", label="Force components (DFT, x/y/z)", unit="eV/Å", values=f_vals)
+                # RMS + atom count when x contains 3 components per atom.
+                if f_vals.size and (f_vals.size % 3 == 0):
+                    force_mat = f_vals.reshape(-1, 3)
+                    mags = np.linalg.norm(force_mat, axis=1)
+                    mags = mags[np.isfinite(mags)]
+                    if mags.size:
+                        force_count = int(mags.size)
+                        force_sum_sq = float(np.sum(np.square(mags)))
+                        try:
+                            force_structures = int(np.unique(force_ds.group_array.now_data).size)
+                        except Exception:
+                            force_structures = 0
+                        force_rms_per_structure = []  # not displayed; keep empty
+        except Exception:
+            logger.debug(traceback.format_exc())
+
+        try:
+            virial_ds = getattr(self, "virial", None)
+            if virial_ds is not None and getattr(virial_ds, "now_data", None) is not None and virial_ds.now_data.size != 0:
+                # Use plotted x-axis directly (DFT/reference values).
+                v_flat = np.asarray(virial_ds.x, dtype=np.float64).reshape(-1)
+                if v_flat.size and (v_flat.size % 6 == 0):
+                    v6 = v_flat.reshape(-1, 6)
+                    v6 = v6[np.all(np.isfinite(v6), axis=1)]
+                    if v6.size:
+                        v_labels = ["xx", "yy", "zz", "xy", "yz", "zx"]
+                        virial_hist = _StreamHistMulti(v_labels, bins_initial=hist_bins_initial, bins_max=hist_bins_max)
+                        virial_hist.update_many(v6)
+                else:
+                    virial_hist = None  # type: ignore[assignment]
+            else:
+                virial_hist = None  # type: ignore[assignment]
+        except Exception:
+            logger.debug(traceback.format_exc())
+            virial_hist = None  # type: ignore[assignment]
+
+        try:
+            stress_ds = getattr(self, "stress", None)
+            if stress_ds is not None and getattr(stress_ds, "now_data", None) is not None and stress_ds.now_data.size != 0:
+                # Use plotted x-axis directly (DFT/reference values).
+                s_flat = np.asarray(stress_ds.x, dtype=np.float64).reshape(-1)
+                if s_flat.size and (s_flat.size % 6 == 0):
+                    s6 = s_flat.reshape(-1, 6)
+                    s6 = s6[np.all(np.isfinite(s6), axis=1)]
+                    if s6.size:
+                        s_labels = ["xx", "yy", "zz", "xy", "yz", "zx"]
+                        stress_hist = _StreamHistMulti(s_labels, bins_initial=hist_bins_initial, bins_max=hist_bins_max)
+                        stress_hist.update_many(s6)
+                        stress_unit = "GPa"
+                else:
+                    stress_hist = None  # type: ignore[assignment]
+                    stress_unit = "GPa"
+            else:
+                stress_hist = None  # type: ignore[assignment]
+                stress_unit = "GPa"
+        except Exception:
+            logger.debug(traceback.format_exc())
+            stress_hist = None  # type: ignore[assignment]
+            stress_unit = "GPa"
 
         # Prepare counts section
         summary_counts = {
@@ -1074,25 +1603,33 @@ class ResultData(QObject):
                     }
                 )
 
-        # Energy statistics
-        energy_stats: dict[str, Any] = {}
-        if energy_values:
-            e_arr = np.asarray(energy_values, dtype=float)
-            energy_stats = {
-                "count": int(e_arr.size),
-                "min": float(e_arr.min()),
-                "max": float(e_arr.max()),
-                "mean": float(e_arr.mean()),
-                "std": float(e_arr.std()),
-                "median": float(np.median(e_arr)),
-            }
-            # Track indices of extremal structures for reference
-            e_min_idx = int(energy_indices[int(np.argmin(e_arr))])
-            e_max_idx = int(energy_indices[int(np.argmax(e_arr))])
-            energy_stats["min_index"] = e_min_idx
-            energy_stats["max_index"] = e_max_idx
-        else:
-            energy_stats = {"count": 0}
+        # Energy statistics (prefer plot dataset x-axis = DFT/reference)
+        energy_stats: dict[str, Any] = {"count": 0}
+        try:
+            energy_ds = getattr(self, "energy", None)
+            if energy_ds is not None and getattr(energy_ds, "now_data", None) is not None:
+                e_arr = np.asarray(energy_ds.x, dtype=np.float64).reshape(-1)
+                e_arr = e_arr[np.isfinite(e_arr)]
+                if e_arr.size:
+                    energy_stats = {
+                        "count": int(e_arr.size),
+                        "min": float(e_arr.min()),
+                        "max": float(e_arr.max()),
+                        "mean": float(e_arr.mean()),
+                        "std": float(e_arr.std()),
+                        "median": float(np.median(e_arr)),
+                    }
+                    # Map back to original structure indices when one-to-one.
+                    if int(e_arr.size) == int(active_structures):
+                        try:
+                            origin_map = np.asarray(structures.group_array.now_data, dtype=np.int64).reshape(-1)
+                            if origin_map.size == e_arr.size:
+                                energy_stats["min_index"] = int(origin_map[int(np.argmin(e_arr))])
+                                energy_stats["max_index"] = int(origin_map[int(np.argmax(e_arr))])
+                        except Exception:
+                            pass
+        except Exception:
+            logger.debug(traceback.format_exc())
 
         # Health diagnostics
         health_messages: list[str] = []
@@ -1135,6 +1672,84 @@ class ResultData(QObject):
         summary["data_file"] = str(self.data_xyz_path.name)
         summary["model_file"] = str(self.nep_txt_path.name)
         summary["group_by"] = group_by.value
+        if force_count > 0:
+            per_struct = np.asarray(force_rms_per_structure, dtype=np.float64) if force_rms_per_structure else np.array([], dtype=np.float64)
+            summary["force_rms"] = {
+                "structures_with_forces": int(force_structures),
+                "atoms_with_forces": int(force_count),
+                "rms_all_atoms": float(np.sqrt(force_sum_sq / float(force_count))),
+                "min_rms_per_structure": float(per_struct.min()) if per_struct.size else 0.0,
+                "max_rms_per_structure": float(per_struct.max()) if per_struct.size else 0.0,
+                "mean_rms_per_structure": float(per_struct.mean()) if per_struct.size else 0.0,
+                "median_rms_per_structure": float(np.median(per_struct)) if per_struct.size else 0.0,
+            }
+        else:
+            summary["force_rms"] = {
+                "structures_with_forces": 0,
+                "atoms_with_forces": 0,
+                "rms_all_atoms": 0.0,
+            }
+
+        virial_total = int(getattr(virial_hist, "total", 0) or 0) if "virial_hist" in locals() else 0
+        stress_total = int(getattr(stress_hist, "total", 0) or 0) if "stress_hist" in locals() else 0
+        if dist_metrics or virial_total > 0 or stress_total > 0:
+            metrics_list: list[dict[str, Any]] = []
+            for item in dist_metrics.values():
+                hist: _StreamHist | None = item.get("hist")
+                if hist is None:
+                    continue
+                total = int(hist.total)
+                if total <= 0:
+                    continue
+                s1 = float(hist.sum)
+                s2 = float(hist.sum_sq)
+                mean = s1 / float(total) if total > 0 else 0.0
+                var = (s2 / float(total)) - mean * mean if total > 0 else 0.0
+                std = float(np.sqrt(max(0.0, var)))
+                exported = hist.export()
+                metrics_list.append(
+                    {
+                        "key": item.get("key", ""),
+                        "label": item.get("label", item.get("key", "")),
+                        "unit": item.get("unit", ""),
+                        "min": float(hist.min) if np.isfinite(hist.min) else 0.0,
+                        "max": float(hist.max) if np.isfinite(hist.max) else 0.0,
+                        "total": total,
+                        "mean": float(mean),
+                        "std": float(std),
+                        **exported,
+                    }
+                )
+            if virial_hist is not None and virial_total > 0 and np.isfinite(virial_hist.min) and np.isfinite(virial_hist.max):
+                exported = virial_hist.export()
+                metrics_list.append(
+                    {
+                        "key": "virial.per_atom.v6",
+                        "label": "Virial per atom (DFT, 6 components)",
+                        "unit": "eV/atom",
+                        "min": float(virial_hist.min),
+                        "max": float(virial_hist.max),
+                        "total": int(virial_total),
+                        **exported,
+                    }
+                )
+            if stress_hist is not None and stress_total > 0 and np.isfinite(stress_hist.min) and np.isfinite(stress_hist.max):
+                exported = stress_hist.export()
+                metrics_list.append(
+                    {
+                        "key": "stress.v6",
+                        "label": "Stress (DFT, 6 components)",
+                        "unit": str(stress_unit),
+                        "min": float(stress_hist.min),
+                        "max": float(stress_hist.max),
+                        "total": int(stress_total),
+                        **exported,
+                    }
+                )
+            metrics_list.sort(key=lambda d: str(d.get("key", "")))
+            summary["numeric_distributions"] = {
+                "metrics": metrics_list,
+            }
 
         self._dataset_summary = summary
 

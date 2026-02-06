@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.structure import get_clusters, process_organic_clusters
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
@@ -90,6 +91,17 @@ class CellScalingCard(MakeDataCard):
         self.num_label.setToolTip("Number of structures to generate")
         self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
 
+        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox.setChecked(False)
+        self.seed_checkbox.setToolTip("Enable reproducible random sampling")
+        self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
+        self.seed_frame = SpinBoxUnitInputFrame(self)
+        self.seed_frame.set_input("", 1, "int")
+        self.seed_frame.setRange(0, 2**31 - 1)
+        self.seed_frame.set_input_value([0])
+        self.seed_frame.setEnabled(False)
+        self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
+
         self.settingLayout.addWidget(self.engine_label,0, 0,1, 1)
         self.settingLayout.addWidget(self.engine_type_combo,0, 1, 1, 2)
 
@@ -102,6 +114,8 @@ class CellScalingCard(MakeDataCard):
         self.settingLayout.addWidget(self.num_label, 3, 0, 1, 1)
 
         self.settingLayout.addWidget(self.num_condition_frame, 3, 1, 1,2)
+        self.settingLayout.addWidget(self.seed_checkbox, 4, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 4, 1, 1, 2)
 
     def process_structure(self, structure):
         """Generate lattice perturbations by scaling cell lengths and optionally angles.
@@ -122,6 +136,9 @@ class CellScalingCard(MakeDataCard):
         max_num = int(self.num_condition_frame.get_input_value()[0])
         identify_organic=self.organic_checkbox.isChecked()
 
+        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
+        rng = np.random.default_rng(base_seed)
+
         if self.perturb_angle_checkbox.isChecked():
             perturb_angles=True
             dim=6 #abc + angles
@@ -130,11 +147,11 @@ class CellScalingCard(MakeDataCard):
             perturb_angles=False
         if engine_type == 0:
 
-            sobol_engine = Sobol(d=dim, scramble=True)
+            sobol_engine = Sobol(d=dim, scramble=True, seed=base_seed)
             sobol_seq = sobol_engine.random(max_num)
             perturbation_factors = 1 + (sobol_seq - 0.5) * 2 * max_scaling
         else:
-            perturbation_factors = 1 + np.random.uniform(-max_scaling, max_scaling, (max_num, dim))
+            perturbation_factors = 1 + rng.uniform(-max_scaling, max_scaling, (max_num, dim))
 
         orig_lattice = structure.cell.array
         orig_lengths = np.linalg.norm(orig_lattice, axis=1)
@@ -165,9 +182,8 @@ class CellScalingCard(MakeDataCard):
                     new_angles[2])
                 cz = np.sqrt(max(new_lengths[2] ** 2 - cx ** 2 - cy ** 2, 0))
                 new_lattice[2] = [cx, cy, cz]
-
-
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type","") + f" Scaling(scaling={max_scaling},{'uniform' if engine_type==1 else 'Sobol'  })"
+            eng = "U" if engine_type == 1 else "S"
+            append_config_tag(new_structure, f"LSc(max={max_scaling},{eng})")
 
             new_structure.set_cell(new_lattice,  scale_atoms=True)
             if identify_organic:
@@ -192,6 +208,8 @@ class CellScalingCard(MakeDataCard):
 
         data_dict['scaling_condition'] = self.scaling_condition_frame.get_input_value()
         data_dict['num_condition'] = self.num_condition_frame.get_input_value()
+        data_dict["use_seed"] = self.seed_checkbox.isChecked()
+        data_dict["seed"] = self.seed_frame.get_input_value()
         return data_dict
 
     def from_dict(self, data_dict):
@@ -209,3 +227,5 @@ class CellScalingCard(MakeDataCard):
         self.perturb_angle_checkbox.setChecked(data_dict['perturb_angle'])
         self.scaling_condition_frame.set_input_value(data_dict['scaling_condition'])
         self.num_condition_frame.set_input_value(data_dict['num_condition'])
+        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
+        self.seed_frame.set_input_value(data_dict.get("seed", [0]))

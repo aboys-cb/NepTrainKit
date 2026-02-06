@@ -18,6 +18,7 @@ HELP_URL = "https://neptrainkit.readthedocs.io/en/latest/index.html"
 FEEDBACK_URL = f"https://github.com/{OWNER}/{REPO}/issues"
 RELEASES_URL = f"https://github.com/{OWNER}/{REPO}/releases"
 RELEASES_API_URL = f"https://api.github.com/repos/{OWNER}/{REPO}/releases/latest"
+RELEASES_LIST_API_URL = f"https://api.github.com/repos/{OWNER}/{REPO}/releases"
 YEAR = 2024
 AUTHOR = "ChengBing Chen"
 

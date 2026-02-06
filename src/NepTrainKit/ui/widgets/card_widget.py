@@ -246,7 +246,14 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
 
 
 class MakeDataCard(MakeDataCardWidget):
-    """Workflow card that processes datasets in a background thread."""
+    """Workflow card that processes datasets in a background thread.
+
+    Notes for card authors
+    ----------------------
+    - When adding provenance to ``atoms.info["Config_type"]``, do not manually
+      concatenate strings. Use ``NepTrainKit.core.config_type.append_config_tag``.
+    - Keep tags short, stable, and quote-free so they are safe to export via EXTXYZ.
+    """
 
     separator = False
     card_name = "MakeDataCard"

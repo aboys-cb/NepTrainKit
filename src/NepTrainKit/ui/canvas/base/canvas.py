@@ -243,6 +243,16 @@ class CanvasLayoutBase(CanvasBase):
         if reverse:
             self.nep_result_data.uncheck(structure_index)
             self.update_scatter_color(structure_index, Brushes.Default)
+            # Restore reject highlights for indices that are still tagged as bad.
+            try:
+                reject = getattr(self.nep_result_data, "reject_index", None)
+                if reject:
+                    to_reject = [idx for idx in structure_index if idx in reject]
+                    setter = getattr(self, "set_reject_highlight", None)
+                    if setter is not None and to_reject:
+                        setter(to_reject, True)
+            except Exception:
+                pass
         else:
             self.nep_result_data.select(structure_index)
             self.update_scatter_color(structure_index, Brushes.Selected)

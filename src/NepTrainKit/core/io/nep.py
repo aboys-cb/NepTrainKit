@@ -14,7 +14,15 @@ from NepTrainKit.paths import as_path
 from NepTrainKit.paths import get_bundled_nep89_path
 from NepTrainKit.config import Config
 from .base import NepPlotData, ResultData, StructureSyncRule
-from NepTrainKit.core.utils import read_nep_out_file, check_fullbatch, read_nep_in, aggregate_per_atom_to_structure,concat_nep_dft_array, is_charge_model
+from NepTrainKit.core.utils import (
+    aggregate_per_atom_to_structure,
+    check_fullbatch,
+    concat_nep_dft_array,
+    is_charge_model,
+    is_spin_model,
+    read_nep_in,
+    read_nep_out_file,
+)
 from NepTrainKit.core.types import ForcesMode
 
 
@@ -352,12 +360,7 @@ class NepTrainResultData(ResultData):
             logger.info(f"Output files will be saved to: {output_dir.name}/")
         
         # detect spin model marker in nep.txt
-        has_spin = False
-        try:
-            content = nep_txt_path.read_text(encoding="utf-8", errors="ignore").lower()
-            has_spin = "nep4_spin" in content
-        except Exception:
-            has_spin = False
+        has_spin = is_spin_model(nep_txt_path)
         
         # Build output paths in the appropriate directory
         energy_out_path = output_dir / f"energy_{output_suffix}.out"

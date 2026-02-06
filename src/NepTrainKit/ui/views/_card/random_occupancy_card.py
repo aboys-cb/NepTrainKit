@@ -35,8 +35,8 @@ class RandomOccupancyCard(MakeDataCard):
 
         self.manual_label = BodyLabel("Manual comp", self.setting_widget)
         self.manual_edit = LineEdit(self.setting_widget)
-        self.manual_edit.setPlaceholderText("Co:0.33,Cr:0.33,Ni:0.34 (preferred) or JSON object")
-        self.manual_label.setToolTip("Element fractions. Used when 'Manual' is selected or when info is missing.")
+        self.manual_edit.setPlaceholderText("Co:0.33,Cr:0.33,Ni:0.34")
+        self.manual_label.setToolTip("Element fractions. Used when 'Manual' is selected or Config_type lacks Comp(...).")
         self.manual_label.installEventFilter(ToolTipFilter(self.manual_label, 300, ToolTipPosition.TOP))
 
         self.mode_label = BodyLabel("Mode", self.setting_widget)
@@ -81,6 +81,8 @@ class RandomOccupancyCard(MakeDataCard):
 
     @staticmethod
     def _read_comp_from_config_type(structure) -> dict[str, float]:
+        # Cards exchange composition context through Config_type tags only.
+        # Avoid introducing extra atoms.info fields for card parameters.
         cfg = str(structure.info.get("Config_type", "") or "")
         if not cfg:
             return {}
@@ -121,7 +123,7 @@ class RandomOccupancyCard(MakeDataCard):
     def process_structure(self, structure):
         comp = self._read_composition(structure)
         if not comp:
-            MessageManager.send_warning_message("RandomOccupancy: missing composition (info or manual).")
+            MessageManager.send_warning_message("RandomOccupancy: missing composition (Config_type Comp tag or manual input).")
             return [structure]
 
         mode = self.mode_combo.currentText()

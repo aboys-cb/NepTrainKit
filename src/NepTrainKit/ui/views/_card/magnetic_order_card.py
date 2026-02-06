@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-
 import numpy as np
 from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
 
@@ -284,8 +282,8 @@ class MagneticOrderCard(MakeDataCard):
         return (signs[:, None] * mags[:, None]) * dirs
 
     def _attach_metadata(self, atoms, *, order: str):  # noqa: ARG002
-        # Intentionally do not store extra `atoms.info[...]` metadata.
-        # Card configuration is persisted separately; Config_type tags are the user-facing hint.
+        # Intentionally do not store card metadata in atoms.info.
+        # Card parameters are persisted in saved card JSON; runtime trace only uses Config_type tags.
         return
 
     @staticmethod

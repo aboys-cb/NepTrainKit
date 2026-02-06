@@ -219,6 +219,8 @@ class CompositionSweepCard(MakeDataCard):
                 sweep_index += 1
 
                 tag = ",".join(f"{e}={comp[e]:.4g}" for e in elems)
+                # Card-generated workflow markers belong in Config_type only.
+                # Do not persist card parameters into atoms.info (especially JSON blobs).
                 append_config_tag(new_structure, f"Comp({tag})")
                 out.append(new_structure)
                 if len(out) >= max_outputs:

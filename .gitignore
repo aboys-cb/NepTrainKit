@@ -9,3 +9,8 @@
 .pytest_cache/
 tests/_sandbox_tmp/
 tests/_localappdata/
+tests/_tmp/
+tests/_pytest_cache/
+tests/_pytest_tmp/
+tests/pytest-cache-files-*/
+/.tmp_localappdata/

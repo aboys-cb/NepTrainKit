@@ -193,7 +193,29 @@ class TestNepTrainResultData( unittest.TestCase):
         result.sync_structures("force", [target_idx])
         index=result.force.convert_index(target_idx)
         synced_force = result.force.now_data[index, result.force.x_cols]
- 
+
+        expected_norm = np.linalg.norm(new_forces, axis=0, keepdims=True).astype(np.float32)
+        assert_allclose(synced_force, expected_norm, atol=1e-6)
+
+    def test_sync_structures_respects_force_mode_raw(self):
+        tmp_dir = self._make_nep_workdir()
+        prev_mode = Config.get("widget", "forces_data", ForcesMode.Raw)
+        self.addCleanup(lambda: Config.set("widget", "forces_data", prev_mode if prev_mode is not None else ForcesMode.Raw))
+        Config.set("widget", "forces_data", ForcesMode.Raw)
+
+        local_train = os.path.join(tmp_dir, "train.xyz")
+        result = NepTrainResultData.from_path(local_train)
+        result.load()
+
+        target_idx = int(result.structure.now_indices[0])
+        structure = result.structure.all_data[target_idx]
+        new_forces = np.full_like(structure.forces, 0.25, dtype=np.float32)
+        structure.forces = new_forces
+
+        result.sync_structures("force", [target_idx])
+        rows = result.force.convert_index([target_idx])
+        synced_force = result.force.now_data[rows, result.force.x_cols].reshape(-1, 3)
+
         assert_allclose(synced_force, new_forces, atol=1e-6)
 
     def test_sync_structures_ignores_removed_and_unknown(self):

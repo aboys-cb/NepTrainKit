@@ -15,7 +15,7 @@ from NepTrainKit.config import Config
 from NepTrainKit.ui.widgets import MyComboBoxSettingCard, DoubleSpinBoxSettingCard, LineEditSettingCard
 from NepTrainKit.ui.widgets import ColorSettingCard
 from NepTrainKit.core.types import ForcesMode, CanvasMode, NepBackend
-from NepTrainKit.ui.update import UpdateWoker,UpdateNEP89Woker
+from NepTrainKit.ui.update import UpdateWoker, UpdateNEP89Woker, get_pending_update_version
 from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR
 
 
@@ -311,8 +311,7 @@ class SettingsWidget(ScrollArea):
             'Check for Updates',
             FluentIcon.INFO,
             "About",
-            'Copyright @' + f" {YEAR}, {AUTHOR}. " +
-            "Version" + f" {__version__}",
+            self._base_about_description(),
             self.about_group
         )
         self.about_nep89_card = PrimaryPushSettingCard(
@@ -322,6 +321,7 @@ class SettingsWidget(ScrollArea):
             "NEP official NEP89 large model",
             self.about_group
         )
+        self._refresh_about_update_content()
         self.init_layout()
         self.init_signal()
 
@@ -437,7 +437,8 @@ class SettingsWidget(ScrollArea):
         None
             Starts an asynchronous update check.
         """
-        UpdateWoker(self).check_update()
+        self._update_worker = UpdateWoker(self)
+        self._update_worker.check_update(manual=True, on_finished=self._on_update_check_finished)
 
     def check_update_nep89(self):
         """Check for updates of the bundled NEP89 model assets.
@@ -447,6 +448,31 @@ class SettingsWidget(ScrollArea):
         None
             Starts an asynchronous NEP89 update check.
         """
-        UpdateNEP89Woker(self).check_update()
+        self._update_nep89_worker = UpdateNEP89Woker(self)
+        self._update_nep89_worker.check_update()
+
+    def _base_about_description(self) -> str:
+        """Return the base About card description text."""
+        return 'Copyright @' + f" {YEAR}, {AUTHOR}. " + "Version" + f" {__version__}"
+
+    def _refresh_about_update_content(self) -> None:
+        """Refresh the About card text based on cached update status."""
+        description = self._base_about_description()
+        pending_version = get_pending_update_version()
+        if pending_version:
+            description += f"\\nNew version available: v{pending_version}"
+        if hasattr(self.about_card, "setContent"):
+            self.about_card.setContent(description)
+
+    def refresh_update_hint(self) -> None:
+        """Public hook used by main window to refresh update hint text."""
+        self._refresh_about_update_content()
+
+    def _on_update_check_finished(self, _result) -> None:
+        """Refresh local/global update hints after manual check."""
+        self._refresh_about_update_content()
+        win = self.window()
+        if hasattr(win, "refresh_update_indicators"):
+            win.refresh_update_indicators()
 
 

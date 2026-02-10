@@ -7,7 +7,7 @@ import traceback
 from collections.abc import Iterable
 from typing import Any
 
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QObject, QThread, Signal, Slot
 from qfluentwidgets import StateToolTip
 from ase.build.tools import sort as ase_sort
 from loguru import logger
@@ -107,9 +107,74 @@ class FilterProcessingThread(QThread):
             self.errorSignal.emit(str(e))
 
 
+class FunctionWorker(QObject):
+    """Run an arbitrary callable in a QThread and return its result via signals.
+
+    Notes
+    -----
+    The callable must not touch Qt UI objects. It should only perform pure
+    computation or IO and then return a Python object.
+    """
+
+    finished = Signal(object)
+    error = Signal(str)
+
+    def __init__(self, func, args=(), kwargs=None):
+        super().__init__()
+        self._func = func
+        self._args = args or ()
+        self._kwargs = kwargs or {}
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            result = self._func(*self._args, **self._kwargs)
+        except Exception as e:  # noqa: BLE001
+            logger.debug(traceback.format_exc())
+            self.error.emit(str(e))
+            return
+        self.finished.emit(result)
+
+
+def run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs) -> QThread:
+    """Convenience helper to run ``func`` in a background QThread.
+
+    Returns
+    -------
+    QThread
+        Started thread. Caller should keep a reference until finished.
+    """
+    thread = QThread(parent)
+    worker = FunctionWorker(func, args=args, kwargs=kwargs)
+    worker.moveToThread(thread)
+    # Keep a strong Python reference so the worker is not GC'd before `thread.started`.
+    # (If GC'd early, the thread event loop can keep running and callers may never
+    # receive finished/error signals.)
+    setattr(thread, "_ntk_worker", worker)
+
+    thread.started.connect(worker.run)
+    worker.finished.connect(thread.quit)
+    worker.error.connect(thread.quit)
+
+    if on_finished is not None:
+        worker.finished.connect(on_finished)
+    if on_error is not None:
+        worker.error.connect(on_error)
+
+    worker.finished.connect(worker.deleteLater)
+    worker.error.connect(worker.deleteLater)
+    thread.finished.connect(lambda: setattr(thread, "_ntk_worker", None))
+    thread.finished.connect(thread.deleteLater)
+
+    thread.start()
+    return thread
+
+
 __all__ = [
     'LoadingThread',
     'DataProcessingThread',
     'FilterProcessingThread',
+    'FunctionWorker',
+    'run_in_thread',
 ]
 

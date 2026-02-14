@@ -353,8 +353,8 @@ class NepTrainResultData(ResultData):
             output_dir = dataset_path.parent
             output_suffix = file_name
         else:
-            # Other NEP files (nep1.txt, nep2.txt, etc.), create result_XXX directory
-            output_dir = dataset_path.parent / f"result_{nep_stem}"
+            # Other NEP files (nep1.txt, nep2.txt, etc.), create file_name_XXX directory
+            output_dir = dataset_path.parent / f"{file_name}_{nep_stem}"
             output_dir.mkdir(exist_ok=True)
             output_suffix = file_name
             logger.info(f"Output files will be saved to: {output_dir.name}/")

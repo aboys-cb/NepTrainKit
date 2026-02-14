@@ -236,12 +236,12 @@ class DeepmdResultData(ResultData):
         nep_txt_path = Path(nep_txt_path)
 
         # Match NEP loader behaviour: default nep.txt writes alongside dataset;
-        # alternate models write into result_<model> folders.
+        # alternate models write into dataset_path_<model> folders.
         nep_stem = nep_txt_path.stem
         if nep_stem == "nep":
             output_dir = dataset_path.parent
         else:
-            output_dir = dataset_path.parent / f"result_{nep_stem}"
+            output_dir = dataset_path.parent / f"{dataset_path}_{nep_stem}"
             output_dir.mkdir(exist_ok=True)
         descriptor_path = output_dir / "descriptor.out"
         e_path = list(dataset_path.parent.glob("*.e_peratom.out") )

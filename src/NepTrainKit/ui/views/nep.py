@@ -266,150 +266,129 @@ class NepResultPlotWidget(QWidget):
             thread.start_work(data.export_descriptor_data, path)
 
 
-    def shift_energy_baseline(self):
-        """Fit and apply an energy baseline shift using the configured search strategy."""
-        data = self.canvas.nep_result_data
-        if data is None:
-            return
-        ref_index = list(data.select_index)
-        max_generations = Config.getint("widget", "max_generation_value", 100000)
-        population_size = Config.getint("widget", "population_size", 40)
-        convergence_tol = Config.getfloat("widget", "convergence_tol", 1e-8)
-        config_set = set(data.structure.get_all_config(SearchType.TAG))
-        suggested = suggest_group_patterns(list(config_set))
+    def _build_shift_energy_dialog(
+        self,
+        suggested_patterns: list[str],
+        max_generations: int,
+        population_size: int,
+        convergence_tol: float,
+    ) -> ShiftEnergyMessageBox:
+        """Create and wire the shift-energy dialog."""
         box = ShiftEnergyMessageBox(
             self._parent,
-            "Specify regex groups for Config_type (comma separated)"
+            "Specify regex groups for Config_type (comma separated)",
         )
-        suggested_text = ";".join(suggested)
-        box.groupEdit.setText(suggested_text)
-        box.genSpinBox.setValue(max_generations)
-        box.sizeSpinBox.setValue(population_size)
-        box.tolSpinBox.setValue(convergence_tol)
         preset_placeholder = "None"
-
-        def _refresh_presets() -> None:
-            box.presetCombo.clear()
-            box.presetCombo.addItem(preset_placeholder)
-            for name in list_energy_baseline_preset_names():
-                box.presetCombo.addItem(name)
-
-        def _import_preset() -> None:
-            path = call_path_dialog(
-                self,
-                "Import baseline preset",
-                "file",
-                file_filter="JSON files (*.json);;All files (*.*)",
-            )
-            if not path:
-                return
-            try:
-                with open(path, "r", encoding="utf-8") as handle:
-                    preset_data = json.load(handle)
-                preset = EnergyBaselinePreset.from_dict(preset_data)
-                preset_name = preset.metadata.get("name") or Path(path).stem
-                save_energy_baseline_preset(preset_name, preset)
-                _refresh_presets()
-                box.presetCombo.setCurrentText(preset_name)
-                MessageManager.send_info_message(f"Imported preset: {preset_name}")
-            except Exception:  # noqa: BLE001
-                MessageManager.send_warning_message("Failed to import baseline preset.")
-
-        def _export_preset() -> None:
-            selected = box.presetCombo.currentText().strip()
-            if selected in {"", preset_placeholder}:
-                MessageManager.send_info_message("Please select a preset to export.")
-                return
-            preset = load_energy_baseline_preset(selected)
-            if preset is None:
-                MessageManager.send_warning_message("Preset not found.")
-                return
-            default_name = f"{selected}.json"
-            path = call_path_dialog(
-                self,
-                "Export baseline preset",
-                "file",
-                default_filename=default_name,
-                file_filter="JSON files (*.json);;All files (*.*)",
-            )
-            if not path:
-                return
-            try:
-                with open(path, "w", encoding="utf-8") as handle:
-                    json.dump(preset.to_dict(), handle, indent=2)
-                MessageManager.send_info_message(f"Preset exported to {path}")
-            except Exception:  # noqa: BLE001
-                MessageManager.send_warning_message("Failed to export preset.")
-
-        def _delete_preset() -> None:
-            selected = box.presetCombo.currentText().strip()
-            if selected in {"", preset_placeholder}:
-                MessageManager.send_info_message("Please select a preset to delete.")
-                return
-            w = MessageBox("Delete baseline preset", f"Delete preset '{selected}'?", box)
-            w.setClosableOnMaskClicked(True)
-            if not w.exec():
-                return
-            if delete_energy_baseline_preset(selected):
-                _refresh_presets()
-                box.presetCombo.setCurrentText(preset_placeholder)
-                MessageManager.send_info_message(f"Deleted preset: {selected}")
-            else:
-                MessageManager.send_warning_message("Failed to delete preset.")
-
-        _refresh_presets()
-        box.importButton.clicked.connect(_import_preset)
-        box.exportButton.clicked.connect(_export_preset)
+        box.set_defaults(suggested_patterns, max_generations, population_size, convergence_tol)
+        self._refresh_shift_preset_combo(box, preset_placeholder)
+        box.importButton.clicked.connect(lambda: self._on_shift_preset_import(box, preset_placeholder))
+        box.exportButton.clicked.connect(lambda: self._on_shift_preset_export(box, preset_placeholder))
         if hasattr(box, "deleteButton"):
-            box.deleteButton.clicked.connect(_delete_preset)
+            box.deleteButton.clicked.connect(lambda: self._on_shift_preset_delete(box, preset_placeholder))
         box.presetNameEdit.setText("")
         box.savePresetCheck.setChecked(False)
+        box.presetCombo.currentTextChanged.connect(
+            lambda selected_name: self._apply_selected_preset_to_dialog(
+                box,
+                selected_name,
+                suggested_patterns,
+                preset_placeholder,
+            )
+        )
+        return box
 
-        def _apply_preset_to_inputs(selected_name: str) -> None:
-            selected_name = (selected_name or "").strip()
-            if not selected_name or selected_name == preset_placeholder:
-                box.groupEdit.setText(suggested_text)
-                return
-            preset = load_energy_baseline_preset(selected_name)
-            if preset is None:
-                return
-            patterns = preset.group_patterns or []
-            if patterns:
-                box.groupEdit.setText(";".join(patterns))
-            if getattr(preset, "alignment_mode", None):
-                box.modeCombo.setCurrentText(preset.alignment_mode)
-            opt = getattr(preset, "optimizer", None) or {}
-            try:
-                if "max_generations" in opt:
-                    box.genSpinBox.setValue(int(opt["max_generations"]))
-                if "population_size" in opt:
-                    box.sizeSpinBox.setValue(int(opt["population_size"]))
-                if "convergence_tol" in opt:
-                    box.tolSpinBox.setValue(float(opt["convergence_tol"]))
-            except Exception:
-                pass
+    def _refresh_shift_preset_combo(self, box: ShiftEnergyMessageBox, preset_placeholder: str) -> None:
+        """Refresh preset names in the shift-energy dialog."""
+        box.set_preset_names(list_energy_baseline_preset_names(), preset_placeholder)
 
-        box.presetCombo.currentTextChanged.connect(_apply_preset_to_inputs)
-        if not box.exec():
+    def _on_shift_preset_import(self, box: ShiftEnergyMessageBox, preset_placeholder: str) -> None:
+        """Import baseline preset from a JSON file."""
+        path = call_path_dialog(
+            self,
+            "Import baseline preset",
+            "file",
+            file_filter="JSON files (*.json);;All files (*.*)",
+        )
+        if not path:
             return
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                preset_data = json.load(handle)
+            preset = EnergyBaselinePreset.from_dict(preset_data)
+            preset_name = preset.metadata.get("name") or Path(path).stem
+            save_energy_baseline_preset(preset_name, preset)
+            self._refresh_shift_preset_combo(box, preset_placeholder)
+            box.presetCombo.setCurrentText(preset_name)
+            MessageManager.send_info_message(f"Imported preset: {preset_name}")
+        except Exception:  # noqa: BLE001
+            MessageManager.send_warning_message("Failed to import baseline preset.")
 
-        pattern_text = box.groupEdit.text().strip()
-        group_patterns = [p.strip() for p in pattern_text.split(';') if p.strip()]
-        alignment_mode = box.modeCombo.currentText()
-        max_generations = box.genSpinBox.value()
-        population_size = box.sizeSpinBox.value()
-        convergence_tol = box.tolSpinBox.value()
-        selected_preset_name = box.presetCombo.currentText().strip()
-        selected_preset = None
-        if selected_preset_name and selected_preset_name != preset_placeholder:
-            selected_preset = load_energy_baseline_preset(selected_preset_name)
-            if selected_preset is None:
-                MessageManager.send_warning_message("Selected preset unavailable.")
-                return
+    def _on_shift_preset_export(self, box: ShiftEnergyMessageBox, preset_placeholder: str) -> None:
+        """Export selected baseline preset to a JSON file."""
+        selected = box.presetCombo.currentText().strip()
+        if selected in {"", preset_placeholder}:
+            MessageManager.send_info_message("Please select a preset to export.")
+            return
+        preset = load_energy_baseline_preset(selected)
+        if preset is None:
+            MessageManager.send_warning_message("Preset not found.")
+            return
+        default_name = f"{selected}.json"
+        path = call_path_dialog(
+            self,
+            "Export baseline preset",
+            "file",
+            default_filename=default_name,
+            file_filter="JSON files (*.json);;All files (*.*)",
+        )
+        if not path:
+            return
+        try:
+            with open(path, "w", encoding="utf-8") as handle:
+                json.dump(preset.to_dict(), handle, indent=2)
+            MessageManager.send_info_message(f"Preset exported to {path}")
+        except Exception:  # noqa: BLE001
+            MessageManager.send_warning_message("Failed to export preset.")
 
-        Config.set("widget", "max_generation_value", max_generations)
-        Config.set("widget", "population_size", population_size)
-        Config.set("widget", "convergence_tol", convergence_tol)
+    def _on_shift_preset_delete(self, box: ShiftEnergyMessageBox, preset_placeholder: str) -> None:
+        """Delete selected baseline preset after user confirmation."""
+        selected = box.presetCombo.currentText().strip()
+        if selected in {"", preset_placeholder}:
+            MessageManager.send_info_message("Please select a preset to delete.")
+            return
+        w = MessageBox("Delete baseline preset", f"Delete preset '{selected}'?", box)
+        w.setClosableOnMaskClicked(True)
+        if not w.exec():
+            return
+        if delete_energy_baseline_preset(selected):
+            self._refresh_shift_preset_combo(box, preset_placeholder)
+            box.presetCombo.setCurrentText(preset_placeholder)
+            MessageManager.send_info_message(f"Deleted preset: {selected}")
+        else:
+            MessageManager.send_warning_message("Failed to delete preset.")
+
+    def _apply_selected_preset_to_dialog(
+        self,
+        box: ShiftEnergyMessageBox,
+        selected_name: str,
+        suggested_patterns: list[str],
+        preset_placeholder: str,
+    ) -> None:
+        """Load preset values into dialog inputs when selection changes."""
+        selected_name = (selected_name or "").strip()
+        if not selected_name or selected_name == preset_placeholder:
+            box.apply_preset_to_inputs(None, suggested_patterns)
+            return
+        preset = load_energy_baseline_preset(selected_name)
+        if preset is None:
+            return
+        box.apply_preset_to_inputs(preset, suggested_patterns)
+
+    def _run_shift_energy_task(self, data, ref_index: list[int], values, selected_preset):
+        """Run baseline shifting asynchronously and return captured baseline outputs."""
+        Config.set("widget", "max_generation_value", values.max_generations)
+        Config.set("widget", "population_size", values.population_size)
+        Config.set("widget", "convergence_tol", values.convergence_tol)
 
         config_set = set(data.structure.get_all_config(SearchType.TAG))
         progress_diag = QProgressDialog("", "Cancel", 0, len(config_set), self._parent)
@@ -427,17 +406,21 @@ class NepResultPlotWidget(QWidget):
         }
         thread.start_work(
             data.iter_shift_energy_baseline,
-            group_patterns,
-            alignment_mode,
-            max_generations,
-            population_size,
-            convergence_tol,
+            values.group_patterns,
+            values.alignment_mode,
+            values.max_generations,
+            values.population_size,
+            values.convergence_tol,
             reference_indices=ref_index,
             precomputed_baseline=selected_preset,
             baseline_store=baseline_store,
             source_summary=source_summary,
         )
         progress_diag.exec()
+        return baseline_store
+
+    def _post_shift_energy_messages(self, data, selected_preset, baseline_store, values) -> None:
+        """Show user-facing messages after baseline shifting."""
         apply_stats = baseline_store.get("apply_stats")
         if selected_preset is not None and isinstance(apply_stats, dict):
             shifted = int(apply_stats.get("shifted_structures", 0) or 0)
@@ -456,13 +439,43 @@ class NepResultPlotWidget(QWidget):
                 MessageManager.send_info_message(
                     f"Preset shifted {shifted}/{total} structures; unmatched examples: {examples}"
                 )
-        if selected_preset is None and box.savePresetCheck.isChecked():
+        if selected_preset is None and values.save_preset:
             baseline = baseline_store.get("baseline")
             if baseline is not None:
-                preset_name = box.presetNameEdit.text().strip() or f"baseline_{len(list_energy_baseline_preset_names()) + 1}"
+                preset_name = values.preset_name or f"baseline_{len(list_energy_baseline_preset_names()) + 1}"
                 baseline.metadata.setdefault("name", preset_name)
                 save_energy_baseline_preset(preset_name, baseline)
                 MessageManager.send_info_message(f"Baseline preset saved: {preset_name}")
+
+    def shift_energy_baseline(self):
+        """Fit and apply an energy baseline shift using the configured search strategy."""
+        data = self.canvas.nep_result_data
+        if data is None:
+            return
+        ref_index = list(data.select_index)
+        max_generations = Config.getint("widget", "max_generation_value", 100000)
+        population_size = Config.getint("widget", "population_size", 40)
+        convergence_tol = Config.getfloat("widget", "convergence_tol", 1e-8)
+        config_set = set(data.structure.get_all_config(SearchType.TAG))
+        suggested = suggest_group_patterns(list(config_set))
+        box = self._build_shift_energy_dialog(
+            suggested,
+            max_generations,
+            population_size,
+            convergence_tol,
+        )
+        if not box.exec():
+            return
+        values = box.collect_values()
+        selected_preset = None
+        if values.selected_preset_name:
+            selected_preset = load_energy_baseline_preset(values.selected_preset_name)
+            if selected_preset is None:
+                MessageManager.send_warning_message("Selected preset unavailable.")
+                return
+
+        baseline_store = self._run_shift_energy_task(data, ref_index, values, selected_preset)
+        self._post_shift_energy_messages(data, selected_preset, baseline_store, values)
         self.canvas.plot_nep_result()
 
 

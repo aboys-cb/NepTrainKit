@@ -23,7 +23,7 @@ from NepTrainKit.core.utils import (
     read_nep_in,
     read_nep_out_file,
 )
-from NepTrainKit.core.types import ForcesMode
+from NepTrainKit.core.types import ForcesMode, parse_forces_mode
 
 
 class NepTrainResultData(ResultData):
@@ -353,8 +353,8 @@ class NepTrainResultData(ResultData):
             output_dir = dataset_path.parent
             output_suffix = file_name
         else:
-            # Other NEP files (nep1.txt, nep2.txt, etc.), create result_XXX directory
-            output_dir = dataset_path.parent / f"result_{nep_stem}"
+            # Other NEP files (nep1.txt, nep2.txt, etc.), create file_name_XXX directory
+            output_dir = dataset_path.parent / f"{file_name}_{nep_stem}"
             output_dir.mkdir(exist_ok=True)
             output_suffix = file_name
             logger.info(f"Output files will be saved to: {output_dir.name}/")
@@ -440,7 +440,7 @@ class NepTrainResultData(ResultData):
                 else:
                     energy_array, force_array, virial_array, stress_array = results
         self._energy_dataset = NepPlotData(energy_array, title="energy")
-        default_forces = Config.get("widget", "forces_data", ForcesMode.Raw)
+        default_forces = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
         if force_array.size != 0 and default_forces == ForcesMode.Norm:
             force_array = aggregate_per_atom_to_structure(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
             self._force_dataset = NepPlotData(force_array, title="force")

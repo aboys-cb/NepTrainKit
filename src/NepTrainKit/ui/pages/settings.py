@@ -14,7 +14,7 @@ from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCa
 from NepTrainKit.config import Config
 from NepTrainKit.ui.widgets import MyComboBoxSettingCard, DoubleSpinBoxSettingCard, LineEditSettingCard
 from NepTrainKit.ui.widgets import ColorSettingCard
-from NepTrainKit.core.types import ForcesMode, CanvasMode, NepBackend
+from NepTrainKit.core.types import ForcesMode, CanvasMode, NepBackend, parse_forces_mode
 from NepTrainKit.ui.update import UpdateWoker, UpdateNEP89Woker, get_pending_update_version
 from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR
 
@@ -50,13 +50,11 @@ class SettingsWidget(ScrollArea):
         self.plot_group = SettingCardGroup(
              'Plot Settings' , self.scrollWidget)
 
-        default_forces = Config.get("widget","forces_data",str(ForcesMode.Raw.value))
-        if default_forces=="Row":
-
-            default_forces="Raw"
+        force_mode = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
+        default_forces = force_mode.value
 
         self.optimization_forces_card = MyComboBoxSettingCard(
-            OptionsConfigItem("forces","forces",ForcesMode(default_forces),OptionsValidator(ForcesMode), EnumSerializer(ForcesMode)),
+            OptionsConfigItem("forces", "forces", force_mode, OptionsValidator(ForcesMode), EnumSerializer(ForcesMode)),
             FluentIcon.BRUSH,
             'Force data format',
             "Streamline data and speed up drawing",

@@ -18,7 +18,7 @@ from qfluentwidgets import HyperlinkLabel, MessageBox, SpinBox, \
     Action, StateToolTip,ComboBox
 
 from NepTrainKit.ui.dialogs import call_path_dialog
-from NepTrainKit.ui.threads import LoadingThread
+from NepTrainKit.ui.threads import LoadingThread, run_in_thread
 from NepTrainKit.config import Config
 
 from NepTrainKit.core import MessageManager
@@ -68,6 +68,12 @@ class ShowNepWidget(QWidget):
         self._nep_cache_dir: Path | None = None
         self._initial_loading = False
         self._updating_nep_combo = False
+        self._search_job_id = 0
+        self._completer_job_id = 0
+        self._search_running = 0
+        self._index_running = 0
+        self._worker_threads: list[QThread] = []
+        self._structure_mask_version_seen: int | None = None
         self.init_action()
         self.init_ui()
         self.calculate_bond_thread:LoadingThread
@@ -651,7 +657,7 @@ class ShowNepWidget(QWidget):
         self.search_lineEdit.searchSignal.connect(self.search_config_type)
         self.search_lineEdit.checkSignal.connect(self.checked_config_type)
         self.search_lineEdit.uncheckSignal.connect(self.uncheck_config_type)
-        self.search_lineEdit.typeChangeSignal.connect(lambda search_type:self.search_lineEdit.setCompleterKeyWord(self.nep_result_data.structure.get_all_config(search_type)) if self.nep_result_data is not None else None)
+        self.search_lineEdit.typeChangeSignal.connect(self._on_search_type_changed)
 
 
         self.search_mode_combo = ComboBox(frame)
@@ -666,6 +672,11 @@ class ShowNepWidget(QWidget):
         frame_layout.addWidget(self.search_mode_combo)
 
         frame_layout.addWidget(self.search_lineEdit)
+        self.search_status_label = BodyLabel(frame)
+        self.search_status_label.setStyleSheet("color: gray;")
+        self.search_status_label.setVisible(False)
+        self.search_status_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        frame_layout.addWidget(self.search_status_label)
         self.path_label = HyperlinkLabel(self.plot_widget)
         self.path_label.setFixedHeight(30)
 
@@ -705,6 +716,72 @@ class ShowNepWidget(QWidget):
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
         self.updateBondInfoSignal.connect(self.bond_label.setText)
         self._refresh_export_actions()
+
+    def _get_completer_max_items(self) -> int:
+        try:
+            return int(Config.getint("widget", "completer_max_items", 50000))
+        except Exception:
+            return 50000
+
+    def _update_search_status_label(self) -> None:
+        label = getattr(self, "search_status_label", None)
+        if label is None:
+            return
+        if getattr(self, "_search_running", 0) > 0:
+            label.setText("Searching…")
+            label.setVisible(True)
+            return
+        if getattr(self, "_index_running", 0) > 0:
+            label.setText("Indexing…")
+            label.setVisible(True)
+            return
+        label.setVisible(False)
+
+    def _set_search_status(self, *, searching: bool | None = None, indexing: bool | None = None) -> None:
+        if searching is not None:
+            self._search_running = 1 if bool(searching) else 0
+        if indexing is not None:
+            self._index_running = 1 if bool(indexing) else 0
+        self._update_search_status_label()
+
+    def _begin_search(self) -> None:
+        self._search_running = int(getattr(self, "_search_running", 0) or 0) + 1
+        self._update_search_status_label()
+
+    def _end_search(self) -> None:
+        self._search_running = max(0, int(getattr(self, "_search_running", 0) or 0) - 1)
+        self._update_search_status_label()
+
+    def _begin_index(self) -> None:
+        self._index_running = int(getattr(self, "_index_running", 0) or 0) + 1
+        self._update_search_status_label()
+
+    def _end_index(self) -> None:
+        self._index_running = max(0, int(getattr(self, "_index_running", 0) or 0) - 1)
+        self._update_search_status_label()
+
+    def _track_worker_thread(self, thread: QThread) -> None:
+        """Keep background threads alive until they finish."""
+        self._worker_threads.append(thread)
+
+        def _cleanup() -> None:
+            try:
+                self._worker_threads.remove(thread)
+            except ValueError:
+                pass
+
+        try:
+            thread.finished.connect(_cleanup)
+        except Exception:
+            pass
+
+    def _invalidate_background_jobs(self) -> None:
+        """Invalidate in-flight background jobs and clear lightweight UI state."""
+        self._search_job_id += 1
+        self._completer_job_id += 1
+        self._search_running = 0
+        self._index_running = 0
+        self._update_search_status_label()
 
     def dragEnterEvent(self, event):
         """Accept drag events carrying file URLs for NEP datasets.
@@ -946,6 +1023,7 @@ class ShowNepWidget(QWidget):
         None
             Updates widget limits and triggers initial rendering.
         """
+        self._invalidate_background_jobs()
         if self.nep_result_data is None:
             return
         if not self.nep_result_data.load_flag :
@@ -968,6 +1046,10 @@ class ShowNepWidget(QWidget):
             except Exception:
                 pass
         self.search_lineEdit.typeChangeSignal.emit(self.search_lineEdit.search_type)
+        try:
+            self._structure_mask_version_seen = int(self.nep_result_data.structure.data.version)
+        except Exception:
+            self._structure_mask_version_seen = None
         self.struct_index_spinbox.valueChanged.emit(0)
 
     def check_nep_result(self, path):
@@ -984,6 +1066,7 @@ class ShowNepWidget(QWidget):
             Schedules dataset loading on a worker thread.
         """
         
+        self._invalidate_background_jobs()
         # Set flag to prevent model change during initial load
         self._initial_loading = True
         self._refresh_export_actions()
@@ -1075,6 +1158,7 @@ class ShowNepWidget(QWidget):
             Attempts to cancel the worker thread and reset state.
         """
 
+        self._invalidate_background_jobs()
         # Request cooperative cancel for structure IO and NEP calc
         if self.nep_result_data is not None:
             try:
@@ -1094,6 +1178,96 @@ class ShowNepWidget(QWidget):
             pass
         self._refresh_export_actions()
         #     self.nep_result_data.nep_calc_thread.stop()
+
+    def _on_search_type_changed(self, search_type: SearchType) -> None:
+        """Apply a cached completer dictionary for the given search type without blocking UI."""
+        data = getattr(self, "nep_result_data", None)
+        if data is None:
+            return
+        structure = getattr(data, "structure", None)
+        if structure is None:
+            return
+        max_items = self._get_completer_max_items()
+        try:
+            if hasattr(structure, "has_completer_cache") and structure.has_completer_cache(search_type, max_items=max_items):
+                cache = structure.get_completer_cache(search_type, max_items=max_items)
+                self.search_lineEdit.setCompleterKeyWord(cache)
+                self._index_running = 0
+                self._update_search_status_label()
+                return
+        except Exception:
+            pass
+
+        # Cache not ready (e.g. legacy object). Build in a background thread.
+        self._completer_job_id += 1
+        job_id = self._completer_job_id
+        dataset_id = id(data)
+        self._begin_index()
+
+        def _build_cache() -> bool:
+            data.structure.ensure_completer_cache(max_items=max_items)
+            return True
+
+        def _on_done(_result: object) -> None:
+            try:
+                if job_id != self._completer_job_id:
+                    return
+                current = getattr(self, "nep_result_data", None)
+                if current is None or id(current) != dataset_id:
+                    return
+                try:
+                    cache = current.structure.get_completer_cache(self.search_lineEdit.search_type, max_items=max_items)
+                    self.search_lineEdit.setCompleterKeyWord(cache)
+                except Exception:
+                    pass
+            finally:
+                self._end_index()
+
+        def _on_err(msg: str) -> None:
+            try:
+                MessageManager.send_warning_message(f"Failed to build search completer cache: {msg}")
+            finally:
+                self._end_index()
+
+        thread = run_in_thread(self, _build_cache, on_finished=_on_done, on_error=_on_err)
+        self._track_worker_thread(thread)
+
+    def _run_async_search(self, config: str, search_type: SearchType, apply_result) -> None:
+        """Run a structure search in background; apply_result runs on UI thread."""
+        data = getattr(self, "nep_result_data", None)
+        if data is None:
+            return
+        config = str(config or "").strip()
+        if not config:
+            # Avoid expensive "match everything" scans from accidental empty input.
+            return
+        self._search_job_id += 1
+        job_id = self._search_job_id
+        dataset_id = id(data)
+        self._begin_search()
+
+        def _compute():
+            return data.structure.search_config(config, search_type)
+
+        def _on_done(indexes: object) -> None:
+            try:
+                if job_id != self._search_job_id:
+                    return
+                current = getattr(self, "nep_result_data", None)
+                if current is None or id(current) != dataset_id:
+                    return
+                apply_result(list(indexes) if isinstance(indexes, (list, tuple, set)) else indexes)
+            finally:
+                self._end_search()
+
+        def _on_err(msg: str) -> None:
+            try:
+                MessageManager.send_warning_message(f"Search failed: {msg}")
+            finally:
+                self._end_search()
+
+        thread = run_in_thread(self, _compute, on_finished=_on_done, on_error=_on_err)
+        self._track_worker_thread(thread)
 
     def to_last_structure(self):
         """Select the previous structure in the current result set.
@@ -1450,9 +1624,13 @@ class ShowNepWidget(QWidget):
             Updates scatter colours to indicate matching structures.
         """
 
-        indexes= self.nep_result_data.structure.search_config(config,search_type)
-
-        self.graph_widget.canvas.update_scatter_color(indexes,Brushes.Show)
+        if self.nep_result_data is None:
+            return
+        self._run_async_search(
+            config,
+            search_type,
+            lambda indexes: self.graph_widget.canvas.update_scatter_color(indexes, Brushes.Show),
+        )
 
     def checked_config_type(self, config:str,search_type:SearchType):
         """Select structures matching the given configuration criteria.
@@ -1469,9 +1647,16 @@ class ShowNepWidget(QWidget):
         None
             Marks matching indices as selected.
         """
-
-        indexes = self.nep_result_data.structure.search_config(config,search_type)
-        self.graph_widget.canvas.select_index(indexes,  False)
+        if self.nep_result_data is None:
+            return
+        if not str(config or "").strip():
+            MessageManager.send_info_message("Please enter a search query.")
+            return
+        self._run_async_search(
+            config,
+            search_type,
+            lambda indexes: self.graph_widget.canvas.select_index(indexes, False),
+        )
 
     def uncheck_config_type(self, config:str,search_type:SearchType):
         """Deselect structures matching the given configuration criteria.
@@ -1488,9 +1673,16 @@ class ShowNepWidget(QWidget):
         None
             Clears selection for the matching indices.
         """
-
-        indexes = self.nep_result_data.structure.search_config(config,search_type)
-        self.graph_widget.canvas.select_index(indexes,True )
+        if self.nep_result_data is None:
+            return
+        if not str(config or "").strip():
+            MessageManager.send_info_message("Please enter a search query.")
+            return
+        self._run_async_search(
+            config,
+            search_type,
+            lambda indexes: self.graph_widget.canvas.select_index(indexes, True),
+        )
 
     def update_dataset_info(self ):
         """Update the dataset status label with current selection metrics.
@@ -1509,4 +1701,15 @@ class ShowNepWidget(QWidget):
         f"Rm: {self.nep_result_data.structure.remove_data.shape[0]} Sel: {len(self.nep_result_data.select_index)} Unsel: {self.nep_result_data.structure.now_data.shape[0]-len(self.nep_result_data.select_index)} Rej: {rej}"
         self.dataset_info_label.setText(info)
         self._refresh_export_actions()
+        # If structures were removed/revoked, refresh completer cache against latest active set.
+        try:
+            current_ver = int(self.nep_result_data.structure.data.version)
+        except Exception:
+            current_ver = None
+        if current_ver is not None and current_ver != self._structure_mask_version_seen:
+            self._structure_mask_version_seen = current_ver
+            try:
+                self._on_search_type_changed(self.search_lineEdit.search_type)
+            except Exception:
+                pass
 

@@ -14,6 +14,7 @@ import json
 import threading
 import re
 import traceback
+from collections import Counter
 from functools import cached_property
 from pathlib import Path
 from dataclasses import dataclass
@@ -60,6 +61,12 @@ class DataBase:
         self._data = np.asarray(data_list)
         self._active_mask = np.ones(len(self._data), dtype=bool)
         self._history: list[npt.NDArray[np.int_]] = []
+        self._version = 0
+
+    @property
+    def version(self) -> int:
+        """Monotonically increasing mutation counter for mask changes."""
+        return int(self._version)
     @property
     def mask_array(self) -> npt.NDArray[np.bool_]:
         """Boolean mask highlighting the active rows."""
@@ -105,13 +112,22 @@ class DataBase:
         idx = idx[(idx >= 0) & (idx < len(self._data))]
         if idx.size == 0:
             return
+        # Only record indices that actually change state.
+        try:
+            idx = idx[self._active_mask[idx]]
+        except Exception:
+            pass
+        if idx.size == 0:
+            return
         self._history.append(idx)
         self._active_mask[idx] = False
+        self._version += 1
     def revoke(self) -> None:
         """Undo the most recent :meth:`remove` call, if any."""
         if self._history:
             last_indices = self._history.pop()
             self._active_mask[last_indices] = True
+            self._version += 1
     def __getitem__(self, item: Any) -> Any:
         """Return a slice or element from the active view."""
         return self.now_data[item]
@@ -319,6 +335,150 @@ class DPPlotData(NepData):
 class StructureData(NepData):
     """Utility mixin for structure-level queries."""
 
+    def _completer_cache_lock(self) -> threading.Lock:
+        lock = getattr(self, "_completer_cache_lock_obj", None)
+        if lock is None:
+            lock = threading.Lock()
+            self._completer_cache_lock_obj = lock
+        return lock
+
+    @staticmethod
+    def _truncate_counter(data: dict[str, int], max_items: int) -> tuple[dict[str, int], bool]:
+        """Return a stable top-N projection of ``data``.
+
+        Parameters
+        ----------
+        data : dict[str, int]
+            Candidate mapping (already aggregated).
+        max_items : int
+            Maximum number of entries to keep.
+
+        Returns
+        -------
+        dict[str, int]
+            Truncated mapping, sorted by (count desc, key asc).
+        bool
+            Whether truncation happened.
+        """
+        if max_items is None or max_items <= 0:
+            return {}, bool(data)
+        if len(data) <= max_items:
+            return data, False
+        items = sorted(data.items(), key=lambda kv: (-int(kv[1]), str(kv[0])))
+        return dict(items[:max_items]), True
+
+    def has_completer_cache(self, search_type: SearchType | str | None = None, max_items: int = 50000) -> bool:
+        """Return True if a completer cache exists for ``search_type`` and ``max_items``."""
+        search_type = self._normalise_search_type(search_type)
+        cache = getattr(self, "_completer_cache", None)
+        cache_max_items = getattr(self, "_completer_cache_max_items", None)
+        cache_version = getattr(self, "_completer_cache_data_version", None)
+        current_version = getattr(getattr(self, "data", None), "version", None)
+        if cache is None or cache_max_items != int(max_items):
+            return False
+        if cache_version is None or current_version is None:
+            return False
+        if int(cache_version) != int(current_version):
+            return False
+        return search_type in cache
+
+    def ensure_completer_cache(self, max_items: int = 50000) -> None:
+        """Build and cache completer mappings for tag/formula/elements.
+
+        Notes
+        -----
+        - Designed to run in a background thread (e.g. dataset load thread).
+        - Results are stored as dict[SearchType, dict[str,int]] and can be fed
+          directly into ConfigTypeSearchLineEdit.setCompleterKeyWord(...).
+        """
+        max_items = int(max_items or 0)
+        with self._completer_cache_lock():
+            cache = getattr(self, "_completer_cache", None)
+            cache_max_items = getattr(self, "_completer_cache_max_items", None)
+            cache_version = getattr(self, "_completer_cache_data_version", None)
+            current_version = getattr(getattr(self, "data", None), "version", None)
+            if (
+                cache is not None
+                and cache_max_items == max_items
+                and cache_version is not None
+                and current_version is not None
+                and int(cache_version) == int(current_version)
+            ):
+                return
+
+            try:
+                start_version = int(self.data.version)
+            except Exception:
+                start_version = -1
+
+            tag_counter: Counter[str] = Counter()
+            formula_counter: Counter[str] = Counter()
+            elem_counter: Counter[str] = Counter()
+
+            for structure in self.now_data:
+                try:
+                    tag = str(getattr(structure, "tag", "") or "").strip()
+                    if tag:
+                        tag_counter[tag] += 1
+                except Exception:
+                    pass
+                try:
+                    formula = str(getattr(structure, "formula", "") or "").strip()
+                    if formula:
+                        formula_counter[formula] += 1
+                except Exception:
+                    pass
+                try:
+                    elems = set(map(str, getattr(structure, "elements")))
+                except Exception:
+                    elems = set()
+                for elem in elems:
+                    elem = str(elem or "").strip()
+                    if elem:
+                        elem_counter[elem] += 1
+
+            tag_map, trunc_tag = self._truncate_counter(dict(tag_counter), max_items)
+            formula_map, trunc_formula = self._truncate_counter(dict(formula_counter), max_items)
+            elem_map, trunc_elem = self._truncate_counter(dict(elem_counter), max_items)
+
+            try:
+                end_version = int(self.data.version)
+            except Exception:
+                end_version = start_version
+            if start_version != -1 and end_version != start_version:
+                # Underlying mask changed while building; skip caching stale results.
+                return
+
+            truncated = bool(trunc_tag or trunc_formula or trunc_elem)
+            warned = bool(getattr(self, "_completer_cache_trunc_warned", False))
+            if truncated and not warned:
+                try:
+                    MessageManager.send_info_message(
+                        f"Search completer candidates exceed {max_items}; suggestions were truncated."
+                    )
+                except Exception:
+                    pass
+                self._completer_cache_trunc_warned = True
+
+            self._completer_cache = {
+                SearchType.TAG: tag_map,
+                SearchType.FORMULA: formula_map,
+                SearchType.ELEMENTS: elem_map,
+            }
+            self._completer_cache_max_items = max_items
+            self._completer_cache_data_version = start_version if start_version != -1 else 0
+
+    def get_completer_cache(self, search_type: SearchType | str | None = None, max_items: int = 50000) -> dict[str, int]:
+        """Return cached completer mapping for ``search_type``; builds it if needed."""
+        search_type = self._normalise_search_type(search_type)
+        try:
+            self.ensure_completer_cache(max_items=max_items)
+        except Exception:
+            logger.debug(traceback.format_exc())
+            return {}
+        cache = getattr(self, "_completer_cache", None) or {}
+        return dict(cache.get(search_type, {}))
+
     @staticmethod
     def _normalise_search_type(search_type: SearchType | str | None) -> SearchType:
         if search_type is None:
@@ -432,9 +592,19 @@ class StructureData(NepData):
         """
         search_type = self._normalise_search_type(search_type)
         if search_type == SearchType.TAG:
-            result_index = [i for i, structure in enumerate(self.now_data) if re.search(config, structure.tag)]
+            try:
+                pattern = re.compile(config)
+            except re.error:
+                MessageManager.send_warning_message("Invalid regex pattern.")
+                return []
+            result_index = [i for i, structure in enumerate(self.now_data) if pattern.search(structure.tag)]
         elif search_type == SearchType.FORMULA:
-            result_index = [i for i, structure in enumerate(self.now_data) if re.search(config, structure.formula)]
+            try:
+                pattern = re.compile(config)
+            except re.error:
+                MessageManager.send_warning_message("Invalid regex pattern.")
+                return []
+            result_index = [i for i, structure in enumerate(self.now_data) if pattern.search(structure.formula)]
         elif search_type == SearchType.ELEMENTS:
             allowed, required, excluded = self._parse_elements_query(config)
             result_index = []
@@ -676,6 +846,16 @@ class ResultData(QObject):
                     )
             # If subclass overrides load_structures, defer to it; otherwise do cancel-aware read
             self.load_structures()
+            # Pre-build completer caches so UI mode switching remains smooth for large datasets.
+            if not self.cancel_event.is_set():
+                try:
+                    max_items = Config.getint("widget", "completer_max_items", 50000)
+                except Exception:
+                    max_items = 50000
+                try:
+                    self.structure.ensure_completer_cache(max_items=max_items)
+                except Exception:
+                    logger.debug(traceback.format_exc())
             if self._atoms_dataset.num!=0:
                 if not self.cancel_event.is_set():
                     self._load_descriptors()

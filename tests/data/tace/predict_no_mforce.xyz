@@ -1,0 +1,9 @@
+2
+Lattice="3 0 0 0 3 0 0 0 3" Properties=species:S:1:pos:R:3:force:R:3:TACE_forces:R:3 energy=-1.0 TACE_energy=-1.2 virial="1 0 0 0 1 0 0 0 1" TACE_virials="2 0 0 0 2 0 0 0 2" pbc="T T T"
+H 0 0 0  0.1 0.2 0.3  -0.1 -0.2 -0.3
+H 0 0 1  0.1 0.2 0.3  -0.1 -0.2 -0.3
+2
+Lattice="3 0 0 0 3 0 0 0 3" Properties=species:S:1:pos:R:3:force:R:3:TACE_forces:R:3 energy=-2.0 TACE_energy=-2.4 virial="3 0 0 0 3 0 0 0 3" TACE_virials="6 0 0 0 6 0 0 0 6" pbc="T T T"
+H 0 0 0  0.1 0.2 0.3  -0.1 -0.2 -0.3
+H 0 0 1  0.1 0.2 0.3  -0.1 -0.2 -0.3
+

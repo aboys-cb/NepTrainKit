@@ -7,6 +7,8 @@ import os
 import shutil
 import tempfile
 import uuid
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 
 # Keep test config/database writes inside the repository sandbox.
@@ -15,11 +17,14 @@ import uuid
 os.environ["LOCALAPPDATA"] = str(Path(__file__).resolve().parent / "_localappdata")
 
 from NepTrainKit.core.io import NepTrainResultData,NepPolarizabilityResultData,NepDipoleResultData
+from NepTrainKit.core.energy_shift import EnergyBaselinePreset
 from numpy.testing import assert_allclose
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.types import ForcesMode
 from NepTrainKit.config import  Config
 from PySide6.QtWidgets import QApplication
+from NepTrainKit.ui.widgets.dialog import ShiftEnergyDialogValues
+import NepTrainKit.ui.views.nep as nep_view_module
 
 Config()
 Config.set("nep", "backend","cpu")
@@ -243,6 +248,168 @@ class TestNepTrainResultData( unittest.TestCase):
         self.assertEqual(len(result.select_index), result.num-2)
         self.assertNotIn(1, result.select_index)
         self.assertNotIn(3, result.select_index)
+
+
+class _ShiftDummyStructure:
+    def __init__(self, config_types=None, total_structures: int = 3):
+        self._config_types = list(config_types or ["A", "B"])
+        self.now_data = [object() for _ in range(total_structures)]
+
+    def get_all_config(self, _search_type):
+        return list(self._config_types)
+
+
+class _ShiftDummyData:
+    def __init__(self):
+        self.select_index = {0}
+        self.structure = _ShiftDummyStructure()
+
+    def iter_shift_energy_baseline(self, *_args, **_kwargs):
+        if False:
+            yield 1
+
+
+class _FakeShiftDialog:
+    def __init__(self, accepted: bool, values: ShiftEnergyDialogValues):
+        self._accepted = accepted
+        self._values = values
+
+    def exec(self):
+        return self._accepted
+
+    def collect_values(self):
+        return self._values
+
+
+class TestNepResultPlotWidgetShiftEnergyBaseline(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls._app = QApplication.instance() or QApplication([])
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls._app is not None:
+            cls._app.quit()
+            cls._app = None
+
+    @staticmethod
+    def _make_widget(data):
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._parent = None
+        widget.canvas = SimpleNamespace(
+            nep_result_data=data,
+            plot_nep_result=MagicMock(),
+        )
+        return widget
+
+    def test_shift_energy_baseline_cancel_does_not_run_task(self):
+        data = _ShiftDummyData()
+        values = ShiftEnergyDialogValues()
+        dialog = _FakeShiftDialog(False, values)
+        widget = self._make_widget(data)
+
+        with patch.object(
+            nep_view_module.NepResultPlotWidget,
+            "_build_shift_energy_dialog",
+            return_value=dialog,
+        ), patch.object(nep_view_module.NepResultPlotWidget, "_run_shift_energy_task") as run_mock:
+            widget.shift_energy_baseline()
+
+        run_mock.assert_not_called()
+        widget.canvas.plot_nep_result.assert_not_called()
+
+    def test_shift_energy_baseline_passes_selected_preset_to_runner(self):
+        data = _ShiftDummyData()
+        values = ShiftEnergyDialogValues(
+            group_patterns=["A.*"],
+            alignment_mode="REF_GROUP",
+            max_generations=123,
+            population_size=7,
+            convergence_tol=1e-5,
+            selected_preset_name="preset_a",
+        )
+        dialog = _FakeShiftDialog(True, values)
+        widget = self._make_widget(data)
+        preset = EnergyBaselinePreset(metadata={"name": "preset_a"})
+        captured: dict[str, object] = {}
+
+        def _capture_run(_self, _data, _ref_index, run_values, selected_preset):
+            captured["values"] = run_values
+            captured["selected_preset"] = selected_preset
+            return {"apply_stats": {"shifted_structures": 1, "total_structures": 3, "unmatched_config_types": []}}
+
+        with patch.object(
+            nep_view_module.NepResultPlotWidget,
+            "_build_shift_energy_dialog",
+            return_value=dialog,
+        ), patch.object(
+            nep_view_module,
+            "load_energy_baseline_preset",
+            return_value=preset,
+        ) as load_mock, patch.object(
+            nep_view_module.NepResultPlotWidget,
+            "_run_shift_energy_task",
+            autospec=True,
+            side_effect=_capture_run,
+        ):
+            widget.shift_energy_baseline()
+
+        load_mock.assert_called_once_with("preset_a")
+        self.assertIs(captured["selected_preset"], preset)
+        self.assertIs(captured["values"], values)
+        widget.canvas.plot_nep_result.assert_called_once()
+
+    def test_shift_energy_baseline_save_preset_after_run(self):
+        data = _ShiftDummyData()
+        values = ShiftEnergyDialogValues(
+            group_patterns=["A.*"],
+            save_preset=True,
+            preset_name="custom_baseline",
+        )
+        dialog = _FakeShiftDialog(True, values)
+        widget = self._make_widget(data)
+        baseline = EnergyBaselinePreset(metadata={})
+
+        with patch.object(
+            nep_view_module.NepResultPlotWidget,
+            "_build_shift_energy_dialog",
+            return_value=dialog,
+        ), patch.object(
+            nep_view_module.NepResultPlotWidget,
+            "_run_shift_energy_task",
+            return_value={"baseline": baseline},
+        ), patch.object(nep_view_module, "save_energy_baseline_preset") as save_mock:
+            widget.shift_energy_baseline()
+
+        save_mock.assert_called_once_with("custom_baseline", baseline)
+        widget.canvas.plot_nep_result.assert_called_once()
+
+    def test_shift_energy_baseline_invalid_selected_preset_aborts(self):
+        data = _ShiftDummyData()
+        values = ShiftEnergyDialogValues(selected_preset_name="missing_preset")
+        dialog = _FakeShiftDialog(True, values)
+        widget = self._make_widget(data)
+
+        with patch.object(
+            nep_view_module.NepResultPlotWidget,
+            "_build_shift_energy_dialog",
+            return_value=dialog,
+        ), patch.object(
+            nep_view_module,
+            "load_energy_baseline_preset",
+            return_value=None,
+        ), patch.object(
+            nep_view_module.NepResultPlotWidget,
+            "_run_shift_energy_task",
+        ) as run_mock, patch.object(
+            nep_view_module.MessageManager,
+            "send_warning_message",
+        ) as warn_mock:
+            widget.shift_energy_baseline()
+
+        run_mock.assert_not_called()
+        warn_mock.assert_called_once_with("Selected preset unavailable.")
+        widget.canvas.plot_nep_result.assert_not_called()
 
 
 class TestNepPolarizabilityResultData( unittest.TestCase):

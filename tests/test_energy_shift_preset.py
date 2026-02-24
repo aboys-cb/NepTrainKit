@@ -55,3 +55,46 @@ def test_apply_energy_baseline_reports_unmatched_config_types():
     assert stats["shifted_structures"] == 0
     assert stats["unmatched_config_types"] == ["A/1"]
 
+
+def test_apply_energy_baseline_skips_structures_without_energy():
+    structure = _make_structure("A/1", ["H", "O"], 10.0)
+    structure.additional_fields.pop("energy", None)
+    preset = EnergyBaselinePreset(
+        alignment_mode="REF_GROUP",
+        elements=["H", "O"],
+        group_to_ref={"A.*": [1.0, 2.0]},
+        group_patterns=["A.*"],
+        config_to_group={},
+    )
+
+    stats = apply_energy_baseline([structure], preset)
+
+    assert stats["shifted_structures"] == 0
+    assert stats["skipped_no_energy"] == 1
+    assert stats["unmatched_config_types"] == []
+
+
+def test_apply_energy_baseline_writes_energy_original_once():
+    structure = _make_structure("A/1", ["H", "O"], 10.0)
+    preset_1 = EnergyBaselinePreset(
+        alignment_mode="REF_GROUP",
+        elements=["H", "O"],
+        group_to_ref={"A/1": [1.0, 2.0]},
+        group_patterns=[],
+        config_to_group={"A/1": "A/1"},
+    )
+    preset_2 = EnergyBaselinePreset(
+        alignment_mode="REF_GROUP",
+        elements=["H", "O"],
+        group_to_ref={"A/1": [0.5, 0.5]},
+        group_patterns=[],
+        config_to_group={"A/1": "A/1"},
+    )
+
+    apply_energy_baseline([structure], preset_1)
+    energy_after_first_shift = float(structure.energy)
+    apply_energy_baseline([structure], preset_2)
+
+    assert float(structure.additional_fields["energy_original"]) == 10.0
+    assert float(structure.energy) != 10.0
+    assert float(structure.energy) != energy_after_first_shift

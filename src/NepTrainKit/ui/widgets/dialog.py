@@ -4,6 +4,7 @@
 # @Author  : Bing
 # @email    : 1747193328@qq.com
 from pathlib import Path
+from dataclasses import dataclass, field
 from typing import Any, Dict
 
 from PySide6.QtGui import QIcon, QDoubleValidator, QIntValidator, QColor
@@ -1309,11 +1310,27 @@ class RenameTagMessageBox(MessageBoxBase):
         )
         return False
 
+
+@dataclass
+class ShiftEnergyDialogValues:
+    """Collected user inputs for energy baseline shifting."""
+
+    group_patterns: list[str] = field(default_factory=list)
+    alignment_mode: str = "DFT_TO_NEP"
+    max_generations: int = 100000
+    population_size: int = 40
+    convergence_tol: float = 1e-8
+    selected_preset_name: str = ""
+    save_preset: bool = False
+    preset_name: str = ""
+
+
 class ShiftEnergyMessageBox(MessageBoxBase):
     """Dialog for energy baseline shift parameters."""
 
     def __init__(self, parent=None, tip="Group regex patterns (comma separated)"):
         super().__init__(parent)
+        self._preset_placeholder = "None"
         self.titleLabel = CaptionLabel(tip, self)
         self.titleLabel.setWordWrap(True)
         self.groupEdit = LineEdit(self)
@@ -1385,6 +1402,72 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.cancelButton.setText('Cancel')
         self.widget.setMinimumWidth(250)
 
+    def set_defaults(
+        self,
+        suggested_patterns: list[str] | None,
+        max_generations: int,
+        population_size: int,
+        convergence_tol: float,
+    ) -> None:
+        """Populate dialog inputs with default values."""
+        patterns = [p.strip() for p in (suggested_patterns or []) if str(p).strip()]
+        self.groupEdit.setText(";".join(patterns))
+        self.genSpinBox.setValue(int(max_generations))
+        self.sizeSpinBox.setValue(int(population_size))
+        self.tolSpinBox.setValue(float(convergence_tol))
+
+    def set_preset_names(self, names: list[str], placeholder: str = "None") -> None:
+        """Refresh available preset names and keep the placeholder entry."""
+        self._preset_placeholder = placeholder
+        blocked = self.presetCombo.blockSignals(True)
+        self.presetCombo.clear()
+        self.presetCombo.addItem(placeholder)
+        for name in names:
+            text = (name or "").strip()
+            if text and text != placeholder:
+                self.presetCombo.addItem(text)
+        self.presetCombo.setCurrentText(placeholder)
+        self.presetCombo.blockSignals(blocked)
+
+    def apply_preset_to_inputs(self, preset: Any, fallback_patterns: list[str] | None) -> None:
+        """Apply preset values to editable widgets, or fallback defaults."""
+        fallback = ";".join([p.strip() for p in (fallback_patterns or []) if str(p).strip()])
+        if preset is None:
+            self.groupEdit.setText(fallback)
+            return
+        patterns = list(getattr(preset, "group_patterns", []) or [])
+        self.groupEdit.setText(";".join(patterns) if patterns else fallback)
+        mode = getattr(preset, "alignment_mode", "")
+        if mode:
+            self.modeCombo.setCurrentText(str(mode))
+        optimizer = dict(getattr(preset, "optimizer", {}) or {})
+        try:
+            if "max_generations" in optimizer:
+                self.genSpinBox.setValue(int(optimizer["max_generations"]))
+            if "population_size" in optimizer:
+                self.sizeSpinBox.setValue(int(optimizer["population_size"]))
+            if "convergence_tol" in optimizer:
+                self.tolSpinBox.setValue(float(optimizer["convergence_tol"]))
+        except Exception:
+            pass
+
+    def collect_values(self) -> ShiftEnergyDialogValues:
+        """Read all user inputs and return a typed payload."""
+        pattern_text = self.groupEdit.text().strip()
+        group_patterns = [p.strip() for p in pattern_text.split(";") if p.strip()]
+        selected_preset_name = self.presetCombo.currentText().strip()
+        if selected_preset_name == self._preset_placeholder:
+            selected_preset_name = ""
+        return ShiftEnergyDialogValues(
+            group_patterns=group_patterns,
+            alignment_mode=self.modeCombo.currentText(),
+            max_generations=int(self.genSpinBox.value()),
+            population_size=int(self.sizeSpinBox.value()),
+            convergence_tol=float(self.tolSpinBox.value()),
+            selected_preset_name=selected_preset_name,
+            save_preset=bool(self.savePresetCheck.isChecked()),
+            preset_name=self.presetNameEdit.text().strip(),
+        )
 
 
 

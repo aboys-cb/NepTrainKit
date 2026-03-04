@@ -26,8 +26,12 @@ public:
   struct ParaMB {
     bool use_typewise_cutoff_zbl = false;
     double typewise_cutoff_zbl_factor = 0.65;
+    bool use_typewise_cutoff = false;
+    double typewise_cutoff_radial_factor = 0.0;
+    double typewise_cutoff_angular_factor = 0.0;
 
     int charge_mode = 0;
+    int spin_mode = 0;
     int model_type = 0; // 0=potential, 1=dipole, 2=polarizability
     int version = 4;
     double rc_radial_max = 0.0;
@@ -43,9 +47,25 @@ public:
     int basis_size_angular = 8;
     std::size_t num_types_sq = 0;
     std::size_t num_c_radial = 0;
+    std::size_t num_c_spin = 0;
+    std::size_t c_spin_offset = 0;
+    std::size_t c_spin_block_stride = 0;
     std::size_t num_types = 0;
     double q_scaler[140];
     int atomic_numbers[94];
+
+    int spin_kmax_ex = 2;
+    int spin_kmax_dmi = 0;
+    int spin_kmax_ani = 0;
+    int spin_kmax_sia = 0;
+    int spin_pmax = 0;
+    int spin_ex_phi_mode = 0;
+    int spin_onsite_basis_mode = 0;
+    double spin_mref = 1.0;
+    // Spin-block radial order: n = 0..spin_n_max. If < 0, defaults to n_max_radial.
+    int spin_n_max = -1;
+    int spin_blocks = 0;
+    double mforce_sign = -1.0;
   };
 
   struct ANN {
@@ -131,6 +151,16 @@ public:
     std::vector<double>& charge,
     std::vector<double>& bec);
 
+  void compute(
+    const std::vector<int>& type,
+    const std::vector<double>& box,
+    const std::vector<double>& position,
+    const std::vector<double>& spin,
+    std::vector<double>& potential,
+    std::vector<double>& force,
+    std::vector<double>& virial,
+    std::vector<double>& mforce);
+
   void compute_with_dftd3(
     const std::string& xc,
     const double rc_potential,
@@ -157,6 +187,13 @@ public:
     const std::vector<int>& type,
     const std::vector<double>& box,
     const std::vector<double>& position,
+    std::vector<double>& descriptor);
+
+  void find_descriptor(
+    const std::vector<int>& type,
+    const std::vector<double>& box,
+    const std::vector<double>& position,
+    const std::vector<double>& spin,
     std::vector<double>& descriptor);
 
   void find_latent_space(
@@ -198,6 +235,24 @@ public:
     double total_virial[6],  // total virial for the current processor
     double* potential,       // eatom or nullptr
     double** f,              // atom->f
+    double** virial          // cvatom or nullptr
+  );
+
+  void compute_for_lammps(
+    int nlocal,              // atom->nlocal
+    int inum,                // list->inum
+    int* ilist,              // list->ilist
+    int* numneigh,           // list->numneigh
+    int** firstneigh,        // list->firstneigh
+    int* type,               // atom->type
+    int* type_map,           // map from atom type to element
+    double** x,              // atom->x
+    double** sp,             // per-atom spin (sp[0..2]=unit, sp[3]=magnitude)
+    double& total_potential, // total potential energy for the current processor
+    double total_virial[6],  // total virial for the current processor
+    double* potential,       // eatom or nullptr
+    double** f,              // atom->f
+    double** fm,             // per-atom mforce (mx, my, mz)
     double** virial          // cvatom or nullptr
   );
 

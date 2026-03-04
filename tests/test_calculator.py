@@ -61,6 +61,30 @@ class TestNep(unittest.TestCase):
 
         np.testing.assert_array_almost_equal(local_structure_descriptor, structure_descriptors,decimal=6)
 
+    def test_cpu_spin_methods_are_exposed(self):
+        if not self.calculator.initialized:
+            self.skipTest("NEP backend is unavailable in current test environment.")
+        self.assertTrue(hasattr(self.calculator.nep3, "calculate_spin"))
+        self.assertTrue(hasattr(self.calculator.nep3, "get_descriptor_spin"))
+        self.assertTrue(hasattr(self.calculator.nep3, "get_structures_descriptor_spin"))
+
+    def test_cpu_spin_methods_raise_on_non_spin_model(self):
+        if not self.calculator.initialized:
+            self.skipTest("NEP backend is unavailable in current test environment.")
+        structure = self.structures
+        atom_types = [[self.calculator.type_dict[s] for s in structure.get_chemical_symbols()]]
+        box = [structure.cell.transpose(1, 0).reshape(-1).tolist()]
+        position = [structure.positions.transpose(1, 0).reshape(-1).tolist()]
+        natoms = len(atom_types[0])
+        spin = [[0.0] * (natoms * 3)]
+
+        with self.assertRaises(RuntimeError):
+            self.calculator.nep3.calculate_spin(atom_types, box, position, spin)
+        with self.assertRaises(RuntimeError):
+            self.calculator.nep3.get_descriptor_spin(atom_types, box, position, spin)
+        with self.assertRaises(RuntimeError):
+            self.calculator.nep3.get_structures_descriptor_spin(atom_types, box, position, spin)
+
 
 class TestDipole(unittest.TestCase):
     def setUp(self):

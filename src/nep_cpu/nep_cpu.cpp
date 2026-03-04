@@ -143,6 +143,106 @@ calculate(const std::vector<std::vector<int>>& type,
     return std::make_tuple(ap, af, av);
 }
 
+std::tuple<pybind11::array, pybind11::array, pybind11::array, pybind11::array>
+calculate_spin(const std::vector<std::vector<int>>& type,
+               const std::vector<std::vector<double>>& box,
+               const std::vector<std::vector<double>>& position,
+               const std::vector<std::vector<double>>& spin) {
+    if (paramb.spin_mode <= 0) {
+        throw std::runtime_error("Spin model is not enabled in this NEP.");
+    }
+    if (paramb.charge_mode != 0) {
+        throw std::runtime_error("Spin and charge_mode cannot be enabled together.");
+    }
+
+    const size_t nframes = type.size();
+    if (box.size() != nframes || position.size() != nframes || spin.size() != nframes) {
+        throw std::runtime_error("Input lists must have the same outer length.");
+    }
+
+    size_t total_atoms = 0;
+    for (size_t i = 0; i < nframes; ++i) {
+        const size_t Ni = type[i].size();
+        if (box[i].size() != 9) {
+            throw std::runtime_error("Each box must have 9 components: ax,bx,cx, ay,by,cy, az,bz,cz.");
+        }
+        if (position[i].size() != Ni * 3) {
+            throw std::runtime_error("Each position must have 3*N components arranged as x[N],y[N],z[N].");
+        }
+        if (spin[i].size() != Ni * 3) {
+            throw std::runtime_error("Each spin must have 3*N components arranged as sx[N],sy[N],sz[N].");
+        }
+        total_atoms += Ni;
+    }
+
+    double* pot_buf = nullptr;
+    double* frc_buf = nullptr;
+    double* vir_buf = nullptr;
+    double* mfc_buf = nullptr;
+    size_t cursor = 0;
+
+    {
+        ScopedReleaseIfHeld _gil_release;
+        pot_buf = new double[total_atoms];
+        frc_buf = new double[total_atoms * 3];
+        vir_buf = new double[total_atoms * 9];
+        mfc_buf = new double[total_atoms * 3];
+
+        for (size_t i = 0; i < nframes; ++i) {
+            check_canceled();
+            const size_t Ni = type[i].size();
+            std::vector<double> p(Ni);
+            std::vector<double> f(Ni * 3);
+            std::vector<double> v(Ni * 9);
+            std::vector<double> mf(Ni * 3);
+            compute(type[i], box[i], position[i], spin[i], p, f, v, mf);
+            for (size_t m = 0; m < Ni; ++m) {
+                pot_buf[cursor + m] = p[m];
+                frc_buf[(cursor + m) * 3 + 0] = f[m + 0 * Ni];
+                frc_buf[(cursor + m) * 3 + 1] = f[m + 1 * Ni];
+                frc_buf[(cursor + m) * 3 + 2] = f[m + 2 * Ni];
+                mfc_buf[(cursor + m) * 3 + 0] = mf[m + 0 * Ni];
+                mfc_buf[(cursor + m) * 3 + 1] = mf[m + 1 * Ni];
+                mfc_buf[(cursor + m) * 3 + 2] = mf[m + 2 * Ni];
+                double* row = vir_buf + (cursor + m) * 9;
+                row[0] = v[m + 0 * Ni];
+                row[1] = v[m + 1 * Ni];
+                row[2] = v[m + 2 * Ni];
+                row[3] = v[m + 3 * Ni];
+                row[4] = v[m + 4 * Ni];
+                row[5] = v[m + 5 * Ni];
+                row[6] = v[m + 6 * Ni];
+                row[7] = v[m + 7 * Ni];
+                row[8] = v[m + 8 * Ni];
+            }
+            cursor += Ni;
+        }
+    }
+
+    auto c1 = pybind11::capsule(pot_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+    auto c2 = pybind11::capsule(frc_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+    auto c3 = pybind11::capsule(vir_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+    auto c4 = pybind11::capsule(mfc_buf, [](void* f){ delete[] reinterpret_cast<double*>(f); });
+
+    std::vector<std::ptrdiff_t> shp_p{static_cast<pybind11::ssize_t>(cursor)};
+    std::vector<std::ptrdiff_t> shp_f{static_cast<pybind11::ssize_t>(cursor), 3};
+    std::vector<std::ptrdiff_t> shp_v{static_cast<pybind11::ssize_t>(cursor), 9};
+    std::vector<std::ptrdiff_t> shp_m{static_cast<pybind11::ssize_t>(cursor), 3};
+    pybind11::array ap(pybind11::dtype::of<double>(), shp_p,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(pot_buf), c1);
+    pybind11::array af(pybind11::dtype::of<double>(), shp_f,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(3*sizeof(double)), static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(frc_buf), c2);
+    pybind11::array av(pybind11::dtype::of<double>(), shp_v,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(9*sizeof(double)), static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(vir_buf), c3);
+    pybind11::array am(pybind11::dtype::of<double>(), shp_m,
+                       std::vector<std::ptrdiff_t>{static_cast<pybind11::ssize_t>(3*sizeof(double)), static_cast<pybind11::ssize_t>(sizeof(double))},
+                       static_cast<void*>(mfc_buf), c4);
+    return std::make_tuple(ap, af, av, am);
+}
+
 std::tuple<pybind11::array, pybind11::array, pybind11::array, pybind11::array, pybind11::array>
 calculate_qnep(const std::vector<std::vector<int>>& type,
                const std::vector<std::vector<double>>& box,
@@ -385,6 +485,45 @@ const std::vector<std::vector<int>>& type,
         return descriptor;
     }
 
+    // Get per-atom descriptor (flattened) with spin, for a batch of structures.
+    std::vector<std::vector<double>> get_descriptor_spin(
+            const std::vector<std::vector<int>>& type,
+            const std::vector<std::vector<double>>& box,
+            const std::vector<std::vector<double>>& position,
+            const std::vector<std::vector<double>>& spin) {
+        if (paramb.spin_mode <= 0) {
+            throw std::runtime_error("Spin model is not enabled in this NEP.");
+        }
+        if (paramb.charge_mode != 0) {
+            throw std::runtime_error("Spin and charge_mode cannot be enabled together.");
+        }
+        if (box.size() != type.size() || position.size() != type.size() || spin.size() != type.size()) {
+            throw std::runtime_error("Input lists must have the same outer length.");
+        }
+
+        ScopedReleaseIfHeld _gil_release;
+
+        const size_t type_size = type.size();
+        std::vector<std::vector<double>> descriptors(type_size);
+        for (size_t i = 0; i < type_size; ++i) {
+            check_canceled();
+            const size_t atom_count = type[i].size();
+            if (box[i].size() != 9) {
+                throw std::runtime_error("Each box must have 9 components: ax,bx,cx, ay,by,cy, az,bz,cz.");
+            }
+            if (position[i].size() != atom_count * 3) {
+                throw std::runtime_error("Each position must have 3*N components arranged as x[N],y[N],z[N].");
+            }
+            if (spin[i].size() != atom_count * 3) {
+                throw std::runtime_error("Each spin must have 3*N components arranged as sx[N],sy[N],sz[N].");
+            }
+            std::vector<double> struct_des(atom_count * static_cast<size_t>(annmb.dim));
+            find_descriptor(type[i], box[i], position[i], spin[i], struct_des);
+            descriptors[i] = std::move(struct_des);
+        }
+        return descriptors;
+    }
+
     // Get element list from the model
     std::vector<std::string> get_element_list() {
         return element_list;
@@ -411,6 +550,61 @@ const std::vector<std::vector<int>>& type,
             find_descriptor(type[i], box[i], position[i], struct_des);
 
             const size_t atom_count = type[i].size();
+            for (size_t atom_idx = 0; atom_idx < atom_count; ++atom_idx) {
+                std::vector<double> atom_descriptor(static_cast<size_t>(annmb.dim));
+                for (int dim_idx = 0; dim_idx < annmb.dim; ++dim_idx) {
+                    const size_t offset = static_cast<size_t>(dim_idx) * atom_count + atom_idx;
+                    atom_descriptor[static_cast<size_t>(dim_idx)] = struct_des[offset];
+                }
+                all_descriptors.emplace_back(std::move(atom_descriptor));
+            }
+        }
+
+        return all_descriptors;
+    }
+
+    // Get per-atom descriptors for all structures with spin input.
+    std::vector<std::vector<double>> get_structures_descriptor_spin(
+            const std::vector<std::vector<int>>& type,
+            const std::vector<std::vector<double>>& box,
+            const std::vector<std::vector<double>>& position,
+            const std::vector<std::vector<double>>& spin) {
+        if (paramb.spin_mode <= 0) {
+            throw std::runtime_error("Spin model is not enabled in this NEP.");
+        }
+        if (paramb.charge_mode != 0) {
+            throw std::runtime_error("Spin and charge_mode cannot be enabled together.");
+        }
+        if (box.size() != type.size() || position.size() != type.size() || spin.size() != type.size()) {
+            throw std::runtime_error("Input lists must have the same outer length.");
+        }
+
+        ScopedReleaseIfHeld _gil_release;
+
+        const size_t type_size = type.size();
+        size_t total_atoms = 0;
+        for (const auto& t : type) {
+            total_atoms += t.size();
+        }
+        std::vector<std::vector<double>> all_descriptors;
+        all_descriptors.reserve(total_atoms);
+
+        for (size_t i = 0; i < type_size; ++i) {
+            check_canceled();
+            const size_t atom_count = type[i].size();
+            if (box[i].size() != 9) {
+                throw std::runtime_error("Each box must have 9 components: ax,bx,cx, ay,by,cy, az,bz,cz.");
+            }
+            if (position[i].size() != atom_count * 3) {
+                throw std::runtime_error("Each position must have 3*N components arranged as x[N],y[N],z[N].");
+            }
+            if (spin[i].size() != atom_count * 3) {
+                throw std::runtime_error("Each spin must have 3*N components arranged as sx[N],sy[N],sz[N].");
+            }
+
+            std::vector<double> struct_des(atom_count * static_cast<size_t>(annmb.dim));
+            find_descriptor(type[i], box[i], position[i], spin[i], struct_des);
+
             for (size_t atom_idx = 0; atom_idx < atom_count; ++atom_idx) {
                 std::vector<double> atom_descriptor(static_cast<size_t>(annmb.dim));
                 for (int dim_idx = 0; dim_idx < annmb.dim; ++dim_idx) {
@@ -471,6 +665,8 @@ PYBIND11_MODULE(nep_cpu, m) {
     auto cls = py::class_<CpuNep>(m, "CpuNep")
         .def(py::init<const std::string&>(), py::arg("potential_filename"))
         .def("calculate", &CpuNep::calculate)
+        .def("calculate_spin", &CpuNep::calculate_spin,
+             py::arg("type"), py::arg("box"), py::arg("position"), py::arg("spin"))
         .def("calculate_qnep", &CpuNep::calculate_qnep)
         .def("calculate_with_dftd3", &CpuNep::calculate_with_dftd3)
         .def("calculate_dftd3", &CpuNep::calculate_dftd3)
@@ -480,13 +676,17 @@ PYBIND11_MODULE(nep_cpu, m) {
         .def("is_canceled", &CpuNep::is_canceled)
 
         .def("get_descriptor", &CpuNep::get_descriptor)
+        .def("get_descriptor_spin", &CpuNep::get_descriptor_spin,
+             py::arg("type"), py::arg("box"), py::arg("position"), py::arg("spin"))
 
         .def("get_element_list", &CpuNep::get_element_list)
         .def("get_structures_polarizability", &CpuNep::get_structures_polarizability)
         .def("get_structures_dipole", &CpuNep::get_structures_dipole)
 
         .def("get_structures_descriptor", &CpuNep::get_structures_descriptor,
-             py::arg("type"), py::arg("box"), py::arg("position"));
+             py::arg("type"), py::arg("box"), py::arg("position"))
+        .def("get_structures_descriptor_spin", &CpuNep::get_structures_descriptor_spin,
+             py::arg("type"), py::arg("box"), py::arg("position"), py::arg("spin"));
 
     // expose charge-capable alias (same pattern as nep_gpu)
     m.attr("CpuQNep") = cls;

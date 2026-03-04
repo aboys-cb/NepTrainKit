@@ -105,13 +105,13 @@ class NepCalculator:
 
     def load_nep(self) -> None:
         # Spin models currently require the GPU backend (NEP_Spin kernels).
-        if self.is_spin_model:
-            if not self._load_nep_backend(NepBackend.GPU):
-                MessageManager.send_warning_message(
-                    "Spin NEP model detected, but the GPU backend failed to load. "
-                    "Spin inference/descriptor requires the GPU backend."
-                )
-            return
+        # if self.is_spin_model:
+        #     if not self._load_nep_backend(NepBackend.GPU):
+        #         MessageManager.send_warning_message(
+        #             "Spin NEP model detected, but the GPU backend failed to load. "
+        #             "Spin inference/descriptor requires the GPU backend."
+        #         )
+        #     return
         if self.backend == NepBackend.AUTO:
             if not self._load_nep_backend(NepBackend.GPU):
                 self._load_nep_backend(NepBackend.CPU)
@@ -159,6 +159,44 @@ class NepCalculator:
         if isinstance(structures, list):
             return structures
         return list(structures)
+
+    @staticmethod
+    def _estimate_cpu_spin_workspace_min_bytes(natoms: int) -> int:
+        """Lower-bound workspace estimate for NEP_CPU spin path.
+
+        NEP_CPU uses fixed-size neighbor buffers with MN=1000. A strict lower bound
+        (excluding model-dependent arrays and Python-side outputs) is:
+        - NL_radial + NL_angular: 2 * (N * MN * int32)
+        - r12: 6 * (N * MN * float64)
+        """
+        if natoms <= 0:
+            return 0
+        mn = 100
+        bytes_per_pair_slot = 2 * 4 + 6 * 8  # 2 int32 + 6 float64 = 56 bytes
+        return int(natoms) * mn * bytes_per_pair_slot
+
+    def _guard_cpu_spin_problem_size(self, group_sizes: list[int]) -> None:
+        if self.backend != NepBackend.CPU:
+            return
+        if not group_sizes:
+            return
+        max_atoms = max(group_sizes)
+        min_bytes = self._estimate_cpu_spin_workspace_min_bytes(max_atoms)
+        limit_gib = float(os.getenv("NEP_CPU_SPIN_MIN_WORKSPACE_GIB_LIMIT", "16"))
+        if limit_gib <= 0:
+            return
+        limit_bytes = int(limit_gib * (1024 ** 3))
+        if min_bytes <= limit_bytes:
+            return
+        min_gib = min_bytes / (1024 ** 3)
+        raise RuntimeError(
+            "CPU spin inference aborted before native call: "
+            f"structure has {max_atoms} atoms, and NEP_CPU fixed neighbor buffers "
+            f"(MN=1000) require at least ~{min_gib:.2f} GiB workspace "
+            "(actual peak is higher). "
+            "Use GPU backend or reduce structure size. "
+            "Set NEP_CPU_SPIN_MIN_WORKSPACE_GIB_LIMIT=0 to disable this guard."
+        )
 
     @timeit
     def compose_structures(
@@ -261,6 +299,8 @@ class NepCalculator:
         return_charge: bool = False,
         return_mforce: bool = False,
         mean_virial: bool = True,
+        sum_energy: bool = True,
+
     ):
         structure_list = self._ensure_structure_list(structures)
         if not self.initialized or not structure_list:
@@ -272,6 +312,7 @@ class NepCalculator:
             return empty, [], []
         if self.is_spin_model and not self.is_charge_model:
             atom_types, boxes, positions, spins, group_sizes = self.compose_structures_spin(structure_list)
+            self._guard_cpu_spin_problem_size(group_sizes)
         else:
             atom_types, boxes, positions, group_sizes = self.compose_structures(structure_list)
         self.nep3.reset_cancel()
@@ -287,7 +328,7 @@ class NepCalculator:
                     else:
                         outputs = self.nep3.calculate(atom_types, boxes, positions)
         except Exception as exc:
-            logger.error(exc)
+            logger.exception(exc)
             MessageManager.send_warning_message(str(exc))
             empty = np.array([], dtype=np.float32)
             if self.is_charge_model and return_charge:
@@ -332,7 +373,7 @@ class NepCalculator:
                 charges_list = [np.asarray(charge, dtype=np.float32).reshape(-1) for charge in (charges or [])]
                 becs_list = [np.asarray(bec, dtype=np.float32).reshape(9, -1).T for bec in (becs or [])]
                 return potentials_array.tolist(), reshaped_forces, reshaped_virials, charges_list, becs_list
-
+        print(outputs)
         mforces = None
         if isinstance(outputs, tuple) and len(outputs) == 4:
             potentials, forces, virials, mforces = outputs
@@ -347,7 +388,11 @@ class NepCalculator:
             forces_arr = forces_arr.reshape(-1, 3)
         if virials_arr.ndim == 1:
             virials_arr = virials_arr.reshape(-1, 9)
-        potentials_array = aggregate_per_atom_to_structure(potentials_arr, group_sizes, map_func=np.sum, axis=None).tolist()
+        if sum_energy:
+
+            potentials_array = aggregate_per_atom_to_structure(potentials_arr, group_sizes, map_func=np.sum, axis=None).tolist()
+        else:
+            potentials_array = split_by_natoms(potentials_arr,group_sizes)
         forces_blocks = split_by_natoms(forces_arr, group_sizes)
         if mean_virial:
             virials_blocks = aggregate_per_atom_to_structure(virials_arr, group_sizes, map_func=np.mean, axis=0).tolist()

@@ -1,8 +1,11 @@
 """Toolbar widgets that expose plotting and structure manipulation actions."""
 
+from pathlib import Path
+
 from PySide6.QtCore import Signal, QSize
 from PySide6.QtGui import QAction, QIcon, QActionGroup
 from qfluentwidgets import CommandBar, Action, CommandBarView
+from NepTrainKit import module_path
 
 
 class KitToolBarBase(CommandBarView):
@@ -80,6 +83,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     dftd3Signal = Signal()
     summarySignal = Signal()
     forceBalanceSignal = Signal()
+    distributionSignal = Signal()
 
     def __init__(self, parent=None):
         """Initialise toolbar actions and keep a reference to the action group."""
@@ -88,6 +92,8 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
 
     def init_actions(self):
         """Populate toolbar actions for interacting with NEP plots."""
+        distribution_icon = Path(module_path) / "src" / "images" / "distribution_inspector.svg"
+        distribution_icon_path = str(distribution_icon) if distribution_icon.exists() else ":/images/src/images/inspect.svg"
         self.addButton("Reset View", QIcon(":/images/src/images/init.svg"), self.resetSignal)
         pan_action = self.addButton(
             "Pan View",
@@ -186,6 +192,11 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             "Dataset Summary",
             QIcon(":/images/src/images/summary.svg"),
             self.summarySignal,
+        )
+        self.addButton(
+            "Distribution Inspector",
+            QIcon(distribution_icon_path),
+            self.distributionSignal,
         )
 
 

@@ -4,6 +4,7 @@ import traceback
 from pathlib import Path
 
 import numpy as np
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 from loguru import logger
 from qfluentwidgets import MessageBox
@@ -24,6 +25,7 @@ from NepTrainKit.ui.widgets import (
     ShiftEnergyMessageBox,
     DFTD3MessageBox,
     DatasetSummaryMessageBox,
+    DistributionInspectorMessageBox,
 )
 from NepTrainKit.core.types import SearchType, CanvasMode
 from NepTrainKit.ui.views import NepDisplayGraphicsToolBar
@@ -71,6 +73,7 @@ class NepResultPlotWidget(QWidget):
         canvas_type = Config.get("widget","canvas_type",CanvasMode.PYQTGRAPH)
 
         self.last_figure_num=None
+        self._distribution_inspector = None
         self.swith_canvas(canvas_type)
 
     def swith_canvas(self,canvas_type:CanvasMode="pyqtgraph"):
@@ -131,7 +134,19 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.editInfoSignal.connect(self.edit_structure_info)
         self.tool_bar.summarySignal.connect(self.show_dataset_summary)
         self.tool_bar.forceBalanceSignal.connect(self.check_force_balance)
+        self.tool_bar.distributionSignal.connect(self.show_distribution_inspector)
         self.canvas.tool_bar = self.tool_bar
+
+    def closeEvent(self, event):
+        """Ensure auxiliary non-modal inspectors are closed with this widget."""
+        dlg = getattr(self, "_distribution_inspector", None)
+        if dlg is not None:
+            try:
+                dlg.close()
+            except Exception:
+                pass
+            self._distribution_inspector = None
+        super().closeEvent(event)
 
 
     def find_non_physical_structures(self):
@@ -561,6 +576,96 @@ class NepResultPlotWidget(QWidget):
             return
         dlg = DatasetSummaryMessageBox(self._parent, summary)
         dlg.exec()
+
+    def _run_distribution_analysis_task(self, data, request) -> dict:
+        """Run distribution analysis in a worker thread and return the payload."""
+        structures = getattr(data, "structure", None)
+        total_structures = int(getattr(structures, "now_data", np.array([])).shape[0]) if structures is not None else 0
+        progress_diag = QProgressDialog("", "Cancel", 0, max(total_structures, 1), self._parent)
+        progress_diag.setFixedSize(300, 100)
+        progress_diag.setWindowTitle("Building distributions")
+        thread = LoadingThread(self._parent, show_tip=False)
+        thread.progressSignal.connect(progress_diag.setValue)
+        thread.finished.connect(progress_diag.accept)
+        progress_diag.canceled.connect(thread.stop_work)
+        thread.start_work(data.iter_distribution_analysis, request=request)
+        progress_diag.exec()
+        return data.get_distribution_analysis()
+
+    def _apply_distribution_selection(self, data, indices: list[int], select_mode: str) -> None:
+        """Apply selected structure indices from distribution bins to the canvas."""
+        if not indices:
+            MessageManager.send_info_message("No structures found in this bin.")
+            return
+        mode = str(select_mode or "replace").strip().lower()
+        if mode == "add":
+            self.canvas.select_index(indices, False)
+            return
+        if mode == "intersect":
+            current = set(getattr(data, "select_index", set()))
+            target = sorted(current.intersection(int(i) for i in indices))
+            if current:
+                self.canvas.select_index(list(current), True)
+            if target:
+                self.canvas.select_index(target, False)
+            return
+
+        current = list(getattr(data, "select_index", set()))
+        if current:
+            self.canvas.select_index(current, True)
+        self.canvas.select_index(indices, False)
+
+    def show_distribution_inspector(self):
+        """Open the distribution-inspector dialog for numeric fields."""
+        data = self.canvas.nep_result_data
+        if data is None:
+            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            return
+        dlg = self._distribution_inspector
+        need_recreate = True
+        if dlg is not None:
+            try:
+                need_recreate = getattr(dlg, "_data", None) is not data
+            except RuntimeError:
+                need_recreate = True
+
+        if need_recreate:
+            if dlg is not None:
+                try:
+                    dlg.close()
+                except Exception:
+                    pass
+            host_parent = self._parent if isinstance(self._parent, QWidget) else self
+            dlg = DistributionInspectorMessageBox(
+                parent=host_parent,
+                data=data,
+                run_analysis_callback=lambda req: self._run_distribution_analysis_task(data, req),
+                apply_selection_callback=lambda indices, mode: self._apply_distribution_selection(data, indices, mode),
+                canvas_type=str(Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)),
+            )
+            dlg.setWindowModality(Qt.WindowModality.NonModal)
+            dlg.setModal(False)
+            dlg.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
+            self._distribution_inspector = dlg
+            try:
+                host_parent.destroyed.connect(lambda *_: dlg.close())
+            except Exception:
+                pass
+
+            # Place inspector near the right side of the parent to avoid covering center plot.
+            try:
+                host = host_parent
+                if host is not None:
+                    geo = host.frameGeometry()
+                    x = geo.x() + max(20, geo.width() - dlg.width() - 24)
+                    y = geo.y() + 72
+                    dlg.move(x, y)
+            except Exception:
+                pass
+
+        dlg.show()
+        dlg.raise_()
+        dlg.activateWindow()
 
     def inverse_select(self):
         """Invert the current structure selection on the canvas.

@@ -11,6 +11,7 @@ from PySide6.QtGui import QIcon, QDoubleValidator, QIntValidator, QColor
 from PySide6.QtWidgets import (
     QVBoxLayout, QFrame, QGridLayout,
     QPushButton, QWidget, QHBoxLayout, QFormLayout, QSizePolicy,
+    QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
 )
 from PySide6.QtCore import Signal, Qt, QUrl, QEvent
 from qfluentwidgets import (
@@ -35,7 +36,18 @@ import os
 from .button import TagPushButton, TagGroup
 
 from NepTrainKit.core import MessageManager
-from NepTrainKit.core.types import SearchType
+from NepTrainKit.config import Config
+from NepTrainKit.core.types import (
+    SearchType,
+    CanvasMode,
+    DistributionGroupMode,
+    DistributionScope,
+    DistributionValueView,
+    DistributionSelectMode,
+    DistributionCurveStyle,
+)
+from NepTrainKit.core.io.base import DistributionRequest
+from NepTrainKit.ui.canvas.distribution_factory import create_distribution_plot_adapter
 
 from NepTrainKit import module_path
 
@@ -770,6 +782,338 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         </div>
     </body>
     </html>"""
+
+class DistributionInspectorMessageBox(FramelessDialog):
+    """Dialog for inspecting distributions of numeric dataset/atomic fields."""
+    _ALL_SERIES_KEY = "__all__"
+
+    def __init__(
+        self,
+        parent=None,
+        data=None,
+        run_analysis_callback=None,
+        apply_selection_callback=None,
+        canvas_type: str | None = None,
+    ):
+        super().__init__(parent)
+        self._data = data
+        self._run_analysis_callback = run_analysis_callback
+        self._apply_selection_callback = apply_selection_callback
+        self._analysis: dict[str, Any] = {}
+        self._field_specs: list[Any] = []
+        self._field_by_key: dict[str, Any] = {}
+        self._metric_by_key: dict[str, dict[str, Any]] = {}
+        self._canvas_type = str(canvas_type or Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)).strip()
+        self._plot_adapter, self._vispy_fallback_warned = create_distribution_plot_adapter(self._canvas_type, self)
+        self.setTitleBar(FluentTitleBar(self))
+        self.setWindowTitle("Distribution Inspector")
+       
+        self.setWindowIcon(QIcon(':/images/src/images/distribution_inspector.svg'))
+
+        root_layout = QVBoxLayout(self)
+        root_layout.setContentsMargins(8, 8, 8, 8)
+        root_layout.setSpacing(8)
+        root_layout.setMenuBar(self.titleBar)
+        self.setLayout(root_layout)
+
+        control_frame = QFrame(self)
+        control_layout = QGridLayout(control_frame)
+        control_layout.setContentsMargins(0, 0, 0, 0)
+        control_layout.setSpacing(6)
+
+        self.fieldCombo = EditableComboBox(self)
+        self.groupCombo = ComboBox(self)
+        self.groupCombo.addItem("Formula", userData=DistributionGroupMode.FORMULA.value)
+        self.groupCombo.addItem("Element", userData=DistributionGroupMode.ELEMENT.value)
+        self.groupCombo.setCurrentIndex(1)
+
+        self.scopeCombo = ComboBox(self)
+        self.scopeCombo.addItem("Active", userData=DistributionScope.ACTIVE.value)
+        self.scopeCombo.addItem("Selected", userData=DistributionScope.SELECTED.value)
+        self.scopeCombo.setCurrentIndex(0)
+
+        self.viewCombo = ComboBox(self)
+        self.viewCombo.addItem("Reference", userData=DistributionValueView.REFERENCE.value)
+        self.viewCombo.addItem("Prediction", userData=DistributionValueView.PREDICTION.value)
+        self.viewCombo.addItem("Error", userData=DistributionValueView.ERROR.value)
+        self.viewCombo.setCurrentIndex(0)
+
+        self.curveCombo = ComboBox(self)
+        self.curveCombo.addItem("KDE", userData=DistributionCurveStyle.KDE.value)
+        self.curveCombo.addItem("Normal", userData=DistributionCurveStyle.NORMAL.value)
+        self.curveCombo.addItem("None", userData=DistributionCurveStyle.NONE.value)
+        self.curveCombo.setCurrentIndex(0)
+
+        self.selectModeCombo = ComboBox(self)
+        self.selectModeCombo.addItem("Replace", userData=DistributionSelectMode.REPLACE.value)
+        self.selectModeCombo.addItem("Add", userData=DistributionSelectMode.ADD.value)
+        self.selectModeCombo.addItem("Intersect", userData=DistributionSelectMode.INTERSECT.value)
+
+        self.binsSpin = SpinBox(self)
+        self.binsSpin.setRange(2, 2000)
+        self.binsSpin.setValue(120)
+
+        self.includeNormCheck = CheckBox("Include norm", self)
+        self.includeNormCheck.setChecked(True)
+
+        self.analyzeButton = PrimaryPushButton("Analyze", self)
+        self.analyzeButton.clicked.connect(self._run_analysis)
+
+        control_layout.addWidget(CaptionLabel("Field", self), 0, 0)
+        control_layout.addWidget(self.fieldCombo, 0, 1, 1, 3)
+        control_layout.addWidget(CaptionLabel("Group", self), 1, 0)
+        control_layout.addWidget(self.groupCombo, 1, 1)
+        control_layout.addWidget(CaptionLabel("Scope", self), 1, 2)
+        control_layout.addWidget(self.scopeCombo, 1, 3)
+        control_layout.addWidget(CaptionLabel("View", self), 2, 0)
+        control_layout.addWidget(self.viewCombo, 2, 1)
+        control_layout.addWidget(CaptionLabel("Select mode", self), 2, 2)
+        control_layout.addWidget(self.selectModeCombo, 2, 3)
+        control_layout.addWidget(CaptionLabel("Bins", self), 3, 0)
+        control_layout.addWidget(self.binsSpin, 3, 1)
+        control_layout.addWidget(CaptionLabel("Curve", self), 3, 2)
+        control_layout.addWidget(self.curveCombo, 3, 3)
+        control_layout.addWidget(self.includeNormCheck, 4, 2)
+        control_layout.addWidget(self.analyzeButton, 4, 3)
+
+        root_layout.addWidget(control_frame)
+
+        result_frame = QFrame(self)
+        result_layout = QGridLayout(result_frame)
+        result_layout.setContentsMargins(0, 0, 0, 0)
+        result_layout.setSpacing(6)
+
+        self.metricCombo = ComboBox(self)
+        self.seriesCombo = ComboBox(self)
+        self.metricCombo.currentIndexChanged.connect(self._refresh_series_combo)
+        self.seriesCombo.currentIndexChanged.connect(self._refresh_plot)
+
+        result_layout.addWidget(CaptionLabel("Metric", self), 0, 0)
+        result_layout.addWidget(self.metricCombo, 0, 1)
+        result_layout.addWidget(CaptionLabel("Series", self), 0, 2)
+        result_layout.addWidget(self.seriesCombo, 0, 3)
+
+        self.plotHintLabel = CaptionLabel("", self)
+        self.plotHintLabel.setWordWrap(True)
+        result_layout.addWidget(self.plotHintLabel, 1, 0, 1, 4)
+        result_layout.addWidget(self._plot_adapter.widget(), 2, 0, 1, 4)
+
+        self.statusLabel = CaptionLabel("", self)
+        self.statusLabel.setWordWrap(True)
+        result_layout.addWidget(self.statusLabel, 3, 0, 1, 4)
+
+        root_layout.addWidget(result_frame)
+
+        self.scopeCombo.currentIndexChanged.connect(self._reload_fields)
+        self.setWindowFlag(Qt.WindowType.Tool, True)
+        self.setWindowFlag(Qt.WindowType.NoDropShadowWindowHint, True)
+        self.setWindowModality(Qt.WindowModality.NonModal)
+        self.setModal(False)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
+        self.setMinimumWidth(720)
+        self.setMaximumWidth(840)
+        self.resize(780, 620)
+        self._plot_adapter.set_bin_click_callback(self._select_bin)
+
+        self._reload_fields()
+
+    def _selected_scope(self) -> str:
+        data = self.scopeCombo.currentData()
+        return str(data) if data else DistributionScope.ACTIVE.value
+
+    def _reload_fields(self) -> None:
+        self.fieldCombo.clear()
+        self._field_specs = []
+        self._field_by_key.clear()
+        if self._vispy_fallback_warned:
+            self.plotHintLabel.setText("Current canvas backend is vispy, but vispy plot failed to initialize; fallback to pyqtgraph.")
+        else:
+            self.plotHintLabel.setText("")
+
+        if self._data is None or not hasattr(self._data, "discover_atomic_numeric_fields"):
+            self.statusLabel.setText("Dataset does not support distribution analysis.")
+            return
+
+        try:
+            specs = self._data.discover_atomic_numeric_fields(scope=self._selected_scope())
+        except Exception:  # noqa: BLE001
+            specs = []
+        self._field_specs = list(specs or [])
+
+        for spec in self._field_specs:
+            key = str(getattr(spec, "key", "") or "")
+            if not key:
+                continue
+            source = str(getattr(spec, "source", ""))
+            label = str(getattr(spec, "label", key) or key)
+            shape = getattr(spec, "shape", None)
+            shape_text = shape.value if hasattr(shape, "value") else str(shape or "")
+            unit = str(getattr(spec, "unit_guess", "unknown") or "unknown")
+            display = f"[{source}] {label} ({shape_text}, unit={unit})"
+            self.fieldCombo.addItem(display, userData=key)
+            self._field_by_key[key] = spec
+
+        if self.fieldCombo.count() == 0:
+            self.statusLabel.setText("No numeric fields found in current scope.")
+        else:
+            self.statusLabel.setText(f"{self.fieldCombo.count()} fields ready. Click Analyze.")
+
+    def _current_field_key(self) -> str:
+        data = self.fieldCombo.currentData()
+        if data:
+            return str(data)
+        text = self.fieldCombo.currentText().strip()
+        for i in range(self.fieldCombo.count()):
+            if text == self.fieldCombo.itemText(i):
+                return str(self.fieldCombo.itemData(i) or "")
+        return ""
+
+    def _run_analysis(self) -> None:
+        field_key = self._current_field_key()
+        if not field_key:
+            self.statusLabel.setText("Please select a field.")
+            return
+        if self._run_analysis_callback is None:
+            self.statusLabel.setText("Analyze callback is unavailable.")
+            return
+
+        req = DistributionRequest(
+            field_keys=(field_key,),
+            include_norm=bool(self.includeNormCheck.isChecked()),
+            value_view=DistributionValueView(str(self.viewCombo.currentData() or DistributionValueView.REFERENCE.value)),
+            group_mode=DistributionGroupMode(str(self.groupCombo.currentData() or DistributionGroupMode.ELEMENT.value)),
+            scope=DistributionScope(str(self.scopeCombo.currentData() or DistributionScope.ACTIVE.value)),
+            bins=int(self.binsSpin.value()),
+            select_mode=DistributionSelectMode(str(self.selectModeCombo.currentData() or DistributionSelectMode.REPLACE.value)),
+            groups=(),
+            curve_style=DistributionCurveStyle(str(self.curveCombo.currentData() or DistributionCurveStyle.KDE.value)),
+            curve_points=240,
+        )
+        try:
+            analysis = self._run_analysis_callback(req)
+        except Exception:  # noqa: BLE001
+            analysis = {}
+
+        self._analysis = dict(analysis or {})
+        self._metric_by_key.clear()
+        self.metricCombo.clear()
+        self.seriesCombo.clear()
+        self._plot_adapter.clear()
+
+        metrics = self._analysis.get("metrics", []) or []
+        for metric in metrics:
+            m_key = str(metric.get("metric_key", "") or "")
+            if not m_key:
+                continue
+            self._metric_by_key[m_key] = metric
+            label = (
+                f"{metric.get('field_label', metric.get('field_key', ''))}"
+                f" :: {metric.get('component', '')}"
+                f" [{metric.get('value_view', 'reference')}]"
+            )
+            self.metricCombo.addItem(label, userData=m_key)
+
+        msgs = self._analysis.get("messages", []) or []
+        if self.metricCombo.count() == 0:
+            base = "No metrics produced for current request."
+            if msgs:
+                base += f" {msgs[0]}"
+            self.statusLabel.setText(base)
+            return
+
+        self._refresh_series_combo()
+        status = f"{self.metricCombo.count()} metrics generated."
+        if msgs:
+            status += f" {msgs[0]}"
+        self.statusLabel.setText(status)
+
+    def _current_metric(self) -> dict[str, Any] | None:
+        m_key = str(self.metricCombo.currentData() or "")
+        if not m_key:
+            return None
+        return self._metric_by_key.get(m_key)
+
+    def _current_series(self, metric: dict[str, Any] | None) -> dict[str, Any] | None:
+        if metric is None:
+            return None
+        s_key = str(self.seriesCombo.currentData() or "")
+        if not s_key:
+            return None
+        if s_key == self._ALL_SERIES_KEY:
+            return {"series_key": self._ALL_SERIES_KEY, "name": "All groups"}
+        for item in metric.get("series", []) or []:
+            if str(item.get("series_key", item.get("name", "")) or "") == s_key:
+                return item
+        return None
+
+    def _refresh_series_combo(self) -> None:
+        self.seriesCombo.clear()
+        metric = self._current_metric()
+        if metric is None:
+            self._plot_adapter.clear()
+            return
+        series = metric.get("series", []) or []
+        if len(series) > 1:
+            self.seriesCombo.addItem("All groups (overlay)", userData=self._ALL_SERIES_KEY)
+        for item in series:
+            s_key = str(item.get("series_key", item.get("name", "")) or "")
+            name = str(item.get("name", s_key))
+            self.seriesCombo.addItem(name, userData=s_key)
+        self._refresh_plot()
+
+    def _refresh_plot(self) -> None:
+        metric = self._current_metric()
+        series = self._current_series(metric)
+        self._plot_adapter.set_payload(metric, series)
+
+    def _select_bin(self, bin_index: int) -> None:
+        if self._data is None or self._apply_selection_callback is None:
+            return
+        metric = self._current_metric()
+        if metric is None:
+            return
+        analysis_id = int(self._analysis.get("analysis_id", 0) or 0)
+        if analysis_id <= 0:
+            return
+        metric_key = str(metric.get("metric_key", "") or "")
+        series_key = str(self.seriesCombo.currentData() or "")
+        if not metric_key or not series_key:
+            return
+
+        indices: list[int] = []
+        sample_count = 0
+        if series_key == self._ALL_SERIES_KEY:
+            merged: set[int] = set()
+            for item in metric.get("series", []) or []:
+                s_key = str(item.get("series_key", item.get("name", "")) or "")
+                if not s_key:
+                    continue
+                hist = list(item.get("hist", []) or [])
+                if 0 <= int(bin_index) < len(hist):
+                    sample_count += int(hist[int(bin_index)] or 0)
+                try:
+                    vals = self._data.resolve_distribution_bin_indices(analysis_id, metric_key, s_key, int(bin_index))
+                except Exception:  # noqa: BLE001
+                    vals = []
+                merged.update(int(i) for i in vals)
+            indices = sorted(merged)
+        else:
+            try:
+                indices = self._data.resolve_distribution_bin_indices(analysis_id, metric_key, series_key, int(bin_index))
+            except Exception:  # noqa: BLE001
+                indices = []
+            series = self._current_series(metric)
+            if series is not None:
+                hist = list(series.get("hist", []) or [])
+                if 0 <= int(bin_index) < len(hist):
+                    sample_count = int(hist[int(bin_index)] or 0)
+
+        mode = str(self.selectModeCombo.currentData() or DistributionSelectMode.REPLACE.value)
+        self._apply_selection_callback(list(indices), mode)
+        series_label = "all groups" if series_key == self._ALL_SERIES_KEY else series_key
+        self.statusLabel.setText(
+            f"Applied bin {bin_index} ({series_label}): {sample_count} samples -> {len(indices)} structures, mode='{mode}'."
+        )
 
 class GetStrMessageBox(MessageBoxBase):
     """ Custom message box """

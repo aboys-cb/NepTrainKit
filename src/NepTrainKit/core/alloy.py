@@ -43,15 +43,43 @@ def parse_composition(text: str) -> dict[str, float]:
     parts = [p.strip() for p in text.split(",") if p.strip()]
     comp: dict[str, float] = {}
     for part in parts:
-        if ":" not in part:
+        if ":" not in part and "=" not in part:
             raise ValueError(f"Invalid composition token: {part!r}")
-        elem, val = part.split(":", 1)
+        if ":" in part:
+            elem, val = part.split(":", 1)
+        else:
+            elem, val = part.split("=", 1)
         elem = elem.strip()
         if not elem:
             continue
         symbol = elem[0].upper() + elem[1:].lower()
         comp[symbol] = float(val)
     return comp
+
+
+def format_composition(
+    composition: Mapping[str, float],
+    *,
+    order: Iterable[str] | None = None,
+    fmt: str = ".12g",
+    include_zeros: bool = False,
+) -> str:
+    """Format a composition mapping as ``A:0.2,B:0.8`` (quote-free for EXTXYZ)."""
+    items = {str(k): float(v) for k, v in dict(composition).items()}
+    if order is None:
+        ordered_keys = list(items.keys())
+    else:
+        ordered_keys = [str(k) for k in order if str(k) in items]
+        for k in items:
+            if k not in ordered_keys:
+                ordered_keys.append(k)
+    parts: list[str] = []
+    for k in ordered_keys:
+        v = float(items.get(k, 0.0))
+        if (not include_zeros) and v == 0.0:
+            continue
+        parts.append(f"{k}:{format(v, fmt)}")
+    return ",".join(parts)
 
 
 def normalize_composition(comp: Mapping[str, float]) -> dict[str, float]:

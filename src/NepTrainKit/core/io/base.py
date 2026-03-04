@@ -14,6 +14,7 @@ import json
 import threading
 import re
 import traceback
+from collections import Counter
 from functools import cached_property
 from pathlib import Path
 from dataclasses import dataclass
@@ -25,7 +26,7 @@ import numpy.typing as npt
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
-from NepTrainKit.core.structure import Structure, atomic_numbers
+from NepTrainKit.core.structure import Structure, atomic_numbers, get_type_map, save_npy_structure
 from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
 
 from .sampler import SparseSampler,farthest_point_sampling,pca
@@ -60,6 +61,12 @@ class DataBase:
         self._data = np.asarray(data_list)
         self._active_mask = np.ones(len(self._data), dtype=bool)
         self._history: list[npt.NDArray[np.int_]] = []
+        self._version = 0
+
+    @property
+    def version(self) -> int:
+        """Monotonically increasing mutation counter for mask changes."""
+        return int(self._version)
     @property
     def mask_array(self) -> npt.NDArray[np.bool_]:
         """Boolean mask highlighting the active rows."""
@@ -105,13 +112,22 @@ class DataBase:
         idx = idx[(idx >= 0) & (idx < len(self._data))]
         if idx.size == 0:
             return
+        # Only record indices that actually change state.
+        try:
+            idx = idx[self._active_mask[idx]]
+        except Exception:
+            pass
+        if idx.size == 0:
+            return
         self._history.append(idx)
         self._active_mask[idx] = False
+        self._version += 1
     def revoke(self) -> None:
         """Undo the most recent :meth:`remove` call, if any."""
         if self._history:
             last_indices = self._history.pop()
             self._active_mask[last_indices] = True
+            self._version += 1
     def __getitem__(self, item: Any) -> Any:
         """Return a slice or element from the active view."""
         return self.now_data[item]
@@ -319,6 +335,150 @@ class DPPlotData(NepData):
 class StructureData(NepData):
     """Utility mixin for structure-level queries."""
 
+    def _completer_cache_lock(self) -> threading.Lock:
+        lock = getattr(self, "_completer_cache_lock_obj", None)
+        if lock is None:
+            lock = threading.Lock()
+            self._completer_cache_lock_obj = lock
+        return lock
+
+    @staticmethod
+    def _truncate_counter(data: dict[str, int], max_items: int) -> tuple[dict[str, int], bool]:
+        """Return a stable top-N projection of ``data``.
+
+        Parameters
+        ----------
+        data : dict[str, int]
+            Candidate mapping (already aggregated).
+        max_items : int
+            Maximum number of entries to keep.
+
+        Returns
+        -------
+        dict[str, int]
+            Truncated mapping, sorted by (count desc, key asc).
+        bool
+            Whether truncation happened.
+        """
+        if max_items is None or max_items <= 0:
+            return {}, bool(data)
+        if len(data) <= max_items:
+            return data, False
+        items = sorted(data.items(), key=lambda kv: (-int(kv[1]), str(kv[0])))
+        return dict(items[:max_items]), True
+
+    def has_completer_cache(self, search_type: SearchType | str | None = None, max_items: int = 50000) -> bool:
+        """Return True if a completer cache exists for ``search_type`` and ``max_items``."""
+        search_type = self._normalise_search_type(search_type)
+        cache = getattr(self, "_completer_cache", None)
+        cache_max_items = getattr(self, "_completer_cache_max_items", None)
+        cache_version = getattr(self, "_completer_cache_data_version", None)
+        current_version = getattr(getattr(self, "data", None), "version", None)
+        if cache is None or cache_max_items != int(max_items):
+            return False
+        if cache_version is None or current_version is None:
+            return False
+        if int(cache_version) != int(current_version):
+            return False
+        return search_type in cache
+
+    def ensure_completer_cache(self, max_items: int = 50000) -> None:
+        """Build and cache completer mappings for tag/formula/elements.
+
+        Notes
+        -----
+        - Designed to run in a background thread (e.g. dataset load thread).
+        - Results are stored as dict[SearchType, dict[str,int]] and can be fed
+          directly into ConfigTypeSearchLineEdit.setCompleterKeyWord(...).
+        """
+        max_items = int(max_items or 0)
+        with self._completer_cache_lock():
+            cache = getattr(self, "_completer_cache", None)
+            cache_max_items = getattr(self, "_completer_cache_max_items", None)
+            cache_version = getattr(self, "_completer_cache_data_version", None)
+            current_version = getattr(getattr(self, "data", None), "version", None)
+            if (
+                cache is not None
+                and cache_max_items == max_items
+                and cache_version is not None
+                and current_version is not None
+                and int(cache_version) == int(current_version)
+            ):
+                return
+
+            try:
+                start_version = int(self.data.version)
+            except Exception:
+                start_version = -1
+
+            tag_counter: Counter[str] = Counter()
+            formula_counter: Counter[str] = Counter()
+            elem_counter: Counter[str] = Counter()
+
+            for structure in self.now_data:
+                try:
+                    tag = str(getattr(structure, "tag", "") or "").strip()
+                    if tag:
+                        tag_counter[tag] += 1
+                except Exception:
+                    pass
+                try:
+                    formula = str(getattr(structure, "formula", "") or "").strip()
+                    if formula:
+                        formula_counter[formula] += 1
+                except Exception:
+                    pass
+                try:
+                    elems = set(map(str, getattr(structure, "elements")))
+                except Exception:
+                    elems = set()
+                for elem in elems:
+                    elem = str(elem or "").strip()
+                    if elem:
+                        elem_counter[elem] += 1
+
+            tag_map, trunc_tag = self._truncate_counter(dict(tag_counter), max_items)
+            formula_map, trunc_formula = self._truncate_counter(dict(formula_counter), max_items)
+            elem_map, trunc_elem = self._truncate_counter(dict(elem_counter), max_items)
+
+            try:
+                end_version = int(self.data.version)
+            except Exception:
+                end_version = start_version
+            if start_version != -1 and end_version != start_version:
+                # Underlying mask changed while building; skip caching stale results.
+                return
+
+            truncated = bool(trunc_tag or trunc_formula or trunc_elem)
+            warned = bool(getattr(self, "_completer_cache_trunc_warned", False))
+            if truncated and not warned:
+                try:
+                    MessageManager.send_info_message(
+                        f"Search completer candidates exceed {max_items}; suggestions were truncated."
+                    )
+                except Exception:
+                    pass
+                self._completer_cache_trunc_warned = True
+
+            self._completer_cache = {
+                SearchType.TAG: tag_map,
+                SearchType.FORMULA: formula_map,
+                SearchType.ELEMENTS: elem_map,
+            }
+            self._completer_cache_max_items = max_items
+            self._completer_cache_data_version = start_version if start_version != -1 else 0
+
+    def get_completer_cache(self, search_type: SearchType | str | None = None, max_items: int = 50000) -> dict[str, int]:
+        """Return cached completer mapping for ``search_type``; builds it if needed."""
+        search_type = self._normalise_search_type(search_type)
+        try:
+            self.ensure_completer_cache(max_items=max_items)
+        except Exception:
+            logger.debug(traceback.format_exc())
+            return {}
+        cache = getattr(self, "_completer_cache", None) or {}
+        return dict(cache.get(search_type, {}))
+
     @staticmethod
     def _normalise_search_type(search_type: SearchType | str | None) -> SearchType:
         if search_type is None:
@@ -432,9 +592,19 @@ class StructureData(NepData):
         """
         search_type = self._normalise_search_type(search_type)
         if search_type == SearchType.TAG:
-            result_index = [i for i, structure in enumerate(self.now_data) if re.search(config, structure.tag)]
+            try:
+                pattern = re.compile(config)
+            except re.error:
+                MessageManager.send_warning_message("Invalid regex pattern.")
+                return []
+            result_index = [i for i, structure in enumerate(self.now_data) if pattern.search(structure.tag)]
         elif search_type == SearchType.FORMULA:
-            result_index = [i for i, structure in enumerate(self.now_data) if re.search(config, structure.formula)]
+            try:
+                pattern = re.compile(config)
+            except re.error:
+                MessageManager.send_warning_message("Invalid regex pattern.")
+                return []
+            result_index = [i for i, structure in enumerate(self.now_data) if pattern.search(structure.formula)]
         elif search_type == SearchType.ELEMENTS:
             allowed, required, excluded = self._parse_elements_query(config)
             result_index = []
@@ -527,6 +697,9 @@ class ResultData(QObject):
         self.data_xyz_path=Path(data_xyz_path)
         self.nep_txt_path=Path(nep_txt_path)
         self.select_index=set()
+        # Mark structures as "bad/reject" without interfering with selection.
+        # Uses original structure indices aligned with StructureData/group_array indices.
+        self.reject_index: set[int] = set()
         # Optional pre-fetched structures to skip IO in load_structures
         self._prefetched_structures: Optional[list[Structure]] = None
         # Optional importer options forwarded to importers.import_structures
@@ -673,6 +846,16 @@ class ResultData(QObject):
                     )
             # If subclass overrides load_structures, defer to it; otherwise do cancel-aware read
             self.load_structures()
+            # Pre-build completer caches so UI mode switching remains smooth for large datasets.
+            if not self.cancel_event.is_set():
+                try:
+                    max_items = Config.getint("widget", "completer_max_items", 50000)
+                except Exception:
+                    max_items = 50000
+                try:
+                    self.structure.ensure_completer_cache(max_items=max_items)
+                except Exception:
+                    logger.debug(traceback.format_exc())
             if self._atoms_dataset.num!=0:
                 if not self.cancel_event.is_set():
                     self._load_descriptors()
@@ -844,6 +1027,145 @@ class ResultData(QObject):
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
         except Exception:
             MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
+            logger.error(traceback.format_exc())
+
+    def export_selected_npy(self, save_path: str | Path) -> None:
+        """Export selected structures as a DeepMD-style ``deepmd/npy`` dataset."""
+        try:
+            selected = self.get_selected_structures()
+            if not selected:
+                MessageManager.send_info_message("Please select some structures first!")
+                return
+            target = Path(save_path).joinpath("export_selected_model")
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(target), selected, type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_active_xyz(self, save_file_path: str | Path) -> None:
+        """Write active (non-removed) structures to ``save_file_path``."""
+        try:
+            active = self.structure.now_data
+            if getattr(active, "size", 0) == 0:
+                MessageManager.send_info_message("No active structures to export.")
+                return
+            with open(save_file_path, "w", encoding="utf8") as handle:
+                for structure in active:
+                    structure.write(handle)
+            MessageManager.send_info_message(f"File exported to: {save_file_path}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_active_npy(self, save_path: str | Path) -> None:
+        """Export active (non-removed) structures as a DeepMD-style ``deepmd/npy`` dataset."""
+        try:
+            active = self.structure.now_data.tolist()
+            if not active:
+                MessageManager.send_info_message("No active structures to export.")
+                return
+            target = Path(save_path).joinpath("export_active_model")
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(target), active, type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_removed_xyz(self, save_file_path: str | Path) -> None:
+        """Write removed structures (if any) to ``save_file_path``."""
+        try:
+            removed = self.structure.remove_data
+            if getattr(removed, "size", 0) == 0:
+                MessageManager.send_info_message("No removed structures to export.")
+                return
+            with open(save_file_path, "w", encoding="utf8") as handle:
+                for structure in removed:
+                    structure.write(handle)
+            MessageManager.send_info_message(f"File exported to: {save_file_path}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_removed_npy(self, save_path: str | Path) -> None:
+        """Export removed structures as a DeepMD-style ``deepmd/npy`` dataset."""
+        try:
+            removed = self.structure.remove_data.tolist()
+            if not removed:
+                MessageManager.send_info_message("No removed structures to export.")
+                return
+            target = Path(save_path).joinpath("export_remove_model")
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(target), removed, type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_current_npy(self, save_path: str | Path, index: int) -> None:
+        """Export a single structure as DeepMD-style ``deepmd/npy`` dataset."""
+        try:
+            mapped = self.structure.convert_index(index)
+            structure = self.structure.all_data[mapped][0]
+            target = Path(save_path).joinpath(f"structure_{int(index)}")
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(target), [structure], type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_model_extxyz(self, save_path: str | Path) -> None:
+        """Export active and removed structures into ``save_path`` folder as extxyz."""
+        try:
+            good_path = Path(save_path).joinpath("export_good_model.xyz")
+            with open(good_path, "w", encoding="utf8") as handle:
+                for structure in self.structure.now_data:
+                    structure.write(handle)
+            removed_path = Path(save_path).joinpath("export_remove_model.xyz")
+            with open(removed_path, "w", encoding="utf8") as handle:
+                for structure in self.structure.remove_data:
+                    structure.write(handle)
+            MessageManager.send_info_message(f"File exported to: {save_path}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
+            logger.error(traceback.format_exc())
+
+    def export_model_npy(self, save_path: str | Path) -> None:
+        """Export active and removed structures into ``save_path`` folder as deepmd/npy."""
+        try:
+            target = Path(save_path)
+            good_target = target / "export_good_model"
+            removed_target = target / "export_remove_model"
+            all_structures = self.structure.all_data.tolist()
+            type_map = get_type_map(all_structures) if all_structures else None
+            save_npy_structure(str(good_target), self.structure.now_data.tolist(), type_map=type_map)
+            save_npy_structure(str(removed_target), self.structure.remove_data.tolist(), type_map=type_map)
+            MessageManager.send_info_message(f"File exported to: {target}")
+        except Exception:
+            MessageManager.send_info_message(
+                "An unknown error occurred while saving. The error message has been output to the log!"
+            )
             logger.error(traceback.format_exc())
     def export_model_xyz(self, save_path: str | Path) -> None:
         """Export active and removed structures into ``save_path`` folder."""

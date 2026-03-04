@@ -94,6 +94,7 @@ class CardGroup(MakeDataCardWidget):
     @property
     def requires_input_dataset(self):
         return any([getattr(card, "requires_input_dataset", True)  for card in self.card_list])
+
     def show_card_setting(self):
         """Propagate window state changes to every child card.
         """

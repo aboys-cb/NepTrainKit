@@ -108,6 +108,21 @@ def clear_energy_baseline_presets() -> int:
     return Config.delete_section(BASELINE_PRESET_SECTION)
 
 
+def _store_energy_original_once(structure: Structure) -> None:
+    """Persist the pre-shift energy once for later traceability."""
+    fields = getattr(structure, "additional_fields", None)
+    if not isinstance(fields, dict):
+        return
+    if "energy_original" in fields:
+        return
+    if not getattr(structure, "has_energy", False):
+        return
+    try:
+        fields["energy_original"] = float(structure.energy)
+    except Exception:
+        return
+
+
 def apply_energy_baseline(structures: List[Structure], baseline: EnergyBaselinePreset) -> dict[str, Any]:
     """Apply a precomputed baseline to structures in-place.
 
@@ -167,6 +182,7 @@ def apply_energy_baseline(structures: List[Structure], baseline: EnergyBaselineP
             continue
 
         shift = float(np.dot(count_vec, np.asarray(ref_vec, dtype=float)))
+        _store_energy_original_once(structure)
         structure.energy = float(structure.energy) - shift
         stats["shifted_structures"] += 1
 

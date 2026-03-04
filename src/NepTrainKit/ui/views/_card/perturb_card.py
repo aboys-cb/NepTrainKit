@@ -15,6 +15,7 @@ from qfluentwidgets import (
 )
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.structure import get_clusters
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
@@ -314,8 +315,8 @@ class PerturbCard(MakeDataCard):
             new_structure = structure.copy()
             new_structure.set_positions(new_positions)
             new_structure.wrap()
-            config_str = f" Perturb(distance={max_scaling}, {'uniform' if engine_type == 1 else 'Sobol'})"
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + config_str
+            eng = "U" if engine_type == 1 else "S"
+            append_config_tag(new_structure, f"Pert(d={max_scaling},{eng})")
             structure_list.append(new_structure)
 
         return structure_list

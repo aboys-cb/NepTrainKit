@@ -9,6 +9,8 @@ from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
+from NepTrainKit.core.config_type import stable_config_id
 from NepTrainKit.core.torsion_guard_pbc import (
     TorsionGuardParams,
     process_single as tg_process_single,
@@ -317,7 +319,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
             bo_c_const=float(self.bo_c_frame.get_input_value()[0]),
             bo_threshold=float(self.bo_thr_frame.get_input_value()[0]),
             seed=(
-                int(self.seed_frame.get_input_value()[0]) + int(structure.info.get("_sweep_index", 0) or 0) * 1000003
+                int(self.seed_frame.get_input_value()[0]) + stable_config_id(structure) * 1000003
                 if self.seed_checkbox.isChecked()
                 else None
             ),
@@ -345,9 +347,10 @@ class OrganicMolConfigPBCCard(MakeDataCard):
                 new_atoms.set_pbc(False)
 
             # Tagging
-            cfg = new_atoms.info.get("Config_type", "")
-            cfg += f" TorsionGuard(n={self.perturb_frame.get_input_value()[0]}, sigma={self.sigma_frame.get_input_value()[0]}, pbc={pbc_mode})"
-            new_atoms.info["Config_type"] = cfg.strip()
+            append_config_tag(
+                new_atoms,
+                f"TG(n={self.perturb_frame.get_input_value()[0]},sig={self.sigma_frame.get_input_value()[0]},pbc={pbc_mode})",
+            )
 
             structures_out.append(new_atoms)
 

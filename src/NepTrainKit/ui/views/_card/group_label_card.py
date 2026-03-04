@@ -6,6 +6,7 @@ import numpy as np
 from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager, MessageManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import MakeDataCard
 
 
@@ -107,14 +108,14 @@ class GroupLabelCard(MakeDataCard):
         atoms = structure.copy()
         if mode.startswith("fractional parity"):
             flags = self._label_by_parity(atoms)
-            tag = "parity"
+            tag = "par"
         else:
             flags = self._label_by_kvec(atoms)
-            tag = f"k={self.kvec_combo.currentText()}"
+            tag = f"k{self.kvec_combo.currentText()}"
 
         groups = np.where(flags == 0, a_label, b_label).astype(object)
         atoms.arrays["group"] = groups
-        atoms.info["Config_type"] = atoms.info.get("Config_type", "") + f" GroupLabel({tag},{a_label}/{b_label})"
+        append_config_tag(atoms, f"Grp({tag},{a_label}/{b_label})")
         return [atoms]
 
     def to_dict(self):
@@ -133,4 +134,3 @@ class GroupLabelCard(MakeDataCard):
         self.group_a_edit.setText(data_dict.get("group_a", "A"))
         self.group_b_edit.setText(data_dict.get("group_b", "B"))
         self.overwrite_checkbox.setChecked(bool(data_dict.get("overwrite", True)))
-

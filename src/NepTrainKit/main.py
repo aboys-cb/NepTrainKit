@@ -10,7 +10,7 @@ import traceback
 from pathlib import Path
 import warnings
 
-from PySide6.QtCore import Qt, QFile
+from PySide6.QtCore import Qt, QFile, QTimer
 from PySide6.QtGui import QIcon, QFont, QPalette, QColor
 from PySide6.QtWidgets import QApplication, QWidget, QGridLayout
 from qfluentwidgets import (
@@ -21,11 +21,14 @@ from qfluentwidgets import (
     SplitToolButton,
     RoundMenu,
     FluentIcon,
+    InfoBadge,
+    InfoBadgePosition,
 )
 from loguru import logger
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.ui.pages import *
+from NepTrainKit.ui.update import AutoUpdateNotifier, get_pending_update_version
 from NepTrainKit.utils import timeit
 from NepTrainKit.ui.updater import unzip
 from NepTrainKit.paths import as_path
@@ -41,6 +44,7 @@ class NepTrainKitMainWindow(FluentWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setMicaEffectEnabled(False)
+        self._update_badge = None
         self.init_ui()
 
     @timeit
@@ -137,6 +141,37 @@ class NepTrainKitMainWindow(FluentWindow):
         if hasattr(widget, "export_file"):
             widget.export_file()  # pyright: ignore[attr-defined]
 
+    def _ensure_update_badge(self) -> None:
+        """Create the persistent update badge on the Settings navigation item."""
+        if self._update_badge is not None:
+            return
+        try:
+            target = self.navigationInterface.widget(self.setting_interface.objectName())
+        except Exception:
+            return
+        self._update_badge = InfoBadge.error(
+            "New",
+            parent=self.navigationInterface,
+            target=target,
+            position=InfoBadgePosition.NAVIGATION_ITEM,
+        )
+        self._update_badge.setCustomBackgroundColor("#E81123", "#E81123")
+        self._update_badge.setFixedHeight(13)
+        self._update_badge.adjustSize()
+        self._update_badge.hide()
+
+    def refresh_update_indicators(self) -> None:
+        """Refresh update indicators in navigation and settings page."""
+        self._ensure_update_badge()
+        pending_version = get_pending_update_version()
+        has_update = bool(pending_version)
+        if self._update_badge is not None:
+            self._update_badge.setVisible(has_update)
+            if has_update and getattr(self._update_badge, "manager", None) is not None:
+                self._update_badge.move(self._update_badge.manager.position())
+        if hasattr(self.setting_interface, "refresh_update_hint"):
+            self.setting_interface.refresh_update_hint()
+
 
 def global_exception_handler(exc_type, exc_value, exc_traceback) -> None:
     """Log uncaught exceptions through ``loguru`` for post-mortem analysis."""
@@ -183,6 +218,9 @@ def main() -> None:
 
     window = NepTrainKitMainWindow()
     window.show()
+    window.refresh_update_indicators()
+    window.auto_update_notifier = AutoUpdateNotifier(window)
+    QTimer.singleShot(3000, window.auto_update_notifier.start_if_due)
 
     if len(sys.argv) == 2:
         dir_path = sys.argv[1]

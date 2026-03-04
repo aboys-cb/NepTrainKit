@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.structure import get_clusters,process_organic_clusters
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
@@ -136,13 +137,13 @@ class ShearMatrixCard(MakeDataCard):
                         process_organic_clusters(structure, new_structure, clusters, is_organic_list)  # pyright:ignore
                     info_list = []
                     if abs(sxy) > 1e-8:
-                        info_list.append(f"xy:{sxy}%")
+                        info_list.append(f"xy={sxy:g}%")
                     if abs(syz) > 1e-8:
-                        info_list.append(f"yz:{syz}%")
+                        info_list.append(f"yz={syz:g}%")
                     if abs(sxz) > 1e-8:
-                        info_list.append(f"xz:{sxz}%")
-                    info_str = "|".join(info_list)
-                    new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Shear({info_str},symmetric={symmetric})"
+                        info_list.append(f"xz={sxz:g}%")
+                    info_str = ",".join(info_list)
+                    append_config_tag(new_structure, f"Shr({info_str},sym={int(bool(symmetric))})")
                     structure_list.append(new_structure)
         return structure_list
 

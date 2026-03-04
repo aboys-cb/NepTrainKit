@@ -10,6 +10,7 @@ from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTip
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.alloy import best_supercell_factors_max_atoms
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -147,15 +148,7 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
                 mat = np.diag([max(na, 1), max(nb, 1), max(nc, 1)])
                 atoms = make_supercell(base, mat)
                 atoms.wrap()
-
-                atoms.info["prototype_lattice"] = lattice
-                atoms.info["prototype_a"] = float(a)
-                atoms.info["prototype_covera"] = float(covera)
-                atoms.info["prototype_rep"] = json.dumps([int(na), int(nb), int(nc)])
-                atoms.info["Config_type"] = (
-                    atoms.info.get("Config_type", "")
-                    + f" Prototype({lattice},a={float(a):.6g},rep={int(na)}x{int(nb)}x{int(nc)})"
-                )
+                append_config_tag(atoms, f"Proto({lattice},a={float(a):.6g},rep={int(na)}x{int(nb)}x{int(nc)})")
                 out.append(atoms)
                 if len(out) >= max_outputs:
                     break

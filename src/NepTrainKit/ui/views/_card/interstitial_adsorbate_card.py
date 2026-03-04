@@ -11,6 +11,7 @@ from ase.geometry import geometry
 from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -236,11 +237,9 @@ class InsertDefectCard(MakeDataCard):
                     break
 
             if inserted:
-                tag = new_structure.info.get("Config_type", "")
                 mode_name = "adsorbate" if mode == 1 else "interstitial"
-                species_summary = ",".join(inserted_species)
-                tag += f" Insert({mode_name},count={inserted},species={species_summary})"
-                new_structure.info["Config_type"] = tag
+                mode_tag = "ad" if mode == 1 else "int"
+                append_config_tag(new_structure, f"Ins({mode_tag},n={inserted})")
             new_structure.wrap()
             results.append(new_structure)
         return results

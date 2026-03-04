@@ -269,7 +269,7 @@ class Structure:
             # Build per-structure mapping once
             try:
                 map_arr = np.array([atomic_numbers[str(sym)] for sym in tmap], dtype=np.int32)
-                return map_arr[np.asarray(sid, dtype=np.int32)].tolist()
+                return map_arr[np.asarray(sid, dtype=np.int32)].flatten().tolist()
             except Exception:
                 pass
         # Fallback: derive from string symbols

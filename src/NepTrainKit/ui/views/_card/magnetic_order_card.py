@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import json
-
 import numpy as np
 from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
 
@@ -16,6 +14,7 @@ from NepTrainKit.core.magnetism import (
     random_signs,
     random_vector_moments,
 )
+from NepTrainKit.core.config_type import append_config_tag, sanitize_config_tag, stable_config_id
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -282,14 +281,27 @@ class MagneticOrderCard(MakeDataCard):
             raise ValueError("signs shape mismatch")
         return (signs[:, None] * mags[:, None]) * dirs
 
-    def _attach_metadata(self, atoms, *, order: str):
-        fmt = "vector" if self.format_combo.currentText().startswith("Non") else "scalar"
-        atoms.info["magmom_format"] = fmt
-        atoms.info["mag_order"] = order
-        axis = self._axis()
-        atoms.info["mag_axis"] = json.dumps([float(x) for x in axis.tolist()])
-        if fmt == "vector":
-            atoms.info["mag_noncollinear"] = True
+    def _attach_metadata(self, atoms, *, order: str):  # noqa: ARG002
+        # Intentionally do not store card metadata in atoms.info.
+        # Card parameters are persisted in saved card JSON; runtime trace only uses Config_type tags.
+        return
+
+    @staticmethod
+    def _axis_tag(axis: np.ndarray) -> str:
+        """Return an EXTXYZ-friendly axis tag without quotes/spaces (e.g. 001 or 0,0,1)."""
+        v = np.asarray(axis, dtype=float).reshape(3)
+        # Prefer compact cardinal encoding when aligned with axes.
+        basis = [
+            (np.array([1.0, 0.0, 0.0]), "100"),
+            (np.array([0.0, 1.0, 0.0]), "010"),
+            (np.array([0.0, 0.0, 1.0]), "001"),
+        ]
+        for b, tag in basis:
+            if np.allclose(v, b, atol=1e-8, rtol=0.0):
+                return tag
+            if np.allclose(v, -b, atol=1e-8, rtol=0.0):
+                return f"-{tag}"
+        return f"{v[0]:.6g},{v[1]:.6g},{v[2]:.6g}"
 
     def process_structure(self, structure):
         outputs = []
@@ -301,7 +313,7 @@ class MagneticOrderCard(MakeDataCard):
             return [structure]
 
         base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
-        sweep_index = int(structure.info.get("_sweep_index", 0) or 0)
+        cfg_id = stable_config_id(structure)
         noncollinear = self.format_combo.currentText().startswith("Non")
 
         if do_fm:
@@ -312,7 +324,7 @@ class MagneticOrderCard(MakeDataCard):
                 del atoms.arrays["initial_magmoms"]
             atoms.set_initial_magnetic_moments(moms)
             self._attach_metadata(atoms, order="FM")
-            atoms.info["Config_type"] = atoms.info.get("Config_type", "") + (" Mag(FM,nc)" if noncollinear else " Mag(FM)")
+            append_config_tag(atoms, "MagFMnc" if noncollinear else "MagFM")
             outputs.append(atoms)
 
         if do_afm:
@@ -338,13 +350,14 @@ class MagneticOrderCard(MakeDataCard):
             atoms.set_initial_magnetic_moments(moms)
             if self.afm_mode_combo.currentText() == "k-vector":
                 k = self._parse_kvec(self.kvec_combo.currentText())
-                atoms.info["mag_kvec"] = json.dumps(list(k))
                 self._attach_metadata(atoms, order=f"AFM{k[0]}{k[1]}{k[2]}")
-                atoms.info["Config_type"] = atoms.info.get("Config_type", "") + (f" Mag(AFM{k[0]}{k[1]}{k[2]},nc)" if noncollinear else f" Mag(AFM{k[0]}{k[1]}{k[2]})")
+                base = f"MagAFM{k[0]}{k[1]}{k[2]}"
+                append_config_tag(atoms, base + ("nc" if noncollinear else ""))
             else:
-                atoms.info["mag_group_ab"] = json.dumps([self.group_a_edit.text(), self.group_b_edit.text()])
+                gA = sanitize_config_tag(self.group_a_edit.text() or "")
+                gB = sanitize_config_tag(self.group_b_edit.text() or "")
                 self._attach_metadata(atoms, order="AFM_group")
-                atoms.info["Config_type"] = atoms.info.get("Config_type", "") + (" Mag(AFM_group,nc)" if noncollinear else " Mag(AFM_group)")
+                append_config_tag(atoms, "MagAFMg" + ("nc" if noncollinear else ""))
             outputs.append(atoms)
 
         if do_pm:
@@ -357,9 +370,9 @@ class MagneticOrderCard(MakeDataCard):
                     rng = np.random.default_rng()
                     seed_note = ""
                 else:
-                    derived_seed = int(base_seed + sweep_index * 1000003 + i)
+                    derived_seed = int(base_seed + cfg_id * 1000003 + i)
                     rng = np.random.default_rng(derived_seed)
-                    seed_note = f",seed={derived_seed}"
+                    seed_note = f"s{derived_seed}"
 
                 if noncollinear:
                     mags, _dirs = self._per_atom_mags_and_dirs(structure)
@@ -379,7 +392,8 @@ class MagneticOrderCard(MakeDataCard):
                     del atoms.arrays["initial_magmoms"]
                 atoms.set_initial_magnetic_moments(moms)
                 self._attach_metadata(atoms, order="PM")
-                atoms.info["Config_type"] = atoms.info.get("Config_type", "") + (f" Mag(PM,nc{seed_note})" if noncollinear else f" Mag(PM{seed_note})")
+                base = "MagPM" + ("nc" if noncollinear else "")
+                append_config_tag(atoms, base + (f"_{seed_note}" if seed_note else ""))
                 outputs.append(atoms)
 
         return outputs or [structure]

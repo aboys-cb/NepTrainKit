@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from itertools import combinations
 
 import numpy as np
@@ -10,6 +9,7 @@ from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTip
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.alloy import parse_element_list, simplex_grid_points, simplex_sobol_points
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -216,13 +216,12 @@ class CompositionSweepCard(MakeDataCard):
                 frac = points[point_idx]
                 comp = {e: float(f) for e, f in zip(elems, frac)}
                 new_structure = structure.copy()
-                new_structure.info["alloy_elements"] = ",".join(elems)
-                new_structure.info["alloy_composition"] = json.dumps(comp, ensure_ascii=False)
-                new_structure.info["_sweep_index"] = int(sweep_index)
                 sweep_index += 1
 
-                tag = "".join(f"{e}{comp[e]:.4g}" for e in elems)
-                new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Comp({tag})"
+                tag = ",".join(f"{e}={comp[e]:.4g}" for e in elems)
+                # Card-generated workflow markers belong in Config_type only.
+                # Do not persist card parameters into atoms.info (especially JSON blobs).
+                append_config_tag(new_structure, f"Comp({tag})")
                 out.append(new_structure)
                 if len(out) >= max_outputs:
                     return out

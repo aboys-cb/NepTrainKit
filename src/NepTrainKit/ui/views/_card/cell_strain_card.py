@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.structure import get_clusters, process_organic_clusters
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
@@ -142,8 +143,8 @@ class CellStrainCard(MakeDataCard):
                 if identify_organic:
                     process_organic_clusters(structure, new_structure, clusters, is_organic_list )  # pyright:ignore
 
-                strain_info = [f"all:{strain}%"]
-                new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Strain({'|'.join(strain_info)})"
+                strain_info = [f"all={strain:g}%"]
+                append_config_tag(new_structure, f"Str({','.join(strain_info)})")
                 structure_list.append(new_structure)
         else:
             if axes == 'uniaxial':
@@ -167,8 +168,8 @@ class CellStrainCard(MakeDataCard):
                     if identify_organic:
                         process_organic_clusters(structure, new_structure, clusters, is_organic_list)  # pyright:ignore
 
-                    strain_info = ["XYZ"[ax] + ":" + str(s) + "%" for ax, s in zip(ax_comb, strain_vals)]
-                    new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + f" Strain({'|'.join(strain_info)})"
+                    strain_info = [f"{'XYZ'[ax]}={float(s):g}%" for ax, s in zip(ax_comb, strain_vals)]
+                    append_config_tag(new_structure, f"Str({','.join(strain_info)})")
                     structure_list.append(new_structure)
 
         return structure_list

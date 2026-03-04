@@ -14,7 +14,6 @@ if str(SRC_PATH) not in sys.path:
 import numpy as np
 from ase.io import read
 from PySide6.QtWidgets import QApplication
-import json
 
 from NepTrainKit.ui.views._card import (
     SuperCellCard,
@@ -256,10 +255,12 @@ class TestCard(unittest.TestCase):
 
         swept = sweep.process_structure(base)
         self.assertEqual(len(swept), 3)
-        self.assertTrue(all("alloy_composition" in atoms.info for atoms in swept))
+        self.assertTrue(
+            all("Comp(" in str(atoms.info.get("Config_type", "")) for atoms in swept)
+        )
 
         occ = RandomOccupancyCard()
-        occ.source_combo.setCurrentText("From info (alloy_composition)")
+        occ.source_combo.setCurrentText("Auto (Comp tag)")
         occ.mode_combo.setCurrentText("Exact")
         occ.samples_frame.set_input_value([1])
 
@@ -285,8 +286,11 @@ class TestCard(unittest.TestCase):
         swept4 = sweep4.process_structure(base)
         self.assertEqual(len(swept4), 8)
         for atoms in swept4:
-            comp = json.loads(atoms.info["alloy_composition"])
-            self.assertEqual(len(comp), 4)
+            cfg = str(atoms.info.get("Config_type", ""))
+            comp_tokens = [t.strip() for t in cfg.split("|") if t.strip().startswith("Comp(") and t.strip().endswith(")")]
+            self.assertTrue(comp_tokens)
+            comp_items = [p for p in comp_tokens[-1][5:-1].split(",") if p.strip()]
+            self.assertEqual(len(comp_items), 4)
 
         sweep5 = CompositionSweepCard()
         sweep5.elements_edit.setText("Co,Cr,Ni,Al,Fe")
@@ -298,8 +302,11 @@ class TestCard(unittest.TestCase):
         swept5 = sweep5.process_structure(base)
         self.assertEqual(len(swept5), 6)
         for atoms in swept5:
-            comp = json.loads(atoms.info["alloy_composition"])
-            self.assertEqual(len(comp), 5)
+            cfg = str(atoms.info.get("Config_type", ""))
+            comp_tokens = [t.strip() for t in cfg.split("|") if t.strip().startswith("Comp(") and t.strip().endswith(")")]
+            self.assertTrue(comp_tokens)
+            comp_items = [p for p in comp_tokens[-1][5:-1].split(",") if p.strip()]
+            self.assertEqual(len(comp_items), 5)
 
     def test_magnetic_order_card_fm_afm(self):
         proto = CrystalPrototypeBuilderCard()
@@ -321,8 +328,8 @@ class TestCard(unittest.TestCase):
 
         results = card.process_structure(base)
         self.assertEqual(len(results), 2)
-        fm = [a for a in results if a.info.get("mag_order") == "FM"][0]
-        afm = [a for a in results if str(a.info.get("mag_order", "")).startswith("AFM")][0]
+        fm = [a for a in results if "MagFM" in str(a.info.get("Config_type", ""))][0]
+        afm = [a for a in results if "MagAFM100" in str(a.info.get("Config_type", ""))][0]
 
         fm_m = np.array(fm.get_initial_magnetic_moments(), dtype=float)
         afm_m = np.array(afm.get_initial_magnetic_moments(), dtype=float)
@@ -396,7 +403,7 @@ class TestCard(unittest.TestCase):
             self.assertEqual(m.ndim, 2)
             self.assertEqual(m.shape[1], 3)
             self.assertTrue(np.any(np.linalg.norm(m, axis=1) > 0))
-            self.assertEqual(atoms.info.get("magmom_format"), "vector")
+            self.assertIn("MagPMnc", str(atoms.info.get("Config_type", "")))
 
     def test_magmom_rotation_lifts_scalar_to_vector(self):
         proto = CrystalPrototypeBuilderCard()

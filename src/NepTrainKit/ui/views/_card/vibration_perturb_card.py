@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.structure import get_vibration_modes
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
@@ -170,8 +171,7 @@ class VibrationModePerturbCard(MakeDataCard):
             if hasattr(new_structure, "wrap"):
                 new_structure.wrap()
 
-            config_suffix = f" VibPerturb(amp={amplitude:.3f}, modes={modes_per_sample})"
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type", "") + config_suffix
+            append_config_tag(new_structure, f"Vib(a={amplitude:.3f},m={modes_per_sample})")
             generated.append(new_structure)
 
         return generated

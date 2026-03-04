@@ -5,6 +5,7 @@ from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.structure import get_clusters, process_organic_clusters
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
@@ -181,9 +182,8 @@ class CellScalingCard(MakeDataCard):
                     new_angles[2])
                 cz = np.sqrt(max(new_lengths[2] ** 2 - cx ** 2 - cy ** 2, 0))
                 new_lattice[2] = [cx, cy, cz]
-
-
-            new_structure.info["Config_type"] = new_structure.info.get("Config_type","") + f" Scaling(scaling={max_scaling},{'uniform' if engine_type==1 else 'Sobol'  })"
+            eng = "U" if engine_type == 1 else "S"
+            append_config_tag(new_structure, f"LSc(max={max_scaling},{eng})")
 
             new_structure.set_cell(new_lattice,  scale_atoms=True)
             if identify_organic:

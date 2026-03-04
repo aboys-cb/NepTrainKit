@@ -111,7 +111,7 @@ def get_xyz_nframe(path: Path | str) -> int:
     nums = re.findall(r"^(\d+)$", content, re.MULTILINE)
     return len(nums)
 
-def concat_nep_dft_array(nep_array: npt.NDArray[np.float32],dft_array:npt.NDArray[np.float32],deepmd=False) -> npt.NDArray[np.float32]:
+def concat_nep_dft_array(nep_array: npt.NDArray[np.float32], dft_array: npt.NDArray[np.float32], deepmd: bool = False, quantity: str = "values") -> npt.NDArray[np.float32]:
     """Concatenate ``nep_array`` with ``dft_array``."""
 
     if nep_array.size == 0:
@@ -120,7 +120,7 @@ def concat_nep_dft_array(nep_array: npt.NDArray[np.float32],dft_array:npt.NDArra
     else:
         mask = np.isnan(dft_array)
         if mask.any():
-            MessageManager.send_warning_message("use nep3 calculator to calculate result replace the original result")
+            MessageManager.send_warning_message(f"Missing DFT {quantity}; using NEP {quantity} instead.")
 
         dft_array[mask] = nep_array[mask]
         if deepmd:
@@ -188,4 +188,39 @@ def is_spin_model(potential_path: str | Path) -> bool:
     except Exception:  # noqa: BLE001
         logger.debug(traceback.format_exc())
         return False
+    return False
+
+
+def is_spin_model(potential_path: str | Path, max_scan_lines: int = 64) -> bool:
+    """Return whether ``nep.txt`` indicates a spin-enabled model.
+
+    Detection rules:
+    1. The first line contains ``_spin`` (e.g. ``nep4_spin``).
+    2. A later line defines ``spin_mode`` with an integer value greater than 0.
+    """
+    path = Path(potential_path)
+    if not path.exists():
+        return False
+
+    try:
+        with path.open("r", encoding="utf8", errors="ignore") as handle:
+            first_line = handle.readline().strip().lower()
+            if "_spin" in first_line:
+                return True
+
+            for _ in range(max(0, int(max_scan_lines))):
+                line = handle.readline()
+                if not line:
+                    break
+                lowered = line.strip().lower()
+                if not lowered or lowered.startswith("#") or "spin_mode" not in lowered:
+                    continue
+
+                match = re.search(r"spin_mode\s+(-?\d+)", lowered)
+                if match and int(match.group(1)) > 0:
+                    return True
+    except Exception:  # noqa: BLE001
+        logger.debug(traceback.format_exc())
+        return False
+
     return False

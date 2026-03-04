@@ -11,6 +11,7 @@ Examples
 >>> NepBackend.AUTO.value
 'auto'
 """
+import re
 import sys
 from enum import Enum
 
@@ -91,6 +92,47 @@ class ForcesMode(StrEnum):
     Raw = "Raw"
     Norm = "Norm"
 
+
+def parse_forces_mode(value, fallback: ForcesMode = ForcesMode.Raw) -> ForcesMode:
+    """Parse a config value into :class:`ForcesMode`.
+
+    Accepts both canonical values (``"Raw"``, ``"Norm"``) and enum-like
+    strings such as ``"ForcesMode.Norm"`` produced by ``str(ForcesMode.Norm)``.
+    """
+    if isinstance(value, ForcesMode):
+        return value
+
+    text = str(value or "").strip()
+    if not text:
+        return fallback
+
+    try:
+        return ForcesMode(text)
+    except Exception:
+        pass
+
+    if "." in text:
+        name = text.split(".")[-1].strip()
+        if name:
+            try:
+                return ForcesMode[name]
+            except Exception:
+                pass
+
+    match = re.search(r"ForcesMode\.([A-Za-z_]+)", text)
+    if match:
+        try:
+            return ForcesMode[match.group(1)]
+        except Exception:
+            pass
+
+    lower = text.lower()
+    for mode in ForcesMode:
+        if lower in {mode.value.lower(), mode.name.lower()}:
+            return mode
+
+    return fallback
+
 class CanvasMode(StrEnum):
     """Preferred canvas backend for visualisation."""
     VISPY = "vispy"
@@ -159,6 +201,7 @@ class Brushes(Base):
         show = _get_color("plot", "show_color", "#00FF00")
         selected = _get_color("plot", "selected_color", "#FF0000")
         current = _get_color("plot", "current_color", "#FF0000")
+        reject = _get_color("plot", "reject_color", "#FF8C00")
 
         cls.BlueBrush = QBrush(QColor(0, 0, 255))
         cls.YellowBrush = QBrush(QColor(255, 255, 0))
@@ -171,6 +214,7 @@ class Brushes(Base):
         cls.Show = QBrush(show)
         cls.Selected = QBrush(selected)
         cls.Current = QBrush(current)
+        cls.Reject = QBrush(reject)
 
     def __getattr__(self, item):
         return getattr(self.Default, item)

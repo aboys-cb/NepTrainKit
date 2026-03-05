@@ -31,6 +31,18 @@ jobs:
       run: |
         pytest tests/  --cov=./src/NepTrainKit  --junitxml=junit.xml -o junit_family=legacy
 
+    - name: Install docs dependencies
+      run: |
+        pip install -r docs/requirements.txt
+
+    - name: Audit Make Dataset card docs
+      run: |
+        python tools/docs/audit_card_docs.py
+
+    - name: Build docs (warnings as errors)
+      run: |
+        python -m sphinx -W -b html docs/source docs/build/html
+
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
       if: success()

@@ -1,11 +1,11 @@
-# Quickstart
+# 快速开始
 
-This guide gets you from installation to first results.
+本页覆盖从安装到首次使用的最短路径。
 
-## 1. Install
+## 1. 安装
 
 - Python 3.10–3.12
-- Recommended: create a fresh environment
+- 建议使用独立环境
 
 ```bash
 conda create -n nepkit python=3.10
@@ -13,99 +13,40 @@ conda activate nepkit
 pip install NepTrainKit
 ```
 
-> **GPU build note (Linux/WSL2):** `pip install` auto‑detects CUDA. If CUDA is not
-> detected, export one of `CUDA_HOME` or `CUDA_PATH` and ensure `lib64` is on your loader path
-> before running `pip install`:
+Linux/WSL2 可按需设置：
 
 ```bash
-# choose your installed CUDA version/path
 export CUDA_HOME=/usr/local/cuda-12.4
 export PATH="$CUDA_HOME/bin:$PATH"
 export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH}"
-
-# (optional) explicitly target your GPU compute capability (SM) when compiling nep_gpu
-# e.g. for Turing (7.5):
-export NEP_GPU_GENCODE="arch=compute_75,code=sm_75"
-# or multiple targets:
-# export NEP_GPU_GENCODE="-gencode arch=compute_75,code=sm_75 -gencode arch=compute_86,code=sm_86"
 pip install NepTrainKit
 ```
 
-> **GPU build note (Windows PowerShell):** Set `CUDA_PATH` (or `CUDA_HOME`) and add `bin`
-> to `Path` before `pip install`:
+Windows PowerShell 可按需设置：
 
 ```powershell
-$env:CUDA_PATH = "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.4"
-$env:Path = "$env:CUDA_PATH\\bin;" + $env:Path
+$env:CUDA_PATH = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
+$env:Path = "$env:CUDA_PATH\bin;" + $env:Path
 pip install NepTrainKit
 ```
 
-Windows portable: download `NepTrainKit.win32.zip` from Releases and run the executable.
-
-## 2. Launch
+## 2. 启动
 
 ```bash
 nepkit
-# or
+# 或
 NepTrainKit
 ```
 
-## 3. NEP Dataset Display
+## 3. 主要模块
 
-- Import data via the top‑left Open button or drag‑and‑drop.
-- Supported imports:
-  - `train.xyz` + corresponding `*.out` files
-  - `nep.txt` (optional; uses NEP89 if absent) + `train.xyz`
-  - DeepMD directory (auto‑detected)
-- Interact with plots, search by `tag`/`formula`/`elements`, select, delete, and export:
-  - Export menu → “Export Selected Structures” for chosen frames
-  - Save button exports `export_remove_model.xyz` and `export_good_model.xyz`
+- `NEP Dataset Display`：导入、可视化、筛选、导出。
+- `Make Dataset`：用 cards 组装生成/过滤 pipeline。
+- `Data Management`：按 Project/Model(version) 管理数据。
+- `Settings`：配置 backend、绘图引擎和性能参数。
 
-## 4. Make Dataset
+## 4. 可复现性建议
 
-- Drag structures (XYZ/POSCAR/CIF) into the window or use Open.
-- Build a pipeline with cards; use groups to branch/merge; add FPS filter if needed.
-- Export to `make_dataset.xyz` when done.
-- Save/Load card configurations as JSON to reuse pipelines.
-
-## 5. Data Management
-
-- Organize datasets into Projects and Models (versions), with notes and tags.
-- Right‑click for New/Modify/Delete, Open Folder, and Tag management.
-- Press `Ctrl+F` for advanced search.
-
-## 6. Settings
-
-- Choose plotting force mode (Raw vs Norm) and canvas engine (PyQtGraph vs Vispy).
-- NEP Backend: select CPU/GPU/Auto for NEP calculations; Auto tries GPU first and falls back to CPU
-- GPU Batch Size: adjust the number of frames per GPU slice to balance speed and memory
-- Enable Auto loading, adjust covalent radius threshold, sorting, and menu grouping.
-- Check app updates and NEP89 model, open help and feedback.
-
-Note:
-- GPU backend requires a compatible NVIDIA driver and CUDA 12.4 runtime. If you see “CUDA driver version is insufficient for CUDA runtime version”, switch NEP Backend to CPU in Settings.
-
-## 7. Tips
-
-- Use Vispy for large scenes if your GPU supports OpenGL.
-- Switch search mode to `formula` to match by composition rather than tags.
-- Switch search mode to `elements` to filter by element set, e.g. `Fe,O` (only Fe/O present) or `+Fe` (must contain Fe).
-- Use the structure toolbar to export descriptors or mark non‑physical bonds.
-## Cite NepTrainKit
-
-If you publish results that rely on NepTrainKit, cite the following paper and acknowledge upstream NEP projects where relevant:
-
-```bibtex
-@article{CHEN2025109859,
-title = {NepTrain and NepTrainKit: Automated active learning and visualization toolkit for neuroevolution potentials},
-journal = {Computer Physics Communications},
-volume = {317},
-pages = {109859},
-year = {2025},
-issn = {0010-4655},
-doi = {https://doi.org/10.1016/j.cpc.2025.109859},
-url = {https://www.sciencedirect.com/science/article/pii/S0010465525003613},
-author = {Chengbing Chen and Yutong Li and Rui Zhao and Zhoulin Liu and Zheyong Fan and Gang Tang and Zhiyong Wang},
-}
-```
-
+- 对支持的卡片开启 `Use seed` 并固定 `seed`
+- 固定卡片顺序与输入顺序
+- 结合 `Config_type` 检查导出结果

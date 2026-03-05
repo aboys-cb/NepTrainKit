@@ -29,6 +29,11 @@ from NepTrainKit.core.io import (ResultData, load_result_data, matches_result_lo
 from NepTrainKit.core.structure import table_info, atomic_numbers
 from NepTrainKit.core.types import Brushes, CanvasMode, SearchType
 from NepTrainKit.paths import get_bundled_nep89_path
+from NepTrainKit.ui.canvas.canvas_factory import (
+    create_structure_plot,
+    resolve_canvas_host_widget,
+    supports_structure_arrows,
+)
 from NepTrainKit.ui.views import (
     NepResultPlotWidget,
     NepDisplayGraphicsToolBar,
@@ -74,6 +79,7 @@ class ShowNepWidget(QWidget):
         self._index_running = 0
         self._worker_threads: list[QThread] = []
         self._structure_mask_version_seen: int | None = None
+        self._structure_canvas_fallback_warned = False
         self.init_action()
         self.init_ui()
         self.calculate_bond_thread:LoadingThread
@@ -559,18 +565,13 @@ class ShowNepWidget(QWidget):
         self.struct_widget = QWidget(self)
         self.struct_widget_layout = QGridLayout(self.struct_widget)
         canvas_type = Config.get("widget", "canvas_type",  str(CanvasMode.PYQTGRAPH.value))
-        if canvas_type == CanvasMode.PYQTGRAPH:
-            from NepTrainKit.ui.canvas.pyqtgraph import StructurePlotWidget
-            self.show_struct_widget = StructurePlotWidget(self.struct_widget)
-
-            self.struct_widget_layout.addWidget(self.show_struct_widget, 1, 0, 1, 1)
-
-        else:
-
-            from NepTrainKit.ui.canvas.vispy import StructurePlotWidget
-            self.show_struct_widget = StructurePlotWidget( parent=self.struct_widget)
-
-            self.struct_widget_layout.addWidget(self.show_struct_widget.native, 1, 0, 1, 1)
+        self.show_struct_widget, fallback = create_structure_plot(canvas_type, self.struct_widget)
+        self.struct_widget_layout.addWidget(resolve_canvas_host_widget(self.show_struct_widget), 1, 0, 1, 1)
+        if fallback and not self._structure_canvas_fallback_warned:
+            MessageManager.send_warning_message(
+                "Current canvas backend is vispy, but vispy structure canvas failed to initialize; fallback to pyqtgraph."
+            )
+            self._structure_canvas_fallback_warned = True
         self.structure_toolbar = StructureToolBar(self.struct_widget)
         self.structure_toolbar.showBondSignal.connect(self.show_struct_widget.set_show_bonds)
         self.structure_toolbar.orthoViewSignal.connect(self.show_struct_widget.set_projection)
@@ -578,6 +579,7 @@ class ShowNepWidget(QWidget):
 
         self.structure_toolbar.exportSignal.connect(self.export_single_struct)
         self.structure_toolbar.arrowSignal.connect(self.show_arrow_dialog)
+        self._update_structure_arrow_availability()
         if hasattr(self.structure_toolbar, "rejectToggledSignal"):
             self.structure_toolbar.rejectToggledSignal.connect(self._toggle_reject_current)
         if hasattr(self.structure_toolbar, "dropRejectSignal"):
@@ -716,6 +718,19 @@ class ShowNepWidget(QWidget):
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
         self.updateBondInfoSignal.connect(self.bond_label.setText)
         self._refresh_export_actions()
+
+    def _update_structure_arrow_availability(self) -> None:
+        """Enable or disable arrow controls based on canvas capabilities."""
+        toolbar = getattr(self, "structure_toolbar", None)
+        if toolbar is None or not hasattr(toolbar, "set_arrow_enabled"):
+            return
+        if supports_structure_arrows(getattr(self, "show_struct_widget", None)):
+            toolbar.set_arrow_enabled(True)
+            return
+        toolbar.set_arrow_enabled(
+            False,
+            "Arrow overlay is available only for vispy structure canvas.",
+        )
 
     def _get_completer_max_items(self) -> int:
         try:
@@ -1392,6 +1407,9 @@ class ShowNepWidget(QWidget):
         None
             Updates arrow display based on user selections.
         """
+        if not supports_structure_arrows(getattr(self, "show_struct_widget", None)):
+            MessageManager.send_info_message("Arrow overlay is unavailable for current structure canvas backend.")
+            return
         structure = getattr(self.show_struct_widget, "structure", None)
         if structure is None:
             return

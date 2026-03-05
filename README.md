@@ -121,7 +121,7 @@ A standalone executable is available for Windows users.
 For detailed usage documentation and examples, please refer to the official documentation:  
 [https://neptrainkit.readthedocs.io/en/latest/index.html](https://neptrainkit.readthedocs.io/en/latest/index.html)
 
-- What's new: see `docs/source/changelog.md` or the Documentation "Changelog" page.
+- What's new: see [GitHub Releases](https://github.com/aboys-cb/NepTrainKit/releases).
 
 ---
 

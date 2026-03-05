@@ -144,6 +144,54 @@ class SearchType(StrEnum):
     FORMULA = "formula"
     ELEMENTS = "elements"
 
+
+class FieldValueShape(StrEnum):
+    """Shape category for numeric fields used by distribution analysis."""
+    SCALAR = "scalar"
+    VECTOR3 = "vector3"
+    VECTORN = "vectorn"
+    TENSOR = "tensor"
+
+
+class FieldDomain(StrEnum):
+    """Data domain for a field."""
+    STRUCTURE = "structure"
+    ATOM = "atom"
+
+
+class DistributionGroupMode(StrEnum):
+    """Grouping mode for distribution analysis."""
+    FORMULA = "formula"
+    ELEMENT = "element"
+
+
+class DistributionValueView(StrEnum):
+    """Value source to visualise in distribution analysis."""
+    REFERENCE = "reference"
+    PREDICTION = "prediction"
+    ERROR = "error"
+
+
+class DistributionScope(StrEnum):
+    """Structure scope for distribution analysis."""
+    ACTIVE = "active"
+    SELECTED = "selected"
+
+
+class DistributionSelectMode(StrEnum):
+    """Selection merge policy when applying a picked histogram bin."""
+    REPLACE = "replace"
+    ADD = "add"
+    INTERSECT = "intersect"
+
+
+class DistributionCurveStyle(StrEnum):
+    """Curve overlay mode for histogram plots in distribution analysis."""
+    NONE = "none"
+    KDE = "kde"
+    NORMAL = "normal"
+
+
 class NepBackend(StrEnum):
     """NEP calculator backend preference."""
     AUTO = "auto"

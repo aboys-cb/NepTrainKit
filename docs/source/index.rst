@@ -1,36 +1,32 @@
-.. NepTrainKit documentation master file, created by
-   sphinx-quickstart on Wed Dec  4 19:50:15 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. NepTrainKit documentation master file.
 
-NepTrainKit documentation
-=========================
-NepTrainKit is a toolkit focused on the operation and visualization of neuroevolution potential (NEP) training datasets. It is mainly used to simplify and optimize the NEP model training process, providing an intuitive graphical interface and analysis tools to help users adjust train dataset.
+NepTrainKit 文档
+==================
+
+NepTrainKit 是一个面向 NEP（neuroevolution potential）训练数据管理、可视化与数据生成的工具箱。
 
 .. note::
 
-   Installing via ``pip`` auto-detects CUDA. If a compatible CUDA toolkit
-   is available, the NEP backend is compiled with GPU acceleration; otherwise,
-   a CPU-only backend is built. If CUDA is not detected automatically, set
-   one of ``CUDA_HOME`` or ``CUDA_PATH`` and update your loader path before running
-   ``pip install``.
+   使用 ``pip`` 安装时会自动检测 CUDA。若检测到可用 CUDA，将构建 GPU backend；否则构建 CPU backend。
+   如需手动指定 CUDA，请在安装前设置 ``CUDA_HOME`` 或 ``CUDA_PATH``。
 
-   Linux/WSL2 example::
+   Linux/WSL2 示例::
 
       export CUDA_HOME=/usr/local/cuda-12.4
       export PATH="$CUDA_HOME/bin:$PATH"
       export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH}"
       pip install NepTrainKit
 
-   Windows (PowerShell) example::
+   Windows (PowerShell) 示例::
 
-      $env:CUDA_PATH = "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.4"
-      $env:Path = "$env:CUDA_PATH\\bin;" + $env:Path
+      $env:CUDA_PATH = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
+      $env:Path = "$env:CUDA_PATH\bin;" + $env:Path
       pip install NepTrainKit
 
-Citing NepTrainKit
--------------------
-If you rely on NepTrainKit for published research, please cite the following article and acknowledge the upstream NEP projects where appropriate:
+引用 NepTrainKit
+-----------------
+
+如果你的研究使用了 NepTrainKit，请引用：
 
 .. code-block:: bibtex
 
@@ -48,11 +44,10 @@ If you rely on NepTrainKit for published research, please cite the following art
 
 .. toctree::
    :maxdepth: 2
-   :caption: Documentation:
+   :caption: 文档目录
 
-   Quickstart <quickstart>
-   Supported Formats <formats>
-   Module    <module/index>
-   Example    <example/index>
-   API Reference <api/index>
-   Changelog <changelog>
+   快速开始 <quickstart>
+   支持格式 <formats>
+   功能模块 <module/index>
+   示例 <example/index>
+   API 参考 <api/index>

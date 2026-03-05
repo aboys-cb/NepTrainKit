@@ -1,5 +1,7 @@
-﻿API Reference
-=============
+API 参考
+=========
+
+下列页面由 ``automodule`` 自动生成；源码 docstring 保持英文原文。
 
 .. automodule:: NepTrainKit.core.structure
    :members:

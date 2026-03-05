@@ -25,6 +25,7 @@ from NepTrainKit.config import  Config
 from PySide6.QtWidgets import QApplication
 from NepTrainKit.ui.widgets.dialog import ShiftEnergyDialogValues
 import NepTrainKit.ui.views.nep as nep_view_module
+import NepTrainKit.ui.pages.show_nep as show_nep_module
 
 Config()
 Config.set("nep", "backend","cpu")
@@ -410,6 +411,69 @@ class TestNepResultPlotWidgetShiftEnergyBaseline(unittest.TestCase):
         run_mock.assert_not_called()
         warn_mock.assert_called_once_with("Selected preset unavailable.")
         widget.canvas.plot_nep_result.assert_not_called()
+
+
+class TestNepResultPlotWidgetCanvasFactory(unittest.TestCase):
+    def test_swith_canvas_uses_factory_and_host_widget(self):
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._layout = MagicMock()
+        widget._canvas_fallback_warned = False
+        canvas_obj = object()
+        host_widget = object()
+
+        with patch.object(nep_view_module, "create_result_canvas", return_value=(canvas_obj, False)) as create_mock, patch.object(
+            nep_view_module, "resolve_canvas_host_widget", return_value=host_widget
+        ) as resolve_mock:
+            nep_view_module.NepResultPlotWidget.swith_canvas(widget, "pyqtgraph")
+
+        self.assertIs(widget.canvas, canvas_obj)
+        create_mock.assert_called_once_with("pyqtgraph", widget)
+        resolve_mock.assert_called_once_with(canvas_obj)
+        widget._layout.addWidget.assert_called_once_with(host_widget)
+
+    def test_swith_canvas_warns_only_once_for_fallback(self):
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._layout = MagicMock()
+        widget._canvas_fallback_warned = False
+
+        with patch.object(
+            nep_view_module,
+            "create_result_canvas",
+            side_effect=[(object(), True), (object(), True)],
+        ), patch.object(
+            nep_view_module,
+            "resolve_canvas_host_widget",
+            side_effect=[object(), object()],
+        ), patch.object(nep_view_module.MessageManager, "send_warning_message") as warn_mock:
+            nep_view_module.NepResultPlotWidget.swith_canvas(widget, "vispy")
+            nep_view_module.NepResultPlotWidget.swith_canvas(widget, "vispy")
+
+        warn_mock.assert_called_once_with(
+            "Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph."
+        )
+        self.assertTrue(widget._canvas_fallback_warned)
+
+
+class TestShowNepWidgetArrowCapability(unittest.TestCase):
+    def test_update_structure_arrow_availability_disables_when_unsupported(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget.show_struct_widget = object()
+        widget.structure_toolbar = SimpleNamespace(set_arrow_enabled=MagicMock())
+        with patch.object(show_nep_module, "supports_structure_arrows", return_value=False):
+            show_nep_module.ShowNepWidget._update_structure_arrow_availability(widget)
+        widget.structure_toolbar.set_arrow_enabled.assert_called_once_with(
+            False,
+            "Arrow overlay is available only for vispy structure canvas.",
+        )
+
+    def test_show_arrow_dialog_guard_when_backend_not_supported(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget.show_struct_widget = object()
+        with patch.object(show_nep_module, "supports_structure_arrows", return_value=False), patch.object(
+            show_nep_module.MessageManager, "send_info_message"
+        ) as info_mock:
+            show_nep_module.ShowNepWidget.show_arrow_dialog(widget)
+        info_mock.assert_called_once_with("Arrow overlay is unavailable for current structure canvas backend.")
 
 
 class TestNepPolarizabilityResultData( unittest.TestCase):

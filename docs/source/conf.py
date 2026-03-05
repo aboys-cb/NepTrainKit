@@ -70,7 +70,7 @@ myst_enable_extensions = [
 
 templates_path = ['_templates']
 # locale_dirs = ['docs/locales']  # directory for translation files
-language = 'en'
+language = 'zh_CN'
 
 
 html_theme = 'sphinx_rtd_theme'
@@ -85,4 +85,10 @@ source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',
 }
+
+# Some autodoc-parsed docstrings use ``|ΣF|`` style markers.
+# Define the substitution globally so Sphinx -W builds stay strict-clean.
+rst_prolog = """
+.. |ΣF| replace:: ΣF
+"""
 

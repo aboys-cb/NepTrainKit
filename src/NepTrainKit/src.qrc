@@ -60,7 +60,7 @@
         <file>src/images/gpu.svg</file>
         <file>src/images/inspect.svg</file>
         <file>src/images/summary.svg</file>
-
+<file>src/images/distribution_inspector.svg</file>
   </qresource>
   <qresource prefix="/theme">
     <file>src/qss/theme.qss</file>

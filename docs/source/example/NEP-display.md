@@ -1,58 +1,38 @@
+# NEP Dataset Display 示例
 
-# NEP Display
+> 本页以操作演示为主。完整工具说明与参数手册请见：
+> [`Show NEP 详细参考`](../module/show-nep-reference.md)
 
-## Data Import
-In this section, we will use only the `nep.txt` and `train.xyz` files. You can simply drag any file into the software window to load it.
+## 数据导入
 
-For a list of supported file formats and details (e.g., VASP OUTCAR/XDATCAR, LAMMPS dump, ASE trajectories), see: [Supported Formats](../formats.md).
+使用 `nep.txt` 与 `train.xyz` 作为最小输入；支持拖拽导入。
 
-Once loaded, the interface will appear as shown below, with red stars indicating the position of the structure in the training set.  
 ![GIF Image](../_static/image/example/display/import.gif)
 
-## Trajectory Playback
-Next, let's introduce the trajectory playback feature. On the right side of the structure index space (SpinBox), there is a play button:  
-<img src="../_static/image/play.svg" alt="delete" width='30' height='30' />. When clicked, it will play the trajectory frame by frame as a preview feature.
+## 轨迹播放
+
+点击播放按钮可逐帧预览结构：
+
+<img src="../_static/image/show_nep_icons/play.svg" alt="play" width='30' height='30' />
 
 ![GIF Image](../_static/image/example/display/play.gif)
 
-## Dataset Editing
-Now, let's demonstrate how to edit and filter the training set.
+## 数据筛选
 
-:::{note}
-- The training set is limited in size, and each toolset is built based on the original data, allowing continuous operations.
-- The following operations are for demonstration purposes and are performed on the energy plot.
-:::
+- 最大误差点筛选：![GIF Image](../_static/image/example/display/maxerror.gif)
+- FPS 稀疏采样：![GIF Image](../_static/image/example/display/fps.gif)
+- 鼠标选择/反选：![GIF Image](../_static/image/example/display/mouse.gif)
+- `Config_type` 组合筛选：![GIF Image](../_static/image/example/display/config1.gif)
 
-### Maximum Error Point Selection
-First, we select and delete the top 10 points based on the maximum energy error.  
-![GIF Image](../_static/image/example/display/maxerror.gif)
+## 导出
 
-### Sparse Sampling of Furthest Points
-This training set contains about 200 structures. We set the minimum distance to 0.01 and retain a maximum of 100 structures.  
+过滤完成后导出数据：
 
-Tip: You can pre‑select a region (by mouse) and then enable "Use current selection as region" in the FPS dialog to restrict sampling to that region only.
-![GIF Image](../_static/image/example/display/fps.gif)
-
-### Manual Selection
-Next, we'll demonstrate how to manually select and deselect structures.  
-:::{note}
-- Left-click: Select a structure, either by clicking or drawing a trajectory.
-- Right-click: Deselect a structure, either by clicking or drawing a trajectory.
-:::
-![GIF Image](../_static/image/example/display/mouse.gif)
-
-### Config_type Selection
-Now, we will demonstrate how to use `Config_type` for selection.  
-![GIF Image](../_static/image/example/display/config1.gif)
-
-:::{important}
-This tool is typically used in conjunction with the three features mentioned above to more precisely filter the structures.
-:::
-
-Below is an example of how `Config_type` can be combined with the sparse sampling of furthest points. Based on the sparse sampling, we retain the AIMD structures.  
-![GIF Image](../_static/image/example/display/config2.gif)
-
-## Exporting the Dataset
-Finally, after deleting the selected structures, we can export the filtered dataset.  
 ![GIF Image](../_static/image/example/display/save.gif)
 
+---
+
+更多细节：
+
+- 图标对照与每个工具逻辑：[`../module/show-nep-reference.md`](../module/show-nep-reference.md)
+- 导入导出分支、NEP 模型切换、搜索语法：[`../module/show-nep-reference.md`](../module/show-nep-reference.md)

@@ -1,8 +1,11 @@
 """Toolbar widgets that expose plotting and structure manipulation actions."""
 
+from pathlib import Path
+
 from PySide6.QtCore import Signal, QSize
 from PySide6.QtGui import QAction, QIcon, QActionGroup
 from qfluentwidgets import CommandBar, Action, CommandBarView
+from NepTrainKit import module_path
 
 
 class KitToolBarBase(CommandBarView):
@@ -80,6 +83,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     dftd3Signal = Signal()
     summarySignal = Signal()
     forceBalanceSignal = Signal()
+    distributionSignal = Signal()
 
     def __init__(self, parent=None):
         """Initialise toolbar actions and keep a reference to the action group."""
@@ -88,6 +92,8 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
 
     def init_actions(self):
         """Populate toolbar actions for interacting with NEP plots."""
+        distribution_icon = Path(module_path) / "src" / "images" / "distribution_inspector.svg"
+        distribution_icon_path = str(distribution_icon) if distribution_icon.exists() else ":/images/src/images/inspect.svg"
         self.addButton("Reset View", QIcon(":/images/src/images/init.svg"), self.resetSignal)
         pan_action = self.addButton(
             "Pan View",
@@ -187,6 +193,11 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             QIcon(":/images/src/images/summary.svg"),
             self.summarySignal,
         )
+        self.addButton(
+            "Distribution Inspector",
+            QIcon(distribution_icon_path),
+            self.distributionSignal,
+        )
 
 
     def reset(self) -> None:
@@ -248,7 +259,7 @@ class StructureToolBar(KitToolBarBase):
             True,
         )
 
-        self.addButton(
+        self._arrow_action = self.addButton(
             "Show Arrows",
             QIcon(":/images/src/images/xyz.svg"),
             self.arrowSignal,
@@ -288,6 +299,17 @@ class StructureToolBar(KitToolBarBase):
             action.setChecked(bool(checked))
         finally:
             self._reject_syncing = False
+
+    def set_arrow_enabled(self, enabled: bool, disabled_tooltip: str = "") -> None:
+        """Enable or disable the arrow action based on backend capabilities."""
+        action = self._actions.get("Show Arrows")
+        if action is None:
+            return
+        action.setEnabled(bool(enabled))
+        if enabled:
+            action.setToolTip("Show Arrows")
+        elif disabled_tooltip:
+            action.setToolTip(disabled_tooltip)
 
     def view_changed(self, checked: bool) -> None:
         """Emit the orthographic view toggle state."""

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from itertools import combinations
 
 import numpy as np
@@ -24,6 +25,8 @@ class CompositionSweepCard(MakeDataCard):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitle("Composition Sweep")
+        self._shown_plan_notice_key: tuple | None = None
+        self._shown_warning_keys: set[tuple] = set()
         self.init_ui()
 
     def init_ui(self):
@@ -33,7 +36,7 @@ class CompositionSweepCard(MakeDataCard):
         self.elements_edit = LineEdit(self.setting_widget)
         self.elements_edit.setPlaceholderText("Co,Cr,Ni,Al")
         self.elements_edit.setText("Co,Cr,Ni")
-        self.elements_label.setToolTip("Candidate elements for binary/ternary combinations")
+        self.elements_label.setToolTip("Candidate elements for binary/ternary/quaternary/quinary combinations")
         self.elements_label.installEventFilter(ToolTipFilter(self.elements_label, 300, ToolTipPosition.TOP))
 
         self.order_label = BodyLabel("Order", self.setting_widget)
@@ -98,6 +101,19 @@ class CompositionSweepCard(MakeDataCard):
         self.max_output_frame.setRange(1, 9999999)
         self.max_output_frame.set_input_value([500])
 
+        self.budget_mode_label = BodyLabel("Budget mode", self.setting_widget)
+        self.budget_mode_combo = ComboBox(self.setting_widget)
+        self.budget_mode_combo.addItems(
+            [
+                "Equal+Reflow",
+                "Capacity-weighted",
+                "Equal (legacy)",
+            ]
+        )
+        self.budget_mode_combo.setCurrentText("Equal+Reflow")
+        self.budget_mode_label.setToolTip("How Max outputs/frame is split across selected orders")
+        self.budget_mode_label.installEventFilter(ToolTipFilter(self.budget_mode_label, 300, ToolTipPosition.TOP))
+
         self.settingLayout.addWidget(self.elements_label, 0, 0, 1, 1)
         self.settingLayout.addWidget(self.elements_edit, 0, 1, 1, 2)
         self.settingLayout.addWidget(self.order_label, 1, 0, 1, 1)
@@ -117,6 +133,21 @@ class CompositionSweepCard(MakeDataCard):
         self.settingLayout.addWidget(self.seed_frame, 7, 1, 1, 2)
         self.settingLayout.addWidget(self.max_output_label, 8, 0, 1, 1)
         self.settingLayout.addWidget(self.max_output_frame, 8, 1, 1, 2)
+        self.settingLayout.addWidget(self.budget_mode_label, 9, 0, 1, 1)
+        self.settingLayout.addWidget(self.budget_mode_combo, 9, 1, 1, 2)
+
+        self.method_combo.currentTextChanged.connect(self._update_method_widgets)
+        for spin in self.step_frame.object_list + self.n_points_frame.object_list:
+            spin.valueChanged.connect(lambda *_args: self._invalidate_runtime_notices())
+        self.minfrac_frame.object_list[0].valueChanged.connect(lambda *_args: self._invalidate_runtime_notices())
+        self.max_output_frame.object_list[0].valueChanged.connect(lambda *_args: self._invalidate_runtime_notices())
+        self.include_endpoints_checkbox.stateChanged.connect(lambda *_args: self._invalidate_runtime_notices())
+        self.seed_checkbox.stateChanged.connect(lambda *_args: self._invalidate_runtime_notices())
+        self.seed_frame.object_list[0].valueChanged.connect(lambda *_args: self._invalidate_runtime_notices())
+        self.budget_mode_combo.currentTextChanged.connect(lambda *_args: self._invalidate_runtime_notices())
+        self.order_combo.currentTextChanged.connect(lambda *_args: self._invalidate_runtime_notices())
+        self.elements_edit.textChanged.connect(lambda *_args: self._invalidate_runtime_notices())
+        self._update_method_widgets()
 
     def _target_orders(self) -> list[int]:
         text = (self.order_combo.currentText() or "").strip()
@@ -145,6 +176,40 @@ class CompositionSweepCard(MakeDataCard):
                 orders.append(val)
         return orders or [2, 3]
 
+    def _invalidate_runtime_notices(self) -> None:
+        self._shown_plan_notice_key = None
+        self._shown_warning_keys.clear()
+
+    def _warn_once(self, key: tuple, message: str) -> None:
+        if key in self._shown_warning_keys:
+            return
+        self._shown_warning_keys.add(key)
+        MessageManager.send_warning_message(message)
+
+    def _update_method_widgets(self) -> None:
+        is_sobol = self.method_combo.currentText() == "Sobol"
+        self.n_points_label.setVisible(is_sobol)
+        self.n_points_frame.setVisible(is_sobol)
+        self.step_label.setVisible(not is_sobol)
+        self.step_frame.setVisible(not is_sobol)
+        self.include_endpoints_checkbox.setVisible(not is_sobol)
+
+        # Keep enabled-state gating as a defensive fallback.
+        self.n_points_label.setEnabled(is_sobol)
+        self.n_points_frame.setEnabled(is_sobol)
+        self.step_label.setEnabled(not is_sobol)
+        self.step_frame.setEnabled(not is_sobol)
+        self.include_endpoints_checkbox.setEnabled(not is_sobol)
+
+    @staticmethod
+    def _is_near_rational_step(step: float, tol: float = 1e-9) -> tuple[bool, int]:
+        if step <= 0:
+            return False, 0
+        n = int(round(1.0 / float(step)))
+        if n <= 0:
+            return False, 0
+        return abs(float(step) - 1.0 / n) <= tol, n
+
     def _simplex_points(self, order: int) -> list[tuple[float, ...]]:
         method = self.method_combo.currentText()
         min_fraction = float(self.minfrac_frame.get_input_value()[0])
@@ -164,6 +229,122 @@ class CompositionSweepCard(MakeDataCard):
             rng.shuffle(pts)
         return pts
 
+    def _budget_mode(self) -> str:
+        txt = (self.budget_mode_combo.currentText() or "").strip().lower()
+        if "legacy" in txt:
+            return "equal_legacy"
+        if "weight" in txt:
+            return "weighted_reflow"
+        return "equal_reflow"
+
+    @staticmethod
+    def _allocate_equal(orders: list[int], max_outputs: int) -> dict[int, int]:
+        budgets: dict[int, int] = {o: 0 for o in orders}
+        if not orders or max_outputs <= 0:
+            return budgets
+        base = max_outputs // len(orders)
+        rem = max_outputs - base * len(orders)
+        for i, o in enumerate(orders):
+            budgets[o] = base + (1 if i < rem else 0)
+        return budgets
+
+    @staticmethod
+    def _allocate_weighted(
+        orders: list[int],
+        capacities: dict[int, int],
+        max_outputs: int,
+    ) -> dict[int, int]:
+        budgets: dict[int, int] = {o: 0 for o in orders}
+        if not orders or max_outputs <= 0:
+            return budgets
+        total_cap = int(sum(max(0, int(capacities.get(o, 0))) for o in orders))
+        if total_cap <= 0:
+            return budgets
+
+        raw = [float(max_outputs) * float(max(0, int(capacities.get(o, 0)))) / float(total_cap) for o in orders]
+        floors = [int(np.floor(v)) for v in raw]
+        for o, v in zip(orders, floors):
+            budgets[o] = int(v)
+        remaining = int(max_outputs - sum(floors))
+        if remaining > 0:
+            frac_rank = sorted(
+                range(len(orders)),
+                key=lambda i: (raw[i] - floors[i], -i),
+                reverse=True,
+            )
+            for i in frac_rank[:remaining]:
+                budgets[orders[i]] += 1
+        return budgets
+
+    @staticmethod
+    def _reflow_budget(
+        orders: list[int],
+        budget: dict[int, int],
+        capacities: dict[int, int],
+        max_outputs: int,
+    ) -> dict[int, int]:
+        emit = {o: int(min(max(0, int(budget.get(o, 0))), max(0, int(capacities.get(o, 0))))) for o in orders}
+        remaining = int(max_outputs) - int(sum(emit.values()))
+        if remaining <= 0:
+            return emit
+
+        active = [o for o in orders if int(capacities.get(o, 0)) > emit[o]]
+        while remaining > 0 and active:
+            n_active = len(active)
+            share = max(remaining // n_active, 1)
+            next_active: list[int] = []
+            progressed = False
+            for o in active:
+                room = int(capacities.get(o, 0)) - emit[o]
+                if room <= 0:
+                    continue
+                add = int(min(room, share))
+                if add > 0:
+                    emit[o] += add
+                    remaining -= add
+                    progressed = True
+                if emit[o] < int(capacities.get(o, 0)):
+                    next_active.append(o)
+                if remaining <= 0:
+                    break
+            if not progressed:
+                break
+            active = next_active
+        return emit
+
+    @staticmethod
+    def _coprime_stride(total: int, hint: int) -> int:
+        total = int(total)
+        if total <= 1:
+            return 1
+        stride = int(hint) % total
+        if stride <= 0:
+            stride = 1
+        while math.gcd(stride, total) != 1:
+            stride += 1
+            if stride >= total:
+                stride = 1
+        return stride
+
+    @classmethod
+    def _spread_slots(cls, total: int, n_pick: int, *, seed: int | None = None) -> list[int]:
+        """Pick ``n_pick`` slots from ``[0, total)`` with low front bias and no duplicates."""
+        total = int(total)
+        n_pick = int(n_pick)
+        if total <= 0 or n_pick <= 0:
+            return []
+        if n_pick >= total:
+            return list(range(total))
+        if seed is None:
+            start = 0
+            stride_hint = int(total * 0.6180339887498949)
+        else:
+            rng = np.random.default_rng(int(seed))
+            start = int(rng.integers(0, total))
+            stride_hint = int(rng.integers(1, total))
+        stride = cls._coprime_stride(total, stride_hint)
+        return [int((start + i * stride) % total) for i in range(n_pick)]
+
     def process_structure(self, structure):
         elements = parse_element_list(self.elements_edit.text())
         if len(elements) < 2:
@@ -181,37 +362,113 @@ class CompositionSweepCard(MakeDataCard):
             MessageManager.send_warning_message("CompositionSweep: not enough elements for requested order.")
             return [structure]
 
-        # Allocate output budget across orders.
-        budgets: dict[int, int] = {}
-        base = max_outputs // len(orders)
-        rem = max_outputs - base * len(orders)
-        for i, o in enumerate(orders):
-            budgets[o] = base + (1 if i < rem else 0)
-        # Ensure at least 1 sample for the highest-priority order when possible.
-        if budgets.get(orders[0], 0) == 0 and max_outputs > 0:
-            budgets[orders[0]] = 1
-
         out = []
         sweep_index = 0
         seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
         combo_rng = np.random.default_rng(seed) if seed is not None else None
+        method = self.method_combo.currentText()
+        if method == "Grid":
+            high_orders = [o for o in orders if o >= 4]
+            if high_orders:
+                step = float(self.step_frame.get_input_value()[0])
+                near, _ = self._is_near_rational_step(step)
+                if not near:
+                    warn_key = (
+                        "grid-step-order4plus",
+                        tuple(high_orders),
+                        round(step, 12),
+                    )
+                    self._warn_once(
+                        warn_key,
+                        "CompositionSweep: Grid with order>=4 requires step ~= 1/n; "
+                        f"step={step:.8g} cannot cover order {','.join(str(o) for o in high_orders)}. "
+                        "Those orders will be skipped (use Sobol for robust high-order sampling).",
+                    )
 
+        order_data: list[dict] = []
+        capacities: dict[int, int] = {}
         for order in orders:
             points = self._simplex_points(order)
-            order_budget = int(budgets.get(order, 0))
-            if order_budget <= 0:
-                continue
             if not points:
                 continue
             combos = list(combinations(elements, order))
             if combo_rng is not None and combos:
                 combo_rng.shuffle(combos)
-
             unique_total = len(combos) * len(points)
+            if unique_total <= 0:
+                continue
+            capacities[order] = int(unique_total)
+            order_data.append(
+                {
+                    "order": order,
+                    "points": points,
+                    "combos": combos,
+                    "capacity": int(unique_total),
+                }
+            )
+
+        if not order_data:
+            MessageManager.send_warning_message("CompositionSweep: no valid composition points can be generated.")
+            return [structure]
+
+        active_orders = [int(item["order"]) for item in order_data]
+        mode = self._budget_mode()
+        if mode == "weighted_reflow":
+            budgets = self._allocate_weighted(active_orders, capacities, max_outputs)
+        else:
+            budgets = self._allocate_equal(active_orders, max_outputs)
+
+        if budgets.get(active_orders[0], 0) == 0 and max_outputs > 0:
+            budgets[active_orders[0]] = 1
+
+        if mode == "equal_legacy":
+            emit = {
+                o: int(min(max(0, int(budgets.get(o, 0))), max(0, int(capacities.get(o, 0)))))
+                for o in active_orders
+            }
+        else:
+            emit = self._reflow_budget(active_orders, budgets, capacities, max_outputs)
+
+        plan_key = (
+            tuple(elements),
+            tuple(active_orders),
+            method,
+            mode,
+            round(float(self.step_frame.get_input_value()[0]), 12),
+            int(self.n_points_frame.get_input_value()[0]),
+            round(float(self.minfrac_frame.get_input_value()[0]), 12),
+            bool(self.include_endpoints_checkbox.isChecked()),
+            bool(self.seed_checkbox.isChecked()),
+            int(self.seed_frame.get_input_value()[0]),
+            int(max_outputs),
+            tuple((o, int(emit.get(o, 0)), int(capacities.get(o, 0))) for o in active_orders),
+        )
+        if self._shown_plan_notice_key != plan_key:
+            self._shown_plan_notice_key = plan_key
+            total_emit = int(sum(emit.values()))
+            details = ", ".join(f"o{o}:{int(emit[o])}/{int(capacities[o])}" for o in active_orders)
+            suffix = ""
+            if total_emit < int(max_outputs):
+                suffix = " (limited by available unique combinations)"
+            MessageManager.send_info_message(
+                "CompositionSweep plan: "
+                f"budget={mode}, target={int(max_outputs)}, emit={total_emit}. {details}{suffix}"
+            )
+
+        for item in order_data:
+            order = int(item["order"])
+            points = item["points"]
+            combos = item["combos"]
+            order_budget = int(emit.get(order, 0))
+            if order_budget <= 0:
+                continue
+            unique_total = int(item["capacity"])
             n_emit = min(order_budget, unique_total)
-            for k in range(n_emit):
-                combo_idx = k % len(combos)
-                point_idx = k // len(combos)
+            slot_seed = None if seed is None else int(seed + order * 104729)
+            slots = self._spread_slots(unique_total, n_emit, seed=slot_seed)
+            for slot in slots:
+                combo_idx = int(slot % len(combos))
+                point_idx = int(slot // len(combos))
                 elems = combos[combo_idx]
                 frac = points[point_idx]
                 comp = {e: float(f) for e, f in zip(elems, frac)}
@@ -239,6 +496,7 @@ class CompositionSweepCard(MakeDataCard):
         data["use_seed"] = self.seed_checkbox.isChecked()
         data["seed"] = self.seed_frame.get_input_value()
         data["max_outputs"] = self.max_output_frame.get_input_value()
+        data["budget_mode"] = self.budget_mode_combo.currentText()
         return data
 
     def from_dict(self, data_dict):
@@ -253,3 +511,6 @@ class CompositionSweepCard(MakeDataCard):
         self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
         self.seed_frame.set_input_value(data_dict.get("seed", [0]))
         self.max_output_frame.set_input_value(data_dict.get("max_outputs", [500]))
+        self.budget_mode_combo.setCurrentText(data_dict.get("budget_mode", "Equal+Reflow"))
+        self._update_method_widgets()
+        self._invalidate_runtime_notices()

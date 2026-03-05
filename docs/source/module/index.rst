@@ -5,6 +5,7 @@
    :maxdepth: 2
 
    NEP 数据展示 <NEP-dataset-display>
+   Show NEP 详细参考 <show-nep-reference>
    数据生成（Make dataset） <make-dataset>
    数据生成卡片手册 <make-dataset-cards/index>
    自定义卡片开发 <custom-card-development>

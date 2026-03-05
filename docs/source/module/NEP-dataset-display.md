@@ -4,7 +4,10 @@
 
 包括工具栏、结果可视化区、结构视图、信息区和工作路径区。
 
-![interface](../_static/image/interface.png)
+![interface](../_static/image/example/display/main.png)
+
+> 详细图标、弹窗参数、工具逻辑、导入导出与模型切换规则请见：
+> [`Show NEP 详细参考`](show-nep-reference.md)
 
 ## 数据导入与导出
 

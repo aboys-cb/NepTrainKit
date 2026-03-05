@@ -1,5 +1,8 @@
 # NEP Dataset Display 示例
 
+> 本页以操作演示为主。完整工具说明与参数手册请见：
+> [`Show NEP 详细参考`](../module/show-nep-reference.md)
+
 ## 数据导入
 
 使用 `nep.txt` 与 `train.xyz` 作为最小输入；支持拖拽导入。
@@ -10,7 +13,7 @@
 
 点击播放按钮可逐帧预览结构：
 
-<img src="../_static/image/play.svg" alt="play" width='30' height='30' />
+<img src="../_static/image/show_nep_icons/play.svg" alt="play" width='30' height='30' />
 
 ![GIF Image](../_static/image/example/display/play.gif)
 
@@ -26,3 +29,10 @@
 过滤完成后导出数据：
 
 ![GIF Image](../_static/image/example/display/save.gif)
+
+---
+
+更多细节：
+
+- 图标对照与每个工具逻辑：[`../module/show-nep-reference.md`](../module/show-nep-reference.md)
+- 导入导出分支、NEP 模型切换、搜索语法：[`../module/show-nep-reference.md`](../module/show-nep-reference.md)

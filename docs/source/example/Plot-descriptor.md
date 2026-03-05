@@ -6,8 +6,8 @@
 
 ## 导出步骤
 
-1. 选择结构：<img src="../_static/image/pen.svg" alt="pen" width='30' height='30' />
-2. 点击导出：<img src="../_static/image/export.svg" alt="export" width='30' height='30' />
+1. 选择结构：<img src="../_static/image/show_nep_icons/pen.svg" alt="pen" width='30' height='30' />
+2. 点击导出：<img src="../_static/image/show_nep_icons/export.svg" alt="export" width='30' height='30' />
 3. 选择文件路径
 
 ## 绘图

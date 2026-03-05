@@ -61,7 +61,7 @@ class VispyDistributionPlot(DistributionPlotBase):
 
         self._view = grid.add_view(row=1, col=1)
         self._view.camera = scene.cameras.PanZoomCamera()
-        self._view.camera.interactive = False
+        self._view.camera.interactive = True
         self._xaxis.link_view(self._view)
         self._yaxis.link_view(self._view)
 

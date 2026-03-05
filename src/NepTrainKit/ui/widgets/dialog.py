@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QFrame, QGridLayout,
     QPushButton, QWidget, QHBoxLayout, QFormLayout, QSizePolicy,
     QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
+    QDialog,
 )
 from PySide6.QtCore import Signal, Qt, QUrl, QEvent
 from qfluentwidgets import (
@@ -783,7 +784,7 @@ class DatasetSummaryMessageBox(MessageBoxBase):
     </body>
     </html>"""
 
-class DistributionInspectorMessageBox(FramelessDialog):
+class DistributionInspectorMessageBox(QDialog):
     """Dialog for inspecting distributions of numeric dataset/atomic fields."""
     _ALL_SERIES_KEY = "__all__"
 
@@ -805,7 +806,6 @@ class DistributionInspectorMessageBox(FramelessDialog):
         self._metric_by_key: dict[str, dict[str, Any]] = {}
         self._canvas_type = str(canvas_type or Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)).strip()
         self._plot_adapter, self._vispy_fallback_warned = create_distribution_plot_adapter(self._canvas_type, self)
-        self.setTitleBar(FluentTitleBar(self))
         self.setWindowTitle("Distribution Inspector")
        
         self.setWindowIcon(QIcon(':/images/src/images/distribution_inspector.svg'))
@@ -813,7 +813,6 @@ class DistributionInspectorMessageBox(FramelessDialog):
         root_layout = QVBoxLayout(self)
         root_layout.setContentsMargins(8, 8, 8, 8)
         root_layout.setSpacing(8)
-        root_layout.setMenuBar(self.titleBar)
         self.setLayout(root_layout)
 
         control_frame = QFrame(self)

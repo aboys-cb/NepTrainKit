@@ -259,7 +259,7 @@ class StructureToolBar(KitToolBarBase):
             True,
         )
 
-        self.addButton(
+        self._arrow_action = self.addButton(
             "Show Arrows",
             QIcon(":/images/src/images/xyz.svg"),
             self.arrowSignal,
@@ -299,6 +299,17 @@ class StructureToolBar(KitToolBarBase):
             action.setChecked(bool(checked))
         finally:
             self._reject_syncing = False
+
+    def set_arrow_enabled(self, enabled: bool, disabled_tooltip: str = "") -> None:
+        """Enable or disable the arrow action based on backend capabilities."""
+        action = self._actions.get("Show Arrows")
+        if action is None:
+            return
+        action.setEnabled(bool(enabled))
+        if enabled:
+            action.setToolTip("Show Arrows")
+        elif disabled_tooltip:
+            action.setToolTip(disabled_tooltip)
 
     def view_changed(self, checked: bool) -> None:
         """Emit the orthographic view toggle state."""

@@ -13,6 +13,7 @@ from NepTrainKit.ui.threads import LoadingThread
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.core import MessageManager
 from NepTrainKit.config import Config
+from NepTrainKit.ui.canvas.canvas_factory import create_result_canvas, resolve_canvas_host_widget
 
 from NepTrainKit.ui.widgets import (
     GetIntMessageBox,
@@ -74,6 +75,7 @@ class NepResultPlotWidget(QWidget):
 
         self.last_figure_num=None
         self._distribution_inspector = None
+        self._canvas_fallback_warned = False
         self.swith_canvas(canvas_type)
 
     def swith_canvas(self,canvas_type:CanvasMode="pyqtgraph"):
@@ -84,22 +86,13 @@ class NepResultPlotWidget(QWidget):
         canvas_type : CanvasMode, default=CanvasMode.PYQTGRAPH
             Backend identifier used to select between the supported canvases.
         """
-        if canvas_type == CanvasMode.PYQTGRAPH:
-            from NepTrainKit.ui.canvas.pyqtgraph import PyqtgraphCanvas
-            self.canvas = PyqtgraphCanvas(self)
-            self._layout.addWidget(self.canvas)
-
-        elif canvas_type == CanvasMode.VISPY:
-
-
-            from NepTrainKit.ui.canvas.vispy import VispyCanvas
-            self.canvas = VispyCanvas(parent=self, bgcolor='white')
-            self._layout.addWidget(self.canvas.native)
-            # self.window().windowHandle().screenChanged.connect(self.canvas.native.screen_changed)
-        else:
-            from NepTrainKit.ui.canvas.vispy import VispyCanvas
-            self.canvas = VispyCanvas(parent=self, bgcolor='white')
-            self._layout.addWidget(self.canvas.native)
+        self.canvas, fallback = create_result_canvas(canvas_type, self)
+        self._layout.addWidget(resolve_canvas_host_widget(self.canvas))
+        if fallback and not self._canvas_fallback_warned:
+            MessageManager.send_warning_message(
+                "Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph."
+            )
+            self._canvas_fallback_warned = True
 
 
 

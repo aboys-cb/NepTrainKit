@@ -12,6 +12,7 @@ if str(SRC_PATH) not in sys.path:
     sys.path.insert(0, str(SRC_PATH))
 
 import numpy as np
+from ase import Atoms
 from ase.io import read
 from PySide6.QtWidgets import QApplication
 
@@ -28,6 +29,7 @@ from NepTrainKit.ui.views._card import (
     CompositionSweepCard,
     RandomOccupancyCard,
     MagneticOrderCard,
+    SpinSpiralCard,
     MagneticMomentRotationCard,
     GroupLabelCard,
     RandomVacancyCard,
@@ -56,6 +58,22 @@ class TestCard(unittest.TestCase):
         np.random.seed(0)
         random.seed(0)
         self.structure = self.base_structure.copy()
+
+    @staticmethod
+    def _spin_chain():
+        atoms = Atoms(
+            symbols=["Fe", "Fe", "Fe", "Fe"],
+            positions=[
+                [0.0, 0.0, 0.0],
+                [0.0, 0.0, 1.0],
+                [0.0, 0.0, 2.0],
+                [0.0, 0.0, 3.0],
+            ],
+            cell=np.diag([6.0, 6.0, 8.0]),
+            pbc=[False, False, True],
+        )
+        atoms.info["Config_type"] = "Fe_chain"
+        return atoms
 
     def test_supercell_card_variants(self):
         card = SuperCellCard()
@@ -404,6 +422,104 @@ class TestCard(unittest.TestCase):
             self.assertEqual(m.shape[1], 3)
             self.assertTrue(np.any(np.linalg.norm(m, axis=1) > 0))
             self.assertIn("MagPMnc", str(atoms.info.get("Config_type", "")))
+
+    def test_spin_spiral_card_periods_and_chirality(self):
+        structure = self._spin_chain()
+
+        card = SpinSpiralCard()
+        card.source_combo.setCurrentText("Map/default magnitude")
+        card.map_edit.setText("Fe:2.0")
+        card.period_frame.set_input_value([2.0, 4.0, 2.0])
+        card.phase_frame.set_input_value([0.0, 0.0, 15.0])
+        card.mz_frame.set_input_value([0.0])
+        card.chirality_combo.setCurrentText("Both")
+        card.max_output_frame.set_input_value([10])
+
+        results = card.process_structure(structure)
+        self.assertEqual(len(results), 4)
+
+        for atoms in results:
+            moments = np.array(atoms.get_initial_magnetic_moments(), dtype=float)
+            self.assertEqual(moments.shape, (4, 3))
+            self.assertTrue(np.allclose(np.linalg.norm(moments, axis=1), 2.0, atol=1e-6))
+            self.assertTrue(np.allclose(moments[:, 2], 0.0, atol=1e-6))
+            self.assertIn("Helix(", str(atoms.info.get("Config_type", "")))
+
+        cw = next(
+            atoms for atoms in results
+            if "L=4" in str(atoms.info.get("Config_type", "")) and "chi=cw" in str(atoms.info.get("Config_type", ""))
+        )
+        ccw = next(
+            atoms for atoms in results
+            if "L=4" in str(atoms.info.get("Config_type", "")) and "chi=ccw" in str(atoms.info.get("Config_type", ""))
+        )
+        cw_m = np.array(cw.get_initial_magnetic_moments(), dtype=float)
+        ccw_m = np.array(ccw.get_initial_magnetic_moments(), dtype=float)
+        self.assertAlmostEqual(cw_m[1, 0], -ccw_m[1, 0], places=6)
+        self.assertAlmostEqual(cw_m[1, 1], ccw_m[1, 1], places=6)
+
+    def test_spin_spiral_card_existing_magnitudes_and_roundtrip(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([1.0, 2.0, 3.0, 4.0])
+
+        card = SpinSpiralCard()
+        card.axis_frame.set_input_value([0.0, 0.0, 1.0])
+        card.period_frame.set_input_value([6.0, 6.0, 1.0])
+        card.phase_frame.set_input_value([30.0, 30.0, 15.0])
+        card.mz_frame.set_input_value([0.5])
+        card.chirality_combo.setCurrentText("Clockwise")
+        card.source_combo.setCurrentText("Existing initial magmoms")
+        card.apply_edit.setText("Fe")
+        card.max_output_frame.set_input_value([5])
+
+        results = card.process_structure(structure)
+        self.assertEqual(len(results), 1)
+        moments = np.array(results[0].get_initial_magnetic_moments(), dtype=float)
+        norms = np.linalg.norm(moments, axis=1)
+        self.assertTrue(np.allclose(norms, [1.0, 2.0, 3.0, 4.0], atol=1e-6))
+        self.assertTrue(np.allclose(moments[:, 2], norms * 0.5, atol=1e-6))
+        self.assertIn("Spiral(", str(results[0].info.get("Config_type", "")))
+        self.assertIn("chi=cw", str(results[0].info.get("Config_type", "")))
+
+        data = card.to_dict()
+        restored = SpinSpiralCard()
+        restored.from_dict(data)
+        self.assertEqual(restored.parameter_mode_combo.currentText(), "Period (L_D)")
+        self.assertEqual(restored.chirality_combo.currentText(), "Clockwise")
+        self.assertEqual(restored.source_combo.currentText(), "Existing initial magmoms")
+        self.assertEqual(restored.apply_edit.text(), "Fe")
+        self.assertEqual(restored.period_frame.get_input_value(), [6.0, 6.0, 1.0])
+
+    def test_spin_spiral_card_angle_gradient_mode_matches_period_mode(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+
+        by_period = SpinSpiralCard()
+        by_period.period_frame.set_input_value([4.0, 4.0, 1.0])
+        by_period.phase_frame.set_input_value([0.0, 0.0, 15.0])
+        by_period.chirality_combo.setCurrentText("Counterclockwise")
+        period_result = by_period.process_structure(structure)[0]
+
+        by_gradient = SpinSpiralCard()
+        by_gradient.parameter_mode_combo.setCurrentText("Angle gradient (deg/A)")
+        by_gradient.angle_gradient_frame.set_input_value([90.0, 90.0, 1.0])
+        by_gradient.phase_frame.set_input_value([0.0, 0.0, 15.0])
+        by_gradient.chirality_combo.setCurrentText("Counterclockwise")
+        gradient_result = by_gradient.process_structure(structure)[0]
+
+        self.assertTrue(
+            np.allclose(
+                np.array(period_result.get_initial_magnetic_moments(), dtype=float),
+                np.array(gradient_result.get_initial_magnetic_moments(), dtype=float),
+                atol=1e-6,
+            )
+        )
+
+        data = by_gradient.to_dict()
+        restored = SpinSpiralCard()
+        restored.from_dict(data)
+        self.assertEqual(restored.parameter_mode_combo.currentText(), "Angle gradient (deg/A)")
+        self.assertEqual(restored.angle_gradient_frame.get_input_value(), [90.0, 90.0, 1.0])
 
     def test_magmom_rotation_lifts_scalar_to_vector(self):
         proto = CrystalPrototypeBuilderCard()

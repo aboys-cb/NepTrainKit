@@ -15,6 +15,7 @@ cards/crystal-prototype-builder-card
 cards/perturb-card
 cards/vibration-perturb-card
 cards/magmom-rotation-card
+cards/spin-spiral-card
 cards/cell-strain-card
 cards/cell-scaling-card
 cards/shear-matrix-card

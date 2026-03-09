@@ -94,6 +94,62 @@ def normalize_vector(vec: np.ndarray, *, default: np.ndarray | None = None) -> n
     return v / n
 
 
+def orthonormal_frame(axis: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Build an orthonormal frame ``(e1, e2, axis_hat)`` for a propagation axis."""
+    axis_hat = normalize_vector(axis)
+    trial = np.array([1.0, 0.0, 0.0], dtype=float) if abs(axis_hat[0]) < 0.9 else np.array([0.0, 1.0, 0.0], dtype=float)
+    e1 = normalize_vector(np.cross(axis_hat, trial), default=np.array([0.0, 1.0, 0.0], dtype=float))
+    e2 = normalize_vector(np.cross(axis_hat, e1), default=np.array([0.0, 0.0, 1.0], dtype=float))
+    return e1, e2, axis_hat
+
+
+def spiral_unit_vectors(
+    positions: np.ndarray,
+    *,
+    axis: np.ndarray,
+    period: float,
+    mz: float = 0.0,
+    phase_deg: float = 0.0,
+    chirality: int = 1,
+    origin_projection: float | None = None,
+) -> np.ndarray:
+    """Return unit vectors for a helical/conical spin spiral.
+
+    The field follows
+
+    ``m(u) = sqrt(1-mz^2) [cos(phi) e1 + sin(phi) e2] + mz axis_hat``
+
+    with ``phi = chirality * 2π u / period + phase`` and ``u`` the projection
+    of each position along ``axis``.
+    """
+    pos = np.asarray(positions, dtype=float)
+    if pos.ndim != 2 or pos.shape[1] != 3:
+        raise ValueError("positions must have shape (n, 3)")
+
+    period = float(period)
+    if period <= 0:
+        raise ValueError("period must be positive")
+
+    mz = float(np.clip(mz, -1.0, 1.0))
+    chirality = 1 if int(chirality) >= 0 else -1
+
+    e1, e2, axis_hat = orthonormal_frame(axis)
+    projections = pos @ axis_hat
+    proj0 = float(np.min(projections)) if origin_projection is None else float(origin_projection)
+
+    phase = chirality * (2.0 * np.pi * (projections - proj0) / period) + np.deg2rad(float(phase_deg))
+    radial = float(np.sqrt(max(0.0, 1.0 - mz * mz)))
+
+    moments = (
+        radial * np.cos(phase)[:, None] * e1[None, :]
+        + radial * np.sin(phase)[:, None] * e2[None, :]
+        + mz * axis_hat[None, :]
+    )
+    norms = np.linalg.norm(moments, axis=1)
+    norms = np.where(norms > 0, norms, 1.0)
+    return moments / norms[:, None]
+
+
 def parse_axis(text: str, *, default: tuple[float, float, float] = (0.0, 0.0, 1.0)) -> np.ndarray:
     """Parse an axis vector from JSON/list-like text such as ``0,0,1`` or ``[0,0,1]``."""
     raw = (text or "").strip()

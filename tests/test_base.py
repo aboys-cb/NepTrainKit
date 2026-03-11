@@ -460,3 +460,66 @@ def test_distribution_nonzero_bins_always_resolve_structure_indices():
             indices = data.resolve_distribution_bin_indices(analysis_id, metric["metric_key"], series_key, bidx)
             assert len(indices) > 0
 
+
+def test_expression_completer_cache_contains_dynamic_fields_and_elements():
+    data = _build_dummy_result()
+    cache = data.get_completer_cache(SearchType.EXPRESSION, max_items=50000)
+
+    assert "natoms" in cache
+    assert cache["natoms"] == 2
+    assert "count.Fe" in cache
+    assert cache["count.Fe"] == 1
+    assert "frac.O" in cache
+    assert cache["frac.O"] == 2
+    assert "has.H" in cache
+    assert cache["has.H"] == 1
+    assert "force.ref.x" in cache
+    assert cache["force.ref.x"] == 2
+    assert "force.x" in cache
+    assert "force.norm" in cache
+    assert "atomic.spin_vec.y" in cache
+    assert cache["atomic.spin_vec.y"] == 2
+    assert "mforce.ref.x" not in cache
+    assert "force.ref.1" not in cache
+
+
+def test_expression_search_supports_builtins_elements_and_dynamic_fields():
+    data = _build_dummy_result()
+
+    assert data.search_config("natoms > 2", SearchType.EXPRESSION) == [1]
+    assert data.search_config("energy > 3", SearchType.EXPRESSION) == [1]
+    assert data.search_config("energy_per_atom > 1.2", SearchType.EXPRESSION) == [1]
+    assert data.search_config("count.Fe >= 2 && !has.H", SearchType.EXPRESSION) == [1]
+    assert data.search_config("frac.H > 0.4", SearchType.EXPRESSION) == [0]
+    assert data.search_config("force.x > 1.0", SearchType.EXPRESSION) == [1]
+    assert data.search_config("force.err.x > 0.005", SearchType.EXPRESSION) == [0, 1]
+
+
+def test_expression_search_handles_atomic_fields_and_errors():
+    data = _build_dummy_result()
+
+    assert data.search_config("atomic.spin_vec.norm > 1.5", SearchType.EXPRESSION) == [1]
+
+    with pytest.raises(ValueError, match="Unknown field"):
+        data.search_config("mforce.ref.x > 1", SearchType.EXPRESSION)
+
+    with pytest.raises(ValueError, match="does not support value views"):
+        data.search_config("atomic.spin_vec.pred.x > 1", SearchType.EXPRESSION)
+
+    with pytest.raises(ValueError, match="Numeric component suffixes are not supported"):
+        data.search_config("force.1 > 1", SearchType.EXPRESSION)
+
+    with pytest.raises(ValueError, match="Invalid expression syntax"):
+        data.search_config("force.x >", SearchType.EXPRESSION)
+
+
+def test_expression_completer_cache_refreshes_after_structure_removal():
+    data = _build_dummy_result()
+    initial = data.get_completer_cache(SearchType.EXPRESSION, max_items=50000)
+    assert "count.Fe" in initial
+
+    data.remove(1)
+    refreshed = data.get_completer_cache(SearchType.EXPRESSION, max_items=50000)
+    assert "count.Fe" not in refreshed
+    assert "has.H" in refreshed
+

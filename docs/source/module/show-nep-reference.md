@@ -266,6 +266,7 @@
 - `tag`：按 `structure.tag` 正则匹配。
 - `formula`：按 `structure.formula` 正则匹配。
 - `elements`：元素集合语法匹配（非正则）。
+- `expression`：按结构级表达式筛选；适合按原子数、元素组成、能量、力、应力、原子属性等条件批量选中。
 
 ### 6.2 `elements` 语法
 
@@ -273,6 +274,235 @@
 - `+Fe,+O`：必须同时包含 `Fe` 和 `O`。
 - `-H` 或 `!H`：必须不包含 `H`。
 - 可混合：`Fe,O,+Fe,-H`。
+
+(show-nep-expression)=
+### 6.3 `expression` 用法总览
+
+- 目的：把“结构是否满足条件”写成一个布尔表达式，然后用搜索/勾选/反选按钮处理结果。
+- 作用对象：仅当前 active structures；已经删除的结构不会参与表达式计算。
+- 搜索按钮：高亮匹配结构。
+- 勾选按钮：把匹配结构加入当前选择集。
+- 反选按钮：把匹配结构从当前选择集中移除。
+- 删除流程不变：通常是先用 expression 勾选，再点工具栏删除按钮。
+
+#### 6.3.1 支持的运算符
+
+- 逻辑运算：`&&`、`||`、`!`
+- 逻辑关键字：`and`、`or`、`not`
+- 比较运算：`>`、`>=`、`<`、`<=`、`==`、`!=`
+- 算术运算：`+`、`-`、`*`、`/`
+- 括号：`(`、`)`
+
+示例：
+
+- `natoms > 100`
+- `has.H && natoms < 50`
+- `(energy_per_atom < -3.0) && (force.norm > 10)`
+
+#### 6.3.2 不支持的语法
+
+- 不支持函数调用：例如 `len(structure)`、`mean(force)`、`any(...)`
+- 不支持固定原子索引：例如 `atom[3].force.x > 1`
+- 不支持数字分量后缀：例如 `force.1`、`stress.3`
+- 不支持字符串函数或正则函数
+
+如果需要原子数，请直接使用 `natoms`。
+
+#### 6.3.3 内置结构字段
+
+下列字段不依赖当前图上显示哪一个子图，始终按当前 active structures 实时计算。
+
+| 字段 | 含义 |
+|---|---|
+| `natoms` | 原子数 |
+| `n_atoms` | `natoms` 的别名 |
+| `volume` | 晶胞体积 |
+| `a` `b` `c` | 晶格长度 |
+| `alpha` `beta` `gamma` | 晶格角 |
+| `spin_natoms` | 有磁矩原子数 |
+| `energy` | 结构总能 |
+| `energy_per_atom` | 每原子能量 |
+| `has_energy` | 是否存在能量 |
+| `has_forces` | 是否存在力 |
+| `has_virial` | 是否存在 virial |
+| `has_bec` | 是否存在 BEC |
+
+示例：
+
+- `natoms >= 128`
+- `volume < 500`
+- `a > 4.5 && c < 20`
+- `energy_per_atom < -4.2`
+- `has_forces && !has_bec`
+
+#### 6.3.4 元素统计字段
+
+元素字段按当前 active structures 里实际出现过的元素动态生成。
+
+| 字段形式 | 含义 | 示例 |
+|---|---|---|
+| `count.<Elem>` | 指定元素个数 | `count.Fe >= 4` |
+| `frac.<Elem>` | 指定元素占比 | `frac.Li > 0.5` |
+| `has.<Elem>` | 是否包含指定元素 | `has.H && natoms < 50` |
+
+补充说明：
+
+- `<Elem>` 使用标准元素符号，例如 `H`、`O`、`Fe`、`Li`
+- 区分元素符号，不区分前缀大小写的内部解析细节；文档和输入建议始终使用标准写法
+- 如果当前 active structures 中没有该元素，表达式会报错
+
+#### 6.3.5 动态数据字段
+
+当前结果数据里存在什么字段，expression 模式就暴露什么字段。常见来源有两类：
+
+- 结果数据集字段：如 `force`、`mforce`、`stress`、`virial`、`dipole`、`bec`
+- 原子属性字段：写成 `atomic.<name>`，例如 `atomic.spin_vec`
+
+这意味着：
+
+- 如果当前数据里没有 `mforce`，补全中不会出现 `mforce`
+- 如果手动输入了不存在的字段，例如 `mforce.ref.x > 1`，会直接报错
+
+#### 6.3.6 后缀规则
+
+##### A. 数据视图后缀
+
+对于有参考值/预测值成对存在的数据集字段，可以追加：
+
+- `.ref`：参考值
+- `.pred`：预测值
+- `.err`：误差，等价于 `pred - ref`
+
+如果省略视图后缀，默认使用 `.ref`。
+
+示例：
+
+- `force.x > 10` 等价于 `force.ref.x > 10`
+- `stress.err.norm > 2`
+- `energy.pred > -4.0`
+
+并不是所有字段都支持这三个后缀：
+
+- `atomic.<name>` 不支持 `.ref/.pred/.err`
+- 非成对数据字段也不支持 `.pred/.err`
+
+##### B. 分量与范数后缀
+
+向量或张量字段支持命名分量后缀，例如：
+
+- 三维向量：`.x`、`.y`、`.z`
+- 六分量张量：`.xx`、`.yy`、`.zz`、`.xy`、`.yz`、`.zx`
+- 范数：`.norm`
+
+示例：
+
+- `force.x > 10`
+- `mforce.norm > 5`
+- `virial.xx < -20`
+- `atomic.spin_vec.z > 0.2`
+
+注意：
+
+- 不支持 `.1/.2/.3` 这类数字分量写法
+- 多分量字段若不写分量或 `.norm`，表达式会报错
+- 标量字段可以直接比较，例如 `energy > -10`
+
+#### 6.3.7 原子级字段如何聚合到结构级
+
+表达式最终必须得到“每个结构是否命中”的结果，所以原子级数据会先聚合到结构级。
+
+默认规则：
+
+1. 先按你写的后缀取出分量或范数
+2. 再在该结构内部做 `max(abs(values))`
+
+因此：
+
+- `force.x > 10` 的含义是“这个结构里是否存在原子满足 `max(abs(force_x)) > 10`”
+- `force.norm > 10` 的含义是“这个结构里是否存在原子满足 `max(force_norm) > 10`”
+- `atomic.spin_vec.y > 0.5` 的含义也是同样的结构级最大绝对值判断
+
+结构级字段如 `natoms`、`volume`、`energy` 不需要额外聚合，直接逐结构比较。
+
+#### 6.3.8 常用表达式示例
+
+##### 按结构大小筛选
+
+- `natoms > 100`
+- `natoms >= 32 && natoms <= 128`
+
+##### 按晶格或体积筛选
+
+- `volume < 1000`
+- `a > 3 && b > 3 && c > 3`
+- `gamma != 120`
+
+##### 按元素组成筛选
+
+- `count.O >= 4`
+- `frac.Li > 0.25`
+- `has.Fe && !has.H`
+
+##### 按能量筛选
+
+- `energy_per_atom < -3.5`
+- `has_energy && energy > -500`
+
+##### 按力、应力、virial 筛选
+
+- `force.x > 10`
+- `force.norm > 15`
+- `force.err.norm > 0.2`
+- `stress.xx > 5`
+- `virial.err.norm > 1`
+
+##### 按 atomic property 筛选
+
+- `atomic.spin_vec.norm > 1.5`
+- `atomic.spin_scalar > 0.1`
+
+##### 组合条件
+
+- `has.H && natoms < 50 && energy_per_atom < -2.5`
+- `(count.Fe >= 2) && (force.norm > 8 || stress.norm > 2)`
+
+#### 6.3.9 补全与右侧数量说明
+
+expression 模式使用单独的动态补全，不和 `tag/formula/elements` 共用缓存。
+
+补全来源包括：
+
+- 内置结构字段，例如 `natoms`、`volume`
+- 元素统计字段，例如 `count.Fe`、`frac.O`
+- 当前数据集中真实存在的动态字段，例如 `force.ref.x`、`virial.ref.xx`
+- 当前结构里真实存在的原子属性字段，例如 `atomic.spin_vec.y`
+
+补全列表右侧的数字不是“本次搜索命中数”，而是“当前 active structures 中有多少个结构对这个候选字段是可用的/有意义的”：
+
+- `natoms` 右侧数字通常等于当前 active structures 总数
+- `count.Fe` 右侧数字表示包含 `Fe` 的结构数
+- `has.H` 右侧数字表示包含 `H` 的结构数
+- `force.ref.x` 右侧数字表示当前有 `force` 数据的结构数
+- `atomic.spin_vec.y` 右侧数字表示当前有 `spin_vec` 原子属性的结构数
+
+这和你实际输入完整表达式后的命中数量不是一回事。
+
+#### 6.3.10 错误与排查
+
+常见错误包括：
+
+- `Unknown field in expression`
+  - 字段不存在，或当前数据里没有这个字段
+- `Unknown atomic field`
+  - `atomic.<name>` 写错了，或当前结构没有该原子属性
+- `Numeric component suffixes are not supported`
+  - 使用了 `.1/.2/.3` 这类数字分量
+- `Field 'xxx' requires an explicit component or '.norm'`
+  - 多分量字段没有写具体分量
+- `does not support value views`
+  - 给不支持的字段写了 `.pred` 或 `.err`
+- `Invalid expression syntax`
+  - 语法不完整，例如 `force.x >`
 
 ![Search Modes](../_static/image/show_nep/q_search_modes.png)
 
@@ -294,6 +524,10 @@
 | `Arrow overlay is unavailable...` | 当前结构画布不支持箭头 API |
 | `Invalid regex pattern.` | `tag/formula` 输入非法正则 |
 | `Unknown element symbol: Xx` | `elements` 输入未知元素 |
+| `Unknown field in expression: xxx` | `expression` 使用了不存在的字段 |
+| `Numeric component suffixes are not supported in expressions.` | `expression` 使用了 `.1/.2/.3` 这类数字分量 |
+| `Expression contains unsupported syntax.` | `expression` 含有不支持的语法 |
+| `Invalid expression syntax.` | `expression` 语法不完整或无法解析 |
 
 ## 相关入口
 

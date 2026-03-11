@@ -9,6 +9,7 @@ dataset synchronisation.
 
 
 """
+import ast
 import os
 import json
 import threading
@@ -903,6 +904,605 @@ class ResultData(QObject):
         if idx.size == 0:
             return np.array([], dtype=np.int64)
         return np.intersect1d(active_indices, idx, assume_unique=False)
+    def _result_completer_cache_lock(self) -> threading.Lock:
+        lock = getattr(self, "_result_completer_cache_lock_obj", None)
+        if lock is None:
+            lock = threading.Lock()
+            self._result_completer_cache_lock_obj = lock
+        return lock
+    def _current_structure_version(self) -> int | None:
+        try:
+            return int(self.structure.data.version)
+        except Exception:
+            return None
+    def has_completer_cache(self, search_type: SearchType | str | None = None, max_items: int = 50000) -> bool:
+        """Return True if a completer cache exists for ``search_type`` and ``max_items``."""
+        search_type = StructureData._normalise_search_type(search_type)
+        if search_type != SearchType.EXPRESSION:
+            return self.structure.has_completer_cache(search_type, max_items=max_items)
+        cache = getattr(self, "_expression_completer_cache", None)
+        cache_max_items = getattr(self, "_expression_completer_cache_max_items", None)
+        cache_version = getattr(self, "_expression_completer_cache_version", None)
+        current_version = self._current_structure_version()
+        return (
+            cache is not None
+            and cache_max_items == int(max_items)
+            and cache_version is not None
+            and current_version is not None
+            and int(cache_version) == int(current_version)
+        )
+    def ensure_completer_cache(self, search_type: SearchType | str | None = None, max_items: int = 50000) -> None:
+        """Build and cache completer mappings for the requested search type."""
+        search_type = StructureData._normalise_search_type(search_type)
+        if search_type != SearchType.EXPRESSION:
+            self.structure.ensure_completer_cache(max_items=max_items)
+            return
+        max_items = int(max_items or 0)
+        with self._result_completer_cache_lock():
+            current_version = self._current_structure_version()
+            if (
+                getattr(self, "_expression_completer_cache", None) is not None
+                and getattr(self, "_expression_completer_cache_max_items", None) == max_items
+                and getattr(self, "_expression_completer_cache_version", None) is not None
+                and current_version is not None
+                and int(getattr(self, "_expression_completer_cache_version")) == int(current_version)
+            ):
+                return
+            cache = self._build_expression_completer_cache(max_items=max_items)
+            self._expression_completer_cache = cache
+            self._expression_completer_cache_max_items = max_items
+            self._expression_completer_cache_version = 0 if current_version is None else int(current_version)
+    def get_completer_cache(self, search_type: SearchType | str | None = None, max_items: int = 50000) -> dict[str, int]:
+        """Return cached completer mapping for ``search_type``; builds it if needed."""
+        search_type = StructureData._normalise_search_type(search_type)
+        if search_type != SearchType.EXPRESSION:
+            return self.structure.get_completer_cache(search_type, max_items=max_items)
+        try:
+            self.ensure_completer_cache(search_type, max_items=max_items)
+        except Exception:
+            logger.debug(traceback.format_exc())
+            return {}
+        return dict(getattr(self, "_expression_completer_cache", None) or {})
+    @staticmethod
+    def _expression_alias(text: str) -> str:
+        alias = re.sub(r"[^0-9A-Za-z_]+", "_", str(text or "").strip().lower()).strip("_")
+        return alias
+    @staticmethod
+    def _expression_component_aliases(components: Sequence[str]) -> tuple[str, ...]:
+        seen: set[str] = set()
+        result: list[str] = []
+        for comp in components:
+            comp_text = str(comp or "").strip()
+            if not comp_text:
+                continue
+            key = comp_text.lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            result.append(comp_text)
+        return tuple(result)
+    @staticmethod
+    def _normalise_expression_text(expr: str) -> str:
+        text = str(expr or "").strip()
+        text = re.sub(r"\bAND\b", " and ", text, flags=re.IGNORECASE)
+        text = re.sub(r"\bOR\b", " or ", text, flags=re.IGNORECASE)
+        text = re.sub(r"\bNOT\b", " not ", text, flags=re.IGNORECASE)
+        text = text.replace("&&", " and ")
+        text = text.replace("||", " or ")
+        text = re.sub(r"(?<![<>=!])!(?!=)", " not ", text)
+        return text
+    @staticmethod
+    def _contains_numeric_component_reference(expr: str) -> bool:
+        pattern = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*\.\d+\b")
+        return bool(pattern.search(str(expr or "")))
+    @staticmethod
+    def _expression_ast_chain(node: ast.AST) -> tuple[str, ...] | None:
+        if isinstance(node, ast.Name):
+            return (node.id,)
+        if isinstance(node, ast.Attribute):
+            base = ResultData._expression_ast_chain(node.value)
+            if base is None:
+                return None
+            return (*base, node.attr)
+        return None
+    @staticmethod
+    def _is_allowed_expression_node(node: ast.AST) -> bool:
+        chain = ResultData._expression_ast_chain(node)
+        if chain is not None:
+            return True
+        allowed_nodes = (
+            ast.Expression,
+            ast.BoolOp,
+            ast.Compare,
+            ast.Load,
+            ast.Constant,
+            ast.UnaryOp,
+            ast.BinOp,
+            ast.And,
+            ast.Or,
+            ast.Not,
+            ast.Add,
+            ast.Sub,
+            ast.Mult,
+            ast.Div,
+            ast.Eq,
+            ast.NotEq,
+            ast.Lt,
+            ast.LtE,
+            ast.Gt,
+            ast.GtE,
+            ast.UAdd,
+            ast.USub,
+        )
+        if not isinstance(node, allowed_nodes):
+            return False
+        if isinstance(node, ast.BoolOp) and not isinstance(node.op, (ast.And, ast.Or)):
+            return False
+        if isinstance(node, ast.UnaryOp) and not isinstance(node.op, (ast.UAdd, ast.USub, ast.Not)):
+            return False
+        if isinstance(node, ast.BinOp) and not isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div)):
+            return False
+        if isinstance(node, ast.Compare):
+            if not all(isinstance(op, (ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE)) for op in node.ops):
+                return False
+        return all(ResultData._is_allowed_expression_node(child) for child in ast.iter_child_nodes(node))
+    def _discover_expression_fields(
+        self,
+        structure_indices: npt.NDArray[np.int64],
+    ) -> tuple[dict[str, tuple[FieldSpec, Any]], dict[str, tuple[FieldSpec, str]]]:
+        dataset_specs, dataset_lookup = self._discover_dataset_field_specs()
+        dataset_fields: dict[str, tuple[FieldSpec, Any]] = {}
+        for spec in dataset_specs:
+            alias = self._expression_alias(spec.label or spec.key.split(":", 1)[-1])
+            dataset = dataset_lookup.get(spec.key)
+            if alias and dataset is not None and alias not in dataset_fields:
+                dataset_fields[alias] = (spec, dataset)
+        atomic_fields: dict[str, tuple[FieldSpec, str]] = {}
+        for spec in self._discover_atomic_property_specs(structure_indices):
+            prop_name = spec.key.split(":", 1)[-1]
+            alias = self._expression_alias(prop_name)
+            if alias and alias not in atomic_fields:
+                atomic_fields[alias] = (spec, prop_name)
+        return dataset_fields, atomic_fields
+    def _build_expression_completer_cache(self, max_items: int = 50000) -> dict[str, int]:
+        active_indices = self._normalize_structure_indices(None)
+        if active_indices.size == 0:
+            return {}
+        structures = [self.structure.all_data[int(i)] for i in active_indices.tolist()]
+        dataset_fields, atomic_fields = self._discover_expression_fields(active_indices)
+        cache: dict[str, int] = {}
+
+        def add_candidate(token: str, weight: int) -> None:
+            key = str(token or "").strip()
+            if not key:
+                return
+            cache[key] = int(weight)
+
+        active_count = int(active_indices.shape[0])
+
+        builtin_tokens = (
+            "natoms",
+            "n_atoms",
+            "volume",
+            "a",
+            "b",
+            "c",
+            "alpha",
+            "beta",
+            "gamma",
+            "spin_natoms",
+            "energy",
+            "energy_per_atom",
+            "has_energy",
+            "has_forces",
+            "has_virial",
+            "has_bec",
+        )
+        always_available_tokens = {"natoms", "n_atoms", "volume", "a", "b", "c", "alpha", "beta", "gamma", "spin_natoms"}
+        builtin_values, element_values = self._build_expression_builtin_values(active_indices)
+        for token in builtin_tokens:
+            values = np.asarray(builtin_values.get(token, np.array([], dtype=np.float64)))
+            if values.dtype == np.bool_:
+                count = int(np.count_nonzero(values))
+            else:
+                count = int(np.count_nonzero(np.isfinite(values)))
+            if token in always_available_tokens:
+                count = active_count
+            add_candidate(token, count)
+
+        for elem, values in element_values.get("count", {}).items():
+            count = int(np.count_nonzero(np.asarray(values, dtype=np.float64) > 0))
+            add_candidate(f"count.{elem}", count)
+            add_candidate(f"frac.{elem}", count)
+            add_candidate(f"has.{elem}", count)
+
+        for alias, (spec, _dataset) in dataset_fields.items():
+            value_count = 0
+            try:
+                row_sids = np.asarray(_dataset.group_array.now_data, dtype=np.int64).reshape(-1)
+                if row_sids.size > 0:
+                    value_count = int(np.unique(row_sids[np.isin(row_sids, active_indices)]).shape[0])
+            except Exception:
+                value_count = 0
+            if value_count <= 0:
+                value_count = active_count
+            components = list(spec.components)
+            if not components:
+                components = list(self._component_names(1))
+            if len(components) == 1:
+                add_candidate(alias, value_count)
+            views = ("ref", "pred", "err") if bool(spec.has_prediction_pair) else ("ref",)
+            for view in views:
+                if len(components) == 1:
+                    add_candidate(f"{alias}.{view}", value_count)
+                    continue
+                for comp in self._expression_component_aliases(components):
+                    add_candidate(f"{alias}.{view}.{comp}", value_count)
+                add_candidate(f"{alias}.{view}.norm", value_count)
+            if len(components) > 1:
+                for comp in self._expression_component_aliases(components):
+                    add_candidate(f"{alias}.{comp}", value_count)
+                add_candidate(f"{alias}.norm", value_count)
+
+        for alias, (spec, _prop_name) in atomic_fields.items():
+            value_count = 0
+            for structure in structures:
+                props = getattr(structure, "atomic_properties", {}) or {}
+                if _prop_name in props:
+                    value_count += 1
+            if value_count <= 0:
+                value_count = active_count
+            components = list(spec.components)
+            if not components:
+                components = list(self._component_names(1))
+            add_candidate(f"atomic.{alias}", value_count)
+            if len(components) == 1:
+                continue
+            for comp in self._expression_component_aliases(components):
+                add_candidate(f"atomic.{alias}.{comp}", value_count)
+            add_candidate(f"atomic.{alias}.norm", value_count)
+
+        return dict(StructureData._truncate_counter(cache, max_items)[0])
+    def _build_expression_builtin_values(
+        self,
+        active_indices: npt.NDArray[np.int64],
+    ) -> tuple[dict[str, npt.NDArray[Any]], dict[str, dict[str, npt.NDArray[Any]]]]:
+        structures = [self.structure.all_data[int(i)] for i in active_indices.tolist()]
+        natoms = np.array([int(len(s)) for s in structures], dtype=np.float64)
+        volumes = np.array([float(getattr(s, "volume", np.nan)) for s in structures], dtype=np.float64)
+        abcs = np.asarray(self.abcs[active_indices], dtype=np.float64) if active_indices.size else np.empty((0, 3), dtype=np.float64)
+        angles = np.asarray(self.angles[active_indices], dtype=np.float64) if active_indices.size else np.empty((0, 3), dtype=np.float64)
+
+        def safe_scalar(getter: Callable[[Structure], float]) -> npt.NDArray[np.float64]:
+            values: list[float] = []
+            for structure in structures:
+                try:
+                    values.append(float(getter(structure)))
+                except Exception:
+                    values.append(float("nan"))
+            return np.asarray(values, dtype=np.float64)
+
+        builtin_values: dict[str, npt.NDArray[Any]] = {
+            "natoms": natoms,
+            "n_atoms": natoms,
+            "volume": volumes,
+            "a": abcs[:, 0] if abcs.size else np.array([], dtype=np.float64),
+            "b": abcs[:, 1] if abcs.size else np.array([], dtype=np.float64),
+            "c": abcs[:, 2] if abcs.size else np.array([], dtype=np.float64),
+            "alpha": angles[:, 0] if angles.size else np.array([], dtype=np.float64),
+            "beta": angles[:, 1] if angles.size else np.array([], dtype=np.float64),
+            "gamma": angles[:, 2] if angles.size else np.array([], dtype=np.float64),
+            "spin_natoms": np.array([int(getattr(s, "spin_num", 0) or 0) for s in structures], dtype=np.float64),
+            "energy": safe_scalar(lambda s: s.energy),
+            "energy_per_atom": safe_scalar(lambda s: s.per_atom_energy),
+            "has_energy": np.array([bool(getattr(s, "has_energy", False)) for s in structures], dtype=bool),
+            "has_forces": np.array([bool(getattr(s, "has_forces", False)) for s in structures], dtype=bool),
+            "has_virial": np.array([bool(getattr(s, "has_virial", False)) for s in structures], dtype=bool),
+            "has_bec": np.array([bool(getattr(s, "has_bec", False)) for s in structures], dtype=bool),
+        }
+        count_values: dict[str, npt.NDArray[np.float64]] = {}
+        frac_values: dict[str, npt.NDArray[np.float64]] = {}
+        has_values: dict[str, npt.NDArray[np.bool_]] = {}
+        element_set: set[str] = set()
+        counters: list[Counter[str]] = []
+        for structure in structures:
+            try:
+                cnt = Counter(map(str, structure.elements))
+            except Exception:
+                cnt = Counter()
+            counters.append(cnt)
+            element_set.update(StructureData._normalise_element_symbol(e) for e in cnt.keys())
+        for elem in sorted(e for e in element_set if e):
+            counts = np.asarray([float(counter.get(elem, 0)) for counter in counters], dtype=np.float64)
+            count_values[elem] = counts
+            with np.errstate(divide="ignore", invalid="ignore"):
+                frac_values[elem] = np.divide(
+                    counts,
+                    natoms,
+                    out=np.zeros_like(counts, dtype=np.float64),
+                    where=natoms > 0,
+                )
+            has_values[elem] = counts > 0
+        return builtin_values, {"count": count_values, "frac": frac_values, "has": has_values}
+    @staticmethod
+    def _resolve_expression_component(
+        token: str | None,
+        components: Sequence[str],
+        label: str,
+    ) -> tuple[str, int | None]:
+        if token is None:
+            if len(components) == 1:
+                return "value", 0
+            raise ValueError(f"Field '{label}' requires an explicit component or '.norm'.")
+        norm_token = token.lower()
+        if norm_token == "norm":
+            return "norm", None
+        if norm_token.isdigit():
+            raise ValueError(f"Numeric component suffixes are not supported for field '{label}'.")
+        for idx, comp in enumerate(components):
+            if norm_token == str(comp).lower():
+                return "component", idx
+        raise ValueError(f"Unknown component '{token}' for field '{label}'.")
+    @staticmethod
+    def _apply_expression_reduction(
+        matrix: npt.NDArray[np.float64],
+        selector: tuple[str, int | None],
+        aggregate_atomwise: bool,
+    ) -> float:
+        if matrix.size == 0:
+            return float("nan")
+        mode, comp_index = selector
+        if mode == "norm":
+            values = np.linalg.norm(matrix, axis=1)
+        else:
+            assert comp_index is not None
+            values = matrix[:, comp_index]
+        if values.size == 0:
+            return float("nan")
+        if aggregate_atomwise:
+            return float(np.max(np.abs(values)))
+        return float(values[0])
+    def _dataset_expression_values(
+        self,
+        dataset: Any,
+        spec: FieldSpec,
+        component_token: str | None,
+        view: str,
+        active_indices: npt.NDArray[np.int64],
+    ) -> npt.NDArray[np.float64]:
+        try:
+            rows = np.asarray(dataset.now_data)
+            row_sids = np.asarray(dataset.group_array.now_data, dtype=np.int64).reshape(-1)
+        except Exception as exc:
+            raise ValueError(f"Failed to read dataset '{spec.label or spec.key}'.") from exc
+        if rows.size == 0 or row_sids.size == 0:
+            return np.full(active_indices.shape[0], np.nan, dtype=np.float64)
+        if rows.ndim == 1:
+            rows = rows.reshape(-1, 1)
+        limit = min(rows.shape[0], row_sids.shape[0])
+        rows = rows[:limit]
+        row_sids = row_sids[:limit]
+        scope_mask = np.isin(row_sids, active_indices)
+        if not np.any(scope_mask):
+            return np.full(active_indices.shape[0], np.nan, dtype=np.float64)
+        rows = rows[scope_mask]
+        row_sids = row_sids[scope_mask]
+        cols = int(getattr(dataset, "cols", 0) or 0)
+        if cols > 0:
+            ref = np.asarray(rows[:, dataset.x_cols], dtype=np.float64)
+            pred = np.asarray(rows[:, dataset.y_cols], dtype=np.float64)
+            if ref.ndim == 1:
+                ref = ref.reshape(-1, 1)
+            if pred.ndim == 1:
+                pred = pred.reshape(-1, 1)
+            if view == "pred":
+                values = pred
+            elif view == "err":
+                values = pred - ref
+            else:
+                values = ref
+        else:
+            if view != "ref":
+                raise ValueError(f"Field '{spec.label or spec.key}' does not support '.{view}'.")
+            values = np.asarray(rows, dtype=np.float64).reshape(rows.shape[0], -1)
+        components = list(spec.components) or list(self._component_names(int(values.shape[1]) if values.ndim == 2 else 1))
+        selector = self._resolve_expression_component(component_token, components, spec.label or spec.key)
+        sid_to_pos = {int(sid): pos for pos, sid in enumerate(active_indices.tolist())}
+        grouped: dict[int, list[int]] = {}
+        for ridx, sid_raw in enumerate(row_sids.tolist()):
+            sid = int(sid_raw)
+            if sid in sid_to_pos:
+                grouped.setdefault(sid, []).append(ridx)
+        out = np.full(active_indices.shape[0], np.nan, dtype=np.float64)
+        aggregate_atomwise = spec.domain == FieldDomain.ATOM
+        for sid, indices in grouped.items():
+            out[sid_to_pos[sid]] = self._apply_expression_reduction(values[indices], selector, aggregate_atomwise)
+        return out
+    def _atomic_expression_values(
+        self,
+        prop_name: str,
+        spec: FieldSpec,
+        component_token: str | None,
+        active_indices: npt.NDArray[np.int64],
+    ) -> npt.NDArray[np.float64]:
+        components = list(spec.components)
+        selector = self._resolve_expression_component(component_token, components, f"atomic.{prop_name}")
+        out = np.full(active_indices.shape[0], np.nan, dtype=np.float64)
+        for pos, sid in enumerate(active_indices.tolist()):
+            structure = self.structure.all_data[int(sid)]
+            props = getattr(structure, "atomic_properties", {}) or {}
+            if prop_name not in props:
+                continue
+            try:
+                arr = np.asarray(props[prop_name], dtype=np.float64)
+            except Exception:
+                continue
+            if arr.size == 0:
+                continue
+            out[pos] = self._apply_expression_reduction(arr.reshape(arr.shape[0], -1), selector, True)
+        return out
+    def _resolve_expression_reference(
+        self,
+        chain: tuple[str, ...],
+        builtin_values: Mapping[str, npt.NDArray[Any]],
+        element_values: Mapping[str, Mapping[str, npt.NDArray[Any]]],
+        dataset_fields: Mapping[str, tuple[FieldSpec, Any]],
+        atomic_fields: Mapping[str, tuple[FieldSpec, str]],
+        active_indices: npt.NDArray[np.int64],
+    ) -> npt.NDArray[Any]:
+        if not chain:
+            raise ValueError("Empty expression reference.")
+        parts = [str(raw) for raw in chain]
+        base = parts[0].lower()
+        if base in {"count", "frac", "has"}:
+            if len(parts) != 2:
+                raise ValueError(f"'{base}' expects an element symbol like '{base}.Fe'.")
+            symbol = StructureData._normalise_element_symbol(parts[1])
+            values = element_values.get(base, {}).get(symbol)
+            if values is None:
+                raise ValueError(f"Unknown element symbol in expression: {parts[1]}")
+            return values
+        if base == "atomic":
+            if len(parts) < 2:
+                raise ValueError("Atomic expression fields must use 'atomic.<name>'.")
+            alias = self._expression_alias(parts[1])
+            entry = atomic_fields.get(alias)
+            if entry is None:
+                raise ValueError(f"Unknown atomic field: {parts[1]}")
+            spec, prop_name = entry
+            tail = parts[2:]
+            if tail and tail[0].lower() in {"ref", "pred", "err"}:
+                raise ValueError(f"Atomic field 'atomic.{alias}' does not support value views.")
+            component_token = tail[0] if tail else None
+            if len(tail) > 1:
+                raise ValueError(f"Unsupported suffix for atomic field 'atomic.{alias}'.")
+            return self._atomic_expression_values(prop_name, spec, component_token, active_indices)
+        if base in builtin_values:
+            if len(parts) == 1:
+                return builtin_values[base]
+            if base in dataset_fields and parts[1].lower() in {"ref", "pred", "err"}:
+                spec, dataset = dataset_fields[base]
+                tail = parts[2:]
+                component_token = tail[0] if tail else None
+                if len(tail) > 1:
+                    raise ValueError(f"Unsupported suffix for field '{base}'.")
+                return self._dataset_expression_values(dataset, spec, component_token, parts[1].lower(), active_indices)
+            raise ValueError(f"Builtin field '{base}' does not support attribute '{parts[1]}'.")
+        entry = dataset_fields.get(base)
+        if entry is not None:
+            spec, dataset = entry
+            tail = parts[1:]
+            view = "ref"
+            if tail and tail[0].lower() in {"ref", "pred", "err"}:
+                if not bool(spec.has_prediction_pair):
+                    raise ValueError(f"Field '{base}' does not support value views.")
+                view = tail[0].lower()
+                tail = tail[1:]
+            component_token = tail[0] if tail else None
+            if len(tail) > 1:
+                raise ValueError(f"Unsupported suffix for field '{base}'.")
+            return self._dataset_expression_values(dataset, spec, component_token, view, active_indices)
+        raise ValueError(f"Unknown field in expression: {parts[0]}")
+    def _eval_expression_ast(
+        self,
+        node: ast.AST,
+        builtin_values: Mapping[str, npt.NDArray[Any]],
+        element_values: Mapping[str, Mapping[str, npt.NDArray[Any]]],
+        dataset_fields: Mapping[str, tuple[FieldSpec, Any]],
+        atomic_fields: Mapping[str, tuple[FieldSpec, str]],
+        active_indices: npt.NDArray[np.int64],
+    ) -> Any:
+        chain = self._expression_ast_chain(node)
+        if chain is not None:
+            return self._resolve_expression_reference(chain, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+        if isinstance(node, ast.Constant):
+            return node.value
+        if isinstance(node, ast.BoolOp):
+            values = [
+                self._eval_expression_ast(v, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+                for v in node.values
+            ]
+            if isinstance(node.op, ast.And):
+                result = np.asarray(values[0], dtype=bool)
+                for value in values[1:]:
+                    result = np.logical_and(result, np.asarray(value, dtype=bool))
+                return result
+            result = np.asarray(values[0], dtype=bool)
+            for value in values[1:]:
+                result = np.logical_or(result, np.asarray(value, dtype=bool))
+            return result
+        if isinstance(node, ast.UnaryOp):
+            operand = self._eval_expression_ast(node.operand, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+            if isinstance(node.op, ast.Not):
+                return np.logical_not(np.asarray(operand, dtype=bool))
+            if isinstance(node.op, ast.UAdd):
+                return +operand
+            if isinstance(node.op, ast.USub):
+                return -operand
+        if isinstance(node, ast.BinOp):
+            left = self._eval_expression_ast(node.left, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+            right = self._eval_expression_ast(node.right, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+            if isinstance(node.op, ast.Add):
+                return left + right
+            if isinstance(node.op, ast.Sub):
+                return left - right
+            if isinstance(node.op, ast.Mult):
+                return left * right
+            if isinstance(node.op, ast.Div):
+                return left / right
+        if isinstance(node, ast.Compare):
+            left = self._eval_expression_ast(node.left, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+            result = None
+            for op, comparator in zip(node.ops, node.comparators):
+                right = self._eval_expression_ast(comparator, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+                if isinstance(op, ast.Eq):
+                    current = left == right
+                elif isinstance(op, ast.NotEq):
+                    current = left != right
+                elif isinstance(op, ast.Gt):
+                    current = left > right
+                elif isinstance(op, ast.GtE):
+                    current = left >= right
+                elif isinstance(op, ast.Lt):
+                    current = left < right
+                elif isinstance(op, ast.LtE):
+                    current = left <= right
+                else:
+                    raise ValueError("Unsupported comparison operator.")
+                result = current if result is None else np.logical_and(result, current)
+                left = right
+            return result
+        raise ValueError("Unsupported expression syntax.")
+    def _search_expression(self, expr: str) -> list[int]:
+        active_indices = self._normalize_structure_indices(None)
+        if active_indices.size == 0:
+            return []
+        builtin_values, element_values = self._build_expression_builtin_values(active_indices)
+        dataset_fields, atomic_fields = self._discover_expression_fields(active_indices)
+        text = self._normalise_expression_text(expr)
+        if self._contains_numeric_component_reference(text):
+            raise ValueError("Numeric component suffixes are not supported in expressions.")
+        try:
+            parsed = ast.parse(text, mode="eval")
+        except SyntaxError as exc:
+            raise ValueError("Invalid expression syntax.") from exc
+        if not self._is_allowed_expression_node(parsed):
+            raise ValueError("Expression contains unsupported syntax.")
+        result = self._eval_expression_ast(parsed.body, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
+        mask = np.asarray(result, dtype=bool)
+        if mask.ndim == 0:
+            mask = np.full(active_indices.shape[0], bool(mask.item()), dtype=bool)
+        else:
+            mask = mask.reshape(-1)
+        if mask.shape[0] != active_indices.shape[0]:
+            raise ValueError("Expression result shape does not match active structures.")
+        return active_indices[mask].astype(int).tolist()
+    def search_config(self, config: str, search_type: SearchType) -> list[int]:
+        """Return structure indices matching the selected search mode."""
+        search_type = StructureData._normalise_search_type(search_type)
+        if search_type == SearchType.EXPRESSION:
+            return self._search_expression(config)
+        return self.structure.search_config(config, search_type)
     def sync_structures(self, fields: Iterable[str] | None = None, structure_indices: Sequence[int] | None = None) -> None:
         """Apply registered :class:`StructureSyncRule` objects to datasets.
 
@@ -993,6 +1593,11 @@ class ResultData(QObject):
                     self._load_descriptors()
                 if not self.cancel_event.is_set():
                     self._load_dataset()
+                if not self.cancel_event.is_set():
+                    try:
+                        self.get_completer_cache(SearchType.EXPRESSION, max_items=max_items)
+                    except Exception:
+                        logger.debug(traceback.format_exc())
                 if not self.cancel_event.is_set():
                     self.load_flag=True
             else:

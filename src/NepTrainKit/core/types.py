@@ -143,6 +143,7 @@ class SearchType(StrEnum):
     TAG = "Config_type"
     FORMULA = "formula"
     ELEMENTS = "elements"
+    EXPRESSION = "expression"
 
 
 class FieldValueShape(StrEnum):

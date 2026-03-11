@@ -288,6 +288,7 @@ class ShowNepWidget(QWidget):
             0: SearchType.TAG,
             1: SearchType.FORMULA,
             2: SearchType.ELEMENTS,
+            3: SearchType.EXPRESSION,
         }
         self.search_lineEdit.set_search_type(mapping.get(idx, SearchType.TAG))
 
@@ -666,6 +667,7 @@ class ShowNepWidget(QWidget):
         self.search_mode_combo.addItem("tag")
         self.search_mode_combo.addItem("formula")
         self.search_mode_combo.addItem("elements")
+        self.search_mode_combo.addItem("expression")
         self.search_mode_combo.setToolTip("switch search mode")
         self.search_mode_combo.installEventFilter(ToolTipFilter(self.search_mode_combo, 300, ToolTipPosition.TOP))
         self.search_mode_combo.currentIndexChanged.connect(self._on_search_mode_changed)
@@ -1199,13 +1201,10 @@ class ShowNepWidget(QWidget):
         data = getattr(self, "nep_result_data", None)
         if data is None:
             return
-        structure = getattr(data, "structure", None)
-        if structure is None:
-            return
         max_items = self._get_completer_max_items()
         try:
-            if hasattr(structure, "has_completer_cache") and structure.has_completer_cache(search_type, max_items=max_items):
-                cache = structure.get_completer_cache(search_type, max_items=max_items)
+            if hasattr(data, "has_completer_cache") and data.has_completer_cache(search_type, max_items=max_items):
+                cache = data.get_completer_cache(search_type, max_items=max_items)
                 self.search_lineEdit.setCompleterKeyWord(cache)
                 self._index_running = 0
                 self._update_search_status_label()
@@ -1220,7 +1219,7 @@ class ShowNepWidget(QWidget):
         self._begin_index()
 
         def _build_cache() -> bool:
-            data.structure.ensure_completer_cache(max_items=max_items)
+            data.ensure_completer_cache(search_type, max_items=max_items)
             return True
 
         def _on_done(_result: object) -> None:
@@ -1231,7 +1230,7 @@ class ShowNepWidget(QWidget):
                 if current is None or id(current) != dataset_id:
                     return
                 try:
-                    cache = current.structure.get_completer_cache(self.search_lineEdit.search_type, max_items=max_items)
+                    cache = current.get_completer_cache(self.search_lineEdit.search_type, max_items=max_items)
                     self.search_lineEdit.setCompleterKeyWord(cache)
                 except Exception:
                     pass
@@ -1262,7 +1261,7 @@ class ShowNepWidget(QWidget):
         self._begin_search()
 
         def _compute():
-            return data.structure.search_config(config, search_type)
+            return data.search_config(config, search_type)
 
         def _on_done(indexes: object) -> None:
             try:

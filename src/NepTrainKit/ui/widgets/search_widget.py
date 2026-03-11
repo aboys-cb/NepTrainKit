@@ -98,6 +98,9 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
         elif search_type == SearchType.ELEMENTS:
             label = "elements"
             example = " e.g. Fe,O  or  +Fe,-H"
+        elif search_type == SearchType.EXPRESSION:
+            label = "expression"
+            example = " e.g. natoms > 100 || force.ref.x > 10"
         else:
             label = str(search_type)
             example = ""

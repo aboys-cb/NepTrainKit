@@ -26,6 +26,10 @@
 - `tag`：基于 `Config_type` 正则匹配
 - `formula`：基于化学式正则匹配
 - `elements`：元素集合语法（`E` / `+E` / `-E`）
+- `expression`：基于结构级表达式筛选，支持 `natoms`、元素统计、能量、力、应力、virial 和 `atomic.<name>`
+
+> `expression` 模式的详细语法、字段规则、补全说明与示例见：
+> [`Show NEP 详细参考`](show-nep-reference.md)
 
 ## 可视化说明
 

@@ -136,6 +136,25 @@ class FunctionWorker(QObject):
         self.finished.emit(result)
 
 
+class CallbackRelay(QObject):
+    """Forward worker results back to the relay object's thread."""
+
+    def __init__(self, on_finished=None, on_error=None, parent=None):
+        super().__init__(parent)
+        self._on_finished = on_finished
+        self._on_error = on_error
+
+    @Slot(object)
+    def handle_finished(self, result) -> None:
+        if self._on_finished is not None:
+            self._on_finished(result)
+
+    @Slot(str)
+    def handle_error(self, message: str) -> None:
+        if self._on_error is not None:
+            self._on_error(message)
+
+
 def run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs) -> QThread:
     """Convenience helper to run ``func`` in a background QThread.
 
@@ -151,19 +170,20 @@ def run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs
     # (If GC'd early, the thread event loop can keep running and callers may never
     # receive finished/error signals.)
     setattr(thread, "_ntk_worker", worker)
+    relay = CallbackRelay(on_finished=on_finished, on_error=on_error, parent=parent)
+    setattr(thread, "_ntk_callback_relay", relay)
 
     thread.started.connect(worker.run)
     worker.finished.connect(thread.quit)
     worker.error.connect(thread.quit)
 
-    if on_finished is not None:
-        worker.finished.connect(on_finished)
-    if on_error is not None:
-        worker.error.connect(on_error)
+    worker.finished.connect(relay.handle_finished)
+    worker.error.connect(relay.handle_error)
 
     worker.finished.connect(worker.deleteLater)
     worker.error.connect(worker.deleteLater)
     thread.finished.connect(lambda: setattr(thread, "_ntk_worker", None))
+    thread.finished.connect(lambda: setattr(thread, "_ntk_callback_relay", None))
     thread.finished.connect(thread.deleteLater)
 
     thread.start()

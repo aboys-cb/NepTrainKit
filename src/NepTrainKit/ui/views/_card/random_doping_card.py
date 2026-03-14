@@ -12,44 +12,30 @@ from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame, DopingRulesWidget
 from NepTrainKit.ui.widgets import MakeDataCard
 from scipy.stats.qmc import Sobol
+from ase.data import atomic_masses, atomic_numbers
 
 
-def sample_dopants(dopant_list, ratios, N, exact=False, rng: np.random.Generator | None = None):
-    """Sample dopant species according to the requested ratios.
-
-    Parameters
-    ----------
-    dopant_list : list
-        Candidate dopant identifiers.
-    ratios : list[float]
-        Probabilities associated with the dopants; values are normalised internally.
-    N : int
-        Number of samples to draw.
-    exact : bool, optional
-        If ``True`` the dopant counts follow the ratios as closely as possible;
-        otherwise each draw is independent.
-    rng : numpy.random.Generator or None, optional
-        Random number generator used for reproducibility.
-
-    Returns
-    -------
-    list
-        Sequence of dopant identifiers of length ``N``.
-    """
+def sample_dopants(dopant_list, ratios, N, exact=False, rng: np.random.Generator | None = None, ratio_type="atom"):
     if rng is None:
         rng = np.random.default_rng()
 
     dopant_list = list(dopant_list)
     ratios = np.array(ratios, dtype=float)
-    ratios = ratios / ratios.sum()
+
+    if ratio_type == "mass":
+        masses = np.array([atomic_masses[atomic_numbers.get(elem, 1)] for elem in dopant_list])
+        atom_ratios = ratios / masses
+        atom_ratios = atom_ratios / atom_ratios.sum()
+    else:
+        atom_ratios = ratios / ratios.sum()
 
     if not exact:
-        return list(rng.choice(dopant_list, size=N, p=ratios, replace=True))
+        return list(rng.choice(dopant_list, size=N, p=atom_ratios, replace=True))
     else:
-        counts = (ratios * N).astype(int)
+        counts = (atom_ratios * N).astype(int)
         diff = N - counts.sum()
         if diff != 0:
-            max_idx = np.argmax(ratios)
+            max_idx = np.argmax(atom_ratios)
             counts[max_idx] += diff
 
         arr = np.repeat(dopant_list, counts)
@@ -58,10 +44,9 @@ def sample_dopants(dopant_list, ratios, N, exact=False, rng: np.random.Generator
 
 
 @CardManager.register_card
-
 class RandomDopingCard(MakeDataCard):
     """Perform random atomic substitutions according to user-specified doping rules.
-    
+
     Parameters
     ----------
     parent : QWidget, optional
@@ -74,7 +59,7 @@ class RandomDopingCard(MakeDataCard):
 
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.
-        
+
         Parameters
         ----------
         parent : QWidget, optional
@@ -85,10 +70,8 @@ class RandomDopingCard(MakeDataCard):
         self.init_ui()
 
     def init_ui(self):
-        """Build the form controls that expose the card configuration.
-        """
+        """Build the form controls that expose the card configuration."""
         self.setObjectName("random_doping_card_widget")
-
 
         self.rules_label = BodyLabel("Rules", self.setting_widget)
         self.rules_widget = DopingRulesWidget(self.setting_widget)
@@ -97,7 +80,7 @@ class RandomDopingCard(MakeDataCard):
 
         self.doping_label = BodyLabel("Doping", self.setting_widget)
 
-        self.doping_type_combo=ComboBox(self.setting_widget)
+        self.doping_type_combo = ComboBox(self.setting_widget)
         self.doping_type_combo.addItem("Random")
         self.doping_type_combo.addItem("Exact")
         self.doping_label.setToolTip("Select doping algorithm")
@@ -132,12 +115,12 @@ class RandomDopingCard(MakeDataCard):
 
     def process_structure(self, structure):
         """Apply stochastic dopant replacements according to the configured rules.
-        
+
         Parameters
         ----------
         structure : ase.Atoms
             Structure to modify.
-        
+
         Returns
         -------
         list[ase.Atoms]
@@ -150,14 +133,13 @@ class RandomDopingCard(MakeDataCard):
             return [structure]
 
         max_num = int(self.max_atoms_condition_frame.get_input_value()[0])
-        exact = self.doping_type_combo.currentText()=="Exact"
+        exact = self.doping_type_combo.currentText() == "Exact"
         base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
         rng = np.random.default_rng(base_seed)
         for _ in range(max_num):
             new_structure = structure.copy()
             total_doping = 0
             for rule in rules:
-
                 target = rule.get("target")
                 dopants = rule.get("dopants", {})
                 if not target or not dopants:
@@ -166,19 +148,43 @@ class RandomDopingCard(MakeDataCard):
                 groups = rule.get("group")
 
                 if groups and "group" in new_structure.arrays:
-
-                    candidate_indices = [i for i,elem,g in zip(range(len(new_structure)), new_structure ,new_structure.arrays["group"]) if elem.symbol == target and g in groups]
+                    candidate_indices = [
+                        i
+                        for i, elem, g in zip(range(len(new_structure)), new_structure, new_structure.arrays["group"])
+                        if elem.symbol == target and g in groups
+                    ]
                 else:
                     candidate_indices = [i for i, a in enumerate(new_structure) if a.symbol == target]
 
                 if not candidate_indices:
                     continue
 
-                if "concentration" == rule["use"]:
-                    conc_min, conc_max = rule.get("concentration", [0.0, 1.0])
-                    conc = rng.uniform(float(conc_min), float(conc_max))
-                    doping_num = max(1, int(len(candidate_indices) * conc))
-                elif "count" == rule["use"]:
+                use_mode = rule.get("use", "atomic_percent")
+
+                if use_mode == "atomic_percent":
+                    percent_min, percent_max = rule.get("percent", [0.0, 100.0])
+                    value = rng.uniform(float(percent_min), float(percent_max)) / 100.0
+                    doping_num = max(1, int(len(candidate_indices) * value))
+                elif use_mode == "mass_percent":
+                    percent_min, percent_max = rule.get("percent", [0.0, 100.0])
+                    target_mass_percent = rng.uniform(float(percent_min), float(percent_max)) / 100.0
+
+                    target_atomic_number = atomic_numbers.get(target, 1)
+                    target_mass = atomic_masses[target_atomic_number]
+                    total_target_mass = len(candidate_indices) * target_mass
+
+                    dopant_elements = list(dopants.keys())
+                    if dopant_elements:
+                        avg_dopant_mass = np.mean(
+                            [atomic_masses[atomic_numbers.get(elem, 1)] for elem in dopant_elements]
+                        )
+                    else:
+                        avg_dopant_mass = target_mass
+
+                    doped_mass = total_target_mass * target_mass_percent
+                    doping_num = max(1, int(doped_mass / avg_dopant_mass))
+
+                elif use_mode == "count":
                     count_min, count_max = rule.get("count", [1, 1])
                     doping_num = int(rng.integers(int(count_min), int(count_max) + 1))
                 else:
@@ -188,15 +194,12 @@ class RandomDopingCard(MakeDataCard):
 
                 idxs = rng.choice(candidate_indices, doping_num, replace=False)
 
-
-
                 dopant_list = list(dopants.keys())
                 ratios = np.array(list(dopants.values()), dtype=float)
-                ratios = ratios / ratios.sum()
-                sample = sample_dopants(dopant_list, ratios, doping_num, exact, rng=rng)
+                ratio_type = rule.get("ratio_type", "atom")
+                sample = sample_dopants(dopant_list, ratios, doping_num, exact, rng=rng, ratio_type=ratio_type)
 
-
-                for idx,elem in zip(idxs,sample):
+                for idx, elem in zip(idxs, sample):
                     new_structure[idx].symbol = elem
                 total_doping += doping_num
             if total_doping:
@@ -208,7 +211,7 @@ class RandomDopingCard(MakeDataCard):
 
     def to_dict(self):
         """Serialize the current configuration to a plain dictionary.
-        
+
         Returns
         -------
         dict
@@ -216,16 +219,16 @@ class RandomDopingCard(MakeDataCard):
         """
         data_dict = super().to_dict()
 
-        data_dict['rules'] = json.dumps(self.rules_widget.to_rules(), ensure_ascii=False)
-        data_dict['doping_type'] = self.doping_type_combo.currentText()
-        data_dict['max_atoms_condition'] = self.max_atoms_condition_frame.get_input_value()
+        data_dict["rules"] = json.dumps(self.rules_widget.to_rules(), ensure_ascii=False)
+        data_dict["doping_type"] = self.doping_type_combo.currentText()
+        data_dict["max_atoms_condition"] = self.max_atoms_condition_frame.get_input_value()
         data_dict["use_seed"] = self.seed_checkbox.isChecked()
         data_dict["seed"] = self.seed_frame.get_input_value()
         return data_dict
 
     def from_dict(self, data_dict):
         """Restore the card configuration from serialized values.
-        
+
         Parameters
         ----------
         data_dict : dict
@@ -233,16 +236,14 @@ class RandomDopingCard(MakeDataCard):
         """
         super().from_dict(data_dict)
 
-        rules = data_dict.get('rules', '')
+        rules = data_dict.get("rules", "")
         if isinstance(rules, str):
             try:
                 rules = json.loads(rules)
             except Exception:
                 rules = []
         self.rules_widget.from_rules(rules)
-        self.doping_type_combo.setCurrentText(data_dict.get("doping_type","Exact"))
-        self.max_atoms_condition_frame.set_input_value(data_dict.get('max_atoms_condition', [1]))
+        self.doping_type_combo.setCurrentText(data_dict.get("doping_type", "Exact"))
+        self.max_atoms_condition_frame.set_input_value(data_dict.get("max_atoms_condition", [1]))
         self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
         self.seed_frame.set_input_value(data_dict.get("seed", [0]))
-
-

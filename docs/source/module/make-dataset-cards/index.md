@@ -14,7 +14,9 @@ cards/super-cell-card
 cards/crystal-prototype-builder-card
 cards/perturb-card
 cards/vibration-perturb-card
+cards/set-magnetic-moments-card
 cards/magmom-rotation-card
+cards/small-angle-spin-tilt-card
 cards/spin-spiral-card
 cards/cell-strain-card
 cards/cell-scaling-card
@@ -46,6 +48,6 @@ cards/card-group
 - 晶格：Super Cell / Lattice Strain / Lattice Perturb
 - 缺陷：Random Vacancy / Insert Defect / Stacking Fault
 - 合金：Random Doping / Composition Sweep / Conditional Replace
-- 磁性：Magnetic Order / Magmom Rotation
+- 磁性：Set Magnetic Moments / Magnetic Order / Small-Angle Spin Tilt / Magmom Rotation
 - 过滤：FPS Filter
 - 容器：Card Group

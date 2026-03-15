@@ -2,21 +2,21 @@
 
 from __future__ import annotations
 
-import re
-
 import numpy as np
 from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.config_type import append_config_tag
-from NepTrainKit.core.magnetism import normalize_vector, parse_magmom_map, spiral_unit_vectors
+from NepTrainKit.core.magnetism import (
+    existing_moment_magnitudes,
+    mapped_moment_magnitudes,
+    normalize_vector,
+    parse_element_set,
+    parse_magmom_map_any,
+    set_initial_magmoms_safe,
+    spiral_unit_vectors,
+)
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
-
-
-def _parse_elements(text: str) -> set[str]:
-    """Split an element string on commas and whitespace."""
-    tokens = [token.strip() for token in re.split(r"[\s,;]+", text or "") if token.strip()]
-    return {token[0].upper() + token[1:].lower() for token in tokens}
 
 
 @CardManager.register_card
@@ -168,8 +168,12 @@ class SpinSpiralCard(MakeDataCard):
         use_map = self.source_combo.currentText() == "Map/default magnitude"
         self.map_label.setEnabled(use_map)
         self.map_edit.setEnabled(use_map)
+        self.map_label.setVisible(use_map)
+        self.map_edit.setVisible(use_map)
         self.default_label.setEnabled(use_map)
         self.default_frame.setEnabled(use_map)
+        self.default_label.setVisible(use_map)
+        self.default_frame.setVisible(use_map)
 
     def _update_parameter_mode_widgets(self):
         use_period = self.parameter_mode_combo.currentText() == "Period (L_D)"
@@ -240,36 +244,25 @@ class SpinSpiralCard(MakeDataCard):
     def _magnitudes(self, structure) -> np.ndarray:
         use_existing = self.source_combo.currentText() == "Existing initial magmoms"
         if use_existing:
-            current = np.asarray(structure.get_initial_magnetic_moments(), dtype=float)
-            if current.size:
-                if current.ndim == 1:
-                    mags = np.abs(current.reshape(-1))
-                elif current.ndim == 2 and current.shape[1] == 3:
-                    mags = np.linalg.norm(current, axis=1)
-                else:
-                    mags = np.zeros(len(structure), dtype=float)
-                if mags.shape[0] == len(structure):
-                    return mags
+            mags = existing_moment_magnitudes(structure)
+            if mags is not None:
+                return mags
             MessageManager.send_warning_message(
                 "SpinSpiral: no valid initial_magmoms found; falling back to magmom map/default."
             )
 
         try:
-            moment_map = parse_magmom_map(self.map_edit.text())
+            moment_map = parse_magmom_map_any(self.map_edit.text())
         except Exception as exc:  # noqa: BLE001
             MessageManager.send_warning_message(f"SpinSpiral: invalid magmom map: {exc}")
             moment_map = {}
 
-        default_moment = float(self.default_frame.get_input_value()[0])
-        mags = np.array(
-            [abs(float(moment_map.get(sym, default_moment))) for sym in structure.get_chemical_symbols()],
-            dtype=float,
+        return mapped_moment_magnitudes(
+            structure,
+            moment_map,
+            default_moment=float(self.default_frame.get_input_value()[0]),
+            apply_elements=parse_element_set(self.apply_edit.text()),
         )
-        apply_elements = _parse_elements(self.apply_edit.text())
-        if apply_elements:
-            mask = np.array([sym in apply_elements for sym in structure.get_chemical_symbols()], dtype=bool)
-            mags = np.where(mask, mags, 0.0)
-        return mags
 
     def process_structure(self, structure):
         periods = self._period_values()
@@ -300,12 +293,7 @@ class SpinSpiralCard(MakeDataCard):
                         chirality=chirality_sign,
                     )
                     magmoms = mags[:, None] * unit_vectors
-                    if (
-                        "initial_magmoms" in atoms.arrays
-                        and np.asarray(atoms.arrays["initial_magmoms"]).shape != np.asarray(magmoms).shape
-                    ):
-                        del atoms.arrays["initial_magmoms"]
-                    atoms.set_initial_magnetic_moments(magmoms)
+                    set_initial_magmoms_safe(atoms, magmoms)
 
                     kind = "Helix" if abs(mz) <= 1e-10 else "Spiral"
                     append_config_tag(

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import math
-import re
 from typing import Iterable
 
 import numpy as np
@@ -11,14 +10,8 @@ from qfluentwidgets import BodyLabel, CheckBox, LineEdit, ToolTipFilter, ToolTip
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.config_type import append_config_tag
-from NepTrainKit.core.magnetism import normalize_vector
+from NepTrainKit.core.magnetism import existing_moment_vectors, normalize_vector, parse_element_set, set_initial_magmoms_safe
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
-
-
-def _parse_elements(text: str) -> set[str]:
-    """Split an element string on commas and whitespace."""
-    tokens = [token.strip() for token in re.split(r"[\s,]+", text) if token.strip()]
-    return set(tokens)
 
 
 @CardManager.register_card
@@ -166,7 +159,7 @@ class MagneticMomentRotationCard(MakeDataCard):
         return vec / current * target_length
 
     def process_structure(self, structure):
-        elements = _parse_elements(self.elements_input.text())
+        elements = parse_element_set(self.elements_input.text())
         max_angle = float(self.angle_frame.get_input_value()[0])
         num_structures = int(self.count_frame.get_input_value()[0])
         disturb_magnitude = self.magnitude_checkbox.isChecked()
@@ -178,17 +171,19 @@ class MagneticMomentRotationCard(MakeDataCard):
         if num_structures <= 0:
             return [structure.copy()]
 
-        base_magmoms = structure.get_initial_magnetic_moments()
-        if base_magmoms is None or len(base_magmoms) == 0:
+        raw_magmoms = np.asarray(structure.get_initial_magnetic_moments(), dtype=float)
+        if raw_magmoms.size == 0:
             return [structure.copy()]
 
-        base_magmoms = np.array(base_magmoms, dtype=float)
-        is_vector = base_magmoms.ndim == 2
+        is_vector = raw_magmoms.ndim == 2 and raw_magmoms.shape == (len(structure), 3)
         lift_scalar = self.lift_scalar_checkbox.isChecked()
         can_rotate = max_angle > 0 and (is_vector or lift_scalar)
 
         axis = np.array([float(v) for v in self.axis_frame.get_input_value()], dtype=float)
         axis = normalize_vector(axis)
+        base_vectors = existing_moment_vectors(structure, axis=axis, lift_scalar=True)
+        if base_vectors is None:
+            return [structure.copy()]
 
         base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
         rng = np.random.default_rng(base_seed)
@@ -202,10 +197,7 @@ class MagneticMomentRotationCard(MakeDataCard):
 
         for _ in range(num_structures):
             new_structure = structure.copy()
-            if is_vector:
-                moment_array = np.array(base_magmoms, copy=True)
-            else:
-                moment_array = np.array(base_magmoms, copy=True).reshape(-1, 1) * axis.reshape(1, 3)
+            moment_array = np.array(base_vectors, copy=True)
 
             for idx, symbol in enumerate(symbols):
                 if symbol not in elements:
@@ -213,7 +205,7 @@ class MagneticMomentRotationCard(MakeDataCard):
 
                 if can_rotate:
                     angle = float(rng.uniform(0.0, max_angle))
-                    base_vec = base_magmoms[idx] if is_vector else moment_array[idx]
+                    base_vec = base_vectors[idx]
                     rotated = self._rotate_vector(base_vec, angle, rng=rng)
                     if disturb_magnitude:
                         original_length = np.linalg.norm(base_vec)
@@ -225,9 +217,7 @@ class MagneticMomentRotationCard(MakeDataCard):
                     scale = float(rng.uniform(min_factor, max_factor))
                     moment_array[idx] = moment_array[idx] * scale
 
-            if "initial_magmoms" in new_structure.arrays and np.asarray(new_structure.arrays["initial_magmoms"]).shape != np.asarray(moment_array).shape:
-                del new_structure.arrays["initial_magmoms"]
-            new_structure.set_initial_magnetic_moments(moment_array)
+            set_initial_magmoms_safe(new_structure, moment_array)
 
             label = "MMR" if can_rotate else "MMS"
             details = []

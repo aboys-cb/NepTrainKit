@@ -455,7 +455,7 @@ class TestCard(unittest.TestCase):
         card.map_edit.setText("Fe:2.0")
         card.period_frame.set_input_value([2.0, 4.0, 2.0])
         card.phase_frame.set_input_value([0.0, 0.0, 15.0])
-        card.mz_frame.set_input_value([0.0])
+        card.mz_frame.set_input_value([0.0, 0.0, 0.1])
         card.chirality_combo.setCurrentText("Both")
         card.max_output_frame.set_input_value([10])
 
@@ -482,6 +482,120 @@ class TestCard(unittest.TestCase):
         self.assertAlmostEqual(cw_m[1, 0], -ccw_m[1, 0], places=6)
         self.assertAlmostEqual(cw_m[1, 1], ccw_m[1, 1], places=6)
 
+    def test_spin_spiral_card_mz_scan_generates_multiple_conical_states(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+
+        card = SpinSpiralCard()
+        card.period_frame.set_input_value([6.0, 6.0, 1.0])
+        card.phase_frame.set_input_value([0.0, 0.0, 15.0])
+        card.mz_frame.set_input_value([0.0, 0.8, 0.4])
+        card.chirality_combo.setCurrentText("Clockwise")
+        card.max_output_frame.set_input_value([10])
+
+        results = card.process_structure(structure)
+        self.assertEqual(len(results), 3)
+
+        expected_mz_values = [0.0, 0.4, 0.8]
+        for atoms, expected_mz in zip(results, expected_mz_values):
+            moments = np.array(atoms.get_initial_magnetic_moments(), dtype=float)
+            norms = np.linalg.norm(moments, axis=1)
+            self.assertTrue(np.allclose(norms, 2.0, atol=1e-6))
+            self.assertTrue(np.allclose(moments[:, 2], norms * expected_mz, atol=1e-6))
+            tag = str(atoms.info.get("Config_type", ""))
+            self.assertIn(f"mz={expected_mz:.6g}", tag)
+            if expected_mz == 0.0:
+                self.assertIn("Helix(", tag)
+            else:
+                self.assertIn("Spiral(", tag)
+
+    def test_spin_spiral_card_commensurate_period_filter(self):
+        structure = self._spin_chain()
+
+        card = SpinSpiralCard()
+        card.source_combo.setCurrentText("Map/default magnitude")
+        card.map_edit.setText("Fe:2.0")
+        card.period_frame.set_input_value([4.0, 8.0, 2.0])
+        card.phase_frame.set_input_value([0.0, 0.0, 15.0])
+        card.mz_frame.set_input_value([0.0, 0.0, 0.1])
+        card.chirality_combo.setCurrentText("Both")
+        card.commensurate_checkbox.setChecked(True)
+        card.max_output_frame.set_input_value([10])
+
+        results = card.process_structure(structure)
+        self.assertEqual(len(results), 4)
+
+        tags = [str(atoms.info.get("Config_type", "")) for atoms in results]
+        self.assertTrue(all(("L=4" in tag or "L=8" in tag) for tag in tags))
+        self.assertFalse(any("L=6" in tag for tag in tags))
+
+        data = card.to_dict()
+        restored = SpinSpiralCard()
+        restored.from_dict(data)
+        self.assertTrue(restored.commensurate_checkbox.isChecked())
+
+    def test_spin_spiral_card_commensurate_period_suggests_supercell(self):
+        structure = self._spin_chain()
+        suggestion = SpinSpiralCard._suggest_supercell_multipliers(
+            [6.0, 10.0],
+            structure=structure,
+            axis=np.array([0.0, 0.0, 1.0]),
+        )
+        self.assertIsNotNone(suggestion)
+        suggested_period, multipliers = suggestion
+        self.assertAlmostEqual(suggested_period, 6.0)
+        self.assertEqual(multipliers, [1, 1, 3])
+
+    def test_spin_spiral_card_commensurate_period_discovery_uses_continuous_range(self):
+        structure = self._spin_chain()
+        structure.set_cell(np.diag([6.0, 6.0, 31.0]))
+
+        card = SpinSpiralCard()
+        card.source_combo.setCurrentText("Map/default magnitude")
+        card.map_edit.setText("Fe:2.0")
+        card.period_frame.set_input_value([15.0, 16.0, 1.0])
+        card.phase_frame.set_input_value([0.0, 0.0, 15.0])
+        card.mz_frame.set_input_value([0.0, 0.0, 0.1])
+        card.chirality_combo.setCurrentText("Both")
+        card.commensurate_checkbox.setChecked(True)
+        card.max_output_frame.set_input_value([10])
+
+        results = card.process_structure(structure)
+        self.assertEqual(len(results), 2)
+        tags = [str(atoms.info.get("Config_type", "")) for atoms in results]
+        self.assertTrue(all("L=15.5" in tag for tag in tags))
+
+    def test_spin_spiral_card_layer_locked_phase_keeps_each_layer_rigid(self):
+        structure = self._spin_bilayer_chain()
+        structure.set_initial_magnetic_moments([2.0] * len(structure))
+
+        continuous = SpinSpiralCard()
+        continuous.period_frame.set_input_value([4.0, 4.0, 1.0])
+        continuous.phase_frame.set_input_value([0.0, 0.0, 15.0])
+        continuous.mz_frame.set_input_value([0.0, 0.0, 0.1])
+        continuous.chirality_combo.setCurrentText("Clockwise")
+
+        layer_locked = SpinSpiralCard()
+        layer_locked.period_frame.set_input_value([4.0, 4.0, 1.0])
+        layer_locked.phase_frame.set_input_value([0.0, 0.0, 15.0])
+        layer_locked.mz_frame.set_input_value([0.0, 0.0, 0.1])
+        layer_locked.chirality_combo.setCurrentText("Clockwise")
+        layer_locked.phase_mode_combo.setCurrentText("Layer-locked")
+        layer_locked.layer_tol_frame.set_input_value([0.05])
+
+        continuous_result = continuous.process_structure(structure)[0]
+        layer_locked_result = layer_locked.process_structure(structure)[0]
+
+        continuous_moments = np.array(continuous_result.get_initial_magnetic_moments(), dtype=float)
+        layer_locked_moments = np.array(layer_locked_result.get_initial_magnetic_moments(), dtype=float)
+
+        self.assertFalse(np.allclose(continuous_moments[0], continuous_moments[1], atol=1e-6))
+        self.assertTrue(np.allclose(layer_locked_moments[0], layer_locked_moments[1], atol=1e-6))
+        self.assertTrue(np.allclose(layer_locked_moments[2], layer_locked_moments[3], atol=1e-6))
+        self.assertTrue(np.allclose(layer_locked_moments[4], layer_locked_moments[5], atol=1e-6))
+        self.assertTrue(np.allclose(layer_locked_moments[6], layer_locked_moments[7], atol=1e-6))
+        self.assertIn("pm=layer", str(layer_locked_result.info.get("Config_type", "")))
+
     def test_spin_spiral_card_existing_magnitudes_and_roundtrip(self):
         structure = self._spin_chain()
         structure.set_initial_magnetic_moments([1.0, 2.0, 3.0, 4.0])
@@ -490,7 +604,7 @@ class TestCard(unittest.TestCase):
         card.axis_frame.set_input_value([0.0, 0.0, 1.0])
         card.period_frame.set_input_value([6.0, 6.0, 1.0])
         card.phase_frame.set_input_value([30.0, 30.0, 15.0])
-        card.mz_frame.set_input_value([0.5])
+        card.mz_frame.set_input_value([0.5, 0.5, 0.1])
         card.chirality_combo.setCurrentText("Clockwise")
         card.source_combo.setCurrentText("Existing initial magmoms")
         card.apply_edit.setText("Fe")
@@ -513,8 +627,29 @@ class TestCard(unittest.TestCase):
         self.assertEqual(restored.source_combo.currentText(), "Existing initial magmoms")
         self.assertEqual(restored.apply_edit.text(), "Fe")
         self.assertEqual(restored.period_frame.get_input_value(), [6.0, 6.0, 1.0])
+        self.assertEqual(restored.mz_frame.get_input_value(), [0.5, 0.5, 0.1])
+        self.assertEqual(restored.phase_mode_combo.currentText(), "Continuous by position")
+        self.assertEqual(restored.layer_tol_frame.get_input_value(), [0.05])
         self.assertFalse(restored.map_label.isVisible())
         self.assertFalse(restored.default_label.isVisible())
+
+        legacy = SpinSpiralCard()
+        legacy.from_dict({"check_state": True, "mz": [0.25]})
+        self.assertEqual(legacy.mz_frame.get_input_value(), [0.25, 0.25, 0.1])
+
+    def test_spin_spiral_card_layer_locked_roundtrip(self):
+        card = SpinSpiralCard()
+        card.phase_mode_combo.setCurrentText("Layer-locked")
+        card.layer_tol_frame.set_input_value([0.08])
+
+        data = card.to_dict()
+        restored = SpinSpiralCard()
+        restored.from_dict(data)
+
+        self.assertEqual(restored.phase_mode_combo.currentText(), "Layer-locked")
+        self.assertEqual(restored.layer_tol_frame.get_input_value(), [0.08])
+        self.assertFalse(restored.layer_tol_label.isHidden())
+        self.assertTrue(restored.layer_tol_frame.isEnabled())
 
     def test_spin_spiral_card_angle_gradient_mode_matches_period_mode(self):
         structure = self._spin_chain()

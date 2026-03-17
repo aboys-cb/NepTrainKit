@@ -18,6 +18,7 @@ from .magnetic_order_card import MagneticOrderCard
 from .set_magnetic_moments_card import SetMagneticMomentsCard
 from .small_angle_spin_tilt_card import SmallAngleSpinTiltCard
 from .spin_spiral_card import SpinSpiralCard
+from .folded_helix_card import FoldedHelixCard
 from .group_label_card import GroupLabelCard
 from .random_vacancy_card import RandomVacancyCard
 from .vacancy_defect_card import VacancyDefectCard
@@ -48,6 +49,7 @@ __all__ = [
     "SetMagneticMomentsCard",
     "SmallAngleSpinTiltCard",
     "SpinSpiralCard",
+    "FoldedHelixCard",
     "GroupLabelCard",
 
     "RandomVacancyCard",

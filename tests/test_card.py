@@ -32,6 +32,7 @@ from NepTrainKit.ui.views._card import (
     SetMagneticMomentsCard,
     SmallAngleSpinTiltCard,
     SpinSpiralCard,
+    FoldedHelixCard,
     MagneticMomentRotationCard,
     GroupLabelCard,
     RandomVacancyCard,
@@ -40,6 +41,7 @@ from NepTrainKit.ui.views._card import (
     OrganicMolConfigPBCCard,
     # VibrationModePerturbCard,
 )
+from NepTrainKit.core.magnetism import orthonormal_frame
 
 
 class TestCard(unittest.TestCase):
@@ -75,6 +77,26 @@ class TestCard(unittest.TestCase):
             pbc=[False, False, True],
         )
         atoms.info["Config_type"] = "Fe_chain"
+        return atoms
+
+    @staticmethod
+    def _spin_bilayer_chain():
+        atoms = Atoms(
+            symbols=["Fe"] * 8,
+            positions=[
+                [0.0, 0.0, 0.00],
+                [1.0, 0.0, 0.01],
+                [0.0, 0.0, 1.00],
+                [1.0, 0.0, 1.01],
+                [0.0, 0.0, 2.00],
+                [1.0, 0.0, 2.01],
+                [0.0, 0.0, 3.00],
+                [1.0, 0.0, 3.01],
+            ],
+            cell=np.diag([4.0, 4.0, 6.0]),
+            pbc=[False, False, True],
+        )
+        atoms.info["Config_type"] = "Fe_bilayer_chain"
         return atoms
 
     def test_supercell_card_variants(self):
@@ -524,6 +546,102 @@ class TestCard(unittest.TestCase):
         restored.from_dict(data)
         self.assertEqual(restored.parameter_mode_combo.currentText(), "Angle gradient (deg/A)")
         self.assertEqual(restored.angle_gradient_frame.get_input_value(), [90.0, 90.0, 1.0])
+
+    def test_folded_helix_card_layer_pattern(self):
+        structure = self._spin_bilayer_chain()
+
+        card = FoldedHelixCard()
+        card.source_combo.setCurrentText("Map/default magnitude")
+        card.map_edit.setText("Fe:2.0")
+        card.layer_axis_frame.set_input_value([0.0, 0.0, 1.0])
+        card.plane_normal_frame.set_input_value([0.0, 0.0, 1.0])
+        card.layer_tol_frame.set_input_value([0.05])
+        card.half_period_mode_combo.setCurrentText("Manual")
+        card.half_period_frame.set_input_value([2, 2, 1])
+        card.angle_step_frame.set_input_value([30.0, 30.0, 15.0])
+        card.phase_frame.set_input_value([0.0, 0.0, 15.0])
+        card.sequence_combo.setCurrentText("Clockwise then counterclockwise")
+        card.max_output_frame.set_input_value([4])
+
+        result = card.process_structure(structure)[0]
+        moments = np.array(result.get_initial_magnetic_moments(), dtype=float)
+        self.assertEqual(moments.shape, (8, 3))
+        self.assertTrue(np.allclose(np.linalg.norm(moments, axis=1), 2.0, atol=1e-6))
+        self.assertTrue(np.allclose(moments[:, 2], 0.0, atol=1e-6))
+        self.assertTrue(np.allclose(moments[0], moments[1], atol=1e-6))
+        self.assertTrue(np.allclose(moments[2], moments[3], atol=1e-6))
+        self.assertTrue(np.allclose(moments[4], moments[5], atol=1e-6))
+        self.assertTrue(np.allclose(moments[6], moments[7], atol=1e-6))
+
+        e1, e2, _ = orthonormal_frame(np.array([0.0, 0.0, 1.0], dtype=float))
+        coeff_1 = moments @ e1 / 2.0
+        coeff_2 = moments @ e2 / 2.0
+        phase_deg = np.rad2deg(np.arctan2(coeff_2, coeff_1))
+        expected = np.array([0.0, 0.0, -30.0, -30.0, -60.0, -60.0, -30.0, -30.0], dtype=float)
+        wrapped = ((phase_deg - expected + 180.0) % 360.0) - 180.0
+        self.assertTrue(np.allclose(wrapped, 0.0, atol=1e-6))
+        self.assertIn("FoldedHelix(", str(result.info.get("Config_type", "")))
+
+    def test_folded_helix_card_auto_half_period_from_layer_count(self):
+        structure = self._spin_bilayer_chain()
+        structure.set_initial_magnetic_moments([2.0] * len(structure))
+
+        card = FoldedHelixCard()
+        card.layer_axis_frame.set_input_value([0.0, 0.0, 1.0])
+        card.plane_normal_frame.set_input_value([0.0, 0.0, 1.0])
+        card.layer_tol_frame.set_input_value([0.05])
+        card.half_period_mode_combo.setCurrentText("Auto from layer count")
+        card.angle_step_frame.set_input_value([30.0, 30.0, 15.0])
+        card.phase_frame.set_input_value([0.0, 0.0, 15.0])
+        card.sequence_combo.setCurrentText("Clockwise then counterclockwise")
+
+        result = card.process_structure(structure)[0]
+        moments = np.array(result.get_initial_magnetic_moments(), dtype=float)
+        e1, e2, _ = orthonormal_frame(np.array([0.0, 0.0, 1.0], dtype=float))
+        coeff_1 = moments @ e1 / 2.0
+        coeff_2 = moments @ e2 / 2.0
+        phase_deg = np.rad2deg(np.arctan2(coeff_2, coeff_1))
+        expected = np.array([0.0, 0.0, -30.0, -30.0, -30.0, -30.0, 0.0, 0.0], dtype=float)
+        wrapped = ((phase_deg - expected + 180.0) % 360.0) - 180.0
+        self.assertTrue(np.allclose(wrapped, 0.0, atol=1e-6))
+        self.assertTrue(np.allclose(moments[0], moments[-1], atol=1e-6))
+        self.assertFalse(card.half_period_frame.isEnabled())
+
+    def test_folded_helix_card_both_sequences_and_roundtrip(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([1.0, 2.0, 3.0, 4.0])
+
+        card = FoldedHelixCard()
+        card.layer_axis_frame.set_input_value([0.0, 0.0, 1.0])
+        card.plane_normal_frame.set_input_value([0.0, 0.0, 1.0])
+        card.half_period_mode_combo.setCurrentText("Manual")
+        card.half_period_frame.set_input_value([2, 2, 1])
+        card.angle_step_frame.set_input_value([45.0, 45.0, 15.0])
+        card.phase_frame.set_input_value([15.0, 15.0, 15.0])
+        card.sequence_combo.setCurrentText("Both")
+        card.apply_edit.setText("Fe")
+        card.max_output_frame.set_input_value([10])
+
+        results = card.process_structure(structure)
+        self.assertEqual(len(results), 2)
+        tags = [str(atoms.info.get("Config_type", "")) for atoms in results]
+        self.assertTrue(any("seq=cw-ccw" in tag for tag in tags))
+        self.assertTrue(any("seq=ccw-cw" in tag for tag in tags))
+        for atoms in results:
+            moments = np.array(atoms.get_initial_magnetic_moments(), dtype=float)
+            self.assertEqual(moments.shape, (4, 3))
+            self.assertTrue(np.allclose(np.linalg.norm(moments, axis=1), [1.0, 2.0, 3.0, 4.0], atol=1e-6))
+
+        data = card.to_dict()
+        restored = FoldedHelixCard()
+        restored.from_dict(data)
+        self.assertEqual(restored.half_period_mode_combo.currentText(), "Manual")
+        self.assertEqual(restored.sequence_combo.currentText(), "Both")
+        self.assertEqual(restored.half_period_frame.get_input_value(), [2, 2, 1])
+        self.assertEqual(restored.angle_step_frame.get_input_value(), [45.0, 45.0, 15.0])
+        self.assertEqual(restored.phase_frame.get_input_value(), [15.0, 15.0, 15.0])
+        self.assertEqual(restored.apply_edit.text(), "Fe")
+        self.assertFalse(restored.map_label.isVisible())
 
     def test_small_angle_spin_tilt_card_reference_and_explicit_index(self):
         structure = self._spin_chain()

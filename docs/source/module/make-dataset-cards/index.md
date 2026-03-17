@@ -18,6 +18,7 @@ cards/set-magnetic-moments-card
 cards/magmom-rotation-card
 cards/small-angle-spin-tilt-card
 cards/spin-spiral-card
+cards/folded-helix-card
 cards/cell-strain-card
 cards/cell-scaling-card
 cards/shear-matrix-card

@@ -238,7 +238,7 @@ class NepCalculator:
                 return potentials_array.tolist(), reshaped_forces, reshaped_virials, charges_list, becs_list
 
         potentials, forces, virials = outputs
-        potentials_arr = np.asarray(potentials, dtype=np.float32)
+        potentials_arr = np.asarray(potentials, dtype=np.float64)
         forces_arr = np.asarray(forces, dtype=np.float32)
         virials_arr = np.asarray(virials, dtype=np.float32)
         if potentials_arr.size == 0:

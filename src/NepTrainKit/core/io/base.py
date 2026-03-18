@@ -1636,6 +1636,26 @@ class ResultData(QObject):
         """Return the cached lattice angles (alpha, beta, gamma) for all structures."""
         return self._angles
 
+    def get_reference_per_atom_energy_array(self, use_active: bool = False) -> npt.NDArray[np.float64]:
+        """Return reference per-atom energies as a flat float64 array."""
+        dataset = getattr(self, "energy", None)
+        if dataset is None or getattr(dataset, "cols", 0) == 0:
+            return np.array([], dtype=np.float64)
+        data = dataset.now_data if use_active else dataset.all_data
+        if data.size == 0:
+            return np.array([], dtype=np.float64)
+        return np.asarray(data[:, dataset.x_cols], dtype=np.float64).reshape(-1)
+
+    def get_predicted_per_atom_energy_array(self, use_active: bool = False) -> npt.NDArray[np.float64]:
+        """Return predicted per-atom energies as a flat float64 array."""
+        dataset = getattr(self, "energy", None)
+        if dataset is None or getattr(dataset, "cols", 0) == 0:
+            return np.array([], dtype=np.float64)
+        data = dataset.now_data if use_active else dataset.all_data
+        if data.size == 0:
+            return np.array([], dtype=np.float64)
+        return np.asarray(data[:, dataset.y_cols], dtype=np.float64).reshape(-1)
+
     def is_select(self, i: int) -> bool:
         """Return ``True`` if the structure index is marked as selected."""
         return i in self.select_index
@@ -3522,6 +3542,8 @@ class ResultData(QObject):
                         value = float(value_text)
                     except Exception:
                         value = value_text
+                if new_tag in {"energy", "energy_original"} and isinstance(value, (float, int, np.number)):
+                    value = float(np.float64(value))
                 structure.additional_fields[new_tag] = value
 
             if rename_map:
@@ -3578,9 +3600,7 @@ class ResultData(QObject):
             ref_index = list(reference_indices)
 
         reference_structures = self.structure.all_data[ref_index] if ref_index else []
-        nep_energy_array = None
-        if hasattr(self, "energy"):
-            nep_energy_array = getattr(self.energy, "y", None)
+        nep_energy_array = self.get_predicted_per_atom_energy_array(use_active=True)
 
         for progress in shift_dataset_energy(
             structures=self.structure.now_data,

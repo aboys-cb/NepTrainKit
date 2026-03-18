@@ -84,12 +84,12 @@ class DeepmdResultData(ResultData):
         total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
         target_width = max(total_cols - dataset.cols, 0)
         if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float64)
         indices = result_data._normalize_structure_indices(structure_indices)
         if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float64)
         structures = [result_data.structure.all_data[i] for i in indices]
-        values = np.array([s.per_atom_energy for s in structures], dtype=np.float32).reshape(-1, target_width)
+        values = np.array([s.per_atom_energy for s in structures], dtype=np.float64).reshape(-1, target_width)
         return indices, values
 
     @staticmethod
@@ -201,7 +201,7 @@ class DeepmdResultData(ResultData):
         return selected_indices, stress_values.astype(np.float32, copy=False)
 
     STRUCTURE_SYNC_RULES = {
-        'energy': StructureSyncRule('energy', 'x_cols', _collect_energy_sync),
+        'energy': StructureSyncRule('energy', 'x_cols', _collect_energy_sync, dtype=np.float64),
         'force': StructureSyncRule('force', 'x_cols', _collect_force_sync),
         'virial': StructureSyncRule('virial', 'x_cols', _collect_virial_sync),
         'stress': StructureSyncRule('stress', 'x_cols', _collect_stress_sync),
@@ -355,7 +355,7 @@ class DeepmdResultData(ResultData):
             self.virial_out_path.exists()
         ])
         return   not output_files_exist
-    def _save_energy_data(self, potentials: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    def _save_energy_data(self, potentials: npt.NDArray[np.floating]) -> npt.NDArray[np.float64]:
         """Persist reference and predicted per-atom energies side by side.
 
         Parameters
@@ -369,14 +369,14 @@ class DeepmdResultData(ResultData):
             Two-column array containing reference and predicted per-atom energies.
         """
 
-        ref_energies = np.array([s.energy if s.has_energy else np.nan for s in self.structure.now_data], dtype=np.float32)
-        energy_array = concat_nep_dft_array(potentials, ref_energies, deepmd=True, quantity="energies")
+        ref_energies = np.array([s.energy if s.has_energy else np.nan for s in self.structure.now_data], dtype=np.float64)
+        energy_array = concat_nep_dft_array(np.asarray(potentials, dtype=np.float64), ref_energies, deepmd=True, quantity="energies")
 
 
         energy_array=energy_array/ self.atoms_num_list.reshape(-1, 1)
-        energy_array = energy_array.astype(np.float32)
+        energy_array = np.asarray(energy_array, dtype=np.float64)
         if energy_array.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
+            np.savetxt(self.energy_out_path, energy_array, fmt='%.17g')
         return energy_array
     def _save_force_data(self, forces: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
         """Persist reference and predicted forces for every atom.
@@ -426,7 +426,7 @@ class DeepmdResultData(ResultData):
         """
         try:
             nep_potentials_list, nep_forces_list, nep_virials_list = self.nep_calc.calculate(self.structure.now_data.tolist())
-            nep_potentials_array=np.array(nep_potentials_list)
+            nep_potentials_array=np.array(nep_potentials_list, dtype=np.float64)
             nep_forces_array=np.vstack(nep_forces_list)
             nep_virials_array=np.vstack(nep_virials_list)
             if nep_potentials_array.size == 0:

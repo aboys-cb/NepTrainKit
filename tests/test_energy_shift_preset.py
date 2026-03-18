@@ -98,3 +98,20 @@ def test_apply_energy_baseline_writes_energy_original_once():
     assert float(structure.additional_fields["energy_original"]) == 10.0
     assert float(structure.energy) != 10.0
     assert float(structure.energy) != energy_after_first_shift
+
+
+def test_apply_energy_baseline_preserves_high_precision_energy():
+    precise_energy = 10.123456789012346
+    structure = _make_structure("A/1", ["H", "O"], precise_energy)
+    preset = EnergyBaselinePreset(
+        alignment_mode="REF_GROUP",
+        elements=["H", "O"],
+        group_to_ref={"A/1": [0.123456789012345, 0.234567890123456]},
+        group_patterns=[],
+        config_to_group={"A/1": "A/1"},
+    )
+
+    apply_energy_baseline([structure], preset)
+
+    assert abs(float(structure.additional_fields["energy_original"]) - precise_energy) < 1e-15
+    assert abs(float(structure.energy) - (precise_energy - 0.358024679135801)) < 1e-15

@@ -137,9 +137,9 @@ class TestNepTrainResultData( unittest.TestCase):
 
         result.sync_structures(fields=None, structure_indices=[target_idx])
 
-        expected_energy = np.array([structure.per_atom_energy], dtype=np.float32)
+        expected_energy = np.array([structure.per_atom_energy], dtype=np.float64)
         synced_energy = result.energy.now_data[target_idx, result.energy.x_cols]
-        assert_allclose(synced_energy, expected_energy, atol=1e-6)
+        assert_allclose(synced_energy, expected_energy, atol=1e-12)
 
         force_rows = result.force.convert_index([target_idx])
         synced_force = result.force.now_data[force_rows, result.force.x_cols].reshape(-1, 3)
@@ -179,7 +179,7 @@ class TestNepTrainResultData( unittest.TestCase):
         result.sync_structures("energy")
         for idx, per_atom in zip(indices, expected):
             synced_energy = result.energy.now_data[idx, result.energy.x_cols]
-            assert_allclose(synced_energy, np.array([per_atom], dtype=np.float32), atol=1e-6)
+            assert_allclose(synced_energy, np.array([per_atom], dtype=np.float64), atol=1e-12)
 
     def test_sync_structures_respects_force_mode_norm(self):
         tmp_dir = self._make_nep_workdir()

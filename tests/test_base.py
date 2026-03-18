@@ -2,11 +2,13 @@
 # -*- coding: utf-8 -*-
 import os
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import pytest
 
 from NepTrainKit.core.io import NepPlotData, StructureData, ResultData
+from NepTrainKit.core.energy_shift import DFT_TO_NEP_ALIGNMENT
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.types import (
     SearchType,
@@ -17,7 +19,7 @@ from NepTrainKit.core.types import (
     DistributionSelectMode,
     DistributionCurveStyle,
 )
-from NepTrainKit.core.io.base import DistributionRequest
+from NepTrainKit.core.io.base import DistributionRequest, StructureSyncRule
 
 @pytest.fixture
 def test_setup():
@@ -142,6 +144,22 @@ def _make_structure_with_numeric_props(species: list[str], tag: str, base: float
 
 
 class _DummyResultData(ResultData):
+    def _collect_energy_sync(result_data: "_DummyResultData", dataset: NepPlotData, structure_indices):
+        total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
+        target_width = max(total_cols - dataset.cols, 0)
+        if target_width == 0:
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float64)
+        indices = result_data._normalize_structure_indices(structure_indices)
+        if indices.size == 0:
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float64)
+        structures = [result_data.structure.all_data[i] for i in indices]
+        values = np.array([s.per_atom_energy for s in structures], dtype=np.float64).reshape(-1, target_width)
+        return indices, values
+
+    STRUCTURE_SYNC_RULES = {
+        "energy": StructureSyncRule("energy", "x_cols", _collect_energy_sync, dtype=np.float64),
+    }
+
     def __init__(self, structures: list[Structure]):
         super().__init__(Path("nep.txt"), Path("train.xyz"), Path("descriptor.out"), calculator_factory=lambda _m: None)
         self._atoms_dataset = StructureData(structures)
@@ -149,9 +167,9 @@ class _DummyResultData(ResultData):
         self._abcs = np.array([s.abc for s in structures], dtype=np.float32)
         self._angles = np.array([s.angles for s in structures], dtype=np.float32)
 
-        ref_energy = np.array([float(s.per_atom_energy) for s in structures], dtype=np.float32).reshape(-1, 1)
+        ref_energy = np.array([float(s.per_atom_energy) for s in structures], dtype=np.float64).reshape(-1, 1)
         pred_energy = ref_energy + 0.05
-        energy_data = np.hstack([pred_energy, ref_energy]).astype(np.float32, copy=False)
+        energy_data = np.hstack([pred_energy, ref_energy]).astype(np.float64, copy=False)
         self._energy_dataset = NepPlotData(energy_data, title="energy")
 
         ref_force = np.vstack([np.asarray(s.forces, dtype=np.float32) for s in structures], dtype=np.float32)
@@ -258,10 +276,56 @@ def test_distribution_atomic_field_degrades_prediction_and_error_view():
     list(data.iter_distribution_analysis(req))
     analysis = data.get_distribution_analysis()
     assert analysis.get("messages")
-
     metric = next(m for m in analysis.get("metrics", []) if m.get("metric_key") == "atomic:spin_scalar|value")
     assert metric.get("value_view") == DistributionValueView.REFERENCE.value
     assert metric.get("available_views") == [DistributionValueView.REFERENCE.value]
+
+
+def test_iter_shift_energy_baseline_uses_float64_predicted_energy_array():
+    data = _build_dummy_result()
+
+    with patch("NepTrainKit.core.io.base.shift_dataset_energy", return_value=iter(())) as shift_mock:
+        list(
+            data.iter_shift_energy_baseline(
+                group_patterns=[],
+                alignment_mode=DFT_TO_NEP_ALIGNMENT,
+                max_generations=10,
+                population_size=8,
+                convergence_tol=1e-8,
+            )
+        )
+
+    nep_energy_array = shift_mock.call_args.kwargs["nep_energy_array"]
+    assert nep_energy_array.dtype == np.float64
+    np.testing.assert_allclose(
+        nep_energy_array,
+        data.get_predicted_per_atom_energy_array(use_active=True),
+        atol=0.0,
+    )
+
+
+def test_apply_dft_d3_correction_keeps_energy_float64():
+    data = _build_dummy_result()
+    original = np.array([structure.energy for structure in data.structure.now_data], dtype=np.float64)
+    potentials = [
+        np.float64("0.12345678901234566"),
+        np.float64("0.23456789012345677"),
+    ]
+    zero_forces = [np.zeros_like(structure.forces) for structure in data.structure.now_data]
+    zero_virials = [np.zeros(9, dtype=np.float32) for _ in data.structure.now_data]
+
+    with patch("NepTrainKit.core.io.base.NepCalculator") as calc_cls:
+        calc_cls.return_value.calculate_dftd3.return_value = (potentials, zero_forces, zero_virials)
+        data.apply_dft_d3_correction(mode=0, functional="pbe", cutoff=12.0, cutoff_cn=10.0)
+
+    shifted = np.array([structure.energy for structure in data.structure.now_data], dtype=np.float64)
+    np.testing.assert_allclose(shifted, original + np.asarray(potentials, dtype=np.float64), atol=1e-15)
+    assert data.energy.all_data.dtype == np.float64
+    np.testing.assert_allclose(
+        data.energy.all_data[:, data.energy.x_cols].reshape(-1),
+        np.array([structure.per_atom_energy for structure in data.structure.now_data], dtype=np.float64),
+        atol=1e-15,
+    )
 
 
 def test_distribution_bin_reverse_lookup_returns_unique_sorted_indices():

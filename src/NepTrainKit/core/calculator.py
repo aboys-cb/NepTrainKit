@@ -178,7 +178,7 @@ class NepCalculator:
     ):
         structure_list = self._ensure_structure_list(structures)
         if not self.initialized or not structure_list:
-            empty = np.array([], dtype=np.float32)
+            empty = np.array([], dtype=np.float64)
             if self.is_charge_model and return_charge:
                 return empty, [], [], [], []
             return empty, [], []
@@ -195,7 +195,7 @@ class NepCalculator:
         except Exception as exc:
             logger.error(exc)
             MessageManager.send_warning_message(str(exc))
-            empty = np.array([], dtype=np.float32)
+            empty = np.array([], dtype=np.float64)
             if self.is_charge_model and return_charge:
                 return empty, [], [], [], []
             return empty, [], []
@@ -204,11 +204,11 @@ class NepCalculator:
             potentials, forces, virials, charges, becs = outputs
             pot_arr = np.asarray(potentials)
             if pot_arr.dtype != object:
-                pot_arr = pot_arr.astype(np.float32, copy=False)
-                forces_arr = np.asarray(forces, dtype=np.float32)
-                virials_arr = np.asarray(virials, dtype=np.float32)
-                charges_arr = np.asarray(charges, dtype=np.float32)
-                becs_arr = np.asarray(becs, dtype=np.float32)
+                pot_arr = pot_arr.astype(np.float64, copy=False)
+                forces_arr = np.asarray(forces, dtype=np.float64)
+                virials_arr = np.asarray(virials, dtype=np.float64)
+                charges_arr = np.asarray(charges, dtype=np.float64)
+                becs_arr = np.asarray(becs, dtype=np.float64)
                 if forces_arr.ndim == 1:
                     forces_arr = forces_arr.reshape(-1, 3)
                 if virials_arr.ndim == 1:
@@ -226,21 +226,21 @@ class NepCalculator:
                     return potentials_array, force_blocks, virial_blocks
                 return potentials_array, force_blocks, virial_blocks, charge_blocks, bec_blocks
             else:
-                potentials = np.hstack(potentials) if len(potentials) else np.array([])
+                potentials = np.hstack(potentials) if len(potentials) else np.array([], dtype=np.float64)
                 potentials_array = aggregate_per_atom_to_structure(potentials, group_sizes, map_func=np.sum, axis=None)
-                reshaped_forces = [np.array(force).reshape(3, -1).T for force in forces]
-                reshaped_virials = [np.array(virial).reshape(9, -1).mean(axis=1) for virial in virials]
+                reshaped_forces = [np.asarray(force, dtype=np.float64).reshape(3, -1).T for force in forces]
+                reshaped_virials = [np.asarray(virial, dtype=np.float64).reshape(9, -1).mean(axis=1) for virial in virials]
                 if not return_charge:
                     return potentials_array.tolist(), reshaped_forces, reshaped_virials
 
-                charges_list = [np.asarray(charge, dtype=np.float32).reshape(-1) for charge in (charges or [])]
-                becs_list = [np.asarray(bec, dtype=np.float32).reshape(9, -1).T for bec in (becs or [])]
+                charges_list = [np.asarray(charge, dtype=np.float64).reshape(-1) for charge in (charges or [])]
+                becs_list = [np.asarray(bec, dtype=np.float64).reshape(9, -1).T for bec in (becs or [])]
                 return potentials_array.tolist(), reshaped_forces, reshaped_virials, charges_list, becs_list
 
         potentials, forces, virials = outputs
         potentials_arr = np.asarray(potentials, dtype=np.float64)
-        forces_arr = np.asarray(forces, dtype=np.float32)
-        virials_arr = np.asarray(virials, dtype=np.float32)
+        forces_arr = np.asarray(forces, dtype=np.float64)
+        virials_arr = np.asarray(virials, dtype=np.float64)
         if potentials_arr.size == 0:
             return [], [], []
         if forces_arr.ndim == 1:
@@ -279,9 +279,9 @@ class NepCalculator:
                 boxes,
                 positions,
             )
-        potentials_arr = np.asarray(potentials, dtype=np.float32)
-        forces_arr = np.asarray(forces, dtype=np.float32)
-        virials_arr = np.asarray(virials, dtype=np.float32)
+        potentials_arr = np.asarray(potentials, dtype=np.float64)
+        forces_arr = np.asarray(forces, dtype=np.float64)
+        virials_arr = np.asarray(virials, dtype=np.float64)
         if forces_arr.ndim == 1:
             forces_arr = forces_arr.reshape(-1, 3)
         if virials_arr.ndim == 1:
@@ -318,9 +318,9 @@ class NepCalculator:
                 positions,
             )
 
-        potentials_arr = np.asarray(potentials, dtype=np.float32)
-        forces_arr = np.asarray(forces, dtype=np.float32)
-        virials_arr = np.asarray(virials, dtype=np.float32)
+        potentials_arr = np.asarray(potentials, dtype=np.float64)
+        forces_arr = np.asarray(forces, dtype=np.float64)
+        virials_arr = np.asarray(virials, dtype=np.float64)
         if forces_arr.ndim == 1:
             forces_arr = forces_arr.reshape(-1, 3)
         if virials_arr.ndim == 1:
@@ -362,7 +362,7 @@ class NepCalculator:
     def get_structures_polarizability(
         self,
         structures: list[Structure],
-    ) -> npt.NDArray[np.float32]:
+    ) -> npt.NDArray[np.float64]:
         if not self.initialized:
             return np.array([])
         types, boxes, positions, _ = self.compose_structures(structures)
@@ -370,12 +370,12 @@ class NepCalculator:
 
         with self._native_stdio_ctx():
             polarizability = self.nep3.get_structures_polarizability(types, boxes, positions)
-        return np.array(polarizability, dtype=np.float32)
+        return np.array(polarizability, dtype=np.float64)
 
     def get_structures_dipole(
         self,
         structures: list[Structure],
-    ) -> npt.NDArray[np.float32]:
+    ) -> npt.NDArray[np.float64]:
         if not self.initialized:
             return np.array([])
         self.nep3.reset_cancel()
@@ -383,7 +383,7 @@ class NepCalculator:
         types, boxes, positions, _ = self.compose_structures(structures)
         with self._native_stdio_ctx():
             dipole = self.nep3.get_structures_dipole(types, boxes, positions)
-        return np.array(dipole, dtype=np.float32)
+        return np.array(dipole, dtype=np.float64)
 
     def calculate_to_ase(
             self,

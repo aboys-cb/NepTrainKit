@@ -18,6 +18,7 @@ os.environ["LOCALAPPDATA"] = str(Path(__file__).resolve().parent / "_localappdat
 
 from NepTrainKit.core.io import NepTrainResultData,NepPolarizabilityResultData,NepDipoleResultData
 from NepTrainKit.core.energy_shift import EnergyBaselinePreset
+from NepTrainKit.core.precision import get_storage_float_dtype
 from numpy.testing import assert_allclose
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.types import ForcesMode
@@ -29,6 +30,7 @@ import NepTrainKit.ui.pages.show_nep as show_nep_module
 
 Config()
 Config.set("nep", "backend","cpu")
+Config.set("nep", "data_precision", "float32")
 
 class TestNepTrainResultData( unittest.TestCase):
     def setUp(self):
@@ -137,7 +139,7 @@ class TestNepTrainResultData( unittest.TestCase):
 
         result.sync_structures(fields=None, structure_indices=[target_idx])
 
-        expected_energy = np.array([structure.per_atom_energy], dtype=np.float64)
+        expected_energy = np.array([structure.per_atom_energy], dtype=get_storage_float_dtype())
         synced_energy = result.energy.now_data[target_idx, result.energy.x_cols]
         assert_allclose(synced_energy, expected_energy, atol=1e-12)
 
@@ -146,7 +148,7 @@ class TestNepTrainResultData( unittest.TestCase):
         assert_allclose(synced_force, new_forces, atol=1e-6)
 
         virial_rows = result.virial.convert_index([target_idx])
-        expected_virial = structure.nep_virial.astype(np.float32)
+        expected_virial = structure.nep_virial.astype(get_storage_float_dtype(), copy=False)
         assert_allclose(
             result.virial.now_data[virial_rows, result.virial.x_cols],
             expected_virial.reshape(1, -1),
@@ -156,7 +158,7 @@ class TestNepTrainResultData( unittest.TestCase):
         stress_rows = result.stress.convert_index([target_idx])
         atoms = result.atoms_num_list[target_idx]
         coeff = atoms / structure.volume
-        expected_stress = (expected_virial * coeff * 160.21766208).astype(np.float32)
+        expected_stress = (expected_virial * coeff * 160.21766208).astype(get_storage_float_dtype(), copy=False)
         assert_allclose(
             result.stress.now_data[stress_rows, result.stress.x_cols],
             expected_stress.reshape(1, -1),
@@ -179,7 +181,7 @@ class TestNepTrainResultData( unittest.TestCase):
         result.sync_structures("energy")
         for idx, per_atom in zip(indices, expected):
             synced_energy = result.energy.now_data[idx, result.energy.x_cols]
-            assert_allclose(synced_energy, np.array([per_atom], dtype=np.float64), atol=1e-12)
+            assert_allclose(synced_energy, np.array([per_atom], dtype=get_storage_float_dtype()), atol=1e-12)
 
     def test_sync_structures_respects_force_mode_norm(self):
         tmp_dir = self._make_nep_workdir()
@@ -200,7 +202,7 @@ class TestNepTrainResultData( unittest.TestCase):
         index=result.force.convert_index(target_idx)
         synced_force = result.force.now_data[index, result.force.x_cols]
 
-        expected_norm = np.linalg.norm(new_forces, axis=0, keepdims=True).astype(np.float32)
+        expected_norm = np.linalg.norm(new_forces, axis=0, keepdims=True).astype(get_storage_float_dtype(), copy=False)
         assert_allclose(synced_force, expected_norm, atol=1e-6)
 
     def test_sync_structures_respects_force_mode_raw(self):

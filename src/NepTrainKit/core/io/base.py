@@ -27,6 +27,7 @@ import numpy.typing as npt
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
+from NepTrainKit.core.precision import get_storage_float_dtype
 from NepTrainKit.core.structure import Structure, atomic_numbers, get_type_map, save_npy_structure
 from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
 
@@ -755,9 +756,9 @@ class StructureSyncRule:
     """Declarative instruction that synchronises structure attributes into datasets."""
     dataset_attr: str
     target: str | slice | Callable[[Any], Any]
-    collector: Callable[["ResultData", Any, Optional[np.ndarray]], tuple[np.ndarray, npt.NDArray[np.float32]]]
+    collector: Callable[["ResultData", Any, Optional[np.ndarray]], tuple[np.ndarray, npt.NDArray[Any]]]
     precondition: Callable[["ResultData"], bool] = lambda _: True
-    dtype: Any = np.float32
+    dtype: Any = None
     def _resolve_target(self, dataset: Any) -> Any:
         """Return the concrete column selector for ``dataset``."""
         if callable(self.target):
@@ -778,7 +779,7 @@ class StructureSyncRule:
         row_idx = np.asarray(row_idx, dtype=np.int64)
         if row_idx.size == 0:
             return
-        values = np.asarray(values, dtype=self.dtype)
+        values = np.asarray(values, dtype=self.dtype or get_storage_float_dtype())
         if values.size == 0:
             return
         target = self._resolve_target(dataset)

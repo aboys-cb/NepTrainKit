@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Iterable, Protocol, List
 from loguru import logger
 from NepTrainKit.paths import PathLike, as_path
+from NepTrainKit.core.precision import get_storage_float_dtype
 from NepTrainKit.core.structure import Structure, atomic_numbers
 import numpy as np
 class FormatImporter(Protocol):
@@ -180,7 +181,7 @@ class XdatcarImporter:
                     latt.append(vec)
                 if not ok:
                     break
-                lattice = (scale * np.array(latt, dtype=np.float64)).reshape(3, 3)
+                lattice = (scale * np.array(latt, dtype=get_storage_float_dtype())).reshape(3, 3)
                 # Species line or counts line
                 line = f.readline()
                 if not line:
@@ -215,7 +216,7 @@ class XdatcarImporter:
                 mode_l = mode_line.strip().lower()
                 use_direct = ("direct" in mode_l)
                 # Read n_atoms coordinate lines
-                coords = np.zeros((n_atoms, 3), dtype=np.float64)
+                coords = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype())
                 read_ok = True
                 for i in range(n_atoms):
                     if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
@@ -246,7 +247,7 @@ class XdatcarImporter:
                 if use_direct:
                     positions = coords @ lattice
                 else:
-                    positions = coords.astype(np.float64)
+                    positions = coords.astype(get_storage_float_dtype(), copy=False)
                 properties = [
                     {"name": "species", "type": "S", "count": 1},
                     {"name": "pos", "type": "R", "count": 3},
@@ -372,7 +373,7 @@ class OutcarImporter:
                         c = parse_floats(next(f))
                         latest_lattice = np.array([[a[0], a[1], a[2]],
                                                    [b[0], b[1], b[2]],
-                                                   [c[0], c[1], c[2]]], dtype=np.float64)
+                                                   [c[0], c[1], c[2]]], dtype=get_storage_float_dtype())
                         pending_lattice = latest_lattice.copy()
                     except Exception:
                         latest_lattice = latest_lattice
@@ -392,7 +393,7 @@ class OutcarImporter:
                         if len(a1) >= 3 and len(a2) >= 3 and len(a3) >= 3:
                             M = np.array([[a1[0], a1[1], a1[2]],
                                           [a2[0], a2[1], a2[2]],
-                                          [a3[0], a3[1], a3[2]]], dtype=np.float64)
+                                          [a3[0], a3[1], a3[2]]], dtype=get_storage_float_dtype())
                             pending_virial = M.reshape(-1)
                         else:
                             f.seek(pos)
@@ -425,7 +426,7 @@ class OutcarImporter:
                         # [[sxx, sxy, sxz], [syx, syy, syz], [szx, szy, szz]]
                         stress = np.array([[xx, xy, xz],
                                            [xy, yy, yz],
-                                           [xz, yz, zz]], dtype=np.float64)
+                                           [xz, yz, zz]], dtype=get_storage_float_dtype())
                         # assign to next POSITION block (we track ML/DFT via last_force_is_ml)
                         pending_stress = stress.reshape(-1)
                     continue
@@ -471,7 +472,7 @@ class OutcarImporter:
                     if pending_lattice is not None:
                         use_lattice = pending_lattice
                     else:
-                        use_lattice = latest_lattice if latest_lattice is not None else np.eye(3, dtype=np.float64)
+                        use_lattice = latest_lattice if latest_lattice is not None else np.eye(3, dtype=get_storage_float_dtype())
                     # consume pending tensors (align to current block kind)
                     stress_next = pending_stress
                     virial_next = pending_virial
@@ -484,8 +485,8 @@ class OutcarImporter:
                     ]
                     atom_props = {
                         "species": species,
-                        "pos": np.array(positions, dtype=np.float64),
-                        "forces": np.array(forces, dtype=np.float64),
+                        "pos": np.array(positions, dtype=get_storage_float_dtype()),
+                        "forces": np.array(forces, dtype=get_storage_float_dtype()),
                     }
                     fields = {
                         "Config_type": "OUTCAR",
@@ -510,24 +511,24 @@ class OutcarImporter:
             if "virial" in fr or "stress" in fr:
                 if "virial" in fr:
                     v = fr["virial"].reshape(3, 3)
-                    virial9 = np.array([v[0,0], v[0,1], v[0,2], v[1,0], v[1,1], v[1,2], v[2,0], v[2,1], v[2,2]], dtype=np.float64)
+                    virial9 = np.array([v[0,0], v[0,1], v[0,2], v[1,0], v[1,1], v[1,2], v[2,0], v[2,1], v[2,2]], dtype=get_storage_float_dtype())
                     add["virial"] = virial9
                     # derive stress from virial
                     try:
                         vol = float(np.abs(np.linalg.det(fr["lattice"])) )
                         s = (-v / vol)
-                        stress9 = np.array([s[0,0], s[0,1], s[0,2], s[1,0], s[1,1], s[1,2], s[2,0], s[2,1], s[2,2]], dtype=np.float64)
+                        stress9 = np.array([s[0,0], s[0,1], s[0,2], s[1,0], s[1,1], s[1,2], s[2,0], s[2,1], s[2,2]], dtype=get_storage_float_dtype())
                         add["stress"] = stress9
                     except Exception:
                         pass
                 else:
                     s = fr["stress"].reshape(3, 3)
-                    stress9 = np.array([s[0,0], s[0,1], s[0,2], s[1,0], s[1,1], s[1,2], s[2,0], s[2,1], s[2,2]], dtype=np.float64)
+                    stress9 = np.array([s[0,0], s[0,1], s[0,2], s[1,0], s[1,1], s[1,2], s[2,0], s[2,1], s[2,2]], dtype=get_storage_float_dtype())
                     add["stress"] = stress9
                     try:
                         vol = float(np.abs(np.linalg.det(fr["lattice"])) )
                         v = (-s * vol)
-                        virial9 = np.array([v[0,0], v[0,1], v[0,2], v[1,0], v[1,1], v[1,2], v[2,0], v[2,1], v[2,2]], dtype=np.float64)
+                        virial9 = np.array([v[0,0], v[0,1], v[0,2], v[1,0], v[1,1], v[1,2], v[2,0], v[2,1], v[2,2]], dtype=get_storage_float_dtype())
                         add["virial"] = virial9
                     except Exception:
                         pass
@@ -641,9 +642,9 @@ class LammpsDumpImporter:
                 lx = float(xhi - xlo)
                 ly = float(yhi - ylo)
                 lz = float(zhi - zlo)
-                a = np.array([lx, 0.0, 0.0], dtype=np.float64)
-                b = np.array([xy, ly, 0.0], dtype=np.float64)
-                c = np.array([xz, yz, lz], dtype=np.float64)
+                a = np.array([lx, 0.0, 0.0], dtype=get_storage_float_dtype())
+                b = np.array([xy, ly, 0.0], dtype=get_storage_float_dtype())
+                c = np.array([xz, yz, lz], dtype=get_storage_float_dtype())
                 lattice = np.vstack([a, b, c]).reshape(3, 3)
                 # ATOMS header
                 atoms_hdr = f.readline()
@@ -656,8 +657,8 @@ class LammpsDumpImporter:
                 has_unwrapped = all(k in idx for k in ("xu", "yu", "zu"))
                 has_forces = all(k in idx for k in ("fx", "fy", "fz"))
                 species_col = "element" if "element" in idx else ("type" if "type" in idx else None)
-                positions = np.zeros((n_atoms, 3), dtype=np.float64)
-                forces = np.zeros((n_atoms, 3), dtype=np.float64) if has_forces else None
+                positions = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype())
+                forces = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype()) if has_forces else None
                 species_list: list[str] = []
                 types_buffer = np.zeros((n_atoms,), dtype=np.int32) if species_col == "type" else None
                 for i in range(n_atoms):
@@ -926,15 +927,15 @@ class Cp2kOutputImporter:
                         if len(vx) >= 3 and len(vy) >= 3 and len(vz) >= 3:
                             stress_gpa = np.array([[vx[-3], vx[-2], vx[-1]],
                                                    [vy[-3], vy[-2], vy[-1]],
-                                                   [vz[-3], vz[-2], vz[-1]]], dtype=np.float64)
+                                                   [vz[-3], vz[-2], vz[-1]]], dtype=get_storage_float_dtype())
                     except Exception:
                         pass
                     continue
         # Assemble lattice
         if a_vec is None or b_vec is None or c_vec is None:
-            lattice = np.eye(3, dtype=np.float64)
+            lattice = np.eye(3, dtype=get_storage_float_dtype())
         else:
-            lattice = np.array([a_vec, b_vec, c_vec], dtype=np.float64)
+            lattice = np.array([a_vec, b_vec, c_vec], dtype=get_storage_float_dtype())
         # Compose atomic data
         properties = [
             {"name": "species", "type": "S", "count": 1},
@@ -942,11 +943,11 @@ class Cp2kOutputImporter:
         ]
         atomic_properties: dict[str, np.ndarray] = {
             "species": np.array(species, dtype=np.str_),
-            "pos": np.array(positions, dtype=np.float64),
+            "pos": np.array(positions, dtype=get_storage_float_dtype()),
         }
         if forces and len(forces) == len(positions):
             properties.append({"name": "forces", "type": "R", "count": 3})
-            atomic_properties["forces"] = np.array(forces, dtype=np.float64)
+            atomic_properties["forces"] = np.array(forces, dtype=get_storage_float_dtype())
         additional_fields: dict[str, object] = {
             "Config_type": "CP2K_1",
             "pbc": "T T T",
@@ -954,10 +955,10 @@ class Cp2kOutputImporter:
         if energy_ev is not None:
             additional_fields["energy"] = float(energy_ev)
         if stress_gpa is not None:
-            s = (stress_gpa * GPA_TO_EV_PER_ANG3).astype(np.float64)
+            s = (stress_gpa * GPA_TO_EV_PER_ANG3).astype(get_storage_float_dtype(), copy=False)
             stress9 = np.array([s[0, 0], s[0, 1], s[0, 2],
                                 s[1, 0], s[1, 1], s[1, 2],
-                                s[2, 0], s[2, 1], s[2, 2]], dtype=np.float64)
+                                s[2, 0], s[2, 1], s[2, 2]], dtype=get_storage_float_dtype())
             additional_fields["stress"] = stress9
         if len(positions) > 0:
             yield Structure(lattice=lattice,
@@ -1025,10 +1026,10 @@ class N2p2CfgImporter:
                 return
             # lattice
             if lattice_vecs and len(lattice_vecs) == 3:
-                lattice = (np.array(lattice_vecs, dtype=np.float64) * float(length_to_ang)).reshape(3, 3)
+                lattice = (np.array(lattice_vecs, dtype=get_storage_float_dtype()) * float(length_to_ang)).reshape(3, 3)
                 pbc_txt = "T T T"
             else:
-                lattice = np.eye(3, dtype=np.float64)
+                lattice = np.eye(3, dtype=get_storage_float_dtype())
                 pbc_txt = "F F F"
             props = [
                 {"name": "species", "type": "S", "count": 1},
@@ -1036,11 +1037,11 @@ class N2p2CfgImporter:
             ]
             atom_props: dict[str, np.ndarray] = {
                 "species": np.array(species, dtype=np.str_),
-                "pos": (np.array(positions, dtype=np.float64) * float(length_to_ang)),
+                "pos": (np.array(positions, dtype=get_storage_float_dtype()) * float(length_to_ang)),
             }
             if forces is not None and len(forces) == len(positions):
                 props.append({"name": "forces", "type": "R", "count": 3})
-                atom_props["forces"] = (np.array(forces, dtype=np.float64) * float(force_to_ev_per_ang))
+                atom_props["forces"] = (np.array(forces, dtype=get_storage_float_dtype()) * float(force_to_ev_per_ang))
             add = {
                 "Config_type": (comment_txt or f"N2P2_CFG_{block_idx}"),
                 "pbc": pbc_txt,
@@ -1171,16 +1172,16 @@ class AseTrajectoryImporter:
             # Lattice/cell
             cell = getattr(atoms, 'cell', None)
             if cell is None:
-                lattice = np.eye(3, dtype=np.float64)
+                lattice = np.eye(3, dtype=get_storage_float_dtype())
             else:
-                arr = np.array(cell.array if hasattr(cell, 'array') else cell, dtype=np.float64)
+                arr = np.array(cell.array if hasattr(cell, 'array') else cell, dtype=get_storage_float_dtype())
                 if arr.size != 9:
-                    lattice = np.eye(3, dtype=np.float64)
+                    lattice = np.eye(3, dtype=get_storage_float_dtype())
                 else:
                     lattice = arr.reshape(3, 3)
             # Species and positions
             symbols = np.array(atoms.get_chemical_symbols(), dtype=np.str_)
-            positions = np.array(atoms.get_positions(), dtype=np.float64)
+            positions = np.array(atoms.get_positions(), dtype=get_storage_float_dtype())
             properties = [
                 {"name": "species", "type": "S", "count": 1},
                 {"name": "pos", "type": "R", "count": 3},
@@ -1209,9 +1210,9 @@ class AseTrajectoryImporter:
             try:
                 if hasattr(atoms, 'arrays') and isinstance(atoms.arrays, dict):
                     if 'forces' in atoms.arrays:
-                        forces = np.array(atoms.arrays['forces'], dtype=np.float64)
+                        forces = np.array(atoms.arrays['forces'], dtype=get_storage_float_dtype())
                 if "forces" in calc_result:
-                    forces = np.array(calc_result['forces'], dtype=np.float64)
+                    forces = np.array(calc_result['forces'], dtype=get_storage_float_dtype())
             except Exception:
                 forces = None
             if isinstance(forces, np.ndarray) and forces.shape == positions.shape:
@@ -1220,16 +1221,16 @@ class AseTrajectoryImporter:
             # Optional stress/virial if present in info with common keys
             try:
                 if 'stress' in calc_result:
-                    s = np.array(calc_result['stress'], dtype=np.float64)
+                    s = np.array(calc_result['stress'], dtype=get_storage_float_dtype())
                     if s.size == 9:
                         add['stress'] = s.reshape(3, 3).reshape(-1)
                     elif s.size == 6:
                         # voigt -> symmetric
                         sxx, syy, szz, syz, sxz, sxy = s.tolist()
-                        S = np.array([[sxx, sxy, sxz], [sxy, syy, syz], [sxz, syz, szz]], dtype=np.float64)
+                        S = np.array([[sxx, sxy, sxz], [sxy, syy, syz], [sxz, syz, szz]], dtype=get_storage_float_dtype())
                         add['stress'] = S.reshape(-1)
                 if 'virial' in info:
-                    v = np.array(info['virial'], dtype=np.float64)
+                    v = np.array(info['virial'], dtype=get_storage_float_dtype())
                     if v.size == 9:
                         add['virial'] = v.reshape(-1)
             except Exception:

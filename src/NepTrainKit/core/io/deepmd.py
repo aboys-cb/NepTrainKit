@@ -3,11 +3,13 @@
 """Utilities for interacting with DeepMD-generated datasets."""
 import traceback
 from pathlib import Path
+from typing import Any
 import numpy as np
 import numpy.typing as npt
 from loguru import logger
 from .base import StructureData, ResultData, DPPlotData, StructureSyncRule, NepPlotData
 from NepTrainKit.core.structure import Structure, load_npy_structure,save_npy_structure
+from NepTrainKit.core.precision import get_storage_float_dtype
 from NepTrainKit.paths import PathLike, as_path, get_bundled_nep89_path
 from NepTrainKit.core.utils import aggregate_per_atom_to_structure, read_nep_out_file, concat_nep_dft_array
 from NepTrainKit.core.types import ForcesMode, parse_forces_mode
@@ -83,13 +85,14 @@ class DeepmdResultData(ResultData):
         """
         total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
         target_width = max(total_cols - dataset.cols, 0)
+        storage_dtype = get_storage_float_dtype()
         if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float64)
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=storage_dtype)
         indices = result_data._normalize_structure_indices(structure_indices)
         if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float64)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
         structures = [result_data.structure.all_data[i] for i in indices]
-        values = np.array([s.per_atom_energy for s in structures], dtype=np.float64).reshape(-1, target_width)
+        values = np.array([s.per_atom_energy for s in structures], dtype=storage_dtype).reshape(-1, target_width)
         return indices, values
 
     @staticmethod
@@ -112,20 +115,21 @@ class DeepmdResultData(ResultData):
         """
         total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
         target_width = max(total_cols - dataset.cols, 0)
+        storage_dtype = get_storage_float_dtype()
         if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=storage_dtype)
         indices = result_data._normalize_structure_indices(structure_indices)
         if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
         group_vals = dataset.group_array.all_data
         per_atom = bool(group_vals.size and np.unique(group_vals).size != group_vals.size)
         structures = [result_data.structure.all_data[i] for i in indices]
         if per_atom:
             row_idx = dataset.convert_index(indices)
-            values = np.vstack([s.forces for s in structures]).astype(np.float32, copy=False)
+            values = np.vstack([s.forces for s in structures]).astype(storage_dtype, copy=False)
         else:
             row_idx = indices
-            values = np.array([np.linalg.norm(s.forces, axis=0) for s in structures], dtype=np.float32)
+            values = np.array([np.linalg.norm(s.forces, axis=0) for s in structures], dtype=storage_dtype)
         return row_idx, values
 
     @staticmethod
@@ -148,17 +152,18 @@ class DeepmdResultData(ResultData):
         """
         total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
         target_width = max(total_cols - dataset.cols, 0)
+        storage_dtype = get_storage_float_dtype()
         if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=storage_dtype)
         indices = result_data._normalize_structure_indices(structure_indices)
         if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
         structures = [result_data.structure.all_data[i] for i in indices]
         mask = np.array([s.has_virial for s in structures], dtype=bool)
         if not mask.any():
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
         selected_indices = indices[mask]
-        values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(np.float32,
+        values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(storage_dtype,
                                                                                                      copy=False)
         return selected_indices, values
 
@@ -182,26 +187,27 @@ class DeepmdResultData(ResultData):
         """
         total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
         target_width = max(total_cols - dataset.cols, 0)
+        storage_dtype = get_storage_float_dtype()
         if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=storage_dtype)
         indices = result_data._normalize_structure_indices(structure_indices)
         if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
         structures = [result_data.structure.all_data[i] for i in indices]
         mask = np.array([s.has_virial for s in structures], dtype=bool)
         if not mask.any():
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
         selected_indices = indices[mask]
-        virial_values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(np.float32,
+        virial_values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(storage_dtype,
                                                                                                             copy=False)
-        atoms = result_data.atoms_num_list[selected_indices].astype(np.float32)
-        volumes = np.array([structures[i].volume for i, flag in enumerate(mask) if flag], dtype=np.float32)
-        coeff = np.divide(atoms, volumes, out=np.zeros_like(atoms, dtype=np.float32), where=volumes != 0)[:, np.newaxis]
+        atoms = result_data.atoms_num_list[selected_indices].astype(storage_dtype)
+        volumes = np.array([structures[i].volume for i, flag in enumerate(mask) if flag], dtype=storage_dtype)
+        coeff = np.divide(atoms, volumes, out=np.zeros_like(atoms, dtype=storage_dtype), where=volumes != 0)[:, np.newaxis]
         stress_values = virial_values * coeff * 160.21766208
-        return selected_indices, stress_values.astype(np.float32, copy=False)
+        return selected_indices, stress_values.astype(storage_dtype, copy=False)
 
     STRUCTURE_SYNC_RULES = {
-        'energy': StructureSyncRule('energy', 'x_cols', _collect_energy_sync, dtype=np.float64),
+        'energy': StructureSyncRule('energy', 'x_cols', _collect_energy_sync),
         'force': StructureSyncRule('force', 'x_cols', _collect_force_sync),
         'virial': StructureSyncRule('virial', 'x_cols', _collect_virial_sync),
         'stress': StructureSyncRule('stress', 'x_cols', _collect_stress_sync),
@@ -314,9 +320,10 @@ class DeepmdResultData(ResultData):
         if self._should_recalculate( ):
             energy_array, force_array, virial_array = self._recalculate_and_save( )
         else:
-            energy_array=read_nep_out_file(self.energy_out_path,ndmin=2)
-            force_array=read_nep_out_file(self.force_out_path,ndmin=2)
-            virial_array=read_nep_out_file(self.virial_out_path,ndmin=2)
+            storage_dtype = get_storage_float_dtype()
+            energy_array = read_nep_out_file(self.energy_out_path, dtype=storage_dtype, ndmin=2)
+            force_array = read_nep_out_file(self.force_out_path, dtype=storage_dtype, ndmin=2)
+            virial_array = read_nep_out_file(self.virial_out_path, dtype=storage_dtype, ndmin=2)
             if energy_array.shape[0]!=self.atoms_num_list.shape[0]:
                 if self.cache_outputs_enabled():
                     self.energy_out_path.unlink(True)
@@ -334,7 +341,7 @@ class DeepmdResultData(ResultData):
         else:
             self._force_dataset = DPPlotData(force_array, group_list=self.atoms_num_list, title="force")
         if self.spin_out_path is not None:
-            spin_array=read_nep_out_file(self.spin_out_path,ndmin=2)
+            spin_array = read_nep_out_file(self.spin_out_path, dtype=get_storage_float_dtype(), ndmin=2)
             group_list=[s.spin_num for s in self.structure.now_data]
             if (np.sum(group_list))!=0:
                 self._spin_dataset = DPPlotData(spin_array,  group_list=group_list, title="spin")
@@ -355,7 +362,7 @@ class DeepmdResultData(ResultData):
             self.virial_out_path.exists()
         ])
         return   not output_files_exist
-    def _save_energy_data(self, potentials: npt.NDArray[np.floating]) -> npt.NDArray[np.float64]:
+    def _save_energy_data(self, potentials: npt.NDArray[np.floating]) -> npt.NDArray[Any]:
         """Persist reference and predicted per-atom energies side by side.
 
         Parameters
@@ -374,11 +381,11 @@ class DeepmdResultData(ResultData):
 
 
         energy_array=energy_array/ self.atoms_num_list.reshape(-1, 1)
-        energy_array = np.asarray(energy_array, dtype=np.float64)
+        energy_array = np.asarray(energy_array, dtype=get_storage_float_dtype())
         if energy_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.energy_out_path, energy_array, fmt='%.17g')
         return energy_array
-    def _save_force_data(self, forces: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    def _save_force_data(self, forces: npt.NDArray[np.floating]) -> npt.NDArray[Any]:
         """Persist reference and predicted forces for every atom.
 
         Parameters
@@ -391,13 +398,17 @@ class DeepmdResultData(ResultData):
         numpy.ndarray
             Two-column array storing reference and predicted forces.
         """
-        ref_forces = np.vstack([s.forces if s.has_forces else np.full((len(s),3 ), np.nan) for s in self.structure.now_data], dtype=np.float32)
+        ref_forces = np.vstack([
+            s.forces if s.has_forces else np.full((len(s), 3), np.nan, dtype=np.float64)
+            for s in self.structure.now_data
+        ], dtype=np.float64)
 
-        forces_array = concat_nep_dft_array(forces, ref_forces, deepmd=True, quantity="forces")
+        forces_array = concat_nep_dft_array(np.asarray(forces, dtype=np.float64), ref_forces, deepmd=True, quantity="forces")
+        forces_array = np.asarray(forces_array, dtype=get_storage_float_dtype())
         if forces_array.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
+            np.savetxt(self.force_out_path, forces_array, fmt='%.17g')
         return forces_array
-    def _save_virial_and_data(self, virials: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    def _save_virial_and_data(self, virials: npt.NDArray[np.floating]) -> npt.NDArray[Any]:
         """Persist reference and predicted virial or stress tensors.
 
         Parameters
@@ -410,11 +421,15 @@ class DeepmdResultData(ResultData):
         numpy.ndarray
             Two-column array with reference and predicted virial components.
         """
-        ref_virials = np.vstack([s.nep_virial if s.has_virial else [np.nan]*6 for s in self.structure.now_data ], dtype=np.float32)
-        virials_array = concat_nep_dft_array(virials, ref_virials, deepmd=True, quantity="virials")
+        ref_virials = np.vstack([
+            s.nep_virial if s.has_virial else np.full(6, np.nan, dtype=np.float64)
+            for s in self.structure.now_data
+        ], dtype=np.float64)
+        virials_array = concat_nep_dft_array(np.asarray(virials, dtype=np.float64), ref_virials, deepmd=True, quantity="virials")
+        virials_array = np.asarray(virials_array, dtype=get_storage_float_dtype())
 
         if virials_array.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
+            np.savetxt(self.virial_out_path, virials_array, fmt='%.17g')
         return virials_array
     def _recalculate_and_save(self ):
         """Recompute NEP predictions and persist freshly generated outputs.
@@ -426,9 +441,9 @@ class DeepmdResultData(ResultData):
         """
         try:
             nep_potentials_list, nep_forces_list, nep_virials_list = self.nep_calc.calculate(self.structure.now_data.tolist())
-            nep_potentials_array=np.array(nep_potentials_list, dtype=np.float64)
-            nep_forces_array=np.vstack(nep_forces_list)
-            nep_virials_array=np.vstack(nep_virials_list)
+            nep_potentials_array = np.array(nep_potentials_list, dtype=np.float64)
+            nep_forces_array = np.asarray(np.vstack(nep_forces_list), dtype=np.float64)
+            nep_virials_array = np.asarray(np.vstack(nep_virials_list), dtype=np.float64)
             if nep_potentials_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the potentials, use the original potentials instead.")
             energy_array = self._save_energy_data(nep_potentials_array)

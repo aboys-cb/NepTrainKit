@@ -22,6 +22,7 @@ from scipy.sparse.csgraph import connected_components
 from collections import defaultdict, Counter
 from NepTrainKit.utils import timeit
 from NepTrainKit.config import Config
+from NepTrainKit.core.precision import as_storage_float_array, get_storage_float_dtype
 from NepTrainKit.paths import PathLike, as_path, ensure_directory
 
 from NepTrainKit import module_path
@@ -39,16 +40,17 @@ def _format_float64_values(values: Any) -> str:
     return " ".join(format(float(v), ".17g") for v in arr)
 
 
-def _normalize_float_field(value: Any) -> Any:
-    """Upcast floating-point arrays to float64 without touching non-real payloads."""
+def _normalize_float_field(value: Any, float_dtype: np.dtype[Any] | None = None) -> Any:
+    """Normalize floating-point payloads to the configured storage dtype."""
+    dtype = float_dtype or get_storage_float_dtype()
     if isinstance(value, np.ndarray):
         if value.dtype.kind == "f":
-            return np.asarray(value, dtype=np.float64)
+            return np.asarray(value, dtype=dtype)
         return value
     if isinstance(value, (list, tuple)):
         arr = np.asarray(value)
         if arr.dtype.kind == "f":
-            return np.asarray(value, dtype=np.float64)
+            return np.asarray(value, dtype=dtype)
     return value
 
 
@@ -89,13 +91,14 @@ class Structure:
         """
         super().__init__()
         self.properties = properties
-        self.lattice = np.asarray(lattice, dtype=np.float64).reshape((3, 3))
+        float_dtype = get_storage_float_dtype()
+        self.lattice = np.asarray(lattice, dtype=float_dtype).reshape((3, 3))
         property_types = {prop["name"]: prop.get("type") for prop in self.properties}
         self.atomic_properties = {}
         for key, value in atomic_properties.items():
             ptype = property_types.get(key)
             if ptype == "R":
-                self.atomic_properties[key] = np.asarray(value, dtype=np.float64)
+                self.atomic_properties[key] = np.asarray(value, dtype=float_dtype)
             elif ptype == "I":
                 self.atomic_properties[key] = np.asarray(value, dtype=np.int32)
             elif ptype == "L":
@@ -103,15 +106,15 @@ class Structure:
             elif ptype == "S":
                 self.atomic_properties[key] = np.asarray(value, dtype=np.str_)
             else:
-                self.atomic_properties[key] = _normalize_float_field(value)
+                self.atomic_properties[key] = _normalize_float_field(value, float_dtype)
         self.additional_fields = {}
         for key, value in additional_fields.items():
             if key in {"energy", "energy_original"} and isinstance(value, (float, int, np.number)) and not isinstance(value, (bool, np.bool_)):
                 self.additional_fields[key] = float(np.float64(value))
             elif key in {"virial", "stress"}:
-                self.additional_fields[key] = np.asarray(value, dtype=np.float64).reshape(-1)
+                self.additional_fields[key] = np.asarray(value, dtype=float_dtype).reshape(-1)
             else:
-                self.additional_fields[key] = _normalize_float_field(value)
+                self.additional_fields[key] = _normalize_float_field(value, float_dtype)
         for energy_key in ("energy", "energy_original"):
             if energy_key in self.additional_fields and isinstance(self.additional_fields[energy_key], (float, int, np.number)):
                 self.additional_fields[energy_key] = float(np.float64(self.additional_fields[energy_key]))
@@ -423,7 +426,7 @@ class Structure:
         has_forces=[i["name"]==self.force_label for i in self.properties]
         if not any(has_forces):
             self.properties.append({'name': self.force_label, 'type': 'R', 'count': 3})
-        self.atomic_properties[self.force_label] = np.asarray(arr, dtype=np.float64).reshape(-1, 3)
+        self.atomic_properties[self.force_label] = np.asarray(arr, dtype=get_storage_float_dtype()).reshape(-1, 3)
 
     @property
     def has_forces(self):
@@ -444,7 +447,7 @@ class Structure:
     @bec.setter
     def bec(self, arr: npt.NDArray[np.float64]):
         """Assign per-atom BEC and ensure metadata exists."""
-        bec_arr = np.asarray(arr, dtype=np.float64).reshape(-1, 9)
+        bec_arr = np.asarray(arr, dtype=get_storage_float_dtype()).reshape(-1, 9)
         has_bec = any(p.get("name") == "bec" for p in self.properties)
         if not has_bec:
             self.properties.append({"name": "bec", "type": "R", "count": 9})
@@ -493,7 +496,7 @@ class Structure:
     @virial.setter
     def virial(self,new_virial:npt.NDArray[np.float64]):
         """Set virial array."""
-        self.additional_fields["virial"] = np.asarray(new_virial, dtype=np.float64).reshape(-1)
+        self.additional_fields["virial"] = np.asarray(new_virial, dtype=get_storage_float_dtype()).reshape(-1)
 
     @property
     def nep_virial(self):
@@ -578,8 +581,8 @@ class Structure:
 
     @positions.setter
     def positions(self, arr: npt.NDArray[np.float64]):
-        """Assign Cartesian coordinates in float64."""
-        self.atomic_properties["pos"] = np.asarray(arr, dtype=np.float64).reshape(-1, 3)
+        """Assign Cartesian coordinates in the configured storage dtype."""
+        self.atomic_properties["pos"] = np.asarray(arr, dtype=get_storage_float_dtype()).reshape(-1, 3)
 
     @property
     def num_atoms(self):
@@ -628,12 +631,13 @@ class Structure:
         old_lattice = target.lattice
         old_positions = target.positions
 
-        new_lattice_arr = np.asarray(new_lattice, dtype=np.float64).reshape((3, 3))
+        target_dtype = get_storage_float_dtype()
+        new_lattice_arr = np.asarray(new_lattice, dtype=target_dtype).reshape((3, 3))
         M = np.linalg.solve(old_lattice, new_lattice_arr)
         new_positions = old_positions @ M
 
         target.lattice = new_lattice_arr
-        target.atomic_properties['pos'] = np.asarray(new_positions, dtype=np.float64).reshape(-1, 3)
+        target.atomic_properties['pos'] = np.asarray(new_positions, dtype=target_dtype).reshape(-1, 3)
 
         return target
 
@@ -675,7 +679,7 @@ class Structure:
             raise ValueError( )
 
         atomic_properties = {}
-        atomic_properties['pos'] = np.asarray(new_positions, dtype=np.float64)
+        atomic_properties['pos'] = np.asarray(new_positions, dtype=get_storage_float_dtype())
         atomic_properties['species'] = new_elements
 
         properties=[{'name': 'species', 'type': 'S', 'count': 1}, {'name': 'pos', 'type': 'R', 'count': 3}]
@@ -780,7 +784,7 @@ class Structure:
                 _info=_info.astype( np.str_)
 
             elif prop["type"] == "R":
-                _info=_info.astype(np.float64)
+                _info = _info.astype(get_storage_float_dtype())
 
             elif prop["type"] == "L":
                 _info=_info.astype( np.bool_)
@@ -838,7 +842,7 @@ class Structure:
                 if key in {"energy", "energy_original"} and isinstance(value, (float, int, np.number)):
                     value = float(np.float64(value))
                 if key =="virial" or key =="stress":
-                    value = np.array(str(value).split(" "), dtype=np.float64)   # pyright:ignore
+                    value = np.array(str(value).split(" "), dtype=get_storage_float_dtype())   # pyright:ignore
                 additional_fields[key] = value
                 # print(additional_fields)
         return lattice, properties, additional_fields
@@ -1550,6 +1554,8 @@ def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_
                 return structures
             key = data_path.stem
             data = np.load(data_path)
+            if isinstance(data, np.ndarray) and data.dtype.kind == "f":
+                data = data.astype(get_storage_float_dtype(), copy=False)
             # Ensure 2D [nframes, -1]
             if data.ndim == 1:
                 data = data.reshape(data.shape[0], -1)
@@ -1836,9 +1842,11 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
             if key == 'type':
                 continue
             if key == "energy":
-                array = np.asarray(value, dtype=np.float64).reshape(-1, 1)
+                array = np.asarray(value, dtype=get_storage_float_dtype()).reshape(-1, 1)
             else:
                 array = np.vstack(value)
+                if isinstance(array, np.ndarray) and array.dtype.kind == "f":
+                    array = np.asarray(array, dtype=get_storage_float_dtype())
             np.save(save_path / f'{key}.npy', array)
 
 

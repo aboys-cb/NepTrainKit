@@ -14,7 +14,7 @@ from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCa
 from NepTrainKit.config import Config
 from NepTrainKit.ui.widgets import MyComboBoxSettingCard, DoubleSpinBoxSettingCard, LineEditSettingCard
 from NepTrainKit.ui.widgets import ColorSettingCard
-from NepTrainKit.core.types import ForcesMode, CanvasMode, NepBackend, parse_forces_mode
+from NepTrainKit.core.types import ForcesMode, CanvasMode, NepBackend, DataPrecision, parse_forces_mode, parse_data_precision
 from NepTrainKit.ui.update import UpdateWoker, UpdateNEP89Woker, get_pending_update_version
 from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR
 
@@ -158,6 +158,23 @@ class SettingsWidget(ScrollArea):
             'Select CPU/GPU or Auto detection',
             texts=[mode.value for mode in NepBackend],
             default=nep_backend_default,
+            parent=self.nep_group
+        )
+
+        data_precision_default = parse_data_precision(Config.get("nep", "data_precision", DataPrecision.FLOAT32)).value
+        self.data_precision_card = MyComboBoxSettingCard(
+            OptionsConfigItem(
+                "nep",
+                "data_precision",
+                DataPrecision(data_precision_default),
+                OptionsValidator(DataPrecision),
+                EnumSerializer(DataPrecision),
+            ),
+            FluentIcon.TAG,
+            'Data Precision',
+            'Choose storage precision for imported DFT/structure data',
+            texts=[mode.value for mode in DataPrecision],
+            default=data_precision_default,
             parent=self.nep_group
         )
 
@@ -350,6 +367,7 @@ class SettingsWidget(ScrollArea):
         self.personal_group.addSettingCard(self.default_cfg_type_card)
 
         self.nep_group.addSettingCard(self.nep_backend_card)
+        self.nep_group.addSettingCard(self.data_precision_card)
         self.nep_group.addSettingCard(self.gpu_bs_card)
 
  
@@ -395,6 +413,7 @@ class SettingsWidget(ScrollArea):
         self.about_nep89_card.clicked.connect(self.check_update_nep89)
 
         self.nep_backend_card.optionChanged.connect(lambda option: Config.set("nep", "backend", option))
+        self.data_precision_card.optionChanged.connect(lambda option: Config.set("nep", "data_precision", option))
         self.gpu_bs_card.valueChanged.connect(lambda value: Config.set("nep", "gpu_batch_size", int(value)))
 
         self.auto_load_card.checkedChanged.connect(lambda state:Config.set("widget","auto_load",state))

@@ -42,6 +42,15 @@ from NepTrainKit.ui.views._card import (
     # VibrationModePerturbCard,
 )
 from NepTrainKit.core.magnetism import orthonormal_frame
+from NepTrainKit.ui.widgets import MakeDataCard
+from NepTrainKit.version import DOCS_BASE_URL
+
+
+class _ExternalTestCard(MakeDataCard):
+    card_name = "External Test Card"
+
+    def process_structure(self, structure):
+        return [structure]
 
 
 class TestCard(unittest.TestCase):
@@ -62,6 +71,21 @@ class TestCard(unittest.TestCase):
         np.random.seed(0)
         random.seed(0)
         self.structure = self.base_structure.copy()
+
+    def test_builtin_card_has_online_doc_url(self):
+        card = StackingFaultCard()
+
+        self.assertEqual(
+            card.get_online_doc_url(),
+            f"{DOCS_BASE_URL}module/make-dataset-cards/cards/stacking-fault-card.html",
+        )
+        self.assertFalse(card.doc_button.isHidden())
+
+    def test_external_card_hides_online_doc_button(self):
+        card = _ExternalTestCard()
+
+        self.assertEqual(card.get_online_doc_url(), "")
+        self.assertTrue(card.doc_button.isHidden())
 
     @staticmethod
     def _spin_chain():

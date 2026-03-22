@@ -1,7 +1,7 @@
 """Audit Make Dataset card documentation coverage and schema alignment.
 
 Checks:
-1) Every card file under ui/views/_card has exactly one doc page.
+1) Every card file under ui/views/_card has exactly one doc page and a stable doc filename mapping.
 2) Doc metadata `serialized_keys` matches code `to_dict` keys exactly.
 3) Required section template exists on every card page.
 4) Preset section has exactly 3 subsections (supports Chinese/English labels).
@@ -387,6 +387,18 @@ def parse_doc_pages() -> list[CardDoc]:
     return pages
 
 
+def expected_doc_filename(source_file: str) -> str:
+    """Return the required markdown filename for a card source file."""
+    stem = Path(source_file).stem.replace("_", "-")
+    return f"{stem}.md"
+
+
+def expected_online_doc_path(source_file: str) -> str:
+    """Return the expected Read the Docs page path for a card source file."""
+    stem = Path(source_file).stem.replace("_", "-")
+    return f"module/make-dataset-cards/cards/{stem}.html"
+
+
 def section_slice(text: str, h2: str) -> str:
     start = text.find(h2)
     if start < 0:
@@ -424,6 +436,12 @@ def audit() -> list[str]:
         if doc.source_file in doc_by_source:
             errors.append(f"Duplicate docs for source_file: {doc.source_file}")
         doc_by_source[doc.source_file] = doc
+        expected_name = expected_doc_filename(doc.source_file)
+        if doc.path.name != expected_name:
+            errors.append(
+                f"{doc.path}: expected filename `{expected_name}` for source_file "
+                f"`{doc.source_file}` so the online docs path stays stable"
+            )
 
     # Coverage: every card has docs
     for src, code in code_cards.items():
@@ -440,6 +458,13 @@ def audit() -> list[str]:
         doc = doc_by_source.get(src)
         if not doc:
             continue
+
+        expected_online_path = expected_online_doc_path(src)
+        if doc.path.stem + ".html" != Path(expected_online_path).name:
+            errors.append(
+                f"{doc.path}: doc filename no longer matches expected online doc path "
+                f"`{expected_online_path}`"
+            )
 
         code_keys = code.keys
         doc_keys = doc.keys

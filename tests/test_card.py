@@ -164,6 +164,47 @@ class TestCard(unittest.TestCase):
         self.assertGreaterEqual(len(atoms_results), 1)
         self.assertTrue(any(len(atoms) > len(structure) for atoms in atoms_results))
 
+    def test_supercell_card_fixed_axis_lock(self):
+        card = SuperCellCard()
+        structure = self.structure.copy()
+        original_cell = np.array(structure.get_cell())
+        original_lengths = np.linalg.norm(original_cell, axis=1)
+
+        card.behavior_type_combo.setCurrentIndex(1)
+        card.super_cell_radio_button.setChecked(True)
+        card.super_scale_radio_button.setChecked(False)
+        card.max_atoms_radio_button.setChecked(False)
+        card.fixed_axis_c_checkbox.setChecked(True)
+        card.fixed_scale_condition_frame.set_input_value([1, 1, 1])
+        card.super_cell_condition_frame.set_input_value([
+            original_lengths[0] * 2.1,
+            original_lengths[1] * 2.1,
+            original_lengths[2] * 4.0,
+        ])
+
+        results = card.process_structure(structure)
+        self.assertEqual(len(results), 4)
+        self.assertTrue(
+            all(
+                np.isclose(np.linalg.norm(np.array(atoms.get_cell())[2]), original_lengths[2], atol=1e-6)
+                for atoms in results
+            )
+        )
+        self.assertTrue(
+            any(
+                np.linalg.norm(np.array(atoms.get_cell())[0]) > original_lengths[0] + 1e-6
+                or np.linalg.norm(np.array(atoms.get_cell())[1]) > original_lengths[1] + 1e-6
+                for atoms in results
+            )
+        )
+
+        data = card.to_dict()
+        restored = SuperCellCard()
+        restored.from_dict(data)
+        self.assertTrue(restored.fixed_axis_c_checkbox.isChecked())
+        self.assertEqual(restored.fixed_scale_condition_frame.get_input_value(), [1, 1, 1])
+        self.assertEqual(restored.super_cell_condition_frame.get_input_value(), list(card.super_cell_condition_frame.get_input_value()))
+
     def test_perturb_card_with_organic(self):
         card = PerturbCard()
         structure = self.structure.copy()

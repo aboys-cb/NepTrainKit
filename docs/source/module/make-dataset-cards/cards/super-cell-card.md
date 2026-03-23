@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Super Cell", "source_file": "src/NepTrainKit/ui/views/_card/super_cell_card.py", "serialized_keys": ["super_cell_type", "super_scale_radio_button", "super_scale_condition", "super_cell_radio_button", "super_cell_condition", "max_atoms_radio_button", "max_atoms_condition"]} -->
+<!-- card-schema: {"card_name": "Super Cell", "source_file": "src/NepTrainKit/ui/views/_card/super_cell_card.py", "serialized_keys": ["super_cell_type", "super_scale_radio_button", "super_scale_condition", "super_cell_radio_button", "super_cell_condition", "max_atoms_radio_button", "max_atoms_condition", "fixed_axis_flags", "fixed_axis_scale"]} -->
 
 # 超胞生成（Super Cell）
 
@@ -131,6 +131,33 @@ $$n_a^{(\max)}=\max\left(\left\lfloor\frac{L_a^*}{\lVert\mathbf{a}\rVert}\right\
   - 平衡：50-200
   - 探索：200+ 需 FPS
 
+### `fixed_axis_flags` (Fixed Axis Flags)
+- UI Label: `Fixed Axis Flags`
+- 字段映射 (Field mapping): 序列化键 `fixed_axis_flags` <-> 界面标签 `Fixed Axis Flags`。
+- 控件标签 (Caption): `Fixed Axis Flags`。
+- 控件解释 (Widget): 勾选开关 `CheckBox`。
+- 类型/范围 (Type/Range): bool list[3]
+- 默认值 (Default): `[false, false, false]`
+- 含义 (Meaning): 控制 a/b/c 三个方向是否锁定为固定扩包倍数。
+- 对输出规模/物理性的影响: 适合 slab 等场景，将某一轴保持不扩包，同时让其余方向继续按当前模式变化。
+- 配置建议 (Practical note):
+  - 开启：对应轴会强制使用 `fixed_axis_scale` 中的倍数。
+  - 关闭：对应轴按当前 mode 的规则自由生成。
+
+### `fixed_axis_scale` (Fixed Axis Scale)
+- UI Label: `Fixed Axis Scale`
+- 字段映射 (Field mapping): 序列化键 `fixed_axis_scale` <-> 界面标签 `Fixed Axis Scale`。
+- 控件标签 (Caption): `Fixed Axis Scale`。
+- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`。
+- 类型/范围 (Type/Range): list[3]
+- 默认值 (Default): `[1, 1, 1]`
+- 含义 (Meaning): 为已锁定的 a/b/c 轴提供固定扩包倍数。
+- 对输出规模/物理性的影响: 一旦对应轴被锁定，就直接采用这里的倍数，不再受目标长度或最大原子数枚举影响。
+- 推荐范围 (Recommended range):
+  - 保守：1, 1, 1
+  - 平衡：1-2 倍
+  - 探索：2-4 倍，需同步关注原子数
+
 
 ## 推荐预设（可直接复制 JSON）
 ### 保守（Safe）
@@ -152,6 +179,16 @@ $$n_a^{(\max)}=\max\left(\left\lfloor\frac{L_a^*}{\lVert\mathbf{a}\rVert}\right\
     20
   ],
   "max_atoms_radio_button": false,
+  "fixed_axis_flags": [
+    false,
+    false,
+    false
+  ],
+  "fixed_axis_scale": [
+    1,
+    1,
+    1
+  ],
   "max_atoms_condition": [
     200
   ]
@@ -177,6 +214,16 @@ $$n_a^{(\max)}=\max\left(\left\lfloor\frac{L_a^*}{\lVert\mathbf{a}\rVert}\right\
     20
   ],
   "max_atoms_radio_button": false,
+  "fixed_axis_flags": [
+    false,
+    false,
+    true
+  ],
+  "fixed_axis_scale": [
+    1,
+    1,
+    1
+  ],
   "max_atoms_condition": [
     200
   ]
@@ -202,6 +249,16 @@ $$n_a^{(\max)}=\max\left(\left\lfloor\frac{L_a^*}{\lVert\mathbf{a}\rVert}\right\
     20
   ],
   "max_atoms_radio_button": false,
+  "fixed_axis_flags": [
+    false,
+    false,
+    true
+  ],
+  "fixed_axis_scale": [
+    1,
+    1,
+    1
+  ],
   "max_atoms_condition": [
     200
   ]

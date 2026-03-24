@@ -27,6 +27,7 @@ import numpy.typing as npt
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
+from NepTrainKit.core.precision import get_storage_float_dtype
 from NepTrainKit.core.structure import Structure, atomic_numbers, get_type_map, save_npy_structure
 from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
 
@@ -755,9 +756,9 @@ class StructureSyncRule:
     """Declarative instruction that synchronises structure attributes into datasets."""
     dataset_attr: str
     target: str | slice | Callable[[Any], Any]
-    collector: Callable[["ResultData", Any, Optional[np.ndarray]], tuple[np.ndarray, npt.NDArray[np.float32]]]
+    collector: Callable[["ResultData", Any, Optional[np.ndarray]], tuple[np.ndarray, npt.NDArray[Any]]]
     precondition: Callable[["ResultData"], bool] = lambda _: True
-    dtype: Any = np.float32
+    dtype: Any = None
     def _resolve_target(self, dataset: Any) -> Any:
         """Return the concrete column selector for ``dataset``."""
         if callable(self.target):
@@ -778,7 +779,7 @@ class StructureSyncRule:
         row_idx = np.asarray(row_idx, dtype=np.int64)
         if row_idx.size == 0:
             return
-        values = np.asarray(values, dtype=self.dtype)
+        values = np.asarray(values, dtype=self.dtype or get_storage_float_dtype())
         if values.size == 0:
             return
         target = self._resolve_target(dataset)
@@ -1635,6 +1636,26 @@ class ResultData(QObject):
     def angles(self) -> npt.NDArray[np.float32]:
         """Return the cached lattice angles (alpha, beta, gamma) for all structures."""
         return self._angles
+
+    def get_reference_per_atom_energy_array(self, use_active: bool = False) -> npt.NDArray[np.float64]:
+        """Return reference per-atom energies as a flat float64 array."""
+        dataset = getattr(self, "energy", None)
+        if dataset is None or getattr(dataset, "cols", 0) == 0:
+            return np.array([], dtype=np.float64)
+        data = dataset.now_data if use_active else dataset.all_data
+        if data.size == 0:
+            return np.array([], dtype=np.float64)
+        return np.asarray(data[:, dataset.x_cols], dtype=np.float64).reshape(-1)
+
+    def get_predicted_per_atom_energy_array(self, use_active: bool = False) -> npt.NDArray[np.float64]:
+        """Return predicted per-atom energies as a flat float64 array."""
+        dataset = getattr(self, "energy", None)
+        if dataset is None or getattr(dataset, "cols", 0) == 0:
+            return np.array([], dtype=np.float64)
+        data = dataset.now_data if use_active else dataset.all_data
+        if data.size == 0:
+            return np.array([], dtype=np.float64)
+        return np.asarray(data[:, dataset.y_cols], dtype=np.float64).reshape(-1)
 
     def is_select(self, i: int) -> bool:
         """Return ``True`` if the structure index is marked as selected."""
@@ -3522,6 +3543,8 @@ class ResultData(QObject):
                         value = float(value_text)
                     except Exception:
                         value = value_text
+                if new_tag in {"energy", "energy_original"} and isinstance(value, (float, int, np.number)):
+                    value = float(np.float64(value))
                 structure.additional_fields[new_tag] = value
 
             if rename_map:
@@ -3578,9 +3601,7 @@ class ResultData(QObject):
             ref_index = list(reference_indices)
 
         reference_structures = self.structure.all_data[ref_index] if ref_index else []
-        nep_energy_array = None
-        if hasattr(self, "energy"):
-            nep_energy_array = getattr(self.energy, "y", None)
+        nep_energy_array = self.get_predicted_per_atom_energy_array(use_active=True)
 
         for progress in shift_dataset_energy(
             structures=self.structure.now_data,

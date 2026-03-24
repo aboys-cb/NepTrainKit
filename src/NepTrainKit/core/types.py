@@ -199,6 +199,44 @@ class NepBackend(StrEnum):
     GPU = "gpu"
     CPU = "cpu"
 
+
+class DataPrecision(StrEnum):
+    """Storage precision preference for imported numeric dataset values."""
+
+    FLOAT32 = "float32"
+    FLOAT64 = "float64"
+
+
+def parse_data_precision(value, fallback: DataPrecision = DataPrecision.FLOAT32) -> DataPrecision:
+    """Parse a config value into :class:`DataPrecision`."""
+
+    if isinstance(value, DataPrecision):
+        return value
+
+    text = str(value or "").strip()
+    if not text:
+        return fallback
+
+    try:
+        return DataPrecision(text)
+    except Exception:
+        pass
+
+    if "." in text:
+        name = text.split(".")[-1].strip()
+        if name:
+            try:
+                return DataPrecision[name]
+            except Exception:
+                pass
+
+    lower = text.lower()
+    for precision in DataPrecision:
+        if lower in {precision.value.lower(), precision.name.lower()}:
+            return precision
+
+    return fallback
+
 class Base:
     """Mixin providing a ``get`` helper that falls back to ``Default``."""
     @classmethod

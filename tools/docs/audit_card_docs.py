@@ -1,19 +1,4 @@
-"""Audit Make Dataset card documentation coverage and schema alignment.
-
-Checks:
-1) Every card file under ui/views/_card has exactly one doc page.
-2) Doc metadata `serialized_keys` matches code `to_dict` keys exactly.
-3) Required section template exists on every card page.
-4) Preset section has exactly 3 subsections (supports Chinese/English labels).
-5) Recommended combinations section has at least 2 bullets.
-6) Minimal/high-throughput example sentences are present.
-7) Banned template phrases are not present.
-8) When-to-use section contains add/avoid signals.
-9) Control section enforces per-parameter recommendation structure.
-10) Rule cards include schema subsections.
-"""
-
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import ast
 import importlib.util
@@ -35,11 +20,14 @@ from NepTrainKit.ui.views import _card as _registered_cards  # noqa: F401
 ROOT = Path(__file__).resolve().parents[2]
 CARD_DIR = ROOT / "src" / "NepTrainKit" / "ui" / "views" / "_card"
 DOC_DIR = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "cards"
+INDEX_DOC = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "index.md"
+RECIPES_DOC = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "recipes.md"
+WRITING_GUIDE = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "writing-guide.md"
 
 SCHEMA_RE = re.compile(r"<!--\s*card-schema:\s*(\{.*\})\s*-->")
-
 REQUIRED_H2 = [
     "## 功能说明",
+    "## 操作示例",
     "## 适用场景与不适用场景",
     "## 输入前提",
     "## 参数说明（完整）",
@@ -49,21 +37,57 @@ REQUIRED_H2 = [
     "## 输出标签 / 元数据变更",
     "## 可复现性说明",
 ]
-
+EXAMPLE_LABELS = ["场景：", "**输入：**", "**目标：**", "**参数设置：**", "**输出：**", "**怎么验证结果合理：**"]
 BANNED_PHRASES = [
-    "Card parameter persisted to JSON and restored on load.",
-    "Defines sampling bounds and step size for generated variants.",
-    "Use when: you need this transformation/filter explicitly in your pipeline and want its parameters persisted in card JSON.",
+    "当前卡片 -> 目标变换卡",
+    "最小可运行示例：先将 **保守预设（Safe）** 应用到单帧结构",
+    "上调幅度前先抽查最短键长、异常角度和晶胞条件数。",
 ]
-
-RULE_SCHEMA_REQUIRED = {
-    "src/NepTrainKit/ui/views/_card/random_doping_card.py": "规则输入 Schema",
-    "src/NepTrainKit/ui/views/_card/random_vacancy_card.py": "规则输入 Schema",
-    "src/NepTrainKit/ui/views/_card/conditional_replace_card.py": "替换输入 Schema",
+EXTRA_INPUT_DOC_RULES = {
+    "src/NepTrainKit/ui/views/_card/vibration_perturb_card.py": [
+        "### 额外输入模板",
+        "mode_1_x",
+        "frequency_1",
+    ],
 }
-
-CARD_GROUP_SOURCE = "src/NepTrainKit/ui/views/_card/card_group.py"
-GROUP_LABEL_SOURCE = "src/NepTrainKit/ui/views/_card/group_label_card.py"
+INDEX_REQUIRED = [
+    "## 按目标选卡",
+    "## 易混卡片对比",
+    "Random Slab` vs `Vacancy Defect Generation",
+    "Random Doping` vs `Composition Sweep` vs `Random Occupancy",
+    "Atomic Perturb` vs `Vib Mode Perturb",
+    "Set Magnetic Moments` vs `Magnetic Order` vs `Magmom Rotation",
+]
+RECIPE_TITLES = ["## 高熵合金", "## 富缺陷表面", "## 磁性数据", "## 有机构象"]
+RECIPE_BLOCKS = ["### 目标说明", "### 输入假设", "### 卡片顺序", "### 每步 JSON 配置", "### 最终数据集特征", "### 常见失败点"]
+SPECIAL_LINKAGE_KEYS = {
+    "super_cell_type",
+    "super_scale_radio_button",
+    "super_scale_condition",
+    "super_cell_radio_button",
+    "super_cell_condition",
+    "max_atoms_radio_button",
+    "num_radio_button",
+    "concentration_radio_button",
+    "concentration_condition",
+    "afm_mode",
+    "afm_kvec",
+    "afm_group_a",
+    "afm_group_b",
+    "afm_zero_unknown",
+    "gen_pm",
+    "pm_count",
+    "pm_direction",
+    "pm_cone_angle",
+    "source",
+    "manual",
+    "mode",
+    "method",
+    "doping_type",
+    "budget_mode",
+    "card_list",
+    "filter_card",
+}
 
 
 @dataclass
@@ -92,46 +116,34 @@ def ensure_app() -> QApplication:
 DEFAULT_CACHE: dict[str, dict[str, object]] = {}
 
 
-def runtime_defaults(
-    source_file: str,
-    card_name: str,
-    class_name: str,
-) -> dict[str, object]:
+def runtime_defaults(source_file: str, card_name: str, class_name: str) -> dict[str, object]:
     cache_key = f"{source_file}::{class_name}"
     if cache_key in DEFAULT_CACHE:
         return DEFAULT_CACHE[cache_key]
     ensure_app()
     source_path = ROOT / source_file
-    if not source_path.exists():
-        DEFAULT_CACHE[cache_key] = {}
-        return {}
-    spec = importlib.util.spec_from_file_location(
-        f"_audit_card_{source_path.stem}_{abs(hash(source_file))}",
-        source_path,
-    )
+    spec = importlib.util.spec_from_file_location(f"_audit_{source_path.stem}", source_path)
     if spec is None or spec.loader is None:
         DEFAULT_CACHE[cache_key] = {}
         return {}
-    mod = importlib.util.module_from_spec(spec)
+    module = importlib.util.module_from_spec(spec)
     original_register = CardManager.register_card
     CardManager.register_card = classmethod(lambda _cls, card_cls: card_cls)
     try:
-        spec.loader.exec_module(mod)
+        spec.loader.exec_module(module)
     finally:
         CardManager.register_card = original_register
     cls = None
-    for obj in mod.__dict__.values():
-        if inspect.isclass(obj) and hasattr(obj, "card_name"):
-            if getattr(obj, "card_name", None) == card_name:
-                cls = obj
-                break
-    if cls is None and class_name and hasattr(mod, class_name):
-        cls = getattr(mod, class_name)
+    for obj in module.__dict__.values():
+        if inspect.isclass(obj) and getattr(obj, "card_name", None) == card_name:
+            cls = obj
+            break
+    if cls is None and class_name and hasattr(module, class_name):
+        cls = getattr(module, class_name)
     if cls is None:
         DEFAULT_CACHE[cache_key] = {}
         return {}
-    card = cls(None)
-    data = dict(card.to_dict())
+    data = dict(cls(None).to_dict())
     DEFAULT_CACHE[cache_key] = data
     return data
 
@@ -161,148 +173,16 @@ def parse_default_value(raw: str) -> object:
 
 def parse_control_defaults(control_text: str) -> dict[str, tuple[str, object]]:
     rows: dict[str, tuple[str, object]] = {}
-    # Legacy table format.
-    lines = [ln for ln in control_text.splitlines() if ln.strip().startswith("|")]
-    if lines:
-        for ln in lines[2:]:
-            cols = [c.strip() for c in ln.strip().strip("|").split("|")]
-            if len(cols) < 4:
-                continue
-            key_match = re.search(r"`([^`]+)`", cols[1])
-            if not key_match:
-                continue
-            key = key_match.group(1)
-            raw_default = cols[3]
-            rows[key] = (raw_default, parse_default_value(raw_default))
-        if rows:
-            return rows
-
-    # New list format.
-    blocks = list(
-        re.finditer(
-            r"^###\s+`(?P<key>[^`]+)`\s+\((?P<ui>[^)]+)\)\s*$",
-            control_text,
-            flags=re.MULTILINE,
-        )
-    )
-    for i, m in enumerate(blocks):
-        key = m.group("key").strip()
-        start = m.end()
-        end = blocks[i + 1].start() if i + 1 < len(blocks) else len(control_text)
-        chunk = control_text[start:end]
-        default_match = re.search(r"^- 默认值 \(Default\):\s*(.+)$", chunk, flags=re.MULTILINE)
-        if not default_match:
-            continue
-        raw_default = default_match.group(1).strip()
-        rows[key] = (raw_default, parse_default_value(raw_default))
-    return rows
-
-
-ENUM_LIKE_KEYS: set[str] = {
-    "mode",
-    "engine_type",
-    "method",
-    "budget_mode",
-    "source",
-    "distribution",
-    "doping_type",
-    "afm_mode",
-    "pm_direction",
-    "axis",
-    "kvec",
-    "lattice",
-    "super_cell_type",
-    "preset_index",
-    "apply_mode",
-    "rotation_mode",
-    "plane",
-    "slab_mode",
-    "pm_mode",
-}
-
-PATH_LIKE_KEYS: set[str] = {
-    "nep_path",
-    "model_path",
-    "path",
-}
-
-NOTE_STYLE_KEYS_BY_CARD: dict[str, set[str]] = {
-    "group-label-card.md": {"mode", "kvec"},
-}
-
-
-def recommendation_style(card_file: str, key: str, typ: str) -> str:
-    key_l = key.strip().lower()
-    typ_l = typ.strip().lower()
-    if key_l in NOTE_STYLE_KEYS_BY_CARD.get(card_file, set()):
-        return "note"
-    if key_l in PATH_LIKE_KEYS or key_l.endswith("_path") or "path" in key_l:
-        return "note"
-    if "bool" in typ_l:
-        return "binary"
-    if key_l in ENUM_LIKE_KEYS:
-        return "tiered"
-    if "string" in typ_l:
-        return "note"
-    if any(token in typ_l for token in ("int", "float", "list[")):
-        return "tiered"
-    return "note"
-
-
-def is_numeric_tiered_type(key: str, typ: str) -> bool:
-    if key.strip().lower() in ENUM_LIKE_KEYS:
-        return False
-    typ_l = typ.lower()
-    if "enum(" in typ_l or "bool" in typ_l or "string" in typ_l:
-        return False
-    return any(token in typ_l for token in ("int", "float", "list["))
-
-
-def parse_control_blocks(control_text: str) -> dict[str, tuple[str, str]]:
-    blocks: dict[str, tuple[str, str]] = {}
-    matches = list(
-        re.finditer(
-            r"^###\s+`(?P<key>[^`]+)`\s+\((?P<ui>[^)]+)\)\s*$",
-            control_text,
-            flags=re.MULTILINE,
-        )
-    )
-    for i, m in enumerate(matches):
-        key = m.group("key").strip()
-        start = m.end()
+    matches = list(re.finditer(r"^###\s+`(?P<key>[^`]+)`\s+\([^)]+\)\s*$", control_text, flags=re.M))
+    for i, match in enumerate(matches):
+        start = match.end()
         end = matches[i + 1].start() if i + 1 < len(matches) else len(control_text)
         chunk = control_text[start:end]
-        typ_match = re.search(r"^- 类型/范围 \(Type/Range\):\s*(.+)$", chunk, flags=re.MULTILINE)
-        typ = typ_match.group(1).strip() if typ_match else "unknown"
-        blocks[key] = (typ, chunk)
-    return blocks
-
-
-def defaults_equivalent(key: str, doc_value: object, code_value: object) -> bool:
-    # Environment-derived path: allow semantic placeholder values.
-    if key == "nep_path":
-        if isinstance(code_value, str) and code_value:
-            if doc_value in {"", None, "__AUTO_PATH__", "AUTO"}:
-                return True
-            if isinstance(doc_value, str):
-                return True
-        return doc_value == code_value
-
-    # Empty values should be explicit as "" or null.
-    if key in {"target", "replacements", "condition", "elements", "species", "params", "rules", "manual", "group_filter"}:
-        if doc_value == "(empty)":
-            return False
-
-    # Keep string enum strict (e.g., "111" vs 111).
-    if isinstance(code_value, str) != isinstance(doc_value, str):
-        return False
-
-    if isinstance(code_value, tuple):
-        code_value = list(code_value)
-    if isinstance(doc_value, tuple):
-        doc_value = list(doc_value)
-
-    return doc_value == code_value
+        default_match = re.search(r"^- 默认值 \(Default\):\s*(.+)$", chunk, flags=re.M)
+        if default_match:
+            raw = default_match.group(1).strip()
+            rows[match.group("key")] = (raw, parse_default_value(raw))
+    return rows
 
 
 def parse_code_cards() -> dict[str, CardCode]:
@@ -311,59 +191,37 @@ def parse_code_cards() -> dict[str, CardCode]:
         if path.name == "__init__.py":
             continue
         text = path.read_text(encoding="utf-8-sig")
-        mod = ast.parse(text)
+        module = ast.parse(text)
         card_name = ""
         keys: list[str] = []
-
-        for node in mod.body:
+        for node in module.body:
             if not isinstance(node, ast.ClassDef):
                 continue
-            has_card_name = False
-            for b in node.body:
-                if isinstance(b, ast.Assign):
-                    for t in b.targets:
-                        if (
-                            isinstance(t, ast.Name)
-                            and t.id == "card_name"
-                            and isinstance(b.value, ast.Constant)
-                            and isinstance(b.value.value, str)
-                        ):
-                            card_name = b.value.value
-                            has_card_name = True
-            if not has_card_name:
+            for stmt in node.body:
+                if isinstance(stmt, ast.Assign):
+                    for target in stmt.targets:
+                        if isinstance(target, ast.Name) and target.id == "card_name" and isinstance(stmt.value, ast.Constant):
+                            card_name = str(stmt.value.value)
+            if not card_name:
                 continue
-
-            for b in node.body:
-                if isinstance(b, ast.FunctionDef) and b.name == "to_dict":
-                    for n in ast.walk(b):
-                        if isinstance(n, ast.Assign):
-                            for t in n.targets:
-                                if (
-                                    isinstance(t, ast.Subscript)
-                                    and isinstance(t.value, ast.Name)
-                                    and t.value.id in {"data", "data_dict"}
-                                    and isinstance(t.slice, ast.Constant)
-                                    and isinstance(t.slice.value, str)
-                                ):
-                                    if t.slice.value not in keys:
-                                        keys.append(t.slice.value)
-                        if (
-                            isinstance(n, ast.Call)
-                            and isinstance(n.func, ast.Attribute)
-                            and isinstance(n.func.value, ast.Name)
-                            and n.func.value.id in {"data", "data_dict"}
-                            and n.func.attr == "update"
-                            and n.args
-                            and isinstance(n.args[0], ast.Dict)
-                        ):
-                            for k in n.args[0].keys:
-                                if isinstance(k, ast.Constant) and isinstance(k.value, str):
-                                    if k.value not in keys:
-                                        keys.append(k.value)
+            for stmt in node.body:
+                if isinstance(stmt, ast.FunctionDef) and stmt.name == "to_dict":
+                    for sub in ast.walk(stmt):
+                        if isinstance(sub, ast.Assign):
+                            for target in sub.targets:
+                                if isinstance(target, ast.Subscript) and isinstance(target.value, ast.Name):
+                                    if target.value.id in {"data", "data_dict"} and isinstance(target.slice, ast.Constant) and isinstance(target.slice.value, str):
+                                        if target.slice.value not in keys:
+                                            keys.append(target.slice.value)
+                        if isinstance(sub, ast.Call) and isinstance(sub.func, ast.Attribute):
+                            if isinstance(sub.func.value, ast.Name) and sub.func.value.id in {"data", "data_dict"} and sub.func.attr == "update":
+                                if sub.args and isinstance(sub.args[0], ast.Dict):
+                                    for k in sub.args[0].keys:
+                                        if isinstance(k, ast.Constant) and isinstance(k.value, str) and k.value not in keys:
+                                            keys.append(k.value)
             break
-
         rel = path.relative_to(ROOT).as_posix()
-        cards[rel] = CardCode(source_file=rel, card_name=card_name, keys=keys)
+        cards[rel] = CardCode(rel, card_name, keys)
     return cards
 
 
@@ -371,47 +229,60 @@ def parse_doc_pages() -> list[CardDoc]:
     pages: list[CardDoc] = []
     for path in sorted(DOC_DIR.glob("*.md")):
         text = path.read_text(encoding="utf-8")
-        m = SCHEMA_RE.search(text)
-        if not m:
+        match = SCHEMA_RE.search(text)
+        if not match:
             raise RuntimeError(f"{path} missing card-schema metadata comment")
-        data = json.loads(m.group(1))
-        pages.append(
-            CardDoc(
-                path=path,
-                source_file=str(data["source_file"]),
-                card_name=str(data["card_name"]),
-                keys=list(data["serialized_keys"]),
-                text=text,
-            )
-        )
+        data = json.loads(match.group(1))
+        pages.append(CardDoc(path, str(data["source_file"]), str(data["card_name"]), list(data["serialized_keys"]), text))
     return pages
 
 
-def section_slice(text: str, h2: str) -> str:
-    start = text.find(h2)
+def expected_doc_filename(source_file: str) -> str:
+    return f"{Path(source_file).stem.replace('_', '-')}.md"
+
+
+def expected_online_doc_path(source_file: str) -> str:
+    stem = Path(source_file).stem.replace("_", "-")
+    return f"module/make-dataset-cards/cards/{stem}.html"
+
+
+def section_slice(text: str, heading: str) -> str:
+    start = text.find(heading)
     if start < 0:
         return ""
-    rest = text[start + len(h2) :]
-    nxt = re.search(r"^##\s+", rest, flags=re.MULTILINE)
-    return rest[: nxt.start()] if nxt else rest
+    rest = text[start + len(heading):]
+    nxt = re.search(r"^##\s+", rest, flags=re.M)
+    return rest[:nxt.start()] if nxt else rest
 
 
-def normalize_preset_subheading(value: str) -> str:
-    label = value.strip()
-    label = re.sub(r"\s+", "", label)
-    label = label.replace("（", "(").replace("）", ")")
-    base = re.sub(r"\(.*?\)", "", label).strip().lower()
-    alias_map = {
-        "safe": "safe",
-        "保守": "safe",
-        "balanced": "balanced",
-        "平衡": "balanced",
-        "aggressive/exploration": "aggressive_exploration",
-        "激进/探索": "aggressive_exploration",
-        "探索/激进": "aggressive_exploration",
-        "激进探索": "aggressive_exploration",
-    }
-    return alias_map.get(base, base)
+def defaults_equivalent(key: str, doc_value: object, code_value: object) -> bool:
+    if key == "nep_path":
+        if isinstance(doc_value, str) and isinstance(code_value, str):
+            normalized_doc = doc_value.replace("\\", "/")
+            normalized_code = code_value.replace("\\", "/")
+            if normalized_doc == "src/NepTrainKit/Config/nep89.txt" and normalized_code.endswith("/src/NepTrainKit/Config/nep89.txt"):
+                return True
+    if isinstance(code_value, tuple):
+        code_value = list(code_value)
+    if isinstance(doc_value, tuple):
+        doc_value = list(doc_value)
+    return doc_value == code_value
+
+
+def should_have_physical_hint(chunk: str) -> bool:
+    type_match = re.search(r"- 类型/范围 \(Type/Range\):\s*(.+)$", chunk, flags=re.M)
+    typ = type_match.group(1).lower() if type_match else ""
+    return any(token in typ for token in ("int", "float", "list[", "enum("))
+
+
+def should_have_decision_hint(key: str, chunk: str) -> bool:
+    type_match = re.search(r"- 类型/范围 \(Type/Range\):\s*(.+)$", chunk, flags=re.M)
+    typ = type_match.group(1).lower() if type_match else ""
+    return "bool" in typ or "string" in typ or "dict" in typ or key.endswith("_path")
+
+
+def should_have_linkage(key: str) -> bool:
+    return key in SPECIAL_LINKAGE_KEYS or key.endswith("_radio_button")
 
 
 def audit() -> list[str]:
@@ -421,192 +292,120 @@ def audit() -> list[str]:
 
     doc_by_source: dict[str, CardDoc] = {}
     for doc in doc_pages:
-        if doc.source_file in doc_by_source:
-            errors.append(f"Duplicate docs for source_file: {doc.source_file}")
         doc_by_source[doc.source_file] = doc
+        expected_name = expected_doc_filename(doc.source_file)
+        if doc.path.name != expected_name:
+            errors.append(f"{doc.path}: expected filename `{expected_name}`")
 
-    # Coverage: every card has docs
     for src, code in code_cards.items():
         if src not in doc_by_source:
             errors.append(f"Missing card doc for {src} ({code.card_name})")
 
-    # No stale docs
-    for src in doc_by_source:
+    for src, doc in doc_by_source.items():
         if src not in code_cards:
             errors.append(f"Doc references unknown source_file: {src}")
-
-    # Per-page checks
-    for src, code in code_cards.items():
-        doc = doc_by_source.get(src)
-        if not doc:
             continue
-
-        code_keys = code.keys
-        doc_keys = doc.keys
-        if set(code_keys) != set(doc_keys):
-            missing = sorted(set(code_keys) - set(doc_keys))
-            extra = sorted(set(doc_keys) - set(code_keys))
+        code = code_cards[src]
+        if set(code.keys) != set(doc.keys):
+            missing = sorted(set(code.keys) - set(doc.keys))
+            extra = sorted(set(doc.keys) - set(code.keys))
             if missing:
                 errors.append(f"{doc.path}: missing serialized keys in metadata: {missing}")
             if extra:
                 errors.append(f"{doc.path}: extra serialized keys in metadata: {extra}")
-
-        # Required headings
         for h in REQUIRED_H2:
             if h not in doc.text:
                 errors.append(f"{doc.path}: missing heading `{h}`")
-
         for phrase in BANNED_PHRASES:
             if phrase in doc.text:
-                errors.append(f"{doc.path}: contains banned template phrase: `{phrase}`")
+                errors.append(f"{doc.path}: contains banned phrase `{phrase}`")
 
-        # Keys must appear in control table (by backticked key)
-        control_section = section_slice(doc.text, "## 参数说明（完整）")
-        for k in code_keys:
-            if f"`{k}`" not in control_section:
-                errors.append(f"{doc.path}: key `{k}` not found in 参数说明 section")
+        example = section_slice(doc.text, "## 操作示例")
+        for label in EXAMPLE_LABELS:
+            if label not in example:
+                errors.append(f"{doc.path}: 操作示例 missing `{label}`")
 
-        # Control section recommendation style checks per parameter block.
-        control_blocks = parse_control_blocks(control_section)
-        for k in code_keys:
-            if k not in control_blocks:
-                continue
-            typ, chunk = control_blocks[k]
-            has_range = "- 推荐范围 (Recommended range):" in chunk
-            has_note = bool(re.search(r"^- 配置建议 \(Practical note\):", chunk, flags=re.MULTILINE))
-            if has_range == has_note:
-                errors.append(
-                    f"{doc.path}: key `{k}` must contain exactly one recommendation structure "
-                    f"(Recommended range or Practical note)"
-                )
-                continue
-
-            expected_style = recommendation_style(doc.path.name, k, typ)
-            if expected_style == "tiered" and not has_range:
-                errors.append(f"{doc.path}: key `{k}` should use tiered Recommended range")
-            if expected_style in {"binary", "note"} and not has_note:
-                errors.append(f"{doc.path}: key `{k}` should use Practical note")
-            if expected_style == "binary":
-                if "开启：" not in chunk or "关闭：" not in chunk:
-                    errors.append(f"{doc.path}: key `{k}` bool Practical note must include 开启/关闭")
-            if expected_style == "tiered" and is_numeric_tiered_type(k, typ):
-                range_lines = re.findall(r"^\s*-\s*(?:保守|平衡|探索)：(.+)$", chunk, flags=re.MULTILINE)
-                if range_lines and any(not re.search(r"\d", line) for line in range_lines):
-                    errors.append(f"{doc.path}: key `{k}` numeric Recommended range should include concrete numbers")
-            if k == "nep_path":
-                if has_range:
-                    errors.append(f"{doc.path}: key `nep_path` must not use tiered Recommended range")
-                if "src/NepTrainKit/Config/nep89.txt" not in chunk:
-                    errors.append(f"{doc.path}: key `nep_path` should show project-relative default path")
-
-        if src == CARD_GROUP_SOURCE:
-            filter_block = control_blocks.get("filter_card")
-            if not filter_block:
-                errors.append(f"{doc.path}: card-group must document `filter_card` control block")
-            else:
-                _, filter_chunk = filter_block
-                if "不作为下游卡片输入" not in filter_chunk:
-                    errors.append(
-                        f"{doc.path}: key `filter_card` should state current behavior "
-                        f"(not used as downstream card input)"
-                    )
-
-        # Presets: exactly 3 required subheadings
-        presets = section_slice(doc.text, "## 推荐预设（可直接复制 JSON）")
-        subheads = re.findall(r"^###\s+(.+)$", presets, flags=re.MULTILINE)
-        if src == GROUP_LABEL_SOURCE:
-            if len(subheads) != 3:
-                errors.append(f"{doc.path}: group-label presets should contain exactly 3 template subheadings")
-        else:
-            normalized = [normalize_preset_subheading(h) for h in subheads]
-            expected_norm = ["safe", "balanced", "aggressive_exploration"]
-            if normalized != expected_norm:
-                errors.append(
-                    f"{doc.path}: preset subheadings must map to Safe/Balanced/Aggressive/Exploration, got {subheads}"
-                )
-
-        # Minimal/high-throughput examples should be highlighted near top.
-        function_desc = section_slice(doc.text, "## 功能说明")
-        if "最小可运行示例" not in function_desc:
-            errors.append(f"{doc.path}: missing `最小可运行示例` sentence in 功能说明 section")
-        if "高通量示例" not in function_desc:
-            errors.append(f"{doc.path}: missing `高通量示例` sentence in 功能说明 section")
-        if ":::{tip}" not in function_desc:
-            errors.append(f"{doc.path}: missing `::{{tip}}` wrapper for high-throughput example in 功能说明 section")
-        if "最小可运行示例" in presets or "高通量示例" in presets:
-            errors.append(f"{doc.path}: presets section should focus on JSON only (remove minimal/high-throughput examples)")
-        if src == CARD_GROUP_SOURCE:
-            if "两张互不依赖的分支卡片" not in function_desc:
-                errors.append(f"{doc.path}: card-group 功能说明 should include container-specific minimal example")
-            if "组外串接清洗/采样链路" not in function_desc:
-                errors.append(f"{doc.path}: card-group 功能说明 should include container-specific high-throughput example")
-            if "先将 **保守预设（Safe）** 应用到单帧结构" in function_desc:
-                errors.append(f"{doc.path}: card-group should not use generic single-frame template sentence")
-            if "建议先导出 xyz" in function_desc and "nep89" in function_desc.lower():
-                errors.append(f"{doc.path}: card-group should not use global FPS/nep89 template sentence")
-
-        # Recommended combinations >= 2 bullets
         combos = section_slice(doc.text, "## 推荐组合")
-        bullets = re.findall(r"^- ", combos, flags=re.MULTILINE)
-        if len(bullets) < 2:
-            errors.append(f"{doc.path}: recommended combinations must contain at least 2 bullets")
-        if src == CARD_GROUP_SOURCE and "并行扩展多样性" in combos:
-            errors.append(f"{doc.path}: card-group combos should avoid generic diversity template wording")
+        if len(re.findall(r"^- ", combos, flags=re.M)) < 2:
+            errors.append(f"{doc.path}: 推荐组合 must contain at least 2 bullets")
 
-        # When section should contain add/avoid signals
-        when_section = section_slice(doc.text, "## 适用场景与不适用场景")
-        if not re.search(r"Add-it trigger|建议添加条件", when_section):
-            errors.append(f"{doc.path}: when-to-use section missing add-it signal")
-        if not re.search(r"Avoid trigger|不建议添加条件", when_section):
-            errors.append(f"{doc.path}: when-to-use section missing avoid signal")
-        if src == CARD_GROUP_SOURCE:
-            if not re.search(r"共享同一输入|同一输入", when_section):
-                errors.append(f"{doc.path}: card-group when-to-use must describe shared-input semantics")
-            if re.search(r"多个项目.{0,6}反复使用", when_section):
-                errors.append(f"{doc.path}: card-group add-it trigger should not be 'multiple projects reuse'")
+        faq = section_slice(doc.text, "## 常见问题与排查")
+        if len(re.findall(r"^- ", faq, flags=re.M)) < 3:
+            errors.append(f"{doc.path}: 常见问题与排查 must contain at least 3 bullets")
 
-        # Default column must align with runtime defaults.
-        class_match = re.search(r"`Class`:\s*`([^`]+)`", doc.text)
-        class_name = class_match.group(1) if class_match else ""
-        defaults = (
-            runtime_defaults(src, code.card_name, class_name)
-            if class_name
-            else {}
-        )
-        if not defaults:
-            errors.append(f"{doc.path}: failed to load runtime defaults for class `{class_name}`")
-        else:
-            table_defaults = parse_control_defaults(control_section)
-            for k in code_keys:
-                if k not in table_defaults:
-                    errors.append(f"{doc.path}: missing Default cell for key `{k}`")
-                    continue
-                raw_default, doc_default = table_defaults[k]
-                if "(empty)" in raw_default:
-                    errors.append(f"{doc.path}: key `{k}` uses banned placeholder `(empty)`; use \"\" or null")
-                    continue
-                if k not in defaults:
-                    errors.append(f"{doc.path}: runtime defaults missing key `{k}`")
-                    continue
-                if not defaults_equivalent(k, doc_default, defaults[k]):
-                    errors.append(
-                        f"{doc.path}: key `{k}` default mismatch (doc={doc_default!r}, code={defaults[k]!r})"
-                    )
-                if k == "nep_path":
-                    if not isinstance(doc_default, str):
-                        errors.append(f"{doc.path}: key `nep_path` default must be a string path")
-                    else:
-                        normalized = doc_default.replace("\\", "/")
-                        if normalized != "src/NepTrainKit/Config/nep89.txt":
-                            errors.append(
-                                f"{doc.path}: key `nep_path` default should be "
-                                f"`src/NepTrainKit/Config/nep89.txt`, got {doc_default!r}"
-                            )
+        control = section_slice(doc.text, "## 参数说明（完整）")
+        blocks = list(re.finditer(r"^###\s+`(?P<key>[^`]+)`\s+\([^)]+\)\s*$", control, flags=re.M))
+        block_texts: dict[str, str] = {}
+        for i, match in enumerate(blocks):
+            start = match.end()
+            end = blocks[i + 1].start() if i + 1 < len(blocks) else len(control)
+            block_texts[match.group("key")] = control[start:end]
+        for key in code.keys:
+            if key not in block_texts:
+                errors.append(f"{doc.path}: key `{key}` missing parameter block")
+                continue
+            block = block_texts[key]
+            for field in ["UI Label", "字段映射 (Field mapping)", "控件标签 (Caption)", "控件解释 (Widget)", "类型/范围 (Type/Range)", "默认值 (Default)", "含义 (Meaning)", "对输出规模/物理性的影响"]:
+                if field not in block:
+                    errors.append(f"{doc.path}: key `{key}` missing field `{field}`")
+            if should_have_physical_hint(block) and "物理直觉 / 典型值" not in block:
+                errors.append(f"{doc.path}: key `{key}` missing `物理直觉 / 典型值`")
+            if should_have_decision_hint(key, block) and "怎么判断该开还是该关" not in block:
+                errors.append(f"{doc.path}: key `{key}` missing `怎么判断该开还是该关`")
+            if should_have_linkage(key) and "参数联动 / 生效条件" not in block:
+                errors.append(f"{doc.path}: key `{key}` missing `参数联动 / 生效条件`")
 
-        # Rule cards require schema subsections
-        needed_schema = RULE_SCHEMA_REQUIRED.get(src)
-        if needed_schema and needed_schema not in control_section:
-            errors.append(f"{doc.path}: missing required schema subsection `{needed_schema}`")
+        defaults = runtime_defaults(src, code.card_name, re.search(r"`Class`:\s*`([^`]+)`", doc.text).group(1))
+        table_defaults = parse_control_defaults(control)
+        for key in code.keys:
+            if key not in table_defaults:
+                errors.append(f"{doc.path}: missing Default cell for key `{key}`")
+                continue
+            raw_default, doc_default = table_defaults[key]
+            if "(empty)" in raw_default:
+                errors.append(f"{doc.path}: key `{key}` uses banned placeholder `(empty)`")
+                continue
+            if key not in defaults:
+                errors.append(f"{doc.path}: runtime defaults missing key `{key}`")
+                continue
+            if not defaults_equivalent(key, doc_default, defaults[key]):
+                errors.append(f"{doc.path}: key `{key}` default mismatch (doc={doc_default!r}, code={defaults[key]!r})")
+
+        expected_online = expected_online_doc_path(src)
+        if doc.path.stem + ".html" != Path(expected_online).name:
+            errors.append(f"{doc.path}: doc filename no longer matches expected online doc path `{expected_online}`")
+        for needle in EXTRA_INPUT_DOC_RULES.get(src, []):
+            if needle not in doc.text:
+                errors.append(f"{doc.path}: missing extra-input guidance `{needle}`")
+
+    guide_text = WRITING_GUIDE.read_text(encoding="utf-8")
+    for needle in ["操作示例模板", "额外输入模板", "参数说明写法", "常见问题与排查", "禁止内容"]:
+        if needle not in guide_text:
+            errors.append(f"{WRITING_GUIDE}: missing `{needle}`")
+
+    index_text = INDEX_DOC.read_text(encoding="utf-8")
+    for needle in INDEX_REQUIRED:
+        if needle not in index_text:
+            errors.append(f"{INDEX_DOC}: missing `{needle}`")
+
+    recipes_text = RECIPES_DOC.read_text(encoding="utf-8")
+    for title in RECIPE_TITLES:
+        if title not in recipes_text:
+            errors.append(f"{RECIPES_DOC}: missing recipe title `{title}`")
+    for title in RECIPE_TITLES:
+        start = recipes_text.find(title)
+        if start < 0:
+            continue
+        rest = recipes_text[start + len(title):]
+        nxt = re.search(r"^##\s+", rest, flags=re.M)
+        block = rest[:nxt.start()] if nxt else rest
+        for needle in RECIPE_BLOCKS:
+            if needle not in block:
+                errors.append(f"{RECIPES_DOC}: recipe `{title}` missing `{needle}`")
+        if "```json" not in block:
+            errors.append(f"{RECIPES_DOC}: recipe `{title}` missing JSON snippet")
+        if "每步预期输出：" not in block:
+            errors.append(f"{RECIPES_DOC}: recipe `{title}` missing per-step expected output")
 
     return errors
 
@@ -618,7 +417,6 @@ def main() -> int:
         for err in errors:
             print(f"- {err}")
         return 1
-
     code_count = len([p for p in CARD_DIR.glob("*.py") if p.name != "__init__.py"])
     doc_count = len(list(DOC_DIR.glob("*.md")))
     print("Make Dataset card docs audit PASSED")
@@ -628,4 +426,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    raise SystemExit(main())

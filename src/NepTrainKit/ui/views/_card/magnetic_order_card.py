@@ -7,12 +7,15 @@ from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilte
 
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.magnetism import (
+    element_mask,
     kvec_signs,
+    mapped_moment_magnitudes,
     normalize_vector,
     parse_magmom_map_any,
-    per_atom_magnitudes,
+    parse_element_set,
     random_signs,
     random_vector_moments,
+    set_initial_magmoms_safe,
 )
 from NepTrainKit.core.config_type import append_config_tag, sanitize_config_tag, stable_config_id
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
@@ -220,8 +223,7 @@ class MagneticOrderCard(MakeDataCard):
 
     @staticmethod
     def _parse_elements(text: str) -> set[str]:
-        tokens = [t.strip() for t in (text or "").replace(";", ",").split(",") if t.strip()]
-        return {t[0].upper() + t[1:].lower() for t in tokens}
+        return parse_element_set(text)
 
     @staticmethod
     def _parse_kvec(text: str) -> tuple[int, int, int]:
@@ -248,23 +250,23 @@ class MagneticOrderCard(MakeDataCard):
 
         axis = self._axis()
         use_elem_dir = self.use_element_dir_checkbox.isChecked()
-
-        mags = np.zeros(len(structure), dtype=float)
+        only = self._parse_elements(self.apply_edit.text())
+        mags = mapped_moment_magnitudes(
+            structure,
+            magmom_map,
+            default_moment=default_m,
+            apply_elements=only,
+        )
         dirs = np.repeat(axis[None, :], len(structure), axis=0)
         symbols = structure.get_chemical_symbols()
         for i, sym in enumerate(symbols):
             val = magmom_map.get(sym, default_m)
             if isinstance(val, np.ndarray):
-                mags[i] = float(np.linalg.norm(val))
                 if use_elem_dir and mags[i] > 0:
                     dirs[i] = normalize_vector(val)
-            else:
-                mags[i] = abs(float(val))
-
-        only = self._parse_elements(self.apply_edit.text())
         if only:
-            mask = np.array([sym in only for sym in symbols], dtype=bool)
-            mags = np.where(mask, mags, 0.0)
+            mask = element_mask(symbols, only)
+            dirs = np.where(mask[:, None], dirs, axis[None, :])
         return mags, dirs
 
     def _make_collinear(self, structure, *, signs: np.ndarray) -> np.ndarray:
@@ -320,9 +322,7 @@ class MagneticOrderCard(MakeDataCard):
             signs = np.ones(len(structure), dtype=float)
             moms = self._make_noncollinear_axis(structure, signs=signs) if noncollinear else self._make_collinear(structure, signs=signs)
             atoms = structure.copy()
-            if "initial_magmoms" in atoms.arrays and np.asarray(atoms.arrays["initial_magmoms"]).shape != np.asarray(moms).shape:
-                del atoms.arrays["initial_magmoms"]
-            atoms.set_initial_magnetic_moments(moms)
+            set_initial_magmoms_safe(atoms, moms)
             self._attach_metadata(atoms, order="FM")
             append_config_tag(atoms, "MagFMnc" if noncollinear else "MagFM")
             outputs.append(atoms)
@@ -345,9 +345,7 @@ class MagneticOrderCard(MakeDataCard):
                 signs = kvec_signs(structure, k)
             moms = self._make_noncollinear_axis(structure, signs=signs) if noncollinear else self._make_collinear(structure, signs=signs)
             atoms = structure.copy()
-            if "initial_magmoms" in atoms.arrays and np.asarray(atoms.arrays["initial_magmoms"]).shape != np.asarray(moms).shape:
-                del atoms.arrays["initial_magmoms"]
-            atoms.set_initial_magnetic_moments(moms)
+            set_initial_magmoms_safe(atoms, moms)
             if self.afm_mode_combo.currentText() == "k-vector":
                 k = self._parse_kvec(self.kvec_combo.currentText())
                 self._attach_metadata(atoms, order=f"AFM{k[0]}{k[1]}{k[2]}")
@@ -388,9 +386,7 @@ class MagneticOrderCard(MakeDataCard):
                     signs = random_signs(len(structure), rng=rng, balanced=balanced)
                     moms = self._make_collinear(structure, signs=signs)
                 atoms = structure.copy()
-                if "initial_magmoms" in atoms.arrays and np.asarray(atoms.arrays["initial_magmoms"]).shape != np.asarray(moms).shape:
-                    del atoms.arrays["initial_magmoms"]
-                atoms.set_initial_magnetic_moments(moms)
+                set_initial_magmoms_safe(atoms, moms)
                 self._attach_metadata(atoms, order="PM")
                 base = "MagPM" + ("nc" if noncollinear else "")
                 append_config_tag(atoms, base + (f"_{seed_note}" if seed_note else ""))

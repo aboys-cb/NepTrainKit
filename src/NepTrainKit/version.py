@@ -14,6 +14,7 @@ except Exception:  # pragma: no cover - fallback path
 
 OWNER = "aboys-cb"
 REPO = "NepTrainKit"
+DOCS_BASE_URL = "https://neptrainkit.readthedocs.io/en/latest/"
 HELP_URL = "https://neptrainkit.readthedocs.io/en/latest/index.html"
 FEEDBACK_URL = f"https://github.com/{OWNER}/{REPO}/issues"
 RELEASES_URL = f"https://github.com/{OWNER}/{REPO}/releases"

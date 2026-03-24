@@ -5,11 +5,13 @@ import traceback
 import json
 from loguru import logger
 from pathlib import Path
+from typing import Any
 import numpy.typing as npt
 import numpy as np
 from NepTrainKit import module_path
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.structure import Structure
+from NepTrainKit.core.precision import get_storage_float_dtype
 from NepTrainKit.paths import as_path
 from NepTrainKit.paths import get_bundled_nep89_path
 from NepTrainKit.config import Config
@@ -93,13 +95,14 @@ class NepTrainResultData(ResultData):
         """
         total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
         target_width = max(total_cols - dataset.cols, 0)
+        storage_dtype = get_storage_float_dtype()
         if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=storage_dtype)
         indices = result_data._normalize_structure_indices(structure_indices)
         if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
         structures = [result_data.structure.all_data[i] for i in indices]
-        values = np.array([s.per_atom_energy for s in structures], dtype=np.float32).reshape(-1, target_width)
+        values = np.array([s.per_atom_energy for s in structures], dtype=storage_dtype).reshape(-1, target_width)
         return indices, values
     @staticmethod
     def _collect_force_sync(result_data: 'NepTrainResultData', dataset: NepPlotData, structure_indices):
@@ -121,20 +124,21 @@ class NepTrainResultData(ResultData):
         """
         total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
         target_width = max(total_cols - dataset.cols, 0)
+        storage_dtype = get_storage_float_dtype()
         if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=storage_dtype)
         indices = result_data._normalize_structure_indices(structure_indices)
         if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
         group_vals = dataset.group_array.all_data
         per_atom = bool(group_vals.size and np.unique(group_vals).size != group_vals.size)
         structures = [result_data.structure.all_data[i] for i in indices]
         if per_atom:
             row_idx = dataset.convert_index(indices)
-            values = np.vstack([s.forces for s in structures]).astype(np.float32, copy=False)
+            values = np.vstack([s.forces for s in structures]).astype(storage_dtype, copy=False)
         else:
             row_idx = indices
-            values = np.array([np.linalg.norm(s.forces, axis=0) for s in structures], dtype=np.float32)
+            values = np.array([np.linalg.norm(s.forces, axis=0) for s in structures], dtype=storage_dtype)
         return row_idx, values
     @staticmethod
     def _collect_virial_sync(result_data: 'NepTrainResultData', dataset: NepPlotData, structure_indices):
@@ -156,17 +160,18 @@ class NepTrainResultData(ResultData):
         """
         total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
         target_width = max(total_cols - dataset.cols, 0)
+        storage_dtype = get_storage_float_dtype()
         if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=storage_dtype)
         indices = result_data._normalize_structure_indices(structure_indices)
         if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
         structures = [result_data.structure.all_data[i] for i in indices]
         mask = np.array([s.has_virial for s in structures], dtype=bool)
         if not mask.any():
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
         selected_indices = indices[mask]
-        values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(np.float32, copy=False)
+        values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(storage_dtype, copy=False)
         return selected_indices, values
     @staticmethod
     def _collect_stress_sync(result_data: 'NepTrainResultData', dataset: NepPlotData, structure_indices):
@@ -188,22 +193,23 @@ class NepTrainResultData(ResultData):
         """
         total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
         target_width = max(total_cols - dataset.cols, 0)
+        storage_dtype = get_storage_float_dtype()
         if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=storage_dtype)
         indices = result_data._normalize_structure_indices(structure_indices)
         if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
         structures = [result_data.structure.all_data[i] for i in indices]
         mask = np.array([s.has_virial for s in structures], dtype=bool)
         if not mask.any():
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=np.float32)
+            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
         selected_indices = indices[mask]
-        virial_values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(np.float32, copy=False)
-        atoms = result_data.atoms_num_list[selected_indices].astype(np.float32)
-        volumes = np.array([structures[i].volume for i, flag in enumerate(mask) if flag], dtype=np.float32)
-        coeff = np.divide(atoms, volumes, out=np.zeros_like(atoms, dtype=np.float32), where=volumes != 0)[:, np.newaxis]
+        virial_values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(storage_dtype, copy=False)
+        atoms = result_data.atoms_num_list[selected_indices].astype(storage_dtype)
+        volumes = np.array([structures[i].volume for i, flag in enumerate(mask) if flag], dtype=storage_dtype)
+        coeff = np.divide(atoms, volumes, out=np.zeros_like(atoms, dtype=storage_dtype), where=volumes != 0)[:, np.newaxis]
         stress_values = virial_values * coeff * 160.21766208
-        return selected_indices, stress_values.astype(np.float32, copy=False)
+        return selected_indices, stress_values.astype(storage_dtype, copy=False)
     STRUCTURE_SYNC_RULES = {
         'energy': StructureSyncRule('energy', 'x_cols', _collect_energy_sync),
         'force': StructureSyncRule('force', 'x_cols', _collect_force_sync),
@@ -417,17 +423,18 @@ class NepTrainResultData(ResultData):
             else:
                 energy_array, force_array, virial_array, stress_array = results
         else:
-            energy_array = read_nep_out_file(self.energy_out_path, dtype=np.float32, ndmin=2)
-            force_array = read_nep_out_file(self.force_out_path, dtype=np.float32, ndmin=2)
-            virial_array = read_nep_out_file(self.virial_out_path, dtype=np.float32, ndmin=2)
-            stress_array = read_nep_out_file(self.stress_out_path, dtype=np.float32, ndmin=2)
+            storage_dtype = get_storage_float_dtype()
+            energy_array = read_nep_out_file(self.energy_out_path, dtype=storage_dtype, ndmin=2)
+            force_array = read_nep_out_file(self.force_out_path, dtype=storage_dtype, ndmin=2)
+            virial_array = read_nep_out_file(self.virial_out_path, dtype=storage_dtype, ndmin=2)
+            stress_array = read_nep_out_file(self.stress_out_path, dtype=storage_dtype, ndmin=2)
             if self.spin_force_out_path:
-                spin_force_array = read_nep_out_file(self.spin_force_out_path, dtype=np.float32, ndmin=2)
+                spin_force_array = read_nep_out_file(self.spin_force_out_path, dtype=storage_dtype, ndmin=2)
             if getattr(self, "is_charge_model", False):
                 if self.charge_out_path:
-                    charge_array = read_nep_out_file(self.charge_out_path, dtype=np.float32, ndmin=2)
+                    charge_array = read_nep_out_file(self.charge_out_path, dtype=storage_dtype, ndmin=2)
                 if self.bec_out_path:
-                    bec_array = read_nep_out_file(self.bec_out_path, dtype=np.float32, ndmin=2)
+                    bec_array = read_nep_out_file(self.bec_out_path, dtype=storage_dtype, ndmin=2)
             if energy_array.shape[0] != self.atoms_num_list.shape[0]:
                 if self.cache_outputs_enabled():
                     for p in [self.energy_out_path, self.force_out_path, self.virial_out_path, self.stress_out_path, self.spin_force_out_path, getattr(self, "charge_out_path", None), getattr(self, "bec_out_path", None)]:
@@ -489,7 +496,7 @@ class NepTrainResultData(ResultData):
                 required.append(self.bec_out_path.exists())
         output_files_exist = all(required)
         return not check_fullbatch(nep_in, len(self.atoms_num_list)) or not output_files_exist
-    def _save_energy_data(self, potentials:npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    def _save_energy_data(self, potentials:npt.NDArray[np.floating]) -> npt.NDArray[Any]:
         """Persist per-structure energy comparisons to disk.
         
         Parameters
@@ -503,15 +510,15 @@ class NepTrainResultData(ResultData):
             Two-column array with predicted and reference energies per structure.
         """
 
-        ref_energies = np.array([s.energy if s.has_energy else np.nan for s in self.structure.now_data], dtype=np.float32)
-        energy_array = concat_nep_dft_array(potentials, ref_energies, quantity="energies")
+        ref_energies = np.array([s.energy if s.has_energy else np.nan for s in self.structure.now_data], dtype=np.float64)
+        energy_array = concat_nep_dft_array(np.asarray(potentials, dtype=np.float64), ref_energies, quantity="energies")
 
         energy_array=energy_array/ self.atoms_num_list.reshape(-1, 1)
-        energy_array = energy_array.astype(np.float32)
+        energy_array = np.asarray(energy_array, dtype=get_storage_float_dtype())
         if energy_array.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.energy_out_path, energy_array, fmt='%10.8f')
+            np.savetxt(self.energy_out_path, energy_array, fmt='%.17g')
         return energy_array
-    def _save_force_data(self, forces: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    def _save_force_data(self, forces: npt.NDArray[np.floating]) -> npt.NDArray[Any]:
         """Persist force comparisons to disk with reference and predicted values.
         
         Parameters
@@ -525,13 +532,17 @@ class NepTrainResultData(ResultData):
             Two-column array containing reference and predicted forces.
         """
 
-        ref_forces = np.vstack([s.forces if s.has_forces else np.full((len(s), 3), np.nan) for s in self.structure.now_data], dtype=np.float32)
-        forces_array = concat_nep_dft_array(forces, ref_forces, quantity="forces")
+        ref_forces = np.vstack([
+            s.forces if s.has_forces else np.full((len(s), 3), np.nan, dtype=np.float64)
+            for s in self.structure.now_data
+        ], dtype=np.float64)
+        forces_array = concat_nep_dft_array(np.asarray(forces, dtype=np.float64), ref_forces, quantity="forces")
+        forces_array = np.asarray(forces_array, dtype=get_storage_float_dtype())
 
         if forces_array.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.force_out_path, forces_array, fmt='%10.8f')
+            np.savetxt(self.force_out_path, forces_array, fmt='%.17g')
         return forces_array
-    def _save_virial_and_stress_data(self, virials: npt.NDArray[np.float32]) -> tuple[npt.NDArray[np.float32],npt.NDArray[np.float32]]:
+    def _save_virial_and_stress_data(self, virials: npt.NDArray[np.floating]) -> tuple[npt.NDArray[Any], npt.NDArray[Any]]:
         """Persist virial tensors and derived stresses to disk.
         
         Parameters
@@ -546,38 +557,43 @@ class NepTrainResultData(ResultData):
         """
         coefficient = (self.atoms_num_list / np.array([s.volume for s in self.structure.now_data ]))[:, np.newaxis]
 
-        ref_virials = np.vstack([s.nep_virial if s.has_virial else [np.nan] * 6 for s in self.structure.now_data], dtype=np.float32)
-        virials_array = concat_nep_dft_array(virials, ref_virials, quantity="virials")
+        ref_virials = np.vstack([
+            s.nep_virial if s.has_virial else np.full(6, np.nan, dtype=np.float64)
+            for s in self.structure.now_data
+        ], dtype=np.float64)
+        virials_array = concat_nep_dft_array(np.asarray(virials, dtype=np.float64), ref_virials, quantity="virials")
+        virials_array = np.asarray(virials_array, dtype=get_storage_float_dtype())
 
         stress_array = virials_array * coefficient * 160.21766208  # Unit conversion to MPa
-        stress_array = stress_array.astype(np.float32)
+        stress_array = np.asarray(stress_array, dtype=get_storage_float_dtype())
         if virials_array.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.virial_out_path, virials_array, fmt='%10.8f')
+            np.savetxt(self.virial_out_path, virials_array, fmt='%.17g')
         if stress_array.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.stress_out_path, stress_array, fmt='%10.8f')
+            np.savetxt(self.stress_out_path, stress_array, fmt='%.17g')
         return virials_array, stress_array
-    def _save_charge_data(self, charges: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    def _save_charge_data(self, charges: npt.NDArray[np.floating]) -> npt.NDArray[Any]:
         """Persist per-atom charges (NEP prediction only)."""
         if charges.size == 0:
             return np.array([])
-        charge_arr = charges.reshape(-1, 1).astype(np.float32, copy=False)
+        charge_arr = np.asarray(charges.reshape(-1, 1), dtype=get_storage_float_dtype())
         if getattr(self, "charge_out_path", None) and charge_arr.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.charge_out_path, charge_arr, fmt='%10.8f')
+            np.savetxt(self.charge_out_path, charge_arr, fmt='%.17g')
         return charge_arr
-    def _save_bec_data(self, becs: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    def _save_bec_data(self, becs: npt.NDArray[np.floating]) -> npt.NDArray[Any]:
         """Persist per-atom BEC with optional reference pairing."""
         if becs.size == 0:
             return np.array([])
-        nep_bec = becs.astype(np.float32, copy=False)
+        nep_bec = np.asarray(becs, dtype=np.float64)
         ref_bec = np.vstack([
-            s.bec.astype(np.float32, copy=False).reshape(-1, 9) if getattr(s, "has_bec", False)
-            else np.full((len(s), 9), np.nan, dtype=np.float32)
+            np.asarray(s.bec, dtype=np.float64).reshape(-1, 9) if getattr(s, "has_bec", False)
+            else np.full((len(s), 9), np.nan, dtype=np.float64)
             for s in self.structure.now_data
         ])
 
         bec_array = concat_nep_dft_array(nep_bec, ref_bec, quantity="BEC values")
+        bec_array = np.asarray(bec_array, dtype=get_storage_float_dtype())
         if getattr(self, "bec_out_path", None) and bec_array.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.bec_out_path, bec_array, fmt='%10.8f')
+            np.savetxt(self.bec_out_path, bec_array, fmt='%.17g')
         return bec_array
     def _recalculate_and_save(self ):
         """Recompute NEP predictions and update on-disk comparison files."""
@@ -590,9 +606,9 @@ class NepTrainResultData(ResultData):
                 nep_charges_list = []
                 nep_bec_list = []
 
-            nep_potentials_array = np.array(nep_potentials_list)
-            nep_forces_array = np.vstack(nep_forces_list)
-            nep_virials_array = np.vstack(nep_virials_list)
+            nep_potentials_array = np.array(nep_potentials_list, dtype=np.float64)
+            nep_forces_array = np.asarray(np.vstack(nep_forces_list), dtype=np.float64)
+            nep_virials_array = np.asarray(np.vstack(nep_virials_list), dtype=np.float64)
             if nep_potentials_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the potentials, use the original potentials instead.")
             energy_array = self._save_energy_data(nep_potentials_array)
@@ -730,7 +746,7 @@ class NepPolarizabilityResultData(ResultData):
             MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
             nep_polarizability_array = np.array([])
         return nep_polarizability_array
-    def _save_polarizability_data(self, polarizability: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    def _save_polarizability_data(self, polarizability: npt.NDArray[np.float64]) -> npt.NDArray[Any]:
         """Persist polarizability comparisons to disk.
         
         Parameters
@@ -743,9 +759,9 @@ class NepPolarizabilityResultData(ResultData):
         numpy.ndarray
             Array containing predicted and reference polarizability components.
         """
-        nep_polarizability_array = polarizability / (self.atoms_num_list[:, np.newaxis])
+        nep_polarizability_array = np.asarray(polarizability, dtype=np.float64) / np.asarray(self.atoms_num_list[:, np.newaxis], dtype=np.float64)
         try:
-            ref_polarizability = np.vstack([s.nep_polarizability for s in self.structure.now_data], dtype=np.float32)
+            ref_polarizability = np.vstack([s.nep_polarizability for s in self.structure.now_data], dtype=np.float64)
             if polarizability.size == 0:
                 polarizability_array = np.column_stack([ref_polarizability, ref_polarizability])
             else:
@@ -755,9 +771,9 @@ class NepPolarizabilityResultData(ResultData):
         except Exception:
             # logger.debug(traceback.format_exc())
             polarizability_array = np.column_stack([polarizability, polarizability])
-        polarizability_array = polarizability_array.astype(np.float32)
+        polarizability_array = np.asarray(polarizability_array, dtype=get_storage_float_dtype())
         if polarizability_array.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.polarizability_out_path, polarizability_array, fmt='%10.8f')
+            np.savetxt(self.polarizability_out_path, polarizability_array, fmt='%.17g')
         return polarizability_array
     def _load_dataset(self) -> None:
         """Populate polarizability datasets from cached outputs or by recalculating."""
@@ -765,7 +781,7 @@ class NepPolarizabilityResultData(ResultData):
         if self._should_recalculate(nep_in):
             polarizability_array = self._recalculate_and_save( )
         else:
-            polarizability_array= read_nep_out_file(self.polarizability_out_path, dtype=np.float32,ndmin=2)
+            polarizability_array = read_nep_out_file(self.polarizability_out_path, dtype=get_storage_float_dtype(), ndmin=2)
             if polarizability_array.shape[0]!=self.atoms_num_list.shape[0]:
                 if self.cache_outputs_enabled():
                     self.polarizability_out_path.unlink()
@@ -883,7 +899,7 @@ class NepDipoleResultData(ResultData):
             MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
             nep_dipole_array = np.array([])
         return nep_dipole_array
-    def _save_dipole_data(self, dipole: npt.NDArray[np.float32]) -> npt.NDArray[np.float32]:
+    def _save_dipole_data(self, dipole: npt.NDArray[np.float64]) -> npt.NDArray[Any]:
         """Persist dipole comparisons to disk.
         
         Parameters
@@ -896,9 +912,9 @@ class NepDipoleResultData(ResultData):
         numpy.ndarray
             Array containing predicted and reference dipole components.
         """
-        nep_dipole_array = dipole / (self.atoms_num_list[:, np.newaxis])
+        nep_dipole_array = np.asarray(dipole, dtype=np.float64) / np.asarray(self.atoms_num_list[:, np.newaxis], dtype=np.float64)
         try:
-            ref_dipole = np.vstack([s.nep_dipole for s in self.structure.now_data], dtype=np.float32)
+            ref_dipole = np.vstack([s.nep_dipole for s in self.structure.now_data], dtype=np.float64)
             if dipole.size == 0:
                 dipole_array = np.column_stack([ref_dipole, ref_dipole])
             else:
@@ -908,9 +924,9 @@ class NepDipoleResultData(ResultData):
         except Exception:
             # logger.debug(traceback.format_exc())
             dipole_array = np.column_stack([nep_dipole_array, nep_dipole_array])
-        dipole_array = dipole_array.astype(np.float32)
+        dipole_array = np.asarray(dipole_array, dtype=get_storage_float_dtype())
         if dipole_array.size != 0 and self.cache_outputs_enabled():
-            np.savetxt(self.dipole_out_path, dipole_array, fmt='%10.8f')
+            np.savetxt(self.dipole_out_path, dipole_array, fmt='%.17g')
         return dipole_array
     def _load_dataset(self) -> None:
         """Populate dipole datasets from cached outputs or by recalculating."""
@@ -918,7 +934,7 @@ class NepDipoleResultData(ResultData):
         if self._should_recalculate(nep_in):
             dipole_array = self._recalculate_and_save( )
         else:
-            dipole_array= read_nep_out_file(self.dipole_out_path, dtype=np.float32,ndmin=2)
+            dipole_array = read_nep_out_file(self.dipole_out_path, dtype=get_storage_float_dtype(), ndmin=2)
             if dipole_array.shape[0]!=self.atoms_num_list.shape[0]:
                 if self.cache_outputs_enabled():
                     self.dipole_out_path.unlink()

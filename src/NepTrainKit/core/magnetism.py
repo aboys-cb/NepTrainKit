@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Mapping
+from typing import Iterable, Mapping
 
 import numpy as np
 from ase import Atoms
@@ -35,6 +35,12 @@ def parse_magmom_map(text: str) -> dict[str, float]:
         symbol = key[0].upper() + key[1:].lower()
         out[symbol] = float(val)
     return out
+
+
+def parse_element_set(text: str) -> set[str]:
+    """Parse a comma/space-separated element-symbol list."""
+    tokens = [t.strip() for t in _ITEM_SPLIT_RE.split((text or "").strip()) if t.strip()]
+    return {token[0].upper() + token[1:].lower() for token in tokens}
 
 
 def parse_magmom_map_any(text: str) -> dict[str, float | np.ndarray]:
@@ -79,6 +85,17 @@ def parse_magmom_map_any(text: str) -> dict[str, float | np.ndarray]:
         else:
             out[symbol] = float(val)
     return out
+
+
+def element_mask(symbols: Iterable[str], selected: Iterable[str] | None = None) -> np.ndarray:
+    """Return a boolean mask for the selected chemical symbols."""
+    symbol_list = list(symbols)
+    if selected is None:
+        return np.ones(len(symbol_list), dtype=bool)
+    normalized = {str(sym)[0].upper() + str(sym)[1:].lower() for sym in selected if str(sym).strip()}
+    if not normalized:
+        return np.ones(len(symbol_list), dtype=bool)
+    return np.array([sym in normalized for sym in symbol_list], dtype=bool)
 
 
 def normalize_vector(vec: np.ndarray, *, default: np.ndarray | None = None) -> np.ndarray:
@@ -164,6 +181,114 @@ def parse_axis(text: str, *, default: tuple[float, float, float] = (0.0, 0.0, 1.
     if len(tokens) != 3:
         return normalize_vector(np.array(default, dtype=float))
     return normalize_vector(np.array([float(t) for t in tokens], dtype=float))
+
+
+def existing_moment_magnitudes(atoms: Atoms) -> np.ndarray | None:
+    """Return per-atom magnetic-moment magnitudes from existing ``initial_magmoms``."""
+    current = np.asarray(atoms.get_initial_magnetic_moments(), dtype=float)
+    if current.size == 0:
+        return None
+    if current.ndim == 1 and current.shape[0] == len(atoms):
+        return np.abs(current.reshape(-1))
+    if current.ndim == 2 and current.shape == (len(atoms), 3):
+        return np.linalg.norm(current, axis=1)
+    return None
+
+
+def existing_moment_vectors(
+    atoms: Atoms,
+    *,
+    axis: np.ndarray | None = None,
+    lift_scalar: bool = True,
+) -> np.ndarray | None:
+    """Return vector magnetic moments from existing ``initial_magmoms`` when possible."""
+    current = np.asarray(atoms.get_initial_magnetic_moments(), dtype=float)
+    if current.size == 0:
+        return None
+    if current.ndim == 2 and current.shape == (len(atoms), 3):
+        return np.array(current, copy=True)
+    if current.ndim == 1 and current.shape[0] == len(atoms) and lift_scalar:
+        axis_vec = normalize_vector(axis if axis is not None else np.array([0.0, 0.0, 1.0], dtype=float))
+        return current.reshape(-1, 1) * axis_vec.reshape(1, 3)
+    return None
+
+
+def existing_moment_scalars(
+    atoms: Atoms,
+    *,
+    axis: np.ndarray | None = None,
+) -> np.ndarray | None:
+    """Return scalar magnetic moments from existing ``initial_magmoms`` when possible."""
+    current = np.asarray(atoms.get_initial_magnetic_moments(), dtype=float)
+    if current.size == 0:
+        return None
+    if current.ndim == 1 and current.shape[0] == len(atoms):
+        return np.array(current, copy=True).reshape(-1)
+    if current.ndim == 2 and current.shape == (len(atoms), 3):
+        axis_vec = normalize_vector(axis if axis is not None else np.array([0.0, 0.0, 1.0], dtype=float))
+        return np.asarray(current, dtype=float) @ axis_vec
+    return None
+
+
+def mapped_moment_magnitudes(
+    atoms: Atoms,
+    moment_map: Mapping[str, float | np.ndarray],
+    *,
+    default_moment: float = 0.0,
+    apply_elements: Iterable[str] | None = None,
+) -> np.ndarray:
+    """Return per-atom moment magnitudes from a scalar/vector element map."""
+    symbols = atoms.get_chemical_symbols()
+    mask = element_mask(symbols, apply_elements)
+    values = np.zeros(len(symbols), dtype=float)
+    for idx, sym in enumerate(symbols):
+        if not mask[idx]:
+            continue
+        raw = moment_map.get(sym, default_moment)
+        if isinstance(raw, np.ndarray):
+            values[idx] = float(np.linalg.norm(raw))
+        else:
+            values[idx] = abs(float(raw))
+    return values
+
+
+def mapped_moment_vectors(
+    atoms: Atoms,
+    moment_map: Mapping[str, float | np.ndarray],
+    *,
+    default_moment: float = 0.0,
+    axis: np.ndarray | None = None,
+    apply_elements: Iterable[str] | None = None,
+    use_element_directions: bool = False,
+) -> np.ndarray:
+    """Return per-atom vector magnetic moments from a scalar/vector element map."""
+    symbols = atoms.get_chemical_symbols()
+    mask = element_mask(symbols, apply_elements)
+    axis_vec = normalize_vector(axis if axis is not None else np.array([0.0, 0.0, 1.0], dtype=float))
+    moments = np.zeros((len(symbols), 3), dtype=float)
+    for idx, sym in enumerate(symbols):
+        if not mask[idx]:
+            continue
+        raw = moment_map.get(sym, default_moment)
+        if isinstance(raw, np.ndarray):
+            magnitude = float(np.linalg.norm(raw))
+            if magnitude <= 0.0:
+                continue
+            if use_element_directions:
+                moments[idx] = magnitude * normalize_vector(raw)
+            else:
+                moments[idx] = magnitude * axis_vec
+        else:
+            moments[idx] = abs(float(raw)) * axis_vec
+    return moments
+
+
+def set_initial_magmoms_safe(atoms: Atoms, magmoms: np.ndarray) -> None:
+    """Set ``initial_magmoms`` while removing incompatible legacy array shapes."""
+    target = np.asarray(magmoms)
+    if "initial_magmoms" in atoms.arrays and np.asarray(atoms.arrays["initial_magmoms"]).shape != target.shape:
+        del atoms.arrays["initial_magmoms"]
+    atoms.set_initial_magnetic_moments(target)
 
 
 def per_atom_magnitudes(

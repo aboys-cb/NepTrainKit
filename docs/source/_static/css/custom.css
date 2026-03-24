@@ -3,3 +3,8 @@ pre {
     overflow-y: auto;   /* 启用垂直滚动条 */
 
 }
+
+/* Widen RTD article area on desktop; the theme default is too narrow. */
+.wy-nav-content {
+    max-width: 1200px;
+}

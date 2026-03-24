@@ -22,6 +22,7 @@ from scipy.sparse.csgraph import connected_components
 from collections import defaultdict, Counter
 from NepTrainKit.utils import timeit
 from NepTrainKit.config import Config
+from NepTrainKit.core.precision import as_storage_float_array, get_storage_float_dtype
 from NepTrainKit.paths import PathLike, as_path, ensure_directory
 
 from NepTrainKit import module_path
@@ -31,6 +32,27 @@ with ptable_path.open("r", encoding="utf-8") as f:
 
 
 atomic_numbers={elem_info["symbol"]:elem_info["number"] for elem_info in table_info.values()}
+
+
+def _format_float64_values(values: Any) -> str:
+    """Format floating-point values for loss-minimised EXTXYZ round trips."""
+    arr = np.asarray(values, dtype=np.float64).reshape(-1)
+    return " ".join(format(float(v), ".17g") for v in arr)
+
+
+def _normalize_float_field(value: Any, float_dtype: np.dtype[Any] | None = None) -> Any:
+    """Normalize floating-point payloads to the configured storage dtype."""
+    dtype = float_dtype or get_storage_float_dtype()
+    if isinstance(value, np.ndarray):
+        if value.dtype.kind == "f":
+            return np.asarray(value, dtype=dtype)
+        return value
+    if isinstance(value, (list, tuple)):
+        arr = np.asarray(value)
+        if arr.dtype.kind == "f":
+            return np.asarray(value, dtype=dtype)
+    return value
+
 
 class Structure:
     """Container for EXTXYZ frames (lattice, positions, species, and fields).
@@ -50,8 +72,8 @@ class Structure:
     """
 
     def __init__(self,
-                 lattice: list[float]|npt.NDArray[np.float32],
-                 atomic_properties:dict[str,npt.NDArray[np.float32]],
+                 lattice: list[float]|npt.NDArray[np.float64],
+                 atomic_properties:dict[str,npt.NDArray[Any]],
                  properties:list[dict[str,str]],
                  additional_fields:dict[str,Any]  ):
         """Initialize a Structure instance.
@@ -69,13 +91,33 @@ class Structure:
         """
         super().__init__()
         self.properties = properties
-        # Avoid unnecessary copies for already-shaped numpy arrays
-        if isinstance(lattice, np.ndarray) :
-            self.lattice = lattice.reshape((3, 3))
-        else:
-            self.lattice = np.array(lattice, dtype=np.float32).reshape((3, 3))
-        self.atomic_properties = atomic_properties
-        self.additional_fields = additional_fields
+        float_dtype = get_storage_float_dtype()
+        self.lattice = np.asarray(lattice, dtype=float_dtype).reshape((3, 3))
+        property_types = {prop["name"]: prop.get("type") for prop in self.properties}
+        self.atomic_properties = {}
+        for key, value in atomic_properties.items():
+            ptype = property_types.get(key)
+            if ptype == "R":
+                self.atomic_properties[key] = np.asarray(value, dtype=float_dtype)
+            elif ptype == "I":
+                self.atomic_properties[key] = np.asarray(value, dtype=np.int32)
+            elif ptype == "L":
+                self.atomic_properties[key] = np.asarray(value, dtype=np.bool_)
+            elif ptype == "S":
+                self.atomic_properties[key] = np.asarray(value, dtype=np.str_)
+            else:
+                self.atomic_properties[key] = _normalize_float_field(value, float_dtype)
+        self.additional_fields = {}
+        for key, value in additional_fields.items():
+            if key in {"energy", "energy_original"} and isinstance(value, (float, int, np.number)) and not isinstance(value, (bool, np.bool_)):
+                self.additional_fields[key] = float(np.float64(value))
+            elif key in {"virial", "stress"}:
+                self.additional_fields[key] = np.asarray(value, dtype=float_dtype).reshape(-1)
+            else:
+                self.additional_fields[key] = _normalize_float_field(value, float_dtype)
+        for energy_key in ("energy", "energy_original"):
+            if energy_key in self.additional_fields and isinstance(self.additional_fields[energy_key], (float, int, np.number)):
+                self.additional_fields[energy_key] = float(np.float64(self.additional_fields[energy_key]))
         self.filter_list = ["species_id"]
         if "force" in self.atomic_properties.keys():
             self.force_label="force"
@@ -250,7 +292,7 @@ class Structure:
         alpha = _angle(b_vec, c_vec)
         beta = _angle(a_vec, c_vec)
         gamma = _angle(a_vec, b_vec)
-        return np.array([alpha, beta, gamma], dtype=np.float32)
+        return np.array([alpha, beta, gamma], dtype=np.float64)
 
     @property
     def numbers(self):
@@ -356,7 +398,7 @@ class Structure:
     @energy.setter
     def energy(self,new_energy:float):
         """Set total energy."""
-        self.additional_fields["energy"] = new_energy
+        self.additional_fields["energy"] = float(np.float64(new_energy))
     @property
     def has_energy(self):
         """Check if energy or stress data is available.
@@ -374,17 +416,17 @@ class Structure:
 
         Returns
         -------
-        ndarray, shape (N, 3), dtype float32
+        ndarray, shape (N, 3), dtype float64
             Forces in eV/Å for each atom.
         """
         return self.atomic_properties[self.force_label]
     @forces.setter
-    def forces(self,arr:npt.NDArray[np.float32]):
+    def forces(self,arr:npt.NDArray[np.float64]):
         """Assign per-atom forces and ensure metadata exists."""
         has_forces=[i["name"]==self.force_label for i in self.properties]
         if not any(has_forces):
             self.properties.append({'name': self.force_label, 'type': 'R', 'count': 3})
-        self.atomic_properties[self.force_label] = arr
+        self.atomic_properties[self.force_label] = np.asarray(arr, dtype=get_storage_float_dtype()).reshape(-1, 3)
 
     @property
     def has_forces(self):
@@ -398,14 +440,14 @@ class Structure:
         return self.force_label in self.atomic_properties.keys()
 
     @property
-    def bec(self) -> npt.NDArray[np.float32]:
+    def bec(self) -> npt.NDArray[np.float64]:
         """Per-atom Born effective charge tensor as (N, 9)."""
         return self.atomic_properties["bec"]
 
     @bec.setter
-    def bec(self, arr: npt.NDArray[np.float32]):
+    def bec(self, arr: npt.NDArray[np.float64]):
         """Assign per-atom BEC and ensure metadata exists."""
-        bec_arr = np.asarray(arr, dtype=np.float32).reshape(-1, 9)
+        bec_arr = np.asarray(arr, dtype=get_storage_float_dtype()).reshape(-1, 9)
         has_bec = any(p.get("name") == "bec" for p in self.properties)
         if not has_bec:
             self.properties.append({"name": "bec", "type": "R", "count": 9})
@@ -452,9 +494,9 @@ class Structure:
                 raise ValueError("No virial or stress data")
         return vir
     @virial.setter
-    def virial(self,new_virial:npt.NDArray[np.float32]):
+    def virial(self,new_virial:npt.NDArray[np.float64]):
         """Set virial array."""
-        self.additional_fields["virial"] = new_virial
+        self.additional_fields["virial"] = np.asarray(new_virial, dtype=get_storage_float_dtype()).reshape(-1)
 
     @property
     def nep_virial(self):
@@ -474,10 +516,10 @@ class Structure:
 
         Returns
         -------
-        ndarray, shape (3,), dtype float32
+        ndarray, shape (3,), dtype float64
             Dipole vector in e·Å/atom, parsed from ``additional_fields['dipole']``.
         """
-        dipole=np.array(self.dipole.split(" "),dtype=np.float32)
+        dipole=np.array(self.dipole.split(" "),dtype=np.float64)
         return dipole/self.num_atoms
 
     @property
@@ -486,10 +528,10 @@ class Structure:
 
         Returns
         -------
-        ndarray, shape (6,), dtype float32
+        ndarray, shape (6,), dtype float64
             [xx, yy, zz, xy, yz, zx] components in Å³/atom.
         """
-        vir = np.array(self.pol.split(" "), dtype=np.float32)
+        vir = np.array(self.pol.split(" "), dtype=np.float64)
         return vir[[0,4,8,1,5,6]] / self.num_atoms
 
     def get_chemical_symbols(self):
@@ -537,6 +579,11 @@ class Structure:
         """
         return self.atomic_properties['pos']
 
+    @positions.setter
+    def positions(self, arr: npt.NDArray[np.float64]):
+        """Assign Cartesian coordinates in the configured storage dtype."""
+        self.atomic_properties["pos"] = np.asarray(arr, dtype=get_storage_float_dtype()).reshape(-1, 3)
+
     @property
     def num_atoms(self):
         """Number of atoms in the structure.
@@ -565,7 +612,7 @@ class Structure:
         """
         return deepcopy(self)
 
-    def set_lattice(self, new_lattice: npt.NDArray[np.float32],in_place=False):
+    def set_lattice(self, new_lattice: npt.NDArray[np.float64],in_place=False):
         """Scale positions to a new lattice and update pos.
 
         Parameters
@@ -584,25 +631,25 @@ class Structure:
         old_lattice = target.lattice
         old_positions = target.positions
 
-        M = np.linalg.solve(old_lattice, new_lattice)
+        target_dtype = get_storage_float_dtype()
+        new_lattice_arr = np.asarray(new_lattice, dtype=target_dtype).reshape((3, 3))
+        M = np.linalg.solve(old_lattice, new_lattice_arr)
         new_positions = old_positions @ M
 
-        target.lattice = new_lattice
-        target.atomic_properties['pos'] = new_positions
+        target.lattice = new_lattice_arr
+        target.atomic_properties['pos'] = np.asarray(new_positions, dtype=target_dtype).reshape(-1, 3)
 
         return target
 
     def supercell(self, scale_factor, order="atom-major", tol=1e-5)->Structure:
         
-        scale_factor = np.asarray(scale_factor, dtype=np.float32)
+        scale_factor = np.asarray(scale_factor, dtype=np.int64)
         if scale_factor.size == 1:
             scale_factor = np.full(3, scale_factor)
         if scale_factor.size != 3:
             raise ValueError("scale_factor must be an array-like of length 3")
         if scale_factor.min() < 1:
             raise ValueError("scale_factor must be >= 1")
-
-        scale_factor = np.asarray(scale_factor, dtype=np.int64)
 
         new_lattice = self.lattice * scale_factor[:, None]
 
@@ -632,7 +679,7 @@ class Structure:
             raise ValueError( )
 
         atomic_properties = {}
-        atomic_properties['pos'] = new_positions.astype(np.float32)
+        atomic_properties['pos'] = np.asarray(new_positions, dtype=get_storage_float_dtype())
         atomic_properties['species'] = new_elements
 
         properties=[{'name': 'species', 'type': 'S', 'count': 1}, {'name': 'pos', 'type': 'R', 'count': 3}]
@@ -737,7 +784,7 @@ class Structure:
                 _info=_info.astype( np.str_)
 
             elif prop["type"] == "R":
-                _info=_info.astype( np.float32)
+                _info = _info.astype(get_storage_float_dtype())
 
             elif prop["type"] == "L":
                 _info=_info.astype( np.bool_)
@@ -790,10 +837,12 @@ class Structure:
                 if key == "config_type" or key == "Config_type":
                     key = "Config_type"
                     value=str(value)
-                if key.lower() in ("energy", "pbc","virial","stress"):
+                if key.lower() in ("energy", "energy_original", "pbc","virial","stress"):
                     key=key.lower()
+                if key in {"energy", "energy_original"} and isinstance(value, (float, int, np.number)):
+                    value = float(np.float64(value))
                 if key =="virial" or key =="stress":
-                    value= np.array(str(value).split(" "), dtype=np.float32)   # pyright:ignore
+                    value = np.array(str(value).split(" "), dtype=get_storage_float_dtype())   # pyright:ignore
                 additional_fields[key] = value
                 # print(additional_fields)
         return lattice, properties, additional_fields
@@ -944,7 +993,8 @@ class Structure:
         # Write global properties
         global_line = []
         if self.lattice.size!=0:
-            global_line.append(f'Lattice="' + ' '.join(f"{x}" for x in self.cell.flatten()) + '"')
+            lattice_text = _format_float64_values(self.cell.flatten())
+            global_line.append(f'Lattice="{lattice_text}"')
 
         props = ":".join(f"{p['name']}:{p['type']}:{p['count']}" for p in self.properties if p["name"] not in self.filter_list)
         global_line.append(f"Properties={props}")
@@ -952,12 +1002,23 @@ class Structure:
             if key =="type_map":
                 continue
             if isinstance(value, (float, int,np.number)):
-                global_line.append(f"{key}={value}")
+                if key in {"energy", "energy_original"}:
+                    scalar_text = format(float(np.float64(value)), ".17g")
+                else:
+                    scalar_text = f"{value}"
+                global_line.append(f"{key}={scalar_text}")
             elif isinstance(value, np.ndarray):
-                value_str = " ".join(map(str, value.flatten()))
+                if value.dtype.kind == "f":
+                    value_str = _format_float64_values(value)
+                else:
+                    value_str = " ".join(map(str, value.flatten()))
                 global_line.append(f'{key}="{value_str}"')
             elif isinstance(value, (list,set,tuple)):
-                value_str = " ".join(map(str, value ))
+                seq_array = np.asarray(list(value) if isinstance(value, set) else value)
+                if seq_array.dtype.kind == "f":
+                    value_str = _format_float64_values(seq_array)
+                else:
+                    value_str = " ".join(map(str, value ))
                 global_line.append(f'{key}="{value_str}"')
             else:
                 global_line.append(f'{key}="{value}"')
@@ -985,7 +1046,7 @@ class Structure:
                 if ptype == 'S':
                     line += " ".join([f"{x}" for x in values]) + " "
                 elif ptype == 'R':
-                    line += " ".join([f"{x:.10g}" for x in values]) + " "
+                    line += _format_float64_values(values) + " "
                 else:
                     line += " ".join([f"{x}" for x in values]) + " "
             file.write(line.strip() + "\n")
@@ -1010,9 +1071,9 @@ class Structure:
             Map from element pair (A, B) with A <= B to the minimal distance
             across the structure.
         """
-        cell = np.asarray(self.cell, dtype=np.float32).reshape(3, 3)
+        cell = np.asarray(self.cell, dtype=np.float64).reshape(3, 3)
         inv_cell = np.linalg.inv(cell)
-        coords = np.asarray(self.positions, dtype=np.float32).reshape(-1, 3)
+        coords = np.asarray(self.positions, dtype=np.float64).reshape(-1, 3)
         frac = coords @ inv_cell
 
         symbols = np.asarray([str(s) for s in self.elements])
@@ -1020,7 +1081,7 @@ class Structure:
         E = uniq_elems.shape[0]
         indices_by_code: list[np.ndarray] = [np.where(codes == c)[0] for c in range(E)]
 
-        min_mat = np.full((E, E), np.inf, dtype=np.float32)
+        min_mat = np.full((E, E), np.inf, dtype=np.float64)
 
         metric = cell @ cell.T  # 3x3
 
@@ -1028,13 +1089,13 @@ class Structure:
         if N == 0:
             return {}
         target_bytes = 80 * 1024 * 1024
-        per_pair_bytes = 4.0 * (3.0 + 1.0)  # df(3) + d(1)
+        per_pair_bytes = 8.0 * (3.0 + 1.0)  # df(3) + d(1)
         block_size = int(max(128, min(1024, target_bytes / (per_pair_bytes * N))))
 
         # Prepare neighbor shifts for triclinic MIC (including zero shift first)
         neighbor_shifts = np.array(
             [[i, j, k] for i in (-1, 0, 1) for j in (-1, 0, 1) for k in (-1, 0, 1)],
-            dtype=np.float32
+            dtype=np.float64
         )
         zero_idx = 13 if (neighbor_shifts[13] == 0).all() else int(np.where((neighbor_shifts == 0).all(axis=1))[0][0])
         order = [zero_idx] + [i for i in range(27) if i != zero_idx]
@@ -1047,12 +1108,12 @@ class Structure:
 
             # Start with zero shift as initial minimum
             tmp = df @ metric
-            d2 = np.einsum('ijk,ijk->ij', df, tmp, dtype=np.float32)
+            d2 = np.einsum('ijk,ijk->ij', df, tmp, dtype=np.float64)
 
             for s in neighbor_shifts[1:]:  # check remaining 26 image shifts
                 dfk = df + s
                 tmpk = dfk @ metric
-                d2k = np.einsum('ijk,ijk->ij', dfk, tmpk, dtype=np.float32)
+                d2k = np.einsum('ijk,ijk->ij', dfk, tmpk, dtype=np.float64)
                 d2 = np.minimum(d2, d2k)
             for row, ii in enumerate(range(i0, i1)):
                 d2[row, ii] = np.inf
@@ -1075,7 +1136,7 @@ class Structure:
             for b in range(a, E):
                 val = float(min_mat[a, b])
                 if np.isfinite(val):
-                    out[(str(uniq_elems[a]), str(uniq_elems[b]))] = np.sqrt(val, dtype=np.float32).item()
+                    out[(str(uniq_elems[a]), str(uniq_elems[b]))] = float(np.sqrt(np.float64(val)))
         return out
 
     def get_bond_pairs(self):
@@ -1122,11 +1183,11 @@ class Structure:
 
 
 
-def calculate_pairwise_distances(lattice_params: npt.NDArray[np.float32],
-                                 atom_coords: npt.NDArray[np.float32],
+def calculate_pairwise_distances(lattice_params: npt.NDArray[np.float64],
+                                 atom_coords: npt.NDArray[np.float64],
                                  fractional: bool = True,
                                  block_size: int = 2048
-                                 ) -> npt.NDArray[np.float32]:
+                                 ) -> npt.NDArray[np.float64]:
     """All-pairs distances under periodic minimum-image convention.
 
     This implementation is robust for triclinic (skewed) cells. It first
@@ -1151,10 +1212,10 @@ def calculate_pairwise_distances(lattice_params: npt.NDArray[np.float32],
         Distance matrix of shape (N, N).
     """
 
-    cell = np.asarray(lattice_params, dtype=np.float32).reshape(3, 3)
-    coords = np.asarray(atom_coords, dtype=np.float32).reshape(-1, 3)
+    cell = np.asarray(lattice_params, dtype=np.float64).reshape(3, 3)
+    coords = np.asarray(atom_coords, dtype=np.float64).reshape(-1, 3)
     if fractional:
-        frac = coords.astype(np.float32)
+        frac = coords.astype(np.float64, copy=False)
     else:
         inv_cell = np.linalg.inv(cell)
         frac = coords @ inv_cell
@@ -1165,7 +1226,7 @@ def calculate_pairwise_distances(lattice_params: npt.NDArray[np.float32],
     # Precompute 26 neighbor offsets in fractional space (excluding [0,0,0]).
     neighbor_shifts = np.array(
         [[i, j, k] for i in (-1, 0, 1) for j in (-1, 0, 1) for k in (-1, 0, 1)],
-        dtype=np.float32
+        dtype=np.float64
     )
     # Ensure [0,0,0] is first for a good initial bound, remaining are checked subsequently
     # Known index when iterating (-1..1) lexicographically is 13; fall back to search if not.
@@ -1174,7 +1235,7 @@ def calculate_pairwise_distances(lattice_params: npt.NDArray[np.float32],
     neighbor_shifts = neighbor_shifts[order]
 
     N = frac.shape[0]
-    dmat = np.empty((N, N), dtype=np.float32)
+    dmat = np.empty((N, N), dtype=np.float64)
 
     bs = max(1, int(block_size))
     for i0 in range(0, N, bs):
@@ -1187,15 +1248,15 @@ def calculate_pairwise_distances(lattice_params: npt.NDArray[np.float32],
         # capture Wigner–Seitz minimum for skewed cells.
         # Start with zero-shift (already wrapped) as initial minimum.
         tmp = df @ metric
-        min_d2 = np.einsum('ijk,ijk->ij', df, tmp, dtype=np.float32)
+        min_d2 = np.einsum('ijk,ijk->ij', df, tmp, dtype=np.float64)
 
         for s in neighbor_shifts[1:]:  # skip the [0,0,0] shift we already used
             dfk = df + s  # broadcast over (bs, N, 3)
             tmpk = dfk @ metric
-            d2k = np.einsum('ijk,ijk->ij', dfk, tmpk, dtype=np.float32)
+            d2k = np.einsum('ijk,ijk->ij', dfk, tmpk, dtype=np.float64)
             min_d2 = np.minimum(min_d2, d2k)
 
-        dmat[i0:i1, :] = np.sqrt(min_d2, dtype=np.float32)
+        dmat[i0:i1, :] = np.sqrt(min_d2)
 
     np.fill_diagonal(dmat, 0.0)
     return dmat
@@ -1493,6 +1554,8 @@ def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_
                 return structures
             key = data_path.stem
             data = np.load(data_path)
+            if isinstance(data, np.ndarray) and data.dtype.kind == "f":
+                data = data.astype(get_storage_float_dtype(), copy=False)
             # Ensure 2D [nframes, -1]
             if data.ndim == 1:
                 data = data.reshape(data.shape[0], -1)
@@ -1555,7 +1618,10 @@ def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_
                 properties.append({'name': key, 'type': 'R', 'count': int(col)})
             else:
                 if count == 1:
-                    additional_fields[key] = prop[0]
+                    if key == "energy":
+                        additional_fields[key] = float(np.float64(prop[0]))
+                    else:
+                        additional_fields[key] = prop[0]
                 else:
                     additional_fields[key] = prop.flatten()
 
@@ -1775,7 +1841,13 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
         for key, value in data.items():
             if key == 'type':
                 continue
-            np.save(save_path / f'{key}.npy', np.vstack(value))
+            if key == "energy":
+                array = np.asarray(value, dtype=get_storage_float_dtype()).reshape(-1, 1)
+            else:
+                array = np.vstack(value)
+                if isinstance(array, np.ndarray) and array.dtype.kind == "f":
+                    array = np.asarray(array, dtype=get_storage_float_dtype())
+            np.save(save_path / f'{key}.npy', array)
 
 
 

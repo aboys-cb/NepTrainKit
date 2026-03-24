@@ -118,7 +118,7 @@ def _store_energy_original_once(structure: Structure) -> None:
     if not getattr(structure, "has_energy", False):
         return
     try:
-        fields["energy_original"] = float(structure.energy)
+        fields["energy_original"] = float(np.float64(structure.energy))
     except Exception:
         return
 
@@ -176,14 +176,14 @@ def apply_energy_baseline(structures: List[Structure], baseline: EnergyBaselineP
             continue
 
         cnt = Counter(structure.elements)
-        count_vec = np.array([cnt.get(e, 0) for e in elements], dtype=float)
-        if float(np.sum(count_vec)) == 0.0:
+        count_vec = np.array([cnt.get(e, 0) for e in elements], dtype=np.float64)
+        if float(np.sum(count_vec, dtype=np.float64)) == 0.0:
             stats["skipped_no_elements_overlap"] += 1
             continue
 
-        shift = float(np.dot(count_vec, np.asarray(ref_vec, dtype=float)))
+        shift = float(np.dot(count_vec, np.asarray(ref_vec, dtype=np.float64)))
         _store_energy_original_once(structure)
-        structure.energy = float(structure.energy) - shift
+        structure.energy = float(np.float64(structure.energy) - np.float64(shift))
         stats["shifted_structures"] += 1
 
     stats["unmatched_config_types"] = sorted(stats["unmatched_config_types"])
@@ -293,7 +293,7 @@ def atomic_baseline_cost(param_population: np.ndarray,
     (2, 1)
     """
     shifted = energies[None, :] - np.dot(param_population, element_counts.T)
-    cost = np.mean((shifted - target_energies[None, :]) ** 2, axis=1)
+    cost = np.mean((shifted - target_energies[None, :]) ** 2, axis=1, dtype=np.float64)
     return cost.reshape(-1, 1)
 
 @timeit
@@ -344,17 +344,17 @@ def nes_optimize_atomic_baseline(num_variables: int,
     """
     np.random.seed(seed)
 
-    best_fitness = np.ones((max_generations, 1))
-    elite = np.zeros((max_generations, num_variables))
-    mean = -1 * np.random.rand(1, num_variables)
-    stddev = 0.1 * np.ones((1, num_variables))
+    best_fitness = np.ones((max_generations, 1), dtype=np.float64)
+    elite = np.zeros((max_generations, num_variables), dtype=np.float64)
+    mean = -1.0 * np.random.rand(1, num_variables).astype(np.float64, copy=False)
+    stddev = 0.1 * np.ones((1, num_variables), dtype=np.float64)
     lr_mean = 1.0
     lr_std = (3 + np.log(num_variables)) / (5 * np.sqrt(num_variables)) / 2
-    weights = np.maximum(0, np.log(pop_size / 2 + 1) - np.log(np.arange(1, pop_size + 1)))
+    weights = np.maximum(0.0, np.log(pop_size / 2 + 1) - np.log(np.arange(1, pop_size + 1, dtype=np.float64)))
     weights = weights / np.sum(weights) - 1 / pop_size
 
     for gen in range(max_generations):
-        z = np.random.randn(pop_size, num_variables)
+        z = np.random.randn(pop_size, num_variables).astype(np.float64, copy=False)
         pop = mean + stddev * z
         fitness = atomic_baseline_cost(pop, energies, element_counts, targets)
         idx = np.argsort(fitness.flatten())
@@ -430,7 +430,7 @@ def shift_dataset_energy(
     """
     frames = []
     for s in structures:
-        energy = float(s.energy)
+        energy = float(np.float64(s.energy))
         config_type = str(s.tag)
         elem_counts = Counter(s.elements)
 
@@ -455,15 +455,16 @@ def shift_dataset_energy(
     if alignment_mode == REF_GROUP_ALIGNMENT:
         if not len(reference_structures):
             raise ValueError("reference_structures is required for REF_GROUP_ALIGNMENT")
-        ref_energies = np.array([f.energy for f in reference_structures])
-        ref_mean = np.mean(ref_energies)
+        ref_energies = np.array([f.energy for f in reference_structures], dtype=np.float64)
+        ref_mean = np.mean(ref_energies, dtype=np.float64)
 
     if alignment_mode == DFT_TO_NEP_ALIGNMENT:
         if nep_energy_array is None:
             raise ValueError("nep_energy_array is required for DFT_TO_NEP_ALIGNMENT")
+        nep_energy_array = np.asarray(nep_energy_array, dtype=np.float64).reshape(-1)
 
         for f, e in zip(frames, nep_energy_array):
-            f["nep_energy"] = e * f["elem_counts"].total()
+            f["nep_energy"] = float(np.float64(e) * np.float64(f["elem_counts"].total()))
 
     all_config_types = {f["config_type"] for f in frames}
 
@@ -490,15 +491,15 @@ def shift_dataset_energy(
 
         if not grp_frames:
             continue
-        energies = np.array([f["energy"] for f in grp_frames])
-        counts = np.array([[f["elem_counts"].get(e, 0) for e in all_elements] for f in grp_frames], dtype=float)
+        energies = np.array([f["energy"] for f in grp_frames], dtype=np.float64)
+        counts = np.array([[f["elem_counts"].get(e, 0) for e in all_elements] for f in grp_frames], dtype=np.float64)
 
         if alignment_mode == REF_GROUP_ALIGNMENT:
-            targets = np.full_like(energies, ref_mean)
+            targets = np.full_like(energies, ref_mean, dtype=np.float64)
         elif alignment_mode == ZERO_BASELINE_ALIGNMENT:
-            targets = np.zeros_like(energies)
+            targets = np.zeros_like(energies, dtype=np.float64)
         else:  # DFT_TO_NEP_ALIGNMENT
-            targets = np.array([f["nep_energy"] for f in grp_frames])
+            targets = np.array([f["nep_energy"] for f in grp_frames], dtype=np.float64)
 
         atomic_ref = nes_optimize_atomic_baseline(
             num_elements,

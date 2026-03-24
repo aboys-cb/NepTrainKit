@@ -1,9 +1,13 @@
 """Card widgets supporting drag-and-drop workflows and dataset processing."""
 
+import inspect
+from pathlib import Path
+from urllib.parse import urljoin
+
 from typing import Any, Iterable
 
-from PySide6.QtCore import Qt, Signal, QMimeData, Property
-from PySide6.QtGui import QIcon, QDrag, QPixmap, QFont
+from PySide6.QtCore import Qt, Signal, QMimeData, Property, QUrl
+from PySide6.QtGui import QIcon, QDrag, QPixmap, QFont, QDesktopServices
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel
 
 from qfluentwidgets import (
@@ -20,6 +24,7 @@ from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleC
 
 from NepTrainKit import utils
 from NepTrainKit.core import MessageManager
+from NepTrainKit.version import DOCS_BASE_URL
 from .label import ProcessLabel
 from ase.io import write as ase_write
 
@@ -133,6 +138,8 @@ class CheckableHeaderCardWidget(HeaderCardWidget):
 class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
     """Checkable card that provides export and close buttons in the header."""
 
+    doc_page_path = ""
+    doc_anchor = ""
     exportSignal = Signal()
 
     def __init__(self, parent=None):
@@ -144,6 +151,11 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
             Parent widget responsible for ownership.
         """
         super(ShareCheckableHeaderCardWidget, self).__init__(parent)
+        self.doc_button = TransparentToolButton(FluentIcon.HELP, self)
+        self.doc_button.clicked.connect(self.open_online_doc)
+        self.doc_button.setToolTip("Open online documentation")
+        self.doc_button.installEventFilter(ToolTipFilter(self.doc_button, 300, ToolTipPosition.TOP))
+
         self.export_button = TransparentToolButton(QIcon(":/images/src/images/export1.svg"), self)
         self.export_button.clicked.connect(self.exportSignal)
         self.export_button.setToolTip("Export data")
@@ -154,8 +166,55 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         self.close_button.setToolTip("Close card")
         self.close_button.installEventFilter(ToolTipFilter(self.close_button, 300, ToolTipPosition.TOP))
 
+        self.headerLayout.addWidget(self.doc_button, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.export_button, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.close_button, 0, Qt.AlignmentFlag.AlignRight)
+        self.refresh_doc_button()
+
+    def _derive_builtin_doc_page_path(self) -> str:
+        """Return the default docs page path for built-in Make Dataset cards."""
+        configured = str(getattr(self, "doc_page_path", "") or "").strip()
+        if configured:
+            return configured
+
+        try:
+            module_file = Path(inspect.getfile(self.__class__)).resolve()
+        except (TypeError, OSError):
+            return ""
+
+        if module_file.parent.name != "_card":
+            return ""
+
+        slug = module_file.stem.replace("_", "-")
+        return f"module/make-dataset-cards/cards/{slug}.html"
+
+    def get_online_doc_url(self) -> str:
+        """Return the online documentation URL for this card, if available."""
+        page_path = self._derive_builtin_doc_page_path()
+        if not page_path:
+            return ""
+
+        if page_path.startswith(("http://", "https://")):
+            url = page_path
+        else:
+            url = urljoin(DOCS_BASE_URL, page_path.lstrip("/"))
+
+        anchor = str(getattr(self, "doc_anchor", "") or "").strip().lstrip("#")
+        if anchor:
+            return f"{url}#{anchor}"
+        return url
+
+    def refresh_doc_button(self) -> None:
+        """Show the doc button only when an online documentation URL exists."""
+        has_url = bool(self.get_online_doc_url())
+        self.doc_button.setVisible(has_url)
+        self.doc_button.setEnabled(has_url)
+
+    def open_online_doc(self) -> None:
+        """Open the online documentation page for the current card."""
+        url = self.get_online_doc_url()
+        if url:
+            QDesktopServices.openUrl(QUrl(url))
 
 
 class MakeDataCardWidget(ShareCheckableHeaderCardWidget):

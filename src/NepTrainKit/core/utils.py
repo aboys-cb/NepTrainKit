@@ -6,7 +6,7 @@ import re
 import traceback
 from functools import partial
 from pathlib import Path
-from typing import Iterable
+from typing import Any, Iterable
 
 import numpy as np
 import numpy.typing as npt
@@ -45,7 +45,7 @@ def check_fullbatch(run_in: dict[str, str], structure_num: int) -> bool:
     return int(run_in.get("batch", 1000)) >= structure_num
 
 
-def read_nep_out_file(file_path: Path | str, **kwargs) -> npt.NDArray[np.float32]:
+def read_nep_out_file(file_path: Path | str, **kwargs) -> npt.NDArray[Any]:
     """Load ``nep`` output data if the file exists, otherwise return empty array."""
     path = Path(file_path)
     if path.exists():
@@ -63,11 +63,11 @@ def split_by_natoms(array, natoms_list:list[int]) -> list[npt.NDArray]:
     split_arrays = np.split(array, split_indices)
     return split_arrays
 def aggregate_per_atom_to_structure(
-    array: npt.NDArray[np.float32],
+    array: npt.NDArray[Any],
     atoms_num_list: Iterable[int],
     map_func=np.linalg.norm,
     axis: int = 0,
-) -> npt.NDArray[np.float32]:
+) -> npt.NDArray[Any]:
     """Aggregate per-atom data into per-structure values based on atom counts."""
     split_arrays = split_by_natoms(array, atoms_num_list)
     func = partial(map_func, axis=axis)
@@ -111,7 +111,7 @@ def get_xyz_nframe(path: Path | str) -> int:
     nums = re.findall(r"^(\d+)$", content, re.MULTILINE)
     return len(nums)
 
-def concat_nep_dft_array(nep_array: npt.NDArray[np.float32], dft_array: npt.NDArray[np.float32], deepmd: bool = False, quantity: str = "values") -> npt.NDArray[np.float32]:
+def concat_nep_dft_array(nep_array: npt.NDArray[Any], dft_array: npt.NDArray[Any], deepmd: bool = False, quantity: str = "values") -> npt.NDArray[Any]:
     """Concatenate ``nep_array`` with ``dft_array``."""
 
     if nep_array.size == 0:

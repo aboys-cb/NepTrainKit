@@ -18,7 +18,7 @@ from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 class MagneticMomentRotationCard(MakeDataCard):
     """Rotate and optionally rescale atomic magnetic moments for selected species."""
 
-    group = "Perturbation"
+    group = "Magnetism"
     card_name = "Magmom Rotation"
     menu_icon = r":/images/src/images/perturb.svg"
 

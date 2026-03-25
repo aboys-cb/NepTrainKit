@@ -5,12 +5,39 @@
 # @email   : 1747193328@qq.com
 
 import sys
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 
-try:
-    from NepTrainKit._version import version as __version__
-except Exception:  # pragma: no cover - fallback path
-    __version__ = version("NepTrainKit")
+
+def _resolve_version() -> str:
+    try:
+        from NepTrainKit._version import version as generated_version
+    except Exception:
+        generated_version = None
+    if generated_version:
+        return generated_version
+
+    try:
+        return version("NepTrainKit")
+    except PackageNotFoundError:
+        pass
+
+    try:
+        from setuptools_scm import get_version
+    except Exception:
+        return "0+unknown"
+
+    try:
+        return get_version(
+            root="../..",
+            relative_to=__file__,
+            tag_regex=r"^v(?P<version>[0-9.]+(?:b[0-9]+)?)$",
+            local_scheme="no-local-version",
+        )
+    except Exception:
+        return "0+unknown"
+
+
+__version__ = _resolve_version()
 
 OWNER = "aboys-cb"
 REPO = "NepTrainKit"

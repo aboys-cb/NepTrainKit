@@ -6,6 +6,14 @@ on:
     types: [published]
   workflow_dispatch:
     inputs:
+      tag_name:
+        description: 'Tag to build (for example: v2.8.3)'
+        required: false
+        default: ''
+      version:
+        description: 'Override package version during rebuild (for example: 2.8.3)'
+        required: false
+        default: ''
 
       upload:
         description: 'Upload to PyPI (true/false)'
@@ -19,6 +27,9 @@ jobs:
   build_sdist:
     name: Source distribution
     runs-on: ubuntu-latest
+    env:
+      TARGET_REF: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag_name || github.ref }}
+      SCM_PRETEND_VERSION: ${{ github.event.inputs.version || '' }}
 
 
 
@@ -26,7 +37,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
+          ref: ${{ env.TARGET_REF }}
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -41,22 +52,28 @@ jobs:
         run: |
           echo "Event: ${{ github.event_name }}"
           echo "Ref: ${{ github.ref }}"
+          echo "Target Ref: $TARGET_REF"
           echo "Release Tag: ${{ github.event.release.tag_name }}"
           echo "Checked out commit: $(git rev-parse HEAD)"
           echo "Current tag: $(git describe --tags --exact-match 2>/dev/null || echo 'no exact tag')"
           echo "All tags: $(git tag --points-at HEAD)"
           echo "Git describe: $(git describe --tags --dirty)"
           echo "Setuptools-SCM version: $(python -m setuptools_scm)"
+        env:
+          SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.SCM_PRETEND_VERSION }}
       - name: Ensure clean repository
         run: git clean -fdx
       - name: Build source distribution
         run: python -m build --sdist -n
+        env:
+          SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.SCM_PRETEND_VERSION }}
 
 
       - name: Test source distribution
         run: pip install dist/*.tar.gz
         env:
           SKLEARN_SKIP_NETWORK_TESTS: 1
+          SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.SCM_PRETEND_VERSION }}
 
         shell: bash
       - name: Store artifacts
@@ -72,6 +89,9 @@ jobs:
 
     name: Build wheel ${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
     runs-on: ${{ matrix.buildplat[0] }}
+    env:
+      TARGET_REF: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag_name || github.ref }}
+      SCM_PRETEND_VERSION: ${{ github.event.inputs.version || '' }}
     strategy:
       matrix:
         # Github Actions doesn't support pairing matrix values together, let's improvise
@@ -103,7 +123,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
-        ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
+        ref: ${{ env.TARGET_REF }}
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
@@ -153,6 +173,7 @@ jobs:
     - name: Build wheels
       uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a  # v2.23.2
       env:
+        SETUPTOOLS_SCM_PRETEND_VERSION: ${{ env.SCM_PRETEND_VERSION }}
 #        CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
 #        CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux_2_28_aarch64
         CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
@@ -203,6 +224,28 @@ jobs:
         name: cibw-wheels-${{ matrix.python }}-${{ matrix.buildplat[1] }}-${{ matrix.buildplat[2] }}
         path: ./wheelhouse/*.whl
 
+  upload_release_assets:
+    name: Upload release assets
+    if: github.event_name == 'release' || github.event.inputs.tag_name != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs: [build_wheels, build_sdist]
+
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cibw-*
+          path: dist
+          merge-multiple: true
+
+      - name: Upload artifacts to GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event_name == 'release' && github.event.release.tag_name || github.event.inputs.tag_name }}
+          files: dist/*
+          overwrite_files: true
 
 #   Upload the wheels and the source distribution
   upload_pypi:

@@ -5,6 +5,7 @@
 /docs/build
 .idea/
 /src/NepTrainKit/?.py
+/src/NepTrainKit/_version.py
 /src/NepTrainKit/Log/*.log
 .pytest_cache/
 tests/_sandbox_tmp/

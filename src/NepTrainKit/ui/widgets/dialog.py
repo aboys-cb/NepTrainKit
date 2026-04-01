@@ -1872,7 +1872,6 @@ class ShiftEnergyMessageBox(MessageBoxBase):
 
 class ProgressDialog(FramelessDialog):
     def __init__(self, parent=None, title=""):
-        pass
         super().__init__(parent)
         self.setStyleSheet("ProgressDialog{background:white}")
 

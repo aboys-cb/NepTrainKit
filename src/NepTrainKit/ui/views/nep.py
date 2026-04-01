@@ -1,4 +1,5 @@
 """Visualization widgets and analysis helpers for NEP evaluation results."""
+
 import json
 import traceback
 from pathlib import Path
@@ -27,6 +28,7 @@ from NepTrainKit.ui.widgets import (
     DFTD3MessageBox,
     DatasetSummaryMessageBox,
     DistributionInspectorMessageBox,
+    TrainingOverlayDialog,
 )
 from NepTrainKit.core.types import SearchType, CanvasMode
 from NepTrainKit.ui.views import NepDisplayGraphicsToolBar
@@ -42,12 +44,12 @@ from NepTrainKit.core.energy_shift import (
 
 class NepResultPlotWidget(QWidget):
     """Plot widget that visualizes NEP evaluation results and provides analysis helpers.
-    
+
     Parameters
     ----------
     parent : QWidget, optional
         Parent widget used to manage modality for dialogs and progress windows.
-    
+
     Attributes
     ----------
     canvas : object
@@ -56,31 +58,31 @@ class NepResultPlotWidget(QWidget):
         Toolbar whose actions manipulate the canvas and underlying dataset.
     """
 
-    def __init__(self,parent=None):
+    def __init__(self, parent=None):
         """Create the widget layout and load the canvas defined in user preferences.
-        
+
         Parameters
         ----------
         parent : QWidget, optional
             Parent widget used for signal propagation and dialog ownership.
         """
         super().__init__(parent)
-        self._parent=parent
+        self._parent = parent
         self.tool_bar: NepDisplayGraphicsToolBar
-        self.draw_mode=False
+        self.draw_mode = False
         # self.setRenderHint(QPainter.Antialiasing, False)
         self._layout = QHBoxLayout(self)
         self.setLayout(self._layout)
-        canvas_type = Config.get("widget","canvas_type",CanvasMode.PYQTGRAPH)
+        canvas_type = Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH)
 
-        self.last_figure_num=None
+        self.last_figure_num = None
         self._distribution_inspector = None
         self._canvas_fallback_warned = False
         self.swith_canvas(canvas_type)
 
-    def swith_canvas(self,canvas_type:CanvasMode="pyqtgraph"):
+    def swith_canvas(self, canvas_type: CanvasMode = "pyqtgraph"):
         """Instantiate the requested plotting backend and attach it to the layout.
-        
+
         Parameters
         ----------
         canvas_type : CanvasMode, default=CanvasMode.PYQTGRAPH
@@ -94,15 +96,13 @@ class NepResultPlotWidget(QWidget):
             )
             self._canvas_fallback_warned = True
 
-
-
     # def clear(self):
     #     self.canvas.clear_axes()
-        # self.last_figure_num=None
+    # self.last_figure_num=None
 
     def set_tool_bar(self, tool):
         """Connect toolbar signals to canvas slots and store the toolbar reference.
-        
+
         Parameters
         ----------
         tool : NepDisplayGraphicsToolBar
@@ -141,7 +141,6 @@ class NepResultPlotWidget(QWidget):
             self._distribution_inspector = None
         super().closeEvent(event)
 
-
     def find_non_physical_structures(self):
         """Launch a background scan for structures that violate distance constraints."""
         data = self.canvas.nep_result_data
@@ -169,24 +168,25 @@ class NepResultPlotWidget(QWidget):
             self.canvas.select_index(indices, False)
 
     def find_max_error_point(self):
-        """Select the highest-error structures on the active axes based on user input.
-        """
+        """Select the highest-error structures on the active axes based on user input."""
         dataset = self.canvas.get_axes_dataset(self.canvas.current_axes)
 
         if dataset is None:
             return
 
-        box= GetIntMessageBox(self._parent,"Please enter an integer N, it will find the top N structures with the largest errors")
-        n = Config.getint("widget","max_error_value",10)
+        box = GetIntMessageBox(
+            self._parent, "Please enter an integer N, it will find the top N structures with the largest errors"
+        )
+        n = Config.getint("widget", "max_error_value", 10)
         box.intSpinBox.setValue(n)
 
         if not box.exec():
             return
-        nmax= box.intSpinBox.value()
-        Config.set("widget","max_error_value",nmax)
-        index= (dataset.get_max_error_index(nmax))
+        nmax = box.intSpinBox.value()
+        Config.set("widget", "max_error_value", nmax)
+        index = dataset.get_max_error_index(nmax)
 
-        self.canvas.select_index(index,False)
+        self.canvas.select_index(index, False)
 
     def sparse_point(self):
         """Run farthest point sampling with simple and advanced strategies."""
@@ -247,6 +247,18 @@ class NepResultPlotWidget(QWidget):
         if structures:
             self.canvas.select_index(structures, reverse)
 
+            # Show training overlay if requested - pre-compute PCA then show dialog
+            show_overlay = bool(getattr(box, "trainingOverlayCheck", None) and box.trainingOverlayCheck.isChecked())
+            if show_overlay and training_path:
+                pca_data = TrainingOverlayDialog.compute_pca_data(
+                    training_path=training_path,
+                    result_data=data,
+                    selected_indices=structures,
+                )
+                if pca_data is not None:
+                    overlay_dialog = TrainingOverlayDialog(parent=self._parent, pca_data=pca_data)
+                    overlay_dialog.show()
+
     def edit_structure_info(self):
         """Open the metadata editor for the current selection and apply the changes."""
         data = self.canvas.nep_result_data
@@ -272,7 +284,6 @@ class NepResultPlotWidget(QWidget):
         if path:
             thread = LoadingThread(self, show_tip=True, title="Exporting descriptor data")
             thread.start_work(data.export_descriptor_data, path)
-
 
     def _build_shift_energy_dialog(
         self,
@@ -486,7 +497,6 @@ class NepResultPlotWidget(QWidget):
         self._post_shift_energy_messages(data, selected_preset, baseline_store, values)
         self.canvas.plot_nep_result()
 
-
     def calc_dft_d3(self):
         """Collect DFT-D3 parameters from the user and start the calculation asynchronously."""
         data = self.canvas.nep_result_data
@@ -497,10 +507,7 @@ class NepResultPlotWidget(QWidget):
         cutoff_cn = Config.getfloat("widget", "cutoff_cn", 6)
         mode = Config.getint("widget", "d3_mode", 0)
 
-        box = DFTD3MessageBox(
-            self._parent,
-            "DFT D3"
-        )
+        box = DFTD3MessageBox(self._parent, "DFT D3")
         box.functionEdit.setText(function)
         box.d1SpinBox.setValue(cutoff)
         box.d1cnSpinBox.setValue(cutoff_cn)
@@ -518,10 +525,7 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget", "d3_mode", mode)
 
         thread = LoadingThread(self._parent, show_tip=True, title="calculating dftd3")
-        thread.start_work(
-            data.apply_dft_d3_correction,
-            mode, functional, d3_cutoff, d3_cutoff_cn
-        )
+        thread.start_work(data.apply_dft_d3_correction, mode, functional, d3_cutoff, d3_cutoff_cn)
         thread.finished.connect(self.canvas.plot_nep_result)
 
     def show_dataset_summary(self):
@@ -661,8 +665,7 @@ class NepResultPlotWidget(QWidget):
         dlg.activateWindow()
 
     def inverse_select(self):
-        """Invert the current structure selection on the canvas.
-        """
+        """Invert the current structure selection on the canvas."""
         self.canvas.inverse_select()
 
     def select_by_index(self):
@@ -697,7 +700,7 @@ class NepResultPlotWidget(QWidget):
         x_min, x_max = box.xMinSpin.value(), box.xMaxSpin.value()
         y_min, y_max = box.yMinSpin.value(), box.yMaxSpin.value()
         logic_and = box.logicCombo.currentText() == "AND"
-        indices = data.select_structures_by_range( dataset, x_min, x_max, y_min, y_max, logic_and)
+        indices = data.select_structures_by_range(dataset, x_min, x_max, y_min, y_max, logic_and)
         if indices:
             self.canvas.select_index(indices, False)
 
@@ -794,41 +797,21 @@ class NepResultPlotWidget(QWidget):
             return
         if indices:
             self.canvas.select_index(indices, False)
-            MessageManager.send_info_message(
-                f"{len(indices)} structures with |ΣF| > {threshold:g}"
-            )
+            MessageManager.send_info_message(f"{len(indices)} structures with |ΣF| > {threshold:g}")
         else:
             MessageManager.send_info_message("All scanned structures satisfy the net-force threshold.")
 
-    def set_dataset(self,dataset):
+    def set_dataset(self, dataset):
         """Attach a NEP result dataset to the canvas and refresh the plots.
-        
+
         Parameters
         ----------
         dataset : Any
             Loaded NEP result container exposing descriptors and structures.
         """
-        if self.last_figure_num !=len(dataset.datasets):
-
+        if self.last_figure_num != len(dataset.datasets):
             self.canvas.init_axes(len(dataset.datasets))
             self.last_figure_num = len(dataset.datasets)
 
         self.canvas.set_nep_result_data(dataset)
         self.canvas.plot_nep_result()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

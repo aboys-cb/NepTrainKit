@@ -2286,7 +2286,7 @@ class ModelInfoMessageBox(MessageBoxBase):
             data_file = path.joinpath("train.xyz")
             if not data_file.exists():
                 MessageManager.send_message_box(
-                    "No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing."
+                    "No 'train.xyz' training data file found in the specified path. This file is required to compute training error metrics; please make sure you know what you are doing."
                 )
                 # data_size=0
                 energy = 0

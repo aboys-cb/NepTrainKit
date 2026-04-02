@@ -54,6 +54,7 @@ import json
 import html
 import math
 import os
+import numpy as np
 from .button import TagPushButton, TagGroup
 
 from NepTrainKit.core import MessageManager
@@ -61,13 +62,16 @@ from NepTrainKit.config import Config
 from NepTrainKit.core.types import (
     SearchType,
     CanvasMode,
+    Brushes,
+    Pens,
     DistributionGroupMode,
     DistributionScope,
     DistributionValueView,
     DistributionSelectMode,
     DistributionCurveStyle,
 )
-from NepTrainKit.core.io.base import DistributionRequest
+from NepTrainKit.core.io.base import DistributionRequest, NepPlotData
+from NepTrainKit.ui.canvas.canvas_factory import create_result_canvas, resolve_canvas_host_widget
 from NepTrainKit.ui.canvas.distribution_factory import create_distribution_plot_adapter
 
 from NepTrainKit import module_path
@@ -2640,20 +2644,28 @@ class TagManageDialog(MessageBoxBase):
         return super().eventFilter(obj, event)
 
 
+@dataclass
+class _TrainingOverlayResultData:
+    """Minimal result-data container used to reuse the existing result canvas."""
+
+    datasets: list[Any]
+    select_index: set[int] = field(default_factory=set)
+    reject_index: set[int] = field(default_factory=set)
+
+
 class TrainingOverlayDialog(QDialog):
     """Non-modal dialog showing PCA scatter plot with training/loaded/selected structures."""
 
-    def __init__(self, parent=None, pca_data=None):
-        """
-        Args:
-            parent: Parent widget
-            pca_data: dict with keys: training_pca, current_pca, selected_pca, n_training, n_current
-        """
+    def __init__(self, parent=None, pca_data=None, canvas_type: str | None = None):
         super().__init__(parent)
         self.setWindowTitle("Training Overlay")
         self.setWindowModality(Qt.WindowModality.NonModal)
         self._pca_data = pca_data or {}
+        self._canvas_type = str(canvas_type or Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)).strip()
+        self._canvas_fallback_warned = False
         self._legend_labels: list = []
+        self._overlay_result_data: _TrainingOverlayResultData | None = None
+        self._canvas = None
         self._setup_ui()
         self._render_from_pca_data()
 
@@ -2739,15 +2751,18 @@ class TrainingOverlayDialog(QDialog):
             current_pca = reduced[offset : offset + current_coords.shape[0]]
 
             selected_pca = np.array([])
+            selected_current_indices = np.array([], dtype=np.int32)
             if len(selected_indices) > 0 and current_pca.size > 0:
                 valid_mask = np.array([0 <= i < len(current_pca) for i in selected_indices], dtype=bool)
                 if valid_mask.any():
-                    selected_pca = current_pca[np.array(selected_indices)[valid_mask]]
+                    selected_current_indices = np.asarray(selected_indices, dtype=np.int32)[valid_mask]
+                    selected_pca = current_pca[selected_current_indices]
 
             return {
                 "training_pca": training_pca,
                 "current_pca": current_pca,
                 "selected_pca": selected_pca,
+                "selected_current_indices": selected_current_indices,
                 "n_training": n_training,
                 "n_current": n_current,
             }
@@ -2757,45 +2772,25 @@ class TrainingOverlayDialog(QDialog):
     def _setup_ui(self):
         from PySide6.QtWidgets import QLabel, QWidget, QVBoxLayout, QHBoxLayout
         from PySide6.QtGui import QPixmap, QPainter, QColor
-        import pyqtgraph as pg
-        from pyqtgraph import PlotWidget, ScatterPlotItem
-
-        self._pg = pg
-        self._ScatterPlotItem = ScatterPlotItem
 
         root_layout = QVBoxLayout(self)
         root_layout.setContentsMargins(10, 10, 10, 10)
         root_layout.setSpacing(8)
 
-        # Custom axis to disable SI scaling and parentheses in label
-        class RawAxis(pg.AxisItem):
-            def tickStrings(self, values, scale, spacing):
-                return [f"{v:.6g}" for v in values]
+        self._plot_hint_label = CaptionLabel("", self)
+        self._plot_hint_label.setWordWrap(True)
+        root_layout.addWidget(self._plot_hint_label)
 
-            def labelString(self):
-                return self.labelText
-
-        self._plot_widget = PlotWidget()
-        # Set white background
-        self._plot_widget.setBackground("w")
-        plot_item = self._plot_widget.getPlotItem()
-
-        # Configure grid with dark gray lines (visible on white background)
-        plot_item.showGrid(x=True, y=True, alpha=0.5)
-
-        # Configure axes with black color
-        bottom_axis = RawAxis("bottom")
-        left_axis = RawAxis("left")
-        bottom_axis.setLabel("PC1", "")
-        left_axis.setLabel("PC2", "")
-        # Set black pen for axis lines and text
-        black_pen = pg.mkPen("k")
-        for axis in [bottom_axis, left_axis]:
-            axis.setPen(black_pen)
-            axis.setTextPen(black_pen)
-        plot_item.setAxisItems({"bottom": bottom_axis, "left": left_axis})
-        self._plot_widget.setMinimumSize(500, 400)
-        root_layout.addWidget(self._plot_widget, 1)
+        self._canvas, fallback = create_result_canvas(self._canvas_type, self)
+        self._canvas.tool_bar = None
+        canvas_host = resolve_canvas_host_widget(self._canvas)
+        canvas_host.setMinimumSize(500, 400)
+        root_layout.addWidget(canvas_host, 1)
+        if fallback:
+            self._plot_hint_label.setText(
+                "Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph."
+            )
+            self._canvas_fallback_warned = True
 
         # Bottom-right legend bar
         bottom_layout = QHBoxLayout()
@@ -2837,81 +2832,70 @@ class TrainingOverlayDialog(QDialog):
         """Render scatter plot from pre-computed PCA data."""
         import numpy as np
 
-        training_pca = self._pca_data.get("training_pca", np.array([]))
-        current_pca = self._pca_data.get("current_pca", np.array([]))
-        selected_pca = self._pca_data.get("selected_pca", np.array([]))
-        n_training = self._pca_data.get("n_training", 0)
-        n_current = self._pca_data.get("n_current", 0)
+        training_pca = self._reshape_points(self._pca_data.get("training_pca", np.array([])))
+        current_pca = self._reshape_points(self._pca_data.get("current_pca", np.array([])))
+        selected_current_indices = np.asarray(
+            self._pca_data.get("selected_current_indices", np.array([], dtype=np.int32)),
+            dtype=np.int32,
+        ).reshape(-1)
 
-        # Update legend
         if len(self._legend_labels) >= 3:
-            self._legend_labels[0].setText(f"Training: {n_training}")
-            self._legend_labels[1].setText(f"Loaded: {n_current}")
-            self._legend_labels[2].setText(f"Selected: {len(selected_pca)}")
+            self._legend_labels[0].setText(f"Training: {training_pca.shape[0]}")
+            self._legend_labels[1].setText(f"Loaded: {current_pca.shape[0]}")
+            self._legend_labels[2].setText(f"Selected: {selected_current_indices.size}")
 
-        # Render scatter
-        self._render_scatter(training_pca, current_pca, selected_pca)
-
-    def _render_scatter(self, training_pca, current_pca, selected_pca):
-        plot = self._plot_widget.getPlotItem()
-        plot.clear()
-
-        uniform_size = 8
-
-        # Helper to create brush and pen
-        def make_scatter(x, y, brush_color, pen_color, size):
-            return self._ScatterPlotItem(
-                x=x,
-                y=y,
-                brush=self._pg.mkBrush(*brush_color),
-                pen=self._pg.mkPen(*pen_color),
-                symbol="o",
-                size=size,
-            )
-
-        if training_pca.size > 0:
-            plot.addItem(
-                make_scatter(
-                    training_pca[:, 0], training_pca[:, 1], (160, 160, 160, 180), (80, 80, 80, 200), uniform_size
-                )
-            )
-
-        if current_pca.size > 0:
-            plot.addItem(
-                make_scatter(
-                    current_pca[:, 0], current_pca[:, 1], (30, 120, 215, 220), (20, 80, 180, 200), uniform_size
-                )
-            )
-
-        if selected_pca.size > 0:
-            plot.addItem(
-                make_scatter(
-                    selected_pca[:, 0], selected_pca[:, 1], (220, 30, 30, 255), (150, 20, 20, 255), uniform_size
-                )
-            )
-
-        self._set_range(plot)
-
-    def _set_range(self, plot):
-        all_scatter = [i for i in plot.items if isinstance(i, self._ScatterPlotItem)]
-        if not all_scatter:
-            return
-
-        x_all, y_all = [], []
-        for item in all_scatter:
-            data = item.data
-            if data is not None and len(data) > 0:
-                x_all.extend(data["x"].tolist())
-                y_all.extend(data["y"].tolist())
-
-        if not x_all:
-            return
-
-        x_min, x_max = min(x_all), max(x_all)
-        y_min, y_max = min(y_all), max(y_all)
-        margin_x = (x_max - x_min) * 0.05 if x_max != x_min else 0.1
-        margin_y = (y_max - y_min) * 0.05 if y_max != y_min else 0.1
-        plot.getViewBox().setRange(
-            xRange=(x_min - margin_x, x_max + margin_x),
-            yRange=(y_min - margin_y, y_max + margin_y),
+        result_data, loaded_ids, selected_ids = self._build_overlay_result_data(
+            training_pca,
+            current_pca,
+            selected_current_indices,
         )
+        self._overlay_result_data = result_data
+        self._canvas.set_nep_result_data(result_data)
+        self._canvas.init_axes(1)
+        self._canvas.plot_nep_result()
+        apply_groups = getattr(self._canvas, "apply_overlay_groups", None)
+        if apply_groups is not None:
+            apply_groups(loaded_ids, selected_ids)
+
+    @staticmethod
+    def _reshape_points(values):
+        arr = np.asarray(values, dtype=np.float32)
+        if arr.size == 0:
+            return np.empty((0, 2), dtype=np.float32)
+        return arr.reshape(-1, 2)
+
+    def _build_overlay_result_data(self, training_pca, current_pca, selected_current_indices):
+        import numpy as np
+
+        point_blocks = [block for block in (training_pca, current_pca) if block.size > 0]
+        if point_blocks:
+            points = np.vstack(point_blocks).astype(np.float32, copy=False)
+        else:
+            points = np.empty((0, 2), dtype=np.float32)
+
+        synthetic_ids = np.arange(points.shape[0], dtype=np.int32)
+        if points.size == 0:
+            plot_data = np.empty((0, 2), dtype=np.float32)
+        else:
+            plot_data = np.column_stack([points[:, 1], points[:, 0]]).astype(np.float32, copy=False)
+
+        dataset = NepPlotData(
+            plot_data,
+            index_list=synthetic_ids,
+            title="descriptor",
+        )
+        dataset.display_title = "Training Overlay"
+        dataset.x_label = "PC1"
+        dataset.y_label = "PC2"
+        dataset.parity_mode = False
+        dataset.show_rmse = False
+        dataset.base_brush = Brushes.TrainingOverlay
+        dataset.base_pen = Pens.TrainingOverlay
+
+        loaded_offset = int(training_pca.shape[0])
+        loaded_ids = synthetic_ids[loaded_offset:].astype(np.int32)
+        selected_current_indices = selected_current_indices[
+            (selected_current_indices >= 0) & (selected_current_indices < int(current_pca.shape[0]))
+        ]
+        selected_ids = (loaded_offset + selected_current_indices).astype(np.int32)
+        return _TrainingOverlayResultData(datasets=[dataset]), loaded_ids, selected_ids

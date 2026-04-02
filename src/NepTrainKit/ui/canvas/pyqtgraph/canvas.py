@@ -40,6 +40,8 @@ class MyPlotItem(PlotItem):
 
         self.current_point = ScatterPlotItem()
         self.current_point.setZValue(100)
+        self.parity_mode = True
+        self._overlay_base_brush = None
         if "title" in kwargs:
             self.setTitle(kwargs["title"])
 
@@ -116,7 +118,7 @@ class MyPlotItem(PlotItem):
         if t == self.title:
             return
         self.setTitle(t)
-        if t != "descriptor":
+        if self.parity_mode and t != "descriptor":
             self.add_diagonal()
 
     @property
@@ -224,16 +226,22 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             return
 
         self.ci.clear()
-        self.addItem(self.current_axes, row=0, col=0, colspan=4)
-        self.current_axes.rmse_size = 12
         # Place the remaining plots on the second row.
         other_plots = [p for p in self.axes_list if p != self.current_axes]
+        if not other_plots:
+            self.addItem(self.current_axes, row=0, col=0, colspan=1)
+            self.current_axes.rmse_size = 12
+            self.ci.layout.setRowStretchFactor(0, 1)
+            return
+
+        self.addItem(self.current_axes, row=0, col=0, colspan=4)
+        self.current_axes.rmse_size = 12
         for i, other_plot in enumerate(other_plots):
             self.addItem(other_plot, row=1, col=i)
             other_plot.rmse_size = 6
 
-        for col, factor in enumerate([3, 1]):
-            self.ci.layout.setRowStretchFactor(col, factor)
+        for row, factor in enumerate([3, 1]):
+            self.ci.layout.setRowStretchFactor(row, factor)
 
     @timeit
     def plot_nep_result(self):
@@ -247,17 +255,30 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
 
         for index, _dataset in enumerate(self.nep_result_data.datasets):
             plot = self.axes_list[index]
+            plot.parity_mode = bool(getattr(_dataset, "parity_mode", _dataset.title != "descriptor"))
             plot.title = _dataset.title
+            display_title = str(getattr(_dataset, "display_title", _dataset.title) or _dataset.title)
+            if display_title != plot.title:
+                plot.setTitle(display_title)
             pg_size = Config.getint("widget", "pg_marker_size", 7) or 7
             plot.scatter(
                 _dataset.x,
                 _dataset.y,
                 data=_dataset.structure_index,
-                brush=Brushes.get(_dataset.title.upper()),
-                pen=Pens.get(_dataset.title.upper()),
+                brush=getattr(_dataset, "base_brush", Brushes.get(_dataset.title.upper())),
+                pen=getattr(_dataset, "base_pen", Pens.get(_dataset.title.upper())),
                 symbol='o',
                 size=pg_size,
             )
+            base_brush = getattr(_dataset, "base_brush", Brushes.get(_dataset.title.upper()))
+            scatter_data = getattr(plot._scatter, "data", None)
+            if scatter_data is not None and getattr(scatter_data, "dtype", None) is not None and scatter_data.dtype.names:
+                plot._scatter.data["brush"] = np.array(
+                    [base_brush for _ in range(len(plot._scatter.data["data"]))],
+                    dtype=object,
+                )
+                plot._scatter.updateSpots()
+            plot._overlay_base_brush = np.array(plot._scatter.data["brush"], copy=True)
 
             # Update the view box range after plotting.
             self.auto_range(plot)
@@ -269,12 +290,21 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             else:
                 plot.set_current_point([], [])
 
-            if _dataset.title not in ["descriptor"]:
+            if bool(getattr(_dataset, "show_rmse", _dataset.title not in ["descriptor"])):
                 # Update RMSE overlays for non-descriptor plots.
                 pos = self.convert_pos(plot, (0, 1))
                 text = f"rmse: {_dataset.get_formart_rmse()}"
                 plot.text.setText(text)
                 plot.text.setPos(*pos)
+            else:
+                plot.text.setText("")
+
+            x_label = getattr(_dataset, "x_label", None)
+            y_label = getattr(_dataset, "y_label", None)
+            if x_label:
+                plot.setLabel("bottom", str(x_label))
+            if y_label:
+                plot.setLabel("left", str(y_label))
 
         # Restore reject highlights after a full replot.
         reject = getattr(self.nep_result_data, "reject_index", None)
@@ -412,6 +442,28 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         to_selected = [idx for idx in indices if idx in selected]
         if to_selected:
             self.update_scatter_color(to_selected, Brushes.Selected)
+
+    def apply_overlay_groups(self, loaded_index, selected_index) -> None:
+        """Apply read-only overlay coloring for a synthetic single-plot dataset."""
+        if self.nep_result_data is None:
+            return
+
+        loaded_ids = {int(v) for v in np.atleast_1d(np.asarray(loaded_index, dtype=np.int64)).tolist()} if loaded_index is not None else set()
+        selected_ids = {int(v) for v in np.atleast_1d(np.asarray(selected_index, dtype=np.int64)).tolist()} if selected_index is not None else set()
+
+        for plot in self.axes_list:
+            scatter = getattr(plot, "_scatter", None)
+            if not scatter:
+                continue
+            if getattr(plot, "_overlay_base_brush", None) is not None:
+                scatter.data["brush"] = np.array(plot._overlay_base_brush, copy=True)
+            scatter.data["sourceRect"][:] = (0, 0, 0, 0)
+            scatter.updateSpots()
+
+        if loaded_ids:
+            self.update_scatter_color(sorted(loaded_ids), Brushes.LoadedOverlay)
+        if selected_ids:
+            self.update_scatter_color(sorted(selected_ids), Brushes.Selected)
 
     def convert_pos(self, plot, pos):
         """Convert a relative position tuple to plot coordinates.

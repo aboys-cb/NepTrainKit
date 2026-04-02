@@ -25,6 +25,7 @@ from NepTrainKit.core.types import ForcesMode
 from NepTrainKit.config import  Config
 from PySide6.QtWidgets import QApplication
 from NepTrainKit.ui.widgets.dialog import ShiftEnergyDialogValues
+import NepTrainKit.ui.widgets.dialog as dialog_module
 import NepTrainKit.ui.views.nep as nep_view_module
 import NepTrainKit.ui.pages.show_nep as show_nep_module
 
@@ -454,6 +455,197 @@ class TestNepResultPlotWidgetCanvasFactory(unittest.TestCase):
             "Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph."
         )
         self.assertTrue(widget._canvas_fallback_warned)
+
+
+class TestTrainingOverlayDialog(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls._app = QApplication.instance() or QApplication([])
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls._app is not None:
+            cls._app.quit()
+            cls._app = None
+
+    def test_dialog_uses_result_canvas_and_single_axis(self):
+        from PySide6.QtWidgets import QWidget
+
+        fake_canvas = SimpleNamespace(
+            tool_bar=None,
+            set_nep_result_data=MagicMock(),
+            init_axes=MagicMock(),
+            plot_nep_result=MagicMock(),
+            apply_overlay_groups=MagicMock(),
+        )
+        host_widget = QWidget()
+
+        pca_data = {
+            "training_pca": np.array([[0.0, 0.0]], dtype=np.float32),
+            "current_pca": np.array([[1.0, 1.0], [2.0, 2.0]], dtype=np.float32),
+            "selected_current_indices": np.array([1], dtype=np.int32),
+        }
+
+        with patch.object(dialog_module, "create_result_canvas", return_value=(fake_canvas, False)) as create_mock, patch.object(
+            dialog_module,
+            "resolve_canvas_host_widget",
+            return_value=host_widget,
+        ) as resolve_mock:
+            dlg = dialog_module.TrainingOverlayDialog(parent=None, pca_data=pca_data, canvas_type="pyqtgraph")
+
+        create_mock.assert_called_once_with("pyqtgraph", dlg)
+        resolve_mock.assert_called_once_with(fake_canvas)
+        fake_canvas.init_axes.assert_called_once_with(1)
+        fake_canvas.plot_nep_result.assert_called_once()
+        fake_canvas.apply_overlay_groups.assert_called_once()
+        loaded_ids, selected_ids = fake_canvas.apply_overlay_groups.call_args.args
+        self.assertListEqual(list(map(int, loaded_ids)), [1, 2])
+        self.assertListEqual(list(map(int, selected_ids)), [2])
+
+        result_data = fake_canvas.set_nep_result_data.call_args.args[0]
+        self.assertEqual(len(result_data.datasets), 1)
+        self.assertEqual(result_data.datasets[0].display_title, "Training Overlay")
+        self.assertEqual(result_data.datasets[0].x_label, "PC1")
+        self.assertEqual(result_data.datasets[0].y_label, "PC2")
+        self.assertFalse(result_data.datasets[0].parity_mode)
+
+    def test_dialog_shows_fallback_hint_for_vispy_failure(self):
+        fake_canvas = SimpleNamespace(
+            tool_bar=None,
+            set_nep_result_data=MagicMock(),
+            init_axes=MagicMock(),
+            plot_nep_result=MagicMock(),
+            apply_overlay_groups=MagicMock(),
+        )
+        from PySide6.QtWidgets import QWidget
+
+        with patch.object(dialog_module, "create_result_canvas", return_value=(fake_canvas, True)), patch.object(
+            dialog_module,
+            "resolve_canvas_host_widget",
+            return_value=QWidget(),
+        ):
+            dlg = dialog_module.TrainingOverlayDialog(parent=None, pca_data={}, canvas_type="vispy")
+
+        self.assertIn("fallback to pyqtgraph", dlg._plot_hint_label.text().lower())
+
+
+class _SparseBoxControl:
+    def __init__(self, value):
+        self._value = value
+
+    def value(self):
+        return self._value
+
+    def setValue(self, value):
+        self._value = value
+
+    def currentIndex(self):
+        return self._value
+
+    def setCurrentIndex(self, value):
+        self._value = value
+
+    def text(self):
+        return self._value
+
+    def setText(self, value):
+        self._value = value
+
+    def isChecked(self):
+        return bool(self._value)
+
+
+class _SparseBox:
+    def __init__(self, accepted=True, training_path="train.xyz", show_overlay=True):
+        self._accepted = accepted
+        self.intSpinBox = _SparseBoxControl(5)
+        self.doubleSpinBox = _SparseBoxControl(0.1)
+        self.regionCheck = _SparseBoxControl(False)
+        self.descriptorCombo = _SparseBoxControl(0)
+        self.modeCombo = _SparseBoxControl(0)
+        self.r2SpinBox = _SparseBoxControl(0.9)
+        self.trainingPathEdit = _SparseBoxControl(training_path)
+        self.trainingOverlayCheck = _SparseBoxControl(show_overlay)
+
+    def exec(self):
+        return self._accepted
+
+
+class _OverlayDialogRecorder:
+    last_kwargs = None
+    shown = False
+
+    def __init__(self, *args, **kwargs):
+        type(self).last_kwargs = kwargs
+
+    @staticmethod
+    def compute_pca_data(*_args, **_kwargs):
+        return {
+            "training_pca": np.array([[0.0, 0.0]], dtype=np.float32),
+            "current_pca": np.array([[1.0, 1.0]], dtype=np.float32),
+            "selected_current_indices": np.array([0], dtype=np.int32),
+        }
+
+    def show(self):
+        type(self).shown = True
+
+
+class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
+    def setUp(self):
+        self._prev_canvas = Config.get("widget", "canvas_type", "pyqtgraph")
+        self._prev_training_path = Config.get("widget", "sparse_training_path", "")
+
+    def tearDown(self):
+        Config.set("widget", "canvas_type", self._prev_canvas)
+        Config.set("widget", "sparse_training_path", self._prev_training_path)
+        _OverlayDialogRecorder.last_kwargs = None
+        _OverlayDialogRecorder.shown = False
+
+    def test_sparse_point_passes_canvas_type_to_overlay_dialog(self):
+        Config.set("widget", "canvas_type", "vispy")
+        Config.set("widget", "sparse_training_path", "train.xyz")
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._parent = None
+        data = SimpleNamespace(
+            sparse_point_selection=MagicMock(return_value=([3], False)),
+        )
+        widget.canvas = SimpleNamespace(
+            nep_result_data=data,
+            select_index=MagicMock(),
+        )
+
+        with patch.object(nep_view_module, "SparseMessageBox", return_value=_SparseBox()), patch.object(
+            nep_view_module,
+            "TrainingOverlayDialog",
+            _OverlayDialogRecorder,
+        ):
+            nep_view_module.NepResultPlotWidget.sparse_point(widget)
+
+        data.sparse_point_selection.assert_called_once()
+        widget.canvas.select_index.assert_called_once_with([3], False)
+        self.assertTrue(_OverlayDialogRecorder.shown)
+        self.assertEqual(_OverlayDialogRecorder.last_kwargs["canvas_type"], "vispy")
+
+    def test_sparse_point_skips_overlay_without_training_path(self):
+        Config.set("widget", "sparse_training_path", "")
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._parent = None
+        data = SimpleNamespace(
+            sparse_point_selection=MagicMock(return_value=([3], False)),
+        )
+        widget.canvas = SimpleNamespace(
+            nep_result_data=data,
+            select_index=MagicMock(),
+        )
+
+        with patch.object(nep_view_module, "SparseMessageBox", return_value=_SparseBox(training_path="", show_overlay=True)), patch.object(
+            nep_view_module,
+            "TrainingOverlayDialog",
+            _OverlayDialogRecorder,
+        ):
+            nep_view_module.NepResultPlotWidget.sparse_point(widget)
+
+        self.assertIsNone(_OverlayDialogRecorder.last_kwargs)
 
 
 class TestShowNepWidgetArrowCapability(unittest.TestCase):

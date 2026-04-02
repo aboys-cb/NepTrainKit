@@ -256,7 +256,11 @@ class NepResultPlotWidget(QWidget):
                     selected_indices=structures,
                 )
                 if pca_data is not None:
-                    overlay_dialog = TrainingOverlayDialog(parent=self._parent, pca_data=pca_data)
+                    overlay_dialog = TrainingOverlayDialog(
+                        parent=self._parent,
+                        pca_data=pca_data,
+                        canvas_type=str(Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)),
+                    )
                     overlay_dialog.show()
 
     def edit_structure_info(self):

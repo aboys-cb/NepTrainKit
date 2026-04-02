@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,
 )
-from PySide6.QtCore import Signal, Qt, QUrl, QEvent
+from PySide6.QtCore import Signal, Qt, QUrl, QEvent, QPropertyAnimation, QEasingCurve, QTimer
 from qfluentwidgets import (
     MessageBoxBase,
     SpinBox,
@@ -2653,13 +2653,22 @@ class _TrainingOverlayResultData:
     reject_index: set[int] = field(default_factory=set)
 
 
-class TrainingOverlayDialog(QDialog):
+class TrainingOverlayDialog(FramelessDialog):
     """Non-modal dialog showing PCA scatter plot with training/loaded/selected structures."""
 
     def __init__(self, parent=None, pca_data=None, canvas_type: str | None = None):
         super().__init__(parent)
+        self.setTitleBar(FluentTitleBar(self))
         self.setWindowTitle("Training Overlay")
+        self.setWindowFlag(Qt.WindowType.Window, True)
+        self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
+        max_btn = getattr(self.titleBar, "maxBtn", None)
+        if max_btn is not None:
+            max_btn.hide()
+            max_btn.setEnabled(False)
         self.setWindowModality(Qt.WindowModality.NonModal)
+        self._fade_in_started = False
+        self._fade_in_anim: QPropertyAnimation | None = None
         self._pca_data = pca_data or {}
         self._canvas_type = str(canvas_type or Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)).strip()
         self._canvas_fallback_warned = False
@@ -2667,7 +2676,47 @@ class TrainingOverlayDialog(QDialog):
         self._overlay_result_data: _TrainingOverlayResultData | None = None
         self._canvas = None
         self._setup_ui()
-        self._render_from_pca_data()
+        if pca_data:
+            self._render_from_pca_data()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._refresh_interaction_later()
+        if self._fade_in_started:
+            return
+        self._fade_in_started = True
+        try:
+            if self.isMaximized():
+                self.setWindowOpacity(1.0)
+                return
+            self.setWindowOpacity(0.0)
+            anim = QPropertyAnimation(self, b"windowOpacity")
+            anim.setDuration(180)
+            anim.setStartValue(0.0)
+            anim.setEndValue(1.0)
+            anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+            anim.start()
+            self._fade_in_anim = anim
+        except Exception:
+            self.setWindowOpacity(1.0)
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.WindowStateChange:
+            if self._fade_in_anim is not None and self._fade_in_anim.state() == QPropertyAnimation.State.Running:
+                self._fade_in_anim.stop()
+                self.setWindowOpacity(1.0)
+            if self.isMaximized():
+                self.showNormal()
+            self._refresh_interaction_later()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._refresh_interaction_later()
+
+    def _refresh_interaction_later(self):
+        """Re-enable interactive handlers after geometry/state changes."""
+        QTimer.singleShot(0, self._ensure_viewbox_interaction)
 
     @staticmethod
     def compute_pca_data(training_path, result_data, selected_indices):
@@ -2770,21 +2819,24 @@ class TrainingOverlayDialog(QDialog):
             return None
 
     def _setup_ui(self):
+        import pyqtgraph as pg
         from PySide6.QtWidgets import QLabel, QWidget, QVBoxLayout, QHBoxLayout
         from PySide6.QtGui import QPixmap, QPainter, QColor
 
         root_layout = QVBoxLayout(self)
-        root_layout.setContentsMargins(10, 10, 10, 10)
-        root_layout.setSpacing(8)
+        root_layout.setContentsMargins(0, 0, 0, 0)
+        root_layout.setSpacing(0)
+        root_layout.setMenuBar(self.titleBar)
 
         self._plot_hint_label = CaptionLabel("", self)
         self._plot_hint_label.setWordWrap(True)
+        self._plot_hint_label.setStyleSheet("padding: 2px 8px;")
         root_layout.addWidget(self._plot_hint_label)
 
         self._canvas, fallback = create_result_canvas(self._canvas_type, self)
         self._canvas.tool_bar = None
         canvas_host = resolve_canvas_host_widget(self._canvas)
-        canvas_host.setMinimumSize(500, 400)
+        canvas_host.setMinimumSize(560, 430)
         root_layout.addWidget(canvas_host, 1)
         if fallback:
             self._plot_hint_label.setText(
@@ -2792,10 +2844,12 @@ class TrainingOverlayDialog(QDialog):
             )
             self._canvas_fallback_warned = True
 
-        # Bottom-right legend bar
+        # Bottom control bar: legend + export buttons
         bottom_layout = QHBoxLayout()
-        bottom_layout.addStretch()
+        bottom_layout.setContentsMargins(10, 4, 10, 6)
+        bottom_layout.setSpacing(8)
 
+        # Legend
         for label, color_rgb in [
             ("Training", (160, 160, 160)),
             ("Loaded", (30, 120, 215)),
@@ -2825,8 +2879,37 @@ class TrainingOverlayDialog(QDialog):
             bottom_layout.addWidget(item_widget)
             self._legend_labels.append(text_lbl)
 
+        bottom_layout.addStretch()
+
+        # Export buttons
+        self._reset_view_btn = PrimaryPushButton("Reset View", self)
+        self._reset_view_btn.clicked.connect(self._on_reset_view)
+        bottom_layout.addWidget(self._reset_view_btn)
+
+        self._export_image_btn = PrimaryPushButton("Export Image", self)
+        self._export_image_btn.clicked.connect(self._on_export_image)
+        bottom_layout.addWidget(self._export_image_btn)
+
+        self._export_data_btn = PrimaryPushButton("Export Data", self)
+        self._export_data_btn.clicked.connect(self._on_export_data)
+        bottom_layout.addWidget(self._export_data_btn)
+
         root_layout.addLayout(bottom_layout)
-        self.resize(620, 520)
+
+        # Store RawAxis class for use in _render_from_pca_data (pg is available here)
+        class _RawAxis(pg.AxisItem):
+            def __init__(self, orientation, parent=None, font_size=11):
+                super().__init__(orientation, parent)
+                font = self.label.font()
+                font.setPointSize(font_size)
+                self.label.setFont(font)
+                self.enableAutoSIPrefix(False)
+
+            def tickStrings(self, values, scale, spacing):
+                return [f"{v:.6g}" for v in values]
+
+        self._RawAxis = _RawAxis
+        self.resize(760, 620)
 
     def _render_from_pca_data(self):
         """Render scatter plot from pre-computed PCA data."""
@@ -2857,6 +2940,137 @@ class TrainingOverlayDialog(QDialog):
         if apply_groups is not None:
             apply_groups(loaded_ids, selected_ids)
 
+        # Apply custom axis font and ensure mouse interaction (pyqtgraph only)
+        self._apply_custom_axes()
+        self._ensure_viewbox_interaction()
+
+    def _apply_custom_axes(self):
+        """Apply custom axis font (smaller, no SI scaling) to all plot axes.
+        Only affects pyqtgraph backend; vispy backend ignores this.
+        """
+        # Only apply for pyqtgraph: vispy stores ViewBoxWidget in axes_list (no setAxisItems)
+        if self._canvas_type != CanvasMode.PYQTGRAPH.value:
+            return
+        axes_list = getattr(self._canvas, "axes_list", None)
+        if not axes_list:
+            return
+        RawAxis = self._RawAxis
+        for plot in axes_list:
+            old_bottom = plot.getAxis("bottom")
+            old_left = plot.getAxis("left")
+            bottom_label = str(getattr(old_bottom, "labelText", "") or "").strip()
+            left_label = str(getattr(old_left, "labelText", "") or "").strip()
+            bottom_axis = RawAxis("bottom")
+            left_axis = RawAxis("left")
+            plot.setAxisItems({"bottom": bottom_axis, "left": left_axis})
+            plot.setLabel("bottom", bottom_label)
+            plot.setLabel("left", left_label)
+            plot.getAxis("left").setWidth(70)
+            plot.getAxis("bottom").setHeight(50)
+
+    def _ensure_viewbox_interaction(self):
+        """Confirm ViewBox allows drag and wheel zoom."""
+        axes_list = getattr(self._canvas, "axes_list", None)
+        if axes_list:
+            for axes in axes_list:
+                set_mouse_enabled = getattr(axes, "setMouseEnabled", None)
+                if callable(set_mouse_enabled):
+                    set_mouse_enabled(True, True)
+
+                get_view_box = getattr(axes, "getViewBox", None)
+                if callable(get_view_box):
+                    view_box = get_view_box()
+                    if view_box is not None:
+                        view_box.setMouseEnabled(True, True)
+                        view_box.setMenuEnabled(False)
+
+                view = getattr(axes, "view", None)
+                camera = getattr(view, "camera", None)
+                if camera is not None and hasattr(camera, "interactive"):
+                    camera.interactive = True
+
+        view_box = getattr(self._canvas, "viewBox", None)
+        if view_box is not None:
+            view_box.setMouseEnabled(True, True)
+            view_box.setMenuEnabled(False)
+
+    def _on_export_image(self):
+        """Export canvas as image (unified pyqtgraph / vispy)."""
+        path = call_path_dialog(
+            self,
+            "Export Image",
+            "file",
+            default_filename="pca_scatter.png",
+            file_filter="PNG files (*.png);;All files (*.*)",
+        )
+        if not path:
+            return
+        try:
+            if self._canvas_fallback_warned:
+                # vispy backend: use built-in save()
+                self._canvas.save(path)
+            else:
+                # pyqtgraph backend: use QWidget.grab()
+                host = resolve_canvas_host_widget(self._canvas)
+                host.grab().save(path)
+            MessageManager.send_info_message(f"Image exported to: {path}")
+        except Exception:
+            MessageManager.send_warning_message("Failed to export image.")
+
+    def _on_reset_view(self):
+        """Reset scatter viewport to fit current data."""
+        if self._canvas is None:
+            return
+        try:
+            auto_range = getattr(self._canvas, "auto_range", None)
+            if callable(auto_range):
+                auto_range()
+                return
+
+            axes_list = getattr(self._canvas, "axes_list", None)
+            if axes_list:
+                for axes in axes_list:
+                    get_view_box = getattr(axes, "getViewBox", None)
+                    if callable(get_view_box):
+                        view_box = get_view_box()
+                        if view_box is not None:
+                            view_box.autoRange()
+        except Exception:
+            MessageManager.send_warning_message("Failed to reset view.")
+
+    def _on_export_data(self):
+        """Export PCA data as CSV (PC1, PC2, Type)."""
+        path = call_path_dialog(
+            self,
+            "Export PCA Data",
+            "file",
+            default_filename="pca_data.csv",
+            file_filter="CSV files (*.csv);;All files (*.*)",
+        )
+        if not path:
+            return
+        try:
+            rows = []
+            training_pca = self._pca_data.get("training_pca")
+            if training_pca is not None and training_pca.size > 0:
+                for row in training_pca:
+                    rows.append((float(row[0]), float(row[1]), "Training"))
+            current_pca = self._pca_data.get("current_pca")
+            if current_pca is not None and current_pca.size > 0:
+                for row in current_pca:
+                    rows.append((float(row[0]), float(row[1]), "Loaded"))
+            selected_pca = self._pca_data.get("selected_pca")
+            if selected_pca is not None and selected_pca.size > 0:
+                for row in selected_pca:
+                    rows.append((float(row[0]), float(row[1]), "Selected"))
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("PC1,PC2,Type\n")
+                for pc1, pc2, t in rows:
+                    f.write(f"{pc1:.8g},{pc2:.8g},{t}\n")
+            MessageManager.send_info_message(f"Data exported to: {path}")
+        except Exception:
+            MessageManager.send_warning_message("Failed to export data.")
+
     @staticmethod
     def _reshape_points(values):
         arr = np.asarray(values, dtype=np.float32)
@@ -2884,9 +3098,9 @@ class TrainingOverlayDialog(QDialog):
             index_list=synthetic_ids,
             title="descriptor",
         )
-        dataset.display_title = "Training Overlay"
-        dataset.x_label = "PC1"
-        dataset.y_label = "PC2"
+        dataset.display_title = "Descriptor"
+        dataset.x_label = ""
+        dataset.y_label = ""
         dataset.parity_mode = False
         dataset.show_rmse = False
         dataset.base_brush = Brushes.TrainingOverlay

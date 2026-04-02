@@ -78,6 +78,7 @@ class NepResultPlotWidget(QWidget):
         self.last_figure_num = None
         self._distribution_inspector = None
         self._canvas_fallback_warned = False
+        self._overlay_dialog_refs: list[TrainingOverlayDialog] = []
         self.swith_canvas(canvas_type)
 
     def swith_canvas(self, canvas_type: CanvasMode = "pyqtgraph"):
@@ -257,9 +258,15 @@ class NepResultPlotWidget(QWidget):
                 )
                 if pca_data is not None:
                     overlay_dialog = TrainingOverlayDialog(
-                        parent=self._parent,
+                        parent=None,
                         pca_data=pca_data,
                         canvas_type=str(Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)),
+                    )
+                    self._overlay_dialog_refs.append(overlay_dialog)
+                    overlay_dialog.destroyed.connect(
+                        lambda *_args, dlg=overlay_dialog: (
+                            self._overlay_dialog_refs.remove(dlg) if dlg in self._overlay_dialog_refs else None
+                        )
                     )
                     overlay_dialog.show()
 

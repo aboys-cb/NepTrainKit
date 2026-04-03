@@ -100,6 +100,7 @@ class ViewBoxWidget(scene.Widget):
         self._scatter=None
         # Overlay marker layers by name (e.g., 'selected', 'show')
         self._overlays = {}
+        self.parity_mode = True
 
         self._diagonal=None
         self.current_point=None
@@ -171,7 +172,7 @@ class ViewBoxWidget(scene.Widget):
                 y_range[1] = y_max
         # self._view.camera.set_range( )
         #
-        if "descriptor"!=self.title:
+        if self.parity_mode:
             real_range=(min(x_range[0],y_range[0]),max(x_range[1],y_range[1]))
             # Provide z-range to avoid VisPy querying scene bounds for z (empty visuals would error)
             self._view.camera.set_range(x=real_range, y=real_range, z=(0, 0))
@@ -346,6 +347,7 @@ class ViewBoxWidget(scene.Widget):
             return self._overlays[name]
         ov = scene.visuals.Markers(antialias=1)
         order_map = {
+            "loaded": 4,
             "show": 4,
             "reject": 5,
             "selected": 6,
@@ -446,7 +448,7 @@ class ViewBoxWidget(scene.Widget):
         if t==self.title:
             return
         self.title_label._text_visual.text = t
-        if t != "descriptor":
+        if self.parity_mode and t != "descriptor":
             self.add_diagonal(color="red", width=3, antialias=True, method='gl')
 class CombinedMeta(type(VispyCanvasLayoutBase), type(scene.SceneCanvas) ):
     """Metaclass bridging ``VispyCanvasLayoutBase`` with ``SceneCanvas`` inheritance.
@@ -479,6 +481,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         # Per-axes overlay state: track indices to render in overlays without touching base VBO
         self._selected_by_plot = {}
         self._show_by_plot = {}
+        self._loaded_by_plot = {}
         self._reject_by_plot = {}
 
 
@@ -736,7 +739,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             return
 
         i = 0
-        row_0_col_span=len(self.axes_list)-1
+        row_0_col_span = max(1, len(self.axes_list) - 1)
         for widget in self.axes_list:
             widget._stretch = (None, None)
             self.grid.remove_widget(widget)
@@ -805,6 +808,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 self._selected_by_plot[plot].clear()
             if plot in self._show_by_plot:
                 self._show_by_plot[plot].clear()
+            if plot in self._loaded_by_plot:
+                self._loaded_by_plot[plot].clear()
             if plot in self._reject_by_plot:
                 self._reject_by_plot[plot].clear()
 
@@ -813,14 +818,18 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             plot=self.axes_list[index]
 
 
-            plot.title= _dataset.title
+            plot.parity_mode = bool(getattr(_dataset, "parity_mode", _dataset.title != "descriptor"))
+            plot.title = _dataset.title
+            display_title = str(getattr(_dataset, "display_title", _dataset.title) or _dataset.title)
+            if display_title != plot.title:
+                plot.title_label._text_visual.text = display_title
 
             marker_size = Config.getint("widget", "vispy_marker_size", 6) or 6
             plot.scatter(_dataset.x,
                          _dataset.y,
                          data=_dataset.structure_index,
-                         brush=Brushes.get(_dataset.title.upper()) ,
-                         pen=Pens.get(_dataset.title.upper()),
+                         brush=getattr(_dataset, "base_brush", Brushes.get(_dataset.title.upper())) ,
+                         pen=getattr(_dataset, "base_pen", Pens.get(_dataset.title.upper())),
                          symbol='o',
                          size=marker_size,
 
@@ -835,12 +844,21 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             else:
                 plot.set_current_point([], [])
 
-            if _dataset.title not in ["descriptor"]:
+            if bool(getattr(_dataset, "show_rmse", _dataset.title not in ["descriptor"])):
             #
                 pos=self.convert_pos(plot,(0.1 ,0.8))
                 text=f"rmse: {_dataset.get_formart_rmse()}"
                 plot.text.text=text
                 plot.text.pos=pos
+            else:
+                plot.text.text = ""
+
+            x_label = getattr(_dataset, "x_label", None)
+            y_label = getattr(_dataset, "y_label", None)
+            if x_label:
+                plot.xaxis.axis.axis_label = str(x_label)
+            if y_label:
+                plot.yaxis.axis.axis_label = str(y_label)
 
         # Restore reject highlights after a full replot.
         reject = getattr(self.nep_result_data, "reject_index", None)
@@ -916,17 +934,25 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 self._selected_by_plot[plot] = set()
             if plot not in self._show_by_plot:
                 self._show_by_plot[plot] = set()
+            if plot not in self._loaded_by_plot:
+                self._loaded_by_plot[plot] = set()
 
             if color is Brushes.Default:
                 # remove from both overlays
                 self._selected_by_plot[plot].difference_update(idx.tolist())
                 self._show_by_plot[plot].difference_update(idx.tolist())
+                self._loaded_by_plot[plot].difference_update(idx.tolist())
             elif color is Brushes.Selected:
                 # add to selected, remove from show to avoid duplicates
                 self._selected_by_plot[plot].update(idx.tolist())
                 self._show_by_plot[plot].difference_update(idx.tolist())
+                self._loaded_by_plot[plot].difference_update(idx.tolist())
             elif color is Brushes.Show:
                 self._show_by_plot[plot].update(idx.tolist())
+                self._loaded_by_plot[plot].difference_update(idx.tolist())
+            elif color is Brushes.LoadedOverlay:
+                self._loaded_by_plot[plot].update(idx.tolist())
+                self._show_by_plot[plot].difference_update(idx.tolist())
             else:
                 # Fallback: treat as selected
                 self._selected_by_plot[plot].update(idx.tolist())
@@ -967,6 +993,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
             sel_pos = _indices_to_positions(self._selected_by_plot[plot])
             show_pos = _indices_to_positions(self._show_by_plot[plot])
+            loaded_pos = _indices_to_positions(self._loaded_by_plot[plot])
 
             # Update overlays (filled squares, no edges for perf)
             overlay_size = Config.getint("widget", "vispy_marker_size", 6) or 6
@@ -979,6 +1006,11 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 plot.set_overlay_positions('show', show_pos, color=Brushes.Show, size=overlay_size, symbol='o')
             else:
                 plot.set_overlay_positions('show', np.empty((0, 2), dtype=np.float32), color=Brushes.Show, size=overlay_size, symbol='o')
+
+            if loaded_pos.size:
+                plot.set_overlay_positions('loaded', loaded_pos, color=Brushes.LoadedOverlay, size=overlay_size, symbol='o')
+            else:
+                plot.set_overlay_positions('loaded', np.empty((0, 2), dtype=np.float32), color=Brushes.LoadedOverlay, size=overlay_size, symbol='o')
 
             # Keep reject overlay on top of show but below selected.
             reject_set = self._reject_by_plot.get(plot, set())
@@ -1058,6 +1090,25 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 size=overlay_size,
                 symbol="x",
             )
+
+    def apply_overlay_groups(self, loaded_index, selected_index) -> None:
+        """Apply read-only overlay coloring for a synthetic single-plot dataset."""
+        if self.nep_result_data is None:
+            return
+
+        loaded_ids = {int(v) for v in np.atleast_1d(np.asarray(loaded_index, dtype=np.int64)).tolist()} if loaded_index is not None else set()
+        selected_ids = {int(v) for v in np.atleast_1d(np.asarray(selected_index, dtype=np.int64)).tolist()} if selected_index is not None else set()
+
+        for plot in self.axes_list:
+            self._selected_by_plot.setdefault(plot, set()).clear()
+            self._show_by_plot.setdefault(plot, set()).clear()
+            self._loaded_by_plot.setdefault(plot, set()).clear()
+            self._reject_by_plot.setdefault(plot, set())
+
+        if loaded_ids:
+            self.update_scatter_color(sorted(loaded_ids), Brushes.LoadedOverlay)
+        if selected_ids:
+            self.update_scatter_color(sorted(selected_ids), Brushes.Selected)
 
 
     def select_point_from_polygon(self,polygon_xy,reverse ):

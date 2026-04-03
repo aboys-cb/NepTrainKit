@@ -30,7 +30,7 @@ class CanvasBase(ABC):
         """
 
         self.current_axes = None
-        self.tool_bar: KitToolBarBase
+        self.tool_bar: KitToolBarBase | None = None
 
     @abstractmethod
     def pan(self, *args, **kwargs):

@@ -262,12 +262,18 @@ class NepResultPlotWidget(QWidget):
                         pca_data=pca_data,
                         canvas_type=str(Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)),
                     )
-                    self._overlay_dialog_refs.append(overlay_dialog)
-                    overlay_dialog.destroyed.connect(
-                        lambda *_args, dlg=overlay_dialog: (
-                            self._overlay_dialog_refs.remove(dlg) if dlg in self._overlay_dialog_refs else None
+                    overlay_refs = getattr(self, "_overlay_dialog_refs", None)
+                    if overlay_refs is None:
+                        overlay_refs = []
+                        self._overlay_dialog_refs = overlay_refs
+                    overlay_refs.append(overlay_dialog)
+                    destroyed_signal = getattr(overlay_dialog, "destroyed", None)
+                    if destroyed_signal is not None:
+                        destroyed_signal.connect(
+                            lambda *_args, dlg=overlay_dialog, refs=overlay_refs: (
+                                refs.remove(dlg) if dlg in refs else None
+                            )
                         )
-                    )
                     overlay_dialog.show()
 
     def edit_structure_info(self):

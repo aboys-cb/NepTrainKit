@@ -4,7 +4,6 @@ from __future__ import annotations
 import datetime
 import hashlib
 import shutil
-from decimal import Decimal
 from pathlib import Path
 
 from typing import Iterable
@@ -114,30 +113,6 @@ class TagService:
             )
             return [TagItem(name=t.name, tag_id=t.id, color=t.color, notes=t.notes) for t in tags]
 
-def query_set_to_dict(func):
-    """Decorator that converts SQLAlchemy ORM objects to plain dicts."""
-    def wrapper(*args, **kwargs):
-        objs = func(*args, **kwargs)
-        if not isinstance(objs, (list, tuple)):
-            objs = [objs]
-        result=[]
-        for obj in objs:
-            obj_dict = {}
-            for column in obj.__table__.columns.keys():
-                val = getattr(obj, column)
-                if isinstance(val, Decimal):
-                    val = float(val)
-                if isinstance(val, datetime.datetime):
-                    val = val.strftime("%Y/%m/%d %H:%M:%S")
-                elif isinstance(val, datetime.date):
-                    val = val.strftime("%Y/%m/%d")
-
-                obj_dict[column] = val
-            result.append(obj_dict)
-
-        return result
-    return wrapper
-
 def _hash_file(path: str) -> str:
     """Return the SHA256 hash of a file."""
     h = hashlib.sha256()
@@ -200,7 +175,6 @@ class ProjectService:
             item.children.append(child_item)
         return item
 
-    # @query_set_to_dict
     def search_projects(self,**kwargs) -> list[ProjectItem]:
         """Return ProjectItem nodes matching the provided ORM filters."""
         with self.db.session() as session:

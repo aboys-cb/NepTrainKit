@@ -26,8 +26,8 @@ from qfluentwidgets import (
 )
 from loguru import logger
 
-from NepTrainKit.core import MessageManager
 from NepTrainKit.ui.pages import *
+from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.update import AutoUpdateNotifier, get_pending_update_version
 from NepTrainKit.utils import timeit
 from NepTrainKit.ui.updater import unzip

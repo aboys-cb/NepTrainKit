@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 """UI-agnostic messaging facade used throughout the toolkit.
 
-This module forwards message invocations to the optional GUI layer when
-available, and falls back to logging otherwise. It avoids a hard dependency on
-Qt during headless or batch operations.
+The core layer owns the public messaging API and writes to Loguru by default.
+GUI code can register a Qt-backed sink at startup without making core import
+the UI package.
 
 Examples
 --------
@@ -12,42 +12,84 @@ Examples
 >>> MessageManager.send_info_message('Hello')  # logs in headless mode
 """
 
+from typing import Protocol, runtime_checkable
+
 from loguru import logger
 
 
+@runtime_checkable
+class MessageSink(Protocol):
+    """Runtime contract for message sinks registered by the GUI layer."""
+
+    @classmethod
+    def send_info_message(cls, message, title="Tip"):
+        ...
+
+    @classmethod
+    def send_success_message(cls, message, title="Success"):
+        ...
+
+    @classmethod
+    def send_warning_message(cls, message, title="Warning"):
+        ...
+
+    @classmethod
+    def send_error_message(cls, message, title="Error"):
+        ...
+
+    @classmethod
+    def send_message_box(cls, message, title="Tip"):
+        ...
+
+
+class _LoggerMessageSink:
+    """Headless sink that maps user-visible messages to Loguru."""
+
+    @classmethod
+    def send_info_message(cls, message, title="Tip"):
+        logger.info(message)
+
+    @classmethod
+    def send_success_message(cls, message, title="Success"):
+        logger.success(message)
+
+    @classmethod
+    def send_warning_message(cls, message, title="Warning"):
+        logger.warning(message)
+
+    @classmethod
+    def send_error_message(cls, message, title="Error"):
+        logger.error(message)
+
+    @classmethod
+    def send_message_box(cls, message, title="Tip"):
+        logger.info(message)
+
+
 class MessageManager:
-    """UI-agnostic proxy for user-visible messages.
+    """UI-agnostic entry point for user-visible messages."""
 
-    Notes
-    -----
-    - Delegates to ``NepTrainKit.ui.messages.MessageManager`` when available.
-    - Falls back to :mod:`loguru` logging when the UI layer is absent.
+    _sink: MessageSink = _LoggerMessageSink
 
-    Examples
-    --------
-    >>> MessageManager.send_warning_message('Check your input')
-    """
+    @classmethod
+    def register_sink(cls, sink: MessageSink):
+        """Install the active message sink."""
+        cls._sink = sink
 
-    @staticmethod
-    def _ui_manager():
-        try:
-            from NepTrainKit.ui.messages import MessageManager as UI
-            return UI
-        except Exception:
-            return None
+    @classmethod
+    def reset_sink(cls):
+        """Restore headless logging for tests and non-GUI use."""
+        cls._sink = _LoggerMessageSink
 
     @classmethod
     def _createInstance(cls, parent=None):
-        """Initialise the UI message singleton if the UI layer is present."""
-        ui = cls._ui_manager()
-        if ui is not None:
-            ui._createInstance(parent)
+        """Backward-compatible no-op; GUI startup registers its own sink."""
+        return None
 
     @classmethod
     def get_instance(cls):
-        """Return the UI message singleton instance or ``None`` in headless mode."""
-        ui = cls._ui_manager()
-        return None if ui is None else ui.get_instance()
+        """Return the active sink object."""
+        return cls._sink
 
     @classmethod
     def send_info_message(cls, message, title="Tip"):
@@ -60,11 +102,7 @@ class MessageManager:
         title : str, default='Tip'
             Optional title for GUI message boxes.
         """
-        ui = cls._ui_manager()
-        if ui is None or ui.get_instance() is None:
-            logger.info(message)
-        else:
-            ui.send_info_message(message, title)
+        cls._sink.send_info_message(message, title)
 
     @classmethod
     def send_success_message(cls, message, title="Success"):
@@ -77,11 +115,7 @@ class MessageManager:
         title : str, default='Success'
             Optional title for GUI message boxes.
         """
-        ui = cls._ui_manager()
-        if ui is None or ui.get_instance() is None:
-            logger.success(message)
-        else:
-            ui.send_success_message(message, title)
+        cls._sink.send_success_message(message, title)
 
     @classmethod
     def send_warning_message(cls, message, title="Warning"):
@@ -94,11 +128,7 @@ class MessageManager:
         title : str, default='Warning'
             Optional title for GUI message boxes.
         """
-        ui = cls._ui_manager()
-        if ui is None or ui.get_instance() is None:
-            logger.warning(message)
-        else:
-            ui.send_warning_message(message, title)
+        cls._sink.send_warning_message(message, title)
 
     @classmethod
     def send_error_message(cls, message, title="Error"):
@@ -111,11 +141,7 @@ class MessageManager:
         title : str, default='Error'
             Optional title for GUI message boxes.
         """
-        ui = cls._ui_manager()
-        if ui is None or ui.get_instance() is None:
-            logger.error(message)
-        else:
-            ui.send_error_message(message, title)
+        cls._sink.send_error_message(message, title)
 
     @classmethod
     def send_message_box(cls, message, title="Tip"):
@@ -128,10 +154,4 @@ class MessageManager:
         title : str, default='Tip'
             Optional title for GUI message boxes.
         """
-        ui = cls._ui_manager()
-        if ui is None or ui.get_instance() is None:
-            logger.info(message)
-        else:
-            ui.send_message_box(message, title)
-
-    # No-op methods here; UI methods live in NepTrainKit.ui.messages
+        cls._sink.send_message_box(message, title)

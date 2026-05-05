@@ -30,6 +30,9 @@ class MessageManager(QObject):
     def _createInstance(cls, parent=None):
         if not cls._instance:
             cls._instance = MessageManager(parent)
+        from NepTrainKit.core.message import MessageManager as CoreMessageManager
+
+        CoreMessageManager.register_sink(cls)
 
     @classmethod
     def get_instance(cls):

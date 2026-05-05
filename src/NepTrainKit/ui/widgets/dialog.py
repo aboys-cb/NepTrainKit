@@ -76,7 +76,8 @@ from NepTrainKit.ui.canvas.distribution_factory import create_distribution_plot_
 
 from NepTrainKit import module_path
 
-from NepTrainKit.utils import LoadingThread, call_path_dialog
+from NepTrainKit.ui.dialogs import call_path_dialog
+from NepTrainKit.ui.threads import LoadingThread
 from NepTrainKit.core.utils import get_xyz_nframe, read_nep_out_file, get_rmse
 
 

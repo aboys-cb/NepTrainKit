@@ -22,8 +22,9 @@ from qfluentwidgets import (
 
 from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleCardWidget
 
-from NepTrainKit import utils
 from NepTrainKit.core import MessageManager
+from NepTrainKit.ui.dialogs import call_path_dialog
+from NepTrainKit.ui.threads import DataProcessingThread, LoadingThread
 from NepTrainKit.version import DOCS_BASE_URL
 from .label import ProcessLabel
 from ase.io import write as ase_write
@@ -377,7 +378,7 @@ class MakeDataCard(MakeDataCardWidget):
     def export_data(self):
         """Prompt the user for an export path and dump results if available."""
         if self.dataset is not None:
-            path = utils.call_path_dialog(
+            path = call_path_dialog(
                 self,
                 "Choose a file save location",
                 "file",
@@ -386,7 +387,7 @@ class MakeDataCard(MakeDataCardWidget):
             )
             if not path:
                 return
-            thread = utils.LoadingThread(self, show_tip=True, title="Exporting data")
+            thread = LoadingThread(self, show_tip=True, title="Exporting data")
             thread.start_work(self.write_result_dataset, path)
 
     def process_structure(self, structure):
@@ -431,7 +432,7 @@ class MakeDataCard(MakeDataCardWidget):
     def run(self):
         """Launch processing in a background thread when enabled."""
         if self.check_state:
-            self.worker_thread = utils.DataProcessingThread(
+            self.worker_thread = DataProcessingThread(
                 self.dataset,
                 self.process_structure,
             )

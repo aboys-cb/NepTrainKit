@@ -38,13 +38,6 @@ def timeit(func: Callable[..., Any]) -> Callable[..., Any]:
     return wrapper
 
 
-def call_path_dialog(*args: Any, **kwargs: Any) -> Any:
-    """Adapter to ``NepTrainKit.ui.dialogs.call_path_dialog`` to avoid GUI imports at module import time."""
-    from NepTrainKit.ui.dialogs import call_path_dialog as _call
-
-    return _call(*args, **kwargs)
-
-
 def sha256_file(path: str | Path, chunk: int = 8 * 1024 * 1024) -> str:
     """Compute the SHA256 hash of a file."""
     p = Path(path)
@@ -56,40 +49,6 @@ def sha256_file(path: str | Path, chunk: int = 8 * 1024 * 1024) -> str:
                 break
             h.update(b)
     return h.hexdigest()
-
-
-def unzip() -> Any:
-    """Adapter to ``NepTrainKit.ui.updater.unzip`` to avoid GUI imports at module import time."""
-    from NepTrainKit.ui.updater import unzip as _unzip
-
-    return _unzip()
-
-
-class LoadingThread:
-    """Proxy class that instantiates the real Qt thread on demand."""
-
-    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
-        from NepTrainKit.ui.threads import LoadingThread as _LT
-
-        return _LT(*args, **kwargs)
-
-
-class DataProcessingThread:
-    """Proxy for ``NepTrainKit.ui.threads.DataProcessingThread`` created on demand."""
-
-    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
-        from NepTrainKit.ui.threads import DataProcessingThread as _T
-
-        return _T(*args, **kwargs)
-
-
-class FilterProcessingThread:
-    """Proxy for ``NepTrainKit.ui.threads.FilterProcessingThread`` created on demand."""
-
-    def __new__(cls, *args: Any, **kwargs: Any) -> Any:
-        from NepTrainKit.ui.threads import FilterProcessingThread as _T
-
-        return _T(*args, **kwargs)
 
 
 def parse_index_string(s: str, total: int) -> list[int]:

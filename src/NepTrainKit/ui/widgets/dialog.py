@@ -3097,11 +3097,11 @@ class TrainingOverlayDialog(FramelessDialog):
         dataset = NepPlotData(
             plot_data,
             index_list=synthetic_ids,
-            title="descriptor",
+            title="training_overlay",
         )
-        dataset.display_title = "Descriptor"
-        dataset.x_label = ""
-        dataset.y_label = ""
+        dataset.display_title = "Training Overlay"
+        dataset.x_label = "PC1"
+        dataset.y_label = "PC2"
         dataset.parity_mode = False
         dataset.show_rmse = False
         dataset.base_brush = Brushes.TrainingOverlay

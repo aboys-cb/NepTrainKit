@@ -10,6 +10,7 @@ from PySide6.QtWidgets import QWidget, QGridLayout, QApplication, QSplitter
 
 from NepTrainKit.paths import get_user_config_path
 from NepTrainKit.core.dataset.database import Database
+from NepTrainKit.core.dataset.seed import seed_nep_data_git
 from NepTrainKit.core.dataset.services import ModelService, ProjectService, TagService
 
 from NepTrainKit.ui.views import ModelItemWidget, ProjectWidget
@@ -42,8 +43,7 @@ class DataManagerWidget(QWidget):
         self.project_service = ProjectService(self._db)
         self.tag_service = TagService(self._db)
         self.init_ui()
-        self.project_widget.gen_nep_data_git()
-        # self.project_widget.gen_test()
+        seed_nep_data_git(self._db, self.project_service, self.model_service)
 
     def dragEnterEvent(self, event):
         """Accept drag events that provide file URLs.

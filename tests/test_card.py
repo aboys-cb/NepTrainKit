@@ -42,12 +42,33 @@ from NepTrainKit.ui.views._card import (
     # VibrationModePerturbCard,
 )
 from NepTrainKit.core.magnetism import orthonormal_frame
+from NepTrainKit.core import CardManager
 from NepTrainKit.ui.widgets import MakeDataCard
+from NepTrainKit.ui.widgets.card_metadata import card_tooltip, metadata_html
 from NepTrainKit.version import DOCS_BASE_URL
 
 
 class _ExternalTestCard(MakeDataCard):
     card_name = "External Test Card"
+
+    def process_structure(self, structure):
+        return [structure]
+
+
+@CardManager.register_card
+class _MetadataTestCard(MakeDataCard):
+    card_name = "Metadata Test Card"
+    description = "Card used to verify contributor metadata."
+    card_version = "0.1"
+    contributors = [
+        {
+            "name": "Test Contributor",
+            "role": "author",
+            "email": "test@example.com",
+            "url": "https://example.com/test",
+            "affiliation": "Test Lab",
+        }
+    ]
 
     def process_structure(self, structure):
         return [structure]
@@ -86,6 +107,21 @@ class TestCard(unittest.TestCase):
 
         self.assertEqual(card.get_online_doc_url(), "")
         self.assertTrue(card.doc_button.isHidden())
+
+    def test_card_contributor_metadata_includes_optional_email(self):
+        metadata = CardManager.get_card_metadata("_MetadataTestCard")
+
+        self.assertIsNotNone(metadata)
+        self.assertEqual(metadata.card_name, "Metadata Test Card")
+        self.assertEqual(metadata.version, "0.1")
+        self.assertEqual(metadata.contributors[0].email, "test@example.com")
+        self.assertIn("Test Contributor", card_tooltip(metadata))
+        self.assertIn("mailto:test@example.com", metadata_html(metadata))
+
+        card = _MetadataTestCard()
+        data = card.to_dict()
+        self.assertEqual(data["metadata"]["contributors"], ["Test Contributor"])
+        self.assertEqual(data["metadata"]["card_version"], "0.1")
 
     @staticmethod
     def _spin_chain():

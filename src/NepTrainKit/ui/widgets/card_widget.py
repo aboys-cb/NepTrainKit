@@ -22,10 +22,12 @@ from qfluentwidgets import (
 
 from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleCardWidget
 
-from NepTrainKit.core import MessageManager
+from NepTrainKit.core import CardManager, MessageManager
+from NepTrainKit.core.card_manager import build_card_metadata
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import DataProcessingThread, LoadingThread
 from NepTrainKit.version import DOCS_BASE_URL
+from .card_metadata import CardMetadataDialog
 from .label import ProcessLabel
 from ase.io import write as ase_write
 
@@ -157,6 +159,11 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         self.doc_button.setToolTip("Open online documentation")
         self.doc_button.installEventFilter(ToolTipFilter(self.doc_button, 300, ToolTipPosition.TOP))
 
+        self.info_button = TransparentToolButton(FluentIcon.INFO, self)
+        self.info_button.clicked.connect(self.show_card_info)
+        self.info_button.setToolTip("Show card information and contributors")
+        self.info_button.installEventFilter(ToolTipFilter(self.info_button, 300, ToolTipPosition.TOP))
+
         self.export_button = TransparentToolButton(QIcon(":/images/src/images/export1.svg"), self)
         self.export_button.clicked.connect(self.exportSignal)
         self.export_button.setToolTip("Export data")
@@ -168,6 +175,7 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         self.close_button.installEventFilter(ToolTipFilter(self.close_button, 300, ToolTipPosition.TOP))
 
         self.headerLayout.addWidget(self.doc_button, 0, Qt.AlignmentFlag.AlignRight)
+        self.headerLayout.addWidget(self.info_button, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.export_button, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.close_button, 0, Qt.AlignmentFlag.AlignRight)
         self.refresh_doc_button()
@@ -217,11 +225,25 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         if url:
             QDesktopServices.openUrl(QUrl(url))
 
+    def show_card_info(self) -> None:
+        """Show contributor and provenance metadata for this card."""
+        class_name = self.__class__.__name__
+        metadata = CardManager.get_card_metadata(class_name) or build_card_metadata(self.__class__)
+        dialog = CardMetadataDialog(metadata, self)
+        dialog.exec()
+
 
 class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
     """Base widget for cards participating in the console workflow."""
 
     group = None
+    description = ""
+    card_version = ""
+    contributors = ()
+    maintainer = ""
+    license = ""
+    citation = ""
+    docs_url = ""
 
     windowStateChangedSignal = Signal()
 
@@ -299,9 +321,15 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         dict[str, Any]
             Mapping that describes the card type and enabled state.
         """
+        metadata = CardManager.get_card_metadata(self.__class__.__name__) or build_card_metadata(self.__class__)
         return {
             "class": self.__class__.__name__,
             "check_state": self.check_state,
+            "metadata": {
+                "card_name": metadata.card_name,
+                "card_version": metadata.version,
+                "contributors": [item.name for item in metadata.contributors],
+            },
         }
 
 

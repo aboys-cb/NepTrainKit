@@ -8,6 +8,7 @@ from qfluentwidgets import (
     PrimaryDropDownPushButton,
     CommandBar,
     Action,
+    FluentIcon,
     ToolTipFilter,
     ToolTipPosition,
 )
@@ -15,6 +16,7 @@ from qfluentwidgets import (
 from NepTrainKit.paths import get_user_config_path, ensure_directory
 from NepTrainKit.core import load_cards_from_directory, CardManager
 from NepTrainKit.config import Config
+from NepTrainKit.ui.widgets.card_metadata import CardLibraryDialog, card_tooltip
 
 from ase.io import extxyz, cif, vasp  # noqa: F401
 from NepTrainKit.ui.views._card import *  # noqa: F401, F403
@@ -90,6 +92,9 @@ class ConsoleWidget(QWidget):
                     target_menu.addSeparator()
                 action = QAction(QIcon(card_class.menu_icon), card_class.card_name)
                 action.setObjectName(class_name)
+                metadata = CardManager.get_card_metadata(class_name)
+                if metadata is not None:
+                    action.setToolTip(card_tooltip(metadata))
                 target_menu.addAction(action)
         else:
             for class_name, card_class in CardManager.card_info_dict.items():
@@ -97,11 +102,25 @@ class ConsoleWidget(QWidget):
                     self.menu.addSeparator()
                 action = QAction(QIcon(card_class.menu_icon), card_class.card_name)
                 action.setObjectName(class_name)
+                metadata = CardManager.get_card_metadata(class_name)
+                if metadata is not None:
+                    action.setToolTip(card_tooltip(metadata))
                 self.menu.addAction(action)
 
         self.menu.triggered.connect(self.menu_clicked)
         self.new_card_button.setMenu(self.menu)
         self.setting_command.addWidget(self.new_card_button)
+
+        library_action = Action(
+            FluentIcon.INFO,
+            "Card Library",
+            triggered=self.show_card_library,
+        )
+        library_action.setToolTip("Show card contributors and metadata")
+        library_action.installEventFilter(
+            ToolTipFilter(library_action, 300, ToolTipPosition.TOP)
+        )
+        self.setting_command.addAction(library_action)
 
         self.setting_command.addSeparator()
         run_action = Action(
@@ -138,6 +157,11 @@ class ConsoleWidget(QWidget):
             Triggered menu action whose object name stores the card class.
         """
         self.newCardSignal.emit(action.objectName())
+
+    def show_card_library(self):
+        """Open the registered card metadata browser."""
+        dialog = CardLibraryDialog(self)
+        dialog.exec()
 
     def run(self, *args, **kwargs):
         """Emit the run signal to start card execution."""

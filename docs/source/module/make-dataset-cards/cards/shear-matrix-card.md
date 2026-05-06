@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Shear Matrix Strain", "source_file": "src/NepTrainKit/ui/views/_card/shear_matrix_card.py", "serialized_keys": ["organic", "symmetric", "xy_range", "yz_range", "xz_range"]} -->
+<!-- card-schema: {"card_name": "Shear Matrix Strain", "source_file": "src/NepTrainKit/ui/views/_card/shear_matrix_card.py", "serialized_keys": ["params", "organic", "symmetric", "xy_range", "yz_range", "xz_range"]} -->
 
 # 剪切矩阵应变（Shear Matrix Strain）
 
@@ -47,6 +47,17 @@ $$\text{symmetric=true 时再加 }S_{21}=\gamma_{xy},\ S_{32}=\gamma_{yz},\ S_{3
 - 单分量试跑后再三分量联扫。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
+- 控件标签 (Caption): `Operation Params`
+- 控件解释 (Widget): 由 XY/YZ/XZ 剪切范围、对称剪切和有机识别控件组合生成的内部参数字典。
+- 类型/范围 (Type/Range): dict
+- 默认值 (Default): `{"xy_range": [-5.0, 5.0, 1.0], "yz_range": [-5.0, 5.0, 1.0], "xz_range": [-5.0, 5.0, 1.0], "symmetric": true, "identify_organic": false}`
+- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
+- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组剪切矩阵参数。
+- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+
 ### `organic` (Organic)
 - UI Label: `Organic`
 - 字段映射 (Field mapping): 序列化键 `organic` <-> 界面标签 `Organic`。

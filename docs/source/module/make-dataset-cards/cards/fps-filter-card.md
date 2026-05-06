@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "FPS Filter", "source_file": "src/NepTrainKit/ui/views/_card/fps_filter_card.py", "serialized_keys": ["nep_path", "num_condition", "min_distance_condition"]} -->
+<!-- card-schema: {"card_name": "FPS Filter", "source_file": "src/NepTrainKit/ui/views/_card/fps_filter_card.py", "serialized_keys": ["params", "nep_path", "num_condition", "min_distance_condition"]} -->
 
 # FPS 过滤（FPS Filter）
 
@@ -48,6 +48,17 @@ $$\min_{i\in S_t,j\in S_t,i\ne j}\lVert\mathbf{d}_i-\mathbf{d}_j\rVert_2\ge d_{\
 - 先在小集试 `min_distance_condition` 对保留率影响。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
+- 控件标签 (Caption): `Operation Params`
+- 控件解释 (Widget): 由 NEP 路径、目标数量、最小 descriptor 距离和当前 NEP 后端配置组合生成的内部参数字典。
+- 类型/范围 (Type/Range): dict
+- 默认值 (Default): `{"nep_path": "src/NepTrainKit/Config/nep89.txt", "n_samples": 100, "min_distance": 0.01, "backend": "auto", "batch_size": 500}`
+- 含义 (Meaning): UI-independent 参数快照，供 dataset-level operation、测试和未来批处理入口复用。
+- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组 FPS 参数。
+- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+
 ### `nep_path` (Nep Path)
 - UI Label: `Nep Path`
 - 字段映射 (Field mapping): 序列化键 `nep_path` <-> 界面标签 `Nep Path`。

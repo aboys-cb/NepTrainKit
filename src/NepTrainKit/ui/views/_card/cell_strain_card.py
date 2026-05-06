@@ -1,14 +1,11 @@
 """Card for applying axial strain variations to lattice vectors."""
 
-from itertools import combinations
-
-import numpy as np
 from PySide6.QtWidgets import QFrame, QGridLayout
-from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
+from qfluentwidgets import BodyLabel, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.config_type import append_config_tag
-from NepTrainKit.core.structure import get_clusters, process_organic_clusters
+from NepTrainKit.core.cards.lattice import CellStrainOperation, CellStrainParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
 @CardManager.register_card
@@ -102,77 +99,31 @@ class CellStrainCard(MakeDataCard):
         self.settingLayout.addWidget(self.strain_z_label, 4, 0, 1, 1)
         self.settingLayout.addWidget(self.strain_z_frame, 4, 1, 1,1)
 
+    def create_operation(self):
+        """Return the UI-independent strain operation."""
+        return CellStrainOperation()
+
+    def get_params(self) -> CellStrainParams:
+        """Read strain parameters from the UI controls."""
+        return CellStrainParams(
+            axes=self.engine_type_combo.currentText(),
+            x_range=tuple(float(value) for value in self.strain_x_frame.get_input_value()),
+            y_range=tuple(float(value) for value in self.strain_y_frame.get_input_value()),
+            z_range=tuple(float(value) for value in self.strain_z_frame.get_input_value()),
+            identify_organic=self.organic_checkbox.isChecked(),
+        )
+
+    def set_params(self, params: CellStrainParams) -> None:
+        """Apply strain parameters to the UI controls."""
+        self.organic_checkbox.setChecked(bool(params.identify_organic))
+        self.engine_type_combo.setText(params.axes)
+        self.strain_x_frame.set_input_value(list(params.x_range))
+        self.strain_y_frame.set_input_value(list(params.y_range))
+        self.strain_z_frame.set_input_value(list(params.z_range))
+
     def process_structure(self, structure):
-        """Generate strained lattices by sweeping the configured axial strain ranges.
-        
-        Parameters
-        ----------
-        structure : ase.Atoms
-            Structure to transform.
-        
-        Returns
-        -------
-        list[ase.Atoms]
-            Structures that reflect the requested uniaxial, biaxial, or isotropic strain.
-        """
-        structure_list=[]
-        axes=self.engine_type_combo.currentText()
-        x=self.strain_x_frame.get_input_value()
-        y=self.strain_y_frame.get_input_value()
-        z=self.strain_z_frame.get_input_value()
-        identify_organic=self.organic_checkbox.isChecked()
-
-
-        if identify_organic:
-            clusters, is_organic_list = get_clusters(structure)
-        strain_range=[
-            np.arange(start=x[0],stop=x[1]+0.001,step=x[2]),
-            np.arange(start=y[0], stop=y[1]+0.001, step=y[2]),
-            np.arange(start=z[0], stop=z[1]+0.001, step=z[2]),
-        ]
-        cell = structure.get_cell()
-        # Define possible axes (0: x, 1: y, 2: z)
-        all_axes = [0, 1, 2]
-
-
-        if axes == 'isotropic':
-            for strain in strain_range[0]:
-                new_structure = structure.copy()
-                new_cell = cell.copy() * (1 + strain / 100)
-                new_structure.set_cell(new_cell, scale_atoms=True)
-                if identify_organic:
-                    process_organic_clusters(structure, new_structure, clusters, is_organic_list )  # pyright:ignore
-
-                strain_info = [f"all={strain:g}%"]
-                append_config_tag(new_structure, f"Str({','.join(strain_info)})")
-                structure_list.append(new_structure)
-        else:
-            if axes == 'uniaxial':
-                axes_combinations = [[i] for i in all_axes]
-            elif axes == 'biaxial':
-                axes_combinations = list(combinations(all_axes, 2))
-            elif axes == 'triaxial':
-                axes_combinations = [all_axes]
-            else:
-                axes_combinations = [["XYZ".index(i.upper()) for i in axes if i.upper() in "XYZ"]]
-            for ax_comb in axes_combinations:
-                if len(ax_comb) == 0:
-                    continue
-                strain_combinations = (np.array(np.meshgrid(*[strain_range[_] for _ in ax_comb])).T.reshape(-1, len(ax_comb)))
-                for strain_vals in strain_combinations:
-                    new_structure = structure.copy()
-                    new_cell = cell.copy()
-                    for ax_idx, strain in zip(ax_comb, strain_vals):
-                        new_cell[ax_idx] *= (1 + strain / 100)
-                    new_structure.set_cell(new_cell, scale_atoms=True)
-                    if identify_organic:
-                        process_organic_clusters(structure, new_structure, clusters, is_organic_list)  # pyright:ignore
-
-                    strain_info = [f"{'XYZ'[ax]}={float(s):g}%" for ax, s in zip(ax_comb, strain_vals)]
-                    append_config_tag(new_structure, f"Str({','.join(strain_info)})")
-                    structure_list.append(new_structure)
-
-        return structure_list
+        """Generate strained lattices from UI-independent parameters."""
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
         """Serialize the current configuration to a plain dictionary.
@@ -183,12 +134,13 @@ class CellStrainCard(MakeDataCard):
             Dictionary that can be fed into ``from_dict`` to rebuild the state.
         """
         data_dict = super().to_dict()
-        data_dict['organic'] = self.organic_checkbox.isChecked()
-
-        data_dict['engine_type'] = self.engine_type_combo.currentText()
-        data_dict['x_range'] = self.strain_x_frame.get_input_value()
-        data_dict['y_range'] = self.strain_y_frame.get_input_value()
-        data_dict['z_range'] = self.strain_z_frame.get_input_value()
+        params = self.get_params()
+        data_dict["params"] = params_to_dict(params)
+        data_dict['organic'] = params.identify_organic
+        data_dict['engine_type'] = params.axes
+        data_dict['x_range'] = list(params.x_range)
+        data_dict['y_range'] = list(params.y_range)
+        data_dict['z_range'] = list(params.z_range)
 
         return data_dict
 
@@ -201,14 +153,24 @@ class CellStrainCard(MakeDataCard):
             Serialized configuration previously produced by ``to_dict``.
         """
         super().from_dict(data_dict)
-
-        self.organic_checkbox.setChecked(data_dict.get("organic", False))
-
-        self.engine_type_combo.setText(data_dict['engine_type'])
-
-        self.strain_x_frame.set_input_value(data_dict['x_range'])
-        self.strain_y_frame.set_input_value(data_dict['y_range'])
-        self.strain_z_frame.set_input_value(data_dict['z_range'])
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = CellStrainParams(
+                axes=raw_params.get("axes", "uniaxial"),
+                x_range=tuple(raw_params.get("x_range", [-5.0, 5.0, 1.0])),
+                y_range=tuple(raw_params.get("y_range", [-5.0, 5.0, 1.0])),
+                z_range=tuple(raw_params.get("z_range", [-5.0, 5.0, 1.0])),
+                identify_organic=raw_params.get("identify_organic", False),
+            )
+        else:
+            params = CellStrainParams(
+                axes=data_dict.get("engine_type", "uniaxial"),
+                x_range=tuple(data_dict.get("x_range", [-5.0, 5.0, 1.0])),
+                y_range=tuple(data_dict.get("y_range", [-5.0, 5.0, 1.0])),
+                z_range=tuple(data_dict.get("z_range", [-5.0, 5.0, 1.0])),
+                identify_organic=data_dict.get("organic", False),
+            )
+        self.set_params(params)
 
 
 

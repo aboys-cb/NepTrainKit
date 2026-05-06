@@ -1,13 +1,11 @@
 """Card for perturbing lattice angles by configurable increments."""
 
-import numpy as np
 from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ToolTipFilter, ToolTipPosition, CheckBox
-from ase.geometry import cell_to_cellpar, cellpar_to_cell
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.config_type import append_config_tag
-from NepTrainKit.core.structure import get_clusters,process_organic_clusters
+from NepTrainKit.core.cards.lattice import ShearAngleOperation, ShearAngleParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
 
@@ -86,57 +84,29 @@ class ShearAngleCard(MakeDataCard):
         self.settingLayout.addWidget(self.gamma_label, 3, 0, 1, 1)
         self.settingLayout.addWidget(self.gamma_frame, 3, 1, 1, 2)
 
+    def create_operation(self):
+        """Return the UI-independent shear angle operation."""
+        return ShearAngleOperation()
+
+    def get_params(self) -> ShearAngleParams:
+        """Read shear angle parameters from UI controls."""
+        return ShearAngleParams(
+            alpha_range=tuple(float(value) for value in self.alpha_frame.get_input_value()),
+            beta_range=tuple(float(value) for value in self.beta_frame.get_input_value()),
+            gamma_range=tuple(float(value) for value in self.gamma_frame.get_input_value()),
+            identify_organic=self.organic_checkbox.isChecked(),
+        )
+
+    def set_params(self, params: ShearAngleParams) -> None:
+        """Apply shear angle parameters to UI controls."""
+        self.organic_checkbox.setChecked(bool(params.identify_organic))
+        self.alpha_frame.set_input_value(list(params.alpha_range))
+        self.beta_frame.set_input_value(list(params.beta_range))
+        self.gamma_frame.set_input_value(list(params.gamma_range))
+
     def process_structure(self, structure):
-        """Sweep the cell angles within the configured ranges while preserving lengths.
-        
-        Parameters
-        ----------
-        structure : ase.Atoms
-            Structure whose lattice angles will be perturbed.
-        
-        Returns
-        -------
-        list[ase.Atoms]
-            Structures containing the angle variations.
-        """
-        structure_list = []
-        alpha = self.alpha_frame.get_input_value()
-        beta = self.beta_frame.get_input_value()
-        gamma = self.gamma_frame.get_input_value()
-        identify_organic = self.organic_checkbox.isChecked()
-
-        if identify_organic:
-            clusters, is_organic_list = get_clusters(structure)
-
-        alpha_range = np.arange(alpha[0], alpha[1] + 0.001, alpha[2])
-        beta_range = np.arange(beta[0], beta[1] + 0.001, beta[2])
-        gamma_range = np.arange(gamma[0], gamma[1] + 0.001, gamma[2])
-        cell = structure.get_cell()
-        cellpar = cell_to_cellpar(cell)  # [a,b,c,alpha,beta,gamma] in degrees
-        lengths = cellpar[:3]
-        angles0 = cellpar[3:]
-
-        for da in alpha_range:
-            for db in beta_range:
-                for dg in gamma_range:
-                    new_structure = structure.copy()
-                    new_angles = angles0 + np.array([da, db, dg])
-                    new_cellpar = [*lengths, *new_angles]
-                    new_lattice = cellpar_to_cell(new_cellpar)
-                    new_structure.set_cell(new_lattice, scale_atoms=True)
-                    if identify_organic:
-                        process_organic_clusters(structure, new_structure, clusters, is_organic_list)  # pyright:ignore
-                    info_list = []
-                    if abs(da) > 1e-8:
-                        info_list.append(f"a={da:g}")
-                    if abs(db) > 1e-8:
-                        info_list.append(f"b={db:g}")
-                    if abs(dg) > 1e-8:
-                        info_list.append(f"g={dg:g}")
-                    info_str = ",".join(info_list)
-                    append_config_tag(new_structure, f"Ang({info_str})")
-                    structure_list.append(new_structure)
-        return structure_list
+        """Sweep cell angles from UI-independent parameters."""
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
         """Serialize the current configuration to a plain dictionary.
@@ -147,10 +117,12 @@ class ShearAngleCard(MakeDataCard):
             Dictionary that can be fed into ``from_dict`` to rebuild the state.
         """
         data_dict = super().to_dict()
-        data_dict["organic"] = self.organic_checkbox.isChecked()
-        data_dict["alpha_range"] = self.alpha_frame.get_input_value()
-        data_dict["beta_range"] = self.beta_frame.get_input_value()
-        data_dict["gamma_range"] = self.gamma_frame.get_input_value()
+        params = self.get_params()
+        data_dict["params"] = params_to_dict(params)
+        data_dict["organic"] = params.identify_organic
+        data_dict["alpha_range"] = list(params.alpha_range)
+        data_dict["beta_range"] = list(params.beta_range)
+        data_dict["gamma_range"] = list(params.gamma_range)
         return data_dict
 
     def from_dict(self, data_dict):
@@ -162,8 +134,20 @@ class ShearAngleCard(MakeDataCard):
             Serialized configuration previously produced by ``to_dict``.
         """
         super().from_dict(data_dict)
-        self.organic_checkbox.setChecked(data_dict.get("organic", False))
-        self.alpha_frame.set_input_value(data_dict.get("alpha_range", [-2, 2, 1]))
-        self.beta_frame.set_input_value(data_dict.get("beta_range", [-2, 2, 1]))
-        self.gamma_frame.set_input_value(data_dict.get("gamma_range", [-2, 2, 1]))
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = ShearAngleParams(
+                alpha_range=tuple(raw_params.get("alpha_range", [-2.0, 2.0, 1.0])),
+                beta_range=tuple(raw_params.get("beta_range", [-2.0, 2.0, 1.0])),
+                gamma_range=tuple(raw_params.get("gamma_range", [-2.0, 2.0, 1.0])),
+                identify_organic=raw_params.get("identify_organic", False),
+            )
+        else:
+            params = ShearAngleParams(
+                alpha_range=tuple(data_dict.get("alpha_range", [-2, 2, 1])),
+                beta_range=tuple(data_dict.get("beta_range", [-2, 2, 1])),
+                gamma_range=tuple(data_dict.get("gamma_range", [-2, 2, 1])),
+                identify_organic=data_dict.get("organic", False),
+            )
+        self.set_params(params)
 

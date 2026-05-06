@@ -23,9 +23,10 @@ from qfluentwidgets import (
 from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleCardWidget
 
 from NepTrainKit.core import CardManager, MessageManager
+from NepTrainKit.core.cards.operation import DatasetOperation, StructureOperation
 from NepTrainKit.core.card_manager import build_card_metadata
 from NepTrainKit.ui.dialogs import call_path_dialog
-from NepTrainKit.ui.threads import DataProcessingThread, LoadingThread
+from NepTrainKit.ui.threads import DataProcessingThread, FilterProcessingThread, LoadingThread
 from NepTrainKit.version import DOCS_BASE_URL
 from .card_metadata import CardMetadataDialog
 from .label import ProcessLabel
@@ -438,6 +439,17 @@ class MakeDataCard(MakeDataCardWidget):
         """
         raise NotImplementedError
 
+    def get_params(self):
+        """Return UI-independent operation parameters for migrated cards."""
+        return None
+
+    def set_params(self, params) -> None:
+        """Apply UI-independent operation parameters to the card widgets."""
+
+    def create_operation(self):
+        """Return a UI-independent operation object for migrated cards."""
+        return None
+
     def closeEvent(self, event):
         """Ensure worker threads are stopped before closing the card."""
         if hasattr(self, "worker_thread"):
@@ -460,10 +472,21 @@ class MakeDataCard(MakeDataCardWidget):
     def run(self):
         """Launch processing in a background thread when enabled."""
         if self.check_state:
-            self.worker_thread = DataProcessingThread(
-                self.dataset,
-                self.process_structure,
-            )
+            operation = self.create_operation()
+            params = self.get_params()
+            if isinstance(operation, StructureOperation):
+                self.worker_thread = DataProcessingThread(self.dataset, operation, params)
+            elif isinstance(operation, DatasetOperation):
+                self.worker_thread = FilterProcessingThread(
+                    dataset=self.dataset,
+                    operation=operation,
+                    params=params,
+                )
+            else:
+                self.worker_thread = DataProcessingThread(
+                    self.dataset,
+                    self.process_structure,
+                )
             self.status_label.set_colors(["#59745A"])
 
             self.worker_thread.progressSignal.connect(self.update_progress)
@@ -543,6 +566,8 @@ class FilterDataCard(MakeDataCard):
 
     def on_processing_finished(self):
         """Refresh status once filtering completes."""
+        if hasattr(self, "worker_thread"):
+            self.result_dataset = self.worker_thread.result_dataset
         self.update_dataset_info()
         self.status_label.set_colors(["#a5d6a7"])
         self.runFinishedSignal.emit(self.index)

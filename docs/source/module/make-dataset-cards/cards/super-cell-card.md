@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Super Cell", "source_file": "src/NepTrainKit/ui/views/_card/super_cell_card.py", "serialized_keys": ["super_cell_type", "super_scale_radio_button", "super_scale_condition", "super_cell_radio_button", "super_cell_condition", "max_atoms_radio_button", "max_atoms_condition", "fixed_axis_flags", "fixed_axis_scale"]} -->
+<!-- card-schema: {"card_name": "Super Cell", "source_file": "src/NepTrainKit/ui/views/_card/super_cell_card.py", "serialized_keys": ["params", "super_cell_type", "super_scale_radio_button", "super_scale_condition", "super_cell_radio_button", "super_cell_condition", "max_atoms_radio_button", "max_atoms_condition", "fixed_axis_flags", "fixed_axis_scale"]} -->
 
 # 超胞生成（Super Cell）
 
@@ -47,6 +47,17 @@ $$n_a^{(\max)}=\max\left(\left\lfloor\frac{L_a^*}{\lVert\mathbf{a}\rVert}\right\
 - 设置原子数上限避免超预算。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
+- 控件标签 (Caption): `Operation Params`
+- 控件解释 (Widget): 由 supercell 行为、主模式、倍数/目标晶胞/最大原子数和固定轴控件组合生成的内部参数字典。
+- 类型/范围 (Type/Range): dict
+- 默认值 (Default): `{"behavior_type": 0, "mode": "scale", "super_scale": [3, 3, 3], "target_cell": [20.0, 20.0, 20.0], "max_atoms": 100, "fixed_axis_flags": [false, false, false], "fixed_axis_scale": [1, 1, 1]}`
+- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
+- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组扩胞参数。
+- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+
 ### `super_cell_type` (Super Cell Type)
 - UI Label: `Super Cell Type`
 - 字段映射 (Field mapping): 序列化键 `super_cell_type` <-> 界面标签 `Super Cell Type`。

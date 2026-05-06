@@ -43,6 +43,21 @@ from NepTrainKit.ui.views._card import (
 )
 from NepTrainKit.core.magnetism import orthonormal_frame
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
+from NepTrainKit.core.cards.lattice import (
+    CellScalingOperation,
+    CellScalingParams,
+    CellStrainOperation,
+    CellStrainParams,
+    PerturbOperation,
+    PerturbParams,
+    ShearAngleOperation,
+    ShearAngleParams,
+    ShearMatrixOperation,
+    ShearMatrixParams,
+    SuperCellOperation,
+    SuperCellParams,
+)
 from NepTrainKit.ui.widgets import MakeDataCard
 from NepTrainKit.ui.widgets.card_metadata import card_tooltip, metadata_html
 from NepTrainKit.version import DOCS_BASE_URL
@@ -241,6 +256,23 @@ class TestCard(unittest.TestCase):
         self.assertEqual(restored.fixed_scale_condition_frame.get_input_value(), [1, 1, 1])
         self.assertEqual(restored.super_cell_condition_frame.get_input_value(), list(card.super_cell_condition_frame.get_input_value()))
 
+    def test_supercell_operation_matches_card_params(self):
+        card = SuperCellCard()
+        structure = self.structure.copy()
+        card.super_scale_radio_button.setChecked(True)
+        card.super_cell_radio_button.setChecked(False)
+        card.max_atoms_radio_button.setChecked(False)
+        card.super_scale_condition_frame.set_input_value([2, 1, 1])
+
+        params = card.get_params()
+        self.assertIsInstance(params, SuperCellParams)
+        card_result = card.process_structure(structure)
+        op_result = SuperCellOperation().run_structure(structure, params)
+
+        self.assertEqual(len(card_result), len(op_result))
+        self.assertEqual(len(card_result[0]), len(op_result[0]))
+        self.assertIn("params", card.to_dict())
+
     def test_perturb_card_with_organic(self):
         card = PerturbCard()
         structure = self.structure.copy()
@@ -256,6 +288,19 @@ class TestCard(unittest.TestCase):
             for atoms in results
         ]
         self.assertTrue(any(delta > 0 for delta in displacements))
+
+    def test_perturb_operation_is_ui_independent(self):
+        params = PerturbParams(
+            engine_type=1,
+            max_distance=0.1,
+            max_num=2,
+            use_seed=True,
+            seed=11,
+        )
+        results = PerturbOperation().run_structure(self.structure.copy(), params)
+
+        self.assertEqual(len(results), 2)
+        self.assertTrue(all("Pert(d=0.1,U)" in atoms.info.get("Config_type", "") for atoms in results))
 
     def test_cell_scaling_card_options(self):
         card = CellScalingCard()
@@ -280,6 +325,20 @@ class TestCard(unittest.TestCase):
             )
         )
 
+    def test_cell_scaling_operation_is_ui_independent(self):
+        params = CellScalingParams(
+            engine_type=1,
+            max_scaling=0.05,
+            max_num=2,
+            perturb_angle=False,
+            use_seed=True,
+            seed=7,
+        )
+        results = CellScalingOperation().run_structure(self.structure.copy(), params)
+
+        self.assertEqual(len(results), 2)
+        self.assertTrue(all("LSc(max=0.05,U)" in atoms.info.get("Config_type", "") for atoms in results))
+
     def test_cell_strain_card_uniaxial(self):
         card = CellStrainCard()
         structure = self.structure.copy()
@@ -303,6 +362,25 @@ class TestCard(unittest.TestCase):
             )
         )
 
+    def test_cell_strain_operation_is_ui_independent(self):
+        params = CellStrainParams(
+            axes="X",
+            x_range=(1.0, 1.0, 1.0),
+            y_range=(0.0, 0.0, 1.0),
+            z_range=(0.0, 0.0, 1.0),
+            identify_organic=False,
+        )
+        results = CellStrainOperation().run_structure(self.structure.copy(), params)
+
+        self.assertEqual(len(results), 1)
+        self.assertIn("Str(X=1%)", results[0].info.get("Config_type", ""))
+
+    def test_fps_filter_operation_rejects_missing_model(self):
+        params = FPSFilterParams(nep_path=str(self.test_dir / "data" / "missing_nep.txt"))
+
+        with self.assertRaises(FileNotFoundError):
+            FPSFilterOperation().run_dataset([self.structure.copy()], params)
+
     def test_shear_matrix_card(self):
         card = ShearMatrixCard()
         structure = self.structure.copy()
@@ -322,6 +400,18 @@ class TestCard(unittest.TestCase):
             )
         )
 
+    def test_shear_matrix_operation_is_ui_independent(self):
+        params = ShearMatrixParams(
+            xy_range=(1.0, 1.0, 1.0),
+            yz_range=(0.0, 0.0, 1.0),
+            xz_range=(0.0, 0.0, 1.0),
+            symmetric=False,
+        )
+        results = ShearMatrixOperation().run_structure(self.structure.copy(), params)
+
+        self.assertEqual(len(results), 1)
+        self.assertIn("Shr(xy=1%,sym=0)", results[0].info.get("Config_type", ""))
+
     def test_shear_angle_card(self):
         card = ShearAngleCard()
         structure = self.structure.copy()
@@ -335,6 +425,17 @@ class TestCard(unittest.TestCase):
         original_angles = np.array(structure.cell.cellpar()[3:])
         new_angles = np.array(results[0].cell.cellpar()[3:])
         self.assertFalse(np.allclose(new_angles, original_angles, atol=1e-6))
+
+    def test_shear_angle_operation_is_ui_independent(self):
+        params = ShearAngleParams(
+            alpha_range=(1.0, 1.0, 1.0),
+            beta_range=(0.0, 0.0, 1.0),
+            gamma_range=(0.0, 0.0, 1.0),
+        )
+        results = ShearAngleOperation().run_structure(self.structure.copy(), params)
+
+        self.assertEqual(len(results), 1)
+        self.assertIn("Ang(a=1)", results[0].info.get("Config_type", ""))
 
     def test_random_slab_card(self):
         card = RandomSlabCard()

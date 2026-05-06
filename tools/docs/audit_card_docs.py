@@ -262,6 +262,14 @@ def defaults_equivalent(key: str, doc_value: object, code_value: object) -> bool
             normalized_code = code_value.replace("\\", "/")
             if normalized_doc == "src/NepTrainKit/Config/nep89.txt" and normalized_code.endswith("/src/NepTrainKit/Config/nep89.txt"):
                 return True
+    if isinstance(doc_value, dict) and isinstance(code_value, dict):
+        if set(doc_value) != set(code_value):
+            return False
+        return all(defaults_equivalent(nested_key, doc_value[nested_key], code_value[nested_key]) for nested_key in doc_value)
+    if isinstance(doc_value, list) and isinstance(code_value, list):
+        if len(doc_value) != len(code_value):
+            return False
+        return all(defaults_equivalent(key, left, right) for left, right in zip(doc_value, code_value))
     if isinstance(code_value, tuple):
         code_value = list(code_value)
     if isinstance(doc_value, tuple):

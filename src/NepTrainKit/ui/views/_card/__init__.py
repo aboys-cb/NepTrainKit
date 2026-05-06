@@ -27,7 +27,7 @@ from .organic_mol_config_pbc_card import OrganicMolConfigPBCCard
 from .layer_copy_card import LayerCopyCard
 from .interstitial_adsorbate_card import InsertDefectCard
 
-from .fps_filter_card import FilterDataCard
+from .fps_filter_card import FPSFilterDataCard, FilterDataCard
 from .card_group import CardGroup
 
 __all__ = [
@@ -58,6 +58,7 @@ __all__ = [
     "OrganicMolConfigPBCCard",
     "LayerCopyCard",
     "InsertDefectCard",
+    "FPSFilterDataCard",
     "FilterDataCard",
     "CardGroup",
 

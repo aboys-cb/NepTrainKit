@@ -1,12 +1,11 @@
 """Card for applying shear matrices to lattice vectors."""
 
-import numpy as np
 from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.config_type import append_config_tag
-from NepTrainKit.core.structure import get_clusters,process_organic_clusters
+from NepTrainKit.core.cards.lattice import ShearMatrixOperation, ShearMatrixParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
 
@@ -90,62 +89,31 @@ class ShearMatrixCard(MakeDataCard):
         self.settingLayout.addWidget(self.xz_label, 3, 0, 1, 1)
         self.settingLayout.addWidget(self.xz_frame, 3, 1, 1, 2)
 
+    def create_operation(self):
+        """Return the UI-independent shear matrix operation."""
+        return ShearMatrixOperation()
+
+    def get_params(self) -> ShearMatrixParams:
+        """Read shear matrix parameters from UI controls."""
+        return ShearMatrixParams(
+            xy_range=tuple(float(value) for value in self.xy_frame.get_input_value()),
+            yz_range=tuple(float(value) for value in self.yz_frame.get_input_value()),
+            xz_range=tuple(float(value) for value in self.xz_frame.get_input_value()),
+            symmetric=self.symmetric_checkbox.isChecked(),
+            identify_organic=self.organic_checkbox.isChecked(),
+        )
+
+    def set_params(self, params: ShearMatrixParams) -> None:
+        """Apply shear matrix parameters to UI controls."""
+        self.organic_checkbox.setChecked(bool(params.identify_organic))
+        self.symmetric_checkbox.setChecked(bool(params.symmetric))
+        self.xy_frame.set_input_value(list(params.xy_range))
+        self.yz_frame.set_input_value(list(params.yz_range))
+        self.xz_frame.set_input_value(list(params.xz_range))
+
     def process_structure(self, structure):
-        """Apply shear matrices to the cell vectors based on the configured percentage ranges.
-        
-        Parameters
-        ----------
-        structure : ase.Atoms
-            Structure to shear.
-        
-        Returns
-        -------
-        list[ase.Atoms]
-            Structures produced by the shear transformation.
-        """
-        structure_list = []
-        xy = self.xy_frame.get_input_value()
-        yz = self.yz_frame.get_input_value()
-        xz = self.xz_frame.get_input_value()
-        identify_organic = self.organic_checkbox.isChecked()
-
-        if identify_organic:
-            clusters, is_organic_list = get_clusters(structure)
-
-        xy_range = np.arange(xy[0], xy[1] + 0.001, xy[2])
-        yz_range = np.arange(yz[0], yz[1] + 0.001, yz[2])
-        xz_range = np.arange(xz[0], xz[1] + 0.001, xz[2])
-        cell = structure.get_cell()
-        symmetric = self.symmetric_checkbox.isChecked()
-
-        for sxy in xy_range:
-            for syz in yz_range:
-                for sxz in xz_range:
-                    new_structure = structure.copy()
-                    shear_matrix = np.eye(3)
-                    shear_matrix[0, 1] += sxy / 100
-                    shear_matrix[1, 2] += syz / 100
-                    shear_matrix[0, 2] += sxz / 100
-                    if symmetric:
-                        shear_matrix[1, 0] += sxy / 100
-                        shear_matrix[2, 1] += syz / 100
-                        shear_matrix[2, 0] += sxz / 100
-
-                    new_cell = np.matmul(cell, shear_matrix)
-                    new_structure.set_cell(new_cell, scale_atoms=True)
-                    if identify_organic:
-                        process_organic_clusters(structure, new_structure, clusters, is_organic_list)  # pyright:ignore
-                    info_list = []
-                    if abs(sxy) > 1e-8:
-                        info_list.append(f"xy={sxy:g}%")
-                    if abs(syz) > 1e-8:
-                        info_list.append(f"yz={syz:g}%")
-                    if abs(sxz) > 1e-8:
-                        info_list.append(f"xz={sxz:g}%")
-                    info_str = ",".join(info_list)
-                    append_config_tag(new_structure, f"Shr({info_str},sym={int(bool(symmetric))})")
-                    structure_list.append(new_structure)
-        return structure_list
+        """Apply shear matrices from UI-independent parameters."""
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
         """Serialize the current configuration to a plain dictionary.
@@ -156,11 +124,13 @@ class ShearMatrixCard(MakeDataCard):
             Dictionary that can be fed into ``from_dict`` to rebuild the state.
         """
         data_dict = super().to_dict()
-        data_dict["organic"] = self.organic_checkbox.isChecked()
-        data_dict["symmetric"] = self.symmetric_checkbox.isChecked()
-        data_dict["xy_range"] = self.xy_frame.get_input_value()
-        data_dict["yz_range"] = self.yz_frame.get_input_value()
-        data_dict["xz_range"] = self.xz_frame.get_input_value()
+        params = self.get_params()
+        data_dict["params"] = params_to_dict(params)
+        data_dict["organic"] = params.identify_organic
+        data_dict["symmetric"] = params.symmetric
+        data_dict["xy_range"] = list(params.xy_range)
+        data_dict["yz_range"] = list(params.yz_range)
+        data_dict["xz_range"] = list(params.xz_range)
         return data_dict
 
     def from_dict(self, data_dict):
@@ -172,8 +142,21 @@ class ShearMatrixCard(MakeDataCard):
             Serialized configuration previously produced by ``to_dict``.
         """
         super().from_dict(data_dict)
-        self.organic_checkbox.setChecked(data_dict.get("organic", False))
-        self.symmetric_checkbox.setChecked(data_dict.get("symmetric", True))
-        self.xy_frame.set_input_value(data_dict.get("xy_range", [-5, 5, 1]))
-        self.yz_frame.set_input_value(data_dict.get("yz_range", [-5, 5, 1]))
-        self.xz_frame.set_input_value(data_dict.get("xz_range", [-5, 5, 1]))
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = ShearMatrixParams(
+                xy_range=tuple(raw_params.get("xy_range", [-5.0, 5.0, 1.0])),
+                yz_range=tuple(raw_params.get("yz_range", [-5.0, 5.0, 1.0])),
+                xz_range=tuple(raw_params.get("xz_range", [-5.0, 5.0, 1.0])),
+                symmetric=raw_params.get("symmetric", True),
+                identify_organic=raw_params.get("identify_organic", False),
+            )
+        else:
+            params = ShearMatrixParams(
+                xy_range=tuple(data_dict.get("xy_range", [-5, 5, 1])),
+                yz_range=tuple(data_dict.get("yz_range", [-5, 5, 1])),
+                xz_range=tuple(data_dict.get("xz_range", [-5, 5, 1])),
+                symmetric=data_dict.get("symmetric", True),
+                identify_organic=data_dict.get("organic", False),
+            )
+        self.set_params(params)

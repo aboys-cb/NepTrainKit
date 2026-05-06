@@ -1,15 +1,13 @@
 """Card for generating lattice perturbations via stochastic scaling."""
 
-import numpy as np
 from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.config_type import append_config_tag
-from NepTrainKit.core.structure import get_clusters, process_organic_clusters
+from NepTrainKit.core.cards.lattice import CellScalingOperation, CellScalingParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
-from scipy.stats.qmc import Sobol
 
 
 @CardManager.register_card
@@ -117,80 +115,35 @@ class CellScalingCard(MakeDataCard):
         self.settingLayout.addWidget(self.seed_checkbox, 4, 0, 1, 1)
         self.settingLayout.addWidget(self.seed_frame, 4, 1, 1, 2)
 
+    def create_operation(self):
+        """Return the UI-independent lattice scaling operation."""
+        return CellScalingOperation()
+
+    def get_params(self) -> CellScalingParams:
+        """Read lattice scaling parameters from UI controls."""
+        return CellScalingParams(
+            engine_type=int(self.engine_type_combo.currentIndex()),
+            max_scaling=float(self.scaling_condition_frame.get_input_value()[0]),
+            max_num=int(self.num_condition_frame.get_input_value()[0]),
+            perturb_angle=self.perturb_angle_checkbox.isChecked(),
+            identify_organic=self.organic_checkbox.isChecked(),
+            use_seed=self.seed_checkbox.isChecked(),
+            seed=int(self.seed_frame.get_input_value()[0]),
+        )
+
+    def set_params(self, params: CellScalingParams) -> None:
+        """Apply lattice scaling parameters to UI controls."""
+        self.engine_type_combo.setCurrentIndex(int(params.engine_type))
+        self.perturb_angle_checkbox.setChecked(bool(params.perturb_angle))
+        self.organic_checkbox.setChecked(bool(params.identify_organic))
+        self.scaling_condition_frame.set_input_value([float(params.max_scaling)])
+        self.num_condition_frame.set_input_value([int(params.max_num)])
+        self.seed_checkbox.setChecked(bool(params.use_seed))
+        self.seed_frame.set_input_value([int(params.seed)])
+
     def process_structure(self, structure):
-        """Generate lattice perturbations by scaling cell lengths and optionally angles.
-        
-        Parameters
-        ----------
-        structure : ase.Atoms
-            Structure to transform.
-        
-        Returns
-        -------
-        list[ase.Atoms]
-            Collection of perturbed structures generated from the input lattice.
-        """
-        structure_list=[]
-        engine_type=self.engine_type_combo.currentIndex()
-        max_scaling=self.scaling_condition_frame.get_input_value()[0]
-        max_num = int(self.num_condition_frame.get_input_value()[0])
-        identify_organic=self.organic_checkbox.isChecked()
-
-        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
-        rng = np.random.default_rng(base_seed)
-
-        if self.perturb_angle_checkbox.isChecked():
-            perturb_angles=True
-            dim=6 #abc + angles
-        else:
-            dim=3 #abc
-            perturb_angles=False
-        if engine_type == 0:
-
-            sobol_engine = Sobol(d=dim, scramble=True, seed=base_seed)
-            sobol_seq = sobol_engine.random(max_num)
-            perturbation_factors = 1 + (sobol_seq - 0.5) * 2 * max_scaling
-        else:
-            perturbation_factors = 1 + rng.uniform(-max_scaling, max_scaling, (max_num, dim))
-
-        orig_lattice = structure.cell.array
-        orig_lengths = np.linalg.norm(orig_lattice, axis=1)
-        unit_vectors = orig_lattice / orig_lengths[:, np.newaxis]
-        if identify_organic:
-            clusters, is_organic_list = get_clusters(structure)
-        for i in range(max_num):
-            new_structure=structure.copy()
-            length_factors = perturbation_factors[i, :3]
-            new_lengths = orig_lengths * length_factors
-
-            new_lattice = unit_vectors * new_lengths[:, np.newaxis]
-
-            if perturb_angles:
-                angle_factors = perturbation_factors[i, 3:]
-                angles = np.arccos([
-                    np.dot(orig_lattice[1], orig_lattice[2]) / (orig_lengths[1] * orig_lengths[2]),
-                    np.dot(orig_lattice[0], orig_lattice[2]) / (orig_lengths[0] * orig_lengths[2]),
-                    np.dot(orig_lattice[0], orig_lattice[1]) / (orig_lengths[0] * orig_lengths[1])
-                ])
-                new_angles = angles * angle_factors
-                new_lattice = np.zeros((3, 3), dtype=np.float32)
-                new_lattice[0] = [new_lengths[0], 0, 0]
-                new_lattice[1] = [new_lengths[1] * np.cos(new_angles[2]),
-                                  new_lengths[1] * np.sin(new_angles[2]), 0]
-                cx = new_lengths[2] * np.cos(new_angles[1])
-                cy = new_lengths[2] * (np.cos(new_angles[0]) - np.cos(new_angles[1]) * np.cos(new_angles[2])) / np.sin(
-                    new_angles[2])
-                cz = np.sqrt(max(new_lengths[2] ** 2 - cx ** 2 - cy ** 2, 0))
-                new_lattice[2] = [cx, cy, cz]
-            eng = "U" if engine_type == 1 else "S"
-            append_config_tag(new_structure, f"LSc(max={max_scaling},{eng})")
-
-            new_structure.set_cell(new_lattice,  scale_atoms=True)
-            if identify_organic:
-                process_organic_clusters(structure, new_structure, clusters, is_organic_list )  # pyright:ignore
-
-            structure_list.append(new_structure)
-        return structure_list
+        """Generate lattice perturbations from UI-independent parameters."""
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
         """Serialize the current configuration to a plain dictionary.
@@ -201,15 +154,15 @@ class CellScalingCard(MakeDataCard):
             Dictionary that can be fed into ``from_dict`` to rebuild the state.
         """
         data_dict = super().to_dict()
-
-        data_dict['engine_type'] = self.engine_type_combo.currentIndex()
-        data_dict['perturb_angle'] = self.perturb_angle_checkbox.isChecked()
-        data_dict['organic'] = self.organic_checkbox.isChecked()
-
-        data_dict['scaling_condition'] = self.scaling_condition_frame.get_input_value()
-        data_dict['num_condition'] = self.num_condition_frame.get_input_value()
-        data_dict["use_seed"] = self.seed_checkbox.isChecked()
-        data_dict["seed"] = self.seed_frame.get_input_value()
+        params = self.get_params()
+        data_dict["params"] = params_to_dict(params)
+        data_dict['engine_type'] = params.engine_type
+        data_dict['perturb_angle'] = params.perturb_angle
+        data_dict['organic'] = params.identify_organic
+        data_dict['scaling_condition'] = [params.max_scaling]
+        data_dict['num_condition'] = [params.max_num]
+        data_dict["use_seed"] = params.use_seed
+        data_dict["seed"] = [params.seed]
         return data_dict
 
     def from_dict(self, data_dict):
@@ -221,11 +174,25 @@ class CellScalingCard(MakeDataCard):
             Serialized configuration previously produced by ``to_dict``.
         """
         super().from_dict(data_dict)
-
-        self.organic_checkbox.setChecked(data_dict.get("organic", False))
-        self.engine_type_combo.setCurrentIndex(data_dict['engine_type'])
-        self.perturb_angle_checkbox.setChecked(data_dict['perturb_angle'])
-        self.scaling_condition_frame.set_input_value(data_dict['scaling_condition'])
-        self.num_condition_frame.set_input_value(data_dict['num_condition'])
-        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
-        self.seed_frame.set_input_value(data_dict.get("seed", [0]))
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = CellScalingParams(
+                engine_type=raw_params.get("engine_type", 1),
+                max_scaling=raw_params.get("max_scaling", 0.04),
+                max_num=raw_params.get("max_num", 50),
+                perturb_angle=raw_params.get("perturb_angle", True),
+                identify_organic=raw_params.get("identify_organic", False),
+                use_seed=raw_params.get("use_seed", False),
+                seed=raw_params.get("seed", 0),
+            )
+        else:
+            params = CellScalingParams(
+                engine_type=data_dict.get("engine_type", 1),
+                max_scaling=data_dict.get("scaling_condition", [0.04])[0],
+                max_num=data_dict.get("num_condition", [50])[0],
+                perturb_angle=data_dict.get("perturb_angle", True),
+                identify_organic=data_dict.get("organic", False),
+                use_seed=data_dict.get("use_seed", False),
+                seed=data_dict.get("seed", [0])[0],
+            )
+        self.set_params(params)

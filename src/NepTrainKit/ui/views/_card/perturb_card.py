@@ -1,8 +1,5 @@
 """Card for applying random atomic perturbations."""
 
-from itertools import combinations
-
-import numpy as np
 from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QVBoxLayout, QLineEdit
 from qfluentwidgets import (
     BodyLabel,
@@ -15,11 +12,10 @@ from qfluentwidgets import (
 )
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.config_type import append_config_tag
-from NepTrainKit.core.structure import get_clusters
+from NepTrainKit.core.cards.lattice import PerturbOperation, PerturbParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
-from scipy.stats.qmc import Sobol
 
 
 class ElementScalingRow(QFrame):
@@ -250,76 +246,39 @@ class PerturbCard(MakeDataCard):
             self.element_rows_frame.setVisible(self.element_scaling_checkbox.isChecked())
 
 
-    def process_structure(self, structure):
-        """Apply random atomic displacements within the configured distance bounds.
-        
-        Parameters
-        ----------
-        structure : ase.Atoms
-            Structure to perturb.
-        
-        Returns
-        -------
-        list[ase.Atoms]
-            Structures containing perturbed atomic positions.
-        """
-        structure_list = []
-        engine_type = self.engine_type_combo.currentIndex()
-        max_scaling = self.scaling_condition_frame.get_input_value()[0]
-        max_num = int(self.num_condition_frame.get_input_value()[0])
-        identify_organic = self.organic_checkbox.isChecked()
+    def create_operation(self):
+        """Return the UI-independent atomic perturbation operation."""
+        return PerturbOperation()
+
+    def get_params(self) -> PerturbParams:
+        """Read atomic perturbation parameters from UI controls."""
         use_element_scaling = self.element_scaling_checkbox.isChecked()
-        element_scalings = self._collect_element_scalings() if use_element_scaling else {}
-
-        n_atoms = len(structure)
-        dim = n_atoms * 3
-        symbols = structure.get_chemical_symbols()
-
-        per_atom_scaling = (
-            np.array([element_scalings.get(sym, max_scaling) for sym in symbols])
-            if use_element_scaling
-            else np.full(n_atoms, max_scaling)
+        return PerturbParams(
+            engine_type=int(self.engine_type_combo.currentIndex()),
+            max_distance=float(self.scaling_condition_frame.get_input_value()[0]),
+            max_num=int(self.num_condition_frame.get_input_value()[0]),
+            identify_organic=self.organic_checkbox.isChecked(),
+            use_element_scaling=use_element_scaling,
+            element_scalings=self._collect_element_scalings() if use_element_scaling else {},
+            use_seed=self.seed_checkbox.isChecked(),
+            seed=int(self.seed_frame.get_input_value()[0]),
         )
 
-        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
-        rng = np.random.default_rng(base_seed)
+    def set_params(self, params: PerturbParams) -> None:
+        """Apply atomic perturbation parameters to UI controls."""
+        self.engine_type_combo.setCurrentIndex(int(params.engine_type))
+        self.scaling_condition_frame.set_input_value([float(params.max_distance)])
+        self.num_condition_frame.set_input_value([int(params.max_num)])
+        self.organic_checkbox.setChecked(bool(params.identify_organic))
+        self.element_scaling_checkbox.setChecked(bool(params.use_element_scaling))
+        self._load_element_scalings(params.element_scalings or {})
+        self.element_rows_frame.setVisible(self.element_scaling_checkbox.isChecked())
+        self.seed_checkbox.setChecked(bool(params.use_seed))
+        self.seed_frame.set_input_value([int(params.seed)])
 
-        if engine_type == 0:
-            sobol_engine = Sobol(d=dim, scramble=True, seed=base_seed)
-            perturbation_factors = (sobol_engine.random(max_num) - 0.5) * 2
-        else:
-            perturbation_factors = rng.uniform(-1, 1, (max_num, dim))
-
-        if identify_organic:
-            clusters, is_organic_list = get_clusters(structure)
-            organic_clusters = [cluster for cluster, is_org in zip(clusters, is_organic_list) if is_org]
-            inorganic_clusters = [cluster for cluster, is_org in zip(clusters, is_organic_list) if not is_org]
-
-        orig_positions = structure.positions
-
-        for i in range(max_num):
-            delta = perturbation_factors[i].reshape(n_atoms, 3) * per_atom_scaling[:, None]
-            new_positions = orig_positions + delta
-
-            if identify_organic:
-                new_positions = orig_positions.copy()
-
-
-                for cluster in organic_clusters:  # pyright:ignore
-                    cluster_delta = delta[cluster[0]]
-                    new_positions[cluster] += cluster_delta
-
-                for cluster in inorganic_clusters:  # pyright:ignore
-                    new_positions[cluster] += delta[cluster]
-
-            new_structure = structure.copy()
-            new_structure.set_positions(new_positions)
-            new_structure.wrap()
-            eng = "U" if engine_type == 1 else "S"
-            append_config_tag(new_structure, f"Pert(d={max_scaling},{eng})")
-            structure_list.append(new_structure)
-
-        return structure_list
+    def process_structure(self, structure):
+        """Apply random atomic displacements from UI-independent parameters."""
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
         """Serialize the current configuration to a plain dictionary.
@@ -331,16 +290,16 @@ class PerturbCard(MakeDataCard):
         """
         data_dict = super().to_dict()
 
-
-        data_dict['engine_type'] = self.engine_type_combo.currentIndex()
-        data_dict["organic"]=self.organic_checkbox.isChecked()
-        data_dict['scaling_condition'] = self.scaling_condition_frame.get_input_value()
-
-        data_dict['num_condition'] = self.num_condition_frame.get_input_value()
-        data_dict["use_element_scaling"] = self.element_scaling_checkbox.isChecked()
-        data_dict["element_scalings"] = self._collect_element_scalings()
-        data_dict["use_seed"] = self.seed_checkbox.isChecked()
-        data_dict["seed"] = self.seed_frame.get_input_value()
+        params = self.get_params()
+        data_dict["params"] = params_to_dict(params)
+        data_dict['engine_type'] = params.engine_type
+        data_dict["organic"] = params.identify_organic
+        data_dict['scaling_condition'] = [params.max_distance]
+        data_dict['num_condition'] = [params.max_num]
+        data_dict["use_element_scaling"] = params.use_element_scaling
+        data_dict["element_scalings"] = params.element_scalings or {}
+        data_dict["use_seed"] = params.use_seed
+        data_dict["seed"] = [params.seed]
         return data_dict
 
     def from_dict(self, data_dict):
@@ -352,15 +311,27 @@ class PerturbCard(MakeDataCard):
             Serialized configuration previously produced by ``to_dict``.
         """
         super().from_dict(data_dict)
-
-        self.engine_type_combo.setCurrentIndex(data_dict['engine_type'])
-
-        self.scaling_condition_frame.set_input_value(data_dict['scaling_condition'])
-
-        self.num_condition_frame.set_input_value(data_dict['num_condition'])
-        self.organic_checkbox.setChecked(data_dict.get("organic", False))
-        self.element_scaling_checkbox.setChecked(data_dict.get("use_element_scaling", False))
-        self._load_element_scalings(data_dict.get("element_scalings", {}))
-        self.element_rows_frame.setVisible(self.element_scaling_checkbox.isChecked())
-        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
-        self.seed_frame.set_input_value(data_dict.get("seed", [0]))
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = PerturbParams(
+                engine_type=raw_params.get("engine_type", 1),
+                max_distance=raw_params.get("max_distance", 0.3),
+                max_num=raw_params.get("max_num", 50),
+                identify_organic=raw_params.get("identify_organic", False),
+                use_element_scaling=raw_params.get("use_element_scaling", False),
+                element_scalings=raw_params.get("element_scalings", {}),
+                use_seed=raw_params.get("use_seed", False),
+                seed=raw_params.get("seed", 0),
+            )
+        else:
+            params = PerturbParams(
+                engine_type=data_dict.get("engine_type", 1),
+                max_distance=data_dict.get("scaling_condition", [0.3])[0],
+                max_num=data_dict.get("num_condition", [50])[0],
+                identify_organic=data_dict.get("organic", False),
+                use_element_scaling=data_dict.get("use_element_scaling", False),
+                element_scalings=data_dict.get("element_scalings", {}),
+                use_seed=data_dict.get("use_seed", False),
+                seed=data_dict.get("seed", [0])[0],
+            )
+        self.set_params(params)

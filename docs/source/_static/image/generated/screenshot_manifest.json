@@ -1,0 +1,35 @@
+{
+  "make_data_empty": {
+    "scenario": "make_data_empty",
+    "title": "Make Data workspace",
+    "description": "Empty Make Data workflow page with the add-card entry point annotated.",
+    "output": "docs/source/_static/image/generated/make_data_empty.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "da932aabb0a3e35949656505271d0922cfe6a0f205d63e948222e811248bb7f2"
+  },
+  "make_data_lattice_strain": {
+    "scenario": "make_data_lattice_strain",
+    "title": "Make Data lattice strain quickstart",
+    "description": "Quickstart scene with a Lattice Strain card configured for small axial strain.",
+    "output": "docs/source/_static/image/generated/make_data_lattice_strain.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "eb7b679261643de7aae92698dfbb2d1f77e82af291c320b3499822928777a0c6"
+  },
+  "show_nep_overview": {
+    "scenario": "show_nep_overview",
+    "title": "NEP Dataset Display overview",
+    "description": "Main NEP Dataset Display window with top-level regions annotated.",
+    "output": "docs/source/_static/image/generated/show_nep_overview.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "2e13d045e1535a94d7e2bde679b7deb9efdb9dfe2d42ccf3f546c2ac1f0722c6"
+  }
+}

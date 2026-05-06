@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Vacancy Defect Generation", "source_file": "src/NepTrainKit/ui/views/_card/vacancy_defect_card.py", "serialized_keys": ["engine_type", "num_condition", "num_radio_button", "concentration_radio_button", "concentration_condition", "max_atoms_condition", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Vacancy Defect Generation", "source_file": "src/NepTrainKit/ui/views/_card/vacancy_defect_card.py", "serialized_keys": ["params", "engine_type", "num_condition", "num_radio_button", "concentration_radio_button", "concentration_condition", "max_atoms_condition", "use_seed", "seed"]} -->
 
 # 空位缺陷生成（Vacancy Defect Generation）
 
@@ -42,6 +42,17 @@
 - 控制 `max_atoms_condition` 先小后大。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> 核心操作参数 `VacancyDefectParams`。
+- 控件标签 (Caption): `Operation Params`。
+- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
+- 类型/范围 (Type/Range): object
+- 默认值 (Default): `{"engine_type": 1, "num_condition": 1, "use_num": true, "concentration_condition": 0.0, "max_structures": 1, "use_seed": false, "seed": 0}`
+- 含义 (Meaning): UI 解耦后的核心参数快照，用于 CLI/批处理复用。
+- 对输出规模/物理性的影响: 与展开后的空位数量、浓度、采样数和随机种子字段一致。
+- 配置建议 (Practical note): 新版本优先读取 `params`，旧字段仍保留用于兼容已有 workflow。
+
 ### `engine_type` (Random Engine)
 - UI Label: `Random Engine`
 - 字段映射 (Field mapping): 序列化键 `engine_type` <-> 界面标签 `Random Engine`。

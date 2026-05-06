@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Insert Defect", "source_file": "src/NepTrainKit/ui/views/_card/interstitial_adsorbate_card.py", "serialized_keys": ["mode", "species", "insert_count", "structure_count", "min_distance", "max_attempts", "use_seed", "seed", "axis", "offset"]} -->
+<!-- card-schema: {"card_name": "Insert Defect", "source_file": "src/NepTrainKit/ui/views/_card/interstitial_adsorbate_card.py", "serialized_keys": ["params", "mode", "species", "insert_count", "structure_count", "min_distance", "max_attempts", "use_seed", "seed", "axis", "offset"]} -->
 
 # 插隙/吸附缺陷（Insert Defect）
 
@@ -42,6 +42,17 @@
 - 根据密度先设保守 `min_distance`。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> 核心操作参数 `InsertDefectParams`。
+- 控件标签 (Caption): `Operation Params`。
+- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
+- 类型/范围 (Type/Range): object
+- 默认值 (Default): `{"mode": 0, "species": "", "insert_count": 1, "structure_count": 10, "min_distance": 1.4, "max_attempts": 200, "use_seed": false, "seed": 0, "axis": 2, "offset": 1.5}`
+- 含义 (Meaning): UI 解耦后的核心参数快照，用于 CLI/批处理复用。
+- 对输出规模/物理性的影响: 与展开后的插入数量、结构数量、最小距离、吸附轴和随机种子字段一致。
+- 配置建议 (Practical note): 新版本优先读取 `params`，旧字段仍保留用于兼容已有 workflow。
+
 ### `mode` (Mode)
 - UI Label: `Mode`
 - 字段映射 (Field mapping): 序列化键 `mode` <-> 界面标签 `Mode`。
@@ -171,7 +182,7 @@
 - 控件标签 (Caption): `Surface axis`。
 - 控件解释 (Widget): 下拉选择 `ComboBox`（显示文本与序列化值可能不同）。
 - 类型/范围 (Type/Range): enum(int): `0=a(x)`, `1=b(y)`, `2=c(z)`（仅 Adsorption 模式使用）
-- 默认值 (Default): `0`
+- 默认值 (Default): `2`
 - 含义 (Meaning): 表面法向轴枚举 (surface normal axis enum)。仅在 `mode=Adsorption` 时生效：`0=a(x)`，`1=b(y)`，`2=c(z)`。
 - 对输出规模/物理性的影响: 决定沿哪一条晶轴法向定义“表面上方”放置方向，会直接改变吸附位点分布。
 - 参数联动 / 生效条件: 表面吸附时它通常定义“往哪一侧表面外法向放置”；体相插隙场景里方向性通常弱一些。

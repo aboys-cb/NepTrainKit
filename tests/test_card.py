@@ -38,6 +38,7 @@ from NepTrainKit.ui.views._card import (
     RandomVacancyCard,
     VacancyDefectCard,
     StackingFaultCard,
+    InsertDefectCard,
     OrganicMolConfigPBCCard,
     # VibrationModePerturbCard,
 )
@@ -52,6 +53,18 @@ from NepTrainKit.core.cards.alloy import (
     RandomOccupancyParams,
 )
 from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
+from NepTrainKit.core.cards.defect import (
+    InsertDefectOperation,
+    InsertDefectParams,
+    RandomSlabOperation,
+    RandomSlabParams,
+    RandomVacancyOperation,
+    RandomVacancyParams,
+    StackingFaultOperation,
+    StackingFaultParams,
+    VacancyDefectOperation,
+    VacancyDefectParams,
+)
 from NepTrainKit.core.cards.lattice import (
     CellScalingOperation,
     CellScalingParams,
@@ -1411,6 +1424,90 @@ class TestCard(unittest.TestCase):
             np.abs(results[0].get_positions() - structure.get_positions()).sum(),
             0.0,
         )
+
+    def test_defect_surface_operations_are_ui_independent(self):
+        structure = self.structure.copy()
+
+        vac_results = RandomVacancyOperation().run_structure(
+            structure,
+            RandomVacancyParams(
+                rules=[{"element": "Si", "count": [1, 1]}],
+                max_structures=2,
+                use_seed=True,
+                seed=3,
+            ),
+        )
+        self.assertEqual(len(vac_results), 2)
+        self.assertTrue(all(len(atoms) == len(structure) - 1 for atoms in vac_results))
+
+        defect_results = VacancyDefectOperation().run_structure(
+            structure,
+            VacancyDefectParams(
+                engine_type=1,
+                use_num=False,
+                concentration_condition=0.6,
+                max_structures=2,
+                use_seed=True,
+                seed=5,
+            ),
+        )
+        self.assertEqual(len(defect_results), 2)
+        self.assertTrue(all(len(atoms) < len(structure) for atoms in defect_results))
+
+        fault_results = StackingFaultOperation().run_structure(
+            structure,
+            StackingFaultParams(hkl=(1, 1, 1), step=(0.1, 0.1, 0.1), layers=1),
+        )
+        self.assertEqual(len(fault_results), 1)
+        self.assertIn("SF(", fault_results[0].info.get("Config_type", ""))
+
+        slab_results = RandomSlabOperation().run_structure(
+            structure,
+            RandomSlabParams(
+                h_range=(1, 1, 1),
+                k_range=(0, 0, 1),
+                l_range=(0, 0, 1),
+                layer_range=(1, 1, 1),
+                vacuum_range=(0, 0, 1),
+            ),
+        )
+        self.assertEqual(len(slab_results), 1)
+        self.assertIn("Slab(", slab_results[0].info.get("Config_type", ""))
+
+        insert_results = InsertDefectOperation().run_structure(
+            structure,
+            InsertDefectParams(
+                mode=0,
+                species="H",
+                insert_count=1,
+                structure_count=1,
+                min_distance=0.1,
+                max_attempts=20,
+                use_seed=True,
+                seed=7,
+            ),
+        )
+        self.assertEqual(len(insert_results), 1)
+        self.assertEqual(len(insert_results[0]), len(structure) + 1)
+        self.assertIn("Ins(int", insert_results[0].info.get("Config_type", ""))
+
+    def test_insert_defect_card_roundtrip(self):
+        card = InsertDefectCard()
+        card.mode_combo.setCurrentIndex(1)
+        card.species_edit.setText("H:2, O:1")
+        card.insert_count_frame.set_input_value([2])
+        card.structures_frame.set_input_value([3])
+        card.min_distance_frame.set_input_value([0.5])
+        card.max_attempts_frame.set_input_value([50])
+        card.seed_checkbox.setChecked(True)
+        card.seed_frame.set_input_value([13])
+        card.axis_combo.setCurrentIndex(2)
+        card.offset_frame.set_input_value([2.0])
+
+        restored = InsertDefectCard()
+        restored.from_dict(card.to_dict())
+
+        self.assertEqual(restored.get_params(), card.get_params())
 
     def test_organic_configuration_card(self):
         card = OrganicMolConfigPBCCard()

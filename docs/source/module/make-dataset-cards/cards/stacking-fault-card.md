@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Stacking Fault", "source_file": "src/NepTrainKit/ui/views/_card/stacking_fault_card.py", "serialized_keys": ["hkl", "step", "layers"]} -->
+<!-- card-schema: {"card_name": "Stacking Fault", "source_file": "src/NepTrainKit/ui/views/_card/stacking_fault_card.py", "serialized_keys": ["params", "hkl", "step", "layers"]} -->
 
 # 层错构型（Stacking Fault）
 
@@ -42,6 +42,17 @@
 - 先小 `step` 试跑再扩展。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> 核心操作参数 `StackingFaultParams`。
+- 控件标签 (Caption): `Operation Params`。
+- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
+- 类型/范围 (Type/Range): object
+- 默认值 (Default): `{"hkl": [1, 1, 1], "step": [0.0, 1.0, 0.5], "layers": 1}`
+- 含义 (Meaning): UI 解耦后的核心参数快照，用于 CLI/批处理复用。
+- 对输出规模/物理性的影响: 与展开后的 `hkl/step/layers` 字段一致。
+- 配置建议 (Practical note): 新版本优先读取 `params`，旧字段仍保留用于兼容已有 workflow。
+
 ### `hkl` (h k l)
 - UI Label: `h k l`
 - 字段映射 (Field mapping): 序列化键 `hkl` <-> 界面标签 `h k l`。

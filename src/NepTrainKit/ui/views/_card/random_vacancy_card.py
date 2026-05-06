@@ -1,17 +1,14 @@
 """Card for generating vacancy configurations according to rules."""
 
 import json
-from itertools import combinations
 
-import numpy as np
-from PySide6.QtWidgets import QFrame, QGridLayout
-from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
+from qfluentwidgets import BodyLabel, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.config_type import append_config_tag
+from NepTrainKit.core.cards.defect import RandomVacancyOperation, RandomVacancyParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame, VacancyRulesWidget
 from NepTrainKit.ui.widgets import MakeDataCard
-from scipy.stats.qmc import Sobol
 
 @CardManager.register_card
 class RandomVacancyCard(MakeDataCard):
@@ -75,8 +72,28 @@ class RandomVacancyCard(MakeDataCard):
         self.settingLayout.addWidget(self.seed_checkbox, 2, 0, 1, 1)
         self.settingLayout.addWidget(self.seed_frame, 2, 1, 1, 2)
 
+    def create_operation(self):
+        """Return the UI-independent random vacancy operation."""
+        return RandomVacancyOperation()
+
+    def get_params(self) -> RandomVacancyParams:
+        """Read random vacancy parameters from UI controls."""
+        return RandomVacancyParams(
+            rules=self.rules_widget.to_rules(),
+            max_structures=int(self.max_atoms_condition_frame.get_input_value()[0]),
+            use_seed=self.seed_checkbox.isChecked(),
+            seed=int(self.seed_frame.get_input_value()[0]),
+        )
+
+    def set_params(self, params: RandomVacancyParams) -> None:
+        """Apply random vacancy parameters to UI controls."""
+        self.rules_widget.from_rules(params.rules)
+        self.max_atoms_condition_frame.set_input_value([int(params.max_structures)])
+        self.seed_checkbox.setChecked(bool(params.use_seed))
+        self.seed_frame.set_input_value([int(params.seed)])
+
     def process_structure(self, structure):
-        """Create vacancy configurations by removing atoms that match the configured rules.
+        """Create vacancy configurations from UI-independent parameters.
         
         Parameters
         ----------
@@ -88,49 +105,7 @@ class RandomVacancyCard(MakeDataCard):
         list[ase.Atoms]
             Structures with vacancies applied according to the rule set.
         """
-        structure_list = []
-
-        rules = self.rules_widget.to_rules()
-        if not isinstance(rules, list) or not rules:
-            return [structure]
-
-        max_num = int(self.max_atoms_condition_frame.get_input_value()[0])
-        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
-        rng = np.random.default_rng(base_seed)
-        for _ in range(max_num):
-            new_structure = structure.copy()
-            total_remove = 0
-            for rule in rules:
-                element = rule.get("element")
-                count_min, count_max = rule.get("count", [0, 0])
-                if not element or int(count_max) <= 0:
-                    continue
-
-                groups = rule.get("group")
-                if groups and "group" in new_structure.arrays:
-                    candidate_indices = [i for i, elem, g in zip(range(len(new_structure)), new_structure, new_structure.arrays["group"]) if elem.symbol == element and g in groups]
-                else:
-                    candidate_indices = [i for i, a in enumerate(new_structure) if a.symbol == element]
-
-                if not candidate_indices:
-                    continue
-
-                remove_num = int(rng.integers(int(count_min), int(count_max) + 1))
-                remove_num = min(remove_num, len(candidate_indices))
-                if remove_num <= 0:
-                    continue
-
-                idxs = rng.choice(candidate_indices, remove_num, replace=False)
-                for idx in sorted(idxs, reverse=True):
-                    del new_structure[idx]
-                total_remove += remove_num
-
-            if total_remove:
-                append_config_tag(new_structure, f"Vac(n={total_remove})")
-
-            structure_list.append(new_structure)
-
-        return structure_list
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
         """Serialize the current configuration to a plain dictionary.
@@ -141,11 +116,12 @@ class RandomVacancyCard(MakeDataCard):
             Dictionary that can be fed into ``from_dict`` to rebuild the state.
         """
         data_dict = super().to_dict()
-
-        data_dict['rules'] = json.dumps(self.rules_widget.to_rules(), ensure_ascii=False)
-        data_dict['max_atoms_condition'] = self.max_atoms_condition_frame.get_input_value()
-        data_dict["use_seed"] = self.seed_checkbox.isChecked()
-        data_dict["seed"] = self.seed_frame.get_input_value()
+        params = self.get_params()
+        data_dict["params"] = params_to_dict(params)
+        data_dict["rules"] = json.dumps(params.rules, ensure_ascii=False)
+        data_dict["max_atoms_condition"] = [params.max_structures]
+        data_dict["use_seed"] = params.use_seed
+        data_dict["seed"] = [params.seed]
         return data_dict
 
     def from_dict(self, data_dict):
@@ -157,16 +133,27 @@ class RandomVacancyCard(MakeDataCard):
             Serialized configuration previously produced by ``to_dict``.
         """
         super().from_dict(data_dict)
-
-        rules = data_dict.get('rules', '')
-        if isinstance(rules, str):
-            try:
-                rules = json.loads(rules)
-            except Exception:
-                rules = []
-        self.rules_widget.from_rules(rules)
-        self.max_atoms_condition_frame.set_input_value(data_dict.get('max_atoms_condition', [1]))
-        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
-        self.seed_frame.set_input_value(data_dict.get("seed", [0]))
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = RandomVacancyParams(
+                rules=raw_params.get("rules", []),
+                max_structures=raw_params.get("max_structures", 1),
+                use_seed=raw_params.get("use_seed", False),
+                seed=raw_params.get("seed", 0),
+            )
+        else:
+            rules = data_dict.get("rules", "")
+            if isinstance(rules, str):
+                try:
+                    rules = json.loads(rules)
+                except Exception:
+                    rules = []
+            params = RandomVacancyParams(
+                rules=rules,
+                max_structures=data_dict.get("max_atoms_condition", [1])[0],
+                use_seed=data_dict.get("use_seed", False),
+                seed=data_dict.get("seed", [0])[0],
+            )
+        self.set_params(params)
 
 

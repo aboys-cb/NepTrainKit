@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Random Slab", "source_file": "src/NepTrainKit/ui/views/_card/random_slab_card.py", "serialized_keys": ["h_range", "k_range", "l_range", "layer_range", "vacuum_range"]} -->
+<!-- card-schema: {"card_name": "Random Slab", "source_file": "src/NepTrainKit/ui/views/_card/random_slab_card.py", "serialized_keys": ["params", "h_range", "k_range", "l_range", "layer_range", "vacuum_range"]} -->
 
 # 随机表面切片（Random Slab）
 
@@ -42,6 +42,17 @@
 - 保证真空层下限足够避免镜像相互作用。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> 核心操作参数 `RandomSlabParams`。
+- 控件标签 (Caption): `Operation Params`。
+- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
+- 类型/范围 (Type/Range): object
+- 默认值 (Default): `{"h_range": [0, 1, 1], "k_range": [0, 1, 1], "l_range": [1, 3, 1], "layer_range": [3, 6, 1], "vacuum_range": [10, 10, 1]}`
+- 含义 (Meaning): UI 解耦后的核心参数快照，用于 CLI/批处理复用。
+- 对输出规模/物理性的影响: 与展开后的 Miller 指数、层数和真空范围字段一致。
+- 配置建议 (Practical note): 新版本优先读取 `params`，旧字段仍保留用于兼容已有 workflow。
+
 ### `h_range` (H Range)
 - UI Label: `H Range`
 - 字段映射 (Field mapping): 序列化键 `h_range` <-> 界面标签 `H Range`。

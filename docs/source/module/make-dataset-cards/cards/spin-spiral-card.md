@@ -1,289 +1,121 @@
 <!-- card-schema: {"card_name": "Spin Spiral", "source_file": "src/NepTrainKit/ui/views/_card/spin_spiral_card.py", "serialized_keys": ["params"]} -->
 
-# 自旋螺旋初始化（Spin Spiral）
+# 自旋螺旋（Spin Spiral）
 
-`Group`: `Magnetism`  
-`Class`: `SpinSpiralCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/spin_spiral_card.py`
+`Group`: `Magnetism` | `Class`: `SpinSpiralCard`
 
 ## 功能说明
-对输入结构按一维相位场写入非共线 `initial_magmoms`，生成一批不同周期、不同起始相位、不同手性、不同 `m_parallel` 的 spin spiral / helix / conical spiral 初始构型。卡片支持两种等价的主控方式：直接扫周期 `L_D`，或直接扫每 Å 转角 `angle gradient`，二者只需要选一个。
 
-它最适合的场景是：为层状或周期性磁结构生成自旋螺旋初始态。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+对输入结构按一维相位场写入非共线 `initial_magmoms`，生成一批不同周期、相位、手性和轴向分量的 spin spiral / helix / conical spiral 初始构型。支持两种等价的主控方式：直接扫周期 L_D 或扫每 Angstrom 转角梯度。
 
-### 关键公式 (Core equations)
-设传播轴单位向量为 $\hat{\mathbf{n}}$，其正交基为 $(\mathbf{e}_1,\mathbf{e}_2,\hat{\mathbf{n}})$，则代码中采用
+$$\mathbf{m}(u)=\sqrt{1-m_z^2}\left[\cos\phi(u)\,\mathbf{e}_1+\sin\phi(u)\,\mathbf{e}_2\right] + m_z\,\hat{\mathbf{n}}$$
 
-$$
-\mathbf{m}(u)=\sqrt{1-m_z^2}\left[\cos\phi(u)\,\mathbf{e}_1+\sin\phi(u)\,\mathbf{e}_2\right] + m_z\,\hat{\mathbf{n}}
-$$
+$$\phi(u)=s\cdot \frac{2\pi u}{L_D}+\phi_0,\qquad s\in\{-1,+1\}$$
 
-$$
-\phi(u)=s\cdot \frac{2\pi u}{L_D}+\phi_0,\qquad s\in\{-1,+1\}
-$$
+其中 m_z = m_parallel / |m| 是无量纲轴向分量。m_z=0 为平面 helix，m_z=0 为 conical spiral。
 
-并且
-
-$$
-g=\frac{360^\circ}{L_D}
-$$
-
-其中 $u$ 是原子坐标在传播轴上的投影，$L_D$ 对应 `period_range`，$g$ 对应 `angle_gradient_range`，$\phi_0$ 对应 `phase_range`。这里的 `mz` 是无量纲、单位化后的轴向分量，等于 `m_parallel / |m|`，因此物理取值范围是 `[-1, 1]`。当 `mz=0` 时，该构型退化为平面 helix；当 `mz!=0` 时为 conical spiral。
+**关键限制：** 这张卡只写入初始磁矩纹理，不改变晶体结构。如果当前晶格与目标周期不相容，需要先扩胞。
 
 ## 操作示例
-### 场景：为层状或周期性磁结构生成自旋螺旋初始态
 
-**输入：** 一个已知参考轴和磁矩幅值来源的磁性结构
+### 场景：模型在螺旋磁结构上能量曲线完全不对
 
-**目标：** 扫描螺旋周期、相位和手性，构造更系统的非共线初始磁态
+你训练了一个 NEP 模型，训练集里有 FM 和 AFM 构型。模型在共线磁序上表现尚可，但一跑到具有螺旋磁序的构型（如 CrNb3S6 或 MnSi 中的 chiral helimagnet），能量曲线形状完全错误——周期依赖的能量极小值位置偏离 DFT 结果超过 30%。
+
+**诊断思路：** 模型从未见过磁矩在空间中连续旋转的构型。FM/AFM 训练集隐式告诉了模型"磁矩方向在空间中是分段常数"的假设。需要在训练集里加入不同周期的螺旋磁纹理，让模型学习 q 空间不同波矢下的能量响应。
+
+**输入：** 一个已知磁矩幅值的磁性结构（如 MnSi 单胞，Mn 磁矩约 2.0 μB，螺旋沿 [111] 方向）
+
+**目标：** 沿 [111] 方向扫描 3 个周期（20/30/40 Angstrom），3 个全局相位（0/30/60 度），纯 helix（mz=0），正反手性成对。共 3x3x2 = 18 个螺旋构型
 
 **参数设置：**
-- `axis` 定义螺旋传播方向
-- `period_range` 或 `angle_gradient_range` 二选一作为主控参数
-- `phase_range` 先用小步长试跑，避免一次生成过多相位点
+- `Propagation Axis` = `[1, 1, 1]`
+- `Spiral Parameter` = `Period (L_D)`
+- `Period Range` = `[20, 40, 10]`
+- `Phase Range` = `[0, 60, 30]`
+- `m_parallel Range` = `[0, 0, 0.1]`
+- `Chirality` = `Both`
 
-**输出：** 一批沿指定轴逐层旋转的螺旋磁矩结构
+**输出：** 18 个结构，磁矩沿 [111] 方向逐层旋转，带 `Helix(L=...,ph=...,mz=0,chi=...,ax=...)` 标签。
 
-**怎么验证结果合理：**
-- 检查相邻层相位递进是否符合设定
-- 若启用整周期约束，确认输出周期数不是空集合
-- 先保证输入已有可信磁矩幅值
+**怎么验证训练集质量改善：**
+- 重训后用 DFT 计算几个螺旋构型的能量作为参考，对比模型预测的 E(q) 曲线
+- 如果极小值位置仍偏离，加密 `period_range` 扫描（例如 `[10, 40, 5]`）
+- 如果发现 conical spiral（mz != 0）的能量比纯 helix 更低，加入 `mz = [0, 0.5, 0.1]` 覆盖锥面螺旋
+- 如果需要晶格相容的周期，勾选 `Period Filter` 开启整周期约束
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 已有数据只覆盖单一磁矩方向，模型对螺旋态、手性成对态或 conical spiral 初态不敏感。
-- 目标任务 (Target objective): 在固定晶体结构上系统扫描 spiral 周期、每 Å 转角、`m_parallel` 锥角分量或 DMI 相关手性分支。
-- 建议添加条件 (Add-it trigger): 你已经知道几何结构不需要扩胞复制，只想在输入结构上生成一批非共线磁矩初态。
-- 不建议添加条件 (Avoid trigger): 体系没有磁矩自由度，或任务本质上需要真实长周期超胞而不是仅改变初始自旋纹理。
-> 物理提示 (Physics caution): 这组卡片主要写入初始磁矩，不自动保证磁序就是最低能态；后验能量和磁矩收敛仍需另行判断。
+### 什么时候加这张卡、什么时候不加
 
-## 输入前提
-- 输入结构应至少包含一类有意义的磁性元素。
-- 若 `magnitude_source` 选 `Existing initial magmoms`，输入结构最好已经带有 `initial_magmoms`。
-- 若 `magnitude_source` 选 `Map/default magnitude`，需要提供 `magmom_map` 或合理的 `default_moment`。
+**加：**
+- 研究体系存在螺旋/非共线磁基态（如 chiral magnet、skyrmion 宿主材料）
+- 模型在非共线磁序上泛化失败
+- 需要系统覆盖 q 空间的磁激发
 
-## 参数说明（完整）
-### `params` (Operation Params)
-- UI Label: `Operation Params`
-- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
-- 控件标签 (Caption): `Operation Params`
-- 控件解释 (Widget): 由传播轴、周期/角梯度扫描、相位、轴向分量、手性、相位模式、整周期过滤、磁矩来源和输出上限组合生成的内部参数字典。
-- 类型/范围 (Type/Range): dict
-- 默认值 (Default): `{"axis": [0.0, 0.0, 1.0], "spiral_parameter_mode": "Period (L_D)", "period_range": [20.0, 40.0, 10.0], "angle_gradient_range": [18.0, 18.0, 1.0], "phase_range": [0.0, 0.0, 15.0], "mz": [0.0, 0.0, 0.1], "chirality": "Both", "phase_mode": "Continuous by position", "layer_tolerance": 0.05, "only_commensurate_periods": false, "magnitude_source": "Existing initial magmoms", "magmom_map": "", "default_moment": 0.0, "apply_elements": "", "max_outputs": 100}`
-- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
-- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组 spin spiral 参数。
-- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+**不加：**
+- 体系只有共线磁序 → `Magnetic Order` 够用
+- 需要局部小角度偏转而非长程螺旋 → 用 `Small-Angle Spin Tilt`
+- 晶体结构本身需要扩胞才能容纳目标周期 → 先扩胞再回来
 
-### `axis` (Propagation Axis)
-- UI Label: `Propagation axis`
-- 字段映射 (Field mapping): 序列化键 `axis` <-> 界面标签 `Propagation axis`。
-- 控件标签 (Caption): `Propagation axis`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（3 个输入框）。
-- 类型/范围 (Type/Range): list[3]
-- 默认值 (Default): `[0.0, 0.0, 1.0]`
-- 含义 (Meaning): 自旋螺旋相位的传播方向。
-- 对输出规模/物理性的影响: 改变沿哪个方向计算相位投影，也就改变了同一结构上自旋旋转的空间分布。
-- 物理直觉 / 典型值: 这类参数主要控制方向、分层或周期；先用最容易人工检查的简单方向和短范围做验证。
-- 推荐范围 (Recommended range):
-  - 保守：`[0, 0, 1]`
-  - 平衡：`[1, 0, 0]`、`[0, 1, 0]`、`[0, 0, 1]`
-  - 探索：按研究问题扫描任意归一化方向，如 `[1, 1, 0]`
+## 参数说明
 
-### `spiral_parameter_mode` (Spiral Parameter)
-- UI Label: `Spiral parameter`
-- 字段映射 (Field mapping): 序列化键 `spiral_parameter_mode` <-> 界面标签 `Spiral parameter`。
-- 控件标签 (Caption): `Spiral parameter`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `"Period (L_D)"`
-- 含义 (Meaning): 选择用周期 `L_D` 还是用每 Å 转角来定义 spiral。
-- 对输出规模/物理性的影响: 不改变结果数，但决定你在界面里操作的是哪一个等价参数。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note): 二选一即可，不需要同时把 `period_range` 和 `angle_gradient_range` 都当主控量来调。
+### 传播方向
 
-### `period_range` (Period Range)
-- UI Label: `Period range`
-- 字段映射 (Field mapping): 序列化键 `period_range` <-> 界面标签 `Period range`。
-- 控件标签 (Caption): `Period range`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3]
-- 默认值 (Default): `[20.0, 40.0, 10.0]`
-- 含义 (Meaning): spiral 周期 $L_D$ 的扫描区间，单位为 Å；仅在 `spiral_parameter_mode="Period (L_D)"` 时生效。
-- 连续搜索说明 (Continuous search): 当 `only_commensurate_periods=true` 时，这里的 `min/max` 会被当作连续搜索区间，软件会自动发现区间内相容的浮点周期，不要求它们正好落在 `step` 网格上，例如 `15.5 Å`。
-- 对输出规模/物理性的影响: 周期越短，相邻位置的相位变化越快；同时也会线性增加输出数量。
-- 物理直觉 / 典型值: 这类参数主要控制方向、分层或周期；先用最容易人工检查的简单方向和短范围做验证。
-- 推荐范围 (Recommended range):
-  - 保守：`[20.0, 20.0, 5.0]`
-  - 平衡：`[10.0, 40.0, 10.0]`
-  - 探索：`[4.0, 80.0, 4.0]`
+**`Propagation Axis`**（axis）：`[x, y, z]`。螺旋相位沿这个方向传播。原子坐标在该方向的投影用于计算相位。
 
-### `angle_gradient_range` (Angle Gradient Range)
-- UI Label: `Angle gradient range`
-- 字段映射 (Field mapping): 序列化键 `angle_gradient_range` <-> 界面标签 `Angle gradient range`。
-- 控件标签 (Caption): `Angle gradient range`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3]
-- 默认值 (Default): `[18.0, 18.0, 1.0]`
-- 含义 (Meaning): 每 Å 的转角梯度 $g$，单位为 deg/Å；仅在 `spiral_parameter_mode="Angle gradient (deg/A)"` 时生效。
-- 对输出规模/物理性的影响: 这是 `period_range` 的等价写法，数值越大表示旋转越快，对应更短的周期。
-- 物理直觉 / 典型值: 它通常是控制变化幅度的主旋钮；先从能看清趋势的小幅度起步，再决定是否扩到探索档。
-- 推荐范围 (Recommended range):
-  - 保守：`[9.0, 9.0, 1.0]`
-  - 平衡：`[9.0, 36.0, 9.0]`
-  - 探索：`[4.5, 90.0, 4.5]`
+### 主控参数（二选一）
 
-### `phase_range` (Phase Range)
-- UI Label: `Phase range`
-- 字段映射 (Field mapping): 序列化键 `phase_range` <-> 界面标签 `Phase range`。
-- 控件标签 (Caption): `Phase range`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3]
-- 默认值 (Default): `[0.0, 0.0, 15.0]`
-- 含义 (Meaning): 全局相位偏移 $\phi_0$ 的扫描区间，单位为度。
-- 对输出规模/物理性的影响: 不改变周期或转角梯度，只平移整条自旋纹理的起始角。
-- 物理直觉 / 典型值: 这类参数主要控制方向、分层或周期；先用最容易人工检查的简单方向和短范围做验证。
-- 推荐范围 (Recommended range):
-  - 保守：`[0.0, 0.0, 15.0]`
-  - 平衡：`[0.0, 90.0, 30.0]`
-  - 探索：`[-180.0, 180.0, 30.0]`
+**`Spiral Parameter`**（spiral_parameter_mode）：选 `Period (L_D)` 扫周期（Angstrom），或 `Angle gradient (deg/A)` 扫每 Angstrom 转角。两者等价。
 
-### `mz` (M Parallel Range)
-- UI Label: `m_parallel range`
-- 字段映射 (Field mapping): 序列化键 `mz` <-> 界面标签 `m_parallel range`。
-- 控件标签 (Caption): `m_parallel range`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3]
-- 默认值 (Default): `[0.0, 0.0, 0.1]`
-- 含义 (Meaning): 沿传播轴的单位化常数分量扫描区间，等于 `m_parallel / |m|`；它是无量纲参数，不是以 `mu_B` 计的绝对磁矩。`0` 对应纯 helix，非零时为 conical spiral。
-- 合法范围 (Valid range): `[-1, 1]`；实际常用扫描通常在 `[0, 1]` 或 `[-1, 1]` 内取步长。
-- 对输出规模/物理性的影响: `|mz|` 越大，磁矩越靠近传播轴方向，平面内旋转分量越小；当区间跨越多个值时会直接增加输出数量。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：`[0.0, 0.0, 0.1]`
-  - 平衡：`[0.0, 0.5, 0.1]`
-  - 探索：`[-0.9, 0.9, 0.1]`
+**`Period Range`**（period_range）：`[min, max, step]`，单位 Angstrom。
+- 保守：`[20, 20, 5]`（单周期）
+- 平衡：`[10, 40, 10]`（4 个周期）
+- 探索：`[4, 80, 4]`（宽范围）
 
-### `chirality` (Chirality)
-- UI Label: `Chirality`
-- 字段映射 (Field mapping): 序列化键 `chirality` <-> 界面标签 `Chirality`。
-- 控件标签 (Caption): `Chirality`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `"Both"`
-- 含义 (Meaning): 选择顺时针、逆时针或同时输出成对手性构型。
-- 对输出规模/物理性的影响: 选 `Both` 会对同一组参数额外生成一对手性相反的结果。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note): `Both` 适合直接构造成对数据；只想固定某个 DMI 手性分支时再改成单一方向。
+**`Angle Gradient Range`**（angle_gradient_range）：`[min, max, step]`，单位 deg/A。值越大旋转越快。360/L_D = 梯度。
 
-### `phase_mode` (Phase Mode)
-- UI Label: `Phase mode`
-- 字段映射 (Field mapping): 序列化键 `phase_mode` <-> 界面标签 `Phase mode`。
-- 控件标签 (Caption): `Phase mode`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `"Continuous by position"`
-- 含义 (Meaning): 选择每个原子按自身投影连续转动，或先按层分组后让整层原子共用同一个相位。
-- 对输出规模/物理性的影响: 不改变输出数量，但会改变同一层内部是否允许因 rumpling/buckling 产生细微相位差；`Layer-locked` 更适合“整层刚性转动”的 SOC/supercell 初态。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note): `Continuous by position` 保留标准连续 spiral；`Layer-locked` 适合层状体系、希望同层原子一起转动时使用。
+### 相位和轴向分量
 
-### `layer_tolerance` (Layer Tolerance)
-- UI Label: `Layer tolerance`
-- 字段映射 (Field mapping): 序列化键 `layer_tolerance` <-> 界面标签 `Layer tolerance`。
-- 控件标签 (Caption): `Layer tolerance`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): float
-- 默认值 (Default): `[0.05]`
-- 含义 (Meaning): 仅在 `phase_mode="Layer-locked"` 时生效；沿传播方向投影差小于等于该阈值的原子会被视作同一层，并共享一个层中心相位。
-- 对输出规模/物理性的影响: 容差越大，越容易把相邻原子并入同一层；容差过小则可能把本来应刚性转动的一层拆成多个相位不同的小层。
-- 物理直觉 / 典型值: 阈值越保守，越能避免重叠或错配，但输出数量也往往更快下降。
-- 推荐范围 (Recommended range):
-  - 保守：`[0.02]`
-  - 平衡：`[0.05]`
-  - 探索：`[0.1]` 到 `0.2`
+**`Phase Range`**（phase_range）：`[min, max, step]`，全局相位偏移，单位度。
+- 保守：`[0, 0, 15]`（单个相位）
+- 平衡：`[0, 90, 30]`（4 个相位）
+- 探索：`[-180, 180, 30]`（全相位空间）
 
-### `only_commensurate_periods` (Period Filter)
-- UI Label: `Period filter`
-- 字段映射 (Field mapping): 序列化键 `only_commensurate_periods` <-> 界面开关 `Only lattice-compatible periods`。
-- 控件标签 (Caption): `Only lattice-compatible periods`。
-- 控件解释 (Widget): 布尔开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 只保留与当前 `cell + pbc + propagation axis` 相容的周期；判据是每个周期方向都满足 `q·T = 2πn`。
-- 自动发现 (Auto discovery): 开启后会在所选区间内自动搜索相容周期，因此即使 `period_range` 的步长是 `1 Å`，也能找到像 `15.5 Å` 这样的相容值。
-- 对输出规模/物理性的影响: 开启后会过滤掉与当前周期性边界不相容的 `period_range` 候选值，减少输出数量，但更适合普通 supercell + SOC 的 DFT 初态。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 失败时提示 (Fallback hint): 如果范围内没有任何相容周期，卡片会给出一个建议的最小 supercell 倍数，帮助你决定扩胞方向。
-- 配置建议 (Practical note): 开启：只保留与当前晶格周期边界相容的周期，适合普通 supercell + SOC 的 DFT 初态。关闭：保留范围内全部候选周期，适合做非严格初猜、扰动或纯数据增强。
+**`m_parallel Range`**（mz）：`[min, max, step]`，沿传播轴的单位化分量，范围 [-1, 1]。0 = 纯 helix，非零 = conical spiral。
+- 保守：`[0, 0, 0.1]`（纯 helix）
+- 平衡：`[0, 0.5, 0.1]`（弱 conical）
+- 探索：`[-0.9, 0.9, 0.1]`（全 conical 空间）
 
-### `magnitude_source` (Magnitude Source)
-- UI Label: `Magnitude source`
-- 字段映射 (Field mapping): 序列化键 `magnitude_source` <-> 界面标签 `Magnitude source`。
-- 控件标签 (Caption): `Magnitude source`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `"Existing initial magmoms"`
-- 含义 (Meaning): 选择磁矩大小来自现有 `initial_magmoms`，还是来自下方的元素映射/默认值。
-- 对输出规模/物理性的影响: 不改变输出数量，但会决定写入的磁矩模长是否继承上游结构。
-- 参数联动 / 生效条件: 它决定当前工作流走哪条主分支；先选模式，再填写与该模式对应的字段。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note): 上游已存在可信局域磁矩时优先用 `Existing initial magmoms`；否则用 `Map/default magnitude` 明确指定模长。
+### 手性
 
-### `magmom_map` (Magmom Map)
-- UI Label: `Magmom map`
-- 字段映射 (Field mapping): 序列化键 `magmom_map` <-> 界面标签 `Magmom map`。
-- 控件标签 (Caption): `Magmom map`。
-- 控件解释 (Widget): 文本输入 `LineEdit`。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `""`
-- 含义 (Meaning): 当 `magnitude_source=Map/default magnitude` 时，用于指定元素到磁矩模长的映射。
-- 对输出规模/物理性的影响: 不改变输出数量，但直接决定每个元素写入的局域磁矩大小。
-- 怎么判断该开还是该关: 只在你明确知道该字段会命中输入结构时填写；不确定时先用最小样本验证命中情况。
-- 配置建议 (Practical note): 使用如 `Fe:2.2,Co:1.7,Ni:0.6` 的简洁格式；未知元素会退回 `default_moment`。
+**`Chirality`**（chirality）：`Clockwise` / `Counterclockwise` / `Both`。选 `Both` 会对同一组参数生成一对手性相反的构型。
 
-### `default_moment` (Default Moment)
-- UI Label: `Default |m|`
-- 字段映射 (Field mapping): 序列化键 `default_moment` <-> 界面标签 `Default |m|`。
-- 控件标签 (Caption): `Default |m|`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): float
-- 默认值 (Default): `[0.0]`
-- 含义 (Meaning): `magmom_map` 未命中元素时使用的默认磁矩模长。
-- 对输出规模/物理性的影响: 可以作为保守回退值，防止遗漏元素直接变成无磁态或乱填模长。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：`0.0`
-  - 平衡：`0.5` 到 `2.5`
-  - 探索：`0.0` 到 `5.0`
+### 相位模式
 
-### `apply_elements` (Apply Elements)
-- UI Label: `Apply elements`
-- 字段映射 (Field mapping): 序列化键 `apply_elements` <-> 界面标签 `Apply elements`。
-- 控件标签 (Caption): `Apply elements`。
-- 控件解释 (Widget): 文本输入 `LineEdit`。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `""`
-- 含义 (Meaning): 可选元素白名单；留空时对所有原子写入 spiral 磁矩。
-- 对输出规模/物理性的影响: 不改变样本数，但可把自旋纹理限制到一部分元素上，其余元素磁矩会置零。
-- 怎么判断该开还是该关: 只在你明确知道该字段会命中输入结构时填写；不确定时先用最小样本验证命中情况。
-- 配置建议 (Practical note): 多子晶格体系中，如果只想在磁性子晶格上施加 spiral，可填写如 `Fe,Co`。
+**`Phase Mode`**（phase_mode）：
+- `Continuous by position`：每个原子按自身投影坐标独立计算相位。标准连续螺旋。
+- `Layer-locked`：先按投影坐标分层，同层原子共享相位。适合层状体系。
 
-### `max_outputs` (Max Outputs)
-- UI Label: `Max outputs`
-- 字段映射 (Field mapping): 序列化键 `max_outputs` <-> 界面标签 `Max outputs`。
-- 控件标签 (Caption): `Max outputs`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int
-- 默认值 (Default): `[100]`
-- 含义 (Meaning): 当参数组合过多时，用于截断输出数量。
-- 对输出规模/物理性的影响: 直接限制生成样本总数，避免一次扫描产生过大的数据集。
-- 物理直觉 / 典型值: 它主要决定每帧会扩出多少个结构，直接影响后续计算预算与重复率。
-- 推荐范围 (Recommended range):
-  - 保守：`16`
-  - 平衡：`50` 到 `200`
-  - 探索：`500` 以上，仅在批量筛选流程中使用
+**`Layer Tolerance`**（layer_tolerance）：仅在 `Layer-locked` 模式下生效。投影差小于此阈值的原子归为同一层。
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+### 整周期约束
+
+**`Period Filter`**（only_commensurate_periods）：勾选后只保留与当前晶格周期边界相容的周期。开启后程序在指定区间内自动搜索相容周期。如果没有相容周期，卡片会给出建议的超胞倍数。
+
+### 磁矩幅值
+
+**`Magnitude Source`**（magnitude_source）：`Existing initial magmoms` 或 `Map/default magnitude`。
+
+**`Magmom Map`** / **`Default Moment`**：仅在 `Map/default magnitude` 模式下生效。
+
+**`Apply Elements`**（apply_elements）：限制哪些元素施加螺旋纹理。
+
+### 输出上限
+
+**`Max Outputs`**（max_outputs）：防止"周期数 x 相位数 x mz 数 x 手性数"组合膨胀。16（保守），50~200（常规），500+（需配合筛选）。
+
+## 推荐预设
+
+### 单周期纯 helix 验证（2 个输出，先确认方向正确）
 ```json
 {
   "class": "SpinSpiralCard",
@@ -306,7 +138,7 @@ $$
 }
 ```
 
-### 平衡（Balanced）
+### 多周期多相位螺旋（~30 个输出，常规 E(q) 曲线拟合）
 ```json
 {
   "class": "SpinSpiralCard",
@@ -329,7 +161,7 @@ $$
 }
 ```
 
-### 激进/探索（Aggressive/Exploration）
+### 全参数空间扫描（~500 个输出，研究级，含 conical + 整周期约束）
 ```json
 {
   "class": "SpinSpiralCard",
@@ -353,23 +185,29 @@ $$
 ```
 
 ## 推荐组合
-- `Magnetic Order -> Spin Spiral`: 先用 `Magnetic Order` 生成合理的局域磁矩模长，再用本卡片扫描 spiral 周期、转角梯度和 `mz`。
-- `Group Label -> Magnetic Order -> Spin Spiral`: 先对不同子晶格做标记和磁矩初始化，再只对目标磁性元素施加 spiral。
-- 磁矩写入类卡片应放在真正依赖 `initial_magmoms` 的旋转、螺旋或 canting 卡片之前。
 
-## 常见问题与排查
-- 输出没有明显变化时，先检查输入是否已有初始磁矩，或当前是否真的开启了 FM/AFM/PM/旋转分支。
-- 如果结果不合理，先看磁矩模长是否被意外改坏，再检查方向参数、group 标签或 k-vector 是否匹配结构。
-- 这些卡片主要写入初始磁矩，不保证一定对应真实磁基态；是否物理合理仍需要结合后续计算结果判断。
+- `Magnetic Order` → `Spin Spiral`：先确定局域磁矩模长，再扫螺旋周期和 mz
+- `Set Magnetic Moments` → `Spin Spiral`：先统一写入磁矩幅值，再做螺旋
+- `Super Cell` → `Spin Spiral`：扩胞后容纳更长周期，再用整周期约束锁相
 
-## 输出标签 / 元数据变更
-- 该卡片会通过 `set_initial_magnetic_moments(...)` 写入三列向量型 `initial_magmoms`。
-- `Config_type` 会追加：
-  - `Helix(L=...,ph=...,mz=...,chi=...,ax=...)` 当 `mz=0`
-  - `Spiral(L=...,ph=...,mz=...,chi=...,ax=...)` 当 `mz!=0`
-  - `...,pm=layer,ltol=...` 仅在 `phase_mode="Layer-locked"` 时追加，用来标记整层刚性转动模式和层容差
+## 常见问题
 
-## 可复现性说明
-- 本卡片没有随机采样；相同输入结构与相同参数会得到完全相同的输出。
-- 代码默认以传播轴最小投影位置作为相位原点，因此结构整体平移不会改变生成的 spiral 纹理。
-- 若上游卡片已经随机化了结构或磁矩模长，本卡片会忠实继承那些上游差异。
+**输出为空 / 只有原始输入。** 磁矩幅值全为 0（检查 `magnitude_source` 和 `magmom_map`）。`Period Filter` 开启且区间内没有相容周期——卡片会打印建议超胞倍数。
+
+**相邻层相位递进不对。** 检查 `Propagation Axis` 是否指向预期的传播方向。`Phase Mode = Layer-locked` 时调整 `layer_tolerance`。
+
+**输出比预期的多很多。** `period_range` 步长太小，或 `mz` 范围太宽。设 `max_outputs` 上限，先小步长试跑再扩大。
+
+**conical spiral 的 mz 值看不懂。** mz 是无量纲比值 m_parallel / |m|，不是以 mu_B 计的绝对磁矩。物理上它只能取 [-1, 1]。
+
+## 输出标签
+
+- `Helix(L=...,ph=...,mz=0,chi=...,ax=...)`：纯平面 helix
+- `Spiral(L=...,ph=...,mz=...,chi=...,ax=...)`：conical spiral
+- 附加 `pm=layer,ltol=...`：仅 layer-locked 模式
+
+所有输出写入 `initial_magmoms` 三列向量。
+
+## 可复现性
+
+无随机性。相同输入结构与相同参数 → 严格一致输出。相位原点固定为传播轴最小投影位置。

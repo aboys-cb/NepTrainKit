@@ -2,323 +2,148 @@
 
 # 超胞生成（Super Cell）
 
-`Group`: `Lattice`  
-`Class`: `SuperCellCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/super_cell_card.py`
+`Group`: `Lattice` | `Class`: `SuperCellCard`
 
 ## 功能说明
-按倍率、目标胞长或原子数上限扩胞（supercell expansion），为缺陷/表面/磁操作提供空间。
 
-它最适合的场景是：为后续做表面、空位或磁性操作，先把母胞扩到合适尺寸。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+按倍率、目标胞长或原子数上限扩胞，为缺陷/表面/磁性操作提供足够空间。三种扩胞策略三选一：固定倍率（`scale`）、目标胞长（`cell`）、原子数上限（`max_atoms`）。可锁定特定轴向不扩胞——适合 slab 等需要维持法向层间距的场景。
 
-### 关键公式 (Core equations)
-$$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T}$$
-$$N'=N\cdot n_a n_b n_c$$
-$$n_a^{(\max)}=\max\left(\left\lfloor\frac{L_a^*}{\lVert\mathbf{a}\rVert}\right\rfloor,1\right),\quad n_a^{(\min)}=\left\lfloor\frac{L_a^*}{\lVert\mathbf{a}\rVert}\right\rfloor+1$$
+$$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\quad N'=N\cdot n_a n_b n_c$$
 
 ## 操作示例
-### 场景：为后续做表面、空位或磁性操作，先把母胞扩到合适尺寸
 
-**输入：** 一个已弛豫的小胞结构，例如 Si、Fe 或氧化物原胞
+### 场景：模型在小胞上训练后跑空位计算，周期镜像干扰导致空位形成能偏高 0.5 eV
 
-**目标：** 在“固定倍率”“目标胞长”“最大原子数”三种策略中选一条主路径，把结构扩到下游可用规模
+你在 bcc Fe 上用 2x2x2 超胞（16 原子）训练了一个 NEP 模型。拿这个模型算单空位形成能，结果比 DFT 高了 0.5 eV。诊断发现：2x2x2 太小的胞里，空位和它的周期镜像之间距离只有约 5A，空位-空位镜像相互作用不可忽略，模型学到的实际上是"带镜像相互作用的空位"而非孤立空位。
+
+**诊断思路：** 缺陷计算的黄金法则是"超胞要大到使缺陷-缺陷镜像相互作用可忽略"。2x2x2 = 16 原子的胞对空位来说太小。解法是在训练集里用更大的超胞（至少 3x3x3 = 54 原子或 4x4x4 = 128 原子）做空位计算，这样模型至少见过大胞里的空位环境。同时，下游做空位操作时也需要大胞作为母结构。
+
+**输入：** 一个 bcc Fe 原胞（2 原子）
+
+**目标：** 扩到 4x4x4 超胞（128 原子），为后续空位缺陷生成提供母结构
 
 **参数设置：**
-- 想固定复制倍数时用 `super_scale_*`
-- 想把胞长扩到某个阈值时用 `super_cell_*`
-- 想受预算约束时用 `max_atoms_*`，并用 `fixed_axis_*` 锁定某些方向
+- mode = `scale`
+- `super_scale` = `[4, 4, 4]`
 
-**输出：** 1 个或多组超胞结构；尺寸变化主要体现在晶格长度和原子总数上
+**输出：** 1 个 4x4x4 超胞结构，128 原子
 
 **怎么验证结果合理：**
-- 检查扩胞方向与下游任务一致，例如做 slab 时常锁住法向
-- 确认原子数没有超出计算预算
-- 导入 JSON 后若模式标志混乱，先保证只保留一条主路径
+- 检查原子数：原胞 2 原子 * 4 * 4 * 4 = 128，核对输出
+- 检查晶格矢量：每个方向拉长 4 倍，体积增大 64 倍
+- 如果空位形成能仍偏高，继续增大到 5x5x5 = 250 原子，直到 DFT 和 NEP 的形成能收敛
+- 如果超胞太大计算不起，用 `max_atoms` 模式设置预算上限
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 原胞太小，周期镜像效应干扰明显。
-- 目标任务 (Target objective): 降低边界伪相互作用并支持复杂操作。
-- 建议添加条件 (Add-it trigger): 下游需要 vacancy/interstitial/slab/magnetic 采样。
-- 不建议添加条件 (Avoid trigger): 算力受限且小胞已满足任务需求。
-> 物理提示 (Physics caution): 重点检查体积变化、晶胞条件数和最近邻距离，避免把几何畸变直接放大到非物理区间。
+### 什么时候加这张卡、什么时候不加
 
-## 输入前提
-- 先选定一种扩胞模式作为主路径。
-- 设置原子数上限避免超预算。
+**加：**
+- 下游要做缺陷（空位、间隙）、表面（slab）、磁性操作，需要超胞作为母结构
+- 当前训练集胞太小，周期镜像干扰不可忽略
+- 需要扩胞以使 defect-defect 距离 > 10A
 
-## 参数说明（完整）
-### `params` (Operation Params)
-- UI Label: `Operation Params`
-- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
-- 控件标签 (Caption): `Operation Params`
-- 控件解释 (Widget): 由 supercell 行为、主模式、倍数/目标晶胞/最大原子数和固定轴控件组合生成的内部参数字典。
-- 类型/范围 (Type/Range): dict
-- 默认值 (Default): `{"behavior_type": 0, "mode": "scale", "super_scale": [3, 3, 3], "target_cell": [20.0, 20.0, 20.0], "max_atoms": 100, "fixed_axis_flags": [false, false, false], "fixed_axis_scale": [1, 1, 1]}`
-- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
-- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组扩胞参数。
-- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+**不加：**
+- 下游任务是体相性质（弹性常数、声子），原胞/小胞就够 —— 扩胞只会白增计算量
+- 计算预算严重受限，扩胞后 DFT 跑不动 —— 这种情况下维持小胞，接受周期镜像有残留误差
+- 需要的是带应变的晶格变化而非单纯的重复复制 —— 用 `Lattice Strain` 或 `Cell Scaling`
 
-### `super_cell_type` (Super Cell Type)
-- UI Label: `Super Cell Type`
-- 字段映射 (Field mapping): 序列化键 `super_cell_type` <-> 界面标签 `Super Cell Type`。
-- 控件标签 (Caption): `Super Cell Type`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`（显示文本与序列化值可能不同）。
-- 类型/范围 (Type/Range): enum(int)
-- 默认值 (Default): `0`
-- 含义 (Meaning): 超胞模式类型 (supercell mode type)。
-- 对输出规模/物理性的影响: 决定采用倍率、目标胞长或原子上限策略。
-- 参数联动 / 生效条件: 三种扩胞思路本质上是“固定倍率 / 目标胞长 / 原子数预算”三选一；先明确主目标，再决定配套的 radio 按钮。
-- 物理直觉 / 典型值: 它决定程序走哪种离散策略；先选对模式，再去调该模式下真正起作用的数值参数。
-- 推荐范围 (Recommended range):
-  - 保守：单模式先跑通
-  - 平衡：按任务切换
-  - 探索：多模式并行需对照
+## 参数说明
 
-### `super_scale_radio_button` (Super Scale Radio Button)
-- UI Label: `Super Scale Radio Button`
-- 字段映射 (Field mapping): 序列化键 `super_scale_radio_button` <-> 界面标签 `Super Scale Radio Button`。
-- 控件标签 (Caption): `Super Scale Radio Button`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `true`
-- 含义 (Meaning): 倍率模式开关 (scale mode switch)。
-- 对输出规模/物理性的影响: 控制是否按固定倍率扩胞。
-- 参数联动 / 生效条件: 开启后主控参数是 `super_scale_condition`；这一路更适合你已经知道复制倍数时使用。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note):
-  - 开启：需要启用 `Super Scale Radio Button` 对应行为时开启。
-  - 关闭：希望保持默认/更保守行为时关闭。
+### 扩胞策略（三选一）
 
-### `super_scale_condition` (Super Scale Condition)
-- UI Label: `Super Scale Condition`
-- 字段映射 (Field mapping): 序列化键 `super_scale_condition` <-> 界面标签 `Super Scale Condition`。
-- 控件标签 (Caption): `Super Scale Condition`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3]
-- 默认值 (Default): `[3, 3, 3]`
-- 含义 (Meaning): 倍率参数 (scale factors)。
-- 对输出规模/物理性的影响: 定义各方向复制倍数。
-- 参数联动 / 生效条件: 只有 `super_scale_radio_button=true` 时它才是主控参数；若同时锁定某个轴，该轴会被 `fixed_axis_scale` 覆盖。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：2x 左右
-  - 平衡：2-4x
-  - 探索：5x+ 高成本
+通过 `mode` 字段选择扩胞策略。每种模式下的实际行为受 `behavior_type` 控制（见下文）。
 
-### `super_cell_radio_button` (Super Cell Radio Button)
-- UI Label: `Super Cell Radio Button`
-- 字段映射 (Field mapping): 序列化键 `super_cell_radio_button` <-> 界面标签 `Super Cell Radio Button`。
-- 控件标签 (Caption): `Super Cell Radio Button`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 目标胞长模式开关 (target-cell mode switch)。
-- 对输出规模/物理性的影响: 控制是否按目标胞长扩胞。
-- 参数联动 / 生效条件: 开启后主控参数切换为 `super_cell_condition`；适合按目标胞长而不是按固定倍数扩胞。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note):
-  - 开启：需要启用 `Super Cell Radio Button` 对应行为时开启。
-  - 关闭：希望保持默认/更保守行为时关闭。
+**`mode`**（string，默认 `"scale"`）：扩胞主模式。
+- `"scale"`：按 `super_scale` 指定的固定倍数扩胞。适合你明确知道需要多大超胞。
+- `"cell"`：按 `target_cell` 指定的目标胞长（单位 A）自动计算倍数。每个方向的倍数 = floor(target_length / original_length) 或 ceil(target_length / original_length)，取决于 `behavior_type`。适合你想让胞长达到特定数值（如所有方向 ≥ 20A）。
+- `"max_atoms"`：按 `max_atoms` 指定的原子数上限枚举所有可能的倍数组合。输出所有总原子数不超过此上限的超胞。适合预算受限时找最大可用超胞。
 
-### `super_cell_condition` (Super Cell Condition)
-- UI Label: `Super Cell Condition`
-- 字段映射 (Field mapping): 序列化键 `super_cell_condition` <-> 界面标签 `Super Cell Condition`。
-- 控件标签 (Caption): `Super Cell Condition`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3]
-- 默认值 (Default): `[20, 20, 20]`
-- 含义 (Meaning): 目标胞长参数 (target cell condition)。
-- 对输出规模/物理性的影响: 定义扩胞后的最小胞长目标。
-- 参数联动 / 生效条件: 只有 `super_cell_radio_button=true` 时按目标胞长枚举；被锁定的轴不再按这个条件自由变化。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：20 到 20，step 20
-  - 平衡：20 到 20，step 10
-  - 探索：20 到 20，step 40
+**`behavior_type`**（int，默认 0）：输出行为。
+- `0`（单输出）：scale 模式下输出一个超胞；cell 模式下输出最大/最小倍数的超胞；max_atoms 模式下输出原子数最大的那个超胞。
+- `1`（枚举）：scale 和 cell 模式下枚举从 1x1x1 到目标倍数的所有组合；max_atoms 模式下枚举所有在上限内的组合。适合想一次生成多个不同大小的超胞。
+- `2`（最小满足）：cell 模式下使用 ceil 取整（至少达到目标长度）；max_atoms 模式下使用 ceil 取整。适合"至少多大才够"的场景。
 
-### `max_atoms_radio_button` (Max Atoms Radio Button)
-- UI Label: `Max Atoms Radio Button`
-- 字段映射 (Field mapping): 序列化键 `max_atoms_radio_button` <-> 界面标签 `Max Atoms Radio Button`。
-- 控件标签 (Caption): `Max Atoms Radio Button`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 原子上限模式开关 (max-atoms mode switch)。
-- 对输出规模/物理性的影响: 用于限制扩胞后结构规模。
-- 参数联动 / 生效条件: 开启后由 `max_atoms_condition` 控制结构规模上限，适合算力预算明确的场景。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note):
-  - 开启：需要启用 `Max Atoms Radio Button` 对应行为时开启。
-  - 关闭：希望保持默认/更保守行为时关闭。
+### 各模式的数值参数
 
-### `max_atoms_condition` (Max Atoms Condition)
-- UI Label: `Max Atoms Condition`
-- 字段映射 (Field mapping): 序列化键 `max_atoms_condition` <-> 界面标签 `Max Atoms Condition`。
-- 控件标签 (Caption): `Max Atoms Condition`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[100]`
-- 含义 (Meaning): 每帧最大生成数 (max generated structures per frame)。
-- 对输出规模/物理性的影响: 主要控制数据量和运行时间。
-- 参数联动 / 生效条件: 只有 `max_atoms_radio_button=true` 时它才成为主控约束；输入太小时仍可能先得到少量更小的超胞。
-- 物理直觉 / 典型值: 它主要决定每帧会扩出多少个结构，直接影响后续计算预算与重复率。
-- 推荐范围 (Recommended range):
-  - 保守：10-50
-  - 平衡：50-200
-  - 探索：200+ 需 FPS
+**`super_scale`**（tuple[int,int,int]，默认 `[3,3,3]`）：仅 scale 模式。a/b/c 方向各复制几倍。最小 1（不复制），典型值 2~4。3x3x3 = 27 倍原子数。
 
-### `fixed_axis_flags` (Fixed Axis Flags)
-- UI Label: `Fixed Axis Flags`
-- 字段映射 (Field mapping): 序列化键 `fixed_axis_flags` <-> 界面标签 `Fixed Axis Flags`。
-- 控件标签 (Caption): `Fixed Axis Flags`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool list[3]
-- 默认值 (Default): `[false, false, false]`
-- 含义 (Meaning): 控制 a/b/c 三个方向是否锁定为固定扩包倍数。
-- 对输出规模/物理性的影响: 适合 slab 等场景，将某一轴保持不扩包，同时让其余方向继续按当前模式变化。
-- 参数联动 / 生效条件: 被锁定的轴不再跟随主模式自由枚举，而是直接读取 `fixed_axis_scale` 中对应的倍数。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 物理直觉 / 典型值: 这类参数主要控制方向、分层或周期；先用最容易人工检查的简单方向和短范围做验证。
-- 配置建议 (Practical note):
-  - 开启：对应轴会强制使用 `fixed_axis_scale` 中的倍数。
-  - 关闭：对应轴按当前 mode 的规则自由生成。
+**`target_cell`**（tuple[float,float,float]，默认 `[20,20,20]` A）：仅 cell 模式。各方向目标胞长。如果原胞 a 长度 = 5A，target=20，倍数 = 4（或 5，取决于 behavior_type）。
 
-### `fixed_axis_scale` (Fixed Axis Scale)
-- UI Label: `Fixed Axis Scale`
-- 字段映射 (Field mapping): 序列化键 `fixed_axis_scale` <-> 界面标签 `Fixed Axis Scale`。
-- 控件标签 (Caption): `Fixed Axis Scale`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): list[3]
-- 默认值 (Default): `[1, 1, 1]`
-- 含义 (Meaning): 为已锁定的 a/b/c 轴提供固定扩包倍数。
-- 对输出规模/物理性的影响: 一旦对应轴被锁定，就直接采用这里的倍数，不再受目标长度或最大原子数枚举影响。
-- 参数联动 / 生效条件: 只对 `fixed_axis_flags=true` 的方向生效；未锁定的方向仍按当前主模式生成。
-- 物理直觉 / 典型值: 这类参数主要控制方向、分层或周期；先用最容易人工检查的简单方向和短范围做验证。
-- 推荐范围 (Recommended range):
-  - 保守：1, 1, 1
-  - 平衡：1-2 倍
-  - 探索：2-4 倍，需同步关注原子数
+**`max_atoms`**（int，默认 100）：仅 max_atoms 模式。超胞总原子数上限。实际输出可能包含多个不超过此上限的超胞。
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+### 轴向锁定
+
+**`fixed_axis_flags`**（tuple[bool,bool,bool]，默认 `[false,false,false]`）：锁定 a/b/c 方向的扩胞倍数。适合 slab 场景：锁住法向（通常 c 轴）不让扩胞，只扩面内方向。被锁定的轴使用 `fixed_axis_scale` 中对应的固定倍数。
+
+**`fixed_axis_scale`**（tuple[int,int,int]，默认 `[1,1,1]`）：被锁定方向的固定扩胞倍数。仅对 `fixed_axis_flags=true` 的方向生效。通常设为 1（不扩胞）。
+
+## 推荐预设
+
+### 快速扩胞（固定 3x3x3，单输出）
 ```json
 {
   "class": "SuperCellCard",
   "check_state": true,
-  "super_cell_type": 0,
-  "super_scale_radio_button": false,
-  "super_scale_condition": [
-    2,
-    2,
-    2
-  ],
-  "super_cell_radio_button": true,
-  "super_cell_condition": [
-    20,
-    20,
-    20
-  ],
-  "max_atoms_radio_button": false,
-  "fixed_axis_flags": [
-    false,
-    false,
-    false
-  ],
-  "fixed_axis_scale": [
-    1,
-    1,
-    1
-  ],
-  "max_atoms_condition": [
-    200
-  ]
+  "mode": "scale",
+  "behavior_type": 0,
+  "super_scale": [3, 3, 3],
+  "target_cell": [20, 20, 20],
+  "max_atoms": 100,
+  "fixed_axis_flags": [false, false, false],
+  "fixed_axis_scale": [1, 1, 1]
 }
 ```
 
-### 平衡（Balanced）
+### Slab 扩胞（面内扩到 20A，法向锁 1x，枚举所有组合）
 ```json
 {
   "class": "SuperCellCard",
   "check_state": true,
-  "super_cell_type": 0,
-  "super_scale_radio_button": false,
-  "super_scale_condition": [
-    2,
-    2,
-    2
-  ],
-  "super_cell_radio_button": true,
-  "super_cell_condition": [
-    20,
-    20,
-    20
-  ],
-  "max_atoms_radio_button": false,
-  "fixed_axis_flags": [
-    false,
-    false,
-    true
-  ],
-  "fixed_axis_scale": [
-    1,
-    1,
-    1
-  ],
-  "max_atoms_condition": [
-    200
-  ]
+  "mode": "cell",
+  "behavior_type": 1,
+  "super_scale": [3, 3, 3],
+  "target_cell": [20, 20, 20],
+  "max_atoms": 100,
+  "fixed_axis_flags": [false, false, true],
+  "fixed_axis_scale": [1, 1, 1]
 }
 ```
 
-### 激进/探索（Aggressive/Exploration）
+### 预算限制下的最大超胞（≤ 300 原子，取最大）
 ```json
 {
   "class": "SuperCellCard",
   "check_state": true,
-  "super_cell_type": 0,
-  "super_scale_radio_button": false,
-  "super_scale_condition": [
-    2,
-    2,
-    2
-  ],
-  "super_cell_radio_button": true,
-  "super_cell_condition": [
-    20,
-    20,
-    20
-  ],
-  "max_atoms_radio_button": false,
-  "fixed_axis_flags": [
-    false,
-    false,
-    true
-  ],
-  "fixed_axis_scale": [
-    1,
-    1,
-    1
-  ],
-  "max_atoms_condition": [
-    200
-  ]
+  "mode": "max_atoms",
+  "behavior_type": 0,
+  "super_scale": [3, 3, 3],
+  "target_cell": [20, 20, 20],
+  "max_atoms": 300,
+  "fixed_axis_flags": [false, false, false],
+  "fixed_axis_scale": [1, 1, 1]
 }
 ```
 
 ## 推荐组合
-- Super Cell -> Vacancy Defect Generation: 保证删缺陷后仍有足够原子数。
-- 作为后续缺陷、表面或磁性卡片的母胞准备步骤。
-- 若扩胞后结构规模明显上升，建议在流程末端再接 `FPS Filter` 控制代表性样本数。
 
-## 常见问题与排查
-- 输出为空或远少于预期时，先检查各范围参数是否真的形成了有效扫描组合；很多这类卡片在参数只给定单点时只会输出很少的结构。
-- 如果结构明显不合理，先看体积、晶胞角和最近邻距离，再把主控幅度或步长回调到更小的量级。
-- 模式冲突时以当前 UI 状态和代码分支为准；导入旧 JSON 后如果发现多个主模式字段同时存在，建议手工确认只保留一条主路径。
+- `Super Cell` -> `Vacancy Defect`：先扩胞再删原子，保证缺陷-镜像距离
+- `Super Cell` -> `Lattice Strain`：扩胞后做应变扫描
+- `Super Cell` -> `Surface Warp`：扩胞后做表面起伏
+- `Super Cell` -> `FPS Filter`：枚举模式产生大量超胞时，用 FPS 去重（相同大小的超胞只有 1 个有用）
 
-## 输出标签 / 元数据变更
-- 该卡片输出的 Config_type 标签模式：
-  - `SC({...}x{...}x{...})`
+## 常见问题
 
-## 可复现性说明
-- 该卡片本身无显式随机种子，参数与输入一致时结果应确定。
-- 若上游含随机操作，仍需在 pipeline 层统一控制随机性。
+**输出只有 1x1x1（等于没扩胞）。** 如果原胞自身已经满足目标——例如原胞 3A、target_cell=20、behavior_type=0 时倍数=6，但原胞 a 长度已经 25A —— 倍数被截断为 1。检查 target_cell 是否设得比原胞还小。或者在 max_atoms 模式下，原胞原子数已超上限，只输出原胞。
+
+**Slab 面内方向扩胞不均匀。** `fixed_axis_flags` 只锁了法向，面内两个方向各走各的倍数。如果面内需要正方形胞，确保 target_cell 的 a/b 目标值一致，或者用 scale 模式手动统一倍数。
+
+**原子数暴增超出计算预算。** 4x4x4 = 64 倍原子数。先心算：倍数 = (na*nb*nc)，原子数 = 原胞原子数 * 倍数。谨慎选择 behavior_type=1（枚举模式），因为从 1x1x1 到目标倍数会产生多个不同大小的超胞。
+
+**枚举模式产生过多超胞。** behavior_type=1 + max_atoms=500 + 原胞=2 原子 → 所有 ≤250 倍原子数的组合都会被输出。如果不需要所有中间大小，改用 behavior_type=0 只取最大。
+
+## 输出标签
+
+`SC({na}x{nb}x{nc})` —— 如 `SC(4x4x4)`。
+
+## 可复现性
+
+无随机性。同参数同输入 → 严格一致输出。

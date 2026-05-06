@@ -2,279 +2,156 @@
 
 # 晶体原型构建（Crystal Prototype Builder）
 
-`Group`: `Lattice`  
-`Class`: `CrystalPrototypeBuilderCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/crystal_prototype_builder_card.py`
+`Group`: `Lattice` | `Class`: `CrystalPrototypeBuilderCard`
 
 ## 功能说明
-按晶型原型和晶格常数范围生成标准晶体起始结构，快速搭建可控的基础结构库。
 
-它最适合的场景是：从 fcc / bcc / hcp 等标准原型直接生成一批统一格式的母相结构。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+从 fcc / bcc / hcp / diamond 等标准晶格原型直接生成晶体结构。选定元素和晶格常数后，程序按模板构造单胞并自动扩胞至目标原子数。这是一张生成器卡（Generator），不需要输入结构。
 
 ## 操作示例
-### 场景：从 fcc / bcc / hcp 等标准原型直接生成一批统一格式的母相结构
 
-**输入：** 目标晶型、元素和晶格常数范围，例如 Cu-fcc 或 Fe-bcc
+### 场景：训练集缺少跨晶型的比较样本
 
-**目标：** 先构造一批可控的基础结构，再把它们作为缺陷、表面或磁性流程的输入
+你在 fcc Ni 上训练了一个 NEP 模型，fcc 相的弹性、声子都很好。但这个 Ni 体系理论上可能存在 hcp 亚稳相——模型在 hcp 相上预测的能量偏高，无法正确给出 fcc/hcp 的能量差。
+
+**诊断思路：** 训练集里只有一种晶型，模型自然偏向它见过的唯一结构。需要把 fcc 和 hcp 两种原型的干净结构都加入训练集，让模型有内插依据来比较不同晶型的能量。这些原型结构不需要是真实实验构型——它们作为"锚点"帮助模型构造相空间。
+
+**输入：** 无（生成器卡，不依赖上游结构）
+
+**目标：** 生成 fcc + hcp 两种晶型的 Ni 结构，晶格常数在实验值附近略有扫描
 
 **参数设置：**
-- `lattice` 先选原型类型
-- `a_range` 控制晶格常数扫描
-- `auto_supercell` 与 `max_atoms` 一起决定输出尺寸
+- `Lattice` = `fcc`，`Element` = `Ni`，`A Range` = `[3.52, 3.52, 0.05]`
+- `Auto Supercell` = 勾选，`Max Atoms` = `[256]`
+- 再开一张同参数但 `Lattice` = `hcp` 的卡
 
-**输出：** 一批标准化原型结构，适合作为后续 Make Dataset 流程的起点
+**输出：** fcc 和 hcp 两种晶型的 Ni 超胞结构，带 `Proto(fcc,a=...,rep=...)` / `Proto(hcp,a=...,rep=...)` 标签
 
-**怎么验证结果合理：**
-- 检查原子数和对称性是否符合原型预期
-- 确认 `auto_supercell` 没有把尺寸扩到超预算
-- 下游要做表面或缺陷时，优先先在这里把母相建对
+**怎么验证训练集质量改善：**
+- 重训后计算 fcc/hcp 能量差，应接近 DFT 参考
+- 检查输出结构原子数和对称性：fcc 应为立方对称，hcp 六角对称
+- 如果输出原子数远小于 `max_atoms`，说明 auto_supercell 找不到合适的扩胞因子——关掉 `auto_supercell`，手动设 `Rep`
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 缺少标准原型结构，训练集拓扑单一。
-- 目标任务 (Target objective): 构建 clean prototype baseline。
-- 建议添加条件 (Add-it trigger): 需要系统对比 fcc/bcc/hcp 等晶型。
-- 不建议添加条件 (Avoid trigger): 已有充分真实结构且无需原型补充。
-> 物理提示 (Physics caution): 重点检查体积变化、晶胞条件数和最近邻距离，避免把几何畸变直接放大到非物理区间。
+### 什么时候加这张卡、什么时候不加
 
-## 输入前提
-- 确认 `lattice` 与元素组合物理可行。
-- 设好 `max_outputs` 避免网格过密。
+**加：**
+- 训练集缺少某种标准晶型的干净构型
+- 需要对比不同晶型的能量（相稳定性）
+- 作为后续缺陷/表面/磁性流程的结构工厂起点
 
-## 参数说明（完整）
-### `params` (Operation Params)
-- UI Label: `Operation Params`
-- 字段映射 (Field mapping): 序列化键 `params` <-> 核心操作参数 `CrystalPrototypeBuilderParams`。
-- 控件标签 (Caption): `Operation Params`。
-- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
-- 类型/范围 (Type/Range): object
-- 默认值 (Default): `{"lattice": "fcc", "element": "Cu", "a_range": [3.6, 3.6, 0.1], "covera": 1.633, "auto_supercell": true, "max_atoms": 512, "rep": [4, 4, 4], "max_outputs": 200}`
-- 含义 (Meaning): UI 解耦后的核心参数快照，用于 CLI/批处理复用。
-- 对输出规模/物理性的影响: 与展开后的晶格类型、元素、晶格常数、扩胞和最大输出字段一致。
-- 配置建议 (Practical note): 新版本优先读取 `params`，旧字段仍保留用于兼容已有 workflow。
+**不加：**
+- 已经有充足的真实结构（实验或 DFT 弛豫的），不需要人造原型
+- 体系是复杂多相材料，简单晶格原型不能代表实际相
 
-### `lattice` (Lattice)
-- UI Label: `Lattice`
-- 字段映射 (Field mapping): 序列化键 `lattice` <-> 界面标签 `Lattice`。
-- 控件标签 (Caption): `Lattice`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`（显示文本与序列化值可能不同）。
-- 类型/范围 (Type/Range): enum(string)
-- 默认值 (Default): `"fcc"`
-- 含义 (Meaning): 晶型模板 (lattice prototype)。
-- 对输出规模/物理性的影响: 决定生成结构的拓扑基底。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 物理直觉 / 典型值: 它决定程序走哪种离散策略；先选对模式，再去调该模式下真正起作用的数值参数。
-- 推荐范围 (Recommended range):
-  - 保守：主晶型
-  - 平衡：主+次晶型
-  - 探索：全晶型需预算限制
+## 参数说明
 
-### `element` (Element)
-- UI Label: `Element`
-- 字段映射 (Field mapping): 序列化键 `element` <-> 界面标签 `Element`。
-- 控件标签 (Caption): `Element`。
-- 控件解释 (Widget): 文本输入 `LineEdit`（或可编辑下拉）。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `"Cu"`
-- 含义 (Meaning): 元素类型 (element type)。
-- 对输出规模/物理性的影响: 定义当前操作核心元素。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note): `Element` 可按任务替换为自定义值；建议先用最小样本验证后再批量生成。
+### `Lattice`（lattice）
 
-### `a_range` (A Range)
-- UI Label: `A Range`
-- 字段映射 (Field mapping): 序列化键 `a_range` <-> 界面标签 `A Range`。
-- 控件标签 (Caption): `A Range`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3]
-- 默认值 (Default): `[3.6, 3.6, 0.1]`
-- 含义 (Meaning): 晶格常数范围 (lattice constant range)。
-- 对输出规模/物理性的影响: 控制结构尺寸扫描范围。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：3.6 到 3.6，step 0.1
-  - 平衡：3.6 到 3.6，step 0.05
-  - 探索：3.6 到 3.6，step 0.2
+晶格原型类型。支持：`fcc`、`bcc`、`hcp`、`sc`、`diamond`、`zincblende`、`rocksalt`、`cesiumchloride`、`fluorite`、`wurtzite`。
 
-### `covera` (Covera)
-- UI Label: `Covera`
-- 字段映射 (Field mapping): 序列化键 `covera` <-> 界面标签 `Covera`。
-- 控件标签 (Caption): `Covera`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): float（单值输入）
-- 默认值 (Default): `[1.633]`
-- 含义 (Meaning): c/a 比例 (c over a ratio)。
-- 对输出规模/物理性的影响: 影响非立方晶型的几何各向异性。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：1.14-1.63
-  - 平衡：1.63-2.45
-  - 探索：2.45-4.08
+- 主晶型（fcc/bcc/hcp）：常见金属
+- 化合物晶型（rocksalt/wurtzite/fluorite）：二元化合物
 
-### `auto_supercell` (Auto Supercell)
-- UI Label: `Auto Supercell`
-- 字段映射 (Field mapping): 序列化键 `auto_supercell` <-> 界面标签 `Auto Supercell`。
-- 控件标签 (Caption): `Auto Supercell`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `true`
-- 含义 (Meaning): 自动扩胞开关 (auto supercell)。
-- 对输出规模/物理性的影响: 自动根据目标规模调整复制参数。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note):
-  - 开启：需要启用 `Auto Supercell` 对应行为时开启。
-  - 关闭：希望保持默认/更保守行为时关闭。
+### `Element`（element）
 
-### `max_atoms` (Max Atoms)
-- UI Label: `Max Atoms`
-- 字段映射 (Field mapping): 序列化键 `max_atoms` <-> 界面标签 `Max Atoms`。
-- 控件标签 (Caption): `Max Atoms`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[512]`
-- 含义 (Meaning): 最大原子数 (maximum atoms)。
-- 对输出规模/物理性的影响: 限制单结构规模，避免超算力预算。
-- 物理直觉 / 典型值: 它主要决定每帧会扩出多少个结构，直接影响后续计算预算与重复率。
-- 推荐范围 (Recommended range):
-  - 保守：256-512
-  - 平衡：512-1024
-  - 探索：1024-2560
+元素符号，如 `Cu`、`Ni`、`Si`。对于化合物原型（如 rocksalt），只用第一个元素，后续需要 `Composition Sweep` + `Random Occupancy` 组合来实现元素分布。
 
-### `rep` (Rep)
-- UI Label: `Rep`
-- 字段映射 (Field mapping): 序列化键 `rep` <-> 界面标签 `Rep`。
-- 控件标签 (Caption): `Rep`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3]
-- 默认值 (Default): `[4, 4, 4]`
-- 含义 (Meaning): 复制倍率向量 (replication vector)。
-- 对输出规模/物理性的影响: 直接决定扩胞倍数和原子数增长。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：1x1x1 到 2x2x2
-  - 平衡：2x2x2 到 3x3x3
-  - 探索：3x3x3 到 5x5x5
+### `A Range`（a_range）
 
-### `max_outputs` (Max Outputs)
-- UI Label: `Max Outputs`
-- 字段映射 (Field mapping): 序列化键 `max_outputs` <-> 界面标签 `Max Outputs`。
-- 控件标签 (Caption): `Max Outputs`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[200]`
-- 含义 (Meaning): 输出上限 (maximum outputs)。
-- 对输出规模/物理性的影响: 限制样本规模，防止组合爆炸。
-- 物理直觉 / 典型值: 它主要决定每帧会扩出多少个结构，直接影响后续计算预算与重复率。
-- 推荐范围 (Recommended range):
-  - 保守：100-200
-  - 平衡：200-400
-  - 探索：400-1000
+`[最小值, 最大值, 步长]`，晶格常数 a（单位 A）。
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+- 单点扫描：`[3.52, 3.52, 0.1]` → 1 个结构
+- 区间扫描：`[3.50, 3.60, 0.02]` → 6 个结构
+- 注意：步长越小 → 结构越多。配合 `max_outputs` 控制上限。
+
+### `C/a`（covera）
+
+仅 hcp 晶型使用。c/a 比例，理想值 ≈ 1.633。
+
+### `Auto Supercell`（auto_supercell）
+
+勾选 → 程序自动计算扩胞因子以逼近 `Max Atoms`。不勾选 → 手动用 `Rep` 指定扩胞倍数。
+
+### `Max Atoms`（max_atoms）
+
+目标最大原子数。仅 `auto_supercell` 勾选时生效。256~512 为常规。
+
+### `Rep`（rep）
+
+`[na, nb, nc]`，三个方向的扩胞倍数。仅 `auto_supercell` 关闭时生效。
+
+### `Max Outputs`（max_outputs）
+
+输出结构总数上限。防止 a_range 扫描+多晶型产生过多结构。
+
+## 推荐预设
+
+### fcc Cu 单点（1 个输出，作为流程起点）
 ```json
 {
   "class": "CrystalPrototypeBuilderCard",
   "check_state": true,
   "lattice": "fcc",
   "element": "Cu",
-  "a_range": [
-    3.6,
-    3.6,
-    0.1
-  ],
-  "covera": [
-    1.633
-  ],
+  "a_range": [3.615, 3.615, 0.1],
+  "covera": [1.633],
   "auto_supercell": true,
-  "max_atoms": [
-    512
-  ],
-  "rep": [
-    4,
-    4,
-    4
-  ],
-  "max_outputs": [
-    10
-  ]
+  "max_atoms": [256],
+  "rep": [4, 4, 4],
+  "max_outputs": [1]
 }
 ```
 
-### 平衡（Balanced）
+### fcc Cu 晶格扫描（5 个点，覆盖平衡晶格附近）
 ```json
 {
   "class": "CrystalPrototypeBuilderCard",
   "check_state": true,
   "lattice": "fcc",
   "element": "Cu",
-  "a_range": [
-    3.6,
-    3.6,
-    0.1
-  ],
-  "covera": [
-    1.633
-  ],
+  "a_range": [3.55, 3.65, 0.025],
+  "covera": [1.633],
   "auto_supercell": true,
-  "max_atoms": [
-    512
-  ],
-  "rep": [
-    4,
-    4,
-    4
-  ],
-  "max_outputs": [
-    200
-  ]
+  "max_atoms": [256],
+  "rep": [4, 4, 4],
+  "max_outputs": [20]
 }
 ```
 
-### 激进/探索（Aggressive/Exploration）
+### 多晶型探索（fcc + hcp，各 5 个点）
 ```json
 {
   "class": "CrystalPrototypeBuilderCard",
   "check_state": true,
-  "lattice": "fcc",
-  "element": "Cu",
-  "a_range": [
-    3.6,
-    3.6,
-    0.1
-  ],
-  "covera": [
-    1.633
-  ],
+  "lattice": "hcp",
+  "element": "Ni",
+  "a_range": [3.50, 3.56, 0.015],
+  "covera": [1.633],
   "auto_supercell": true,
-  "max_atoms": [
-    512
-  ],
-  "rep": [
-    4,
-    4,
-    4
-  ],
-  "max_outputs": [
-    600
-  ]
+  "max_atoms": [256],
+  "rep": [4, 4, 4],
+  "max_outputs": [20]
 }
 ```
 
 ## 推荐组合
-- Crystal Prototype Builder -> Composition Sweep -> Random Occupancy: 先生成干净模板，再进行成分修饰。
-- 作为后续缺陷、表面或磁性卡片的母胞准备步骤。
-- 若扩胞后结构规模明显上升，建议在流程末端再接 `FPS Filter` 控制代表性样本数。
 
-## 常见问题与排查
-- 输出为空或远少于预期时，先检查各范围参数是否真的形成了有效扫描组合；很多这类卡片在参数只给定单点时只会输出很少的结构。
-- 如果结构明显不合理，先看体积、晶胞角和最近邻距离，再把主控幅度或步长回调到更小的量级。
-- 模式冲突时以当前 UI 状态和代码分支为准；导入旧 JSON 后如果发现多个主模式字段同时存在，建议手工确认只保留一条主路径。
+- `Crystal Prototype Builder` → `Atomic Perturb`：先建原型，再加坐标噪声
+- `Crystal Prototype Builder` → `Composition Sweep` → `Random Occupancy`：先生成干净模板，再进行成分修饰
+- `Crystal Prototype Builder` → `Lattice Strain`：先建原型，再做应变扫描
 
-## 输出标签 / 元数据变更
-- 该卡片输出的 Config_type 标签模式：
-  - `Proto({...},a={...},rep={...}x{...}x{...})`
+## 常见问题
 
-## 可复现性说明
-- 该卡片本身无显式随机种子，参数与输入一致时结果应确定。
-- 若上游含随机操作，仍需在 pipeline 层统一控制随机性。
+**输出只有 1 个结构。** a_range 的起点=终点且步长>0 时只产生单点。如果需要扫描，设定不同起点和终点。
+
+**原子数远小于 `max_atoms`。** auto_supercell 的扩胞因子是整数，可能因为单胞原子数多导致最近整数倍已超过 max_atoms。手动关掉 auto_supercell 改 `rep`。
+
+**hcp 结构不是六角的。** hcp 的 ASE bulk 构造需要正确的 covera。确认 covera 在 1.6 左右。
+
+## 输出标签
+
+`Proto({晶格类型},a={晶格常数},rep={na}x{nb}x{nc})`
+
+## 可复现性
+
+无随机性。同参数 → 严格一致输出。

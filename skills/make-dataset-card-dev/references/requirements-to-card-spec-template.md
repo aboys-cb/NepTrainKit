@@ -18,7 +18,18 @@
 - Operation 类型：`StructureOperation` / `DatasetOperation` / `GeneratorOperation`
 - Core 模块：`lattice.py` / `structure.py` / `alloy.py` / `defect.py` / `magnetism.py` / `filter.py`
 
-## 3. 参数设计（Params + UI）
+## 3. 操作示例（先写这个）
+
+在写代码前先把操作示例定下来。必须从训练集诊断出发：
+
+- **模型故障现象：** 模型在什么任务上、什么指标变差了
+- **根因诊断：** 训练集缺了什么数据导致这个问题
+- **输入结构：** 具体是什么输入
+- **预期改善：** 加入这批数据后，重训模型应该看到什么变化
+- **参数设置：** 解决这个问题大概需要什么参数/量级
+- **验证方法：** 怎么判断训练集质量确实改善了
+
+## 4. 参数设计（Params + UI）
 
 对每个参数填写：
 
@@ -27,9 +38,8 @@
 - UI 控件类型（SpinBoxUnitInputFrame / ComboBox / CheckBox / LineEdit）：
 - 类型与范围：
 - 默认值：
-- tooltip：
-- 在 `params` 中的 key：
-- 是否保留旧 `to_dict` key：
+- 使用建议（场景 + 量级，不要泛化模板句）：
+- 参数联动 / 生效条件（仅在条件生效时写）：
 
 ## 4. 业务逻辑设计
 

@@ -102,6 +102,17 @@ UI 类放在 `src/NepTrainKit/ui/views/_card/*.py`，遵循现有风格：
   - 文档：`docs/source/module/make-dataset-cards/cards/foo-bar-card.md`
   - 在线链接：`https://neptrainkit.readthedocs.io/en/latest/module/make-dataset-cards/cards/foo-bar-card.html`
 
+**文档写作核心原则：从训练集诊断出发。**
+
+操作示例必须回答"模型哪里不行 → 训练集缺什么 → 这张卡怎么补 → 怎么验证改善"，而不是只写"设参数→得结果"。禁止以下内容：
+
+- 模板填充句："先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时再偏离"
+- 同义反复开关建议："需要启用 XXX 时开启 / 希望保持默认时关闭"
+- 把 `params`（序列化实现细节）作为用户参数列出
+- 三档预设 JSON 几乎一样（Safe/Balanced/Aggressive 应有实质性参数差异）
+
+详细规范见 `docs/source/module/make-dataset-cards/writing-guide.md`。
+
 ### 6. 测试
 
 最少覆盖：

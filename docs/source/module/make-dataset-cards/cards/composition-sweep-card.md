@@ -2,326 +2,175 @@
 
 # 成分扫描（Composition Sweep）
 
-`Group`: `Alloy`  
-`Class`: `CompositionSweepCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/composition_sweep_card.py`
+`Group`: `Alloy` | `Class`: `CompositionSweepCard`
 
 ## 功能说明
-在元素池和元数约束下生成成分设计空间（composition design space），用于合金候选前置展开。
 
-它最适合的场景是：先定义一批目标成分点，再交给下游卡片把成分真正落到原子位点。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+在元素池和元数约束下生成成分设计空间。对选定元素集合按二元到五元组合展开，用网格或 Sobol 低差异序列在 simplex 上采样目标配比点，输出带 `Comp(...)` 标签的结构副本。本卡只生成目标配比计划，不真正落位——需要下游接 `Random Occupancy` 才能得到离散原子占位。
 
 ## 操作示例
-### 场景：先定义一批目标成分点，再交给下游卡片把成分真正落到原子位点
 
-**输入：** 一个母相结构，以及一组候选元素，例如 `Co,Cr,Ni,Al,Fe`
+### 场景：模型在偏离训练集化学计量比时预测崩了
 
-**目标：** 系统扫过二元到五元目标配比，而不是只做几次随机替换
+你在 Co-Cr-Ni 三元系上训练了一个 NEP 模型，训练数据全部来自等摩尔 CoCrNi 单相。模型对等摩尔构型的能量和力预测很好，但一跑 Co30Cr20Ni50 这种偏离等摩尔的组分，能量误差翻了三倍。诊断结果是：训练集所有数据的成分落在 simplex 的一个点上，模型根本没有见过成分变化导致的局域化学环境差异。
+
+**诊断思路：** 合金模型的基本要求是能在整个成分空间内插，而不是只记住一个成分点。如果训练集成分覆盖太窄，模型只能外推——成分漂得越远，误差越大。解决办法是先在目标成分空间内均匀撒一批配比点，再去下游逐个落位，让模型从头学起不同成分下的化学环境。
+
+**输入：** 一个弛豫好的 CoCrNi 超胞结构（当前训练集里唯一的结构，等摩尔配比）
+
+**目标：** 从 Co-Cr-Ni 三个元素出发，生成二元 + 三元所有配比的网格采样，约 500 个目标配比点，后续接 `Random Occupancy` 落地
 
 **参数设置：**
-- `order` 决定扫二元、三元还是更高元组合
-- `method="Grid"` 适合低维规则网格，`"Sobol"` 更适合高维覆盖
-- `max_outputs` 先按你的计算预算限制每帧输出量
+- `elements` = `Co,Cr,Ni`
+- `order` = `2,3` （二元 + 三元组合）
+- `method` = `Grid`，`step` = `0.1`
+- `max_outputs` = `500`
 
-**输出：** 多份带 `Comp(...)` 标签的结构副本；此时是“目标配比计划”，还不是实际离散占位结果
+**输出：** 约 500 个带 `Comp(Co=...,Cr=...,Ni=...)` 标签的结构副本。此时结构内原子种类未变，标签只是目标配比计划
 
-**怎么验证结果合理：**
-- 检查 `Config_type` 中是否出现了目标成分标签
-- 确认输出数量与 `order`、`method` 和 `max_outputs` 一致
-- 需要真实随机合金时，记得继续接 `Random Occupancy`
+**怎么验证训练集质量改善：**
+- 重训后跑几个偏移等摩尔的测试组分，力的 MAE 应该不再随成分漂移而显著恶化
+- 检查 `Config_type` 中 Comp 标签的成分分布是否覆盖了 simplex 各区域——如果某些边角空白，减小 step 或换 Sobol 补点
+- 如果全部集中等摩尔附近但没有边角覆盖，打开 `include_endpoints`，降低 `min_fraction` 到 0
+- 如果输出量不够覆盖所有 order 组合，提高 `max_outputs`，或把 `budget_mode` 换成 `Capacity-weighted` 让高元数组合分到更多名额
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 元素组合覆盖单一，跨成分迁移误差高。
-- 目标任务 (Target objective): 先覆盖成分空间，再下游做占位/掺杂。
-- 建议添加条件 (Add-it trigger): 需要二元到多元合金系统化采样。
-- 不建议添加条件 (Avoid trigger): 任务只关注单一固定化学计量。
-> 物理提示 (Physics caution): 重点检查目标配比、实际元素统计和标签是否一致，避免“标签写对了、占位落错了”。
+### 什么时候加这张卡、什么时候不加
 
-## 输入前提
-- 明确元素池、元数上限和预算上限。
-- 先小规模验证 `method` 与 `budget_mode` 的分布行为。
+**加：**
+- 模型在偏离训练集化学计量比时误差显著增大
+- 需要系统覆盖二元到多元合金成分空间，而非少量随机掺杂
+- 作为合金 pipeline 的第一步，先定义配比，再接占位卡片
 
-## 参数说明（完整）
-### `params` (Operation Params)
-- UI Label: `Operation Params`
-- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
-- 控件标签 (Caption): `Operation Params`
-- 控件解释 (Widget): 由元素列表、阶数、采样方法、simplex 参数、输出预算和 seed 控件组合生成的内部参数字典。
-- 类型/范围 (Type/Range): dict
-- 默认值 (Default): `{"elements": "Co,Cr,Ni", "order": "2,3,4,5", "method": "Grid", "step": 0.1, "n_points": 50, "min_fraction": 0.0, "include_endpoints": true, "use_seed": false, "seed": 0, "max_outputs": 500, "budget_mode": "Equal+Reflow"}`
-- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
-- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组组成扫描参数。
-- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+**不加：**
+- 只需单一固定化学计量比的结构
+- 已经有明确掺杂规则且不需要扫配比空间 → 直接用 `Random Doping`
+- 需要增补的是同一成分下的不同原子排布 → 直接用 `Random Occupancy`
 
-### `elements` (Elements)
-- UI Label: `Elements`
-- 字段映射 (Field mapping): 序列化键 `elements` <-> 界面标签 `Elements`。
-- 控件标签 (Caption): `Elements`。
-- 控件解释 (Widget): 文本输入 `LineEdit`（或可编辑下拉）。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `"Co,Cr,Ni"`
-- 含义 (Meaning): 元素集合输入 (element set)。
-- 对输出规模/物理性的影响: 决定参与操作的元素子集。
-- 怎么判断该开还是该关: 只在你明确知道该字段会命中输入结构时填写；不确定时先用最小样本验证命中情况。
-- 配置建议 (Practical note): `Elements` 可按任务替换为自定义值；建议先用最小样本验证后再批量生成。
+## 参数说明
 
-### `order` (Order)
-- UI Label: `Order`
-- 字段映射 (Field mapping): 序列化键 `order` <-> 界面标签 `Order`。
-- 控件标签 (Caption): `Order`。
-- 控件解释 (Widget): 文本输入 `LineEdit`（或可编辑下拉）。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `"2,3,4,5"`
-- 含义 (Meaning): 组合阶范围 (order)。
-- 对输出规模/物理性的影响: 控制元数组合阶数。
-- 参数联动 / 生效条件: 它定义“扫几元成分空间”，并直接影响预算如何在不同元数组合之间分配。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note): `Order` 可按任务替换为自定义值；建议先用最小样本验证后再批量生成。
+### `elements`（elements）
 
-### `method` (Method)
-- UI Label: `Method`
-- 字段映射 (Field mapping): 序列化键 `method` <-> 界面标签 `Method`。
-- 控件标签 (Caption): `Method`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`（显示文本与序列化值可能不同）。
-- 类型/范围 (Type/Range): enum(string): `Grid`, `Sobol`
-- 默认值 (Default): `"Grid"`
-- 含义 (Meaning): 成分点生成方法 (composition sampling method)，可选 `Grid` 或 `Sobol`。
-- 对输出规模/物理性的影响: Grid 便于解释且步长可控；Sobol 属于低差异序列，在少样本/高阶(order>=4)时覆盖通常更稳。样本足够多时两者差异会减小。
-- 参数联动 / 生效条件: `Grid` 更适合低维规则扫描，`Sobol` 更适合高维覆盖；两者对应的主控参数不同。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 物理直觉 / 典型值: 它决定程序走哪种离散策略；先选对模式，再去调该模式下真正起作用的数值参数。
-- 推荐范围 (Recommended range):
-  - 保守：少样本或高阶优先 Sobol
-  - 平衡：Grid 先试跑，再用 Sobol 补覆盖盲区
-  - 探索：大样本阶段按可解释性与算力预算选择
+逗号分隔的元素列表，如 `Co,Cr,Ni,Al,Fe`。至少需要 2 个元素才能生效。程序会从中取出所有 n 元组合做配比扫描。
 
-### `step` (Step)
-- UI Label: `Step`
-- 字段映射 (Field mapping): 序列化键 `step` <-> 界面标签 `Step`。
-- 控件标签 (Caption): `Step`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): float（单值输入）
-- 默认值 (Default): `[0.1]`
-- 含义 (Meaning): 步长区间 (step range)。
-- 对输出规模/物理性的影响: 主控扫描位移幅度与分辨率。
-- 参数联动 / 生效条件: 只有 `method="Grid"` 时它才决定网格分辨率。
-- 物理直觉 / 典型值: 它通常是控制变化幅度的主旋钮；先从能看清趋势的小幅度起步，再决定是否扩到探索档。
-- 推荐范围 (Recommended range):
-  - 保守：0.07-0.1
-  - 平衡：0.1-0.15
-  - 探索：0.15-0.25
+### `order`（order）
 
-### `n_points` (N Points)
-- UI Label: `N Points`
-- 字段映射 (Field mapping): 序列化键 `n_points` <-> 界面标签 `N Points`。
-- 控件标签 (Caption): `N Points`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[50]`
-- 含义 (Meaning): 采样点数 (number of points)。
-- 对输出规模/物理性的影响: 点数越大覆盖越密，但计算开销更高。
-- 参数联动 / 生效条件: 只有 `method="Sobol"` 时它才决定目标采样点数。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：25-50
-  - 平衡：50-100
-  - 探索：100-250
+整数逗号分隔，如 `2,3,4,5`。决定扫描哪些元数的组合。只支持 2/3/4/5 元。也兼容旧版名称如 `Binary`、`Ternary+Quaternary`。
 
-### `min_fraction` (Min Fraction)
-- UI Label: `Min Fraction`
-- 字段映射 (Field mapping): 序列化键 `min_fraction` <-> 界面标签 `Min Fraction`。
-- 控件标签 (Caption): `Min Fraction`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): float（单值输入）
-- 默认值 (Default): `[0.0]`
-- 含义 (Meaning): 最小组分比例下限 (minimum fraction ratio)。取值 `0-1`，可按百分比理解。
-- 对输出规模/物理性的影响: 约束每个元素的最小占比；例如 `0.05` 表示每个组分至少 `5%`，会过滤极端稀释端点。
-- 物理直觉 / 典型值: 把它直接理解成比例更直观；先从几个百分点或较小分数开始，通常更容易保持结构稳定。
-- 推荐范围 (Recommended range):
-  - 保守：0.05-0.10（更稳）
-  - 平衡：0.01-0.05（平衡覆盖）
-  - 探索：0.00-0.01（覆盖边角但组合更散）
+典型配置：`2,3` 适合快速覆盖，`2,3,4,5` 适合系统性高熵探索。
 
-### `include_endpoints` (Include Endpoints)
-- UI Label: `Include Endpoints`
-- 字段映射 (Field mapping): 序列化键 `include_endpoints` <-> 界面标签 `Include Endpoints`。
-- 控件标签 (Caption): `Include Endpoints`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `true`
-- 含义 (Meaning): 是否包含端点 (include endpoints)。
-- 对输出规模/物理性的影响: 控制是否保留纯端元和边界成分点。
-- 参数联动 / 生效条件: 只在 Grid 模式下有意义，用于决定是否把端点成分也纳入扫描。
-- 怎么判断该开还是该关: 只有当你明确知道这个开关会改变当前工作流目标时才开启；不确定时先保持默认并用小样本验证。
-- 配置建议 (Practical note):
-  - 开启：需要启用 `Include Endpoints` 对应行为时开启。
-  - 关闭：希望保持默认/更保守行为时关闭。
+### `method`（method）
 
-### `use_seed` (Use Seed)
-- UI Label: `Use Seed`
-- 字段映射 (Field mapping): 序列化键 `use_seed` <-> 界面标签 `Use Seed`。
-- 控件标签 (Caption): `Use Seed`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 是否启用固定随机种子 (deterministic seed switch)。
-- 对输出规模/物理性的影响: 开启后可复现实验；关闭后每次采样分布会变化。
-- 怎么判断该开还是该关: 做可复现实验或要对比不同参数时开启；纯探索阶段可以先关闭以增加随机覆盖。
-- 配置建议 (Practical note):
-  - 开启：需要可复现对比时开启。
-  - 关闭：探索阶段可关闭以增加随机覆盖。
+`Grid` 或 `Sobol`。Grid 均匀网格采样，步长可控，适合低元数（2-3 元）。Sobol 低差异序列在高维 simplex 上覆盖更均匀，适合 4-5 元或点数有限时。
 
-### `seed` (Seed)
-- UI Label: `Seed`
-- 字段映射 (Field mapping): 序列化键 `seed` <-> 界面标签 `Seed`。
-- 控件标签 (Caption): `Seed`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[0]`
-- 含义 (Meaning): 随机种子值 (random seed value)。
-- 对输出规模/物理性的影响: 只影响随机路径，不改变物理模型本身。
-- 参数联动 / 生效条件: `seed` 只有在 `use_seed=true` 时才真正固定随机路径。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：0（随机）
-  - 平衡：1-99（可复现）
-  - 探索：100-9999（多 seed 对比）
+### `step`（step）
 
-### `max_outputs` (Max Outputs)
-- UI Label: `Max Outputs`
-- 字段映射 (Field mapping): 序列化键 `max_outputs` <-> 界面标签 `Max Outputs`。
-- 控件标签 (Caption): `Max Outputs`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[500]`
-- 含义 (Meaning): 输出上限 (maximum outputs)。
-- 对输出规模/物理性的影响: 限制样本规模，防止组合爆炸。
-- 物理直觉 / 典型值: 它主要决定每帧会扩出多少个结构，直接影响后续计算预算与重复率。
-- 推荐范围 (Recommended range):
-  - 保守：250-500
-  - 平衡：500-1000
-  - 探索：1000-2500
+浮点数，仅 Grid 模式生效。决定 simplex 网格分辨率。越小 → 点越密 → 输出越多。典型值 0.05-0.15。
 
-### `budget_mode` (Budget Mode)
-- UI Label: `Budget Mode`
-- 字段映射 (Field mapping): 序列化键 `budget_mode` <-> 界面标签 `Budget Mode`。
-- 控件标签 (Caption): `Budget Mode`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`（显示文本与序列化值可能不同）。
-- 类型/范围 (Type/Range): enum(string)
-- 默认值 (Default): `"Equal+Reflow"`
-- 含义 (Meaning): 预算分配策略 (budget mode)。
-- 对输出规模/物理性的影响: 决定不同子空间获得样本名额的比例。
-- 参数联动 / 生效条件: 当 `order` 同时包含多种元数时，它决定 `max_outputs` 如何分配到每种元数组合。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 物理直觉 / 典型值: 它决定程序走哪种离散策略；先选对模式，再去调该模式下真正起作用的数值参数。
-- 推荐范围 (Recommended range):
-  - 保守：均匀分配
-  - 平衡：轻度偏置
-  - 探索：强偏置探索
+### `n_points`（n_points）
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+整数，仅 Sobol 模式生效。目标采样点数。典型值 25-200。
+
+### `min_fraction`（min_fraction）
+
+浮点数，0-1。每个元素的最小占比下限。`0.05` = 每个组分至少 5%，会过滤掉极端稀释的端点成分。设 0 则不做下限约束。
+
+### `include_endpoints`（include_endpoints）
+
+布尔值，仅 Grid 模式。勾选后保留纯端点和边界成分点。关闭则跳过。
+
+### `max_outputs`（max_outputs）
+
+整数，输出总上限，防止组合爆炸。按 `budget_mode` 分配到各 order。典型值 250-1500。
+
+### `budget_mode`（budget_mode）
+
+- `Equal+Reflow`：各 order 均分预算，余量回流。适合大多数场景。
+- `Capacity-weighted`：按各 order 的理论容量加权分配。高元数分到更多名额。
+- `Equal (Legacy)`：旧版均分，不做余量回流。
+
+### `use_seed` / `seed`
+
+勾选 `use_seed` 后固定随机路径（Sobol 生成和组合选取），可复现。`seed` 不同取值产生不同采样分布。
+
+## 推荐预设
+
+### 快速试探（二元+三元 Grid，~100 点）
 ```json
 {
   "class": "CompositionSweepCard",
   "check_state": true,
   "elements": "Co,Cr,Ni",
-  "order": "2,3,4,5",
+  "order": "2,3",
   "method": "Grid",
-  "step": [
-    0.1
-  ],
-  "n_points": [
-    50
-  ],
-  "min_fraction": [
-    0.0
-  ],
+  "step": [0.1],
+  "n_points": [50],
+  "min_fraction": [0.0],
   "include_endpoints": true,
   "use_seed": false,
-  "seed": [
-    0
-  ],
-  "max_outputs": [
-    10
-  ],
+  "seed": [0],
+  "max_outputs": [100],
   "budget_mode": "Equal+Reflow"
 }
 ```
 
-### 平衡（Balanced）
+### 常规覆盖（全组合 Grid，~500 点）
 ```json
 {
   "class": "CompositionSweepCard",
   "check_state": true,
-  "elements": "Co,Cr,Ni",
+  "elements": "Co,Cr,Ni,Al",
   "order": "2,3,4,5",
   "method": "Grid",
-  "step": [
-    0.1
-  ],
-  "n_points": [
-    50
-  ],
-  "min_fraction": [
-    0.0
-  ],
+  "step": [0.1],
+  "n_points": [50],
+  "min_fraction": [0.0],
   "include_endpoints": true,
   "use_seed": false,
-  "seed": [
-    0
-  ],
-  "max_outputs": [
-    500
-  ],
+  "seed": [0],
+  "max_outputs": [500],
   "budget_mode": "Equal+Reflow"
 }
 ```
 
-### 激进/探索（Aggressive/Exploration）
+### 高维探索（Sobol 全组合，~1500 点）
 ```json
 {
   "class": "CompositionSweepCard",
   "check_state": true,
-  "elements": "Co,Cr,Ni",
+  "elements": "Co,Cr,Ni,Al,Fe",
   "order": "2,3,4,5",
-  "method": "Grid",
-  "step": [
-    0.1
-  ],
-  "n_points": [
-    50
-  ],
-  "min_fraction": [
-    0.0
-  ],
+  "method": "Sobol",
+  "step": [0.1],
+  "n_points": [150],
+  "min_fraction": [0.0],
   "include_endpoints": true,
   "use_seed": true,
-  "seed": [
-    0
-  ],
-  "max_outputs": [
-    1500
-  ],
+  "seed": [42],
+  "max_outputs": [1500],
   "budget_mode": "Capacity-weighted"
 }
 ```
 
 ## 推荐组合
-- Composition Sweep -> Random Occupancy: 将目标成分标签转换为显式原子占位。
-- Composition Sweep -> Random Doping: 先做成分展开，再做位点定向替位。
-- 先明确“目标配比”还是“具体落位”，再决定接 `Composition Sweep`、`Random Occupancy` 还是 `Random Doping`。
 
-## 常见问题与排查
-- 结果没有变化时，先检查目标元素、规则字符串或 `Comp tag` 来源是否真的命中了输入结构。
-- 如果输出成分偏离预期，优先检查是“目标配比定义”问题，还是“离散落位/随机替换”步骤把分布拉偏。
-- 这组卡片不会自动替你决定工作流分工；需要系统扫配比时先用 `Composition Sweep`，需要真实落位时再接 `Random Occupancy` 或 `Random Doping`。
+- `Composition Sweep` → `Random Occupancy`：先定义目标配比，再落到离散原子占位。合金 pipeline 的标准起手式。
+- `Composition Sweep` → `Random Occupancy` → `Random Doping`：配比覆盖 + 占位多样性 + 额外局部替位。
+- `Composition Sweep` → `Random Occupancy` → `Atomic Perturb`：成分 + 占位 + 坐标噪声。
 
-## 输出标签 / 元数据变更
-- 该卡片输出的 Config_type 标签模式：
-  - `Comp({...})`
+## 常见问题
 
-## 可复现性说明
-- 设置 `use_seed=true` 且固定 `seed`，可在相同输入顺序下复现实验。
-- 上游随机卡片或输入顺序变化仍会改变最终样本集合。
-- 建议把 seed 与 pipeline 配置一起版本化记录。
+**输出和输入完全一样。** `elements` 少于 2 个元素，或 `order` 不合法，或 `max_outputs` <= 0。
+
+**标签成分和原子实际组成不一致。** 正常——Composition Sweep 只打目标配比标签，不改原子种类。需要接 `Random Occupancy` 才会真正替换原子。
+
+**组合爆炸。** 5 元 + Grid + step=0.05 可产生上万个点。先用 `max_outputs` 卡住上限，小样本验证后再放量。
+
+**某些 order 没有输出。** 检查 `budget_mode` 分配和 element 数量。只有 3 个元素但 order 含 4 和 5 时，程序自动跳过不可执行的组合。
+
+## 输出标签
+
+`Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` 格式。每个输出结构通过 `Config_type` 携带目标配比。
+
+## 可复现性
+
+勾选 `use_seed` + 固定 `seed` → 相同输入顺序可复现。Grid 模式的网格点本身是确定性的，`use_seed` 主要影响组合选取顺序和 Sobol 生成。

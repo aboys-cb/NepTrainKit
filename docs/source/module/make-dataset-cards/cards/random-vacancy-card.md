@@ -2,184 +2,136 @@
 
 # 随机空位（Random Vacancy）
 
-`Group`: `Defect`  
-`Class`: `RandomVacancyCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/random_vacancy_card.py`
+`Group`: `Defect` | `Class`: `RandomVacancyCard`
 
 ## 功能说明
-根据规则删除指定元素原子（rule-based vacancy），控制空位元素类型、数量和区域。
 
-它最适合的场景是：按元素或 group 规则删除特定位点，生成可控的空位样本。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+按规则表对指定元素原子做删除操作，生成可控的空位缺陷结构。每条规则精确控制"删除什么元素、删多少个、在哪个 region 删"，支持元素过滤和 group 区域约束。
+
+**和 `Vacancy Defect Generation` 的区别：**
+- `Random Vacancy`：规则驱动，按元素+group 精确删除位点，适合定向研究某类空位缺陷
+- `Vacancy Defect Generation`：统计驱动，按整体浓度或数量随机删除，适合快速生成低/中/高缺陷强度的分布样本
 
 ## 操作示例
-### 场景：按元素或 group 规则删除特定位点，生成可控的空位样本
 
-**输入：** 一个足够大的超胞，以及明确的删位规则
+### 场景：模型对表面氧空位预测完全错误
 
-**目标：** 做带约束的删位，而不是只按整体浓度随机删原子
+你在 LiCoO2 上训练了一个 NEP 模型，体相性质预测很好，但一跑表面 slab 加氧空位的构型，能量误差是体相的 3 倍。检查发现训练集里没有缺氧的结构，模型根本不知道氧空位附近 Co 原子的局域环境长什么样。
+
+**诊断思路：** 氧空位周围，Co 原子从正常的 Co-O 八面体配位变成五配位甚至四配位，键长、电荷分布都变了。训练集里只有完美晶体结构，模型完全靠外推处理这些配位变化。需要往训练集中加入精确控制的氧空位构型，让模型见过"氧被拿走"之后的配位环境。
+
+**输入：** 一个 LiCoO2 的 slab 结构，已经用 `Group Label` 标记了表面层和体相的 group
+
+**目标：** 只删表面层的氧原子，每次删 1~3 个，每帧生成 20 个不同落点的空位版本
 
 **参数设置：**
-- `rules` 中写清元素、count 和可选 group 过滤
-- `max_atoms_condition` 控制每帧生成多少个删位版本
-- `use_seed` 在做规则对比时建议开启
+- `Rules`：`[{"element":"O","count":[1,3],"group":["surface"]}]`
+- `Max Atoms Condition`：`[20]`
+- `Use Seed`：勾选，`Seed`：`[42]`
 
-**输出：** 多份按规则删位后的结构，删除位置可追溯
+**输出：** 20 个空位结构，每帧中 1~3 个表面氧被删除，带 `Vac(n=...)` 标签
 
-**怎么验证结果合理：**
-- 检查删位元素和数量是否命中规则
-- 若结果为空或无变化，先检查规则是否写错元素名或 group
-- 缺陷过强时先降低 count
+**怎么验证训练集质量改善：**
+- 重训后用同样含氧空位的表面结构推理，能量误差应显著下降
+- 抽查删除位置最近邻 Co 原子的键长分布是否在物理合理范围
+- 如果只有表面需要空位，坚持用 group 约束；去掉 group 会生成体相空位，稀释训练数据
+- 如果需要同时覆盖体相和表面空位，加第二条规则不带 group
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 空位缺陷覆盖不足或分布不可控。
-- 目标任务 (Target objective): 精确控制空位类型与局域分布。
-- 建议添加条件 (Add-it trigger): 需要按元素和 group 定向删原子。
-- 不建议添加条件 (Avoid trigger): 仅需无规则随机空位。
-> 物理提示 (Physics caution): 重点检查缺陷附近的局部配位和是否形成孤立原子或明显断裂。
+### 什么时候加这张卡、什么时候不加
 
-## 输入前提
-- 先单规则验证，再叠加多规则。
-- 使用 group 时确认输入包含 `atoms.arrays['group']`；如果数据来自 `.xyz`，请使用 EXTXYZ 风格的 `group` 列，普通三列 XYZ 不会保留该数组。
+**加：**
+- 需要按元素和 group 精确控制空位位置，而不是按整体浓度随机删
+- 研究特定元素的空位缺陷对模型预测的影响
+- 下游磁性卡需要特定子晶格有明确的 vacancy pattern
 
-## 参数说明（完整）
-### `params` (Operation Params)
-- UI Label: `Operation Params`
-- 字段映射 (Field mapping): 序列化键 `params` <-> 核心操作参数 `RandomVacancyParams`。
-- 控件标签 (Caption): `Operation Params`。
-- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
-- 类型/范围 (Type/Range): object
-- 默认值 (Default): `{"rules": [], "max_structures": 1, "use_seed": false, "seed": 0}`
-- 含义 (Meaning): UI 解耦后的核心参数快照，用于 CLI/批处理复用。
-- 对输出规模/物理性的影响: 与展开后的 `rules/max_structures/use_seed/seed` 字段一致。
-- 配置建议 (Practical note): 新版本优先读取 `params`，旧字段仍保留用于兼容已有 workflow。
+**不加：**
+- 只需要整体浓度覆盖 → 用 `Vacancy Defect Generation`
+- 体系本身原子数很少（<10），删任何一个都会剧烈改变化学计量比
 
-### `rules` (Rules)
-- UI Label: `Rules`
-- 字段映射 (Field mapping): 序列化键 `rules` <-> 界面标签 `Rules`。
-- 控件标签 (Caption): `Rules`。
-- 控件解释 (Widget): 文本输入 `LineEdit`（或可编辑下拉）。
-- 类型/范围 (Type/Range): string (JSON list)
-- 默认值 (Default): `"[]"`
-- 含义 (Meaning): 空位规则表 (vacancy rules)，字段含 `element/count/group`。
-- 对输出规模/物理性的影响: 控制删原子元素与密度分布。
-- 怎么判断该开还是该关: 只在你明确知道该字段会命中输入结构时填写；不确定时先用最小样本验证命中情况。
-- 配置建议 (Practical note): 按规则语法填写，建议先单规则单帧验证后再扩展。
+## 参数说明
 
-### `max_atoms_condition` (Max Atoms Condition)
-- UI Label: `Max Atoms Condition`
-- 字段映射 (Field mapping): 序列化键 `max_atoms_condition` <-> 界面标签 `Max Atoms Condition`。
-- 控件标签 (Caption): `Max Atoms Condition`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[1]`
-- 含义 (Meaning): 每帧最大生成数 (max generated structures per frame)。
-- 对输出规模/物理性的影响: 主要控制数据量和运行时间。
-- 物理直觉 / 典型值: 它主要决定每帧会扩出多少个结构，直接影响后续计算预算与重复率。
-- 推荐范围 (Recommended range):
-  - 保守：10-50
-  - 平衡：50-200
-  - 探索：200+ 需 FPS
+### `Rules`（rules）
 
-### `use_seed` (Use Seed)
-- UI Label: `Use Seed`
-- 字段映射 (Field mapping): 序列化键 `use_seed` <-> 界面标签 `Use Seed`。
-- 控件标签 (Caption): `Use Seed`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 是否启用固定随机种子 (deterministic seed switch)。
-- 对输出规模/物理性的影响: 开启后可复现实验；关闭后每次采样分布会变化。
-- 怎么判断该开还是该关: 做可复现实验或要对比不同参数时开启；纯探索阶段可以先关闭以增加随机覆盖。
-- 配置建议 (Practical note):
-  - 开启：需要可复现对比时开启。
-  - 关闭：探索阶段可关闭以增加随机覆盖。
+JSON 字符串（界面中可用简化语法输入，程序自动转换）。每条 rule 包含：
 
-### `seed` (Seed)
-- UI Label: `Seed`
-- 字段映射 (Field mapping): 序列化键 `seed` <-> 界面标签 `Seed`。
-- 控件标签 (Caption): `Seed`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[0]`
-- 含义 (Meaning): 随机种子值 (random seed value)。
-- 对输出规模/物理性的影响: 只影响随机路径，不改变物理模型本身。
-- 参数联动 / 生效条件: `seed` 只有在 `use_seed=true` 时才真正固定随机路径。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：0（随机）
-  - 平衡：1-99（可复现）
-  - 探索：100-9999（多 seed 对比）
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `element` | string | 被删除的元素，如 `O` |
+| `count` | [min, max] | 删除数量区间 |
+| `group` | string / list（可选） | 限制只删除特定 group 标签内的原子。需要输入有 `atoms.arrays['group']`。界面里写成 `surface_top,surface_bottom` |
 
-### 规则输入 Schema (Rule input schema)
-`rules` 在 card JSON 中保存为 JSON 字符串，但界面里每条规则的 `group` 建议按简单字符串填写，不建议用户自己手写嵌套 JSON。
-- `element` (string): 删除目标元素。
-- `count` (list[2]): 删除数量区间。
-- `group` (string or list[string], optional): 界面里推荐写成 `surface_top,surface_bottom`；程序会拆成名称列表，并匹配 `atoms.arrays['group']`。如果输入来自 `.xyz`，请使用 EXTXYZ 风格的 `group` 列。
+规则为空时，卡片不产生任何删除，输出 = 输入。
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+多条规则按顺序执行。如果两条规则操作同一个元素，第二条会在第一条的结果上继续删除。注意不要设计互相冲突的规则。
+
+### `Max Atoms Condition`（max_atoms_condition）
+
+每输入帧生成多少个空位版本。
+
+- 10~30：轻量定向验证
+- 30~50：常规覆盖
+- 50~100：建议后接 `FPS Filter`
+
+### `Use Seed` / `Seed`（use_seed / seed）
+
+勾选 `use_seed` + 固定 `seed` 可复现。PM 随机性受 seed + 输入顺序联合控制。
+
+## 推荐预设
+
+### 单元素单空位（2 个输出，验证规则命中用）
 ```json
 {
   "class": "RandomVacancyCard",
   "check_state": true,
   "rules": "[{\"element\":\"O\",\"count\":[1,1]}]",
-  "max_atoms_condition": [
-    20
-  ],
+  "max_atoms_condition": [2],
   "use_seed": true,
-  "seed": [
-    101
-  ]
+  "seed": [42]
 }
 ```
 
-### 平衡（Balanced）
+### 单元素低浓度空位（20 个输出，常规覆盖）
 ```json
 {
   "class": "RandomVacancyCard",
   "check_state": true,
   "rules": "[{\"element\":\"O\",\"count\":[1,3]}]",
-  "max_atoms_condition": [
-    20
-  ],
+  "max_atoms_condition": [20],
   "use_seed": true,
-  "seed": [
-    101
-  ]
+  "seed": [42]
 }
 ```
 
-### 激进/探索（Aggressive/Exploration）
+### 多元素带 group 约束（20 个输出，表面定向空位）
 ```json
 {
   "class": "RandomVacancyCard",
   "check_state": true,
-  "rules": "[{\"element\":\"O\",\"count\":[2,6]},{\"element\":\"Li\",\"count\":[1,3],\"group\":[\"surface_top\"]}]",
-  "max_atoms_condition": [
-    20
-  ],
+  "rules": "[{\"element\":\"O\",\"count\":[1,3],\"group\":[\"surface\"]},{\"element\":\"Li\",\"count\":[1,1],\"group\":[\"surface\"]}]",
+  "max_atoms_condition": [20],
   "use_seed": true,
-  "seed": [
-    101
-  ]
+  "seed": [42]
 }
 ```
 
 ## 推荐组合
-- Random Slab -> Random Vacancy: 在显式元素/group 控制下构建表面空位数据集。
-- 缺陷强度上升前，通常先用 `Super Cell` 扩大母胞，避免小胞里缺陷相互作用过强。
-- 缺陷生成后建议抽查最短键长、局部配位和是否出现明显断裂。
 
-## 常见问题与排查
-- 输出为空或结构数明显偏少时，先检查规则是否命中、浓度/数量是否过严，或输入超胞是否太小。
-- 若输出结构不合理，优先检查最短键长、局部配位和是否出现整块骨架塌缩，再降低缺陷强度。
-- 参数越界时通常受 UI 范围限制；但“过激而仍在范围内”的配置不会被自动裁剪，程序会继续按当前设置生成结果。
+- `Group Label` → `Random Vacancy`：先标记 surface/bulk group，再定向删位
+- `Super Cell` → `Random Vacancy`：先扩胞到足够大，避免小胞里缺陷相互作用过强
+- `Random Vacancy` → `FPS Filter`：大批量生成后做代表性筛选
 
-## 输出标签 / 元数据变更
-- 该卡片输出的 Config_type 标签模式：
-  - `Vac(n={...})`
+## 常见问题
 
-## 可复现性说明
-- 设置 `use_seed=true` 且固定 `seed`，可在相同输入顺序下复现实验。
-- 上游随机卡片或输入顺序变化仍会改变最终样本集合。
-- 建议把 seed 与 pipeline 配置一起版本化记录。
+**输出和输入一样，没有删除。** 检查 rules 是否为空、element 是否真的存在于输入结构中、group 过滤是否把候选位点全滤掉了。
+
+**删完骨架塌缩。** 检查 count 上限是否太长。在 20 原子小胞里删 10 个必然崩。先扩胞再删。
+
+**多条规则交互异常。** 规则顺序执行。如果一条规则删了大量原子，下一条规则的候选池可能已经变了。
+
+## 输出标签
+
+`Vac(n={删除原子数})`
+
+## 可复现性
+
+勾选 `use_seed` + 固定 `seed` → 相同输入可复现。输入结构顺序变化也会影响结果，建议把 seed 与 pipeline 配置一起版本化。

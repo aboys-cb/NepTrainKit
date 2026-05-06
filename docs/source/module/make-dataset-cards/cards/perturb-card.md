@@ -2,258 +2,141 @@
 
 # 原子扰动（Atomic Perturb）
 
-`Group`: `Perturbation`  
-`Class`: `PerturbCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/perturb_card.py`
+`Group`: `Perturbation` | `Class`: `PerturbCard`
 
 ## 功能说明
-对原子坐标施加随机扰动（atomic perturbation），补充近平衡态局部位移样本。
 
-它最适合的场景是：为 Si 或金属小胞补充室温附近的轻微原子热扰动样本。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+对原子坐标施加随机位移扰动，补充近平衡势能面的局部位移样本。每个原子在 `[-max_distance, max_distance]` 范围内独立随机偏移，晶格保持不变。
 
-### 关键公式 (Core equations)
 $$\Delta\mathbf{r}_i=\boldsymbol\xi_i\odot d_i,\quad \boldsymbol\xi_i\in[-1,1]^3,\quad \mathbf{r}_i'=\mathbf{r}_i+\Delta\mathbf{r}_i$$
-$$\text{organic cluster 模式: }\forall j\in\mathcal{C},\ \mathbf{r}_j'=\mathbf{r}_j+\Delta\mathbf{r}_{\text{anchor}(\mathcal{C})}$$
+
+开启 `identify_organic` 后有机分子团簇做刚性整体移动，避免分子内键被拉伸。
 
 ## 操作示例
-### 场景：为 Si 或金属小胞补充室温附近的轻微原子热扰动样本
 
-**输入：** 一个已弛豫的体相或分子晶体结构
+### 场景：静力学测试集上力 MAE 只有 50 meV/A，但 MD 轨迹上跳到 200 meV/A
 
-**目标：** 围绕平衡位置生成多份局部位移样本，补近平衡势能面覆盖
+你在 Si 上训练了一个 NEP 模型，用 DFT 静态计算的数据做验证，力的 MAE 只有 50 meV/A。但用这个模型跑 300K NVT MD 时，力的误差跳到了 200 meV/A——因为训练集里所有原子都在平衡位置，模型没见过原子偏离平衡态的构型。
+
+**诊断思路：** 静态弛豫结构代表势能面极小点。MD 轨迹在极小点周围的势能面上采样，模型需要对平衡位置附近的位移方向有力学响应。如果训练集全是极小点，模型对偏离平衡的力梯度完全是外推的。解决方法是对每个结构的原子做随机小位移，让模型学习近平衡势能面的曲率。
+
+**输入：** 一个弛豫好的 Si 超胞（64 原子）
+
+**目标：** 生成 50 个扰动版本，每个原子的位移幅度 ≤ 0.15A（约室温 Si 振动幅度的 2~3 倍）
 
 **参数设置：**
-- `scaling_condition=[0.03]-[0.08] Å` 常作为第一轮试跑区间
-- `num_condition` 先从 20-50 起步
-- `organic=true` 只在输入确实包含有机团簇时开启
+- `max_distance` = `0.15` （单位 A）
+- `max_num` = `50`
+- `engine_type` = `0` （Sobol，少量样本覆盖更均匀）
 
-**输出：** 每个输入结构扩出多份坐标略有差异的扰动构型，主晶格不变
+**输出：** 50 个结构，每个原子的坐标在原始位置附近随机偏移 0~0.15A
 
-**怎么验证结果合理：**
-- 抽查最短键长变化不要明显超出目标体系容忍区间
-- 若重复度高，可换 `engine_type` 或增大样本数
-- 若出现断键，优先回调 `scaling_condition`
+**怎么验证训练集质量改善：**
+- 重训后用一段 MD 轨迹做推理，力的 MAE 应该显著下降，接近静力学测试集水平
+- 抽查最短键长：0.15A 位移下 Si-Si 键长变化应在 ±0.3A 以内（两个相邻原子可能向不同方向偏移）。如果出现 < 1.8A 的短键，降低 `max_distance`
+- 如果改善不够，增大 `max_num` 到 100、也增大 `max_distance` 到 0.25A
+- 如果体系含多种元素且质量差异大（如含 H + 重元素），考虑开启 `use_element_scaling` 给轻元素更大位移
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 力预测在小位移区间不稳定。
-- 目标任务 (Target objective): 覆盖局域势能面邻域。
-- 建议添加条件 (Add-it trigger): 缺少热噪声近似样本。
-- 不建议添加条件 (Avoid trigger): 已有大量高质量 MD 热扰动数据。
-> 物理提示 (Physics caution): 重点检查位移后最短键长和局部角度；幅度先小后大，比一次性追求大覆盖更稳妥。
+### 什么时候加这张卡、什么时候不加
 
-## 输入前提
-- 结构应先弛豫到合理状态。
-- 按元素扰动前确认 `element_scalings` 完整。
+**加：**
+- 训练集主要由静态弛豫结构组成，缺少力方向信息
+- 模型在 MD 模拟或非平衡构型上力预测偏差大
+- 需要补近平衡势能面的曲率（力常数）信息
 
-## 参数说明（完整）
-### `params` (Operation Params)
-- UI Label: `Operation Params`
-- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
-- 控件标签 (Caption): `Operation Params`
-- 控件解释 (Widget): 由随机引擎、最大位移、输出数量、有机识别、元素覆盖距离和 seed 控件组合生成的内部参数字典。
-- 类型/范围 (Type/Range): dict
-- 默认值 (Default): `{"engine_type": 1, "max_distance": 0.3, "max_num": 50, "identify_organic": false, "use_element_scaling": false, "element_scalings": {}, "use_seed": false, "seed": 0}`
-- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
-- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组原子扰动参数。
-- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+**不加：**
+- 训练集已有大量 MD 轨迹数据——MD 本身已覆盖热振动位移，再加随机扰动是冗余的
+- 输入结构未弛豫——扰动一个本身就不在极小点的结构没有意义，先弛豫再扰动
+- 位移幅度设置的过大（> 0.5A），产生大量非物理构型——这种大位移应该用 MD 而不是随机扰动
 
-### `engine_type` (Engine Type)
-- UI Label: `Engine Type`
-- 字段映射 (Field mapping): 序列化键 `engine_type` <-> 界面标签 `Engine Type`。
-- 控件标签 (Caption): `Engine Type`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`（显示文本与序列化值可能不同）。
-- 类型/范围 (Type/Range): enum(int): `0=Sobol`, `1=Uniform`
-- 默认值 (Default): `1`
-- 含义 (Meaning): 随机引擎类型 (random engine type)，`0=Sobol`，`1=Uniform`。
-- 对输出规模/物理性的影响: Uniform 更快，适合高吞吐批量扰动；Sobol 在少量样本时能更均匀覆盖位移方向。样本数量增大后，两者差距通常减小。
-- 物理直觉 / 典型值: 它决定程序走哪种离散策略；先选对模式，再去调该模式下真正起作用的数值参数。
-- 推荐范围 (Recommended range):
-  - 保守：少量样本与基线验证用 Sobol
-  - 平衡：中等规模用 Uniform 预跑并抽查 Sobol
-  - 探索：大规模以吞吐优先，可固定一种引擎保持一致性
+## 参数说明
 
-### `organic` (Organic)
-- UI Label: `Organic`
-- 字段映射 (Field mapping): 序列化键 `organic` <-> 界面标签 `Organic`。
-- 控件标签 (Caption): `Organic`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 有机团簇识别与刚性移动开关 (organic cluster rigid mode)。
-- 对输出规模/物理性的影响: 开启后先识别有机团簇，扰动时对有机分子做刚性整体移动，减少分子内键长/拓扑被破坏；输入含有机分子时应开启。
-- 怎么判断该开还是该关: 只有当你明确知道这个开关会改变当前工作流目标时才开启；不确定时先保持默认并用小样本验证。
-- 配置建议 (Practical note):
-  - 开启：输入包含有机分子时必须开启；会先识别团簇并按分子刚性整体移动。
-  - 关闭：仅在确认为纯无机体系时关闭。
+**`engine_type`**（int，默认 1）：随机引擎。`0` = Sobol，少量样本时位移方向覆盖更均匀；`1` = Uniform，更快。样本数 ≥ 100 后差异缩小。
 
-### `scaling_condition` (Scaling Condition)
-- UI Label: `Scaling Condition`
-- 字段映射 (Field mapping): 序列化键 `scaling_condition` <-> 界面标签 `Scaling Condition`。
-- 控件标签 (Caption): `Scaling Condition`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): float（单值输入）
-- 默认值 (Default): `[0.3]`
-- 含义 (Meaning): 最大位移距离 (max displacement distance)，单位 `Å`。
-- 对输出规模/物理性的影响: 这是绝对长度而非百分比；每个原子的位移向量按 `[-1,1]` 随机方向乘以该距离上限（或元素专属上限）。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：0.05-0.15 Å
-  - 平衡：0.15-0.30 Å
-  - 探索：0.30-0.50 Å（建议配后筛）
+**`max_distance`**（float，默认 0.3 A）：每个原子的最大位移距离。这是绝对长度（单位 A），不是百分比。室温下典型固体原子振动幅度约 0.05~0.1A，设 0.15~0.3A 通常合适。含 H 等轻元素时考虑开启 `use_element_scaling` 单独调大 H 的幅度。0.01~0.05A 适合微扰验证，0.3~0.5A 需要后筛检查非物理键长。
 
-### `num_condition` (Num Condition)
-- UI Label: `Num Condition`
-- 字段映射 (Field mapping): 序列化键 `num_condition` <-> 界面标签 `Num Condition`。
-- 控件标签 (Caption): `Num Condition`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[50]`
-- 含义 (Meaning): 采样数量控制 (sample count control)。
-- 对输出规模/物理性的影响: 主要影响输出规模与耗时，不是幅度主控参数。
-- 物理直觉 / 典型值: 它主要决定每帧会扩出多少个结构，直接影响后续计算预算与重复率。
-- 推荐范围 (Recommended range):
-  - 保守：25-50
-  - 平衡：50-100
-  - 探索：100-250
+**`max_num`**（int，默认 50）：每输入帧生成的扰动样本数。20~50 适合轻量补样；50~100 适合常规覆盖；100+ 建议后接 `FPS Filter` 去重。
 
-### `use_element_scaling` (Use Element Scaling)
-- UI Label: `Use Element Scaling`
-- 字段映射 (Field mapping): 序列化键 `use_element_scaling` <-> 界面标签 `Use Element Scaling`。
-- 控件标签 (Caption): `Use Element Scaling`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 按元素扰动缩放 (use element scaling)。
-- 对输出规模/物理性的影响: 允许不同元素使用不同扰动幅度。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note):
-  - 开启：需要启用 `Use Element Scaling` 对应行为时开启。
-  - 关闭：希望保持默认/更保守行为时关闭。
+**`identify_organic`**（bool，默认 false）：有机团簇识别。分子晶体必须开启，纯无机关闭。
 
-### `element_scalings` (Element Scalings)
-- UI Label: `Element Scalings`
-- 字段映射 (Field mapping): 序列化键 `element_scalings` <-> 界面标签 `Element Scalings`。
-- 控件标签 (Caption): `Element Scalings`。
-- 控件解释 (Widget): 按字段类型解析。
-- 类型/范围 (Type/Range): dict
-- 默认值 (Default): `{}`
-- 含义 (Meaning): 元素缩放字典 (element scaling dict)。
-- 对输出规模/物理性的影响: 定义元素到扰动系数映射。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note): 建议围绕任务目标小步调整，并先做单帧验证。
+**`use_element_scaling`**（bool，默认 false）：按元素设置不同扰动幅度。开启后 `max_distance` 被 `element_scalings` 中对应元素的系数覆盖。多元素体系（如含 H+重元素）建议开启。
 
-### `use_seed` (Use Seed)
-- UI Label: `Use Seed`
-- 字段映射 (Field mapping): 序列化键 `use_seed` <-> 界面标签 `Use Seed`。
-- 控件标签 (Caption): `Use Seed`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 是否启用固定随机种子 (deterministic seed switch)。
-- 对输出规模/物理性的影响: 开启后可复现实验；关闭后每次采样分布会变化。
-- 怎么判断该开还是该关: 做可复现实验或要对比不同参数时开启；纯探索阶段可以先关闭以增加随机覆盖。
-- 配置建议 (Practical note):
-  - 开启：需要可复现对比时开启。
-  - 关闭：探索阶段可关闭以增加随机覆盖。
+**`element_scalings`**（dict，默认 {}）：元素 → 最大位移的映射，如 `{"H":0.5,"O":0.15,"Si":0.1}`。仅 `use_element_scaling=true` 时生效。未列出的元素使用 `max_distance`。
 
-### `seed` (Seed)
-- UI Label: `Seed`
-- 字段映射 (Field mapping): 序列化键 `seed` <-> 界面标签 `Seed`。
-- 控件标签 (Caption): `Seed`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[0]`
-- 含义 (Meaning): 随机种子值 (random seed value)。
-- 对输出规模/物理性的影响: 只影响随机路径，不改变物理模型本身。
-- 参数联动 / 生效条件: `seed` 只有在 `use_seed=true` 时才真正固定随机路径。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：0（随机）
-  - 平衡：1-99（可复现）
-  - 探索：100-9999（多 seed 对比）
+**`use_seed`**（bool，默认 false）：固定随机种子。
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+**`seed`**（int，默认 0）：随机种子值。仅 `use_seed=true` 时生效。
+
+## 推荐预设
+
+### 室温微扰（0.1A，Sobol，30 样本）
 ```json
 {
   "class": "PerturbCard",
   "check_state": true,
   "engine_type": 0,
-  "organic": false,
-  "scaling_condition": [
-    0.01
-  ],
-  "num_condition": [
-    20
-  ],
+  "max_distance": 0.1,
+  "max_num": 30,
+  "identify_organic": false,
   "use_element_scaling": false,
-  "element_scalings": {},
-  "use_seed": false,
-  "seed": [
-    0
-  ]
-}
-```
-
-### 平衡（Balanced）
-```json
-{
-  "class": "PerturbCard",
-  "check_state": true,
-  "engine_type": 0,
-  "organic": false,
-  "scaling_condition": [
-    0.03
-  ],
-  "num_condition": [
-    20
-  ],
-  "use_element_scaling": false,
-  "element_scalings": {},
-  "use_seed": false,
-  "seed": [
-    0
-  ]
-}
-```
-
-### 激进/探索（Aggressive/Exploration）
-```json
-{
-  "class": "PerturbCard",
-  "check_state": true,
-  "engine_type": 0,
-  "organic": false,
-  "scaling_condition": [
-    0.08
-  ],
-  "num_condition": [
-    20
-  ],
-  "use_element_scaling": true,
   "element_scalings": {},
   "use_seed": true,
-  "seed": [
-    0
-  ]
+  "seed": 42
+}
+```
+
+### 常规补力场（0.2A，Uniform，50 样本）
+```json
+{
+  "class": "PerturbCard",
+  "check_state": true,
+  "engine_type": 1,
+  "max_distance": 0.2,
+  "max_num": 50,
+  "identify_organic": false,
+  "use_element_scaling": false,
+  "element_scalings": {},
+  "use_seed": true,
+  "seed": 42
+}
+```
+
+### 多元素差异化扰动（H 0.5A / 重元素 0.15A，100 样本）
+```json
+{
+  "class": "PerturbCard",
+  "check_state": true,
+  "engine_type": 0,
+  "max_distance": 0.15,
+  "max_num": 100,
+  "identify_organic": false,
+  "use_element_scaling": true,
+  "element_scalings": {"H": 0.5, "C": 0.2, "O": 0.15},
+  "use_seed": true,
+  "seed": 42
 }
 ```
 
 ## 推荐组合
-- Lattice Strain -> Atomic Perturb: 结合全局形变与局部位移噪声。
-- 与晶格类卡片串联时，先做晶格变化，再补局部位移噪声。
-- 大批量生成后可在流程末端接 `FPS Filter` 去掉重复样本。
 
-## 常见问题与排查
-- 输出为空时，优先检查输入是否满足这张卡的前提，例如是否已有振动模态、是否启用了正确的模式。
-- 如果出现短键、断键或明显高能构型，先降低主控位移幅度，再缩小每帧样本数做抽样检查。
-- 随机种子只控制采样路径，不会自动修正非物理参数；参数过激时程序仍会按当前配置生成结果。
+- `Lattice Strain` -> `Atomic Perturb`：先做全局形变，再补局部位移
+- `Shear Matrix Strain` -> `Atomic Perturb`：剪切变形后加坐标噪声
+- `Atomic Perturb` -> `FPS Filter`：大批量扰动后去重
 
-## 输出标签 / 元数据变更
-- 该卡片输出的 Config_type 标签模式：
-  - `Pert(d={...},{...})`
+## 常见问题
 
-## 可复现性说明
-- 设置 `use_seed=true` 且固定 `seed`，可在相同输入顺序下复现实验。
-- 上游随机卡片或输入顺序变化仍会改变最终样本集合。
-- 建议把 seed 与 pipeline 配置一起版本化记录。
+**扰动后出现异常短键（< 1.0A）。** 两个相邻原子随机位移方向恰好相反，距离骤减。降低 `max_distance` 或增大 `max_num` 后通过 `FPS Filter` 筛掉短键结构。这是随机扰动的固有局限——它不做碰撞检测。
+
+**分子晶体中分子碎掉了。** `identify_organic` 没开。开启后整个分子团簇做刚性平移，分子内键长完全保留。
+
+**扰动后力 MAE 没改善。** 可能 `max_distance` 太小，位移落在模型已经学好的线性区内。增大到 0.3~0.5A 试试。也可能体系本身的势能面非谐性很强，随机扰动方向不一定是最需要的——此时用 `Vib Mode Perturb` 替代，沿真实振动模方向做位移。
+
+**Sobol 引擎 output 和预期不一致。** Sobol 序列的 scramble 受 seed 控制。如果 `use_seed=false`，不同运行的 Sobol 序列也不同。需要可复现时必须 `use_seed=true`。
+
+## 输出标签
+
+`Pert(d={max_distance},{U|S})` —— `U` 表示 Uniform，`S` 表示 Sobol。
+
+## 可复现性
+
+勾选 `use_seed` + 固定 `seed` → 相同输入可复现。

@@ -16,8 +16,8 @@ Use this map to edit only what is needed.
 ## Docs paths
 
 - `docs/source/module/make-dataset-cards/cards/*.md`: per-card docs.
-- `docs/source/module/make-dataset-cards/writing-guide.md`: doc structure requirements.
-- `tools/docs/audit_card_docs.py`: audit rules enforced in CI.
+- `docs/source/module/make-dataset-cards/writing-guide.md`: **authoritative doc style reference.** Read before writing any card doc.
+- `tools/docs/audit_card_docs.py`: minimal integrity check (key consistency, code-doc defaults match). Does NOT enforce style — style is enforced by the writing guide.
 - `skills/make-dataset-card-dev/references/requirements-to-card-spec-template.md`: pre-coding card spec template.
 
 ## Tests to touch first

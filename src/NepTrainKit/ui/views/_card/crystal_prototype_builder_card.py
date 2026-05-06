@@ -125,9 +125,6 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
         self.rep_frame.set_input_value([int(value) for value in params.rep])
         self.max_output_frame.set_input_value([int(params.max_outputs)])
 
-    def process_structure(self, structure):  # noqa: ARG002
-        return self.create_operation().generate(self.get_params())
-
     def to_dict(self):
         data = super().to_dict()
         params = self.get_params()

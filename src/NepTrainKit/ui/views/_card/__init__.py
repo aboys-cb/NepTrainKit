@@ -27,7 +27,8 @@ from .organic_mol_config_pbc_card import OrganicMolConfigPBCCard
 from .layer_copy_card import LayerCopyCard
 from .interstitial_adsorbate_card import InsertDefectCard
 
-from .fps_filter_card import FPSFilterDataCard, FilterDataCard
+from .fps_filter_card import FPSFilterDataCard
+from NepTrainKit.ui.widgets.card_widget import FilterDataCard
 from .card_group import CardGroup
 
 __all__ = [

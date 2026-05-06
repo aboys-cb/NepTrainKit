@@ -11,6 +11,7 @@ SRC_PATH = PROJECT_ROOT / "src"
 if str(SRC_PATH) not in sys.path:
     sys.path.insert(0, str(SRC_PATH))
 
+from PySide6.QtCore import QEventLoop, QTimer
 from PySide6.QtWidgets import QApplication
 
 from NepTrainKit.ui.pages.makedata import MakeDataWidget
@@ -32,8 +33,12 @@ class TestMakeDataSourceCard(unittest.TestCase):
         widget.add_card("CrystalPrototypeBuilderCard")
         self.assertEqual(len(widget.workspace_card_widget.cards), 1)
 
-        widget.run_card()
-
         card = widget.workspace_card_widget.cards[0]
-        self.assertGreater(len(card.result_dataset), 0)
+        loop = QEventLoop()
+        card.runFinishedSignal.connect(loop.quit)
+        QTimer.singleShot(5000, loop.quit)
 
+        widget.run_card()
+        loop.exec()
+
+        self.assertGreater(len(card.result_dataset), 0)

@@ -578,7 +578,7 @@ class TestCard(unittest.TestCase):
         card.max_atoms_frame.set_input_value([64])
         card.max_output_frame.set_input_value([10])
 
-        results = card.process_structure(self.structure.copy())
+        results = card.create_operation().generate(card.get_params())
         self.assertGreaterEqual(len(results), 1)
         self.assertTrue(all(atoms.pbc.all() for atoms in results))
         self.assertTrue(all(len(atoms) <= 64 for atoms in results))
@@ -721,7 +721,7 @@ class TestCard(unittest.TestCase):
         proto.auto_supercell_button.setChecked(False)
         proto.rep_frame.set_input_value([2, 2, 2])
         proto.max_output_frame.set_input_value([1])
-        base = proto.process_structure(self.structure.copy())[0]
+        base = proto.create_operation().generate(proto.get_params())[0]
 
         card = MagneticOrderCard()
         card.map_edit.setText("Fe:2.2")
@@ -816,7 +816,7 @@ class TestCard(unittest.TestCase):
         proto.auto_supercell_button.setChecked(False)
         proto.rep_frame.set_input_value([2, 2, 2])
         proto.max_output_frame.set_input_value([1])
-        base = proto.process_structure(self.structure.copy())[0]
+        base = proto.create_operation().generate(proto.get_params())[0]
 
         gl = GroupLabelCard()
         gl.mode_combo.setCurrentText("k-vector layers (recommended)")
@@ -891,7 +891,7 @@ class TestCard(unittest.TestCase):
         proto.auto_supercell_button.setChecked(False)
         proto.rep_frame.set_input_value([2, 2, 2])
         proto.max_output_frame.set_input_value([1])
-        base = proto.process_structure(self.structure.copy())[0]
+        base = proto.create_operation().generate(proto.get_params())[0]
 
         card = MagneticOrderCard()
         card.format_combo.setCurrentText("Non-collinear (vector)")
@@ -1478,7 +1478,7 @@ class TestCard(unittest.TestCase):
         proto.auto_supercell_button.setChecked(False)
         proto.rep_frame.set_input_value([2, 2, 2])
         proto.max_output_frame.set_input_value([1])
-        base = proto.process_structure(self.structure.copy())[0]
+        base = proto.create_operation().generate(proto.get_params())[0]
 
         order = MagneticOrderCard()
         order.format_combo.setCurrentText("Collinear (scalar)")

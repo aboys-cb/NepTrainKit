@@ -101,11 +101,6 @@ class FPSFilterDataCard(FilterDataCard):
         self.num_condition_frame.set_input_value([int(params.n_samples)])
         self.min_distance_condition_frame.set_input_value([float(params.min_distance)])
 
-    def process_structure(self, *args, **kwargs):
-        """Run dataset-level FPS filtering for legacy direct callers."""
-        self.result_dataset = self.create_operation().run_dataset(self.dataset, self.get_params())
-        return self.result_dataset
-
     def stop(self):
         """Stop background processing and release any worker threads.
         """

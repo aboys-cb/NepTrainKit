@@ -23,7 +23,7 @@ from qfluentwidgets import (
 from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleCardWidget
 
 from NepTrainKit.core import CardManager, MessageManager
-from NepTrainKit.core.cards.operation import DatasetOperation, StructureOperation
+from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
 from NepTrainKit.core.card_manager import build_card_metadata
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import DataProcessingThread, FilterProcessingThread, LoadingThread
@@ -479,6 +479,12 @@ class MakeDataCard(MakeDataCardWidget):
             elif isinstance(operation, DatasetOperation):
                 self.worker_thread = FilterProcessingThread(
                     dataset=self.dataset,
+                    operation=operation,
+                    params=params,
+                )
+            elif isinstance(operation, GeneratorOperation):
+                self.worker_thread = FilterProcessingThread(
+                    dataset=self.dataset or [],
                     operation=operation,
                     params=params,
                 )

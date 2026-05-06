@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Crystal Prototype Builder", "source_file": "src/NepTrainKit/ui/views/_card/crystal_prototype_builder_card.py", "serialized_keys": ["lattice", "element", "a_range", "covera", "auto_supercell", "max_atoms", "rep", "max_outputs"]} -->
+<!-- card-schema: {"card_name": "Crystal Prototype Builder", "source_file": "src/NepTrainKit/ui/views/_card/crystal_prototype_builder_card.py", "serialized_keys": ["params", "lattice", "element", "a_range", "covera", "auto_supercell", "max_atoms", "rep", "max_outputs"]} -->
 
 # 晶体原型构建（Crystal Prototype Builder）
 
@@ -42,6 +42,17 @@
 - 设好 `max_outputs` 避免网格过密。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> 核心操作参数 `CrystalPrototypeBuilderParams`。
+- 控件标签 (Caption): `Operation Params`。
+- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
+- 类型/范围 (Type/Range): object
+- 默认值 (Default): `{"lattice": "fcc", "element": "Cu", "a_range": [3.6, 3.6, 0.1], "covera": 1.633, "auto_supercell": true, "max_atoms": 512, "rep": [4, 4, 4], "max_outputs": 200}`
+- 含义 (Meaning): UI 解耦后的核心参数快照，用于 CLI/批处理复用。
+- 对输出规模/物理性的影响: 与展开后的晶格类型、元素、晶格常数、扩胞和最大输出字段一致。
+- 配置建议 (Practical note): 新版本优先读取 `params`，旧字段仍保留用于兼容已有 workflow。
+
 ### `lattice` (Lattice)
 - UI Label: `Lattice`
 - 字段映射 (Field mapping): 序列化键 `lattice` <-> 界面标签 `Lattice`。

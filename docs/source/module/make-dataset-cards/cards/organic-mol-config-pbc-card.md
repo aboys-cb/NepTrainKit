@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Organic Mol Config", "source_file": "src/NepTrainKit/ui/views/_card/organic_mol_config_pbc_card.py", "serialized_keys": ["perturb_per_frame", "torsion_range_deg", "max_torsions_per_conf", "gaussian_sigma", "pbc_mode", "local_cutoff", "local_subtree", "bond_detect_factor", "bond_keep_min_factor", "bond_keep_max_factor", "bond_keep_max_enable", "nonbond_min_factor", "max_retries", "mult_bond_factor", "nonpbc_box_size", "bo_c_const", "bo_threshold", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Organic Mol Config", "source_file": "src/NepTrainKit/ui/views/_card/organic_mol_config_pbc_card.py", "serialized_keys": ["params", "perturb_per_frame", "torsion_range_deg", "max_torsions_per_conf", "gaussian_sigma", "pbc_mode", "local_cutoff", "local_subtree", "bond_detect_factor", "bond_keep_min_factor", "bond_keep_max_factor", "bond_keep_max_enable", "nonbond_min_factor", "max_retries", "mult_bond_factor", "nonpbc_box_size", "bo_c_const", "bo_threshold", "use_seed", "seed"]} -->
 
 # 有机构象采样（Organic Mol Config）
 
@@ -42,6 +42,17 @@
 - 先小批量验证有效构象率。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> 核心操作参数 `OrganicMolConfigPBCParams`。
+- 控件标签 (Caption): `Operation Params`。
+- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
+- 类型/范围 (Type/Range): object
+- 默认值 (Default): `{"perturb_per_frame": 100, "torsion_range_deg": [-180.0, 180.0], "max_torsions_per_conf": 50, "gaussian_sigma": 0.03, "pbc_mode": "auto", "local_cutoff": 200, "local_subtree": 100, "bond_detect_factor": 1.15, "bond_keep_min_factor": 0.6, "bond_keep_max_factor": 1.15, "bond_keep_max_enable": false, "nonbond_min_factor": 0.8, "max_retries": 12, "mult_bond_factor": 0.87, "nonpbc_box_size": 100.0, "bo_c_const": 0.3, "bo_threshold": 0.2, "use_seed": false, "seed": 0}`
+- 含义 (Meaning): UI 解耦后的核心参数快照，用于 CLI/批处理复用。
+- 对输出规模/物理性的影响: 与展开后的扭转采样、PBC、键长守卫、重试和随机种子字段一致。
+- 配置建议 (Practical note): 新版本优先读取 `params`，旧字段仍保留用于兼容已有 workflow。
+
 ### `perturb_per_frame` (Perturb Per Frame)
 - UI Label: `Perturb Per Frame`
 - 字段映射 (Field mapping): 序列化键 `perturb_per_frame` <-> 界面标签 `Perturb Per Frame`。

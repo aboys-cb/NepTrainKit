@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import numpy as np
 from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
 
-from NepTrainKit.core import CardManager, MessageManager
-from NepTrainKit.core.config_type import append_config_tag
+from NepTrainKit.core import CardManager
+from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.core.cards.structure import GroupLabelOperation, GroupLabelParams
 from NepTrainKit.ui.widgets import MakeDataCard
 
 
@@ -69,68 +69,50 @@ class GroupLabelCard(MakeDataCard):
         self.settingLayout.addWidget(self.group_b_edit, 3, 1, 1, 2)
         self.settingLayout.addWidget(self.overwrite_checkbox, 4, 0, 1, 2)
 
-    @staticmethod
-    def _parse_kvec(text: str) -> np.ndarray:
-        text = (text or "").strip()
-        if text in {"100", "010", "001", "110", "111"}:
-            return np.array([int(c) for c in text], dtype=float)
-        return np.array([1.0, 1.0, 1.0], dtype=float)
+    def create_operation(self):
+        return GroupLabelOperation()
 
-    def _label_by_kvec(self, atoms) -> np.ndarray:
-        k = self._parse_kvec(self.kvec_combo.currentText())
-        scaled = atoms.get_scaled_positions(wrap=True)
-        phase = np.floor(2.0 * (scaled @ k)).astype(int)
-        return (phase % 2).astype(int)
+    def get_params(self) -> GroupLabelParams:
+        return GroupLabelParams(
+            mode=self.mode_combo.currentText(),
+            kvec=self.kvec_combo.currentText(),
+            group_a=self.group_a_edit.text(),
+            group_b=self.group_b_edit.text(),
+            overwrite=self.overwrite_checkbox.isChecked(),
+        )
 
-    @staticmethod
-    def _label_by_parity(atoms) -> np.ndarray:
-        scaled = atoms.get_scaled_positions(wrap=True)
-        ints = np.rint(2.0 * scaled).astype(int)
-        parity = (ints.sum(axis=1) % 2).astype(int)
-        return parity
+    def set_params(self, params: GroupLabelParams) -> None:
+        self.mode_combo.setCurrentText(params.mode)
+        self.kvec_combo.setCurrentText(params.kvec)
+        self.group_a_edit.setText(params.group_a)
+        self.group_b_edit.setText(params.group_b)
+        self.overwrite_checkbox.setChecked(bool(params.overwrite))
 
     def process_structure(self, structure):
-        if (not self.overwrite_checkbox.isChecked()) and "group" in structure.arrays:
-            return [structure]
-
-        if structure.cell is None or np.linalg.det(structure.cell.array) == 0:  # pyright:ignore
-            MessageManager.send_warning_message("GroupLabel: structure has no valid cell.")
-            return [structure]
-
-        mode = self.mode_combo.currentText()
-        a_label = (self.group_a_edit.text() or "A").strip()
-        b_label = (self.group_b_edit.text() or "B").strip()
-        if not a_label:
-            a_label = "A"
-        if not b_label:
-            b_label = "B"
-
-        atoms = structure.copy()
-        if mode.startswith("fractional parity"):
-            flags = self._label_by_parity(atoms)
-            tag = "par"
-        else:
-            flags = self._label_by_kvec(atoms)
-            tag = f"k{self.kvec_combo.currentText()}"
-
-        groups = np.where(flags == 0, a_label, b_label).astype(object)
-        atoms.arrays["group"] = groups
-        append_config_tag(atoms, f"Grp({tag},{a_label}/{b_label})")
-        return [atoms]
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
         data = super().to_dict()
-        data["mode"] = self.mode_combo.currentText()
-        data["kvec"] = self.kvec_combo.currentText()
-        data["group_a"] = self.group_a_edit.text()
-        data["group_b"] = self.group_b_edit.text()
-        data["overwrite"] = self.overwrite_checkbox.isChecked()
+        params = self.get_params()
+        data["params"] = params_to_dict(params)
+        data["mode"] = params.mode
+        data["kvec"] = params.kvec
+        data["group_a"] = params.group_a
+        data["group_b"] = params.group_b
+        data["overwrite"] = params.overwrite
         return data
 
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
-        self.mode_combo.setCurrentText(data_dict.get("mode", "k-vector layers (recommended)"))
-        self.kvec_combo.setCurrentText(data_dict.get("kvec", "111"))
-        self.group_a_edit.setText(data_dict.get("group_a", "A"))
-        self.group_b_edit.setText(data_dict.get("group_b", "B"))
-        self.overwrite_checkbox.setChecked(bool(data_dict.get("overwrite", True)))
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = GroupLabelParams(**raw_params)
+        else:
+            params = GroupLabelParams(
+                mode=data_dict.get("mode", "k-vector layers (recommended)"),
+                kvec=data_dict.get("kvec", "111"),
+                group_a=data_dict.get("group_a", "A"),
+                group_b=data_dict.get("group_b", "B"),
+                overwrite=data_dict.get("overwrite", True),
+            )
+        self.set_params(params)

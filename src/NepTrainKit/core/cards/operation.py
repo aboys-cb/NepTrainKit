@@ -23,6 +23,14 @@ class DatasetOperation(ABC):
         """Transform a complete dataset."""
 
 
+class GeneratorOperation(ABC):
+    """Operation that generates structures without an input dataset."""
+
+    @abstractmethod
+    def generate(self, params: Any) -> list:
+        """Generate a dataset."""
+
+
 def params_to_dict(params: Any) -> dict[str, Any]:
     """Serialize operation parameters to a plain dictionary."""
     if params is None:

@@ -12,7 +12,7 @@ from qfluentwidgets import StateToolTip
 from ase.build.tools import sort as ase_sort
 from loguru import logger
 
-from NepTrainKit.core.cards.operation import DatasetOperation, StructureOperation
+from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
 
 
 class LoadingThread(QThread):
@@ -111,6 +111,8 @@ class FilterProcessingThread(QThread):
             self.progressSignal.emit(0)
             if isinstance(self.operation, DatasetOperation):
                 self.result_dataset = self.operation.run_dataset(self.dataset, self.params)
+            elif isinstance(self.operation, GeneratorOperation):
+                self.result_dataset = self.operation.generate(self.params)
             else:
                 result = self.process_func()
                 if result is not None:

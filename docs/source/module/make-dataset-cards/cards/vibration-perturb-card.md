@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Vib Mode Perturb", "source_file": "src/NepTrainKit/ui/views/_card/vibration_perturb_card.py", "serialized_keys": ["distribution", "amplitude", "modes_per_sample", "min_frequency", "max_num", "scale_by_frequency", "exclude_near_zero", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Vib Mode Perturb", "source_file": "src/NepTrainKit/ui/views/_card/vibration_perturb_card.py", "serialized_keys": ["params", "distribution", "amplitude", "modes_per_sample", "min_frequency", "max_num", "scale_by_frequency", "exclude_near_zero", "use_seed", "seed"]} -->
 
 # 振动模态扰动（Vib Mode Perturb）
 
@@ -76,6 +76,17 @@ H 0.740 0.000 0.000 -0.10 0.00 0.00 1500.0
 - 列名写错或数组形状不对时，这张卡不会自动修复；它会把该结构视为“没有可用振动模态”。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> 核心操作参数 `VibrationModePerturbParams`。
+- 控件标签 (Caption): `Operation Params`。
+- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
+- 类型/范围 (Type/Range): object
+- 默认值 (Default): `{"distribution": 0, "amplitude": 0.05, "modes_per_sample": 2, "min_frequency": 10.0, "max_num": 32, "scale_by_frequency": true, "exclude_near_zero": true, "use_seed": false, "seed": 0}`
+- 含义 (Meaning): UI 解耦后的核心参数快照，用于 CLI/批处理复用。
+- 对输出规模/物理性的影响: 与展开后的振动模式、幅度、频率过滤、样本数和随机种子字段一致。
+- 配置建议 (Practical note): 新版本优先读取 `params`，旧字段仍保留用于兼容已有 workflow。
+
 ### `distribution` (Distribution)
 - UI Label: `Distribution`
 - 字段映射 (Field mapping): 序列化键 `distribution` <-> 界面标签 `Distribution`。

@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Group Label", "source_file": "src/NepTrainKit/ui/views/_card/group_label_card.py", "serialized_keys": ["mode", "kvec", "group_a", "group_b", "overwrite"]} -->
+<!-- card-schema: {"card_name": "Group Label", "source_file": "src/NepTrainKit/ui/views/_card/group_label_card.py", "serialized_keys": ["params", "mode", "kvec", "group_a", "group_b", "overwrite"]} -->
 
 # 分组标记（Group Label）
 
@@ -58,6 +58,17 @@ Si 4.072 4.072 1.357 B
 - 如果输入来自 `.xyz` 文件并且你想保留现成分组，请使用 EXTXYZ 风格的 `Properties=...:group:S:1` 列；普通三列 XYZ 只会保留元素和坐标。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> 核心操作参数 `GroupLabelParams`。
+- 控件标签 (Caption): `Operation Params`。
+- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
+- 类型/范围 (Type/Range): object
+- 默认值 (Default): `{"mode": "k-vector layers (recommended)", "kvec": "111", "group_a": "A", "group_b": "B", "overwrite": true}`
+- 含义 (Meaning): UI 解耦后的核心参数快照，用于 CLI/批处理复用。
+- 对输出规模/物理性的影响: 与展开后的分组模式、k-vector 和标签名字段一致。
+- 配置建议 (Practical note): 新版本优先读取 `params`，旧字段仍保留用于兼容已有 workflow。
+
 ### `mode` (Mode)
 - UI Label: `Mode`
 - 字段映射 (Field mapping): 序列化键 `mode` <-> 界面标签 `Mode`。

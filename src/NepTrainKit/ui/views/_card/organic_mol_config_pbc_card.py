@@ -2,18 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Any, List
+from typing import Any
 
-import numpy as np
-from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.config_type import append_config_tag
-from NepTrainKit.core.config_type import stable_config_id
-from NepTrainKit.core.torsion_guard_pbc import (
-    TorsionGuardParams,
-    process_single as tg_process_single,
+from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.core.cards.structure import (
+    OrganicMolConfigPBCOperation,
+    OrganicMolConfigPBCParams,
 )
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
@@ -270,91 +267,68 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         """
         return self.pbc_combo.currentText()
 
+    def create_operation(self):
+        return OrganicMolConfigPBCOperation()
+
+    def get_params(self) -> OrganicMolConfigPBCParams:
+        return OrganicMolConfigPBCParams(
+            perturb_per_frame=int(self.perturb_frame.get_input_value()[0]),
+            torsion_range_deg=tuple(map(float, self.torsion_frame.get_input_value())),
+            max_torsions_per_conf=int(self.max_torsions_frame.get_input_value()[0]),
+            gaussian_sigma=float(self.sigma_frame.get_input_value()[0]),
+            pbc_mode=self._current_pbc_mode(),
+            local_cutoff=int(self.local_cut_frame.get_input_value()[0]),
+            local_subtree=int(self.local_sub_frame.get_input_value()[0]),
+            bond_detect_factor=float(self.bond_detect_frame.get_input_value()[0]),
+            bond_keep_min_factor=float(self.bond_min_frame.get_input_value()[0]),
+            bond_keep_max_factor=float(self.bond_max_frame.get_input_value()[0]),
+            bond_keep_max_enable=self.bond_max_enable.isChecked(),
+            nonbond_min_factor=float(self.nonbond_min_frame.get_input_value()[0]),
+            max_retries=int(self.retries_frame.get_input_value()[0]),
+            mult_bond_factor=float(self.multbond_frame.get_input_value()[0]),
+            nonpbc_box_size=float(self.box_frame.get_input_value()[0]),
+            bo_c_const=float(self.bo_c_frame.get_input_value()[0]),
+            bo_threshold=float(self.bo_thr_frame.get_input_value()[0]),
+            use_seed=self.seed_checkbox.isChecked(),
+            seed=int(self.seed_frame.get_input_value()[0]),
+        )
+
+    def set_params(self, params: OrganicMolConfigPBCParams) -> None:
+        self.perturb_frame.set_input_value([int(params.perturb_per_frame)])
+        self.torsion_frame.set_input_value([float(value) for value in params.torsion_range_deg])
+        self.max_torsions_frame.set_input_value([int(params.max_torsions_per_conf)])
+        self.sigma_frame.set_input_value([float(params.gaussian_sigma)])
+        self.pbc_combo.setCurrentIndex({"auto": 0, "yes": 1, "no": 2}.get(params.pbc_mode, 0))
+        self.local_cut_frame.set_input_value([int(params.local_cutoff)])
+        self.local_sub_frame.set_input_value([int(params.local_subtree)])
+        self.bond_detect_frame.set_input_value([float(params.bond_detect_factor)])
+        self.bond_min_frame.set_input_value([float(params.bond_keep_min_factor)])
+        self.bond_max_frame.set_input_value([float(params.bond_keep_max_factor)])
+        self.bond_max_enable.setChecked(bool(params.bond_keep_max_enable))
+        self.nonbond_min_frame.set_input_value([float(params.nonbond_min_factor)])
+        self.retries_frame.set_input_value([int(params.max_retries)])
+        self.multbond_frame.set_input_value([float(params.mult_bond_factor)])
+        self.box_frame.set_input_value([float(params.nonpbc_box_size)])
+        self.bo_c_frame.set_input_value([float(params.bo_c_const)])
+        self.bo_thr_frame.set_input_value([float(params.bo_threshold)])
+        self.seed_checkbox.setChecked(bool(params.use_seed))
+        self.seed_frame.set_input_value([int(params.seed)])
+
     # ---------- Core ----------
     def process_structure(self, structure) -> list[Any]:
         """Generate torsion-driven molecular conformers using the TorsionGuard PBC workflow.
-        
+
         Parameters
         ----------
         structure : ase.Atoms
             Structure providing the initial molecular coordinates and cell.
-        
+
         Returns
         -------
         list[ase.Atoms]
             Structures returned by the torsion-guard generator.
         """
-        # structure is an ASE Atoms
-        from ase import Atoms  # local import to avoid hard dep in module import time
-
-        pbc_mode = self._current_pbc_mode()
-
-        symbols: List[str] = structure.get_chemical_symbols()
-        coords: np.ndarray = structure.get_positions().astype(float)
-
-        # Decide cell: always pass a 3x3 even for non-PBC if available; module decides using pbc_mode
-        cell_mat = None
-        try:
-            cell_arr = structure.get_cell().array  # type: ignore[attr-defined]
-            if cell_arr is not None and np.array(cell_arr).shape == (3, 3):
-                cell_mat = np.array(cell_arr, dtype=float)
-        except Exception:
-            cell_mat = None
-
-        params = TorsionGuardParams(
-            perturb_per_frame=int(self.perturb_frame.get_input_value()[0]),
-            torsion_range_deg=tuple(map(float, self.torsion_frame.get_input_value())),
-            max_torsions_per_conf=int(self.max_torsions_frame.get_input_value()[0]),
-            gaussian_sigma=float(self.sigma_frame.get_input_value()[0]),
-            pbc_mode=pbc_mode,
-            local_mode_cutoff_atoms=int(self.local_cut_frame.get_input_value()[0]),
-            local_torsion_max_subtree=int(self.local_sub_frame.get_input_value()[0]),
-            bond_detect_factor=float(self.bond_detect_frame.get_input_value()[0]),
-            bond_keep_min_factor=float(self.bond_min_frame.get_input_value()[0]),
-            bond_keep_max_factor=float(self.bond_max_frame.get_input_value()[0]) if self.bond_max_enable.isChecked() else None,
-            nonbond_min_factor=float(self.nonbond_min_frame.get_input_value()[0]),
-            max_retries_per_frame=int(self.retries_frame.get_input_value()[0]),
-            mult_bond_factor=float(self.multbond_frame.get_input_value()[0]),
-            nonpbc_box_size=float(self.box_frame.get_input_value()[0]),
-            bo_c_const=float(self.bo_c_frame.get_input_value()[0]),
-            bo_threshold=float(self.bo_thr_frame.get_input_value()[0]),
-            seed=(
-                int(self.seed_frame.get_input_value()[0]) + stable_config_id(structure) * 1000003
-                if self.seed_checkbox.isChecked()
-                else None
-            ),
-        )
-
-        result_list = tg_process_single(symbols, coords, cell_mat, params)
-
-        structures_out: list[Atoms] = []
-        for sym, new_coords, cell, pbc_active in result_list:
-            new_atoms: Atoms = structure.copy()
-            new_atoms.set_positions(np.array(new_coords, dtype=float))
-
-            # Set periodicity and cell
-            if pbc_active and cell is not None:
-                new_atoms.set_cell(np.array(cell, dtype=float))
-                new_atoms.set_pbc(True)
-                try:
-                    new_atoms.wrap()
-                except Exception:
-                    pass
-            else:
-                # Centered in a non-PBC box already by module; attach a large box for visualization
-                L = float(self.box_frame.get_input_value()[0])
-                new_atoms.set_cell(np.diag([L, L, L]))
-                new_atoms.set_pbc(False)
-
-            # Tagging
-            append_config_tag(
-                new_atoms,
-                f"TG(n={self.perturb_frame.get_input_value()[0]},sig={self.sigma_frame.get_input_value()[0]},pbc={pbc_mode})",
-            )
-
-            structures_out.append(new_atoms)
-
-        return structures_out
+        return self.create_operation().run_structure(structure, self.get_params())
 
     # ---------- Persistence ----------
     def to_dict(self):
@@ -366,26 +340,28 @@ class OrganicMolConfigPBCCard(MakeDataCard):
             Dictionary that can be fed into ``from_dict`` to rebuild the state.
         """
         data = super().to_dict()
+        params = self.get_params()
         data.update({
-            "perturb_per_frame": self.perturb_frame.get_input_value(),
-            "torsion_range_deg": self.torsion_frame.get_input_value(),
-            "max_torsions_per_conf": self.max_torsions_frame.get_input_value(),
-            "gaussian_sigma": self.sigma_frame.get_input_value(),
-            "pbc_mode": self.pbc_combo.currentText(),
-            "local_cutoff": self.local_cut_frame.get_input_value(),
-            "local_subtree": self.local_sub_frame.get_input_value(),
-            "bond_detect_factor": self.bond_detect_frame.get_input_value(),
-            "bond_keep_min_factor": self.bond_min_frame.get_input_value(),
-            "bond_keep_max_factor": self.bond_max_frame.get_input_value(),
-            "bond_keep_max_enable": self.bond_max_enable.isChecked(),
-            "nonbond_min_factor": self.nonbond_min_frame.get_input_value(),
-            "max_retries": self.retries_frame.get_input_value(),
-            "mult_bond_factor": self.multbond_frame.get_input_value(),
-            "nonpbc_box_size": self.box_frame.get_input_value(),
-            "bo_c_const": self.bo_c_frame.get_input_value(),
-            "bo_threshold": self.bo_thr_frame.get_input_value(),
-            "use_seed": self.seed_checkbox.isChecked(),
-            "seed": self.seed_frame.get_input_value(),
+            "params": params_to_dict(params),
+            "perturb_per_frame": [params.perturb_per_frame],
+            "torsion_range_deg": list(params.torsion_range_deg),
+            "max_torsions_per_conf": [params.max_torsions_per_conf],
+            "gaussian_sigma": [params.gaussian_sigma],
+            "pbc_mode": params.pbc_mode,
+            "local_cutoff": [params.local_cutoff],
+            "local_subtree": [params.local_subtree],
+            "bond_detect_factor": [params.bond_detect_factor],
+            "bond_keep_min_factor": [params.bond_keep_min_factor],
+            "bond_keep_max_factor": [params.bond_keep_max_factor],
+            "bond_keep_max_enable": params.bond_keep_max_enable,
+            "nonbond_min_factor": [params.nonbond_min_factor],
+            "max_retries": [params.max_retries],
+            "mult_bond_factor": [params.mult_bond_factor],
+            "nonpbc_box_size": [params.nonpbc_box_size],
+            "bo_c_const": [params.bo_c_const],
+            "bo_threshold": [params.bo_threshold],
+            "use_seed": params.use_seed,
+            "seed": [params.seed],
         })
         return data
 
@@ -398,26 +374,30 @@ class OrganicMolConfigPBCCard(MakeDataCard):
             Serialized configuration previously produced by ``to_dict``.
         """
         super().from_dict(data_dict)
-        self.perturb_frame.set_input_value(data_dict.get("perturb_per_frame", [100]))
-        self.torsion_frame.set_input_value(data_dict.get("torsion_range_deg", [-180.0, 180.0]))
-        self.max_torsions_frame.set_input_value(data_dict.get("max_torsions_per_conf", [5]))
-        self.sigma_frame.set_input_value(data_dict.get("gaussian_sigma", [0.03]))
-
-        pbc_mode = data_dict.get("pbc_mode", "auto")
-        idx = {"auto": 0, "yes": 1, "no": 2}.get(pbc_mode, 0)
-        self.pbc_combo.setCurrentIndex(idx)
-
-        self.local_cut_frame.set_input_value(data_dict.get("local_cutoff", [150]))
-        self.local_sub_frame.set_input_value(data_dict.get("local_subtree", [40]))
-        self.bond_detect_frame.set_input_value(data_dict.get("bond_detect_factor", [1.15]))
-        self.bond_min_frame.set_input_value(data_dict.get("bond_keep_min_factor", [0.60]))
-        self.bond_max_frame.set_input_value(data_dict.get("bond_keep_max_factor", [1.15]))
-        self.bond_max_enable.setChecked(bool(data_dict.get("bond_keep_max_enable", False)))
-        self.nonbond_min_frame.set_input_value(data_dict.get("nonbond_min_factor", [0.80]))
-        self.retries_frame.set_input_value(data_dict.get("max_retries", [12]))
-        self.multbond_frame.set_input_value(data_dict.get("mult_bond_factor", [0.87]))
-        self.box_frame.set_input_value(data_dict.get("nonpbc_box_size", [100.0]))
-        self.bo_c_frame.set_input_value(data_dict.get("bo_c_const", [0.3]))
-        self.bo_thr_frame.set_input_value(data_dict.get("bo_threshold", [0.2]))
-        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
-        self.seed_frame.set_input_value(data_dict.get("seed", [0]))
+        raw_params = data_dict.get("params")
+        if raw_params:
+            raw_params["torsion_range_deg"] = tuple(raw_params.get("torsion_range_deg", [-180.0, 180.0]))
+            params = OrganicMolConfigPBCParams(**raw_params)
+        else:
+            params = OrganicMolConfigPBCParams(
+                perturb_per_frame=data_dict.get("perturb_per_frame", [100])[0],
+                torsion_range_deg=tuple(data_dict.get("torsion_range_deg", [-180.0, 180.0])),
+                max_torsions_per_conf=data_dict.get("max_torsions_per_conf", [50])[0],
+                gaussian_sigma=data_dict.get("gaussian_sigma", [0.03])[0],
+                pbc_mode=data_dict.get("pbc_mode", "auto"),
+                local_cutoff=data_dict.get("local_cutoff", [200])[0],
+                local_subtree=data_dict.get("local_subtree", [100])[0],
+                bond_detect_factor=data_dict.get("bond_detect_factor", [1.15])[0],
+                bond_keep_min_factor=data_dict.get("bond_keep_min_factor", [0.60])[0],
+                bond_keep_max_factor=data_dict.get("bond_keep_max_factor", [1.15])[0],
+                bond_keep_max_enable=data_dict.get("bond_keep_max_enable", False),
+                nonbond_min_factor=data_dict.get("nonbond_min_factor", [0.80])[0],
+                max_retries=data_dict.get("max_retries", [12])[0],
+                mult_bond_factor=data_dict.get("mult_bond_factor", [0.87])[0],
+                nonpbc_box_size=data_dict.get("nonpbc_box_size", [100.0])[0],
+                bo_c_const=data_dict.get("bo_c_const", [0.3])[0],
+                bo_threshold=data_dict.get("bo_threshold", [0.2])[0],
+                use_seed=data_dict.get("use_seed", False),
+                seed=data_dict.get("seed", [0])[0],
+            )
+        self.set_params(params)

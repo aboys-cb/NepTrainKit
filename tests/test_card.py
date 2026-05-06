@@ -67,6 +67,8 @@ from NepTrainKit.core.cards.lattice import (
     SuperCellParams,
 )
 from NepTrainKit.core.cards.magnetism import (
+    FoldedHelixOperation,
+    FoldedHelixParams,
     MagneticMomentRotationOperation,
     MagneticMomentRotationParams,
     MagneticOrderOperation,
@@ -679,6 +681,18 @@ class TestCard(unittest.TestCase):
             ),
         )[0]
         self.assertIn("Helix(", str(spiral_result.info.get("Config_type", "")))
+
+        folded = FoldedHelixOperation().run_structure(
+            set_result,
+            FoldedHelixParams(
+                half_period_mode="Manual",
+                half_period_layers=[2, 2, 1],
+                angle_step_range=[30.0, 30.0, 15.0],
+                phase_range=[0.0, 0.0, 15.0],
+                max_outputs=1,
+            ),
+        )[0]
+        self.assertIn("FoldedHelix(", str(folded.info.get("Config_type", "")))
 
         tilt_result = SmallAngleSpinTiltOperation().run_structure(
             set_result,

@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Folded Helix", "source_file": "src/NepTrainKit/ui/views/_card/folded_helix_card.py", "serialized_keys": ["layer_axis", "plane_normal", "layer_tolerance", "half_period_mode", "half_period_layers", "angle_step_range", "phase_range", "sequence_mode", "magnitude_source", "magmom_map", "default_moment", "apply_elements", "max_outputs"]} -->
+<!-- card-schema: {"card_name": "Folded Helix", "source_file": "src/NepTrainKit/ui/views/_card/folded_helix_card.py", "serialized_keys": ["params", "layer_axis", "plane_normal", "layer_tolerance", "half_period_mode", "half_period_layers", "angle_step_range", "phase_range", "sequence_mode", "magnitude_source", "magmom_map", "default_moment", "apply_elements", "max_outputs"]} -->
 
 # 折返螺旋初始磁矩（Folded Helix）
 
@@ -66,6 +66,17 @@ $$
 - 如果你只想对部分磁性元素施加 folded helix，可以通过 `apply_elements` 限定元素集合。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
+- 控件标签 (Caption): `Operation Params`
+- 控件解释 (Widget): 由分层轴、旋转平面法向、层容差、半周期模式、角步长、相位、手性序列、磁矩来源和输出上限组合生成的内部参数字典。
+- 类型/范围 (Type/Range): dict
+- 默认值 (Default): `{"layer_axis": [0.0, 0.0, 1.0], "plane_normal": [0.0, 0.0, 1.0], "layer_tolerance": 0.05, "half_period_mode": "Auto from layer count", "half_period_layers": [2, 4, 1], "angle_step_range": [15.0, 45.0, 15.0], "phase_range": [0.0, 0.0, 15.0], "sequence_mode": "Clockwise then counterclockwise", "magnitude_source": "Existing initial magmoms", "magmom_map": "", "default_moment": 0.0, "apply_elements": "", "max_outputs": 100}`
+- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
+- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组 folded helix 参数。
+- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+
 ### `layer_axis` (Layer axis)
 - UI Label: `Layer axis`
 - 字段映射 (Field mapping): 序列化键 `layer_axis` <-> 界面标签 `Layer axis`。

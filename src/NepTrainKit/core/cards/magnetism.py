@@ -123,6 +123,19 @@ def range_values(values: list[float], *, minimum: float | None = None) -> list[f
     return ordered
 
 
+def int_range_values(values: list[int], *, minimum: int = 1) -> list[int]:
+    """Expand a [start, stop, step] integer scan triplet."""
+    start, stop, step = [int(v) for v in values]
+    start = max(start, minimum)
+    stop = max(stop, minimum)
+    if stop < start:
+        start, stop = stop, start
+    step = abs(step)
+    if stop == start or step <= 0:
+        return [start]
+    return list(range(start, stop + 1, step))
+
+
 def axis_tag(axis: np.ndarray, *, precision: int = 6) -> str:
     """Return an EXTXYZ-friendly axis tag without quotes or spaces."""
     v = np.asarray(axis, dtype=float).reshape(3)
@@ -1068,3 +1081,124 @@ class SmallAngleSpinTiltOperation(StructureOperation):
             moment_array[idx] = self.tilted_vector(moment_array[idx], half_angle, params, sign=-sign)
         return moment_array
 
+
+@dataclass(frozen=True)
+class FoldedHelixParams:
+    layer_axis: list[float] | tuple[float, float, float] = (0.0, 0.0, 1.0)
+    plane_normal: list[float] | tuple[float, float, float] = (0.0, 0.0, 1.0)
+    layer_tolerance: float = 0.05
+    half_period_mode: str = "Auto from layer count"
+    half_period_layers: list[int] | tuple[int, int, int] = (2, 4, 1)
+    angle_step_range: list[float] | tuple[float, float, float] = (15.0, 45.0, 15.0)
+    phase_range: list[float] | tuple[float, float, float] = (0.0, 0.0, 15.0)
+    sequence_mode: str = "Clockwise then counterclockwise"
+    magnitude_source: str = "Existing initial magmoms"
+    magmom_map: str = ""
+    default_moment: float = 0.0
+    apply_elements: str = ""
+    max_outputs: int = 100
+
+
+class FoldedHelixOperation(StructureOperation):
+    """Generate symmetric clockwise-then-counterclockwise layered helix moments."""
+
+    def run_structure(self, structure, params: FoldedHelixParams) -> list:
+        angle_steps = range_values(list(params.angle_step_range), minimum=0.0)
+        phases = range_values(list(params.phase_range))
+        max_outputs = int(params.max_outputs)
+
+        mags = self.magnitudes(structure, params)
+        if mags.shape[0] != len(structure) or not np.any(mags > 0):
+            return [structure.copy()]
+
+        layer_axis = normalize_vector(np.array(params.layer_axis, dtype=float))
+        plane_normal = normalize_vector(np.array(params.plane_normal, dtype=float))
+        e1, e2, plane_hat = orthonormal_frame(plane_normal)
+        layer_ids = SpinSpiralOperation.layer_ids(
+            np.asarray(structure.get_positions(), dtype=float),
+            layer_axis,
+            float(params.layer_tolerance),
+        )
+        layer_count = int(layer_ids.max()) + 1 if layer_ids.size else 0
+        half_periods = self.half_period_values(params, layer_count=layer_count)
+        auto_mode = params.half_period_mode == "Auto from layer count"
+
+        outputs = []
+        reached_limit = False
+        for half_period in half_periods:
+            if auto_mode:
+                folded_steps = self.auto_folded_steps(layer_ids, layer_count=layer_count)
+            else:
+                period_layers = max(2, 2 * int(half_period))
+                local_layer = np.mod(layer_ids, period_layers)
+                folded_steps = np.where(local_layer <= half_period, local_layer, period_layers - local_layer).astype(float)
+
+            for angle_step in angle_steps:
+                for phase_deg in phases:
+                    for seq_tag, seq_sign in self.sequence_values(params):
+                        atoms = structure.copy()
+                        phase_rad = np.deg2rad(float(phase_deg) + seq_sign * folded_steps * float(angle_step))
+                        unit_vectors = (
+                            np.cos(phase_rad)[:, None] * e1[None, :]
+                            + np.sin(phase_rad)[:, None] * e2[None, :]
+                        )
+                        set_initial_magmoms_safe(atoms, mags[:, None] * unit_vectors)
+                        append_config_tag(
+                            atoms,
+                            (
+                                f"FoldedHelix(h={half_period},da={float(angle_step):.6g},"
+                                f"ph={float(phase_deg):.6g},seq={seq_tag},"
+                                f"ax={axis_tag(layer_axis, precision=3)},pn={axis_tag(plane_hat, precision=3)})"
+                            ),
+                        )
+                        outputs.append(atoms)
+                        if len(outputs) >= max_outputs:
+                            reached_limit = True
+                            break
+                    if reached_limit:
+                        break
+                if reached_limit:
+                    break
+            if reached_limit:
+                break
+
+        return outputs or [structure.copy()]
+
+    @staticmethod
+    def sequence_values(params: FoldedHelixParams) -> list[tuple[str, int]]:
+        if params.sequence_mode == "Counterclockwise then clockwise":
+            return [("ccw-cw", 1)]
+        if params.sequence_mode == "Both":
+            return [("cw-ccw", -1), ("ccw-cw", 1)]
+        return [("cw-ccw", -1)]
+
+    @staticmethod
+    def half_period_values(params: FoldedHelixParams, *, layer_count: int) -> list[int]:
+        if params.half_period_mode == "Manual":
+            return int_range_values(list(params.half_period_layers), minimum=1)
+        derived = max(1, (int(layer_count) - 1) // 2)
+        return [derived]
+
+    @staticmethod
+    def auto_folded_steps(layer_ids: np.ndarray, *, layer_count: int) -> np.ndarray:
+        if layer_ids.size == 0 or layer_count <= 1:
+            return np.zeros_like(layer_ids, dtype=float)
+        top_index = float(layer_count - 1)
+        half_span = top_index / 2.0
+        layer_pos = layer_ids.astype(float)
+        return half_span - np.abs(layer_pos - half_span)
+
+    @staticmethod
+    def magnitudes(structure, params: FoldedHelixParams) -> np.ndarray:
+        apply_elements = parse_element_set(params.apply_elements)
+        if params.magnitude_source == "Existing initial magmoms":
+            mags = existing_moment_magnitudes(structure)
+            if mags is not None:
+                mask = element_mask(structure.get_chemical_symbols(), apply_elements)
+                return np.where(mask, mags, 0.0)
+        return mapped_moment_magnitudes(
+            structure,
+            parse_magmom_map_any(params.magmom_map),
+            default_moment=float(params.default_moment),
+            apply_elements=apply_elements,
+        )

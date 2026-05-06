@@ -43,6 +43,14 @@ from NepTrainKit.ui.views._card import (
 )
 from NepTrainKit.core.magnetism import orthonormal_frame
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.cards.alloy import (
+    CompositionSweepOperation,
+    CompositionSweepParams,
+    RandomDopingOperation,
+    RandomDopingParams,
+    RandomOccupancyOperation,
+    RandomOccupancyParams,
+)
 from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
 from NepTrainKit.core.cards.lattice import (
     CellScalingOperation,
@@ -469,6 +477,26 @@ class TestCard(unittest.TestCase):
         for atoms in results:
             self.assertIn("Ge", atoms.get_chemical_symbols())
 
+    def test_random_doping_operation_is_ui_independent(self):
+        params = RandomDopingParams(
+            rules=[
+                {
+                    "target": "Si",
+                    "dopants": {"Ge": 1.0},
+                    "use": "count",
+                    "count": [1, 1],
+                }
+            ],
+            doping_type="Exact",
+            max_structures=2,
+            use_seed=True,
+            seed=3,
+        )
+        results = RandomDopingOperation().run_structure(self.structure.copy(), params)
+
+        self.assertEqual(len(results), 2)
+        self.assertTrue(all("Ge" in atoms.get_chemical_symbols() for atoms in results))
+
     def test_crystal_prototype_builder_card(self):
         card = CrystalPrototypeBuilderCard()
         card.structure_combo.setCurrentText("fcc")
@@ -515,6 +543,35 @@ class TestCard(unittest.TestCase):
         for atoms in occupied:
             syms = set(atoms.get_chemical_symbols())
             self.assertTrue(syms.issubset({"Co", "Ni"}))
+
+    def test_composition_and_occupancy_operations_are_ui_independent(self):
+        base = self.structure.copy()
+        base.info.setdefault("Config_type", "base")
+
+        sweep_params = CompositionSweepParams(
+            elements="Co,Ni",
+            order="2",
+            method="Grid",
+            step=0.5,
+            include_endpoints=True,
+            max_outputs=3,
+        )
+        swept = CompositionSweepOperation().run_structure(base, sweep_params)
+
+        self.assertEqual(len(swept), 3)
+        self.assertTrue(all("Comp(" in atoms.info.get("Config_type", "") for atoms in swept))
+
+        occ_params = RandomOccupancyParams(
+            source="Auto (Comp tag)",
+            mode="Exact",
+            samples=1,
+            use_seed=True,
+            seed=5,
+        )
+        occupied = RandomOccupancyOperation().run_structure(swept[0], occ_params)
+
+        self.assertEqual(len(occupied), 1)
+        self.assertTrue(set(occupied[0].get_chemical_symbols()).issubset({"Co", "Ni"}))
 
     def test_composition_sweep_quaternary_quinary(self):
         base = self.structure.copy()

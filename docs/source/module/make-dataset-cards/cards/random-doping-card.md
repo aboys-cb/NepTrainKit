@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Random Doping", "source_file": "src/NepTrainKit/ui/views/_card/random_doping_card.py", "serialized_keys": ["rules", "doping_type", "max_atoms_condition", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Random Doping", "source_file": "src/NepTrainKit/ui/views/_card/random_doping_card.py", "serialized_keys": ["params", "rules", "doping_type", "max_atoms_condition", "use_seed", "seed"]} -->
 
 # 随机掺杂（Random Doping）
 
@@ -42,6 +42,17 @@
 - 先用窄浓度区间做正确性验证。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
+- 控件标签 (Caption): `Operation Params`
+- 控件解释 (Widget): 由 rules、doping mode、输出数量和 seed 控件组合生成的内部参数字典。
+- 类型/范围 (Type/Range): dict
+- 默认值 (Default): `{"rules": [], "doping_type": "Random", "max_structures": 1, "use_seed": false, "seed": 0}`
+- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
+- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组随机掺杂规则。
+- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+
 ### `rules` (Rules)
 - UI Label: `Rules`
 - 字段映射 (Field mapping): 序列化键 `rules` <-> 界面标签 `Rules`。

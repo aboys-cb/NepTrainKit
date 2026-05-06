@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Composition Sweep", "source_file": "src/NepTrainKit/ui/views/_card/composition_sweep_card.py", "serialized_keys": ["elements", "order", "method", "step", "n_points", "min_fraction", "include_endpoints", "use_seed", "seed", "max_outputs", "budget_mode"]} -->
+<!-- card-schema: {"card_name": "Composition Sweep", "source_file": "src/NepTrainKit/ui/views/_card/composition_sweep_card.py", "serialized_keys": ["params", "elements", "order", "method", "step", "n_points", "min_fraction", "include_endpoints", "use_seed", "seed", "max_outputs", "budget_mode"]} -->
 
 # 成分扫描（Composition Sweep）
 
@@ -42,6 +42,17 @@
 - 先小规模验证 `method` 与 `budget_mode` 的分布行为。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
+- 控件标签 (Caption): `Operation Params`
+- 控件解释 (Widget): 由元素列表、阶数、采样方法、simplex 参数、输出预算和 seed 控件组合生成的内部参数字典。
+- 类型/范围 (Type/Range): dict
+- 默认值 (Default): `{"elements": "Co,Cr,Ni", "order": "2,3,4,5", "method": "Grid", "step": 0.1, "n_points": 50, "min_fraction": 0.0, "include_endpoints": true, "use_seed": false, "seed": 0, "max_outputs": 500, "budget_mode": "Equal+Reflow"}`
+- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
+- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组组成扫描参数。
+- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+
 ### `elements` (Elements)
 - UI Label: `Elements`
 - 字段映射 (Field mapping): 序列化键 `elements` <-> 界面标签 `Elements`。

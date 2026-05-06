@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-import numpy as np
 from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager, MessageManager
-from NepTrainKit.core.alloy import assign_random_occupancy, parse_composition
-from NepTrainKit.core.config_type import append_config_tag, stable_config_id
+from NepTrainKit.core.cards.alloy import RandomOccupancyOperation, RandomOccupancyParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -79,99 +78,77 @@ class RandomOccupancyCard(MakeDataCard):
         self.settingLayout.addWidget(self.seed_checkbox, 5, 0, 1, 1)
         self.settingLayout.addWidget(self.seed_frame, 5, 1, 1, 2)
 
-    @staticmethod
-    def _read_comp_from_config_type(structure) -> dict[str, float]:
-        # Cards exchange composition context through Config_type tags only.
-        # Avoid introducing extra atoms.info fields for card parameters.
-        cfg = str(structure.info.get("Config_type", "") or "")
-        if not cfg:
-            return {}
-        for token in cfg.split("|"):
-            token = token.strip()
-            if token.startswith("Comp(") and token.endswith(")"):
-                inner = token[5:-1].strip()
-                if not inner:
-                    continue
-                # Preferred format: Co=0.33,Cr=0.33,Ni=0.34 (also accepts ':').
-                return parse_composition(inner)
-        return {}
+    def create_operation(self):
+        """Return the UI-independent random occupancy operation."""
+        return RandomOccupancyOperation()
 
-    def _read_composition(self, structure) -> dict[str, float]:
-        if self.source_combo.currentText().lower().startswith("auto"):
-            return self._read_comp_from_config_type(structure)
-        manual = self.manual_edit.text().strip()
-        if not manual:
-            return {}
-        try:
-            return parse_composition(manual)
-        except Exception as exc:  # noqa: BLE001
-            MessageManager.send_warning_message(f"RandomOccupancy: invalid manual composition: {exc}")
-            return {}
+    def get_params(self) -> RandomOccupancyParams:
+        """Read random occupancy parameters from UI controls."""
+        return RandomOccupancyParams(
+            source=self.source_combo.currentText(),
+            manual=self.manual_edit.text(),
+            mode=self.mode_combo.currentText(),
+            samples=int(self.samples_frame.get_input_value()[0]),
+            group_filter=self.group_edit.text(),
+            use_seed=self.seed_checkbox.isChecked(),
+            seed=int(self.seed_frame.get_input_value()[0]),
+        )
 
-    def _eligible_indices(self, structure) -> np.ndarray | None:
-        groups_text = self.group_edit.text().strip()
-        if not groups_text:
-            return None
-        if "group" not in structure.arrays:
-            return None
-        allowed = {g.strip() for g in groups_text.split(",") if g.strip()}
-        if not allowed:
-            return None
-        grp = structure.arrays["group"]
-        return np.array([i for i, g in enumerate(grp) if str(g) in allowed], dtype=int)
+    def set_params(self, params: RandomOccupancyParams) -> None:
+        """Apply random occupancy parameters to UI controls."""
+        self.source_combo.setCurrentText(params.source)
+        self.manual_edit.setText(params.manual)
+        self.mode_combo.setCurrentText(params.mode)
+        self.samples_frame.set_input_value([int(params.samples)])
+        self.group_edit.setText(params.group_filter)
+        self.seed_checkbox.setChecked(bool(params.use_seed))
+        self.seed_frame.set_input_value([int(params.seed)])
 
     def process_structure(self, structure):
-        comp = self._read_composition(structure)
-        if not comp:
-            MessageManager.send_warning_message("RandomOccupancy: missing composition (Config_type Comp tag or manual input).")
+        """Assign occupancy from UI-independent parameters."""
+        try:
+            result = self.create_operation().run_structure(structure, self.get_params())
+        except Exception as exc:  # noqa: BLE001
+            MessageManager.send_warning_message(f"RandomOccupancy: invalid composition: {exc}")
             return [structure]
-
-        mode = self.mode_combo.currentText()
-        n_samples = int(self.samples_frame.get_input_value()[0])
-        indices = self._eligible_indices(structure)
-
-        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
-        cfg_id = stable_config_id(structure)
-
-        out = []
-        for sample_idx in range(max(n_samples, 1)):
-            if base_seed is None:
-                rng = np.random.default_rng()
-                seed_note = ""
-            else:
-                derived_seed = int(base_seed + cfg_id * 1000003 + sample_idx)
-                rng = np.random.default_rng(derived_seed)
-                seed_note = f",s={derived_seed}"
-
-            new_atoms = assign_random_occupancy(
-                structure,
-                comp,
-                indices=indices,
-                mode=mode,
-                rng=rng,
-            )
-            mode_tag = "E" if mode.lower().startswith("exact") else "R"
-            append_config_tag(new_atoms, f"Occ({mode_tag}{seed_note})")
-            out.append(new_atoms)
-        return out
+        if len(result) == 1 and result[0] is structure:
+            MessageManager.send_warning_message("RandomOccupancy: missing composition (Config_type Comp tag or manual input).")
+        return result
 
     def to_dict(self):
         data = super().to_dict()
-        data["source"] = self.source_combo.currentText()
-        data["manual"] = self.manual_edit.text()
-        data["mode"] = self.mode_combo.currentText()
-        data["samples"] = self.samples_frame.get_input_value()
-        data["group_filter"] = self.group_edit.text()
-        data["use_seed"] = self.seed_checkbox.isChecked()
-        data["seed"] = self.seed_frame.get_input_value()
+        params = self.get_params()
+        data["params"] = params_to_dict(params)
+        data["source"] = params.source
+        data["manual"] = params.manual
+        data["mode"] = params.mode
+        data["samples"] = [params.samples]
+        data["group_filter"] = params.group_filter
+        data["use_seed"] = params.use_seed
+        data["seed"] = [params.seed]
         return data
 
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
-        self.source_combo.setCurrentText(data_dict.get("source", "Auto (Comp tag)"))
-        self.manual_edit.setText(data_dict.get("manual", ""))
-        self.mode_combo.setCurrentText(data_dict.get("mode", "Exact"))
-        self.samples_frame.set_input_value(data_dict.get("samples", [1]))
-        self.group_edit.setText(data_dict.get("group_filter", ""))
-        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
-        self.seed_frame.set_input_value(data_dict.get("seed", [0]))
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = RandomOccupancyParams(
+                source=raw_params.get("source", "Auto (Comp tag)"),
+                manual=raw_params.get("manual", ""),
+                mode=raw_params.get("mode", "Exact"),
+                samples=raw_params.get("samples", 1),
+                group_filter=raw_params.get("group_filter", ""),
+                use_seed=raw_params.get("use_seed", False),
+                seed=raw_params.get("seed", 0),
+            )
+        else:
+            params = RandomOccupancyParams(
+                source=data_dict.get("source", "Auto (Comp tag)"),
+                manual=data_dict.get("manual", ""),
+                mode=data_dict.get("mode", "Exact"),
+                samples=data_dict.get("samples", [1])[0],
+                group_filter=data_dict.get("group_filter", ""),
+                use_seed=data_dict.get("use_seed", False),
+                seed=data_dict.get("seed", [0])[0],
+            )
+        self.set_params(params)

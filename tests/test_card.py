@@ -28,6 +28,7 @@ from NepTrainKit.ui.views._card import (
     RandomDopingCard,
     CompositionSweepCard,
     RandomOccupancyCard,
+    ConditionalReplaceCard,
     MagneticOrderCard,
     SetMagneticMomentsCard,
     SmallAngleSpinTiltCard,
@@ -39,6 +40,7 @@ from NepTrainKit.ui.views._card import (
     VacancyDefectCard,
     StackingFaultCard,
     InsertDefectCard,
+    LayerCopyCard,
     OrganicMolConfigPBCCard,
     # VibrationModePerturbCard,
 )
@@ -47,12 +49,15 @@ from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import (
     CompositionSweepOperation,
     CompositionSweepParams,
+    ConditionalReplaceOperation,
+    ConditionalReplaceParams,
     RandomDopingOperation,
     RandomDopingParams,
     RandomOccupancyOperation,
     RandomOccupancyParams,
 )
 from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
+from NepTrainKit.core.cards.structure import LayerCopyOperation, LayerCopyParams
 from NepTrainKit.core.cards.defect import (
     InsertDefectOperation,
     InsertDefectParams,
@@ -523,6 +528,35 @@ class TestCard(unittest.TestCase):
 
         self.assertEqual(len(results), 2)
         self.assertTrue(all("Ge" in atoms.get_chemical_symbols() for atoms in results))
+
+    def test_conditional_replace_operation_is_ui_independent(self):
+        results = ConditionalReplaceOperation().run_structure(
+            self.structure.copy(),
+            ConditionalReplaceParams(
+                target="Si",
+                replacements="Ge:1",
+                condition="all",
+                seed=1,
+                mode=1,
+            ),
+        )
+
+        self.assertEqual(len(results), 1)
+        self.assertTrue(all(symbol == "Ge" for symbol in results[0].get_chemical_symbols()))
+        self.assertIn("Repl(Si->Ge)", results[0].info.get("Config_type", ""))
+
+    def test_conditional_replace_card_roundtrip(self):
+        card = ConditionalReplaceCard()
+        card.target_edit.setText("Si")
+        card.replacements_edit.setText("Ge:0.5,C:0.5")
+        card.condition_edit.setText("z>=0")
+        card.seed_frame.set_input_value([9])
+        card.mode_combo.setCurrentIndex(1)
+
+        restored = ConditionalReplaceCard()
+        restored.from_dict(card.to_dict())
+
+        self.assertEqual(restored.get_params(), card.get_params())
 
     def test_crystal_prototype_builder_card(self):
         card = CrystalPrototypeBuilderCard()
@@ -1505,6 +1539,40 @@ class TestCard(unittest.TestCase):
         card.offset_frame.set_input_value([2.0])
 
         restored = InsertDefectCard()
+        restored.from_dict(card.to_dict())
+
+        self.assertEqual(restored.get_params(), card.get_params())
+
+    def test_layer_copy_operation_is_ui_independent(self):
+        structure = self.structure.copy()
+        results = LayerCopyOperation().run_structure(
+            structure,
+            LayerCopyParams(
+                dz_expr="1.0",
+                layers=2,
+                distance=3.0,
+                extend_cell_z=True,
+            ),
+        )
+
+        self.assertEqual(len(results), 1)
+        self.assertEqual(len(results[0]), len(structure) * 2)
+        self.assertIn("SWC(L=2,dz=3)", results[0].info.get("Config_type", ""))
+
+    def test_layer_copy_card_roundtrip(self):
+        card = LayerCopyCard()
+        card.preset_combo.setCurrentIndex(0)
+        card.expr_edit.setPlainText("A + z*0")
+        card.params_edit.setText("A=1.5")
+        card.apply_combo.setCurrentIndex(2)
+        card.zrange_frame.set_input_value([0.0, 2.0])
+        card.wrap_checkbox.setChecked(True)
+        card.extend_cell_checkbox.setChecked(False)
+        card.vacuum_frame.set_input_value([1.0])
+        card.layers_frame.set_input_value([2])
+        card.distance_frame.set_input_value([4.0])
+
+        restored = LayerCopyCard()
         restored.from_dict(card.to_dict())
 
         self.assertEqual(restored.get_params(), card.get_params())

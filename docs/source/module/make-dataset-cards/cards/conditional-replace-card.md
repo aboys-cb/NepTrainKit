@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Conditional Replace", "source_file": "src/NepTrainKit/ui/views/_card/conditional_replace_card.py", "serialized_keys": ["target", "replacements", "condition", "seed", "mode"]} -->
+<!-- card-schema: {"card_name": "Conditional Replace", "source_file": "src/NepTrainKit/ui/views/_card/conditional_replace_card.py", "serialized_keys": ["params", "target", "replacements", "condition", "seed", "mode"]} -->
 
 # 条件替换（Conditional Replace）
 
@@ -42,6 +42,17 @@
 - 先用 `condition=all` 验证路径，再收紧条件。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> 核心操作参数 `ConditionalReplaceParams`。
+- 控件标签 (Caption): `Operation Params`。
+- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
+- 类型/范围 (Type/Range): object
+- 默认值 (Default): `{"target": "", "replacements": "", "condition": "", "seed": 0, "mode": 0}`
+- 含义 (Meaning): UI 解耦后的核心参数快照，用于 CLI/批处理复用。
+- 对输出规模/物理性的影响: 与展开后的目标元素、替换配方、空间条件和随机种子字段一致。
+- 配置建议 (Practical note): 新版本优先读取 `params`，旧字段仍保留用于兼容已有 workflow。
+
 ### `target` (Target element)
 - UI Label: `Target element`
 - 字段映射 (Field mapping): 序列化键 `target` <-> 界面标签 `Target element`。

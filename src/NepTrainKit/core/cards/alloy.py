@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import ast
+import json
 import math
+import re
 from dataclasses import dataclass, field
 from itertools import combinations
 from typing import Any
@@ -486,3 +489,255 @@ class RandomOccupancyOperation(StructureOperation):
             return None
         groups = structure.arrays["group"]
         return np.array([i for i, group in enumerate(groups) if str(group) in allowed], dtype=int)
+
+
+def normalize_condition_expr(expr: str) -> str:
+    """Convert card condition syntax to a Python boolean expression."""
+    expr = expr.strip()
+    if not expr or expr.lower() == "all":
+        return "True"
+    expr = re.sub(r"\bAND\b", "and", expr, flags=re.IGNORECASE)
+    expr = re.sub(r"\bOR\b", "or", expr, flags=re.IGNORECASE)
+    expr = re.sub(r"\bNOT\b", "not", expr, flags=re.IGNORECASE)
+    return re.sub(r"(?<![<>!])=(?!=)", "==", expr)
+
+
+def _is_allowed_condition_node(node: ast.AST) -> bool:
+    if isinstance(node, (ast.operator, ast.unaryop, ast.boolop, ast.cmpop)):
+        return True
+    allowed_nodes = (
+        ast.Expression,
+        ast.BoolOp,
+        ast.Compare,
+        ast.Name,
+        ast.Load,
+        ast.Constant,
+        ast.UnaryOp,
+        ast.BinOp,
+        ast.Not,
+    )
+    if not isinstance(node, allowed_nodes):
+        return False
+    for child in ast.iter_child_nodes(node):
+        if not _is_allowed_condition_node(child):
+            return False
+    if isinstance(node, ast.BoolOp) and not isinstance(node.op, (ast.And, ast.Or)):
+        return False
+    if isinstance(node, ast.UnaryOp) and not isinstance(node.op, (ast.UAdd, ast.USub, ast.Not)):
+        return False
+    if isinstance(node, ast.BinOp) and not isinstance(node.op, (ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Pow)):
+        return False
+    if isinstance(node, ast.Compare):
+        return all(isinstance(op, (ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE)) for op in node.ops)
+    return True
+
+
+def _eval_condition_node(node: ast.AST, env: dict[str, float], tol: float) -> float | bool:
+    if isinstance(node, ast.Expression):
+        return _eval_condition_node(node.body, env, tol)
+    if isinstance(node, ast.Constant):
+        return node.value
+    if isinstance(node, ast.Name):
+        if node.id not in env:
+            raise ValueError(f"Unknown name '{node.id}'")
+        return env[node.id]
+    if isinstance(node, ast.UnaryOp):
+        val = _eval_condition_node(node.operand, env, tol)
+        if isinstance(node.op, ast.UAdd):
+            return +val
+        if isinstance(node.op, ast.USub):
+            return -val
+        if isinstance(node.op, ast.Not):
+            return not bool(val)
+    if isinstance(node, ast.BinOp):
+        left = _eval_condition_node(node.left, env, tol)
+        right = _eval_condition_node(node.right, env, tol)
+        if isinstance(node.op, ast.Add):
+            return left + right
+        if isinstance(node.op, ast.Sub):
+            return left - right
+        if isinstance(node.op, ast.Mult):
+            return left * right
+        if isinstance(node.op, ast.Div):
+            return left / right
+        if isinstance(node.op, ast.Pow):
+            return left**right
+    if isinstance(node, ast.Compare):
+        left = _eval_condition_node(node.left, env, tol)
+        result = True
+        for op, comparator in zip(node.ops, node.comparators):
+            right = _eval_condition_node(comparator, env, tol)
+            if isinstance(op, ast.Eq):
+                ok = abs(left - right) <= tol
+            elif isinstance(op, ast.NotEq):
+                ok = abs(left - right) > tol
+            elif isinstance(op, ast.Lt):
+                ok = left < right
+            elif isinstance(op, ast.LtE):
+                ok = left <= right or abs(left - right) <= tol
+            elif isinstance(op, ast.Gt):
+                ok = left > right
+            elif isinstance(op, ast.GtE):
+                ok = left >= right or abs(left - right) <= tol
+            else:
+                ok = False
+            result = result and ok
+            left = right
+            if not result:
+                break
+        return result
+    if isinstance(node, ast.BoolOp):
+        vals = [_eval_condition_node(value, env, tol) for value in node.values]
+        if isinstance(node.op, ast.And):
+            return all(bool(value) for value in vals)
+        if isinstance(node.op, ast.Or):
+            return any(bool(value) for value in vals)
+    raise ValueError("Unsupported expression")
+
+
+def evaluate_condition(expr: str, coords: np.ndarray) -> bool | np.ndarray:
+    """Safely evaluate a coordinate condition against one or more positions."""
+    expr_py = normalize_condition_expr(expr)
+    tree = ast.parse(expr_py, mode="eval")
+    if not _is_allowed_condition_node(tree):
+        raise ValueError("Condition expression contains unsupported syntax.")
+    coords_arr = np.asarray(coords, dtype=float)
+
+    def eval_single(pos) -> bool:
+        x, y, z = map(float, pos[:3])
+        return bool(_eval_condition_node(tree, {"x": x, "y": y, "z": z}, tol=1e-4))
+
+    if coords_arr.ndim == 1:
+        return eval_single(coords_arr)
+    if coords_arr.ndim == 2:
+        return np.array([eval_single(position) for position in coords_arr], dtype=bool)
+    raise ValueError(f"Unsupported coordinate shape: {coords_arr.shape}")
+
+
+def parse_replacements(text: str) -> tuple[list[str], list[float]]:
+    """Parse replacement spec like ``Cs:0.6,Na:0.4`` or a JSON mapping."""
+    names: list[str] = []
+    ratios: list[float] = []
+    text = (text or "").strip()
+    if not text:
+        return names, ratios
+
+    if text.startswith("{") and text.endswith("}"):
+        data = json.loads(text)
+        if not isinstance(data, dict):
+            raise ValueError("Replacement JSON must be an object.")
+        for key, value in data.items():
+            name = str(key).strip()
+            ratio = float(value)
+            if name and ratio >= 0:
+                names.append(name)
+                ratios.append(ratio)
+        return names, ratios
+
+    for token in (item for item in text.split(",") if item.strip()):
+        if ":" in token:
+            key, value = token.split(":", 1)
+            name = key.strip()
+            ratio = float(value)
+        else:
+            name = token.strip()
+            ratio = 1.0
+        if name and ratio >= 0:
+            names.append(name)
+            ratios.append(ratio)
+    return names, ratios
+
+
+@dataclass(frozen=True)
+class ConditionalReplaceParams:
+    """Parameters for coordinate-gated atomic replacement."""
+
+    target: str = ""
+    replacements: str = ""
+    condition: str = ""
+    seed: int = 0
+    mode: int = 0
+
+
+class ConditionalReplaceOperation(StructureOperation):
+    """Replace atoms that match target species and coordinate condition."""
+
+    def run_structure(self, structure, params: ConditionalReplaceParams) -> list:
+        target = params.target.strip()
+        if not target:
+            return [structure]
+
+        new_atoms, ratios = parse_replacements(params.replacements)
+        if not new_atoms or len(ratios) != len(new_atoms):
+            raise ValueError("Replacements must be provided as elem:ratio entries.")
+
+        seed = int(params.seed) if int(params.seed) != 0 else None
+        exact = int(params.mode) == 1
+        new_structure, replaced = replace_atoms_with_conditions(
+            structure,
+            atom_to_replace=target,
+            new_atoms=new_atoms,
+            probabilities=ratios,
+            condition=params.condition.strip() or "all",
+            seed=seed,
+            exact=exact,
+        )
+        if replaced:
+            append_config_tag(new_structure, f"Repl({target}->{','.join(new_atoms)})")
+        return [new_structure]
+
+
+def replace_atoms_with_conditions(
+    structure,
+    atom_to_replace: str,
+    new_atoms: list[str],
+    probabilities: list[float],
+    condition: str,
+    seed: int | None = None,
+    exact: bool = False,
+):
+    """Replace atoms in a structure using a probability distribution and coordinate condition."""
+    symbols = structure.get_chemical_symbols()
+    positions = structure.get_positions()
+    target_indices = [
+        idx
+        for idx, (symbol, position) in enumerate(zip(symbols, positions))
+        if symbol == atom_to_replace and evaluate_condition(condition, np.asarray(position, dtype=float))
+    ]
+    if not target_indices:
+        return structure, 0
+
+    probs = np.asarray(probabilities, dtype=float)
+    if probs.size != len(new_atoms) or probs.size == 0:
+        raise ValueError("Replacement probabilities must match replacement atoms.")
+    if np.all(probs <= 0):
+        raise ValueError("At least one replacement probability must be positive.")
+    probs = probs / probs.sum()
+
+    rng = np.random.default_rng(seed)
+    shuffled = rng.permutation(target_indices)
+    if exact:
+        sampled = _exact_replacement_sample(new_atoms, probs, len(shuffled), rng)
+    else:
+        sampled = rng.choice(new_atoms, size=len(shuffled), p=probs, replace=True)
+
+    new_structure = structure.copy()
+    for idx, elem in zip(shuffled, sampled):
+        new_structure[idx].symbol = elem
+    return new_structure, len(shuffled)
+
+
+def _exact_replacement_sample(new_atoms: list[str], probs: np.ndarray, total: int, rng: np.random.Generator) -> np.ndarray:
+    raw_counts = probs * total
+    counts = np.floor(raw_counts).astype(int)
+    remainder = total - int(counts.sum())
+    if remainder > 0:
+        residuals = raw_counts - counts
+        order = np.argsort(-residuals)
+        for i in range(remainder):
+            counts[order[i % len(order)]] += 1
+    sampled: list[str] = []
+    for name, count in zip(new_atoms, counts):
+        sampled.extend([name] * int(count))
+    rng.shuffle(sampled)
+    return np.array(sampled, dtype=object)

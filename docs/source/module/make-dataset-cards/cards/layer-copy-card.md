@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Layer Copy", "source_file": "src/NepTrainKit/ui/views/_card/layer_copy_card.py", "serialized_keys": ["preset_index", "dz_expr", "params", "apply_mode", "elements", "z_range", "wrap", "extend_cell_z", "extra_vacuum", "layers", "distance"]} -->
+<!-- card-schema: {"card_name": "Layer Copy", "source_file": "src/NepTrainKit/ui/views/_card/layer_copy_card.py", "serialized_keys": ["operation_params", "preset_index", "dz_expr", "params", "apply_mode", "elements", "z_range", "wrap", "extend_cell_z", "extra_vacuum", "layers", "distance"]} -->
 
 # 层复制（Layer Copy）
 
@@ -42,6 +42,17 @@
 - 按边界条件选择 `wrap/extend_cell_z/extra_vacuum`。
 
 ## 参数说明（完整）
+### `operation_params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `operation_params` <-> 核心操作参数 `LayerCopyParams`。
+- 控件标签 (Caption): `Operation Params`。
+- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
+- 类型/范围 (Type/Range): object
+- 默认值 (Default): `{"preset_index": 1, "dz_expr": "sin(x/pi) + sin(y/pi)", "expression_params": "", "apply_mode": 0, "elements": "", "z_range": [-1000000.0, 1000000.0], "wrap": false, "extend_cell_z": true, "extra_vacuum": 0.0, "layers": 3, "distance": 3.0}`
+- 含义 (Meaning): UI 解耦后的核心参数快照，用于 CLI/批处理复用。
+- 对输出规模/物理性的影响: 与展开后的表达式、作用范围、层数、层间距和晶胞扩展字段一致。
+- 配置建议 (Practical note): `params` 已用于表达式参数，因此核心快照使用 `operation_params` 避免覆盖旧 workflow 语义。
+
 ### `preset_index` (Preset Index)
 - UI Label: `Preset Index`
 - 字段映射 (Field mapping): 序列化键 `preset_index` <-> 界面标签 `Preset Index`。

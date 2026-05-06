@@ -146,24 +146,9 @@ class CellScalingCard(MakeDataCard):
         return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
-        """Serialize the current configuration to a plain dictionary.
-        
-        Returns
-        -------
-        dict
-            Dictionary that can be fed into ``from_dict`` to rebuild the state.
-        """
-        data_dict = super().to_dict()
-        params = self.get_params()
-        data_dict["params"] = params_to_dict(params)
-        data_dict['engine_type'] = params.engine_type
-        data_dict['perturb_angle'] = params.perturb_angle
-        data_dict['organic'] = params.identify_organic
-        data_dict['scaling_condition'] = [params.max_scaling]
-        data_dict['num_condition'] = [params.max_num]
-        data_dict["use_seed"] = params.use_seed
-        data_dict["seed"] = [params.seed]
-        return data_dict
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
 
     def from_dict(self, data_dict):
         """Restore the card configuration from serialized values.

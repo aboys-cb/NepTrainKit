@@ -127,16 +127,7 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
 
     def to_dict(self):
         data = super().to_dict()
-        params = self.get_params()
-        data["params"] = params_to_dict(params)
-        data["lattice"] = params.lattice
-        data["element"] = params.element
-        data["a_range"] = list(params.a_range)
-        data["covera"] = [params.covera]
-        data["auto_supercell"] = params.auto_supercell
-        data["max_atoms"] = [params.max_atoms]
-        data["rep"] = list(params.rep)
-        data["max_outputs"] = [params.max_outputs]
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):

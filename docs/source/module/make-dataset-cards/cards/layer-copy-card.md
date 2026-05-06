@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Layer Copy", "source_file": "src/NepTrainKit/ui/views/_card/layer_copy_card.py", "serialized_keys": ["operation_params", "preset_index", "dz_expr", "params", "apply_mode", "elements", "z_range", "wrap", "extend_cell_z", "extra_vacuum", "layers", "distance"]} -->
+<!-- card-schema: {"card_name": "Layer Copy", "source_file": "src/NepTrainKit/ui/views/_card/layer_copy_card.py", "serialized_keys": ["params"]} -->
 
 # 层复制（Layer Copy）
 
@@ -82,15 +82,14 @@
 
 ### `params` (Params)
 - UI Label: `Params`
-- 字段映射 (Field mapping): 序列化键 `params` <-> 界面标签 `Params`。
+- 字段映射 (Field mapping): 序列化键 `params` <-> 核心操作参数 `LayerCopyParams`。
 - 控件标签 (Caption): `Params`。
-- 控件解释 (Widget): 文本输入 `LineEdit`（或可编辑下拉）。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `""`
-- 含义 (Meaning): 表达式参数 (expression parameters)。
-- 对输出规模/物理性的影响: 用于调节 `dz_expr` 形状和幅度。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note): 按表达式参数表填写，建议先小范围试跑确认语义。
+- 控件解释 (Widget): 由界面控件自动汇总，不需要手动编辑。
+- 类型/范围 (Type/Range): object
+- 默认值 (Default): `{"preset_index": 1, "dz_expr": "sin(x/pi) + sin(y/pi)", "expression_params": "", "apply_mode": 0, "elements": "", "z_range": [-1000000.0, 1000000.0], "wrap": false, "extend_cell_z": true, "extra_vacuum": 0.0, "layers": 3, "distance": 3.0}`
+- 含义 (Meaning): UI 解耦后的核心参数快照，用于 workflow/CLI/批处理复用。
+- 对输出规模/物理性的影响: 与展开后的表达式、作用范围、层数、层间距离和晶胞扩展字段一致。
+- 配置建议 (Practical note): 新版 JSON 只写 `params`；`from_dict` 仍然兼容旧的 `operation_params` 和表达式参数字段。
 
 ### `apply_mode` (Apply Mode)
 - UI Label: `Apply Mode`

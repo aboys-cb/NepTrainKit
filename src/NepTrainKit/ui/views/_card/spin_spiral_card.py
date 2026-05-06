@@ -291,23 +291,7 @@ class SpinSpiralCard(MakeDataCard):
 
     def to_dict(self):
         data = super().to_dict()
-        params = self.get_params()
-        data["params"] = params_to_dict(params)
-        data["axis"] = list(params.axis)
-        data["spiral_parameter_mode"] = params.spiral_parameter_mode
-        data["period_range"] = list(params.period_range)
-        data["angle_gradient_range"] = list(params.angle_gradient_range)
-        data["phase_range"] = list(params.phase_range)
-        data["mz"] = list(params.mz)
-        data["chirality"] = params.chirality
-        data["phase_mode"] = params.phase_mode
-        data["layer_tolerance"] = [params.layer_tolerance]
-        data["only_commensurate_periods"] = params.only_commensurate_periods
-        data["magnitude_source"] = params.magnitude_source
-        data["magmom_map"] = params.magmom_map
-        data["default_moment"] = [params.default_moment]
-        data["apply_elements"] = params.apply_elements
-        data["max_outputs"] = [params.max_outputs]
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):

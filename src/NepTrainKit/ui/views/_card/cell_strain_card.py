@@ -126,23 +126,9 @@ class CellStrainCard(MakeDataCard):
         return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
-        """Serialize the current configuration to a plain dictionary.
-        
-        Returns
-        -------
-        dict
-            Dictionary that can be fed into ``from_dict`` to rebuild the state.
-        """
-        data_dict = super().to_dict()
-        params = self.get_params()
-        data_dict["params"] = params_to_dict(params)
-        data_dict['organic'] = params.identify_organic
-        data_dict['engine_type'] = params.axes
-        data_dict['x_range'] = list(params.x_range)
-        data_dict['y_range'] = list(params.y_range)
-        data_dict['z_range'] = list(params.z_range)
-
-        return data_dict
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
 
     def from_dict(self, data_dict):
         """Restore the card configuration from serialized values.

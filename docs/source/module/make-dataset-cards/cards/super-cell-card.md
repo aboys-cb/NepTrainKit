@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Super Cell", "source_file": "src/NepTrainKit/ui/views/_card/super_cell_card.py", "serialized_keys": ["params", "super_cell_type", "super_scale_radio_button", "super_scale_condition", "super_cell_radio_button", "super_cell_condition", "max_atoms_radio_button", "max_atoms_condition", "fixed_axis_flags", "fixed_axis_scale"]} -->
+<!-- card-schema: {"card_name": "Super Cell", "source_file": "src/NepTrainKit/ui/views/_card/super_cell_card.py", "serialized_keys": ["params"]} -->
 
 # 超胞生成（Super Cell）
 

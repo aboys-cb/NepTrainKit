@@ -184,17 +184,7 @@ class SetMagneticMomentsCard(MakeDataCard):
 
     def to_dict(self):
         data = super().to_dict()
-        params = self.get_params()
-        data["params"] = params_to_dict(params)
-        data["source"] = params.source
-        data["format"] = params.format
-        data["axis"] = list(params.axis)
-        data["magmom_map"] = params.magmom_map
-        data["use_element_dirs"] = params.use_element_dirs
-        data["default_moment"] = [params.default_moment]
-        data["constant_moment"] = [params.constant_moment]
-        data["lift_scalar"] = params.lift_scalar
-        data["apply_elements"] = params.apply_elements
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):

@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Stacking Fault", "source_file": "src/NepTrainKit/ui/views/_card/stacking_fault_card.py", "serialized_keys": ["params", "hkl", "step", "layers"]} -->
+<!-- card-schema: {"card_name": "Stacking Fault", "source_file": "src/NepTrainKit/ui/views/_card/stacking_fault_card.py", "serialized_keys": ["params"]} -->
 
 # 层错构型（Stacking Fault）
 

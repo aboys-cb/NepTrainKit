@@ -1,4 +1,4 @@
-﻿"""Card for rotating magnetic moments of selected atoms."""
+"""Card for rotating magnetic moments of selected atoms."""
 
 from __future__ import annotations
 
@@ -155,19 +155,9 @@ class MagneticMomentRotationCard(MakeDataCard):
         return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
-        data_dict = super().to_dict()
-        params = self.get_params()
-        data_dict["params"] = params_to_dict(params)
-        data_dict["elements"] = params.elements
-        data_dict["max_angle"] = [params.max_angle]
-        data_dict["num_structures"] = [params.num_structures]
-        data_dict["lift_scalar"] = params.lift_scalar
-        data_dict["axis"] = list(params.axis)
-        data_dict["disturb_magnitude"] = params.disturb_magnitude
-        data_dict["magnitude_factor"] = list(params.magnitude_factor)
-        data_dict["use_seed"] = params.use_seed
-        data_dict["seed"] = [params.seed]
-        return data_dict
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
 
     def from_dict(self, data_dict):
         super().from_dict(data_dict)

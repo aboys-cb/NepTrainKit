@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Organic Mol Config", "source_file": "src/NepTrainKit/ui/views/_card/organic_mol_config_pbc_card.py", "serialized_keys": ["params", "perturb_per_frame", "torsion_range_deg", "max_torsions_per_conf", "gaussian_sigma", "pbc_mode", "local_cutoff", "local_subtree", "bond_detect_factor", "bond_keep_min_factor", "bond_keep_max_factor", "bond_keep_max_enable", "nonbond_min_factor", "max_retries", "mult_bond_factor", "nonpbc_box_size", "bo_c_const", "bo_threshold", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Organic Mol Config", "source_file": "src/NepTrainKit/ui/views/_card/organic_mol_config_pbc_card.py", "serialized_keys": ["params"]} -->
 
 # 有机构象采样（Organic Mol Config）
 

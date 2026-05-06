@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Insert Defect", "source_file": "src/NepTrainKit/ui/views/_card/interstitial_adsorbate_card.py", "serialized_keys": ["params", "mode", "species", "insert_count", "structure_count", "min_distance", "max_attempts", "use_seed", "seed", "axis", "offset"]} -->
+<!-- card-schema: {"card_name": "Insert Defect", "source_file": "src/NepTrainKit/ui/views/_card/interstitial_adsorbate_card.py", "serialized_keys": ["params"]} -->
 
 # 插隙/吸附缺陷（Insert Defect）
 

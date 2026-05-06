@@ -117,15 +117,7 @@ class RandomOccupancyCard(MakeDataCard):
 
     def to_dict(self):
         data = super().to_dict()
-        params = self.get_params()
-        data["params"] = params_to_dict(params)
-        data["source"] = params.source
-        data["manual"] = params.manual
-        data["mode"] = params.mode
-        data["samples"] = [params.samples]
-        data["group_filter"] = params.group_filter
-        data["use_seed"] = params.use_seed
-        data["seed"] = [params.seed]
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):

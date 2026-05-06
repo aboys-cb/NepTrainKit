@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Lattice Perturb", "source_file": "src/NepTrainKit/ui/views/_card/cell_scaling_card.py", "serialized_keys": ["params", "engine_type", "perturb_angle", "organic", "scaling_condition", "num_condition", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Lattice Perturb", "source_file": "src/NepTrainKit/ui/views/_card/cell_scaling_card.py", "serialized_keys": ["params"]} -->
 
 # 晶格扰动（Lattice Perturb）
 

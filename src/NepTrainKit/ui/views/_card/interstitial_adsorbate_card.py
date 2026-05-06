@@ -180,22 +180,7 @@ class InsertDefectCard(MakeDataCard):
 
     def to_dict(self):
         data = super().to_dict()
-        params = self.get_params()
-        data.update(
-            {
-                "params": params_to_dict(params),
-                "mode": params.mode,
-                "species": params.species,
-                "insert_count": [params.insert_count],
-                "structure_count": [params.structure_count],
-                "min_distance": [params.min_distance],
-                "max_attempts": [params.max_attempts],
-                "use_seed": params.use_seed,
-                "seed": [params.seed],
-                "axis": params.axis,
-                "offset": [params.offset],
-            }
-        )
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data):

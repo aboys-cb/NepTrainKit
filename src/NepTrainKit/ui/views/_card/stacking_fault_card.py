@@ -83,11 +83,7 @@ class StackingFaultCard(MakeDataCard):
 
     def to_dict(self):
         data = super().to_dict()
-        params = self.get_params()
-        data["params"] = params_to_dict(params)
-        data["hkl"] = list(params.hkl)
-        data["step"] = list(params.step)
-        data["layers"] = [params.layers]
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):

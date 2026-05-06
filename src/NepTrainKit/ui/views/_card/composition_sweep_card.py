@@ -216,19 +216,7 @@ class CompositionSweepCard(MakeDataCard):
 
     def to_dict(self):
         data = super().to_dict()
-        params = self.get_params()
-        data["params"] = params_to_dict(params)
-        data["elements"] = params.elements
-        data["order"] = params.order
-        data["method"] = params.method
-        data["step"] = [params.step]
-        data["n_points"] = [params.n_points]
-        data["min_fraction"] = [params.min_fraction]
-        data["include_endpoints"] = params.include_endpoints
-        data["use_seed"] = params.use_seed
-        data["seed"] = [params.seed]
-        data["max_outputs"] = [params.max_outputs]
-        data["budget_mode"] = params.budget_mode
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):

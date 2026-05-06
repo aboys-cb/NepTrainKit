@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Random Occupancy", "source_file": "src/NepTrainKit/ui/views/_card/random_occupancy_card.py", "serialized_keys": ["params", "source", "manual", "mode", "samples", "group_filter", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Random Occupancy", "source_file": "src/NepTrainKit/ui/views/_card/random_occupancy_card.py", "serialized_keys": ["params"]} -->
 
 # 随机占位（Random Occupancy）
 

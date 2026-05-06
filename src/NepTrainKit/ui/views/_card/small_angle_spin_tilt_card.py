@@ -423,34 +423,7 @@ class SmallAngleSpinTiltCard(MakeDataCard):
 
     def to_dict(self):
         data = super().to_dict()
-        params = self.get_params()
-        data["params"] = params_to_dict(params)
-        data["canting_mode"] = params.canting_mode
-        data["target_mode"] = params.target_mode
-        data["target_indices"] = params.target_indices
-        data["pair_left_indices"] = params.pair_left_indices
-        data["pair_right_indices"] = params.pair_right_indices
-        data["pair_source"] = params.pair_source
-        data["pair_shell"] = [params.pair_shell]
-        data["pair_shell_tolerance"] = [params.pair_shell_tolerance]
-        data["pair_element_filter"] = params.pair_element_filter
-        data["pair_group_filter"] = params.pair_group_filter
-        data["bond_filter_mode"] = params.bond_filter_mode
-        data["bond_filter_axis"] = list(params.bond_filter_axis)
-        data["bond_filter_tolerance"] = [params.bond_filter_tolerance]
-        data["group_a"] = params.group_a
-        data["group_b"] = params.group_b
-        data["angle_list"] = params.angle_list
-        data["tilt_signs"] = params.tilt_signs
-        data["include_reference"] = params.include_reference
-        data["magnitude_source"] = params.magnitude_source
-        data["magmom_map"] = params.magmom_map
-        data["default_moment"] = [params.default_moment]
-        data["lift_scalar"] = params.lift_scalar
-        data["axis"] = list(params.axis)
-        data["reference_direction"] = list(params.reference_direction)
-        data["apply_elements"] = params.apply_elements
-        data["max_outputs"] = [params.max_outputs]
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):

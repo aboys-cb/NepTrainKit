@@ -95,17 +95,7 @@ class ConditionalReplaceCard(MakeDataCard):
 
     def to_dict(self) -> dict[str, Any]:
         data = super().to_dict()
-        params = self.get_params()
-        data.update(
-            {
-                "params": params_to_dict(params),
-                "target": params.target,
-                "replacements": params.replacements,
-                "condition": params.condition,
-                "seed": [params.seed],
-                "mode": params.mode,
-            }
-        )
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict: dict[str, Any]) -> None:

@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Set Magnetic Moments", "source_file": "src/NepTrainKit/ui/views/_card/set_magnetic_moments_card.py", "serialized_keys": ["params", "source", "format", "axis", "magmom_map", "use_element_dirs", "default_moment", "constant_moment", "lift_scalar", "apply_elements"]} -->
+<!-- card-schema: {"card_name": "Set Magnetic Moments", "source_file": "src/NepTrainKit/ui/views/_card/set_magnetic_moments_card.py", "serialized_keys": ["params"]} -->
 
 # 设置磁矩（Set Magnetic Moments）
 

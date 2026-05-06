@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Atomic Perturb", "source_file": "src/NepTrainKit/ui/views/_card/perturb_card.py", "serialized_keys": ["params", "engine_type", "organic", "scaling_condition", "num_condition", "use_element_scaling", "element_scalings", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Atomic Perturb", "source_file": "src/NepTrainKit/ui/views/_card/perturb_card.py", "serialized_keys": ["params"]} -->
 
 # 原子扰动（Atomic Perturb）
 

@@ -332,37 +332,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
 
     # ---------- Persistence ----------
     def to_dict(self):
-        """Serialize the current configuration to a plain dictionary.
-        
-        Returns
-        -------
-        dict
-            Dictionary that can be fed into ``from_dict`` to rebuild the state.
-        """
         data = super().to_dict()
-        params = self.get_params()
-        data.update({
-            "params": params_to_dict(params),
-            "perturb_per_frame": [params.perturb_per_frame],
-            "torsion_range_deg": list(params.torsion_range_deg),
-            "max_torsions_per_conf": [params.max_torsions_per_conf],
-            "gaussian_sigma": [params.gaussian_sigma],
-            "pbc_mode": params.pbc_mode,
-            "local_cutoff": [params.local_cutoff],
-            "local_subtree": [params.local_subtree],
-            "bond_detect_factor": [params.bond_detect_factor],
-            "bond_keep_min_factor": [params.bond_keep_min_factor],
-            "bond_keep_max_factor": [params.bond_keep_max_factor],
-            "bond_keep_max_enable": params.bond_keep_max_enable,
-            "nonbond_min_factor": [params.nonbond_min_factor],
-            "max_retries": [params.max_retries],
-            "mult_bond_factor": [params.mult_bond_factor],
-            "nonpbc_box_size": [params.nonpbc_box_size],
-            "bo_c_const": [params.bo_c_const],
-            "bo_threshold": [params.bo_threshold],
-            "use_seed": params.use_seed,
-            "seed": [params.seed],
-        })
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):

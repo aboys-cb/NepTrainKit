@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "FPS Filter", "source_file": "src/NepTrainKit/ui/views/_card/fps_filter_card.py", "serialized_keys": ["params", "nep_path", "num_condition", "min_distance_condition"]} -->
+<!-- card-schema: {"card_name": "FPS Filter", "source_file": "src/NepTrainKit/ui/views/_card/fps_filter_card.py", "serialized_keys": ["params"]} -->
 
 # FPS 过滤（FPS Filter）
 

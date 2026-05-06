@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Spin Spiral", "source_file": "src/NepTrainKit/ui/views/_card/spin_spiral_card.py", "serialized_keys": ["params", "axis", "spiral_parameter_mode", "period_range", "angle_gradient_range", "phase_range", "mz", "chirality", "phase_mode", "layer_tolerance", "only_commensurate_periods", "magnitude_source", "magmom_map", "default_moment", "apply_elements", "max_outputs"]} -->
+<!-- card-schema: {"card_name": "Spin Spiral", "source_file": "src/NepTrainKit/ui/views/_card/spin_spiral_card.py", "serialized_keys": ["params"]} -->
 
 # 自旋螺旋初始化（Spin Spiral）
 

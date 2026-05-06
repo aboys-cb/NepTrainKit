@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Group Label", "source_file": "src/NepTrainKit/ui/views/_card/group_label_card.py", "serialized_keys": ["params", "mode", "kvec", "group_a", "group_b", "overwrite"]} -->
+<!-- card-schema: {"card_name": "Group Label", "source_file": "src/NepTrainKit/ui/views/_card/group_label_card.py", "serialized_keys": ["params"]} -->
 
 # 分组标记（Group Label）
 

@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Random Vacancy", "source_file": "src/NepTrainKit/ui/views/_card/random_vacancy_card.py", "serialized_keys": ["params", "rules", "max_atoms_condition", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Random Vacancy", "source_file": "src/NepTrainKit/ui/views/_card/random_vacancy_card.py", "serialized_keys": ["params"]} -->
 
 # 随机空位（Random Vacancy）
 

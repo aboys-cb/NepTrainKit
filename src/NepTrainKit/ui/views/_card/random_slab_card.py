@@ -132,22 +132,9 @@ class RandomSlabCard(MakeDataCard):
         return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
-        """Serialize the current configuration to a plain dictionary.
-        
-        Returns
-        -------
-        dict
-            Dictionary that can be fed into ``from_dict`` to rebuild the state.
-        """
-        data_dict = super().to_dict()
-        params = self.get_params()
-        data_dict["params"] = params_to_dict(params)
-        data_dict["h_range"] = list(params.h_range)
-        data_dict["k_range"] = list(params.k_range)
-        data_dict["l_range"] = list(params.l_range)
-        data_dict["layer_range"] = list(params.layer_range)
-        data_dict["vacuum_range"] = list(params.vacuum_range)
-        return data_dict
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
 
     def from_dict(self, data_dict):
         """Restore the card configuration from serialized values.

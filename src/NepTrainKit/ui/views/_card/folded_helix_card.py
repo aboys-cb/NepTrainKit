@@ -237,21 +237,7 @@ class FoldedHelixCard(MakeDataCard):
 
     def to_dict(self):
         data = super().to_dict()
-        params = self.get_params()
-        data["params"] = params_to_dict(params)
-        data["layer_axis"] = list(params.layer_axis)
-        data["plane_normal"] = list(params.plane_normal)
-        data["layer_tolerance"] = [params.layer_tolerance]
-        data["half_period_mode"] = params.half_period_mode
-        data["half_period_layers"] = list(params.half_period_layers)
-        data["angle_step_range"] = list(params.angle_step_range)
-        data["phase_range"] = list(params.phase_range)
-        data["sequence_mode"] = params.sequence_mode
-        data["magnitude_source"] = params.magnitude_source
-        data["magmom_map"] = params.magmom_map
-        data["default_moment"] = [params.default_moment]
-        data["apply_elements"] = params.apply_elements
-        data["max_outputs"] = [params.max_outputs]
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):

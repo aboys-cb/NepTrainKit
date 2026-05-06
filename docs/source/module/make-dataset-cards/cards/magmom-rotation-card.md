@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Magmom Rotation", "source_file": "src/NepTrainKit/ui/views/_card/magmom_rotation_card.py", "serialized_keys": ["params", "elements", "max_angle", "num_structures", "lift_scalar", "axis", "disturb_magnitude", "magnitude_factor", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Magmom Rotation", "source_file": "src/NepTrainKit/ui/views/_card/magmom_rotation_card.py", "serialized_keys": ["params"]} -->
 
 # 磁矩旋转（Magmom Rotation）
 

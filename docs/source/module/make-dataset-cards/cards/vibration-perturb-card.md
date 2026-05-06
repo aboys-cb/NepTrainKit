@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Vib Mode Perturb", "source_file": "src/NepTrainKit/ui/views/_card/vibration_perturb_card.py", "serialized_keys": ["params", "distribution", "amplitude", "modes_per_sample", "min_frequency", "max_num", "scale_by_frequency", "exclude_near_zero", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Vib Mode Perturb", "source_file": "src/NepTrainKit/ui/views/_card/vibration_perturb_card.py", "serialized_keys": ["params"]} -->
 
 # 振动模态扰动（Vib Mode Perturb）
 

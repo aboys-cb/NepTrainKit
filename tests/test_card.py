@@ -57,6 +57,7 @@ from NepTrainKit.core.cards.alloy import (
     RandomOccupancyParams,
 )
 from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.cards.structure import (
     CrystalPrototypeBuilderOperation,
     CrystalPrototypeBuilderParams,
@@ -111,6 +112,8 @@ from NepTrainKit.core.cards.magnetism import (
 from NepTrainKit.ui.widgets import MakeDataCard
 from NepTrainKit.ui.widgets.card_metadata import card_tooltip, metadata_html
 from NepTrainKit.version import DOCS_BASE_URL
+
+BASE_CARD_KEYS = {"class", "check_state", "metadata", "params"}
 
 
 class _ExternalTestCard(MakeDataCard):
@@ -187,6 +190,98 @@ class TestCard(unittest.TestCase):
         data = card.to_dict()
         self.assertEqual(data["metadata"]["contributors"], ["Test Contributor"])
         self.assertEqual(data["metadata"]["card_version"], "0.1")
+
+    def test_operation_cards_write_only_params(self):
+        for class_name, card_cls in CardManager.card_info_dict.items():
+            if not hasattr(card_cls, "create_operation"):
+                continue
+            card = card_cls()
+            if card.create_operation() is None:
+                continue
+            serialized = card.to_dict()
+            self.assertEqual(
+                set(serialized),
+                BASE_CARD_KEYS,
+                f"{class_name} should write only current params format",
+            )
+
+    def test_legacy_card_keys_still_load(self):
+        strain = CellStrainCard()
+        strain.from_dict(
+            {
+                "check_state": True,
+                "organic": True,
+                "engine_type": "biaxial",
+                "x_range": [1.0, 2.0, 0.5],
+                "y_range": [3.0, 4.0, 0.5],
+                "z_range": [0.0, 0.0, 1.0],
+            }
+        )
+        self.assertEqual(
+            strain.get_params(),
+            CellStrainParams(
+                axes="biaxial",
+                x_range=(1.0, 2.0, 0.5),
+                y_range=(3.0, 4.0, 0.5),
+                z_range=(0.0, 0.0, 1.0),
+                identify_organic=True,
+            ),
+        )
+
+        layer = LayerCopyCard()
+        layer.from_dict(
+            {
+                "check_state": True,
+                "preset_index": 0,
+                "dz_expr": "A + z*0",
+                "params": "A=1.5",
+                "apply_mode": 2,
+                "elements": "Si",
+                "z_range": [0.0, 2.0],
+                "wrap": True,
+                "extend_cell_z": False,
+                "extra_vacuum": [1.0],
+                "layers": [2],
+                "distance": [4.0],
+            }
+        )
+        self.assertEqual(
+            layer.get_params(),
+            LayerCopyParams(
+                preset_index=0,
+                dz_expr="A + z*0",
+                expression_params="A=1.5",
+                apply_mode=2,
+                elements="Si",
+                z_range=(0.0, 2.0),
+                wrap=True,
+                extend_cell_z=False,
+                extra_vacuum=1.0,
+                layers=2,
+                distance=4.0,
+            ),
+        )
+
+        operation_params = LayerCopyParams(
+            preset_index=1,
+            dz_expr="z + 1",
+            expression_params="",
+            apply_mode=1,
+            elements="",
+            z_range=(-1.0, 1.0),
+            wrap=False,
+            extend_cell_z=True,
+            extra_vacuum=0.5,
+            layers=4,
+            distance=2.5,
+        )
+        layer.from_dict(
+            {
+                "check_state": True,
+                "operation_params": params_to_dict(operation_params),
+            }
+        )
+        self.assertEqual(layer.get_params(), operation_params)
 
     @staticmethod
     def _spin_chain():

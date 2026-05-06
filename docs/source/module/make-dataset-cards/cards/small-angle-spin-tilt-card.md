@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Small-Angle Spin Tilt", "source_file": "src/NepTrainKit/ui/views/_card/small_angle_spin_tilt_card.py", "serialized_keys": ["params", "canting_mode", "target_mode", "target_indices", "pair_left_indices", "pair_right_indices", "pair_source", "pair_shell", "pair_shell_tolerance", "pair_element_filter", "pair_group_filter", "bond_filter_mode", "bond_filter_axis", "bond_filter_tolerance", "group_a", "group_b", "angle_list", "tilt_signs", "include_reference", "magnitude_source", "magmom_map", "default_moment", "lift_scalar", "axis", "reference_direction", "apply_elements", "max_outputs"]} -->
+<!-- card-schema: {"card_name": "Small-Angle Spin Tilt", "source_file": "src/NepTrainKit/ui/views/_card/small_angle_spin_tilt_card.py", "serialized_keys": ["params"]} -->
 
 # 小角度单自旋/成对 Canting（Small-Angle Spin Tilt）
 

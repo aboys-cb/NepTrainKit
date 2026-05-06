@@ -272,28 +272,7 @@ class MagneticOrderCard(MakeDataCard):
 
     def to_dict(self):
         data = super().to_dict()
-        params = self.get_params()
-        data["params"] = params_to_dict(params)
-        data["format"] = params.format
-        data["axis"] = list(params.axis)
-        data["magmom_map"] = params.magmom_map
-        data["use_element_dirs"] = params.use_element_dirs
-        data["default_moment"] = [params.default_moment]
-        data["apply_elements"] = params.apply_elements
-        data["gen_fm"] = params.gen_fm
-        data["gen_afm"] = params.gen_afm
-        data["afm_mode"] = params.afm_mode
-        data["afm_kvec"] = params.afm_kvec
-        data["afm_group_a"] = params.afm_group_a
-        data["afm_group_b"] = params.afm_group_b
-        data["afm_zero_unknown"] = params.afm_zero_unknown
-        data["gen_pm"] = params.gen_pm
-        data["pm_count"] = [params.pm_count]
-        data["pm_direction"] = params.pm_direction
-        data["pm_cone_angle"] = [params.pm_cone_angle]
-        data["pm_balanced"] = params.pm_balanced
-        data["use_seed"] = params.use_seed
-        data["seed"] = [params.seed]
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):

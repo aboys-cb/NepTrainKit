@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Vacancy Defect Generation", "source_file": "src/NepTrainKit/ui/views/_card/vacancy_defect_card.py", "serialized_keys": ["params", "engine_type", "num_condition", "num_radio_button", "concentration_radio_button", "concentration_condition", "max_atoms_condition", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Vacancy Defect Generation", "source_file": "src/NepTrainKit/ui/views/_card/vacancy_defect_card.py", "serialized_keys": ["params"]} -->
 
 # 空位缺陷生成（Vacancy Defect Generation）
 

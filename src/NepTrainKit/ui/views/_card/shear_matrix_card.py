@@ -116,22 +116,9 @@ class ShearMatrixCard(MakeDataCard):
         return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
-        """Serialize the current configuration to a plain dictionary.
-        
-        Returns
-        -------
-        dict
-            Dictionary that can be fed into ``from_dict`` to rebuild the state.
-        """
-        data_dict = super().to_dict()
-        params = self.get_params()
-        data_dict["params"] = params_to_dict(params)
-        data_dict["organic"] = params.identify_organic
-        data_dict["symmetric"] = params.symmetric
-        data_dict["xy_range"] = list(params.xy_range)
-        data_dict["yz_range"] = list(params.yz_range)
-        data_dict["xz_range"] = list(params.xz_range)
-        return data_dict
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
 
     def from_dict(self, data_dict):
         """Restore the card configuration from serialized values.

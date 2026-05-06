@@ -177,27 +177,9 @@ class SuperCellCard(MakeDataCard):
         return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
-        """Serialize the current configuration to a plain dictionary.
-        
-        Returns
-        -------
-        dict
-            Dictionary that can be fed into ``from_dict`` to rebuild the state.
-        """
-        data_dict = super().to_dict()
-
-        params = self.get_params()
-        data_dict["params"] = params_to_dict(params)
-        data_dict['super_cell_type'] = params.behavior_type
-        data_dict['super_scale_radio_button'] = params.mode == "scale"
-        data_dict['super_scale_condition'] = list(params.super_scale)
-        data_dict['super_cell_radio_button'] = params.mode == "cell"
-        data_dict['super_cell_condition'] = list(params.target_cell)
-        data_dict['max_atoms_radio_button'] = params.mode == "max_atoms"
-        data_dict['max_atoms_condition'] = [params.max_atoms]
-        data_dict['fixed_axis_flags'] = list(params.fixed_axis_flags)
-        data_dict['fixed_axis_scale'] = list(params.fixed_axis_scale)
-        return data_dict
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
 
     def from_dict(self, data_dict):
         """Restore the card configuration from serialized values.

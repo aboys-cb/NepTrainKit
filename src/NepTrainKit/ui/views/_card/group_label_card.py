@@ -93,13 +93,7 @@ class GroupLabelCard(MakeDataCard):
 
     def to_dict(self):
         data = super().to_dict()
-        params = self.get_params()
-        data["params"] = params_to_dict(params)
-        data["mode"] = params.mode
-        data["kvec"] = params.kvec
-        data["group_a"] = params.group_a
-        data["group_b"] = params.group_b
-        data["overwrite"] = params.overwrite
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):

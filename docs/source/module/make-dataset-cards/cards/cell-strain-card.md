@@ -1,227 +1,132 @@
-<!-- card-schema: {"card_name": "Lattice Strain", "source_file": "src/NepTrainKit/ui/views/_card/cell_strain_card.py", "serialized_keys": ["params", "organic", "engine_type", "x_range", "y_range", "z_range"]} -->
+<!-- card-schema: {"card_name": "Lattice Strain", "source_file": "src/NepTrainKit/ui/views/_card/cell_strain_card.py", "serialized_keys": ["params"]} -->
 
 # 晶格应变（Lattice Strain）
 
-`Group`: `Lattice`  
-`Class`: `CellStrainCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/cell_strain_card.py`
+`Group`: `Lattice` | `Class`: `CellStrainCard`
 
 ## 功能说明
-按轴向组合扫描应变（uniaxial/biaxial/triaxial/isotropic），系统构建应力-应变覆盖数据。
 
-它最适合的场景是：为弹性响应或应力训练生成单轴/双轴应变样本。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+对晶胞的轴向做受控应变扫描。选一个方向组合（单轴/双轴/三轴/各向同性），给定拉伸范围和步长，程序按百分比改变晶格矢量，生成一组应变结构。
 
-### 关键公式 (Core equations)
 $$\epsilon_i=\frac{s_i}{100},\quad \mathbf{C}'=\mathbf{D}\mathbf{C},\quad \mathbf{D}=\mathrm{diag}(1+\epsilon_x,1+\epsilon_y,1+\epsilon_z)$$
-$$\text{isotropic: }\mathbf{C}'=(1+\epsilon)\mathbf{C}$$
 
 ## 操作示例
-### 场景：为弹性响应或应力训练生成单轴/双轴应变样本
 
-**输入：** 一个已弛豫晶体，且你知道主要想拉伸或压缩哪个方向
+### 场景：测一个已弛豫晶体的弹性响应
 
-**目标：** 在不引入剪切的前提下，对 x/y/z 三个方向做受控应变扫描
+**输入：** 一个弛豫好的 Si 单胞
+
+**目标：** 沿 x 方向做 -2% 到 +2% 的单轴应变，步长 1%，看看模型能不能正确预测应力-应变趋势
 
 **参数设置：**
-- `engine_type` 先选清楚是单轴、双轴还是全方向策略
-- `x_range` / `y_range` / `z_range` 先从百分之几级别的小应变开始
-- `organic=true` 仅在分子晶体中需要额外保护分子内部结构时开启
+- `Axes` = `uniaxial`
+- `x_range` = `[-2, 2, 1]` （-2% 到 +2%，每 1% 一步）
+- `y_range` / `z_range` 用默认值即可（uniaxial 模式只生效 x 方向）
 
-**输出：** 一批带轴向应变差异的结构，晶格长度变化比角度变化更明显
+**输出：** 5 个结构（-2%, -1%, 0%, +1%, +2%），晶格 x 分量逐步拉长
 
 **怎么验证结果合理：**
-- 检查目标方向的晶格参数是否按预期变化
-- 非目标方向不要出现意外大幅畸变
-- 输出若为空，先检查各方向范围是否真的形成了有效扫描
+- 用可视化工具检查晶格 x 长度是否按百分比线性变化
+- y、z 方向晶格长度不应变化
+- 原子分数坐标应保持不变（`scale_atoms=True` 下绝对坐标自动缩放）
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 弹性相关预测不稳，轴向响应泛化差。
-- 目标任务 (Target objective): 构建可解释的应变网格数据。
-- 建议添加条件 (Add-it trigger): 需要比较不同应变路径的模型表现。
-- 不建议添加条件 (Avoid trigger): 仅需要局部坐标噪声而非系统应变。
-> 物理提示 (Physics caution): 重点检查体积变化、晶胞条件数和最近邻距离，避免把几何畸变直接放大到非物理区间。
+## 参数说明
 
-## 输入前提
-- 先确定 `engine_type` 与研究问题匹配。
-- 控制步长与范围，防止组合数失控。
+### `Axes`（engine_type）
 
-## 参数说明（完整）
-### `params` (Operation Params)
-- UI Label: `Operation Params`
-- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
-- 控件标签 (Caption): `Operation Params`
-- 控件解释 (Widget): 由 `Axes`、`X`、`Y`、`Z`、`Organic` 控件组合生成的内部参数字典。
-- 类型/范围 (Type/Range): dict
-- 默认值 (Default): `{"axes": "uniaxial", "x_range": [-5.0, 5.0, 1.0], "y_range": [-5.0, 5.0, 1.0], "z_range": [-5.0, 5.0, 1.0], "identify_organic": false}`
-- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
-- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组应变参数。
-- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+下拉选择。决定同时对哪些轴施加应变。
 
-### `organic` (Organic)
-- UI Label: `Organic`
-- 字段映射 (Field mapping): 序列化键 `organic` <-> 界面标签 `Organic`。
-- 控件标签 (Caption): `Organic`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 有机团簇识别与刚性移动开关 (organic cluster rigid mode)。
-- 对输出规模/物理性的影响: 开启后先识别有机团簇，扰动时对有机分子做刚性整体移动，减少分子内键长/拓扑被破坏；输入含有机分子时应开启。
-- 怎么判断该开还是该关: 只有当你明确知道这个开关会改变当前工作流目标时才开启；不确定时先保持默认并用小样本验证。
-- 配置建议 (Practical note):
-  - 开启：输入包含有机分子时必须开启；会先识别团簇并按分子刚性整体移动。
-  - 关闭：仅在确认为纯无机体系时关闭。
+| 选项 | 含义 | 什么时候用 |
+|------|------|-----------|
+| `uniaxial` | 只拉压一个轴，对 x/y/z 分别扫描 | 测各向异性弹性常数 |
+| `biaxial` | 两两组合（xy, xz, yz），同时拉压两个轴 | 覆盖泊松耦合效应 |
+| `triaxial` | 三轴同时独立扫描 | 预算充足时做全空间覆盖 |
+| `isotropic` | 三轴等比例缩放 | 只要体积变化，不改变晶格形状 |
 
-### `engine_type` (Axes)
-- UI Label: `Axes`
-- 字段映射 (Field mapping): 序列化键 `engine_type` <-> 界面标签 `Axes`。
-- 控件标签 (Caption): `Axes`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`（显示文本与序列化值可能不同）。
-- 类型/范围 (Type/Range): enum(string): `uniaxial`, `biaxial`, `triaxial`, `isotropic`
-- 默认值 (Default): `"uniaxial"`
-- 含义 (Meaning): 应变轴模式 (strain axes mode)，可选 `uniaxial / biaxial / triaxial / isotropic`。
-- 对输出规模/物理性的影响: 决定同时施加应变的轴向组合与样本规模：轴数越多，组合空间越大、计算成本越高。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 物理直觉 / 典型值: 它决定程序走哪种离散策略；先选对模式，再去调该模式下真正起作用的数值参数。
-- 推荐范围 (Recommended range):
-  - 保守：isotropic 或 uniaxial 基线
-  - 平衡：biaxial 覆盖主要耦合响应
-  - 探索：triaxial 仅在预算充足且有明确需求时启用
+自由输入单个轴也可以，比如输入 `X` 等价于 uniaxial 且只扫 x 方向。
 
-### `x_range` (X)
-- UI Label: `X`
-- 字段映射 (Field mapping): 序列化键 `x_range` <-> 界面标签 `X`。
-- 控件标签 (Caption): `X`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3], percent `[min,max,step]`
-- 默认值 (Default): `[-5.0, 5.0, 1.0]`
-- 含义 (Meaning): X 方向应变扫描区间（单位 `%`），格式为 `[min,max,step]`。
-- 对输出规模/物理性的影响: 按百分比应变扫描 x 轴（例如 `-5` 到 `5` 表示 `-5%` 到 `+5%`）。范围越宽或步长越小，组合数增长越快。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：±1-2%
-  - 平衡：±3-5%
-  - 探索：±6%+
+**输出规模：** isotropic 最少（每个 strain 值 1 个结构），triaxial 最多（三维网格，组合数 = Nx × Ny × Nz）。
 
-### `y_range` (Y)
-- UI Label: `Y`
-- 字段映射 (Field mapping): 序列化键 `y_range` <-> 界面标签 `Y`。
-- 控件标签 (Caption): `Y`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3], percent `[min,max,step]`
-- 默认值 (Default): `[-5.0, 5.0, 1.0]`
-- 含义 (Meaning): Y 方向应变扫描区间（单位 `%`），格式为 `[min,max,step]`。
-- 对输出规模/物理性的影响: 按百分比应变扫描 y 轴（例如 `-5` 到 `5` 表示 `-5%` 到 `+5%`）。范围越宽或步长越小，组合数增长越快。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：±1-2%
-  - 平衡：±3-5%
-  - 探索：±6%+
+### `X` / `Y` / `Z`（x_range / y_range / z_range）
 
-### `z_range` (Z)
-- UI Label: `Z`
-- 字段映射 (Field mapping): 序列化键 `z_range` <-> 界面标签 `Z`。
-- 控件标签 (Caption): `Z`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3], percent `[min,max,step]`
-- 默认值 (Default): `[-5.0, 5.0, 1.0]`
-- 含义 (Meaning): Z 方向应变扫描区间（单位 `%`），格式为 `[min,max,step]`。
-- 对输出规模/物理性的影响: 按百分比应变扫描 z 轴（例如 `-5` 到 `5` 表示 `-5%` 到 `+5%`）。范围越宽或步长越小，组合数增长越快。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：±1-2%
-  - 平衡：±3-5%
-  - 探索：±6%+
+三个独立的 `[最小值, 最大值, 步长]`，单位是百分比。
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+- `[-3, 3, 1]` 表示从 -3% 压缩到 +3% 拉伸，每隔 1% 取一个点
+- 只有当前 `Axes` 模式激活的轴才生效。其余轴的方向即使填了值也被忽略
+
+**推荐幅度：**
+- ±1~2%：大多数晶体的弹性区，键长变化 < 0.1Å，适合近平衡训练
+- ±3~5%：开始进入非谐区域，适合覆盖中等变形
+- ±6%+：极端变形，可能产生非物理键长，建议先抽查输出再批量跑
+
+### `Identify organic`（organic）
+
+复选框。开启后程序先识别有机分子团簇，应变时将分子作为刚性整体移动，而不是对分子内每个原子单独缩放。
+
+- 输入是分子晶体（MOF、有机半导体等）：**开启**
+- 输入是无机晶体（金属、氧化物等）：**关闭**，开了只会增加不必要计算
+
+## 推荐预设
+
+### 近平衡弹性（isotropic, ±1%）
 ```json
 {
   "class": "CellStrainCard",
   "check_state": true,
   "organic": false,
   "engine_type": "isotropic",
-  "x_range": [
-    -1,
-    1,
-    1
-  ],
-  "y_range": [
-    -1,
-    1,
-    1
-  ],
-  "z_range": [
-    -1,
-    1,
-    1
-  ]
+  "x_range": [-1, 1, 1],
+  "y_range": [-1, 1, 1],
+  "z_range": [-1, 1, 1]
 }
 ```
 
-### 平衡（Balanced）
+### 各向异性覆盖（uniaxial, ±3%, 三个方向）
+```json
+{
+  "class": "CellStrainCard",
+  "check_state": true,
+  "organic": false,
+  "engine_type": "uniaxial",
+  "x_range": [-3, 3, 1],
+  "y_range": [-3, 3, 1],
+  "z_range": [-3, 3, 1]
+}
+```
+
+### 大变形探索（biaxial, ±6%）
 ```json
 {
   "class": "CellStrainCard",
   "check_state": true,
   "organic": false,
   "engine_type": "biaxial",
-  "x_range": [
-    -3,
-    3,
-    1
-  ],
-  "y_range": [
-    -3,
-    3,
-    1
-  ],
-  "z_range": [
-    -3,
-    3,
-    1
-  ]
-}
-```
-
-### 激进/探索（Aggressive/Exploration）
-```json
-{
-  "class": "CellStrainCard",
-  "check_state": true,
-  "organic": false,
-  "engine_type": "triaxial",
-  "x_range": [
-    -6,
-    6,
-    2
-  ],
-  "y_range": [
-    -6,
-    6,
-    2
-  ],
-  "z_range": [
-    -6,
-    6,
-    2
-  ]
+  "x_range": [-6, 6, 2],
+  "y_range": [-6, 6, 2],
+  "z_range": [-6, 6, 2]
 }
 ```
 
 ## 推荐组合
-- Lattice Strain -> Atomic Perturb: 对每个应变帧增加局部差异。
-- Lattice Strain -> Shear Matrix Strain: 在轴向应变后补充非对角剪切分量覆盖。
-- 作为后续缺陷、表面或磁性卡片的母胞准备步骤。
 
-## 常见问题与排查
-- 输出为空或远少于预期时，先检查各范围参数是否真的形成了有效扫描组合；很多这类卡片在参数只给定单点时只会输出很少的结构。
-- 如果结构明显不合理，先看体积、晶胞角和最近邻距离，再把主控幅度或步长回调到更小的量级。
-- 模式冲突时以当前 UI 状态和代码分支为准；导入旧 JSON 后如果发现多个主模式字段同时存在，建议手工确认只保留一条主路径。
+- `Lattice Strain` → `Atomic Perturb`：应变后再加原子坐标噪声，覆盖几何+热扰动
+- `Lattice Strain` → `Shear Matrix Strain`：轴向应变后补剪切分量
+- 作为 `Random Slab` / `Insert Defect` / 磁性卡片的母胞准备步骤
 
-## 输出标签 / 元数据变更
-- 该卡片输出的 Config_type 标签模式：
-  - `Str({...})`
+## 常见问题
 
-## 可复现性说明
-- 该卡片本身无显式随机种子，参数与输入一致时结果应确定。
-- 若上游含随机操作，仍需在 pipeline 层统一控制随机性。
+**输出为空。** 检查各轴的 `步长` 是否 > 0，`最大值` 是否 >= `最小值`。如果某个轴的步长为 0，该方向不会产生扫描点。
+
+**输出结构晶格角明显变化。** 这是纯轴向应变，不应该改变角度。如果角度变了，检查是否上游结构已经带有非正交晶格，或误用了其他卡片。
+
+**组合爆炸。** `triaxial` + 细步长会很难产。比如 3 个轴各 10 个点 = 1000 个结构。先算一下 Nx × Ny × Nz 再跑。
+
+**有机分子键被拉断。** 确认 `Identify organic` 已开启。
+
+## 输出标签
+
+输出结构的 `Config_type` 追加标签：`Str(x=-2%,y=1%)` / `Str(all=3%)` 等。
+
+## 可复现性
+
+无随机性。相同参数 + 相同输入结构 → 输出严格一致。

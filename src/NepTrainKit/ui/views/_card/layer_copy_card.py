@@ -224,31 +224,15 @@ class LayerCopyCard(MakeDataCard):
 
     def to_dict(self) -> dict[str, Any]:
         data = super().to_dict()
-        params = self.get_params()
-        operation_params = params_to_dict(params)
-        operation_params["z_range"] = list(params.z_range)
-        data.update(
-            {
-                "operation_params": operation_params,
-                "preset_index": params.preset_index,
-                "dz_expr": params.dz_expr,
-                "params": params.expression_params,
-                "apply_mode": params.apply_mode,
-                "elements": params.elements,
-                "z_range": list(params.z_range),
-                "wrap": params.wrap,
-                "extend_cell_z": params.extend_cell_z,
-                "extra_vacuum": [params.extra_vacuum],
-                "layers": [params.layers],
-                "distance": [params.distance],
-            }
-        )
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict: dict[str, Any]) -> None:
         super().from_dict(data_dict)
-        raw_params = data_dict.get("operation_params")
-        if raw_params:
+        raw_params = data_dict.get("params")
+        if not isinstance(raw_params, dict):
+            raw_params = data_dict.get("operation_params")
+        if isinstance(raw_params, dict):
             params = LayerCopyParams(
                 preset_index=raw_params.get("preset_index", 1),
                 dz_expr=raw_params.get("dz_expr", "sin(x/pi) + sin(y/pi)"),

@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Shear Matrix Strain", "source_file": "src/NepTrainKit/ui/views/_card/shear_matrix_card.py", "serialized_keys": ["params", "organic", "symmetric", "xy_range", "yz_range", "xz_range"]} -->
+<!-- card-schema: {"card_name": "Shear Matrix Strain", "source_file": "src/NepTrainKit/ui/views/_card/shear_matrix_card.py", "serialized_keys": ["params"]} -->
 
 # 剪切矩阵应变（Shear Matrix Strain）
 

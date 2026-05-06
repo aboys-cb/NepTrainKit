@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Crystal Prototype Builder", "source_file": "src/NepTrainKit/ui/views/_card/crystal_prototype_builder_card.py", "serialized_keys": ["params", "lattice", "element", "a_range", "covera", "auto_supercell", "max_atoms", "rep", "max_outputs"]} -->
+<!-- card-schema: {"card_name": "Crystal Prototype Builder", "source_file": "src/NepTrainKit/ui/views/_card/crystal_prototype_builder_card.py", "serialized_keys": ["params"]} -->
 
 # 晶体原型构建（Crystal Prototype Builder）
 

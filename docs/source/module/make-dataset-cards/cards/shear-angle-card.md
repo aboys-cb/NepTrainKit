@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Shear Angle Strain", "source_file": "src/NepTrainKit/ui/views/_card/shear_angle_card.py", "serialized_keys": ["params", "organic", "alpha_range", "beta_range", "gamma_range"]} -->
+<!-- card-schema: {"card_name": "Shear Angle Strain", "source_file": "src/NepTrainKit/ui/views/_card/shear_angle_card.py", "serialized_keys": ["params"]} -->
 
 # 剪切角应变（Shear Angle Strain）
 

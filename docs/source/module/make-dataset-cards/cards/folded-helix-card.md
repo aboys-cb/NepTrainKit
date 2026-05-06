@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Folded Helix", "source_file": "src/NepTrainKit/ui/views/_card/folded_helix_card.py", "serialized_keys": ["params", "layer_axis", "plane_normal", "layer_tolerance", "half_period_mode", "half_period_layers", "angle_step_range", "phase_range", "sequence_mode", "magnitude_source", "magmom_map", "default_moment", "apply_elements", "max_outputs"]} -->
+<!-- card-schema: {"card_name": "Folded Helix", "source_file": "src/NepTrainKit/ui/views/_card/folded_helix_card.py", "serialized_keys": ["params"]} -->
 
 # 折返螺旋初始磁矩（Folded Helix）
 

@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Composition Sweep", "source_file": "src/NepTrainKit/ui/views/_card/composition_sweep_card.py", "serialized_keys": ["params", "elements", "order", "method", "step", "n_points", "min_fraction", "include_endpoints", "use_seed", "seed", "max_outputs", "budget_mode"]} -->
+<!-- card-schema: {"card_name": "Composition Sweep", "source_file": "src/NepTrainKit/ui/views/_card/composition_sweep_card.py", "serialized_keys": ["params"]} -->
 
 # 成分扫描（Composition Sweep）
 

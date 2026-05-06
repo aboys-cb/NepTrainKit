@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Conditional Replace", "source_file": "src/NepTrainKit/ui/views/_card/conditional_replace_card.py", "serialized_keys": ["params", "target", "replacements", "condition", "seed", "mode"]} -->
+<!-- card-schema: {"card_name": "Conditional Replace", "source_file": "src/NepTrainKit/ui/views/_card/conditional_replace_card.py", "serialized_keys": ["params"]} -->
 
 # 条件替换（Conditional Replace）
 

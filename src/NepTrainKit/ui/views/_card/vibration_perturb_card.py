@@ -147,20 +147,9 @@ class VibrationModePerturbCard(MakeDataCard):
         return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
-        """Serialize the card configuration."""
-        data_dict = super().to_dict()
-        params = self.get_params()
-        data_dict["params"] = params_to_dict(params)
-        data_dict["distribution"] = params.distribution
-        data_dict["amplitude"] = [params.amplitude]
-        data_dict["modes_per_sample"] = [params.modes_per_sample]
-        data_dict["min_frequency"] = [params.min_frequency]
-        data_dict["max_num"] = [params.max_num]
-        data_dict["scale_by_frequency"] = params.scale_by_frequency
-        data_dict["exclude_near_zero"] = params.exclude_near_zero
-        data_dict["use_seed"] = params.use_seed
-        data_dict["seed"] = [params.seed]
-        return data_dict
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
 
     def from_dict(self, data_dict):
         """Restore the card configuration from serialized values."""

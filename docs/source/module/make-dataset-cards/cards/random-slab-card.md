@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Random Slab", "source_file": "src/NepTrainKit/ui/views/_card/random_slab_card.py", "serialized_keys": ["params", "h_range", "k_range", "l_range", "layer_range", "vacuum_range"]} -->
+<!-- card-schema: {"card_name": "Random Slab", "source_file": "src/NepTrainKit/ui/views/_card/random_slab_card.py", "serialized_keys": ["params"]} -->
 
 # 随机表面切片（Random Slab）
 

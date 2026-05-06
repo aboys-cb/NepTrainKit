@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Magmom Rotation", "source_file": "src/NepTrainKit/ui/views/_card/magmom_rotation_card.py", "serialized_keys": ["elements", "max_angle", "num_structures", "lift_scalar", "axis", "disturb_magnitude", "magnitude_factor", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Magmom Rotation", "source_file": "src/NepTrainKit/ui/views/_card/magmom_rotation_card.py", "serialized_keys": ["params", "elements", "max_angle", "num_structures", "lift_scalar", "axis", "disturb_magnitude", "magnitude_factor", "use_seed", "seed"]} -->
 
 # 磁矩旋转（Magmom Rotation）
 
@@ -46,6 +46,17 @@ $$\mathbf{R}(\hat{\mathbf{n}},\theta)=\cos\theta\,\mathbf{I}+(1-\cos\theta)\hat{
 - 先从小角度 `max_angle` 开始。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
+- 控件标签 (Caption): `Operation Params`
+- 控件解释 (Widget): 由元素、旋转角、输出数量、标量抬升、参考轴、模长扰动和 seed 控件组合生成的内部参数字典。
+- 类型/范围 (Type/Range): dict
+- 默认值 (Default): `{"elements": "", "max_angle": 10.0, "num_structures": 5, "lift_scalar": true, "axis": [0.0, 0.0, 1.0], "disturb_magnitude": true, "magnitude_factor": [0.95, 1.05], "use_seed": false, "seed": 0}`
+- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
+- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组磁矩旋转参数。
+- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+
 ### `elements` (Elements)
 - UI Label: `Elements`
 - 字段映射 (Field mapping): 序列化键 `elements` <-> 界面标签 `Elements`。

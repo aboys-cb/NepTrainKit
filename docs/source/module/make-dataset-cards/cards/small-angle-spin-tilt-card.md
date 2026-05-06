@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Small-Angle Spin Tilt", "source_file": "src/NepTrainKit/ui/views/_card/small_angle_spin_tilt_card.py", "serialized_keys": ["canting_mode", "target_mode", "target_indices", "pair_left_indices", "pair_right_indices", "pair_source", "pair_shell", "pair_shell_tolerance", "pair_element_filter", "pair_group_filter", "bond_filter_mode", "bond_filter_axis", "bond_filter_tolerance", "group_a", "group_b", "angle_list", "tilt_signs", "include_reference", "magnitude_source", "magmom_map", "default_moment", "lift_scalar", "axis", "reference_direction", "apply_elements", "max_outputs"]} -->
+<!-- card-schema: {"card_name": "Small-Angle Spin Tilt", "source_file": "src/NepTrainKit/ui/views/_card/small_angle_spin_tilt_card.py", "serialized_keys": ["params", "canting_mode", "target_mode", "target_indices", "pair_left_indices", "pair_right_indices", "pair_source", "pair_shell", "pair_shell_tolerance", "pair_element_filter", "pair_group_filter", "bond_filter_mode", "bond_filter_axis", "bond_filter_tolerance", "group_a", "group_b", "angle_list", "tilt_signs", "include_reference", "magnitude_source", "magmom_map", "default_moment", "lift_scalar", "axis", "reference_direction", "apply_elements", "max_outputs"]} -->
 
 # 小角度单自旋/成对 Canting（Small-Angle Spin Tilt）
 
@@ -58,6 +58,17 @@ $$
 - 若使用 `Group pair canting`，输入结构需要带有 `arrays['group']`；通常可先用 `Group Label` 生成。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
+- 控件标签 (Caption): `Operation Params`
+- 控件解释 (Widget): 由 canting 模式、目标原子/原子对选择、邻居壳过滤、角度列表、参考磁矩来源、参考轴和输出上限组合生成的内部参数字典。
+- 类型/范围 (Type/Range): dict
+- 默认值 (Default): `{"canting_mode": "Single-spin tilt", "target_mode": "First eligible atom", "target_indices": "", "pair_left_indices": "", "pair_right_indices": "", "pair_source": "Manual indices", "pair_shell": 1, "pair_shell_tolerance": 0.05, "pair_element_filter": "", "pair_group_filter": "", "bond_filter_mode": "Any", "bond_filter_axis": [0.0, 0.0, 1.0], "bond_filter_tolerance": 20.0, "group_a": "A", "group_b": "B", "angle_list": "1,2,5,10", "tilt_signs": "Positive only", "include_reference": true, "magnitude_source": "Existing initial magmoms", "magmom_map": "", "default_moment": 0.0, "lift_scalar": true, "axis": [0.0, 0.0, 1.0], "reference_direction": [1.0, 0.0, 0.0], "apply_elements": "", "max_outputs": 100}`
+- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
+- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组小角度 canting 参数。
+- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+
 ### `canting_mode` (Canting Mode)
 - UI Label: `Canting mode`
 - 字段映射 (Field mapping): 序列化键 `canting_mode` <-> 界面标签 `Canting mode`。

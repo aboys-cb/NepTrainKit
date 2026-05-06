@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Spin Spiral", "source_file": "src/NepTrainKit/ui/views/_card/spin_spiral_card.py", "serialized_keys": ["axis", "spiral_parameter_mode", "period_range", "angle_gradient_range", "phase_range", "mz", "chirality", "phase_mode", "layer_tolerance", "only_commensurate_periods", "magnitude_source", "magmom_map", "default_moment", "apply_elements", "max_outputs"]} -->
+<!-- card-schema: {"card_name": "Spin Spiral", "source_file": "src/NepTrainKit/ui/views/_card/spin_spiral_card.py", "serialized_keys": ["params", "axis", "spiral_parameter_mode", "period_range", "angle_gradient_range", "phase_range", "mz", "chirality", "phase_mode", "layer_tolerance", "only_commensurate_periods", "magnitude_source", "magmom_map", "default_moment", "apply_elements", "max_outputs"]} -->
 
 # 自旋螺旋初始化（Spin Spiral）
 
@@ -62,6 +62,17 @@ $$
 - 若 `magnitude_source` 选 `Map/default magnitude`，需要提供 `magmom_map` 或合理的 `default_moment`。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
+- 控件标签 (Caption): `Operation Params`
+- 控件解释 (Widget): 由传播轴、周期/角梯度扫描、相位、轴向分量、手性、相位模式、整周期过滤、磁矩来源和输出上限组合生成的内部参数字典。
+- 类型/范围 (Type/Range): dict
+- 默认值 (Default): `{"axis": [0.0, 0.0, 1.0], "spiral_parameter_mode": "Period (L_D)", "period_range": [20.0, 40.0, 10.0], "angle_gradient_range": [18.0, 18.0, 1.0], "phase_range": [0.0, 0.0, 15.0], "mz": [0.0, 0.0, 0.1], "chirality": "Both", "phase_mode": "Continuous by position", "layer_tolerance": 0.05, "only_commensurate_periods": false, "magnitude_source": "Existing initial magmoms", "magmom_map": "", "default_moment": 0.0, "apply_elements": "", "max_outputs": 100}`
+- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
+- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组 spin spiral 参数。
+- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+
 ### `axis` (Propagation Axis)
 - UI Label: `Propagation axis`
 - 字段映射 (Field mapping): 序列化键 `axis` <-> 界面标签 `Propagation axis`。

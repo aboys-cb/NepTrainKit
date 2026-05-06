@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Magnetic Order", "source_file": "src/NepTrainKit/ui/views/_card/magnetic_order_card.py", "serialized_keys": ["format", "axis", "magmom_map", "use_element_dirs", "default_moment", "apply_elements", "gen_fm", "gen_afm", "afm_mode", "afm_kvec", "afm_group_a", "afm_group_b", "afm_zero_unknown", "gen_pm", "pm_count", "pm_direction", "pm_cone_angle", "pm_balanced", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Magnetic Order", "source_file": "src/NepTrainKit/ui/views/_card/magnetic_order_card.py", "serialized_keys": ["params", "format", "axis", "magmom_map", "use_element_dirs", "default_moment", "apply_elements", "gen_fm", "gen_afm", "afm_mode", "afm_kvec", "afm_group_a", "afm_group_b", "afm_zero_unknown", "gen_pm", "pm_count", "pm_direction", "pm_cone_angle", "pm_balanced", "use_seed", "seed"]} -->
 
 # 磁有序初始化（Magnetic Order）
 
@@ -42,6 +42,17 @@
 - AFM group 模式需先有 Group Label 结果。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
+- 控件标签 (Caption): `Operation Params`
+- 控件解释 (Widget): 由磁矩格式、参考轴、元素磁矩映射、FM/AFM/PM 分支、AFM 模式和 PM 随机参数组合生成的内部参数字典。
+- 类型/范围 (Type/Range): dict
+- 默认值 (Default): `{"format": "Collinear (scalar)", "axis": [0.0, 0.0, 1.0], "magmom_map": "", "use_element_dirs": false, "default_moment": 0.0, "apply_elements": "", "gen_fm": true, "gen_afm": true, "afm_mode": "k-vector", "afm_kvec": "111", "afm_group_a": "A", "afm_group_b": "B", "afm_zero_unknown": true, "gen_pm": false, "pm_count": 10, "pm_direction": "sphere", "pm_cone_angle": 30.0, "pm_balanced": true, "use_seed": false, "seed": 0}`
+- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
+- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组磁序生成参数。
+- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+
 ### `format` (Format)
 - UI Label: `Format`
 - 字段映射 (Field mapping): 序列化键 `format` <-> 界面标签 `Format`。

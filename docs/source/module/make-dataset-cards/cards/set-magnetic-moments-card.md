@@ -1,4 +1,4 @@
-<!-- card-schema: {"card_name": "Set Magnetic Moments", "source_file": "src/NepTrainKit/ui/views/_card/set_magnetic_moments_card.py", "serialized_keys": ["source", "format", "axis", "magmom_map", "use_element_dirs", "default_moment", "constant_moment", "lift_scalar", "apply_elements"]} -->
+<!-- card-schema: {"card_name": "Set Magnetic Moments", "source_file": "src/NepTrainKit/ui/views/_card/set_magnetic_moments_card.py", "serialized_keys": ["params", "source", "format", "axis", "magmom_map", "use_element_dirs", "default_moment", "constant_moment", "lift_scalar", "apply_elements"]} -->
 
 # 设置磁矩（Set Magnetic Moments）
 
@@ -59,6 +59,17 @@ $$
 - 若只想初始化某些元素，可通过 `apply_elements` 收缩作用范围；未选中的元素会被写成零磁矩。
 
 ## 参数说明（完整）
+### `params` (Operation Params)
+- UI Label: `Operation Params`
+- 字段映射 (Field mapping): 序列化键 `params` <-> UI 控件读取后的纯参数对象。
+- 控件标签 (Caption): `Operation Params`
+- 控件解释 (Widget): 由磁矩来源、输出格式、参考轴、元素磁矩映射、默认/常量模长、标量抬升和作用元素组合生成的内部参数字典。
+- 类型/范围 (Type/Range): dict
+- 默认值 (Default): `{"source": "Map/default magnitude", "format": "Non-collinear (vector)", "axis": [0.0, 0.0, 1.0], "magmom_map": "", "use_element_dirs": false, "default_moment": 0.0, "constant_moment": 2.0, "lift_scalar": true, "apply_elements": ""}`
+- 含义 (Meaning): UI-independent 参数快照，供 core operation、测试和未来批处理入口复用。
+- 对输出规模/物理性的影响: 本字段本身不新增物理行为；其内容与下面的 legacy 字段保持同一组磁矩设置参数。
+- 怎么判断该开还是该关: 这是序列化结构字段，不是用户开关；导入旧 JSON 时仍可由 legacy 字段恢复。
+
 ### `source` (Source)
 - UI Label: `Source`
 - 字段映射 (Field mapping): 序列化键 `source` <-> 界面标签 `Source`。

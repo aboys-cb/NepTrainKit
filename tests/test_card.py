@@ -66,6 +66,18 @@ from NepTrainKit.core.cards.lattice import (
     SuperCellOperation,
     SuperCellParams,
 )
+from NepTrainKit.core.cards.magnetism import (
+    MagneticMomentRotationOperation,
+    MagneticMomentRotationParams,
+    MagneticOrderOperation,
+    MagneticOrderParams,
+    SetMagneticMomentsOperation,
+    SetMagneticMomentsParams,
+    SmallAngleSpinTiltOperation,
+    SmallAngleSpinTiltParams,
+    SpinSpiralOperation,
+    SpinSpiralParams,
+)
 from NepTrainKit.ui.widgets import MakeDataCard
 from NepTrainKit.ui.widgets.card_metadata import card_tooltip, metadata_html
 from NepTrainKit.version import DOCS_BASE_URL
@@ -636,6 +648,61 @@ class TestCard(unittest.TestCase):
         afm_m = np.array(afm.get_initial_magnetic_moments(), dtype=float)
         self.assertTrue(np.all(fm_m >= 0))
         self.assertTrue(np.any(afm_m > 0) and np.any(afm_m < 0))
+
+    def test_magnetic_operations_are_ui_independent(self):
+        structure = self._spin_chain()
+
+        set_result = SetMagneticMomentsOperation().run_structure(
+            structure,
+            SetMagneticMomentsParams(
+                source="Map/default magnitude",
+                format="Non-collinear (vector)",
+                magmom_map="Fe:2.0",
+                axis=[0.0, 0.0, 1.0],
+            ),
+        )[0]
+        self.assertIn("MagSet(map,vec)", str(set_result.info.get("Config_type", "")))
+
+        order_result = MagneticOrderOperation().run_structure(
+            structure,
+            MagneticOrderParams(magmom_map="Fe:2.0", gen_fm=True, gen_afm=False),
+        )[0]
+        self.assertIn("MagFM", str(order_result.info.get("Config_type", "")))
+
+        spiral_result = SpinSpiralOperation().run_structure(
+            set_result,
+            SpinSpiralParams(
+                period_range=[4.0, 4.0, 1.0],
+                phase_range=[0.0, 0.0, 15.0],
+                chirality="Clockwise",
+                max_outputs=1,
+            ),
+        )[0]
+        self.assertIn("Helix(", str(spiral_result.info.get("Config_type", "")))
+
+        tilt_result = SmallAngleSpinTiltOperation().run_structure(
+            set_result,
+            SmallAngleSpinTiltParams(
+                target_mode="Explicit indices (1-based)",
+                target_indices="2",
+                angle_list="5",
+                include_reference=False,
+            ),
+        )[0]
+        self.assertIn("SpinTilt(i=2,a=5", str(tilt_result.info.get("Config_type", "")))
+
+        rotated = MagneticMomentRotationOperation().run_structure(
+            set_result,
+            MagneticMomentRotationParams(
+                elements="Fe",
+                max_angle=10.0,
+                num_structures=1,
+                use_seed=True,
+                seed=7,
+            ),
+        )[0]
+        moments = np.array(rotated.get_initial_magnetic_moments(), dtype=float)
+        self.assertEqual(moments.shape, (4, 3))
 
     def test_group_label_card_and_group_afm(self):
         proto = CrystalPrototypeBuilderCard()

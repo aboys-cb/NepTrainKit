@@ -2,97 +2,12 @@
 
 from __future__ import annotations
 
-import math
-import re
-
-import numpy as np
-from ase.geometry import get_distances
 from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager, MessageManager
-from NepTrainKit.core.config_type import append_config_tag
-from NepTrainKit.core.magnetism import (
-    existing_moment_vectors,
-    mapped_moment_vectors,
-    normalize_vector,
-    orthonormal_frame,
-    parse_element_set,
-    parse_magmom_map_any,
-    set_initial_magmoms_safe,
-)
+from NepTrainKit.core.cards.magnetism import SmallAngleSpinTiltOperation, SmallAngleSpinTiltParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
-
-
-def _parse_angle_list(text: str) -> list[float]:
-    """Parse a comma-separated list of positive tilt angles in degrees."""
-    values: list[float] = []
-    seen: set[float] = set()
-    for token in re.split(r"[\s,;]+", text or ""):
-        if not token.strip():
-            continue
-        try:
-            value = float(token)
-        except ValueError:
-            continue
-        if value <= 0:
-            continue
-        rounded = float(np.round(value, 12))
-        if rounded in seen:
-            continue
-        seen.add(rounded)
-        values.append(rounded)
-    return values
-
-
-def _parse_atom_indices(text: str, natoms: int) -> list[int]:
-    """Parse 1-based atom indices from tokens such as ``1,3-5``."""
-    indices: list[int] = []
-    seen: set[int] = set()
-    for token in re.split(r"[\s,;]+", text or ""):
-        token = token.strip()
-        if not token:
-            continue
-        if "-" in token:
-            start_text, end_text = token.split("-", 1)
-            try:
-                start = int(start_text)
-                end = int(end_text)
-            except ValueError:
-                continue
-            if end < start:
-                start, end = end, start
-            raw_values = range(start, end + 1)
-        else:
-            try:
-                raw_values = [int(token)]
-            except ValueError:
-                continue
-
-        for raw in raw_values:
-            idx = raw - 1
-            if idx < 0 or idx >= natoms or idx in seen:
-                continue
-            seen.add(idx)
-            indices.append(idx)
-    return indices
-
-
-def _parse_pair_filter(text: str, *, normalize_case: bool = False) -> set[tuple[str, str]]:
-    """Parse pair filters such as ``Fe-Co,Fe-Fe`` into canonical tuple pairs."""
-    pairs: set[tuple[str, str]] = set()
-    for token in re.split(r"[\s,;]+", text or ""):
-        token = token.strip()
-        if not token or "-" not in token:
-            continue
-        left, right = [part.strip() for part in token.split("-", 1)]
-        if not left or not right:
-            continue
-        if normalize_case:
-            left = left[0].upper() + left[1:].lower()
-            right = right[0].upper() + right[1:].lower()
-        pair = tuple(sorted((left, right)))
-        pairs.add(pair)
-    return pairs
 
 
 @CardManager.register_card
@@ -435,417 +350,141 @@ class SmallAngleSpinTiltCard(MakeDataCard):
         self.default_label.setVisible(use_map)
         self.default_frame.setVisible(use_map)
 
-    def _axis(self) -> np.ndarray:
-        values = [float(v) for v in self.axis_frame.get_input_value()]
-        return normalize_vector(np.array(values, dtype=float))
-
-    def _reference_direction(self) -> np.ndarray:
-        values = [float(v) for v in self.reference_frame.get_input_value()]
-        return normalize_vector(np.array(values, dtype=float), default=np.array([1.0, 0.0, 0.0], dtype=float))
-
-    def _angles(self) -> list[float]:
-        values = _parse_angle_list(self.angle_edit.text())
-        if values:
-            return values
-        MessageManager.send_warning_message("SmallAngleSpinTilt: invalid tilt angles; using default 1,2,5,10 deg.")
-        return [1.0, 2.0, 5.0, 10.0]
-
-    def _signs(self) -> list[tuple[str, float]]:
-        mode = self.sign_combo.currentText()
-        if mode == "Negative only":
-            return [("neg", -1.0)]
-        if mode == "Both (+/- pair)":
-            return [("pos", 1.0), ("neg", -1.0)]
-        return [("pos", 1.0)]
-
-    def _pair_targets(self, structure, base_moments: np.ndarray) -> list[tuple[int, int]]:
-        if self.pair_source_combo.currentText() == "Auto by neighbor shell":
-            return self._auto_pair_targets(structure, base_moments)
-        left = _parse_atom_indices(self.pair_left_edit.text(), len(structure))
-        right = _parse_atom_indices(self.pair_right_edit.text(), len(structure))
-        if not left or not right:
-            return []
-        if len(left) != len(right):
-            MessageManager.send_warning_message(
-                "SmallAngleSpinTilt: pair index counts differ; truncating to the shorter side."
-            )
-        pairs: list[tuple[int, int]] = []
-        seen: set[tuple[int, int]] = set()
-        norms = np.linalg.norm(base_moments, axis=1)
-        for left_idx, right_idx in zip(left, right):
-            if left_idx == right_idx:
-                continue
-            if norms[left_idx] <= 1e-10 or norms[right_idx] <= 1e-10:
-                continue
-            pair = (left_idx, right_idx)
-            if pair in seen:
-                continue
-            seen.add(pair)
-            pairs.append(pair)
-        return pairs
-
-    def _auto_pair_targets(self, structure, base_moments: np.ndarray) -> list[tuple[int, int]]:
-        norms = np.linalg.norm(base_moments, axis=1)
-        apply_elements = parse_element_set(self.apply_edit.text())
-        eligible = [
-            idx
-            for idx, (sym, mag) in enumerate(zip(structure.get_chemical_symbols(), norms))
-            if mag > 1e-10 and (not apply_elements or sym in apply_elements)
-        ]
-        if len(eligible) < 2:
-            return []
-
-        positions = np.asarray(structure.get_positions(), dtype=float)
-        vec_matrix, dist_matrix = get_distances(
-            positions[eligible],
-            positions[eligible],
-            cell=np.asarray(structure.cell),
-            pbc=np.asarray(structure.pbc, dtype=bool),
-        )
-        tol = float(self.pair_tol_frame.get_input_value()[0])
-        shell_index = int(self.pair_shell_frame.get_input_value()[0]) - 1
-
-        pair_distances: list[tuple[int, int, float, np.ndarray]] = []
-        for row in range(len(eligible)):
-            for col in range(row + 1, len(eligible)):
-                dist = float(dist_matrix[row, col])
-                if dist <= 1e-12:
-                    continue
-                pair_distances.append((eligible[row], eligible[col], dist, np.asarray(vec_matrix[row, col], dtype=float)))
-        if not pair_distances:
-            return []
-
-        unique_distances = sorted(dist for _, _, dist, _ in pair_distances)
-        shells: list[float] = []
-        for dist in unique_distances:
-            if not shells or abs(dist - shells[-1]) > tol:
-                shells.append(dist)
-        if shell_index < 0 or shell_index >= len(shells):
-            MessageManager.send_warning_message(
-                f"SmallAngleSpinTilt: neighbor shell {shell_index + 1} not found; available shells={len(shells)}."
-            )
-            return []
-
-        target_distance = shells[shell_index]
-        return [
-            (i, j)
-            for i, j, dist, bond_vector in pair_distances
-            if abs(dist - target_distance) <= tol
-            and self._passes_pair_filters(structure, i, j, bond_vector)
-        ]
-
-    def _passes_pair_filters(self, structure, left_idx: int, right_idx: int, bond_vector: np.ndarray) -> bool:
-        element_pairs = _parse_pair_filter(self.pair_element_edit.text(), normalize_case=True)
-        if element_pairs:
-            syms = structure.get_chemical_symbols()
-            pair = tuple(sorted((syms[left_idx], syms[right_idx])))
-            if pair not in element_pairs:
-                return False
-
-        group_pairs = _parse_pair_filter(self.pair_group_edit.text(), normalize_case=False)
-        if group_pairs:
-            if "group" not in structure.arrays:
-                return False
-            groups = [str(g) for g in np.asarray(structure.arrays["group"])]
-            pair = tuple(sorted((groups[left_idx], groups[right_idx])))
-            if pair not in group_pairs:
-                return False
-
-        mode = self.bond_mode_combo.currentText()
-        if mode == "Any":
-            return True
-
-        reference = normalize_vector(np.array(self.bond_axis_frame.get_input_value(), dtype=float))
-        bond_hat = normalize_vector(np.asarray(bond_vector, dtype=float), default=reference)
-        cos_angle = float(np.clip(abs(np.dot(bond_hat, reference)), 0.0, 1.0))
-        angle = float(np.degrees(np.arccos(cos_angle)))
-        tolerance = float(self.bond_tol_frame.get_input_value()[0])
-        if mode == "Near axis":
-            return angle <= tolerance
-        return abs(90.0 - angle) <= tolerance
-
-    def _group_targets(self, structure, base_moments: np.ndarray) -> tuple[list[int], list[int]]:
-        if "group" not in structure.arrays:
-            return [], []
-        group_values = [str(g) for g in np.asarray(structure.arrays["group"])]
-        group_a = (self.group_a_edit.text() or "A").strip()
-        group_b = (self.group_b_edit.text() or "B").strip()
-        norms = np.linalg.norm(base_moments, axis=1)
-        left = [idx for idx, (g, mag) in enumerate(zip(group_values, norms)) if g == group_a and mag > 1e-10]
-        right = [idx for idx, (g, mag) in enumerate(zip(group_values, norms)) if g == group_b and mag > 1e-10]
-        return left, right
-
-    def _vector_moments(self, structure) -> np.ndarray | None:
-        use_existing = self.source_combo.currentText() == "Existing initial magmoms"
-        axis = self._axis()
-
-        if use_existing:
-            values = existing_moment_vectors(
-                structure,
-                axis=axis,
-                lift_scalar=self.lift_scalar_checkbox.isChecked(),
-            )
-            if values is not None:
-                return values
-            if len(np.asarray(structure.get_initial_magnetic_moments(), dtype=float).shape) == 1 and not self.lift_scalar_checkbox.isChecked():
-                MessageManager.send_warning_message(
-                    "SmallAngleSpinTilt: scalar initial_magmoms require Lift scalar magmoms to vectors."
-                )
-                return None
-            MessageManager.send_warning_message(
-                "SmallAngleSpinTilt: no valid initial_magmoms found; falling back to magmom map/default."
-            )
-
+    def process_structure(self, structure):
         try:
-            moment_map = parse_magmom_map_any(self.map_edit.text())
+            return self.create_operation().run_structure(structure, self.get_params())
         except Exception as exc:  # noqa: BLE001
             MessageManager.send_warning_message(f"SmallAngleSpinTilt: invalid magmom map: {exc}")
-            moment_map = {}
+            return [structure.copy()]
 
-        return mapped_moment_vectors(
-            structure,
-            moment_map,
+    def create_operation(self):
+        return SmallAngleSpinTiltOperation()
+
+    def get_params(self) -> SmallAngleSpinTiltParams:
+        return SmallAngleSpinTiltParams(
+            canting_mode=self.canting_mode_combo.currentText(),
+            target_mode=self.target_mode_combo.currentText(),
+            target_indices=self.target_indices_edit.text(),
+            pair_left_indices=self.pair_left_edit.text(),
+            pair_right_indices=self.pair_right_edit.text(),
+            pair_source=self.pair_source_combo.currentText(),
+            pair_shell=int(self.pair_shell_frame.get_input_value()[0]),
+            pair_shell_tolerance=float(self.pair_tol_frame.get_input_value()[0]),
+            pair_element_filter=self.pair_element_edit.text(),
+            pair_group_filter=self.pair_group_edit.text(),
+            bond_filter_mode=self.bond_mode_combo.currentText(),
+            bond_filter_axis=self.bond_axis_frame.get_input_value(),
+            bond_filter_tolerance=float(self.bond_tol_frame.get_input_value()[0]),
+            group_a=self.group_a_edit.text(),
+            group_b=self.group_b_edit.text(),
+            angle_list=self.angle_edit.text(),
+            tilt_signs=self.sign_combo.currentText(),
+            include_reference=self.include_reference_checkbox.isChecked(),
+            magnitude_source=self.source_combo.currentText(),
+            magmom_map=self.map_edit.text(),
             default_moment=float(self.default_frame.get_input_value()[0]),
-            axis=axis,
-            apply_elements=parse_element_set(self.apply_edit.text()),
-            use_element_directions=False,
+            lift_scalar=self.lift_scalar_checkbox.isChecked(),
+            axis=self.axis_frame.get_input_value(),
+            reference_direction=self.reference_frame.get_input_value(),
+            apply_elements=self.apply_edit.text(),
+            max_outputs=int(self.max_output_frame.get_input_value()[0]),
         )
 
-    def _candidate_indices(self, structure, base_moments: np.ndarray) -> list[int]:
-        norms = np.linalg.norm(base_moments, axis=1)
-        apply_elements = parse_element_set(self.apply_edit.text())
-        eligible = [
-            idx
-            for idx, (sym, mag) in enumerate(zip(structure.get_chemical_symbols(), norms))
-            if mag > 1e-10 and (not apply_elements or sym in apply_elements)
-        ]
-        if not eligible:
-            return []
-
-        mode = self.target_mode_combo.currentText()
-        if mode == "First eligible atom":
-            return [eligible[0]]
-        if mode == "All eligible atoms":
-            return eligible
-
-        explicit = _parse_atom_indices(self.target_indices_edit.text(), len(structure))
-        explicit = [idx for idx in explicit if idx in set(eligible)]
-        return explicit
-
-    def _tilt_direction(self, base_direction: np.ndarray) -> np.ndarray:
-        base_hat = normalize_vector(base_direction)
-        preferred = self._reference_direction()
-        preferred = preferred - float(np.dot(preferred, base_hat)) * base_hat
-        if np.linalg.norm(preferred) <= 1e-10:
-            e1, _, _ = orthonormal_frame(base_hat)
-            return e1
-        return normalize_vector(preferred)
-
-    def _tilted_vector(self, vector: np.ndarray, angle_deg: float, *, sign: float = 1.0) -> np.ndarray:
-        vec = np.asarray(vector, dtype=float).reshape(3)
-        magnitude = float(np.linalg.norm(vec))
-        if magnitude <= 0.0 or angle_deg <= 0.0:
-            return vec.copy()
-
-        base_hat = vec / magnitude
-        tilt_hat = self._tilt_direction(base_hat)
-        theta = math.radians(float(angle_deg) * float(sign))
-        direction = (math.cos(theta) * base_hat) + (math.sin(theta) * tilt_hat)
-        direction = normalize_vector(direction, default=base_hat)
-        return magnitude * direction
-
-    @staticmethod
-    def _set_vector_magmoms(atoms, magmoms: np.ndarray):
-        set_initial_magmoms_safe(atoms, magmoms)
-
-    def _apply_pair_canting(
-        self,
-        base_moments: np.ndarray,
-        left_indices: list[int],
-        right_indices: list[int],
-        angle_deg: float,
-        *,
-        sign: float,
-    ) -> np.ndarray:
-        moment_array = np.array(base_moments, copy=True)
-        half_angle = float(angle_deg) * 0.5
-        for idx in left_indices:
-            moment_array[idx] = self._tilted_vector(moment_array[idx], half_angle, sign=sign)
-        for idx in right_indices:
-            moment_array[idx] = self._tilted_vector(moment_array[idx], half_angle, sign=-sign)
-        return moment_array
-
-    def process_structure(self, structure):
-        base_moments = self._vector_moments(structure)
-        if base_moments is None or base_moments.shape != (len(structure), 3):
-            return [structure.copy()]
-
-        if not np.any(np.linalg.norm(base_moments, axis=1) > 1e-10):
-            MessageManager.send_warning_message("SmallAngleSpinTilt: all magnetic-moment magnitudes are zero; returning input.")
-            return [structure.copy()]
-
-        angles = self._angles()
-        max_outputs = int(self.max_output_frame.get_input_value()[0])
-        outputs = []
-        reached_limit = False
-        mode = self.canting_mode_combo.currentText()
-
-        if self.include_reference_checkbox.isChecked():
-            reference = structure.copy()
-            self._set_vector_magmoms(reference, base_moments)
-            append_config_tag(reference, "SpinTiltRef")
-            outputs.append(reference)
-
-        if mode == "Single-spin tilt":
-            target_indices = self._candidate_indices(structure, base_moments)
-            if not target_indices:
-                MessageManager.send_warning_message("SmallAngleSpinTilt: no eligible target atoms found; returning input.")
-                return outputs or [structure.copy()]
-            for atom_index in target_indices:
-                for angle_deg in angles:
-                    for sign_tag, sign_value in self._signs():
-                        tilted = structure.copy()
-                        moment_array = np.array(base_moments, copy=True)
-                        moment_array[atom_index] = self._tilted_vector(
-                            moment_array[atom_index],
-                            angle_deg,
-                            sign=sign_value,
-                        )
-                        self._set_vector_magmoms(tilted, moment_array)
-                        append_config_tag(
-                            tilted,
-                            f"SpinTilt(i={atom_index + 1},a={float(angle_deg):.6g},sg={sign_tag})",
-                        )
-                        outputs.append(tilted)
-                        if len(outputs) >= max_outputs:
-                            reached_limit = True
-                            break
-                    if reached_limit:
-                        break
-                if reached_limit:
-                    break
-        elif mode == "Atom pair canting":
-            pairs = self._pair_targets(structure, base_moments)
-            if not pairs:
-                MessageManager.send_warning_message("SmallAngleSpinTilt: no valid atom pairs found; returning input.")
-                return outputs or [structure.copy()]
-            for left_idx, right_idx in pairs:
-                for angle_deg in angles:
-                    for sign_tag, sign_value in self._signs():
-                        tilted = structure.copy()
-                        moment_array = self._apply_pair_canting(
-                            base_moments,
-                            [left_idx],
-                            [right_idx],
-                            angle_deg,
-                            sign=sign_value,
-                        )
-                        self._set_vector_magmoms(tilted, moment_array)
-                        append_config_tag(
-                            tilted,
-                            f"SpinPair(i={left_idx + 1},j={right_idx + 1},a={float(angle_deg):.6g},sg={sign_tag})",
-                        )
-                        outputs.append(tilted)
-                        if len(outputs) >= max_outputs:
-                            reached_limit = True
-                            break
-                    if reached_limit:
-                        break
-                if reached_limit:
-                    break
-        else:
-            left_group, right_group = self._group_targets(structure, base_moments)
-            if not left_group or not right_group:
-                MessageManager.send_warning_message(
-                    "SmallAngleSpinTilt: group-pair mode requires arrays['group'] and non-empty Group A/B targets."
-                )
-                return outputs or [structure.copy()]
-            group_a = (self.group_a_edit.text() or "A").strip()
-            group_b = (self.group_b_edit.text() or "B").strip()
-            for angle_deg in angles:
-                for sign_tag, sign_value in self._signs():
-                    tilted = structure.copy()
-                    moment_array = self._apply_pair_canting(
-                        base_moments,
-                        left_group,
-                        right_group,
-                        angle_deg,
-                        sign=sign_value,
-                    )
-                    self._set_vector_magmoms(tilted, moment_array)
-                    append_config_tag(
-                        tilted,
-                        f"SpinPairG(A={group_a},B={group_b},a={float(angle_deg):.6g},sg={sign_tag})",
-                    )
-                    outputs.append(tilted)
-                    if len(outputs) >= max_outputs:
-                        reached_limit = True
-                        break
-                if reached_limit:
-                    break
-
-        if reached_limit:
-            MessageManager.send_warning_message("SmallAngleSpinTilt: output truncated by Max outputs.")
-        return outputs or [structure.copy()]
+    def set_params(self, params: SmallAngleSpinTiltParams) -> None:
+        self.canting_mode_combo.setCurrentText(params.canting_mode)
+        self.target_mode_combo.setCurrentText(params.target_mode)
+        self.target_indices_edit.setText(params.target_indices)
+        self.pair_left_edit.setText(params.pair_left_indices)
+        self.pair_right_edit.setText(params.pair_right_indices)
+        self.pair_source_combo.setCurrentText(params.pair_source)
+        self.pair_shell_frame.set_input_value([int(params.pair_shell)])
+        self.pair_tol_frame.set_input_value([float(params.pair_shell_tolerance)])
+        self.pair_element_edit.setText(params.pair_element_filter)
+        self.pair_group_edit.setText(params.pair_group_filter)
+        self.bond_mode_combo.setCurrentText(params.bond_filter_mode)
+        self.bond_axis_frame.set_input_value([float(v) for v in params.bond_filter_axis])
+        self.bond_tol_frame.set_input_value([float(params.bond_filter_tolerance)])
+        self.group_a_edit.setText(params.group_a)
+        self.group_b_edit.setText(params.group_b)
+        self.angle_edit.setText(params.angle_list)
+        self.sign_combo.setCurrentText(params.tilt_signs)
+        self.include_reference_checkbox.setChecked(bool(params.include_reference))
+        self.source_combo.setCurrentText(params.magnitude_source)
+        self.map_edit.setText(params.magmom_map)
+        self.default_frame.set_input_value([float(params.default_moment)])
+        self.lift_scalar_checkbox.setChecked(bool(params.lift_scalar))
+        self.axis_frame.set_input_value([float(v) for v in params.axis])
+        self.reference_frame.set_input_value([float(v) for v in params.reference_direction])
+        self.apply_edit.setText(params.apply_elements)
+        self.max_output_frame.set_input_value([int(params.max_outputs)])
+        self._update_canting_mode_widgets()
+        self._update_target_widgets()
+        self._update_magnitude_source_widgets()
 
     def to_dict(self):
         data = super().to_dict()
-        data["canting_mode"] = self.canting_mode_combo.currentText()
-        data["target_mode"] = self.target_mode_combo.currentText()
-        data["target_indices"] = self.target_indices_edit.text()
-        data["pair_left_indices"] = self.pair_left_edit.text()
-        data["pair_right_indices"] = self.pair_right_edit.text()
-        data["pair_source"] = self.pair_source_combo.currentText()
-        data["pair_shell"] = self.pair_shell_frame.get_input_value()
-        data["pair_shell_tolerance"] = self.pair_tol_frame.get_input_value()
-        data["pair_element_filter"] = self.pair_element_edit.text()
-        data["pair_group_filter"] = self.pair_group_edit.text()
-        data["bond_filter_mode"] = self.bond_mode_combo.currentText()
-        data["bond_filter_axis"] = self.bond_axis_frame.get_input_value()
-        data["bond_filter_tolerance"] = self.bond_tol_frame.get_input_value()
-        data["group_a"] = self.group_a_edit.text()
-        data["group_b"] = self.group_b_edit.text()
-        data["angle_list"] = self.angle_edit.text()
-        data["tilt_signs"] = self.sign_combo.currentText()
-        data["include_reference"] = self.include_reference_checkbox.isChecked()
-        data["magnitude_source"] = self.source_combo.currentText()
-        data["magmom_map"] = self.map_edit.text()
-        data["default_moment"] = self.default_frame.get_input_value()
-        data["lift_scalar"] = self.lift_scalar_checkbox.isChecked()
-        data["axis"] = self.axis_frame.get_input_value()
-        data["reference_direction"] = self.reference_frame.get_input_value()
-        data["apply_elements"] = self.apply_edit.text()
-        data["max_outputs"] = self.max_output_frame.get_input_value()
+        params = self.get_params()
+        data["params"] = params_to_dict(params)
+        data["canting_mode"] = params.canting_mode
+        data["target_mode"] = params.target_mode
+        data["target_indices"] = params.target_indices
+        data["pair_left_indices"] = params.pair_left_indices
+        data["pair_right_indices"] = params.pair_right_indices
+        data["pair_source"] = params.pair_source
+        data["pair_shell"] = [params.pair_shell]
+        data["pair_shell_tolerance"] = [params.pair_shell_tolerance]
+        data["pair_element_filter"] = params.pair_element_filter
+        data["pair_group_filter"] = params.pair_group_filter
+        data["bond_filter_mode"] = params.bond_filter_mode
+        data["bond_filter_axis"] = list(params.bond_filter_axis)
+        data["bond_filter_tolerance"] = [params.bond_filter_tolerance]
+        data["group_a"] = params.group_a
+        data["group_b"] = params.group_b
+        data["angle_list"] = params.angle_list
+        data["tilt_signs"] = params.tilt_signs
+        data["include_reference"] = params.include_reference
+        data["magnitude_source"] = params.magnitude_source
+        data["magmom_map"] = params.magmom_map
+        data["default_moment"] = [params.default_moment]
+        data["lift_scalar"] = params.lift_scalar
+        data["axis"] = list(params.axis)
+        data["reference_direction"] = list(params.reference_direction)
+        data["apply_elements"] = params.apply_elements
+        data["max_outputs"] = [params.max_outputs]
         return data
 
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
-        self.canting_mode_combo.setCurrentText(data_dict.get("canting_mode", "Single-spin tilt"))
-        self.target_mode_combo.setCurrentText(data_dict.get("target_mode", "First eligible atom"))
-        self.target_indices_edit.setText(data_dict.get("target_indices", ""))
-        self.pair_left_edit.setText(data_dict.get("pair_left_indices", ""))
-        self.pair_right_edit.setText(data_dict.get("pair_right_indices", ""))
-        self.pair_source_combo.setCurrentText(data_dict.get("pair_source", "Manual indices"))
-        self.pair_shell_frame.set_input_value(data_dict.get("pair_shell", [1]))
-        self.pair_tol_frame.set_input_value(data_dict.get("pair_shell_tolerance", [0.05]))
-        self.pair_element_edit.setText(data_dict.get("pair_element_filter", ""))
-        self.pair_group_edit.setText(data_dict.get("pair_group_filter", ""))
-        self.bond_mode_combo.setCurrentText(data_dict.get("bond_filter_mode", "Any"))
-        self.bond_axis_frame.set_input_value(data_dict.get("bond_filter_axis", [0.0, 0.0, 1.0]))
-        self.bond_tol_frame.set_input_value(data_dict.get("bond_filter_tolerance", [20.0]))
-        self.group_a_edit.setText(data_dict.get("group_a", "A"))
-        self.group_b_edit.setText(data_dict.get("group_b", "B"))
-        self.angle_edit.setText(data_dict.get("angle_list", "1,2,5,10"))
-        self.sign_combo.setCurrentText(data_dict.get("tilt_signs", "Positive only"))
-        self.include_reference_checkbox.setChecked(bool(data_dict.get("include_reference", True)))
-        self.source_combo.setCurrentText(data_dict.get("magnitude_source", "Existing initial magmoms"))
-        self.map_edit.setText(data_dict.get("magmom_map", ""))
-        self.default_frame.set_input_value(data_dict.get("default_moment", [0.0]))
-        self.lift_scalar_checkbox.setChecked(bool(data_dict.get("lift_scalar", True)))
-        self.axis_frame.set_input_value(data_dict.get("axis", [0.0, 0.0, 1.0]))
-        self.reference_frame.set_input_value(data_dict.get("reference_direction", [1.0, 0.0, 0.0]))
-        self.apply_edit.setText(data_dict.get("apply_elements", ""))
-        self.max_output_frame.set_input_value(data_dict.get("max_outputs", [100]))
-        self._update_canting_mode_widgets()
-        self._update_target_widgets()
-        self._update_magnitude_source_widgets()
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = SmallAngleSpinTiltParams(**raw_params)
+        else:
+            params = SmallAngleSpinTiltParams(
+                canting_mode=data_dict.get("canting_mode", "Single-spin tilt"),
+                target_mode=data_dict.get("target_mode", "First eligible atom"),
+                target_indices=data_dict.get("target_indices", ""),
+                pair_left_indices=data_dict.get("pair_left_indices", ""),
+                pair_right_indices=data_dict.get("pair_right_indices", ""),
+                pair_source=data_dict.get("pair_source", "Manual indices"),
+                pair_shell=data_dict.get("pair_shell", [1])[0],
+                pair_shell_tolerance=data_dict.get("pair_shell_tolerance", [0.05])[0],
+                pair_element_filter=data_dict.get("pair_element_filter", ""),
+                pair_group_filter=data_dict.get("pair_group_filter", ""),
+                bond_filter_mode=data_dict.get("bond_filter_mode", "Any"),
+                bond_filter_axis=data_dict.get("bond_filter_axis", [0.0, 0.0, 1.0]),
+                bond_filter_tolerance=data_dict.get("bond_filter_tolerance", [20.0])[0],
+                group_a=data_dict.get("group_a", "A"),
+                group_b=data_dict.get("group_b", "B"),
+                angle_list=data_dict.get("angle_list", "1,2,5,10"),
+                tilt_signs=data_dict.get("tilt_signs", "Positive only"),
+                include_reference=data_dict.get("include_reference", True),
+                magnitude_source=data_dict.get("magnitude_source", "Existing initial magmoms"),
+                magmom_map=data_dict.get("magmom_map", ""),
+                default_moment=data_dict.get("default_moment", [0.0])[0],
+                lift_scalar=data_dict.get("lift_scalar", True),
+                axis=data_dict.get("axis", [0.0, 0.0, 1.0]),
+                reference_direction=data_dict.get("reference_direction", [1.0, 0.0, 0.0]),
+                apply_elements=data_dict.get("apply_elements", ""),
+                max_outputs=data_dict.get("max_outputs", [100])[0],
+            )
+        self.set_params(params)

@@ -1,25 +1,42 @@
 # Make Dataset
 
-Make Dataset 是一个基于 cards 的结构生成与过滤流水线编辑器。
+Make Dataset 是一个基于卡片的训练数据结构生成与过滤流水线编辑器。每张卡片代表一种变换操作（应变、扰动、掺杂、切面……），卡片可串行连接组成 pipeline。
+
+## 界面速览
+
+1. **工作区**：卡片从上到下串行执行，上游输出自动成为下游输入
+2. **添加卡片**：点击 `Add new card` 菜单按分组选择卡片加入工作区，或从卡片面板拖入
+3. **配置参数**：展开卡片，参数控件在卡片内部，设置后勾选启用
+4. **底部状态**：每张卡片显示输入/输出结构计数
 
 ## 数据流
 
-- 线性链：上游输出传递给下游
-- Card Group：组内共享同一输入并汇合输出
-- Filter：可全局或组内筛选
+- **线性链**：卡片 A → 卡片 B → 卡片 C，每张卡处理上一张的输出
+- **Card Group**：组内多张卡片共享同一输入、并行执行、汇总输出。适合"同一母相既要切表面又要挖空位"的分支场景
+- **过滤器**：`FPS Filter` 可放在链末端做代表性筛选
 
-## 推荐流程
+```{tip}
+**先动晶格，后动原子。** 如果同时用了晶格变换卡（`Lattice Strain` / `Lattice Perturb` / `Shear Matrix` 等）和原子扰动卡（`Atomic Perturb` / `Vib Mode Perturb`），把晶格卡放在前面、原子卡放在后面。反过来会导致：原子位移是针对旧晶格计算的，晶格一旦缩放或剪切，原来的位移方向和幅度在新的晶格下就不再物理合理，容易产生非物理键长和碰撞。
+```
 
-1. 导入结构（XYZ/POSCAR/CIF）
-2. 构建 pipeline
-3. 保存/加载 card JSON
-4. 导出 `make_dataset.xyz`
+## 快速上手
 
-:::{tip}
-如果后续需要做最远点采样（FPS），建议先导出 `xyz`，在第一个模块用 `nep89` 做预测清洗并删除不合理结构，再执行 FPS。
-:::
+1. 导入结构（`Open` 按钮，支持 XYZ / POSCAR / CIF / EXTXYZ）
+2. 从左侧拖入卡片到工作区
+3. 展开卡片，设参数，勾选启用
+4. 点 `Run` 执行
+5. 点卡片上的导出按钮保存结果
+
+```{tip}
+如果后续要做预测清洗加最远点采样（FPS），建议先导出 xyz，在 `NEP Dataset Display` 模块用当前体系已训练的 NEP 模型做预测并剔除不合理结构，再回来接 `FPS Filter`。如果还没有体系专用的势函数，可用内置 nep89 做初步筛选——但 nep89 是通用碳硅模型，不适用于所有体系。
+```
+
+## 保存和恢复
+
+`Save` / `Load` 按钮将当前工作区所有卡片的配置序列化为 JSON。下次打开时直接加载 JSON 即可恢复整个 pipeline，包括每张卡的参数、启停状态和卡片顺序。
 
 ## 文档入口
 
-- [Make Dataset 卡片手册](make-dataset-cards/index.md)
-- [Make Dataset 配方示例](make-dataset-cards/recipes.md)
+- [卡片手册](make-dataset-cards/index.md)：按目标选卡、易混卡片对比、每张卡的完整参数说明
+- [配方示例](make-dataset-cards/recipes.md)：4 条端到端配方（高熵合金、富缺陷表面、磁性数据、有机构象），含可复制 JSON
+- [自定义卡片开发](custom-card-development.md)：按 Operation/Params 架构开发新卡片

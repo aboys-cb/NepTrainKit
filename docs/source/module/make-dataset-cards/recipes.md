@@ -188,7 +188,7 @@
 
 ```json
 {
-  "class": "InterstitialAdsorbateCard",
+  "class": "InsertDefectCard",
   "params": {
     "mode": 1,
     "species": "H,O",

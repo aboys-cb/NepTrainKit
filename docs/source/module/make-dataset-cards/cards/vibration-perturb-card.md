@@ -101,15 +101,17 @@ Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc="F F F"
 {
   "class": "VibrationModePerturbCard",
   "check_state": true,
-  "distribution": 0,
-  "amplitude": 0.02,
-  "modes_per_sample": 2,
-  "min_frequency": 0.1,
-  "max_num": 20,
-  "scale_by_frequency": true,
-  "exclude_near_zero": true,
-  "use_seed": true,
-  "seed": 42
+  "params": {
+    "distribution": 0,
+    "amplitude": 0.02,
+    "modes_per_sample": 2,
+    "min_frequency": 0.1,
+    "max_num": 20,
+    "scale_by_frequency": true,
+    "exclude_near_zero": true,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
@@ -118,15 +120,17 @@ Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc="F F F"
 {
   "class": "VibrationModePerturbCard",
   "check_state": true,
-  "distribution": 0,
-  "amplitude": 0.05,
-  "modes_per_sample": 3,
-  "min_frequency": 0.1,
-  "max_num": 32,
-  "scale_by_frequency": true,
-  "exclude_near_zero": true,
-  "use_seed": true,
-  "seed": 42
+  "params": {
+    "distribution": 0,
+    "amplitude": 0.05,
+    "modes_per_sample": 3,
+    "min_frequency": 0.1,
+    "max_num": 32,
+    "scale_by_frequency": true,
+    "exclude_near_zero": true,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
@@ -135,15 +139,17 @@ Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc="F F F"
 {
   "class": "VibrationModePerturbCard",
   "check_state": true,
-  "distribution": 1,
-  "amplitude": 0.1,
-  "modes_per_sample": 5,
-  "min_frequency": 0.0,
-  "max_num": 50,
-  "scale_by_frequency": false,
-  "exclude_near_zero": false,
-  "use_seed": true,
-  "seed": 42
+  "params": {
+    "distribution": 1,
+    "amplitude": 0.1,
+    "modes_per_sample": 5,
+    "min_frequency": 0.0,
+    "max_num": 50,
+    "scale_by_frequency": false,
+    "exclude_near_zero": false,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 

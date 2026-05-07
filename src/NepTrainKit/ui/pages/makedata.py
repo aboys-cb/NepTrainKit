@@ -7,9 +7,17 @@ import os.path
 import re
 
 import numpy as np
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QIcon
-from PySide6.QtWidgets import QWidget, QGridLayout, QApplication
+from PySide6.QtCore import QEvent, Qt
+from PySide6.QtGui import QAction, QIcon, QKeySequence
+from PySide6.QtWidgets import (
+    QAbstractSpinBox,
+    QApplication,
+    QGridLayout,
+    QLineEdit,
+    QPlainTextEdit,
+    QTextEdit,
+    QWidget,
+)
 from ase import Atoms, Atom
 from qfluentwidgets import HyperlinkLabel, BodyLabel, SubtitleLabel
 
@@ -51,9 +59,48 @@ class MakeDataWidget(QWidget):
         self.setObjectName("MakeDataWidget")
         self.setAcceptDrops(True)
         self.nep_result_data=None
+        self._clipboard_shortcut_filter_installed = False
         self.init_action()
         self.init_ui()
         self.dataset=None
+
+    def eventFilter(self, watched, event):
+        """Route Ctrl+V on the Make Dataset workspace to card JSON paste."""
+        if (
+            event.type() == QEvent.Type.KeyPress
+            and self.isVisible()
+            and QApplication.activeWindow() is self.window()
+            and event.matches(QKeySequence.StandardKey.Paste)
+            and self._focus_allows_card_json_paste()
+        ):
+            self.paste_card_config_from_clipboard()
+            event.accept()
+            return True
+        return super().eventFilter(watched, event)
+
+    def _focus_allows_card_json_paste(self) -> bool:
+        """Return True when Ctrl+V should create cards instead of editing text."""
+        focus_widget = QApplication.focusWidget()
+        editable_widgets = (QLineEdit, QTextEdit, QPlainTextEdit, QAbstractSpinBox)
+        return not isinstance(focus_widget, editable_widgets)
+
+    def _install_clipboard_shortcut_filter(self):
+        """Install the application-level filter once while this page is visible."""
+        if self._clipboard_shortcut_filter_installed:
+            return
+        app = QApplication.instance()
+        if app is not None:
+            app.installEventFilter(self)
+            self._clipboard_shortcut_filter_installed = True
+
+    def _remove_clipboard_shortcut_filter(self):
+        """Remove the application-level Ctrl+V filter when leaving this page."""
+        if not self._clipboard_shortcut_filter_installed:
+            return
+        app = QApplication.instance()
+        if app is not None:
+            app.removeEventFilter(self)
+        self._clipboard_shortcut_filter_installed = False
 
 
     def dragEnterEvent(self, event):
@@ -125,6 +172,7 @@ class MakeDataWidget(QWidget):
             self._parent.load_menu.addAction(self.paste_card_config_action)  # pyright:ignore
         if hasattr(self._parent,"save_menu"):
             self._parent.save_menu.addAction(self.export_card_config_action)  # pyright:ignore
+        self._install_clipboard_shortcut_filter()
 
     def hideEvent(self, event):
         """Detach menu actions when the widget is hidden.
@@ -144,6 +192,7 @@ class MakeDataWidget(QWidget):
             self._parent.load_menu.removeAction(self.paste_card_config_action)  # pyright:ignore
         if hasattr(self._parent,"save_menu"):
             self._parent.save_menu.removeAction(self.export_card_config_action)   # pyright:ignore
+        self._remove_clipboard_shortcut_filter()
 
     def init_action(self):
         """Create persistent actions shared with the main window.
@@ -177,6 +226,7 @@ class MakeDataWidget(QWidget):
         self.setting_group.runSignal.connect(self.run_card)
         self.setting_group.stopSignal.connect(self.stop_run_card)
         self.setting_group.newCardSignal.connect(self.add_card)
+        self.setting_group.pasteSignal.connect(self.paste_card_config_from_clipboard)
 
         self.path_label = HyperlinkLabel(self)
         self.path_label.setFixedHeight(30)

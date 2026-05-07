@@ -70,13 +70,15 @@ $$f_k\in[1-m,1+m],\quad a_i'=f_i a_i,\quad \theta_j'=g_j\theta_j$$
 {
   "class": "CellScalingCard",
   "check_state": true,
-  "engine_type": 0,
-  "max_scaling": 0.02,
-  "max_num": 30,
-  "perturb_angle": false,
-  "identify_organic": false,
-  "use_seed": true,
-  "seed": 42
+  "params": {
+    "engine_type": 0,
+    "max_scaling": 0.02,
+    "max_num": 30,
+    "perturb_angle": false,
+    "identify_organic": false,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
@@ -85,13 +87,15 @@ $$f_k\in[1-m,1+m],\quad a_i'=f_i a_i,\quad \theta_j'=g_j\theta_j$$
 {
   "class": "CellScalingCard",
   "check_state": true,
-  "engine_type": 1,
-  "max_scaling": 0.05,
-  "max_num": 50,
-  "perturb_angle": true,
-  "identify_organic": false,
-  "use_seed": true,
-  "seed": 42
+  "params": {
+    "engine_type": 1,
+    "max_scaling": 0.05,
+    "max_num": 50,
+    "perturb_angle": true,
+    "identify_organic": false,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
@@ -100,13 +104,15 @@ $$f_k\in[1-m,1+m],\quad a_i'=f_i a_i,\quad \theta_j'=g_j\theta_j$$
 {
   "class": "CellScalingCard",
   "check_state": true,
-  "engine_type": 0,
-  "max_scaling": 0.08,
-  "max_num": 100,
-  "perturb_angle": true,
-  "identify_organic": true,
-  "use_seed": true,
-  "seed": 42
+  "params": {
+    "engine_type": 0,
+    "max_scaling": 0.08,
+    "max_num": 100,
+    "perturb_angle": true,
+    "identify_organic": true,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 

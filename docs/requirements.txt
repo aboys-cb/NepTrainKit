@@ -2,6 +2,7 @@ myst-parser
 sphinx
 sphinx-autodoc-typehints
 sphinx_design
+sphinx-copybutton
 sphinx_rtd_theme
 sqlalchemy
 numpy

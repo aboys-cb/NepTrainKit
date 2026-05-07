@@ -39,6 +39,8 @@ class ConsoleWidget(QWidget):
     ----------
     newCardSignal : Signal
         Emitted with the selected card class name when a menu entry is chosen.
+    pasteSignal : Signal
+        Emitted when the user requests card creation from clipboard JSON.
     stopSignal : Signal
         Emitted when the stop action is triggered.
     runSignal : Signal
@@ -46,6 +48,7 @@ class ConsoleWidget(QWidget):
     """
 
     newCardSignal = Signal(str)
+    pasteSignal = Signal()
     stopSignal = Signal()
     runSignal = Signal()
 
@@ -122,6 +125,17 @@ class ConsoleWidget(QWidget):
         )
         self.setting_command.addAction(library_action)
 
+        paste_action = Action(
+            QIcon(r":/images/src/images/copy_figure.svg"),
+            "Paste JSON",
+            triggered=self.paste,
+        )
+        paste_action.setToolTip("Create card(s) from clipboard JSON")
+        paste_action.installEventFilter(
+            ToolTipFilter(paste_action, 300, ToolTipPosition.TOP)
+        )
+        self.setting_command.addAction(paste_action)
+
         self.setting_command.addSeparator()
         run_action = Action(
             QIcon(r":/images/src/images/run.svg"),
@@ -166,6 +180,10 @@ class ConsoleWidget(QWidget):
     def run(self, *args, **kwargs):
         """Emit the run signal to start card execution."""
         self.runSignal.emit()
+
+    def paste(self, *args, **kwargs):
+        """Emit the paste signal to append cards from clipboard JSON."""
+        self.pasteSignal.emit()
 
     def stop(self, *args, **kwargs):
         """Emit the stop signal to abort card execution."""

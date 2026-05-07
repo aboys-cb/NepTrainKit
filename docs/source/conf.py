@@ -27,6 +27,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinx.ext.mathjax',
     'sphinx_design',
+    'sphinx_copybutton',
     'myst_parser',
 ]
 autodoc_default_options = {
@@ -81,6 +82,11 @@ html_context = {
 html_css_files = [
     'css/custom.css',  # specify your custom CSS file here
 ]
+
+copybutton_prompt_text = r'^\s*(>>> |\.\.\. |\$ |PS> )'
+copybutton_prompt_is_regexp = True
+copybutton_only_copy_prompt_lines = False
+
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',

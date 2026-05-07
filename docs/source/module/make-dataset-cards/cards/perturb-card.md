@@ -74,14 +74,16 @@ $$\Delta\mathbf{r}_i=\boldsymbol\xi_i\odot d_i,\quad \boldsymbol\xi_i\in[-1,1]^3
 {
   "class": "PerturbCard",
   "check_state": true,
-  "engine_type": 0,
-  "max_distance": 0.1,
-  "max_num": 30,
-  "identify_organic": false,
-  "use_element_scaling": false,
-  "element_scalings": {},
-  "use_seed": true,
-  "seed": 42
+  "params": {
+    "engine_type": 0,
+    "max_distance": 0.1,
+    "max_num": 30,
+    "identify_organic": false,
+    "use_element_scaling": false,
+    "element_scalings": {},
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
@@ -90,14 +92,16 @@ $$\Delta\mathbf{r}_i=\boldsymbol\xi_i\odot d_i,\quad \boldsymbol\xi_i\in[-1,1]^3
 {
   "class": "PerturbCard",
   "check_state": true,
-  "engine_type": 1,
-  "max_distance": 0.2,
-  "max_num": 50,
-  "identify_organic": false,
-  "use_element_scaling": false,
-  "element_scalings": {},
-  "use_seed": true,
-  "seed": 42
+  "params": {
+    "engine_type": 1,
+    "max_distance": 0.2,
+    "max_num": 50,
+    "identify_organic": false,
+    "use_element_scaling": false,
+    "element_scalings": {},
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
@@ -106,14 +110,16 @@ $$\Delta\mathbf{r}_i=\boldsymbol\xi_i\odot d_i,\quad \boldsymbol\xi_i\in[-1,1]^3
 {
   "class": "PerturbCard",
   "check_state": true,
-  "engine_type": 0,
-  "max_distance": 0.15,
-  "max_num": 100,
-  "identify_organic": false,
-  "use_element_scaling": true,
-  "element_scalings": {"H": 0.5, "C": 0.2, "O": 0.15},
-  "use_seed": true,
-  "seed": 42
+  "params": {
+    "engine_type": 0,
+    "max_distance": 0.15,
+    "max_num": 100,
+    "identify_organic": false,
+    "use_element_scaling": true,
+    "element_scalings": {"H": 0.5, "C": 0.2, "O": 0.15},
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 

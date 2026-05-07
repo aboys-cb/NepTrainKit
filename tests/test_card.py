@@ -46,6 +46,7 @@ from NepTrainKit.ui.views._card import (
 )
 from NepTrainKit.core.magnetism import orthonormal_frame
 from NepTrainKit.core import CardManager
+from NepTrainKit.core.alloy import parse_composition
 from NepTrainKit.core.cards.alloy import (
     CompositionSweepOperation,
     CompositionSweepParams,
@@ -111,6 +112,7 @@ from NepTrainKit.core.cards.magnetism import (
 )
 from NepTrainKit.ui.widgets import MakeDataCard
 from NepTrainKit.ui.widgets.card_metadata import card_tooltip, metadata_html
+from NepTrainKit.ui.widgets.doping_rule import DopingRuleItem
 from NepTrainKit.version import DOCS_BASE_URL
 
 BASE_CARD_KEYS = {"class", "check_state", "metadata", "params"}
@@ -614,6 +616,18 @@ class TestCard(unittest.TestCase):
         for atoms in results:
             self.assertIn("Ge", atoms.get_chemical_symbols())
 
+    def test_random_doping_dopants_accept_bare_element(self):
+        item = DopingRuleItem()
+        item.target_edit.setText("Si")
+        item.dopants_edit.setText("Ge")
+        item.count_botton.setChecked(True)
+        item._on_mode_changed()
+        item.count_frame.set_input_value([1, 1])
+
+        rule = item.to_rule()
+
+        self.assertEqual(rule["dopants"], {"Ge": 1.0})
+
     def test_random_doping_operation_is_ui_independent(self):
         params = RandomDopingParams(
             rules=[
@@ -633,6 +647,11 @@ class TestCard(unittest.TestCase):
 
         self.assertEqual(len(results), 2)
         self.assertTrue(all("Ge" in atoms.get_chemical_symbols() for atoms in results))
+
+    def test_parse_composition_accepts_bare_elements(self):
+        self.assertEqual(parse_composition("Ge"), {"Ge": 1.0})
+        self.assertEqual(parse_composition("Ge,C"), {"Ge": 1.0, "C": 1.0})
+        self.assertEqual(parse_composition("Ge:0.7,C"), {"Ge": 0.7, "C": 1.0})
 
     def test_conditional_replace_operation_is_ui_independent(self):
         results = ConditionalReplaceOperation().run_structure(

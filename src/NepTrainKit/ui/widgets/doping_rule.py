@@ -26,6 +26,8 @@ from qfluentwidgets import (
     ToolTipPosition,
     PushButton,
 )
+from NepTrainKit.core.alloy import parse_composition
+
 from .input import SpinBoxUnitInputFrame
 
 
@@ -46,6 +48,7 @@ class DopingRuleItem(QFrame):
         self.target_edit.setPlaceholderText("Cs")
         self.target_edit.setFixedWidth(90)
         self.dopants_edit = QLineEdit(self)
+        self.dopants_edit.setPlaceholderText("Ge or Ge:0.7,C:0.3")
         self.dopants_edit.setFixedWidth(160)
 
         self.percent_frame = SpinBoxUnitInputFrame(self)
@@ -98,7 +101,7 @@ class DopingRuleItem(QFrame):
         self.__layout.addWidget(self.indices_edit, 0, 3)
 
         self.dopants_label = BodyLabel("Dopants", self)
-        self.dopants_label.setToolTip("Dopant elements and ratio, e.g. Cs:0.6,Na:0.4")
+        self.dopants_label.setToolTip("Dopant elements and ratio, e.g. Cs:0.6,Na:0.4. A bare element means ratio 1.0.")
         self.dopants_label.installEventFilter(ToolTipFilter(self.dopants_label, 300, ToolTipPosition.TOP))
         self.__layout.addWidget(self.dopants_label, 1, 0)
         self.__layout.addWidget(self.dopants_edit, 1, 1, 1, 2)
@@ -155,13 +158,9 @@ class DopingRuleItem(QFrame):
             rule["target"] = target
         try:
             dopant_text = self.dopants_edit.text().strip()
-            if dopant_text.startswith("{") and dopant_text.endswith("}"):
-                dopants = json.loads(self.dopants_edit.text()) if self.dopants_edit.text() else {}
-                if isinstance(dopants, dict) and dopants:
-                    rule["dopants"] = dopants
-            else:
-                dopant_list = dopant_text.split(",")
-                rule["dopants"] = {dopant.split(":")[0]: float(dopant.split(":")[1]) for dopant in dopant_list}
+            dopants = parse_composition(dopant_text)
+            if dopants:
+                rule["dopants"] = dopants
         except Exception:
             logger.error(traceback.format_exc())
 

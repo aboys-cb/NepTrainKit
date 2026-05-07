@@ -26,7 +26,7 @@
 **目标：** 每帧替换 3~8% 的 Si 为 Ge，每帧生成 20 个版本，覆盖不同掺杂落点
 
 **参数设置：**
-- `Rules`：target=`Si`, dopants=`Ge:1.0`, use=`atomic_percent`, percent=`[3, 8]`
+- `Rules`：target=`Si`, dopants=`Ge`, use=`atomic_percent`, percent=`[3, 8]`
 - `Doping Type`：`Exact` （对比实验需要稳定的掺杂数量）
 - `Max Atoms Condition`：`[20]`
 
@@ -36,6 +36,7 @@
 - 重训后跑 Si:Ge 测试集，力的 MAE 应该回到和纯 Si 训练集接近的水平
 - 抽查几个掺杂输出，Ge 原子的最近邻距离是否合理（Si-Ge 键长应略大于 Si-Si）
 - 如果模型对高浓度掺杂仍然不准，扩大 `percent` 上限到 15~20%
+- 如果只掺一种元素，dopants 可以直接写 `Ge`，等价于 `Ge:1.0`
 - 如果需要多元素掺杂（如同时掺 Ge 和 C），在 dopants 里写 `Ge:0.7,C:0.3`
 
 ### 什么时候加这张卡、什么时候不加
@@ -58,7 +59,7 @@
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `target` | string | 被替换的元素，如 `Si` |
-| `dopants` | object | 替换目标元素及其权重，如 `{"Ge":0.7,"C":0.3}`。界面里写成 `Ge:0.7,C:0.3` |
+| `dopants` | object | 替换目标元素及其权重，如 `{"Ge":0.7,"C":0.3}`。界面里写成 `Ge:0.7,C:0.3`；单元素可直接写 `Ge`，默认权重为 `1.0` |
 | `use` | string | `atomic_percent`（原子百分比）/ `mass_percent`（质量百分比）/ `count`（固定数量）|
 | `percent` | [min, max] | 仅 `atomic_percent` / `mass_percent` 模式，替换比例区间 |
 | `count` | [min, max] | 仅 `count` 模式，替换原子数区间 |

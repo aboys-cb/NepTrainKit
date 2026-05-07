@@ -31,7 +31,11 @@ def parse_element_list(text: str) -> list[str]:
 
 
 def parse_composition(text: str) -> dict[str, float]:
-    """Parse a composition mapping from JSON or ``A:0.2,B:0.8`` syntax."""
+    """Parse a composition mapping from JSON or ``A:0.2,B:0.8`` syntax.
+
+    A bare element token is treated as weight ``1.0`` so user input such as
+    ``Ge`` means ``Ge:1.0``.
+    """
     text = (text or "").strip()
     if not text:
         return {}
@@ -39,21 +43,31 @@ def parse_composition(text: str) -> dict[str, float]:
         data = json.loads(text)
         if not isinstance(data, dict):
             raise TypeError("Composition JSON must be an object mapping element->fraction.")
-        return {str(k): float(v) for k, v in data.items()}
-    parts = [p.strip() for p in text.split(",") if p.strip()]
+        comp: dict[str, float] = {}
+        for key, value in data.items():
+            elem = str(key).strip()
+            if not elem:
+                continue
+            symbol = elem[0].upper() + elem[1:].lower()
+            comp[symbol] = float(value)
+        return comp
+    parts = [p.strip() for p in _ELEMENT_SPLIT_RE.split(text) if p.strip()]
     comp: dict[str, float] = {}
     for part in parts:
-        if ":" not in part and "=" not in part:
-            raise ValueError(f"Invalid composition token: {part!r}")
         if ":" in part:
             elem, val = part.split(":", 1)
-        else:
+            ratio = float(val)
+        elif "=" in part:
             elem, val = part.split("=", 1)
+            ratio = float(val)
+        else:
+            elem = part
+            ratio = 1.0
         elem = elem.strip()
         if not elem:
             continue
         symbol = elem[0].upper() + elem[1:].lower()
-        comp[symbol] = float(val)
+        comp[symbol] = ratio
     return comp
 
 

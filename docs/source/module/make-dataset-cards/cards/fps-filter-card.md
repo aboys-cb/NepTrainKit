@@ -110,7 +110,7 @@ $$i_t=\arg\max_j\ \min_{i\in S_{t-1}}\lVert\mathbf{d}_j-\mathbf{d}_i\rVert_2,\qu
 
 ## 推荐组合
 
-- 任意生成链末端 → `FPS Filter`：在生成链条最末端统一去冗余
+- 任意生成链 → `NEP Dataset Display` 清洗 → `FPS Filter`：先去掉明显坏结构，再做代表性筛选
 - `FPS Filter` → 导出 DFT 计算：控制进入 DFT 计算的结构数量，节省计算资源
 - 多分支汇总后 → `FPS Filter`：先汇总各分支输出，再统一挑选
 

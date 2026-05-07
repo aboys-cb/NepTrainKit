@@ -1,4 +1,4 @@
-# NEP Dataset Display 示例
+﻿# NEP Dataset Display 示例
 
 > 本页以操作演示为主。完整工具说明与参数手册请见：
 > [`Show NEP 详细参考`](../module/show-nep-reference.md)
@@ -13,7 +13,7 @@
 
 点击播放按钮可逐帧预览结构：
 
-<img src="../_static/image/show_nep_icons/play.svg" alt="play" width='30' height='30' />
+<img src="../_static/image/generated/show_nep_icons/play.svg" alt="play" width='30' height='30' />
 
 ![GIF Image](../_static/image/example/display/play.gif)
 

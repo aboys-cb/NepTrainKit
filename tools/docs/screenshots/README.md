@@ -30,6 +30,12 @@ Check whether committed screenshots are still current:
 python tools/docs/screenshots/capture.py check --all
 ```
 
+Synchronise Show NEP toolbar icons from the application resource directory:
+
+```bash
+python tools/docs/screenshots/sync_show_nep_icons.py
+```
+
 The check command compares rendered pixels with a small tolerance because local
 Windows title bars, focus state, and Qt text antialiasing can differ slightly
 between captures. Tighten the threshold when debugging one image:
@@ -44,6 +50,11 @@ python tools/docs/screenshots/capture.py check make_data_empty --max-diff-ratio 
   `NepTrainKit.main.create_main_window()` so screenshots use the same theme,
   font, stylesheet, and window initialization as the real app.
 - Scenarios live in `registry.py` and `scenarios.py`.
+- Show NEP icon files are copied from `src/NepTrainKit/src/images/` into
+  `docs/source/_static/image/generated/show_nep_icons/`; documentation pages
+  should reference the generated path instead of maintaining manual icon copies.
+- Show NEP dialog screenshots are regular scenarios under
+  `docs/source/_static/image/generated/show_nep_reference/`.
 - Prefer widget/action targets over hard-coded coordinates. Manual boxes are
   only for plot-internal regions that Qt cannot expose as widgets.
 - Dataset scenarios copy tracked fixtures from `tests/data/` into

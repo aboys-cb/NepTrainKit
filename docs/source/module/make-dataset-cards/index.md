@@ -53,7 +53,9 @@ cards/card-group
 3. 最后参考 [配方示例（Recipes）](recipes.md) 组织多卡流程。
 
 :::{tip}
-涉及 `FPS Filter` 的高通量流程，通常先导出 `xyz`，再在后续模块用 `nep89` 做预测清洗和最远点采样。`FPS Filter` 本身适合做末端代表性筛选，不适合替代结构生成卡片。
+涉及 `FPS Filter` 的高通量流程，通常先导出 `xyz`，在 `NEP Dataset Display`
+里清洗明显异常结构，再做代表性采样。清洗时可以用内置 NEP89 或当前体系已有模型做预筛，
+但不要把它们当作 DFT 标签。`FPS Filter` 本身适合做末端代表性筛选，不适合替代结构生成卡片。
 :::
 
 ## 按目标选卡
@@ -81,7 +83,7 @@ cards/card-group
 | 从振动模式生成位移样本 | `Vib Mode Perturb` | 已包含模态数组的结构 | 用 `Atomic Perturb` 代替模态扰动 |
 | 从有机分子构象空间采样 | `Organic Mol Config` | 已识别分子结构 | 用无机卡片强行扰动有机体系 |
 | 做容器化分支流程 | `Card Group` | 任意共享输入 | 把 `Card Group` 当成筛选器 |
-| 从大样本中选代表性结构 | `FPS Filter` | 生成卡片在前 | 把 `FPS Filter` 当成结构生成器 |
+| 从干净候选池中选代表性结构 | `FPS Filter` | `NEP Dataset Display` 清洗后的候选池 | 把 `FPS Filter` 当成第一道质量检查 |
 
 ## 易混卡片对比
 

@@ -133,10 +133,11 @@ def capture(spec: ScenarioSpec, output: Path) -> Path:
     try:
         runner(context)
         pump_events(context.app, 80)
-        pixmap = context.window.grab()
+        capture_widget = context.capture_widget or context.window
+        pixmap = capture_widget.grab()
         if pixmap.isNull():
             raise RuntimeError(f"Qt returned an empty screenshot for {spec.name}")
-        pixmap = annotate(pixmap, context.window, spec.annotations, spec.title)
+        pixmap = annotate(pixmap, capture_widget, spec.annotations, spec.title)
         output.parent.mkdir(parents=True, exist_ok=True)
         if not pixmap.save(str(output)):
             raise RuntimeError(f"Failed to save screenshot: {output}")

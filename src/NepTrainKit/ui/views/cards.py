@@ -8,6 +8,7 @@ from qfluentwidgets import (
     PrimaryDropDownPushButton,
     CommandBar,
     Action,
+    FluentIcon,
     ToolTipFilter,
     ToolTipPosition,
 )
@@ -15,6 +16,7 @@ from qfluentwidgets import (
 from NepTrainKit.paths import get_user_config_path, ensure_directory
 from NepTrainKit.core import load_cards_from_directory, CardManager
 from NepTrainKit.config import Config
+from NepTrainKit.ui.widgets.card_metadata import CardLibraryDialog, card_tooltip
 
 from ase.io import extxyz, cif, vasp  # noqa: F401
 from NepTrainKit.ui.views._card import *  # noqa: F401, F403
@@ -37,6 +39,8 @@ class ConsoleWidget(QWidget):
     ----------
     newCardSignal : Signal
         Emitted with the selected card class name when a menu entry is chosen.
+    pasteSignal : Signal
+        Emitted when the user requests card creation from clipboard JSON.
     stopSignal : Signal
         Emitted when the stop action is triggered.
     runSignal : Signal
@@ -44,6 +48,8 @@ class ConsoleWidget(QWidget):
     """
 
     newCardSignal = Signal(str)
+    pasteSignal = Signal()
+    copySignal = Signal()
     stopSignal = Signal()
     runSignal = Signal()
 
@@ -60,7 +66,7 @@ class ConsoleWidget(QWidget):
         self.gridLayout.setObjectName("console_gridLayout")
         self.setting_command = CommandBar(self)
         self.new_card_button = PrimaryDropDownPushButton(
-            QIcon(":/images/src/images/copy_figure.svg"),
+            FluentIcon.ADD,
             "Add new card",
             self,
         )
@@ -90,6 +96,9 @@ class ConsoleWidget(QWidget):
                     target_menu.addSeparator()
                 action = QAction(QIcon(card_class.menu_icon), card_class.card_name)
                 action.setObjectName(class_name)
+                metadata = CardManager.get_card_metadata(class_name)
+                if metadata is not None:
+                    action.setToolTip(card_tooltip(metadata))
                 target_menu.addAction(action)
         else:
             for class_name, card_class in CardManager.card_info_dict.items():
@@ -97,11 +106,47 @@ class ConsoleWidget(QWidget):
                     self.menu.addSeparator()
                 action = QAction(QIcon(card_class.menu_icon), card_class.card_name)
                 action.setObjectName(class_name)
+                metadata = CardManager.get_card_metadata(class_name)
+                if metadata is not None:
+                    action.setToolTip(card_tooltip(metadata))
                 self.menu.addAction(action)
 
         self.menu.triggered.connect(self.menu_clicked)
         self.new_card_button.setMenu(self.menu)
         self.setting_command.addWidget(self.new_card_button)
+
+        library_action = Action(
+            FluentIcon.INFO,
+            "Card Library",
+            triggered=self.show_card_library,
+        )
+        library_action.setToolTip("Show card contributors and metadata")
+        library_action.installEventFilter(
+            ToolTipFilter(library_action, 300, ToolTipPosition.TOP)
+        )
+        self.setting_command.addAction(library_action)
+
+        paste_action = Action(
+            FluentIcon.PASTE,
+            "Paste JSON",
+            triggered=self.paste,
+        )
+        paste_action.setToolTip("Create card(s) from clipboard JSON")
+        paste_action.installEventFilter(
+            ToolTipFilter(paste_action, 300, ToolTipPosition.TOP)
+        )
+        self.setting_command.addAction(paste_action)
+
+        copy_action = Action(
+            FluentIcon.COPY,
+            "Copy JSON",
+            triggered=self.copy,
+        )
+        copy_action.setToolTip("Copy current workflow card JSON")
+        copy_action.installEventFilter(
+            ToolTipFilter(copy_action, 300, ToolTipPosition.TOP)
+        )
+        self.setting_command.addAction(copy_action)
 
         self.setting_command.addSeparator()
         run_action = Action(
@@ -139,9 +184,22 @@ class ConsoleWidget(QWidget):
         """
         self.newCardSignal.emit(action.objectName())
 
+    def show_card_library(self):
+        """Open the registered card metadata browser."""
+        dialog = CardLibraryDialog(self)
+        dialog.exec()
+
     def run(self, *args, **kwargs):
         """Emit the run signal to start card execution."""
         self.runSignal.emit()
+
+    def paste(self, *args, **kwargs):
+        """Emit the paste signal to append cards from clipboard JSON."""
+        self.pasteSignal.emit()
+
+    def copy(self, *args, **kwargs):
+        """Emit the copy signal to copy workflow JSON to the clipboard."""
+        self.copySignal.emit()
 
     def stop(self, *args, **kwargs):
         """Emit the stop signal to abort card execution."""

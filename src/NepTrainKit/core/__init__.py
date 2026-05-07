@@ -19,10 +19,10 @@ from typing import Any
 
 __all__ = [
     'MessageManager',
-    'CardManager', 'load_cards_from_directory',
+    'CardManager', 'CardContributor', 'CardMetadata', 'load_cards_from_directory',
 ]
 
-from .card_manager import CardManager, load_cards_from_directory
+from .card_manager import CardContributor, CardManager, CardMetadata, load_cards_from_directory
 from .message import MessageManager
 
 # 可选：通过环境变量 NEP_NATIVE_STDIO 控制原生 stdout/stderr 重定向

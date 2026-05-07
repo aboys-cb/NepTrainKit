@@ -123,6 +123,8 @@ def farthest_point_sampling(points, n_samples, min_dist=0.1, selected_data=None)
     True
     """
     n_points = points.shape[0]
+    if n_points == 0 or int(n_samples) <= 0:
+        return []
 
     if isinstance(selected_data, np.ndarray) and selected_data.size == 0:
         selected_data = None

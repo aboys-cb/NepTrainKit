@@ -2,22 +2,11 @@
 
 from __future__ import annotations
 
-import numpy as np
 from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager, MessageManager
-from NepTrainKit.core.magnetism import (
-    element_mask,
-    kvec_signs,
-    mapped_moment_magnitudes,
-    normalize_vector,
-    parse_magmom_map_any,
-    parse_element_set,
-    random_signs,
-    random_vector_moments,
-    set_initial_magmoms_safe,
-)
-from NepTrainKit.core.config_type import append_config_tag, sanitize_config_tag, stable_config_id
+from NepTrainKit.core.cards.magnetism import MagneticOrderOperation, MagneticOrderParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -221,222 +210,97 @@ class MagneticOrderCard(MakeDataCard):
         self.group_b_edit.setEnabled(afm_enabled and use_group)
         self.zero_unknown_groups_checkbox.setEnabled(afm_enabled and use_group)
 
-    @staticmethod
-    def _parse_elements(text: str) -> set[str]:
-        return parse_element_set(text)
+    def create_operation(self):
+        return MagneticOrderOperation()
 
-    @staticmethod
-    def _parse_kvec(text: str) -> tuple[int, int, int]:
-        text = (text or "").strip()
-        if text in {"100", "010", "001", "110", "111"}:
-            return tuple(int(c) for c in text)  # type: ignore[return-value]
-        return (1, 1, 1)
-
-    def _axis(self) -> np.ndarray:
-        x, y, z = [float(v) for v in self.axis_frame.get_input_value()]
-        return normalize_vector(np.array([x, y, z], dtype=float))
-
-    def _moment_map(self) -> dict[str, float | np.ndarray]:
-        magmom_map: dict[str, float | np.ndarray] = {}
-        try:
-            magmom_map = parse_magmom_map_any(self.map_edit.text())
-        except Exception as exc:  # noqa: BLE001
-            MessageManager.send_warning_message(f"MagneticOrder: invalid magmom map: {exc}")
-        return magmom_map
-
-    def _per_atom_mags_and_dirs(self, structure) -> tuple[np.ndarray, np.ndarray]:
-        magmom_map = self._moment_map()
-        default_m = float(self.default_frame.get_input_value()[0])
-
-        axis = self._axis()
-        use_elem_dir = self.use_element_dir_checkbox.isChecked()
-        only = self._parse_elements(self.apply_edit.text())
-        mags = mapped_moment_magnitudes(
-            structure,
-            magmom_map,
-            default_moment=default_m,
-            apply_elements=only,
+    def get_params(self) -> MagneticOrderParams:
+        return MagneticOrderParams(
+            format=self.format_combo.currentText(),
+            axis=self.axis_frame.get_input_value(),
+            magmom_map=self.map_edit.text(),
+            use_element_dirs=self.use_element_dir_checkbox.isChecked(),
+            default_moment=float(self.default_frame.get_input_value()[0]),
+            apply_elements=self.apply_edit.text(),
+            gen_fm=self.fm_checkbox.isChecked(),
+            gen_afm=self.afm_checkbox.isChecked(),
+            afm_mode=self.afm_mode_combo.currentText(),
+            afm_kvec=self.kvec_combo.currentText(),
+            afm_group_a=self.group_a_edit.text(),
+            afm_group_b=self.group_b_edit.text(),
+            afm_zero_unknown=self.zero_unknown_groups_checkbox.isChecked(),
+            gen_pm=self.pm_checkbox.isChecked(),
+            pm_count=int(self.pm_count_frame.get_input_value()[0]),
+            pm_direction=self.pm_direction_combo.currentText(),
+            pm_cone_angle=float(self.pm_cone_frame.get_input_value()[0]),
+            pm_balanced=self.pm_balanced_checkbox.isChecked(),
+            use_seed=self.seed_checkbox.isChecked(),
+            seed=int(self.seed_frame.get_input_value()[0]),
         )
-        dirs = np.repeat(axis[None, :], len(structure), axis=0)
-        symbols = structure.get_chemical_symbols()
-        for i, sym in enumerate(symbols):
-            val = magmom_map.get(sym, default_m)
-            if isinstance(val, np.ndarray):
-                if use_elem_dir and mags[i] > 0:
-                    dirs[i] = normalize_vector(val)
-        if only:
-            mask = element_mask(symbols, only)
-            dirs = np.where(mask[:, None], dirs, axis[None, :])
-        return mags, dirs
 
-    def _make_collinear(self, structure, *, signs: np.ndarray) -> np.ndarray:
-        mags, _dirs = self._per_atom_mags_and_dirs(structure)
-        signs = np.asarray(signs, dtype=float).reshape(-1)
-        if signs.shape[0] != mags.shape[0]:
-            raise ValueError("signs shape mismatch")
-        return signs * mags
-
-    def _make_noncollinear_axis(self, structure, *, signs: np.ndarray) -> np.ndarray:
-        mags, dirs = self._per_atom_mags_and_dirs(structure)
-        signs = np.asarray(signs, dtype=float).reshape(-1)
-        if signs.shape[0] != mags.shape[0]:
-            raise ValueError("signs shape mismatch")
-        return (signs[:, None] * mags[:, None]) * dirs
-
-    def _attach_metadata(self, atoms, *, order: str):  # noqa: ARG002
-        # Intentionally do not store card metadata in atoms.info.
-        # Card parameters are persisted in saved card JSON; runtime trace only uses Config_type tags.
-        return
-
-    @staticmethod
-    def _axis_tag(axis: np.ndarray) -> str:
-        """Return an EXTXYZ-friendly axis tag without quotes/spaces (e.g. 001 or 0,0,1)."""
-        v = np.asarray(axis, dtype=float).reshape(3)
-        # Prefer compact cardinal encoding when aligned with axes.
-        basis = [
-            (np.array([1.0, 0.0, 0.0]), "100"),
-            (np.array([0.0, 1.0, 0.0]), "010"),
-            (np.array([0.0, 0.0, 1.0]), "001"),
-        ]
-        for b, tag in basis:
-            if np.allclose(v, b, atol=1e-8, rtol=0.0):
-                return tag
-            if np.allclose(v, -b, atol=1e-8, rtol=0.0):
-                return f"-{tag}"
-        return f"{v[0]:.6g},{v[1]:.6g},{v[2]:.6g}"
+    def set_params(self, params: MagneticOrderParams) -> None:
+        self.format_combo.setCurrentText(params.format)
+        self.axis_frame.set_input_value([float(v) for v in params.axis])
+        self.map_edit.setText(params.magmom_map)
+        self.use_element_dir_checkbox.setChecked(bool(params.use_element_dirs))
+        self.default_frame.set_input_value([float(params.default_moment)])
+        self.apply_edit.setText(params.apply_elements)
+        self.fm_checkbox.setChecked(bool(params.gen_fm))
+        self.afm_checkbox.setChecked(bool(params.gen_afm))
+        self.afm_mode_combo.setCurrentText(params.afm_mode)
+        self.kvec_combo.setCurrentText(params.afm_kvec)
+        self.group_a_edit.setText(params.afm_group_a)
+        self.group_b_edit.setText(params.afm_group_b)
+        self.zero_unknown_groups_checkbox.setChecked(bool(params.afm_zero_unknown))
+        self.pm_checkbox.setChecked(bool(params.gen_pm))
+        self.pm_count_frame.set_input_value([int(params.pm_count)])
+        self.pm_direction_combo.setCurrentText(params.pm_direction)
+        self.pm_cone_frame.set_input_value([float(params.pm_cone_angle)])
+        self.pm_balanced_checkbox.setChecked(bool(params.pm_balanced))
+        self.seed_checkbox.setChecked(bool(params.use_seed))
+        self.seed_frame.set_input_value([int(params.seed)])
+        self.seed_frame.setEnabled(self.seed_checkbox.isChecked())
+        self._update_afm_mode_widgets()
 
     def process_structure(self, structure):
-        outputs = []
-
-        do_fm = self.fm_checkbox.isChecked()
-        do_afm = self.afm_checkbox.isChecked()
-        do_pm = self.pm_checkbox.isChecked()
-        if not (do_fm or do_afm or do_pm):
+        try:
+            if self.afm_checkbox.isChecked() and self.afm_mode_combo.currentText() == "group A/B" and "group" not in structure.arrays:
+                MessageManager.send_warning_message("MagneticOrder: AFM mode 'group A/B' requires arrays['group']; falling back to k-vector.")
+            return self.create_operation().run_structure(structure, self.get_params())
+        except Exception as exc:  # noqa: BLE001
+            MessageManager.send_warning_message(f"MagneticOrder: invalid magmom map: {exc}")
             return [structure]
-
-        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
-        cfg_id = stable_config_id(structure)
-        noncollinear = self.format_combo.currentText().startswith("Non")
-
-        if do_fm:
-            signs = np.ones(len(structure), dtype=float)
-            moms = self._make_noncollinear_axis(structure, signs=signs) if noncollinear else self._make_collinear(structure, signs=signs)
-            atoms = structure.copy()
-            set_initial_magmoms_safe(atoms, moms)
-            self._attach_metadata(atoms, order="FM")
-            append_config_tag(atoms, "MagFMnc" if noncollinear else "MagFM")
-            outputs.append(atoms)
-
-        if do_afm:
-            if self.afm_mode_combo.currentText() == "group A/B" and "group" in structure.arrays:
-                gA = (self.group_a_edit.text() or "A").strip()
-                gB = (self.group_b_edit.text() or "B").strip()
-                grp = np.asarray(structure.arrays["group"])
-                grp = np.array([str(g) for g in grp], dtype=object)
-                signs = np.zeros(len(structure), dtype=float)
-                signs[grp == gA] = 1.0
-                signs[grp == gB] = -1.0
-                if not self.zero_unknown_groups_checkbox.isChecked():
-                    signs[(grp != gA) & (grp != gB)] = 1.0
-            else:
-                if self.afm_mode_combo.currentText() == "group A/B" and "group" not in structure.arrays:
-                    MessageManager.send_warning_message("MagneticOrder: AFM mode 'group A/B' requires arrays['group']; falling back to k-vector.")
-                k = self._parse_kvec(self.kvec_combo.currentText())
-                signs = kvec_signs(structure, k)
-            moms = self._make_noncollinear_axis(structure, signs=signs) if noncollinear else self._make_collinear(structure, signs=signs)
-            atoms = structure.copy()
-            set_initial_magmoms_safe(atoms, moms)
-            if self.afm_mode_combo.currentText() == "k-vector":
-                k = self._parse_kvec(self.kvec_combo.currentText())
-                self._attach_metadata(atoms, order=f"AFM{k[0]}{k[1]}{k[2]}")
-                base = f"MagAFM{k[0]}{k[1]}{k[2]}"
-                append_config_tag(atoms, base + ("nc" if noncollinear else ""))
-            else:
-                gA = sanitize_config_tag(self.group_a_edit.text() or "")
-                gB = sanitize_config_tag(self.group_b_edit.text() or "")
-                self._attach_metadata(atoms, order="AFM_group")
-                append_config_tag(atoms, "MagAFMg" + ("nc" if noncollinear else ""))
-            outputs.append(atoms)
-
-        if do_pm:
-            pm_n = int(self.pm_count_frame.get_input_value()[0])
-            balanced = self.pm_balanced_checkbox.isChecked()
-            direction_mode = self.pm_direction_combo.currentText()
-            cone_angle = float(self.pm_cone_frame.get_input_value()[0])
-            for i in range(max(pm_n, 1)):
-                if base_seed is None:
-                    rng = np.random.default_rng()
-                    seed_note = ""
-                else:
-                    derived_seed = int(base_seed + cfg_id * 1000003 + i)
-                    rng = np.random.default_rng(derived_seed)
-                    seed_note = f"s{derived_seed}"
-
-                if noncollinear:
-                    mags, _dirs = self._per_atom_mags_and_dirs(structure)
-                    moms = random_vector_moments(
-                        mags,
-                        rng=rng,
-                        direction_mode=direction_mode,
-                        axis=self._axis(),
-                        max_angle_deg=cone_angle,
-                        balanced=balanced,
-                    )
-                else:
-                    signs = random_signs(len(structure), rng=rng, balanced=balanced)
-                    moms = self._make_collinear(structure, signs=signs)
-                atoms = structure.copy()
-                set_initial_magmoms_safe(atoms, moms)
-                self._attach_metadata(atoms, order="PM")
-                base = "MagPM" + ("nc" if noncollinear else "")
-                append_config_tag(atoms, base + (f"_{seed_note}" if seed_note else ""))
-                outputs.append(atoms)
-
-        return outputs or [structure]
 
     def to_dict(self):
         data = super().to_dict()
-        data["format"] = self.format_combo.currentText()
-        data["axis"] = self.axis_frame.get_input_value()
-        data["magmom_map"] = self.map_edit.text()
-        data["use_element_dirs"] = self.use_element_dir_checkbox.isChecked()
-        data["default_moment"] = self.default_frame.get_input_value()
-        data["apply_elements"] = self.apply_edit.text()
-        data["gen_fm"] = self.fm_checkbox.isChecked()
-        data["gen_afm"] = self.afm_checkbox.isChecked()
-        data["afm_mode"] = self.afm_mode_combo.currentText()
-        data["afm_kvec"] = self.kvec_combo.currentText()
-        data["afm_group_a"] = self.group_a_edit.text()
-        data["afm_group_b"] = self.group_b_edit.text()
-        data["afm_zero_unknown"] = self.zero_unknown_groups_checkbox.isChecked()
-        data["gen_pm"] = self.pm_checkbox.isChecked()
-        data["pm_count"] = self.pm_count_frame.get_input_value()
-        data["pm_direction"] = self.pm_direction_combo.currentText()
-        data["pm_cone_angle"] = self.pm_cone_frame.get_input_value()
-        data["pm_balanced"] = self.pm_balanced_checkbox.isChecked()
-        data["use_seed"] = self.seed_checkbox.isChecked()
-        data["seed"] = self.seed_frame.get_input_value()
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
-        self.format_combo.setCurrentText(data_dict.get("format", "Collinear (scalar)"))
-        self.axis_frame.set_input_value(data_dict.get("axis", [0.0, 0.0, 1.0]))
-        self.map_edit.setText(data_dict.get("magmom_map", ""))
-        self.use_element_dir_checkbox.setChecked(bool(data_dict.get("use_element_dirs", False)))
-        self.default_frame.set_input_value(data_dict.get("default_moment", [0.0]))
-        self.apply_edit.setText(data_dict.get("apply_elements", ""))
-        self.fm_checkbox.setChecked(bool(data_dict.get("gen_fm", True)))
-        self.afm_checkbox.setChecked(bool(data_dict.get("gen_afm", True)))
-        self.afm_mode_combo.setCurrentText(data_dict.get("afm_mode", "k-vector"))
-        self.kvec_combo.setCurrentText(data_dict.get("afm_kvec", "111"))
-        self.group_a_edit.setText(data_dict.get("afm_group_a", "A"))
-        self.group_b_edit.setText(data_dict.get("afm_group_b", "B"))
-        self.zero_unknown_groups_checkbox.setChecked(bool(data_dict.get("afm_zero_unknown", True)))
-        self.pm_checkbox.setChecked(bool(data_dict.get("gen_pm", False)))
-        self.pm_count_frame.set_input_value(data_dict.get("pm_count", [10]))
-        self.pm_direction_combo.setCurrentText(data_dict.get("pm_direction", "sphere"))
-        self.pm_cone_frame.set_input_value(data_dict.get("pm_cone_angle", [30.0]))
-        self.pm_balanced_checkbox.setChecked(bool(data_dict.get("pm_balanced", True)))
-        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
-        self.seed_frame.set_input_value(data_dict.get("seed", [0]))
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = MagneticOrderParams(**raw_params)
+        else:
+            params = MagneticOrderParams(
+                format=data_dict.get("format", "Collinear (scalar)"),
+                axis=data_dict.get("axis", [0.0, 0.0, 1.0]),
+                magmom_map=data_dict.get("magmom_map", ""),
+                use_element_dirs=data_dict.get("use_element_dirs", False),
+                default_moment=data_dict.get("default_moment", [0.0])[0],
+                apply_elements=data_dict.get("apply_elements", ""),
+                gen_fm=data_dict.get("gen_fm", True),
+                gen_afm=data_dict.get("gen_afm", True),
+                afm_mode=data_dict.get("afm_mode", "k-vector"),
+                afm_kvec=data_dict.get("afm_kvec", "111"),
+                afm_group_a=data_dict.get("afm_group_a", "A"),
+                afm_group_b=data_dict.get("afm_group_b", "B"),
+                afm_zero_unknown=data_dict.get("afm_zero_unknown", True),
+                gen_pm=data_dict.get("gen_pm", False),
+                pm_count=data_dict.get("pm_count", [10])[0],
+                pm_direction=data_dict.get("pm_direction", "sphere"),
+                pm_cone_angle=data_dict.get("pm_cone_angle", [30.0])[0],
+                pm_balanced=data_dict.get("pm_balanced", True),
+                use_seed=data_dict.get("use_seed", False),
+                seed=data_dict.get("seed", [0])[0],
+            )
+        self.set_params(params)

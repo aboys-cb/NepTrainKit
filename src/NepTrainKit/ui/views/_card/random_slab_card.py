@@ -1,18 +1,12 @@
 """Card for enumerating crystal slabs across Miller indices."""
 
-from itertools import combinations
-
-import numpy as np
-from PySide6.QtWidgets import QFrame, QGridLayout
-from ase.build import surface
-from loguru import logger
-from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox
+from qfluentwidgets import BodyLabel, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.config_type import append_config_tag
+from NepTrainKit.core.cards.defect import RandomSlabOperation, RandomSlabParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
-from scipy.stats.qmc import Sobol
 
 @CardManager.register_card
 class RandomSlabCard(MakeDataCard):
@@ -100,8 +94,30 @@ class RandomSlabCard(MakeDataCard):
         self.settingLayout.addWidget(self.vacuum_label, 4, 0, 1, 1)
         self.settingLayout.addWidget(self.vacuum_frame, 4, 1, 1, 2)
 
+    def create_operation(self):
+        """Return the UI-independent slab operation."""
+        return RandomSlabOperation()
+
+    def get_params(self) -> RandomSlabParams:
+        """Read slab generation parameters from UI controls."""
+        return RandomSlabParams(
+            h_range=tuple(int(v) for v in self.h_frame.get_input_value()),
+            k_range=tuple(int(v) for v in self.k_frame.get_input_value()),
+            l_range=tuple(int(v) for v in self.l_frame.get_input_value()),
+            layer_range=tuple(int(v) for v in self.layer_frame.get_input_value()),
+            vacuum_range=tuple(int(v) for v in self.vacuum_frame.get_input_value()),
+        )
+
+    def set_params(self, params: RandomSlabParams) -> None:
+        """Apply slab generation parameters to UI controls."""
+        self.h_frame.set_input_value([int(v) for v in params.h_range])
+        self.k_frame.set_input_value([int(v) for v in params.k_range])
+        self.l_frame.set_input_value([int(v) for v in params.l_range])
+        self.layer_frame.set_input_value([int(v) for v in params.layer_range])
+        self.vacuum_frame.set_input_value([int(v) for v in params.vacuum_range])
+
     def process_structure(self, structure):
-        """Build surface slabs across the requested Miller indices, layer counts, and vacuum thicknesses.
+        """Build surface slabs from UI-independent parameters.
         
         Parameters
         ----------
@@ -113,55 +129,12 @@ class RandomSlabCard(MakeDataCard):
         list[ase.Atoms]
             Slab structures created from the specified index and thickness combinations.
         """
-        structure_list = []
-
-        h_min, h_max, h_step = self.h_frame.get_input_value()
-        k_min, k_max, k_step = self.k_frame.get_input_value()
-        l_min, l_max, l_step = self.l_frame.get_input_value()
-
-        layer_min, layer_max, layer_step = self.layer_frame.get_input_value()
-        vac_min, vac_max, vac_step = self.vacuum_frame.get_input_value()
-
-        h_range = np.arange(h_min, h_max + 1, h_step)
-        k_range = np.arange(k_min, k_max + 1, k_step)
-        l_range = np.arange(l_min, l_max + 1, l_step)
-        layer_range = np.arange(layer_min, layer_max + 1, layer_step)
-        vac_range = np.arange(vac_min, vac_max + vac_step, vac_step)
-
-        for h in h_range:
-            for k in k_range:
-                for l in l_range:
-                    if h == 0 and k == 0 and l == 0:
-                        continue
-                    for layers in layer_range:
-                        for vac in vac_range:
-                            try:
-                                if vac==0:
-                                    vac=None
-                                slab = surface(structure, (int(h), int(k), int(l)), int(layers), vacuum=vac,periodic=True)
-                                slab.wrap()
-                                slab.info["Config_type"] = structure.info.get("Config_type", "")
-                                append_config_tag(slab, f"Slab(hkl={int(h)}{int(k)}{int(l)},L={int(layers)},vac={vac})")
-                                structure_list.append(slab)
-                            except Exception as e:
-                                logger.error(f"Failed to build slab {(h, k, l)}: {e}")
-        return structure_list
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
-        """Serialize the current configuration to a plain dictionary.
-        
-        Returns
-        -------
-        dict
-            Dictionary that can be fed into ``from_dict`` to rebuild the state.
-        """
-        data_dict = super().to_dict()
-        data_dict['h_range'] = self.h_frame.get_input_value()
-        data_dict['k_range'] = self.k_frame.get_input_value()
-        data_dict['l_range'] = self.l_frame.get_input_value()
-        data_dict['layer_range'] = self.layer_frame.get_input_value()
-        data_dict['vacuum_range'] = self.vacuum_frame.get_input_value()
-        return data_dict
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
 
     def from_dict(self, data_dict):
         """Restore the card configuration from serialized values.
@@ -172,11 +145,24 @@ class RandomSlabCard(MakeDataCard):
             Serialized configuration previously produced by ``to_dict``.
         """
         super().from_dict(data_dict)
-        self.h_frame.set_input_value(data_dict.get('h_range', [0, 1, 1]))
-        self.k_frame.set_input_value(data_dict.get('k_range', [0, 1, 1]))
-        self.l_frame.set_input_value(data_dict.get('l_range', [1, 3, 1]))
-        self.layer_frame.set_input_value(data_dict.get('layer_range', [3, 6, 1]))
-        self.vacuum_frame.set_input_value(data_dict.get('vacuum_range', [10, 10, 1]))
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = RandomSlabParams(
+                h_range=raw_params.get("h_range", [0, 1, 1]),
+                k_range=raw_params.get("k_range", [0, 1, 1]),
+                l_range=raw_params.get("l_range", [1, 3, 1]),
+                layer_range=raw_params.get("layer_range", [3, 6, 1]),
+                vacuum_range=raw_params.get("vacuum_range", [10, 10, 1]),
+            )
+        else:
+            params = RandomSlabParams(
+                h_range=data_dict.get("h_range", [0, 1, 1]),
+                k_range=data_dict.get("k_range", [0, 1, 1]),
+                l_range=data_dict.get("l_range", [1, 3, 1]),
+                layer_range=data_dict.get("layer_range", [3, 6, 1]),
+                vacuum_range=data_dict.get("vacuum_range", [10, 10, 1]),
+            )
+        self.set_params(params)
 
 
 

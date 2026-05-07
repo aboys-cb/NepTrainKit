@@ -1,216 +1,157 @@
-<!-- card-schema: {"card_name": "Lattice Strain", "source_file": "src/NepTrainKit/ui/views/_card/cell_strain_card.py", "serialized_keys": ["organic", "engine_type", "x_range", "y_range", "z_range"]} -->
+<!-- card-schema: {"card_name": "Lattice Strain", "source_file": "src/NepTrainKit/ui/views/_card/cell_strain_card.py", "serialized_keys": ["params"]} -->
 
 # 晶格应变（Lattice Strain）
 
-`Group`: `Lattice`  
-`Class`: `CellStrainCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/cell_strain_card.py`
+`Group`: `Lattice` | `Class`: `CellStrainCard`
 
 ## 功能说明
-按轴向组合扫描应变（uniaxial/biaxial/triaxial/isotropic），系统构建应力-应变覆盖数据。
 
-它最适合的场景是：为弹性响应或应力训练生成单轴/双轴应变样本。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+对晶胞轴向做受控应变扫描。选定方向组合（单轴/双轴/三轴/各向同性），给定拉伸百分比和步长，程序按比例缩放晶格矢量，生成一组不同应变的结构。
 
-### 关键公式 (Core equations)
 $$\epsilon_i=\frac{s_i}{100},\quad \mathbf{C}'=\mathbf{D}\mathbf{C},\quad \mathbf{D}=\mathrm{diag}(1+\epsilon_x,1+\epsilon_y,1+\epsilon_z)$$
-$$\text{isotropic: }\mathbf{C}'=(1+\epsilon)\mathbf{C}$$
 
 ## 操作示例
-### 场景：为弹性响应或应力训练生成单轴/双轴应变样本
 
-**输入：** 一个已弛豫晶体，且你知道主要想拉伸或压缩哪个方向
+### 场景：模型预测的弹性常数偏差太大
 
-**目标：** 在不引入剪切的前提下，对 x/y/z 三个方向做受控应变扫描
+你在 Si 上训练了一个 NEP 模型，能量-体积曲线拟合得很好，但算出来的 C11 比 DFT 参考值高了 15%。这说明训练集里所有结构都处在平衡体积附近，模型没见过晶格被拉伸/压缩的构型，只能外推——外推不准。
+
+**诊断思路：** 弹性常数是能量对应变的二阶导数。如果训练集在平衡点附近的应变成分太稀疏，导数拟合就不可靠。解决办法是往训练集里加入一组已知应变的晶格，让模型"见过"被拉伸和压缩的晶胞。
+
+**输入：** 一个弛豫好的 Si 单胞（当前训练集里唯一的结构）
+
+**目标：** 沿 x 方向做 -2% 到 +2% 的单轴应变，步长 1%，共 5 个结构，让模型在 ±2% 范围内有内插依据
 
 **参数设置：**
-- `engine_type` 先选清楚是单轴、双轴还是全方向策略
-- `x_range` / `y_range` / `z_range` 先从百分之几级别的小应变开始
-- `organic=true` 仅在分子晶体中需要额外保护分子内部结构时开启
+- `Axes` = `uniaxial`
+- `x_range` = `[-2, 2, 1]` （-2% 到 +2%，每 1% 一步）
 
-**输出：** 一批带轴向应变差异的结构，晶格长度变化比角度变化更明显
+**输出：** 5 个结构（-2%, -1%, 0%, +1%, +2%），晶格 x 分量逐步拉长，原子分数坐标保持不变
 
-**怎么验证结果合理：**
-- 检查目标方向的晶格参数是否按预期变化
-- 非目标方向不要出现意外大幅畸变
-- 输出若为空，先检查各方向范围是否真的形成了有效扫描
+**怎么验证训练集质量改善：**
+- 重训后重新计算 C11，应该比之前更接近 DFT 参考值
+- 如果改善不够，把范围扩大到 ±5%，加 biaxial 方向，增加采样密度
+- 如果应变 +5% 后最近邻键长超过物理合理区间（和 DFT 参考键长差 > 0.2Å），说明到了非物理变形区，上限回调
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 弹性相关预测不稳，轴向响应泛化差。
-- 目标任务 (Target objective): 构建可解释的应变网格数据。
-- 建议添加条件 (Add-it trigger): 需要比较不同应变路径的模型表现。
-- 不建议添加条件 (Avoid trigger): 仅需要局部坐标噪声而非系统应变。
-> 物理提示 (Physics caution): 重点检查体积变化、晶胞条件数和最近邻距离，避免把几何畸变直接放大到非物理区间。
+### 什么时候加这张卡、什么时候不加
 
-## 输入前提
-- 先确定 `engine_type` 与研究问题匹配。
-- 控制步长与范围，防止组合数失控。
+**加：**
+- 模型弹性常数、体模量、应力-应变响应系统性偏差大
+- 训练集中所有结构体积/形状过于集中在平衡态附近
+- 需要模型在变形路径上有内插能力而非外推
 
-## 参数说明（完整）
-### `organic` (Organic)
-- UI Label: `Organic`
-- 字段映射 (Field mapping): 序列化键 `organic` <-> 界面标签 `Organic`。
-- 控件标签 (Caption): `Organic`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 有机团簇识别与刚性移动开关 (organic cluster rigid mode)。
-- 对输出规模/物理性的影响: 开启后先识别有机团簇，扰动时对有机分子做刚性整体移动，减少分子内键长/拓扑被破坏；输入含有机分子时应开启。
-- 怎么判断该开还是该关: 只有当你明确知道这个开关会改变当前工作流目标时才开启；不确定时先保持默认并用小样本验证。
-- 配置建议 (Practical note):
-  - 开启：输入包含有机分子时必须开启；会先识别团簇并按分子刚性整体移动。
-  - 关闭：仅在确认为纯无机体系时关闭。
+**不加：**
+- 只需要局部原子坐标噪声（用 `Atomic Perturb` 更合适）
+- 体系本身对应变不敏感（如刚性分子晶体），加了只是增大训练集体积没帮助
 
-### `engine_type` (Axes)
-- UI Label: `Axes`
-- 字段映射 (Field mapping): 序列化键 `engine_type` <-> 界面标签 `Axes`。
-- 控件标签 (Caption): `Axes`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`（显示文本与序列化值可能不同）。
-- 类型/范围 (Type/Range): enum(string): `uniaxial`, `biaxial`, `triaxial`, `isotropic`
-- 默认值 (Default): `"uniaxial"`
-- 含义 (Meaning): 应变轴模式 (strain axes mode)，可选 `uniaxial / biaxial / triaxial / isotropic`。
-- 对输出规模/物理性的影响: 决定同时施加应变的轴向组合与样本规模：轴数越多，组合空间越大、计算成本越高。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 物理直觉 / 典型值: 它决定程序走哪种离散策略；先选对模式，再去调该模式下真正起作用的数值参数。
-- 推荐范围 (Recommended range):
-  - 保守：isotropic 或 uniaxial 基线
-  - 平衡：biaxial 覆盖主要耦合响应
-  - 探索：triaxial 仅在预算充足且有明确需求时启用
+## 参数说明
+### Axes（axes）
+类型：`str`。默认：`'uniaxial'`。选择对哪些晶格轴施加应变。
 
-### `x_range` (X)
-- UI Label: `X`
-- 字段映射 (Field mapping): 序列化键 `x_range` <-> 界面标签 `X`。
-- 控件标签 (Caption): `X`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3], percent `[min,max,step]`
-- 默认值 (Default): `[-5.0, 5.0, 1.0]`
-- 含义 (Meaning): X 方向应变扫描区间（单位 `%`），格式为 `[min,max,step]`。
-- 对输出规模/物理性的影响: 按百分比应变扫描 x 轴（例如 `-5` 到 `5` 表示 `-5%` 到 `+5%`）。范围越宽或步长越小，组合数增长越快。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：±1-2%
-  - 平衡：±3-5%
-  - 探索：±6%+
+物理直觉：`uniaxial` 用来补 C11/C22/C33 一类单轴弹性响应；`biaxial` 补面内耦合和泊松效应；`isotropic` 更接近 EOS/体模量采样。不要在只想做体积曲线时打开三轴独立扫描。
 
-### `y_range` (Y)
-- UI Label: `Y`
-- 字段映射 (Field mapping): 序列化键 `y_range` <-> 界面标签 `Y`。
-- 控件标签 (Caption): `Y`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3], percent `[min,max,step]`
-- 默认值 (Default): `[-5.0, 5.0, 1.0]`
-- 含义 (Meaning): Y 方向应变扫描区间（单位 `%`），格式为 `[min,max,step]`。
-- 对输出规模/物理性的影响: 按百分比应变扫描 y 轴（例如 `-5` 到 `5` 表示 `-5%` 到 `+5%`）。范围越宽或步长越小，组合数增长越快。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：±1-2%
-  - 平衡：±3-5%
-  - 探索：±6%+
+### X Range（x_range）
+类型：`tuple[float, float, float]`。默认：`(-5.0, 5.0, 1.0)`。设置 x 轴应变扫描范围。
 
-### `z_range` (Z)
-- UI Label: `Z`
-- 字段映射 (Field mapping): 序列化键 `z_range` <-> 界面标签 `Z`。
-- 控件标签 (Caption): `Z`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3], percent `[min,max,step]`
-- 默认值 (Default): `[-5.0, 5.0, 1.0]`
-- 含义 (Meaning): Z 方向应变扫描区间（单位 `%`），格式为 `[min,max,step]`。
-- 对输出规模/物理性的影响: 按百分比应变扫描 z 轴（例如 `-5` 到 `5` 表示 `-5%` 到 `+5%`）。范围越宽或步长越小，组合数增长越快。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：±1-2%
-  - 平衡：±3-5%
-  - 探索：±6%+
+`[最小值, 最大值, 步长]`，单位 %。
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+只有 `Axes` 激活的方向才生效。isotropic 模式只用 x_range。步长越小、范围越宽 → 结构越多。
+
+**典型数值参考：**
+- ±1~2%：大多数无机晶体的弹性区，键长变化 < 0.1Å。补弹性常数首选
+- ±3~5%：非谐区，适合做应力-应变曲线覆盖。抽查输出确认没有非物理键长
+- ±6%+：极端变形，可能拉断键。每批跑完务必抽查最近邻距离
+
+### Y Range（y_range）
+类型：`tuple[float, float, float]`。默认：`(-5.0, 5.0, 1.0)`。设置 y 轴应变扫描范围。
+
+`[最小值, 最大值, 步长]`，单位 %。
+
+只有 `Axes` 激活的方向才生效。isotropic 模式只用 x_range。步长越小、范围越宽 → 结构越多。
+
+**典型数值参考：**
+- ±1~2%：大多数无机晶体的弹性区，键长变化 < 0.1Å。补弹性常数首选
+- ±3~5%：非谐区，适合做应力-应变曲线覆盖。抽查输出确认没有非物理键长
+- ±6%+：极端变形，可能拉断键。每批跑完务必抽查最近邻距离
+
+### Z Range（z_range）
+类型：`tuple[float, float, float]`。默认：`(-5.0, 5.0, 1.0)`。设置 z 轴应变扫描范围。
+
+`[最小值, 最大值, 步长]`，单位 %。
+
+只有 `Axes` 激活的方向才生效。isotropic 模式只用 x_range。步长越小、范围越宽 → 结构越多。
+
+**典型数值参考：**
+- ±1~2%：大多数无机晶体的弹性区，键长变化 < 0.1Å。补弹性常数首选
+- ±3~5%：非谐区，适合做应力-应变曲线覆盖。抽查输出确认没有非物理键长
+- ±6%+：极端变形，可能拉断键。每批跑完务必抽查最近邻距离
+
+### Identify Organic（identify_organic）
+类型：`bool`。默认：`False`。决定是否识别有机分子并保护内部几何。
+
+物理直觉：分子晶体、MOF、有机半导体打开；纯无机晶体关闭。打开后分子内部键长尽量保持刚性，避免晶格应变把分子内键当成晶格键拉伸。
+
+## 推荐预设
+
+### 近平衡弹性（isotropic ±1%，适合补体模量）
 ```json
 {
   "class": "CellStrainCard",
   "check_state": true,
   "organic": false,
   "engine_type": "isotropic",
-  "x_range": [
-    -1,
-    1,
-    1
-  ],
-  "y_range": [
-    -1,
-    1,
-    1
-  ],
-  "z_range": [
-    -1,
-    1,
-    1
-  ]
+  "x_range": [-1, 1, 1],
+  "y_range": [-1, 1, 1],
+  "z_range": [-1, 1, 1]
 }
 ```
 
-### 平衡（Balanced）
+### 各向异性弹性（uniaxial ±3%，三个方向各 7 个点）
+```json
+{
+  "class": "CellStrainCard",
+  "check_state": true,
+  "organic": false,
+  "engine_type": "uniaxial",
+  "x_range": [-3, 3, 1],
+  "y_range": [-3, 3, 1],
+  "z_range": [-3, 3, 1]
+}
+```
+
+### 全方向覆盖（biaxial ±6%，适合怀疑模型在大变形下崩溃）
 ```json
 {
   "class": "CellStrainCard",
   "check_state": true,
   "organic": false,
   "engine_type": "biaxial",
-  "x_range": [
-    -3,
-    3,
-    1
-  ],
-  "y_range": [
-    -3,
-    3,
-    1
-  ],
-  "z_range": [
-    -3,
-    3,
-    1
-  ]
-}
-```
-
-### 激进/探索（Aggressive/Exploration）
-```json
-{
-  "class": "CellStrainCard",
-  "check_state": true,
-  "organic": false,
-  "engine_type": "triaxial",
-  "x_range": [
-    -6,
-    6,
-    2
-  ],
-  "y_range": [
-    -6,
-    6,
-    2
-  ],
-  "z_range": [
-    -6,
-    6,
-    2
-  ]
+  "x_range": [-6, 6, 2],
+  "y_range": [-6, 6, 2],
+  "z_range": [-6, 6, 2]
 }
 ```
 
 ## 推荐组合
-- Lattice Strain -> Atomic Perturb: 对每个应变帧增加局部差异。
-- Lattice Strain -> Shear Matrix Strain: 在轴向应变后补充非对角剪切分量覆盖。
-- 作为后续缺陷、表面或磁性卡片的母胞准备步骤。
 
-## 常见问题与排查
-- 输出为空或远少于预期时，先检查各范围参数是否真的形成了有效扫描组合；很多这类卡片在参数只给定单点时只会输出很少的结构。
-- 如果结构明显不合理，先看体积、晶胞角和最近邻距离，再把主控幅度或步长回调到更小的量级。
-- 模式冲突时以当前 UI 状态和代码分支为准；导入旧 JSON 后如果发现多个主模式字段同时存在，建议手工确认只保留一条主路径。
+- `Lattice Strain` → `Atomic Perturb`：应变 + 坐标噪声，同时覆盖几何变形和热扰动
+- `Lattice Strain` → `Shear Matrix Strain`：先补轴向应变，再补剪切分量
+- `Super Cell` → `Lattice Strain`：先扩胞到目标尺寸，再做应变扫描
 
-## 输出标签 / 元数据变更
-- 该卡片输出的 Config_type 标签模式：
-  - `Str({...})`
+## 常见问题
 
-## 可复现性说明
-- 该卡片本身无显式随机种子，参数与输入一致时结果应确定。
-- 若上游含随机操作，仍需在 pipeline 层统一控制随机性。
+**输出为空。** 步长 ≤ 0，或者最大值 < 最小值。检查 x/y/z_range。
+
+**结构角度异常变化。** 轴向应变不改变晶格角。如果变了，检查上游结构是否已经带非正交晶格。
+
+**组合爆炸。** `triaxial` + 步长 0.5% + ±5% = 21³ = 9261 个结构。先估算 Nx × Ny × Nz 再跑。
+
+**有机分子键被拉断。** `Identify organic` 没开。
+
+## 输出标签
+
+`Str(x=-1%,y=2%)` / `Str(all=3%)` 等。
+
+## 可复现性
+
+无随机性。同参数同输入 → 严格一致输出。

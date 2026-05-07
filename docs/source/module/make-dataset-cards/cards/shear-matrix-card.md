@@ -1,215 +1,143 @@
-<!-- card-schema: {"card_name": "Shear Matrix Strain", "source_file": "src/NepTrainKit/ui/views/_card/shear_matrix_card.py", "serialized_keys": ["organic", "symmetric", "xy_range", "yz_range", "xz_range"]} -->
+<!-- card-schema: {"card_name": "Shear Matrix Strain", "source_file": "src/NepTrainKit/ui/views/_card/shear_matrix_card.py", "serialized_keys": ["params"]} -->
 
 # 剪切矩阵应变（Shear Matrix Strain）
 
-`Group`: `Lattice`  
-`Class`: `ShearMatrixCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/shear_matrix_card.py`
+`Group`: `Lattice` | `Class`: `ShearMatrixCard`
 
 ## 功能说明
-通过 xy/yz/xz 剪切矩阵生成非对角形变样本，覆盖剪切应变相关结构变化。
 
-它最适合的场景是：通过非对角剪切矩阵项生成受控剪切样本。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+通过 xy/yz/xz 剪切矩阵分量生成非对角形变样本。对晶格矢量的三个剪切通道做系统扫描，每个通道独立控制 min/max/step。
 
-### 关键公式 (Core equations)
-$$\gamma_{xy}=\frac{s_{xy}}{100},\ \gamma_{yz}=\frac{s_{yz}}{100},\ \gamma_{xz}=\frac{s_{xz}}{100}$$
-$$\mathbf{S}=\begin{bmatrix}1&\gamma_{xy}&\gamma_{xz}\\0&1&\gamma_{yz}\\0&0&1\end{bmatrix},\quad \mathbf{C}'=\mathbf{C}\mathbf{S}$$
-$$\text{symmetric=true 时再加 }S_{21}=\gamma_{xy},\ S_{32}=\gamma_{yz},\ S_{31}=\gamma_{xz}$$
+$$\gamma_{xy}=\frac{s_{xy}}{100},\quad \mathbf{S}=\begin{bmatrix}1&\gamma_{xy}&\gamma_{xz}\\0&1&\gamma_{yz}\\0&0&1\end{bmatrix},\quad \mathbf{C}'=\mathbf{C}\mathbf{S}$$
+
+`symmetric=true` 时填充 S 的下三角对应项，使剪切路径更接近对称形变。
 
 ## 操作示例
-### 场景：通过非对角剪切矩阵项生成受控剪切样本
 
-**输入：** 一个晶体结构，并已明确想改动 `xy`、`yz` 或 `xz` 哪个剪切分量
+### 场景：模型预测剪切模量 C44 比 DFT 低 40%
 
-**目标：** 比角度法更直接地控制剪切矩阵元素，补充弹性或畸变数据
+你在 fcc Al 上训练了一个 NEP 模型，C11/C12 都对，但 C44 只有 DFT 值的 60%。诊断发现：C44 是对应于 xy/yz/xz 方向剪切的分量，而训练集里所有结构都是轴向拉伸/压缩（通过 `Lattice Strain` 生成的），模型没见过非对角剪切变形。
+
+**诊断思路：** 剪切弹性常数来源于非对角应变。如果训练集只覆盖对角应变（axial strain），模型对剪切方向的刚度完全靠外推。需要往训练集里加入已知剪切分量的结构。
+
+**输入：** 一个弛豫好的 fcc Al 单胞
+
+**目标：** 沿 xy 方向做 -3% 到 +3% 剪切，步长 1%，对称模式，共 7 个结构
 
 **参数设置：**
-- `xy_range/yz_range/xz_range` 先从小百分比开始
-- `symmetric=true` 时适合更规则的剪切扫描
-- `organic=true` 只在分子晶体场景下考虑
+- `xy_range` = `[-3, 3, 1]`
+- `yz_range` = `[0, 0, 1]` （不扫 yz）—— 注意要把步长非零的值写进去，否则 range 为空不生成
+- `xz_range` = `[0, 0, 1]` （不扫 xz）
+- `symmetric` = `true`
 
-**输出：** 一批剪切矩阵不同的结构，晶格基矢之间的夹角和投影关系会变化
+**输出：** 7 个结构，剪切矩阵的 xy 分量从 -0.03 到 +0.03，yz 和 xz 分量为 0
 
-**怎么验证结果合理：**
-- 检查非对角项变化是否符合设定
-- 若畸变后结构明显失稳，先减小剪切幅度
-- 一次只放开一到两个分量更容易调参
+**怎么验证训练集质量改善：**
+- 重训后重新计算弹性常数矩阵，C44 应该更接近 DFT 参考值
+- 检查输出结构的晶格角变化：单斜/triclinic 体系剪切后角度会偏离正交，确认变化在物理合理范围
+- 如果 C44 改善但 C55/C66 仍有偏差，再单独扫 yz_range 和 xz_range
+- 如果三个分量都需要同时补，再同时放开三个 range —— 但注意输出数 = Nxy * Nyz * Nxz，组合数很快爆炸
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 对剪切应力相关性质预测不稳。
-- 目标任务 (Target objective): 系统覆盖剪切分量及对称性差异。
-- 建议添加条件 (Add-it trigger): 需要非对角应变采样。
-- 不建议添加条件 (Avoid trigger): 仅做体积或单轴应变。
-> 物理提示 (Physics caution): 重点检查体积变化、晶胞条件数和最近邻距离，避免把几何畸变直接放大到非物理区间。
+### 什么时候加这张卡、什么时候不加
 
-## 输入前提
-- 先确认 `symmetric` 策略。
-- 单分量试跑后再三分量联扫。
+**加：**
+- 模型剪切模量、非对角弹性常数系统性偏差
+- 训练集缺少非正交晶格构型、所有结构都在高对称格点
+- 需要覆盖剪切方向的应力-应变响应
 
-## 参数说明（完整）
-### `organic` (Organic)
-- UI Label: `Organic`
-- 字段映射 (Field mapping): 序列化键 `organic` <-> 界面标签 `Organic`。
-- 控件标签 (Caption): `Organic`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 有机团簇识别与刚性移动开关 (organic cluster rigid mode)。
-- 对输出规模/物理性的影响: 开启后先识别有机团簇，扰动时对有机分子做刚性整体移动，减少分子内键长/拓扑被破坏；输入含有机分子时应开启。
-- 怎么判断该开还是该关: 只有当你明确知道这个开关会改变当前工作流目标时才开启；不确定时先保持默认并用小样本验证。
-- 配置建议 (Practical note):
-  - 开启：输入包含有机分子时必须开启；会先识别团簇并按分子刚性整体移动。
-  - 关闭：仅在确认为纯无机体系时关闭。
+**不加：**
+- 只需要体积和单轴应变 → `Lattice Strain` 更直接
+- 想通过角度而非矩阵分量控制剪切 → `Shear Angle Strain` 更适合
+- 体系本身是刚性分子晶体，剪切只会破坏分子内拓扑 → 考虑 `identify_organic`
 
-### `symmetric` (Symmetric Shear)
-- UI Label: `Symmetric Shear`
-- 字段映射 (Field mapping): 序列化键 `symmetric` <-> 界面标签 `Symmetric Shear`。
-- 控件标签 (Caption): `Symmetric Shear`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `true`
-- 含义 (Meaning): 对称剪切开关 (symmetric shear)。
-- 对输出规模/物理性的影响: 开启后更接近对称形变路径，通常更稳定。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note):
-  - 开启：需要对称剪切路径时开启。
-  - 关闭：仅测试非对称分量时关闭。
+## 参数说明
 
-### `xy_range` (XY)
-- UI Label: `XY`
-- 字段映射 (Field mapping): 序列化键 `xy_range` <-> 界面标签 `XY`。
-- 控件标签 (Caption): `XY`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3], percent `[min,max,step]`
-- 默认值 (Default): `[-5.0, 5.0, 1.0]`
-- 含义 (Meaning): XY 剪切分量扫描区间（单位 `%`），格式为 `[min,max,step]`。
-- 对输出规模/物理性的影响: 剪切矩阵分量按 `sxy/100` 写入，`sxy=5` 即 `0.05` 剪切分量。范围越宽或步长越小，生成组合越多。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：±1-2%
-  - 平衡：±3-5%
-  - 探索：±6%+
+### XY Range（xy_range）
+类型：`tuple[float, float, float]`。默认：`(-5.0, 5.0, 1.0)`。设置 xy 剪切分量扫描范围。
 
-### `yz_range` (YZ)
-- UI Label: `YZ`
-- 字段映射 (Field mapping): 序列化键 `yz_range` <-> 界面标签 `YZ`。
-- 控件标签 (Caption): `YZ`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3], percent `[min,max,step]`
-- 默认值 (Default): `[-5.0, 5.0, 1.0]`
-- 含义 (Meaning): YZ 剪切分量扫描区间（单位 `%`），格式为 `[min,max,step]`。
-- 对输出规模/物理性的影响: 剪切矩阵分量按 `syz/100` 写入，`syz=5` 即 `0.05` 剪切分量。范围越宽或步长越小，生成组合越多。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：±1-2%
-  - 平衡：±3-5%
-  - 探索：±6%+
+XY 剪切分量扫描区间 `[min, max, step]`，单位 %。`sxy=5` 对应剪切矩阵分量 `0.05`。只扫一个分量时把另两个设为一个点（如 `[0, 0, 1]`）。
 
-### `xz_range` (XZ)
-- UI Label: `XZ`
-- 字段映射 (Field mapping): 序列化键 `xz_range` <-> 界面标签 `XZ`。
-- 控件标签 (Caption): `XZ`。
-- 控件解释 (Widget): 区间输入 `SpinBoxUnitInputFrame`（`min/max/step` 三输入框）。
-- 类型/范围 (Type/Range): list[3], percent `[min,max,step]`
-- 默认值 (Default): `[-5.0, 5.0, 1.0]`
-- 含义 (Meaning): XZ 剪切分量扫描区间（单位 `%`），格式为 `[min,max,step]`。
-- 对输出规模/物理性的影响: 剪切矩阵分量按 `sxz/100` 写入，`sxz=5` 即 `0.05` 剪切分量。范围越宽或步长越小，生成组合越多。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：±1-2%
-  - 平衡：±3-5%
-  - 探索：±6%+
+### YZ Range（yz_range）
+类型：`tuple[float, float, float]`。默认：`(-5.0, 5.0, 1.0)`。设置 yz 剪切分量扫描范围。
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+YZ 剪切分量，同上。
+
+### XZ Range（xz_range）
+类型：`tuple[float, float, float]`。默认：`(-5.0, 5.0, 1.0)`。设置 xz 剪切分量扫描范围。
+
+XZ 剪切分量，同上。
+
+### Symmetric（symmetric）
+类型：`bool`。默认：`True`。决定是否同时生成正负对称剪切。
+
+对称剪切。开启后剪切矩阵下三角同步填充（`S[1,0] = S[0,1]` 等），剪切路径更接近物理对称形变。研究非对称畸变时关闭。
+
+### Identify Organic（identify_organic）
+类型：`bool`。默认：`False`。决定是否识别有机分子并保护内部几何。
+
+有机团簇识别。分子晶体必须开启，纯无机体系关闭。
+
+## 推荐预设
+
+### 单分量弹性补样（仅 xy，±3%，对称）
 ```json
 {
   "class": "ShearMatrixCard",
   "check_state": true,
-  "organic": false,
+  "xy_range": [-3, 3, 1],
+  "yz_range": [0, 0, 1],
+  "xz_range": [0, 0, 1],
   "symmetric": true,
-  "xy_range": [
-    -1,
-    1,
-    1
-  ],
-  "yz_range": [
-    -1,
-    1,
-    1
-  ],
-  "xz_range": [
-    -1,
-    1,
-    1
-  ]
+  "identify_organic": false
 }
 ```
 
-### 平衡（Balanced）
+### 双分量剪切覆盖（xy+yz，±5%，对称，~121 个输出）
 ```json
 {
   "class": "ShearMatrixCard",
   "check_state": true,
-  "organic": false,
+  "xy_range": [-5, 5, 1],
+  "yz_range": [-5, 5, 1],
+  "xz_range": [0, 0, 1],
   "symmetric": true,
-  "xy_range": [
-    -3,
-    3,
-    1
-  ],
-  "yz_range": [
-    -3,
-    3,
-    1
-  ],
-  "xz_range": [
-    -3,
-    3,
-    1
-  ]
+  "identify_organic": false
 }
 ```
 
-### 激进/探索（Aggressive/Exploration）
+### 三通道研究级（xy+yz+xz，±6%，步长 2%，非对称，~343 个输出）
 ```json
 {
   "class": "ShearMatrixCard",
   "check_state": true,
-  "organic": false,
+  "xy_range": [-6, 6, 2],
+  "yz_range": [-6, 6, 2],
+  "xz_range": [-6, 6, 2],
   "symmetric": false,
-  "xy_range": [
-    -6,
-    6,
-    2
-  ],
-  "yz_range": [
-    -6,
-    6,
-    2
-  ],
-  "xz_range": [
-    -6,
-    6,
-    2
-  ]
+  "identify_organic": false
 }
 ```
 
 ## 推荐组合
-- Shear Matrix Strain -> Atomic Perturb: 用局部位移进一步细化剪切结构。
-- 作为后续缺陷、表面或磁性卡片的母胞准备步骤。
-- 若扩胞后结构规模明显上升，建议在流程末端再接 `FPS Filter` 控制代表性样本数。
 
-## 常见问题与排查
-- 输出为空或远少于预期时，先检查各范围参数是否真的形成了有效扫描组合；很多这类卡片在参数只给定单点时只会输出很少的结构。
-- 如果结构明显不合理，先看体积、晶胞角和最近邻距离，再把主控幅度或步长回调到更小的量级。
-- 模式冲突时以当前 UI 状态和代码分支为准；导入旧 JSON 后如果发现多个主模式字段同时存在，建议手工确认只保留一条主路径。
+- `Lattice Strain` -> `Shear Matrix Strain`：先补轴向应变，再补剪切分量，覆盖完整弹性张量
+- `Shear Matrix Strain` -> `Atomic Perturb`：剪切变形后加坐标噪声
+- `Super Cell` -> `Shear Matrix Strain`：先扩胞再剪切，适合研究大尺度剪切响应
 
-## 输出标签 / 元数据变更
-- 该卡片输出的 Config_type 标签模式：
-  - `Shr({...},sym={...})`
+## 常见问题
 
-## 可复现性说明
-- 该卡片本身无显式随机种子，参数与输入一致时结果应确定。
-- 若上游含随机操作，仍需在 pipeline 层统一控制随机性。
+**输出为空。** 检查 range 的步长是否 > 0。如果不扫某个分量，不能设置 `[0, 0, 0]` —— 步长为 0 会导致 range 为空。应该设置 `[0, 0, 1]` 确保至少生成一个点（0）。
+
+**输出数量爆炸。** 三通道联扫的输出数 = Nxy * Nyz * Nxz。默认 `[-5, 5, 1]` 三个通道同时开 = 11^3 = 1331 个结构。建议先单通道试跑验证参数合理性后再加通道。
+
+**剪切后结构物理不合理。** 剪切幅度过大导致晶格条件数恶化（接近奇异）。抽查最近邻距离和晶格行列式。±5% 以上建议逐步增加并每步检查。
+
+**vs Shear Angle Strain 如何选择。** Shear Matrix 在笛卡尔坐标下直接修改剪切矩阵分量，适合和弹性常数计算对齐；Shear Angle 修改晶胞角度 alpha/beta/gamma，适合和 XRD/晶体学角度对齐。两者产生不同的形变路径，可以互补使用。
+
+## 输出标签
+
+`Shr(xy={sxy}%,yz={syz}%,xz={sxz}%,sym={0|1})`
+
+## 可复现性
+
+无随机性。同参数同输入 → 严格一致输出。所有剪切分量按固定网格扫描。

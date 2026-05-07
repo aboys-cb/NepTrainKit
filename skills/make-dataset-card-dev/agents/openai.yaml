@@ -1,4 +1,4 @@
 interface:
   display_name: "Make Dataset Card Dev"
-  short_description: "把需求或脚本转成 NepTrainKit Make Dataset 卡片"
-  default_prompt: "根据需求描述或小脚本，按项目卡片风格设计 UI、实现业务逻辑并完成 UI 与逻辑绑定。"
+  short_description: "按 Operation 架构开发 NepTrainKit Make Dataset 卡片"
+  default_prompt: "根据需求描述、脚本或现有卡片，按 Params dataclass + core Operation + UI 绑定的架构实现或重构 Make Dataset 卡片，并补齐文档和测试。"

@@ -1,4 +1,4 @@
-#!/usr/bin/env python 
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # @Time    : 2024/11/28 22:45
 # @Author  : Bing
@@ -9,12 +9,21 @@ from typing import Any, Dict
 
 from PySide6.QtGui import QIcon, QDoubleValidator, QIntValidator, QColor
 from PySide6.QtWidgets import (
-    QVBoxLayout, QFrame, QGridLayout,
-    QPushButton, QWidget, QHBoxLayout, QFormLayout, QSizePolicy,
-    QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView,
+    QVBoxLayout,
+    QFrame,
+    QGridLayout,
+    QPushButton,
+    QWidget,
+    QHBoxLayout,
+    QFormLayout,
+    QSizePolicy,
+    QTableWidget,
+    QTableWidgetItem,
+    QHeaderView,
+    QAbstractItemView,
     QDialog,
 )
-from PySide6.QtCore import Signal, Qt, QUrl, QEvent
+from PySide6.QtCore import Signal, Qt, QUrl, QEvent, QPropertyAnimation, QEasingCurve, QTimer
 from qfluentwidgets import (
     MessageBoxBase,
     SpinBox,
@@ -24,16 +33,28 @@ from qfluentwidgets import (
     ProgressBar,
     ComboBox,
     FluentStyleSheet,
-    FluentTitleBar, TransparentToolButton, ColorDialog,
-    TitleLabel, HyperlinkLabel, LineEdit, EditableComboBox, PrimaryPushButton, Flyout, InfoBarIcon, MessageBox,
-    TextEdit, FluentIcon,
-    ToolTipFilter, ToolTipPosition
+    FluentTitleBar,
+    TransparentToolButton,
+    ColorDialog,
+    TitleLabel,
+    HyperlinkLabel,
+    LineEdit,
+    EditableComboBox,
+    PrimaryPushButton,
+    Flyout,
+    InfoBarIcon,
+    MessageBox,
+    TextEdit,
+    FluentIcon,
+    ToolTipFilter,
+    ToolTipPosition,
 )
 from qframelesswindow import FramelessDialog
 import json
 import html
 import math
 import os
+import numpy as np
 from .button import TagPushButton, TagGroup
 
 from NepTrainKit.core import MessageManager
@@ -41,25 +62,29 @@ from NepTrainKit.config import Config
 from NepTrainKit.core.types import (
     SearchType,
     CanvasMode,
+    Brushes,
+    Pens,
     DistributionGroupMode,
     DistributionScope,
     DistributionValueView,
     DistributionSelectMode,
     DistributionCurveStyle,
 )
-from NepTrainKit.core.io.base import DistributionRequest
+from NepTrainKit.core.io.base import DistributionRequest, NepPlotData
+from NepTrainKit.ui.canvas.canvas_factory import create_result_canvas, resolve_canvas_host_widget
 from NepTrainKit.ui.canvas.distribution_factory import create_distribution_plot_adapter
 
 from NepTrainKit import module_path
 
-from NepTrainKit.utils import LoadingThread,call_path_dialog
-from NepTrainKit.core.utils import get_xyz_nframe,  read_nep_out_file, get_rmse
+from NepTrainKit.ui.dialogs import call_path_dialog
+from NepTrainKit.ui.threads import LoadingThread
+from NepTrainKit.core.utils import get_xyz_nframe, read_nep_out_file, get_rmse
 
 
 class GetIntMessageBox(MessageBoxBase):
-    """ Custom message box """
+    """Custom message box"""
 
-    def __init__(self, parent=None,tip=""):
+    def __init__(self, parent=None, tip=""):
         super().__init__(parent)
         self.titleLabel = CaptionLabel(tip, self)
         self.titleLabel.setWordWrap(True)
@@ -68,7 +93,7 @@ class GetIntMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.intSpinBox)
 
-        self.widget.setMinimumWidth(100 )
+        self.widget.setMinimumWidth(100)
         self.intSpinBox.setMaximum(100000000)
 
 
@@ -141,7 +166,7 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
         self.viewLayout.addLayout(layout)
-        heager_row =   QHBoxLayout()
+        heager_row = QHBoxLayout()
         title = TitleLabel("Dataset Summary", self)
 
         # Export HTML button
@@ -149,7 +174,7 @@ class DatasetSummaryMessageBox(MessageBoxBase):
 
         self.exportButton.clicked.connect(self._export_html)
         heager_row.addWidget(title)
-        heager_row.addWidget(self.exportButton,alignment=Qt.AlignmentFlag.AlignRight)
+        heager_row.addWidget(self.exportButton, alignment=Qt.AlignmentFlag.AlignRight)
         layout.addLayout(heager_row)
 
         # Source info
@@ -260,8 +285,6 @@ class DatasetSummaryMessageBox(MessageBoxBase):
                 cfg_grid.addWidget(bar, r, 3)
             layout.addLayout(cfg_grid)
 
-
-
     def _export_html(self) -> None:
         """Export the full summary (all rows) to an HTML file."""
         path = call_path_dialog(
@@ -291,12 +314,12 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         dist_metrics = dist.get("metrics", []) or []
         force_rms = self._summary.get("force_rms", {}) or {}
         energy_stats = self._summary.get("energy", {}) or {}
-        
+
         # Handling Grouping Logic (Formula or Tag)
-        group_by = self._summary.get("group_by", "tag") # Default to tag
+        group_by = self._summary.get("group_by", "tag")  # Default to tag
         group_label = "Formula" if "FORMULA" in str(group_by).upper() else "Config ID"
         group_section_title = "Formulas" if "FORMULA" in str(group_by).upper() else "Configuration Types"
-        
+
         data_file = self._summary.get("data_file", "N/A")
         model_file = self._summary.get("model_file", "N/A")
 
@@ -507,7 +530,7 @@ class DatasetSummaryMessageBox(MessageBoxBase):
                 swatches = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6"]
                 parts = []
                 for i, s in enumerate(series[:6]):
-                    name = html.escape(str(s.get("name", f"s{i+1}")))
+                    name = html.escape(str(s.get("name", f"s{i + 1}")))
                     color_var = swatches[i]
                     parts.append(
                         f"<span class='dist-legend-item'><span class='dist-swatch' style='background: var({color_var});'></span>{name}</span>"
@@ -535,7 +558,7 @@ class DatasetSummaryMessageBox(MessageBoxBase):
             <div class="card" style="margin-top: 30px;">
                 <h2>Numeric Distributions</h2>
                 <div class="dist-grid">
-                    {''.join(dist_cards)}
+                    {"".join(dist_cards)}
                 </div>
             </div>
 
@@ -741,10 +764,10 @@ class DatasetSummaryMessageBox(MessageBoxBase):
                 <div class="card">
                     <h2>Structure Overview</h2>
                     <table>
-                        <tr><td class="stat-label">Original Count</td><td class="stat-val">{counts.get('orig_structures', 0)}</td></tr>
-                        <tr><td class="stat-label">Active Structures</td><td class="stat-val" style="color: var(--accent-green);">{counts.get('active_structures', 0)}</td></tr>
-                        <tr><td class="stat-label">Removed / Selected</td><td class="stat-val">{counts.get('removed_structures', 0)} / {counts.get('selected_structures', 0)}</td></tr>
-                        <tr><td class="stat-label">Total Atoms (Active)</td><td class="stat-val">{atoms.get('total_atoms_active', 0):,}</td></tr>
+                        <tr><td class="stat-label">Original Count</td><td class="stat-val">{counts.get("orig_structures", 0)}</td></tr>
+                        <tr><td class="stat-label">Active Structures</td><td class="stat-val" style="color: var(--accent-green);">{counts.get("active_structures", 0)}</td></tr>
+                        <tr><td class="stat-label">Removed / Selected</td><td class="stat-val">{counts.get("removed_structures", 0)} / {counts.get("selected_structures", 0)}</td></tr>
+                        <tr><td class="stat-label">Total Atoms (Active)</td><td class="stat-val">{atoms.get("total_atoms_active", 0):,}</td></tr>
                         {energy_rows}
                         {force_rms_rows}
                     </table>
@@ -753,10 +776,10 @@ class DatasetSummaryMessageBox(MessageBoxBase):
                 <div class="card">
                     <h2>Atoms per Structure</h2>
                     <table>
-                        <tr><td class="stat-label">Minimum</td><td class="stat-val">{atoms.get('min_atoms', 0)}</td></tr>
-                        <tr><td class="stat-label">Maximum</td><td class="stat-val">{atoms.get('max_atoms', 0)}</td></tr>
-                        <tr><td class="stat-label">Mean Value</td><td class="stat-val" style="font-size: 1.1em; color: var(--primary);">{atoms.get('mean_atoms', 0.0):.1f}</td></tr>
-                        <tr><td class="stat-label">Median Value</td><td class="stat-val">{atoms.get('median_atoms', 0.0):.1f}</td></tr>
+                        <tr><td class="stat-label">Minimum</td><td class="stat-val">{atoms.get("min_atoms", 0)}</td></tr>
+                        <tr><td class="stat-label">Maximum</td><td class="stat-val">{atoms.get("max_atoms", 0)}</td></tr>
+                        <tr><td class="stat-label">Mean Value</td><td class="stat-val" style="font-size: 1.1em; color: var(--primary);">{atoms.get("mean_atoms", 0.0):.1f}</td></tr>
+                        <tr><td class="stat-label">Median Value</td><td class="stat-val">{atoms.get("median_atoms", 0.0):.1f}</td></tr>
                     </table>
                 </div>
             </div>
@@ -784,8 +807,10 @@ class DatasetSummaryMessageBox(MessageBoxBase):
     </body>
     </html>"""
 
+
 class DistributionInspectorMessageBox(QDialog):
     """Dialog for inspecting distributions of numeric dataset/atomic fields."""
+
     _ALL_SERIES_KEY = "__all__"
 
     def __init__(
@@ -807,8 +832,8 @@ class DistributionInspectorMessageBox(QDialog):
         self._canvas_type = str(canvas_type or Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)).strip()
         self._plot_adapter, self._vispy_fallback_warned = create_distribution_plot_adapter(self._canvas_type, self)
         self.setWindowTitle("Distribution Inspector")
-       
-        self.setWindowIcon(QIcon(':/images/src/images/distribution_inspector.svg'))
+
+        self.setWindowIcon(QIcon(":/images/src/images/distribution_inspector.svg"))
 
         root_layout = QVBoxLayout(self)
         root_layout.setContentsMargins(8, 8, 8, 8)
@@ -925,7 +950,9 @@ class DistributionInspectorMessageBox(QDialog):
         self._field_specs = []
         self._field_by_key.clear()
         if self._vispy_fallback_warned:
-            self.plotHintLabel.setText("Current canvas backend is vispy, but vispy plot failed to initialize; fallback to pyqtgraph.")
+            self.plotHintLabel.setText(
+                "Current canvas backend is vispy, but vispy plot failed to initialize; fallback to pyqtgraph."
+            )
         else:
             self.plotHintLabel.setText("")
 
@@ -979,11 +1006,15 @@ class DistributionInspectorMessageBox(QDialog):
         req = DistributionRequest(
             field_keys=(field_key,),
             include_norm=bool(self.includeNormCheck.isChecked()),
-            value_view=DistributionValueView(str(self.viewCombo.currentData() or DistributionValueView.REFERENCE.value)),
+            value_view=DistributionValueView(
+                str(self.viewCombo.currentData() or DistributionValueView.REFERENCE.value)
+            ),
             group_mode=DistributionGroupMode(str(self.groupCombo.currentData() or DistributionGroupMode.ELEMENT.value)),
             scope=DistributionScope(str(self.scopeCombo.currentData() or DistributionScope.ACTIVE.value)),
             bins=int(self.binsSpin.value()),
-            select_mode=DistributionSelectMode(str(self.selectModeCombo.currentData() or DistributionSelectMode.REPLACE.value)),
+            select_mode=DistributionSelectMode(
+                str(self.selectModeCombo.currentData() or DistributionSelectMode.REPLACE.value)
+            ),
             groups=(),
             curve_style=DistributionCurveStyle(str(self.curveCombo.currentData() or DistributionCurveStyle.KDE.value)),
             curve_points=240,
@@ -1098,7 +1129,9 @@ class DistributionInspectorMessageBox(QDialog):
             indices = sorted(merged)
         else:
             try:
-                indices = self._data.resolve_distribution_bin_indices(analysis_id, metric_key, series_key, int(bin_index))
+                indices = self._data.resolve_distribution_bin_indices(
+                    analysis_id, metric_key, series_key, int(bin_index)
+                )
             except Exception:  # noqa: BLE001
                 indices = []
             series = self._current_series(metric)
@@ -1114,10 +1147,11 @@ class DistributionInspectorMessageBox(QDialog):
             f"Applied bin {bin_index} ({series_label}): {sample_count} samples -> {len(indices)} structures, mode='{mode}'."
         )
 
-class GetStrMessageBox(MessageBoxBase):
-    """ Custom message box """
 
-    def __init__(self, parent=None,tip=""):
+class GetStrMessageBox(MessageBoxBase):
+    """Custom message box"""
+
+    def __init__(self, parent=None, tip=""):
         super().__init__(parent)
         self.titleLabel = CaptionLabel(tip, self)
         self.titleLabel.setWordWrap(True)
@@ -1126,19 +1160,19 @@ class GetStrMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.lineEdit)
 
-        self.widget.setMinimumWidth(100 )
+        self.widget.setMinimumWidth(100)
 
 
 class SparseMessageBox(MessageBoxBase):
     """Dialog for configuring sparsity-related parameters."""
 
-    def __init__(self, parent=None,tip=""):
+    def __init__(self, parent=None, tip=""):
         super().__init__(parent)
         self.titleLabel = CaptionLabel(tip, self)
         self.titleLabel.setWordWrap(True)
         self._frame = QFrame(self)
-        self.frame_layout=QGridLayout(self._frame)
-        self.frame_layout.setContentsMargins(0,0,0,0)
+        self.frame_layout = QGridLayout(self._frame)
+        self.frame_layout.setContentsMargins(0, 0, 0, 0)
         self.frame_layout.setSpacing(4)
         self.intSpinBox = SpinBox(self)
 
@@ -1151,38 +1185,34 @@ class SparseMessageBox(MessageBoxBase):
 
         self.modeCombo = ComboBox(self)
         self.modeCombo.addItems(["Fixed count (FPS)", "R^2 stop (FPS)"])
-        self.frame_layout.addWidget(CaptionLabel("Sampling mode", self),0,0,1,1)
-        self.frame_layout.addWidget(self.modeCombo,0,1,1,2)
+        self.frame_layout.addWidget(CaptionLabel("Sampling mode", self), 0, 0, 1, 1)
+        self.frame_layout.addWidget(self.modeCombo, 0, 1, 1, 2)
 
-        self.maxNumLabel = CaptionLabel("Max num", self)
-        self.frame_layout.addWidget(self.maxNumLabel,1,0,1,1)
-        self.frame_layout.addWidget(self.intSpinBox,1,1,1,2)
-        self.frame_layout.addWidget(CaptionLabel("Min distance", self),2,0,1,1)
+        self.maxNumLabel = CaptionLabel("Sample limit", self)
+        self.frame_layout.addWidget(self.maxNumLabel, 1, 0, 1, 1)
+        self.frame_layout.addWidget(self.intSpinBox, 1, 1, 1, 2)
+        self.frame_layout.addWidget(CaptionLabel("Min distance", self), 2, 0, 1, 1)
 
-        self.frame_layout.addWidget(self.doubleSpinBox,2,1,1,2)
+        self.frame_layout.addWidget(self.doubleSpinBox, 2, 1, 1, 2)
 
         self.r2Label = CaptionLabel("R^2 threshold", self)
         self.r2SpinBox = DoubleSpinBox(self)
         self.r2SpinBox.setDecimals(4)
         self.r2SpinBox.setRange(0.0, 1.0)
         self.r2SpinBox.setSingleStep(0.01)
-        self.frame_layout.addWidget(self.r2Label,3,0,1,1)
-        self.frame_layout.addWidget(self.r2SpinBox,3,1,1,2)
-
-
+        self.frame_layout.addWidget(self.r2Label, 3, 0, 1, 1)
+        self.frame_layout.addWidget(self.r2SpinBox, 3, 1, 1, 2)
 
         self.descriptorCombo = ComboBox(self)
         self.descriptorCombo.addItems(["Reduced (PCA)", "Raw descriptor"])
-        self.frame_layout.addWidget(CaptionLabel("Descriptor source", self),4,0,1,1)
-        self.frame_layout.addWidget(self.descriptorCombo,4,1,1,2)
+        self.frame_layout.addWidget(CaptionLabel("Descriptor source", self), 4, 0, 1, 1)
+        self.frame_layout.addWidget(self.descriptorCombo, 4, 1, 1, 2)
 
         self.advancedFrame = QFrame(self)
         self.advancedFrame.setVisible(False)
         self.advancedLayout = QGridLayout(self.advancedFrame)
-        self.advancedLayout.setContentsMargins(0,0,0,0)
+        self.advancedLayout.setContentsMargins(0, 0, 0, 0)
         self.advancedLayout.setSpacing(4)
-
-
 
         self.trainingPathEdit = LineEdit(self)
         self.trainingPathEdit.setPlaceholderText("Optional training dataset path (.xyz or folder)")
@@ -1197,28 +1227,36 @@ class SparseMessageBox(MessageBoxBase):
         self.trainingBrowseButton.clicked.connect(self._pick_training_path)
         self.trainingBrowseButton.setToolTip("Browse for an existing training dataset")
 
-        self.advancedLayout.addWidget(CaptionLabel("Training dataset", self),1,0)
-        self.advancedLayout.addWidget(trainingPathWidget,1,1)
+        self.advancedLayout.addWidget(CaptionLabel("Training dataset", self), 1, 0)
+        self.advancedLayout.addWidget(trainingPathWidget, 1, 1)
 
         # region option: use current selection as FPS region
         self.regionCheck = CheckBox("Use current selection as region", self)
-        self.regionCheck.setToolTip("When FPS sampling is performed in the designated area, the program will automatically deselect it, just click to delete!")
+        self.regionCheck.setToolTip(
+            "When FPS sampling is performed in the designated area, the program will automatically deselect it, just click to delete!"
+        )
         self.regionCheck.installEventFilter(ToolTipFilter(self.regionCheck, 300, ToolTipPosition.TOP))
 
+        # training overlay option
+        self.trainingOverlayCheck = CheckBox("Show training overlay", self)
+        self.trainingOverlayCheck.setToolTip(
+            "Display a scatter plot showing training data, loaded data, and selected structures in PCA space after sampling."
+        )
+        self.trainingOverlayCheck.installEventFilter(ToolTipFilter(self.trainingOverlayCheck, 300, ToolTipPosition.TOP))
+
         self.viewLayout.addWidget(self.titleLabel)
-        self.viewLayout.addWidget(self._frame )
+        self.viewLayout.addWidget(self._frame)
         self.viewLayout.addWidget(self.advancedFrame)
         self.viewLayout.addWidget(self.regionCheck)
+        self.viewLayout.addWidget(self.trainingOverlayCheck)
 
-        self.yesButton.setText('Ok')
-        self.cancelButton.setText('Cancel')
+        self.yesButton.setText("Ok")
+        self.cancelButton.setText("Cancel")
 
         self.widget.setMinimumWidth(200)
         self.advancedFrame.setVisible(True)
         self.modeCombo.currentIndexChanged.connect(self._update_mode_visibility)
         self._update_mode_visibility()
-
-
 
     def _pick_training_path(self):
         """Prompt the user to choose a training dataset path."""
@@ -1257,8 +1295,8 @@ class IndexSelectMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.indexEdit)
         self.viewLayout.addWidget(self.checkBox)
 
-        self.yesButton.setText('Ok')
-        self.cancelButton.setText('Cancel')
+        self.yesButton.setText("Ok")
+        self.cancelButton.setText("Cancel")
         self.widget.setMinimumWidth(200)
 
 
@@ -1305,8 +1343,8 @@ class RangeSelectMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText('Ok')
-        self.cancelButton.setText('Cancel')
+        self.yesButton.setText("Ok")
+        self.cancelButton.setText("Cancel")
         self.widget.setMinimumWidth(300)
 
 
@@ -1338,8 +1376,18 @@ class LatticeRangeSelectMessageBox(MessageBoxBase):
         self.gammaMaxSpin = DoubleSpinBox(self)
 
         spins = [
-            self.aMinSpin, self.aMaxSpin, self.bMinSpin, self.bMaxSpin, self.cMinSpin, self.cMaxSpin,
-            self.alphaMinSpin, self.alphaMaxSpin, self.betaMinSpin, self.betaMaxSpin, self.gammaMinSpin, self.gammaMaxSpin
+            self.aMinSpin,
+            self.aMaxSpin,
+            self.bMinSpin,
+            self.bMaxSpin,
+            self.cMinSpin,
+            self.cMaxSpin,
+            self.alphaMinSpin,
+            self.alphaMaxSpin,
+            self.betaMinSpin,
+            self.betaMaxSpin,
+            self.gammaMinSpin,
+            self.gammaMaxSpin,
         ]
         for spin in spins:
             spin.setDecimals(4)
@@ -1380,8 +1428,8 @@ class LatticeRangeSelectMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText('Ok')
-        self.cancelButton.setText('Cancel')
+        self.yesButton.setText("Ok")
+        self.cancelButton.setText("Cancel")
         self.widget.setMinimumWidth(400)
 
 
@@ -1424,12 +1472,12 @@ class ArrowMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText('Ok')
-        self.cancelButton.setText('Cancel')
+        self.yesButton.setText("Ok")
+        self.cancelButton.setText("Cancel")
         self.widget.setMinimumWidth(250)
+
+
 class InputInfoMessageBox(MessageBoxBase):
-
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.titleLabel = CaptionLabel("new structure info", self)
@@ -1449,21 +1497,24 @@ class InputInfoMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText('Ok')
-        self.cancelButton.setText('Cancel')
+        self.yesButton.setText("Ok")
+        self.cancelButton.setText("Cancel")
         self.widget.setMinimumWidth(100)
+
     def validate(self):
         if self.keyEdit.text().strip() != "":
             return True
         Flyout.create(
             icon=InfoBarIcon.INFORMATION,
-            title='Tip',
+            title="Tip",
             content="A valid value must be entered",
             target=self.keyEdit,
             parent=self,
-            isClosable=True
+            isClosable=True,
         )
         return False
+
+
 class EditInfoMessageBox(MessageBoxBase):
     """Dialog for editing structure information."""
 
@@ -1471,8 +1522,7 @@ class EditInfoMessageBox(MessageBoxBase):
         super().__init__(parent)
         self.titleLabel = CaptionLabel("Edit info", self)
         self.titleLabel.setWordWrap(True)
-        self.new_tag_button = PrimaryPushButton(QIcon(":/images/src/images/copy_figure.svg"),
-                                                         "Add new tag", self)
+        self.new_tag_button = PrimaryPushButton(QIcon(":/images/src/images/copy_figure.svg"), "Add new tag", self)
         self.new_tag_button.setMaximumWidth(200)
         self.new_tag_button.setObjectName("new_tag_button")
         self.new_tag_button.clicked.connect(self.new_tag)
@@ -1481,23 +1531,25 @@ class EditInfoMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.new_tag_button)
 
         self.viewLayout.addWidget(self.tag_group)
-        self.yesButton.setText('Ok')
-        self.cancelButton.setText('Cancel')
+        self.yesButton.setText("Ok")
+        self.cancelButton.setText("Cancel")
         self.widget.setMinimumWidth(600)
         self.remove_tag = set()
         self.new_tag_info = {}
         self.rename_tag_map = {}
         self._display_to_original = {}
         self._suppress_tag_removed = False
+
     def new_tag(self):
         box = InputInfoMessageBox(self)
         if not box.exec():
             return
-        key=box.keyEdit.text()
-        value=box.valueEdit.text()
+        key = box.keyEdit.text()
+        value = box.valueEdit.text()
 
         if key.strip():
-            self.add_tag(key.strip(),value)
+            self.add_tag(key.strip(), value)
+
     def init_tags(self, tags):
         for tag in tags:
             if tag == "species_id":
@@ -1505,13 +1557,15 @@ class EditInfoMessageBox(MessageBoxBase):
             btn = self.tag_group.add_tag(tag)
             btn.installEventFilter(self)
             self._display_to_original[tag] = tag
-    def tag_removed(self,tag):
+
+    def tag_removed(self, tag):
         if self._suppress_tag_removed:
             return
         if tag in self.new_tag_info.keys():
             self.new_tag_info.pop(tag)
         self.remove_tag.add(tag)
-    def add_tag(self,tag,value):
+
+    def add_tag(self, tag, value):
         if self.tag_group.has_tag(tag):
             MessageManager.send_message_box(f"{tag} already exists, please delete it first")
             return
@@ -1602,11 +1656,12 @@ class EditInfoMessageBox(MessageBoxBase):
         self.tag_group.tags[new_name] = self.tag_group.tags.pop(old_name)
         self._display_to_original.pop(old_name, None)
         self._display_to_original[new_name] = original_old
+
     def validate(self):
-        if len(self.new_tag_info)!=0 or len(self.remove_tag)!=0 or len(self.rename_tag_map)!=0:
-            title = 'Modify information confirmation'
-            remove_info=";".join(self.remove_tag)
-            add_info="\n".join([f"{k}={v}" for k,v in self.new_tag_info.items()])
+        if len(self.new_tag_info) != 0 or len(self.remove_tag) != 0 or len(self.rename_tag_map) != 0:
+            title = "Modify information confirmation"
+            remove_info = ";".join(self.remove_tag)
+            add_info = "\n".join([f"{k}={v}" for k, v in self.new_tag_info.items()])
             rename_info = "\n".join([f"{k} -> {v}" for k, v in self.rename_tag_map.items()])
             content = (
                 f"You removed the following information from the structure:\n{remove_info}\n\n"
@@ -1618,9 +1673,7 @@ class EditInfoMessageBox(MessageBoxBase):
 
             w.setClosableOnMaskClicked(True)
 
-
             if w.exec():
-
                 return True
             else:
                 return False
@@ -1636,8 +1689,8 @@ class RenameTagMessageBox(MessageBoxBase):
         self.nameEdit.setText(old_name)
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.nameEdit)
-        self.yesButton.setText('Ok')
-        self.cancelButton.setText('Cancel')
+        self.yesButton.setText("Ok")
+        self.cancelButton.setText("Cancel")
         self.widget.setMinimumWidth(320)
 
     def validate(self):
@@ -1645,11 +1698,11 @@ class RenameTagMessageBox(MessageBoxBase):
             return True
         Flyout.create(
             icon=InfoBarIcon.INFORMATION,
-            title='Tip',
+            title="Tip",
             content="A valid value must be entered",
             target=self.nameEdit,
             parent=self,
-            isClosable=True
+            isClosable=True,
         )
         return False
 
@@ -1710,13 +1763,14 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.tolSpinBox.setDecimals(10)
         self.tolSpinBox.setMinimum(0)
         self.modeCombo = ComboBox(self)
-        self.modeCombo.addItems([
-            "REF_GROUP",
-            "ZERO_BASELINE",
-            "DFT_TO_NEP",
-        ])
+        self.modeCombo.addItems(
+            [
+                "REF_GROUP",
+                "ZERO_BASELINE",
+                "DFT_TO_NEP",
+            ]
+        )
         self.modeCombo.setCurrentText("DFT_TO_NEP")
-
 
         self.frame_layout.addWidget(CaptionLabel("Max generations", self), 0, 0)
         self.frame_layout.addWidget(self.genSpinBox, 0, 1)
@@ -1724,10 +1778,18 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.frame_layout.addWidget(self.sizeSpinBox, 1, 1)
         self.frame_layout.addWidget(CaptionLabel("Convergence tol", self), 2, 0)
         self.frame_layout.addWidget(self.tolSpinBox, 2, 1)
-        self.frame_layout.addWidget(HyperlinkLabel(QUrl("https://github.com/brucefan1983/GPUMD/tree/master/tools/Analysis_and_Processing/energy-reference-aligner"),
-                                                   "Alignment mode", self), 3, 0)
+        self.frame_layout.addWidget(
+            HyperlinkLabel(
+                QUrl(
+                    "https://github.com/brucefan1983/GPUMD/tree/master/tools/Analysis_and_Processing/energy-reference-aligner"
+                ),
+                "Alignment mode",
+                self,
+            ),
+            3,
+            0,
+        )
         self.frame_layout.addWidget(self.modeCombo, 3, 1)
-
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(CaptionLabel("Use existing preset (optional)", self))
@@ -1741,8 +1803,8 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.groupEdit)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText('Ok')
-        self.cancelButton.setText('Cancel')
+        self.yesButton.setText("Ok")
+        self.cancelButton.setText("Cancel")
         self.widget.setMinimumWidth(250)
 
     def set_defaults(
@@ -1813,24 +1875,19 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         )
 
 
-
 class ProgressDialog(FramelessDialog):
-
-    def __init__(self,parent=None,title=""):
-        pass
+    def __init__(self, parent=None, title=""):
         super().__init__(parent)
-        self.setStyleSheet('ProgressDialog{background:white}')
-
+        self.setStyleSheet("ProgressDialog{background:white}")
 
         FluentStyleSheet.DIALOG.apply(self)
 
-
         self.setWindowTitle(title)
-        self.setFixedSize(300,100)
+        self.setFixedSize(300, 100)
         self.__layout = QVBoxLayout(self)
-        self.__layout.setContentsMargins(0,0,0,0)
+        self.__layout.setContentsMargins(0, 0, 0, 0)
         self.progressBar = ProgressBar(self)
-        self.progressBar.setRange(0,100)
+        self.progressBar.setRange(0, 100)
         self.progressBar.setValue(0)
         self.__layout.addWidget(self.progressBar)
         self.setLayout(self.__layout)
@@ -1838,10 +1895,12 @@ class ProgressDialog(FramelessDialog):
         self.__thread.finished.connect(self.close)
 
         self.__thread.progressSignal.connect(self.progressBar.setValue)
-    def closeEvent(self,event):
+
+    def closeEvent(self, event):
         if self.__thread.isRunning():
             self.__thread.stop_work()
-    def run_task(self,task_function,*args,**kwargs):
+
+    def run_task(self, task_function, *args, **kwargs):
         self.__thread.start_work(task_function, *args, **kwargs)
 
 
@@ -1854,11 +1913,10 @@ class PeriodicTableDialog(FramelessDialog):
         super().__init__(parent)
         self.setTitleBar(FluentTitleBar(self))
         self.setWindowTitle("Periodic Table")
-        self.setWindowIcon(QIcon(':/images/src/images/logo.svg'))
+        self.setWindowIcon(QIcon(":/images/src/images/logo.svg"))
         self.resize(400, 350)
 
-
-        with open(module_path / "Config/ptable.json" , "r", encoding="utf-8") as f:
+        with open(module_path / "Config/ptable.json", "r", encoding="utf-8") as f:
             self.table_data = {int(k): v for k, v in json.load(f).items()}
 
         self.group_colors = {}
@@ -1868,7 +1926,7 @@ class PeriodicTableDialog(FramelessDialog):
                 self.group_colors[g] = info.get("color", "#FFFFFF")
 
         self.__layout = QGridLayout(self)
-        self.__layout.setContentsMargins(2, 2,2, 2)
+        self.__layout.setContentsMargins(2, 2, 2, 2)
         self.__layout.setSpacing(1)
         self.setLayout(self.__layout)
         self.__layout.setMenuBar(self.titleBar)
@@ -1882,10 +1940,11 @@ class PeriodicTableDialog(FramelessDialog):
             period = self._get_period(num)
             row, col = self._grid_position(num, group, period)
             btn = QPushButton(info["symbol"], self)
-            btn.setFixedSize(30,30)
-            btn.setStyleSheet(f'background-color: {info.get("color", "#FFFFFF")};')
+            btn.setFixedSize(30, 30)
+            btn.setStyleSheet(f"background-color: {info.get('color', '#FFFFFF')};")
             btn.clicked.connect(lambda _=False, sym=info["symbol"]: self.elementSelected.emit(sym))
-            self.__layout.addWidget(btn, row+1, col)
+            self.__layout.addWidget(btn, row + 1, col)
+
     def _get_period(self, num: int) -> int:
         if num <= 2:
             return 1
@@ -1915,7 +1974,6 @@ class PeriodicTableDialog(FramelessDialog):
         else:
             row, col = period, group
         return row - 1, col - 1
-
 
 
 class DFTD3MessageBox(MessageBoxBase):
@@ -1981,7 +2039,7 @@ class DFTD3MessageBox(MessageBoxBase):
             "dsd-pbep86",
             "b97m",
             "wb97x",
-            "wb97m"
+            "wb97m",
         ]
         self.functionEdit.addItems(functionals)
         self._frame = QFrame(self)
@@ -1996,18 +2054,17 @@ class DFTD3MessageBox(MessageBoxBase):
         self.d1cnSpinBox = DoubleSpinBox(self)
         self.d1cnSpinBox.setMaximum(999999)
 
-
         self.modeCombo = ComboBox(self)
-        self.modeCombo.addItems([
-            # "NEP Only",
-            # "DFT-D3 only",
-            # "NEP with DFT-D3",
-            "Add DFT-D3",
-            "Subtract DFT-D3",
-
-        ])
+        self.modeCombo.addItems(
+            [
+                # "NEP Only",
+                # "DFT-D3 only",
+                # "NEP with DFT-D3",
+                "Add DFT-D3",
+                "Subtract DFT-D3",
+            ]
+        )
         self.modeCombo.setCurrentText("NEP Only")
-
 
         self.frame_layout.addWidget(CaptionLabel("D3 cutoff ", self), 0, 0)
         self.frame_layout.addWidget(self.d1SpinBox, 0, 1)
@@ -2017,23 +2074,22 @@ class DFTD3MessageBox(MessageBoxBase):
         self.frame_layout.addWidget(CaptionLabel("Alignment mode", self), 3, 0)
         self.frame_layout.addWidget(self.modeCombo, 3, 1)
 
-
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.functionEdit)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText('Ok')
-        self.cancelButton.setText('Cancel')
+        self.yesButton.setText("Ok")
+        self.cancelButton.setText("Cancel")
         self.widget.setMinimumWidth(250)
 
-
     def validate(self):
-        if self.modeCombo.currentIndex()!=0:
+        if self.modeCombo.currentIndex() != 0:
             if len(self.functionEdit.text()) == 0:
-
                 self.functionEdit.setFocus()
                 return False
         return True
+
+
 class ProjectInfoMessageBox(MessageBoxBase):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -2042,28 +2098,28 @@ class ProjectInfoMessageBox(MessageBoxBase):
 
         self.widget_layout = QGridLayout(self._widget)
 
-        self.parent_combox=ComboBox(self._widget)
-        self.project_name=LineEdit(self._widget)
+        self.parent_combox = ComboBox(self._widget)
+        self.project_name = LineEdit(self._widget)
         self.project_name.setPlaceholderText("The name of the project")
 
-        self.project_note=TextEdit(self._widget)
-        self.project_note.setMinimumSize(200,100)
+        self.project_note = TextEdit(self._widget)
+        self.project_note.setMinimumSize(200, 100)
         self.project_note.setPlaceholderText("Notes on the project")
-        self.widget_layout.addWidget(CaptionLabel("Parent",self), 0, 0)
+        self.widget_layout.addWidget(CaptionLabel("Parent", self), 0, 0)
 
         self.widget_layout.addWidget(self.parent_combox, 0, 1)
 
-        self.widget_layout.addWidget(CaptionLabel("Project Name",self), 1, 0)
+        self.widget_layout.addWidget(CaptionLabel("Project Name", self), 1, 0)
         self.widget_layout.addWidget(self.project_name, 1, 1)
-        self.widget_layout.addWidget(CaptionLabel("Project Note",self), 2, 0 )
-        self.widget_layout.addWidget(self.project_note, 2, 1 )
+        self.widget_layout.addWidget(CaptionLabel("Project Note", self), 2, 0)
+        self.widget_layout.addWidget(self.project_note, 2, 1)
         self.viewLayout.addWidget(self._widget)
+
     def validate(self):
-        project_name=self.project_name.text().strip()
-        if len(project_name)==0:
+        project_name = self.project_name.text().strip()
+        if len(project_name) == 0:
             return False
         return True
-
 
 
 class ModelInfoMessageBox(MessageBoxBase):
@@ -2071,13 +2127,11 @@ class ModelInfoMessageBox(MessageBoxBase):
         super().__init__(parent)
         self.setAcceptDrops(True)
 
-
         self._widget = QWidget(self)
         self.viewLayout.addWidget(self._widget)
         root = QVBoxLayout(self._widget)
         root.setContentsMargins(0, 0, 0, 0)
         root.setSpacing(2)
-
 
         titleBar = QFrame(self._widget)
         tLayout = QHBoxLayout(titleBar)
@@ -2088,7 +2142,6 @@ class ModelInfoMessageBox(MessageBoxBase):
         self.titleLabel.setAlignment(Qt.AlignCenter)
         tLayout.addWidget(self.titleLabel)
         root.addWidget(titleBar)
-
 
         infoCard = QFrame(self._widget)
         info = QFormLayout(infoCard)
@@ -2106,7 +2159,6 @@ class ModelInfoMessageBox(MessageBoxBase):
         info.addRow(CaptionLabel("Type", self), self.model_type_combox)
         info.addRow(CaptionLabel("Name", self), self.model_name_edit)
 
-
         rmseCard = QFrame(self._widget)
         rmse = QGridLayout(rmseCard)
         rmse.setContentsMargins(0, 0, 0, 0)
@@ -2119,12 +2171,11 @@ class ModelInfoMessageBox(MessageBoxBase):
         titleRmse.setFont(tf)
 
         self.energy_spinBox = LineEdit(rmseCard)
-        self.force_spinBox  = LineEdit(rmseCard)
+        self.force_spinBox = LineEdit(rmseCard)
         self.virial_spinBox = LineEdit(rmseCard)
         self.energy_spinBox.setText("0")
         self.force_spinBox.setText("0")
         self.virial_spinBox.setText("0")
-
 
         validator = QDoubleValidator(bottom=-1e12, top=1e12, decimals=2)
         for w in (self.energy_spinBox, self.force_spinBox, self.virial_spinBox):
@@ -2138,9 +2189,9 @@ class ModelInfoMessageBox(MessageBoxBase):
         rmse.addWidget(self.energy_spinBox, r, 1)
         rmse.addWidget(CaptionLabel("meV/atom", self), r, 2)
         r += 1
-        rmse.addWidget(CaptionLabel("force",  self), r, 0)
-        rmse.addWidget(self.force_spinBox,  r, 1)
-        rmse.addWidget(CaptionLabel("meV/Å",    self), r, 2)
+        rmse.addWidget(CaptionLabel("force", self), r, 0)
+        rmse.addWidget(self.force_spinBox, r, 1)
+        rmse.addWidget(CaptionLabel("meV/Å", self), r, 2)
         r += 1
         rmse.addWidget(CaptionLabel("virial", self), r, 0)
         rmse.addWidget(self.virial_spinBox, r, 1)
@@ -2158,8 +2209,8 @@ class ModelInfoMessageBox(MessageBoxBase):
         pathCard = QFrame(self._widget)
         path = QFormLayout(pathCard)
         path.setLabelAlignment(Qt.AlignRight)
-        path.setHorizontalSpacing(5); path.setVerticalSpacing(3)
-
+        path.setHorizontalSpacing(5)
+        path.setVerticalSpacing(3)
 
         structureRow = QWidget(pathCard)
         h = QHBoxLayout(structureRow)
@@ -2174,9 +2225,6 @@ class ModelInfoMessageBox(MessageBoxBase):
         h.addWidget(self.train_path_edit, 1)
         h.addWidget(browse, 0)
 
-
-
-
         path.addRow(CaptionLabel("Path", self), structureRow)
 
         root.addWidget(pathCard)
@@ -2189,10 +2237,10 @@ class ModelInfoMessageBox(MessageBoxBase):
 
         self.new_tag_edit = LineEdit(tagsCard)
         self.new_tag_edit.setPlaceholderText("Enter the tag and press Enter")
-        self.new_tag_edit.returnPressed.connect(lambda :self.add_tag(self.new_tag_edit.text()))
+        self.new_tag_edit.returnPressed.connect(lambda: self.add_tag(self.new_tag_edit.text()))
         self.tag_group = TagGroup(parent=self)
 
-        tags.addRow(CaptionLabel("Tags", self), self.new_tag_edit )
+        tags.addRow(CaptionLabel("Tags", self), self.new_tag_edit)
         tags.addRow(CaptionLabel(""), self.tag_group)  # 鐠?TagGroup 閻欘剙宕版稉鈧悰?
         root.addWidget(tagsCard)
 
@@ -2212,55 +2260,59 @@ class ModelInfoMessageBox(MessageBoxBase):
 
         root.addStretch(1)
 
-
-
     def _pick_file(self):
-        path=call_path_dialog(self,"Select the model folder path","directory")
+        path = call_path_dialog(self, "Select the model folder path", "directory")
 
         if path:
             self.train_path_edit.setText(path)
             self.check_path()
-    def add_tag(self,tag ):
+
+    def add_tag(self, tag):
         if self.tag_group.has_tag(tag):
             MessageManager.send_info_message(f"{tag} already exists!")
             return
 
         self.tag_group.add_tag(tag)
+
     def check_path(self):
-        _path=self.train_path_edit.text()
-        path=Path(_path)
+        _path = self.train_path_edit.text()
+        path = Path(_path)
         if not path.exists():
             MessageManager.send_message_box(f"{_path} does not exist!")
             return
-        if self.model_type_combox.currentText()=="NEP":
-            model_file=path.joinpath("nep.txt")
+        if self.model_type_combox.currentText() == "NEP":
+            model_file = path.joinpath("nep.txt")
             if not model_file.exists():
-                MessageManager.send_message_box("No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing.")
+                MessageManager.send_message_box(
+                    "No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing."
+                )
 
-            data_file=path.joinpath("train.xyz")
+            data_file = path.joinpath("train.xyz")
             if not data_file.exists():
-                MessageManager.send_message_box("No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing.")
+                MessageManager.send_message_box(
+                    "No 'train.xyz' training data file found in the specified path. This file is required to compute training error metrics; please make sure you know what you are doing."
+                )
                 # data_size=0
-                energy=0
-                force=0
-                virial=0
+                energy = 0
+                force = 0
+                virial = 0
             else:
-
                 # data_size=get_xyz_nframe(data_file)
                 # if data_size
-                energy_array=read_nep_out_file(path.joinpath("energy_train.out"))
-                energy = get_rmse(energy_array[:,0],energy_array[:,1])*1000
-                force_array=read_nep_out_file(path.joinpath("force_train.out"))
-                force = get_rmse(force_array[:,:3],force_array[:,3:])*1000
-                virial_array=read_nep_out_file(path.joinpath("virial_train.out"))
-                virial = get_rmse(virial_array[:,:6],virial_array[:,6:])*1000
+                energy_array = read_nep_out_file(path.joinpath("energy_train.out"))
+                energy = get_rmse(energy_array[:, 0], energy_array[:, 1]) * 1000
+                force_array = read_nep_out_file(path.joinpath("force_train.out"))
+                force = get_rmse(force_array[:, :3], force_array[:, 3:]) * 1000
+                virial_array = read_nep_out_file(path.joinpath("virial_train.out"))
+                virial = get_rmse(virial_array[:, :6], virial_array[:, 6:]) * 1000
 
-            self.force_spinBox.setText(str(round(force,2)))
-            self.energy_spinBox.setText(str(round(energy,2)))
-            self.virial_spinBox.setText(str(round(virial,2)))
+            self.force_spinBox.setText(str(round(force, 2)))
+            self.energy_spinBox.setText(str(round(energy, 2)))
+            self.virial_spinBox.setText(str(round(virial, 2)))
+
     def get_dict(self):
-        path=Path(self.train_path_edit.text())
-        data_file=path.joinpath("train.xyz")
+        path = Path(self.train_path_edit.text())
+        data_file = path.joinpath("train.xyz")
         data_size = get_xyz_nframe(data_file)
         return dict(
             # project_id=self.,
@@ -2273,13 +2325,13 @@ class ModelInfoMessageBox(MessageBoxBase):
             energy=float(self.energy_spinBox.text().strip()),
             force=float(self.force_spinBox.text().strip()),
             virial=float(self.virial_spinBox.text().strip()),
-
             notes=self.model_note_edit.toPlainText(),
             tags=list(self.tag_group.tags.keys()),
-            parent_id=self.parent_combox.currentData()
+            parent_id=self.parent_combox.currentData(),
         )
-class AdvancedModelSearchDialog(MessageBoxBase):
 
+
+class AdvancedModelSearchDialog(MessageBoxBase):
     searchRequested = Signal(dict)
 
     def __init__(self, parent=None):
@@ -2299,7 +2351,8 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         self.viewLayout.addLayout(root)
         # Title
         titleBar = QFrame(self)
-        tLay = QHBoxLayout(titleBar); tLay.setContentsMargins(0, 0, 0, 0)
+        tLay = QHBoxLayout(titleBar)
+        tLay.setContentsMargins(0, 0, 0, 0)
         self.titleLabel = TitleLabel("Advanced Model Search", titleBar)
         # f = self.titleLabel.font(); f.setPointSize(f.pointSize() + 3); f.setBold(True)
         # self.titleLabel.setFont(f)
@@ -2307,8 +2360,11 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         tLay.addWidget(self.titleLabel)
         root.addWidget(titleBar)
 
-        formCard = QFrame(self); form = QFormLayout(formCard)
-        form.setLabelAlignment(Qt.AlignRight); form.setHorizontalSpacing(3); form.setVerticalSpacing(3)
+        formCard = QFrame(self)
+        form = QFormLayout(formCard)
+        form.setLabelAlignment(Qt.AlignRight)
+        form.setHorizontalSpacing(3)
+        form.setVerticalSpacing(3)
 
         self.projectIdsEdit = LineEdit(formCard)
         self.projectIdsEdit.setPlaceholderText("e.g. 1 or 1,3,5")
@@ -2328,45 +2384,49 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         self.modelTypeCombo = ComboBox(formCard)
         self.modelTypeCombo.addItems(["<Any>", "NEP", "DeepMD", "Other"])
 
-        self.tagsAllEdit  = LineEdit(formCard); self.tagsAllEdit.setPlaceholderText("tag1, tag2 (AND)")
-        self.tagsAnyEdit  = LineEdit(formCard); self.tagsAnyEdit.setPlaceholderText("tag1, tag2 (OR)")
-        self.tagsNoneEdit = LineEdit(formCard); self.tagsNoneEdit.setPlaceholderText("tag1, tag2 (NOT)")
+        self.tagsAllEdit = LineEdit(formCard)
+        self.tagsAllEdit.setPlaceholderText("tag1, tag2 (AND)")
+        self.tagsAnyEdit = LineEdit(formCard)
+        self.tagsAnyEdit.setPlaceholderText("tag1, tag2 (OR)")
+        self.tagsNoneEdit = LineEdit(formCard)
+        self.tagsNoneEdit.setPlaceholderText("tag1, tag2 (NOT)")
 
         self.orderAscChk = CheckBox("Order by created_at ascending", formCard)
         self.orderAscChk.setChecked(True)
-        self.limitEdit  = LineEdit(formCard); self.limitEdit.setPlaceholderText("e.g. 100"); self.limitEdit.setValidator(QIntValidator(0, 10**9))
-        self.offsetEdit = LineEdit(formCard); self.offsetEdit.setPlaceholderText("e.g. 0");   self.offsetEdit.setValidator(QIntValidator(0, 10**9))
+        self.limitEdit = LineEdit(formCard)
+        self.limitEdit.setPlaceholderText("e.g. 100")
+        self.limitEdit.setValidator(QIntValidator(0, 10**9))
+        self.offsetEdit = LineEdit(formCard)
+        self.offsetEdit.setPlaceholderText("e.g. 0")
+        self.offsetEdit.setValidator(QIntValidator(0, 10**9))
 
-        form.addRow(CaptionLabel("Project ID(s):",self), self.projectIdsEdit)
-        form.addRow(CaptionLabel("",self), self.includeDescendantsChk)
-        form.addRow(CaptionLabel("Parent ID:",self), self.parentIdEdit)
-        form.addRow(CaptionLabel("Model Type:",self), self.modelTypeCombo)
-        form.addRow(CaptionLabel("Name contains:",self), self.nameContainsEdit)
-        form.addRow(CaptionLabel("Notes contains:",self), self.notesContainsEdit)
-        form.addRow(CaptionLabel("Tags (ALL):",self), self.tagsAllEdit)
-        form.addRow(CaptionLabel("Tags (ANY):",self), self.tagsAnyEdit)
-        form.addRow(CaptionLabel("Tags (NOT):",self), self.tagsNoneEdit)
-        form.addRow(CaptionLabel("Order:",self), self.orderAscChk)
-        form.addRow(CaptionLabel("Limit:",self), self.limitEdit)
-        form.addRow(CaptionLabel("Offset:",self), self.offsetEdit)
+        form.addRow(CaptionLabel("Project ID(s):", self), self.projectIdsEdit)
+        form.addRow(CaptionLabel("", self), self.includeDescendantsChk)
+        form.addRow(CaptionLabel("Parent ID:", self), self.parentIdEdit)
+        form.addRow(CaptionLabel("Model Type:", self), self.modelTypeCombo)
+        form.addRow(CaptionLabel("Name contains:", self), self.nameContainsEdit)
+        form.addRow(CaptionLabel("Notes contains:", self), self.notesContainsEdit)
+        form.addRow(CaptionLabel("Tags (ALL):", self), self.tagsAllEdit)
+        form.addRow(CaptionLabel("Tags (ANY):", self), self.tagsAnyEdit)
+        form.addRow(CaptionLabel("Tags (NOT):", self), self.tagsNoneEdit)
+        form.addRow(CaptionLabel("Order:", self), self.orderAscChk)
+        form.addRow(CaptionLabel("Limit:", self), self.limitEdit)
+        form.addRow(CaptionLabel("Offset:", self), self.offsetEdit)
 
         root.addWidget(formCard)
-
 
         self.buttonLayout.removeWidget(self.yesButton)
         self.buttonLayout.removeWidget(self.cancelButton)
         self.yesButton.hide()
         self.cancelButton.hide()
         self.searchBtn = PrimaryPushButton("Search", self)
-        self.resetBtn  = PrimaryPushButton("Reset", self)
-        self.closeBtn  = PrimaryPushButton("Close", self)
+        self.resetBtn = PrimaryPushButton("Reset", self)
+        self.closeBtn = PrimaryPushButton("Close", self)
         self.buttonLayout.addWidget(self.searchBtn)
         self.buttonLayout.addWidget(self.resetBtn)
         self.buttonLayout.addWidget(self.closeBtn)
 
-
         root.addStretch(1)
-
 
     def _wire_events(self):
         self.searchBtn.clicked.connect(self._emit_params)
@@ -2420,10 +2480,7 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         parent_id_val = int(parent_text) if parent_text.isdigit() else None
 
         params: Dict[str, Any] = dict(
-            project_id=(
-                project_ids[0] if len(project_ids) == 1
-                else (project_ids if project_ids else None)
-            ),
+            project_id=(project_ids[0] if len(project_ids) == 1 else (project_ids if project_ids else None)),
             include_descendants=self.includeDescendantsChk.isChecked(),
             parent_id=parent_id_val,
             name_contains=(self.nameContainsEdit.text().strip() or None),
@@ -2495,13 +2552,10 @@ class TagEditDialog(MessageBoxBase):
         form.addRow("Notes", self.notesEdit)
         layout.addLayout(form)
 
-
-
         self.colorBtn.clicked.connect(self._choose_color)
 
-
     def _choose_color(self):
-        color_dialog = ColorDialog(QColor(self.colorEdit.text()),"Edit Tag Color", self)
+        color_dialog = ColorDialog(QColor(self.colorEdit.text()), "Edit Tag Color", self)
         if color_dialog.exec():
             self.colorEdit.setText(color_dialog.color.name())
 
@@ -2512,13 +2566,14 @@ class TagEditDialog(MessageBoxBase):
             self.notesEdit.toPlainText().strip(),
         )
 
+
 class TagManageDialog(MessageBoxBase):
     """Dialog to create, edit and remove tags."""
 
     def __init__(self, tag_service, parent=None):
         super().__init__(parent)
-        self._parent=parent
-        self.tag_changed=False
+        self._parent = parent
+        self.tag_changed = False
         self.setWindowTitle("Manage Tags")
         self.tag_service = tag_service
         self._tag_map: dict[str, int] = {}
@@ -2535,7 +2590,6 @@ class TagManageDialog(MessageBoxBase):
         self._layout.addWidget(self.new_tag_edit)
         self._layout.addWidget(self.tag_group)
         self.viewLayout.addLayout(self._layout)
-
 
         self._load_tags()
 
@@ -2579,7 +2633,7 @@ class TagManageDialog(MessageBoxBase):
                 if new_name != old_name and self.tag_group.has_tag(new_name):
                     MessageManager.send_info_message(f"{new_name} already exists!")
                     return True
-                self.tag_changed=True
+                self.tag_changed = True
                 self.tag_service.update_tag(tag_id, name=new_name, color=color, notes=notes)
                 obj.setText(new_name)
                 obj.setBackgroundColor(color)
@@ -2589,3 +2643,474 @@ class TagManageDialog(MessageBoxBase):
                     self._tag_map[new_name] = self._tag_map.pop(old_name)
             return True
         return super().eventFilter(obj, event)
+
+
+@dataclass
+class _TrainingOverlayResultData:
+    """Minimal result-data container used to reuse the existing result canvas."""
+
+    datasets: list[Any]
+    select_index: set[int] = field(default_factory=set)
+    reject_index: set[int] = field(default_factory=set)
+
+
+class TrainingOverlayDialog(FramelessDialog):
+    """Non-modal dialog showing PCA scatter plot with training/loaded/selected structures."""
+
+    def __init__(self, parent=None, pca_data=None, canvas_type: str | None = None):
+        super().__init__(parent)
+        self.setTitleBar(FluentTitleBar(self))
+        self.setWindowTitle("Training Overlay")
+        self.setWindowFlag(Qt.WindowType.Window, True)
+        self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
+        max_btn = getattr(self.titleBar, "maxBtn", None)
+        if max_btn is not None:
+            max_btn.hide()
+            max_btn.setEnabled(False)
+        self.setWindowModality(Qt.WindowModality.NonModal)
+        self._fade_in_started = False
+        self._fade_in_anim: QPropertyAnimation | None = None
+        self._pca_data = pca_data or {}
+        self._canvas_type = str(canvas_type or Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)).strip()
+        self._canvas_fallback_warned = False
+        self._legend_labels: list = []
+        self._overlay_result_data: _TrainingOverlayResultData | None = None
+        self._canvas = None
+        self._setup_ui()
+        if pca_data:
+            self._render_from_pca_data()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._refresh_interaction_later()
+        if self._fade_in_started:
+            return
+        self._fade_in_started = True
+        try:
+            if self.isMaximized():
+                self.setWindowOpacity(1.0)
+                return
+            self.setWindowOpacity(0.0)
+            anim = QPropertyAnimation(self, b"windowOpacity")
+            anim.setDuration(180)
+            anim.setStartValue(0.0)
+            anim.setEndValue(1.0)
+            anim.setEasingCurve(QEasingCurve.Type.OutCubic)
+            anim.start()
+            self._fade_in_anim = anim
+        except Exception:
+            self.setWindowOpacity(1.0)
+
+    def changeEvent(self, event):
+        super().changeEvent(event)
+        if event.type() == QEvent.Type.WindowStateChange:
+            if self._fade_in_anim is not None and self._fade_in_anim.state() == QPropertyAnimation.State.Running:
+                self._fade_in_anim.stop()
+                self.setWindowOpacity(1.0)
+            if self.isMaximized():
+                self.showNormal()
+            self._refresh_interaction_later()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._refresh_interaction_later()
+
+    def _refresh_interaction_later(self):
+        """Re-enable interactive handlers after geometry/state changes."""
+        QTimer.singleShot(0, self._ensure_viewbox_interaction)
+
+    @staticmethod
+    def compute_pca_data(training_path, result_data, selected_indices):
+        """Pre-compute PCA data before showing dialog. Returns dict with pca results."""
+        import numpy as np
+        from NepTrainKit.core.io.sampler import pca
+
+        if result_data is None:
+            return None
+
+        try:
+            dataset = getattr(result_data, "descriptor", None)
+            if dataset is None:
+                return None
+
+            desc_now_reduced = np.asarray(dataset.now_data, dtype=np.float32)
+            n_current = desc_now_reduced.shape[0]
+
+            current_coords = desc_now_reduced
+            raw_all = getattr(result_data, "_descriptor_raw_all", None)
+            if raw_all is not None and raw_all.size > 0:
+                try:
+                    data_obj = getattr(dataset, "data", None)
+                    if data_obj is not None:
+                        now_indices = getattr(data_obj, "now_indices", None)
+                        if now_indices is not None:
+                            raw_now = np.asarray(raw_all[now_indices], dtype=np.float32)
+                            if raw_now.ndim == 2 and raw_now.shape[1] > 2:
+                                current_coords = raw_now
+                except Exception:
+                    pass
+
+            training_coords = None
+            n_training = 0
+            if training_path:
+                try:
+                    from NepTrainKit.core.io.importers import import_structures
+                    from NepTrainKit.core.io.base import aggregate_per_atom_to_structure
+                    from NepTrainKit.paths import as_path
+                    from NepTrainKit.core.utils import read_nep_out_file
+
+                    t_path = as_path(training_path)
+                    t_structs = import_structures(t_path)
+                    if t_structs:
+                        t_counts = np.array([len(s) for s in t_structs], dtype=int)
+                        stem = t_path.stem
+                        if stem == "train":
+                            t_desc_path = t_path.with_name("descriptor.out")
+                        else:
+                            t_desc_path = t_path.with_name(f"descriptor_{stem}.out")
+                        t_desc = read_nep_out_file(t_desc_path, dtype=np.float32, ndmin=2)
+                        if t_desc.size == 0:
+                            nep_calc = getattr(result_data, "nep_calc", None)
+                            if nep_calc:
+                                t_desc = nep_calc.get_structures_descriptor(t_structs, True)
+                        if t_desc.size != 0:
+                            if t_desc.shape[0] == int(np.sum(t_counts)):
+                                t_desc = aggregate_per_atom_to_structure(t_desc, t_counts, map_func=np.mean, axis=0)
+                            training_coords = np.asarray(t_desc, dtype=np.float32)
+                            n_training = training_coords.shape[0]
+                except Exception:
+                    pass
+
+            coords_list = []
+            if training_coords is not None and training_coords.size > 0:
+                coords_list.append(training_coords)
+            if current_coords.size > 0:
+                coords_list.append(current_coords)
+
+            if len(coords_list) == 0:
+                return None
+
+            combined = np.vstack(coords_list)
+            reduced = pca(combined.astype(np.float32), n_components=2)
+
+            offset = 0
+            training_pca = np.array([])
+            if n_training > 0:
+                training_pca = reduced[offset : offset + n_training]
+                offset += n_training
+            current_pca = reduced[offset : offset + current_coords.shape[0]]
+
+            selected_pca = np.array([])
+            selected_current_indices = np.array([], dtype=np.int32)
+            if len(selected_indices) > 0 and current_pca.size > 0:
+                valid_mask = np.array([0 <= i < len(current_pca) for i in selected_indices], dtype=bool)
+                if valid_mask.any():
+                    selected_current_indices = np.asarray(selected_indices, dtype=np.int32)[valid_mask]
+                    selected_pca = current_pca[selected_current_indices]
+
+            return {
+                "training_pca": training_pca,
+                "current_pca": current_pca,
+                "selected_pca": selected_pca,
+                "selected_current_indices": selected_current_indices,
+                "n_training": n_training,
+                "n_current": n_current,
+            }
+        except Exception:
+            return None
+
+    def _setup_ui(self):
+        import pyqtgraph as pg
+        from PySide6.QtWidgets import QLabel, QWidget, QVBoxLayout, QHBoxLayout
+        from PySide6.QtGui import QPixmap, QPainter, QColor
+
+        root_layout = QVBoxLayout(self)
+        root_layout.setContentsMargins(0, 0, 0, 0)
+        root_layout.setSpacing(0)
+        root_layout.setMenuBar(self.titleBar)
+
+        self._plot_hint_label = CaptionLabel("", self)
+        self._plot_hint_label.setWordWrap(True)
+        self._plot_hint_label.setStyleSheet("padding: 2px 8px;")
+        root_layout.addWidget(self._plot_hint_label)
+
+        self._canvas, fallback = create_result_canvas(self._canvas_type, self)
+        self._canvas.tool_bar = None
+        canvas_host = resolve_canvas_host_widget(self._canvas)
+        canvas_host.setMinimumSize(560, 430)
+        root_layout.addWidget(canvas_host, 1)
+        if fallback:
+            self._plot_hint_label.setText(
+                "Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph."
+            )
+            self._canvas_fallback_warned = True
+
+        # Bottom control bar: legend + export buttons
+        bottom_layout = QHBoxLayout()
+        bottom_layout.setContentsMargins(10, 4, 10, 6)
+        bottom_layout.setSpacing(8)
+
+        # Legend
+        for label, color_rgb in [
+            ("Training", (160, 160, 160)),
+            ("Loaded", (30, 120, 215)),
+            ("Selected", (220, 30, 30)),
+        ]:
+            pixmap = QPixmap(14, 14)
+            pixmap.fill(QColor(255, 255, 255, 0))
+            painter = QPainter(pixmap)
+            painter.setBrush(QColor(*color_rgb))
+            painter.setPen(QColor(*color_rgb).darker(120))
+            painter.drawEllipse(1, 1, 12, 12)
+            painter.end()
+
+            icon_lbl = QLabel()
+            icon_lbl.setPixmap(pixmap)
+
+            text_lbl = QLabel(f"{label}: -")
+            text_lbl.setStyleSheet("color:#444;font-size:12px;")
+
+            item_widget = QWidget()
+            item_layout = QHBoxLayout(item_widget)
+            item_layout.setContentsMargins(0, 0, 0, 0)
+            item_layout.setSpacing(4)
+            item_layout.addWidget(icon_lbl)
+            item_layout.addWidget(text_lbl)
+
+            bottom_layout.addWidget(item_widget)
+            self._legend_labels.append(text_lbl)
+
+        bottom_layout.addStretch()
+
+        # Export buttons
+        self._reset_view_btn = PrimaryPushButton("Reset View", self)
+        self._reset_view_btn.clicked.connect(self._on_reset_view)
+        bottom_layout.addWidget(self._reset_view_btn)
+
+        self._export_image_btn = PrimaryPushButton("Export Image", self)
+        self._export_image_btn.clicked.connect(self._on_export_image)
+        bottom_layout.addWidget(self._export_image_btn)
+
+        self._export_data_btn = PrimaryPushButton("Export Data", self)
+        self._export_data_btn.clicked.connect(self._on_export_data)
+        bottom_layout.addWidget(self._export_data_btn)
+
+        root_layout.addLayout(bottom_layout)
+
+        # Store RawAxis class for use in _render_from_pca_data (pg is available here)
+        class _RawAxis(pg.AxisItem):
+            def __init__(self, orientation, parent=None, font_size=11):
+                super().__init__(orientation, parent)
+                font = self.label.font()
+                font.setPointSize(font_size)
+                self.label.setFont(font)
+                self.enableAutoSIPrefix(False)
+
+            def tickStrings(self, values, scale, spacing):
+                return [f"{v:.6g}" for v in values]
+
+        self._RawAxis = _RawAxis
+        self.resize(760, 620)
+
+    def _render_from_pca_data(self):
+        """Render scatter plot from pre-computed PCA data."""
+        import numpy as np
+
+        training_pca = self._reshape_points(self._pca_data.get("training_pca", np.array([])))
+        current_pca = self._reshape_points(self._pca_data.get("current_pca", np.array([])))
+        selected_current_indices = np.asarray(
+            self._pca_data.get("selected_current_indices", np.array([], dtype=np.int32)),
+            dtype=np.int32,
+        ).reshape(-1)
+
+        if len(self._legend_labels) >= 3:
+            self._legend_labels[0].setText(f"Training: {training_pca.shape[0]}")
+            self._legend_labels[1].setText(f"Loaded: {current_pca.shape[0]}")
+            self._legend_labels[2].setText(f"Selected: {selected_current_indices.size}")
+
+        result_data, loaded_ids, selected_ids = self._build_overlay_result_data(
+            training_pca,
+            current_pca,
+            selected_current_indices,
+        )
+        self._overlay_result_data = result_data
+        self._canvas.set_nep_result_data(result_data)
+        self._canvas.init_axes(1)
+        self._canvas.plot_nep_result()
+        apply_groups = getattr(self._canvas, "apply_overlay_groups", None)
+        if apply_groups is not None:
+            apply_groups(loaded_ids, selected_ids)
+
+        # Apply custom axis font and ensure mouse interaction (pyqtgraph only)
+        self._apply_custom_axes()
+        self._ensure_viewbox_interaction()
+
+    def _apply_custom_axes(self):
+        """Apply custom axis font (smaller, no SI scaling) to all plot axes.
+        Only affects pyqtgraph backend; vispy backend ignores this.
+        """
+        # Only apply for pyqtgraph: vispy stores ViewBoxWidget in axes_list (no setAxisItems)
+        if self._canvas_type != CanvasMode.PYQTGRAPH.value:
+            return
+        axes_list = getattr(self._canvas, "axes_list", None)
+        if not axes_list:
+            return
+        RawAxis = self._RawAxis
+        for plot in axes_list:
+            old_bottom = plot.getAxis("bottom")
+            old_left = plot.getAxis("left")
+            bottom_label = str(getattr(old_bottom, "labelText", "") or "").strip()
+            left_label = str(getattr(old_left, "labelText", "") or "").strip()
+            bottom_axis = RawAxis("bottom")
+            left_axis = RawAxis("left")
+            plot.setAxisItems({"bottom": bottom_axis, "left": left_axis})
+            plot.setLabel("bottom", bottom_label)
+            plot.setLabel("left", left_label)
+            plot.getAxis("left").setWidth(70)
+            plot.getAxis("bottom").setHeight(50)
+
+    def _ensure_viewbox_interaction(self):
+        """Confirm ViewBox allows drag and wheel zoom."""
+        axes_list = getattr(self._canvas, "axes_list", None)
+        if axes_list:
+            for axes in axes_list:
+                set_mouse_enabled = getattr(axes, "setMouseEnabled", None)
+                if callable(set_mouse_enabled):
+                    set_mouse_enabled(True, True)
+
+                get_view_box = getattr(axes, "getViewBox", None)
+                if callable(get_view_box):
+                    view_box = get_view_box()
+                    if view_box is not None:
+                        view_box.setMouseEnabled(True, True)
+                        view_box.setMenuEnabled(False)
+
+                view = getattr(axes, "view", None)
+                camera = getattr(view, "camera", None)
+                if camera is not None and hasattr(camera, "interactive"):
+                    camera.interactive = True
+
+        view_box = getattr(self._canvas, "viewBox", None)
+        if view_box is not None:
+            view_box.setMouseEnabled(True, True)
+            view_box.setMenuEnabled(False)
+
+    def _on_export_image(self):
+        """Export canvas as image (unified pyqtgraph / vispy)."""
+        path = call_path_dialog(
+            self,
+            "Export Image",
+            "file",
+            default_filename="pca_scatter.png",
+            file_filter="PNG files (*.png);;All files (*.*)",
+        )
+        if not path:
+            return
+        try:
+            if self._canvas_fallback_warned:
+                # vispy backend: use built-in save()
+                self._canvas.save(path)
+            else:
+                # pyqtgraph backend: use QWidget.grab()
+                host = resolve_canvas_host_widget(self._canvas)
+                host.grab().save(path)
+            MessageManager.send_info_message(f"Image exported to: {path}")
+        except Exception:
+            MessageManager.send_warning_message("Failed to export image.")
+
+    def _on_reset_view(self):
+        """Reset scatter viewport to fit current data."""
+        if self._canvas is None:
+            return
+        try:
+            auto_range = getattr(self._canvas, "auto_range", None)
+            if callable(auto_range):
+                auto_range()
+                return
+
+            axes_list = getattr(self._canvas, "axes_list", None)
+            if axes_list:
+                for axes in axes_list:
+                    get_view_box = getattr(axes, "getViewBox", None)
+                    if callable(get_view_box):
+                        view_box = get_view_box()
+                        if view_box is not None:
+                            view_box.autoRange()
+        except Exception:
+            MessageManager.send_warning_message("Failed to reset view.")
+
+    def _on_export_data(self):
+        """Export PCA data as CSV (PC1, PC2, Type)."""
+        path = call_path_dialog(
+            self,
+            "Export PCA Data",
+            "file",
+            default_filename="pca_data.csv",
+            file_filter="CSV files (*.csv);;All files (*.*)",
+        )
+        if not path:
+            return
+        try:
+            rows = []
+            training_pca = self._pca_data.get("training_pca")
+            if training_pca is not None and training_pca.size > 0:
+                for row in training_pca:
+                    rows.append((float(row[0]), float(row[1]), "Training"))
+            current_pca = self._pca_data.get("current_pca")
+            if current_pca is not None and current_pca.size > 0:
+                for row in current_pca:
+                    rows.append((float(row[0]), float(row[1]), "Loaded"))
+            selected_pca = self._pca_data.get("selected_pca")
+            if selected_pca is not None and selected_pca.size > 0:
+                for row in selected_pca:
+                    rows.append((float(row[0]), float(row[1]), "Selected"))
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("PC1,PC2,Type\n")
+                for pc1, pc2, t in rows:
+                    f.write(f"{pc1:.8g},{pc2:.8g},{t}\n")
+            MessageManager.send_info_message(f"Data exported to: {path}")
+        except Exception:
+            MessageManager.send_warning_message("Failed to export data.")
+
+    @staticmethod
+    def _reshape_points(values):
+        arr = np.asarray(values, dtype=np.float32)
+        if arr.size == 0:
+            return np.empty((0, 2), dtype=np.float32)
+        return arr.reshape(-1, 2)
+
+    def _build_overlay_result_data(self, training_pca, current_pca, selected_current_indices):
+        import numpy as np
+
+        point_blocks = [block for block in (training_pca, current_pca) if block.size > 0]
+        if point_blocks:
+            points = np.vstack(point_blocks).astype(np.float32, copy=False)
+        else:
+            points = np.empty((0, 2), dtype=np.float32)
+
+        synthetic_ids = np.arange(points.shape[0], dtype=np.int32)
+        if points.size == 0:
+            plot_data = np.empty((0, 2), dtype=np.float32)
+        else:
+            plot_data = np.column_stack([points[:, 1], points[:, 0]]).astype(np.float32, copy=False)
+
+        dataset = NepPlotData(
+            plot_data,
+            index_list=synthetic_ids,
+            title="training_overlay",
+        )
+        dataset.display_title = "Training Overlay"
+        dataset.x_label = "PC1"
+        dataset.y_label = "PC2"
+        dataset.parity_mode = False
+        dataset.show_rmse = False
+        dataset.base_brush = Brushes.TrainingOverlay
+        dataset.base_pen = Pens.TrainingOverlay
+
+        loaded_offset = int(training_pca.shape[0])
+        loaded_ids = synthetic_ids[loaded_offset:].astype(np.int32)
+        selected_current_indices = selected_current_indices[
+            (selected_current_indices >= 0) & (selected_current_indices < int(current_pca.shape[0]))
+        ]
+        selected_ids = (loaded_offset + selected_current_indices).astype(np.int32)
+        return _TrainingOverlayResultData(datasets=[dataset]), loaded_ids, selected_ids

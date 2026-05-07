@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-import numpy as np
-from loguru import logger
 from PySide6.QtWidgets import QFrame, QGridLayout
 from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.config_type import append_config_tag
-from NepTrainKit.core.structure import get_vibration_modes
+from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.core.cards.structure import VibrationModePerturbOperation, VibrationModePerturbParams
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
 
@@ -63,12 +61,12 @@ class VibrationModePerturbCard(MakeDataCard):
         self.min_freq_label.setToolTip("Discard modes whose |frequency| is below this threshold")
         self.min_freq_label.installEventFilter(ToolTipFilter(self.min_freq_label, 300, ToolTipPosition.TOP))
 
-        self.num_label = BodyLabel("Max num:", self.setting_widget)
+        self.num_label = BodyLabel("Structures", self.setting_widget)
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("unit", 1, "int")
         self.num_condition_frame.setRange(1, 10000)
         self.num_condition_frame.set_input_value([32])
-        self.num_label.setToolTip("Maximum number of perturbed structures to generate")
+        self.num_label.setToolTip("Number of vibrationally perturbed structures to generate")
         self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
 
         self.optional_label = BodyLabel("Options", self.setting_widget)
@@ -117,93 +115,58 @@ class VibrationModePerturbCard(MakeDataCard):
         self.settingLayout.addWidget(self.seed_checkbox, 6, 0, 1, 1)
         self.settingLayout.addWidget(self.seed_frame, 6, 1, 1, 2)
 
+    def create_operation(self):
+        return VibrationModePerturbOperation()
+
+    def get_params(self) -> VibrationModePerturbParams:
+        return VibrationModePerturbParams(
+            distribution=self.distribution_combo.currentIndex(),
+            amplitude=float(self.amplitude_frame.get_input_value()[0]),
+            modes_per_sample=int(self.modes_frame.get_input_value()[0]),
+            min_frequency=float(self.min_freq_frame.get_input_value()[0]),
+            max_num=int(self.num_condition_frame.get_input_value()[0]),
+            scale_by_frequency=self.scale_checkbox.isChecked(),
+            exclude_near_zero=self.exclude_checkbox.isChecked(),
+            use_seed=self.seed_checkbox.isChecked(),
+            seed=int(self.seed_frame.get_input_value()[0]),
+        )
+
+    def set_params(self, params: VibrationModePerturbParams) -> None:
+        self.distribution_combo.setCurrentIndex(int(params.distribution))
+        self.amplitude_frame.set_input_value([float(params.amplitude)])
+        self.modes_frame.set_input_value([int(params.modes_per_sample)])
+        self.min_freq_frame.set_input_value([float(params.min_frequency)])
+        self.num_condition_frame.set_input_value([int(params.max_num)])
+        self.scale_checkbox.setChecked(bool(params.scale_by_frequency))
+        self.exclude_checkbox.setChecked(bool(params.exclude_near_zero))
+        self.seed_checkbox.setChecked(bool(params.use_seed))
+        self.seed_frame.set_input_value([int(params.seed)])
+
     def process_structure(self, structure):
         """Create perturbed structures aligned with available vibrational modes."""
-
-        amplitude = float(self.amplitude_frame.get_input_value()[0])
-        if amplitude <= 0.0:
-            logger.warning("VibrationModePerturbCard: amplitude must be positive.")
-            return []
-
-        modes_per_sample = int(self.modes_frame.get_input_value()[0])
-        if modes_per_sample <= 0:
-            logger.warning("VibrationModePerturbCard: modes_per_sample must be >= 1.")
-            return []
-
-        min_frequency = float(self.min_freq_frame.get_input_value()[0]) if self.exclude_checkbox.isChecked() else 0.0
-
-        frequencies, modes = get_vibration_modes(structure, min_frequency=min_frequency)
-        if modes.size == 0:
-            logger.warning("VibrationModePerturbCard: no vibrational modes found on structure.")
-            return []
-
-        max_samples = int(self.num_condition_frame.get_input_value()[0])
-        distribution = self.distribution_combo.currentIndex()
-        scale_by_frequency = self.scale_checkbox.isChecked()
-
-        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
-        rng = np.random.default_rng(base_seed)
-
-        generated = []
-        freq_for_scaling = np.abs(frequencies)
-        freq_for_scaling[~np.isfinite(freq_for_scaling)] = 0.0
-
-        replace = modes_per_sample > modes.shape[0]
-        orig_positions = structure.get_positions()
-
-        for _ in range(max_samples):
-            indices = rng.choice(modes.shape[0], size=modes_per_sample, replace=replace)
-            if distribution == 0:
-                coeffs = rng.normal(loc=0.0, scale=1.0, size=modes_per_sample)
-            else:
-                coeffs = rng.uniform(-1.0, 1.0, size=modes_per_sample)
-
-            if scale_by_frequency:
-                denominators = np.sqrt(np.clip(freq_for_scaling[indices], a_min=1e-12, a_max=None))
-                denominators[denominators == 0.0] = 1.0
-                coeffs = coeffs / denominators
-
-            displacement = np.sum(coeffs[:, None, None] * modes[indices], axis=0)
-            new_positions = orig_positions + amplitude * displacement
-
-            new_structure = structure.copy()
-            new_structure.set_positions(new_positions)
-            if hasattr(new_structure, "wrap"):
-                new_structure.wrap()
-
-            append_config_tag(new_structure, f"Vib(a={amplitude:.3f},m={modes_per_sample})")
-            generated.append(new_structure)
-
-        return generated
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
-        """Serialize the card configuration."""
-        data_dict = super().to_dict()
-        data_dict["distribution"] = self.distribution_combo.currentIndex()
-        data_dict["amplitude"] = self.amplitude_frame.get_input_value()
-        data_dict["modes_per_sample"] = self.modes_frame.get_input_value()
-        data_dict["min_frequency"] = self.min_freq_frame.get_input_value()
-        data_dict["max_num"] = self.num_condition_frame.get_input_value()
-        data_dict["scale_by_frequency"] = self.scale_checkbox.isChecked()
-        data_dict["exclude_near_zero"] = self.exclude_checkbox.isChecked()
-        data_dict["use_seed"] = self.seed_checkbox.isChecked()
-        data_dict["seed"] = self.seed_frame.get_input_value()
-        return data_dict
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
 
     def from_dict(self, data_dict):
         """Restore the card configuration from serialized values."""
         super().from_dict(data_dict)
-
-        self.distribution_combo.setCurrentIndex(data_dict.get("distribution", 0))
-        if "amplitude" in data_dict:
-            self.amplitude_frame.set_input_value(data_dict["amplitude"])
-        if "modes_per_sample" in data_dict:
-            self.modes_frame.set_input_value(data_dict["modes_per_sample"])
-        if "min_frequency" in data_dict:
-            self.min_freq_frame.set_input_value(data_dict["min_frequency"])
-        if "max_num" in data_dict:
-            self.num_condition_frame.set_input_value(data_dict["max_num"])
-        self.scale_checkbox.setChecked(data_dict.get("scale_by_frequency", True))
-        self.exclude_checkbox.setChecked(data_dict.get("exclude_near_zero", True))
-        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
-        self.seed_frame.set_input_value(data_dict.get("seed", [0]))
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = VibrationModePerturbParams(**raw_params)
+        else:
+            params = VibrationModePerturbParams(
+                distribution=data_dict.get("distribution", 0),
+                amplitude=data_dict.get("amplitude", [0.05])[0],
+                modes_per_sample=data_dict.get("modes_per_sample", [2])[0],
+                min_frequency=data_dict.get("min_frequency", [10.0])[0],
+                max_num=data_dict.get("max_num", [32])[0],
+                scale_by_frequency=data_dict.get("scale_by_frequency", True),
+                exclude_near_zero=data_dict.get("exclude_near_zero", True),
+                use_seed=data_dict.get("use_seed", False),
+                seed=data_dict.get("seed", [0])[0],
+            )
+        self.set_params(params)

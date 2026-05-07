@@ -12,6 +12,8 @@ from qfluentwidgets import StateToolTip
 from ase.build.tools import sort as ase_sort
 from loguru import logger
 
+from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
+
 
 class LoadingThread(QThread):
     progressSignal = Signal(int)
@@ -61,10 +63,11 @@ class DataProcessingThread(QThread):
     finishSignal = Signal()
     errorSignal = Signal(str)
 
-    def __init__(self, dataset, process_func):
+    def __init__(self, dataset, process_func, params=None):
         super().__init__()
         self.dataset = dataset
         self.process_func = process_func
+        self.params = params
         self.result_dataset = []
         self.setStackSize(8 * 1024 * 1024)
 
@@ -75,7 +78,10 @@ class DataProcessingThread(QThread):
             from NepTrainKit.config import Config  # Lazy import to avoid cycles
             sort_atoms = Config.getboolean("widget", "sort_atoms", False)
             for index, structure in enumerate(self.dataset):
-                processed = self.process_func(structure)
+                if isinstance(self.process_func, StructureOperation):
+                    processed = self.process_func.run_structure(structure, self.params)
+                else:
+                    processed = self.process_func(structure)
                 if sort_atoms:
                     processed = [ase_sort(s) for s in processed]
                 self.result_dataset.extend(processed)
@@ -92,14 +98,25 @@ class FilterProcessingThread(QThread):
     finishSignal = Signal()
     errorSignal = Signal(str)
 
-    def __init__(self, process_func):
+    def __init__(self, process_func=None, dataset=None, operation=None, params=None):
         super().__init__()
         self.process_func = process_func
+        self.dataset = dataset
+        self.operation = operation
+        self.params = params
+        self.result_dataset = []
 
     def run(self):
         try:
             self.progressSignal.emit(0)
-            self.process_func()
+            if isinstance(self.operation, DatasetOperation):
+                self.result_dataset = self.operation.run_dataset(self.dataset, self.params)
+            elif isinstance(self.operation, GeneratorOperation):
+                self.result_dataset = self.operation.generate(self.params)
+            else:
+                result = self.process_func()
+                if result is not None:
+                    self.result_dataset = result
             self.progressSignal.emit(100)
             self.finishSignal.emit()
         except Exception as e:  # noqa: BLE001

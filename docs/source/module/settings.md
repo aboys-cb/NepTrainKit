@@ -1,24 +1,39 @@
 # 设置（Settings）
 
-用于配置显示行为、后端策略与性能参数，修改后即时生效。
+`Settings` 用来调整显示行为、NEP 后端和性能相关选项。一般不需要一开始就改；
+当你遇到显示卡顿、模型预测慢、自动加载不符合习惯，或想切换 CPU/GPU 后端时，再来这里。
 
-## 个性化
+## 先改哪些
 
-- Force data format：Raw / Norm
-- Canvas Engine：PyQtGraph / Vispy
-- Auto loading
-- Cache output files
-- Covalent radius coefficient
-- Sort atoms
-- Use card group menu
+| 你遇到的问题 | 可以看哪个设置 | 影响 |
+| --- | --- | --- |
+| 大结构显示卡顿 | `Canvas Engine` | 在 PyQtGraph / Vispy 之间切换结构渲染后端 |
+| 力图数值不符合习惯 | `Force data format` | 在原始力和归一化显示之间切换 |
+| 打开目录时不想自动加载 | `Auto loading` | 控制是否自动读取相关结果文件 |
+| 反复打开同一批输出较慢 | `Cache output files` | 缓存解析结果，减少重复读取成本 |
+| 非物理结构检测太松或太严 | `Covalent radius coefficient` | 影响近邻距离判据 |
+| 原子顺序影响观察 | `Sort atoms` | 控制结构显示或导出时的排序行为 |
+| 卡片菜单太拥挤 | `Use card group menu` | 改变 Make Dataset 加卡菜单组织方式 |
 
-## NEP 设置
+## NEP 后端
 
-- NEP Backend：CPU / GPU / Auto
-- GPU Batch Size
+`NEP Backend` 控制预测时优先使用 CPU、GPU 还是自动选择。
 
-## 关于
+- `Auto`：通常作为默认选项。
+- `CPU`：适合没有可用 GPU、或只是少量结构快速查看。
+- `GPU`：适合批量预测或较大候选池。
 
-- NEP89 下载检查
-- 文档与反馈入口
-- 版本与更新检查
+`GPU Batch Size` 影响一次送入 GPU 的结构数量。显存不足时调小；预测吞吐低且显存充足时可以调大。
+
+## NEP89
+
+`About` 区域包含 NEP89 下载检查。NEP89 可用于某些候选结构的快速预筛，但它不是所有材料体系的可靠模型。
+使用时要把它当作异常结构筛查工具，而不是 DFT 标签来源。
+
+如果你有当前体系自己的 NEP 模型，优先使用自己的模型做预筛。
+
+## 修改设置的原则
+
+- 先确认问题属于显示、读取、预测还是卡片流程，再改对应设置。
+- 一次只改一个关键选项，方便判断影响。
+- 涉及数据清洗阈值时，改完要抽查被选中的结构，而不是只看数量变化。

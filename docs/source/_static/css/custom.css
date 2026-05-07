@@ -1,10 +1,33 @@
 pre {
-    max-height: 400px;  /* 设置最大高度 */
-    overflow-y: auto;   /* 启用垂直滚动条 */
-
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 /* Widen RTD article area on desktop; the theme default is too narrow. */
 .wy-nav-content {
     max-width: 1200px;
+}
+
+.rst-content p {
+    line-height: 1.75;
+}
+
+.rst-content .docs-screenshot {
+    display: block;
+    width: 100%;
+    max-width: 1120px;
+    margin: 1.25rem 0 1.75rem;
+    border: 1px solid #d8e0e6;
+    border-radius: 8px;
+    box-shadow: 0 12px 32px rgba(31, 41, 55, 0.12);
+}
+
+.rst-content .sd-card {
+    border: 1px solid #d9e2ea;
+    border-radius: 8px;
+    box-shadow: none;
+}
+
+.rst-content .sd-card-title {
+    font-weight: 700;
 }

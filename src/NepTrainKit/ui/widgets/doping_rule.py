@@ -22,10 +22,13 @@ from qfluentwidgets import (
     FluentIcon,
     LineEdit,
     RadioButton,
+    ComboBox,
     ToolTipFilter,
     ToolTipPosition,
     PushButton,
 )
+from NepTrainKit.core.alloy import parse_composition
+
 from .input import SpinBoxUnitInputFrame
 
 
@@ -40,12 +43,13 @@ class DopingRuleItem(QFrame):
         self.__layout.setVerticalSpacing(6)
         self.setStyleSheet("background-color: rgb(239, 249, 254);")
 
-        self.setFixedSize(460, 140)
+        self.setFixedSize(500, 190)
 
         self.target_edit = QLineEdit(self)
         self.target_edit.setPlaceholderText("Cs")
         self.target_edit.setFixedWidth(90)
         self.dopants_edit = QLineEdit(self)
+        self.dopants_edit.setPlaceholderText("Ge or Ge:0.7,C:0.3")
         self.dopants_edit.setFixedWidth(160)
 
         self.percent_frame = SpinBoxUnitInputFrame(self)
@@ -65,11 +69,28 @@ class DopingRuleItem(QFrame):
         self.mode_group.addButton(self.count_botton)
         self.mode_group.buttonClicked.connect(self._on_mode_changed)
 
-        self.count_frame = SpinBoxUnitInputFrame(self)
-        self.count_frame.set_input(["-", ""], 2, "int")
-        self.count_frame.setRange(0, 999999)
-        self.count_frame.set_input_value([10, 10])
-        self.count_frame.setFixedWidth(180)
+        self.count_mode_combo = ComboBox(self)
+        self.count_mode_combo.addItems(["Fixed count", "Random range"])
+        self.count_mode_combo.setCurrentText("Fixed count")
+        self.count_mode_combo.setFixedWidth(180)
+        self.count_mode_combo.setToolTip(
+            "Fixed count replaces exactly the first value. Random range samples between the two values."
+        )
+        self.count_mode_combo.installEventFilter(ToolTipFilter(self.count_mode_combo, 300, ToolTipPosition.TOP))
+        self.count_mode_combo.currentTextChanged.connect(self._on_count_mode_changed)
+
+        self.fixed_count_frame = SpinBoxUnitInputFrame(self)
+        self.fixed_count_frame.set_input("", 1, "int")
+        self.fixed_count_frame.setRange(0, 999999)
+        self.fixed_count_frame.set_input_value([10])
+        self.fixed_count_frame.setFixedWidth(90)
+
+        self.count_range_frame = SpinBoxUnitInputFrame(self)
+        self.count_range_frame.set_input(["-", ""], 2, "int")
+        self.count_range_frame.setRange(0, 999999)
+        self.count_range_frame.set_input_value([1, 10])
+        self.count_range_frame.setFixedWidth(180)
+        self.count_frame = self.count_range_frame
 
         self.ratio_type_button = PushButton("Atom Ratio", self)
         self.ratio_type_button.setCheckable(True)
@@ -98,7 +119,7 @@ class DopingRuleItem(QFrame):
         self.__layout.addWidget(self.indices_edit, 0, 3)
 
         self.dopants_label = BodyLabel("Dopants", self)
-        self.dopants_label.setToolTip("Dopant elements and ratio, e.g. Cs:0.6,Na:0.4")
+        self.dopants_label.setToolTip("Dopant elements and ratio, e.g. Cs:0.6,Na:0.4. A bare element means ratio 1.0.")
         self.dopants_label.installEventFilter(ToolTipFilter(self.dopants_label, 300, ToolTipPosition.TOP))
         self.__layout.addWidget(self.dopants_label, 1, 0)
         self.__layout.addWidget(self.dopants_edit, 1, 1, 1, 2)
@@ -118,8 +139,12 @@ class DopingRuleItem(QFrame):
         self.value_label.installEventFilter(ToolTipFilter(self.value_label, 300, ToolTipPosition.TOP))
         self.__layout.addWidget(self.value_label, 3, 0)
         self.__layout.addWidget(self.percent_frame, 3, 1, 1, 2)
-        self.count_frame.setVisible(False)
-        self.__layout.addWidget(self.count_frame, 3, 1, 1, 2)
+        self.count_mode_combo.setVisible(False)
+        self.__layout.addWidget(self.count_mode_combo, 3, 1, 1, 2)
+        self.fixed_count_frame.setVisible(False)
+        self.count_range_frame.setVisible(False)
+        self.__layout.addWidget(self.fixed_count_frame, 4, 1, 1, 2)
+        self.__layout.addWidget(self.count_range_frame, 4, 1, 1, 2)
 
         self.delete_button.setToolTip("Delete rule")
         self.delete_button.installEventFilter(ToolTipFilter(self.delete_button, 300, ToolTipPosition.TOP))
@@ -139,7 +164,14 @@ class DopingRuleItem(QFrame):
     def _on_mode_changed(self) -> None:
         is_count = self.count_botton.isChecked()
         self.percent_frame.setVisible(not is_count)
-        self.count_frame.setVisible(is_count)
+        self.count_mode_combo.setVisible(is_count)
+        self._on_count_mode_changed()
+
+    def _on_count_mode_changed(self) -> None:
+        is_count = self.count_botton.isChecked()
+        fixed = self.count_mode_combo.currentText() == "Fixed count"
+        self.fixed_count_frame.setVisible(is_count and fixed)
+        self.count_range_frame.setVisible(is_count and not fixed)
 
     def to_rule(self) -> dict[str, Any]:
         """Serialize the current editor state into a rule mapping.
@@ -155,18 +187,21 @@ class DopingRuleItem(QFrame):
             rule["target"] = target
         try:
             dopant_text = self.dopants_edit.text().strip()
-            if dopant_text.startswith("{") and dopant_text.endswith("}"):
-                dopants = json.loads(self.dopants_edit.text()) if self.dopants_edit.text() else {}
-                if isinstance(dopants, dict) and dopants:
-                    rule["dopants"] = dopants
-            else:
-                dopant_list = dopant_text.split(",")
-                rule["dopants"] = {dopant.split(":")[0]: float(dopant.split(":")[1]) for dopant in dopant_list}
+            dopants = parse_composition(dopant_text)
+            if dopants:
+                rule["dopants"] = dopants
         except Exception:
             logger.error(traceback.format_exc())
 
         rule["percent"] = [float(v) for v in self.percent_frame.get_input_value()]
-        rule["count"] = [int(v) for v in self.count_frame.get_input_value()]
+        if self.count_mode_combo.currentText() == "Fixed count":
+            count = int(self.fixed_count_frame.get_input_value()[0])
+            count_values = [count, count]
+            rule["count_mode"] = "fixed"
+        else:
+            count_values = [int(v) for v in self.count_range_frame.get_input_value()]
+            rule["count_mode"] = "random"
+        rule["count"] = count_values
 
         if self.count_botton.isChecked():
             rule["use"] = "count"
@@ -203,7 +238,13 @@ class DopingRuleItem(QFrame):
         if "percent" in rule:
             self.percent_frame.set_input_value(rule["percent"])
         if "count" in rule:
-            self.count_frame.set_input_value(rule["count"])
+            count_values = list(rule["count"])
+            if count_values:
+                self.fixed_count_frame.set_input_value([int(count_values[0])])
+                if len(count_values) == 1:
+                    self.count_range_frame.set_input_value([int(count_values[0]), int(count_values[0])])
+                else:
+                    self.count_range_frame.set_input_value([int(count_values[0]), int(count_values[-1])])
         if "group" in rule:
             self.indices_edit.setText(",".join(str(i) for i in rule["group"]))
         if "use" in rule:
@@ -215,6 +256,13 @@ class DopingRuleItem(QFrame):
             else:
                 self.atomic_percent_radio.setChecked(True)
             self._on_mode_changed()
+        count_values = list(rule.get("count", [1, 1]))
+        count_mode = str(rule.get("count_mode", "")).lower()
+        if count_mode == "fixed" or (not count_mode and count_values and count_values[0] == count_values[-1]):
+            self.count_mode_combo.setCurrentText("Fixed count")
+        else:
+            self.count_mode_combo.setCurrentText("Random range")
+        self._on_count_mode_changed()
         if "ratio_type" in rule:
             self.ratio_type_button.setChecked(rule["ratio_type"] == "atom")
             self._toggle_ratio_type()

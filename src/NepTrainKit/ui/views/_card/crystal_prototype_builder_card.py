@@ -2,15 +2,11 @@
 
 from __future__ import annotations
 
-import json
-
-import numpy as np
-from ase.build import bulk, make_supercell
 from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition, RadioButton
 
-from NepTrainKit.core import CardManager, MessageManager
-from NepTrainKit.core.alloy import best_supercell_factors_max_atoms
-from NepTrainKit.core.config_type import append_config_tag
+from NepTrainKit.core import CardManager
+from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.core.cards.structure import CrystalPrototypeBuilderOperation, CrystalPrototypeBuilderParams
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -103,98 +99,53 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
         self.settingLayout.addWidget(self.max_output_label, 6, 0, 1, 1)
         self.settingLayout.addWidget(self.max_output_frame, 6, 1, 1, 2)
 
-    def _a_values(self) -> list[float]:
-        a_min, a_max, a_step = [float(v) for v in self.a_frame.get_input_value()]
-        if a_step <= 0:
-            return [a_min]
-        if a_max < a_min:
-            a_min, a_max = a_max, a_min
-        if abs(a_max - a_min) <= 1e-12:
-            return [a_min]
-        values = list(np.arange(a_min, a_max + 1e-12, a_step, dtype=float))
-        if not values:
-            values = [a_min]
-        return [float(v) for v in values]
+    def create_operation(self):
+        return CrystalPrototypeBuilderOperation()
 
-    def _build_prototypes(self) -> list:
-        element = self.element_edit.text().strip()
-        if not element:
-            element = "Cu"
-        element = element[0].upper() + element[1:].lower()
+    def get_params(self) -> CrystalPrototypeBuilderParams:
+        return CrystalPrototypeBuilderParams(
+            lattice=self.structure_combo.currentText(),
+            element=self.element_edit.text(),
+            a_range=tuple(float(value) for value in self.a_frame.get_input_value()),
+            covera=float(self.covera_frame.get_input_value()[0]),
+            auto_supercell=self.auto_supercell_button.isChecked(),
+            max_atoms=int(self.max_atoms_frame.get_input_value()[0]),
+            rep=tuple(int(value) for value in self.rep_frame.get_input_value()),
+            max_outputs=int(self.max_output_frame.get_input_value()[0]),
+        )
 
-        lattice = self.structure_combo.currentText().strip().lower()
-        covera = float(self.covera_frame.get_input_value()[0])
-
-        max_outputs = int(self.max_output_frame.get_input_value()[0])
-        if max_outputs <= 0:
-            return []
-
-        out = []
-        for a in self._a_values():
-            try:
-                if lattice == "hcp":
-                    base = bulk(element, "hcp", a=float(a), covera=covera)
-                else:
-                    base = bulk(element, lattice, a=float(a), cubic=True)
-                base.pbc = True
-                base.wrap()
-
-                if self.manual_supercell_button.isChecked():
-                    na, nb, nc = [int(v) for v in self.rep_frame.get_input_value()]
-                else:
-                    factors = best_supercell_factors_max_atoms(base, int(self.max_atoms_frame.get_input_value()[0]))
-                    na, nb, nc = factors.na, factors.nb, factors.nc
-
-                mat = np.diag([max(na, 1), max(nb, 1), max(nc, 1)])
-                atoms = make_supercell(base, mat)
-                atoms.wrap()
-                append_config_tag(atoms, f"Proto({lattice},a={float(a):.6g},rep={int(na)}x{int(nb)}x{int(nc)})")
-                out.append(atoms)
-                if len(out) >= max_outputs:
-                    break
-            except Exception as exc:  # noqa: BLE001
-                MessageManager.send_warning_message(f"Prototype build failed: {exc}")
-                continue
-        return out
-
-    def process_structure(self, structure):  # noqa: ARG002
-        return self._build_prototypes()
-
-    def run(self):
-        """Override to support generation without iterating an input dataset."""
-        if self.check_state:
-            if self.dataset is None:
-                self.dataset = []
-            self.result_dataset = self._build_prototypes()
-            self.update_dataset_info()
-            self.status_label.setText(f"Generated: {len(self.result_dataset)}")
-            self.runFinishedSignal.emit(self.index)
-        else:
-            self.result_dataset = self.dataset or []
-            self.update_dataset_info()
-            self.runFinishedSignal.emit(self.index)
+    def set_params(self, params: CrystalPrototypeBuilderParams) -> None:
+        self.structure_combo.setCurrentText(params.lattice)
+        self.element_edit.setText(params.element)
+        self.a_frame.set_input_value([float(value) for value in params.a_range])
+        self.covera_frame.set_input_value([float(params.covera)])
+        self.auto_supercell_button.setChecked(bool(params.auto_supercell))
+        self.manual_supercell_button.setChecked(not bool(params.auto_supercell))
+        self.max_atoms_frame.set_input_value([int(params.max_atoms)])
+        self.rep_frame.set_input_value([int(value) for value in params.rep])
+        self.max_output_frame.set_input_value([int(params.max_outputs)])
 
     def to_dict(self):
         data = super().to_dict()
-        data["lattice"] = self.structure_combo.currentText()
-        data["element"] = self.element_edit.text()
-        data["a_range"] = self.a_frame.get_input_value()
-        data["covera"] = self.covera_frame.get_input_value()
-        data["auto_supercell"] = self.auto_supercell_button.isChecked()
-        data["max_atoms"] = self.max_atoms_frame.get_input_value()
-        data["rep"] = self.rep_frame.get_input_value()
-        data["max_outputs"] = self.max_output_frame.get_input_value()
+        data["params"] = params_to_dict(self.get_params())
         return data
 
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
-        self.structure_combo.setCurrentText(data_dict.get("lattice", "fcc"))
-        self.element_edit.setText(data_dict.get("element", "Cu"))
-        self.a_frame.set_input_value(data_dict.get("a_range", [3.6, 3.6, 0.1]))
-        self.covera_frame.set_input_value(data_dict.get("covera", [1.633]))
-        auto = bool(data_dict.get("auto_supercell", True))
-        self.auto_supercell_button.setChecked(auto)
-        self.manual_supercell_button.setChecked(not auto)
-        self.max_atoms_frame.set_input_value(data_dict.get("max_atoms", [512]))
-        self.rep_frame.set_input_value(data_dict.get("rep", [4, 4, 4]))
-        self.max_output_frame.set_input_value(data_dict.get("max_outputs", [200]))
+        raw_params = data_dict.get("params")
+        if raw_params:
+            raw_params["a_range"] = tuple(raw_params.get("a_range", [3.6, 3.6, 0.1]))
+            raw_params["rep"] = tuple(raw_params.get("rep", [4, 4, 4]))
+            params = CrystalPrototypeBuilderParams(**raw_params)
+        else:
+            params = CrystalPrototypeBuilderParams(
+                lattice=data_dict.get("lattice", "fcc"),
+                element=data_dict.get("element", "Cu"),
+                a_range=tuple(data_dict.get("a_range", [3.6, 3.6, 0.1])),
+                covera=data_dict.get("covera", [1.633])[0],
+                auto_supercell=data_dict.get("auto_supercell", True),
+                max_atoms=data_dict.get("max_atoms", [512])[0],
+                rep=tuple(data_dict.get("rep", [4, 4, 4])),
+                max_outputs=data_dict.get("max_outputs", [200])[0],
+            )
+        self.set_params(params)

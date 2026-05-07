@@ -264,6 +264,8 @@ class Pens(Base):
         edge = _get_color("plot", "marker_edge_color", "#07519C")
         current = _get_color("plot", "current_color", "#FF0000")
         line = _get_color("plot", "line_color", "#FF0000")
+        training_overlay = _get_color("plot", "training_overlay_edge_color", "#505050")
+        loaded_overlay = _get_color("plot", "loaded_overlay_edge_color", "#1450B4")
 
         cls.Default = mkPen(color=edge, width=0.8)
         cls.Energy = cls.Default
@@ -271,6 +273,8 @@ class Pens(Base):
         cls.Virial = cls.Default
         cls.Stress = cls.Default
         cls.Descriptor = cls.Default
+        cls.TrainingOverlay = mkPen(color=training_overlay, width=0.8)
+        cls.LoadedOverlay = mkPen(color=loaded_overlay, width=0.8)
         cls.Current = mkPen(color=current, width=1)
         cls.Line = mkPen(color=line, width=2)
 
@@ -289,6 +293,8 @@ class Brushes(Base):
         selected = _get_color("plot", "selected_color", "#FF0000")
         current = _get_color("plot", "current_color", "#FF0000")
         reject = _get_color("plot", "reject_color", "#FF8C00")
+        training_overlay = _get_color("plot", "training_overlay_color", "#A0A0A0")
+        loaded_overlay = _get_color("plot", "loaded_overlay_color", "#1E78D7")
 
         cls.BlueBrush = QBrush(QColor(0, 0, 255))
         cls.YellowBrush = QBrush(QColor(255, 255, 0))
@@ -298,6 +304,8 @@ class Brushes(Base):
         cls.Virial = cls.Default
         cls.Stress = cls.Default
         cls.Descriptor = cls.Default
+        cls.TrainingOverlay = QBrush(training_overlay)
+        cls.LoadedOverlay = QBrush(loaded_overlay)
         cls.Show = QBrush(show)
         cls.Selected = QBrush(selected)
         cls.Current = QBrush(current)

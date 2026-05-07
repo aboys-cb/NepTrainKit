@@ -1,21 +1,14 @@
 """Filter card that keeps representative points via farthest point sampling."""
 
-import os
-from itertools import combinations
-
-import numpy as np
-from PySide6.QtWidgets import QFrame, QGridLayout
-from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox, LineEdit
+from qfluentwidgets import BodyLabel, ToolTipFilter, ToolTipPosition, LineEdit
 
 from NepTrainKit import module_path
-from NepTrainKit.ui.threads import FilterProcessingThread
 from NepTrainKit.config import Config
-from NepTrainKit.core import CardManager,   MessageManager
-from NepTrainKit.core.calculator import  NepCalculator
-from NepTrainKit.core.io import farthest_point_sampling
-from NepTrainKit.core.types import NepBackend
+from NepTrainKit.core import CardManager
+from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
-from NepTrainKit.ui.widgets import MakeDataCard, FilterDataCard
+from NepTrainKit.ui.widgets import FilterDataCard
 
 
 @CardManager.register_card
@@ -88,37 +81,25 @@ class FPSFilterDataCard(FilterDataCard):
         self.settingLayout.addWidget(self.nep_path_label, 2, 0, 1, 1)
         self.settingLayout.addWidget(self.nep_path_lineedit, 2, 1, 1, 2)
 
-    def process_structure(self,*args, **kwargs ):
-        """Compute NEP descriptors and apply farthest point sampling to the current dataset.
-        
-        Parameters
-        ----------
-        *args
-            Unused positional arguments.
-        **kwargs
-            Unused keyword arguments.
-        
-        Returns
-        -------
-        None
-            The filtered dataset is stored on ``result_dataset``.
-        """
-        nep_path=self.nep_path_lineedit.text()
-        n_samples=self.num_condition_frame.get_input_value()[0]
-        distance=self.min_distance_condition_frame.get_input_value()[0]
+    def create_operation(self):
+        """Return the UI-independent FPS operation."""
+        return FPSFilterOperation()
 
-        nep_calc = NepCalculator(
-            model_file=nep_path,
-            backend=NepBackend(Config.get("nep", "backend", "auto")),
-            batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+    def get_params(self) -> FPSFilterParams:
+        """Read FPS parameters from UI controls."""
+        return FPSFilterParams(
+            nep_path=self.nep_path_lineedit.text(),
+            n_samples=int(self.num_condition_frame.get_input_value()[0]),
+            min_distance=float(self.min_distance_condition_frame.get_input_value()[0]),
+            backend=Config.get("nep", "backend", "auto"),
+            batch_size=Config.getint("nep", "gpu_batch_size", 1000),
         )
-        desc_array=nep_calc.get_structures_descriptor(self.dataset)
 
-
-
-        remaining_indices = farthest_point_sampling(desc_array, n_samples=n_samples, min_dist=distance)
-
-        self.result_dataset = [self.dataset[i] for i in remaining_indices]
+    def set_params(self, params: FPSFilterParams) -> None:
+        """Apply FPS parameters to UI controls."""
+        self.nep_path_lineedit.setText(params.nep_path)
+        self.num_condition_frame.set_input_value([int(params.n_samples)])
+        self.min_distance_condition_frame.set_input_value([float(params.min_distance)])
 
     def stop(self):
         """Stop background processing and release any worker threads.
@@ -127,33 +108,6 @@ class FPSFilterDataCard(FilterDataCard):
         if hasattr(self, "nep_thread"):
             self.nep_thread.stop()
             del self.nep_thread
-
-    def run(self):
-        """Execute the card logic, launching a worker thread when the card is enabled.
-        """
-        nep_path=self.nep_path_lineedit.text()
-
-        if not os.path.exists(nep_path):
-            MessageManager.send_warning_message(  "NEP file not exists!")
-            self.runFinishedSignal.emit(self.index)
-
-            return
-        if self.check_state:
-            self.worker_thread = FilterProcessingThread(
-
-                self.process_structure
-            )
-            self.status_label.set_colors(["#59745A"])
-
-            self.worker_thread.progressSignal.connect(self.update_progress)
-            self.worker_thread.finishSignal.connect(self.on_processing_finished)
-            self.worker_thread.errorSignal.connect(self.on_processing_error)
-
-            self.worker_thread.start()
-        else:
-            self.result_dataset = self.dataset
-            self.update_dataset_info()
-            self.runFinishedSignal.emit(self.index)
 
     def update_progress(self, progress):
         """Update the visual progress indicators during background execution.
@@ -167,19 +121,9 @@ class FPSFilterDataCard(FilterDataCard):
         self.status_label.set_progress(progress)
 
     def to_dict(self):
-        """Serialize the current configuration to a plain dictionary.
-        
-        Returns
-        -------
-        dict
-            Dictionary that can be fed into ``from_dict`` to rebuild the state.
-        """
-        data_dict = super().to_dict()
-
-        data_dict['nep_path']=self.nep_path_lineedit.text()
-        data_dict['num_condition'] = self.num_condition_frame.get_input_value()
-        data_dict['min_distance_condition'] = self.min_distance_condition_frame.get_input_value()
-        return data_dict
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
 
     def from_dict(self, data_dict):
         """Restore the card configuration from serialized values.
@@ -189,15 +133,23 @@ class FPSFilterDataCard(FilterDataCard):
         data_dict : dict
             Serialized configuration previously produced by ``to_dict``.
         """
-        try:
-            super().from_dict(data_dict)
-
-            if os.path.exists(data_dict['nep_path']):
-                self.nep_path_lineedit.setText(data_dict['nep_path'])
-            else:
-                self.nep_path_lineedit.setText(self.nep89_path )
-            self.num_condition_frame.set_input_value(data_dict['num_condition'])
-            self.min_distance_condition_frame.set_input_value(data_dict['min_distance_condition'])
-        except:
-            pass
+        super().from_dict(data_dict)
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = FPSFilterParams(
+                nep_path=raw_params.get("nep_path", self.nep89_path),
+                n_samples=raw_params.get("n_samples", 100),
+                min_distance=raw_params.get("min_distance", 0.01),
+                backend=raw_params.get("backend", Config.get("nep", "backend", "auto")),
+                batch_size=raw_params.get("batch_size", Config.getint("nep", "gpu_batch_size", 1000)),
+            )
+        else:
+            params = FPSFilterParams(
+                nep_path=data_dict.get("nep_path", self.nep89_path),
+                n_samples=data_dict.get("num_condition", [100])[0],
+                min_distance=data_dict.get("min_distance_condition", [0.01])[0],
+                backend=Config.get("nep", "backend", "auto"),
+                batch_size=Config.getint("nep", "gpu_batch_size", 1000),
+            )
+        self.set_params(params)
 

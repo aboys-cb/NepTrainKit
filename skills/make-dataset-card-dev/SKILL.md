@@ -1,41 +1,39 @@
 ---
 name: make-dataset-card-dev
-description: 将“需求描述”或“已有小脚本”转化为 NepTrainKit 的 Make Dataset 卡片实现。适用于按现有卡片风格设计 UI、实现数据生成/变换业务逻辑、完成 UI 与逻辑绑定（含 `to_dict`/`from_dict`）、接入卡片注册、补齐文档与测试，并通过 `tools/docs/audit_card_docs.py` 与相关 pytest 检查。
+description: 将“需求描述”或“已有小脚本”转化为 NepTrainKit 的 Make Dataset 卡片实现或维护现有卡片。适用于新增、迁移、重构 Make Dataset 卡片时，按 Operation/Params 架构拆分 core 业务逻辑与 PySide UI，完成卡片注册、参数序列化、文档、测试和 `tools/docs/audit_card_docs.py` 检查。
 ---
 
 # Make Dataset Card Dev
 
 ## 目标
 
-把用户输入（需求文本或脚本）稳定转换为可交付卡片：
+把需求文本、已有脚本或现有卡片重构需求稳定转换为可交付卡片：
 
-1. UI 设计符合项目现有卡片风格。
-2. 业务逻辑可运行且与 UI 参数一一对应。
-3. UI-逻辑-序列化绑定完整。
-4. 注册、文档、测试链路闭环。
+1. 业务逻辑在 `src/NepTrainKit/core/cards/`，不依赖 PySide、qfluentwidgets 或 MessageManager。
+2. UI 只负责控件、参数读写、序列化和调用 operation。
+3. `Params dataclass`、operation、UI、文档、测试保持同一套参数契约。
+4. 注册、在线文档路径、测试和文档审计闭环。
 
-## 协作规则（先确认再改）
+## 协作规则
 
-以下情况先和用户确认，再进入代码修改：
+先从需求本质确认卡片类型，再动代码。以下情况先和用户确认：
 
 1. 需求表述存在多种合理解读。
-2. 方案会改变已有行为或兼容性。
-3. 改动会跨多个模块，影响面较大。
-4. 存在明显更优实现路径。
+2. 方案会改变已有行为、默认值或旧 JSON 兼容性。
+3. 需要引入新依赖、跨页改运行时框架，或影响已有工作流。
+4. 存在明显更短或更稳的实现路径。
 
 当存在更优路径时，先给出“当前方案 vs 替代方案”的简短对比（收益、代价、风险），由用户拍板后再实施。
 
-## 输入类型
+## 先判定卡片语义
 
-### A. 需求描述输入
+不要强行把所有卡片塞进同一个接口。先选 operation 类型：
 
-- 典型输入：`“我想做一个按元素比例随机替换并可控 seed 的数据增强卡片”`
-- 处理重点：先抽象“参数、约束、输出结构变化”。
+- `StructureOperation`: 单结构变换，签名为 `run_structure(structure, params) -> list[Atoms]`。
+- `DatasetOperation`: 全数据集过滤或排序，签名为 `run_dataset(dataset, params) -> list[Atoms]`。
+- `GeneratorOperation`: 无输入生成结构，签名为 `generate(params) -> list[Atoms]`。
 
-### B. 小脚本输入
-
-- 典型输入：用户提供一段 Python 数据生成脚本。
-- 处理重点：从脚本反推出“可配置参数 + 默认值 + 算法主流程 + 随机性控制”。
+对应参数必须用 frozen dataclass 表达，例如 `FooParams`。UI 通过 `get_params()` 构造 dataclass，通过 `set_params(params)` 恢复控件。
 
 ## 工作流
 
@@ -43,87 +41,118 @@ description: 将“需求描述”或“已有小脚本”转化为 NepTrainKit 
 
 先产出一个“卡片规格草案”，至少包含：
 
-- `card_name`（UI 显示名）
-- `group`（菜单分组）
-- 是否依赖输入数据集（`requires_input_dataset`）
-- 参数清单（名称、类型、默认值、范围、是否必填）
-- 处理逻辑摘要（输入结构 -> 输出结构）
-- 元数据标签策略（`Config_type` 如何追加）
+- `card_name`、`group`、`menu_icon`、`requires_input_dataset`
+- operation 类型：`StructureOperation` / `DatasetOperation` / `GeneratorOperation`
+- `Params dataclass` 字段清单：名称、类型、默认值、范围、是否必填
+- 处理逻辑摘要：输入对象 -> 输出结构列表
+- 随机性与 seed 策略
+- `Config_type` 标签策略
 
-如果是脚本输入，再额外提取：
+如果是脚本输入，额外提取：
 
-- 脚本里的硬编码常量，改为 UI 参数。
-- 随机数行为，是否暴露 seed。
-- I/O 副作用，改为卡片内存处理流程（避免直接文件覆盖）。
+- 脚本里的硬编码常量，改为 Params 字段和 UI 参数。
+- 文件 I/O 副作用，改为内存数据流；不要覆盖用户文件。
+- 随机数入口，明确是否暴露 `use_seed` 和 `seed`。
 
-### 2. 按项目风格设计 UI
+### 2. 实现 core operation
 
-遵循现有实现模式（见 `references/card-touchpoints.md`）：
+优先在已有模块里放置逻辑：
 
-- 统一用 `init_ui()` 构建控件。
-- 常用控件优先：
-  - 数值参数：`SpinBoxUnitInputFrame`
-  - 枚举参数：`ComboBox`
-  - 开关参数：`CheckBox` / `RadioButton`
-  - 字符串参数：`LineEdit`
-- 每个参数都提供清晰 label + tooltip。
-- 布局使用 `settingLayout.addWidget(...)`，保持卡片风格一致。
+- 晶格/结构变换：`core/cards/lattice.py` 或 `core/cards/structure.py`
+- 随机/组成/替换：`core/cards/alloy.py`
+- 缺陷/表面：`core/cards/defect.py`
+- 磁性：`core/cards/magnetism.py`
+- 数据集过滤：`core/cards/filter.py`
 
-### 3. 实现业务逻辑
+实现规则：
 
-- 在 `process_structure(self, structure)` 实现核心算法。
-- 返回 `list[ase.Atoms]`，不要在此层做 UI 交互。
+- operation 不导入 `PySide6`、`qfluentwidgets`、`MessageManager`。
+- 参数校验失败时抛出明确异常；UI 层负责展示错误。
 - 结构变换后使用 `append_config_tag(...)` 写入可追溯标签。
-- 对输入异常做温和降级（返回原结构或空结果，并给出消息）。
+- 不做静默物理替换、降级模型或伪成功返回；unsupported 就明确失败。
+- 若需要序列化 dataclass，用 `params_to_dict(params)`；tuple 字段在 UI `to_dict()` 中按文档契约转成 list。
 
-### 4. 完成 UI 与逻辑绑定
+### 3. 实现 UI 卡片
+
+UI 类放在 `src/NepTrainKit/ui/views/_card/*.py`，遵循现有风格：
+
+- 新卡片默认继承 `MakeDataCard`。不要因为 operation 是 dataset 级别就新建 `FilterDataCard` 子类；当前 `FilterDataCard` 只保留给既有过滤卡的显示差异。
+- `init_ui()` 构建控件。
+- 数值参数用 `SpinBoxUnitInputFrame`，枚举用 `ComboBox`，开关用 `CheckBox` / `RadioButton`，字符串用 `LineEdit`。
+- 提供 `create_operation()`、`get_params()`、`set_params(params)`。
+- 所有卡片禁止覆盖 `run()`：基类 `MakeDataCard.run()` 已根据 `create_operation()` 返回的 operation 类型自动分发到正确线程。
+- `process_structure()` 若保留，只能作为兼容委托层。结构卡调用 `run_structure(...)`；dataset/generator 卡片不要新增伪 `process_structure()` 通路。
+- 生成型卡片使用 `GeneratorOperation` 和 `requires_input_dataset = False`。
+
+### 4. 完成序列化
 
 绑定必须完整：
 
-- UI 参数读取 -> 逻辑参数传递。
-- `to_dict()` 写入全部关键状态。
-- `from_dict()` 用稳定默认值恢复状态，兼容旧 JSON。
-- 特殊卡片若需“无输入数据集运行”，重写 `run()` 并处理 `requires_input_dataset=False` 路径。
+- `to_dict()` 写入 `"params": params_to_dict(self.get_params())`。
+- 保留必要的旧 key，保证旧 JSON 可加载。旧 key 双写是过渡态；新增持久化格式时再引入版本字段清理。
+- `from_dict()` 优先读 `params`，没有时按旧 key 构造 Params，再调用 `set_params(params)`。
+- 文档里的 `serialized_keys`、默认值和运行时 `to_dict()` 一致。
 
-### 5. 注册与接入
+### 5. 注册、文档和在线路径
 
 - 类上加 `@CardManager.register_card`。
 - 在 `src/NepTrainKit/ui/views/_card/__init__.py` 导入并加入 `__all__`。
-- 确认 MakeData 页面可添加并执行该卡片。
+- 每张内置卡片必须有对应文档：
+  - 源码：`src/NepTrainKit/ui/views/_card/foo_bar_card.py`
+  - 文档：`docs/source/module/make-dataset-cards/cards/foo-bar-card.md`
+  - 在线链接：`https://neptrainkit.readthedocs.io/en/latest/module/make-dataset-cards/cards/foo-bar-card.html`
 
-### 6. 文档与测试同步
+**文档写作核心原则：从训练集诊断出发。**
 
-- 更新 `docs/source/module/make-dataset-cards/cards/*.md` 对应文档。
-- 文档参数名、默认值、`serialized_keys` 与代码一致。
-- 测试最少覆盖：
-  - 基本运行不崩溃
-  - 参数生效
-  - `to_dict`/`from_dict` 往返一致
+操作示例必须回答"模型哪里不行 → 训练集缺什么 → 这张卡怎么补 → 怎么验证改善"，而不是只写"设参数→得结果"。禁止以下内容：
+
+- 模板填充句："先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时再偏离"
+- 同义反复开关建议："需要启用 XXX 时开启 / 希望保持默认时关闭"
+- 把 `params`（序列化实现细节）作为用户参数列出
+- 三档预设 JSON 几乎一样（Safe/Balanced/Aggressive 应有实质性参数差异）
+
+详细规范见 `docs/source/module/make-dataset-cards/writing-guide.md`。
+
+参数文档必须按 `Params dataclass` 字段逐项落标题：无功能组时使用 `### 参数名（key）`，有功能组时使用 `### 功能组` + `#### 参数名（key）`。不要把多个 key 合在一个标题里；枚举表必须写真实选项，不能写“以 UI 下拉项为准”；物理直觉不能用可套在任何参数上的模板句。`tools/docs/audit_card_docs.py` 会按这一契约检查。
+
+### 6. 测试
+
+最少覆盖：
+
+- operation 可脱离 UI 直接运行，不需要 `QApplication` 或 Qt 控件。
+- UI `get_params()` / `set_params()` / `to_dict()` / `from_dict()` 往返一致。
+- 关键参数生效。
+- 文档审计通过。
+
+新建或实质修改卡片时，测试不能只验证“不报错”。必须在 `tests/cards/` 对应领域文件中覆盖该卡片的核心输出语义：
+
+- 每个用户可选模式、关键参数分支和随机 seed 策略都要有代表性用例。
+- 边界条件和非法参数要验证明确失败原因，不做静默降级或伪成功。
+- 输出结构要检查可决策结果，例如数量、元素组成、cell/position/magmom 变化、过滤保留/剔除集合、`Config_type` 追踪标签。
+- 随机型卡片要验证固定 seed 的可复现性；没有 seed 的随机分布只检查物理/几何约束，不写脆弱的逐坐标快照。
+- dataset/generator 卡片要直接测 `run_dataset(...)` 或 `generate(...)` 的输入输出契约；UI 往返测试只验证参数绑定，不能替代 operation 行为测试。
+
+## 验证
+
+从仓库根目录运行 `python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick`。更多模式见 `references/validation-playbook.md`。
 
 ## 交付格式
 
 执行此 skill 时，输出按以下结构组织：
 
-1. 卡片规格摘要（从需求/脚本提取）
-2. 实现清单（改了哪些文件、每个文件做了什么）
-3. 验证结果（跑了哪些命令、通过/失败）
-4. 未覆盖风险（如果有）
+1. 卡片规格摘要
+2. 实现清单
+3. 验证结果
+4. 未覆盖风险
 
 ## 质量门槛
 
-- UI 参数与业务逻辑参数一一对应，无“死参数”。
-- 业务逻辑不依赖 UI 状态副作用，代码可测试。
-- `to_dict`/`from_dict` 无丢字段和错类型。
-- 文档审计与相关测试通过。
-
-## 快速验证命令
-
-- 快速检查：
-  - `python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick`
-- 含文档构建：
-  - `python skills/make-dataset-card-dev/scripts/run_card_checks.py --with-docs`
-- 全量回归：
-  - `python skills/make-dataset-card-dev/scripts/run_card_checks.py --full`
+- core operation 与 UI 解耦。
+- UI 参数、Params dataclass、文档默认值一一对应。
+- 没有“UI 有参数但逻辑没用”的死参数。
+- 没有“逻辑硬编码但 UI 没暴露”的隐含参数。
+- `to_dict` / `from_dict` 无丢字段和错类型。
+- `tools/docs/audit_card_docs.py` 和相关 pytest 通过。
 
 ## Resources
 
@@ -135,10 +164,4 @@ description: 将“需求描述”或“已有小脚本”转化为 NepTrainKit 
 
 ### scripts/
 
-- `scripts/run_card_checks.py`：统一执行交付检查。
-## Online Doc Mapping Rule
-
-- Every built-in Make Dataset card must preserve a stable mapping between the card source filename and the docs page filename.
-- For `src/NepTrainKit/ui/views/_card/foo_bar_card.py`, the docs page must be `docs/source/module/make-dataset-cards/cards/foo-bar-card.md`.
-- The UI links cards directly to `https://neptrainkit.readthedocs.io/en/latest/module/make-dataset-cards/cards/foo-bar-card.html`.
-- If a new card does not match this mapping, rename or update the docs page before finishing the task. Do not ship a built-in card without a valid online docs target.
+- `scripts/run_card_checks.py`：统一执行交付检查，并包含 operation 架构审计。

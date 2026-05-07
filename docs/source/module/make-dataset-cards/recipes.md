@@ -9,6 +9,10 @@
 下面的 JSON 采用“卡片配置片段”的写法，字段名与当前 `to_dict()` 保持一致，可直接对照卡片页里的推荐预设填写。第一版 recipes 不依赖截图，也不绑定固定示例文件。
 :::
 
+每条配方的卡片链只负责生成候选池。链条末尾写的 `Show NEP 清洗 -> FPS`
+表示后处理方向：先在 `NEP Dataset Display` 里删掉明显异常结构，再做代表性采样。
+如果你有当前体系的 NEP 模型，可以用它做预筛；没有时可以先做几何检查和人工抽查。
+
 ## 高熵合金
 
 ### 目标说明
@@ -23,7 +27,7 @@
 
 ### 卡片顺序
 
-`Crystal Prototype Builder -> Composition Sweep -> Random Occupancy -> Random Doping -> 导出 xyz -> nep89 清洗 -> FPS`
+`Crystal Prototype Builder -> Composition Sweep -> Random Occupancy -> Random Doping -> 导出 xyz -> Show NEP 清洗 -> FPS`
 
 ### 每步 JSON 配置
 
@@ -32,13 +36,16 @@
 ```json
 {
   "class": "CrystalPrototypeBuilderCard",
-  "lattice": "fcc",
-  "element": "Ni",
-  "a_range": [3.52, 3.52, 0.1],
-  "auto_supercell": true,
-  "max_atoms": [64],
-  "rep": [2, 2, 2],
-  "max_outputs": [1]
+  "params": {
+    "lattice": "fcc",
+    "element": "Ni",
+    "a_range": [3.52, 3.52, 0.1],
+    "covera": 1.633,
+    "auto_supercell": true,
+    "max_atoms": 64,
+    "rep": [2, 2, 2],
+    "max_outputs": 1
+  }
 }
 ```
 
@@ -49,16 +56,19 @@
 ```json
 {
   "class": "CompositionSweepCard",
-  "elements": "Co,Cr,Ni,Al,Fe",
-  "order": "4,5",
-  "method": "Sobol",
-  "n_points": [24],
-  "min_fraction": [0.05],
-  "include_endpoints": true,
-  "use_seed": true,
-  "seed": [42],
-  "max_outputs": [24],
-  "budget_mode": "Equal+Reflow"
+  "params": {
+    "elements": "Co,Cr,Ni,Al,Fe",
+    "order": "4,5",
+    "method": "Sobol",
+    "step": 0.1,
+    "n_points": 24,
+    "min_fraction": 0.05,
+    "include_endpoints": true,
+    "use_seed": true,
+    "seed": 42,
+    "max_outputs": 24,
+    "budget_mode": "Equal+Reflow"
+  }
 }
 ```
 
@@ -69,13 +79,15 @@
 ```json
 {
   "class": "RandomOccupancyCard",
-  "source": "Auto (Comp tag)",
-  "manual": "",
-  "mode": "Exact",
-  "samples": [2],
-  "group_filter": "",
-  "use_seed": true,
-  "seed": [42]
+  "params": {
+    "source": "Auto (Comp tag)",
+    "manual": "",
+    "mode": "Exact",
+    "samples": 2,
+    "group_filter": "",
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
@@ -86,11 +98,22 @@
 ```json
 {
   "class": "RandomDopingCard",
-  "rules": "[{\"target\":\"Ni\",\"dopants\":{\"Co\":1.0,\"Cr\":1.0},\"use\":\"count\",\"count\":[1,2],\"concentration\":[0.0,1.0]}]",
-  "doping_type": "Exact",
-  "max_atoms_condition": [2],
-  "use_seed": true,
-  "seed": [123]
+  "params": {
+    "rules": [
+      {
+        "target": "Ni",
+        "dopants": {"Co": 1.0, "Cr": 1.0},
+        "use": "count",
+        "count_mode": "random",
+        "count": [1, 2],
+        "percent": [0.0, 1.0]
+      }
+    ],
+    "doping_type": "Exact",
+    "max_structures": 2,
+    "use_seed": true,
+    "seed": 123
+  }
 }
 ```
 
@@ -121,7 +144,7 @@
 
 ### 卡片顺序
 
-`Super Cell -> Random Slab -> Insert Defect -> Vacancy Defect Generation -> 导出 xyz -> nep89 清洗 -> FPS`
+`Super Cell -> Random Slab -> Insert Defect -> Vacancy Defect Generation -> 导出 xyz -> Show NEP 清洗 -> FPS`
 
 ### 每步 JSON 配置
 
@@ -130,15 +153,15 @@
 ```json
 {
   "class": "SuperCellCard",
-  "super_cell_type": 0,
-  "super_scale_radio_button": true,
-  "super_scale_condition": [2, 2, 1],
-  "super_cell_radio_button": false,
-  "super_cell_condition": [20, 20, 20],
-  "max_atoms_radio_button": false,
-  "max_atoms_condition": [200],
-  "fixed_axis_flags": [false, false, true],
-  "fixed_axis_scale": [1, 1, 1]
+  "params": {
+    "behavior_type": 0,
+    "mode": "scale",
+    "super_scale": [2, 2, 1],
+    "target_cell": [20.0, 20.0, 20.0],
+    "max_atoms": 200,
+    "fixed_axis_flags": [false, false, true],
+    "fixed_axis_scale": [1, 1, 1]
+  }
 }
 ```
 
@@ -149,11 +172,13 @@
 ```json
 {
   "class": "RandomSlabCard",
-  "h_range": [0, 1, 1],
-  "k_range": [0, 1, 1],
-  "l_range": [1, 3, 1],
-  "layer_range": [4, 8, 1],
-  "vacuum_range": [12, 18, 2]
+  "params": {
+    "h_range": [0, 1, 1],
+    "k_range": [0, 1, 1],
+    "l_range": [1, 3, 1],
+    "layer_range": [4, 8, 1],
+    "vacuum_range": [12, 18, 2]
+  }
 }
 ```
 
@@ -163,17 +188,19 @@
 
 ```json
 {
-  "class": "InterstitialAdsorbateCard",
-  "mode": "adsorbate",
-  "species": "H,O",
-  "insert_count": [1],
-  "structure_count": [2],
-  "min_distance": [1.2],
-  "max_attempts": [50],
-  "use_seed": true,
-  "seed": [7],
-  "axis": [0.0, 0.0, 1.0],
-  "offset": [1.5]
+  "class": "InsertDefectCard",
+  "params": {
+    "mode": 1,
+    "species": "H,O",
+    "insert_count": 1,
+    "structure_count": 2,
+    "min_distance": 1.2,
+    "max_attempts": 50,
+    "use_seed": true,
+    "seed": 7,
+    "axis": 2,
+    "offset": 1.5
+  }
 }
 ```
 
@@ -184,14 +211,16 @@
 ```json
 {
   "class": "VacancyDefectCard",
-  "engine_type": 1,
-  "num_condition": [1],
-  "num_radio_button": false,
-  "concentration_radio_button": true,
-  "concentration_condition": [0.03],
-  "max_atoms_condition": [3],
-  "use_seed": true,
-  "seed": [19]
+  "params": {
+    "engine_type": 1,
+    "num_condition": 1,
+    "use_num": false,
+    "concentration_condition": 0.03,
+    "count_mode": "fixed",
+    "max_structures": 3,
+    "use_seed": true,
+    "seed": 19
+  }
 }
 ```
 
@@ -231,11 +260,13 @@
 ```json
 {
   "class": "GroupLabelCard",
-  "mode": "k-vector layers (recommended)",
-  "kvec": "111",
-  "group_a": "A",
-  "group_b": "B",
-  "overwrite": true
+  "params": {
+    "mode": "k-vector layers (recommended)",
+    "kvec": "111",
+    "group_a": "A",
+    "group_b": "B",
+    "overwrite": true
+  }
 }
 ```
 
@@ -246,26 +277,28 @@
 ```json
 {
   "class": "MagneticOrderCard",
-  "format": "Collinear (scalar)",
-  "axis": [0.0, 0.0, 1.0],
-  "magmom_map": "Fe:2.2",
-  "use_element_dirs": false,
-  "default_moment": [0.0],
-  "apply_elements": "Fe",
-  "gen_fm": true,
-  "gen_afm": true,
-  "afm_mode": "group A/B",
-  "afm_kvec": "111",
-  "afm_group_a": "A",
-  "afm_group_b": "B",
-  "afm_zero_unknown": true,
-  "gen_pm": true,
-  "pm_count": [8],
-  "pm_direction": "sphere",
-  "pm_cone_angle": [30.0],
-  "pm_balanced": true,
-  "use_seed": true,
-  "seed": [88]
+  "params": {
+    "format": "Collinear (scalar)",
+    "axis": [0.0, 0.0, 1.0],
+    "magmom_map": "Fe:2.2",
+    "use_element_dirs": false,
+    "default_moment": 0.0,
+    "apply_elements": "Fe",
+    "gen_fm": true,
+    "gen_afm": true,
+    "afm_mode": "group A/B",
+    "afm_kvec": "111",
+    "afm_group_a": "A",
+    "afm_group_b": "B",
+    "afm_zero_unknown": true,
+    "gen_pm": true,
+    "pm_count": 8,
+    "pm_direction": "sphere",
+    "pm_cone_angle": 30.0,
+    "pm_balanced": true,
+    "use_seed": true,
+    "seed": 88
+  }
 }
 ```
 
@@ -276,15 +309,17 @@
 ```json
 {
   "class": "MagneticMomentRotationCard",
-  "elements": "Fe",
-  "max_angle": [15.0],
-  "num_structures": [3],
-  "lift_scalar": true,
-  "axis": [0.0, 0.0, 1.0],
-  "disturb_magnitude": false,
-  "magnitude_factor": [1.0],
-  "use_seed": true,
-  "seed": [99]
+  "params": {
+    "elements": "Fe",
+    "max_angle": 15.0,
+    "num_structures": 3,
+    "lift_scalar": true,
+    "axis": [0.0, 0.0, 1.0],
+    "disturb_magnitude": false,
+    "magnitude_factor": [1.0, 1.0],
+    "use_seed": true,
+    "seed": 99
+  }
 }
 ```
 
@@ -315,7 +350,7 @@
 
 ### 卡片顺序
 
-`Organic Mol Config -> Atomic Perturb -> 导出 xyz -> nep89 清洗 -> FPS`
+`Organic Mol Config -> Atomic Perturb -> 导出 xyz -> Show NEP 清洗 -> FPS`
 
 ### 每步 JSON 配置
 
@@ -324,25 +359,27 @@
 ```json
 {
   "class": "OrganicMolConfigPBCCard",
-  "perturb_per_frame": [8],
-  "torsion_range_deg": [-25.0, 25.0],
-  "max_torsions_per_conf": [2],
-  "gaussian_sigma": [0.01],
-  "pbc_mode": "molecule in box",
-  "local_cutoff": [5.0],
-  "local_subtree": true,
-  "bond_detect_factor": [1.15],
-  "bond_keep_min_factor": [0.75],
-  "bond_keep_max_factor": [1.30],
-  "bond_keep_max_enable": true,
-  "nonbond_min_factor": [0.80],
-  "max_retries": [50],
-  "mult_bond_factor": [1.10],
-  "nonpbc_box_size": [20.0],
-  "bo_c_const": [0.35],
-  "bo_threshold": [0.25],
-  "use_seed": true,
-  "seed": [5]
+  "params": {
+    "perturb_per_frame": 8,
+    "torsion_range_deg": [-25.0, 25.0],
+    "max_torsions_per_conf": 2,
+    "gaussian_sigma": 0.01,
+    "pbc_mode": "molecule in box",
+    "local_cutoff": 5,
+    "local_subtree": 100,
+    "bond_detect_factor": 1.15,
+    "bond_keep_min_factor": 0.75,
+    "bond_keep_max_factor": 1.30,
+    "bond_keep_max_enable": true,
+    "nonbond_min_factor": 0.80,
+    "max_retries": 50,
+    "mult_bond_factor": 1.10,
+    "nonpbc_box_size": 20.0,
+    "bo_c_const": 0.35,
+    "bo_threshold": 0.25,
+    "use_seed": true,
+    "seed": 5
+  }
 }
 ```
 
@@ -353,14 +390,16 @@
 ```json
 {
   "class": "PerturbCard",
-  "engine_type": 0,
-  "organic": true,
-  "scaling_condition": [0.03],
-  "num_condition": [3],
-  "use_element_scaling": false,
-  "element_scalings": {},
-  "use_seed": true,
-  "seed": [6]
+  "params": {
+    "engine_type": 0,
+    "max_distance": 0.03,
+    "max_num": 3,
+    "identify_organic": true,
+    "use_element_scaling": false,
+    "element_scalings": {},
+    "use_seed": true,
+    "seed": 6
+  }
 }
 ```
 

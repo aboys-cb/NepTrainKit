@@ -784,6 +784,92 @@ class StructureSyncRule:
             return
         target = self._resolve_target(dataset)
         dataset.all_data[row_idx, target] = values
+
+
+def _sync_target_width(dataset: Any) -> int:
+    total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
+    return max(total_cols - dataset.cols, 0)
+
+
+def _empty_sync_result(width: int) -> tuple[np.ndarray, npt.NDArray[Any]]:
+    return np.array([], dtype=np.int64), np.empty((0, width), dtype=get_storage_float_dtype())
+
+
+def collect_energy_sync(result_data: "ResultData", dataset: NepPlotData, structure_indices):
+    """Collect reference energies for structure-synchronised result datasets."""
+    target_width = _sync_target_width(dataset)
+    if target_width == 0:
+        return _empty_sync_result(0)
+    indices = result_data._normalize_structure_indices(structure_indices)
+    if indices.size == 0:
+        return _empty_sync_result(target_width)
+    storage_dtype = get_storage_float_dtype()
+    structures = [result_data.structure.all_data[i] for i in indices]
+    values = np.array([s.per_atom_energy for s in structures], dtype=storage_dtype).reshape(-1, target_width)
+    return indices, values
+
+
+def collect_force_sync(result_data: "ResultData", dataset: NepPlotData, structure_indices):
+    """Collect force values aligned with structure or atom rows."""
+    target_width = _sync_target_width(dataset)
+    if target_width == 0:
+        return _empty_sync_result(0)
+    indices = result_data._normalize_structure_indices(structure_indices)
+    if indices.size == 0:
+        return _empty_sync_result(target_width)
+    storage_dtype = get_storage_float_dtype()
+    group_vals = dataset.group_array.all_data
+    per_atom = bool(group_vals.size and np.unique(group_vals).size != group_vals.size)
+    structures = [result_data.structure.all_data[i] for i in indices]
+    if per_atom:
+        row_idx = dataset.convert_index(indices)
+        values = np.vstack([s.forces for s in structures]).astype(storage_dtype, copy=False)
+    else:
+        row_idx = indices
+        values = np.array([np.linalg.norm(s.forces, axis=0) for s in structures], dtype=storage_dtype)
+    return row_idx, values
+
+
+def collect_virial_sync(result_data: "ResultData", dataset: NepPlotData, structure_indices):
+    """Collect virial tensors for structures that provide virial information."""
+    target_width = _sync_target_width(dataset)
+    if target_width == 0:
+        return _empty_sync_result(0)
+    indices = result_data._normalize_structure_indices(structure_indices)
+    if indices.size == 0:
+        return _empty_sync_result(target_width)
+    storage_dtype = get_storage_float_dtype()
+    structures = [result_data.structure.all_data[i] for i in indices]
+    mask = np.array([s.has_virial for s in structures], dtype=bool)
+    if not mask.any():
+        return _empty_sync_result(target_width)
+    selected_indices = indices[mask]
+    values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(storage_dtype, copy=False)
+    return selected_indices, values
+
+
+def collect_stress_sync(result_data: "ResultData", dataset: NepPlotData, structure_indices):
+    """Collect stress tensors derived from virials for selected structures."""
+    target_width = _sync_target_width(dataset)
+    if target_width == 0:
+        return _empty_sync_result(0)
+    indices = result_data._normalize_structure_indices(structure_indices)
+    if indices.size == 0:
+        return _empty_sync_result(target_width)
+    storage_dtype = get_storage_float_dtype()
+    structures = [result_data.structure.all_data[i] for i in indices]
+    mask = np.array([s.has_virial for s in structures], dtype=bool)
+    if not mask.any():
+        return _empty_sync_result(target_width)
+    selected_indices = indices[mask]
+    virial_values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(storage_dtype, copy=False)
+    atoms = result_data.atoms_num_list[selected_indices].astype(storage_dtype)
+    volumes = np.array([structures[i].volume for i, flag in enumerate(mask) if flag], dtype=storage_dtype)
+    coeff = np.divide(atoms, volumes, out=np.zeros_like(atoms, dtype=storage_dtype), where=volumes != 0)[:, np.newaxis]
+    stress_values = virial_values * coeff * 160.21766208
+    return selected_indices, stress_values.astype(storage_dtype, copy=False)
+
+
 class ResultData(QObject):
     """Manage structures, descriptors, and plots for NEP result files.
     Subclasses implement :meth:`_load_dataset` and expose their plot datasets

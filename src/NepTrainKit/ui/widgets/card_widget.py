@@ -1,6 +1,7 @@
 """Card widgets supporting drag-and-drop workflows and dataset processing."""
 
 import inspect
+import json
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -8,7 +9,7 @@ from typing import Any, Iterable
 
 from PySide6.QtCore import Qt, Signal, QMimeData, Property, QUrl
 from PySide6.QtGui import QIcon, QDrag, QPixmap, QFont, QDesktopServices
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel
+from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel
 
 from qfluentwidgets import (
     CheckBox,
@@ -22,9 +23,13 @@ from qfluentwidgets import (
 
 from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleCardWidget
 
-from NepTrainKit import utils
-from NepTrainKit.core import MessageManager
+from NepTrainKit.core import CardManager, MessageManager
+from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
+from NepTrainKit.core.card_manager import build_card_metadata
+from NepTrainKit.ui.dialogs import call_path_dialog
+from NepTrainKit.ui.threads import DataProcessingThread, FilterProcessingThread, LoadingThread
 from NepTrainKit.version import DOCS_BASE_URL
+from .card_metadata import CardMetadataDialog
 from .label import ProcessLabel
 from ase.io import write as ase_write
 
@@ -156,6 +161,16 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         self.doc_button.setToolTip("Open online documentation")
         self.doc_button.installEventFilter(ToolTipFilter(self.doc_button, 300, ToolTipPosition.TOP))
 
+        self.info_button = TransparentToolButton(FluentIcon.INFO, self)
+        self.info_button.clicked.connect(self.show_card_info)
+        self.info_button.setToolTip("Show card information and contributors")
+        self.info_button.installEventFilter(ToolTipFilter(self.info_button, 300, ToolTipPosition.TOP))
+
+        self.copy_json_button = TransparentToolButton(FluentIcon.COPY, self)
+        self.copy_json_button.clicked.connect(self.copy_json_to_clipboard)
+        self.copy_json_button.setToolTip("Copy card JSON")
+        self.copy_json_button.installEventFilter(ToolTipFilter(self.copy_json_button, 300, ToolTipPosition.TOP))
+
         self.export_button = TransparentToolButton(QIcon(":/images/src/images/export1.svg"), self)
         self.export_button.clicked.connect(self.exportSignal)
         self.export_button.setToolTip("Export data")
@@ -167,6 +182,8 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         self.close_button.installEventFilter(ToolTipFilter(self.close_button, 300, ToolTipPosition.TOP))
 
         self.headerLayout.addWidget(self.doc_button, 0, Qt.AlignmentFlag.AlignRight)
+        self.headerLayout.addWidget(self.info_button, 0, Qt.AlignmentFlag.AlignRight)
+        self.headerLayout.addWidget(self.copy_json_button, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.export_button, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.close_button, 0, Qt.AlignmentFlag.AlignRight)
         self.refresh_doc_button()
@@ -216,11 +233,34 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         if url:
             QDesktopServices.openUrl(QUrl(url))
 
+    def show_card_info(self) -> None:
+        """Show contributor and provenance metadata for this card."""
+        class_name = self.__class__.__name__
+        metadata = CardManager.get_card_metadata(class_name) or build_card_metadata(self.__class__)
+        dialog = CardMetadataDialog(metadata, self)
+        dialog.exec()
+
+    def copy_json_to_clipboard(self) -> None:
+        """Copy this card's current configuration JSON to the system clipboard."""
+        QApplication.clipboard().setText(self.to_json_text())
+        MessageManager.send_success_message("Card JSON copied to clipboard.")
+
+    def to_json_text(self) -> str:
+        """Return this card's current configuration as pretty JSON text."""
+        return json.dumps(self.to_dict(), indent=4, ensure_ascii=False)
+
 
 class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
     """Base widget for cards participating in the console workflow."""
 
     group = None
+    description = ""
+    card_version = ""
+    contributors = ()
+    maintainer = ""
+    license = ""
+    citation = ""
+    docs_url = ""
 
     windowStateChangedSignal = Signal()
 
@@ -298,9 +338,15 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         dict[str, Any]
             Mapping that describes the card type and enabled state.
         """
+        metadata = CardManager.get_card_metadata(self.__class__.__name__) or build_card_metadata(self.__class__)
         return {
             "class": self.__class__.__name__,
             "check_state": self.check_state,
+            "metadata": {
+                "card_name": metadata.card_name,
+                "card_version": metadata.version,
+                "contributors": [item.name for item in metadata.contributors],
+            },
         }
 
 
@@ -377,7 +423,7 @@ class MakeDataCard(MakeDataCardWidget):
     def export_data(self):
         """Prompt the user for an export path and dump results if available."""
         if self.dataset is not None:
-            path = utils.call_path_dialog(
+            path = call_path_dialog(
                 self,
                 "Choose a file save location",
                 "file",
@@ -386,7 +432,7 @@ class MakeDataCard(MakeDataCardWidget):
             )
             if not path:
                 return
-            thread = utils.LoadingThread(self, show_tip=True, title="Exporting data")
+            thread = LoadingThread(self, show_tip=True, title="Exporting data")
             thread.start_work(self.write_result_dataset, path)
 
     def process_structure(self, structure):
@@ -408,6 +454,17 @@ class MakeDataCard(MakeDataCardWidget):
             Subclasses must override this method to provide logic.
         """
         raise NotImplementedError
+
+    def get_params(self):
+        """Return UI-independent operation parameters for migrated cards."""
+        return None
+
+    def set_params(self, params) -> None:
+        """Apply UI-independent operation parameters to the card widgets."""
+
+    def create_operation(self):
+        """Return a UI-independent operation object for migrated cards."""
+        return None
 
     def closeEvent(self, event):
         """Ensure worker threads are stopped before closing the card."""
@@ -431,10 +488,27 @@ class MakeDataCard(MakeDataCardWidget):
     def run(self):
         """Launch processing in a background thread when enabled."""
         if self.check_state:
-            self.worker_thread = utils.DataProcessingThread(
-                self.dataset,
-                self.process_structure,
-            )
+            operation = self.create_operation()
+            params = self.get_params()
+            if isinstance(operation, StructureOperation):
+                self.worker_thread = DataProcessingThread(self.dataset, operation, params)
+            elif isinstance(operation, DatasetOperation):
+                self.worker_thread = FilterProcessingThread(
+                    dataset=self.dataset,
+                    operation=operation,
+                    params=params,
+                )
+            elif isinstance(operation, GeneratorOperation):
+                self.worker_thread = FilterProcessingThread(
+                    dataset=self.dataset or [],
+                    operation=operation,
+                    params=params,
+                )
+            else:
+                self.worker_thread = DataProcessingThread(
+                    self.dataset,
+                    self.process_structure,
+                )
             self.status_label.set_colors(["#59745A"])
 
             self.worker_thread.progressSignal.connect(self.update_progress)
@@ -514,6 +588,8 @@ class FilterDataCard(MakeDataCard):
 
     def on_processing_finished(self):
         """Refresh status once filtering completes."""
+        if hasattr(self, "worker_thread"):
+            self.result_dataset = self.worker_thread.result_dataset
         self.update_dataset_info()
         self.status_label.set_colors(["#a5d6a7"])
         self.runFinishedSignal.emit(self.index)

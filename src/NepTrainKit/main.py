@@ -26,8 +26,8 @@ from qfluentwidgets import (
 )
 from loguru import logger
 
-from NepTrainKit.core import MessageManager
 from NepTrainKit.ui.pages import *
+from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.update import AutoUpdateNotifier, get_pending_update_version
 from NepTrainKit.utils import timeit
 from NepTrainKit.ui.updater import unzip
@@ -195,17 +195,8 @@ def set_light_theme(app: QApplication) -> None:
     app.setStyle("Fusion")
 
 
-def main() -> None:
-    """Launch the NepTrainKit GUI application."""
-    setTheme(Theme.LIGHT)
-    sys.excepthook = global_exception_handler
-
-    update_zip = Path("update.zip")
-    update_tar = Path("update.tar.gz")
-    if update_zip.exists() or update_tar.exists():
-        unzip()
-
-    app = QApplication(sys.argv)
+def configure_app(app: QApplication) -> None:
+    """Apply the same theme, font, and stylesheet used by the desktop app."""
     set_light_theme(app)
     font = QFont("Arial", 12)
     app.setFont(font)
@@ -216,8 +207,36 @@ def main() -> None:
         theme_file.close()
         app.setStyleSheet(theme)
 
+
+def create_app(argv: list[str] | None = None) -> QApplication:
+    """Create or configure the shared Qt application instance."""
+    setTheme(Theme.LIGHT)
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication(sys.argv if argv is None else argv)
+    configure_app(app)
+    return app
+
+
+def create_main_window(*, show: bool = True) -> NepTrainKitMainWindow:
+    """Create the main window used by both the app and documentation tools."""
     window = NepTrainKitMainWindow()
-    window.show()
+    if show:
+        window.show()
+    return window
+
+
+def main() -> None:
+    """Launch the NepTrainKit GUI application."""
+    sys.excepthook = global_exception_handler
+
+    update_zip = Path("update.zip")
+    update_tar = Path("update.tar.gz")
+    if update_zip.exists() or update_tar.exists():
+        unzip()
+
+    app = create_app(sys.argv)
+    window = create_main_window(show=True)
     window.refresh_update_indicators()
     window.auto_update_notifier = AutoUpdateNotifier(window)
     QTimer.singleShot(3000, window.auto_update_notifier.start_if_due)

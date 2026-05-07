@@ -1,124 +1,95 @@
-<!-- card-schema: {"card_name": "Conditional Replace", "source_file": "src/NepTrainKit/ui/views/_card/conditional_replace_card.py", "serialized_keys": ["target", "replacements", "condition", "seed", "mode"]} -->
+<!-- card-schema: {"card_name": "Conditional Replace", "source_file": "src/NepTrainKit/ui/views/_card/conditional_replace_card.py", "serialized_keys": ["params"]} -->
 
 # 条件替换（Conditional Replace）
 
-`Group`: `Alloy`  
-`Class`: `ConditionalReplaceCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/conditional_replace_card.py`
+`Group`: `Alloy` | `Class`: `ConditionalReplaceCard`
 
 ## 功能说明
-按空间表达式对目标元素执行条件替换（conditional replacement），构建区域选择性化学改性样本。
 
-它最适合的场景是：只替换满足局部规则的位点，而不是对所有候选原子做无差别随机替换。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+按空间坐标条件对指定元素做区域选择性替换。用 x/y/z 坐标表达式（如 `z>=8 and z<=10`）筛选候选位点，只替换命中区域内的原子，未命中区域保持原样。适合表面钝化、界面修饰、层状材料选择性改性等场景。
+
+与 `Random Doping` 的区别：`Random Doping` 对全体 target 原子做无差别随机替换；`Conditional Replace` 先用坐标条件筛选位点，再在命中区域内做替换。
 
 ## 操作示例
-### 场景：只替换满足局部规则的位点，而不是对所有候选原子做无差别随机替换
 
-**输入：** 一个含目标元素的结构，以及明确的替换规则或条件表达式
+### 场景：模型在表面化学上完全失效，但体相预测很好
 
-**目标：** 把“只换表面 O”或“只换某一 group 内位点”这类条件约束写进替换流程
+你在 MgO 表面上训练了一个 NEP 模型，训练数据覆盖了完美晶体和表面弛豫结构。体相弹性常数和声子谱都很好，但一跑有表面吸附或表面钝化的结构，模型就崩了——能量误差是体相的 10 倍。诊断结果是：训练集里所有 O 原子都处于体相八面体配位环境，模型从未见过低配位表面 O 的局域环境，更不知道表面 O 被 F 替换后会发生什么。
+
+**诊断思路：** 表面原子的化学环境与体相完全不同——配位数低、悬挂键多、更活泼。如果训练集缺少表面区域的元素变化（如 F 钝化表面 O），模型会对表面化学完全盲猜。解决办法是用条件替换把表面几层的特定元素换成钝化元素，让模型学习表面化学环境。
+
+**输入：** 一个 MgO 表面 slab 结构，z 方向 0-16A，表面 O 位于高 z 区域
+
+**目标：** 把顶层 2A 区域内的 O 替换为 F，模拟表面氟化
 
 **参数设置：**
-- `target` 写要被替换的原始元素或位点条件
-- `replacements` 写候选替换元素及比例
-- `condition` 用来限制哪些位点允许参与
+- `target` = `O`
+- `replacements` = `F:1.0`
+- `condition` = `z>=8 and z<=10`
+- `mode` = `1` （Exact 模式，确保全部命中位点被替换）
 
-**输出：** 只有命中条件的位点会被替换；未命中的位置保持原样
+**输出：** 1 个结构，满足 z 在 8-10A 的所有 O 被替换为 F，其余区域不变。带 `Repl(O->F)` 标签
 
-**怎么验证结果合理：**
-- 抽查被替换的原子是否真的满足条件
-- 若结果和原结构完全一样，先检查 `condition` 是否过严
-- 确认替换后标签和元素统计与预期一致
+**怎么验证训练集质量改善：**
+- 重训后跑表面吸附测试，力的 MAE 应该显著降低，不再在表面区域出现异常大力误差
+- 抽查输出，确认只有表面区域被替换，体相原子保持不变——如果体相也被动了，condition 表达式有问题
+- 如果需要多元素钝化，把 `replacements` 写成 `F:0.5,Cl:0.5`
+- 如果表面层厚度不确定，先用 `all` 条件验证替换配方正确性，再收紧 z 范围
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 需要只在表层/局域区域替换元素。
-- 目标任务 (Target objective): 增强局域化学环境变化覆盖。
-- 建议添加条件 (Add-it trigger): 可以用 `x/y/z` 明确写出作用区域。
-- 不建议添加条件 (Avoid trigger): 仅需全局替换，Random Doping 更直接。
-> 物理提示 (Physics caution): 重点检查目标配比、实际元素统计和标签是否一致，避免“标签写对了、占位落错了”。
+### 什么时候加这张卡、什么时候不加
 
-## 输入前提
-- 先验证 `replacements` 语法正确。
-- 先用 `condition=all` 验证路径，再收紧条件。
+**加：**
+- 模型对表面/界面/晶界区域的预测质量显著差于体相
+- 需要做区域选择性化学改性：表面钝化、界面掺杂、层状材料夹层替换
+- 替换规则可以用 x/y/z 坐标表达式写清楚
 
-## 参数说明（完整）
-### `target` (Target element)
-- UI Label: `Target element`
-- 字段映射 (Field mapping): 序列化键 `target` <-> 界面标签 `Target element`。
-- 控件标签 (Caption): `Target element`。
-- 控件解释 (Widget): 文本输入 `LineEdit`（或可编辑下拉）。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `""`
-- 含义 (Meaning): 目标元素 (target species)。
-- 对输出规模/物理性的影响: 限定被替换或处理的原子种类。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note): `Target element` 可按任务替换为自定义值；建议先用最小样本验证后再批量生成。
+**不加：**
+- 不需要空间选择性 → 用 `Random Doping` 更直接
+- 替换规则无法用 x/y/z 表达式描述（如按近邻配位筛选）
+- 只需要全局组合配比变化 → `Composition Sweep` + `Random Occupancy`
 
-### `replacements` (Replacements)
-- UI Label: `Replacements`
-- 字段映射 (Field mapping): 序列化键 `replacements` <-> 界面标签 `Replacements`。
-- 控件标签 (Caption): `Replacements`。
-- 控件解释 (Widget): 文本输入 `LineEdit`（或可编辑下拉）。
-- 类型/范围 (Type/Range): string (`elem:ratio` list or JSON dict)
-- 默认值 (Default): `""`
-- 含义 (Meaning): 替换配方 (replacement map)，支持 `A:0.7,B:0.3` 或 JSON dict。
-- 对输出规模/物理性的影响: 决定替换后化学组成分布。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note): 按映射语法填写，建议先用简单映射验证后再扩展。
+## 参数说明
 
-### `condition` (Condition)
-- UI Label: `Condition`
-- 字段映射 (Field mapping): 序列化键 `condition` <-> 界面标签 `Condition`。
-- 控件标签 (Caption): `Condition`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): string boolean expression on `x,y,z`
-- 默认值 (Default): `""`
-- 含义 (Meaning): 空间条件表达式 (condition expression)，支持 x/y/z 与逻辑运算。
-- 对输出规模/物理性的影响: 命中区域越宽，替换越全局；越窄，越局域。
-- 怎么判断该开还是该关: 只在你明确知道该字段会命中输入结构时填写；不确定时先用最小样本验证命中情况。
-- 配置建议 (Practical note):
-  - 开启：需要启用 `Condition` 对应行为时开启。
-  - 关闭：希望保持默认/更保守行为时关闭。
+### Target（target）
+类型：`str`。默认：`''`。指定被替换的元素或目标集合。
 
-### `seed` (Seed)
-- UI Label: `Seed`
-- 字段映射 (Field mapping): 序列化键 `seed` <-> 界面标签 `Seed`。
-- 控件标签 (Caption): `Seed`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[0]`
-- 含义 (Meaning): 随机种子值 (random seed value)。
-- 对输出规模/物理性的影响: 只影响随机路径，不改变物理模型本身。
-- 参数联动 / 生效条件: `seed` 只有在 `use_seed=true` 时才真正固定随机路径。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：0（随机）
-  - 平衡：1-99（可复现）
-  - 探索：100-9999（多 seed 对比）
+被替换的元素符号，如 `O`、`Si`。只替换匹配该元素的位点中满足 `condition` 的那部分。
 
-### `mode` (Mode)
-- UI Label: `Mode`
-- 字段映射 (Field mapping): 序列化键 `mode` <-> 界面标签 `Mode`。
-- 控件标签 (Caption): `Mode`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`（显示文本与序列化值可能不同）。
-- 类型/范围 (Type/Range): enum(int)
-- 默认值 (Default): `0`
-- 含义 (Meaning): 操作模式 (operation mode)。
-- 对输出规模/物理性的影响: 改变执行逻辑路径，影响样本分布。
-- 参数联动 / 生效条件: 它决定当前工作流走哪条主分支；先选模式，再填写与该模式对应的字段。
-- 物理直觉 / 典型值: 它决定程序走哪种离散策略；先选对模式，再去调该模式下真正起作用的数值参数。
-- 推荐范围 (Recommended range):
-  - 保守：默认模式先验证
-  - 平衡：按任务切换
-  - 探索：探索模式配审计
+### Replacements（replacements）
+类型：`str`。默认：`''`。指定替换后的元素及其权重。
 
-### 替换输入 Schema (Replacement input schema)
-- `replacements` 优先写成 `Co:0.7,Ni:0.3` 这种逗号+冒号字符串；只有在你明确需要回填内部序列化结果时，才考虑 JSON dict 字符串。
-- `condition` 支持 `x/y/z` 与 `and/or/not` 逻辑表达式。
-- 建议先用 `all` 验证替换路径，再收紧局域条件。
+替换配方，支持两种格式：逗号冒号 `F:0.7,N:0.3` 或 JSON dict `{"F":0.7,"N":0.3}`。比例会被归一化。在命中区域内按比例随机分配替换元素。
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+### Condition（condition）
+类型：`str`。默认：`''`。定义原子筛选条件表达式。
+
+空间条件表达式，支持 x/y/z 变量和基本运算符。不填或填 `all` = 所有 target 原子都符合条件。
+
+变量：`x`、`y`、`z`（原子笛卡尔坐标，单位 A）
+比较：`<`、`>`、`<=`、`>=`、`==`、`!=`
+逻辑：`and`、`or`、`not`
+算术：`+`、`-`、`*`、`/`
+
+典型例子：
+- `z>=8 and z<=10`：替换 z 在 8-10A 范围内的 target 原子
+- `x>5 or y<2`：替换特定 xy 象限内的原子
+- `z<=4`：只替换底层
+
+### Seed（seed）
+类型：`int`。默认：`0`。设置固定随机种子的整数值。
+
+整数。非 0 时固定随机路径，控制多元素替换模式下的分配随机性。`0` 表示每次运行随机。
+
+生效条件：`use_seed=True`。
+
+### Mode（mode）
+类型：`int`。默认：`0`。选择替换规则的预设模板。
+
+整数枚举。`0` = Random 模式（按比例概率随机采样），`1` = Exact 模式（尽量精确匹配比例计数）。
+
+## 推荐预设
+
+### 表面单元素钝化（表面 O→F，窄窗口）
 ```json
 {
   "class": "ConditionalReplaceCard",
@@ -126,14 +97,12 @@
   "target": "O",
   "replacements": "F:1.0",
   "condition": "z>=8 and z<=10",
-  "seed": [
-    101
-  ],
+  "seed": [101],
   "mode": 1
 }
 ```
 
-### 平衡（Balanced）
+### 表面多元素钝化（表面 O→F/N，宽窗口）
 ```json
 {
   "class": "ConditionalReplaceCard",
@@ -141,14 +110,12 @@
   "target": "O",
   "replacements": "F:0.7,N:0.3",
   "condition": "z>=6 and z<=14",
-  "seed": [
-    101
-  ],
+  "seed": [101],
   "mode": 0
 }
 ```
 
-### 激进/探索（Aggressive/Exploration）
+### 全区域多元素替换（所有 O→F/N/Cl，用于探索区）
 ```json
 {
   "class": "ConditionalReplaceCard",
@@ -156,27 +123,31 @@
   "target": "O",
   "replacements": "F:0.4,N:0.3,Cl:0.3",
   "condition": "all",
-  "seed": [
-    101
-  ],
+  "seed": [101],
   "mode": 0
 }
 ```
 
 ## 推荐组合
-- Conditional Replace -> Random Doping: 先做几何门控替换，再做更广泛替位采样。
-- 先明确“目标配比”还是“具体落位”，再决定接 `Composition Sweep`、`Random Occupancy` 还是 `Random Doping`。
-- 涉及 group 或局部位点限制时，可先接 `Group Label` 或规则类卡片再执行替换。
 
-## 常见问题与排查
-- 结果没有变化时，先检查目标元素、规则字符串或 `Comp tag` 来源是否真的命中了输入结构。
-- 如果输出成分偏离预期，优先检查是“目标配比定义”问题，还是“离散落位/随机替换”步骤把分布拉偏。
-- 这组卡片不会自动替你决定工作流分工；需要系统扫配比时先用 `Composition Sweep`，需要真实落位时再接 `Random Occupancy` 或 `Random Doping`。
+- `Group Label` → `Conditional Replace`：先打 group 标签分割区域，再用坐标条件做精细筛选。
+- `Conditional Replace` → `Atomic Perturb`：替换后加坐标噪声，松驰替换引入的局部应力。
+- `Conditional Replace` → `Random Doping`：先做区域选择性替换覆盖表面化学，再做全局替位补样。
 
-## 输出标签 / 元数据变更
-- 该卡片输出的 Config_type 标签模式：
-  - `Repl({...}->{...})`
+## 常见问题
 
-## 可复现性说明
-- `seed=[0]` 一般表示随机路径；固定非零值用于可重复对比。
-- 输入顺序变化会改变样本对应关系。
+**输出 = 输入，没有替换。** `target` 为空，或输入结构中不存在该元素，或 `condition` 把所有候选位点都过滤掉了。先用 `condition=all` 验证替换逻辑，再逐步收紧条件。
+
+**替换了不该替换的位点。** condition 表达式区域范围写错了。检查结构坐标范围，确认上下限对应目标区域。Slab 的真空层可能导致 z 坐标超出预期。
+
+**condition 解析失败。** 检查语法：变量只能用 x/y/z，运算符拼写正确（`and` 非 `AND`，`==` 非 `=`）。
+
+**替换后键长不合理。** 纯化学替换不做结构弛豫。如果键长明显异常，建议后接弛豫计算。
+
+## 输出标签
+
+`Repl(O->F)` / `Repl(O->F,N,Cl)` 格式。仅在确实发生了替换时才写入标签。
+
+## 可复现性
+
+固定非零 `seed` → 相同输入可复现。多元素替换模式下 seed 控制哪个位点分配到哪个替换元素。`seed=0` 表示每次运行随机。

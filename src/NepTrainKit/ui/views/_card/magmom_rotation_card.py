@@ -1,16 +1,12 @@
-﻿"""Card for rotating magnetic moments of selected atoms."""
+"""Card for rotating magnetic moments of selected atoms."""
 
 from __future__ import annotations
 
-import math
-from typing import Iterable
-
-import numpy as np
 from qfluentwidgets import BodyLabel, CheckBox, LineEdit, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.config_type import append_config_tag
-from NepTrainKit.core.magnetism import existing_moment_vectors, normalize_vector, parse_element_set, set_initial_magmoms_safe
+from NepTrainKit.core.cards.magnetism import MagneticMomentRotationOperation, MagneticMomentRotationParams
+from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -126,138 +122,58 @@ class MagneticMomentRotationCard(MakeDataCard):
         self.magnitude_factor_frame.setEnabled(enabled)
 
 
-    @staticmethod
-    def _rotate_vector(vector: np.ndarray, angle_deg: float, rng: np.random.Generator) -> np.ndarray:
-        vec = np.asarray(vector, dtype=float)
-        if not np.any(vec) or angle_deg <= 0:
-            return vec.copy()
+    def create_operation(self):
+        return MagneticMomentRotationOperation()
 
-        axis = rng.normal(size=3)
-        axis_norm = np.linalg.norm(axis)
-        if axis_norm == 0:
-            axis = np.array([0.0, 0.0, 1.0])
-        else:
-            axis = axis / axis_norm
+    def get_params(self) -> MagneticMomentRotationParams:
+        return MagneticMomentRotationParams(
+            elements=self.elements_input.text(),
+            max_angle=float(self.angle_frame.get_input_value()[0]),
+            num_structures=int(self.count_frame.get_input_value()[0]),
+            lift_scalar=self.lift_scalar_checkbox.isChecked(),
+            axis=self.axis_frame.get_input_value(),
+            disturb_magnitude=self.magnitude_checkbox.isChecked(),
+            magnitude_factor=self.magnitude_factor_frame.get_input_value(),
+            use_seed=self.seed_checkbox.isChecked(),
+            seed=int(self.seed_frame.get_input_value()[0]),
+        )
 
-        theta = math.radians(angle_deg)
-        cos_t = math.cos(theta)
-        sin_t = math.sin(theta)
-        ux, uy, uz = axis
-        rotation_matrix = np.array([
-            [cos_t + ux * ux * (1 - cos_t), ux * uy * (1 - cos_t) - uz * sin_t, ux * uz * (1 - cos_t) + uy * sin_t],
-            [uy * ux * (1 - cos_t) + uz * sin_t, cos_t + uy * uy * (1 - cos_t), uy * uz * (1 - cos_t) - ux * sin_t],
-            [uz * ux * (1 - cos_t) - uy * sin_t, uz * uy * (1 - cos_t) + ux * sin_t, cos_t + uz * uz * (1 - cos_t)],
-        ])
-        return rotation_matrix @ vec
-
-    @staticmethod
-    def _rescale_vector(vector: np.ndarray, target_length: float) -> np.ndarray:
-        vec = np.asarray(vector, dtype=float)
-        current = np.linalg.norm(vec)
-        if current == 0 or target_length == 0:
-            return np.zeros_like(vec)
-        return vec / current * target_length
+    def set_params(self, params: MagneticMomentRotationParams) -> None:
+        self.elements_input.setText(params.elements)
+        self.angle_frame.set_input_value([float(params.max_angle)])
+        self.count_frame.set_input_value([int(params.num_structures)])
+        self.lift_scalar_checkbox.setChecked(bool(params.lift_scalar))
+        self.axis_frame.set_input_value([float(v) for v in params.axis])
+        self.magnitude_checkbox.setChecked(bool(params.disturb_magnitude))
+        self.magnitude_factor_frame.set_input_value([float(v) for v in params.magnitude_factor])
+        self.seed_checkbox.setChecked(bool(params.use_seed))
+        self.seed_frame.set_input_value([int(params.seed)])
+        self.seed_frame.setEnabled(self.seed_checkbox.isChecked())
+        self._toggle_magnitude_inputs(self.magnitude_checkbox.checkState())
 
     def process_structure(self, structure):
-        elements = parse_element_set(self.elements_input.text())
-        max_angle = float(self.angle_frame.get_input_value()[0])
-        num_structures = int(self.count_frame.get_input_value()[0])
-        disturb_magnitude = self.magnitude_checkbox.isChecked()
-        min_factor = float(self.magnitude_factor_frame.get_input_value()[0])
-        max_factor = float(self.magnitude_factor_frame.get_input_value()[1])
-        if min_factor > max_factor:
-            min_factor, max_factor = max_factor, min_factor
-
-        if num_structures <= 0:
-            return [structure.copy()]
-
-        raw_magmoms = np.asarray(structure.get_initial_magnetic_moments(), dtype=float)
-        if raw_magmoms.size == 0:
-            return [structure.copy()]
-
-        is_vector = raw_magmoms.ndim == 2 and raw_magmoms.shape == (len(structure), 3)
-        lift_scalar = self.lift_scalar_checkbox.isChecked()
-        can_rotate = max_angle > 0 and (is_vector or lift_scalar)
-
-        axis = np.array([float(v) for v in self.axis_frame.get_input_value()], dtype=float)
-        axis = normalize_vector(axis)
-        base_vectors = existing_moment_vectors(structure, axis=axis, lift_scalar=True)
-        if base_vectors is None:
-            return [structure.copy()]
-
-        base_seed = int(self.seed_frame.get_input_value()[0]) if self.seed_checkbox.isChecked() else None
-        rng = np.random.default_rng(base_seed)
-
-        if not elements:
-            symbols: Iterable[str] = structure.get_chemical_symbols()
-            elements = set(symbols)
-
-        results = []
-        symbols = structure.get_chemical_symbols()
-
-        for _ in range(num_structures):
-            new_structure = structure.copy()
-            moment_array = np.array(base_vectors, copy=True)
-
-            for idx, symbol in enumerate(symbols):
-                if symbol not in elements:
-                    continue
-
-                if can_rotate:
-                    angle = float(rng.uniform(0.0, max_angle))
-                    base_vec = base_vectors[idx]
-                    rotated = self._rotate_vector(base_vec, angle, rng=rng)
-                    if disturb_magnitude:
-                        original_length = np.linalg.norm(base_vec)
-                        scale = float(rng.uniform(min_factor, max_factor))
-                        target_length = original_length * scale
-                        rotated = self._rescale_vector(rotated, target_length)
-                    moment_array[idx] = rotated
-                elif disturb_magnitude:
-                    scale = float(rng.uniform(min_factor, max_factor))
-                    moment_array[idx] = moment_array[idx] * scale
-
-            set_initial_magmoms_safe(new_structure, moment_array)
-
-            label = "MMR" if can_rotate else "MMS"
-            details = []
-            if can_rotate:
-                details.append(f"a={max_angle:.1f}")
-            if disturb_magnitude:
-                details.append(f"s={min_factor:.2f}-{max_factor:.2f}")
-            tag = label + (("(" + ",".join(details) + ")") if details else "")
-            append_config_tag(new_structure, tag)
-            results.append(new_structure)
-
-        return results
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
-        data_dict = super().to_dict()
-        data_dict["elements"] = self.elements_input.text()
-        data_dict["max_angle"] = self.angle_frame.get_input_value()
-        data_dict["num_structures"] = self.count_frame.get_input_value()
-        data_dict["lift_scalar"] = self.lift_scalar_checkbox.isChecked()
-        data_dict["axis"] = self.axis_frame.get_input_value()
-        data_dict["disturb_magnitude"] = self.magnitude_checkbox.isChecked()
-        data_dict["magnitude_factor"] = self.magnitude_factor_frame.get_input_value()
-        data_dict["use_seed"] = self.seed_checkbox.isChecked()
-        data_dict["seed"] = self.seed_frame.get_input_value()
-
-        return data_dict
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
 
     def from_dict(self, data_dict):
         super().from_dict(data_dict)
-        self.elements_input.setText(data_dict.get("elements", ""))
-        if "max_angle" in data_dict:
-            self.angle_frame.set_input_value(data_dict["max_angle"])
-        if "num_structures" in data_dict:
-            self.count_frame.set_input_value(data_dict["num_structures"])
-        self.lift_scalar_checkbox.setChecked(bool(data_dict.get("lift_scalar", True)))
-        self.axis_frame.set_input_value(data_dict.get("axis", [0.0, 0.0, 1.0]))
-        self.magnitude_checkbox.setChecked(data_dict.get("disturb_magnitude", True))
-        if "magnitude_factor" in data_dict:
-            self.magnitude_factor_frame.set_input_value(data_dict["magnitude_factor"])
-        self.seed_checkbox.setChecked(bool(data_dict.get("use_seed", False)))
-        self.seed_frame.set_input_value(data_dict.get("seed", [0]))
-
-        self._toggle_magnitude_inputs(self.magnitude_checkbox.checkState())
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = MagneticMomentRotationParams(**raw_params)
+        else:
+            params = MagneticMomentRotationParams(
+                elements=data_dict.get("elements", ""),
+                max_angle=data_dict.get("max_angle", [10.0])[0],
+                num_structures=data_dict.get("num_structures", [5])[0],
+                lift_scalar=data_dict.get("lift_scalar", True),
+                axis=data_dict.get("axis", [0.0, 0.0, 1.0]),
+                disturb_magnitude=data_dict.get("disturb_magnitude", True),
+                magnitude_factor=data_dict.get("magnitude_factor", [0.95, 1.05]),
+                use_seed=data_dict.get("use_seed", False),
+                seed=data_dict.get("seed", [0])[0],
+            )
+        self.set_params(params)

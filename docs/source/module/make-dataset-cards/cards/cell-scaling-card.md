@@ -1,236 +1,164 @@
-<!-- card-schema: {"card_name": "Lattice Perturb", "source_file": "src/NepTrainKit/ui/views/_card/cell_scaling_card.py", "serialized_keys": ["engine_type", "perturb_angle", "organic", "scaling_condition", "num_condition", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Lattice Perturb", "source_file": "src/NepTrainKit/ui/views/_card/cell_scaling_card.py", "serialized_keys": ["params"]} -->
 
 # 晶格扰动（Lattice Perturb）
 
-`Group`: `Lattice`  
-`Class`: `CellScalingCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/cell_scaling_card.py`
+`Group`: `Lattice` | `Class`: `CellScalingCard`
 
 ## 功能说明
-对晶胞尺度与坐标做轻量随机扰动（lattice perturbation），用于补充近平衡态的几何变化样本。
 
-它最适合的场景是：为已弛豫晶体补充轻度体积缩放与少量晶格噪声。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+对晶胞尺度和角度做轻量随机扰动，为近平衡态补充几何变化样本。每个输出结构在原始晶格基础上引入独立随机的长度缩放和（可选的）角度缩放。
 
-### 关键公式 (Core equations)
-$$f_k\in[1-m,1+m],\quad a_i'=f_i a_i$$
-$$\theta_j'=g_j\theta_j\quad(\text{when }perturb\_angle=true)$$
-$$\mathbf{b}'=[b'\cos\gamma',\ b'\sin\gamma',\ 0]$$
-$$c_x'=c'\cos\beta',\quad c_y'=\frac{c'(\cos\alpha'-\cos\beta'\cos\gamma')}{\sin\gamma'},\quad c_z'=\sqrt{c'^2-c_x'^2-c_y'^2}$$
-$$\mathbf{c}'=[c_x',\ c_y',\ c_z']$$
+$$f_k\in[1-m,1+m],\quad a_i'=f_i a_i,\quad \theta_j'=g_j\theta_j$$
 
 ## 操作示例
-### 场景：为已弛豫晶体补充轻度体积缩放与少量晶格噪声
 
-**输入：** 一个体相晶体或分子晶体，基态晶胞参数已经可信
+### 场景：模型预测热膨胀系数偏差超过 30%
 
-**目标：** 生成围绕平衡体积附近的晶格尺度变化样本，用于体积响应或热膨胀附近训练
+你在 Si 上训练了一个 NEP 模型，弛豫态的能量和力精度都过关，但用准谐近似算出来的热膨胀系数比实验值大了 30%。诊断发现：训练集里所有结构都处在同一平衡体积，模型对体积轻微变化时的能量梯度完全是外推出来的——外推不准。
+
+**诊断思路：** 热膨胀系数取决于声子频率对体积的导数，归根结底需要模型在平衡体积附近有足够的体积-能量采样点。纯静态弛豫结构只有一个体积，不够。解决办法是围绕平衡晶格随机生成一批稍微膨胀或收缩的结构，用少量白噪声覆盖近邻体积空间。
+
+**输入：** 一个弛豫好的 Si 单胞
+
+**目标：** 围绕平衡体积生成 30 个随机晶格扰动的结构，缩放幅度 4%，覆盖 ±4% 的体积范围
 
 **参数设置：**
-- `scaling_condition` 从 0.01-0.05 这一类小幅尺度变化开始
-- `num_condition` 先用 10-30 检查分布，再放大
-- `perturb_angle=false` 时先只看长度变化，避免角度扰动混入
+- `max_scaling` = `0.04` （4% 缩放幅度）
+- `max_num` = `30`
+- `perturb_angle` = `false` （先只看长度变化，避免角度扰动混入）
 
-**输出：** 一批带不同晶格尺度标签的结构，原子内部拓扑应基本保持稳定
+**输出：** 30 个结构，每个的晶格长度在原始值的 96%~104% 之间随机分布，原子分数坐标随晶格同步缩放
 
-**怎么验证结果合理：**
-- 检查体积变化是否落在目标窗口内
-- 最近邻距离不要被压缩到明显短键区间
-- 若体积变化过大，先回调 `scaling_condition`
+**怎么验证训练集质量改善：**
+- 重训后重新跑准谐近似计算热膨胀系数，应更接近实验值
+- 检查输出结构的体积分布直方图：应均匀覆盖 [V*(1-0.04), V*(1+0.04)]，不要在两端堆积
+- 如果改善不够，增大 `max_scaling` 到 0.06~0.08，同时换 Sobol 引擎覆盖更均匀
+- 抽查最短键长：如果 4% 缩放后最短键比 DFT 参考键长短了 > 0.2A，说明缩放过大，回调 `max_scaling`
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 模型对小体积变化或轻微几何噪声敏感。
-- 目标任务 (Target objective): 扩展近似热涨落区域的结构覆盖。
-- 建议添加条件 (Add-it trigger): 需要比静态结构更密集的微扰样本。
-- 不建议添加条件 (Avoid trigger): 结构已经明显不稳定或接近相变边界。
-> 物理提示 (Physics caution): 重点检查体积变化、晶胞条件数和最近邻距离，避免把几何畸变直接放大到非物理区间。
+### 什么时候加这张卡、什么时候不加
 
-## 输入前提
-- 输入结构应先完成基本几何清洗（无明显重叠）。
-- 若输入含有机分子，必须开启 `organic` 以启用团簇识别和刚性移动。
+**加：**
+- 模型对体积变化敏感，体积-能量曲线或热膨胀相关性质偏差大
+- 训练集中所有结构体积过于集中，缺少近平衡体积散布
+- 需要模型在 ±5% 体积范围内有内插能力
 
-## 参数说明（完整）
-### `engine_type` (Engine Type)
-- UI Label: `Engine Type`
-- 字段映射 (Field mapping): 序列化键 `engine_type` <-> 界面标签 `Engine Type`。
-- 控件标签 (Caption): `Engine Type`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`（显示文本与序列化值可能不同）。
-- 类型/范围 (Type/Range): enum(int): `0=Sobol`, `1=Uniform`
-- 默认值 (Default): `1`
-- 含义 (Meaning): 随机引擎类型 (random engine type)，`0=Sobol`，`1=Uniform`。
-- 对输出规模/物理性的影响: Uniform 生成更快；Sobol 在样本较少时覆盖更均匀。样本规模足够大时，两者分布差异通常会缩小。
-- 物理直觉 / 典型值: 它决定程序走哪种离散策略；先选对模式，再去调该模式下真正起作用的数值参数。
-- 推荐范围 (Recommended range):
-  - 保守：小样本优先 Sobol
-  - 平衡：先用 Uniform 快速试跑再抽样对比 Sobol
-  - 探索：大样本阶段按速度与复现需求择优
+**不加：**
+- 只需要特定方向、特定幅度的应变 → 用 `Lattice Strain` 更精确控制
+- 体系本身刚度极大、体积变化无物理意义（如高压相），扰动只产生无意义结构
+- 输入结构含有机分子但没开 `identify_organic` —— 分子内键会被错误拉伸
 
-### `perturb_angle` (Perturb Angle)
-- UI Label: `Perturb Angle`
-- 字段映射 (Field mapping): 序列化键 `perturb_angle` <-> 界面标签 `Perturb Angle`。
-- 控件标签 (Caption): `Perturb Angle`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `true`
-- 含义 (Meaning): 角度扰动开关 (perturb angle switch)。
-- 对输出规模/物理性的影响: 开启后除尺度变化外还会引入晶格角度变化，覆盖更广但失稳风险更高。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note):
-  - 开启：需要启用 `Perturb Angle` 对应行为时开启。
-  - 关闭：希望保持默认/更保守行为时关闭。
+## 参数说明
 
-### `organic` (Organic)
-- UI Label: `Organic`
-- 字段映射 (Field mapping): 序列化键 `organic` <-> 界面标签 `Organic`。
-- 控件标签 (Caption): `Organic`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 有机团簇识别与刚性移动开关 (organic cluster rigid mode)。
-- 对输出规模/物理性的影响: 开启后先识别有机团簇，扰动时对有机分子做刚性整体移动，减少分子内键长/拓扑被破坏；输入含有机分子时应开启。
-- 怎么判断该开还是该关: 只有当你明确知道这个开关会改变当前工作流目标时才开启；不确定时先保持默认并用小样本验证。
-- 配置建议 (Practical note):
-  - 开启：输入包含有机分子时必须开启；会先识别团簇并按分子刚性整体移动。
-  - 关闭：仅在确认为纯无机体系时关闭。
+### Engine Type（engine_type）
+类型：`int`。默认：`1`。选择随机或准随机采样引擎。
 
-### `scaling_condition` (Scaling Condition)
-- UI Label: `Scaling Condition`
-- 字段映射 (Field mapping): 序列化键 `scaling_condition` <-> 界面标签 `Scaling Condition`。
-- 控件标签 (Caption): `Scaling Condition`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): float（单值输入）
-- 默认值 (Default): `[0.04]`
-- 含义 (Meaning): 最大缩放幅度系数 `m` (max scaling ratio)。取值为 `0-1` 的比例值；例如 `0.04` 表示 `4%`。
-- 对输出规模/物理性的影响: 长度/角度因子按 `1±m` 采样；例如 `m=0.04` 时，晶格长度与角度扰动幅度约为 `±4%`。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：0.01-0.03（约 1%-3%）
-  - 平衡：0.03-0.06（约 3%-6%）
-  - 探索：0.06-0.1（约 6%-10%，需严格质检）
+随机引擎。`0` = Sobol 序列，少量样本时覆盖更均匀；`1` = 均匀随机，生成更快。样本数 ≥ 50 时两者差异不大；≤ 20 时优先 Sobol。
 
-### `num_condition` (Num Condition)
-- UI Label: `Num Condition`
-- 字段映射 (Field mapping): 序列化键 `num_condition` <-> 界面标签 `Num Condition`。
-- 控件标签 (Caption): `Num Condition`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[50]`
-- 含义 (Meaning): 每个输入结构的晶格扰动采样数 (samples per input structure)。
-- 对输出规模/物理性的影响: 该卡片主要改变晶格尺度/角度，原子坐标会随晶格同步缩放；单纯增大该值会快速放大数据量，但微观局域多样性提升有限。细粒度多样性建议主要由 `Atomic Perturb` 等原子级扰动补充。
-- 物理直觉 / 典型值: 它主要决定每帧会扩出多少个结构，直接影响后续计算预算与重复率。
-- 推荐范围 (Recommended range):
-  - 保守：8-20（先验证分布与质检流程）
-  - 平衡：20-50（常规训练覆盖）
-  - 探索：50-100（仅在明确需要更多晶格态时，建议联用 Atomic Perturb）
+### Max Scaling（max_scaling）
+类型：`float`。默认：`0.04`。设置晶格长度或角度扰动的最大幅度。
 
-### `use_seed` (Use Seed)
-- UI Label: `Use Seed`
-- 字段映射 (Field mapping): 序列化键 `use_seed` <-> 界面标签 `Use Seed`。
-- 控件标签 (Caption): `Use Seed`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 是否启用固定随机种子 (deterministic seed switch)。
-- 对输出规模/物理性的影响: 开启后可复现实验；关闭后每次采样分布会变化。
-- 怎么判断该开还是该关: 做可复现实验或要对比不同参数时开启；纯探索阶段可以先关闭以增加随机覆盖。
-- 配置建议 (Practical note):
-  - 开启：需要可复现对比时开启。
-  - 关闭：探索阶段可关闭以增加随机覆盖。
+最大缩放幅度系数 `m`。晶格长度在 `[1-m, 1+m]` 内均匀采样。若 `perturb_angle=true`，角度也在同样相对范围内采样。0.01~0.03 适合补近平衡声子区，0.04~0.06 适合热膨胀覆盖，0.08+ 需抽查最近邻距离防止非物理键长。
 
-### `seed` (Seed)
-- UI Label: `Seed`
-- 字段映射 (Field mapping): 序列化键 `seed` <-> 界面标签 `Seed`。
-- 控件标签 (Caption): `Seed`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[0]`
-- 含义 (Meaning): 随机种子值 (random seed value)。
-- 对输出规模/物理性的影响: 只影响随机路径，不改变物理模型本身。
-- 参数联动 / 生效条件: `seed` 只有在 `use_seed=true` 时才真正固定随机路径。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：0（随机）
-  - 平衡：1-99（可复现）
-  - 探索：100-9999（多 seed 对比）
+### Max Num（max_num）
+类型：`int`。默认：`50`。设置扰动或采样结构的输出数量。
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+每输入帧生成的扰动样本数。20~30 足够覆盖 ±4% 体积空间的 3D 长度自由度；50~100 适用于同时扰动角度的 6D 空间。注意这是随机采样不是系统网格——增大此值提高的是覆盖密度而非覆盖范围。
+
+### Perturb Angle（perturb_angle）
+类型：`bool`。默认：`True`。决定是否同时扰动晶格角度。
+
+是否同时扰动晶格角度（alpha/beta/gamma）。开启后角度在原始值的 `[1-m, 1+m]` 倍范围内随机缩放——注意这是角度值的乘性缩放，不是加性偏移。非正交晶格体系（单斜、三斜）建议开启；正交或更高对称晶系可以先关掉，长度覆盖够用再加。
+
+### Identify Organic（identify_organic）
+类型：`bool`。默认：`False`。决定是否识别有机分子并保护内部几何。
+
+开启后识别有机分子团簇，扰动时有机分子做刚性整体移动。分子晶体（MOF、有机半导体）必须开，否则分子内键长会被晶格缩放破坏。纯无机体系关掉以节省计算。
+
+### Use Seed（use_seed）
+类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
+
+固定随机种子。需要对比实验或可复现输出时勾选。纯探索阶段可关闭以增加随机覆盖。
+
+### Seed（seed）
+类型：`int`。默认：`0`。设置固定随机种子的整数值。
+
+随机种子值。仅 `use_seed=true` 时生效。不同 seed 产生不同扰动分布。
+
+生效条件：`use_seed=True`。
+
+## 推荐预设
+
+### 近平衡声子覆盖（max_scaling=2%，仅长度，Sobol）
 ```json
 {
   "class": "CellScalingCard",
   "check_state": true,
-  "engine_type": 0,
-  "perturb_angle": false,
-  "organic": false,
-  "scaling_condition": [
-    0.01
-  ],
-  "num_condition": [
-    20
-  ],
-  "use_seed": false,
-  "seed": [
-    0
-  ]
+  "params": {
+    "engine_type": 0,
+    "max_scaling": 0.02,
+    "max_num": 30,
+    "perturb_angle": false,
+    "identify_organic": false,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
-### 平衡（Balanced）
+### 热膨胀 + 角度覆盖（max_scaling=5%，长度+角度，50 样本）
 ```json
 {
   "class": "CellScalingCard",
   "check_state": true,
-  "engine_type": 0,
-  "perturb_angle": false,
-  "organic": false,
-  "scaling_condition": [
-    0.03
-  ],
-  "num_condition": [
-    20
-  ],
-  "use_seed": false,
-  "seed": [
-    0
-  ]
+  "params": {
+    "engine_type": 1,
+    "max_scaling": 0.05,
+    "max_num": 50,
+    "perturb_angle": true,
+    "identify_organic": false,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
-### 激进/探索（Aggressive/Exploration）
+### 大范围探索（max_scaling=8%，100 样本，含有机保护）
 ```json
 {
   "class": "CellScalingCard",
   "check_state": true,
-  "engine_type": 0,
-  "perturb_angle": true,
-  "organic": false,
-  "scaling_condition": [
-    0.08
-  ],
-  "num_condition": [
-    20
-  ],
-  "use_seed": true,
-  "seed": [
-    0
-  ]
+  "params": {
+    "engine_type": 0,
+    "max_scaling": 0.08,
+    "max_num": 100,
+    "perturb_angle": true,
+    "identify_organic": true,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
 ## 推荐组合
-- Lattice Perturb -> Atomic Perturb: 将晶格扰动与原子扰动联用。
-- 作为后续缺陷、表面或磁性卡片的母胞准备步骤。
-- 若扩胞后结构规模明显上升，建议在流程末端再接 `FPS Filter` 控制代表性样本数。
 
-## 常见问题与排查
-- 输出为空或远少于预期时，先检查各范围参数是否真的形成了有效扫描组合；很多这类卡片在参数只给定单点时只会输出很少的结构。
-- 如果结构明显不合理，先看体积、晶胞角和最近邻距离，再把主控幅度或步长回调到更小的量级。
-- 模式冲突时以当前 UI 状态和代码分支为准；导入旧 JSON 后如果发现多个主模式字段同时存在，建议手工确认只保留一条主路径。
+- `Lattice Strain` -> `Lattice Perturb`：先系统扫特定方向应变，再补充随机近邻散布
+- `Lattice Perturb` -> `Atomic Perturb`：晶格扰动后再加原子级坐标噪声
+- `Super Cell` -> `Lattice Perturb`：扩胞后在更大尺度上做晶格扰动
 
-## 输出标签 / 元数据变更
-- 该卡片输出的 Config_type 标签模式：
-  - `LSc(max={...},{...})`
+## 常见问题
 
-## 可复现性说明
-- 设置 `use_seed=true` 且固定 `seed`，可在相同输入顺序下复现实验。
-- 上游随机卡片或输入顺序变化仍会改变最终样本集合。
-- 建议把 seed 与 pipeline 配置一起版本化记录。
+**输出全是相同结构或分布极窄。** `max_scaling` 是否太小（如 0.001）？或者 `max_num` 太小导致偶然均匀。先增大 `max_scaling` 到 0.02 以上，增大 `max_num` 到 20 以上。
+
+**分子晶体输出中键被拉断。** `identify_organic` 没开。对于 MOF、有机晶体等，必须开启此开关，否则晶格缩放会直接拉伸分子内键。
+
+**角度扰动后结构角度变化不符合预期。** 注意此卡的角度扰动是乘性缩放（原始角度乘以随机因子），不是加性偏移。如果原始角度是 90 度、`max_scaling=0.04`，新角度在 86.4~93.6 度之间。
+
+**Sobol 和 Uniform 输出差异大。** `max_num` 较小时（< 20）Sobol 覆盖明显更均匀。样本数 ≥ 50 后两者差异缩小。如果在意复现性，固定 `engine_type` + `use_seed`。
+
+## 输出标签
+
+`LSc(max={max_scaling},{U|S})` —— `U` 表示 Uniform，`S` 表示 Sobol。
+
+## 可复现性
+
+勾选 `use_seed` + 固定 `seed` → 相同输入可复现。注意 Sobol 引擎的 scramble 也受 seed 控制，给定 seed 后序列完全确定。

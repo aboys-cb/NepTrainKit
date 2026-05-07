@@ -1,154 +1,147 @@
-<!-- card-schema: {"card_name": "FPS Filter", "source_file": "src/NepTrainKit/ui/views/_card/fps_filter_card.py", "serialized_keys": ["nep_path", "num_condition", "min_distance_condition"]} -->
+<!-- card-schema: {"card_name": "FPS Filter", "source_file": "src/NepTrainKit/ui/views/_card/fps_filter_card.py", "serialized_keys": ["params"]} -->
 
 # FPS 过滤（FPS Filter）
 
-`Group`: `Filter`  
-`Class`: `FPSFilterDataCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/fps_filter_card.py`
+`Group`: `Filter` | `Class`: `FPSFilterDataCard`
 
 ## 功能说明
-基于特征距离执行最远点采样（FPS），用于在完成物理清洗后压缩冗余并保留多样性。
 
-它最适合的场景是：从已经生成好的大批量结构中挑出代表性子集。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+基于 NEP 描述符空间的最远点采样（FPS），从大批量结构中挑选代表性子集，去除冗余同时保留多样性。需要提供一个 NEP 模型文件（如内置的 `nep89.txt` 或你自己训练的模型）用于生成描述符。
 
-### 关键公式 (Core equations)
-$$\mathbf{d}_i=\mathrm{NEP89}(x_i)$$
+$$\mathbf{d}_i=\mathrm{NEP}(\text{structure}_i)$$
+
 $$i_t=\arg\max_j\ \min_{i\in S_{t-1}}\lVert\mathbf{d}_j-\mathbf{d}_i\rVert_2,\quad S_t=S_{t-1}\cup\{i_t\}$$
-$$\min_{i\in S_t,j\in S_t,i\ne j}\lVert\mathbf{d}_i-\mathbf{d}_j\rVert_2\ge d_{\min}\ (\text{if feasible})$$
 
 ## 操作示例
-### 场景：从已经生成好的大批量结构中挑出代表性子集
 
-**输入：** 一个规模已经较大的候选数据集，以及可用的 `nep89` 模型路径
+### 场景：2000 个候选结构训练出来效果不如 200 个精选的
 
-**目标：** 在不完全手工筛选的前提下，去掉明显重复的结构，只保留覆盖面更好的代表帧
+你用多张生成卡产出了 2000 个候选结构，全部丢进训练集跑了 DFT 计算。重训后模型精度比只用前 200 个结构手动挑的版本还差——2000 个结构里大量重复构型，有效多样性反而被稀释了。
+
+**诊断思路：** 卡片生成的候选集有大量统计冗余。比如 `Random Vacancy` 生成了 200 个空位结构，但从描述符角度看可能只有 15 种真正不同的局域环境。FPS 可以在描述符空间里按"最远优先"的原则挑出最不相似的子集，保留多样性去掉冗余。
+
+**输入：** 2000 个候选结构，以及一个可用的 `nep89.txt` 模型文件
+
+**目标：** 从 2000 个中挑出 200 个最具代表性的结构
 
 **参数设置：**
-- `nep_path` 指向可用的模型文件
-- `num_condition` 先限定想保留的目标数量
-- `min_distance_condition` 用来控制样本间最小描述符距离
+- `Nep Path` = 指向你的 NEP 模型文件路径
+- `Num Condition` = `[200]`
+- `Min Distance Condition` = `[0.01]`
 
-**输出：** 数量更少但分布更均匀的代表性结构子集
+**输出：** 200 个结构，在描述符空间中两两距离尽可能大，覆盖输入集的多样性
 
-**怎么验证结果合理：**
-- 确认输出数量接近 `num_condition`
-- 抽查保留下来的结构是否确实覆盖了不同局部环境
-- 若输出过少，先放宽 `min_distance_condition` 或检查 `nep_path` 是否可用
+**怎么验证挑选质量：**
+- 重训后用同一组测试集对比：FPS 精选 200 个 vs 随机抽 200 个，前者精度应更高
+- 如果 200 个不够，增大 `num_condition` 到 500
+- 如果挑出的结构仍有重复感，增大 `min_distance_condition` 到 0.05~0.1
+- 注意：FPS 只挑不造——如果输入池本身没有某类构型，FPS 不会凭空变出来
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 数据量大但冗余高，训练收益下降。
-- 目标任务 (Target objective): 在删除非物理结构后保留代表性结构分布。
-- 建议添加条件 (Add-it trigger): 已完成 `nep89` 预测筛查并剔除不合理结构。
-- 不建议添加条件 (Avoid trigger): 仍处于样本生成早期或尚未完成物理清洗。
-> 物理提示 (Physics caution): 过滤阈值只是选样规则，不是物理约束；先确认输入池本身已经过基本清洗。
+### 什么时候加这张卡、什么时候不加
 
-## 输入前提
-- 先导出 xyz 并在第一个模块用 `nep89` 预测，删除不合理结构后再执行 FPS。
-- 确认描述符模型路径 `nep_path` 有效。
-- 先在小集试 `min_distance_condition` 对保留率影响。
+**加：**
+- 生成链条产生了大量结构（>500），需要去冗余
+- 怀疑训练集有大量重复/高度相似的构型
+- 需要在保持覆盖的前提下压缩训练集体积
 
-## 参数说明（完整）
-### `nep_path` (Nep Path)
-- UI Label: `Nep Path`
-- 字段映射 (Field mapping): 序列化键 `nep_path` <-> 界面标签 `Nep Path`。
-- 控件标签 (Caption): `Nep Path`。
-- 控件解释 (Widget): 文本输入 `LineEdit`（或可编辑下拉）。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `"src/NepTrainKit/Config/nep89.txt"`
-- 含义 (Meaning): 特征模型路径 (NEP model path)。
-- 对输出规模/物理性的影响: 用于距离特征计算，路径失效会导致过滤退化。
-- 怎么判断该开还是该关: 只在你明确知道该字段会命中输入结构时填写；不确定时先用最小样本验证命中情况。
-- 配置建议 (Practical note): 用于生成描述符，默认使用 `src/NepTrainKit/Config/nep89.txt`，可替换为你自己的模型路径。
+**不加：**
+- 还在生成阶段，结构数量很少（<50）
+- 输入池本身还没经过物理清洗（如已用 NEP 预筛、剔除异常结构）
+- 模型还没训练出来——FPS 需要一个可用的 NEP 模型来生成描述符
 
-### `num_condition` (Num Condition)
-- UI Label: `Num Condition`
-- 字段映射 (Field mapping): 序列化键 `num_condition` <-> 界面标签 `Num Condition`。
-- 控件标签 (Caption): `Num Condition`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[100]`
-- 含义 (Meaning): 采样数量控制 (sample count control)。
-- 对输出规模/物理性的影响: 主要影响输出规模与耗时，不是幅度主控参数。
-- 物理直觉 / 典型值: 它主要决定每帧会扩出多少个结构，直接影响后续计算预算与重复率。
-- 推荐范围 (Recommended range):
-  - 保守：50-100
-  - 平衡：100-200
-  - 探索：200-500
+## 参数说明
+### Nep Path（nep_path）
+类型：`str`。默认：`MISSING`。指定用于结构 fingerprint 或 FPS 的 NEP 模型路径。
 
-### `min_distance_condition` (Min Distance Condition)
-- UI Label: `Min Distance Condition`
-- 字段映射 (Field mapping): 序列化键 `min_distance_condition` <-> 界面标签 `Min Distance Condition`。
-- 控件标签 (Caption): `Min Distance Condition`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): float（单值输入）
-- 默认值 (Default): `[0.01]`
-- 含义 (Meaning): 最小特征距离阈值 (minimum descriptor distance)。
-- 对输出规模/物理性的影响: 阈值越大去冗余越强，保留样本越少。
-- 物理直觉 / 典型值: 阈值越保守，越能避免重叠或错配，但输出数量也往往更快下降。
-- 推荐范围 (Recommended range):
-  - 保守：0.05-0.06
-  - 平衡：0.05-0.06
-  - 探索：0.05-0.06（仅探索）
+用于生成 NEP 描述符的模型文件路径。必须是一个可用的 NEP 模型文件（如 `nep.txt` 或内置 `nep89.txt`）。路径为空或文件不存在时卡片报错。
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+### N Samples（n_samples）
+类型：`int`。默认：`100`。设置 FPS 过滤后保留的结构数量。
+
+物理直觉：这是最终保留的代表结构数，不是生成数。DFT 预算固定时直接设为可计算数量；太小会丢掉稀有构型。
+
+### Min Distance（min_distance）
+类型：`float`。默认：`0.01`。设置新原子或随机坐标与现有原子的最小距离约束。
+
+物理直觉：descriptor 空间最小距离。值越大去重越强；设太大会过早停止，设太小会保留近重复结构。
+
+### Backend（backend）
+类型：`str`。默认：`'auto'`。选择 fingerprint 计算后端。
+
+物理直觉：`auto` 让程序选择可用 NEP 后端；只有在调试性能或后端差异时才固定具体后端。
+
+### Batch Size（batch_size）
+类型：`int`。默认：`1000`。设置 descriptor 批处理大小。
+
+物理直觉：只影响 descriptor 计算吞吐和内存。GPU/大体系可调大，内存不足或模型很大时调小。
+
+## 推荐预设
+
+### 轻度去重（保留 100 个，min_dist 0.01）
 ```json
 {
   "class": "FPSFilterDataCard",
   "check_state": true,
-  "nep_path": "",
-  "num_condition": [
-    10
-  ],
-  "min_distance_condition": [
-    0.001
-  ]
+  "params": {
+    "nep_path": "path/to/nep.txt",
+    "n_samples": 100,
+    "min_distance": 0.01,
+    "backend": "auto",
+    "batch_size": 1000
+  }
 }
 ```
 
-### 平衡（Balanced）
+### 常规去重（保留 200 个，min_dist 0.03）
 ```json
 {
   "class": "FPSFilterDataCard",
   "check_state": true,
-  "nep_path": "",
-  "num_condition": [
-    20
-  ],
-  "min_distance_condition": [
-    0.001
-  ]
+  "params": {
+    "nep_path": "path/to/nep.txt",
+    "n_samples": 200,
+    "min_distance": 0.03,
+    "backend": "auto",
+    "batch_size": 1000
+  }
 }
 ```
 
-### 激进/探索（Aggressive/Exploration）
+### 强去重（保留 50 个，min_dist 0.06）
 ```json
 {
   "class": "FPSFilterDataCard",
   "check_state": true,
-  "nep_path": "",
-  "num_condition": [
-    60
-  ],
-  "min_distance_condition": [
-    0.001
-  ]
+  "params": {
+    "nep_path": "path/to/nep.txt",
+    "n_samples": 50,
+    "min_distance": 0.06,
+    "backend": "auto",
+    "batch_size": 1000
+  }
 }
 ```
 
 ## 推荐组合
-- 任意生成分支 -> 本卡: 建议把下采样放在分支末端，统一控制导出冗余。
-- Card Group -> 本卡（组外）: 先汇总分支结果，再执行距离约束采样，避免组内依赖混乱。
-- 过滤卡尽量放在生成链末端，不要放在结构还没展开之前。
 
-## 常见问题与排查
-- 输出过少时，通常是距离阈值太严、目标数量太小，或模型路径/输入数据本身存在问题。
-- 如果筛选后的代表性不好，先回头检查前一阶段的数据分布，再调整筛选阈值，而不是只继续压缩数量。
-- 过滤卡只负责“选”，不负责“造”；上游数据本身不合理时，过滤不会自动把它变成高质量数据。
+- 任意生成链 → `NEP Dataset Display` 清洗 → `FPS Filter`：先去掉明显坏结构，再做代表性筛选
+- `FPS Filter` → 导出 DFT 计算：控制进入 DFT 计算的结构数量，节省计算资源
+- 多分支汇总后 → `FPS Filter`：先汇总各分支输出，再统一挑选
 
-## 输出标签 / 元数据变更
-- 该卡片本身不新增专用 Config_type 标签。
+## 常见问题
 
-## 可复现性说明
-- 该卡片本身无显式随机种子，参数与输入一致时结果应确定。
-- 若上游含随机操作，仍需在 pipeline 层统一控制随机性。
+**卡片报错"NEP file does not exist"。** `nep_path` 指向的文件不存在。确认路径正确。
+
+**输出数量远小于 `num_condition`。** `min_distance_condition` 太严，无法选出足够多满足距离约束的结构。降低该阈值。
+
+**挑出的结构覆盖不全。** FPS 只能从现有池里选。如果某些局域环境在输入池里本来就没有，FPS 也无法补充。回到上游增加生成多样性。
+
+**描述符计算很慢。** 大批量（>5000）时描述符计算可能耗时。先用 `FPS Filter` 之前控制好上游输出量。
+
+## 输出标签
+
+不新增专用 Config_type 标签。输出结构保留原标签。
+
+## 可复现性
+
+无随机性。同参数同输入 → 严格一致输出。FPS 是确定性贪心算法。

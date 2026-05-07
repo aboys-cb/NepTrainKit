@@ -1,155 +1,95 @@
-<!-- card-schema: {"card_name": "Random Occupancy", "source_file": "src/NepTrainKit/ui/views/_card/random_occupancy_card.py", "serialized_keys": ["source", "manual", "mode", "samples", "group_filter", "use_seed", "seed"]} -->
+<!-- card-schema: {"card_name": "Random Occupancy", "source_file": "src/NepTrainKit/ui/views/_card/random_occupancy_card.py", "serialized_keys": ["params"]} -->
 
 # 随机占位（Random Occupancy）
 
-`Group`: `Alloy`  
-`Class`: `RandomOccupancyCard`  
-`Source`: `src/NepTrainKit/ui/views/_card/random_occupancy_card.py`
+`Group`: `Alloy` | `Class`: `RandomOccupancyCard`
 
 ## 功能说明
-在给定总成分约束下随机分配位点元素（site occupancy assignment），用于同成分多排布样本扩展。
 
-它最适合的场景是：把 `Composition Sweep` 生成的目标配比真正落到原子占位上。如果你更关心完整工作流而不是单个参数，请先看下面的“操作示例”。
+在给定总成分约束下，将目标配比真正落到原子占位上。读取 `Comp(...)` 标签或手工输入的成分字符串，用精确或随机模式把各元素分配到离散晶格位点，输出带 `Occ(...)` 标签的真实化学占位结构。
+
+典型用法：接在 `Composition Sweep` 之后，把目标配比计划转化为可以跑 DFT/NEP 的实际结构。
 
 ## 操作示例
-### 场景：把 `Composition Sweep` 生成的目标配比真正落到原子占位上
 
-**输入：** 一个带 `Comp(...)` 标签的结构，或一份手工填写的目标配比说明
+### 场景：同成分不同排布下的能量预测，模型偏差从 5 跳到 50 meV/atom
 
-**目标：** 从连续配比分布走到离散原子占位，得到可用于第一性原理或训练的数据结构
+你在 CoCrNi 训练集上跑了 `Composition Sweep`，覆盖了从纯元素到等摩尔的各种配比。但每个配比只生成了一个占位结构——对 Co0.33Cr0.33Ni0.33，训练集里 Cr 永远在角落、Co 永远在面心。模型学到的不是"这个成分"，而是"这个成分 + 这个特定排布"。拿到另一个同样成分但 Cr/Co 位置互换的结构，能量预测偏差从 5 meV/atom 跳到了 50 meV/atom。
+
+**诊断思路：** 对给定成分，短程化学有序度——哪种原子偏好和哪种原子做邻居——显著影响总能量和局域力。训练集里每种成分只有一个排布样本，模型就把成分和特定排布绑死了。解决：给每个目标配比生成多个不同占位版本。
+
+**输入：** 一批带 `Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` 标签的结构（来自上游 `Composition Sweep`）
+
+**目标：** 每个目标配比生成 5 个不同原子排布版本，覆盖排布多样性
 
 **参数设置：**
-- `source` 先决定读取 `Comp tag` 还是手工 `manual`
-- `mode` 决定精确落点还是随机落点
-- `samples` 控制每个目标配比扩出多少个占位实例
+- `source` = `Auto (Comp tag)` （自动读取上游 Comp 标签）
+- `mode` = `Exact` （精确匹配目标配比，每次排布不同但元素计数一致）
+- `samples` = `5`
 
-**输出：** 同一目标配比会得到一批真实化学占位结构，而不是只停留在标签层面
+**输出：** 每个输入结构产生 5 个带 `Occ(E)` 标签的结构，元素组成与 Comp 标签一致但原子排布各不相同
 
-**怎么验证结果合理：**
-- 检查输出元素组成是否与目标配比大致一致
-- 若全部退化成原元素，先检查 `source` 与 `manual` 是否设置正确
-- 想做系统配比扫描时，记得把它放在 `Composition Sweep` 之后
+**怎么验证训练集质量改善：**
+- 重训后对同一成分的不同排布跑推理，能量方差应该合理——不应全坍缩到一个值，也不应异常发散
+- 抽查几个占位输出，确认元素计数与目标配比一致（Exact 模式）或统计上接近（Random 模式）
+- 如果不同排布之间的能量差异非常小且体系对排布不敏感，可以减少 `samples`；差异大则增大
+- 如果上游没有 `Comp(...)` 标签导致输出=输入，切换到手工模式并填写 `manual` 成分字符串
 
-## 适用场景与不适用场景
-- 数据症状 (Dataset symptom): 同成分下占位排列单一，迁移泛化差。
-- 目标任务 (Target objective): 增加位点排列多样性而保持总体成分。
-- 建议添加条件 (Add-it trigger): 高熵或多元固溶体占位采样任务。
-- 不建议添加条件 (Avoid trigger): 不需要占位随机化。
-> 物理提示 (Physics caution): 重点检查目标配比、实际元素统计和标签是否一致，避免“标签写对了、占位落错了”。
+### 什么时候加这张卡、什么时候不加
 
-## 输入前提
-- 确认 `source` 与成分字符串格式。
-- 若使用 group 过滤，结构需已有 group 数组。
+**加：**
+- 上游有 `Composition Sweep` 或手工定义了目标配比，需要落到具体原子占位
+- 同一成分下需要多个不同原子排布来覆盖短程化学有序度
+- 高熵合金、固溶体等需要成分-排布联合采样的体系
 
-## 参数说明（完整）
-### `source` (Source)
-- UI Label: `Source`
-- 字段映射 (Field mapping): 序列化键 `source` <-> 界面标签 `Source`。
-- 控件标签 (Caption): `Source`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`（显示文本与序列化值可能不同）。
-- 类型/范围 (Type/Range): enum(string)
-- 默认值 (Default): `"Auto (Comp tag)"`
-- 含义 (Meaning): 成分来源 (composition source)。
-- 对输出规模/物理性的影响: 决定自动读取还是手工输入。
-- 参数联动 / 生效条件: `Auto (Comp tag)` 适合接在 `Composition Sweep` 后；手工模式则要你自己保证 `manual` 内容可解析。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 物理直觉 / 典型值: 它决定程序走哪种离散策略；先选对模式，再去调该模式下真正起作用的数值参数。
-- 推荐范围 (Recommended range):
-  - 保守：自动优先
-  - 平衡：手工兜底
-  - 探索：双来源交叉核验
+**不加：**
+- 不需要改变原子占位
+- 需要直接指定替换规则而非从配比出发 → 用 `Random Doping`
+- 输入本身已经是真实的离散占位结构且不再需要多样性
 
-### `manual` (Manual)
-- UI Label: `Manual`
-- 字段映射 (Field mapping): 序列化键 `manual` <-> 界面标签 `Manual`。
-- 控件标签 (Caption): `Manual`。
-- 控件解释 (Widget): 文本输入 `LineEdit`（或可编辑下拉）。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `""`
-- 含义 (Meaning): 手动成分字符串 (manual composition)。
-- 对输出规模/物理性的影响: 用于显式指定元素比例。
-- 参数联动 / 生效条件: 只有当 `source` 走手工模式时它才会成为目标配比来源。
-- 怎么判断该开还是该关: 只在你明确知道该字段会命中输入结构时填写；不确定时先用最小样本验证命中情况。
-- 配置建议 (Practical note): `Manual` 可按任务替换为自定义值；建议先用最小样本验证后再批量生成。
+## 参数说明
 
-### `mode` (Mode)
-- UI Label: `Mode`
-- 字段映射 (Field mapping): 序列化键 `mode` <-> 界面标签 `Mode`。
-- 控件标签 (Caption): `Mode`。
-- 控件解释 (Widget): 下拉选择 `ComboBox`（显示文本与序列化值可能不同）。
-- 类型/范围 (Type/Range): enum(string)
-- 默认值 (Default): `"Exact"`
-- 含义 (Meaning): 操作模式 (operation mode)。
-- 对输出规模/物理性的影响: 改变执行逻辑路径，影响样本分布。
-- 参数联动 / 生效条件: 它决定目标配比如何落到离散位点：更精确还是更随机。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 物理直觉 / 典型值: 它决定程序走哪种离散策略；先选对模式，再去调该模式下真正起作用的数值参数。
-- 推荐范围 (Recommended range):
-  - 保守：默认模式先验证
-  - 平衡：按任务切换
-  - 探索：探索模式配审计
+### Source（source）
+类型：`str`。默认：`'Auto (Comp tag)'`。选择输入信息的来源。
 
-### `samples` (Samples)
-- UI Label: `Samples`
-- 字段映射 (Field mapping): 序列化键 `samples` <-> 界面标签 `Samples`。
-- 控件标签 (Caption): `Samples`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[1]`
-- 含义 (Meaning): 每帧样本数 (samples per frame)。
-- 对输出规模/物理性的影响: 控制输出体量和统计稳定性。
-- 参数联动 / 生效条件: 每个目标配比会展开成多少个离散占位样本，与上游 `Comp(...)` 点数相乘后就是这一段的主要输出规模。
-- 物理直觉 / 典型值: 它主要决定每帧会扩出多少个结构，直接影响后续计算预算与重复率。
-- 推荐范围 (Recommended range):
-  - 保守：1-3
-  - 平衡：5-10
-  - 探索：20+ 需去重
+`Auto (Comp tag)` 或 `Manual`。Auto 从输入结构的 `Config_type` 中读取 `Comp(...)` 标签作为目标配比，适合接在 `Composition Sweep` 之后。Manual 从 `manual` 字段读取手工配比字符串。
 
-### `group_filter` (Group Filter)
-- UI Label: `Group Filter`
-- 字段映射 (Field mapping): 序列化键 `group_filter` <-> 界面标签 `Group Filter`。
-- 控件标签 (Caption): `Group Filter`。
-- 控件解释 (Widget): 文本输入 `LineEdit`（或可编辑下拉）。
-- 类型/范围 (Type/Range): string
-- 默认值 (Default): `""`
-- 含义 (Meaning): 分组过滤条件 (group filter)。
-- 对输出规模/物理性的影响: 限制操作仅作用于指定 group。
-- 参数联动 / 生效条件: 只有输入结构已带 `group` 数组时，这个过滤条件才会真正限制可占位的区域。
-- 怎么判断该开还是该关: 先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时，再主动偏离默认设置。
-- 配置建议 (Practical note): `Group Filter` 可按任务替换为自定义值；建议先用最小样本验证后再批量生成。
+### Manual（manual）
+类型：`str`。默认：`''`。手动指定每个元素的占位数量或比例。
 
-### `use_seed` (Use Seed)
-- UI Label: `Use Seed`
-- 字段映射 (Field mapping): 序列化键 `use_seed` <-> 界面标签 `Use Seed`。
-- 控件标签 (Caption): `Use Seed`。
-- 控件解释 (Widget): 勾选开关 `CheckBox`。
-- 类型/范围 (Type/Range): bool
-- 默认值 (Default): `false`
-- 含义 (Meaning): 是否启用固定随机种子 (deterministic seed switch)。
-- 对输出规模/物理性的影响: 开启后可复现实验；关闭后每次采样分布会变化。
-- 怎么判断该开还是该关: 做可复现实验或要对比不同参数时开启；纯探索阶段可以先关闭以增加随机覆盖。
-- 配置建议 (Practical note):
-  - 开启：需要可复现对比时开启。
-  - 关闭：探索阶段可关闭以增加随机覆盖。
+成分字符串，如 `Co:0.333,Cr:0.333,Ni:0.334`。仅在 `source=Manual` 时生效。比例会被归一化。
+如果只输入单个元素，如 `Ge`，会按 `Ge:1.0` 处理；输入 `Ge,C` 则两个元素默认权重都是 `1.0`。
 
-### `seed` (Seed)
-- UI Label: `Seed`
-- 字段映射 (Field mapping): 序列化键 `seed` <-> 界面标签 `Seed`。
-- 控件标签 (Caption): `Seed`。
-- 控件解释 (Widget): 数值输入 `SpinBoxUnitInputFrame`。
-- 类型/范围 (Type/Range): int（单值输入）
-- 默认值 (Default): `[0]`
-- 含义 (Meaning): 随机种子值 (random seed value)。
-- 对输出规模/物理性的影响: 只影响随机路径，不改变物理模型本身。
-- 参数联动 / 生效条件: `seed` 只有在 `use_seed=true` 时才真正固定随机路径。
-- 物理直觉 / 典型值: 先从小范围试跑并抽查输出，再决定是否扩大范围；范围越宽，覆盖越广，但极端构型风险也越高。
-- 推荐范围 (Recommended range):
-  - 保守：0（随机）
-  - 平衡：1-99（可复现）
-  - 探索：100-9999（多 seed 对比）
+### Mode（mode）
+类型：`str`。默认：`'Exact'`。选择严格计数、比例采样或随机占位策略。
 
-## 推荐预设（可直接复制 JSON）
-### 保守（Safe）
+`Exact` 或 `Random`。Exact 精确匹配目标配比，每个原子的元素分配满足目标计数（向下取整后按余数补足），适合对比实验。Random 按目标比例概率采样，整体统计接近但不严格匹配，适合探索性跑样。
+
+### Samples（samples）
+类型：`int`。默认：`1`。设置每个输入结构生成的样本数量。
+
+整数，每个目标配比生成多少个不同占位版本。典型值 1-20。乘以上游配比点数 = 总输出量。
+
+### Group Filter（group_filter）
+类型：`str`。默认：`''`。限制只在指定 group 上操作。
+
+逗号分隔的 group 标签，如 `A,B`。限制只在这些 group 内的位点上做占位分配。需要输入结构已带 `atoms.arrays['group']`。
+
+### Use Seed（use_seed）
+类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
+
+勾选 `use_seed` 后固定随机路径，`seed` 不同取值产生不同占位分布。结合输入结构的 stable config ID 为每个样本派生独立种子。
+
+### Seed（seed）
+类型：`int`。默认：`0`。设置固定随机种子的整数值。
+
+勾选 `use_seed` 后固定随机路径，`seed` 不同取值产生不同占位分布。结合输入结构的 stable config ID 为每个样本派生独立种子。
+
+生效条件：`use_seed=True`。
+
+## 推荐预设
+
+### 单样本落地（每配比 1 排布，快速验证占位路径）
 ```json
 {
   "class": "RandomOccupancyCard",
@@ -157,18 +97,14 @@
   "source": "Auto (Comp tag)",
   "manual": "",
   "mode": "Exact",
-  "samples": [
-    1
-  ],
+  "samples": [1],
   "group_filter": "",
   "use_seed": false,
-  "seed": [
-    0
-  ]
+  "seed": [0]
 }
 ```
 
-### 平衡（Balanced）
+### 多样性占位（每配比 5 排布，常规训练用）
 ```json
 {
   "class": "RandomOccupancyCard",
@@ -176,51 +112,48 @@
   "source": "Auto (Comp tag)",
   "manual": "",
   "mode": "Exact",
-  "samples": [
-    1
-  ],
-  "group_filter": "",
-  "use_seed": false,
-  "seed": [
-    0
-  ]
-}
-```
-
-### 激进/探索（Aggressive/Exploration）
-```json
-{
-  "class": "RandomOccupancyCard",
-  "check_state": true,
-  "source": "Auto (Comp tag)",
-  "manual": "",
-  "mode": "Exact",
-  "samples": [
-    20
-  ],
+  "samples": [5],
   "group_filter": "",
   "use_seed": true,
-  "seed": [
-    0
-  ]
+  "seed": [42]
+}
+```
+
+### 高多样性子晶格（每配比 20 排布，仅限 group A）
+```json
+{
+  "class": "RandomOccupancyCard",
+  "check_state": true,
+  "source": "Auto (Comp tag)",
+  "manual": "",
+  "mode": "Random",
+  "samples": [20],
+  "group_filter": "A",
+  "use_seed": true,
+  "seed": [42]
 }
 ```
 
 ## 推荐组合
-- Group Label -> Random Occupancy: 将占位变化限制在指定 group。
-- 先明确“目标配比”还是“具体落位”，再决定接 `Composition Sweep`、`Random Occupancy` 还是 `Random Doping`。
-- 涉及 group 或局部位点限制时，可先接 `Group Label` 或规则类卡片再执行替换。
 
-## 常见问题与排查
-- 结果没有变化时，先检查目标元素、规则字符串或 `Comp tag` 来源是否真的命中了输入结构。
-- 如果输出成分偏离预期，优先检查是“目标配比定义”问题，还是“离散落位/随机替换”步骤把分布拉偏。
-- 这组卡片不会自动替你决定工作流分工；需要系统扫配比时先用 `Composition Sweep`，需要真实落位时再接 `Random Occupancy` 或 `Random Doping`。
+- `Composition Sweep` → `Random Occupancy`：标准合金 pipeline，配比 → 落位。
+- `Group Label` → `Random Occupancy`：先打 group 标签，再限制占位区域。
+- `Random Occupancy` → `Atomic Perturb`：占位后加坐标噪声松驰局部应力。
 
-## 输出标签 / 元数据变更
-- 该卡片输出的 Config_type 标签模式：
-  - `Occ({...}{...})`
+## 常见问题
 
-## 可复现性说明
-- 设置 `use_seed=true` 且固定 `seed`，可在相同输入顺序下复现实验。
-- 上游随机卡片或输入顺序变化仍会改变最终样本集合。
-- 建议把 seed 与 pipeline 配置一起版本化记录。
+**输出 = 输入，没有变化。** 上游没有 `Comp(...)` 标签且 `manual` 为空。检查 `source` 设置，或切换到 Manual 模式并填写成分。
+
+**占位后元素数量与标签不一致。** `Random` 模式下统计浮动是正常的。换 `Exact` 模式可精确匹配。
+
+**输出数量远超预期。** 输出 = 输入帧数 x `samples`。上游 500 个配比点 x `samples=5` = 2500 个结构。先估算总规模再跑。
+
+**group_filter 不生效。** 检查输入结构是否有 `atoms.arrays['group']` 且标签拼写完全匹配。
+
+## 输出标签
+
+`Occ(E)` / `Occ(R)` / `Occ(E,s=...)` / `Occ(R,s=...)`。E = Exact，R = Random。使用 seed 时附加种子值便于追踪。
+
+## 可复现性
+
+勾选 `use_seed` + 固定 `seed` 可复现。种子与输入结构的 stable config ID 联合派生样本级种子，相同配置 + 相同 seed → 相同占位序列。注意输入结构顺序变化会影响结果。

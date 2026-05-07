@@ -7,7 +7,17 @@ from typing import Any
 import numpy as np
 import numpy.typing as npt
 from loguru import logger
-from .base import StructureData, ResultData, DPPlotData, StructureSyncRule, NepPlotData
+from .base import (
+    StructureData,
+    ResultData,
+    DPPlotData,
+    StructureSyncRule,
+    NepPlotData,
+    collect_energy_sync,
+    collect_force_sync,
+    collect_stress_sync,
+    collect_virial_sync,
+)
 from NepTrainKit.core.structure import Structure, load_npy_structure,save_npy_structure
 from NepTrainKit.core.precision import get_storage_float_dtype
 from NepTrainKit.paths import PathLike, as_path, get_bundled_nep89_path
@@ -65,152 +75,11 @@ class DeepmdResultData(ResultData):
         self.spin_out_path = Path(spin_out_path) if spin_out_path is not None else None
         self.virial_out_path = Path(virial_out_path)
 
-    @staticmethod
-    def _collect_energy_sync(result_data: 'DeepmdResultData', dataset: NepPlotData, structure_indices):
-        """Collect reference energies for the provided structure indices.
-
-        Parameters
-        ----------
-        result_data : DeepmdResultData
-            Source container providing structures and metadata.
-        dataset : NepPlotData
-            Plot dataset whose columns are being synchronised.
-        structure_indices : Sequence[int]
-            Indices of structures selected in the UI.
-
-        Returns
-        -------
-        tuple[numpy.ndarray, numpy.ndarray]
-            Row indices and energy values aligned with the dataset layout.
-        """
-        total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
-        target_width = max(total_cols - dataset.cols, 0)
-        storage_dtype = get_storage_float_dtype()
-        if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=storage_dtype)
-        indices = result_data._normalize_structure_indices(structure_indices)
-        if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
-        structures = [result_data.structure.all_data[i] for i in indices]
-        values = np.array([s.per_atom_energy for s in structures], dtype=storage_dtype).reshape(-1, target_width)
-        return indices, values
-
-    @staticmethod
-    def _collect_force_sync(result_data: 'DeepmdResultData', dataset: NepPlotData, structure_indices):
-        """Collect force values aligned with the provided structures.
-
-        Parameters
-        ----------
-        result_data : DeepmdResultData
-            Source container providing structures and metadata.
-        dataset : NepPlotData
-            Plot dataset whose columns are being synchronised.
-        structure_indices : Sequence[int]
-            Indices of structures selected in the UI.
-
-        Returns
-        -------
-        tuple[numpy.ndarray, numpy.ndarray]
-            Dataset row indices and force components arranged per atom or per structure.
-        """
-        total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
-        target_width = max(total_cols - dataset.cols, 0)
-        storage_dtype = get_storage_float_dtype()
-        if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=storage_dtype)
-        indices = result_data._normalize_structure_indices(structure_indices)
-        if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
-        group_vals = dataset.group_array.all_data
-        per_atom = bool(group_vals.size and np.unique(group_vals).size != group_vals.size)
-        structures = [result_data.structure.all_data[i] for i in indices]
-        if per_atom:
-            row_idx = dataset.convert_index(indices)
-            values = np.vstack([s.forces for s in structures]).astype(storage_dtype, copy=False)
-        else:
-            row_idx = indices
-            values = np.array([np.linalg.norm(s.forces, axis=0) for s in structures], dtype=storage_dtype)
-        return row_idx, values
-
-    @staticmethod
-    def _collect_virial_sync(result_data: 'DeepmdResultData', dataset: NepPlotData, structure_indices):
-        """Collect virial tensors for structures that provide virial information.
-
-        Parameters
-        ----------
-        result_data : DeepmdResultData
-            Source container providing structures and metadata.
-        dataset : NepPlotData
-            Plot dataset whose columns are being synchronised.
-        structure_indices : Sequence[int]
-            Indices of structures selected in the UI.
-
-        Returns
-        -------
-        tuple[numpy.ndarray, numpy.ndarray]
-            Structure indices with virials and the corresponding tensor components.
-        """
-        total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
-        target_width = max(total_cols - dataset.cols, 0)
-        storage_dtype = get_storage_float_dtype()
-        if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=storage_dtype)
-        indices = result_data._normalize_structure_indices(structure_indices)
-        if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
-        structures = [result_data.structure.all_data[i] for i in indices]
-        mask = np.array([s.has_virial for s in structures], dtype=bool)
-        if not mask.any():
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
-        selected_indices = indices[mask]
-        values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(storage_dtype,
-                                                                                                     copy=False)
-        return selected_indices, values
-
-    @staticmethod
-    def _collect_stress_sync(result_data: 'DeepmdResultData', dataset: NepPlotData, structure_indices):
-        """Collect stress tensors derived from virials for the selected structures.
-
-        Parameters
-        ----------
-        result_data : DeepmdResultData
-            Source container providing structures and metadata.
-        dataset : NepPlotData
-            Plot dataset whose columns are being synchronised.
-        structure_indices : Sequence[int]
-            Indices of structures selected in the UI.
-
-        Returns
-        -------
-        tuple[numpy.ndarray, numpy.ndarray]
-            Structure indices and stress values expressed in eV/Angstrom^3.
-        """
-        total_cols = dataset.data.all_data.shape[1] if dataset.data.all_data.ndim > 1 else 0
-        target_width = max(total_cols - dataset.cols, 0)
-        storage_dtype = get_storage_float_dtype()
-        if target_width == 0:
-            return np.array([], dtype=np.int64), np.empty((0, 0), dtype=storage_dtype)
-        indices = result_data._normalize_structure_indices(structure_indices)
-        if indices.size == 0:
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
-        structures = [result_data.structure.all_data[i] for i in indices]
-        mask = np.array([s.has_virial for s in structures], dtype=bool)
-        if not mask.any():
-            return np.array([], dtype=np.int64), np.empty((0, target_width), dtype=storage_dtype)
-        selected_indices = indices[mask]
-        virial_values = np.vstack([structures[i].nep_virial for i, flag in enumerate(mask) if flag]).astype(storage_dtype,
-                                                                                                            copy=False)
-        atoms = result_data.atoms_num_list[selected_indices].astype(storage_dtype)
-        volumes = np.array([structures[i].volume for i, flag in enumerate(mask) if flag], dtype=storage_dtype)
-        coeff = np.divide(atoms, volumes, out=np.zeros_like(atoms, dtype=storage_dtype), where=volumes != 0)[:, np.newaxis]
-        stress_values = virial_values * coeff * 160.21766208
-        return selected_indices, stress_values.astype(storage_dtype, copy=False)
-
     STRUCTURE_SYNC_RULES = {
-        'energy': StructureSyncRule('energy', 'x_cols', _collect_energy_sync),
-        'force': StructureSyncRule('force', 'x_cols', _collect_force_sync),
-        'virial': StructureSyncRule('virial', 'x_cols', _collect_virial_sync),
-        'stress': StructureSyncRule('stress', 'x_cols', _collect_stress_sync),
+        'energy': StructureSyncRule('energy', 'x_cols', collect_energy_sync),
+        'force': StructureSyncRule('force', 'x_cols', collect_force_sync),
+        'virial': StructureSyncRule('virial', 'x_cols', collect_virial_sync),
+        'stress': StructureSyncRule('stress', 'x_cols', collect_stress_sync),
     }
 
     @classmethod

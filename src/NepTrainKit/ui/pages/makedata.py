@@ -7,11 +7,19 @@ import os.path
 import re
 
 import numpy as np
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction, QIcon
-from PySide6.QtWidgets import QWidget, QGridLayout, QApplication
+from PySide6.QtCore import QEvent, Qt
+from PySide6.QtGui import QAction, QIcon, QKeySequence
+from PySide6.QtWidgets import (
+    QAbstractSpinBox,
+    QApplication,
+    QGridLayout,
+    QLineEdit,
+    QPlainTextEdit,
+    QTextEdit,
+    QWidget,
+)
 from ase import Atoms, Atom
-from qfluentwidgets import HyperlinkLabel, BodyLabel, SubtitleLabel
+from qfluentwidgets import FluentIcon, HyperlinkLabel, BodyLabel, SubtitleLabel
 
 from NepTrainKit.core import MessageManager, CardManager
 from NepTrainKit.core.config_type import append_config_tag
@@ -51,9 +59,48 @@ class MakeDataWidget(QWidget):
         self.setObjectName("MakeDataWidget")
         self.setAcceptDrops(True)
         self.nep_result_data=None
+        self._clipboard_shortcut_filter_installed = False
         self.init_action()
         self.init_ui()
         self.dataset=None
+
+    def eventFilter(self, watched, event):
+        """Route Ctrl+V on the Make Dataset workspace to card JSON paste."""
+        if (
+            event.type() == QEvent.Type.KeyPress
+            and self.isVisible()
+            and QApplication.activeWindow() is self.window()
+            and event.matches(QKeySequence.StandardKey.Paste)
+            and self._focus_allows_card_json_paste()
+        ):
+            self.paste_card_config_from_clipboard()
+            event.accept()
+            return True
+        return super().eventFilter(watched, event)
+
+    def _focus_allows_card_json_paste(self) -> bool:
+        """Return True when Ctrl+V should create cards instead of editing text."""
+        focus_widget = QApplication.focusWidget()
+        editable_widgets = (QLineEdit, QTextEdit, QPlainTextEdit, QAbstractSpinBox)
+        return not isinstance(focus_widget, editable_widgets)
+
+    def _install_clipboard_shortcut_filter(self):
+        """Install the application-level filter once while this page is visible."""
+        if self._clipboard_shortcut_filter_installed:
+            return
+        app = QApplication.instance()
+        if app is not None:
+            app.installEventFilter(self)
+            self._clipboard_shortcut_filter_installed = True
+
+    def _remove_clipboard_shortcut_filter(self):
+        """Remove the application-level Ctrl+V filter when leaving this page."""
+        if not self._clipboard_shortcut_filter_installed:
+            return
+        app = QApplication.instance()
+        if app is not None:
+            app.removeEventFilter(self)
+        self._clipboard_shortcut_filter_installed = False
 
 
     def dragEnterEvent(self, event):
@@ -122,8 +169,10 @@ class MakeDataWidget(QWidget):
         """
         if hasattr(self._parent,"load_menu"):
             self._parent.load_menu.addAction(self.load_card_config_action)  # pyright:ignore
+            self._parent.load_menu.addAction(self.paste_card_config_action)  # pyright:ignore
         if hasattr(self._parent,"save_menu"):
             self._parent.save_menu.addAction(self.export_card_config_action)  # pyright:ignore
+        self._install_clipboard_shortcut_filter()
 
     def hideEvent(self, event):
         """Detach menu actions when the widget is hidden.
@@ -140,8 +189,10 @@ class MakeDataWidget(QWidget):
         """
         if hasattr(self._parent,"load_menu"):
             self._parent.load_menu.removeAction(self.load_card_config_action)  # pyright:ignore
+            self._parent.load_menu.removeAction(self.paste_card_config_action)  # pyright:ignore
         if hasattr(self._parent,"save_menu"):
             self._parent.save_menu.removeAction(self.export_card_config_action)   # pyright:ignore
+        self._remove_clipboard_shortcut_filter()
 
     def init_action(self):
         """Create persistent actions shared with the main window.
@@ -155,6 +206,8 @@ class MakeDataWidget(QWidget):
         self.export_card_config_action.triggered.connect(self.export_card_config)
         self.load_card_config_action = QAction(QIcon(r":/images/src/images/open.svg"), "Import Card Config")
         self.load_card_config_action.triggered.connect(self.load_card_config)
+        self.paste_card_config_action = QAction(FluentIcon.PASTE.icon(), "Paste Card JSON")
+        self.paste_card_config_action.triggered.connect(self.paste_card_config_from_clipboard)
 
     def init_ui(self):
         """Build the workflow canvas, console, and status widgets.
@@ -173,6 +226,8 @@ class MakeDataWidget(QWidget):
         self.setting_group.runSignal.connect(self.run_card)
         self.setting_group.stopSignal.connect(self.stop_run_card)
         self.setting_group.newCardSignal.connect(self.add_card)
+        self.setting_group.pasteSignal.connect(self.paste_card_config_from_clipboard)
+        self.setting_group.copySignal.connect(self.copy_card_config_to_clipboard)
 
         self.path_label = HyperlinkLabel(self)
         self.path_label.setFixedHeight(30)
@@ -425,16 +480,29 @@ class MakeDataWidget(QWidget):
 
         path = call_path_dialog(self, "Choose a file save location", "file", default_filename="card_config.json")
         if path:
-            config={}
-            config["software_version"]=__version__
-            config["cards"]=[]
-            for card in cards:
-                config["cards"].append(card.to_dict())
-
-
             with open(path, "w",encoding="utf-8") as file:
-                json.dump(config, file, indent=4,ensure_ascii=False)
+                json.dump(self._current_card_config_payload(), file, indent=4, ensure_ascii=False)
             MessageManager.send_success_message("Card configuration exported successfully.")
+
+    def _current_card_config_payload(self):
+        """Return the current workflow card configuration payload."""
+        return {
+            "software_version": __version__,
+            "cards": [card.to_dict() for card in self.workspace_card_widget.cards],
+        }
+
+    def copy_card_config_to_clipboard(self):
+        """Copy the current workflow card configuration JSON to the clipboard."""
+        cards = self.workspace_card_widget.cards
+        if not cards:
+            MessageManager.send_warning_message("No cards in workspace.")
+            return
+        QApplication.clipboard().setText(self.current_card_config_json())
+        MessageManager.send_success_message("Card configuration JSON copied to clipboard.")
+
+    def current_card_config_json(self):
+        """Return the current workflow card configuration as pretty JSON text."""
+        return json.dumps(self._current_card_config_payload(), indent=4, ensure_ascii=False)
 
     def load_card_config(self):
         """Load card configuration from a JSON file chosen by the user.
@@ -448,6 +516,28 @@ class MakeDataWidget(QWidget):
         if path:
 
             self.parse_card_config(path)
+
+    def paste_card_config_from_clipboard(self):
+        """Append card configuration JSON from the system clipboard.
+
+        Returns
+        -------
+        None
+            Creates cards when the clipboard contains one card, a card list, or
+            an exported workflow object with a ``cards`` field.
+        """
+        text = QApplication.clipboard().text().strip()
+        if not text:
+            MessageManager.send_warning_message("Clipboard does not contain card JSON.")
+            return
+        try:
+            payload = json.loads(text)
+            cards = self._normalise_card_config_payload(payload)
+        except ValueError as exc:
+            MessageManager.send_warning_message(str(exc))
+            return
+
+        self._add_card_configs(cards)
 
     def parse_card_config(self,path):
         """Populate the workspace from a saved card configuration.
@@ -465,16 +555,57 @@ class MakeDataWidget(QWidget):
         try:
             with open(path, "r",encoding="utf-8") as file:
                 config = json.load(file)
-        except Exception:
-            MessageManager.send_warning_message("Invalid card configuration file.")
+            cards = self._normalise_card_config_payload(config)
+        except Exception as exc:
+            MessageManager.send_warning_message(f"Invalid card configuration file: {exc}")
             return
         self.workspace_card_widget.clear_cards()
-        cards=config.get("cards")
+        self._add_card_configs(cards)
+
+    def _normalise_card_config_payload(self, payload):
+        """Return a validated list of card dictionaries from supported JSON shapes."""
+        if isinstance(payload, dict) and "cards" in payload:
+            cards = payload.get("cards")
+        elif isinstance(payload, list):
+            cards = payload
+        elif isinstance(payload, dict):
+            cards = [payload]
+        else:
+            raise ValueError("Card JSON must be an object, a list, or an exported workflow.")
+
+        if not isinstance(cards, list) or not cards:
+            raise ValueError("Card JSON does not contain any cards.")
+
+        normalised_cards = []
+        for card in cards:
+            if not isinstance(card, dict):
+                raise ValueError("Each card JSON entry must be an object.")
+            name = card.get("class")
+            if not isinstance(name, str) or not name:
+                raise ValueError("Each card JSON entry must contain a class name.")
+            if name not in CardManager.card_info_dict:
+                raise ValueError(f"Unknown card class: {name}")
+            card_data = dict(card)
+            card_data.setdefault("check_state", True)
+            normalised_cards.append(card_data)
+        return normalised_cards
+
+    def _add_card_configs(self, cards):
+        """Create cards from validated card configuration dictionaries."""
+        added_count = 0
         for card in cards:
             name=card.get("class")
             card_widget=self.add_card(name)
             if card_widget is not None:
-                card_widget.from_dict(card)
+                try:
+                    card_widget.from_dict(card)
+                except Exception as exc:
+                    card_widget.close()
+                    MessageManager.send_error_message(f"Failed to load {name}: {exc}")
+                    continue
+                added_count += 1
+        if added_count:
+            MessageManager.send_success_message(f"Added {added_count} card configuration(s).")
 
 
 if __name__ == "__main__":

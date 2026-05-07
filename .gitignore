@@ -3,6 +3,8 @@
 /build
 /dist
 /docs/build
+/docs/_build
+/.tmp/docs-screenshots
 .idea/
 /src/NepTrainKit/?.py
 /src/NepTrainKit/_version.py

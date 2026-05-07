@@ -1,19 +1,14 @@
 """Card for building supercells using several expansion strategies."""
 
-from itertools import combinations
-from typing import List, Tuple
-
-import numpy as np
 from PySide6.QtWidgets import QFrame, QGridLayout
-from ase.build import make_supercell
-from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, EditableComboBox, RadioButton
+from qfluentwidgets import BodyLabel, ComboBox, ToolTipFilter, ToolTipPosition, CheckBox, RadioButton
 
 from NepTrainKit.core import CardManager
-from NepTrainKit.core.config_type import append_config_tag
+from NepTrainKit.core.cards.lattice import SuperCellOperation, SuperCellParams
+from NepTrainKit.core.cards.operation import params_to_dict
 
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
-from scipy.stats.qmc import Sobol
 
 @CardManager.register_card
 class SuperCellCard(MakeDataCard):
@@ -127,7 +122,7 @@ class SuperCellCard(MakeDataCard):
         self.settingLayout.addWidget(self.fixed_scale_label, 5, 0, 1, 1)
         self.settingLayout.addWidget(self.fixed_scale_condition_frame, 5, 1, 1, 2)
 
-    def _get_fixed_axis_flags(self) -> Tuple[bool, bool, bool]:
+    def _get_fixed_axis_flags(self) -> tuple[bool, bool, bool]:
         """Return the axis-lock toggles for a, b, and c."""
         return (
             self.fixed_axis_a_checkbox.isChecked(),
@@ -135,325 +130,56 @@ class SuperCellCard(MakeDataCard):
             self.fixed_axis_c_checkbox.isChecked(),
         )
 
-    def _get_fixed_axis_values(self) -> Tuple[int, int, int]:
+    def _get_fixed_axis_values(self) -> tuple[int, int, int]:
         """Return the configured fixed multipliers for a, b, and c."""
         na, nb, nc = self.fixed_scale_condition_frame.get_input_value()
         return (int(na), int(nb), int(nc))
 
-    def _apply_fixed_axes(self, scale_factors: Tuple[int, int, int]) -> Tuple[int, int, int]:
-        """Override selected axes with the configured fixed multipliers."""
-        fixed_flags = self._get_fixed_axis_flags()
-        fixed_values = self._get_fixed_axis_values()
-        return tuple(
-            fixed_values[i] if fixed_flags[i] else max(int(scale_factors[i]), 1)
-            for i in range(3)
+    def create_operation(self):
+        """Return the UI-independent supercell operation."""
+        return SuperCellOperation()
+
+    def get_params(self) -> SuperCellParams:
+        """Read supercell parameters from UI controls."""
+        if self.super_cell_radio_button.isChecked():
+            mode = "cell"
+        elif self.max_atoms_radio_button.isChecked():
+            mode = "max_atoms"
+        else:
+            mode = "scale"
+
+        return SuperCellParams(
+            behavior_type=int(self.behavior_type_combo.currentIndex()),
+            mode=mode,
+            super_scale=tuple(int(value) for value in self.super_scale_condition_frame.get_input_value()),
+            target_cell=tuple(float(value) for value in self.super_cell_condition_frame.get_input_value()),
+            max_atoms=int(self.max_atoms_condition_frame.get_input_value()[0]),
+            fixed_axis_flags=self._get_fixed_axis_flags(),
+            fixed_axis_scale=self._get_fixed_axis_values(),
         )
 
-    def _dedupe_factors(self, expansion_factors: List[Tuple[int, int, int]]) -> List[Tuple[int, int, int]]:
-        """Remove duplicates while preserving factor order."""
-        unique_factors: List[Tuple[int, int, int]] = []
-        seen = set()
-        for scale_factors in expansion_factors:
-            adjusted = self._apply_fixed_axes(scale_factors)
-            if adjusted in seen:
-                continue
-            seen.add(adjusted)
-            unique_factors.append(adjusted)
-        return unique_factors
+    def set_params(self, params: SuperCellParams) -> None:
+        """Apply supercell parameters to UI controls."""
+        self.behavior_type_combo.setCurrentIndex(int(params.behavior_type))
+        self.super_scale_radio_button.setChecked(params.mode == "scale")
+        self.super_cell_radio_button.setChecked(params.mode == "cell")
+        self.max_atoms_radio_button.setChecked(params.mode == "max_atoms")
+        self.super_scale_condition_frame.set_input_value(list(params.super_scale))
+        self.super_cell_condition_frame.set_input_value(list(params.target_cell))
+        self.max_atoms_condition_frame.set_input_value([int(params.max_atoms)])
+        self.fixed_axis_a_checkbox.setChecked(bool(params.fixed_axis_flags[0]))
+        self.fixed_axis_b_checkbox.setChecked(bool(params.fixed_axis_flags[1]))
+        self.fixed_axis_c_checkbox.setChecked(bool(params.fixed_axis_flags[2]))
+        self.fixed_scale_condition_frame.set_input_value(list(params.fixed_axis_scale))
 
-    def _get_iteration_axis_values(self, scale_factors: Tuple[int, int, int]) -> Tuple[List[int], List[int], List[int]]:
-        """Return per-axis iteration values, honouring any fixed-axis locks."""
-        fixed_flags = self._get_fixed_axis_flags()
-        fixed_values = self._get_fixed_axis_values()
-
-        axis_values: List[List[int]] = []
-        for axis, limit in enumerate(scale_factors):
-            if fixed_flags[axis]:
-                axis_values.append([fixed_values[axis]])
-            else:
-                axis_values.append(list(range(1, max(int(limit), 1) + 1)))
-
-        return axis_values[0], axis_values[1], axis_values[2]
-
-    def _get_scale_factors(self) -> List[Tuple[int, int, int]]:
-        """Return the user-specified scale factors for direct supercell expansion.
-        
-        Returns
-        -------
-        list[tuple[int, int, int]]
-            Scale factors along the a, b, and c axes.
-        """
-        na, nb, nc = self.super_scale_condition_frame.get_input_value()
-        return [self._apply_fixed_axes((int(na), int(nb), int(nc)))]
-
-    def _get_cell_factors(self, structure, behavior_type) -> List[Tuple[int, int, int]]:
-        """Calculate expansion factors based on target lattice lengths and behavior mode.
-        
-        Parameters
-        ----------
-        structure : ase.Atoms
-            Structure whose cell metrics are analysed.
-        behavior_type : int
-            0: Maximum (lengths <= inputs), 2: Minimum (lengths > inputs).
-        
-        Returns
-        -------
-        list[tuple[int, int, int]]
-            Scale factors that satisfy the length constraints.
-        """
-        target_a, target_b, target_c = self.super_cell_condition_frame.get_input_value()
-        lattice = structure.cell.array
-
-        a_len = np.linalg.norm(lattice[0])
-        b_len = np.linalg.norm(lattice[1])
-        c_len = np.linalg.norm(lattice[2])
-        fixed_flags = self._get_fixed_axis_flags()
-        fixed_values = self._get_fixed_axis_values()
-
-        if behavior_type == 2:  # Minimum: cell_length > target
-            # Use int(target/len) + 1 to ensure it is strictly greater than the parameter
-            na = fixed_values[0] if fixed_flags[0] else (int(target_a / a_len) + 1 if a_len > 0 else 1)
-            nb = fixed_values[1] if fixed_flags[1] else (int(target_b / b_len) + 1 if b_len > 0 else 1)
-            nc = fixed_values[2] if fixed_flags[2] else (int(target_c / c_len) + 1 if c_len > 0 else 1)
-        else:  # Maximum or Iteration: cell_length <= target
-            na = fixed_values[0] if fixed_flags[0] else max(int(target_a / a_len) if a_len > 0 else 0, 1)
-            nb = fixed_values[1] if fixed_flags[1] else max(int(target_b / b_len) if b_len > 0 else 0, 1)
-            nc = fixed_values[2] if fixed_flags[2] else max(int(target_c / c_len) if c_len > 0 else 0, 1)
-
-            if not fixed_flags[0]:
-                na = na - 1 if na * a_len > target_a and na > 1 else na
-            if not fixed_flags[1]:
-                nb = nb - 1 if nb * b_len > target_b and nb > 1 else nb
-            if not fixed_flags[2]:
-                nc = nc - 1 if nc * c_len > target_c and nc > 1 else nc
-
-        return [(max(na, 1), max(nb, 1), max(nc, 1))]
-
-    def _get_max_atoms_factors(self, structure) -> List[Tuple[int, int, int]]:
-        """Enumerate expansion factors that keep the total atom count within the configured limit.
-        
-        Parameters
-        ----------
-        structure : ase.Atoms
-            Structure providing the base atom count.
-        
-        Returns
-        -------
-        list[tuple[int, int, int]]
-            Sorted list of scale factors ordered by resulting atom count.
-        """
-        max_atoms = self.max_atoms_condition_frame.get_input_value()[0]
-        num_atoms_orig = len(structure)
-        if num_atoms_orig <= 0:
-            return []
-
-        fixed_flags = self._get_fixed_axis_flags()
-        fixed_values = self._get_fixed_axis_values()
-        max_n = max(int(max_atoms / num_atoms_orig), 1)
-
-        axis_ranges = []
-        for axis, is_fixed in enumerate(fixed_flags):
-            if is_fixed:
-                axis_ranges.append(range(fixed_values[axis], fixed_values[axis] + 1))
-            else:
-                axis_ranges.append(range(1, max_n + 1))
-
-        expansion_factors = []
-        for na in axis_ranges[0]:
-            for nb in axis_ranges[1]:
-                for nc in axis_ranges[2]:
-                    total_atoms = num_atoms_orig * na * nb * nc
-                    if total_atoms <= max_atoms:
-                        expansion_factors.append((na, nb, nc))
-
-        expansion_factors.sort(key=lambda x: num_atoms_orig * x[0] * x[1] * x[2])
-        return expansion_factors
-
-    def _get_min_atoms_factors(self, structure) -> List[Tuple[int, int, int]]:
-        """Enumerate expansion factors that ensure the total atom count meets the minimum requirement.
-        
-        Parameters
-        ----------
-        structure : ase.Atoms
-            Structure providing the base atom count.
-        
-        Returns
-        -------
-        list[tuple[int, int, int]]
-            Sorted list of scale factors ordered by resulting atom count that meet the minimum requirement.
-        """
-        min_atoms = self.min_atoms_condition_frame.get_input_value()[0]
-        num_atoms_orig = len(structure)
-        
-        # Calculate minimum required scale factors
-        min_n = max(int(min_atoms / num_atoms_orig), 1)
-        
-        # Find all combinations that meet or exceed the minimum
-        expansion_factors = []
-        for na in range(1, min_n + 5):  # Allow up to 5x beyond minimum to give options
-            for nb in range(1, min_n + 5):
-                for nc in range(1, min_n + 5):
-                    total_atoms = num_atoms_orig * na * nb * nc
-                    if total_atoms >= min_atoms:
-                        expansion_factors.append((na, nb, nc))
-        
-        # Sort by total atom count (ascending)
-        expansion_factors.sort(key=lambda x: num_atoms_orig * x[0] * x[1] * x[2])
-        
-        if len(expansion_factors) == 0:
-            # If no factors meet the minimum, return the smallest that does
-            na = nb = nc = int(round(min_n ** (1/3))) or 1
-            while num_atoms_orig * na * nb * nc < min_atoms:
-                nc += 1
-                if num_atoms_orig * na * nb * nc >= min_atoms:
-                    break
-            else:
-                nb += 1
-                nc = 1
-                if num_atoms_orig * na * nb * nc < min_atoms:
-                    na += 1
-                    nb = nc = 1
-            expansion_factors = [(na, nb, nc)]
-
-        return expansion_factors
-
-    def _generate_structures(self, structure, expansion_factors, super_cell_type) :
-        """Build supercells using the supplied expansion factors and behaviour mode.
-        
-        Parameters
-        ----------
-        structure : ase.Atoms
-            Base structure to expand.
-        expansion_factors : list[tuple[int, int, int]]
-            Candidate scale factors produced by helper methods.
-        super_cell_type : int
-            Behaviour index selected in the UI.
-        
-        Returns
-        -------
-        list[ase.Atoms]
-            Generated supercell structures.
-        """
-        structure_list = []
-        if not expansion_factors:
-            return [structure.copy()]
-
-        if super_cell_type == 0:  # Maximum
-            na, nb, nc = expansion_factors[-1]
-
-            if na == 1 and nb == 1 and nc == 1:
-
-
-                return [structure.copy()]
-
-            supercell = make_supercell(structure,np.diag([na, nb, nc]),order="atom-major")
-            supercell.info["Config_type"] = structure.info.get("Config_type", "")
-            append_config_tag(supercell, f"SC({na}x{nb}x{nc})")
-
-            structure_list.append(supercell)
-
-        elif super_cell_type == 1:  # Iteration
-            if self.max_atoms_radio_button.isChecked():
-
-                for na, nb, nc in expansion_factors:
-
-
-                    if na==1 and nb==1 and nc==1:
-                        supercell=structure.copy()
-
-
-                    else:
-                        supercell = make_supercell(structure, np.diag([na, nb, nc]),order="atom-major")
-                        supercell.info["Config_type"] = structure.info.get("Config_type", "")
-                        append_config_tag(supercell, f"SC({na}x{nb}x{nc})")
-
-                        # supercell = structure.supercell([na, nb, nc])
-                    structure_list.append(supercell)
-            else:
-
-                na, nb, nc = expansion_factors[0]
-                a_values, b_values, c_values = self._get_iteration_axis_values((na, nb, nc))
-                for i in a_values:
-                    for j in b_values:
-                        for k in c_values:
-
-                            if i == 1 and j == 1 and k == 1:
-                                supercell = structure.copy()
-                            else:
-                                supercell = make_supercell(structure, np.diag([i, j, k]),order="atom-major")
-                                supercell.info["Config_type"] = structure.info.get("Config_type", "")
-                                append_config_tag(supercell, f"SC({i}x{j}x{k})")
-                                # supercell = structure.supercell((i, j, k))
-
-                            structure_list.append(supercell)
-
-        elif super_cell_type == 2:  # Minimum
-            if expansion_factors:
-                na, nb, nc = expansion_factors[0]  # Take the first/smallest expansion factor
-
-                if na == 1 and nb == 1 and nc == 1:
-                    return [structure.copy()]
-
-                supercell = make_supercell(structure, np.diag([na, nb, nc]),order="atom-major")
-                supercell.info["Config_type"] = structure.info.get("Config_type", "")
-                append_config_tag(supercell, f"SC({na}x{nb}x{nc})")
-
-                structure_list.append(supercell)
-            else:
-                # If no valid factors, return original structure
-                return [structure.copy()]
-
-        return structure_list
-
-    def process_structure(self,structure):
-        """Generate supercells according to the selected behaviour (maximum, iteration, or minimum).
-        
-        Parameters
-        ----------
-        structure : ase.Atoms
-            Base structure used to create supercells.
-        
-        Returns
-        -------
-        list[ase.Atoms]
-            Supercell structures produced by the chosen expansion strategy.
-        """
-        super_cell_type = self.behavior_type_combo.currentIndex()
-
-        if self.super_scale_radio_button.isChecked():
-            expansion_factors = self._get_scale_factors()
-        elif self.super_cell_radio_button.isChecked():
-            expansion_factors = self._get_cell_factors(structure, super_cell_type)
-        elif self.max_atoms_radio_button.isChecked():
-            expansion_factors = self._get_max_atoms_factors(structure)
-        else:
-            expansion_factors = [(1, 1, 1)]
-
-        expansion_factors = self._dedupe_factors(expansion_factors)
-        structure_list = self._generate_structures(structure, expansion_factors, super_cell_type)
-        return structure_list
+    def process_structure(self, structure):
+        """Generate supercells from UI-independent parameters."""
+        return self.create_operation().run_structure(structure, self.get_params())
 
     def to_dict(self):
-        """Serialize the current configuration to a plain dictionary.
-        
-        Returns
-        -------
-        dict
-            Dictionary that can be fed into ``from_dict`` to rebuild the state.
-        """
-        data_dict = super().to_dict()
-
-
-        data_dict['super_cell_type'] = self.behavior_type_combo.currentIndex()
-        data_dict['super_scale_radio_button'] = self.super_scale_radio_button.isChecked()
-        data_dict['super_scale_condition'] = self.super_scale_condition_frame.get_input_value()
-        data_dict['super_cell_radio_button'] = self.super_cell_radio_button.isChecked()
-        data_dict['super_cell_condition'] = self.super_cell_condition_frame.get_input_value()
-        data_dict['max_atoms_radio_button'] = self.max_atoms_radio_button.isChecked()
-        data_dict['max_atoms_condition'] = self.max_atoms_condition_frame.get_input_value()
-        data_dict['fixed_axis_flags'] = list(self._get_fixed_axis_flags())
-        data_dict['fixed_axis_scale'] = list(self._get_fixed_axis_values())
-        return data_dict
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
 
     def from_dict(self, data_dict):
         """Restore the card configuration from serialized values.
@@ -465,22 +191,31 @@ class SuperCellCard(MakeDataCard):
         """
         super().from_dict(data_dict)
 
-        self.behavior_type_combo.setCurrentIndex(data_dict.get('super_cell_type', 0))
-        self.super_scale_radio_button.setChecked(data_dict.get('super_scale_radio_button', True))
-        self.super_scale_condition_frame.set_input_value(data_dict.get('super_scale_condition', [3, 3, 3]))
-        self.super_cell_radio_button.setChecked(data_dict.get('super_cell_radio_button', False))
-        self.super_cell_condition_frame.set_input_value(data_dict.get('super_cell_condition', [20, 20, 20]))
-        self.max_atoms_radio_button.setChecked(data_dict.get('max_atoms_radio_button', False))
-        self.max_atoms_condition_frame.set_input_value(data_dict.get('max_atoms_condition', [100]))
-
-        fixed_axis_flags = data_dict.get('fixed_axis_flags', [False, False, False])
-        if not isinstance(fixed_axis_flags, list) or len(fixed_axis_flags) != 3:
-            fixed_axis_flags = [False, False, False]
-        self.fixed_axis_a_checkbox.setChecked(bool(fixed_axis_flags[0]))
-        self.fixed_axis_b_checkbox.setChecked(bool(fixed_axis_flags[1]))
-        self.fixed_axis_c_checkbox.setChecked(bool(fixed_axis_flags[2]))
-
-        fixed_axis_scale = data_dict.get('fixed_axis_scale', [1, 1, 1])
-        if not isinstance(fixed_axis_scale, list) or len(fixed_axis_scale) != 3:
-            fixed_axis_scale = [1, 1, 1]
-        self.fixed_scale_condition_frame.set_input_value(fixed_axis_scale)
+        raw_params = data_dict.get("params")
+        if raw_params:
+            params = SuperCellParams(
+                behavior_type=raw_params.get("behavior_type", 0),
+                mode=raw_params.get("mode", "scale"),
+                super_scale=tuple(raw_params.get("super_scale", [3, 3, 3])),
+                target_cell=tuple(raw_params.get("target_cell", [20.0, 20.0, 20.0])),
+                max_atoms=raw_params.get("max_atoms", 100),
+                fixed_axis_flags=tuple(raw_params.get("fixed_axis_flags", [False, False, False])),
+                fixed_axis_scale=tuple(raw_params.get("fixed_axis_scale", [1, 1, 1])),
+            )
+        else:
+            if data_dict.get('super_cell_radio_button', False):
+                mode = "cell"
+            elif data_dict.get('max_atoms_radio_button', False):
+                mode = "max_atoms"
+            else:
+                mode = "scale"
+            params = SuperCellParams(
+                behavior_type=data_dict.get('super_cell_type', 0),
+                mode=mode,
+                super_scale=tuple(data_dict.get('super_scale_condition', [3, 3, 3])),
+                target_cell=tuple(data_dict.get('super_cell_condition', [20, 20, 20])),
+                max_atoms=data_dict.get('max_atoms_condition', [100])[0],
+                fixed_axis_flags=tuple(data_dict.get('fixed_axis_flags', [False, False, False])),
+                fixed_axis_scale=tuple(data_dict.get('fixed_axis_scale', [1, 1, 1])),
+            )
+        self.set_params(params)

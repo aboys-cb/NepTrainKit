@@ -1,6 +1,7 @@
 """Card widgets supporting drag-and-drop workflows and dataset processing."""
 
 import inspect
+import json
 from pathlib import Path
 from urllib.parse import urljoin
 
@@ -8,7 +9,7 @@ from typing import Any, Iterable
 
 from PySide6.QtCore import Qt, Signal, QMimeData, Property, QUrl
 from PySide6.QtGui import QIcon, QDrag, QPixmap, QFont, QDesktopServices
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel
+from PySide6.QtWidgets import QApplication, QWidget, QGridLayout, QHBoxLayout, QVBoxLayout, QLabel
 
 from qfluentwidgets import (
     CheckBox,
@@ -165,6 +166,11 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         self.info_button.setToolTip("Show card information and contributors")
         self.info_button.installEventFilter(ToolTipFilter(self.info_button, 300, ToolTipPosition.TOP))
 
+        self.copy_json_button = TransparentToolButton(FluentIcon.COPY, self)
+        self.copy_json_button.clicked.connect(self.copy_json_to_clipboard)
+        self.copy_json_button.setToolTip("Copy card JSON")
+        self.copy_json_button.installEventFilter(ToolTipFilter(self.copy_json_button, 300, ToolTipPosition.TOP))
+
         self.export_button = TransparentToolButton(QIcon(":/images/src/images/export1.svg"), self)
         self.export_button.clicked.connect(self.exportSignal)
         self.export_button.setToolTip("Export data")
@@ -177,6 +183,7 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
 
         self.headerLayout.addWidget(self.doc_button, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.info_button, 0, Qt.AlignmentFlag.AlignRight)
+        self.headerLayout.addWidget(self.copy_json_button, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.export_button, 0, Qt.AlignmentFlag.AlignRight)
         self.headerLayout.addWidget(self.close_button, 0, Qt.AlignmentFlag.AlignRight)
         self.refresh_doc_button()
@@ -232,6 +239,15 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         metadata = CardManager.get_card_metadata(class_name) or build_card_metadata(self.__class__)
         dialog = CardMetadataDialog(metadata, self)
         dialog.exec()
+
+    def copy_json_to_clipboard(self) -> None:
+        """Copy this card's current configuration JSON to the system clipboard."""
+        QApplication.clipboard().setText(self.to_json_text())
+        MessageManager.send_success_message("Card JSON copied to clipboard.")
+
+    def to_json_text(self) -> str:
+        """Return this card's current configuration as pretty JSON text."""
+        return json.dumps(self.to_dict(), indent=4, ensure_ascii=False)
 
 
 class MakeDataCardWidget(ShareCheckableHeaderCardWidget):

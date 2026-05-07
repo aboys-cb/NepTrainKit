@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import json
 import unittest
 from pathlib import Path
 
@@ -42,3 +43,37 @@ class TestMakeDataSourceCard(unittest.TestCase):
         loop.exec()
 
         self.assertGreater(len(card.result_dataset), 0)
+
+    def test_copy_single_card_json_can_be_pasted_back(self):
+        widget = MakeDataWidget()
+        widget.add_card("CrystalPrototypeBuilderCard")
+        card = widget.workspace_card_widget.cards[0]
+
+        payload = json.loads(card.to_json_text())
+
+        self.assertEqual(payload["class"], "CrystalPrototypeBuilderCard")
+        self.assertIn("params", payload)
+
+        restored = MakeDataWidget()
+        restored._add_card_configs(restored._normalise_card_config_payload(payload))
+
+        self.assertEqual(len(restored.workspace_card_widget.cards), 1)
+        self.assertEqual(restored.workspace_card_widget.cards[0].__class__.__name__, "CrystalPrototypeBuilderCard")
+
+    def test_copy_workflow_json_can_be_pasted_back(self):
+        widget = MakeDataWidget()
+        widget.add_card("CrystalPrototypeBuilderCard")
+        widget.add_card("SuperCellCard")
+
+        payload = json.loads(widget.current_card_config_json())
+
+        self.assertIn("software_version", payload)
+        self.assertEqual([card["class"] for card in payload["cards"]], ["CrystalPrototypeBuilderCard", "SuperCellCard"])
+
+        restored = MakeDataWidget()
+        restored._add_card_configs(restored._normalise_card_config_payload(payload))
+
+        self.assertEqual(
+            [card.__class__.__name__ for card in restored.workspace_card_widget.cards],
+            ["CrystalPrototypeBuilderCard", "SuperCellCard"],
+        )

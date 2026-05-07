@@ -234,10 +234,15 @@ def audit() -> list[str]:
             if banned in doc.text:
                 errors.append(f"{doc.path}: placeholder parameter text remains: `{banned}`")
 
+        param_section = extract_parameter_section(doc.text)
+        if param_section is not None:
+            orphan_h4 = find_orphan_h4_parameter_headings(param_section)
+            if orphan_h4:
+                errors.append(f"{doc.path}: H4 parameter headings appear before any H3 group: {orphan_h4[:3]}")
+
         # ---- params-only docs must document every Params field as a heading ----
         if doc.keys == ["params"]:
             params_fields = extract_params_fields(src)
-            param_section = extract_parameter_section(doc.text)
             if param_section is None:
                 errors.append(f"{doc.path}: missing `## 参数说明` section")
             elif params_fields:
@@ -247,9 +252,6 @@ def audit() -> list[str]:
                         errors.append(f"{doc.path}: missing parameter heading for `{key}`")
                 if INLINE_PARAM_RE.search(param_section):
                     errors.append(f"{doc.path}: old inline parameter entry remains in `## 参数说明`")
-                orphan_h4 = find_orphan_h4_parameter_headings(param_section)
-                if orphan_h4:
-                    errors.append(f"{doc.path}: H4 parameter headings appear before any H3 group: {orphan_h4[:3]}")
                 blocks = extract_parameter_blocks(param_section)
                 for key in params_fields:
                     body = blocks.get(key, [])

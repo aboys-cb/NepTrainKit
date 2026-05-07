@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 from ase import Atoms, Atom
-from qfluentwidgets import HyperlinkLabel, BodyLabel, SubtitleLabel
+from qfluentwidgets import FluentIcon, HyperlinkLabel, BodyLabel, SubtitleLabel
 
 from NepTrainKit.core import MessageManager, CardManager
 from NepTrainKit.core.config_type import append_config_tag
@@ -206,7 +206,7 @@ class MakeDataWidget(QWidget):
         self.export_card_config_action.triggered.connect(self.export_card_config)
         self.load_card_config_action = QAction(QIcon(r":/images/src/images/open.svg"), "Import Card Config")
         self.load_card_config_action.triggered.connect(self.load_card_config)
-        self.paste_card_config_action = QAction(QIcon(r":/images/src/images/copy_figure.svg"), "Paste Card JSON")
+        self.paste_card_config_action = QAction(FluentIcon.PASTE.icon(), "Paste Card JSON")
         self.paste_card_config_action.triggered.connect(self.paste_card_config_from_clipboard)
 
     def init_ui(self):
@@ -227,6 +227,7 @@ class MakeDataWidget(QWidget):
         self.setting_group.stopSignal.connect(self.stop_run_card)
         self.setting_group.newCardSignal.connect(self.add_card)
         self.setting_group.pasteSignal.connect(self.paste_card_config_from_clipboard)
+        self.setting_group.copySignal.connect(self.copy_card_config_to_clipboard)
 
         self.path_label = HyperlinkLabel(self)
         self.path_label.setFixedHeight(30)
@@ -479,16 +480,29 @@ class MakeDataWidget(QWidget):
 
         path = call_path_dialog(self, "Choose a file save location", "file", default_filename="card_config.json")
         if path:
-            config={}
-            config["software_version"]=__version__
-            config["cards"]=[]
-            for card in cards:
-                config["cards"].append(card.to_dict())
-
-
             with open(path, "w",encoding="utf-8") as file:
-                json.dump(config, file, indent=4,ensure_ascii=False)
+                json.dump(self._current_card_config_payload(), file, indent=4, ensure_ascii=False)
             MessageManager.send_success_message("Card configuration exported successfully.")
+
+    def _current_card_config_payload(self):
+        """Return the current workflow card configuration payload."""
+        return {
+            "software_version": __version__,
+            "cards": [card.to_dict() for card in self.workspace_card_widget.cards],
+        }
+
+    def copy_card_config_to_clipboard(self):
+        """Copy the current workflow card configuration JSON to the clipboard."""
+        cards = self.workspace_card_widget.cards
+        if not cards:
+            MessageManager.send_warning_message("No cards in workspace.")
+            return
+        QApplication.clipboard().setText(self.current_card_config_json())
+        MessageManager.send_success_message("Card configuration JSON copied to clipboard.")
+
+    def current_card_config_json(self):
+        """Return the current workflow card configuration as pretty JSON text."""
+        return json.dumps(self._current_card_config_payload(), indent=4, ensure_ascii=False)
 
     def load_card_config(self):
         """Load card configuration from a JSON file chosen by the user.

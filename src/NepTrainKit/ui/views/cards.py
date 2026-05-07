@@ -49,6 +49,7 @@ class ConsoleWidget(QWidget):
 
     newCardSignal = Signal(str)
     pasteSignal = Signal()
+    copySignal = Signal()
     stopSignal = Signal()
     runSignal = Signal()
 
@@ -65,7 +66,7 @@ class ConsoleWidget(QWidget):
         self.gridLayout.setObjectName("console_gridLayout")
         self.setting_command = CommandBar(self)
         self.new_card_button = PrimaryDropDownPushButton(
-            QIcon(":/images/src/images/copy_figure.svg"),
+            FluentIcon.ADD,
             "Add new card",
             self,
         )
@@ -126,7 +127,7 @@ class ConsoleWidget(QWidget):
         self.setting_command.addAction(library_action)
 
         paste_action = Action(
-            QIcon(r":/images/src/images/copy_figure.svg"),
+            FluentIcon.PASTE,
             "Paste JSON",
             triggered=self.paste,
         )
@@ -135,6 +136,17 @@ class ConsoleWidget(QWidget):
             ToolTipFilter(paste_action, 300, ToolTipPosition.TOP)
         )
         self.setting_command.addAction(paste_action)
+
+        copy_action = Action(
+            FluentIcon.COPY,
+            "Copy JSON",
+            triggered=self.copy,
+        )
+        copy_action.setToolTip("Copy current workflow card JSON")
+        copy_action.installEventFilter(
+            ToolTipFilter(copy_action, 300, ToolTipPosition.TOP)
+        )
+        self.setting_command.addAction(copy_action)
 
         self.setting_command.addSeparator()
         run_action = Action(
@@ -184,6 +196,10 @@ class ConsoleWidget(QWidget):
     def paste(self, *args, **kwargs):
         """Emit the paste signal to append cards from clipboard JSON."""
         self.pasteSignal.emit()
+
+    def copy(self, *args, **kwargs):
+        """Emit the copy signal to copy workflow JSON to the clipboard."""
+        self.copySignal.emit()
 
     def stop(self, *args, **kwargs):
         """Emit the stop signal to abort card execution."""

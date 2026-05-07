@@ -96,11 +96,20 @@
 {
   "class": "RandomDopingCard",
   "check_state": true,
-  "rules": "[{\"target\":\"Si\",\"dopants\":{\"Ge\":1.0},\"use\":\"atomic_percent\",\"percent\":[1,2]}]",
-  "doping_type": "Exact",
-  "max_atoms_condition": [20],
-  "use_seed": true,
-  "seed": [101]
+  "params": {
+    "rules": [
+      {
+        "target": "Si",
+        "dopants": {"Ge": 1.0},
+        "use": "atomic_percent",
+        "percent": [1, 2]
+      }
+    ],
+    "doping_type": "Exact",
+    "max_structures": 20,
+    "use_seed": true,
+    "seed": 101
+  }
 }
 ```
 
@@ -109,11 +118,20 @@
 {
   "class": "RandomDopingCard",
   "check_state": true,
-  "rules": "[{\"target\":\"Si\",\"dopants\":{\"Ge\":0.7,\"C\":0.3},\"use\":\"atomic_percent\",\"percent\":[3,8]}]",
-  "doping_type": "Exact",
-  "max_atoms_condition": [20],
-  "use_seed": true,
-  "seed": [101]
+  "params": {
+    "rules": [
+      {
+        "target": "Si",
+        "dopants": {"Ge": 0.7, "C": 0.3},
+        "use": "atomic_percent",
+        "percent": [3, 8]
+      }
+    ],
+    "doping_type": "Exact",
+    "max_structures": 20,
+    "use_seed": true,
+    "seed": 101
+  }
 }
 ```
 
@@ -122,11 +140,20 @@
 {
   "class": "RandomDopingCard",
   "check_state": true,
-  "rules": "[{\"target\":\"Si\",\"dopants\":{\"Ge\":0.5,\"C\":0.3,\"Sn\":0.2},\"use\":\"atomic_percent\",\"percent\":[8,20]}]",
-  "doping_type": "Random",
-  "max_atoms_condition": [20],
-  "use_seed": true,
-  "seed": [101]
+  "params": {
+    "rules": [
+      {
+        "target": "Si",
+        "dopants": {"Ge": 0.5, "C": 0.3, "Sn": 0.2},
+        "use": "atomic_percent",
+        "percent": [8, 20]
+      }
+    ],
+    "doping_type": "Random",
+    "max_structures": 20,
+    "use_seed": true,
+    "seed": 101
+  }
 }
 ```
 

@@ -53,9 +53,9 @@
 
 ### 主模式：Count vs Concentration
 
-**`Vacancy Count`**（num_radio_button）：勾选 → count 模式，用 `Vacancy Count` 的整数值决定删几个原子。默认开启。
+**`Vacancy Count`**（use_num=true）：勾选 → count 模式，用 `Vacancy Count` 的整数值决定删几个原子。默认开启。
 
-**`Vacancy Fraction`**（concentration_radio_button）：勾选 → fraction 模式，用 `Vacancy Fraction` 的比例计算目标删除数：`target_defects = int(fraction * n_atoms)`。与 count 模式二选一。
+**`Vacancy Fraction`**（use_num=false）：勾选 → fraction 模式，用 `Vacancy Fraction` 的比例计算目标删除数：`target_defects = int(fraction * n_atoms)`。与 count 模式二选一。
 
 **`Vacancy Count`**（num_condition）：count 模式下的空位数量。范围为 1-8。
 
@@ -89,15 +89,16 @@
 {
   "class": "VacancyDefectCard",
   "check_state": true,
-  "engine_type": 0,
-  "num_radio_button": false,
-  "concentration_radio_button": true,
-  "num_condition": [1],
-  "concentration_condition": [0.02],
-  "count_mode": "fixed",
-  "max_atoms_condition": [50],
-  "use_seed": true,
-  "seed": [42]
+  "params": {
+    "engine_type": 0,
+    "num_condition": 1,
+    "use_num": false,
+    "concentration_condition": 0.02,
+    "count_mode": "fixed",
+    "max_structures": 50,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
@@ -106,15 +107,16 @@
 {
   "class": "VacancyDefectCard",
   "check_state": true,
-  "engine_type": 1,
-  "num_radio_button": false,
-  "concentration_radio_button": true,
-  "num_condition": [1],
-  "concentration_condition": [0.05],
-  "count_mode": "fixed",
-  "max_atoms_condition": [50],
-  "use_seed": true,
-  "seed": [42]
+  "params": {
+    "engine_type": 1,
+    "num_condition": 1,
+    "use_num": false,
+    "concentration_condition": 0.05,
+    "count_mode": "fixed",
+    "max_structures": 50,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
@@ -123,15 +125,16 @@
 {
   "class": "VacancyDefectCard",
   "check_state": true,
-  "engine_type": 0,
-  "num_radio_button": false,
-  "concentration_radio_button": true,
-  "num_condition": [1],
-  "concentration_condition": [0.10],
-  "count_mode": "fixed",
-  "max_atoms_condition": [100],
-  "use_seed": true,
-  "seed": [42]
+  "params": {
+    "engine_type": 0,
+    "num_condition": 1,
+    "use_num": false,
+    "concentration_condition": 0.10,
+    "count_mode": "fixed",
+    "max_structures": 100,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 

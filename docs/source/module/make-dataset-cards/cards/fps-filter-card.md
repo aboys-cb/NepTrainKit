@@ -6,9 +6,9 @@
 
 ## 功能说明
 
-基于 NEP89 描述符空间的最远点采样（FPS），从大批量结构中挑选代表性子集，去除冗余同时保留多样性。需要提供一个 NEP 模型文件用于生成描述符。
+基于 NEP 描述符空间的最远点采样（FPS），从大批量结构中挑选代表性子集，去除冗余同时保留多样性。需要提供一个 NEP 模型文件（如内置的 `nep89.txt` 或你自己训练的模型）用于生成描述符。
 
-$$\mathbf{d}_i=\mathrm{NEP89}(\text{structure}_i)$$
+$$\mathbf{d}_i=\mathrm{NEP}(\text{structure}_i)$$
 
 $$i_t=\arg\max_j\ \min_{i\in S_{t-1}}\lVert\mathbf{d}_j-\mathbf{d}_i\rVert_2,\quad S_t=S_{t-1}\cup\{i_t\}$$
 
@@ -46,14 +46,14 @@ $$i_t=\arg\max_j\ \min_{i\in S_{t-1}}\lVert\mathbf{d}_j-\mathbf{d}_i\rVert_2,\qu
 
 **不加：**
 - 还在生成阶段，结构数量很少（<50）
-- 输入池本身还没经过物理清洗（如已跑完 nep89 预测、剔除异常结构）
+- 输入池本身还没经过物理清洗（如已用 NEP 预筛、剔除异常结构）
 - 模型还没训练出来——FPS 需要一个可用的 NEP 模型来生成描述符
 
 ## 参数说明
 
 ### `Nep Path`（nep_path）
 
-用于生成 NEP89 描述符的模型文件路径。必须是一个可用的 NEP 模型文件（如 `nep.txt`）。路径为空或文件不存在时卡片报错。
+用于生成 NEP 描述符的模型文件路径。必须是一个可用的 NEP 模型文件（如 `nep.txt` 或内置 `nep89.txt`）。路径为空或文件不存在时卡片报错。
 
 ### `Num Condition`（num_condition）
 
@@ -80,9 +80,13 @@ $$i_t=\arg\max_j\ \min_{i\in S_{t-1}}\lVert\mathbf{d}_j-\mathbf{d}_i\rVert_2,\qu
 {
   "class": "FPSFilterDataCard",
   "check_state": true,
-  "nep_path": "path/to/nep.txt",
-  "num_condition": [100],
-  "min_distance_condition": [0.01]
+  "params": {
+    "nep_path": "path/to/nep.txt",
+    "n_samples": 100,
+    "min_distance": 0.01,
+    "backend": "auto",
+    "batch_size": 1000
+  }
 }
 ```
 
@@ -91,9 +95,13 @@ $$i_t=\arg\max_j\ \min_{i\in S_{t-1}}\lVert\mathbf{d}_j-\mathbf{d}_i\rVert_2,\qu
 {
   "class": "FPSFilterDataCard",
   "check_state": true,
-  "nep_path": "path/to/nep.txt",
-  "num_condition": [200],
-  "min_distance_condition": [0.03]
+  "params": {
+    "nep_path": "path/to/nep.txt",
+    "n_samples": 200,
+    "min_distance": 0.03,
+    "backend": "auto",
+    "batch_size": 1000
+  }
 }
 ```
 
@@ -102,9 +110,13 @@ $$i_t=\arg\max_j\ \min_{i\in S_{t-1}}\lVert\mathbf{d}_j-\mathbf{d}_i\rVert_2,\qu
 {
   "class": "FPSFilterDataCard",
   "check_state": true,
-  "nep_path": "path/to/nep.txt",
-  "num_condition": [50],
-  "min_distance_condition": [0.06]
+  "params": {
+    "nep_path": "path/to/nep.txt",
+    "n_samples": 50,
+    "min_distance": 0.06,
+    "backend": "auto",
+    "batch_size": 1000
+  }
 }
 ```
 

@@ -84,10 +84,14 @@ JSON 字符串（界面中可用简化语法输入，程序自动转换）。每
 {
   "class": "RandomVacancyCard",
   "check_state": true,
-  "rules": "[{\"element\":\"O\",\"count_mode\":\"fixed\",\"count\":[1,1]}]",
-  "max_atoms_condition": [2],
-  "use_seed": true,
-  "seed": [42]
+  "params": {
+    "rules": [
+      {"element": "O", "count_mode": "fixed", "count": [1, 1]}
+    ],
+    "max_structures": 2,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
@@ -96,10 +100,14 @@ JSON 字符串（界面中可用简化语法输入，程序自动转换）。每
 {
   "class": "RandomVacancyCard",
   "check_state": true,
-  "rules": "[{\"element\":\"O\",\"count_mode\":\"random\",\"count\":[1,3]}]",
-  "max_atoms_condition": [20],
-  "use_seed": true,
-  "seed": [42]
+  "params": {
+    "rules": [
+      {"element": "O", "count_mode": "random", "count": [1, 3]}
+    ],
+    "max_structures": 20,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 
@@ -108,10 +116,15 @@ JSON 字符串（界面中可用简化语法输入，程序自动转换）。每
 {
   "class": "RandomVacancyCard",
   "check_state": true,
-  "rules": "[{\"element\":\"O\",\"count_mode\":\"random\",\"count\":[1,3],\"group\":[\"surface\"]},{\"element\":\"Li\",\"count_mode\":\"fixed\",\"count\":[1,1],\"group\":[\"surface\"]}]",
-  "max_atoms_condition": [20],
-  "use_seed": true,
-  "seed": [42]
+  "params": {
+    "rules": [
+      {"element": "O", "count_mode": "random", "count": [1, 3], "group": ["surface"]},
+      {"element": "Li", "count_mode": "fixed", "count": [1, 1], "group": ["surface"]}
+    ],
+    "max_structures": 20,
+    "use_seed": true,
+    "seed": 42
+  }
 }
 ```
 

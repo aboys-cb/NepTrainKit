@@ -153,7 +153,7 @@ class MyCard(MakeDataCard):
 
 - `@CardManager.register_card` 装饰 UI 类。
 - 在 `src/NepTrainKit/ui/views/_card/__init__.py` 导入并加入 `__all__`。
-- 写文档页 `docs/source/module/make-dataset-cards/cards/my-card.md`，必须从训练集诊断场景出发。参见 [卡片文档编写规范](make-dataset-cards/writing-guide.md)。
+- 写文档页 `docs/source/module/make-dataset-cards/cards/my-card.md`，操作示例必须从训练集诊断场景出发：先说用户遇到什么训练集问题，再说明这张卡如何补结构。参见 [卡片文档编写规范](make-dataset-cards/writing-guide.md)。
 - 写 operation 测试（不需要 Qt）：
   ```python
   def test_my_card_operation():

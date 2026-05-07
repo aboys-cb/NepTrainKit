@@ -112,7 +112,8 @@ class TestOperationRegressionEdges(BaseCardTest):
                 ),
             )
 
-        self.assertEqual(CompositionGradientOperation._normalized_composition("Fe:nan,Co:1", ["Fe", "Co"]), {})
+        with self.assertRaisesRegex(ValueError, "finite"):
+            CompositionGradientOperation._normalized_composition("Fe:nan,Co:1", ["Fe", "Co"])
 
     def test_defect_invalid_edges_fail_and_adsorbate_uses_current_positions(self):
         with self.assertRaisesRegex(ValueError, "step must be positive"):

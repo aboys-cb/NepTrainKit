@@ -48,15 +48,21 @@ def is_parseable(path: PathLike) -> bool:
 def import_structures(path: PathLike, **kwargs) -> List[Structure]:
     """Try each registered importer until one yields structures."""
     candidate = as_path(path)
+    matched_errors: list[str] = []
     for imp in _IMPORTERS:
         try:
             if imp.matches(candidate):
-                return list(imp.iter_structures(candidate, **kwargs))
-        except Exception:
-            logger.error(
-                f"Importer {imp.__class__.__name__} failed for {candidate}: {traceback.format_exc()}"
-            )
+                structures = list(imp.iter_structures(candidate, **kwargs))
+                if structures:
+                    return structures
+                matched_errors.append(f"{imp.__class__.__name__} produced no structures")
+        except Exception as exc:
+            detail = traceback.format_exc()
+            logger.error(f"Importer {imp.__class__.__name__} failed for {candidate}: {detail}")
+            matched_errors.append(f"{imp.__class__.__name__}: {exc}")
             continue
+    if matched_errors:
+        raise ValueError(f"Failed to import structures from {candidate}: {'; '.join(matched_errors)}")
     return []
 # ----------- Built-in importers -----------
 class ExtxyzImporter:

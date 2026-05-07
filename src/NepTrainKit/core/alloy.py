@@ -316,10 +316,9 @@ def assign_random_occupancy(
     rng.shuffle(pool)
 
     new_atoms = atoms.copy()
-    chem = new_atoms.get_chemical_symbols()
-    for idx, sym in zip(indices.tolist(), pool.tolist()):
-        chem[int(idx)] = sym
-    new_atoms.set_chemical_symbols(chem)
+    chem = np.asarray(new_atoms.get_chemical_symbols(), dtype=object)
+    chem[indices] = pool
+    new_atoms.set_chemical_symbols(chem.tolist())
     return new_atoms
 
 

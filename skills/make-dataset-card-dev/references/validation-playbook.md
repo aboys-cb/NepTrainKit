@@ -37,6 +37,22 @@ Runs:
 - `python tools/docs/audit_card_docs.py`
 - `python -m sphinx -W -b html docs/source docs/build/html`
 
+## Card generation benchmark
+
+Use this when a new or changed card may be slow:
+
+```bash
+python tools/benchmark_card_operations.py
+```
+
+This benchmarks structure-generating operations directly, without Qt UI startup. It also runs lightweight semantic checks on every scenario, so a faster path must still generate the expected output shape, tags, composition, geometry, or magnetic moments. Useful filters:
+
+```bash
+python tools/benchmark_card_operations.py --only spin --repeat 5
+python tools/benchmark_card_operations.py --profile count50
+python tools/benchmark_card_operations.py --only slab --json card_bench.json
+```
+
 ## Triage order
 
 1. Fix operation architecture violations first; do not leave core logic in UI cards.

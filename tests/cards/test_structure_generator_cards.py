@@ -32,6 +32,33 @@ class TestStructureGeneratorCards(BaseCardTest):
         self.assertTrue(results[0].pbc.all())
         self.assertIn("Proto(bcc", results[0].info.get("Config_type", ""))
 
+    def test_crystal_prototype_builder_reuses_auto_supercell_factors(self):
+        params = CrystalPrototypeBuilderParams(
+            lattice="fcc",
+            element="Cu",
+            a_range=(3.5, 3.7, 0.1),
+            auto_supercell=True,
+            max_atoms=128,
+            max_outputs=3,
+        )
+        operation = CrystalPrototypeBuilderOperation()
+        calls = []
+        original = operation.__class__.generate.__globals__["best_supercell_factors_max_atoms"]
+
+        def counted(*args, **kwargs):
+            calls.append(args)
+            return original(*args, **kwargs)
+
+        operation.__class__.generate.__globals__["best_supercell_factors_max_atoms"] = counted
+        try:
+            results = operation.generate(params)
+        finally:
+            operation.__class__.generate.__globals__["best_supercell_factors_max_atoms"] = original
+
+        self.assertEqual(len(results), 3)
+        self.assertEqual(len(calls), 1)
+        self.assertTrue(all("Proto(fcc" in atoms.info.get("Config_type", "") for atoms in results))
+
     def test_crystal_prototype_builder_card_roundtrip(self):
         card = CrystalPrototypeBuilderCard()
         card.structure_combo.setCurrentText("hcp")

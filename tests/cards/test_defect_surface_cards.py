@@ -1,7 +1,28 @@
+from ase.geometry import geometry
+
 from .card_test_base import *
 
 
 class TestDefectSurfaceCards(BaseCardTest):
+    def test_insert_defect_fast_nearest_distance_matches_ase(self):
+        structure = self.structure.copy()
+        candidate = np.asarray(structure.get_positions()[0], dtype=float) + np.array([0.2, 0.1, 0.0])
+
+        nearest = InsertDefectOperation._nearest_distance(
+            candidate,
+            np.asarray(structure.get_positions(), dtype=float),
+            cell=np.asarray(structure.cell.array, dtype=float),
+            pbc=np.asarray(structure.pbc, dtype=bool),
+        )
+        _, dists = geometry.get_distances(
+            candidate,
+            np.asarray(structure.get_positions(), dtype=float),
+            cell=np.asarray(structure.cell.array, dtype=float),
+            pbc=np.asarray(structure.pbc, dtype=bool),
+        )
+
+        self.assertAlmostEqual(nearest, float(np.min(dists)), places=12)
+
     def test_random_slab_card(self):
         card = RandomSlabCard()
         structure = self.structure.copy()

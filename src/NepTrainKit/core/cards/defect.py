@@ -81,6 +81,8 @@ class RandomVacancyOperation(StructureOperation):
         structure_list = []
         for _ in range(int(params.max_structures)):
             new_structure = structure.copy()
+            symbols = np.asarray(new_structure.get_chemical_symbols(), dtype=object)
+            keep_mask = np.ones(len(new_structure), dtype=bool)
             total_remove = 0
             for rule in params.rules:
                 element = rule.get("element")
@@ -94,19 +96,12 @@ class RandomVacancyOperation(StructureOperation):
 
                 groups = rule.get("group")
                 if groups and "group" in new_structure.arrays:
-                    candidate_indices = [
-                        i
-                        for i, atom, group in zip(
-                            range(len(new_structure)),
-                            new_structure,
-                            new_structure.arrays["group"],
-                        )
-                        if atom.symbol == element and group in groups
-                    ]
+                    group_values = np.asarray(new_structure.arrays["group"], dtype=object)
+                    candidate_indices = np.nonzero(keep_mask & (symbols == element) & np.isin(group_values, list(groups)))[0]
                 else:
-                    candidate_indices = [i for i, atom in enumerate(new_structure) if atom.symbol == element]
+                    candidate_indices = np.nonzero(keep_mask & (symbols == element))[0]
 
-                if not candidate_indices:
+                if len(candidate_indices) == 0:
                     continue
 
                 count_mode = str(rule.get("count_mode", "")).lower()
@@ -121,11 +116,11 @@ class RandomVacancyOperation(StructureOperation):
                     continue
 
                 idxs = rng.choice(candidate_indices, remove_num, replace=False)
-                for idx in sorted(idxs, reverse=True):
-                    del new_structure[idx]
+                keep_mask[np.asarray(idxs, dtype=int)] = False
                 total_remove += remove_num
 
             if total_remove:
+                del new_structure[~keep_mask]
                 append_config_tag(new_structure, f"Vac(n={total_remove})")
             structure_list.append(new_structure)
         return structure_list
@@ -351,8 +346,8 @@ class InsertDefectOperation(StructureOperation):
                     if candidate is None:
                         continue
 
-                    _, dists = geometry.get_distances(candidate, positions_reference, cell=cell, pbc=pbc)
-                    if len(dists.ravel()) and np.min(dists) < max(min_distance, 0.0):
+                    nearest = self._nearest_distance(candidate, positions_reference, cell=cell, pbc=pbc)
+                    if nearest < max(min_distance, 0.0):
                         continue
 
                     element = str(rng.choice(species, p=np.array(weights, dtype=float)))
@@ -380,6 +375,29 @@ class InsertDefectOperation(StructureOperation):
     def _sample_interstitial(cell: np.ndarray, *, rng: np.random.Generator) -> np.ndarray:
         frac = rng.random(3)
         return frac @ cell
+
+    @staticmethod
+    def _nearest_distance(candidate: np.ndarray, positions: np.ndarray, *, cell: np.ndarray, pbc: np.ndarray) -> float:
+        pos = np.asarray(positions, dtype=float)
+        if pos.size == 0:
+            return float("inf")
+        cell_arr = np.asarray(cell, dtype=float)
+        pbc_arr = np.asarray(pbc, dtype=bool)
+        offdiag = cell_arr.copy()
+        np.fill_diagonal(offdiag, 0.0)
+        if cell_arr.shape == (3, 3) and np.all(np.isfinite(cell_arr)) and np.allclose(offdiag, 0.0, atol=1e-12):
+            lengths = np.diag(cell_arr)
+            if np.all(np.abs(lengths[pbc_arr]) > 1e-12):
+                delta = pos - np.asarray(candidate, dtype=float).reshape(1, 3)
+                for axis in range(3):
+                    if pbc_arr[axis]:
+                        length = float(lengths[axis])
+                        delta[:, axis] -= np.rint(delta[:, axis] / length) * length
+                return float(np.sqrt(np.min(np.sum(delta * delta, axis=1))))
+
+        _, dists = geometry.get_distances(candidate, pos, cell=cell_arr, pbc=pbc_arr)
+        flat = np.asarray(dists, dtype=float).ravel()
+        return float(np.min(flat)) if flat.size else float("inf")
 
     @staticmethod
     def _sample_adsorbate(

@@ -202,3 +202,28 @@ class TestMagnetismOrderCards(MagnetismCardTest):
         m = np.array(rotated.get_initial_magnetic_moments(), dtype=float)
         self.assertEqual(m.ndim, 2)
         self.assertEqual(m.shape[1], 3)
+
+    def test_magmom_rotation_seed_reproducibility_and_magnitude_bounds(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+        params = MagneticMomentRotationParams(
+            max_angle=10.0,
+            num_structures=3,
+            disturb_magnitude=True,
+            magnitude_factor=(0.9, 1.1),
+            use_seed=True,
+            seed=21,
+        )
+
+        first = MagneticMomentRotationOperation().run_structure(structure, params)
+        second = MagneticMomentRotationOperation().run_structure(structure, params)
+
+        for a, b in zip(first, second):
+            ma = np.array(a.get_initial_magnetic_moments(), dtype=float)
+            mb = np.array(b.get_initial_magnetic_moments(), dtype=float)
+            self.assertTrue(np.allclose(ma, mb, atol=1e-12))
+            self.assertEqual(ma.shape, (4, 3))
+            norms = np.linalg.norm(ma, axis=1)
+            self.assertTrue(np.all(norms >= 1.8 - 1e-12))
+            self.assertTrue(np.all(norms <= 2.2 + 1e-12))
+            self.assertIn("MMR(", a.info.get("Config_type", ""))

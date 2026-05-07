@@ -86,6 +86,7 @@ class RandomDopingOperation(StructureOperation):
 
         for _ in range(int(params.max_structures)):
             new_structure = structure.copy()
+            symbols = np.asarray(new_structure.get_chemical_symbols(), dtype=object)
             total_doping = 0
             for rule in params.rules:
                 target = rule.get("target")
@@ -95,19 +96,12 @@ class RandomDopingOperation(StructureOperation):
 
                 groups = rule.get("group")
                 if groups and "group" in new_structure.arrays:
-                    candidate_indices = [
-                        i
-                        for i, elem, group in zip(
-                            range(len(new_structure)),
-                            new_structure,
-                            new_structure.arrays["group"],
-                        )
-                        if elem.symbol == target and group in groups
-                    ]
+                    group_values = np.asarray(new_structure.arrays["group"], dtype=object)
+                    candidate_indices = np.nonzero((symbols == target) & np.isin(group_values, list(groups)))[0]
                 else:
-                    candidate_indices = [i for i, atom in enumerate(new_structure) if atom.symbol == target]
+                    candidate_indices = np.nonzero(symbols == target)[0]
 
-                if not candidate_indices:
+                if len(candidate_indices) == 0:
                     continue
 
                 doping_num = self._doping_count(new_structure, candidate_indices, target, dopants, rule, rng)
@@ -125,11 +119,11 @@ class RandomDopingOperation(StructureOperation):
                     ratio_type=rule.get("ratio_type", "atom"),
                 )
 
-                for idx, elem in zip(idxs, sample):
-                    new_structure[idx].symbol = elem
+                symbols[np.asarray(idxs, dtype=int)] = np.asarray(sample, dtype=object)
                 total_doping += doping_num
 
             if total_doping:
+                new_structure.set_chemical_symbols(symbols.tolist())
                 append_config_tag(new_structure, f"Dop(n={total_doping})")
             structure_list.append(new_structure)
 
@@ -475,7 +469,7 @@ class CompositionGradientOperation(StructureOperation):
                 rng = np.random.default_rng(derived_seed)
                 seed_tag = f",s={derived_seed}"
             atoms = structure.copy()
-            symbols = atoms.get_chemical_symbols()
+            symbols = np.asarray(atoms.get_chemical_symbols(), dtype=object)
             for group_idx, indices in enumerate(groups):
                 t = 0.0 if len(groups) == 1 else float(group_idx) / float(len(groups) - 1)
                 comp = {
@@ -483,9 +477,8 @@ class CompositionGradientOperation(StructureOperation):
                     for element in elements
                 }
                 assigned = self._exact_layer_assignment(elements, comp, len(indices), rng)
-                for atom_idx, symbol in zip(indices, assigned):
-                    symbols[int(atom_idx)] = str(symbol)
-            atoms.set_chemical_symbols(symbols)
+                symbols[np.asarray(indices, dtype=int)] = assigned
+            atoms.set_chemical_symbols(symbols.tolist())
             append_config_tag(atoms, f"CompGrad(ax={self._axis_name(axis_idx)},b={len(groups)}{seed_tag})")
             outputs.append(atoms)
         return outputs
@@ -821,12 +814,14 @@ def replace_atoms_with_conditions(
     """Replace atoms in a structure using a probability distribution and coordinate condition."""
     symbols = structure.get_chemical_symbols()
     positions = structure.get_positions()
-    target_indices = [
-        idx
-        for idx, (symbol, position) in enumerate(zip(symbols, positions))
-        if symbol == atom_to_replace and evaluate_condition(condition, np.asarray(position, dtype=float))
-    ]
-    if not target_indices:
+    target_mask = np.asarray(symbols, dtype=object) == atom_to_replace
+    condition_result = evaluate_condition(condition, np.asarray(positions, dtype=float))
+    if isinstance(condition_result, np.ndarray):
+        condition_mask = np.asarray(condition_result, dtype=bool)
+    else:
+        condition_mask = np.full(len(symbols), bool(condition_result), dtype=bool)
+    target_indices = np.nonzero(target_mask & condition_mask)[0]
+    if len(target_indices) == 0:
         return structure, 0
 
     probs = np.asarray(probabilities, dtype=float)
@@ -844,8 +839,10 @@ def replace_atoms_with_conditions(
         sampled = rng.choice(new_atoms, size=len(shuffled), p=probs, replace=True)
 
     new_structure = structure.copy()
-    for idx, elem in zip(shuffled, sampled):
-        new_structure[idx].symbol = elem
+    new_symbols = list(symbols)
+    for idx, elem in zip(shuffled.tolist(), sampled.tolist()):
+        new_symbols[int(idx)] = str(elem)
+    new_structure.set_chemical_symbols(new_symbols)
     return new_structure, len(shuffled)
 
 

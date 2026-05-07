@@ -215,6 +215,35 @@ class MagneticMomentRotationOperation(StructureOperation):
             return np.zeros_like(vec)
         return vec / current * target_length
 
+    @staticmethod
+    def rotate_vectors(vectors: np.ndarray, angle_deg: np.ndarray, axes: np.ndarray) -> np.ndarray:
+        vec = np.asarray(vectors, dtype=float)
+        if vec.size == 0:
+            return vec.copy()
+
+        axis = np.asarray(axes, dtype=float)
+        axis_norm = np.linalg.norm(axis, axis=1)
+        safe_axis = np.zeros_like(axis)
+        nonzero_axis = axis_norm > 1e-12
+        safe_axis[nonzero_axis] = axis[nonzero_axis] / axis_norm[nonzero_axis, None]
+        safe_axis[~nonzero_axis] = np.array([0.0, 0.0, 1.0], dtype=float)
+
+        theta = np.deg2rad(np.asarray(angle_deg, dtype=float))
+        cos_t = np.cos(theta)[:, None]
+        sin_t = np.sin(theta)[:, None]
+        dot = np.sum(safe_axis * vec, axis=1)[:, None]
+        return vec * cos_t + np.cross(safe_axis, vec) * sin_t + safe_axis * dot * (1.0 - cos_t)
+
+    @staticmethod
+    def rescale_vectors(vectors: np.ndarray, target_lengths: np.ndarray) -> np.ndarray:
+        vec = np.asarray(vectors, dtype=float)
+        targets = np.asarray(target_lengths, dtype=float)
+        current = np.linalg.norm(vec, axis=1)
+        out = np.zeros_like(vec)
+        mask = (current > 1e-12) & (targets != 0.0)
+        out[mask] = vec[mask] / current[mask, None] * targets[mask, None]
+        return out
+
     def run_structure(self, structure, params: MagneticMomentRotationParams) -> list:
         num_structures = int(params.num_structures)
         if num_structures <= 0:
@@ -243,24 +272,24 @@ class MagneticMomentRotationOperation(StructureOperation):
 
         results = []
         symbols = structure.get_chemical_symbols()
+        selected_mask = np.array([symbol in elements for symbol in symbols], dtype=bool)
+        selected_indices = np.nonzero(selected_mask)[0]
+        base_lengths = np.linalg.norm(base_vectors, axis=1)
         for _ in range(num_structures):
             new_structure = structure.copy()
             moment_array = np.array(base_vectors, copy=True)
-            for idx, symbol in enumerate(symbols):
-                if symbol not in elements:
-                    continue
+            if selected_indices.size:
                 if can_rotate:
-                    angle = float(rng.uniform(0.0, float(params.max_angle)))
-                    base_vec = base_vectors[idx]
-                    rotated = self.rotate_vector(base_vec, angle, rng=rng)
+                    angles = rng.uniform(0.0, float(params.max_angle), size=selected_indices.size)
+                    axes = rng.normal(size=(selected_indices.size, 3))
+                    rotated = self.rotate_vectors(base_vectors[selected_indices], angles, axes)
                     if params.disturb_magnitude:
-                        original_length = np.linalg.norm(base_vec)
-                        scale = float(rng.uniform(min_factor, max_factor))
-                        rotated = self.rescale_vector(rotated, original_length * scale)
-                    moment_array[idx] = rotated
+                        scales = rng.uniform(min_factor, max_factor, size=selected_indices.size)
+                        rotated = self.rescale_vectors(rotated, base_lengths[selected_indices] * scales)
+                    moment_array[selected_indices] = rotated
                 elif params.disturb_magnitude:
-                    scale = float(rng.uniform(min_factor, max_factor))
-                    moment_array[idx] = moment_array[idx] * scale
+                    scales = rng.uniform(min_factor, max_factor, size=selected_indices.size)
+                    moment_array[selected_indices] *= scales[:, None]
             set_initial_magmoms_safe(new_structure, moment_array)
             label = "MMR" if can_rotate else "MMS"
             details = []
@@ -997,35 +1026,67 @@ class SmallAngleSpinTiltOperation(StructureOperation):
             return []
 
         positions = np.asarray(structure.get_positions(), dtype=float)
-        vec_matrix, dist_matrix = get_distances(
+        vec_matrix, dist_matrix = self.pair_distance_matrix(
             positions[eligible],
-            positions[eligible],
-            cell=np.asarray(structure.cell),
+            cell=np.asarray(structure.cell.array, dtype=float),
             pbc=np.asarray(structure.pbc, dtype=bool),
         )
         tol = float(params.pair_shell_tolerance)
         shell_index = int(params.pair_shell) - 1
-        pair_distances: list[tuple[int, int, float, np.ndarray]] = []
-        for row in range(len(eligible)):
-            for col in range(row + 1, len(eligible)):
-                dist = float(dist_matrix[row, col])
-                if dist <= 1e-12:
-                    continue
-                pair_distances.append((eligible[row], eligible[col], dist, np.asarray(vec_matrix[row, col], dtype=float)))
-        if not pair_distances:
+        rows, cols = np.triu_indices(len(eligible), k=1)
+        distances = np.asarray(dist_matrix[rows, cols], dtype=float)
+        valid = distances > 1e-12
+        if not np.any(valid):
             return []
+
         shells: list[float] = []
-        for dist in sorted(dist for _, _, dist, _ in pair_distances):
+        for dist in np.sort(distances[valid]):
             if not shells or abs(dist - shells[-1]) > tol:
-                shells.append(dist)
+                shells.append(float(dist))
         if shell_index < 0 or shell_index >= len(shells):
             return []
         target_distance = shells[shell_index]
+        shell_mask = valid & (np.abs(distances - target_distance) <= tol)
+        shell_rows = rows[shell_mask]
+        shell_cols = cols[shell_mask]
+        left = np.asarray(eligible, dtype=int)[shell_rows]
+        right = np.asarray(eligible, dtype=int)[shell_cols]
+
+        has_pair_filters = (
+            bool(parse_pair_filter(params.pair_element_filter, normalize_case=True))
+            or bool(parse_pair_filter(params.pair_group_filter, normalize_case=False))
+            or params.bond_filter_mode != "Any"
+        )
+        if not has_pair_filters:
+            return [(int(i), int(j)) for i, j in zip(left, right)]
+
         return [
-            (i, j)
-            for i, j, dist, bond_vector in pair_distances
-            if abs(dist - target_distance) <= tol and self.passes_pair_filters(structure, i, j, bond_vector, params)
+            (int(i), int(j))
+            for i, j, row, col in zip(left, right, shell_rows, shell_cols)
+            if self.passes_pair_filters(structure, int(i), int(j), np.asarray(vec_matrix[row, col], dtype=float), params)
         ]
+
+    @staticmethod
+    def pair_distance_matrix(positions: np.ndarray, *, cell: np.ndarray, pbc: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        cell_arr = np.asarray(cell, dtype=float)
+        pbc_arr = np.asarray(pbc, dtype=bool)
+        positions_arr = np.asarray(positions, dtype=float)
+        if positions_arr.size == 0:
+            return np.empty((0, 0, 3), dtype=float), np.empty((0, 0), dtype=float)
+
+        offdiag = cell_arr.copy()
+        np.fill_diagonal(offdiag, 0.0)
+        if cell_arr.shape == (3, 3) and np.all(np.isfinite(cell_arr)) and np.allclose(offdiag, 0.0, atol=1e-12):
+            lengths = np.diag(cell_arr)
+            if np.all(np.abs(lengths[pbc_arr]) > 1e-12):
+                vec = positions_arr[None, :, :] - positions_arr[:, None, :]
+                for axis in range(3):
+                    if pbc_arr[axis]:
+                        length = float(lengths[axis])
+                        vec[..., axis] -= np.rint(vec[..., axis] / length) * length
+                return vec, np.linalg.norm(vec, axis=2)
+
+        return get_distances(positions_arr, positions_arr, cell=cell_arr, pbc=pbc_arr)
 
     @staticmethod
     def passes_pair_filters(structure, left_idx: int, right_idx: int, bond_vector: np.ndarray, params: SmallAngleSpinTiltParams) -> bool:

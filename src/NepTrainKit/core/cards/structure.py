@@ -466,17 +466,16 @@ class CrystalPrototypeBuilderOperation(GeneratorOperation):
         element = self._canonical_element(params.element)
         lattice = params.lattice.strip().lower()
         out = []
+        supercell_factors = None
         for a in self._a_values(params.a_range):
-            if lattice == "hcp":
-                base = bulk(element, "hcp", a=float(a), covera=float(params.covera))
-            else:
-                base = bulk(element, lattice, a=float(a), cubic=True)
+            base = self._build_base(element, lattice, float(a), float(params.covera))
             base.pbc = True
             base.wrap()
 
             if params.auto_supercell:
-                factors = best_supercell_factors_max_atoms(base, int(params.max_atoms))
-                na, nb, nc = factors.na, factors.nb, factors.nc
+                if supercell_factors is None:
+                    supercell_factors = best_supercell_factors_max_atoms(base, int(params.max_atoms))
+                na, nb, nc = supercell_factors.na, supercell_factors.nb, supercell_factors.nc
             else:
                 na, nb, nc = [int(value) for value in params.rep]
 
@@ -493,6 +492,12 @@ class CrystalPrototypeBuilderOperation(GeneratorOperation):
     def _canonical_element(element: str) -> str:
         element = element.strip() or "Cu"
         return element[0].upper() + element[1:].lower()
+
+    @staticmethod
+    def _build_base(element: str, lattice: str, a: float, covera: float):
+        if lattice == "hcp":
+            return bulk(element, "hcp", a=float(a), covera=float(covera))
+        return bulk(element, lattice, a=float(a), cubic=True)
 
     @staticmethod
     def _a_values(values: tuple[float, float, float]) -> list[float]:

@@ -1,7 +1,28 @@
+from ase.geometry import get_distances
+
 from .magnetism_test_base import *
 
 
 class TestMagnetismTiltDisorderCards(MagnetismCardTest):
+    def test_small_angle_spin_tilt_fast_pair_distance_matches_ase(self):
+        structure = self._spin_chain()
+        positions = np.asarray(structure.get_positions(), dtype=float)
+
+        vec_fast, dist_fast = SmallAngleSpinTiltOperation.pair_distance_matrix(
+            positions,
+            cell=np.asarray(structure.cell.array, dtype=float),
+            pbc=np.asarray(structure.pbc, dtype=bool),
+        )
+        vec_ase, dist_ase = get_distances(
+            positions,
+            positions,
+            cell=np.asarray(structure.cell.array, dtype=float),
+            pbc=np.asarray(structure.pbc, dtype=bool),
+        )
+
+        self.assertTrue(np.allclose(dist_fast, dist_ase, atol=1e-12))
+        self.assertTrue(np.allclose(np.linalg.norm(vec_fast, axis=2), np.linalg.norm(vec_ase, axis=2), atol=1e-12))
+
     def test_small_angle_spin_tilt_card_reference_and_explicit_index(self):
         structure = self._spin_chain()
         structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])

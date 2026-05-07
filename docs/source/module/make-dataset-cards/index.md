@@ -14,7 +14,6 @@
 
 writing-guide
 recipes
-coverage-matrix
 cards/super-cell-card
 cards/crystal-prototype-builder-card
 cards/perturb-card
@@ -54,7 +53,7 @@ cards/card-group
 
 1. 先看“按目标选卡”，确定主卡片。
 2. 再看对应卡片页里的“操作示例”，确认参数量级。
-3. 最后参考 [覆盖矩阵](coverage-matrix.md) 和 [配方示例（Recipes）](recipes.md) 组织多卡流程。
+3. 最后参考 [配方示例（Recipes）](recipes.md) 组织多卡流程。
 
 :::{tip}
 涉及 `FPS Filter` 的高通量流程，通常先导出 `xyz`，在 `NEP Dataset Display`

@@ -122,6 +122,14 @@ UI 类放在 `src/NepTrainKit/ui/views/_card/*.py`，遵循现有风格：
 - 关键参数生效。
 - 文档审计通过。
 
+新建或实质修改卡片时，测试不能只验证“不报错”。必须在 `tests/cards/` 对应领域文件中覆盖该卡片的核心输出语义：
+
+- 每个用户可选模式、关键参数分支和随机 seed 策略都要有代表性用例。
+- 边界条件和非法参数要验证明确失败原因，不做静默降级或伪成功。
+- 输出结构要检查可决策结果，例如数量、元素组成、cell/position/magmom 变化、过滤保留/剔除集合、`Config_type` 追踪标签。
+- 随机型卡片要验证固定 seed 的可复现性；没有 seed 的随机分布只检查物理/几何约束，不写脆弱的逐坐标快照。
+- dataset/generator 卡片要直接测 `run_dataset(...)` 或 `generate(...)` 的输入输出契约；UI 往返测试只验证参数绑定，不能替代 operation 行为测试。
+
 ## 验证
 
 从仓库根目录运行 `python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick`。更多模式见 `references/validation-playbook.md`。

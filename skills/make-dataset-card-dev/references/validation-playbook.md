@@ -11,7 +11,7 @@ python skills/make-dataset-card-dev/scripts/run_card_checks.py --quick
 Runs:
 
 - operation architecture audit
-- `pytest tests/test_makedata_source_card.py tests/test_card.py -q`
+- `pytest tests/test_makedata_source_card.py tests/cards -q`
 - `python tools/docs/audit_card_docs.py`
 
 ## Include docs build
@@ -43,6 +43,16 @@ Runs:
 2. Fix code/runtime errors from pytest.
 3. Fix schema/section mismatches reported by `audit_card_docs.py`.
 4. Fix docs warnings or broken references from Sphinx.
+
+## New card test bar
+
+When adding a card, update `tests/cards/` in the domain file that matches the card. The test must prove the card behavior, not only that execution finishes:
+
+- cover each public mode and key parameter branch;
+- cover invalid or boundary params with explicit errors;
+- assert output semantics such as structure count, composition, cell/position/magmom changes, dataset filter decisions, generated tags, and `Config_type`;
+- cover deterministic seed behavior for random operations;
+- keep UI round-trip tests focused on parameter binding and serialization; operation behavior belongs in direct operation tests.
 
 ## Operation architecture audit
 

@@ -23,7 +23,7 @@ Use this map to edit only what is needed.
 ## Tests to touch first
 
 - `tests/test_makedata_source_card.py`: source-card execution in MakeData page.
-- `tests/test_card.py`: operation, card transformation, and serialization tests.
+- `tests/cards/`: operation, card transformation, and serialization tests grouped by card domain.
 - Operation tests should avoid Qt setup: call `Operation().run_structure(atoms, Params(...))`, `run_dataset(...)`, or `generate(...)` directly.
 
 ## CI references

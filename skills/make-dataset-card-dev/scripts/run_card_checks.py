@@ -108,7 +108,7 @@ def build_commands(full: bool, with_docs: bool) -> list[list[str]]:
         ]
 
     commands: list[list[str]] = [
-        [py, "-m", "pytest", "tests/test_makedata_source_card.py", "tests/test_card.py", "-q"],
+        [py, "-m", "pytest", "tests/test_makedata_source_card.py", "tests/cards", "-q"],
         [py, "tools/docs/audit_card_docs.py"],
     ]
     if with_docs:

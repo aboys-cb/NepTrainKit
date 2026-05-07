@@ -58,114 +58,102 @@ $$\phi(u)=s\cdot \frac{2\pi u}{L_D}+\phi_0,\qquad s\in\{-1,+1\}$$
 
 ## 参数说明
 
-
-
-### 传播和周期
+### 螺旋轴和周期
 
 #### Axis（axis）
-类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 1.0)`。选择操作沿哪个空间轴或磁矩参考轴定义。
+类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 1.0)`。设置螺旋传播方向和分层投影轴。
 
-物理直觉：坐标轴参数会改变空间分层、吸附方向或磁矩方向；使用前先确认结构取向。
+`[x, y, z]`。螺旋相位沿这个方向传播。原子坐标在该方向的投影用于计算相位。
 
 生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。
-
 
 #### Spiral Parameter Mode（spiral_parameter_mode）
 类型：`str`。默认：`'Period (L_D)'`。选择螺旋结构由周期还是角梯度控制。
 
-物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
-
-| 选项 | 含义 | 什么时候选 |
-|------|------|-----------|
-| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
-
+物理直觉：`Period (L_D)` 适合已知螺旋周期或要扫 E(q)；`Angle gradient (deg/A)` 适合直接控制每埃旋转角。
 
 #### Period Range（period_range）
 类型：`list[float] | tuple[float, float, float]`。默认：`(20.0, 40.0, 10.0)`。设置螺旋周期的扫描范围。
 
-物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
-
+`[min, max, step]`，单位 Angstrom。
+- 保守：`[20, 20, 5]`（单周期）
+- 平衡：`[10, 40, 10]`（4 个周期）
+- 探索：`[4, 80, 4]`（宽范围）
 
 #### Angle Gradient Range（angle_gradient_range）
 类型：`list[float] | tuple[float, float, float]`。默认：`(18.0, 18.0, 1.0)`。设置单位长度自旋转角梯度的扫描范围。
 
-物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
-
+`[min, max, step]`，单位 deg/A。值越大旋转越快。360/L_D = 梯度。
 
 #### Layer Tolerance（layer_tolerance）
 类型：`float`。默认：`0.05`。设置把原子归为同一层的坐标容差。
 
-物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
-
+仅在 `Layer-locked` 模式下生效。投影差小于此阈值的原子归为同一层。
 
 #### Only Commensurate Periods（only_commensurate_periods）
-类型：`bool`。默认：`False`。控制 `only_commensurate_periods` 对应的生成或过滤行为。
+类型：`bool`。默认：`False`。决定是否只保留与当前晶胞长度相容的螺旋周期。
 
-物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
-
+勾选后只保留与当前晶格周期边界相容的周期。开启后程序在指定区间内自动搜索相容周期。如果没有相容周期，卡片会给出建议的超胞倍数。
 
 ### 相位和形状
 
 #### Phase Range（phase_range）
 类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 15.0)`。设置螺旋或折返结构的相位扫描范围。
 
-物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
-
+`[min, max, step]`，全局相位偏移，单位度。
+- 保守：`[0, 0, 15]`（单个相位）
+- 平衡：`[0, 90, 30]`（4 个相位）
+- 探索：`[-180, 180, 30]`（全相位空间）
 
 #### Mz（mz）
-类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 0.1)`。控制 `mz` 对应的生成或过滤行为。
+类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 0.1)`。设置 conical spiral 中沿轴向的磁矩分量扫描。
 
-物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
-
+`[min, max, step]`，沿传播轴的单位化分量，范围 [-1, 1]。0 = 纯 helix，非零 = conical spiral。
+- 保守：`[0, 0, 0.1]`（纯 helix）
+- 平衡：`[0, 0.5, 0.1]`（弱 conical）
+- 探索：`[-0.9, 0.9, 0.1]`（全 conical 空间）
 
 #### Chirality（chirality）
-类型：`str`。默认：`'Both'`。控制 `chirality` 对应的生成或过滤行为。
+类型：`str`。默认：`'Both'`。选择生成顺时针、逆时针或两种手性的螺旋。
 
-物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
-
+`Clockwise` / `Counterclockwise` / `Both`。选 `Both` 会对同一组参数生成一对手性相反的构型。
 
 #### Phase Mode（phase_mode）
-类型：`str`。默认：`'Continuous by position'`。控制 `phase_mode` 对应的生成或过滤行为。
+类型：`str`。默认：`'Continuous by position'`。选择相位按连续坐标变化还是按离散层跳变。
 
-物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
-
+- `Continuous by position`：每个原子按自身投影坐标独立计算相位。标准连续螺旋。
+- `Layer-locked`：先按投影坐标分层，同层原子共享相位。适合层状体系。
 
 ### 磁矩幅值
 
 #### Magnitude Source（magnitude_source）
 类型：`str`。默认：`'Existing initial magmoms'`。选择磁矩幅值来自元素映射、默认值还是已有结构。
 
-物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+`Existing initial magmoms` 或 `Map/default magnitude`。
 
-| 选项 | 含义 | 什么时候选 |
-|------|------|-----------|
-| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
-
+**`Magmom Map`** / **`Default Moment`**：仅在 `Map/default magnitude` 模式下生效。
 
 #### Magmom Map（magmom_map）
 类型：`str`。默认：`''`。按元素指定磁矩幅值或方向，例如 `Fe:2.2, Ni:0.6`。
 
-物理直觉：已有元素磁矩先验时使用；未知体系不要用它伪造不存在的元素差异。
-
+物理直觉：已知元素局域磁矩时显式写入，例如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。
 
 #### Default Moment（default_moment）
 类型：`float`。默认：`0.0`。为没有显式元素映射的原子提供默认磁矩幅值。
 
-物理直觉：只适合作为兜底幅值；关键磁性元素应在 `magmom_map` 中显式给出。
-
+物理直觉：只作为 `magmom_map` 未命中的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。
 
 #### Apply Elements（apply_elements）
 类型：`str`。默认：`''`。限制只处理指定元素，留空表示处理所有元素。
 
-物理直觉：用于只扰动磁性元素或只替换目标元素；留空代表全元素参与。
-
+限制哪些元素施加螺旋纹理。
 
 ### 输出预算
 
 #### Max Outputs（max_outputs）
 类型：`int`。默认：`100`。限制这张卡最多输出多少个结构。
 
-物理直觉：这是防止链式卡片数量爆炸的预算阀；上游结构很多时应先按计算预算设上限。
+物理直觉：周期、相位、手性和锥角组合会迅速相乘。E(q) 曲线先保留几十个点，全参数探索再放大。
 
 ## 推荐预设
 

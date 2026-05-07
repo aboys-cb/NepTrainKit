@@ -26,6 +26,18 @@ RECIPES_DOC = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "reci
 
 SCHEMA_RE = re.compile(r"<!--\s*card-schema:\s*(\{.*\})\s*-->")
 PARAM_HEADING_RE = re.compile(r"^\s{0,3}#{3,4}\s+.+?（([A-Za-z_][A-Za-z0-9_]*)）\s*$", re.MULTILINE)
+INLINE_PARAM_RE = re.compile(r"^\s*\*\*`[^`]+`\*\*（[A-Za-z_][A-Za-z0-9_]*(?:\s*/\s*[A-Za-z_][A-Za-z0-9_]*)*）", re.MULTILINE)
+BANNED_PARAM_TEXT = [
+    "以 UI 下拉项为准",
+    "根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。",
+    "模式会改变结构生成语义，不是单纯的输出数量开关。",
+    "选择这张卡的主操作模式。",
+    "对应的生成或过滤行为。",
+    "指定参与生成、替换或扰动的元素集合。",
+    "选择操作沿哪个空间轴或磁矩参考轴定义。",
+]
+TYPE_PREFIX = "类型："
+CONDITION_PREFIX = "生效条件："
 
 
 @dataclass
@@ -151,6 +163,36 @@ def extract_parameter_section(text: str) -> str | None:
     return text[match.end():end]
 
 
+def extract_parameter_blocks(section: str) -> dict[str, list[str]]:
+    blocks: dict[str, list[str]] = {}
+    current_key: str | None = None
+    for line in section.splitlines():
+        match = PARAM_HEADING_RE.match(line)
+        if match:
+            current_key = match.group(1)
+            blocks[current_key] = []
+            continue
+        if line.startswith("### ") and not match:
+            current_key = None
+            continue
+        if current_key is not None:
+            blocks[current_key].append(line)
+    return blocks
+
+
+def find_orphan_h4_parameter_headings(section: str) -> list[str]:
+    """Return H4 parameter headings that appear before any H3 group in 参数说明."""
+    seen_group = False
+    orphan_headings: list[str] = []
+    for line in section.splitlines():
+        if line.startswith("### ") and not line.startswith("#### "):
+            seen_group = True
+            continue
+        if line.startswith("#### ") and PARAM_HEADING_RE.match(line) and not seen_group:
+            orphan_headings.append(line.strip())
+    return orphan_headings
+
+
 # ---------------------------------------------------------------------------
 # audit
 # ---------------------------------------------------------------------------
@@ -188,6 +230,10 @@ def audit() -> list[str]:
         if extra_in_doc:
             errors.append(f"{doc.path}: keys in schema but not in code: {extra_in_doc}")
 
+        for banned in BANNED_PARAM_TEXT:
+            if banned in doc.text:
+                errors.append(f"{doc.path}: placeholder parameter text remains: `{banned}`")
+
         # ---- params-only docs must document every Params field as a heading ----
         if doc.keys == ["params"]:
             params_fields = extract_params_fields(src)
@@ -199,6 +245,23 @@ def audit() -> list[str]:
                 for key in params_fields:
                     if key not in documented:
                         errors.append(f"{doc.path}: missing parameter heading for `{key}`")
+                if INLINE_PARAM_RE.search(param_section):
+                    errors.append(f"{doc.path}: old inline parameter entry remains in `## 参数说明`")
+                orphan_h4 = find_orphan_h4_parameter_headings(param_section)
+                if orphan_h4:
+                    errors.append(f"{doc.path}: H4 parameter headings appear before any H3 group: {orphan_h4[:3]}")
+                blocks = extract_parameter_blocks(param_section)
+                for key in params_fields:
+                    body = blocks.get(key, [])
+                    specific_lines = [
+                        line.strip()
+                        for line in body
+                        if line.strip()
+                        and not line.strip().startswith(TYPE_PREFIX)
+                        and not line.strip().startswith(CONDITION_PREFIX)
+                    ]
+                    if not specific_lines:
+                        errors.append(f"{doc.path}: parameter `{key}` has no concrete explanation beyond type/default")
 
     # ---- index integrity ----
     index_text = INDEX_DOC.read_text(encoding="utf-8")

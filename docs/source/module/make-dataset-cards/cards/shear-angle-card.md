@@ -51,30 +51,25 @@ $$\mathbf{C}'=\mathrm{cellpar\_to\_cell}(a,b,c,\alpha',\beta',\gamma')$$
 
 ## 参数说明
 
-
 ### Alpha Range（alpha_range）
-
 类型：`tuple[float, float, float]`。默认：`(-2.0, 2.0, 1.0)`。设置 alpha 晶格角扫描范围。
 
-物理直觉：角度扫描用于补晶胞角自由度；极端角度需要配合几何过滤。
+Alpha 角增量扫描区间 `[min, max, step]`，单位度。表示相对原始角度的偏移量。不扫的通道设为 `[0, 0, 1]` 保证至少生成一个点。
 
 ### Beta Range（beta_range）
-
 类型：`tuple[float, float, float]`。默认：`(-2.0, 2.0, 1.0)`。设置 beta 晶格角扫描范围。
 
-物理直觉：角度扫描用于补晶胞角自由度；极端角度需要配合几何过滤。
+Beta 角增量扫描区间，同上。
 
 ### Gamma Range（gamma_range）
-
 类型：`tuple[float, float, float]`。默认：`(-2.0, 2.0, 1.0)`。设置 gamma 晶格角扫描范围。
 
-物理直觉：角度扫描用于补晶胞角自由度；极端角度需要配合几何过滤。
+Gamma 角增量扫描区间，同上。
 
 ### Identify Organic（identify_organic）
-
 类型：`bool`。默认：`False`。决定是否识别有机分子并保护内部几何。
 
-物理直觉：有分子或有机片段时打开，防止晶格扰动破坏分子内部键长；纯无机晶体通常关闭。
+有机团簇识别。分子晶体必须开启。
 
 ## 推荐预设
 

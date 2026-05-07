@@ -50,30 +50,40 @@
 
 ## 参数说明
 
-
 ### Rules（rules）
-
 类型：`list[dict[str, Any]]`。默认：`field(default_factory=list)`。定义每条随机替换或空位生成规则。
 
-物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+JSON 字符串（界面中可用简化语法输入，程序自动转换）。每条 rule 包含：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `element` | string | 被删除的元素，如 `O` |
+| `count_mode` | string | `fixed` 精确删除 `count[0]` 个原子；`random` 在 `count[0]..count[1]` 之间随机 |
+| `count` | [min, max] | 固定数量写 `[n,n]`，随机范围写 `[min,max]` |
+| `group` | string / list（可选） | 限制只删除特定 group 标签内的原子。需要输入有 `atoms.arrays['group']`。界面里写成 `surface_top,surface_bottom` |
+
+规则为空时，卡片不产生任何删除，输出 = 输入。
+
+多条规则按顺序执行。如果两条规则操作同一个元素，第二条会在第一条的结果上继续删除。注意不要设计互相冲突的规则。
 
 ### Max Structures（max_structures）
-
 类型：`int`。默认：`1`。限制每个输入结构最多输出多少个候选结构。
 
-物理直觉：每个输入结构都会乘上这个数量；链式生成时优先按 DFT 预算反推。
+每输入帧生成多少个空位版本。
+
+- 10~30：轻量定向验证
+- 30~50：常规覆盖
+- 50~100：建议后接 `FPS Filter`
 
 ### Use Seed（use_seed）
-
 类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
 
-物理直觉：需要可复现的训练集生成或测试时打开；做最终大规模探索且希望保留随机多样性时可关闭。
+勾选 `use_seed` + 固定 `seed` 可复现。PM 随机性受 seed + 输入顺序联合控制。
 
 ### Seed（seed）
-
 类型：`int`。默认：`0`。设置固定随机种子的整数值。
 
-物理直觉：同一 seed 应产生同一批候选；只有在 `use_seed` 打开时才改变结果。
+勾选 `use_seed` + 固定 `seed` 可复现。PM 随机性受 seed + 输入顺序联合控制。
 
 生效条件：`use_seed=True`。
 

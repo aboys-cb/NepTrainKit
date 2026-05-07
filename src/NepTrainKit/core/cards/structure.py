@@ -215,7 +215,10 @@ class LayerCopyOperation(StructureOperation):
                 dz_total = abs(float(params.distance)) * (int(params.layers) - 1) + max(0.0, float(params.extra_vacuum))
                 if dz_total > 0.0:
                     base_cell = base_cell.copy()
-                    base_cell[2, 2] = base_cell[2, 2] + dz_total
+                    c_norm = float(np.linalg.norm(base_cell[2]))
+                    if c_norm <= 1e-12:
+                        raise ValueError("LayerCopy: cannot extend a zero-length c lattice vector.")
+                    base_cell[2] = base_cell[2] + dz_total * base_cell[2] / c_norm
                     combined.set_cell(base_cell, scale_atoms=False)
 
         if params.wrap and hasattr(combined, "wrap"):
@@ -239,6 +242,8 @@ class LayerCopyOperation(StructureOperation):
         z_min, z_max = [float(value) for value in params.z_range]
         if z_min > z_max:
             z_min, z_max = z_max, z_min
+        if mode != 2:
+            raise ValueError(f"LayerCopy: unsupported apply_mode {mode}.")
         z = structure.get_positions()[:, 2]
         return (z >= z_min) & (z <= z_max)
 
@@ -322,7 +327,7 @@ class GroupLabelOperation(StructureOperation):
 
     def run_structure(self, structure, params: GroupLabelParams) -> list:
         if (not params.overwrite) and "group" in structure.arrays:
-            return [structure]
+            return [structure.copy()]
         if structure.cell is None or np.linalg.det(structure.cell.array) == 0:
             raise ValueError("GroupLabel: structure has no valid cell.")
 
@@ -345,7 +350,7 @@ class GroupLabelOperation(StructureOperation):
         text = (text or "").strip()
         if text in {"100", "010", "001", "110", "111"}:
             return np.array([int(value) for value in text], dtype=float)
-        return np.array([1.0, 1.0, 1.0], dtype=float)
+        raise ValueError(f"GroupLabel: unsupported k-vector '{text}'.")
 
     @classmethod
     def _label_by_kvec(cls, atoms, kvec: str) -> np.ndarray:

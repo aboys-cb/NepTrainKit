@@ -25,6 +25,33 @@ from NepTrainKit.core.config_type import append_config_tag, stable_config_id
 from .operation import StructureOperation
 
 
+def _as_list(value: Any) -> list:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, (list, tuple, np.ndarray)):
+        return list(value)
+    return [value]
+
+
+def _range_pair(value: Any, *, label: str) -> tuple[float, float]:
+    values = _as_list(value)
+    if not values:
+        raise ValueError(f"{label} must not be empty.")
+    if len(values) == 1:
+        low = high = float(values[0])
+    elif len(values) == 2:
+        low, high = [float(item) for item in values]
+    else:
+        raise ValueError(f"{label} must contain one or two values.")
+    if not np.all(np.isfinite([low, high])):
+        raise ValueError(f"{label} values must be finite.")
+    if low > high:
+        raise ValueError(f"{label} minimum must be <= maximum.")
+    return low, high
+
+
 def sample_dopants(
     dopant_list,
     ratios,
@@ -39,13 +66,23 @@ def sample_dopants(
 
     dopant_list = list(dopant_list)
     ratios = np.array(ratios, dtype=float)
+    if not dopant_list:
+        raise ValueError("At least one dopant is required.")
+    if ratios.size != len(dopant_list) or ratios.size == 0:
+        raise ValueError("Dopant ratios must match dopant elements.")
+    if np.any(~np.isfinite(ratios)) or np.any(ratios < 0.0):
+        raise ValueError("Dopant ratios must be finite and non-negative.")
 
     if ratio_type == "mass":
         masses = np.array([atomic_masses[atomic_numbers.get(elem, 1)] for elem in dopant_list])
         atom_ratios = ratios / masses
-        atom_ratios = atom_ratios / atom_ratios.sum()
+        total = float(atom_ratios.sum())
     else:
-        atom_ratios = ratios / ratios.sum()
+        atom_ratios = ratios
+        total = float(atom_ratios.sum())
+    if total <= 0.0:
+        raise ValueError("At least one dopant ratio must be positive.")
+    atom_ratios = atom_ratios / total
 
     if not exact:
         return list(rng.choice(dopant_list, size=n_items, p=atom_ratios, replace=True))
@@ -77,14 +114,17 @@ class RandomDopingOperation(StructureOperation):
 
     def run_structure(self, structure, params: RandomDopingParams) -> list:
         if not isinstance(params.rules, list) or not params.rules:
-            return [structure]
+            return [structure.copy()]
 
         structure_list = []
         exact = params.doping_type == "Exact"
+        max_structures = int(params.max_structures)
+        if max_structures <= 0:
+            raise ValueError("RandomDoping: max_structures must be >= 1.")
         base_seed = int(params.seed) if params.use_seed else None
         rng = np.random.default_rng(base_seed)
 
-        for _ in range(int(params.max_structures)):
+        for _ in range(max_structures):
             new_structure = structure.copy()
             symbols = np.asarray(new_structure.get_chemical_symbols(), dtype=object)
             total_doping = 0
@@ -93,11 +133,13 @@ class RandomDopingOperation(StructureOperation):
                 dopants = rule.get("dopants", {})
                 if not target or not dopants:
                     continue
+                if not isinstance(dopants, dict):
+                    raise ValueError("RandomDoping rule dopants must be an element->ratio mapping.")
 
                 groups = rule.get("group")
                 if groups and "group" in new_structure.arrays:
                     group_values = np.asarray(new_structure.arrays["group"], dtype=object)
-                    candidate_indices = np.nonzero((symbols == target) & np.isin(group_values, list(groups)))[0]
+                    candidate_indices = np.nonzero((symbols == target) & np.isin(group_values, _as_list(groups)))[0]
                 else:
                     candidate_indices = np.nonzero(symbols == target)[0]
 
@@ -133,12 +175,12 @@ class RandomDopingOperation(StructureOperation):
         use_mode = rule.get("use", "atomic_percent")
 
         if use_mode == "atomic_percent":
-            percent_min, percent_max = rule.get("percent", [0.0, 100.0])
+            percent_min, percent_max = _range_pair(rule.get("percent", [0.0, 100.0]), label="percent")
             value = rng.uniform(float(percent_min), float(percent_max)) / 100.0
             return max(1, int(len(candidate_indices) * value))
 
         if use_mode == "mass_percent":
-            percent_min, percent_max = rule.get("percent", [0.0, 100.0])
+            percent_min, percent_max = _range_pair(rule.get("percent", [0.0, 100.0]), label="percent")
             target_mass_percent = rng.uniform(float(percent_min), float(percent_max)) / 100.0
 
             target_mass = atomic_masses[atomic_numbers.get(target, 1)]
@@ -155,16 +197,12 @@ class RandomDopingOperation(StructureOperation):
             return max(1, int(doped_mass / avg_dopant_mass))
 
         if use_mode == "count":
-            count_values = list(rule.get("count", [1, 1]))
-            if not count_values:
-                return 1
-            count_min = int(count_values[0])
-            count_max = int(count_values[-1])
+            count_min_f, count_max_f = _range_pair(rule.get("count", [1, 1]), label="count")
+            count_min = int(count_min_f)
+            count_max = int(count_max_f)
             count_mode = str(rule.get("count_mode", "")).lower()
             if count_mode == "fixed" or (not count_mode and count_min == count_max):
                 return count_min
-            if count_max < count_min:
-                count_min, count_max = count_max, count_min
             return int(rng.integers(count_min, count_max + 1))
 
         return len(candidate_indices)
@@ -193,12 +231,12 @@ class CompositionSweepOperation(StructureOperation):
     def run_structure(self, structure, params: CompositionSweepParams) -> list:
         elements = parse_element_list(params.elements)
         if len(elements) < 2:
-            return [structure]
+            return [structure.copy()]
 
         orders = [order for order in self._target_orders(params.order) if len(elements) >= order]
         max_outputs = int(params.max_outputs)
         if max_outputs <= 0 or not orders:
-            return [structure]
+            return [structure.copy()]
 
         out = []
         seed = int(params.seed) if params.use_seed else None
@@ -220,7 +258,7 @@ class CompositionSweepOperation(StructureOperation):
             order_data.append({"order": order, "points": points, "combos": combos, "capacity": int(unique_total)})
 
         if not order_data:
-            return [structure]
+            return [structure.copy()]
 
         active_orders = [int(item["order"]) for item in order_data]
         mode = self._budget_mode(params.budget_mode)
@@ -487,7 +525,7 @@ class CompositionGradientOperation(StructureOperation):
     def _normalized_composition(text: str, elements: list[str]) -> dict[str, float]:
         parsed = parse_composition(text)
         values = np.asarray([float(parsed.get(element, 0.0)) for element in elements], dtype=float)
-        if values.size != len(elements) or np.any(values < 0.0) or float(values.sum()) <= 0.0:
+        if values.size != len(elements) or np.any(~np.isfinite(values)) or np.any(values < 0.0) or float(values.sum()) <= 0.0:
             return {}
         values = values / float(values.sum())
         return {element: float(value) for element, value in zip(elements, values)}
@@ -549,7 +587,7 @@ class RandomOccupancyOperation(StructureOperation):
     def run_structure(self, structure, params: RandomOccupancyParams) -> list:
         comp = self._read_composition(structure, params)
         if not comp:
-            return [structure]
+            return [structure.copy()]
 
         indices = self._eligible_indices(structure, params.group_filter)
         base_seed = int(params.seed) if params.use_seed else None
@@ -738,7 +776,10 @@ def parse_replacements(text: str) -> tuple[list[str], list[float]]:
         return names, ratios
 
     if text.startswith("{") and text.endswith("}"):
-        data = json.loads(text)
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Invalid replacement JSON: {exc.msg}") from exc
         if not isinstance(data, dict):
             raise ValueError("Replacement JSON must be an object.")
         for key, value in data.items():
@@ -780,7 +821,7 @@ class ConditionalReplaceOperation(StructureOperation):
     def run_structure(self, structure, params: ConditionalReplaceParams) -> list:
         target = params.target.strip()
         if not target:
-            return [structure]
+            return [structure.copy()]
 
         new_atoms, ratios = parse_replacements(params.replacements)
         if not new_atoms or len(ratios) != len(new_atoms):
@@ -827,6 +868,8 @@ def replace_atoms_with_conditions(
     probs = np.asarray(probabilities, dtype=float)
     if probs.size != len(new_atoms) or probs.size == 0:
         raise ValueError("Replacement probabilities must match replacement atoms.")
+    if np.any(~np.isfinite(probs)) or np.any(probs < 0.0):
+        raise ValueError("Replacement probabilities must be finite and non-negative.")
     if np.all(probs <= 0):
         raise ValueError("At least one replacement probability must be positive.")
     probs = probs / probs.sum()

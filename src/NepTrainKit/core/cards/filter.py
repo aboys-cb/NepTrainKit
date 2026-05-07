@@ -30,6 +30,8 @@ class FPSFilterOperation(DatasetOperation):
     """Select representative structures using NEP descriptors and FPS."""
 
     def run_dataset(self, dataset, params: FPSFilterParams) -> list:
+        if not dataset:
+            return []
         nep_path = Path(params.nep_path)
         if not nep_path.exists():
             raise FileNotFoundError(f"NEP file does not exist: {nep_path}")
@@ -119,7 +121,11 @@ class GeometryFilterOperation(DatasetOperation):
 
     @classmethod
     def mass_density(cls, structure, volume: float) -> float:
+        if float(volume) <= 0.0:
+            raise ValueError("GeometryFilter mass_density requires positive volume.")
         total_mass = 0.0
         for symbol in structure.get_chemical_symbols():
+            if symbol not in atomic_numbers:
+                raise ValueError(f"Unknown chemical symbol '{symbol}'.")
             total_mass += float(atomic_masses[atomic_numbers[symbol]])
         return total_mass / float(volume) * cls.AMU_PER_A3_TO_G_PER_CM3

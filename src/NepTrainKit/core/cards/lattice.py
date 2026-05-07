@@ -17,6 +17,19 @@ from NepTrainKit.core.structure import get_clusters, process_organic_clusters
 from .operation import StructureOperation
 
 
+def _scan_values(values, *, label: str) -> np.ndarray:
+    if len(values) != 3:
+        raise ValueError(f"{label} must contain exactly three values: start, stop, step.")
+    start, stop, step = [float(value) for value in values]
+    if not np.all(np.isfinite([start, stop, step])):
+        raise ValueError(f"{label} values must be finite.")
+    if step <= 0.0:
+        raise ValueError(f"{label} step must be positive.")
+    if stop < start:
+        start, stop = stop, start
+    return np.arange(start, stop + step * 0.5, step, dtype=float)
+
+
 @dataclass(frozen=True)
 class CellStrainParams:
     """Parameters for axial lattice strain generation."""
@@ -40,9 +53,9 @@ class CellStrainOperation(StructureOperation):
             clusters, is_organic_list = get_clusters(structure)
 
         strain_range = [
-            np.arange(start=params.x_range[0], stop=params.x_range[1] + 0.001, step=params.x_range[2]),
-            np.arange(start=params.y_range[0], stop=params.y_range[1] + 0.001, step=params.y_range[2]),
-            np.arange(start=params.z_range[0], stop=params.z_range[1] + 0.001, step=params.z_range[2]),
+            _scan_values(params.x_range, label="x_range"),
+            _scan_values(params.y_range, label="y_range"),
+            _scan_values(params.z_range, label="z_range"),
         ]
         cell = structure.get_cell()
         all_axes = [0, 1, 2]
@@ -109,29 +122,34 @@ class CellScalingOperation(StructureOperation):
 
     def run_structure(self, structure, params: CellScalingParams) -> list:
         structure_list = []
+        max_num = int(params.max_num)
+        if max_num <= 0:
+            raise ValueError("CellScaling: max_num must be >= 1.")
         base_seed = int(params.seed) if params.use_seed else None
         rng = np.random.default_rng(base_seed)
         dim = 6 if params.perturb_angle else 3
 
         if params.engine_type == 0:
             sobol_engine = Sobol(d=dim, scramble=True, seed=base_seed)
-            sobol_seq = sobol_engine.random(int(params.max_num))
+            sobol_seq = sobol_engine.random(max_num)
             perturbation_factors = 1 + (sobol_seq - 0.5) * 2 * float(params.max_scaling)
         else:
             perturbation_factors = 1 + rng.uniform(
                 -float(params.max_scaling),
                 float(params.max_scaling),
-                (int(params.max_num), dim),
+                (max_num, dim),
             )
 
         orig_lattice = structure.cell.array
         orig_lengths = np.linalg.norm(orig_lattice, axis=1)
+        if orig_lattice.shape != (3, 3) or np.any(~np.isfinite(orig_lengths)) or np.any(orig_lengths <= 1e-12):
+            raise ValueError("CellScaling requires three nonzero lattice vectors.")
         unit_vectors = orig_lattice / orig_lengths[:, np.newaxis]
 
         if params.identify_organic:
             clusters, is_organic_list = get_clusters(structure)
 
-        for i in range(int(params.max_num)):
+        for i in range(max_num):
             new_structure = structure.copy()
             length_factors = perturbation_factors[i, :3]
             new_lengths = orig_lengths * length_factors
@@ -139,14 +157,18 @@ class CellScalingOperation(StructureOperation):
 
             if params.perturb_angle:
                 angle_factors = perturbation_factors[i, 3:]
-                angles = np.arccos(
+                cosines = np.array(
                     [
                         np.dot(orig_lattice[1], orig_lattice[2]) / (orig_lengths[1] * orig_lengths[2]),
                         np.dot(orig_lattice[0], orig_lattice[2]) / (orig_lengths[0] * orig_lengths[2]),
                         np.dot(orig_lattice[0], orig_lattice[1]) / (orig_lengths[0] * orig_lengths[1]),
-                    ]
+                    ],
+                    dtype=float,
                 )
+                angles = np.arccos(np.clip(cosines, -1.0, 1.0))
                 new_angles = angles * angle_factors
+                if abs(float(np.sin(new_angles[2]))) <= 1e-12:
+                    raise ValueError("CellScaling produced a singular gamma angle.")
                 new_lattice = np.zeros((3, 3), dtype=np.float32)
                 new_lattice[0] = [new_lengths[0], 0, 0]
                 new_lattice[1] = [
@@ -190,9 +212,9 @@ class ShearMatrixOperation(StructureOperation):
         if params.identify_organic:
             clusters, is_organic_list = get_clusters(structure)
 
-        xy_range = np.arange(params.xy_range[0], params.xy_range[1] + 0.001, params.xy_range[2])
-        yz_range = np.arange(params.yz_range[0], params.yz_range[1] + 0.001, params.yz_range[2])
-        xz_range = np.arange(params.xz_range[0], params.xz_range[1] + 0.001, params.xz_range[2])
+        xy_range = _scan_values(params.xy_range, label="xy_range")
+        yz_range = _scan_values(params.yz_range, label="yz_range")
+        xz_range = _scan_values(params.xz_range, label="xz_range")
         cell = structure.get_cell()
 
         for sxy in xy_range:
@@ -243,9 +265,9 @@ class ShearAngleOperation(StructureOperation):
         if params.identify_organic:
             clusters, is_organic_list = get_clusters(structure)
 
-        alpha_range = np.arange(params.alpha_range[0], params.alpha_range[1] + 0.001, params.alpha_range[2])
-        beta_range = np.arange(params.beta_range[0], params.beta_range[1] + 0.001, params.beta_range[2])
-        gamma_range = np.arange(params.gamma_range[0], params.gamma_range[1] + 0.001, params.gamma_range[2])
+        alpha_range = _scan_values(params.alpha_range, label="alpha_range")
+        beta_range = _scan_values(params.beta_range, label="beta_range")
+        gamma_range = _scan_values(params.gamma_range, label="gamma_range")
         cellpar = cell_to_cellpar(structure.get_cell())
         lengths = cellpar[:3]
         angles0 = cellpar[3:]
@@ -293,6 +315,11 @@ class PerturbOperation(StructureOperation):
     def run_structure(self, structure, params: PerturbParams) -> list:
         structure_list = []
         n_atoms = len(structure)
+        max_num = int(params.max_num)
+        if max_num <= 0:
+            raise ValueError("Perturb: max_num must be >= 1.")
+        if n_atoms == 0:
+            return [structure.copy()]
         dim = n_atoms * 3
         symbols = structure.get_chemical_symbols()
         element_scalings = params.element_scalings or {}
@@ -307,9 +334,9 @@ class PerturbOperation(StructureOperation):
 
         if params.engine_type == 0:
             sobol_engine = Sobol(d=dim, scramble=True, seed=base_seed)
-            perturbation_factors = (sobol_engine.random(int(params.max_num)) - 0.5) * 2
+            perturbation_factors = (sobol_engine.random(max_num) - 0.5) * 2
         else:
-            perturbation_factors = rng.uniform(-1, 1, (int(params.max_num), dim))
+            perturbation_factors = rng.uniform(-1, 1, (max_num, dim))
 
         if params.identify_organic:
             clusters, is_organic_list = get_clusters(structure)
@@ -317,9 +344,8 @@ class PerturbOperation(StructureOperation):
             inorganic_clusters = [cluster for cluster, is_org in zip(clusters, is_organic_list) if not is_org]
 
         orig_positions = structure.positions
-        for i in range(int(params.max_num)):
+        for i in range(max_num):
             delta = perturbation_factors[i].reshape(n_atoms, 3) * per_atom_scaling[:, None]
-            new_positions = orig_positions + delta
 
             if params.identify_organic:
                 new_positions = orig_positions.copy()
@@ -328,6 +354,8 @@ class PerturbOperation(StructureOperation):
                     new_positions[cluster] += cluster_delta
                 for cluster in inorganic_clusters:
                     new_positions[cluster] += delta[cluster]
+            else:
+                new_positions = orig_positions + delta
 
             new_structure = structure.copy()
             new_structure.set_positions(new_positions)

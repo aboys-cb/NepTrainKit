@@ -17,8 +17,42 @@ from NepTrainKit.core.config_type import append_config_tag
 from .operation import StructureOperation
 
 
+def _as_list(value: Any) -> list:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, (list, tuple, np.ndarray)):
+        return list(value)
+    return [value]
+
+
+def _count_range(value: Any, *, label: str) -> tuple[int, int]:
+    values = _as_list(value)
+    if not values:
+        raise ValueError(f"{label} must not be empty.")
+    if len(values) == 1:
+        low = high = int(values[0])
+    elif len(values) == 2:
+        low, high = [int(item) for item in values]
+    else:
+        raise ValueError(f"{label} must contain one or two values.")
+    if low > high:
+        raise ValueError(f"{label} minimum must be <= maximum.")
+    return low, high
+
+
 def _range_values(values: Sequence[float], *, include_step: bool = False) -> np.ndarray:
+    if len(values) != 3:
+        raise ValueError("Range must contain exactly three values: start, stop, step.")
     start, end, step = values
+    start, end, step = float(start), float(end), float(step)
+    if not np.all(np.isfinite([start, end, step])):
+        raise ValueError("Range values must be finite.")
+    if step <= 0.0:
+        raise ValueError("Range step must be positive.")
+    if end < start:
+        start, end = end, start
     if include_step:
         return np.arange(start, end + step, step)
     return np.arange(start, end + step / 2, step)
@@ -74,30 +108,29 @@ class RandomVacancyOperation(StructureOperation):
 
     def run_structure(self, structure, params: RandomVacancyParams) -> list:
         if not isinstance(params.rules, list) or not params.rules:
-            return [structure]
+            return [structure.copy()]
 
         base_seed = int(params.seed) if params.use_seed else None
         rng = np.random.default_rng(base_seed)
         structure_list = []
-        for _ in range(int(params.max_structures)):
+        max_structures = int(params.max_structures)
+        if max_structures <= 0:
+            raise ValueError("RandomVacancy: max_structures must be >= 1.")
+        for _ in range(max_structures):
             new_structure = structure.copy()
             symbols = np.asarray(new_structure.get_chemical_symbols(), dtype=object)
             keep_mask = np.ones(len(new_structure), dtype=bool)
             total_remove = 0
             for rule in params.rules:
                 element = rule.get("element")
-                count_values = list(rule.get("count", [0, 0]))
-                if not count_values:
-                    continue
-                count_min = int(count_values[0])
-                count_max = int(count_values[-1])
+                count_min, count_max = _count_range(rule.get("count", [0, 0]), label="count")
                 if not element or int(count_max) <= 0:
                     continue
 
                 groups = rule.get("group")
                 if groups and "group" in new_structure.arrays:
                     group_values = np.asarray(new_structure.arrays["group"], dtype=object)
-                    candidate_indices = np.nonzero(keep_mask & (symbols == element) & np.isin(group_values, list(groups)))[0]
+                    candidate_indices = np.nonzero(keep_mask & (symbols == element) & np.isin(group_values, _as_list(groups)))[0]
                 else:
                     candidate_indices = np.nonzero(keep_mask & (symbols == element))[0]
 
@@ -108,8 +141,6 @@ class RandomVacancyOperation(StructureOperation):
                 if count_mode == "fixed" or (not count_mode and count_min == count_max):
                     remove_num = count_min
                 else:
-                    if count_max < count_min:
-                        count_min, count_max = count_max, count_min
                     remove_num = int(rng.integers(count_min, count_max + 1))
                 remove_num = min(remove_num, len(candidate_indices))
                 if remove_num <= 0:
@@ -148,17 +179,21 @@ class VacancyDefectOperation(StructureOperation):
         base_seed = int(params.seed) if params.use_seed else None
         rng = np.random.default_rng(base_seed)
         n_atoms = len(structure)
+        if n_atoms <= 1:
+            raise ValueError("VacancyDefect requires at least two atoms.")
 
         if params.use_num:
             max_defects = int(params.num_condition)
         else:
             max_defects = int(float(params.concentration_condition) * n_atoms)
-        if max_defects == n_atoms:
-            max_defects -= 1
+        if max_defects >= n_atoms:
+            max_defects = n_atoms - 1
         if max_defects <= 0:
             raise ValueError("Vacancy defect settings must allow at least one vacancy.")
 
         max_num = int(params.max_structures)
+        if max_num <= 0:
+            raise ValueError("VacancyDefect: max_structures must be >= 1.")
         fixed_count = str(params.count_mode).lower() == "fixed"
         if int(params.engine_type) == 0:
             sobol_engine = Sobol(d=n_atoms + 1, scramble=True, seed=base_seed)
@@ -208,19 +243,28 @@ class StackingFaultOperation(StructureOperation):
     """Generate displaced structures across a stacking-fault plane."""
 
     def run_structure(self, structure, params: StackingFaultParams) -> list:
+        if len(params.hkl) != 3:
+            raise ValueError("StackingFault hkl must contain exactly three integers.")
+        if len(params.step) != 3:
+            raise ValueError("StackingFault step must contain exactly three values: start, stop, step.")
         h, k, l = [int(value) for value in params.hkl]
         step_start, step_end, step_step = [float(value) for value in params.step]
         num_layers = int(params.layers)
+        if num_layers <= 0:
+            raise ValueError("StackingFault layers must be >= 1.")
 
         cell = structure.cell.array
+        if len(structure) == 0:
+            raise ValueError("StackingFault requires at least one atom.")
         recip = np.linalg.inv(cell).T
         normal = h * recip[0] + k * recip[1] + l * recip[2]
         if np.linalg.norm(normal) < 1e-8:
-            return [structure]
+            return [structure.copy()]
         normal = normal / np.linalg.norm(normal)
 
         positions = structure.get_positions()
-        non_parallel_vector = np.array([1, 0, 0]) if normal[0] != 1 else np.array([0, 1, 0])
+        basis = np.eye(3)
+        non_parallel_vector = basis[int(np.argmin(np.abs(basis @ normal)))]
         perpendicular_vector = np.cross(normal, non_parallel_vector)
         perpendicular_vector = perpendicular_vector / np.linalg.norm(perpendicular_vector)
 
@@ -322,6 +366,16 @@ class InsertDefectOperation(StructureOperation):
         species, weights = _parse_species(params.species, structure.get_chemical_symbols())
         axis = int(params.axis)
         offset = float(params.offset)
+        if max_structs <= 0:
+            raise ValueError("InsertDefect: structure_count must be >= 1.")
+        if count <= 0:
+            raise ValueError("InsertDefect: insert_count must be >= 1.")
+        if min_distance <= 0.0:
+            raise ValueError("InsertDefect: min_distance must be positive.")
+        if max_attempts <= 0:
+            raise ValueError("InsertDefect: max_attempts must be >= 1.")
+        if axis < 0 or axis > 2:
+            raise ValueError("InsertDefect: axis must be 0, 1, or 2.")
 
         base_seed = int(params.seed) if params.use_seed else None
         rng = np.random.default_rng(base_seed)
@@ -347,7 +401,7 @@ class InsertDefectOperation(StructureOperation):
                         continue
 
                     nearest = self._nearest_distance(candidate, positions_reference, cell=cell, pbc=pbc)
-                    if nearest < max(min_distance, 0.0):
+                    if nearest < min_distance:
                         continue
 
                     element = str(rng.choice(species, p=np.array(weights, dtype=float)))
@@ -412,7 +466,10 @@ class InsertDefectOperation(StructureOperation):
         if positions.size == 0:
             return None
 
-        scaled = structure.get_scaled_positions(wrap=False)
+        try:
+            scaled = np.asarray(positions, dtype=float) @ np.linalg.inv(np.asarray(cell, dtype=float))
+        except np.linalg.LinAlgError:
+            return None
         top_frac = scaled[:, axis].max()
         frac = rng.random(3)
         frac[axis] = top_frac

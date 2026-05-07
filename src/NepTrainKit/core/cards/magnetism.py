@@ -90,11 +90,13 @@ def parse_pair_filter(text: str, *, normalize_case: bool = False) -> set[tuple[s
     pairs: set[tuple[str, str]] = set()
     for token in re.split(r"[\s,;]+", text or ""):
         token = token.strip()
-        if not token or "-" not in token:
+        if not token:
             continue
+        if token.count("-") != 1:
+            raise ValueError(f"Invalid pair filter '{token}', expected A-B.")
         left, right = [part.strip() for part in token.split("-", 1)]
         if not left or not right:
-            continue
+            raise ValueError(f"Invalid pair filter '{token}', expected A-B.")
         if normalize_case:
             left = left[0].upper() + left[1:].lower()
             right = right[0].upper() + right[1:].lower()
@@ -104,13 +106,19 @@ def parse_pair_filter(text: str, *, normalize_case: bool = False) -> set[tuple[s
 
 def range_values(values: list[float], *, minimum: float | None = None) -> list[float]:
     """Expand a [start, stop, step] scan triplet into stable float values."""
+    if len(values) != 3:
+        raise ValueError("Scan range must contain exactly three values: start, stop, step.")
     start, stop, step = [float(v) for v in values]
+    if not np.all(np.isfinite([start, stop, step])):
+        raise ValueError("Scan range values must be finite.")
+    if step <= 0:
+        raise ValueError("Scan range step must be positive.")
     if minimum is not None:
         start = max(start, minimum)
         stop = max(stop, minimum)
     if stop < start:
         start, stop = stop, start
-    if abs(stop - start) <= 1e-12 or step <= 0:
+    if abs(stop - start) <= 1e-12:
         return [start]
     raw = list(np.arange(start, stop + abs(step) * 0.5, abs(step), dtype=float))
     if not raw:
@@ -125,13 +133,16 @@ def range_values(values: list[float], *, minimum: float | None = None) -> list[f
 
 def int_range_values(values: list[int], *, minimum: int = 1) -> list[int]:
     """Expand a [start, stop, step] integer scan triplet."""
+    if len(values) != 3:
+        raise ValueError("Integer scan range must contain exactly three values: start, stop, step.")
     start, stop, step = [int(v) for v in values]
+    if step <= 0:
+        raise ValueError("Integer scan range step must be positive.")
     start = max(start, minimum)
     stop = max(stop, minimum)
     if stop < start:
         start, stop = stop, start
-    step = abs(step)
-    if stop == start or step <= 0:
+    if stop == start:
         return [start]
     return list(range(start, stop + 1, step))
 
@@ -194,7 +205,7 @@ class MagneticMomentRotationOperation(StructureOperation):
 
         axis = rng.normal(size=3)
         axis_norm = np.linalg.norm(axis)
-        axis = np.array([0.0, 0.0, 1.0]) if axis_norm == 0 else axis / axis_norm
+        axis = np.array([0.0, 0.0, 1.0]) if axis_norm <= 1e-12 else axis / axis_norm
 
         theta = math.radians(angle_deg)
         cos_t = math.cos(theta)
@@ -427,7 +438,7 @@ class MagneticOrderOperation(StructureOperation):
     def run_structure(self, structure, params: MagneticOrderParams) -> list:
         outputs = []
         if not (params.gen_fm or params.gen_afm or params.gen_pm):
-            return [structure]
+            return [structure.copy()]
 
         base_seed = int(params.seed) if params.use_seed else None
         cfg_id = stable_config_id(structure)
@@ -490,7 +501,7 @@ class MagneticOrderOperation(StructureOperation):
                 append_config_tag(atoms, base + (f"_{seed_note}" if seed_note else ""))
                 outputs.append(atoms)
 
-        return outputs or [structure]
+        return outputs or [structure.copy()]
 
     def _per_atom_mags_and_dirs(self, structure, params: MagneticOrderParams) -> tuple[np.ndarray, np.ndarray]:
         magmom_map = parse_magmom_map_any(params.magmom_map)
@@ -959,8 +970,7 @@ class SmallAngleSpinTiltOperation(StructureOperation):
             values = existing_moment_vectors(structure, axis=axis, lift_scalar=params.lift_scalar)
             if values is not None:
                 return values
-            if len(np.asarray(structure.get_initial_magnetic_moments(), dtype=float).shape) == 1 and not params.lift_scalar:
-                return None
+            return None
         return mapped_moment_vectors(
             structure,
             parse_magmom_map_any(params.magmom_map),
@@ -999,6 +1009,8 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         right = parse_atom_indices(params.pair_right_indices, len(structure))
         if not left or not right:
             return []
+        if len(left) != len(right):
+            raise ValueError("Manual atom pair canting requires the same number of left and right indices.")
         pairs: list[tuple[int, int]] = []
         seen: set[tuple[int, int]] = set()
         norms = np.linalg.norm(base_moments, axis=1)
@@ -1104,6 +1116,8 @@ class SmallAngleSpinTiltOperation(StructureOperation):
                 return False
         if params.bond_filter_mode == "Any":
             return True
+        if params.bond_filter_mode not in {"Near axis", "Near plane"}:
+            raise ValueError(f"Unsupported bond_filter_mode: {params.bond_filter_mode}")
         reference = normalize_vector(np.array(params.bond_filter_axis, dtype=float))
         bond_hat = normalize_vector(np.asarray(bond_vector, dtype=float), default=reference)
         cos_angle = float(np.clip(abs(np.dot(bond_hat, reference)), 0.0, 1.0))

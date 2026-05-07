@@ -9,7 +9,9 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+from ase import Atoms
 from ase.build import bulk, make_supercell
+from ase.geometry import get_distances
 from loguru import logger
 
 from NepTrainKit.core.alloy import best_supercell_factors_max_atoms
@@ -443,6 +445,244 @@ class OrganicMolConfigPBCOperation(StructureOperation):
         except Exception:
             return None
         return None
+
+
+@dataclass(frozen=True)
+class RandomPackingParams:
+    """Parameters for random atomic packing inside an existing cell."""
+
+    structures: int = 1
+    composition: str = ""
+    min_distance: float = 1.5
+    pair_min_distances: str = ""
+    max_attempts_per_atom: int = 500
+    strict_mode: bool = True
+    use_seed: bool = False
+    seed: int = 0
+
+
+class RandomPackingOperation(StructureOperation):
+    """Randomly repack atoms in the input cell under explicit distance constraints."""
+
+    def run_structure(self, structure, params: RandomPackingParams) -> list:
+        n_structures = int(params.structures)
+        if n_structures <= 0:
+            raise ValueError("Random Packing: structures must be >= 1.")
+
+        min_distance = float(params.min_distance)
+        if min_distance <= 0.0:
+            raise ValueError("Random Packing: min_distance must be positive.")
+
+        max_attempts = int(params.max_attempts_per_atom)
+        if max_attempts <= 0:
+            raise ValueError("Random Packing: max_attempts_per_atom must be >= 1.")
+
+        cell = np.asarray(structure.cell.array, dtype=float)
+        if cell.shape != (3, 3) or abs(float(np.linalg.det(cell))) <= 1e-12:
+            raise ValueError("Random Packing requires a non-singular input cell.")
+
+        pbc = np.asarray(structure.pbc, dtype=bool)
+        symbols = self.symbols_from_params(structure, params.composition)
+        pair_rules = self.parse_pair_min_distances(params.pair_min_distances)
+        order = self.placement_order(symbols, min_distance, pair_rules)
+
+        base_seed = int(params.seed) if params.use_seed else None
+        cfg_id = stable_config_id(structure)
+        outputs = []
+        failures = 0
+        for sample_idx in range(n_structures):
+            rng = np.random.default_rng(None if base_seed is None else int(base_seed + cfg_id * 1000003 + sample_idx))
+            try:
+                atoms = self.pack_one(
+                    structure,
+                    symbols=symbols,
+                    order=order,
+                    min_distance=min_distance,
+                    pair_rules=pair_rules,
+                    max_attempts=max_attempts,
+                    rng=rng,
+                    cell=cell,
+                    pbc=pbc,
+                )
+            except ValueError:
+                failures += 1
+                if params.strict_mode:
+                    raise
+                logger.warning("RandomPackingOperation: skipped failed sample {} for {}", sample_idx + 1, structure.info.get("Config_type", "structure"))
+                continue
+            seed_tag = f",s={int(base_seed + cfg_id * 1000003 + sample_idx)}" if base_seed is not None else ""
+            append_config_tag(atoms, f"RandPack(n={len(symbols)},d={min_distance:.6g}{seed_tag})")
+            outputs.append(atoms)
+
+        if not outputs:
+            raise ValueError(f"Random Packing failed to generate any structures ({failures} failures).")
+        return outputs
+
+    @staticmethod
+    def symbols_from_params(structure, composition: str) -> list[str]:
+        text = (composition or "").strip()
+        if not text:
+            return list(structure.get_chemical_symbols())
+
+        chunks = [chunk.strip() for chunk in re.split(r"[,;\n]+", text) if chunk.strip()]
+        if not chunks:
+            raise ValueError("Random Packing: composition is empty.")
+
+        symbols: list[str] = []
+        for chunk in chunks:
+            if ":" in chunk:
+                raw_symbol, raw_count = chunk.split(":", 1)
+            elif "=" in chunk:
+                raw_symbol, raw_count = chunk.split("=", 1)
+            else:
+                raise ValueError(f"Random Packing: invalid composition item '{chunk}', expected Element:count.")
+            symbol = raw_symbol.strip()
+            if not symbol:
+                raise ValueError(f"Random Packing: invalid composition item '{chunk}'.")
+            symbol = symbol[0].upper() + symbol[1:].lower()
+            count_value = float(raw_count)
+            count = int(round(count_value))
+            if count <= 0 or abs(count_value - count) > 1e-9:
+                raise ValueError(f"Random Packing: composition count for {symbol} must be a positive integer.")
+            symbols.extend([symbol] * count)
+
+        if not symbols:
+            raise ValueError("Random Packing: composition produced no atoms.")
+        return symbols
+
+    @staticmethod
+    def parse_pair_min_distances(text: str) -> dict[tuple[str, str], float]:
+        rules: dict[tuple[str, str], float] = {}
+        for chunk in re.split(r"[,;\n]+", text or ""):
+            item = chunk.strip()
+            if not item:
+                continue
+            if ":" not in item:
+                raise ValueError(f"Random Packing: invalid pair distance '{item}', expected A-B:value.")
+            pair_text, value_text = item.split(":", 1)
+            if "-" not in pair_text:
+                raise ValueError(f"Random Packing: invalid pair '{pair_text}', expected A-B.")
+            left, right = [part.strip() for part in pair_text.split("-", 1)]
+            if not left or not right:
+                raise ValueError(f"Random Packing: invalid pair '{pair_text}'.")
+            left = left[0].upper() + left[1:].lower()
+            right = right[0].upper() + right[1:].lower()
+            value = float(value_text)
+            if value <= 0.0:
+                raise ValueError(f"Random Packing: pair distance for {left}-{right} must be positive.")
+            rules[tuple(sorted((left, right)))] = value
+        return rules
+
+    @staticmethod
+    def min_distance_for_pair(left: str, right: str, default: float, pair_rules: dict[tuple[str, str], float]) -> float:
+        return float(pair_rules.get(tuple(sorted((left, right))), default))
+
+    @classmethod
+    def placement_order(cls, symbols: list[str], min_distance: float, pair_rules: dict[tuple[str, str], float]) -> np.ndarray:
+        per_symbol = {
+            symbol: max(cls.min_distance_for_pair(symbol, other, min_distance, pair_rules) for other in set(symbols))
+            for symbol in set(symbols)
+        }
+        return np.asarray(sorted(range(len(symbols)), key=lambda idx: (-per_symbol[symbols[idx]], symbols[idx], idx)), dtype=int)
+
+    @classmethod
+    def pack_one(
+        cls,
+        structure,
+        *,
+        symbols: list[str],
+        order: np.ndarray,
+        min_distance: float,
+        pair_rules: dict[tuple[str, str], float],
+        max_attempts: int,
+        rng: np.random.Generator,
+        cell: np.ndarray,
+        pbc: np.ndarray,
+    ) -> Atoms:
+        placed_positions: list[np.ndarray] = []
+        placed_symbols: list[str] = []
+        positions_by_original = np.zeros((len(symbols), 3), dtype=float)
+
+        for original_idx in rng.permutation(order):
+            symbol = symbols[int(original_idx)]
+            placed = False
+            for _attempt in range(max_attempts):
+                frac = rng.random(3)
+                candidate = frac @ cell
+                if cls.candidate_is_valid(
+                    candidate,
+                    symbol,
+                    placed_positions=placed_positions,
+                    placed_symbols=placed_symbols,
+                    min_distance=min_distance,
+                    pair_rules=pair_rules,
+                    cell=cell,
+                    pbc=pbc,
+                ):
+                    positions_by_original[int(original_idx)] = candidate
+                    placed_positions.append(candidate)
+                    placed_symbols.append(symbol)
+                    placed = True
+                    break
+            if not placed:
+                raise ValueError(
+                    "Random Packing could not place "
+                    f"{symbol} after {int(max_attempts)} attempts. Reduce min distances, enlarge the cell, or lower atom count."
+                )
+
+        atoms = Atoms(symbols=symbols, positions=positions_by_original, cell=cell, pbc=pbc)
+        atoms.info.update(dict(structure.info))
+        if hasattr(atoms, "wrap"):
+            atoms.wrap()
+        return atoms
+
+    @classmethod
+    def candidate_is_valid(
+        cls,
+        candidate: np.ndarray,
+        symbol: str,
+        *,
+        placed_positions: list[np.ndarray],
+        placed_symbols: list[str],
+        min_distance: float,
+        pair_rules: dict[tuple[str, str], float],
+        cell: np.ndarray,
+        pbc: np.ndarray,
+    ) -> bool:
+        if not placed_positions:
+            return True
+        positions = np.asarray(placed_positions, dtype=float)
+        distances = cls.candidate_distances(candidate, positions, cell=cell, pbc=pbc)
+        thresholds = np.asarray(
+            [cls.min_distance_for_pair(symbol, other, min_distance, pair_rules) for other in placed_symbols],
+            dtype=float,
+        )
+        return bool(np.all(distances + 1e-12 >= thresholds))
+
+    @staticmethod
+    def candidate_distances(candidate: np.ndarray, positions: np.ndarray, *, cell: np.ndarray, pbc: np.ndarray) -> np.ndarray:
+        cell_arr = np.asarray(cell, dtype=float)
+        pbc_arr = np.asarray(pbc, dtype=bool)
+        positions_arr = np.asarray(positions, dtype=float)
+        offdiag = cell_arr.copy()
+        np.fill_diagonal(offdiag, 0.0)
+        if cell_arr.shape == (3, 3) and np.allclose(offdiag, 0.0, atol=1e-12):
+            lengths = np.diag(cell_arr)
+            if np.all(np.abs(lengths[pbc_arr]) > 1e-12):
+                vec = positions_arr - np.asarray(candidate, dtype=float).reshape(1, 3)
+                for axis in range(3):
+                    if pbc_arr[axis]:
+                        length = float(lengths[axis])
+                        vec[:, axis] -= np.rint(vec[:, axis] / length) * length
+                return np.linalg.norm(vec, axis=1)
+
+        _vec, distances = get_distances(
+            np.asarray(candidate, dtype=float).reshape(1, 3),
+            positions_arr,
+            cell=cell_arr,
+            pbc=pbc_arr,
+        )
+        return np.asarray(distances, dtype=float).reshape(-1)
 
 
 @dataclass(frozen=True)

@@ -1322,6 +1322,184 @@ class SpinDisorderOperation(StructureOperation):
 
 
 @dataclass(frozen=True)
+class CorrelatedRandomSpinParams:
+    mode: str = "Cone around reference"
+    correlation_kernel: str = "exponential"
+    correlation_length: float = 3.0
+    samples: int = 1
+    cone_angle: float = 30.0
+    magnitude_source: str = "Existing initial magmoms"
+    magmom_map: str = ""
+    default_moment: float = 0.0
+    lift_scalar: bool = True
+    axis: list[float] | tuple[float, float, float] = (0.0, 0.0, 1.0)
+    apply_elements: str = ""
+    max_atoms_for_full: int = 200
+    use_seed: bool = False
+    seed: int = 0
+
+
+class CorrelatedRandomSpinOperation(StructureOperation):
+    """Generate non-collinear magnetic moments from an exact correlated random field."""
+
+    def run_structure(self, structure, params: CorrelatedRandomSpinParams) -> list:
+        samples = int(params.samples)
+        if samples <= 0:
+            raise ValueError("Correlated Random Spin: samples must be >= 1.")
+
+        xi = float(params.correlation_length)
+        if xi <= 0.0:
+            raise ValueError("Correlated Random Spin: correlation_length must be positive.")
+
+        max_atoms = int(params.max_atoms_for_full)
+        if max_atoms <= 0:
+            raise ValueError("Correlated Random Spin: max_atoms_for_full must be >= 1.")
+
+        base_moments = self.vector_moments(structure, params)
+        if base_moments is None or base_moments.shape != (len(structure), 3):
+            raise ValueError("Correlated Random Spin requires vector magnetic moments or liftable scalar magmoms.")
+
+        selected = self.eligible_indices(structure, base_moments, params)
+        if selected.size == 0:
+            raise ValueError("Correlated Random Spin found no eligible nonzero magnetic moments.")
+        if selected.size > max_atoms:
+            raise ValueError(
+                "Correlated Random Spin exact full covariance is limited to "
+                f"{max_atoms} eligible atoms; got {selected.size}. Reduce the selection or use a smaller structure."
+            )
+
+        kernel = self.kernel_name(params.correlation_kernel)
+        positions = np.asarray(structure.get_positions(), dtype=float)[selected]
+        _vec_matrix, distances = SmallAngleSpinTiltOperation.pair_distance_matrix(
+            positions,
+            cell=np.asarray(structure.cell.array, dtype=float),
+            pbc=np.asarray(structure.pbc, dtype=bool),
+        )
+        covariance = self.covariance_matrix(distances, xi=xi, kernel=kernel)
+        try:
+            chol = np.linalg.cholesky(covariance)
+        except np.linalg.LinAlgError as exc:
+            raise ValueError("Correlated Random Spin covariance is not positive definite for this structure/kernel.") from exc
+
+        base_seed = int(params.seed) if params.use_seed else None
+        cfg_id = stable_config_id(structure)
+        outputs = []
+        for sample_idx in range(samples):
+            if base_seed is None:
+                rng = np.random.default_rng()
+                seed_tag = ""
+            else:
+                derived_seed = int(base_seed + cfg_id * 1000003 + sample_idx)
+                rng = np.random.default_rng(derived_seed)
+                seed_tag = f",s={derived_seed}"
+            field = chol @ rng.normal(size=(selected.size, 3))
+            moments = np.array(base_moments, copy=True)
+            selected_moments = base_moments[selected]
+            magnitudes = np.linalg.norm(selected_moments, axis=1)
+            if params.mode == "Full random directions":
+                dirs = self.normalize_rows(field, fallback=self.normalize_rows(selected_moments))
+                mode_tag = "full"
+            elif params.mode == "Cone around reference":
+                dirs = self.cone_directions(selected_moments, field, float(params.cone_angle), rng)
+                mode_tag = "cone"
+            else:
+                raise ValueError(f"Correlated Random Spin: unsupported mode '{params.mode}'.")
+
+            moments[selected] = magnitudes[:, None] * dirs
+            atoms = structure.copy()
+            set_initial_magmoms_safe(atoms, moments)
+            detail = f"xi={xi:.6g},ker={kernel},mode={mode_tag},n={selected.size}{seed_tag}"
+            if mode_tag == "cone":
+                detail += f",a={float(params.cone_angle):.6g}"
+            append_config_tag(atoms, f"CorrSpin({detail})")
+            outputs.append(atoms)
+        return outputs
+
+    @staticmethod
+    def kernel_name(value: str) -> str:
+        normalized = (value or "exponential").strip().lower().replace(" ", "_").replace("-", "_")
+        if normalized in {"exponential", "exp"}:
+            return "exponential"
+        if normalized in {"squared_exponential", "squared", "gaussian"}:
+            return "squared_exponential"
+        raise ValueError(f"Correlated Random Spin: unsupported correlation_kernel '{value}'.")
+
+    @staticmethod
+    def covariance_matrix(distances: np.ndarray, *, xi: float, kernel: str) -> np.ndarray:
+        dist = np.asarray(distances, dtype=float)
+        if kernel == "squared_exponential":
+            cov = np.exp(-0.5 * (dist / float(xi)) ** 2)
+        else:
+            cov = np.exp(-dist / float(xi))
+        cov = 0.5 * (cov + cov.T)
+        cov[np.diag_indices_from(cov)] = 1.0 + 1e-10
+        return cov
+
+    @staticmethod
+    def eligible_indices(structure, base_moments: np.ndarray, params: CorrelatedRandomSpinParams) -> np.ndarray:
+        apply_elements = parse_element_set(params.apply_elements)
+        norms = np.linalg.norm(base_moments, axis=1)
+        indices = [
+            idx
+            for idx, (symbol, norm) in enumerate(zip(structure.get_chemical_symbols(), norms))
+            if norm > 1e-10 and (not apply_elements or symbol in apply_elements)
+        ]
+        return np.asarray(indices, dtype=int)
+
+    @staticmethod
+    def vector_moments(structure, params: CorrelatedRandomSpinParams) -> np.ndarray | None:
+        axis = normalize_vector(np.array(params.axis, dtype=float))
+        if params.magnitude_source == "Existing initial magmoms":
+            return existing_moment_vectors(structure, axis=axis, lift_scalar=params.lift_scalar)
+        return mapped_moment_vectors(
+            structure,
+            parse_magmom_map_any(params.magmom_map),
+            default_moment=float(params.default_moment),
+            axis=axis,
+            apply_elements=parse_element_set(params.apply_elements),
+            use_element_directions=False,
+        )
+
+    @staticmethod
+    def normalize_rows(vectors: np.ndarray, fallback: np.ndarray | None = None) -> np.ndarray:
+        vec = np.asarray(vectors, dtype=float)
+        norms = np.linalg.norm(vec, axis=1)
+        out = np.zeros_like(vec)
+        mask = norms > 1e-12
+        out[mask] = vec[mask] / norms[mask, None]
+        if np.any(~mask):
+            if fallback is None:
+                out[~mask] = np.array([0.0, 0.0, 1.0], dtype=float)
+            else:
+                fb = np.asarray(fallback, dtype=float)
+                fb_norm = np.linalg.norm(fb, axis=1)
+                fb_out = np.zeros_like(fb)
+                fb_mask = fb_norm > 1e-12
+                fb_out[fb_mask] = fb[fb_mask] / fb_norm[fb_mask, None]
+                fb_out[~fb_mask] = np.array([0.0, 0.0, 1.0], dtype=float)
+                out[~mask] = fb_out[~mask]
+        return out
+
+    @classmethod
+    def cone_directions(
+        cls,
+        base_moments: np.ndarray,
+        field: np.ndarray,
+        cone_angle: float,
+        rng: np.random.Generator,
+    ) -> np.ndarray:
+        base_hat = cls.normalize_rows(base_moments)
+        transverse = np.asarray(field, dtype=float) - np.sum(field * base_hat, axis=1)[:, None] * base_hat
+        transverse = cls.normalize_rows(transverse, fallback=np.asarray([orthonormal_frame(axis)[0] for axis in base_hat], dtype=float))
+        max_angle = max(0.0, min(float(cone_angle), 180.0))
+        cos_min = math.cos(math.radians(max_angle))
+        cos_theta = rng.uniform(cos_min, 1.0, size=len(base_hat))
+        sin_theta = np.sqrt(np.clip(1.0 - cos_theta * cos_theta, 0.0, 1.0))
+        dirs = cos_theta[:, None] * base_hat + sin_theta[:, None] * transverse
+        return cls.normalize_rows(dirs, fallback=base_hat)
+
+
+@dataclass(frozen=True)
 class FoldedHelixParams:
     layer_axis: list[float] | tuple[float, float, float] = (0.0, 0.0, 1.0)
     plane_normal: list[float] | tuple[float, float, float] = (0.0, 0.0, 1.0)

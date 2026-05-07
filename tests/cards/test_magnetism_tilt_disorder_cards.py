@@ -264,3 +264,92 @@ class TestMagnetismTiltDisorderCards(MagnetismCardTest):
         restored = SpinDisorderCard()
         restored.from_dict(card.to_dict())
         self.assertEqual(restored.get_params(), card.get_params())
+
+    def test_correlated_random_spin_cone_preserves_magnitudes_and_seed(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+        params = CorrelatedRandomSpinParams(
+            mode="Cone around reference",
+            correlation_kernel="exponential",
+            correlation_length=2.0,
+            samples=2,
+            cone_angle=10.0,
+            use_seed=True,
+            seed=17,
+            max_atoms_for_full=10,
+        )
+
+        op = CorrelatedRandomSpinOperation()
+        results = op.run_structure(structure, params)
+        repeated = op.run_structure(structure, params)
+
+        self.assertEqual(len(results), 2)
+        for left, right in zip(results, repeated):
+            moments = np.asarray(left.get_initial_magnetic_moments(), dtype=float)
+            repeated_moments = np.asarray(right.get_initial_magnetic_moments(), dtype=float)
+            self.assertEqual(moments.shape, (4, 3))
+            self.assertTrue(np.allclose(moments, repeated_moments, atol=1e-12))
+            self.assertTrue(np.allclose(np.linalg.norm(moments, axis=1), 2.0, atol=1e-8))
+            cos_angles = np.clip(moments[:, 2] / 2.0, -1.0, 1.0)
+            angles = np.degrees(np.arccos(cos_angles))
+            self.assertTrue(np.all(angles <= 10.0 + 1e-8))
+            self.assertIn("CorrSpin(xi=2,ker=exponential,mode=cone", str(left.info.get("Config_type", "")))
+
+    def test_correlated_random_spin_full_mode_kernel_and_limit(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+
+        exp_result = CorrelatedRandomSpinOperation().run_structure(
+            structure,
+            CorrelatedRandomSpinParams(
+                mode="Full random directions",
+                correlation_kernel="exponential",
+                correlation_length=2.0,
+                samples=1,
+                use_seed=True,
+                seed=3,
+                max_atoms_for_full=10,
+            ),
+        )[0]
+        sq_result = CorrelatedRandomSpinOperation().run_structure(
+            structure,
+            CorrelatedRandomSpinParams(
+                mode="Full random directions",
+                correlation_kernel="squared_exponential",
+                correlation_length=2.0,
+                samples=1,
+                use_seed=True,
+                seed=3,
+                max_atoms_for_full=10,
+            ),
+        )[0]
+
+        exp_moments = np.asarray(exp_result.get_initial_magnetic_moments(), dtype=float)
+        sq_moments = np.asarray(sq_result.get_initial_magnetic_moments(), dtype=float)
+        self.assertTrue(np.allclose(np.linalg.norm(exp_moments, axis=1), 2.0, atol=1e-8))
+        self.assertFalse(np.allclose(exp_moments, sq_moments, atol=1e-8))
+
+        with self.assertRaisesRegex(ValueError, "exact full covariance"):
+            CorrelatedRandomSpinOperation().run_structure(
+                structure,
+                CorrelatedRandomSpinParams(max_atoms_for_full=2),
+            )
+
+    def test_correlated_random_spin_card_roundtrip(self):
+        card = CorrelatedRandomSpinCard()
+        card.mode_combo.setCurrentText("Full random directions")
+        card.kernel_combo.setCurrentText("squared_exponential")
+        card.xi_frame.set_input_value([4.5])
+        card.samples_frame.set_input_value([3])
+        card.cone_frame.set_input_value([15.0])
+        card.source_combo.setCurrentText("Map/default magnitude")
+        card.map_edit.setText("Fe:2.2")
+        card.default_frame.set_input_value([0.1])
+        card.apply_edit.setText("Fe")
+        card.max_atoms_frame.set_input_value([50])
+        card.seed_checkbox.setChecked(True)
+        card.seed_frame.set_input_value([13])
+
+        restored = CorrelatedRandomSpinCard()
+        restored.from_dict(card.to_dict())
+        self.assertEqual(restored.get_params(), card.get_params())

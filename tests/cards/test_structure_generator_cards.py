@@ -2,6 +2,101 @@ from .card_test_base import *
 
 
 class TestStructureGeneratorCards(BaseCardTest):
+    def test_random_packing_preserves_cell_composition_and_distance_constraints(self):
+        structure = Atoms(
+            symbols=["Fe", "Fe", "O", "O"],
+            positions=np.zeros((4, 3)),
+            cell=np.diag([8.0, 8.0, 8.0]),
+            pbc=True,
+        )
+        structure.info["Config_type"] = "FeO_seed"
+
+        results = RandomPackingOperation().run_structure(
+            structure,
+            RandomPackingParams(
+                structures=2,
+                min_distance=1.0,
+                pair_min_distances="Fe-O:2.0,O-O:1.5",
+                use_seed=True,
+                seed=7,
+            ),
+        )
+
+        self.assertEqual(len(results), 2)
+        for atoms in results:
+            self.assertTrue(np.allclose(atoms.cell.array, structure.cell.array))
+            self.assertTrue(np.array_equal(np.asarray(atoms.pbc, dtype=bool), np.asarray(structure.pbc, dtype=bool)))
+            self.assertEqual(atoms.get_chemical_symbols().count("Fe"), 2)
+            self.assertEqual(atoms.get_chemical_symbols().count("O"), 2)
+            symbols = atoms.get_chemical_symbols()
+            for i in range(len(atoms)):
+                for j in range(i + 1, len(atoms)):
+                    dist = RandomPackingOperation.candidate_distances(
+                        atoms.positions[i],
+                        atoms.positions[j : j + 1],
+                        cell=np.asarray(atoms.cell.array, dtype=float),
+                        pbc=np.asarray(atoms.pbc, dtype=bool),
+                    )[0]
+                    expected = RandomPackingOperation.min_distance_for_pair(
+                        symbols[i],
+                        symbols[j],
+                        1.0,
+                        RandomPackingOperation.parse_pair_min_distances("Fe-O:2.0,O-O:1.5"),
+                    )
+                    self.assertGreaterEqual(dist + 1e-12, expected)
+            self.assertIn("RandPack(n=4,d=1", atoms.info.get("Config_type", ""))
+
+    def test_random_packing_manual_exact_composition_and_roundtrip(self):
+        structure = Atoms(
+            symbols=["Si"],
+            positions=[[0.0, 0.0, 0.0]],
+            cell=np.diag([7.0, 7.0, 7.0]),
+            pbc=True,
+        )
+        structure.info["Config_type"] = "manual_pack"
+
+        card = RandomPackingCard()
+        card.structures_frame.set_input_value([1])
+        card.composition_edit.setText("Fe:2,O:1")
+        card.min_distance_frame.set_input_value([1.0])
+        card.pair_distance_edit.setText("Fe-O:1.2")
+        card.attempts_frame.set_input_value([200])
+        card.strict_checkbox.setChecked(True)
+        card.seed_checkbox.setChecked(True)
+        card.seed_frame.set_input_value([9])
+
+        result = card.process_structure(structure)[0]
+        self.assertEqual(result.get_chemical_symbols().count("Fe"), 2)
+        self.assertEqual(result.get_chemical_symbols().count("O"), 1)
+        self.assertEqual(len(result), 3)
+
+        restored = RandomPackingCard()
+        restored.from_dict(card.to_dict())
+        self.assertEqual(restored.get_params(), card.get_params())
+
+    def test_random_packing_invalid_or_impossible_constraints_fail_explicitly(self):
+        structure = Atoms(
+            symbols=["He", "He"],
+            positions=[[0.0, 0.0, 0.0], [0.2, 0.0, 0.0]],
+            cell=np.diag([1.0, 1.0, 1.0]),
+            pbc=True,
+        )
+        with self.assertRaisesRegex(ValueError, "composition count"):
+            RandomPackingOperation.symbols_from_params(structure, "Fe:0.5,O:0.5")
+
+        with self.assertRaisesRegex(ValueError, "could not place"):
+            RandomPackingOperation().run_structure(
+                structure,
+                RandomPackingParams(
+                    structures=1,
+                    min_distance=0.9,
+                    max_attempts_per_atom=5,
+                    strict_mode=True,
+                    use_seed=True,
+                    seed=1,
+                ),
+            )
+
     def test_crystal_prototype_builder_card(self):
         card = CrystalPrototypeBuilderCard()
         card.structure_combo.setCurrentText("fcc")

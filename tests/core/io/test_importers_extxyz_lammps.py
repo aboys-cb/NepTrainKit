@@ -50,6 +50,15 @@ def test_unmatched_file_returns_empty_list(tmp_path):
     assert import_structures(path) == []
 
 
+@pytest.mark.parametrize("content", ["", "\n\n  \t\n"])
+def test_empty_file_returns_empty_list(tmp_path, content):
+    path = tmp_path / "empty.xyz"
+    path.write_text(content, encoding="utf-8")
+
+    assert is_parseable(path)
+    assert import_structures(path) == []
+
+
 def test_lammps_dump_importer_loads_scaled_coordinates_forces_and_elements(tmp_path):
     path = tmp_path / "traj.dump"
     path.write_text(

@@ -35,6 +35,17 @@ def register_importer(importer: FormatImporter) -> FormatImporter:
     """
     _IMPORTERS.append(importer)
     return importer
+def _is_blank_file(path: Path) -> bool:
+    if not path.is_file():
+        return False
+    try:
+        with path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(8192), b""):
+                if chunk.strip():
+                    return False
+    except OSError:
+        return False
+    return True
 def is_parseable(path: PathLike) -> bool:
     """Return ``True`` if any registered importer recognises ``path``."""
     candidate = as_path(path)
@@ -48,6 +59,8 @@ def is_parseable(path: PathLike) -> bool:
 def import_structures(path: PathLike, **kwargs) -> List[Structure]:
     """Try each registered importer until one yields structures."""
     candidate = as_path(path)
+    if _is_blank_file(candidate):
+        return []
     matched_errors: list[str] = []
     for imp in _IMPORTERS:
         try:

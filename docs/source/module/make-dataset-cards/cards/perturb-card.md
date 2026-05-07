@@ -51,21 +51,62 @@ $$\Delta\mathbf{r}_i=\boldsymbol\xi_i\odot d_i,\quad \boldsymbol\xi_i\in[-1,1]^3
 
 ## 参数说明
 
-**`engine_type`**（int，默认 1）：随机引擎。`0` = Sobol，少量样本时位移方向覆盖更均匀；`1` = Uniform，更快。样本数 ≥ 100 后差异缩小。
 
-**`max_distance`**（float，默认 0.3 A）：每个原子的最大位移距离。这是绝对长度（单位 A），不是百分比。室温下典型固体原子振动幅度约 0.05~0.1A，设 0.15~0.3A 通常合适。含 H 等轻元素时考虑开启 `use_element_scaling` 单独调大 H 的幅度。0.01~0.05A 适合微扰验证，0.3~0.5A 需要后筛检查非物理键长。
+### Engine Type（engine_type）
 
-**`max_num`**（int，默认 50）：每输入帧生成的扰动样本数。20~50 适合轻量补样；50~100 适合常规覆盖；100+ 建议后接 `FPS Filter` 去重。
+类型：`int`。默认：`1`。选择随机或准随机采样引擎。
 
-**`identify_organic`**（bool，默认 false）：有机团簇识别。分子晶体必须开启，纯无机关闭。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-**`use_element_scaling`**（bool，默认 false）：按元素设置不同扰动幅度。开启后 `max_distance` 被 `element_scalings` 中对应元素的系数覆盖。多元素体系（如含 H+重元素）建议开启。
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
 
-**`element_scalings`**（dict，默认 {}）：元素 → 最大位移的映射，如 `{"H":0.5,"O":0.15,"Si":0.1}`。仅 `use_element_scaling=true` 时生效。未列出的元素使用 `max_distance`。
+### Max Distance（max_distance）
 
-**`use_seed`**（bool，默认 false）：固定随机种子。
+类型：`float`。默认：`0.3`。设置原子随机位移的最大距离。
 
-**`seed`**（int，默认 0）：随机种子值。仅 `use_seed=true` 时生效。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+### Max Num（max_num）
+
+类型：`int`。默认：`50`。设置扰动或采样结构的输出数量。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+### Identify Organic（identify_organic）
+
+类型：`bool`。默认：`False`。决定是否识别有机分子并保护内部几何。
+
+物理直觉：有分子或有机片段时打开，防止晶格扰动破坏分子内部键长；纯无机晶体通常关闭。
+
+### Use Element Scaling（use_element_scaling）
+
+类型：`bool`。默认：`False`。决定是否按元素覆盖全局原子位移幅度。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+### Element Scalings（element_scalings）
+
+类型：`dict[str, float] | None`。默认：`None`。按元素设置原子位移幅度。
+
+物理直觉：轻元素和重元素位移尺度明显不同时使用；不要用它掩盖过大的全局扰动幅度。
+
+生效条件：`use_element_scaling=True`。
+
+### Use Seed（use_seed）
+
+类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
+
+物理直觉：需要可复现的训练集生成或测试时打开；做最终大规模探索且希望保留随机多样性时可关闭。
+
+### Seed（seed）
+
+类型：`int`。默认：`0`。设置固定随机种子的整数值。
+
+物理直觉：同一 seed 应产生同一批候选；只有在 `use_seed` 打开时才改变结果。
+
+生效条件：`use_seed=True`。
 
 ## 推荐预设
 

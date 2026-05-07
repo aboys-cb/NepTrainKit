@@ -51,27 +51,40 @@ $$i_t=\arg\max_j\ \min_{i\in S_{t-1}}\lVert\mathbf{d}_j-\mathbf{d}_i\rVert_2,\qu
 
 ## 参数说明
 
-### `Nep Path`（nep_path）
 
-用于生成 NEP 描述符的模型文件路径。必须是一个可用的 NEP 模型文件（如 `nep.txt` 或内置 `nep89.txt`）。路径为空或文件不存在时卡片报错。
+### Nep Path（nep_path）
 
-### `Num Condition`（num_condition）
+类型：`str`。默认：`MISSING`。指定用于结构 fingerprint 或 FPS 的 NEP 模型路径。
 
-期望保留的目标数量。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-- 50~100：轻量子集
-- 100~300：常规覆盖
-- 300+：大保留集
+### N Samples（n_samples）
 
-实际输出数量 = min(num_condition, 输入数量, 满足 min_distance 约束的数量)。
+类型：`int`。默认：`100`。设置 FPS 过滤后保留的结构数量。
 
-### `Min Distance Condition`（min_distance_condition）
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-描述符空间中两两最小允许距离。阈值越大去冗余越强，保留样本越少。
+### Min Distance（min_distance）
 
-- 0.001~0.01：轻度去重
-- 0.01~0.05：常规
-- 0.05~0.1：强去重
+类型：`float`。默认：`0.01`。设置新原子或随机坐标与现有原子的最小距离约束。
+
+物理直觉：它是几何硬约束；设得过小会保留短键坏结构，设得过大可能导致随机放置失败。
+
+### Backend（backend）
+
+类型：`str`。默认：`'auto'`。选择 fingerprint 计算后端。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
+
+### Batch Size（batch_size）
+
+类型：`int`。默认：`1000`。设置 descriptor 批处理大小。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
 ## 推荐预设
 

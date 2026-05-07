@@ -51,39 +51,136 @@ $$P(\text{torsion})\sim U(\theta_{\min},\theta_{\max}),\quad \Delta\mathbf{r}_i\
 
 ## 参数说明
 
-### 采样控制
 
-**`Perturb Per Frame`**（perturb_per_frame）：每输入帧生成多少个构象候选。20~100 为常规范围。注意：实际有效输出 = 候选数 x 成功率，受约束条件影响。
 
-**`Torsion Range Deg`**（torsion_range_deg）：`[最小值, 最大值]`，二面角旋转范围，单位度。±30° 保守，±180° 全覆盖。
+### 构象采样
 
-**`Max Torsions Per Conf`**（max_torsions_per_conf）：每个构象最多旋转多少个二面角。1~5 为常规。越多构象越复杂，成功率越低。
+#### Perturb Per Frame（perturb_per_frame）
+类型：`int`。默认：`100`。控制 `perturb_per_frame` 对应的生成或过滤行为。
 
-**`Gaussian Sigma`**（gaussian_sigma）：局域高斯扰动强度，单位 A。0.01~0.03 为常规。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-### 约束参数
 
-**`Bond Detect Factor`**（bond_detect_factor）：成键检测因子，越大越容易判定成键。默认 1.15。
+#### Torsion Range Deg（torsion_range_deg）
+类型：`tuple[float, float]`。默认：`(-180.0, 180.0)`。设置有机分子扭转角范围。
 
-**`Bond Keep Min Factor`**（bond_keep_min_factor）：最小保键因子。允许的最短键长 = `factor * r0`。0.6 为默认。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-**`Bond Keep Max Factor`** / **`Bond Keep Max Enable`**：最大保键因子及开关。允许的最长键长 = `factor * r0`。默认关闭（不检查键长上限）。
 
-**`Nonbond Min Factor`**（nonbond_min_factor）：非键最小距离因子。允许的非键最近距离 = `factor * r_vdw`。0.8 为默认。
+#### Max Torsions Per Conf（max_torsions_per_conf）
+类型：`int`。默认：`50`。限制每个构象最多扰动的扭转键数量。
 
-**`Max Retries`**（max_retries）：每个构象候选的最大重试次数。约束失败后重试。增大可提高成功率但线性增加耗时。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-### 高级参数
 
-**`PBC Mode`**（pbc_mode）：`auto` / `pbc` / `nonpbc`。周期/非周期模式。
+#### Gaussian Sigma（gaussian_sigma）
+类型：`float`。默认：`0.03`。设置局部随机位移的高斯标准差。
 
-**`Local Cutoff`**（local_cutoff）：局域截断半径（原子数）。100~200 为常规。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-**`Local Subtree`**（local_subtree）：局域子图规模（原子数）。50~100 为常规。
+
+#### Max Retries（max_retries）
+类型：`int`。默认：`12`。设置构象重试次数。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+### PBC 和局部环境
+
+#### PBC Mode（pbc_mode）
+类型：`str`。默认：`'auto'`。控制 `pbc_mode` 对应的生成或过滤行为。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
+
+
+#### Local Cutoff（local_cutoff）
+类型：`int`。默认：`200`。设置局部构象扰动的截断距离。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### Local Subtree（local_subtree）
+类型：`int`。默认：`100`。决定是否按分子局部子树传播扭转。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### Nonpbc Box Size（nonpbc_box_size）
+类型：`float`。默认：`100.0`。设置非周期分子的包围盒尺寸。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+### 键识别和键长约束
+
+#### Bond Detect Factor（bond_detect_factor）
+类型：`float`。默认：`1.15`。设置键识别的距离系数。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### Bond Keep Min Factor（bond_keep_min_factor）
+类型：`float`。默认：`0.6`。设置保留键长下限系数。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### Bond Keep Max Factor（bond_keep_max_factor）
+类型：`float`。默认：`1.15`。设置保留键长上限系数。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### Bond Keep Max Enable（bond_keep_max_enable）
+类型：`bool`。默认：`False`。决定是否启用键长上限检查。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### Mult Bond Factor（mult_bond_factor）
+类型：`float`。默认：`0.87`。设置多重键识别系数。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### BO C Const（bo_c_const）
+类型：`float`。默认：`0.3`。控制 `bo_c_const` 对应的生成或过滤行为。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### BO Threshold（bo_threshold）
+类型：`float`。默认：`0.2`。控制 `bo_threshold` 对应的生成或过滤行为。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+### 非键约束
+
+#### Nonbond Min Factor（nonbond_min_factor）
+类型：`float`。默认：`0.8`。设置非键原子最小距离系数。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
 
 ### 随机性
 
-**`Use Seed`** / **`Seed`**（use_seed / seed）：勾选 + 固定 seed 可复现。种子与结构的稳定 ID 联合影响采样路径。
+#### Use Seed（use_seed）
+类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
+
+物理直觉：需要可复现的训练集生成或测试时打开；做最终大规模探索且希望保留随机多样性时可关闭。
+
+
+#### Seed（seed）
+类型：`int`。默认：`0`。设置固定随机种子的整数值。
+
+物理直觉：同一 seed 应产生同一批候选；只有在 `use_seed` 打开时才改变结果。
+
+生效条件：`use_seed=True`。
 
 ## 推荐预设
 

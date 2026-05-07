@@ -22,33 +22,116 @@
 
 ## 参数说明
 
-`mode`：string，默认 `Cone around reference`。`Cone around reference` 在原始磁矩方向周围做相关 cone disorder；`Full random directions` 直接用相关随机场方向覆盖整球。
 
-`correlation_kernel`：string，默认 `exponential`。可选 `exponential` 或 `squared_exponential`。默认指数核 `exp(-r/xi)` 更接近常见自旋相关长度直觉；平方指数核更平滑、短程衰减更快。
 
-`correlation_length`：float，默认 `3.0`。空间相关长度 `xi`，单位 Angstrom，必须大于 0。
+### 相关随机场
 
-`samples`：int，默认 `1`。每个输入结构生成多少个独立相关随机自旋场。
+#### Mode（mode）
+类型：`str`。默认：`'Cone around reference'`。选择这张卡的主操作模式。
 
-`cone_angle`：float，默认 `30.0`。`mode=Cone around reference` 时使用，单位 degree。
+物理直觉：主模式会改变生成语义；不要只为了多出结构而混用物理含义不同的模式。
 
-`magnitude_source`：string，默认 `Existing initial magmoms`。可选 `Existing initial magmoms` 或 `Map/default magnitude`。
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
 
-`magmom_map`：string，默认 `""`。`magnitude_source=Map/default magnitude` 时使用，例如 `Fe:2.2,Co:1.7`。
 
-`default_moment`：float，默认 `0.0`。元素不在 `magmom_map` 中时使用的磁矩模长。
+#### Correlation Kernel（correlation_kernel）
+类型：`str`。默认：`'exponential'`。选择自旋空间相关函数。
 
-`lift_scalar`：bool，默认 `True`。输入是一维标量磁矩时，是否沿 `axis` 提升为三维向量。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-`axis`：三维 float list，默认 `(0.0, 0.0, 1.0)`。用于标量磁矩提升和 map/default 参考方向。
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
 
-`apply_elements`：string，默认 `""`。只对列出的元素施加相关随机化；空字符串表示所有非零磁矩原子。
 
-`max_atoms_for_full`：int，默认 `200`。精确 full-covariance 采样的 eligible 原子数上限。超过后直接失败，不隐式切换近似算法。
+#### Correlation Length（correlation_length）
+类型：`float`。默认：`3.0`。设置自旋随机场的空间相关长度。
 
-`use_seed`：bool，默认 `False`。开启后相关随机场可复现。
+物理直觉：小于最近邻距离时接近独立随机；大于若干晶格常数时形成长程平滑自旋纹理。
 
-`seed`：int，默认 `0`。`use_seed=True` 时作为基础 seed。
+
+#### Max Atoms For Full（max_atoms_for_full）
+类型：`int`。默认：`200`。限制 full covariance 方法允许处理的最大原子数。
+
+物理直觉：full covariance 是三次复杂度；超过阈值应先缩小体系或降低候选数量。
+
+
+### 输出和角度
+
+#### Samples（samples）
+类型：`int`。默认：`1`。设置每个输入结构生成的样本数量。
+
+物理直觉：样本数越大覆盖越密，但后续卡片会继续相乘；用于高维随机态时先控制在几十量级。
+
+
+#### Cone Angle（cone_angle）
+类型：`float`。默认：`30.0`。设置非共线 cone disorder 的最大偏转角。
+
+物理直觉：小 cone 对应有限温扰动，大 cone 更接近强无序态；不要把它当作真实温度。
+
+生效条件：`mode` 或方向模型选择 cone/noncollinear 随机化时。
+
+
+### 磁矩幅值
+
+#### Magnitude Source（magnitude_source）
+类型：`str`。默认：`'Existing initial magmoms'`。选择磁矩幅值来自元素映射、默认值还是已有结构。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
+
+
+#### Magmom Map（magmom_map）
+类型：`str`。默认：`''`。按元素指定磁矩幅值或方向，例如 `Fe:2.2, Ni:0.6`。
+
+物理直觉：已有元素磁矩先验时使用；未知体系不要用它伪造不存在的元素差异。
+
+
+#### Default Moment（default_moment）
+类型：`float`。默认：`0.0`。为没有显式元素映射的原子提供默认磁矩幅值。
+
+物理直觉：只适合作为兜底幅值；关键磁性元素应在 `magmom_map` 中显式给出。
+
+
+#### Lift Scalar（lift_scalar）
+类型：`bool`。默认：`True`。决定是否把标量磁矩提升为非共线向量。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### Axis（axis）
+类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 1.0)`。选择操作沿哪个空间轴或磁矩参考轴定义。
+
+物理直觉：坐标轴参数会改变空间分层、吸附方向或磁矩方向；使用前先确认结构取向。
+
+生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。
+
+
+#### Apply Elements（apply_elements）
+类型：`str`。默认：`''`。限制只处理指定元素，留空表示处理所有元素。
+
+物理直觉：用于只扰动磁性元素或只替换目标元素；留空代表全元素参与。
+
+
+### 随机性
+
+#### Use Seed（use_seed）
+类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
+
+物理直觉：需要可复现的训练集生成或测试时打开；做最终大规模探索且希望保留随机多样性时可关闭。
+
+
+#### Seed（seed）
+类型：`int`。默认：`0`。设置固定随机种子的整数值。
+
+物理直觉：同一 seed 应产生同一批候选；只有在 `use_seed` 打开时才改变结果。
+
+生效条件：`use_seed=True`。
 
 ## 推荐预设
 

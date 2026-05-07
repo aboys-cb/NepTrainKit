@@ -52,42 +52,42 @@
 
 ## 参数说明
 
-### 规则表
 
-**`Rules`**（rules）：JSON 字符串（界面中可用简化语法输入，程序自动转换）。每条 rule 包含：
+### Rules（rules）
 
-| 字段 | 类型 | 说明 |
-|------|------|------|
-| `target` | string | 被替换的元素，如 `Si` |
-| `dopants` | object | 替换目标元素及其权重，如 `{"Ge":0.7,"C":0.3}`。界面里写成 `Ge:0.7,C:0.3`；单元素可直接写 `Ge`，默认权重为 `1.0` |
-| `use` | string | `atomic_percent`（原子百分比）/ `mass_percent`（质量百分比）/ `count`（按原子数量）|
-| `percent` | [min, max] | 仅 `atomic_percent` / `mass_percent` 模式，替换比例区间 |
-| `count_mode` | string | `fixed` 精确替换 `count[0]` 个原子；`random` 在 `count[0]..count[1]` 之间随机 |
-| `count` | [min, max] | 仅 `count` 模式。固定数量写 `[n,n]`，随机范围写 `[min,max]` |
-| `group` | string（可选）| 限制只替换特定 group 标签内的原子。需要输入有 `atoms.arrays['group']` |
+类型：`list[dict[str, Any]]`。默认：`field(default_factory=list)`。定义每条随机替换或空位生成规则。
 
-**规则为空时，卡片不产生任何替换，输出 = 输入。**
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-### 采样模式
+### Doping Type（doping_type）
 
-**`Doping Type`**（doping_type）：`Random` 或 `Exact`。
+类型：`str`。默认：`'Random'`。选择掺杂计数采用精确枚举还是随机抽样。
 
-- `Random`：按权重概率随机采样，每帧替换数量有浮动
-- `Exact`：尽量匹配精确计数。替换数量更稳定，适合对比实验
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-### 输出数量
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
 
-**`Structures`**（max_structures）：整数。**每输入帧生成多少个掺杂版本**（注意：不是原子数上限）。
+### Max Structures（max_structures）
 
-- 10~50：轻量补样
-- 50~200：常规覆盖
-- 200+：建议后接 `FPS Filter` 做代表性筛选
+类型：`int`。默认：`1`。限制每个输入结构最多输出多少个候选结构。
 
-### 随机性
+物理直觉：每个输入结构都会乘上这个数量；链式生成时优先按 DFT 预算反推。
 
-**`Use Seed`**（use_seed）：勾选 → 固定种子可复现。
+### Use Seed（use_seed）
 
-**`Seed`**（seed）：种子值。
+类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
+
+物理直觉：需要可复现的训练集生成或测试时打开；做最终大规模探索且希望保留随机多样性时可关闭。
+
+### Seed（seed）
+
+类型：`int`。默认：`0`。设置固定随机种子的整数值。
+
+物理直觉：同一 seed 应产生同一批候选；只有在 `use_seed` 打开时才改变结果。
+
+生效条件：`use_seed=True`。
 
 ## 推荐预设
 

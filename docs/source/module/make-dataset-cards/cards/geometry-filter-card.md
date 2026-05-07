@@ -22,17 +22,42 @@
 
 ## 参数说明
 
-`min_pair_distance`：float，默认 `1.0` A。最短原子间距低于该值的结构会被删除。设为 `0.0` 表示不检查短键。
 
-`min_volume_per_atom`：float，默认 `0.0` A^3/atom。单原子体积低于该值的结构会被删除。`0.0` 表示关闭下限检查。
+### Min Pair Distance（min_pair_distance）
 
-`max_volume_per_atom`：float，默认 `0.0` A^3/atom。单原子体积高于该值的结构会被删除。`0.0` 表示关闭上限检查。
+类型：`float`。默认：`1.0`。设置任意原子对允许的最小距离。
 
-`min_density`：float，默认 `0.0` g/cm^3。质量密度低于该值的结构会被删除。`0.0` 表示关闭下限检查。
+物理直觉：用于挡掉明显短键；通常应低于正常最近邻键长但高于非物理重叠距离。
 
-`max_density`：float，默认 `0.0` g/cm^3。质量密度高于该值的结构会被删除。`0.0` 表示关闭上限检查。
+### Min Volume Per Atom（min_volume_per_atom）
 
-`require_finite_cell`：bool，默认 `False`。开启后，即使没有设置体积或密度阈值，也会删除零体积或非法晶胞结构。
+类型：`float`。默认：`0.0`。设置允许的最小单原子体积。
+
+物理直觉：过滤压缩过度结构；阈值应参考同体系平衡体积而不是跨元素通用值。
+
+### Max Volume Per Atom（max_volume_per_atom）
+
+类型：`float`。默认：`0.0`。设置允许的最大单原子体积。
+
+物理直觉：过滤过度拉伸或真空异常结构；slab 体系需避免把真空当体相体积判断。
+
+### Min Density（min_density）
+
+类型：`float`。默认：`0.0`。设置允许的最小质量密度。
+
+物理直觉：用于挡掉低密度异常结构；多孔或含真空体系要谨慎设置。
+
+### Max Density（max_density）
+
+类型：`float`。默认：`0.0`。设置允许的最大质量密度。
+
+物理直觉：用于挡掉过度压缩结构；阈值应来自目标材料的合理密度范围。
+
+### Require Finite Cell（require_finite_cell）
+
+类型：`bool`。默认：`False`。决定是否要求晶胞体积有限。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
 ## 推荐预设
 

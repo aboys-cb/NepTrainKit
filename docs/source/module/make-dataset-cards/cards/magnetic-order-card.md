@@ -50,63 +50,164 @@
 
 ## 参数说明
 
-### 磁矩幅值来源（至少填一个）
 
-**`Magmom Map`**（magmom_map）：字符串。每个元素的磁矩大小。格式 `Fe:2.2,Ni:0.6`。最精确的控制方式。
 
-**`Default Moment`**（default_moment）：浮点数。`magmom_map` 中未列出的元素用此默认值。设为 0 则不给未配置元素写磁矩。
+### 磁矩格式与幅值
 
-**`Apply Elements`**（apply_elements）：逗号分隔，如 `Fe,Co`。只对列出的元素写磁矩，其余写 0。留空 = 全部生效。
+#### Format（format）
+类型：`str`。默认：`'Collinear (scalar)'`。选择磁矩写入格式。
 
-> 优先级：`magmom_map` 命中 → `default_moment` 兜底 → 未命中 `apply_elements` 的写 0。
+物理直觉：标量适合共线近似；向量适合非共线、自旋螺旋和 canting 数据。
 
-### 磁矩格式与方向
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
 
-**`Format`**（format）：`Collinear (scalar)` 或 `Non-collinear (vector)`。
-- Collinear：磁矩只有大小和 ± 号，沿 `Axis` 方向。适合大多数共线磁序。
-- Non-collinear：3D 矢量磁矩。适合螺旋、canting 等非共线体系。
 
-**`Axis`**（axis）：`[x, y, z]`，collinear 模式下磁矩的参考轴方向。默认 `[0, 0, 1]`（z 轴）。
+#### Axis（axis）
+类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 1.0)`。选择操作沿哪个空间轴或磁矩参考轴定义。
 
-**`Use Element Dirs`**（use_element_dirs）：勾选后，非共线模式下不同元素可以使用 `magmom_map` 中各自的方向先验，而不是全部沿 `Axis`。适合多元素磁性体系（如 Fe↑ Mn↓）。仅在非共线格式下有意义。
+物理直觉：坐标轴参数会改变空间分层、吸附方向或磁矩方向；使用前先确认结构取向。
 
-### FM 分支
+生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。
 
-**`Gen FM`**（gen_fm）：勾选 → 输出一个铁磁结构（所有磁矩同向）。通常建议保持开启，FM 是重要的磁序参考态。
 
-### AFM 分支
+#### Magmom Map（magmom_map）
+类型：`str`。默认：`''`。按元素指定磁矩幅值或方向，例如 `Fe:2.2, Ni:0.6`。
 
-**`Gen AFM`**（gen_afm）：勾选 → 输出反铁磁结构。
+物理直觉：已有元素磁矩先验时使用；未知体系不要用它伪造不存在的元素差异。
 
-**`AFM Mode`**（afm_mode）：
-- `k-vector`：用波矢决定正负翻转。适合周期性子晶格。需配置 `AFM Kvec`。
-- `group A/B`：用 `atoms.arrays['group']` 中的标签决定正负。需上游先跑 `Group Label`，需配置 `AFM Group A/B`。
 
-**`AFM Kvec`**（afm_kvec）：仅 k-vector 模式。`100` / `010` / `001` / `110` / `111`。
+#### Use Element Dirs（use_element_dirs）
+类型：`bool`。默认：`False`。决定是否使用元素映射中的方向信息。
 
-**`AFM Group A / B`**（afm_group_a / afm_group_b）：仅 group A/B 模式。指定哪个 group 取正、哪个取负。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-**`AFM Zero Unknown`**（afm_zero_unknown）：仅 group A/B 模式。勾选 → 不属 A 也不属 B 的原子磁矩置零；不勾选 → 默认正号。
+
+#### Default Moment（default_moment）
+类型：`float`。默认：`0.0`。为没有显式元素映射的原子提供默认磁矩幅值。
+
+物理直觉：只适合作为兜底幅值；关键磁性元素应在 `magmom_map` 中显式给出。
+
+
+#### Apply Elements（apply_elements）
+类型：`str`。默认：`''`。限制只处理指定元素，留空表示处理所有元素。
+
+物理直觉：用于只扰动磁性元素或只替换目标元素；留空代表全元素参与。
+
+
+### FM / AFM 分支
+
+#### Gen FM（gen_fm）
+类型：`bool`。默认：`True`。决定是否生成 FM 磁序结构。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### Gen AFM（gen_afm）
+类型：`bool`。默认：`True`。决定是否生成 AFM 磁序结构。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### AFM Mode（afm_mode）
+类型：`str`。默认：`'k-vector'`。选择 AFM 生成方式。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
+
+
+#### AFM Kvec（afm_kvec）
+类型：`str`。默认：`'111'`。控制 `afm_kvec` 对应的生成或过滤行为。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：`gen_afm=True` 且 `afm_mode` 使用 k-vector。
+
+
+#### AFM Group A（afm_group_a）
+类型：`str`。默认：`'A'`。指定 AFM A 子晶格。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：`gen_afm=True` 且 `afm_mode` 使用 group。
+
+
+#### AFM Group B（afm_group_b）
+类型：`str`。默认：`'B'`。指定 AFM B 子晶格。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：`gen_afm=True` 且 `afm_mode` 使用 group。
+
+
+#### AFM Zero Unknown（afm_zero_unknown）
+类型：`bool`。默认：`True`。决定未知 group 原子是否置零磁矩。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
 
 ### PM 分支
 
-**`Gen PM`**（gen_pm）：勾选 → 生成顺磁结构。默认关闭，因为 PM 会显著增大输出规模。
+#### Gen PM（gen_pm）
+类型：`bool`。默认：`False`。决定是否生成 PM 随机磁矩结构。
 
-**`PM Count`**（pm_count）：PM 样本数，建议 5-20。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-**`PM Direction`**（pm_direction）：
-- `sphere`：方向在球面上均匀采样
-- `cone`：在以 `Axis` 为中心的锥面内采样，锥角由 `PM Cone Angle` 控制
 
-**`PM Cone Angle`**（pm_cone_angle）：仅 cone 模式，单位度。30° 表示偏离 Axis 最多 30°。
+#### PM Count（pm_count）
+类型：`int`。默认：`10`。设置 PM 随机结构数量。
 
-**`PM Balanced`**（pm_balanced）：勾选 → 正负方向数量尽量平衡。建议保持。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：`gen_pm=True`。
+
+
+#### PM Direction（pm_direction）
+类型：`str`。默认：`'sphere'`。选择 PM 随机方向模型。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
+
+生效条件：`gen_pm=True`。
+
+
+#### PM Cone Angle（pm_cone_angle）
+类型：`float`。默认：`30.0`。设置 PM cone 随机方向的最大偏转角。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：`pm_direction` 选择 cone 类方向时。
+
+
+#### PM Balanced（pm_balanced）
+类型：`bool`。默认：`True`。决定 PM 随机方向是否强制总体平衡。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：`gen_pm=True`。
+
 
 ### 随机性
 
-**`Use Seed`**（use_seed）：勾选 → 固定种子可复现。
+#### Use Seed（use_seed）
+类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
 
-**`Seed`**（seed）：种子值。仅 `use_seed` 勾选时生效。不同值产生不同 PM 随机分布。
+物理直觉：需要可复现的训练集生成或测试时打开；做最终大规模探索且希望保留随机多样性时可关闭。
+
+
+#### Seed（seed）
+类型：`int`。默认：`0`。设置固定随机种子的整数值。
+
+物理直觉：同一 seed 应产生同一批候选；只有在 `use_seed` 打开时才改变结果。
+
+生效条件：`use_seed=True`。
 
 ## 推荐预设
 

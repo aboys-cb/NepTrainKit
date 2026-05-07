@@ -1,13 +1,9 @@
-"""Minimal card-doc integrity audit.
+"""Card-doc integrity audit.
 
 Kept checks (catch real bugs):
   * every card source has a doc page, and every doc page has a card source
   * serialized_keys in the card-schema comment match what to_dict() writes
-  * default values from the Params dataclass appear in the doc text
-
-Removed checks (now enforced by the card-dev skill / writing guide):
-  * exact heading names, field labels, banned filler phrases
-  * per-parameter block format requirements
+  * every Params dataclass field has a dedicated parameter heading
 """
 
 from __future__ import annotations
@@ -29,6 +25,7 @@ INDEX_DOC = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "index.
 RECIPES_DOC = ROOT / "docs" / "source" / "module" / "make-dataset-cards" / "recipes.md"
 
 SCHEMA_RE = re.compile(r"<!--\s*card-schema:\s*(\{.*\})\s*-->")
+PARAM_HEADING_RE = re.compile(r"^\s{0,3}#{3,4}\s+.+?（([A-Za-z_][A-Za-z0-9_]*)）\s*$", re.MULTILINE)
 
 
 @dataclass
@@ -115,8 +112,8 @@ def parse_doc_pages() -> list[CardDoc]:
     return pages
 
 
-def extract_params_defaults(source_file: str) -> dict[str, object] | None:
-    """Extract field defaults from the Params dataclass in core/cards/."""
+def extract_params_fields(source_file: str) -> list[str] | None:
+    """Extract field names from the Params dataclass in core/cards/."""
     ui_path = CARD_DIR / Path(source_file).name
     if not ui_path.exists():
         return None
@@ -136,15 +133,22 @@ def extract_params_defaults(source_file: str) -> dict[str, object] | None:
         for node in core_module.body:
             if not isinstance(node, ast.ClassDef) or node.name != params_name:
                 continue
-            defaults: dict[str, object] = {}
+            fields: list[str] = []
             for stmt in node.body:
-                if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name) and stmt.value:
-                    try:
-                        defaults[stmt.target.id] = ast.literal_eval(stmt.value)
-                    except Exception:
-                        defaults[stmt.target.id] = ast.unparse(stmt.value)  # fallback string
-            return defaults if defaults else None
+                if isinstance(stmt, ast.AnnAssign) and isinstance(stmt.target, ast.Name):
+                    fields.append(stmt.target.id)
+            return fields if fields else None
     return None
+
+
+def extract_parameter_section(text: str) -> str | None:
+    """Return the 参数说明 section body, excluding the next H2 section."""
+    match = re.search(r"^## 参数说明\s*$", text, re.MULTILINE)
+    if not match:
+        return None
+    next_h2 = re.search(r"^##\s+", text[match.end():], re.MULTILINE)
+    end = match.end() + next_h2.start() if next_h2 else len(text)
+    return text[match.end():end]
 
 
 # ---------------------------------------------------------------------------
@@ -184,13 +188,17 @@ def audit() -> list[str]:
         if extra_in_doc:
             errors.append(f"{doc.path}: keys in schema but not in code: {extra_in_doc}")
 
-        # ---- default values present in doc (new-format params-only cards) ----
+        # ---- params-only docs must document every Params field as a heading ----
         if doc.keys == ["params"]:
-            defaults = extract_params_defaults(src)
-            if defaults:
-                for key in defaults:
-                    if key not in doc.text:
-                        errors.append(f"{doc.path}: params key `{key}` not found in doc")
+            params_fields = extract_params_fields(src)
+            param_section = extract_parameter_section(doc.text)
+            if param_section is None:
+                errors.append(f"{doc.path}: missing `## 参数说明` section")
+            elif params_fields:
+                documented = set(PARAM_HEADING_RE.findall(param_section))
+                for key in params_fields:
+                    if key not in documented:
+                        errors.append(f"{doc.path}: missing parameter heading for `{key}`")
 
     # ---- index integrity ----
     index_text = INDEX_DOC.read_text(encoding="utf-8")

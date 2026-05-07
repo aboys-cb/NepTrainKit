@@ -45,44 +45,54 @@
 
 ## 参数说明
 
-### `Lattice`（lattice）
 
-晶格原型类型。支持：`fcc`、`bcc`、`hcp`、`sc`、`diamond`、`zincblende`、`rocksalt`、`cesiumchloride`、`fluorite`、`wurtzite`。
+### Lattice（lattice）
 
-- 主晶型（fcc/bcc/hcp）：常见金属
-- 化合物晶型（rocksalt/wurtzite/fluorite）：二元化合物
+类型：`str`。默认：`'fcc'`。选择要生成的晶体原型。
 
-### `Element`（element）
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-元素符号，如 `Cu`、`Ni`、`Si`。对于化合物原型（如 rocksalt），只用第一个元素，后续需要 `Composition Sweep` + `Random Occupancy` 组合来实现元素分布。
+### Element（element）
 
-### `A Range`（a_range）
+类型：`str`。默认：`'Cu'`。指定原型晶体的元素。
 
-`[最小值, 最大值, 步长]`，晶格常数 a（单位 A）。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-- 单点扫描：`[3.52, 3.52, 0.1]` → 1 个结构
-- 区间扫描：`[3.50, 3.60, 0.02]` → 6 个结构
-- 注意：步长越小 → 结构越多。配合 `max_outputs` 控制上限。
+### A Range（a_range）
 
-### `C/a`（covera）
+类型：`tuple[float, float, float]`。默认：`(3.6, 3.6, 0.1)`。设置原型晶格常数扫描范围。
 
-仅 hcp 晶型使用。c/a 比例，理想值 ≈ 1.633。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-### `Auto Supercell`（auto_supercell）
+### C/A（covera）
 
-勾选 → 程序自动计算扩胞因子以逼近 `Max Atoms`。不勾选 → 手动用 `Rep` 指定扩胞倍数。
+类型：`float`。默认：`1.633`。控制 `covera` 对应的生成或过滤行为。
 
-### `Max Atoms`（max_atoms）
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-目标最大原子数。仅 `auto_supercell` 勾选时生效。256~512 为常规。
+### Auto Supercell（auto_supercell）
 
-### `Rep`（rep）
+类型：`bool`。默认：`True`。决定是否自动扩胞到目标原子数附近。
 
-`[na, nb, nc]`，三个方向的扩胞倍数。仅 `auto_supercell` 关闭时生效。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-### `Max Outputs`（max_outputs）
+### Max Atoms（max_atoms）
 
-输出结构总数上限。防止 a_range 扫描+多晶型产生过多结构。
+类型：`int`。默认：`512`。限制生成结构的最大原子数。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+### Rep（rep）
+
+类型：`tuple[int, int, int]`。默认：`(4, 4, 4)`。设置手动扩胞倍数。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+### Max Outputs（max_outputs）
+
+类型：`int`。默认：`200`。限制这张卡最多输出多少个结构。
+
+物理直觉：这是防止链式卡片数量爆炸的预算阀；上游结构很多时应先按计算预算设上限。
 
 ## 推荐预设
 

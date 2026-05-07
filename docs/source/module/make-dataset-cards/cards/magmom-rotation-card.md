@@ -50,39 +50,64 @@ $$\mathbf{m}'=\lambda\,\mathbf{R}(\hat{\mathbf{n}},\theta)\,\mathbf{m},\quad \la
 
 ## 参数说明
 
-### 核心控制
 
-**`Elements`**（elements）：逗号分隔的元素列表，如 `Fe,Co`。只对列出的元素做旋转和模长扰动。留空 = 全部磁性原子参与。
+### Elements（elements）
 
-**`Max Angle`**（max_angle）：最大旋转角，单位度。每次随机采样角度在 [0, max_angle] 内均匀分布。
-- 保守：2~5°（验证方向变化确实有帮助）
-- 平衡：8~15°（常规有限温度覆盖）
-- 探索：20°+（宽温度区间，需重点抽查）
+类型：`str`。默认：`''`。指定参与生成、替换或扰动的元素集合。
 
-**`Num Structures`**（num_structures）：每输入帧输出的旋转版本数。5~10 用于轻量补样，10~30 用于常规覆盖，30+ 建议后接过滤。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-### 标量抬升
+### Max Angle（max_angle）
 
-**`Lift Scalar`**（lift_scalar）：输入是共线标量磁矩时，是否先沿 `Axis` 抬升为向量再做旋转。输入是标量且需要旋转时必须开启。
+类型：`float`。默认：`10.0`。设置磁矩随机旋转的最大角度。
 
-### 参考轴
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-**`Axis`**（axis）：`lift_scalar` 抬升时使用的参考方向，默认 `[0, 0, 1]`。输入已经是向量磁矩时此参数对初始方向无影响。
+### Num Structures（num_structures）
 
-### 模长扰动
+类型：`int`。默认：`5`。控制 `num_structures` 对应的生成或过滤行为。
 
-**`Disturb Magnitude`**（disturb_magnitude）：是否在旋转的同时随机缩放磁矩模长。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-**`Magnitude Factor`**（magnitude_factor）：`[min, max]`，模长缩放因子区间。
-- 保守：`[0.98, 1.02]`
-- 平衡：`[0.95, 1.05]`
-- 探索：`[0.85, 1.15]`
+### Lift Scalar（lift_scalar）
 
-### 随机性
+类型：`bool`。默认：`True`。决定是否把标量磁矩提升为非共线向量。
 
-**`Use Seed`**（use_seed）：勾选 → 固定种子可复现。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-**`Seed`**（seed）：种子值。仅 `use_seed` 勾选时生效。
+### Axis（axis）
+
+类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 1.0)`。选择操作沿哪个空间轴或磁矩参考轴定义。
+
+物理直觉：坐标轴参数会改变空间分层、吸附方向或磁矩方向；使用前先确认结构取向。
+
+生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。
+
+### Disturb Magnitude（disturb_magnitude）
+
+类型：`bool`。默认：`True`。控制 `disturb_magnitude` 对应的生成或过滤行为。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+### Magnitude Factor（magnitude_factor）
+
+类型：`list[float] | tuple[float, float]`。默认：`(0.95, 1.05)`。控制 `magnitude_factor` 对应的生成或过滤行为。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+### Use Seed（use_seed）
+
+类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
+
+物理直觉：需要可复现的训练集生成或测试时打开；做最终大规模探索且希望保留随机多样性时可关闭。
+
+### Seed（seed）
+
+类型：`int`。默认：`0`。设置固定随机种子的整数值。
+
+物理直觉：同一 seed 应产生同一批候选；只有在 `use_seed` 打开时才改变结果。
+
+生效条件：`use_seed=True`。
 
 ## 推荐预设
 

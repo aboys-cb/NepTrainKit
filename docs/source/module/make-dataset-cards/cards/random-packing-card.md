@@ -22,21 +22,62 @@
 
 ## 参数说明
 
-`structures`：int，默认 `1`。每个输入结构生成多少个随机 packing。
 
-`composition`：string，默认 `""`。空字符串表示保持输入结构的元素计数。非空时必须写精确正整数计数，例如 `Fe:32,O:64`；不接受 `Fe:0.5,O:0.5` 这类比例，因为本卡需要确定的离散原子数。
 
-`min_distance`：float，默认 `1.5`。所有未被 pair-specific 规则覆盖的元素对使用这个最小距离，单位 Angstrom。
+### 组成和数量
 
-`pair_min_distances`：string，默认 `""`。pair-specific 最小距离，格式如 `Fe-O:1.8, O-O:1.2, Fe-Fe:2.0`。元素顺序无关，未指定的 pair 回到 `min_distance`。
+#### Structures（structures）
+类型：`int`。默认：`1`。设置要生成的随机构型数量。
 
-`max_attempts_per_atom`：int，默认 `500`。每个原子最多尝试多少次随机位置。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-`strict_mode`：bool，默认 `True`。开启时，只要任一 requested sample 放置失败，整张卡失败且不返回半成品。关闭时失败 sample 被跳过；如果一个都没有成功才报错。
 
-`use_seed`：bool，默认 `False`。开启后随机坐标可复现。
+#### Composition（composition）
+类型：`str`。默认：`''`。指定目标组成；留空时使用输入结构的元素和计数。
 
-`seed`：int，默认 `0`。`use_seed=True` 时作为基础 seed，并与输入结构 ID 和 sample 序号派生每个输出的随机流。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+### 距离约束
+
+#### Min Distance（min_distance）
+类型：`float`。默认：`1.5`。设置新原子或随机坐标与现有原子的最小距离约束。
+
+物理直觉：它是几何硬约束；设得过小会保留短键坏结构，设得过大可能导致随机放置失败。
+
+
+#### Pair Min Distances（pair_min_distances）
+类型：`str`。默认：`''`。按元素对覆盖全局最小距离约束。
+
+物理直觉：当 H、O、金属等原子半径差别大时使用元素对覆盖全局距离。
+
+
+#### Max Attempts Per Atom（max_attempts_per_atom）
+类型：`int`。默认：`500`。限制每个原子随机放置失败前的最大尝试次数。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### Strict Mode（strict_mode）
+类型：`bool`。默认：`True`。决定单个样本失败时是中断还是跳过该样本。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+### 随机性
+
+#### Use Seed（use_seed）
+类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
+
+物理直觉：需要可复现的训练集生成或测试时打开；做最终大规模探索且希望保留随机多样性时可关闭。
+
+
+#### Seed（seed）
+类型：`int`。默认：`0`。设置固定随机种子的整数值。
+
+物理直觉：同一 seed 应产生同一批候选；只有在 `use_seed` 打开时才改变结果。
+
+生效条件：`use_seed=True`。
 
 ## 推荐预设
 

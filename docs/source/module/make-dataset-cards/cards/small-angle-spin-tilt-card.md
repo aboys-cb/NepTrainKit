@@ -58,69 +58,218 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 
 ## 参数说明
 
+
+
 ### Canting 模式
 
-**`Canting Mode`**（canting_mode）：
+#### Canting Mode（canting_mode）
+类型：`str`。默认：`'Single-spin tilt'`。选择小角度自旋倾斜的目标类型。
 
-| 模式 | 含义 | 适用 |
-|------|------|------|
-| `Single-spin tilt` | 单独偏转选定原子的磁矩 | 验证流程、研究特定位点 |
-| `Global tilt` | 所有 eligible 磁矩按同一角度偏转 | 外场下整体偏转、spin-flop 近似路径 |
-| `Atom pair canting` | 左右两侧原子分别偏转 ±θ/2 | DMI 训练集首选 |
-| `Group pair canting` | 两组原子整体分别偏转 ±θ/2 | 子晶格级别 canting |
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-### 单自旋模式的目标选择
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
 
-**`Target Mode`**（target_mode）：`First eligible atom`（最保守）、`All eligible atoms`（按站点展开）、`Explicit indices (1-based)`（精确指定）。仅 `Single-spin tilt` 使用；`Global tilt` 总是作用于所有 eligible 磁矩。
 
-**`Target Indices`**（target_indices）：仅显式索引模式生效。格式 `1,3-5`。
+#### Target Mode（target_mode）
+类型：`str`。默认：`'First eligible atom'`。选择目标原子的解释方式。
 
-### 原子对模式的目标选择
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-**`Pair Source`**（pair_source）：`Manual indices`（手动指定左右索引）或 `Auto by neighbor shell`（按近邻壳层自动找对）。
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
 
-**`Pair Left/Right Indices`**（pair_left_indices / pair_right_indices）：手动模式时，左右两侧 1-based 索引列表，一一配对。
 
-**`Pair Shell`**（pair_shell）：自动模式时，第几近邻壳层。1 为第一近邻，2 为第二近邻。
+#### Target Indices（target_indices）
+类型：`str`。默认：`''`。控制 `target_indices` 对应的生成或过滤行为。
 
-**`Pair Shell Tolerance`**（pair_shell_tolerance）：自动分壳层的距离容差，单位 Angstrom。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-**过滤条件（仅在自动模式下生效）：**
+生效条件：`target_mode` 使用手动索引时。
 
-- **`Pair Element Filter`**（pair_element_filter）：`Fe-Fe,Fe-Co` 格式，只保留指定元素组合的对
-- **`Pair Group Filter`**（pair_group_filter）：`A-B,A-A` 格式，需要输入有 `arrays['group']`
-- **`Bond Filter Mode`**（bond_filter_mode）：`Any` / `Near axis` / `In plane (normal)`，按键方向筛选
-- **`Bond Filter Axis`** / **`Bond Filter Tolerance`**：键方向筛选的参考轴和角度容差
 
-### Group pair 模式
+### 原子对目标
 
-**`Group A/B`**（group_a / group_b）：`arrays['group']` 中的标签名。需要输入已有 group 标签。
+#### Pair Left Indices（pair_left_indices）
+类型：`str`。默认：`''`。指定原子对左侧索引列表。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：`pair_source` 选择手动索引时。
+
+
+#### Pair Right Indices（pair_right_indices）
+类型：`str`。默认：`''`。指定原子对右侧索引列表。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：`pair_source` 选择手动索引时。
+
+
+#### Pair Source（pair_source）
+类型：`str`。默认：`'Manual indices'`。选择原子对来自手动列表还是自动近邻搜索。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
+
+
+#### Pair Shell（pair_shell）
+类型：`int`。默认：`1`。选择第几近邻壳层。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：`pair_source` 选择近邻自动搜索时。
+
+
+#### Pair Shell Tolerance（pair_shell_tolerance）
+类型：`float`。默认：`0.05`。设置近邻壳层距离容差。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：`pair_source` 选择近邻自动搜索时。
+
+
+#### Pair Element Filter（pair_element_filter）
+类型：`str`。默认：`''`。按元素对筛选原子对。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：自动生成原子对后需要按元素筛选时。
+
+
+#### Pair Group Filter（pair_group_filter）
+类型：`str`。默认：`''`。按 group 对筛选原子对。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：自动生成原子对后需要按 group 筛选时。
+
+
+#### Bond Filter Mode（bond_filter_mode）
+类型：`str`。默认：`'Any'`。选择键方向筛选方式。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
+
+
+#### Bond Filter Axis（bond_filter_axis）
+类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 1.0)`。设置键方向筛选参考轴。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：`bond_filter_mode` 不是关闭状态时。
+
+
+#### Bond Filter Tolerance（bond_filter_tolerance）
+类型：`float`。默认：`20.0`。设置键方向筛选角度或投影容差。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：`bond_filter_mode` 不是关闭状态时。
+
+
+### Group Pair 模式
+
+#### Group A（group_a）
+类型：`str`。默认：`'A'`。指定 A 组原子或 group 标签。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：需要 group pair、手动 group 或 AFM group 模式时。
+
+
+#### Group B（group_b）
+类型：`str`。默认：`'B'`。指定 B 组原子或 group 标签。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+生效条件：需要 group pair、手动 group 或 AFM group 模式时。
+
 
 ### 角度和手性
 
-**`Angle List`**（angle_list）：逗号分隔的偏转角列表，单位度。推荐从 `1,2,5,10` 开始。
+#### Angle List（angle_list）
+类型：`str`。默认：`'1,2,5,10'`。设置需要扫描的小角度列表。
 
-**`Tilt Signs`**（tilt_signs）：`Positive only`（只 +θ）、`Negative only`（只 -θ）、`Both (+/- pair)`（成对输出，DMI 必选）。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-### 参考态
 
-**`Include Reference`**（include_reference）：是否额外输出一帧未偏转的参考磁态，方便做 energy difference 对比。
+#### Tilt Signs（tilt_signs）
+类型：`str`。默认：`'Positive only'`。设置角度正负手性组合。
 
-### 磁矩来源
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-**`Magnitude Source`**（magnitude_source）：`Existing initial magmoms`（优先）或 `Map/default magnitude`。
 
-**`Magmom Map`** / **`Default Moment`**：仅在 `Map/default magnitude` 模式下生效。
+#### Include Reference（include_reference）
+类型：`bool`。默认：`True`。控制 `include_reference` 对应的生成或过滤行为。
 
-**`Lift Scalar`** / **`Axis`**：标量磁矩抬升为向量的开关和参考轴。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
 
-**`Reference Direction`**（reference_direction）：canting 平面的首选侧向参考方向。
 
-**`Apply Elements`**（apply_elements）：限制哪些元素参与目标筛选。
+### 磁矩与参考态
 
-### 输出上限
+#### Magnitude Source（magnitude_source）
+类型：`str`。默认：`'Existing initial magmoms'`。选择磁矩幅值来自元素映射、默认值还是已有结构。
 
-**`Max Outputs`**（max_outputs）：防止"目标数 x 角度数 x 手性数"组合膨胀。16（保守），50~200（常规），500+（需配合筛选）。
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+| 选项 | 含义 | 什么时候选 |
+|------|------|-----------|
+| 以 UI 下拉项为准 | 不同选项对应不同物理生成语义 | 选择前先看本页操作示例和推荐预设 |
+
+
+#### Magmom Map（magmom_map）
+类型：`str`。默认：`''`。按元素指定磁矩幅值或方向，例如 `Fe:2.2, Ni:0.6`。
+
+物理直觉：已有元素磁矩先验时使用；未知体系不要用它伪造不存在的元素差异。
+
+
+#### Default Moment（default_moment）
+类型：`float`。默认：`0.0`。为没有显式元素映射的原子提供默认磁矩幅值。
+
+物理直觉：只适合作为兜底幅值；关键磁性元素应在 `magmom_map` 中显式给出。
+
+
+#### Lift Scalar（lift_scalar）
+类型：`bool`。默认：`True`。决定是否把标量磁矩提升为非共线向量。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### Axis（axis）
+类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 1.0)`。选择操作沿哪个空间轴或磁矩参考轴定义。
+
+物理直觉：坐标轴参数会改变空间分层、吸附方向或磁矩方向；使用前先确认结构取向。
+
+生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。
+
+
+#### Reference Direction（reference_direction）
+类型：`list[float] | tuple[float, float, float]`。默认：`(1.0, 0.0, 0.0)`。定义参考自旋方向，用于构造相对倾斜或 cone。
+
+物理直觉：根据这张卡要补的训练集缺口设置；调整后重点检查输出数量、几何合理性和 `Config_type` 标签是否符合预期。
+
+
+#### Apply Elements（apply_elements）
+类型：`str`。默认：`''`。限制只处理指定元素，留空表示处理所有元素。
+
+物理直觉：用于只扰动磁性元素或只替换目标元素；留空代表全元素参与。
+
+
+### 输出预算
+
+#### Max Outputs（max_outputs）
+类型：`int`。默认：`100`。限制这张卡最多输出多少个结构。
+
+物理直觉：这是防止链式卡片数量爆炸的预算阀；上游结构很多时应先按计算预算设上限。
 
 ## 推荐预设
 

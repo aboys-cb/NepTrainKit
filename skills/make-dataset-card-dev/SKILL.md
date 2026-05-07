@@ -113,6 +113,8 @@ UI 类放在 `src/NepTrainKit/ui/views/_card/*.py`，遵循现有风格：
 
 详细规范见 `docs/source/module/make-dataset-cards/writing-guide.md`。
 
+参数文档必须按 `Params dataclass` 字段逐项落标题：无功能组时使用 `### 参数名（key）`，有功能组时使用 `### 功能组` + `#### 参数名（key）`。不要把多个 key 合在一个标题里；`tools/docs/audit_card_docs.py` 会按这一契约检查。
+
 ### 6. 测试
 
 最少覆盖：

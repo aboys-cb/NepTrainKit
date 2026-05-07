@@ -425,6 +425,119 @@ class CompositionSweepOperation(StructureOperation):
 
 
 @dataclass(frozen=True)
+class CompositionGradientParams:
+    elements: str = "Ni,Co"
+    start_composition: str = "Ni:1,Co:0"
+    end_composition: str = "Ni:0,Co:1"
+    axis: str = "x"
+    bins: int = 8
+    target_elements: str = ""
+    samples: int = 1
+    use_seed: bool = False
+    seed: int = 0
+
+
+class CompositionGradientOperation(StructureOperation):
+    """Assign site species from a composition gradient along one Cartesian axis."""
+
+    AXIS_INDEX = {"x": 0, "y": 1, "z": 2}
+
+    def run_structure(self, structure, params: CompositionGradientParams) -> list:
+        elements = parse_element_list(params.elements)
+        if len(elements) < 2:
+            raise ValueError("Composition Gradient requires at least two elements.")
+        start_comp = self._normalized_composition(params.start_composition, elements)
+        end_comp = self._normalized_composition(params.end_composition, elements)
+        if not start_comp or not end_comp:
+            raise ValueError("Composition Gradient requires valid start and end compositions.")
+
+        candidate_indices = self._candidate_indices(structure, params.target_elements)
+        if candidate_indices.size == 0:
+            raise ValueError("Composition Gradient found no atoms matching target_elements.")
+
+        bins = max(1, int(params.bins))
+        axis_idx = self.AXIS_INDEX.get(str(params.axis).strip().lower(), 0)
+        coord = self._axis_coordinate(structure, axis_idx)
+        order = candidate_indices[np.argsort(coord[candidate_indices], kind="mergesort")]
+        groups = [group for group in np.array_split(order, bins) if len(group) > 0]
+        if not groups:
+            raise ValueError("Composition Gradient could not build nonempty coordinate bins.")
+
+        base_seed = int(params.seed) if params.use_seed else None
+        cfg_id = stable_config_id(structure)
+        outputs = []
+        for sample_idx in range(max(int(params.samples), 1)):
+            if base_seed is None:
+                rng = np.random.default_rng()
+                seed_tag = ""
+            else:
+                derived_seed = int(base_seed + cfg_id * 1000003 + sample_idx)
+                rng = np.random.default_rng(derived_seed)
+                seed_tag = f",s={derived_seed}"
+            atoms = structure.copy()
+            symbols = atoms.get_chemical_symbols()
+            for group_idx, indices in enumerate(groups):
+                t = 0.0 if len(groups) == 1 else float(group_idx) / float(len(groups) - 1)
+                comp = {
+                    element: (1.0 - t) * float(start_comp[element]) + t * float(end_comp[element])
+                    for element in elements
+                }
+                assigned = self._exact_layer_assignment(elements, comp, len(indices), rng)
+                for atom_idx, symbol in zip(indices, assigned):
+                    symbols[int(atom_idx)] = str(symbol)
+            atoms.set_chemical_symbols(symbols)
+            append_config_tag(atoms, f"CompGrad(ax={self._axis_name(axis_idx)},b={len(groups)}{seed_tag})")
+            outputs.append(atoms)
+        return outputs
+
+    @staticmethod
+    def _normalized_composition(text: str, elements: list[str]) -> dict[str, float]:
+        parsed = parse_composition(text)
+        values = np.asarray([float(parsed.get(element, 0.0)) for element in elements], dtype=float)
+        if values.size != len(elements) or np.any(values < 0.0) or float(values.sum()) <= 0.0:
+            return {}
+        values = values / float(values.sum())
+        return {element: float(value) for element, value in zip(elements, values)}
+
+    @staticmethod
+    def _candidate_indices(structure, target_elements: str) -> np.ndarray:
+        targets = set(parse_element_list(target_elements))
+        if not targets:
+            return np.arange(len(structure), dtype=int)
+        return np.asarray(
+            [idx for idx, symbol in enumerate(structure.get_chemical_symbols()) if symbol in targets],
+            dtype=int,
+        )
+
+    @staticmethod
+    def _axis_coordinate(structure, axis_idx: int) -> np.ndarray:
+        if bool(np.asarray(structure.pbc, dtype=bool)[axis_idx]) and float(structure.get_volume()) > 0.0:
+            return np.asarray(structure.get_scaled_positions(wrap=True), dtype=float)[:, axis_idx]
+        return np.asarray(structure.get_positions(), dtype=float)[:, axis_idx]
+
+    @staticmethod
+    def _axis_name(axis_idx: int) -> str:
+        return ("x", "y", "z")[int(axis_idx)]
+
+    @staticmethod
+    def _exact_layer_assignment(elements: list[str], comp: dict[str, float], n_sites: int, rng: np.random.Generator) -> np.ndarray:
+        fractions = np.asarray([float(comp[element]) for element in elements], dtype=float)
+        fractions = fractions / float(fractions.sum())
+        raw = fractions * int(n_sites)
+        counts = np.floor(raw).astype(int)
+        remainder = int(n_sites) - int(counts.sum())
+        if remainder > 0:
+            residual_order = np.argsort(-(raw - counts))
+            for i in range(remainder):
+                counts[int(residual_order[i % len(residual_order)])] += 1
+        assigned: list[str] = []
+        for element, count in zip(elements, counts):
+            assigned.extend([element] * int(count))
+        rng.shuffle(assigned)
+        return np.asarray(assigned, dtype=object)
+
+
+@dataclass(frozen=True)
 class RandomOccupancyParams:
     """Parameters for random occupancy assignment."""
 

@@ -6,7 +6,7 @@
 
 ## 功能说明
 
-对选定目标原子或原子对做确定性小角度磁矩偏转（canting）。支持三种模式：单自旋偏转、显式原子对 canting、两组原子的 group-pair canting。后两种模式显式构造 S_i x S_j 的正/负手性对，直接服务于 DMI 训练集。
+对选定目标原子、全局磁序或原子对做确定性小角度磁矩偏转（canting）。支持四种模式：单自旋偏转、Global tilt、显式原子对 canting、两组原子的 group-pair canting。pair 模式显式构造 S_i x S_j 的正/负手性对，直接服务于 DMI 训练集；Global tilt 用于外场下的集体偏转角扫描。
 
 $$\hat{\mathbf{m}}(\theta)=\cos\theta\,\hat{\mathbf{m}}_0+\sin\theta\,\hat{\mathbf{t}}$$
 
@@ -47,10 +47,12 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 **加：**
 - 训练 DMI 或手性相关的磁性模型
 - 需要确定性、可对比的小角度偏转样本（不是随机方向扰动）
+- 需要外场或 metamagnetic 路径附近的整体磁序偏转
 - 分子动力学显示特定原子对的磁矩夹角出现非物理振荡
 
 **不加：**
 - 只需要随机方向扰动覆盖 → 用 `Magmom Rotation`
+- 需要离散比例翻转或从有序到无序的梯度 → 用 `Spin Disorder`
 - 需要整体磁序翻转（不是局部 canting）→ 用 `Magnetic Order` 的 AFM 分支
 - 需要连续螺旋调制 → 用 `Spin Spiral`
 
@@ -63,12 +65,13 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 | 模式 | 含义 | 适用 |
 |------|------|------|
 | `Single-spin tilt` | 单独偏转选定原子的磁矩 | 验证流程、研究特定位点 |
+| `Global tilt` | 所有 eligible 磁矩按同一角度偏转 | 外场下整体偏转、spin-flop 近似路径 |
 | `Atom pair canting` | 左右两侧原子分别偏转 ±θ/2 | DMI 训练集首选 |
 | `Group pair canting` | 两组原子整体分别偏转 ±θ/2 | 子晶格级别 canting |
 
 ### 单自旋模式的目标选择
 
-**`Target Mode`**（target_mode）：`First eligible atom`（最保守）、`All eligible atoms`（按站点展开）、`Explicit indices (1-based)`（精确指定）。
+**`Target Mode`**（target_mode）：`First eligible atom`（最保守）、`All eligible atoms`（按站点展开）、`Explicit indices (1-based)`（精确指定）。仅 `Single-spin tilt` 使用；`Global tilt` 总是作用于所有 eligible 磁矩。
 
 **`Target Indices`**（target_indices）：仅显式索引模式生效。格式 `1,3-5`。
 

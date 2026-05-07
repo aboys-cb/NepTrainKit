@@ -27,10 +27,10 @@ class SmallAngleSpinTiltCard(MakeDataCard):
         self.setObjectName("small_angle_spin_tilt_card_widget")
 
         self.canting_mode_label = BodyLabel("Canting mode", self.setting_widget)
-        self.canting_mode_label.setToolTip("Choose single-spin tilt, explicit atom-pair canting, or group-pair canting")
+        self.canting_mode_label.setToolTip("Choose global tilt, single-spin tilt, atom-pair canting, or group-pair canting")
         self.canting_mode_label.installEventFilter(ToolTipFilter(self.canting_mode_label, 300, ToolTipPosition.TOP))
         self.canting_mode_combo = ComboBox(self.setting_widget)
-        self.canting_mode_combo.addItems(["Single-spin tilt", "Atom pair canting", "Group pair canting"])
+        self.canting_mode_combo.addItems(["Single-spin tilt", "Global tilt", "Atom pair canting", "Group pair canting"])
         self.canting_mode_combo.setCurrentText("Single-spin tilt")
 
         self.target_mode_label = BodyLabel("Target atoms", self.setting_widget)
@@ -291,7 +291,7 @@ class SmallAngleSpinTiltCard(MakeDataCard):
         self.target_mode_label.setEnabled(single_mode)
         self.target_mode_combo.setEnabled(single_mode)
 
-        explicit = single_mode and self.target_mode_combo.currentText() == "Explicit indices (1-based)"
+        explicit = mode == "Single-spin tilt" and self.target_mode_combo.currentText() == "Explicit indices (1-based)"
         self.target_indices_label.setVisible(explicit)
         self.target_indices_edit.setVisible(explicit)
         self.target_indices_label.setEnabled(explicit)

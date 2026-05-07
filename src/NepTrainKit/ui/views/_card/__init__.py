@@ -12,11 +12,13 @@ from .shear_angle_card import ShearAngleCard
 from .random_slab_card import RandomSlabCard
 from .random_doping_card import RandomDopingCard
 from .composition_sweep_card import CompositionSweepCard
+from .composition_gradient_card import CompositionGradientCard
 from .random_occupancy_card import RandomOccupancyCard
 from .conditional_replace_card import ConditionalReplaceCard
 from .magnetic_order_card import MagneticOrderCard
 from .set_magnetic_moments_card import SetMagneticMomentsCard
 from .small_angle_spin_tilt_card import SmallAngleSpinTiltCard
+from .spin_disorder_card import SpinDisorderCard
 from .spin_spiral_card import SpinSpiralCard
 from .folded_helix_card import FoldedHelixCard
 from .group_label_card import GroupLabelCard
@@ -28,6 +30,7 @@ from .layer_copy_card import LayerCopyCard
 from .interstitial_adsorbate_card import InsertDefectCard
 
 from .fps_filter_card import FPSFilterDataCard
+from .geometry_filter_card import GeometryFilterCard
 from NepTrainKit.ui.widgets.card_widget import FilterDataCard
 from .card_group import CardGroup
 
@@ -44,11 +47,13 @@ __all__ = [
     "RandomSlabCard",
     "RandomDopingCard",
     "CompositionSweepCard",
+    "CompositionGradientCard",
     "RandomOccupancyCard",
     "ConditionalReplaceCard",
     "MagneticOrderCard",
     "SetMagneticMomentsCard",
     "SmallAngleSpinTiltCard",
+    "SpinDisorderCard",
     "SpinSpiralCard",
     "FoldedHelixCard",
     "GroupLabelCard",
@@ -60,6 +65,7 @@ __all__ = [
     "LayerCopyCard",
     "InsertDefectCard",
     "FPSFilterDataCard",
+    "GeometryFilterCard",
     "FilterDataCard",
     "CardGroup",
 

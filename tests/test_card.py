@@ -27,11 +27,13 @@ from NepTrainKit.ui.views._card import (
     RandomSlabCard,
     RandomDopingCard,
     CompositionSweepCard,
+    CompositionGradientCard,
     RandomOccupancyCard,
     ConditionalReplaceCard,
     MagneticOrderCard,
     SetMagneticMomentsCard,
     SmallAngleSpinTiltCard,
+    SpinDisorderCard,
     SpinSpiralCard,
     FoldedHelixCard,
     MagneticMomentRotationCard,
@@ -43,6 +45,7 @@ from NepTrainKit.ui.views._card import (
     LayerCopyCard,
     OrganicMolConfigPBCCard,
     VibrationModePerturbCard,
+    GeometryFilterCard,
 )
 from NepTrainKit.core.magnetism import orthonormal_frame
 from NepTrainKit.core import CardManager
@@ -50,6 +53,8 @@ from NepTrainKit.core.alloy import parse_composition
 from NepTrainKit.core.cards.alloy import (
     CompositionSweepOperation,
     CompositionSweepParams,
+    CompositionGradientOperation,
+    CompositionGradientParams,
     ConditionalReplaceOperation,
     ConditionalReplaceParams,
     RandomDopingOperation,
@@ -57,7 +62,7 @@ from NepTrainKit.core.cards.alloy import (
     RandomOccupancyOperation,
     RandomOccupancyParams,
 )
-from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
+from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams, GeometryFilterOperation, GeometryFilterParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.cards.structure import (
     CrystalPrototypeBuilderOperation,
@@ -107,6 +112,8 @@ from NepTrainKit.core.cards.magnetism import (
     SetMagneticMomentsParams,
     SmallAngleSpinTiltOperation,
     SmallAngleSpinTiltParams,
+    SpinDisorderOperation,
+    SpinDisorderParams,
     SpinSpiralOperation,
     SpinSpiralParams,
 )
@@ -529,6 +536,30 @@ class TestCard(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             FPSFilterOperation().run_dataset([self.structure.copy()], params)
 
+    def test_geometry_filter_operation_and_card_roundtrip(self):
+        good = Atoms(
+            symbols=["Si", "Si"],
+            positions=[[0.0, 0.0, 0.0], [2.35, 0.0, 0.0]],
+            cell=np.diag([5.0, 5.0, 5.0]),
+            pbc=True,
+        )
+        bad = good.copy()
+        bad.positions[1] = [0.5, 0.0, 0.0]
+
+        params = GeometryFilterParams(min_pair_distance=1.0, require_finite_cell=True)
+        kept = GeometryFilterOperation().run_dataset([good, bad], params)
+        self.assertEqual(len(kept), 1)
+        self.assertTrue(np.allclose(kept[0].positions, good.positions))
+
+        card = GeometryFilterCard()
+        card.min_pair_frame.set_input_value([1.4])
+        card.min_vpa_frame.set_input_value([5.0])
+        card.max_vpa_frame.set_input_value([80.0])
+        card.require_cell_checkbox.setChecked(True)
+        restored = GeometryFilterCard()
+        restored.from_dict(card.to_dict())
+        self.assertEqual(restored.get_params(), card.get_params())
+
     def test_shear_matrix_card(self):
         card = ShearMatrixCard()
         structure = self.structure.copy()
@@ -817,6 +848,39 @@ class TestCard(unittest.TestCase):
 
         self.assertEqual(len(occupied), 1)
         self.assertTrue(set(occupied[0].get_chemical_symbols()).issubset({"Co", "Ni"}))
+
+    def test_composition_gradient_operation_and_card_roundtrip(self):
+        base = Atoms(
+            symbols=["Ni"] * 8,
+            positions=[[float(i), 0.0, 0.0] for i in range(8)],
+            cell=np.diag([8.0, 2.0, 2.0]),
+            pbc=[True, False, False],
+        )
+        params = CompositionGradientParams(
+            elements="Ni,Co",
+            start_composition="Ni:1,Co:0",
+            end_composition="Ni:0,Co:1",
+            axis="x",
+            bins=4,
+            samples=2,
+            use_seed=True,
+            seed=3,
+        )
+        results = CompositionGradientOperation().run_structure(base, params)
+        self.assertEqual(len(results), 2)
+        self.assertTrue(all("CompGrad(ax=x,b=4" in str(atoms.info.get("Config_type", "")) for atoms in results))
+        self.assertEqual(results[0].get_chemical_symbols()[:2], ["Ni", "Ni"])
+        self.assertEqual(results[0].get_chemical_symbols()[-2:], ["Co", "Co"])
+
+        card = CompositionGradientCard()
+        card.elements_edit.setText("Ni,Co")
+        card.bins_frame.set_input_value([4])
+        card.samples_frame.set_input_value([2])
+        card.seed_checkbox.setChecked(True)
+        card.seed_frame.set_input_value([3])
+        restored = CompositionGradientCard()
+        restored.from_dict(card.to_dict())
+        self.assertEqual(restored.get_params(), card.get_params())
 
     def test_composition_sweep_quaternary_quinary(self):
         base = self.structure.copy()
@@ -1419,6 +1483,24 @@ class TestCard(unittest.TestCase):
         self.assertFalse(card.map_label.isVisible())
         self.assertFalse(card.default_label.isVisible())
 
+    def test_small_angle_spin_tilt_global_tilt(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+
+        results = SmallAngleSpinTiltOperation().run_structure(
+            structure,
+            SmallAngleSpinTiltParams(
+                canting_mode="Global tilt",
+                angle_list="5",
+                include_reference=False,
+            ),
+        )
+        self.assertEqual(len(results), 1)
+        moments = np.array(results[0].get_initial_magnetic_moments(), dtype=float)
+        self.assertTrue(np.allclose(moments[:, 0], 2.0 * np.sin(np.deg2rad(5.0)), atol=1e-6))
+        self.assertTrue(np.allclose(moments[:, 2], 2.0 * np.cos(np.deg2rad(5.0)), atol=1e-6))
+        self.assertIn("SpinTiltG(a=5,sg=pos)", str(results[0].info.get("Config_type", "")))
+
     def test_small_angle_spin_tilt_card_map_source_roundtrip_and_limit(self):
         structure = self._spin_chain()
 
@@ -1568,6 +1650,49 @@ class TestCard(unittest.TestCase):
         self.assertEqual(restored.bond_tol_frame.get_input_value(), [5.0])
         self.assertFalse(restored.bond_axis_label.isHidden())
         self.assertFalse(restored.bond_tol_label.isHidden())
+
+    def test_spin_disorder_operation_and_card_roundtrip(self):
+        structure = self._spin_chain()
+        structure.set_initial_magnetic_moments([2.0, 2.0, 2.0, 2.0])
+
+        results = SpinDisorderOperation().run_structure(
+            structure,
+            SpinDisorderParams(
+                mode="Flip fraction",
+                fractions="0.5",
+                samples_per_fraction=1,
+                use_seed=True,
+                seed=11,
+            ),
+        )
+        self.assertEqual(len(results), 1)
+        moments = np.array(results[0].get_initial_magnetic_moments(), dtype=float)
+        self.assertEqual(int(np.sum(moments[:, 2] < 0.0)), 2)
+        self.assertIn("SpinDis(f=0.5,n=2,mode=flip", str(results[0].info.get("Config_type", "")))
+
+        cone = SpinDisorderOperation().run_structure(
+            structure,
+            SpinDisorderParams(
+                mode="Cone disorder",
+                fractions="0.5",
+                cone_angle=10.0,
+                use_seed=True,
+                seed=11,
+            ),
+        )[0]
+        cone_moments = np.array(cone.get_initial_magnetic_moments(), dtype=float)
+        self.assertTrue(np.allclose(np.linalg.norm(cone_moments, axis=1), 2.0, atol=1e-6))
+
+        card = SpinDisorderCard()
+        card.mode_combo.setCurrentText("Cone disorder")
+        card.fractions_edit.setText("0.25,0.5")
+        card.samples_frame.set_input_value([2])
+        card.cone_frame.set_input_value([12.0])
+        card.seed_checkbox.setChecked(True)
+        card.seed_frame.set_input_value([5])
+        restored = SpinDisorderCard()
+        restored.from_dict(card.to_dict())
+        self.assertEqual(restored.get_params(), card.get_params())
 
     def test_set_magnetic_moments_card_map_vector_roundtrip(self):
         structure = self._spin_chain()

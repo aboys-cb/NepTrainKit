@@ -834,7 +834,25 @@ class SmallAngleSpinTiltOperation(StructureOperation):
             append_config_tag(reference, "SpinTiltRef")
             outputs.append(reference)
 
-        if params.canting_mode == "Single-spin tilt":
+        if params.canting_mode == "Global tilt":
+            target_indices = self.all_eligible_indices(structure, base_moments, params)
+            if not target_indices:
+                return outputs or [structure.copy()]
+            for angle_deg in angles:
+                for sign_tag, sign_value in self.signs(params):
+                    tilted = structure.copy()
+                    moment_array = np.array(base_moments, copy=True)
+                    for idx in target_indices:
+                        moment_array[idx] = self.tilted_vector(moment_array[idx], angle_deg, params, sign=sign_value)
+                    set_initial_magmoms_safe(tilted, moment_array)
+                    append_config_tag(tilted, f"SpinTiltG(a={float(angle_deg):.6g},sg={sign_tag})")
+                    outputs.append(tilted)
+                    if len(outputs) >= max_outputs:
+                        reached_limit = True
+                        break
+                if reached_limit:
+                    break
+        elif params.canting_mode == "Single-spin tilt":
             target_indices = self.candidate_indices(structure, base_moments, params)
             if not target_indices:
                 return outputs or [structure.copy()]
@@ -925,13 +943,7 @@ class SmallAngleSpinTiltOperation(StructureOperation):
 
     @staticmethod
     def candidate_indices(structure, base_moments: np.ndarray, params: SmallAngleSpinTiltParams) -> list[int]:
-        norms = np.linalg.norm(base_moments, axis=1)
-        apply_elements = parse_element_set(params.apply_elements)
-        eligible = [
-            idx
-            for idx, (sym, mag) in enumerate(zip(structure.get_chemical_symbols(), norms))
-            if mag > 1e-10 and (not apply_elements or sym in apply_elements)
-        ]
+        eligible = SmallAngleSpinTiltOperation.all_eligible_indices(structure, base_moments, params)
         if not eligible:
             return []
         if params.target_mode == "First eligible atom":
@@ -940,6 +952,16 @@ class SmallAngleSpinTiltOperation(StructureOperation):
             return eligible
         explicit = parse_atom_indices(params.target_indices, len(structure))
         return [idx for idx in explicit if idx in set(eligible)]
+
+    @staticmethod
+    def all_eligible_indices(structure, base_moments: np.ndarray, params: SmallAngleSpinTiltParams) -> list[int]:
+        norms = np.linalg.norm(base_moments, axis=1)
+        apply_elements = parse_element_set(params.apply_elements)
+        return [
+            idx
+            for idx, (sym, mag) in enumerate(zip(structure.get_chemical_symbols(), norms))
+            if mag > 1e-10 and (not apply_elements or sym in apply_elements)
+        ]
 
     def pair_targets(self, structure, base_moments: np.ndarray, params: SmallAngleSpinTiltParams) -> list[tuple[int, int]]:
         if params.pair_source == "Auto by neighbor shell":
@@ -1080,6 +1102,162 @@ class SmallAngleSpinTiltOperation(StructureOperation):
         for idx in right_indices:
             moment_array[idx] = self.tilted_vector(moment_array[idx], half_angle, params, sign=-sign)
         return moment_array
+
+
+@dataclass(frozen=True)
+class SpinDisorderParams:
+    mode: str = "Flip fraction"
+    fractions: str = "0.1,0.3,0.5,0.7"
+    samples_per_fraction: int = 1
+    cone_angle: float = 30.0
+    magnitude_source: str = "Existing initial magmoms"
+    magmom_map: str = ""
+    default_moment: float = 0.0
+    lift_scalar: bool = True
+    axis: list[float] | tuple[float, float, float] = (0.0, 0.0, 1.0)
+    apply_elements: str = ""
+    use_seed: bool = False
+    seed: int = 0
+    max_outputs: int = 100
+
+
+class SpinDisorderOperation(StructureOperation):
+    """Generate controlled spin-disorder states between ordered and PM limits."""
+
+    def run_structure(self, structure, params: SpinDisorderParams) -> list:
+        base_moments = self.vector_moments(structure, params)
+        if base_moments is None or base_moments.shape != (len(structure), 3):
+            raise ValueError("Spin Disorder requires vector magnetic moments or liftable scalar magmoms.")
+
+        eligible = self.eligible_indices(structure, base_moments, params)
+        if eligible.size == 0:
+            raise ValueError("Spin Disorder found no eligible nonzero magnetic moments.")
+
+        fractions = self.fraction_values(params.fractions)
+        if not fractions:
+            raise ValueError("Spin Disorder requires at least one positive disorder fraction.")
+
+        base_seed = int(params.seed) if params.use_seed else None
+        cfg_id = stable_config_id(structure)
+        outputs = []
+        max_outputs = int(params.max_outputs)
+        for frac_idx, fraction in enumerate(fractions):
+            n_change = self.count_for_fraction(len(eligible), fraction)
+            if n_change <= 0:
+                continue
+            for sample_idx in range(max(int(params.samples_per_fraction), 1)):
+                if base_seed is None:
+                    rng = np.random.default_rng()
+                    seed_tag = ""
+                else:
+                    derived_seed = int(base_seed + cfg_id * 1000003 + frac_idx * 1009 + sample_idx)
+                    rng = np.random.default_rng(derived_seed)
+                    seed_tag = f",s={derived_seed}"
+                selected = rng.choice(eligible, size=n_change, replace=False)
+                moments = np.array(base_moments, copy=True)
+                if params.mode == "Flip fraction":
+                    moments[selected] *= -1.0
+                    label = "flip"
+                elif params.mode == "Cone disorder":
+                    label = "cone"
+                    for idx in selected:
+                        moments[idx] = self.random_cone_vector(base_moments[idx], float(params.cone_angle), rng)
+                else:
+                    label = "rand"
+                    for idx in selected:
+                        magnitude = float(np.linalg.norm(base_moments[idx]))
+                        moments[idx] = magnitude * self.random_unit_vector(rng)
+
+                atoms = structure.copy()
+                set_initial_magmoms_safe(atoms, moments)
+                detail = f"f={float(fraction):.6g},n={int(n_change)},mode={label}{seed_tag}"
+                if label == "cone":
+                    detail += f",a={float(params.cone_angle):.6g}"
+                append_config_tag(atoms, f"SpinDis({detail})")
+                outputs.append(atoms)
+                if len(outputs) >= max_outputs:
+                    return outputs
+        if not outputs:
+            raise ValueError("Spin Disorder did not generate any structures.")
+        return outputs
+
+    @staticmethod
+    def fraction_values(text: str) -> list[float]:
+        values = []
+        seen = set()
+        for token in re.split(r"[\s,;]+", text or ""):
+            if not token.strip():
+                continue
+            try:
+                value = float(token)
+            except ValueError:
+                continue
+            if value <= 0.0:
+                continue
+            value = min(value, 1.0)
+            rounded = float(np.round(value, 12))
+            if rounded in seen:
+                continue
+            seen.add(rounded)
+            values.append(rounded)
+        return values
+
+    @staticmethod
+    def count_for_fraction(n_items: int, fraction: float) -> int:
+        if n_items <= 0 or fraction <= 0.0:
+            return 0
+        return min(n_items, max(1, int(round(float(n_items) * float(fraction)))))
+
+    @staticmethod
+    def eligible_indices(structure, base_moments: np.ndarray, params: SpinDisorderParams) -> np.ndarray:
+        apply_elements = parse_element_set(params.apply_elements)
+        norms = np.linalg.norm(base_moments, axis=1)
+        indices = [
+            idx
+            for idx, (symbol, norm) in enumerate(zip(structure.get_chemical_symbols(), norms))
+            if norm > 1e-10 and (not apply_elements or symbol in apply_elements)
+        ]
+        return np.asarray(indices, dtype=int)
+
+    @staticmethod
+    def vector_moments(structure, params: SpinDisorderParams) -> np.ndarray | None:
+        axis = normalize_vector(np.array(params.axis, dtype=float))
+        if params.magnitude_source == "Existing initial magmoms":
+            values = existing_moment_vectors(structure, axis=axis, lift_scalar=params.lift_scalar)
+            if values is not None:
+                return values
+            if len(np.asarray(structure.get_initial_magnetic_moments(), dtype=float).shape) == 1 and not params.lift_scalar:
+                return None
+        return mapped_moment_vectors(
+            structure,
+            parse_magmom_map_any(params.magmom_map),
+            default_moment=float(params.default_moment),
+            axis=axis,
+            apply_elements=parse_element_set(params.apply_elements),
+            use_element_directions=False,
+        )
+
+    @staticmethod
+    def random_unit_vector(rng: np.random.Generator) -> np.ndarray:
+        vector = rng.normal(size=3)
+        norm = float(np.linalg.norm(vector))
+        if norm <= 1e-12:
+            return np.array([0.0, 0.0, 1.0], dtype=float)
+        return vector / norm
+
+    def random_cone_vector(self, vector: np.ndarray, cone_angle: float, rng: np.random.Generator) -> np.ndarray:
+        magnitude = float(np.linalg.norm(vector))
+        if magnitude <= 1e-12:
+            return np.zeros(3, dtype=float)
+        axis = normalize_vector(np.asarray(vector, dtype=float))
+        e1, e2, axis = orthonormal_frame(axis)
+        max_angle = max(0.0, min(float(cone_angle), 180.0))
+        cos_min = math.cos(math.radians(max_angle))
+        cos_theta = float(rng.uniform(cos_min, 1.0))
+        sin_theta = math.sqrt(max(0.0, 1.0 - cos_theta * cos_theta))
+        phi = float(rng.uniform(0.0, 2.0 * math.pi))
+        direction = cos_theta * axis + sin_theta * (math.cos(phi) * e1 + math.sin(phi) * e2)
+        return magnitude * normalize_vector(direction, default=axis)
 
 
 @dataclass(frozen=True)

@@ -28,7 +28,7 @@
 **参数设置：**
 - `Rules`：target=`Si`, dopants=`Ge`, use=`atomic_percent`, percent=`[3, 8]`
 - `Doping Type`：`Exact` （对比实验需要稳定的掺杂数量）
-- `Max Atoms Condition`：`[20]`
+- `Structures`：`[20]`
 
 **输出：** 20 个掺杂结构，每帧中 3~8% 的 Si 变成 Ge，带 `Dop(n=...)` 标签
 
@@ -60,9 +60,10 @@
 |------|------|------|
 | `target` | string | 被替换的元素，如 `Si` |
 | `dopants` | object | 替换目标元素及其权重，如 `{"Ge":0.7,"C":0.3}`。界面里写成 `Ge:0.7,C:0.3`；单元素可直接写 `Ge`，默认权重为 `1.0` |
-| `use` | string | `atomic_percent`（原子百分比）/ `mass_percent`（质量百分比）/ `count`（固定数量）|
+| `use` | string | `atomic_percent`（原子百分比）/ `mass_percent`（质量百分比）/ `count`（按原子数量）|
 | `percent` | [min, max] | 仅 `atomic_percent` / `mass_percent` 模式，替换比例区间 |
-| `count` | [min, max] | 仅 `count` 模式，替换原子数区间 |
+| `count_mode` | string | `fixed` 精确替换 `count[0]` 个原子；`random` 在 `count[0]..count[1]` 之间随机 |
+| `count` | [min, max] | 仅 `count` 模式。固定数量写 `[n,n]`，随机范围写 `[min,max]` |
 | `group` | string（可选）| 限制只替换特定 group 标签内的原子。需要输入有 `atoms.arrays['group']` |
 
 **规则为空时，卡片不产生任何替换，输出 = 输入。**
@@ -76,7 +77,7 @@
 
 ### 输出数量
 
-**`Max Atoms Condition`**（max_atoms_condition）：整数。**每输入帧生成多少个掺杂版本**（注意：不是原子数上限）。
+**`Structures`**（max_structures）：整数。**每输入帧生成多少个掺杂版本**（注意：不是原子数上限）。
 
 - 10~50：轻量补样
 - 50~200：常规覆盖

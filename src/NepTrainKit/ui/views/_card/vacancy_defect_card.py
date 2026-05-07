@@ -47,9 +47,9 @@ class VacancyDefectCard(MakeDataCard):
         self.engine_type_combo.addItem("Uniform")
         self.engine_type_combo.setCurrentIndex(1)
 
-        self.num_radio_button = RadioButton("Vacancy num",self.setting_widget)
+        self.num_radio_button = RadioButton("Vacancy count",self.setting_widget)
         self.num_radio_button.setChecked(True)
-        self.num_radio_button.setToolTip("Set fixed number of vacancies")
+        self.num_radio_button.setToolTip("Use atom count as the vacancy amount control")
         self.num_radio_button.installEventFilter(ToolTipFilter(self.num_radio_button, 300, ToolTipPosition.TOP))
 
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
@@ -57,8 +57,8 @@ class VacancyDefectCard(MakeDataCard):
         self.num_condition_frame.setRange(1,10000)
 
 
-        self.concentration_radio_button = RadioButton("Vacancy concentration",self.setting_widget)
-        self.concentration_radio_button.setToolTip("Set vacancy concentration")
+        self.concentration_radio_button = RadioButton("Vacancy fraction",self.setting_widget)
+        self.concentration_radio_button.setToolTip("Use fraction of atoms as the vacancy amount control")
         self.concentration_radio_button.installEventFilter(ToolTipFilter(self.concentration_radio_button, 300, ToolTipPosition.TOP))
 
 
@@ -66,13 +66,20 @@ class VacancyDefectCard(MakeDataCard):
         self.concentration_condition_frame.set_input("",1,"float")
         self.concentration_condition_frame.setRange(0,1)
 
+        self.count_mode_label = BodyLabel("Count mode", self.setting_widget)
+        self.count_mode_label.setToolTip("Fixed removes exactly the requested amount. Random samples from 1 to that amount.")
+        self.count_mode_label.installEventFilter(ToolTipFilter(self.count_mode_label, 300, ToolTipPosition.TOP))
+        self.count_mode_combo = ComboBox(self.setting_widget)
+        self.count_mode_combo.addItems(["Fixed count", "Random up to value"])
+        self.count_mode_combo.setCurrentText("Fixed count")
+
 
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_condition_frame.set_input("unit",1)
         self.max_atoms_condition_frame.setRange(1,10000)
 
-        self.max_atoms_label= BodyLabel("Max num",self.setting_widget)
-        self.max_atoms_label.setToolTip("Number of structures to generate")
+        self.max_atoms_label= BodyLabel("Structures",self.setting_widget)
+        self.max_atoms_label.setToolTip("Number of vacancy structures to generate")
 
         self.max_atoms_label.installEventFilter(ToolTipFilter(self.max_atoms_label, 300, ToolTipPosition.TOP))
 
@@ -94,10 +101,12 @@ class VacancyDefectCard(MakeDataCard):
         self.settingLayout.addWidget(self.num_condition_frame, 1, 1, 1, 2)
         self.settingLayout.addWidget(self.concentration_radio_button, 2, 0, 1, 1)
         self.settingLayout.addWidget(self.concentration_condition_frame, 2, 1, 1, 2)
-        self.settingLayout.addWidget(self.max_atoms_label, 3, 0, 1, 1)
-        self.settingLayout.addWidget(self.max_atoms_condition_frame, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.seed_checkbox, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 4, 1, 1, 2)
+        self.settingLayout.addWidget(self.count_mode_label, 3, 0, 1, 1)
+        self.settingLayout.addWidget(self.count_mode_combo, 3, 1, 1, 2)
+        self.settingLayout.addWidget(self.max_atoms_label, 4, 0, 1, 1)
+        self.settingLayout.addWidget(self.max_atoms_condition_frame, 4, 1, 1, 2)
+        self.settingLayout.addWidget(self.seed_checkbox, 5, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 5, 1, 1, 2)
 
     def create_operation(self):
         """Return the UI-independent vacancy-defect operation."""
@@ -110,6 +119,7 @@ class VacancyDefectCard(MakeDataCard):
             num_condition=int(self.num_condition_frame.get_input_value()[0]),
             use_num=self.num_radio_button.isChecked(),
             concentration_condition=float(self.concentration_condition_frame.get_input_value()[0]),
+            count_mode="fixed" if self.count_mode_combo.currentText() == "Fixed count" else "random",
             max_structures=int(self.max_atoms_condition_frame.get_input_value()[0]),
             use_seed=self.seed_checkbox.isChecked(),
             seed=int(self.seed_frame.get_input_value()[0]),
@@ -123,6 +133,7 @@ class VacancyDefectCard(MakeDataCard):
         self.max_atoms_condition_frame.set_input_value([int(params.max_structures)])
         self.num_radio_button.setChecked(bool(params.use_num))
         self.concentration_radio_button.setChecked(not bool(params.use_num))
+        self.count_mode_combo.setCurrentText("Fixed count" if params.count_mode == "fixed" else "Random up to value")
         self.seed_checkbox.setChecked(bool(params.use_seed))
         self.seed_frame.set_input_value([int(params.seed)])
 
@@ -162,6 +173,7 @@ class VacancyDefectCard(MakeDataCard):
                 num_condition=raw_params.get("num_condition", 1),
                 use_num=raw_params.get("use_num", True),
                 concentration_condition=raw_params.get("concentration_condition", 0.0),
+                count_mode=raw_params.get("count_mode", "random"),
                 max_structures=raw_params.get("max_structures", 1),
                 use_seed=raw_params.get("use_seed", False),
                 seed=raw_params.get("seed", 0),
@@ -172,6 +184,7 @@ class VacancyDefectCard(MakeDataCard):
                 num_condition=data_dict.get("num_condition", [1])[0],
                 use_num=data_dict.get("num_radio_button", True),
                 concentration_condition=data_dict.get("concentration_condition", [0.0])[0],
+                count_mode=data_dict.get("count_mode", "random"),
                 max_structures=data_dict.get("max_atoms_condition", [1])[0],
                 use_seed=data_dict.get("use_seed", False),
                 seed=data_dict.get("seed", [0])[0],

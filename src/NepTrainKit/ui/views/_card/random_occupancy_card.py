@@ -44,11 +44,13 @@ class RandomOccupancyCard(MakeDataCard):
         self.mode_label.setToolTip("Exact: integer counts match fractions; Random: multinomial sampling")
         self.mode_label.installEventFilter(ToolTipFilter(self.mode_label, 300, ToolTipPosition.TOP))
 
-        self.samples_label = BodyLabel("Samples/frame", self.setting_widget)
+        self.samples_label = BodyLabel("Structures/input", self.setting_widget)
         self.samples_frame = SpinBoxUnitInputFrame(self)
         self.samples_frame.set_input("unit", 1, "int")
         self.samples_frame.setRange(1, 999999)
         self.samples_frame.set_input_value([1])
+        self.samples_label.setToolTip("Number of occupancy samples generated from each input structure")
+        self.samples_label.installEventFilter(ToolTipFilter(self.samples_label, 300, ToolTipPosition.TOP))
 
         self.group_label = BodyLabel("Group filter", self.setting_widget)
         self.group_edit = LineEdit(self.setting_widget)

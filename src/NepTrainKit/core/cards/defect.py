@@ -84,7 +84,11 @@ class RandomVacancyOperation(StructureOperation):
             total_remove = 0
             for rule in params.rules:
                 element = rule.get("element")
-                count_min, count_max = rule.get("count", [0, 0])
+                count_values = list(rule.get("count", [0, 0]))
+                if not count_values:
+                    continue
+                count_min = int(count_values[0])
+                count_max = int(count_values[-1])
                 if not element or int(count_max) <= 0:
                     continue
 
@@ -105,7 +109,13 @@ class RandomVacancyOperation(StructureOperation):
                 if not candidate_indices:
                     continue
 
-                remove_num = int(rng.integers(int(count_min), int(count_max) + 1))
+                count_mode = str(rule.get("count_mode", "")).lower()
+                if count_mode == "fixed" or (not count_mode and count_min == count_max):
+                    remove_num = count_min
+                else:
+                    if count_max < count_min:
+                        count_min, count_max = count_max, count_min
+                    remove_num = int(rng.integers(count_min, count_max + 1))
                 remove_num = min(remove_num, len(candidate_indices))
                 if remove_num <= 0:
                     continue
@@ -129,6 +139,7 @@ class VacancyDefectParams:
     num_condition: int = 1
     use_num: bool = True
     concentration_condition: float = 0.0
+    count_mode: str = "fixed"
     max_structures: int = 1
     use_seed: bool = False
     seed: int = 0
@@ -153,17 +164,23 @@ class VacancyDefectOperation(StructureOperation):
             raise ValueError("Vacancy defect settings must allow at least one vacancy.")
 
         max_num = int(params.max_structures)
+        fixed_count = str(params.count_mode).lower() == "fixed"
         if int(params.engine_type) == 0:
             sobol_engine = Sobol(d=n_atoms + 1, scramble=True, seed=base_seed)
             sobol_seq = sobol_engine.random(max_num)
+        elif fixed_count:
+            defect_counts = np.full(max_num, max_defects, dtype=int)
         else:
             defect_counts = rng.integers(1, max_defects + 1, size=max_num)
 
         for i in range(max_num):
             new_structure = structure.copy()
             if int(params.engine_type) == 0:
-                target_defects = 1 + int(sobol_seq[i, 0] * max_defects)
-                target_defects = int(min(target_defects, max_defects))
+                if fixed_count:
+                    target_defects = max_defects
+                else:
+                    target_defects = 1 + int(sobol_seq[i, 0] * max_defects)
+                    target_defects = int(min(target_defects, max_defects))
                 position_scores = sobol_seq[i, 1:]
                 defect_indices = np.argsort(position_scores)[:target_defects]
             else:

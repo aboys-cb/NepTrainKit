@@ -91,7 +91,7 @@ class CompositionSweepCard(MakeDataCard):
         self.seed_frame.setEnabled(False)
         self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
 
-        self.max_output_label = BodyLabel("Max outputs/frame", self.setting_widget)
+        self.max_output_label = BodyLabel("Max outputs/input", self.setting_widget)
         self.max_output_frame = SpinBoxUnitInputFrame(self)
         self.max_output_frame.set_input("unit", 1, "int")
         self.max_output_frame.setRange(1, 9999999)
@@ -107,7 +107,7 @@ class CompositionSweepCard(MakeDataCard):
             ]
         )
         self.budget_mode_combo.setCurrentText("Equal+Reflow")
-        self.budget_mode_label.setToolTip("How Max outputs/frame is split across selected orders")
+        self.budget_mode_label.setToolTip("How Max outputs/input is split across selected orders")
         self.budget_mode_label.installEventFilter(ToolTipFilter(self.budget_mode_label, 300, ToolTipPosition.TOP))
 
         self.settingLayout.addWidget(self.elements_label, 0, 0, 1, 1)

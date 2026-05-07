@@ -61,12 +61,12 @@ class VibrationModePerturbCard(MakeDataCard):
         self.min_freq_label.setToolTip("Discard modes whose |frequency| is below this threshold")
         self.min_freq_label.installEventFilter(ToolTipFilter(self.min_freq_label, 300, ToolTipPosition.TOP))
 
-        self.num_label = BodyLabel("Max num:", self.setting_widget)
+        self.num_label = BodyLabel("Structures", self.setting_widget)
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("unit", 1, "int")
         self.num_condition_frame.setRange(1, 10000)
         self.num_condition_frame.set_input_value([32])
-        self.num_label.setToolTip("Maximum number of perturbed structures to generate")
+        self.num_label.setToolTip("Number of vibrationally perturbed structures to generate")
         self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
 
         self.optional_label = BodyLabel("Options", self.setting_widget)

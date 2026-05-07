@@ -6,10 +6,10 @@
 
 ## 功能说明
 
-按数量或浓度随机删除原子，快速生成低到高缺陷强度的空位结构分布。支持 Sobol / Uniform 两种随机引擎，可选 count 或 concentration 两种主模式。
+按数量或比例删除原子，快速生成低到高缺陷强度的空位结构分布。支持 Sobol / Uniform 两种随机引擎，可选 count 或 fraction 两种主模式，并可选择固定空位数或随机空位数。
 
 **和 `Random Vacancy` 的区别：**
-- `Vacancy Defect Generation`：统计驱动，按整体浓度/数量随机删，适合快速覆盖空位密度分布
+- `Vacancy Defect Generation`：统计驱动，按整体比例/数量生成空位，适合快速覆盖空位密度分布
 - `Random Vacancy`：规则驱动，按元素+group 精确删除位点，适合定向研究
 
 ## 操作示例
@@ -22,15 +22,16 @@
 
 **输入：** 一个 100 原子的 Fe 超胞
 
-**目标：** 用 concentration 模式生成 2%~5% 浓度区间的空位，每帧 50 个随机版本
+**目标：** 用 fraction 模式生成 5% 空位浓度，每帧 50 个随机落点版本
 
 **参数设置：**
-- `Vacancy Concentration Mode`：勾选（浓度模式）
-- `Vacancy Concentration`：`[0.05]`（5% 浓度，即 5 个空位）
-- `Max Num`：`[50]`
+- `Vacancy Fraction`：勾选
+- `Vacancy Fraction`：`[0.05]`（100 原子里精确删除 5 个空位）
+- `Count Mode`：`Fixed count`
+- `Structures`：`[50]`
 - `Random Engine`：`Uniform`
 
-**输出：** 50 个空位结构，每个随机删 ~5 个原子，带 `Vac(n=...)` 标签
+**输出：** 50 个空位结构，每个都删除 5 个原子，但空位落点不同，带 `Vac(n=5)` 标签
 
 **怎么验证训练集质量改善：**
 - 重训后用含空位的测试集推理，力 MAE 应对空位近邻原子也有合理精度
@@ -52,13 +53,15 @@
 
 ### 主模式：Count vs Concentration
 
-**`Vacancy Num Mode`**（num_radio_button）：勾选 → count 模式，用 `Vacancy Num` 的整数值决定删几个原子。默认开启。
+**`Vacancy Count`**（num_radio_button）：勾选 → count 模式，用 `Vacancy Count` 的整数值决定删几个原子。默认开启。
 
-**`Vacancy Concentration Mode`**（concentration_radio_button）：勾选 → concentration 模式，用 `Vacancy Concentration` 的比例计算最大删除数：`max_defects = int(concentration * n_atoms)`。与 count 模式二选一。
+**`Vacancy Fraction`**（concentration_radio_button）：勾选 → fraction 模式，用 `Vacancy Fraction` 的比例计算目标删除数：`target_defects = int(fraction * n_atoms)`。与 count 模式二选一。
 
-**`Vacancy Num`**（num_condition）：count 模式下的采样数量。范围为 1-8。
+**`Vacancy Count`**（num_condition）：count 模式下的空位数量。范围为 1-8。
 
-**`Vacancy Concentration`**（concentration_condition）：浓度模式下的空位比例。0.02 表示约 2% 的原子被删。推荐 0.005-0.08。
+**`Vacancy Fraction`**（concentration_condition）：fraction 模式下的空位比例。0.02 表示约 2% 的原子被删。推荐 0.005-0.08。
+
+**`Count Mode`**（count_mode）：`fixed` 精确删除上面指定的数量；`random` 在 1 到指定数量之间随机。新建卡片默认 `fixed`，只有显式选择 `Random up to value` 时才随机空位数量。
 
 ### `Random Engine`（engine_type）
 
@@ -67,7 +70,7 @@
 | `0` (Sobol) | 准随机序列 | 样本少时对空位数量和位置的覆盖更均衡 |
 | `1` (Uniform) | 均匀随机 | 大批量时更快，统计差异不大 |
 
-### `Max Num`（max_atoms_condition）
+### `Structures`（max_structures）
 
 每输入帧生成多少个空位版本。
 
@@ -91,6 +94,7 @@
   "concentration_radio_button": true,
   "num_condition": [1],
   "concentration_condition": [0.02],
+  "count_mode": "fixed",
   "max_atoms_condition": [50],
   "use_seed": true,
   "seed": [42]
@@ -107,6 +111,7 @@
   "concentration_radio_button": true,
   "num_condition": [1],
   "concentration_condition": [0.05],
+  "count_mode": "fixed",
   "max_atoms_condition": [50],
   "use_seed": true,
   "seed": [42]
@@ -123,6 +128,7 @@
   "concentration_radio_button": true,
   "num_condition": [1],
   "concentration_condition": [0.10],
+  "count_mode": "fixed",
   "max_atoms_condition": [100],
   "use_seed": true,
   "seed": [42]
@@ -141,7 +147,7 @@
 
 **空位太多导致骨架崩坏。** 浓度模式 `0.10` 以上已到强缺陷区。先检查是否有孤立原子或明显断裂，再决定是否回调。
 
-**count 和 concentration 同时开着怎么办。** 以 concentration 模式优先。确认只启用了一个主模式。
+**count 和 fraction 怎么选。** 二者只选一个：想精确删几个原子用 `Vacancy Count`；想按体系大小等比例删用 `Vacancy Fraction`。
 
 ## 输出标签
 

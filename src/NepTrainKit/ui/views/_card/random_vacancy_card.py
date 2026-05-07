@@ -47,11 +47,11 @@ class RandomVacancyCard(MakeDataCard):
         self.rules_label.setToolTip("vacancy rules")
         self.rules_label.installEventFilter(ToolTipFilter(self.rules_label, 300, ToolTipPosition.TOP))
 
-        self.max_atoms_label = BodyLabel("Max structures", self.setting_widget)
+        self.max_atoms_label = BodyLabel("Structures", self.setting_widget)
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_condition_frame.set_input("unit", 1)
         self.max_atoms_condition_frame.setRange(1, 10000)
-        self.max_atoms_label.setToolTip("Number of structures to generate")
+        self.max_atoms_label.setToolTip("Number of vacancy structures to generate")
         self.max_atoms_label.installEventFilter(ToolTipFilter(self.max_atoms_label, 300, ToolTipPosition.TOP))
 
         self.seed_checkbox = CheckBox("Use seed", self.setting_widget)

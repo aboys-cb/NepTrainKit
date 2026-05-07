@@ -84,9 +84,9 @@ class CellScalingCard(MakeDataCard):
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("unit",1,"int")
         self.num_condition_frame.setRange(1,10000)
-        self.num_label=BodyLabel("Max num:",self.setting_widget)
+        self.num_label=BodyLabel("Structures",self.setting_widget)
         self.num_condition_frame.set_input_value([50])
-        self.num_label.setToolTip("Number of structures to generate")
+        self.num_label.setToolTip("Number of scaled structures to generate")
         self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
 
         self.seed_checkbox = CheckBox("Use seed", self.setting_widget)

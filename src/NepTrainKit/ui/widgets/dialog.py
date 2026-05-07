@@ -1188,7 +1188,7 @@ class SparseMessageBox(MessageBoxBase):
         self.frame_layout.addWidget(CaptionLabel("Sampling mode", self), 0, 0, 1, 1)
         self.frame_layout.addWidget(self.modeCombo, 0, 1, 1, 2)
 
-        self.maxNumLabel = CaptionLabel("Max num", self)
+        self.maxNumLabel = CaptionLabel("Sample limit", self)
         self.frame_layout.addWidget(self.maxNumLabel, 1, 0, 1, 1)
         self.frame_layout.addWidget(self.intSpinBox, 1, 1, 1, 2)
         self.frame_layout.addWidget(CaptionLabel("Min distance", self), 2, 0, 1, 1)

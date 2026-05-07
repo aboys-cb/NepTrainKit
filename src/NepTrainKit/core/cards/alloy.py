@@ -161,8 +161,17 @@ class RandomDopingOperation(StructureOperation):
             return max(1, int(doped_mass / avg_dopant_mass))
 
         if use_mode == "count":
-            count_min, count_max = rule.get("count", [1, 1])
-            return int(rng.integers(int(count_min), int(count_max) + 1))
+            count_values = list(rule.get("count", [1, 1]))
+            if not count_values:
+                return 1
+            count_min = int(count_values[0])
+            count_max = int(count_values[-1])
+            count_mode = str(rule.get("count_mode", "")).lower()
+            if count_mode == "fixed" or (not count_mode and count_min == count_max):
+                return count_min
+            if count_max < count_min:
+                count_min, count_max = count_max, count_min
+            return int(rng.integers(count_min, count_max + 1))
 
         return len(candidate_indices)
 

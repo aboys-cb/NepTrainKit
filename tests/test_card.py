@@ -113,6 +113,7 @@ from NepTrainKit.core.cards.magnetism import (
 from NepTrainKit.ui.widgets import MakeDataCard
 from NepTrainKit.ui.widgets.card_metadata import card_tooltip, metadata_html
 from NepTrainKit.ui.widgets.doping_rule import DopingRuleItem
+from NepTrainKit.ui.widgets.vacancy_rule import VacancyRuleItem
 from NepTrainKit.version import DOCS_BASE_URL
 
 BASE_CARD_KEYS = {"class", "check_state", "metadata", "params"}
@@ -622,11 +623,38 @@ class TestCard(unittest.TestCase):
         item.dopants_edit.setText("Ge")
         item.count_botton.setChecked(True)
         item._on_mode_changed()
-        item.count_frame.set_input_value([1, 1])
+        item.fixed_count_frame.set_input_value([1])
 
         rule = item.to_rule()
 
         self.assertEqual(rule["dopants"], {"Ge": 1.0})
+        self.assertEqual(rule["count"], [1, 1])
+        self.assertEqual(rule["count_mode"], "fixed")
+
+    def test_random_doping_count_mode_distinguishes_fixed_and_range(self):
+        structure = Atoms("Si5", positions=np.arange(15, dtype=float).reshape(5, 3), cell=[10, 10, 10], pbc=True)
+
+        fixed = RandomDopingOperation().run_structure(
+            structure,
+            RandomDopingParams(
+                rules=[{"target": "Si", "dopants": {"Ge": 1.0}, "use": "count", "count": [3, 3], "count_mode": "fixed"}],
+                max_structures=3,
+                use_seed=True,
+                seed=1,
+            ),
+        )
+        self.assertTrue(all(atoms.get_chemical_symbols().count("Ge") == 3 for atoms in fixed))
+
+        ranged = RandomDopingOperation().run_structure(
+            structure,
+            RandomDopingParams(
+                rules=[{"target": "Si", "dopants": {"Ge": 1.0}, "use": "count", "count": [1, 3], "count_mode": "random"}],
+                max_structures=10,
+                use_seed=True,
+                seed=1,
+            ),
+        )
+        self.assertTrue(all(1 <= atoms.get_chemical_symbols().count("Ge") <= 3 for atoms in ranged))
 
     def test_random_doping_operation_is_ui_independent(self):
         params = RandomDopingParams(
@@ -1618,13 +1646,42 @@ class TestCard(unittest.TestCase):
         card = RandomVacancyCard()
         structure = self.structure.copy()
         card.rules_widget.from_rules([
-            {"element": "Si", "count": [1, 1]},
+            {"element": "Si", "count": [1, 1], "count_mode": "fixed"},
         ])
         card.max_atoms_condition_frame.set_input_value([2])
 
         results = card.process_structure(structure)
         self.assertEqual(len(results), 2)
         self.assertTrue(all(len(atoms) == len(structure) - 1 for atoms in results))
+
+    def test_vacancy_rule_count_mode_distinguishes_fixed_and_range(self):
+        item = VacancyRuleItem()
+        item.element_edit.setText("Si")
+        item.fixed_count_frame.set_input_value([2])
+        fixed = item.to_rule()
+        self.assertEqual(fixed["count"], [2, 2])
+        self.assertEqual(fixed["count_mode"], "fixed")
+
+        item.count_mode_combo.setCurrentText("Random range")
+        item.count_range_frame.set_input_value([1, 3])
+        ranged = item.to_rule()
+        self.assertEqual(ranged["count"], [1, 3])
+        self.assertEqual(ranged["count_mode"], "random")
+
+    def test_random_vacancy_operation_fixed_count(self):
+        structure = Atoms("Si5", positions=np.arange(15, dtype=float).reshape(5, 3), cell=[10, 10, 10], pbc=True)
+
+        results = RandomVacancyOperation().run_structure(
+            structure,
+            RandomVacancyParams(
+                rules=[{"element": "Si", "count": [2, 2], "count_mode": "fixed"}],
+                max_structures=4,
+                use_seed=True,
+                seed=1,
+            ),
+        )
+
+        self.assertTrue(all(len(atoms) == 3 for atoms in results))
 
     def test_vacancy_defect_card_concentration(self):
         card = VacancyDefectCard()
@@ -1634,11 +1691,30 @@ class TestCard(unittest.TestCase):
         card.num_radio_button.setChecked(False)
         card.concentration_condition_frame.set_input_value([0.6])
         card.num_condition_frame.set_input_value([1])
+        card.count_mode_combo.setCurrentText("Random up to value")
         card.max_atoms_condition_frame.set_input_value([2])
 
         results = card.process_structure(structure)
         self.assertEqual(len(results), 2)
         self.assertTrue(all(len(atoms) < len(structure) for atoms in results))
+
+    def test_vacancy_defect_fixed_count(self):
+        structure = Atoms("Si5", positions=np.arange(15, dtype=float).reshape(5, 3), cell=[10, 10, 10], pbc=True)
+
+        results = VacancyDefectOperation().run_structure(
+            structure,
+            VacancyDefectParams(
+                engine_type=1,
+                num_condition=3,
+                use_num=True,
+                count_mode="fixed",
+                max_structures=3,
+                use_seed=True,
+                seed=2,
+            ),
+        )
+
+        self.assertTrue(all(len(atoms) == 2 for atoms in results))
 
     def test_stacking_fault_card(self):
         card = StackingFaultCard()
@@ -1660,7 +1736,7 @@ class TestCard(unittest.TestCase):
         vac_results = RandomVacancyOperation().run_structure(
             structure,
             RandomVacancyParams(
-                rules=[{"element": "Si", "count": [1, 1]}],
+                rules=[{"element": "Si", "count": [1, 1], "count_mode": "fixed"}],
                 max_structures=2,
                 use_seed=True,
                 seed=3,
@@ -1675,6 +1751,7 @@ class TestCard(unittest.TestCase):
                 engine_type=1,
                 use_num=False,
                 concentration_condition=0.6,
+                count_mode="random",
                 max_structures=2,
                 use_seed=True,
                 seed=5,

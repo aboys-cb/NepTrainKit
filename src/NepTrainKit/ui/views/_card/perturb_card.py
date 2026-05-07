@@ -160,8 +160,8 @@ class PerturbCard(MakeDataCard):
         self.num_condition_frame.setRange(1,10000)
         self.num_condition_frame.set_input_value([50])
 
-        self.num_label=BodyLabel("Max num:",self.setting_widget)
-        self.num_label.setToolTip("Number of structures to generate")
+        self.num_label=BodyLabel("Structures",self.setting_widget)
+        self.num_label.setToolTip("Number of perturbed structures to generate")
 
         self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
 

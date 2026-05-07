@@ -26,7 +26,7 @@
 
 **参数设置：**
 - `Rules`：`[{"element":"O","count":[1,3],"group":["surface"]}]`
-- `Max Atoms Condition`：`[20]`
+- `Structures`：`[20]`
 - `Use Seed`：勾选，`Seed`：`[42]`
 
 **输出：** 20 个空位结构，每帧中 1~3 个表面氧被删除，带 `Vac(n=...)` 标签
@@ -57,14 +57,15 @@ JSON 字符串（界面中可用简化语法输入，程序自动转换）。每
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `element` | string | 被删除的元素，如 `O` |
-| `count` | [min, max] | 删除数量区间 |
+| `count_mode` | string | `fixed` 精确删除 `count[0]` 个原子；`random` 在 `count[0]..count[1]` 之间随机 |
+| `count` | [min, max] | 固定数量写 `[n,n]`，随机范围写 `[min,max]` |
 | `group` | string / list（可选） | 限制只删除特定 group 标签内的原子。需要输入有 `atoms.arrays['group']`。界面里写成 `surface_top,surface_bottom` |
 
 规则为空时，卡片不产生任何删除，输出 = 输入。
 
 多条规则按顺序执行。如果两条规则操作同一个元素，第二条会在第一条的结果上继续删除。注意不要设计互相冲突的规则。
 
-### `Max Atoms Condition`（max_atoms_condition）
+### `Structures`（max_structures）
 
 每输入帧生成多少个空位版本。
 
@@ -83,7 +84,7 @@ JSON 字符串（界面中可用简化语法输入，程序自动转换）。每
 {
   "class": "RandomVacancyCard",
   "check_state": true,
-  "rules": "[{\"element\":\"O\",\"count\":[1,1]}]",
+  "rules": "[{\"element\":\"O\",\"count_mode\":\"fixed\",\"count\":[1,1]}]",
   "max_atoms_condition": [2],
   "use_seed": true,
   "seed": [42]
@@ -95,7 +96,7 @@ JSON 字符串（界面中可用简化语法输入，程序自动转换）。每
 {
   "class": "RandomVacancyCard",
   "check_state": true,
-  "rules": "[{\"element\":\"O\",\"count\":[1,3]}]",
+  "rules": "[{\"element\":\"O\",\"count_mode\":\"random\",\"count\":[1,3]}]",
   "max_atoms_condition": [20],
   "use_seed": true,
   "seed": [42]
@@ -107,7 +108,7 @@ JSON 字符串（界面中可用简化语法输入，程序自动转换）。每
 {
   "class": "RandomVacancyCard",
   "check_state": true,
-  "rules": "[{\"element\":\"O\",\"count\":[1,3],\"group\":[\"surface\"]},{\"element\":\"Li\",\"count\":[1,1],\"group\":[\"surface\"]}]",
+  "rules": "[{\"element\":\"O\",\"count_mode\":\"random\",\"count\":[1,3],\"group\":[\"surface\"]},{\"element\":\"Li\",\"count_mode\":\"fixed\",\"count\":[1,1],\"group\":[\"surface\"]}]",
   "max_atoms_condition": [20],
   "use_seed": true,
   "seed": [42]

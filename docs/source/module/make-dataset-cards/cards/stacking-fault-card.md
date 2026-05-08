@@ -8,7 +8,7 @@
 
 沿指定 Miller 晶面做相对滑移，生成不同位移量的层错结构。选定 hkl 晶面后，从指定层开始将上层原子整体平移，扫描位移步长覆盖堆垛错配路径。
 
-$$\mathbf{n}=\frac{h\mathbf{b}_1+k\mathbf{b}_2+l\mathbf{b}_3}{|h\mathbf{b}_1+k\mathbf{b}_2+l\mathbf{b}_3|},\quad \mathbf{r}'_i=\mathbf{r}_i+\mathbf{n}\cdot\Delta d\ (\text{if } \mathbf{r}_i\cdot\mathbf{n}_\perp \ge z_{\text{plane}})$$
+$$\mathbf{n}=\frac{h\mathbf{b}_1+k\mathbf{b}_2+l\mathbf{b}_3}{|h\mathbf{b}_1+k\mathbf{b}_2+l\mathbf{b}_3|},\quad \hat{\mathbf{s}}\perp\mathbf{n},\quad \mathbf{r}'_i=\mathbf{r}_i+\hat{\mathbf{s}}\Delta d\ (\text{if } \mathbf{r}_i\cdot\mathbf{n} \ge z_{\text{plane}})$$
 
 ## 操作示例
 
@@ -24,7 +24,7 @@ $$\mathbf{n}=\frac{h\mathbf{b}_1+k\mathbf{b}_2+l\mathbf{b}_3}{|h\mathbf{b}_1+k\m
 
 **参数设置：**
 - `h k l` = `[1, 1, 1]`
-- `Step` = `[0.0, 1.0, 0.1]`
+- `Step` = `[0.0, 1.0, 0.1]`（单位 Å，沿面内滑移方向）
 - `Layers` = `[3]`
 
 **输出：** 11 个结构（位移 0.0, 0.1, 0.2, ..., 1.0），上层原子相对下层整体平移指定距离，带 `SF(hkl=111,d=...)` 标签
@@ -60,7 +60,7 @@ Miller 指数，定义滑移面。
 ### Step（step）
 类型：`Sequence[float]`。默认：`(0.0, 1.0, 0.5)`。设置连续路径或扫描的步长。
 
-`[起始, 结束, 步长]`，滑移位移扫描参数。
+`[起始, 结束, 步长]`，单位 Å。沿 hkl 晶面内的确定性滑移方向平移选中原子层；分层方向由 hkl 法向决定。
 
 - 步长越小、范围越宽 → 结构越多
 - 保守：`[0.0, 0.3, 0.1]`，4 个点

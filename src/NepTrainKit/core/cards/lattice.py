@@ -312,6 +312,31 @@ class PerturbParams:
 class PerturbOperation(StructureOperation):
     """Apply random atomic displacements from explicit parameters."""
 
+    @staticmethod
+    def unit_ball_displacements(samples: np.ndarray, radii: np.ndarray) -> np.ndarray:
+        """Map [0, 1]^3 samples to displacement vectors inside per-atom balls."""
+        raw = np.asarray(samples, dtype=float)
+        if raw.ndim != 3 or raw.shape[2] != 3:
+            raise ValueError("Perturb: samples must have shape (n_structures, n_atoms, 3).")
+        limits = np.asarray(radii, dtype=float)
+        if limits.ndim != 1 or limits.shape[0] != raw.shape[1]:
+            raise ValueError("Perturb: radii must contain one value per atom.")
+        if not np.all(np.isfinite(limits)) or np.any(limits < 0.0):
+            raise ValueError("Perturb: max_distance values must be finite and non-negative.")
+
+        cos_theta = 2.0 * raw[:, :, 0] - 1.0
+        phi = 2.0 * np.pi * raw[:, :, 1]
+        radius = np.cbrt(raw[:, :, 2]) * limits[None, :]
+        sin_theta = np.sqrt(np.clip(1.0 - cos_theta * cos_theta, 0.0, 1.0))
+        return np.stack(
+            (
+                radius * sin_theta * np.cos(phi),
+                radius * sin_theta * np.sin(phi),
+                radius * cos_theta,
+            ),
+            axis=2,
+        )
+
     def run_structure(self, structure, params: PerturbParams) -> list:
         structure_list = []
         n_atoms = len(structure)
@@ -328,15 +353,18 @@ class PerturbOperation(StructureOperation):
             if params.use_element_scaling
             else np.full(n_atoms, params.max_distance)
         )
+        if not np.all(np.isfinite(per_atom_scaling)) or np.any(per_atom_scaling < 0.0):
+            raise ValueError("Perturb: max_distance values must be finite and non-negative.")
 
         base_seed = int(params.seed) if params.use_seed else None
         rng = np.random.default_rng(base_seed)
 
         if params.engine_type == 0:
             sobol_engine = Sobol(d=dim, scramble=True, seed=base_seed)
-            perturbation_factors = (sobol_engine.random(max_num) - 0.5) * 2
+            unit_samples = sobol_engine.random(max_num).reshape(max_num, n_atoms, 3)
         else:
-            perturbation_factors = rng.uniform(-1, 1, (max_num, dim))
+            unit_samples = rng.random((max_num, n_atoms, 3))
+        displacements = self.unit_ball_displacements(unit_samples, per_atom_scaling)
 
         if params.identify_organic:
             clusters, is_organic_list = get_clusters(structure)
@@ -345,7 +373,7 @@ class PerturbOperation(StructureOperation):
 
         orig_positions = structure.positions
         for i in range(max_num):
-            delta = perturbation_factors[i].reshape(n_atoms, 3) * per_atom_scaling[:, None]
+            delta = displacements[i]
 
             if params.identify_organic:
                 new_positions = orig_positions.copy()

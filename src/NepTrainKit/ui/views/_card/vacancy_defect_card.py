@@ -64,6 +64,8 @@ class VacancyDefectCard(MakeDataCard):
 
         self.concentration_condition_frame = SpinBoxUnitInputFrame(self)
         self.concentration_condition_frame.set_input("",1,"float")
+        self.concentration_condition_frame.setDecimals(6)
+        self.concentration_condition_frame.setSingleStep(0.001)
         self.concentration_condition_frame.setRange(0,1)
 
         self.count_mode_label = BodyLabel("Count mode", self.setting_widget)

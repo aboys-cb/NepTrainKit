@@ -124,6 +124,24 @@ class TestDefectSurfaceCards(BaseCardTest):
             0.0,
         )
 
+    def test_stacking_fault_displaces_selected_layers_in_plane(self):
+        structure = Atoms(
+            "Si3",
+            positions=[[0.0, 0.0, 0.0], [0.0, 0.0, 1.0], [0.0, 0.0, 2.0]],
+            cell=[5.0, 5.0, 5.0],
+            pbc=False,
+        )
+
+        result = StackingFaultOperation().run_structure(
+            structure,
+            StackingFaultParams(hkl=(0, 0, 1), step=(0.5, 0.5, 0.1), layers=2),
+        )[0]
+
+        displacement = result.get_positions() - structure.get_positions()
+        np.testing.assert_allclose(displacement[0], [0.0, 0.0, 0.0], atol=1e-12)
+        np.testing.assert_allclose(displacement[1:, 2], [0.0, 0.0], atol=1e-12)
+        np.testing.assert_allclose(np.linalg.norm(displacement[1:], axis=1), [0.5, 0.5], atol=1e-12)
+
     def test_defect_surface_operations_are_ui_independent(self):
         structure = self.structure.copy()
 

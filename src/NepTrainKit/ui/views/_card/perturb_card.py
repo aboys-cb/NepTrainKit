@@ -32,6 +32,8 @@ class ElementScalingRow(QFrame):
 
         self.distance_frame = SpinBoxUnitInputFrame(self)
         self.distance_frame.set_input("Å", 1, "float")
+        self.distance_frame.setDecimals(4)
+        self.distance_frame.setSingleStep(0.01)
         self.distance_frame.setRange(0, 1)
         self.distance_frame.set_input_value([default_distance])
 
@@ -117,6 +119,8 @@ class PerturbCard(MakeDataCard):
 
         self.scaling_condition_frame = SpinBoxUnitInputFrame(self)
         self.scaling_condition_frame.set_input("Å",1,"float")
+        self.scaling_condition_frame.setDecimals(4)
+        self.scaling_condition_frame.setSingleStep(0.01)
         self.scaling_condition_frame.setRange(0,1)
         self.scaling_radio_label=BodyLabel("Max distance:",self.setting_widget)
         self.scaling_condition_frame.set_input_value([0.3])

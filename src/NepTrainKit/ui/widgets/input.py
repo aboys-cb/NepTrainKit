@@ -95,6 +95,11 @@ class SpinBoxUnitInputFrame(QFrame):
             if isinstance(input_object, QDoubleSpinBox):
                 input_object.setDecimals(decimals)
 
+    def setSingleStep(self, step: int | float):
+        """Set keyboard/wheel increment for every spin box."""
+        for input_object in self.object_list:
+            input_object.setSingleStep(step)
+
     def get_input_value(self) -> list[int | float]:
         """Return the numeric values from each input widget.
 

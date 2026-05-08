@@ -76,7 +76,7 @@ class MagneticMomentRotationCard(MakeDataCard):
         self.axis_frame.set_input("", 3, "float")
         self.axis_frame.setRange(-1.0, 1.0)
         for obj in self.axis_frame.object_list:
-            obj.setDecimals(3)  # pyright:ignore
+            obj.setDecimals(6)  # pyright:ignore
         self.axis_frame.set_input_value([0.0, 0.0, 1.0])
 
         self.magnitude_checkbox = CheckBox("Randomise magnitude", self.setting_widget)

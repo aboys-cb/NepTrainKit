@@ -6,9 +6,9 @@
 
 ## 功能说明
 
-对原子坐标施加随机位移扰动，补充近平衡势能面的局部位移样本。每个原子在 `[-max_distance, max_distance]` 范围内独立随机偏移，晶格保持不变。
+对原子坐标施加随机位移扰动，补充近平衡势能面的局部位移样本。每个原子的随机位移向量长度不超过 `max_distance`，晶格保持不变。
 
-$$\Delta\mathbf{r}_i=\boldsymbol\xi_i\odot d_i,\quad \boldsymbol\xi_i\in[-1,1]^3,\quad \mathbf{r}_i'=\mathbf{r}_i+\Delta\mathbf{r}_i$$
+$$\Delta\mathbf{r}_i=r_i\hat{\mathbf{u}}_i,\quad 0\le r_i\le d_i,\quad \|\hat{\mathbf{u}}_i\|=1,\quad \mathbf{r}_i'=\mathbf{r}_i+\Delta\mathbf{r}_i$$
 
 开启 `identify_organic` 后有机分子团簇做刚性整体移动，避免分子内键被拉伸。
 
@@ -59,7 +59,7 @@ $$\Delta\mathbf{r}_i=\boldsymbol\xi_i\odot d_i,\quad \boldsymbol\xi_i\in[-1,1]^3
 ### Max Distance（max_distance）
 类型：`float`。默认：`0.3`。设置原子随机位移的最大距离。
 
-每个原子的最大位移距离。这是绝对长度（单位 A），不是百分比。室温下典型固体原子振动幅度约 0.05~0.1A，设 0.15~0.3A 通常合适。含 H 等轻元素时考虑开启 `use_element_scaling` 单独调大 H 的幅度。0.01~0.05A 适合微扰验证，0.3~0.5A 需要后筛检查非物理键长。
+每个原子的最大位移向量长度。这是绝对长度（单位 A），不是每个 Cartesian 分量的上限，也不是百分比。室温下典型固体原子振动幅度约 0.05~0.1A，设 0.15~0.3A 通常合适。含 H 等轻元素时考虑开启 `use_element_scaling` 单独调大 H 的幅度。0.01~0.05A 适合微扰验证，0.3~0.5A 需要后筛检查非物理键长。
 
 ### Max Num（max_num）
 类型：`int`。默认：`50`。设置扰动或采样结构的输出数量。

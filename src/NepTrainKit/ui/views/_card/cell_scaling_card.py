@@ -53,6 +53,8 @@ class CellScalingCard(MakeDataCard):
 
         self.scaling_condition_frame = SpinBoxUnitInputFrame(self)
         self.scaling_condition_frame.set_input("",1,"float")
+        self.scaling_condition_frame.setDecimals(6)
+        self.scaling_condition_frame.setSingleStep(0.001)
         self.scaling_condition_frame.setRange(0,1)
         self.scaling_condition_frame.set_input_value([0.04])
 

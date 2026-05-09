@@ -60,19 +60,16 @@ $$\phi(k)=\phi_0+\sigma\cdot s(k)\cdot\Delta\phi$$
 ### 分层定义
 
 #### Layer Axis（layer_axis）
-类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 1.0)`。设置层划分所在的空间轴。
 
-`[x, y, z]`。原子坐标沿此方向投影后用于分层。
+`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。原子坐标沿此方向投影后用于分层，格式 `[x, y, z]`。
 
 #### Plane Normal（plane_normal）
-类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 1.0)`。设置用于识别层或键方向的法向量。
 
-`[x, y, z]`。磁矩旋转平面的法向。例如 `[0, 0, 1]` 表示磁矩在 xy 面内旋转。
+`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。磁矩旋转平面的法向。例如 `[0, 0, 1]` 表示磁矩在 xy 面内旋转。
 
 #### Layer Tolerance（layer_tolerance）
-类型：`float`。默认：`0.05`。设置把原子归为同一层的坐标容差。
 
-投影坐标差不超过此阈值的原子归为同一层，单位 Angstrom。
+`float`，默认 `0.05`。投影坐标差不超过此阈值的原子归为同一层，单位 Angstrom。
 - 保守：`0.01`（严格分层）
 - 平衡：`0.03~0.10`（容忍小幅层内起伏）
 - 如果层内有明显 rumpling，适当放宽
@@ -80,15 +77,12 @@ $$\phi(k)=\phi_0+\sigma\cdot s(k)\cdot\Delta\phi$$
 ### 半周期控制
 
 #### Half Period Mode（half_period_mode）
-类型：`str`。默认：`'Auto from layer count'`。选择折返半周期的定义方式。
 
-- `Auto from layer count`：由当前层数自动推导半周期，保证首尾闭合。大多数情况下用这个。
-- `Manual`：手动指定 `half_period_layers` 扫描范围，适合比较不同折返周期。
+`str`，默认 `'Auto from layer count'`。`Auto from layer count` 由当前层数自动推导半周期，保证首尾闭合（大多数情况推荐这个）。`Manual` 手动指定 `half_period_layers` 扫描范围，适合比较不同折返周期。
 
 #### Half Period Layers（half_period_layers）
-类型：`list[int] | tuple[int, int, int]`。默认：`(2, 4, 1)`。设置每个半周期包含的层数。
 
-仅在 manual 模式下生效。`[min, max, step]`，半周期的层步进数。
+`list[int] | tuple[int, int, int]`，默认 `(2, 4, 1)`。仅在 manual 模式下生效。`[min, max, step]` 格式，半周期的层步进数。
 - 保守：`[2, 2, 1]`（最短折返）
 - 平衡：`[2, 6, 1]`
 - 探索：`[4, 12, 2]`
@@ -96,58 +90,48 @@ $$\phi(k)=\phi_0+\sigma\cdot s(k)\cdot\Delta\phi$$
 ### 旋转参数
 
 #### Angle Step Range（angle_step_range）
-类型：`list[float] | tuple[float, float, float]`。默认：`(15.0, 45.0, 15.0)`。设置相邻层之间自旋转角的扫描范围。
 
-`[min, max, step]`，相邻层之间的面内转角，单位度。
+`list[float] | tuple[float, float, float]`，默认 `(15.0, 45.0, 15.0)`。`[min, max, step]`，相邻层之间的面内转角，单位度。
 - 保守：`[5, 15, 5]`（小转角）
 - 平衡：`[15, 45, 15]`（中转角）
 - 探索：`[30, 90, 15]`（大转角）
 
 #### Phase Range（phase_range）
-类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 15.0)`。设置螺旋或折返结构的相位扫描范围。
 
-`[min, max, step]`，全局相位偏移，单位度。
+`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 15.0)`。`[min, max, step]`，全局相位偏移，单位度。
 - 保守：`[0, 0, 15]`
 - 平衡：`[0, 90, 30]`
 - 探索：`[-180, 180, 30]`
 
 #### Sequence Mode（sequence_mode）
-类型：`str`。默认：`'Clockwise then counterclockwise'`。选择折返手性序列。
 
-- `Clockwise then counterclockwise`：前半周期顺时针、后半周期逆时针
-- `Counterclockwise then clockwise`：前半周期逆时针、后半周期顺时针
-- `Both`：两种都生成
+`str`，默认 `'Clockwise then counterclockwise'`。`Clockwise then counterclockwise` 前半周期顺时针、后半周期逆时针；`Counterclockwise then clockwise` 相反；`Both` 两种都生成。
 
 ### 磁矩幅值
 
 #### Magnitude Source（magnitude_source）
-类型：`str`。默认：`'Existing initial magmoms'`。选择磁矩幅值来自元素映射、默认值还是已有结构。
 
-`Existing initial magmoms` 或 `Map/default magnitude`。
+`str`，默认 `'Existing initial magmoms'`。可选 `Existing initial magmoms` 复用已有磁矩，或 `Map/default magnitude` 用元素映射生成幅值。
 
 **`Magmom Map`** / **`Default Moment`**：仅在 `Map/default magnitude` 模式下生效。
 
 #### Magmom Map（magmom_map）
-类型：`str`。默认：`''`。按元素指定磁矩幅值或方向，例如 `Fe:2.2, Ni:0.6`。
 
-物理直觉：已知元素局域磁矩时显式写入，例如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。
+`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。
 
 #### Default Moment（default_moment）
-类型：`float`。默认：`0.0`。为没有显式元素映射的原子提供默认磁矩幅值。
 
-物理直觉：只作为 `magmom_map` 未命中的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。
+`float`，默认 `0.0`。只作为 `magmom_map` 未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。
 
 #### Apply Elements（apply_elements）
-类型：`str`。默认：`''`。限制只处理指定元素，留空表示处理所有元素。
 
-限制哪些元素施加折返纹理。
+`str`，默认 `''`。限制哪些元素施加折返纹理，留空则全部参与。
 
 ### 输出预算
 
 #### Max Outputs（max_outputs）
-类型：`int`。默认：`100`。限制这张卡最多输出多少个结构。
 
-物理直觉：折返螺旋会按半周期、角度、相位和手性相乘。先用几十个确认相位/层识别，再放大到研究级扫描。
+`int`，默认 `100`。半周期、角度、相位和手性会相乘放大输出数量。先用几十个确认相位和层识别无误，再放大到研究级扫描。
 
 ## 推荐预设
 

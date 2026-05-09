@@ -51,9 +51,8 @@
 ### 磁矩来源
 
 #### Source（source）
-类型：`str`。默认：`'Map/default magnitude'`。选择输入信息的来源。
 
-决定磁矩从哪里来。
+`str`，默认 `'Map/default magnitude'`。磁矩从哪里来。
 
 | 选项 | 含义 |
 |------|------|
@@ -62,50 +61,42 @@
 | `Constant magnitude` | 所有目标元素统一用一个常数幅值，适合快速扫参考值 |
 
 #### Magmom Map（magmom_map）
-类型：`str`。默认：`''`。按元素指定磁矩幅值或方向，例如 `Fe:2.2, Ni:0.6`。
 
-元素到磁矩的映射。格式 `Fe:2.2,Ni:0.6`，也可用 JSON 向量如 `{"Cr":[0,0,1.0]}`。
+`str`，默认 `''`。元素到磁矩的映射，格式如 `Fe:2.2,Ni:0.6`，也可用 JSON 向量如 `{"Cr":[0,0,1.0]}`。
 
 #### Use Element Dirs（use_element_dirs）
-类型：`bool`。默认：`False`。决定是否使用元素映射中的方向信息。
 
-勾选后，`magmom_map` 中提供的向量方向会被保留，而不是统一投到 `Axis`。仅向量格式下有意义。
+`bool`，默认 `False`。勾选后 `magmom_map` 中提供的向量方向会被保留，而不是统一投到 `Axis`。仅向量格式下有意义。
 
 #### Default Moment（default_moment）
-类型：`float`。默认：`0.0`。为没有显式元素映射的原子提供默认磁矩幅值。
 
-`magmom_map` 未命中元素的默认幅值。设 0 则不给未配置元素写磁矩。
+`float`，默认 `0.0`。`magmom_map` 未命中元素的默认幅值。设 0 则不给未配置元素写磁矩。
 
 #### Constant Moment（constant_moment）
-类型：`float`。默认：`2.0`。用统一磁矩幅值覆盖目标原子。
 
-`Source = Constant magnitude` 时所有目标元素的统一幅值。
+`float`，默认 `2.0`。`Source = Constant magnitude` 时所有目标元素的统一幅值。
 
 ### 输出格式
 
 #### Format（format）
-类型：`str`。默认：`'Non-collinear (vector)'`。选择磁矩写入格式。
 
-`Collinear (scalar)` 或 `Non-collinear (vector)`。后续要做旋转、螺旋、canting 时优先选向量格式。
+`str`，默认 `'Non-collinear (vector)'`。`Collinear (scalar)` 或 `Non-collinear (vector)`。后续要做旋转、螺旋、canting 时优先选向量格式。
 
 #### Lift Scalar（lift_scalar）
-类型：`bool`。默认：`True`。决定是否把标量磁矩提升为非共线向量。
 
-输入是标量且目标格式是向量时，是否沿 `Axis` 抬升。通常保持开启。
+`bool`，默认 `True`。输入是标量且目标格式是向量时，是否沿 `Axis` 抬升。通常保持开启。
 
 #### Axis（axis）
-类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 1.0)`。设置把标量磁矩提升为非共线向量时使用的参考方向。
 
-`[x, y, z]`。向量输出的参考方向、标量抬升的方向。
+`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。向量输出的参考方向、标量抬升的方向，格式为 `[x, y, z]`。
 
 生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。
 
 ### 元素范围
 
 #### Apply Elements（apply_elements）
-类型：`str`。默认：`''`。限制只处理指定元素，留空表示处理所有元素。
 
-逗号分隔，如 `Fe,Co`。只对列出的元素写磁矩，其余写 0。留空 = 全部生效。
+`str`，默认 `''`。逗号分隔如 `Fe,Co`，只对列出的元素写磁矩，其余写 0。留空则全部生效。
 
 ## 推荐预设
 

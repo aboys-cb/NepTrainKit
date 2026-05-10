@@ -51,47 +51,34 @@ $$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\
 ### 扩胞策略
 
 #### Behavior Type（behavior_type）
-类型：`int`。默认：`0`。选择扩胞策略。
 
-输出行为。
-- `0`（单输出）：scale 模式下输出一个超胞；cell 模式下输出最大/最小倍数的超胞；max_atoms 模式下输出原子数最大的那个超胞。
-- `1`（枚举）：scale 和 cell 模式下枚举从 1x1x1 到目标倍数的所有组合；max_atoms 模式下枚举所有在上限内的组合。适合想一次生成多个不同大小的超胞。
-- `2`（最小满足）：cell 模式下使用 ceil 取整（至少达到目标长度）；max_atoms 模式下使用 ceil 取整。适合"至少多大才够"的场景。
+`int`，默认 0。控制输出哪些超胞。`0` = 单输出：scale 模式输出刚好那个倍数；cell 模式输出最大或最小倍数的超胞；max_atoms 模式输出原子数最大的那个。`1` = 枚举：从 1x1x1 到目标倍数，所有中间组合都输出——适合想一次生成多个不同大小的超胞。`2` = 最小满足：cell 模式用 ceil 取整（至少达到目标长度），max_atoms 模式同理——适合"至少多大才够"的场景。
 
 #### Mode（mode）
-类型：`SuperCellMode`。默认：`'scale'`。选择按固定倍数扩胞还是按目标晶胞长度自动扩胞。
 
-扩胞主模式。
-- `"scale"`：按 `super_scale` 指定的固定倍数扩胞。适合你明确知道需要多大超胞。
-- `"cell"`：按 `target_cell` 指定的目标胞长（单位 A）自动计算倍数。每个方向的倍数 = floor(target_length / original_length) 或 ceil(target_length / original_length)，取决于 `behavior_type`。适合你想让胞长达到特定数值（如所有方向 ≥ 20A）。
-- `"max_atoms"`：按 `max_atoms` 指定的原子数上限枚举所有可能的倍数组合。输出所有总原子数不超过此上限的超胞。适合预算受限时找最大可用超胞。
+`SuperCellMode`，默认 `'scale'`。`"scale"` 按 `super_scale` 里写死的倍数扩——你最清楚自己要多大时用这个。`"cell"` 按 `target_cell` 里的目标胞长（单位 A）自动算倍数，每个方向的倍数 = floor 或 ceil（目标长度/原始长度），取决于 `behavior_type`——想让胞长达到特定数值（比如所有方向大于等于 20A）时用这个。`"max_atoms"` 按原子数上限枚举所有可能的倍数组合，输出所有不超过上限的超胞——预算受限时找最大可用超胞用这个。
 
 #### Super Scale（super_scale）
-类型：`tuple[int, int, int]`。默认：`(3, 3, 3)`。设置固定扩胞倍数。
 
-仅 scale 模式。a/b/c 方向各复制几倍。最小 1（不复制），典型值 2~4。3x3x3 = 27 倍原子数。
+`tuple[int, int, int]`，默认 `(3, 3, 3)`。仅 scale 模式生效。a/b/c 方向各复制几倍，最小 1（不复制），典型值 2~4。注意 3x3x3 = 27 倍原子数，提前心算一下总原子数别超预算。
 
 #### Target Cell（target_cell）
-类型：`tuple[float, float, float]`。默认：`(20.0, 20.0, 20.0)`。设置目标晶胞长度阈值。
 
-仅 cell 模式。各方向目标胞长。如果原胞 a 长度 = 5A，target=20，倍数 = 4（或 5，取决于 behavior_type）。
+`tuple[float, float, float]`，默认 `(20.0, 20.0, 20.0)`。仅 cell 模式生效。各方向的目标胞长，单位 A。比如原胞 a 长度 = 5A 时，target=20 会算出倍数 4（或 5，取决于 behavior_type 是 floor 还是 ceil）。
 
 #### Max Atoms（max_atoms）
-类型：`int`。默认：`100`。限制生成结构的最大原子数。
 
-仅 max_atoms 模式。超胞总原子数上限。实际输出可能包含多个不超过此上限的超胞。
+`int`，默认 100。仅 max_atoms 模式生效。超胞总原子数上限，实际输出可能包含多个不超过此上限的不同倍数超胞。
 
 ### 轴向锁定
 
 #### Fixed Axis Flags（fixed_axis_flags）
-类型：`tuple[bool, bool, bool]`。默认：`(False, False, False)`。指定哪些轴锁定为固定扩胞倍数。
 
-锁定 a/b/c 方向的扩胞倍数。适合 slab 场景：锁住法向（通常 c 轴）不让扩胞，只扩面内方向。被锁定的轴使用 `fixed_axis_scale` 中对应的固定倍数。
+`tuple[bool, bool, bool]`，默认 `(false, false, false)`。锁定 a/b/c 方向的扩胞倍数。最适合 slab 场景：把法向（通常 c 轴）锁住不扩，只扩面内两个方向。被锁住的轴用 `fixed_axis_scale` 里对应的倍数，不被锁住的轴正常扩。
 
 #### Fixed Axis Scale（fixed_axis_scale）
-类型：`tuple[int, int, int]`。默认：`(1, 1, 1)`。指定被锁定轴的扩胞倍数。
 
-被锁定方向的固定扩胞倍数。仅对 `fixed_axis_flags=true` 的方向生效。通常设为 1（不扩胞）。
+`tuple[int, int, int]`，默认 `(1, 1, 1)`。仅对 `fixed_axis_flags` 中对应位置为 true 的轴生效。通常设为 1（不扩胞），但如果你需要一个方向固定扩 2 倍、另一个方向自由扩，也可以设成其他值。
 
 ## 推荐预设
 

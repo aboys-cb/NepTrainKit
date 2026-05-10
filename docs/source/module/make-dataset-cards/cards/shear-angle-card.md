@@ -52,24 +52,22 @@ $$\mathbf{C}'=\mathrm{cellpar\_to\_cell}(a,b,c,\alpha',\beta',\gamma')$$
 ## 参数说明
 
 ### Alpha Range（alpha_range）
-类型：`tuple[float, float, float]`。默认：`(-2.0, 2.0, 1.0)`。设置 alpha 晶格角扫描范围。
 
-Alpha 角增量扫描区间 `[min, max, step]`，单位度。表示相对原始角度的偏移量。不扫的通道设为 `[0, 0, 1]` 保证至少生成一个点。
+`tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。alpha 角相对于原始值的增量扫描区间，格式 `[min, max, step]`，单位度。注意最终角度 = 原始角度 + 增量，不是直接用增量替换。不扫的通道不能设 `[0, 0, 0]`，必须写 `[0, 0, 1]` 让 range 至少产生一个 0 点。
 
 ### Beta Range（beta_range）
-类型：`tuple[float, float, float]`。默认：`(-2.0, 2.0, 1.0)`。设置 beta 晶格角扫描范围。
 
-Beta 角增量扫描区间，同上。
+`tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。beta 角增量扫描区间，单位和语法同上。不扫时写 `[0, 0, 1]`。
 
 ### Gamma Range（gamma_range）
-类型：`tuple[float, float, float]`。默认：`(-2.0, 2.0, 1.0)`。设置 gamma 晶格角扫描范围。
 
-Gamma 角增量扫描区间，同上。
+`tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。gamma 角增量扫描区间，同上。不扫时写 `[0, 0, 1]`。
+
+输出总数 = Nalpha * Nbeta * Ngamma。三个通道同时按默认值跑 = 5^3 = 125 个结构。步长减半会 8 倍增长，建议从单通道开始逐次加。
 
 ### Identify Organic（identify_organic）
-类型：`bool`。默认：`False`。决定是否识别有机分子并保护内部几何。
 
-有机团簇识别。分子晶体必须开启。
+`bool`，默认 `false`。分子晶体必须打开——角度变化会改变分子间相对取向，如果分子内键也被跟着拉伸就不对了。纯无机体系关着即可。
 
 ## 推荐预设
 

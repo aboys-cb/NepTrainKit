@@ -52,136 +52,101 @@
 
 ### 磁矩格式和幅值
 
+先把"磁矩写多大、什么格式"定下来，后面 FM/AFM/PM 分支都在这个基础上操作。
+
 #### Format（format）
-类型：`str`。默认：`'Collinear (scalar)'`。选择磁矩写入格式。
 
-`Collinear (scalar)` 或 `Non-collinear (vector)`。
-- Collinear：磁矩只有大小和 ± 号，沿 `Axis` 方向。适合大多数共线磁序。
-- Non-collinear：3D 矢量磁矩。适合螺旋、canting 等非共线体系。
+`str`，默认 `Collinear (scalar)`。`Collinear` = 每个原子只有一个标量 ± 磁矩，沿 `Axis` 方向；`Non-collinear` = 每个原子一个 3D 矢量。
 
+大多数共线磁序用标量就够了，简单且训练数据量小。如果你后续要做非共线螺旋、canting 或 DMI 相关训练，这里必须先切成矢量模式。
 
 #### Axis（axis）
-类型：`list[float] | tuple[float, float, float]`。默认：`(0.0, 0.0, 1.0)`。设置共线磁序和 cone PM 的参考磁矩轴。
 
-物理直觉：共线模式下标量磁矩沿这个轴解释；非共线默认方向也以它为参考。常规自旋极化用 z，外场或各向异性能量扫描时改成目标方向。
+`[x, y, z]`，默认 `[0, 0, 1]`（z 轴）。共线模式下磁矩沿这个方向；非共线模式下 FM/AFM 的默认方向也以它为参考。
 
-生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。
+改它之前先确认结构的晶胞取向——如果你的 slab 法向是 z，通常保持默认；如果研究面内各向异性，可能要改到 x 或 y。
 
 #### Magmom Map（magmom_map）
-类型：`str`。默认：`''`。按元素指定磁矩幅值或方向，例如 `Fe:2.2, Ni:0.6`。
 
-字符串。每个元素的磁矩大小。格式 `Fe:2.2,Ni:0.6`。最精确的控制方式。
+`str`，默认空。`Fe:2.2, Ni:0.6` 这种格式，显式指定每个元素的磁矩大小。这是你最精确的控制方式——用已知的 DFT 或文献值填。
 
 #### Use Element Dirs（use_element_dirs）
-类型：`bool`。默认：`False`。决定是否使用元素映射中的方向信息。
 
-物理直觉：多元素非共线体系中，不同元素可能有不同先验方向；打开后 `magmom_map` 的方向信息优先于全局 axis。共线标量模式下通常不用。
+`bool`，默认 false。打开后不同元素可以有不同的磁矩方向（从 `magmom_map` 中读取方向信息），而不是全沿 `Axis`。非共线多元素体系（比如 Fe↑ Mn↓）才会用到。标量模式下不需要开。
 
 #### Default Moment（default_moment）
-类型：`float`。默认：`0.0`。为没有显式元素映射的原子提供默认磁矩幅值。
 
-浮点数。`magmom_map` 中未列出的元素用此默认值。设为 0 则不给未配置元素写磁矩。
+`float`，默认 0.0。没在 `magmom_map` 里列出的元素统一用这个值。设 0 意味着非磁性元素不写磁矩。
 
 #### Apply Elements（apply_elements）
-类型：`str`。默认：`''`。限制只处理指定元素，留空表示处理所有元素。
 
-逗号分隔，如 `Fe,Co`。只对列出的元素写磁矩，其余写 0。留空 = 全部生效。
+`str`，默认空（全部生效）。逗号分隔如 `Fe, Co`。只给这些元素写磁矩，其他的写 0。
 
-> 优先级：`magmom_map` 命中 → `default_moment` 兜底 → 未命中 `apply_elements` 的写 0。
+> 优先级：`magmom_map` 命中的 → 用映射值；没命中但被 `apply_elements` 包含的 → 用 `default_moment`；都不在的 → 写 0。
 
 ### FM / AFM 分支
 
-#### Gen FM（gen_fm）
-类型：`bool`。默认：`True`。决定是否生成 FM 磁序结构。
+这两张复选框决定输出里有没有铁磁和反铁磁构型。通常至少保留 FM ——它是一个重要的能量参考态。
 
-物理直觉：FM 是多数磁性训练集的参考端点。除非只想生成 AFM/PM 对照，否则建议保留一个 FM 样本用于能量基准。
+#### Gen FM（gen_fm）
+
+`bool`，默认 true。打开 → 输出一个铁磁结构（所有磁矩同向）。关掉它意味着你只要 AFM/PM，比较少见。
 
 #### Gen AFM（gen_afm）
-类型：`bool`。默认：`True`。决定是否生成 AFM 磁序结构。
 
-勾选 → 输出反铁磁结构。
+`bool`，默认 true。打开 → 输出反铁磁结构。需要选一种 AFM 构造方式：
 
 #### AFM Mode（afm_mode）
-类型：`str`。默认：`'k-vector'`。选择 AFM 生成方式。
 
-- `k-vector`：用波矢决定正负翻转。适合周期性子晶格。需配置 `AFM Kvec`。
-- `group A/B`：用 `atoms.arrays['group']` 中的标签决定正负。需上游先跑 `Group Label`，需配置 `AFM Group A/B`。
+`str`，默认 `k-vector`。`k-vector` 用波矢自动翻转——简单、不需要上游准备。`group A/B` 用手动标注的 group 标签决定正负——更灵活，但需要先用 `Group Label` 卡打好标签。
+
+你很可能先从 k-vector 试起。只有当你发现 k-vector 的翻转面切到了不等价原子（比如 NiO 里 Ni 和 O 两种子晶格被混在一起了），再切到 group A/B。
 
 #### AFM Kvec（afm_kvec）
-类型：`str`。默认：`'111'`。设置 k-vector AFM 的交替方向。
 
-仅 k-vector 模式。`100` / `010` / `001` / `110` / `111`。
+`str`，默认 `111`。仅 k-vector 模式。`100` / `010` / `001` / `110` / `111`。沿这个方向相邻原子层磁矩正负交替。
 
-生效条件：`gen_afm=True` 且 `afm_mode` 使用 k-vector。
+#### AFM Group A / B（afm_group_a / afm_group_b）
 
-#### AFM Group A（afm_group_a）
-类型：`str`。默认：`'A'`。指定 AFM A 子晶格。
-
-仅 group A/B 模式。指定哪个 group 取正、哪个取负。
-
-生效条件：`gen_afm=True` 且 `afm_mode` 使用 group。
-
-#### AFM Group B（afm_group_b）
-类型：`str`。默认：`'B'`。指定 AFM B 子晶格。
-
-仅 group A/B 模式。指定哪个 group 取正、哪个取负。
-
-生效条件：`gen_afm=True` 且 `afm_mode` 使用 group。
+`str`，默认 `A` / `B`。仅 group A/B 模式。指明 `atoms.arrays['group']` 中哪个标签取正、哪个取负。需要和上游 `Group Label` 卡里的设置完全一致（区分大小写）。
 
 #### AFM Zero Unknown（afm_zero_unknown）
-类型：`bool`。默认：`True`。决定未知 group 原子是否置零磁矩。
 
-仅 group A/B 模式。勾选 → 不属 A 也不属 B 的原子磁矩置零；不勾选 → 默认正号。
+`bool`，默认 true。仅 group A/B 模式。打开 → 不属于 A 也不属于 B 的原子磁矩置零。关掉 → 这些原子默认为正。
 
 ### PM 分支
 
-#### Gen PM（gen_pm）
-类型：`bool`。默认：`False`。决定是否生成 PM 随机磁矩结构。
+PM 生成大量随机磁序样本。默认关闭的——因为开了输出数量会乘上 `pm_count + 2`。
 
-勾选 → 生成顺磁结构。默认关闭，因为 PM 会显著增大输出规模。
+#### Gen PM（gen_pm）
+
+`bool`，默认 false。打开后才生成顺磁构型。
 
 #### PM Count（pm_count）
-类型：`int`。默认：`10`。设置 PM 随机结构数量。
 
-PM 样本数，建议 5-20。
-
-生效条件：`gen_pm=True`。
+`int`，默认 10。生成几个 PM 样本。5-10 覆盖基本无序态，20+ 做统计训练。注意每帧输出 = 1 FM（如果开了）+ 1 AFM（如果开了）+ `pm_count` 个 PM。
 
 #### PM Direction（pm_direction）
-类型：`str`。默认：`'sphere'`。选择 PM 随机方向模型。
 
-- `sphere`：方向在球面上均匀采样
-- `cone`：在以 `Axis` 为中心的锥面内采样，锥角由 `PM Cone Angle` 控制
-
-生效条件：`gen_pm=True`。
+`str`，默认 `sphere`。`sphere` — 磁矩方向在球面上均匀撒。`cone` — 限制在以 `Axis` 为中心的锥面内，锥角由下面的 `PM Cone Angle` 控制。如果你要模拟有限温度下自旋偏离平衡方向不太远的情况，用 cone；要模拟完全无序的顺磁态，用 sphere。
 
 #### PM Cone Angle（pm_cone_angle）
-类型：`float`。默认：`30.0`。设置 PM cone 随机方向的最大偏转角。
 
-仅 cone 模式，单位度。30° 表示偏离 Axis 最多 30°。
-
-生效条件：`pm_direction` 选择 cone 类方向时。
+`float`，默认 30°。仅 cone 模式。偏离 `Axis` 的最大角度。30° 表示有限温近平衡扰动，60° 接近强无序。
 
 #### PM Balanced（pm_balanced）
-类型：`bool`。默认：`True`。决定 PM 随机方向是否强制总体平衡。
 
-勾选 → 正负方向数量尽量平衡。建议保持。
-
-生效条件：`gen_pm=True`。
+`bool`，默认 true。打开后正负方向数量尽量平衡。一般建议保持——不勾的话可能出现某一方向系统性偏多。
 
 ### 随机性
 
 #### Use Seed（use_seed）
-类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
 
-勾选 → 固定种子可复现。
+`bool`，默认 false。打开后固定随机种子 → 同参数同输入可复现。对比实验时开，纯探索可以关。
 
 #### Seed（seed）
-类型：`int`。默认：`0`。设置固定随机种子的整数值。
 
-种子值。仅 `use_seed` 勾选时生效。不同值产生不同 PM 随机分布。
-
-生效条件：`use_seed=True`。
+`int`，默认 0。仅在 `use_seed` 打开时生效。
 
 ## 推荐预设
 

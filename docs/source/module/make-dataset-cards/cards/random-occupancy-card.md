@@ -50,40 +50,32 @@
 ## 参数说明
 
 ### Source（source）
-类型：`str`。默认：`'Auto (Comp tag)'`。选择输入信息的来源。
 
-`Auto (Comp tag)` 或 `Manual`。Auto 从输入结构的 `Config_type` 中读取 `Comp(...)` 标签作为目标配比，适合接在 `Composition Sweep` 之后。Manual 从 `manual` 字段读取手工配比字符串。
+`str`，默认 `Auto (Comp tag)`。`Auto` 从输入结构的 `Config_type` 中读取 `Comp(...)` 标签作为目标配比，适合接在 `Composition Sweep` 之后。`Manual` 从下面的 `manual` 字段读取手工配比字符串。
 
 ### Manual（manual）
-类型：`str`。默认：`''`。手动指定每个元素的占位数量或比例。
 
-成分字符串，如 `Co:0.333,Cr:0.333,Ni:0.334`。仅在 `source=Manual` 时生效。比例会被归一化。
-如果只输入单个元素，如 `Ge`，会按 `Ge:1.0` 处理；输入 `Ge,C` 则两个元素默认权重都是 `1.0`。
+`str`，默认空。成分字符串，如 `Co:0.333,Cr:0.333,Ni:0.334`，仅在 `source=Manual` 时生效。比例会被自动归一化。只输入单个元素如 `Ge` 时按 `Ge:1.0` 处理；输入 `Ge,C` 则两个元素默认权重都是 1.0。
 
 ### Mode（mode）
-类型：`str`。默认：`'Exact'`。选择严格计数、比例采样或随机占位策略。
 
-`Exact` 或 `Random`。Exact 精确匹配目标配比，每个原子的元素分配满足目标计数（向下取整后按余数补足），适合对比实验。Random 按目标比例概率采样，整体统计接近但不严格匹配，适合探索性跑样。
+`str`，默认 `Exact`。`Exact` 精确匹配目标配比，每个原子的元素分配满足目标计数（向下取整后按余数补足），适合对比实验。`Random` 按目标比例概率采样，整体统计接近但不严格匹配，适合探索性跑样。
 
 ### Samples（samples）
-类型：`int`。默认：`1`。设置每个输入结构生成的样本数量。
 
-整数，每个目标配比生成多少个不同占位版本。典型值 1-20。乘以上游配比点数 = 总输出量。
+`int`，默认 1。每个输入结构为每个目标配比生成多少个不同占位版本。典型值 1-20。注意总输出 = 上游配比点数 x 这个值，先估算规模再跑。
 
 ### Group Filter（group_filter）
-类型：`str`。默认：`''`。限制只在指定 group 上操作。
 
-逗号分隔的 group 标签，如 `A,B`。限制只在这些 group 内的位点上做占位分配。需要输入结构已带 `atoms.arrays['group']`。
+`str`，默认空。逗号分隔的 group 标签，如 `A,B`。限制只在这些 group 内的位点上做占位分配。需要输入结构已带 `atoms.arrays['group']`。
 
 ### Use Seed（use_seed）
-类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
 
-勾选 `use_seed` 后固定随机路径，`seed` 不同取值产生不同占位分布。结合输入结构的 stable config ID 为每个样本派生独立种子。
+`bool`，默认 false。打开后固定随机路径，`seed` 不同取值产生不同占位分布。程序会结合输入结构的 stable config ID 为每个样本派生独立种子。
 
 ### Seed（seed）
-类型：`int`。默认：`0`。设置固定随机种子的整数值。
 
-勾选 `use_seed` 后固定随机路径，`seed` 不同取值产生不同占位分布。结合输入结构的 stable config ID 为每个样本派生独立种子。
+`int`，默认 0。不同取值产生不同的占位分布。
 
 生效条件：`use_seed=True`。
 

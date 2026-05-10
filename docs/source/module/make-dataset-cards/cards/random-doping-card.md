@@ -51,33 +51,28 @@
 - 只需要全局随机占位 → 用 `Random Occupancy`
 
 ## 参数说明
-### Rules（rules）
-类型：`list[dict[str, Any]]`。默认：`field(default_factory=list)`。定义每条随机替换或空位生成规则。
 
-物理直觉：每条 rule 定义目标元素、替换元素、比例/计数和可选 group。复杂掺杂优先拆成多条明确 rule，不要把不同物理缺陷混成一个概率池。
+### Rules（rules）
+
+`list[dict[str, Any]]`，默认空列表。每条 rule 定义目标元素、替换元素、比例/计数和可选 group。复杂掺杂优先拆成多条明确 rule，不要把不同物理缺陷混成一个概率池。
+
+rule 内的典型字段：`target`（被替换元素）、`dopants`（替换元素及权重 dict）、`use`（`atomic_percent` / `mass_percent` / `count`）、`percent`（百分比范围 `[min, max]` 或 `[fixed]`）、`count`（固定替换个数）、`group`（可选，限制只在此 group 内操作）。
 
 ### Doping Type（doping_type）
-类型：`str`。默认：`'Random'`。选择掺杂计数采用精确枚举还是随机抽样。
 
-`Random` 或 `Exact`。
-
-- `Random`：按权重概率随机采样，每帧替换数量有浮动
-- `Exact`：尽量匹配精确计数。替换数量更稳定，适合对比实验
+`str`，默认 `Random`。`Random` 按权重概率随机采样，每帧替换数量有浮动。`Exact` 尽量匹配精确计数，替换数量更稳定，适合对比实验。
 
 ### Max Structures（max_structures）
-类型：`int`。默认：`1`。限制每个输入结构最多输出多少个候选结构。
 
-物理直觉：每个输入结构最多输出的掺杂构型数。低浓度精确掺杂可用 10-50，高维随机合金应后接 FPS 控制预算。
+`int`，默认 1。每个输入结构最多输出的掺杂构型数。低浓度精确掺杂可用 10-50，高维随机合金应后接 FPS 控制预算。
 
 ### Use Seed（use_seed）
-类型：`bool`。默认：`False`。决定是否使用固定随机种子保证可复现。
 
-勾选 → 固定种子可复现。
+`bool`，默认 false。打开后固定种子可复现。对比实验时开，探索阶段可以关着。
 
 ### Seed（seed）
-类型：`int`。默认：`0`。设置固定随机种子的整数值。
 
-种子值。
+`int`，默认 0。不同取值产生不同的替换分布。
 
 生效条件：`use_seed=True`。
 

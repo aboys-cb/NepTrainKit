@@ -46,51 +46,28 @@
 ## 参数说明
 
 ### Lattice（lattice）
-类型：`str`。默认：`'fcc'`。选择要生成的晶体原型。
-
-晶格原型类型。支持：`fcc`、`bcc`、`hcp`、`sc`、`diamond`、`zincblende`、`rocksalt`、`cesiumchloride`、`fluorite`、`wurtzite`。
-
-- 主晶型（fcc/bcc/hcp）：常见金属
-- 化合物晶型（rocksalt/wurtzite/fluorite）：二元化合物
+`str`，默认 `'fcc'`。晶格原型类型，支持 `fcc`、`bcc`、`hcp`、`sc`、`diamond`、`zincblende`、`rocksalt`、`cesiumchloride`、`fluorite`、`wurtzite`。主晶型（fcc/bcc/hcp）对应常见金属，化合物晶型（rocksalt/wurtzite/fluorite）对应二元化合物。
 
 ### Element（element）
-类型：`str`。默认：`'Cu'`。指定原型晶体的元素。
-
-元素符号，如 `Cu`、`Ni`、`Si`。对于化合物原型（如 rocksalt），只用第一个元素，后续需要 `Composition Sweep` + `Random Occupancy` 组合来实现元素分布。
+`str`，默认 `'Cu'`。元素符号，如 `Cu`、`Ni`、`Si`。对于化合物原型（如 rocksalt），这里只用第一个元素——后续需要用 `Composition Sweep` + `Random Occupancy` 来实现多元素分布。
 
 ### A Range（a_range）
-类型：`tuple[float, float, float]`。默认：`(3.6, 3.6, 0.1)`。设置原型晶格常数扫描范围。
-
-`[最小值, 最大值, 步长]`，晶格常数 a（单位 A）。
-
-- 单点扫描：`[3.52, 3.52, 0.1]` → 1 个结构
-- 区间扫描：`[3.50, 3.60, 0.02]` → 6 个结构
-- 注意：步长越小 → 结构越多。配合 `max_outputs` 控制上限。
+`tuple[float, float, float]`，默认 `(3.6, 3.6, 0.1)`。晶格常数 a 的扫描范围，格式 `[最小值, 最大值, 步长]`，单位 A。单点扫描如 `[3.52, 3.52, 0.1]` 产 1 个结构；区间扫描如 `[3.50, 3.60, 0.02]` 产 6 个。步长越小结构越多，记得用 `max_outputs` 控制总量。
 
 ### C/A（covera）
-类型：`float`。默认：`1.633`。设置 hcp 原型的 `c/a` 轴比。
-
-仅 hcp 晶型使用。c/a 比例，理想值 ≈ 1.633。
+`float`，默认 1.633。仅 hcp 晶型使用，c/a 轴比，理想值约 1.633。
 
 ### Auto Supercell（auto_supercell）
-类型：`bool`。默认：`True`。决定是否自动扩胞到目标原子数附近。
-
-勾选 → 程序自动计算扩胞因子以逼近 `Max Atoms`。不勾选 → 手动用 `Rep` 指定扩胞倍数。
+`bool`，默认 true。勾选后程序自动计算扩胞因子以逼近 `Max Atoms`；不勾选则手动通过 `Rep` 指定扩胞倍数。
 
 ### Max Atoms（max_atoms）
-类型：`int`。默认：`512`。限制生成结构的最大原子数。
-
-目标最大原子数。仅 `auto_supercell` 勾选时生效。256~512 为常规。
+`int`，默认 512。目标最大原子数，仅 `auto_supercell` 开启时生效。常规范围 256~512。
 
 ### Rep（rep）
-类型：`tuple[int, int, int]`。默认：`(4, 4, 4)`。设置手动扩胞倍数。
-
-`[na, nb, nc]`，三个方向的扩胞倍数。仅 `auto_supercell` 关闭时生效。
+`tuple[int, int, int]`，默认 `(4, 4, 4)`。三个方向的扩胞倍数 `[na, nb, nc]`，仅 `auto_supercell` 关闭时生效。
 
 ### Max Outputs（max_outputs）
-类型：`int`。默认：`200`。限制这张卡最多输出多少个结构。
-
-输出结构总数上限。防止 a_range 扫描+多晶型产生过多结构。
+`int`，默认 200。这张卡输出结构总数的硬上限，防止 a_range 扫描 + 多晶型组合爆炸。
 
 ## 推荐预设
 

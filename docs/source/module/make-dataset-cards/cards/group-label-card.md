@@ -52,44 +52,37 @@ $$g_{k\text{-vec}}=\left\lfloor 2(\mathbf{s}\cdot\mathbf{k})\right\rfloor\bmod 2
 ## 参数说明
 
 ### Mode（mode）
-类型：`str`。默认：`'k-vector layers (recommended)'`。选择按 k-vector 分层还是按手动索引写 group 标签。
+
+`str`，默认 `k-vector layers (recommended)`。按 k-vector 分层还是按分数坐标奇偶写 group 标签。
 
 | 模式 | 算法 | 适用场景 |
 |------|------|---------|
 | `k-vector layers (recommended)` | $$g=\lfloor2(s\cdot k)\rfloor\bmod2$$ | 层状磁序，沿 k 方向交替翻转 |
 | `fractional parity (2x rounding)` | $$g=(\text{round}(2s_x)+\text{round}(2s_y)+\text{round}(2s_z))\bmod2$$ | NaCl 型子晶格交替，不依赖层方向 |
 
-k-vector 模式是最常用和最推荐的。
+k-vector 模式最常用，也是推荐的首选。
 
 ### Kvec（kvec）
-类型：`str`。默认：`'111'`。设置交替分组使用的晶格方向。
 
-仅 k-vector 模式。可选：`100`、`010`、`001`、`110`、`111`。
+`str`，默认 `111`，仅 k-vector 模式。可选 `100`/`010`/`001`/`110`/`111`。
 
 - `111`：体对角线方向分层，适合 fcc/bcc 基的 AFM（如 NiO 型）
-- `100` / `010` / `001`：沿单轴方向分层
+- `100`/`010`/`001`：沿单轴方向分层
 - `110`：面对角线方向
 
 ### Group A（group_a）
-类型：`str`。默认：`'A'`。指定 A 组原子或 group 标签。
 
-标签名字符串。默认 `A` 和 `B`。可自定义为 `S1`/`S2`、`up`/`down` 等，但必须与下游引用的名称完全一致。
-
-生效条件：需要 group pair、手动 group 或 AFM group 模式时。
+`str`，默认 `A`。可自定义为 `S1`、`up` 等，但必须与下游引用的名称完全一致（区分大小写）。
 
 ### Group B（group_b）
-类型：`str`。默认：`'B'`。指定 B 组原子或 group 标签。
 
-标签名字符串。默认 `A` 和 `B`。可自定义为 `S1`/`S2`、`up`/`down` 等，但必须与下游引用的名称完全一致。
-
-生效条件：需要 group pair、手动 group 或 AFM group 模式时。
+`str`，默认 `B`。可自定义为 `S2`、`down` 等，同样必须与下游完全一致。
 
 ### Overwrite（overwrite）
-类型：`bool`。默认：`True`。决定是否覆盖已有 group 标签。
 
-勾选 → 强制覆盖已有的 group 数组。不勾选 → 如果输入已有 group，原样返回不重写。
+`bool`，默认 true。勾选后强制覆盖已有的 group 数组；不勾选则输入如果已有 group 就原样返回不重写。
 
-**重要：** 如果输入结构来自之前跑过的 `Group Label` 卡并且 `overwrite` 开着，新卡会把旧标签覆盖掉。如果不确定，先用 `overwrite=false` 检查输入是否已有 group。
+如果输入结构来自之前跑过的 `Group Label` 卡且开着 overwrite，新卡会把旧标签覆盖掉。不确定的时候先用 `overwrite=false` 检查输入是否已有 group。
 
 ## 推荐预设
 

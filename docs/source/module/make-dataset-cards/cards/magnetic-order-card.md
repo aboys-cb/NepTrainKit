@@ -106,9 +106,13 @@
 
 `str`，默认 `111`。仅 k-vector 模式。`100` / `010` / `001` / `110` / `111`。沿这个方向相邻原子层磁矩正负交替。
 
-#### AFM Group A / B（afm_group_a / afm_group_b）
+#### AFM Group A（afm_group_a）
 
-`str`，默认 `A` / `B`。仅 group A/B 模式。指明 `atoms.arrays['group']` 中哪个标签取正、哪个取负。需要和上游 `Group Label` 卡里的设置完全一致（区分大小写）。
+`str`，默认 `A`。仅 group A/B 模式。`atoms.arrays['group']` 中等于这个标签的原子取正号磁矩。它必须和上游 `Group Label` 卡写入的标签完全一致，包括大小写。
+
+#### AFM Group B（afm_group_b）
+
+`str`，默认 `B`。仅 group A/B 模式。`atoms.arrays['group']` 中等于这个标签的原子取负号磁矩。通常和 `afm_group_a` 成对使用，用来显式指定两套反平行子晶格。
 
 #### AFM Zero Unknown（afm_zero_unknown）
 

@@ -13,6 +13,23 @@ from scipy.stats.qmc import Sobol
 
 
 _ELEMENT_SPLIT_RE = re.compile(r"[,\s;]+")
+_ELEMENT_SYMBOL_RE = re.compile(r"^[A-Za-z][A-Za-z]?$")
+
+
+def _validate_composition_ratio(symbol: str, ratio: float) -> float:
+    ratio = float(ratio)
+    if not np.isfinite(ratio):
+        raise ValueError(f"Composition ratio for {symbol} must be finite.")
+    if ratio < 0.0:
+        raise ValueError(f"Composition ratio for {symbol} must be non-negative.")
+    return ratio
+
+
+def _normalize_element_symbol(text: str) -> str:
+    elem = str(text).strip()
+    if not elem or not _ELEMENT_SYMBOL_RE.match(elem):
+        raise ValueError(f"Invalid element symbol: {text!r}")
+    return elem[0].upper() + elem[1:].lower()
 
 
 def parse_element_list(text: str) -> list[str]:
@@ -24,7 +41,7 @@ def parse_element_list(text: str) -> list[str]:
     for token in raw:
         if not token:
             continue
-        symbol = token[0].upper() + token[1:].lower()
+        symbol = _normalize_element_symbol(token)
         if symbol not in out:
             out.append(symbol)
     return out
@@ -48,8 +65,8 @@ def parse_composition(text: str) -> dict[str, float]:
             elem = str(key).strip()
             if not elem:
                 continue
-            symbol = elem[0].upper() + elem[1:].lower()
-            comp[symbol] = float(value)
+            symbol = _normalize_element_symbol(elem)
+            comp[symbol] = _validate_composition_ratio(symbol, float(value))
         return comp
     parts = [p.strip() for p in _ELEMENT_SPLIT_RE.split(text) if p.strip()]
     comp: dict[str, float] = {}
@@ -66,8 +83,8 @@ def parse_composition(text: str) -> dict[str, float]:
         elem = elem.strip()
         if not elem:
             continue
-        symbol = elem[0].upper() + elem[1:].lower()
-        comp[symbol] = ratio
+        symbol = _normalize_element_symbol(elem)
+        comp[symbol] = _validate_composition_ratio(symbol, ratio)
     return comp
 
 
@@ -98,7 +115,8 @@ def format_composition(
 
 def normalize_composition(comp: Mapping[str, float]) -> dict[str, float]:
     """Return a normalized copy of ``comp`` whose values sum to 1."""
-    items = [(k, float(v)) for k, v in comp.items() if float(v) > 0.0]
+    validated = [(k, _validate_composition_ratio(str(k), float(v))) for k, v in comp.items()]
+    items = [(k, v) for k, v in validated if v > 0.0]
     if not items:
         return {}
     total = sum(v for _, v in items)

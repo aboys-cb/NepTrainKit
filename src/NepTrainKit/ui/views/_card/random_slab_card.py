@@ -79,9 +79,11 @@ class RandomSlabCard(MakeDataCard):
         self.vacuum_label.setToolTip("Vacuum thickness range in Å")
         self.vacuum_label.installEventFilter(ToolTipFilter(self.vacuum_label, 0, ToolTipPosition.TOP))
         self.vacuum_frame = SpinBoxUnitInputFrame(self)
-        self.vacuum_frame.set_input(["-", "step", "Å"], 3, "int")
+        self.vacuum_frame.set_input(["-", "step", "Å"], 3, "float")
+        self.vacuum_frame.setDecimals(3)
+        self.vacuum_frame.setSingleStep(0.5)
         self.vacuum_frame.setRange(0, 100)
-        self.vacuum_frame.set_input_value([10, 10, 1])
+        self.vacuum_frame.set_input_value([10.0, 10.0, 1.0])
 
         self.settingLayout.addWidget(self.h_label, 0, 0, 1, 1)
         self.settingLayout.addWidget(self.h_frame, 0, 1, 1, 2)
@@ -105,7 +107,7 @@ class RandomSlabCard(MakeDataCard):
             k_range=tuple(int(v) for v in self.k_frame.get_input_value()),
             l_range=tuple(int(v) for v in self.l_frame.get_input_value()),
             layer_range=tuple(int(v) for v in self.layer_frame.get_input_value()),
-            vacuum_range=tuple(int(v) for v in self.vacuum_frame.get_input_value()),
+            vacuum_range=tuple(float(v) for v in self.vacuum_frame.get_input_value()),
         )
 
     def set_params(self, params: RandomSlabParams) -> None:
@@ -114,7 +116,7 @@ class RandomSlabCard(MakeDataCard):
         self.k_frame.set_input_value([int(v) for v in params.k_range])
         self.l_frame.set_input_value([int(v) for v in params.l_range])
         self.layer_frame.set_input_value([int(v) for v in params.layer_range])
-        self.vacuum_frame.set_input_value([int(v) for v in params.vacuum_range])
+        self.vacuum_frame.set_input_value([float(v) for v in params.vacuum_range])
 
     def process_structure(self, structure):
         """Build surface slabs from UI-independent parameters.
@@ -152,7 +154,7 @@ class RandomSlabCard(MakeDataCard):
                 k_range=raw_params.get("k_range", [0, 1, 1]),
                 l_range=raw_params.get("l_range", [1, 3, 1]),
                 layer_range=raw_params.get("layer_range", [3, 6, 1]),
-                vacuum_range=raw_params.get("vacuum_range", [10, 10, 1]),
+                vacuum_range=raw_params.get("vacuum_range", [10.0, 10.0, 1.0]),
             )
         else:
             params = RandomSlabParams(
@@ -160,7 +162,7 @@ class RandomSlabCard(MakeDataCard):
                 k_range=data_dict.get("k_range", [0, 1, 1]),
                 l_range=data_dict.get("l_range", [1, 3, 1]),
                 layer_range=data_dict.get("layer_range", [3, 6, 1]),
-                vacuum_range=data_dict.get("vacuum_range", [10, 10, 1]),
+                vacuum_range=data_dict.get("vacuum_range", [10.0, 10.0, 1.0]),
             )
         self.set_params(params)
 

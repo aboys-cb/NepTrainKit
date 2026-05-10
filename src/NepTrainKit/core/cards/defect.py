@@ -265,10 +265,10 @@ class StackingFaultOperation(StructureOperation):
         positions = structure.get_positions()
         basis = np.eye(3)
         non_parallel_vector = basis[int(np.argmin(np.abs(basis @ normal)))]
-        perpendicular_vector = np.cross(normal, non_parallel_vector)
-        perpendicular_vector = perpendicular_vector / np.linalg.norm(perpendicular_vector)
+        slip_direction = np.cross(normal, non_parallel_vector)
+        slip_direction = slip_direction / np.linalg.norm(slip_direction)
 
-        coord = positions @ perpendicular_vector
+        coord = positions @ normal
         unique_coords = np.unique(np.round(coord, 8))
         unique_coords.sort()
         if num_layers >= len(unique_coords):
@@ -281,7 +281,7 @@ class StackingFaultOperation(StructureOperation):
         for displacement in _range_values((step_start, step_end, step_step)):
             new_structure = structure.copy()
             pos = new_structure.positions.copy()
-            pos[mask] += normal * displacement
+            pos[mask] += slip_direction * displacement
             new_structure.set_positions(pos)
             new_structure.wrap()
             append_config_tag(new_structure, f"SF(hkl={h}{k}{l},d={displacement:g})")
@@ -297,7 +297,7 @@ class RandomSlabParams:
     k_range: Sequence[int] = (0, 1, 1)
     l_range: Sequence[int] = (1, 3, 1)
     layer_range: Sequence[int] = (3, 6, 1)
-    vacuum_range: Sequence[int] = (10, 10, 1)
+    vacuum_range: Sequence[float] = (10.0, 10.0, 1.0)
 
 
 class RandomSlabOperation(StructureOperation):

@@ -122,6 +122,7 @@ def farthest_point_sampling(points, n_samples, min_dist=0.1, selected_data=None)
     >>> len(idx) <= 5
     True
     """
+    points = np.asarray(points)
     n_points = points.shape[0]
     if n_points == 0 or int(n_samples) <= 0:
         return []
@@ -130,6 +131,7 @@ def farthest_point_sampling(points, n_samples, min_dist=0.1, selected_data=None)
         selected_data = None
 
     sampled_indices: list[int] = []
+    selected_mask = np.zeros(n_points, dtype=bool)
 
     if selected_data is not None:
         distances_to_samples = numpy_cdist(points, selected_data)
@@ -138,16 +140,23 @@ def farthest_point_sampling(points, n_samples, min_dist=0.1, selected_data=None)
     else:
         first_index = 0
         sampled_indices.append(first_index)
+        selected_mask[first_index] = True
         min_distances = np.linalg.norm(points - points[first_index], axis=1)
+        min_distances[selected_mask] = -np.inf
 
-    while len(sampled_indices) < n_samples:
+    max_samples = min(int(n_samples), n_points)
+    while len(sampled_indices) < max_samples:
         current_index = int(np.argmax(min_distances))
+        if selected_mask[current_index] or not np.isfinite(min_distances[current_index]):
+            break
         if min_distances[current_index] < float(min_dist):
             break
         sampled_indices.append(int(current_index))
+        selected_mask[current_index] = True
         new_point = points[current_index]
         new_distances = np.linalg.norm(points - new_point, axis=1)
         min_distances = np.minimum(min_distances, new_distances)
+        min_distances[selected_mask] = -np.inf
     return sampled_indices
 
 
@@ -189,13 +198,16 @@ def incremental_fps_with_r2(
 
     # Initialise distance field, optionally warm-started
     sampled_indices: list[int] = []
+    selected_mask = np.zeros(n_points, dtype=bool)
     if isinstance(selected_data, np.ndarray) and selected_data.size != 0:
         distances_to_samples = numpy_cdist(points, selected_data)
         min_distances = np.min(distances_to_samples, axis=1)
     else:
         first_index = 0
         sampled_indices.append(first_index)
+        selected_mask[first_index] = True
         min_distances = np.linalg.norm(points - points[first_index], axis=1)
+        min_distances[selected_mask] = -np.inf
 
     def _current_r2() -> float:
         if total_variance <= 0.0:
@@ -208,7 +220,7 @@ def incremental_fps_with_r2(
     # Early exit if variance is degenerate but we still want one representative
     if total_variance <= 0.0 and len(sampled_indices) == 0:
         first_idx = int(np.argmax(min_distances))
-        if min_distances[first_idx] >= float(min_dist):
+        if np.isfinite(min_distances[first_idx]) and min_distances[first_idx] >= float(min_dist):
             sampled_indices.append(first_idx)
         return sampled_indices, 1.0
 
@@ -218,12 +230,16 @@ def incremental_fps_with_r2(
 
     while len(sampled_indices) < n_samples:
         current_index = int(np.argmax(min_distances))
+        if selected_mask[current_index] or not np.isfinite(min_distances[current_index]):
+            break
         if min_distances[current_index] < float(min_dist):
             break
         sampled_indices.append(current_index)
+        selected_mask[current_index] = True
         new_point = points[current_index]
         new_distances = np.linalg.norm(points - new_point, axis=1)
         min_distances = np.minimum(min_distances, new_distances)
+        min_distances[selected_mask] = -np.inf
         r2 = _current_r2()
         if r2 >= r2_threshold:
             break

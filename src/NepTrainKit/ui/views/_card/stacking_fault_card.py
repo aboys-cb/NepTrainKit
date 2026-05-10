@@ -32,14 +32,15 @@ class StackingFaultCard(MakeDataCard):
         self.hkl_label.setToolTip("Enter Miller indices (h k l): Used to define the stacking fault plane.")
         self.hkl_label.installEventFilter(ToolTipFilter(self.hkl_label, 0, ToolTipPosition.TOP))
 
-        self.step_label = BodyLabel("Step", self.setting_widget)
+        self.step_label = BodyLabel("Displacement", self.setting_widget)
         self.step_frame = SpinBoxUnitInputFrame(self)
-        self.step_frame.set_input(["-", "step", ""], 3, "float")
+        self.step_frame.set_input(["-", "step", "Å"], 3, "float")
+        self.step_frame.setDecimals(4)
+        self.step_frame.setSingleStep(0.1)
         self.step_frame.setRange(-10, 10)
         self.step_frame.set_input_value([0.0, 1.0, 0.5])
         self.step_label.setToolTip(
-            "Displacement start, end, and step: Controls the displacement during the fault. "
-            "Units: multiples of lattice normal."
+            "Displacement start, end, and step in Å along a deterministic in-plane slip direction."
         )
         self.step_label.installEventFilter(ToolTipFilter(self.step_label, 0, ToolTipPosition.TOP))
 

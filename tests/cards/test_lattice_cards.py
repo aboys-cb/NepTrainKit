@@ -129,6 +129,51 @@ class TestLatticeCards(BaseCardTest):
 
         self.assertEqual(len(results), 2)
         self.assertTrue(all("Pert(d=0.1,U)" in atoms.info.get("Config_type", "") for atoms in results))
+        for atoms in results:
+            displacements = atoms.get_positions() - self.structure.get_positions()
+            self.assertLessEqual(float(np.linalg.norm(displacements, axis=1).max()), 0.1 + 1e-12)
+
+    def test_perturb_max_distance_is_displacement_norm_limit(self):
+        structure = Atoms(
+            "HHeLi",
+            positions=[[0.0, 0.0, 0.0], [2.0, 0.0, 0.0], [4.0, 0.0, 0.0]],
+            cell=[10.0, 10.0, 10.0],
+            pbc=False,
+        )
+        params = PerturbParams(
+            engine_type=1,
+            max_distance=0.2,
+            max_num=8,
+            use_element_scaling=True,
+            element_scalings={"H": 0.05, "Li": 0.0},
+            use_seed=True,
+            seed=11,
+        )
+
+        results = PerturbOperation().run_structure(structure.copy(), params)
+
+        limits = np.array([0.05, 0.2, 0.0])
+        for atoms in results:
+            displacements = atoms.get_positions() - structure.get_positions()
+            norms = np.linalg.norm(displacements, axis=1)
+            np.testing.assert_array_less(norms, limits + 1e-12)
+
+    def test_perturb_rejects_invalid_distance_limits(self):
+        with self.assertRaisesRegex(ValueError, "max_distance"):
+            PerturbOperation().run_structure(
+                self.structure.copy(),
+                PerturbParams(max_distance=-0.1, max_num=1),
+            )
+        with self.assertRaisesRegex(ValueError, "max_distance"):
+            PerturbOperation().run_structure(
+                self.structure.copy(),
+                PerturbParams(
+                    max_distance=0.1,
+                    max_num=1,
+                    use_element_scaling=True,
+                    element_scalings={"Si": float("nan")},
+                ),
+            )
 
     def test_cell_scaling_card_options(self):
         card = CellScalingCard()

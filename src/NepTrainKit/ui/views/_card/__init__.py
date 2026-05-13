@@ -28,6 +28,8 @@ from .random_vacancy_card import RandomVacancyCard
 from .vacancy_defect_card import VacancyDefectCard
 from .stacking_fault_card import StackingFaultCard
 from .organic_mol_config_pbc_card import OrganicMolConfigPBCCard
+from .local_solvation_card import LocalSolvationCard
+from .solvent_box_fill_card import SolventBoxFillCard
 from .layer_copy_card import LayerCopyCard
 from .interstitial_adsorbate_card import InsertDefectCard
 
@@ -66,6 +68,8 @@ __all__ = [
     "VacancyDefectCard",
     "StackingFaultCard",
     "OrganicMolConfigPBCCard",
+    "LocalSolvationCard",
+    "SolventBoxFillCard",
     "LayerCopyCard",
     "InsertDefectCard",
     "FPSFilterDataCard",

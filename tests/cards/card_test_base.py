@@ -45,7 +45,9 @@ from NepTrainKit.ui.views._card import (
     StackingFaultCard,
     InsertDefectCard,
     LayerCopyCard,
+    LocalSolvationCard,
     OrganicMolConfigPBCCard,
+    SolventBoxFillCard,
     VibrationModePerturbCard,
     GeometryFilterCard,
 )
@@ -78,6 +80,15 @@ from NepTrainKit.core.cards.structure import (
     RandomPackingParams,
     VibrationModePerturbOperation,
     VibrationModePerturbParams,
+)
+from NepTrainKit.core.cards.solvation import (
+    LocalSolvationOperation,
+    LocalSolvationParams,
+    SolventBoxFillOperation,
+    SolventBoxFillParams,
+    estimate_solvent_count_from_density,
+    has_collision,
+    parse_solvent_xyz,
 )
 from NepTrainKit.core.cards.defect import (
     InsertDefectOperation,

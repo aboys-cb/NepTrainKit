@@ -43,6 +43,8 @@ cards/vacancy-defect-card
 cards/stacking-fault-card
 cards/interstitial-adsorbate-card
 cards/organic-mol-config-pbc-card
+cards/local-solvation-card
+cards/solvent-box-fill-card
 cards/layer-copy-card
 cards/fps-filter-card
 cards/geometry-filter-card
@@ -92,6 +94,8 @@ cards/card-group
 | 基于已有磁矩做旋转、多步 canting、全局偏转或螺旋 | `Magmom Rotation` / `Small-Angle Spin Tilt` / `Spin Spiral` / `Folded Helix` | `Set Magnetic Moments` / `Magnetic Order` | 直接拿空白结构做旋转 |
 | 从振动模式生成位移样本 | `Vib Mode Perturb` | 已包含模态数组的结构 | 用 `Atomic Perturb` 代替模态扰动 |
 | 从有机分子构象空间采样 | `Organic Mol Config` | 已识别分子结构 | 用无机卡片强行扰动有机体系 |
+| 在局部离子、极性中心或溶质周围补溶剂壳 | `Local Solvation` | 已有溶质或离子结构 | 把它当成平衡溶剂化或量化优化 |
+| 在周期 cell 中生成整盒溶剂初态 | `Solvent Box Fill` | 已有非奇异周期 cell | 用局部溶剂壳卡替代整盒填充 |
 | 做容器化分支流程 | `Card Group` | 任意共享输入 | 把 `Card Group` 当成筛选器 |
 | 从干净候选池中选代表性结构 | `FPS Filter` | `NEP Dataset Display` 清洗后的候选池 | 把 `FPS Filter` 当成第一道质量检查 |
 
@@ -129,4 +133,4 @@ cards/card-group
 - `Defect / Surface`: `Random Slab`、`Random Vacancy`、`Vacancy Defect Generation`、`Insert Defect`、`Stacking Fault`、`Layer Copy`
 - `Magnetism`: `Set Magnetic Moments`、`Magnetic Order`、`Spin Disorder`、`Correlated Random Spin`、`Magmom Rotation`、`Small-Angle Spin Tilt`、`Spin Spiral`、`Folded Helix`
 - `Filter / Container`: `Geometry Filter`、`FPS Filter`、`Card Group`
-- `Organic`: `Organic Mol Config`
+- `Organic`: `Organic Mol Config`、`Local Solvation`、`Solvent Box Fill`

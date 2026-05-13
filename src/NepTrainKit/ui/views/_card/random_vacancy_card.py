@@ -24,6 +24,9 @@ class RandomVacancyCard(MakeDataCard):
 
     card_name = "Random Vacancy"
     menu_icon = r":/images/src/images/defect.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.

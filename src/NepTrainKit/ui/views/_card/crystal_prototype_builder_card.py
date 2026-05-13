@@ -17,6 +17,9 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
     group = "Lattice"
     card_name = "Crystal Prototype Builder"
     menu_icon = r":/images/src/images/supercell.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     requires_input_dataset = False
 

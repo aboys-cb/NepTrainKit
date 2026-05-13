@@ -76,6 +76,9 @@ class PerturbCard(MakeDataCard):
     group = "Perturbation"
     card_name= "Atomic Perturb"
     menu_icon=r":/images/src/images/perturb.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.
         

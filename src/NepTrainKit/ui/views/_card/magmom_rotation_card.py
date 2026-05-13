@@ -17,6 +17,9 @@ class MagneticMomentRotationCard(MakeDataCard):
     group = "Magnetism"
     card_name = "Magmom Rotation"
     menu_icon = r":/images/src/images/perturb.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)

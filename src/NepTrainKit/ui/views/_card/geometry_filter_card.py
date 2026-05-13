@@ -17,6 +17,9 @@ class GeometryFilterCard(MakeDataCard):
     group = "Filter"
     card_name = "Geometry Filter"
     menu_icon = r":/images/src/images/check.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)

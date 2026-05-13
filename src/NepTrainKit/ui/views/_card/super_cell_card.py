@@ -23,6 +23,9 @@ class SuperCellCard(MakeDataCard):
     group = "Lattice"
     card_name= "Super Cell"
     menu_icon=r":/images/src/images/supercell.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
     separator = False
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.

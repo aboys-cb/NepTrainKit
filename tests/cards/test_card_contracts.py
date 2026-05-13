@@ -34,6 +34,18 @@ class TestCardContracts(BaseCardTest):
         self.assertEqual(data["metadata"]["contributors"], ["Test Contributor"])
         self.assertEqual(data["metadata"]["card_version"], "0.1")
 
+    def test_builtin_cards_declare_contributor_metadata(self):
+        chen_cards = {"OrganicMolConfigPBCCard", "LocalSolvationCard", "SolventBoxFillCard"}
+        for class_name, metadata in CardManager.card_metadata_dict.items():
+            if "_card" not in metadata.source_path:
+                continue
+            self.assertTrue(metadata.contributors, f"{class_name} should declare contributor metadata")
+            contributor_names = {item.name for item in metadata.contributors}
+            if class_name in chen_cards:
+                self.assertIn("Chen Zherui", contributor_names)
+            else:
+                self.assertIn("NepTrainKit", contributor_names)
+
     def test_card_status_summary_uses_input_output_time_format(self):
         card = _ExternalTestCard()
         card.set_dataset([self.structure])

@@ -36,6 +36,9 @@ class LayerCopyCard(MakeDataCard):
     group = "Structure"
     card_name = "Layer Copy"
     menu_icon = r":/images/src/images/defect.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     _PRESETS: list[tuple[str, str, str]] = [
         ("Custom", "", ""),

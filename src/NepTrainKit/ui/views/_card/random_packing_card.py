@@ -17,6 +17,9 @@ class RandomPackingCard(MakeDataCard):
     group = "Structure"
     card_name = "Random Packing"
     menu_icon = r":/images/src/images/perturb.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)

@@ -18,6 +18,9 @@ class SolventBoxFillCard(MakeDataCard):
     group = "Organic"
     card_name = "Solvent Box Fill"
     menu_icon = r":/images/src/images/perturb.svg"
+    contributors = [
+        {"name": "Chen Zherui", "role": "author", "email": "chenzherui0124@foxmail.com"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)

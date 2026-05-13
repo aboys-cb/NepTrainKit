@@ -21,6 +21,9 @@ class VacancyDefectCard(MakeDataCard):
     group = "Defect"
     card_name= "Vacancy Defect Generation"
     menu_icon=r":/images/src/images/defect.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.
         

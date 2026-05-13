@@ -17,6 +17,9 @@ class InsertDefectCard(MakeDataCard):
     group = "Defect"
     card_name = "Insert Defect"
     menu_icon = r":/images/src/images/defect.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)

@@ -29,6 +29,9 @@ class OrganicMolConfigPBCCard(MakeDataCard):
     group = "Organic"
     card_name = "Organic Mol Config"
     menu_icon = r":/images/src/images/perturb.svg"
+    contributors = [
+        {"name": "Chen Zherui", "role": "author", "email": "chenzherui0124@foxmail.com"},
+    ]
 
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.

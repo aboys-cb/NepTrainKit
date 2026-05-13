@@ -24,6 +24,9 @@ class RandomDopingCard(MakeDataCard):
     group = "Alloy"
     card_name = "Random Doping"
     menu_icon = r":/images/src/images/defect.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.

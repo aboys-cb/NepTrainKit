@@ -22,6 +22,9 @@ class SpinSpiralCard(MakeDataCard):
     group = "Magnetism"
     card_name = "Spin Spiral"
     menu_icon = r":/images/src/images/perturb.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
     _coerce_scan_triplet = staticmethod(coerce_scan_triplet)
     _suggest_supercell_multipliers = staticmethod(suggest_supercell_multipliers)
 

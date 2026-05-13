@@ -33,6 +33,9 @@ class CardGroup(MakeDataCardWidget):
     group = "Container"
     card_name= "Card Group"
     menu_icon=r":/images/src/images/group.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
     runFinishedSignal=Signal(int)
     def __init__(self, parent=None):
         """Initialise layouts, drag-and-drop targets, and default execution state.

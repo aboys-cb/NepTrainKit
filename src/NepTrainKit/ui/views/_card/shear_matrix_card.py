@@ -22,6 +22,9 @@ class ShearMatrixCard(MakeDataCard):
     group = "Lattice"
     card_name = "Shear Matrix Strain"
     menu_icon = r":/images/src/images/scaling.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.

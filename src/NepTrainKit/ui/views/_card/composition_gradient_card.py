@@ -17,6 +17,9 @@ class CompositionGradientCard(MakeDataCard):
     group = "Alloy"
     card_name = "Composition Gradient"
     menu_icon = r":/images/src/images/defect.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)

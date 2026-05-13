@@ -25,6 +25,9 @@ class FPSFilterDataCard(FilterDataCard):
     group = "Filter"
     card_name= "FPS Filter"
     menu_icon=r":/images/src/images/fps.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.
         

@@ -1,5 +1,6 @@
 from .card_test_base import *
 from .card_test_base import _ExternalTestCard, _MetadataTestCard
+from NepTrainKit.ui.widgets import FilterDataCard
 
 
 class TestCardContracts(BaseCardTest):
@@ -32,6 +33,26 @@ class TestCardContracts(BaseCardTest):
         data = card.to_dict()
         self.assertEqual(data["metadata"]["contributors"], ["Test Contributor"])
         self.assertEqual(data["metadata"]["card_version"], "0.1")
+
+    def test_card_status_summary_uses_input_output_time_format(self):
+        card = _ExternalTestCard()
+        card.set_dataset([self.structure])
+        card.result_dataset = [self.structure.copy(), self.structure.copy()]
+        card._last_elapsed_seconds = 2.414
+
+        card.update_dataset_info()
+
+        self.assertEqual(card.status_label.text(), "Input: 1 -> Output: 2 | Time: 2.41 s")
+
+    def test_filter_card_status_summary_uses_output_label(self):
+        card = FilterDataCard()
+        card.set_dataset([self.structure, self.structure.copy()])
+        card.result_dataset = [self.structure.copy()]
+        card._last_elapsed_seconds = 0.006
+
+        card.update_dataset_info()
+
+        self.assertEqual(card.status_label.text(), "Input: 2 -> Output: 1 | Time: 0.01 s")
 
     def test_operation_cards_write_only_params(self):
         for class_name, card_cls in CardManager.card_info_dict.items():

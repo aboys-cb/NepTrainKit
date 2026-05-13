@@ -69,9 +69,11 @@ class DataProcessingThread(QThread):
         self.process_func = process_func
         self.params = params
         self.result_dataset = []
+        self.elapsed_seconds = 0.0
         self.setStackSize(8 * 1024 * 1024)
 
     def run(self):
+        start = time.perf_counter()
         try:
             total = len(self.dataset)
             self.progressSignal.emit(0)
@@ -86,8 +88,10 @@ class DataProcessingThread(QThread):
                     processed = [ase_sort(s) for s in processed]
                 self.result_dataset.extend(processed)
                 self.progressSignal.emit(int((index + 1) / total * 100))
+            self.elapsed_seconds = time.perf_counter() - start
             self.finishSignal.emit()
         except Exception as e:  # noqa: BLE001
+            self.elapsed_seconds = time.perf_counter() - start
             logger.debug(traceback.format_exc())
             self.errorSignal.emit(str(e))
 
@@ -105,8 +109,10 @@ class FilterProcessingThread(QThread):
         self.operation = operation
         self.params = params
         self.result_dataset = []
+        self.elapsed_seconds = 0.0
 
     def run(self):
+        start = time.perf_counter()
         try:
             self.progressSignal.emit(0)
             if isinstance(self.operation, DatasetOperation):
@@ -118,8 +124,10 @@ class FilterProcessingThread(QThread):
                 if result is not None:
                     self.result_dataset = result
             self.progressSignal.emit(100)
+            self.elapsed_seconds = time.perf_counter() - start
             self.finishSignal.emit()
         except Exception as e:  # noqa: BLE001
+            self.elapsed_seconds = time.perf_counter() - start
             logger.debug(traceback.format_exc())
             self.errorSignal.emit(str(e))
 

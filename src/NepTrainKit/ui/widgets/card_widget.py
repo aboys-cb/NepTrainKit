@@ -377,6 +377,7 @@ class MakeDataCard(MakeDataCardWidget):
         self.exportSignal.connect(self.export_data)
         self.dataset: Any = None
         self.result_dataset = []
+        self._last_elapsed_seconds: float | None = None
         self.index = 0
         self.setting_widget = QWidget(self)
         self.viewLayout.setContentsMargins(3, 6, 3, 6)
@@ -405,6 +406,7 @@ class MakeDataCard(MakeDataCardWidget):
         """
         self.dataset = dataset
         self.result_dataset = []
+        self._last_elapsed_seconds = None
 
         self.update_dataset_info()
 
@@ -482,6 +484,7 @@ class MakeDataCard(MakeDataCardWidget):
             if self.worker_thread.isRunning():
                 self.worker_thread.terminate()
                 self.result_dataset = self.worker_thread.result_dataset
+                self._last_elapsed_seconds = None
                 self.update_dataset_info()
                 del self.worker_thread
 
@@ -518,6 +521,7 @@ class MakeDataCard(MakeDataCardWidget):
             self.worker_thread.start()
         else:
             self.result_dataset = self.dataset
+            self._last_elapsed_seconds = 0.0
             self.update_dataset_info()
             self.runFinishedSignal.emit(self.index)
 
@@ -535,6 +539,7 @@ class MakeDataCard(MakeDataCardWidget):
     def on_processing_finished(self):
         """Handle a successful run and emit the completion signal."""
         self.result_dataset = self.worker_thread.result_dataset
+        self._last_elapsed_seconds = self.worker_thread.elapsed_seconds
         self.update_dataset_info()
         self.status_label.set_colors(["#a5d6a7"])
         self.runFinishedSignal.emit(self.index)
@@ -552,6 +557,7 @@ class MakeDataCard(MakeDataCardWidget):
 
         self.status_label.set_colors(["red"])
         self.result_dataset = self.worker_thread.result_dataset
+        self._last_elapsed_seconds = getattr(self.worker_thread, "elapsed_seconds", None)
         del self.worker_thread
         self.update_dataset_info()
         self.runFinishedSignal.emit(self.index)
@@ -560,8 +566,14 @@ class MakeDataCard(MakeDataCardWidget):
 
     def update_dataset_info(self):
         """Display dataset statistics in the status label."""
-        text = f"Input structures: {len(self.dataset)} -> Output: {len(self.result_dataset)}"
-        self.status_label.setText(text)
+        self.status_label.setText(self._format_dataset_info())
+
+    def _format_dataset_info(self) -> str:
+        """Return the compact input/output/time summary shown below the card."""
+        text = f"Input: {len(self.dataset)} -> Output: {len(self.result_dataset)}"
+        if self._last_elapsed_seconds is not None:
+            text = f"{text} | Time: {self._last_elapsed_seconds:.2f} s"
+        return text
 
 
 class FilterDataCard(MakeDataCard):
@@ -578,6 +590,7 @@ class FilterDataCard(MakeDataCard):
             if self.worker_thread.isRunning():
                 self.worker_thread.terminate()
                 self.result_dataset = []
+                self._last_elapsed_seconds = None
                 self.update_dataset_info()
                 del self.worker_thread
 
@@ -590,6 +603,7 @@ class FilterDataCard(MakeDataCard):
         """Refresh status once filtering completes."""
         if hasattr(self, "worker_thread"):
             self.result_dataset = self.worker_thread.result_dataset
+            self._last_elapsed_seconds = self.worker_thread.elapsed_seconds
         self.update_dataset_info()
         self.status_label.set_colors(["#a5d6a7"])
         self.runFinishedSignal.emit(self.index)
@@ -608,6 +622,7 @@ class FilterDataCard(MakeDataCard):
 
         self.status_label.set_colors(["red"])
 
+        self._last_elapsed_seconds = getattr(self.worker_thread, "elapsed_seconds", None)
         del self.worker_thread
         self.update_dataset_info()
         self.runFinishedSignal.emit(self.index)
@@ -616,8 +631,7 @@ class FilterDataCard(MakeDataCard):
 
     def update_dataset_info(self):
         """Display the number of structures kept by the filter."""
-        text = f"Input structures: {len(self.dataset)} -> Selected: {len(self.result_dataset)}"
-        self.status_label.setText(text)
+        self.status_label.setText(self._format_dataset_info())
 
 
 

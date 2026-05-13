@@ -348,7 +348,7 @@ class LocalSolvationOperation(StructureOperation):
         if mode == "ion-water" and center_symbol in ION_ELEMENTS and solvent.water_like:
             ion_profile = ION_WATER_PROFILES.get(center_symbol, DEFAULT_ION_WATER_PROFILE)
             if ion_counts.get(center_index, 0) >= int(ion_profile["coordination"]):
-                inner, outer = ion_profile["first_shell_com"]
+                inner, outer = shell
             else:
                 inner, outer = ion_profile["ion_o"]
                 direction = random_unit_vector(rng)

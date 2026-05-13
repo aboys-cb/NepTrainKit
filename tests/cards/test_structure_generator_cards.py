@@ -241,6 +241,30 @@ class TestStructureGeneratorCards(BaseCardTest):
                 distance = float(np.linalg.norm(positions[i] - positions[j]))
                 self.assertGreaterEqual(distance + 1e-12, min_distance)
 
+    def test_local_solvation_ion_water_uses_shell_after_first_coordination(self):
+        structure = Atoms(
+            symbols=["Ca"],
+            positions=[[0.0, 0.0, 0.0]],
+            pbc=False,
+        )
+        result = LocalSolvationOperation().run_structure(
+            structure,
+            LocalSolvationParams(
+                solvent_count=50,
+                sampling_mode="auto",
+                center_mode="all",
+                shell=(0.0, 5.0),
+                collision_scale=0.72,
+                max_attempts=10000,
+                use_seed=True,
+                seed=1,
+            ),
+        )[0]
+
+        self.assertEqual(result.get_chemical_symbols().count("O"), 50)
+        self.assertEqual(result.get_chemical_symbols().count("H"), 100)
+        self.assertIn("SolvLocal(mode=ion-water,n=50,sel=1)", result.info.get("Config_type", ""))
+
     def test_local_solvation_z_range_uses_selected_center_region(self):
         structure = Atoms(
             symbols=["Ca", "Ca"],

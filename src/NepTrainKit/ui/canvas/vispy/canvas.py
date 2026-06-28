@@ -24,7 +24,7 @@ class ViewBoxWidget(scene.Widget):
 
     """Composite widget combining axes, scatter visuals, and overlays for a single subplot.
     """
-    def __init__(self, title, *args, **kwargs):
+    def __init__(self, title, full_detail: bool = False, *args, **kwargs):
         """Initialise the widget layout, axes, and default visuals.
         
         Parameters
@@ -46,29 +46,6 @@ class ViewBoxWidget(scene.Widget):
         self.title_label.height_max = 30
         self.grid.add_widget(self.title_label, row=0, col=0, col_span=3)
 
-        self.yaxis = scene.AxisWidget(orientation='left',
-                                 axis_width=1,
-                                 # axis_label='Y Axis',
-                                 # axis_font_size=12,
-                                 # axis_label_margin=10,
-                                 tick_label_margin=5,
-                                 axis_color="black",
-                                 text_color="black"
-                                 )
-        self.yaxis.width_max = 50
-        self.grid.add_widget(self.yaxis, row=1, col=0)
-
-        self.xaxis = scene.AxisWidget(orientation='bottom',
-                                 axis_width=1,
-                                 tick_label_margin=10,
-                                 axis_color="black",
-                                 text_color="black"
-
-                                 )
-
-        self.xaxis.height_max = 30
-        self.grid.add_widget(self.xaxis, row=2, col=1)
-
         right_padding = self.grid.add_widget(row=1, col=2, row_span=1)
         right_padding.width_max = 5
         self._view = self.grid.add_view(row=1, col=1,  )
@@ -76,11 +53,13 @@ class ViewBoxWidget(scene.Widget):
         self._view.camera = scene.cameras.PanZoomCamera()
         self._view.camera.interactive = False
 
-        self.xaxis.link_view(self._view)
-        self.yaxis.link_view(self._view)
-
-        self.text=  scene.Text('', parent=self._view.scene, color='red',anchor_x="left", anchor_y="top" )
-        self.text.font_size = 8
+        self.xaxis = None
+        self.yaxis = None
+        self.text = None
+        self._x_label = ""
+        self._y_label = ""
+        self._rmse_text = ""
+        self._full_detail = False
 
 
         self.data=np.array([])
@@ -104,7 +83,68 @@ class ViewBoxWidget(scene.Widget):
 
         self._diagonal=None
         self.current_point=None
+        self._layout_attached = False
+        if full_detail:
+            self.set_full_detail(True)
         self.freeze()
+
+    def set_full_detail(self, enabled: bool):
+        """Toggle full plot controls for the active main plot."""
+        if enabled and self.xaxis is None:
+            self.xaxis = scene.AxisWidget(
+                orientation='bottom',
+                axis_width=1,
+                tick_label_margin=10,
+                axis_color="black",
+                text_color="black",
+            )
+            self.xaxis.height_max = 30
+            self.grid.add_widget(self.xaxis, row=2, col=1)
+
+            self.yaxis = scene.AxisWidget(
+                orientation='left',
+                axis_width=1,
+                tick_label_margin=5,
+                axis_color="black",
+                text_color="black",
+            )
+            self.yaxis.width_max = 50
+            self.grid.add_widget(self.yaxis, row=1, col=0)
+
+            self.xaxis.link_view(self._view)
+            self.yaxis.link_view(self._view)
+
+            self.text = scene.Text('', parent=self._view.scene, color='red', anchor_x="left", anchor_y="top")
+            self.text.font_size = 8
+            self.set_axis_labels(self._x_label, self._y_label)
+            self.set_rmse_text(self._rmse_text)
+
+        if self.xaxis is not None:
+            self.xaxis.visible = enabled
+            self.xaxis.height_max = 30 if enabled else 0
+        if self.yaxis is not None:
+            self.yaxis.visible = enabled
+            self.yaxis.width_max = 50 if enabled else 0
+        if self.text is not None:
+            self.text.visible = enabled
+        self._full_detail = bool(enabled)
+        if enabled and self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:
+            self.add_diagonal(color="red", width=3, antialias=True, method='gl')
+
+    def set_axis_labels(self, x_label=None, y_label=None):
+        """Store and apply axis labels when full controls exist."""
+        self._x_label = str(x_label or "")
+        self._y_label = str(y_label or "")
+        if self.xaxis is not None:
+            self.xaxis.axis.axis_label = self._x_label
+        if self.yaxis is not None:
+            self.yaxis.axis.axis_label = self._y_label
+
+    def set_rmse_text(self, text: str):
+        """Store and apply the RMSE annotation."""
+        self._rmse_text = str(text or "")
+        if self.text is not None:
+            self.text.text = self._rmse_text
 
 
 
@@ -301,6 +341,8 @@ class ViewBoxWidget(scene.Widget):
         **kwargs : dict
             Styling arguments forwarded to :meth:`line`.
         """
+        if self.xaxis is None:
+            return
         x_domain = self.xaxis.axis.domain
         line_data = np.linspace(*x_domain,num=100)
         self._diagonal=self.line(line_data,line_data,**kwargs)
@@ -310,6 +352,8 @@ class ViewBoxWidget(scene.Widget):
         """Update the parity diagonal to match the latest axis domain.
         """
         if self._diagonal is None:
+            return None
+        if self.xaxis is None:
             return None
 
         x_domain = self.xaxis.axis.domain
@@ -423,6 +467,8 @@ class ViewBoxWidget(scene.Widget):
         int
             Font size in points.
         """
+        if self.text is None:
+            return 0
         return self.text.font_size
     @rmse_size.setter
     def rmse_size(self,size):
@@ -434,7 +480,8 @@ class ViewBoxWidget(scene.Widget):
         size : int
             Font size in points.
         """
-        self.text.font_size=size
+        if self.text is not None:
+            self.text.font_size=size
     @title.setter
     def title(self, t):
 
@@ -448,7 +495,7 @@ class ViewBoxWidget(scene.Widget):
         if t==self.title:
             return
         self.title_label._text_visual.text = t
-        if self.parity_mode and t != "descriptor":
+        if self.xaxis is not None and self.parity_mode and t != "descriptor" and self._diagonal is None:
             self.add_diagonal(color="red", width=3, antialias=True, method='gl')
 class CombinedMeta(type(VispyCanvasLayoutBase), type(scene.SceneCanvas) ):
     """Metaclass bridging ``VispyCanvasLayoutBase`` with ``SceneCanvas`` inheritance.
@@ -500,7 +547,14 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         for widget in self.axes_list:
             widget._stretch = (None, None)
             widget.parent=None
-            self.grid.remove_widget(widget)
+            if getattr(widget, "_layout_attached", False):
+                self.grid.remove_widget(widget)
+                widget._layout_attached = False
+        self._selected_by_plot.clear()
+        self._show_by_plot.clear()
+        self._loaded_by_plot.clear()
+        self._reject_by_plot.clear()
+        self.current_axes = None
 
         super().clear_axes()
 
@@ -713,6 +767,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if self.current_axes != axes:
             self.set_current_axes(axes)
             self.set_view_layout()
+            self._refresh_current_axes_annotations()
 
     def init_axes(self,axes_num   ):
         """Create the requested number of axes widgets.
@@ -724,8 +779,10 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         """
         self.clear_axes()
         for r in range(axes_num):
-            plot = ViewBoxWidget(title="")
+            plot = ViewBoxWidget(title="", full_detail=(r == 0))
             self.axes_list.append(plot)
+        if self.axes_list:
+            self.current_axes = self.axes_list[0]
         self.set_view_layout()
         self.update()
 
@@ -742,15 +799,23 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         row_0_col_span = max(1, len(self.axes_list) - 1)
         for widget in self.axes_list:
             widget._stretch = (None, None)
-            self.grid.remove_widget(widget)
+            if getattr(widget, "_layout_attached", False):
+                self.grid.remove_widget(widget)
+                widget._layout_attached = False
 
             if widget == self.current_axes:
+                if hasattr(widget, "set_full_detail"):
+                    widget.set_full_detail(True)
                 widget.rmse_size=8
                 self.grid.add_widget(widget, row=0, col=0, row_span=6, col_span=row_0_col_span)
+                widget._layout_attached = True
             else:
+                if hasattr(widget, "set_full_detail"):
+                    widget.set_full_detail(False)
                 widget.rmse_size=4
 
                 self.grid.add_widget(widget, row=6, col=i, row_span=2, col_span=1)
+                widget._layout_attached = True
 
                 i += 1
 
@@ -844,26 +909,40 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             else:
                 plot.set_current_point([], [])
 
-            if bool(getattr(_dataset, "show_rmse", _dataset.title not in ["descriptor"])):
-            #
+            show_rmse = bool(getattr(_dataset, "show_rmse", _dataset.title not in ["descriptor"]))
+            rmse_text = f"rmse: {_dataset.get_formart_rmse()}" if show_rmse else ""
+            plot.set_rmse_text(rmse_text if plot is self.current_axes else "")
+            if show_rmse and plot is self.current_axes:
                 pos=self.convert_pos(plot,(0.1 ,0.8))
-                text=f"rmse: {_dataset.get_formart_rmse()}"
-                plot.text.text=text
-                plot.text.pos=pos
+                if plot.text is not None:
+                    plot.text.pos=pos
             else:
-                plot.text.text = ""
+                plot.set_rmse_text("")
 
             x_label = getattr(_dataset, "x_label", None)
             y_label = getattr(_dataset, "y_label", None)
-            if x_label:
-                plot.xaxis.axis.axis_label = str(x_label)
-            if y_label:
-                plot.yaxis.axis.axis_label = str(y_label)
+            plot.set_axis_labels(x_label, y_label)
 
         # Restore reject highlights after a full replot.
         reject = getattr(self.nep_result_data, "reject_index", None)
         if reject:
             self.set_reject_highlight(list(reject), True)
+
+    def _refresh_current_axes_annotations(self):
+        """Refresh labels and RMSE text after promoting a thumbnail to the main plot."""
+        plot = self.current_axes
+        dataset = self.get_axes_dataset(plot)
+        if plot is None or dataset is None:
+            return
+
+        plot.set_axis_labels(getattr(dataset, "x_label", None), getattr(dataset, "y_label", None))
+        if bool(getattr(dataset, "show_rmse", dataset.title not in ["descriptor"])):
+            plot.set_rmse_text(f"rmse: {dataset.get_formart_rmse()}")
+            plot.auto_range()
+            if plot.text is not None:
+                plot.text.pos = self.convert_pos(plot, (0.1, 0.8))
+        else:
+            plot.set_rmse_text("")
 
     def convert_pos(self,plot,pos):
         """Convert a relative position tuple to view coordinates.

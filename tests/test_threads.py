@@ -1,13 +1,14 @@
 import threading
 import time
 
-from PySide6.QtCore import QCoreApplication, QObject, QThread
+from PySide6.QtCore import QObject, QThread
+from PySide6.QtWidgets import QApplication
 
-from NepTrainKit.ui.threads import run_in_thread
+from NepTrainKit.ui.threads import LoadingThread, run_in_thread
 
 
 def _wait_until(predicate, timeout: float = 3.0) -> bool:
-    app = QCoreApplication.instance() or QCoreApplication([])
+    app = QApplication.instance() or QApplication([])
     deadline = time.time() + timeout
     while time.time() < deadline:
         app.processEvents()
@@ -18,8 +19,13 @@ def _wait_until(predicate, timeout: float = 3.0) -> bool:
     return bool(predicate())
 
 
+def test_loading_thread_uses_larger_stack_for_numpy_workers():
+    thread = LoadingThread(show_tip=False)
+    assert thread.stackSize() >= 8 * 1024 * 1024
+
+
 def test_run_in_thread_finished_callback_runs_on_parent_thread():
-    app = QCoreApplication.instance() or QCoreApplication([])
+    app = QApplication.instance() or QApplication([])
     parent = QObject()
     main_thread = parent.thread()
     main_ident = threading.get_ident()
@@ -44,7 +50,7 @@ def test_run_in_thread_finished_callback_runs_on_parent_thread():
 
 
 def test_run_in_thread_error_callback_runs_on_parent_thread():
-    app = QCoreApplication.instance() or QCoreApplication([])
+    app = QApplication.instance() or QApplication([])
     parent = QObject()
     main_thread = parent.thread()
     main_ident = threading.get_ident()

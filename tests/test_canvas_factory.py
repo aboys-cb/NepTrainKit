@@ -138,6 +138,20 @@ class TestCanvasFactory(unittest.TestCase):
 
         canvas.grid.add_widget.assert_called_once_with(plot, row=0, col=0, row_span=6, col_span=1)
 
+    def test_vispy_init_axes_keeps_thumbnails_compact_until_selected(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+
+        canvas.init_axes(3)
+
+        self.assertIsNotNone(canvas.axes_list[0].xaxis)
+        self.assertIsNone(canvas.axes_list[1].xaxis)
+        self.assertIsNone(canvas.axes_list[2].xaxis)
+
+        canvas.set_current_axes(canvas.axes_list[2])
+
+        self.assertIsNotNone(canvas.axes_list[2].xaxis)
+        self.assertFalse(canvas.axes_list[0].xaxis.visible)
+
     def test_pyqtgraph_set_view_layout_single_axis_does_not_reserve_subplot_space(self):
         canvas = canvas_factory._create_pyqtgraph_result_canvas(None)
         plot = SimpleNamespace(rmse_size=None)

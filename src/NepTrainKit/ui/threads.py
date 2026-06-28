@@ -20,6 +20,7 @@ class LoadingThread(QThread):
 
     def __init__(self, parent=None, show_tip=True, title='running'):
         super(LoadingThread, self).__init__(parent)
+        self.setStackSize(8 * 1024 * 1024)
         self.show_tip = show_tip
         self.title = title
         self._parent = parent
@@ -222,4 +223,3 @@ __all__ = [
     'FunctionWorker',
     'run_in_thread',
 ]
-

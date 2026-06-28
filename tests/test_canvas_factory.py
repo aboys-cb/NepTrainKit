@@ -568,6 +568,34 @@ class TestCanvasFactory(unittest.TestCase):
         overlay = plot._overlays["selected"].positions
         np.testing.assert_array_equal(overlay[:, :2], np.array([[2.0, 3.0], [3.0, 4.0]], dtype=np.float32))
 
+    def test_vispy_plot_nep_result_prewarms_overlay_position_cache(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        dataset = NepPlotData(
+            np.array(
+                [
+                    [0.0, 0.1],
+                    [1.0, 1.1],
+                    [2.0, 2.1],
+                    [3.0, 3.1],
+                ],
+                dtype=np.float32,
+            ),
+            index_list=np.arange(4, dtype=np.int32),
+            title="energy",
+        )
+        dataset.show_rmse = False
+        dataset.x_label = "x"
+        dataset.y_label = "y"
+        canvas.nep_result_data = SimpleNamespace(datasets=[dataset], select_index=set(), reject_index=set())
+
+        canvas.plot_nep_result()
+
+        signature = canvas._overlay_cache_signature(dataset)
+        self.assertIn(signature, canvas._overlay_position_cache)
+        self.assertIn("selected", canvas.axes_list[0]._overlays)
+        self.assertFalse(canvas.axes_list[0]._overlays["selected"].visible)
+
     def test_vispy_overlay_cache_handles_atom_level_mforce_components(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
         row_groups = np.array([0, 0, 1, 2, 2, 2], dtype=np.int32)
@@ -600,6 +628,26 @@ class TestCanvasFactory(unittest.TestCase):
 
         self.assertEqual(signature_1, signature_2)
         self.assertIs(lookup_1, lookup_2)
+
+    def test_vispy_polygon_selection_prefilters_candidates_by_bounds(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        canvas.current_axes = canvas.axes_list[0]
+        x = np.array([0.0, 0.2, 0.8, 5.0, 6.0], dtype=np.float32)
+        y = np.array([0.0, 0.2, 0.8, 5.0, 6.0], dtype=np.float32)
+        structure_index = np.arange(5, dtype=np.int32)
+        dataset = SimpleNamespace(x=x, y=y, structure_index=structure_index)
+        canvas.nep_result_data = SimpleNamespace(datasets=[dataset], select_index=set())
+        polygon = np.array([[-0.1, -0.1], [1.0, -0.1], [1.0, 1.0], [-0.1, 1.0]], dtype=np.float32)
+
+        def inside(points, _polygon):
+            self.assertEqual(points.shape[0], 3)
+            return np.array([True, False, True])
+
+        with patch.object(canvas, "is_point_in_polygon", side_effect=inside), patch.object(canvas, "select_index") as select_index:
+            canvas.select_point_from_polygon(polygon, False)
+
+        select_index.assert_called_once_with([0, 2], False)
 
     def test_vispy_structure_plot_reuses_static_visuals(self):
         plot = canvas_factory._create_vispy_structure_plot(None)

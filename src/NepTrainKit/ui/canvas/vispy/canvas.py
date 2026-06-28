@@ -1466,6 +1466,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         reject = getattr(self.nep_result_data, "reject_index", None)
         if reject:
             self.set_reject_highlight(list(reject), True)
+        self.prewarm_overlay_position_cache()
 
     def _refresh_current_axes_annotations(self):
         """Refresh labels and RMSE text after promoting a thumbnail to the main plot."""
@@ -1632,6 +1633,36 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             ms=f"{_elapsed_ms(t0):.3f}",
         )
         return lookup
+
+    def prewarm_overlay_position_cache(self):
+        if self.nep_result_data is None:
+            return
+
+        total_t0 = time.perf_counter()
+        warmed = 0
+        overlay_size = Config.getint("widget", "vispy_marker_size", 6) or 6
+        empty = np.empty((0, 2), dtype=np.float32)
+        for plot in self.axes_list:
+            dataset = self.get_axes_dataset(plot)
+            if dataset is None:
+                continue
+            t0 = time.perf_counter()
+            self._overlay_position_lookup(dataset)
+            if getattr(plot, "_scatter", None):
+                plot.set_overlay_positions("loaded", empty, color=Brushes.LoadedOverlay, size=overlay_size)
+                plot.set_overlay_positions("show", empty, color=Brushes.Show, size=overlay_size)
+                plot.set_overlay_positions("selected", empty, color=Brushes.Selected, size=overlay_size)
+            warmed += 1
+            _vispy_perf_log(
+                "overlay.cache_prewarm_plot",
+                title=getattr(dataset, "title", ""),
+                ms=f"{_elapsed_ms(t0):.3f}",
+            )
+        _vispy_perf_log(
+            "overlay.cache_prewarm",
+            plots=warmed,
+            total_ms=f"{_elapsed_ms(total_t0):.3f}",
+        )
 
     def _overlay_positions_for_indices(self, dataset, indices:set[int]):
         if not indices:
@@ -1943,8 +1974,35 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             )
             return
         mask_t0 = time.perf_counter()
-        mask = x > -10000
+        polygon_xy = np.asarray(polygon_xy)
+        px = polygon_xy[:, 0]
+        py = polygon_xy[:, 1]
+        xmin = np.min(px)
+        xmax = np.max(px)
+        ymin = np.min(py)
+        ymax = np.max(py)
+        mask = (x > -10000) & (x >= xmin) & (x <= xmax) & (y >= ymin) & (y <= ymax)
         mask_ms = _elapsed_ms(mask_t0)
+        if not np.any(mask):
+            apply_t0 = time.perf_counter()
+            self.select_index([], reverse)
+            apply_ms = _elapsed_ms(apply_t0)
+            _vispy_perf_log(
+                "polygon.select",
+                points=int(x.size),
+                candidates=0,
+                vertices=int(polygon_xy.shape[0]),
+                selected=0,
+                reverse=bool(reverse),
+                arrays_ms=f"{arrays_ms:.3f}",
+                mask_ms=f"{mask_ms:.3f}",
+                stack_ms="0.000",
+                pip_ms="0.000",
+                unique_ms="0.000",
+                apply_ms=f"{apply_ms:.3f}",
+                total_ms=f"{_elapsed_ms(total_t0):.3f}",
+            )
+            return
         stack_t0 = time.perf_counter()
         points = np.column_stack([x[mask], y[mask]])
         stack_ms = _elapsed_ms(stack_t0)
@@ -1959,8 +2017,9 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         apply_ms = _elapsed_ms(apply_t0)
         _vispy_perf_log(
             "polygon.select",
-            points=int(points.shape[0]),
-            vertices=int(np.asarray(polygon_xy).shape[0]),
+            points=int(x.size),
+            candidates=int(points.shape[0]),
+            vertices=int(polygon_xy.shape[0]),
             selected=len(select_index),
             reverse=bool(reverse),
             arrays_ms=f"{arrays_ms:.3f}",

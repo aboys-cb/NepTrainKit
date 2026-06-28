@@ -33,13 +33,13 @@ uniform float u_edge_width;
 
 void main(void) {
     vec2 p = gl_PointCoord.xy - vec2(0.5, 0.5);
-    float r = length(p);
-    if (r > 0.5) {
+    float r2 = dot(p, p);
+    if (r2 > 0.25) {
         discard;
     }
     float point_size = max(1.0, u_size * u_pixel_scale);
     float edge_start = max(0.0, 0.5 - u_edge_width / point_size);
-    if (r >= edge_start) {
+    if (r2 >= edge_start * edge_start) {
         gl_FragColor = u_edge_color;
     } else {
         if (u_face_color.a <= 0.0) {

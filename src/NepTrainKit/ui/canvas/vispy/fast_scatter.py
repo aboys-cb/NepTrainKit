@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import os
+import time
+
 import numpy as np
+from loguru import logger
 from vispy import gloo
 from vispy.scene.visuals import create_visual_node
 from vispy.visuals import Visual
@@ -45,6 +49,17 @@ void main(void) {
     }
 }
 """
+
+
+def _perf_enabled():
+    return os.environ.get("NEPKIT_VISPY_PERF", "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _perf_log(message, **values):
+    if not _perf_enabled():
+        return
+    payload = " ".join(f"{key}={value}" for key, value in values.items())
+    logger.debug(f"[vispy-perf] {message} {payload}".rstrip())
 
 
 class FastScatterVisual(Visual):
@@ -93,6 +108,7 @@ class FastScatterVisual(Visual):
         symbol=None,
         **_kwargs,
     ):
+        t0 = time.perf_counter()
         if pos is None:
             pos = np.empty((0, 2), dtype=np.float32)
         pos = np.asarray(pos, dtype=np.float32)
@@ -106,15 +122,29 @@ class FastScatterVisual(Visual):
         self._pos_changed = True
         self._style_changed = True
         self.update()
+        _perf_log(
+            "fastscatter.set_data",
+            points=self._pos.shape[0],
+            dtype=str(self._pos.dtype),
+            ms=f"{(time.perf_counter() - t0) * 1000:.3f}",
+        )
 
     def set_indices(self, indices=None):
+        t0 = time.perf_counter()
         if indices is None:
             self._index_buffer_obj = None
+            count = 0
         else:
             indices = np.asarray(indices, dtype=np.uint32)
             self._index_buffer_obj = gloo.IndexBuffer(np.ascontiguousarray(indices))
+            count = int(indices.size)
         self._index_buffer = self._index_buffer_obj
         self.update()
+        _perf_log(
+            "fastscatter.set_indices",
+            indices=count,
+            ms=f"{(time.perf_counter() - t0) * 1000:.3f}",
+        )
 
     def _prepare_transforms(self, view):
         view.view_program.vert["transform"] = view.transforms.get_transform()
@@ -122,18 +152,34 @@ class FastScatterVisual(Visual):
     def _prepare_draw(self, view=None):
         if self._pos.size == 0:
             return False
+        total_t0 = time.perf_counter()
+        upload_ms = 0.0
+        style_ms = 0.0
         if self._pos_changed:
+            t0 = time.perf_counter()
             self._pos_vbo.set_data(self._pos)
             self.shared_program["a_position"] = self._pos_vbo
             self._pos_changed = False
+            upload_ms = (time.perf_counter() - t0) * 1000
         if self._style_changed:
+            t0 = time.perf_counter()
             self.shared_program["u_face_color"] = self._face_color
             self.shared_program["u_edge_color"] = self._edge_color
             self.shared_program["u_size"] = self._size
             self.shared_program["u_edge_width"] = self._edge_width
             self._style_changed = False
+            style_ms = (time.perf_counter() - t0) * 1000
         self.shared_program["u_pixel_scale"] = self.transforms.pixel_scale
         self._index_buffer = self._index_buffer_obj
+        if upload_ms > 0.0 or style_ms > 0.0:
+            _perf_log(
+                "fastscatter.prepare_draw",
+                points=self._pos.shape[0],
+                indices=0 if self._index_buffer_obj is None else "active",
+                upload_ms=f"{upload_ms:.3f}",
+                style_ms=f"{style_ms:.3f}",
+                total_ms=f"{(time.perf_counter() - total_t0) * 1000:.3f}",
+            )
         return True
 
     def _compute_bounds(self, axis, view):

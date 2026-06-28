@@ -7,10 +7,12 @@ os.environ["VISPY_IGNORE_OLD_VERSION"] = "true"
 # os.environ["VISPY_PYQT5_SHARE_CONTEXT"] = "true"
 
 import numpy as np
+import time
 
 from PySide6.QtCore import QPointF, Qt
 from PySide6.QtGui import QBrush, QColor, QPainter, QPen
 from PySide6.QtWidgets import QWidget
+from loguru import logger
 from vispy import scene
 
 from vispy.visuals.filters import MarkerPickingFilter
@@ -25,6 +27,21 @@ from NepTrainKit.core.types import Brushes, Pens, VispyThumbnailMode, parse_visp
 VISPY_THUMBNAIL_POINT_LIMIT = 50000
 VISPY_THUMBNAIL_OUTLIER_FRACTION = 0.2
 VISPY_THUMBNAIL_MODE_DEFAULT = VispyThumbnailMode.FAST.value
+
+
+def _vispy_perf_enabled():
+    return os.environ.get("NEPKIT_VISPY_PERF", "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _vispy_perf_log(message, **values):
+    if not _vispy_perf_enabled():
+        return
+    payload = " ".join(f"{key}={value}" for key, value in values.items())
+    logger.debug(f"[vispy-perf] {message} {payload}".rstrip())
+
+
+def _elapsed_ms(start):
+    return (time.perf_counter() - start) * 1000
 
 
 class _LassoOverlay(QWidget):
@@ -523,7 +540,10 @@ class ViewBoxWidget(scene.Widget):
         """
         if name in self._overlays and self._overlays[name] is not None:
             return self._overlays[name]
-        ov = scene.visuals.Markers(antialias=1)
+        if symbol == 'o':
+            ov = FastScatter()
+        else:
+            ov = scene.visuals.Markers(antialias=1)
         order_map = {
             "loaded": 4,
             "show": 4,
@@ -533,8 +553,8 @@ class ViewBoxWidget(scene.Widget):
         ov.order = order_map.get(name, 4)  # above base scatter and diagonal
         # keep same scene/camera
         self._view.add(ov)
-        # overlays are 2D; no need for depth test
-        ov.update_gl_state(depth_test=False)
+        if hasattr(ov, "update_gl_state"):
+            ov.update_gl_state(depth_test=False)
         # initialize with empty data and hide from bounds
         ov.set_data(np.empty((0, 2), dtype=np.float32), face_color=self.convert_color(color), edge_width=0, symbol=symbol, size=size)
         ov.visible = False
@@ -664,6 +684,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         self._show_by_plot = {}
         self._loaded_by_plot = {}
         self._reject_by_plot = {}
+        self._overlay_position_cache = {}
 
 
         self.grid = self.central_widget.add_grid(margin=0, spacing=0)
@@ -676,6 +697,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         self._lasso_overlay.show()
         self._lasso_overlay.raise_()
         self._lasso_screen_path = []
+        self._lasso_perf = None
         self.events.resize.connect(lambda _event: self._sync_lasso_overlay_geometry())
         # Use filters to affect the rendering of the mesh.
 
@@ -692,6 +714,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         self._show_by_plot.clear()
         self._loaded_by_plot.clear()
         self._reject_by_plot.clear()
+        self._overlay_position_cache.clear()
         self.current_axes = None
 
         super().clear_axes()
@@ -834,11 +857,30 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if event.button == 1 or event.button ==2:
             if self.draw_mode:
 
+                event_t0 = time.perf_counter()
+                transform_t0 = time.perf_counter()
                 tr = self.scene.node_transform(self.current_axes.view.scene)
                 x, y, _, _ = tr.map(event.pos)
+                transform_ms = _elapsed_ms(transform_t0)
                 self.mouse_path = [[x, y]]
                 self._lasso_screen_path = [tuple(event.pos)]
+                overlay_t0 = time.perf_counter()
                 self._begin_lasso_overlay(event.pos)
+                overlay_ms = _elapsed_ms(overlay_t0)
+                self._lasso_perf = {
+                    "start": event_t0,
+                    "moves": 0,
+                    "move_ms": 0.0,
+                    "max_move_ms": 0.0,
+                    "transform_ms": transform_ms,
+                    "overlay_ms": overlay_ms,
+                }
+                _vispy_perf_log(
+                    "lasso.press",
+                    transform_ms=f"{transform_ms:.3f}",
+                    overlay_ms=f"{overlay_ms:.3f}",
+                    total_ms=f"{_elapsed_ms(event_t0):.3f}",
+                )
 
 
     def on_mouse_move(self, event):
@@ -853,12 +895,32 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if not self.draw_mode:
             return
         if (event.button == 1 or event.button ==2) and len(self.mouse_path) > 0:
+            event_t0 = time.perf_counter()
+            transform_t0 = time.perf_counter()
             tr = self.scene.node_transform(self.current_axes.view.scene)
             x, y, _, _ = tr.map(event.pos)
+            transform_ms = _elapsed_ms(transform_t0)
 
             self.mouse_path.append([x,y])
             self._lasso_screen_path.append(tuple(event.pos))
+            overlay_t0 = time.perf_counter()
             self._append_lasso_overlay_point(event.pos)
+            overlay_ms = _elapsed_ms(overlay_t0)
+            total_ms = _elapsed_ms(event_t0)
+            if self._lasso_perf is not None:
+                self._lasso_perf["moves"] += 1
+                self._lasso_perf["move_ms"] += total_ms
+                self._lasso_perf["max_move_ms"] = max(self._lasso_perf["max_move_ms"], total_ms)
+                self._lasso_perf["transform_ms"] += transform_ms
+                self._lasso_perf["overlay_ms"] += overlay_ms
+            if total_ms >= 8.0:
+                _vispy_perf_log(
+                    "lasso.move_slow",
+                    points=len(self.mouse_path),
+                    transform_ms=f"{transform_ms:.3f}",
+                    overlay_ms=f"{overlay_ms:.3f}",
+                    total_ms=f"{total_ms:.3f}",
+                )
 
     def on_mouse_release(self, event):
         """Complete selection interactions when the mouse button is released.
@@ -871,20 +933,44 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if not self.draw_mode:
             return
         if event.button == 1 or event.button ==2:
+            event_t0 = time.perf_counter()
             reverse=event.button == 2
 
+            clear_t0 = time.perf_counter()
             self._clear_lasso_overlay()
+            clear_ms = _elapsed_ms(clear_t0)
+            select_ms = 0.0
 
             if len(self.mouse_path)>2:
 
+                select_t0 = time.perf_counter()
                 self.select_point_from_polygon(np.array(self.mouse_path),reverse)
+                select_ms = _elapsed_ms(select_t0)
             else:
+                select_t0 = time.perf_counter()
                 structure_index = self.structure_at(event.pos, self.current_axes)
                 if structure_index is not None:
                     self.select_index(structure_index,reverse)
+                select_ms = _elapsed_ms(select_t0)
 
+            perf = self._lasso_perf or {}
+            moves = int(perf.get("moves", 0) or 0)
+            move_ms = float(perf.get("move_ms", 0.0) or 0.0)
+            _vispy_perf_log(
+                "lasso.release",
+                points=len(self.mouse_path),
+                moves=moves,
+                avg_move_ms=f"{(move_ms / moves) if moves else 0.0:.3f}",
+                max_move_ms=f"{float(perf.get('max_move_ms', 0.0) or 0.0):.3f}",
+                transform_ms=f"{float(perf.get('transform_ms', 0.0) or 0.0):.3f}",
+                overlay_ms=f"{float(perf.get('overlay_ms', 0.0) or 0.0):.3f}",
+                clear_ms=f"{clear_ms:.3f}",
+                select_ms=f"{select_ms:.3f}",
+                total_ms=f"{_elapsed_ms(event_t0):.3f}",
+            )
             self.mouse_path = []
             self._lasso_screen_path = []
+            self._lasso_perf = None
 
     def _get_clicked_axes(self,pos):
         """Return the ViewBoxWidget beneath the given canvas position.
@@ -1151,25 +1237,54 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         return valid_indices[candidate_local]
 
     def _plot_arrays_for_detail(self, dataset, full_detail: bool):
+        t0 = time.perf_counter()
         x = dataset.x
         y = dataset.y
         structure_index = dataset.structure_index
         if full_detail:
+            _vispy_perf_log(
+                "plot.arrays",
+                title=getattr(dataset, "title", ""),
+                detail="full",
+                points=np.asarray(x).size,
+                ms=f"{_elapsed_ms(t0):.3f}",
+            )
             return x, y, structure_index
         limit = self._thumbnail_limit()
         indices = self._thumbnail_sample_indices(dataset, limit)
         if indices is None:
+            _vispy_perf_log(
+                "plot.arrays",
+                title=getattr(dataset, "title", ""),
+                detail="thumbnail",
+                mode=self._thumbnail_mode().value,
+                points=np.asarray(x).size,
+                rendered=np.asarray(x).size,
+                ms=f"{_elapsed_ms(t0):.3f}",
+            )
             return x, y, structure_index
+        _vispy_perf_log(
+            "plot.arrays",
+            title=getattr(dataset, "title", ""),
+            detail="thumbnail",
+            mode=self._thumbnail_mode().value,
+            points=np.asarray(x).size,
+            rendered=indices.size,
+            ms=f"{_elapsed_ms(t0):.3f}",
+        )
         return x[indices], y[indices], structure_index[indices]
 
     def _plot_dataset_on_axes(self, plot, dataset, full_detail: bool):
+        total_t0 = time.perf_counter()
         plot.parity_mode = bool(getattr(dataset, "parity_mode", dataset.title != "descriptor"))
         plot.title = dataset.title
         display_title = str(getattr(dataset, "display_title", dataset.title) or dataset.title)
         if display_title != plot.title:
             plot.title_label._text_visual.text = display_title
 
+        signature_t0 = time.perf_counter()
         layer_key, brush, pen, marker_size, cache_signature, index_signature = self._plot_cache_signature(plot, dataset, full_detail)
+        signature_ms = _elapsed_ms(signature_t0)
         if (
             full_detail
             and plot._scatter_signatures.get(layer_key) == cache_signature
@@ -1177,9 +1292,20 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             and plot.activate_scatter_layer(layer_key, cache_signature=cache_signature, index_signature=index_signature)
         ):
             plot._plot_full_detail = bool(full_detail)
+            _vispy_perf_log(
+                "plot.dataset",
+                title=getattr(dataset, "title", ""),
+                detail="full" if full_detail else "thumbnail",
+                path="reuse_full",
+                signature_ms=f"{signature_ms:.3f}",
+                total_ms=f"{_elapsed_ms(total_t0):.3f}",
+            )
             return
 
+        index_t0 = time.perf_counter()
         indices = self._active_point_indices(dataset) if full_detail else None
+        index_ms = _elapsed_ms(index_t0)
+        activate_t0 = time.perf_counter()
         if plot.activate_scatter_layer(
             layer_key,
             cache_signature=cache_signature,
@@ -1187,12 +1313,26 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             index_signature=index_signature,
         ):
             plot._plot_full_detail = bool(full_detail)
+            _vispy_perf_log(
+                "plot.dataset",
+                title=getattr(dataset, "title", ""),
+                detail="full" if full_detail else "thumbnail",
+                path="reuse_layer",
+                active_indices=0 if indices is None else int(indices.size),
+                signature_ms=f"{signature_ms:.3f}",
+                index_ms=f"{index_ms:.3f}",
+                activate_ms=f"{_elapsed_ms(activate_t0):.3f}",
+                total_ms=f"{_elapsed_ms(total_t0):.3f}",
+            )
             return
 
+        arrays_t0 = time.perf_counter()
         if full_detail:
             x, y, structure_index = self._full_plot_arrays(dataset)
         else:
             x, y, structure_index = self._plot_arrays_for_detail(dataset, full_detail)
+        arrays_ms = _elapsed_ms(arrays_t0)
+        scatter_t0 = time.perf_counter()
         plot.scatter(
             x,
             y,
@@ -1206,7 +1346,21 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             indices=indices,
             index_signature=index_signature,
         )
+        scatter_ms = _elapsed_ms(scatter_t0)
         plot._plot_full_detail = bool(full_detail)
+        _vispy_perf_log(
+            "plot.dataset",
+            title=getattr(dataset, "title", ""),
+            detail="full" if full_detail else "thumbnail",
+            path="upload",
+            points=np.asarray(x).size,
+            active_indices=0 if indices is None else int(indices.size),
+            signature_ms=f"{signature_ms:.3f}",
+            index_ms=f"{index_ms:.3f}",
+            arrays_ms=f"{arrays_ms:.3f}",
+            scatter_ms=f"{scatter_ms:.3f}",
+            total_ms=f"{_elapsed_ms(total_t0):.3f}",
+        )
 
     def _refresh_plot_detail(self, plot):
         if plot is None or self.nep_result_data is None or plot not in self.axes_list:
@@ -1372,6 +1526,178 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                                        )
             else:
                 plot.set_current_point([], [])
+
+    def _overlay_cache_signature(self, dataset):
+        data = getattr(dataset, "data", None)
+        group_array = getattr(dataset, "group_array", None)
+        raw_x = getattr(dataset, "__dict__", {}).get("x")
+        raw_y = getattr(dataset, "__dict__", {}).get("y")
+        data_array = getattr(data, "all_data", None)
+        group_array_data = getattr(group_array, "all_data", None)
+        x_source = data_array if data_array is not None else raw_x
+        y_source = data_array if data_array is not None else raw_y
+        return (
+            id(dataset),
+            id(x_source),
+            id(y_source),
+            id(group_array_data),
+            getattr(data, "version", 0),
+            getattr(group_array, "version", 0),
+            np.shape(x_source if x_source is not None else ()),
+            np.shape(y_source if y_source is not None else ()),
+            np.shape(group_array_data if group_array_data is not None else ()),
+            int(getattr(dataset, "cols", 0) or 0),
+            int(getattr(dataset, "_plot_coord_version", getattr(dataset, "_content_version", 0)) or 0),
+        )
+
+    def _overlay_position_lookup(self, dataset):
+        signature = self._overlay_cache_signature(dataset)
+        cached = self._overlay_position_cache.get(signature)
+        if cached is not None:
+            return cached
+
+        t0 = time.perf_counter()
+        if hasattr(dataset, "now_data") and hasattr(dataset, "x_cols") and hasattr(dataset, "y_cols"):
+            rows = np.asarray(dataset.now_data)
+            cols = int(getattr(dataset, "cols", 0) or 0)
+            if cols == 0:
+                x = rows.reshape(-1)
+                y = x
+            else:
+                x = rows[:, dataset.x_cols].ravel()
+                y = rows[:, dataset.y_cols].ravel()
+        else:
+            x = np.asarray(dataset.x)
+            y = np.asarray(dataset.y)
+        group_array = getattr(dataset, "group_array", None)
+        row_groups = getattr(group_array, "now_data", None)
+        cols = int(getattr(dataset, "cols", 0) or 0)
+        if row_groups is not None and cols > 0:
+            row_groups = np.asarray(row_groups, dtype=np.int64).reshape(-1)
+            count = min(x.size, y.size, row_groups.size * cols)
+            rows = count // cols
+            row_groups = row_groups[:rows]
+            sidx = row_groups
+            scale = cols
+            x = x[: rows * cols]
+            y = y[: rows * cols]
+        else:
+            sidx = np.asarray(dataset.structure_index, dtype=np.int64)
+            count = min(x.size, y.size, sidx.size)
+            x = x[:count]
+            y = y[:count]
+            sidx = sidx[:count]
+            scale = 1
+
+        if sidx.size == 0:
+            lookup = {
+                "x": x,
+                "y": y,
+                "unique": np.empty(0, dtype=np.int64),
+                "starts": np.empty(0, dtype=np.int64),
+                "counts": np.empty(0, dtype=np.int64),
+                "scale": scale,
+                "order": None,
+            }
+        else:
+            is_sorted = bool(np.all(sidx[:-1] <= sidx[1:])) if sidx.size > 1 else True
+            if is_sorted:
+                unique, starts, counts = np.unique(sidx, return_index=True, return_counts=True)
+                order = None
+            else:
+                order = np.argsort(sidx, kind="stable")
+                sorted_sidx = sidx[order]
+                unique, starts, counts = np.unique(sorted_sidx, return_index=True, return_counts=True)
+            lookup = {
+                "x": x,
+                "y": y,
+                "unique": unique,
+                "starts": starts.astype(np.int64, copy=False),
+                "counts": counts.astype(np.int64, copy=False),
+                "scale": scale,
+                "order": order,
+            }
+
+        dataset_id = id(dataset)
+        for key in list(self._overlay_position_cache):
+            if key[0] == dataset_id and key != signature:
+                self._overlay_position_cache.pop(key, None)
+        self._overlay_position_cache[signature] = lookup
+        _vispy_perf_log(
+            "overlay.cache_build",
+            points=count,
+            structures=lookup["unique"].size,
+            scale=scale,
+            sorted=lookup["order"] is None,
+            ms=f"{_elapsed_ms(t0):.3f}",
+        )
+        return lookup
+
+    def _overlay_positions_for_indices(self, dataset, indices:set[int]):
+        if not indices:
+            return np.empty((0, 2), dtype=np.float32)
+
+        t0 = time.perf_counter()
+        lookup = self._overlay_position_lookup(dataset)
+        unique = lookup["unique"]
+        if unique.size == 0:
+            return np.empty((0, 2), dtype=np.float32)
+
+        indices_arr = np.fromiter(indices, dtype=np.int64)
+        positions = np.searchsorted(unique, indices_arr)
+        in_bounds = positions < unique.size
+        valid = np.zeros(indices_arr.shape, dtype=bool)
+        valid[in_bounds] = unique[positions[in_bounds]] == indices_arr[in_bounds]
+        positions = positions[valid]
+        if positions.size == 0:
+            _vispy_perf_log(
+                "overlay.positions",
+                requested=indices_arr.size,
+                matched=0,
+                points=0,
+                ms=f"{_elapsed_ms(t0):.3f}",
+            )
+            return np.empty((0, 2), dtype=np.float32)
+
+        starts = lookup["starts"][positions]
+        counts = lookup["counts"][positions]
+        scale = int(lookup.get("scale", 1) or 1)
+        total = int(np.sum(counts) * scale)
+        order = lookup["order"]
+        if order is None:
+            point_starts = starts * scale
+            point_counts = counts * scale
+            if point_counts.size > 0 and bool(np.all(point_counts == point_counts[0])):
+                offsets = np.arange(int(point_counts[0]), dtype=np.int64)
+                result_indices = (point_starts[:, None] + offsets[None, :]).ravel()
+            else:
+                group_offsets = np.arange(total, dtype=np.int64) - np.repeat(np.cumsum(point_counts) - point_counts, point_counts)
+                result_indices = np.repeat(point_starts, point_counts) + group_offsets
+        else:
+            if counts.size > 0 and bool(np.all(counts == counts[0])):
+                row_offsets = np.arange(int(counts[0]), dtype=np.int64)
+                row_indices = (starts[:, None] + row_offsets[None, :]).ravel()
+            else:
+                row_total = int(np.sum(counts))
+                row_offsets = np.arange(row_total, dtype=np.int64) - np.repeat(np.cumsum(counts) - counts, counts)
+                row_indices = np.repeat(starts, counts) + row_offsets
+            row_indices = order[row_indices]
+            if scale > 1:
+                comp_offsets = np.arange(scale, dtype=np.int64)
+                result_indices = (row_indices[:, None] * scale + comp_offsets[None, :]).ravel()
+            else:
+                result_indices = row_indices
+
+        pos = np.column_stack([lookup["x"][result_indices], lookup["y"][result_indices]]).astype(np.float32, copy=False)
+        _vispy_perf_log(
+            "overlay.positions",
+            requested=indices_arr.size,
+            matched=positions.size,
+            points=pos.shape[0],
+            ms=f"{_elapsed_ms(t0):.3f}",
+        )
+        return pos
+
     @timeit
     def update_scatter_color(self,structure_index,color=Brushes.Selected):
         # Switch to overlay layers so we don't reupload the entire base VBO
@@ -1384,12 +1710,18 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         color : Any, optional
             Brush applied to the selected points.
         """
+        total_t0 = time.perf_counter()
         idx = np.atleast_1d(np.asarray(structure_index)).astype(np.int64)
         if idx.size == 0:
             return
 
         selected_global = set(getattr(self.nep_result_data, "select_index", set())) if self.nep_result_data is not None else set()
+        idx_list = idx.tolist()
+        idx_set = set(idx_list)
+        total_positions_ms = 0.0
+        total_overlay_ms = 0.0
         for plot in self.axes_list:
+            plot_t0 = time.perf_counter()
             if not plot._scatter:
                 continue
             # init overlay sets for this plot
@@ -1400,89 +1732,102 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             if plot not in self._loaded_by_plot:
                 self._loaded_by_plot[plot] = set()
 
+            sets_t0 = time.perf_counter()
+            dirty_layers = set()
             if color is Brushes.Default:
                 # remove from both overlays
-                self._selected_by_plot[plot].difference_update(idx.tolist())
-                self._show_by_plot[plot].difference_update(idx.tolist())
-                self._loaded_by_plot[plot].difference_update(idx.tolist())
+                self._selected_by_plot[plot].difference_update(idx_list)
+                self._show_by_plot[plot].difference_update(idx_list)
+                self._loaded_by_plot[plot].difference_update(idx_list)
+                dirty_layers.update(("selected", "show", "loaded"))
             elif color is Brushes.Selected:
                 # add to selected, remove from show to avoid duplicates
-                self._selected_by_plot[plot].update(idx.tolist())
-                self._show_by_plot[plot].difference_update(idx.tolist())
-                self._loaded_by_plot[plot].difference_update(idx.tolist())
+                show_dirty = bool(self._show_by_plot[plot].intersection(idx_set))
+                loaded_dirty = bool(self._loaded_by_plot[plot].intersection(idx_set))
+                self._selected_by_plot[plot].update(idx_list)
+                self._show_by_plot[plot].difference_update(idx_list)
+                self._loaded_by_plot[plot].difference_update(idx_list)
+                dirty_layers.add("selected")
+                if show_dirty:
+                    dirty_layers.add("show")
+                if loaded_dirty:
+                    dirty_layers.add("loaded")
             elif color is Brushes.Show:
-                self._show_by_plot[plot].update(idx.tolist())
-                self._loaded_by_plot[plot].difference_update(idx.tolist())
+                loaded_dirty = bool(self._loaded_by_plot[plot].intersection(idx_set))
+                self._show_by_plot[plot].update(idx_list)
+                self._loaded_by_plot[plot].difference_update(idx_list)
+                dirty_layers.add("show")
+                if loaded_dirty:
+                    dirty_layers.add("loaded")
             elif color is Brushes.LoadedOverlay:
-                self._loaded_by_plot[plot].update(idx.tolist())
-                self._show_by_plot[plot].difference_update(idx.tolist())
+                show_dirty = bool(self._show_by_plot[plot].intersection(idx_set))
+                self._loaded_by_plot[plot].update(idx_list)
+                self._show_by_plot[plot].difference_update(idx_list)
+                dirty_layers.add("loaded")
+                if show_dirty:
+                    dirty_layers.add("show")
             else:
                 # Fallback: treat as selected
-                self._selected_by_plot[plot].update(idx.tolist())
+                self._selected_by_plot[plot].update(idx_list)
+                dirty_layers.add("selected")
+            sets_ms = _elapsed_ms(sets_t0)
 
-            # Recompute overlay positions lazily from dataset (handles decimation of base)
             dataset = self.get_axes_dataset(plot)
             if dataset is None:
                 continue
 
-            def _indices_to_positions(indices:set[int]):
-                """Return scatter positions for the given structure indices.
-
-                Parameters
-                ----------
-                indices : set[int]
-                    Indices to extract.
-
-                Returns
-                -------
-                numpy.ndarray
-                    Positions as an array with shape ``(N, 2)``.
-                """
-                if not indices:
-                    return np.empty((0, 2), dtype=np.float32)
-                indices_arr = np.fromiter(indices, dtype=np.int64)
-                # Only consider currently visible (active) structures
-                # The scatter uses flattened x/y; structure_index aligns with those
-                try:
-                    sidx = dataset.structure_index
-                    mask = np.isin(sidx, indices_arr)
-                    if not np.any(mask):
-                        return np.empty((0, 2), dtype=np.float32)
-                    x = dataset.x[mask]
-                    y = dataset.y[mask]
-                    return np.column_stack([x, y]).astype(np.float32, copy=False)
-                except Exception:
-                    return np.empty((0, 2), dtype=np.float32)
-
-            sel_pos = _indices_to_positions(self._selected_by_plot[plot])
-            show_pos = _indices_to_positions(self._show_by_plot[plot])
-            loaded_pos = _indices_to_positions(self._loaded_by_plot[plot])
-
             # Update overlays (filled squares, no edges for perf)
             overlay_size = Config.getint("widget", "vispy_marker_size", 6) or 6
-            if sel_pos.size:
-                plot.set_overlay_positions('selected', sel_pos, color=Brushes.Selected, size=overlay_size, symbol='o')
-            else:
-                plot.set_overlay_positions('selected', np.empty((0, 2), dtype=np.float32), color=Brushes.Selected, size=overlay_size, symbol='o')
+            position_ms = 0.0
+            overlay_t0 = time.perf_counter()
 
-            if show_pos.size:
-                plot.set_overlay_positions('show', show_pos, color=Brushes.Show, size=overlay_size, symbol='o')
-            else:
-                plot.set_overlay_positions('show', np.empty((0, 2), dtype=np.float32), color=Brushes.Show, size=overlay_size, symbol='o')
+            def _refresh_overlay(name, indices, brush, symbol='o'):
+                nonlocal position_ms
+                pos_t0 = time.perf_counter()
+                pos = self._overlay_positions_for_indices(dataset, indices)
+                position_ms += _elapsed_ms(pos_t0)
+                if pos.size:
+                    plot.set_overlay_positions(name, pos, color=brush, size=overlay_size, symbol=symbol)
+                else:
+                    plot.set_overlay_positions(name, np.empty((0, 2), dtype=np.float32), color=brush, size=overlay_size, symbol=symbol)
 
-            if loaded_pos.size:
-                plot.set_overlay_positions('loaded', loaded_pos, color=Brushes.LoadedOverlay, size=overlay_size, symbol='o')
-            else:
-                plot.set_overlay_positions('loaded', np.empty((0, 2), dtype=np.float32), color=Brushes.LoadedOverlay, size=overlay_size, symbol='o')
+            if "selected" in dirty_layers:
+                _refresh_overlay("selected", self._selected_by_plot[plot], Brushes.Selected)
+            if "show" in dirty_layers:
+                _refresh_overlay("show", self._show_by_plot[plot], Brushes.Show)
+            if "loaded" in dirty_layers:
+                _refresh_overlay("loaded", self._loaded_by_plot[plot], Brushes.LoadedOverlay)
 
             # Keep reject overlay on top of show but below selected.
             reject_set = self._reject_by_plot.get(plot, set())
             display_reject = reject_set - selected_global if reject_set else set()
-            if display_reject:
-                rej_pos = _indices_to_positions(display_reject)
-                plot.set_overlay_positions('reject', rej_pos, color=Brushes.Reject, size=overlay_size, symbol='x')
-            else:
-                plot.set_overlay_positions('reject', np.empty((0, 2), dtype=np.float32), color=Brushes.Reject, size=overlay_size, symbol='x')
+            if reject_set and bool(reject_set.intersection(idx_set)):
+                _refresh_overlay("reject", display_reject, Brushes.Reject, symbol='x')
+            overlay_ms = _elapsed_ms(overlay_t0)
+            total_positions_ms += position_ms
+            total_overlay_ms += overlay_ms
+            _vispy_perf_log(
+                "overlay.update_plot",
+                title=getattr(dataset, "title", ""),
+                changed=idx.size,
+                dirty=",".join(sorted(dirty_layers)) or "-",
+                selected=len(self._selected_by_plot[plot]),
+                show=len(self._show_by_plot[plot]),
+                loaded=len(self._loaded_by_plot[plot]),
+                reject=len(display_reject),
+                sets_ms=f"{sets_ms:.3f}",
+                positions_ms=f"{position_ms:.3f}",
+                overlay_ms=f"{overlay_ms:.3f}",
+                total_ms=f"{_elapsed_ms(plot_t0):.3f}",
+            )
+        _vispy_perf_log(
+            "overlay.update_total",
+            changed=idx.size,
+            plots=len(self.axes_list),
+            positions_ms=f"{total_positions_ms:.3f}",
+            overlay_ms=f"{total_overlay_ms:.3f}",
+            total_ms=f"{_elapsed_ms(total_t0):.3f}",
+        )
 
     def set_reject_highlight(self, structure_indices, enabled: bool) -> None:
         """Toggle the reject highlight overlay for the provided structure indices.
@@ -1584,11 +1929,45 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         reverse : bool
             When ``True`` remove the enclosed points from the selection.
         """
+        total_t0 = time.perf_counter()
+        arrays_t0 = time.perf_counter()
         x, y, structure_index = self._interaction_arrays_for_axes(self.current_axes)
+        arrays_ms = _elapsed_ms(arrays_t0)
         if x is None or y is None or structure_index is None or structure_index.size == 0:
+            _vispy_perf_log(
+                "polygon.select",
+                points=0,
+                selected=0,
+                arrays_ms=f"{arrays_ms:.3f}",
+                total_ms=f"{_elapsed_ms(total_t0):.3f}",
+            )
             return
+        mask_t0 = time.perf_counter()
         mask = x > -10000
+        mask_ms = _elapsed_ms(mask_t0)
+        stack_t0 = time.perf_counter()
         points = np.column_stack([x[mask], y[mask]])
+        stack_ms = _elapsed_ms(stack_t0)
+        pip_t0 = time.perf_counter()
         selected = self.is_point_in_polygon(points, polygon_xy)
+        pip_ms = _elapsed_ms(pip_t0)
+        unique_t0 = time.perf_counter()
         select_index=np.unique(structure_index[mask][selected]).astype(np.int64).tolist()
+        unique_ms = _elapsed_ms(unique_t0)
+        apply_t0 = time.perf_counter()
         self.select_index(select_index,reverse)
+        apply_ms = _elapsed_ms(apply_t0)
+        _vispy_perf_log(
+            "polygon.select",
+            points=int(points.shape[0]),
+            vertices=int(np.asarray(polygon_xy).shape[0]),
+            selected=len(select_index),
+            reverse=bool(reverse),
+            arrays_ms=f"{arrays_ms:.3f}",
+            mask_ms=f"{mask_ms:.3f}",
+            stack_ms=f"{stack_ms:.3f}",
+            pip_ms=f"{pip_ms:.3f}",
+            unique_ms=f"{unique_ms:.3f}",
+            apply_ms=f"{apply_ms:.3f}",
+            total_ms=f"{_elapsed_ms(total_t0):.3f}",
+        )

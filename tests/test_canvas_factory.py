@@ -546,6 +546,61 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertFalse(canvas._lasso_overlay.isHidden())
         self.assertEqual(canvas._lasso_overlay._points, [])
 
+    def test_vispy_update_scatter_color_uses_overlay_position_cache(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        x = np.arange(6, dtype=np.float32)
+        y = x + 1
+        structure_index = np.array([0, 0, 1, 1, 2, 2], dtype=np.int32)
+        dataset = SimpleNamespace(
+            title="energy",
+            x=x,
+            y=y,
+            structure_index=structure_index,
+        )
+        canvas.nep_result_data = SimpleNamespace(datasets=[dataset], select_index=set())
+        plot.scatter(x, y, structure_index)
+
+        with patch("NepTrainKit.ui.canvas.vispy.canvas.np.isin", side_effect=AssertionError("np.isin should not be used")):
+            canvas.update_scatter_color([1], Brushes.Selected)
+
+        overlay = plot._overlays["selected"].positions
+        np.testing.assert_array_equal(overlay[:, :2], np.array([[2.0, 3.0], [3.0, 4.0]], dtype=np.float32))
+
+    def test_vispy_overlay_cache_handles_atom_level_mforce_components(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        row_groups = np.array([0, 0, 1, 2, 2, 2], dtype=np.int32)
+        cols = 3
+        x = np.arange(row_groups.size * cols, dtype=np.float32)
+        y = x + 100
+        dataset = SimpleNamespace(
+            title="mforce",
+            x=x,
+            y=y,
+            cols=cols,
+            group_array=SimpleNamespace(now_data=row_groups, all_data=row_groups),
+        )
+
+        pos = canvas._overlay_positions_for_indices(dataset, {2})
+
+        expected_x = np.arange(9, 18, dtype=np.float32)
+        np.testing.assert_array_equal(pos[:, 0], expected_x)
+        np.testing.assert_array_equal(pos[:, 1], expected_x + 100)
+
+    def test_vispy_overlay_cache_signature_reuses_nep_plotdata_properties(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        rows = np.arange(24, dtype=np.float32).reshape(4, 6)
+        dataset = NepPlotData(rows, group_list=np.array([1, 2, 1], dtype=np.int32), title="force")
+
+        signature_1 = canvas._overlay_cache_signature(dataset)
+        signature_2 = canvas._overlay_cache_signature(dataset)
+        lookup_1 = canvas._overlay_position_lookup(dataset)
+        lookup_2 = canvas._overlay_position_lookup(dataset)
+
+        self.assertEqual(signature_1, signature_2)
+        self.assertIs(lookup_1, lookup_2)
+
     def test_vispy_structure_plot_reuses_static_visuals(self):
         plot = canvas_factory._create_vispy_structure_plot(None)
         structure_1 = SimpleNamespace(

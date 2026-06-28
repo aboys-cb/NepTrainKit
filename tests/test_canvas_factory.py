@@ -45,6 +45,11 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertEqual(type(canvas).__name__, "PyqtgraphCanvas")
         self.assertFalse(fallback)
 
+    def test_create_result_canvas_auto_defaults_to_pyqtgraph(self):
+        canvas, fallback = canvas_factory.create_result_canvas(CanvasMode.AUTO, None)
+        self.assertEqual(type(canvas).__name__, "PyqtgraphCanvas")
+        self.assertFalse(fallback)
+
     def test_create_result_canvas_unknown_defaults_to_pyqtgraph(self):
         canvas, fallback = canvas_factory.create_result_canvas("unknown-backend", None)
         self.assertEqual(type(canvas).__name__, "PyqtgraphCanvas")

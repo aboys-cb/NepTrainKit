@@ -135,6 +135,7 @@ def parse_forces_mode(value, fallback: ForcesMode = ForcesMode.Raw) -> ForcesMod
 
 class CanvasMode(StrEnum):
     """Preferred canvas backend for visualisation."""
+    AUTO = "auto"
     VISPY = "vispy"
     PYQTGRAPH = "pyqtgraph"
 

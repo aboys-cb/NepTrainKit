@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from NepTrainKit.core.io import NepPlotData, StructureData, ResultData
+from NepTrainKit.config import Config
 from NepTrainKit.core.energy_shift import DFT_TO_NEP_ALIGNMENT
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.types import (
@@ -199,6 +200,36 @@ def _build_dummy_result() -> _DummyResultData:
         _make_structure_with_numeric_props(["Fe", "O", "Fe"], "beta", base=1.0),
     ]
     return _DummyResultData(structures)
+
+
+def test_descriptor_pca_cache_reuses_matching_file(tmp_path):
+    previous_cache = Config.get("io", "cache_outputs", None)
+    try:
+        Config.set("io", "cache_outputs", True)
+        data = _build_dummy_result()
+        data.descriptor_path = tmp_path / "descriptor.out"
+        data.descriptor_path.write_text("descriptor payload", encoding="utf8")
+
+        descriptors = np.arange(30, dtype=np.float32).reshape(5, 6)
+        reduced = np.column_stack(
+            [
+                np.linspace(0.0, 1.0, num=5, dtype=np.float32),
+                np.linspace(1.0, 2.0, num=5, dtype=np.float32),
+            ]
+        )
+
+        with patch("NepTrainKit.core.io.base.pca", return_value=reduced) as pca_mock:
+            first = data._load_or_compute_descriptor_pca(descriptors)
+            second = data._load_or_compute_descriptor_pca(descriptors)
+
+        pca_mock.assert_called_once_with(descriptors, 2)
+        np.testing.assert_allclose(first, reduced)
+        np.testing.assert_allclose(second, reduced)
+    finally:
+        if previous_cache is None:
+            Config.delete("io", "cache_outputs")
+        else:
+            Config.set("io", "cache_outputs", previous_cache)
 
 
 def test_discover_atomic_numeric_fields_excludes_blacklist_and_classifies():
@@ -586,4 +617,3 @@ def test_expression_completer_cache_refreshes_after_structure_removal():
     refreshed = data.get_completer_cache(SearchType.EXPRESSION, max_items=50000)
     assert "count.Fe" not in refreshed
     assert "has.H" in refreshed
-

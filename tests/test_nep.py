@@ -21,7 +21,7 @@ from NepTrainKit.core.energy_shift import EnergyBaselinePreset
 from NepTrainKit.core.precision import get_storage_float_dtype
 from numpy.testing import assert_allclose
 from NepTrainKit.core.structure import Structure
-from NepTrainKit.core.types import ForcesMode
+from NepTrainKit.core.types import CanvasMode, ForcesMode
 from NepTrainKit.config import  Config
 from PySide6.QtWidgets import QApplication
 from NepTrainKit.ui.widgets.dialog import ShiftEnergyDialogValues
@@ -417,6 +417,105 @@ class TestNepResultPlotWidgetShiftEnergyBaseline(unittest.TestCase):
 
 
 class TestNepResultPlotWidgetCanvasFactory(unittest.TestCase):
+    def _set_canvas_config(self, canvas_type, threshold=50):
+        previous_canvas = Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)
+        previous_threshold = Config.get("widget", "auto_vispy_point_threshold", None)
+        self.addCleanup(lambda: Config.set("widget", "canvas_type", previous_canvas))
+        if previous_threshold is None:
+            self.addCleanup(lambda: Config.delete("widget", "auto_vispy_point_threshold"))
+        else:
+            self.addCleanup(lambda: Config.set("widget", "auto_vispy_point_threshold", previous_threshold))
+        Config.set("widget", "canvas_type", canvas_type)
+        Config.set("widget", "auto_vispy_point_threshold", threshold)
+
+    @staticmethod
+    def _plot_dataset(points):
+        return SimpleNamespace(datasets=[SimpleNamespace(x=np.zeros(points, dtype=np.float32))])
+
+    def test_auto_canvas_prefers_pyqtgraph_below_threshold(self):
+        self._set_canvas_config(CanvasMode.AUTO.value, threshold=50)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._vispy_unavailable = False
+
+        canvas_type = nep_view_module.NepResultPlotWidget._desired_canvas_type_for_dataset(
+            widget, self._plot_dataset(49)
+        )
+
+        self.assertEqual(canvas_type, CanvasMode.PYQTGRAPH.value)
+
+    def test_auto_canvas_prefers_vispy_at_threshold(self):
+        self._set_canvas_config(CanvasMode.AUTO.value, threshold=50)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._vispy_unavailable = False
+
+        canvas_type = nep_view_module.NepResultPlotWidget._desired_canvas_type_for_dataset(
+            widget, self._plot_dataset(50)
+        )
+
+        self.assertEqual(canvas_type, CanvasMode.VISPY.value)
+
+    def test_manual_canvas_setting_overrides_auto_threshold(self):
+        self._set_canvas_config(CanvasMode.PYQTGRAPH.value, threshold=50)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._vispy_unavailable = False
+
+        canvas_type = nep_view_module.NepResultPlotWidget._desired_canvas_type_for_dataset(
+            widget, self._plot_dataset(5000)
+        )
+
+        self.assertEqual(canvas_type, CanvasMode.PYQTGRAPH.value)
+
+    def test_manual_vispy_uses_pyqtgraph_when_vispy_unavailable(self):
+        self._set_canvas_config(CanvasMode.VISPY.value, threshold=50)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._vispy_unavailable = True
+
+        canvas_type = nep_view_module.NepResultPlotWidget._desired_canvas_type_for_dataset(
+            widget, self._plot_dataset(5000)
+        )
+
+        self.assertEqual(canvas_type, CanvasMode.PYQTGRAPH.value)
+
+    def test_auto_canvas_uses_pyqtgraph_when_vispy_unavailable(self):
+        self._set_canvas_config(CanvasMode.AUTO.value, threshold=50)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._vispy_unavailable = True
+
+        canvas_type = nep_view_module.NepResultPlotWidget._desired_canvas_type_for_dataset(
+            widget, self._plot_dataset(5000)
+        )
+
+        self.assertEqual(canvas_type, CanvasMode.PYQTGRAPH.value)
+
+    def test_set_dataset_switches_canvas_before_plotting(self):
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._canvas_type = CanvasMode.PYQTGRAPH.value
+        widget.last_figure_num = 1
+        new_canvas = SimpleNamespace(
+            init_axes=MagicMock(),
+            set_nep_result_data=MagicMock(),
+            plot_nep_result=MagicMock(),
+        )
+        dataset = SimpleNamespace(datasets=[object(), object()])
+
+        def switch_canvas(canvas_type):
+            widget._canvas_type = canvas_type
+            widget.canvas = new_canvas
+
+        widget.swith_canvas = MagicMock(side_effect=switch_canvas)
+
+        with patch.object(
+            nep_view_module.NepResultPlotWidget,
+            "_desired_canvas_type_for_dataset",
+            return_value=CanvasMode.VISPY.value,
+        ):
+            nep_view_module.NepResultPlotWidget.set_dataset(widget, dataset)
+
+        widget.swith_canvas.assert_called_once_with(CanvasMode.VISPY.value)
+        new_canvas.init_axes.assert_called_once_with(2)
+        new_canvas.set_nep_result_data.assert_called_once_with(dataset)
+        new_canvas.plot_nep_result.assert_called_once()
+
     def test_swith_canvas_uses_factory_and_host_widget(self):
         widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
         widget._layout = MagicMock()

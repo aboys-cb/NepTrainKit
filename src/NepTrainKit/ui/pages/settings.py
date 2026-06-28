@@ -64,7 +64,7 @@ class SettingsWidget(ScrollArea):
             default=default_forces,
             parent=self.personal_group
         )
-        canvas_type = Config.get("widget","canvas_type",str(CanvasMode.PYQTGRAPH.value))
+        canvas_type = Config.get("widget","canvas_type",str(CanvasMode.AUTO.value))
 
         self.canvas_card = MyComboBoxSettingCard(
             OptionsConfigItem("canvas","canvas",CanvasMode(canvas_type),OptionsValidator(CanvasMode), EnumSerializer(CanvasMode)),
@@ -491,5 +491,4 @@ class SettingsWidget(ScrollArea):
         win = self.window()
         if hasattr(win, "refresh_update_indicators"):
             win.refresh_update_indicators()
-
 

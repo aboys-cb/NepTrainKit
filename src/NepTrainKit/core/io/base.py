@@ -10,6 +10,7 @@ dataset synchronisation.
 
 """
 import ast
+import hashlib
 import os
 import json
 import threading
@@ -3782,12 +3783,54 @@ class ResultData(QObject):
         # Prepare reduced (PCA) descriptors for plotting
         reduced = self._descriptor_raw_all
         if reduced.size != 0 and reduced.shape[1] > 2:
-            try:
-                reduced = pca(reduced, 2)
-            except Exception:
-                MessageManager.send_error_message("PCA dimensionality reduction fails")
-                reduced = np.array([], dtype=np.float32)
+            reduced = self._load_or_compute_descriptor_pca(reduced)
         self._descriptor_dataset = NepPlotData(reduced, title="descriptor")
+
+    def _descriptor_pca_cache_paths(self) -> tuple[Path, Path]:
+        cache_path = self.descriptor_path.with_suffix(".pca2.npy")
+        meta_path = self.descriptor_path.with_suffix(".pca2.json")
+        return cache_path, meta_path
+
+    def _descriptor_pca_cache_metadata(self, desc_array: npt.NDArray[Any]) -> dict[str, Any] | None:
+        try:
+            stat = self.descriptor_path.stat()
+        except OSError:
+            return None
+        atoms = np.asarray(getattr(self, "atoms_num_list", []), dtype=np.int64)
+        return {
+            "descriptor_path": self.descriptor_path.name,
+            "descriptor_size": int(stat.st_size),
+            "descriptor_mtime_ns": int(stat.st_mtime_ns),
+            "descriptor_shape": [int(v) for v in np.asarray(desc_array).shape],
+            "atoms_num_hash": hashlib.sha256(atoms.tobytes()).hexdigest(),
+        }
+
+    def _load_or_compute_descriptor_pca(self, desc_array: npt.NDArray[Any]) -> npt.NDArray[Any]:
+        metadata = self._descriptor_pca_cache_metadata(desc_array)
+        cache_path, meta_path = self._descriptor_pca_cache_paths()
+        if metadata is not None and cache_path.exists() and meta_path.exists():
+            try:
+                cached_meta = json.loads(meta_path.read_text(encoding="utf8"))
+                if cached_meta == metadata:
+                    cached = np.load(cache_path)
+                    if cached.shape[0] == desc_array.shape[0] and cached.shape[1] == 2:
+                        return np.asarray(cached, dtype=np.float32)
+            except Exception:
+                logger.debug(traceback.format_exc())
+
+        try:
+            reduced = pca(desc_array, 2)
+        except Exception:
+            MessageManager.send_error_message("PCA dimensionality reduction fails")
+            return np.array([], dtype=np.float32)
+
+        if metadata is not None and self.cache_outputs_enabled():
+            try:
+                np.save(cache_path, np.asarray(reduced, dtype=np.float32))
+                meta_path.write_text(json.dumps(metadata, indent=2), encoding="utf8")
+            except Exception:
+                logger.debug(traceback.format_exc())
+        return reduced
     def __repr__(self):
         info = f"{self.__class__.__name__}(Orig: {self.atoms_num_list.shape[0]} Now: {self.structure.now_data.shape[0]} " \
                f"Rm: {self.structure.remove_data.shape[0]} Sel: {len(self.select_index)} Unsel: {self.structure.now_data.shape[0] - len(self.select_index)})"

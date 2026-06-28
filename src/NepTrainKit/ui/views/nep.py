@@ -41,6 +41,8 @@ from NepTrainKit.core.energy_shift import (
     suggest_group_patterns,
 )
 
+AUTO_VISPY_POINT_THRESHOLD = 50000
+
 
 class NepResultPlotWidget(QWidget):
     """Plot widget that visualizes NEP evaluation results and provides analysis helpers.
@@ -73,13 +75,24 @@ class NepResultPlotWidget(QWidget):
         # self.setRenderHint(QPainter.Antialiasing, False)
         self._layout = QHBoxLayout(self)
         self.setLayout(self._layout)
-        canvas_type = Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH)
+        canvas_type = Config.get("widget", "canvas_type", CanvasMode.AUTO)
 
         self.last_figure_num = None
         self._distribution_inspector = None
         self._canvas_fallback_warned = False
+        self._vispy_unavailable = False
         self._overlay_dialog_refs: list[TrainingOverlayDialog] = []
         self.swith_canvas(canvas_type)
+
+    @staticmethod
+    def _canvas_mode_value(canvas_type: object) -> str:
+        """Return a supported canvas mode string from config-like values."""
+        text = str(canvas_type or "").strip().lower()
+        if text in {CanvasMode.AUTO.value, "canvasmode.auto", CanvasMode.AUTO.name.lower()}:
+            return CanvasMode.AUTO.value
+        if text in {CanvasMode.VISPY.value, "canvasmode.vispy", CanvasMode.VISPY.name.lower()}:
+            return CanvasMode.VISPY.value
+        return CanvasMode.PYQTGRAPH.value
 
     def swith_canvas(self, canvas_type: CanvasMode = "pyqtgraph"):
         """Instantiate the requested plotting backend and attach it to the layout.
@@ -89,13 +102,67 @@ class NepResultPlotWidget(QWidget):
         canvas_type : CanvasMode, default=CanvasMode.PYQTGRAPH
             Backend identifier used to select between the supported canvases.
         """
+        old_canvas = getattr(self, "canvas", None)
+        if old_canvas is not None:
+            self._disconnect_canvas_toolbar(old_canvas)
+
+        old_host = getattr(self, "_canvas_host_widget", None)
+        if old_host is not None:
+            try:
+                self._layout.removeWidget(old_host)
+            except Exception:
+                pass
+            try:
+                old_host.setParent(None)
+            except Exception:
+                pass
+
+        requested_mode = self._canvas_mode_value(canvas_type)
         self.canvas, fallback = create_result_canvas(canvas_type, self)
-        self._layout.addWidget(resolve_canvas_host_widget(self.canvas))
+        self._canvas_host_widget = resolve_canvas_host_widget(self.canvas)
+        self._layout.addWidget(self._canvas_host_widget)
+        self._canvas_type = CanvasMode.PYQTGRAPH.value if fallback or requested_mode == CanvasMode.AUTO.value else requested_mode
+        if fallback:
+            self._vispy_unavailable = True
         if fallback and not self._canvas_fallback_warned:
             MessageManager.send_warning_message(
                 "Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph."
             )
             self._canvas_fallback_warned = True
+        self._connect_canvas_toolbar(self.canvas)
+
+    def _connect_canvas_toolbar(self, canvas):
+        """Connect canvas-specific toolbar actions to the active canvas."""
+        tool_bar = getattr(self, "tool_bar", None)
+        if tool_bar is None:
+            return
+        tool_bar.panSignal.connect(canvas.pan)
+        tool_bar.resetSignal.connect(canvas.auto_range)
+        tool_bar.deleteSignal.connect(canvas.delete)
+        tool_bar.revokeSignal.connect(canvas.revoke)
+        tool_bar.penSignal.connect(canvas.pen)
+        canvas.tool_bar = tool_bar
+
+    def _disconnect_canvas_toolbar(self, canvas):
+        """Disconnect toolbar actions from a canvas that is being replaced."""
+        tool_bar = getattr(self, "tool_bar", None)
+        if tool_bar is None:
+            return
+        for signal, slot in (
+            (tool_bar.panSignal, canvas.pan),
+            (tool_bar.resetSignal, canvas.auto_range),
+            (tool_bar.deleteSignal, canvas.delete),
+            (tool_bar.revokeSignal, canvas.revoke),
+            (tool_bar.penSignal, canvas.pen),
+        ):
+            try:
+                signal.disconnect(slot)
+            except Exception:
+                pass
+        try:
+            canvas.tool_bar = None
+        except Exception:
+            pass
 
     # def clear(self):
     #     self.canvas.clear_axes()
@@ -110,11 +177,7 @@ class NepResultPlotWidget(QWidget):
             Toolbar instance whose actions manipulate the canvas.
         """
         self.tool_bar: NepDisplayGraphicsToolBar = tool
-        self.tool_bar.panSignal.connect(self.canvas.pan)
-        self.tool_bar.resetSignal.connect(self.canvas.auto_range)
-        self.tool_bar.deleteSignal.connect(self.canvas.delete)
-        self.tool_bar.revokeSignal.connect(self.canvas.revoke)
-        self.tool_bar.penSignal.connect(self.canvas.pen)
+        self._connect_canvas_toolbar(self.canvas)
         self.tool_bar.exportSignal.connect(self.export_descriptor_data)
         self.tool_bar.findMaxSignal.connect(self.find_max_error_point)
         self.tool_bar.discoverySignal.connect(self.find_non_physical_structures)
@@ -129,7 +192,6 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.summarySignal.connect(self.show_dataset_summary)
         self.tool_bar.forceBalanceSignal.connect(self.check_force_balance)
         self.tool_bar.distributionSignal.connect(self.show_distribution_inspector)
-        self.canvas.tool_bar = self.tool_bar
 
     def closeEvent(self, event):
         """Ensure auxiliary non-modal inspectors are closed with this widget."""
@@ -818,6 +880,46 @@ class NepResultPlotWidget(QWidget):
         else:
             MessageManager.send_info_message("All scanned structures satisfy the net-force threshold.")
 
+    @staticmethod
+    def _plot_point_count(plot_data) -> int:
+        """Return the number of scatter points a dataset will draw."""
+        try:
+            return int(np.asarray(plot_data.x).size)
+        except Exception:
+            pass
+        rows = getattr(plot_data, "now_data", None)
+        if rows is None:
+            return int(getattr(plot_data, "num", 0) or 0)
+        try:
+            cols = int(getattr(plot_data, "cols", 0) or 0)
+            row_count = int(np.asarray(rows).shape[0])
+            return row_count * cols if cols > 0 else row_count
+        except Exception:
+            return int(getattr(plot_data, "num", 0) or 0)
+
+    @classmethod
+    def _max_plot_point_count(cls, dataset) -> int:
+        """Return the largest plotted point count among result sub-datasets."""
+        return max((cls._plot_point_count(item) for item in getattr(dataset, "datasets", []) or []), default=0)
+
+    def _desired_canvas_type_for_dataset(self, dataset) -> str:
+        """Resolve the active canvas backend for this dataset and user setting."""
+        configured = self._canvas_mode_value(Config.get("widget", "canvas_type", CanvasMode.AUTO))
+        if configured == CanvasMode.VISPY.value and getattr(self, "_vispy_unavailable", False):
+            return CanvasMode.PYQTGRAPH.value
+        if configured != CanvasMode.AUTO.value:
+            return configured
+
+        if getattr(self, "_vispy_unavailable", False):
+            return CanvasMode.PYQTGRAPH.value
+
+        threshold = Config.getint("widget", "auto_vispy_point_threshold", AUTO_VISPY_POINT_THRESHOLD)
+        if threshold is None or threshold <= 0:
+            threshold = AUTO_VISPY_POINT_THRESHOLD
+        if self._max_plot_point_count(dataset) >= threshold:
+            return CanvasMode.VISPY.value
+        return CanvasMode.PYQTGRAPH.value
+
     def set_dataset(self, dataset):
         """Attach a NEP result dataset to the canvas and refresh the plots.
 
@@ -826,6 +928,11 @@ class NepResultPlotWidget(QWidget):
         dataset : Any
             Loaded NEP result container exposing descriptors and structures.
         """
+        desired_canvas_type = self._desired_canvas_type_for_dataset(dataset)
+        if getattr(self, "_canvas_type", None) != desired_canvas_type:
+            self.swith_canvas(desired_canvas_type)
+            self.last_figure_num = None
+
         if self.last_figure_num != len(dataset.datasets):
             self.canvas.init_axes(len(dataset.datasets))
             self.last_figure_num = len(dataset.datasets)

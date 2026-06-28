@@ -111,6 +111,7 @@ class FilterProcessingThread(QThread):
         self.params = params
         self.result_dataset = []
         self.elapsed_seconds = 0.0
+        self.setStackSize(8 * 1024 * 1024)
 
     def run(self):
         start = time.perf_counter()

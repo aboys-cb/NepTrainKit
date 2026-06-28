@@ -49,13 +49,23 @@ from qfluentwidgets import (
     ToolTipFilter,
     ToolTipPosition,
 )
-from qframelesswindow import FramelessDialog
 import json
 import html
 import math
 import os
+import sys
 import numpy as np
 from .button import TagPushButton, TagGroup
+
+if sys.platform == "darwin" and os.environ.get("QT_QPA_PLATFORM", "").split(":")[0].lower() == "offscreen":
+    class FramelessDialog(QDialog):
+        """Headless-safe stand-in for qframelesswindow's mac native dialog."""
+
+        def setTitleBar(self, title_bar):
+            self.titleBar = title_bar
+            title_bar.setParent(self)
+else:
+    from qframelesswindow import FramelessDialog
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.config import Config

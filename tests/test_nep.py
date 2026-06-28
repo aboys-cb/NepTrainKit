@@ -768,6 +768,34 @@ class TestShowNepWidgetArrowCapability(unittest.TestCase):
             show_nep_module.ShowNepWidget.show_arrow_dialog(widget)
         info_mock.assert_called_once_with("Arrow overlay is unavailable for current structure canvas backend.")
 
+    def test_show_current_structure_defers_and_coalesces_structure_render(self):
+        app = QApplication.instance() or QApplication([])
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._pending_structure_index = None
+        widget._structure_update_scheduled = False
+        widget._sync_reject_toolbar_state = MagicMock()
+        widget.nep_result_data = SimpleNamespace(get_atoms=MagicMock(side_effect=lambda idx: SimpleNamespace(index=idx, has_forces=False)))
+        widget.graph_widget = SimpleNamespace(canvas=SimpleNamespace(plot_current_point=MagicMock()))
+        widget.show_struct_widget = SimpleNamespace(show_structure=MagicMock())
+        widget.update_structure_bond_info = MagicMock()
+        widget.struct_info_widget = SimpleNamespace(show_structure_info=MagicMock())
+        widget.force_label = SimpleNamespace(setText=MagicMock())
+        widget._refresh_export_actions = MagicMock()
+
+        show_nep_module.ShowNepWidget.show_current_structure(widget, 1)
+        show_nep_module.ShowNepWidget.show_current_structure(widget, 2)
+        show_nep_module.ShowNepWidget.show_current_structure(widget, 3)
+
+        self.assertEqual(widget.graph_widget.canvas.plot_current_point.call_count, 3)
+        widget.show_struct_widget.show_structure.assert_not_called()
+
+        app.processEvents()
+
+        widget.nep_result_data.get_atoms.assert_called_once_with(3)
+        widget.show_struct_widget.show_structure.assert_called_once()
+        rendered_atoms = widget.show_struct_widget.show_structure.call_args.args[0]
+        self.assertEqual(rendered_atoms.index, 3)
+
 
 class TestNepPolarizabilityResultData( unittest.TestCase):
     def setUp(self):

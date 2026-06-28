@@ -80,6 +80,8 @@ class ShowNepWidget(QWidget):
         self._worker_threads: list[QThread] = []
         self._structure_mask_version_seen: int | None = None
         self._structure_canvas_fallback_warned = False
+        self._pending_structure_index: int | None = None
+        self._structure_update_scheduled = False
         self.init_action()
         self.init_ui()
         self.calculate_bond_thread:LoadingThread
@@ -1459,14 +1461,26 @@ class ShowNepWidget(QWidget):
         except Exception:
             pass
 
+        self.graph_widget.canvas.plot_current_point(current_index)
+        self._pending_structure_index = int(current_index)
+        if not self._structure_update_scheduled:
+            self._structure_update_scheduled = True
+            QTimer.singleShot(0, self._flush_current_structure_update)
+
+    def _flush_current_structure_update(self):
+        """Render the pending structure after the plot highlight has had a UI tick."""
+        self._structure_update_scheduled = False
+        current_index = self._pending_structure_index
+        self._pending_structure_index = None
+        if current_index is None:
+            return
+
         try:
             atoms=self.nep_result_data.get_atoms(current_index)
         except Exception:
             logger.debug(traceback.format_exc())
             MessageManager.send_message_box("The index is invalid, perhaps the structure has been deleted")
             return
-
-        self.graph_widget.canvas.plot_current_point(current_index)
 
         self.show_struct_widget.show_structure(atoms)
         self.update_structure_bond_info(atoms)
@@ -1729,4 +1743,3 @@ class ShowNepWidget(QWidget):
                 self._on_search_type_changed(self.search_lineEdit.search_type)
             except Exception:
                 pass
-

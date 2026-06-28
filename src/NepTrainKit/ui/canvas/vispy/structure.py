@@ -82,6 +82,9 @@ class ArrowAxes:
         self.label_positions = label_positions or [[0.6, 0, 0], [0, 0.6, 0], [0, 0, 0.6]]
         self.scale = scale
         self.font_size = font_size
+        self.arrows = []
+        self.arrow_transforms = []
+        self.label_visuals = []
 
         # Create arrows and labels
         self._create_arrows()
@@ -93,6 +96,27 @@ class ArrowAxes:
 
         # Initial update
         self._update_axis()
+
+    def _arrow_transform(self, direction):
+        """Build a transform that aligns the arrow mesh to ``direction``."""
+        transform = MatrixTransform()
+        direction = np.array(direction, dtype=float)
+        if np.linalg.norm(direction) == 0:
+            raise ValueError("Direction vector is zero, cannot normalize.")
+        direction /= np.linalg.norm(direction)
+
+        z_axis = np.array([0, 0, 1], dtype=float)
+        if not np.allclose(direction, z_axis) and not np.allclose(direction, -z_axis):
+            axis = np.cross(z_axis, direction)
+            axis_norm = np.linalg.norm(axis)
+            if axis_norm > 1e-6:
+                axis /= axis_norm
+                angle = np.arccos(np.clip(np.dot(z_axis, direction), -1.0, 1.0)) * 180 / np.pi
+                transform.rotate(angle, axis)
+            elif np.allclose(direction, -z_axis):
+                transform.rotate(180, [1, 0, 0])
+        transform.scale([self.scale, self.scale, self.scale])
+        return transform
 
     def _create_arrows(self):
         """Create arrow meshes for each axis direction.
@@ -109,33 +133,10 @@ class ArrowAxes:
         for i, (direction, color) in enumerate(zip(self.directions, self.colors)):
             arrow = Mesh(meshdata=self.arrow_mesh, color=color, parent=self.axis_root)
             # arrow.set_gl_state(depth_test=False, depth_func='always', cull_face=False)
-            transform = MatrixTransform()
-
-            # Normalize direction
-            direction = np.array(direction, dtype=float)
-            if np.linalg.norm(direction) == 0:
-                raise ValueError(f"Direction vector {i} is zero, cannot normalize.")
-            direction /= np.linalg.norm(direction)
-
-            # Align arrow (Z-axis to direction) using quaternion rotation
-            z_axis = np.array([0, 0, 1], dtype=float)
-            if not np.allclose(direction, z_axis) and not np.allclose(direction, -z_axis):
-
-                # Compute rotation axis and angle
-                axis = np.cross(z_axis, direction)
-                axis_norm = np.linalg.norm(axis)
-
-                if axis_norm > 1e-6:  # Avoid division by zero
-                    axis /= axis_norm
-                    angle = np.arccos(np.clip(np.dot(z_axis, direction), -1.0, 1.0)) * 180 / np.pi
-                    transform.rotate(angle, axis)
-
-                elif np.allclose(direction, -z_axis):
-
-                    transform.rotate(180, [1, 0, 0])
-
-            transform.scale([self.scale, self.scale, self.scale])
+            transform = self._arrow_transform(direction)
             arrow.transform = transform
+            self.arrows.append(arrow)
+            self.arrow_transforms.append(transform)
 
             # Debug direction
             # print(f"Axis {self.labels[i]} direction: {direction}")
@@ -163,7 +164,15 @@ class ArrowAxes:
                 pos=pos,
                 parent=self.axis_root
             )
+            self.label_visuals.append(text)
             # text.set_gl_state(depth_test=False)
+
+    def update_directions(self, directions):
+        """Update arrow orientations without recreating visuals or event hooks."""
+        self.directions = directions
+        for arrow, direction in zip(self.arrows, self.directions):
+            arrow.transform = self._arrow_transform(direction)
+        self.axis_root.update()
 
     def _update_axis(self, event=None):
         """Update arrow transform and label to reflect a new orientation.
@@ -231,6 +240,13 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.bond_items = []  # Store bond meshes
         self.arrow_items = []
         self.arrow_colorbar = None
+        self._atom_mesh = None
+        self._atom_signature = None
+        self._atom_template_vertices = None
+        self._atom_faces = None
+        self._atom_colors = None
+        self._axes_signature = None
+        self._lighting_initialized = False
         self.arrow_config:dict[str,Any]
         self.arrow_config = None
         self.lattice_item = None  # Store lattice lines
@@ -393,8 +409,6 @@ class StructurePlotWidget(scene.SceneCanvas):
         structure : Any
             Structure object exposing ``cell`` coordinates.
         """
-        if self.lattice_item:
-            self.lattice_item.parent = None
         origin = np.array([0.0, 0.0, 0.0])
         a1, a2, a3 = structure.cell
         vertices = np.array([
@@ -406,14 +420,21 @@ class StructurePlotWidget(scene.SceneCanvas):
         ]
         lines = np.array([vertices[edge] for edge in edges]).reshape(-1, 3)
         self._lattice_lines_pos = lines
-        self.lattice_item = Line(
-            pos=lines,
-            color=self._lattice_color,
-            width=1.5,
-            connect='segments',
-            method='gl',
-            parent=self.view.scene,antialias=True
-        )
+        if self.lattice_item:
+            self.lattice_item.set_data(
+                pos=lines,
+                color=self._lattice_color,
+                connect='segments',
+            )
+        else:
+            self.lattice_item = Line(
+                pos=lines,
+                color=self._lattice_color,
+                width=1.5,
+                connect='segments',
+                method='gl',
+                parent=self.view.scene,antialias=True
+            )
 
 
         #
@@ -437,16 +458,23 @@ class StructurePlotWidget(scene.SceneCanvas):
         #         update_axis_visual()
         #
         #
-        self.axes = ArrowAxes(
-            canvas=self,
-            parent=self.scene,
-            directions=[a1 / np.linalg.norm(a1),a2/ np.linalg.norm(a2), a3 / np.linalg.norm(a3)],
-            colors=['red', 'green', 'blue'],
-            labels=['X', 'Y', 'Z'],
-            label_positions=[[0.6, 0, 0], [0, 0.6, 0], [0, 0, 0.6]],
-            scale=0.5,
-            font_size=12
-        )
+        directions = [a1 / np.linalg.norm(a1),a2/ np.linalg.norm(a2), a3 / np.linalg.norm(a3)]
+        axes_signature = tuple(np.round(np.asarray(directions, dtype=np.float64).ravel(), 8))
+        if self.axes is None:
+            self.axes = ArrowAxes(
+                canvas=self,
+                parent=self.scene,
+                directions=directions,
+                colors=['red', 'green', 'blue'],
+                labels=['X', 'Y', 'Z'],
+                label_positions=[[0.6, 0, 0], [0, 0.6, 0], [0, 0, 0.6]],
+                scale=0.5,
+                font_size=12
+            )
+            self._axes_signature = axes_signature
+        elif self._axes_signature != axes_signature:
+            self.axes.update_directions(directions)
+            self._axes_signature = axes_signature
 
     def show_bond(self, structure):
         """Draw bonds as cylinders between atom pairs.
@@ -547,54 +575,74 @@ class StructurePlotWidget(scene.SceneCanvas):
             Structure instance providing ``numbers`` and ``positions`` arrays.
         """
         for item in self.atom_items:
-            if item['mesh']:
-                item['mesh'].parent = None
             if item['halo']:
                 item['halo'].parent = None
         self.atom_items = []
 
-        # Merge all atoms
-        all_vertices = []
-        all_faces = []
-        all_colors = []
-        face_offset = 0
         sphere_vertices=self.sphere_meshdata.get_vertices()
         sphere_vertices_size=sphere_vertices.shape[0]
-
         sphere_faces=self.sphere_meshdata.get_faces()
-        for idx, (n, p) in enumerate(zip(structure.numbers, structure.positions)):
-            elem = str(n)
-            color = Color(table_info.get(elem, {'color': '#808080'})['color']).rgba
-            size = table_info.get(elem, {'radii': 70})['radii'] / 150 * self.scale_factor
-            scaled_vertices = sphere_vertices * size + p
-            all_vertices.append(scaled_vertices)
-            all_faces.append(sphere_faces + face_offset)
-            all_colors.append(np.repeat([color], sphere_vertices_size, axis=0))
-            face_offset += sphere_vertices_size
+
+        numbers = np.asarray(structure.numbers)
+        positions = np.asarray(structure.positions, dtype=np.float32)
+        signature = (tuple(int(n) for n in numbers.tolist()), float(self.scale_factor), sphere_vertices_size)
+
+        if self._atom_signature != signature:
+            sizes = np.array(
+                [table_info.get(str(n), {'radii': 70})['radii'] / 150 * self.scale_factor for n in numbers],
+                dtype=np.float32,
+            )
+            colors_by_atom = np.array(
+                [Color(table_info.get(str(n), {'color': '#808080'})['color']).rgba for n in numbers],
+                dtype=np.float32,
+            )
+            offsets = np.arange(numbers.size, dtype=np.int32) * sphere_vertices_size
+            self._atom_template_vertices = (
+                np.asarray(sphere_vertices, dtype=np.float32)[None, :, :] * sizes[:, None, None]
+            )
+            self._atom_faces = (sphere_faces[None, :, :] + offsets[:, None, None]).reshape(-1, 3)
+            self._atom_colors = np.repeat(colors_by_atom, sphere_vertices_size, axis=0)
+            self._atom_signature = signature
+
+        if numbers.size == 0:
+            if self._atom_mesh is not None:
+                self._atom_mesh.parent = None
+                self._atom_mesh = None
+            return
+
+        vertices = (self._atom_template_vertices + positions[:, None, :]).reshape(-1, 3)
+        if self._atom_mesh is None:
+            self._atom_mesh = Mesh(
+                vertices=vertices,
+                faces=self._atom_faces,
+                vertex_colors=self._atom_colors,
+                parent=self.view.scene
+            )
+            self._atom_mesh.attach(self.shading_filter)
+        else:
+            self._atom_mesh.set_data(
+                vertices=vertices,
+                faces=self._atom_faces,
+                vertex_colors=self._atom_colors,
+            )
+
+        sizes = np.array(
+            [table_info.get(str(n), {'radii': 70})['radii'] / 150 * self.scale_factor for n in numbers],
+            dtype=np.float32,
+        )
+        colors_by_atom = np.array(
+            [Color(table_info.get(str(n), {'color': '#808080'})['color']).rgba for n in numbers],
+            dtype=np.float32,
+        )
+        for idx, (p, color, size) in enumerate(zip(positions, colors_by_atom, sizes)):
             self.atom_items.append({
-                'mesh': None,
+                'mesh': self._atom_mesh,
                 'position': p,
                 'original_color': color,
                 'size': size,
                 'halo': None,
-                'vertex_range': (len(all_vertices) - 1) * sphere_vertices_size
+                'vertex_range': idx * sphere_vertices_size
             })
-
-        # Create single mesh for atoms
-        if all_vertices:
-            vertices = np.vstack(all_vertices)
-            faces = np.vstack(all_faces)
-            colors = np.vstack(all_colors)
-            mesh_data = MeshData(vertices=vertices, faces=faces, vertex_colors=colors)
-            mesh = Mesh(
-                meshdata=mesh_data,
-                # shading='smooth',
-                parent=self.view.scene
-            )
-            mesh.attach(self.shading_filter)
-
-            for item in self.atom_items:
-                item['mesh'] = mesh
 
         # Highlight bad bonds
 
@@ -768,11 +816,6 @@ class StructurePlotWidget(scene.SceneCanvas):
         """
         self.structure = structure
         self.apply_style_from_config(redraw_lattice=False)
-        if self.axes is not None:
-            self.axes.axis_root.parent = None
-
-        if self.lattice_item:
-            self.lattice_item.parent = None
 
         self._clear_arrow_visuals()
 
@@ -812,7 +855,9 @@ class StructurePlotWidget(scene.SceneCanvas):
         cfg = self.arrow_config
         if cfg and cfg.get("prop_name") in structure.atomic_properties:
             self.show_arrow(cfg["prop_name"], cfg["scale"], cfg["cmap"])
-        self.update_lighting()
+        if self.auto_view or not self._lighting_initialized:
+            self.update_lighting()
+            self._lighting_initialized = True
 
 
     def on_mouse_move(self, event):

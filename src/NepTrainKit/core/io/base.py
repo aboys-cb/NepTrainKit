@@ -785,6 +785,7 @@ class StructureSyncRule:
             return
         target = self._resolve_target(dataset)
         dataset.all_data[row_idx, target] = values
+        dataset._plot_coord_version = int(getattr(dataset, "_plot_coord_version", 0) or 0) + 1
 
 
 def _sync_target_width(dataset: Any) -> int:

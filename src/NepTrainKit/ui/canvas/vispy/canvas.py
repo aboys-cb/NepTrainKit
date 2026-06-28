@@ -8,16 +8,57 @@ os.environ["VISPY_IGNORE_OLD_VERSION"] = "true"
 
 import numpy as np
 
-from PySide6.QtGui import QBrush, QColor, QPen
+from PySide6.QtCore import QPointF, Qt
+from PySide6.QtGui import QBrush, QColor, QPainter, QPen
+from PySide6.QtWidgets import QWidget
 from vispy import scene
 
 from vispy.visuals.filters import MarkerPickingFilter
 from NepTrainKit.utils import timeit
 from NepTrainKit.config import Config
 from NepTrainKit.ui.canvas.base.canvas import VispyCanvasLayoutBase
+from NepTrainKit.ui.canvas.vispy.fast_scatter import FastScatter
 from NepTrainKit.core.io import NepTrainResultData
-from NepTrainKit.core.types import Brushes, Pens
+from NepTrainKit.core.types import Brushes, Pens, VispyThumbnailMode, parse_vispy_thumbnail_mode
 
+
+VISPY_THUMBNAIL_POINT_LIMIT = 50000
+VISPY_THUMBNAIL_OUTLIER_FRACTION = 0.2
+VISPY_THUMBNAIL_MODE_DEFAULT = VispyThumbnailMode.FAST.value
+
+
+class _LassoOverlay(QWidget):
+    """Paint lasso feedback without asking VisPy to redraw point clouds."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self._points = []
+        self._pen = QPen(QColor(255, 0, 0), 1.5)
+        self.setAttribute(Qt.WA_TransparentForMouseEvents, True)
+        self.setAttribute(Qt.WA_NoSystemBackground, True)
+        self.setAttribute(Qt.WA_TranslucentBackground, True)
+        self.hide()
+
+    def clear_points(self):
+        self._points = []
+        self.update()
+
+    def append_point(self, point):
+        self._points.append(QPointF(float(point[0]), float(point[1])))
+        self.update()
+
+    def set_points(self, points):
+        self._points = [QPointF(float(x), float(y)) for x, y in points]
+        self.update()
+
+    def paintEvent(self, _event):
+        if len(self._points) < 2:
+            return
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing, True)
+        painter.setPen(self._pen)
+        for i in range(1, len(self._points)):
+            painter.drawLine(self._points[i - 1], self._points[i])
 
 
 class ViewBoxWidget(scene.Widget):
@@ -77,6 +118,13 @@ class ViewBoxWidget(scene.Widget):
         self.picking_filter = MarkerPickingFilter()
 
         self._scatter=None
+        self._scatter_layers = {}
+        self._scatter_signatures = {}
+        self._scatter_index_signatures = {}
+        self._scatter_ranges = {}
+        self._scatter_active_indices = {}
+        self._active_scatter_layer = None
+        self._scatter_active_signature = None
         # Overlay marker layers by name (e.g., 'selected', 'show')
         self._overlays = {}
         self.parity_mode = True
@@ -84,13 +132,13 @@ class ViewBoxWidget(scene.Widget):
         self._diagonal=None
         self.current_point=None
         self._layout_attached = False
-        if full_detail:
-            self.set_full_detail(True)
+        self._plot_full_detail = None
+        self.set_full_detail(full_detail)
         self.freeze()
 
     def set_full_detail(self, enabled: bool):
         """Toggle full plot controls for the active main plot."""
-        if enabled and self.xaxis is None:
+        if self.xaxis is None:
             self.xaxis = scene.AxisWidget(
                 orientation='bottom',
                 axis_width=1,
@@ -119,15 +167,15 @@ class ViewBoxWidget(scene.Widget):
             self.set_axis_labels(self._x_label, self._y_label)
             self.set_rmse_text(self._rmse_text)
 
-        if self.xaxis is not None:
-            self.xaxis.visible = enabled
-            self.xaxis.height_max = 30 if enabled else 0
-        if self.yaxis is not None:
-            self.yaxis.visible = enabled
-            self.yaxis.width_max = 50 if enabled else 0
-        if self.text is not None:
-            self.text.visible = enabled
         self._full_detail = bool(enabled)
+        if self.xaxis is not None:
+            self.xaxis.visible = True
+            self.xaxis.height_max = 30 if enabled else 22
+        if self.yaxis is not None:
+            self.yaxis.visible = True
+            self.yaxis.width_max = 50 if enabled else 38
+        if self.text is not None:
+            self.text.visible = bool(enabled)
         if enabled and self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:
             self.add_diagonal(color="red", width=3, antialias=True, method='gl')
 
@@ -174,50 +222,46 @@ class ViewBoxWidget(scene.Widget):
 
         return edge_color
 
-    def auto_range(self):
-        """Auto-scale the pan/zoom camera to fit the scatter data.
-        """
-        if self._scatter is None:
-            return
+    def _range_from_arrays(self, x, y):
+        mask = (x > -10000) & np.isfinite(x) & np.isfinite(y)
+        if not np.any(mask):
+            return [0, 1], [0, 1]
+        return [float(np.min(x[mask])), float(np.max(x[mask]))], [float(np.min(y[mask])), float(np.max(y[mask]))]
 
-        pos = self._scatter._data["a_position"]
-        if pos.size==0:
-            return
-        x_range = [10000, -10000]
-        y_range = [10000, -10000]
-
-
-        x = pos[:,0]
-        y = pos[:,1]
-
-        x = x[x > -10000]
-        y = y[y > -10000]
-        if x.size == 0:
-            x_range =[0,1]
-            y_range =[0,1]
-
-        else:
-
-            x_min = np.min(x)
-            x_max = np.max(x)
-            y_min = np.min(y)
-            y_max = np.max(y)
-            if x_min < x_range[0]:
-                x_range[0] = x_min
-            if x_max > x_range[1]:
-                x_range[1] = x_max
-            if y_min < y_range[0]:
-                y_range[0] = y_min
-            if y_max > y_range[1]:
-                y_range[1] = y_max
-        # self._view.camera.set_range( )
-        #
+    def _apply_data_range(self, x_range, y_range):
         if self.parity_mode:
             real_range=(min(x_range[0],y_range[0]),max(x_range[1],y_range[1]))
             # Provide z-range to avoid VisPy querying scene bounds for z (empty visuals would error)
             self._view.camera.set_range(x=real_range, y=real_range, z=(0, 0))
         else:
             self._view.camera.set_range(x=x_range, y=y_range, z=(0, 0))
+
+    def _apply_scatter_range(self, layer_key):
+        cached_range = self._scatter_ranges.get(layer_key)
+        if cached_range is None:
+            return False
+        self._apply_data_range(*cached_range)
+        return True
+
+    def auto_range(self):
+        """Auto-scale the pan/zoom camera to fit the scatter data.
+        """
+        if self._scatter is None:
+            return
+
+        if hasattr(self._scatter, "positions"):
+            pos = self._scatter.positions
+        else:
+            pos = self._scatter._data["a_position"]
+        if pos.size==0:
+            return
+        active_indices = self._scatter_active_indices.get(self._active_scatter_layer)
+        if active_indices is not None:
+            pos = pos[np.asarray(active_indices, dtype=np.int64)]
+        x_range, y_range = self._range_from_arrays(pos[:, 0], pos[:, 1])
+        if self._active_scatter_layer is not None:
+            self._scatter_ranges[self._active_scatter_layer] = (x_range, y_range)
+        self._apply_data_range(x_range, y_range)
 
     def set_current_point(self, x,y):
 
@@ -255,7 +299,66 @@ class ViewBoxWidget(scene.Widget):
             size=current_size,
         )
 
-    def scatter(self,x,y,data,brush=None,pen=None ,**kwargs):
+    def _ensure_scatter(self, layer_key):
+        if layer_key in self._scatter_layers and self._scatter_layers[layer_key] is not None:
+            return self._scatter_layers[layer_key]
+
+        scatter = FastScatter()
+        scatter.order=1
+        self._view.add(scatter)
+        scatter.visible = False
+        self._scatter_layers[layer_key] = scatter
+        return scatter
+
+    def _set_scatter_indices(self, layer_key, indices=None, index_signature=None):
+        scatter = self._scatter_layers.get(layer_key)
+        if scatter is None or not hasattr(scatter, "set_indices"):
+            return False
+        if index_signature is not None and self._scatter_index_signatures.get(layer_key) == index_signature:
+            return False
+        scatter.set_indices(indices)
+        self._scatter_active_indices[layer_key] = None if indices is None else np.asarray(indices, dtype=np.uint32)
+        if indices is None:
+            cached_range = self._scatter_ranges.get((layer_key, "all"))
+            if cached_range is not None:
+                self._scatter_ranges[layer_key] = cached_range
+        if index_signature is not None:
+            self._scatter_index_signatures[layer_key] = index_signature
+        return True
+
+    def activate_scatter_layer(self, layer_key, data=None, cache_signature=None, indices=None, index_signature=None):
+        scatter = self._ensure_scatter(layer_key)
+        layer_changed = self._active_scatter_layer != layer_key
+        for key, layer in self._scatter_layers.items():
+            layer.visible = key == layer_key
+        self._scatter = scatter
+        self._active_scatter_layer = layer_key
+        if data is not None:
+            self.data = data
+        if cache_signature is not None and self._scatter_signatures.get(layer_key) == cache_signature:
+            index_changed = self._set_scatter_indices(layer_key, indices, index_signature)
+            active_signature = (cache_signature, index_signature)
+            if layer_changed or index_changed or self._scatter_active_signature != active_signature:
+                self._apply_scatter_range(layer_key)
+                self.update_diagonal()
+                self._scatter_active_signature = active_signature
+            return True
+        return False
+
+    def scatter(
+        self,
+        x,
+        y,
+        data,
+        brush=None,
+        pen=None,
+        *,
+        layer_key="full",
+        cache_signature=None,
+        indices=None,
+        index_signature=None,
+        **kwargs
+    ):
         """Update or create the primary scatter visual.
         
         Parameters
@@ -278,22 +381,40 @@ class ViewBoxWidget(scene.Widget):
         vispy.scene.visuals.Markers
             Scatter visual used to render the data.
         """
-        if self._scatter is None:
-            # Use configurable antialias level (default 0.5)
-            self._scatter = scene.visuals.Markers(antialias=self.marker_antialias)
-            self._scatter.order=1
-            self._scatter.attach(self.picking_filter)
-
-            self._view.add(self._scatter)
-
-        self.data=data
-
         if brush is not None:
 
             kwargs["face_color"]=self.convert_color(brush)
         if pen is not None:
 
             kwargs["edge_color"]=self.convert_color(pen)
+            if isinstance(pen, QPen):
+                kwargs["edge_width"] = max(0.0, float(pen.widthF() or pen.width() or 1.0))
+        signature = cache_signature
+        if signature is None:
+            signature = (
+                id(x),
+                id(y),
+                id(data),
+                tuple(np.shape(x)),
+                tuple(np.shape(y)),
+                tuple(np.shape(data)),
+                kwargs.get("size"),
+                kwargs.get("symbol"),
+                str(kwargs.get("face_color")),
+                str(kwargs.get("edge_color")),
+                kwargs.get("edge_width"),
+            )
+
+        if self.activate_scatter_layer(
+            layer_key,
+            data=data,
+            cache_signature=signature,
+            indices=indices,
+            index_signature=index_signature,
+        ):
+            return self._scatter
+        scatter = self._scatter
+
         if x.size != 0:
 
             pos = np.column_stack([x, y]).astype(np.float32, copy=False)
@@ -301,11 +422,24 @@ class ViewBoxWidget(scene.Widget):
             if 'size' not in kwargs or kwargs.get('size') is None:
                 kwargs['size'] = self.marker_size_default
             # self._scatter.update_gl_state(depth_test=False)
-            self._scatter.set_data(pos, **kwargs)
-            self.auto_range()
+            scatter.set_data(pos, **kwargs)
+            self._scatter_signatures[layer_key] = signature
+            full_range = self._range_from_arrays(pos[:, 0], pos[:, 1])
+            self._scatter_ranges[(layer_key, "all")] = full_range
+            self._scatter_ranges[layer_key] = full_range
+            self._set_scatter_indices(layer_key, indices, index_signature)
+            self._apply_scatter_range(layer_key)
+            self._scatter_active_signature = (signature, index_signature)
         else:
-            self._scatter.set_data(np.empty((0, 3)), **kwargs)
-            self.auto_range()
+            scatter.set_data(np.empty((0, 3)), **kwargs)
+            self._scatter_signatures[layer_key] = signature
+            self._scatter_ranges[(layer_key, "all")] = ([0, 1], [0, 1])
+            self._scatter_ranges[layer_key] = ([0, 1], [0, 1])
+            self._set_scatter_indices(layer_key, None, index_signature)
+            self._apply_scatter_range(layer_key)
+            self._scatter_active_signature = (signature, index_signature)
+        if self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:
+            self.add_diagonal(color="red", width=3, antialias=True, method='gl')
         self.update_diagonal()
         return self._scatter
 
@@ -331,6 +465,7 @@ class ViewBoxWidget(scene.Widget):
         line=scene.Line(xy , **kwargs)
         self.view.add(line)
         return line
+
     def add_diagonal(self,**kwargs):
 
 
@@ -355,7 +490,6 @@ class ViewBoxWidget(scene.Widget):
             return None
         if self.xaxis is None:
             return None
-
         x_domain = self.xaxis.axis.domain
 
         line_data = np.linspace(*x_domain,num=100)
@@ -537,8 +671,12 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
 
         self.events.mouse_double_click.connect(self.switch_view_box)
-        self.path_line = scene.visuals.Line(color='red', method='gl', antialias=False)
-        self._path_update_step = 3
+        self._lasso_overlay = _LassoOverlay(self.native)
+        self._sync_lasso_overlay_geometry()
+        self._lasso_overlay.show()
+        self._lasso_overlay.raise_()
+        self._lasso_screen_path = []
+        self.events.resize.connect(lambda _event: self._sync_lasso_overlay_geometry())
         # Use filters to affect the rendering of the mesh.
 
     def clear_axes(self):
@@ -570,7 +708,35 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         self.nep_result_data:NepTrainResultData=dataset
 
 
-    def point_at(self,pos):
+    def _canvas_to_data_pos(self, axes, pos):
+        """Map a canvas pixel position into an axes data coordinate."""
+        tr = self.scene.node_transform(axes.view.scene)
+        x, y, _, _ = tr.map(pos)
+        return float(x), float(y)
+
+    def _interaction_arrays_for_axes(self, axes):
+        """Return full data arrays for picking and polygon selection."""
+        dataset = None
+        try:
+            dataset = self.get_axes_dataset(axes)
+        except (AttributeError, IndexError, ValueError):
+            dataset = None
+        if dataset is not None:
+            return np.asarray(dataset.x), np.asarray(dataset.y), np.asarray(dataset.structure_index)
+
+        if axes is None or axes.data.size == 0 or axes._scatter is None:
+            return None, None, None
+        if hasattr(axes._scatter, "positions"):
+            positions = axes._scatter.positions
+        else:
+            positions = axes._scatter._data["a_position"]
+        if positions.size == 0:
+            return None, None, None
+        positions = positions[:, :2]
+        size = min(positions.shape[0], axes.data.size)
+        return positions[:size, 0], positions[:size, 1], np.asarray(axes.data[:size])
+
+    def point_at(self, pos, current_axes=None):
         """Return the marker index under the given canvas position.
         
         Parameters
@@ -585,72 +751,67 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         """
         if self.nep_result_data is None:
             return None
-        current_axes=self._get_clicked_axes(pos)
+        if current_axes is None:
+            current_axes=self._get_clicked_axes(pos)
         if current_axes is None:
             return None
-        # adjust the event position for hidpi screens
-        render_size = tuple(int(round(d * self.pixel_scale)) for d in self.size)
-        x_pos = int(round(pos[0] * self.pixel_scale))
-        y_pos = int(round(render_size[1] - (pos[1] * self.pixel_scale)))
-        # print(canvas.pixel_scale)
-        # render a small patch around the mouse cursor
-        restore_state = not current_axes.picking_filter.enabled
-        current_axes.picking_filter.enabled = True
-        # Temporarily hide overlays and current-point so picking only sees base scatter
-        hidden = []
-        if hasattr(current_axes, '_overlays'):
-            for ov in current_axes._overlays.values():
-                if ov is not None and ov.visible:
-                    hidden.append(ov)
-                    ov.visible = False
-        if getattr(current_axes, 'current_point', None) is not None and current_axes.current_point.visible:
-            hidden.append(current_axes.current_point)
-            current_axes.current_point.visible = False
-        # Also hide drawing helpers to avoid contaminating the pick render
-        path_was_visible = False
-        if getattr(self, 'path_line', None) is not None and self.path_line.parent is not None:
-            path_was_visible = getattr(self.path_line, 'visible', True)
-            self.path_line.visible = False
-        diag_was_visible = False
-        if getattr(current_axes, '_diagonal', None) is not None:
-            diag_was_visible = getattr(current_axes._diagonal, 'visible', False)
-            current_axes._diagonal.visible = False
-        current_axes._scatter.update_gl_state(blend=False)
-        picking_render = self.render(
-            crop=(x_pos - 3, y_pos - 3, 7, 7),
-            bgcolor=(0, 0, 0, 0),
-            alpha=True,
-        )
-        # Restore previously hidden visuals
-        for v in hidden:
-            v.visible = True
-        if getattr(self, 'path_line', None) is not None and self.path_line.parent is not None:
-            self.path_line.visible = path_was_visible
-        if getattr(current_axes, '_diagonal', None) is not None:
-            current_axes._diagonal.visible = diag_was_visible
-        if restore_state:
-            current_axes.picking_filter.enabled = False
-        current_axes._scatter.update_gl_state(blend=not current_axes.picking_filter.enabled)
+        x, y, structure_index = self._interaction_arrays_for_axes(current_axes)
+        if x is None or y is None or structure_index is None or structure_index.size == 0:
+            return None
 
-        # unpack indices in patch and pick the nearest valid marker index
-        patch = (picking_render.view(np.uint32) - 1)[:, :, 0]
-        if current_axes.data.size == 0:
+        x0, y0 = self._canvas_to_data_pos(current_axes, pos)
+        radius_px = float(max(6, getattr(current_axes, "marker_size_default", 6)))
+        x1, y1 = self._canvas_to_data_pos(current_axes, (pos[0] + radius_px, pos[1]))
+        x2, y2 = self._canvas_to_data_pos(current_axes, (pos[0], pos[1] + radius_px))
+        dx = max(abs(x1 - x0), np.finfo(np.float32).eps)
+        dy = max(abs(y2 - y0), np.finfo(np.float32).eps)
+
+        mask = (x > -10000) & (np.abs(x - x0) <= dx) & (np.abs(y - y0) <= dy)
+        if not np.any(mask):
             return None
-        # valid indices are in [0, data_size)
-        valid_mask = patch < int(current_axes.data.size)
-        if not np.any(valid_mask):
+
+        candidate_indices = np.nonzero(mask)[0]
+        candidate_x = x[candidate_indices]
+        candidate_y = y[candidate_indices]
+        dist2 = ((candidate_x - x0) / dx) ** 2 + ((candidate_y - y0) / dy) ** 2
+        nearest = int(np.argmin(dist2))
+        if float(dist2[nearest]) > 1.0:
             return None
-        # compute distance to center for valid pixels and choose nearest
-        h, w = patch.shape
-        yy, xx = np.mgrid[0:h, 0:w]
-        cy = (h - 1) / 2.0
-        cx = (w - 1) / 2.0
-        dist2 = (yy - cy) ** 2 + (xx - cx) ** 2
-        # set invalid distances to large
-        dist2 = np.where(valid_mask, dist2, 1e9)
-        iy, ix = np.unravel_index(np.argmin(dist2), dist2.shape)
-        marker_idx = int(patch[iy, ix])
-        return marker_idx
+        return int(candidate_indices[nearest])
+
+    def structure_at(self, pos, current_axes=None):
+        """Return the structure index under the given canvas position."""
+        index = self.point_at(pos, current_axes)
+        if index is None:
+            return None
+        if current_axes is None:
+            current_axes = self._get_clicked_axes(pos)
+        _x, _y, structure_index = self._interaction_arrays_for_axes(current_axes)
+        if structure_index is None or index >= structure_index.size:
+            return None
+        return int(structure_index[index])
+
+    def _sync_lasso_overlay_geometry(self):
+        if self._lasso_overlay is None:
+            return
+        self._lasso_overlay.setGeometry(self.native.rect())
+
+    def _begin_lasso_overlay(self, point):
+        if self._lasso_overlay is None:
+            return
+        self._lasso_overlay.clear_points()
+        self._lasso_overlay.append_point(point)
+
+    def _append_lasso_overlay_point(self, point):
+        if self._lasso_overlay is None:
+            return
+        self._lasso_overlay.append_point(point)
+
+    def _clear_lasso_overlay(self):
+        if self._lasso_overlay is None:
+            return
+        self._lasso_overlay.clear_points()
+
     def on_mouse_press(self, event):
         """Handle mouse press events for either picking or polygon drawing.
         
@@ -662,14 +823,10 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
         if not self.draw_mode:
 
-            index = self.point_at(event.pos)
-
             current_axes = self._get_clicked_axes(event.pos)
+            structure_index = self.structure_at(event.pos, current_axes)
 
-            if index is not None:
-                structure_index=current_axes.data[index]
-
-
+            if structure_index is not None:
                 self.structureIndexChanged.emit(structure_index)
 
             return False
@@ -680,8 +837,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 tr = self.scene.node_transform(self.current_axes.view.scene)
                 x, y, _, _ = tr.map(event.pos)
                 self.mouse_path = [[x, y]]
-                self.path_line.set_data(pos=np.array(self.mouse_path))
-                self.current_axes.view.add(self.path_line)
+                self._lasso_screen_path = [tuple(event.pos)]
+                self._begin_lasso_overlay(event.pos)
 
 
     def on_mouse_move(self, event):
@@ -700,9 +857,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             x, y, _, _ = tr.map(event.pos)
 
             self.mouse_path.append([x,y])
-
-            if (len(self.mouse_path) % getattr(self, '_path_update_step', 3)) == 0:
-                self.path_line.set_data(pos=np.array(self.mouse_path))
+            self._lasso_screen_path.append(tuple(event.pos))
+            self._append_lasso_overlay_point(event.pos)
 
     def on_mouse_release(self, event):
         """Complete selection interactions when the mouse button is released.
@@ -717,19 +873,18 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if event.button == 1 or event.button ==2:
             reverse=event.button == 2
 
-            self.path_line.parent=None
+            self._clear_lasso_overlay()
 
             if len(self.mouse_path)>2:
 
                 self.select_point_from_polygon(np.array(self.mouse_path),reverse)
             else:
-                index = self.point_at(event.pos)
-                if index is not None:
-                    structure_index = self.current_axes.data[index]
-
+                structure_index = self.structure_at(event.pos, self.current_axes)
+                if structure_index is not None:
                     self.select_index(structure_index,reverse)
 
             self.mouse_path = []
+            self._lasso_screen_path = []
 
     def _get_clicked_axes(self,pos):
         """Return the ViewBoxWidget beneath the given canvas position.
@@ -765,8 +920,10 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if axes is None:
             return
         if self.current_axes != axes:
+            old_axes = self.current_axes
             self.set_current_axes(axes)
-            self.set_view_layout()
+            self._refresh_plot_detail(old_axes)
+            self._refresh_plot_detail(axes)
             self._refresh_current_axes_annotations()
 
     def init_axes(self,axes_num   ):
@@ -818,6 +975,249 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 widget._layout_attached = True
 
                 i += 1
+
+    def _dataset_version(self, dataset):
+        data = getattr(dataset, "data", None)
+        group_array = getattr(dataset, "group_array", None)
+        return (
+            getattr(data, "version", 0),
+            getattr(group_array, "version", 0),
+            getattr(data, "num", None),
+            getattr(group_array, "num", None),
+            np.shape(getattr(data, "all_data", ())),
+            np.shape(getattr(group_array, "all_data", ())),
+        )
+
+    def _thumbnail_limit(self):
+        try:
+            limit = Config.getint("widget", "vispy_thumbnail_point_limit", VISPY_THUMBNAIL_POINT_LIMIT)
+        except Exception:
+            limit = VISPY_THUMBNAIL_POINT_LIMIT
+        return max(0, int(limit or 0))
+
+    def _thumbnail_mode(self):
+        return parse_vispy_thumbnail_mode(
+            Config.get("widget", "vispy_thumbnail_mode", VISPY_THUMBNAIL_MODE_DEFAULT)
+        )
+
+    def _dataset_position_version(self, dataset):
+        data = getattr(dataset, "data", None)
+        group_array = getattr(dataset, "group_array", None)
+        return (
+            int(getattr(dataset, "_plot_coord_version", getattr(dataset, "_content_version", 0)) or 0),
+            id(getattr(data, "all_data", None)),
+            id(getattr(group_array, "all_data", None)),
+            np.shape(getattr(data, "all_data", ())),
+            np.shape(getattr(group_array, "all_data", ())),
+        )
+
+    def _full_plot_arrays(self, dataset):
+        data = np.asarray(dataset.all_data)
+        if data.ndim < 2 or data.shape[1] < 2:
+            x = data.reshape(-1)
+            y = x
+            structure_index = np.asarray(dataset.group_array.all_data, dtype=np.int32).reshape(-1)
+            return x, y, structure_index
+        cols = data.shape[1] // 2
+        x = data[:, dataset.x_cols].ravel()
+        y = data[:, dataset.y_cols].ravel()
+        structure_index = np.asarray(dataset.group_array.all_data, dtype=np.int32).repeat(cols)
+        return x, y, structure_index
+
+    def _active_point_indices(self, dataset):
+        data = getattr(dataset, "data", None)
+        mask = getattr(data, "mask_array", None)
+        if mask is None:
+            return None
+        mask = np.asarray(mask, dtype=bool).reshape(-1)
+        if mask.size == 0 or bool(np.all(mask)):
+            return None
+        all_data = np.asarray(dataset.all_data)
+        if all_data.ndim < 2 or all_data.shape[1] < 2:
+            return np.nonzero(mask)[0].astype(np.uint32, copy=False)
+        cols = all_data.shape[1] // 2
+        rows = np.nonzero(mask)[0].astype(np.uint32, copy=False)
+        offsets = np.arange(cols, dtype=np.uint32)
+        return (rows[:, None] * np.uint32(cols) + offsets[None, :]).ravel()
+
+    def _plot_cache_signature(self, plot, dataset, full_detail: bool):
+        marker_size = Config.getint("widget", "vispy_marker_size", 6) or 6
+        layer_key = "full" if full_detail else "thumbnail"
+        brush = getattr(dataset, "base_brush", Brushes.get(dataset.title.upper()))
+        pen = getattr(dataset, "base_pen", Pens.get(dataset.title.upper()))
+        version = self._dataset_position_version(dataset) if full_detail else self._dataset_version(dataset)
+        index_signature = None
+        if full_detail:
+            index_signature = self._dataset_version(dataset)
+        return (
+            layer_key,
+            brush,
+            pen,
+            marker_size,
+            (
+                id(dataset),
+                version,
+                layer_key,
+                self._thumbnail_mode().value if not full_detail else "",
+                self._thumbnail_limit() if not full_detail else 0,
+                marker_size,
+                dataset.title,
+                getattr(dataset, "display_title", dataset.title),
+                tuple(plot.convert_color(brush)) if brush is not None else None,
+                tuple(plot.convert_color(pen)) if pen is not None else None,
+            ),
+            index_signature,
+        )
+
+    def _thumbnail_sample_indices(self, dataset, limit):
+        x = np.asarray(dataset.x)
+        y = np.asarray(dataset.y)
+        count = x.shape[0]
+        if limit <= 0 or count <= limit:
+            return None
+
+        mode = self._thumbnail_mode()
+        if mode == VispyThumbnailMode.OFF:
+            return None
+        if mode == VispyThumbnailMode.FAST:
+            return np.linspace(0, count - 1, num=limit, dtype=np.int64)
+
+        finite = np.isfinite(x) & np.isfinite(y) & (x > -10000)
+        valid_indices = np.nonzero(finite)[0]
+        if valid_indices.size == 0:
+            return np.linspace(0, count - 1, num=limit, dtype=np.int64)
+
+        parity_mode = bool(getattr(dataset, "parity_mode", getattr(dataset, "title", "") not in ("", "descriptor")))
+        selected = []
+
+        if parity_mode:
+            outlier_count = min(valid_indices.size, int(limit * VISPY_THUMBNAIL_OUTLIER_FRACTION))
+            if outlier_count > 0:
+                residual = np.abs(
+                    y[valid_indices].astype(np.float64, copy=False)
+                    - x[valid_indices].astype(np.float64, copy=False)
+                )
+                outlier_local = np.argpartition(residual, -outlier_count)[-outlier_count:]
+                selected.append(valid_indices[outlier_local])
+
+        selected_size = sum(indices.size for indices in selected)
+        grid_limit = max(1, limit - selected_size)
+        grid_indices = self._thumbnail_grid_sample_indices(x, y, valid_indices, grid_limit, parity_mode)
+        selected.append(grid_indices)
+
+        indices = np.unique(np.concatenate(selected)).astype(np.int64, copy=False)
+        if indices.size < limit:
+            fill = np.linspace(0, count - 1, num=min(count, limit), dtype=np.int64)
+            indices = np.unique(np.concatenate([indices, fill])).astype(np.int64, copy=False)
+        if indices.size < limit:
+            missing = np.setdiff1d(np.arange(count, dtype=np.int64), indices, assume_unique=True)
+            indices = np.concatenate([indices, missing[: limit - indices.size]])
+        if indices.size > limit:
+            keep = np.linspace(0, indices.size - 1, num=limit, dtype=np.int64)
+            indices = indices[keep]
+        return indices
+
+    def _thumbnail_grid_sample_indices(self, x, y, valid_indices, limit, parity_mode):
+        if limit <= 0 or valid_indices.size == 0:
+            return np.empty(0, dtype=np.int64)
+
+        xv = x[valid_indices].astype(np.float64, copy=False)
+        yv = y[valid_indices].astype(np.float64, copy=False)
+        x_min, x_max = np.percentile(xv, [0.5, 99.5])
+        y_min, y_max = np.percentile(yv, [0.5, 99.5])
+        if not np.isfinite(x_min) or not np.isfinite(x_max) or x_min == x_max:
+            x_min, x_max = float(np.min(xv)), float(np.max(xv))
+        if not np.isfinite(y_min) or not np.isfinite(y_max) or y_min == y_max:
+            y_min, y_max = float(np.min(yv)), float(np.max(yv))
+        if x_min == x_max or y_min == y_max:
+            return valid_indices[np.linspace(0, valid_indices.size - 1, num=min(limit, valid_indices.size), dtype=np.int64)]
+
+        bins = max(2, int(np.ceil(np.sqrt(limit))))
+        xi = np.clip(((xv - x_min) / (x_max - x_min) * bins).astype(np.int64), 0, bins - 1)
+        yi = np.clip(((yv - y_min) / (y_max - y_min) * bins).astype(np.int64), 0, bins - 1)
+        cell_id = xi * bins + yi
+
+        if parity_mode:
+            score = np.abs(yv - xv)
+            best_score = np.full(bins * bins, -np.inf, dtype=np.float64)
+            np.maximum.at(best_score, cell_id, score)
+            candidate_local = np.flatnonzero(score == best_score[cell_id])
+        else:
+            _cells, candidate_local = np.unique(cell_id, return_index=True)
+
+        if candidate_local.size > limit:
+            keep = np.linspace(0, candidate_local.size - 1, num=limit, dtype=np.int64)
+            candidate_local = candidate_local[keep]
+        return valid_indices[candidate_local]
+
+    def _plot_arrays_for_detail(self, dataset, full_detail: bool):
+        x = dataset.x
+        y = dataset.y
+        structure_index = dataset.structure_index
+        if full_detail:
+            return x, y, structure_index
+        limit = self._thumbnail_limit()
+        indices = self._thumbnail_sample_indices(dataset, limit)
+        if indices is None:
+            return x, y, structure_index
+        return x[indices], y[indices], structure_index[indices]
+
+    def _plot_dataset_on_axes(self, plot, dataset, full_detail: bool):
+        plot.parity_mode = bool(getattr(dataset, "parity_mode", dataset.title != "descriptor"))
+        plot.title = dataset.title
+        display_title = str(getattr(dataset, "display_title", dataset.title) or dataset.title)
+        if display_title != plot.title:
+            plot.title_label._text_visual.text = display_title
+
+        layer_key, brush, pen, marker_size, cache_signature, index_signature = self._plot_cache_signature(plot, dataset, full_detail)
+        if (
+            full_detail
+            and plot._scatter_signatures.get(layer_key) == cache_signature
+            and plot._scatter_index_signatures.get(layer_key) == index_signature
+            and plot.activate_scatter_layer(layer_key, cache_signature=cache_signature, index_signature=index_signature)
+        ):
+            plot._plot_full_detail = bool(full_detail)
+            return
+
+        indices = self._active_point_indices(dataset) if full_detail else None
+        if plot.activate_scatter_layer(
+            layer_key,
+            cache_signature=cache_signature,
+            indices=indices,
+            index_signature=index_signature,
+        ):
+            plot._plot_full_detail = bool(full_detail)
+            return
+
+        if full_detail:
+            x, y, structure_index = self._full_plot_arrays(dataset)
+        else:
+            x, y, structure_index = self._plot_arrays_for_detail(dataset, full_detail)
+        plot.scatter(
+            x,
+            y,
+            data=structure_index,
+            brush=brush,
+            pen=pen,
+            symbol='o',
+            size=marker_size,
+            layer_key=layer_key,
+            cache_signature=cache_signature,
+            indices=indices,
+            index_signature=index_signature,
+        )
+        plot._plot_full_detail = bool(full_detail)
+
+    def _refresh_plot_detail(self, plot):
+        if plot is None or self.nep_result_data is None or plot not in self.axes_list:
+            return
+        dataset = self.get_axes_dataset(plot)
+        if dataset is None:
+            return
+        full_detail = plot is self.current_axes
+        if plot._plot_full_detail == full_detail:
+            return
+        self._plot_dataset_on_axes(plot, dataset, full_detail)
 
     def auto_range(self):
         """Delegate auto-ranging to the currently active axes.
@@ -883,22 +1283,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             plot=self.axes_list[index]
 
 
-            plot.parity_mode = bool(getattr(_dataset, "parity_mode", _dataset.title != "descriptor"))
-            plot.title = _dataset.title
-            display_title = str(getattr(_dataset, "display_title", _dataset.title) or _dataset.title)
-            if display_title != plot.title:
-                plot.title_label._text_visual.text = display_title
-
-            marker_size = Config.getint("widget", "vispy_marker_size", 6) or 6
-            plot.scatter(_dataset.x,
-                         _dataset.y,
-                         data=_dataset.structure_index,
-                         brush=getattr(_dataset, "base_brush", Brushes.get(_dataset.title.upper())) ,
-                         pen=getattr(_dataset, "base_pen", Pens.get(_dataset.title.upper())),
-                         symbol='o',
-                         size=marker_size,
-
-                                      )
+            self._plot_dataset_on_axes(plot, _dataset, plot is self.current_axes)
 
             # continue
             if _dataset.group_array.num !=0:
@@ -938,7 +1323,6 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         plot.set_axis_labels(getattr(dataset, "x_label", None), getattr(dataset, "y_label", None))
         if bool(getattr(dataset, "show_rmse", dataset.title not in ["descriptor"])):
             plot.set_rmse_text(f"rmse: {dataset.get_formart_rmse()}")
-            plot.auto_range()
             if plot.text is not None:
                 plot.text.pos = self.convert_pos(plot, (0.1, 0.8))
         else:
@@ -1200,7 +1584,11 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         reverse : bool
             When ``True`` remove the enclosed points from the selection.
         """
-        index=self.is_point_in_polygon(np.column_stack([self.current_axes._scatter._data["a_position"][:,0],self.current_axes._scatter._data["a_position"][:,1]]),polygon_xy)
-        index = np.where(index)[0]
-        select_index=self.current_axes.data[index].tolist()
+        x, y, structure_index = self._interaction_arrays_for_axes(self.current_axes)
+        if x is None or y is None or structure_index is None or structure_index.size == 0:
+            return
+        mask = x > -10000
+        points = np.column_stack([x[mask], y[mask]])
+        selected = self.is_point_in_polygon(points, polygon_xy)
+        select_index=np.unique(structure_index[mask][selected]).astype(np.int64).tolist()
         self.select_index(select_index,reverse)

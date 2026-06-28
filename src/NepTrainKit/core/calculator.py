@@ -20,7 +20,7 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.paths import PathLike, as_path
 from NepTrainKit.core.types import NepBackend
-from NepTrainKit.core.utils import split_by_natoms, aggregate_per_atom_to_structure, is_charge_model
+from NepTrainKit.core.utils import split_by_natoms, aggregate_per_atom_to_structure, is_charge_model, is_spin_model
 from NepTrainKit.core.cstdio_redirect import redirect_c_stdout_stderr
 
 try:
@@ -66,10 +66,14 @@ class NepCalculator:
         self.initialized = False
         self.nep3 = None
         self.is_charge_model = is_charge_model(self.model_path)
+        self.is_spin_model = is_spin_model(self.model_path)
         self.element_list: list[str] = []
         self.type_dict: dict[str, int] = {}
         # Native stdio behavior for C/C++ (printf) in backends
         self._native_stdio = native_stdio
+        if self.is_spin_model:
+            logger.info("Spin NEP model detected; native NEP calculator loading is skipped.")
+            return
         if CpuNep is None and GpuNep is None:
             MessageManager.send_message_box(
                 "Failed to import NEP.\n To use the display functionality normally, please prepare the *.out and descriptor.out files.",

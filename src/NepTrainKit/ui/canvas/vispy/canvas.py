@@ -16,17 +16,17 @@ from loguru import logger
 from vispy import scene
 
 from vispy.visuals.filters import MarkerPickingFilter
+from vispy.visuals.transforms import STTransform
 from NepTrainKit.utils import timeit
 from NepTrainKit.config import Config
 from NepTrainKit.ui.canvas.base.canvas import VispyCanvasLayoutBase
 from NepTrainKit.ui.canvas.vispy.fast_scatter import FastScatter
 from NepTrainKit.core.io import NepTrainResultData
-from NepTrainKit.core.types import Brushes, Pens, VispyThumbnailMode, parse_vispy_thumbnail_mode
+from NepTrainKit.core.types import Brushes, Pens
 
 
-VISPY_THUMBNAIL_POINT_LIMIT = 50000
-VISPY_THUMBNAIL_OUTLIER_FRACTION = 0.2
-VISPY_THUMBNAIL_MODE_DEFAULT = VispyThumbnailMode.FAST.value
+VISPY_PREVIEW_WIDTH = 640
+VISPY_PREVIEW_HEIGHT = 240
 
 
 def _vispy_perf_enabled():
@@ -76,6 +76,215 @@ class _LassoOverlay(QWidget):
         painter.setPen(self._pen)
         for i in range(1, len(self._points)):
             painter.drawLine(self._points[i - 1], self._points[i])
+
+
+class DatasetGpuCache:
+    """Cache full plot arrays and full-data preview rasters per dataset."""
+
+    def __init__(self):
+        self._arrays = {}
+        self._previews = {}
+
+    def clear(self):
+        self._arrays.clear()
+        self._previews.clear()
+
+    def position_signature(self, dataset):
+        data = getattr(dataset, "data", None)
+        group_array = getattr(dataset, "group_array", None)
+        return (
+            id(dataset),
+            int(getattr(dataset, "_plot_coord_version", getattr(dataset, "_content_version", 0)) or 0),
+            id(getattr(data, "all_data", None)),
+            id(getattr(group_array, "all_data", None)),
+            np.shape(getattr(data, "all_data", ())),
+            np.shape(getattr(group_array, "all_data", ())),
+        )
+
+    def dataset_version(self, dataset):
+        data = getattr(dataset, "data", None)
+        group_array = getattr(dataset, "group_array", None)
+        return (
+            getattr(data, "version", 0),
+            getattr(group_array, "version", 0),
+            getattr(data, "num", None),
+            getattr(group_array, "num", None),
+            np.shape(getattr(data, "all_data", ())),
+            np.shape(getattr(group_array, "all_data", ())),
+        )
+
+    def arrays(self, dataset):
+        signature = self.position_signature(dataset)
+        cached = self._arrays.get(signature)
+        if cached is not None:
+            return cached
+
+        data = np.asarray(dataset.all_data)
+        if data.ndim < 2 or data.shape[1] < 2:
+            x = data.reshape(-1)
+            y = x
+            structure_index = np.asarray(dataset.group_array.all_data, dtype=np.int32).reshape(-1)
+        else:
+            cols = data.shape[1] // 2
+            x = data[:, dataset.x_cols].ravel()
+            y = data[:, dataset.y_cols].ravel()
+            structure_index = np.asarray(dataset.group_array.all_data, dtype=np.int32).repeat(cols)
+
+        cached = (x, y, structure_index)
+        dataset_id = id(dataset)
+        for key in list(self._arrays):
+            if key[0] == dataset_id and key != signature:
+                self._arrays.pop(key, None)
+        self._arrays[signature] = cached
+        return cached
+
+    def active_indices(self, dataset):
+        data = getattr(dataset, "data", None)
+        mask = getattr(data, "mask_array", None)
+        if mask is None:
+            return None
+        mask = np.asarray(mask, dtype=bool).reshape(-1)
+        if mask.size == 0 or bool(np.all(mask)):
+            return None
+        all_data = np.asarray(dataset.all_data)
+        if all_data.ndim < 2 or all_data.shape[1] < 2:
+            return np.nonzero(mask)[0].astype(np.uint32, copy=False)
+        cols = all_data.shape[1] // 2
+        rows = np.nonzero(mask)[0].astype(np.uint32, copy=False)
+        offsets = np.arange(cols, dtype=np.uint32)
+        return (rows[:, None] * np.uint32(cols) + offsets[None, :]).ravel()
+
+    def data_range(self, x, y, parity_mode):
+        mask = (x > -10000) & np.isfinite(x) & np.isfinite(y)
+        if not np.any(mask):
+            return [0, 1], [0, 1]
+        x_range = [float(np.min(x[mask])), float(np.max(x[mask]))]
+        y_range = [float(np.min(y[mask])), float(np.max(y[mask]))]
+        if parity_mode:
+            real_range = [min(x_range[0], y_range[0]), max(x_range[1], y_range[1])]
+            return real_range, real_range
+        return x_range, y_range
+
+    def preview(self, dataset, color, parity_mode, active_indices=None):
+        color_arr = np.asarray(color, dtype=np.float32).reshape(-1)
+        color_key = tuple(float(v) for v in color_arr[:4])
+        preview_signature = (
+            self.position_signature(dataset),
+            self.dataset_version(dataset),
+            color_key,
+            bool(parity_mode),
+            VISPY_PREVIEW_WIDTH,
+            VISPY_PREVIEW_HEIGHT,
+        )
+        cached = self._previews.get(preview_signature)
+        if cached is not None:
+            return cached
+
+        t0 = time.perf_counter()
+        x, y, _structure_index = self.arrays(dataset)
+        if active_indices is not None:
+            active_indices = np.asarray(active_indices, dtype=np.int64)
+            x = x[active_indices]
+            y = y[active_indices]
+
+        x_range, y_range = self.data_range(x, y, parity_mode)
+        image = self._rasterize_preview(x, y, x_range, y_range, color_arr)
+        cached = (image, x_range, y_range)
+        dataset_id = id(dataset)
+        for key in list(self._previews):
+            if key[0][0] == dataset_id and key != preview_signature:
+                self._previews.pop(key, None)
+        self._previews[preview_signature] = cached
+        _vispy_perf_log(
+            "preview.raster",
+            title=getattr(dataset, "title", ""),
+            points=int(np.asarray(x).size),
+            width=VISPY_PREVIEW_WIDTH,
+            height=VISPY_PREVIEW_HEIGHT,
+            ms=f"{_elapsed_ms(t0):.3f}",
+        )
+        return cached
+
+    def _rasterize_preview(self, x, y, x_range, y_range, color):
+        width = VISPY_PREVIEW_WIDTH
+        height = VISPY_PREVIEW_HEIGHT
+        image = np.zeros((height, width, 4), dtype=np.uint8)
+        x = np.asarray(x)
+        y = np.asarray(y)
+        mask = (x > -10000) & np.isfinite(x) & np.isfinite(y)
+        if not np.any(mask):
+            return image
+
+        x_min, x_max = x_range
+        y_min, y_max = y_range
+        if x_min == x_max:
+            x_max = x_min + 1.0
+        if y_min == y_max:
+            y_max = y_min + 1.0
+
+        px = ((x[mask] - x_min) / (x_max - x_min) * (width - 1)).astype(np.int64)
+        py = ((y[mask] - y_min) / (y_max - y_min) * (height - 1)).astype(np.int64)
+        valid = (px >= 0) & (px < width) & (py >= 0) & (py < height)
+        if not np.any(valid):
+            return image
+
+        px = px[valid]
+        py = py[valid]
+        counts = np.zeros((height, width), dtype=np.uint16)
+        np.add.at(counts, (py, px), 1)
+        occupied = counts > 0
+        rgb = np.clip(color[:3] * 255, 0, 255).astype(np.uint8)
+        alpha_base = float(color[3]) if color.size >= 4 else 1.0
+        alpha_base = max(alpha_base, 0.85)
+        alpha = np.clip((80 + np.log1p(counts.astype(np.float32)) * 45) * alpha_base, 0, 255).astype(np.uint8)
+        image[occupied, :3] = rgb
+        image[occupied, 3] = alpha[occupied]
+        image[1:, :, :] = np.maximum(image[1:, :, :], image[:-1, :, :])
+        image[:, 1:, :] = np.maximum(image[:, 1:, :], image[:, :-1, :])
+        return image
+
+
+class MainPlotView:
+    """Render the active plot as a real interactive scatter visual."""
+
+    def __init__(self, cache: DatasetGpuCache):
+        self.cache = cache
+
+    def render(self, plot, dataset, brush, pen, marker_size, layer_key, cache_signature, index_signature):
+        x, y, structure_index = self.cache.arrays(dataset)
+        indices = self.cache.active_indices(dataset)
+        plot.set_preview_visible(False)
+        return plot.scatter(
+            x,
+            y,
+            data=structure_index,
+            brush=brush,
+            pen=pen,
+            symbol='o',
+            size=marker_size,
+            layer_key=layer_key,
+            cache_signature=cache_signature,
+            indices=indices,
+            index_signature=index_signature,
+        )
+
+
+class PreviewPlotView:
+    """Render inactive plots as cached full-data preview images plus overlays."""
+
+    def __init__(self, cache: DatasetGpuCache):
+        self.cache = cache
+
+    def render(self, plot, dataset, brush, pen, marker_size):
+        face_color = np.asarray(plot.convert_color(brush), dtype=np.float32).reshape(-1)
+        if face_color.size < 4 or face_color[3] <= 0.1:
+            color = plot.convert_color(pen)
+        else:
+            color = face_color
+        active_indices = self.cache.active_indices(dataset)
+        image, x_range, y_range = self.cache.preview(dataset, color, plot.parity_mode, active_indices=active_indices)
+        plot.set_preview_image(image, x_range, y_range)
+        return plot._preview_image
 
 
 class ViewBoxWidget(scene.Widget):
@@ -142,6 +351,7 @@ class ViewBoxWidget(scene.Widget):
         self._scatter_active_indices = {}
         self._active_scatter_layer = None
         self._scatter_active_signature = None
+        self._preview_image = None
         # Overlay marker layers by name (e.g., 'selected', 'show')
         self._overlays = {}
         self.parity_mode = True
@@ -149,6 +359,7 @@ class ViewBoxWidget(scene.Widget):
         self._diagonal=None
         self.current_point=None
         self._layout_attached = False
+        self._layout_position = None
         self._plot_full_detail = None
         self.set_full_detail(full_detail)
         self.freeze()
@@ -195,6 +406,37 @@ class ViewBoxWidget(scene.Widget):
             self.text.visible = bool(enabled)
         if enabled and self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:
             self.add_diagonal(color="red", width=3, antialias=True, method='gl')
+
+    def set_preview_visible(self, visible: bool):
+        if self._preview_image is not None:
+            self._preview_image.visible = bool(visible)
+        for layer in self._scatter_layers.values():
+            layer.visible = not visible and layer is self._scatter
+
+    def set_preview_image(self, image, x_range, y_range):
+        if self._preview_image is None:
+            self._preview_image = scene.visuals.Image(image, interpolation="nearest", parent=self._view.scene)
+            self._preview_image.order = 1
+        else:
+            self._preview_image.set_data(image)
+
+        width = max(1, image.shape[1])
+        height = max(1, image.shape[0])
+        x_min, x_max = x_range
+        y_min, y_max = y_range
+        self._preview_image.transform = STTransform(
+            scale=((x_max - x_min) / width, (y_max - y_min) / height),
+            translate=(x_min, y_min),
+        )
+        self._preview_image.visible = True
+        for layer in self._scatter_layers.values():
+            layer.visible = False
+        self._scatter = None
+        self._active_scatter_layer = None
+        self._apply_data_range(x_range, y_range)
+        if self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:
+            self.add_diagonal(color="red", width=3, antialias=True, method='gl')
+        self.update_diagonal()
 
     def set_axis_labels(self, x_label=None, y_label=None):
         """Store and apply axis labels when full controls exist."""
@@ -308,6 +550,8 @@ class ViewBoxWidget(scene.Widget):
 
         z=np.full(x.shape,2)
         current_size = Config.getint("plot", "current_marker_size", 20) or 20
+        if not self._full_detail:
+            current_size = max(6, int(current_size * 0.45))
         self.current_point.set_data(
             np.vstack([x, y, z]).T,
             face_color=self.convert_color(Brushes.Current),
@@ -345,6 +589,8 @@ class ViewBoxWidget(scene.Widget):
 
     def activate_scatter_layer(self, layer_key, data=None, cache_signature=None, indices=None, index_signature=None):
         scatter = self._ensure_scatter(layer_key)
+        if self._preview_image is not None:
+            self._preview_image.visible = False
         layer_changed = self._active_scatter_layer != layer_key
         for key, layer in self._scatter_layers.items():
             layer.visible = key == layer_key
@@ -685,6 +931,10 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         self._loaded_by_plot = {}
         self._reject_by_plot = {}
         self._overlay_position_cache = {}
+        self._dataset_cache = DatasetGpuCache()
+        self._main_plot_view = MainPlotView(self._dataset_cache)
+        self._preview_plot_view = PreviewPlotView(self._dataset_cache)
+        self._plot_dataset_indices = []
 
 
         self.grid = self.central_widget.add_grid(margin=0, spacing=0)
@@ -715,6 +965,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         self._loaded_by_plot.clear()
         self._reject_by_plot.clear()
         self._overlay_position_cache.clear()
+        self._dataset_cache.clear()
+        self._plot_dataset_indices.clear()
         self.current_axes = None
 
         super().clear_axes()
@@ -729,6 +981,32 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             Dataset used for plotting and interaction.
         """
         self.nep_result_data:NepTrainResultData=dataset
+        self._ensure_plot_dataset_indices()
+
+    def _ensure_plot_dataset_indices(self):
+        count = len(getattr(self.nep_result_data, "datasets", []) or [])
+        if len(self._plot_dataset_indices) != len(self.axes_list) or any(idx >= count for idx in self._plot_dataset_indices):
+            self._plot_dataset_indices = list(range(min(len(self.axes_list), count)))
+
+    def _dataset_index_for_plot(self, plot):
+        if plot not in self.axes_list:
+            return None
+        self._ensure_plot_dataset_indices()
+        plot_index = self.axes_list.index(plot)
+        if plot_index >= len(self._plot_dataset_indices):
+            return None
+        return self._plot_dataset_indices[plot_index]
+
+    def get_axes_dataset(self, axes):
+        if axes is None or self.nep_result_data is None:
+            return None
+        dataset_index = self._dataset_index_for_plot(axes)
+        if dataset_index is None:
+            return None
+        datasets = self.nep_result_data.datasets
+        if dataset_index >= len(datasets):
+            return None
+        return datasets[dataset_index]
 
 
     def _canvas_to_data_pos(self, axes, pos):
@@ -987,7 +1265,10 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         """
         view = self.visual_at(pos)
 
-        if isinstance(view, scene.ViewBox)  :
+        while view is not None and not isinstance(view, scene.ViewBox):
+            view = getattr(view, "parent", None)
+
+        if isinstance(view, scene.ViewBox):
             for axes in self.axes_list:
                 if axes.view == view:
                     return axes
@@ -1005,12 +1286,32 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         axes=self._get_clicked_axes(mouse_pos)
         if axes is None:
             return
-        if self.current_axes != axes:
-            old_axes = self.current_axes
-            self.set_current_axes(axes)
-            self._refresh_plot_detail(old_axes)
-            self._refresh_plot_detail(axes)
-            self._refresh_current_axes_annotations()
+        if axes is self.axes_list[0]:
+            return
+        old_axes = self.axes_list[0]
+        self.current_axes = old_axes
+        old_index = self._dataset_index_for_plot(old_axes)
+        new_index = self._dataset_index_for_plot(axes)
+        if old_index is None or new_index is None:
+            return
+        main_slot = self.axes_list.index(old_axes)
+        preview_slot = self.axes_list.index(axes)
+        self._plot_dataset_indices[main_slot], self._plot_dataset_indices[preview_slot] = new_index, old_index
+        self._render_plot(old_axes, self.nep_result_data.datasets[new_index], True)
+        self._render_plot(axes, self.nep_result_data.datasets[old_index], False)
+        for plot in (old_axes, axes):
+            plot.clear_overlays()
+            self._selected_by_plot.setdefault(plot, set()).clear()
+            self._show_by_plot.setdefault(plot, set()).clear()
+            self._loaded_by_plot.setdefault(plot, set()).clear()
+            self._reject_by_plot.setdefault(plot, set()).clear()
+        selected = sorted(getattr(self.nep_result_data, "select_index", set()) or [])
+        if selected:
+            self.update_scatter_color(selected, Brushes.Selected)
+        reject = sorted(getattr(self.nep_result_data, "reject_index", set()) or [])
+        if reject:
+            self.set_reject_highlight(reject, True)
+        self._refresh_current_axes_annotations()
 
     def init_axes(self,axes_num   ):
         """Create the requested number of axes widgets.
@@ -1032,35 +1333,52 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
     def set_view_layout(self):
         """Arrange axes so the active plot occupies the main area and others align below.
         """
+        total_t0 = time.perf_counter()
         if len(self.axes_list)==0:
             return
-        if self.current_axes not in self.axes_list:
-            self.set_current_axes(self.axes_list[0])
-            return
+        self.current_axes = self.axes_list[0]
 
         i = 0
+        moved = 0
+        unchanged = 0
         row_0_col_span = max(1, len(self.axes_list) - 1)
-        for widget in self.axes_list:
-            widget._stretch = (None, None)
-            if getattr(widget, "_layout_attached", False):
+        for plot_index, widget in enumerate(self.axes_list):
+            if plot_index == 0:
+                full_detail = True
+                rmse_size = 8
+                layout = (0, 0, 6, row_0_col_span)
+            else:
+                full_detail = False
+                rmse_size = 4
+                layout = (6, i, 2, 1)
+                i += 1
+
+            if hasattr(widget, "set_full_detail"):
+                widget.set_full_detail(full_detail)
+            widget.rmse_size = rmse_size
+
+            old_layout = getattr(widget, "_layout_position", None)
+            attached = getattr(widget, "_layout_attached", False)
+            if attached and old_layout != layout:
                 self.grid.remove_widget(widget)
                 widget._layout_attached = False
+                attached = False
 
-            if widget == self.current_axes:
-                if hasattr(widget, "set_full_detail"):
-                    widget.set_full_detail(True)
-                widget.rmse_size=8
-                self.grid.add_widget(widget, row=0, col=0, row_span=6, col_span=row_0_col_span)
+            if not attached:
+                widget._stretch = (None, None)
+                self.grid.add_widget(widget, row=layout[0], col=layout[1], row_span=layout[2], col_span=layout[3])
                 widget._layout_attached = True
+                widget._layout_position = layout
+                moved += 1
             else:
-                if hasattr(widget, "set_full_detail"):
-                    widget.set_full_detail(False)
-                widget.rmse_size=4
-
-                self.grid.add_widget(widget, row=6, col=i, row_span=2, col_span=1)
-                widget._layout_attached = True
-
-                i += 1
+                unchanged += 1
+        _vispy_perf_log(
+            "layout.switch",
+            axes=len(self.axes_list),
+            moved=moved,
+            unchanged=unchanged,
+            total_ms=f"{_elapsed_ms(total_t0):.3f}",
+        )
 
     def _dataset_version(self, dataset):
         data = getattr(dataset, "data", None)
@@ -1074,67 +1392,25 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             np.shape(getattr(group_array, "all_data", ())),
         )
 
-    def _thumbnail_limit(self):
-        try:
-            limit = Config.getint("widget", "vispy_thumbnail_point_limit", VISPY_THUMBNAIL_POINT_LIMIT)
-        except Exception:
-            limit = VISPY_THUMBNAIL_POINT_LIMIT
-        return max(0, int(limit or 0))
-
-    def _thumbnail_mode(self):
-        return parse_vispy_thumbnail_mode(
-            Config.get("widget", "vispy_thumbnail_mode", VISPY_THUMBNAIL_MODE_DEFAULT)
-        )
-
     def _dataset_position_version(self, dataset):
-        data = getattr(dataset, "data", None)
-        group_array = getattr(dataset, "group_array", None)
-        return (
-            int(getattr(dataset, "_plot_coord_version", getattr(dataset, "_content_version", 0)) or 0),
-            id(getattr(data, "all_data", None)),
-            id(getattr(group_array, "all_data", None)),
-            np.shape(getattr(data, "all_data", ())),
-            np.shape(getattr(group_array, "all_data", ())),
-        )
+        return self._dataset_cache.position_signature(dataset)[1:]
 
     def _full_plot_arrays(self, dataset):
-        data = np.asarray(dataset.all_data)
-        if data.ndim < 2 or data.shape[1] < 2:
-            x = data.reshape(-1)
-            y = x
-            structure_index = np.asarray(dataset.group_array.all_data, dtype=np.int32).reshape(-1)
-            return x, y, structure_index
-        cols = data.shape[1] // 2
-        x = data[:, dataset.x_cols].ravel()
-        y = data[:, dataset.y_cols].ravel()
-        structure_index = np.asarray(dataset.group_array.all_data, dtype=np.int32).repeat(cols)
-        return x, y, structure_index
+        return self._dataset_cache.arrays(dataset)
 
     def _active_point_indices(self, dataset):
-        data = getattr(dataset, "data", None)
-        mask = getattr(data, "mask_array", None)
-        if mask is None:
-            return None
-        mask = np.asarray(mask, dtype=bool).reshape(-1)
-        if mask.size == 0 or bool(np.all(mask)):
-            return None
-        all_data = np.asarray(dataset.all_data)
-        if all_data.ndim < 2 or all_data.shape[1] < 2:
-            return np.nonzero(mask)[0].astype(np.uint32, copy=False)
-        cols = all_data.shape[1] // 2
-        rows = np.nonzero(mask)[0].astype(np.uint32, copy=False)
-        offsets = np.arange(cols, dtype=np.uint32)
-        return (rows[:, None] * np.uint32(cols) + offsets[None, :]).ravel()
+        return self._dataset_cache.active_indices(dataset)
+
+    def _dataset_layer_key(self, dataset):
+        return f"dataset-{id(dataset)}"
 
     def _plot_cache_signature(self, plot, dataset, full_detail: bool):
         marker_size = Config.getint("widget", "vispy_marker_size", 6) or 6
-        layer_key = "full" if full_detail else "thumbnail"
+        layer_key = self._dataset_layer_key(dataset)
         brush = getattr(dataset, "base_brush", Brushes.get(dataset.title.upper()))
         pen = getattr(dataset, "base_pen", Pens.get(dataset.title.upper()))
-        version = self._dataset_position_version(dataset) if full_detail else self._dataset_version(dataset)
-        index_signature = None
-        if full_detail:
-            index_signature = self._dataset_version(dataset)
+        version = self._dataset_position_version(dataset)
+        index_signature = self._dataset_version(dataset)
         return (
             layer_key,
             brush,
@@ -1144,8 +1420,6 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 id(dataset),
                 version,
                 layer_key,
-                self._thumbnail_mode().value if not full_detail else "",
-                self._thumbnail_limit() if not full_detail else 0,
                 marker_size,
                 dataset.title,
                 getattr(dataset, "display_title", dataset.title),
@@ -1155,127 +1429,50 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             index_signature,
         )
 
-    def _thumbnail_sample_indices(self, dataset, limit):
-        x = np.asarray(dataset.x)
-        y = np.asarray(dataset.y)
-        count = x.shape[0]
-        if limit <= 0 or count <= limit:
-            return None
-
-        mode = self._thumbnail_mode()
-        if mode == VispyThumbnailMode.OFF:
-            return None
-        if mode == VispyThumbnailMode.FAST:
-            return np.linspace(0, count - 1, num=limit, dtype=np.int64)
-
-        finite = np.isfinite(x) & np.isfinite(y) & (x > -10000)
-        valid_indices = np.nonzero(finite)[0]
-        if valid_indices.size == 0:
-            return np.linspace(0, count - 1, num=limit, dtype=np.int64)
-
-        parity_mode = bool(getattr(dataset, "parity_mode", getattr(dataset, "title", "") not in ("", "descriptor")))
-        selected = []
-
-        if parity_mode:
-            outlier_count = min(valid_indices.size, int(limit * VISPY_THUMBNAIL_OUTLIER_FRACTION))
-            if outlier_count > 0:
-                residual = np.abs(
-                    y[valid_indices].astype(np.float64, copy=False)
-                    - x[valid_indices].astype(np.float64, copy=False)
-                )
-                outlier_local = np.argpartition(residual, -outlier_count)[-outlier_count:]
-                selected.append(valid_indices[outlier_local])
-
-        selected_size = sum(indices.size for indices in selected)
-        grid_limit = max(1, limit - selected_size)
-        grid_indices = self._thumbnail_grid_sample_indices(x, y, valid_indices, grid_limit, parity_mode)
-        selected.append(grid_indices)
-
-        indices = np.unique(np.concatenate(selected)).astype(np.int64, copy=False)
-        if indices.size < limit:
-            fill = np.linspace(0, count - 1, num=min(count, limit), dtype=np.int64)
-            indices = np.unique(np.concatenate([indices, fill])).astype(np.int64, copy=False)
-        if indices.size < limit:
-            missing = np.setdiff1d(np.arange(count, dtype=np.int64), indices, assume_unique=True)
-            indices = np.concatenate([indices, missing[: limit - indices.size]])
-        if indices.size > limit:
-            keep = np.linspace(0, indices.size - 1, num=limit, dtype=np.int64)
-            indices = indices[keep]
-        return indices
-
-    def _thumbnail_grid_sample_indices(self, x, y, valid_indices, limit, parity_mode):
-        if limit <= 0 or valid_indices.size == 0:
-            return np.empty(0, dtype=np.int64)
-
-        xv = x[valid_indices].astype(np.float64, copy=False)
-        yv = y[valid_indices].astype(np.float64, copy=False)
-        x_min, x_max = np.percentile(xv, [0.5, 99.5])
-        y_min, y_max = np.percentile(yv, [0.5, 99.5])
-        if not np.isfinite(x_min) or not np.isfinite(x_max) or x_min == x_max:
-            x_min, x_max = float(np.min(xv)), float(np.max(xv))
-        if not np.isfinite(y_min) or not np.isfinite(y_max) or y_min == y_max:
-            y_min, y_max = float(np.min(yv)), float(np.max(yv))
-        if x_min == x_max or y_min == y_max:
-            return valid_indices[np.linspace(0, valid_indices.size - 1, num=min(limit, valid_indices.size), dtype=np.int64)]
-
-        bins = max(2, int(np.ceil(np.sqrt(limit))))
-        xi = np.clip(((xv - x_min) / (x_max - x_min) * bins).astype(np.int64), 0, bins - 1)
-        yi = np.clip(((yv - y_min) / (y_max - y_min) * bins).astype(np.int64), 0, bins - 1)
-        cell_id = xi * bins + yi
-
-        if parity_mode:
-            score = np.abs(yv - xv)
-            best_score = np.full(bins * bins, -np.inf, dtype=np.float64)
-            np.maximum.at(best_score, cell_id, score)
-            candidate_local = np.flatnonzero(score == best_score[cell_id])
+    def _apply_plot_annotations(self, plot, dataset, full_detail):
+        rmse_func = getattr(dataset, "get_formart_rmse", None)
+        show_rmse = bool(getattr(dataset, "show_rmse", dataset.title not in ["descriptor"])) and callable(rmse_func)
+        rmse_text = f"rmse: {rmse_func()}" if show_rmse else ""
+        plot.set_rmse_text(rmse_text if full_detail else "")
+        if show_rmse and full_detail:
+            pos = self.convert_pos(plot, (0.1, 0.8))
+            if plot.text is not None:
+                plot.text.pos = pos
         else:
-            _cells, candidate_local = np.unique(cell_id, return_index=True)
+            plot.set_rmse_text("")
+        plot.set_axis_labels(getattr(dataset, "x_label", None), getattr(dataset, "y_label", None))
 
-        if candidate_local.size > limit:
-            keep = np.linspace(0, candidate_local.size - 1, num=limit, dtype=np.int64)
-            candidate_local = candidate_local[keep]
-        return valid_indices[candidate_local]
+    def _render_plot(self, plot, dataset, full_detail):
+        plot.parity_mode = bool(getattr(dataset, "parity_mode", dataset.title != "descriptor"))
+        plot.title = dataset.title
+        display_title = str(getattr(dataset, "display_title", dataset.title) or dataset.title)
+        if display_title != plot.title:
+            plot.title_label._text_visual.text = display_title
 
-    def _plot_arrays_for_detail(self, dataset, full_detail: bool):
-        t0 = time.perf_counter()
-        x = dataset.x
-        y = dataset.y
-        structure_index = dataset.structure_index
+        layer_key, brush, pen, marker_size, cache_signature, index_signature = self._plot_cache_signature(plot, dataset, full_detail)
         if full_detail:
-            _vispy_perf_log(
-                "plot.arrays",
-                title=getattr(dataset, "title", ""),
-                detail="full",
-                points=np.asarray(x).size,
-                ms=f"{_elapsed_ms(t0):.3f}",
-            )
-            return x, y, structure_index
-        limit = self._thumbnail_limit()
-        indices = self._thumbnail_sample_indices(dataset, limit)
-        if indices is None:
-            _vispy_perf_log(
-                "plot.arrays",
-                title=getattr(dataset, "title", ""),
-                detail="thumbnail",
-                mode=self._thumbnail_mode().value,
-                points=np.asarray(x).size,
-                rendered=np.asarray(x).size,
-                ms=f"{_elapsed_ms(t0):.3f}",
-            )
-            return x, y, structure_index
-        _vispy_perf_log(
-            "plot.arrays",
-            title=getattr(dataset, "title", ""),
-            detail="thumbnail",
-            mode=self._thumbnail_mode().value,
-            points=np.asarray(x).size,
-            rendered=indices.size,
-            ms=f"{_elapsed_ms(t0):.3f}",
-        )
-        return x[indices], y[indices], structure_index[indices]
+            plot.set_full_detail(True)
+            self._main_plot_view.render(plot, dataset, brush, pen, marker_size, layer_key, cache_signature, index_signature)
+        else:
+            plot.set_full_detail(False)
+            self._preview_plot_view.render(plot, dataset, brush, pen, marker_size)
+            plot._scatter_signatures[layer_key] = cache_signature
+            plot._scatter_index_signatures[layer_key] = index_signature
+        plot._plot_full_detail = bool(full_detail)
+        self._apply_plot_annotations(plot, dataset, full_detail)
 
     def _plot_dataset_on_axes(self, plot, dataset, full_detail: bool):
         total_t0 = time.perf_counter()
+        if not full_detail:
+            self._render_plot(plot, dataset, False)
+            _vispy_perf_log(
+                "plot.dataset",
+                title=getattr(dataset, "title", ""),
+                detail="preview",
+                path="preview",
+                total_ms=f"{_elapsed_ms(total_t0):.3f}",
+            )
+            return
         plot.parity_mode = bool(getattr(dataset, "parity_mode", dataset.title != "descriptor"))
         plot.title = dataset.title
         display_title = str(getattr(dataset, "display_title", dataset.title) or dataset.title)
@@ -1303,7 +1500,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             return
 
         index_t0 = time.perf_counter()
-        indices = self._active_point_indices(dataset) if full_detail else None
+        indices = self._active_point_indices(dataset)
         index_ms = _elapsed_ms(index_t0)
         activate_t0 = time.perf_counter()
         if plot.activate_scatter_layer(
@@ -1327,10 +1524,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             return
 
         arrays_t0 = time.perf_counter()
-        if full_detail:
-            x, y, structure_index = self._full_plot_arrays(dataset)
-        else:
-            x, y, structure_index = self._plot_arrays_for_detail(dataset, full_detail)
+        x, y, structure_index = self._full_plot_arrays(dataset)
         arrays_ms = _elapsed_ms(arrays_t0)
         scatter_t0 = time.perf_counter()
         plot.scatter(
@@ -1419,6 +1613,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         Called after data mutations to keep the canvas in sync with the dataset.
         """
         self.nep_result_data.select_index.clear()
+        self._ensure_plot_dataset_indices()
         # Clear all overlays so deleted selections do not persist visually
         for plot in self.axes_list:
             if hasattr(plot, 'clear_overlays'):
@@ -1432,9 +1627,11 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             if plot in self._reject_by_plot:
                 self._reject_by_plot[plot].clear()
 
-        for index,_dataset in enumerate(self.nep_result_data.datasets):
-
-            plot=self.axes_list[index]
+        for plot_index, dataset_index in enumerate(self._plot_dataset_indices):
+            if plot_index >= len(self.axes_list) or dataset_index >= len(self.nep_result_data.datasets):
+                continue
+            _dataset = self.nep_result_data.datasets[dataset_index]
+            plot=self.axes_list[plot_index]
 
 
             self._plot_dataset_on_axes(plot, _dataset, plot is self.current_axes)
@@ -1753,7 +1950,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         total_overlay_ms = 0.0
         for plot in self.axes_list:
             plot_t0 = time.perf_counter()
-            if not plot._scatter:
+            if not plot._scatter and getattr(plot, "_preview_image", None) is None:
                 continue
             # init overlay sets for this plot
             if plot not in self._selected_by_plot:
@@ -1809,6 +2006,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
             # Update overlays (filled squares, no edges for perf)
             overlay_size = Config.getint("widget", "vispy_marker_size", 6) or 6
+            if not getattr(plot, "_full_detail", False):
+                overlay_size = max(3, int(overlay_size * 0.65))
             position_ms = 0.0
             overlay_t0 = time.perf_counter()
 
@@ -1879,7 +2078,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         indices = idx.tolist()
 
         for plot in self.axes_list:
-            if not getattr(plot, "_scatter", None):
+            if not getattr(plot, "_scatter", None) and getattr(plot, "_preview_image", None) is None:
                 continue
             if plot not in self._reject_by_plot:
                 self._reject_by_plot[plot] = set()
@@ -1894,6 +2093,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 continue
 
             overlay_size = Config.getint("widget", "vispy_marker_size", 6) or 6
+            if not getattr(plot, "_full_detail", False):
+                overlay_size = max(3, int(overlay_size * 0.65))
 
             display_reject = self._reject_by_plot[plot] - selected if selected else set(self._reject_by_plot[plot])
             if not display_reject:

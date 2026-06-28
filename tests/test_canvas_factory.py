@@ -13,7 +13,7 @@ os.environ["LOCALAPPDATA"] = str(Path(__file__).resolve().parent / "_localappdat
 
 from NepTrainKit.config import Config
 from NepTrainKit.core.io.base import NepPlotData
-from NepTrainKit.core.types import Brushes, CanvasMode, Pens, VispyThumbnailMode
+from NepTrainKit.core.types import Brushes, CanvasMode, Pens
 import NepTrainKit.ui.canvas.canvas_factory as canvas_factory
 
 
@@ -151,11 +151,23 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertFalse(canvas.axes_list[1].text.visible)
 
         canvas.set_current_axes(canvas.axes_list[2])
+        canvas.set_view_layout()
 
         self.assertIsNotNone(canvas.axes_list[2].xaxis)
         self.assertTrue(canvas.axes_list[0].xaxis.visible)
-        self.assertFalse(canvas.axes_list[0].text.visible)
-        self.assertTrue(canvas.axes_list[2].text.visible)
+        self.assertTrue(canvas.axes_list[0].text.visible)
+        self.assertFalse(canvas.axes_list[2].text.visible)
+
+    def test_vispy_layout_switch_keeps_numeric_grid_stretch(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+
+        canvas.init_axes(3)
+        canvas.grid._recreate_solver()
+        canvas.set_current_axes(canvas.axes_list[1])
+        canvas.grid._recreate_solver()
+
+        for plot in canvas.axes_list:
+            self.assertTrue(all(value is not None for value in plot.stretch))
 
     def test_vispy_compact_thumbnail_keeps_axes_and_diagonal(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
@@ -183,9 +195,10 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertIsNotNone(thumbnail._diagonal)
 
         canvas.set_current_axes(thumbnail)
+        canvas.set_view_layout()
 
-        self.assertTrue(thumbnail.text.visible)
-        self.assertFalse(main_plot.text.visible)
+        self.assertFalse(thumbnail.text.visible)
+        self.assertTrue(main_plot.text.visible)
 
     def test_vispy_point_at_uses_cpu_pick_without_render(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
@@ -264,72 +277,6 @@ class TestCanvasFactory(unittest.TestCase):
 
         canvas.select_index.assert_called_once_with([20], False)
 
-    def test_vispy_thumbnail_arrays_are_limited_for_large_plots(self):
-        canvas = canvas_factory._create_vispy_result_canvas(None)
-        dataset = SimpleNamespace(
-            x=np.arange(10, dtype=np.float32),
-            y=np.arange(10, dtype=np.float32) + 1,
-            structure_index=np.arange(10, dtype=np.int32) + 100,
-        )
-
-        with patch.object(canvas, "_thumbnail_limit", return_value=3), patch.object(
-            canvas, "_thumbnail_mode", return_value=VispyThumbnailMode.FAST
-        ):
-            main_x, _main_y, main_index = canvas._plot_arrays_for_detail(dataset, True)
-            thumb_x, _thumb_y, thumb_index = canvas._plot_arrays_for_detail(dataset, False)
-
-        np.testing.assert_array_equal(main_x, np.arange(10, dtype=np.float32))
-        np.testing.assert_array_equal(main_index, np.arange(10, dtype=np.int32) + 100)
-        np.testing.assert_array_equal(thumb_x, np.array([0, 4, 9], dtype=np.float32))
-        np.testing.assert_array_equal(thumb_index, np.array([100, 104, 109], dtype=np.int32))
-
-    def test_vispy_thumbnail_sampling_keeps_diagonal_outlier(self):
-        canvas = canvas_factory._create_vispy_result_canvas(None)
-        x = np.arange(100, dtype=np.float32)
-        y = x.copy()
-        y[37] = 500.0
-        dataset = SimpleNamespace(
-            title="energy",
-            parity_mode=True,
-            x=x,
-            y=y,
-            structure_index=np.arange(100, dtype=np.int32),
-        )
-
-        with patch.object(canvas, "_thumbnail_limit", return_value=10), patch.object(
-            canvas, "_thumbnail_mode", return_value=VispyThumbnailMode.SMART
-        ):
-            _thumb_x, _thumb_y, thumb_index = canvas._plot_arrays_for_detail(dataset, False)
-
-        self.assertIn(37, thumb_index.tolist())
-        self.assertLessEqual(thumb_index.size, 10)
-
-    def test_vispy_thumbnail_sampling_keeps_sparse_cluster(self):
-        canvas = canvas_factory._create_vispy_result_canvas(None)
-        x = np.concatenate([
-            np.linspace(0.0, 1.0, 200, dtype=np.float32),
-            np.array([20.0, 20.1], dtype=np.float32),
-        ])
-        y = np.concatenate([
-            np.linspace(0.0, 1.0, 200, dtype=np.float32),
-            np.array([20.0, 20.1], dtype=np.float32),
-        ])
-        dataset = SimpleNamespace(
-            title="descriptor",
-            parity_mode=False,
-            x=x,
-            y=y,
-            structure_index=np.arange(x.size, dtype=np.int32),
-        )
-
-        with patch.object(canvas, "_thumbnail_limit", return_value=20), patch.object(
-            canvas, "_thumbnail_mode", return_value=VispyThumbnailMode.SMART
-        ):
-            _thumb_x, _thumb_y, thumb_index = canvas._plot_arrays_for_detail(dataset, False)
-
-        self.assertTrue({200, 201}.intersection(thumb_index.tolist()))
-        self.assertLessEqual(thumb_index.size, 20)
-
     def test_vispy_reuses_scatter_layer_when_dataset_version_is_unchanged(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
         canvas.init_axes(1)
@@ -354,7 +301,7 @@ class TestCanvasFactory(unittest.TestCase):
         )
 
         canvas._plot_dataset_on_axes(plot, dataset, True)
-        scatter = plot._scatter_layers["full"]
+        scatter = plot._scatter_layers[canvas._dataset_layer_key(dataset)]
 
         with patch.object(scatter, "set_data", side_effect=AssertionError("scatter VBO should be reused")):
             canvas._plot_dataset_on_axes(plot, dataset, True)
@@ -384,7 +331,7 @@ class TestCanvasFactory(unittest.TestCase):
 
         canvas._plot_dataset_on_axes(plot, dataset, True)
 
-        with patch.object(canvas, "_plot_arrays_for_detail", side_effect=AssertionError("plot arrays should be cached")):
+        with patch.object(canvas, "_full_plot_arrays", side_effect=AssertionError("plot arrays should be cached")):
             canvas._plot_dataset_on_axes(plot, dataset, True)
 
     def test_vispy_base_scatter_uses_fast_scatter(self):
@@ -433,7 +380,7 @@ class TestCanvasFactory(unittest.TestCase):
         )
 
         canvas._plot_dataset_on_axes(plot, dataset, True)
-        scatter = plot._scatter_layers["full"]
+        scatter = plot._scatter_layers[canvas._dataset_layer_key(dataset)]
         dataset.data.mask_array = np.array([True, False, True, False, True, True], dtype=bool)
         dataset.data.version = 1
         dataset.data.num = 4
@@ -482,7 +429,7 @@ class TestCanvasFactory(unittest.TestCase):
         )
 
         canvas._plot_dataset_on_axes(plot, dataset, True)
-        scatter = plot._scatter_layers["full"]
+        scatter = plot._scatter_layers[canvas._dataset_layer_key(dataset)]
         dataset.all_data[0, 1] = 100.0
         dataset._plot_coord_version = 1
 
@@ -491,21 +438,116 @@ class TestCanvasFactory(unittest.TestCase):
 
         set_data.assert_called_once()
 
-    def test_vispy_thumbnail_mode_off_uses_full_thumbnail_data(self):
+    def test_vispy_preview_uses_image_and_main_reuses_dataset_layer(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        all_data = np.column_stack([np.arange(10, dtype=np.float32), np.arange(10, dtype=np.float32)])
         dataset = SimpleNamespace(
+            title="energy",
+            display_title="energy",
+            parity_mode=True,
             x=np.arange(10, dtype=np.float32),
             y=np.arange(10, dtype=np.float32),
             structure_index=np.arange(10, dtype=np.int32),
+            all_data=all_data,
+            x_cols=slice(1, None),
+            y_cols=slice(None, 1),
+            data=SimpleNamespace(version=0, num=10, all_data=all_data, mask_array=np.ones(10, dtype=bool)),
+            group_array=SimpleNamespace(version=0, num=10, all_data=np.arange(10, dtype=np.int32)),
         )
 
-        with patch.object(canvas, "_thumbnail_limit", return_value=3), patch.object(
-            canvas, "_thumbnail_mode", return_value=VispyThumbnailMode.OFF
-        ):
-            thumb_x, _thumb_y, thumb_index = canvas._plot_arrays_for_detail(dataset, False)
+        canvas._plot_dataset_on_axes(plot, dataset, True)
+        scatter = plot._scatter_layers[canvas._dataset_layer_key(dataset)]
+        canvas._plot_dataset_on_axes(plot, dataset, False)
+        self.assertIsNotNone(plot._preview_image)
+        self.assertIsNone(plot._scatter)
 
-        np.testing.assert_array_equal(thumb_x, np.arange(10, dtype=np.float32))
-        np.testing.assert_array_equal(thumb_index, np.arange(10, dtype=np.int32))
+        with patch.object(scatter, "set_data", side_effect=AssertionError("positions should stay on GPU")):
+            canvas._plot_dataset_on_axes(plot, dataset, True)
+
+    def test_vispy_preview_uses_pen_color_when_face_is_transparent(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        all_data = np.column_stack([np.linspace(0, 1, 10, dtype=np.float32), np.linspace(0, 1, 10, dtype=np.float32)])
+        dataset = SimpleNamespace(
+            title="energy",
+            display_title="energy",
+            parity_mode=True,
+            show_rmse=False,
+            x=all_data[:, 1],
+            y=all_data[:, 0],
+            structure_index=np.arange(10, dtype=np.int32),
+            all_data=all_data,
+            x_cols=slice(1, None),
+            y_cols=slice(None, 1),
+            data=SimpleNamespace(version=0, num=10, all_data=all_data, mask_array=np.ones(10, dtype=bool)),
+            group_array=SimpleNamespace(
+                version=0,
+                num=10,
+                all_data=np.arange(10, dtype=np.int32),
+                now_data=np.arange(10, dtype=np.int32),
+            ),
+        )
+
+        canvas._render_plot(plot, dataset, False)
+
+        image = plot._preview_image._data
+        visible = image[:, :, 3] > 0
+        self.assertTrue(np.any(visible))
+        self.assertGreater(np.max(image[:, :, 2][visible]), np.max(image[:, :, 0][visible]))
+
+    def test_vispy_preview_current_marker_is_scaled_down(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(2)
+        main_plot = canvas.axes_list[0]
+        preview_plot = canvas.axes_list[1]
+
+        main_plot.set_current_point(np.array([0.0], dtype=np.float32), np.array([0.0], dtype=np.float32))
+        preview_plot.set_current_point(np.array([0.0], dtype=np.float32), np.array([0.0], dtype=np.float32))
+
+        self.assertLess(preview_plot.current_point._data["a_size"][0], main_plot.current_point._data["a_size"][0])
+
+    def test_vispy_switch_view_box_swaps_dataset_mapping_without_layout_move(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(2)
+        datasets = []
+        for title in ("energy", "force"):
+            all_data = np.column_stack([np.arange(4, dtype=np.float32), np.arange(4, dtype=np.float32)])
+            datasets.append(
+                SimpleNamespace(
+                    title=title,
+                    display_title=title,
+                    parity_mode=True,
+                    show_rmse=False,
+                    x=np.arange(4, dtype=np.float32),
+                    y=np.arange(4, dtype=np.float32),
+                    structure_index=np.arange(4, dtype=np.int32),
+                    all_data=all_data,
+                    x_cols=slice(1, None),
+                    y_cols=slice(None, 1),
+                    data=SimpleNamespace(version=0, num=4, all_data=all_data, mask_array=np.ones(4, dtype=bool)),
+                    group_array=SimpleNamespace(
+                        version=0,
+                        num=4,
+                        all_data=np.arange(4, dtype=np.int32),
+                        now_data=np.arange(4, dtype=np.int32),
+                    ),
+                )
+            )
+        canvas.nep_result_data = SimpleNamespace(datasets=datasets, select_index=set(), reject_index=set())
+        canvas._ensure_plot_dataset_indices()
+        canvas.plot_nep_result()
+
+        with patch.object(canvas, "_get_clicked_axes", return_value=canvas.axes_list[1]):
+            canvas.switch_view_box(SimpleNamespace(pos=(10, 10)))
+
+        self.assertIs(canvas.current_axes, canvas.axes_list[0])
+        self.assertEqual(canvas._plot_dataset_indices, [1, 0])
+        self.assertEqual(canvas.get_axes_dataset(canvas.axes_list[0]).title, "force")
+        self.assertEqual(canvas.get_axes_dataset(canvas.axes_list[1]).title, "energy")
+        self.assertIsNotNone(canvas.axes_list[1]._preview_image)
 
     def test_vispy_lasso_overlay_avoids_scene_line_redraw_in_off_mode(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
@@ -521,26 +563,17 @@ class TestCanvasFactory(unittest.TestCase):
         move_1 = SimpleNamespace(button=1, pos=(20, 20))
         move_2 = SimpleNamespace(button=1, pos=(30, 20))
         release = SimpleNamespace(button=1, pos=(30, 10))
-        previous = Config.get("widget", "vispy_thumbnail_mode")
-        try:
-            Config.set("widget", "vispy_thumbnail_mode", VispyThumbnailMode.OFF)
-            with patch.object(canvas.scene, "node_transform", return_value=Transform()), patch.object(
-                canvas.current_axes.view, "add", side_effect=AssertionError("lasso should not enter VisPy scene")
-            ), patch.object(canvas._lasso_overlay, "setGeometry", side_effect=AssertionError("lasso geometry should be stable")), patch.object(
-                canvas._lasso_overlay, "show", side_effect=AssertionError("lasso overlay should stay mounted")
-            ), patch.object(canvas._lasso_overlay, "hide", side_effect=AssertionError("lasso overlay should stay mounted")), patch.object(
-                canvas._lasso_overlay, "raise_", side_effect=AssertionError("lasso overlay should not change stacking during drag")
-            ), patch.object(canvas, "select_point_from_polygon") as select_polygon:
-                canvas.on_mouse_press(press)
-                canvas.on_mouse_move(move_1)
-                canvas.on_mouse_move(move_2)
-                canvas.on_mouse_release(release)
-
-        finally:
-            if previous is None:
-                Config.delete("widget", "vispy_thumbnail_mode")
-            else:
-                Config.set("widget", "vispy_thumbnail_mode", previous)
+        with patch.object(canvas.scene, "node_transform", return_value=Transform()), patch.object(
+            canvas.current_axes.view, "add", side_effect=AssertionError("lasso should not enter VisPy scene")
+        ), patch.object(canvas._lasso_overlay, "setGeometry", side_effect=AssertionError("lasso geometry should be stable")), patch.object(
+            canvas._lasso_overlay, "show", side_effect=AssertionError("lasso overlay should stay mounted")
+        ), patch.object(canvas._lasso_overlay, "hide", side_effect=AssertionError("lasso overlay should stay mounted")), patch.object(
+            canvas._lasso_overlay, "raise_", side_effect=AssertionError("lasso overlay should not change stacking during drag")
+        ), patch.object(canvas, "select_point_from_polygon") as select_polygon:
+            canvas.on_mouse_press(press)
+            canvas.on_mouse_move(move_1)
+            canvas.on_mouse_move(move_2)
+            canvas.on_mouse_release(release)
 
         select_polygon.assert_called_once()
         self.assertFalse(canvas._lasso_overlay.isHidden())

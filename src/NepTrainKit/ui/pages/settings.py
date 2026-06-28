@@ -19,10 +19,8 @@ from NepTrainKit.core.types import (
     CanvasMode,
     NepBackend,
     DataPrecision,
-    VispyThumbnailMode,
     parse_forces_mode,
     parse_data_precision,
-    parse_vispy_thumbnail_mode,
 )
 from NepTrainKit.ui.update import UpdateWoker, UpdateNEP89Woker, get_pending_update_version
 from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR
@@ -210,8 +208,6 @@ class SettingsWidget(ScrollArea):
         pg_size = Config.getint("widget", "pg_marker_size", 7) or 7
         vispy_size = Config.getint("widget", "vispy_marker_size", 6) or 6
         vispy_aa = Config.getfloat("widget", "vispy_marker_antialias", 0.5) or 0.5
-        thumbnail_mode = parse_vispy_thumbnail_mode(Config.get("widget", "vispy_thumbnail_mode", VispyThumbnailMode.FAST)).value
-        thumbnail_limit = Config.getint("widget", "vispy_thumbnail_point_limit", 50000) or 50000
         current_size = Config.getint("plot", "current_marker_size", 20) or 20
 
         self.edge_color_card = ColorSettingCard(
@@ -265,31 +261,6 @@ class SettingsWidget(ScrollArea):
         )
         self.vispy_aa_card.setRange(0.0, 2.0)
         self.vispy_aa_card.setValue(float(vispy_aa))
-
-        self.vispy_thumbnail_mode_card = MyComboBoxSettingCard(
-            OptionsConfigItem(
-                "vispy",
-                "thumbnail_mode",
-                VispyThumbnailMode(thumbnail_mode),
-                OptionsValidator(VispyThumbnailMode),
-                EnumSerializer(VispyThumbnailMode),
-            ),
-            FluentIcon.SPEED_HIGH,
-            'VisPy thumbnail mode',
-            'Off uses full data, Fast is smooth, Smart keeps outliers',
-            texts=[mode.value for mode in VispyThumbnailMode],
-            default=thumbnail_mode,
-            parent=self.plot_group
-        )
-
-        self.vispy_thumbnail_limit_card = DoubleSpinBoxSettingCard(
-            FluentIcon.SPEED_HIGH,
-            'VisPy thumbnail point limit',
-            'Point budget for thumbnail plots',
-            self.plot_group
-        )
-        self.vispy_thumbnail_limit_card.setRange(1000, 1000000)
-        self.vispy_thumbnail_limit_card.setValue(float(thumbnail_limit))
 
         self.structure_bg_color_card = ColorSettingCard(
             FluentIcon.BRUSH,
@@ -423,8 +394,6 @@ class SettingsWidget(ScrollArea):
         self.plot_group.addSettingCard(self.pg_size_card)
         self.plot_group.addSettingCard(self.vispy_size_card)
         self.plot_group.addSettingCard(self.vispy_aa_card)
-        self.plot_group.addSettingCard(self.vispy_thumbnail_mode_card)
-        self.plot_group.addSettingCard(self.vispy_thumbnail_limit_card)
         self.plot_group.addSettingCard(self.structure_bg_color_card)
         self.plot_group.addSettingCard(self.structure_lattice_color_card)
         self.plot_group.addSettingCard(self.selected_color_card)
@@ -473,8 +442,6 @@ class SettingsWidget(ScrollArea):
         self.pg_size_card.valueChanged.connect(lambda v: Config.set("widget", "pg_marker_size", int(v)))
         self.vispy_size_card.valueChanged.connect(lambda v: Config.set("widget", "vispy_marker_size", int(v)))
         self.vispy_aa_card.valueChanged.connect(lambda v: Config.set("widget", "vispy_marker_antialias", float(v)))
-        self.vispy_thumbnail_mode_card.optionChanged.connect(lambda v: Config.set("widget", "vispy_thumbnail_mode", v))
-        self.vispy_thumbnail_limit_card.valueChanged.connect(lambda v: Config.set("widget", "vispy_thumbnail_point_limit", int(v)))
         self.structure_bg_color_card.colorChanged.connect(lambda v: Config.set("widget", "structure_bg_color", v))
         self.structure_lattice_color_card.colorChanged.connect(lambda v: Config.set("widget", "structure_lattice_color", v))
 

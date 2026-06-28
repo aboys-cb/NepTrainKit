@@ -139,42 +139,6 @@ class CanvasMode(StrEnum):
     VISPY = "vispy"
     PYQTGRAPH = "pyqtgraph"
 
-class VispyThumbnailMode(StrEnum):
-    """LOD strategy used for VisPy thumbnail plots."""
-    OFF = "off"
-    FAST = "fast"
-    SMART = "smart"
-
-
-def parse_vispy_thumbnail_mode(value, fallback: VispyThumbnailMode = VispyThumbnailMode.FAST) -> VispyThumbnailMode:
-    """Parse a config value into :class:`VispyThumbnailMode`."""
-    if isinstance(value, VispyThumbnailMode):
-        return value
-
-    text = str(value or "").strip()
-    if not text:
-        return fallback
-
-    try:
-        return VispyThumbnailMode(text)
-    except Exception:
-        pass
-
-    if "." in text:
-        name = text.split(".")[-1].strip()
-        if name:
-            try:
-                return VispyThumbnailMode[name]
-            except Exception:
-                pass
-
-    lower = text.lower()
-    for mode in VispyThumbnailMode:
-        if lower in {mode.value.lower(), mode.name.lower()}:
-            return mode
-
-    return fallback
-
 class SearchType(StrEnum):
     """Structure search attribute family."""
     TAG = "Config_type"

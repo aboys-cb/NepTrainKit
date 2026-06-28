@@ -498,6 +498,64 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertTrue(np.any(visible))
         self.assertGreater(np.max(image[:, :, 2][visible]), np.max(image[:, :, 0][visible]))
 
+    def test_vispy_preview_reuses_cached_image_without_set_data(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        all_data = np.column_stack([np.linspace(0, 1, 10, dtype=np.float32), np.linspace(0, 1, 10, dtype=np.float32)])
+        dataset = SimpleNamespace(
+            title="energy",
+            display_title="energy",
+            parity_mode=True,
+            show_rmse=False,
+            x=all_data[:, 1],
+            y=all_data[:, 0],
+            structure_index=np.arange(10, dtype=np.int32),
+            all_data=all_data,
+            x_cols=slice(1, None),
+            y_cols=slice(None, 1),
+            data=SimpleNamespace(version=0, num=10, all_data=all_data, mask_array=np.ones(10, dtype=bool)),
+            group_array=SimpleNamespace(
+                version=0,
+                num=10,
+                all_data=np.arange(10, dtype=np.int32),
+                now_data=np.arange(10, dtype=np.int32),
+            ),
+        )
+
+        canvas._render_plot(plot, dataset, False)
+
+        with patch.object(plot._preview_image, "set_data", side_effect=AssertionError("cached preview image should be reused")):
+            canvas._render_plot(plot, dataset, False)
+
+    def test_vispy_preview_does_not_compute_rmse(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        all_data = np.column_stack([np.linspace(0, 1, 10, dtype=np.float32), np.linspace(0, 1, 10, dtype=np.float32)])
+        dataset = SimpleNamespace(
+            title="force",
+            display_title="force",
+            parity_mode=True,
+            show_rmse=True,
+            get_formart_rmse=MagicMock(side_effect=AssertionError("preview should not compute RMSE")),
+            x=all_data[:, 1],
+            y=all_data[:, 0],
+            structure_index=np.arange(10, dtype=np.int32),
+            all_data=all_data,
+            x_cols=slice(1, None),
+            y_cols=slice(None, 1),
+            data=SimpleNamespace(version=0, num=10, all_data=all_data, mask_array=np.ones(10, dtype=bool)),
+            group_array=SimpleNamespace(
+                version=0,
+                num=10,
+                all_data=np.arange(10, dtype=np.int32),
+                now_data=np.arange(10, dtype=np.int32),
+            ),
+        )
+
+        canvas._render_plot(plot, dataset, False)
+
     def test_vispy_preview_current_marker_is_scaled_down(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
         canvas.init_axes(2)
@@ -599,6 +657,28 @@ class TestCanvasFactory(unittest.TestCase):
             canvas.update_scatter_color([1], Brushes.Selected)
 
         overlay = plot._overlays["selected"].positions
+        np.testing.assert_array_equal(overlay[:, :2], np.array([[2.0, 3.0], [3.0, 4.0]], dtype=np.float32))
+
+    def test_vispy_reject_highlight_uses_overlay_position_cache(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        x = np.arange(6, dtype=np.float32)
+        y = x + 1
+        structure_index = np.array([0, 0, 1, 1, 2, 2], dtype=np.int32)
+        dataset = SimpleNamespace(
+            title="energy",
+            x=x,
+            y=y,
+            structure_index=structure_index,
+        )
+        canvas.nep_result_data = SimpleNamespace(datasets=[dataset], select_index=set())
+        plot.scatter(x, y, structure_index)
+
+        with patch("NepTrainKit.ui.canvas.vispy.canvas.np.isin", side_effect=AssertionError("np.isin should not be used")):
+            canvas.set_reject_highlight([1], True)
+
+        overlay = plot._overlays["reject"]._data["a_position"]
         np.testing.assert_array_equal(overlay[:, :2], np.array([[2.0, 3.0], [3.0, 4.0]], dtype=np.float32))
 
     def test_vispy_plot_nep_result_prewarms_overlay_position_cache(self):

@@ -352,6 +352,8 @@ class ViewBoxWidget(scene.Widget):
         self._active_scatter_layer = None
         self._scatter_active_signature = None
         self._preview_image = None
+        self._preview_image_source = None
+        self._preview_image_range = None
         # Overlay marker layers by name (e.g., 'selected', 'show')
         self._overlays = {}
         self.parity_mode = True
@@ -414,11 +416,22 @@ class ViewBoxWidget(scene.Widget):
             layer.visible = not visible and layer is self._scatter
 
     def set_preview_image(self, image, x_range, y_range):
+        preview_range = (tuple(float(v) for v in x_range), tuple(float(v) for v in y_range))
+        if self._preview_image is not None and self._preview_image_source is image and self._preview_image_range == preview_range:
+            self._preview_image.visible = True
+            for layer in self._scatter_layers.values():
+                layer.visible = False
+            self._scatter = None
+            self._active_scatter_layer = None
+            return
+
         if self._preview_image is None:
             self._preview_image = scene.visuals.Image(image, interpolation="nearest", parent=self._view.scene)
             self._preview_image.order = 1
         else:
             self._preview_image.set_data(image)
+        self._preview_image_source = image
+        self._preview_image_range = preview_range
 
         width = max(1, image.shape[1])
         height = max(1, image.shape[0])
@@ -1431,7 +1444,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
 
     def _apply_plot_annotations(self, plot, dataset, full_detail):
         rmse_func = getattr(dataset, "get_formart_rmse", None)
-        show_rmse = bool(getattr(dataset, "show_rmse", dataset.title not in ["descriptor"])) and callable(rmse_func)
+        show_rmse = bool(full_detail) and bool(getattr(dataset, "show_rmse", dataset.title not in ["descriptor"])) and callable(rmse_func)
         rmse_text = f"rmse: {rmse_func()}" if show_rmse else ""
         plot.set_rmse_text(rmse_text if full_detail else "")
         if show_rmse and full_detail:
@@ -1645,10 +1658,11 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             else:
                 plot.set_current_point([], [])
 
-            show_rmse = bool(getattr(_dataset, "show_rmse", _dataset.title not in ["descriptor"]))
+            is_current_plot = plot is self.current_axes
+            show_rmse = is_current_plot and bool(getattr(_dataset, "show_rmse", _dataset.title not in ["descriptor"]))
             rmse_text = f"rmse: {_dataset.get_formart_rmse()}" if show_rmse else ""
-            plot.set_rmse_text(rmse_text if plot is self.current_axes else "")
-            if show_rmse and plot is self.current_axes:
+            plot.set_rmse_text(rmse_text if is_current_plot else "")
+            if show_rmse and is_current_plot:
                 pos=self.convert_pos(plot,(0.1 ,0.8))
                 if plot.text is not None:
                     plot.text.pos=pos
@@ -2107,22 +2121,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
                 )
                 continue
 
-            indices_arr = np.fromiter(display_reject, dtype=np.int64)
-            sidx = dataset.structure_index
-            mask = np.isin(sidx, indices_arr)
-            if not np.any(mask):
-                plot.set_overlay_positions(
-                    "reject",
-                    np.empty((0, 2), dtype=np.float32),
-                    color=Brushes.Reject,
-                    size=overlay_size,
-                    symbol="x",
-                )
-                continue
-
-            x = dataset.x[mask]
-            y = dataset.y[mask]
-            pos = np.column_stack([x, y]).astype(np.float32, copy=False)
+            pos = self._overlay_positions_for_indices(dataset, display_reject)
             plot.set_overlay_positions(
                 "reject",
                 pos,

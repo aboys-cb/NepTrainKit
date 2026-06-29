@@ -1886,6 +1886,37 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             return np.empty((0, 2), dtype=np.float32)
 
         indices_arr = np.fromiter(indices, dtype=np.int64)
+        if lookup["order"] is None and indices_arr.size > unique.size * 0.75:
+            selected_mask = np.zeros(unique.size, dtype=bool)
+            positions = np.searchsorted(unique, indices_arr)
+            in_bounds = positions < unique.size
+            positions = positions[in_bounds]
+            valid_indices = indices_arr[in_bounds]
+            valid = unique[positions] == valid_indices
+            selected_mask[positions[valid]] = True
+
+            starts = lookup["starts"]
+            counts = lookup["counts"]
+            scale = int(lookup.get("scale", 1) or 1)
+            point_counts = counts * scale
+            total_points = int(np.sum(point_counts))
+            point_mask = np.ones(total_points, dtype=bool)
+            missing = np.nonzero(~selected_mask)[0]
+            if missing.size:
+                point_starts = starts[missing] * scale
+                for start, count in zip(point_starts, point_counts[missing]):
+                    point_mask[int(start):int(start + count)] = False
+            pos = np.column_stack([lookup["x"][point_mask], lookup["y"][point_mask]]).astype(np.float32, copy=False)
+            _vispy_perf_log(
+                "overlay.positions",
+                requested=indices_arr.size,
+                matched=int(np.count_nonzero(selected_mask)),
+                points=pos.shape[0],
+                mode="dense",
+                ms=f"{_elapsed_ms(t0):.3f}",
+            )
+            return pos
+
         positions = np.searchsorted(unique, indices_arr)
         in_bounds = positions < unique.size
         valid = np.zeros(indices_arr.shape, dtype=bool)

@@ -729,6 +729,23 @@ class TestCanvasFactory(unittest.TestCase):
         np.testing.assert_array_equal(pos[:, 0], expected_x)
         np.testing.assert_array_equal(pos[:, 1], expected_x + 100)
 
+    def test_vispy_overlay_positions_dense_selection_excludes_missing_structures(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        row_groups = np.array([0, 0, 1, 1, 2, 2, 3, 3, 4, 4], dtype=np.int32)
+        x = np.arange(row_groups.size, dtype=np.float32)
+        y = x + 100
+        dataset = SimpleNamespace(
+            title="energy",
+            x=x,
+            y=y,
+            structure_index=row_groups,
+        )
+
+        pos = canvas._overlay_positions_for_indices(dataset, {0, 1, 3, 4})
+
+        np.testing.assert_array_equal(pos[:, 0], np.array([0, 1, 2, 3, 6, 7, 8, 9], dtype=np.float32))
+        np.testing.assert_array_equal(pos[:, 1], np.array([100, 101, 102, 103, 106, 107, 108, 109], dtype=np.float32))
+
     def test_vispy_overlay_cache_signature_reuses_nep_plotdata_properties(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
         rows = np.arange(24, dtype=np.float32).reshape(4, 6)

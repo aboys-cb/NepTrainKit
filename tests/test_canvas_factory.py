@@ -571,20 +571,23 @@ class TestCanvasFactory(unittest.TestCase):
         canvas = canvas_factory._create_vispy_result_canvas(None)
         canvas.init_axes(2)
         datasets = []
-        for title in ("energy", "force"):
-            all_data = np.column_stack([np.arange(4, dtype=np.float32), np.arange(4, dtype=np.float32)])
+        for offset, title in enumerate(("energy", "force")):
+            base = np.arange(4, dtype=np.float32) + offset * 100
+            all_data = np.column_stack([base, base + 10])
             datasets.append(
                 SimpleNamespace(
                     title=title,
                     display_title=title,
                     parity_mode=True,
                     show_rmse=False,
-                    x=np.arange(4, dtype=np.float32),
-                    y=np.arange(4, dtype=np.float32),
+                    x=all_data[:, 1],
+                    y=all_data[:, 0],
                     structure_index=np.arange(4, dtype=np.int32),
                     all_data=all_data,
                     x_cols=slice(1, None),
                     y_cols=slice(None, 1),
+                    convert_index=lambda index: np.array([int(index)], dtype=np.int64),
+                    is_visible=lambda array_index: np.asarray(array_index).size > 0,
                     data=SimpleNamespace(version=0, num=4, all_data=all_data, mask_array=np.ones(4, dtype=bool)),
                     group_array=SimpleNamespace(
                         version=0,
@@ -597,6 +600,7 @@ class TestCanvasFactory(unittest.TestCase):
         canvas.nep_result_data = SimpleNamespace(datasets=datasets, select_index=set(), reject_index=set())
         canvas._ensure_plot_dataset_indices()
         canvas.plot_nep_result()
+        canvas.plot_current_point(2)
 
         with patch.object(canvas, "_get_clicked_axes", return_value=canvas.axes_list[1]):
             canvas.switch_view_box(SimpleNamespace(pos=(10, 10)))
@@ -606,6 +610,13 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertEqual(canvas.get_axes_dataset(canvas.axes_list[0]).title, "force")
         self.assertEqual(canvas.get_axes_dataset(canvas.axes_list[1]).title, "energy")
         self.assertIsNotNone(canvas.axes_list[1]._preview_image)
+        np.testing.assert_allclose(canvas.axes_list[0].current_point._data["a_position"][:, :2], [[112.0, 102.0]])
+        np.testing.assert_allclose(canvas.axes_list[1].current_point._data["a_position"][:, :2], [[12.0, 2.0]])
+
+        canvas.plot_nep_result()
+
+        np.testing.assert_allclose(canvas.axes_list[0].current_point._data["a_position"][:, :2], [[112.0, 102.0]])
+        np.testing.assert_allclose(canvas.axes_list[1].current_point._data["a_position"][:, :2], [[12.0, 2.0]])
 
     def test_vispy_lasso_overlay_avoids_scene_line_redraw_in_off_mode(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)

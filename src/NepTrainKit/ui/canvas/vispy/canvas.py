@@ -1371,6 +1371,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         if reject:
             self.set_reject_highlight(reject, True)
         self._refresh_current_axes_annotations()
+        self._refresh_current_point_marker()
 
     def init_axes(self,axes_num   ):
         """Create the requested number of axes widgets.
@@ -1723,6 +1724,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         reject = getattr(self.nep_result_data, "reject_index", None)
         if reject:
             self.set_reject_highlight(list(reject), True)
+        self._refresh_current_point_marker()
         self.prewarm_overlay_position_cache()
 
     def _refresh_current_axes_annotations(self):
@@ -1764,6 +1766,11 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         x_pos = x_range[0] + x_percent * (x_range[1] - x_range[0])
         y_pos = y_range[0] + y_percent * (y_range[1] - y_range[0])
         return x_pos,y_pos
+    def _refresh_current_point_marker(self):
+        if self.nep_result_data is None or not self.axes_list:
+            return
+        self.plot_current_point(self.structure_index)
+
     def plot_current_point(self,structure_index):
         """Highlight the selected structure across all axes.
         
@@ -1775,6 +1782,9 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         self.structure_index=structure_index
         for plot in  self.axes_list :
             dataset=self.get_axes_dataset(plot)
+            if dataset is None:
+                plot.set_current_point([], [])
+                continue
             array_index=dataset.convert_index(structure_index)
             if dataset.is_visible(array_index) :
 

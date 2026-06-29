@@ -17,6 +17,7 @@ from unittest.mock import MagicMock, patch
 os.environ["LOCALAPPDATA"] = str(Path(__file__).resolve().parent / "_localappdata")
 
 from NepTrainKit.core.io import NepTrainResultData,NepPolarizabilityResultData,NepDipoleResultData
+from NepTrainKit.core.io.base import DPPlotData, NepPlotData
 from NepTrainKit.core.energy_shift import EnergyBaselinePreset
 from NepTrainKit.core.precision import get_storage_float_dtype
 from numpy.testing import assert_allclose
@@ -748,6 +749,22 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
 
 
 class TestShowNepWidgetArrowCapability(unittest.TestCase):
+    class _FakeStructure:
+        def __init__(self, index=0, natoms=1):
+            self.index = index
+            self.atomic_properties = {}
+            self.has_forces = False
+            self._natoms = natoms
+
+        def __len__(self):
+            return self._natoms
+
+        def copy(self):
+            clone = TestShowNepWidgetArrowCapability._FakeStructure(self.index, self._natoms)
+            clone.atomic_properties = {key: value.copy() for key, value in self.atomic_properties.items()}
+            clone.has_forces = self.has_forces
+            return clone
+
     def test_update_structure_arrow_availability_disables_when_unsupported(self):
         widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
         widget.show_struct_widget = object()
@@ -768,13 +785,90 @@ class TestShowNepWidgetArrowCapability(unittest.TestCase):
             show_nep_module.ShowNepWidget.show_arrow_dialog(widget)
         info_mock.assert_called_once_with("Arrow overlay is unavailable for current structure canvas backend.")
 
+    def test_ml_arrow_vectors_use_nep_plot_column_order(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        rows = np.array(
+            [
+                [1.0, 2.0, 3.0, 10.0, 20.0, 30.0],
+                [4.0, 5.0, 6.0, 40.0, 50.0, 60.0],
+                [7.0, 8.0, 9.0, 70.0, 80.0, 90.0],
+            ],
+            dtype=np.float32,
+        )
+        widget.nep_result_data = SimpleNamespace(_force_vector_dataset=NepPlotData(rows, group_list=np.array([2, 1]), title="force"))
+        structure = self._FakeStructure(natoms=2)
+
+        show_nep_module.ShowNepWidget._inject_ml_arrow_vectors(widget, structure, 0)
+
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_ML_FORCE], rows[:2, :3])
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_DFT_FORCE], rows[:2, 3:])
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_FORCE_ERROR], rows[:2, :3] - rows[:2, 3:])
+
+    def test_ml_arrow_vectors_use_deepmd_plot_column_order(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        rows = np.array(
+            [
+                [10.0, 20.0, 30.0, 1.0, 2.0, 3.0],
+                [40.0, 50.0, 60.0, 4.0, 5.0, 6.0],
+            ],
+            dtype=np.float32,
+        )
+        widget.nep_result_data = SimpleNamespace(_force_vector_dataset=DPPlotData(rows, group_list=np.array([2]), title="force"))
+        structure = self._FakeStructure(natoms=2)
+
+        show_nep_module.ShowNepWidget._inject_ml_arrow_vectors(widget, structure, 0)
+
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_DFT_FORCE], rows[:, :3])
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_ML_FORCE], rows[:, 3:])
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_FORCE_ERROR], rows[:, 3:] - rows[:, :3])
+
+    def test_arrow_display_names_hide_internal_ml_force_keys(self):
+        labels, label_to_prop = show_nep_module.ShowNepWidget._arrow_display_names(
+            [show_nep_module._ARROW_ML_FORCE, show_nep_module._ARROW_FORCE_ERROR, "spin"]
+        )
+
+        self.assertEqual(labels, ["ML force", "Force error (ML - DFT)", "spin"])
+        self.assertEqual(label_to_prop["ML force"], show_nep_module._ARROW_ML_FORCE)
+        self.assertEqual(label_to_prop["spin"], "spin")
+
+    def test_existing_atomic_vector_properties_remain_arrow_options(self):
+        structure = self._FakeStructure(natoms=2)
+        structure.atomic_properties["spin"] = np.ones((2, 3), dtype=np.float32)
+        structure.atomic_properties[show_nep_module._ARROW_ML_FORCE] = np.zeros((2, 3), dtype=np.float32)
+
+        props = [
+            name for name, arr in structure.atomic_properties.items()
+            if isinstance(arr, np.ndarray) and arr.ndim == 2 and arr.shape[1] == 3
+        ]
+        labels, label_to_prop = show_nep_module.ShowNepWidget._arrow_display_names(props)
+
+        self.assertIn("spin", labels)
+        self.assertIn("ML force", labels)
+        self.assertEqual(label_to_prop["spin"], "spin")
+
+    def test_display_structure_copy_reuses_atomic_arrays(self):
+        source = self._FakeStructure(index=0, natoms=2)
+        spin = np.ones((2, 3), dtype=np.float32)
+        source.atomic_properties["spin"] = spin
+
+        display = show_nep_module.ShowNepWidget._copy_structure_for_display(source)
+
+        self.assertIsNot(display, source)
+        self.assertIsNot(display.atomic_properties, source.atomic_properties)
+        self.assertIs(display.atomic_properties["spin"], spin)
+        display.atomic_properties[show_nep_module._ARROW_ML_FORCE] = np.zeros((2, 3), dtype=np.float32)
+        self.assertNotIn(show_nep_module._ARROW_ML_FORCE, source.atomic_properties)
+
     def test_show_current_structure_defers_and_coalesces_structure_render(self):
         app = QApplication.instance() or QApplication([])
         widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
         widget._pending_structure_index = None
         widget._structure_update_scheduled = False
         widget._sync_reject_toolbar_state = MagicMock()
-        widget.nep_result_data = SimpleNamespace(get_atoms=MagicMock(side_effect=lambda idx: SimpleNamespace(index=idx, has_forces=False)))
+        source_atoms = self._FakeStructure(index=3)
+        widget.nep_result_data = SimpleNamespace(get_atoms=MagicMock(return_value=source_atoms))
         widget.graph_widget = SimpleNamespace(canvas=SimpleNamespace(plot_current_point=MagicMock()))
         widget.show_struct_widget = SimpleNamespace(show_structure=MagicMock())
         widget.update_structure_bond_info = MagicMock()
@@ -795,6 +889,72 @@ class TestShowNepWidgetArrowCapability(unittest.TestCase):
         widget.show_struct_widget.show_structure.assert_called_once()
         rendered_atoms = widget.show_struct_widget.show_structure.call_args.args[0]
         self.assertEqual(rendered_atoms.index, 3)
+        self.assertIsNot(rendered_atoms, source_atoms)
+
+    def test_ml_arrow_vectors_do_not_mutate_export_source_structure(self):
+        app = QApplication.instance() or QApplication([])
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        widget._pending_structure_index = None
+        widget._structure_update_scheduled = False
+        widget._sync_reject_toolbar_state = MagicMock()
+        source_atoms = self._FakeStructure(index=0, natoms=2)
+        rows = np.array(
+            [
+                [1.0, 2.0, 3.0, 10.0, 20.0, 30.0],
+                [4.0, 5.0, 6.0, 40.0, 50.0, 60.0],
+            ],
+            dtype=np.float32,
+        )
+        widget.nep_result_data = SimpleNamespace(
+            get_atoms=MagicMock(return_value=source_atoms),
+            _force_vector_dataset=NepPlotData(rows, group_list=np.array([2]), title="force"),
+        )
+        widget.graph_widget = SimpleNamespace(canvas=SimpleNamespace(plot_current_point=MagicMock()))
+        widget.show_struct_widget = SimpleNamespace(show_structure=MagicMock())
+        widget.update_structure_bond_info = MagicMock()
+        widget.struct_info_widget = SimpleNamespace(show_structure_info=MagicMock())
+        widget.force_label = SimpleNamespace(setText=MagicMock())
+        widget._refresh_export_actions = MagicMock()
+
+        show_nep_module.ShowNepWidget.show_current_structure(widget, 0)
+        app.processEvents()
+
+        rendered_atoms = widget.show_struct_widget.show_structure.call_args.args[0]
+        self.assertIn(show_nep_module._ARROW_ML_FORCE, rendered_atoms.atomic_properties)
+        self.assertNotIn(show_nep_module._ARROW_ML_FORCE, source_atoms.atomic_properties)
+        self.assertNotIn(show_nep_module._ARROW_DFT_FORCE, source_atoms.atomic_properties)
+        self.assertNotIn(show_nep_module._ARROW_FORCE_ERROR, source_atoms.atomic_properties)
+
+    def test_arrow_vector_lookup_keeps_force_and_mforce_cached(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        force = NepPlotData(np.zeros((2, 6), dtype=np.float32), group_list=np.array([2]), title="force")
+        mforce = NepPlotData(np.ones((2, 6), dtype=np.float32), group_list=np.array([2]), title="mforce")
+
+        show_nep_module.ShowNepWidget._arrow_vector_lookup(widget, force)
+        show_nep_module.ShowNepWidget._arrow_vector_lookup(widget, mforce)
+
+        self.assertEqual(len(widget._arrow_vector_lookup_cache), 2)
+
+    def test_arrow_vector_pair_uses_cached_sorted_lookup(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        rows = np.array(
+            [
+                [1.0, 2.0, 3.0, 11.0, 12.0, 13.0],
+                [4.0, 5.0, 6.0, 14.0, 15.0, 16.0],
+                [7.0, 8.0, 9.0, 17.0, 18.0, 19.0],
+            ],
+            dtype=np.float32,
+        )
+        dataset = NepPlotData(rows, group_list=np.array([2, 1]), title="force")
+
+        dft, ml = show_nep_module.ShowNepWidget._extract_arrow_vector_pair(widget, dataset, 0, 2)
+
+        np.testing.assert_allclose(ml, rows[:2, :3])
+        np.testing.assert_allclose(dft, rows[:2, 3:])
+        self.assertEqual(len(widget._arrow_vector_lookup_cache), 1)
 
 
 class TestNepPolarizabilityResultData( unittest.TestCase):

@@ -138,6 +138,8 @@ class NepTrainResultData(ResultData):
         self.has_virial_structure_index_list = None
         self._bec_dataset = None
         self._spin_force_dataset = None
+        self._force_vector_dataset = None
+        self._spin_force_vector_dataset = None
     @property
     def datasets(self):
         """Return datasets exposed to the UI in display order."""
@@ -325,6 +327,11 @@ class NepTrainResultData(ResultData):
                     energy_array, force_array, virial_array, stress_array = results
         self._energy_dataset = NepPlotData(energy_array, title="energy")
         default_forces = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
+        self._force_vector_dataset = (
+            NepPlotData(force_array, group_list=self.atoms_num_list, title="force")
+            if force_array.size != 0
+            else None
+        )
         if force_array.size != 0 and default_forces == ForcesMode.Norm:
             force_array = aggregate_per_atom_to_structure(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
             self._force_dataset = NepPlotData(force_array, title="force")
@@ -332,8 +339,10 @@ class NepTrainResultData(ResultData):
             self._force_dataset = NepPlotData(force_array, group_list=self.atoms_num_list, title="force")
         # Spin force (magnetic force) dataset, display only
         if spin_force_array.size != 0:
+            self._spin_force_vector_dataset = NepPlotData(spin_force_array, group_list=self.atoms_num_list, title="mforce")
             self._spin_force_dataset = NepPlotData(spin_force_array, group_list=self.atoms_num_list, title="mforce")
         else:
+            self._spin_force_vector_dataset = None
             self._spin_force_dataset = None
         if float(nep_in.get("lambda_v", 1)) != 0 or (getattr(self, "is_spin_model", False) and virial_array.size != 0):
             self._stress_dataset = NepPlotData(stress_array, title="stress")

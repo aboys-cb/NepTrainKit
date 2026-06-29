@@ -74,6 +74,7 @@ class DeepmdResultData(ResultData):
         self.force_out_path = Path(force_out_path)
         self.spin_out_path = Path(spin_out_path) if spin_out_path is not None else None
         self.virial_out_path = Path(virial_out_path)
+        self._force_vector_dataset = None
 
     STRUCTURE_SYNC_RULES = {
         'energy': StructureSyncRule('energy', 'x_cols', collect_energy_sync),
@@ -204,6 +205,11 @@ class DeepmdResultData(ResultData):
                 energy_array, force_array, virial_array = self._recalculate_and_save()
         self._energy_dataset = DPPlotData(energy_array, title="energy")
         default_forces = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
+        self._force_vector_dataset = (
+            DPPlotData(force_array, group_list=self.atoms_num_list, title="force")
+            if force_array.size != 0
+            else None
+        )
         if force_array.size != 0 and default_forces == ForcesMode.Norm:
             force_array = aggregate_per_atom_to_structure(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
             self._force_dataset = DPPlotData(force_array, title="force")

@@ -11,10 +11,9 @@ from NepTrainKit.config import Config
 from NepTrainKit.core.structure import table_info
 import numpy as np
 from vispy.util.transforms import rotate
-
 from vispy import app, scene, visuals
 from vispy.geometry import MeshData, create_cylinder, create_cone, create_sphere
-from vispy.scene.visuals import Mesh, Line,Text
+from vispy.scene.visuals import Mesh, Line, Text
 from vispy.color import Color, get_colormap
 
 
@@ -240,6 +239,11 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.bond_items = []  # Store bond meshes
         self.arrow_items = []
         self.arrow_colorbar = None
+        self._arrow_mesh = None
+        self._arrow_base_vertices_h = None
+        self._arrow_base_faces = None
+        self._arrow_base_vertex_count = 0
+        self._arrow_colorbar_signature = None
         self._atom_mesh = None
         self._atom_signature = None
         self._atom_template_vertices = None
@@ -657,16 +661,18 @@ class StructurePlotWidget(scene.SceneCanvas):
     def _clear_arrow_visuals(self):
         """Remove any existing arrow visuals from the scene.
         """
-        for item in self.arrow_items:
-            item.parent = None
+        if self._arrow_mesh is not None:
+            self._arrow_mesh.parent = None
+            self._arrow_mesh = None
         self.arrow_items = []
         if self.arrow_colorbar:
             self.arrow_colorbar.parent = None
             # self.arrow_colorbar._colorbar.parent = None
             # self.grid.remove_widget(self.arrow_colorbar)
             self.arrow_colorbar = None
+        self._arrow_colorbar_signature = None
 
-    def show_arrow(self, prop_name="spin", scale=1.0, cmap="viridis"):
+    def show_arrow(self, prop_name="spin", scale=1.0, cmap="viridis", label: str | None = None):
         """Render directional arrows that indicate per-atom vector data.
         
         Parameters
@@ -678,21 +684,18 @@ class StructurePlotWidget(scene.SceneCanvas):
         color_map : str or None
             Colormap name used when ``colors`` is ``None``.
         """
-        self._clear_arrow_visuals()
-        self.arrow_config = {"prop_name": prop_name, "scale": scale, "cmap": cmap}
+        self.arrow_config = {"prop_name": prop_name, "scale": scale, "cmap": cmap, "label": label}
         if self.structure is None:
+            self._clear_arrow_visuals()
             return
         if prop_name not in self.structure.atomic_properties:
+            self._clear_arrow_visuals()
             return
         vectors = self.structure.atomic_properties[prop_name]
         if vectors.ndim != 2 or vectors.shape[1] != 3:
+            self._clear_arrow_visuals()
             return
         vectors = vectors * scale
-
-        arrow_meshdata = create_arrow_mesh()
-        z_axis = np.array([0, 0, 1], dtype=float)
-        base_vertices = arrow_meshdata.get_vertices()
-        base_faces = arrow_meshdata.get_faces()
 
         mags = np.linalg.norm(vectors, axis=1)
         max_mag = mags.max() if np.any(mags) else 1.0
@@ -700,6 +703,17 @@ class StructurePlotWidget(scene.SceneCanvas):
 
         cmap_obj = get_colormap(cmap)
         color_values = cmap_obj.map(mags / max_mag if max_mag > 0 else mags)
+
+        if self._arrow_base_vertices_h is None:
+            arrow_meshdata = create_arrow_mesh()
+            base_vertices = np.asarray(arrow_meshdata.get_vertices(), dtype=np.float32)
+            self._arrow_base_vertices_h = np.c_[base_vertices, np.ones(base_vertices.shape[0], dtype=np.float32)]
+            self._arrow_base_faces = np.asarray(arrow_meshdata.get_faces(), dtype=np.uint32)
+            self._arrow_base_vertex_count = int(base_vertices.shape[0])
+        base_vertices_h = self._arrow_base_vertices_h
+        base_faces = self._arrow_base_faces
+        base_vertices_size = self._arrow_base_vertex_count
+        z_axis = np.array([0, 0, 1], dtype=float)
 
         all_vertices = []
         all_faces = []
@@ -727,9 +741,7 @@ class StructurePlotWidget(scene.SceneCanvas):
             scale_mat = np.diag([length, length, length, 1.0])
             transform = rot @ scale_mat
             transform[:3, 3] = pos
-            base_vertices_size=base_vertices.shape[0]
-            verts = np.c_[base_vertices, np.ones(base_vertices_size)]
-            verts = (transform @ verts.T).T[:, :3]
+            verts = (transform @ base_vertices_h.T).T[:, :3]
 
             faces = base_faces + offset
             offset += base_vertices_size
@@ -742,21 +754,38 @@ class StructurePlotWidget(scene.SceneCanvas):
             vertices = np.vstack(all_vertices)
             faces = np.vstack(all_faces)
             colors = np.vstack(all_colors)
-            arrow_meshdata = MeshData(vertices=vertices, faces=faces, vertex_colors=colors)
-            arrow_mesh = Mesh(meshdata=arrow_meshdata, parent=self.view.scene)
-            self.arrow_items.append(arrow_mesh)
+            if self._arrow_mesh is None:
+                self._arrow_mesh = Mesh(
+                    vertices=vertices,
+                    faces=faces,
+                    vertex_colors=colors,
+                    parent=self.view.scene,
+                )
+                self._arrow_mesh.set_gl_state(depth_test=True, cull_face=False)
+                self.arrow_items = [self._arrow_mesh]
+            else:
+                self._arrow_mesh.set_data(vertices=vertices, faces=faces, vertex_colors=colors)
 
-            from vispy.scene.widgets import ColorBarWidget
-            self.arrow_colorbar = scene.ColorBar(cmap=cmap_obj, orientation='right',
-                                                 pos=(self.size[0]-50,self.size[1]-150),
-                                                 size=(200,10),
-                                                 label=prop_name,clim=(round(min_mag,2),round(max_mag)),parent=self.scene)
+            signature = (cmap, label or prop_name)
+            clim = (round(float(min_mag), 2), round(float(max_mag), 2))
+            if self.arrow_colorbar is None or self._arrow_colorbar_signature != signature:
+                if self.arrow_colorbar is not None:
+                    self.arrow_colorbar.parent = None
+                self.arrow_colorbar = scene.ColorBar(cmap=cmap_obj, orientation='right',
+                                                     pos=(self.size[0]-50,self.size[1]-150),
+                                                     size=(200,10),
+                                                     label=label or prop_name,clim=clim,parent=self.scene)
+                self._arrow_colorbar_signature = signature
+            else:
+                self.arrow_colorbar.clim = clim
             # self.arrow_colorbar.transform = STTransform(translate=(-25, -25, 0))
             # self.arrow_colorbar.update()
 
             # self.arrow_colorbar.height_max = 100
             # self.arrow_colorbar.width_max = 5
             # self.grid.add_widget(self.arrow_colorbar,row=0, col=9,row_span=10,col_span=1 )
+        else:
+            self._clear_arrow_visuals()
 
     def clear_arrow(self):
         """Remove arrow visuals and associated colourbars from the scene.
@@ -817,8 +846,6 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.structure = structure
         self.apply_style_from_config(redraw_lattice=False)
 
-        self._clear_arrow_visuals()
-
 
         if self.auto_view:
             coords = structure.positions
@@ -854,7 +881,9 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.show_bond(structure)
         cfg = self.arrow_config
         if cfg and cfg.get("prop_name") in structure.atomic_properties:
-            self.show_arrow(cfg["prop_name"], cfg["scale"], cfg["cmap"])
+            self.show_arrow(cfg["prop_name"], cfg["scale"], cfg["cmap"], cfg.get("label"))
+        else:
+            self._clear_arrow_visuals()
         if self.auto_view or not self._lighting_initialized:
             self.update_lighting()
             self._lighting_initialized = True

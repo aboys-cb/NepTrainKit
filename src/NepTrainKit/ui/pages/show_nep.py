@@ -5,6 +5,7 @@
 import os.path
 import sys
 import traceback
+from copy import copy
 from pathlib import Path
 
 from loguru import logger
@@ -42,6 +43,27 @@ from NepTrainKit.ui.views import (
 )
 
 
+_ARROW_DFT_FORCE = "__ntk_dft_force"
+_ARROW_ML_FORCE = "__ntk_ml_force"
+_ARROW_FORCE_ERROR = "__ntk_force_error"
+_ARROW_DFT_MFORCE = "__ntk_dft_mforce"
+_ARROW_ML_MFORCE = "__ntk_ml_mforce"
+_ARROW_MFORCE_ERROR = "__ntk_mforce_error"
+
+_ARROW_VECTOR_LABELS = {
+    _ARROW_DFT_FORCE: "DFT force",
+    _ARROW_ML_FORCE: "ML force",
+    _ARROW_FORCE_ERROR: "Force error (ML - DFT)",
+    _ARROW_DFT_MFORCE: "DFT mforce",
+    _ARROW_ML_MFORCE: "ML mforce",
+    _ARROW_MFORCE_ERROR: "MForce error (ML - DFT)",
+}
+
+_ARROW_VECTOR_SOURCES = (
+    (("_force_vector_dataset", "force"), (_ARROW_DFT_FORCE, _ARROW_ML_FORCE, _ARROW_FORCE_ERROR)),
+    (("_spin_force_vector_dataset", "_mforce_vector_dataset", "spin_force", "mforce"), (_ARROW_DFT_MFORCE, _ARROW_ML_MFORCE, _ARROW_MFORCE_ERROR)),
+)
+
 
 
 class ShowNepWidget(QWidget):
@@ -78,6 +100,7 @@ class ShowNepWidget(QWidget):
         self._search_running = 0
         self._index_running = 0
         self._worker_threads: list[QThread] = []
+        self._arrow_vector_lookup_cache = {}
         self._structure_mask_version_seen: int | None = None
         self._structure_canvas_fallback_warned = False
         self._pending_structure_index: int | None = None
@@ -1400,6 +1423,118 @@ class ShowNepWidget(QWidget):
         thread = LoadingThread(self, show_tip=True, title="Exporting data")
         thread.start_work(self._export_current_xyz, path, index)
 
+    def _get_arrow_source_dataset(self, candidate_names: tuple[str, ...]):
+        data = getattr(self, "nep_result_data", None)
+        if data is None:
+            return None
+        for name in candidate_names:
+            try:
+                dataset = getattr(data, name, None)
+            except Exception:
+                dataset = None
+            if dataset is None:
+                continue
+            try:
+                rows = np.asarray(dataset.all_data)
+                if rows.ndim == 2 and int(getattr(dataset, "cols", 0) or 0) == 3 and rows.shape[1] >= 6:
+                    return dataset
+            except Exception:
+                continue
+        return None
+
+    def _arrow_vector_lookup(self, dataset):
+        cache = getattr(self, "_arrow_vector_lookup_cache", None)
+        if cache is None:
+            cache = {}
+            self._arrow_vector_lookup_cache = cache
+        rows = np.asarray(dataset.all_data)
+        groups = np.asarray(dataset.group_array.all_data, dtype=np.int64).reshape(-1)
+        key = (
+            id(dataset),
+            id(getattr(dataset.data, "all_data", None)),
+            id(getattr(dataset.group_array, "all_data", None)),
+            getattr(dataset.data, "version", 0),
+            getattr(dataset.group_array, "version", 0),
+            rows.shape,
+            groups.shape,
+        )
+        cached = cache.get(key)
+        if cached is not None:
+            return cached
+        lookup = {
+            "rows": rows,
+            "groups": groups,
+            "sorted": bool(np.all(groups[:-1] <= groups[1:])) if groups.size > 1 else True,
+        }
+        dataset_id = id(dataset)
+        for old_key in list(cache):
+            if old_key[0] == dataset_id and old_key != key:
+                cache.pop(old_key, None)
+        cache[key] = lookup
+        return lookup
+
+    def _extract_arrow_vector_pair(self, dataset, structure_index: int, atom_count: int):
+        try:
+            lookup = self._arrow_vector_lookup(dataset)
+            rows = lookup["rows"]
+            groups = lookup["groups"]
+        except Exception:
+            return None
+        if rows.ndim != 2 or rows.shape[0] != groups.size or rows.shape[1] < 6:
+            return None
+        if lookup.get("sorted", False):
+            target = int(structure_index)
+            left = int(np.searchsorted(groups, target, side="left"))
+            right = int(np.searchsorted(groups, target, side="right"))
+            selected = rows[left:right]
+        else:
+            selected = rows[groups == int(structure_index)]
+        if selected.shape[0] != int(atom_count):
+            return None
+        try:
+            dft = np.asarray(selected[:, dataset.x_cols], dtype=np.float32).reshape(-1, 3)
+            ml = np.asarray(selected[:, dataset.y_cols], dtype=np.float32).reshape(-1, 3)
+        except Exception:
+            return None
+        if dft.shape != ml.shape or dft.shape != (int(atom_count), 3):
+            return None
+        return dft, ml
+
+    def _inject_ml_arrow_vectors(self, structure, structure_index: int) -> None:
+        atom_count = len(structure)
+        for candidate_names, prop_names in _ARROW_VECTOR_SOURCES:
+            dataset = self._get_arrow_source_dataset(candidate_names)
+            if dataset is None:
+                continue
+            pair = self._extract_arrow_vector_pair(dataset, int(structure_index), atom_count)
+            if pair is None:
+                continue
+            dft, ml = pair
+            dft_prop, ml_prop, err_prop = prop_names
+            structure.atomic_properties[dft_prop] = dft
+            structure.atomic_properties[ml_prop] = ml
+            structure.atomic_properties[err_prop] = ml - dft
+
+    @staticmethod
+    def _copy_structure_for_display(structure):
+        display_structure = copy(structure)
+        display_structure.atomic_properties = dict(getattr(structure, "atomic_properties", {}) or {})
+        display_structure.properties = list(getattr(structure, "properties", []) or [])
+        display_structure.additional_fields = dict(getattr(structure, "additional_fields", {}) or {})
+        return display_structure
+
+    @staticmethod
+    def _arrow_display_names(props: list[str]) -> tuple[list[str], dict[str, str]]:
+        labels: list[str] = []
+        label_to_prop: dict[str, str] = {}
+        for prop in props:
+            label = _ARROW_VECTOR_LABELS.get(prop, prop)
+            if label in label_to_prop:
+                label = prop
+            labels.append(label)
+            label_to_prop[label] = prop
+        return labels, label_to_prop
+
     def show_arrow_dialog(self):
         """Configure vector arrow overlays for the current structure.
 
@@ -1421,20 +1556,22 @@ class ShowNepWidget(QWidget):
         if not props:
             MessageManager.send_info_message("No vector data available")
             return
-        box = ArrowMessageBox(self, props)
+        labels, label_to_prop = self._arrow_display_names(props)
+        box = ArrowMessageBox(self, labels)
         cfg = getattr(self.show_struct_widget, "arrow_config", None)
         if cfg and cfg.get("prop_name") in props:
-            box.propCombo.setCurrentText(cfg["prop_name"])
+            box.propCombo.setCurrentText(_ARROW_VECTOR_LABELS.get(cfg["prop_name"], cfg["prop_name"]))
             box.scaleSpin.setValue(cfg["scale"])
             box.colorCombo.setCurrentText(cfg["cmap"])
             box.showCheck.setChecked(True)
         if not box.exec():
             return
         if box.showCheck.isChecked():
-            prop = box.propCombo.currentText()
+            label = box.propCombo.currentText()
+            prop = label_to_prop.get(label, label)
             scale = box.scaleSpin.value()
             cmap = box.colorCombo.currentText()
-            self.show_struct_widget.show_arrow(prop, scale, cmap)
+            self.show_struct_widget.show_arrow(prop, scale, cmap, label)
         else:
             self.show_struct_widget.clear_arrow()
 
@@ -1482,7 +1619,9 @@ class ShowNepWidget(QWidget):
             MessageManager.send_message_box("The index is invalid, perhaps the structure has been deleted")
             return
 
-        self.show_struct_widget.show_structure(atoms)
+        display_atoms = self._copy_structure_for_display(atoms)
+        self._inject_ml_arrow_vectors(display_atoms, int(current_index))
+        self.show_struct_widget.show_structure(display_atoms)
         self.update_structure_bond_info(atoms)
         self.struct_info_widget.show_structure_info(atoms)
 

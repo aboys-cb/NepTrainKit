@@ -81,6 +81,8 @@ class DataProcessingThread(QThread):
             from NepTrainKit.config import Config  # Lazy import to avoid cycles
             sort_atoms = Config.getboolean("widget", "sort_atoms", False)
             for index, structure in enumerate(self.dataset):
+                if self.isInterruptionRequested():
+                    break
                 if isinstance(self.process_func, StructureOperation):
                     processed = self.process_func.run_structure(structure, self.params)
                 else:
@@ -89,6 +91,8 @@ class DataProcessingThread(QThread):
                     processed = [ase_sort(s) for s in processed]
                 self.result_dataset.extend(processed)
                 self.progressSignal.emit(int((index + 1) / total * 100))
+                if self.isInterruptionRequested():
+                    break
             self.elapsed_seconds = time.perf_counter() - start
             self.finishSignal.emit()
         except Exception as e:  # noqa: BLE001

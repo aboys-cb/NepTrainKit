@@ -22,6 +22,8 @@ class TestFilterCards(BaseCardTest):
         kept = GeometryFilterOperation().run_dataset([good, bad], params)
         self.assertEqual(len(kept), 1)
         self.assertTrue(np.allclose(kept[0].positions, good.positions))
+        self.assertFalse(GeometryFilterOperation.has_pair_closer_than(good, 1.0))
+        self.assertTrue(GeometryFilterOperation.has_pair_closer_than(bad, 1.0))
 
         card = GeometryFilterCard()
         card.min_pair_frame.set_input_value([1.4])

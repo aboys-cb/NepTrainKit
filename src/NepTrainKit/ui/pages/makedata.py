@@ -354,6 +354,9 @@ class MakeDataWidget(QWidget):
         None
             Starts the card execution chain or reports missing data.
         """
+        if self._has_running_card():
+            MessageManager.send_info_message("Cards are still running. Please wait for the current run to finish.")
+            return
         self.stop_run_card()
         first_card=self._next_card(-1)
         if first_card:
@@ -369,6 +372,20 @@ class MakeDataWidget(QWidget):
             first_card.run()
         else:
             MessageManager.send_info_message("No card selected. Please select a card in the workspace.")
+
+    def _has_running_card(self):
+        """Return True when any workspace card still owns a running worker."""
+        return any(self._card_is_running(card) for card in self.workspace_card_widget.cards)
+
+    def _card_is_running(self, card):
+        worker = getattr(card, "worker_thread", None)
+        if worker is not None and worker.isRunning():
+            return True
+        for child in getattr(card, "card_list", []):
+            if self._card_is_running(child):
+                return True
+        filter_card = getattr(card, "filter_card", None)
+        return bool(filter_card is not None and self._card_is_running(filter_card))
 
     def _next_card(self,current_card_index=-1):
         """Return the next enabled card after the given index.

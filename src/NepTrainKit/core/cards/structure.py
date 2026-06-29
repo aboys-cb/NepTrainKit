@@ -266,6 +266,14 @@ class VibrationModePerturbParams:
 class VibrationModePerturbOperation(StructureOperation):
     """Generate perturbations along precomputed vibrational modes."""
 
+    @staticmethod
+    def wrapped_positions(structure, positions: np.ndarray) -> np.ndarray:
+        if not np.any(structure.pbc):
+            return positions
+        scaled = np.asarray(positions, dtype=float) @ np.linalg.inv(structure.cell.array)
+        scaled[:, np.asarray(structure.pbc, dtype=bool)] %= 1.0
+        return scaled @ structure.cell.array
+
     def run_structure(self, structure, params: VibrationModePerturbParams) -> list:
         amplitude = float(params.amplitude)
         if amplitude <= 0.0:
@@ -303,9 +311,8 @@ class VibrationModePerturbOperation(StructureOperation):
 
             displacement = np.sum(coeffs[:, None, None] * modes[indices], axis=0)
             new_structure = structure.copy()
-            new_structure.set_positions(orig_positions + amplitude * displacement)
-            if hasattr(new_structure, "wrap"):
-                new_structure.wrap()
+            new_positions = orig_positions + amplitude * displacement
+            new_structure.set_positions(self.wrapped_positions(structure, new_positions))
             append_config_tag(new_structure, f"Vib(a={amplitude:.3f},m={modes_per_sample})")
             generated.append(new_structure)
         return generated

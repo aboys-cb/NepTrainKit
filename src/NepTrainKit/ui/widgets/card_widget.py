@@ -487,27 +487,51 @@ class MakeDataCard(MakeDataCardWidget):
 
     def closeEvent(self, event):
         """Ensure worker threads are stopped before closing the card."""
-        if hasattr(self, "worker_thread"):
-            if self.worker_thread.isRunning():
-                self.worker_thread.terminate()
-                self.runFinishedSignal.emit(self.index)
-
+        if self._stop_worker_thread(discard_results=False):
+            self.runFinishedSignal.emit(self.index)
+        if hasattr(self, "worker_thread") and self.worker_thread.isRunning():
+            event.ignore()
+            return
         self.deleteLater()
         super().closeEvent(event)
 
+    def _stop_worker_thread(self, discard_results: bool = False) -> bool:
+        """Request worker interruption before dropping its reference."""
+        if not hasattr(self, "worker_thread"):
+            return False
+
+        thread = self.worker_thread
+        was_running = thread.isRunning()
+        if was_running:
+            thread.requestInterruption()
+            if not thread.wait(200):
+                return True
+
+        if not discard_results:
+            self.result_dataset = thread.result_dataset
+        self._last_elapsed_seconds = None
+        del self.worker_thread
+        return was_running
+
+    def _wait_for_worker_thread(self):
+        """Wait for a worker that just emitted completion before deleting it."""
+        if not hasattr(self, "worker_thread"):
+            return None
+        thread = self.worker_thread
+        if thread.isRunning():
+            thread.wait()
+        return thread
+
     def stop(self):
         """Stop any running processing thread and capture partial results."""
-        if hasattr(self, "worker_thread"):
-            if self.worker_thread.isRunning():
-                self.worker_thread.terminate()
-                self.result_dataset = self.worker_thread.result_dataset
-                self._last_elapsed_seconds = None
-                self.update_dataset_info()
-                del self.worker_thread
+        if self._stop_worker_thread(discard_results=False):
+            self.update_dataset_info()
 
     def run(self):
         """Launch processing in a background thread when enabled."""
         if self.check_state:
+            if hasattr(self, "worker_thread") and self.worker_thread.isRunning():
+                return
             operation = self.create_operation()
             params = self.get_params()
             if isinstance(operation, StructureOperation):
@@ -555,8 +579,11 @@ class MakeDataCard(MakeDataCardWidget):
 
     def on_processing_finished(self):
         """Handle a successful run and emit the completion signal."""
-        self.result_dataset = self.worker_thread.result_dataset
-        self._last_elapsed_seconds = self.worker_thread.elapsed_seconds
+        worker_thread = self._wait_for_worker_thread()
+        if worker_thread is None:
+            return
+        self.result_dataset = worker_thread.result_dataset
+        self._last_elapsed_seconds = worker_thread.elapsed_seconds
         self.update_dataset_info()
         self.status_label.set_colors(["#a5d6a7"])
         self.runFinishedSignal.emit(self.index)
@@ -573,8 +600,11 @@ class MakeDataCard(MakeDataCardWidget):
         self.close_button.setEnabled(True)
 
         self.status_label.set_colors(["red"])
-        self.result_dataset = self.worker_thread.result_dataset
-        self._last_elapsed_seconds = getattr(self.worker_thread, "elapsed_seconds", None)
+        worker_thread = self._wait_for_worker_thread()
+        if worker_thread is None:
+            return
+        self.result_dataset = worker_thread.result_dataset
+        self._last_elapsed_seconds = getattr(worker_thread, "elapsed_seconds", None)
         del self.worker_thread
         self.update_dataset_info()
         self.runFinishedSignal.emit(self.index)
@@ -603,13 +633,9 @@ class FilterDataCard(MakeDataCard):
 
     def stop(self):
         """Terminate the worker thread and discard partial results."""
-        if hasattr(self, "worker_thread"):
-            if self.worker_thread.isRunning():
-                self.worker_thread.terminate()
-                self.result_dataset = []
-                self._last_elapsed_seconds = None
-                self.update_dataset_info()
-                del self.worker_thread
+        if self._stop_worker_thread(discard_results=True):
+            self.result_dataset = []
+            self.update_dataset_info()
 
     def update_progress(self, progress):
         """Display worker progress in the status label."""
@@ -618,9 +644,10 @@ class FilterDataCard(MakeDataCard):
 
     def on_processing_finished(self):
         """Refresh status once filtering completes."""
-        if hasattr(self, "worker_thread"):
-            self.result_dataset = self.worker_thread.result_dataset
-            self._last_elapsed_seconds = self.worker_thread.elapsed_seconds
+        worker_thread = self._wait_for_worker_thread()
+        if worker_thread is not None:
+            self.result_dataset = worker_thread.result_dataset
+            self._last_elapsed_seconds = worker_thread.elapsed_seconds
         self.update_dataset_info()
         self.status_label.set_colors(["#a5d6a7"])
         self.runFinishedSignal.emit(self.index)
@@ -639,7 +666,8 @@ class FilterDataCard(MakeDataCard):
 
         self.status_label.set_colors(["red"])
 
-        self._last_elapsed_seconds = getattr(self.worker_thread, "elapsed_seconds", None)
+        worker_thread = self._wait_for_worker_thread()
+        self._last_elapsed_seconds = getattr(worker_thread, "elapsed_seconds", None)
         del self.worker_thread
         self.update_dataset_info()
         self.runFinishedSignal.emit(self.index)
@@ -649,4 +677,3 @@ class FilterDataCard(MakeDataCard):
     def update_dataset_info(self):
         """Display the number of structures kept by the filter."""
         self.status_label.setText(self._format_dataset_info())
-

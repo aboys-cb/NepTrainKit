@@ -406,6 +406,24 @@ class TestLatticeCards(BaseCardTest):
         )
         self.assertEqual(len(op_results), 2)
 
+        skewed = structure.copy()
+        skewed.set_cell(
+            np.array(
+                [
+                    [5.4, 0.2, 0.1],
+                    [0.3, 5.5, 0.2],
+                    [0.1, 0.4, 5.6],
+                ]
+            ),
+            scale_atoms=True,
+        )
+        shifted_positions = skewed.positions + np.array([6.0, -5.5, 5.8])
+        expected = skewed.copy()
+        expected.set_positions(shifted_positions)
+        expected.wrap()
+        wrapped = VibrationModePerturbOperation.wrapped_positions(skewed, shifted_positions)
+        np.testing.assert_allclose(wrapped, expected.positions, atol=1e-12)
+
         restored = VibrationModePerturbCard()
         restored.from_dict(card.to_dict())
         self.assertEqual(restored.get_params(), card.get_params())

@@ -1,10 +1,13 @@
 from .card_test_base import *
 from .card_test_base import _ExternalTestCard, _MetadataTestCard
 from unittest.mock import patch
+import time
 
 from PySide6.QtCore import QEvent, QPointF, Qt
 from PySide6.QtGui import QMouseEvent
 
+from NepTrainKit.core.cards.operation import StructureOperation
+from NepTrainKit.ui.threads import DataProcessingThread
 from NepTrainKit.ui.widgets import FilterDataCard
 
 
@@ -70,6 +73,27 @@ class TestCardContracts(BaseCardTest):
         card.update_dataset_info()
 
         self.assertEqual(card.status_label.text(), "Input: 2 -> Output: 1 | Time: 0.01 s")
+
+    def test_card_stop_waits_for_worker_before_deleting_reference(self):
+        class SlowOperation(StructureOperation):
+            def run_structure(self, structure, params):
+                time.sleep(0.05)
+                return [structure.copy()]
+
+        card = PerturbCard()
+        card.set_dataset([self.structure.copy()])
+        thread = DataProcessingThread([self.structure.copy() for _ in range(5)], SlowOperation(), None)
+        card.worker_thread = thread
+        thread.start()
+        deadline = time.perf_counter() + 2.0
+        while not thread.isRunning() and time.perf_counter() < deadline:
+            self._app.processEvents()
+            time.sleep(0.01)
+
+        card.stop()
+
+        self.assertFalse(thread.isRunning())
+        self.assertFalse(hasattr(card, "worker_thread"))
 
     def test_card_drag_starts_only_after_drag_threshold(self):
         class FakeDrag:

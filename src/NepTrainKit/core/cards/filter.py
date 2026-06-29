@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 from ase.data import atomic_masses, atomic_numbers
+from ase.neighborlist import neighbor_list
 
 from NepTrainKit.core.calculator import NepCalculator
 from NepTrainKit.core.io import farthest_point_sampling
@@ -93,7 +94,7 @@ class GeometryFilterOperation(DatasetOperation):
                 return False
 
         min_pair_distance = float(params.min_pair_distance)
-        if min_pair_distance > 0.0 and natoms > 1 and cls.shortest_pair_distance(structure) < min_pair_distance:
+        if min_pair_distance > 0.0 and natoms > 1 and cls.has_pair_closer_than(structure, min_pair_distance):
             return False
 
         if volume > 0.0:
@@ -118,6 +119,14 @@ class GeometryFilterOperation(DatasetOperation):
             return float("inf")
         distances[distances <= 1e-12] = np.inf
         return float(np.min(distances))
+
+    @staticmethod
+    def has_pair_closer_than(structure, cutoff: float) -> bool:
+        try:
+            indices = neighbor_list("i", structure, float(cutoff), self_interaction=False)
+        except Exception:
+            return GeometryFilterOperation.shortest_pair_distance(structure) < float(cutoff)
+        return bool(len(indices) > 0)
 
     @classmethod
     def mass_density(cls, structure, volume: float) -> float:

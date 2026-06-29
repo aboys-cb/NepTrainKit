@@ -355,6 +355,15 @@ class PerturbOperation(StructureOperation):
             axis=2,
         )
 
+    @staticmethod
+    def wrapped_positions(structure, positions: np.ndarray) -> np.ndarray:
+        """Wrap Cartesian positions through fractional coordinates without ASE's per-call solve."""
+        if not np.any(structure.pbc):
+            return positions
+        scaled = np.asarray(positions, dtype=float) @ np.linalg.inv(structure.cell.array)
+        scaled[:, np.asarray(structure.pbc, dtype=bool)] %= 1.0
+        return scaled @ structure.cell.array
+
     def run_structure(self, structure, params: PerturbParams) -> list:
         structure_list = []
         n_atoms = len(structure)
@@ -404,8 +413,7 @@ class PerturbOperation(StructureOperation):
                 new_positions = orig_positions + delta
 
             new_structure = structure.copy()
-            new_structure.set_positions(new_positions)
-            new_structure.wrap()
+            new_structure.set_positions(self.wrapped_positions(structure, new_positions))
             eng = "U" if params.engine_type == 1 else "S"
             append_config_tag(new_structure, f"Pert(d={params.max_distance},{eng})")
             structure_list.append(new_structure)

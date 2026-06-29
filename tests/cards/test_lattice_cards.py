@@ -176,6 +176,32 @@ class TestLatticeCards(BaseCardTest):
                 ),
             )
 
+    def test_perturb_wrap_matches_ase_after_lattice_change(self):
+        structure = CellStrainOperation().run_structure(
+            self.structure.copy(),
+            CellStrainParams(
+                axes="triaxial",
+                x_range=(1.0, 1.0, 1.0),
+                y_range=(-1.0, -1.0, 1.0),
+                z_range=(0.5, 0.5, 1.0),
+            ),
+        )[0]
+        params = PerturbParams(max_distance=0.2, max_num=4, use_seed=True, seed=23)
+
+        results = PerturbOperation().run_structure(structure.copy(), params)
+
+        rng = np.random.default_rng(params.seed)
+        unit_samples = rng.random((params.max_num, len(structure), 3))
+        displacements = PerturbOperation.unit_ball_displacements(
+            unit_samples,
+            np.full(len(structure), params.max_distance),
+        )
+        for result, displacement in zip(results, displacements):
+            expected = structure.copy()
+            expected.set_positions(structure.positions + displacement)
+            expected.wrap()
+            np.testing.assert_allclose(result.positions, expected.positions, atol=1e-12)
+
     def test_cell_scaling_card_options(self):
         card = CellScalingCard()
         structure = self.structure.copy()

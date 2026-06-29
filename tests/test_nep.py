@@ -825,6 +825,54 @@ class TestShowNepWidgetArrowCapability(unittest.TestCase):
         np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_ML_FORCE], rows[:, 3:])
         np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_FORCE_ERROR], rows[:, 3:] - rows[:, :3])
 
+    def test_deepmd_mforce_arrow_error_does_not_require_existing_mforce_property(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        rows = np.array(
+            [
+                [10.0, 20.0, 30.0, 1.0, 2.0, 3.0],
+                [40.0, 50.0, 60.0, 4.0, 5.0, 6.0],
+            ],
+            dtype=np.float32,
+        )
+        widget.nep_result_data = SimpleNamespace(mforce=DPPlotData(rows, group_list=np.array([2]), title="mforce"))
+        structure = self._FakeStructure(natoms=2)
+        structure.atomic_properties["force"] = np.zeros((2, 3), dtype=np.float32)
+
+        show_nep_module.ShowNepWidget._inject_ml_arrow_vectors(widget, structure, 0)
+
+        self.assertNotIn("mforce", structure.atomic_properties)
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_DFT_MFORCE], rows[:, :3])
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_ML_MFORCE], rows[:, 3:])
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_MFORCE_ERROR], rows[:, 3:] - rows[:, :3])
+
+    def test_sparse_mforce_arrow_error_uses_force_mag_mask(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        rows = np.array(
+            [
+                [10.0, 20.0, 30.0, 1.0, 2.0, 3.0],
+                [40.0, 50.0, 60.0, 4.0, 5.0, 6.0],
+            ],
+            dtype=np.float32,
+        )
+        widget.nep_result_data = SimpleNamespace(mforce=DPPlotData(rows, group_list=np.array([2]), title="mforce"))
+        structure = self._FakeStructure(natoms=3)
+        structure.atomic_properties["force_mag"] = np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+            ],
+            dtype=np.float32,
+        )
+
+        show_nep_module.ShowNepWidget._inject_ml_arrow_vectors(widget, structure, 0)
+
+        expected_error = np.zeros((3, 3), dtype=np.float32)
+        expected_error[1:] = rows[:, 3:] - rows[:, :3]
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_MFORCE_ERROR], expected_error)
+
     def test_arrow_display_names_hide_internal_ml_force_keys(self):
         labels, label_to_prop = show_nep_module.ShowNepWidget._arrow_display_names(
             [show_nep_module._ARROW_ML_FORCE, show_nep_module._ARROW_FORCE_ERROR, "spin"]

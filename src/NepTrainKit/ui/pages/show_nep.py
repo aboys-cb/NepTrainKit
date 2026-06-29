@@ -1489,16 +1489,36 @@ class ShowNepWidget(QWidget):
             selected = rows[left:right]
         else:
             selected = rows[groups == int(structure_index)]
-        if selected.shape[0] != int(atom_count):
-            return None
         try:
             dft = np.asarray(selected[:, dataset.x_cols], dtype=np.float32).reshape(-1, 3)
             ml = np.asarray(selected[:, dataset.y_cols], dtype=np.float32).reshape(-1, 3)
         except Exception:
             return None
-        if dft.shape != ml.shape or dft.shape != (int(atom_count), 3):
+        if dft.shape != ml.shape or dft.ndim != 2 or dft.shape[1] != 3:
             return None
         return dft, ml
+
+    @staticmethod
+    def _expand_arrow_vector_pair(structure, dft: np.ndarray, ml: np.ndarray):
+        atom_count = len(structure)
+        if dft.shape == ml.shape == (atom_count, 3):
+            return dft, ml
+        props = getattr(structure, "atomic_properties", {}) or {}
+        force_mag = props.get("force_mag")
+        if force_mag is None:
+            return None
+        try:
+            mag = np.asarray(force_mag, dtype=np.float32).reshape(atom_count, 3)
+        except Exception:
+            return None
+        mask = ~np.all(mag == 0, axis=1)
+        if int(np.sum(mask)) != int(dft.shape[0]):
+            return None
+        expanded_dft = np.zeros((atom_count, 3), dtype=np.float32)
+        expanded_ml = np.zeros((atom_count, 3), dtype=np.float32)
+        expanded_dft[mask] = dft
+        expanded_ml[mask] = ml
+        return expanded_dft, expanded_ml
 
     def _inject_ml_arrow_vectors(self, structure, structure_index: int) -> None:
         atom_count = len(structure)
@@ -1510,6 +1530,10 @@ class ShowNepWidget(QWidget):
             if pair is None:
                 continue
             dft, ml = pair
+            expanded_pair = self._expand_arrow_vector_pair(structure, dft, ml)
+            if expanded_pair is None:
+                continue
+            dft, ml = expanded_pair
             dft_prop, ml_prop, err_prop = prop_names
             structure.atomic_properties[dft_prop] = dft
             structure.atomic_properties[ml_prop] = ml

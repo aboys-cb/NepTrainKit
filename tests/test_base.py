@@ -50,6 +50,26 @@ def test_nep_plot_data(test_setup):
     data.revoke()
     assert data.now_data.shape == (10, 6)
 
+
+def test_nep_plot_data_max_error_uses_unique_structure_order():
+    data = np.array(
+        [
+            [10.0, 0.0],
+            [9.0, 0.0],
+            [8.0, 0.0],
+            [7.0, 0.0],
+            [6.0, 0.0],
+            [5.0, 0.0],
+            [4.0, 0.0],
+            [3.0, 0.0],
+        ],
+        dtype=np.float64,
+    )
+    plot = NepPlotData(data, group_list=[4, 2, 2], title="force")
+
+    assert plot.get_max_error_index(3) == [0, 1, 2]
+
+
 def test_structure_data(test_setup):
     """测试StructureData基本功能"""
     _, _, test_dir = test_setup
@@ -588,6 +608,14 @@ def test_expression_search_supports_builtins_elements_and_dynamic_fields():
     assert data.search_config("frac.H > 0.4", SearchType.EXPRESSION) == [0]
     assert data.search_config("force.x > 1.0", SearchType.EXPRESSION) == [1]
     assert data.search_config("force.err.x > 0.005", SearchType.EXPRESSION) == [0, 1]
+
+
+def test_expression_search_skips_dynamic_discovery_for_simple_references():
+    data = _build_dummy_result()
+
+    with patch.object(data, "_discover_expression_fields", side_effect=AssertionError("unexpected dynamic scan")):
+        assert data.search_config("natoms > 2", SearchType.EXPRESSION) == [1]
+        assert data.search_config("count.Fe >= 2", SearchType.EXPRESSION) == [1]
 
 
 def test_expression_search_handles_atomic_fields_and_errors():

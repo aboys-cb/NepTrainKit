@@ -240,22 +240,30 @@ class CanvasLayoutBase(CanvasBase):
 
         if not structure_index:
             return
+        selected = set(getattr(self.nep_result_data, "select_index", set()))
+        idx_set = {int(i) for i in structure_index}
         if reverse:
-            self.nep_result_data.uncheck(structure_index)
-            self.update_scatter_color(structure_index, Brushes.Default)
+            changed = sorted(idx_set.intersection(selected))
+            if not changed:
+                return
+            self.nep_result_data.uncheck(changed)
+            self.update_scatter_color(changed, Brushes.Default)
             # Restore reject highlights for indices that are still tagged as bad.
             try:
                 reject = getattr(self.nep_result_data, "reject_index", None)
                 if reject:
-                    to_reject = [idx for idx in structure_index if idx in reject]
+                    to_reject = [idx for idx in changed if idx in reject]
                     setter = getattr(self, "set_reject_highlight", None)
                     if setter is not None and to_reject:
                         setter(to_reject, True)
             except Exception:
                 pass
         else:
-            self.nep_result_data.select(structure_index)
-            self.update_scatter_color(structure_index, Brushes.Selected)
+            changed = sorted(idx_set.difference(selected))
+            if not changed:
+                return
+            self.nep_result_data.select(changed)
+            self.update_scatter_color(changed, Brushes.Selected)
 
     def inverse_select(self):
         """Flip the selection state across all active structures."""

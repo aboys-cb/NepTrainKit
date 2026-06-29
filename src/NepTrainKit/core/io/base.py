@@ -291,11 +291,31 @@ class NepData:
         """Return the ``nmax`` structure indices with the largest absolute error."""
         if not self.cols:
             return []
-        error = np.sum(np.abs(self.now_data[:, : self.cols] - self.now_data[:, self.cols :]), axis=1)
-        sorted_idx = np.argsort(-error)
-        structure_index = self.group_array.now_data[sorted_idx]
-        _, unique_indices = np.unique(structure_index, return_index=True)
-        return structure_index[np.sort(unique_indices)][:nmax].tolist()
+        nmax = int(nmax)
+        if nmax <= 0:
+            return []
+        data_version = int(getattr(self.data, "version", 0) or 0)
+        cache = getattr(self, "_max_error_cache", None)
+        if cache is not None and cache[0] == data_version and cache[1] == self.cols:
+            error = cache[2]
+        else:
+            error = np.sum(np.abs(self.now_data[:, : self.cols] - self.now_data[:, self.cols :]), axis=1)
+            self._max_error_cache = (data_version, self.cols, error)
+        if error.size == 0:
+            return []
+        total = int(error.shape[0])
+        k = min(total, max(nmax * 4, nmax + 64))
+        while True:
+            if k >= total:
+                sorted_idx = np.argsort(-error)
+            else:
+                candidate_idx = np.argpartition(-error, k - 1)[:k]
+                sorted_idx = candidate_idx[np.argsort(-error[candidate_idx])]
+            structure_index = self.group_array.now_data[sorted_idx]
+            _, unique_indices = np.unique(structure_index, return_index=True)
+            if unique_indices.size >= nmax or k >= total:
+                return structure_index[np.sort(unique_indices)][:nmax].tolist()
+            k = min(total, k * 2)
 class NepPlotData(NepData):
     """Two-column plot helper that separates NEP predictions from references."""
     def __init__(self, data_list: Sequence[Any] | npt.NDArray[Any], **kwargs: Any) -> None:
@@ -410,13 +430,16 @@ class StructureData(NepData):
             cache = getattr(self, "_completer_cache", None)
             cache_max_items = getattr(self, "_completer_cache_max_items", None)
             cache_version = getattr(self, "_completer_cache_data_version", None)
+            element_cache_version = getattr(self, "_element_count_cache_data_version", None)
             current_version = getattr(getattr(self, "data", None), "version", None)
             if (
                 cache is not None
                 and cache_max_items == max_items
                 and cache_version is not None
+                and element_cache_version is not None
                 and current_version is not None
                 and int(cache_version) == int(current_version)
+                and int(element_cache_version) == int(current_version)
             ):
                 return
 
@@ -428,8 +451,10 @@ class StructureData(NepData):
             tag_counter: Counter[str] = Counter()
             formula_counter: Counter[str] = Counter()
             elem_counter: Counter[str] = Counter()
+            element_counts: dict[str, npt.NDArray[np.int32]] = {}
+            active_count = int(self.now_data.shape[0])
 
-            for structure in self.now_data:
+            for row, structure in enumerate(self.now_data):
                 try:
                     tag = str(getattr(structure, "tag", "") or "").strip()
                     if tag:
@@ -443,13 +468,18 @@ class StructureData(NepData):
                 except Exception:
                     pass
                 try:
-                    elems = set(map(str, getattr(structure, "elements")))
+                    counts = Counter(self._normalise_element_symbol(str(elem)) for elem in getattr(structure, "elements"))
                 except Exception:
-                    elems = set()
-                for elem in elems:
+                    counts = Counter()
+                for elem, count in counts.items():
                     elem = str(elem or "").strip()
                     if elem:
                         elem_counter[elem] += 1
+                        values = element_counts.get(elem)
+                        if values is None:
+                            values = np.zeros(active_count, dtype=np.int32)
+                            element_counts[elem] = values
+                        values[row] = int(count)
 
             tag_map, trunc_tag = self._truncate_counter(dict(tag_counter), max_items)
             formula_map, trunc_formula = self._truncate_counter(dict(formula_counter), max_items)
@@ -481,6 +511,21 @@ class StructureData(NepData):
             }
             self._completer_cache_max_items = max_items
             self._completer_cache_data_version = start_version if start_version != -1 else 0
+            self._element_count_cache = element_counts
+            self._element_count_cache_data_version = start_version if start_version != -1 else 0
+
+    def get_element_count_cache(self, elements: set[str] | None = None) -> dict[str, npt.NDArray[np.int32]]:
+        """Return element count arrays aligned with active structures."""
+        current_version = getattr(getattr(self, "data", None), "version", None)
+        cache_version = getattr(self, "_element_count_cache_data_version", None)
+        cache = getattr(self, "_element_count_cache", None)
+        if cache is None or cache_version is None or current_version is None or int(cache_version) != int(current_version):
+            self.ensure_completer_cache(max_items=int(getattr(self, "_completer_cache_max_items", 50000) or 50000))
+            cache = getattr(self, "_element_count_cache", None) or {}
+        if elements is None:
+            return {elem: values for elem, values in cache.items()}
+        wanted = {self._normalise_element_symbol(elem) for elem in elements if str(elem or "").strip()}
+        return {elem: values for elem, values in cache.items() if elem in wanted}
 
     def get_completer_cache(self, search_type: SearchType | str | None = None, max_items: int = 50000) -> dict[str, int]:
         """Return cached completer mapping for ``search_type``; builds it if needed."""
@@ -621,19 +666,23 @@ class StructureData(NepData):
             result_index = [i for i, structure in enumerate(self.now_data) if pattern.search(structure.formula)]
         elif search_type == SearchType.ELEMENTS:
             allowed, required, excluded = self._parse_elements_query(config)
-            result_index = []
-            for i, structure in enumerate(self.now_data):
-                try:
-                    elem_set = set(map(str, structure.elements))
-                except Exception:
-                    continue
-                if excluded and elem_set.intersection(excluded):
-                    continue
-                if required and not required.issubset(elem_set):
-                    continue
-                if allowed and not elem_set.issubset(allowed):
-                    continue
-                result_index.append(i)
+            element_counts = self.get_element_count_cache()
+            active_count = int(self.now_data.shape[0])
+            mask = np.ones(active_count, dtype=bool)
+            for elem in required:
+                values = element_counts.get(elem)
+                mask &= values > 0 if values is not None else False
+            for elem in excluded:
+                values = element_counts.get(elem)
+                if values is not None:
+                    mask &= values == 0
+            if allowed:
+                outside = np.zeros(active_count, dtype=bool)
+                for elem, values in element_counts.items():
+                    if elem not in allowed:
+                        outside |= values > 0
+                mask &= ~outside
+            result_index = np.nonzero(mask)[0]
         return self.group_array[result_index].tolist()
 
 
@@ -1095,6 +1144,16 @@ class ResultData(QObject):
             return (*base, node.attr)
         return None
     @staticmethod
+    def _expression_reference_chains(node: ast.AST) -> set[tuple[str, ...]]:
+        """Return expression field references without counting nested attributes twice."""
+        chain = ResultData._expression_ast_chain(node)
+        if chain is not None:
+            return {chain}
+        refs: set[tuple[str, ...]] = set()
+        for child in ast.iter_child_nodes(node):
+            refs.update(ResultData._expression_reference_chains(child))
+        return refs
+    @staticmethod
     def _is_allowed_expression_node(node: ast.AST) -> bool:
         chain = ResultData._expression_ast_chain(node)
         if chain is not None:
@@ -1255,12 +1314,61 @@ class ResultData(QObject):
     def _build_expression_builtin_values(
         self,
         active_indices: npt.NDArray[np.int64],
+        references: set[tuple[str, ...]] | None = None,
     ) -> tuple[dict[str, npt.NDArray[Any]], dict[str, dict[str, npt.NDArray[Any]]]]:
-        structures = [self.structure.all_data[int(i)] for i in active_indices.tolist()]
-        natoms = np.array([int(len(s)) for s in structures], dtype=np.float64)
-        volumes = np.array([float(getattr(s, "volume", np.nan)) for s in structures], dtype=np.float64)
-        abcs = np.asarray(self.abcs[active_indices], dtype=np.float64) if active_indices.size else np.empty((0, 3), dtype=np.float64)
-        angles = np.asarray(self.angles[active_indices], dtype=np.float64) if active_indices.size else np.empty((0, 3), dtype=np.float64)
+        builtin_tokens = {
+            "natoms",
+            "n_atoms",
+            "volume",
+            "a",
+            "b",
+            "c",
+            "alpha",
+            "beta",
+            "gamma",
+            "spin_natoms",
+            "energy",
+            "energy_per_atom",
+            "has_energy",
+            "has_forces",
+            "has_virial",
+            "has_bec",
+        }
+        if references is None:
+            requested_builtins = set(builtin_tokens)
+            requested_elements: set[str] | None = None
+        else:
+            requested_builtins = {chain[0].lower() for chain in references if chain and chain[0].lower() in builtin_tokens}
+            requested_elements = {
+                StructureData._normalise_element_symbol(chain[1])
+                for chain in references
+                if len(chain) == 2 and chain[0].lower() in {"count", "frac", "has"}
+            }
+        needs_structures = references is None or bool(
+            requested_builtins.intersection(
+                {"volume", "spin_natoms", "energy", "energy_per_atom", "has_energy", "has_forces", "has_virial", "has_bec"}
+            )
+            or requested_elements
+        )
+        structures = [self.structure.all_data[int(i)] for i in active_indices.tolist()] if needs_structures else []
+        if {"natoms", "n_atoms"}.intersection(requested_builtins) or requested_elements:
+            try:
+                natoms = np.asarray(self.atoms_num_list[active_indices], dtype=np.float64)
+            except Exception:
+                source = structures or [self.structure.all_data[int(i)] for i in active_indices.tolist()]
+                natoms = np.array([int(len(s)) for s in source], dtype=np.float64)
+        else:
+            natoms = np.array([], dtype=np.float64)
+        abcs = (
+            np.asarray(self.abcs[active_indices], dtype=np.float64)
+            if active_indices.size and {"a", "b", "c"}.intersection(requested_builtins)
+            else np.empty((0, 3), dtype=np.float64)
+        )
+        angles = (
+            np.asarray(self.angles[active_indices], dtype=np.float64)
+            if active_indices.size and {"alpha", "beta", "gamma"}.intersection(requested_builtins)
+            else np.empty((0, 3), dtype=np.float64)
+        )
 
         def safe_scalar(getter: Callable[[Structure], float]) -> npt.NDArray[np.float64]:
             values: list[float] = []
@@ -1271,38 +1379,69 @@ class ResultData(QObject):
                     values.append(float("nan"))
             return np.asarray(values, dtype=np.float64)
 
-        builtin_values: dict[str, npt.NDArray[Any]] = {
-            "natoms": natoms,
-            "n_atoms": natoms,
-            "volume": volumes,
-            "a": abcs[:, 0] if abcs.size else np.array([], dtype=np.float64),
-            "b": abcs[:, 1] if abcs.size else np.array([], dtype=np.float64),
-            "c": abcs[:, 2] if abcs.size else np.array([], dtype=np.float64),
-            "alpha": angles[:, 0] if angles.size else np.array([], dtype=np.float64),
-            "beta": angles[:, 1] if angles.size else np.array([], dtype=np.float64),
-            "gamma": angles[:, 2] if angles.size else np.array([], dtype=np.float64),
-            "spin_natoms": np.array([int(getattr(s, "spin_num", 0) or 0) for s in structures], dtype=np.float64),
-            "energy": safe_scalar(lambda s: s.energy),
-            "energy_per_atom": safe_scalar(lambda s: s.per_atom_energy),
-            "has_energy": np.array([bool(getattr(s, "has_energy", False)) for s in structures], dtype=bool),
-            "has_forces": np.array([bool(getattr(s, "has_forces", False)) for s in structures], dtype=bool),
-            "has_virial": np.array([bool(getattr(s, "has_virial", False)) for s in structures], dtype=bool),
-            "has_bec": np.array([bool(getattr(s, "has_bec", False)) for s in structures], dtype=bool),
-        }
+        builtin_values: dict[str, npt.NDArray[Any]] = {}
+        if "natoms" in requested_builtins:
+            builtin_values["natoms"] = natoms
+        if "n_atoms" in requested_builtins:
+            builtin_values["n_atoms"] = natoms
+        if "volume" in requested_builtins:
+            builtin_values["volume"] = np.array([float(getattr(s, "volume", np.nan)) for s in structures], dtype=np.float64)
+        if "a" in requested_builtins:
+            builtin_values["a"] = abcs[:, 0] if abcs.size else np.array([], dtype=np.float64)
+        if "b" in requested_builtins:
+            builtin_values["b"] = abcs[:, 1] if abcs.size else np.array([], dtype=np.float64)
+        if "c" in requested_builtins:
+            builtin_values["c"] = abcs[:, 2] if abcs.size else np.array([], dtype=np.float64)
+        if "alpha" in requested_builtins:
+            builtin_values["alpha"] = angles[:, 0] if angles.size else np.array([], dtype=np.float64)
+        if "beta" in requested_builtins:
+            builtin_values["beta"] = angles[:, 1] if angles.size else np.array([], dtype=np.float64)
+        if "gamma" in requested_builtins:
+            builtin_values["gamma"] = angles[:, 2] if angles.size else np.array([], dtype=np.float64)
+        if "spin_natoms" in requested_builtins:
+            builtin_values["spin_natoms"] = np.array([int(getattr(s, "spin_num", 0) or 0) for s in structures], dtype=np.float64)
+        if "energy" in requested_builtins:
+            builtin_values["energy"] = safe_scalar(lambda s: s.energy)
+        if "energy_per_atom" in requested_builtins:
+            builtin_values["energy_per_atom"] = safe_scalar(lambda s: s.per_atom_energy)
+        if "has_energy" in requested_builtins:
+            builtin_values["has_energy"] = np.array([bool(getattr(s, "has_energy", False)) for s in structures], dtype=bool)
+        if "has_forces" in requested_builtins:
+            builtin_values["has_forces"] = np.array([bool(getattr(s, "has_forces", False)) for s in structures], dtype=bool)
+        if "has_virial" in requested_builtins:
+            builtin_values["has_virial"] = np.array([bool(getattr(s, "has_virial", False)) for s in structures], dtype=bool)
+        if "has_bec" in requested_builtins:
+            builtin_values["has_bec"] = np.array([bool(getattr(s, "has_bec", False)) for s in structures], dtype=bool)
         count_values: dict[str, npt.NDArray[np.float64]] = {}
         frac_values: dict[str, npt.NDArray[np.float64]] = {}
         has_values: dict[str, npt.NDArray[np.bool_]] = {}
         element_set: set[str] = set()
         counters: list[Counter[str]] = []
-        for structure in structures:
+        cached_element_counts: dict[str, npt.NDArray[np.int32]] | None = None
+        if requested_elements is not None and requested_elements:
             try:
-                cnt = Counter(map(str, structure.elements))
+                active_now = np.asarray(self.structure.group_array.now_data, dtype=np.int64).reshape(-1)
+                if active_now.shape == active_indices.shape and np.array_equal(active_now, active_indices):
+                    cached_element_counts = self.structure.get_element_count_cache(requested_elements)
             except Exception:
-                cnt = Counter()
-            counters.append(cnt)
-            element_set.update(StructureData._normalise_element_symbol(e) for e in cnt.keys())
+                cached_element_counts = None
+        if cached_element_counts is not None:
+            element_set = {e for e in requested_elements if e}
+        elif requested_elements is None or requested_elements:
+            for structure in structures:
+                try:
+                    cnt = Counter(StructureData._normalise_element_symbol(str(elem)) for elem in structure.elements)
+                except Exception:
+                    cnt = Counter()
+                counters.append(cnt)
+                element_set.update(StructureData._normalise_element_symbol(e) for e in cnt.keys())
+        if requested_elements is not None:
+            element_set = {e for e in requested_elements if e}
         for elem in sorted(e for e in element_set if e):
-            counts = np.asarray([float(counter.get(elem, 0)) for counter in counters], dtype=np.float64)
+            if cached_element_counts is not None:
+                counts = np.asarray(cached_element_counts.get(elem, np.zeros(active_indices.shape[0], dtype=np.int32)), dtype=np.float64)
+            else:
+                counts = np.asarray([float(counter.get(elem, 0)) for counter in counters], dtype=np.float64)
             count_values[elem] = counts
             with np.errstate(divide="ignore", invalid="ignore"):
                 frac_values[elem] = np.divide(
@@ -1566,8 +1705,6 @@ class ResultData(QObject):
         active_indices = self._normalize_structure_indices(None)
         if active_indices.size == 0:
             return []
-        builtin_values, element_values = self._build_expression_builtin_values(active_indices)
-        dataset_fields, atomic_fields = self._discover_expression_fields(active_indices)
         text = self._normalise_expression_text(expr)
         if self._contains_numeric_component_reference(text):
             raise ValueError("Numeric component suffixes are not supported in expressions.")
@@ -1577,6 +1714,36 @@ class ResultData(QObject):
             raise ValueError("Invalid expression syntax.") from exc
         if not self._is_allowed_expression_node(parsed):
             raise ValueError("Expression contains unsupported syntax.")
+        references = self._expression_reference_chains(parsed.body)
+        builtin_tokens = {
+            "natoms",
+            "n_atoms",
+            "volume",
+            "a",
+            "b",
+            "c",
+            "alpha",
+            "beta",
+            "gamma",
+            "spin_natoms",
+            "energy",
+            "energy_per_atom",
+            "has_energy",
+            "has_forces",
+            "has_virial",
+            "has_bec",
+        }
+        dynamic_field_needed = any(
+            chain
+            and chain[0].lower() not in builtin_tokens
+            and chain[0].lower() not in {"count", "frac", "has"}
+            for chain in references
+        )
+        builtin_values, element_values = self._build_expression_builtin_values(active_indices, references)
+        if dynamic_field_needed:
+            dataset_fields, atomic_fields = self._discover_expression_fields(active_indices)
+        else:
+            dataset_fields, atomic_fields = {}, {}
         result = self._eval_expression_ast(parsed.body, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
         mask = np.asarray(result, dtype=bool)
         if mask.ndim == 0:

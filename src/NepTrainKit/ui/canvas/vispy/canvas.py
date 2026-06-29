@@ -27,6 +27,7 @@ from NepTrainKit.core.types import Brushes, Pens
 
 VISPY_PREVIEW_WIDTH = 640
 VISPY_PREVIEW_HEIGHT = 240
+VISPY_PREVIEW_RASTER_OVERLAY_MIN_RATIO = 0.9
 
 
 def _vispy_perf_enabled():
@@ -356,6 +357,7 @@ class ViewBoxWidget(scene.Widget):
         self._preview_image_range = None
         # Overlay marker layers by name (e.g., 'selected', 'show')
         self._overlays = {}
+        self._overlay_images = {}
         self.parity_mode = True
 
         self._diagonal=None
@@ -412,6 +414,9 @@ class ViewBoxWidget(scene.Widget):
     def set_preview_visible(self, visible: bool):
         if self._preview_image is not None:
             self._preview_image.visible = bool(visible)
+        if not visible:
+            for image in self._overlay_images.values():
+                image.visible = False
         for layer in self._scatter_layers.values():
             layer.visible = not visible and layer is self._scatter
 
@@ -851,7 +856,46 @@ class ViewBoxWidget(scene.Widget):
         pos = np.asarray(pos, dtype=np.float32)
         ov.set_data(pos=pos, edge_width=0, symbol=symbol, size=size, **kwargs)
         ov.visible = bool(pos.size)
+        image = self._overlay_images.get(name)
+        if image is not None:
+            image.visible = False
         return ov
+
+    def set_overlay_image(self, name: str, image: np.ndarray | None, x_range, y_range):
+        """Replace a preview overlay image layer."""
+        marker = self._overlays.get(name)
+        if marker is not None:
+            marker.visible = False
+        overlay = self._overlay_images.get(name)
+        if image is None or not np.asarray(image).size:
+            if overlay is not None:
+                overlay.visible = False
+            return overlay
+
+        image = np.asarray(image, dtype=np.uint8)
+        if overlay is None:
+            overlay = scene.visuals.Image(image, interpolation="nearest", parent=self._view.scene)
+            order_map = {
+                "loaded": 4,
+                "show": 4,
+                "reject": 5,
+                "selected": 6,
+            }
+            overlay.order = order_map.get(name, 4)
+            self._overlay_images[name] = overlay
+        else:
+            overlay.set_data(image)
+
+        width = max(1, image.shape[1])
+        height = max(1, image.shape[0])
+        x_min, x_max = x_range
+        y_min, y_max = y_range
+        overlay.transform = STTransform(
+            scale=((x_max - x_min) / width, (y_max - y_min) / height),
+            translate=(x_min, y_min),
+        )
+        overlay.visible = bool(np.any(image[..., 3]))
+        return overlay
 
     def clear_overlays(self):
         """Hide and clear all overlay layers for this view.
@@ -860,6 +904,8 @@ class ViewBoxWidget(scene.Widget):
         for ov in self._overlays.values():
             ov.set_data(pos=empty, edge_width=0, symbol='o', size=9)
             ov.visible = False
+        for image in self._overlay_images.values():
+            image.visible = False
 
     @property
     def title(self):
@@ -1971,6 +2017,82 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         )
         return pos
 
+    def _preview_overlay_image_for_indices(self, plot, dataset, indices: set[int], brush):
+        if getattr(plot, "_full_detail", False):
+            return None
+        base_image = getattr(plot, "_preview_image_source", None)
+        preview_range = getattr(plot, "_preview_image_range", None)
+        if base_image is None or preview_range is None:
+            return None
+        if not indices:
+            return np.zeros_like(np.asarray(base_image, dtype=np.uint8))
+
+        t0 = time.perf_counter()
+        lookup = self._overlay_position_lookup(dataset)
+        unique = lookup["unique"]
+        if unique.size == 0:
+            return np.zeros_like(np.asarray(base_image, dtype=np.uint8))
+
+        indices_arr = np.fromiter(indices, dtype=np.int64)
+        positions = np.searchsorted(unique, indices_arr)
+        in_bounds = positions < unique.size
+        positions = positions[in_bounds]
+        valid_indices = indices_arr[in_bounds]
+        valid = unique[positions] == valid_indices
+        selected_mask = np.zeros(unique.size, dtype=bool)
+        selected_mask[positions[valid]] = True
+        matched = int(np.count_nonzero(selected_mask))
+        ratio = matched / float(unique.size)
+        if ratio < VISPY_PREVIEW_RASTER_OVERLAY_MIN_RATIO:
+            return None
+
+        base = np.asarray(base_image, dtype=np.uint8)
+        image = np.zeros_like(base)
+        color = np.asarray(plot.convert_color(brush), dtype=np.float32).reshape(-1)
+        rgb = np.clip(color[:3] * 255, 0, 255).astype(np.uint8)
+        alpha_factor = float(color[3]) if color.size >= 4 else 1.0
+        image[..., :3] = rgb
+        image[..., 3] = np.clip(base[..., 3].astype(np.float32) * max(0.35, alpha_factor), 0, 255).astype(np.uint8)
+
+        missing = unique[~selected_mask]
+        if missing.size:
+            pos = self._overlay_positions_for_indices(dataset, set(int(v) for v in missing.tolist()))
+            if pos.size:
+                (x_range, y_range) = preview_range
+                x_min, x_max = x_range
+                y_min, y_max = y_range
+                if x_max != x_min and y_max != y_min:
+                    height, width = image.shape[:2]
+                    x = pos[:, 0]
+                    y = pos[:, 1]
+                    mask = (x > -10000) & np.isfinite(x) & np.isfinite(y)
+                    px = ((x[mask] - x_min) / (x_max - x_min) * (width - 1)).astype(np.int64)
+                    py = ((y[mask] - y_min) / (y_max - y_min) * (height - 1)).astype(np.int64)
+                    valid_px = (px >= 0) & (px < width) & (py >= 0) & (py < height)
+                    px = px[valid_px]
+                    py = py[valid_px]
+                    for dy in (0, 1):
+                        yy = py + dy
+                        y_ok = yy < height
+                        if not np.any(y_ok):
+                            continue
+                        for dx in (0, 1):
+                            xx = px[y_ok] + dx
+                            x_ok = xx < width
+                            if np.any(x_ok):
+                                image[yy[y_ok][x_ok], xx[x_ok], 3] = 0
+
+        _vispy_perf_log(
+            "overlay.preview_image",
+            title=getattr(dataset, "title", ""),
+            requested=indices_arr.size,
+            matched=matched,
+            missing=int(missing.size),
+            ratio=f"{ratio:.3f}",
+            ms=f"{_elapsed_ms(t0):.3f}",
+        )
+        return image
+
     @timeit
     def update_scatter_color(self,structure_index,color=Brushes.Selected):
         # Switch to overlay layers so we don't reupload the entire base VBO
@@ -2059,6 +2181,17 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             def _refresh_overlay(name, indices, brush, symbol='o'):
                 nonlocal position_ms
                 pos_t0 = time.perf_counter()
+                if symbol == 'o' and not getattr(plot, "_full_detail", False):
+                    preview_range = getattr(plot, "_preview_image_range", None)
+                    if not indices and preview_range is not None:
+                        position_ms += _elapsed_ms(pos_t0)
+                        plot.set_overlay_image(name, None, *preview_range)
+                        return
+                    image = self._preview_overlay_image_for_indices(plot, dataset, indices, brush)
+                    if image is not None:
+                        position_ms += _elapsed_ms(pos_t0)
+                        plot.set_overlay_image(name, image, *preview_range)
+                        return
                 pos = self._overlay_positions_for_indices(dataset, indices)
                 position_ms += _elapsed_ms(pos_t0)
                 if pos.size:

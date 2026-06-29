@@ -746,6 +746,40 @@ class TestCanvasFactory(unittest.TestCase):
         np.testing.assert_array_equal(pos[:, 0], np.array([0, 1, 2, 3, 6, 7, 8, 9], dtype=np.float32))
         np.testing.assert_array_equal(pos[:, 1], np.array([100, 101, 102, 103, 106, 107, 108, 109], dtype=np.float32))
 
+    def test_vispy_preview_dense_overlay_uses_image_layer(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+
+        class PreviewPlot:
+            pass
+
+        plot = PreviewPlot()
+        plot._scatter = None
+        plot._preview_image = object()
+        plot._preview_image_source = np.zeros((10, 10, 4), dtype=np.uint8)
+        plot._preview_image_source[..., 3] = 120
+        plot._preview_image_range = ((0.0, 9.0), (0.0, 9.0))
+        plot._full_detail = False
+        plot.convert_color = MagicMock(return_value=(1.0, 0.0, 0.0, 1.0))
+        plot.set_overlay_image = MagicMock()
+        plot.set_overlay_positions = MagicMock()
+
+        dataset = SimpleNamespace(
+            title="force",
+            x=np.arange(10, dtype=np.float32),
+            y=np.arange(10, dtype=np.float32),
+            structure_index=np.arange(10, dtype=np.int32),
+        )
+        canvas.axes_list = [plot]
+        canvas.nep_result_data = SimpleNamespace(select_index=set(range(9)), reject_index=set())
+        with patch.object(canvas, "get_axes_dataset", return_value=dataset):
+            canvas.update_scatter_color(range(9))
+
+        plot.set_overlay_image.assert_called_once()
+        plot.set_overlay_positions.assert_not_called()
+        image = plot.set_overlay_image.call_args.args[1]
+        self.assertGreater(int(image[0, 0, 3]), 0)
+        self.assertEqual(int(image[9, 9, 3]), 0)
+
     def test_vispy_overlay_cache_signature_reuses_nep_plotdata_properties(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
         rows = np.arange(24, dtype=np.float32).reshape(4, 6)

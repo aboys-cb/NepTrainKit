@@ -6,6 +6,8 @@ from typing import Any
 
 from vispy.visuals.filters import ShadingFilter
 from vispy.visuals.transforms import MatrixTransform, STTransform
+from vispy.scene.cameras.perspective import PerspectiveCamera
+from vispy.util import keys
 
 from NepTrainKit.config import Config
 from NepTrainKit.core.structure import table_info
@@ -15,6 +17,139 @@ from vispy import app, scene, visuals
 from vispy.geometry import MeshData, create_cylinder, create_cone, create_sphere
 from vispy.scene.visuals import Mesh, Line, Text
 from vispy.color import Color, get_colormap
+
+
+class StructureTurntableCamera(scene.cameras.TurntableCamera):
+    """Turntable camera with structure-view mouse bindings."""
+
+    def __init__(self, *args, translate_speed=1.3, **kwargs):
+        super().__init__(*args, translate_speed=translate_speed, **kwargs)
+        self._rotation_center = None
+        self._rotation_center_changed_callback = None
+
+    def set_rotation_center(self, center):
+        self._rotation_center = tuple(float(v) for v in np.asarray(center, dtype=np.float64).reshape(3))
+        self._notify_rotation_center_changed()
+
+    def clear_rotation_center(self):
+        self._rotation_center = None
+        self._notify_rotation_center_changed()
+
+    def set_rotation_center_changed_callback(self, callback):
+        self._rotation_center_changed_callback = callback
+
+    def _notify_rotation_center_changed(self):
+        callback = self._rotation_center_changed_callback
+        if callback is not None:
+            try:
+                callback()
+            except Exception:
+                pass
+
+    def _translation_scale(self):
+        if self.fov == 0:
+            return self._scale_factor
+        return float(self._actual_distance or self._distance or self._scale_factor)
+
+    def _center_delta_for_screen_delta(self, screen_delta):
+        norm = np.mean(self._viewbox.size)
+        dist = -np.asarray(screen_delta, dtype=np.float64)[:2] / norm * self._translation_scale()
+        dist[1] *= -1
+        dx, dy, dz = self._dist_to_trans(dist)
+        ff = self._flip_factors
+        up, forward, right = self._get_dim_vectors()
+        dx, dy, dz = right * dx + forward * dy + up * dz
+        dx, dy, dz = ff[0] * dx, ff[1] * dy, dz * ff[2]
+        return np.asarray([dx, dy, dz], dtype=np.float64)
+
+    def _translate_from_mouse_delta(self, p1, p2):
+        if self._event_value is None or len(self._event_value) == 2:
+            self._event_value = self.center
+        delta = np.asarray(p2, dtype=np.float64)[:2] - np.asarray(p1, dtype=np.float64)[:2]
+        dx, dy, dz = self._center_delta_for_screen_delta(delta)
+        c = self._event_value
+        self.center = c[0] + dx, c[1] + dy, c[2] + dz
+        if self._rotation_center is None:
+            self._notify_rotation_center_changed()
+
+    def _project_scene_point(self, point):
+        try:
+            mapped = self._viewbox.scene.node_transform(self._viewbox.canvas.scene).map(
+                np.asarray([point], dtype=np.float64)
+            )[0]
+        except Exception:
+            return None
+        mapped = np.asarray(mapped, dtype=np.float64)
+        if mapped.shape[0] >= 4:
+            if not np.isfinite(mapped[3]) or abs(mapped[3]) <= 1e-12:
+                return None
+            mapped = mapped[:2] / mapped[3]
+        else:
+            mapped = mapped[:2]
+        if not np.all(np.isfinite(mapped)):
+            return None
+        return mapped
+
+    def _update_rotation(self, event):
+        p1 = event.mouse_event.press_event.pos
+        p2 = event.mouse_event.pos
+        pivot = self._rotation_center
+        if pivot is None:
+            return super()._update_rotation(event)
+
+        if self._event_value is None or len(self._event_value) != 4:
+            self._event_value = (
+                self.azimuth,
+                self.elevation,
+                tuple(float(v) for v in self.center),
+                self._project_scene_point(pivot),
+            )
+        start_azimuth, start_elevation, start_center, pivot_screen = self._event_value
+        delta = p2 - p1
+        self.center = start_center
+        self.azimuth = start_azimuth - delta[0] * 0.5
+        self.elevation = start_elevation + delta[1] * 0.5
+        current_screen = self._project_scene_point(pivot)
+        if pivot_screen is None or current_screen is None:
+            return
+        correction = np.asarray(pivot_screen, dtype=np.float64) - np.asarray(current_screen, dtype=np.float64)
+        if np.any(np.abs(correction) > 1e-6):
+            center = np.asarray(self.center, dtype=np.float64) + self._center_delta_for_screen_delta(correction)
+            self.center = tuple(float(v) for v in center)
+
+    def viewbox_mouse_event(self, event):
+        """Use left drag for rotate, right drag for pan, wheel for zoom."""
+        if event.handled or not self.interactive:
+            return
+
+        PerspectiveCamera.viewbox_mouse_event(self, event)
+
+        if event.type == 'mouse_release':
+            self._event_value = None
+        elif event.type == 'mouse_press':
+            event.handled = True
+        elif event.type == 'mouse_move':
+            if event.press_event is None:
+                return
+            if 1 in event.buttons and 2 in event.buttons:
+                return
+
+            modifiers = event.mouse_event.modifiers
+            p1 = event.mouse_event.press_event.pos
+            p2 = event.mouse_event.pos
+            d = p2 - p1
+
+            if 1 in event.buttons and not modifiers:
+                self._update_rotation(event)
+            elif 2 in event.buttons and not modifiers:
+                self._translate_from_mouse_delta(p1, p2)
+            elif 1 in event.buttons and keys.SHIFT in modifiers:
+                self._translate_from_mouse_delta(p1, p2)
+            elif 2 in event.buttons and keys.SHIFT in modifiers:
+                if self._event_value is None:
+                    self._event_value = self._fov
+                fov = self._event_value - d[1] / 5.0
+                self.fov = min(180.0, max(0.0, fov))
 
 
 def create_arrow_mesh()->MeshData:
@@ -244,6 +379,7 @@ class StructurePlotWidget(scene.SceneCanvas):
         self._arrow_base_faces = None
         self._arrow_base_vertex_count = 0
         self._arrow_colorbar_signature = None
+        self._rotation_center_marker = None
         self._atom_mesh = None
         self._atom_signature = None
         self._atom_template_vertices = None
@@ -282,6 +418,12 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.set_projection(False)
         self.events.mouse_move.connect(self._on_mouse_move)
         self.events.resize.connect(self._on_resize)
+        self.events.mouse_double_click.connect(self._on_mouse_double_click)
+
+    def _install_camera_callbacks(self):
+        setter = getattr(self.view.camera, "set_rotation_center_changed_callback", None)
+        if setter is not None:
+            setter(self._refresh_rotation_center_marker)
     def _on_mouse_move(self,ev):
         """Handle mouse move events (placeholder for future interaction hooks).
         
@@ -306,6 +448,137 @@ class StructurePlotWidget(scene.SceneCanvas):
             self.arrow_colorbar.pos=[self.size[0]-50,self.size[1]-150]
             self.arrow_colorbar.update()
             # self.update( self.arrow_colorbar)
+
+    def _nearest_atom_index_at_canvas_pos(self, pos, max_distance=18.0):
+        """Return nearest atom index under a canvas position, if any."""
+        structure = getattr(self, "structure", None)
+        if structure is None:
+            return None
+        positions = np.asarray(getattr(structure, "positions", []), dtype=np.float64)
+        if positions.ndim != 2 or positions.shape[0] == 0 or positions.shape[1] != 3:
+            return None
+        try:
+            mapped = self.view.scene.node_transform(self.scene).map(positions)
+        except Exception:
+            return None
+        mapped = np.asarray(mapped, dtype=np.float64)
+        if mapped.ndim != 2 or mapped.shape[0] != positions.shape[0]:
+            return None
+        if mapped.shape[1] >= 4:
+            w = mapped[:, 3]
+            valid = np.isfinite(w) & (np.abs(w) > 1e-12)
+            screen = mapped[:, :2] / w[:, None]
+        else:
+            valid = np.ones(mapped.shape[0], dtype=bool)
+            screen = mapped[:, :2]
+        click = np.asarray(pos, dtype=np.float64)[:2]
+        valid &= np.all(np.isfinite(screen), axis=1)
+        if not np.any(valid):
+            return None
+        dist2 = np.sum((screen - click) ** 2, axis=1)
+        dist2[~valid] = np.inf
+        atom_index = int(np.argmin(dist2))
+        if dist2[atom_index] > float(max_distance) ** 2:
+            return None
+        return atom_index
+
+    def _rotation_center_marker_size(self):
+        structure = getattr(self, "structure", None)
+        if structure is None:
+            return 0.25
+        try:
+            positions = np.asarray(structure.positions, dtype=np.float64)
+            span = float(np.max(np.ptp(positions, axis=0))) if positions.size else 0.0
+        except Exception:
+            span = 0.0
+        return max(span * 0.04, 0.25)
+
+    def _set_rotation_center_marker(self, center):
+        center = np.asarray(center, dtype=np.float32).reshape(3)
+        size = np.float32(self._rotation_center_marker_size())
+        axes = np.eye(3, dtype=np.float32) * size
+        pos = np.array(
+            [
+                center - axes[0],
+                center + axes[0],
+                center - axes[1],
+                center + axes[1],
+                center - axes[2],
+                center + axes[2],
+            ],
+            dtype=np.float32,
+        )
+        colors = np.array(
+            [
+                [1.0, 0.15, 0.10, 1.0],
+                [1.0, 0.15, 0.10, 1.0],
+                [0.10, 0.70, 0.20, 1.0],
+                [0.10, 0.70, 0.20, 1.0],
+                [0.15, 0.35, 1.0, 1.0],
+                [0.15, 0.35, 1.0, 1.0],
+            ],
+            dtype=np.float32,
+        )
+        if self._rotation_center_marker is None:
+            self._rotation_center_marker = Line(
+                pos=pos,
+                color=colors,
+                connect="segments",
+                width=3,
+                method="gl",
+                antialias=True,
+                parent=self.view.scene,
+            )
+            self._rotation_center_marker.set_gl_state(depth_test=False)
+        else:
+            self._rotation_center_marker.set_data(pos=pos, color=colors, connect="segments")
+
+    def _current_rotation_center(self):
+        camera = self.view.camera
+        center = getattr(camera, "_rotation_center", None)
+        if center is None:
+            center = getattr(camera, "center", None)
+        if center is None:
+            return None
+        try:
+            return np.asarray(center, dtype=np.float64).reshape(3)
+        except Exception:
+            return None
+
+    def _refresh_rotation_center_marker(self):
+        if getattr(self, "structure", None) is None:
+            self._clear_rotation_center_marker()
+            return
+        center = self._current_rotation_center()
+        if center is None:
+            self._clear_rotation_center_marker()
+            return
+        self._set_rotation_center_marker(center)
+
+    def _clear_rotation_center_marker(self):
+        if self._rotation_center_marker is not None:
+            self._rotation_center_marker.parent = None
+            self._rotation_center_marker = None
+
+    def _on_mouse_double_click(self, event):
+        """Set rotation center to the atom nearest a left double-click."""
+        if getattr(event, "button", None) != 1:
+            return
+        atom_index = self._nearest_atom_index_at_canvas_pos(event.pos)
+        if atom_index is None:
+            return
+        try:
+            center = np.asarray(self.structure.positions[atom_index], dtype=np.float64).reshape(3)
+            setter = getattr(self.view.camera, "set_rotation_center", None)
+            if setter is not None:
+                setter(center)
+            else:
+                self.view.camera.center = tuple(float(v) for v in center)
+                self._refresh_rotation_center_marker()
+            event.handled = True
+            self.update()
+        except Exception:
+            return
     def set_auto_view(self,auto_view):
         """Toggle automatic camera framing when a structure is displayed.
         
@@ -336,19 +609,22 @@ class StructurePlotWidget(scene.SceneCanvas):
 
         }
         if self.ortho:
-            self.view.camera = scene.cameras.TurntableCamera(
+            self.view.camera = StructureTurntableCamera(
                 fov=0,  # Orthographic
                 **current_state
             )
+            self._install_camera_callbacks()
             self.view.camera.distance=350
 
         else:
-            self.view.camera = scene.cameras.TurntableCamera(
+            self.view.camera = StructureTurntableCamera(
                 fov=60,  # Perspective
                 **current_state
             )
+            self._install_camera_callbacks()
             self.view.camera.distance=50
 
+        self._refresh_rotation_center_marker()
         self.update()
 
     def set_show_bonds(self, show_bonds=True):
@@ -843,6 +1119,10 @@ class StructurePlotWidget(scene.SceneCanvas):
         structure : Any
             Structure object with ``cell`` and ``positions`` attributes.
         """
+        if structure is not self.structure:
+            clear_center = getattr(self.view.camera, "clear_rotation_center", None)
+            if clear_center is not None:
+                clear_center()
         self.structure = structure
         self.apply_style_from_config(redraw_lattice=False)
 
@@ -887,6 +1167,7 @@ class StructurePlotWidget(scene.SceneCanvas):
         if self.auto_view or not self._lighting_initialized:
             self.update_lighting()
             self._lighting_initialized = True
+        self._refresh_rotation_center_marker()
 
 
     def on_mouse_move(self, event):

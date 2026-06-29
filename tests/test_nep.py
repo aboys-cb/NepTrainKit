@@ -29,6 +29,7 @@ from NepTrainKit.ui.widgets.dialog import ShiftEnergyDialogValues
 import NepTrainKit.ui.widgets.dialog as dialog_module
 import NepTrainKit.ui.views.nep as nep_view_module
 import NepTrainKit.ui.pages.show_nep as show_nep_module
+from NepTrainKit.ui.canvas.vispy.structure import StructurePlotWidget, StructureTurntableCamera
 
 Config()
 Config.set("nep", "backend","cpu")
@@ -955,6 +956,223 @@ class TestShowNepWidgetArrowCapability(unittest.TestCase):
         np.testing.assert_allclose(ml, rows[:2, :3])
         np.testing.assert_allclose(dft, rows[:2, 3:])
         self.assertEqual(len(widget._arrow_vector_lookup_cache), 1)
+
+
+class TestStructurePlotWidgetInteraction(unittest.TestCase):
+    class _Projection:
+        def __init__(self, screen_positions):
+            self.screen_positions = np.asarray(screen_positions, dtype=np.float64)
+
+        def map(self, positions):
+            positions = np.asarray(positions)
+            return np.column_stack(
+                [
+                    self.screen_positions[: positions.shape[0]],
+                    np.zeros(positions.shape[0], dtype=np.float64),
+                    np.ones(positions.shape[0], dtype=np.float64),
+                ]
+            )
+
+    def test_structure_canvas_uses_custom_turntable_camera(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        try:
+            self.assertIsInstance(canvas.view.camera, StructureTurntableCamera)
+            self.assertEqual(canvas.view.camera.translate_speed, 1.3)
+            canvas.set_projection(True)
+            self.assertIsInstance(canvas.view.camera, StructureTurntableCamera)
+            self.assertEqual(canvas.view.camera.translate_speed, 1.3)
+            canvas.set_projection(False)
+            self.assertIsInstance(canvas.view.camera, StructureTurntableCamera)
+            self.assertEqual(canvas.view.camera.translate_speed, 1.3)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_nearest_atom_for_double_click_uses_screen_distance(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        canvas.structure = SimpleNamespace(positions=np.zeros((3, 3), dtype=np.float32))
+        projection = self._Projection(
+            [
+                [10.0, 10.0],
+                [40.0, 30.0],
+                [100.0, 100.0],
+            ]
+        )
+        try:
+            with patch.object(canvas.view.scene, "node_transform", return_value=projection):
+                atom_index = canvas._nearest_atom_index_at_canvas_pos(np.array([42.0, 31.0]))
+                blank_index = canvas._nearest_atom_index_at_canvas_pos(np.array([70.0, 70.0]), max_distance=5.0)
+
+            self.assertEqual(atom_index, 1)
+            self.assertIsNone(blank_index)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_left_double_click_sets_rotation_center_without_moving_view(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        structure = Structure(
+            np.eye(3),
+            {
+                "pos": np.array([[0.0, 0.0, 0.0], [1.0, 2.0, 3.0]], dtype=np.float32),
+                "species": np.array(["H", "H"]),
+            },
+            props,
+            {},
+        )
+        projection = self._Projection(
+            [
+                [10.0, 10.0],
+                [30.0, 30.0],
+            ]
+        )
+        event = SimpleNamespace(button=1, pos=np.array([31.0, 29.0]), handled=False)
+        original_center = tuple(canvas.view.camera.center)
+
+        try:
+            canvas.show_structure(structure)
+            with patch.object(canvas.view.scene, "node_transform", return_value=projection), patch.object(
+                canvas, "update"
+            ) as update_mock:
+                canvas._on_mouse_double_click(event)
+
+            self.assertEqual(tuple(canvas.view.camera.center), original_center)
+            self.assertEqual(canvas.view.camera._rotation_center, (1.0, 2.0, 3.0))
+            self.assertIsNotNone(canvas._rotation_center_marker)
+            self.assertTrue(event.handled)
+            self.assertGreaterEqual(update_mock.call_count, 1)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_show_structure_resets_to_default_rotation_center_marker(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        first = Structure(
+            np.eye(3),
+            {"pos": np.zeros((1, 3), dtype=np.float32), "species": np.array(["H"])},
+            props,
+            {},
+        )
+        second = Structure(
+            np.eye(3),
+            {"pos": np.ones((1, 3), dtype=np.float32), "species": np.array(["H"])},
+            props,
+            {},
+        )
+        try:
+            canvas.show_structure(first)
+            canvas.view.camera.set_rotation_center((1.0, 2.0, 3.0))
+            canvas._set_rotation_center_marker((1.0, 2.0, 3.0))
+            canvas.show_structure(second)
+
+            self.assertIsNone(canvas.view.camera._rotation_center)
+            self.assertIsNotNone(canvas._rotation_center_marker)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_show_structure_displays_default_rotation_center_marker(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        structure = Structure(
+            np.eye(3),
+            {"pos": np.zeros((1, 3), dtype=np.float32), "species": np.array(["H"])},
+            props,
+            {},
+        )
+        try:
+            canvas.show_structure(structure)
+
+            self.assertIsNone(canvas.view.camera._rotation_center)
+            self.assertIsNotNone(canvas._rotation_center_marker)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_rotation_center_keeps_pivot_screen_position_stable(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=True, size=(500, 400))
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        structure = Structure(
+            np.eye(3) * 10,
+            {"pos": np.array([[0, 0, 0], [2, 0, 0]], dtype=np.float32), "species": np.array(["H", "H"])},
+            props,
+            {},
+        )
+        try:
+            canvas.show_structure(structure)
+            canvas.show()
+            app.processEvents()
+            camera = canvas.view.camera
+            camera.center = (0, 0, 0)
+            camera.distance = 50
+            camera.scale_factor = 10
+            camera.azimuth = 30
+            camera.elevation = 30
+            app.processEvents()
+
+            pivot = np.array([2.0, 0.0, 0.0])
+            before = camera._project_scene_point(pivot)
+            camera.set_rotation_center(pivot)
+            press = SimpleNamespace(pos=np.array([100.0, 100.0]))
+            mouse = SimpleNamespace(press_event=press, pos=np.array([120.0, 100.0]), modifiers=[])
+            camera._event_value = None
+            camera._update_rotation(SimpleNamespace(mouse_event=mouse))
+            app.processEvents()
+            after = camera._project_scene_point(pivot)
+
+            self.assertLess(float(np.linalg.norm(after - before)), 0.5)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_right_drag_pan_tracks_screen_delta_after_zoom(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=True, size=(500, 400))
+        try:
+            canvas.show()
+            app.processEvents()
+            camera = canvas.view.camera
+            camera.center = (0, 0, 0)
+            camera.distance = 5
+            camera.scale_factor = 1
+            camera.azimuth = 20
+            camera.elevation = 30
+            app.processEvents()
+            point = np.array([0.0, 0.0, 0.0])
+            before = camera._project_scene_point(point)
+
+            camera._event_value = None
+            camera._translate_from_mouse_delta(np.array([100.0, 100.0]), np.array([120.0, 100.0]))
+            app.processEvents()
+            after = camera._project_scene_point(point)
+
+            delta = after - before
+            self.assertGreater(float(delta[0]), 15.0)
+            self.assertLess(float(delta[0]), 30.0)
+            self.assertAlmostEqual(float(delta[1]), 0.0, delta=1.0)
+        finally:
+            canvas.close()
+            app.processEvents()
 
 
 class TestNepPolarizabilityResultData( unittest.TestCase):

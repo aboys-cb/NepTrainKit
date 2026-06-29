@@ -22,6 +22,7 @@ from NepTrainKit.core.alloy import (
 )
 from NepTrainKit.core.config_type import append_config_tag, stable_config_id
 
+from .geometry import scaled_positions
 from .operation import StructureOperation
 
 
@@ -543,7 +544,7 @@ class CompositionGradientOperation(StructureOperation):
     @staticmethod
     def _axis_coordinate(structure, axis_idx: int) -> np.ndarray:
         if bool(np.asarray(structure.pbc, dtype=bool)[axis_idx]) and float(structure.get_volume()) > 0.0:
-            return np.asarray(structure.get_scaled_positions(wrap=True), dtype=float)[:, axis_idx]
+            return scaled_positions(structure, wrap=True)[:, axis_idx]
         return np.asarray(structure.get_positions(), dtype=float)[:, axis_idx]
 
     @staticmethod

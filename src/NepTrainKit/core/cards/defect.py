@@ -14,6 +14,7 @@ from scipy.stats.qmc import Sobol
 
 from NepTrainKit.core.config_type import append_config_tag
 
+from .geometry import wrapped_positions
 from .operation import StructureOperation
 
 
@@ -282,8 +283,7 @@ class StackingFaultOperation(StructureOperation):
             new_structure = structure.copy()
             pos = new_structure.positions.copy()
             pos[mask] += slip_direction * displacement
-            new_structure.set_positions(pos)
-            new_structure.wrap()
+            new_structure.set_positions(wrapped_positions(new_structure, pos))
             append_config_tag(new_structure, f"SF(hkl={h}{k}{l},d={displacement:g})")
             structure_list.append(new_structure)
         return structure_list
@@ -327,7 +327,7 @@ class RandomSlabOperation(StructureOperation):
                                     vacuum=vacuum,
                                     periodic=True,
                                 )
-                                slab.wrap()
+                                slab.set_positions(wrapped_positions(slab, slab.positions))
                                 slab.info["Config_type"] = structure.info.get("Config_type", "")
                                 append_config_tag(
                                     slab,
@@ -421,7 +421,7 @@ class InsertDefectOperation(StructureOperation):
             if inserted:
                 mode_tag = "ad" if int(params.mode) == 1 else "int"
                 append_config_tag(new_structure, f"Ins({mode_tag},n={inserted})")
-            new_structure.wrap()
+            new_structure.set_positions(wrapped_positions(new_structure, new_structure.positions))
             results.append(new_structure)
         return results
 

@@ -14,6 +14,7 @@ from scipy.stats.qmc import Sobol
 from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.structure import get_clusters, process_organic_clusters
 
+from .geometry import wrapped_positions as fast_wrapped_positions
 from .operation import StructureOperation
 
 
@@ -358,11 +359,7 @@ class PerturbOperation(StructureOperation):
     @staticmethod
     def wrapped_positions(structure, positions: np.ndarray) -> np.ndarray:
         """Wrap Cartesian positions through fractional coordinates without ASE's per-call solve."""
-        if not np.any(structure.pbc):
-            return positions
-        scaled = np.asarray(positions, dtype=float) @ np.linalg.inv(structure.cell.array)
-        scaled[:, np.asarray(structure.pbc, dtype=bool)] %= 1.0
-        return scaled @ structure.cell.array
+        return fast_wrapped_positions(structure, positions)
 
     def run_structure(self, structure, params: PerturbParams) -> list:
         structure_list = []

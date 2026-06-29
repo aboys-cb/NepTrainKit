@@ -20,6 +20,7 @@ from NepTrainKit.core.config_type import stable_config_id
 from NepTrainKit.core.structure import get_vibration_modes
 from NepTrainKit.core.torsion_guard_pbc import TorsionGuardParams, process_single as tg_process_single
 
+from .geometry import scaled_positions, wrapped_positions as fast_wrapped_positions
 from .operation import GeneratorOperation, StructureOperation
 
 
@@ -221,8 +222,8 @@ class LayerCopyOperation(StructureOperation):
                     base_cell[2] = base_cell[2] + dz_total * base_cell[2] / c_norm
                     combined.set_cell(base_cell, scale_atoms=False)
 
-        if params.wrap and hasattr(combined, "wrap"):
-            combined.wrap()
+        if params.wrap:
+            combined.set_positions(fast_wrapped_positions(combined, combined.positions))
 
         append_config_tag(combined, f"SWC(L={int(params.layers)},dz={float(params.distance):g})")
         return [combined]
@@ -268,11 +269,7 @@ class VibrationModePerturbOperation(StructureOperation):
 
     @staticmethod
     def wrapped_positions(structure, positions: np.ndarray) -> np.ndarray:
-        if not np.any(structure.pbc):
-            return positions
-        scaled = np.asarray(positions, dtype=float) @ np.linalg.inv(structure.cell.array)
-        scaled[:, np.asarray(structure.pbc, dtype=bool)] %= 1.0
-        return scaled @ structure.cell.array
+        return fast_wrapped_positions(structure, positions)
 
     def run_structure(self, structure, params: VibrationModePerturbParams) -> list:
         amplitude = float(params.amplitude)
@@ -362,13 +359,13 @@ class GroupLabelOperation(StructureOperation):
     @classmethod
     def _label_by_kvec(cls, atoms, kvec: str) -> np.ndarray:
         k = cls._parse_kvec(kvec)
-        scaled = atoms.get_scaled_positions(wrap=True)
+        scaled = scaled_positions(atoms, wrap=True)
         phase = np.floor(2.0 * (scaled @ k)).astype(int)
         return (phase % 2).astype(int)
 
     @staticmethod
     def _label_by_parity(atoms) -> np.ndarray:
-        scaled = atoms.get_scaled_positions(wrap=True)
+        scaled = scaled_positions(atoms, wrap=True)
         ints = np.rint(2.0 * scaled).astype(int)
         return (ints.sum(axis=1) % 2).astype(int)
 
@@ -434,7 +431,7 @@ class OrganicMolConfigPBCOperation(StructureOperation):
                 new_atoms.set_cell(np.array(cell, dtype=float))
                 new_atoms.set_pbc(True)
                 try:
-                    new_atoms.wrap()
+                    new_atoms.set_positions(fast_wrapped_positions(new_atoms, new_atoms.positions))
                 except Exception:
                     pass
             else:
@@ -497,6 +494,7 @@ class RandomPackingOperation(StructureOperation):
         symbols = self.symbols_from_params(structure, params.composition)
         pair_rules = self.parse_pair_min_distances(params.pair_min_distances)
         order = self.placement_order(symbols, min_distance, pair_rules)
+        ortho_lengths = self.orthorhombic_lengths(cell, pbc)
 
         base_seed = int(params.seed) if params.use_seed else None
         cfg_id = stable_config_id(structure)
@@ -515,6 +513,7 @@ class RandomPackingOperation(StructureOperation):
                     rng=rng,
                     cell=cell,
                     pbc=pbc,
+                    ortho_lengths=ortho_lengths,
                 )
             except ValueError:
                 failures += 1
@@ -610,6 +609,7 @@ class RandomPackingOperation(StructureOperation):
         rng: np.random.Generator,
         cell: np.ndarray,
         pbc: np.ndarray,
+        ortho_lengths: np.ndarray | None,
     ) -> Atoms:
         placed_positions: list[np.ndarray] = []
         placed_symbols: list[str] = []
@@ -630,6 +630,7 @@ class RandomPackingOperation(StructureOperation):
                     pair_rules=pair_rules,
                     cell=cell,
                     pbc=pbc,
+                    ortho_lengths=ortho_lengths,
                 ):
                     positions_by_original[int(original_idx)] = candidate
                     placed_positions.append(candidate)
@@ -644,8 +645,6 @@ class RandomPackingOperation(StructureOperation):
 
         atoms = Atoms(symbols=symbols, positions=positions_by_original, cell=cell, pbc=pbc)
         atoms.info.update(dict(structure.info))
-        if hasattr(atoms, "wrap"):
-            atoms.wrap()
         return atoms
 
     @classmethod
@@ -660,11 +659,14 @@ class RandomPackingOperation(StructureOperation):
         pair_rules: dict[tuple[str, str], float],
         cell: np.ndarray,
         pbc: np.ndarray,
+        ortho_lengths: np.ndarray | None,
     ) -> bool:
         if not placed_positions:
             return True
         positions = np.asarray(placed_positions, dtype=float)
-        distances = cls.candidate_distances(candidate, positions, cell=cell, pbc=pbc)
+        distances = cls.candidate_distances(candidate, positions, cell=cell, pbc=pbc, ortho_lengths=ortho_lengths)
+        if not pair_rules:
+            return bool(np.all(distances + 1e-12 >= float(min_distance)))
         thresholds = np.asarray(
             [cls.min_distance_for_pair(symbol, other, min_distance, pair_rules) for other in placed_symbols],
             dtype=float,
@@ -672,21 +674,32 @@ class RandomPackingOperation(StructureOperation):
         return bool(np.all(distances + 1e-12 >= thresholds))
 
     @staticmethod
-    def candidate_distances(candidate: np.ndarray, positions: np.ndarray, *, cell: np.ndarray, pbc: np.ndarray) -> np.ndarray:
+    def orthorhombic_lengths(cell: np.ndarray, pbc: np.ndarray) -> np.ndarray | None:
+        cell_arr = np.asarray(cell, dtype=float)
+        pbc_arr = np.asarray(pbc, dtype=bool)
+        if cell_arr.shape != (3, 3):
+            return None
+        offdiag = cell_arr.copy()
+        np.fill_diagonal(offdiag, 0.0)
+        if not np.allclose(offdiag, 0.0, atol=1e-12):
+            return None
+        lengths = np.diag(cell_arr)
+        if not np.all(np.abs(lengths[pbc_arr]) > 1e-12):
+            return None
+        return lengths
+
+    @staticmethod
+    def candidate_distances(candidate: np.ndarray, positions: np.ndarray, *, cell: np.ndarray, pbc: np.ndarray, ortho_lengths: np.ndarray | None = None) -> np.ndarray:
         cell_arr = np.asarray(cell, dtype=float)
         pbc_arr = np.asarray(pbc, dtype=bool)
         positions_arr = np.asarray(positions, dtype=float)
-        offdiag = cell_arr.copy()
-        np.fill_diagonal(offdiag, 0.0)
-        if cell_arr.shape == (3, 3) and np.allclose(offdiag, 0.0, atol=1e-12):
-            lengths = np.diag(cell_arr)
-            if np.all(np.abs(lengths[pbc_arr]) > 1e-12):
-                vec = positions_arr - np.asarray(candidate, dtype=float).reshape(1, 3)
-                for axis in range(3):
-                    if pbc_arr[axis]:
-                        length = float(lengths[axis])
-                        vec[:, axis] -= np.rint(vec[:, axis] / length) * length
-                return np.linalg.norm(vec, axis=1)
+        if ortho_lengths is not None:
+            vec = positions_arr - np.asarray(candidate, dtype=float).reshape(1, 3)
+            for axis in range(3):
+                if pbc_arr[axis]:
+                    length = float(ortho_lengths[axis])
+                    vec[:, axis] -= np.rint(vec[:, axis] / length) * length
+            return np.linalg.norm(vec, axis=1)
 
         _vec, distances = get_distances(
             np.asarray(candidate, dtype=float).reshape(1, 3),
@@ -722,7 +735,7 @@ class CrystalPrototypeBuilderOperation(GeneratorOperation):
         for a in self._a_values(params.a_range):
             base = self._build_base(element, lattice, float(a), float(params.covera))
             base.pbc = True
-            base.wrap()
+            base.set_positions(fast_wrapped_positions(base, base.positions))
 
             if params.auto_supercell:
                 if supercell_factors is None:
@@ -733,7 +746,7 @@ class CrystalPrototypeBuilderOperation(GeneratorOperation):
 
             matrix = np.diag([max(na, 1), max(nb, 1), max(nc, 1)])
             atoms = make_supercell(base, matrix)
-            atoms.wrap()
+            atoms.set_positions(fast_wrapped_positions(atoms, atoms.positions))
             append_config_tag(atoms, f"Proto({lattice},a={float(a):.6g},rep={int(na)}x{int(nb)}x{int(nc)})")
             out.append(atoms)
             if len(out) >= int(params.max_outputs):

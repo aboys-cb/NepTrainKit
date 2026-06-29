@@ -15,6 +15,7 @@ from ase.io import read as ase_read
 
 from NepTrainKit.core.config_type import append_config_tag, stable_config_id
 
+from .geometry import wrapped_positions as wrap_structure_positions
 from .operation import StructureOperation
 from .structure import OrganicMolConfigPBCOperation, OrganicMolConfigPBCParams
 
@@ -475,7 +476,7 @@ class SolventBoxFillOperation(StructureOperation):
             info=dict(structure.info),
         )
         try:
-            atoms.wrap()
+            atoms.set_positions(wrap_structure_positions(atoms, atoms.positions))
         except Exception:
             pass
         return atoms, placed, attempts, consecutive_failures

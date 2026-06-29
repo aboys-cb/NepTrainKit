@@ -275,6 +275,7 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         super().__init__(parent)
         self.setMouseTracking(True)
         self.window_state = "expand"
+        self._drag_start_pos = None
         self.collapse_button = TransparentToolButton(QIcon(":/images/src/images/collapse.svg"), self)
         self.collapse_button.clicked.connect(self.collapse)
         self.collapse_button.setToolTip("Collapse or expand card")
@@ -282,6 +283,12 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
 
         self.headerLayout.insertWidget(0, self.collapse_button, 0, Qt.AlignmentFlag.AlignLeft)
         self.windowStateChangedSignal.connect(self.update_window_state)
+
+    def mousePressEvent(self, e):
+        """Remember where a possible card drag started."""
+        if e.button() == Qt.MouseButton.LeftButton:
+            self._drag_start_pos = e.position().toPoint()
+        super().mousePressEvent(e)
 
     def mouseMoveEvent(self, e):
         """Enable drag-and-drop reordering for the card.
@@ -293,6 +300,15 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         """
         if e.buttons() != Qt.MouseButton.LeftButton:
             return
+
+        if self._drag_start_pos is None:
+            self._drag_start_pos = e.position().toPoint()
+            return
+
+        current_pos = e.position().toPoint()
+        if (current_pos - self._drag_start_pos).manhattanLength() < QApplication.startDragDistance():
+            return
+
         drag = QDrag(self)
         mime = QMimeData()
         drag.setMimeData(mime)
@@ -300,9 +316,10 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         pixmap = QPixmap(self.size())
         self.render(pixmap)
         drag.setPixmap(pixmap)
-        drag.setHotSpot(e.pos())
+        drag.setHotSpot(current_pos)
 
         drag.exec(Qt.DropAction.MoveAction)
+        self._drag_start_pos = None
 
     def collapse(self):
         """Toggle between collapsed and expanded states."""
@@ -632,6 +649,4 @@ class FilterDataCard(MakeDataCard):
     def update_dataset_info(self):
         """Display the number of structures kept by the filter."""
         self.status_label.setText(self._format_dataset_info())
-
-
 

@@ -1,5 +1,10 @@
 from .card_test_base import *
 from .card_test_base import _ExternalTestCard, _MetadataTestCard
+from unittest.mock import patch
+
+from PySide6.QtCore import QEvent, QPointF, Qt
+from PySide6.QtGui import QMouseEvent
+
 from NepTrainKit.ui.widgets import FilterDataCard
 
 
@@ -65,6 +70,63 @@ class TestCardContracts(BaseCardTest):
         card.update_dataset_info()
 
         self.assertEqual(card.status_label.text(), "Input: 2 -> Output: 1 | Time: 0.01 s")
+
+    def test_card_drag_starts_only_after_drag_threshold(self):
+        class FakeDrag:
+            calls = 0
+
+            def __init__(self, parent):
+                FakeDrag.calls += 1
+
+            def setMimeData(self, mime):
+                pass
+
+            def setPixmap(self, pixmap):
+                pass
+
+            def setHotSpot(self, pos):
+                pass
+
+            def exec(self, action):
+                pass
+
+        card = _ExternalTestCard()
+        card.resize(420, 160)
+        card.show()
+        self._app.processEvents()
+
+        press_event = QMouseEvent(
+            QEvent.Type.MouseButtonPress,
+            QPointF(10, 10),
+            QPointF(10, 10),
+            Qt.MouseButton.LeftButton,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        small_move_event = QMouseEvent(
+            QEvent.Type.MouseMove,
+            QPointF(11, 11),
+            QPointF(11, 11),
+            Qt.MouseButton.NoButton,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        large_move_event = QMouseEvent(
+            QEvent.Type.MouseMove,
+            QPointF(10 + QApplication.startDragDistance() + 1, 10),
+            QPointF(10 + QApplication.startDragDistance() + 1, 10),
+            Qt.MouseButton.NoButton,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+
+        with patch("NepTrainKit.ui.widgets.card_widget.QDrag", FakeDrag):
+            card.mousePressEvent(press_event)
+            card.mouseMoveEvent(small_move_event)
+            self.assertEqual(FakeDrag.calls, 0)
+
+            card.mouseMoveEvent(large_move_event)
+            self.assertEqual(FakeDrag.calls, 1)
 
     def test_operation_cards_write_only_params(self):
         for class_name, card_cls in CardManager.card_info_dict.items():

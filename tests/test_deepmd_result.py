@@ -30,6 +30,7 @@ def test_deepmd_root_uses_existing_prediction_outputs(tmp_path: Path):
     assert result.force_out_path == tmp_path / "test_result.fr.out"
     assert result.virial_out_path == tmp_path / "test_result.v_peratom.out"
     assert result.spin_out_path == tmp_path / "test_result.fm.out"
+    assert not (tmp_path / "data_nep89").exists()
 
 
 def test_deepmd_data_subdir_uses_parent_prediction_outputs(tmp_path: Path):
@@ -42,6 +43,7 @@ def test_deepmd_data_subdir_uses_parent_prediction_outputs(tmp_path: Path):
     assert result.force_out_path == tmp_path / "test_result.fr.out"
     assert result.virial_out_path == tmp_path / "test_result.v_peratom.out"
     assert result.spin_out_path == tmp_path / "test_result.fm.out"
+    assert not (tmp_path / "data_nep89").exists()
 
 
 def _structure(natoms: int, force_mag: np.ndarray | None = None) -> Structure:
@@ -114,3 +116,41 @@ def test_deepmd_cached_outputs_can_generate_missing_descriptor(tmp_path: Path):
     result._load_descriptors()
 
     np.testing.assert_allclose(result.descriptor.now_data, np.array([[1.0, 2.0]], dtype=np.float32))
+
+
+def test_deepmd_cached_outputs_read_predictions_while_generating_descriptor(tmp_path: Path):
+    for name, text in {
+        "test_result.e_peratom.out": "2.0 20.0\n",
+        "test_result.fr.out": "1 2 3 10 20 30\n",
+        "test_result.v_peratom.out": "1 2 3 4 5 6 10 20 30 40 50 60\n",
+    }.items():
+        (tmp_path / name).write_text(text, encoding="utf-8")
+    result = DeepmdResultData(
+        tmp_path / "nep.txt",
+        tmp_path,
+        tmp_path / "test_result.e_peratom.out",
+        tmp_path / "test_result.fr.out",
+        tmp_path / "test_result.v_peratom.out",
+        tmp_path / "descriptor.out",
+        cached_outputs_only=True,
+    )
+    result.set_structures([_structure(1)])
+    result.load_structures()
+
+    class FakeCalculator:
+        def calculate(self, _structures):
+            raise AssertionError("cached DeepMD outputs must not be recalculated")
+
+        def get_structures_descriptor(self, structures):
+            assert len(structures) == 1
+            return np.array([[7.0, 8.0]], dtype=np.float32)
+
+    result.nep_calc = FakeCalculator()
+
+    result._load_descriptors()
+    result._load_dataset()
+
+    np.testing.assert_allclose(result.descriptor.all_data, [[7.0, 8.0]])
+    np.testing.assert_allclose(result.energy.all_data, [[2.0, 20.0]])
+    np.testing.assert_allclose(result.force.all_data, [[1, 2, 3, 10, 20, 30]])
+    np.testing.assert_allclose(result.virial.all_data, [[1, 2, 3, 4, 5, 6, 10, 20, 30, 40, 50, 60]])

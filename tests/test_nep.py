@@ -48,7 +48,9 @@ class TestNepTrainResultData( unittest.TestCase):
 
     def test_load_train(self):
         """测试结构加载功能"""
-        result = NepTrainResultData.from_path(self.train_path)
+        tmp_dir = self._make_nep_workdir()
+        local_train = os.path.join(tmp_dir, "train.xyz")
+        result = NepTrainResultData.from_path(local_train)
 
 
         result.load()
@@ -68,35 +70,27 @@ class TestNepTrainResultData( unittest.TestCase):
         self.assertEqual(result.force.num, 5750)
         self.assertEqual(result.stress.num, 23)
         self.assertEqual(result.virial.num, 23)
-        result.export_model_xyz(self.data_dir)
+        result.export_model_xyz(tmp_dir)
         export_good_model = Structure.read_multiple(
-            os.path.join(self.data_dir,"export_good_model.xyz"))
+            os.path.join(tmp_dir,"export_good_model.xyz"))
         export_remove_model = Structure.read_multiple(
-            os.path.join(self.data_dir,"export_remove_model.xyz"))
+            os.path.join(tmp_dir,"export_remove_model.xyz"))
 
         self.assertEqual(len(export_good_model), 23)
         self.assertEqual(len(export_remove_model), 2)
-        os.remove(os.path.join(self.data_dir,"export_good_model.xyz"))
-        os.remove(os.path.join(self.data_dir,"export_remove_model.xyz"))
 
     def test_load_train2(self):
-        result = NepTrainResultData.from_path(self.train_path)
+        tmp_dir = self._make_nep_workdir()
+        local_train = os.path.join(tmp_dir, "train.xyz")
+        result = NepTrainResultData.from_path(local_train)
         result.load()
         self.assertEqual(result.energy.num, 25)
         self.assertEqual(result.force.num, 6250)
         self.assertEqual(result.stress.num, 25)
         self.assertEqual(result.virial.num, 25)
-        os.remove(os.path.join(self.data_dir,"energy_train.out"))
-        os.remove(os.path.join(self.data_dir,"force_train.out"))
-        os.remove(os.path.join(self.data_dir,"stress_train.out"))
-        os.remove(os.path.join(self.data_dir,"virial_train.out"))
-        os.remove(os.path.join(self.data_dir,"descriptor.out"))
 
     def _make_nep_workdir(self) -> str:
-        base_tmp = Path(__file__).resolve().parent / "_sandbox_tmp"
-        base_tmp.mkdir(parents=True, exist_ok=True)
-        tmp_path = base_tmp / f"nep_test_{uuid.uuid4().hex}"
-        tmp_path.mkdir(parents=True, exist_ok=False)
+        tmp_path = Path(tempfile.mkdtemp(prefix=f"nep_test_{uuid.uuid4().hex}_"))
         tmp_dir = str(tmp_path)
         self._tmp_dirs.append(tmp_dir)
         for item in os.listdir(self.data_dir):

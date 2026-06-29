@@ -8,7 +8,7 @@ from typing import Literal
 
 import numpy as np
 from ase.build import make_supercell
-from ase.geometry import cell_to_cellpar, cellpar_to_cell
+from ase.geometry import cell_to_cellpar
 from scipy.stats.qmc import Sobol
 
 from NepTrainKit.core.config_type import append_config_tag
@@ -28,6 +28,24 @@ def _scan_values(values, *, label: str) -> np.ndarray:
     if stop < start:
         start, stop = stop, start
     return np.arange(start, stop + step * 0.5, step, dtype=float)
+
+
+def _cell_from_lengths_angles(lengths, angles_deg) -> np.ndarray:
+    """Build a cell from lengths and degree angles using ASE's default convention."""
+    a, b, c = [float(value) for value in lengths]
+    alpha, beta, gamma = np.radians(np.asarray(angles_deg, dtype=float))
+    sin_gamma = np.sin(gamma)
+    if abs(float(sin_gamma)) <= 1e-12:
+        raise ValueError("ShearAngle produced a singular gamma angle.")
+
+    cell = np.zeros((3, 3), dtype=float)
+    cell[0] = [a, 0.0, 0.0]
+    cell[1] = [b * np.cos(gamma), b * sin_gamma, 0.0]
+    cx = c * np.cos(beta)
+    cy = c * (np.cos(alpha) - np.cos(beta) * np.cos(gamma)) / sin_gamma
+    cz = np.sqrt(max(c * c - cx * cx - cy * cy, 0.0))
+    cell[2] = [cx, cy, cz]
+    return cell
 
 
 @dataclass(frozen=True)
@@ -277,7 +295,7 @@ class ShearAngleOperation(StructureOperation):
                 for dg in gamma_range:
                     new_structure = structure.copy()
                     new_angles = angles0 + np.array([da, db, dg])
-                    new_lattice = cellpar_to_cell([*lengths, *new_angles])
+                    new_lattice = _cell_from_lengths_angles(lengths, new_angles)
                     new_structure.set_cell(new_lattice, scale_atoms=True)
                     if params.identify_organic:
                         process_organic_clusters(structure, new_structure, clusters, is_organic_list)

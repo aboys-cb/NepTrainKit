@@ -1,4 +1,5 @@
 from .card_test_base import *
+from ase.geometry import cell_to_cellpar, cellpar_to_cell
 
 
 class TestLatticeCards(BaseCardTest):
@@ -303,6 +304,33 @@ class TestLatticeCards(BaseCardTest):
 
         self.assertEqual(len(results), 1)
         self.assertIn("Ang(a=1)", results[0].info.get("Config_type", ""))
+
+    def test_shear_angle_operation_matches_ase_cellpar_for_skewed_cell(self):
+        structure = self.structure.copy()
+        structure.set_cell(
+            np.array(
+                [
+                    [5.4, 0.2, 0.1],
+                    [0.4, 5.6, 0.3],
+                    [0.2, 0.5, 5.7],
+                ]
+            ),
+            scale_atoms=True,
+        )
+        params = ShearAngleParams(
+            alpha_range=(1.0, 1.0, 1.0),
+            beta_range=(-1.0, -1.0, 1.0),
+            gamma_range=(0.5, 0.5, 1.0),
+        )
+
+        result = ShearAngleOperation().run_structure(structure.copy(), params)[0]
+        cellpar = cell_to_cellpar(structure.get_cell())
+        expected_cell = cellpar_to_cell([*cellpar[:3], *(cellpar[3:] + np.array([1.0, -1.0, 0.5]))])
+        expected = structure.copy()
+        expected.set_cell(expected_cell, scale_atoms=True)
+
+        np.testing.assert_allclose(result.cell.array, expected.cell.array, atol=1e-12)
+        np.testing.assert_allclose(result.positions, expected.positions, atol=1e-12)
 
     def test_vibration_mode_perturb_card(self):
         card = VibrationModePerturbCard()

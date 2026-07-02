@@ -252,6 +252,30 @@ def test_descriptor_pca_cache_reuses_matching_file(tmp_path):
             Config.set("io", "cache_outputs", previous_cache)
 
 
+def test_export_model_xyz_reads_export_digits_once(tmp_path):
+    previous_digits = Config.get("io", "export_significant_digits", None)
+    try:
+        Config.delete("io", "export_significant_digits")
+        data = _build_dummy_result()
+
+        with patch.object(Config, "getint", wraps=Config.getint) as getint_mock:
+            data.export_model_xyz(tmp_path)
+
+        digit_calls = [
+            call for call in getint_mock.call_args_list
+            if call.args[:2] == ("io", "export_significant_digits")
+        ]
+        assert len(digit_calls) == 1
+
+        lines = (tmp_path / "export_good_model.xyz").read_text(encoding="utf8").splitlines()
+        assert lines[2].startswith("H 0 0.009999999776 0.01999999955")
+    finally:
+        if previous_digits is None:
+            Config.delete("io", "export_significant_digits")
+        else:
+            Config.set("io", "export_significant_digits", previous_digits)
+
+
 def test_discover_atomic_numeric_fields_excludes_blacklist_and_classifies():
     data = _build_dummy_result()
     fields = data.discover_atomic_numeric_fields(scope="active")

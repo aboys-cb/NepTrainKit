@@ -22,7 +22,7 @@ from scipy.sparse.csgraph import connected_components
 from collections import defaultdict, Counter
 from NepTrainKit.utils import timeit
 from NepTrainKit.config import Config
-from NepTrainKit.core.precision import as_storage_float_array, get_storage_float_dtype
+from NepTrainKit.core.precision import as_storage_float_array, get_export_significant_digits, get_storage_float_dtype
 from NepTrainKit.paths import PathLike, as_path, ensure_directory
 
 from NepTrainKit import module_path
@@ -38,6 +38,14 @@ def _format_float64_values(values: Any) -> str:
     """Format floating-point values for loss-minimised EXTXYZ round trips."""
     arr = np.asarray(values, dtype=np.float64).reshape(-1)
     return " ".join(format(float(v), ".17g") for v in arr)
+
+
+def _format_atomic_float_values(values: Any, significant_digits: int) -> str:
+    """Format per-atom floating-point values for user-facing EXTXYZ exports."""
+    arr = np.asarray(values, dtype=np.float64).reshape(-1)
+    digits = max(6, min(17, int(significant_digits)))
+    fmt = f".{digits}g"
+    return " ".join(format(float(v), fmt) for v in arr)
 
 
 def _normalize_float_field(value: Any, float_dtype: np.dtype[Any] | None = None) -> Any:
@@ -977,15 +985,19 @@ class Structure:
 
 
 
-    def write(self, file:IO):
+    def write(self, file:IO, *, atomic_float_digits: int | None = None):
         """Write the structure as an EXTXYZ frame to a file-like object.
 
         Parameters
         ----------
         file : IO
             Open text stream supporting write().
+        atomic_float_digits : int, optional
+            Significant digits for per-atom floating-point fields.
         """
 
+        if atomic_float_digits is None:
+            atomic_float_digits = get_export_significant_digits()
 
         # Write number of atoms
         file.write(f"{self.num_atoms}\n")
@@ -1046,7 +1058,7 @@ class Structure:
                 if ptype == 'S':
                     line += " ".join([f"{x}" for x in values]) + " "
                 elif ptype == 'R':
-                    line += _format_float64_values(values) + " "
+                    line += _format_atomic_float_values(values, atomic_float_digits) + " "
                 else:
                     line += " ".join([f"{x}" for x in values]) + " "
             file.write(line.strip() + "\n")

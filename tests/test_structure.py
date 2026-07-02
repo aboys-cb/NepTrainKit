@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import unittest
 import os
+from io import StringIO
 from pathlib import Path
 
 import numpy as np
@@ -25,7 +26,9 @@ class TestStructure(unittest.TestCase):
 
     def setUp(self):
         self._prev_precision = Config.get("nep", "data_precision")
+        self._prev_export_digits = Config.get("io", "export_significant_digits")
         Config.delete("nep", "data_precision")
+        Config.delete("io", "export_significant_digits")
         self.lattice = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]], dtype=np.float32)
         self.structure_info = {
             "species": ["H", "O"],
@@ -48,6 +51,10 @@ class TestStructure(unittest.TestCase):
             Config.delete("nep", "data_precision")
         else:
             Config.set("nep", "data_precision", self._prev_precision)
+        if self._prev_export_digits is None:
+            Config.delete("io", "export_significant_digits")
+        else:
+            Config.set("io", "export_significant_digits", self._prev_export_digits)
 
     def test_default_storage_precision_is_float32(self):
         self.assertEqual(get_storage_precision(), DataPrecision.FLOAT32)
@@ -142,7 +149,7 @@ class TestStructure(unittest.TestCase):
         )
 
         with open(test_file, "w", encoding="utf8") as f:
-            structure.write(f)
+            structure.write(f, atomic_float_digits=17)
 
         read_structure = Structure.read_xyz(test_file)
         self.assertEqual(read_structure.lattice.dtype, np.float64)
@@ -159,6 +166,54 @@ class TestStructure(unittest.TestCase):
         import os
 
         os.remove(test_file)
+
+    def test_xyz_export_digits_only_affect_atomic_float_fields(self):
+        Config.set("nep", "data_precision", DataPrecision.FLOAT64)
+        Config.set("io", "export_significant_digits", 8)
+        precise_lattice = np.array(
+            [
+                [1.1234567890123457, 0.0, 0.0],
+                [0.0, 2.2345678901234567, 0.0],
+                [0.0, 0.0, 3.345678901234567],
+            ],
+            dtype=np.float64,
+        )
+        precise_positions = np.array(
+            [[0.12345678901234567, 0.0, 0.0], [0.5, 0.5000000000000001, 0.5]],
+            dtype=np.float64,
+        )
+        precise_forces = np.array(
+            [[0.1111111111111111, 0.2222222222222222, 0.3333333333333333],
+             [-0.4444444444444444, -0.5555555555555556, -0.6666666666666666]],
+            dtype=np.float64,
+        )
+        precise_virial = np.array(
+            [1.1234567890123457, 0.0, 0.0, 0.0, 2.2345678901234567, 0.0, 0.0, 0.0, 3.345678901234567],
+            dtype=np.float64,
+        )
+        structure = Structure(
+            precise_lattice,
+            {
+                "species": ["H", "O"],
+                "pos": precise_positions,
+                "forces": precise_forces,
+            },
+            self.properties,
+            {
+                "energy": 1.1234567890123457,
+                "virial": precise_virial,
+            },
+        )
+
+        handle = StringIO()
+        structure.write(handle)
+        lines = handle.getvalue().splitlines()
+
+        self.assertIn('Lattice="1.1234567890123457', lines[1])
+        self.assertIn('virial="1.1234567890123457', lines[1])
+        self.assertIn("energy=1.1234567890123457", lines[1])
+        self.assertEqual(lines[2], "H 0.12345679 0 0 0.11111111 0.22222222 0.33333333")
+        self.assertEqual(lines[3], "O 0.5 0.5 0.5 -0.44444444 -0.55555556 -0.66666667")
 
     def test_xyz2npy(self):
         save_npy_structure("./npy", [self.structure])

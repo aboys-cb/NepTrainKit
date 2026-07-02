@@ -27,6 +27,7 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.ui.widgets import ConfigTypeSearchLineEdit, ArrowMessageBox, ExportFormatMessageBox
 from NepTrainKit.core.io import (ResultData, load_result_data, matches_result_loader)
 
+from NepTrainKit.core.precision import get_export_significant_digits
 from NepTrainKit.core.structure import table_info, atomic_numbers
 from NepTrainKit.core.types import Brushes, CanvasMode, SearchType
 from NepTrainKit.paths import get_bundled_nep89_path
@@ -1390,8 +1391,9 @@ class ShowNepWidget(QWidget):
     def _export_current_xyz(self, save_file_path: str, index: int) -> None:
         """Write a single structure to an XYZ file (runs in background thread)."""
         atoms = self.nep_result_data.get_atoms(index)
+        atomic_float_digits = get_export_significant_digits()
         with open(save_file_path, "w", encoding="utf-8") as handle:
-            atoms.write(handle)
+            atoms.write(handle, atomic_float_digits=atomic_float_digits)
         MessageManager.send_info_message(f"File exported to: {save_file_path}")
 
     def export_current_structure(self):

@@ -134,6 +134,18 @@ class SettingsWidget(ScrollArea):
             parent=self.personal_group
         )
         self.cache_outputs_card.setValue(cache_outputs)
+
+        export_digits = Config.getint("io", "export_significant_digits", 10) or 10
+        self.export_digits_card = DoubleSpinBoxSettingCard(
+            FluentIcon.SAVE,
+            'Export significant digits',
+            'Significant digits for per-atom XYZ/extxyz values',
+            self.personal_group
+        )
+        self.export_digits_card.setRange(6, 17)
+        self.export_digits_card.doubleSpinBox.setDecimals(0)
+        self.export_digits_card.doubleSpinBox.setSingleStep(1)
+        self.export_digits_card.setValue(float(export_digits))
         # Default Config_type text
         default_cfg_type = Config.get("widget", "default_config_type", "neptrainkit")
         self.default_cfg_type_card = LineEditSettingCard(
@@ -371,6 +383,7 @@ class SettingsWidget(ScrollArea):
         self.personal_group.addSettingCard(self.use_group_menu_card)
         self.personal_group.addSettingCard(self.deepmd_preserve_card)
         self.personal_group.addSettingCard(self.cache_outputs_card)
+        self.personal_group.addSettingCard(self.export_digits_card)
         self.personal_group.addSettingCard(self.default_cfg_type_card)
 
         self.nep_group.addSettingCard(self.nep_backend_card)
@@ -428,6 +441,7 @@ class SettingsWidget(ScrollArea):
         self.use_group_menu_card.checkedChanged.connect(lambda state:Config.set("widget","use_group_menu",state))
         self.deepmd_preserve_card.checkedChanged.connect(lambda state: Config.set("widget", "deepmd_preserve_subfolders", state))
         self.cache_outputs_card.checkedChanged.connect(lambda state: Config.set("io", "cache_outputs", state))
+        self.export_digits_card.valueChanged.connect(lambda value: Config.set("io", "export_significant_digits", int(value)))
         self.default_cfg_type_card.textChanged.connect(lambda v: Config.set("widget", "default_config_type", v))
         # plot settings
         from NepTrainKit.core.types import Pens, Brushes

@@ -28,7 +28,7 @@ import numpy.typing as npt
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
-from NepTrainKit.core.precision import get_storage_float_dtype
+from NepTrainKit.core.precision import get_export_significant_digits, get_storage_float_dtype
 from NepTrainKit.core.structure import Structure, atomic_numbers, get_type_map, save_npy_structure
 from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
 
@@ -2033,10 +2033,11 @@ class ResultData(QObject):
         """Write the currently selected structures to ``save_file_path``."""
         indices = list(self.select_index)
         try:
+            atomic_float_digits = get_export_significant_digits()
             with open(save_file_path, "w", encoding="utf8") as handle:
                 mapped = self.structure.convert_index(indices)
                 for structure in self.structure.all_data[mapped]:
-                    structure.write(handle)
+                    structure.write(handle, atomic_float_digits=atomic_float_digits)
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
         except Exception:
             MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
@@ -2063,13 +2064,14 @@ class ResultData(QObject):
     def export_active_xyz(self, save_file_path: str | Path) -> None:
         """Write active (non-removed) structures to ``save_file_path``."""
         try:
+            atomic_float_digits = get_export_significant_digits()
             active = self.structure.now_data
             if getattr(active, "size", 0) == 0:
                 MessageManager.send_info_message("No active structures to export.")
                 return
             with open(save_file_path, "w", encoding="utf8") as handle:
                 for structure in active:
-                    structure.write(handle)
+                    structure.write(handle, atomic_float_digits=atomic_float_digits)
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
         except Exception:
             MessageManager.send_info_message(
@@ -2098,13 +2100,14 @@ class ResultData(QObject):
     def export_removed_xyz(self, save_file_path: str | Path) -> None:
         """Write removed structures (if any) to ``save_file_path``."""
         try:
+            atomic_float_digits = get_export_significant_digits()
             removed = self.structure.remove_data
             if getattr(removed, "size", 0) == 0:
                 MessageManager.send_info_message("No removed structures to export.")
                 return
             with open(save_file_path, "w", encoding="utf8") as handle:
                 for structure in removed:
-                    structure.write(handle)
+                    structure.write(handle, atomic_float_digits=atomic_float_digits)
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
         except Exception:
             MessageManager.send_info_message(
@@ -2149,14 +2152,15 @@ class ResultData(QObject):
     def export_model_extxyz(self, save_path: str | Path) -> None:
         """Export active and removed structures into ``save_path`` folder as extxyz."""
         try:
+            atomic_float_digits = get_export_significant_digits()
             good_path = Path(save_path).joinpath("export_good_model.xyz")
             with open(good_path, "w", encoding="utf8") as handle:
                 for structure in self.structure.now_data:
-                    structure.write(handle)
+                    structure.write(handle, atomic_float_digits=atomic_float_digits)
             removed_path = Path(save_path).joinpath("export_remove_model.xyz")
             with open(removed_path, "w", encoding="utf8") as handle:
                 for structure in self.structure.remove_data:
-                    structure.write(handle)
+                    structure.write(handle, atomic_float_digits=atomic_float_digits)
             MessageManager.send_info_message(f"File exported to: {save_path}")
         except Exception:
             MessageManager.send_info_message(
@@ -2183,14 +2187,15 @@ class ResultData(QObject):
     def export_model_xyz(self, save_path: str | Path) -> None:
         """Export active and removed structures into ``save_path`` folder."""
         try:
+            atomic_float_digits = get_export_significant_digits()
             good_path = Path(save_path).joinpath("export_good_model.xyz")
             with open(good_path, "w", encoding="utf8") as handle:
                 for structure in self.structure.now_data:
-                    structure.write(handle)
+                    structure.write(handle, atomic_float_digits=atomic_float_digits)
             removed_path = Path(save_path).joinpath("export_remove_model.xyz")
             with open(removed_path, "w", encoding="utf8") as handle:
                 for structure in self.structure.remove_data:
-                    structure.write(handle)
+                    structure.write(handle, atomic_float_digits=atomic_float_digits)
             MessageManager.send_info_message(f"File exported to: {save_path}")
         except Exception:
             MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")

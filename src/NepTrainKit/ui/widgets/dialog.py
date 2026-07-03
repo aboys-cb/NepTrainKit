@@ -1923,7 +1923,7 @@ class PeriodicTableDialog(FramelessDialog):
         super().__init__(parent)
         self.setTitleBar(FluentTitleBar(self))
         self.setWindowTitle("Periodic Table")
-        self.setWindowIcon(QIcon(":/images/src/images/logo.svg"))
+        self.setWindowIcon(QIcon(":/images/src/images/logo.png"))
         self.resize(400, 350)
 
         with open(module_path / "Config/ptable.json", "r", encoding="utf-8") as f:

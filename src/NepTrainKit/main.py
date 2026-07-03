@@ -6,6 +6,7 @@ import os
 import sys
 if sys.platform == "darwin":
     os.environ["OPENBLAS_NUM_THREADS"] = "1"
+import tempfile
 import traceback
 from pathlib import Path
 import warnings
@@ -34,6 +35,31 @@ from NepTrainKit.ui.updater import unzip
 from NepTrainKit.paths import as_path
 
 warnings.filterwarnings("ignore")
+
+APP_ICON_RESOURCE = ':/images/src/images/logo.png'
+
+
+def _application_icon() -> QIcon:
+    """Return the shared application icon."""
+    return QIcon(APP_ICON_RESOURCE)
+
+
+def _set_macos_dock_icon(app: QApplication, icon: QIcon) -> None:
+    """Set the macOS Dock icon when running from Python instead of an app bundle."""
+    if sys.platform != "darwin":
+        return
+    try:
+        from AppKit import NSApplication, NSImage  # type: ignore
+
+        icon_path = Path(tempfile.gettempdir()) / "NepTrainKit-dock-icon.png"
+        pixmap = icon.pixmap(512, 512)
+        if pixmap.isNull() or not pixmap.save(str(icon_path), "PNG"):
+            return
+        image = NSImage.alloc().initWithContentsOfFile_(str(icon_path))
+        if image is not None:
+            NSApplication.sharedApplication().setApplicationIconImage_(image)
+    except Exception:
+        logger.debug("Failed to set macOS Dock icon:\n{}", traceback.format_exc())
 
 
 
@@ -123,7 +149,7 @@ class NepTrainKitMainWindow(FluentWindow):
     def initWindow(self) -> None:
         """Configure top-level window parameters such as size and title."""
         self.resize(1200, 700)
-        self.setWindowIcon(QIcon(':/images/src/images/logo.svg'))
+        self.setWindowIcon(_application_icon())
         self.setWindowTitle('NepTrainKit')
         desktop = QApplication.screens()[0].availableGeometry()
         width, height = desktop.width(), desktop.height()
@@ -198,6 +224,10 @@ def set_light_theme(app: QApplication) -> None:
 def configure_app(app: QApplication) -> None:
     """Apply the same theme, font, and stylesheet used by the desktop app."""
     set_light_theme(app)
+    app.setApplicationName("NepTrainKit")
+    icon = _application_icon()
+    app.setWindowIcon(icon)
+    _set_macos_dock_icon(app, icon)
     font = QFont("Arial", 12)
     app.setFont(font)
 

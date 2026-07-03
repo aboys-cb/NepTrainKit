@@ -379,7 +379,7 @@ class MakeDataCard(MakeDataCardWidget):
 
     separator = False
     card_name = "MakeDataCard"
-    menu_icon = r":/images/src/images/logo.svg"
+    menu_icon = r":/images/src/images/logo.png"
     runFinishedSignal = Signal(int)
 
     def __init__(self, parent=None):

@@ -155,7 +155,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             self.inverseSignal,
         )
         revoke_action = self.addButton(
-            "Undo",
+            "Undo Delete",
             QIcon(":/images/src/images/revoke.svg"),
             self.revokeSignal,
         )

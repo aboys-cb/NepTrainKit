@@ -2248,6 +2248,36 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             total_ms=f"{_elapsed_ms(total_t0):.3f}",
         )
 
+    def rebuild_selection_display(self):
+        """Rebuild selected overlays from the current selection set."""
+        if self.nep_result_data is None:
+            return
+        selected = set(getattr(self.nep_result_data, "select_index", set()))
+        overlay_size = Config.getint("widget", "vispy_marker_size", 6) or 6
+        for plot in self.axes_list:
+            dataset = self.get_axes_dataset(plot)
+            if dataset is None:
+                continue
+            if plot not in self._selected_by_plot:
+                self._selected_by_plot[plot] = set()
+            if plot not in self._show_by_plot:
+                self._show_by_plot[plot] = set()
+            if plot not in self._loaded_by_plot:
+                self._loaded_by_plot[plot] = set()
+            self._selected_by_plot[plot] = set(selected)
+            self._show_by_plot[plot].difference_update(selected)
+            self._loaded_by_plot[plot].difference_update(selected)
+            size = overlay_size
+            if not getattr(plot, "_full_detail", False):
+                size = max(3, int(size * 0.65))
+            pos = self._overlay_positions_for_indices(dataset, selected)
+            plot.set_overlay_positions("selected", pos, color=Brushes.Selected, size=size)
+            reject_set = self._reject_by_plot.get(plot, set())
+            if reject_set:
+                display_reject = reject_set - selected
+                reject_pos = self._overlay_positions_for_indices(dataset, display_reject)
+                plot.set_overlay_positions("reject", reject_pos, color=Brushes.Reject, size=size, symbol='x')
+
     def set_reject_highlight(self, structure_indices, enabled: bool) -> None:
         """Toggle the reject highlight overlay for the provided structure indices.
 

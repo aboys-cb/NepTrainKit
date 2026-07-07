@@ -30,6 +30,20 @@ class _ArrowMissing:
         return None
 
 
+class _InverseSelectionData:
+    def __init__(self, datasets):
+        self.datasets = datasets
+        self.select_index = set()
+        self.reject_index = set()
+        self.structure = SimpleNamespace(now_indices=np.array([0, 1, 2], dtype=np.int32))
+
+    def inverse_select(self):
+        self.select_index = set(self.structure.now_indices.tolist()) - set(self.select_index)
+
+    def clear_selection_history(self):
+        pass
+
+
 class TestCanvasFactory(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -127,6 +141,26 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertEqual(brushes[0].color().rgba(), Brushes.TrainingOverlay.color().rgba())
         self.assertEqual(brushes[1].color().rgba(), Brushes.TrainingOverlay.color().rgba())
         self.assertEqual(brushes[2].color().rgba(), Brushes.TrainingOverlay.color().rgba())
+
+    def test_pyqtgraph_inverse_select_from_empty_refreshes_all_points(self):
+        canvas, fallback = canvas_factory.create_result_canvas(CanvasMode.PYQTGRAPH, None)
+        self.assertFalse(fallback)
+        dataset = NepPlotData(
+            np.array([[0.0, 0.0], [1.0, 1.0], [2.0, 2.0]], dtype=np.float32),
+            index_list=np.array([0, 1, 2], dtype=np.int32),
+            title="energy",
+        )
+        dataset.show_rmse = False
+        result_data = _InverseSelectionData([dataset])
+
+        canvas.init_axes(1)
+        canvas.set_nep_result_data(result_data)
+        canvas.plot_nep_result()
+        canvas.inverse_select()
+
+        self.assertEqual(result_data.select_index, {0, 1, 2})
+        brushes = canvas.axes_list[0]._scatter.data["brush"]
+        self.assertTrue(all(brush.color().rgba() == Brushes.Selected.color().rgba() for brush in brushes))
 
     def test_vispy_set_view_layout_single_axis_uses_nonzero_col_span(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
@@ -669,6 +703,29 @@ class TestCanvasFactory(unittest.TestCase):
 
         overlay = plot._overlays["selected"].positions
         np.testing.assert_array_equal(overlay[:, :2], np.array([[2.0, 3.0], [3.0, 4.0]], dtype=np.float32))
+
+    def test_vispy_inverse_select_from_empty_refreshes_selected_overlay(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        x = np.array([0.0, 1.0, 2.0], dtype=np.float32)
+        y = x + 1.0
+        structure_index = np.array([0, 1, 2], dtype=np.int32)
+        dataset = SimpleNamespace(
+            title="energy",
+            x=x,
+            y=y,
+            structure_index=structure_index,
+        )
+        canvas.nep_result_data = _InverseSelectionData([dataset])
+        plot.scatter(x, y, structure_index)
+
+        canvas.inverse_select()
+
+        self.assertEqual(canvas.nep_result_data.select_index, {0, 1, 2})
+        self.assertEqual(canvas._selected_by_plot[plot], {0, 1, 2})
+        overlay = plot._overlays["selected"].positions
+        np.testing.assert_array_equal(overlay[:, :2], np.column_stack([x, y]).astype(np.float32))
 
     def test_vispy_reject_highlight_uses_overlay_position_cache(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)

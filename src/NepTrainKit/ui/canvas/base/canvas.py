@@ -236,6 +236,13 @@ class CanvasLayoutBase(CanvasBase):
 
     def _sync_selection_colors(self, before, after):
         """Update scatter colors from two selection snapshots."""
+        try:
+            active = set(self.nep_result_data.structure.now_indices.tolist())
+        except Exception:
+            active = set()
+        if not before and active and after == active:
+            self.rebuild_selection_display()
+            return
         to_default = sorted(before - after)
         to_selected = sorted(after - before)
         if to_default:
@@ -243,6 +250,12 @@ class CanvasLayoutBase(CanvasBase):
             self._restore_reject_highlight(to_default)
         if to_selected:
             self.update_scatter_color(to_selected, Brushes.Selected)
+
+    def rebuild_selection_display(self):
+        """Rebuild selection visuals from the current selection set."""
+        selected = set(getattr(self.nep_result_data, "select_index", set()))
+        if selected:
+            self.update_scatter_color(sorted(selected), Brushes.Selected)
 
     def undo_selection(self):
         """Undo the most recent selection change."""

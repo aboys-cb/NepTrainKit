@@ -406,6 +406,29 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
 
             plot._scatter.updateSpots()
 
+    def rebuild_selection_display(self):
+        """Rebuild point brushes from the current selection set."""
+        if self.nep_result_data is None:
+            return
+        selected = set(getattr(self.nep_result_data, "select_index", set()))
+        reject = set(getattr(self.nep_result_data, "reject_index", set()) or set())
+        for plot in self.axes_list:
+            scatter = getattr(plot, "_scatter", None)
+            if not scatter:
+                continue
+            base = getattr(plot, "_overlay_base_brush", None)
+            if base is not None:
+                scatter.data["brush"] = np.array(base, copy=True)
+            data = scatter.data["data"]
+            selected_rows = [i for i, value in enumerate(data) if int(value) in selected]
+            reject_rows = [i for i, value in enumerate(data) if int(value) in reject and int(value) not in selected]
+            if reject_rows:
+                scatter.data["brush"][reject_rows] = Brushes.Reject
+            if selected_rows:
+                scatter.data["brush"][selected_rows] = Brushes.Selected
+            scatter.data["sourceRect"][:] = (0, 0, 0, 0)
+            scatter.updateSpots()
+
     def set_reject_highlight(self, structure_indices, enabled: bool) -> None:
         """Toggle the reject highlight for the provided structure indices.
 

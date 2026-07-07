@@ -249,6 +249,28 @@ class TestNepTrainResultData( unittest.TestCase):
         self.assertNotIn(1, result.select_index)
         self.assertNotIn(3, result.select_index)
 
+    def test_undo_selection_history(self):
+        tmp_dir = self._make_nep_workdir()
+        local_train = os.path.join(tmp_dir, "train.xyz")
+        result = NepTrainResultData.from_path(local_train)
+        result.load()
+
+        result.select([0, 1])
+        result.uncheck(0)
+        result.inverse_select()
+
+        self.assertTrue(result.undo_selection())
+        self.assertEqual(result.select_index, {1})
+        self.assertTrue(result.undo_selection())
+        self.assertEqual(result.select_index, {0, 1})
+        self.assertTrue(result.undo_selection())
+        self.assertEqual(result.select_index, set())
+        self.assertFalse(result.undo_selection())
+
+        result.select([0, 1])
+        result.delete_selected()
+        self.assertFalse(result.undo_selection())
+
 
 class _ShiftDummyStructure:
     def __init__(self, config_types=None, total_structures: int = 3):

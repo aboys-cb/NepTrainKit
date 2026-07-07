@@ -1673,6 +1673,7 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         Called after data mutations to keep the canvas in sync with the dataset.
         """
         self.nep_result_data.select_index.clear()
+        self.nep_result_data.clear_selection_history()
         self._ensure_plot_dataset_indices()
         # Clear all overlays so deleted selections do not persist visually
         for plot in self.axes_list:

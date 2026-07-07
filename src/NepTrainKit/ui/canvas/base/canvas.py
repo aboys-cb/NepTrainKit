@@ -222,6 +222,38 @@ class CanvasLayoutBase(CanvasBase):
         else:
             MessageManager.send_info_message("No undoable deletion!")
 
+    def _restore_reject_highlight(self, indices):
+        """Restore reject color for unselected rejected structures."""
+        try:
+            reject = getattr(self.nep_result_data, "reject_index", None)
+            if reject:
+                to_reject = [idx for idx in indices if idx in reject]
+                setter = getattr(self, "set_reject_highlight", None)
+                if setter is not None and to_reject:
+                    setter(to_reject, True)
+        except Exception:
+            pass
+
+    def _sync_selection_colors(self, before, after):
+        """Update scatter colors from two selection snapshots."""
+        to_default = sorted(before - after)
+        to_selected = sorted(after - before)
+        if to_default:
+            self.update_scatter_color(to_default, Brushes.Default)
+            self._restore_reject_highlight(to_default)
+        if to_selected:
+            self.update_scatter_color(to_selected, Brushes.Selected)
+
+    def undo_selection(self):
+        """Undo the most recent selection change."""
+        if self.nep_result_data is None:
+            return
+        before = set(self.nep_result_data.select_index)
+        if self.nep_result_data.undo_selection():
+            self._sync_selection_colors(before, set(self.nep_result_data.select_index))
+        else:
+            MessageManager.send_info_message("No undoable selection!")
+
     def select_index(self, structure_index, reverse):
         """Toggle selection state for one or more structures.
 
@@ -248,16 +280,7 @@ class CanvasLayoutBase(CanvasBase):
                 return
             self.nep_result_data.uncheck(changed)
             self.update_scatter_color(changed, Brushes.Default)
-            # Restore reject highlights for indices that are still tagged as bad.
-            try:
-                reject = getattr(self.nep_result_data, "reject_index", None)
-                if reject:
-                    to_reject = [idx for idx in changed if idx in reject]
-                    setter = getattr(self, "set_reject_highlight", None)
-                    if setter is not None and to_reject:
-                        setter(to_reject, True)
-            except Exception:
-                pass
+            self._restore_reject_highlight(changed)
         else:
             changed = sorted(idx_set.difference(selected))
             if not changed:
@@ -271,11 +294,9 @@ class CanvasLayoutBase(CanvasBase):
         if self.nep_result_data is None:
             return
 
-        active_indices = set(self.nep_result_data.structure.now_indices.tolist())
-        selected = set(self.nep_result_data.select_index)
-
-        self.select_index(list(selected), True)
-        self.select_index(list(active_indices - selected), False)
+        before = set(self.nep_result_data.select_index)
+        self.nep_result_data.inverse_select()
+        self._sync_selection_colors(before, set(self.nep_result_data.select_index))
 
 
 class VispyCanvasLayoutBase(CanvasLayoutBase, QObject, metaclass=CombinedMeta):

@@ -964,6 +964,7 @@ class ResultData(QObject):
         self.data_xyz_path=Path(data_xyz_path)
         self.nep_txt_path=Path(nep_txt_path)
         self.select_index=set()
+        self._selection_history: list[set[int]] = []
         # Mark structures as "bad/reject" without interfering with selection.
         # Uses original structure indices aligned with StructureData/group_array indices.
         self.reject_index: set[int] = set()
@@ -1915,6 +1916,41 @@ class ResultData(QObject):
     def is_select(self, i: int) -> bool:
         """Return ``True`` if the structure index is marked as selected."""
         return i in self.select_index
+    def _active_selection(self, indices: Iterable[int]) -> set[int]:
+        """Return valid active structure indices from ``indices``."""
+        active_mask = self.structure.data.mask_array
+        total = len(self.structure.all_data)
+        selected: set[int] = set()
+        for value in indices:
+            idx = int(value)
+            if 0 <= idx < total and active_mask[idx]:
+                selected.add(idx)
+        return selected
+    def _set_selection(self, selected: set[int], *, record: bool = True) -> bool:
+        """Replace the selection, optionally recording one undo step."""
+        selected = self._active_selection(selected)
+        if selected == self.select_index:
+            return False
+        if record:
+            self._selection_history.append(set(self.select_index))
+        self.select_index.clear()
+        self.select_index.update(selected)
+        self.updateInfoSignal.emit()
+        return True
+    @property
+    def can_undo_selection(self) -> bool:
+        """Return whether a previous selection state is available."""
+        return bool(self._selection_history)
+    def clear_selection_history(self) -> None:
+        """Drop stored selection undo states."""
+        self._selection_history.clear()
+    def undo_selection(self) -> bool:
+        """Restore the previous selection state."""
+        while self._selection_history:
+            selected = self._selection_history.pop()
+            if self._set_selection(selected, record=False):
+                return True
+        return False
     def select(self, indices: Sequence[int] | int) -> None:
         """Mark structures denoted by ``indices`` as selected."""
         if isinstance(indices, (int, np.integer)):
@@ -1925,27 +1961,23 @@ class ResultData(QObject):
         valid = (idx >= 0) & (idx < len(self.structure.all_data))
         valid &= self.structure.data.mask_array[idx]
         idx = idx[valid]
-        self.select_index.update(idx.tolist())
-        self.updateInfoSignal.emit()
+        selected = set(self.select_index)
+        selected.update(idx.tolist())
+        self._set_selection(selected)
     def uncheck(self, indices: Sequence[int] | int) -> None:
         """Remove structures denoted by ``indices`` from the selection set."""
         if isinstance(indices, (int, np.integer)):
             iter_indices = [int(indices)]
         else:
             iter_indices = (int(i) for i in np.asarray(indices).ravel())
+        selected = set(self.select_index)
         for idx in iter_indices:
-            self.select_index.discard(idx)
-        self.updateInfoSignal.emit()
+            selected.discard(idx)
+        self._set_selection(selected)
     def inverse_select(self) -> None:
         """Invert the current selection over the active structure set."""
         active_indices = set(self.structure.data.now_indices.tolist())
-        selected_indices = set(self.select_index)
-        to_unselect = list(selected_indices)
-        to_select = list(active_indices - selected_indices)
-        if to_unselect:
-            self.uncheck(to_unselect)
-        if to_select:
-            self.select(to_select)
+        self._set_selection(active_indices - set(self.select_index))
     def select_structures_by_index(self, index_expression: str, use_origin: bool = True) -> list[int]:
         """Resolve an index expression into raw structure indices."""
         if not index_expression:
@@ -2225,6 +2257,7 @@ class ResultData(QObject):
         """Remove and clear all currently selected structures."""
         self.remove(list(self.select_index))
         self.select_index.clear()
+        self._selection_history.clear()
         self.updateInfoSignal.emit()
     def iter_non_physical_structure_indices(self, radius_coefficient: float):
         """Yield progress increments while collecting non-physical structures."""

@@ -70,6 +70,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     sparseSignal = Signal()
     penSignal = Signal(bool)
     undoSignal = Signal()
+    undoSelectionSignal = Signal()
     discoverySignal = Signal()
     deleteSignal = Signal()
     editInfoSignal = Signal()
@@ -154,9 +155,14 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             QIcon(":/images/src/images/inverse.svg"),
             self.inverseSignal,
         )
+        undo_selection_action = self.addButton(
+            "Undo Selection",
+            QIcon(":/images/src/images/undo_selection.svg"),
+            self.undoSelectionSignal,
+        )
         revoke_action = self.addButton(
             "Undo Delete",
-            QIcon(":/images/src/images/revoke.svg"),
+            QIcon(":/images/src/images/undo_delete.svg"),
             self.revokeSignal,
         )
         delete_action = self.addButton(

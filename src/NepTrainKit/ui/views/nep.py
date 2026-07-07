@@ -140,6 +140,7 @@ class NepResultPlotWidget(QWidget):
         tool_bar.resetSignal.connect(canvas.auto_range)
         tool_bar.deleteSignal.connect(canvas.delete)
         tool_bar.revokeSignal.connect(canvas.revoke)
+        tool_bar.undoSelectionSignal.connect(canvas.undo_selection)
         tool_bar.penSignal.connect(canvas.pen)
         canvas.tool_bar = tool_bar
 
@@ -153,6 +154,7 @@ class NepResultPlotWidget(QWidget):
             (tool_bar.resetSignal, canvas.auto_range),
             (tool_bar.deleteSignal, canvas.delete),
             (tool_bar.revokeSignal, canvas.revoke),
+            (tool_bar.undoSelectionSignal, canvas.undo_selection),
             (tool_bar.penSignal, canvas.pen),
         ):
             try:

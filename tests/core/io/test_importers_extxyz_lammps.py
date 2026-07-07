@@ -99,3 +99,135 @@ def test_matching_invalid_lammps_dump_raises_value_error(tmp_path):
     assert is_parseable(path)
     with pytest.raises(ValueError, match="Failed to import structures"):
         import_structures(path)
+
+
+def test_outcar_importer_uses_potcar_species_when_vrhfin_is_absent(tmp_path):
+    path = tmp_path / "OUTCAR (1)"
+    path.write_text(
+        "\n".join(
+            [
+                " POTCAR:    PAW_PBE Cl 06Sep2000",
+                " POTCAR:    PAW_PBE Li_sv 10Sep2004",
+                " POTCAR:    PAW_PBE U 06Sep2000",
+                "   ions per type =               1   1   1",
+                "      direct lattice vectors                 reciprocal lattice vectors",
+                "     3.0 0.0 0.0    0 0 0",
+                "     0.0 3.0 0.0    0 0 0",
+                "     0.0 0.0 3.0    0 0 0",
+                " POSITION                                       TOTAL-FORCE (eV/Angst)",
+                " -----------------------------------------------------------------------------------",
+                "   0.0 0.0 0.0   0.1 0.2 0.3",
+                "   1.0 1.0 1.0  -0.1 -0.2 -0.3",
+                "   2.0 2.0 2.0   0.0 0.0 0.0",
+                " -----------------------------------------------------------------------------------",
+                "  free  energy   TOTEN  =      -12.50000000 eV",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    structures = import_structures(path)
+
+    assert len(structures) == 1
+    structure = structures[0]
+    assert structure.atomic_properties["species"].tolist() == ["Cl", "Li", "U"]
+    assert structure.energy == -12.5
+
+
+def test_outcar_importer_falls_back_to_position_block_without_forces(tmp_path):
+    path = tmp_path / "sample.outcar"
+    path.write_text(
+        "\n".join(
+            [
+                " POTCAR:    PAW_PBE Cl 06Sep2000",
+                " POTCAR:    PAW_PBE Li_sv 10Sep2004",
+                "   ions per type =               1   1",
+                "      direct lattice vectors                 reciprocal lattice vectors",
+                "     2.0 0.0 0.0    0 0 0",
+                "     0.0 2.0 0.0    0 0 0",
+                "     0.0 0.0 2.0    0 0 0",
+                " position of ions in fractional coordinates (direct lattice)",
+                "   0.25 0.25 0.25",
+                "   0.75 0.75 0.75",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    structures = import_structures(path)
+
+    assert len(structures) == 1
+    structure = structures[0]
+    assert structure.atomic_properties["species"].tolist() == ["Cl", "Li"]
+    assert "forces" not in structure.atomic_properties
+    np.testing.assert_allclose(structure.positions, [[0.5, 0.5, 0.5], [1.5, 1.5, 1.5]])
+
+
+def test_xdatcar_importer_loads_all_configurations(tmp_path):
+    path = tmp_path / "XDATCAR"
+    path.write_text(
+        "\n".join(
+            [
+                "sample",
+                "1.0",
+                "2 0 0",
+                "0 2 0",
+                "0 0 2",
+                "Cl Li",
+                "1 1",
+                "Direct configuration=     1",
+                "0.0 0.0 0.0",
+                "0.5 0.5 0.5",
+                "Direct configuration=     2",
+                "0.25 0.25 0.25",
+                "0.75 0.75 0.75",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    structures = import_structures(path)
+
+    assert len(structures) == 2
+    assert structures[0].atomic_properties["species"].tolist() == ["Cl", "Li"]
+    assert structures[1].additional_fields["Config_type"] == "XDATCAR_2"
+    np.testing.assert_allclose(structures[1].positions, [[0.5, 0.5, 0.5], [1.5, 1.5, 1.5]])
+
+
+def test_xdatcar_importer_keeps_repeated_header_compatibility(tmp_path):
+    path = tmp_path / "XDATCAR"
+    path.write_text(
+        "\n".join(
+            [
+                "frame one",
+                "1.0",
+                "2 0 0",
+                "0 2 0",
+                "0 0 2",
+                "Cl",
+                "1",
+                "Direct configuration=     1",
+                "0.25 0.25 0.25",
+                "frame two",
+                "1.0",
+                "4 0 0",
+                "0 4 0",
+                "0 0 4",
+                "Cl",
+                "1",
+                "Direct configuration=     2",
+                "0.25 0.25 0.25",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    structures = import_structures(path)
+
+    assert len(structures) == 2
+    np.testing.assert_allclose(structures[0].positions, [[0.5, 0.5, 0.5]])
+    np.testing.assert_allclose(structures[1].positions, [[1.0, 1.0, 1.0]])

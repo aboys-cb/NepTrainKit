@@ -139,7 +139,7 @@ class XdatcarImporter:
         """Parse VASP XDATCAR trajectory into :class:`Structure` frames.
         Notes
         -----
-        - Supports variable cell per frame (XDATCAR-style headers before each config).
+        - Supports standard XDATCAR files with one header and many configs.
         - Coordinates are converted to Cartesian and stored under ``pos``.
         - Species are taken from header; if absent, falls back to dummy ``X1``/``X2``.
         """
@@ -152,87 +152,77 @@ class XdatcarImporter:
                 return True
             except Exception:
                 return False
+
+        def read_header(f, title: str):
+            while title.strip() == "":
+                title = f.readline()
+                if not title:
+                    return None
+            scale_line = f.readline()
+            if not scale_line:
+                return None
+            try:
+                scale = float(scale_line.split()[0])
+            except Exception:
+                return None
+            latt = []
+            for _ in range(3):
+                line = f.readline()
+                if not line:
+                    return None
+                parts = line.split()
+                if len(parts) < 3:
+                    return None
+                try:
+                    latt.append([float(parts[0]), float(parts[1]), float(parts[2])])
+                except Exception:
+                    return None
+            lattice = (scale * np.array(latt, dtype=get_storage_float_dtype())).reshape(3, 3)
+
+            line = f.readline()
+            if not line:
+                return None
+            tokens = line.split()
+            if all(_is_number(t) for t in tokens):
+                counts = [int(round(float(t))) for t in tokens]
+                sym_from_kw = kwargs.get("species", None)
+                symbols = list(sym_from_kw) if sym_from_kw is not None else [f"X{i+1}" for i in range(len(counts))]
+                if len(symbols) != len(counts):
+                    raise ValueError("Provided species length does not match counts in XDATCAR")
+            else:
+                symbols = tokens
+                line2 = f.readline()
+                if not line2:
+                    return None
+                counts = [int(round(float(x))) for x in line2.split()]
+                if len(counts) != len(symbols):
+                    return None
+            species_list = np.concatenate([
+                np.array([sym] * cnt, dtype=np.str_)
+                for sym, cnt in zip(symbols, counts)
+            ])
+            return lattice, int(sum(counts)), species_list
+
         with candidate.open("r", encoding="utf8", errors="ignore") as f:
+            header = read_header(f, f.readline())
+            if header is None:
+                return
+            frame_index = 0
             while True:
                 if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
                     return
-                title = f.readline()
-                if not title:
-                    break
-                # Skip possible blank lines
-                while title.strip() == "":
-                    if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
-                        return
-                    title = f.readline()
-                    if not title:
-                        return
-                scale_line = f.readline()
-                if not scale_line:
-                    break
-                scale_line = scale_line.strip()
-                if scale_line == "":
-                    # Unexpected blank; try next
-                    continue
-                try:
-                    scale = float(scale_line.split()[0])
-                except Exception:
-                    # Not a valid frame start; try to continue scanning
-                    continue
-                # Lattice 3 lines
-                latt = []
-                ok = True
-                for _ in range(3):
-                    if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
-                        return
-                    line = f.readline()
-                    if not line:
-                        ok = False
-                        break
-                    parts = line.split()
-                    if len(parts) < 3:
-                        ok = False
-                        break
-                    try:
-                        vec = [float(parts[0]), float(parts[1]), float(parts[2])]
-                    except Exception:
-                        ok = False
-                        break
-                    latt.append(vec)
-                if not ok:
-                    break
-                lattice = (scale * np.array(latt, dtype=get_storage_float_dtype())).reshape(3, 3)
-                # Species line or counts line
-                line = f.readline()
-                if not line:
-                    break
-                tokens = line.split()
-                # If tokens all numbers -> counts-only header (no symbols)
-                if all(_is_number(t) for t in tokens):
-                    counts = [int(round(float(t))) for t in tokens]
-                    # Try get symbols from kwargs or fall back to X1, X2, ...
-                    sym_from_kw = kwargs.get("species", None)
-                    if sym_from_kw is not None:
-                        if len(sym_from_kw) != len(counts):
-                            raise ValueError("Provided species length does not match counts in XDATCAR")
-                        symbols = list(sym_from_kw)
-                    else:
-                        symbols = [f"X{i+1}" for i in range(len(counts))]
-                else:
-                    symbols = tokens
-                    # Next line is counts
-                    line2 = f.readline()
-                    if not line2:
-                        break
-                    counts = [int(round(float(x))) for x in line2.split()]
-                    if len(counts) != len(symbols):
-                        # Some XDATCARs repeat header; be permissive
-                        counts = counts[: len(symbols)]
-                n_atoms = int(sum(counts))
-                # Next line indicates coordinate mode
+                lattice, n_atoms, species_list = header
                 mode_line = f.readline()
                 if not mode_line:
-                    break
+                    return
+                if not mode_line.strip():
+                    continue
                 mode_l = mode_line.strip().lower()
+                if "direct" not in mode_l and "cart" not in mode_l:
+                    header = read_header(f, mode_line)
+                    if header is None:
+                        return
+                    continue
                 use_direct = ("direct" in mode_l)
                 # Read n_atoms coordinate lines
                 coords = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype())
@@ -257,11 +247,6 @@ class XdatcarImporter:
                         break
                 if not read_ok:
                     break
-                # Expand species list in-order
-                species_list = np.concatenate([
-                    np.array([sym] * cnt, dtype=np.str_)
-                    for sym, cnt in zip(symbols, counts)
-                ])
                 # Convert to Cartesian if in direct (fractional) coords
                 if use_direct:
                     positions = coords @ lattice
@@ -275,8 +260,9 @@ class XdatcarImporter:
                     "species": species_list,
                     "pos": positions,
                 }
+                frame_index += 1
                 additional_fields = {
-                    "Config_type": title.strip(),
+                    "Config_type": f"XDATCAR_{frame_index}",
                     "pbc": "T T T",
                 }
                 yield Structure(lattice=lattice,
@@ -292,7 +278,8 @@ class OutcarImporter:
         """Return ``True`` when ``path`` looks like a VASP OUTCAR file."""
         candidate = as_path(path)
         ext = candidate.suffix.lower()
-        return candidate.is_file() and (candidate.name.lower() == "outcar" or ext == ".outcar")
+        name = candidate.name.lower()
+        return candidate.is_file() and (name == "outcar" or name.startswith("outcar ") or ext == ".outcar")
     def iter_structures(self, path: PathLike, cancel_event=None, **kwargs):
         """Stream VASP OUTCAR configurations as :class:`Structure` objects."""
         candidate = as_path(path)
@@ -315,7 +302,30 @@ class OutcarImporter:
         pending_virial: np.ndarray | None = None  # eV, 9 comps row-major
         last_force_is_ml: bool | None = None
         frames: list[dict] = []
+        position_only_frames: list[dict] = []
         # helpers for species mapping
+        def clean_element_token(token: str) -> str | None:
+            token = token.split("_", 1)[0].strip()
+            letters = ""
+            for ch in token:
+                if not ch.isalpha():
+                    break
+                letters += ch
+            if not letters:
+                return None
+            sym = letters[0].upper() + letters[1:].lower()
+            return sym if sym in atomic_numbers else None
+
+        def add_species_symbol(sym: str | None) -> None:
+            nonlocal species_by_type
+            if not sym:
+                return
+            if species_by_type is None:
+                species_by_type = []
+            # avoid adjacent duplicates from repeated POTCAR echoes
+            if not species_by_type or species_by_type[-1] != sym:
+                species_by_type.append(sym)
+
         def finalize_species_list(n_atoms: int) -> np.ndarray:
             """Expand type-wise species metadata into a per-atom array."""
             nonlocal species_by_type, counts_by_type
@@ -335,6 +345,32 @@ class OutcarImporter:
                 # fall back to generic X if mismatch
                 return np.array(["X"] * n_atoms, dtype=np.str_)
             return np.array(expanded, dtype=np.str_)
+
+        def make_position_frame(positions: list[list[float]], lattice: np.ndarray, *, include_forces: bool = False, forces: list[list[float]] | None = None) -> dict | None:
+            n_atoms = len(positions)
+            if n_atoms == 0:
+                return None
+            species = finalize_species_list(n_atoms)
+            props = [
+                {"name": "species", "type": "S", "count": 1},
+                {"name": "pos", "type": "R", "count": 3},
+            ]
+            atom_props = {
+                "species": species,
+                "pos": np.array(positions, dtype=get_storage_float_dtype()),
+            }
+            if include_forces and forces is not None:
+                props.append({"name": "forces", "type": "R", "count": 3})
+                atom_props["forces"] = np.array(forces, dtype=get_storage_float_dtype())
+            return {
+                "lattice": lattice.copy(),
+                "properties": props,
+                "atomic_properties": atom_props,
+                "additional_fields": {
+                    "Config_type": "OUTCAR",
+                    "pbc": "T T T",
+                },
+            }
         # Parse file sequentially
         with candidate.open("r", encoding="utf8", errors="ignore") as f:
             for raw in f:
@@ -351,15 +387,19 @@ class OutcarImporter:
                     continue
                 # Try to collect species by type via VRHFIN or TITEL blocks
                 lt = line.lstrip()
+                if lt.startswith("POTCAR:"):
+                    try:
+                        for token in lt.split(":", 1)[1].split():
+                            sym = clean_element_token(token)
+                            if sym is not None:
+                                add_species_symbol(sym)
+                                break
+                    except Exception:
+                        pass
+                    continue
                 if lt.startswith("VRHFIN") and ":" in lt and "=" in lt:
                     try:
-                        sym = lt.split("=")[1].split(":")[0].strip()
-                        sym = sym.replace("_sv", "").strip()
-                        if species_by_type is None:
-                            species_by_type = []
-                        # avoid duplicates if multiple POTCAR copies
-                        if sym and (len(species_by_type) == 0 or species_by_type[-1] != sym):
-                            species_by_type.append(sym)
+                        add_species_symbol(clean_element_token(lt.split("=")[1].split(":")[0]))
                     except Exception:
                         pass
                     continue
@@ -370,17 +410,11 @@ class OutcarImporter:
                         # find first token that looks like element symbol (H or He)
                         cand = None
                         for t in tokens:
-                            if len(t) <= 3 and t[0].isalpha() and t[0].isupper():
-                                # strip suffix like Li_sv
-                                base = t[:2]
-                                if base[0].isupper() and (len(base) == 1 or base[1].islower()):
-                                    cand = base
-                                    break
+                            cand = clean_element_token(t)
+                            if cand is not None:
+                                break
                         if cand is not None:
-                            if species_by_type is None:
-                                species_by_type = []
-                            if len(species_by_type) == 0 or species_by_type[-1] != cand:
-                                species_by_type.append(cand)
+                            add_species_symbol(cand)
                     except Exception:
                         pass
                     continue
@@ -396,6 +430,31 @@ class OutcarImporter:
                         pending_lattice = latest_lattice.copy()
                     except Exception:
                         latest_lattice = latest_lattice
+                    continue
+                if line.strip().startswith("position of ions in"):
+                    if counts_by_type is None:
+                        continue
+                    n_atoms = int(sum(counts_by_type))
+                    coords: list[list[float]] = []
+                    for _ in range(n_atoms):
+                        l2 = next(f, "")
+                        nums = parse_floats(l2)
+                        if len(nums) < 3:
+                            coords = []
+                            break
+                        coords.append(nums[:3])
+                    if not coords:
+                        continue
+                    use_lattice = pending_lattice if pending_lattice is not None else latest_lattice
+                    if use_lattice is None:
+                        use_lattice = np.eye(3, dtype=get_storage_float_dtype())
+                    if "fractional" in line.lower() or "direct" in line.lower():
+                        positions = (np.array(coords, dtype=get_storage_float_dtype()) @ use_lattice).tolist()
+                    else:
+                        positions = coords
+                    frame = make_position_frame(positions, use_lattice)
+                    if frame is not None:
+                        position_only_frames.append(frame)
                     continue
                 # Track header indicating whether next 'in kB' belongs to ML or DFT
                 if line.strip().startswith("ML FORCE on cell") and "-STRESS" in line:
@@ -484,10 +543,6 @@ class OutcarImporter:
                             break
                         positions.append(nums[0:3])
                         forces.append(nums[-3:])
-                    n_atoms = len(positions)
-                    if n_atoms == 0:
-                        continue
-                    species = finalize_species_list(n_atoms)
                     if pending_lattice is not None:
                         use_lattice = pending_lattice
                     else:
@@ -497,32 +552,20 @@ class OutcarImporter:
                     virial_next = pending_virial
                     pending_stress = None
                     pending_virial = None
-                    props = [
-                        {"name": "species", "type": "S", "count": 1},
-                        {"name": "pos", "type": "R", "count": 3},
-                        {"name": "forces", "type": "R", "count": 3},
-                    ]
-                    atom_props = {
-                        "species": species,
-                        "pos": np.array(positions, dtype=get_storage_float_dtype()),
-                        "forces": np.array(forces, dtype=get_storage_float_dtype()),
-                    }
-                    fields = {
-                        "Config_type": "OUTCAR",
-                        "pbc": "T T T",
-                    }
+                    frame = make_position_frame(positions, use_lattice, include_forces=True, forces=forces)
+                    if frame is None:
+                        continue
                     # Only keep DFT frames for downstream NEP, skip ML frames
                     if is_ml_block:
                         continue
-                    frames.append({
-                        "lattice": use_lattice.copy(),
-                        "properties": props,
-                        "atomic_properties": atom_props,
-                        "additional_fields": fields,
+                    frame.update({
                         **({"virial": virial_next} if virial_next is not None else {}),
                         **({"stress": stress_next} if stress_next is not None else {}),
                     })
+                    frames.append(frame)
         # Emit frames as Structure objects
+        if not frames:
+            frames = position_only_frames[-1:]
         for i, fr in enumerate(frames):
             add = fr["additional_fields"].copy()
             if "energy" in fr:

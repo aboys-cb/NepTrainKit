@@ -47,6 +47,24 @@ class TestBenchmarkStage1Core(unittest.TestCase):
         np.testing.assert_allclose(out.cell.array[1:], cell[1:])
         np.testing.assert_allclose(out.positions, atoms.positions)
 
+    def test_bain_scale_volume_applies_volume_scan(self):
+        atoms = Atoms("H", positions=[[0.1, 0.2, 0.3]], cell=[2, 3, 4], pbc=True)
+        volume = atoms.get_volume()
+
+        out = BainPathOperation().run_structure(
+            atoms,
+            BainPathParams(
+                axis="z",
+                ca_range=(1.2, 1.2, 1.0),
+                mode="scale_volume",
+                volume_scale_range=(0.5, 1.0, 0.5),
+            ),
+        )
+
+        self.assertEqual(len(out), 2)
+        np.testing.assert_allclose([item.get_volume() / volume for item in out], [0.5, 1.0], rtol=1e-12)
+        self.assertTrue(all("mode=scale_volume" in item.info.get("Config_type", "") for item in out))
+
     def test_bain_rejects_invalid_axis_and_range(self):
         atoms = Atoms("H", positions=[[0, 0, 0]], cell=[1, 1, 1], pbc=True)
         with self.assertRaisesRegex(ValueError, "axis"):
@@ -87,6 +105,73 @@ class TestBenchmarkStage1Core(unittest.TestCase):
         projected = slip - np.dot(slip, normal) * normal
 
         self.assertAlmostEqual(float(np.dot(projected, normal)), 0.0, places=12)
+
+    def test_strict_gsfe_fraction_of_vector_uses_projected_slip(self):
+        atoms = Atoms("H4", positions=[[0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 0, 3]], cell=[8, 8, 8], pbc=True)
+
+        shifted = StrictGSFEPathOperation().run_structure(
+            atoms,
+            StrictGSFEPathParams(
+                plane_hkl=(0, 0, 1),
+                slip_uvw=(1, 0, 0),
+                displacement_range=(0.0, 0.25, 0.25),
+                displacement_unit="fraction_of_vector",
+                cut_mode="middle",
+                wrap=False,
+            ),
+        )[1]
+
+        displacement = shifted.positions - atoms.positions
+        np.testing.assert_allclose(displacement[:2], 0.0, atol=1e-12)
+        np.testing.assert_allclose(displacement[2:], [[2.0, 0.0, 0.0], [2.0, 0.0, 0.0]], atol=1e-12)
+
+    def test_strict_gsfe_cut_modes_and_wrap(self):
+        atoms = Atoms("H4", positions=[[0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 0, 3]], cell=[4, 4, 4], pbc=True)
+        op = StrictGSFEPathOperation()
+
+        fractional = op.run_structure(
+            atoms,
+            StrictGSFEPathParams(
+                plane_hkl=(0, 0, 1),
+                slip_uvw=(1, 0, 0),
+                displacement_range=(0.0, 1.0, 1.0),
+                displacement_unit="angstrom",
+                cut_mode="fractional",
+                cut_fraction=0.25,
+                wrap=False,
+            ),
+        )[1]
+        moved = np.linalg.norm(fractional.positions - atoms.positions, axis=1) > 1e-12
+        np.testing.assert_array_equal(moved, [False, True, True, True])
+
+        layer = op.run_structure(
+            atoms,
+            StrictGSFEPathParams(
+                plane_hkl=(0, 0, 1),
+                slip_uvw=(1, 0, 0),
+                displacement_range=(0.0, 1.0, 1.0),
+                displacement_unit="angstrom",
+                cut_mode="layer_index",
+                layer_index=1,
+                wrap=False,
+            ),
+        )[1]
+        moved = np.linalg.norm(layer.positions - atoms.positions, axis=1) > 1e-12
+        np.testing.assert_array_equal(moved, [False, False, True, True])
+
+        wrapped = op.run_structure(
+            atoms,
+            StrictGSFEPathParams(
+                plane_hkl=(0, 0, 1),
+                slip_uvw=(1, 0, 0),
+                displacement_range=(0.0, 5.0, 5.0),
+                displacement_unit="angstrom",
+                cut_mode="middle",
+                wrap=True,
+            ),
+        )[1]
+        self.assertTrue(np.all(wrapped.get_scaled_positions(wrap=False) >= -1e-12))
+        self.assertTrue(np.all(wrapped.get_scaled_positions(wrap=False) < 1.0 + 1e-12))
 
     def test_strict_gsfe_rejects_invalid_geometry(self):
         atoms = Atoms("H3", positions=[[0, 0, 0], [0, 0, 1], [0, 0, 2]], cell=[5, 5, 5], pbc=True)

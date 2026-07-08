@@ -102,6 +102,19 @@ class TestLatticeCards(BaseCardTest):
         self.assertEqual(len(card_result[0]), len(op_result[0]))
         self.assertIn("params", card.to_dict())
 
+    def test_bain_path_card_roundtrip(self):
+        card = BainPathCard()
+        card.axis_combo.setCurrentText("x")
+        card.ca_frame.set_input_value([0.8, 1.2, 0.2])
+        card.mode_combo.setCurrentText("scale_volume")
+        card.volume_frame.set_input_value([0.9, 1.1, 0.1])
+        card.scale_atoms_checkbox.setChecked(False)
+
+        restored = BainPathCard()
+        restored.from_dict(card.to_dict())
+
+        self.assertEqual(restored.get_params(), card.get_params())
+
     def test_perturb_card_with_organic(self):
         card = PerturbCard()
         structure = self.structure.copy()

@@ -6,6 +6,7 @@ from .perturb_card import PerturbCard
 from .vibration_perturb_card import VibrationModePerturbCard
 from .magmom_rotation_card import MagneticMomentRotationCard
 from .cell_strain_card import CellStrainCard
+from .bain_path_card import BainPathCard
 from .cell_scaling_card import CellScalingCard
 from .shear_matrix_card import ShearMatrixCard
 from .shear_angle_card import ShearAngleCard
@@ -27,6 +28,7 @@ from .group_label_card import GroupLabelCard
 from .random_vacancy_card import RandomVacancyCard
 from .vacancy_defect_card import VacancyDefectCard
 from .stacking_fault_card import StackingFaultCard
+from .strict_gsfe_path_card import StrictGSFEPathCard
 from .organic_mol_config_pbc_card import OrganicMolConfigPBCCard
 from .local_solvation_card import LocalSolvationCard
 from .solvent_box_fill_card import SolventBoxFillCard
@@ -45,6 +47,7 @@ __all__ = [
     "VibrationModePerturbCard",
     "MagneticMomentRotationCard",
     "CellStrainCard",
+    "BainPathCard",
     "ShearMatrixCard",
     "ShearAngleCard",
     "CellScalingCard",
@@ -67,6 +70,7 @@ __all__ = [
     "RandomVacancyCard",
     "VacancyDefectCard",
     "StackingFaultCard",
+    "StrictGSFEPathCard",
     "OrganicMolConfigPBCCard",
     "LocalSolvationCard",
     "SolventBoxFillCard",

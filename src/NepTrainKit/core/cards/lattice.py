@@ -60,6 +60,65 @@ class CellStrainParams:
     identify_organic: bool = False
 
 
+@dataclass(frozen=True)
+class BainPathParams:
+    """Parameters for Bain/tetragonal distortion path generation."""
+
+    axis: Literal["x", "y", "z"] = "z"
+    ca_range: tuple[float, float, float] = (1.0, 1.0, 1.0)
+    mode: Literal["constant_volume", "scale_volume", "free_c"] = "constant_volume"
+    volume_scale_range: tuple[float, float, float] = (1.0, 1.0, 1.0)
+    scale_atoms: bool = True
+
+
+class BainPathOperation(StructureOperation):
+    """Generate fixed-structure Bain/tetragonal distortion structures."""
+
+    def run_structure(self, structure, params: BainPathParams) -> list:
+        axis_map = {"x": 0, "y": 1, "z": 2}
+        axis = str(params.axis).lower()
+        if axis not in axis_map:
+            raise ValueError("BainPath axis must be x, y, or z.")
+        if params.mode not in {"constant_volume", "scale_volume", "free_c"}:
+            raise ValueError("BainPath mode must be constant_volume, scale_volume, or free_c.")
+
+        cell = np.asarray(structure.cell.array, dtype=float)
+        if cell.shape != (3, 3) or abs(float(np.linalg.det(cell))) <= 1e-12:
+            raise ValueError("BainPath requires a nonsingular 3x3 cell.")
+
+        ca_values = _scan_values(params.ca_range, label="ca_range")
+        if np.any(ca_values <= 0.0):
+            raise ValueError("BainPath ca_range values must be positive.")
+        volume_values = (
+            _scan_values(params.volume_scale_range, label="volume_scale_range")
+            if params.mode == "scale_volume"
+            else np.array([1.0], dtype=float)
+        )
+        if np.any(volume_values <= 0.0):
+            raise ValueError("BainPath volume_scale_range values must be positive.")
+
+        c_axis = axis_map[axis]
+        out = []
+        base_volume = abs(float(np.linalg.det(cell)))
+        for r in ca_values:
+            factors = np.ones(3, dtype=float)
+            factors[c_axis] = float(r)
+            if params.mode != "free_c":
+                for i in range(3):
+                    if i != c_axis:
+                        factors[i] = 1.0 / np.sqrt(float(r))
+            for vscale in volume_values:
+                new_cell = cell * factors[:, None]
+                if params.mode == "scale_volume":
+                    new_cell = new_cell * (float(vscale) ** (1.0 / 3.0))
+                atoms = structure.copy()
+                atoms.set_cell(new_cell, scale_atoms=bool(params.scale_atoms))
+                v_over_v0 = abs(float(np.linalg.det(new_cell))) / base_volume
+                append_config_tag(atoms, f"Bain(ax={axis},ca={float(r):g},V={v_over_v0:g},mode={params.mode})")
+                out.append(atoms)
+        return out
+
+
 class CellStrainOperation(StructureOperation):
     """Generate strained lattices from explicit parameters."""
 

@@ -234,6 +234,19 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertFalse(thumbnail.text.visible)
         self.assertTrue(main_plot.text.visible)
 
+    def test_vispy_empty_scatter_does_not_auto_range_from_missing_marker_data(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+
+        plot.scatter(
+            np.array([], dtype=np.float32),
+            np.array([], dtype=np.float32),
+            np.array([], dtype=np.int32),
+        )
+
+        self.assertEqual(plot._scatter_ranges[("full", "all")], ([0, 1], [0, 1]))
+
     def test_vispy_point_at_uses_cpu_pick_without_render(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
         canvas.init_axes(1)

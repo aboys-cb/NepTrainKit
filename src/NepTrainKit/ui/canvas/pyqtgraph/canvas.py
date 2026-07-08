@@ -252,7 +252,9 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         Invoked after data mutations (delete, undo, reload) to refresh the canvas.
         """
         self.nep_result_data.select_index.clear()
-        self.nep_result_data.clear_selection_history()
+        clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
+        if clear_selection_history is not None:
+            clear_selection_history()
 
         for index, _dataset in enumerate(self.nep_result_data.datasets):
             plot = self.axes_list[index]

@@ -148,7 +148,9 @@ class MakeDataWidget(QWidget):
                 elif file_path.endswith(".json"):
                     self.parse_card_config(file_path)
                 else:
-                    MessageManager.send_info_message("Only .xyz .vasp .cif or json files are supported for import.")
+                    MessageManager.send_info_message(
+                        self.tr("Only .xyz .vasp .cif or json files are supported for import.")
+                    )
             if structures_path:
                 self.load_base_structure(structures_path)
 
@@ -202,11 +204,20 @@ class MakeDataWidget(QWidget):
         None
             QAction instances are stored on the widget.
         """
-        self.export_card_config_action = QAction(QIcon(r":/images/src/images/save.svg"), "Export Card Config")
+        self.export_card_config_action = QAction(
+            QIcon(r":/images/src/images/save.svg"),
+            self.tr("Export Card Config"),
+        )
         self.export_card_config_action.triggered.connect(self.export_card_config)
-        self.load_card_config_action = QAction(QIcon(r":/images/src/images/open.svg"), "Import Card Config")
+        self.load_card_config_action = QAction(
+            QIcon(r":/images/src/images/open.svg"),
+            self.tr("Import Card Config"),
+        )
         self.load_card_config_action.triggered.connect(self.load_card_config)
-        self.paste_card_config_action = QAction(FluentIcon.PASTE.icon(), "Paste Card JSON")
+        self.paste_card_config_action = QAction(
+            FluentIcon.PASTE.icon(),
+            self.tr("Paste Card JSON"),
+        )
         self.paste_card_config_action.triggered.connect(self.paste_card_config_from_clipboard)
 
     def init_ui(self):
@@ -232,7 +243,7 @@ class MakeDataWidget(QWidget):
         self.path_label = HyperlinkLabel(self)
         self.path_label.setFixedHeight(30)
         user_config_path = get_user_config_path()
-        self.path_label.setText("Folder for Custom Cards  ")
+        self.path_label.setText(self.tr("Folder for Custom Cards"))
 
         self.path_label.setUrl(f"file:///{user_config_path}/cards")
 
@@ -264,7 +275,9 @@ class MakeDataWidget(QWidget):
             try:
                 atoms  = ase_read(path,":")
             except:
-                MessageManager.send_warning_message(f"load structure failed:{path}")
+                MessageManager.send_warning_message(
+                    self.tr("Load structure failed: {path}").format(path=path)
+                )
                 continue
             for atom in atoms:
                 if isinstance(atom, Atom):
@@ -293,8 +306,12 @@ class MakeDataWidget(QWidget):
         if len(structures_list)==0:
             return
         self.dataset=structures_list
-        MessageManager.send_success_message(f"success load {len(structures_list)} structures.")
-        self.dataset_info_label.setText(f" Success load {len(structures_list)} structures.")
+        MessageManager.send_success_message(
+            self.tr("success load {count} structures.").format(count=len(structures_list))
+        )
+        self.dataset_info_label.setText(
+            self.tr("Success load {count} structures.").format(count=len(structures_list))
+        )
 
     def open_file(self):
         """Open a file dialog and load selected structures.
@@ -355,7 +372,9 @@ class MakeDataWidget(QWidget):
             Starts the card execution chain or reports missing data.
         """
         if self._has_running_card():
-            MessageManager.send_info_message("Cards are still running. Please wait for the current run to finish.")
+            MessageManager.send_info_message(
+                self.tr("Cards are still running. Please wait for the current run to finish.")
+            )
             return
         self.stop_run_card()
         first_card=self._next_card(-1)
@@ -363,7 +382,7 @@ class MakeDataWidget(QWidget):
             needs_input = bool(getattr(first_card, "requires_input_dataset", True))
             if not self.dataset and needs_input:
                 MessageManager.send_info_message(
-                    "Please import the structure file first. You can drag it in directly or import it from the upper left corner!"
+                    self.tr("Please import the structure file first. You can drag it in directly or import it from the upper left corner!")
                 )
                 return
             first_card.dataset = self.dataset or []
@@ -371,7 +390,9 @@ class MakeDataWidget(QWidget):
             first_card.runFinishedSignal.connect(self._run_next_card)
             first_card.run()
         else:
-            MessageManager.send_info_message("No card selected. Please select a card in the workspace.")
+            MessageManager.send_info_message(
+                self.tr("No card selected. Please select a card in the workspace.")
+            )
 
     def _has_running_card(self):
         """Return True when any workspace card still owns a running worker."""
@@ -439,7 +460,9 @@ class MakeDataWidget(QWidget):
             next_card.runFinishedSignal.connect(self._run_next_card)
             next_card.run()
         else:
-            MessageManager.send_success_message("Perturbation training set created successfully.")
+            MessageManager.send_success_message(
+                self.tr("Perturbation training set created successfully.")
+            )
 
     def stop_run_card(self):
         """Stop all running cards and disconnect scheduling hooks.
@@ -475,7 +498,7 @@ class MakeDataWidget(QWidget):
         """
 
         if card_name not in CardManager.card_info_dict:
-            MessageManager.send_warning_message("no card")
+            MessageManager.send_warning_message(self.tr("no card"))
             return None
         card=CardManager.card_info_dict[card_name](self)
         self.workspace_card_widget.add_card(card)
@@ -491,7 +514,7 @@ class MakeDataWidget(QWidget):
         """
         cards=self.workspace_card_widget.cards
         if not cards:
-            MessageManager.send_warning_message("No cards in workspace.")
+            MessageManager.send_warning_message(self.tr("No cards in workspace."))
 
             return
 
@@ -499,7 +522,9 @@ class MakeDataWidget(QWidget):
         if path:
             with open(path, "w",encoding="utf-8") as file:
                 json.dump(self._current_card_config_payload(), file, indent=4, ensure_ascii=False)
-            MessageManager.send_success_message("Card configuration exported successfully.")
+            MessageManager.send_success_message(
+                self.tr("Card configuration exported successfully.")
+            )
 
     def _current_card_config_payload(self):
         """Return the current workflow card configuration payload."""
@@ -512,10 +537,12 @@ class MakeDataWidget(QWidget):
         """Copy the current workflow card configuration JSON to the clipboard."""
         cards = self.workspace_card_widget.cards
         if not cards:
-            MessageManager.send_warning_message("No cards in workspace.")
+            MessageManager.send_warning_message(self.tr("No cards in workspace."))
             return
         QApplication.clipboard().setText(self.current_card_config_json())
-        MessageManager.send_success_message("Card configuration JSON copied to clipboard.")
+        MessageManager.send_success_message(
+            self.tr("Card configuration JSON copied to clipboard.")
+        )
 
     def current_card_config_json(self):
         """Return the current workflow card configuration as pretty JSON text."""
@@ -545,7 +572,7 @@ class MakeDataWidget(QWidget):
         """
         text = QApplication.clipboard().text().strip()
         if not text:
-            MessageManager.send_warning_message("Clipboard does not contain card JSON.")
+            MessageManager.send_warning_message(self.tr("Clipboard does not contain card JSON."))
             return
         try:
             payload = json.loads(text)
@@ -574,7 +601,9 @@ class MakeDataWidget(QWidget):
                 config = json.load(file)
             cards = self._normalise_card_config_payload(config)
         except Exception as exc:
-            MessageManager.send_warning_message(f"Invalid card configuration file: {exc}")
+            MessageManager.send_warning_message(
+                self.tr("Invalid card configuration file: {error}").format(error=exc)
+            )
             return
         self.workspace_card_widget.clear_cards()
         self._add_card_configs(cards)
@@ -618,11 +647,15 @@ class MakeDataWidget(QWidget):
                     card_widget.from_dict(card)
                 except Exception as exc:
                     card_widget.close()
-                    MessageManager.send_error_message(f"Failed to load {name}: {exc}")
+                    MessageManager.send_error_message(
+                        self.tr("Failed to load {name}: {error}").format(name=name, error=exc)
+                    )
                     continue
                 added_count += 1
         if added_count:
-            MessageManager.send_success_message(f"Added {added_count} card configuration(s).")
+            MessageManager.send_success_message(
+                self.tr("Added {count} card configuration(s).").format(count=added_count)
+            )
 
 
 if __name__ == "__main__":

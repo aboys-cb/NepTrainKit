@@ -53,7 +53,8 @@ test = [
     "pytest>=7.0",
     "pytest-qt>=4.2.0",
     "pytest-cov>=4.0.0",
-    "codecov>=2.0.0"
+    "codecov>=2.0.0",
+    "tomli>=2.0; python_version < '3.11'"
 ]
 
 [project.urls]
@@ -76,6 +77,7 @@ where = ["src"]
 include = ["NepTrainKit", "NepTrainKit.*" ]
 
 [tool.setuptools.package-data]
+"NepTrainKit" = ["translations/*.qm", "translations/*.ts"]
 "NepTrainKit.Config" = ["config.sqlite","ptable.json","nep.json","nep89.txt" ]
 
 [tool.setuptools_scm]

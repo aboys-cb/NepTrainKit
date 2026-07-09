@@ -206,22 +206,31 @@ class ShowNepWidget(QWidget):
         None
             Configures action callbacks for export operations.
         """
-        self.open_file_action = Action(QIcon(':/images/src/images/open.svg'), "Open File…")
+        self.open_file_action = Action(QIcon(':/images/src/images/open.svg'), self.tr("Open File…"))
         self.open_file_action.triggered.connect(self.open_file)
 
-        self.open_folder_action = Action(QIcon(':/images/src/images/open.svg'), "Open Folder…")
+        self.open_folder_action = Action(QIcon(':/images/src/images/open.svg'), self.tr("Open Folder…"))
         self.open_folder_action.triggered.connect(self.open_folder)
 
-        self.export_all_action = Action(QIcon(":/images/src/images/export1.svg"), "Export All…")
+        self.export_all_action = Action(QIcon(":/images/src/images/export1.svg"), self.tr("Export All…"))
         self.export_all_action.triggered.connect(self.export_all_structures)
 
-        self.export_selected_action = Action(QIcon(":/images/src/images/export1.svg"), "Export Selected (0)…")
+        self.export_selected_action = Action(
+            QIcon(":/images/src/images/export1.svg"),
+            self.tr("Export Selected ({selected})…").format(selected=0),
+        )
         self.export_selected_action.triggered.connect(self.export_selected_structures)
 
-        self.export_removed_action = Action(QIcon(":/images/src/images/export1.svg"), "Export Removed (0)…")
+        self.export_removed_action = Action(
+            QIcon(":/images/src/images/export1.svg"),
+            self.tr("Export Removed ({removed})…").format(removed=0),
+        )
         self.export_removed_action.triggered.connect(self.export_removed_structures)
 
-        self.export_current_action = Action(QIcon(":/images/src/images/export1.svg"), "Export Active (0)…")
+        self.export_current_action = Action(
+            QIcon(":/images/src/images/export1.svg"),
+            self.tr("Export Active ({active})…").format(active=0),
+        )
         self.export_current_action.triggered.connect(self.export_active_structures)
 
         self._refresh_export_actions()
@@ -290,9 +299,15 @@ class ShowNepWidget(QWidget):
             except Exception:
                 active = 0
 
-        self.export_selected_action.setText(f"Export Selected ({selected})…")
-        self.export_removed_action.setText(f"Export Removed ({removed})…")
-        self.export_current_action.setText(f"Export Active ({active})…")
+        self.export_selected_action.setText(
+            self.tr("Export Selected ({selected})…").format(selected=selected)
+        )
+        self.export_removed_action.setText(
+            self.tr("Export Removed ({removed})…").format(removed=removed)
+        )
+        self.export_current_action.setText(
+            self.tr("Export Active ({active})…").format(active=active)
+        )
 
         self.export_all_action.setEnabled(ready and not busy)
         self.export_selected_action.setEnabled(ready and (selected > 0) and not busy)
@@ -543,7 +558,7 @@ class ShowNepWidget(QWidget):
         except Exception:
             logger.debug(traceback.format_exc())
             tip.setState(False)
-            MessageManager.send_error_message(f"Failed to switch NEP model")
+            MessageManager.send_error_message(self.tr("Failed to switch NEP model"))
     
     def _restore_selection(self, indices):
         """Restore previously selected structure indices after reload.
@@ -616,7 +631,7 @@ class ShowNepWidget(QWidget):
         self.struct_index_widget = QWidget(self)
         self.struct_index_widget_layout = QHBoxLayout(self.struct_index_widget)
         self.struct_index_label = BodyLabel(self.struct_index_widget)
-        self.struct_index_label.setText("Current structure (original file index):")
+        self.struct_index_label.setText(self.tr("Current structure (original file index):"))
 
         self.struct_index_spinbox = SpinBox(self.struct_index_widget)
 
@@ -771,11 +786,11 @@ class ShowNepWidget(QWidget):
         if label is None:
             return
         if getattr(self, "_search_running", 0) > 0:
-            label.setText("Searching…")
+            label.setText(self.tr("Searching…"))
             label.setVisible(True)
             return
         if getattr(self, "_index_running", 0) > 0:
-            label.setText("Indexing…")
+            label.setText(self.tr("Indexing…"))
             label.setVisible(True)
             return
         label.setVisible(False)
@@ -879,7 +894,7 @@ class ShowNepWidget(QWidget):
                 self.set_work_path(path)
                 return
 
-        MessageManager.send_info_message("unsupported file format")
+        MessageManager.send_info_message(self.tr("unsupported file format"))
 
     def open_file(self):
         """Prompt the user to select an XYZ result file to display.
@@ -906,7 +921,7 @@ class ShowNepWidget(QWidget):
     def export_all_structures(self):
         """Export active + removed structures in either XYZ or deepmd/npy format."""
         if not self._dataset_ready():
-            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
             return
         fmt = self._choose_export_format()
         if fmt is None:
@@ -923,14 +938,14 @@ class ShowNepWidget(QWidget):
     def export_active_structures(self):
         """Export active (non-removed) structures in either XYZ or deepmd/npy format."""
         if not self._dataset_ready():
-            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
             return
         try:
             active = int(self.nep_result_data.structure.now_data.shape[0])
         except Exception:
             active = 0
         if active == 0:
-            MessageManager.send_info_message("No active structures to export.")
+            MessageManager.send_info_message(self.tr("No active structures to export."))
             return
         fmt = self._choose_export_format()
         if fmt is None:
@@ -963,10 +978,10 @@ class ShowNepWidget(QWidget):
             Starts a background job to write selected atoms to disk.
         """
         if not self._dataset_ready():
-            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
             return
         if len(self.nep_result_data.select_index) == 0:
-            MessageManager.send_info_message("Please select some structures first!")
+            MessageManager.send_info_message(self.tr("Please select some structures first!"))
             return
         fmt = self._choose_export_format()
         if fmt is None:
@@ -993,11 +1008,11 @@ class ShowNepWidget(QWidget):
     def export_removed_structures(self):
         """Export removed structures in either XYZ or deepmd/npy format."""
         if not self._dataset_ready():
-            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
             return
         removed = int(self.nep_result_data.structure.remove_data.shape[0])
         if removed == 0:
-            MessageManager.send_info_message("No removed structures to export.")
+            MessageManager.send_info_message(self.tr("No removed structures to export."))
             return
         fmt = self._choose_export_format()
         if fmt is None:
@@ -1035,7 +1050,7 @@ class ShowNepWidget(QWidget):
             Starts loading after confirming overwrites.
         """
         if not matches_result_loader(path):
-            MessageManager.send_info_message("unsupported file format")
+            MessageManager.send_info_message(self.tr("unsupported file format"))
             return
 
 
@@ -1046,7 +1061,11 @@ class ShowNepWidget(QWidget):
         else:
             pass
         if os.path.exists(old_path):
-            box=MessageBox("Ask","A working directory already exists. Loading a new directory will erase the previous results.\nDo you want to load the new working path?",self)
+            box=MessageBox(
+                self.tr("Confirm"),
+                self.tr("A working directory already exists. Loading a new directory will erase the previous results.\nDo you want to load the new working path?"),
+                self,
+            )
             box.exec_()
             if box.result()==0:
                 return
@@ -1136,7 +1155,9 @@ class ShowNepWidget(QWidget):
             self._initial_loading = False
             return
 
-        self.path_label.setText(f"Current file: {file_name}")
+        self.path_label.setText(
+            self.tr("Current file: {file_name}").format(file_name=file_name)
+        )
         self.path_label.setUrl(QUrl.fromLocalFile(show_path))
         
         # Detect and populate NEP model files for combo box
@@ -1265,7 +1286,9 @@ class ShowNepWidget(QWidget):
 
         def _on_err(msg: str) -> None:
             try:
-                MessageManager.send_warning_message(f"Failed to build search completer cache: {msg}")
+                MessageManager.send_warning_message(
+                    self.tr("Failed to build search completer cache: {msg}").format(msg=msg)
+                )
             finally:
                 self._end_index()
 
@@ -1302,7 +1325,9 @@ class ShowNepWidget(QWidget):
 
         def _on_err(msg: str) -> None:
             try:
-                MessageManager.send_warning_message(f"Search failed: {msg}")
+                MessageManager.send_warning_message(
+                    self.tr("Search failed: {msg}").format(msg=msg)
+                )
             finally:
                 self._end_search()
 
@@ -1394,12 +1419,14 @@ class ShowNepWidget(QWidget):
         atomic_float_digits = get_export_significant_digits()
         with open(save_file_path, "w", encoding="utf-8") as handle:
             atoms.write(handle, atomic_float_digits=atomic_float_digits)
-        MessageManager.send_info_message(f"File exported to: {save_file_path}")
+        MessageManager.send_info_message(
+            self.tr("File exported to: {save_file_path}").format(save_file_path=save_file_path)
+        )
 
     def export_current_structure(self):
         """Export the currently displayed structure in either XYZ or deepmd/npy."""
         if not self._dataset_ready():
-            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
             return
         index = int(self.struct_index_spinbox.value())
         fmt = self._choose_export_format()
@@ -1570,7 +1597,9 @@ class ShowNepWidget(QWidget):
             Updates arrow display based on user selections.
         """
         if not supports_structure_arrows(getattr(self, "show_struct_widget", None)):
-            MessageManager.send_info_message("Arrow overlay is unavailable for current structure canvas backend.")
+            MessageManager.send_info_message(
+                self.tr("Arrow overlay is unavailable for current structure canvas backend.")
+            )
             return
         structure = getattr(self.show_struct_widget, "structure", None)
         if structure is None:
@@ -1580,7 +1609,7 @@ class ShowNepWidget(QWidget):
             if isinstance(arr, np.ndarray) and arr.ndim == 2 and arr.shape[1] == 3
         ]
         if not props:
-            MessageManager.send_info_message("No vector data available")
+            MessageManager.send_info_message(self.tr("No vector data available"))
             return
         labels, label_to_prop = self._arrow_display_names(props)
         box = ArrowMessageBox(self, labels)
@@ -1718,18 +1747,18 @@ class ShowNepWidget(QWidget):
     def _drop_all_reject(self) -> None:
         """Delete all currently rejected active structures."""
         if not self._dataset_ready():
-            MessageManager.send_info_message("NEP data has not been loaded yet!")
+            MessageManager.send_info_message(self.tr("NEP data has not been loaded yet!"))
             return
 
         reject_active = self._active_reject_indices()
         if not reject_active:
-            MessageManager.send_info_message("No bad structures tagged.")
+            MessageManager.send_info_message(self.tr("No bad structures tagged."))
             return
 
         n = len(reject_active)
         box = MessageBox(
-            "Confirm",
-            f"This will delete {n} structures marked as bad.\nDo you want to continue?",
+            self.tr("Confirm"),
+            self.tr("This will delete {count} structures marked as bad.\nDo you want to continue?").format(count=n),
             self,
         )
         box.exec_()
@@ -1740,7 +1769,7 @@ class ShowNepWidget(QWidget):
             self.nep_result_data.remove(list(reject_active))
         except Exception:
             logger.debug(traceback.format_exc())
-            MessageManager.send_error_message("Failed to delete rejected structures.")
+            MessageManager.send_error_message(self.tr("Failed to delete rejected structures."))
             return
 
         # Clear tags after delete (chosen default).
@@ -1802,7 +1831,9 @@ class ShowNepWidget(QWidget):
             # else:
         self.updateBondInfoSignal.emit( bond_text )
         if unreasonable:
-            MessageManager.send_info_message("The distance between atoms is too small, and the structure may be unreasonable.")
+            MessageManager.send_info_message(
+                self.tr("The distance between atoms is too small, and the structure may be unreasonable.")
+            )
 
     def search_config_type(self,config:str,search_type:SearchType):
         """Highlight structures matching the provided configuration query.
@@ -1846,7 +1877,7 @@ class ShowNepWidget(QWidget):
         if self.nep_result_data is None:
             return
         if not str(config or "").strip():
-            MessageManager.send_info_message("Please enter a search query.")
+            MessageManager.send_info_message(self.tr("Please enter a search query."))
             return
         self._run_async_search(
             config,
@@ -1872,7 +1903,7 @@ class ShowNepWidget(QWidget):
         if self.nep_result_data is None:
             return
         if not str(config or "").strip():
-            MessageManager.send_info_message("Please enter a search query.")
+            MessageManager.send_info_message(self.tr("Please enter a search query."))
             return
         self._run_async_search(
             config,

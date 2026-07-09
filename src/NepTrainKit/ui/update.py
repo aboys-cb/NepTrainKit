@@ -10,7 +10,7 @@ import time
 import traceback
 from typing import Any, Callable
 
-from PySide6.QtCore import QObject, QUrl, Signal
+from PySide6.QtCore import QObject, QUrl, Signal, QCoreApplication
 from PySide6.QtGui import QDesktopServices
 from loguru import logger
 from qfluentwidgets import CaptionLabel, MessageBox, MessageBoxBase, TextEdit
@@ -26,6 +26,10 @@ RELEASES_PER_PAGE = 30
 REQUEST_TIMEOUT: tuple[float, float] = (2.0, 5.0)
 MAX_CACHED_NOTES_LENGTH = 12_000
 UPDATE_SECTION = "update"
+
+
+def _tr(text: str) -> str:
+    return QCoreApplication.translate("Update", text)
 
 
 def normalize_tag_version(tag: str) -> str:
@@ -288,13 +292,13 @@ class UpdateWoker(QObject):
 
         if not result.get("ok"):
             error = str(result.get("error") or "Network error!")
-            MessageManager.send_error_message(error, title="Update Check Failed")
+            MessageManager.send_error_message(error, title=_tr("Update Check Failed"))
             _finish()
             return
 
         if not result.get("has_update"):
             clear_pending_update_state()
-            MessageManager.send_success_message("You are already using the latest version!")
+            MessageManager.send_success_message(_tr("You are already using the latest version!"))
             _finish()
             return
 
@@ -303,18 +307,23 @@ class UpdateWoker(QObject):
         release_url = str(result.get("release_url") or RELEASES_URL).strip() or RELEASES_URL
         _set_pending_update_state(latest_version, notes, release_url)
 
-        title = f"New version available: v{latest_version}" if latest_version else "New version available"
+        if latest_version:
+            prefix = _tr("New version available: v")
+            title = f"{prefix}{latest_version}"
+        else:
+            title = _tr("Update available")
         box = ReleaseNotesMessageBox(title, notes, self._parent)
-        box.yesButton.setText("Open Releases")
-        box.cancelButton.setText("Close")
+        box.yesButton.setText(_tr("Open Releases"))
+        box.cancelButton.setText(_tr("Close"))
         box.exec_()
         if box.result() != 0:
             QDesktopServices.openUrl(QUrl(release_url))
 
         if not is_nuitka_compiled:
+            command = "python -m pip install -U --pre NepTrainKit"
             MessageManager.send_info_message(
-                "Upgrade command: python -m pip install -U --pre NepTrainKit",
-                title="Pip Upgrade",
+                _tr("Upgrade command: {command}").format(command=command),
+                title=_tr("Pip Upgrade"),
             )
         _finish()
 
@@ -337,7 +346,7 @@ class UpdateWoker(QObject):
         if self.update_thread.isRunning():
             return
         if manual:
-            MessageManager.send_info_message("Checking for updates, please wait...")
+            MessageManager.send_info_message(_tr("Checking for updates, please wait..."))
         self.update_thread.start_work(self._check_update)
 
 
@@ -367,8 +376,10 @@ class AutoUpdateNotifier(QObject):
         pending_version = get_pending_update_version()
         if not pending_version:
             return
-        notice = f"New version v{pending_version} is available. Open Settings > About > Check for Updates for details."
-        MessageManager.send_info_message(notice, title="Update available")
+        notice = _tr("New version v{version} is available. Open Settings > About > Check for Updates for details.").format(
+            version=pending_version
+        )
+        MessageManager.send_info_message(notice, title=_tr("Update available"))
         self._startup_notice_sent = True
         self._startup_notice_version = pending_version
 
@@ -409,10 +420,12 @@ class AutoUpdateNotifier(QObject):
             Config.set(UPDATE_SECTION, "last_notified_version", latest_version)
             return
 
-        notice = f"New version v{latest_version} is available. {summary}".strip()
+        notice = _tr("New version v{version} is available. {summary} Open Settings > About > Check for Updates for details.").format(
+            version=latest_version,
+            summary=summary,
+        ).strip()
         notice = build_compact_summary(notice, max_length=220)
-        notice += " Open Settings > About > Check for Updates for details."
-        MessageManager.send_info_message(notice, title="Update available")
+        MessageManager.send_info_message(notice, title=_tr("Update available"))
         Config.set(UPDATE_SECTION, "last_notified_version", latest_version)
 
 
@@ -429,7 +442,7 @@ class UpdateNEP89Woker(QObject):
         self.func = self._check_update
         self.version.connect(self._check_update_call_back)
         self.update_thread = LoadingThread(self._parent, show_tip=False)
-        self.down_thread = LoadingThread(self._parent, show_tip=True, title="Downloading")
+        self.down_thread = LoadingThread(self._parent, show_tip=True, title=_tr("Downloading"))
 
     def download(self, latest_date: int) -> None:
         """Download the latest ``nep89`` model and refresh metadata."""
@@ -448,7 +461,7 @@ class UpdateNEP89Woker(QObject):
                 if chunk:
                     target.write(chunk)
 
-        MessageManager.send_success_message("Update large model completed!")
+        MessageManager.send_success_message(_tr("Update large model completed!"))
         nep_json_path = module_path / "Config/nep.json"
         with nep_json_path.open("r", encoding="utf-8") as config_file:
             local_nep_info = json.load(config_file)
@@ -460,12 +473,14 @@ class UpdateNEP89Woker(QObject):
         """Check the remote repository for a newer ``nep89`` dataset."""
         import requests
 
-        MessageManager.send_info_message("Checking for updates, please wait...")
+        MessageManager.send_info_message(_tr("Checking for updates, please wait..."))
         api_url = "https://api.github.com/repos/brucefan1983/GPUMD/contents/potentials/nep"
         response = requests.get(api_url, timeout=REQUEST_TIMEOUT)
         if response.status_code != 200:
             MessageManager.send_warning_message(
-                f"Unable to access the warehouse directory, status code: {response.status_code}"
+                _tr("Unable to access the warehouse directory, status code: {status_code}").format(
+                    status_code=response.status_code
+                )
             )
             return
         directories = [
@@ -484,7 +499,7 @@ class UpdateNEP89Woker(QObject):
                     latest_date = current_date
 
         if latest_date is None:
-            MessageManager.send_warning_message("No NEP89 release directory found in upstream repository.")
+            MessageManager.send_warning_message(_tr("No NEP89 release directory found in upstream repository."))
             return
 
         self.version.emit(latest_date)
@@ -495,15 +510,15 @@ class UpdateNEP89Woker(QObject):
         with nep_json_path.open("r", encoding="utf-8") as config_file:
             local_nep_info = json.load(config_file)
         if local_nep_info["date"] >= latest_date:
-            MessageManager.send_success_message("You are already using the latest version!")
+            MessageManager.send_success_message(_tr("You are already using the latest version!"))
             return
         box = MessageBox(
-            "New version",
-            f"A new version of the large model has been detected:{latest_date}",
+            _tr("Update available"),
+            _tr("A new version of the large model has been detected: {version}").format(version=latest_date),
             self._parent,
         )
-        box.yesButton.setText("Update")
-        box.cancelButton.setText("Cancel")
+        box.yesButton.setText(_tr("Update"))
+        box.cancelButton.setText(_tr("Cancel"))
         box.exec_()
         if box.result() == 0:
             return

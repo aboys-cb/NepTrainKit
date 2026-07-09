@@ -33,6 +33,7 @@ from NepTrainKit.ui.update import AutoUpdateNotifier, get_pending_update_version
 from NepTrainKit.utils import timeit
 from NepTrainKit.ui.updater import unzip
 from NepTrainKit.paths import as_path
+from NepTrainKit.i18n import install_translator
 
 warnings.filterwarnings("ignore")
 
@@ -119,22 +120,22 @@ class NepTrainKitMainWindow(FluentWindow):
         self.addSubInterface(
             self.show_nep_interface,
             QIcon(':/images/src/images/show_nep.svg'),
-            'NEP Dataset Display',
+            self.tr('NEP Dataset Display'),
         )
         self.addSubInterface(
             self.make_data_interface,
             QIcon(':/images/src/images/make.svg'),
-            'Make Data',
+            self.tr('Make Data'),
         )
         self.addSubInterface(
             self.data_manager_interface,
             QIcon(':/images/src/images/dataset.svg'),
-            'Data Management',
+            self.tr('Data Management'),
         )
         self.addSubInterface(
             self.setting_interface,
             FluentIcon.SETTING,
-            'Settings',
+            self.tr('Settings'),
             NavigationItemPosition.BOTTOM,
         )
         self.navigationInterface.activateWindow()
@@ -222,9 +223,10 @@ def set_light_theme(app: QApplication) -> None:
 
 
 def configure_app(app: QApplication) -> None:
-    """Apply the same theme, font, and stylesheet used by the desktop app."""
+    """Apply the same theme, font, stylesheet, and translator used by the desktop app."""
     set_light_theme(app)
     app.setApplicationName("NepTrainKit")
+    install_translator(app)
     icon = _application_icon()
     app.setWindowIcon(icon)
     _set_macos_dock_icon(app, icon)

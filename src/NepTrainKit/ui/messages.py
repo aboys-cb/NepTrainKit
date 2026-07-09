@@ -2,9 +2,13 @@
 # -*- coding: utf-8 -*-
 # Global UI message center (Qt-based)
 
-from PySide6.QtCore import QObject, Signal, Qt
+from PySide6.QtCore import QObject, Signal, Qt, QCoreApplication
 from qfluentwidgets import InfoBar, InfoBarIcon, InfoBarPosition, MessageBox
 from loguru import logger
+
+
+def _tr(text: str) -> str:
+    return QCoreApplication.translate("MessageManager", text)
 
 
 class MessageManager(QObject):
@@ -39,35 +43,40 @@ class MessageManager(QObject):
         return cls._instance
 
     @classmethod
-    def send_info_message(cls, message, title="Tip"):
+    def send_info_message(cls, message, title=None):
+        title = _tr("Tip") if title is None else title
         if cls._instance is None:
             logger.info(message)
         else:
             cls._instance.showMessageSignal.emit(InfoBarIcon.INFORMATION, message, title)
 
     @classmethod
-    def send_success_message(cls, message, title="Success"):
+    def send_success_message(cls, message, title=None):
+        title = _tr("Success") if title is None else title
         if cls._instance is None:
             logger.success(message)
         else:
             cls._instance.showMessageSignal.emit(InfoBarIcon.SUCCESS, message, title)
 
     @classmethod
-    def send_warning_message(cls, message, title="Warning"):
+    def send_warning_message(cls, message, title=None):
+        title = _tr("Warning") if title is None else title
         if cls._instance is None:
             logger.warning(message)
         else:
             cls._instance.showMessageSignal.emit(InfoBarIcon.WARNING, message, title)
 
     @classmethod
-    def send_error_message(cls, message, title="Error"):
+    def send_error_message(cls, message, title=None):
+        title = _tr("Error") if title is None else title
         if cls._instance is None:
             logger.error(message)
         else:
             cls._instance.showMessageSignal.emit(InfoBarIcon.ERROR, message, title)
 
     @classmethod
-    def send_message_box(cls, message, title="Tip"):
+    def send_message_box(cls, message, title=None):
+        title = _tr("Tip") if title is None else title
         if cls._instance is None:
             logger.info(message)
         else:
@@ -95,4 +104,3 @@ class MessageManager(QObject):
             duration=duration,
             parent=self._parent,
         )
-

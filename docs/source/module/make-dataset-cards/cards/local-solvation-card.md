@@ -62,7 +62,7 @@
 
 #### Shell（shell）
 
-`tuple[float, float]`，默认 `(2.2, 4.5)`，单位 A。局部溶剂中心到溶剂分子参考位置的采样壳层。外半径必须大于内半径。
+`tuple[float, float]`，默认 `(2.2, 4.5)`，单位 Å。局部溶剂中心到溶剂分子参考位置的采样壳层。外半径必须大于内半径。
 
 #### Min Distance（min_distance）
 
@@ -88,15 +88,15 @@
 
 #### Fixed Box Size（box_size）
 
-`float`，默认 100.0，单位 A。输入没有有效 cell 且 `auto_box=False` 时，输出会居中放入这个固定盒子；这对应原脚本的 `-box` 默认行为。
+`float`，默认 100.0，单位 Å。输入没有有效 cell 且 `auto_box=False` 时，输出会居中放入这个固定盒子；这对应原脚本的 `-box` 默认行为。
 
 #### Box Padding（box_padding）
 
-`float`，默认 8.0，单位 A。`auto_box=True` 时在坐标包围盒外增加的边距。
+`float`，默认 8.0，单位 Å。`auto_box=True` 时在坐标包围盒外增加的边距。
 
 #### Min Box（min_box）
 
-`float`，默认 0.0，单位 A。`auto_box=True` 时每条盒边的最小长度。
+`float`，默认 0.0，单位 Å。`auto_box=True` 时每条盒边的最小长度。
 
 ### 柔性溶剂
 
@@ -118,7 +118,7 @@
 
 #### Flex Gaussian Sigma（flex_gaussian_sigma）
 
-`float`，默认 0.03，单位 A。柔性构象生成时叠加的坐标噪声。
+`float`，默认 0.03，单位 Å。柔性构象生成时叠加的坐标噪声。
 
 ### 随机性
 
@@ -130,11 +130,66 @@
 
 `int`，默认 0。`use_seed=True` 时生效。
 
+## 推荐预设
+
+### Ca 第一水合壳（6 个水，固定 seed）
+
+```json
+{
+  "class": "Local Solvation",
+  "check_state": true,
+  "params": {
+    "structures": 1,
+    "solvent_count": 6,
+    "sampling_mode": "auto",
+    "center_mode": "elements",
+    "center_elements": "Ca",
+    "shell": [2.6, 3.4],
+    "min_distance": 0.8,
+    "strict_count": true,
+    "use_seed": true,
+    "seed": 42
+  }
+}
+```
+
+### 表面含水局部环境（按 z 选中心，允许部分输出）
+
+```json
+{
+  "class": "Local Solvation",
+  "check_state": true,
+  "params": {
+    "structures": 3,
+    "solvent_count": 12,
+    "sampling_mode": "water",
+    "center_mode": "z_range",
+    "z_range": [8.0, 14.0],
+    "shell": [2.4, 5.0],
+    "min_distance": 0.9,
+    "strict_count": false,
+    "auto_box": false,
+    "use_seed": true,
+    "seed": 7
+  }
+}
+```
+
 ## 推荐组合
 
-- `Local Solvation -> Geometry Filter`：先生成局部溶剂环境，再剔除短接触或异常体积结构。
-- `Local Solvation -> FPS Filter`：局部溶剂化批量生成后抽代表结构送 DFT。
+- `Local Solvation → Geometry Filter`：先生成局部溶剂环境，再剔除短接触或异常体积结构。
+- `Local Solvation → FPS Filter`：局部溶剂化批量生成后抽代表结构送 DFT。
+
+## 常见问题
+
+- 没有选到中心原子：检查 `center_mode` 是否和 `center_elements`、`center_indices` 或 `z_range` 匹配。
+- 一直插不满目标数量：降低 `solvent_count`，放宽 `shell`，减小 `min_distance` 或 `collision_scale`；如果目标是周期整盒溶剂，优先改用 `Solvent Box Fill`。
+- 输出有明显短接触：增大 `min_distance` 或 `collision_scale`，再接 `Geometry Filter` 和 DFT/MD 预松弛。
 
 ## 输出标签
 
 `SolvLocal(mode={mode},n={placed},sel={center_count})`
+
+## 可复现性
+
+打开 `use_seed` 后，相同输入结构、结构顺序、参数和 `seed` 会生成相同插入结果。若输入结构顺序、中心原子集合或溶剂分子文本发生变化，输出也会随之变化。

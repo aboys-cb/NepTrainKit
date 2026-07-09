@@ -33,7 +33,7 @@ $$f_k\in[1-m,1+m],\quad a_i'=f_i a_i,\quad \theta_j'=g_j\theta_j$$
 - 重训后重新跑准谐近似计算热膨胀系数，应更接近实验值
 - 检查输出结构的体积分布直方图：应均匀覆盖 [V*(1-0.04), V*(1+0.04)]，不要在两端堆积
 - 如果改善不够，增大 `max_scaling` 到 0.06~0.08，同时换 Sobol 引擎覆盖更均匀
-- 抽查最短键长：如果 4% 缩放后最短键比 DFT 参考键长短了 > 0.2A，说明缩放过大，回调 `max_scaling`
+- 抽查最短键长：如果 4% 缩放后最短键比 DFT 参考键长短了 > 0.2 Å，说明缩放过大，回调 `max_scaling`
 
 ### 什么时候加这张卡、什么时候不加
 
@@ -134,9 +134,9 @@ $$f_k\in[1-m,1+m],\quad a_i'=f_i a_i,\quad \theta_j'=g_j\theta_j$$
 
 ## 推荐组合
 
-- `Lattice Strain` -> `Lattice Perturb`：先系统扫特定方向应变，再补充随机近邻散布
-- `Lattice Perturb` -> `Atomic Perturb`：晶格扰动后再加原子级坐标噪声
-- `Super Cell` -> `Lattice Perturb`：扩胞后在更大尺度上做晶格扰动
+- `Lattice Strain` → `Lattice Perturb`：先系统扫特定方向应变，再补充随机近邻散布
+- `Lattice Perturb` → `Atomic Perturb`：晶格扰动后再加原子级坐标噪声
+- `Super Cell` → `Lattice Perturb`：扩胞后在更大尺度上做晶格扰动
 
 ## 常见问题
 

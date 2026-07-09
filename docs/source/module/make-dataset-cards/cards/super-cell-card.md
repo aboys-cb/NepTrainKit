@@ -14,7 +14,7 @@ $$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\
 
 ### 场景：模型在小胞上训练后跑空位计算，周期镜像干扰导致空位形成能偏高 0.5 eV
 
-你在 bcc Fe 上用 2x2x2 超胞（16 原子）训练了一个 NEP 模型。拿这个模型算单空位形成能，结果比 DFT 高了 0.5 eV。诊断发现：2x2x2 太小的胞里，空位和它的周期镜像之间距离只有约 5A，空位-空位镜像相互作用不可忽略，模型学到的实际上是"带镜像相互作用的空位"而非孤立空位。
+你在 bcc Fe 上用 2x2x2 超胞（16 原子）训练了一个 NEP 模型。拿这个模型算单空位形成能，结果比 DFT 高了 0.5 eV。诊断发现：2x2x2 太小的胞里，空位和它的周期镜像之间距离只有约 5 Å，空位-空位镜像相互作用不可忽略，模型学到的实际上是"带镜像相互作用的空位"而非孤立空位。
 
 **诊断思路：** 缺陷计算的黄金法则是"超胞要大到使缺陷-缺陷镜像相互作用可忽略"。2x2x2 = 16 原子的胞对空位来说太小。解法是在训练集里用更大的超胞（至少 3x3x3 = 54 原子或 4x4x4 = 128 原子）做空位计算，这样模型至少见过大胞里的空位环境。同时，下游做空位操作时也需要大胞作为母结构。
 
@@ -39,7 +39,7 @@ $$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\
 **加：**
 - 下游要做缺陷（空位、间隙）、表面（slab）、磁性操作，需要超胞作为母结构
 - 当前训练集胞太小，周期镜像干扰不可忽略
-- 需要扩胞以使 defect-defect 距离 > 10A
+- 需要扩胞以使 defect-defect 距离 > 10 Å
 
 **不加：**
 - 下游任务是体相性质（弹性常数、声子），原胞/小胞就够 —— 扩胞只会白增计算量
@@ -56,7 +56,7 @@ $$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\
 
 #### Mode（mode）
 
-`SuperCellMode`，默认 `'scale'`。`"scale"` 按 `super_scale` 里写死的倍数扩——你最清楚自己要多大时用这个。`"cell"` 按 `target_cell` 里的目标胞长（单位 A）自动算倍数，每个方向的倍数 = floor 或 ceil（目标长度/原始长度），取决于 `behavior_type`——想让胞长达到特定数值（比如所有方向大于等于 20A）时用这个。`"max_atoms"` 按原子数上限枚举所有可能的倍数组合，输出所有不超过上限的超胞——预算受限时找最大可用超胞用这个。
+`SuperCellMode`，默认 `'scale'`。`"scale"` 按 `super_scale` 里写死的倍数扩——你最清楚自己要多大时用这个。`"cell"` 按 `target_cell` 里的目标胞长（单位 Å）自动算倍数，每个方向的倍数 = floor 或 ceil（目标长度/原始长度），取决于 `behavior_type`——想让胞长达到特定数值（比如所有方向大于等于 20 Å）时用这个。`"max_atoms"` 按原子数上限枚举所有可能的倍数组合，输出所有不超过上限的超胞——预算受限时找最大可用超胞用这个。
 
 #### Super Scale（super_scale）
 
@@ -64,7 +64,7 @@ $$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\
 
 #### Target Cell（target_cell）
 
-`tuple[float, float, float]`，默认 `(20.0, 20.0, 20.0)`。仅 cell 模式生效。各方向的目标胞长，单位 A。比如原胞 a 长度 = 5A 时，target=20 会算出倍数 4（或 5，取决于 behavior_type 是 floor 还是 ceil）。
+`tuple[float, float, float]`，默认 `(20.0, 20.0, 20.0)`。仅 cell 模式生效。各方向的目标胞长，单位 Å。比如原胞 a 长度 = 5 Å 时，target=20 会算出倍数 4（或 5，取决于 behavior_type 是 floor 还是 ceil）。
 
 #### Max Atoms（max_atoms）
 
@@ -97,7 +97,7 @@ $$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\
 }
 ```
 
-### Slab 扩胞（面内扩到 20A，法向锁 1x，枚举所有组合）
+### Slab 扩胞（面内扩到 20 Å，法向锁 1x，枚举所有组合）
 ```json
 {
   "class": "SuperCellCard",
@@ -129,14 +129,14 @@ $$\mathbf{T}=\mathrm{diag}(n_a,n_b,n_c),\quad \mathbf{C}'=\mathbf{C}\mathbf{T},\
 
 ## 推荐组合
 
-- `Super Cell` -> `Vacancy Defect`：先扩胞再删原子，保证缺陷-镜像距离
-- `Super Cell` -> `Lattice Strain`：扩胞后做应变扫描
-- `Super Cell` -> `Surface Warp`：扩胞后做表面起伏
-- `Super Cell` -> `FPS Filter`：枚举模式产生大量超胞时，用 FPS 去重（相同大小的超胞只有 1 个有用）
+- `Super Cell` → `Vacancy Defect`：先扩胞再删原子，保证缺陷-镜像距离
+- `Super Cell` → `Lattice Strain`：扩胞后做应变扫描
+- `Super Cell` → `Surface Warp`：扩胞后做表面起伏
+- `Super Cell` → `FPS Filter`：枚举模式产生大量超胞时，用 FPS 去重（相同大小的超胞只有 1 个有用）
 
 ## 常见问题
 
-**输出只有 1x1x1（等于没扩胞）。** 如果原胞自身已经满足目标——例如原胞 3A、target_cell=20、behavior_type=0 时倍数=6，但原胞 a 长度已经 25A —— 倍数被截断为 1。检查 target_cell 是否设得比原胞还小。或者在 max_atoms 模式下，原胞原子数已超上限，只输出原胞。
+**输出只有 1x1x1（等于没扩胞）。** 如果原胞自身已经满足目标——例如原胞 3 Å、target_cell=20、behavior_type=0 时倍数=6，但原胞 a 长度已经 25 Å —— 倍数被截断为 1。检查 target_cell 是否设得比原胞还小。或者在 max_atoms 模式下，原胞原子数已超上限，只输出原胞。
 
 **Slab 面内方向扩胞不均匀。** `fixed_axis_flags` 只锁了法向，面内两个方向各走各的倍数。如果面内需要正方形胞，确保 target_cell 的 a/b 目标值一致，或者用 scale 模式手动统一倍数。
 

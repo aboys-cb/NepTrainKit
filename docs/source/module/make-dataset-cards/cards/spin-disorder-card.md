@@ -140,9 +140,9 @@ FeCo 训练集包含 FM、AFM 和完全随机 PM，但缺少 10%-70% 局部翻�
 
 ## 推荐组合
 
-- `Magnetic Order -> Spin Disorder`：先建立 FM/AFM 参考态，再生成中间无序比例。
-- `Set Magnetic Moments -> Spin Disorder -> Small-Angle Spin Tilt`：先统一磁矩模长，再做无序化和小角偏转。
-- `Spin Disorder -> Geometry Filter`：磁性结构如果同时经过强几何扰动，后面接几何清洗。
+- `Magnetic Order → Spin Disorder`：先建立 FM/AFM 参考态，再生成中间无序比例。
+- `Set Magnetic Moments → Spin Disorder → Small-Angle Spin Tilt`：先统一磁矩模长，再做无序化和小角偏转。
+- `Spin Disorder → Geometry Filter`：磁性结构如果同时经过强几何扰动，后面接几何清洗。
 
 ## 常见问题
 

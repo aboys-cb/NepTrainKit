@@ -44,7 +44,7 @@
 
 `float`，默认 1.5 Å。全局最小原子对距离——任何两个原子都不允许比这个值更近。
 
-设太小会放行短键坏结构，设太大在高密度 cell 里可能根本放不下所有原子。一个安全的起点是：取体系最短合理键长的 70-90%。比如 Si-Si 键约 2.35A，设 1.8A 通常没问题。
+设太小会放行短键坏结构，设太大在高密度 cell 里可能根本放不下所有原子。一个安全的起点是：取体系最短合理键长的 70-90%。比如 Si-Si 键约 2.35 Å，设 1.8 Å 通常没问题。
 
 #### Pair Min Distances（pair_min_distances）
 
@@ -114,9 +114,9 @@
 
 ## 推荐组合
 
-- `Crystal Prototype Builder -> Super Cell -> Random Packing`：复用目标 cell 尺度生成无序 seed。
-- `Random Packing -> Geometry Filter`：先生成，再过滤短键、体积和密度异常。
-- `Random Packing -> Atomic Perturb`：在已经满足硬距离约束的无序 seed 上叠加小位移噪声。
+- `Crystal Prototype Builder → Super Cell → Random Packing`：复用目标 cell 尺度生成无序 seed。
+- `Random Packing → Geometry Filter`：先生成，再过滤短键、体积和密度异常。
+- `Random Packing → Atomic Perturb`：在已经满足硬距离约束的无序 seed 上叠加小位移噪声。
 
 ## 常见问题
 

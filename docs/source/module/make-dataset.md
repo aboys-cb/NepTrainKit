@@ -35,7 +35,7 @@
 最常见的是线性链：
 
 ```text
-Super Cell -> Lattice Strain -> Atomic Perturb
+Super Cell → Lattice Strain → Atomic Perturb
 ```
 
 每张卡会处理上一张卡的输出。一般原则是：
@@ -98,6 +98,6 @@ candidate_pool_fps.xyz
 
 ## 从文档 JSON 直接创建卡片
 
-如果文档里给出的是单张卡片 JSON、卡片数组，或者完整的 `card_config.json`，可以先复制代码块，再回到 `Make Dataset` 页面执行 `Load -> Paste Card JSON`。
+如果文档里给出的是单张卡片 JSON、卡片数组，或者完整的 `card_config.json`，可以先复制代码块，再回到 `Make Dataset` 页面执行 `Load → Paste Card JSON`。
 
-这个入口不会清空当前工作区，只会把剪贴板里的卡片追加到末尾。需要完整替换工作区时，仍然使用 `Load -> Import Card Config` 导入保存好的 JSON 文件。
+这个入口不会清空当前工作区，只会把剪贴板里的卡片追加到末尾。需要完整替换工作区时，仍然使用 `Load → Import Card Config` 导入保存好的 JSON 文件。

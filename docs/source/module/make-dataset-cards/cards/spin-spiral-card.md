@@ -72,7 +72,7 @@ $$\phi(u)=s\cdot \frac{2\pi u}{L_D}+\phi_0,\qquad s\in\{-1,+1\}$$
 
 #### Period Range（period_range）
 
-`list[float] | tuple[float, float, float]`，默认 `(20.0, 40.0, 10.0)`。`[min, max, step]` 格式，单位 Angstrom。
+`list[float] | tuple[float, float, float]`，默认 `(20.0, 40.0, 10.0)`。`[min, max, step]` 格式，单位 Å。
 - 保守：`[20, 20, 5]`（单周期）
 - 平衡：`[10, 40, 10]`（4 个周期）
 - 探索：`[4, 80, 4]`（宽范围）

@@ -31,7 +31,7 @@
 `str`，默认 `'exponential'`。自旋空间相关函数。`exponential` 衰减更慢，保留更长尾的自旋关联；`squared_exponential` 更平滑但远距离衰减更快。有限相关长度磁无序优先选 exponential。
 
 #### Correlation Length（correlation_length）
-`float`，默认 3.0 A。自旋随机场的空间相关长度。设得比最近邻距离还小 → 近似独立随机；放大到几倍晶格常数 → 形成平滑磁畴。做有限温磁无序时不要一上来就跳到无限长相关。
+`float`，默认 3.0 Å。自旋随机场的空间相关长度。设得比最近邻距离还小 → 近似独立随机；放大到几倍晶格常数 → 形成平滑磁畴。做有限温磁无序时不要一上来就跳到无限长相关。
 
 #### Max Atoms For Full（max_atoms_for_full）
 `int`，默认 200。full covariance 方法能处理的最大原子数，因为需要 O(N³) 的 Cholesky 分解。小体系保持默认即可；超过几百个磁性原子时先缩小结构，不要盲目调大这个值。
@@ -130,9 +130,9 @@
 
 ## 推荐组合
 
-- `Set Magnetic Moments -> Correlated Random Spin`：先统一磁矩模长来源，再生成相关非共线态。
-- `Magnetic Order -> Correlated Random Spin`：从 FM/AFM 参考态生成有限温 cone disorder。
-- `Spin Disorder -> Correlated Random Spin`：先做离散翻转比例，再对局部方向加空间相关扰动。
+- `Set Magnetic Moments → Correlated Random Spin`：先统一磁矩模长来源，再生成相关非共线态。
+- `Magnetic Order → Correlated Random Spin`：从 FM/AFM 参考态生成有限温 cone disorder。
+- `Spin Disorder → Correlated Random Spin`：先做离散翻转比例，再对局部方向加空间相关扰动。
 
 ## 常见问题
 

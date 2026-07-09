@@ -47,12 +47,17 @@
 | 检查净力是否异常 | `Check Net Force` | 选中净力超过阈值的结构 |
 | 按来源筛结构 | 搜索框 `tag` 模式 | 按 `Config_type` 找某类生成结构 |
 | 按元素筛结构 | 搜索框 `elements` 模式 | 找含有或不含某些元素的结构 |
+| 按表达式筛结构 | 搜索框 `expression` 模式 | 用原子数、元素比例、能量、力、应力或原子属性批量选中结构 |
+| 代表性采样 | `Sparse samples` | 用 FPS 从当前数据或选区里挑代表结构 |
+| 看数值分布 | `Distribution Inspector` | 按元素或化学式查看数值字段分布，并可反向选择结构 |
+| 看数据概况 | `Dataset Summary` | 汇总元素、结构数量和数值分布，可导出 HTML |
 | 删除当前选中结构 | `Delete Selected Items` | 从当前数据集中移除选中结构 |
-| 后悔删除 | `Undo` | 恢复最近一次删除 |
+| 后悔选错 | `Undo Selection` | 撤销最近一次选择变化 |
+| 后悔删除 | `Undo Delete` | 恢复最近一次删除 |
 | 导出干净子集 | 顶部 `Save` / 导出菜单 | 保存后进入 DFT、FPS 或训练流程 |
 
 如果你不知道按钮图标对应哪个功能，查
-[Show NEP 详细参考](show-nep-reference.md)。参考页按按钮列出了弹窗参数和执行结果。
+[NEP Dataset Display 详细参考](show-nep-reference.md)。参考页按按钮列出了参数和执行结果。
 
 ## 候选结构清洗时怎么用
 
@@ -88,4 +93,4 @@
 - `expression`：基于结构级表达式筛选，支持 `natoms`、元素统计、能量、力、应力、virial 和 `atomic.<name>`。
 
 `expression` 的完整语法、字段规则和示例见
-[Show NEP 详细参考](show-nep-reference.md)。
+[NEP Dataset Display 详细参考](show-nep-reference.md)。

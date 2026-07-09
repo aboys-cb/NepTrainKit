@@ -44,7 +44,7 @@
 
 #### Density（density）
 
-`float`，默认 1.0，单位 g/cm3。`count_mode="density"` 时用于估算溶剂分子数量。
+`float`，默认 1.0，单位 g/cm³。`count_mode="density"` 时用于估算溶剂分子数量。
 
 #### Fill Packing（fill_packing）
 
@@ -92,7 +92,7 @@
 
 #### Flex Gaussian Sigma（flex_gaussian_sigma）
 
-`float`，默认 0.03，单位 A。柔性构象生成时叠加的坐标噪声。
+`float`，默认 0.03，单位 Å。柔性构象生成时叠加的坐标噪声。
 
 ### 随机性
 
@@ -104,11 +104,64 @@
 
 `int`，默认 0。`use_seed=True` 时生效。
 
+## 推荐预设
+
+### 固定数量水盒（200 个水，固定 seed）
+
+```json
+{
+  "class": "Solvent Box Fill",
+  "check_state": true,
+  "params": {
+    "structures": 1,
+    "count_mode": "fixed",
+    "solvent_count": 200,
+    "sampling_mode": "auto",
+    "min_distance": 0.8,
+    "max_attempts_per_solvent": 500,
+    "strict_count": true,
+    "use_seed": true,
+    "seed": 42
+  }
+}
+```
+
+### 按密度填充水盒（允许部分输出）
+
+```json
+{
+  "class": "Solvent Box Fill",
+  "check_state": true,
+  "params": {
+    "structures": 3,
+    "count_mode": "density",
+    "density": 1.0,
+    "fill_packing": 0.7,
+    "sampling_mode": "water",
+    "min_distance": 0.85,
+    "max_attempts_per_solvent": 800,
+    "strict_count": false,
+    "use_seed": true,
+    "seed": 7
+  }
+}
+```
+
 ## 推荐组合
 
-- `Solvent Box Fill -> Geometry Filter`：先剔除短接触和明显异常盒子。
-- `Solvent Box Fill -> FPS Filter`：整盒初态很多时，用代表性采样降低 DFT 数量。
+- `Solvent Box Fill → Geometry Filter`：先剔除短接触和明显异常盒子。
+- `Solvent Box Fill → FPS Filter`：整盒初态很多时，用代表性采样降低 DFT 数量。
+
+## 常见问题
+
+- 输入没有有效周期 cell：这张卡需要非奇异 cell 和至少一个周期方向；非周期局部溶剂环境请用 `Local Solvation`。
+- 无法插满目标数量：降低 `solvent_count` 或 `fill_packing`，减小 `min_distance` 或 `collision_scale`，增大 cell；也可以关闭 `strict_count` 先保留部分可用候选。
+- 按密度估算的数量不符合预期：数量由 cell 体积、溶剂分子质量、`density` 和 `fill_packing` 共同决定，先检查 cell 单位、真空层和 `solvent_xyz` 是否正确。
 
 ## 输出标签
 
 `SolvBox(mode={mode},n={placed})`
+
+## 可复现性
+
+打开 `use_seed` 后，相同输入结构、结构顺序、参数和 `seed` 会生成相同填盒结果。`count_mode="density"` 时，cell 体积或 `solvent_xyz` 改变会改变目标分子数，因此输出也会改变。

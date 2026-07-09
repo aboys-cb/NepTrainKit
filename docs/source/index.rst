@@ -19,7 +19,7 @@ DFT 和训练流程。
    :alt: Empty Make Data workspace annotated overview
    :class: docs-screenshot
 
-最小工作流只有三步：
+最小工作流分四步：
 
 1. 先导入初始结构。
 2. 添加一张生成或变换卡片。
@@ -63,11 +63,11 @@ DFT 和训练流程。
 .. code-block:: text
 
    Make Dataset 生成候选结构
-   -> NEP Dataset Display 查看并清洗异常结构
-   -> FPS Filter 或其他方法选择代表结构
-   -> DFT 标注能量、力、应力
-   -> GPUMD 训练 NEP
-   -> NEP Dataset Display 回看训练结果并继续迭代
+   → NEP Dataset Display 查看并清洗异常结构
+   → FPS Filter 或其他方法选择代表结构
+   → DFT 标注能量、力、应力
+   → GPUMD 训练 NEP
+   → NEP Dataset Display 回看训练结果并继续迭代
 
 从哪里开始
 ----------
@@ -85,7 +85,7 @@ DFT 和训练流程。
       :link: workflows/clean-candidate-structures
       :link-type: doc
 
-      从 Make Dataset 输出候选池，到 Show NEP 删除异常结构，再采样去 DFT。
+      从 Make Dataset 输出候选池，到 NEP Dataset Display 删除异常结构，再采样去 DFT。
 
    .. grid-item-card:: 我想分析已有训练结果
       :link: module/NEP-dataset-display

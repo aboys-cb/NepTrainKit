@@ -1,7 +1,7 @@
-﻿# NEP Dataset Display 示例
+# NEP Dataset Display 示例
 
 > 本页以操作演示为主。完整工具说明与参数手册请见：
-> [`Show NEP 详细参考`](../module/show-nep-reference.md)
+> [`NEP Dataset Display 详细参考`](../module/show-nep-reference.md)
 
 ## 数据导入
 

@@ -6,7 +6,7 @@
 
 ## 功能说明
 
-按显式晶面 `hkl` 和滑移方向 `uvw` 生成未弛豫的广义层错能（GSFE）路径结构。程序先把 `uvw` 对应的晶格方向投影到目标晶面内，再选择切开的上半部分原子，按一组位移量整体滑移。
+按显式晶面 `hkl` 和滑移方向 `uvw` 生成未弛豫的广义层错能（GSFE）路径结构。输入必须已经是 slab-oriented cell：第三晶胞方向要垂直于 `plane_hkl`，否则周期边界会把断层面错接成重合或过近原子，程序会直接报错。
 
 相比 `Stacking Fault`，这张卡把滑移方向写成明确的晶向，并提供 `middle`、`fractional`、`layer_index` 三种切面选择。它适合你已经知道目标滑移系统，想要严格控制 GSFE 路径几何的场景。
 
@@ -16,18 +16,18 @@
 
 你在 fcc Ni 上训练了 NEP，体相和弹性响应都不错，但 (111)<112> 的 GSFE 峰值比 DFT 低很多。训练集里虽然有随机扰动和表面，但没有沿这个滑移系系统移动半晶体的结构，模型没学到层间错排的能量代价。
 
-**输入：** 一个沿常规晶向构造的 fcc Ni 超胞。
+**输入：** 一个 fcc111 slab-oriented 周期超胞，例如 `Crystal Prototype Builder` 的 `fcc111` 原型。
 
-**目标：** 沿 `(111)` 面、`[11-2]` 方向生成 0 到 1 个滑移向量的路径，步长 0.1。
+**目标：** 沿 slab cell 的 `(001)` 面和面内 `[100]` 周期方向生成 0 到 1 个滑移向量的路径，步长 0.1；这个 `(001)` 就是原始 fcc 的 `(111)` 面。
 
 **参数设置：**
-- `plane_hkl = [1, 1, 1]`
-- `slip_uvw = [1, 1, -2]`
+- `plane_hkl = [0, 0, 1]`
+- `slip_uvw = [1, 0, 0]`
 - `displacement_range = [0.0, 1.0, 0.1]`
 - `displacement_unit = "fraction_of_vector"`
 - `cut_mode = "middle"`
 
-**输出：** 11 个未弛豫层错结构，带 `GSFE(hkl=111,uvw=11-2,d=...)` 标签。
+**输出：** 11 个未弛豫层错结构，带 `GSFE(hkl=001,uvw=100,d=...)` 标签。
 
 **怎么验证训练集质量改善：** 对输出结构做 DFT 单点或短弛豫后加入训练集，重训再扫同一 GSFE 路径。峰值、局部极小位置和曲线对称性应更接近 DFT；如果只有峰值改善但曲线仍有锯齿，把步长从 0.1 缩到 0.05。
 
@@ -35,15 +35,15 @@
 
 ### Plane HKL（plane_hkl）
 
-`Sequence[int]`，默认 `(1, 1, 1)`。Miller 指数，定义哪一个晶面作为层错切面。
+`Sequence[int]`，默认 `(0, 0, 1)`。Miller 指数，定义哪一个晶面作为层错切面；该面的法向必须平行于第三晶胞方向。
 
-低指数面最常用：fcc 先看 `(111)`，bcc 常见 `(110)`、`(112)`。`(0, 0, 0)` 没有物理意义，程序会直接报错。你应该让这个面和后续验证的 GSFE/位错滑移系统一致，否则训练样本补不到目标缺口。
+低指数面最常用：fcc111 slab cell 里用 `(001)` 表示原始 fcc `(111)` 面。`(0, 0, 0)` 没有物理意义，程序会直接报错。普通 cubic fcc cell 里的 `(111)` 不满足 slab-oriented 要求，不能直接使用。
 
 ### Slip UVW（slip_uvw）
 
-`Sequence[int]`，默认 `(1, 1, -2)`。晶向指数，定义滑移方向；程序会把它投影到 `plane_hkl` 所在平面内。
+`Sequence[int]`，默认 `(1, 0, 0)`。晶向指数，定义滑移方向；程序会把它投影到 `plane_hkl` 所在平面内。
 
-如果 `slip_uvw` 平行于晶面法向，投影后长度为零，程序会报错。对于 fcc `(111)` 面，`[11-2]` 是常见候选；对于别的结构，先用你要计算的位错或层错文献里的滑移方向，不要随便换成一个看起来方便的轴向。
+如果 `slip_uvw` 平行于晶面法向，投影后长度为零，程序会报错。对于 fcc111 slab cell，先用 `[100]` 或另一个面内周期方向做完整周期路径；如果要扫特定 partial 位移，需要把 slab cell 的面内基矢先构造成对应路径。
 
 ### Displacement Range（displacement_range）
 
@@ -94,7 +94,7 @@
 
 ## 推荐预设
 
-### fcc (111)<112> 完整分数路径
+### fcc111 slab 完整分数路径
 
 适合 GSFE 曲线第一轮覆盖，输出 11 个结构。
 
@@ -103,8 +103,8 @@
   "class": "StrictGSFEPathCard",
   "check_state": true,
   "params": {
-    "plane_hkl": [1, 1, 1],
-    "slip_uvw": [1, 1, -2],
+    "plane_hkl": [0, 0, 1],
+    "slip_uvw": [1, 0, 0],
     "displacement_range": [0.0, 1.0, 0.1],
     "displacement_unit": "fraction_of_vector",
     "cut_mode": "middle",
@@ -124,8 +124,8 @@
   "class": "StrictGSFEPathCard",
   "check_state": true,
   "params": {
-    "plane_hkl": [1, 1, 1],
-    "slip_uvw": [1, 1, -2],
+    "plane_hkl": [0, 0, 1],
+    "slip_uvw": [1, 0, 0],
     "displacement_range": [0.0, 0.5, 0.1],
     "displacement_unit": "angstrom",
     "cut_mode": "middle",
@@ -159,9 +159,9 @@
 
 ## 推荐组合
 
-- `Super Cell` -> `Strict GSFE Path`：先扩胞，再切面滑移，降低小胞周期重复带来的假相互作用。
-- `Strict GSFE Path` -> `Atomic Perturb`：在每个位移点附近加入小扰动，让模型不仅见过理想路径，也见过热扰动后的层错环境。
-- `Bain Path` -> `Strict GSFE Path`：先改变晶胞形状，再扫层错路径，用于相变或应变下的 GSFE 数据。
+- `Super Cell` → `Strict GSFE Path`：先扩胞，再切面滑移，降低小胞周期重复带来的假相互作用。
+- `Strict GSFE Path` → `Atomic Perturb`：在每个位移点附近加入小扰动，让模型不仅见过理想路径，也见过热扰动后的层错环境。
+- `Bain Path` → `Strict GSFE Path`：先改变晶胞形状，再扫层错路径，用于相变或应变下的 GSFE 数据。
 
 ## 常见问题
 

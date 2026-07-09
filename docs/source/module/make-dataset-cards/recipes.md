@@ -9,7 +9,7 @@
 下面的 JSON 采用“卡片配置片段”的写法，字段名与当前 `to_dict()` 保持一致，可直接对照卡片页里的推荐预设填写。第一版 recipes 不依赖截图，也不绑定固定示例文件。
 :::
 
-每条配方的卡片链只负责生成候选池。链条末尾写的 `Show NEP 清洗 -> FPS`
+每条配方的卡片链只负责生成候选池。链条末尾写的 `NEP Dataset Display 清洗 → FPS`
 表示后处理方向：先在 `NEP Dataset Display` 里删掉明显异常结构，再做代表性采样。
 如果你有当前体系的 NEP 模型，可以用它做预筛；没有时可以先做几何检查和人工抽查。
 
@@ -27,7 +27,7 @@
 
 ### 卡片顺序
 
-`Crystal Prototype Builder -> Composition Sweep -> Random Occupancy -> Random Doping -> 导出 xyz -> Show NEP 清洗 -> FPS`
+`Crystal Prototype Builder → Composition Sweep → Random Occupancy → Random Doping → 导出 xyz → NEP Dataset Display 清洗 → FPS`
 
 ### 每步 JSON 配置
 
@@ -144,7 +144,7 @@
 
 ### 卡片顺序
 
-`Super Cell -> Random Slab -> Insert Defect -> Vacancy Defect Generation -> 导出 xyz -> Show NEP 清洗 -> FPS`
+`Super Cell → Random Slab → Insert Defect → Vacancy Defect Generation → 导出 xyz → NEP Dataset Display 清洗 → FPS`
 
 ### 每步 JSON 配置
 
@@ -251,7 +251,7 @@
 
 ### 卡片顺序
 
-`Group Label -> Magnetic Order -> Magmom Rotation`
+`Group Label → Magnetic Order → Magmom Rotation`
 
 ### 每步 JSON 配置
 
@@ -350,7 +350,7 @@
 
 ### 卡片顺序
 
-`Organic Mol Config -> Atomic Perturb -> 导出 xyz -> Show NEP 清洗 -> FPS`
+`Organic Mol Config → Atomic Perturb → 导出 xyz → NEP Dataset Display 清洗 → FPS`
 
 ### 每步 JSON 配置
 

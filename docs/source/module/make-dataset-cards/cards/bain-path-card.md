@@ -132,9 +132,9 @@
 
 ## 推荐组合
 
-- `Bain Path` -> `Atomic Perturb`：先补系统四方畸变，再给每个形变点加入小坐标扰动，覆盖非零温局域环境。
-- `Super Cell` -> `Bain Path`：先扩胞再扫路径，避免小胞里单个缺陷或磁序周期过短。
-- `Bain Path` -> `Lattice Strain`：先覆盖相变主路径，再补普通轴向应变，用来稳定弹性响应。
+- `Bain Path` → `Atomic Perturb`：先补系统四方畸变，再给每个形变点加入小坐标扰动，覆盖非零温局域环境。
+- `Super Cell` → `Bain Path`：先扩胞再扫路径，避免小胞里单个缺陷或磁序周期过短。
+- `Bain Path` → `Lattice Strain`：先覆盖相变主路径，再补普通轴向应变，用来稳定弹性响应。
 
 ## 常见问题
 

@@ -11,6 +11,7 @@
 | `POSCAR` / `CONTCAR` | `Make Dataset` | 作为初始晶体结构生成候选池 |
 | `CIF` | `Make Dataset` | 从晶体结构开始构建候选集 |
 | ASE `.traj` | `NEP Dataset Display` | 查看已有轨迹或转换结构 |
+| DeepMD `deepmd/npy` 目录 | `NEP Dataset Display` | 查看或导出 DeepMD 风格结构数据 |
 
 如果你要继续生成新结构，优先导入 `Make Dataset`。如果你要检查、删除、筛选或导出子集，
 优先导入 `NEP Dataset Display`。
@@ -42,6 +43,13 @@ VASP 结果通常用于把 DFT 标注转成训练结构，或在 `NEP Dataset Di
 - `lammpstrj`
 
 支持正交和三斜晶胞，以及常见坐标列。导入后建议先抽查晶胞、元素类型和坐标单位是否符合预期。
+
+## 导出
+
+`NEP Dataset Display` 可以把当前数据导出为两类结果：
+
+- `xyz` / `extxyz`：适合继续回到 GPUMD、ASE 或 Make Dataset 流程。
+- `deepmd/npy`：适合接入 DeepMD 风格数据管理；是否保留导入时的子目录层级由 `Settings → Keep DeepMD subfolders` 控制。
 
 ## 大数据和导入说明
 

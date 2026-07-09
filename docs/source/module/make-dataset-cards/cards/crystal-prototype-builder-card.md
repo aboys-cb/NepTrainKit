@@ -6,7 +6,7 @@
 
 ## 功能说明
 
-从 fcc / bcc / hcp / diamond 等标准晶格原型直接生成晶体结构。选定元素和晶格常数后，程序按模板构造单胞并自动扩胞至目标原子数。这是一张生成器卡（Generator），不需要输入结构。
+从 fcc / bcc / hcp / fcc111 等标准晶格原型直接生成晶体结构。选定元素和晶格常数后，程序按模板构造单胞并自动扩胞至目标原子数。这是一张生成器卡（Generator），不需要输入结构。
 
 ## 操作示例
 
@@ -46,13 +46,13 @@
 ## 参数说明
 
 ### Lattice（lattice）
-`str`，默认 `'fcc'`。晶格原型类型，支持 `fcc`、`bcc`、`hcp`、`sc`、`diamond`、`zincblende`、`rocksalt`、`cesiumchloride`、`fluorite`、`wurtzite`。主晶型（fcc/bcc/hcp）对应常见金属，化合物晶型（rocksalt/wurtzite/fluorite）对应二元化合物。
+`str`，默认 `'fcc'`。晶格原型类型，支持 `fcc`、`bcc`、`hcp`、`fcc111`。`fcc111` 生成第三晶胞方向垂直于 fcc (111) 面的周期 slab-oriented cell，适合接 `Strict GSFE Path`。
 
 ### Element（element）
 `str`，默认 `'Cu'`。元素符号，如 `Cu`、`Ni`、`Si`。对于化合物原型（如 rocksalt），这里只用第一个元素——后续需要用 `Composition Sweep` + `Random Occupancy` 来实现多元素分布。
 
 ### A Range（a_range）
-`tuple[float, float, float]`，默认 `(3.6, 3.6, 0.1)`。晶格常数 a 的扫描范围，格式 `[最小值, 最大值, 步长]`，单位 A。单点扫描如 `[3.52, 3.52, 0.1]` 产 1 个结构；区间扫描如 `[3.50, 3.60, 0.02]` 产 6 个。步长越小结构越多，记得用 `max_outputs` 控制总量。
+`tuple[float, float, float]`，默认 `(3.6, 3.6, 0.1)`。晶格常数 a 的扫描范围，格式 `[最小值, 最大值, 步长]`，单位 Å。单点扫描如 `[3.52, 3.52, 0.1]` 产 1 个结构；区间扫描如 `[3.50, 3.60, 0.02]` 产 6 个。步长越小结构越多，记得用 `max_outputs` 控制总量。
 
 ### C/A（covera）
 `float`，默认 1.633。仅 hcp 晶型使用，c/a 轴比，理想值约 1.633。

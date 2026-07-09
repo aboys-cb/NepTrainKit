@@ -28,9 +28,9 @@ CardParams (frozen dataclass)
 
 | 类型 | 基类 | 签名 | 什么时候用 |
 |------|------|------|-----------|
-| `StructureOperation` | `core.cards.operation.StructureOperation` | `run_structure(structure, params) -> list[Atoms]` | 单结构变换：应变、扰动、扩胞、掺杂 |
-| `DatasetOperation` | `core.cards.operation.DatasetOperation` | `run_dataset(dataset, params) -> list[Atoms]` | 全数据集过滤/排序：FPS |
-| `GeneratorOperation` | `core.cards.operation.GeneratorOperation` | `generate(params) -> list[Atoms]` | 无输入生成：晶体原型构建 |
+| `StructureOperation` | `core.cards.operation.StructureOperation` | `run_structure(structure, params) → list[Atoms]` | 单结构变换：应变、扰动、扩胞、掺杂 |
+| `DatasetOperation` | `core.cards.operation.DatasetOperation` | `run_dataset(dataset, params) → list[Atoms]` | 全数据集过滤/排序：FPS |
+| `GeneratorOperation` | `core.cards.operation.GeneratorOperation` | `generate(params) → list[Atoms]` | 无输入生成：晶体原型构建 |
 
 ## 第二步：写 Params dataclass
 
@@ -62,7 +62,7 @@ from .operation import StructureOperation  # 或 DatasetOperation / GeneratorOpe
 class MyCardOperation(StructureOperation):
     """Pure logic for my card."""
 
-    def run_structure(self, structure, params: MyCardParams) -> list:
+    def run_structure(self, structure, params: MyCardParams) → list:
         # 校验
         if params.param_b <= 0:
             raise ValueError("param_b must be > 0")
@@ -111,14 +111,14 @@ class MyCard(MakeDataCard):
     def create_operation(self):
         return MyCardOperation()
 
-    def get_params(self) -> MyCardParams:
+    def get_params(self) → MyCardParams:
         return MyCardParams(
             param_a=self.combo.currentText(),
             param_b=float(self.spinbox.get_input_value()[0]),
             ...
         )
 
-    def set_params(self, params: MyCardParams) -> None:
+    def set_params(self, params: MyCardParams) → None:
         self.combo.setText(params.param_a)
         self.spinbox.set_input_value([params.param_b])
         ...

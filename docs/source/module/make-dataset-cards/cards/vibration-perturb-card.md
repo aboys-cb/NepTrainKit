@@ -16,7 +16,7 @@ $$\mathbf{r}'=\mathbf{r}+A\sum_{k\in\mathcal{K}} c_k\mathbf{u}_k,\quad c_k\sim\m
 
 ### 场景：加了 Atomic Perturb 后力 MAE 改善有限，低频声子支的预测仍然很差
 
-你在 Si 上训练了一个 NEP 模型。加了 `Atomic Perturb`（0.2A 随机位移）后，力的 MAE 从 150 meV/A 降到了 80 meV/A，但计算出的声子色散在低频声学支上误差仍然很大。诊断发现：纯随机扰动在所有方向上均匀采样，但低频声子对应的是长波长的协同原子运动——纯随机扰动几乎不可能恰好对齐这些方向。
+你在 Si 上训练了一个 NEP 模型。加了 `Atomic Perturb`（0.2 Å 随机位移）后，力的 MAE 从 150 meV/A 降到了 80 meV/A，但计算出的声子色散在低频声学支上误差仍然很大。诊断发现：纯随机扰动在所有方向上均匀采样，但低频声子对应的是长波长的协同原子运动——纯随机扰动几乎不可能恰好对齐这些方向。
 
 **诊断思路：** 声子频率对位移的灵敏度在各个模态方向上差异巨大。低频声学模涉及大范围原子协同位移，但在局部键长上变化很小——纯随机扰动倾向于产生"局域键长变化大"的构型，这恰好是高频光学模的特征，不是低频模的特征。需要沿准确的振动模本征方向施加位移，让模型在模态坐标上也有训练点。
 
@@ -175,9 +175,9 @@ Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc="F F F"
 
 ## 推荐组合
 
-- `Vib Mode Perturb` -> `Atomic Perturb`：先沿模态方向扰动，再补充纯随机方向
-- `phonopy/DFPT` 生成模态 -> `Vib Mode Perturb`：计算完模态后直接喂入生成训练数据
-- `Vib Mode Perturb` -> `FPS Filter`：大批量生成后去重
+- `Vib Mode Perturb` → `Atomic Perturb`：先沿模态方向扰动，再补充纯随机方向
+- `phonopy/DFPT` 生成模态 → `Vib Mode Perturb`：计算完模态后直接喂入生成训练数据
+- `Vib Mode Perturb` → `FPS Filter`：大批量生成后去重
 
 ## 常见问题
 

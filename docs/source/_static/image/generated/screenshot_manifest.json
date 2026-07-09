@@ -24,7 +24,7 @@
   "show_nep_arrow_dialog": {
     "scenario": "show_nep_arrow_dialog",
     "title": "Show arrows dialog",
-    "description": "Show NEP vector-arrow configuration dialog.",
+    "description": "NEP Dataset Display vector-arrow configuration dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/s_arrow_dialog.png",
     "window_size": [
       1200,
@@ -35,7 +35,7 @@
   "show_nep_dftd3_dialog": {
     "scenario": "show_nep_dftd3_dialog",
     "title": "DFT D3 dialog",
-    "description": "Show NEP DFT-D3 correction dialog.",
+    "description": "NEP Dataset Display DFT-D3 correction dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_dftd3_dialog.png",
     "window_size": [
       1200,
@@ -46,7 +46,7 @@
   "show_nep_distribution_dialog": {
     "scenario": "show_nep_distribution_dialog",
     "title": "Distribution inspector dialog",
-    "description": "Show NEP distribution inspector dialog.",
+    "description": "NEP Dataset Display distribution inspector dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_dist_dialog.png",
     "window_size": [
       1200,
@@ -57,7 +57,7 @@
   "show_nep_drop_bad_dialog": {
     "scenario": "show_nep_drop_bad_dialog",
     "title": "Drop bad confirmation dialog",
-    "description": "Show NEP reject-deletion confirmation dialog.",
+    "description": "NEP Dataset Display reject-deletion confirmation dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/s_dropbad_confirm.png",
     "window_size": [
       1200,
@@ -68,7 +68,7 @@
   "show_nep_edit_info_dialog": {
     "scenario": "show_nep_edit_info_dialog",
     "title": "Edit info dialog",
-    "description": "Show NEP structure-info editing dialog.",
+    "description": "NEP Dataset Display structure-info editing dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_editinfo_dialog.png",
     "window_size": [
       1200,
@@ -79,7 +79,7 @@
   "show_nep_export_format_dialog": {
     "scenario": "show_nep_export_format_dialog",
     "title": "Export format dialog",
-    "description": "Show NEP export-format dialog.",
+    "description": "NEP Dataset Display export-format dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/s_export_format.png",
     "window_size": [
       1200,
@@ -90,7 +90,7 @@
   "show_nep_force_dialog": {
     "scenario": "show_nep_force_dialog",
     "title": "Check net force dialog",
-    "description": "Show NEP net-force threshold dialog.",
+    "description": "NEP Dataset Display net-force threshold dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_force_dialog.png",
     "window_size": [
       1200,
@@ -101,7 +101,7 @@
   "show_nep_index_dialog": {
     "scenario": "show_nep_index_dialog",
     "title": "Select by Index dialog",
-    "description": "Show NEP index-selection dialog.",
+    "description": "NEP Dataset Display index-selection dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_index_dialog.png",
     "window_size": [
       1200,
@@ -112,7 +112,7 @@
   "show_nep_lattice_dialog": {
     "scenario": "show_nep_lattice_dialog",
     "title": "Select by Lattice dialog",
-    "description": "Show NEP lattice-range selection dialog.",
+    "description": "NEP Dataset Display lattice-range selection dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_lattice_dialog.png",
     "window_size": [
       1200,
@@ -123,7 +123,7 @@
   "show_nep_max_error_dialog": {
     "scenario": "show_nep_max_error_dialog",
     "title": "Find max error dialog",
-    "description": "Show NEP maximum-error count dialog.",
+    "description": "NEP Dataset Display maximum-error count dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_maxerr_dialog.png",
     "window_size": [
       1200,
@@ -145,7 +145,7 @@
   "show_nep_range_dialog": {
     "scenario": "show_nep_range_dialog",
     "title": "Select by Range dialog",
-    "description": "Show NEP scatter-range selection dialog.",
+    "description": "NEP Dataset Display scatter-range selection dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_range_dialog.png",
     "window_size": [
       1200,
@@ -156,7 +156,7 @@
   "show_nep_shift_dialog": {
     "scenario": "show_nep_shift_dialog",
     "title": "Energy baseline shift dialog",
-    "description": "Show NEP energy-baseline shift dialog.",
+    "description": "NEP Dataset Display energy-baseline shift dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_shift_dialog.png",
     "window_size": [
       1200,
@@ -167,7 +167,7 @@
   "show_nep_sparse_dialog": {
     "scenario": "show_nep_sparse_dialog",
     "title": "Sparse samples dialog",
-    "description": "Show NEP sparse sampling dialog.",
+    "description": "NEP Dataset Display sparse sampling dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_sparse_dialog.png",
     "window_size": [
       1200,
@@ -178,7 +178,7 @@
   "show_nep_summary_dialog": {
     "scenario": "show_nep_summary_dialog",
     "title": "Dataset summary dialog",
-    "description": "Show NEP dataset summary dialog.",
+    "description": "NEP Dataset Display dataset summary dialog.",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_summary_dialog.png",
     "window_size": [
       1200,

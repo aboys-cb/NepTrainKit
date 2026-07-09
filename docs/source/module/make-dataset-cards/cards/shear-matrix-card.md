@@ -117,9 +117,9 @@ $$\gamma_{xy}=\frac{s_{xy}}{100},\quad \mathbf{S}=\begin{bmatrix}1&\gamma_{xy}&\
 
 ## 推荐组合
 
-- `Lattice Strain` -> `Shear Matrix Strain`：先补轴向应变，再补剪切分量，覆盖完整弹性张量
-- `Shear Matrix Strain` -> `Atomic Perturb`：剪切变形后加坐标噪声
-- `Super Cell` -> `Shear Matrix Strain`：先扩胞再剪切，适合研究大尺度剪切响应
+- `Lattice Strain` → `Shear Matrix Strain`：先补轴向应变，再补剪切分量，覆盖完整弹性张量
+- `Shear Matrix Strain` → `Atomic Perturb`：剪切变形后加坐标噪声
+- `Super Cell` → `Shear Matrix Strain`：先扩胞再剪切，适合研究大尺度剪切响应
 
 ## 常见问题
 

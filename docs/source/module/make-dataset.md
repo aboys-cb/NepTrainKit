@@ -52,7 +52,9 @@ Super Cell → Lattice Strain → Atomic Perturb
 | 目标 | 先看这些卡 |
 | --- | --- |
 | 扩大晶胞 | `Super Cell` |
+| 从标准晶体原型开始 | `Crystal Prototype Builder` |
 | 补弹性响应 | `Lattice Strain` / `Shear Matrix Strain` / `Shear Angle Strain` |
+| 补四方相变或 GSFE 路径 | `Bain Path` / `Strict GSFE Path` |
 | 补近平衡扰动 | `Atomic Perturb` / `Vibration Perturb` |
 | 做缺陷 | `Random Vacancy` / `Vacancy Defect` / `Insert Defect` |
 | 做表面或层错 | `Random Slab` / `Stacking Fault` |

@@ -48,6 +48,7 @@ from .search_widget import ConfigTypeSearchLineEdit
 from .settingscard import MyComboBoxSettingCard, DoubleSpinBoxSettingCard, LineEditSettingCard, ColorSettingCard
 from .table import IdNameTableModel
 from .tree import TreeModel, TreeItem, TagDelegate
+from .audit_chart import AuditChartWidget
 
 __all__ = [
     "FlowLayout",
@@ -94,4 +95,5 @@ __all__ = [
     "TreeModel",
     "TreeItem",
     "TagDelegate",
+    "AuditChartWidget",
 ]

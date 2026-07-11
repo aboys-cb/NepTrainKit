@@ -15,12 +15,15 @@ from loguru import logger
 from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
 
 
+_NUMPY_WORKER_STACK_SIZE = 8 * 1024 * 1024
+
+
 class LoadingThread(QThread):
     progressSignal = Signal(int)
 
     def __init__(self, parent=None, show_tip=True, title='running'):
         super(LoadingThread, self).__init__(parent)
-        self.setStackSize(8 * 1024 * 1024)
+        self.setStackSize(_NUMPY_WORKER_STACK_SIZE)
         self.show_tip = show_tip
         self.title = title
         self._parent = parent
@@ -71,7 +74,7 @@ class DataProcessingThread(QThread):
         self.params = params
         self.result_dataset = []
         self.elapsed_seconds = 0.0
-        self.setStackSize(8 * 1024 * 1024)
+        self.setStackSize(_NUMPY_WORKER_STACK_SIZE)
 
     def run(self):
         start = time.perf_counter()
@@ -115,7 +118,7 @@ class FilterProcessingThread(QThread):
         self.params = params
         self.result_dataset = []
         self.elapsed_seconds = 0.0
-        self.setStackSize(8 * 1024 * 1024)
+        self.setStackSize(_NUMPY_WORKER_STACK_SIZE)
 
     def run(self):
         start = time.perf_counter()
@@ -195,6 +198,9 @@ def run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs
         Started thread. Caller should keep a reference until finished.
     """
     thread = QThread(parent)
+    # Qt's default macOS worker stack can be as small as 544 KiB.  NumPy/SciPy
+    # routines used by background dataset analysis can exceed that limit.
+    thread.setStackSize(_NUMPY_WORKER_STACK_SIZE)
     worker = FunctionWorker(func, args=args, kwargs=kwargs)
     worker.moveToThread(thread)
     # Keep a strong Python reference so the worker is not GC'd before `thread.started`.

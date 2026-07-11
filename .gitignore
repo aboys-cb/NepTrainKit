@@ -4,12 +4,14 @@
 /dist
 /docs/build
 /docs/_build
+/docs/superpowers/
 /.tmp/docs-screenshots
 .idea/
 /src/NepTrainKit/?.py
 /src/NepTrainKit/_version.py
 /src/NepTrainKit/Log/*.log
 .pytest_cache/
+.superpowers/
 tests/_sandbox_tmp/
 tests/_localappdata/
 tests/_tmp/

@@ -40,6 +40,7 @@ def test_run_in_thread_finished_callback_runs_on_parent_thread():
         state["callback_thread"] = QThread.currentThread()
 
     thread = run_in_thread(parent, work, on_finished=on_finished)
+    assert thread.stackSize() >= 8 * 1024 * 1024
     assert _wait_until(lambda: "callback_ident" in state)
     app.processEvents()
 

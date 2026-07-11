@@ -134,6 +134,7 @@ class ShowNepWidget(QWidget):
                 self.export_selected_action,
                 self.export_removed_action,
                 self.export_current_action,
+                self.audit_current_dataset_action,
             ):
                 try:
                     self._parent.save_menu.removeAction(act)  # pyright: ignore[attr-defined]
@@ -185,6 +186,7 @@ class ShowNepWidget(QWidget):
                 self.export_selected_action,
                 self.export_removed_action,
                 self.export_current_action,
+                self.audit_current_dataset_action,
             ):
                 try:
                     self._parent.save_menu.removeAction(act)  # pyright:ignore
@@ -232,6 +234,12 @@ class ShowNepWidget(QWidget):
             self.tr("Export Active ({active})…").format(active=0),
         )
         self.export_current_action.triggered.connect(self.export_active_structures)
+
+        self.audit_current_dataset_action = Action(
+            QIcon(":/images/src/images/summary.svg"),
+            self.tr("Audit current dataset"),
+        )
+        self.audit_current_dataset_action.triggered.connect(self.open_training_set_audit)
 
         self._refresh_export_actions()
 
@@ -1884,6 +1892,32 @@ class ShowNepWidget(QWidget):
             search_type,
             lambda indexes: self.graph_widget.canvas.select_index(indexes, False),
         )
+
+    def open_training_set_audit(self):
+        """Open Training Set Audit for the currently loaded dataset."""
+        if self.nep_result_data is None or not getattr(self.nep_result_data, "load_flag", False):
+            MessageManager.send_info_message(
+                self.tr("Please load a dataset before running Training Set Audit.")
+            )
+            return
+        if hasattr(self._parent, "open_training_set_audit"):
+            self._parent.open_training_set_audit(self.nep_result_data)
+            return
+        MessageManager.send_warning_message(
+            self.tr("Training Set Audit page is not available.")
+        )
+
+    def select_structure_indices(self, indices):
+        """Replace the current selection with structure indices from Training Set Audit."""
+        if self.nep_result_data is None:
+            return
+        current = list(getattr(self.nep_result_data, "select_index", set()))
+        if current:
+            self.graph_widget.canvas.select_index(current, True)
+        clean = sorted({int(index) for index in indices if int(index) >= 0})
+        if clean:
+            self.graph_widget.canvas.select_index(clean, False)
+        self._refresh_export_actions()
 
     def uncheck_config_type(self, config:str,search_type:SearchType):
         """Deselect structures matching the given configuration criteria.

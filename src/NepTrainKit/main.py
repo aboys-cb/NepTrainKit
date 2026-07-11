@@ -27,8 +27,10 @@ from qfluentwidgets import (
 )
 from loguru import logger
 
+from NepTrainKit.core.audit import build_training_set_audit
 from NepTrainKit.ui.pages import *
 from NepTrainKit.ui.messages import MessageManager
+from NepTrainKit.ui.threads import run_in_thread
 from NepTrainKit.ui.update import AutoUpdateNotifier, get_pending_update_version
 from NepTrainKit.utils import timeit
 from NepTrainKit.ui.updater import unzip
@@ -123,6 +125,11 @@ class NepTrainKitMainWindow(FluentWindow):
             self.tr('NEP Dataset Display'),
         )
         self.addSubInterface(
+            self.training_set_audit_interface,
+            QIcon(':/images/src/images/summary.svg'),
+            self.tr('Training Set Audit'),
+        )
+        self.addSubInterface(
             self.make_data_interface,
             QIcon(':/images/src/images/make.svg'),
             self.tr('Make Data'),
@@ -143,9 +150,20 @@ class NepTrainKitMainWindow(FluentWindow):
     def init_widget(self) -> None:
         """Instantiate the page widgets used by the navigation interface."""
         self.show_nep_interface = ShowNepWidget(self)
+        self.training_set_audit_interface = TrainingSetAuditWidget(self)
         self.make_data_interface = MakeDataWidget(self)
         self.setting_interface = SettingsWidget(self)
         self.data_manager_interface = DataManagerWidget(self)
+        self._audited_result_data = None
+        self._audited_result_signature = None
+        self._connect_training_set_audit_signals()
+
+    def _connect_training_set_audit_signals(self) -> None:
+        """Wire Training Set Audit page actions back into the main window."""
+        self.training_set_audit_interface.selectStructuresSignal.connect(
+            self.handle_training_set_audit_selection
+        )
+        self.training_set_audit_interface.rerunAuditSignal.connect(self.open_training_set_audit)
 
     def initWindow(self) -> None:
         """Configure top-level window parameters such as size and title."""
@@ -167,6 +185,75 @@ class NepTrainKitMainWindow(FluentWindow):
         widget = self.stackedWidget.currentWidget()
         if hasattr(widget, "export_file"):
             widget.export_file()  # pyright: ignore[attr-defined]
+
+    def _training_set_audit_signature(self, result_data) -> tuple[object | None, tuple[int, ...]]:
+        """Return a deterministic snapshot of the current active structure state."""
+        version = None
+        indices: tuple[int, ...] = ()
+        try:
+            version = getattr(result_data.structure.data, "version", None)
+        except Exception:
+            version = None
+        try:
+            raw_indices = getattr(result_data.structure, "now_indices", ())
+            indices = tuple(int(index) for index in raw_indices)
+        except Exception:
+            indices = ()
+        return version, indices
+
+    def open_training_set_audit(self, result_data=None) -> None:
+        """Build and show Training Set Audit for ``result_data`` or the current dataset."""
+        data = result_data if result_data is not None else getattr(self.show_nep_interface, "nep_result_data", None)
+        if data is None:
+            MessageManager.send_info_message(
+                self.tr("Please load a dataset before running Training Set Audit.")
+            )
+            return
+        dataset_id = str(getattr(data, "data_xyz_path", self.tr("current dataset")))
+        self.training_set_audit_interface.set_loading(dataset_id)
+        self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
+
+        def apply_result(result) -> None:
+            self._training_set_audit_thread = None
+            if getattr(self.show_nep_interface, "nep_result_data", None) is not data:
+                return
+            self._audited_result_data = data
+            self._audited_result_signature = self._training_set_audit_signature(data)
+            self.training_set_audit_interface.set_result(result)
+            self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
+
+        def report_error(message: str) -> None:
+            self._training_set_audit_thread = None
+            MessageManager.send_warning_message(
+                self.tr("Training Set Audit failed: {message}").format(message=message)
+            )
+
+        self._training_set_audit_thread = run_in_thread(
+            self,
+            build_training_set_audit,
+            data,
+            dataset_id=dataset_id,
+            on_finished=apply_result,
+            on_error=report_error,
+        )
+
+    def handle_training_set_audit_selection(self, indices) -> None:
+        """Apply Training Set Audit indices only when the source dataset is still current."""
+        current_data = getattr(self.show_nep_interface, "nep_result_data", None)
+        current_signature = None if current_data is None else self._training_set_audit_signature(current_data)
+        if (
+            current_data is None
+            or current_data is not self._audited_result_data
+            or current_signature != self._audited_result_signature
+        ):
+            MessageManager.send_info_message(
+                self.tr(
+                    "Training Set Audit results are stale. Please rerun the audit for the current dataset."
+                )
+            )
+            return
+        self.show_nep_interface.select_structure_indices(indices)
+        self.stackedWidget.setCurrentWidget(self.show_nep_interface)
 
     def _ensure_update_badge(self) -> None:
         """Create the persistent update badge on the Settings navigation item."""

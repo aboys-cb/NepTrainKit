@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from math import isfinite
+from math import ceil, isfinite
 from numbers import Integral
 from typing import Any
 
@@ -27,6 +27,8 @@ class AuditChartWidget(QWidget):
         super().__init__(parent)
         self._plot: dict[str, Any] | None = None
         self._bar_rects: list[tuple[QRectF, list[int] | None]] = []
+        self._bar_tooltips: list[str] = []
+        self.setMouseTracking(True)
         self.setMinimumHeight(220)
 
     @property
@@ -48,12 +50,14 @@ class AuditChartWidget(QWidget):
         """Normalize and render one plot payload emitted by an audit dimension."""
         self._plot = self._normalize_plot(plot)
         self._bar_rects = []
+        self._bar_tooltips = []
         self.update()
 
     def clear(self) -> None:
         """Discard the current plot and render the empty state."""
         self._plot = None
         self._bar_rects = []
+        self._bar_tooltips = []
         self.update()
 
     @staticmethod
@@ -96,6 +100,13 @@ class AuditChartWidget(QWidget):
             if len(edges) != len(counts) + 1 or any(right <= left for left, right in zip(edges, edges[1:])):
                 return None
             normalized["bin_edges"] = edges
+            labels = series.get("bin_labels")
+            if (
+                isinstance(labels, Sequence)
+                and not isinstance(labels, (str, bytes))
+                and len(labels) == len(counts)
+            ):
+                normalized["bin_labels"] = tuple(str(label) for label in labels)
         else:
             labels = series.get("labels")
             if not isinstance(labels, Sequence) or isinstance(labels, (str, bytes)) or len(labels) != len(counts):
@@ -157,6 +168,7 @@ class AuditChartWidget(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.fillRect(self.rect(), _BACKGROUND)
         self._bar_rects = []
+        self._bar_tooltips = []
         if self._plot is None:
             painter.setPen(_TEXT)
             painter.drawText(
@@ -178,6 +190,16 @@ class AuditChartWidget(QWidget):
         painter.setFont(title_font)
         painter.setPen(_TEXT)
         painter.drawText(QRectF(8, 6, max(1, self.width() - 16), 22), Qt.AlignmentFlag.AlignLeft, self._plot["title"])
+        if self._plot["highlighted_bins"]:
+            legend = self.tr("Orange = low-frequency range")
+            metrics = QFontMetrics(painter.font())
+            width = metrics.horizontalAdvance(legend)
+            painter.fillRect(QRectF(self.width() - width - 32, 12, 10, 10), _ORANGE)
+            painter.drawText(
+                QRectF(self.width() - width - 18, 5, width + 10, 22),
+                Qt.AlignmentFlag.AlignVCenter,
+                legend,
+            )
 
     def _draw_histogram(self, painter: QPainter) -> None:
         chart = QRectF(58, 38, max(1, self.width() - 74), max(1, self.height() - 82))
@@ -196,19 +218,52 @@ class AuditChartWidget(QWidget):
             )
             painter.fillRect(rect, _ORANGE if index in self._plot["highlighted_bins"] else _TEAL)
             self._bar_rects.append((rect, self._plot["structure_indices"][index]))
+            if "bin_labels" in self._plot:
+                label = self._plot["bin_labels"][index]
+            else:
+                label = f"{self._plot['bin_edges'][index]:g}–{self._plot['bin_edges'][index + 1]:g}"
+            self._bar_tooltips.append(f"{label}: {count:g}")
+            if rect.width() >= 24 and rect.height() >= 12:
+                painter.setPen(_TEXT)
+                painter.drawText(
+                    QRectF(rect.left(), max(chart.top(), rect.top() - 17), rect.width(), 15),
+                    Qt.AlignmentFlag.AlignCenter,
+                    f"{count:g}",
+                )
 
         self._draw_axis_labels(painter, chart)
         metrics = QFontMetrics(painter.font())
-        edges = self._plot["bin_edges"]
-        for index, edge in enumerate(edges):
-            x = chart.left() + chart.width() * index / (len(edges) - 1)
-            label = f"{edge:g}"
-            width = metrics.horizontalAdvance(label)
-            painter.drawText(QRectF(x - width / 2, chart.bottom() + 4, width + 2, 16), Qt.AlignmentFlag.AlignLeft, label)
+        if "bin_labels" in self._plot:
+            labels = self._plot["bin_labels"]
+            step = max(1, ceil(len(labels) / max(1, self.width() // 110)))
+            for index, label in enumerate(labels):
+                if index % step and index != len(labels) - 1:
+                    continue
+                x = chart.left() + slot_width * (index + 0.5)
+                width = min(slot_width * step, metrics.horizontalAdvance(label) + 4)
+                painter.drawText(
+                    QRectF(x - width / 2, chart.bottom() + 4, width, 16),
+                    Qt.AlignmentFlag.AlignCenter,
+                    label,
+                )
+        else:
+            edges = self._plot["bin_edges"]
+            step = max(1, ceil((len(edges) - 1) / max(1, self.width() // 110)))
+            for index, edge in enumerate(edges):
+                if index % step and index != len(edges) - 1:
+                    continue
+                x = chart.left() + chart.width() * index / (len(edges) - 1)
+                label = f"{edge:g}"
+                width = metrics.horizontalAdvance(label)
+                painter.drawText(
+                    QRectF(x - width / 2, chart.bottom() + 4, width + 2, 16),
+                    Qt.AlignmentFlag.AlignLeft,
+                    label,
+                )
 
     def _draw_categorical_bars(self, painter: QPainter) -> None:
         left_margin = min(170.0, max(90.0, self.width() * 0.28))
-        chart = QRectF(left_margin, 38, max(1, self.width() - left_margin - 16), max(1, self.height() - 78))
+        chart = QRectF(left_margin, 38, max(1, self.width() - left_margin - 76), max(1, self.height() - 78))
         self._draw_grid(painter, chart, horizontal=False)
         counts = self._plot["counts"]
         max_count = max(counts) if max(counts) > 0 else 1.0
@@ -220,21 +275,51 @@ class AuditChartWidget(QWidget):
             rect = QRectF(chart.left(), y, chart.width() * count / max_count, bar_height)
             painter.fillRect(rect, _ORANGE if index in self._plot["highlighted_bins"] else _TEAL)
             elided = metrics.elidedText(label, Qt.TextElideMode.ElideRight, int(left_margin - 12))
-            painter.drawText(QRectF(6, y, left_margin - 12, bar_height), Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter, elided)
+            painter.drawText(
+                QRectF(6, y, left_margin - 12, bar_height),
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                elided,
+            )
             self._bar_rects.append((rect, self._plot["structure_indices"][index]))
+            self._bar_tooltips.append(f"{label}: {count:g}")
+            painter.setPen(_TEXT)
+            painter.drawText(
+                QRectF(rect.right() + 4, y, 70, bar_height),
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+                f"{count:g}",
+            )
 
         self._draw_axis_labels(painter, chart)
 
     def _draw_grid(self, painter: QPainter, chart: QRectF, *, horizontal: bool) -> None:
         painter.setPen(QPen(_GRID, 1))
+        max_count = max(self._plot["counts"]) if max(self._plot["counts"]) > 0 else 1.0
+        metrics = QFontMetrics(painter.font())
         for index in range(5):
             fraction = index / 4
             if horizontal:
                 y = chart.top() + chart.height() * fraction
                 painter.drawLine(chart.left(), y, chart.right(), y)
+                label = str(int(round(max_count * (1.0 - fraction))))
+                painter.setPen(_TEXT)
+                painter.drawText(
+                    QRectF(2, y - 8, chart.left() - 8, 16),
+                    Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                    label,
+                )
+                painter.setPen(QPen(_GRID, 1))
             else:
                 x = chart.left() + chart.width() * fraction
                 painter.drawLine(x, chart.top(), x, chart.bottom())
+                label = str(int(round(max_count * fraction)))
+                width = metrics.horizontalAdvance(label)
+                painter.setPen(_TEXT)
+                painter.drawText(
+                    QRectF(x - width / 2, chart.bottom() + 3, width + 2, 16),
+                    Qt.AlignmentFlag.AlignCenter,
+                    label,
+                )
+                painter.setPen(QPen(_GRID, 1))
         painter.setPen(QPen(_TEXT, 1))
         painter.drawLine(chart.left(), chart.bottom(), chart.right(), chart.bottom())
         painter.drawLine(chart.left(), chart.top(), chart.left(), chart.bottom())
@@ -264,3 +349,13 @@ class AuditChartWidget(QWidget):
                         self.selectedGroupSignal.emit(list(structure_indices))
                     break
         super().mouseReleaseEvent(event)
+
+    def mouseMoveEvent(self, event) -> None:  # noqa: N802 - Qt hook
+        point = event.position()
+        tooltip = ""
+        for index, (rect, _) in enumerate(self._bar_rects):
+            if rect.contains(point):
+                tooltip = self._bar_tooltips[index]
+                break
+        self.setToolTip(tooltip)
+        super().mouseMoveEvent(event)

@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import numpy as np
+import pytest
 from ase.data import atomic_numbers
 from ase.neighborlist import neighbor_list as ase_neighbor_list
 
@@ -211,6 +212,16 @@ def test_label_range_strict_quantile_tails_preserve_force_and_energy_indices():
     by_id = {item.id: item for item in slices}
     assert by_id["label_ranges:force_high_tail"].structure_indices == (1126, 1133)
     assert by_id["label_ranges:energy_high_tail"].structure_indices == (1133,)
+    force_metrics = {
+        metric.name: metric for metric in by_id["label_ranges:force_high_tail"].metrics
+    }
+    energy_metrics = {
+        metric.name: metric for metric in by_id["label_ranges:energy_high_tail"].metrics
+    }
+    assert force_metrics["threshold"].value == pytest.approx(17.1)
+    assert force_metrics["threshold"].unit == "eV/angstrom"
+    assert energy_metrics["threshold"].value == pytest.approx(18.05)
+    assert energy_metrics["threshold"].unit == "eV/atom"
 
 
 def test_label_plots_include_only_available_metrics_and_labeled_records():

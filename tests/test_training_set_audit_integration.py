@@ -288,15 +288,15 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         self._app.installTranslator(translator)
         try:
             main_context = {
-                "Training Set Audit": "训练集审计",
+                "Training Set Audit": "训练集检查",
                 "current dataset": "当前数据集",
-                "Please load a dataset before running Training Set Audit.": "请先加载数据集，再运行训练集审计。",
-                "Training Set Audit results are stale. Please rerun the audit for the current dataset.": "训练集审计结果已过期。请针对当前数据集重新运行审计。",
+                "Please load a dataset before running Training Set Audit.": "请先加载数据集，再运行训练集检查。",
+                "Training Set Audit results are stale. Please rerun the audit for the current dataset.": "训练集检查结果已过期，请针对当前数据集重新检查。",
             }
             show_nep_context = {
-                "Audit current dataset": "审计当前数据集",
-                "Please load a dataset before running Training Set Audit.": "请先加载数据集，再运行训练集审计。",
-                "Training Set Audit page is not available.": "训练集审计页面不可用。",
+                "Audit current dataset": "检查当前数据集",
+                "Please load a dataset before running Training Set Audit.": "请先加载数据集，再运行训练集检查。",
+                "Training Set Audit page is not available.": "训练集检查页面不可用。",
             }
             for source, expected in main_context.items():
                 self.assertEqual(

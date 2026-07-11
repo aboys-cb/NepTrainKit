@@ -47,18 +47,25 @@ def _label_histogram_plot(
     }
 
 
-def _tail_indices(records: Sequence[StructureAuditRecord], values: list[float | None], quantile: float) -> list[int]:
+def _tail_selection(
+    records: Sequence[StructureAuditRecord],
+    values: list[float | None],
+    quantile: float,
+) -> tuple[list[int], float | None]:
     finite = np.asarray([value for value in values if value is not None and np.isfinite(value)], dtype=np.float64)
     if finite.size < 4:
-        return []
+        return [], None
     threshold = float(np.quantile(finite, quantile))
     if not np.isfinite(threshold):
-        return []
-    return [
-        record.index
-        for record, value in zip(records, values)
-        if value is not None and np.isfinite(value) and value > threshold
-    ]
+        return [], None
+    return (
+        [
+            record.index
+            for record, value in zip(records, values)
+            if value is not None and np.isfinite(value) and value > threshold
+        ],
+        threshold,
+    )
 
 
 def audit_label_ranges(
@@ -97,7 +104,9 @@ def audit_label_ranges(
         )
         if plot is not None
     )
-    high_force = _tail_indices(records, force_values, 0.90)
+    high_force, high_force_threshold = _tail_selection(
+        records, force_values, 0.90
+    )
     if high_force:
         observed = f"{len(high_force)} structures are in the top 10% of maximum force values."
         if force_labeled_count < total_count:
@@ -118,13 +127,22 @@ def audit_label_ranges(
                 limit="High force can be physically intended; this finding is a review target, not a delete recommendation.",
                 metrics=(
                     SliceMetric("tail_quantile", 0.90, "", None, "high"),
+                    SliceMetric(
+                        "threshold",
+                        high_force_threshold,
+                        "eV/angstrom",
+                        None,
+                        "high",
+                    ),
                     SliceMetric("labeled_count", force_labeled_count),
                     SliceMetric("total_count", total_count),
                 ),
             )
         )
 
-    high_energy = _tail_indices(records, energy_values, 0.95)
+    high_energy, high_energy_threshold = _tail_selection(
+        records, energy_values, 0.95
+    )
     if high_energy:
         observed = f"{len(high_energy)} structures are in the top 5% of energy per atom."
         if energy_labeled_count < total_count:
@@ -145,6 +163,13 @@ def audit_label_ranges(
                 limit="This does not say the structures are wrong; inspect source and geometry before acting.",
                 metrics=(
                     SliceMetric("tail_quantile", 0.95, "", None, "high"),
+                    SliceMetric(
+                        "threshold",
+                        high_energy_threshold,
+                        "eV/atom",
+                        None,
+                        "high",
+                    ),
                     SliceMetric("labeled_count", energy_labeled_count),
                     SliceMetric("total_count", total_count),
                 ),

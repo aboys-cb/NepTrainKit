@@ -44,6 +44,8 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
                 {
                     "counts": (1, 2),
                     "bin_edges": (0.0, 0.5, 1.0),
+                    "bin_labels": ("0-50%", "50-100%"),
+                    "highlighted_bins": (0,),
                     "structure_indices": ((0,), (1, 2)),
                 },
             ),
@@ -179,6 +181,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.show()
         widget.set_result(self._local_chemistry_result())
         widget.dimension_list.setCurrentRow(1)
+        widget.page_tabs.setCurrentIndex(1)
         self._app.processEvents()
 
         self.assertTrue(widget.local_scope_selector.isVisible())
@@ -192,8 +195,8 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertTrue(widget.chart_widget.plot_id.startswith("local_chemistry:angular:Fe:"))
         self.assertEqual(
             widget.analysis_status_label.text(),
-            "Active NEP model · Angular core · effective pair cutoff is the mean of center and "
-            "neighbor cutoffs · center Fe",
+            "Scope from the active NEP cutoffs · Angular neighbors · center Fe. "
+            "Orange marks low-frequency ranges inside the current data.",
         )
 
         widget.local_center_selector.setCurrentIndex(1)
@@ -202,7 +205,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.local_center_selector.currentData(), "Ni")
         self.assertEqual(widget.plot_selector.count(), 2)
         self.assertTrue(widget.chart_widget.plot_id.startswith("local_chemistry:radial:Ni:"))
-        self.assertIn("Radial context", widget.analysis_status_label.text())
+        self.assertIn("Radial neighbors", widget.analysis_status_label.text())
 
         widget.dimension_list.setCurrentRow(0)
         self.assertTrue(widget.local_scope_selector.isHidden())
@@ -274,7 +277,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.set_result(self._dashboard_result())
 
         self.assertEqual(widget.dimension_list.count(), 3)
-        self.assertEqual(widget.metric_structure_value.text(), "3")
+        self.assertEqual(widget.metric_structure_value.text(), "1 groups · 2 structures")
         self.assertEqual(widget.generated_at_label.text(), "Generated 2026-07-10 08:30 UTC")
         self.assertIsInstance(widget.rerun_button, PrimaryPushButton)
         self.assertNotIsInstance(widget.export_report_button, PrimaryPushButton)
@@ -283,21 +286,22 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertIsInstance(widget.local_center_selector, ComboBox)
         self.assertIsInstance(widget.plot_selector, ComboBox)
         self.assertIsInstance(widget.slice_table, TableWidget)
-        self.assertEqual(widget.metric_findings_label.text(), "Flagged slices (H/M/L)")
-        self.assertEqual(widget.metric_findings_value.text(), "2 · 1/1/0")
-        self.assertEqual(widget.metric_dimension_label.text(), "Available label metrics")
-        self.assertEqual(widget.metric_dimension_value.text(), "2")
-        self.assertEqual(widget.metric_context_label.text(), "Label completeness")
-        self.assertEqual(widget.metric_context_value.text(), "5 / 9")
-        self.assertEqual(widget.dimension_list.item(0).text(), "Overview\n2 findings")
-        self.assertEqual(widget.dimension_list.item(1).text(), "Composition\nAvailable · 1 finding")
-        self.assertEqual(widget.dimension_list.item(2).text(), "Label ranges\nPartial · 1 finding")
+        self.assertEqual(widget.metric_findings_label.text(), "Label coverage")
+        self.assertEqual(widget.metric_findings_value.text(), "E 100% · F 67% · V 0%")
+        self.assertEqual(widget.metric_dimension_label.text(), "Thin-distribution signals")
+        self.assertEqual(widget.metric_dimension_value.text(), "1")
+        self.assertEqual(widget.metric_context_label.text(), "Model errors")
+        self.assertEqual(widget.metric_context_value.text(), "Not evaluated")
+        self.assertEqual(widget.dimension_list.item(0).text(), "Overview\n2 topics")
+        self.assertEqual(widget.dimension_list.item(1).text(), "Composition balance\nCalculated · 1 topic")
+        self.assertEqual(widget.dimension_list.item(2).text(), "Labels and extremes\nPartial data · 1 topic")
         self.assertEqual(widget.label_availability_title.text(), "Label availability")
         self.assertEqual(
             widget.label_availability_value.text(),
             "Energy 3/3\nForce 2/3\nVirial 0/3",
         )
-        self.assertEqual(widget.analysis_tabs.count(), 2)
+        self.assertEqual(widget.page_tabs.count(), 2)
+        self.assertEqual(widget.page_tabs.tabText(0), "Summary")
         self.assertEqual(widget.chart_widget.plot_id, "composition:Fe")
         self.assertEqual(widget.slice_table.rowCount(), 2)
         self.assertEqual(widget.audit_header.objectName(), "auditHeader")
@@ -311,41 +315,55 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.set_result(self._dashboard_result())
 
         widget.dimension_list.setCurrentRow(1)
-        self.assertEqual(widget.metric_dimension_label.text(), "Sparse bins")
-        self.assertEqual(widget.metric_dimension_value.text(), "1")
-        self.assertEqual(widget.metric_context_label.text(), "Dimension status")
-        self.assertEqual(widget.metric_context_value.text(), "Available")
         self.assertEqual(widget.plot_selector.count(), 2)
-        self.assertTrue(widget.plot_selector.isVisibleTo(widget))
         self.assertEqual(widget.chart_widget.plot_id, "composition:Fe")
-        self.assertEqual(widget.slice_table.rowCount(), 1)
+        self.assertEqual(widget.slice_table.rowCount(), 2)
 
         widget.plot_selector.setCurrentIndex(1)
         self.assertEqual(widget.chart_widget.plot_id, "composition:O")
 
         widget.dimension_list.setCurrentRow(2)
-        self.assertEqual(widget.metric_dimension_label.text(), "Available label metrics")
-        self.assertEqual(widget.metric_dimension_value.text(), "2")
-        self.assertEqual(widget.metric_context_label.text(), "Label completeness")
-        self.assertEqual(widget.metric_context_value.text(), "5 / 9")
         self.assertFalse(widget.chart_widget.isHidden())
 
-    def test_severity_filter_composes_with_dimension_filter(self):
+    def test_related_sparse_bins_are_grouped_into_one_topic(self):
         widget = TrainingSetAuditWidget()
-        widget.set_result(self._dashboard_result())
+        slices = tuple(
+            AuditSlice(
+                id=f"composition:Fe:{label}",
+                title=f"Sparse Fe bin {label}",
+                dimension_id="composition",
+                severity=AuditSeverity.HIGH,
+                bias_type=AuditBiasType.SPARSITY,
+                structure_indices=indices,
+                observed="Observed.",
+                interpretation="Interpretation.",
+                limit="Limit.",
+            )
+            for label, indices in (("0-5%", (0,)), ("5-20%", (1,)))
+        )
+        widget.set_result(
+            AuditResult(
+                dataset_id="grouped.xyz",
+                generated_at="now",
+                inputs={"structure_count": 10},
+                dimensions=(
+                    AuditDimension(
+                        "composition",
+                        "Composition",
+                        AuditStatus.AVAILABLE,
+                        plots=(self._histogram("composition:Fe", "Fe concentration"),),
+                    ),
+                ),
+                slices=slices,
+                overview_metrics={"structures": 10},
+            )
+        )
 
-        widget.severity_buttons[AuditSeverity.HIGH].click()
         self.assertEqual(widget.slice_table.rowCount(), 1)
-        self.assertEqual(widget.slice_table.item(0, 0).text(), "High")
+        self.assertEqual(widget.slice_table.item(0, 0).text(), "Thin distribution")
+        self.assertEqual(len(widget._topics[0].source_slices), 2)
 
-        widget.dimension_list.setCurrentRow(2)
-        self.assertEqual(widget.slice_table.rowCount(), 0)
-
-        widget.severity_buttons[AuditSeverity.MEDIUM].click()
-        self.assertEqual(widget.slice_table.rowCount(), 1)
-        self.assertEqual(widget.slice_table.item(0, 2).text(), "Label ranges")
-
-    def test_set_result_resets_severity_filter_and_active_style_each_time(self):
+    def test_set_result_resets_to_summary_and_first_topic(self):
         widget = TrainingSetAuditWidget()
         first_result = self._dashboard_result()
         second_result = AuditResult(
@@ -356,55 +374,37 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             slices=first_result.slices,
             overview_metrics=first_result.overview_metrics,
         )
-        widget.show()
-        self._app.processEvents()
-
-        def rendered_background(button):
-            image = button.grab().toImage()
-            return image.pixelColor(image.width() - 8, image.height() // 2).name()
-
         widget.set_result(first_result)
-        medium_button = widget.severity_buttons[AuditSeverity.MEDIUM]
-        medium_button.click()
-        self._app.processEvents()
-        self.assertTrue(medium_button.isChecked())
-        self.assertTrue(medium_button.property("severityFilterActive"))
-        self.assertIn("#087f78", medium_button.styleSheet())
-        self.assertEqual(rendered_background(medium_button), "#087f78")
-        self.assertEqual(rendered_background(widget.severity_all_button), "#ffffff")
+        widget.slice_table.selectRow(1)
+        widget.page_tabs.setCurrentIndex(1)
 
         widget.set_result(second_result)
-        self._app.processEvents()
 
-        self.assertTrue(widget.severity_all_button.isChecked())
-        self.assertTrue(widget.severity_all_button.property("severityFilterActive"))
-        self.assertIn("#087f78", widget.severity_all_button.styleSheet())
-        self.assertEqual(rendered_background(widget.severity_all_button), "#087f78")
-        self.assertEqual(rendered_background(medium_button), "#ffffff")
-        self.assertFalse(medium_button.isChecked())
-        self.assertFalse(medium_button.property("severityFilterActive"))
+        self.assertEqual(widget.page_tabs.currentIndex(), 0)
+        self.assertEqual(widget.slice_table.currentRow(), 0)
+        self.assertEqual(widget.selected_topic_label.text(), widget._topics[0].title)
         self.assertEqual(widget.slice_table.rowCount(), 2)
-        widget.close()
 
-    def test_finding_severity_uses_approved_foreground_colors(self):
+    def test_topic_categories_use_approved_foreground_colors(self):
         widget = TrainingSetAuditWidget()
+        biases = (
+            AuditBiasType.RISK_CONCENTRATION,
+            AuditBiasType.SPARSITY,
+            AuditBiasType.INFORMATIONAL,
+        )
         slices = tuple(
             AuditSlice(
-                id=f"composition:{severity.value}",
-                title=f"{severity.value.title()} finding",
-                dimension_id="composition",
-                severity=severity,
-                bias_type=AuditBiasType.INFORMATIONAL,
+                id=f"custom:{bias.value}",
+                title=f"{bias.value.title()} topic",
+                dimension_id="custom",
+                severity=AuditSeverity.INFO,
+                bias_type=bias,
                 structure_indices=(0,),
                 observed="Observed.",
                 interpretation="Interpretation.",
                 limit="Limit.",
             )
-            for severity in (
-                AuditSeverity.HIGH,
-                AuditSeverity.MEDIUM,
-                AuditSeverity.LOW,
-            )
+            for bias in biases
         )
         widget.set_result(
             AuditResult(
@@ -416,13 +416,13 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         )
 
         self.assertEqual(
-            widget.slice_table.item(0, 0).foreground().color().name(), "#c94932"
+            widget.slice_table.item(0, 0).foreground().color().name(), "#a14d16"
         )
         self.assertEqual(
-            widget.slice_table.item(1, 0).foreground().color().name(), "#d08a17"
+            widget.slice_table.item(1, 0).foreground().color().name(), "#087f78"
         )
         self.assertEqual(
-            widget.slice_table.item(2, 0).foreground().color().name(), "#89979b"
+            widget.slice_table.item(2, 0).foreground().color().name(), "#526267"
         )
 
     def test_findings_columns_adapt_and_restore_without_horizontal_scrolling(self):
@@ -433,13 +433,13 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self._app.processEvents()
 
         self.assertFalse(widget.slice_table.isColumnHidden(2))
-        self.assertFalse(widget.slice_table.isColumnHidden(4))
+        self.assertFalse(widget.slice_table.isColumnHidden(3))
 
         widget.resize(960, 680)
         self._app.processEvents()
 
         self.assertFalse(widget.slice_table.isColumnHidden(2))
-        self.assertTrue(widget.slice_table.isColumnHidden(4))
+        self.assertFalse(widget.slice_table.isColumnHidden(3))
         self.assertGreaterEqual(widget.slice_table.columnWidth(1), 240)
         self.assertEqual(
             widget.slice_table.horizontalScrollBarPolicy(),
@@ -450,8 +450,8 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.resize(760, 680)
         self._app.processEvents()
 
-        self.assertTrue(widget.slice_table.isColumnHidden(2))
-        self.assertTrue(widget.slice_table.isColumnHidden(4))
+        self.assertFalse(widget.slice_table.isColumnHidden(2))
+        self.assertTrue(widget.slice_table.isColumnHidden(3))
         self.assertGreaterEqual(widget.slice_table.columnWidth(1), 240)
         self.assertFalse(widget.slice_table.horizontalScrollBar().isVisible())
 
@@ -459,7 +459,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self._app.processEvents()
 
         self.assertFalse(widget.slice_table.isColumnHidden(2))
-        self.assertFalse(widget.slice_table.isColumnHidden(4))
+        self.assertFalse(widget.slice_table.isColumnHidden(3))
         widget.close()
 
     def test_selection_updates_evidence_and_selected_count_without_auto_handoff(self):
@@ -468,16 +468,28 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.selectStructuresSignal.connect(received.append)
         widget.set_result(self._dashboard_result())
 
-        widget.slice_table.selectRow(1)
+        widget.slice_table.selectRow(0)
 
-        self.assertIn("Two structures", widget.observed_label.toPlainText())
+        self.assertIn("highest 10%", widget.observed_label.toPlainText())
         self.assertEqual(
             widget.send_button.text(),
             "Show 2 structures in Dataset Display",
         )
         widget.chart_widget.selectedGroupSignal.emit([0, 1, 2])
         self.assertEqual(widget.chart_selection_label.text(), "Chart selection: 3 structures")
+        self.assertTrue(widget.chart_send_button.isEnabled())
         self.assertEqual(received, [])
+
+    def test_review_topic_opens_its_related_distribution(self):
+        widget = TrainingSetAuditWidget()
+        widget.set_result(self._dashboard_result())
+        widget.slice_table.selectRow(0)
+
+        widget.view_distribution_button.click()
+
+        self.assertEqual(widget.page_tabs.currentIndex(), 1)
+        self.assertEqual(widget._selected_dimension_id(), "label_ranges")
+        self.assertEqual(widget.chart_widget.plot_id, "label_ranges:max_force")
 
     def test_empty_result_keeps_dimensions_and_shows_exact_reasons(self):
         widget = TrainingSetAuditWidget()
@@ -497,10 +509,10 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.dimension_list.setCurrentRow(2)
 
         self.assertEqual(widget.dimension_list.count(), 3)
-        self.assertEqual(widget.metric_structure_value.text(), "0")
+        self.assertEqual(widget.metric_structure_value.text(), "0 groups · 0 structures")
         self.assertEqual(widget.slice_table.rowCount(), 0)
         self.assertEqual(widget.analysis_status_label.text(), "No labels are available.")
-        self.assertIn("No findings", widget.findings_empty_label.text())
+        self.assertIn("No review topic", widget.findings_empty_label.text())
 
     def test_no_result_starts_quiet_and_set_result_restores_dashboard(self):
         widget = TrainingSetAuditWidget()
@@ -550,10 +562,13 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.set_result(result)
 
         self.assertEqual(widget.header_label.text(), "translated::Training Set Audit")
-        self.assertEqual(widget.slice_table.horizontalHeaderItem(0).text(), "translated::Severity")
-        self.assertEqual(widget.slice_table.item(0, 2).text(), "translated::Label ranges")
-        self.assertEqual(widget.slice_table.item(0, 4).text(), "translated::Risk concentration")
-        self.assertEqual(widget.observed_label.toPlainText(), "Observed value remains a domain value.")
+        self.assertEqual(widget.slice_table.horizontalHeaderItem(0).text(), "translated::Type")
+        self.assertEqual(widget.slice_table.item(0, 0).text(), "translated::Review")
+        self.assertEqual(
+            widget.slice_table.item(0, 1).text(),
+            "translated::Maximum-force review group (top 10%)",
+        )
+        self.assertTrue(widget.observed_label.toPlainText().startswith("translated::1 structures"))
 
     def test_shipped_chinese_catalog_translates_page_owned_audit_text(self):
         catalog = (
@@ -568,10 +583,10 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self._app.installTranslator(translator)
         try:
             widget = TrainingSetAuditWidget()
-            self.assertEqual(widget.header_label.text(), "训练集审计")
-            self.assertEqual(widget.slice_table.horizontalHeaderItem(0).text(), "严重程度")
-            self.assertEqual(widget.dimension_rail.findChild(QLabel, "panelTitle").text(), "审计维度")
-            self.assertEqual(widget.rerun_button.text(), "重新运行审计")
+            self.assertEqual(widget.header_label.text(), "训练集检查")
+            self.assertEqual(widget.slice_table.horizontalHeaderItem(0).text(), "类型")
+            self.assertEqual(widget.dimension_rail.findChild(QLabel, "panelTitle").text(), "检查项目")
+            self.assertEqual(widget.rerun_button.text(), "重新检查")
             self.assertEqual(widget.export_report_button.text(), "导出 HTML 报告")
 
             energy_plot = {
@@ -641,18 +656,18 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             widget.set_result(self._local_chemistry_result())
             widget.dimension_list.setCurrentRow(1)
 
-            self.assertTrue(widget.dimension_list.item(1).text().startswith("局域化学\n"))
-            self.assertEqual(widget.local_scope_selector.itemText(0), "角向核心")
-            self.assertEqual(widget.local_scope_selector.itemText(1), "径向环境")
+            self.assertTrue(widget.dimension_list.item(1).text().startswith("局域环境支持\n"))
+            self.assertEqual(widget.local_scope_selector.itemText(0), "角向邻居")
+            self.assertEqual(widget.local_scope_selector.itemText(1), "径向邻居")
             self.assertEqual(widget.local_center_label.text(), "中心元素")
             self.assertEqual(widget.plot_selector.itemText(0), "邻居数")
             self.assertEqual(widget.plot_selector.itemText(1), "Fe 邻居比例")
             self.assertEqual(
                 widget.analysis_status_label.text(),
-                "当前 NEP 模型 · 角向核心 · 元素对有效截断半径取中心元素与邻居元素"
-                "截断半径的平均值 · 中心元素 Fe",
+                "范围来自当前 NEP 截断半径 · 角向邻居 · 中心元素 Fe。"
+                "橙色表示当前数据中样本较少的区间。",
             )
-            self.assertEqual(widget.chart_widget._plot["title"], "角向核心：Fe 邻居数")
+            self.assertEqual(widget.chart_widget._plot["title"], "角向邻居：Fe 邻居数")
             self.assertEqual(widget.chart_widget._plot["y_label"], "局域环境数")
         finally:
             self._app.removeTranslator(translator)
@@ -681,7 +696,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.chart_widget.plot_id, "composition:Fe")
         self.assertFalse(widget.plot_selector.isVisibleTo(widget))
         self.assertEqual(widget.slice_table.rowCount(), 0)
-        self.assertIn("No findings", widget.findings_empty_label.text())
+        self.assertIn("No review topic", widget.findings_empty_label.text())
 
     def test_partial_reason_and_long_finding_title_remain_available(self):
         widget = TrainingSetAuditWidget()
@@ -714,8 +729,12 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             widget.analysis_status_label.text(),
             "Available on labeled subsets only: force (2/3).",
         )
-        self.assertEqual(widget.slice_table.item(1, 1).text(), long_title)
-        self.assertEqual(widget.slice_table.item(1, 1).toolTip(), long_title)
+        row = next(
+            row
+            for row in range(widget.slice_table.rowCount())
+            if widget.slice_table.item(row, 1).text() == long_title
+        )
+        self.assertEqual(widget.slice_table.item(row, 1).toolTip(), long_title)
 
     def test_set_result_populates_slice_table_and_evidence(self):
         widget = TrainingSetAuditWidget()
@@ -741,10 +760,10 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.set_result(result)
 
         self.assertEqual(widget.slice_table.rowCount(), 1)
-        self.assertIn("High force tail", widget.slice_table.item(0, 1).text())
+        self.assertIn("Maximum-force review group", widget.slice_table.item(0, 1).text())
         widget.slice_table.selectRow(0)
-        self.assertIn("Two structures", widget.observed_label.toPlainText())
-        self.assertIn("High force", widget.limit_label.toPlainText())
+        self.assertIn("highest 10%", widget.observed_label.toPlainText())
+        self.assertIn("review group", widget.limit_label.toPlainText())
 
     def test_send_button_emits_selected_structure_indices(self):
         widget = TrainingSetAuditWidget()
@@ -775,7 +794,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
 
         self.assertEqual(received, [[1, 2]])
 
-    def test_dimension_filter_limits_visible_slices(self):
+    def test_detail_dimension_selection_does_not_hide_summary_topics(self):
         widget = TrainingSetAuditWidget()
         result = AuditResult(
             dataset_id="train.xyz",
@@ -810,8 +829,9 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.set_result(result)
         widget.dimension_list.setCurrentRow(1)
 
-        self.assertEqual(widget.slice_table.rowCount(), 1)
-        self.assertEqual(widget.slice_table.item(0, 2).text(), "Label ranges")
+        self.assertEqual(widget.slice_table.rowCount(), 2)
+        self.assertEqual(widget.slice_table.item(0, 0).text(), "Review")
+        self.assertEqual(widget.slice_table.item(1, 0).text(), "Thin distribution")
 
     def test_dimension_filter_defaults_to_all_dimensions(self):
         widget = TrainingSetAuditWidget()
@@ -840,9 +860,9 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
 
         widget.set_result(result)
 
-        self.assertEqual(widget.dimension_list.item(0).text(), "Overview\n1 finding")
+        self.assertEqual(widget.dimension_list.item(0).text(), "Overview\n1 topic")
         self.assertEqual(widget.slice_table.rowCount(), 1)
-        self.assertEqual(widget.slice_table.item(0, 2).text(), "Label ranges")
+        self.assertEqual(widget.slice_table.item(0, 0).text(), "Review")
 
     def test_rerun_button_emits_signal(self):
         widget = TrainingSetAuditWidget()

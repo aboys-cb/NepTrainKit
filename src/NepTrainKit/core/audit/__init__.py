@@ -1,37 +1,87 @@
 """Training Set Audit core APIs."""
-from .engine import build_training_set_audit
+from .context import build_fingerprints, resolve_audit_scope
+from .config_types import audit_config_types
+from .data_quality import audit_data_quality
+from .engine import build_audit, build_training_set_audit
 from .extract import (
     StructureAuditRecord,
     indexed_structures_from_result_data,
+    records_from_indexed_structures,
     records_from_result_data,
     records_from_structures,
 )
+from .findings import build_findings, canonical_findings
+from .inventory import build_dataset_inventory, compare_composition_target
 from .local_chemistry import audit_local_chemistry
 from .nep_cutoff import NepCutoffProfile, parse_nep_cutoff
 from .result import (
     AuditBiasType,
+    AuditAction,
+    AuditConfidence,
+    AuditContext,
+    CompositionPoint,
+    CompositionTarget,
+    DatasetInventory,
     AuditDimension,
+    AuditEvidence,
+    AuditFinding,
+    AuditFindingKind,
+    AuditFindingState,
+    AuditFingerprints,
     AuditResult,
+    AuditRun,
+    AuditScope,
+    AuditScopeKind,
     AuditSeverity,
     AuditSlice,
     AuditStatus,
+    AuditTargetRelevance,
+    TargetSupportCell,
+    TargetSupportStatus,
     SliceMetric,
 )
 
 __all__ = [
+    "AuditAction",
     "AuditBiasType",
+    "AuditConfidence",
+    "AuditContext",
+    "CompositionPoint",
+    "CompositionTarget",
+    "DatasetInventory",
     "AuditDimension",
+    "AuditEvidence",
+    "AuditFinding",
+    "AuditFindingKind",
+    "AuditFindingState",
+    "AuditFingerprints",
     "AuditResult",
+    "AuditRun",
+    "AuditScope",
+    "AuditScopeKind",
     "AuditSeverity",
     "AuditSlice",
     "AuditStatus",
+    "AuditTargetRelevance",
+    "TargetSupportCell",
+    "TargetSupportStatus",
     "SliceMetric",
     "StructureAuditRecord",
     "NepCutoffProfile",
     "audit_local_chemistry",
+    "audit_data_quality",
+    "audit_config_types",
+    "build_audit",
+    "build_dataset_inventory",
+    "build_findings",
+    "build_fingerprints",
     "build_training_set_audit",
+    "canonical_findings",
+    "compare_composition_target",
     "indexed_structures_from_result_data",
     "parse_nep_cutoff",
+    "records_from_indexed_structures",
     "records_from_result_data",
     "records_from_structures",
+    "resolve_audit_scope",
 ]

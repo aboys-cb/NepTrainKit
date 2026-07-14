@@ -694,7 +694,10 @@ class NepResultPlotWidget(QWidget):
         self.canvas.select_index(indices, False)
 
     def show_distribution_inspector(self):
-        """Open the distribution-inspector dialog for numeric fields."""
+        """Open the unified audit distribution explorer when available."""
+        if hasattr(self._parent, "open_training_set_distribution"):
+            self._parent.open_training_set_distribution()
+            return
         data = self.canvas.nep_result_data
         if data is None:
             MessageManager.send_info_message("NEP data has not been loaded yet!")

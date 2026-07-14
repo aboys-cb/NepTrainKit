@@ -65,6 +65,19 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
 
         parent.open_training_set_audit.assert_called_once_with(widget.nep_result_data)
 
+    def test_show_nep_distribution_entry_opens_unified_audit_section(self):
+        parent = SimpleNamespace(open_training_set_audit=MagicMock())
+        widget = ShowNepWidget.__new__(ShowNepWidget)
+        widget._parent = parent
+        widget.nep_result_data = SimpleNamespace(load_flag=True)
+
+        ShowNepWidget.open_training_set_distribution(widget)
+
+        parent.open_training_set_audit.assert_called_once_with(
+            widget.nep_result_data,
+            initial_section="distribution",
+        )
+
     def test_show_nep_audit_messages_use_show_nep_translation_context(self):
         widget = ShowNepWidget.__new__(ShowNepWidget)
         widget.nep_result_data = None
@@ -82,7 +95,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             ShowNepWidget.open_training_set_audit(widget)
 
         tr_mock.assert_called_once_with(
-            "Please load a dataset before running Training Set Audit."
+            "Please load a dataset before running Training Set Check."
         )
         info_mock.assert_called_once_with("translated ShowNep audit message")
 
@@ -99,7 +112,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         ):
             ShowNepWidget.open_training_set_audit(widget)
 
-        tr_mock.assert_called_once_with("Training Set Audit page is not available.")
+        tr_mock.assert_called_once_with("Training Set Check page is not available.")
         warning_mock.assert_called_once_with("translated unavailable audit page")
 
     def test_show_event_and_hide_event_manage_audit_action_lifecycle(self):
@@ -153,7 +166,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             main_module.NepTrainKitMainWindow.open_training_set_audit(window)
 
         tr_mock.assert_called_once_with(
-            "Please load a dataset before running Training Set Audit."
+            "Please load a dataset before running Training Set Check."
         )
         info_mock.assert_called_once_with("translated main audit message")
 
@@ -173,7 +186,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             )
 
         tr_mock.assert_called_once_with(
-            "Training Set Audit results are stale. Please rerun the audit for the current dataset."
+            "Training Set Check results are stale. Please rerun the checks for the current dataset."
         )
         info_mock.assert_called_once_with("translated stale audit message")
 
@@ -181,10 +194,16 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
         data = SimpleNamespace(data_xyz_path="train.xyz")
         audit_result = object()
-        window.show_nep_interface = SimpleNamespace(nep_result_data=data)
+        window.show_nep_interface = SimpleNamespace(
+            nep_result_data=data,
+            run_distribution_analysis=MagicMock(),
+            apply_distribution_selection=MagicMock(),
+        )
         window.training_set_audit_interface = SimpleNamespace(
             set_loading=MagicMock(),
             set_result=MagicMock(),
+            set_distribution_context=MagicMock(),
+            show_distribution_explorer=MagicMock(),
         )
         window.stackedWidget = SimpleNamespace(setCurrentWidget=MagicMock())
         callbacks = {}
@@ -214,8 +233,40 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window.training_set_audit_interface.set_result.assert_not_called()
         callbacks["on_finished"](audit_result)
         window.training_set_audit_interface.set_result.assert_called_once_with(audit_result)
+        window.training_set_audit_interface.show_distribution_explorer.assert_not_called()
         self.assertEqual(window.stackedWidget.setCurrentWidget.call_count, 2)
         window.stackedWidget.setCurrentWidget.assert_called_with(
+            window.training_set_audit_interface
+        )
+
+    def test_main_window_reuses_unchanged_training_set_audit_result(self):
+        window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
+        data = SimpleNamespace(data_xyz_path="train.xyz")
+        cached_result = object()
+        window.show_nep_interface = SimpleNamespace(
+            nep_result_data=data,
+            run_distribution_analysis=MagicMock(),
+            apply_distribution_selection=MagicMock(),
+        )
+        window.training_set_audit_interface = SimpleNamespace(
+            set_loading=MagicMock(),
+            set_result=MagicMock(),
+            set_distribution_context=MagicMock(),
+            show_distribution_explorer=MagicMock(),
+        )
+        window.stackedWidget = SimpleNamespace(setCurrentWidget=MagicMock())
+        signature = main_module.NepTrainKitMainWindow._training_set_audit_signature(window, data)
+        window._audited_result_data = data
+        window._audited_result_signature = signature
+        window._audited_result = cached_result
+
+        with patch.object(main_module, "run_in_thread") as thread_mock:
+            main_module.NepTrainKitMainWindow.open_training_set_audit(window, data)
+
+        thread_mock.assert_not_called()
+        window.training_set_audit_interface.set_loading.assert_not_called()
+        window.training_set_audit_interface.set_result.assert_called_once_with(cached_result)
+        window.stackedWidget.setCurrentWidget.assert_called_once_with(
             window.training_set_audit_interface
         )
 
@@ -228,7 +279,12 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             )
         )
         window._audited_result_data = shared_data
-        window._audited_result_signature = (3, (0, 2, 4))
+        window._audited_result_signature = (
+            main_module.NepTrainKitMainWindow._training_set_audit_signature(
+                window,
+                shared_data,
+            )
+        )
         window.show_nep_interface = SimpleNamespace(
             nep_result_data=shared_data,
             select_structure_indices=MagicMock(),
@@ -273,7 +329,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
 
         window.training_set_audit_interface.rerunAuditSignal.emit()
 
-        window.open_training_set_audit.assert_called_once_with()
+        window.open_training_set_audit.assert_called_once_with(force=True)
 
     def test_shipped_chinese_catalog_translates_audit_integration_contexts(self):
         catalog = (
@@ -288,15 +344,15 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         self._app.installTranslator(translator)
         try:
             main_context = {
-                "Training Set Audit": "训练集检查",
+                "Training Set Check": "训练集评估",
                 "current dataset": "当前数据集",
-                "Please load a dataset before running Training Set Audit.": "请先加载数据集，再运行训练集检查。",
-                "Training Set Audit results are stale. Please rerun the audit for the current dataset.": "训练集检查结果已过期，请针对当前数据集重新检查。",
+                "Please load a dataset before running Training Set Check.": "请先加载数据集，再运行训练集评估。",
+                "Training Set Check results are stale. Please rerun the checks for the current dataset.": "训练集评估结果已过期，请针对当前数据集重新检查。",
             }
             show_nep_context = {
-                "Audit current dataset": "检查当前数据集",
-                "Please load a dataset before running Training Set Audit.": "请先加载数据集，再运行训练集检查。",
-                "Training Set Audit page is not available.": "训练集检查页面不可用。",
+                "Check current dataset": "评估当前数据集",
+                "Please load a dataset before running Training Set Check.": "请先加载数据集，再运行训练集评估。",
+                "Training Set Check page is not available.": "训练集评估页面不可用。",
             }
             for source, expected in main_context.items():
                 self.assertEqual(

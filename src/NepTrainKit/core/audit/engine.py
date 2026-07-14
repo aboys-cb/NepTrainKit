@@ -2,26 +2,48 @@
 from __future__ import annotations
 
 from collections import Counter
+from dataclasses import replace
 from datetime import datetime, timezone
 from math import isfinite
 from typing import Any
 
 from .composition import audit_composition
-from .extract import indexed_structures_from_result_data, records_from_result_data
+from .config_types import audit_config_types
+from .context import build_fingerprints, resolve_audit_scope
+from .data_quality import audit_data_quality
+from .extract import records_from_indexed_structures
+from .findings import build_findings
 from .label_ranges import audit_label_ranges
 from .local_chemistry import audit_local_chemistry
+from .inventory import build_dataset_inventory
 from .nep_cutoff import parse_nep_cutoff
 from .pair_contacts import PairContactCollector
-from .result import AuditDimension, AuditResult, AuditStatus
+from .result import AuditContext, AuditDimension, AuditResult, AuditRun, AuditStatus
 
 
-def build_training_set_audit(result_data: Any, *, dataset_id: str = "current") -> AuditResult:
-    records = records_from_result_data(result_data)
+def build_audit(context: AuditContext) -> AuditRun:
+    """Build one immutable assessment run through the public core seam."""
+    result_data = context.dataset
+    scope, indexed_structures = resolve_audit_scope(
+        result_data,
+        context.scope_kind,
+        context.indices,
+    )
+    records = records_from_indexed_structures(indexed_structures)
+    inventory = build_dataset_inventory(records)
     dimensions = []
     slices = []
     overview: dict[str, object] = {"structures": len(records)}
 
-    for run_dimension in (audit_composition, audit_label_ranges):
+    quality_dimension, quality_slices, quality_overview = audit_data_quality(
+        indexed_structures,
+        result_data=result_data,
+    )
+    dimensions.append(quality_dimension)
+    slices.extend(quality_slices)
+    overview[quality_dimension.id] = quality_overview
+
+    for run_dimension in (audit_composition, audit_config_types, audit_label_ranges):
         dimension, dimension_slices, dimension_overview = run_dimension(records)
         dimensions.append(dimension)
         slices.extend(dimension_slices)
@@ -51,7 +73,7 @@ def build_training_set_audit(result_data: Any, *, dataset_id: str = "current") -
             profile = parse_nep_cutoff(model_path)
             pair_collector = PairContactCollector(profile)
             local_dimension, local_slices, local_overview = audit_local_chemistry(
-                indexed_structures_from_result_data(result_data),
+                indexed_structures,
                 profile,
                 pair_contact_collector=pair_collector,
             )
@@ -114,11 +136,32 @@ def build_training_set_audit(result_data: Any, *, dataset_id: str = "current") -
         }
     )
 
-    return AuditResult(
-        dataset_id=dataset_id,
+    source_path = getattr(result_data, "data_xyz_path", "")
+    audit_run = AuditResult(
+        dataset_id=context.dataset_id,
         generated_at=datetime.now(timezone.utc).isoformat(),
-        inputs={"structure_count": len(records)},
+        inputs={
+            "structure_count": len(records),
+            "source_structure_count": scope.source_count,
+            "scope": scope.kind.value,
+            "source_path": str(source_path) if source_path else "",
+            "ruleset_version": context.ruleset_version,
+        },
         dimensions=tuple(dimensions),
         slices=tuple(slices),
         overview_metrics=overview,
+        scope=scope,
+        fingerprints=build_fingerprints(result_data, scope),
+        ruleset_version=context.ruleset_version,
+        inventory=inventory,
     )
+    return replace(audit_run, findings=build_findings(audit_run))
+
+
+def build_training_set_audit(
+    result_data: Any,
+    *,
+    dataset_id: str = "current",
+) -> AuditRun:
+    """Compatibility adapter for callers that audit the active dataset."""
+    return build_audit(AuditContext(dataset=result_data, dataset_id=dataset_id))

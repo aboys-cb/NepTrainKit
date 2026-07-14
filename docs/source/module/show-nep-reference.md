@@ -36,7 +36,7 @@
 | <img src="../_static/image/generated/show_nep_icons/alignment.svg" width="20" /> | `Energy Baseline Shift` | 是 | 对能量基线做平移校正 |
 | <img src="../_static/image/generated/show_nep_icons/dft_d3.png" width="20" /> | `DFT D3` | 是 | 配置并应用 DFT-D3 校正 |
 | <img src="../_static/image/generated/show_nep_icons/summary.svg" width="20" /> | `Dataset Summary` | 是（结果展示） | 查看数据集摘要，可导出 HTML |
-| <img src="../_static/image/generated/show_nep_icons/distribution_inspector.svg" width="20" /> | `Distribution Inspector` | 是（非模态） | 查看数值字段分布并反向选择结构 |
+| <img src="../_static/image/generated/show_nep_icons/distribution_inspector.svg" width="20" /> | `Explore distributions` | 否（打开训练集评估页面） | 查看数值字段分布并反向选择结构 |
 
 ### 2.2 结构工具栏（右侧）
 
@@ -182,13 +182,15 @@
 
 ![Dataset Summary Dialog](../_static/image/generated/show_nep_reference/g_summary_dialog.png)
 
-#### M. `Distribution Inspector`
+#### M. `Explore distributions`
 
-- 输入控件：`Field / Group / Scope / View / Select mode / Bins / Curve / Include norm`。
-- 结果控件：`Metric / Series` 联动图；点击 bin 反向选择结构。
-- 执行结果：分布分析 + 选择回写主图。
+- 点击后打开 `训练集评估 → 数据分布`，不再弹出独立的 Distribution Inspector 窗口。
+- 默认只需要选择 `字段 / 数值类型 / 分组方式 / 数据范围`。
+- `选择方式 / 分箱数 / 辅助曲线 / 向量模长` 收入“高级选项”。
+- `Metric / Series` 与分布图联动；点击分箱会把对应结构选择回写到 Dataset Display。
+- Reference / Prediction / Error 只在底层数据支持时产生有效结果。
 
-![Distribution Inspector](../_static/image/generated/show_nep_reference/g_dist_dialog.png)
+原有独立窗口暂时作为兼容实现保留，但工具栏入口已经切换到统一页面。
 
 ## 4. 结构工具栏（按按钮查）
 

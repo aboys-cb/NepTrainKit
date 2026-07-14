@@ -84,6 +84,13 @@ def records_from_structures(structures: Sequence[Structure]) -> list[StructureAu
     return [_record_from_structure(index, structure) for index, structure in enumerate(structures)]
 
 
+def records_from_indexed_structures(
+    structures: Sequence[tuple[int, Structure]],
+) -> list[StructureAuditRecord]:
+    """Build compact records while preserving source-dataset indices."""
+    return [_record_from_structure(index, structure) for index, structure in structures]
+
+
 def indexed_structures_from_result_data(result_data: Any) -> list[tuple[int, Structure]]:
     """Return active structures with indices relative to the original dataset."""
     structure_data = getattr(result_data, "structure", result_data)
@@ -115,7 +122,4 @@ def indexed_structures_from_result_data(result_data: Any) -> list[tuple[int, Str
 
 
 def records_from_result_data(result_data: Any) -> list[StructureAuditRecord]:
-    return [
-        _record_from_structure(index, structure)
-        for index, structure in indexed_structures_from_result_data(result_data)
-    ]
+    return records_from_indexed_structures(indexed_structures_from_result_data(result_data))

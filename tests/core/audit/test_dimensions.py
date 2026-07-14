@@ -9,11 +9,13 @@ from ase.neighborlist import neighbor_list as ase_neighbor_list
 
 from NepTrainKit.core.audit import local_chemistry
 from NepTrainKit.core.audit.composition import audit_composition
+from NepTrainKit.core.audit.config_types import audit_config_types
 from NepTrainKit.core.audit.engine import build_training_set_audit
 from NepTrainKit.core.audit.extract import StructureAuditRecord, indexed_structures_from_result_data
 from NepTrainKit.core.audit.label_ranges import audit_label_ranges
 from NepTrainKit.core.audit.local_chemistry import audit_local_chemistry
 from NepTrainKit.core.audit.nep_cutoff import NepCutoffProfile
+from NepTrainKit.core.audit.pair_contacts import PairContactCollector
 from NepTrainKit.core.audit.result import AuditBiasType, AuditSeverity, AuditStatus
 from NepTrainKit.core.structure import Structure
 
@@ -86,6 +88,32 @@ def test_composition_plot_emits_histogram_payload():
     assert sum(plot["series"][0]["counts"]) == len(records)
     assert len(plot["series"][0]["bin_edges"]) == len(plot["series"][0]["counts"]) + 1
     assert all(isinstance(group, tuple) for group in plot["series"][0]["structure_indices"])
+
+
+def test_config_type_distribution_is_evidence_not_a_rarity_alarm():
+    records = [
+        _record(4, {"Fe": 1.0}, " bulk "),
+        _record(8, {"Fe": 1.0}, "bulk"),
+        _record(11, {"Fe": 1.0}, "defect"),
+        _record(15, {"Fe": 1.0}, ""),
+    ]
+
+    dimension, slices, overview = audit_config_types(records)
+
+    assert dimension.status is AuditStatus.PARTIAL
+    assert slices == ()
+    assert overview == {
+        "group_count": 2,
+        "labeled_count": 3,
+        "missing_count": 1,
+        "groups": {"bulk": 2, "defect": 1},
+    }
+    plot = dimension.plots[0]
+    series = plot["series"][0]
+    assert series["labels"] == ("bulk", "defect")
+    assert series["counts"] == (2, 1)
+    assert series["structure_indices"] == ((4, 8), (11,))
+    assert plot["missing_structure_indices"] == (15,)
 
 
 def test_composition_uses_exact_nonoverlapping_labels_and_fixed_edge_membership():
@@ -407,7 +435,43 @@ def test_local_chemistry_compiled_neighbor_search_matches_ase_for_periodic_struc
     assert actual_rows == expected_rows
 
 
-def test_local_chemistry_processes_structures_without_retaining_all_ase_atoms():
+def test_native_local_chemistry_aggregates_match_python_policy_fallback():
+    profile = NepCutoffProfile(("Fe", "Ni"), (2.4, 2.2), (1.5, 1.3))
+    structures = [
+        _structure(["Fe", "Ni"], [[0.2, 0.2, 0.2], [4.8, 0.2, 0.2]]),
+        _structure(
+            ["Fe", "Fe", "Ni"],
+            [[0.1, 0.1, 0.1], [1.2, 0.2, 0.1], [4.7, 4.8, 0.2]],
+            cell=np.asarray([[5.0, 0.0, 0.0], [1.1, 4.8, 0.0], [0.3, 0.5, 5.2]]),
+        ),
+    ]
+    indexed = list(enumerate(structures))
+
+    native_collector = PairContactCollector(profile)
+    native_local = audit_local_chemistry(
+        indexed,
+        profile,
+        pair_contact_collector=native_collector,
+    )
+    native_pair = native_collector.finalize()
+    reference_collector = PairContactCollector(profile)
+    with patch.object(local_chemistry, "typed_neighbor_counts", return_value=None), patch.object(
+        local_chemistry,
+        "typed_contact_summary",
+        return_value=None,
+    ):
+        reference_local = audit_local_chemistry(
+            indexed,
+            profile,
+            pair_contact_collector=reference_collector,
+        )
+    reference_pair = reference_collector.finalize()
+
+    assert native_local == reference_local
+    assert native_pair == reference_pair
+
+
+def test_local_chemistry_batches_neighbor_recovery_without_ase_conversion():
     indexed = [
         (
             index,
@@ -416,29 +480,20 @@ def test_local_chemistry_processes_structures_without_retaining_all_ase_atoms():
         for index in range(3)
     ]
     profile = NepCutoffProfile(("Fe", "Ni"), (2.0, 2.0), (1.1, 1.1))
-    original_as_atoms = local_chemistry._as_atoms
-    original_neighbor_pairs = local_chemistry._compiled_neighbor_pairs
-    conversion_count = 0
-    search_count = 0
+    original_batch = local_chemistry.cutoff_neighbor_pairs_batch
+    batch_count = 0
 
-    def track_as_atoms(*args, **kwargs):
-        nonlocal conversion_count
-        conversion_count += 1
-        return original_as_atoms(*args, **kwargs)
+    def track_batch(*args, **kwargs):
+        nonlocal batch_count
+        batch_count += 1
+        return original_batch(*args, **kwargs)
 
-    def track_neighbor_pairs(*args, **kwargs):
-        nonlocal search_count
-        assert conversion_count == search_count + 1
-        search_count += 1
-        return original_neighbor_pairs(*args, **kwargs)
-
-    with patch.object(local_chemistry, "_as_atoms", side_effect=track_as_atoms), patch.object(
-        local_chemistry, "_compiled_neighbor_pairs", side_effect=track_neighbor_pairs
+    with patch.object(local_chemistry, "_as_atoms", side_effect=AssertionError("ASE conversion is not expected")), patch.object(
+        local_chemistry, "cutoff_neighbor_pairs_batch", side_effect=track_batch
     ):
         audit_local_chemistry(indexed, profile)
 
-    assert conversion_count == len(indexed)
-    assert search_count == len(indexed)
+    assert batch_count == 1
 
 
 def test_local_chemistry_flags_populated_bins_below_ten_percent():
@@ -479,7 +534,9 @@ def test_engine_appends_unavailable_local_chemistry_without_breaking_mvp_dimensi
     result = build_training_set_audit(result_data)
 
     assert tuple(dimension.id for dimension in result.dimensions) == (
+        "data_quality",
         "composition",
+        "config_types",
         "label_ranges",
         "local_chemistry",
         "pair_contacts",
@@ -543,16 +600,35 @@ def test_pair_contacts_distinguish_co_sampling_from_local_contact(tmp_path: Path
     assert metrics["contact_structures"] == 1
 
 
-def test_engine_adds_dashboard_overview_counts(monkeypatch):
-    records = [
-        _record(0, {"Fe": 1.0}, "bulk", energy=-1.0, force=0.2, virial=1.0),
-        _record(1, {"Fe": 1.0}, "   ", energy=float("nan"), force=float("nan"), virial=None),
-        _record(2, {"Ni": 1.0}, " defect ", energy=-0.8, force=float("inf"), virial=float("nan")),
-        _record(3, {"Ni": 1.0}, "bulk", energy=float("inf"), force=None, virial=float("inf")),
-    ]
-    monkeypatch.setattr("NepTrainKit.core.audit.engine.records_from_result_data", lambda _: records)
+def test_engine_adds_dashboard_overview_counts():
+    def labeled(element, config_type, energy, force, virial):
+        structure = _structure([element], [[1.0, 1.0, 1.0]], config_type=config_type)
+        if energy is not None:
+            structure.energy = energy
+        if force is not None:
+            structure.forces = np.asarray([[force, 0.0, 0.0]])
+        if virial is not None:
+            structure.virial = np.asarray([virial, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        return structure
 
-    result = build_training_set_audit(object())
+    structures = np.asarray(
+        [
+            labeled("Fe", "bulk", -1.0, 0.2, 1.0),
+            labeled("Fe", "   ", float("nan"), float("nan"), None),
+            labeled("Ni", " defect ", -0.8, float("inf"), float("nan")),
+            labeled("Ni", "bulk", float("inf"), None, float("inf")),
+        ],
+        dtype=object,
+    )
+    result_data = SimpleNamespace(
+        structure=SimpleNamespace(
+            all_data=structures,
+            now_indices=np.arange(len(structures), dtype=np.int32),
+        ),
+        nep_txt_path=None,
+    )
+
+    result = build_training_set_audit(result_data)
 
     assert result.overview_metrics["finding_count"] == len(result.slices)
     assert result.overview_metrics["severity_counts"] == {

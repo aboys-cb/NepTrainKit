@@ -127,7 +127,7 @@ class NepTrainKitMainWindow(FluentWindow):
         self.addSubInterface(
             self.training_set_audit_interface,
             QIcon(':/images/src/images/summary.svg'),
-            self.tr('Training Set Audit'),
+            self.tr('Training Set Check'),
         )
         self.addSubInterface(
             self.make_data_interface,
@@ -156,6 +156,7 @@ class NepTrainKitMainWindow(FluentWindow):
         self.data_manager_interface = DataManagerWidget(self)
         self._audited_result_data = None
         self._audited_result_signature = None
+        self._audited_result = None
         self._connect_training_set_audit_signals()
 
     def _connect_training_set_audit_signals(self) -> None:
@@ -163,7 +164,9 @@ class NepTrainKitMainWindow(FluentWindow):
         self.training_set_audit_interface.selectStructuresSignal.connect(
             self.handle_training_set_audit_selection
         )
-        self.training_set_audit_interface.rerunAuditSignal.connect(self.open_training_set_audit)
+        self.training_set_audit_interface.rerunAuditSignal.connect(
+            lambda: self.open_training_set_audit(force=True)
+        )
 
     def initWindow(self) -> None:
         """Configure top-level window parameters such as size and title."""
@@ -186,30 +189,65 @@ class NepTrainKitMainWindow(FluentWindow):
         if hasattr(widget, "export_file"):
             widget.export_file()  # pyright: ignore[attr-defined]
 
-    def _training_set_audit_signature(self, result_data) -> tuple[object | None, tuple[int, ...]]:
-        """Return a deterministic snapshot of the current active structure state."""
-        version = None
+    def _training_set_audit_signature(self, result_data) -> tuple[object, ...]:
+        """Return a cheap snapshot for safe reuse of an unchanged audit run."""
+        versions: list[object | None] = []
+        for attribute in ("structure", "energy", "_force_vector_dataset", "virial"):
+            try:
+                dataset = getattr(result_data, attribute)
+                versions.append(getattr(dataset.data, "version", None))
+            except Exception:
+                versions.append(None)
         indices: tuple[int, ...] = ()
-        try:
-            version = getattr(result_data.structure.data, "version", None)
-        except Exception:
-            version = None
         try:
             raw_indices = getattr(result_data.structure, "now_indices", ())
             indices = tuple(int(index) for index in raw_indices)
         except Exception:
             indices = ()
-        return version, indices
+        file_signatures = []
+        for attribute in ("data_xyz_path", "nep_txt_path"):
+            try:
+                target = Path(getattr(result_data, attribute))
+                stat = target.stat()
+                file_signatures.append((str(target), stat.st_size, stat.st_mtime_ns))
+            except Exception:
+                file_signatures.append(None)
+        return tuple(versions), indices, tuple(file_signatures)
 
-    def open_training_set_audit(self, result_data=None) -> None:
+    def open_training_set_audit(
+        self,
+        result_data=None,
+        *,
+        initial_section: str = "summary",
+        force: bool = False,
+    ) -> None:
         """Build and show Training Set Audit for ``result_data`` or the current dataset."""
         data = result_data if result_data is not None else getattr(self.show_nep_interface, "nep_result_data", None)
         if data is None:
             MessageManager.send_info_message(
-                self.tr("Please load a dataset before running Training Set Audit.")
+                self.tr("Please load a dataset before running Training Set Check.")
             )
             return
         dataset_id = str(getattr(data, "data_xyz_path", self.tr("current dataset")))
+        signature = self._training_set_audit_signature(data)
+        cached_result = getattr(self, "_audited_result", None)
+        if (
+            not force
+            and cached_result is not None
+            and getattr(self, "_audited_result_data", None) is data
+            and getattr(self, "_audited_result_signature", None) == signature
+        ):
+            self.training_set_audit_interface.set_result(cached_result)
+            self.training_set_audit_interface.set_distribution_context(
+                data=data,
+                run_analysis_callback=self.show_nep_interface.run_distribution_analysis,
+                apply_selection_callback=self.show_nep_interface.apply_distribution_selection,
+            )
+            if initial_section == "distribution":
+                self.training_set_audit_interface.show_distribution_explorer()
+            self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
+            return
+        self.training_set_audit_interface.set_distribution_context(data=None)
         self.training_set_audit_interface.set_loading(dataset_id)
         self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
 
@@ -219,13 +257,21 @@ class NepTrainKitMainWindow(FluentWindow):
                 return
             self._audited_result_data = data
             self._audited_result_signature = self._training_set_audit_signature(data)
+            self._audited_result = result
             self.training_set_audit_interface.set_result(result)
+            self.training_set_audit_interface.set_distribution_context(
+                data=data,
+                run_analysis_callback=self.show_nep_interface.run_distribution_analysis,
+                apply_selection_callback=self.show_nep_interface.apply_distribution_selection,
+            )
+            if initial_section == "distribution":
+                self.training_set_audit_interface.show_distribution_explorer()
             self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
 
         def report_error(message: str) -> None:
             self._training_set_audit_thread = None
             MessageManager.send_warning_message(
-                self.tr("Training Set Audit failed: {message}").format(message=message)
+                self.tr("Training Set Check failed: {message}").format(message=message)
             )
 
         self._training_set_audit_thread = run_in_thread(
@@ -248,7 +294,7 @@ class NepTrainKitMainWindow(FluentWindow):
         ):
             MessageManager.send_info_message(
                 self.tr(
-                    "Training Set Audit results are stale. Please rerun the audit for the current dataset."
+                    "Training Set Check results are stale. Please rerun the checks for the current dataset."
                 )
             )
             return

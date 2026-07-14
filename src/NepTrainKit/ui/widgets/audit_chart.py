@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from math import ceil, isfinite
+from math import ceil, expm1, isfinite, log1p
 from numbers import Integral
 from typing import Any
 
@@ -67,7 +67,7 @@ class AuditChartWidget(QWidget):
 
         kind = plot.get("kind")
         plot_id = plot.get("id")
-        if kind not in {"histogram", "categorical_bars"} or not isinstance(plot_id, str) or not plot_id:
+        if kind not in {"histogram", "categorical_bars", "composition_stems"} or not isinstance(plot_id, str) or not plot_id:
             return None
 
         series_items = plot.get("series")
@@ -107,11 +107,45 @@ class AuditChartWidget(QWidget):
                 and len(labels) == len(counts)
             ):
                 normalized["bin_labels"] = tuple(str(label) for label in labels)
-        else:
+        elif kind == "categorical_bars":
             labels = series.get("labels")
             if not isinstance(labels, Sequence) or isinstance(labels, (str, bytes)) or len(labels) != len(counts):
                 return None
             normalized["labels"] = tuple(str(label) for label in labels)
+        else:
+            x_values = AuditChartWidget._numeric_values(
+                series.get("x_values"), nonnegative=False
+            )
+            if len(x_values) != len(counts) or any(
+                value < 0.0 or value > 1.0 for value in x_values
+            ):
+                return None
+            labels = series.get("labels")
+            if not isinstance(labels, Sequence) or isinstance(labels, (str, bytes)) or len(labels) != len(counts):
+                labels = tuple(f"{value:.4g}" for value in x_values)
+            target_points = AuditChartWidget._numeric_values(
+                plot.get("target_points", ()), nonnegative=False
+            )
+            try:
+                x_min = float(plot.get("x_min", 0.0))
+                x_max = float(plot.get("x_max", 1.0))
+            except (TypeError, ValueError):
+                return None
+            if (
+                not isfinite(x_min)
+                or not isfinite(x_max)
+                or x_min >= x_max
+                or any(value < x_min or value > x_max for value in x_values)
+            ):
+                return None
+            normalized["x_values"] = x_values
+            normalized["x_min"] = x_min
+            normalized["x_max"] = x_max
+            normalized["labels"] = tuple(str(label) for label in labels)
+            normalized["log_scale"] = bool(plot.get("log_scale", False))
+            normalized["target_points"] = tuple(
+                value for value in target_points if 0.0 <= value <= 1.0
+            )
         return normalized
 
     @staticmethod
@@ -181,8 +215,10 @@ class AuditChartWidget(QWidget):
         self._draw_title(painter)
         if self._plot["kind"] == "histogram":
             self._draw_histogram(painter)
-        else:
+        elif self._plot["kind"] == "categorical_bars":
             self._draw_categorical_bars(painter)
+        else:
+            self._draw_composition_stems(painter)
 
     def _draw_title(self, painter: QPainter) -> None:
         title_font = QFont(painter.font())
@@ -289,6 +325,131 @@ class AuditChartWidget(QWidget):
                 f"{count:g}",
             )
 
+        self._draw_axis_labels(painter, chart)
+
+    def _draw_composition_stems(self, painter: QPainter) -> None:
+        chart = QRectF(58, 38, max(1, self.width() - 76), max(1, self.height() - 82))
+        counts = self._plot["counts"]
+        x_min = self._plot["x_min"]
+        x_max = self._plot["x_max"]
+        x_span = x_max - x_min
+
+        def chart_x(value: float) -> float:
+            return chart.left() + chart.width() * (value - x_min) / x_span
+
+        log_scale = self._plot["log_scale"]
+        display_counts = tuple(log1p(value) for value in counts) if log_scale else counts
+        max_display = max(display_counts) if max(display_counts) > 0 else 1.0
+
+        painter.setPen(QPen(_GRID, 1))
+        metrics = QFontMetrics(painter.font())
+        for index in range(5):
+            fraction = index / 4
+            y = chart.bottom() - chart.height() * fraction
+            painter.drawLine(chart.left(), y, chart.right(), y)
+            display_value = max_display * fraction
+            value = expm1(display_value) if log_scale else display_value
+            label = f"{int(round(value)):,}"
+            painter.setPen(_TEXT)
+            painter.drawText(
+                QRectF(2, y - 8, chart.left() - 8, 16),
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                label,
+            )
+            painter.setPen(QPen(_GRID, 1))
+
+        for target in self._plot["target_points"]:
+            x = chart_x(target)
+            painter.setPen(QPen(_ORANGE, 1, Qt.PenStyle.DashLine))
+            painter.drawLine(x, chart.top(), x, chart.bottom())
+
+        painter.setPen(QPen(_TEXT, 1))
+        painter.drawLine(chart.left(), chart.bottom(), chart.right(), chart.bottom())
+        painter.drawLine(chart.left(), chart.top(), chart.left(), chart.bottom())
+
+        point_width = max(7.0, min(16.0, chart.width() / max(1, len(counts)) * 0.35))
+        labeled_indices = set(
+            sorted(range(len(counts)), key=lambda index: counts[index], reverse=True)[:3]
+        )
+        labeled_indices.update(
+            index
+            for index, value in enumerate(self._plot["x_values"])
+            if value <= 1.0e-8 or value >= 1.0 - 1.0e-8
+        )
+        labeled_indices.update(
+            index
+            for index, value in enumerate(self._plot["x_values"])
+            if any(abs(value - target) <= 1.0e-8 for target in self._plot["target_points"])
+        )
+        occupied_labels: list[QRectF] = []
+        for index, (x_value, count, display_count) in enumerate(
+            zip(self._plot["x_values"], counts, display_counts)
+        ):
+            x = chart_x(x_value)
+            height = chart.height() * display_count / max_display
+            top = chart.bottom() - height
+            color = _ORANGE if index in self._plot["highlighted_bins"] else _TEAL
+            painter.setPen(QPen(color, 2))
+            painter.drawLine(x, chart.bottom(), x, top)
+            painter.setBrush(color)
+            painter.drawEllipse(QRectF(x - 3.5, top - 3.5, 7, 7))
+            hit_rect = QRectF(
+                x - point_width / 2,
+                max(chart.top(), top - 8),
+                point_width,
+                max(16.0, chart.bottom() - top + 8),
+            )
+            self._bar_rects.append((hit_rect, self._plot["structure_indices"][index]))
+            self._bar_tooltips.append(
+                f"{self._plot['labels'][index]}: {count:g}"
+            )
+            if index in labeled_indices:
+                label = f"{count:,.0f}"
+                width = metrics.horizontalAdvance(label) + 8
+                left = min(
+                    max(chart.left(), x - width / 2),
+                    chart.right() - width,
+                )
+                candidates = (
+                    top - 22,
+                    top - 40,
+                    top + 5,
+                    top - 58,
+                )
+                label_rect = next(
+                    (
+                        QRectF(left, max(chart.top(), candidate), width, 16)
+                        for candidate in candidates
+                        if not any(
+                            existing.intersects(
+                                QRectF(left, max(chart.top(), candidate), width, 16)
+                            )
+                            for existing in occupied_labels
+                        )
+                    ),
+                    None,
+                )
+                if label_rect is not None:
+                    occupied_labels.append(label_rect.adjusted(-2, -1, 2, 1))
+                    painter.fillRect(label_rect.adjusted(-2, -1, 2, 1), _BACKGROUND)
+                    painter.setPen(_TEXT)
+                    painter.drawText(
+                        label_rect,
+                        Qt.AlignmentFlag.AlignCenter,
+                        label,
+                    )
+
+        for index in range(5):
+            fraction = index / 4
+            x = chart_x(fraction)
+            label = f"{fraction:.0%}"
+            width = metrics.horizontalAdvance(label) + 4
+            painter.setPen(_TEXT)
+            painter.drawText(
+                QRectF(x - width / 2, chart.bottom() + 4, width, 16),
+                Qt.AlignmentFlag.AlignCenter,
+                label,
+            )
         self._draw_axis_labels(painter, chart)
 
     def _draw_grid(self, painter: QPainter, chart: QRectF, *, horizontal: bool) -> None:

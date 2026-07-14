@@ -15,12 +15,18 @@ from scipy.spatial import cKDTree
 from NepTrainKit.core.structure import Structure
 
 from .nep_cutoff import NepCutoffProfile
+from .neighbor_scan import (
+    cutoff_neighbor_pairs_batch,
+    typed_contact_summary,
+    typed_neighbor_counts,
+)
 from .result import AuditBiasType, AuditDimension, AuditSeverity, AuditSlice, AuditStatus, SliceMetric
 
 
 _SCOPE_TITLES = {"angular": "Angular core", "radial": "Radial context"}
 _FRACTION_EDGES = tuple(index / 10.0 for index in range(11))
 _FRACTION_LABELS = tuple(f"{10 * index}-{10 * (index + 1)}%" for index in range(10))
+_NATIVE_BATCH_SIZE = 512
 
 
 @dataclass
@@ -34,6 +40,22 @@ class _Histogram:
         self.structure_indices[bin_index][structure_index] = None
         self.sample_count += 1
 
+    def add_many(self, bin_indices: np.ndarray, structure_indices: np.ndarray) -> None:
+        """Merge a full-scope vectorized histogram payload."""
+        bins = np.asarray(bin_indices, dtype=np.int64).reshape(-1)
+        sources = np.asarray(structure_indices, dtype=np.int64).reshape(-1)
+        if bins.size != sources.size:
+            raise ValueError("Histogram bins and structure indices must have matching sizes.")
+        if bins.size == 0:
+            return
+        unique_bins, counts = np.unique(bins, return_counts=True)
+        self.counts.update(
+            {int(bin_index): int(count) for bin_index, count in zip(unique_bins, counts)}
+        )
+        for bin_index in unique_bins:
+            ordered_sources = dict.fromkeys(int(index) for index in sources[bins == bin_index])
+            self.structure_indices[int(bin_index)].update(ordered_sources)
+        self.sample_count += int(bins.size)
 
 def _pbc_flags(structure: Structure) -> tuple[bool, bool, bool]:
     value = getattr(structure, "additional_fields", {}).get("pbc", "T T T")
@@ -67,6 +89,14 @@ def _pbc_flags(structure: Structure) -> tuple[bool, bool, bool]:
 
 
 def _as_atoms(structure: Structure, model_elements: set[str]) -> tuple[Atoms, tuple[str, ...]]:
+    positions, cell, pbc, symbols = _geometry_arrays(structure, model_elements)
+    return Atoms(symbols=symbols, positions=positions, cell=cell, pbc=pbc), symbols
+
+
+def _geometry_arrays(
+    structure: Structure,
+    model_elements: set[str],
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, tuple[str, ...]]:
     symbols = tuple(str(symbol) for symbol in structure.elements)
     unknown = sorted(set(symbols) - model_elements)
     if unknown:
@@ -78,7 +108,31 @@ def _as_atoms(structure: Structure, model_elements: set[str]) -> tuple[Atoms, tu
         raise ValueError("A structure has invalid positions or cell data.")
     if not np.all(np.isfinite(positions)) or not np.all(np.isfinite(cell)):
         raise ValueError("A structure has non-finite positions or cell data.")
-    return Atoms(symbols=symbols, positions=positions, cell=cell, pbc=_pbc_flags(structure)), symbols
+    return positions, cell, np.asarray(_pbc_flags(structure), dtype=np.bool_), symbols
+
+
+def _iter_cutoff_neighbor_batches(
+    indexed_structures: Sequence[tuple[int, Structure]],
+    model_elements: set[str],
+    cutoff: float,
+):
+    for start in range(0, len(indexed_structures), _NATIVE_BATCH_SIZE):
+        chunk = indexed_structures[start : start + _NATIVE_BATCH_SIZE]
+        prepared = [
+            (structure_index, *_geometry_arrays(structure, model_elements))
+            for structure_index, structure in chunk
+        ]
+        pair_offsets, centers, neighbors, distances = cutoff_neighbor_pairs_batch(
+            [item[1] for item in prepared],
+            [item[2] for item in prepared],
+            [item[3] for item in prepared],
+            cutoff,
+        )
+        atom_counts = np.asarray([len(item[1]) for item in prepared], dtype=np.int64)
+        atom_offsets = np.empty(len(prepared) + 1, dtype=np.int64)
+        atom_offsets[0] = 0
+        np.cumsum(atom_counts, out=atom_offsets[1:])
+        yield prepared, atom_offsets, pair_offsets, centers, neighbors, distances
 
 
 def _pair_cutoffs(profile: NepCutoffProfile, elements: tuple[str, ...], scope: str) -> dict[tuple[int, int], float]:
@@ -272,64 +326,138 @@ def audit_local_chemistry(
     model_elements = set(elements)
     histograms: dict[tuple[str, str, str], _Histogram] = defaultdict(_Histogram)
     max_radial_cutoff = float(max(profile.radial_cutoffs))
-    radial_pair_cutoffs = {
-        (atomic_numbers[first], atomic_numbers[second]): max_radial_cutoff
-        for first_index, first in enumerate(elements)
-        for second in elements[first_index:]
-    }
-    candidate_cutoff_matrix = np.full((len(elements), len(elements)), max_radial_cutoff, dtype=np.float64)
     radial_cutoff_matrix = _cutoff_matrix(profile, elements, "radial")
     angular_cutoff_matrix = _cutoff_matrix(profile, elements, "angular")
     element_indices = {element: index for index, element in enumerate(elements)}
-    element_number_indices = {atomic_numbers[element]: index for element, index in element_indices.items()}
     present_elements: set[str] = set()
-    for structure_index, structure in indexed_structures:
-        atoms, symbols = _as_atoms(structure, model_elements)
-        present_elements.update(symbols)
-        centers, neighbors, distances = _compiled_neighbor_pairs(
-            atoms,
-            radial_pair_cutoffs,
-            candidate_cutoff_matrix,
-            element_number_indices,
+    cutoff_matrices = np.stack([angular_cutoff_matrix, radial_cutoff_matrix])
+    source_atom_parts: list[np.ndarray] = []
+    atom_type_parts: list[np.ndarray] = []
+    neighbor_count_parts: list[np.ndarray] = []
+    neighbor_type_count_parts: list[np.ndarray] = []
+    for prepared, atom_offsets, pair_offsets, batch_centers, batch_neighbors, batch_distances in _iter_cutoff_neighbor_batches(
+        indexed_structures,
+        model_elements,
+        max_radial_cutoff,
+    ):
+        atom_types = np.concatenate(
+            [np.asarray([element_indices[symbol] for symbol in item[4]], dtype=np.int32) for item in prepared]
         )
-        atom_element_indices = np.asarray([element_indices[symbol] for symbol in symbols], dtype=np.intp)
-        neighbor_element_indices = atom_element_indices[neighbors]
-        radial_mask = distances < radial_cutoff_matrix[
-            atom_element_indices[centers], neighbor_element_indices
-        ]
-        angular_mask = distances < angular_cutoff_matrix[
-            atom_element_indices[centers], neighbor_element_indices
-        ]
-        if pair_contact_collector is not None:
-            pair_contact_collector.observe(
-                structure_index,
-                symbols,
-                centers,
-                neighbors,
-                distances,
-                {"angular": angular_cutoff_matrix, "radial": radial_cutoff_matrix},
-            )
-        for scope, scope_centers, scope_neighbor_element_indices in (
-            ("angular", centers[angular_mask], neighbor_element_indices[angular_mask]),
-            ("radial", centers[radial_mask], neighbor_element_indices[radial_mask]),
-        ):
-            neighbor_counts = np.bincount(scope_centers, minlength=len(symbols))
-            neighbor_element_counts = {
-                neighbor_element: np.bincount(
-                    scope_centers[scope_neighbor_element_indices == neighbor_index],
-                    minlength=len(symbols),
+        neighbor_summary = typed_neighbor_counts(
+            atom_offsets,
+            atom_types,
+            pair_offsets,
+            batch_centers,
+            batch_neighbors,
+            batch_distances,
+            cutoff_matrices,
+        )
+        if neighbor_summary is not None:
+            source_atom_parts.append(
+                np.repeat(
+                    np.asarray([item[0] for item in prepared], dtype=np.int64),
+                    np.diff(atom_offsets),
                 )
-                for neighbor_index, neighbor_element in enumerate(elements)
-            }
-            for atom_index, center in enumerate(symbols):
-                count = int(neighbor_counts[atom_index])
-                histograms[(scope, center, "neighbor_count")].add(count, structure_index)
-                for neighbor_element in elements:
-                    fraction = 0.0 if count == 0 else neighbor_element_counts[neighbor_element][atom_index] / count
-                    fraction_bin = min(int(float(fraction) * 10.0), 9)
-                    histograms[(scope, center, f"neighbor_fraction_{neighbor_element}")].add(
-                        fraction_bin,
-                        structure_index,
+            )
+            atom_type_parts.append(atom_types)
+            neighbor_count_parts.append(neighbor_summary[0])
+            neighbor_type_count_parts.append(neighbor_summary[1])
+        contact_summary = None
+        if pair_contact_collector is not None:
+            contact_summary = typed_contact_summary(
+                atom_offsets,
+                atom_types,
+                pair_offsets,
+                batch_centers,
+                batch_neighbors,
+                batch_distances,
+                cutoff_matrices,
+                pair_contact_collector.detail_mask(),
+            )
+            if contact_summary is not None:
+                pair_contact_collector.observe_batch(
+                    [item[0] for item in prepared],
+                    [item[4] for item in prepared],
+                    *contact_summary,
+                )
+        for row, (structure_index, _positions, _cell, _pbc, symbols) in enumerate(prepared):
+            present_elements.update(symbols)
+            pair_start = int(pair_offsets[row])
+            pair_stop = int(pair_offsets[row + 1])
+            centers = batch_centers[pair_start:pair_stop]
+            neighbors = batch_neighbors[pair_start:pair_stop]
+            distances = batch_distances[pair_start:pair_stop]
+            atom_element_indices = np.asarray([element_indices[symbol] for symbol in symbols], dtype=np.intp)
+            neighbor_element_indices = atom_element_indices[neighbors]
+            radial_mask = distances < radial_cutoff_matrix[
+                atom_element_indices[centers], neighbor_element_indices
+            ]
+            angular_mask = distances < angular_cutoff_matrix[
+                atom_element_indices[centers], neighbor_element_indices
+            ]
+            if pair_contact_collector is not None and contact_summary is None:
+                pair_contact_collector.observe(
+                    structure_index,
+                    symbols,
+                    centers,
+                    neighbors,
+                    distances,
+                    {"angular": angular_cutoff_matrix, "radial": radial_cutoff_matrix},
+                )
+            if neighbor_summary is not None:
+                continue
+            for scope, scope_centers, scope_neighbor_element_indices in (
+                ("angular", centers[angular_mask], neighbor_element_indices[angular_mask]),
+                ("radial", centers[radial_mask], neighbor_element_indices[radial_mask]),
+            ):
+                neighbor_counts = np.bincount(scope_centers, minlength=len(symbols))
+                neighbor_element_counts = {
+                    neighbor_element: np.bincount(
+                        scope_centers[scope_neighbor_element_indices == neighbor_index],
+                        minlength=len(symbols),
+                    )
+                    for neighbor_index, neighbor_element in enumerate(elements)
+                }
+                for atom_index, center in enumerate(symbols):
+                    count = int(neighbor_counts[atom_index])
+                    histograms[(scope, center, "neighbor_count")].add(count, structure_index)
+                    for neighbor_element in elements:
+                        fraction = (
+                            0.0
+                            if count == 0
+                            else neighbor_element_counts[neighbor_element][atom_index] / count
+                        )
+                        fraction_bin = min(int(float(fraction) * 10.0), 9)
+                        histograms[(scope, center, f"neighbor_fraction_{neighbor_element}")].add(
+                            fraction_bin,
+                            structure_index,
+                        )
+
+    if source_atom_parts:
+        source_atoms = np.concatenate(source_atom_parts)
+        all_atom_types = np.concatenate(atom_type_parts)
+        all_neighbor_counts = np.concatenate(neighbor_count_parts, axis=1)
+        all_neighbor_type_counts = np.concatenate(neighbor_type_count_parts, axis=1)
+        for scope_index, scope in enumerate(("angular", "radial")):
+            for center_index, center in enumerate(elements):
+                center_mask = all_atom_types == center_index
+                center_counts = all_neighbor_counts[scope_index, center_mask]
+                center_sources = source_atoms[center_mask]
+                histograms[(scope, center, "neighbor_count")].add_many(
+                    center_counts,
+                    center_sources,
+                )
+                for neighbor_index, neighbor_element in enumerate(elements):
+                    fractions = np.divide(
+                        all_neighbor_type_counts[scope_index, center_mask, neighbor_index],
+                        center_counts,
+                        out=np.zeros(center_counts.shape, dtype=np.float64),
+                        where=center_counts != 0,
+                    )
+                    fraction_bins = np.minimum((fractions * 10.0).astype(np.int64), 9)
+                    histograms[(scope, center, f"neighbor_fraction_{neighbor_element}")].add_many(
+                        fraction_bins,
+                        center_sources,
                     )
 
     if not present_elements:

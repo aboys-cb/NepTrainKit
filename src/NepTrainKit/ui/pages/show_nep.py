@@ -237,7 +237,7 @@ class ShowNepWidget(QWidget):
 
         self.audit_current_dataset_action = Action(
             QIcon(":/images/src/images/summary.svg"),
-            self.tr("Audit current dataset"),
+            self.tr("Check current dataset"),
         )
         self.audit_current_dataset_action.triggered.connect(self.open_training_set_audit)
 
@@ -1897,14 +1897,50 @@ class ShowNepWidget(QWidget):
         """Open Training Set Audit for the currently loaded dataset."""
         if self.nep_result_data is None or not getattr(self.nep_result_data, "load_flag", False):
             MessageManager.send_info_message(
-                self.tr("Please load a dataset before running Training Set Audit.")
+                self.tr("Please load a dataset before running Training Set Check.")
             )
             return
         if hasattr(self._parent, "open_training_set_audit"):
             self._parent.open_training_set_audit(self.nep_result_data)
             return
         MessageManager.send_warning_message(
-            self.tr("Training Set Audit page is not available.")
+            self.tr("Training Set Check page is not available.")
+        )
+
+    def open_training_set_distribution(self):
+        """Open the unified audit page directly on numeric distributions."""
+        if self.nep_result_data is None or not getattr(self.nep_result_data, "load_flag", False):
+            MessageManager.send_info_message(
+                self.tr("Please load a dataset before running Training Set Check.")
+            )
+            return
+        if hasattr(self._parent, "open_training_set_audit"):
+            self._parent.open_training_set_audit(
+                self.nep_result_data,
+                initial_section="distribution",
+            )
+            return
+        MessageManager.send_warning_message(
+            self.tr("Training Set Check page is not available.")
+        )
+
+    def run_distribution_analysis(self, request):
+        """Run the existing distribution engine for the unified audit explorer."""
+        if self.nep_result_data is None:
+            return {}
+        return self.graph_widget._run_distribution_analysis_task(  # noqa: SLF001
+            self.nep_result_data,
+            request,
+        )
+
+    def apply_distribution_selection(self, indices, mode) -> None:
+        """Apply a distribution-bin selection through the Dataset Display canvas."""
+        if self.nep_result_data is None:
+            return
+        self.graph_widget._apply_distribution_selection(  # noqa: SLF001
+            self.nep_result_data,
+            list(indices),
+            str(mode),
         )
 
     def select_structure_indices(self, indices):

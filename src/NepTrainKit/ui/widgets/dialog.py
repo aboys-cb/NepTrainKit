@@ -818,8 +818,8 @@ class DatasetSummaryMessageBox(MessageBoxBase):
     </html>"""
 
 
-class DistributionInspectorMessageBox(QDialog):
-    """Dialog for inspecting distributions of numeric dataset/atomic fields."""
+class DistributionExplorerWidget(QWidget):
+    """Embeddable explorer for numeric dataset and atomic-field distributions."""
 
     _ALL_SERIES_KEY = "__all__"
 
@@ -841,10 +841,6 @@ class DistributionInspectorMessageBox(QDialog):
         self._metric_by_key: dict[str, dict[str, Any]] = {}
         self._canvas_type = str(canvas_type or Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)).strip()
         self._plot_adapter, self._vispy_fallback_warned = create_distribution_plot_adapter(self._canvas_type, self)
-        self.setWindowTitle("Distribution Inspector")
-
-        self.setWindowIcon(QIcon(":/images/src/images/distribution_inspector.svg"))
-
         root_layout = QVBoxLayout(self)
         root_layout.setContentsMargins(8, 8, 8, 8)
         root_layout.setSpacing(8)
@@ -857,56 +853,67 @@ class DistributionInspectorMessageBox(QDialog):
 
         self.fieldCombo = EditableComboBox(self)
         self.groupCombo = ComboBox(self)
-        self.groupCombo.addItem("Formula", userData=DistributionGroupMode.FORMULA.value)
-        self.groupCombo.addItem("Element", userData=DistributionGroupMode.ELEMENT.value)
+        self.groupCombo.addItem(self.tr("Formula"), userData=DistributionGroupMode.FORMULA.value)
+        self.groupCombo.addItem(self.tr("Element"), userData=DistributionGroupMode.ELEMENT.value)
         self.groupCombo.setCurrentIndex(1)
 
         self.scopeCombo = ComboBox(self)
-        self.scopeCombo.addItem("Active", userData=DistributionScope.ACTIVE.value)
-        self.scopeCombo.addItem("Selected", userData=DistributionScope.SELECTED.value)
+        self.scopeCombo.addItem(self.tr("Active"), userData=DistributionScope.ACTIVE.value)
+        self.scopeCombo.addItem(self.tr("Selected"), userData=DistributionScope.SELECTED.value)
         self.scopeCombo.setCurrentIndex(0)
 
         self.viewCombo = ComboBox(self)
-        self.viewCombo.addItem("Reference", userData=DistributionValueView.REFERENCE.value)
-        self.viewCombo.addItem("Prediction", userData=DistributionValueView.PREDICTION.value)
-        self.viewCombo.addItem("Error", userData=DistributionValueView.ERROR.value)
+        self.viewCombo.addItem(self.tr("Reference"), userData=DistributionValueView.REFERENCE.value)
+        self.viewCombo.addItem(self.tr("Prediction"), userData=DistributionValueView.PREDICTION.value)
+        self.viewCombo.addItem(self.tr("Error"), userData=DistributionValueView.ERROR.value)
         self.viewCombo.setCurrentIndex(0)
 
         self.curveCombo = ComboBox(self)
-        self.curveCombo.addItem("KDE", userData=DistributionCurveStyle.KDE.value)
-        self.curveCombo.addItem("Normal", userData=DistributionCurveStyle.NORMAL.value)
-        self.curveCombo.addItem("None", userData=DistributionCurveStyle.NONE.value)
+        self.curveCombo.addItem(self.tr("KDE"), userData=DistributionCurveStyle.KDE.value)
+        self.curveCombo.addItem(self.tr("Normal"), userData=DistributionCurveStyle.NORMAL.value)
+        self.curveCombo.addItem(self.tr("None"), userData=DistributionCurveStyle.NONE.value)
         self.curveCombo.setCurrentIndex(0)
 
         self.selectModeCombo = ComboBox(self)
-        self.selectModeCombo.addItem("Replace", userData=DistributionSelectMode.REPLACE.value)
-        self.selectModeCombo.addItem("Add", userData=DistributionSelectMode.ADD.value)
-        self.selectModeCombo.addItem("Intersect", userData=DistributionSelectMode.INTERSECT.value)
+        self.selectModeCombo.addItem(self.tr("Replace"), userData=DistributionSelectMode.REPLACE.value)
+        self.selectModeCombo.addItem(self.tr("Add"), userData=DistributionSelectMode.ADD.value)
+        self.selectModeCombo.addItem(self.tr("Intersect"), userData=DistributionSelectMode.INTERSECT.value)
 
         self.binsSpin = SpinBox(self)
         self.binsSpin.setRange(2, 2000)
         self.binsSpin.setValue(120)
 
-        self.includeNormCheck = CheckBox("Include norm", self)
+        self.includeNormCheck = CheckBox(self.tr("Include norm"), self)
         self.includeNormCheck.setChecked(True)
+        self.advancedCheck = CheckBox(self.tr("Advanced options"), self)
+        self.advancedCheck.setChecked(False)
+        self.advancedCheck.toggled.connect(self._set_advanced_visible)
 
-        self.analyzeButton = PrimaryPushButton("Analyze", self)
+        self.analyzeButton = PrimaryPushButton(self.tr("Analyze"), self)
         self.analyzeButton.clicked.connect(self._run_analysis)
 
-        control_layout.addWidget(CaptionLabel("Field", self), 0, 0)
+        self.fieldLabel = CaptionLabel(self.tr("Field"), self)
+        self.groupLabel = CaptionLabel(self.tr("Group"), self)
+        self.scopeLabel = CaptionLabel(self.tr("Scope"), self)
+        self.viewLabel = CaptionLabel(self.tr("View"), self)
+        self.selectModeLabel = CaptionLabel(self.tr("Select mode"), self)
+        self.binsLabel = CaptionLabel(self.tr("Bins"), self)
+        self.curveLabel = CaptionLabel(self.tr("Curve"), self)
+        control_layout.addWidget(self.fieldLabel, 0, 0)
         control_layout.addWidget(self.fieldCombo, 0, 1, 1, 3)
-        control_layout.addWidget(CaptionLabel("Group", self), 1, 0)
+        control_layout.addWidget(self.groupLabel, 1, 0)
         control_layout.addWidget(self.groupCombo, 1, 1)
-        control_layout.addWidget(CaptionLabel("Scope", self), 1, 2)
+        control_layout.addWidget(self.scopeLabel, 1, 2)
         control_layout.addWidget(self.scopeCombo, 1, 3)
-        control_layout.addWidget(CaptionLabel("View", self), 2, 0)
+        control_layout.addWidget(self.viewLabel, 2, 0)
         control_layout.addWidget(self.viewCombo, 2, 1)
-        control_layout.addWidget(CaptionLabel("Select mode", self), 2, 2)
+        control_layout.addWidget(self.selectModeLabel, 2, 2)
         control_layout.addWidget(self.selectModeCombo, 2, 3)
-        control_layout.addWidget(CaptionLabel("Bins", self), 3, 0)
+        control_layout.addWidget(self.binsLabel, 3, 0)
         control_layout.addWidget(self.binsSpin, 3, 1)
-        control_layout.addWidget(CaptionLabel("Curve", self), 3, 2)
+        control_layout.addWidget(self.curveLabel, 3, 2)
         control_layout.addWidget(self.curveCombo, 3, 3)
+        control_layout.addWidget(self.advancedCheck, 4, 0, 1, 2)
         control_layout.addWidget(self.includeNormCheck, 4, 2)
         control_layout.addWidget(self.analyzeButton, 4, 3)
 
@@ -922,9 +929,9 @@ class DistributionInspectorMessageBox(QDialog):
         self.metricCombo.currentIndexChanged.connect(self._refresh_series_combo)
         self.seriesCombo.currentIndexChanged.connect(self._refresh_plot)
 
-        result_layout.addWidget(CaptionLabel("Metric", self), 0, 0)
+        result_layout.addWidget(CaptionLabel(self.tr("Metric"), self), 0, 0)
         result_layout.addWidget(self.metricCombo, 0, 1)
-        result_layout.addWidget(CaptionLabel("Series", self), 0, 2)
+        result_layout.addWidget(CaptionLabel(self.tr("Series"), self), 0, 2)
         result_layout.addWidget(self.seriesCombo, 0, 3)
 
         self.plotHintLabel = CaptionLabel("", self)
@@ -939,16 +946,40 @@ class DistributionInspectorMessageBox(QDialog):
         root_layout.addWidget(result_frame)
 
         self.scopeCombo.currentIndexChanged.connect(self._reload_fields)
-        self.setWindowFlag(Qt.WindowType.Tool, True)
-        self.setWindowFlag(Qt.WindowType.NoDropShadowWindowHint, True)
-        self.setWindowModality(Qt.WindowModality.NonModal)
-        self.setModal(False)
-        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
         self.setMinimumWidth(720)
-        self.setMaximumWidth(840)
-        self.resize(780, 620)
         self._plot_adapter.set_bin_click_callback(self._select_bin)
 
+        self._set_advanced_visible(False)
+        self._reload_fields()
+
+    def _set_advanced_visible(self, visible: bool) -> None:
+        for widget in (
+            self.selectModeLabel,
+            self.selectModeCombo,
+            self.binsLabel,
+            self.binsSpin,
+            self.curveLabel,
+            self.curveCombo,
+            self.includeNormCheck,
+        ):
+            widget.setVisible(bool(visible))
+
+    def set_context(
+        self,
+        *,
+        data=None,
+        run_analysis_callback=None,
+        apply_selection_callback=None,
+    ) -> None:
+        """Replace the dataset and callbacks without rebuilding the explorer UI."""
+        self._data = data
+        self._run_analysis_callback = run_analysis_callback
+        self._apply_selection_callback = apply_selection_callback
+        self._analysis = {}
+        self._metric_by_key.clear()
+        self.metricCombo.clear()
+        self.seriesCombo.clear()
+        self._plot_adapter.clear()
         self._reload_fields()
 
     def _selected_scope(self) -> str:
@@ -1156,6 +1187,41 @@ class DistributionInspectorMessageBox(QDialog):
         self.statusLabel.setText(
             f"Applied bin {bin_index} ({series_label}): {sample_count} samples -> {len(indices)} structures, mode='{mode}'."
         )
+
+
+class DistributionInspectorMessageBox(QDialog):
+    """Compatibility window around :class:`DistributionExplorerWidget`."""
+
+    def __init__(
+        self,
+        parent=None,
+        data=None,
+        run_analysis_callback=None,
+        apply_selection_callback=None,
+        canvas_type: str | None = None,
+    ):
+        super().__init__(parent)
+        self._data = data
+        self.setWindowTitle("Distribution Inspector")
+        self.setWindowIcon(QIcon(":/images/src/images/distribution_inspector.svg"))
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.explorer = DistributionExplorerWidget(
+            self,
+            data=data,
+            run_analysis_callback=run_analysis_callback,
+            apply_selection_callback=apply_selection_callback,
+            canvas_type=canvas_type,
+        )
+        layout.addWidget(self.explorer)
+        self.setWindowFlag(Qt.WindowType.Tool, True)
+        self.setWindowFlag(Qt.WindowType.NoDropShadowWindowHint, True)
+        self.setWindowModality(Qt.WindowModality.NonModal)
+        self.setModal(False)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
+        self.setMinimumWidth(720)
+        self.setMaximumWidth(840)
+        self.resize(780, 620)
 
 
 class GetStrMessageBox(MessageBoxBase):

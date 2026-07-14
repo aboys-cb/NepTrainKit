@@ -10,6 +10,7 @@ except ModuleNotFoundError:  # Python < 3.11
 
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtWidgets import QApplication
+import pytest
 
 from NepTrainKit import i18n
 from NepTrainKit.ui import update
@@ -20,6 +21,18 @@ assert _SCRIPT_SPEC and _SCRIPT_SPEC.loader
 update_translations = importlib.util.module_from_spec(_SCRIPT_SPEC)
 sys.modules.setdefault("update_translations", update_translations)
 _SCRIPT_SPEC.loader.exec_module(update_translations)
+
+
+@pytest.fixture(autouse=True)
+def _restore_application_language_after_test():
+    """Keep translator state from leaking into unrelated Qt test modules."""
+    app = QApplication.instance()
+    if app is not None:
+        i18n.install_translator(app, "en_US")
+    yield
+    app = QApplication.instance()
+    if app is not None:
+        i18n.install_translator(app, "en_US")
 
 _MAKE_DATA_PATH = Path(__file__).resolve().parents[1] / "src" / "NepTrainKit" / "ui" / "pages" / "makedata.py"
 _SHOW_NEP_PATH = Path(__file__).resolve().parents[1] / "src" / "NepTrainKit" / "ui" / "pages" / "show_nep.py"

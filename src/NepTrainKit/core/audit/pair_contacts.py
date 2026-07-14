@@ -24,8 +24,8 @@ class _PairStats:
     b_centers: int = 0
     a_exposed: int = 0
     b_exposed: int = 0
-    structure_edge_counts: list[int] = field(default_factory=list)
     normalized_distances: list[float] = field(default_factory=list)
+    detail_saturated: bool = False
 
 
 def _pair_probability(count_a: int, count_b: int, atom_count: int, *, same_element: bool) -> float:
@@ -54,6 +54,19 @@ class PairContactCollector:
         self._pairs = tuple(combinations_with_replacement(self._elements, 2))
         self._stats: dict[tuple[str, str, str], _PairStats] = defaultdict(_PairStats)
         self._present: set[str] = set()
+
+    def detail_mask(self) -> np.ndarray:
+        """Return which scope/pair groups still need distance-detail samples."""
+        return np.asarray(
+            [
+                [
+                    not self._stats[(scope, first, second)].detail_saturated
+                    for first, second in self._pairs
+                ]
+                for scope in ("angular", "radial")
+            ],
+            dtype=np.uint8,
+        )
 
     def observe(
         self,
@@ -126,10 +139,56 @@ class PairContactCollector:
 
                 observed = int(np.count_nonzero(actual))
                 stats.contact_edges += observed
-                stats.structure_edge_counts.append(observed)
                 if observed:
                     stats.contact_structures[structure_index] = None
-                    stats.normalized_distances.extend((distances[actual] / cutoff).tolist())
+                    if not stats.detail_saturated:
+                        stats.normalized_distances.extend((distances[actual] / cutoff).tolist())
+                if stats.contact_edges >= 20 and len(stats.contact_structures) >= 3:
+                    stats.detail_saturated = True
+                    stats.normalized_distances.clear()
+
+    def observe_batch(
+        self,
+        structure_indices: list[int],
+        symbols_by_structure: list[tuple[str, ...]],
+        metrics: np.ndarray,
+        normalized_codes: np.ndarray,
+        normalized_values: np.ndarray,
+    ) -> None:
+        """Merge native descriptive contact aggregates without applying policy."""
+        for symbols in symbols_by_structure:
+            self._present.update(symbols)
+        expected_shape = (len(structure_indices), 2, len(self._pairs), 8)
+        if metrics.shape != expected_shape:
+            raise ValueError(f"Contact summary shape {metrics.shape} does not match {expected_shape}.")
+        source_indices = np.asarray(structure_indices, dtype=np.int64)
+        for scope_index, scope in enumerate(("angular", "radial")):
+            for pair_index, (first, second) in enumerate(self._pairs):
+                values = metrics[:, scope_index, pair_index, :]
+                co_sampled = values[:, 0] != 0.0
+                if not np.any(co_sampled):
+                    continue
+                stats = self._stats[(scope, first, second)]
+                for structure_index in source_indices[co_sampled]:
+                    stats.co_sampled[int(structure_index)] = None
+                stats.opportunity_edges += int(np.sum(values[:, 1], dtype=np.float64))
+                stats.expected_edges += sum(values[:, 2].tolist())
+                contacts = values[:, 3].astype(np.int64, copy=False)
+                stats.contact_edges += int(np.sum(contacts, dtype=np.int64))
+                stats.a_centers += int(np.sum(values[:, 4], dtype=np.float64))
+                stats.b_centers += int(np.sum(values[:, 5], dtype=np.float64))
+                stats.a_exposed += int(np.sum(values[:, 6], dtype=np.float64))
+                stats.b_exposed += int(np.sum(values[:, 7], dtype=np.float64))
+                for structure_index in source_indices[contacts > 0]:
+                    stats.contact_structures[int(structure_index)] = None
+                if stats.contact_edges >= 20 and len(stats.contact_structures) >= 3:
+                    stats.detail_saturated = True
+                    stats.normalized_distances.clear()
+                elif not stats.detail_saturated:
+                    code = scope_index * len(self._pairs) + pair_index
+                    stats.normalized_distances.extend(
+                        normalized_values[normalized_codes == code].tolist()
+                    )
 
     def finalize(self) -> tuple[AuditDimension, tuple[AuditSlice, ...], dict[str, object]]:
         elements = tuple(element for element in self._elements if element in self._present)

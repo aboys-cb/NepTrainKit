@@ -7,6 +7,7 @@ import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timezone
+from html import escape
 from pathlib import Path
 from typing import Any
 
@@ -15,12 +16,16 @@ from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QFrame,
+    QFormLayout,
     QGridLayout,
     QHBoxLayout,
     QHeaderView,
     QLabel,
+    QLineEdit,
     QListWidgetItem,
+    QDoubleSpinBox,
     QSizePolicy,
+    QSpinBox,
     QTabWidget,
     QTableWidgetItem,
     QTextEdit,
@@ -38,20 +43,28 @@ from qfluentwidgets import (
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.audit.report import write_audit_report_html
+from NepTrainKit.core.audit.findings import canonical_findings
+from NepTrainKit.core.audit.inventory import compare_composition_target
 from NepTrainKit.core.audit.result import (
     AuditBiasType,
     AuditDimension,
+    AuditFindingKind,
     AuditResult,
     AuditSlice,
     AuditStatus,
+    CompositionTarget,
+    DatasetInventory,
+    TargetSupportStatus,
 )
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.widgets.audit_chart import AuditChartWidget
+from NepTrainKit.ui.widgets.dialog import DistributionExplorerWidget
 
 
 _OVERVIEW = "__audit_overview__"
 _DIMENSION_COLUMN_MIN_WIDTH = 840
 _TOPIC_CATEGORY_COLORS = {
+    "blocker": (QColor("#a61b1b"), QColor("#fdecec")),
     "review": (QColor("#a14d16"), QColor("#fff1df")),
     "thin": (QColor("#087f78"), QColor("#e7f5f3")),
     "imbalance": (QColor("#7b5a14"), QColor("#fff6dc")),
@@ -92,6 +105,9 @@ class TrainingSetAuditWidget(QWidget):
         self._active_plots: list[dict[str, Any]] = []
         self._local_chemistry_plots: list[dict[str, Any]] = []
         self._selected_chart_indices: list[int] = []
+        self._selected_composition_indices: list[int] = []
+        self._selected_target_indices: list[int] = []
+        self._review_states: dict[str, str] = {}
         self._build_ui()
         self._set_empty_state()
 
@@ -132,7 +148,7 @@ class TrainingSetAuditWidget(QWidget):
 
         self.rerun_button = PrimaryPushButton(
             FluentIcon.SYNC,
-            self.tr("Re-run audit"),
+            self.tr("Re-run checks"),
             self.audit_header,
         )
         self.rerun_button.clicked.connect(self.rerunAuditSignal.emit)
@@ -186,18 +202,73 @@ class TrainingSetAuditWidget(QWidget):
         metric_layout.setContentsMargins(14, 8, 14, 8)
         metric_layout.setSpacing(0)
         self.metric_structure_value, self.metric_structure_label = self._add_metric(
-            metric_layout, self.tr("Review groups"), "0"
+            metric_layout, self.tr("Structures"), "0"
         )
         self.metric_findings_value, self.metric_findings_label = self._add_metric(
-            metric_layout, self.tr("Label coverage"), "0 / 3"
+            metric_layout, self.tr("Exact composition points"), "0"
         )
         self.metric_dimension_value, self.metric_dimension_label = self._add_metric(
-            metric_layout, self.tr("Thin-distribution signals"), "0"
+            metric_layout, self.tr("Elements"), "—"
         )
         self.metric_context_value, self.metric_context_label = self._add_metric(
-            metric_layout, self.tr("Model errors"), self.tr("Not evaluated"), last=True
+            metric_layout, self.tr("Label availability"), "E — · F — · V —", last=True
         )
         summary_layout.addWidget(self.metric_band)
+
+        overview_columns = QHBoxLayout()
+        overview_columns.setContentsMargins(0, 0, 0, 0)
+        overview_columns.setSpacing(10)
+        self.inventory_panel = QFrame(summary_tab)
+        self.inventory_panel.setObjectName("auditInventoryPanel")
+        inventory_layout = QVBoxLayout(self.inventory_panel)
+        inventory_layout.setContentsMargins(14, 12, 14, 12)
+        inventory_layout.setSpacing(7)
+        inventory_title = QLabel(self.tr("What this dataset contains"), self.inventory_panel)
+        inventory_title.setObjectName("panelTitle")
+        self.inventory_summary_label = QLabel("", self.inventory_panel)
+        self.inventory_summary_label.setObjectName("inventorySummary")
+        self.inventory_summary_label.setTextFormat(Qt.TextFormat.RichText)
+        self.inventory_summary_label.setWordWrap(True)
+        self.composition_highlights_label = QLabel("", self.inventory_panel)
+        self.composition_highlights_label.setObjectName("inventoryDetails")
+        self.composition_highlights_label.setTextFormat(Qt.TextFormat.RichText)
+        self.composition_highlights_label.setWordWrap(True)
+        inventory_layout.addWidget(inventory_title)
+        inventory_layout.addWidget(self.inventory_summary_label)
+        inventory_layout.addWidget(self.composition_highlights_label, stretch=1)
+        self.open_data_map_button = PushButton(
+            FluentIcon.VIEW, self.tr("Open composition and structure map"), self.inventory_panel
+        )
+        self.open_data_map_button.clicked.connect(lambda: self.page_tabs.setCurrentIndex(1))
+        inventory_layout.addWidget(self.open_data_map_button, alignment=Qt.AlignmentFlag.AlignRight)
+        overview_columns.addWidget(self.inventory_panel, stretch=3)
+
+        self.next_actions_panel = QFrame(summary_tab)
+        self.next_actions_panel.setObjectName("auditNextActionsPanel")
+        actions_layout = QVBoxLayout(self.next_actions_panel)
+        actions_layout.setContentsMargins(14, 12, 14, 12)
+        actions_layout.setSpacing(7)
+        actions_title = QLabel(self.tr("Recommended next steps"), self.next_actions_panel)
+        actions_title.setObjectName("panelTitle")
+        self.next_actions_label = QLabel("", self.next_actions_panel)
+        self.next_actions_label.setObjectName("nextActionsText")
+        self.next_actions_label.setWordWrap(True)
+        actions_layout.addWidget(actions_title)
+        actions_layout.addWidget(self.next_actions_label, stretch=1)
+        action_buttons = QHBoxLayout()
+        self.open_review_button = PrimaryPushButton(
+            self.tr("Open review queue"), self.next_actions_panel
+        )
+        self.open_review_button.clicked.connect(lambda: self.page_tabs.setCurrentIndex(2))
+        self.open_target_button = PushButton(
+            self.tr("Set target"), self.next_actions_panel
+        )
+        self.open_target_button.clicked.connect(lambda: self.page_tabs.setCurrentIndex(3))
+        action_buttons.addWidget(self.open_review_button)
+        action_buttons.addWidget(self.open_target_button)
+        actions_layout.addLayout(action_buttons)
+        overview_columns.addWidget(self.next_actions_panel, stretch=2)
+        summary_layout.addLayout(overview_columns, stretch=1)
 
         self.findings_panel = QFrame(summary_tab)
         self.findings_panel.setObjectName("auditFindingsPanel")
@@ -223,13 +294,14 @@ class TrainingSetAuditWidget(QWidget):
 
         self.slice_table = TableWidget(self.findings_panel)
         self.slice_table.setObjectName("auditFindingsTable")
-        self.slice_table.setColumnCount(4)
+        self.slice_table.setColumnCount(5)
         self.slice_table.setHorizontalHeaderLabels(
             [
                 self.tr("Type"),
                 self.tr("What to review"),
                 self.tr("Structures"),
                 self.tr("Evidence"),
+                self.tr("State"),
             ]
         )
         self.slice_table.setSelectionBehavior(
@@ -248,13 +320,13 @@ class TrainingSetAuditWidget(QWidget):
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
         self.slice_table.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
         self.slice_table.setCheckedColor("#087f78", "#087f78")
         self.slice_table.itemSelectionChanged.connect(self._on_slice_selection_changed)
         findings_layout.addWidget(self.slice_table, stretch=1)
-        summary_layout.addWidget(self.findings_panel, stretch=2)
 
         self.evidence_panel = QFrame(summary_tab)
         self.evidence_panel.setObjectName("auditEvidencePanel")
@@ -295,22 +367,117 @@ class TrainingSetAuditWidget(QWidget):
         evidence_actions.addWidget(self.view_distribution_button)
         evidence_actions.addWidget(self.send_button)
         evidence_layout.addLayout(evidence_actions, 3, 0, 1, 3)
-        summary_layout.addWidget(self.evidence_panel, stretch=1)
+        summary_layout.addStretch(1)
 
-        self.page_tabs.addTab(summary_tab, self.tr("Summary"))
+        self.page_tabs.addTab(summary_tab, self.tr("Overview"))
 
         detail_tab = QWidget(self.page_tabs)
-        body = QHBoxLayout(detail_tab)
-        body.setContentsMargins(0, 10, 0, 0)
+        detail_layout = QVBoxLayout(detail_tab)
+        detail_layout.setContentsMargins(0, 10, 0, 0)
+        detail_layout.setSpacing(0)
+        self.data_map_tabs = QTabWidget(detail_tab)
+        self.data_map_tabs.setDocumentMode(True)
+
+        composition_page = QWidget(self.data_map_tabs)
+        composition_layout = QVBoxLayout(composition_page)
+        composition_layout.setContentsMargins(0, 8, 0, 0)
+        composition_layout.setSpacing(10)
+        composition_header = QFrame(composition_page)
+        composition_header.setObjectName("auditCompositionHeader")
+        composition_header_layout = QHBoxLayout(composition_header)
+        composition_header_layout.setContentsMargins(14, 10, 14, 10)
+        composition_text = QVBoxLayout()
+        composition_title = QLabel(
+            self.tr("Composition and structure map"), composition_header
+        )
+        composition_title.setObjectName("panelTitle")
+        self.composition_map_hint = QLabel("", composition_header)
+        self.composition_map_hint.setObjectName("panelHint")
+        self.composition_map_hint.setWordWrap(True)
+        composition_text.addWidget(composition_title)
+        composition_text.addWidget(self.composition_map_hint)
+        composition_header_layout.addLayout(composition_text, stretch=1)
+        self.composition_element_selector = ComboBox(composition_header)
+        self.composition_element_selector.setMinimumWidth(100)
+        self.composition_element_selector.currentIndexChanged.connect(
+            self._refresh_composition_map
+        )
+        self.composition_scale_selector = ComboBox(composition_header)
+        self.composition_scale_selector.addItem(self.tr("Linear scale"), userData=False)
+        self.composition_scale_selector.addItem(self.tr("Log scale"), userData=True)
+        self.composition_scale_selector.currentIndexChanged.connect(
+            self._refresh_composition_map
+        )
+        composition_header_layout.addWidget(self.composition_element_selector)
+        composition_header_layout.addWidget(self.composition_scale_selector)
+        composition_layout.addWidget(composition_header)
+
+        self.composition_chart = AuditChartWidget(composition_page)
+        self.composition_chart.setObjectName("auditCompositionChart")
+        self.composition_chart.selectedGroupSignal.connect(
+            self._on_composition_group_selected
+        )
+        composition_layout.addWidget(self.composition_chart, stretch=3)
+
+        self.composition_table = TableWidget(composition_page)
+        self.composition_table.setObjectName("auditCompositionTable")
+        self.composition_table.setColumnCount(5)
+        self.composition_table.setHorizontalHeaderLabels(
+            [
+                self.tr("Exact composition"),
+                self.tr("Structures"),
+                self.tr("Share"),
+                self.tr("Atom counts"),
+                self.tr("Configuration types"),
+            ]
+        )
+        self.composition_table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+        )
+        self.composition_table.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+        )
+        self.composition_table.setEditTriggers(
+            QAbstractItemView.EditTrigger.NoEditTriggers
+        )
+        self.composition_table.verticalHeader().setVisible(False)
+        composition_table_header = self.composition_table.horizontalHeader()
+        composition_table_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        composition_table_header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        composition_table_header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        composition_table_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        composition_table_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        self.composition_table.itemSelectionChanged.connect(
+            self._on_composition_table_selection_changed
+        )
+        composition_layout.addWidget(self.composition_table, stretch=2)
+        composition_actions = QHBoxLayout()
+        self.composition_selection_label = QLabel("", composition_page)
+        self.composition_selection_label.setObjectName("auditChartSelection")
+        self.composition_show_button = PrimaryPushButton(
+            self.tr("Show selected structures"), composition_page
+        )
+        self.composition_show_button.setEnabled(False)
+        self.composition_show_button.clicked.connect(
+            self._emit_composition_structures
+        )
+        composition_actions.addWidget(self.composition_selection_label, stretch=1)
+        composition_actions.addWidget(self.composition_show_button)
+        composition_layout.addLayout(composition_actions)
+        self.data_map_tabs.addTab(composition_page, self.tr("Composition map"))
+
+        advanced_page = QWidget(self.data_map_tabs)
+        body = QHBoxLayout(advanced_page)
+        body.setContentsMargins(0, 8, 0, 0)
         body.setSpacing(10)
 
-        self.dimension_rail = QFrame(detail_tab)
+        self.dimension_rail = QFrame(advanced_page)
         self.dimension_rail.setObjectName("auditDimensionRail")
         self.dimension_rail.setFixedWidth(192)
         rail_layout = QVBoxLayout(self.dimension_rail)
         rail_layout.setContentsMargins(10, 12, 10, 10)
         rail_layout.setSpacing(8)
-        rail_title = QLabel(self.tr("Audit dimensions"), self.dimension_rail)
+        rail_title = QLabel(self.tr("Check areas"), self.dimension_rail)
         rail_title.setObjectName("panelTitle")
         self.dimension_list = ListWidget(self.dimension_rail)
         self.dimension_list.setObjectName("auditDimensionList")
@@ -332,7 +499,7 @@ class TrainingSetAuditWidget(QWidget):
         workspace.setContentsMargins(0, 0, 0, 0)
         workspace.setSpacing(10)
 
-        self.analysis_panel = QFrame(detail_tab)
+        self.analysis_panel = QFrame(advanced_page)
         self.analysis_panel.setObjectName("auditAnalysisPanel")
         analysis_layout = QVBoxLayout(self.analysis_panel)
         analysis_layout.setContentsMargins(12, 10, 12, 10)
@@ -410,7 +577,184 @@ class TrainingSetAuditWidget(QWidget):
         workspace.addWidget(self.analysis_panel, stretch=1)
 
         body.addLayout(workspace, stretch=1)
-        self.page_tabs.addTab(detail_tab, self.tr("Detailed data"))
+        self.data_map_tabs.addTab(advanced_page, self.tr("Advanced evidence"))
+
+        self.distribution_tab = QWidget(self.data_map_tabs)
+        distribution_layout = QVBoxLayout(self.distribution_tab)
+        distribution_layout.setContentsMargins(0, 10, 0, 0)
+        distribution_layout.setSpacing(8)
+        distribution_title = QLabel(
+            self.tr("Explore numeric fields"), self.distribution_tab
+        )
+        distribution_title.setObjectName("panelTitle")
+        distribution_hint = QLabel(
+            self.tr(
+                "Inspect reference, prediction, or error distributions and click a bin "
+                "to select its structures."
+            ),
+            self.distribution_tab,
+        )
+        distribution_hint.setObjectName("panelHint")
+        distribution_hint.setWordWrap(True)
+        distribution_layout.addWidget(distribution_title)
+        distribution_layout.addWidget(distribution_hint)
+        self.distribution_explorer = DistributionExplorerWidget(
+            self.distribution_tab,
+            canvas_type=None,
+        )
+        distribution_layout.addWidget(self.distribution_explorer, stretch=1)
+        self.data_map_tabs.addTab(
+            self.distribution_tab, self.tr("Explore distributions")
+        )
+        detail_layout.addWidget(self.data_map_tabs, stretch=1)
+        self.page_tabs.addTab(detail_tab, self.tr("Data map"))
+
+        review_tab = QWidget(self.page_tabs)
+        review_layout = QVBoxLayout(review_tab)
+        review_layout.setContentsMargins(0, 10, 0, 0)
+        review_layout.setSpacing(10)
+        self.review_banner = QFrame(review_tab)
+        self.review_banner.setObjectName("auditReviewBanner")
+        review_banner_layout = QHBoxLayout(self.review_banner)
+        review_banner_layout.setContentsMargins(14, 10, 14, 10)
+        self.review_summary_label = QLabel("", self.review_banner)
+        self.review_summary_label.setObjectName("reviewSummary")
+        self.review_summary_label.setWordWrap(True)
+        review_banner_layout.addWidget(self.review_summary_label, stretch=1)
+        self.review_state_selector = ComboBox(self.review_banner)
+        for label, value in (
+            (self.tr("Pending"), "pending"),
+            (self.tr("Keep"), "keep"),
+            (self.tr("Exclude later"), "exclude"),
+            (self.tr("Known duplicate"), "duplicate"),
+        ):
+            self.review_state_selector.addItem(label, userData=value)
+        self.apply_review_state_button = PushButton(
+            self.tr("Set state"), self.review_banner
+        )
+        self.apply_review_state_button.clicked.connect(self._apply_review_state)
+        review_banner_layout.addWidget(self.review_state_selector)
+        review_banner_layout.addWidget(self.apply_review_state_button)
+        review_layout.addWidget(self.review_banner)
+        review_layout.addWidget(self.findings_panel, stretch=3)
+        review_layout.addWidget(self.evidence_panel, stretch=2)
+        self.page_tabs.addTab(review_tab, self.tr("Review queue"))
+
+        target_tab = QWidget(self.page_tabs)
+        target_layout = QHBoxLayout(target_tab)
+        target_layout.setContentsMargins(0, 10, 0, 0)
+        target_layout.setSpacing(10)
+        target_main = QVBoxLayout()
+        target_main.setSpacing(10)
+        self.target_definition_panel = QFrame(target_tab)
+        self.target_definition_panel.setObjectName("auditTargetDefinitionPanel")
+        target_definition_layout = QHBoxLayout(self.target_definition_panel)
+        target_definition_layout.setContentsMargins(14, 10, 14, 10)
+        target_form = QFormLayout()
+        self.target_element_selector = ComboBox(self.target_definition_panel)
+        self.target_minimum_spin = QDoubleSpinBox(self.target_definition_panel)
+        self.target_minimum_spin.setRange(0.0, 100.0)
+        self.target_minimum_spin.setSuffix(" %")
+        self.target_maximum_spin = QDoubleSpinBox(self.target_definition_panel)
+        self.target_maximum_spin.setRange(0.0, 100.0)
+        self.target_maximum_spin.setValue(100.0)
+        self.target_maximum_spin.setSuffix(" %")
+        self.target_points_edit = QLineEdit(self.target_definition_panel)
+        self.target_points_edit.setPlaceholderText(
+            self.tr("Optional, e.g. 0, 12.5, 25, 37.5")
+        )
+        self.target_minimum_count_spin = QSpinBox(self.target_definition_panel)
+        self.target_minimum_count_spin.setRange(1, 1_000_000_000)
+        self.target_minimum_count_spin.setValue(1000)
+        target_form.addRow(self.tr("Element"), self.target_element_selector)
+        target_form.addRow(self.tr("Range"), self.target_minimum_spin)
+        target_form.addRow(self.tr("to"), self.target_maximum_spin)
+        target_form.addRow(self.tr("Key points (optional)"), self.target_points_edit)
+        target_form.addRow(self.tr("Minimum structures / point"), self.target_minimum_count_spin)
+        target_definition_layout.addLayout(target_form, stretch=1)
+        target_explanation = QVBoxLayout()
+        target_title = QLabel(self.tr("Define the model scope you intend to support"), self.target_definition_panel)
+        target_title.setObjectName("panelTitle")
+        self.target_limit_label = QLabel(
+            self.tr(
+                "This comparison checks whether the requested composition points have enough structures. "
+                "It does not prove local-environment or physical coverage."
+            ),
+            self.target_definition_panel,
+        )
+        self.target_limit_label.setObjectName("panelHint")
+        self.target_limit_label.setWordWrap(True)
+        self.apply_target_button = PrimaryPushButton(
+            self.tr("Compare with dataset"), self.target_definition_panel
+        )
+        self.apply_target_button.clicked.connect(self._apply_composition_target)
+        target_explanation.addWidget(target_title)
+        target_explanation.addWidget(self.target_limit_label, stretch=1)
+        target_explanation.addWidget(self.apply_target_button, alignment=Qt.AlignmentFlag.AlignRight)
+        target_definition_layout.addLayout(target_explanation, stretch=2)
+        target_main.addWidget(self.target_definition_panel)
+
+        self.target_result_summary_label = QLabel("", target_tab)
+        self.target_result_summary_label.setObjectName("targetResultSummary")
+        self.target_result_summary_label.setWordWrap(True)
+        target_main.addWidget(self.target_result_summary_label)
+
+        self.target_chart = AuditChartWidget(target_tab)
+        self.target_chart.setObjectName("auditTargetChart")
+        self.target_chart.setMinimumHeight(160)
+        self.target_chart.selectedGroupSignal.connect(self._on_target_group_selected)
+        target_main.addWidget(self.target_chart, stretch=3)
+        self.target_table = TableWidget(target_tab)
+        self.target_table.setColumnCount(5)
+        self.target_table.setHorizontalHeaderLabels(
+            [
+                self.tr("Composition point"),
+                self.tr("Status"),
+                self.tr("Observed"),
+                self.tr("Nearest point"),
+                self.tr("Action"),
+            ]
+        )
+        self.target_table.verticalHeader().setVisible(False)
+        self.target_table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.target_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.target_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.target_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.target_table.itemSelectionChanged.connect(self._on_target_selection_changed)
+        target_main.addWidget(self.target_table, stretch=2)
+        target_actions = QHBoxLayout()
+        self.target_selection_label = QLabel("", target_tab)
+        self.target_selection_label.setObjectName("auditChartSelection")
+        self.target_show_button = PrimaryPushButton(
+            self.tr("Show target structures"), target_tab
+        )
+        self.target_show_button.setEnabled(False)
+        self.target_show_button.clicked.connect(self._emit_target_structures)
+        target_actions.addWidget(self.target_selection_label, stretch=1)
+        target_actions.addWidget(self.target_show_button)
+        target_main.addLayout(target_actions)
+        target_layout.addLayout(target_main, stretch=3)
+
+        self.model_panel = QFrame(target_tab)
+        self.model_panel.setObjectName("auditModelPanel")
+        model_layout = QVBoxLayout(self.model_panel)
+        model_layout.setContentsMargins(14, 12, 14, 12)
+        model_title = QLabel(self.tr("Model comparison"), self.model_panel)
+        model_title.setObjectName("panelTitle")
+        self.model_empty_label = QLabel(
+            self.tr(
+                "No prediction or error result is attached. Open Show NEP and calculate results, "
+                "then return here to compare model errors by composition and review group."
+            ),
+            self.model_panel,
+        )
+        self.model_empty_label.setObjectName("panelHint")
+        self.model_empty_label.setWordWrap(True)
+        model_layout.addWidget(model_title)
+        model_layout.addWidget(self.model_empty_label)
+        model_layout.addStretch(1)
+        target_layout.addWidget(self.model_panel, stretch=1)
+        self.page_tabs.addTab(target_tab, self.tr("Target & model"))
         root.addWidget(self.page_tabs, stretch=1)
         self._apply_stylesheet()
         self._update_responsive_columns(self.width())
@@ -470,6 +814,8 @@ class TrainingSetAuditWidget(QWidget):
         self._active_plots = []
         self._local_chemistry_plots = []
         self._selected_chart_indices = []
+        self._selected_composition_indices = []
+        self._selected_target_indices = []
         self.dimension_list.clear()
         self._set_local_chemistry_controls_visible(False)
         self.local_scope_selector.clear()
@@ -478,6 +824,21 @@ class TrainingSetAuditWidget(QWidget):
         self.chart_widget.clear()
         self.chart_selection_label.clear()
         self.chart_send_button.setEnabled(False)
+        self.composition_element_selector.clear()
+        self.target_element_selector.clear()
+        self.composition_chart.clear()
+        self.target_chart.clear()
+        self.composition_table.setRowCount(0)
+        self.target_table.setRowCount(0)
+        self.target_result_summary_label.clear()
+        self.composition_selection_label.clear()
+        self.composition_show_button.setEnabled(False)
+        self.target_selection_label.clear()
+        self.target_show_button.setEnabled(False)
+        self.inventory_summary_label.clear()
+        self.composition_highlights_label.clear()
+        self.next_actions_label.clear()
+        self.review_summary_label.clear()
         self.label_availability_value.clear()
         self._populate_slice_table()
         self._clear_evidence()
@@ -493,12 +854,411 @@ class TrainingSetAuditWidget(QWidget):
             self.tr("Analyzing {dataset}...").format(dataset=dataset_id)
         )
 
+    def set_distribution_context(
+        self,
+        *,
+        data=None,
+        run_analysis_callback=None,
+        apply_selection_callback=None,
+    ) -> None:
+        """Attach the current ResultData to the embedded distribution explorer."""
+        self.distribution_explorer.set_context(
+            data=data,
+            run_analysis_callback=run_analysis_callback,
+            apply_selection_callback=apply_selection_callback,
+        )
+
+    def show_distribution_explorer(self) -> None:
+        """Switch to the unified numeric-field distribution workspace."""
+        self.page_tabs.setCurrentIndex(1)
+        self.data_map_tabs.setCurrentWidget(self.distribution_tab)
+
+    def _inventory(self) -> DatasetInventory | None:
+        if self._result is None:
+            return None
+        return self._result.inventory
+
+    def _populate_inventory_views(self) -> None:
+        inventory = self._inventory()
+        self.composition_element_selector.blockSignals(True)
+        self.target_element_selector.blockSignals(True)
+        self.composition_element_selector.clear()
+        self.target_element_selector.clear()
+        if inventory is not None:
+            for element in inventory.elements:
+                self.composition_element_selector.addItem(element, userData=element)
+                self.target_element_selector.addItem(element, userData=element)
+            default_index = max(0, len(inventory.elements) - 1)
+            self.composition_element_selector.setCurrentIndex(default_index)
+            self.target_element_selector.setCurrentIndex(default_index)
+        self.composition_element_selector.blockSignals(False)
+        self.target_element_selector.blockSignals(False)
+        self._refresh_composition_map()
+        self._apply_composition_target()
+
+    @staticmethod
+    def _composition_formula(elements: tuple[str, ...], fractions: tuple[float, ...]) -> str:
+        populated = [
+            f"{element} {fraction:.2%}"
+            for element, fraction in zip(elements, fractions)
+            if fraction > 1.0e-10
+        ]
+        return " · ".join(populated) or "—"
+
+    @staticmethod
+    def _element_fraction_groups(
+        inventory: DatasetInventory, element: str
+    ) -> tuple[tuple[float, tuple[Any, ...]], ...]:
+        element_index = inventory.elements.index(element)
+        grouped: dict[float, list[Any]] = {}
+        for point in inventory.composition_points:
+            fraction = round(point.fractions[element_index], 12)
+            grouped.setdefault(fraction, []).append(point)
+        return tuple(
+            (fraction, tuple(grouped[fraction])) for fraction in sorted(grouped)
+        )
+
+    def _composition_plot(
+        self,
+        element: str,
+        *,
+        target_points: tuple[float, ...] = (),
+    ) -> dict[str, Any] | None:
+        inventory = self._inventory()
+        if inventory is None or element not in inventory.elements:
+            return None
+        groups = self._element_fraction_groups(inventory, element)
+        return {
+            "kind": "composition_stems",
+            "id": f"inventory:composition:{element}",
+            "title": self.tr("Exact composition support for {element}").format(
+                element=element
+            ),
+            "x_label": self.tr("{element} atomic fraction").format(element=element),
+            "y_label": self.tr("Structures"),
+            "x_min": -0.01,
+            "x_max": 1.0,
+            "log_scale": bool(self.composition_scale_selector.currentData()),
+            "target_points": target_points,
+            "series": (
+                {
+                    "counts": tuple(
+                        sum(point.structure_count for point in points)
+                        for _, points in groups
+                    ),
+                    "x_values": tuple(fraction for fraction, _ in groups),
+                    "labels": tuple(
+                        self.tr(
+                            "{element} {fraction:.2%} · {count} exact compositions"
+                        ).format(
+                            element=element,
+                            fraction=fraction,
+                            count=len(points),
+                        )
+                        for fraction, points in groups
+                    ),
+                    "structure_indices": tuple(
+                        tuple(
+                            sorted(
+                                index
+                                for point in points
+                                for index in point.structure_indices
+                            )
+                        )
+                        for _, points in groups
+                    ),
+                },
+            ),
+        }
+
+    def _refresh_composition_map(self, index: int = -1) -> None:
+        del index
+        inventory = self._inventory()
+        element = self.composition_element_selector.currentData()
+        if inventory is None or not isinstance(element, str):
+            self.composition_map_hint.setText(
+                self.tr("No exact composition inventory is available.")
+            )
+            self.composition_chart.clear()
+            self.composition_table.setRowCount(0)
+            return
+        self.composition_map_hint.setText(
+            self.tr(
+                "{points} exact normalized composition points across {structures:,} structures. "
+                "Supercells with the same atomic fractions are merged."
+            ).format(
+                points=len(inventory.composition_points),
+                structures=inventory.structure_count,
+            )
+        )
+        self.composition_chart.set_plot(self._composition_plot(element))
+        self._populate_composition_table(element)
+
+    def _populate_composition_table(self, element: str) -> None:
+        inventory = self._inventory()
+        if inventory is None or element not in inventory.elements:
+            self.composition_table.setRowCount(0)
+            return
+        element_index = inventory.elements.index(element)
+        points = sorted(
+            inventory.composition_points,
+            key=lambda point: (-point.structure_count, point.fractions[element_index]),
+        )
+        self.composition_table.clearContents()
+        self.composition_table.setRowCount(len(points))
+        for row, point in enumerate(points):
+            formula = self._composition_formula(inventory.elements, point.fractions)
+            formula_item = QTableWidgetItem(formula)
+            formula_item.setData(Qt.ItemDataRole.UserRole, point.structure_indices)
+            self.composition_table.setItem(row, 0, formula_item)
+            count_item = QTableWidgetItem(f"{point.structure_count:,}")
+            count_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.composition_table.setItem(row, 1, count_item)
+            share_item = QTableWidgetItem(f"{point.share:.2%}")
+            share_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.composition_table.setItem(row, 2, share_item)
+            atom_counts = ", ".join(
+                f"{count} atoms × {structures:,}"
+                for count, structures in point.atom_counts
+            ) or "—"
+            self.composition_table.setItem(row, 3, QTableWidgetItem(atom_counts))
+            config_types = ", ".join(
+                f"{name} × {count:,}" for name, count in point.config_types[:4]
+            ) or self.tr("Not labeled")
+            self.composition_table.setItem(row, 4, QTableWidgetItem(config_types))
+        if points:
+            self.composition_table.selectRow(0)
+
+    def _on_composition_table_selection_changed(self) -> None:
+        row = self.composition_table.currentRow()
+        item = self.composition_table.item(row, 0) if row >= 0 else None
+        value = item.data(Qt.ItemDataRole.UserRole) if item is not None else ()
+        self._set_composition_selection(value if isinstance(value, tuple) else ())
+
+    def _on_composition_group_selected(self, structure_indices: list[int]) -> None:
+        self._set_composition_selection(tuple(int(index) for index in structure_indices))
+
+    def _set_composition_selection(self, structure_indices: tuple[int, ...]) -> None:
+        self._selected_composition_indices = list(structure_indices)
+        count = len(structure_indices)
+        self.composition_selection_label.setText(
+            self.tr("Selected composition point: {count:,} structures").format(
+                count=count
+            )
+        )
+        self.composition_show_button.setText(
+            self.tr("Show {count:,} structures").format(count=count)
+        )
+        self.composition_show_button.setEnabled(bool(structure_indices))
+
+    def _emit_composition_structures(self) -> None:
+        if self._selected_composition_indices:
+            self.selectStructuresSignal.emit(list(self._selected_composition_indices))
+
+    def _on_target_group_selected(self, structure_indices: list[int]) -> None:
+        self._selected_target_indices = [int(index) for index in structure_indices]
+        count = len(self._selected_target_indices)
+        self.target_selection_label.setText(
+            self.tr("Selected chart point: {count:,} structures").format(count=count)
+        )
+        self.target_show_button.setEnabled(bool(self._selected_target_indices))
+
+    def _emit_target_structures(self) -> None:
+        if self._selected_target_indices:
+            self.selectStructuresSignal.emit(list(self._selected_target_indices))
+
+    def _apply_review_state(self) -> None:
+        topic = self._selected_topic()
+        state = self.review_state_selector.currentData()
+        if topic is None or not isinstance(state, str):
+            return
+        self._review_states[topic.id] = state
+        row = self.slice_table.currentRow()
+        if row >= 0:
+            self.slice_table.setItem(
+                row, 4, QTableWidgetItem(self.review_state_selector.currentText())
+            )
+        self._update_review_summary()
+
+    def _update_review_summary(self) -> None:
+        blocker_count = sum(topic.category == "blocker" for topic in self._topics)
+        review_count = sum(topic.category == "review" for topic in self._topics)
+        affected = len(
+            {
+                index
+                for topic in self._topics
+                if topic.category in {"blocker", "review"}
+                for index in topic.structure_indices
+            }
+        )
+        decided = sum(topic.id in self._review_states for topic in self._topics)
+        data_quality = (
+            self._result.overview_metrics.get("data_quality", {})
+            if self._result is not None
+            else {}
+        )
+        duplicate_groups = (
+            int(data_quality.get("duplicate_group_count", 0) or 0)
+            if isinstance(data_quality, Mapping)
+            else 0
+        )
+        summary = self.tr(
+                "{total} review topics · {blockers} blockers · {reviews} review groups · "
+                "{affected:,} affected structures · {decided} states recorded in this session"
+            ).format(
+                total=len(self._topics),
+                blockers=blocker_count,
+                reviews=review_count,
+                affected=affected,
+                decided=decided,
+            )
+        if duplicate_groups:
+            summary += self.tr(" · {groups} repeated-geometry groups").format(
+                groups=duplicate_groups
+            )
+        self.review_summary_label.setText(summary)
+
+    def _parse_target_points(self) -> tuple[float, ...]:
+        values: list[float] = []
+        for token in re.split(r"[,，;；\s]+", self.target_points_edit.text().strip()):
+            if not token:
+                continue
+            try:
+                value = float(token) / 100.0
+            except ValueError:
+                continue
+            if 0.0 <= value <= 1.0 and value not in values:
+                values.append(value)
+        return tuple(sorted(values))
+
+    def _apply_composition_target(self) -> None:
+        inventory = self._inventory()
+        element = self.target_element_selector.currentData()
+        if inventory is None or not isinstance(element, str):
+            self.target_table.setRowCount(0)
+            self.target_chart.clear()
+            self.target_result_summary_label.setText(
+                self.tr("Load a dataset before comparing a target.")
+            )
+            return
+        minimum = self.target_minimum_spin.value() / 100.0
+        maximum = self.target_maximum_spin.value() / 100.0
+        if maximum < minimum:
+            minimum, maximum = maximum, minimum
+        explicit_points = self._parse_target_points()
+        if explicit_points:
+            points = explicit_points
+            chart_target_points = explicit_points
+            mode_summary = self.tr(
+                "Comparing {count} explicit {element} composition points."
+            ).format(count=len(points), element=element)
+        else:
+            points = tuple(
+                fraction
+                for fraction, _ in self._element_fraction_groups(inventory, element)
+                if minimum - 1.0e-8 <= fraction <= maximum + 1.0e-8
+            )
+            chart_target_points = tuple(
+                dict.fromkeys((minimum, maximum))
+            )
+            mode_summary = self.tr(
+                "No key points were entered. Showing {count} existing {element} fraction points "
+                "inside the selected range; this can reveal thin existing points, but not missing "
+                "points between them."
+            ).format(count=len(points), element=element)
+        self.target_chart.set_plot(
+            self._composition_plot(element, target_points=chart_target_points)
+        )
+        if not points:
+            self.target_table.clearContents()
+            self.target_table.setRowCount(1)
+            self.target_table.setItem(
+                0,
+                0,
+                QTableWidgetItem(f"{minimum:.2%}–{maximum:.2%}"),
+            )
+            self.target_table.setItem(
+                0, 1, QTableWidgetItem(self.tr("No sample in range"))
+            )
+            self.target_table.setItem(0, 2, QTableWidgetItem("0"))
+            self.target_table.setItem(0, 3, QTableWidgetItem("—"))
+            self.target_table.setItem(
+                0, 4, QTableWidgetItem(self.tr("Plan sampling"))
+            )
+            self.target_result_summary_label.setText(mode_summary)
+            self._selected_target_indices = []
+            self.target_selection_label.clear()
+            self.target_show_button.setEnabled(False)
+            return
+        target = CompositionTarget(
+            element=element,
+            minimum=minimum,
+            maximum=maximum,
+            key_points=points,
+            minimum_structure_count=self.target_minimum_count_spin.value(),
+        )
+        cells = compare_composition_target(inventory, target)
+        status_counts = {
+            status: sum(cell.status == status for cell in cells)
+            for status in TargetSupportStatus
+        }
+        self.target_result_summary_label.setText(
+            mode_summary
+            + " "
+            + self.tr(
+                "Quantity rule met: {supported} · thin: {thin} · no exact sample: {missing}."
+            ).format(
+                supported=status_counts[TargetSupportStatus.SUPPORTED],
+                thin=status_counts[TargetSupportStatus.THIN],
+                missing=status_counts[TargetSupportStatus.NO_SAMPLE],
+            )
+        )
+        self.target_table.clearContents()
+        self.target_table.setRowCount(len(cells))
+        status_text = {
+            TargetSupportStatus.SUPPORTED: self.tr("Quantity rule met"),
+            TargetSupportStatus.THIN: self.tr("Thin"),
+            TargetSupportStatus.NO_SAMPLE: self.tr("No exact sample"),
+            TargetSupportStatus.UNJUDGEABLE: self.tr("Cannot evaluate"),
+        }
+        for row, cell in enumerate(cells):
+            self.target_table.setItem(row, 0, QTableWidgetItem(f"{cell.target_fraction:.2%}"))
+            self.target_table.setItem(row, 1, QTableWidgetItem(status_text[cell.status]))
+            self.target_table.setItem(row, 2, QTableWidgetItem(f"{cell.observed_count:,}"))
+            nearest = "—" if cell.nearest_fraction is None else f"{cell.nearest_fraction:.2%}"
+            self.target_table.setItem(row, 3, QTableWidgetItem(nearest))
+            action = {
+                TargetSupportStatus.SUPPORTED: self.tr("Review structures"),
+                TargetSupportStatus.THIN: self.tr("Add structures"),
+                TargetSupportStatus.NO_SAMPLE: self.tr("Plan sampling"),
+                TargetSupportStatus.UNJUDGEABLE: self.tr("Check target"),
+            }[cell.status]
+            action_item = QTableWidgetItem(action)
+            action_item.setData(Qt.ItemDataRole.UserRole, cell.structure_indices)
+            self.target_table.setItem(row, 4, action_item)
+        if cells:
+            self.target_table.selectRow(0)
+
+    def _on_target_selection_changed(self) -> None:
+        row = self.target_table.currentRow()
+        item = self.target_table.item(row, 4) if row >= 0 else None
+        value = item.data(Qt.ItemDataRole.UserRole) if item is not None else ()
+        indices = value if isinstance(value, tuple) else ()
+        self._selected_target_indices = list(indices)
+        self.target_selection_label.setText(
+            self.tr("Selected target point: {count:,} structures").format(
+                count=len(indices)
+            )
+        )
+        self.target_show_button.setEnabled(bool(indices))
+
     def set_result(self, result: AuditResult) -> None:
         self._result = result
         self._all_slices = list(result.slices)
         self._dimensions = {dimension.id: dimension for dimension in result.dimensions}
         self._topics = self._build_topics()
         self._selected_chart_indices = []
+        self._selected_composition_indices = []
         self.no_dataset_state.hide()
         self.audit_header.show()
         self.dashboard_body.show()
@@ -506,16 +1266,45 @@ class TrainingSetAuditWidget(QWidget):
         structure_count = result.overview_metrics.get(
             "structures", result.inputs.get("structure_count", 0)
         )
-        self.dataset_label.setText(
-            self.tr("{dataset} · {count} structures").format(
-                dataset=result.dataset_id,
-                count=structure_count,
+        if result.scope is not None:
+            self.dataset_label.setText(
+                self.tr("{dataset} · {scope} scope · {count}/{total} structures").format(
+                    dataset=result.dataset_id,
+                    scope=result.scope.kind.value,
+                    count=result.scope.count,
+                    total=result.scope.source_count,
+                )
             )
-        )
-        self.generated_at_label.setText(self._generated_at_text(result.generated_at))
+        else:
+            self.dataset_label.setText(
+                self.tr("{dataset} · {count} structures").format(
+                    dataset=result.dataset_id,
+                    count=structure_count,
+                )
+            )
+        run_meta = [self._generated_at_text(result.generated_at)]
+        if result.ruleset_version:
+            run_meta.append(
+                self.tr("Rules {version}").format(version=result.ruleset_version)
+            )
+        if result.fingerprints.dataset:
+            run_meta.append(
+                self.tr("Data {fingerprint}").format(
+                    fingerprint=result.fingerprints.dataset[:10]
+                )
+            )
+        if result.fingerprints.model:
+            run_meta.append(
+                self.tr("Model {fingerprint}").format(
+                    fingerprint=result.fingerprints.model[:10]
+                )
+            )
+        self.generated_at_label.setText(" · ".join(run_meta))
         self._update_label_availability()
         self._update_summary()
         self._populate_slice_table()
+        self._populate_inventory_views()
+        self._update_review_summary()
 
         self.dimension_list.blockSignals(True)
         self.dimension_list.clear()
@@ -608,41 +1397,159 @@ class TrainingSetAuditWidget(QWidget):
         )
 
     def _build_topics(self) -> list[_AuditTopic]:
+        if self._result is None:
+            return []
         topics: list[_AuditTopic] = []
-        grouped: dict[str, list[AuditSlice]] = {}
+        evidence_by_id = {audit_slice.id: audit_slice for audit_slice in self._all_slices}
 
-        for audit_slice in self._all_slices:
-            if audit_slice.dimension_id == "local_chemistry":
-                group_id = ":".join(audit_slice.id.split(":")[:3])
-            elif audit_slice.dimension_id == "composition":
-                parts = audit_slice.id.split(":", 2)
-                group_id = ":".join(parts[:2])
-            else:
-                group_id = audit_slice.id
-            grouped.setdefault(group_id, []).append(audit_slice)
-
-        for group_id, source_slices in grouped.items():
-            first = source_slices[0]
+        for finding in canonical_findings(self._result):
+            source_slices = [
+                evidence_by_id[evidence_id]
+                for evidence_id in finding.evidence_ids
+                if evidence_id in evidence_by_id
+            ]
+            first = source_slices[0] if source_slices else None
+            if first is None:
+                topics.append(self._topic_from_finding(finding))
+                continue
             if first.dimension_id == "label_ranges":
                 topics.append(self._label_range_topic(first))
             elif first.dimension_id == "composition":
-                topics.append(self._composition_topic(group_id, source_slices))
+                topics.append(self._composition_topic(finding.id, source_slices))
             elif first.dimension_id == "local_chemistry":
-                topics.append(self._local_chemistry_topic(group_id, source_slices))
+                topics.append(self._local_chemistry_topic(finding.id, source_slices))
             elif first.dimension_id == "pair_contacts":
                 topics.append(self._pair_contact_topic(first))
             else:
-                topics.append(self._fallback_topic(first))
+                topics.append(self._topic_from_finding(finding, tuple(source_slices)))
 
         priority = {
-            "review": 0,
-            "imbalance": 1,
-            "thin": 2,
-            "redundancy": 3,
-            "info": 4,
+            "blocker": 0,
+            "review": 1,
+            "imbalance": 2,
+            "thin": 3,
+            "redundancy": 4,
+            "info": 5,
         }
         topics.sort(key=lambda topic: priority.get(topic.category, 9))
         return topics
+
+    def _topic_from_finding(self, finding, source_slices: tuple[AuditSlice, ...] = ()) -> _AuditTopic:
+        category = {
+            AuditFindingKind.BLOCKER: "blocker",
+            AuditFindingKind.REVIEW: "review",
+        }.get(finding.kind, "info")
+        if finding.kind == AuditFindingKind.EVIDENCE:
+            category = {
+                AuditBiasType.SPARSITY: "thin",
+                AuditBiasType.IMBALANCE: "imbalance",
+                AuditBiasType.REDUNDANCY: "redundancy",
+            }.get(finding.signal_type, "info")
+        title, observed, conclusion, limit = self._localized_core_finding(finding)
+        return _AuditTopic(
+            id=finding.id,
+            category=category,
+            title=title,
+            dimension_id=finding.dimension_id,
+            structure_indices=finding.structure_indices,
+            observed=observed,
+            interpretation=conclusion,
+            limit=limit,
+            plot_id=finding.plot_id,
+            source_slices=source_slices,
+        )
+
+    def _localized_core_finding(self, finding) -> tuple[str, str, str, str]:
+        if finding.dimension_id != "data_quality":
+            return finding.title, finding.observed, finding.conclusion, finding.limit
+
+        count = len(finding.structure_indices)
+        data_quality = (
+            self._result.overview_metrics.get("data_quality", {})
+            if self._result is not None
+            else {}
+        )
+        duplicate_group_count = (
+            int(data_quality.get("duplicate_group_count", 0) or 0)
+            if isinstance(data_quality, Mapping)
+            else 0
+        )
+        translations = {
+            "data_quality:empty_structure": (
+                self.tr("Empty structures"),
+                self.tr("{count} structures contain no atoms.").format(count=count),
+                self.tr("A zero-atom frame cannot provide an atomic training example."),
+                self.tr("This check does not impose a minimum cell size or composition."),
+            ),
+            "data_quality:nonfinite_geometry": (
+                self.tr("Non-finite geometry values"),
+                self.tr(
+                    "{count} structures have an invalid position shape or NaN/Inf positions or cell values."
+                ).format(count=count),
+                self.tr("Training and neighbor calculations cannot safely consume these geometries."),
+                self.tr("This check does not judge whether a finite geometry is physically meaningful."),
+            ),
+            "data_quality:invalid_pbc": (
+                self.tr("Invalid periodic-boundary metadata"),
+                self.tr("{count} structures do not provide three readable PBC directions.").format(count=count),
+                self.tr("Periodic geometry operations need an unambiguous PBC definition."),
+                self.tr("Missing PBC uses the existing NepTrainKit default and is not flagged."),
+            ),
+            "data_quality:invalid_cell": (
+                self.tr("Invalid periodic cell"),
+                self.tr("{count} structures have invalid lattice vectors for their periodic directions.").format(count=count),
+                self.tr("Minimum-image geometry is undefined for the declared periodic directions."),
+                self.tr("Non-periodic directions are not required to span a three-dimensional volume."),
+            ),
+            "data_quality:unknown_elements": (
+                self.tr("Invalid element information"),
+                self.tr("{count} structures contain unknown element symbols or a symbol-count mismatch.").format(count=count),
+                self.tr("A training backend cannot map these atoms to a valid element type."),
+                self.tr("This does not check whether the attached model supports every valid element."),
+            ),
+            "data_quality:invalid_label_shape": (
+                self.tr("Invalid label shape"),
+                self.tr("{count} structures have energy, force, or virial labels with an invalid shape.").format(count=count),
+                self.tr("Mismatched labels can be assigned to the wrong atoms or rejected by training."),
+                self.tr("Missing labels are handled separately and are not automatically invalid."),
+            ),
+            "data_quality:nonfinite_labels": (
+                self.tr("Non-finite label values"),
+                self.tr("{count} structures contain NaN/Inf energy, force, or virial labels.").format(count=count),
+                self.tr("Non-finite targets make common training losses non-finite."),
+                self.tr("The check does not require every supported label type to be present."),
+            ),
+            "data_quality:short_distance": (
+                self.tr("Overlapping atoms"),
+                self.tr("{count} structures contain an atom pair closer than 0.5 Å.").format(count=count),
+                self.tr("This is a conservative collision signal and should be checked before training."),
+                self.tr("Specialized collision datasets may intentionally contain very short distances."),
+            ),
+            "data_quality:label_conflicts": (
+                self.tr("Duplicate geometries with conflicting labels"),
+                self.tr("{count} structures share geometry but disagree in common training labels.").format(count=count),
+                self.tr("The same input geometry maps to inconsistent targets and needs provenance review."),
+                self.tr("The check cannot decide which repeated calculation is correct."),
+            ),
+            "data_quality:exact_duplicates": (
+                self.tr("Repeated geometries"),
+                (
+                    self.tr(
+                        "{count} structures belong to {groups} repeated-geometry groups."
+                    ).format(count=count, groups=duplicate_group_count)
+                    if duplicate_group_count
+                    else self.tr(
+                        "{count} structures repeat geometry already present in the current scope."
+                    ).format(count=count)
+                ),
+                self.tr("Repeated geometries may unintentionally overweight one configuration."),
+                self.tr("They may be intentional for weighting or independent-label studies; do not delete automatically."),
+            ),
+        }
+        return translations.get(
+            finding.id,
+            (finding.title, finding.observed, finding.conclusion, finding.limit),
+        )
 
     def _label_range_topic(self, audit_slice: AuditSlice) -> _AuditTopic:
         count = len(audit_slice.structure_indices)
@@ -972,24 +1879,34 @@ class TrainingSetAuditWidget(QWidget):
         self.slice_table.setColumnHidden(2, width < 650)
 
     def _update_summary(self) -> None:
+        blocker_topics = [topic for topic in self._topics if topic.category == "blocker"]
         review_topics = [topic for topic in self._topics if topic.category == "review"]
         thin_topics = [
             topic
             for topic in self._topics
             if topic.category in {"thin", "imbalance", "redundancy"}
         ]
-        review_indices = {
+        attention_topics = blocker_topics + review_topics
+        blocker_indices = {
             int(index)
-            for topic in review_topics
+            for topic in blocker_topics
             for index in topic.structure_indices
         }
-        self.metric_structure_value.setText(
-            self.tr("{groups} groups · {structures} structures").format(
-                groups=len(review_topics), structures=len(review_indices)
-            )
+        review_indices = {
+            int(index)
+            for topic in attention_topics
+            for index in topic.structure_indices
+        }
+        total = self._structure_count()
+        inventory = self._inventory()
+        self.metric_structure_value.setText(f"{total:,}")
+        self.metric_findings_value.setText(
+            str(len(inventory.composition_points)) if inventory is not None else "—"
+        )
+        self.metric_dimension_value.setText(
+            " · ".join(inventory.elements) if inventory is not None else "—"
         )
         counts = self._overview_label_counts()
-        total = self._structure_count()
         if total > 0:
             coverage = " · ".join(
                 f"{label[0].upper()} {counts[label] / total:.0%}"
@@ -997,11 +1914,13 @@ class TrainingSetAuditWidget(QWidget):
             )
         else:
             coverage = "E 0% · F 0% · V 0%"
-        self.metric_findings_value.setText(coverage)
-        self.metric_dimension_value.setText(str(len(thin_topics)))
-        self.metric_context_value.setText(self.tr("Not evaluated"))
+        self.metric_context_value.setText(coverage)
 
-        if review_topics:
+        if blocker_topics:
+            lead = self.tr(
+                "Resolve {groups} data blockers affecting {structures} unique structures before training."
+            ).format(groups=len(blocker_topics), structures=len(blocker_indices))
+        elif review_topics:
             lead = self.tr(
                 "Start with {groups} review groups covering {structures} unique structures."
             ).format(groups=len(review_topics), structures=len(review_indices))
@@ -1024,6 +1943,117 @@ class TrainingSetAuditWidget(QWidget):
                 lead=lead, distribution=distribution, labels=label_text
             )
         )
+
+        if inventory is None:
+            self.inventory_summary_label.setText(
+                self.tr("No exact composition inventory is available.")
+            )
+            self.composition_highlights_label.clear()
+        else:
+            self.inventory_summary_label.setText(
+                "<div style='color:#425257'>"
+                f"<span style='font-size:16px; font-weight:600; color:#183b38'>"
+                f"{inventory.structure_count:,}</span> {escape(self.tr('structures'))}"
+                "&nbsp;&nbsp;·&nbsp;&nbsp;"
+                f"<span style='font-size:16px; font-weight:600; color:#183b38'>"
+                f"{len(inventory.composition_points)}</span> "
+                f"{escape(self.tr('exact composition points'))}"
+                "&nbsp;&nbsp;·&nbsp;&nbsp;"
+                f"<span style='font-weight:600'>{escape(self.tr('Atom counts'))}</span> "
+                f"{escape(', '.join(f'{count} × {structures:,}' for count, structures in inventory.atom_counts) or '—')}"
+                "</div>"
+            )
+            top_points = sorted(
+                inventory.composition_points,
+                key=lambda point: point.structure_count,
+                reverse=True,
+            )[:3]
+            top_share = sum(point.share for point in top_points)
+            pure_points = [
+                point
+                for point in inventory.composition_points
+                if max(point.fractions, default=0.0) >= 1.0 - 1e-8
+            ]
+            rows = "".join(
+                "<tr>"
+                f"<td style='padding:3px 12px 3px 0'>{escape(self._composition_formula(inventory.elements, point.fractions))}</td>"
+                f"<td align='right' style='padding:3px 8px'><b>{point.structure_count:,}</b></td>"
+                f"<td align='right' style='padding:3px 0; color:#657579'>{point.share:.2%}</td>"
+                "</tr>"
+                for point in top_points
+            )
+            pure_summary = ""
+            if pure_points:
+                pure_items = []
+                for point in pure_points:
+                    element_index = max(
+                        range(len(point.fractions)),
+                        key=point.fractions.__getitem__,
+                    )
+                    pure_items.append(
+                        self.tr("Pure {element} {count:,}").format(
+                            element=inventory.elements[element_index],
+                            count=point.structure_count,
+                        )
+                    )
+                pure_summary = (
+                    "<div style='margin-top:8px; padding-top:6px; color:#425257'>"
+                    f"<b>{escape(self.tr('Pure-element endpoints'))}</b>&nbsp;&nbsp;"
+                    f"{escape('   ·   '.join(pure_items))}</div>"
+                )
+            concentration = escape(
+                self.tr(
+                    "Top {count} composition points contain {share:.1%} of structures."
+                ).format(count=len(top_points), share=top_share)
+            )
+            self.composition_highlights_label.setText(
+                "<div style='margin-top:8px'>"
+                f"<div style='font-weight:600; color:#243135'>{escape(self.tr('Main composition points'))}</div>"
+                f"<div style='color:#657579; margin-bottom:4px'>{concentration}</div>"
+                f"<table cellspacing='0' width='100%'>{rows}</table>"
+                f"{pure_summary}</div>"
+            )
+
+        data_quality = (
+            self._result.overview_metrics.get("data_quality", {})
+            if self._result is not None
+            else {}
+        )
+        duplicate_groups = (
+            int(data_quality.get("duplicate_group_count", 0) or 0)
+            if isinstance(data_quality, Mapping)
+            else 0
+        )
+        next_steps: list[str] = []
+        if blocker_topics:
+            next_steps.append(
+                self.tr("1. Resolve {count} blocker topics before training.").format(
+                    count=len(blocker_topics)
+                )
+            )
+        elif review_topics:
+            if duplicate_groups:
+                next_steps.append(
+                    self.tr(
+                        "1. Review {groups} repeated-geometry groups before deciding whether to keep or exclude them."
+                    ).format(groups=duplicate_groups)
+                )
+            else:
+                next_steps.append(
+                    self.tr("1. Review {count} priority topics.").format(
+                        count=len(review_topics)
+                    )
+                )
+        else:
+            next_steps.append(self.tr("1. No priority data-quality review is pending."))
+        next_steps.append(
+            self.tr("2. Inspect composition concentration and pure-element endpoints.")
+        )
+        next_steps.append(
+            self.tr("3. Define the intended target range to expose missing or thin points.")
+        )
+        self.next_actions_label.setText("\n".join(next_steps))
+        self.open_review_button.setEnabled(bool(self._topics))
 
     def _update_analysis(self, dimension_id: str) -> None:
         self.plot_selector.blockSignals(True)
@@ -1366,6 +2396,16 @@ class TrainingSetAuditWidget(QWidget):
             evidence_item = QTableWidgetItem(topic.observed)
             evidence_item.setToolTip(topic.observed)
             self.slice_table.setItem(row, 3, evidence_item)
+            state = self._review_states.get(topic.id, "pending")
+            state_labels = {
+                "pending": self.tr("Pending"),
+                "keep": self.tr("Keep"),
+                "exclude": self.tr("Exclude later"),
+                "duplicate": self.tr("Known duplicate"),
+            }
+            self.slice_table.setItem(
+                row, 4, QTableWidgetItem(state_labels.get(state, state))
+            )
 
         has_findings = bool(self._topics)
         self.findings_empty_label.setText(
@@ -1416,6 +2456,11 @@ class TrainingSetAuditWidget(QWidget):
         )
         self.send_button.setEnabled(bool(topic.structure_indices))
         self.view_distribution_button.setEnabled(bool(topic.plot_id))
+        state_index = self.review_state_selector.findData(
+            self._review_states.get(topic.id, "pending")
+        )
+        if state_index >= 0:
+            self.review_state_selector.setCurrentIndex(state_index)
 
     def _emit_selected_structures(self) -> None:
         topic = self._selected_topic()
@@ -1457,10 +2502,13 @@ class TrainingSetAuditWidget(QWidget):
             self.plot_selector.setCurrentIndex(target_plot)
             self._show_selected_plot(target_plot)
         self.page_tabs.setCurrentIndex(1)
+        self.data_map_tabs.setCurrentIndex(1)
 
     def _dimension_title(self, dimension_id: str) -> str:
         display_names = {
+            "data_quality": self.tr("Data quality"),
             "composition": self.tr("Composition balance"),
+            "config_types": self.tr("Configuration types"),
             "label_ranges": self.tr("Labels and extremes"),
             "local_chemistry": self.tr("Local-environment support"),
             "pair_contacts": self.tr("Element-pair support"),
@@ -1474,6 +2522,7 @@ class TrainingSetAuditWidget(QWidget):
 
     def _topic_category_text(self, category: str) -> str:
         return {
+            "blocker": self.tr("Data blocker"),
             "review": self.tr("Review"),
             "thin": self.tr("Thin distribution"),
             "imbalance": self.tr("Imbalance"),
@@ -1504,7 +2553,7 @@ class TrainingSetAuditWidget(QWidget):
             self,
             self.tr("Export Training Set Audit report"),
             "file",
-            default_filename="training_set_audit.html",
+            default_filename="training_set_check.html",
         )
         if not path:
             return
@@ -1530,7 +2579,13 @@ class TrainingSetAuditWidget(QWidget):
             QFrame#auditAnalysisPanel,
             QFrame#auditFindingsPanel,
             QFrame#auditSummaryPanel,
-            QFrame#auditEvidencePanel {
+            QFrame#auditEvidencePanel,
+            QFrame#auditInventoryPanel,
+            QFrame#auditNextActionsPanel,
+            QFrame#auditCompositionHeader,
+            QFrame#auditReviewBanner,
+            QFrame#auditTargetDefinitionPanel,
+            QFrame#auditModelPanel {
                 background: #ffffff;
                 border: 1px solid #d9e1e3;
                 border-radius: 5px;
@@ -1539,6 +2594,10 @@ class TrainingSetAuditWidget(QWidget):
                 background: #eef8f6;
                 border: 1px solid #b9dcd7;
                 border-left: 4px solid #087f78;
+            }
+            QFrame#auditReviewBanner {
+                background: #eef8f6;
+                border-color: #b9dcd7;
             }
             QLabel#auditTitle {
                 color: #18272b;
@@ -1570,6 +2629,25 @@ class TrainingSetAuditWidget(QWidget):
                 color: #183b38;
                 font-size: 14px;
                 font-weight: 600;
+            }
+            QLabel#inventorySummary,
+            QLabel#reviewSummary {
+                color: #183b38;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            QLabel#inventoryDetails,
+            QLabel#nextActionsText {
+                color: #425257;
+                font-size: 12px;
+            }
+            QLabel#targetResultSummary {
+                color: #315b57;
+                background: #eef8f6;
+                border: 1px solid #b9dcd7;
+                border-radius: 4px;
+                padding: 7px 10px;
+                font-size: 12px;
             }
             QLabel#selectedTopicTitle {
                 color: #243135;

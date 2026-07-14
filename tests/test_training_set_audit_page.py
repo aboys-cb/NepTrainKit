@@ -11,10 +11,13 @@ from qfluentwidgets import ComboBox, ListWidget, PrimaryPushButton, TableWidget
 from NepTrainKit.core.audit.result import (
     AuditBiasType,
     AuditDimension,
+    AuditFindingKind,
     AuditResult,
     AuditSeverity,
     AuditSlice,
     AuditStatus,
+    CompositionPoint,
+    DatasetInventory,
 )
 from NepTrainKit.ui import pages as ui_pages
 from NepTrainKit.ui.pages.training_set_audit import TrainingSetAuditWidget
@@ -111,6 +114,29 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
                 },
                 "label_counts": {"energy": 3, "force": 2, "virial": 0},
             },
+            inventory=DatasetInventory(
+                structure_count=3,
+                elements=("Fe", "Ni"),
+                composition_points=(
+                    CompositionPoint(
+                        reduced_counts=(1, 0),
+                        fractions=(1.0, 0.0),
+                        structure_count=1,
+                        share=1 / 3,
+                        structure_indices=(0,),
+                        atom_counts=((16, 1),),
+                    ),
+                    CompositionPoint(
+                        reduced_counts=(1, 1),
+                        fractions=(0.5, 0.5),
+                        structure_count=2,
+                        share=2 / 3,
+                        structure_indices=(1, 2),
+                        atom_counts=((16, 2),),
+                    ),
+                ),
+                atom_counts=((16, 3),),
+            ),
         )
 
     @staticmethod
@@ -182,6 +208,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.set_result(self._local_chemistry_result())
         widget.dimension_list.setCurrentRow(1)
         widget.page_tabs.setCurrentIndex(1)
+        widget.data_map_tabs.setCurrentIndex(1)
         self._app.processEvents()
 
         self.assertTrue(widget.local_scope_selector.isVisible())
@@ -277,7 +304,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.set_result(self._dashboard_result())
 
         self.assertEqual(widget.dimension_list.count(), 3)
-        self.assertEqual(widget.metric_structure_value.text(), "1 groups · 2 structures")
+        self.assertEqual(widget.metric_structure_value.text(), "3")
         self.assertEqual(widget.generated_at_label.text(), "Generated 2026-07-10 08:30 UTC")
         self.assertIsInstance(widget.rerun_button, PrimaryPushButton)
         self.assertNotIsInstance(widget.export_report_button, PrimaryPushButton)
@@ -286,12 +313,12 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertIsInstance(widget.local_center_selector, ComboBox)
         self.assertIsInstance(widget.plot_selector, ComboBox)
         self.assertIsInstance(widget.slice_table, TableWidget)
-        self.assertEqual(widget.metric_findings_label.text(), "Label coverage")
-        self.assertEqual(widget.metric_findings_value.text(), "E 100% · F 67% · V 0%")
-        self.assertEqual(widget.metric_dimension_label.text(), "Thin-distribution signals")
-        self.assertEqual(widget.metric_dimension_value.text(), "1")
-        self.assertEqual(widget.metric_context_label.text(), "Model errors")
-        self.assertEqual(widget.metric_context_value.text(), "Not evaluated")
+        self.assertEqual(widget.metric_findings_label.text(), "Exact composition points")
+        self.assertEqual(widget.metric_findings_value.text(), "2")
+        self.assertEqual(widget.metric_dimension_label.text(), "Elements")
+        self.assertEqual(widget.metric_dimension_value.text(), "Fe · Ni")
+        self.assertEqual(widget.metric_context_label.text(), "Label availability")
+        self.assertEqual(widget.metric_context_value.text(), "E 100% · F 67% · V 0%")
         self.assertEqual(widget.dimension_list.item(0).text(), "Overview\n2 topics")
         self.assertEqual(widget.dimension_list.item(1).text(), "Composition balance\nCalculated · 1 topic")
         self.assertEqual(widget.dimension_list.item(2).text(), "Labels and extremes\nPartial data · 1 topic")
@@ -300,8 +327,15 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             widget.label_availability_value.text(),
             "Energy 3/3\nForce 2/3\nVirial 0/3",
         )
-        self.assertEqual(widget.page_tabs.count(), 2)
-        self.assertEqual(widget.page_tabs.tabText(0), "Summary")
+        self.assertEqual(widget.page_tabs.count(), 4)
+        self.assertEqual(widget.page_tabs.tabText(0), "Overview")
+        self.assertEqual(widget.page_tabs.tabText(1), "Data map")
+        self.assertEqual(widget.page_tabs.tabText(2), "Review queue")
+        self.assertEqual(widget.page_tabs.tabText(3), "Target & model")
+        self.assertEqual(widget.data_map_tabs.count(), 3)
+        self.assertEqual(widget.composition_table.rowCount(), 2)
+        self.assertEqual(widget.composition_chart.plot_id, "inventory:composition:Ni")
+        self.assertIn("<table", widget.composition_highlights_label.text())
         self.assertEqual(widget.chart_widget.plot_id, "composition:Fe")
         self.assertEqual(widget.slice_table.rowCount(), 2)
         self.assertEqual(widget.audit_header.objectName(), "auditHeader")
@@ -324,6 +358,69 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
 
         widget.dimension_list.setCurrentRow(2)
         self.assertFalse(widget.chart_widget.isHidden())
+
+    def test_composition_target_distinguishes_supported_thin_and_missing_points(self):
+        widget = TrainingSetAuditWidget()
+        widget.set_result(self._dashboard_result())
+        widget.target_points_edit.setText("0, 25, 50")
+        widget.target_minimum_count_spin.setValue(2)
+
+        widget.apply_target_button.click()
+
+        self.assertEqual(widget.target_table.rowCount(), 3)
+        self.assertEqual(widget.target_table.item(0, 1).text(), "Thin")
+        self.assertEqual(widget.target_table.item(1, 1).text(), "No exact sample")
+        self.assertEqual(widget.target_table.item(2, 1).text(), "Quantity rule met")
+        self.assertEqual(widget.target_chart.plot_id, "inventory:composition:Ni")
+
+    def test_blank_target_key_points_uses_existing_fraction_points_in_range(self):
+        widget = TrainingSetAuditWidget()
+        widget.set_result(self._dashboard_result())
+        widget.target_points_edit.clear()
+        widget.target_minimum_count_spin.setValue(2)
+
+        widget.apply_target_button.click()
+
+        self.assertEqual(widget.target_table.rowCount(), 2)
+        self.assertIn("No key points were entered", widget.target_result_summary_label.text())
+        self.assertEqual(widget.target_table.item(0, 0).text(), "0.00%")
+        self.assertEqual(widget.target_table.item(1, 0).text(), "50.00%")
+
+    def test_multinary_chart_aggregates_exact_compositions_at_same_element_fraction(self):
+        widget = TrainingSetAuditWidget()
+        result = AuditResult(
+            dataset_id="ternary.xyz",
+            generated_at="now",
+            inputs={"structure_count": 9},
+            overview_metrics={"structures": 9},
+            inventory=DatasetInventory(
+                structure_count=9,
+                elements=("Co", "Ni", "V"),
+                composition_points=(
+                    CompositionPoint((1, 1, 0), (0.5, 0.5, 0.0), 3, 3 / 9, (0, 1, 2)),
+                    CompositionPoint((1, 3, 0), (0.25, 0.75, 0.0), 2, 2 / 9, (3, 4)),
+                    CompositionPoint((2, 1, 1), (0.5, 0.25, 0.25), 4, 4 / 9, (5, 6, 7, 8)),
+                ),
+            ),
+        )
+
+        widget.set_result(result)
+
+        self.assertEqual(widget.composition_chart._plot["x_values"], (0.0, 0.25))
+        self.assertEqual(widget.composition_chart._plot["counts"], (5.0, 4.0))
+        self.assertEqual(widget.composition_table.rowCount(), 3)
+        self.assertEqual(widget.target_table.rowCount(), 2)
+
+    def test_composition_table_hands_exact_point_indices_to_dataset_display(self):
+        widget = TrainingSetAuditWidget()
+        received = []
+        widget.selectStructuresSignal.connect(received.append)
+        widget.set_result(self._dashboard_result())
+
+        widget.composition_table.selectRow(0)
+        widget.composition_show_button.click()
+
+        self.assertEqual(received, [[1, 2]])
 
     def test_related_sparse_bins_are_grouped_into_one_topic(self):
         widget = TrainingSetAuditWidget()
@@ -428,6 +525,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
     def test_findings_columns_adapt_and_restore_without_horizontal_scrolling(self):
         widget = TrainingSetAuditWidget()
         widget.set_result(self._dashboard_result())
+        widget.page_tabs.setCurrentIndex(2)
         widget.resize(1280, 820)
         widget.show()
         self._app.processEvents()
@@ -509,7 +607,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.dimension_list.setCurrentRow(2)
 
         self.assertEqual(widget.dimension_list.count(), 3)
-        self.assertEqual(widget.metric_structure_value.text(), "0 groups · 0 structures")
+        self.assertEqual(widget.metric_structure_value.text(), "0")
         self.assertEqual(widget.slice_table.rowCount(), 0)
         self.assertEqual(widget.analysis_status_label.text(), "No labels are available.")
         self.assertIn("No review topic", widget.findings_empty_label.text())
@@ -583,7 +681,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self._app.installTranslator(translator)
         try:
             widget = TrainingSetAuditWidget()
-            self.assertEqual(widget.header_label.text(), "训练集检查")
+            self.assertEqual(widget.header_label.text(), "训练集评估")
             self.assertEqual(widget.slice_table.horizontalHeaderItem(0).text(), "类型")
             self.assertEqual(widget.dimension_rail.findChild(QLabel, "panelTitle").text(), "检查项目")
             self.assertEqual(widget.rerun_button.text(), "重新检查")
@@ -863,6 +961,39 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.dimension_list.item(0).text(), "Overview\n1 topic")
         self.assertEqual(widget.slice_table.rowCount(), 1)
         self.assertEqual(widget.slice_table.item(0, 0).text(), "Review")
+
+    def test_data_blocker_is_shown_before_review_signals(self):
+        widget = TrainingSetAuditWidget()
+        result = AuditResult(
+            dataset_id="train.xyz",
+            generated_at="now",
+            inputs={"structure_count": 3},
+            dimensions=(
+                AuditDimension("data_quality", "Data quality", AuditStatus.AVAILABLE),
+            ),
+            slices=(
+                AuditSlice(
+                    id="data_quality:nonfinite_labels",
+                    title="Non-finite label values",
+                    dimension_id="data_quality",
+                    severity=AuditSeverity.HIGH,
+                    bias_type=AuditBiasType.RISK_CONCENTRATION,
+                    structure_indices=(2,),
+                    observed="One structure contains a non-finite force.",
+                    interpretation="Training loss would become non-finite.",
+                    limit="Missing labels are not included.",
+                    finding_kind=AuditFindingKind.BLOCKER,
+                    rule="Present labels must be finite.",
+                ),
+            ),
+            overview_metrics={"structures": 3},
+        )
+
+        widget.set_result(result)
+
+        self.assertEqual(widget.slice_table.item(0, 0).text(), "Data blocker")
+        self.assertIn("Resolve 1 data blockers affecting 1 unique structures", widget.summary_conclusion_label.text())
+        self.assertEqual(widget.metric_structure_value.text(), "3")
 
     def test_rerun_button_emits_signal(self):
         widget = TrainingSetAuditWidget()

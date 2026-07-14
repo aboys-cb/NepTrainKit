@@ -5,7 +5,8 @@ from html import escape
 from pathlib import Path
 from typing import Iterable
 
-from .result import AuditResult, AuditSlice
+from .findings import canonical_findings
+from .result import AuditFinding, AuditResult
 
 
 DISCLAIMER = (
@@ -34,52 +35,76 @@ def _render_kv_list(items: Iterable[tuple[str, object]], empty_text: str) -> str
     return "\n".join(rows)
 
 
-def _render_slice_metrics(audit_slice: AuditSlice) -> str:
-    if not audit_slice.metrics:
-        return '<p class="muted">No slice metrics were recorded.</p>'
-    rows = []
-    for metric in audit_slice.metrics:
-        value = _format_value(metric.value)
-        if metric.unit:
-            value = f"{value} {metric.unit}"
-        meta_bits = []
-        if metric.baseline is not None:
-            meta_bits.append(f"baseline {_format_value(metric.baseline)}")
-        if metric.direction:
-            meta_bits.append(metric.direction)
-        meta = f" <span class=\"muted\">({escape(' · '.join(meta_bits))})</span>" if meta_bits else ""
-        rows.append(
-            "<div class=\"metric-row\">"
-            f"<span>{escape(metric.name)}</span>"
-            f"<strong>{escape(value)}</strong>"
-            f"{meta}"
-            "</div>"
-        )
-    return "\n".join(rows)
-
-
-def _render_slice(audit_slice: AuditSlice) -> str:
+def _render_finding(finding: AuditFinding) -> str:
     return (
-        '<section class="slice">'
-        f"<h2>{escape(audit_slice.title)}</h2>"
+        '<section class="finding">'
+        f"<h2>{escape(finding.title)}</h2>"
         '<div class="pill-row">'
-        f'<span class="pill severity-{escape(audit_slice.severity.value)}">{escape(audit_slice.severity.value)}</span>'
-        f'<span class="pill">{escape(audit_slice.bias_type.value)}</span>'
-        f'<span class="pill">{len(audit_slice.structure_indices)} structures</span>'
+        f'<span class="pill kind-{escape(finding.kind.value)}">{escape(finding.kind.value)}</span>'
+        f'<span class="pill">{escape(finding.signal_type.value)}</span>'
+        f'<span class="pill">{len(finding.structure_indices)} structures</span>'
+        f'<span class="pill">confidence: {escape(finding.confidence.value)}</span>'
         "</div>"
-        f"<p><strong>Observed</strong>: {escape(audit_slice.observed)}</p>"
-        f"<p><strong>Interpretation</strong>: {escape(audit_slice.interpretation)}</p>"
-        f"<p><strong>Limit</strong>: {escape(audit_slice.limit)}</p>"
-        '<div class="metrics">'
-        f"{_render_slice_metrics(audit_slice)}"
-        "</div>"
+        f"<p><strong>Observed</strong>: {escape(finding.observed)}</p>"
+        f"<p><strong>Conclusion / Interpretation</strong>: {escape(finding.conclusion)}</p>"
+        f"<p><strong>Rule</strong>: {escape(finding.rule)}</p>"
+        f"<p><strong>Limit</strong>: {escape(finding.limit)}</p>"
         "</section>"
+    )
+
+
+def _render_inventory(result: AuditResult) -> str:
+    inventory = result.inventory
+    if inventory is None:
+        return '<p class="muted">No exact composition inventory was recorded.</p>'
+    rows = []
+    for point in sorted(
+        inventory.composition_points,
+        key=lambda item: item.structure_count,
+        reverse=True,
+    ):
+        composition = " · ".join(
+            f"{element} {fraction:.2%}"
+            for element, fraction in zip(inventory.elements, point.fractions)
+        )
+        atom_counts = ", ".join(
+            f"{count} atoms × {structures}" for count, structures in point.atom_counts
+        ) or "—"
+        rows.append(
+            "<tr>"
+            f"<td>{escape(composition)}</td>"
+            f"<td>{point.structure_count:,}</td>"
+            f"<td>{point.share:.2%}</td>"
+            f"<td>{escape(atom_counts)}</td>"
+            "</tr>"
+        )
+    return (
+        f'<p><strong>{inventory.structure_count:,}</strong> structures · '
+        f'<strong>{len(inventory.composition_points)}</strong> exact composition points · '
+        f'{escape(" · ".join(inventory.elements))}</p>'
+        '<div class="table-wrap"><table><thead><tr>'
+        '<th>Exact composition</th><th>Structures</th><th>Share</th><th>Atom counts</th>'
+        f'</tr></thead><tbody>{"".join(rows)}</tbody></table></div>'
     )
 
 
 def render_audit_report_html(result: AuditResult) -> str:
     overview_rows = _render_kv_list(result.overview_metrics.items(), "No overview metrics were recorded.")
     inputs_rows = _render_kv_list(result.inputs.items(), "No inputs were recorded.")
+    fingerprint_rows = _render_kv_list(
+        (
+            (key, value)
+            for key, value in (
+                ("dataset", result.fingerprints.dataset),
+                ("scope", result.fingerprints.scope),
+                ("model", result.fingerprints.model),
+                ("target", result.fingerprints.target),
+                ("ruleset", result.ruleset_version),
+            )
+            if value
+        ),
+        "No fingerprints were recorded.",
+    )
     dimensions = result.dimensions
     dimension_rows = []
     for dimension in dimensions:
@@ -95,10 +120,11 @@ def render_audit_report_html(result: AuditResult) -> str:
     if not dimension_rows:
         dimension_rows.append('<p class="muted">No dimensions were recorded.</p>')
 
-    if result.slices:
-        slice_html = "\n".join(_render_slice(item) for item in result.slices)
+    findings = canonical_findings(result)
+    if findings:
+        finding_html = "\n".join(_render_finding(item) for item in findings)
     else:
-        slice_html = '<p class="empty">No audit findings were generated.</p>'
+        finding_html = '<p class="empty">No audit findings were generated.</p>'
 
     return (
         "<!doctype html>\n"
@@ -114,20 +140,23 @@ def render_audit_report_html(result: AuditResult) -> str:
         "    h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.1; }\n"
         "    h2 { margin: 0 0 10px; font-size: 19px; }\n"
         "    .subtitle { margin: 0 0 20px; color: #52606d; }\n"
-        "    .card, .slice { background: #fff; border: 1px solid #d8dee4; border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03); }\n"
+        "    .card, .finding { background: #fff; border: 1px solid #d8dee4; border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03); }\n"
         "    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }\n"
         "    .section-title { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; }\n"
         "    .kv-row, .metric-row, .dimension-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #edf1f4; }\n"
         "    .kv-row:last-child, .metric-row:last-child, .dimension-row:last-child { border-bottom: 0; padding-bottom: 0; }\n"
         "    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }\n"
         "    .pill { display: inline-flex; align-items: center; border: 1px solid #d8dee4; border-radius: 999px; padding: 3px 9px; font-size: 12px; color: #334155; background: #f8fafb; }\n"
-        "    .severity-high { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }\n"
-        "    .severity-medium { background: #fef3c7; border-color: #fcd34d; color: #92400e; }\n"
-        "    .severity-low { background: #dcfce7; border-color: #86efac; color: #166534; }\n"
-        "    .severity-info { background: #e0f2fe; border-color: #7dd3fc; color: #075985; }\n"
+        "    .kind-blocker { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }\n"
+        "    .kind-review { background: #fef3c7; border-color: #fcd34d; color: #92400e; }\n"
+        "    .kind-evidence { background: #e0f2fe; border-color: #7dd3fc; color: #075985; }\n"
         "    .muted { color: #64748b; }\n"
         "    .empty { color: #52606d; font-style: italic; }\n"
         "    .note { margin-top: 8px; padding: 10px 12px; border-left: 3px solid #205a69; background: #eef6f7; color: #174c58; border-radius: 6px; }\n"
+        "    .table-wrap { overflow-x: auto; }\n"
+        "    table { width: 100%; border-collapse: collapse; }\n"
+        "    th, td { padding: 8px; text-align: left; border-bottom: 1px solid #edf1f4; }\n"
+        "    th { color: #52606d; font-size: 12px; }\n"
         "    @media (max-width: 900px) { body { padding: 18px; } .grid { grid-template-columns: 1fr; } }\n"
         "  </style>\n"
         "</head>\n"
@@ -153,6 +182,10 @@ def render_audit_report_html(result: AuditResult) -> str:
         f'      <p class="note">{escape(DISCLAIMER)}</p>\n'
         "    </section>\n"
         '    <section class="card">\n'
+        '      <div class="section-title">Dataset inventory</div>\n'
+        f"{_render_inventory(result)}\n"
+        "    </section>\n"
+        '    <section class="card">\n'
         '      <div class="section-title">Inputs</div>\n'
         f"{inputs_rows}\n"
         "    </section>\n"
@@ -161,12 +194,16 @@ def render_audit_report_html(result: AuditResult) -> str:
         f"{''.join(dimension_rows)}\n"
         "    </section>\n"
         '    <section class="card">\n'
+        '      <div class="section-title">Run identity</div>\n'
+        f"{fingerprint_rows}\n"
+        "    </section>\n"
+        '    <section class="card">\n'
         '      <div class="section-title">Overview metrics</div>\n'
         f"{overview_rows}\n"
         "    </section>\n"
         '    <section class="card">\n'
         '      <div class="section-title">Findings</div>\n'
-        f"{slice_html}\n"
+        f"{finding_html}\n"
         "    </section>\n"
         "  </main>\n"
         "</body>\n"

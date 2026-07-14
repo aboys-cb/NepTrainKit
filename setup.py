@@ -393,6 +393,17 @@ ext_modules.append(
     )
 )
 
+ext_modules.append(
+    Extension(
+        "NepTrainKit.core._fastaudit",
+        ["src/NepTrainKit/core/_fastaudit.cpp"],
+        include_dirs=[pybind11_include],
+        extra_compile_args=list(extra_compile_args),
+        extra_link_args=extra_link_args,
+        language="c++",
+    )
+)
+
 setup(
     author="Chen Cheng bing",
 cmdclass={'build_ext': BuildExtNVCC},

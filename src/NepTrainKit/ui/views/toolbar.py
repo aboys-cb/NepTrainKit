@@ -200,7 +200,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             self.summarySignal,
         )
         self.addButton(
-            "Distribution Inspector",
+            self.tr("Explore distributions"),
             QIcon(distribution_icon_path),
             self.distributionSignal,
         )

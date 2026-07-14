@@ -53,6 +53,29 @@ def categorical_payload():
     }
 
 
+@pytest.fixture
+def composition_payload():
+    return {
+        "kind": "composition_stems",
+        "id": "inventory:composition:Ni",
+        "title": "Exact Ni composition support",
+        "x_label": "Ni atomic fraction",
+        "y_label": "Structures",
+        "x_min": -0.01,
+        "x_max": 1.0,
+        "log_scale": True,
+        "target_points": (0.0, 0.25, 0.5),
+        "series": (
+            {
+                "x_values": (0.0, 0.5, 1.0),
+                "labels": ("Fe 100%", "Fe 50% · Ni 50%", "Ni 100%"),
+                "counts": (596, 28746, 943),
+                "structure_indices": ((1,), (2, 3), (4,)),
+            },
+        ),
+    }
+
+
 def test_histogram_state_can_be_set_and_cleared(app, histogram_payload):
     widget = AuditChartWidget()
 
@@ -77,6 +100,26 @@ def test_categorical_payload_is_accepted(app, categorical_payload):
 
     assert widget.plot_id == "pair_contacts:radial"
     assert widget.has_data is True
+
+
+def test_composition_stems_accept_exact_points_and_emit_indices(app, composition_payload):
+    widget = AuditChartWidget()
+    received = []
+    widget.selectedGroupSignal.connect(received.append)
+    widget.set_plot(composition_payload)
+    widget.resize(640, 260)
+    widget.show()
+    app.processEvents()
+
+    QTest.mouseClick(
+        widget,
+        Qt.MouseButton.LeftButton,
+        pos=widget._bar_rects[1][0].center().toPoint(),
+    )
+
+    assert widget.plot_id == "inventory:composition:Ni"
+    assert widget._bar_rects[0][0].center().x() > 58
+    assert received == [[2, 3]]
 
 
 def test_histogram_accepts_negative_finite_strictly_increasing_bin_edges(app, histogram_payload):
@@ -145,7 +188,9 @@ def test_malformed_payload_uses_empty_fallback(app, payload):
     assert widget.has_data is False
 
 
-@pytest.mark.parametrize("payload", ("histogram_payload", "categorical_payload"))
+@pytest.mark.parametrize(
+    "payload", ("histogram_payload", "categorical_payload", "composition_payload")
+)
 def test_plot_renders_multiple_colors(app, request, payload):
     widget = AuditChartWidget()
     widget.set_plot(request.getfixturevalue(payload))

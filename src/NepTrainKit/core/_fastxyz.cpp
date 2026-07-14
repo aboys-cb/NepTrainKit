@@ -300,9 +300,7 @@ static std::vector<FrameIndex> index_frames(const char* buf, size_t nbytes) {
     return out;
 }
 
-// Parallel frame indexing: split buffer into coarse chunks, align to line boundaries,
-// and scan frame starts within each chunk. Header and data line scans may cross chunk
-// boundaries; a frame is only emitted by the chunk that contains its first line.
+// Thread count for parallel per-frame parsing.
 static int compute_threads(int max_workers) {
     int nthreads = 1;
 #ifdef _OPENMP
@@ -319,101 +317,6 @@ static int compute_threads(int max_workers) {
 #endif
     if (nthreads < 1) nthreads = 1;
     return nthreads;
-}
-
-static std::vector<FrameIndex> index_frames_parallel(const char* buf, size_t nbytes, int max_workers) {
-    const char* gend = buf + nbytes;
-    size_t chunk_bytes = 32ull * 1024ull * 1024ull; // 32 MiB default
-    if (const char* env = std::getenv("NEPKIT_FASTXYZ_CHUNK_MB")) {
-        long mb = std::strtol(env, nullptr, 10);
-        if (mb > 0) chunk_bytes = static_cast<size_t>(mb) * 1024ull * 1024ull;
-    }
-    if (chunk_bytes == 0) chunk_bytes = nbytes;
-    size_t nchunks = (nbytes + chunk_bytes - 1) / chunk_bytes;
-
-    int nthreads = compute_threads(max_workers);
-    // Ensure at least as many chunks as threads to keep workers busy
-    if (nchunks < static_cast<size_t>(nthreads)) {
-        nchunks = static_cast<size_t>(nthreads);
-        chunk_bytes = (nbytes + nchunks - 1) / nchunks;
-    }
-
-    std::vector<std::vector<FrameIndex>> parts(nchunks);
-
-#ifdef _OPENMP
-#pragma omp parallel for schedule(static) num_threads(nthreads)
-#endif
-    for (ptrdiff_t ci = 0; ci < static_cast<ptrdiff_t>(nchunks); ++ci) {
-        const size_t start = static_cast<size_t>(ci) * chunk_bytes;
-        const size_t stop = std::min(nbytes, (static_cast<size_t>(ci) + 1) * chunk_bytes);
-        const char* cs = buf + start;
-        const char* ce = buf + stop;
-        if (cs >= ce) {
-            continue;
-        }
-        // Align chunk start to next line start (skip a partial line at the beginning)
-        if (cs != buf) {
-			// Check if cs is already at start of a line.
-			if (*(cs - 1) != '\n') {
-				// cs is in the middle of a line → skip to next line
-				const void* nl = std::memchr(cs, '\n', static_cast<size_t>(ce - cs));
-				if (!nl) {
-					continue;
-				}
-				cs = static_cast<const char*>(nl) + 1;
-			}
-			// else: cs is already at line start, do nothing.
-		}
-        std::vector<FrameIndex> local;
-        const char* p = cs;
-        while (p < ce) {
-            const char* l1 = p;
-            const char* e1 = find_eol(l1, gend);
-            if (l1 == e1) { // blank line
-                p = (e1 < gend ? e1 + 1 : e1);
-                continue;
-            }
-            int num = 0; const char* after = nullptr;
-            if (!parse_int(l1, e1, num, &after)) {
-                // not a valid frame start; skip line
-                p = (e1 < gend ? e1 + 1 : e1);
-                continue;
-            }
-            // second line (header)
-            const char* l2 = (e1 < gend) ? e1 + 1 : gend;
-            const char* e2 = find_eol(l2, gend);
-            const char* d0 = (e2 < gend) ? e2 + 1 : gend;
-            const char* d = d0;
-            for (int i = 0; i < num && d < gend; ++i) {
-                d = find_eol(d, gend);
-                if (d < gend) ++d;
-            }
-            FrameIndex fi;
-            fi.off_num = static_cast<size_t>(l1 - buf);
-            fi.off_header = static_cast<size_t>(l2 - buf);
-            fi.off_data = static_cast<size_t>(d0 - buf);
-            fi.end = static_cast<size_t>(d - buf);
-            fi.num_atoms = num;
-            local.push_back(fi);
-
-            // Advance p to the frame end (may move beyond this chunk window)
-            p = d;
-            if (p < gend && p <= ce) {
-                // no-op
-            }
-        }
-        parts[static_cast<size_t>(ci)] = std::move(local);
-    }
-
-    // Merge and sort by start offset to ensure global ordering
-    std::vector<FrameIndex> out;
-    size_t total = 0; for (auto& v : parts) total += v.size();
-    out.reserve(total);
-    for (auto& v : parts) {
-        out.insert(out.end(), v.begin(), v.end());
-    }
-    std::sort(out.begin(), out.end(), [](const FrameIndex& a, const FrameIndex& b){ return a.off_num < b.off_num; });
-    return out;
 }
 
 // Parse frames into Python-friendly dicts
@@ -465,7 +368,13 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
     {
         // Indexing is pure C++; release the GIL here as well.
         ScopedReleaseIfHeld _nogil_idx;
-        frames = index_frames_parallel(base, nbytes, max_workers);
+        // Frame boundaries are stateful: the atom count determines exactly how
+        // many lines must be skipped before the next frame can begin.  Splitting
+        // the raw buffer at arbitrary line boundaries can start inside an atom
+        // block, where a numeric first property (for example pos:R:3) may be
+        // mistaken for the next atom count.  Keep indexing serial and parallelise
+        // the substantially heavier per-frame parsing below.
+        frames = index_frames(base, nbytes);
     }
     auto t_idx1 = clock::now();
     if (dbg) {

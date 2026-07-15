@@ -8,6 +8,7 @@ from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.magnetism import MagneticOrderOperation, MagneticOrderParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
 @CardManager.register_card
@@ -23,21 +24,21 @@ class MagneticOrderCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Magnetic Order Generator")
+        self.setTitle(self.tr("Magnetic Order Generator"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("magnetic_order_card_widget")
 
-        self.format_label = BodyLabel("Format", self.setting_widget)
-        self.format_label.setToolTip("Collinear: scalar MAGMOM; Non-collinear: vector MAGMOM (mx,my,mz)")
+        self.format_label = BodyLabel(self.tr("Format"), self.setting_widget)
+        self.format_label.setToolTip(self.tr("Collinear: scalar MAGMOM; Non-collinear: vector MAGMOM (mx,my,mz)"))
         self.format_label.installEventFilter(ToolTipFilter(self.format_label, 300, ToolTipPosition.TOP))
         self.format_combo = ComboBox(self.setting_widget)
-        self.format_combo.addItems(["Collinear (scalar)", "Non-collinear (vector)"])
-        self.format_combo.setCurrentText("Collinear (scalar)")
+        add_translated_items(self, self.format_combo, ["Collinear (scalar)", "Non-collinear (vector)"])
+        set_combo_value(self.format_combo, "Collinear (scalar)")
 
-        self.axis_label = BodyLabel("Axis (x,y,z)", self.setting_widget)
-        self.axis_label.setToolTip("Reference axis for FM/AFM (and PM cone/plane when selected)")
+        self.axis_label = BodyLabel(self.tr("Axis (x,y,z)"), self.setting_widget)
+        self.axis_label.setToolTip(self.tr("Reference axis for FM/AFM (and PM cone/plane when selected)"))
         self.axis_label.installEventFilter(ToolTipFilter(self.axis_label, 300, ToolTipPosition.TOP))
         self.axis_frame = SpinBoxUnitInputFrame(self)
         self.axis_frame.set_input("", 3, "float")
@@ -45,21 +46,23 @@ class MagneticOrderCard(MakeDataCard):
         self.axis_frame.setRange(-1.0, 1.0)
         self.axis_frame.set_input_value([0.0, 0.0, 1.0])
 
-        self.map_label = BodyLabel("Magmom map", self.setting_widget)
-        self.map_label.setToolTip('Per-element moments, e.g. "Fe:2.2,Co:1.7,Ni:0.6,Cr:1.0" or JSON')
+        self.map_label = BodyLabel(self.tr("Magmom map"), self.setting_widget)
+        self.map_label.setToolTip(self.tr('Per-element moments, e.g. "Fe:2.2,Co:1.7,Ni:0.6,Cr:1.0" or JSON'))
         self.map_label.installEventFilter(ToolTipFilter(self.map_label, 300, ToolTipPosition.TOP))
         self.map_edit = LineEdit(self.setting_widget)
-        self.map_edit.setPlaceholderText("Fe:2.2,Co:1.7,Ni:0.6,Cr:1.0")
+        self.map_edit.setPlaceholderText(self.tr("Fe:2.2,Co:1.7,Ni:0.6,Cr:1.0"))
 
-        self.use_element_dir_checkbox = CheckBox("Use element vector directions (if provided)", self.setting_widget)
+        self.use_element_dir_checkbox = CheckBox(self.tr("Use element vector directions (if provided)"), self.setting_widget)
         self.use_element_dir_checkbox.setChecked(False)
-        self.use_element_dir_checkbox.setToolTip('If the map provides vectors (e.g. Cr:[0,0,1]), use them as directions for FM/AFM')
+        self.use_element_dir_checkbox.setToolTip(
+            self.tr('If the map provides vectors (e.g. Cr:[0,0,1]), use them as directions for FM/AFM')
+        )
         self.use_element_dir_checkbox.installEventFilter(
             ToolTipFilter(self.use_element_dir_checkbox, 300, ToolTipPosition.TOP)
         )
 
-        self.default_label = BodyLabel("Default |m|", self.setting_widget)
-        self.default_label.setToolTip("Magnitude for elements not listed in Magmom map")
+        self.default_label = BodyLabel(self.tr("Default |m|"), self.setting_widget)
+        self.default_label.setToolTip(self.tr("Magnitude for elements not listed in Magmom map"))
         self.default_label.installEventFilter(ToolTipFilter(self.default_label, 300, ToolTipPosition.TOP))
         self.default_frame = SpinBoxUnitInputFrame(self)
         self.default_frame.set_input("", 1, "float")
@@ -67,66 +70,66 @@ class MagneticOrderCard(MakeDataCard):
         self.default_frame.setRange(0.0, 20.0)
         self.default_frame.set_input_value([0.0])
 
-        self.apply_label = BodyLabel("Apply elements", self.setting_widget)
-        self.apply_label.setToolTip("Optional: only assign moments to these elements (comma-separated). Empty=all")
+        self.apply_label = BodyLabel(self.tr("Apply elements"), self.setting_widget)
+        self.apply_label.setToolTip(self.tr("Optional: only assign moments to these elements (comma-separated). Empty=all"))
         self.apply_label.installEventFilter(ToolTipFilter(self.apply_label, 300, ToolTipPosition.TOP))
         self.apply_edit = LineEdit(self.setting_widget)
-        self.apply_edit.setPlaceholderText("Fe,Co,Ni,Cr")
+        self.apply_edit.setPlaceholderText(self.tr("Fe,Co,Ni,Cr"))
 
-        self.fm_checkbox = CheckBox("Generate FM", self.setting_widget)
+        self.fm_checkbox = CheckBox(self.tr("Generate FM"), self.setting_widget)
         self.fm_checkbox.setChecked(True)
-        self.afm_checkbox = CheckBox("Generate AFM", self.setting_widget)
+        self.afm_checkbox = CheckBox(self.tr("Generate AFM"), self.setting_widget)
         self.afm_checkbox.setChecked(True)
 
-        self.afm_mode_label = BodyLabel("AFM mode", self.setting_widget)
-        self.afm_mode_label.setToolTip("AFM sign assignment: k-vector layers or explicit A/B groups")
+        self.afm_mode_label = BodyLabel(self.tr("AFM mode"), self.setting_widget)
+        self.afm_mode_label.setToolTip(self.tr("AFM sign assignment: k-vector layers or explicit A/B groups"))
         self.afm_mode_label.installEventFilter(ToolTipFilter(self.afm_mode_label, 300, ToolTipPosition.TOP))
         self.afm_mode_combo = ComboBox(self.setting_widget)
-        self.afm_mode_combo.addItems(["k-vector", "group A/B"])
+        add_translated_items(self, self.afm_mode_combo, ["k-vector", "group A/B"])
 
-        self.kvec_label = BodyLabel("AFM k-vector", self.setting_widget)
-        self.kvec_label.setToolTip("AFM modulation in fractional coordinates: 100, 010, 001, 110, 111")
+        self.kvec_label = BodyLabel(self.tr("AFM k-vector"), self.setting_widget)
+        self.kvec_label.setToolTip(self.tr("AFM modulation in fractional coordinates: 100, 010, 001, 110, 111"))
         self.kvec_label.installEventFilter(ToolTipFilter(self.kvec_label, 300, ToolTipPosition.TOP))
         self.kvec_combo = ComboBox(self.setting_widget)
         self.kvec_combo.addItems(["100", "010", "001", "110", "111"])
         self.kvec_combo.setCurrentText("111")
 
-        self.group_a_label = BodyLabel("AFM group +", self.setting_widget)
-        self.group_a_label.setToolTip("Group label assigned + sign (requires arrays['group'])")
+        self.group_a_label = BodyLabel(self.tr("AFM group +"), self.setting_widget)
+        self.group_a_label.setToolTip(self.tr("Group label assigned + sign (requires arrays['group'])"))
         self.group_a_label.installEventFilter(ToolTipFilter(self.group_a_label, 300, ToolTipPosition.TOP))
         self.group_a_edit = LineEdit(self.setting_widget)
         self.group_a_edit.setText("A")
 
-        self.group_b_label = BodyLabel("AFM group -", self.setting_widget)
-        self.group_b_label.setToolTip("Group label assigned - sign (requires arrays['group'])")
+        self.group_b_label = BodyLabel(self.tr("AFM group -"), self.setting_widget)
+        self.group_b_label.setToolTip(self.tr("Group label assigned - sign (requires arrays['group'])"))
         self.group_b_label.installEventFilter(ToolTipFilter(self.group_b_label, 300, ToolTipPosition.TOP))
         self.group_b_edit = LineEdit(self.setting_widget)
         self.group_b_edit.setText("B")
 
-        self.zero_unknown_groups_checkbox = CheckBox("Zero unknown groups", self.setting_widget)
+        self.zero_unknown_groups_checkbox = CheckBox(self.tr("Zero unknown groups"), self.setting_widget)
         self.zero_unknown_groups_checkbox.setChecked(True)
-        self.zero_unknown_groups_checkbox.setToolTip("If an atom group is neither A nor B, set its moment to 0")
+        self.zero_unknown_groups_checkbox.setToolTip(self.tr("If an atom group is neither A nor B, set its moment to 0"))
         self.zero_unknown_groups_checkbox.installEventFilter(
             ToolTipFilter(self.zero_unknown_groups_checkbox, 300, ToolTipPosition.TOP)
         )
 
-        self.pm_checkbox = CheckBox("Generate PM (random signs)", self.setting_widget)
+        self.pm_checkbox = CheckBox(self.tr("Generate PM (random signs)"), self.setting_widget)
         self.pm_checkbox.setChecked(False)
-        self.pm_count_label = BodyLabel("PM structures", self.setting_widget)
+        self.pm_count_label = BodyLabel(self.tr("PM structures"), self.setting_widget)
         self.pm_count_frame = SpinBoxUnitInputFrame(self)
         self.pm_count_frame.set_input("unit", 1, "int")
         self.pm_count_frame.setRange(1, 999999)
         self.pm_count_frame.set_input_value([10])
 
-        self.pm_direction_label = BodyLabel("PM directions", self.setting_widget)
-        self.pm_direction_label.setToolTip("Non-collinear PM direction distribution")
+        self.pm_direction_label = BodyLabel(self.tr("PM directions"), self.setting_widget)
+        self.pm_direction_label.setToolTip(self.tr("Non-collinear PM direction distribution"))
         self.pm_direction_label.installEventFilter(ToolTipFilter(self.pm_direction_label, 300, ToolTipPosition.TOP))
         self.pm_direction_combo = ComboBox(self.setting_widget)
-        self.pm_direction_combo.addItems(["sphere", "cone", "plane", "axis"])
-        self.pm_direction_combo.setCurrentText("sphere")
+        add_translated_items(self, self.pm_direction_combo, ["sphere", "cone", "plane", "axis"])
+        set_combo_value(self.pm_direction_combo, "sphere")
 
-        self.pm_cone_label = BodyLabel("PM cone angle", self.setting_widget)
-        self.pm_cone_label.setToolTip("Cone half-angle in degrees (used when PM directions=cone)")
+        self.pm_cone_label = BodyLabel(self.tr("PM cone angle"), self.setting_widget)
+        self.pm_cone_label.setToolTip(self.tr("Cone half-angle in degrees (used when PM directions=cone)"))
         self.pm_cone_label.installEventFilter(ToolTipFilter(self.pm_cone_label, 300, ToolTipPosition.TOP))
         self.pm_cone_frame = SpinBoxUnitInputFrame(self)
         self.pm_cone_frame.set_input("deg", 1, "float")
@@ -134,12 +137,12 @@ class MagneticOrderCard(MakeDataCard):
         self.pm_cone_frame.setRange(0.0, 180.0)
         self.pm_cone_frame.set_input_value([30.0])
 
-        self.pm_balanced_checkbox = CheckBox("PM balanced", self.setting_widget)
+        self.pm_balanced_checkbox = CheckBox(self.tr("PM balanced"), self.setting_widget)
         self.pm_balanced_checkbox.setChecked(True)
-        self.pm_balanced_checkbox.setToolTip("Try to balance +/- signs to near-zero net moment")
+        self.pm_balanced_checkbox.setToolTip(self.tr("Try to balance +/- signs to near-zero net moment"))
         self.pm_balanced_checkbox.installEventFilter(ToolTipFilter(self.pm_balanced_checkbox, 300, ToolTipPosition.TOP))
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -192,7 +195,7 @@ class MagneticOrderCard(MakeDataCard):
     def _update_afm_mode_widgets(self):
         """Show/hide AFM controls based on the selected AFM mode."""
         afm_enabled = self.afm_checkbox.isChecked()
-        mode = self.afm_mode_combo.currentText()
+        mode = combo_value(self.afm_mode_combo)
 
         use_group = mode == "group A/B"
 
@@ -218,7 +221,7 @@ class MagneticOrderCard(MakeDataCard):
 
     def get_params(self) -> MagneticOrderParams:
         return MagneticOrderParams(
-            format=self.format_combo.currentText(),
+            format=combo_value(self.format_combo),
             axis=self.axis_frame.get_input_value(),
             magmom_map=self.map_edit.text(),
             use_element_dirs=self.use_element_dir_checkbox.isChecked(),
@@ -226,14 +229,14 @@ class MagneticOrderCard(MakeDataCard):
             apply_elements=self.apply_edit.text(),
             gen_fm=self.fm_checkbox.isChecked(),
             gen_afm=self.afm_checkbox.isChecked(),
-            afm_mode=self.afm_mode_combo.currentText(),
+            afm_mode=combo_value(self.afm_mode_combo),
             afm_kvec=self.kvec_combo.currentText(),
             afm_group_a=self.group_a_edit.text(),
             afm_group_b=self.group_b_edit.text(),
             afm_zero_unknown=self.zero_unknown_groups_checkbox.isChecked(),
             gen_pm=self.pm_checkbox.isChecked(),
             pm_count=int(self.pm_count_frame.get_input_value()[0]),
-            pm_direction=self.pm_direction_combo.currentText(),
+            pm_direction=combo_value(self.pm_direction_combo),
             pm_cone_angle=float(self.pm_cone_frame.get_input_value()[0]),
             pm_balanced=self.pm_balanced_checkbox.isChecked(),
             use_seed=self.seed_checkbox.isChecked(),
@@ -241,7 +244,7 @@ class MagneticOrderCard(MakeDataCard):
         )
 
     def set_params(self, params: MagneticOrderParams) -> None:
-        self.format_combo.setCurrentText(params.format)
+        set_combo_value(self.format_combo, params.format)
         self.axis_frame.set_input_value([float(v) for v in params.axis])
         self.map_edit.setText(params.magmom_map)
         self.use_element_dir_checkbox.setChecked(bool(params.use_element_dirs))
@@ -249,14 +252,14 @@ class MagneticOrderCard(MakeDataCard):
         self.apply_edit.setText(params.apply_elements)
         self.fm_checkbox.setChecked(bool(params.gen_fm))
         self.afm_checkbox.setChecked(bool(params.gen_afm))
-        self.afm_mode_combo.setCurrentText(params.afm_mode)
+        set_combo_value(self.afm_mode_combo, params.afm_mode)
         self.kvec_combo.setCurrentText(params.afm_kvec)
         self.group_a_edit.setText(params.afm_group_a)
         self.group_b_edit.setText(params.afm_group_b)
         self.zero_unknown_groups_checkbox.setChecked(bool(params.afm_zero_unknown))
         self.pm_checkbox.setChecked(bool(params.gen_pm))
         self.pm_count_frame.set_input_value([int(params.pm_count)])
-        self.pm_direction_combo.setCurrentText(params.pm_direction)
+        set_combo_value(self.pm_direction_combo, params.pm_direction)
         self.pm_cone_frame.set_input_value([float(params.pm_cone_angle)])
         self.pm_balanced_checkbox.setChecked(bool(params.pm_balanced))
         self.seed_checkbox.setChecked(bool(params.use_seed))
@@ -266,7 +269,7 @@ class MagneticOrderCard(MakeDataCard):
 
     def process_structure(self, structure):
         try:
-            if self.afm_checkbox.isChecked() and self.afm_mode_combo.currentText() == "group A/B" and "group" not in structure.arrays:
+            if self.afm_checkbox.isChecked() and combo_value(self.afm_mode_combo) == "group A/B" and "group" not in structure.arrays:
                 MessageManager.send_warning_message("MagneticOrder: AFM mode 'group A/B' requires arrays['group']; falling back to k-vector.")
             return self.create_operation().run_structure(structure, self.get_params())
         except Exception as exc:  # noqa: BLE001

@@ -35,7 +35,7 @@ class ShearAngleCard(MakeDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self.setTitle("Make Shear Angle Strain")
+        self.setTitle(self.tr("Make Shear Angle Strain"))
         self.init_ui()
 
     def init_ui(self):
@@ -47,35 +47,35 @@ class ShearAngleCard(MakeDataCard):
         self.optional_frame_layout.setContentsMargins(0, 0, 0, 0)
         self.optional_frame_layout.setSpacing(2)
 
-        self.optional_label = BodyLabel("Optional", self.setting_widget)
-        self.organic_checkbox = CheckBox("Identify organic", self.setting_widget)
+        self.optional_label = BodyLabel(self.tr("Optional"), self.setting_widget)
+        self.organic_checkbox = CheckBox(self.tr("Identify organic"), self.setting_widget)
         self.organic_checkbox.setChecked(False)
-        self.optional_label.setToolTip("Treat organic molecules as rigid units")
+        self.optional_label.setToolTip(self.tr("Treat organic molecules as rigid units"))
         self.optional_label.installEventFilter(ToolTipFilter(self.optional_label, 300, ToolTipPosition.TOP))
         self.optional_frame_layout.addWidget(self.organic_checkbox, 0, 0, 1, 1)
 
-        self.alpha_label = BodyLabel("Alpha:", self.setting_widget)
+        self.alpha_label = BodyLabel(self.tr("Alpha:"), self.setting_widget)
         self.alpha_frame = SpinBoxUnitInputFrame(self)
         self.alpha_frame.set_input(["-", "deg step:", "deg"], 3, "float")
         self.alpha_frame.setRange(-30, 30)
         self.alpha_frame.set_input_value([-2, 2, 1])
-        self.alpha_label.setToolTip("Alpha angle adjustment range")
+        self.alpha_label.setToolTip(self.tr("Alpha angle adjustment range"))
         self.alpha_label.installEventFilter(ToolTipFilter(self.alpha_label, 300, ToolTipPosition.TOP))
 
-        self.beta_label = BodyLabel("Beta:", self.setting_widget)
+        self.beta_label = BodyLabel(self.tr("Beta:"), self.setting_widget)
         self.beta_frame = SpinBoxUnitInputFrame(self)
         self.beta_frame.set_input(["-", "deg step:", "deg"], 3, "float")
         self.beta_frame.setRange(-30, 30)
         self.beta_frame.set_input_value([-2, 2, 1])
-        self.beta_label.setToolTip("Beta angle adjustment range")
+        self.beta_label.setToolTip(self.tr("Beta angle adjustment range"))
         self.beta_label.installEventFilter(ToolTipFilter(self.beta_label, 300, ToolTipPosition.TOP))
 
-        self.gamma_label = BodyLabel("Gamma:", self.setting_widget)
+        self.gamma_label = BodyLabel(self.tr("Gamma:"), self.setting_widget)
         self.gamma_frame = SpinBoxUnitInputFrame(self)
         self.gamma_frame.set_input(["-", "deg step:", "deg"], 3, "float")
         self.gamma_frame.setRange(-30, 30)
         self.gamma_frame.set_input_value([-2, 2, 1])
-        self.gamma_label.setToolTip("Gamma angle adjustment range")
+        self.gamma_label.setToolTip(self.tr("Gamma angle adjustment range"))
         self.gamma_label.installEventFilter(ToolTipFilter(self.gamma_label, 300, ToolTipPosition.TOP))
 
         self.settingLayout.addWidget(self.optional_label, 0, 0, 1, 1)

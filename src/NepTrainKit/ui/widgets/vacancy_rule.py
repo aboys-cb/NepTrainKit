@@ -37,14 +37,15 @@ class VacancyRuleItem(QFrame):
         self.setStyleSheet("background-color: rgb(239, 249, 254);")
 
         self.element_edit = QLineEdit(self)
-        self.element_edit.setPlaceholderText("Cs")
+        self.element_edit.setPlaceholderText(self.tr("Cs"))
         self.group_edit = QLineEdit(self)
 
         self.count_mode_combo = ComboBox(self)
-        self.count_mode_combo.addItems(["Fixed count", "Random range"])
-        self.count_mode_combo.setCurrentText("Fixed count")
+        self.count_mode_combo.addItem(self.tr("Fixed count"), userData="fixed")
+        self.count_mode_combo.addItem(self.tr("Random range"), userData="random")
+        self.count_mode_combo.setCurrentIndex(0)
         self.count_mode_combo.setToolTip(
-            "Fixed count removes exactly this many atoms. Random range samples between min and max."
+            self.tr("Fixed count removes exactly this many atoms. Random range samples between min and max.")
         )
         self.count_mode_combo.installEventFilter(ToolTipFilter(self.count_mode_combo, 300, ToolTipPosition.TOP))
         self.count_mode_combo.currentTextChanged.connect(self._on_count_mode_changed)
@@ -64,17 +65,17 @@ class VacancyRuleItem(QFrame):
         self.delete_button = TransparentToolButton(QIcon(":/images/src/images/delete.svg"), self)
         self.delete_button.clicked.connect(self._delete_self)
 
-        self.element_label = BodyLabel("Element", self)
-        self.element_label.setToolTip("Element to remove")
+        self.element_label = BodyLabel(self.tr("Element"), self)
+        self.element_label.setToolTip(self.tr("Element to remove"))
         self.element_label.installEventFilter(ToolTipFilter(self.element_label, 300, ToolTipPosition.TOP))
-        self.group_label = BodyLabel("Group", self)
-        self.group_label.setToolTip("Optional group name")
+        self.group_label = BodyLabel(self.tr("Group"), self)
+        self.group_label.setToolTip(self.tr("Optional group name"))
         self.group_label.installEventFilter(ToolTipFilter(self.group_label, 300, ToolTipPosition.TOP))
-        self.count_label = BodyLabel("Count mode", self)
-        self.count_label.setToolTip("Choose exact vacancy count or a random count range")
+        self.count_label = BodyLabel(self.tr("Count mode"), self)
+        self.count_label.setToolTip(self.tr("Choose exact vacancy count or a random count range"))
         self.count_label.installEventFilter(ToolTipFilter(self.count_label, 300, ToolTipPosition.TOP))
-        self.count_value_label = BodyLabel("Count", self)
-        self.count_value_label.setToolTip("Vacancies removed per generated structure")
+        self.count_value_label = BodyLabel(self.tr("Count"), self)
+        self.count_value_label.setToolTip(self.tr("Vacancies removed per generated structure"))
         self.count_value_label.installEventFilter(ToolTipFilter(self.count_value_label, 300, ToolTipPosition.TOP))
 
         self.__layout.addWidget(self.element_label, 0, 0)
@@ -94,7 +95,7 @@ class VacancyRuleItem(QFrame):
         self.deleteLater()
 
     def _on_count_mode_changed(self) -> None:
-        fixed = self.count_mode_combo.currentText() == "Fixed count"
+        fixed = self.count_mode_combo.currentData() == "fixed"
         self.fixed_count_frame.setVisible(fixed)
         self.count_range_frame.setVisible(not fixed)
 
@@ -110,7 +111,7 @@ class VacancyRuleItem(QFrame):
         element = self.element_edit.text().strip()
         if element:
             rule["element"] = element
-        if self.count_mode_combo.currentText() == "Fixed count":
+        if self.count_mode_combo.currentData() == "fixed":
             count = int(self.fixed_count_frame.get_input_value()[0])
             rule["count"] = [count, count]
             rule["count_mode"] = "fixed"
@@ -143,9 +144,9 @@ class VacancyRuleItem(QFrame):
                     self.count_range_frame.set_input_value([int(count_values[0]), int(count_values[-1])])
             count_mode = str(rule.get("count_mode", "")).lower()
             if count_mode == "fixed" or (not count_mode and count_values and count_values[0] == count_values[-1]):
-                self.count_mode_combo.setCurrentText("Fixed count")
+                self.count_mode_combo.setCurrentIndex(0)
             else:
-                self.count_mode_combo.setCurrentText("Random range")
+                self.count_mode_combo.setCurrentIndex(1)
             self._on_count_mode_changed()
         if "group" in rule:
             self.group_edit.setText(",".join(str(i) for i in rule["group"]))
@@ -165,7 +166,7 @@ class VacancyRulesWidget(QWidget):
         btn_layout.setContentsMargins(0, 0, 0, 0)
         self.add_button = TransparentToolButton(FluentIcon.ADD, self)
         self.add_button.clicked.connect(self.add_rule)
-        self.add_button.setToolTip("Add rule")
+        self.add_button.setToolTip(self.tr("Add rule"))
         self.add_button.installEventFilter(ToolTipFilter(self.add_button, 300, ToolTipPosition.TOP))
         btn_layout.addWidget(self.add_button, 0, Qt.AlignmentFlag.AlignLeft)
         btn_layout.addStretch(1)

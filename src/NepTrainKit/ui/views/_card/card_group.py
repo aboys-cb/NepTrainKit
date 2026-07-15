@@ -41,7 +41,7 @@ class CardGroup(MakeDataCardWidget):
         """Initialise layouts, drag-and-drop targets, and default execution state.
         """
         super().__init__(parent)
-        self.setTitle("Card Group")
+        self.setTitle(self.tr("Card Group"))
         self.setAcceptDrops(True)
         self.index=0
         self.group_widget = QWidget(self)

@@ -333,13 +333,9 @@ class ShowNepWidget(QWidget):
         except Exception:
             idx = int(getattr(self.search_mode_combo, "currentIndex", lambda: 0)())
 
-        mapping = {
-            0: SearchType.TAG,
-            1: SearchType.FORMULA,
-            2: SearchType.ELEMENTS,
-            3: SearchType.EXPRESSION,
-        }
-        self.search_lineEdit.set_search_type(mapping.get(idx, SearchType.TAG))
+        combo = getattr(self, "search_mode_combo", None)
+        search_type = combo.itemData(idx) if combo is not None and idx >= 0 else None
+        self.search_lineEdit.set_search_type(search_type or SearchType.TAG)
 
     def _on_nep_model_changed(self, index):
         """Handle NEP model file switch in the combo box."""
@@ -518,7 +514,7 @@ class ShowNepWidget(QWidget):
         selected_indices = list(self.nep_result_data.select_index) if hasattr(self.nep_result_data, 'select_index') else []
         reject_indices = list(getattr(self.nep_result_data, "reject_index", set()))
         
-        tip = StateToolTip("Switching NEP model", 'Please wait...', self)
+        tip = StateToolTip(self.tr("Switching NEP model"), self.tr("Please wait..."), self)
         tip.show()
         
         try:
@@ -667,7 +663,7 @@ class ShowNepWidget(QWidget):
         self.bond_label.setFont(getFont(20, QFont.Weight.DemiBold))
         self.bond_label.setWordWrap(True)
         # self.bond_label.setStyleSheet("QLabel { background-color: #f3f3f3; color: black; padding: 5px; }")
-        self.bond_label.setToolTip('The Tip is the minimum distance between atoms in the current structure, in Å.')
+        self.bond_label.setToolTip(self.tr("Tip is the minimum distance between atoms in the current structure, in Å."))
 
         self.bond_label.installEventFilter(ToolTipFilter(self.bond_label, 300, ToolTipPosition.TOP))
 
@@ -676,7 +672,7 @@ class ShowNepWidget(QWidget):
 
         self.force_label = StrongBodyLabel(self.struct_widget)
         self.force_label.setWordWrap(True)
-        self.force_label.setToolTip("Net force of the current structure (sum of all atomic forces).")
+        self.force_label.setToolTip(self.tr("Net force of the current structure (sum of all atomic forces)."))
 
         # self.struct_widget_layout.addWidget(self.export_single_struct_button, 1, 0, 1, 1, alignment=Qt.AlignRight)
         self.struct_widget_layout.addWidget(self.struct_info_widget, 2, 0, 1, 1)
@@ -713,11 +709,11 @@ class ShowNepWidget(QWidget):
 
 
         self.search_mode_combo = ComboBox(frame)
-        self.search_mode_combo.addItem("tag")
-        self.search_mode_combo.addItem("formula")
-        self.search_mode_combo.addItem("elements")
-        self.search_mode_combo.addItem("expression")
-        self.search_mode_combo.setToolTip("switch search mode")
+        self.search_mode_combo.addItem(self.tr("Config_type"), userData=SearchType.TAG)
+        self.search_mode_combo.addItem(self.tr("Formula"), userData=SearchType.FORMULA)
+        self.search_mode_combo.addItem(self.tr("Elements"), userData=SearchType.ELEMENTS)
+        self.search_mode_combo.addItem(self.tr("Expression"), userData=SearchType.EXPRESSION)
+        self.search_mode_combo.setToolTip(self.tr("Switch search mode"))
         self.search_mode_combo.installEventFilter(ToolTipFilter(self.search_mode_combo, 300, ToolTipPosition.TOP))
         self.search_mode_combo.currentIndexChanged.connect(self._on_search_mode_changed)
         if hasattr(self.search_mode_combo, "activated"):
@@ -743,7 +739,7 @@ class ShowNepWidget(QWidget):
         self.path_container_layout.setSpacing(5)
         
         self.nep_model_combo = ComboBox(self.path_container)
-        self.nep_model_combo.setToolTip("Switch NEP model")
+        self.nep_model_combo.setToolTip(self.tr("Switch NEP model"))
         self.nep_model_combo.setFixedWidth(120)
         self.nep_model_combo.installEventFilter(ToolTipFilter(self.nep_model_combo, 300, ToolTipPosition.TOP))
         self.nep_model_combo.currentIndexChanged.connect(self._on_nep_model_changed)
@@ -780,7 +776,7 @@ class ShowNepWidget(QWidget):
             return
         toolbar.set_arrow_enabled(
             False,
-            "Arrow overlay is available only for vispy structure canvas.",
+            self.tr("Arrow overlay is available only for vispy structure canvas."),
         )
 
     def _get_completer_max_items(self) -> int:
@@ -1202,7 +1198,7 @@ class ShowNepWidget(QWidget):
         
         # self.graph_widget.set_dataset(self.dataset)
         self.load_thread=QThread(self)
-        tip = StateToolTip("Loading", 'Please wait patiently~~', self )
+        tip = StateToolTip(self.tr("Loading"), self.tr("Please wait patiently..."), self)
         tip.show()
         tip.closedSignal.connect(self.stop_loading)
         self.nep_result_data.moveToThread(self.load_thread)

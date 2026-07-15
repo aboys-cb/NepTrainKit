@@ -8,6 +8,7 @@ from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.magnetism import SetMagneticMomentsOperation, SetMagneticMomentsParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
 @CardManager.register_card
@@ -23,28 +24,32 @@ class SetMagneticMomentsCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Set Magnetic Moments")
+        self.setTitle(self.tr("Set Magnetic Moments"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("set_magnetic_moments_card_widget")
 
-        self.source_label = BodyLabel("Source", self.setting_widget)
-        self.source_label.setToolTip("Choose whether to reuse existing magmoms, element map/default values, or a constant moment")
+        self.source_label = BodyLabel(self.tr("Source"), self.setting_widget)
+        self.source_label.setToolTip(self.tr("Choose whether to reuse existing magmoms, element map/default values, or a constant moment"))
         self.source_label.installEventFilter(ToolTipFilter(self.source_label, 300, ToolTipPosition.TOP))
         self.source_combo = ComboBox(self.setting_widget)
-        self.source_combo.addItems(["Existing initial magmoms", "Map/default magnitude", "Constant magnitude"])
-        self.source_combo.setCurrentText("Map/default magnitude")
+        add_translated_items(
+            self,
+            self.source_combo,
+            ["Existing initial magmoms", "Map/default magnitude", "Constant magnitude"],
+        )
+        set_combo_value(self.source_combo, "Map/default magnitude")
 
-        self.format_label = BodyLabel("Format", self.setting_widget)
-        self.format_label.setToolTip("Collinear writes scalar MAGMOM; Non-collinear writes vector MAGMOM")
+        self.format_label = BodyLabel(self.tr("Format"), self.setting_widget)
+        self.format_label.setToolTip(self.tr("Collinear writes scalar MAGMOM; Non-collinear writes vector MAGMOM"))
         self.format_label.installEventFilter(ToolTipFilter(self.format_label, 300, ToolTipPosition.TOP))
         self.format_combo = ComboBox(self.setting_widget)
-        self.format_combo.addItems(["Collinear (scalar)", "Non-collinear (vector)"])
-        self.format_combo.setCurrentText("Non-collinear (vector)")
+        add_translated_items(self, self.format_combo, ["Collinear (scalar)", "Non-collinear (vector)"])
+        set_combo_value(self.format_combo, "Non-collinear (vector)")
 
-        self.axis_label = BodyLabel("Axis (x,y,z)", self.setting_widget)
-        self.axis_label.setToolTip("Reference axis used for vector output and scalar-to-vector lifting")
+        self.axis_label = BodyLabel(self.tr("Axis (x,y,z)"), self.setting_widget)
+        self.axis_label.setToolTip(self.tr("Reference axis used for vector output and scalar-to-vector lifting"))
         self.axis_label.installEventFilter(ToolTipFilter(self.axis_label, 300, ToolTipPosition.TOP))
         self.axis_frame = SpinBoxUnitInputFrame(self)
         self.axis_frame.set_input("", 3, "float")
@@ -53,21 +58,23 @@ class SetMagneticMomentsCard(MakeDataCard):
             obj.setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.axis_frame.set_input_value([0.0, 0.0, 1.0])
 
-        self.map_label = BodyLabel("Magmom map", self.setting_widget)
-        self.map_label.setToolTip('Per-element moments, e.g. "Fe:2.2,Co:1.7" or JSON such as {"Cr":[0,0,1.0]}')
+        self.map_label = BodyLabel(self.tr("Magmom map"), self.setting_widget)
+        self.map_label.setToolTip(
+            self.tr('Per-element moments, e.g. "Fe:2.2,Co:1.7" or JSON such as {"Cr":[0,0,1.0]}')
+        )
         self.map_label.installEventFilter(ToolTipFilter(self.map_label, 300, ToolTipPosition.TOP))
         self.map_edit = LineEdit(self.setting_widget)
-        self.map_edit.setPlaceholderText("Fe:2.2,Co:1.7")
+        self.map_edit.setPlaceholderText(self.tr("Fe:2.2,Co:1.7"))
 
-        self.use_element_dir_checkbox = CheckBox("Use element vector directions", self.setting_widget)
+        self.use_element_dir_checkbox = CheckBox(self.tr("Use element vector directions"), self.setting_widget)
         self.use_element_dir_checkbox.setChecked(False)
-        self.use_element_dir_checkbox.setToolTip("If the map provides vectors, preserve their directions in vector output")
+        self.use_element_dir_checkbox.setToolTip(self.tr("If the map provides vectors, preserve their directions in vector output"))
         self.use_element_dir_checkbox.installEventFilter(
             ToolTipFilter(self.use_element_dir_checkbox, 300, ToolTipPosition.TOP)
         )
 
-        self.default_label = BodyLabel("Default |m|", self.setting_widget)
-        self.default_label.setToolTip("Magnitude for elements not listed in Magmom map")
+        self.default_label = BodyLabel(self.tr("Default |m|"), self.setting_widget)
+        self.default_label.setToolTip(self.tr("Magnitude for elements not listed in Magmom map"))
         self.default_label.installEventFilter(ToolTipFilter(self.default_label, 300, ToolTipPosition.TOP))
         self.default_frame = SpinBoxUnitInputFrame(self)
         self.default_frame.set_input("", 1, "float")
@@ -75,8 +82,8 @@ class SetMagneticMomentsCard(MakeDataCard):
         self.default_frame.object_list[0].setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.default_frame.set_input_value([0.0])
 
-        self.constant_label = BodyLabel("Constant |m|", self.setting_widget)
-        self.constant_label.setToolTip("Uniform magnitude used when Source = Constant magnitude")
+        self.constant_label = BodyLabel(self.tr("Constant |m|"), self.setting_widget)
+        self.constant_label.setToolTip(self.tr("Uniform magnitude used when Source = Constant magnitude"))
         self.constant_label.installEventFilter(ToolTipFilter(self.constant_label, 300, ToolTipPosition.TOP))
         self.constant_frame = SpinBoxUnitInputFrame(self)
         self.constant_frame.set_input("", 1, "float")
@@ -84,18 +91,18 @@ class SetMagneticMomentsCard(MakeDataCard):
         self.constant_frame.object_list[0].setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.constant_frame.set_input_value([2.0])
 
-        self.lift_scalar_checkbox = CheckBox("Lift scalar magmoms to vectors", self.setting_widget)
+        self.lift_scalar_checkbox = CheckBox(self.tr("Lift scalar magmoms to vectors"), self.setting_widget)
         self.lift_scalar_checkbox.setChecked(True)
-        self.lift_scalar_checkbox.setToolTip("When Source = Existing initial magmoms, lift scalar input onto Axis for vector output")
+        self.lift_scalar_checkbox.setToolTip(self.tr("When Source = Existing initial magmoms, lift scalar input onto Axis for vector output"))
         self.lift_scalar_checkbox.installEventFilter(
             ToolTipFilter(self.lift_scalar_checkbox, 300, ToolTipPosition.TOP)
         )
 
-        self.apply_label = BodyLabel("Apply elements", self.setting_widget)
-        self.apply_label.setToolTip("Optional comma-separated element list; empty means all atoms")
+        self.apply_label = BodyLabel(self.tr("Apply elements"), self.setting_widget)
+        self.apply_label.setToolTip(self.tr("Optional comma-separated element list; empty means all atoms"))
         self.apply_label.installEventFilter(ToolTipFilter(self.apply_label, 300, ToolTipPosition.TOP))
         self.apply_edit = LineEdit(self.setting_widget)
-        self.apply_edit.setPlaceholderText("Fe,Co,Ni")
+        self.apply_edit.setPlaceholderText(self.tr("Fe,Co,Ni"))
 
         self.settingLayout.addWidget(self.source_label, 0, 0, 1, 1)
         self.settingLayout.addWidget(self.source_combo, 0, 1, 1, 2)
@@ -119,8 +126,8 @@ class SetMagneticMomentsCard(MakeDataCard):
         self._update_source_widgets()
 
     def _update_source_widgets(self):
-        source = self.source_combo.currentText()
-        vector_output = self.format_combo.currentText() == "Non-collinear (vector)"
+        source = combo_value(self.source_combo)
+        vector_output = combo_value(self.format_combo) == "Non-collinear (vector)"
 
         use_map = source == "Map/default magnitude"
         use_constant = source == "Constant magnitude"
@@ -152,8 +159,8 @@ class SetMagneticMomentsCard(MakeDataCard):
 
     def get_params(self) -> SetMagneticMomentsParams:
         return SetMagneticMomentsParams(
-            source=self.source_combo.currentText(),
-            format=self.format_combo.currentText(),
+            source=combo_value(self.source_combo),
+            format=combo_value(self.format_combo),
             axis=self.axis_frame.get_input_value(),
             magmom_map=self.map_edit.text(),
             use_element_dirs=self.use_element_dir_checkbox.isChecked(),
@@ -164,8 +171,8 @@ class SetMagneticMomentsCard(MakeDataCard):
         )
 
     def set_params(self, params: SetMagneticMomentsParams) -> None:
-        self.source_combo.setCurrentText(params.source)
-        self.format_combo.setCurrentText(params.format)
+        set_combo_value(self.source_combo, params.source)
+        set_combo_value(self.format_combo, params.format)
         self.axis_frame.set_input_value([float(v) for v in params.axis])
         self.map_edit.setText(params.magmom_map)
         self.use_element_dir_checkbox.setChecked(bool(params.use_element_dirs))

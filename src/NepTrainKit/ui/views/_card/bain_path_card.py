@@ -5,6 +5,7 @@ from qfluentwidgets import BodyLabel, CheckBox, ComboBox, ToolTipFilter, ToolTip
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.lattice import BainPathOperation, BainPathParams
 from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -19,38 +20,46 @@ class BainPathCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Make Bain Path")
+        self.setTitle(self.tr("Make Bain Path"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("bain_path_card_widget")
 
-        self.axis_label = BodyLabel("c axis", self.setting_widget)
+        self.axis_label = BodyLabel(self.tr("c axis"), self.setting_widget)
         self.axis_combo = ComboBox(self.setting_widget)
-        self.axis_combo.addItems(["x", "y", "z"])
-        self.axis_combo.setCurrentText("z")
+        add_translated_items(self, self.axis_combo, ["x", "y", "z"])
+        set_combo_value(self.axis_combo, "z")
 
-        self.ca_label = BodyLabel("c/a scale", self.setting_widget)
+        self.ca_label = BodyLabel(self.tr("c/a scale"), self.setting_widget)
         self.ca_frame = SpinBoxUnitInputFrame(self)
         self.ca_frame.set_input(["-", "step", ""], 3, "float")
         self.ca_frame.setDecimals(4)
         self.ca_frame.setRange(0.0001, 100.0)
         self.ca_frame.set_input_value([1.0, 1.0, 1.0])
-        self.ca_label.setToolTip("Relative c/a scale r: c *= r; constant-volume modes compensate perpendicular axes.")
+        self.ca_label.setToolTip(self.tr("Relative c/a scale r: c *= r; constant-volume modes compensate perpendicular axes."))
         self.ca_label.installEventFilter(ToolTipFilter(self.ca_label, 300, ToolTipPosition.TOP))
 
-        self.mode_label = BodyLabel("Mode", self.setting_widget)
+        self.mode_label = BodyLabel(self.tr("Mode"), self.setting_widget)
         self.mode_combo = ComboBox(self.setting_widget)
-        self.mode_combo.addItems(["constant_volume", "scale_volume", "free_c"])
+        add_translated_items(
+            self,
+            self.mode_combo,
+            [
+                ("constant_volume", "constant volume"),
+                ("scale_volume", "scale volume"),
+                ("free_c", "free c"),
+            ],
+        )
 
-        self.volume_label = BodyLabel("V scale", self.setting_widget)
+        self.volume_label = BodyLabel(self.tr("V scale"), self.setting_widget)
         self.volume_frame = SpinBoxUnitInputFrame(self)
         self.volume_frame.set_input(["-", "step", ""], 3, "float")
         self.volume_frame.setDecimals(4)
         self.volume_frame.setRange(0.0001, 100.0)
         self.volume_frame.set_input_value([1.0, 1.0, 1.0])
 
-        self.scale_atoms_checkbox = CheckBox("Scale atoms", self.setting_widget)
+        self.scale_atoms_checkbox = CheckBox(self.tr("Scale atoms"), self.setting_widget)
         self.scale_atoms_checkbox.setChecked(True)
 
         self.settingLayout.addWidget(self.axis_label, 0, 0, 1, 1)
@@ -68,17 +77,17 @@ class BainPathCard(MakeDataCard):
 
     def get_params(self) -> BainPathParams:
         return BainPathParams(
-            axis=self.axis_combo.currentText(),
+            axis=combo_value(self.axis_combo),
             ca_range=tuple(float(v) for v in self.ca_frame.get_input_value()),
-            mode=self.mode_combo.currentText(),
+            mode=combo_value(self.mode_combo),
             volume_scale_range=tuple(float(v) for v in self.volume_frame.get_input_value()),
             scale_atoms=self.scale_atoms_checkbox.isChecked(),
         )
 
     def set_params(self, params: BainPathParams) -> None:
-        self.axis_combo.setCurrentText(params.axis)
+        set_combo_value(self.axis_combo, params.axis)
         self.ca_frame.set_input_value(list(params.ca_range))
-        self.mode_combo.setCurrentText(params.mode)
+        set_combo_value(self.mode_combo, params.mode)
         self.volume_frame.set_input_value(list(params.volume_scale_range))
         self.scale_atoms_checkbox.setChecked(bool(params.scale_atoms))
 

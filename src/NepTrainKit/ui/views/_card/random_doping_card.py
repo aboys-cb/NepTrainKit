@@ -9,6 +9,7 @@ from NepTrainKit.core.cards.alloy import RandomDopingOperation, RandomDopingPara
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame, DopingRulesWidget
 from NepTrainKit.ui.widgets import MakeDataCard
+from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
 @CardManager.register_card
@@ -37,36 +38,35 @@ class RandomDopingCard(MakeDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self.setTitle("Random Doping Replacement")
+        self.setTitle(self.tr("Random Doping Replacement"))
         self.init_ui()
 
     def init_ui(self):
         """Build the form controls that expose the card configuration."""
         self.setObjectName("random_doping_card_widget")
 
-        self.rules_label = BodyLabel("Rules", self.setting_widget)
+        self.rules_label = BodyLabel(self.tr("Rules"), self.setting_widget)
         self.rules_widget = DopingRulesWidget(self.setting_widget)
-        self.rules_label.setToolTip("doping rules")
+        self.rules_label.setToolTip(self.tr("doping rules"))
         self.rules_label.installEventFilter(ToolTipFilter(self.rules_label, 300, ToolTipPosition.TOP))
 
-        self.doping_label = BodyLabel("Doping", self.setting_widget)
+        self.doping_label = BodyLabel(self.tr("Doping"), self.setting_widget)
 
         self.doping_type_combo = ComboBox(self.setting_widget)
-        self.doping_type_combo.addItem("Random")
-        self.doping_type_combo.addItem("Exact")
-        self.doping_label.setToolTip("Select doping algorithm")
+        add_translated_items(self, self.doping_type_combo, ["Random", "Exact"])
+        self.doping_label.setToolTip(self.tr("Select doping algorithm"))
         self.doping_label.installEventFilter(ToolTipFilter(self.doping_label, 300, ToolTipPosition.TOP))
 
-        self.max_atoms_label = BodyLabel("Structures", self.setting_widget)
+        self.max_atoms_label = BodyLabel(self.tr("Structures"), self.setting_widget)
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_condition_frame.set_input("unit", 1)
         self.max_atoms_condition_frame.setRange(1, 999999)
-        self.max_atoms_label.setToolTip("Number of doped structures to generate")
+        self.max_atoms_label.setToolTip(self.tr("Number of doped structures to generate"))
         self.max_atoms_label.installEventFilter(ToolTipFilter(self.max_atoms_label, 300, ToolTipPosition.TOP))
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip("Enable reproducible random sampling")
+        self.seed_checkbox.setToolTip(self.tr("Enable reproducible random sampling"))
         self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -92,7 +92,7 @@ class RandomDopingCard(MakeDataCard):
         """Read random doping parameters from UI controls."""
         return RandomDopingParams(
             rules=self.rules_widget.to_rules(),
-            doping_type=self.doping_type_combo.currentText(),
+            doping_type=combo_value(self.doping_type_combo),
             max_structures=int(self.max_atoms_condition_frame.get_input_value()[0]),
             use_seed=self.seed_checkbox.isChecked(),
             seed=int(self.seed_frame.get_input_value()[0]),
@@ -101,7 +101,7 @@ class RandomDopingCard(MakeDataCard):
     def set_params(self, params: RandomDopingParams) -> None:
         """Apply random doping parameters to UI controls."""
         self.rules_widget.from_rules(params.rules)
-        self.doping_type_combo.setCurrentText(params.doping_type)
+        set_combo_value(self.doping_type_combo, params.doping_type)
         self.max_atoms_condition_frame.set_input_value([int(params.max_structures)])
         self.seed_checkbox.setChecked(bool(params.use_seed))
         self.seed_frame.set_input_value([int(params.seed)])

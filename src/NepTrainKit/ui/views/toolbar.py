@@ -26,7 +26,7 @@ class KitToolBarBase(CommandBarView):
         self.setSpaing(0)
         self.init_actions()
 
-    def addButton(self, name, icon, callback, checkable: bool = False):
+    def addButton(self, name, icon, callback, checkable: bool = False, action_key: str | None = None):
         """Create an action button with an optional checkable state.
 
         Parameters
@@ -51,7 +51,7 @@ class KitToolBarBase(CommandBarView):
             action.toggled.connect(callback)
         else:
             action.triggered.connect(callback)
-        self._actions[name] = action
+        self._actions[action_key or name] = action
         self.addAction(action)
         action.setToolTip(name)
         return action
@@ -95,41 +95,41 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         """Populate toolbar actions for interacting with NEP plots."""
         distribution_icon = Path(module_path) / "src" / "images" / "distribution_inspector.svg"
         distribution_icon_path = str(distribution_icon) if distribution_icon.exists() else ":/images/src/images/inspect.svg"
-        self.addButton("Reset View", QIcon(":/images/src/images/init.svg"), self.resetSignal)
+        self.addButton(self.tr("Reset View"), QIcon(":/images/src/images/init.svg"), self.resetSignal)
         pan_action = self.addButton(
-            "Pan View",
+            self.tr("Pan View"),
             QIcon(":/images/src/images/pan.svg"),
             self.pan,
             True,
         )
         self.addButton(
-            "Select by Index",
+            self.tr("Select by Index"),
             QIcon(":/images/src/images/index.svg"),
             self.selectIndexSignal,
         )
         self.addButton(
-            "Select by Range",
+            self.tr("Select by Range"),
             QIcon(":/images/src/images/data_range.svg"),
             self.rangeSignal,
         )
         self.addButton(
-            "Select by Lattice",
+            self.tr("Select by Lattice"),
             QIcon(":/images/src/images/supercell.svg"),
             self.latticeRangeSignal,
         )
         find_max_action = self.addButton(
-            "Find Max Error Point",
+            self.tr("Find Max Error Point"),
             QIcon(":/images/src/images/find_max.svg"),
             self.findMaxSignal,
         )
         sparse_action = self.addButton(
-            "Sparse samples",
+            self.tr("Sparse samples"),
             QIcon(":/images/src/images/sparse.svg"),
             self.sparseSignal,
         )
 
         pen_action = self.addButton(
-            "Mouse Selection",
+            self.tr("Mouse Selection"),
             QIcon(":/images/src/images/pen.svg"),
             self.pen,
             True,
@@ -141,50 +141,50 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         self.action_group.setExclusionPolicy(QActionGroup.ExclusionPolicy.ExclusiveOptional)
 
         discovery_action = self.addButton(
-            "Finding non-physical structures",
+            self.tr("Find non-physical structures"),
             QIcon(":/images/src/images/discovery.svg"),
             self.discoverySignal,
         )
         self.addButton(
-            "Check Net Force",
+            self.tr("Check net force"),
             QIcon(":/images/src/images/inspect.svg"),
             self.forceBalanceSignal,
         )
         inverse_action = self.addButton(
-            "Inverse Selection",
+            self.tr("Invert selection"),
             QIcon(":/images/src/images/inverse.svg"),
             self.inverseSignal,
         )
         undo_selection_action = self.addButton(
-            "Undo Selection",
+            self.tr("Undo selection"),
             QIcon(":/images/src/images/undo_selection.svg"),
             self.undoSelectionSignal,
         )
         revoke_action = self.addButton(
-            "Undo Delete",
+            self.tr("Undo delete"),
             QIcon(":/images/src/images/undo_delete.svg"),
             self.revokeSignal,
         )
         delete_action = self.addButton(
-            "Delete Selected Items",
+            self.tr("Delete selected items"),
             QIcon(":/images/src/images/delete.svg"),
             self.deleteSignal,
         )
 
         self.addSeparator()
         self.addButton(
-            "Edit Info",
+            self.tr("Edit info"),
             QIcon(":/images/src/images/edit_info.svg"),
             self.editInfoSignal,
         )
         export_action = self.addButton(
-            "Export structure descriptor",
+            self.tr("Export structure descriptor"),
             QIcon(":/images/src/images/export.svg"),
             self.exportSignal,
         )
         self.addSeparator()
         self.addButton(
-            "Energy Baseline Shift",
+            self.tr("Energy baseline shift"),
             QIcon(":/images/src/images/alignment.svg"),
             self.shiftEnergySignal,
         )
@@ -195,7 +195,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         )
         self.addSeparator()
         self.addButton(
-            "Dataset Summary",
+            self.tr("Dataset summary"),
             QIcon(":/images/src/images/summary.svg"),
             self.summarySignal,
         )
@@ -247,44 +247,47 @@ class StructureToolBar(KitToolBarBase):
         """Populate actions for camera control and structure export."""
         self._reject_syncing = False
         view_action = self.addButton(
-            "Ortho View",
+            self.tr("Orthographic view"),
             QIcon(":/images/src/images/view_change.svg"),
             self.view_changed,
             True,
         )
         auto_action = self.addButton(
-            "Automatic View",
+            self.tr("Auto view"),
             QIcon(":/images/src/images/auto_distance.svg"),
             self.auto_view_changed,
             True,
         )
         show_bond_action = self.addButton(
-            "Show Bonds",
+            self.tr("Show bonds"),
             QIcon(":/images/src/images/show_bond.svg"),
             self.show_bond,
             True,
+            action_key="show_bonds",
         )
 
         self._arrow_action = self.addButton(
-            "Show Arrows",
+            self.tr("Show arrows"),
             QIcon(":/images/src/images/xyz.svg"),
             self.arrowSignal,
+            action_key="show_arrows",
         )
 
         export_action = self.addButton(
-            "Export current structure",
+            self.tr("Export current structure"),
             QIcon(":/images/src/images/export1.svg"),
             self.exportSignal,
         )
         self.addSeparator()
         self.addButton(
-            "Mark Bad (Reject)",
+            self.tr("Mark bad (reject)"),
             QIcon(":/images/src/images/defect.svg"),
             self._reject_changed,
             True,
+            action_key="mark_bad",
         )
         self.addButton(
-            "Drop All Bad",
+            self.tr("Drop all bad"),
             QIcon(":/images/src/images/delete.svg"),
             self.dropRejectSignal,
         )
@@ -297,7 +300,7 @@ class StructureToolBar(KitToolBarBase):
 
     def set_reject_checked(self, checked: bool) -> None:
         """Update the reject toggle without emitting signals."""
-        action = self._actions.get("Mark Bad (Reject)")
+        action = self._actions.get("mark_bad")
         if action is None:
             return
         try:
@@ -308,12 +311,12 @@ class StructureToolBar(KitToolBarBase):
 
     def set_arrow_enabled(self, enabled: bool, disabled_tooltip: str = "") -> None:
         """Enable or disable the arrow action based on backend capabilities."""
-        action = self._actions.get("Show Arrows")
+        action = self._actions.get("show_arrows")
         if action is None:
             return
         action.setEnabled(bool(enabled))
         if enabled:
-            action.setToolTip("Show Arrows")
+            action.setToolTip(self.tr("Show arrows"))
         elif disabled_tooltip:
             action.setToolTip(disabled_tooltip)
 
@@ -328,8 +331,8 @@ class StructureToolBar(KitToolBarBase):
     def show_bond(self, checked: bool) -> None:
         """Toggle bond visibility and update the corresponding icon."""
         if checked:
-            self._actions["Show Bonds"].setIcon(QIcon(":/images/src/images/hide_bond.svg"))
+            self._actions["show_bonds"].setIcon(QIcon(":/images/src/images/hide_bond.svg"))
             self.showBondSignal.emit(True)
         else:
-            self._actions["Show Bonds"].setIcon(QIcon(":/images/src/images/show_bond.svg"))
+            self._actions["show_bonds"].setIcon(QIcon(":/images/src/images/show_bond.svg"))
             self.showBondSignal.emit(False)

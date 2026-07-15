@@ -37,31 +37,31 @@ class FPSFilterDataCard(FilterDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self.setTitle("Filter by FPS")
+        self.setTitle(self.tr("Filter by FPS"))
         self.init_ui()
 
     def init_ui(self):
         """Build the form controls that expose the card configuration.
         """
         self.setObjectName("fps_filter_card_widget")
-        self.nep_path_label = BodyLabel("NEP file path: ", self.setting_widget)
+        self.nep_path_label = BodyLabel(self.tr("NEP file path: "), self.setting_widget)
 
         self.nep_path_lineedit = LineEdit(self.setting_widget)
-        self.nep_path_lineedit.setPlaceholderText("nep.txt path")
-        self.nep_path_label.setToolTip("Path to NEP model")
+        self.nep_path_lineedit.setPlaceholderText(self.tr("nep.txt path"))
+        self.nep_path_label.setToolTip(self.tr("Path to NEP model"))
         self.nep_path_label.installEventFilter(ToolTipFilter(self.nep_path_label, 300, ToolTipPosition.TOP))
 
         self.nep89_path = str(module_path/ "Config/nep89.txt" )
         self.nep_path_lineedit.setText(self.nep89_path )
 
 
-        self.num_label = BodyLabel("Max selected", self.setting_widget)
+        self.num_label = BodyLabel(self.tr("Max selected"), self.setting_widget)
 
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("unit", 1, "int")
         self.num_condition_frame.setRange(1, 10000)
         self.num_condition_frame.set_input_value([100])
-        self.num_label.setToolTip("Number of structures to keep")
+        self.num_label.setToolTip(self.tr("Number of structures to keep"))
         self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
 
         self.min_distance_condition_frame = SpinBoxUnitInputFrame(self)
@@ -70,8 +70,8 @@ class FPSFilterDataCard(FilterDataCard):
         self.min_distance_condition_frame.object_list[0].setDecimals(4)   # pyright:ignore
         self.min_distance_condition_frame.set_input_value([0.01])
 
-        self.min_distance_label = BodyLabel("Min distance", self.setting_widget)
-        self.min_distance_label.setToolTip("Minimum distance between samples")
+        self.min_distance_label = BodyLabel(self.tr("Min distance"), self.setting_widget)
+        self.min_distance_label.setToolTip(self.tr("Minimum distance between samples"))
 
         self.min_distance_label.installEventFilter(ToolTipFilter(self.min_distance_label, 300, ToolTipPosition.TOP))
 
@@ -120,7 +120,7 @@ class FPSFilterDataCard(FilterDataCard):
         progress : float | int
             Latest progress value emitted by the worker thread.
         """
-        self.status_label.setText(f"generate descriptors ...")
+        self.status_label.setText(self.tr("Generating descriptors..."))
         self.status_label.set_progress(progress)
 
     def to_dict(self):
@@ -155,4 +155,3 @@ class FPSFilterDataCard(FilterDataCard):
                 batch_size=Config.getint("nep", "gpu_batch_size", 1000),
             )
         self.set_params(params)
-

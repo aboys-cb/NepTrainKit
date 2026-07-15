@@ -28,7 +28,7 @@ class ElementScalingRow(QFrame):
         self._layout.setSpacing(4)
 
         self.element_input = QLineEdit(self)
-        self.element_input.setPlaceholderText("Fe")
+        self.element_input.setPlaceholderText(self.tr("Fe"))
 
         self.distance_frame = SpinBoxUnitInputFrame(self)
         self.distance_frame.set_input("Å", 1, "float")
@@ -38,7 +38,7 @@ class ElementScalingRow(QFrame):
         self.distance_frame.set_input_value([default_distance])
 
         self.delete_button = TransparentToolButton(FluentIcon.DELETE, self)
-        self.delete_button.setToolTip("Remove this element override")
+        self.delete_button.setToolTip(self.tr("Remove this element override"))
         self.delete_button.installEventFilter(
             ToolTipFilter(self.delete_button, 300, ToolTipPosition.TOP)
         )
@@ -88,7 +88,7 @@ class PerturbCard(MakeDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self.setTitle("Make Atomic Perturb")
+        self.setTitle(self.tr("Make Atomic Perturb"))
         self.element_rows = []
         self.init_ui()
 
@@ -96,13 +96,13 @@ class PerturbCard(MakeDataCard):
         """Build the form controls that expose the card configuration.
         """
         self.setObjectName("perturb_card_widget")
-        self.engine_label=BodyLabel("Random engine:",self.setting_widget)
+        self.engine_label=BodyLabel(self.tr("Random engine:"),self.setting_widget)
         self.engine_type_combo=ComboBox(self.setting_widget)
-        self.engine_type_combo.addItem("Sobol")
-        self.engine_type_combo.addItem("Uniform")
+        self.engine_type_combo.addItem(self.tr("Sobol"))
+        self.engine_type_combo.addItem(self.tr("Uniform"))
         self.engine_type_combo.setCurrentIndex(1)
 
-        self.engine_label.setToolTip("Select random engine")
+        self.engine_label.setToolTip(self.tr("Select random engine"))
         self.engine_label.installEventFilter(ToolTipFilter(self.engine_label, 300, ToolTipPosition.TOP))
 
         self.optional_frame = QFrame(self.setting_widget)
@@ -110,10 +110,10 @@ class PerturbCard(MakeDataCard):
         self.optional_frame_layout.setContentsMargins(0, 0, 0, 0)
         self.optional_frame_layout.setSpacing(2)
 
-        self.optional_label=BodyLabel("Optional",self.setting_widget)
-        self.organic_checkbox=CheckBox("Identify organic", self.setting_widget)
+        self.optional_label=BodyLabel(self.tr("Optional"),self.setting_widget)
+        self.organic_checkbox=CheckBox(self.tr("Identify organic"), self.setting_widget)
         self.organic_checkbox.setChecked(False)
-        self.optional_label.setToolTip("Treat organic molecules as rigid units")
+        self.optional_label.setToolTip(self.tr("Treat organic molecules as rigid units"))
         self.optional_label.installEventFilter(ToolTipFilter(self.optional_label, 300, ToolTipPosition.TOP))
 
 
@@ -125,13 +125,13 @@ class PerturbCard(MakeDataCard):
         self.scaling_condition_frame.setDecimals(4)
         self.scaling_condition_frame.setSingleStep(0.01)
         self.scaling_condition_frame.setRange(0,1)
-        self.scaling_radio_label=BodyLabel("Max distance:",self.setting_widget)
+        self.scaling_radio_label=BodyLabel(self.tr("Max distance:"),self.setting_widget)
         self.scaling_condition_frame.set_input_value([0.3])
-        self.scaling_radio_label.setToolTip("Maximum displacement distance")
+        self.scaling_radio_label.setToolTip(self.tr("Maximum displacement distance"))
         self.scaling_radio_label.installEventFilter(ToolTipFilter(self.scaling_radio_label, 300, ToolTipPosition.TOP))
 
-        self.element_scaling_label = BodyLabel("Element overrides:", self.setting_widget)
-        self.element_scaling_label.setToolTip("Override max distance per element; fallback to global value when empty")
+        self.element_scaling_label = BodyLabel(self.tr("Element overrides:"), self.setting_widget)
+        self.element_scaling_label.setToolTip(self.tr("Override max distance per element; fallback to global value when empty"))
         self.element_scaling_label.installEventFilter(ToolTipFilter(self.element_scaling_label, 300, ToolTipPosition.TOP))
         self.element_scaling_frame = QFrame(self.setting_widget)
         self.element_scaling_layout = QVBoxLayout(self.element_scaling_frame)
@@ -140,14 +140,14 @@ class PerturbCard(MakeDataCard):
         header_layout = QHBoxLayout()
         header_layout.setContentsMargins(0, 0, 0, 0)
         header_layout.setSpacing(4)
-        self.element_scaling_checkbox = CheckBox("Enable per-element", self.setting_widget)
+        self.element_scaling_checkbox = CheckBox(self.tr("Enable per-element"), self.setting_widget)
         self.element_scaling_checkbox.setChecked(False)
-        self.element_scaling_checkbox.setToolTip("Use per-element max distance instead of a single global value")
+        self.element_scaling_checkbox.setToolTip(self.tr("Use per-element max distance instead of a single global value"))
         self.element_scaling_checkbox.installEventFilter(
             ToolTipFilter(self.element_scaling_checkbox, 300, ToolTipPosition.TOP)
         )
         self.add_element_button = TransparentToolButton(FluentIcon.ADD, self.setting_widget)
-        self.add_element_button.setToolTip("Add an element-specific distance")
+        self.add_element_button.setToolTip(self.tr("Add an element-specific distance"))
         self.add_element_button.installEventFilter(
             ToolTipFilter(self.add_element_button, 300, ToolTipPosition.TOP)
         )
@@ -167,14 +167,14 @@ class PerturbCard(MakeDataCard):
         self.num_condition_frame.setRange(1,10000)
         self.num_condition_frame.set_input_value([50])
 
-        self.num_label=BodyLabel("Structures",self.setting_widget)
-        self.num_label.setToolTip("Number of perturbed structures to generate")
+        self.num_label=BodyLabel(self.tr("Structures"),self.setting_widget)
+        self.num_label.setToolTip(self.tr("Number of perturbed structures to generate"))
 
         self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip("Enable reproducible random perturbations")
+        self.seed_checkbox.setToolTip(self.tr("Enable reproducible random perturbations"))
         self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")

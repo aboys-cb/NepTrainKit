@@ -7,6 +7,7 @@ from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilte
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import CorrelatedRandomSpinOperation, CorrelatedRandomSpinParams
 from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -23,28 +24,32 @@ class CorrelatedRandomSpinCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Correlated Random Spin")
+        self.setTitle(self.tr("Correlated Random Spin"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("correlated_random_spin_card_widget")
 
-        self.mode_label = BodyLabel("Mode", self.setting_widget)
-        self.mode_label.setToolTip("Full random directions or cone disorder around the reference magnetic moments")
+        self.mode_label = BodyLabel(self.tr("Mode"), self.setting_widget)
+        self.mode_label.setToolTip(self.tr("Full random directions or cone disorder around the reference magnetic moments"))
         self.mode_label.installEventFilter(ToolTipFilter(self.mode_label, 300, ToolTipPosition.TOP))
         self.mode_combo = ComboBox(self.setting_widget)
-        self.mode_combo.addItems(["Cone around reference", "Full random directions"])
-        self.mode_combo.setCurrentText("Cone around reference")
+        add_translated_items(self, self.mode_combo, ["Cone around reference", "Full random directions"])
+        set_combo_value(self.mode_combo, "Cone around reference")
 
-        self.kernel_label = BodyLabel("Kernel", self.setting_widget)
-        self.kernel_label.setToolTip("Correlation kernel used for the exact covariance matrix")
+        self.kernel_label = BodyLabel(self.tr("Kernel"), self.setting_widget)
+        self.kernel_label.setToolTip(self.tr("Correlation kernel used for the exact covariance matrix"))
         self.kernel_label.installEventFilter(ToolTipFilter(self.kernel_label, 300, ToolTipPosition.TOP))
         self.kernel_combo = ComboBox(self.setting_widget)
-        self.kernel_combo.addItems(["exponential", "squared_exponential"])
-        self.kernel_combo.setCurrentText("exponential")
+        add_translated_items(
+            self,
+            self.kernel_combo,
+            [("exponential", "exponential"), ("squared_exponential", "squared exponential")],
+        )
+        set_combo_value(self.kernel_combo, "exponential")
 
-        self.xi_label = BodyLabel("Correlation length", self.setting_widget)
-        self.xi_label.setToolTip("Spatial correlation length xi in Angstrom")
+        self.xi_label = BodyLabel(self.tr("Correlation length"), self.setting_widget)
+        self.xi_label.setToolTip(self.tr("Spatial correlation length xi in Angstrom"))
         self.xi_label.installEventFilter(ToolTipFilter(self.xi_label, 300, ToolTipPosition.TOP))
         self.xi_frame = SpinBoxUnitInputFrame(self)
         self.xi_frame.set_input("A", 1, "float")
@@ -52,16 +57,16 @@ class CorrelatedRandomSpinCard(MakeDataCard):
         self.xi_frame.object_list[0].setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.xi_frame.set_input_value([3.0])
 
-        self.samples_label = BodyLabel("Samples", self.setting_widget)
-        self.samples_label.setToolTip("Number of independent correlated spin fields generated per input structure")
+        self.samples_label = BodyLabel(self.tr("Samples"), self.setting_widget)
+        self.samples_label.setToolTip(self.tr("Number of independent correlated spin fields generated per input structure"))
         self.samples_label.installEventFilter(ToolTipFilter(self.samples_label, 300, ToolTipPosition.TOP))
         self.samples_frame = SpinBoxUnitInputFrame(self)
         self.samples_frame.set_input("unit", 1, "int")
         self.samples_frame.setRange(1, 100000)
         self.samples_frame.set_input_value([1])
 
-        self.cone_label = BodyLabel("Cone angle", self.setting_widget)
-        self.cone_label.setToolTip("Maximum cone angle in degrees for cone disorder")
+        self.cone_label = BodyLabel(self.tr("Cone angle"), self.setting_widget)
+        self.cone_label.setToolTip(self.tr("Maximum cone angle in degrees for cone disorder"))
         self.cone_label.installEventFilter(ToolTipFilter(self.cone_label, 300, ToolTipPosition.TOP))
         self.cone_frame = SpinBoxUnitInputFrame(self)
         self.cone_frame.set_input("deg", 1, "float")
@@ -69,21 +74,21 @@ class CorrelatedRandomSpinCard(MakeDataCard):
         self.cone_frame.object_list[0].setDecimals(3)  # pyright: ignore[reportAttributeAccessIssue]
         self.cone_frame.set_input_value([30.0])
 
-        self.source_label = BodyLabel("Magnitude source", self.setting_widget)
-        self.source_label.setToolTip("Use existing initial magmoms or build reference magnitudes from map/default")
+        self.source_label = BodyLabel(self.tr("Magnitude source"), self.setting_widget)
+        self.source_label.setToolTip(self.tr("Use existing initial magmoms or build reference magnitudes from map/default"))
         self.source_label.installEventFilter(ToolTipFilter(self.source_label, 300, ToolTipPosition.TOP))
         self.source_combo = ComboBox(self.setting_widget)
-        self.source_combo.addItems(["Existing initial magmoms", "Map/default magnitude"])
-        self.source_combo.setCurrentText("Existing initial magmoms")
+        add_translated_items(self, self.source_combo, ["Existing initial magmoms", "Map/default magnitude"])
+        set_combo_value(self.source_combo, "Existing initial magmoms")
 
-        self.map_label = BodyLabel("Magmom map", self.setting_widget)
-        self.map_label.setToolTip('Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"')
+        self.map_label = BodyLabel(self.tr("Magmom map"), self.setting_widget)
+        self.map_label.setToolTip(self.tr('Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"'))
         self.map_label.installEventFilter(ToolTipFilter(self.map_label, 300, ToolTipPosition.TOP))
         self.map_edit = LineEdit(self.setting_widget)
-        self.map_edit.setPlaceholderText("Fe:2.2,Ni:0.6")
+        self.map_edit.setPlaceholderText(self.tr("Fe:2.2,Ni:0.6"))
 
-        self.default_label = BodyLabel("Default |m|", self.setting_widget)
-        self.default_label.setToolTip("Magnitude used for elements not listed in the magmom map")
+        self.default_label = BodyLabel(self.tr("Default |m|"), self.setting_widget)
+        self.default_label.setToolTip(self.tr("Magnitude used for elements not listed in the magmom map"))
         self.default_label.installEventFilter(ToolTipFilter(self.default_label, 300, ToolTipPosition.TOP))
         self.default_frame = SpinBoxUnitInputFrame(self)
         self.default_frame.set_input("", 1, "float")
@@ -91,11 +96,11 @@ class CorrelatedRandomSpinCard(MakeDataCard):
         self.default_frame.object_list[0].setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.default_frame.set_input_value([0.0])
 
-        self.lift_scalar_checkbox = CheckBox("Lift scalar magmoms to vectors", self.setting_widget)
+        self.lift_scalar_checkbox = CheckBox(self.tr("Lift scalar magmoms to vectors"), self.setting_widget)
         self.lift_scalar_checkbox.setChecked(True)
 
-        self.axis_label = BodyLabel("Reference axis", self.setting_widget)
-        self.axis_label.setToolTip("Axis for lifted scalar magmoms and map/default reference states")
+        self.axis_label = BodyLabel(self.tr("Reference axis"), self.setting_widget)
+        self.axis_label.setToolTip(self.tr("Axis for lifted scalar magmoms and map/default reference states"))
         self.axis_label.installEventFilter(ToolTipFilter(self.axis_label, 300, ToolTipPosition.TOP))
         self.axis_frame = SpinBoxUnitInputFrame(self)
         self.axis_frame.set_input("", 3, "float")
@@ -104,21 +109,21 @@ class CorrelatedRandomSpinCard(MakeDataCard):
             obj.setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.axis_frame.set_input_value([0.0, 0.0, 1.0])
 
-        self.apply_label = BodyLabel("Apply elements", self.setting_widget)
-        self.apply_label.setToolTip("Optional comma-separated element list; empty means all nonzero moments")
+        self.apply_label = BodyLabel(self.tr("Apply elements"), self.setting_widget)
+        self.apply_label.setToolTip(self.tr("Optional comma-separated element list; empty means all nonzero moments"))
         self.apply_label.installEventFilter(ToolTipFilter(self.apply_label, 300, ToolTipPosition.TOP))
         self.apply_edit = LineEdit(self.setting_widget)
-        self.apply_edit.setPlaceholderText("Fe,Co")
+        self.apply_edit.setPlaceholderText(self.tr("Fe,Co"))
 
-        self.max_atoms_label = BodyLabel("Max exact atoms", self.setting_widget)
-        self.max_atoms_label.setToolTip("Maximum eligible atoms allowed for exact full-covariance sampling")
+        self.max_atoms_label = BodyLabel(self.tr("Max exact atoms"), self.setting_widget)
+        self.max_atoms_label.setToolTip(self.tr("Maximum eligible atoms allowed for exact full-covariance sampling"))
         self.max_atoms_label.installEventFilter(ToolTipFilter(self.max_atoms_label, 300, ToolTipPosition.TOP))
         self.max_atoms_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_frame.set_input("unit", 1, "int")
         self.max_atoms_frame.setRange(1, 1000000)
         self.max_atoms_frame.set_input_value([200])
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -159,14 +164,14 @@ class CorrelatedRandomSpinCard(MakeDataCard):
         self._update_source_widgets()
 
     def _update_mode_widgets(self):
-        show_cone = self.mode_combo.currentText() == "Cone around reference"
+        show_cone = combo_value(self.mode_combo) == "Cone around reference"
         self.cone_label.setVisible(show_cone)
         self.cone_frame.setVisible(show_cone)
         self.cone_label.setEnabled(show_cone)
         self.cone_frame.setEnabled(show_cone)
 
     def _update_source_widgets(self):
-        use_map = self.source_combo.currentText() == "Map/default magnitude"
+        use_map = combo_value(self.source_combo) == "Map/default magnitude"
         for widget in (self.map_label, self.map_edit, self.default_label, self.default_frame):
             widget.setVisible(use_map)
             widget.setEnabled(use_map)
@@ -176,12 +181,12 @@ class CorrelatedRandomSpinCard(MakeDataCard):
 
     def get_params(self) -> CorrelatedRandomSpinParams:
         return CorrelatedRandomSpinParams(
-            mode=self.mode_combo.currentText(),
-            correlation_kernel=self.kernel_combo.currentText(),
+            mode=combo_value(self.mode_combo),
+            correlation_kernel=combo_value(self.kernel_combo),
             correlation_length=float(self.xi_frame.get_input_value()[0]),
             samples=int(self.samples_frame.get_input_value()[0]),
             cone_angle=float(self.cone_frame.get_input_value()[0]),
-            magnitude_source=self.source_combo.currentText(),
+            magnitude_source=combo_value(self.source_combo),
             magmom_map=self.map_edit.text(),
             default_moment=float(self.default_frame.get_input_value()[0]),
             lift_scalar=self.lift_scalar_checkbox.isChecked(),
@@ -193,12 +198,12 @@ class CorrelatedRandomSpinCard(MakeDataCard):
         )
 
     def set_params(self, params: CorrelatedRandomSpinParams) -> None:
-        self.mode_combo.setCurrentText(params.mode)
-        self.kernel_combo.setCurrentText(params.correlation_kernel)
+        set_combo_value(self.mode_combo, params.mode)
+        set_combo_value(self.kernel_combo, params.correlation_kernel)
         self.xi_frame.set_input_value([float(params.correlation_length)])
         self.samples_frame.set_input_value([int(params.samples)])
         self.cone_frame.set_input_value([float(params.cone_angle)])
-        self.source_combo.setCurrentText(params.magnitude_source)
+        set_combo_value(self.source_combo, params.magnitude_source)
         self.map_edit.setText(params.magmom_map)
         self.default_frame.set_input_value([float(params.default_moment)])
         self.lift_scalar_checkbox.setChecked(bool(params.lift_scalar))

@@ -7,6 +7,7 @@ from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTip
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.alloy import CompositionSweepOperation, CompositionSweepParams
 from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -23,7 +24,7 @@ class CompositionSweepCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Composition Sweep")
+        self.setTitle(self.tr("Composition Sweep"))
         self._shown_plan_notice_key: tuple | None = None
         self._shown_warning_keys: set[tuple] = set()
         self.init_ui()
@@ -31,16 +32,18 @@ class CompositionSweepCard(MakeDataCard):
     def init_ui(self):
         self.setObjectName("composition_sweep_card_widget")
 
-        self.elements_label = BodyLabel("Elements", self.setting_widget)
+        self.elements_label = BodyLabel(self.tr("Elements"), self.setting_widget)
         self.elements_edit = LineEdit(self.setting_widget)
-        self.elements_edit.setPlaceholderText("Co,Cr,Ni,Al")
+        self.elements_edit.setPlaceholderText(self.tr("Co,Cr,Ni,Al"))
         self.elements_edit.setText("Co,Cr,Ni")
-        self.elements_label.setToolTip("Candidate elements for binary/ternary/quaternary/quinary combinations")
+        self.elements_label.setToolTip(self.tr("Candidate elements for binary/ternary/quaternary/quinary combinations"))
         self.elements_label.installEventFilter(ToolTipFilter(self.elements_label, 300, ToolTipPosition.TOP))
 
-        self.order_label = BodyLabel("Order", self.setting_widget)
+        self.order_label = BodyLabel(self.tr("Order"), self.setting_widget)
         self.order_combo = ComboBox(self.setting_widget)
-        self.order_combo.addItems(
+        add_translated_items(
+            self,
+            self.order_combo,
             [
                 "2",
                 "3",
@@ -52,40 +55,40 @@ class CompositionSweepCard(MakeDataCard):
                 "5,4,3,2",
             ]
         )
-        self.order_combo.setCurrentText("2,3,4,5")
-        self.order_label.setToolTip("Orders to generate, e.g. 2,3,4,5")
+        set_combo_value(self.order_combo, "2,3,4,5")
+        self.order_label.setToolTip(self.tr("Orders to generate, e.g. 2,3,4,5"))
         self.order_label.installEventFilter(ToolTipFilter(self.order_label, 300, ToolTipPosition.TOP))
 
-        self.method_label = BodyLabel("Method", self.setting_widget)
+        self.method_label = BodyLabel(self.tr("Method"), self.setting_widget)
         self.method_combo = ComboBox(self.setting_widget)
-        self.method_combo.addItems(["Grid", "Sobol"])
-        self.method_label.setToolTip("Grid step scan or Sobol low-discrepancy sampling on simplex")
+        add_translated_items(self, self.method_combo, ["Grid", "Sobol"])
+        self.method_label.setToolTip(self.tr("Grid step scan or Sobol low-discrepancy sampling on simplex"))
         self.method_label.installEventFilter(ToolTipFilter(self.method_label, 300, ToolTipPosition.TOP))
 
-        self.step_label = BodyLabel("Step", self.setting_widget)
+        self.step_label = BodyLabel(self.tr("Step"), self.setting_widget)
         self.step_frame = SpinBoxUnitInputFrame(self)
         self.step_frame.set_input("", 1, "float")
         self.step_frame.setDecimals(6)
         self.step_frame.setRange(1e-6, 1.0)
         self.step_frame.set_input_value([0.1])
 
-        self.n_points_label = BodyLabel("N points", self.setting_widget)
+        self.n_points_label = BodyLabel(self.tr("N points"), self.setting_widget)
         self.n_points_frame = SpinBoxUnitInputFrame(self)
         self.n_points_frame.set_input("unit", 1, "int")
         self.n_points_frame.setRange(1, 999999)
         self.n_points_frame.set_input_value([50])
 
-        self.minfrac_label = BodyLabel("Min fraction", self.setting_widget)
+        self.minfrac_label = BodyLabel(self.tr("Min fraction"), self.setting_widget)
         self.minfrac_frame = SpinBoxUnitInputFrame(self)
         self.minfrac_frame.set_input("", 1, "float")
         self.minfrac_frame.setDecimals(6)
         self.minfrac_frame.setRange(0.0, 1.0)
         self.minfrac_frame.set_input_value([0.0])
 
-        self.include_endpoints_checkbox = CheckBox("Include endpoints", self.setting_widget)
+        self.include_endpoints_checkbox = CheckBox(self.tr("Include endpoints"), self.setting_widget)
         self.include_endpoints_checkbox.setChecked(True)
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -94,23 +97,25 @@ class CompositionSweepCard(MakeDataCard):
         self.seed_frame.setEnabled(False)
         self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
 
-        self.max_output_label = BodyLabel("Max outputs/input", self.setting_widget)
+        self.max_output_label = BodyLabel(self.tr("Max outputs/input"), self.setting_widget)
         self.max_output_frame = SpinBoxUnitInputFrame(self)
         self.max_output_frame.set_input("unit", 1, "int")
         self.max_output_frame.setRange(1, 9999999)
         self.max_output_frame.set_input_value([500])
 
-        self.budget_mode_label = BodyLabel("Budget mode", self.setting_widget)
+        self.budget_mode_label = BodyLabel(self.tr("Budget mode"), self.setting_widget)
         self.budget_mode_combo = ComboBox(self.setting_widget)
-        self.budget_mode_combo.addItems(
+        add_translated_items(
+            self,
+            self.budget_mode_combo,
             [
                 "Equal+Reflow",
                 "Capacity-weighted",
                 "Equal (legacy)",
             ]
         )
-        self.budget_mode_combo.setCurrentText("Equal+Reflow")
-        self.budget_mode_label.setToolTip("How Max outputs/input is split across selected orders")
+        set_combo_value(self.budget_mode_combo, "Equal+Reflow")
+        self.budget_mode_label.setToolTip(self.tr("How Max outputs/input is split across selected orders"))
         self.budget_mode_label.installEventFilter(ToolTipFilter(self.budget_mode_label, 300, ToolTipPosition.TOP))
 
         self.settingLayout.addWidget(self.elements_label, 0, 0, 1, 1)
@@ -159,7 +164,7 @@ class CompositionSweepCard(MakeDataCard):
         MessageManager.send_warning_message(message)
 
     def _update_method_widgets(self) -> None:
-        is_sobol = self.method_combo.currentText() == "Sobol"
+        is_sobol = combo_value(self.method_combo) == "Sobol"
         self.n_points_label.setVisible(is_sobol)
         self.n_points_frame.setVisible(is_sobol)
         self.step_label.setVisible(not is_sobol)
@@ -181,8 +186,8 @@ class CompositionSweepCard(MakeDataCard):
         """Read composition sweep parameters from UI controls."""
         return CompositionSweepParams(
             elements=self.elements_edit.text(),
-            order=self.order_combo.currentText(),
-            method=self.method_combo.currentText(),
+            order=combo_value(self.order_combo),
+            method=combo_value(self.method_combo),
             step=float(self.step_frame.get_input_value()[0]),
             n_points=int(self.n_points_frame.get_input_value()[0]),
             min_fraction=float(self.minfrac_frame.get_input_value()[0]),
@@ -190,14 +195,14 @@ class CompositionSweepCard(MakeDataCard):
             use_seed=self.seed_checkbox.isChecked(),
             seed=int(self.seed_frame.get_input_value()[0]),
             max_outputs=int(self.max_output_frame.get_input_value()[0]),
-            budget_mode=self.budget_mode_combo.currentText(),
+            budget_mode=combo_value(self.budget_mode_combo),
         )
 
     def set_params(self, params: CompositionSweepParams) -> None:
         """Apply composition sweep parameters to UI controls."""
         self.elements_edit.setText(params.elements)
-        self.order_combo.setCurrentText(params.order)
-        self.method_combo.setCurrentText(params.method)
+        set_combo_value(self.order_combo, params.order)
+        set_combo_value(self.method_combo, params.method)
         self.step_frame.set_input_value([float(params.step)])
         self.n_points_frame.set_input_value([int(params.n_points)])
         self.minfrac_frame.set_input_value([float(params.min_fraction)])
@@ -205,7 +210,7 @@ class CompositionSweepCard(MakeDataCard):
         self.seed_checkbox.setChecked(bool(params.use_seed))
         self.seed_frame.set_input_value([int(params.seed)])
         self.max_output_frame.set_input_value([int(params.max_outputs)])
-        self.budget_mode_combo.setCurrentText(params.budget_mode)
+        set_combo_value(self.budget_mode_combo, params.budget_mode)
         self._update_method_widgets()
         self._invalidate_runtime_notices()
 

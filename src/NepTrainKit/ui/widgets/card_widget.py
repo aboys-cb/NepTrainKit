@@ -117,7 +117,7 @@ class CheckableHeaderCardWidget(HeaderCardWidget):
         self.state_checkbox = CheckBox()
         self.state_checkbox.setChecked(True)
         self.state_checkbox.stateChanged.connect(self.state_changed)
-        self.state_checkbox.setToolTip("Enable or disable this card")
+        self.state_checkbox.setToolTip(self.tr("Enable or disable this card"))
         self.headerLayout.insertWidget(0, self.state_checkbox, 0, Qt.AlignmentFlag.AlignLeft)
         self.headerLayout.setStretch(1, 3)
         self.headerLayout.setContentsMargins(10, 0, 3, 0)
@@ -158,27 +158,27 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         super(ShareCheckableHeaderCardWidget, self).__init__(parent)
         self.doc_button = TransparentToolButton(FluentIcon.HELP, self)
         self.doc_button.clicked.connect(self.open_online_doc)
-        self.doc_button.setToolTip("Open online documentation")
+        self.doc_button.setToolTip(self.tr("Open online documentation"))
         self.doc_button.installEventFilter(ToolTipFilter(self.doc_button, 300, ToolTipPosition.TOP))
 
         self.info_button = TransparentToolButton(FluentIcon.INFO, self)
         self.info_button.clicked.connect(self.show_card_info)
-        self.info_button.setToolTip("Show card information and contributors")
+        self.info_button.setToolTip(self.tr("Show card information and contributors"))
         self.info_button.installEventFilter(ToolTipFilter(self.info_button, 300, ToolTipPosition.TOP))
 
         self.copy_json_button = TransparentToolButton(FluentIcon.COPY, self)
         self.copy_json_button.clicked.connect(self.copy_json_to_clipboard)
-        self.copy_json_button.setToolTip("Copy card JSON")
+        self.copy_json_button.setToolTip(self.tr("Copy card JSON"))
         self.copy_json_button.installEventFilter(ToolTipFilter(self.copy_json_button, 300, ToolTipPosition.TOP))
 
         self.export_button = TransparentToolButton(QIcon(":/images/src/images/export1.svg"), self)
         self.export_button.clicked.connect(self.exportSignal)
-        self.export_button.setToolTip("Export data")
+        self.export_button.setToolTip(self.tr("Export data"))
         self.export_button.installEventFilter(ToolTipFilter(self.export_button, 300, ToolTipPosition.TOP))
 
         self.close_button = TransparentToolButton(FluentIcon.CLOSE, self)
         self.close_button.clicked.connect(self.close)
-        self.close_button.setToolTip("Close card")
+        self.close_button.setToolTip(self.tr("Close card"))
         self.close_button.installEventFilter(ToolTipFilter(self.close_button, 300, ToolTipPosition.TOP))
 
         self.headerLayout.addWidget(self.doc_button, 0, Qt.AlignmentFlag.AlignRight)
@@ -243,7 +243,7 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
     def copy_json_to_clipboard(self) -> None:
         """Copy this card's current configuration JSON to the system clipboard."""
         QApplication.clipboard().setText(self.to_json_text())
-        MessageManager.send_success_message("Card JSON copied to clipboard.")
+        MessageManager.send_success_message(self.tr("Card JSON copied to clipboard."))
 
     def to_json_text(self) -> str:
         """Return this card's current configuration as pretty JSON text."""
@@ -278,7 +278,7 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         self._drag_start_pos = None
         self.collapse_button = TransparentToolButton(QIcon(":/images/src/images/collapse.svg"), self)
         self.collapse_button.clicked.connect(self.collapse)
-        self.collapse_button.setToolTip("Collapse or expand card")
+        self.collapse_button.setToolTip(self.tr("Collapse or expand card"))
         self.collapse_button.installEventFilter(ToolTipFilter(self.collapse_button, 300, ToolTipPosition.TOP))
 
         self.headerLayout.insertWidget(0, self.collapse_button, 0, Qt.AlignmentFlag.AlignLeft)
@@ -444,14 +444,14 @@ class MakeDataCard(MakeDataCardWidget):
         if self.dataset is not None:
             path = call_path_dialog(
                 self,
-                "Choose a file save location",
+                self.tr("Choose a file save location"),
                 "file",
                 f"export_{self.card_name.replace(' ', '_')}_structure.xyz",
                 file_filter="XYZ Files (*.xyz)",
             )
             if not path:
                 return
-            thread = LoadingThread(self, show_tip=True, title="Exporting data")
+            thread = LoadingThread(self, show_tip=True, title=self.tr("Exporting data"))
             thread.start_work(self.write_result_dataset, path)
 
     def process_structure(self, structure):
@@ -574,7 +574,7 @@ class MakeDataCard(MakeDataCardWidget):
         progress : int
             Percentage reported by the background worker.
         """
-        self.status_label.setText(f"Processing {progress}%")
+        self.status_label.setText(self.tr("Processing {progress}%").format(progress=progress))
         self.status_label.set_progress(progress)
 
     def on_processing_finished(self):
@@ -609,7 +609,7 @@ class MakeDataCard(MakeDataCardWidget):
         self.update_dataset_info()
         self.runFinishedSignal.emit(self.index)
 
-        MessageManager.send_error_message(f"Error occurred: {error}")
+        MessageManager.send_error_message(self.tr("Error occurred: {error}").format(error=error))
 
     def update_dataset_info(self):
         """Display dataset statistics in the status label."""
@@ -617,9 +617,15 @@ class MakeDataCard(MakeDataCardWidget):
 
     def _format_dataset_info(self) -> str:
         """Return the compact input/output/time summary shown below the card."""
-        text = f"Input: {len(self.dataset)} -> Output: {len(self.result_dataset)}"
+        text = self.tr("Input: {input_count} -> Output: {output_count}").format(
+            input_count=len(self.dataset),
+            output_count=len(self.result_dataset),
+        )
         if self._last_elapsed_seconds is not None:
-            text = f"{text} | Time: {self._last_elapsed_seconds:.2f} s"
+            text = self.tr("{summary} | Time: {seconds:.2f} s").format(
+                summary=text,
+                seconds=self._last_elapsed_seconds,
+            )
         return text
 
 
@@ -629,7 +635,7 @@ class FilterDataCard(MakeDataCard):
     def __init__(self, parent=None):
         """Initialize the filter card and configure the title."""
         super().__init__(parent)
-        self.setTitle("Filter Data")
+        self.setTitle(self.tr("Filter data"))
 
     def stop(self):
         """Terminate the worker thread and discard partial results."""
@@ -639,7 +645,7 @@ class FilterDataCard(MakeDataCard):
 
     def update_progress(self, progress):
         """Display worker progress in the status label."""
-        self.status_label.setText(f"Processing {progress}%")
+        self.status_label.setText(self.tr("Processing {progress}%").format(progress=progress))
         self.status_label.set_progress(progress)
 
     def on_processing_finished(self):
@@ -672,7 +678,7 @@ class FilterDataCard(MakeDataCard):
         self.update_dataset_info()
         self.runFinishedSignal.emit(self.index)
 
-        MessageManager.send_error_message(f"Error occurred: {error}")
+        MessageManager.send_error_message(self.tr("Error occurred: {error}").format(error=error))
 
     def update_dataset_info(self):
         """Display the number of structures kept by the filter."""

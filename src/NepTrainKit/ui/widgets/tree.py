@@ -308,7 +308,7 @@ class TagDelegate(QStyledItemDelegate):
     def createEditor(self, parent: QWidget, option, index):
         """Create a line edit that supports comma-separated tag entry."""
         editor = QLineEdit(parent)
-        editor.setPlaceholderText("Comma-separated tags")
+        editor.setPlaceholderText(self.tr("Comma-separated tags"))
         if self.tag_list:
             completer = QCompleter(self.tag_list, editor)
             completer.setCaseSensitivity(Qt.CaseInsensitive)
@@ -328,5 +328,4 @@ class TagDelegate(QStyledItemDelegate):
         text = editor.text().strip()
         tags = [t.strip() for t in text.split(",") if t.strip()]
         model.setData(index, tags, Qt.EditRole)
-
 

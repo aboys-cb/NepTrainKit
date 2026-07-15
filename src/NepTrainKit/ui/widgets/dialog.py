@@ -128,7 +128,7 @@ class ExportFormatMessageBox(MessageBoxBase):
 
     def __init__(self, parent=None, default_format: str = "xyz"):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel("Choose export format", self)
+        self.titleLabel = CaptionLabel(self.tr("Choose export format"), self)
         self.titleLabel.setWordWrap(True)
 
         self.formatCombo = ComboBox(self)
@@ -167,7 +167,7 @@ class DatasetSummaryMessageBox(MessageBoxBase):
             group_by_enum = SearchType(group_by_value)
         except Exception:
             group_by_enum = SearchType.FORMULA if group_by_value.endswith(".FORMULA") else SearchType.TAG
-        group_label = "Formula" if group_by_enum == SearchType.FORMULA else "Config_type"
+        group_label = self.tr("Formula") if group_by_enum == SearchType.FORMULA else "Config_type"
 
         self.widget.setMinimumWidth(460)
         max_rows_display = 10  # limit rows shown in dialog to keep it compact
@@ -177,7 +177,7 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         layout.setSpacing(8)
         self.viewLayout.addLayout(layout)
         heager_row = QHBoxLayout()
-        title = TitleLabel("Dataset Summary", self)
+        title = TitleLabel(self.tr("Dataset summary"), self)
 
         # Export HTML button
         self.exportButton = TransparentToolButton(":/images/src/images/export1.svg", self)
@@ -251,12 +251,12 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         # Element distribution
         elements = sorted(self._summary.get("elements", []), key=lambda x: x.get("fraction", 0.0), reverse=True)
         if elements:
-            elem_title = CaptionLabel("Element distribution (active structures):", self)
+            elem_title = CaptionLabel(self.tr("Element distribution (active structures):"), self)
             layout.addWidget(elem_title)
             elem_grid = QGridLayout()
             elem_grid.setContentsMargins(0, 0, 0, 0)
             elem_grid.setSpacing(4)
-            headers = ["Element", "Atoms", "Structures", "Fraction", ""]
+            headers = [self.tr("Element"), self.tr("Atoms"), self.tr("Structures"), self.tr("Fraction"), ""]
             for c, h in enumerate(headers):
                 elem_grid.addWidget(CaptionLabel(h, self), 0, c)
             for r, elem in enumerate(elements[:max_rows_display], start=1):
@@ -275,7 +275,10 @@ class DatasetSummaryMessageBox(MessageBoxBase):
         # Config_type distribution
         cfg = self._summary.get("config_types", [])
         if cfg:
-            cfg_title = CaptionLabel(f"{group_label} distribution (active structures):", self)
+            cfg_title = CaptionLabel(
+                self.tr("{group_label} distribution (active structures):").format(group_label=group_label),
+                self,
+            )
             layout.addWidget(cfg_title)
             cfg_grid = QGridLayout()
             cfg_grid.setContentsMargins(0, 0, 0, 0)
@@ -992,13 +995,13 @@ class DistributionExplorerWidget(QWidget):
         self._field_by_key.clear()
         if self._vispy_fallback_warned:
             self.plotHintLabel.setText(
-                "Current canvas backend is vispy, but vispy plot failed to initialize; fallback to pyqtgraph."
+                self.tr("Current canvas backend is vispy, but vispy plot failed to initialize; fallback to pyqtgraph.")
             )
         else:
             self.plotHintLabel.setText("")
 
         if self._data is None or not hasattr(self._data, "discover_atomic_numeric_fields"):
-            self.statusLabel.setText("Dataset does not support distribution analysis.")
+            self.statusLabel.setText(self.tr("Dataset does not support distribution analysis."))
             return
 
         try:
@@ -1021,9 +1024,11 @@ class DistributionExplorerWidget(QWidget):
             self._field_by_key[key] = spec
 
         if self.fieldCombo.count() == 0:
-            self.statusLabel.setText("No numeric fields found in current scope.")
+            self.statusLabel.setText(self.tr("No numeric fields found in current scope."))
         else:
-            self.statusLabel.setText(f"{self.fieldCombo.count()} fields ready. Click Analyze.")
+            self.statusLabel.setText(
+                self.tr("{count} fields ready. Click Analyze.").format(count=self.fieldCombo.count())
+            )
 
     def _current_field_key(self) -> str:
         data = self.fieldCombo.currentData()
@@ -1038,10 +1043,10 @@ class DistributionExplorerWidget(QWidget):
     def _run_analysis(self) -> None:
         field_key = self._current_field_key()
         if not field_key:
-            self.statusLabel.setText("Please select a field.")
+            self.statusLabel.setText(self.tr("Please select a field."))
             return
         if self._run_analysis_callback is None:
-            self.statusLabel.setText("Analyze callback is unavailable.")
+            self.statusLabel.setText(self.tr("Analyze callback is unavailable."))
             return
 
         req = DistributionRequest(
@@ -1086,14 +1091,14 @@ class DistributionExplorerWidget(QWidget):
 
         msgs = self._analysis.get("messages", []) or []
         if self.metricCombo.count() == 0:
-            base = "No metrics produced for current request."
+            base = self.tr("No metrics produced for current request.")
             if msgs:
                 base += f" {msgs[0]}"
             self.statusLabel.setText(base)
             return
 
         self._refresh_series_combo()
-        status = f"{self.metricCombo.count()} metrics generated."
+        status = self.tr("{count} metrics generated.").format(count=self.metricCombo.count())
         if msgs:
             status += f" {msgs[0]}"
         self.statusLabel.setText(status)
@@ -1111,7 +1116,7 @@ class DistributionExplorerWidget(QWidget):
         if not s_key:
             return None
         if s_key == self._ALL_SERIES_KEY:
-            return {"series_key": self._ALL_SERIES_KEY, "name": "All groups"}
+            return {"series_key": self._ALL_SERIES_KEY, "name": self.tr("All groups")}
         for item in metric.get("series", []) or []:
             if str(item.get("series_key", item.get("name", "")) or "") == s_key:
                 return item
@@ -1125,7 +1130,7 @@ class DistributionExplorerWidget(QWidget):
             return
         series = metric.get("series", []) or []
         if len(series) > 1:
-            self.seriesCombo.addItem("All groups (overlay)", userData=self._ALL_SERIES_KEY)
+            self.seriesCombo.addItem(self.tr("All groups (overlay)"), userData=self._ALL_SERIES_KEY)
         for item in series:
             s_key = str(item.get("series_key", item.get("name", "")) or "")
             name = str(item.get("name", s_key))
@@ -1183,9 +1188,15 @@ class DistributionExplorerWidget(QWidget):
 
         mode = str(self.selectModeCombo.currentData() or DistributionSelectMode.REPLACE.value)
         self._apply_selection_callback(list(indices), mode)
-        series_label = "all groups" if series_key == self._ALL_SERIES_KEY else series_key
+        series_label = self.tr("all groups") if series_key == self._ALL_SERIES_KEY else series_key
         self.statusLabel.setText(
-            f"Applied bin {bin_index} ({series_label}): {sample_count} samples -> {len(indices)} structures, mode='{mode}'."
+            self.tr("Applied bin {bin_index} ({series_label}): {sample_count} samples -> {count} structures, mode='{mode}'.").format(
+                bin_index=bin_index,
+                series_label=series_label,
+                sample_count=sample_count,
+                count=len(indices),
+                mode=mode,
+            )
         )
 
 
@@ -1202,7 +1213,7 @@ class DistributionInspectorMessageBox(QDialog):
     ):
         super().__init__(parent)
         self._data = data
-        self.setWindowTitle("Distribution Inspector")
+        self.setWindowTitle(self.tr("Distribution inspector"))
         self.setWindowIcon(QIcon(":/images/src/images/distribution_inspector.svg"))
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -1260,18 +1271,19 @@ class SparseMessageBox(MessageBoxBase):
         self.doubleSpinBox.setMaximum(10)
 
         self.modeCombo = ComboBox(self)
-        self.modeCombo.addItems(["Fixed count (FPS)", "R^2 stop (FPS)"])
-        self.frame_layout.addWidget(CaptionLabel("Sampling mode", self), 0, 0, 1, 1)
+        self.modeCombo.addItem(self.tr("Fixed count (FPS)"), userData="count")
+        self.modeCombo.addItem(self.tr("R^2 stop (FPS)"), userData="r2")
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Sampling mode"), self), 0, 0, 1, 1)
         self.frame_layout.addWidget(self.modeCombo, 0, 1, 1, 2)
 
-        self.maxNumLabel = CaptionLabel("Sample limit", self)
+        self.maxNumLabel = CaptionLabel(self.tr("Sample limit"), self)
         self.frame_layout.addWidget(self.maxNumLabel, 1, 0, 1, 1)
         self.frame_layout.addWidget(self.intSpinBox, 1, 1, 1, 2)
-        self.frame_layout.addWidget(CaptionLabel("Min distance", self), 2, 0, 1, 1)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Min distance"), self), 2, 0, 1, 1)
 
         self.frame_layout.addWidget(self.doubleSpinBox, 2, 1, 1, 2)
 
-        self.r2Label = CaptionLabel("R^2 threshold", self)
+        self.r2Label = CaptionLabel(self.tr("R^2 threshold"), self)
         self.r2SpinBox = DoubleSpinBox(self)
         self.r2SpinBox.setDecimals(4)
         self.r2SpinBox.setRange(0.0, 1.0)
@@ -1280,8 +1292,9 @@ class SparseMessageBox(MessageBoxBase):
         self.frame_layout.addWidget(self.r2SpinBox, 3, 1, 1, 2)
 
         self.descriptorCombo = ComboBox(self)
-        self.descriptorCombo.addItems(["Reduced (PCA)", "Raw descriptor"])
-        self.frame_layout.addWidget(CaptionLabel("Descriptor source", self), 4, 0, 1, 1)
+        self.descriptorCombo.addItem(self.tr("Reduced (PCA)"), userData="reduced")
+        self.descriptorCombo.addItem(self.tr("Raw descriptor"), userData="raw")
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Descriptor source"), self), 4, 0, 1, 1)
         self.frame_layout.addWidget(self.descriptorCombo, 4, 1, 1, 2)
 
         self.advancedFrame = QFrame(self)
@@ -1291,7 +1304,7 @@ class SparseMessageBox(MessageBoxBase):
         self.advancedLayout.setSpacing(4)
 
         self.trainingPathEdit = LineEdit(self)
-        self.trainingPathEdit.setPlaceholderText("Optional training dataset path (.xyz or folder)")
+        self.trainingPathEdit.setPlaceholderText(self.tr("Optional training dataset path (.xyz or folder)"))
         self.trainingPathEdit.setClearButtonEnabled(True)
         trainingPathWidget = QWidget(self)
         trainingPathLayout = QHBoxLayout(trainingPathWidget)
@@ -1301,22 +1314,22 @@ class SparseMessageBox(MessageBoxBase):
         self.trainingBrowseButton = TransparentToolButton(FluentIcon.FOLDER_ADD, trainingPathWidget)
         trainingPathLayout.addWidget(self.trainingBrowseButton, 0)
         self.trainingBrowseButton.clicked.connect(self._pick_training_path)
-        self.trainingBrowseButton.setToolTip("Browse for an existing training dataset")
+        self.trainingBrowseButton.setToolTip(self.tr("Browse for an existing training dataset"))
 
-        self.advancedLayout.addWidget(CaptionLabel("Training dataset", self), 1, 0)
+        self.advancedLayout.addWidget(CaptionLabel(self.tr("Training dataset"), self), 1, 0)
         self.advancedLayout.addWidget(trainingPathWidget, 1, 1)
 
         # region option: use current selection as FPS region
-        self.regionCheck = CheckBox("Use current selection as region", self)
+        self.regionCheck = CheckBox(self.tr("Use current selection as region"), self)
         self.regionCheck.setToolTip(
-            "When FPS sampling is performed in the designated area, the program will automatically deselect it, just click to delete!"
+            self.tr("When FPS sampling is performed in the selected region, the program will automatically deselect it so you can delete it directly.")
         )
         self.regionCheck.installEventFilter(ToolTipFilter(self.regionCheck, 300, ToolTipPosition.TOP))
 
         # training overlay option
-        self.trainingOverlayCheck = CheckBox("Show training overlay", self)
+        self.trainingOverlayCheck = CheckBox(self.tr("Show training overlay"), self)
         self.trainingOverlayCheck.setToolTip(
-            "Display a scatter plot showing training data, loaded data, and selected structures in PCA space after sampling."
+            self.tr("Display a scatter plot showing training data, loaded data, and selected structures in PCA space after sampling.")
         )
         self.trainingOverlayCheck.installEventFilter(ToolTipFilter(self.trainingOverlayCheck, 300, ToolTipPosition.TOP))
 
@@ -1326,8 +1339,8 @@ class SparseMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.regionCheck)
         self.viewLayout.addWidget(self.trainingOverlayCheck)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
 
         self.widget.setMinimumWidth(200)
         self.advancedFrame.setVisible(True)
@@ -1338,12 +1351,12 @@ class SparseMessageBox(MessageBoxBase):
         """Prompt the user to choose a training dataset path."""
         path = call_path_dialog(
             self,
-            "Select training dataset",
+            self.tr("Select training dataset"),
             "select",
             file_filter="XYZ files (*.xyz);;All files (*.*)",
         )
         if not path:
-            path = call_path_dialog(self, "Select training dataset folder", "directory")
+            path = call_path_dialog(self, self.tr("Select training dataset folder"), "directory")
         if path:
             self.trainingPathEdit.setText(path)
 
@@ -1364,15 +1377,15 @@ class IndexSelectMessageBox(MessageBoxBase):
         self.titleLabel = CaptionLabel(tip, self)
         self.titleLabel.setWordWrap(True)
         self.indexEdit = LineEdit(self)
-        self.checkBox = CheckBox("Use original indices", self)
+        self.checkBox = CheckBox(self.tr("Use original indices"), self)
         self.checkBox.setChecked(True)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.indexEdit)
         self.viewLayout.addWidget(self.checkBox)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(200)
 
 
@@ -1405,22 +1418,22 @@ class RangeSelectMessageBox(MessageBoxBase):
         self.logicCombo = ComboBox(self)
         self.logicCombo.addItems(["AND", "OR"])
 
-        self.frame_layout.addWidget(CaptionLabel("X min", self), 0, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("X min"), self), 0, 0)
         self.frame_layout.addWidget(self.xMinSpin, 0, 1)
-        self.frame_layout.addWidget(CaptionLabel("X max", self), 0, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("X max"), self), 0, 2)
         self.frame_layout.addWidget(self.xMaxSpin, 0, 3)
-        self.frame_layout.addWidget(CaptionLabel("Y min", self), 1, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Y min"), self), 1, 0)
         self.frame_layout.addWidget(self.yMinSpin, 1, 1)
-        self.frame_layout.addWidget(CaptionLabel("Y max", self), 1, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Y max"), self), 1, 2)
         self.frame_layout.addWidget(self.yMaxSpin, 1, 3)
-        self.frame_layout.addWidget(CaptionLabel("Logic", self), 2, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Logic"), self), 2, 0)
         self.frame_layout.addWidget(self.logicCombo, 2, 1, 1, 3)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(300)
 
 
@@ -1470,42 +1483,42 @@ class LatticeRangeSelectMessageBox(MessageBoxBase):
             spin.setRange(0, 1e6)
 
         # Lattice constants labels
-        self.frame_layout.addWidget(CaptionLabel("a min", self), 0, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("a min"), self), 0, 0)
         self.frame_layout.addWidget(self.aMinSpin, 0, 1)
-        self.frame_layout.addWidget(CaptionLabel("a max", self), 0, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("a max"), self), 0, 2)
         self.frame_layout.addWidget(self.aMaxSpin, 0, 3)
 
-        self.frame_layout.addWidget(CaptionLabel("b min", self), 1, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("b min"), self), 1, 0)
         self.frame_layout.addWidget(self.bMinSpin, 1, 1)
-        self.frame_layout.addWidget(CaptionLabel("b max", self), 1, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("b max"), self), 1, 2)
         self.frame_layout.addWidget(self.bMaxSpin, 1, 3)
 
-        self.frame_layout.addWidget(CaptionLabel("c min", self), 2, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("c min"), self), 2, 0)
         self.frame_layout.addWidget(self.cMinSpin, 2, 1)
-        self.frame_layout.addWidget(CaptionLabel("c max", self), 2, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("c max"), self), 2, 2)
         self.frame_layout.addWidget(self.cMaxSpin, 2, 3)
 
         # Lattice angles labels
-        self.frame_layout.addWidget(CaptionLabel("α min", self), 3, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("α min"), self), 3, 0)
         self.frame_layout.addWidget(self.alphaMinSpin, 3, 1)
-        self.frame_layout.addWidget(CaptionLabel("α max", self), 3, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("α max"), self), 3, 2)
         self.frame_layout.addWidget(self.alphaMaxSpin, 3, 3)
 
-        self.frame_layout.addWidget(CaptionLabel("β min", self), 4, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("β min"), self), 4, 0)
         self.frame_layout.addWidget(self.betaMinSpin, 4, 1)
-        self.frame_layout.addWidget(CaptionLabel("β max", self), 4, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("β max"), self), 4, 2)
         self.frame_layout.addWidget(self.betaMaxSpin, 4, 3)
 
-        self.frame_layout.addWidget(CaptionLabel("γ min", self), 5, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("γ min"), self), 5, 0)
         self.frame_layout.addWidget(self.gammaMinSpin, 5, 1)
-        self.frame_layout.addWidget(CaptionLabel("γ max", self), 5, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("γ max"), self), 5, 2)
         self.frame_layout.addWidget(self.gammaMaxSpin, 5, 3)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(400)
 
 
@@ -1514,7 +1527,7 @@ class ArrowMessageBox(MessageBoxBase):
 
     def __init__(self, parent=None, props=None):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel("Vector property", self)
+        self.titleLabel = CaptionLabel(self.tr("Vector property"), self)
         self.titleLabel.setWordWrap(True)
 
         self._frame = QFrame(self)
@@ -1534,29 +1547,29 @@ class ArrowMessageBox(MessageBoxBase):
         self.colorCombo = ComboBox(self)
         self.colorCombo.addItems(["viridis", "magma", "plasma", "inferno", "jet"])
 
-        self.showCheck = CheckBox("Show arrows", self)
+        self.showCheck = CheckBox(self.tr("Show arrows"), self)
         self.showCheck.setChecked(True)
 
-        self.frame_layout.addWidget(CaptionLabel("Property", self), 0, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Property"), self), 0, 0)
         self.frame_layout.addWidget(self.propCombo, 0, 1)
-        self.frame_layout.addWidget(CaptionLabel("Scale", self), 1, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Scale"), self), 1, 0)
         self.frame_layout.addWidget(self.scaleSpin, 1, 1)
-        self.frame_layout.addWidget(CaptionLabel("Colormap", self), 2, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Colormap"), self), 2, 0)
         self.frame_layout.addWidget(self.colorCombo, 2, 1)
         self.frame_layout.addWidget(self.showCheck, 3, 0, 1, 2)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(250)
 
 
 class InputInfoMessageBox(MessageBoxBase):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel("new structure info", self)
+        self.titleLabel = CaptionLabel(self.tr("New structure info"), self)
         self.titleLabel.setWordWrap(True)
 
         self._frame = QFrame(self)
@@ -1566,15 +1579,15 @@ class InputInfoMessageBox(MessageBoxBase):
 
         self.keyEdit = LineEdit(self)
         self.valueEdit = LineEdit(self)
-        self.frame_layout.addWidget(CaptionLabel("Key", self), 1, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Key"), self), 1, 0)
         self.frame_layout.addWidget(self.keyEdit, 1, 1, 1, 3)
-        self.frame_layout.addWidget(CaptionLabel("Value", self), 2, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Value"), self), 2, 0)
         self.frame_layout.addWidget(self.valueEdit, 2, 1, 1, 3)
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(100)
 
     def validate(self):
@@ -1582,8 +1595,8 @@ class InputInfoMessageBox(MessageBoxBase):
             return True
         Flyout.create(
             icon=InfoBarIcon.INFORMATION,
-            title="Tip",
-            content="A valid value must be entered",
+            title=self.tr("Tip"),
+            content=self.tr("A valid value must be entered"),
             target=self.keyEdit,
             parent=self,
             isClosable=True,
@@ -1596,9 +1609,9 @@ class EditInfoMessageBox(MessageBoxBase):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel("Edit info", self)
+        self.titleLabel = CaptionLabel(self.tr("Edit info"), self)
         self.titleLabel.setWordWrap(True)
-        self.new_tag_button = PrimaryPushButton(QIcon(":/images/src/images/copy_figure.svg"), "Add new tag", self)
+        self.new_tag_button = PrimaryPushButton(QIcon(":/images/src/images/copy_figure.svg"), self.tr("Add new tag"), self)
         self.new_tag_button.setMaximumWidth(200)
         self.new_tag_button.setObjectName("new_tag_button")
         self.new_tag_button.clicked.connect(self.new_tag)
@@ -1607,8 +1620,8 @@ class EditInfoMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.new_tag_button)
 
         self.viewLayout.addWidget(self.tag_group)
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(600)
         self.remove_tag = set()
         self.new_tag_info = {}
@@ -1759,14 +1772,14 @@ class EditInfoMessageBox(MessageBoxBase):
 class RenameTagMessageBox(MessageBoxBase):
     def __init__(self, old_name: str, parent=None):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel(f"Rename tag: {old_name}", self)
+        self.titleLabel = CaptionLabel(self.tr("Rename tag: {name}").format(name=old_name), self)
         self.titleLabel.setWordWrap(True)
         self.nameEdit = LineEdit(self)
         self.nameEdit.setText(old_name)
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.nameEdit)
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(320)
 
     def validate(self):
@@ -1774,8 +1787,8 @@ class RenameTagMessageBox(MessageBoxBase):
             return True
         Flyout.create(
             icon=InfoBarIcon.INFORMATION,
-            title="Tip",
-            content="A valid value must be entered",
+            title=self.tr("Tip"),
+            content=self.tr("A valid value must be entered"),
             target=self.nameEdit,
             parent=self,
             isClosable=True,
@@ -1811,7 +1824,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.importButton = TransparentToolButton(FluentIcon.FOLDER_ADD, self)
         self.exportButton = TransparentToolButton(FluentIcon.SAVE, self)
         self.deleteButton = TransparentToolButton(FluentIcon.DELETE, self)
-        self.deleteButton.setToolTip("Delete selected preset")
+        self.deleteButton.setToolTip(self.tr("Delete selected preset"))
         self.deleteButton.installEventFilter(ToolTipFilter(self.deleteButton, 300, ToolTipPosition.TOP))
         preset_row = QHBoxLayout()
         preset_row.setContentsMargins(0, 0, 0, 0)
@@ -1820,9 +1833,9 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         preset_row.addWidget(self.importButton, 0)
         preset_row.addWidget(self.exportButton, 0)
         preset_row.addWidget(self.deleteButton, 0)
-        self.savePresetCheck = CheckBox("Save baseline as preset", self)
+        self.savePresetCheck = CheckBox(self.tr("Save baseline as preset"), self)
         self.presetNameEdit = LineEdit(self)
-        self.presetNameEdit.setPlaceholderText("Preset name")
+        self.presetNameEdit.setPlaceholderText(self.tr("Preset name"))
         self.presetNameEdit.setEnabled(False)
         self.savePresetCheck.toggled.connect(self.presetNameEdit.setEnabled)
 
@@ -1839,27 +1852,23 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.tolSpinBox.setDecimals(10)
         self.tolSpinBox.setMinimum(0)
         self.modeCombo = ComboBox(self)
-        self.modeCombo.addItems(
-            [
-                "REF_GROUP",
-                "ZERO_BASELINE",
-                "DFT_TO_NEP",
-            ]
-        )
-        self.modeCombo.setCurrentText("DFT_TO_NEP")
+        self.modeCombo.addItem(self.tr("Reference group"), userData="REF_GROUP")
+        self.modeCombo.addItem(self.tr("Zero baseline"), userData="ZERO_BASELINE")
+        self.modeCombo.addItem(self.tr("DFT to NEP"), userData="DFT_TO_NEP")
+        self._set_alignment_mode("DFT_TO_NEP")
 
-        self.frame_layout.addWidget(CaptionLabel("Max generations", self), 0, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Max generations"), self), 0, 0)
         self.frame_layout.addWidget(self.genSpinBox, 0, 1)
-        self.frame_layout.addWidget(CaptionLabel("Population size", self), 1, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Population size"), self), 1, 0)
         self.frame_layout.addWidget(self.sizeSpinBox, 1, 1)
-        self.frame_layout.addWidget(CaptionLabel("Convergence tol", self), 2, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Convergence tolerance"), self), 2, 0)
         self.frame_layout.addWidget(self.tolSpinBox, 2, 1)
         self.frame_layout.addWidget(
             HyperlinkLabel(
                 QUrl(
                     "https://github.com/brucefan1983/GPUMD/tree/master/tools/Analysis_and_Processing/energy-reference-aligner"
                 ),
-                "Alignment mode",
+                self.tr("Alignment mode"),
                 self,
             ),
             3,
@@ -1868,7 +1877,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.frame_layout.addWidget(self.modeCombo, 3, 1)
 
         self.viewLayout.addWidget(self.titleLabel)
-        self.viewLayout.addWidget(CaptionLabel("Use existing preset (optional)", self))
+        self.viewLayout.addWidget(CaptionLabel(self.tr("Use existing preset (optional)"), self))
         self.viewLayout.addLayout(preset_row)
         save_row = QHBoxLayout()
         save_row.setContentsMargins(0, 0, 0, 0)
@@ -1879,9 +1888,20 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.groupEdit)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(250)
+
+    def _set_alignment_mode(self, mode: str) -> None:
+        for index in range(self.modeCombo.count()):
+            if self.modeCombo.itemData(index) == mode:
+                self.modeCombo.setCurrentIndex(index)
+                return
+        self.modeCombo.setCurrentIndex(2)
+
+    def _alignment_mode(self) -> str:
+        value = self.modeCombo.currentData()
+        return str(value) if value else "DFT_TO_NEP"
 
     def set_defaults(
         self,
@@ -1920,7 +1940,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.groupEdit.setText(";".join(patterns) if patterns else fallback)
         mode = getattr(preset, "alignment_mode", "")
         if mode:
-            self.modeCombo.setCurrentText(str(mode))
+            self._set_alignment_mode(str(mode))
         optimizer = dict(getattr(preset, "optimizer", {}) or {})
         try:
             if "max_generations" in optimizer:
@@ -1941,7 +1961,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
             selected_preset_name = ""
         return ShiftEnergyDialogValues(
             group_patterns=group_patterns,
-            alignment_mode=self.modeCombo.currentText(),
+            alignment_mode=self._alignment_mode(),
             max_generations=int(self.genSpinBox.value()),
             population_size=int(self.sizeSpinBox.value()),
             convergence_tol=float(self.tolSpinBox.value()),
@@ -1988,7 +2008,7 @@ class PeriodicTableDialog(FramelessDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitleBar(FluentTitleBar(self))
-        self.setWindowTitle("Periodic Table")
+        self.setWindowTitle(self.tr("Periodic table"))
         self.setWindowIcon(QIcon(":/images/src/images/logo.png"))
         self.resize(400, 350)
 
@@ -2060,7 +2080,7 @@ class DFTD3MessageBox(MessageBoxBase):
         self.titleLabel = CaptionLabel(tip, self)
         self.titleLabel.setWordWrap(True)
         self.functionEdit = EditableComboBox(self)
-        self.functionEdit.setPlaceholderText("dft d3 functional")
+        self.functionEdit.setPlaceholderText(self.tr("DFT D3 functional"))
         functionals = [
             "b1b95",
             "b2gpplyp",
@@ -2131,31 +2151,24 @@ class DFTD3MessageBox(MessageBoxBase):
         self.d1cnSpinBox.setMaximum(999999)
 
         self.modeCombo = ComboBox(self)
-        self.modeCombo.addItems(
-            [
-                # "NEP Only",
-                # "DFT-D3 only",
-                # "NEP with DFT-D3",
-                "Add DFT-D3",
-                "Subtract DFT-D3",
-            ]
-        )
-        self.modeCombo.setCurrentText("NEP Only")
+        self.modeCombo.addItem(self.tr("Add DFT-D3"))
+        self.modeCombo.addItem(self.tr("Subtract DFT-D3"))
+        self.modeCombo.setCurrentIndex(0)
 
-        self.frame_layout.addWidget(CaptionLabel("D3 cutoff ", self), 0, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("D3 cutoff"), self), 0, 0)
         self.frame_layout.addWidget(self.d1SpinBox, 0, 1)
-        self.frame_layout.addWidget(CaptionLabel("D3 cutoff _cn ", self), 1, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("D3 cutoff _cn"), self), 1, 0)
         self.frame_layout.addWidget(self.d1cnSpinBox, 1, 1)
 
-        self.frame_layout.addWidget(CaptionLabel("Alignment mode", self), 3, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Alignment mode"), self), 3, 0)
         self.frame_layout.addWidget(self.modeCombo, 3, 1)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.functionEdit)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(250)
 
     def validate(self):
@@ -2176,18 +2189,18 @@ class ProjectInfoMessageBox(MessageBoxBase):
 
         self.parent_combox = ComboBox(self._widget)
         self.project_name = LineEdit(self._widget)
-        self.project_name.setPlaceholderText("The name of the project")
+        self.project_name.setPlaceholderText(self.tr("Project name"))
 
         self.project_note = TextEdit(self._widget)
         self.project_note.setMinimumSize(200, 100)
-        self.project_note.setPlaceholderText("Notes on the project")
-        self.widget_layout.addWidget(CaptionLabel("Parent", self), 0, 0)
+        self.project_note.setPlaceholderText(self.tr("Project notes"))
+        self.widget_layout.addWidget(CaptionLabel(self.tr("Parent"), self), 0, 0)
 
         self.widget_layout.addWidget(self.parent_combox, 0, 1)
 
-        self.widget_layout.addWidget(CaptionLabel("Project Name", self), 1, 0)
+        self.widget_layout.addWidget(CaptionLabel(self.tr("Project name"), self), 1, 0)
         self.widget_layout.addWidget(self.project_name, 1, 1)
-        self.widget_layout.addWidget(CaptionLabel("Project Note", self), 2, 0)
+        self.widget_layout.addWidget(CaptionLabel(self.tr("Project notes"), self), 2, 0)
         self.widget_layout.addWidget(self.project_note, 2, 1)
         self.viewLayout.addWidget(self._widget)
 
@@ -2213,7 +2226,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         tLayout = QHBoxLayout(titleBar)
         tLayout.setContentsMargins(0, 0, 0, 0)
         tLayout.setSpacing(0)
-        self.titleLabel = TitleLabel("Create / Edit Model", titleBar)
+        self.titleLabel = TitleLabel(self.tr("Create / edit model"), titleBar)
 
         self.titleLabel.setAlignment(Qt.AlignCenter)
         tLayout.addWidget(self.titleLabel)
@@ -2229,11 +2242,11 @@ class ModelInfoMessageBox(MessageBoxBase):
         self.model_type_combox = ComboBox(infoCard)
         self.model_type_combox.addItems(["NEP"])
         self.model_name_edit = LineEdit(infoCard)
-        self.model_name_edit.setPlaceholderText("The name of the model")
+        self.model_name_edit.setPlaceholderText(self.tr("Model name"))
 
-        info.addRow(CaptionLabel("Parent", self), self.parent_combox)
-        info.addRow(CaptionLabel("Type", self), self.model_type_combox)
-        info.addRow(CaptionLabel("Name", self), self.model_name_edit)
+        info.addRow(CaptionLabel(self.tr("Parent"), self), self.parent_combox)
+        info.addRow(CaptionLabel(self.tr("Type"), self), self.model_type_combox)
+        info.addRow(CaptionLabel(self.tr("Name"), self), self.model_name_edit)
 
         rmseCard = QFrame(self._widget)
         rmse = QGridLayout(rmseCard)
@@ -2241,7 +2254,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         rmse.setHorizontalSpacing(5)
         rmse.setVerticalSpacing(2)
 
-        titleRmse = CaptionLabel("RMSE (energy / force / virial)", self)
+        titleRmse = CaptionLabel(self.tr("RMSE (energy / force / virial)"), self)
         tf = titleRmse.font()
         tf.setBold(True)
         titleRmse.setFont(tf)
@@ -2261,15 +2274,15 @@ class ModelInfoMessageBox(MessageBoxBase):
         r = 0
         rmse.addWidget(titleRmse, r, 0, 1, 3)
         r += 1
-        rmse.addWidget(CaptionLabel("energy", self), r, 0)
+        rmse.addWidget(CaptionLabel(self.tr("energy"), self), r, 0)
         rmse.addWidget(self.energy_spinBox, r, 1)
         rmse.addWidget(CaptionLabel("meV/atom", self), r, 2)
         r += 1
-        rmse.addWidget(CaptionLabel("force", self), r, 0)
+        rmse.addWidget(CaptionLabel(self.tr("force"), self), r, 0)
         rmse.addWidget(self.force_spinBox, r, 1)
         rmse.addWidget(CaptionLabel("meV/Å", self), r, 2)
         r += 1
-        rmse.addWidget(CaptionLabel("virial", self), r, 0)
+        rmse.addWidget(CaptionLabel(self.tr("virial"), self), r, 0)
         rmse.addWidget(self.virial_spinBox, r, 1)
         rmse.addWidget(CaptionLabel("meV/atom", self), r, 2)
         r += 1
@@ -2293,7 +2306,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         h.setContentsMargins(0, 0, 0, 0)
         h.setSpacing(3)
         self.train_path_edit = LineEdit(structureRow)
-        self.train_path_edit.setPlaceholderText("model train path")
+        self.train_path_edit.setPlaceholderText(self.tr("Model training path"))
         self.train_path_edit.editingFinished.connect(self.check_path)
         browse = TransparentToolButton(FluentIcon.FOLDER_ADD, structureRow)
         browse.setFixedHeight(self.train_path_edit.sizeHint().height())
@@ -2301,7 +2314,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         h.addWidget(self.train_path_edit, 1)
         h.addWidget(browse, 0)
 
-        path.addRow(CaptionLabel("Path", self), structureRow)
+        path.addRow(CaptionLabel(self.tr("Path"), self), structureRow)
 
         root.addWidget(pathCard)
 
@@ -2312,11 +2325,11 @@ class ModelInfoMessageBox(MessageBoxBase):
         tags.setVerticalSpacing(0)
 
         self.new_tag_edit = LineEdit(tagsCard)
-        self.new_tag_edit.setPlaceholderText("Enter the tag and press Enter")
+        self.new_tag_edit.setPlaceholderText(self.tr("Enter the tag and press Enter"))
         self.new_tag_edit.returnPressed.connect(lambda: self.add_tag(self.new_tag_edit.text()))
         self.tag_group = TagGroup(parent=self)
 
-        tags.addRow(CaptionLabel("Tags", self), self.new_tag_edit)
+        tags.addRow(CaptionLabel(self.tr("Tags"), self), self.new_tag_edit)
         tags.addRow(CaptionLabel(""), self.tag_group)  # 鐠?TagGroup 閻欘剙宕版稉鈧悰?
         root.addWidget(tagsCard)
 
@@ -2327,17 +2340,17 @@ class ModelInfoMessageBox(MessageBoxBase):
         notes.setVerticalSpacing(0)
 
         self.model_note_edit = TextEdit(notesCard)
-        self.model_note_edit.setPlaceholderText("Notes on the model")
+        self.model_note_edit.setPlaceholderText(self.tr("Model notes"))
         self.model_note_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         # self.model_note_edit.setMinimumHeight(30)
 
-        notes.addRow(CaptionLabel("Notes", self), self.model_note_edit)
+        notes.addRow(CaptionLabel(self.tr("Notes"), self), self.model_note_edit)
         root.addWidget(notesCard)
 
         root.addStretch(1)
 
     def _pick_file(self):
-        path = call_path_dialog(self, "Select the model folder path", "directory")
+        path = call_path_dialog(self, self.tr("Select the model folder path"), "directory")
 
         if path:
             self.train_path_edit.setText(path)
@@ -2345,7 +2358,7 @@ class ModelInfoMessageBox(MessageBoxBase):
 
     def add_tag(self, tag):
         if self.tag_group.has_tag(tag):
-            MessageManager.send_info_message(f"{tag} already exists!")
+            MessageManager.send_info_message(self.tr("{tag} already exists!").format(tag=tag))
             return
 
         self.tag_group.add_tag(tag)
@@ -2354,19 +2367,19 @@ class ModelInfoMessageBox(MessageBoxBase):
         _path = self.train_path_edit.text()
         path = Path(_path)
         if not path.exists():
-            MessageManager.send_message_box(f"{_path} does not exist!")
+            MessageManager.send_message_box(self.tr("{path} does not exist!").format(path=_path))
             return
         if self.model_type_combox.currentText() == "NEP":
             model_file = path.joinpath("nep.txt")
             if not model_file.exists():
                 MessageManager.send_message_box(
-                    "No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing."
+                    self.tr("No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing.")
                 )
 
             data_file = path.joinpath("train.xyz")
             if not data_file.exists():
                 MessageManager.send_message_box(
-                    "No 'train.xyz' training data file found in the specified path. This file is required to compute training error metrics; please make sure you know what you are doing."
+                    self.tr("No 'train.xyz' training data file found in the specified path. This file is required to compute training error metrics; please make sure you know what you are doing.")
                 )
                 # data_size=0
                 energy = 0
@@ -2412,7 +2425,7 @@ class AdvancedModelSearchDialog(MessageBoxBase):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Advanced Search - Models")
+        self.setWindowTitle(self.tr("Advanced search - models"))
         # self.setDraggable(True)
         self.setModal(False)
         # self.resize(640, 520)
@@ -2429,7 +2442,7 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         titleBar = QFrame(self)
         tLay = QHBoxLayout(titleBar)
         tLay.setContentsMargins(0, 0, 0, 0)
-        self.titleLabel = TitleLabel("Advanced Model Search", titleBar)
+        self.titleLabel = TitleLabel(self.tr("Advanced model search"), titleBar)
         # f = self.titleLabel.font(); f.setPointSize(f.pointSize() + 3); f.setBold(True)
         # self.titleLabel.setFont(f)
         self.titleLabel.setAlignment(Qt.AlignCenter)
@@ -2443,51 +2456,54 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         form.setVerticalSpacing(3)
 
         self.projectIdsEdit = LineEdit(formCard)
-        self.projectIdsEdit.setPlaceholderText("e.g. 1 or 1,3,5")
-        self.includeDescendantsChk = CheckBox("Include sub-projects", formCard)
+        self.projectIdsEdit.setPlaceholderText(self.tr("e.g. 1 or 1,3,5"))
+        self.includeDescendantsChk = CheckBox(self.tr("Include sub-projects"), formCard)
         self.includeDescendantsChk.setChecked(True)
 
         # Parent id
         self.parentIdEdit = LineEdit(formCard)
-        self.parentIdEdit.setPlaceholderText("None or integer")
+        self.parentIdEdit.setPlaceholderText(self.tr("None or integer"))
         self.parentIdEdit.setValidator(QIntValidator())
 
         self.nameContainsEdit = LineEdit(formCard)
-        self.nameContainsEdit.setPlaceholderText("contains in name")
+        self.nameContainsEdit.setPlaceholderText(self.tr("contains in name"))
         self.notesContainsEdit = LineEdit(formCard)
-        self.notesContainsEdit.setPlaceholderText("contains in notes")
+        self.notesContainsEdit.setPlaceholderText(self.tr("contains in notes"))
 
         self.modelTypeCombo = ComboBox(formCard)
-        self.modelTypeCombo.addItems(["<Any>", "NEP", "DeepMD", "Other"])
+        self.modelTypeCombo.addItem(self.tr("<Any>"), userData=None)
+        self.modelTypeCombo.addItem("NEP", userData="NEP")
+        self.modelTypeCombo.addItem("DeepMD", userData="DeepMD")
+        self.modelTypeCombo.addItem(self.tr("Other"), userData="Other")
 
         self.tagsAllEdit = LineEdit(formCard)
-        self.tagsAllEdit.setPlaceholderText("tag1, tag2 (AND)")
+        self.tagsAllEdit.setPlaceholderText(self.tr("tag1, tag2 (AND)"))
         self.tagsAnyEdit = LineEdit(formCard)
-        self.tagsAnyEdit.setPlaceholderText("tag1, tag2 (OR)")
+        self.tagsAnyEdit.setPlaceholderText(self.tr("tag1, tag2 (OR)"))
         self.tagsNoneEdit = LineEdit(formCard)
-        self.tagsNoneEdit.setPlaceholderText("tag1, tag2 (NOT)")
+        self.tagsNoneEdit.setPlaceholderText(self.tr("tag1, tag2 (NOT)"))
 
-        self.orderAscChk = CheckBox("Order by created_at ascending", formCard)
+        self.orderAscChk = CheckBox(self.tr("Order by created_at ascending"), formCard)
         self.orderAscChk.setChecked(True)
         self.limitEdit = LineEdit(formCard)
-        self.limitEdit.setPlaceholderText("e.g. 100")
+        self.limitEdit.setPlaceholderText(self.tr("e.g. 100"))
         self.limitEdit.setValidator(QIntValidator(0, 10**9))
         self.offsetEdit = LineEdit(formCard)
-        self.offsetEdit.setPlaceholderText("e.g. 0")
+        self.offsetEdit.setPlaceholderText(self.tr("e.g. 0"))
         self.offsetEdit.setValidator(QIntValidator(0, 10**9))
 
-        form.addRow(CaptionLabel("Project ID(s):", self), self.projectIdsEdit)
+        form.addRow(CaptionLabel(self.tr("Project ID(s):"), self), self.projectIdsEdit)
         form.addRow(CaptionLabel("", self), self.includeDescendantsChk)
-        form.addRow(CaptionLabel("Parent ID:", self), self.parentIdEdit)
-        form.addRow(CaptionLabel("Model Type:", self), self.modelTypeCombo)
-        form.addRow(CaptionLabel("Name contains:", self), self.nameContainsEdit)
-        form.addRow(CaptionLabel("Notes contains:", self), self.notesContainsEdit)
-        form.addRow(CaptionLabel("Tags (ALL):", self), self.tagsAllEdit)
-        form.addRow(CaptionLabel("Tags (ANY):", self), self.tagsAnyEdit)
-        form.addRow(CaptionLabel("Tags (NOT):", self), self.tagsNoneEdit)
-        form.addRow(CaptionLabel("Order:", self), self.orderAscChk)
-        form.addRow(CaptionLabel("Limit:", self), self.limitEdit)
-        form.addRow(CaptionLabel("Offset:", self), self.offsetEdit)
+        form.addRow(CaptionLabel(self.tr("Parent ID:"), self), self.parentIdEdit)
+        form.addRow(CaptionLabel(self.tr("Model type:"), self), self.modelTypeCombo)
+        form.addRow(CaptionLabel(self.tr("Name contains:"), self), self.nameContainsEdit)
+        form.addRow(CaptionLabel(self.tr("Notes contains:"), self), self.notesContainsEdit)
+        form.addRow(CaptionLabel(self.tr("Tags (ALL):"), self), self.tagsAllEdit)
+        form.addRow(CaptionLabel(self.tr("Tags (ANY):"), self), self.tagsAnyEdit)
+        form.addRow(CaptionLabel(self.tr("Tags (NOT):"), self), self.tagsNoneEdit)
+        form.addRow(CaptionLabel(self.tr("Order:"), self), self.orderAscChk)
+        form.addRow(CaptionLabel(self.tr("Limit:"), self), self.limitEdit)
+        form.addRow(CaptionLabel(self.tr("Offset:"), self), self.offsetEdit)
 
         root.addWidget(formCard)
 
@@ -2495,9 +2511,9 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         self.buttonLayout.removeWidget(self.cancelButton)
         self.yesButton.hide()
         self.cancelButton.hide()
-        self.searchBtn = PrimaryPushButton("Search", self)
-        self.resetBtn = PrimaryPushButton("Reset", self)
-        self.closeBtn = PrimaryPushButton("Close", self)
+        self.searchBtn = PrimaryPushButton(self.tr("Search"), self)
+        self.resetBtn = PrimaryPushButton(self.tr("Reset"), self)
+        self.closeBtn = PrimaryPushButton(self.tr("Close"), self)
         self.buttonLayout.addWidget(self.searchBtn)
         self.buttonLayout.addWidget(self.resetBtn)
         self.buttonLayout.addWidget(self.closeBtn)
@@ -2549,8 +2565,7 @@ class AdvancedModelSearchDialog(MessageBoxBase):
     def build_params(self) -> Dict[str, Any]:
         """收集并返回与 search_models_advanced 对应的参数字典。"""
         project_ids = self._parse_project_ids(self.projectIdsEdit.text())
-        mt_text = self.modelTypeCombo.currentText()
-        model_type = None if mt_text == "<Any>" else mt_text
+        model_type = self.modelTypeCombo.currentData()
 
         parent_text = self.parentIdEdit.text().strip()
         parent_id_val = int(parent_text) if parent_text.isdigit() else None
@@ -2601,7 +2616,7 @@ class TagEditDialog(MessageBoxBase):
 
     def __init__(self, name: str, color: str, notes: str, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Edit Tag")
+        self.setWindowTitle(self.tr("Edit tag"))
         # self.resize(300, 200)
 
         layout = QVBoxLayout()
@@ -2623,15 +2638,15 @@ class TagEditDialog(MessageBoxBase):
         self.notesEdit = TextEdit(self)
         self.notesEdit.setPlainText(notes)
 
-        form.addRow("Name", self.nameEdit)
-        form.addRow("Color", colorWidget)
-        form.addRow("Notes", self.notesEdit)
+        form.addRow(self.tr("Name"), self.nameEdit)
+        form.addRow(self.tr("Color"), colorWidget)
+        form.addRow(self.tr("Notes"), self.notesEdit)
         layout.addLayout(form)
 
         self.colorBtn.clicked.connect(self._choose_color)
 
     def _choose_color(self):
-        color_dialog = ColorDialog(QColor(self.colorEdit.text()), "Edit Tag Color", self)
+        color_dialog = ColorDialog(QColor(self.colorEdit.text()), self.tr("Edit tag color"), self)
         if color_dialog.exec():
             self.colorEdit.setText(color_dialog.color.name())
 
@@ -2650,7 +2665,7 @@ class TagManageDialog(MessageBoxBase):
         super().__init__(parent)
         self._parent = parent
         self.tag_changed = False
-        self.setWindowTitle("Manage Tags")
+        self.setWindowTitle(self.tr("Manage tags"))
         self.tag_service = tag_service
         self._tag_map: dict[str, int] = {}
         # self.resize(360, 240)
@@ -2658,7 +2673,7 @@ class TagManageDialog(MessageBoxBase):
         self._layout = QVBoxLayout()
         self.new_tag_edit = LineEdit(self)
         self.new_tag_edit.setMinimumWidth(300)
-        self.new_tag_edit.setPlaceholderText("Enter the tag and press Enter")
+        self.new_tag_edit.setPlaceholderText(self.tr("Enter the tag and press Enter"))
         self.new_tag_edit.returnPressed.connect(self.add_tag)
         self.tag_group = TagGroup(parent=self)
         self.tag_group.setMinimumHeight(100)
@@ -2736,7 +2751,7 @@ class TrainingOverlayDialog(FramelessDialog):
     def __init__(self, parent=None, pca_data=None, canvas_type: str | None = None):
         super().__init__(parent)
         self.setTitleBar(FluentTitleBar(self))
-        self.setWindowTitle("Training Overlay")
+        self.setWindowTitle(self.tr("Training overlay"))
         self.setWindowFlag(Qt.WindowType.Window, True)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
         max_btn = getattr(self.titleBar, "maxBtn", None)
@@ -2917,7 +2932,7 @@ class TrainingOverlayDialog(FramelessDialog):
         root_layout.addWidget(canvas_host, 1)
         if fallback:
             self._plot_hint_label.setText(
-                "Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph."
+                self.tr("Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph.")
             )
             self._canvas_fallback_warned = True
 
@@ -2928,9 +2943,9 @@ class TrainingOverlayDialog(FramelessDialog):
 
         # Legend
         for label, color_rgb in [
-            ("Training", (160, 160, 160)),
-            ("Loaded", (30, 120, 215)),
-            ("Selected", (220, 30, 30)),
+            (self.tr("Training"), (160, 160, 160)),
+            (self.tr("Loaded"), (30, 120, 215)),
+            (self.tr("Selected"), (220, 30, 30)),
         ]:
             pixmap = QPixmap(14, 14)
             pixmap.fill(QColor(255, 255, 255, 0))
@@ -2959,15 +2974,15 @@ class TrainingOverlayDialog(FramelessDialog):
         bottom_layout.addStretch()
 
         # Export buttons
-        self._reset_view_btn = PrimaryPushButton("Reset View", self)
+        self._reset_view_btn = PrimaryPushButton(self.tr("Reset view"), self)
         self._reset_view_btn.clicked.connect(self._on_reset_view)
         bottom_layout.addWidget(self._reset_view_btn)
 
-        self._export_image_btn = PrimaryPushButton("Export Image", self)
+        self._export_image_btn = PrimaryPushButton(self.tr("Export image"), self)
         self._export_image_btn.clicked.connect(self._on_export_image)
         bottom_layout.addWidget(self._export_image_btn)
 
-        self._export_data_btn = PrimaryPushButton("Export Data", self)
+        self._export_data_btn = PrimaryPushButton(self.tr("Export data"), self)
         self._export_data_btn.clicked.connect(self._on_export_data)
         bottom_layout.addWidget(self._export_data_btn)
 
@@ -3000,9 +3015,9 @@ class TrainingOverlayDialog(FramelessDialog):
         ).reshape(-1)
 
         if len(self._legend_labels) >= 3:
-            self._legend_labels[0].setText(f"Training: {training_pca.shape[0]}")
-            self._legend_labels[1].setText(f"Loaded: {current_pca.shape[0]}")
-            self._legend_labels[2].setText(f"Selected: {selected_current_indices.size}")
+            self._legend_labels[0].setText(self.tr("Training: {count}").format(count=training_pca.shape[0]))
+            self._legend_labels[1].setText(self.tr("Loaded: {count}").format(count=current_pca.shape[0]))
+            self._legend_labels[2].setText(self.tr("Selected: {count}").format(count=selected_current_indices.size))
 
         result_data, loaded_ids, selected_ids = self._build_overlay_result_data(
             training_pca,

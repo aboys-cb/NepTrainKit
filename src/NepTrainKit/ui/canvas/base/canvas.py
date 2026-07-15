@@ -3,11 +3,15 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QCoreApplication, QObject, Signal
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.types import Brushes
 from NepTrainKit.ui.views import KitToolBarBase
+
+
+def _tr(text: str) -> str:
+    return QCoreApplication.translate("CanvasBase", text)
 
 
 class CanvasBase(ABC):
@@ -220,7 +224,7 @@ class CanvasLayoutBase(CanvasBase):
             self.nep_result_data.revoke()
             self.plot_nep_result()
         else:
-            MessageManager.send_info_message("No undoable deletion!")
+            MessageManager.send_info_message(_tr("No undoable deletion!"))
 
     def _restore_reject_highlight(self, indices):
         """Restore reject color for unselected rejected structures."""
@@ -265,7 +269,7 @@ class CanvasLayoutBase(CanvasBase):
         if self.nep_result_data.undo_selection():
             self._sync_selection_colors(before, set(self.nep_result_data.select_index))
         else:
-            MessageManager.send_info_message("No undoable selection!")
+            MessageManager.send_info_message(_tr("No undoable selection!"))
 
     def select_index(self, structure_index, reverse):
         """Toggle selection state for one or more structures.

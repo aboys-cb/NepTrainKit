@@ -11,6 +11,213 @@ def _tr(text: str) -> str:
     return QCoreApplication.translate("MessageManager", text)
 
 
+def _zh_runtime_messages_enabled() -> bool:
+    return QCoreApplication.translate("RuntimeMessage", "__language_probe__") == "zh_CN"
+
+
+_RUNTIME_PREFIX_REPLACEMENTS = (
+    ("Error occurred: ", "发生错误："),
+    ("Failed to load ", "加载失败："),
+    ("Unknown card class: ", "未知卡片类："),
+    ("Imported preset: ", "已导入预设："),
+    ("Preset exported to ", "预设已导出到 "),
+    ("Deleted preset: ", "已删除预设："),
+    ("Baseline preset saved: ", "基准预设已保存："),
+    ("Preset did not match current dataset ", "预设与当前数据集不匹配 "),
+    ("Preset shifted ", "预设已平移 "),
+    ("Image exported to: ", "图片已导出到："),
+    ("Data exported to: ", "数据已导出到："),
+    ("Exported dataset summary to: ", "数据集摘要已导出到："),
+    ("File exported to: ", "文件已导出到："),
+    ("NEPKit currently does not support model_type=", "NEPKit 暂不支持 model_type="),
+    ("Search completer candidates exceed ", "搜索候选项超过 "),
+    ("Unsupported search type: ", "不支持的搜索类型："),
+    ("Unknown element symbol: ", "未知元素符号："),
+    ("An error occurred while running NEP calculator: ", "运行 NEP 计算器时出错："),
+    ("RandomOccupancy: invalid composition: ", "RandomOccupancy：成分无效："),
+    ("SpinSpiral: invalid magmom map: ", "SpinSpiral：magmom 映射无效："),
+    ("FoldedHelix: invalid magmom map: ", "FoldedHelix：magmom 映射无效："),
+    ("SetMagneticMoments: invalid magmom map: ", "SetMagneticMoments：magmom 映射无效："),
+    ("SmallAngleSpinTilt: invalid magmom map: ", "SmallAngleSpinTilt：magmom 映射无效："),
+    ("MagneticOrder: invalid magmom map: ", "MagneticOrder：magmom 映射无效："),
+    ("CompositionSweep Grid: ", "CompositionSweep 网格模式："),
+    ("dz test failed: ", "dz 测试失败："),
+    ("dz test ok: ", "dz 测试通过："),
+)
+
+
+_RUNTIME_TEXT_REPLACEMENTS = (
+    ("Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph.", "当前画布后端是 vispy，但 vispy 画布初始化失败；已回退到 pyqtgraph。"),
+    ("No data selected!", "未选择数据！"),
+    ("NEP data has not been loaded yet!", "尚未加载 NEP 数据！"),
+    ("No active structures to summarise.", "没有可汇总的有效结构。"),
+    ("No active structures to scan.", "没有可扫描的有效结构。"),
+    ("No active structures to export.", "没有可导出的有效结构。"),
+    ("No removed structures to export.", "没有可导出的已移除结构。"),
+    ("No bad structures tagged.", "没有标记为异常的结构。"),
+    ("Please select some structures first!", "请先选择一些结构！"),
+    ("Please enter a search query.", "请输入搜索条件。"),
+    ("unsupported file format", "不支持的文件格式"),
+    ("No vector data available", "没有可用的矢量数据"),
+    ("The index is invalid, perhaps the structure has been deleted", "索引无效，结构可能已被删除。"),
+    ("Failed to switch NEP model", "切换 NEP 模型失败"),
+    ("Failed to build dataset summary.", "构建数据集摘要失败。"),
+    ("Dataset summary is empty.", "数据集摘要为空。"),
+    ("No structures found in this bin.", "该分箱内没有结构。"),
+    ("Threshold must be positive.", "阈值必须为正数。"),
+    ("Failed to consume force-balance results.", "读取力平衡结果失败。"),
+    ("All scanned structures satisfy the net-force threshold.", "所有已扫描结构都满足净力阈值。"),
+    (" structures shifted", " 个结构已平移"),
+    ("Unmatched examples: ", "未匹配示例："),
+    ("unmatched examples: ", "未匹配示例："),
+    ("Failed to import baseline preset.", "导入基准预设失败。"),
+    ("Please select a preset to export.", "请先选择要导出的预设。"),
+    ("Preset not found.", "未找到预设。"),
+    ("Failed to export preset.", "导出预设失败。"),
+    ("Please select a preset to delete.", "请先选择要删除的预设。"),
+    ("Failed to delete preset.", "删除预设失败。"),
+    ("Selected preset unavailable.", "选中的预设不可用。"),
+    ("Failed to export dataset summary.", "导出数据集摘要失败。"),
+    ("Failed to export image.", "导出图片失败。"),
+    ("Failed to reset view.", "重置视图失败。"),
+    ("Failed to export data.", "导出数据失败。"),
+    ("RandomOccupancy: missing composition (Config_type Comp tag or manual input).", "RandomOccupancy：缺少成分信息（Config_type 中的 Comp 标签或手动输入）。"),
+    ("No input structure available to test.", "没有可用于测试的输入结构。"),
+    ("No atoms selected by 'apply to' settings.", "“应用到”设置没有选中任何原子。"),
+    ("SetMagneticMoments: no usable initial_magmoms found.", "SetMagneticMoments：未找到可用的 initial_magmoms。"),
+    ("MagneticOrder: AFM mode 'group A/B' requires arrays['group']; falling back to k-vector.", "MagneticOrder：AFM 的“group A/B”模式需要 arrays['group']；已回退到 k-vector。"),
+    ("generate descriptors ...", "正在生成描述符……"),
+    ("read nep.in file error", "读取 nep.in 文件失败"),
+    ("No NEP model file found; the program will use nep89 instead.", "未找到 NEP 模型文件；将临时使用内置 NEP89 模型继续计算。"),
+    ("; the program will use nep89 instead.", "；将临时使用内置 NEP89 模型继续计算。"),
+    ("The nep calculator fails to calculate the potentials, use the original potentials instead.", "NEP 计算器未能计算势能，已保留原始势能。"),
+    ("The nep calculator fails to calculate the polarizability, use the original polarizability instead.", "NEP 计算器未能计算极化率，已保留原始极化率。"),
+    ("The nep calculator fails to calculate the dipole, use the original dipole instead.", "NEP 计算器未能计算偶极矩，已保留原始偶极矩。"),
+    ("An unknown error occurred while saving. The error message has been output to the log!", "保存时发生未知错误，错误详情已写入日志。"),
+    ("Failed to create custom calculator; falling back to NEP.", "创建自定义计算器失败，已回退到 NEP。"),
+    ("Failed to import NEP.\n To use the display functionality normally, please prepare the *.out and descriptor.out files.", "导入 NEP 失败。\n如需正常使用显示功能，请准备 *.out 和 descriptor.out 文件。"),
+    ("; suggestions were truncated.", "；已截断建议列表。"),
+    ("Invalid regex pattern.", "正则表达式无效。"),
+    ("Current selection has no points on this plot; FPS will run on full data.", "当前选择在该图中没有点；FPS 将在全部数据上运行。"),
+    ("When FPS sampling is performed in the designated area, the program will automatically deselect it, just click to delete!", "在指定区域执行 FPS 采样后，程序会自动取消该区域选择；单击即可删除。"),
+    ("No structures were loaded.", "没有加载到结构。"),
+    ("load dataset error!", "加载数据集失败！"),
+    ("No descriptor data available", "没有可用的描述符数据"),
+    ("No selection found; FPS will run on full data.", "没有找到选择集，FPS 将在全部数据上运行。"),
+    ("Descriptor dataset is unavailable.", "描述符数据集不可用。"),
+    ("Raw descriptors not cached; falling back to reduced space.", "原始描述符未缓存，已回退到降维空间。"),
+    ("Edit completed", "编辑完成"),
+    ("PCA dimensionality reduction fails", "PCA 降维失败"),
+    ("The NEP backend you selected is GPU, but it failed to load on your device; the program has switched to the CPU backend.", "你选择了 GPU NEP 后端，但当前设备加载失败；程序已切换到 CPU 后端。"),
+    ("Missing DFT energy; using NEP energy instead.", "缺少 DFT energy，已改用 NEP energy。"),
+    ("Missing DFT force; using NEP force instead.", "缺少 DFT force，已改用 NEP force。"),
+    ("Missing DFT virial; using NEP virial instead.", "缺少 DFT virial，已改用 NEP virial。"),
+    ("Missing DFT stress; using NEP stress instead.", "缺少 DFT stress，已改用 NEP stress。"),
+    ("BainPath axis must be x, y, or z.", "BainPath：axis 必须是 x、y 或 z。"),
+    ("BainPath mode must be constant_volume, scale_volume, or free_c.", "BainPath：mode 必须是 constant_volume、scale_volume 或 free_c。"),
+    ("CellScaling: max_num must be >= 1.", "CellScaling：max_num 必须 >= 1。"),
+    ("CellScaling requires three nonzero lattice vectors.", "CellScaling 需要三条非零晶格矢量。"),
+    ("Perturb: max_num must be >= 1.", "Perturb：max_num 必须 >= 1。"),
+    ("VacancyDefect requires at least two atoms.", "VacancyDefect 至少需要两个原子。"),
+    ("Vacancy defect settings must allow at least one vacancy.", "空位缺陷设置必须至少允许生成一个空位。"),
+    ("InsertDefect: structure_count must be >= 1.", "InsertDefect：structure_count 必须 >= 1。"),
+    ("InsertDefect: insert_count must be >= 1.", "InsertDefect：insert_count 必须 >= 1。"),
+    ("InsertDefect: min_distance must be positive.", "InsertDefect：min_distance 必须为正数。"),
+    ("InsertDefect: max_attempts must be >= 1.", "InsertDefect：max_attempts 必须 >= 1。"),
+    ("InsertDefect: axis must be 0, 1, or 2.", "InsertDefect：axis 必须是 0、1 或 2。"),
+    ("LayerCopy: dz expression is empty.", "LayerCopy：dz 表达式为空。"),
+    ("LayerCopy: no atoms selected by apply settings.", "LayerCopy：“应用到”设置没有选中任何原子。"),
+    ("VibrationModePerturb: amplitude must be positive.", "VibrationModePerturb：amplitude 必须为正数。"),
+    ("VibrationModePerturb: modes_per_sample must be >= 1.", "VibrationModePerturb：modes_per_sample 必须 >= 1。"),
+    ("GroupLabel: structure has no valid cell.", "GroupLabel：结构没有有效晶胞。"),
+    ("Random Packing: structures must be >= 1.", "Random Packing：structures 必须 >= 1。"),
+    ("Random Packing: min_distance must be positive.", "Random Packing：min_distance 必须为正数。"),
+    ("Random Packing: max_attempts_per_atom must be >= 1.", "Random Packing：max_attempts_per_atom 必须 >= 1。"),
+    ("Random Packing requires a non-singular input cell.", "Random Packing 需要非奇异的输入晶胞。"),
+    ("Spin Disorder requires vector magnetic moments or liftable scalar magmoms.", "Spin Disorder 需要矢量磁矩，或可提升为矢量的标量 magmoms。"),
+    ("Spin Disorder found no eligible nonzero magnetic moments.", "Spin Disorder 未找到符合条件的非零磁矩。"),
+    ("Spin Disorder requires at least one positive disorder fraction.", "Spin Disorder 至少需要一个正的无序比例。"),
+    ("Spin Disorder did not generate any structures.", "Spin Disorder 没有生成任何结构。"),
+    ("Card JSON must be an object, a list, or an exported workflow.", "卡片 JSON 必须是对象、列表或导出的工作流。"),
+    ("Card JSON does not contain any cards.", "卡片 JSON 中没有任何卡片。"),
+    ("Each card JSON entry must be an object.", "每个卡片 JSON 条目都必须是对象。"),
+    ("Each card JSON entry must contain a class name.", "每个卡片 JSON 条目都必须包含类名。"),
+    (" (use Sobol for order>=4)", "（order >= 4 时请使用 Sobol）"),
+)
+
+
+_RUNTIME_EXCEPTION_REPLACEMENTS = (
+    ("must be >= 1", "必须 >= 1"),
+    ("must be positive", "必须为正数"),
+    ("must be finite", "必须是有限值"),
+    ("must be non-negative", "必须为非负数"),
+    ("must contain exactly three values: start, stop, step", "必须包含三个值：起点、终点、步长"),
+    ("step must be positive", "步长必须为正数"),
+    ("values must be finite", "取值必须是有限值"),
+    ("requires at least one atom", "至少需要一个原子"),
+    ("requires at least two atoms", "至少需要两个原子"),
+    ("requires a nonsingular 3x3 cell", "需要非奇异的 3x3 晶胞"),
+    ("requires a non-singular input cell", "需要非奇异的输入晶胞"),
+    ("produced a singular gamma angle", "生成了奇异的 gamma 角"),
+    ("unsupported mode", "不支持的模式"),
+    ("unsupported", "不支持"),
+    ("invalid", "无效"),
+    ("Invalid", "无效"),
+    ("Unknown", "未知"),
+    ("requires", "需要"),
+    ("failed", "失败"),
+    ("Failed", "失败"),
+    ("empty", "为空"),
+    ("no atoms selected", "没有选中原子"),
+    ("not found", "未找到"),
+    ("does not contain", "不包含"),
+    ("shape mismatch", "形状不匹配"),
+    ("is not allowed", "不允许"),
+    ("NaN/Inf", "NaN/Inf"),
+    ("Missing DFT ", "缺少 DFT "),
+    ("; using NEP ", "；已改用 NEP "),
+    (" instead.", "。"),
+    (" already exists, please delete it first", " 已存在，请先删除它"),
+    (" already exists!", " 已存在！"),
+    (" does not exist!", " 不存在！"),
+    (" structures with |ΣF| > ", " 个结构满足 |ΣF| > "),
+    ("The index is ", "索引为 "),
+    (" must be ", " 必须是 "),
+    (" or ", " 或 "),
+)
+
+
+def translate_runtime_message(message) -> str:
+    """Translate late-bound UI messages and common runtime errors."""
+    text = str(message)
+    translated = QCoreApplication.translate("RuntimeMessage", text)
+    if translated != text:
+        return translated
+    if not _zh_runtime_messages_enabled():
+        return text
+
+    for prefix, replacement in _RUNTIME_PREFIX_REPLACEMENTS:
+        if text.startswith(prefix):
+            text = replacement + text[len(prefix):]
+            break
+    for source, replacement in _RUNTIME_TEXT_REPLACEMENTS:
+        text = text.replace(source, replacement)
+    for source, replacement in _RUNTIME_EXCEPTION_REPLACEMENTS:
+        text = text.replace(source, replacement)
+    return text
+
+
+def _runtime_message_catalog() -> None:
+    """Literal catalog for lupdate; runtime translations are applied centrally."""
+    QCoreApplication.translate("RuntimeMessage", "__language_probe__")
+    for text, _replacement in (
+        *_RUNTIME_PREFIX_REPLACEMENTS,
+        *_RUNTIME_TEXT_REPLACEMENTS,
+        *_RUNTIME_EXCEPTION_REPLACEMENTS,
+    ):
+        QCoreApplication.translate("RuntimeMessage", text)
+
+
 class MessageManager(QObject):
     """Qt message center singleton for showing InfoBars and message boxes.
 
@@ -44,7 +251,9 @@ class MessageManager(QObject):
 
     @classmethod
     def send_info_message(cls, message, title=None):
+        message = translate_runtime_message(message)
         title = _tr("Tip") if title is None else title
+        title = translate_runtime_message(title)
         if cls._instance is None:
             logger.info(message)
         else:
@@ -52,7 +261,9 @@ class MessageManager(QObject):
 
     @classmethod
     def send_success_message(cls, message, title=None):
+        message = translate_runtime_message(message)
         title = _tr("Success") if title is None else title
+        title = translate_runtime_message(title)
         if cls._instance is None:
             logger.success(message)
         else:
@@ -60,7 +271,9 @@ class MessageManager(QObject):
 
     @classmethod
     def send_warning_message(cls, message, title=None):
+        message = translate_runtime_message(message)
         title = _tr("Warning") if title is None else title
+        title = translate_runtime_message(title)
         if cls._instance is None:
             logger.warning(message)
         else:
@@ -68,7 +281,9 @@ class MessageManager(QObject):
 
     @classmethod
     def send_error_message(cls, message, title=None):
+        message = translate_runtime_message(message)
         title = _tr("Error") if title is None else title
+        title = translate_runtime_message(title)
         if cls._instance is None:
             logger.error(message)
         else:
@@ -76,7 +291,9 @@ class MessageManager(QObject):
 
     @classmethod
     def send_message_box(cls, message, title=None):
+        message = translate_runtime_message(message)
         title = _tr("Tip") if title is None else title
+        title = translate_runtime_message(title)
         if cls._instance is None:
             logger.info(message)
         else:

@@ -215,7 +215,7 @@ class NepResultPlotWidget(QWidget):
         progress_diag = QProgressDialog("", "Cancel", 0, data.structure.num, self._parent)
         thread = LoadingThread(self._parent, show_tip=False)
         progress_diag.setFixedSize(300, 100)
-        progress_diag.setWindowTitle("Finding non-physical structures")
+        progress_diag.setWindowTitle(self.tr("Finding non-physical structures"))
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
         thread.finished.connect(lambda: self._apply_non_physical_selection(data))
@@ -240,7 +240,8 @@ class NepResultPlotWidget(QWidget):
             return
 
         box = GetIntMessageBox(
-            self._parent, "Please enter an integer N, it will find the top N structures with the largest errors"
+            self._parent,
+            self.tr("Enter an integer N to find the top N structures with the largest errors."),
         )
         n = Config.getint("widget", "max_error_value", 10)
         box.intSpinBox.setValue(n)
@@ -259,7 +260,7 @@ class NepResultPlotWidget(QWidget):
         if data is None:
             return
 
-        box = SparseMessageBox(self._parent, "Configure farthest point sampling")
+        box = SparseMessageBox(self._parent, self.tr("Configure farthest point sampling"))
         n_samples_default = Config.getint("widget", "sparse_num_value", 10)
         distance_default = Config.getfloat("widget", "sparse_distance_value", 0.01)
 
@@ -491,10 +492,10 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget", "convergence_tol", values.convergence_tol)
 
         config_set = set(data.structure.get_all_config(SearchType.TAG))
-        progress_diag = QProgressDialog("", "Cancel", 0, len(config_set), self._parent)
+        progress_diag = QProgressDialog("", self.tr("Cancel"), 0, len(config_set), self._parent)
         thread = LoadingThread(self._parent, show_tip=False)
         progress_diag.setFixedSize(300, 100)
-        progress_diag.setWindowTitle("Shift energies")
+        progress_diag.setWindowTitle(self.tr("Shift energies"))
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
         progress_diag.canceled.connect(thread.stop_work)
@@ -605,7 +606,7 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget", "functional", functional)
         Config.set("widget", "d3_mode", mode)
 
-        thread = LoadingThread(self._parent, show_tip=True, title="calculating dftd3")
+        thread = LoadingThread(self._parent, show_tip=True, title=self.tr("Calculating DFT-D3"))
         thread.start_work(data.apply_dft_d3_correction, mode, functional, d3_cutoff, d3_cutoff_cn)
         thread.finished.connect(self.canvas.plot_nep_result)
 
@@ -623,13 +624,13 @@ class NepResultPlotWidget(QWidget):
             group_by = search_type
         structures = getattr(data, "structure", None)
         if structures is None or structures.now_data.size == 0:
-            MessageManager.send_info_message("No active structures to summarise.")
+            MessageManager.send_info_message(self.tr("No active structures to summarise."))
             return
         total_structures = int(structures.now_data.shape[0])
 
-        progress_diag = QProgressDialog("", "Cancel", 0, total_structures, self._parent)
+        progress_diag = QProgressDialog("", self.tr("Cancel"), 0, total_structures, self._parent)
         progress_diag.setFixedSize(300, 100)
-        progress_diag.setWindowTitle("Summarising dataset")
+        progress_diag.setWindowTitle(self.tr("Summarising dataset"))
         progress_diag.setAutoClose(True)
         progress_diag.setAutoReset(True)
         thread = LoadingThread(self._parent, show_tip=False)
@@ -646,11 +647,11 @@ class NepResultPlotWidget(QWidget):
         try:
             summary = data.get_dataset_summary()
         except Exception:  # noqa: BLE001
-            MessageManager.send_warning_message("Failed to build dataset summary.")
+            MessageManager.send_warning_message(self.tr("Failed to build dataset summary."))
             logger.debug(traceback.format_exc())
             return
         if not summary:
-            MessageManager.send_info_message("Dataset summary is empty.")
+            MessageManager.send_info_message(self.tr("Dataset summary is empty."))
             return
         dlg = DatasetSummaryMessageBox(self._parent, summary)
         dlg.exec()
@@ -659,9 +660,9 @@ class NepResultPlotWidget(QWidget):
         """Run distribution analysis in a worker thread and return the payload."""
         structures = getattr(data, "structure", None)
         total_structures = int(getattr(structures, "now_data", np.array([])).shape[0]) if structures is not None else 0
-        progress_diag = QProgressDialog("", "Cancel", 0, max(total_structures, 1), self._parent)
+        progress_diag = QProgressDialog("", self.tr("Cancel"), 0, max(total_structures, 1), self._parent)
         progress_diag.setFixedSize(300, 100)
-        progress_diag.setWindowTitle("Building distributions")
+        progress_diag.setWindowTitle(self.tr("Building distributions"))
         thread = LoadingThread(self._parent, show_tip=False)
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
@@ -857,12 +858,12 @@ class NepResultPlotWidget(QWidget):
 
         total_structures = int(getattr(data.structure, "num", 0) or data.structure.now_data.shape[0])
         if total_structures == 0:
-            MessageManager.send_info_message("No active structures to scan.")
+            MessageManager.send_info_message(self.tr("No active structures to scan."))
             return
 
-        progress_diag = QProgressDialog("", "Cancel", 0, total_structures, self._parent)
+        progress_diag = QProgressDialog("", self.tr("Cancel"), 0, total_structures, self._parent)
         progress_diag.setFixedSize(300, 100)
-        progress_diag.setWindowTitle("Checking net forces")
+        progress_diag.setWindowTitle(self.tr("Checking net forces"))
         thread = LoadingThread(self._parent, show_tip=False)
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)

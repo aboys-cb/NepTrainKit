@@ -23,7 +23,7 @@ class InsertDefectCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Make Insert Defect")
+        self.setTitle(self.tr("Make Insert Defect"))
         self._init_ui()
 
     def _init_ui(self):
@@ -31,26 +31,26 @@ class InsertDefectCard(MakeDataCard):
         self.setObjectName("insert_defect_card_widget")
 
         row = 0
-        self.mode_label = BodyLabel("Mode", self.setting_widget)
-        self.mode_label.setToolTip("Interstitial: insert inside bulk. Adsorption: place species above a surface.")
+        self.mode_label = BodyLabel(self.tr("Mode"), self.setting_widget)
+        self.mode_label.setToolTip(self.tr("Interstitial: insert inside bulk. Adsorption: place species above a surface."))
         self.mode_label.installEventFilter(ToolTipFilter(self.mode_label, 300, ToolTipPosition.TOP))
         self.mode_combo = ComboBox(self.setting_widget)
-        self.mode_combo.addItems(["Interstitial", "Adsorption"])
+        self.mode_combo.addItems([self.tr("Interstitial"), self.tr("Adsorption")])
         self.mode_combo.currentIndexChanged.connect(self._update_mode_visibility)
         self.settingLayout.addWidget(self.mode_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.mode_combo, row, 1, 1, 2)
         row += 1
 
-        self.species_label = BodyLabel("Species (comma separated)", self.setting_widget)
-        self.species_label.setToolTip("Insert element list, optionally with weights, e.g. 'Li, Na:2'")
+        self.species_label = BodyLabel(self.tr("Species (comma separated)"), self.setting_widget)
+        self.species_label.setToolTip(self.tr("Insert element list, optionally with weights, e.g. 'Li, Na:2'"))
         self.species_label.installEventFilter(ToolTipFilter(self.species_label, 300, ToolTipPosition.TOP))
         self.species_edit = LineEdit(self.setting_widget)
         self.settingLayout.addWidget(self.species_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.species_edit, row, 1, 1, 2)
         row += 1
 
-        self.insert_count_label = BodyLabel("Atoms per structure", self.setting_widget)
-        self.insert_count_label.setToolTip("Number of atoms to insert per generated structure")
+        self.insert_count_label = BodyLabel(self.tr("Atoms per structure"), self.setting_widget)
+        self.insert_count_label.setToolTip(self.tr("Number of atoms to insert per generated structure"))
         self.insert_count_label.installEventFilter(ToolTipFilter(self.insert_count_label, 300, ToolTipPosition.TOP))
         self.insert_count_frame = SpinBoxUnitInputFrame(self)
         self.insert_count_frame.set_input("unit", 1, "int")
@@ -60,8 +60,8 @@ class InsertDefectCard(MakeDataCard):
         self.settingLayout.addWidget(self.insert_count_frame, row, 1, 1, 2)
         row += 1
 
-        self.structures_label = BodyLabel("Structures to generate", self.setting_widget)
-        self.structures_label.setToolTip("Number of augmented structures to create")
+        self.structures_label = BodyLabel(self.tr("Structures to generate"), self.setting_widget)
+        self.structures_label.setToolTip(self.tr("Number of augmented structures to create"))
         self.structures_label.installEventFilter(ToolTipFilter(self.structures_label, 300, ToolTipPosition.TOP))
         self.structures_frame = SpinBoxUnitInputFrame(self)
         self.structures_frame.set_input("unit", 1, "int")
@@ -71,8 +71,8 @@ class InsertDefectCard(MakeDataCard):
         self.settingLayout.addWidget(self.structures_frame, row, 1, 1, 2)
         row += 1
 
-        self.min_distance_label = BodyLabel("Min distance (Å)", self.setting_widget)
-        self.min_distance_label.setToolTip("Reject insertions closer than this distance to existing atoms")
+        self.min_distance_label = BodyLabel(self.tr("Min distance (Å)"), self.setting_widget)
+        self.min_distance_label.setToolTip(self.tr("Reject insertions closer than this distance to existing atoms"))
         self.min_distance_label.installEventFilter(ToolTipFilter(self.min_distance_label, 300, ToolTipPosition.TOP))
         self.min_distance_frame = SpinBoxUnitInputFrame(self)
         self.min_distance_frame.set_input("Å", 1, "float")
@@ -83,8 +83,8 @@ class InsertDefectCard(MakeDataCard):
         self.settingLayout.addWidget(self.min_distance_frame, row, 1, 1, 2)
         row += 1
 
-        self.max_attempts_label = BodyLabel("Max attempts", self.setting_widget)
-        self.max_attempts_label.setToolTip("Maximum random trials per inserted atom")
+        self.max_attempts_label = BodyLabel(self.tr("Max attempts"), self.setting_widget)
+        self.max_attempts_label.setToolTip(self.tr("Maximum random trials per inserted atom"))
         self.max_attempts_label.installEventFilter(ToolTipFilter(self.max_attempts_label, 300, ToolTipPosition.TOP))
         self.max_attempts_frame = SpinBoxUnitInputFrame(self)
         self.max_attempts_frame.set_input("unit", 1, "int")
@@ -94,9 +94,9 @@ class InsertDefectCard(MakeDataCard):
         self.settingLayout.addWidget(self.max_attempts_frame, row, 1, 1, 2)
         row += 1
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip("Enable reproducible random sampling")
+        self.seed_checkbox.setToolTip(self.tr("Enable reproducible random sampling"))
         self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -109,18 +109,18 @@ class InsertDefectCard(MakeDataCard):
         row += 1
 
         # Adsorption-specific controls
-        self.axis_label = BodyLabel("Surface axis", self.setting_widget)
-        self.axis_label.setToolTip("Crystal axis treated as surface normal for adsorption")
+        self.axis_label = BodyLabel(self.tr("Surface axis"), self.setting_widget)
+        self.axis_label.setToolTip(self.tr("Crystal axis treated as surface normal for adsorption"))
         self.axis_label.installEventFilter(ToolTipFilter(self.axis_label, 300, ToolTipPosition.TOP))
         self.axis_combo = ComboBox(self.setting_widget)
-        self.axis_combo.addItems(["a (x)", "b (y)", "c (z)"])
+        self.axis_combo.addItems([self.tr("a (x)"), self.tr("b (y)"), self.tr("c (z)")])
         self.axis_combo.setCurrentIndex(2)
         self.settingLayout.addWidget(self.axis_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.axis_combo, row, 1, 1, 2)
         row += 1
 
-        self.offset_label = BodyLabel("Offset distance (Å)", self.setting_widget)
-        self.offset_label.setToolTip("Height above the surface plane when placing adsorbates")
+        self.offset_label = BodyLabel(self.tr("Offset distance (Å)"), self.setting_widget)
+        self.offset_label.setToolTip(self.tr("Height above the surface plane when placing adsorbates"))
         self.offset_label.installEventFilter(ToolTipFilter(self.offset_label, 300, ToolTipPosition.TOP))
         self.offset_frame = SpinBoxUnitInputFrame(self)
         self.offset_frame.set_input("Å", 1, "float")

@@ -52,38 +52,38 @@ class LayerCopyCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Surface Warp (dz=f(x,y)) + Layer Copy")
+        self.setTitle(self.tr("Surface Warp (dz=f(x,y)) + Layer Copy"))
         self._build_ui()
 
     def _build_ui(self):
         layout: QGridLayout = self.settingLayout
 
-        self.preset_label = BodyLabel("dz preset", self.setting_widget)
+        self.preset_label = BodyLabel(self.tr("dz preset"), self.setting_widget)
         self.preset_combo = ComboBox(self.setting_widget)
-        self.preset_combo.addItems([name for name, _, _ in self._PRESETS])
+        self.preset_combo.addItems([self.tr(name) for name, _, _ in self._PRESETS])
         self.preset_combo.setCurrentIndex(1)
-        self.preset_label.setToolTip("Choose a preset dz(x,y) expression (Custom keeps your input).")
+        self.preset_label.setToolTip(self.tr("Choose a preset dz(x,y) expression (Custom keeps your input)."))
         self.preset_label.installEventFilter(ToolTipFilter(self.preset_label, 300, ToolTipPosition.TOP))
 
         self.test_button = TransparentToolButton(FluentIcon.PLAY, self.setting_widget)
-        self.test_button.setToolTip("Test dz expression on current structure")
+        self.test_button.setToolTip(self.tr("Test dz expression on current structure"))
         self.test_button.installEventFilter(ToolTipFilter(self.test_button, 300, ToolTipPosition.TOP))
 
-        self.expr_label = BodyLabel("dz expression (Å)", self.setting_widget)
+        self.expr_label = BodyLabel(self.tr("dz expression (Å)"), self.setting_widget)
         self.expr_edit = TextEdit(self.setting_widget)
-        self.expr_edit.setPlaceholderText("e.g. sin(x/pi) + sin(y/pi)")
+        self.expr_edit.setPlaceholderText(self.tr("e.g. sin(x/pi) + sin(y/pi)"))
         self.expr_edit.setFixedHeight(70)
 
-        self.params_label = BodyLabel("params", self.setting_widget)
+        self.params_label = BodyLabel(self.tr("params"), self.setting_widget)
         self.params_edit = LineEdit(self.setting_widget)
-        self.params_edit.setPlaceholderText("A=1, Lx=3.14, Ly=3.14  (optional)")
+        self.params_edit.setPlaceholderText(self.tr("A=1, Lx=3.14, Ly=3.14  (optional)"))
 
-        self.apply_label = BodyLabel("apply to", self.setting_widget)
+        self.apply_label = BodyLabel(self.tr("apply to"), self.setting_widget)
         self.apply_combo = ComboBox(self.setting_widget)
-        self.apply_combo.addItems(["All atoms", "Elements", "Z-range"])
+        self.apply_combo.addItems([self.tr("All atoms"), self.tr("Elements"), self.tr("Z-range")])
 
         self.elements_edit = LineEdit(self.setting_widget)
-        self.elements_edit.setPlaceholderText("C, Si, O")
+        self.elements_edit.setPlaceholderText(self.tr("C, Si, O"))
         self.elements_edit.setVisible(False)
 
         self.zrange_frame = SpinBoxUnitInputFrame(self)
@@ -92,24 +92,24 @@ class LayerCopyCard(MakeDataCard):
         self.zrange_frame.set_input_value([-1e6, 1e6])
         self.zrange_frame.setVisible(False)
 
-        self.wrap_checkbox = CheckBox("Wrap after warp/copy", self.setting_widget)
+        self.wrap_checkbox = CheckBox(self.tr("Wrap after warp/copy"), self.setting_widget)
         self.wrap_checkbox.setChecked(False)
 
-        self.extend_cell_checkbox = CheckBox("Extend cell along z", self.setting_widget)
+        self.extend_cell_checkbox = CheckBox(self.tr("Extend cell along z"), self.setting_widget)
         self.extend_cell_checkbox.setChecked(True)
 
-        self.vacuum_label = BodyLabel("extra vacuum (Å)", self.setting_widget)
+        self.vacuum_label = BodyLabel(self.tr("extra vacuum (Å)"), self.setting_widget)
         self.vacuum_frame = SpinBoxUnitInputFrame(self)
         self.vacuum_frame.set_input("Å", 1, input_type="float")
         self.vacuum_frame.setRange(0.0, 1e6)
         self.vacuum_frame.set_input_value([0.0])
 
-        self.layers_label = BodyLabel("Number of layers", self.setting_widget)
+        self.layers_label = BodyLabel(self.tr("Number of layers"), self.setting_widget)
         self.layers_frame = SpinBoxUnitInputFrame(self)
         self.layers_frame.set_input("layers", 1, input_type="int")
         self.layers_frame.setRange(1, 999)
 
-        self.distance_label = BodyLabel("Layer spacing (Å)", self.setting_widget)
+        self.distance_label = BodyLabel(self.tr("Layer spacing (Å)"), self.setting_widget)
         self.distance_frame = SpinBoxUnitInputFrame(self)
         self.distance_frame.set_input("Å", 1, input_type="float")
         self.distance_frame.setRange(-1e4, 1e4)

@@ -5,7 +5,7 @@ from __future__ import annotations
 from html import escape
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QCoreApplication, Qt
 from PySide6.QtWidgets import (
     QDialog,
     QHBoxLayout,
@@ -20,6 +20,10 @@ from PySide6.QtWidgets import (
 from NepTrainKit.core import CardManager, CardMetadata
 
 
+def _tr(text: str) -> str:
+    return QCoreApplication.translate("CardMetadata", text)
+
+
 def contributor_label(contributor) -> str:
     """Return a compact public label for one contributor."""
     role = f" ({contributor.role})" if contributor.role else ""
@@ -29,7 +33,7 @@ def contributor_label(contributor) -> str:
 def contributors_text(metadata: CardMetadata) -> str:
     """Return contributor names for plain-text UI surfaces."""
     if not metadata.contributors:
-        return "Not specified"
+        return _tr("Not specified")
     return ", ".join(contributor_label(item) for item in metadata.contributors)
 
 
@@ -38,29 +42,32 @@ def card_tooltip(metadata: CardMetadata) -> str:
     lines = [metadata.card_name]
     if metadata.description:
         lines.append(metadata.description)
-    lines.append(f"Contributors: {contributors_text(metadata)}")
+    lines.append(_tr("Contributors: {contributors}").format(contributors=contributors_text(metadata)))
     if metadata.version:
-        lines.append(f"Version: {metadata.version}")
+        lines.append(_tr("Version: {version}").format(version=metadata.version))
     return "\n".join(lines)
 
 
 def _source_label(metadata: CardMetadata) -> str:
     path = Path(metadata.source_path) if metadata.source_path else None
     if path and path.parent.name == "_card":
-        return "Built-in"
+        return _tr("Built-in")
     if path:
-        return "Custom"
-    return "Unknown"
+        return _tr("Custom")
+    return _tr("Unknown")
 
 
 def _contributors_html(metadata: CardMetadata) -> str:
     if not metadata.contributors:
         return """
         <div class="section">
-          <h3>Contributors</h3>
-          <p class="empty">No public contributor metadata yet.</p>
+          <h3>{contributors_title}</h3>
+          <p class="empty">{empty_text}</p>
         </div>
-        """
+        """.format(
+            contributors_title=escape(_tr("Contributors")),
+            empty_text=escape(_tr("No public contributor metadata yet.")),
+        )
 
     rows = []
     for contributor in metadata.contributors:
@@ -87,22 +94,25 @@ def _contributors_html(metadata: CardMetadata) -> str:
 
     return """
     <div class="section">
-      <h3>Contributors</h3>
+      <h3>{contributors_title}</h3>
       {rows}
     </div>
-    """.format(rows="\n".join(rows))
+    """.format(
+        contributors_title=escape(_tr("Contributors")),
+        rows="\n".join(rows),
+    )
 
 
 def metadata_html(metadata: CardMetadata) -> str:
     """Render card metadata as compact HTML."""
     fields = [
-        ("Class", metadata.class_name),
-        ("Group", metadata.group or ""),
-        ("Version", metadata.version),
-        ("Maintainer", metadata.maintainer),
-        ("License", metadata.license),
-        ("Source", _source_label(metadata)),
-        ("Source path", metadata.source_path),
+        (_tr("Class"), metadata.class_name),
+        (_tr("Group"), metadata.group or ""),
+        (_tr("Version"), metadata.version),
+        (_tr("Maintainer"), metadata.maintainer),
+        (_tr("License"), metadata.license),
+        (_tr("Source"), _source_label(metadata)),
+        (_tr("Source path"), metadata.source_path),
     ]
 
     chips = [f'<span class="chip chip-source">{escape(_source_label(metadata))}</span>']
@@ -114,7 +124,7 @@ def metadata_html(metadata: CardMetadata) -> str:
     description = (
         f'<p class="description">{escape(metadata.description)}</p>'
         if metadata.description
-        else '<p class="description muted">No description provided.</p>'
+        else f'<p class="description muted">{escape(_tr("No description provided."))}</p>'
     )
 
     html = [
@@ -300,7 +310,7 @@ h3 {
 """,
         """
 <div class="hero">
-  <div class="eyebrow">Make Dataset Card</div>
+  <div class="eyebrow">{eyebrow}</div>
   <h1>{name}</h1>
   {description}
   <div>{chips}</div>
@@ -309,6 +319,7 @@ h3 {
             name=escape(metadata.card_name),
             description=description,
             chips=" ".join(chips),
+            eyebrow=escape(_tr("Make Dataset Card")),
         ),
     ]
     html.append(_contributors_html(metadata))
@@ -325,7 +336,7 @@ h3 {
         url = escape(metadata.docs_url)
         rows.append(
             "<tr>"
-            '<td class="key">Docs</td>'
+            f'<td class="key">{escape(_tr("Docs"))}</td>'
             f'<td class="value"><a href="{url}">{url}</a></td>'
             "</tr>"
         )
@@ -333,21 +344,27 @@ h3 {
         html.append(
             """
 <div class="section">
-  <h3>Metadata</h3>
+  <h3>{metadata_title}</h3>
   <table class="meta-table">
     {rows}
   </table>
 </div>
-""".format(rows="\n".join(rows))
+""".format(
+                metadata_title=escape(_tr("Metadata")),
+                rows="\n".join(rows),
+            )
         )
     if metadata.citation:
         html.append(
             """
 <div class="section">
-  <h3>Citation</h3>
+  <h3>{citation_title}</h3>
   <div class="citation">{citation}</div>
 </div>
-""".format(citation=escape(metadata.citation))
+""".format(
+                citation_title=escape(_tr("Citation")),
+                citation=escape(metadata.citation),
+            )
         )
     html.append("</div></body></html>")
     return "\n".join(html)
@@ -358,7 +375,7 @@ class CardMetadataDialog(QDialog):
 
     def __init__(self, metadata: CardMetadata, parent=None):
         super().__init__(parent)
-        self.setWindowTitle(f"Card Info - {metadata.card_name}")
+        self.setWindowTitle(self.tr("Card info - {card_name}").format(card_name=metadata.card_name))
         self.resize(580, 460)
 
         layout = QVBoxLayout(self)
@@ -373,7 +390,7 @@ class CardMetadataDialog(QDialog):
         browser.setHtml(metadata_html(metadata))
         layout.addWidget(browser)
 
-        close_button = QPushButton("Close", self)
+        close_button = QPushButton(self.tr("Close"), self)
         close_button.setMinimumWidth(96)
         close_button.clicked.connect(self.accept)
         layout.addWidget(
@@ -386,7 +403,7 @@ class CardLibraryDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Card Library")
+        self.setWindowTitle(self.tr("Card library"))
         self.resize(880, 560)
         self._metadata_by_class = dict(CardManager.card_metadata_dict)
 
@@ -394,7 +411,7 @@ class CardLibraryDialog(QDialog):
         root.setContentsMargins(12, 12, 12, 12)
         root.setSpacing(10)
 
-        title = QLabel("Make Dataset Cards", self)
+        title = QLabel(self.tr("Make Dataset cards"), self)
         title.setStyleSheet(
             "QLabel { color: #0f172a; font-size: 16px; font-weight: 700; "
             "padding: 4px 2px; }"
@@ -441,7 +458,7 @@ class CardLibraryDialog(QDialog):
         body.addWidget(self.detail, 2)
         root.addLayout(body)
 
-        close_button = QPushButton("Close", self)
+        close_button = QPushButton(self.tr("Close"), self)
         close_button.setMinimumWidth(96)
         close_button.clicked.connect(self.accept)
         root.addWidget(close_button, alignment=Qt.AlignmentFlag.AlignRight)

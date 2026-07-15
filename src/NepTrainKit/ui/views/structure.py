@@ -28,17 +28,17 @@ class StructureInfoWidget(QWidget):
         self.setLayout(self._layout)
 
         self.atom_label = BodyLabel(self)
-        self.atom_label.setText("Atoms:")
+        self.atom_label.setText(self.tr("Atoms:"))
         self.atom_num_text = BodyLabel(self)
 
         self.formula_label = BodyLabel(self)
-        self.formula_label.setText("Formula:")
+        self.formula_label.setText(self.tr("Formula:"))
         self.formula_text = BodyLabel(self)
         self.formula_text.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
         self.formula_text.setWordWrap(True)
 
         self.lattice_label = BodyLabel(self)
-        self.lattice_label.setText("Lattice:")
+        self.lattice_label.setText(self.tr("Lattice:"))
         self.lattice_text = BodyLabel(self)
         self.lattice_text.setWordWrap(True)
 
@@ -47,7 +47,7 @@ class StructureInfoWidget(QWidget):
         self.length_text = BodyLabel(self)
 
         self.angle_label = BodyLabel(self)
-        self.angle_label.setText("Angles:")
+        self.angle_label.setText(self.tr("Angles:"))
         self.angle_text = BodyLabel(self)
 
         self.config_label = BodyLabel(self)

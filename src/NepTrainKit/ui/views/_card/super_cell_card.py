@@ -36,7 +36,7 @@ class SuperCellCard(MakeDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self.setTitle("Make Supercell")
+        self.setTitle(self.tr("Make Supercell"))
         self.init_ui()
 
     def init_ui(self):
@@ -44,45 +44,45 @@ class SuperCellCard(MakeDataCard):
         """
         self.setObjectName("super_cell_card_widget")
         self.behavior_type_combo=ComboBox(self.setting_widget)
-        self.behavior_type_combo.addItem("Maximum")
-        self.behavior_type_combo.addItem("Iteration")
-        self.behavior_type_combo.addItem("Minimum")
+        self.behavior_type_combo.addItem(self.tr("Maximum"))
+        self.behavior_type_combo.addItem(self.tr("Iteration"))
+        self.behavior_type_combo.addItem(self.tr("Minimum"))
 
-        self.combo_label=BodyLabel("Behavior:",self.setting_widget)
-        self.combo_label.setToolTip("Select supercell generation method")
+        self.combo_label=BodyLabel(self.tr("Behavior:"),self.setting_widget)
+        self.combo_label.setToolTip(self.tr("Select supercell generation method"))
         self.combo_label.installEventFilter(ToolTipFilter(self.combo_label, 300, ToolTipPosition.TOP))
 
-        self.super_scale_radio_button = RadioButton("Super scale",self.setting_widget)
+        self.super_scale_radio_button = RadioButton(self.tr("Super scale"),self.setting_widget)
         self.super_scale_radio_button.setChecked(True)
         self.super_scale_condition_frame = SpinBoxUnitInputFrame(self)
         self.super_scale_condition_frame.set_input("",3)
         self.super_scale_condition_frame.setRange(1,999)
         self.super_scale_condition_frame.set_input_value([3,3,3])
-        self.super_scale_radio_button.setToolTip("Scale factors along axes")
+        self.super_scale_radio_button.setToolTip(self.tr("Scale factors along axes"))
         self.super_scale_radio_button.installEventFilter(ToolTipFilter(self.super_scale_radio_button, 300, ToolTipPosition.TOP))
 
-        self.super_cell_radio_button = RadioButton("Super cell",self.setting_widget)
+        self.super_cell_radio_button = RadioButton(self.tr("Super cell"),self.setting_widget)
         self.super_cell_condition_frame = SpinBoxUnitInputFrame(self)
         self.super_cell_condition_frame.set_input("Å",3)
         self.super_cell_condition_frame.setRange(1,9999)
         self.super_cell_condition_frame.set_input_value([20,20,20])
 
-        self.super_cell_radio_button.setToolTip("Target lattice constant in Å")
+        self.super_cell_radio_button.setToolTip(self.tr("Target lattice constant in Å"))
         self.super_cell_radio_button.installEventFilter(ToolTipFilter(self.super_cell_radio_button, 300, ToolTipPosition.TOP))
 
 
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_condition_frame.set_input("unit",1)
         self.max_atoms_condition_frame.setRange(1,10000)
-        # self.max_atoms_condition_frame.setToolTip("Maximum allowed atoms")
+        # self.max_atoms_condition_frame.setToolTip(self.tr("Maximum allowed atoms"))
         self.max_atoms_condition_frame.set_input_value([100])
 
-        self.max_atoms_radio_button = RadioButton("Max atoms",self.setting_widget)
-        self.max_atoms_radio_button.setToolTip("Limit cell size by atom count")
+        self.max_atoms_radio_button = RadioButton(self.tr("Max atoms"),self.setting_widget)
+        self.max_atoms_radio_button.setToolTip(self.tr("Limit cell size by atom count"))
         self.max_atoms_radio_button.installEventFilter(ToolTipFilter(self.max_atoms_radio_button, 300, ToolTipPosition.TOP))
 
-        self.fixed_axis_label = BodyLabel("Fixed axes:", self.setting_widget)
-        self.fixed_axis_label.setToolTip("Keep selected axes at a fixed multiplier in all supercell modes")
+        self.fixed_axis_label = BodyLabel(self.tr("Fixed axes:"), self.setting_widget)
+        self.fixed_axis_label.setToolTip(self.tr("Keep selected axes at a fixed multiplier in all supercell modes"))
         self.fixed_axis_label.installEventFilter(ToolTipFilter(self.fixed_axis_label, 300, ToolTipPosition.TOP))
 
         self.fixed_axis_frame = QFrame(self.setting_widget)
@@ -90,20 +90,20 @@ class SuperCellCard(MakeDataCard):
         self.fixed_axis_layout.setContentsMargins(0, 0, 0, 0)
         self.fixed_axis_layout.setHorizontalSpacing(12)
 
-        self.fixed_axis_a_checkbox = CheckBox("a", self.fixed_axis_frame)
-        self.fixed_axis_b_checkbox = CheckBox("b", self.fixed_axis_frame)
-        self.fixed_axis_c_checkbox = CheckBox("c", self.fixed_axis_frame)
+        self.fixed_axis_a_checkbox = CheckBox(self.tr("a"), self.fixed_axis_frame)
+        self.fixed_axis_b_checkbox = CheckBox(self.tr("b"), self.fixed_axis_frame)
+        self.fixed_axis_c_checkbox = CheckBox(self.tr("c"), self.fixed_axis_frame)
 
-        self.fixed_axis_a_checkbox.setToolTip("Lock the a-axis multiplier to the fixed scale below")
-        self.fixed_axis_b_checkbox.setToolTip("Lock the b-axis multiplier to the fixed scale below")
-        self.fixed_axis_c_checkbox.setToolTip("Lock the c-axis multiplier to the fixed scale below")
+        self.fixed_axis_a_checkbox.setToolTip(self.tr("Lock the a-axis multiplier to the fixed scale below"))
+        self.fixed_axis_b_checkbox.setToolTip(self.tr("Lock the b-axis multiplier to the fixed scale below"))
+        self.fixed_axis_c_checkbox.setToolTip(self.tr("Lock the c-axis multiplier to the fixed scale below"))
 
         self.fixed_axis_layout.addWidget(self.fixed_axis_a_checkbox, 0, 0)
         self.fixed_axis_layout.addWidget(self.fixed_axis_b_checkbox, 0, 1)
         self.fixed_axis_layout.addWidget(self.fixed_axis_c_checkbox, 0, 2)
 
-        self.fixed_scale_label = BodyLabel("Fixed scale:", self.setting_widget)
-        self.fixed_scale_label.setToolTip("Multipliers used for the locked a/b/c axes")
+        self.fixed_scale_label = BodyLabel(self.tr("Fixed scale:"), self.setting_widget)
+        self.fixed_scale_label.setToolTip(self.tr("Multipliers used for the locked a/b/c axes"))
         self.fixed_scale_label.installEventFilter(ToolTipFilter(self.fixed_scale_label, 300, ToolTipPosition.TOP))
 
         self.fixed_scale_condition_frame = SpinBoxUnitInputFrame(self)

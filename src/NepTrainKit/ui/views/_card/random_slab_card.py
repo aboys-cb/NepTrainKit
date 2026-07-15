@@ -35,7 +35,7 @@ class RandomSlabCard(MakeDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self.setTitle("Random Slab Generation")
+        self.setTitle(self.tr("Random Slab Generation"))
         self.init_ui()
 
     def init_ui(self):
@@ -44,24 +44,24 @@ class RandomSlabCard(MakeDataCard):
         self.setObjectName("random_slab_card_widget")
 
         # Miller index ranges for h, k, l
-        self.h_label = BodyLabel("h", self.setting_widget)
-        self.h_label.setToolTip("h index range")
+        self.h_label = BodyLabel(self.tr("h"), self.setting_widget)
+        self.h_label.setToolTip(self.tr("h index range"))
         self.h_label.installEventFilter(ToolTipFilter(self.h_label, 0, ToolTipPosition.TOP))
         self.h_frame = SpinBoxUnitInputFrame(self)
         self.h_frame.set_input(["-", "step", ""], 3, "int")
         self.h_frame.setRange(-10, 10)
         self.h_frame.set_input_value([0, 1, 1])
 
-        self.k_label = BodyLabel("k", self.setting_widget)
-        self.k_label.setToolTip("k index range")
+        self.k_label = BodyLabel(self.tr("k"), self.setting_widget)
+        self.k_label.setToolTip(self.tr("k index range"))
         self.k_label.installEventFilter(ToolTipFilter(self.k_label, 0, ToolTipPosition.TOP))
         self.k_frame = SpinBoxUnitInputFrame(self)
         self.k_frame.set_input(["-", "step", ""], 3, "int")
         self.k_frame.setRange(-10, 10)
         self.k_frame.set_input_value([0, 1, 1])
 
-        self.l_label = BodyLabel("l", self.setting_widget)
-        self.l_label.setToolTip("l index range")
+        self.l_label = BodyLabel(self.tr("l"), self.setting_widget)
+        self.l_label.setToolTip(self.tr("l index range"))
         self.l_label.installEventFilter(ToolTipFilter(self.l_label, 0, ToolTipPosition.TOP))
         self.l_frame = SpinBoxUnitInputFrame(self)
         self.l_frame.set_input(["-", "step", ""], 3, "int")
@@ -69,8 +69,8 @@ class RandomSlabCard(MakeDataCard):
         self.l_frame.set_input_value([1, 3, 1])
 
         # Layer number range
-        self.layer_label = BodyLabel("Layers", self.setting_widget)
-        self.layer_label.setToolTip("Layer range")
+        self.layer_label = BodyLabel(self.tr("Layers"), self.setting_widget)
+        self.layer_label.setToolTip(self.tr("Layer range"))
         self.layer_label.installEventFilter(ToolTipFilter(self.layer_label, 0, ToolTipPosition.TOP))
         self.layer_frame = SpinBoxUnitInputFrame(self)
         self.layer_frame.set_input(["-", "step", ""], 3, "int")
@@ -78,8 +78,8 @@ class RandomSlabCard(MakeDataCard):
         self.layer_frame.set_input_value([3, 6, 1])
 
         # Vacuum thickness range
-        self.vacuum_label = BodyLabel("Vacuum", self.setting_widget)
-        self.vacuum_label.setToolTip("Vacuum thickness range in Å")
+        self.vacuum_label = BodyLabel(self.tr("Vacuum"), self.setting_widget)
+        self.vacuum_label.setToolTip(self.tr("Vacuum thickness range in Å"))
         self.vacuum_label.installEventFilter(ToolTipFilter(self.vacuum_label, 0, ToolTipPosition.TOP))
         self.vacuum_frame = SpinBoxUnitInputFrame(self)
         self.vacuum_frame.set_input(["-", "step", "Å"], 3, "float")

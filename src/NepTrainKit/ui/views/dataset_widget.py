@@ -50,13 +50,13 @@ class ModelItemWidget(QWidget, DatasetManager):
         self._view.setModel(self._model)
         self._model.setHeader([
             "ID",
-            "Name",
-            "Size",
+            self.tr("Name"),
+            self.tr("Size"),
             "E(meV/atom)",
             "F(meV/?)",
             "V(meV/atom)",
-            "Tags",
-            "Create At",
+            self.tr("Tags"),
+            self.tr("Created at"),
         ])
         self._view.setItemDelegateForColumn(6, TagDelegate(self._model))
         width = [90, 200, 60, 90, 80, 90, 200, 30]
@@ -92,23 +92,23 @@ class ModelItemWidget(QWidget, DatasetManager):
         self._menu_pos = QPoint()
         self.menu = RoundMenu(parent=self)
 
-        create_action = Action("New", self.menu)
+        create_action = Action(self.tr("New"), self.menu)
         create_action.triggered.connect(lambda: self.create_model(modify=False))
         self.menu.addAction(create_action)
 
-        modify_action = Action("Modify", self.menu)
+        modify_action = Action(self.tr("Modify"), self.menu)
         modify_action.triggered.connect(lambda: self.create_model(modify=True))
         self.menu.addAction(modify_action)
 
-        open_action = Action("Open Folder", self.menu)
+        open_action = Action(self.tr("Open folder"), self.menu)
         open_action.triggered.connect(self.open_folder)
         self.menu.addAction(open_action)
 
-        delete_action = Action("Delete", self.menu)
+        delete_action = Action(self.tr("Delete"), self.menu)
         delete_action.triggered.connect(self.remove_model)
         self.menu.addAction(delete_action)
 
-        tag_action = Action("Manage Tags", self.menu)
+        tag_action = Action(self.tr("Manage tags"), self.menu)
         tag_action.triggered.connect(self.manage_tags)
         self.menu.addAction(tag_action)
 
@@ -202,7 +202,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         """
         box = ModelInfoMessageBox(self._parent)
         index = self._view.indexAt(self._menu_pos)
-        box.parent_combox.addItem("Top Model", userData=None)
+        box.parent_combox.addItem(self.tr("Top model"), userData=None)
         for model in self.model_item_dict.values():
             box.parent_combox.addItem(
                 f"{model.model_id}-{model.name}",
@@ -214,12 +214,12 @@ class ModelItemWidget(QWidget, DatasetManager):
             box.parent_combox.setCurrentText(f"{item.data(0)}-{item.data(1)}")
             model_id = item.data(0)
         else:
-            box.parent_combox.setCurrentText("Top Model")
+            box.parent_combox.setCurrentIndex(0)
             if modify:
                 return
             model_id = None
 
-        box.setWindowTitle("Project Info")
+        box.setWindowTitle(self.tr("Model info"))
         if modify:
             current_model = self.model_item_dict[model_id]
             box.model_name_edit.setText(current_model.name)
@@ -238,7 +238,7 @@ class ModelItemWidget(QWidget, DatasetManager):
                     f"{parent_model.model_id}-{parent_model.name}"
                 )
             else:
-                box.parent_combox.setCurrentText("Top Model")
+                box.parent_combox.setCurrentIndex(0)
 
         if not box.exec_():
             return
@@ -249,14 +249,14 @@ class ModelItemWidget(QWidget, DatasetManager):
         if modify:
             self.model_service.modify_model(current_model.model_id, **data)
             self.load_models_by_project(self.project)
-            MessageManager.send_success_message("Model modification successful")
+            MessageManager.send_success_message(self.tr("Model modified successfully"))
             return
 
         project = self.model_service.add_version(**data)
         if project is None:
-            MessageManager.send_error_message("Failed to create model")
+            MessageManager.send_error_message(self.tr("Failed to create model"))
         else:
-            MessageManager.send_success_message("Model created successfully")
+            MessageManager.send_success_message(self.tr("Model created successfully"))
             self.load_models_by_project(self.project)
 
     def remove_model(self) -> None:
@@ -269,8 +269,8 @@ class ModelItemWidget(QWidget, DatasetManager):
         item = index.internalPointer()
         model_id = item.data(0)
         box = MessageBox(
-            "Ask",
-            "Do you want to delete this item?\nIf you delete it, all items under it will be deleted!",
+            self.tr("Confirm"),
+            self.tr("Do you want to delete this item?\nAll child items will also be deleted."),
             self._parent,
         )
         box.exec_()
@@ -278,7 +278,7 @@ class ModelItemWidget(QWidget, DatasetManager):
             return
 
         self.model_service.remove_model(model_id=model_id)
-        MessageManager.send_success_message("Model deleted successfully")
+        MessageManager.send_success_message(self.tr("Model deleted successfully"))
         self.load_models_by_project(self.project)
 
     def open_folder(self) -> None:
@@ -315,4 +315,3 @@ class ModelItemWidget(QWidget, DatasetManager):
         box = AdvancedModelSearchDialog(self._parent)
         box.searchRequested.connect(self.on_search)
         box.show()
-

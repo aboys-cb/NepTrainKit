@@ -8,6 +8,7 @@ from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilte
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.cards.solvation import DEFAULT_WATER_XYZ, LocalSolvationOperation, LocalSolvationParams
+from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -24,15 +25,15 @@ class LocalSolvationCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Local Solvation")
+        self.setTitle(self.tr("Local Solvation"))
         self._init_ui()
 
     def _init_ui(self):
         self.setObjectName("local_solvation_card_widget")
         row = 0
 
-        self.solvent_label = BodyLabel("Solvent XYZ", self.setting_widget)
-        self.solvent_label.setToolTip("Single solvent molecule in XYZ/extxyz text")
+        self.solvent_label = BodyLabel(self.tr("Solvent XYZ"), self.setting_widget)
+        self.solvent_label.setToolTip(self.tr("Single solvent molecule in XYZ/extxyz text"))
         self.solvent_label.installEventFilter(ToolTipFilter(self.solvent_label, 300, ToolTipPosition.TOP))
         self.solvent_edit = QPlainTextEdit(self.setting_widget)
         self.solvent_edit.setPlainText(DEFAULT_WATER_XYZ)
@@ -41,8 +42,8 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.solvent_edit, row, 1, 1, 2)
         row += 1
 
-        self.structures_label = BodyLabel("Structures", self.setting_widget)
-        self.structures_label.setToolTip("Independent solvated structures generated per input structure")
+        self.structures_label = BodyLabel(self.tr("Structures"), self.setting_widget)
+        self.structures_label.setToolTip(self.tr("Independent solvated structures generated per input structure"))
         self.structures_label.installEventFilter(ToolTipFilter(self.structures_label, 300, ToolTipPosition.TOP))
         self.structures_frame = SpinBoxUnitInputFrame(self)
         self.structures_frame.set_input("unit", 1, "int")
@@ -52,8 +53,8 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.structures_frame, row, 1, 1, 2)
         row += 1
 
-        self.count_label = BodyLabel("Solvent count", self.setting_widget)
-        self.count_label.setToolTip("Number of solvent molecules inserted in each generated structure")
+        self.count_label = BodyLabel(self.tr("Solvent count"), self.setting_widget)
+        self.count_label.setToolTip(self.tr("Number of solvent molecules inserted in each generated structure"))
         self.count_label.installEventFilter(ToolTipFilter(self.count_label, 300, ToolTipPosition.TOP))
         self.count_frame = SpinBoxUnitInputFrame(self)
         self.count_frame.set_input("unit", 1, "int")
@@ -63,44 +64,44 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.count_frame, row, 1, 1, 2)
         row += 1
 
-        self.mode_label = BodyLabel("Sampling mode", self.setting_widget)
-        self.mode_label.setToolTip("auto resolves water and ion-water from solvent and selected centers")
+        self.mode_label = BodyLabel(self.tr("Sampling mode"), self.setting_widget)
+        self.mode_label.setToolTip(self.tr("auto resolves water and ion-water from solvent and selected centers"))
         self.mode_label.installEventFilter(ToolTipFilter(self.mode_label, 300, ToolTipPosition.TOP))
         self.mode_combo = ComboBox(self.setting_widget)
-        self.mode_combo.addItems(["auto", "general", "water", "ion-water", "loose", "dense"])
+        add_translated_items(self, self.mode_combo, ["auto", "general", "water", "ion-water", "loose", "dense"])
         self.settingLayout.addWidget(self.mode_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.mode_combo, row, 1, 1, 2)
         row += 1
 
-        self.center_mode_label = BodyLabel("Center mode", self.setting_widget)
-        self.center_mode_label.setToolTip("How center atoms for local solvation are selected")
+        self.center_mode_label = BodyLabel(self.tr("Center mode"), self.setting_widget)
+        self.center_mode_label.setToolTip(self.tr("How center atoms for local solvation are selected"))
         self.center_mode_label.installEventFilter(ToolTipFilter(self.center_mode_label, 300, ToolTipPosition.TOP))
         self.center_mode_combo = ComboBox(self.setting_widget)
-        self.center_mode_combo.addItems(["all", "elements", "indices", "z_range"])
+        add_translated_items(self, self.center_mode_combo, ["all", "elements", "indices", "z_range"])
         self.settingLayout.addWidget(self.center_mode_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.center_mode_combo, row, 1, 1, 2)
         row += 1
 
-        self.elements_label = BodyLabel("Center elements", self.setting_widget)
-        self.elements_label.setToolTip("Comma-separated element symbols used when center mode is elements")
+        self.elements_label = BodyLabel(self.tr("Center elements"), self.setting_widget)
+        self.elements_label.setToolTip(self.tr("Comma-separated element symbols used when center mode is elements"))
         self.elements_label.installEventFilter(ToolTipFilter(self.elements_label, 300, ToolTipPosition.TOP))
         self.elements_edit = LineEdit(self.setting_widget)
-        self.elements_edit.setPlaceholderText("Ca, Na, O")
+        self.elements_edit.setPlaceholderText(self.tr("Ca, Na, O"))
         self.settingLayout.addWidget(self.elements_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.elements_edit, row, 1, 1, 2)
         row += 1
 
-        self.indices_label = BodyLabel("Center indices", self.setting_widget)
-        self.indices_label.setToolTip("1-based atom indices/ranges used when center mode is indices")
+        self.indices_label = BodyLabel(self.tr("Center indices"), self.setting_widget)
+        self.indices_label.setToolTip(self.tr("1-based atom indices/ranges used when center mode is indices"))
         self.indices_label.installEventFilter(ToolTipFilter(self.indices_label, 300, ToolTipPosition.TOP))
         self.indices_edit = LineEdit(self.setting_widget)
-        self.indices_edit.setPlaceholderText("1,3,5-8")
+        self.indices_edit.setPlaceholderText(self.tr("1,3,5-8"))
         self.settingLayout.addWidget(self.indices_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.indices_edit, row, 1, 1, 2)
         row += 1
 
-        self.z_label = BodyLabel("Z range", self.setting_widget)
-        self.z_label.setToolTip("Cartesian z interval used when center mode is z_range")
+        self.z_label = BodyLabel(self.tr("Z range"), self.setting_widget)
+        self.z_label.setToolTip(self.tr("Cartesian z interval used when center mode is z_range"))
         self.z_label.installEventFilter(ToolTipFilter(self.z_label, 300, ToolTipPosition.TOP))
         self.z_frame = SpinBoxUnitInputFrame(self)
         self.z_frame.set_input(["A", "A"], 2, ["float", "float"])
@@ -110,8 +111,8 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.z_frame, row, 1, 1, 2)
         row += 1
 
-        self.shell_label = BodyLabel("Shell range", self.setting_widget)
-        self.shell_label.setToolTip("Center-to-solvent shell range in Angstrom for local placement")
+        self.shell_label = BodyLabel(self.tr("Shell range"), self.setting_widget)
+        self.shell_label.setToolTip(self.tr("Center-to-solvent shell range in Angstrom for local placement"))
         self.shell_label.installEventFilter(ToolTipFilter(self.shell_label, 300, ToolTipPosition.TOP))
         self.shell_frame = SpinBoxUnitInputFrame(self)
         self.shell_frame.set_input(["A", "A"], 2, ["float", "float"])
@@ -123,8 +124,8 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.shell_frame, row, 1, 1, 2)
         row += 1
 
-        self.min_distance_label = BodyLabel("Min distance", self.setting_widget)
-        self.min_distance_label.setToolTip("Optional global atom-atom distance cutoff; 0 uses element radii")
+        self.min_distance_label = BodyLabel(self.tr("Min distance"), self.setting_widget)
+        self.min_distance_label.setToolTip(self.tr("Optional global atom-atom distance cutoff; 0 uses element radii"))
         self.min_distance_label.installEventFilter(ToolTipFilter(self.min_distance_label, 300, ToolTipPosition.TOP))
         self.min_distance_frame = SpinBoxUnitInputFrame(self)
         self.min_distance_frame.set_input("A", 1, "float")
@@ -135,8 +136,8 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.min_distance_frame, row, 1, 1, 2)
         row += 1
 
-        self.collision_label = BodyLabel("Collision scale", self.setting_widget)
-        self.collision_label.setToolTip("0 uses the selected mode profile; positive values override radii scaling")
+        self.collision_label = BodyLabel(self.tr("Collision scale"), self.setting_widget)
+        self.collision_label.setToolTip(self.tr("0 uses the selected mode profile; positive values override radii scaling"))
         self.collision_label.installEventFilter(ToolTipFilter(self.collision_label, 300, ToolTipPosition.TOP))
         self.collision_frame = SpinBoxUnitInputFrame(self)
         self.collision_frame.set_input("x", 1, "float")
@@ -147,8 +148,8 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.collision_frame, row, 1, 1, 2)
         row += 1
 
-        self.attempts_label = BodyLabel("Max attempts", self.setting_widget)
-        self.attempts_label.setToolTip("Maximum placement attempts per generated structure")
+        self.attempts_label = BodyLabel(self.tr("Max attempts"), self.setting_widget)
+        self.attempts_label.setToolTip(self.tr("Maximum placement attempts per generated structure"))
         self.attempts_label.installEventFilter(ToolTipFilter(self.attempts_label, 300, ToolTipPosition.TOP))
         self.attempts_frame = SpinBoxUnitInputFrame(self)
         self.attempts_frame.set_input("unit", 1, "int")
@@ -158,19 +159,19 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.attempts_frame, row, 1, 1, 2)
         row += 1
 
-        self.strict_checkbox = CheckBox("Strict count", self.setting_widget)
-        self.strict_checkbox.setToolTip("Fail if the requested solvent count cannot be placed")
+        self.strict_checkbox = CheckBox(self.tr("Strict count"), self.setting_widget)
+        self.strict_checkbox.setToolTip(self.tr("Fail if the requested solvent count cannot be placed"))
         self.strict_checkbox.setChecked(True)
         self.settingLayout.addWidget(self.strict_checkbox, row, 0, 1, 3)
         row += 1
 
-        self.auto_box_checkbox = CheckBox("Auto box for non-periodic output", self.setting_widget)
+        self.auto_box_checkbox = CheckBox(self.tr("Auto box for non-periodic output"), self.setting_widget)
         self.auto_box_checkbox.setChecked(False)
         self.settingLayout.addWidget(self.auto_box_checkbox, row, 0, 1, 3)
         row += 1
 
-        self.box_size_label = BodyLabel("Fixed box size", self.setting_widget)
-        self.box_size_label.setToolTip("Non-periodic fixed output box when auto box is off")
+        self.box_size_label = BodyLabel(self.tr("Fixed box size"), self.setting_widget)
+        self.box_size_label.setToolTip(self.tr("Non-periodic fixed output box when auto box is off"))
         self.box_size_label.installEventFilter(ToolTipFilter(self.box_size_label, 300, ToolTipPosition.TOP))
         self.box_size_frame = SpinBoxUnitInputFrame(self)
         self.box_size_frame.set_input("A", 1, "float")
@@ -180,8 +181,8 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.box_size_frame, row, 1, 1, 2)
         row += 1
 
-        self.box_label = BodyLabel("Auto box padding/min", self.setting_widget)
-        self.box_label.setToolTip("Padding and minimum edge length used by auto box")
+        self.box_label = BodyLabel(self.tr("Auto box padding/min"), self.setting_widget)
+        self.box_label.setToolTip(self.tr("Padding and minimum edge length used by auto box"))
         self.box_label.installEventFilter(ToolTipFilter(self.box_label, 300, ToolTipPosition.TOP))
         self.box_frame = SpinBoxUnitInputFrame(self)
         self.box_frame.set_input(["A", "A"], 2, ["float", "float"])
@@ -191,14 +192,14 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.box_frame, row, 1, 1, 2)
         row += 1
 
-        self.flex_checkbox = CheckBox("Flexible solvent", self.setting_widget)
+        self.flex_checkbox = CheckBox(self.tr("Flexible solvent"), self.setting_widget)
         self.flex_checkbox.setChecked(False)
-        self.flex_checkbox.setToolTip("Use the existing torsion-guard core to pre-generate solvent conformers")
+        self.flex_checkbox.setToolTip(self.tr("Use the existing torsion-guard core to pre-generate solvent conformers"))
         self.settingLayout.addWidget(self.flex_checkbox, row, 0, 1, 3)
         row += 1
 
-        self.flex_pool_label = BodyLabel("Flex pool", self.setting_widget)
-        self.flex_pool_label.setToolTip("Number of pre-generated solvent conformers")
+        self.flex_pool_label = BodyLabel(self.tr("Flex pool"), self.setting_widget)
+        self.flex_pool_label.setToolTip(self.tr("Number of pre-generated solvent conformers"))
         self.flex_pool_label.installEventFilter(ToolTipFilter(self.flex_pool_label, 300, ToolTipPosition.TOP))
         self.flex_pool_frame = SpinBoxUnitInputFrame(self)
         self.flex_pool_frame.set_input("unit", 1, "int")
@@ -208,8 +209,8 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.flex_pool_frame, row, 1, 1, 2)
         row += 1
 
-        self.flex_torsion_label = BodyLabel("Flex torsion", self.setting_widget)
-        self.flex_torsion_label.setToolTip("Torsion angle range for flexible solvent conformers")
+        self.flex_torsion_label = BodyLabel(self.tr("Flex torsion"), self.setting_widget)
+        self.flex_torsion_label.setToolTip(self.tr("Torsion angle range for flexible solvent conformers"))
         self.flex_torsion_label.installEventFilter(ToolTipFilter(self.flex_torsion_label, 300, ToolTipPosition.TOP))
         self.flex_torsion_frame = SpinBoxUnitInputFrame(self)
         self.flex_torsion_frame.set_input(["deg", "deg"], 2, ["float", "float"])
@@ -219,8 +220,8 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.flex_torsion_frame, row, 1, 1, 2)
         row += 1
 
-        self.flex_max_label = BodyLabel("Flex max/sigma", self.setting_widget)
-        self.flex_max_label.setToolTip("Max torsions per conformer and Gaussian coordinate noise")
+        self.flex_max_label = BodyLabel(self.tr("Flex max/sigma"), self.setting_widget)
+        self.flex_max_label.setToolTip(self.tr("Max torsions per conformer and Gaussian coordinate noise"))
         self.flex_max_label.installEventFilter(ToolTipFilter(self.flex_max_label, 300, ToolTipPosition.TOP))
         self.flex_max_frame = SpinBoxUnitInputFrame(self)
         self.flex_max_frame.set_input(["unit", "A"], 2, ["int", "float"])
@@ -231,7 +232,7 @@ class LocalSolvationCard(MakeDataCard):
         self.settingLayout.addWidget(self.flex_max_frame, row, 1, 1, 2)
         row += 1
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -252,8 +253,8 @@ class LocalSolvationCard(MakeDataCard):
             solvent_xyz=self.solvent_edit.toPlainText(),
             structures=int(self.structures_frame.get_input_value()[0]),
             solvent_count=int(self.count_frame.get_input_value()[0]),
-            sampling_mode=self.mode_combo.currentText(),
-            center_mode=self.center_mode_combo.currentText(),
+            sampling_mode=combo_value(self.mode_combo),
+            center_mode=combo_value(self.center_mode_combo),
             center_elements=self.elements_edit.text(),
             center_indices=self.indices_edit.text(),
             z_range=tuple(map(float, self.z_frame.get_input_value())),
@@ -279,8 +280,8 @@ class LocalSolvationCard(MakeDataCard):
         self.solvent_edit.setPlainText(params.solvent_xyz)
         self.structures_frame.set_input_value([int(params.structures)])
         self.count_frame.set_input_value([int(params.solvent_count)])
-        self.mode_combo.setCurrentText(params.sampling_mode)
-        self.center_mode_combo.setCurrentText(params.center_mode)
+        set_combo_value(self.mode_combo, params.sampling_mode)
+        set_combo_value(self.center_mode_combo, params.center_mode)
         self.elements_edit.setText(params.center_elements)
         self.indices_edit.setText(params.center_indices)
         self.z_frame.set_input_value([float(value) for value in params.z_range])

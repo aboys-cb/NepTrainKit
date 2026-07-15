@@ -42,7 +42,7 @@ class ProjectWidget(QWidget, DatasetManager):
 
         self._model = TreeModel()
         self._view.setModel(self._model)
-        self._model.setHeader(["(ID) Project Name", "ID", ""])
+        self._model.setHeader([self.tr("(ID) Project name"), "ID", ""])
         self._view.setColumnHidden(1, True)
         self._view.setColumnWidth(0, 150)
 
@@ -71,15 +71,15 @@ class ProjectWidget(QWidget, DatasetManager):
         self._menu_pos = QPoint()
         self.menu = RoundMenu(parent=self)
 
-        create_action = Action("New", self.menu)
+        create_action = Action(self.tr("New"), self.menu)
         create_action.triggered.connect(lambda: self.create_project(modify=False))
         self.menu.addAction(create_action)
 
-        modify_action = Action("Modify", self.menu)
+        modify_action = Action(self.tr("Modify"), self.menu)
         modify_action.triggered.connect(lambda: self.create_project(modify=True))
         self.menu.addAction(modify_action)
 
-        delete_action = Action("Delete", self.menu)
+        delete_action = Action(self.tr("Delete"), self.menu)
         delete_action.triggered.connect(self.remove_project)
         self.menu.addAction(delete_action)
 
@@ -106,7 +106,7 @@ class ProjectWidget(QWidget, DatasetManager):
         """
         box = ProjectInfoMessageBox(self._parent)
         index = self._view.indexAt(self._menu_pos)
-        box.parent_combox.addItem("Top Project", userData=None)
+        box.parent_combox.addItem(self.tr("Top project"), userData=None)
         for project in self.project_item_dict.values():
             box.parent_combox.addItem(project.name, userData=project.project_id)
 
@@ -116,12 +116,12 @@ class ProjectWidget(QWidget, DatasetManager):
             project = self.project_item_dict[project_id]
             box.parent_combox.setCurrentText(project.name)
         else:
-            box.parent_combox.setCurrentText("Top Project")
+            box.parent_combox.setCurrentIndex(0)
             if modify:
                 return
             project_id = None
 
-        box.setWindowTitle("Project Info")
+        box.setWindowTitle(self.tr("Project info"))
         if modify:
             current_project = self.project_item_dict[project_id]
             box.project_name.setText(current_project.name)
@@ -130,7 +130,7 @@ class ProjectWidget(QWidget, DatasetManager):
                 parent_project = self.project_item_dict[current_project.parent_id]
                 box.parent_combox.setCurrentText(parent_project.name)
             else:
-                box.parent_combox.setCurrentText("Top Project")
+                box.parent_combox.setCurrentIndex(0)
 
         if not box.exec_():
             return
@@ -147,7 +147,7 @@ class ProjectWidget(QWidget, DatasetManager):
                 parent_id=parent_id,
             )
             self.load_all_projects()
-            MessageManager.send_success_message("Project modification successful")
+            MessageManager.send_success_message(self.tr("Project modified successfully"))
             return
 
         project = self.project_service.create_project(
@@ -156,9 +156,9 @@ class ProjectWidget(QWidget, DatasetManager):
             parent_id=parent_id,
         )
         if project is None:
-            MessageManager.send_error_message("Failed to create project")
+            MessageManager.send_error_message(self.tr("Failed to create project"))
         else:
-            MessageManager.send_success_message("Project created successfully")
+            MessageManager.send_success_message(self.tr("Project created successfully"))
             self.load_all_projects()
 
     def remove_project(self) -> None:
@@ -170,8 +170,8 @@ class ProjectWidget(QWidget, DatasetManager):
         item = index.internalPointer()
         project_id = item.data(1)
         box = MessageBox(
-            "Ask",
-            "Do you want to delete this item?\nIf you delete it, all items under it will be deleted!",
+            self.tr("Confirm"),
+            self.tr("Do you want to delete this item?\nAll child items will also be deleted."),
             self._parent,
         )
         box.exec_()
@@ -179,7 +179,7 @@ class ProjectWidget(QWidget, DatasetManager):
             return
 
         self.project_service.remove_project(project_id=project_id)
-        MessageManager.send_success_message("Project deleted successfully")
+        MessageManager.send_success_message(self.tr("Project deleted successfully"))
         self.load_all_projects()
 
     def load(self) -> None:

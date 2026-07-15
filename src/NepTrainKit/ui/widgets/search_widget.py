@@ -36,9 +36,9 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
         self.checkButton = LineEditButton(":/images/src/images/check.svg", self)
         self.checkButton.installEventFilter(ToolTipFilter(self.checkButton, 300, ToolTipPosition.TOP))
 
-        self.checkButton.setToolTip("Mark structure according to Config_type")
+        self.checkButton.setToolTip(self.tr("Mark structures by Config_type"))
         self.uncheckButton = LineEditButton(":/images/src/images/uncheck.svg", self)
-        self.uncheckButton.setToolTip("Unmark structure according to Config_type")
+        self.uncheckButton.setToolTip(self.tr("Unmark structures by Config_type"))
         self.uncheckButton.installEventFilter(ToolTipFilter(self.uncheckButton, 300, ToolTipPosition.TOP))
 
         self.searchButton.setIconSize(QSize(16, 16))
@@ -93,22 +93,22 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
             label = "Config_type"
             example = ""
         elif search_type == SearchType.FORMULA:
-            label = "formula (regex)"
-            example = " e.g. Fe.*O"
+            label = self.tr("formula (regex)")
+            example = self.tr(" e.g. Fe.*O")
         elif search_type == SearchType.ELEMENTS:
-            label = "elements"
-            example = " e.g. Fe,O  or  +Fe,-H"
+            label = self.tr("elements")
+            example = self.tr(" e.g. Fe,O or +Fe,-H")
         elif search_type == SearchType.EXPRESSION:
-            label = "expression"
-            example = " e.g. natoms > 100 || force.ref.x > 10"
+            label = self.tr("expression")
+            example = self.tr(" e.g. natoms > 100 || force.ref.x > 10")
         else:
             label = str(search_type)
             example = ""
 
-        self.searchButton.setToolTip(f"Searching for structures based on {label}")
-        self.checkButton.setToolTip(f"Mark structure according to {label}")
-        self.uncheckButton.setToolTip(f"Unmark structure according to {label}")
-        self.setPlaceholderText(f"Mark structure according to {label}{example}")
+        self.searchButton.setToolTip(self.tr("Search structures by {label}").format(label=label))
+        self.checkButton.setToolTip(self.tr("Mark structures by {label}").format(label=label))
+        self.uncheckButton.setToolTip(self.tr("Unmark structures by {label}").format(label=label))
+        self.setPlaceholderText(self.tr("Mark structures by {label}{example}").format(label=label, example=example))
         self.typeChangeSignal.emit(search_type)
 
     def _checked(self):
@@ -138,4 +138,3 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
             new_words = self.completer_model.parser_list(new_words)
         self._delegate.data = new_words
         self.completer_model.set_data(new_words)
-

@@ -67,13 +67,13 @@ class ConsoleWidget(QWidget):
         self.setting_command = CommandBar(self)
         self.new_card_button = PrimaryDropDownPushButton(
             FluentIcon.ADD,
-            "Add new card",
+            self.tr("Add new card"),
             self,
         )
         self.new_card_button.setMaximumWidth(200)
         self.new_card_button.setObjectName("new_card_button")
 
-        self.new_card_button.setToolTip("Add a new card")
+        self.new_card_button.setToolTip(self.tr("Add a new card"))
         self.new_card_button.installEventFilter(
             ToolTipFilter(self.new_card_button, 300, ToolTipPosition.TOP)
         )
@@ -117,10 +117,10 @@ class ConsoleWidget(QWidget):
 
         library_action = Action(
             FluentIcon.INFO,
-            "Card Library",
+            self.tr("Card library"),
             triggered=self.show_card_library,
         )
-        library_action.setToolTip("Show card contributors and metadata")
+        library_action.setToolTip(self.tr("Show card contributors and metadata"))
         library_action.installEventFilter(
             ToolTipFilter(library_action, 300, ToolTipPosition.TOP)
         )
@@ -128,10 +128,10 @@ class ConsoleWidget(QWidget):
 
         paste_action = Action(
             FluentIcon.PASTE,
-            "Paste JSON",
+            self.tr("Paste JSON"),
             triggered=self.paste,
         )
-        paste_action.setToolTip("Create card(s) from clipboard JSON")
+        paste_action.setToolTip(self.tr("Create card(s) from clipboard JSON"))
         paste_action.installEventFilter(
             ToolTipFilter(paste_action, 300, ToolTipPosition.TOP)
         )
@@ -139,10 +139,10 @@ class ConsoleWidget(QWidget):
 
         copy_action = Action(
             FluentIcon.COPY,
-            "Copy JSON",
+            self.tr("Copy JSON"),
             triggered=self.copy,
         )
-        copy_action.setToolTip("Copy current workflow card JSON")
+        copy_action.setToolTip(self.tr("Copy current workflow card JSON"))
         copy_action.installEventFilter(
             ToolTipFilter(copy_action, 300, ToolTipPosition.TOP)
         )
@@ -151,10 +151,10 @@ class ConsoleWidget(QWidget):
         self.setting_command.addSeparator()
         run_action = Action(
             QIcon(r":/images/src/images/run.svg"),
-            'Run',
+            self.tr("Run"),
             triggered=self.run,
         )
-        run_action.setToolTip('Run selected cards')
+        run_action.setToolTip(self.tr("Run selected cards"))
         run_action.installEventFilter(
             ToolTipFilter(run_action, 300, ToolTipPosition.TOP)
         )
@@ -162,10 +162,10 @@ class ConsoleWidget(QWidget):
         self.setting_command.addAction(run_action)
         stop_action = Action(
             QIcon(r":/images/src/images/stop.svg"),
-            'Stop',
+            self.tr("Stop"),
             triggered=self.stop,
         )
-        stop_action.setToolTip('Stop running cards')
+        stop_action.setToolTip(self.tr("Stop running cards"))
         stop_action.installEventFilter(
             ToolTipFilter(stop_action, 300, ToolTipPosition.TOP)
         )
@@ -204,4 +204,3 @@ class ConsoleWidget(QWidget):
     def stop(self, *args, **kwargs):
         """Emit the stop signal to abort card execution."""
         self.stopSignal.emit()
-

@@ -8,6 +8,7 @@ from qfluentwidgets import BodyLabel, CheckBox, ComboBox, ToolTipFilter, ToolTip
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.cards.solvation import DEFAULT_WATER_XYZ, SolventBoxFillOperation, SolventBoxFillParams
+from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -24,15 +25,15 @@ class SolventBoxFillCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Solvent Box Fill")
+        self.setTitle(self.tr("Solvent Box Fill"))
         self._init_ui()
 
     def _init_ui(self):
         self.setObjectName("solvent_box_fill_card_widget")
         row = 0
 
-        self.solvent_label = BodyLabel("Solvent XYZ", self.setting_widget)
-        self.solvent_label.setToolTip("Single solvent molecule in XYZ/extxyz text")
+        self.solvent_label = BodyLabel(self.tr("Solvent XYZ"), self.setting_widget)
+        self.solvent_label.setToolTip(self.tr("Single solvent molecule in XYZ/extxyz text"))
         self.solvent_label.installEventFilter(ToolTipFilter(self.solvent_label, 300, ToolTipPosition.TOP))
         self.solvent_edit = QPlainTextEdit(self.setting_widget)
         self.solvent_edit.setPlainText(DEFAULT_WATER_XYZ)
@@ -41,8 +42,8 @@ class SolventBoxFillCard(MakeDataCard):
         self.settingLayout.addWidget(self.solvent_edit, row, 1, 1, 2)
         row += 1
 
-        self.structures_label = BodyLabel("Structures", self.setting_widget)
-        self.structures_label.setToolTip("Independent filled boxes generated per input structure")
+        self.structures_label = BodyLabel(self.tr("Structures"), self.setting_widget)
+        self.structures_label.setToolTip(self.tr("Independent filled boxes generated per input structure"))
         self.structures_label.installEventFilter(ToolTipFilter(self.structures_label, 300, ToolTipPosition.TOP))
         self.structures_frame = SpinBoxUnitInputFrame(self)
         self.structures_frame.set_input("unit", 1, "int")
@@ -52,17 +53,17 @@ class SolventBoxFillCard(MakeDataCard):
         self.settingLayout.addWidget(self.structures_frame, row, 1, 1, 2)
         row += 1
 
-        self.count_mode_label = BodyLabel("Count mode", self.setting_widget)
-        self.count_mode_label.setToolTip("fixed uses solvent count; density derives the count from box volume")
+        self.count_mode_label = BodyLabel(self.tr("Count mode"), self.setting_widget)
+        self.count_mode_label.setToolTip(self.tr("fixed uses solvent count; density derives the count from box volume"))
         self.count_mode_label.installEventFilter(ToolTipFilter(self.count_mode_label, 300, ToolTipPosition.TOP))
         self.count_mode_combo = ComboBox(self.setting_widget)
-        self.count_mode_combo.addItems(["fixed", "density"])
+        add_translated_items(self, self.count_mode_combo, ["fixed", "density"])
         self.settingLayout.addWidget(self.count_mode_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.count_mode_combo, row, 1, 1, 2)
         row += 1
 
-        self.count_label = BodyLabel("Solvent count", self.setting_widget)
-        self.count_label.setToolTip("Number of solvent molecules inserted when count mode is fixed")
+        self.count_label = BodyLabel(self.tr("Solvent count"), self.setting_widget)
+        self.count_label.setToolTip(self.tr("Number of solvent molecules inserted when count mode is fixed"))
         self.count_label.installEventFilter(ToolTipFilter(self.count_label, 300, ToolTipPosition.TOP))
         self.count_frame = SpinBoxUnitInputFrame(self)
         self.count_frame.set_input("unit", 1, "int")
@@ -72,8 +73,8 @@ class SolventBoxFillCard(MakeDataCard):
         self.settingLayout.addWidget(self.count_frame, row, 1, 1, 2)
         row += 1
 
-        self.density_label = BodyLabel("Density", self.setting_widget)
-        self.density_label.setToolTip("Solvent mass density in g/cm^3 when count mode is density")
+        self.density_label = BodyLabel(self.tr("Density"), self.setting_widget)
+        self.density_label.setToolTip(self.tr("Solvent mass density in g/cm^3 when count mode is density"))
         self.density_label.installEventFilter(ToolTipFilter(self.density_label, 300, ToolTipPosition.TOP))
         self.density_frame = SpinBoxUnitInputFrame(self)
         self.density_frame.set_input("g/cm3", 1, "float")
@@ -84,17 +85,17 @@ class SolventBoxFillCard(MakeDataCard):
         self.settingLayout.addWidget(self.density_frame, row, 1, 1, 2)
         row += 1
 
-        self.mode_label = BodyLabel("Sampling mode", self.setting_widget)
-        self.mode_label.setToolTip("auto resolves water/general from the solvent molecule")
+        self.mode_label = BodyLabel(self.tr("Sampling mode"), self.setting_widget)
+        self.mode_label.setToolTip(self.tr("auto resolves water/general from the solvent molecule"))
         self.mode_label.installEventFilter(ToolTipFilter(self.mode_label, 300, ToolTipPosition.TOP))
         self.mode_combo = ComboBox(self.setting_widget)
-        self.mode_combo.addItems(["auto", "general", "water", "loose", "dense"])
+        add_translated_items(self, self.mode_combo, ["auto", "general", "water", "loose", "dense"])
         self.settingLayout.addWidget(self.mode_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.mode_combo, row, 1, 1, 2)
         row += 1
 
-        self.fill_packing_label = BodyLabel("Fill packing", self.setting_widget)
-        self.fill_packing_label.setToolTip("Density scaling factor used when count mode is density")
+        self.fill_packing_label = BodyLabel(self.tr("Fill packing"), self.setting_widget)
+        self.fill_packing_label.setToolTip(self.tr("Density scaling factor used when count mode is density"))
         self.fill_packing_label.installEventFilter(ToolTipFilter(self.fill_packing_label, 300, ToolTipPosition.TOP))
         self.fill_packing_frame = SpinBoxUnitInputFrame(self)
         self.fill_packing_frame.set_input("x", 1, "float")
@@ -105,8 +106,8 @@ class SolventBoxFillCard(MakeDataCard):
         self.settingLayout.addWidget(self.fill_packing_frame, row, 1, 1, 2)
         row += 1
 
-        self.min_distance_label = BodyLabel("Min distance", self.setting_widget)
-        self.min_distance_label.setToolTip("Optional global atom-atom distance cutoff; 0 uses element radii")
+        self.min_distance_label = BodyLabel(self.tr("Min distance"), self.setting_widget)
+        self.min_distance_label.setToolTip(self.tr("Optional global atom-atom distance cutoff; 0 uses element radii"))
         self.min_distance_label.installEventFilter(ToolTipFilter(self.min_distance_label, 300, ToolTipPosition.TOP))
         self.min_distance_frame = SpinBoxUnitInputFrame(self)
         self.min_distance_frame.set_input("A", 1, "float")
@@ -117,8 +118,8 @@ class SolventBoxFillCard(MakeDataCard):
         self.settingLayout.addWidget(self.min_distance_frame, row, 1, 1, 2)
         row += 1
 
-        self.collision_label = BodyLabel("Collision scale", self.setting_widget)
-        self.collision_label.setToolTip("0 uses the selected mode profile; positive values override radii scaling")
+        self.collision_label = BodyLabel(self.tr("Collision scale"), self.setting_widget)
+        self.collision_label.setToolTip(self.tr("0 uses the selected mode profile; positive values override radii scaling"))
         self.collision_label.installEventFilter(ToolTipFilter(self.collision_label, 300, ToolTipPosition.TOP))
         self.collision_frame = SpinBoxUnitInputFrame(self)
         self.collision_frame.set_input("x", 1, "float")
@@ -129,8 +130,8 @@ class SolventBoxFillCard(MakeDataCard):
         self.settingLayout.addWidget(self.collision_frame, row, 1, 1, 2)
         row += 1
 
-        self.attempts_label = BodyLabel("Attempts/solvent", self.setting_widget)
-        self.attempts_label.setToolTip("Maximum placement attempts per requested solvent molecule")
+        self.attempts_label = BodyLabel(self.tr("Attempts/solvent"), self.setting_widget)
+        self.attempts_label.setToolTip(self.tr("Maximum placement attempts per requested solvent molecule"))
         self.attempts_label.installEventFilter(ToolTipFilter(self.attempts_label, 300, ToolTipPosition.TOP))
         self.attempts_frame = SpinBoxUnitInputFrame(self)
         self.attempts_frame.set_input("unit", 1, "int")
@@ -140,20 +141,20 @@ class SolventBoxFillCard(MakeDataCard):
         self.settingLayout.addWidget(self.attempts_frame, row, 1, 1, 2)
         row += 1
 
-        self.strict_checkbox = CheckBox("Strict count", self.setting_widget)
-        self.strict_checkbox.setToolTip("Fail if the requested solvent count cannot be placed")
+        self.strict_checkbox = CheckBox(self.tr("Strict count"), self.setting_widget)
+        self.strict_checkbox.setToolTip(self.tr("Fail if the requested solvent count cannot be placed"))
         self.strict_checkbox.setChecked(True)
         self.settingLayout.addWidget(self.strict_checkbox, row, 0, 1, 3)
         row += 1
 
-        self.flex_checkbox = CheckBox("Flexible solvent", self.setting_widget)
+        self.flex_checkbox = CheckBox(self.tr("Flexible solvent"), self.setting_widget)
         self.flex_checkbox.setChecked(False)
-        self.flex_checkbox.setToolTip("Use the existing torsion-guard core to pre-generate solvent conformers")
+        self.flex_checkbox.setToolTip(self.tr("Use the existing torsion-guard core to pre-generate solvent conformers"))
         self.settingLayout.addWidget(self.flex_checkbox, row, 0, 1, 3)
         row += 1
 
-        self.flex_pool_label = BodyLabel("Flex pool", self.setting_widget)
-        self.flex_pool_label.setToolTip("Number of pre-generated solvent conformers")
+        self.flex_pool_label = BodyLabel(self.tr("Flex pool"), self.setting_widget)
+        self.flex_pool_label.setToolTip(self.tr("Number of pre-generated solvent conformers"))
         self.flex_pool_label.installEventFilter(ToolTipFilter(self.flex_pool_label, 300, ToolTipPosition.TOP))
         self.flex_pool_frame = SpinBoxUnitInputFrame(self)
         self.flex_pool_frame.set_input("unit", 1, "int")
@@ -163,8 +164,8 @@ class SolventBoxFillCard(MakeDataCard):
         self.settingLayout.addWidget(self.flex_pool_frame, row, 1, 1, 2)
         row += 1
 
-        self.flex_torsion_label = BodyLabel("Flex torsion", self.setting_widget)
-        self.flex_torsion_label.setToolTip("Torsion angle range for flexible solvent conformers")
+        self.flex_torsion_label = BodyLabel(self.tr("Flex torsion"), self.setting_widget)
+        self.flex_torsion_label.setToolTip(self.tr("Torsion angle range for flexible solvent conformers"))
         self.flex_torsion_label.installEventFilter(ToolTipFilter(self.flex_torsion_label, 300, ToolTipPosition.TOP))
         self.flex_torsion_frame = SpinBoxUnitInputFrame(self)
         self.flex_torsion_frame.set_input(["deg", "deg"], 2, ["float", "float"])
@@ -174,8 +175,8 @@ class SolventBoxFillCard(MakeDataCard):
         self.settingLayout.addWidget(self.flex_torsion_frame, row, 1, 1, 2)
         row += 1
 
-        self.flex_max_label = BodyLabel("Flex max/sigma", self.setting_widget)
-        self.flex_max_label.setToolTip("Max torsions per conformer and Gaussian coordinate noise")
+        self.flex_max_label = BodyLabel(self.tr("Flex max/sigma"), self.setting_widget)
+        self.flex_max_label.setToolTip(self.tr("Max torsions per conformer and Gaussian coordinate noise"))
         self.flex_max_label.installEventFilter(ToolTipFilter(self.flex_max_label, 300, ToolTipPosition.TOP))
         self.flex_max_frame = SpinBoxUnitInputFrame(self)
         self.flex_max_frame.set_input(["unit", "A"], 2, ["int", "float"])
@@ -186,7 +187,7 @@ class SolventBoxFillCard(MakeDataCard):
         self.settingLayout.addWidget(self.flex_max_frame, row, 1, 1, 2)
         row += 1
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -205,10 +206,10 @@ class SolventBoxFillCard(MakeDataCard):
         return SolventBoxFillParams(
             solvent_xyz=self.solvent_edit.toPlainText(),
             structures=int(self.structures_frame.get_input_value()[0]),
-            count_mode=self.count_mode_combo.currentText(),
+            count_mode=combo_value(self.count_mode_combo),
             solvent_count=int(self.count_frame.get_input_value()[0]),
             density=float(self.density_frame.get_input_value()[0]),
-            sampling_mode=self.mode_combo.currentText(),
+            sampling_mode=combo_value(self.mode_combo),
             fill_packing=float(self.fill_packing_frame.get_input_value()[0]),
             min_distance=float(self.min_distance_frame.get_input_value()[0]),
             collision_scale=float(self.collision_frame.get_input_value()[0]),
@@ -226,10 +227,10 @@ class SolventBoxFillCard(MakeDataCard):
     def set_params(self, params: SolventBoxFillParams) -> None:
         self.solvent_edit.setPlainText(params.solvent_xyz)
         self.structures_frame.set_input_value([int(params.structures)])
-        self.count_mode_combo.setCurrentText(params.count_mode)
+        set_combo_value(self.count_mode_combo, params.count_mode)
         self.count_frame.set_input_value([int(params.solvent_count)])
         self.density_frame.set_input_value([float(params.density)])
-        self.mode_combo.setCurrentText(params.sampling_mode)
+        set_combo_value(self.mode_combo, params.sampling_mode)
         self.fill_packing_frame.set_input_value([float(params.fill_packing)])
         self.min_distance_frame.set_input_value([float(params.min_distance)])
         self.collision_frame.set_input_value([float(params.collision_scale)])

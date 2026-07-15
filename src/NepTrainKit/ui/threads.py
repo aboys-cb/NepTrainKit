@@ -25,7 +25,7 @@ class LoadingThread(QThread):
         super(LoadingThread, self).__init__(parent)
         self.setStackSize(_NUMPY_WORKER_STACK_SIZE)
         self.show_tip = show_tip
-        self.title = title
+        self.title = self.tr("Running") if title == "running" else title
         self._parent = parent
         self.tip: StateToolTip
         self._kwargs: Any
@@ -40,7 +40,7 @@ class LoadingThread(QThread):
 
     def start_work(self, func, *args, **kwargs):
         if self.show_tip:
-            self.tip = StateToolTip(self.title, 'Please wait patiently~~', self._parent)
+            self.tip = StateToolTip(self.title, self.tr("Please wait patiently..."), self._parent)
             self.tip.show()
             self.finished.connect(self.__finished_work)
             self.tip.closedSignal.connect(self.stop_work)
@@ -54,7 +54,7 @@ class LoadingThread(QThread):
 
     def __finished_work(self):
         if self.tip:
-            self.tip.setContent('success!')
+            self.tip.setContent(self.tr("Success"))
             self.tip.setState(True)
 
     def stop_work(self):

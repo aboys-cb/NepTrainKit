@@ -172,10 +172,34 @@ def test_normalize_language_accepts_only_supported_values():
 def test_resolve_language_from_locale_name():
     assert i18n.resolve_language("auto", "zh_CN") == "zh_CN"
     assert i18n.resolve_language("auto", "zh_Hans_CN") == "zh_CN"
+    assert i18n.resolve_language("auto", "zh-Hans-CN") == "zh_CN"
     assert i18n.resolve_language("auto", "en_US") == "en_US"
     assert i18n.resolve_language("zh_CN", "en_US") == "zh_CN"
     assert i18n.resolve_language("en_US", "zh_CN") == "en_US"
     assert i18n.resolve_language("bad-value", "zh_CN") == "zh_CN"
+
+
+def test_resolve_language_uses_system_candidates(monkeypatch):
+    monkeypatch.setattr(i18n, "_system_locale_candidates", lambda: ["zh-Hans-CN", "en_US"])
+    assert i18n.resolve_language("auto") == "zh_CN"
+
+
+def test_resolve_language_uses_next_supported_candidate(monkeypatch):
+    monkeypatch.setattr(i18n, "_system_locale_candidates", lambda: ["C", "POSIX", "en_US", "zh_CN"])
+    assert i18n.resolve_language("auto") == "en_US"
+
+
+def test_environment_locale_candidates_prefer_ui_message_language(monkeypatch):
+    monkeypatch.setenv("LANGUAGE", "zh_CN:en_US")
+    monkeypatch.setenv("LC_MESSAGES", "en_US.UTF-8")
+    monkeypatch.setenv("LANG", "en_US.UTF-8")
+    monkeypatch.setenv("LC_ALL", "C.UTF-8")
+    assert i18n._environment_locale_candidates()[:4] == [
+        "zh_CN",
+        "en_US",
+        "en_US.UTF-8",
+        "en_US.UTF-8",
+    ]
 
 
 def test_translation_path_only_for_chinese():

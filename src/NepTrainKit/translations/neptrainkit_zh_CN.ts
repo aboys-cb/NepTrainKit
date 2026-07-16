@@ -8221,6 +8221,30 @@ Do you want to continue?</source>
             <source>Quantity rule met: {supported} · thin: {thin} · no exact sample: {missing}.</source>
             <translation>数量规则已满足：{supported} · 数量偏少：{thin} · 没有精确样本：{missing}。</translation>
         </message>
+        <message>
+            <source>The model declares {declared} elements; this dataset contains {present}: {elements}. The other {absent} model elements are absent, so their compositions and local environments cannot be audited here. Neighbor analysis computes only present elements. This is informational and may be intentional for a subsystem or universal model. Model errors were not evaluated.</source>
+            <translation>模型声明了 {declared} 种元素；当前数据集包含 {present} 种：{elements}。其余 {absent} 种模型元素未在数据中出现，因此无法在这里审查它们的组分与局域环境。邻居分析只计算实际出现的元素。这是一条信息提示；对于子体系或通用大模型，这种情况可能是有意的。尚未评估模型误差。</translation>
+        </message>
+        <message>
+            <source>Absent model elements: {elements}</source>
+            <translation>数据集中未出现的模型元素：{elements}</translation>
+        </message>
+        <message>
+            <source>All {count} model-declared elements occur in this dataset: {elements}. Model errors were not evaluated.</source>
+            <translation>模型声明的 {count} 种元素均出现在当前数据集中：{elements}。尚未评估模型误差。</translation>
+        </message>
+        <message>
+            <source>Audit {seconds} s</source>
+            <translation>审查耗时 {seconds} 秒</translation>
+        </message>
+        <message>
+            <source>Backend total: {milliseconds} ms</source>
+            <translation>后端总耗时：{milliseconds} 毫秒</translation>
+        </message>
+        <message>
+            <source>UI render: {milliseconds} ms</source>
+            <translation>界面渲染：{milliseconds} 毫秒</translation>
+        </message>
     </context>
     <context>
         <name>Update</name>

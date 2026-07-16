@@ -9,8 +9,10 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
+from time import perf_counter
 from typing import Any
 
+from loguru import logger
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
@@ -1252,11 +1254,83 @@ class TrainingSetAuditWidget(QWidget):
         )
         self.target_show_button.setEnabled(bool(indices))
 
+    def _update_model_scope_summary(self) -> None:
+        local_overview = (
+            self._result.overview_metrics.get("local_chemistry", {})
+            if self._result is not None
+            else {}
+        )
+        declared = tuple(
+            str(element)
+            for element in (
+                local_overview.get("declared_model_elements", ())
+                if isinstance(local_overview, Mapping)
+                else ()
+            )
+        )
+        analyzed = tuple(
+            str(element)
+            for element in (
+                local_overview.get("analyzed_model_elements", ())
+                if isinstance(local_overview, Mapping)
+                else ()
+            )
+        )
+        absent = tuple(
+            str(element)
+            for element in (
+                local_overview.get("absent_model_elements", ())
+                if isinstance(local_overview, Mapping)
+                else ()
+            )
+        )
+        if not declared:
+            self.model_empty_label.setText(
+                self.tr(
+                    "No prediction or error result is attached. Open Show NEP and calculate results, "
+                    "then return here to compare model errors by composition and review group."
+                )
+            )
+            self.model_empty_label.setToolTip("")
+            return
+        present_text = " · ".join(analyzed) or "—"
+        if absent:
+            self.model_empty_label.setText(
+                self.tr(
+                    "The model declares {declared} elements; this dataset contains {present}: {elements}. "
+                    "The other {absent} model elements are absent, so their compositions and local environments "
+                    "cannot be audited here. Neighbor analysis computes only present elements. This is informational "
+                    "and may be intentional for a subsystem or universal model. Model errors were not evaluated."
+                ).format(
+                    declared=len(declared),
+                    present=len(analyzed),
+                    elements=present_text,
+                    absent=len(absent),
+                )
+            )
+            self.model_empty_label.setToolTip(
+                self.tr("Absent model elements: {elements}").format(
+                    elements=", ".join(absent)
+                )
+            )
+            return
+        self.model_empty_label.setText(
+            self.tr(
+                "All {count} model-declared elements occur in this dataset: {elements}. "
+                "Model errors were not evaluated."
+            ).format(count=len(declared), elements=present_text)
+        )
+        self.model_empty_label.setToolTip("")
+
     def set_result(self, result: AuditResult) -> None:
+        render_started = perf_counter()
+        render_timings_ms: dict[str, float] = {}
+        stage_started = perf_counter()
         self._result = result
         self._all_slices = list(result.slices)
         self._dimensions = {dimension.id: dimension for dimension in result.dimensions}
         self._topics = self._build_topics()
+        render_timings_ms["topic_prepare"] = (perf_counter() - stage_started) * 1000.0
         self._selected_chart_indices = []
         self._selected_composition_indices = []
         self.no_dataset_state.hide()
@@ -1299,13 +1373,25 @@ class TrainingSetAuditWidget(QWidget):
                     fingerprint=result.fingerprints.model[:10]
                 )
             )
+        backend_timing = result.overview_metrics.get("timings_ms", {})
+        if isinstance(backend_timing, Mapping):
+            backend_total = float(backend_timing.get("total", 0.0) or 0.0)
+            if backend_total > 0.0:
+                run_meta.append(
+                    self.tr("Audit {seconds} s").format(seconds=f"{backend_total / 1000.0:.2f}")
+                )
         self.generated_at_label.setText(" · ".join(run_meta))
+
+        stage_started = perf_counter()
         self._update_label_availability()
         self._update_summary()
         self._populate_slice_table()
         self._populate_inventory_views()
+        self._update_model_scope_summary()
         self._update_review_summary()
+        render_timings_ms["dashboard_widgets"] = (perf_counter() - stage_started) * 1000.0
 
+        stage_started = perf_counter()
         self.dimension_list.blockSignals(True)
         self.dimension_list.clear()
         overview_title = self.tr("Overview")
@@ -1348,6 +1434,67 @@ class TrainingSetAuditWidget(QWidget):
                 self.dimension_list.addItem(item)
         self.dimension_list.blockSignals(False)
         self.dimension_list.setCurrentRow(0)
+        render_timings_ms["dimension_list"] = (perf_counter() - stage_started) * 1000.0
+        render_timings_ms["total"] = (perf_counter() - render_started) * 1000.0
+        self._last_render_timings_ms = {
+            key: round(value, 3) for key, value in render_timings_ms.items()
+        }
+
+        timing_lines: list[str] = []
+        if isinstance(backend_timing, Mapping):
+            timing_lines.append(
+                self.tr("Backend total: {milliseconds} ms").format(
+                    milliseconds=f"{float(backend_timing.get('total', 0.0) or 0.0):.1f}"
+                )
+            )
+            stages = backend_timing.get("stages", {})
+            if isinstance(stages, Mapping):
+                timing_lines.extend(
+                    f"{name}: {float(milliseconds):.1f} ms"
+                    for name, milliseconds in sorted(
+                        stages.items(), key=lambda item: float(item[1]), reverse=True
+                    )
+                )
+        for section_name in ("data_quality", "local_chemistry"):
+            section = result.overview_metrics.get(section_name, {})
+            section_timing = section.get("timings_ms", {}) if isinstance(section, Mapping) else {}
+            section_stages = (
+                section_timing.get("stages", {})
+                if isinstance(section_timing, Mapping)
+                else {}
+            )
+            if isinstance(section_stages, Mapping) and section_stages:
+                timing_lines.append(f"[{section_name}]")
+                timing_lines.extend(
+                    f"  {name}: {float(milliseconds):.1f} ms"
+                    for name, milliseconds in sorted(
+                        section_stages.items(),
+                        key=lambda item: float(item[1]),
+                        reverse=True,
+                    )
+                )
+        timing_lines.append(
+            self.tr("UI render: {milliseconds} ms").format(
+                milliseconds=f"{render_timings_ms['total']:.1f}"
+            )
+        )
+        self.generated_at_label.setToolTip("\n".join(timing_lines))
+        logger.info(
+            "Training Set Audit UI timing: total={total:.1f} ms | {stages}",
+            total=render_timings_ms["total"],
+            stages=" | ".join(
+                f"{key}={value:.1f} ms"
+                for key, value in sorted(
+                    (
+                        (key, value)
+                        for key, value in render_timings_ms.items()
+                        if key != "total"
+                    ),
+                    key=lambda item: item[1],
+                    reverse=True,
+                )
+            ),
+        )
 
     def _structure_count(self) -> int:
         if self._result is None:

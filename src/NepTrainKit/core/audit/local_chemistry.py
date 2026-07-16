@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
+from time import perf_counter
 from typing import Sequence
 
 import numpy as np
@@ -276,6 +277,13 @@ def audit_local_chemistry(
             empty_overview,
         )
 
+    audit_started = perf_counter()
+    timings_ms = {
+        "batch_geometry_prepare": 0.0,
+        "batch_type_prepare": 0.0,
+        "neighbor_kernel": 0.0,
+        "batch_result_collect": 0.0,
+    }
     elements = profile.elements
     model_elements = set(elements)
     histograms: dict[tuple[str, str, str], _Histogram] = defaultdict(_Histogram)
@@ -293,7 +301,16 @@ def audit_local_chemistry(
         if geometry is not None
         else _iter_geometry_batches(indexed_structures, model_elements)
     )
-    for prepared, atom_offsets in batches:
+    batch_iterator = iter(batches)
+    while True:
+        stage_started = perf_counter()
+        try:
+            prepared, atom_offsets = next(batch_iterator)
+        except StopIteration:
+            break
+        timings_ms["batch_geometry_prepare"] += (perf_counter() - stage_started) * 1000.0
+
+        stage_started = perf_counter()
         atom_types = np.concatenate(
             [np.asarray([element_indices[symbol] for symbol in item[4]], dtype=np.int32) for item in prepared]
         )
@@ -302,6 +319,9 @@ def audit_local_chemistry(
             if pair_contact_collector is not None
             else np.zeros((2, len(elements) * (len(elements) + 1) // 2), dtype=np.uint8)
         )
+        timings_ms["batch_type_prepare"] += (perf_counter() - stage_started) * 1000.0
+
+        stage_started = perf_counter()
         neighbor_counts, neighbor_type_counts, *contact_summary = local_chemistry_summary_batch(
             [item[1] for item in prepared],
             [item[2] for item in prepared],
@@ -310,6 +330,9 @@ def audit_local_chemistry(
             cutoff_matrices,
             detail_mask,
         )
+        timings_ms["neighbor_kernel"] += (perf_counter() - stage_started) * 1000.0
+
+        stage_started = perf_counter()
         source_atom_parts.append(
             np.repeat(
                 np.asarray([item[0] for item in prepared], dtype=np.int64),
@@ -327,7 +350,9 @@ def audit_local_chemistry(
             )
         for _structure_index, _positions, _cell, _pbc, symbols in prepared:
             present_elements.update(symbols)
+        timings_ms["batch_result_collect"] += (perf_counter() - stage_started) * 1000.0
 
+    stage_started = perf_counter()
     if source_atom_parts:
         source_atoms = np.concatenate(source_atom_parts)
         all_atom_types = np.concatenate(atom_type_parts)
@@ -354,6 +379,7 @@ def audit_local_chemistry(
                         fraction_bins,
                         center_sources,
                     )
+    timings_ms["histogram_aggregation"] = (perf_counter() - stage_started) * 1000.0
 
     if not present_elements:
         return (
@@ -363,6 +389,7 @@ def audit_local_chemistry(
         )
     elements = tuple(element for element in profile.elements if element in present_elements)
 
+    stage_started = perf_counter()
     plots: list[dict[str, object]] = []
     slices: list[AuditSlice] = []
     for scope in ("angular", "radial"):
@@ -389,6 +416,7 @@ def audit_local_chemistry(
                 )
                 plots.append(plot)
                 slices.extend(plot_slices)
+    timings_ms["plot_assembly"] = (perf_counter() - stage_started) * 1000.0
 
     dimension = AuditDimension(
         "local_chemistry",
@@ -400,5 +428,9 @@ def audit_local_chemistry(
         "available_scopes": ("angular", "radial"),
         "center_element_count": len(elements),
         "sparse_bin_count": len(slices),
+        "timings_ms": {
+            "total": round((perf_counter() - audit_started) * 1000.0, 3),
+            "stages": {key: round(value, 3) for key, value in timings_ms.items()},
+        },
     }
     return dimension, tuple(slices), overview

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
+from time import perf_counter
 from typing import Any
 
 import numpy as np
@@ -264,6 +265,8 @@ def audit_data_quality(
             {"blocker_count": 0, "review_count": 0},
         )
 
+    audit_started = perf_counter()
+    timings_ms: dict[str, float] = {}
     issues: dict[str, set[int]] = defaultdict(set)
     geometry_groups: dict[tuple[Any, ...], list[int]] = defaultdict(list)
     labels_by_index: dict[int, Mapping[str, np.ndarray]] = {}
@@ -272,8 +275,11 @@ def audit_data_quality(
     geometry_cells: list[np.ndarray] = []
     geometry_pbc: list[np.ndarray] = []
     source_indices = [source_index for source_index, _ in indexed_structures]
+    stage_started = perf_counter()
     label_coverage, batch_nonfinite = _reference_label_status(result_data, source_indices)
+    timings_ms["reference_label_arrays"] = (perf_counter() - stage_started) * 1000.0
 
+    stage_started = perf_counter()
     prepared_geometry: list[tuple[int, Structure, np.ndarray, bool, np.ndarray, np.ndarray, bool]] = []
     for source_index, structure in indexed_structures:
         try:
@@ -289,11 +295,16 @@ def audit_data_quality(
         prepared_geometry.append(
             (source_index, structure, positions, position_shape_ok, cell, pbc, pbc_ok)
         )
+    timings_ms["geometry_array_prepare"] = (perf_counter() - stage_started) * 1000.0
+
+    stage_started = perf_counter()
     cell_status = periodic_cell_statuses(
         [item[4] for item in prepared_geometry],
         [item[5] for item in prepared_geometry],
     )
+    timings_ms["cell_validation"] = (perf_counter() - stage_started) * 1000.0
 
+    stage_started = perf_counter()
     for prepared_row, prepared in enumerate(prepared_geometry):
         source_index, structure, positions, position_shape_ok, cell, pbc, pbc_ok = prepared
         atom_count = int(positions.shape[0]) if position_shape_ok else 0
@@ -350,7 +361,9 @@ def audit_data_quality(
         geometry_cells.append(cell)
         geometry_pbc.append(pbc)
         geometry_groups[_geometry_key(elements, positions, cell, pbc)].append(source_index)
+    timings_ms["structure_contracts"] = (perf_counter() - stage_started) * 1000.0
 
+    stage_started = perf_counter()
     try:
         structure_data = getattr(result_data, "structure", None)
         geometry_snapshot = getattr(structure_data, "geometry_snapshot", None)
@@ -374,13 +387,17 @@ def audit_data_quality(
             )
     except Exception:
         issues["short_distance_unavailable"].update(geometry_source_indices)
+    timings_ms["minimum_distance_scan"] = (perf_counter() - stage_started) * 1000.0
 
+    stage_started = perf_counter()
     duplicate_groups = [group for group in geometry_groups.values() if len(group) > 1]
     duplicate_indices = {index for group in duplicate_groups for index in group}
     conflict_indices: set[int] = set()
     for group in duplicate_groups:
         conflict_indices.update(_conflicting_label_indices(group, labels_by_index))
+    timings_ms["duplicate_conflicts"] = (perf_counter() - stage_started) * 1000.0
 
+    stage_started = perf_counter()
     slices: list[AuditSlice] = []
     definitions = (
         (
@@ -518,6 +535,8 @@ def audit_data_quality(
         reason = (
             f"Short-distance checking was unavailable for {len(issues['short_distance_unavailable'])} structures."
         )
+    timings_ms["finding_assembly"] = (perf_counter() - stage_started) * 1000.0
+    timings_ms["total"] = (perf_counter() - audit_started) * 1000.0
     return (
         AuditDimension(
             "data_quality",
@@ -535,5 +554,13 @@ def audit_data_quality(
             "affected_structure_count": len(
                 {index for item in slices for index in item.structure_indices}
             ),
+            "timings_ms": {
+                "total": round(timings_ms["total"], 3),
+                "stages": {
+                    key: round(value, 3)
+                    for key, value in timings_ms.items()
+                    if key != "total"
+                },
+            },
         },
     )

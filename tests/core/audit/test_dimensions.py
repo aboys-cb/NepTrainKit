@@ -8,7 +8,7 @@ import pytest
 from NepTrainKit.core.audit import local_chemistry
 from NepTrainKit.core.audit.composition import audit_composition
 from NepTrainKit.core.audit.config_types import audit_config_types
-from NepTrainKit.core.audit.engine import build_training_set_audit
+from NepTrainKit.core.audit.engine import _restrict_profile_to_records, build_training_set_audit
 from NepTrainKit.core.audit.extract import StructureAuditRecord, indexed_structures_from_result_data
 from NepTrainKit.core.audit.label_ranges import audit_label_ranges
 from NepTrainKit.core.audit.local_chemistry import audit_local_chemistry
@@ -28,6 +28,26 @@ def _record(index, composition, config_type, energy=None, force=None, virial=Non
         energy_per_atom=energy,
         max_force=force,
         virial_norm=virial,
+    )
+
+
+def test_engine_restricts_wide_model_profile_to_elements_present_in_scope():
+    profile = NepCutoffProfile(
+        ("H", "Fe", "Ni", "O"),
+        (6.0, 5.0, 4.0, 3.0),
+        (3.0, 2.5, 2.0, 1.5),
+    )
+    records = [
+        _record(0, {"Fe": 0.5, "Ni": 0.5}, "bulk"),
+        _record(1, {"Ni": 1.0}, "bulk"),
+    ]
+
+    restricted = _restrict_profile_to_records(profile, records)
+
+    assert restricted == NepCutoffProfile(
+        ("Fe", "Ni"),
+        (5.0, 4.0),
+        (2.5, 2.0),
     )
 
 
@@ -424,7 +444,10 @@ def test_native_local_chemistry_handles_orthogonal_and_triclinic_cells():
         "local_chemistry:radial:Fe:neighbor_count": (1, 0, 2),
         "local_chemistry:radial:Ni:neighbor_count": (1, 0, 1),
     }
-    assert overview == {
+    assert {
+        key: overview[key]
+        for key in ("available_scopes", "center_element_count", "sparse_bin_count")
+    } == {
         "available_scopes": ("angular", "radial"),
         "center_element_count": 2,
         "sparse_bin_count": 0,
@@ -529,9 +552,39 @@ def test_engine_uses_active_nep_model_for_local_chemistry(tmp_path: Path):
     assert local_dimension.id == "local_chemistry"
     assert local_dimension.status is AuditStatus.AVAILABLE
     assert result.overview_metrics["local_chemistry"]["available_scopes"] == ("angular", "radial")
+    local_timings = result.overview_metrics["local_chemistry"]["timings_ms"]
+    assert set(local_timings["stages"]) == {
+        "batch_geometry_prepare",
+        "batch_type_prepare",
+        "neighbor_kernel",
+        "batch_result_collect",
+        "histogram_aggregation",
+        "plot_assembly",
+    }
     pair_dimension = result.dimensions[-1]
     assert pair_dimension.id == "pair_contacts"
     assert pair_dimension.status is AuditStatus.AVAILABLE
+
+
+def test_engine_reports_absent_model_elements_without_computing_their_pair_matrix(tmp_path: Path):
+    structure = _structure(["Fe", "Ni"], [[2.0, 2.0, 2.0], [3.0, 2.0, 2.0]])
+    model = tmp_path / "nep.txt"
+    model.write_text("nep4 4 H Fe Ni O\ncutoff 2 1.5 8 4\n", encoding="utf-8")
+    result_data = SimpleNamespace(
+        structure=SimpleNamespace(
+            all_data=np.asarray([structure], dtype=object),
+            now_indices=np.asarray([0], dtype=np.int32),
+        ),
+        nep_txt_path=model,
+    )
+
+    result = build_training_set_audit(result_data)
+
+    local_overview = result.overview_metrics["local_chemistry"]
+    assert local_overview["declared_model_elements"] == ("H", "Fe", "Ni", "O")
+    assert local_overview["analyzed_model_elements"] == ("Fe", "Ni")
+    assert local_overview["absent_model_elements"] == ("H", "O")
+    assert result.overview_metrics["pair_contacts"]["pair_count"] == 3
 
 
 def test_pair_contacts_distinguish_co_sampling_from_local_contact(tmp_path: Path):

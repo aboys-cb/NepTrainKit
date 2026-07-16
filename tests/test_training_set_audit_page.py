@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import importlib
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 from PySide6.QtCore import QTranslator, Qt
@@ -239,6 +240,31 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertTrue(widget.local_center_selector.isHidden())
         widget.close()
 
+    def test_model_panel_distinguishes_compute_filtering_from_absent_element_evidence(self):
+        result = self._local_chemistry_result()
+        local_overview = {
+            **result.overview_metrics["local_chemistry"],
+            "declared_model_elements": ("H", "Fe", "Ni", "O"),
+            "analyzed_model_elements": ("Fe", "Ni"),
+            "absent_model_elements": ("H", "O"),
+        }
+        result = replace(
+            result,
+            overview_metrics={
+                **result.overview_metrics,
+                "local_chemistry": local_overview,
+            },
+        )
+        widget = TrainingSetAuditWidget()
+
+        widget.set_result(result)
+
+        self.assertIn("declares 4 elements", widget.model_empty_label.text())
+        self.assertIn("dataset contains 2: Fe · Ni", widget.model_empty_label.text())
+        self.assertIn("other 2 model elements are absent", widget.model_empty_label.text())
+        self.assertEqual(widget.model_empty_label.toolTip(), "Absent model elements: H, O")
+        widget.close()
+
     def test_local_chemistry_unavailable_hides_selectors_and_shows_parser_reason(self):
         widget = TrainingSetAuditWidget()
         reason = "NEP cutoff line does not match the declared element count."
@@ -343,6 +369,42 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.metric_band.objectName(), "auditMetricBand")
         self.assertEqual(widget.analysis_panel.objectName(), "auditAnalysisPanel")
         self.assertEqual(widget.findings_panel.objectName(), "auditFindingsPanel")
+
+    def test_dashboard_exposes_backend_and_render_timings_without_cluttering_panels(self):
+        result = self._dashboard_result()
+        result = replace(
+            result,
+            overview_metrics={
+                **result.overview_metrics,
+                "timings_ms": {
+                    "total": 1234.5,
+                    "preparation": 400.0,
+                    "finalization": 100.0,
+                    "stages": {
+                        "record_extraction": 300.0,
+                        "data_quality": 500.0,
+                    },
+                },
+                "data_quality": {
+                    "timings_ms": {
+                        "total": 500.0,
+                        "stages": {
+                            "structure_contracts": 420.0,
+                            "minimum_distance_scan": 16.0,
+                        },
+                    },
+                },
+            },
+        )
+        widget = TrainingSetAuditWidget()
+
+        widget.set_result(result)
+
+        self.assertIn("Audit 1.23 s", widget.generated_at_label.text())
+        self.assertIn("Backend total: 1234.5 ms", widget.generated_at_label.toolTip())
+        self.assertIn("data_quality: 500.0 ms", widget.generated_at_label.toolTip())
+        self.assertIn("structure_contracts: 420.0 ms", widget.generated_at_label.toolTip())
+        self.assertGreaterEqual(widget._last_render_timings_ms["total"], 0.0)
 
     def test_dimension_selection_updates_plots_findings_and_unavailable_reason(self):
         widget = TrainingSetAuditWidget()

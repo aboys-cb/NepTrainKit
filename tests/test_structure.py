@@ -167,6 +167,30 @@ class TestStructure(unittest.TestCase):
 
         os.remove(test_file)
 
+    def test_xyz_escaped_json_metadata_roundtrip_preserves_following_fields(self):
+        xyz = r'''1
+Lattice="3 0 0 0 3 0 0 0 3" Properties=species:S:1:pos:R:3 rss_composition="_JSON {\"B\": 0.6, \"N\": 0.4}" prerelax_energy=-4.5 stress="1 0 0 0 1 0 0 0 1" energy=-10.25 pbc="T T T"
+B 0 0 0
+'''
+
+        structure = Structure.parse_xyz(xyz)
+
+        self.assertEqual(structure.additional_fields["rss_composition"], '_JSON {"B": 0.6, "N": 0.4}')
+        self.assertEqual(structure.additional_fields["prerelax_energy"], -4.5)
+        self.assertEqual(structure.energy, -10.25)
+        np.testing.assert_array_equal(structure.additional_fields["stress"], np.eye(3).reshape(-1))
+        self.assertEqual(structure.additional_fields["pbc"], "T T T")
+
+        handle = StringIO()
+        structure.write(handle)
+        written = handle.getvalue()
+        self.assertIn(r'rss_composition="_JSON {\"B\": 0.6, \"N\": 0.4}"', written.splitlines()[1])
+
+        reparsed = Structure.parse_xyz(written)
+        self.assertEqual(reparsed.additional_fields["rss_composition"], structure.additional_fields["rss_composition"])
+        self.assertEqual(reparsed.energy, structure.energy)
+        np.testing.assert_array_equal(reparsed.additional_fields["stress"], structure.additional_fields["stress"])
+
     def test_xyz_export_digits_only_affect_atomic_float_fields(self):
         Config.set("nep", "data_precision", DataPrecision.FLOAT64)
         Config.set("io", "export_significant_digits", 8)

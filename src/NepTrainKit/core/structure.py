@@ -48,6 +48,64 @@ def _format_atomic_float_values(values: Any, significant_digits: int) -> str:
     return " ".join(format(float(v), fmt) for v in arr)
 
 
+def _parse_extxyz_key_value_pairs(line: str) -> list[tuple[str, str]]:
+    """Parse EXTXYZ header pairs while honoring backslash escapes in quotes."""
+    pairs: list[tuple[str, str]] = []
+    index = 0
+    length = len(line)
+
+    while index < length:
+        while index < length and line[index].isspace():
+            index += 1
+        if index >= length:
+            break
+
+        key_start = index
+        while index < length and line[index] != "=" and not line[index].isspace():
+            index += 1
+        key = line[key_start:index]
+        while index < length and line[index].isspace():
+            index += 1
+        if not key or index >= length or line[index] != "=":
+            while index < length and not line[index].isspace():
+                index += 1
+            continue
+
+        index += 1
+        while index < length and line[index].isspace():
+            index += 1
+
+        if index < length and line[index] == '"':
+            index += 1
+            value_chars: list[str] = []
+            while index < length:
+                char = line[index]
+                index += 1
+                if char == "\\" and index < length:
+                    value_chars.append(line[index])
+                    index += 1
+                elif char == '"':
+                    break
+                else:
+                    value_chars.append(char)
+            value = "".join(value_chars)
+        else:
+            value_start = index
+            while index < length and not line[index].isspace():
+                index += 1
+            value = line[value_start:index]
+
+        pairs.append((key, value))
+
+    return pairs
+
+
+def _quote_extxyz_string(value: str) -> str:
+    """Quote a string value so parsing and writing preserve its contents."""
+    escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{escaped}"'
+
+
 def _normalize_float_field(value: Any, float_dtype: np.dtype[Any] | None = None) -> Any:
     """Normalize floating-point payloads to the configured storage dtype."""
     dtype = float_dtype or get_storage_float_dtype()
@@ -815,17 +873,11 @@ class Structure:
 
     @classmethod
     def _parse_global_properties(cls, line:str)->tuple[list[float],list[dict[str,Any]],dict[str,Any]]:
-        
-        pattern = r'(\w+)=\s*"([^"]+)"|(\w+)=([\S]+)'
-        matches = re.findall(pattern, line)
         properties = []
         lattice = None
         additional_fields = {}
 
-        for match in matches:
-            key = match[0] or match[2]
-            # key=key.capitalize()
-            value = match[1] or match[3]
+        for key, value in _parse_extxyz_key_value_pairs(line):
 
             if key.capitalize()  == "Lattice":
                 lattice = list(map(float, value.split()))
@@ -833,15 +885,10 @@ class Structure:
                 # Parse Properties details
                 properties = cls._parse_properties(value)
             else:
-
-                if '"' in value:
-
-                    value = value.strip('"')
-                else:
-                    try:
-                        value = float(value)
-                    except Exception as e:
-                        value = value
+                try:
+                    value = float(value)
+                except Exception:
+                    pass
                 if key == "config_type" or key == "Config_type":
                     key = "Config_type"
                     value=str(value)
@@ -1033,7 +1080,7 @@ class Structure:
                     value_str = " ".join(map(str, value ))
                 global_line.append(f'{key}="{value_str}"')
             else:
-                global_line.append(f'{key}="{value}"')
+                global_line.append(f'{key}={_quote_extxyz_string(str(value))}')
         file.write(" ".join(global_line) + "\n")
 
         for row in range(self.num_atoms):

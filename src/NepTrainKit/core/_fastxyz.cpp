@@ -197,14 +197,18 @@ static void parse_header_line(const char* b, const char* e,
         }
         p = skip_ws(p, e);
         std::string value;
-        bool quoted = false;
         if (p < e && *p == '"') {
-            quoted = true;
             ++p;
-            const char* v0 = p;
-            while (p < e && *p != '"') ++p;
-            value.assign(v0, p);
-            if (p < e && *p == '"') ++p;
+            while (p < e) {
+                const char c = *p++;
+                if (c == '\\' && p < e) {
+                    value.push_back(*p++);
+                } else if (c == '"') {
+                    break;
+                } else {
+                    value.push_back(c);
+                }
+            }
         } else {
             const char* v0 = p;
             while (p < e && !std::isspace(static_cast<unsigned char>(*p))) ++p;

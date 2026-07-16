@@ -9,7 +9,11 @@ import numpy as np
 
 from NepTrainKit.core.structure import Structure, atomic_numbers
 
-from .neighbor_scan import find_short_distance_structure_rows, periodic_cell_statuses
+from .neighbor_scan import (
+    find_short_distance_geometry_structure_indices,
+    find_short_distance_structure_rows,
+    periodic_cell_statuses,
+)
 from .result import (
     AuditBiasType,
     AuditConfidence,
@@ -348,15 +352,26 @@ def audit_data_quality(
         geometry_groups[_geometry_key(elements, positions, cell, pbc)].append(source_index)
 
     try:
-        short_distance_rows = find_short_distance_structure_rows(
-            geometry_positions,
-            geometry_cells,
-            geometry_pbc,
-            SHORT_DISTANCE_ANGSTROM,
-        )
-        issues["short_distance"].update(
-            geometry_source_indices[row] for row in short_distance_rows
-        )
+        structure_data = getattr(result_data, "structure", None)
+        geometry_snapshot = getattr(structure_data, "geometry_snapshot", None)
+        if callable(geometry_snapshot) and len(geometry_source_indices) == len(indexed_structures):
+            geometry = geometry_snapshot(geometry_source_indices)
+            issues["short_distance"].update(
+                find_short_distance_geometry_structure_indices(
+                    geometry,
+                    SHORT_DISTANCE_ANGSTROM,
+                )
+            )
+        else:
+            short_distance_rows = find_short_distance_structure_rows(
+                geometry_positions,
+                geometry_cells,
+                geometry_pbc,
+                SHORT_DISTANCE_ANGSTROM,
+            )
+            issues["short_distance"].update(
+                geometry_source_indices[row] for row in short_distance_rows
+            )
     except Exception:
         issues["short_distance_unavailable"].update(geometry_source_indices)
 

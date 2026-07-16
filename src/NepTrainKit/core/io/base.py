@@ -30,6 +30,7 @@ from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
 from NepTrainKit.core.precision import get_export_significant_digits, get_storage_float_dtype
 from NepTrainKit.core.structure import Structure, atomic_numbers, get_type_map, save_npy_structure
+from NepTrainKit.core.geometry_cache import GeometrySnapshot, StructureGeometryCache
 from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
 
 from .sampler import SparseSampler,farthest_point_sampling,pca
@@ -368,6 +369,22 @@ class DPPlotData(NepData):
         return self.group_array[:].repeat(self.cols).astype(np.int32)
 class StructureData(NepData):
     """Utility mixin for structure-level queries."""
+
+    _geometry_cache_init_lock = threading.Lock()
+
+    def geometry_snapshot(
+        self,
+        source_indices: Sequence[int] | npt.NDArray[np.int64] | None = None,
+    ) -> GeometrySnapshot:
+        """Return cached contiguous geometry for all or selected source rows."""
+        cache = getattr(self, "_geometry_cache", None)
+        if cache is None:
+            with self._geometry_cache_init_lock:
+                cache = getattr(self, "_geometry_cache", None)
+                if cache is None:
+                    cache = StructureGeometryCache(self.all_data)
+                    self._geometry_cache = cache
+        return cache.snapshot(source_indices)
 
     def _completer_cache_lock(self) -> threading.Lock:
         lock = getattr(self, "_completer_cache_lock_obj", None)
@@ -2261,12 +2278,19 @@ class ResultData(QObject):
         self.updateInfoSignal.emit()
     def iter_non_physical_structure_indices(self, radius_coefficient: float):
         """Yield progress increments while collecting non-physical structures."""
-        structures = self.structure.now_data
-        group_array = self.structure.group_array.now_data
-        pending: list[int] = []
-        for structure, index in zip(structures, group_array):
-            if not structure.adjust_reasonable(radius_coefficient):
-                pending.append(int(index))
+        from NepTrainKit.core.audit.neighbor_scan import (
+            find_scaled_radii_collision_structure_indices,
+        )
+
+        active_indices = self.structure.now_indices
+        geometry = self.structure.geometry_snapshot(active_indices)
+        pending = list(
+            find_scaled_radii_collision_structure_indices(
+                geometry,
+                float(radius_coefficient),
+            )
+        )
+        for _ in active_indices:
             yield 1
         self._pending_non_physical_indices = pending
 

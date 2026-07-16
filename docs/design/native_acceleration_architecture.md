@@ -22,6 +22,9 @@ src/NepTrainKit/_native/
 ├── _io.*
 ├── _audit.*
 └── _phase.*
+
+src/NepTrainKit/core/
+└── geometry_cache.py            # 跟随 StructureData 生命周期的只读几何快照
 ```
 
 `nep_cpu` 和 `nep_gpu` 是模型计算后端，继续保持独立；它们不属于应用层 `_native` 模块。
@@ -35,15 +38,28 @@ src/NepTrainKit/_native/
 - 周期晶格必须可逆；奇异输入直接报错，不静默近似。
 - 排除中心原子的零平移自映像；允许同一原子的非零周期映像。
 - KNN 结果采用确定性排序；半径查询保持 Audit 的严格 `< cutoff` 语义。
-- Phase 使用 `float`，Audit 使用 `double`。
+- Phase 与碰撞识别使用 `float`；需要保留归一化距离细节的 Local Chemistry 使用 `double`。
 - 小结构使用直接扫描，较大结构使用 cell-list；这个选择封装在模块内部，调用方不感知。
+
+## Dataset 几何快照
+
+`StructureData.geometry_snapshot()` 是重复结构分析的共享 seam：
+
+- 首次请求时把 positions、cell、PBC、原子序数和 atom offsets 整理成连续只读数组；
+- 删除和撤销只改变激活投影，不重建不变的底层几何；
+- 最近一次激活/选定范围的投影会复用；
+- 数据质量、局域化学、非物理结构识别和后续相分析读取同一份快照；
+- 新载入数据会创建新的 `StructureData`，因此缓存自然随 dataset 一起销毁，不使用全局缓存。
+
+接口假设 `StructureData` 的底层 Structure 对象在生命周期内不被原地修改；当前产品的删除/撤销只修改掩码，符合这一契约。
 
 ## Python/C++ 边界
 
 - `_io`：只解析和索引 EXTXYZ，不理解训练集审查规则。
 - `_audit`：只做批量几何搜索、标签数组聚合和数值统计，不生成产品结论。
 - `_phase`：只做局域特征与候选相数值指标，不决定 UI 文案或下一步建议。
-- Python 层负责 fallback、审查阈值、finding、排序、报告和交互。
+- Python 层负责输入适配、审查阈值、finding、排序、报告和交互。
+- 已下沉且经过验证的热点不保留第二套 Python 算法；原生模块缺失或输入不受支持时明确报错。
 
 一个能力只应进入一个领域模块。只有出现第二个真实调用方的计算原语，才下沉到 `include/neptrainkit/native` 共享层。
 

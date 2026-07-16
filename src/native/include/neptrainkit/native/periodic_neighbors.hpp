@@ -7,6 +7,7 @@
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -225,6 +226,74 @@ public:
         return false;
     }
 
+    bool any_distinct_pair_below_scaled_radii(
+        const Scalar* radii,
+        Scalar coefficient
+    ) const {
+        if (atom_count_ < 2) return false;
+        if (!(coefficient >= static_cast<Scalar>(0)) || !std::isfinite(coefficient)) {
+            throw std::invalid_argument("radius coefficient must be finite and non-negative");
+        }
+        if (coefficient == static_cast<Scalar>(0)) return false;
+        Scalar maximum_radius = static_cast<Scalar>(0);
+        for (std::int64_t atom = 0; atom < atom_count_; ++atom) {
+            const Scalar radius = radii[atom];
+            if (!(radius >= static_cast<Scalar>(0)) || !std::isfinite(radius)) {
+                throw std::invalid_argument("atomic radii must be finite and non-negative");
+            }
+            maximum_radius = std::max(maximum_radius, radius);
+        }
+        const Scalar maximum_cutoff = static_cast<Scalar>(2) * coefficient * maximum_radius;
+        if (!(maximum_cutoff > static_cast<Scalar>(0))) return false;
+
+        if (atom_count_ <= kDirectScanAtomLimit) {
+            const auto translations = image_translations(maximum_cutoff);
+            for (std::int64_t first_index = 0; first_index < atom_count_; ++first_index) {
+                const auto& first = wrapped_[static_cast<std::size_t>(first_index)];
+                for (std::int64_t second_index = first_index + 1;
+                     second_index < atom_count_; ++second_index) {
+                    const auto& second = wrapped_[static_cast<std::size_t>(second_index)];
+                    const Scalar cutoff = coefficient * (
+                        radii[first_index] + radii[second_index]
+                    );
+                    const Scalar cutoff_squared = cutoff * cutoff;
+                    const Scalar base_x = second[0] - first[0];
+                    const Scalar base_y = second[1] - first[1];
+                    const Scalar base_z = second[2] - first[2];
+                    for (const auto& shift : translations) {
+                        const Scalar dx = base_x + shift.x;
+                        const Scalar dy = base_y + shift.y;
+                        const Scalar dz = base_z + shift.z;
+                        if (dx * dx + dy * dy + dz * dz < cutoff_squared) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        const SpatialIndex index(this, maximum_cutoff);
+        for (std::int64_t center = 0; center < atom_count_; ++center) {
+            bool found = false;
+            index.visit(center, [&](
+                const ImagePoint& point,
+                Scalar,
+                Scalar,
+                Scalar,
+                Scalar squared
+            ) {
+                if (point.source == center) return true;
+                const Scalar cutoff = coefficient * (radii[center] + radii[point.source]);
+                if (squared < cutoff * cutoff) {
+                    found = true;
+                    return false;
+                }
+                return true;
+            });
+            if (found) return true;
+        }
+        return false;
+    }
+
 private:
     // Measured on Audit's 32-atom frame workload: below this point the setup
     // cost of a cell-list is larger than the pair scan it replaces.
@@ -316,7 +385,15 @@ private:
             bins_[2] = bin_count(2);
             const std::size_t total_bins = static_cast<std::size_t>(bins_[0]) *
                                            bins_[1] * bins_[2];
-            heads_.assign(total_bins, -1);
+            const std::size_t dense_limit = std::max<std::size_t>(
+                1000000, points_.size() * 32
+            );
+            sparse_bins_ = total_bins > dense_limit;
+            if (sparse_bins_) {
+                sparse_heads_.reserve(points_.size() * 2);
+            } else {
+                heads_.assign(total_bins, -1);
+            }
             next_.assign(points_.size(), -1);
             for (std::size_t point_index = 0; point_index < points_.size(); ++point_index) {
                 const ImagePoint& point = points_[point_index];
@@ -324,8 +401,14 @@ private:
                 const int y = coordinate(point.y, 1);
                 const int z = coordinate(point.z, 2);
                 const std::size_t bin = flat_bin(x, y, z);
-                next_[point_index] = heads_[bin];
-                heads_[bin] = static_cast<std::int32_t>(point_index);
+                if (sparse_bins_) {
+                    const auto previous = sparse_heads_.find(bin);
+                    next_[point_index] = previous == sparse_heads_.end() ? -1 : previous->second;
+                    sparse_heads_[bin] = static_cast<std::int32_t>(point_index);
+                } else {
+                    next_[point_index] = heads_[bin];
+                    heads_[bin] = static_cast<std::int32_t>(point_index);
+                }
             }
         }
 
@@ -343,7 +426,14 @@ private:
                      y <= std::min(bins_[1] - 1, center_y + 1); ++y) {
                     for (int z = std::max(0, center_z - 1);
                          z <= std::min(bins_[2] - 1, center_z + 1); ++z) {
-                        std::int32_t point_index = heads_[flat_bin(x, y, z)];
+                        const std::size_t bin = flat_bin(x, y, z);
+                        std::int32_t point_index = -1;
+                        if (sparse_bins_) {
+                            const auto found = sparse_heads_.find(bin);
+                            if (found != sparse_heads_.end()) point_index = found->second;
+                        } else {
+                            point_index = heads_[bin];
+                        }
                         while (point_index >= 0) {
                             const ImagePoint& point = points_[static_cast<std::size_t>(point_index)];
                             if (!(point.source == center && point.central_image)) {
@@ -395,7 +485,9 @@ private:
         std::array<Scalar, 3> lower_;
         std::array<Scalar, 3> upper_;
         int bins_[3] = {1, 1, 1};
+        bool sparse_bins_ = false;
         std::vector<std::int32_t> heads_;
+        std::unordered_map<std::size_t, std::int32_t> sparse_heads_;
         std::vector<std::int32_t> next_;
     };
 

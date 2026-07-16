@@ -6,7 +6,9 @@ from dataclasses import dataclass, field
 from typing import Sequence
 
 import numpy as np
+from ase.data import chemical_symbols
 
+from NepTrainKit.core.geometry_cache import GeometrySnapshot
 from NepTrainKit.core.structure import Structure
 
 from .nep_cutoff import NepCutoffProfile
@@ -127,6 +129,40 @@ def _iter_geometry_batches(
         yield prepared, atom_offsets
 
 
+def _iter_cached_geometry_batches(
+    geometry: GeometrySnapshot,
+    model_elements: set[str],
+):
+    for start in range(0, geometry.structure_count, _NATIVE_BATCH_SIZE):
+        stop = min(start + _NATIVE_BATCH_SIZE, geometry.structure_count)
+        atom_begin = int(geometry.atom_offsets[start])
+        local_offsets = np.ascontiguousarray(
+            geometry.atom_offsets[start : stop + 1] - atom_begin,
+            dtype=np.int64,
+        )
+        prepared = []
+        for row in range(start, stop):
+            frame_begin = int(geometry.atom_offsets[row])
+            frame_end = int(geometry.atom_offsets[row + 1])
+            symbols = tuple(
+                chemical_symbols[int(number)]
+                for number in geometry.atomic_numbers[frame_begin:frame_end]
+            )
+            unknown = sorted(set(symbols) - model_elements)
+            if unknown:
+                raise ValueError("A structure contains elements not declared in the active NEP model.")
+            prepared.append(
+                (
+                    int(geometry.source_indices[row]),
+                    geometry.positions[frame_begin:frame_end],
+                    geometry.cells[row],
+                    geometry.pbc[row],
+                    symbols,
+                )
+            )
+        yield prepared, local_offsets
+
+
 def _cutoff_matrix(profile: NepCutoffProfile, elements: tuple[str, ...], scope: str) -> np.ndarray:
     cutoffs = np.asarray(
         [profile.pair_cutoff(element, element, scope) for element in elements],
@@ -229,6 +265,7 @@ def audit_local_chemistry(
     profile: NepCutoffProfile,
     *,
     pair_contact_collector=None,
+    geometry: GeometrySnapshot | None = None,
 ) -> tuple[AuditDimension, tuple[AuditSlice, ...], dict[str, object]]:
     """Audit per-center neighbor counts and chemical fractions at NEP cutoffs."""
     empty_overview = {"available_scopes": (), "center_element_count": 0, "sparse_bin_count": 0}
@@ -251,10 +288,12 @@ def audit_local_chemistry(
     atom_type_parts: list[np.ndarray] = []
     neighbor_count_parts: list[np.ndarray] = []
     neighbor_type_count_parts: list[np.ndarray] = []
-    for prepared, atom_offsets in _iter_geometry_batches(
-        indexed_structures,
-        model_elements,
-    ):
+    batches = (
+        _iter_cached_geometry_batches(geometry, model_elements)
+        if geometry is not None
+        else _iter_geometry_batches(indexed_structures, model_elements)
+    )
+    for prepared, atom_offsets in batches:
         atom_types = np.concatenate(
             [np.asarray([element_indices[symbol] for symbol in item[4]], dtype=np.int32) for item in prepared]
         )

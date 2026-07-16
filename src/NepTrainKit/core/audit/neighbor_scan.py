@@ -5,7 +5,10 @@ from itertools import product
 from typing import Sequence
 
 import numpy as np
+from ase.data import covalent_radii
 from scipy.spatial import cKDTree
+
+from NepTrainKit.core.geometry_cache import GeometrySnapshot
 
 try:
     from NepTrainKit._native import _audit as _native_scan
@@ -17,6 +20,61 @@ _NATIVE_CELL_DETERMINANT_TOLERANCE = 1.0e-12
 _CELL_VALID = np.uint8(1)
 _NATIVE_NEIGHBOR_SUPPORTED = np.uint8(2)
 _CELL_STATUS_AMBIGUOUS = np.uint8(4)
+
+
+def find_scaled_radii_collision_structure_indices(
+    geometry: GeometrySnapshot,
+    coefficient: float,
+) -> tuple[int, ...]:
+    """Return source rows containing a pair below scaled covalent radii."""
+    if _native_scan is None or not hasattr(_native_scan, "scaled_radii_collision_mask"):
+        raise RuntimeError("Non-physical structure scanning requires the native audit extension.")
+    coefficient = float(coefficient)
+    if not np.isfinite(coefficient) or coefficient < 0.0:
+        raise ValueError("radius coefficient must be finite and non-negative")
+    numbers = np.asarray(geometry.atomic_numbers, dtype=np.int64)
+    if np.any(numbers <= 0) or np.any(numbers >= len(covalent_radii)):
+        raise ValueError("geometry contains an unsupported atomic number")
+    radii = np.ascontiguousarray(covalent_radii[numbers], dtype=np.float32)
+    mask = np.asarray(
+        _native_scan.scaled_radii_collision_mask(
+            np.ascontiguousarray(geometry.positions, dtype=np.float32),
+            np.ascontiguousarray(geometry.atom_offsets, dtype=np.int64),
+            np.ascontiguousarray(geometry.cells, dtype=np.float32),
+            np.ascontiguousarray(geometry.pbc, dtype=np.uint8),
+            radii,
+            coefficient,
+        ),
+        dtype=np.uint8,
+    )
+    if mask.shape != (geometry.structure_count,):
+        raise RuntimeError("native collision scanner returned an invalid result shape")
+    return tuple(int(index) for index in geometry.source_indices[mask != 0])
+
+
+def find_short_distance_geometry_structure_indices(
+    geometry: GeometrySnapshot,
+    cutoff: float,
+) -> tuple[int, ...]:
+    """Return source rows containing a distinct pair within a fixed cutoff."""
+    if _native_scan is None or not hasattr(_native_scan, "short_distance_mask"):
+        raise RuntimeError("Short-distance scanning requires the native audit extension.")
+    cutoff = float(cutoff)
+    if not np.isfinite(cutoff) or cutoff < 0.0:
+        raise ValueError("cutoff must be finite and non-negative")
+    mask = np.asarray(
+        _native_scan.short_distance_mask(
+            np.ascontiguousarray(geometry.positions, dtype=np.float64),
+            np.ascontiguousarray(geometry.atom_offsets, dtype=np.int64),
+            np.ascontiguousarray(geometry.cells, dtype=np.float64),
+            np.ascontiguousarray(geometry.pbc, dtype=np.uint8),
+            cutoff,
+        ),
+        dtype=np.uint8,
+    )
+    if mask.shape != (geometry.structure_count,):
+        raise RuntimeError("native short-distance scanner returned an invalid result shape")
+    return tuple(int(index) for index in geometry.source_indices[mask != 0])
 
 
 def _valid_periodic_cell_python(cell: np.ndarray, pbc: np.ndarray) -> bool:

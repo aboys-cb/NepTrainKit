@@ -28,7 +28,8 @@ struct NormalizedContactFrame {
     std::vector<double> values;
 };
 
-double determinant(const double* a) {
+template <typename Scalar>
+Scalar determinant(const Scalar* a) {
     return a[0] * (a[4] * a[8] - a[5] * a[7])
          - a[1] * (a[3] * a[8] - a[5] * a[6])
          + a[2] * (a[3] * a[7] - a[4] * a[6]);
@@ -126,6 +127,92 @@ void collect_cutoff_neighbors_frame(
 }
 
 }  // namespace
+
+py::array_t<std::uint8_t> scaled_radii_collision_mask(
+    py::array_t<float, py::array::c_style | py::array::forcecast> positions,
+    py::array_t<std::int64_t, py::array::c_style | py::array::forcecast> offsets,
+    py::array_t<float, py::array::c_style | py::array::forcecast> cells,
+    py::array_t<std::uint8_t, py::array::c_style | py::array::forcecast> pbc,
+    py::array_t<float, py::array::c_style | py::array::forcecast> radii,
+    float coefficient
+) {
+    const auto position_info = positions.request();
+    const auto offset_info = offsets.request();
+    const auto cell_info = cells.request();
+    const auto pbc_info = pbc.request();
+    const auto radius_info = radii.request();
+    if (!(coefficient >= 0.0f) || !std::isfinite(coefficient)) {
+        throw std::invalid_argument("radius coefficient must be finite and non-negative");
+    }
+    if (position_info.ndim != 2 || position_info.shape[1] != 3) {
+        throw std::invalid_argument("positions must have shape (N, 3)");
+    }
+    if (offset_info.ndim != 1 || offset_info.shape[0] < 1) {
+        throw std::invalid_argument("offsets must have shape (M + 1,)");
+    }
+    const py::ssize_t frame_count = offset_info.shape[0] - 1;
+    if (cell_info.ndim != 3 || cell_info.shape[0] != frame_count ||
+        cell_info.shape[1] != 3 || cell_info.shape[2] != 3) {
+        throw std::invalid_argument("cells must have shape (M, 3, 3)");
+    }
+    if (pbc_info.ndim != 2 || pbc_info.shape[0] != frame_count || pbc_info.shape[1] != 3) {
+        throw std::invalid_argument("pbc must have shape (M, 3)");
+    }
+    if (radius_info.ndim != 1 || radius_info.shape[0] != position_info.shape[0]) {
+        throw std::invalid_argument("radii must contain one value per atom");
+    }
+
+    const auto* offset_data = static_cast<const std::int64_t*>(offset_info.ptr);
+    const auto* cell_data = static_cast<const float*>(cell_info.ptr);
+    const auto* pbc_data = static_cast<const std::uint8_t*>(pbc_info.ptr);
+    const auto* position_data = static_cast<const float*>(position_info.ptr);
+    const auto* radius_data = static_cast<const float*>(radius_info.ptr);
+    const std::int64_t atom_count = static_cast<std::int64_t>(position_info.shape[0]);
+    if (offset_data[0] != 0 || offset_data[frame_count] != atom_count) {
+        throw std::invalid_argument("offsets must span every input atom");
+    }
+    for (py::ssize_t frame = 0; frame < frame_count; ++frame) {
+        if (offset_data[frame] > offset_data[frame + 1]) {
+            throw std::invalid_argument("offsets must be monotonic");
+        }
+        const std::uint8_t* flags = pbc_data + 3 * frame;
+        if ((flags[0] || flags[1] || flags[2]) &&
+            std::abs(determinant(cell_data + 9 * frame)) <= 1.0e-8f) {
+            throw std::invalid_argument("periodic collision scans require a nonsingular cell");
+        }
+    }
+
+    py::array_t<std::uint8_t> result(frame_count);
+    auto* result_data = result.mutable_data();
+    {
+        py::gil_scoped_release release;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+        for (py::ssize_t frame = 0; frame < frame_count; ++frame) {
+            const std::int64_t begin = offset_data[frame];
+            const std::int64_t end = offset_data[frame + 1];
+            if (end - begin < 2) {
+                result_data[frame] = 0;
+                continue;
+            }
+            const std::uint8_t* raw_flags = pbc_data + 3 * frame;
+            const bool flags[3] = {
+                raw_flags[0] != 0, raw_flags[1] != 0, raw_flags[2] != 0
+            };
+            const neptrainkit::native::PeriodicNeighborSearch<float> search(
+                position_data + 3 * begin,
+                end - begin,
+                cell_data + 9 * frame,
+                flags
+            );
+            result_data[frame] = search.any_distinct_pair_below_scaled_radii(
+                radius_data + begin, coefficient
+            ) ? 1 : 0;
+        }
+    }
+    return result;
+}
 
 py::array_t<std::uint8_t> short_distance_mask(
     py::array_t<double, py::array::c_style | py::array::forcecast> positions,
@@ -612,6 +699,17 @@ py::tuple local_chemistry_summary(
 
 PYBIND11_MODULE(_audit, module) {
     module.doc() = "Batched native geometry primitives for Training Set Audit";
+    module.def(
+        "scaled_radii_collision_mask",
+        &scaled_radii_collision_mask,
+        py::arg("positions"),
+        py::arg("offsets"),
+        py::arg("cells"),
+        py::arg("pbc"),
+        py::arg("radii"),
+        py::arg("coefficient"),
+        "Return one collision flag per structure using scaled atomic radii."
+    );
     module.def(
         "short_distance_mask",
         &short_distance_mask,

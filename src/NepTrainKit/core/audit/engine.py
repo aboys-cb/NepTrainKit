@@ -31,6 +31,13 @@ def build_audit(context: AuditContext) -> AuditRun:
     )
     records = records_from_indexed_structures(indexed_structures)
     inventory = build_dataset_inventory(records)
+    geometry = None
+    geometry_snapshot = getattr(getattr(result_data, "structure", None), "geometry_snapshot", None)
+    if callable(geometry_snapshot):
+        try:
+            geometry = geometry_snapshot(scope.indices)
+        except (IndexError, ValueError):
+            geometry = None
     dimensions = []
     slices = []
     overview: dict[str, object] = {"structures": len(records)}
@@ -76,6 +83,7 @@ def build_audit(context: AuditContext) -> AuditRun:
                 indexed_structures,
                 profile,
                 pair_contact_collector=pair_collector,
+                geometry=geometry,
             )
             pair_dimension, pair_slices, pair_overview = pair_collector.finalize()
         except ValueError as exc:

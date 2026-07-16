@@ -8,7 +8,7 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 try:
-    from NepTrainKit.core import _fastaudit as _native_scan
+    from NepTrainKit._native import _audit as _native_scan
 except ImportError:  # Source-only development and unsupported build platforms.
     _native_scan = None
 
@@ -114,73 +114,6 @@ def _has_short_distance_python(
     return False
 
 
-def _cutoff_neighbor_pairs_python(
-    positions: np.ndarray,
-    cell: np.ndarray,
-    pbc: np.ndarray,
-    cutoff: float,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Reference adapter returning directed periodic neighbors within ``cutoff``."""
-    atom_count = len(positions)
-    if atom_count == 0:
-        empty = np.empty(0, dtype=np.int32)
-        return empty, empty, np.empty(0, dtype=np.float64)
-
-    wrapped = positions
-    image_indices = np.arange(atom_count, dtype=np.int32)
-    image_shifts = np.zeros((atom_count, 3), dtype=np.int32)
-    if np.any(pbc):
-        inverse = np.linalg.inv(cell)
-        fractional = positions @ inverse
-        fractional[:, pbc] %= 1.0
-        wrapped = fractional @ cell
-        face_distances = 1.0 / np.linalg.norm(inverse.T, axis=1)
-        shift_ranges = [
-            range(-int(np.ceil(cutoff / face_distances[axis])), int(np.ceil(cutoff / face_distances[axis])) + 1)
-            if pbc[axis]
-            else (0,)
-            for axis in range(3)
-        ]
-        shifts = np.asarray(tuple(product(*shift_ranges)), dtype=np.int32)
-        image_positions = (
-            wrapped[np.newaxis, :, :] + (shifts @ cell)[:, np.newaxis, :]
-        ).reshape(-1, 3)
-        image_indices = np.tile(image_indices, len(shifts))
-        image_shifts = np.repeat(shifts, atom_count, axis=0)
-    else:
-        image_positions = wrapped
-
-    tree = cKDTree(image_positions)
-    center_parts: list[np.ndarray] = []
-    neighbor_parts: list[np.ndarray] = []
-    distance_parts: list[np.ndarray] = []
-    for center, candidates in enumerate(tree.query_ball_point(wrapped, cutoff)):
-        candidate_images = np.asarray(candidates, dtype=np.intp)
-        candidate_neighbors = image_indices[candidate_images]
-        candidate_distances = np.linalg.norm(
-            image_positions[candidate_images] - wrapped[center],
-            axis=1,
-        )
-        central_self = (candidate_neighbors == center) & np.all(
-            image_shifts[candidate_images] == 0,
-            axis=1,
-        )
-        valid = (candidate_distances < cutoff) & ~central_self
-        if np.any(valid):
-            count = int(np.count_nonzero(valid))
-            center_parts.append(np.full(count, center, dtype=np.int32))
-            neighbor_parts.append(candidate_neighbors[valid].astype(np.int32, copy=False))
-            distance_parts.append(candidate_distances[valid])
-    if not center_parts:
-        empty = np.empty(0, dtype=np.int32)
-        return empty, empty, np.empty(0, dtype=np.float64)
-    return (
-        np.concatenate(center_parts),
-        np.concatenate(neighbor_parts),
-        np.concatenate(distance_parts),
-    )
-
-
 def cutoff_neighbor_pairs_batch(
     positions_by_structure: Sequence[np.ndarray],
     cells: Sequence[np.ndarray],
@@ -206,124 +139,81 @@ def cutoff_neighbor_pairs_batch(
         if cell.shape != (3, 3) or pbc.shape != (3,):
             raise ValueError("each cell and pbc value must have shape (3, 3) and (3,)")
 
-    frame_results: list[tuple[np.ndarray, np.ndarray, np.ndarray] | None] = [None] * len(normalized)
+    if _native_scan is None or not hasattr(_native_scan, "cutoff_neighbor_pairs"):
+        raise RuntimeError("Cutoff neighbor pairs require the native audit extension.")
     statuses = periodic_cell_statuses(
         [item[1] for item in normalized],
         [item[2] for item in normalized],
     )
-    native_rows = [
-        row
-        for row, status in enumerate(statuses)
-        if _native_scan is not None
-        and hasattr(_native_scan, "cutoff_neighbor_pairs")
-        and status & _NATIVE_NEIGHBOR_SUPPORTED
-    ]
-    if native_rows:
-        native_positions = [normalized[row][0] for row in native_rows]
-        atom_counts = np.asarray([len(value) for value in native_positions], dtype=np.int64)
-        atom_offsets = np.empty(len(native_rows) + 1, dtype=np.int64)
-        atom_offsets[0] = 0
-        np.cumsum(atom_counts, out=atom_offsets[1:])
-        pair_offsets, centers, neighbors, distances = _native_scan.cutoff_neighbor_pairs(
-            np.concatenate(native_positions, axis=0),
-            atom_offsets,
-            np.stack([normalized[row][1] for row in native_rows]),
-            np.stack([normalized[row][2] for row in native_rows]),
-            float(cutoff),
-        )
-        pair_offsets = np.asarray(pair_offsets, dtype=np.int64)
-        centers = np.asarray(centers, dtype=np.int32)
-        neighbors = np.asarray(neighbors, dtype=np.int32)
-        distances = np.asarray(distances, dtype=np.float64)
-        for native_index, row in enumerate(native_rows):
-            start = int(pair_offsets[native_index])
-            stop = int(pair_offsets[native_index + 1])
-            frame_results[row] = (centers[start:stop], neighbors[start:stop], distances[start:stop])
-
-    for row, result in enumerate(frame_results):
-        if result is None:
-            positions, cell, pbc = normalized[row]
-            frame_results[row] = _cutoff_neighbor_pairs_python(
-                positions,
-                cell,
-                pbc.astype(bool),
-                float(cutoff),
-            )
-
-    counts = np.asarray([len(result[0]) for result in frame_results if result is not None], dtype=np.int64)
-    pair_offsets = np.empty(len(frame_results) + 1, dtype=np.int64)
-    pair_offsets[0] = 0
-    np.cumsum(counts, out=pair_offsets[1:])
-    if pair_offsets[-1] == 0:
-        return (
-            pair_offsets,
-            np.empty(0, dtype=np.int32),
-            np.empty(0, dtype=np.int32),
-            np.empty(0, dtype=np.float64),
-        )
-    completed = [result for result in frame_results if result is not None]
+    if np.any((statuses & _NATIVE_NEIGHBOR_SUPPORTED) == 0):
+        raise ValueError("Cutoff neighbor pairs require finite positions and a nonsingular periodic cell.")
+    atom_counts = np.asarray([len(item[0]) for item in normalized], dtype=np.int64)
+    atom_offsets = np.empty(len(normalized) + 1, dtype=np.int64)
+    atom_offsets[0] = 0
+    np.cumsum(atom_counts, out=atom_offsets[1:])
+    pair_offsets, centers, neighbors, distances = _native_scan.cutoff_neighbor_pairs(
+        np.concatenate([item[0] for item in normalized], axis=0),
+        atom_offsets,
+        np.stack([item[1] for item in normalized]),
+        np.stack([item[2] for item in normalized]),
+        float(cutoff),
+    )
     return (
-        pair_offsets,
-        np.concatenate([result[0] for result in completed]),
-        np.concatenate([result[1] for result in completed]),
-        np.concatenate([result[2] for result in completed]),
+        np.asarray(pair_offsets, dtype=np.int64),
+        np.asarray(centers, dtype=np.int32),
+        np.asarray(neighbors, dtype=np.int32),
+        np.asarray(distances, dtype=np.float64),
     )
 
 
-def typed_contact_summary(
-    atom_offsets: np.ndarray,
+def local_chemistry_summary_batch(
+    positions_by_structure: Sequence[np.ndarray],
+    cells: Sequence[np.ndarray],
+    pbc_flags: Sequence[np.ndarray],
     atom_types: np.ndarray,
-    pair_offsets: np.ndarray,
-    centers: np.ndarray,
-    neighbors: np.ndarray,
-    distances: np.ndarray,
     cutoff_matrices: np.ndarray,
     detail_mask: np.ndarray,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray] | None:
-    """Return native descriptive contact aggregates, or ``None`` for fallback."""
-    if _native_scan is None or not hasattr(_native_scan, "typed_contact_summary"):
-        return None
-    metrics, normalized_codes, normalized_values = _native_scan.typed_contact_summary(
-        np.ascontiguousarray(atom_offsets, dtype=np.int64),
-        np.ascontiguousarray(atom_types, dtype=np.int32),
-        np.ascontiguousarray(pair_offsets, dtype=np.int64),
-        np.ascontiguousarray(centers, dtype=np.int32),
-        np.ascontiguousarray(neighbors, dtype=np.int32),
-        np.ascontiguousarray(distances, dtype=np.float64),
-        np.ascontiguousarray(cutoff_matrices, dtype=np.float64),
-        np.ascontiguousarray(detail_mask, dtype=np.uint8),
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Return fused native neighbor counts and contact aggregates for one batch."""
+    if _native_scan is None or not hasattr(_native_scan, "local_chemistry_summary"):
+        raise RuntimeError("Local Chemistry requires the native audit extension.")
+    if not (len(positions_by_structure) == len(cells) == len(pbc_flags)):
+        raise ValueError("positions, cells, and pbc must contain the same number of structures")
+    normalized_positions = [
+        np.ascontiguousarray(positions, dtype=np.float64)
+        for positions in positions_by_structure
+    ]
+    normalized_cells = [np.ascontiguousarray(cell, dtype=np.float64) for cell in cells]
+    normalized_pbc = [np.ascontiguousarray(pbc, dtype=np.uint8) for pbc in pbc_flags]
+    statuses = periodic_cell_statuses(normalized_cells, normalized_pbc)
+    if np.any((statuses & _NATIVE_NEIGHBOR_SUPPORTED) == 0):
+        raise ValueError("Local Chemistry requires finite positions and a nonsingular periodic cell.")
+    atom_counts = np.asarray([len(value) for value in normalized_positions], dtype=np.int64)
+    atom_offsets = np.empty(len(normalized_positions) + 1, dtype=np.int64)
+    atom_offsets[0] = 0
+    np.cumsum(atom_counts, out=atom_offsets[1:])
+    flat_positions = (
+        np.concatenate(normalized_positions, axis=0)
+        if normalized_positions
+        else np.empty((0, 3), dtype=np.float64)
     )
-    return (
-        np.asarray(metrics, dtype=np.float64),
-        np.asarray(normalized_codes, dtype=np.int32),
-        np.asarray(normalized_values, dtype=np.float64),
-    )
-
-
-def typed_neighbor_counts(
-    atom_offsets: np.ndarray,
-    atom_types: np.ndarray,
-    pair_offsets: np.ndarray,
-    centers: np.ndarray,
-    neighbors: np.ndarray,
-    distances: np.ndarray,
-    cutoff_matrices: np.ndarray,
-) -> tuple[np.ndarray, np.ndarray] | None:
-    """Return native per-atom typed counts, or ``None`` for Python fallback."""
-    if _native_scan is None or not hasattr(_native_scan, "typed_neighbor_counts"):
-        return None
-    counts, type_counts = _native_scan.typed_neighbor_counts(
-        np.ascontiguousarray(atom_offsets, dtype=np.int64),
-        np.ascontiguousarray(atom_types, dtype=np.int32),
-        np.ascontiguousarray(pair_offsets, dtype=np.int64),
-        np.ascontiguousarray(centers, dtype=np.int32),
-        np.ascontiguousarray(neighbors, dtype=np.int32),
-        np.ascontiguousarray(distances, dtype=np.float64),
-        np.ascontiguousarray(cutoff_matrices, dtype=np.float64),
+    counts, type_counts, metrics, normalized_codes, normalized_values = (
+        _native_scan.local_chemistry_summary(
+            flat_positions,
+            atom_offsets,
+            np.stack(normalized_cells),
+            np.stack(normalized_pbc),
+            np.ascontiguousarray(atom_types, dtype=np.int32),
+            np.ascontiguousarray(cutoff_matrices, dtype=np.float64),
+            np.ascontiguousarray(detail_mask, dtype=np.uint8),
+        )
     )
     return (
         np.asarray(counts, dtype=np.int32),
         np.asarray(type_counts, dtype=np.int32),
+        np.asarray(metrics, dtype=np.float64),
+        np.asarray(normalized_codes, dtype=np.int32),
+        np.asarray(normalized_values, dtype=np.float64),
     )
 
 

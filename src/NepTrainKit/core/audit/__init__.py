@@ -14,6 +14,7 @@ from .findings import build_findings, canonical_findings
 from .inventory import build_dataset_inventory, compare_composition_target
 from .local_chemistry import audit_local_chemistry
 from .nep_cutoff import NepCutoffProfile, parse_nep_cutoff
+from .phase_refinement import PhaseRefinement, refine_l12, refine_laves
 from .result import (
     AuditBiasType,
     AuditAction,
@@ -68,6 +69,7 @@ __all__ = [
     "SliceMetric",
     "StructureAuditRecord",
     "NepCutoffProfile",
+    "PhaseRefinement",
     "audit_local_chemistry",
     "audit_data_quality",
     "audit_config_types",
@@ -80,6 +82,8 @@ __all__ = [
     "compare_composition_target",
     "indexed_structures_from_result_data",
     "parse_nep_cutoff",
+    "refine_l12",
+    "refine_laves",
     "records_from_indexed_structures",
     "records_from_result_data",
     "records_from_structures",

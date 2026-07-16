@@ -257,7 +257,7 @@ AuditRun
 
 内部检查器可以按文件拆分，但第一阶段不公开 `CheckPlugin` 接口。只有出现第二个真实实现或外部提供者时，才建立 adapter seam。
 
-快速体检中的晶胞有效性与短距离检查通过一个窄的批处理几何接口完成：Python 负责数据契约、规则和 Finding，原生 `_fastaudit` 扩展只接收连续的坐标、结构偏移、晶胞、PBC 与 cutoff，返回晶胞状态和每个结构是否存在短原子对。正交与非正交晶格使用相同的周期最短镜像语义；扩展不可用、晶胞接近数值秩阈值，或遇到合法的奇异部分周期晶胞时，使用同一接口下的 NumPy/SciPy 参考实现。两条路径必须由同一组行为测试约束。不得把审计结论、阈值政策或 UI 文案下沉到 C++。
+快速体检中的晶胞有效性与短距离检查通过一个窄的批处理几何接口完成：Python 负责数据契约、规则和 Finding，原生 `NepTrainKit._native._audit` 扩展只接收连续的坐标、结构偏移、晶胞、PBC 与 cutoff，返回晶胞状态和每个结构是否存在短原子对。正交与非正交晶格使用相同的周期最短镜像语义；扩展不可用、晶胞接近数值秩阈值，或遇到合法的奇异部分周期晶胞时，使用同一接口下的 NumPy/SciPy 参考实现。两条路径必须由同一组行为测试约束。不得把审计结论、阈值政策或 UI 文案下沉到 C++。
 
 ### 审计范围
 
@@ -433,8 +433,8 @@ Finding 的动作只允许调用已有工作流：
 - 2026-07-12：完成 Phase 0；`AuditContext → AuditRun` 已记录 scope、指纹、规则版本和 canonical Findings，GUI 与 HTML 共用结果。
 - 2026-07-12：完成 Phase 1 快速体检；加入明确的数据 blocker、重复/标签冲突、`Config_type` evidence 和保守 review set。
 - 2026-07-12：Distribution Explorer 已嵌入统一页面，工具栏入口已切换；旧 Dialog 只作为一个版本的兼容壳保留。
-- 2026-07-12：局域化学改用 `_fastaudit` 分块返回通用 cutoff 邻居，并在原生层计算无政策含义的 typed neighbor/contact aggregates；Local Chemistry 和 Pair Contacts 的阈值、Finding 与解释仍留在 Python。FeNi 55,985 帧局域化学阶段先从 47.802 秒降至 6.366 秒；对已经达到“多结构支持”的元素对停止回传不再用于 Finding 的逐边距离明细后，3 次中位数进一步降至 3.310 秒。文件型 NepTrainKit 数据集的结构指纹改为源文件内容哈希与单调结构版本组合，通用调用仍保留逐结构内容哈希回退；指纹中位数从 1.801 秒降至 0.082 秒，完整首次 Audit 的 3 次中位数从最初约 52.6 秒降至 5.750 秒。正交、非正交和部分周期路径均与 Python/SciPy 参考对齐。未变化的数据范围、源文件和模型再次进入时复用上一次 AuditRun，不再重新计算；页面“重新检查”仍强制刷新。
-- FeNi 真实数据验证：55,985 帧的 Python/SciPy 数据质量检查 3 次中位数为 11.435 秒，其中短距离检查占 10.875 秒。批处理 `_fastaudit` C++/OpenMP 路径与 Python 参考结果完全一致；进一步把逐结构 NumPy `matrix_rank/SVD` 晶胞检查合并到原生批次后，7 次端到端中位数为 1.341 秒。标签有限值检查优先复用 `dataset.energy / dataset.virial / _force_vector_dataset` 的 reference 数组后，同轮逐结构/批量中位数为 1.389/1.245 秒，结果一致；相对初始版本整体约提升 9.19 倍。原生晶胞状态扫描为 0.000163 秒，Python/SVD 参考为 0.601429 秒；10,000 个随机正交/非正交、全周期/部分周期和退化晶胞为 0 mismatch。OpenMP 邻居 kernel 在 1/2/4/8 线程下的最终中位数分别为 0.153/0.101/0.086/0.058 秒。`float32` kernel（0.05276 秒）未胜过同轮 double（0.05243 秒），固定镜像数组/复用 scratch 版本退化至 0.0561 秒，两项实验均已撤回。最终结果无 blocker，42 个重复几何仅作为 review set。
+- 2026-07-12：局域化学改用 `_native._audit` 分块返回通用 cutoff 邻居，并在原生层计算无政策含义的 typed neighbor/contact aggregates；Local Chemistry 和 Pair Contacts 的阈值、Finding 与解释仍留在 Python。FeNi 55,985 帧局域化学阶段先从 47.802 秒降至 6.366 秒；对已经达到“多结构支持”的元素对停止回传不再用于 Finding 的逐边距离明细后，3 次中位数进一步降至 3.310 秒。文件型 NepTrainKit 数据集的结构指纹改为源文件内容哈希与单调结构版本组合，通用调用仍保留逐结构内容哈希回退；指纹中位数从 1.801 秒降至 0.082 秒，完整首次 Audit 的 3 次中位数从最初约 52.6 秒降至 5.750 秒。正交、非正交和部分周期路径均与 Python/SciPy 参考对齐。未变化的数据范围、源文件和模型再次进入时复用上一次 AuditRun，不再重新计算；页面“重新检查”仍强制刷新。
+- FeNi 真实数据验证：55,985 帧的 Python/SciPy 数据质量检查 3 次中位数为 11.435 秒，其中短距离检查占 10.875 秒。批处理 `_native._audit` C++/OpenMP 路径与 Python 参考结果完全一致；进一步把逐结构 NumPy `matrix_rank/SVD` 晶胞检查合并到原生批次后，7 次端到端中位数为 1.341 秒。标签有限值检查优先复用 `dataset.energy / dataset.virial / _force_vector_dataset` 的 reference 数组后，同轮逐结构/批量中位数为 1.389/1.245 秒，结果一致；相对初始版本整体约提升 9.19 倍。原生晶胞状态扫描为 0.000163 秒，Python/SVD 参考为 0.601429 秒；10,000 个随机正交/非正交、全周期/部分周期和退化晶胞为 0 mismatch。OpenMP 邻居 kernel 在 1/2/4/8 线程下的最终中位数分别为 0.153/0.101/0.086/0.058 秒。`float32` kernel（0.05276 秒）未胜过同轮 double（0.05243 秒），固定镜像数组/复用 scratch 版本退化至 0.0561 秒，两项实验均已撤回。最终结果无 blocker，42 个重复几何仅作为 review set。
 - 2026-07-14：产品信息架构按 `training-set-audit-product-reset-v2.md` 落成四屏 Qt 页面。`DatasetInventory` 在 core 中按精确归一化组分聚合，保留超胞大小、`config_type` 和结构索引；概览、数据地图、复核队列、目标与模型均复用同一 `AuditRun`。目标比较当前只支持组成范围、离散点和显式最低结构数，状态措辞限定为“数量规则已满足/数量偏少/没有精确样本”，不声称物理覆盖。真实 FeNi 复验得到 55,985 帧、33 个精确组分点、纯 Fe 596、纯 Ni 943、Top 3 组分占 81.9%，42 个结构属于 14 组重复几何。
 
 ### 下一执行点

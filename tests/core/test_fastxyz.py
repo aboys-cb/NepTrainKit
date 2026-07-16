@@ -18,7 +18,7 @@ def _pos_first_trajectory(frame_count: int = 61) -> bytes:
 
 
 def test_parallel_parse_keeps_pos_first_frame_boundaries(monkeypatch):
-    fastxyz = pytest.importorskip("NepTrainKit.core._fastxyz")
+    fastxyz = pytest.importorskip("NepTrainKit._native._io")
     monkeypatch.setenv("NEPKIT_FASTXYZ_SPECIES_MODE", "str")
 
     frames = fastxyz.parse_all(memoryview(_pos_first_trajectory()), 4)

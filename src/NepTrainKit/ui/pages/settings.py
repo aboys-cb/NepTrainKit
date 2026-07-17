@@ -13,6 +13,12 @@ from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCa
 
 from NepTrainKit.config import Config
 from NepTrainKit.i18n import LANGUAGE_LABELS, SUPPORTED_LANGUAGES, normalize_language
+from NepTrainKit.logging_config import (
+    DEFAULT_LOG_LEVEL,
+    LOG_LEVELS,
+    normalize_log_level,
+    set_log_level,
+)
 from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.widgets import MyComboBoxSettingCard, DoubleSpinBoxSettingCard, LineEditSettingCard
 from NepTrainKit.ui.widgets import ColorSettingCard
@@ -101,6 +107,26 @@ class SettingsWidget(ScrollArea):
         self.language_combo.setCurrentIndex(SUPPORTED_LANGUAGES.index(language_config))
         self.language_card.hBoxLayout.addWidget(self.language_combo, 0, Qt.AlignmentFlag.AlignRight)
         self.language_card.hBoxLayout.addSpacing(16)
+
+        log_level = normalize_log_level(
+            Config.get("logging", "level", DEFAULT_LOG_LEVEL)
+        )
+        self.log_level_card = SettingCard(
+            FluentIcon.INFO,
+            self.tr("Log level"),
+            self.tr(
+                "Minimum level written to the console and log file; applies immediately"
+            ),
+            self.personal_group,
+        )
+        self.log_level_combo = ComboBox(self.log_level_card)
+        for level in LOG_LEVELS:
+            self.log_level_combo.addItem(level, userData=level)
+        self.log_level_combo.setCurrentIndex(LOG_LEVELS.index(log_level))
+        self.log_level_card.hBoxLayout.addWidget(
+            self.log_level_combo, 0, Qt.AlignmentFlag.AlignRight
+        )
+        self.log_level_card.hBoxLayout.addSpacing(16)
 
 
         auto_load_config = Config.getboolean("widget","auto_load",False)
@@ -394,6 +420,7 @@ class SettingsWidget(ScrollArea):
         self.personal_group.addSettingCard(self.optimization_forces_card)
         self.personal_group.addSettingCard(self.canvas_card)
         self.personal_group.addSettingCard(self.language_card)
+        self.personal_group.addSettingCard(self.log_level_card)
         self.personal_group.addSettingCard(self.auto_load_card)
         self.personal_group.addSettingCard(self.radius_coefficient_Card)
         self.personal_group.addSettingCard(self.sort_atoms_card)
@@ -447,6 +474,7 @@ class SettingsWidget(ScrollArea):
         self.radius_coefficient_Card.valueChanged.connect(lambda value:Config.set("widget","radius_coefficient",value))
         self.optimization_forces_card.optionChanged.connect(lambda option:Config.set("widget","forces_data",option ))
         self.language_combo.currentIndexChanged.connect(self._on_language_changed)
+        self.log_level_combo.currentIndexChanged.connect(self._on_log_level_changed)
         self.about_card.clicked.connect(self.check_update)
         self.about_nep89_card.clicked.connect(self.check_update_nep89)
 
@@ -494,6 +522,12 @@ class SettingsWidget(ScrollArea):
             self.tr("Language saved. Restart NepTrainKit to apply it."),
             title=self.tr("Tip"),
         )
+
+    def _on_log_level_changed(self, index: int) -> None:
+        """Persist and immediately apply the selected minimum log level."""
+        level = normalize_log_level(self.log_level_combo.itemData(index))
+        Config.set("logging", "level", level)
+        set_log_level(level)
 
     def check_update(self):
         """Trigger the application update workflow for NepTrainKit.

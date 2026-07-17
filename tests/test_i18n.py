@@ -263,6 +263,7 @@ def test_chinese_qm_translates_core_label():
     i18n.install_translator(app, "zh_CN")
     translated = QCoreApplication.translate("NepTrainKitMainWindow", "Settings")
     assert translated == "设置"
+    assert QCoreApplication.translate("SettingsWidget", "Log level") == "日志等级"
     assert i18n.current_language() == "zh_CN"
 
 

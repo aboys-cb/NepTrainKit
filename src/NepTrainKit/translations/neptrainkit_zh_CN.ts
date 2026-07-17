@@ -4701,6 +4701,14 @@ All child items will also be deleted.</source>
             <translation>重启 NepTrainKit 后应用语言设置</translation>
         </message>
         <message>
+            <source>Log level</source>
+            <translation>日志等级</translation>
+        </message>
+        <message>
+            <source>Minimum level written to the console and log file; applies immediately</source>
+            <translation>控制台和日志文件输出的最低等级，修改后立即生效</translation>
+        </message>
+        <message>
             <location filename="../ui/pages/settings.py" line="114" />
             <source>Auto loading</source>
             <translation>自动加载</translation>

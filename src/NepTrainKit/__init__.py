@@ -6,9 +6,9 @@
 
 import sys
 from pathlib import Path
-from loguru import logger
 sys.path.append(str(Path(__file__).resolve().parent))
 from NepTrainKit import src_rc
+from NepTrainKit.logging_config import DEFAULT_LOG_LEVEL, initialize_logging
 
 try:
     # Actual if statement not needed, but keeps code inspectors more happy
@@ -20,10 +20,11 @@ except NameError:
     is_nuitka_compiled = False
 
 if is_nuitka_compiled:
-    logger.add("./Log/{time:%Y-%m}.log",
-               level="DEBUG",
-                )
     module_path = Path("./").resolve()
 else:
     module_path = Path(__file__).resolve().parent
 
+initialize_logging(
+    DEFAULT_LOG_LEVEL,
+    file_sink="./Log/{time:%Y-%m}.log" if is_nuitka_compiled else None,
+)

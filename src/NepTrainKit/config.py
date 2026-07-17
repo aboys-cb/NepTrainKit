@@ -234,3 +234,11 @@ class Config:
         except SQLAlchemyError:
             return 0
 Config()
+
+from NepTrainKit.logging_config import DEFAULT_LOG_LEVEL, normalize_log_level, set_log_level
+
+_stored_log_level = Config.get("logging", "level", DEFAULT_LOG_LEVEL)
+_active_log_level = normalize_log_level(_stored_log_level)
+if _active_log_level != _stored_log_level:
+    Config.set("logging", "level", _active_log_level)
+set_log_level(_active_log_level)

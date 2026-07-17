@@ -18,9 +18,14 @@ from NepTrainKit.core.audit.result import (
     AuditSlice,
     AuditStatus,
     CompositionPhaseEvidence,
+    CompositionMagneticEvidence,
     CompositionPoint,
     DatasetInventory,
+    ElementMagneticEvidence,
+    ElementPairMagneticEvidence,
     PhaseInventory,
+    MagneticInventory,
+    StructureMagneticEvidence,
     StructurePhaseEvidence,
 )
 from NepTrainKit.ui import pages as ui_pages
@@ -142,6 +147,234 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
                 atom_counts=((16, 3),),
             ),
         )
+
+    @staticmethod
+    def _magnetic_structure(index: int, label: str, net: float, q_peak: float):
+        return StructureMagneticEvidence(
+            source_index=index,
+            atom_count=16,
+            spin_atom_count=16,
+            order_label=label,
+            confidence_state="strong",
+            mean_moment=1.5,
+            moment_std=0.1,
+            net_moment_ratio=net,
+            collinearity=1.0 if label in {"fm", "afm"} else 0.4,
+            coplanarity=1.0,
+            neighbor_correlation=1.0 if label == "fm" else -0.5,
+            neighbor_abs_correlation=1.0,
+            parallel_fraction=1.0 if label == "fm" else 0.0,
+            antiparallel_fraction=0.0 if label == "fm" else 0.5,
+            q_peak_strength=q_peak,
+            q_vector=(1, 0, 0) if q_peak else (0, 0, 0),
+        )
+
+    def test_magnetic_order_map_evidence_and_filter_are_available_together(self):
+        base = self._dashboard_result()
+        magnetic = MagneticInventory(
+            schema_version="magnetic-inventory-v1",
+            method_id="spin-order-sf-neighbor-v1",
+            analysis_strategy="all-spin-structures-v1",
+            source_structure_count=3,
+            analyzed_structure_count=3,
+            missing_spin_count=0,
+            composition_points=(
+                CompositionMagneticEvidence(
+                    reduced_counts=(1, 0), source_structure_count=1,
+                    analyzed_structure_count=1, missing_spin_count=0,
+                    order_fractions=(("fm", 1.0),),
+                    confidence_counts=(("strong", 1),),
+                    mean_net_moment_ratio=1.0, mean_collinearity=1.0,
+                    mean_q_peak_strength=0.0,
+                    structures=(self._magnetic_structure(0, "fm", 1.0, 0.0),),
+                ),
+                CompositionMagneticEvidence(
+                    reduced_counts=(1, 1), source_structure_count=2,
+                    analyzed_structure_count=2, missing_spin_count=0,
+                    order_fractions=(("afm", 0.5), ("spin_disordered", 0.5)),
+                    confidence_counts=(("strong", 2),),
+                    mean_net_moment_ratio=0.05, mean_collinearity=0.7,
+                    mean_q_peak_strength=0.55,
+                    structures=(
+                        self._magnetic_structure(1, "afm", 0.0, 1.0),
+                        self._magnetic_structure(2, "spin_disordered", 0.1, 0.1),
+                    ),
+                ),
+            ),
+        )
+        result = replace(
+            base,
+            magnetic_inventory=magnetic,
+            overview_metrics={
+                **base.overview_metrics,
+                "magnetic_inventory": {"available": True, "status": "complete"},
+            },
+        )
+        widget = TrainingSetAuditWidget()
+        selected = []
+        widget.selectStructuresSignal.connect(selected.append)
+
+        widget.set_result(result)
+        widget.composition_order_selector.setCurrentIndex(1)
+
+        self.assertIn("composition-magnetism", widget.composition_chart.plot_id)
+        self.assertIn("AFM-like", widget.composition_table.item(0, 3).text())
+        self.assertIn("snapshot-pattern classification", widget.composition_phase_summary_label.text())
+        magnetic_row = next(
+            row for row in range(widget.dimension_list.count())
+            if widget.dimension_list.item(row).data(Qt.ItemDataRole.UserRole)
+            == "magnetic_evidence"
+        )
+        widget.dimension_list.setCurrentRow(magnetic_row)
+        self.assertEqual(widget.plot_selector.count(), 4)
+        afm_index = widget.composition_magnetic_selector.findData("afm")
+        widget.composition_magnetic_selector.setCurrentIndex(afm_index)
+        widget._emit_composition_structures()
+        self.assertEqual(selected[-1], [1])
+
+    def test_magnetic_evidence_crosses_structure_phase_and_element_local_patterns(self):
+        base = self._dashboard_result()
+        magnetic_structures = (
+            replace(
+                self._magnetic_structure(0, "fm", 1.0, 0.0),
+                element_evidence=(ElementMagneticEvidence(
+                    element="Fe", atom_count=16, spin_atom_count=16,
+                    order_label="aligned", mean_moment=2.1,
+                    net_moment_ratio=1.0, collinearity=1.0,
+                    intra_element_correlation=1.0, intra_element_pair_count=192,
+                    q_peak_strength=0.0, q_vector=(0, 0, 0),
+                ),),
+            ),
+            replace(
+                self._magnetic_structure(1, "afm", 0.0, 1.0),
+                element_evidence=(
+                    ElementMagneticEvidence(
+                        element="Fe", atom_count=8, spin_atom_count=8,
+                        order_label="compensated", mean_moment=2.0,
+                        net_moment_ratio=0.0, collinearity=1.0,
+                        intra_element_correlation=-1.0, intra_element_pair_count=48,
+                        q_peak_strength=1.0, q_vector=(1, 0, 0),
+                    ),
+                    ElementMagneticEvidence(
+                        element="Ni", atom_count=8, spin_atom_count=8,
+                        order_label="aligned", mean_moment=0.6,
+                        net_moment_ratio=1.0, collinearity=1.0,
+                        intra_element_correlation=1.0, intra_element_pair_count=48,
+                        q_peak_strength=0.0, q_vector=(0, 0, 0),
+                    ),
+                ),
+                element_pair_evidence=(ElementPairMagneticEvidence(
+                    element_a="Fe", element_b="Ni", pair_count=96,
+                    correlation=-1.0, coupling_label="antiparallel",
+                ),),
+            ),
+            replace(
+                self._magnetic_structure(2, "spin_disordered", 0.1, 0.1),
+                element_evidence=(
+                    ElementMagneticEvidence(
+                        element="Fe", atom_count=8, spin_atom_count=8,
+                        order_label="compensated", mean_moment=2.0,
+                        net_moment_ratio=0.1, collinearity=1.0,
+                        intra_element_correlation=-0.8, intra_element_pair_count=48,
+                        q_peak_strength=0.8, q_vector=(1, 0, 0),
+                    ),
+                    ElementMagneticEvidence(
+                        element="Ni", atom_count=8, spin_atom_count=8,
+                        order_label="aligned", mean_moment=0.6,
+                        net_moment_ratio=0.9, collinearity=1.0,
+                        intra_element_correlation=0.9, intra_element_pair_count=48,
+                        q_peak_strength=0.1, q_vector=(1, 0, 0),
+                    ),
+                ),
+                element_pair_evidence=(ElementPairMagneticEvidence(
+                    element_a="Fe", element_b="Ni", pair_count=96,
+                    correlation=0.0, coupling_label="mixed",
+                ),),
+            ),
+        )
+        magnetic = MagneticInventory(
+            schema_version="magnetic-inventory-v2",
+            method_id="spin-order-sf-neighbor-element-v2",
+            analysis_strategy="all-spin-structures-v1",
+            source_structure_count=3, analyzed_structure_count=3,
+            missing_spin_count=0,
+            composition_points=(
+                CompositionMagneticEvidence(
+                    reduced_counts=(1, 0), source_structure_count=1,
+                    analyzed_structure_count=1, missing_spin_count=0,
+                    order_fractions=(("fm", 1.0),), confidence_counts=(("strong", 1),),
+                    mean_net_moment_ratio=1.0, mean_collinearity=1.0,
+                    mean_q_peak_strength=0.0, structures=(magnetic_structures[0],),
+                ),
+                CompositionMagneticEvidence(
+                    reduced_counts=(1, 1), source_structure_count=2,
+                    analyzed_structure_count=2, missing_spin_count=0,
+                    order_fractions=(("afm", 0.5), ("spin_disordered", 0.5)),
+                    confidence_counts=(("strong", 2),),
+                    mean_net_moment_ratio=0.05, mean_collinearity=0.7,
+                    mean_q_peak_strength=0.55, structures=magnetic_structures[1:],
+                ),
+            ),
+        )
+        phase = PhaseInventory(
+            schema_version="phase-inventory-v2", method_id="adaptive-cna-ordering-v1",
+            reference_bank_id="aflow-l12-laves-v1", analysis_strategy="all-structures-v1",
+            source_structure_count=3, analyzed_structure_count=3, analyzed_atom_count=48,
+            composition_points=(
+                CompositionPhaseEvidence(
+                    reduced_counts=(1, 0), source_structure_count=1,
+                    analyzed_structure_count=1, analyzed_atom_count=16,
+                    local_phase_fractions=(("fcc", 1.0),),
+                    structure_phase_fractions=(("fcc", 1.0),),
+                    confidence_counts=(("strong", 1),),
+                    structures=(StructurePhaseEvidence(
+                        source_index=0, atom_count=16, phase_label="fcc",
+                        confidence_state="strong", local_phase_fractions=(("fcc", 1.0),),
+                    ),),
+                ),
+                CompositionPhaseEvidence(
+                    reduced_counts=(1, 1), source_structure_count=2,
+                    analyzed_structure_count=2, analyzed_atom_count=32,
+                    local_phase_fractions=(("fcc", 0.5), ("bcc", 0.5)),
+                    structure_phase_fractions=(("fcc", 0.5), ("bcc", 0.5)),
+                    confidence_counts=(("strong", 2),),
+                    structures=(
+                        StructurePhaseEvidence(
+                            source_index=1, atom_count=16, phase_label="fcc",
+                            confidence_state="strong", local_phase_fractions=(("fcc", 1.0),),
+                        ),
+                        StructurePhaseEvidence(
+                            source_index=2, atom_count=16, phase_label="bcc",
+                            confidence_state="strong", local_phase_fractions=(("bcc", 1.0),),
+                        ),
+                    ),
+                ),
+            ),
+        )
+        widget = TrainingSetAuditWidget()
+        widget.set_result(replace(base, magnetic_inventory=magnetic, phase_inventory=phase))
+
+        magnetic_row = next(
+            row for row in range(widget.dimension_list.count())
+            if widget.dimension_list.item(row).data(Qt.ItemDataRole.UserRole)
+            == "magnetic_evidence"
+        )
+        widget.dimension_list.setCurrentRow(magnetic_row)
+
+        plot_ids = {plot["id"] for plot in widget._active_plots}
+        self.assertIn("magnetic_evidence:phase_order_joint", plot_ids)
+        self.assertIn("magnetic_evidence:element_local_order", plot_ids)
+        self.assertIn("magnetic_evidence:element_pair_coupling", plot_ids)
+        widget._render_phase_summary()
+        self.assertIn("Element-local spin patterns", widget.composition_phase_summary_label.text())
+        self.assertIn("Fe", widget.composition_phase_summary_label.text())
+        self.assertIn("Ni", widget.composition_phase_summary_label.text())
+        self.assertIn("Compensated (AFM-like) 67%", widget.composition_phase_summary_label.text())
+        joint_plot = next(
+            plot for plot in widget._active_plots
+            if plot["id"] == "magnetic_evidence:phase_order_joint"
+        )
+        self.assertTrue(any(label.startswith("FCC ·") for label in joint_plot["series"][0]["labels"]))
 
     @staticmethod
     def _local_chemistry_plot(scope, center_element, metric_kind):
@@ -368,6 +601,12 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.data_map_tabs.count(), 3)
         self.assertEqual(widget.composition_table.rowCount(), 2)
         self.assertEqual(widget.composition_chart.plot_id, "inventory:composition:Ni")
+        self.assertIs(widget.audit_header.parentWidget(), widget.summary_tab)
+        self.assertEqual(widget.composition_splitter.orientation(), Qt.Orientation.Horizontal)
+        self.assertEqual(widget.composition_splitter.count(), 2)
+        self.assertFalse(widget.composition_table.isColumnHidden(0))
+        self.assertTrue(widget.composition_table.isColumnHidden(5))
+        self.assertTrue(widget.composition_table.isColumnHidden(6))
         self.assertIn("<table", widget.composition_highlights_label.text())
         self.assertEqual(widget.chart_widget.plot_id, "composition:Fe")
         self.assertEqual(widget.slice_table.rowCount(), 2)
@@ -892,6 +1131,28 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
                     "Structure-level phase labels",
                 ),
                 "结构级相别",
+            )
+            self.assertEqual(
+                QCoreApplication.translate("TrainingSetAuditWidget", "structures"),
+                "个结构",
+            )
+            self.assertEqual(
+                QCoreApplication.translate(
+                    "TrainingSetAuditWidget", "exact composition points"
+                ),
+                "个精确组分点",
+            )
+            self.assertEqual(
+                QCoreApplication.translate(
+                    "TrainingSetAuditWidget", "Main composition points"
+                ),
+                "主要组分",
+            )
+            self.assertEqual(
+                QCoreApplication.translate(
+                    "TrainingSetAuditWidget", "Pure-element endpoints"
+                ),
+                "纯元素端点",
             )
 
             energy_plot = {

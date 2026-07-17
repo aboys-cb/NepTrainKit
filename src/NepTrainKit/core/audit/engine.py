@@ -18,6 +18,7 @@ from .extract import records_from_indexed_structures
 from .findings import build_findings
 from .label_ranges import audit_label_ranges
 from .local_chemistry import audit_local_chemistry
+from .magnetic_inventory import build_magnetic_inventory
 from .inventory import build_dataset_inventory
 from .nep_cutoff import NepCutoffProfile, parse_nep_cutoff
 from .pair_contacts import PairContactCollector
@@ -96,6 +97,24 @@ def build_audit(context: AuditContext) -> AuditRun:
         except (RuntimeError, ValueError) as exc:
             logger.warning("Training Set Audit phase evidence unavailable: {}", exc)
         timings_ms["phase_inventory"] = (perf_counter() - stage_started) * 1000.0
+    magnetic_inventory = None
+    magnetic_cache_hit = False
+    if (
+        context.include_magnetic_inventory
+        and geometry is not None
+        and inventory.structure_count
+    ):
+        stage_started = perf_counter()
+        try:
+            magnetic_inventory, magnetic_cache_hit = build_magnetic_inventory(
+                geometry,
+                inventory,
+                getattr(result_data.structure, "all_data", ()),
+                cache_owner=getattr(result_data, "structure", None),
+            )
+        except (RuntimeError, ValueError) as exc:
+            logger.warning("Training Set Audit magnetic evidence unavailable: {}", exc)
+        timings_ms["magnetic_inventory"] = (perf_counter() - stage_started) * 1000.0
     dimensions = []
     slices = []
     overview: dict[str, object] = {
@@ -116,6 +135,35 @@ def build_audit(context: AuditContext) -> AuditRun:
                 phase_inventory.analyzed_structure_count
                 if phase_inventory is not None
                 else 0
+            ),
+        },
+        "magnetic_inventory": {
+            "available": (
+                magnetic_inventory is not None
+                and magnetic_inventory.analyzed_structure_count > 0
+            ),
+            "status": (
+                "complete"
+                if magnetic_inventory is not None
+                and magnetic_inventory.analyzed_structure_count > 0
+                else "no-spin"
+                if magnetic_inventory is not None
+                else "pending"
+                if not context.include_magnetic_inventory
+                and geometry is not None
+                and inventory.structure_count
+                else "unavailable"
+            ),
+            "cache_hit": magnetic_cache_hit,
+            "analyzed_structures": (
+                magnetic_inventory.analyzed_structure_count
+                if magnetic_inventory is not None
+                else 0
+            ),
+            "missing_spin_structures": (
+                magnetic_inventory.missing_spin_count
+                if magnetic_inventory is not None
+                else inventory.structure_count
             ),
         },
     }
@@ -282,6 +330,7 @@ def build_audit(context: AuditContext) -> AuditRun:
         ruleset_version=context.ruleset_version,
         inventory=inventory,
         phase_inventory=phase_inventory,
+        magnetic_inventory=magnetic_inventory,
     )
     timings_ms["result_assembly"] = (perf_counter() - stage_started) * 1000.0
 
@@ -338,6 +387,7 @@ def build_training_set_audit(
     *,
     dataset_id: str = "current",
     include_phase_inventory: bool = True,
+    include_magnetic_inventory: bool = True,
 ) -> AuditRun:
     """Compatibility adapter for callers that audit the active dataset."""
     return build_audit(
@@ -345,5 +395,6 @@ def build_training_set_audit(
             dataset=result_data,
             dataset_id=dataset_id,
             include_phase_inventory=include_phase_inventory,
+            include_magnetic_inventory=include_magnetic_inventory,
         )
     )

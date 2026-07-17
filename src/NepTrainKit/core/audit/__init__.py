@@ -13,6 +13,10 @@ from .extract import (
 from .findings import build_findings, canonical_findings
 from .inventory import build_dataset_inventory, compare_composition_target
 from .local_chemistry import audit_local_chemistry
+from .magnetic_inventory import (
+    build_magnetic_inventory,
+    summarize_magnetic_inventory,
+)
 from .nep_cutoff import NepCutoffProfile, parse_nep_cutoff
 from .phase_refinement import PhaseRefinement, refine_l12, refine_laves
 from .phase_inventory import (
@@ -28,9 +32,17 @@ from .result import (
     CompositionPhaseEvidence,
     CompositionTarget,
     DatasetInventory,
+    CompositionMagneticEvidence,
+    ElementMagneticEvidence,
+    ElementMagneticSummary,
+    ElementPairMagneticEvidence,
+    ElementPairMagneticSummary,
+    MagneticEvidenceSummary,
+    MagneticInventory,
     PhaseInventory,
     PhaseEvidenceSummary,
     StructurePhaseEvidence,
+    StructureMagneticEvidence,
     AuditDimension,
     AuditEvidence,
     AuditFinding,
@@ -59,9 +71,17 @@ __all__ = [
     "CompositionPhaseEvidence",
     "CompositionTarget",
     "DatasetInventory",
+    "CompositionMagneticEvidence",
+    "ElementMagneticEvidence",
+    "ElementMagneticSummary",
+    "ElementPairMagneticEvidence",
+    "ElementPairMagneticSummary",
+    "MagneticEvidenceSummary",
+    "MagneticInventory",
     "PhaseInventory",
     "PhaseEvidenceSummary",
     "StructurePhaseEvidence",
+    "StructureMagneticEvidence",
     "AuditDimension",
     "AuditEvidence",
     "AuditFinding",
@@ -88,8 +108,10 @@ __all__ = [
     "build_audit",
     "build_dataset_inventory",
     "build_findings",
+    "build_magnetic_inventory",
     "build_phase_inventory",
     "summarize_phase_inventory",
+    "summarize_magnetic_inventory",
     "build_fingerprints",
     "build_training_set_audit",
     "canonical_findings",

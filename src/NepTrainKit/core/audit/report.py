@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Iterable
 
 from .findings import canonical_findings
+from .magnetic_inventory import summarize_magnetic_inventory
 from .result import AuditFinding, AuditResult
 
 
@@ -15,6 +16,27 @@ DISCLAIMER = (
 )
 
 _PHASE_ORDER = ("fcc", "bcc", "hcp", "l12", "c14", "c15", "unresolved")
+_MAGNETIC_ORDER = (
+    "fm", "afm", "ferrimagnetic", "spin_spiral", "noncollinear",
+    "collinear_mixed", "spin_disordered", "low_moment",
+)
+
+_ELEMENT_ORDER_NAMES = {
+    "aligned": "Aligned (FM-like)",
+    "compensated": "Compensated (AFM-like)",
+    "modulated": "Modulated / spiral-like",
+    "noncollinear": "Noncollinear",
+    "collinear_mixed": "Mixed collinear",
+    "disordered": "Disordered-like",
+    "low_moment": "Low / zero moment",
+    "insufficient": "Insufficient local evidence",
+}
+
+_COUPLING_NAMES = {
+    "parallel": "Parallel",
+    "antiparallel": "Antiparallel",
+    "mixed": "Mixed",
+}
 
 
 def _format_value(value: object) -> str:
@@ -70,6 +92,11 @@ def _render_inventory(result: AuditResult) -> str:
         if phase_inventory is not None
         else {}
     )
+    magnetic_inventory = result.magnetic_inventory
+    magnetic_by_composition = (
+        {point.reduced_counts: point for point in magnetic_inventory.composition_points}
+        if magnetic_inventory is not None else {}
+    )
     for point in sorted(
         inventory.composition_points,
         key=lambda item: item.structure_count,
@@ -91,12 +118,22 @@ def _render_inventory(result: AuditResult) -> str:
                 f"{phase_label.upper()} {phase_fraction:.0%} "
                 f"({phase_point.analyzed_structure_count}/{point.structure_count} analyzed)"
             )
+        magnetic_point = magnetic_by_composition.get(point.reduced_counts)
+        if magnetic_point is None or not magnetic_point.order_fractions:
+            magnetic_text = "No spin:R:3"
+        else:
+            magnetic_label, magnetic_fraction = magnetic_point.order_fractions[0]
+            magnetic_text = (
+                f"{magnetic_label} {magnetic_fraction:.0%} "
+                f"({magnetic_point.analyzed_structure_count}/{point.structure_count} analyzed)"
+            )
         rows.append(
             "<tr>"
             f"<td>{escape(composition)}</td>"
             f"<td>{point.structure_count:,}</td>"
             f"<td>{point.share:.2%}</td>"
             f"<td>{escape(phase_text)}</td>"
+            f"<td>{escape(magnetic_text)}</td>"
             f"<td>{escape(atom_counts)}</td>"
             "</tr>"
         )
@@ -105,7 +142,7 @@ def _render_inventory(result: AuditResult) -> str:
         f'<strong>{len(inventory.composition_points)}</strong> exact composition points · '
         f'{escape(" · ".join(inventory.elements))}</p>'
         '<div class="table-wrap"><table><thead><tr>'
-        '<th>Exact composition</th><th>Structures</th><th>Share</th><th>Main local phase</th><th>Atom counts</th>'
+        '<th>Exact composition</th><th>Structures</th><th>Share</th><th>Main local phase</th><th>Magnetic order</th><th>Atom counts</th>'
         f'</tr></thead><tbody>{"".join(rows)}</tbody></table></div>'
         + (
             '<p class="muted">Phase evidence includes every audited structure and classifies local geometry; '
@@ -114,6 +151,12 @@ def _render_inventory(result: AuditResult) -> str:
             f'{escape(phase_inventory.reference_bank_id)}.</p>'
             if phase_inventory is not None
             else ""
+        )
+        + (
+            '<p class="muted">Magnetic labels use only per-atom spin:R:3 and classify snapshot patterns. '
+            'They do not establish thermodynamic FM/AFM/PM stability; mforce and force_mag are excluded. '
+            f'Method: {escape(magnetic_inventory.method_id)}.</p>'
+            if magnetic_inventory is not None else ""
         )
     )
 
@@ -201,6 +244,161 @@ def _render_phase_composition_maps(result: AuditResult) -> str:
     )
 
 
+def _render_magnetic_composition_maps(result: AuditResult) -> str:
+    inventory = result.inventory
+    magnetic_inventory = result.magnetic_inventory
+    if inventory is None or magnetic_inventory is None or magnetic_inventory.analyzed_structure_count <= 0:
+        return ""
+    magnetic_by_composition = {
+        point.reduced_counts: point for point in magnetic_inventory.composition_points
+    }
+    sections = []
+    for element_index, element in enumerate(inventory.elements):
+        concentration_counts: dict[float, Counter[str]] = defaultdict(Counter)
+        for point in inventory.composition_points:
+            magnetic_point = magnetic_by_composition.get(point.reduced_counts)
+            if magnetic_point is None:
+                continue
+            concentration = round(point.fractions[element_index], 12)
+            concentration_counts[concentration].update(
+                structure.order_label for structure in magnetic_point.structures
+            )
+        rows = []
+        for concentration, counts in sorted(concentration_counts.items()):
+            total = sum(counts.values())
+            if total <= 0:
+                continue
+            segments = "".join(
+                f'<span class="phase-segment magnetic-{label}" '
+                f'style="width:{100.0 * count / total:.6f}%" '
+                f'title="{escape(label)}: {count:,} / {total:,}"></span>'
+                for label in _MAGNETIC_ORDER
+                for count in (counts.get(label, 0),)
+                if count > 0
+            )
+            rows.append(
+                '<div class="phase-map-row">'
+                f'<span class="phase-concentration">{concentration:.2%}</span>'
+                f'<span class="phase-track">{segments}</span>'
+                f'<strong>{total:,}</strong></div>'
+            )
+        if rows:
+            sections.append(
+                f'<details class="phase-map"{" open" if not sections else ""}>'
+                f'<summary>{escape(element)} concentration</summary>{"".join(rows)}</details>'
+            )
+    if not sections:
+        return ""
+    present = {
+        structure.order_label
+        for point in magnetic_inventory.composition_points
+        for structure in point.structures
+    }
+    legend = "".join(
+        f'<span><i class="magnetic-{label}"></i>{escape(label)}</span>'
+        for label in _MAGNETIC_ORDER if label in present
+    )
+    return (
+        '<div class="phase-map-heading"><strong>Magnetic-pattern labels by composition</strong>'
+        '<span>Only structures carrying spin:R:3</span></div>'
+        f'<div class="phase-legend">{legend}</div>{"".join(sections)}'
+    )
+
+
+def _render_magnetic_cross_evidence(result: AuditResult) -> str:
+    """Render structure-phase and element-local magnetic evidence together."""
+    magnetic_inventory = result.magnetic_inventory
+    if magnetic_inventory is None or magnetic_inventory.analyzed_structure_count <= 0:
+        return ""
+    magnetic_structures = tuple(
+        structure
+        for point in magnetic_inventory.composition_points
+        for structure in point.structures
+    )
+    sections: list[str] = []
+    if result.phase_inventory is not None and magnetic_structures:
+        phase_by_index = {
+            structure.source_index: structure.phase_label
+            for point in result.phase_inventory.composition_points
+            for structure in point.structures
+        }
+        joint = Counter(
+            (phase_by_index[structure.source_index], structure.order_label)
+            for structure in magnetic_structures
+            if structure.source_index in phase_by_index
+        )
+        if joint:
+            rows = "".join(
+                "<tr>"
+                f"<td>{escape(phase.upper())}</td>"
+                f"<td>{escape(order)}</td>"
+                f"<td>{count:,}</td>"
+                "</tr>"
+                for (phase, order), count in sorted(
+                    joint.items(), key=lambda item: (-item[1], item[0])
+                )
+            )
+            sections.append(
+                '<div class="phase-map-heading"><strong>Magnetic order inside each structural phase</strong>'
+                '<span>Matched by structure index</span></div>'
+                '<div class="table-wrap"><table><thead><tr>'
+                '<th>Structural phase</th><th>Magnetic pattern</th><th>Structures</th>'
+                f'</tr></thead><tbody>{rows}</tbody></table></div>'
+            )
+
+    summary = summarize_magnetic_inventory(magnetic_inventory)
+    if summary is not None and summary.element_summaries:
+        rows = "".join(
+            "<tr>"
+            f"<td><strong>{escape(item.element)}</strong></td>"
+            f"<td>{escape(_ELEMENT_ORDER_NAMES.get(item.order_fractions[0][0], item.order_fractions[0][0]))} "
+            f"{item.order_fractions[0][1]:.0%}</td>"
+            f"<td>{item.structure_count:,}</td>"
+            f"<td>{item.mean_moment:.3f}</td>"
+            f"<td>{item.mean_net_moment_ratio:.3f}</td>"
+            f"<td>{item.mean_intra_element_correlation:+.3f}</td>"
+            "</tr>"
+            for item in summary.element_summaries
+            if item.order_fractions
+        )
+        if rows:
+            sections.append(
+                '<div class="phase-map-heading"><strong>Element-local spin patterns</strong>'
+                '<span>One spin sublattice per element</span></div>'
+                '<div class="table-wrap"><table><thead><tr>'
+                '<th>Element</th><th>Dominant local pattern</th><th>Structures</th>'
+                '<th>Mean moment</th><th>Net ratio</th><th>Same-element correlation</th>'
+                f'</tr></thead><tbody>{rows}</tbody></table></div>'
+            )
+    if summary is not None and summary.element_pair_summaries:
+        rows = "".join(
+            "<tr>"
+            f"<td><strong>{escape(item.element_a)}–{escape(item.element_b)}</strong></td>"
+            f"<td>{escape(_COUPLING_NAMES.get(item.coupling_fractions[0][0], item.coupling_fractions[0][0]))} "
+            f"{item.coupling_fractions[0][1]:.0%}</td>"
+            f"<td>{item.structure_count:,}</td>"
+            f"<td>{item.mean_correlation:+.3f}</td>"
+            "</tr>"
+            for item in summary.element_pair_summaries
+            if item.coupling_fractions
+        )
+        if rows:
+            sections.append(
+                '<div class="phase-map-heading"><strong>Neighboring element-pair spin coupling</strong>'
+                '<span>Directional correlation, not a chemical-bond label</span></div>'
+                '<div class="table-wrap"><table><thead><tr>'
+                '<th>Element pair</th><th>Dominant coupling</th><th>Structures</th><th>Mean correlation</th>'
+                f'</tr></thead><tbody>{rows}</tbody></table></div>'
+            )
+    if not sections:
+        return ""
+    return "".join(sections) + (
+        '<p class="muted">Element-local labels describe spin-sublattice patterns in the saved snapshots. '
+        'They are evidence such as FM-like alignment or AFM-like compensation, not independent '
+        'thermodynamic phase assignments.</p>'
+    )
+
+
 def render_audit_report_html(result: AuditResult) -> str:
     overview_rows = _render_kv_list(result.overview_metrics.items(), "No overview metrics were recorded.")
     inputs_rows = _render_kv_list(result.inputs.items(), "No inputs were recorded.")
@@ -280,6 +478,9 @@ def render_audit_report_html(result: AuditResult) -> str:
         "    .phase-segment { display: block; min-width: 1px; }\n"
         "    .phase-fcc { background: #159a9c; } .phase-bcc { background: #3b6fb6; } .phase-hcp { background: #e8871e; }\n"
         "    .phase-l12 { background: #775da6; } .phase-c14 { background: #2e8b57; } .phase-c15 { background: #b44c6c; } .phase-unresolved { background: #89969a; }\n"
+        "    .magnetic-fm { background:#d1495b; } .magnetic-afm { background:#3b6fb6; } .magnetic-ferrimagnetic { background:#a15c9b; }\n"
+        "    .magnetic-spin_spiral { background:#e8871e; } .magnetic-noncollinear { background:#159a9c; } .magnetic-collinear_mixed { background:#7b6d3d; }\n"
+        "    .magnetic-spin_disordered { background:#89969a; } .magnetic-low_moment { background:#c8d0d2; }\n"
         "    table { width: 100%; border-collapse: collapse; }\n"
         "    th, td { padding: 8px; text-align: left; border-bottom: 1px solid #edf1f4; }\n"
         "    th { color: #52606d; font-size: 12px; }\n"
@@ -311,6 +512,8 @@ def render_audit_report_html(result: AuditResult) -> str:
         '      <div class="section-title">Dataset inventory</div>\n'
         f"{_render_inventory(result)}\n"
         f"{_render_phase_composition_maps(result)}\n"
+        f"{_render_magnetic_composition_maps(result)}\n"
+        f"{_render_magnetic_cross_evidence(result)}\n"
         "    </section>\n"
         '    <section class="card">\n'
         '      <div class="section-title">Inputs</div>\n'

@@ -8305,19 +8305,19 @@ Do you want to continue?</source>
         </message>
         <message>
             <source>structures</source>
-            <translation type="vanished">个结构</translation>
+            <translation>个结构</translation>
         </message>
         <message>
             <source>exact composition points</source>
-            <translation type="vanished">个精确组分点</translation>
+            <translation>个精确组分点</translation>
         </message>
         <message>
             <source>Main composition points</source>
-            <translation type="vanished">主要组分</translation>
+            <translation>主要组分</translation>
         </message>
         <message>
             <source>Pure-element endpoints</source>
-            <translation type="vanished">纯元素端点</translation>
+            <translation>纯元素端点</translation>
         </message>
         <message>
             <location filename="../ui/pages/training_set_audit.py" line="1994" />
@@ -8397,6 +8397,82 @@ Do you want to continue?</source>
             <source>UI render: {milliseconds} ms</source>
             <translation>界面渲染：{milliseconds} 毫秒</translation>
         </message>
+        <message><source>Structural phase</source><translation>结构相</translation></message>
+        <message><source>Magnetic order</source><translation>磁序</translation></message>
+        <message><source>Structural / magnetic order</source><translation>结构相 / 磁序</translation></message>
+        <message><source>Evidence coverage</source><translation>证据覆盖</translation></message>
+        <message><source>Magnetic-order distribution by {element} concentration</source><translation>磁序随 {element} 浓度的分布</translation></message>
+        <message><source>FM-like</source><translation>类铁磁</translation></message>
+        <message><source>AFM-like</source><translation>类反铁磁</translation></message>
+        <message><source>Ferrimagnetic-like</source><translation>类亚铁磁</translation></message>
+        <message><source>Spin spiral-like</source><translation>类自旋螺旋</translation></message>
+        <message><source>Noncollinear ordered</source><translation>非共线有序</translation></message>
+        <message><source>Mixed collinear</source><translation>共线混合态</translation></message>
+        <message><source>Spin-disordered-like</source><translation>类自旋无序</translation></message>
+        <message><source>Low / zero moment</source><translation>低 / 零磁矩</translation></message>
+        <message><source>&lt;b&gt;{scope}: structural order&lt;/b&gt; &amp;nbsp; {phases}&lt;br&gt;Analyzed all {analyzed:,} structures; {strong:,} have strong evidence.{confirmed} This classifies local structure; it does not predict thermodynamic stability.</source><translation>&lt;b&gt;{scope}：结构相&lt;/b&gt; &amp;nbsp; {phases}&lt;br&gt;已分析全部 {analyzed:,} 个结构；其中 {strong:,} 个具有强证据。{confirmed}这里只判断局域结构，不预测热力学稳定性。</translation></message>
+        <message><source>Structural-order analysis is running for every structure.</source><translation>正在对全部结构分析结构相。</translation></message>
+        <message><source>Structural-order evidence is unavailable.</source><translation>结构相证据不可用。</translation></message>
+        <message><source>&lt;b&gt;{scope}: magnetic order&lt;/b&gt; &amp;nbsp; {orders}&lt;br&gt;Analyzed {analyzed:,} spin structures; {missing:,} lack a valid spin:R:3 field. Pattern evidence: net moment ratio {net:.2f}, collinearity {col:.2f}, q-peak {q:.2f}. This is a snapshot-pattern classification, not a thermodynamic FM/AFM/PM claim.</source><translation>&lt;b&gt;{scope}：磁序&lt;/b&gt; &amp;nbsp; {orders}&lt;br&gt;已分析 {analyzed:,} 个含自旋结构；{missing:,} 个缺少有效的 spin:R:3 字段。模式证据：净磁矩比 {net:.2f}、共线度 {col:.2f}、q 峰强度 {q:.2f}。这里只判断单帧自旋模式，不作热力学 FM/AFM/PM 结论。</translation></message>
+        <message><source>&lt;b&gt;Magnetic order&lt;/b&gt;&lt;br&gt;No valid per-atom spin:R:3 field is available in this scope. mforce and force_mag are force labels and are not used as spin states.</source><translation>&lt;b&gt;磁序&lt;/b&gt;&lt;br&gt;当前范围内没有有效的逐原子 spin:R:3 字段。mforce 和 force_mag 是磁力标签，不会被当作自旋状态。</translation></message>
+        <message><source>Magnetic-order analysis is running for every spin structure.</source><translation>正在分析全部含自旋结构的磁序。</translation></message>
+        <message><source>No spin</source><translation>无自旋</translation></message>
+        <message><source>spin 0/{count}</source><translation>自旋 0/{count}</translation></message>
+        <message><source>No valid per-atom spin:R:3 field</source><translation>没有有效的逐原子 spin:R:3 字段</translation></message>
+        <message><source>{order} ({share:.0%})</source><translation>{order}（{share:.0%}）</translation></message>
+        <message><source>spin {analyzed}/{total}</source><translation>自旋 {analyzed}/{total}</translation></message>
+        <message><source> · net {net:.2f} · collinearity {col:.2f} · q-peak {q:.2f}</source><translation> · 净磁矩比 {net:.2f} · 共线度 {col:.2f} · q 峰 {q:.2f}</translation></message>
+        <message><source>Structural: {phase}
+Magnetic: {magnetic}</source><translation>结构相：{phase}
+磁序：{magnetic}</translation></message>
+        <message><source>{label} · {count} structures</source><translation>{label} · {count} 个结构</translation></message>
+        <message><source>All structural phases</source><translation>全部结构相</translation></message>
+        <message><source>All magnetic orders</source><translation>全部磁序</translation></message>
+        <message><source>Show {count:,} matching structures</source><translation>查看 {count:,} 个匹配结构</translation></message>
+        <message><source>Wait for complete structural and magnetic-order analysis before exporting the report.</source><translation>请等待结构相与磁序分析完成后再导出报告。</translation></message>
+        <message><source>Analyzing local phases and magnetic order: {completed:,}/{total:,} structures. The chart will update automatically.</source><translation>正在分析局域相与磁序：{completed:,}/{total:,} 个结构。图表将在完成后自动更新。</translation></message>
+        <message><source>Analyzing structural and magnetic order: {completed:,}/{total:,} checks across {structures:,} structures. The chart will update automatically.</source><translation>正在分析结构相与磁序：{completed:,}/{total:,} 项检查，覆盖 {structures:,} 个结构。图表将在完成后自动更新。</translation></message>
+        <message><source>Structural or magnetic-order analysis failed: {message}</source><translation>结构相或磁序分析失败：{message}</translation></message>
+        <message><source>No valid spin:R:3 states were found.</source><translation>未发现有效的 spin:R:3 自旋状态。</translation></message>
+        <message><source>{order} {share:.1%}</source><translation>{order} {share:.1%}</translation></message>
+        <message><source>Magnetic-pattern labels: {values}.</source><translation>磁序模式：{values}。</translation></message>
+        <message><source>Analyzing every structure carrying spin:R:3.</source><translation>正在分析每个含 spin:R:3 的结构。</translation></message>
+        <message><source>Magnetic-order evidence is unavailable.</source><translation>磁序证据不可用。</translation></message>
+        <message><source>No valid per-atom spin:R:3 field was found. mforce and force_mag are not spin states.</source><translation>未发现有效的逐原子 spin:R:3 字段。mforce 和 force_mag 不是自旋状态。</translation></message>
+        <message><source>All {count:,} structures carrying spin:R:3 were analyzed; {missing:,} structures lack spin. Labels describe snapshot patterns, not thermodynamic magnetic stability.</source><translation>已分析全部 {count:,} 个含 spin:R:3 的结构；{missing:,} 个结构缺少自旋。标签描述单帧模式，不代表热力学磁稳定性。</translation></message>
+        <message><source>Net moment ratio</source><translation>净磁矩比</translation></message>
+        <message><source>Spin collinearity</source><translation>自旋共线度</translation></message>
+        <message><source>Nonzero-q peak strength</source><translation>非零 q 峰强度</translation></message>
+        <message><source>Structure-level magnetic-pattern labels</source><translation>结构级磁序模式</translation></message>
+        <message><source>Calculated · {count:,} spin structures</source><translation>已计算 · {count:,} 个含自旋结构</translation></message>
+        <message><source>Calculating all spin structures</source><translation>正在计算全部含自旋结构</translation></message>
+        <message><source>No spin:R:3 data</source><translation>无 spin:R:3 数据</translation></message>
+        <message><source>Aligned (FM-like)</source><translation>对齐（类铁磁）</translation></message>
+        <message><source>Compensated (AFM-like)</source><translation>补偿（类反铁磁）</translation></message>
+        <message><source>Modulated / spiral-like</source><translation>调制 / 类螺旋</translation></message>
+        <message><source>Noncollinear</source><translation>非共线</translation></message>
+        <message><source>Disordered-like</source><translation>类无序</translation></message>
+        <message><source>Insufficient local evidence</source><translation>局部证据不足</translation></message>
+        <message><source>Parallel coupling</source><translation>平行耦合</translation></message>
+        <message><source>Antiparallel coupling</source><translation>反平行耦合</translation></message>
+        <message><source>Mixed coupling</source><translation>混合耦合</translation></message>
+        <message><source>moment</source><translation>平均磁矩</translation></message>
+        <message><source>net</source><translation>净磁矩比</translation></message>
+        <message><source>same-element correlation</source><translation>同元素相关</translation></message>
+        <message><source>&lt;b&gt;Element-local spin patterns&lt;/b&gt;&lt;br&gt;{rows}These labels describe each element's spin sublattice inside the selected structures.</source><translation>&lt;b&gt;元素局部自旋模式&lt;/b&gt;&lt;br&gt;{rows}这些标签描述所选结构中每种元素的自旋子晶格。</translation></message>
+        <message><source>&lt;b&gt;Element-pair coupling&lt;/b&gt;&lt;br&gt;{pairs}&lt;br&gt;Correlation compares neighboring spin directions; it is not a chemical-bond label.</source><translation>&lt;b&gt;元素对耦合&lt;/b&gt;&lt;br&gt;{pairs}&lt;br&gt;相关系数比较相邻自旋方向，不是化学键标签。</translation></message>
+        <message><source>Magnetic order inside each structural phase</source><translation>各结构相中的磁序</translation></message>
+        <message><source>Structural phase · magnetic order</source><translation>结构相 · 磁序</translation></message>
+        <message><source>{phase} · {order}</source><translation>{phase} · {order}</translation></message>
+        <message><source>Element-local spin patterns</source><translation>元素局部自旋模式</translation></message>
+        <message><source>Structures containing the element</source><translation>含该元素的结构数</translation></message>
+        <message><source>Element · local spin pattern</source><translation>元素 · 局部自旋模式</translation></message>
+        <message><source>{element} · {order}</source><translation>{element} · {order}</translation></message>
+        <message><source>Neighboring element-pair spin coupling</source><translation>相邻元素对的自旋耦合</translation></message>
+        <message><source>Structures containing the pair</source><translation>含该元素对的结构数</translation></message>
+        <message><source>Element pair · coupling</source><translation>元素对 · 耦合</translation></message>
+        <message><source>{element_a}–{element_b} · {coupling}</source><translation>{element_a}–{element_b} · {coupling}</translation></message>
+        <message><source>Exact composition groups</source><translation>精确组分分组</translation></message>
     </context>
     <context>
         <name>Update</name>

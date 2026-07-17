@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QDoubleSpinBox,
     QSizePolicy,
+    QSplitter,
     QSpinBox,
     QTabWidget,
     QTableWidgetItem,
@@ -48,6 +49,7 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.core.audit.report import write_audit_report_html
 from NepTrainKit.core.audit.findings import canonical_findings
 from NepTrainKit.core.audit.inventory import compare_composition_target
+from NepTrainKit.core.audit.magnetic_inventory import summarize_magnetic_inventory
 from NepTrainKit.core.audit.phase_inventory import summarize_phase_inventory
 from NepTrainKit.core.audit.result import (
     AuditBiasType,
@@ -113,6 +115,7 @@ class TrainingSetAuditWidget(QWidget):
         self._selected_chart_indices: list[int] = []
         self._selected_composition_indices: list[int] = []
         self._selected_phase_indices: list[int] = []
+        self._selected_magnetic_indices: list[int] = []
         self._selected_composition_key: tuple[int, ...] | None = None
         self._selected_target_indices: list[int] = []
         self._review_states: dict[str, str] = {}
@@ -171,8 +174,6 @@ class TrainingSetAuditWidget(QWidget):
         self.export_report_button.clicked.connect(self._choose_and_export_report)
         header_layout.addWidget(self.rerun_button)
         header_layout.addWidget(self.export_report_button)
-        root.addWidget(self.audit_header)
-
         self.page_tabs = QTabWidget(self)
         self.page_tabs.setObjectName("auditPageTabs")
         self.page_tabs.setDocumentMode(True)
@@ -182,6 +183,8 @@ class TrainingSetAuditWidget(QWidget):
         summary_layout = QVBoxLayout(summary_tab)
         summary_layout.setContentsMargins(0, 10, 0, 0)
         summary_layout.setSpacing(10)
+        self.summary_tab = summary_tab
+        summary_layout.addWidget(self.audit_header)
 
         self.summary_panel = QFrame(summary_tab)
         self.summary_panel.setObjectName("auditSummaryPanel")
@@ -414,29 +417,63 @@ class TrainingSetAuditWidget(QWidget):
             self._refresh_composition_map
         )
         composition_header_layout.addWidget(self.composition_element_selector)
+        self.composition_order_selector = ComboBox(composition_header)
+        self.composition_order_selector.setMinimumWidth(150)
+        self.composition_order_selector.addItem(
+            self.tr("Structural phase"), userData="structural"
+        )
+        self.composition_order_selector.addItem(
+            self.tr("Magnetic order"), userData="magnetic"
+        )
+        self.composition_order_selector.currentIndexChanged.connect(
+            self._refresh_composition_map
+        )
+        composition_header_layout.addWidget(self.composition_order_selector)
         composition_layout.addWidget(composition_header)
 
-        self.composition_phase_summary_label = QLabel("", composition_page)
+        self.composition_splitter = QSplitter(
+            Qt.Orientation.Horizontal, composition_page
+        )
+        self.composition_splitter.setObjectName("auditCompositionSplitter")
+        self.composition_splitter.setChildrenCollapsible(False)
+        self.composition_splitter.setHandleWidth(8)
+
+        composition_visual_panel = QWidget(self.composition_splitter)
+        composition_visual_layout = QVBoxLayout(composition_visual_panel)
+        composition_visual_layout.setContentsMargins(0, 0, 0, 0)
+        composition_visual_layout.setSpacing(8)
+
+        self.composition_phase_summary_label = QLabel("", composition_visual_panel)
         self.composition_phase_summary_label.setObjectName("inventoryDetails")
         self.composition_phase_summary_label.setTextFormat(Qt.TextFormat.RichText)
         self.composition_phase_summary_label.setWordWrap(True)
         self.composition_phase_summary_label.setTextInteractionFlags(
             Qt.TextInteractionFlag.TextSelectableByMouse
         )
-        composition_layout.addWidget(self.composition_phase_summary_label)
-        self.composition_phase_progress = ProgressBar(composition_page)
+        composition_visual_layout.addWidget(self.composition_phase_summary_label)
+        self.composition_phase_progress = ProgressBar(composition_visual_panel)
         self.composition_phase_progress.setRange(0, 100)
         self.composition_phase_progress.hide()
-        composition_layout.addWidget(self.composition_phase_progress)
+        composition_visual_layout.addWidget(self.composition_phase_progress)
 
-        self.composition_chart = AuditChartWidget(composition_page)
+        self.composition_chart = AuditChartWidget(composition_visual_panel)
         self.composition_chart.setObjectName("auditCompositionChart")
         self.composition_chart.selectedGroupSignal.connect(
             self._on_composition_group_selected
         )
-        composition_layout.addWidget(self.composition_chart, stretch=3)
+        composition_visual_layout.addWidget(self.composition_chart, stretch=1)
 
-        self.composition_table = TableWidget(composition_page)
+        composition_table_panel = QWidget(self.composition_splitter)
+        composition_table_layout = QVBoxLayout(composition_table_panel)
+        composition_table_layout.setContentsMargins(0, 0, 0, 0)
+        composition_table_layout.setSpacing(6)
+        composition_table_title = QLabel(
+            self.tr("Exact composition groups"), composition_table_panel
+        )
+        composition_table_title.setObjectName("panelTitle")
+        composition_table_layout.addWidget(composition_table_title)
+
+        self.composition_table = TableWidget(composition_table_panel)
         self.composition_table.setObjectName("auditCompositionTable")
         self.composition_table.setColumnCount(7)
         self.composition_table.setHorizontalHeaderLabels(
@@ -444,8 +481,8 @@ class TrainingSetAuditWidget(QWidget):
                 self.tr("Exact composition"),
                 self.tr("Structures"),
                 self.tr("Share"),
-                self.tr("Main local phase"),
-                self.tr("Phase evidence"),
+                self.tr("Structural / magnetic order"),
+                self.tr("Evidence coverage"),
                 self.tr("Atom counts"),
                 self.tr("Configuration types"),
             ]
@@ -464,34 +501,50 @@ class TrainingSetAuditWidget(QWidget):
         composition_table_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         composition_table_header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         composition_table_header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        composition_table_header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        composition_table_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
         composition_table_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
         composition_table_header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
         composition_table_header.setSectionResizeMode(6, QHeaderView.ResizeMode.Stretch)
+        self.composition_table.setColumnHidden(5, True)
+        self.composition_table.setColumnHidden(6, True)
         self.composition_table.itemSelectionChanged.connect(
             self._on_composition_table_selection_changed
         )
-        composition_layout.addWidget(self.composition_table, stretch=2)
+        composition_table_layout.addWidget(self.composition_table, stretch=1)
         composition_actions = QHBoxLayout()
-        self.composition_selection_label = QLabel("", composition_page)
+        self.composition_selection_label = QLabel("", composition_table_panel)
         self.composition_selection_label.setObjectName("auditChartSelection")
-        self.composition_phase_selector = ComboBox(composition_page)
+        self.composition_selection_label.setWordWrap(True)
+        self.composition_phase_selector = ComboBox(composition_table_panel)
         self.composition_phase_selector.setMinimumWidth(150)
         self.composition_phase_selector.currentIndexChanged.connect(
             self._refresh_phase_drilldown
         )
+        self.composition_magnetic_selector = ComboBox(composition_table_panel)
+        self.composition_magnetic_selector.setMinimumWidth(170)
+        self.composition_magnetic_selector.currentIndexChanged.connect(
+            self._refresh_phase_drilldown
+        )
         self.composition_show_button = PrimaryPushButton(
-            self.tr("Show selected structures"), composition_page
+            self.tr("Show selected structures"), composition_table_panel
         )
         self.composition_show_button.setEnabled(False)
         self.composition_show_button.clicked.connect(
             self._emit_composition_structures
         )
-        composition_layout.addWidget(self.composition_selection_label)
+        composition_table_layout.addWidget(self.composition_selection_label)
         composition_actions.addStretch(1)
         composition_actions.addWidget(self.composition_phase_selector)
+        composition_actions.addWidget(self.composition_magnetic_selector)
         composition_actions.addWidget(self.composition_show_button)
-        composition_layout.addLayout(composition_actions)
+        composition_table_layout.addLayout(composition_actions)
+
+        self.composition_splitter.addWidget(composition_visual_panel)
+        self.composition_splitter.addWidget(composition_table_panel)
+        self.composition_splitter.setStretchFactor(0, 9)
+        self.composition_splitter.setStretchFactor(1, 11)
+        self.composition_splitter.setSizes([520, 640])
+        composition_layout.addWidget(self.composition_splitter, stretch=1)
         self.data_map_tabs.addTab(composition_page, self.tr("Composition map"))
 
         advanced_page = QWidget(self.data_map_tabs)
@@ -844,6 +897,7 @@ class TrainingSetAuditWidget(QWidget):
         self._selected_chart_indices = []
         self._selected_composition_indices = []
         self._selected_phase_indices = []
+        self._selected_magnetic_indices = []
         self._selected_composition_key = None
         self._selected_target_indices = []
         self.dimension_list.clear()
@@ -867,6 +921,8 @@ class TrainingSetAuditWidget(QWidget):
         self.composition_selection_label.clear()
         self.composition_phase_selector.clear()
         self.composition_phase_selector.setEnabled(False)
+        self.composition_magnetic_selector.clear()
+        self.composition_magnetic_selector.setEnabled(False)
         self.composition_show_button.setEnabled(False)
         self.target_selection_label.clear()
         self.target_show_button.setEnabled(False)
@@ -940,6 +996,10 @@ class TrainingSetAuditWidget(QWidget):
             )
         self.composition_element_selector.blockSignals(False)
         self.target_element_selector.blockSignals(False)
+        magnetic = self._result.magnetic_inventory if self._result is not None else None
+        magnetic_available = magnetic is not None and magnetic.analyzed_structure_count > 0
+        if not magnetic_available and self.composition_order_selector.currentData() == "magnetic":
+            self.composition_order_selector.setCurrentIndex(0)
         self._refresh_composition_map()
         self._apply_composition_target()
 
@@ -975,25 +1035,42 @@ class TrainingSetAuditWidget(QWidget):
         if inventory is None or element not in inventory.elements:
             return None
         groups = self._element_fraction_groups(inventory, element)
-        phase_inventory = (
-            self._result.phase_inventory if self._result is not None else None
-        )
-        if phase_inventory is not None:
-            phase_by_index = {
-                structure.source_index: structure.phase_label
-                for point in phase_inventory.composition_points
-                for structure in point.structures
-            }
+        mode = self.composition_order_selector.currentData() or "structural"
+        inventory_result = None
+        labels_by_index: dict[int, str] = {}
+        if mode == "magnetic" and self._result is not None:
+            inventory_result = self._result.magnetic_inventory
+            if inventory_result is not None:
+                labels_by_index = {
+                    structure.source_index: structure.order_label
+                    for point in inventory_result.composition_points
+                    for structure in point.structures
+                }
             ordered_labels = (
-                "fcc",
-                "bcc",
-                "hcp",
-                "l12",
-                "c14",
-                "c15",
-                "unresolved",
+                "fm", "afm", "ferrimagnetic", "spin_spiral",
+                "noncollinear", "collinear_mixed", "spin_disordered", "low_moment",
             )
-            phase_series = []
+            display_name = self._magnetic_display_name
+            title = self.tr(
+                "Magnetic-order distribution by {element} concentration"
+            ).format(element=element)
+            plot_id = f"inventory:composition-magnetism:{element}"
+        else:
+            inventory_result = self._result.phase_inventory if self._result is not None else None
+            if inventory_result is not None:
+                labels_by_index = {
+                    structure.source_index: structure.phase_label
+                    for point in inventory_result.composition_points
+                    for structure in point.structures
+                }
+            ordered_labels = ("fcc", "bcc", "hcp", "l12", "c14", "c15", "unresolved")
+            display_name = self._phase_display_name
+            title = self.tr(
+                "Phase distribution by {element} concentration"
+            ).format(element=element)
+            plot_id = f"inventory:composition-phase:{element}"
+        if inventory_result is not None and labels_by_index:
+            stacked_series = []
             for label in ordered_labels:
                 index_groups = tuple(
                     tuple(
@@ -1001,27 +1078,25 @@ class TrainingSetAuditWidget(QWidget):
                             index
                             for point in points
                             for index in point.structure_indices
-                            if phase_by_index.get(index) == label
+                            if labels_by_index.get(index) == label
                         )
                     )
                     for _, points in groups
                 )
                 counts = tuple(len(indices) for indices in index_groups)
                 if any(counts):
-                    phase_series.append(
+                    stacked_series.append(
                         {
                             "id": label,
-                            "label": self._phase_display_name(label),
+                            "label": display_name(label),
                             "counts": counts,
                             "structure_indices": index_groups,
                         }
                     )
             return {
                 "kind": "composition_phase_stacks",
-                "id": f"inventory:composition-phase:{element}",
-                "title": self.tr(
-                    "Phase distribution by {element} concentration"
-                ).format(element=element),
+                "id": plot_id,
+                "title": title,
                 "x_label": self.tr("{element} atomic fraction").format(
                     element=element
                 ),
@@ -1040,7 +1115,7 @@ class TrainingSetAuditWidget(QWidget):
                     )
                     for fraction, points in groups
                 ),
-                "series": tuple(phase_series),
+                "series": tuple(stacked_series),
             }
         return {
             "kind": "composition_stems",
@@ -1122,6 +1197,37 @@ class TrainingSetAuditWidget(QWidget):
             "unresolved": self.tr("Unresolved"),
         }.get(label, label)
 
+    def _magnetic_display_name(self, label: str) -> str:
+        return {
+            "fm": self.tr("FM-like"),
+            "afm": self.tr("AFM-like"),
+            "ferrimagnetic": self.tr("Ferrimagnetic-like"),
+            "spin_spiral": self.tr("Spin spiral-like"),
+            "noncollinear": self.tr("Noncollinear ordered"),
+            "collinear_mixed": self.tr("Mixed collinear"),
+            "spin_disordered": self.tr("Spin-disordered-like"),
+            "low_moment": self.tr("Low / zero moment"),
+        }.get(label, label)
+
+    def _element_order_display_name(self, label: str) -> str:
+        return {
+            "aligned": self.tr("Aligned (FM-like)"),
+            "compensated": self.tr("Compensated (AFM-like)"),
+            "modulated": self.tr("Modulated / spiral-like"),
+            "noncollinear": self.tr("Noncollinear"),
+            "collinear_mixed": self.tr("Mixed collinear"),
+            "disordered": self.tr("Disordered-like"),
+            "low_moment": self.tr("Low / zero moment"),
+            "insufficient": self.tr("Insufficient local evidence"),
+        }.get(label, label)
+
+    def _coupling_display_name(self, label: str) -> str:
+        return {
+            "parallel": self.tr("Parallel coupling"),
+            "antiparallel": self.tr("Antiparallel coupling"),
+            "mixed": self.tr("Mixed coupling"),
+        }.get(label, label)
+
     def _phase_point_for_reduced_counts(self, reduced_counts: tuple[int, ...]):
         if self._result is None or self._result.phase_inventory is None:
             return None
@@ -1134,34 +1240,25 @@ class TrainingSetAuditWidget(QWidget):
             None,
         )
 
+    def _magnetic_point_for_reduced_counts(self, reduced_counts: tuple[int, ...]):
+        if self._result is None or self._result.magnetic_inventory is None:
+            return None
+        return next(
+            (
+                point
+                for point in self._result.magnetic_inventory.composition_points
+                if point.reduced_counts == reduced_counts
+            ),
+            None,
+        )
+
     def _render_phase_summary(
         self,
         structure_indices: tuple[int, ...] = (),
     ) -> None:
-        if self._result is None or self._result.phase_inventory is None:
-            phase_meta = (
-                self._result.overview_metrics.get("phase_inventory", {})
-                if self._result is not None
-                else {}
-            )
-            if isinstance(phase_meta, Mapping) and phase_meta.get("status") == "pending":
-                total = self._structure_count()
-                self.composition_phase_summary_label.setText(
-                    self.tr(
-                        "Analyzing local phases for all {count:,} structures. "
-                        "The chart will update automatically; no sampling estimate is used."
-                    ).format(count=total)
-                )
-                self.composition_phase_summary_label.show()
-            else:
-                self.composition_phase_summary_label.setText(
-                    self.tr(
-                        "Phase evidence is unavailable. Other audit results remain valid."
-                    )
-                )
-                self.composition_phase_summary_label.show()
+        if self._result is None:
+            self.composition_phase_summary_label.hide()
             return
-        phase_inventory = self._result.phase_inventory
         inventory = self._inventory()
         selected = set(structure_indices)
         allowed_keys = None
@@ -1171,50 +1268,112 @@ class TrainingSetAuditWidget(QWidget):
                 for point in inventory.composition_points
                 if selected.intersection(point.structure_indices)
             }
-        summary = summarize_phase_inventory(phase_inventory, allowed_keys)
-        if summary is None:
-            self.composition_phase_summary_label.clear()
-            self.composition_phase_summary_label.hide()
-            return
-        local_fractions = dict(summary.local_phase_fractions)
-        confidence_totals = dict(summary.confidence_counts)
-        confirmed_totals = dict(summary.confirmed_candidates)
-        phase_text = " &nbsp;·&nbsp; ".join(
-            f"<b>{escape(self._phase_display_name(label))} "
-            f"{local_fractions[label]:.1%}</b>"
-            for label in ("fcc", "hcp", "bcc", "unresolved")
-        )
-        confirmed_text = ""
-        if confirmed_totals:
-            confirmed_text = self.tr(" Confirmed ordering: {values}.").format(
-                values=", ".join(
-                    f"{escape(self._phase_display_name(label))} × {count:,}"
-                    for label, count in sorted(confirmed_totals.items())
-                )
-            )
         scope_text = (
             self.tr("Selected composition group")
             if selected
             else self.tr("Current audited scope")
         )
-        strong_count = confidence_totals.get("strong", 0)
-        self.composition_phase_summary_label.setText(
-            self.tr(
-                "<b>{scope}: local structure evidence</b> &nbsp; "
-                "{phases}<br>"
-                "Analyzed all {analyzed:,} structures; "
-                "{strong:,} have strong structure-level evidence.{confirmed} "
-                "This classifies local structure; it does not predict thermodynamic stability. "
-                "Method: {method}; reference bank: {bank}."
-            ).format(
-                scope=escape(scope_text),
-                phases=phase_text,
-                analyzed=summary.analyzed_structure_count,
-                strong=strong_count,
-                confirmed=confirmed_text,
-                method=escape(phase_inventory.method_id),
-                bank=escape(phase_inventory.reference_bank_id),
+        sections: list[str] = []
+        phase_inventory = self._result.phase_inventory
+        if phase_inventory is not None:
+            summary = summarize_phase_inventory(phase_inventory, allowed_keys)
+            if summary is not None:
+                local_fractions = dict(summary.local_phase_fractions)
+                confidence_totals = dict(summary.confidence_counts)
+                confirmed_totals = dict(summary.confirmed_candidates)
+                phase_text = " &nbsp;·&nbsp; ".join(
+                    f"<b>{escape(self._phase_display_name(label))} "
+                    f"{local_fractions[label]:.1%}</b>"
+                    for label in ("fcc", "hcp", "bcc", "unresolved")
+                )
+                confirmed_text = ""
+                if confirmed_totals:
+                    confirmed_text = self.tr(" Confirmed ordering: {values}.").format(
+                        values=", ".join(
+                            f"{escape(self._phase_display_name(label))} × {count:,}"
+                            for label, count in sorted(confirmed_totals.items())
+                        )
+                    )
+                sections.append(self.tr(
+                    "<b>{scope}: structural order</b> &nbsp; {phases}<br>"
+                    "Analyzed all {analyzed:,} structures; {strong:,} have strong evidence.{confirmed} "
+                    "This classifies local structure; it does not predict thermodynamic stability."
+                ).format(
+                    scope=escape(scope_text), phases=phase_text,
+                    analyzed=summary.analyzed_structure_count,
+                    strong=confidence_totals.get("strong", 0), confirmed=confirmed_text,
+                ))
+        else:
+            phase_meta = self._result.overview_metrics.get("phase_inventory", {})
+            sections.append(
+                self.tr("Structural-order analysis is running for every structure.")
+                if isinstance(phase_meta, Mapping) and phase_meta.get("status") == "pending"
+                else self.tr("Structural-order evidence is unavailable.")
             )
+
+        magnetic_inventory = self._result.magnetic_inventory
+        if magnetic_inventory is not None:
+            magnetic = summarize_magnetic_inventory(magnetic_inventory, allowed_keys)
+            if magnetic is not None:
+                order_text = " &nbsp;·&nbsp; ".join(
+                    f"<b>{escape(self._magnetic_display_name(label))} {fraction:.1%}</b>"
+                    for label, fraction in magnetic.order_fractions[:5]
+                )
+                sections.append(self.tr(
+                    "<b>{scope}: magnetic order</b> &nbsp; {orders}<br>"
+                    "Analyzed {analyzed:,} spin structures; {missing:,} lack a valid spin:R:3 field. "
+                    "Pattern evidence: net moment ratio {net:.2f}, collinearity {col:.2f}, q-peak {q:.2f}. "
+                    "This is a snapshot-pattern classification, not a thermodynamic FM/AFM/PM claim."
+                ).format(
+                    scope=escape(scope_text), orders=order_text,
+                    analyzed=magnetic.analyzed_structure_count,
+                    missing=magnetic.missing_spin_count,
+                    net=magnetic.mean_net_moment_ratio,
+                    col=magnetic.mean_collinearity,
+                    q=magnetic.mean_q_peak_strength,
+                ))
+                element_rows = "".join(
+                    "<tr>"
+                    f"<td style='padding:2px 12px 2px 0'><b>{escape(item.element)}</b></td>"
+                    f"<td style='padding:2px 12px 2px 0'>{escape(self._element_order_display_name(item.order_fractions[0][0]))} {item.order_fractions[0][1]:.0%}</td>"
+                    f"<td style='padding:2px 12px 2px 0'>{escape(self.tr('moment'))} {item.mean_moment:.2f}</td>"
+                    f"<td style='padding:2px 12px 2px 0'>{escape(self.tr('net'))} {item.mean_net_moment_ratio:.2f}</td>"
+                    f"<td style='padding:2px 0'>{escape(self.tr('same-element correlation'))} {item.mean_intra_element_correlation:+.2f}</td>"
+                    "</tr>"
+                    for item in magnetic.element_summaries
+                    if item.order_fractions
+                )
+                if element_rows:
+                    sections.append(
+                        self.tr(
+                            "<b>Element-local spin patterns</b><br>"
+                            "{rows}"
+                            "These labels describe each element's spin sublattice inside the selected structures."
+                        ).format(rows=f"<table cellspacing='0'>{element_rows}</table>")
+                    )
+                pair_text = " &nbsp;·&nbsp; ".join(
+                    f"<b>{escape(item.element_a)}–{escape(item.element_b)}</b> "
+                    f"{escape(self._coupling_display_name(item.coupling_fractions[0][0]))} "
+                    f"{item.coupling_fractions[0][1]:.0%} ({item.mean_correlation:+.2f})"
+                    for item in magnetic.element_pair_summaries
+                    if item.coupling_fractions
+                )
+                if pair_text:
+                    sections.append(self.tr(
+                        "<b>Element-pair coupling</b><br>{pairs}<br>"
+                        "Correlation compares neighboring spin directions; it is not a chemical-bond label."
+                    ).format(pairs=pair_text))
+            else:
+                sections.append(self.tr(
+                    "<b>Magnetic order</b><br>No valid per-atom spin:R:3 field is available in this scope. "
+                    "mforce and force_mag are force labels and are not used as spin states."
+                ))
+        else:
+            magnetic_meta = self._result.overview_metrics.get("magnetic_inventory", {})
+            if isinstance(magnetic_meta, Mapping) and magnetic_meta.get("status") == "pending":
+                sections.append(self.tr("Magnetic-order analysis is running for every spin structure."))
+        self.composition_phase_summary_label.setText(
+            "<div>" + "<hr style='border:0;border-top:1px solid #d9e3e3;margin:7px 0'>".join(sections) + "</div>"
         )
         self.composition_phase_summary_label.show()
 
@@ -1271,12 +1430,53 @@ class TrainingSetAuditWidget(QWidget):
                     f"{self._phase_display_name(label)} {fraction:.1%}"
                     for label, fraction in phase_point.local_phase_fractions
                 )
-            dominant_item = QTableWidgetItem(dominant_phase)
+            magnetic_point = self._magnetic_point_for_reduced_counts(point.reduced_counts)
+            if self._result is None or self._result.magnetic_inventory is None:
+                dominant_magnetic = ""
+                magnetic_evidence = ""
+                magnetic_tooltip = ""
+            elif magnetic_point is None or not magnetic_point.order_fractions:
+                dominant_magnetic = self.tr("No spin")
+                magnetic_evidence = self.tr("spin 0/{count}").format(
+                    count=point.structure_count
+                )
+                magnetic_tooltip = self.tr("No valid per-atom spin:R:3 field")
+            else:
+                magnetic_label, magnetic_fraction = magnetic_point.order_fractions[0]
+                dominant_magnetic = self.tr("{order} ({share:.0%})").format(
+                    order=self._magnetic_display_name(magnetic_label),
+                    share=magnetic_fraction,
+                )
+                magnetic_evidence = self.tr("spin {analyzed}/{total}").format(
+                    analyzed=magnetic_point.analyzed_structure_count,
+                    total=magnetic_point.source_structure_count,
+                )
+                magnetic_tooltip = " · ".join(
+                    f"{self._magnetic_display_name(label)} {fraction:.1%}"
+                    for label, fraction in magnetic_point.order_fractions
+                )
+                magnetic_tooltip += self.tr(
+                    " · net {net:.2f} · collinearity {col:.2f} · q-peak {q:.2f}"
+                ).format(
+                    net=magnetic_point.mean_net_moment_ratio,
+                    col=magnetic_point.mean_collinearity,
+                    q=magnetic_point.mean_q_peak_strength,
+                )
+            dominant_item = QTableWidgetItem(
+                "  ·  ".join(filter(None, (dominant_phase, dominant_magnetic)))
+            )
             dominant_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            dominant_item.setToolTip(phase_tooltip)
+            dominant_item.setToolTip(
+                self.tr("Structural: {phase}\nMagnetic: {magnetic}").format(
+                    phase=phase_tooltip or dominant_phase,
+                    magnetic=magnetic_tooltip,
+                )
+            )
             self.composition_table.setItem(row, 3, dominant_item)
-            evidence_item = QTableWidgetItem(phase_evidence)
-            evidence_item.setToolTip(phase_tooltip)
+            evidence_item = QTableWidgetItem(
+                "  ·  ".join(filter(None, (phase_evidence, magnetic_evidence)))
+            )
+            evidence_item.setToolTip(f"{phase_tooltip}\n{magnetic_tooltip}")
             self.composition_table.setItem(row, 4, evidence_item)
             atom_counts = ", ".join(
                 f"{count} atoms × {structures:,}"
@@ -1298,6 +1498,11 @@ class TrainingSetAuditWidget(QWidget):
             )
             config_item.setToolTip(all_config_types)
             self.composition_table.setItem(row, 6, config_item)
+            formula_item.setToolTip(
+                f"{self.tr('Atom counts')}: {atom_counts}\n"
+                f"{self.tr('Configuration types')}: "
+                f"{all_config_types or self.tr('Not labeled')}"
+            )
         if points:
             self.composition_table.selectRow(0)
 
@@ -1345,58 +1550,87 @@ class TrainingSetAuditWidget(QWidget):
             if structure.source_index in selected
         )
 
+    def _selected_magnetic_evidence(self):
+        if self._result is None or self._result.magnetic_inventory is None:
+            return ()
+        selected = set(self._selected_composition_indices)
+        return tuple(
+            structure
+            for point in self._result.magnetic_inventory.composition_points
+            for structure in point.structures
+            if structure.source_index in selected
+        )
+
     def _refresh_phase_drilldown(self, index: int = -1) -> None:
         del index
-        previous_label = self.composition_phase_selector.currentData()
-        evidence = self._selected_phase_evidence()
-        counts: dict[str, int] = {}
-        for structure in evidence:
-            counts[structure.phase_label] = counts.get(structure.phase_label, 0) + 1
-        self.composition_phase_selector.blockSignals(True)
-        self.composition_phase_selector.clear()
-        self.composition_phase_selector.addItem(
-            self.tr("All structures"), userData=""
-        )
-        selected_index = 0
-        for label, count in sorted(counts.items(), key=lambda item: (-item[1], item[0])):
-            self.composition_phase_selector.addItem(
-                self.tr("{phase} · {count} analyzed").format(
-                    phase=self._phase_display_name(label),
-                    count=count,
-                ),
-                userData=label,
-            )
-            if label == previous_label:
-                selected_index = self.composition_phase_selector.count() - 1
-        self.composition_phase_selector.setCurrentIndex(selected_index)
-        self.composition_phase_selector.setEnabled(bool(evidence))
-        self.composition_phase_selector.blockSignals(False)
-        selected_label = self.composition_phase_selector.currentData() or ""
-        if selected_label:
-            self._selected_phase_indices = sorted(
-                structure.source_index
-                for structure in evidence
-                if structure.phase_label == selected_label
-            )
-            button_text = self.tr("Show {count:,} {phase} structures").format(
-                count=len(self._selected_phase_indices),
-                phase=self._phase_display_name(selected_label),
-            )
-            self.composition_show_button.setText(button_text)
-            self.composition_show_button.setEnabled(bool(self._selected_phase_indices))
-        else:
-            self._selected_phase_indices = list(self._selected_composition_indices)
-            self.composition_show_button.setText(
-                self.tr("Show {count:,} structures").format(
-                    count=len(self._selected_phase_indices)
+        phase_previous = self.composition_phase_selector.currentData()
+        magnetic_previous = self.composition_magnetic_selector.currentData()
+        phase_evidence = self._selected_phase_evidence()
+        magnetic_evidence = self._selected_magnetic_evidence()
+
+        def populate(selector, evidence, attribute, display, previous, all_text):
+            counts: dict[str, int] = {}
+            for structure in evidence:
+                label = getattr(structure, attribute)
+                counts[label] = counts.get(label, 0) + 1
+            selector.blockSignals(True)
+            selector.clear()
+            selector.addItem(all_text, userData="")
+            selected_index = 0
+            for label, count in sorted(counts.items(), key=lambda item: (-item[1], item[0])):
+                selector.addItem(
+                    self.tr("{label} · {count} structures").format(
+                        label=display(label), count=count
+                    ),
+                    userData=label,
                 )
+                if label == previous:
+                    selected_index = selector.count() - 1
+            selector.setCurrentIndex(selected_index)
+            selector.setEnabled(bool(evidence))
+            selector.blockSignals(False)
+
+        populate(
+            self.composition_phase_selector, phase_evidence, "phase_label",
+            self._phase_display_name, phase_previous, self.tr("All structural phases")
+        )
+        populate(
+            self.composition_magnetic_selector, magnetic_evidence, "order_label",
+            self._magnetic_display_name, magnetic_previous, self.tr("All magnetic orders")
+        )
+        selected_phase = self.composition_phase_selector.currentData() or ""
+        selected_magnetic = self.composition_magnetic_selector.currentData() or ""
+        selected_indices = set(self._selected_composition_indices)
+        if selected_phase:
+            selected_indices.intersection_update(
+                structure.source_index
+                for structure in phase_evidence
+                if structure.phase_label == selected_phase
             )
-            self.composition_show_button.setEnabled(bool(self._selected_phase_indices))
+        if selected_magnetic:
+            selected_indices.intersection_update(
+                structure.source_index
+                for structure in magnetic_evidence
+                if structure.order_label == selected_magnetic
+            )
+        self._selected_phase_indices = sorted(selected_indices)
+        self._selected_magnetic_indices = sorted(selected_indices)
+        if selected_phase and not selected_magnetic:
+            button_text = self.tr("Show {count:,} {phase} structures").format(
+                count=len(selected_indices),
+                phase=self._phase_display_name(selected_phase),
+            )
+        else:
+            button_text = self.tr("Show {count:,} matching structures").format(
+                count=len(selected_indices)
+            )
+        self.composition_show_button.setText(button_text)
+        self.composition_show_button.setEnabled(bool(selected_indices))
     def start_phase_analysis(self, total: int) -> None:
         del total
         self.export_report_button.setEnabled(False)
         self.export_report_button.setToolTip(
-            self.tr("Wait for complete phase analysis before exporting the report.")
+            self.tr("Wait for complete structural and magnetic-order analysis before exporting the report.")
         )
         self.composition_phase_progress.setValue(0)
         self.composition_phase_progress.show()
@@ -1406,12 +1640,21 @@ class TrainingSetAuditWidget(QWidget):
         total = max(1, int(total))
         completed = min(total, max(0, int(completed)))
         self.composition_phase_progress.setValue(round(100 * completed / total))
-        self.composition_phase_summary_label.setText(
-            self.tr(
+        if total == self._structure_count():
+            progress_text = self.tr(
                 "Analyzing local phases: {completed:,}/{total:,} structures. "
                 "The chart will update automatically."
             ).format(completed=completed, total=total)
-        )
+        else:
+            progress_text = self.tr(
+                "Analyzing structural and magnetic order: {completed:,}/{total:,} checks "
+                "across {structures:,} structures. The chart will update automatically."
+            ).format(
+                completed=completed,
+                total=total,
+                structures=self._structure_count(),
+            )
+        self.composition_phase_summary_label.setText(progress_text)
         self.composition_phase_summary_label.show()
 
     def finish_phase_analysis(self, result: AuditResult) -> None:
@@ -1425,6 +1668,7 @@ class TrainingSetAuditWidget(QWidget):
         self._update_summary()
         self._populate_inventory_views()
         self._sync_phase_dimension_item()
+        self._sync_magnetic_dimension_item()
         if selected_key is not None:
             for row in range(self.composition_table.rowCount()):
                 item = self.composition_table.item(row, 0)
@@ -1435,6 +1679,8 @@ class TrainingSetAuditWidget(QWidget):
                     break
         if selected_dimension == "phase_evidence":
             self._update_analysis("phase_evidence")
+        elif selected_dimension == "magnetic_evidence":
+            self._update_analysis("magnetic_evidence")
 
     def fail_phase_analysis(self, message: str) -> None:
         if self._result is not None:
@@ -1442,16 +1688,20 @@ class TrainingSetAuditWidget(QWidget):
             phase_meta = dict(overview.get("phase_inventory", {}))
             phase_meta.update({"available": False, "status": "unavailable"})
             overview["phase_inventory"] = phase_meta
+            magnetic_meta = dict(overview.get("magnetic_inventory", {}))
+            magnetic_meta.update({"available": False, "status": "unavailable"})
+            overview["magnetic_inventory"] = magnetic_meta
             self._result = replace(self._result, overview_metrics=overview)
         self.composition_phase_progress.hide()
         self.export_report_button.setEnabled(True)
         self.export_report_button.setToolTip("")
         self.composition_phase_summary_label.setText(
-            self.tr("Phase analysis failed: {message}").format(message=message)
+            self.tr("Structural or magnetic-order analysis failed: {message}").format(message=message)
         )
         self.composition_phase_summary_label.show()
         self._update_summary()
         self._sync_phase_dimension_item()
+        self._sync_magnetic_dimension_item()
 
     def _emit_composition_structures(self) -> None:
         if self._selected_phase_indices:
@@ -1801,6 +2051,7 @@ class TrainingSetAuditWidget(QWidget):
         overview.setData(Qt.ItemDataRole.UserRole, _OVERVIEW)
         self.dimension_list.addItem(overview)
         self._sync_phase_dimension_item()
+        self._sync_magnetic_dimension_item()
         if result.dimensions:
             for dimension in result.dimensions:
                 status = self._status_text(dimension.status)
@@ -2636,9 +2887,30 @@ class TrainingSetAuditWidget(QWidget):
             )
             for label, count in key_items
         )
-        return self.tr("Structure-level phase labels: {values}.").format(
+        structural = self.tr("Structure-level phase labels: {values}.").format(
             values=values or self.tr("none")
         )
+        magnetic_inventory = self._result.magnetic_inventory
+        if magnetic_inventory is None or magnetic_inventory.analyzed_structure_count <= 0:
+            return structural + " " + self.tr("No valid spin:R:3 states were found.")
+        magnetic_counts: dict[str, int] = {}
+        for point in magnetic_inventory.composition_points:
+            for structure in point.structures:
+                magnetic_counts[structure.order_label] = (
+                    magnetic_counts.get(structure.order_label, 0) + 1
+                )
+        magnetic_total = magnetic_inventory.analyzed_structure_count
+        magnetic_values = ", ".join(
+            self.tr("{order} {share:.1%}").format(
+                order=self._magnetic_display_name(label), share=count / magnetic_total
+            )
+            for label, count in sorted(
+                magnetic_counts.items(), key=lambda item: (-item[1], item[0])
+            )[:3]
+        )
+        return structural + " " + self.tr(
+            "Magnetic-pattern labels: {values}."
+        ).format(values=magnetic_values)
 
     def _update_analysis(self, dimension_id: str) -> None:
         self.plot_selector.blockSignals(True)
@@ -2647,6 +2919,7 @@ class TrainingSetAuditWidget(QWidget):
         self._set_local_chemistry_controls_visible(False)
         is_local_chemistry = dimension_id == "local_chemistry"
         is_phase_evidence = dimension_id == "phase_evidence"
+        is_magnetic_evidence = dimension_id == "magnetic_evidence"
         if self._result is None:
             self._active_plots = []
             status_text = self.tr("No audit result is loaded.")
@@ -2663,6 +2936,9 @@ class TrainingSetAuditWidget(QWidget):
         elif is_phase_evidence:
             self._active_plots = self._phase_evidence_plots()
             status_text = self._phase_evidence_status_text()
+        elif is_magnetic_evidence:
+            self._active_plots = self._magnetic_evidence_plots()
+            status_text = self._magnetic_evidence_status_text()
         else:
             dimension = self._dimensions.get(dimension_id)
             if dimension is not None and dimension.status == AuditStatus.UNAVAILABLE:
@@ -3096,6 +3372,7 @@ class TrainingSetAuditWidget(QWidget):
     def _dimension_title(self, dimension_id: str) -> str:
         display_names = {
             "phase_evidence": self.tr("Phases and local structure"),
+            "magnetic_evidence": self.tr("Magnetic order"),
             "data_quality": self.tr("Data quality"),
             "composition": self.tr("Composition balance"),
             "config_types": self.tr("Configuration types"),
@@ -3200,6 +3477,200 @@ class TrainingSetAuditWidget(QWidget):
             },
         ]
 
+    def _magnetic_evidence_status_text(self) -> str:
+        if self._result is None:
+            return self.tr("No audit result is loaded.")
+        inventory = self._result.magnetic_inventory
+        if inventory is None:
+            meta = self._result.overview_metrics.get("magnetic_inventory", {})
+            if isinstance(meta, Mapping) and meta.get("status") == "pending":
+                return self.tr("Analyzing every structure carrying spin:R:3.")
+            return self.tr("Magnetic-order evidence is unavailable.")
+        if inventory.analyzed_structure_count <= 0:
+            return self.tr(
+                "No valid per-atom spin:R:3 field was found. mforce and force_mag are not spin states."
+            )
+        return self.tr(
+            "All {count:,} structures carrying spin:R:3 were analyzed; {missing:,} structures lack spin. "
+            "Labels describe snapshot patterns, not thermodynamic magnetic stability."
+        ).format(
+            count=inventory.analyzed_structure_count,
+            missing=inventory.missing_spin_count,
+        )
+
+    def _magnetic_evidence_plots(self) -> list[dict[str, Any]]:
+        if self._result is None or self._result.magnetic_inventory is None:
+            return []
+        structures = tuple(
+            structure
+            for point in self._result.magnetic_inventory.composition_points
+            for structure in point.structures
+        )
+        if not structures:
+            return []
+        order = (
+            "fm", "afm", "ferrimagnetic", "spin_spiral", "noncollinear",
+            "collinear_mixed", "spin_disordered", "low_moment",
+        )
+        labels = tuple(label for label in order if any(s.order_label == label for s in structures))
+        groups = tuple(
+            tuple(s.source_index for s in structures if s.order_label == label)
+            for label in labels
+        )
+        metric_specs = (
+            ("net", self.tr("Net moment ratio"), "net_moment_ratio"),
+            ("collinearity", self.tr("Spin collinearity"), "collinearity"),
+            ("q_peak", self.tr("Nonzero-q peak strength"), "q_peak_strength"),
+        )
+        plots: list[dict[str, Any]] = [
+            {
+                "kind": "categorical_bars",
+                "id": "magnetic_evidence:orders",
+                "title": self.tr("Structure-level magnetic-pattern labels"),
+                "x_label": self.tr("Structures"),
+                "y_label": self.tr("Magnetic order"),
+                "series": ({
+                    "labels": tuple(self._magnetic_display_name(label) for label in labels),
+                    "bar_ids": labels,
+                    "counts": tuple(len(group) for group in groups),
+                    "structure_indices": groups,
+                },),
+            }
+        ]
+        phase_inventory = self._result.phase_inventory
+        if phase_inventory is not None:
+            phase_by_index = {
+                structure.source_index: structure.phase_label
+                for point in phase_inventory.composition_points
+                for structure in point.structures
+            }
+            joint_groups: dict[tuple[str, str], list[int]] = {}
+            for structure in structures:
+                phase_label = phase_by_index.get(structure.source_index)
+                if phase_label is None:
+                    continue
+                joint_groups.setdefault(
+                    (phase_label, structure.order_label), []
+                ).append(structure.source_index)
+            if joint_groups:
+                ranked_joint = sorted(
+                    joint_groups,
+                    key=lambda key: (-len(joint_groups[key]), key[0], key[1]),
+                )
+                plots.append({
+                    "kind": "categorical_bars",
+                    "id": "magnetic_evidence:phase_order_joint",
+                    "title": self.tr("Magnetic order inside each structural phase"),
+                    "x_label": self.tr("Structures"),
+                    "y_label": self.tr("Structural phase · magnetic order"),
+                    "series": ({
+                        "labels": tuple(
+                            self.tr("{phase} · {order}").format(
+                                phase=self._phase_display_name(phase),
+                                order=self._magnetic_display_name(magnetic),
+                            )
+                            for phase, magnetic in ranked_joint
+                        ),
+                        "bar_ids": tuple(
+                            f"{phase}:{magnetic}" for phase, magnetic in ranked_joint
+                        ),
+                        "counts": tuple(len(joint_groups[key]) for key in ranked_joint),
+                        "structure_indices": tuple(
+                            tuple(joint_groups[key]) for key in ranked_joint
+                        ),
+                    },),
+                })
+        element_groups: dict[tuple[str, str], list[int]] = {}
+        pair_groups: dict[tuple[str, str, str], list[int]] = {}
+        for structure in structures:
+            for evidence in structure.element_evidence:
+                element_groups.setdefault(
+                    (evidence.element, evidence.order_label), []
+                ).append(structure.source_index)
+            for evidence in structure.element_pair_evidence:
+                pair_groups.setdefault(
+                    (evidence.element_a, evidence.element_b, evidence.coupling_label), []
+                ).append(structure.source_index)
+        if element_groups:
+            ranked_elements = sorted(
+                element_groups,
+                key=lambda key: (key[0], -len(element_groups[key]), key[1]),
+            )
+            plots.append({
+                "kind": "categorical_bars",
+                "id": "magnetic_evidence:element_local_order",
+                "title": self.tr("Element-local spin patterns"),
+                "x_label": self.tr("Structures containing the element"),
+                "y_label": self.tr("Element · local spin pattern"),
+                "series": ({
+                    "labels": tuple(
+                        self.tr("{element} · {order}").format(
+                            element=element,
+                            order=self._element_order_display_name(label),
+                        )
+                        for element, label in ranked_elements
+                    ),
+                    "bar_ids": tuple(
+                        f"{element}:{label}" for element, label in ranked_elements
+                    ),
+                    "counts": tuple(len(element_groups[key]) for key in ranked_elements),
+                    "structure_indices": tuple(
+                        tuple(element_groups[key]) for key in ranked_elements
+                    ),
+                },),
+            })
+        if pair_groups:
+            ranked_pairs = sorted(
+                pair_groups,
+                key=lambda key: (key[0], key[1], -len(pair_groups[key]), key[2]),
+            )
+            plots.append({
+                "kind": "categorical_bars",
+                "id": "magnetic_evidence:element_pair_coupling",
+                "title": self.tr("Neighboring element-pair spin coupling"),
+                "x_label": self.tr("Structures containing the pair"),
+                "y_label": self.tr("Element pair · coupling"),
+                "series": ({
+                    "labels": tuple(
+                        self.tr("{element_a}–{element_b} · {coupling}").format(
+                            element_a=element_a,
+                            element_b=element_b,
+                            coupling=self._coupling_display_name(label),
+                        )
+                        for element_a, element_b, label in ranked_pairs
+                    ),
+                    "bar_ids": tuple(
+                        f"{element_a}:{element_b}:{label}"
+                        for element_a, element_b, label in ranked_pairs
+                    ),
+                    "counts": tuple(len(pair_groups[key]) for key in ranked_pairs),
+                    "structure_indices": tuple(
+                        tuple(pair_groups[key]) for key in ranked_pairs
+                    ),
+                },),
+            })
+        for metric_id, title, attribute in metric_specs:
+            bin_count = 10
+            bin_groups: list[list[int]] = [[] for _ in range(bin_count)]
+            for structure in structures:
+                value = max(0.0, min(1.0, float(getattr(structure, attribute))))
+                bin_groups[min(bin_count - 1, int(value * bin_count))].append(
+                    structure.source_index
+                )
+            plots.append({
+                "kind": "histogram",
+                "id": f"magnetic_evidence:{metric_id}",
+                "title": title,
+                "x_label": title,
+                "y_label": self.tr("Structures"),
+                "series": ({
+                    "counts": tuple(len(group) for group in bin_groups),
+                    "bin_edges": tuple(index / bin_count for index in range(bin_count + 1)),
+                    "structure_indices": tuple(tuple(group) for group in bin_groups),
+                },),
+            })
+        return plots
+
     def _sync_phase_dimension_item(self) -> None:
         if not hasattr(self, "dimension_list") or self._result is None:
             return
@@ -3229,6 +3700,43 @@ class TrainingSetAuditWidget(QWidget):
             detail = self.tr("Not calculated")
         item.setText(f"{self._dimension_title('phase_evidence')}\n{detail}")
         item.setToolTip(self._phase_evidence_status_text())
+
+    def _sync_magnetic_dimension_item(self) -> None:
+        if not hasattr(self, "dimension_list") or self._result is None:
+            return
+        if (
+            self._result.magnetic_inventory is None
+            and "magnetic_inventory" not in self._result.overview_metrics
+        ):
+            return
+        item = next(
+            (
+                self.dimension_list.item(row)
+                for row in range(self.dimension_list.count())
+                if self.dimension_list.item(row).data(Qt.ItemDataRole.UserRole)
+                == "magnetic_evidence"
+            ),
+            None,
+        )
+        if item is None:
+            item = QListWidgetItem()
+            item.setData(Qt.ItemDataRole.UserRole, "magnetic_evidence")
+            self.dimension_list.insertItem(2, item)
+        inventory = self._result.magnetic_inventory
+        meta = self._result.overview_metrics.get("magnetic_inventory", {})
+        status = meta.get("status") if isinstance(meta, Mapping) else None
+        if inventory is not None and inventory.analyzed_structure_count > 0:
+            detail = self.tr("Calculated · {count:,} spin structures").format(
+                count=inventory.analyzed_structure_count
+            )
+        elif status == "pending":
+            detail = self.tr("Calculating all spin structures")
+        elif status == "no-spin" or inventory is not None:
+            detail = self.tr("No spin:R:3 data")
+        else:
+            detail = self.tr("Not calculated")
+        item.setText(f"{self._dimension_title('magnetic_evidence')}\n{detail}")
+        item.setToolTip(self._magnetic_evidence_status_text())
 
     def _topic_category_text(self, category: str) -> str:
         return {
@@ -3408,6 +3916,11 @@ class TrainingSetAuditWidget(QWidget):
             QTabBar::tab:selected {
                 color: #087f78;
                 border-bottom: 2px solid #087f78;
+            }
+            QSplitter#auditCompositionSplitter::handle {
+                background: #e5ebed;
+                margin: 6px 3px;
+                border-radius: 1px;
             }
             QLabel#auditAnalysisStatus {
                 color: #657579;

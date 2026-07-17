@@ -24,6 +24,14 @@ _PHASE_COLORS = {
     "c14": QColor("#2E8B57"),
     "c15": QColor("#B44C6C"),
     "unresolved": QColor("#89969A"),
+    "fm": QColor("#D1495B"),
+    "afm": QColor("#3B6FB6"),
+    "ferrimagnetic": QColor("#A15C9B"),
+    "spin_spiral": QColor("#E8871E"),
+    "noncollinear": QColor("#159A9C"),
+    "collinear_mixed": QColor("#7B6D3D"),
+    "spin_disordered": QColor("#89969A"),
+    "low_moment": QColor("#C8D0D2"),
 }
 _EVIDENCE_COLORS = {
     "strong": QColor("#159A9C"),

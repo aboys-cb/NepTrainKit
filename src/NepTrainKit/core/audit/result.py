@@ -101,6 +101,7 @@ class AuditContext:
     indices: tuple[int, ...] = ()
     ruleset_version: str = "quick-check-v1"
     include_phase_inventory: bool = True
+    include_magnetic_inventory: bool = True
 
 
 @dataclass(frozen=True)
@@ -179,6 +180,130 @@ class PhaseEvidenceSummary:
     local_phase_fractions: tuple[tuple[str, float], ...]
     confidence_counts: tuple[tuple[str, int], ...]
     confirmed_candidates: tuple[tuple[str, int], ...]
+
+
+@dataclass(frozen=True)
+class ElementMagneticEvidence:
+    """Element-resolved spin pattern within one structure."""
+
+    element: str
+    atom_count: int
+    spin_atom_count: int
+    order_label: str
+    mean_moment: float
+    net_moment_ratio: float
+    collinearity: float
+    intra_element_correlation: float
+    intra_element_pair_count: int
+    q_peak_strength: float
+    q_vector: tuple[int, int, int]
+
+
+@dataclass(frozen=True)
+class ElementPairMagneticEvidence:
+    """Nearest-neighbor spin coupling between two elements in one structure."""
+
+    element_a: str
+    element_b: str
+    pair_count: int
+    correlation: float
+    coupling_label: str
+
+
+@dataclass(frozen=True)
+class ElementMagneticSummary:
+    """Dataset-slice summary for one element-local spin pattern."""
+
+    element: str
+    structure_count: int
+    order_fractions: tuple[tuple[str, float], ...]
+    mean_moment: float
+    mean_net_moment_ratio: float
+    mean_collinearity: float
+    mean_intra_element_correlation: float
+    mean_q_peak_strength: float
+
+
+@dataclass(frozen=True)
+class ElementPairMagneticSummary:
+    """Dataset-slice summary for one element-pair spin coupling."""
+
+    element_a: str
+    element_b: str
+    structure_count: int
+    coupling_fractions: tuple[tuple[str, float], ...]
+    mean_correlation: float
+
+
+@dataclass(frozen=True)
+class StructureMagneticEvidence:
+    """Magnetic-order pattern and compact evidence for one structure."""
+
+    source_index: int
+    atom_count: int
+    spin_atom_count: int
+    order_label: str
+    confidence_state: str
+    mean_moment: float
+    moment_std: float
+    net_moment_ratio: float
+    collinearity: float
+    coplanarity: float
+    neighbor_correlation: float
+    neighbor_abs_correlation: float
+    parallel_fraction: float
+    antiparallel_fraction: float
+    q_peak_strength: float
+    q_vector: tuple[int, int, int]
+    element_evidence: tuple[ElementMagneticEvidence, ...] = ()
+    element_pair_evidence: tuple[ElementPairMagneticEvidence, ...] = ()
+
+
+@dataclass(frozen=True)
+class CompositionMagneticEvidence:
+    """Complete magnetic-order evidence for one exact composition."""
+
+    reduced_counts: tuple[int, ...]
+    source_structure_count: int
+    analyzed_structure_count: int
+    missing_spin_count: int
+    order_fractions: tuple[tuple[str, float], ...]
+    confidence_counts: tuple[tuple[str, int], ...]
+    mean_net_moment_ratio: float
+    mean_collinearity: float
+    mean_q_peak_strength: float
+    element_summaries: tuple[ElementMagneticSummary, ...] = ()
+    element_pair_summaries: tuple[ElementPairMagneticSummary, ...] = ()
+    structures: tuple[StructureMagneticEvidence, ...] = ()
+
+
+@dataclass(frozen=True)
+class MagneticInventory:
+    """Versioned magnetic-order evidence for every structure carrying spin."""
+
+    schema_version: str
+    method_id: str
+    analysis_strategy: str
+    source_structure_count: int
+    analyzed_structure_count: int
+    missing_spin_count: int
+    composition_points: tuple[CompositionMagneticEvidence, ...]
+
+
+@dataclass(frozen=True)
+class MagneticEvidenceSummary:
+    """Aggregate magnetic-order evidence for selected composition points."""
+
+    source_structure_count: int
+    analyzed_structure_count: int
+    missing_spin_count: int
+    order_fractions: tuple[tuple[str, float], ...]
+    confidence_counts: tuple[tuple[str, int], ...]
+    mean_net_moment_ratio: float
+    mean_collinearity: float
+    mean_q_peak_strength: float
+    element_summaries: tuple[ElementMagneticSummary, ...] = ()
+    element_pair_summaries: tuple[ElementPairMagneticSummary, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -281,6 +406,7 @@ class AuditResult:
     findings: tuple[AuditFinding, ...] = ()
     inventory: DatasetInventory | None = None
     phase_inventory: PhaseInventory | None = None
+    magnetic_inventory: MagneticInventory | None = None
 
     @property
     def evidence(self) -> tuple[AuditEvidence, ...]:

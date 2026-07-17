@@ -414,6 +414,11 @@ ext_modules.extend(
             "src/native/phase/module.cpp",
             depends=(_native_neighbor_header,),
         ),
+        native_extension(
+            "_magnetism",
+            "src/native/magnetism/module.cpp",
+            depends=(_native_neighbor_header,),
+        ),
     ]
 )
 

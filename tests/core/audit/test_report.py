@@ -9,9 +9,15 @@ from NepTrainKit.core.audit.result import (
     AuditSlice,
     AuditStatus,
     CompositionPhaseEvidence,
+    CompositionMagneticEvidence,
     CompositionPoint,
     DatasetInventory,
+    ElementMagneticEvidence,
+    ElementPairMagneticEvidence,
     PhaseInventory,
+    MagneticInventory,
+    StructureMagneticEvidence,
+    StructurePhaseEvidence,
     SliceMetric,
 )
 
@@ -116,6 +122,83 @@ def test_report_includes_exact_dataset_inventory():
     assert "Fe concentration" in html
     assert "62.50%" in html
     assert "phase-fcc" in html
+
+
+def test_report_includes_magnetic_order_map_and_boundary():
+    structure = StructureMagneticEvidence(
+        source_index=0, atom_count=16, spin_atom_count=16,
+        order_label="fm", confidence_state="strong", mean_moment=2.1,
+        moment_std=0.0, net_moment_ratio=1.0, collinearity=1.0,
+        coplanarity=1.0, neighbor_correlation=1.0,
+        neighbor_abs_correlation=1.0, parallel_fraction=1.0,
+        antiparallel_fraction=0.0, q_peak_strength=0.0, q_vector=(0, 0, 0),
+        element_evidence=(ElementMagneticEvidence(
+            element="Fe", atom_count=16, spin_atom_count=16,
+            order_label="aligned", mean_moment=2.1, net_moment_ratio=1.0,
+            collinearity=1.0, intra_element_correlation=1.0,
+            intra_element_pair_count=192, q_peak_strength=0.0,
+            q_vector=(0, 0, 0),
+        ),),
+        element_pair_evidence=(ElementPairMagneticEvidence(
+            element_a="Fe", element_b="Ni", pair_count=24,
+            correlation=-0.8, coupling_label="antiparallel",
+        ),),
+    )
+    result = AuditResult(
+        dataset_id="spin.xyz", generated_at="now", inputs={"structure_count": 1},
+        inventory=DatasetInventory(
+            structure_count=1, elements=("Fe",),
+            composition_points=(CompositionPoint(
+                reduced_counts=(1,), fractions=(1.0,), structure_count=1,
+                share=1.0, structure_indices=(0,),
+            ),),
+        ),
+        magnetic_inventory=MagneticInventory(
+            schema_version="magnetic-inventory-v1",
+            method_id="spin-order-sf-neighbor-v1",
+            analysis_strategy="all-spin-structures-v1",
+            source_structure_count=1, analyzed_structure_count=1,
+            missing_spin_count=0,
+            composition_points=(CompositionMagneticEvidence(
+                reduced_counts=(1,), source_structure_count=1,
+                analyzed_structure_count=1, missing_spin_count=0,
+                order_fractions=(("fm", 1.0),), confidence_counts=(("strong", 1),),
+                mean_net_moment_ratio=1.0, mean_collinearity=1.0,
+                mean_q_peak_strength=0.0, structures=(structure,),
+            ),),
+        ),
+        phase_inventory=PhaseInventory(
+            schema_version="phase-inventory-v2", method_id="adaptive-cna-ordering-v1",
+            reference_bank_id="aflow-l12-laves-v1", analysis_strategy="all-structures-v1",
+            source_structure_count=1, analyzed_structure_count=1, analyzed_atom_count=16,
+            composition_points=(CompositionPhaseEvidence(
+                reduced_counts=(1,), source_structure_count=1,
+                analyzed_structure_count=1, analyzed_atom_count=16,
+                local_phase_fractions=(("fcc", 1.0),),
+                structure_phase_fractions=(("fcc", 1.0),),
+                confidence_counts=(("strong", 1),),
+                structures=(
+                    StructurePhaseEvidence(
+                        source_index=0, atom_count=16, phase_label="fcc",
+                        confidence_state="strong", local_phase_fractions=(("fcc", 1.0),),
+                    ),
+                ),
+            ),),
+        ),
+    )
+
+    html = render_audit_report_html(result)
+
+    assert "Magnetic-pattern labels by composition" in html
+    assert "FM" in html
+    assert "spin:R:3" in html
+    assert "mforce and force_mag are excluded" in html
+    assert "magnetic-fm" in html
+    assert "Magnetic order inside each structural phase" in html
+    assert "Element-local spin patterns" in html
+    assert "Aligned (FM-like)" in html
+    assert "Neighboring element-pair spin coupling" in html
+    assert "Antiparallel" in html
 
 
 def test_report_uses_the_same_consolidated_findings_as_the_gui_contract():

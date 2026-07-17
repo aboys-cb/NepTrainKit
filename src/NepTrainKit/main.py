@@ -29,6 +29,7 @@ from qfluentwidgets import (
 from loguru import logger
 
 from NepTrainKit.core.audit import (
+    build_magnetic_inventory,
     build_phase_inventory,
     build_training_set_audit,
 )
@@ -253,7 +254,10 @@ class NepTrainKitMainWindow(FluentWindow):
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
             self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
-            if getattr(cached_result, "phase_inventory", object()) is None:
+            if (
+                getattr(cached_result, "phase_inventory", object()) is None
+                or getattr(cached_result, "magnetic_inventory", object()) is None
+            ):
                 self._start_training_set_phase_analysis(data, cached_result)
             return
         self.training_set_audit_interface.set_distribution_context(data=None)
@@ -290,6 +294,7 @@ class NepTrainKitMainWindow(FluentWindow):
             data,
             dataset_id=dataset_id,
             include_phase_inventory=False,
+            include_magnetic_inventory=False,
             on_finished=apply_result,
             on_error=report_error,
         )
@@ -314,9 +319,11 @@ class NepTrainKitMainWindow(FluentWindow):
 
     def _start_training_set_phase_analysis(self, data, result) -> None:
         """Analyze every structure in the audited scope without blocking the page."""
+        if getattr(result, "inventory", None) is None:
+            return
         if (
-            getattr(result, "inventory", None) is None
-            or getattr(result, "phase_inventory", None) is not None
+            getattr(result, "phase_inventory", None) is not None
+            and getattr(result, "magnetic_inventory", None) is not None
         ):
             return
         if self._training_set_phase_result is result:
@@ -331,25 +338,46 @@ class NepTrainKitMainWindow(FluentWindow):
         def compute():
             scope_indices = result.scope.indices if result.scope is not None else None
             geometry = data.structure.geometry_snapshot(scope_indices)
-            return build_phase_inventory(
+            phase_payload = build_phase_inventory(
                 geometry,
                 result.inventory,
                 cache_owner=data.structure,
                 progress=lambda completed, total: (
                     self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
-                        completed, total
+                        completed, total * 2
                     )
                     if token is self._training_set_phase_token
                     else None
                 ),
             )
+            magnetic_payload = (
+                build_magnetic_inventory(
+                    geometry,
+                    result.inventory,
+                    getattr(data.structure, "all_data", ()),
+                    cache_owner=data.structure,
+                    progress=lambda completed, total: (
+                        self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
+                            total + completed, total * 2
+                        )
+                        if token is self._training_set_phase_token
+                        else None
+                    ),
+                )
+                if hasattr(geometry, "source_indices")
+                else (None, False)
+            )
+            return phase_payload, magnetic_payload
 
         def apply_completed(payload) -> None:
             if token is not self._training_set_phase_token:
                 return
             self._training_set_phase_thread = None
             self._training_set_phase_result = None
-            phase_inventory, cache_hit = payload
+            (phase_inventory, phase_cache_hit), (
+                magnetic_inventory,
+                magnetic_cache_hit,
+            ) = payload
             if (
                 getattr(self.show_nep_interface, "nep_result_data", None) is not data
                 or self._training_set_audit_signature(data)
@@ -362,16 +390,38 @@ class NepTrainKitMainWindow(FluentWindow):
                 {
                     "available": True,
                     "status": "complete",
-                    "cache_hit": bool(cache_hit),
+                    "cache_hit": bool(phase_cache_hit),
                     "analyzed_structures": phase_inventory.analyzed_structure_count,
                 }
             )
             overview = dict(result.overview_metrics)
             overview["phase_inventory"] = phase_meta
+            overview["magnetic_inventory"] = {
+                "available": (
+                    magnetic_inventory is not None
+                    and magnetic_inventory.analyzed_structure_count > 0
+                ),
+                "status": (
+                    "complete"
+                    if magnetic_inventory is not None
+                    and magnetic_inventory.analyzed_structure_count > 0
+                    else "no-spin"
+                ),
+                "cache_hit": bool(magnetic_cache_hit),
+                "analyzed_structures": (
+                    magnetic_inventory.analyzed_structure_count
+                    if magnetic_inventory is not None else 0
+                ),
+                "missing_spin_structures": (
+                    magnetic_inventory.missing_spin_count
+                    if magnetic_inventory is not None else result.inventory.structure_count
+                ),
+            }
             updated_result = replace(
                 result,
                 overview_metrics=overview,
                 phase_inventory=phase_inventory,
+                magnetic_inventory=magnetic_inventory,
             )
             self._audited_result = updated_result
             self.training_set_audit_interface.finish_phase_analysis(updated_result)

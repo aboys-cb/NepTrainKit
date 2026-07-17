@@ -3791,6 +3791,10 @@ All child items will also be deleted.</source>
             <source>Training Set Audit results are stale. Please rerun the audit for the current dataset.</source>
             <translation type="vanished">训练集检查结果已过期，请针对当前数据集重新检查。</translation>
         </message>
+        <message>
+            <source>Full phase analysis failed: {message}</source>
+            <translation>完整相分析失败：{message}</translation>
+        </message>
     </context>
     <context>
         <name>OrganicMolConfigPBCCard</name>
@@ -7340,8 +7344,8 @@ Do you want to continue?</source>
         </message>
         <message>
             <location filename="../ui/pages/training_set_audit.py" line="1758" />
-            <source>{contacts} directed cutoff contacts occur in {contact_structures} of {co_sampled} co-sampled structures.</source>
-            <translation>在 {co_sampled} 个共同采样结构中，有 {contact_structures} 个结构出现接触，共计 {contacts} 条有向截断接触边。</translation>
+            <source>{contacts} directed cutoff contacts occur in {contact_structures} of {co_occurring} co-occurring structures.</source>
+            <translation>在 {co_occurring} 个同时含有该元素对的结构中，有 {contact_structures} 个结构出现接触，共计 {contacts} 条有向截断接触边。</translation>
         </message>
         <message>
             <location filename="../ui/pages/training_set_audit.py" line="1766" />
@@ -7409,8 +7413,8 @@ Do you want to continue?</source>
         </message>
         <message>
             <location filename="../ui/pages/training_set_audit.py" line="1942" />
-            <source>{lead} {distribution} {labels} Model errors were not evaluated.</source>
-            <translation>{lead}{distribution}{labels}尚未评估模型误差。</translation>
+            <source>{lead} {phase} {distribution} {labels} Model errors were not evaluated.</source>
+            <translation>{lead}{phase}{distribution}{labels}尚未评估模型误差。</translation>
         </message>
         <message>
             <source>Run Training Set Check before exporting a report.</source>
@@ -7876,6 +7880,154 @@ Do you want to continue?</source>
             <translation>原子数</translation>
         </message>
         <message>
+            <source>Main local phase</source>
+            <translation>主要局域相</translation>
+        </message>
+        <message>
+            <source>Phase evidence</source>
+            <translation>相证据</translation>
+        </message>
+        <message>
+            <source>All structures</source>
+            <translation>全部结构</translation>
+        </message>
+        <message>
+            <source>{phase} · {count} analyzed</source>
+            <translation>{phase} · 已分析 {count} 个</translation>
+        </message>
+        <message>
+            <source>Show {count:,} {phase} structures</source>
+            <translation>查看 {count:,} 个 {phase} 结构</translation>
+        </message>
+        <message>
+            <source>Phase distribution by {element} concentration</source>
+            <translation>按 {element} 浓度统计的相分布</translation>
+        </message>
+        <message>
+            <source>Analyzing local phases for all {count:,} structures. The chart will update automatically; no sampling estimate is used.</source>
+            <translation>正在分析全部 {count:,} 个结构的局域相。完成后图表会自动更新，不使用抽样估算。</translation>
+        </message>
+        <message>
+            <source>Phase evidence is unavailable. Other audit results remain valid.</source>
+            <translation>当前无法获得相证据，其他审查结果仍然有效。</translation>
+        </message>
+        <message>
+            <source>Unresolved</source>
+            <translation>未解析</translation>
+        </message>
+        <message>
+            <source>Selected composition group</source>
+            <translation>已选组分组</translation>
+        </message>
+        <message>
+            <source>Current audited scope</source>
+            <translation>当前审查范围</translation>
+        </message>
+        <message>
+            <source> Confirmed ordering: {values}.</source>
+            <translation> 已确认有序相：{values}。</translation>
+        </message>
+        <message>
+            <source>&lt;b&gt;{scope}: local structure evidence&lt;/b&gt; &amp;nbsp; {phases}&lt;br&gt;Analyzed all {analyzed:,} structures; {strong:,} have strong structure-level evidence.{confirmed} This classifies local structure; it does not predict thermodynamic stability. Method: {method}; reference bank: {bank}.</source>
+            <translation>&lt;b&gt;{scope}：局域结构证据&lt;/b&gt; &amp;nbsp; {phases}&lt;br&gt;已分析全部 {analyzed:,} 个结构；其中 {strong:,} 个具有较强的结构级证据。{confirmed} 这里判定的是局域结构，不代表热力学稳定性。方法：{method}；参考库：{bank}。</translation>
+        </message>
+        <message>
+            <source>Not analyzed</source>
+            <translation>未分析</translation>
+        </message>
+        <message>
+            <source>{phase} ({share:.0%})</source>
+            <translation>{phase}（{share:.0%}）</translation>
+        </message>
+        <message>
+            <source>Mixed ({phase} {share:.0%})</source>
+            <translation>混合（{phase} {share:.0%}）</translation>
+        </message>
+        <message>
+            <source>Strong {strong}/{analyzed} · analyzed all</source>
+            <translation>强证据 {strong}/{analyzed} · 已全量分析</translation>
+        </message>
+        <message>
+            <source> · +{count} more</source>
+            <translation> · 另有 {count} 项</translation>
+        </message>
+        <message>
+            <source>Analyzing local phases: {completed:,}/{total:,} structures. The chart will update automatically.</source>
+            <translation>正在分析局域相：{completed:,}/{total:,} 个结构。图表将在完成后自动更新。</translation>
+        </message>
+        <message>
+            <source>Wait for complete phase analysis before exporting the report.</source>
+            <translation>请等待全部结构的相分析完成后再导出报告。</translation>
+        </message>
+        <message>
+            <source>Phase analysis failed: {message}</source>
+            <translation>相分析失败：{message}</translation>
+        </message>
+        <message>
+            <source>Phases and local structure</source>
+            <translation>相与局域结构</translation>
+        </message>
+        <message>
+            <source>Analyzing every structure in the audited scope. Results will appear automatically.</source>
+            <translation>正在分析审查范围内的全部结构，完成后结果会自动显示。</translation>
+        </message>
+        <message>
+            <source>Phase evidence is unavailable for the current data.</source>
+            <translation>当前数据无法获得相证据。</translation>
+        </message>
+        <message>
+            <source>All {count:,} structures were analyzed. Structure labels summarize local geometry; they do not establish thermodynamic phase stability.</source>
+            <translation>已分析全部 {count:,} 个结构。结构标签概括局域几何，不代表热力学相稳定性。</translation>
+        </message>
+        <message>
+            <source>Structure-level phase labels</source>
+            <translation>结构级相别</translation>
+        </message>
+        <message>
+            <source>Phase label</source>
+            <translation>相别</translation>
+        </message>
+        <message>
+            <source>Phase-evidence confidence</source>
+            <translation>相证据可信状态</translation>
+        </message>
+        <message>
+            <source>Evidence state</source>
+            <translation>证据状态</translation>
+        </message>
+        <message>
+            <source>Strong evidence</source>
+            <translation>强证据</translation>
+        </message>
+        <message>
+            <source>Mixed local structure</source>
+            <translation>混合局域结构</translation>
+        </message>
+        <message>
+            <source>Calculated · {count:,} structures</source>
+            <translation>已计算 · {count:,} 个结构</translation>
+        </message>
+        <message>
+            <source>Calculating all structures</source>
+            <translation>正在计算全部结构</translation>
+        </message>
+        <message>
+            <source>Full phase analysis is continuing in the background.</source>
+            <translation>全部结构的相分析正在后台继续。</translation>
+        </message>
+        <message>
+            <source>{phase} {share:.1%}</source>
+            <translation>{phase} {share:.1%}</translation>
+        </message>
+        <message>
+            <source>Structure-level phase labels: {values}.</source>
+            <translation>结构级相别：{values}。</translation>
+        </message>
+        <message>
+            <source>2. Inspect how phase labels change with composition and open unresolved structures.</source>
+            <translation>2. 检查相别如何随组分变化，并查看未解析结构。</translation>
+        </message>
+        <message>
             <location filename="../ui/pages/training_set_audit.py" line="467" />
             <source>Composition map</source>
             <translation>组分地图</translation>
@@ -8220,6 +8372,30 @@ Do you want to continue?</source>
             <location filename="../ui/pages/training_set_audit.py" line="1209" />
             <source>Quantity rule met: {supported} · thin: {thin} · no exact sample: {missing}.</source>
             <translation>数量规则已满足：{supported} · 数量偏少：{thin} · 没有精确样本：{missing}。</translation>
+        </message>
+        <message>
+            <source>The model declares {declared} elements; this dataset contains {present}: {elements}. The other {absent} model elements are absent, so their compositions and local environments cannot be audited here. Neighbor analysis computes only present elements. This is informational and may be intentional for a subsystem or universal model. Model errors were not evaluated.</source>
+            <translation>模型声明了 {declared} 种元素；当前数据集包含 {present} 种：{elements}。其余 {absent} 种模型元素未在数据中出现，因此无法在这里审查它们的组分与局域环境。邻居分析只计算实际出现的元素。这是一条信息提示；对于子体系或通用大模型，这种情况可能是有意的。尚未评估模型误差。</translation>
+        </message>
+        <message>
+            <source>Absent model elements: {elements}</source>
+            <translation>数据集中未出现的模型元素：{elements}</translation>
+        </message>
+        <message>
+            <source>All {count} model-declared elements occur in this dataset: {elements}. Model errors were not evaluated.</source>
+            <translation>模型声明的 {count} 种元素均出现在当前数据集中：{elements}。尚未评估模型误差。</translation>
+        </message>
+        <message>
+            <source>Audit {seconds} s</source>
+            <translation>审查耗时 {seconds} 秒</translation>
+        </message>
+        <message>
+            <source>Backend total: {milliseconds} ms</source>
+            <translation>后端总耗时：{milliseconds} 毫秒</translation>
+        </message>
+        <message>
+            <source>UI render: {milliseconds} ms</source>
+            <translation>界面渲染：{milliseconds} 毫秒</translation>
         </message>
     </context>
     <context>

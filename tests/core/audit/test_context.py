@@ -89,6 +89,26 @@ def test_build_audit_records_scope_ruleset_and_canonical_findings():
     assert run.findings
     assert "label_ranges:energy_high_tail" in {finding.id for finding in run.findings}
     assert all(finding.evidence_ids for finding in run.findings)
+    timings = run.overview_metrics["timings_ms"]
+    assert timings["total"] >= 0.0
+    assert set(timings["stages"]) >= {
+        "scope_resolution",
+        "record_extraction",
+        "inventory",
+        "geometry_snapshot",
+        "data_quality",
+        "fingerprints",
+        "findings",
+    }
+    quality_timings = run.overview_metrics["data_quality"]["timings_ms"]
+    assert set(quality_timings["stages"]) >= {
+        "reference_label_arrays",
+        "geometry_array_prepare",
+        "cell_validation",
+        "structure_contracts",
+        "minimum_distance_scan",
+        "duplicate_conflicts",
+    }
 
 
 def test_fingerprints_change_with_scope_data_and_model(tmp_path):

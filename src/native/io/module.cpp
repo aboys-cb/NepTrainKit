@@ -1,5 +1,5 @@
 // Fast EXTXYZ parsing with mmap buffer input
-// Build with pybind11; exposed as NepTrainKit.core._fastxyz
+// Build with pybind11; exposed as NepTrainKit._native._io.
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -772,7 +772,7 @@ static py::list index_only_impl(py::buffer bbuf) {
     return out;
 }
 
-PYBIND11_MODULE(_fastxyz, m) {
+PYBIND11_MODULE(_io, m) {
     m.doc() = "Fast EXTXYZ parser for NepTrainKit (mmap buffer input)";
     m.def("index_frames", &index_only_impl, "Return frame offsets from a memory buffer");
     m.def("parse_all", &parse_all_impl, py::arg("buffer"), py::arg("max_workers") = -1,

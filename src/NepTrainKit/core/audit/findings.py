@@ -200,11 +200,11 @@ def _local_chemistry_finding(
         thin_count = sum(
             int(counts[index]) for index in highlighted if 0 <= index < len(counts)
         )
-        sample_count = int(plot.get("sample_count", 0) or 0)
-        fraction = 0.0 if sample_count <= 0 else thin_count / sample_count
+        environment_count = int(plot.get("environment_count", 0) or 0)
+        fraction = 0.0 if environment_count <= 0 else thin_count / environment_count
         evidence_lines.append(
             f"{_local_metric_label(plot)}: {_compact_bin_labels(selected_labels)}; "
-            f"{thin_count} of {sample_count} environments ({fraction:.1%})."
+            f"{thin_count} of {environment_count} environments ({fraction:.1%})."
         )
     representative_plot_id = next(
         (plot_id for plot_id in plot_ids if plot_id.endswith(":neighbor_count")),
@@ -243,7 +243,7 @@ def _pair_contact_finding(evidence: AuditSlice) -> AuditFinding:
     pair = "-".join(parts[2:4]) if len(parts) >= 4 else evidence.title
     contacts = int(_metric_value(evidence, "contact_edges") or 0)
     contact_structures = int(_metric_value(evidence, "contact_structures") or 0)
-    co_sampled = int(_metric_value(evidence, "co_sampled_structures") or 0)
+    co_occurring = int(_metric_value(evidence, "co_occurring_structures") or 0)
     indices = tuple(evidence.structure_indices)
     return AuditFinding(
         id=evidence.id,
@@ -254,7 +254,7 @@ def _pair_contact_finding(evidence: AuditSlice) -> AuditFinding:
         structure_indices=indices,
         observed=(
             f"{contacts} directed cutoff contacts occur in {contact_structures} of "
-            f"{co_sampled} co-sampled structures."
+            f"{co_occurring} co-occurring structures."
         ),
         conclusion=(
             "This describes pair support in the current data; it is not a sampling recommendation."

@@ -972,19 +972,16 @@ class Structure:
         """
         High-performance multi-frame EXTXYZ reader backed by a C++ parser.
 
-        This uses a pybind11 extension (NepTrainKit.core._fastxyz) and Python mmap
+        This uses a pybind11 extension (NepTrainKit._native._io) and Python mmap
         to index and parse frames in native code, then constructs Structure objects.
         Falls back to read_multiple on error or if the extension is unavailable.
         """
         try:
-            from NepTrainKit.core import _fastxyz as _fx
+            from NepTrainKit._native import _io as _fx
         except Exception:
             print(traceback.format_exc())
-            try:
-                import _fastxyz as _fx
-            except Exception:
-                logger.warning("_fastxyz extension not available; falling back to Python reader")
-                return cls.read_multiple(filename)
+            logger.warning("native EXTXYZ parser is not available; falling back to Python reader")
+            return cls.read_multiple(filename)
 
         import mmap as _mmap
         import os as _os

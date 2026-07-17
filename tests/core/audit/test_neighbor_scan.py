@@ -1,12 +1,32 @@
 import numpy as np
 import pytest
+from ase import Atoms
+from ase.neighborlist import neighbor_list
 
 from NepTrainKit.core.audit import neighbor_scan
 from NepTrainKit.core.audit.neighbor_scan import (
     cutoff_neighbor_pairs_batch,
+    find_scaled_radii_collision_structure_indices,
     find_short_distance_structure_rows,
+    local_chemistry_summary_batch,
     periodic_cell_statuses,
 )
+from NepTrainKit.core.geometry_cache import GeometrySnapshot
+
+
+def _geometry_snapshot(positions, cells, pbc, numbers):
+    counts = np.asarray([len(frame) for frame in positions], dtype=np.int64)
+    offsets = np.empty(len(positions) + 1, dtype=np.int64)
+    offsets[0] = 0
+    np.cumsum(counts, out=offsets[1:])
+    return GeometrySnapshot(
+        source_indices=np.arange(len(positions), dtype=np.int64),
+        positions=np.concatenate(positions).astype(np.float32),
+        atom_offsets=offsets,
+        cells=np.asarray(cells, dtype=np.float32),
+        pbc=np.asarray(pbc, dtype=np.uint8),
+        atomic_numbers=np.concatenate(numbers).astype(np.int16),
+    )
 
 
 def test_batch_scan_handles_nonperiodic_and_orthorhombic_periodic_pairs():
@@ -26,6 +46,59 @@ def test_batch_scan_handles_nonperiodic_and_orthorhombic_periodic_pairs():
     )
 
     assert rows == (0, 1)
+
+
+def test_local_chemistry_requires_native_extension(monkeypatch):
+    monkeypatch.setattr(neighbor_scan, "_native_scan", None)
+
+    with pytest.raises(RuntimeError, match="native audit extension"):
+        local_chemistry_summary_batch(
+            [np.zeros((1, 3))],
+            [np.eye(3)],
+            [np.zeros(3, dtype=np.uint8)],
+            np.zeros(1, dtype=np.int32),
+            np.ones((2, 1, 1)),
+            np.zeros((2, 1), dtype=np.uint8),
+        )
+
+
+def test_scaled_radii_collision_scan_handles_orthogonal_triclinic_and_large_frames():
+    triclinic = np.asarray(
+        [[5.0, 0.0, 0.0], [1.1, 4.8, 0.0], [0.3, 0.5, 5.2]],
+        dtype=np.float32,
+    )
+    large = np.stack(
+        np.meshgrid(
+            np.arange(8, dtype=np.float32) * 2.5,
+            np.arange(4, dtype=np.float32) * 2.5,
+            np.arange(4, dtype=np.float32) * 2.5,
+            indexing="ij",
+        ),
+        axis=-1,
+    ).reshape(-1, 3)
+    large[1] = large[0] + np.asarray([0.1, 0.0, 0.0], dtype=np.float32)
+    triclinic_fractional = np.asarray([[0.02, 0.03, 0.04], [0.98, 0.03, 0.04]])
+    geometry = _geometry_snapshot(
+        positions=[
+            np.asarray([[0.1, 1.0, 1.0], [4.9, 1.0, 1.0]]),
+            triclinic_fractional @ triclinic,
+            np.asarray([[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]]),
+            large,
+        ],
+        cells=[np.eye(3) * 5.0, triclinic, np.eye(3) * 5.0, np.eye(3) * 30.0],
+        pbc=[[1, 1, 1], [1, 1, 1], [0, 0, 0], [1, 1, 1]],
+        numbers=[
+            np.asarray([28, 28]),
+            np.asarray([23, 27]),
+            np.asarray([1, 1]),
+            np.ones(len(large), dtype=np.int16),
+        ],
+    )
+
+    assert find_scaled_radii_collision_structure_indices(geometry, 0.7) == (0, 1, 3)
+    assert find_scaled_radii_collision_structure_indices(geometry, 0.3) == (0, 1, 3)
+    assert find_scaled_radii_collision_structure_indices(geometry, 0.03) == ()
+    assert find_scaled_radii_collision_structure_indices(geometry, 0.0) == ()
 
 
 def test_batch_scan_handles_triclinic_minimum_image():
@@ -116,7 +189,7 @@ def test_native_and_reference_scans_match_for_random_triclinic_cells(monkeypatch
     assert native_rows == reference_rows
 
 
-def test_native_cutoff_pairs_match_reference_for_orthogonal_and_triclinic_cells(monkeypatch):
+def test_native_cutoff_pairs_match_reference_for_orthogonal_and_triclinic_cells():
     if neighbor_scan._native_scan is None or not hasattr(
         neighbor_scan._native_scan,
         "cutoff_neighbor_pairs",
@@ -134,13 +207,8 @@ def test_native_cutoff_pairs_match_reference_for_orthogonal_and_triclinic_cells(
     pbc = [np.asarray([True, True, True])] * 2
 
     native = cutoff_neighbor_pairs_batch(positions, cells, pbc, cutoff=2.0)
-    monkeypatch.setattr(neighbor_scan, "_native_scan", None)
-    reference = cutoff_neighbor_pairs_batch(positions, cells, pbc, cutoff=2.0)
-
-    assert np.array_equal(native[0], reference[0])
     for row in range(2):
         native_slice = slice(int(native[0][row]), int(native[0][row + 1]))
-        reference_slice = slice(int(reference[0][row]), int(reference[0][row + 1]))
         native_pairs = sorted(
             zip(
                 native[1][native_slice].tolist(),
@@ -148,11 +216,17 @@ def test_native_cutoff_pairs_match_reference_for_orthogonal_and_triclinic_cells(
                 np.round(native[3][native_slice], 10).tolist(),
             )
         )
+        reference_centers, reference_neighbors, reference_distances = neighbor_list(
+            "ijd",
+            Atoms("H3", positions=positions[row], cell=cells[row], pbc=pbc[row]),
+            2.0,
+            self_interaction=False,
+        )
         reference_pairs = sorted(
             zip(
-                reference[1][reference_slice].tolist(),
-                reference[2][reference_slice].tolist(),
-                np.round(reference[3][reference_slice], 10).tolist(),
+                reference_centers.tolist(),
+                reference_neighbors.tolist(),
+                np.round(reference_distances, 10).tolist(),
             )
         )
         assert native_pairs == reference_pairs

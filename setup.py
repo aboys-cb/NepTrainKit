@@ -375,39 +375,52 @@ class BuildExtNVCC(build_ext):
                 self.build_extension(ge)
             except Exception as e:
                 print(f"WARNING: nep_gpu build failed and was skipped: {e}")
-# preserve previously defined extensions
-# Register fast EXTXYZ parser extension for core
-_fastxyz_compile_args = list(extra_compile_args)
+_native_neighbor_header = "src/native/include/neptrainkit/native/periodic_neighbors.hpp"
+_native_fast_float_header = "src/native/io/fast_float.h"
 
 
-_fastxyz_include_dirs = [pybind11_include, "src/NepTrainKit/core"]
-
-ext_modules.append(
-    Extension(
-        "NepTrainKit.core._fastxyz",
-        ["src/NepTrainKit/core/_fastxyz.cpp"],
-        include_dirs=_fastxyz_include_dirs,
-        extra_compile_args=_fastxyz_compile_args,
-        extra_link_args=extra_link_args,
-        language="c++",
-    )
-)
-
-ext_modules.append(
-    Extension(
-        "NepTrainKit.core._fastaudit",
-        ["src/NepTrainKit/core/_fastaudit.cpp"],
-        include_dirs=[pybind11_include],
+def native_extension(
+    module_name: str,
+    source: str,
+    *,
+    depends: tuple[str, ...] = (),
+) -> Extension:
+    """Create one private application-native extension with shared headers."""
+    return Extension(
+        f"NepTrainKit._native.{module_name}",
+        [source],
+        include_dirs=[pybind11_include, "src/native/include"],
         extra_compile_args=list(extra_compile_args),
         extra_link_args=extra_link_args,
+        depends=list(depends),
         language="c++",
     )
+
+
+ext_modules.extend(
+    [
+        native_extension(
+            "_io",
+            "src/native/io/module.cpp",
+            depends=(_native_fast_float_header,),
+        ),
+        native_extension(
+            "_audit",
+            "src/native/audit/module.cpp",
+            depends=(_native_neighbor_header,),
+        ),
+        native_extension(
+            "_phase",
+            "src/native/phase/module.cpp",
+            depends=(_native_neighbor_header,),
+        ),
+    ]
 )
 
 setup(
     author="Chen Cheng bing",
-cmdclass={'build_ext': BuildExtNVCC},
+    cmdclass={'build_ext': BuildExtNVCC},
     # include_dirs=[np.get_include()],
-ext_modules=ext_modules,
-zip_safe=False,
+    ext_modules=ext_modules,
+    zip_safe=False,
 )

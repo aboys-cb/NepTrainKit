@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
@@ -12,6 +13,13 @@ from PySide6.QtWidgets import QApplication
 import NepTrainKit.main as main_module
 import NepTrainKit.ui.pages.show_nep as show_nep_module
 from NepTrainKit.ui.pages.show_nep import ShowNepWidget
+from NepTrainKit.core.audit.result import (
+    AuditResult,
+    AuditScope,
+    AuditScopeKind,
+    DatasetInventory,
+    PhaseInventory,
+)
 
 
 class _Canvas:
@@ -300,6 +308,74 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             window.show_nep_interface
         )
 
+    def test_main_window_runs_complete_phase_analysis_off_ui_thread(self):
+        window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
+        structure = SimpleNamespace(
+            data=SimpleNamespace(version=3),
+            now_indices=np.array([0, 1], dtype=int),
+            geometry_snapshot=MagicMock(return_value="geometry"),
+        )
+        data = SimpleNamespace(structure=structure)
+        phase = PhaseInventory(
+            schema_version="phase-inventory-v2",
+            method_id="adaptive-cna-ordering-v1",
+            reference_bank_id="aflow-l12-laves-v1",
+            analysis_strategy="all-structures-v1",
+            source_structure_count=2,
+            analyzed_structure_count=2,
+            analyzed_atom_count=32,
+            composition_points=(),
+        )
+        result = AuditResult(
+            dataset_id="train.xyz",
+            generated_at="now",
+            inputs={"structure_count": 2},
+            overview_metrics={"phase_inventory": {"available": False, "status": "pending"}},
+            scope=AuditScope(AuditScopeKind.ACTIVE, (0, 1), 2),
+            inventory=DatasetInventory(2, ("Ni",), ()),
+        )
+        window.show_nep_interface = SimpleNamespace(nep_result_data=data)
+        window.training_set_audit_interface = SimpleNamespace(
+            start_phase_analysis=MagicMock(),
+            finish_phase_analysis=MagicMock(),
+            fail_phase_analysis=MagicMock(),
+        )
+        window._audited_result_data = data
+        window._audited_result = result
+        window._training_set_phase_thread = None
+        window._training_set_phase_result = None
+        window._training_set_phase_token = None
+        window._audited_result_signature = (
+            main_module.NepTrainKitMainWindow._training_set_audit_signature(window, data)
+        )
+        callbacks = {}
+
+        def fake_run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs):
+            callbacks.update(func=func, on_finished=on_finished, on_error=on_error)
+            return "phase-thread"
+
+        with (
+            patch.object(main_module, "run_in_thread", side_effect=fake_run_in_thread),
+            patch.object(
+                main_module,
+                "build_phase_inventory",
+                return_value=(phase, False),
+            ) as phase_mock,
+        ):
+            main_module.NepTrainKitMainWindow._start_training_set_phase_analysis(
+                window, data, result
+            )
+            payload = callbacks["func"]()
+            callbacks["on_finished"](payload)
+
+        structure.geometry_snapshot.assert_called_once_with((0, 1))
+        phase_mock.assert_called_once()
+        self.assertIs(window._audited_result.phase_inventory, phase)
+        window.training_set_audit_interface.start_phase_analysis.assert_called_once_with(2)
+        window.training_set_audit_interface.finish_phase_analysis.assert_called_once_with(
+            window._audited_result
+        )
+
     def test_main_window_rejects_same_object_when_active_signature_changes(self):
         window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
         shared_data = SimpleNamespace(
@@ -348,6 +424,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
                 "current dataset": "当前数据集",
                 "Please load a dataset before running Training Set Check.": "请先加载数据集，再运行训练集评估。",
                 "Training Set Check results are stale. Please rerun the checks for the current dataset.": "训练集评估结果已过期，请针对当前数据集重新检查。",
+                "Full phase analysis failed: {message}": "完整相分析失败：{message}",
             }
             show_nep_context = {
                 "Check current dataset": "评估当前数据集",

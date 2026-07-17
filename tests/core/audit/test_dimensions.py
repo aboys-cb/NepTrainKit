@@ -4,13 +4,11 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from ase.data import atomic_numbers
-from ase.neighborlist import neighbor_list as ase_neighbor_list
 
 from NepTrainKit.core.audit import local_chemistry
 from NepTrainKit.core.audit.composition import audit_composition
 from NepTrainKit.core.audit.config_types import audit_config_types
-from NepTrainKit.core.audit.engine import build_training_set_audit
+from NepTrainKit.core.audit.engine import _restrict_profile_to_records, build_training_set_audit
 from NepTrainKit.core.audit.extract import StructureAuditRecord, indexed_structures_from_result_data
 from NepTrainKit.core.audit.label_ranges import audit_label_ranges
 from NepTrainKit.core.audit.local_chemistry import audit_local_chemistry
@@ -30,6 +28,26 @@ def _record(index, composition, config_type, energy=None, force=None, virial=Non
         energy_per_atom=energy,
         max_force=force,
         virial_norm=virial,
+    )
+
+
+def test_engine_restricts_wide_model_profile_to_elements_present_in_scope():
+    profile = NepCutoffProfile(
+        ("H", "Fe", "Ni", "O"),
+        (6.0, 5.0, 4.0, 3.0),
+        (3.0, 2.5, 2.0, 1.5),
+    )
+    records = [
+        _record(0, {"Fe": 0.5, "Ni": 0.5}, "bulk"),
+        _record(1, {"Ni": 1.0}, "bulk"),
+    ]
+
+    restricted = _restrict_profile_to_records(profile, records)
+
+    assert restricted == NepCutoffProfile(
+        ("Fe", "Ni"),
+        (5.0, 4.0),
+        (2.5, 2.0),
     )
 
 
@@ -395,47 +413,7 @@ def test_local_chemistry_uses_nep_scopes_pbc_and_original_indices():
     assert sum(int(label) * count for label, count in zip(radial_series["bin_labels"], radial_series["counts"])) == 2
 
 
-def test_local_chemistry_uses_compiled_neighbor_search_instead_of_ase_neighbor_list():
-    structure = _structure(
-        ["Fe", "Ni"],
-        [[2.0, 2.0, 2.0], [3.5, 2.0, 2.0]],
-    )
-    profile = NepCutoffProfile(
-        elements=("Fe", "Ni"),
-        radial_cutoffs=(2.0, 2.0),
-        angular_cutoffs=(1.1, 1.1),
-    )
-
-    with patch.object(local_chemistry, "neighbor_list", wraps=local_chemistry.neighbor_list) as neighbor_list_spy:
-        audit_local_chemistry([(4, structure)], profile)
-
-    assert neighbor_list_spy.call_count == 0
-
-
-def test_local_chemistry_compiled_neighbor_search_matches_ase_for_periodic_structure():
-    structure = _structure(
-        ["Fe", "Ni", "Fe"],
-        [[0.2, 2.0, 2.0], [9.2, 2.0, 2.0], [5.0, 2.0, 2.0]],
-    )
-    profile = NepCutoffProfile(
-        elements=("Fe", "Ni"),
-        radial_cutoffs=(2.0, 2.0),
-        angular_cutoffs=(1.1, 1.1),
-    )
-    atoms, _ = local_chemistry._as_atoms(structure, set(profile.elements))
-    pair_cutoffs = local_chemistry._pair_cutoffs(profile, profile.elements, "radial")
-    cutoff_matrix = local_chemistry._cutoff_matrix(profile, profile.elements, "radial")
-    element_indices = {atomic_numbers[element]: index for index, element in enumerate(profile.elements)}
-
-    expected = ase_neighbor_list("ijd", atoms, pair_cutoffs, self_interaction=False)
-    actual = local_chemistry._compiled_neighbor_pairs(atoms, pair_cutoffs, cutoff_matrix, element_indices)
-
-    expected_rows = sorted(zip(expected[0], expected[1], np.round(expected[2], 12)))
-    actual_rows = sorted(zip(actual[0], actual[1], np.round(actual[2], 12)))
-    assert actual_rows == expected_rows
-
-
-def test_native_local_chemistry_aggregates_match_python_policy_fallback():
+def test_native_local_chemistry_handles_orthogonal_and_triclinic_cells():
     profile = NepCutoffProfile(("Fe", "Ni"), (2.4, 2.2), (1.5, 1.3))
     structures = [
         _structure(["Fe", "Ni"], [[0.2, 0.2, 0.2], [4.8, 0.2, 0.2]]),
@@ -447,31 +425,41 @@ def test_native_local_chemistry_aggregates_match_python_policy_fallback():
     ]
     indexed = list(enumerate(structures))
 
-    native_collector = PairContactCollector(profile)
-    native_local = audit_local_chemistry(
+    collector = PairContactCollector(profile)
+    dimension, _, overview = audit_local_chemistry(
         indexed,
         profile,
-        pair_contact_collector=native_collector,
+        pair_contact_collector=collector,
     )
-    native_pair = native_collector.finalize()
-    reference_collector = PairContactCollector(profile)
-    with patch.object(local_chemistry, "typed_neighbor_counts", return_value=None), patch.object(
-        local_chemistry,
-        "typed_contact_summary",
-        return_value=None,
-    ):
-        reference_local = audit_local_chemistry(
-            indexed,
-            profile,
-            pair_contact_collector=reference_collector,
-        )
-    reference_pair = reference_collector.finalize()
+    pair_dimension, _, pair_overview = collector.finalize()
 
-    assert native_local == reference_local
-    assert native_pair == reference_pair
+    counts = {
+        plot["id"]: plot["series"][0]["counts"]
+        for plot in dimension.plots
+        if plot["id"].endswith("neighbor_count")
+    }
+    assert counts == {
+        "local_chemistry:angular:Fe:neighbor_count": (1, 1, 1),
+        "local_chemistry:angular:Ni:neighbor_count": (1, 1),
+        "local_chemistry:radial:Fe:neighbor_count": (1, 0, 2),
+        "local_chemistry:radial:Ni:neighbor_count": (1, 0, 1),
+    }
+    assert {
+        key: overview[key]
+        for key in ("available_scopes", "center_element_count", "sparse_bin_count")
+    } == {
+        "available_scopes": ("angular", "radial"),
+        "center_element_count": 2,
+        "sparse_bin_count": 0,
+    }
+    assert [plot["series"][0]["counts"] for plot in pair_dimension.plots] == [
+        (2, 2, 0),
+        (2, 4, 0),
+    ]
+    assert pair_overview == {"co_occurring_pair_count": 4, "pair_count": 3, "zero_contact_pair_count": 0}
 
 
-def test_local_chemistry_batches_neighbor_recovery_without_ase_conversion():
+def test_local_chemistry_calls_one_fused_native_batch():
     indexed = [
         (
             index,
@@ -480,7 +468,7 @@ def test_local_chemistry_batches_neighbor_recovery_without_ase_conversion():
         for index in range(3)
     ]
     profile = NepCutoffProfile(("Fe", "Ni"), (2.0, 2.0), (1.1, 1.1))
-    original_batch = local_chemistry.cutoff_neighbor_pairs_batch
+    original_batch = local_chemistry.local_chemistry_summary_batch
     batch_count = 0
 
     def track_batch(*args, **kwargs):
@@ -488,9 +476,7 @@ def test_local_chemistry_batches_neighbor_recovery_without_ase_conversion():
         batch_count += 1
         return original_batch(*args, **kwargs)
 
-    with patch.object(local_chemistry, "_as_atoms", side_effect=AssertionError("ASE conversion is not expected")), patch.object(
-        local_chemistry, "cutoff_neighbor_pairs_batch", side_effect=track_batch
-    ):
+    with patch.object(local_chemistry, "local_chemistry_summary_batch", side_effect=track_batch):
         audit_local_chemistry(indexed, profile)
 
     assert batch_count == 1
@@ -566,9 +552,39 @@ def test_engine_uses_active_nep_model_for_local_chemistry(tmp_path: Path):
     assert local_dimension.id == "local_chemistry"
     assert local_dimension.status is AuditStatus.AVAILABLE
     assert result.overview_metrics["local_chemistry"]["available_scopes"] == ("angular", "radial")
+    local_timings = result.overview_metrics["local_chemistry"]["timings_ms"]
+    assert set(local_timings["stages"]) == {
+        "batch_geometry_prepare",
+        "batch_type_prepare",
+        "neighbor_kernel",
+        "batch_result_collect",
+        "histogram_aggregation",
+        "plot_assembly",
+    }
     pair_dimension = result.dimensions[-1]
     assert pair_dimension.id == "pair_contacts"
     assert pair_dimension.status is AuditStatus.AVAILABLE
+
+
+def test_engine_reports_absent_model_elements_without_computing_their_pair_matrix(tmp_path: Path):
+    structure = _structure(["Fe", "Ni"], [[2.0, 2.0, 2.0], [3.0, 2.0, 2.0]])
+    model = tmp_path / "nep.txt"
+    model.write_text("nep4 4 H Fe Ni O\ncutoff 2 1.5 8 4\n", encoding="utf-8")
+    result_data = SimpleNamespace(
+        structure=SimpleNamespace(
+            all_data=np.asarray([structure], dtype=object),
+            now_indices=np.asarray([0], dtype=np.int32),
+        ),
+        nep_txt_path=model,
+    )
+
+    result = build_training_set_audit(result_data)
+
+    local_overview = result.overview_metrics["local_chemistry"]
+    assert local_overview["declared_model_elements"] == ("H", "Fe", "Ni", "O")
+    assert local_overview["analyzed_model_elements"] == ("Fe", "Ni")
+    assert local_overview["absent_model_elements"] == ("H", "O")
+    assert result.overview_metrics["pair_contacts"]["pair_count"] == 3
 
 
 def test_pair_contacts_distinguish_co_sampling_from_local_contact(tmp_path: Path):
@@ -596,7 +612,7 @@ def test_pair_contacts_distinguish_co_sampling_from_local_contact(tmp_path: Path
     assert counts[labels.index("Fe-Ni")] == 2
     pair_slice = next(item for item in result.slices if item.id == "pair_contacts:radial:Fe:Ni")
     metrics = {metric.name: metric.value for metric in pair_slice.metrics}
-    assert metrics["co_sampled_structures"] == 2
+    assert metrics["co_occurring_structures"] == 2
     assert metrics["contact_structures"] == 1
 
 

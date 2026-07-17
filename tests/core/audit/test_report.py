@@ -8,8 +8,10 @@ from NepTrainKit.core.audit.result import (
     AuditSeverity,
     AuditSlice,
     AuditStatus,
+    CompositionPhaseEvidence,
     CompositionPoint,
     DatasetInventory,
+    PhaseInventory,
     SliceMetric,
 )
 
@@ -80,6 +82,26 @@ def test_report_includes_exact_dataset_inventory():
                 ),
             ),
         ),
+        phase_inventory=PhaseInventory(
+            schema_version="phase-inventory-v2",
+            method_id="adaptive-cna-ordering-v1",
+            reference_bank_id="aflow-l12-laves-v1",
+            analysis_strategy="all-structures-v1",
+            source_structure_count=3,
+            analyzed_structure_count=3,
+            analyzed_atom_count=64,
+            composition_points=(
+                CompositionPhaseEvidence(
+                    reduced_counts=(5, 3),
+                    source_structure_count=3,
+                    analyzed_structure_count=3,
+                    analyzed_atom_count=64,
+                    local_phase_fractions=(("fcc", 0.75), ("hcp", 0.0), ("bcc", 0.0), ("unresolved", 0.25)),
+                    structure_phase_fractions=(("fcc", 2 / 3), ("unresolved", 1 / 3)),
+                    confidence_counts=(("strong", 2), ("unresolved", 1)),
+                ),
+            ),
+        ),
     )
 
     html = render_audit_report_html(result)
@@ -87,6 +109,13 @@ def test_report_includes_exact_dataset_inventory():
     assert "Dataset inventory" in html
     assert "Fe 62.50% · Ni 37.50%" in html
     assert "16 atoms × 2, 32 atoms × 1" in html
+    assert "FCC 67% (3/3 analyzed)" in html
+    assert "adaptive-cna-ordering-v1" in html
+    assert "does not predict thermodynamic stability" in html
+    assert "Phase labels by composition" in html
+    assert "Fe concentration" in html
+    assert "62.50%" in html
+    assert "phase-fcc" in html
 
 
 def test_report_uses_the_same_consolidated_findings_as_the_gui_contract():

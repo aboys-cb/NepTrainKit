@@ -8,6 +8,7 @@ if sys.platform == "darwin":
     os.environ["OPENBLAS_NUM_THREADS"] = "1"
 import tempfile
 import traceback
+from dataclasses import replace
 from pathlib import Path
 import warnings
 
@@ -27,7 +28,10 @@ from qfluentwidgets import (
 )
 from loguru import logger
 
-from NepTrainKit.core.audit import build_training_set_audit
+from NepTrainKit.core.audit import (
+    build_phase_inventory,
+    build_training_set_audit,
+)
 from NepTrainKit.ui.pages import *
 from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.threads import run_in_thread
@@ -157,6 +161,9 @@ class NepTrainKitMainWindow(FluentWindow):
         self._audited_result_data = None
         self._audited_result_signature = None
         self._audited_result = None
+        self._training_set_phase_thread = None
+        self._training_set_phase_result = None
+        self._training_set_phase_token = None
         self._connect_training_set_audit_signals()
 
     def _connect_training_set_audit_signals(self) -> None:
@@ -246,6 +253,8 @@ class NepTrainKitMainWindow(FluentWindow):
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
             self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
+            if getattr(cached_result, "phase_inventory", object()) is None:
+                self._start_training_set_phase_analysis(data, cached_result)
             return
         self.training_set_audit_interface.set_distribution_context(data=None)
         self.training_set_audit_interface.set_loading(dataset_id)
@@ -267,6 +276,7 @@ class NepTrainKitMainWindow(FluentWindow):
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
             self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
+            self._start_training_set_phase_analysis(data, result)
 
         def report_error(message: str) -> None:
             self._training_set_audit_thread = None
@@ -279,6 +289,7 @@ class NepTrainKitMainWindow(FluentWindow):
             build_training_set_audit,
             data,
             dataset_id=dataset_id,
+            include_phase_inventory=False,
             on_finished=apply_result,
             on_error=report_error,
         )
@@ -300,6 +311,89 @@ class NepTrainKitMainWindow(FluentWindow):
             return
         self.show_nep_interface.select_structure_indices(indices)
         self.stackedWidget.setCurrentWidget(self.show_nep_interface)
+
+    def _start_training_set_phase_analysis(self, data, result) -> None:
+        """Analyze every structure in the audited scope without blocking the page."""
+        if (
+            getattr(result, "inventory", None) is None
+            or getattr(result, "phase_inventory", None) is not None
+        ):
+            return
+        if self._training_set_phase_result is result:
+            return
+        token = object()
+        self._training_set_phase_token = token
+        self._training_set_phase_result = result
+        self.training_set_audit_interface.start_phase_analysis(
+            result.inventory.structure_count
+        )
+
+        def compute():
+            scope_indices = result.scope.indices if result.scope is not None else None
+            geometry = data.structure.geometry_snapshot(scope_indices)
+            return build_phase_inventory(
+                geometry,
+                result.inventory,
+                cache_owner=data.structure,
+                progress=lambda completed, total: (
+                    self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
+                        completed, total
+                    )
+                    if token is self._training_set_phase_token
+                    else None
+                ),
+            )
+
+        def apply_completed(payload) -> None:
+            if token is not self._training_set_phase_token:
+                return
+            self._training_set_phase_thread = None
+            self._training_set_phase_result = None
+            phase_inventory, cache_hit = payload
+            if (
+                getattr(self.show_nep_interface, "nep_result_data", None) is not data
+                or self._training_set_audit_signature(data)
+                != self._audited_result_signature
+                or self._audited_result is not result
+            ):
+                return
+            phase_meta = dict(result.overview_metrics.get("phase_inventory", {}))
+            phase_meta.update(
+                {
+                    "available": True,
+                    "status": "complete",
+                    "cache_hit": bool(cache_hit),
+                    "analyzed_structures": phase_inventory.analyzed_structure_count,
+                }
+            )
+            overview = dict(result.overview_metrics)
+            overview["phase_inventory"] = phase_meta
+            updated_result = replace(
+                result,
+                overview_metrics=overview,
+                phase_inventory=phase_inventory,
+            )
+            self._audited_result = updated_result
+            self.training_set_audit_interface.finish_phase_analysis(updated_result)
+
+        def report_error(message: str) -> None:
+            if token is not self._training_set_phase_token:
+                return
+            self._training_set_phase_thread = None
+            self._training_set_phase_result = None
+            self.training_set_audit_interface.fail_phase_analysis(message)
+            MessageManager.send_warning_message(
+                self.tr("Full phase analysis failed: {message}").format(
+                    message=message
+                )
+            )
+
+        self._training_set_phase_thread = run_in_thread(
+            self,
+            compute,
+            on_finished=apply_completed,
+            on_error=report_error,
+        )
 
     def _ensure_update_badge(self) -> None:
         """Create the persistent update badge on the Settings navigation item."""

@@ -116,6 +116,69 @@ def test_structure_data_completer_cache_counts():
     assert elem_cache["Fe"] == 2
 
 
+def test_structure_geometry_snapshot_survives_mask_changes_and_reuses_storage():
+    structures = [
+        _make_structure(["H"], "single"),
+        _make_structure(["Fe", "O"], "pair"),
+        _make_structure(["Ni"], "single"),
+    ]
+    structures[1].positions[1] = np.asarray([0.25, 0.0, 0.0], dtype=np.float32)
+    data = StructureData(structures)
+
+    full = data.geometry_snapshot()
+    assert data.geometry_snapshot() is full
+    assert full.positions.dtype == np.float32
+    assert full.atomic_numbers.tolist() == [1, 26, 8, 28]
+    assert full.atom_offsets.tolist() == [0, 1, 3, 4]
+
+    data.remove(1)
+    active = data.geometry_snapshot(data.now_indices)
+    assert active.source_indices.tolist() == [0, 2]
+    assert active.atom_offsets.tolist() == [0, 1, 2]
+    assert data.geometry_snapshot(data.now_indices) is active
+
+    data.revoke()
+    assert data.geometry_snapshot(data.now_indices) is full
+
+
+def test_structure_geometry_cache_owns_versioned_derived_analysis():
+    data = StructureData([_make_structure(["Ni"], "single")])
+    calls = []
+
+    first, first_hit = data.cached_geometry_analysis(
+        "phase",
+        ("method-v1", (0,)),
+        lambda: calls.append("built") or {"phase": "fcc"},
+    )
+    second, second_hit = data.cached_geometry_analysis(
+        "phase",
+        ("method-v1", (0,)),
+        lambda: calls.append("rebuilt") or {"phase": "bcc"},
+    )
+
+    assert first == {"phase": "fcc"}
+    assert second is first
+    assert first_hit is False
+    assert second_hit is True
+    assert calls == ["built"]
+
+
+def test_non_physical_scan_uses_active_geometry_snapshot():
+    safe = _make_structure(["H"], "safe")
+    collision = _make_structure(["Fe", "O"], "collision")
+    collision.positions[1] = np.asarray([0.1, 0.0, 0.0], dtype=np.float32)
+    owner = type("Owner", (), {})()
+    owner.structure = StructureData([safe, collision])
+    owner._pending_non_physical_indices = []
+
+    assert list(ResultData.iter_non_physical_structure_indices(owner, 0.7)) == [1, 1]
+    assert ResultData.consume_non_physical_structure_indices(owner) == [1]
+
+    owner.structure.remove(1)
+    assert list(ResultData.iter_non_physical_structure_indices(owner, 0.7)) == [1]
+    assert ResultData.consume_non_physical_structure_indices(owner) == []
+
+
 def test_completer_cache_respects_max_items():
     structures = [_make_structure(["H"], f"tag_{i:04d}") for i in range(100)]
     data = StructureData(structures)

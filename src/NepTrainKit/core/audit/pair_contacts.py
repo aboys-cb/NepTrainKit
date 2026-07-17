@@ -15,7 +15,7 @@ from .result import AuditBiasType, AuditDimension, AuditSeverity, AuditSlice, Au
 
 @dataclass
 class _PairStats:
-    co_sampled: dict[int, None] = field(default_factory=dict)
+    co_occurring: dict[int, None] = field(default_factory=dict)
     contact_structures: dict[int, None] = field(default_factory=dict)
     contact_edges: int = 0
     expected_edges: float = 0.0
@@ -92,11 +92,11 @@ class PairContactCollector:
                 first_count = int(counts[first_index])
                 second_count = int(counts[second_index])
                 same_element = first == second
-                co_sampled = first_count >= (2 if same_element else 1) and second_count >= 1
+                co_occurring = first_count >= (2 if same_element else 1) and second_count >= 1
                 stats = self._stats[(scope, first, second)]
-                if not co_sampled:
+                if not co_occurring:
                     continue
-                stats.co_sampled[structure_index] = None
+                stats.co_occurring[structure_index] = None
 
                 cutoff = float(cutoff_matrix[first_index, second_index])
                 geometric = distances < cutoff
@@ -165,12 +165,12 @@ class PairContactCollector:
         for scope_index, scope in enumerate(("angular", "radial")):
             for pair_index, (first, second) in enumerate(self._pairs):
                 values = metrics[:, scope_index, pair_index, :]
-                co_sampled = values[:, 0] != 0.0
-                if not np.any(co_sampled):
+                co_occurring = values[:, 0] != 0.0
+                if not np.any(co_occurring):
                     continue
                 stats = self._stats[(scope, first, second)]
-                for structure_index in source_indices[co_sampled]:
-                    stats.co_sampled[int(structure_index)] = None
+                for structure_index in source_indices[co_occurring]:
+                    stats.co_occurring[int(structure_index)] = None
                 stats.opportunity_edges += int(np.sum(values[:, 1], dtype=np.float64))
                 stats.expected_edges += sum(values[:, 2].tolist())
                 contacts = values[:, 3].astype(np.int64, copy=False)
@@ -196,12 +196,12 @@ class PairContactCollector:
             return (
                 AuditDimension("pair_contacts", "Pair contacts", AuditStatus.UNAVAILABLE, "No atoms are loaded."),
                 (),
-                {"pair_count": 0, "co_sampled_pair_count": 0, "zero_contact_pair_count": 0},
+                {"pair_count": 0, "co_occurring_pair_count": 0, "zero_contact_pair_count": 0},
             )
 
         plots = []
         slices = []
-        co_sampled_count = 0
+        co_occurring_count = 0
         zero_contact_count = 0
         for scope in ("angular", "radial"):
             labels = []
@@ -212,21 +212,21 @@ class PairContactCollector:
                 stats = self._stats[(scope, first, second)]
                 labels.append(f"{first}-{second}")
                 counts.append(stats.contact_edges)
-                groups.append(tuple(stats.contact_structures or stats.co_sampled))
-                if stats.co_sampled and stats.contact_edges == 0:
+                groups.append(tuple(stats.contact_structures or stats.co_occurring))
+                if stats.co_occurring and stats.contact_edges == 0:
                     highlighted.append(len(labels) - 1)
-                if stats.co_sampled:
-                    co_sampled_count += 1
-                if stats.co_sampled and stats.contact_edges == 0:
+                if stats.co_occurring:
+                    co_occurring_count += 1
+                if stats.co_occurring and stats.contact_edges == 0:
                     zero_contact_count += 1
 
                 ratio = None if stats.expected_edges <= 0.0 else stats.contact_edges / stats.expected_edges
-                support_label = "not co-sampled" if not stats.co_sampled else (
-                    "co-sampled; no local contact" if stats.contact_edges == 0 else
+                support_label = "not co-occurring" if not stats.co_occurring else (
+                    "co-occurring; no local contact" if stats.contact_edges == 0 else
                     "observed; low support" if stats.contact_edges < 20 or len(stats.contact_structures) < 3 else
                     "observed; multi-structure support"
                 )
-                if not stats.co_sampled or stats.contact_edges == 0 or support_label == "observed; low support":
+                if not stats.co_occurring or stats.contact_edges == 0 or support_label == "observed; low support":
                     slices.append(
                         AuditSlice(
                             id=f"pair_contacts:{scope}:{first}:{second}",
@@ -234,15 +234,15 @@ class PairContactCollector:
                             dimension_id="pair_contacts",
                             severity=AuditSeverity.INFO,
                             bias_type=AuditBiasType.INFORMATIONAL,
-                            structure_indices=tuple(stats.contact_structures or stats.co_sampled),
+                            structure_indices=tuple(stats.contact_structures or stats.co_occurring),
                             observed=(
                                 f"{stats.contact_edges} directed NEP-cutoff contact edges across "
-                                f"{len(stats.contact_structures)} of {len(stats.co_sampled)} co-sampled structures."
+                                f"{len(stats.contact_structures)} of {len(stats.co_occurring)} co-occurring structures."
                             ),
                             interpretation="This is a dataset-support observation, not a sampling recommendation.",
                             limit="O/E is shown as a descriptive same-geometry, same-composition reference; low expected counts make the ratio unstable.",
                             metrics=(
-                                SliceMetric("co_sampled_structures", len(stats.co_sampled), "structures"),
+                                SliceMetric("co_occurring_structures", len(stats.co_occurring), "structures"),
                                 SliceMetric("contact_structures", len(stats.contact_structures), "structures"),
                                 SliceMetric("contact_edges", stats.contact_edges, "directed edges"),
                                 SliceMetric("geometric_opportunities", stats.opportunity_edges, "directed edges"),
@@ -269,5 +269,5 @@ class PairContactCollector:
         return (
             AuditDimension("pair_contacts", "Pair contacts", AuditStatus.AVAILABLE, plots=tuple(plots)),
             tuple(slices),
-            {"pair_count": len(self._pairs), "co_sampled_pair_count": co_sampled_count, "zero_contact_pair_count": zero_contact_count},
+            {"pair_count": len(self._pairs), "co_occurring_pair_count": co_occurring_count, "zero_contact_pair_count": zero_contact_count},
         )

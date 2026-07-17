@@ -19,3 +19,15 @@ tests/_pytest_cache/
 tests/_pytest_tmp/
 tests/pytest-cache-files-*/
 /.tmp_localappdata/
+
+# Local platform builds and generated diagnostics
+**/.DS_Store
+/src/NepTrainKit/**/*.so
+/diagnostics/
+/tmp/
+
+# Outputs generated while exercising bundled test fixtures
+/tests/data/**/descriptor.pca2.json
+/tests/data/**/descriptor.pca2.npy
+/tests/data/**/nep.in
+/tests/data/nep/*.out

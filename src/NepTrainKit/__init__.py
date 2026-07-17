@@ -7,8 +7,18 @@
 import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent))
-from NepTrainKit import src_rc
 from NepTrainKit.logging_config import DEFAULT_LOG_LEVEL, initialize_logging
+
+
+def _try_import_src_rc() -> None:
+    try:
+        from . import src_rc  # noqa: F401
+    except ModuleNotFoundError as exc:
+        if exc.name != "PySide6":
+            raise
+
+
+_try_import_src_rc()
 
 try:
     # Actual if statement not needed, but keeps code inspectors more happy

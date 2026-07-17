@@ -141,6 +141,28 @@ def test_structure_geometry_snapshot_survives_mask_changes_and_reuses_storage():
     assert data.geometry_snapshot(data.now_indices) is full
 
 
+def test_structure_geometry_cache_owns_versioned_derived_analysis():
+    data = StructureData([_make_structure(["Ni"], "single")])
+    calls = []
+
+    first, first_hit = data.cached_geometry_analysis(
+        "phase",
+        ("method-v1", (0,)),
+        lambda: calls.append("built") or {"phase": "fcc"},
+    )
+    second, second_hit = data.cached_geometry_analysis(
+        "phase",
+        ("method-v1", (0,)),
+        lambda: calls.append("rebuilt") or {"phase": "bcc"},
+    )
+
+    assert first == {"phase": "fcc"}
+    assert second is first
+    assert first_hit is False
+    assert second_hit is True
+    assert calls == ["built"]
+
+
 def test_non_physical_scan_uses_active_geometry_snapshot():
     safe = _make_structure(["H"], "safe")
     collision = _make_structure(["Fe", "O"], "collision")

@@ -386,6 +386,11 @@ class StructureData(NepData):
                     self._geometry_cache = cache
         return cache.snapshot(source_indices)
 
+    def cached_geometry_analysis(self, namespace, key, build):
+        """Cache a geometry-derived result for this immutable dataset."""
+        self.geometry_snapshot()
+        return self._geometry_cache.analysis_result(namespace, key, build)
+
     def _completer_cache_lock(self) -> threading.Lock:
         lock = getattr(self, "_completer_cache_lock_obj", None)
         if lock is None:

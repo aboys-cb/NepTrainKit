@@ -5,7 +5,7 @@ import unittest
 from dataclasses import replace
 from pathlib import Path
 
-from PySide6.QtCore import QTranslator, Qt
+from PySide6.QtCore import QCoreApplication, QTranslator, Qt
 from PySide6.QtWidgets import QApplication, QLabel
 from qfluentwidgets import ComboBox, ListWidget, PrimaryPushButton, TableWidget
 
@@ -17,8 +17,11 @@ from NepTrainKit.core.audit.result import (
     AuditSeverity,
     AuditSlice,
     AuditStatus,
+    CompositionPhaseEvidence,
     CompositionPoint,
     DatasetInventory,
+    PhaseInventory,
+    StructurePhaseEvidence,
 )
 from NepTrainKit.ui import pages as ui_pages
 from NepTrainKit.ui.pages.training_set_audit import TrainingSetAuditWidget
@@ -207,7 +210,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.resize(1100, 760)
         widget.show()
         widget.set_result(self._local_chemistry_result())
-        widget.dimension_list.setCurrentRow(1)
+        widget.dimension_list.setCurrentRow(2)
         widget.page_tabs.setCurrentIndex(1)
         widget.data_map_tabs.setCurrentIndex(1)
         self._app.processEvents()
@@ -284,7 +287,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         )
 
         widget.set_result(result)
-        widget.dimension_list.setCurrentRow(1)
+        widget.dimension_list.setCurrentRow(2)
 
         self.assertTrue(widget.local_scope_selector.isHidden())
         self.assertTrue(widget.local_center_label.isHidden())
@@ -318,7 +321,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget = TrainingSetAuditWidget()
 
         widget.set_result(result)
-        widget.dimension_list.setCurrentRow(1)
+        widget.dimension_list.setCurrentRow(2)
 
         self.assertEqual(widget.plot_selector.itemText(0), "Neighbor count")
         self.assertEqual(widget.plot_selector.itemText(1), "Fe neighbor fraction")
@@ -329,7 +332,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
 
         widget.set_result(self._dashboard_result())
 
-        self.assertEqual(widget.dimension_list.count(), 3)
+        self.assertEqual(widget.dimension_list.count(), 4)
         self.assertEqual(widget.metric_structure_value.text(), "3")
         self.assertEqual(widget.generated_at_label.text(), "Generated 2026-07-10 08:30 UTC")
         self.assertIsInstance(widget.rerun_button, PrimaryPushButton)
@@ -346,8 +349,12 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.metric_context_label.text(), "Label availability")
         self.assertEqual(widget.metric_context_value.text(), "E 100% · F 67% · V 0%")
         self.assertEqual(widget.dimension_list.item(0).text(), "Overview\n2 topics")
-        self.assertEqual(widget.dimension_list.item(1).text(), "Composition balance\nCalculated · 1 topic")
-        self.assertEqual(widget.dimension_list.item(2).text(), "Labels and extremes\nPartial data · 1 topic")
+        self.assertEqual(
+            widget.dimension_list.item(1).text(),
+            "Phases and local structure\nNot calculated",
+        )
+        self.assertEqual(widget.dimension_list.item(2).text(), "Composition balance\nCalculated · 1 topic")
+        self.assertEqual(widget.dimension_list.item(3).text(), "Labels and extremes\nPartial data · 1 topic")
         self.assertEqual(widget.label_availability_title.text(), "Label availability")
         self.assertEqual(
             widget.label_availability_value.text(),
@@ -410,7 +417,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget = TrainingSetAuditWidget()
         widget.set_result(self._dashboard_result())
 
-        widget.dimension_list.setCurrentRow(1)
+        widget.dimension_list.setCurrentRow(2)
         self.assertEqual(widget.plot_selector.count(), 2)
         self.assertEqual(widget.chart_widget.plot_id, "composition:Fe")
         self.assertEqual(widget.slice_table.rowCount(), 2)
@@ -418,8 +425,132 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.plot_selector.setCurrentIndex(1)
         self.assertEqual(widget.chart_widget.plot_id, "composition:O")
 
-        widget.dimension_list.setCurrentRow(2)
+        widget.dimension_list.setCurrentRow(3)
         self.assertFalse(widget.chart_widget.isHidden())
+
+    def test_composition_map_shows_complete_phase_evidence_and_drilldown(self):
+        result = replace(
+            self._dashboard_result(),
+            phase_inventory=PhaseInventory(
+                schema_version="phase-inventory-v2",
+                method_id="adaptive-cna-ordering-v1",
+                reference_bank_id="aflow-l12-laves-v1",
+                analysis_strategy="all-structures-v1",
+                source_structure_count=3,
+                analyzed_structure_count=3,
+                analyzed_atom_count=48,
+                composition_points=(
+                    CompositionPhaseEvidence(
+                        reduced_counts=(1, 0),
+                        source_structure_count=1,
+                        analyzed_structure_count=1,
+                        analyzed_atom_count=16,
+                        local_phase_fractions=(("fcc", 0.875), ("hcp", 0.0), ("bcc", 0.0), ("unresolved", 0.125)),
+                        structure_phase_fractions=(("fcc", 1.0),),
+                        confidence_counts=(("strong", 1),),
+                        structures=(
+                            StructurePhaseEvidence(
+                                source_index=0,
+                                atom_count=16,
+                                phase_label="fcc",
+                                confidence_state="strong",
+                                local_phase_fractions=(("fcc", 0.875), ("hcp", 0.0), ("bcc", 0.0), ("unresolved", 0.125)),
+                            ),
+                        ),
+                    ),
+                    CompositionPhaseEvidence(
+                        reduced_counts=(1, 1),
+                        source_structure_count=2,
+                        analyzed_structure_count=2,
+                        analyzed_atom_count=32,
+                        local_phase_fractions=(("fcc", 0.125), ("hcp", 0.0), ("bcc", 0.3125), ("unresolved", 0.5625)),
+                        structure_phase_fractions=(("bcc", 0.5), ("unresolved", 0.5)),
+                        confidence_counts=(("mixed", 1), ("unresolved", 1)),
+                        structures=(
+                            StructurePhaseEvidence(
+                                source_index=1,
+                                atom_count=16,
+                                phase_label="bcc",
+                                confidence_state="mixed",
+                                local_phase_fractions=(("fcc", 0.25), ("hcp", 0.0), ("bcc", 0.625), ("unresolved", 0.125)),
+                            ),
+                            StructurePhaseEvidence(
+                                source_index=2,
+                                atom_count=16,
+                                phase_label="unresolved",
+                                confidence_state="unresolved",
+                                local_phase_fractions=(("fcc", 0.0), ("hcp", 0.0), ("bcc", 0.0), ("unresolved", 1.0)),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+        widget = TrainingSetAuditWidget()
+
+        widget.set_result(result)
+
+        self.assertFalse(widget.composition_phase_summary_label.isHidden())
+        self.assertIn("FCC", widget.composition_phase_summary_label.text())
+        self.assertIn("Analyzed all 2 structures", widget.composition_phase_summary_label.text())
+        self.assertIn("does not predict thermodynamic stability", widget.composition_phase_summary_label.text())
+        self.assertEqual(widget.composition_chart._plot["kind"], "composition_phase_stacks")
+        self.assertEqual(widget.composition_table.columnCount(), 7)
+        self.assertIn(widget.composition_table.item(0, 3).text(), {"Mixed (BCC 50%)", "FCC (100%)"})
+        self.assertIn("analyzed all", widget.composition_table.item(0, 4).text())
+
+        selected = []
+        widget.selectStructuresSignal.connect(selected.append)
+        widget.composition_phase_selector.setCurrentIndex(1)
+        widget.composition_show_button.click()
+
+        self.assertEqual(selected, [[1]])
+        self.assertIn("BCC", widget.composition_show_button.text())
+
+        phase_row = next(
+            row
+            for row in range(widget.dimension_list.count())
+            if widget.dimension_list.item(row).data(Qt.ItemDataRole.UserRole)
+            == "phase_evidence"
+        )
+        widget.dimension_list.setCurrentRow(phase_row)
+        self.assertEqual(widget.plot_selector.count(), 2)
+        self.assertEqual(widget.chart_widget.plot_id, "phase_evidence:structure_labels")
+        self.assertEqual(
+            widget.chart_widget._plot["bar_ids"],
+            ("fcc", "bcc", "unresolved"),
+        )
+        widget.plot_selector.setCurrentIndex(1)
+        self.assertEqual(
+            widget.chart_widget._plot["bar_ids"],
+            ("strong", "mixed", "unresolved"),
+        )
+
+    def test_pending_phase_analysis_reports_full_progress_without_sampling_claims(self):
+        base = self._dashboard_result()
+        pending = replace(
+            base,
+            overview_metrics={
+                **base.overview_metrics,
+                "phase_inventory": {
+                    "available": False,
+                    "status": "pending",
+                    "analyzed_structures": 0,
+                },
+            },
+        )
+        widget = TrainingSetAuditWidget()
+
+        widget.set_result(pending)
+        widget.start_phase_analysis(3)
+        widget.update_phase_analysis_progress(2, 3)
+
+        self.assertFalse(widget.composition_phase_progress.isHidden())
+        self.assertEqual(widget.composition_phase_progress.value(), 67)
+        self.assertIn("2/3 structures", widget.composition_phase_summary_label.text())
+        self.assertNotIn("sampled", widget.composition_phase_summary_label.text())
+        self.assertEqual(widget.composition_chart.plot_id, "inventory:composition:Ni")
+        self.assertIn("Calculating all structures", widget.dimension_list.item(1).text())
 
     def test_composition_target_distinguishes_supported_thin_and_missing_points(self):
         widget = TrainingSetAuditWidget()
@@ -666,9 +797,9 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         )
 
         widget.set_result(result)
-        widget.dimension_list.setCurrentRow(2)
+        widget.dimension_list.setCurrentRow(3)
 
-        self.assertEqual(widget.dimension_list.count(), 3)
+        self.assertEqual(widget.dimension_list.count(), 4)
         self.assertEqual(widget.metric_structure_value.text(), "0")
         self.assertEqual(widget.slice_table.rowCount(), 0)
         self.assertEqual(widget.analysis_status_label.text(), "No labels are available.")
@@ -690,7 +821,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertTrue(widget.no_dataset_state.isHidden())
         self.assertFalse(widget.audit_header.isHidden())
         self.assertFalse(widget.dashboard_body.isHidden())
-        self.assertEqual(widget.dimension_list.count(), 3)
+        self.assertEqual(widget.dimension_list.count(), 4)
         self.assertFalse(widget.chart_widget.isHidden())
 
     def test_display_text_uses_widget_translation_before_ui_construction(self):
@@ -748,6 +879,20 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             self.assertEqual(widget.dimension_rail.findChild(QLabel, "panelTitle").text(), "检查项目")
             self.assertEqual(widget.rerun_button.text(), "重新检查")
             self.assertEqual(widget.export_report_button.text(), "导出 HTML 报告")
+            self.assertEqual(
+                QCoreApplication.translate(
+                    "TrainingSetAuditWidget",
+                    "Analyzing local phases: {completed:,}/{total:,} structures. The chart will update automatically.",
+                ),
+                "正在分析局域相：{completed:,}/{total:,} 个结构。图表将在完成后自动更新。",
+            )
+            self.assertEqual(
+                QCoreApplication.translate(
+                    "TrainingSetAuditWidget",
+                    "Structure-level phase labels",
+                ),
+                "结构级相别",
+            )
 
             energy_plot = {
                 "kind": "histogram",
@@ -785,7 +930,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
                 },
             )
             widget.set_result(result)
-            widget.dimension_list.setCurrentRow(1)
+            widget.dimension_list.setCurrentRow(2)
             self.assertEqual(widget.chart_widget._plot["title"], "单原子能量分布")
             self.assertEqual(widget.chart_widget._plot["x_label"], "单原子能量")
             self.assertEqual(widget.chart_widget._plot["y_label"], "结构数")
@@ -814,9 +959,9 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         try:
             widget = TrainingSetAuditWidget()
             widget.set_result(self._local_chemistry_result())
-            widget.dimension_list.setCurrentRow(1)
+            widget.dimension_list.setCurrentRow(2)
 
-            self.assertTrue(widget.dimension_list.item(1).text().startswith("局域环境支持\n"))
+            self.assertTrue(widget.dimension_list.item(2).text().startswith("局域环境支持\n"))
             self.assertEqual(widget.local_scope_selector.itemText(0), "角向邻居")
             self.assertEqual(widget.local_scope_selector.itemText(1), "径向邻居")
             self.assertEqual(widget.local_center_label.text(), "中心元素")
@@ -851,7 +996,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         )
 
         widget.set_result(result)
-        widget.dimension_list.setCurrentRow(1)
+        widget.dimension_list.setCurrentRow(2)
 
         self.assertEqual(widget.chart_widget.plot_id, "composition:Fe")
         self.assertFalse(widget.plot_selector.isVisibleTo(widget))
@@ -883,7 +1028,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         )
 
         widget.set_result(result)
-        widget.dimension_list.setCurrentRow(2)
+        widget.dimension_list.setCurrentRow(3)
 
         self.assertEqual(
             widget.analysis_status_label.text(),
@@ -987,7 +1132,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         )
 
         widget.set_result(result)
-        widget.dimension_list.setCurrentRow(1)
+        widget.dimension_list.setCurrentRow(2)
 
         self.assertEqual(widget.slice_table.rowCount(), 2)
         self.assertEqual(widget.slice_table.item(0, 0).text(), "Review")

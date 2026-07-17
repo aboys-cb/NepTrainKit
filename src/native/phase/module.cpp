@@ -92,6 +92,103 @@ py::tuple periodic_knn_vectors(
     return py::make_tuple(std::move(vectors), std::move(indices), std::move(valid));
 }
 
+py::tuple translational_order_evidence(
+    py::array_t<float, py::array::c_style | py::array::forcecast> positions_array,
+    py::array_t<float, py::array::c_style | py::array::forcecast> cell_array,
+    py::array_t<bool, py::array::c_style | py::array::forcecast> pbc_array
+) {
+    if (positions_array.ndim() != 2 || positions_array.shape(1) != 3 ||
+        cell_array.ndim() != 2 || cell_array.shape(0) != 3 || cell_array.shape(1) != 3 ||
+        pbc_array.ndim() != 1 || pbc_array.shape(0) != 3) {
+        throw py::value_error("positions, cell, and pbc must have shapes (N,3), (3,3), and (3,)");
+    }
+    const py::ssize_t atom_count = positions_array.shape(0);
+    if (atom_count == 0) {
+        throw py::value_error("translational order requires at least one atom");
+    }
+    if (!pbc_array.data()[0] || !pbc_array.data()[1] || !pbc_array.data()[2]) {
+        const double unavailable = std::numeric_limits<double>::quiet_NaN();
+        return py::make_tuple(unavailable, unavailable);
+    }
+
+    const float* cell = cell_array.data();
+    const float determinant =
+        cell[0] * (cell[4] * cell[8] - cell[5] * cell[7]) -
+        cell[1] * (cell[3] * cell[8] - cell[5] * cell[6]) +
+        cell[2] * (cell[3] * cell[7] - cell[4] * cell[6]);
+    if (std::abs(determinant) <= kEps) {
+        throw py::value_error("periodic cell must be invertible");
+    }
+    const float inverse_determinant = 1.0f / determinant;
+    const std::array<float, 9> inverse{{
+        (cell[4] * cell[8] - cell[5] * cell[7]) * inverse_determinant,
+        (cell[2] * cell[7] - cell[1] * cell[8]) * inverse_determinant,
+        (cell[1] * cell[5] - cell[2] * cell[4]) * inverse_determinant,
+        (cell[5] * cell[6] - cell[3] * cell[8]) * inverse_determinant,
+        (cell[0] * cell[8] - cell[2] * cell[6]) * inverse_determinant,
+        (cell[2] * cell[3] - cell[0] * cell[5]) * inverse_determinant,
+        (cell[3] * cell[7] - cell[4] * cell[6]) * inverse_determinant,
+        (cell[1] * cell[6] - cell[0] * cell[7]) * inverse_determinant,
+        (cell[0] * cell[4] - cell[1] * cell[3]) * inverse_determinant,
+    }};
+    std::vector<std::array<float, 3>> fractional(static_cast<std::size_t>(atom_count));
+    const float* positions = positions_array.data();
+    for (py::ssize_t atom = 0; atom < atom_count; ++atom) {
+        for (int axis = 0; axis < 3; ++axis) {
+            float value =
+                positions[atom * 3] * inverse[axis] +
+                positions[atom * 3 + 1] * inverse[3 + axis] +
+                positions[atom * 3 + 2] * inverse[6 + axis];
+            value -= std::floor(value);
+            fractional[static_cast<std::size_t>(atom)][axis] = value;
+        }
+    }
+
+    static constexpr std::array<std::array<int, 3>, 13> directions{{
+        {{1, 0, 0}}, {{0, 1, 0}}, {{0, 0, 1}},
+        {{1, 1, 0}}, {{1, -1, 0}}, {{1, 0, 1}}, {{1, 0, -1}},
+        {{0, 1, 1}}, {{0, 1, -1}},
+        {{1, 1, 1}}, {{1, 1, -1}}, {{1, -1, 1}}, {{-1, 1, 1}},
+    }};
+    const int maximum_harmonic = std::min(
+        64,
+        static_cast<int>(std::ceil(4.0 * std::cbrt(static_cast<double>(atom_count))))
+    );
+    const int wave_count = static_cast<int>(directions.size()) * maximum_harmonic;
+    std::vector<double> intensities(static_cast<std::size_t>(wave_count), 0.0);
+    constexpr double two_pi = 6.283185307179586476925286766559;
+    {
+        py::gil_scoped_release release;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static)
+#endif
+        for (int wave = 0; wave < wave_count; ++wave) {
+            const auto& direction = directions[static_cast<std::size_t>(wave / maximum_harmonic)];
+            const int harmonic = wave % maximum_harmonic + 1;
+            double real = 0.0;
+            double imaginary = 0.0;
+            for (const auto& value : fractional) {
+                const double phase = two_pi * harmonic * (
+                    direction[0] * value[0] +
+                    direction[1] * value[1] +
+                    direction[2] * value[2]
+                );
+                real += std::cos(phase);
+                imaginary += std::sin(phase);
+            }
+            const double denominator = static_cast<double>(atom_count) * atom_count;
+            intensities[static_cast<std::size_t>(wave)] =
+                (real * real + imaginary * imaginary) / denominator;
+        }
+    }
+    const double score = *std::max_element(intensities.begin(), intensities.end());
+    const double random_limit = std::min(
+        1.0,
+        std::log(static_cast<double>(wave_count) / 0.01) / atom_count
+    );
+    return py::make_tuple(score, random_limit);
+}
+
 inline float legendre(const int order, const float value) {
     if (order == 0) return 1.0f;
     if (order == 1) return value;
@@ -445,6 +542,150 @@ std::vector<Neighbor> sorted_neighbors(
     return neighbors;
 }
 
+int bit_count(unsigned int value) {
+    int count = 0;
+    while (value) {
+        value &= value - 1;
+        ++count;
+    }
+    return count;
+}
+
+std::int8_t classify_close_packed_cna(const std::vector<Neighbor>& neighbors) {
+    if (neighbors.size() < 13 ||
+        neighbors[11].distance <= kEps ||
+        neighbors[12].distance / neighbors[11].distance < 1.08f) {
+        return 0;
+    }
+    const float cutoff = 0.5f * (
+        neighbors[11].distance + neighbors[12].distance
+    );
+    const float cutoff_squared = cutoff * cutoff;
+    std::array<unsigned int, 12> adjacency{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+    for (int left = 0; left < 12; ++left) {
+        for (int right = left + 1; right < 12; ++right) {
+            const float dx = neighbors[left].x - neighbors[right].x;
+            const float dy = neighbors[left].y - neighbors[right].y;
+            const float dz = neighbors[left].z - neighbors[right].z;
+            if (dx * dx + dy * dy + dz * dz < cutoff_squared) {
+                adjacency[left] |= 1u << right;
+                adjacency[right] |= 1u << left;
+            }
+        }
+    }
+    int signature_421 = 0;
+    int signature_422 = 0;
+    for (int bonded = 0; bonded < 12; ++bonded) {
+        const unsigned int common = adjacency[bonded];
+        if (bit_count(common) != 4) return 0;
+        int degree_sum = 0;
+        int maximum_degree = 0;
+        for (int vertex = 0; vertex < 12; ++vertex) {
+            if (!(common & (1u << vertex))) continue;
+            const int degree = bit_count(adjacency[vertex] & common);
+            degree_sum += degree;
+            maximum_degree = std::max(maximum_degree, degree);
+        }
+        const int bond_count = degree_sum / 2;
+        if (bond_count != 2) return 0;
+        if (maximum_degree == 1) {
+            ++signature_421;
+        } else if (maximum_degree == 2) {
+            ++signature_422;
+        } else {
+            return 0;
+        }
+    }
+    if (signature_421 == 12) return 1;
+    if (signature_421 == 6 && signature_422 == 6) return 2;
+    return 0;
+}
+
+std::int8_t classify_adaptive_cna(const std::vector<Neighbor>& neighbors) {
+    const std::int8_t close_packed = classify_close_packed_cna(neighbors);
+    if (close_packed) return close_packed;
+    if (neighbors.size() < 15 ||
+        neighbors[13].distance <= kEps ||
+        neighbors[14].distance / neighbors[13].distance < 1.08f) {
+        return 0;
+    }
+    const float cutoff = 0.5f * (
+        neighbors[13].distance + neighbors[14].distance
+    );
+    const float cutoff_squared = cutoff * cutoff;
+    std::array<unsigned int, 14> adjacency{};
+    for (int left = 0; left < 14; ++left) {
+        for (int right = left + 1; right < 14; ++right) {
+            const float dx = neighbors[left].x - neighbors[right].x;
+            const float dy = neighbors[left].y - neighbors[right].y;
+            const float dz = neighbors[left].z - neighbors[right].z;
+            if (dx * dx + dy * dy + dz * dz < cutoff_squared) {
+                adjacency[left] |= 1u << right;
+                adjacency[right] |= 1u << left;
+            }
+        }
+    }
+    int signature_444 = 0;
+    int signature_666 = 0;
+    for (int bonded = 0; bonded < 14; ++bonded) {
+        const unsigned int common = adjacency[bonded];
+        const int common_count = bit_count(common);
+        if (common_count != 4 && common_count != 6) return 0;
+        int degree_sum = 0;
+        for (int vertex = 0; vertex < 14; ++vertex) {
+            if (!(common & (1u << vertex))) continue;
+            const int degree = bit_count(adjacency[vertex] & common);
+            if (degree != 2) return 0;
+            degree_sum += degree;
+        }
+        if (degree_sum / 2 != common_count) return 0;
+        if (common_count == 4) {
+            ++signature_444;
+        } else {
+            ++signature_666;
+        }
+    }
+    return signature_444 == 6 && signature_666 == 8 ? 3 : 0;
+}
+
+py::array_t<std::int8_t> adaptive_cna_labels(
+    py::array_t<float, py::array::c_style | py::array::forcecast> vectors_array,
+    py::array_t<std::int32_t, py::array::c_style | py::array::forcecast> indices_array,
+    py::array_t<bool, py::array::c_style | py::array::forcecast> valid_array
+) {
+    if (vectors_array.ndim() != 3 || vectors_array.shape(2) != 3 ||
+        indices_array.ndim() != 2 || valid_array.ndim() != 2 ||
+        vectors_array.shape(0) != indices_array.shape(0) ||
+        vectors_array.shape(0) != valid_array.shape(0) ||
+        vectors_array.shape(1) != indices_array.shape(1) ||
+        vectors_array.shape(1) != valid_array.shape(1)) {
+        throw py::value_error("invalid adaptive CNA input shapes");
+    }
+    const py::ssize_t atom_count = vectors_array.shape(0);
+    const py::ssize_t neighbor_count = vectors_array.shape(1);
+    py::array_t<std::int8_t> labels(atom_count);
+    std::fill(labels.mutable_data(), labels.mutable_data() + atom_count, 0);
+    if (neighbor_count < 13) return labels;
+
+    const float* vectors = vectors_array.data();
+    const std::int32_t* indices = indices_array.data();
+    const bool* valid = valid_array.data();
+    std::int8_t* output = labels.mutable_data();
+    {
+        py::gil_scoped_release release;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) if(atom_count >= 256)
+#endif
+        for (py::ssize_t atom = 0; atom < atom_count; ++atom) {
+            const std::vector<Neighbor> neighbors = sorted_neighbors(
+                vectors, indices, valid, atom, neighbor_count
+            );
+            output[atom] = classify_adaptive_cna(neighbors);
+        }
+    }
+    return labels;
+}
+
 bool matches_shape_template(
     const std::vector<Neighbor>& neighbors,
     const int coordination,
@@ -720,6 +961,20 @@ PYBIND11_MODULE(_phase, module) {
         py::arg("indices"),
         py::arg("valid"),
         py::arg("atom_types")
+    );
+    module.def(
+        "translational_order_evidence",
+        &translational_order_evidence,
+        py::arg("positions"),
+        py::arg("cell"),
+        py::arg("pbc")
+    );
+    module.def(
+        "adaptive_cna_labels",
+        &adaptive_cna_labels,
+        py::arg("vectors"),
+        py::arg("indices"),
+        py::arg("valid")
     );
     module.def(
         "l12_refinement_metrics",

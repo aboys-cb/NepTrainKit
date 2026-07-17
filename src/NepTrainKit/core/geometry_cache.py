@@ -3,10 +3,13 @@ from __future__ import annotations
 
 import threading
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any, Callable, Hashable, Sequence, TypeVar
 
 import numpy as np
 from ase.data import atomic_numbers
+
+
+_T = TypeVar("_T")
 
 
 @dataclass(frozen=True)
@@ -83,6 +86,8 @@ class StructureGeometryCache:
         self._all_snapshot: GeometrySnapshot | None = None
         self._projected_key: tuple[int, ...] | None = None
         self._projected_snapshot: GeometrySnapshot | None = None
+        self._analysis_lock = threading.Lock()
+        self._analysis_results: dict[tuple[str, Hashable], Any] = {}
 
     def snapshot(self, source_indices: Sequence[int] | np.ndarray | None = None) -> GeometrySnapshot:
         """Return a contiguous snapshot for all or selected source rows."""
@@ -105,6 +110,21 @@ class StructureGeometryCache:
             self._projected_key = key
             self._projected_snapshot = projected
             return projected
+
+    def analysis_result(
+        self,
+        namespace: str,
+        key: Hashable,
+        build: Callable[[], _T],
+    ) -> tuple[_T, bool]:
+        """Return one dataset-owned derived result and whether it was cached."""
+        cache_key = (str(namespace), key)
+        with self._analysis_lock:
+            if cache_key in self._analysis_results:
+                return self._analysis_results[cache_key], True
+            result = build()
+            self._analysis_results[cache_key] = result
+            return result, False
 
     def _build_all(self) -> GeometrySnapshot:
         positions: list[np.ndarray] = []

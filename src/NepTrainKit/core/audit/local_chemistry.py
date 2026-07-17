@@ -27,12 +27,12 @@ _NATIVE_BATCH_SIZE = 512
 class _Histogram:
     counts: Counter[int] = field(default_factory=Counter)
     structure_indices: dict[int, dict[int, None]] = field(default_factory=lambda: defaultdict(dict))
-    sample_count: int = 0
+    environment_count: int = 0
 
     def add(self, bin_index: int, structure_index: int) -> None:
         self.counts[bin_index] += 1
         self.structure_indices[bin_index][structure_index] = None
-        self.sample_count += 1
+        self.environment_count += 1
 
     def add_many(self, bin_indices: np.ndarray, structure_indices: np.ndarray) -> None:
         """Merge a full-scope vectorized histogram payload."""
@@ -61,7 +61,7 @@ class _Histogram:
             encounter_order = np.sort(first_indices[start:stop])
             ordered_sources = dict.fromkeys(int(index) for index in sources[encounter_order])
             self.structure_indices[int(pair_bins[start])].update(ordered_sources)
-        self.sample_count += int(bins.size)
+        self.environment_count += int(bins.size)
 
 
 def _pbc_flags(structure: Structure) -> tuple[bool, bool, bool]:
@@ -172,10 +172,10 @@ def _cutoff_matrix(profile: NepCutoffProfile, elements: tuple[str, ...], scope: 
     return 0.5 * (cutoffs[:, np.newaxis] + cutoffs[np.newaxis, :])
 
 
-def _severity(sample_fraction: float) -> AuditSeverity:
-    if sample_fraction < 0.03:
+def _severity(environment_fraction: float) -> AuditSeverity:
+    if environment_fraction < 0.03:
         return AuditSeverity.HIGH
-    if sample_fraction < 0.08:
+    if environment_fraction < 0.08:
         return AuditSeverity.MEDIUM
     return AuditSeverity.LOW
 
@@ -205,7 +205,7 @@ def _plot_and_slices(
     sparse_keys = tuple(
         key
         for key in bin_keys
-        if histogram.counts.get(key, 0) and histogram.counts[key] / histogram.sample_count < 0.10
+        if histogram.counts.get(key, 0) and histogram.counts[key] / histogram.environment_count < 0.10
     )
     sparse_positions = tuple(bin_keys.index(key) for key in sparse_keys)
     plot_id = f"local_chemistry:{scope}:{center}:{metric}"
@@ -229,32 +229,32 @@ def _plot_and_slices(
                 "structure_indices": index_groups,
             },
         ),
-        "sample_count": histogram.sample_count,
+        "environment_count": histogram.environment_count,
     }
 
     slices = []
     for key in sparse_keys:
         position = bin_keys.index(key)
         count = histogram.counts[key]
-        sample_fraction = count / histogram.sample_count
+        environment_fraction = count / histogram.environment_count
         label = bin_labels[position]
         slices.append(
             AuditSlice(
                 id=f"{plot_id}:{position}",
                 title=f"Sparse {_SCOPE_TITLES[scope].lower()} bin: {center} {metric_label} {label}",
                 dimension_id="local_chemistry",
-                severity=_severity(sample_fraction),
+                severity=_severity(environment_fraction),
                 bias_type=AuditBiasType.SPARSITY,
                 structure_indices=tuple(histogram.structure_indices[key]),
                 observed=(
-                    f"{label} contains {count} of {histogram.sample_count} comparable {center} "
-                    f"local environments ({sample_fraction:.1%})."
+                    f"{label} contains {count} of {histogram.environment_count} comparable {center} "
+                    f"local environments ({environment_fraction:.1%})."
                 ),
                 interpretation="This populated local-chemistry bin is thin relative to comparable environments.",
                 limit="Sparsity is only actionable when this environment matters for the intended model use.",
                 metrics=(
-                    SliceMetric("sample_count", count, "local environments", histogram.sample_count, "low"),
-                    SliceMetric("sample_fraction", round(sample_fraction, 4), "", None, "low"),
+                    SliceMetric("environment_count", count, "local environments", histogram.environment_count, "low"),
+                    SliceMetric("environment_fraction", round(environment_fraction, 4), "", None, "low"),
                 ),
             )
         )

@@ -76,6 +76,35 @@ def composition_payload():
     }
 
 
+@pytest.fixture
+def composition_phase_payload():
+    return {
+        "kind": "composition_phase_stacks",
+        "id": "inventory:composition-phase:Ni",
+        "title": "Phase distribution by Ni concentration",
+        "x_label": "Ni atomic fraction",
+        "y_label": "Structures",
+        "x_min": -0.01,
+        "x_max": 1.0,
+        "x_values": (0.0, 0.5, 1.0),
+        "labels": ("Ni 0%", "Ni 50%", "Ni 100%"),
+        "series": (
+            {
+                "id": "fcc",
+                "label": "FCC",
+                "counts": (1, 2, 1),
+                "structure_indices": ((0,), (1, 2), (4,)),
+            },
+            {
+                "id": "bcc",
+                "label": "BCC",
+                "counts": (0, 1, 0),
+                "structure_indices": ((), (3,), ()),
+            },
+        ),
+    }
+
+
 def test_histogram_state_can_be_set_and_cleared(app, histogram_payload):
     widget = AuditChartWidget()
 
@@ -120,6 +149,32 @@ def test_composition_stems_accept_exact_points_and_emit_indices(app, composition
     assert widget.plot_id == "inventory:composition:Ni"
     assert widget._bar_rects[0][0].center().x() > 58
     assert received == [[2, 3]]
+
+
+def test_composition_phase_stacks_emit_the_clicked_phase_group(
+    app, composition_phase_payload
+):
+    widget = AuditChartWidget()
+    received = []
+    widget.selectedGroupSignal.connect(received.append)
+    widget.set_plot(composition_phase_payload)
+    widget.resize(760, 300)
+    widget.show()
+    app.processEvents()
+
+    bcc_segment = next(
+        rect
+        for rect, indices in widget._bar_rects
+        if indices == [3]
+    )
+    QTest.mouseClick(
+        widget,
+        Qt.MouseButton.LeftButton,
+        pos=bcc_segment.center().toPoint(),
+    )
+
+    assert widget._plot["counts"] == (1.0, 3.0, 1.0)
+    assert received == [[3]]
 
 
 def test_histogram_accepts_negative_finite_strictly_increasing_bin_edges(app, histogram_payload):
@@ -189,7 +244,13 @@ def test_malformed_payload_uses_empty_fallback(app, payload):
 
 
 @pytest.mark.parametrize(
-    "payload", ("histogram_payload", "categorical_payload", "composition_payload")
+    "payload",
+    (
+        "histogram_payload",
+        "categorical_payload",
+        "composition_payload",
+        "composition_phase_payload",
+    ),
 )
 def test_plot_renders_multiple_colors(app, request, payload):
     widget = AuditChartWidget()
@@ -221,3 +282,25 @@ def test_clicking_histogram_bar_emits_original_structure_indices(app, histogram_
     QTest.mouseClick(widget, Qt.MouseButton.LeftButton, pos=widget._bar_rects[1][0].center().toPoint())
 
     assert received == [[40]]
+
+
+def test_tiny_categorical_bar_keeps_clickable_hit_area(app, categorical_payload):
+    categorical_payload["series"][0]["counts"] = (10_000, 1)
+    categorical_payload["series"][0]["structure_indices"] = ((10,), (99,))
+    widget = AuditChartWidget()
+    received = []
+    widget.selectedGroupSignal.connect(received.append)
+    widget.set_plot(categorical_payload)
+    widget.resize(640, 260)
+    widget.show()
+    app.processEvents()
+
+    rare_hit_rect = widget._bar_rects[1][0]
+    QTest.mouseClick(
+        widget,
+        Qt.MouseButton.LeftButton,
+        pos=rare_hit_rect.center().toPoint(),
+    )
+
+    assert rare_hit_rect.width() >= 20
+    assert received == [[99]]

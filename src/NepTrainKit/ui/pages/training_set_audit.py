@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
@@ -39,6 +39,7 @@ from qfluentwidgets import (
     FluentIcon,
     ListWidget,
     PrimaryPushButton,
+    ProgressBar,
     PushButton,
     TableWidget,
 )
@@ -47,6 +48,7 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.core.audit.report import write_audit_report_html
 from NepTrainKit.core.audit.findings import canonical_findings
 from NepTrainKit.core.audit.inventory import compare_composition_target
+from NepTrainKit.core.audit.phase_inventory import summarize_phase_inventory
 from NepTrainKit.core.audit.result import (
     AuditBiasType,
     AuditDimension,
@@ -56,6 +58,7 @@ from NepTrainKit.core.audit.result import (
     AuditStatus,
     CompositionTarget,
     DatasetInventory,
+    PhaseInventory,
     TargetSupportStatus,
 )
 from NepTrainKit.ui.dialogs import call_path_dialog
@@ -96,6 +99,7 @@ class TrainingSetAuditWidget(QWidget):
 
     selectStructuresSignal = Signal(list)
     rerunAuditSignal = Signal()
+    phaseAnalysisProgressSignal = Signal(int, int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -108,9 +112,14 @@ class TrainingSetAuditWidget(QWidget):
         self._local_chemistry_plots: list[dict[str, Any]] = []
         self._selected_chart_indices: list[int] = []
         self._selected_composition_indices: list[int] = []
+        self._selected_phase_indices: list[int] = []
+        self._selected_composition_key: tuple[int, ...] | None = None
         self._selected_target_indices: list[int] = []
         self._review_states: dict[str, str] = {}
         self._build_ui()
+        self.phaseAnalysisProgressSignal.connect(
+            self.update_phase_analysis_progress
+        )
         self._set_empty_state()
 
     def _build_ui(self) -> None:
@@ -404,15 +413,21 @@ class TrainingSetAuditWidget(QWidget):
         self.composition_element_selector.currentIndexChanged.connect(
             self._refresh_composition_map
         )
-        self.composition_scale_selector = ComboBox(composition_header)
-        self.composition_scale_selector.addItem(self.tr("Linear scale"), userData=False)
-        self.composition_scale_selector.addItem(self.tr("Log scale"), userData=True)
-        self.composition_scale_selector.currentIndexChanged.connect(
-            self._refresh_composition_map
-        )
         composition_header_layout.addWidget(self.composition_element_selector)
-        composition_header_layout.addWidget(self.composition_scale_selector)
         composition_layout.addWidget(composition_header)
+
+        self.composition_phase_summary_label = QLabel("", composition_page)
+        self.composition_phase_summary_label.setObjectName("inventoryDetails")
+        self.composition_phase_summary_label.setTextFormat(Qt.TextFormat.RichText)
+        self.composition_phase_summary_label.setWordWrap(True)
+        self.composition_phase_summary_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        composition_layout.addWidget(self.composition_phase_summary_label)
+        self.composition_phase_progress = ProgressBar(composition_page)
+        self.composition_phase_progress.setRange(0, 100)
+        self.composition_phase_progress.hide()
+        composition_layout.addWidget(self.composition_phase_progress)
 
         self.composition_chart = AuditChartWidget(composition_page)
         self.composition_chart.setObjectName("auditCompositionChart")
@@ -423,12 +438,14 @@ class TrainingSetAuditWidget(QWidget):
 
         self.composition_table = TableWidget(composition_page)
         self.composition_table.setObjectName("auditCompositionTable")
-        self.composition_table.setColumnCount(5)
+        self.composition_table.setColumnCount(7)
         self.composition_table.setHorizontalHeaderLabels(
             [
                 self.tr("Exact composition"),
                 self.tr("Structures"),
                 self.tr("Share"),
+                self.tr("Main local phase"),
+                self.tr("Phase evidence"),
                 self.tr("Atom counts"),
                 self.tr("Configuration types"),
             ]
@@ -447,8 +464,10 @@ class TrainingSetAuditWidget(QWidget):
         composition_table_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         composition_table_header.setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
         composition_table_header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
-        composition_table_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
+        composition_table_header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
         composition_table_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        composition_table_header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
+        composition_table_header.setSectionResizeMode(6, QHeaderView.ResizeMode.Stretch)
         self.composition_table.itemSelectionChanged.connect(
             self._on_composition_table_selection_changed
         )
@@ -456,6 +475,11 @@ class TrainingSetAuditWidget(QWidget):
         composition_actions = QHBoxLayout()
         self.composition_selection_label = QLabel("", composition_page)
         self.composition_selection_label.setObjectName("auditChartSelection")
+        self.composition_phase_selector = ComboBox(composition_page)
+        self.composition_phase_selector.setMinimumWidth(150)
+        self.composition_phase_selector.currentIndexChanged.connect(
+            self._refresh_phase_drilldown
+        )
         self.composition_show_button = PrimaryPushButton(
             self.tr("Show selected structures"), composition_page
         )
@@ -463,7 +487,9 @@ class TrainingSetAuditWidget(QWidget):
         self.composition_show_button.clicked.connect(
             self._emit_composition_structures
         )
-        composition_actions.addWidget(self.composition_selection_label, stretch=1)
+        composition_layout.addWidget(self.composition_selection_label)
+        composition_actions.addStretch(1)
+        composition_actions.addWidget(self.composition_phase_selector)
         composition_actions.addWidget(self.composition_show_button)
         composition_layout.addLayout(composition_actions)
         self.data_map_tabs.addTab(composition_page, self.tr("Composition map"))
@@ -817,6 +843,8 @@ class TrainingSetAuditWidget(QWidget):
         self._local_chemistry_plots = []
         self._selected_chart_indices = []
         self._selected_composition_indices = []
+        self._selected_phase_indices = []
+        self._selected_composition_key = None
         self._selected_target_indices = []
         self.dimension_list.clear()
         self._set_local_chemistry_controls_visible(False)
@@ -829,11 +857,16 @@ class TrainingSetAuditWidget(QWidget):
         self.composition_element_selector.clear()
         self.target_element_selector.clear()
         self.composition_chart.clear()
+        self.composition_phase_summary_label.clear()
+        self.composition_phase_summary_label.hide()
+        self.composition_phase_progress.hide()
         self.target_chart.clear()
         self.composition_table.setRowCount(0)
         self.target_table.setRowCount(0)
         self.target_result_summary_label.clear()
         self.composition_selection_label.clear()
+        self.composition_phase_selector.clear()
+        self.composition_phase_selector.setEnabled(False)
         self.composition_show_button.setEnabled(False)
         self.target_selection_label.clear()
         self.target_show_button.setEnabled(False)
@@ -882,6 +915,8 @@ class TrainingSetAuditWidget(QWidget):
 
     def _populate_inventory_views(self) -> None:
         inventory = self._inventory()
+        preferred_composition_element = self.composition_element_selector.currentData()
+        preferred_target_element = self.target_element_selector.currentData()
         self.composition_element_selector.blockSignals(True)
         self.target_element_selector.blockSignals(True)
         self.composition_element_selector.clear()
@@ -891,8 +926,18 @@ class TrainingSetAuditWidget(QWidget):
                 self.composition_element_selector.addItem(element, userData=element)
                 self.target_element_selector.addItem(element, userData=element)
             default_index = max(0, len(inventory.elements) - 1)
-            self.composition_element_selector.setCurrentIndex(default_index)
-            self.target_element_selector.setCurrentIndex(default_index)
+            composition_index = self.composition_element_selector.findData(
+                preferred_composition_element
+            )
+            target_index = self.target_element_selector.findData(
+                preferred_target_element
+            )
+            self.composition_element_selector.setCurrentIndex(
+                composition_index if composition_index >= 0 else default_index
+            )
+            self.target_element_selector.setCurrentIndex(
+                target_index if target_index >= 0 else default_index
+            )
         self.composition_element_selector.blockSignals(False)
         self.target_element_selector.blockSignals(False)
         self._refresh_composition_map()
@@ -930,6 +975,73 @@ class TrainingSetAuditWidget(QWidget):
         if inventory is None or element not in inventory.elements:
             return None
         groups = self._element_fraction_groups(inventory, element)
+        phase_inventory = (
+            self._result.phase_inventory if self._result is not None else None
+        )
+        if phase_inventory is not None:
+            phase_by_index = {
+                structure.source_index: structure.phase_label
+                for point in phase_inventory.composition_points
+                for structure in point.structures
+            }
+            ordered_labels = (
+                "fcc",
+                "bcc",
+                "hcp",
+                "l12",
+                "c14",
+                "c15",
+                "unresolved",
+            )
+            phase_series = []
+            for label in ordered_labels:
+                index_groups = tuple(
+                    tuple(
+                        sorted(
+                            index
+                            for point in points
+                            for index in point.structure_indices
+                            if phase_by_index.get(index) == label
+                        )
+                    )
+                    for _, points in groups
+                )
+                counts = tuple(len(indices) for indices in index_groups)
+                if any(counts):
+                    phase_series.append(
+                        {
+                            "id": label,
+                            "label": self._phase_display_name(label),
+                            "counts": counts,
+                            "structure_indices": index_groups,
+                        }
+                    )
+            return {
+                "kind": "composition_phase_stacks",
+                "id": f"inventory:composition-phase:{element}",
+                "title": self.tr(
+                    "Phase distribution by {element} concentration"
+                ).format(element=element),
+                "x_label": self.tr("{element} atomic fraction").format(
+                    element=element
+                ),
+                "y_label": self.tr("Structures"),
+                "x_min": -0.01,
+                "x_max": 1.0,
+                "target_points": target_points,
+                "x_values": tuple(fraction for fraction, _ in groups),
+                "labels": tuple(
+                    self.tr(
+                        "{element} {fraction:.2%} · {count} exact compositions"
+                    ).format(
+                        element=element,
+                        fraction=fraction,
+                        count=len(points),
+                    )
+                    for fraction, points in groups
+                ),
+                "series": tuple(phase_series),
+            }
         return {
             "kind": "composition_stems",
             "id": f"inventory:composition:{element}",
@@ -940,7 +1052,7 @@ class TrainingSetAuditWidget(QWidget):
             "y_label": self.tr("Structures"),
             "x_min": -0.01,
             "x_max": 1.0,
-            "log_scale": bool(self.composition_scale_selector.currentData()),
+            "log_scale": False,
             "target_points": target_points,
             "series": (
                 {
@@ -982,6 +1094,8 @@ class TrainingSetAuditWidget(QWidget):
                 self.tr("No exact composition inventory is available.")
             )
             self.composition_chart.clear()
+            self.composition_phase_summary_label.clear()
+            self.composition_phase_summary_label.hide()
             self.composition_table.setRowCount(0)
             return
         self.composition_map_hint.setText(
@@ -994,7 +1108,115 @@ class TrainingSetAuditWidget(QWidget):
             )
         )
         self.composition_chart.set_plot(self._composition_plot(element))
+        self._render_phase_summary()
         self._populate_composition_table(element)
+
+    def _phase_display_name(self, label: str) -> str:
+        return {
+            "fcc": "FCC",
+            "hcp": "HCP",
+            "bcc": "BCC",
+            "l12": "L1₂",
+            "c14": "C14 Laves",
+            "c15": "C15 Laves",
+            "unresolved": self.tr("Unresolved"),
+        }.get(label, label)
+
+    def _phase_point_for_reduced_counts(self, reduced_counts: tuple[int, ...]):
+        if self._result is None or self._result.phase_inventory is None:
+            return None
+        return next(
+            (
+                point
+                for point in self._result.phase_inventory.composition_points
+                if point.reduced_counts == reduced_counts
+            ),
+            None,
+        )
+
+    def _render_phase_summary(
+        self,
+        structure_indices: tuple[int, ...] = (),
+    ) -> None:
+        if self._result is None or self._result.phase_inventory is None:
+            phase_meta = (
+                self._result.overview_metrics.get("phase_inventory", {})
+                if self._result is not None
+                else {}
+            )
+            if isinstance(phase_meta, Mapping) and phase_meta.get("status") == "pending":
+                total = self._structure_count()
+                self.composition_phase_summary_label.setText(
+                    self.tr(
+                        "Analyzing local phases for all {count:,} structures. "
+                        "The chart will update automatically; no sampling estimate is used."
+                    ).format(count=total)
+                )
+                self.composition_phase_summary_label.show()
+            else:
+                self.composition_phase_summary_label.setText(
+                    self.tr(
+                        "Phase evidence is unavailable. Other audit results remain valid."
+                    )
+                )
+                self.composition_phase_summary_label.show()
+            return
+        phase_inventory = self._result.phase_inventory
+        inventory = self._inventory()
+        selected = set(structure_indices)
+        allowed_keys = None
+        if selected and inventory is not None:
+            allowed_keys = {
+                point.reduced_counts
+                for point in inventory.composition_points
+                if selected.intersection(point.structure_indices)
+            }
+        summary = summarize_phase_inventory(phase_inventory, allowed_keys)
+        if summary is None:
+            self.composition_phase_summary_label.clear()
+            self.composition_phase_summary_label.hide()
+            return
+        local_fractions = dict(summary.local_phase_fractions)
+        confidence_totals = dict(summary.confidence_counts)
+        confirmed_totals = dict(summary.confirmed_candidates)
+        phase_text = " &nbsp;·&nbsp; ".join(
+            f"<b>{escape(self._phase_display_name(label))} "
+            f"{local_fractions[label]:.1%}</b>"
+            for label in ("fcc", "hcp", "bcc", "unresolved")
+        )
+        confirmed_text = ""
+        if confirmed_totals:
+            confirmed_text = self.tr(" Confirmed ordering: {values}.").format(
+                values=", ".join(
+                    f"{escape(self._phase_display_name(label))} × {count:,}"
+                    for label, count in sorted(confirmed_totals.items())
+                )
+            )
+        scope_text = (
+            self.tr("Selected composition group")
+            if selected
+            else self.tr("Current audited scope")
+        )
+        strong_count = confidence_totals.get("strong", 0)
+        self.composition_phase_summary_label.setText(
+            self.tr(
+                "<b>{scope}: local structure evidence</b> &nbsp; "
+                "{phases}<br>"
+                "Analyzed all {analyzed:,} structures; "
+                "{strong:,} have strong structure-level evidence.{confirmed} "
+                "This classifies local structure; it does not predict thermodynamic stability. "
+                "Method: {method}; reference bank: {bank}."
+            ).format(
+                scope=escape(scope_text),
+                phases=phase_text,
+                analyzed=summary.analyzed_structure_count,
+                strong=strong_count,
+                confirmed=confirmed_text,
+                method=escape(phase_inventory.method_id),
+                bank=escape(phase_inventory.reference_bank_id),
+            )
+        )
+        self.composition_phase_summary_label.show()
 
     def _populate_composition_table(self, element: str) -> None:
         inventory = self._inventory()
@@ -1012,6 +1234,10 @@ class TrainingSetAuditWidget(QWidget):
             formula = self._composition_formula(inventory.elements, point.fractions)
             formula_item = QTableWidgetItem(formula)
             formula_item.setData(Qt.ItemDataRole.UserRole, point.structure_indices)
+            formula_item.setData(
+                Qt.ItemDataRole.UserRole + 1,
+                point.reduced_counts,
+            )
             self.composition_table.setItem(row, 0, formula_item)
             count_item = QTableWidgetItem(f"{point.structure_count:,}")
             count_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -1019,15 +1245,59 @@ class TrainingSetAuditWidget(QWidget):
             share_item = QTableWidgetItem(f"{point.share:.2%}")
             share_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.composition_table.setItem(row, 2, share_item)
+            phase_point = self._phase_point_for_reduced_counts(point.reduced_counts)
+            if phase_point is None or not phase_point.structure_phase_fractions:
+                dominant_phase = "—"
+                phase_evidence = self.tr("Not analyzed")
+                phase_tooltip = ""
+            else:
+                phase_label, phase_fraction = phase_point.structure_phase_fractions[0]
+                if phase_fraction > 0.50:
+                    dominant_phase = self.tr("{phase} ({share:.0%})").format(
+                        phase=self._phase_display_name(phase_label),
+                        share=phase_fraction,
+                    )
+                else:
+                    dominant_phase = self.tr("Mixed ({phase} {share:.0%})").format(
+                        phase=self._phase_display_name(phase_label),
+                        share=phase_fraction,
+                    )
+                confidence = dict(phase_point.confidence_counts)
+                phase_evidence = self.tr("Strong {strong}/{analyzed} · analyzed all").format(
+                    strong=confidence.get("strong", 0),
+                    analyzed=phase_point.analyzed_structure_count,
+                )
+                phase_tooltip = " · ".join(
+                    f"{self._phase_display_name(label)} {fraction:.1%}"
+                    for label, fraction in phase_point.local_phase_fractions
+                )
+            dominant_item = QTableWidgetItem(dominant_phase)
+            dominant_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            dominant_item.setToolTip(phase_tooltip)
+            self.composition_table.setItem(row, 3, dominant_item)
+            evidence_item = QTableWidgetItem(phase_evidence)
+            evidence_item.setToolTip(phase_tooltip)
+            self.composition_table.setItem(row, 4, evidence_item)
             atom_counts = ", ".join(
                 f"{count} atoms × {structures:,}"
                 for count, structures in point.atom_counts
             ) or "—"
-            self.composition_table.setItem(row, 3, QTableWidgetItem(atom_counts))
-            config_types = ", ".join(
+            self.composition_table.setItem(row, 5, QTableWidgetItem(atom_counts))
+            all_config_types = ", ".join(
+                f"{name} × {count:,}" for name, count in point.config_types
+            )
+            visible_config_types = ", ".join(
                 f"{name} × {count:,}" for name, count in point.config_types[:4]
-            ) or self.tr("Not labeled")
-            self.composition_table.setItem(row, 4, QTableWidgetItem(config_types))
+            )
+            if len(point.config_types) > 4:
+                visible_config_types += self.tr(" · +{count} more").format(
+                    count=len(point.config_types) - 4
+                )
+            config_item = QTableWidgetItem(
+                visible_config_types or self.tr("Not labeled")
+            )
+            config_item.setToolTip(all_config_types)
+            self.composition_table.setItem(row, 6, config_item)
         if points:
             self.composition_table.selectRow(0)
 
@@ -1035,9 +1305,18 @@ class TrainingSetAuditWidget(QWidget):
         row = self.composition_table.currentRow()
         item = self.composition_table.item(row, 0) if row >= 0 else None
         value = item.data(Qt.ItemDataRole.UserRole) if item is not None else ()
+        reduced_counts = (
+            item.data(Qt.ItemDataRole.UserRole + 1) if item is not None else None
+        )
+        self._selected_composition_key = (
+            tuple(int(value) for value in reduced_counts)
+            if isinstance(reduced_counts, tuple)
+            else None
+        )
         self._set_composition_selection(value if isinstance(value, tuple) else ())
 
     def _on_composition_group_selected(self, structure_indices: list[int]) -> None:
+        self._selected_composition_key = None
         self._set_composition_selection(tuple(int(index) for index in structure_indices))
 
     def _set_composition_selection(self, structure_indices: tuple[int, ...]) -> None:
@@ -1052,10 +1331,131 @@ class TrainingSetAuditWidget(QWidget):
             self.tr("Show {count:,} structures").format(count=count)
         )
         self.composition_show_button.setEnabled(bool(structure_indices))
+        self._render_phase_summary(structure_indices)
+        self._refresh_phase_drilldown()
+
+    def _selected_phase_evidence(self):
+        if self._result is None or self._result.phase_inventory is None:
+            return ()
+        selected = set(self._selected_composition_indices)
+        return tuple(
+            structure
+            for point in self._result.phase_inventory.composition_points
+            for structure in point.structures
+            if structure.source_index in selected
+        )
+
+    def _refresh_phase_drilldown(self, index: int = -1) -> None:
+        del index
+        previous_label = self.composition_phase_selector.currentData()
+        evidence = self._selected_phase_evidence()
+        counts: dict[str, int] = {}
+        for structure in evidence:
+            counts[structure.phase_label] = counts.get(structure.phase_label, 0) + 1
+        self.composition_phase_selector.blockSignals(True)
+        self.composition_phase_selector.clear()
+        self.composition_phase_selector.addItem(
+            self.tr("All structures"), userData=""
+        )
+        selected_index = 0
+        for label, count in sorted(counts.items(), key=lambda item: (-item[1], item[0])):
+            self.composition_phase_selector.addItem(
+                self.tr("{phase} · {count} analyzed").format(
+                    phase=self._phase_display_name(label),
+                    count=count,
+                ),
+                userData=label,
+            )
+            if label == previous_label:
+                selected_index = self.composition_phase_selector.count() - 1
+        self.composition_phase_selector.setCurrentIndex(selected_index)
+        self.composition_phase_selector.setEnabled(bool(evidence))
+        self.composition_phase_selector.blockSignals(False)
+        selected_label = self.composition_phase_selector.currentData() or ""
+        if selected_label:
+            self._selected_phase_indices = sorted(
+                structure.source_index
+                for structure in evidence
+                if structure.phase_label == selected_label
+            )
+            button_text = self.tr("Show {count:,} {phase} structures").format(
+                count=len(self._selected_phase_indices),
+                phase=self._phase_display_name(selected_label),
+            )
+            self.composition_show_button.setText(button_text)
+            self.composition_show_button.setEnabled(bool(self._selected_phase_indices))
+        else:
+            self._selected_phase_indices = list(self._selected_composition_indices)
+            self.composition_show_button.setText(
+                self.tr("Show {count:,} structures").format(
+                    count=len(self._selected_phase_indices)
+                )
+            )
+            self.composition_show_button.setEnabled(bool(self._selected_phase_indices))
+    def start_phase_analysis(self, total: int) -> None:
+        del total
+        self.export_report_button.setEnabled(False)
+        self.export_report_button.setToolTip(
+            self.tr("Wait for complete phase analysis before exporting the report.")
+        )
+        self.composition_phase_progress.setValue(0)
+        self.composition_phase_progress.show()
+        self._render_phase_summary(tuple(self._selected_composition_indices))
+
+    def update_phase_analysis_progress(self, completed: int, total: int) -> None:
+        total = max(1, int(total))
+        completed = min(total, max(0, int(completed)))
+        self.composition_phase_progress.setValue(round(100 * completed / total))
+        self.composition_phase_summary_label.setText(
+            self.tr(
+                "Analyzing local phases: {completed:,}/{total:,} structures. "
+                "The chart will update automatically."
+            ).format(completed=completed, total=total)
+        )
+        self.composition_phase_summary_label.show()
+
+    def finish_phase_analysis(self, result: AuditResult) -> None:
+        """Apply complete background phase evidence without resetting navigation."""
+        selected_key = self._selected_composition_key
+        selected_dimension = self._selected_dimension_id()
+        self._result = result
+        self.export_report_button.setEnabled(True)
+        self.export_report_button.setToolTip("")
+        self.composition_phase_progress.hide()
+        self._update_summary()
+        self._populate_inventory_views()
+        self._sync_phase_dimension_item()
+        if selected_key is not None:
+            for row in range(self.composition_table.rowCount()):
+                item = self.composition_table.item(row, 0)
+                if item is not None and item.data(
+                    Qt.ItemDataRole.UserRole + 1
+                ) == selected_key:
+                    self.composition_table.selectRow(row)
+                    break
+        if selected_dimension == "phase_evidence":
+            self._update_analysis("phase_evidence")
+
+    def fail_phase_analysis(self, message: str) -> None:
+        if self._result is not None:
+            overview = dict(self._result.overview_metrics)
+            phase_meta = dict(overview.get("phase_inventory", {}))
+            phase_meta.update({"available": False, "status": "unavailable"})
+            overview["phase_inventory"] = phase_meta
+            self._result = replace(self._result, overview_metrics=overview)
+        self.composition_phase_progress.hide()
+        self.export_report_button.setEnabled(True)
+        self.export_report_button.setToolTip("")
+        self.composition_phase_summary_label.setText(
+            self.tr("Phase analysis failed: {message}").format(message=message)
+        )
+        self.composition_phase_summary_label.show()
+        self._update_summary()
+        self._sync_phase_dimension_item()
 
     def _emit_composition_structures(self) -> None:
-        if self._selected_composition_indices:
-            self.selectStructuresSignal.emit(list(self._selected_composition_indices))
+        if self._selected_phase_indices:
+            self.selectStructuresSignal.emit(list(self._selected_phase_indices))
 
     def _on_target_group_selected(self, structure_indices: list[int]) -> None:
         self._selected_target_indices = [int(index) for index in structure_indices]
@@ -1400,6 +1800,7 @@ class TrainingSetAuditWidget(QWidget):
         )
         overview.setData(Qt.ItemDataRole.UserRole, _OVERVIEW)
         self.dimension_list.addItem(overview)
+        self._sync_phase_dimension_item()
         if result.dimensions:
             for dimension in result.dimensions:
                 status = self._status_text(dimension.status)
@@ -1829,8 +2230,8 @@ class TrainingSetAuditWidget(QWidget):
                 for index in highlighted
                 if 0 <= index < len(counts)
             )
-            sample_count = int(plot.get("sample_count", 0) or 0)
-            fraction = 0.0 if sample_count <= 0 else thin_count / sample_count
+            environment_count = int(plot.get("environment_count", 0) or 0)
+            fraction = 0.0 if environment_count <= 0 else thin_count / environment_count
             evidence_lines.append(
                 self.tr(
                     "{metric}: {ranges}; {thin} of {total} environments ({fraction})."
@@ -1838,7 +2239,7 @@ class TrainingSetAuditWidget(QWidget):
                     metric=self._local_metric_label(plot),
                     ranges=self._compact_bin_labels(selected_labels),
                     thin=thin_count,
-                    total=sample_count,
+                    total=environment_count,
                     fraction=f"{fraction:.1%}",
                 )
             )
@@ -1890,8 +2291,8 @@ class TrainingSetAuditWidget(QWidget):
         contact_structures = int(
             self._metric_value(audit_slice, "contact_structures") or 0
         )
-        co_sampled = int(
-            self._metric_value(audit_slice, "co_sampled_structures") or 0
+        co_occurring = int(
+            self._metric_value(audit_slice, "co_occurring_structures") or 0
         )
         return _AuditTopic(
             id=audit_slice.id,
@@ -1903,11 +2304,11 @@ class TrainingSetAuditWidget(QWidget):
             structure_indices=tuple(audit_slice.structure_indices),
             observed=self.tr(
                 "{contacts} directed cutoff contacts occur in {contact_structures} of "
-                "{co_sampled} co-sampled structures."
+                "{co_occurring} co-occurring structures."
             ).format(
                 contacts=contacts,
                 contact_structures=contact_structures,
-                co_sampled=co_sampled,
+                co_occurring=co_occurring,
             ),
             interpretation=self.tr(
                 "This describes pair support in the current data; it is not a sampling recommendation."
@@ -2085,9 +2486,15 @@ class TrainingSetAuditWidget(QWidget):
             if complete_labels
             else self.tr("Some energy, force, or virial labels are missing; see Detailed data.")
         )
+        phase_text = self._phase_overview_sentence()
         self.summary_conclusion_label.setText(
-            self.tr("{lead} {distribution} {labels} Model errors were not evaluated.").format(
-                lead=lead, distribution=distribution, labels=label_text
+            self.tr(
+                "{lead} {phase} {distribution} {labels} Model errors were not evaluated."
+            ).format(
+                lead=lead,
+                phase=phase_text,
+                distribution=distribution,
+                labels=label_text,
             )
         )
 
@@ -2194,7 +2601,9 @@ class TrainingSetAuditWidget(QWidget):
         else:
             next_steps.append(self.tr("1. No priority data-quality review is pending."))
         next_steps.append(
-            self.tr("2. Inspect composition concentration and pure-element endpoints.")
+            self.tr(
+                "2. Inspect how phase labels change with composition and open unresolved structures."
+            )
         )
         next_steps.append(
             self.tr("3. Define the intended target range to expose missing or thin points.")
@@ -2202,12 +2611,42 @@ class TrainingSetAuditWidget(QWidget):
         self.next_actions_label.setText("\n".join(next_steps))
         self.open_review_button.setEnabled(bool(self._topics))
 
+    def _phase_overview_sentence(self) -> str:
+        if self._result is None or self._result.phase_inventory is None:
+            phase_meta = (
+                self._result.overview_metrics.get("phase_inventory", {})
+                if self._result is not None
+                else {}
+            )
+            if isinstance(phase_meta, Mapping) and phase_meta.get("status") == "pending":
+                return self.tr("Full phase analysis is continuing in the background.")
+            return self.tr("Phase evidence is unavailable for the current data.")
+        phase_inventory = self._result.phase_inventory
+        counts: dict[str, int] = {}
+        for point in phase_inventory.composition_points:
+            for structure in point.structures:
+                counts[structure.phase_label] = counts.get(structure.phase_label, 0) + 1
+        total = phase_inventory.analyzed_structure_count
+        ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
+        key_items = ranked[:3]
+        values = ", ".join(
+            self.tr("{phase} {share:.1%}").format(
+                phase=self._phase_display_name(label),
+                share=0.0 if total <= 0 else count / total,
+            )
+            for label, count in key_items
+        )
+        return self.tr("Structure-level phase labels: {values}.").format(
+            values=values or self.tr("none")
+        )
+
     def _update_analysis(self, dimension_id: str) -> None:
         self.plot_selector.blockSignals(True)
         self.plot_selector.clear()
         self._local_chemistry_plots = []
         self._set_local_chemistry_controls_visible(False)
         is_local_chemistry = dimension_id == "local_chemistry"
+        is_phase_evidence = dimension_id == "phase_evidence"
         if self._result is None:
             self._active_plots = []
             status_text = self.tr("No audit result is loaded.")
@@ -2221,6 +2660,9 @@ class TrainingSetAuditWidget(QWidget):
             status_text = ""
             if not self._active_plots:
                 status_text = self.tr("No numeric distribution available.")
+        elif is_phase_evidence:
+            self._active_plots = self._phase_evidence_plots()
+            status_text = self._phase_evidence_status_text()
         else:
             dimension = self._dimensions.get(dimension_id)
             if dimension is not None and dimension.status == AuditStatus.UNAVAILABLE:
@@ -2653,6 +3095,7 @@ class TrainingSetAuditWidget(QWidget):
 
     def _dimension_title(self, dimension_id: str) -> str:
         display_names = {
+            "phase_evidence": self.tr("Phases and local structure"),
             "data_quality": self.tr("Data quality"),
             "composition": self.tr("Composition balance"),
             "config_types": self.tr("Configuration types"),
@@ -2666,6 +3109,126 @@ class TrainingSetAuditWidget(QWidget):
         if dimension is not None:
             return dimension.title
         return dimension_id.replace("_", " ").capitalize()
+
+    def _phase_evidence_status_text(self) -> str:
+        if self._result is None:
+            return self.tr("No audit result is loaded.")
+        phase_inventory = self._result.phase_inventory
+        if phase_inventory is None:
+            phase_meta = self._result.overview_metrics.get("phase_inventory", {})
+            if isinstance(phase_meta, Mapping) and phase_meta.get("status") == "pending":
+                return self.tr(
+                    "Analyzing every structure in the audited scope. Results will appear automatically."
+                )
+            return self.tr("Phase evidence is unavailable for the current data.")
+        return self.tr(
+            "All {count:,} structures were analyzed. Structure labels summarize local geometry; "
+            "they do not establish thermodynamic phase stability."
+        ).format(count=phase_inventory.analyzed_structure_count)
+
+    def _phase_evidence_plots(self) -> list[dict[str, Any]]:
+        if self._result is None or self._result.phase_inventory is None:
+            return []
+        structures = tuple(
+            structure
+            for point in self._result.phase_inventory.composition_points
+            for structure in point.structures
+        )
+        phase_order = ("fcc", "bcc", "hcp", "l12", "c14", "c15", "unresolved")
+        phase_groups = tuple(
+            tuple(
+                structure.source_index
+                for structure in structures
+                if structure.phase_label == label
+            )
+            for label in phase_order
+        )
+        phase_labels = tuple(
+            label for label, indices in zip(phase_order, phase_groups) if indices
+        )
+        phase_groups = tuple(indices for indices in phase_groups if indices)
+        confidence_order = ("strong", "mixed", "unresolved")
+        confidence_groups = tuple(
+            tuple(
+                structure.source_index
+                for structure in structures
+                if structure.confidence_state == state
+            )
+            for state in confidence_order
+        )
+        confidence_labels = {
+            "strong": self.tr("Strong evidence"),
+            "mixed": self.tr("Mixed local structure"),
+            "unresolved": self.tr("Unresolved"),
+        }
+        return [
+            {
+                "kind": "categorical_bars",
+                "id": "phase_evidence:structure_labels",
+                "title": self.tr("Structure-level phase labels"),
+                "x_label": self.tr("Structures"),
+                "y_label": self.tr("Phase label"),
+                "series": (
+                    {
+                        "labels": tuple(
+                            self._phase_display_name(label) for label in phase_labels
+                        ),
+                        "bar_ids": phase_labels,
+                        "counts": tuple(len(indices) for indices in phase_groups),
+                        "structure_indices": phase_groups,
+                    },
+                ),
+            },
+            {
+                "kind": "categorical_bars",
+                "id": "phase_evidence:confidence",
+                "title": self.tr("Phase-evidence confidence"),
+                "x_label": self.tr("Structures"),
+                "y_label": self.tr("Evidence state"),
+                "series": (
+                    {
+                        "labels": tuple(
+                            confidence_labels[state] for state in confidence_order
+                        ),
+                        "bar_ids": confidence_order,
+                        "counts": tuple(
+                            len(indices) for indices in confidence_groups
+                        ),
+                        "structure_indices": confidence_groups,
+                    },
+                ),
+            },
+        ]
+
+    def _sync_phase_dimension_item(self) -> None:
+        if not hasattr(self, "dimension_list") or self._result is None:
+            return
+        item = next(
+            (
+                self.dimension_list.item(row)
+                for row in range(self.dimension_list.count())
+                if self.dimension_list.item(row).data(Qt.ItemDataRole.UserRole)
+                == "phase_evidence"
+            ),
+            None,
+        )
+        if item is None:
+            item = QListWidgetItem()
+            item.setData(Qt.ItemDataRole.UserRole, "phase_evidence")
+            self.dimension_list.insertItem(1, item)
+        phase_inventory = self._result.phase_inventory
+        phase_meta = self._result.overview_metrics.get("phase_inventory", {})
+        status = phase_meta.get("status") if isinstance(phase_meta, Mapping) else None
+        if phase_inventory is not None:
+            detail = self.tr("Calculated · {count:,} structures").format(
+                count=phase_inventory.analyzed_structure_count
+            )
+        elif status == "pending":
+            detail = self.tr("Calculating all structures")
+        else:
+            detail = self.tr("Not calculated")
+        item.setText(f"{self._dimension_title('phase_evidence')}\n{detail}")
+        item.setToolTip(self._phase_evidence_status_text())
 
     def _topic_category_text(self, category: str) -> str:
         return {

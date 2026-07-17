@@ -38,6 +38,10 @@ warnings.filterwarnings("ignore", message=".*OVITO.*PyPI")
 phase_sketch_module = importlib.import_module("NepTrainKit.core.audit.phase_sketch")
 
 
+_MINIMUM_LOCAL_GEOMETRY_SUPPORT = 0.40
+_LOCAL_EVIDENCE_FOREST_PROBABILITY = 0.80
+
+
 @dataclass(frozen=True)
 class Frame:
     atoms: Atoms
@@ -53,6 +57,25 @@ class Frame:
         if self.geometry == "bcc":
             return f"bcc:{self.ordering}"
         return self.geometry
+
+
+@dataclass(frozen=True)
+class GeometryEvidence:
+    """Structure label plus the evidence needed to expose weak decisions."""
+
+    label: str
+    candidate: str
+    confidence_state: str
+    local_support_fraction: float
+    local_unknown_fraction: float
+    local_margin_median: float
+    local_distance_median: float
+    local_evidence_evaluated: bool
+    structure_distance_ratio: float
+    forest_probability: float
+    translational_order_score: float | None
+    translational_order_limit: float | None
+    cna_phase_fractions: dict[str, float]
 
 
 def _random_solution_symbols(
@@ -361,17 +384,172 @@ class PhaseSketchModel:
 
     def predict_many(self, sketches) -> list[tuple[str, str]]:
         """Classify a frame batch while keeping open-set decisions per frame."""
+        predictions, _ = self.predict_many_with_evidence(sketches)
+        return predictions
+
+    def predict_many_with_evidence(
+        self,
+        sketches,
+    ) -> tuple[list[tuple[str, str]], list[GeometryEvidence]]:
+        """Classify a batch and retain why each geometry label was accepted."""
         sketches = tuple(sketches)
         if not sketches:
-            return []
+            return [], []
         geometry_summaries = np.stack(
             [summarize_phase_sketch(sketch.geometry) for sketch in sketches]
         )
-        geometries = self.geometry_forest.predict(geometry_summaries).astype(object)
-        geometry_accepted = self.structure_geometry.accepts_labels(
-            geometry_summaries, geometries
+        candidates = self.geometry_forest.predict(geometry_summaries).astype(object)
+        structure_classes, structure_distances = (
+            self.structure_geometry.distances_by_class(geometry_summaries)
         )
-        geometries[~geometry_accepted] = "unknown"
+        structure_class_indices = {
+            label: index for index, label in enumerate(structure_classes)
+        }
+        structure_ratios = np.asarray(
+            [
+                structure_distances[row, structure_class_indices[str(candidate)]]
+                / self.structure_geometry.thresholds_[str(candidate)]
+                for row, candidate in enumerate(candidates)
+            ],
+            dtype=np.float64,
+        )
+        structure_accepted = structure_ratios <= 1.0
+        forest_probabilities = self.geometry_forest.predict_proba(geometry_summaries)
+        forest_class_indices = {
+            str(label): index
+            for index, label in enumerate(self.geometry_forest.classes_)
+        }
+        candidate_probabilities = np.asarray(
+            [
+                forest_probabilities[row, forest_class_indices[str(candidate)]]
+                for row, candidate in enumerate(candidates)
+            ],
+            dtype=np.float64,
+        )
+        diffuse_structure = np.asarray(
+            [
+                sketch.translational_order_score is not None
+                and sketch.translational_order_limit is not None
+                and sketch.translational_order_limit < 1.0
+                and sketch.translational_order_score
+                < sketch.translational_order_limit
+                for sketch in sketches
+            ],
+            dtype=bool,
+        )
+        local_rows = np.flatnonzero(
+            structure_accepted
+            & ~diffuse_structure
+            & (candidate_probabilities < _LOCAL_EVIDENCE_FOREST_PROBABILITY)
+        )
+        local_predictions: dict[int, tuple[np.ndarray, np.ndarray, np.ndarray]] = {}
+        if len(local_rows):
+            local_lengths = np.asarray(
+                [len(sketches[row].geometry) for row in local_rows], dtype=np.intp
+            )
+            local_prediction = self.geometry.predict(
+                np.concatenate(
+                    [sketches[row].geometry for row in local_rows], axis=0
+                )
+            )
+            cursor = 0
+            for row, length in zip(local_rows, local_lengths):
+                stop = cursor + int(length)
+                local_predictions[int(row)] = (
+                    local_prediction.labels[cursor:stop],
+                    local_prediction.margins[cursor:stop],
+                    local_prediction.distances[cursor:stop],
+                )
+                cursor = stop
+
+        geometries = candidates.copy()
+        evidence: list[GeometryEvidence] = []
+        for row, (candidate, accepted, structure_ratio, forest_probability) in enumerate(
+            zip(
+                candidates,
+                structure_accepted,
+                structure_ratios,
+                candidate_probabilities,
+            )
+        ):
+            cna_codes = sketches[row].cna_labels
+            cna_fractions = {
+                "fcc": float(np.mean(cna_codes == 1)),
+                "hcp": float(np.mean(cna_codes == 2)),
+                "bcc": float(np.mean(cna_codes == 3)),
+                "other_or_unresolved": float(np.mean(cna_codes == 0)),
+            }
+            local_values = local_predictions.get(row)
+            if local_values is None:
+                local_support = float("nan")
+                local_unknown = float("nan")
+                local_margin = float("nan")
+                local_distance = float("nan")
+            else:
+                local_labels, local_margins, local_distances = local_values
+                local_support = float(np.mean(local_labels == candidate))
+                local_unknown = float(np.mean(local_labels == "unknown"))
+                local_margin = float(np.median(local_margins))
+                local_distance = float(np.median(local_distances))
+            if diffuse_structure[row]:
+                label = "unknown"
+                confidence_state = "diffuse_structure"
+            elif not accepted:
+                cna_support = cna_fractions.get(
+                    str(candidate), 0.0
+                )
+                prototype_support = (
+                    local_support if local_values is not None else 0.0
+                )
+                if max(prototype_support, cna_support) >= 0.80:
+                    label = str(candidate)
+                    confidence_state = "matched_local"
+                else:
+                    label = "unknown"
+                    confidence_state = "outside_reference"
+            elif (
+                local_values is not None
+                and local_support < _MINIMUM_LOCAL_GEOMETRY_SUPPORT
+            ):
+                label = "unknown"
+                confidence_state = "low_local_support"
+            elif (
+                str(candidate) in {"fcc", "hcp"}
+                and cna_fractions["other_or_unresolved"] <= 0.50
+                and cna_fractions["fcc"] >= 0.20
+                and cna_fractions["hcp"] >= 0.20
+            ):
+                label = str(candidate)
+                confidence_state = "mixed_local"
+            else:
+                label = str(candidate)
+                confidence_state = "matched"
+            geometries[row] = label
+            evidence.append(
+                GeometryEvidence(
+                    label=label,
+                    candidate=str(candidate),
+                    confidence_state=confidence_state,
+                    local_support_fraction=local_support,
+                    local_unknown_fraction=local_unknown,
+                    local_margin_median=local_margin,
+                    local_distance_median=local_distance,
+                    local_evidence_evaluated=local_values is not None,
+                    structure_distance_ratio=float(structure_ratio),
+                    forest_probability=float(forest_probability),
+                    translational_order_score=(
+                        float(sketches[row].translational_order_score)
+                        if sketches[row].translational_order_score is not None
+                        else None
+                    ),
+                    translational_order_limit=(
+                        float(sketches[row].translational_order_limit)
+                        if sketches[row].translational_order_limit is not None
+                        else None
+                    ),
+                    cna_phase_fractions=cna_fractions,
+                )
+            )
 
         orderings = np.full(len(sketches), "pure", dtype=object)
         for geometry, forest, bank in (
@@ -389,30 +567,11 @@ class PhaseSketchModel:
             labels[~accepted] = "unknown"
             orderings[rows] = labels
         orderings[geometries == "unknown"] = "unknown"
-        return [(str(geometry), str(ordering)) for geometry, ordering in zip(geometries, orderings)]
-
-    def predict_unbatched(self, sketch) -> tuple[str, str]:
-        """Reference single-frame path retained for benchmark validation."""
-        geometry_summary = summarize_phase_sketch(sketch.geometry)[None, :]
-        geometry = str(self.geometry_forest.predict(geometry_summary)[0])
-        if not self.structure_geometry.accepts_labels(geometry_summary, (geometry,))[0]:
-            geometry = "unknown"
-        if geometry == "fcc":
-            chemistry_summary = summarize_phase_sketch(sketch.chemistry)[None, :]
-            ordering = str(self.fcc_ordering_forest.predict(chemistry_summary)[0])
-            if not self.structure_fcc_ordering.accepts_labels(chemistry_summary, (ordering,))[0]:
-                ordering = "unknown"
-        elif geometry == "bcc":
-            chemistry_summary = summarize_phase_sketch(sketch.chemistry)[None, :]
-            ordering = str(self.bcc_ordering_forest.predict(chemistry_summary)[0])
-            if not self.structure_bcc_ordering.accepts_labels(chemistry_summary, (ordering,))[0]:
-                ordering = "unknown"
-        elif geometry == "unknown":
-            ordering = "unknown"
-        else:
-            ordering = "pure"
-        return geometry, ordering
-
+        predictions = [
+            (str(geometry), str(ordering))
+            for geometry, ordering in zip(geometries, orderings)
+        ]
+        return predictions, evidence
 
 def fit_phase_sketch(frames: list[Frame]) -> tuple[PhaseSketchModel, list]:
     sketches = [_sketch_frame(frame) for frame in frames]
@@ -505,12 +664,20 @@ def fit_phase_sketch(frames: list[Frame]) -> tuple[PhaseSketchModel, list]:
     ), sketches
 
 
-def _ptm_prediction(frame: Frame) -> tuple[str, str]:
+def _ptm_prediction(
+    frame: Frame,
+    *,
+    rmsd_cutoff: float = 0.10,
+) -> tuple[str, str]:
     from ovito.io.ase import ase_to_ovito
     from ovito.modifiers import PolyhedralTemplateMatchingModifier
     from ovito.pipeline import Pipeline, StaticSource
 
-    modifier = PolyhedralTemplateMatchingModifier(output_rmsd=True, output_ordering=True)
+    modifier = PolyhedralTemplateMatchingModifier(
+        output_rmsd=True,
+        output_ordering=True,
+        rmsd_cutoff=rmsd_cutoff,
+    )
     for structure_type in modifier.structures:
         structure_type.enabled = True
     pipeline = Pipeline(source=StaticSource(data=ase_to_ovito(frame.atoms)))
@@ -554,7 +721,9 @@ def run_benchmark(repeats: int = 3) -> dict[str, object]:
     training_seconds = time.perf_counter() - train_start
 
     sketch_cache = [_sketch_frame(frame) for frame in test]
-    phase_sketch_predictions = model.predict_many(sketch_cache)
+    phase_sketch_predictions, geometry_evidence = model.predict_many_with_evidence(
+        sketch_cache
+    )
     ptm_predictions = [_ptm_prediction(frame) for frame in test]
 
     truth_geometry = [frame.geometry for frame in test]
@@ -611,6 +780,9 @@ def run_benchmark(repeats: int = 3) -> dict[str, object]:
             "unknown_order_recall": float(
                 np.mean([sketch_phase[index].endswith(":unknown") for index in unknown_order_rows])
             ),
+            "confidence_state": dict(
+                sorted(Counter(value.confidence_state for value in geometry_evidence).items())
+            ),
             "training_seconds": training_seconds,
             "median_inference_seconds": median(sketch_times),
             "atoms_per_second": atom_count / median(sketch_times),
@@ -632,6 +804,16 @@ def run_benchmark(repeats: int = 3) -> dict[str, object]:
                 "condition": frame.condition,
                 "truth": truth_phase[index],
                 "phase_sketch": sketch_phase[index],
+                "phase_candidate": geometry_evidence[index].candidate,
+                "confidence_state": geometry_evidence[index].confidence_state,
+                "local_support_fraction": (
+                    geometry_evidence[index].local_support_fraction
+                    if geometry_evidence[index].local_evidence_evaluated
+                    else None
+                ),
+                "cna_phase_fractions": geometry_evidence[
+                    index
+                ].cna_phase_fractions,
                 "ptm": ptm_phase[index],
             }
             for index, frame in enumerate(test)

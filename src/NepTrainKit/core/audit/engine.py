@@ -21,6 +21,7 @@ from .local_chemistry import audit_local_chemistry
 from .inventory import build_dataset_inventory
 from .nep_cutoff import NepCutoffProfile, parse_nep_cutoff
 from .pair_contacts import PairContactCollector
+from .phase_inventory import build_phase_inventory
 from .result import AuditContext, AuditDimension, AuditResult, AuditRun, AuditStatus
 
 
@@ -78,9 +79,46 @@ def build_audit(context: AuditContext) -> AuditRun:
         except (IndexError, ValueError):
             geometry = None
     timings_ms["geometry_snapshot"] = (perf_counter() - stage_started) * 1000.0
+    phase_inventory = None
+    phase_cache_hit = False
+    if (
+        context.include_phase_inventory
+        and geometry is not None
+        and inventory.structure_count
+    ):
+        stage_started = perf_counter()
+        try:
+            phase_inventory, phase_cache_hit = build_phase_inventory(
+                geometry,
+                inventory,
+                cache_owner=getattr(result_data, "structure", None),
+            )
+        except (RuntimeError, ValueError) as exc:
+            logger.warning("Training Set Audit phase evidence unavailable: {}", exc)
+        timings_ms["phase_inventory"] = (perf_counter() - stage_started) * 1000.0
     dimensions = []
     slices = []
-    overview: dict[str, object] = {"structures": len(records)}
+    overview: dict[str, object] = {
+        "structures": len(records),
+        "phase_inventory": {
+            "available": phase_inventory is not None,
+            "status": (
+                "complete"
+                if phase_inventory is not None
+                else "pending"
+                if not context.include_phase_inventory
+                and geometry is not None
+                and inventory.structure_count
+                else "unavailable"
+            ),
+            "cache_hit": phase_cache_hit,
+            "analyzed_structures": (
+                phase_inventory.analyzed_structure_count
+                if phase_inventory is not None
+                else 0
+            ),
+        },
+    }
 
     stage_started = perf_counter()
     quality_dimension, quality_slices, quality_overview = audit_data_quality(
@@ -111,7 +149,7 @@ def build_audit(context: AuditContext) -> AuditRun:
     }
     pair_overview: dict[str, object] = {
         "pair_count": 0,
-        "co_sampled_pair_count": 0,
+        "co_occurring_pair_count": 0,
         "zero_contact_pair_count": 0,
     }
     declared_model_elements: tuple[str, ...] = ()
@@ -243,6 +281,7 @@ def build_audit(context: AuditContext) -> AuditRun:
         fingerprints=fingerprints,
         ruleset_version=context.ruleset_version,
         inventory=inventory,
+        phase_inventory=phase_inventory,
     )
     timings_ms["result_assembly"] = (perf_counter() - stage_started) * 1000.0
 
@@ -298,6 +337,13 @@ def build_training_set_audit(
     result_data: Any,
     *,
     dataset_id: str = "current",
+    include_phase_inventory: bool = True,
 ) -> AuditRun:
     """Compatibility adapter for callers that audit the active dataset."""
-    return build_audit(AuditContext(dataset=result_data, dataset_id=dataset_id))
+    return build_audit(
+        AuditContext(
+            dataset=result_data,
+            dataset_id=dataset_id,
+            include_phase_inventory=include_phase_inventory,
+        )
+    )

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Evaluate PhaseSketch and PTM agreement on a real EXTXYZ dataset.
+"""Evaluate PhaseSketch, PTM, and CNA agreement on a real EXTXYZ dataset.
 
 The result is deliberately called an agreement report rather than an accuracy
 report: production datasets normally do not carry trusted phase labels.
@@ -49,6 +49,46 @@ def _fractions(values: list[str]) -> dict[str, float]:
     }
 
 
+def _cna_prediction(frame: Frame) -> str:
+    from ovito.io.ase import ase_to_ovito
+    from ovito.modifiers import CommonNeighborAnalysisModifier
+    from ovito.pipeline import Pipeline, StaticSource
+
+    modifier = CommonNeighborAnalysisModifier(
+        mode=CommonNeighborAnalysisModifier.Mode.AdaptiveCutoff
+    )
+    pipeline = Pipeline(source=StaticSource(data=ase_to_ovito(frame.atoms)))
+    pipeline.modifiers.append(modifier)
+    output = pipeline.compute()
+    structure_types = np.asarray(output.particles["Structure Type"], dtype=np.int32)
+    mapping = {0: "unknown", 1: "fcc", 2: "hcp", 3: "bcc", 4: "ico"}
+    counts = Counter(mapping.get(int(value), "unknown") for value in structure_types)
+    label, count = counts.most_common(1)[0]
+    return label if count / len(structure_types) >= 0.5 else "unknown"
+
+
+def _evidence_record(value) -> dict[str, object]:
+    local = None
+    if value.local_evidence_evaluated:
+        local = {
+            "support_fraction": value.local_support_fraction,
+            "unknown_fraction": value.local_unknown_fraction,
+            "margin_median": value.local_margin_median,
+            "distance_median": value.local_distance_median,
+        }
+    return {
+        "label": value.label,
+        "candidate": value.candidate,
+        "confidence_state": value.confidence_state,
+        "structure_distance_ratio": value.structure_distance_ratio,
+        "forest_probability": value.forest_probability,
+        "translational_order_score": value.translational_order_score,
+        "translational_order_limit": value.translational_order_limit,
+        "cna_phase_fractions": value.cna_phase_fractions,
+        "local": local,
+    }
+
+
 def evaluate_dataset(
     path: Path,
     *,
@@ -61,6 +101,9 @@ def evaluate_dataset(
     refinement_labels = {"l12": Counter(), "laves": Counter()}
     refinement_eligible = Counter()
     refinement_confirmed = {"l12": [], "laves": []}
+    refinement_by_composition: dict[
+        str, dict[tuple[tuple[str, int], ...], dict[str, object]]
+    ] = {"l12": {}, "laves": {}}
     refinement_seconds = 0.0
     total_atoms = 0
     scan_started = time.perf_counter()
@@ -87,8 +130,23 @@ def evaluate_dataset(
                 continue
             refinement_eligible[candidate] += 1
             refinement_labels[candidate][result.label] += 1
+            bucket = refinement_by_composition[candidate].setdefault(
+                key,
+                {
+                    "eligible_structures": 0,
+                    "confirmed_structures": 0,
+                    "eligible_atoms": 0,
+                    "local_match_atoms": 0.0,
+                    "labels": Counter(),
+                },
+            )
+            bucket["eligible_structures"] += 1
+            bucket["eligible_atoms"] += len(atoms)
+            bucket["local_match_atoms"] += len(atoms) * result.joint_match_fraction
+            bucket["labels"][result.label] += 1
             if result.confirmed:
                 refinement_confirmed[candidate].append(index)
+                bucket["confirmed_structures"] += 1
         refinement_seconds += time.perf_counter() - refinement_started
         reservoir = selected[key]
         if len(reservoir) < sample_per_composition:
@@ -111,15 +169,29 @@ def evaluate_dataset(
         _sketch_frame(Frame(atoms, "unknown", "unknown", "real", str(index)))
         for _, index, atoms in rows
     ]
-    phase_predictions = model.predict_many(sketches)
+    phase_predictions, geometry_evidence = model.predict_many_with_evidence(sketches)
     phase_seconds = time.perf_counter() - phase_started
 
     ptm_started = time.perf_counter()
-    ptm_predictions = [
-        _ptm_prediction(Frame(atoms, "unknown", "unknown", "real", str(index)))
+    ptm_cutoffs = (0.10, 0.12, 0.15, 0.20)
+    ptm_predictions_by_cutoff = {
+        cutoff: [
+            _ptm_prediction(
+                Frame(atoms, "unknown", "unknown", "real", str(index)),
+                rmsd_cutoff=cutoff,
+            )
+            for _, index, atoms in rows
+        ]
+        for cutoff in ptm_cutoffs
+    }
+    ptm_seconds = time.perf_counter() - ptm_started
+
+    cna_started = time.perf_counter()
+    cna_geometry = [
+        _cna_prediction(Frame(atoms, "unknown", "unknown", "real", str(index)))
         for _, index, atoms in rows
     ]
-    ptm_seconds = time.perf_counter() - ptm_started
+    cna_seconds = time.perf_counter() - cna_started
 
     refinement_summary: dict[str, dict[str, object]] = {}
     for candidate in ("l12", "laves"):
@@ -131,16 +203,58 @@ def evaluate_dataset(
         }
 
     phase_geometry = [geometry for geometry, _ in phase_predictions]
+    candidate_geometry = [value.candidate for value in geometry_evidence]
+    confidence_states = [value.confidence_state for value in geometry_evidence]
     phase_labels = [_phase_label(*prediction) for prediction in phase_predictions]
+    ptm_predictions = ptm_predictions_by_cutoff[0.10]
     ptm_geometry = [geometry for geometry, _ in ptm_predictions]
     ptm_labels = [_phase_label(*prediction) for prediction in ptm_predictions]
     geometry_joint = Counter(zip(phase_geometry, ptm_geometry))
+
+    default_double_reject = [
+        index
+        for index, (value, ptm, cna) in enumerate(
+            zip(geometry_evidence, ptm_geometry, cna_geometry)
+        )
+        if value.confidence_state in {"matched", "low_local_support"}
+        and ptm == "unknown"
+        and cna == "unknown"
+    ]
+    tolerance_sweep: dict[str, dict[str, int]] = {}
+    for cutoff, predictions in ptm_predictions_by_cutoff.items():
+        relaxed_geometry = [geometry for geometry, _ in predictions]
+        comparison = Counter()
+        for row in default_double_reject:
+            label = relaxed_geometry[row]
+            candidate = candidate_geometry[row]
+            if label == candidate:
+                comparison["same_as_candidate"] += 1
+            elif label == "unknown":
+                comparison["unknown"] += 1
+            else:
+                comparison[f"different:{label}"] += 1
+        tolerance_sweep[f"{cutoff:.2f}"] = dict(sorted(comparison.items()))
 
     composition_rows = []
     cursor = 0
     for key in sorted(selected):
         count = len(selected[key])
         stop = cursor + count
+        candidate_local_phases = {}
+        for candidate in ("l12", "laves"):
+            bucket = refinement_by_composition[candidate].get(key)
+            if bucket is None:
+                continue
+            eligible_atoms = int(bucket["eligible_atoms"])
+            candidate_local_phases[candidate] = {
+                "eligible_structures": int(bucket["eligible_structures"]),
+                "confirmed_structures": int(bucket["confirmed_structures"]),
+                "labels": dict(sorted(bucket["labels"].items())),
+                "eligible_atoms": eligible_atoms,
+                "local_match_fraction": (
+                    float(bucket["local_match_atoms"]) / eligible_atoms
+                ),
+            }
         composition_rows.append(
             {
                 **_composition_record(key),
@@ -149,11 +263,27 @@ def evaluate_dataset(
                 "sample_indices": [index for index, _ in sorted(selected[key])],
                 "phase_sketch": _fractions(phase_labels[cursor:stop]),
                 "ptm": _fractions(ptm_labels[cursor:stop]),
+                "cna_local_fractions": {
+                    label: float(
+                        np.mean(
+                            [
+                                value.cna_phase_fractions[label]
+                                for value in geometry_evidence[cursor:stop]
+                            ]
+                        )
+                    )
+                    for label in ("fcc", "hcp", "bcc", "other_or_unresolved")
+                },
+                "candidate_local_phases": candidate_local_phases,
                 "structures": [
                     {
                         "index": index,
                         "phase_sketch": phase_labels[cursor + offset],
+                        "geometry_evidence": _evidence_record(
+                            geometry_evidence[cursor + offset]
+                        ),
                         "ptm": ptm_labels[cursor + offset],
+                        "cna": cna_geometry[cursor + offset],
                     }
                     for offset, (index, _) in enumerate(sorted(selected[key]))
                 ],
@@ -176,6 +306,12 @@ def evaluate_dataset(
                     "dataset_structures": 0,
                     "phase_sketch_weighted": Counter(),
                     "ptm_weighted": Counter(),
+                    "cna_local_weighted": Counter(),
+                    "candidate_local_weighted": {
+                        "l12": Counter(),
+                        "laves": Counter(),
+                    },
+                    "estimated_atoms": 0,
                 },
             )
             population = int(row["dataset_structures"])
@@ -184,9 +320,29 @@ def evaluate_dataset(
                 group["phase_sketch_weighted"][label] += population * fraction
             for label, fraction in row["ptm"].items():
                 group["ptm_weighted"][label] += population * fraction
+            atom_count = sum(int(value) for value in row["counts"].values())
+            estimated_atoms = population * atom_count
+            group["estimated_atoms"] += estimated_atoms
+            for label, fraction in row["cna_local_fractions"].items():
+                group["cna_local_weighted"][label] += (
+                    estimated_atoms * fraction
+                )
+            for candidate, values in row["candidate_local_phases"].items():
+                candidate_bucket = group["candidate_local_weighted"][candidate]
+                candidate_bucket["eligible_structures"] += values[
+                    "eligible_structures"
+                ]
+                candidate_bucket["confirmed_structures"] += values[
+                    "confirmed_structures"
+                ]
+                candidate_bucket["eligible_atoms"] += values["eligible_atoms"]
+                candidate_bucket["local_match_atoms"] += (
+                    values["eligible_atoms"] * values["local_match_fraction"]
+                )
         output_rows = []
         for atomic_percent, group in sorted(grouped.items()):
             population = int(group["dataset_structures"])
+            estimated_atoms = int(group["estimated_atoms"])
             output_rows.append(
                 {
                     "atomic_percent": atomic_percent,
@@ -198,6 +354,26 @@ def evaluate_dataset(
                     "ptm_estimated_fraction": {
                         label: value / population
                         for label, value in sorted(group["ptm_weighted"].items())
+                    },
+                    "cna_local_estimated_fraction": {
+                        label: value / estimated_atoms
+                        for label, value in sorted(
+                            group["cna_local_weighted"].items()
+                        )
+                    },
+                    "candidate_local_phase_estimates": {
+                        candidate: {
+                            "eligible_structures": int(values["eligible_structures"]),
+                            "confirmed_structures": int(values["confirmed_structures"]),
+                            "eligible_atoms": int(values["eligible_atoms"]),
+                            "local_match_fraction": (
+                                values["local_match_atoms"] / values["eligible_atoms"]
+                            ),
+                        }
+                        for candidate, values in group[
+                            "candidate_local_weighted"
+                        ].items()
+                        if values["eligible_atoms"]
                     },
                 }
             )
@@ -219,6 +395,8 @@ def evaluate_dataset(
         },
         "phase_sketch": {
             "geometry": dict(sorted(Counter(phase_geometry).items())),
+            "candidate_geometry": dict(sorted(Counter(candidate_geometry).items())),
+            "confidence_state": dict(sorted(Counter(confidence_states).items())),
             "phase": dict(sorted(Counter(phase_labels).items())),
             "seconds": phase_seconds,
         },
@@ -226,6 +404,12 @@ def evaluate_dataset(
             "geometry": dict(sorted(Counter(ptm_geometry).items())),
             "phase": dict(sorted(Counter(ptm_labels).items())),
             "seconds": ptm_seconds,
+            "rmsd_cutoff": 0.10,
+            "tolerance_sweep_on_default_double_reject": tolerance_sweep,
+        },
+        "cna": {
+            "geometry": dict(sorted(Counter(cna_geometry).items())),
+            "seconds": cna_seconds,
         },
         "agreement": {
             "geometry": float(np.mean(np.asarray(phase_geometry) == np.asarray(ptm_geometry))),
@@ -233,6 +417,20 @@ def evaluate_dataset(
             "geometry_joint": {
                 f"PhaseSketch={left}|PTM={right}": count
                 for (left, right), count in sorted(geometry_joint.items())
+            },
+            "default_ptm_and_cna_reject_candidate": {
+                "structures": len(default_double_reject),
+                "indices": [rows[row][1] for row in default_double_reject],
+            },
+            "low_local_support": {
+                "structures": sum(
+                    state == "low_local_support" for state in confidence_states
+                ),
+                "indices": [
+                    rows[row][1]
+                    for row, state in enumerate(confidence_states)
+                    if state == "low_local_support"
+                ],
             },
         },
         "candidate_refinement": {

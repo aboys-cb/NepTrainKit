@@ -2,15 +2,45 @@ from itertools import product
 
 import numpy as np
 import pytest
+from ase import Atoms
 from ase.build import bulk
 
 from NepTrainKit.core.audit import phase_sketch as phase_sketch_module
 from NepTrainKit.core.audit.phase_sketch import (
     PrototypeBank,
+    _adaptive_cna_reference,
+    _translational_order_reference,
+    accelerated_periodic_knn_vectors,
+    adaptive_cna_labels,
     periodic_knn_vectors,
     phase_sketch,
     summarize_phase_sketch,
+    translational_order_evidence,
 )
+
+
+def _stacked_close_packed(sequence: str, size: int = 3) -> Atoms:
+    distance = 2.55
+    first = np.asarray((distance, 0.0, 0.0))
+    second = np.asarray((0.5 * distance, np.sqrt(3.0) * 0.5 * distance, 0.0))
+    layer_height = np.sqrt(2.0 / 3.0) * distance
+    offsets = {
+        "A": np.zeros(3),
+        "B": (first + second) / 3.0,
+        "C": 2.0 * (first + second) / 3.0,
+    }
+    positions = [
+        row * first + column * second + offsets[layer] + (0.0, 0.0, depth * layer_height)
+        for depth, layer in enumerate(sequence)
+        for row in range(size)
+        for column in range(size)
+    ]
+    return Atoms(
+        f"Cu{len(positions)}",
+        positions=positions,
+        cell=(size * first, size * second, (0.0, 0.0, len(sequence) * layer_height)),
+        pbc=True,
+    )
 
 
 def test_periodic_knn_matches_bruteforce_for_skewed_cell():
@@ -206,3 +236,84 @@ def test_native_features_match_python_reference(monkeypatch):
 
     np.testing.assert_allclose(accelerated.geometry, reference.geometry, rtol=3.0e-4, atol=1.0e-4)
     np.testing.assert_allclose(accelerated.chemistry, reference.chemistry, rtol=3.0e-4, atol=1.0e-4)
+
+
+def test_translational_order_matches_reference_for_skewed_crystal():
+    atoms = bulk("Cu", "fcc", a=3.62, cubic=True).repeat((3, 3, 3))
+    deformation = np.asarray(
+        ((1.0, 0.12, -0.04), (0.03, 0.96, 0.08), (-0.07, 0.05, 1.04))
+    )
+    atoms.set_cell(atoms.cell.array @ deformation, scale_atoms=True)
+
+    actual = translational_order_evidence(
+        atoms.positions, atoms.cell.array, atoms.pbc
+    )
+    expected = _translational_order_reference(
+        atoms.positions, atoms.cell.array
+    )
+
+    np.testing.assert_allclose(actual, expected, rtol=2.0e-5, atol=2.0e-5)
+
+
+def test_translational_order_separates_crystal_from_uniform_liquid():
+    crystal = bulk("Cu", "fcc", a=3.62, cubic=True).repeat((5, 5, 5))
+    crystal_score, crystal_limit = translational_order_evidence(
+        crystal.positions, crystal.cell.array, crystal.pbc
+    )
+
+    rng = np.random.default_rng(20260716)
+    liquid_positions = rng.random((len(crystal), 3)) @ crystal.cell.array
+    liquid_score, liquid_limit = translational_order_evidence(
+        liquid_positions, crystal.cell.array, crystal.pbc
+    )
+
+    assert crystal_score > crystal_limit
+    assert liquid_score < liquid_limit
+
+
+@pytest.mark.parametrize(
+    ("sequence", "expected"),
+    (("ABC" * 4, 1), ("AB" * 6, 2)),
+)
+def test_adaptive_cna_identifies_fcc_and_hcp(sequence, expected):
+    atoms = _stacked_close_packed(sequence)
+    vectors, indices, valid = accelerated_periodic_knn_vectors(
+        atoms.positions, atoms.cell.array, atoms.pbc, neighbors=24
+    )
+
+    actual = adaptive_cna_labels(vectors, indices, valid)
+    reference = _adaptive_cna_reference(vectors, valid)
+
+    np.testing.assert_array_equal(actual, reference)
+    np.testing.assert_array_equal(actual, np.full(len(atoms), expected))
+
+
+def test_adaptive_cna_identifies_bcc_without_mislabeling_common_controls():
+    structures = (
+        (bulk("Fe", "bcc", a=2.87, cubic=True).repeat((3, 3, 3)), 3),
+        (bulk("Si", "diamond", a=5.43, cubic=True).repeat((3, 3, 3)), 0),
+        (bulk("Po", "sc", a=3.35, cubic=True).repeat((3, 3, 3)), 0),
+    )
+    for atoms, expected in structures:
+        vectors, indices, valid = accelerated_periodic_knn_vectors(
+            atoms.positions, atoms.cell.array, atoms.pbc, neighbors=24
+        )
+        actual = adaptive_cna_labels(vectors, indices, valid)
+        reference = _adaptive_cna_reference(vectors, valid)
+
+        np.testing.assert_array_equal(actual, reference)
+        np.testing.assert_array_equal(actual, np.full(len(atoms), expected))
+
+
+def test_adaptive_cna_localizes_intrinsic_stacking_fault():
+    sequence = "ABCABCABABCABC"
+    atoms = _stacked_close_packed(sequence)
+    vectors, indices, valid = accelerated_periodic_knn_vectors(
+        atoms.positions, atoms.cell.array, atoms.pbc, neighbors=24
+    )
+
+    labels = adaptive_cna_labels(vectors, indices, valid)
+
+    atoms_per_layer = len(atoms) // len(sequence)
+    assert np.count_nonzero(labels == 2) == 2 * atoms_per_layer
+    assert np.count_nonzero(labels == 1) == len(atoms) - 2 * atoms_per_layer

@@ -456,7 +456,7 @@ def test_native_local_chemistry_handles_orthogonal_and_triclinic_cells():
         (2, 2, 0),
         (2, 4, 0),
     ]
-    assert pair_overview == {"co_sampled_pair_count": 4, "pair_count": 3, "zero_contact_pair_count": 0}
+    assert pair_overview == {"co_occurring_pair_count": 4, "pair_count": 3, "zero_contact_pair_count": 0}
 
 
 def test_local_chemistry_calls_one_fused_native_batch():
@@ -612,7 +612,7 @@ def test_pair_contacts_distinguish_co_sampling_from_local_contact(tmp_path: Path
     assert counts[labels.index("Fe-Ni")] == 2
     pair_slice = next(item for item in result.slices if item.id == "pair_contacts:radial:Fe:Ni")
     metrics = {metric.name: metric.value for metric in pair_slice.metrics}
-    assert metrics["co_sampled_structures"] == 2
+    assert metrics["co_occurring_structures"] == 2
     assert metrics["contact_structures"] == 1
 
 

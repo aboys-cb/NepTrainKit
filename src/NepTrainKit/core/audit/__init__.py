@@ -15,14 +15,22 @@ from .inventory import build_dataset_inventory, compare_composition_target
 from .local_chemistry import audit_local_chemistry
 from .nep_cutoff import NepCutoffProfile, parse_nep_cutoff
 from .phase_refinement import PhaseRefinement, refine_l12, refine_laves
+from .phase_inventory import (
+    build_phase_inventory,
+    summarize_phase_inventory,
+)
 from .result import (
     AuditBiasType,
     AuditAction,
     AuditConfidence,
     AuditContext,
     CompositionPoint,
+    CompositionPhaseEvidence,
     CompositionTarget,
     DatasetInventory,
+    PhaseInventory,
+    PhaseEvidenceSummary,
+    StructurePhaseEvidence,
     AuditDimension,
     AuditEvidence,
     AuditFinding,
@@ -48,8 +56,12 @@ __all__ = [
     "AuditConfidence",
     "AuditContext",
     "CompositionPoint",
+    "CompositionPhaseEvidence",
     "CompositionTarget",
     "DatasetInventory",
+    "PhaseInventory",
+    "PhaseEvidenceSummary",
+    "StructurePhaseEvidence",
     "AuditDimension",
     "AuditEvidence",
     "AuditFinding",
@@ -76,6 +88,8 @@ __all__ = [
     "build_audit",
     "build_dataset_inventory",
     "build_findings",
+    "build_phase_inventory",
+    "summarize_phase_inventory",
     "build_fingerprints",
     "build_training_set_audit",
     "canonical_findings",

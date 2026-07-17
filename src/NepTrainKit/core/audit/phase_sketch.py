@@ -5,6 +5,7 @@ the Training Set Audit phase-atlas direction, not yet a public product API.
 """
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 from itertools import product
 from typing import Iterable, Sequence
@@ -28,6 +29,9 @@ class PhaseSketch:
 
     geometry: np.ndarray
     chemistry: np.ndarray
+    translational_order_score: float | None
+    translational_order_limit: float | None
+    cna_labels: np.ndarray
 
 
 @dataclass(frozen=True)
@@ -180,6 +184,177 @@ def accelerated_periodic_knn_vectors(
     )
 
 
+def _translational_order_reference(
+    positions: np.ndarray,
+    cell: np.ndarray,
+) -> tuple[float, float]:
+    fractional = np.asarray(positions, dtype=np.float64) @ np.linalg.inv(
+        np.asarray(cell, dtype=np.float64)
+    )
+    fractional -= np.floor(fractional)
+    atom_count = len(fractional)
+    maximum_harmonic = min(64, int(np.ceil(4.0 * atom_count ** (1.0 / 3.0))))
+    directions = np.asarray(
+        (
+            (1, 0, 0), (0, 1, 0), (0, 0, 1),
+            (1, 1, 0), (1, -1, 0), (1, 0, 1), (1, 0, -1),
+            (0, 1, 1), (0, 1, -1),
+            (1, 1, 1), (1, 1, -1), (1, -1, 1), (-1, 1, 1),
+        ),
+        dtype=np.float64,
+    )
+    harmonics = np.arange(1, maximum_harmonic + 1, dtype=np.float64)
+    score = 0.0
+    for direction in directions:
+        phases = (fractional @ direction)[:, None] * harmonics[None, :]
+        amplitudes = np.abs(np.mean(np.exp(2j * np.pi * phases), axis=0)) ** 2
+        score = max(score, float(np.max(amplitudes)))
+    wave_count = len(directions) * maximum_harmonic
+    random_limit = min(1.0, float(np.log(wave_count / 0.01) / atom_count))
+    return score, random_limit
+
+
+def translational_order_evidence(
+    positions: np.ndarray,
+    cell: np.ndarray,
+    pbc: Sequence[bool],
+) -> tuple[float | None, float | None]:
+    """Return a Bragg-order score and a finite-size random-position limit."""
+    periodic = np.asarray(pbc, dtype=bool).reshape(3)
+    if not np.all(periodic):
+        return None, None
+    pos = np.ascontiguousarray(positions, dtype=np.float32)
+    box = np.ascontiguousarray(cell, dtype=np.float32).reshape(3, 3)
+    if not len(pos):
+        raise ValueError("translational order requires at least one atom")
+    if _native_phase is not None and hasattr(
+        _native_phase, "translational_order_evidence"
+    ):
+        score, limit = _native_phase.translational_order_evidence(
+            pos, box, periodic
+        )
+        return float(score), float(limit)
+    return _translational_order_reference(pos, box)
+
+
+def _longest_graph_path(
+    adjacency: np.ndarray,
+    vertex: int,
+    visited: int,
+) -> int:
+    best = 0
+    for neighbor in np.flatnonzero(adjacency[vertex]):
+        bit = 1 << int(neighbor)
+        if visited & bit:
+            continue
+        best = max(
+            best,
+            1 + _longest_graph_path(adjacency, int(neighbor), visited | bit),
+        )
+    return best
+
+
+def _adaptive_cna_reference(
+    vectors: np.ndarray,
+    valid: np.ndarray,
+) -> np.ndarray:
+    labels = np.zeros(len(vectors), dtype=np.int8)
+    for atom, row in enumerate(vectors):
+        neighbors = row[valid[atom]]
+        distances = np.linalg.norm(neighbors, axis=1)
+        order = np.argsort(distances, kind="stable")
+        neighbors = neighbors[order]
+        distances = distances[order]
+        if (
+            len(neighbors) >= 13
+            and distances[11] > _EPS
+            and distances[12] / distances[11] >= 1.08
+        ):
+            cutoff = 0.5 * (distances[11] + distances[12])
+            signatures: Counter[tuple[int, int, int]] = Counter()
+            for bonded in range(12):
+                common = [
+                    candidate
+                    for candidate in range(12)
+                    if candidate != bonded
+                    and np.linalg.norm(neighbors[candidate] - neighbors[bonded]) < cutoff
+                ]
+                if len(common) != 4:
+                    break
+                adjacency = np.zeros((4, 4), dtype=bool)
+                for left in range(4):
+                    for right in range(left + 1, 4):
+                        if np.linalg.norm(
+                            neighbors[common[left]] - neighbors[common[right]]
+                        ) < cutoff:
+                            adjacency[left, right] = True
+                            adjacency[right, left] = True
+                bond_count = int(np.sum(adjacency) // 2)
+                longest_path = max(
+                    _longest_graph_path(adjacency, vertex, 1 << vertex)
+                    for vertex in range(4)
+                )
+                signatures[(len(common), bond_count, longest_path)] += 1
+            else:
+                if signatures == {(4, 2, 1): 12}:
+                    labels[atom] = 1
+                    continue
+                if signatures == {(4, 2, 1): 6, (4, 2, 2): 6}:
+                    labels[atom] = 2
+                    continue
+        if (
+            len(neighbors) >= 15
+            and distances[13] > _EPS
+            and distances[14] / distances[13] >= 1.08
+        ):
+            cutoff = 0.5 * (distances[13] + distances[14])
+            signatures = Counter()
+            for bonded in range(14):
+                common = [
+                    candidate
+                    for candidate in range(14)
+                    if candidate != bonded
+                    and np.linalg.norm(neighbors[candidate] - neighbors[bonded]) < cutoff
+                ]
+                adjacency = np.zeros((len(common), len(common)), dtype=bool)
+                for left in range(len(common)):
+                    for right in range(left + 1, len(common)):
+                        if np.linalg.norm(
+                            neighbors[common[left]] - neighbors[common[right]]
+                        ) < cutoff:
+                            adjacency[left, right] = True
+                            adjacency[right, left] = True
+                bond_count = int(np.sum(adjacency) // 2)
+                longest_path = (
+                    max(
+                        _longest_graph_path(adjacency, vertex, 1 << vertex)
+                        for vertex in range(len(common))
+                    )
+                    if common
+                    else 0
+                )
+                signatures[(len(common), bond_count, longest_path)] += 1
+            if signatures == {(4, 4, 3): 6, (6, 6, 5): 8}:
+                labels[atom] = 3
+    return labels
+
+
+def adaptive_cna_labels(
+    vectors: np.ndarray,
+    indices: np.ndarray,
+    valid: np.ndarray,
+) -> np.ndarray:
+    """Classify ideal-to-moderately-distorted FCC/HCP/BCC local topology."""
+    if _native_phase is not None and hasattr(
+        _native_phase, "adaptive_cna_labels"
+    ):
+        return np.asarray(
+            _native_phase.adaptive_cna_labels(vectors, indices, valid),
+            dtype=np.int8,
+        )
+    return _adaptive_cna_reference(vectors, valid)
+
+
 def _bond_order_features(unit_vectors: np.ndarray, counts: Sequence[int]) -> list[float]:
     features: list[float] = []
     orders = (2, 4, 6, 8, 10, 12)
@@ -283,6 +458,9 @@ def phase_sketch(
 ) -> PhaseSketch:
     """Compute factorized local fingerprints for all atoms in one structure."""
     types = np.asarray(atom_types, dtype=np.int32)
+    translational_score, translational_limit = translational_order_evidence(
+        positions, cell, pbc
+    )
     vectors, indices, valid = accelerated_periodic_knn_vectors(
         positions,
         cell,
@@ -296,10 +474,15 @@ def phase_sketch(
             valid,
             types,
         )
+        cna_labels = adaptive_cna_labels(vectors, indices, valid)
         return PhaseSketch(
             geometry=np.asarray(geometry, dtype=np.float32),
             chemistry=np.asarray(chemistry, dtype=np.float32),
+            translational_order_score=translational_score,
+            translational_order_limit=translational_limit,
+            cna_labels=cna_labels,
         )
+    cna_labels = _adaptive_cna_reference(vectors, valid)
     geometry_rows: list[list[float]] = []
     chemistry_rows: list[list[float]] = []
     for center in range(len(vectors)):
@@ -354,6 +537,9 @@ def phase_sketch(
     return PhaseSketch(
         geometry=np.asarray(geometry_rows, dtype=np.float32),
         chemistry=np.asarray(chemistry_rows, dtype=np.float32),
+        translational_order_score=translational_score,
+        translational_order_limit=translational_limit,
+        cna_labels=cna_labels,
     )
 
 

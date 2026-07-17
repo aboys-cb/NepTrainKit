@@ -550,10 +550,10 @@ py::tuple local_chemistry_summary(
                     ++second, ++active_type_pair
                 ) {
                     const bool same_type = first == second;
-                    const bool co_sampled =
+                    const bool co_occurring =
                         populations[static_cast<std::size_t>(first)] >= (same_type ? 2 : 1) &&
                         populations[static_cast<std::size_t>(second)] >= 1;
-                    if (!co_sampled) continue;
+                    if (!co_occurring) continue;
                     for (py::ssize_t scope = 0; scope < scope_count; ++scope) {
                         const std::size_t code = static_cast<std::size_t>(
                             scope * type_pair_count + active_type_pair
@@ -629,8 +629,8 @@ py::tuple local_chemistry_summary(
                     const bool same_type = first == second;
                     const std::int32_t first_count = populations[static_cast<std::size_t>(first)];
                     const std::int32_t second_count = populations[static_cast<std::size_t>(second)];
-                    const bool co_sampled = first_count >= (same_type ? 2 : 1) && second_count >= 1;
-                    if (!co_sampled || frame_atom_count == 0) continue;
+                    const bool co_occurring = first_count >= (same_type ? 2 : 1) && second_count >= 1;
+                    if (!co_occurring || frame_atom_count == 0) continue;
                     for (py::ssize_t scope = 0; scope < scope_count; ++scope) {
                         const std::size_t code = static_cast<std::size_t>(
                             scope * type_pair_count + type_pair

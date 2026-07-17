@@ -100,6 +100,7 @@ class AuditContext:
     scope_kind: AuditScopeKind = AuditScopeKind.ACTIVE
     indices: tuple[int, ...] = ()
     ruleset_version: str = "quick-check-v1"
+    include_phase_inventory: bool = True
 
 
 @dataclass(frozen=True)
@@ -126,6 +127,58 @@ class DatasetInventory:
     atom_counts: tuple[tuple[int, int], ...] = ()
     config_types: tuple[tuple[str, int], ...] = ()
     missing_config_type_count: int = 0
+
+
+@dataclass(frozen=True)
+class StructurePhaseEvidence:
+    """One analyzed structure and the evidence used for phase drill-down."""
+
+    source_index: int
+    atom_count: int
+    phase_label: str
+    confidence_state: str
+    local_phase_fractions: tuple[tuple[str, float], ...]
+
+
+@dataclass(frozen=True)
+class CompositionPhaseEvidence:
+    """Complete phase evidence for one exact normalized composition."""
+
+    reduced_counts: tuple[int, ...]
+    source_structure_count: int
+    analyzed_structure_count: int
+    analyzed_atom_count: int
+    local_phase_fractions: tuple[tuple[str, float], ...]
+    structure_phase_fractions: tuple[tuple[str, float], ...]
+    confidence_counts: tuple[tuple[str, int], ...]
+    confirmed_candidates: tuple[tuple[str, int], ...] = ()
+    structures: tuple[StructurePhaseEvidence, ...] = ()
+
+
+@dataclass(frozen=True)
+class PhaseInventory:
+    """Versioned, complete structural-phase evidence for one audit scope."""
+
+    schema_version: str
+    method_id: str
+    reference_bank_id: str
+    analysis_strategy: str
+    source_structure_count: int
+    analyzed_structure_count: int
+    analyzed_atom_count: int
+    composition_points: tuple[CompositionPhaseEvidence, ...]
+
+
+@dataclass(frozen=True)
+class PhaseEvidenceSummary:
+    """Complete local phase evidence for selected composition points."""
+
+    source_structure_count: int
+    analyzed_structure_count: int
+    analyzed_atom_count: int
+    local_phase_fractions: tuple[tuple[str, float], ...]
+    confidence_counts: tuple[tuple[str, int], ...]
+    confirmed_candidates: tuple[tuple[str, int], ...]
 
 
 @dataclass(frozen=True)
@@ -227,6 +280,7 @@ class AuditResult:
     ruleset_version: str = ""
     findings: tuple[AuditFinding, ...] = ()
     inventory: DatasetInventory | None = None
+    phase_inventory: PhaseInventory | None = None
 
     @property
     def evidence(self) -> tuple[AuditEvidence, ...]:

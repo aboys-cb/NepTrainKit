@@ -9,9 +9,11 @@ if str(SRC_PATH) not in sys.path:
 
 import numpy as np
 from ase import Atoms
+from ase.build import fcc111
 
 from NepTrainKit.core.cards.defect import StrictGSFEPathOperation, StrictGSFEPathParams
 from NepTrainKit.core.cards.lattice import BainPathOperation, BainPathParams
+from NepTrainKit.core.cards.structure import CrystalPrototypeBuilderOperation, CrystalPrototypeBuilderParams
 
 
 class TestBenchmarkStage1Core(unittest.TestCase):
@@ -184,6 +186,53 @@ class TestBenchmarkStage1Core(unittest.TestCase):
             op.run_structure(atoms, StrictGSFEPathParams(plane_hkl=(0, 0, 1), slip_uvw=(0, 0, 1)))
         with self.assertRaisesRegex(ValueError, "layer_index"):
             op.run_structure(atoms, StrictGSFEPathParams(cut_mode="layer_index", layer_index=2))
+
+    def test_strict_gsfe_rejects_non_slab_oriented_plane(self):
+        atoms = Atoms(
+            "Ni4",
+            scaled_positions=[[0, 0, 0], [0, 0.5, 0.5], [0.5, 0, 0.5], [0.5, 0.5, 0]],
+            cell=[3.6, 3.6, 3.6],
+            pbc=True,
+        )
+        with self.assertRaisesRegex(ValueError, "slab-oriented"):
+            StrictGSFEPathOperation().run_structure(atoms, StrictGSFEPathParams(plane_hkl=(1, 1, 1)))
+
+    def test_strict_gsfe_fcc111_slab_geometry(self):
+        atoms = fcc111("Ni", size=(2, 4, 6), a=3.6, vacuum=None, periodic=True, orthogonal=True)
+        frames = StrictGSFEPathOperation().run_structure(
+            atoms,
+            StrictGSFEPathParams(
+                plane_hkl=(0, 0, 1),
+                slip_uvw=(1, 0, 0),
+                displacement_range=(0.0, 1.0, 0.125),
+            ),
+        )
+
+        self.assertEqual(len(frames), 9)
+        for frame in frames:
+            distances = frame.get_all_distances(mic=True)
+            distances = distances[~np.eye(len(frame), dtype=bool)]
+            self.assertGreater(float(distances.min()), 2.0)
+            self.assertFalse(np.any(distances < 1e-6))
+        np.testing.assert_allclose(frames[0].get_positions(), frames[-1].get_positions(), atol=1e-12)
+
+    def test_crystal_prototype_builder_fcc111(self):
+        frames = CrystalPrototypeBuilderOperation().generate(
+            CrystalPrototypeBuilderParams(
+                lattice="fcc111",
+                element="Ni",
+                a_range=(3.6, 3.6, 0.1),
+                auto_supercell=False,
+                rep=(2, 2, 2),
+                max_outputs=1,
+            )
+        )
+
+        self.assertEqual(len(frames), 1)
+        self.assertEqual(len(frames[0]), 48)
+        self.assertAlmostEqual(frames[0].get_volume() / len(frames[0]), 11.664, places=12)
+        self.assertAlmostEqual(frames[0].cell.angles()[0], 90.0, places=12)
+        self.assertIn("Proto(fcc111", frames[0].info.get("Config_type", ""))
 
 
 if __name__ == "__main__":

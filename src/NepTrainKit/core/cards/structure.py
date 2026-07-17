@@ -10,7 +10,7 @@ from typing import Any
 
 import numpy as np
 from ase import Atoms
-from ase.build import bulk, make_supercell
+from ase.build import bulk, fcc111, make_supercell
 from ase.geometry import get_distances
 from loguru import logger
 
@@ -760,6 +760,8 @@ class CrystalPrototypeBuilderOperation(GeneratorOperation):
 
     @staticmethod
     def _build_base(element: str, lattice: str, a: float, covera: float):
+        if lattice == "fcc111":
+            return fcc111(element, size=(1, 2, 3), a=float(a), vacuum=None, periodic=True, orthogonal=True)
         if lattice == "hcp":
             return bulk(element, "hcp", a=float(a), covera=float(covera))
         return bulk(element, lattice, a=float(a), cubic=True)

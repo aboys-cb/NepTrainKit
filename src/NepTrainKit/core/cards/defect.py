@@ -293,8 +293,8 @@ class StackingFaultOperation(StructureOperation):
 class StrictGSFEPathParams:
     """Parameters for unrelaxed GSFE path generation with explicit slip geometry."""
 
-    plane_hkl: Sequence[int] = (1, 1, 1)
-    slip_uvw: Sequence[int] = (1, 1, -2)
+    plane_hkl: Sequence[int] = (0, 0, 1)
+    slip_uvw: Sequence[int] = (1, 0, 0)
     displacement_range: Sequence[float] = (0.0, 1.0, 0.5)
     displacement_unit: str = "fraction_of_vector"
     cut_mode: str = "middle"
@@ -321,6 +321,7 @@ class StrictGSFEPathOperation(StructureOperation):
             raise ValueError("StrictGSFEPath slip_uvw must not be (0,0,0).")
 
         normal = self.plane_normal(cell, hkl)
+        self._validate_slab_oriented(cell, normal)
         slip = np.asarray(uvw, dtype=float) @ cell
         slip_projected = slip - np.dot(slip, normal) * normal
         slip_norm = float(np.linalg.norm(slip_projected))
@@ -372,6 +373,18 @@ class StrictGSFEPathOperation(StructureOperation):
         if norm <= 1e-12:
             raise ValueError("StrictGSFEPath plane_hkl produced a zero normal.")
         return normal / norm
+
+    @staticmethod
+    def _validate_slab_oriented(cell: np.ndarray, normal: np.ndarray) -> None:
+        c_axis = np.asarray(cell, dtype=float)[2]
+        c_norm = float(np.linalg.norm(c_axis))
+        if c_norm <= 1e-12:
+            raise ValueError("StrictGSFEPath requires a nonzero third cell vector.")
+        parallel_error = float(np.linalg.norm(np.cross(c_axis / c_norm, normal)))
+        if parallel_error > 1e-6:
+            raise ValueError(
+                "StrictGSFEPath requires a slab-oriented cell: the third cell vector must be normal to plane_hkl."
+            )
 
     @staticmethod
     def cut_mask(coord: np.ndarray, params: StrictGSFEPathParams) -> np.ndarray:

@@ -2317,7 +2317,7 @@ class TrainingSetAuditWidget(QWidget):
             )
         )
         self.generated_at_label.setToolTip("\n".join(timing_lines))
-        logger.info(
+        logger.debug(
             "Training Set Audit UI timing: total={total:.1f} ms | {stages}",
             total=render_timings_ms["total"],
             stages=" | ".join(

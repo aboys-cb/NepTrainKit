@@ -350,7 +350,7 @@ def build_audit(context: AuditContext) -> AuditRun:
     overview_with_timings = dict(overview)
     overview_with_timings["timings_ms"] = timing_summary
     result = replace(result, overview_metrics=overview_with_timings)
-    logger.info(
+    logger.debug(
         "Training Set Audit timing: total={total:.1f} ms | {stages}",
         total=timings_ms["total"],
         stages=" | ".join(
@@ -367,7 +367,7 @@ def build_audit(context: AuditContext) -> AuditRun:
         section_timing = section.get("timings_ms", {}) if isinstance(section, dict) else {}
         section_stages = section_timing.get("stages", {}) if isinstance(section_timing, dict) else {}
         if isinstance(section_stages, dict) and section_stages:
-            logger.info(
+            logger.debug(
                 "Training Set Audit {section} timing: {stages}",
                 section=section_name,
                 stages=" | ".join(

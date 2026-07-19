@@ -10,6 +10,45 @@ from typing import Any
 DEFAULT_WINDOW_SIZE = (1200, 700)
 DEFAULT_OUTPUT_DIR = Path("docs/source/_static/image/generated")
 
+ZH_TEXT = {
+    "NEP Dataset Display overview": "NEP 数据集展示总览",
+    "Open data": "打开数据",
+    "Error plots": "误差图",
+    "Structure viewer": "结构查看器",
+    "Search and selection": "搜索与选择",
+    "Training Set Audit overview": "训练集评估总览",
+    "Phase evidence on the composition map": "组分地图中的相结构证据",
+    "Make Data workspace": "Make Data 工作区",
+    "Open input structures": "打开输入结构",
+    "Add new card": "添加卡片",
+    "Run selected cards": "运行选中卡片",
+    "Workflow workspace": "流程工作区",
+    "Make Data lattice strain quickstart": "Make Data 晶格应变快速上手",
+    "Add Lattice Strain card": "添加 Lattice Strain 卡片",
+    "Set strain range": "设置应变范围",
+    "Export generated structures": "导出生成结构",
+}
+
+EN_TEXT = {
+    "先读当前结论": "Read the conclusion first",
+    "确认数据概况": "Confirm the dataset summary",
+    "按建议顺序复核": "Review in the recommended order",
+    "导出分层报告": "Export the layered report",
+    "切换元素与证据层": "Switch element and evidence layer",
+    "相分布随成分变化": "Phase distribution across composition",
+    "精确成分与结构数": "Exact composition and structure count",
+    "筛选相并回看结构": "Filter phases and inspect structures",
+}
+
+
+def localized_text(text: str, language: str) -> str:
+    """Return screenshot annotation text for a runtime language."""
+    if language == "zh_CN":
+        return ZH_TEXT.get(text, text)
+    if language == "en_US":
+        return EN_TEXT.get(text, text)
+    raise ValueError(f"Unsupported screenshot language: {language}")
+
 
 @dataclass(frozen=True)
 class Annotation:

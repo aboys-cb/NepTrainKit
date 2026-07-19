@@ -16,13 +16,6 @@ GETTEXT_DIR = BUILD_DIR / "gettext"
 HTML_DIR = BUILD_DIR / "html"
 LOCALE_DIR = SOURCE_DIR / "locale"
 LANGUAGES = ("zh_CN", "en")
-REVIEWED_ENGLISH_CATALOGS = (
-    "index.po",
-    "quickstart.po",
-    "module/index.po",
-    "module/NEP-dataset-display.po",
-    "module/training-set-assessment.po",
-)
 HAN_TEXT = re.compile(r"[\u3400-\u9fff]")
 
 
@@ -56,16 +49,17 @@ def update_catalogs() -> None:
     )
 
 
-def check_reviewed_catalogs() -> None:
+def check_english_catalogs() -> None:
     from babel.messages.pofile import read_po
 
     errors: list[str] = []
     catalog_root = LOCALE_DIR / "en/LC_MESSAGES"
-    for relative_path in REVIEWED_ENGLISH_CATALOGS:
-        catalog_path = catalog_root / relative_path
-        if not catalog_path.is_file():
-            errors.append(f"missing catalog: {catalog_path}")
-            continue
+    catalog_paths = sorted(catalog_root.rglob("*.po"))
+    if not catalog_paths:
+        errors.append(f"no catalogs found under: {catalog_root}")
+
+    for catalog_path in catalog_paths:
+        relative_path = catalog_path.relative_to(catalog_root)
 
         with catalog_path.open(encoding="utf-8") as catalog_file:
             catalog = read_po(catalog_file)
@@ -88,7 +82,7 @@ def check_reviewed_catalogs() -> None:
 
     if errors:
         raise SystemExit("English translation check failed:\n- " + "\n- ".join(errors))
-    print(f"Validated {len(REVIEWED_ENGLISH_CATALOGS)} reviewed English catalogs.")
+    print(f"Validated all {len(catalog_paths)} English catalogs.")
 
 
 def build_language(language: str) -> None:
@@ -133,7 +127,7 @@ def write_landing_page() -> None:
 
 
 def build_all() -> None:
-    check_reviewed_catalogs()
+    check_english_catalogs()
     for language in LANGUAGES:
         build_language(language)
     write_landing_page()
@@ -146,7 +140,7 @@ def main() -> int:
     if args.command in {"update", "all"}:
         update_catalogs()
     if args.command == "check":
-        check_reviewed_catalogs()
+        check_english_catalogs()
     if args.command in {"build", "all"}:
         build_all()
     return 0

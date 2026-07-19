@@ -28,23 +28,23 @@ msgstr "Training Set Audit"
 #: ../../source/module/training-set-assessment.md:3
 #: 6699bedd19ba4fbe95b17c97b4e01057
 msgid ""
-"「训练集评估」用于检查当前训练数据：先找会阻止训练的技术问题，再查看组分、标签、局域环境、结构相和磁序在数据内部如何分布。每一项结果都能回到 "
-"`NEP Dataset Display` 中的原始结构，便于继续查看、选择或导出。"
+"「训练集评估」用于检查当前训练数据：先找会阻止训练的技术问题，再查看组分、标签、局域环境、结构相和磁序在数据内部如何分布。每一项结果都能回到 `NEP "
+"Dataset Display` 中的原始结构，便于继续查看、选择或导出。"
 msgstr ""
-"Training Set Audit inspects the active training data in two stages: it "
-"first finds technical problems that can block training, then shows how "
+"Training Set Audit inspects the active training data in two stages: it first"
+" finds technical problems that can block training, then shows how "
 "composition, labels, local environments, structural phases, and magnetic "
-"order are distributed within the dataset. Every result keeps the original"
-" structure indices so that you can return to `NEP Dataset Display` to "
+"order are distributed within the dataset. Every result keeps the original "
+"structure indices so that you can return to `NEP Dataset Display` to "
 "inspect, select, or export the affected structures."
 
 #: ../../source/module/training-set-assessment.md:5
 #: cdfe8de8ee3f4eecb2299ddc67ffdd35
 msgid "这个页面给出的是**当前数据快照的证据**。它不会仅凭一份训练集宣称物理空间已经完整覆盖，也不会在缺少独立测试数据时判断势函数是否可靠。"
 msgstr ""
-"This page reports **evidence from the current dataset snapshot**. A "
-"training set alone cannot prove complete coverage of physical space, and "
-"model reliability cannot be established without independent test data."
+"This page reports **evidence from the current dataset snapshot**. A training"
+" set alone cannot prove complete coverage of physical space, and model "
+"reliability cannot be established without independent test data."
 
 #: ../../source/module/training-set-assessment.md:7
 #: 61b50b66a79641f58e7994c0074098c3
@@ -54,52 +54,41 @@ msgstr "Open the audit from `NEP Dataset Display`"
 #: ../../source/module/training-set-assessment.md:9
 #: 08bd3645102a4cd1809c6981fbbfab3c
 msgid "先在 `NEP Dataset Display` 中打开训练数据，再使用以下任一入口："
-msgstr ""
-"Load the training data in `NEP Dataset Display`, then use either entry "
-"point:"
+msgstr "Load the training data in `NEP Dataset Display`, then use either entry point:"
 
-#: ../../source/module/training-set-assessment.md
-#: b5b0e16e6e5544fe93ad6cdaecbade8b
+#: ../../source/module/training-set-assessment.md b5b0e16e6e5544fe93ad6cdaecbade8b
 msgid "入口"
 msgstr "Entry point"
 
-#: ../../source/module/training-set-assessment.md
-#: a66e604d54b34c95adb49d063bdb09ef
+#: ../../source/module/training-set-assessment.md a66e604d54b34c95adb49d063bdb09ef
 msgid "打开位置"
 msgstr "Opens"
 
-#: ../../source/module/training-set-assessment.md
-#: e9c698fc627c4f2286cd80b11b74e9c8
+#: ../../source/module/training-set-assessment.md e9c698fc627c4f2286cd80b11b74e9c8
 msgid "适合做什么"
 msgstr "Use it for"
 
-#: ../../source/module/training-set-assessment.md
-#: 2301673faa294843a3637d89f1fb1232
+#: ../../source/module/training-set-assessment.md 2301673faa294843a3637d89f1fb1232
 msgid "顶部 `Save` 分裂菜单 → `评估当前数据集`"
 msgstr "Title-bar `Save` split menu → `Check current dataset`"
 
-#: ../../source/module/training-set-assessment.md
-#: 582ecc1ba7bd4fc191db7518820b9f47
+#: ../../source/module/training-set-assessment.md 582ecc1ba7bd4fc191db7518820b9f47
 msgid "训练集评估的「概览」"
 msgstr "Training Set Audit → `Overview`"
 
-#: ../../source/module/training-set-assessment.md
-#: 3521d2ccdd0e4997b0c8490ad2817e98
+#: ../../source/module/training-set-assessment.md 3521d2ccdd0e4997b0c8490ad2817e98
 msgid "完整检查当前活动结构"
 msgstr "Run the complete audit on the active structures"
 
-#: ../../source/module/training-set-assessment.md
-#: 3471d396a4c34b0db5814449a2e685fb
+#: ../../source/module/training-set-assessment.md 3471d396a4c34b0db5814449a2e685fb
 msgid "左侧图表工具栏 → `查看数据分布`"
 msgstr "Plot toolbar → `Explore distributions`"
 
-#: ../../source/module/training-set-assessment.md
-#: 6df085e7882940b29852ad79d47d166d
+#: ../../source/module/training-set-assessment.md 6df085e7882940b29852ad79d47d166d
 msgid "「数据地图」→「数据分布」"
 msgstr "`Data map` → `Data distribution`"
 
-#: ../../source/module/training-set-assessment.md
-#: 9086731d725e4f679e91f37d830d421d
+#: ../../source/module/training-set-assessment.md 9086731d725e4f679e91f37d830d421d
 msgid "直接查看能量、力、virial、预测值或误差的分布"
 msgstr "Inspect distributions of energy, force, virial, predictions, or errors"
 
@@ -108,8 +97,8 @@ msgstr "Inspect distributions of energy, force, virial, predictions, or errors"
 msgid "没有加载数据时，入口会提示先打开数据集。评估默认只读取当前活动结构；已删除结构不在本次范围内。"
 msgstr ""
 "If no data is loaded, NepTrainKit asks you to open a dataset first. The "
-"audit covers the active structures only; structures already removed from "
-"the dataset are outside the audit scope."
+"audit covers the active structures only; structures already removed from the"
+" dataset are outside the audit scope."
 
 #: ../../source/module/training-set-assessment.md:18
 #: 54d1978fec7744d7914bcda70923c82a
@@ -123,9 +112,9 @@ msgid ""
 "后，请点击「重新检查」。旧结果不能继续代表已经变化的数据。"
 msgstr ""
 "The header records the audited structure range, data fingerprint, and "
-"generation time. Click `Re-run checks` after deleting structures, "
-"switching datasets, editing labels, or changing `nep.txt`. An earlier "
-"result no longer represents the modified data."
+"generation time. Click `Re-run checks` after deleting structures, switching "
+"datasets, editing labels, or changing `nep.txt`. An earlier result no longer"
+" represents the modified data."
 
 #: ../../source/module/training-set-assessment.md:23
 #: 1ae98d139db0449083e1057ac32e66fb
@@ -165,9 +154,9 @@ msgstr ""
 #: 98d3d9b712cd470c97c81556770afecb
 msgid "点击复核项后，下方会显示观察事实、解释和能力边界。再点击显示结构按钮，即可返回原页面，并选中该项对应的真实结构。"
 msgstr ""
-"Select a review topic to see the observation, interpretation, and "
-"capability boundary. Use the structure button to return to `NEP Dataset "
-"Display` with the affected structures selected."
+"Select a review topic to see the observation, interpretation, and capability"
+" boundary. Use the structure button to return to `NEP Dataset Display` with "
+"the affected structures selected."
 
 #: ../../source/module/training-set-assessment.md:35
 #: a7ae51cba48b46fcafcb3e9cc38b76b2
@@ -184,20 +173,18 @@ msgstr ""
 #: ../../source/module/training-set-assessment.md:40
 #: f2b6ca11e715491f938f8d67fd9faa54
 msgid ""
-"图中的编号就是推荐阅读顺序：先读当前结论，再确认本次检查了多少结构和标签，随后按「建议下一步」进入复核队列。只有需要留档或发给合作者时，才使用右上角的"
-" HTML 导出。"
+"图中的编号就是推荐阅读顺序：先读当前结论，再确认本次检查了多少结构和标签，随后按「建议下一步」进入复核队列。只有需要留档或发给合作者时，才使用右上角的 "
+"HTML 导出。"
 msgstr ""
 "Follow the numbered reading order in the screenshot: read the current "
-"conclusion, confirm how many structures and labels were checked, then use"
-" Recommended next steps to enter the review queue. Export HTML only when "
-"you need a durable record or a report for a collaborator."
+"conclusion, confirm how many structures and labels were checked, then use "
+"Recommended next steps to enter the review queue. Export HTML only when you "
+"need a durable record or a report for a collaborator."
 
 #: ../../source/module/training-set-assessment.md:42
 #: d5d79373769e42d8be5e44267e8a95d8
 msgid "2. 在「数据地图」查看组分、相和磁序"
-msgstr ""
-"Step 2: Inspect composition, structural phase, and magnetic order in Data"
-" map"
+msgstr "Step 2: Inspect composition, structural phase, and magnetic order in Data map"
 
 #: ../../source/module/training-set-assessment.md:44
 #: 043386637a75498c89281021fa493457
@@ -205,19 +192,19 @@ msgid ""
 "「组分地图」按精确原子比例合并结构。例如，`Fe2Ni2`、`Fe4Ni4` 和 `Fe32Ni32` 都归入同一个 `Fe:Ni = 1:1` "
 "组分点。右侧表格仍保留结构数量、原子数和 `Config_type`，不会把不同尺寸的结构当成同一个结构。"
 msgstr ""
-"The composition map groups structures by exact atomic ratio. For example,"
-" `Fe2Ni2`, `Fe4Ni4`, and `Fe32Ni32` all belong to the same `Fe:Ni = 1:1` "
-"composition point. The table still records the number of structures, atom"
-" counts, and `Config_type`, so structures with different cell sizes are "
-"not treated as the same geometry."
+"The composition map groups structures by exact atomic ratio. For example, "
+"`Fe2Ni2`, `Fe4Ni4`, and `Fe32Ni32` all belong to the same `Fe:Ni = 1:1` "
+"composition point. The table still records the number of structures, atom "
+"counts, and `Config_type`, so structures with different cell sizes are not "
+"treated as the same geometry."
 
 #: ../../source/module/training-set-assessment.md:46
 #: 80c09b86bd784b19b4c5f92d5c0ca1ca
 msgid "第一次进入时，柱高表示该浓度下的结构数。点击「分析相结构与磁序」后，页面会遍历当前评估范围内的所有结构，并增加两种视图："
 msgstr ""
-"Initially, each bar shows the number of structures at that concentration."
-" Click `Analyze phases and magnetic order` to traverse every structure in"
-" the audit scope and enable two additional evidence views:"
+"Initially, each bar shows the number of structures at that concentration. "
+"Click `Analyze phases and magnetic order` to traverse every structure in the"
+" audit scope and enable two additional evidence views:"
 
 #: ../../source/module/training-set-assessment.md:48
 #: b6dcdb3c4dc44f239ba3ee5dca404b41
@@ -230,9 +217,9 @@ msgstr ""
 #: d30818cc1abf4109b3ea337f646f11f7
 msgid "**磁序：** 类 FM、类 AFM、类亚铁磁、类自旋螺旋、非共线有序、混合共线、类自旋无序、低／零磁矩和无有效 `spin` 字段。"
 msgstr ""
-"**Magnetic order:** FM-like, AFM-like, ferrimagnetic-like, spin-spiral-"
-"like, noncollinear order, mixed collinear, spin-disordered-like, low/zero"
-" moment, and no valid `spin` field."
+"**Magnetic order:** FM-like, AFM-like, ferrimagnetic-like, spin-spiral-like,"
+" noncollinear order, mixed collinear, spin-disordered-like, low/zero moment,"
+" and no valid `spin` field."
 
 #: ../../source/module/training-set-assessment.md:51
 #: f4712e13b1494d418274a174d972c57c
@@ -254,8 +241,8 @@ msgstr ""
 #: 892a6ae6ab4e496ca9878d72b8ad3376
 msgid "训练集评估的组分地图，标出证据层切换、相分布柱图、精确组分表和结构回选控件"
 msgstr ""
-"Composition map with controls for evidence-layer selection, phase-colored"
-" bars, exact-composition groups, and sending structures back to Dataset "
+"Composition map with controls for evidence-layer selection, phase-colored "
+"bars, exact-composition groups, and sending structures back to Dataset "
 "Display"
 
 #: ../../source/module/training-set-assessment.md:55
@@ -270,13 +257,13 @@ msgid ""
 "或内置有序相，因此柱子显示为灰色「未解析」。这不是程序出错，而是「当前几何证据不足以给出这些标签」。如果数据带有有效 "
 "`spin:R:3`，右上角证据层还会出现「按磁序着色」，下方磁序筛选框也会启用。"
 msgstr ""
-"The example above contains a single exact `Pb:Te = 1:1` composition "
-"point. a-CNA does not force this geometry into FCC, HCP, BCC, or one of "
-"the built-in ordered-phase templates, so the bar is gray and labeled "
-"unresolved. This is not an analysis failure: it means the current "
-"geometric evidence is insufficient for those labels. With valid "
-"`spin:R:3` data, a magnetic-order coloring option appears in the evidence"
-" selector and the magnetic filter becomes available."
+"The example above contains a single exact `Pb:Te = 1:1` composition point. "
+"a-CNA does not force this geometry into FCC, HCP, BCC, or one of the built-"
+"in ordered-phase templates, so the bar is gray and labeled unresolved. This "
+"is not an analysis failure: it means the current geometric evidence is "
+"insufficient for those labels. With valid `spin:R:3` data, a magnetic-order "
+"coloring option appears in the evidence selector and the magnetic filter "
+"becomes available."
 
 #: ../../source/module/training-set-assessment.md:62
 #: 21e2b1c5fe0d49cd9aab5f9f55d4213c
@@ -288,22 +275,22 @@ msgstr "Step 3: Trace local environments in Advanced evidence"
 msgid "有活动的 `nep.txt` 时，页面会读取模型声明的元素及径向、角向 cutoff，并按模型实际可见的邻域统计："
 msgstr ""
 "With an active `nep.txt`, the audit reads the model elements and "
-"radial/angular cutoffs, then measures the neighborhoods that the model "
-"can actually see:"
+"radial/angular cutoffs, then measures the neighborhoods that the model can "
+"actually see:"
 
 #: ../../source/module/training-set-assessment.md:66
 #: 51761a611e904d94a8992beb4c1fa98e
 msgid "中心元素周围的配位数和近邻元素组成；"
 msgstr ""
-"coordination numbers and neighboring-element composition around each "
-"central element;"
+"coordination numbers and neighboring-element composition around each central"
+" element;"
 
 #: ../../source/module/training-set-assessment.md:67
 #: 42a955e90d054366a778852dee0abf96
 msgid "元素对是否共同出现、是否在 cutoff 内真正接触；"
 msgstr ""
-"whether element pairs merely coexist or actually come into contact inside"
-" the cutoff;"
+"whether element pairs merely coexist or actually come into contact inside "
+"the cutoff;"
 
 #: ../../source/module/training-set-assessment.md:68
 #: 5f10f9cf918c4290963b72c16990402f
@@ -314,9 +301,9 @@ msgstr "label distributions, the high-force tail, and the high-energy tail."
 #: 8c329ebb7a624f639992f14e273da37a
 msgid "没有 `nep.txt` 时，数据质量、组分、标签、结构相和磁序仍可使用；依赖模型 cutoff 的局域化学与元素对接触会显示为不可用。"
 msgstr ""
-"Without `nep.txt`, data quality, composition, labels, structural phase, "
-"and magnetic order remain available. Local-chemistry and element-pair "
-"contact checks that require model cutoffs are marked unavailable."
+"Without `nep.txt`, data quality, composition, labels, structural phase, and "
+"magnetic order remain available. Local-chemistry and element-pair contact "
+"checks that require model cutoffs are marked unavailable."
 
 #: ../../source/module/training-set-assessment.md:72
 #: 168b7783eb834e96928d0e28b76c1b4b
@@ -327,14 +314,13 @@ msgstr "Step 4: Record decisions in Review queue"
 #: cee429f1f4f04af4b0df9524958b6bba
 msgid "「复核队列」把相关的低频分箱合并为一个主题，避免同一问题产生大量重复提醒。状态选项会随问题类型变化：阻塞项可标为「未解决」或「已解决并重新检查」，重复几何可标记为「有意保留」「隔离候选」或「需要重算」，普通复核项可标记为「物理上合理」或「检查几何」。这些状态用于当前数据快照的页面复核，不会自动删除或修改结构。"
 msgstr ""
-"The Review queue combines related low-frequency bins into one topic "
-"instead of producing many alerts for the same issue. Available states "
-"depend on the finding: blockers can be marked unresolved or resolved and "
-"rechecked; repeated geometries can be intentionally retained, isolated as"
-" candidates, or sent for recalculation; ordinary review groups can be "
-"marked physically expected or scheduled for geometry inspection. These "
-"states document the review of the current snapshot. They do not delete or"
-" modify structures."
+"The Review queue combines related low-frequency bins into one topic instead "
+"of producing many alerts for the same issue. Available states depend on the "
+"finding: blockers can be marked unresolved or resolved and rechecked; "
+"repeated geometries can be intentionally retained, isolated as candidates, "
+"or sent for recalculation; ordinary review groups can be marked physically "
+"expected or scheduled for geometry inspection. These states document the "
+"review of the current snapshot. They do not delete or modify structures."
 
 #: ../../source/module/training-set-assessment.md:76
 #: 00057f74063f486bb3c724edbd119efa
@@ -345,8 +331,8 @@ msgstr "Step 5: Use Target & model only after defining the research scope"
 #: edf7b27e0d6f4d4ca7f2946653638858
 msgid "目标比较只在用户明确给出目标后才成立。可以指定："
 msgstr ""
-"A target comparison is meaningful only after the user declares a target. "
-"You can specify:"
+"A target comparison is meaningful only after the user declares a target. You"
+" can specify:"
 
 #: ../../source/module/training-set-assessment.md:80
 #: 6663531a2dba4e81825af56ffb83ee35
@@ -373,20 +359,18 @@ msgstr "a minimum structure count at each point."
 msgid "页面比较的是**精确组分点和结构数量规则**。即使某个点显示为「支持」，也只表示数量规则通过，不代表局域环境、温压路径、缺陷类型或模型精度已经覆盖。"
 msgstr ""
 "The comparison evaluates **exact composition points and structure-count "
-"rules**. A point marked supported has passed those count rules only; it "
-"does not prove coverage of local environments, temperature-pressure "
-"paths, defect types, or model accuracy."
+"rules**. A point marked supported has passed those count rules only; it does"
+" not prove coverage of local environments, temperature-pressure paths, "
+"defect types, or model accuracy."
 
 #: ../../source/module/training-set-assessment.md:87
 #: 5e63620becc24f198008aee5b0e00235
-msgid ""
-"当前训练数据上的 Show NEP "
-"预测可以用于浏览误差，但不会自动视为独立模型验证。要判断泛化误差，仍需结构映射和单位已经核对的独立参考值与预测值。"
+msgid "当前训练数据上的 Show NEP 预测可以用于浏览误差，但不会自动视为独立模型验证。要判断泛化误差，仍需结构映射和单位已经核对的独立参考值与预测值。"
 msgstr ""
-"Show NEP predictions on the current training data are useful for browsing"
-" errors, but they are not automatically treated as independent model "
-"validation. Generalization error requires separately mapped reference and"
-" prediction values with verified units."
+"Show NEP predictions on the current training data are useful for browsing "
+"errors, but they are not automatically treated as independent model "
+"validation. Generalization error requires separately mapped reference and "
+"prediction values with verified units."
 
 #: ../../source/module/training-set-assessment.md:89
 #: 12d49f612a0842338f657b2cef5dc145
@@ -402,8 +386,8 @@ msgstr "Training blockers"
 #: fb2c0454cf644d2ba660a47c03b5475d
 msgid "以下结果违反明确的数据契约，应在训练前处理："
 msgstr ""
-"The following results violate explicit data contracts and should be "
-"resolved before training:"
+"The following results violate explicit data contracts and should be resolved"
+" before training:"
 
 #: ../../source/module/training-set-assessment.md:95
 #: 201e22212b5d4ec0b3183c27c5dd8ad1
@@ -447,14 +431,14 @@ msgstr ""
 #: ../../source/module/training-set-assessment.md:103
 #: 9b00c04a73ea421288390a7ab30ce220
 msgid ""
-"相同几何按元素、周期边界、晶胞和坐标共同判断；晶胞与坐标比较到小数点后 8 位。冲突标签的当前绝对容差为：能量 `1 × 10⁻⁵`、力 `1 ×"
-" 10⁻⁵`、virial `1 × 10⁻⁴`，相对容差为 `0`。"
+"相同几何按元素、周期边界、晶胞和坐标共同判断；晶胞与坐标比较到小数点后 8 位。冲突标签的当前绝对容差为：能量 `1 × 10⁻⁵`、力 `1 × "
+"10⁻⁵`、virial `1 × 10⁻⁴`，相对容差为 `0`。"
 msgstr ""
 "Geometry identity includes elements, periodic boundaries, cell, and "
-"coordinates; cells and coordinates are rounded to eight decimal places "
-"for comparison. Current absolute tolerances for conflicting labels are `1"
-" × 10⁻⁵` for energy, `1 × 10⁻⁵` for force, and `1 × 10⁻⁴` for virial, "
-"with zero relative tolerance."
+"coordinates; cells and coordinates are rounded to eight decimal places for "
+"comparison. Current absolute tolerances for conflicting labels are `1 × "
+"10⁻⁵` for energy, `1 × 10⁻⁵` for force, and `1 × 10⁻⁴` for virial, with zero"
+" relative tolerance."
 
 #: ../../source/module/training-set-assessment.md:105
 #: b1dcde8083e947e2bc5b380b515e906e
@@ -488,17 +472,17 @@ msgstr "repeated geometries;"
 #: 6fc2d34a1eb842d2ae3b96d335343375
 msgid "当前数据内部的低频组分、低频局域环境或不平衡集合。"
 msgstr ""
-"low-frequency compositions, local environments, or imbalanced groups "
-"inside the current dataset."
+"low-frequency compositions, local environments, or imbalanced groups inside "
+"the current dataset."
 
 #: ../../source/module/training-set-assessment.md:114
 #: a56b30fffd754de0b1143205909b28f1
 msgid "固定分位集合按排名必然产生。高力、高能量或重复结构可能来自真实目标物理、显式加权或独立计算，因此这些结果是复核入口，不是删除建议。"
 msgstr ""
-"Rank-based percentile groups exist by construction. High-force, high-"
-"energy, or repeated structures may represent intended physics, explicit "
-"weighting, or independent calculations. Treat these findings as review "
-"entry points, not deletion recommendations."
+"Rank-based percentile groups exist by construction. High-force, high-energy,"
+" or repeated structures may represent intended physics, explicit weighting, "
+"or independent calculations. Treat these findings as review entry points, "
+"not deletion recommendations."
 
 #: ../../source/module/training-set-assessment.md:116
 #: cc9ba17d6e3541f0bd1ae8a87a63adb9
@@ -513,22 +497,21 @@ msgstr "FCC, HCP, and BCC: adaptive common-neighbor analysis"
 #: ../../source/module/training-set-assessment.md:120
 #: 1b5ae4ed2c374fef880211d6f3c60948
 msgid ""
-"页面先对每个原子做自适应公共近邻分析（Adaptive Common Neighbor "
-"Analysis，a-CNA）。算法使用周期性近邻搜索，最多取得 24 个近邻，并根据第一、第二近邻壳之间的距离间隔为每个原子单独确定 "
-"cutoff。"
+"页面先对每个原子做自适应公共近邻分析（Adaptive Common Neighbor Analysis，a-CNA）。算法使用周期性近邻搜索，最多取得"
+" 24 个近邻，并根据第一、第二近邻壳之间的距离间隔为每个原子单独确定 cutoff。"
 msgstr ""
-"The audit applies adaptive common-neighbor analysis (a-CNA) to each atom."
-" A periodic neighbor search collects up to 24 neighbors, then determines "
-"an atom-specific cutoff from the gap between the first and second "
-"neighbor shells."
+"The audit applies adaptive common-neighbor analysis (a-CNA) to each atom. A "
+"periodic neighbor search collects up to 24 neighbors, then determines an "
+"atom-specific cutoff from the gap between the first and second neighbor "
+"shells."
 
 #: ../../source/module/training-set-assessment.md:122
 #: 1299e0823c8e4ced9db30fcc6298c5d3
 #, python-brace-format
 msgid "对于 FCC 和 HCP，设排好序的近邻距离为 $d_1 \\le \\cdots \\le d_{13}$。只有在"
 msgstr ""
-"For FCC and HCP, let the sorted neighbor distances be $d_1 \\le \\cdots "
-"\\le d_{13}$. Only when"
+"For FCC and HCP, let the sorted neighbor distances be $d_1 \\le \\cdots \\le"
+" d_{13}$. Only when"
 
 #: ../../source/module/training-set-assessment.md:124
 #: 63da2a42dfb747a683a32e894cd6f1de
@@ -553,10 +536,10 @@ msgstr ""
 #: ba99d301dc254e9a98ecee0614e998d8
 msgid "分隔 12 配位的第一近邻壳。随后统计每条中心—近邻键的 3 个 CNA 数：公共近邻数、公共近邻之间的键数、最长键链长度。理想拓扑对应："
 msgstr ""
-"to separate the 12-fold first-neighbor shell. Each center-neighbor bond "
-"is then described by three CNA values: the number of common neighbors, "
-"the number of bonds among those common neighbors, and the longest bond-"
-"chain length. The ideal topologies are:"
+"to separate the 12-fold first-neighbor shell. Each center-neighbor bond is "
+"then described by three CNA values: the number of common neighbors, the "
+"number of bonds among those common neighbors, and the longest bond-chain "
+"length. The ideal topologies are:"
 
 #: ../../source/module/training-set-assessment.md:55
 #: 2cfbad8c3e484a49b460dd2a372fb241
@@ -612,9 +595,7 @@ msgstr ""
 #: ../../source/module/training-set-assessment.md:144
 #: 9e0402b9a3804e40995ba626ee78c23a
 msgid "对一帧结构，某种局域相的原子占比为"
-msgstr ""
-"For a structure, the fraction of atoms assigned to local phase $\\alpha$ "
-"is"
+msgstr "For a structure, the fraction of atoms assigned to local phase $\\alpha$ is"
 
 #: ../../source/module/training-set-assessment.md:146
 #: 6794b0ff02dc4a4687b4bbd5c2378c9a
@@ -627,14 +608,14 @@ msgstr ""
 #: ../../source/module/training-set-assessment.md:150
 #: 8cbf6a7dc61645f1a8e00458c727c75f
 msgid ""
-"若没有更具体的有序相通过确认，$p_\\alpha \\ge 0.80$ 时结构记为强证据；$0.50 \\le p_\\alpha < "
-"0.80$ 时记为混合证据；低于 `0.50` 时记为未解析。这些比例描述当前快照中的局域拓扑，不等同于热力学相分数。"
+"若没有更具体的有序相通过确认，$p_\\alpha \\ge 0.80$ 时结构记为强证据；$0.50 \\le p_\\alpha < 0.80$ "
+"时记为混合证据；低于 `0.50` 时记为未解析。这些比例描述当前快照中的局域拓扑，不等同于热力学相分数。"
 msgstr ""
 "Unless a more specific ordered phase has been confirmed, $p_\\alpha \\ge "
-"0.80$ is strong structural evidence, $0.50 \\le p_\\alpha < 0.80$ is "
-"mixed evidence, and a value below `0.50` is unresolved. These fractions "
-"describe local topology in the saved snapshot; they are not thermodynamic"
-" phase fractions."
+"0.80$ is strong structural evidence, $0.50 \\le p_\\alpha < 0.80$ is mixed "
+"evidence, and a value below `0.50` is unresolved. These fractions describe "
+"local topology in the saved snapshot; they are not thermodynamic phase "
+"fractions."
 
 #: ../../source/module/training-set-assessment.md:152
 #: 4f214f01f21243548d661cb2b86689be
@@ -645,18 +626,17 @@ msgstr "L1₂ and Laves phases: geometry and chemistry must both pass"
 #: 71d337bcdb1d452ab3a925fef935da0b
 msgid "L1₂、C14 和 C15 不能只靠 FCC/HCP/BCC 局域几何区分。页面只对二元结构做保守确认，并同时检查组成、局域形状和化学占位。"
 msgstr ""
-"L1₂, C14, and C15 cannot be distinguished using FCC/HCP/BCC local "
-"geometry alone. The audit applies conservative confirmation to binary "
-"structures and requires composition, local shape, and chemical occupation"
-" to agree."
+"L1₂, C14, and C15 cannot be distinguished using FCC/HCP/BCC local geometry "
+"alone. The audit applies conservative confirmation to binary structures and "
+"requires composition, local shape, and chemical occupation to agree."
 
 #: ../../source/module/training-set-assessment.md:156
 #: 254f04f1d51843518807c6632c6dbc3b
 msgid "局域形状首先消除整体尺度。对选定的 $K$ 个近邻，以平均近邻距离 $\\bar r$ 归一化，构造"
 msgstr ""
-"The local-shape comparison first removes the overall length scale. For "
-"the selected $K$ neighbors, distances are normalized by their mean $\\bar"
-" r$ to construct"
+"The local-shape comparison first removes the overall length scale. For the "
+"selected $K$ neighbors, distances are normalized by their mean $\\bar r$ to "
+"construct"
 
 #: ../../source/module/training-set-assessment.md:158
 #: 9ab3cc4004e64b15907b696d2a436872
@@ -677,37 +657,36 @@ msgid ""
 msgstr ""
 "Here $\\oplus$ concatenates the two sorted sets. The audit computes the "
 "minimum root-mean-square distance between this descriptor and built-in "
-"reference-crystal templates. The normalization tolerates uniform scaling "
-"and moderate distortion, but the classifier does not assign a phase from "
-"the lattice constant alone."
+"reference-crystal templates. The normalization tolerates uniform scaling and"
+" moderate distortion, but the classifier does not assign a phase from the "
+"lattice constant alone."
 
 #: ../../source/module/training-set-assessment.md:166
 #: bb9d97c1887843e39f4fbf4c119243b6
 msgid ""
-"**L1₂：** 自动识别接近 `A:B = 1:3` 的二元组成。除了 FCC 形状外，还要求 A 位点的前 12 个近邻中没有 A、第二壳 6"
-" 个近邻全为 A；B 位点的前 12 个近邻中有 4 个 A、第二壳没有 A。几何匹配比例至少为 `0.80`，化学匹配比例至少为 "
+"**L1₂：** 自动识别接近 `A:B = 1:3` 的二元组成。除了 FCC 形状外，还要求 A 位点的前 12 个近邻中没有 A、第二壳 6 "
+"个近邻全为 A；B 位点的前 12 个近邻中有 4 个 A、第二壳没有 A。几何匹配比例至少为 `0.80`，化学匹配比例至少为 "
 "`0.85`，几何与化学同时匹配的比例至少为 `0.80`。"
 msgstr ""
-"**L1₂:** identify a binary composition close to `A:B = 1:3`. In addition "
-"to an FCC-like shape, an A site must have no A atoms among its first 12 "
+"**L1₂:** identify a binary composition close to `A:B = 1:3`. In addition to "
+"an FCC-like shape, an A site must have no A atoms among its first 12 "
 "neighbors and six A atoms in the second shell; a B site must have four A "
-"atoms in the first 12 neighbors and no A atoms in the second shell. At "
-"least `0.80` of sites must pass geometry, `0.85` must pass chemistry, and"
-" `0.80` must pass both."
+"atoms in the first 12 neighbors and no A atoms in the second shell. At least"
+" `0.80` of sites must pass geometry, `0.85` must pass chemistry, and `0.80` "
+"must pass both."
 
 #: ../../source/module/training-set-assessment.md:167
 #: 2a2f0d05807645e1992718feb52afbe8
 msgid ""
-"**Laves：** 自动识别接近 `A:B = 1:2` 的二元组成。A 位点按 Z16 模板检查，B 位点按 Z12 模板检查；A 位点应有 "
-"4 个 A 近邻，B 位点应有 6 个 A 近邻。几何匹配和联合匹配比例都至少为 `0.85`。通过后再用 B 子晶格的中心对称参数区分 C14 "
-"与 C15。"
+"**Laves：** 自动识别接近 `A:B = 1:2` 的二元组成。A 位点按 Z16 模板检查，B 位点按 Z12 模板检查；A 位点应有 4 个"
+" A 近邻，B 位点应有 6 个 A 近邻。几何匹配和联合匹配比例都至少为 `0.85`。通过后再用 B 子晶格的中心对称参数区分 C14 与 C15。"
 msgstr ""
-"**Laves:** identify a binary composition close to `A:B = 1:2`. A sites "
-"are checked against a Z16 template and B sites against a Z12 template. An"
-" A site should have four A neighbors and a B site should have six A "
-"neighbors. Both the geometry pass fraction and the joint geometry-and-"
-"chemistry fraction must be at least `0.85`. C14 and C15 are then "
-"separated using the centrosymmetry parameter of the B sublattice."
+"**Laves:** identify a binary composition close to `A:B = 1:2`. A sites are "
+"checked against a Z16 template and B sites against a Z12 template. An A site"
+" should have four A neighbors and a B site should have six A neighbors. Both"
+" the geometry pass fraction and the joint geometry-and-chemistry fraction "
+"must be at least `0.85`. C14 and C15 are then separated using the "
+"centrosymmetry parameter of the B sublattice."
 
 #: ../../source/module/training-set-assessment.md:169
 #: f8e2e44067814637b7451ef4adbbe4b3
@@ -716,11 +695,11 @@ msgid ""
 "混合在当前局域证据下可能不可区分，因此只显示为未确认线索，不会作为已确认 C36 输出。这里的「未确认」表示证据不足，不表示该相一定不存在。"
 msgstr ""
 "When A/B roles are inferred automatically, the actual minority-element "
-"fraction must be within `3.5%` of the ideal composition. C36 local "
-"stacking can be indistinguishable from mixed C14/C15 under the current "
-"local evidence, so it is reported only as an unconfirmed signal rather "
-"than a confirmed C36 label. Unconfirmed means insufficient evidence, not "
-"proof that the phase is absent."
+"fraction must be within `3.5%` of the ideal composition. C36 local stacking "
+"can be indistinguishable from mixed C14/C15 under the current local "
+"evidence, so it is reported only as an unconfirmed signal rather than a "
+"confirmed C36 label. Unconfirmed means insufficient evidence, not proof that"
+" the phase is absent."
 
 #: ../../source/module/training-set-assessment.md:171
 #: 13618249aa594b228b6283df0e880ae7
@@ -736,8 +715,8 @@ msgstr "Input requirement"
 #: 83de5186a6f1405c8757ec07813f6154
 msgid "磁序只读取逐原子的 `spin:R:3`，即每个原子一个三分量自旋向量："
 msgstr ""
-"Magnetic analysis reads only per-atom `spin:R:3`: one three-component "
-"spin vector for each atom."
+"Magnetic analysis reads only per-atom `spin:R:3`: one three-component spin "
+"vector for each atom."
 
 #: ../../source/module/training-set-assessment.md:177
 #: f67d63dd0e8d47719084716e759c3a97
@@ -750,10 +729,10 @@ msgid ""
 "`spin` 必须是数值型 `N × 3` 数组，并且所有分量有限。`mforce` 和 `force_mag` 是磁力标签，不能替代 "
 "`spin`。缺少有效 `spin` 的结构会单独显示为「无有效 spin 字段」，不会被猜成非磁结构。"
 msgstr ""
-"`spin` must be a numeric `N × 3` array with finite components. `mforce` "
-"and `force_mag` are magnetic-force labels and cannot replace `spin`. A "
-"structure without valid `spin` data is reported as having no valid spin "
-"field; it is not guessed to be nonmagnetic."
+"`spin` must be a numeric `N × 3` array with finite components. `mforce` and "
+"`force_mag` are magnetic-force labels and cannot replace `spin`. A structure"
+" without valid `spin` data is reported as having no valid spin field; it is "
+"not guessed to be nonmagnetic."
 
 #: ../../source/module/training-set-assessment.md:183
 #: 58e32798caa746dba64587c67539a49b
@@ -768,9 +747,9 @@ msgid ""
 "$\\hat{\\mathbf s}_i=\\mathbf s_i/m_i$。小于等于 `1 × 10⁻⁷` 的磁矩不参与方向统计。"
 msgstr ""
 "Let the spin on atom $i$ be $\\mathbf s_i$, its magnitude be "
-"$m_i=\\lVert\\mathbf s_i\\rVert$, and its unit direction be "
-"$\\hat{\\mathbf s}_i=\\mathbf s_i/m_i$. Moments at or below `1 × 10⁻⁷` "
-"are excluded from directional statistics."
+"$m_i=\\lVert\\mathbf s_i\\rVert$, and its unit direction be $\\hat{\\mathbf "
+"s}_i=\\mathbf s_i/m_i$. Moments at or below `1 × 10⁻⁷` are excluded from "
+"directional statistics."
 
 #: ../../source/module/training-set-assessment.md:187
 #: 1011c9d95d2b45f6908d966e1e3a4501
@@ -792,8 +771,8 @@ msgstr ""
 msgid "$R_M$ 接近 `1` 表示自旋净对齐，接近 `0` 表示整体补偿。它是无量纲比例；平均磁矩仍沿用输入 `spin` 的单位。"
 msgstr ""
 "$R_M$ near `1` indicates net alignment, while a value near `0` indicates "
-"global compensation. The ratio is dimensionless; the mean moment retains "
-"the unit of the input `spin` vectors."
+"global compensation. The ratio is dimensionless; the mean moment retains the"
+" unit of the input `spin` vectors."
 
 #: ../../source/module/training-set-assessment.md:195
 #: 68cb00d2de6345d795a4b300256f40a6
@@ -814,12 +793,12 @@ msgstr ""
 #: ../../source/module/training-set-assessment.md:202
 #: 7ecdcd628481469aa45787ae2713aae2
 msgid ""
-"共线性取 $C=\\lambda_3$，共面性取 $P=1-3\\lambda_1$。$C$ 接近 `1` 表示方向集中在同一条轴上；$P$ 接近"
-" `1` 表示方向主要位于同一平面。"
+"共线性取 $C=\\lambda_3$，共面性取 $P=1-3\\lambda_1$。$C$ 接近 `1` 表示方向集中在同一条轴上；$P$ 接近 "
+"`1` 表示方向主要位于同一平面。"
 msgstr ""
-"Collinearity is $C=\\lambda_3$ and coplanarity is $P=1-3\\lambda_1$. A "
-"value of $C$ near `1` means the directions concentrate around one axis; "
-"$P$ near `1` means the directions lie mainly in one plane."
+"Collinearity is $C=\\lambda_3$ and coplanarity is $P=1-3\\lambda_1$. A value"
+" of $C$ near `1` means the directions concentrate around one axis; $P$ near "
+"`1` means the directions lie mainly in one plane."
 
 #: ../../source/module/training-set-assessment.md:204
 #: 74bcb9d561f84c20944ff93d87dbd3ce
@@ -858,9 +837,8 @@ msgstr "**Low-order magnetic structure factor**"
 #: 658fea072b8c4a8dbf96a1b9f6ec4527
 msgid "对分数坐标 $\\mathbf f_i$，程序在周期方向上扫描 $|h|,|k|,|l|\\le3$ 的非零整数波矢，计算"
 msgstr ""
-"For fractional coordinates $\\mathbf f_i$, the audit scans nonzero "
-"integer wave vectors with $|h|,|k|,|l|\\le3$ along periodic directions "
-"and computes"
+"For fractional coordinates $\\mathbf f_i$, the audit scans nonzero integer "
+"wave vectors with $|h|,|k|,|l|\\le3$ along periodic directions and computes"
 
 #: ../../source/module/training-set-assessment.md:218
 #: fd0c5dde99be4bc3915f739c0cb34d46
@@ -878,12 +856,12 @@ msgstr ""
 #: 0146439fb8a84d0894439f6c95ba7684
 #, python-brace-format
 msgid ""
-"页面记录最大值 $S_\\mathrm{max}$ 及对应的整数波矢。它用于识别当前超胞内可分辨的低阶调制，不是连续 reciprocal-"
-"space 扫描。"
+"页面记录最大值 $S_\\mathrm{max}$ 及对应的整数波矢。它用于识别当前超胞内可分辨的低阶调制，不是连续 reciprocal-space "
+"扫描。"
 msgstr ""
-"The page records the maximum $S_\\mathrm{max}$ and its integer wave "
-"vector. This detects low-order modulation that the current supercell can "
-"represent; it is not a continuous reciprocal-space scan."
+"The page records the maximum $S_\\mathrm{max}$ and its integer wave vector. "
+"This detects low-order modulation that the current supercell can represent; "
+"it is not a continuous reciprocal-space scan."
 
 #: ../../source/module/training-set-assessment.md:227
 #: 9e39cb50b15442eb8123ccbdacdc073b
@@ -937,8 +915,8 @@ msgid ""
 "$C\\ge0.90$，并且满足以下任一条件：$S_\\mathrm{max}\\ge0.45$、反平行近邻比例至少 "
 "`0.20`、$R_M\\le0.20$；或 $R_M\\le0.20$ 且 $\\bar c\\le-0.25$"
 msgstr ""
-"$C\\ge0.90$ and at least one of the following: $S_\\mathrm{max}\\ge0.45$,"
-" antiparallel-neighbor fraction at least `0.20`, or $R_M\\le0.20$; "
+"$C\\ge0.90$ and at least one of the following: $S_\\mathrm{max}\\ge0.45$, "
+"antiparallel-neighbor fraction at least `0.20`, or $R_M\\le0.20$; "
 "alternatively $R_M\\le0.20$ and $\\bar c\\le-0.25$"
 
 #: ../../source/module/training-set-assessment.md:55
@@ -949,12 +927,10 @@ msgstr "Ferrimagnetic-like"
 #: ../../source/module/training-set-assessment.md:55
 #: ee5126d2716a49f4845d5d650d9717d0
 #, python-brace-format
-msgid ""
-"$C\\ge0.90$、$S_\\mathrm{max}\\ge0.45$、反平行近邻比例至少 `0.20`，且 "
-"$0.20<R_M\\le0.95$"
+msgid "$C\\ge0.90$、$S_\\mathrm{max}\\ge0.45$、反平行近邻比例至少 `0.20`，且 $0.20<R_M\\le0.95$"
 msgstr ""
-"$C\\ge0.90$, $S_\\mathrm{max}\\ge0.45$, antiparallel-neighbor fraction at"
-" least `0.20`, and $0.20<R_M\\le0.95$"
+"$C\\ge0.90$, $S_\\mathrm{max}\\ge0.45$, antiparallel-neighbor fraction at "
+"least `0.20`, and $0.20<R_M\\le0.95$"
 
 #: ../../source/module/training-set-assessment.md:55
 #: f8d5f9e7ff5b491089f4cb1c20146196
@@ -1004,12 +980,12 @@ msgid ""
 "逐元素结果使用相同的净磁矩、方向张量、同元素近邻相关和结构因子，给出「对齐」「补偿」「调制」「非共线」「混合共线」「无序」等快照标签。异元素近邻耦合按平均点积判断：不小于"
 " `0.50` 为平行，不大于 `-0.50` 为反平行，其余为混合。"
 msgstr ""
-"Per-element results use the same net moment, direction tensor, same-"
-"element neighbor correlation, and structure factor to label each snapshot"
-" as aligned, compensated, modulated, noncollinear, mixed collinear, or "
-"disordered. Neighboring unlike-element coupling is classified from the "
-"mean dot product: at least `0.50` is parallel, at most `-0.50` is "
-"antiparallel, and intermediate values are mixed."
+"Per-element results use the same net moment, direction tensor, same-element "
+"neighbor correlation, and structure factor to label each snapshot as "
+"aligned, compensated, modulated, noncollinear, mixed collinear, or "
+"disordered. Neighboring unlike-element coupling is classified from the mean "
+"dot product: at least `0.50` is parallel, at most `-0.50` is antiparallel, "
+"and intermediate values are mixed."
 
 #: ../../source/module/training-set-assessment.md:244
 #: f2ba8086aca549029a49934ea5e6b11b
@@ -1020,13 +996,13 @@ msgstr "Limits of magnetic-order labels"
 #: a3f175cf9c214c1ca7abde5a7940e111
 msgid "这些标签描述单帧自旋快照，不是有限温度磁相判定。波矢扫描只覆盖当前超胞可表示的低阶整数点；非公度螺旋、更长周期调制、强缺陷结构或尺寸很小的结构可能落入「混合」或「未解析」。判断相变温度、磁畴稳定性或自由能仍需要独立模拟和物理验证。"
 msgstr ""
-"These labels describe a single saved spin snapshot, not a finite-"
-"temperature magnetic phase. The wave-vector scan covers only the low-"
-"order integer points representable in the current supercell. "
-"Incommensurate spirals, longer-period modulation, strongly defective "
-"structures, or very small cells may be reported as mixed or unresolved. "
-"Transition temperatures, domain stability, and free energies require "
-"separate simulations and physical validation."
+"These labels describe a single saved spin snapshot, not a finite-temperature"
+" magnetic phase. The wave-vector scan covers only the low-order integer "
+"points representable in the current supercell. Incommensurate spirals, "
+"longer-period modulation, strongly defective structures, or very small cells"
+" may be reported as mixed or unresolved. Transition temperatures, domain "
+"stability, and free energies require separate simulations and physical "
+"validation."
 
 #: ../../source/module/training-set-assessment.md:249
 #: 1b25cfb5ee664cc5a3a01a50b37443b9
@@ -1038,15 +1014,15 @@ msgstr "Export an HTML report"
 msgid "点击页面顶部「导出 HTML 报告」，可保存本次数据快照。报告采用与页面相同的阅读优先级，不再把所有原始表格一次性铺开："
 msgstr ""
 "Click `Export HTML report` in the page header to save the current audit "
-"snapshot. The report follows the same reading priority as the application"
-" instead of expanding every raw table at once:"
+"snapshot. The report follows the same reading priority as the application "
+"instead of expanding every raw table at once:"
 
 #: ../../source/module/training-set-assessment.md:253
 #: fde9051a8f9c45cb8305311341c619bd
 msgid "第一屏先给出「训练前必须处理」「建议复核」或「未发现阻塞项」；"
 msgstr ""
-"The first screen states whether action is required before training, "
-"review is recommended, or no blocker was found."
+"The first screen states whether action is required before training, review "
+"is recommended, or no blocker was found."
 
 #: ../../source/module/training-set-assessment.md:254
 #: fabe5d83d391434fbf89bc4e666ae28e
@@ -1059,31 +1035,30 @@ msgstr ""
 #: 959d62ab09ce43f99a7c2148ffd2326c
 msgid "「Start here」只列最多 3 个最高优先级问题，并给出下一步动作；"
 msgstr ""
-"`Start here` lists at most the three highest-priority findings and gives "
-"the next action for each."
+"`Start here` lists at most the three highest-priority findings and gives the"
+" next action for each."
 
 #: ../../source/module/training-set-assessment.md:256
 #: 3757202766934ab29b69dbd12aa27634
 msgid "完整复核项按「必须处理」「建议复核」「支持证据」「不可用检查」分组；只有阻塞项默认展开；"
 msgstr ""
-"Complete findings are grouped into Required action, Review next, "
-"Supporting evidence, and Unavailable checks. Only blocking findings are "
-"expanded by default."
+"Complete findings are grouped into Required action, Review next, Supporting "
+"evidence, and Unavailable checks. Only blocking findings are expanded by "
+"default."
 
 #: ../../source/module/training-set-assessment.md:257
 #: ec370cb7e2c84bbab8ecf3155872b4d7
 msgid "普通复核详情、组分清单、相／磁地图、输入参数和运行指纹默认折叠，需要追证据时再展开。"
 msgstr ""
-"Ordinary review details, composition inventory, phase/magnetic maps, "
-"input parameters, and run fingerprints remain collapsed until evidence is"
-" needed."
+"Ordinary review details, composition inventory, phase/magnetic maps, input "
+"parameters, and run fingerprints remain collapsed until evidence is needed."
 
 #: ../../source/module/training-set-assessment.md:259
 #: aa0d43d1259b452daaba9f68430784ae
 msgid "因此，收到报告的人应先读状态横幅和 `Start here`，再展开与自己判断有关的证据。报告中仍保留："
 msgstr ""
-"Read the status banner and `Start here` first, then expand only the "
-"evidence needed for the decision. The report still preserves:"
+"Read the status banner and `Start here` first, then expand only the evidence"
+" needed for the decision. The report still preserves:"
 
 #: ../../source/module/training-set-assessment.md:261
 #: 4b2b84a711e84c159dba53cf75a562f6
@@ -1128,8 +1103,8 @@ msgstr "Training Set Audit cannot determine by itself:"
 #: 717a4e144ab448d492106e79e06a7755
 msgid "数据是否覆盖某个温度、压力、缺陷、界面或相变目标；"
 msgstr ""
-"whether the data cover a target temperature, pressure, defect, interface,"
-" or phase-transition regime;"
+"whether the data cover a target temperature, pressure, defect, interface, or"
+" phase-transition regime;"
 
 #: ../../source/module/training-set-assessment.md:273
 #: 27e8bafc5305412c9567e092c0f9a524
@@ -1163,7 +1138,7 @@ msgstr ""
 msgid "这些问题分别需要明确的目标空间、目标结构或轨迹、模型预测、独立参考数据和物性验证协议。「当前数据中少」只表示相对稀少，不等于研究目标中缺失。"
 msgstr ""
 "Those questions require a declared target space, target structures or "
-"trajectories, model predictions, independent reference data, and a "
-"property-specific validation protocol. Rare in this dataset means "
-"relatively infrequent inside the current snapshot; it does not mean "
-"missing from the research target."
+"trajectories, model predictions, independent reference data, and a property-"
+"specific validation protocol. Rare in this dataset means relatively "
+"infrequent inside the current snapshot; it does not mean missing from the "
+"research target."

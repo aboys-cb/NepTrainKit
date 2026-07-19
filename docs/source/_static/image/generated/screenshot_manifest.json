@@ -3,209 +3,456 @@
     "scenario": "make_data_empty",
     "title": "Make Data workspace",
     "description": "Empty Make Data workflow page with the add-card entry point annotated.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/make_data_empty.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "f4b1b60d7ad97ec639b5561e8bcf479a155aa13f04650941771d359cae8b4594"
+    "sha256": "20954c01b2d30698aa5cdfcadfc8f153b82adf472d6172bf28d09d5a6b668bec"
+  },
+  "make_data_empty_en": {
+    "scenario": "make_data_empty",
+    "title": "Make Data workspace",
+    "description": "Empty Make Data workflow page with the add-card entry point annotated.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/make_data_empty_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "05548082cb5a3faefd0bb85e071d355c70f6dbef33f0bb61bc377f032fb19db1"
   },
   "make_data_lattice_strain": {
     "scenario": "make_data_lattice_strain",
     "title": "Make Data lattice strain quickstart",
     "description": "Quickstart scene with a Lattice Strain card configured for small axial strain.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/make_data_lattice_strain.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "eb7b679261643de7aae92698dfbb2d1f77e82af291c320b3499822928777a0c6"
+    "sha256": "35c250f8e00df47fa97e5c8be1e16bd9706e00b7909d00a9f4d2f3401e6522ed"
+  },
+  "make_data_lattice_strain_en": {
+    "scenario": "make_data_lattice_strain",
+    "title": "Make Data lattice strain quickstart",
+    "description": "Quickstart scene with a Lattice Strain card configured for small axial strain.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/make_data_lattice_strain_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "d5c8e65e6b6e5d76ab35daa5ec9ad3ffdecc637cdec43de240755c4d6f85dc2e"
   },
   "show_nep_arrow_dialog": {
     "scenario": "show_nep_arrow_dialog",
     "title": "Show arrows dialog",
-    "description": "NEP Dataset Display vector-arrow configuration dialog.",
+    "description": "Show NEP vector-arrow configuration dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/s_arrow_dialog.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "f57924dd611a9e72801c63367d85658bae67c3b835dd8a59ea4bcf56097533d2"
+    "sha256": "4a76dc62348d60b51f96808146d06e9e0617d95f918865d935127416f98f29aa"
+  },
+  "show_nep_arrow_dialog_en": {
+    "scenario": "show_nep_arrow_dialog",
+    "title": "Show arrows dialog",
+    "description": "Show NEP vector-arrow configuration dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/s_arrow_dialog_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "479fe5791c0283202482167a6ae74cceedf4c2f24f63c3171c036b59148e5d17"
   },
   "show_nep_dftd3_dialog": {
     "scenario": "show_nep_dftd3_dialog",
     "title": "DFT D3 dialog",
-    "description": "NEP Dataset Display DFT-D3 correction dialog.",
+    "description": "Show NEP DFT-D3 correction dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_dftd3_dialog.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "72107332e4eb0f5e4c167e9eb26e1066326885d0f02011b2b63077551a14c20b"
+    "sha256": "940b1053f997f6b4f16faedc92d3641f44f18484236791cf6df2f125a62fa380"
+  },
+  "show_nep_dftd3_dialog_en": {
+    "scenario": "show_nep_dftd3_dialog",
+    "title": "DFT D3 dialog",
+    "description": "Show NEP DFT-D3 correction dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/g_dftd3_dialog_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "07b95c08d75a52972dda69bcdc02929d845976601443a1e8410b90a04cd3b797"
   },
   "show_nep_distribution_dialog": {
     "scenario": "show_nep_distribution_dialog",
     "title": "Distribution inspector dialog",
-    "description": "NEP Dataset Display distribution inspector dialog.",
+    "description": "Show NEP distribution inspector dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_dist_dialog.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "8a80bd9b73769bb8ceeb32e8dcf12b1cc481f4a653045706f5fe8b057db5c695"
+    "sha256": "93f414c00814f3eb2445ce0a119ddf622d9768be1bfac4f956fac46330aa2446"
+  },
+  "show_nep_distribution_dialog_en": {
+    "scenario": "show_nep_distribution_dialog",
+    "title": "Distribution inspector dialog",
+    "description": "Show NEP distribution inspector dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/g_dist_dialog_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "f0361da9074fe99a3ae928842ddc22102542152c01d440f8e8c98e0045dd88f2"
   },
   "show_nep_drop_bad_dialog": {
     "scenario": "show_nep_drop_bad_dialog",
     "title": "Drop bad confirmation dialog",
-    "description": "NEP Dataset Display reject-deletion confirmation dialog.",
+    "description": "Show NEP reject-deletion confirmation dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/s_dropbad_confirm.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "c0f222b50ef753a5b5c55566b9bf8d6bb463848f893462eddddb1bf07c38d802"
+    "sha256": "014f30e2b8eeaad498071409c76a6546cef88f6a06077c470303da438629225d"
+  },
+  "show_nep_drop_bad_dialog_en": {
+    "scenario": "show_nep_drop_bad_dialog",
+    "title": "Drop bad confirmation dialog",
+    "description": "Show NEP reject-deletion confirmation dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/s_dropbad_confirm_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "3015ad2c3bb6c20ec53c2ae055f207b82e96a9fbafbe30c428a9f71c99f8a999"
   },
   "show_nep_edit_info_dialog": {
     "scenario": "show_nep_edit_info_dialog",
     "title": "Edit info dialog",
-    "description": "NEP Dataset Display structure-info editing dialog.",
+    "description": "Show NEP structure-info editing dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_editinfo_dialog.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "83ebd94f91ee0321341867d7d8c6a010aac9a114a22f9c7d7e9744db89dd0739"
+    "sha256": "c13b6c00882d9849a29a0a84d5f97c86fb4c4348600e3d4b126a26e543cdebf1"
+  },
+  "show_nep_edit_info_dialog_en": {
+    "scenario": "show_nep_edit_info_dialog",
+    "title": "Edit info dialog",
+    "description": "Show NEP structure-info editing dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/g_editinfo_dialog_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "77207f071df95fbc8b01e6490337f18f11c93ec2d1c88684050be25687947865"
   },
   "show_nep_export_format_dialog": {
     "scenario": "show_nep_export_format_dialog",
     "title": "Export format dialog",
-    "description": "NEP Dataset Display export-format dialog.",
+    "description": "Show NEP export-format dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/s_export_format.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "5d09eef4f22fe1298af6ead8f308094e5cf8169a7d736d8b7fdafe459c90e602"
+    "sha256": "c271f9d2805991c1a44ef47a45f0c645e21382628883ef779eadf97307212bc7"
+  },
+  "show_nep_export_format_dialog_en": {
+    "scenario": "show_nep_export_format_dialog",
+    "title": "Export format dialog",
+    "description": "Show NEP export-format dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/s_export_format_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "e6883362dcff09b41fa0a9d3c2c865869c974f59a265ec919cc94e9655d7ad7d"
   },
   "show_nep_force_dialog": {
     "scenario": "show_nep_force_dialog",
     "title": "Check net force dialog",
-    "description": "NEP Dataset Display net-force threshold dialog.",
+    "description": "Show NEP net-force threshold dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_force_dialog.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "60ad0458382bb1833771fb0cf61a43256804e710ac1cd81084d5ec5c460fcefd"
+    "sha256": "8a3aa6c8d4c58cd68bb71c4160e42e2dc7d6acbe8849f9f95bf7a7f6fd2ad4df"
+  },
+  "show_nep_force_dialog_en": {
+    "scenario": "show_nep_force_dialog",
+    "title": "Check net force dialog",
+    "description": "Show NEP net-force threshold dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/g_force_dialog_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "3447db9c4c4abbc969f5a0bc11d2ad667dd448f7099a19cd0a2df229ae7a6317"
   },
   "show_nep_index_dialog": {
     "scenario": "show_nep_index_dialog",
     "title": "Select by Index dialog",
-    "description": "NEP Dataset Display index-selection dialog.",
+    "description": "Show NEP index-selection dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_index_dialog.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "a2dccb7f0e10f9e180aad961b37f89286b88047dc03602ebfe4ca042d27b3937"
+    "sha256": "1dbdb4d9762eb3880eef335c9880b7119211b9dcfbd1acacc8a95417efad2f4b"
+  },
+  "show_nep_index_dialog_en": {
+    "scenario": "show_nep_index_dialog",
+    "title": "Select by Index dialog",
+    "description": "Show NEP index-selection dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/g_index_dialog_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "3408282c86424963d55e9f44f1b320ff049a5038d9f8233b816196a034692a0c"
   },
   "show_nep_lattice_dialog": {
     "scenario": "show_nep_lattice_dialog",
     "title": "Select by Lattice dialog",
-    "description": "NEP Dataset Display lattice-range selection dialog.",
+    "description": "Show NEP lattice-range selection dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_lattice_dialog.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "065c87b39cf325afe8f56de15a2f9630202afd45104b9668b522474ba6dd1e77"
+    "sha256": "2222115bb1a24f0d55a785c8c37a11ffbfbbb82e1d781e0b956c7b514cb96ffd"
+  },
+  "show_nep_lattice_dialog_en": {
+    "scenario": "show_nep_lattice_dialog",
+    "title": "Select by Lattice dialog",
+    "description": "Show NEP lattice-range selection dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/g_lattice_dialog_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "a3669d92543145789de64f05a63e17f28f0749e867d009b9767f05782955ad25"
   },
   "show_nep_max_error_dialog": {
     "scenario": "show_nep_max_error_dialog",
     "title": "Find max error dialog",
-    "description": "NEP Dataset Display maximum-error count dialog.",
+    "description": "Show NEP maximum-error count dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_maxerr_dialog.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "2d0f8e7d4ad66e133c01d6627dbf9874442dbcc2a2e7dd9aa062c24f0fe0001b"
+    "sha256": "17ee4e4b58b2975530645771961d983f27d97aaffaaeced81d19e5d473a357d3"
+  },
+  "show_nep_max_error_dialog_en": {
+    "scenario": "show_nep_max_error_dialog",
+    "title": "Find max error dialog",
+    "description": "Show NEP maximum-error count dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/g_maxerr_dialog_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "44254fc7aeba12e44ac8754ac2172880533af00293899e7f566cf9e5de64e90c"
   },
   "show_nep_overview": {
     "scenario": "show_nep_overview",
     "title": "NEP Dataset Display overview",
     "description": "Main NEP Dataset Display window with top-level regions annotated.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_overview.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "ff4d60d2af16d46edaaaf5b80ff4f62d74d7cf5b87de93bb67ca96e9c2958b92"
+    "sha256": "2b49b492bda45f5762aeef67ca362b4666e89892be8044411e40100010a9e020"
+  },
+  "show_nep_overview_en": {
+    "scenario": "show_nep_overview",
+    "title": "NEP Dataset Display overview",
+    "description": "Main NEP Dataset Display window with top-level regions annotated.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_overview_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "59727fd1e4938a5b0baf6e58747358869889a01e127a3cf774ee497fa411313c"
   },
   "show_nep_range_dialog": {
     "scenario": "show_nep_range_dialog",
     "title": "Select by Range dialog",
-    "description": "NEP Dataset Display scatter-range selection dialog.",
+    "description": "Show NEP scatter-range selection dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_range_dialog.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "ff571b91a8c660b3b1a9a9eeb4f92f0a58e5e2551d7eac0805326c72734c5e81"
+    "sha256": "45ff4dfe8ef34e6cdd4b77b4db6c87d74d767f924d48ff7e9c5b02ca7281ade6"
+  },
+  "show_nep_range_dialog_en": {
+    "scenario": "show_nep_range_dialog",
+    "title": "Select by Range dialog",
+    "description": "Show NEP scatter-range selection dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/g_range_dialog_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "78a973961164d2d22bfa0ee22fd4d8de02296f969d748b3cefc2779adbf232e1"
   },
   "show_nep_shift_dialog": {
     "scenario": "show_nep_shift_dialog",
     "title": "Energy baseline shift dialog",
-    "description": "NEP Dataset Display energy-baseline shift dialog.",
+    "description": "Show NEP energy-baseline shift dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_shift_dialog.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "123d9bd50010cf8c022118125eb74018c20d7e79ad1abfd29d83f977502c9835"
+    "sha256": "8642000ae7f9345212b6922e2bd2bacdc17b63fac6bc55bb36c2748e610bd424"
+  },
+  "show_nep_shift_dialog_en": {
+    "scenario": "show_nep_shift_dialog",
+    "title": "Energy baseline shift dialog",
+    "description": "Show NEP energy-baseline shift dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/g_shift_dialog_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "05a3af233f524bc511be549dab5e909f64d4bc3b113a5e1b3a20fab3b1735ab6"
   },
   "show_nep_sparse_dialog": {
     "scenario": "show_nep_sparse_dialog",
     "title": "Sparse samples dialog",
-    "description": "NEP Dataset Display sparse sampling dialog.",
+    "description": "Show NEP sparse sampling dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_sparse_dialog.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "d1c624e422a343dc1616f06d39256678d238867a288803c77bbaab79f755671f"
+    "sha256": "885c44f4bee08434d5121d28be8fe914cde31e5896a2ffc661772d425066b962"
+  },
+  "show_nep_sparse_dialog_en": {
+    "scenario": "show_nep_sparse_dialog",
+    "title": "Sparse samples dialog",
+    "description": "Show NEP sparse sampling dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/g_sparse_dialog_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "f52ca6fef3051ec70ee9bdc7aad318dac914a0b07d82debabd101fdb5cb711ce"
   },
   "show_nep_summary_dialog": {
     "scenario": "show_nep_summary_dialog",
     "title": "Dataset summary dialog",
-    "description": "NEP Dataset Display dataset summary dialog.",
+    "description": "Show NEP dataset summary dialog.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/show_nep_reference/g_summary_dialog.png",
     "window_size": [
       1200,
       700
     ],
-    "sha256": "ef0c70df550ca4891e264c4ed1e46b4867078e5387a899d756c4024d584514b1"
+    "sha256": "0a852fa15eabc22b6e67f46755fcd372e116c3d52ea217b2de760e5a5283bbd0"
+  },
+  "show_nep_summary_dialog_en": {
+    "scenario": "show_nep_summary_dialog",
+    "title": "Dataset summary dialog",
+    "description": "Show NEP dataset summary dialog.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/show_nep_reference/g_summary_dialog_en.png",
+    "window_size": [
+      1200,
+      700
+    ],
+    "sha256": "06779fb5dff8f06522427e6acb2c0573c22ce84f360b302c18601c49696ef904"
   },
   "training_set_audit_overview": {
     "scenario": "training_set_audit_overview",
     "title": "Training Set Audit overview",
     "description": "Audit overview showing the conclusion, dataset summary, review queue, and report export.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/training_set_audit_overview.png",
     "window_size": [
       1440,
       860
     ],
-    "sha256": "3e1b508af680097d297c3c5ba9d0c782697202e7d266b9bdcfc8b96a61854b83"
+    "sha256": "f425d0a47b40148a3ac61db2887db8e1bfd596edc70f6000988e289872e839ea"
+  },
+  "training_set_audit_overview_en": {
+    "scenario": "training_set_audit_overview",
+    "title": "Training Set Audit overview",
+    "description": "Audit overview showing the conclusion, dataset summary, review queue, and report export.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/training_set_audit_overview_en.png",
+    "window_size": [
+      1440,
+      860
+    ],
+    "sha256": "5c08190ff8867547daa7d7134c44419a2be73315985ca95f8e0c3179874b1eb1"
   },
   "training_set_audit_structure_map": {
     "scenario": "training_set_audit_structure_map",
     "title": "Phase evidence on the composition map",
     "description": "Composition map after on-demand structural-phase analysis.",
+    "language": "zh_CN",
     "output": "docs/source/_static/image/generated/training_set_audit_structure_map.png",
     "window_size": [
       1440,
       860
     ],
-    "sha256": "6622a86c4c7f260d1d9f7498434bec2eb0c2625bfecff51441d1278e72baf7dd"
+    "sha256": "86fd78756a4f1abac3fdd7309d23807ea19ddf25a26c69fe398d654467b827ab"
+  },
+  "training_set_audit_structure_map_en": {
+    "scenario": "training_set_audit_structure_map",
+    "title": "Phase evidence on the composition map",
+    "description": "Composition map after on-demand structural-phase analysis.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/training_set_audit_structure_map_en.png",
+    "window_size": [
+      1440,
+      860
+    ],
+    "sha256": "4b01093e25800b26212606af77f42268692b5c64441df7f475ce55030774694d"
   }
 }

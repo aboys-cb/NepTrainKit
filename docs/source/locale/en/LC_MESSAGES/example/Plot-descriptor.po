@@ -27,6 +27,8 @@ msgstr "Descriptor Plotting Example"
 #: ../../source/example/Plot-descriptor.md:3 8651e63c16b64e85a4d2d4ed686aa4fd
 msgid "以 CsPbI3 为例，导出 descriptor 后绘制结构分布。"
 msgstr ""
+"This example exports descriptors for CsPbI3 and plots the resulting "
+"distribution of structures."
 
 #: ../../source/example/Plot-descriptor.md:5 136fd3e699e34ae0b618f7c1757fa667
 msgid "![Image](../_static/image/example/plot_descriptor/main_ui.png)"
@@ -44,13 +46,16 @@ msgstr ""
 
 #: ../../source/example/Plot-descriptor.md:7 d3e479ee66a246319374ae56b5f78fb6
 msgid "导出步骤"
-msgstr ""
+msgstr "Export the descriptors"
 
 #: ../../source/example/Plot-descriptor.md:9 5ac1e40229414f3fbf13fa899ad9e087
 msgid ""
 "选择结构：<img src=\"../_static/image/generated/show_nep_icons/pen.svg\" "
 "alt=\"pen\" width='30' height='30' />"
 msgstr ""
+"Select the structures: <img "
+"src=\"../_static/image/generated/show_nep_icons/pen.svg\" alt=\"pen\" "
+"width='30' height='30' />"
 
 #: ../../source/example/Plot-descriptor.md:9 f0eef507ad634362a4231bb119cee5f0
 msgid "pen"
@@ -65,6 +70,9 @@ msgid ""
 "点击导出：<img src=\"../_static/image/generated/show_nep_icons/export.svg\" "
 "alt=\"export\" width='30' height='30' />"
 msgstr ""
+"Click Export descriptors: <img "
+"src=\"../_static/image/generated/show_nep_icons/export.svg\" alt=\"export\" "
+"width='30' height='30' />"
 
 #: ../../source/example/Plot-descriptor.md:10 d64028e7092741a6b3ef47e50cd53b8c
 msgid "export"
@@ -76,18 +84,21 @@ msgstr ""
 
 #: ../../source/example/Plot-descriptor.md:11 aec3994fe93f476581e4c68c199f0f5c
 msgid "选择文件路径"
-msgstr ""
+msgstr "Choose the output path."
 
 #: ../../source/example/Plot-descriptor.md:13 7efbc319b0214c909b1fe3c2878e5fe0
 msgid "绘图"
-msgstr ""
+msgstr "Plot the distribution"
 
 #: ../../source/example/Plot-descriptor.md:15 8f7688a0106643d9b8202a524499a005
 msgid ""
 "使用 [plot_descriptor.py](https://github.com/aboys-"
-"cb/NepTrainKit/blob/master/tools/plot_descriptor.py)， 配置 `config` 和 "
-"`method` 后执行："
+"cb/NepTrainKit/blob/master/tools/plot_descriptor.py)， 配置 `config` 和 `method`"
+" 后执行："
 msgstr ""
+"Open [plot_descriptor.py](https://github.com/aboys-"
+"cb/NepTrainKit/blob/master/tools/plot_descriptor.py), set `config` and "
+"`method`, and then run:"
 
 #: ../../source/example/Plot-descriptor.md:18 9d28a185688e420691cc3d8491e8e318
 msgid "`python plot_descriptor.py`"

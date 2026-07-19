@@ -23,7 +23,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:3
 #: f887eea9810642628d8b43611f7238b5
 msgid "FPS 过滤（FPS Filter）"
-msgstr ""
+msgstr "FPS Filter"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:5
 #: 3ff48ad16143443fbe21c6adf94a94ad
@@ -33,7 +33,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:7
 #: d4db257bf8a74a0d8be46ef905f1be9f
 msgid "功能说明"
-msgstr ""
+msgstr "What the card does"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:9
 #: e0f23e45cdda4326806177a9068d5331
@@ -41,6 +41,10 @@ msgid ""
 "基于 NEP 描述符空间的最远点采样（FPS），从大批量结构中挑选代表性子集，去除冗余同时保留多样性。需要提供一个 NEP 模型文件（如内置的 "
 "`nep89.txt` 或你自己训练的模型）用于生成描述符。"
 msgstr ""
+"Use farthest-point sampling (FPS) in NEP descriptor space to select a "
+"representative subset from a large pool, reducing redundancy while retaining"
+" diversity. A usable NEP model, such as the bundled `nep89.txt` or a system-"
+"specific model, is required to compute descriptors."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:11
 #: 7ef8cabec21e45f0835d1f2e5ba83719
@@ -59,12 +63,12 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:15
 #: 6d86307b4a1c41dc964aca747ed7c117
 msgid "操作示例"
-msgstr ""
+msgstr "Example workflow"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:17
 #: 5ce3d352caf44c76b801cd60b1f8811a
 msgid "场景：2000 个候选结构训练出来效果不如 200 个精选的"
-msgstr ""
+msgstr "Scenario: 2,000 candidates perform worse than 200 selected structures"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:19
 #: 83c714ad8a914e19bd33f50c96987d06
@@ -72,33 +76,40 @@ msgid ""
 "你用多张生成卡产出了 2000 个候选结构，全部丢进训练集跑了 DFT 计算。重训后模型精度比只用前 200 个结构手动挑的版本还差——2000 "
 "个结构里大量重复构型，有效多样性反而被稀释了。"
 msgstr ""
+"Several generators produce 2,000 candidates and all are labeled by DFT, yet "
+"the retrained model is worse than one trained on 200 manually selected "
+"structures. Heavy duplication diluted effective diversity."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:21
 #: b115bb80195047c3aacd49d3d5bfd158
 msgid ""
-"**诊断思路：** 卡片生成的候选集有大量统计冗余。比如 `Random Vacancy` 生成了 200 个空位结构，但从描述符角度看可能只有 "
-"15 种真正不同的局域环境。FPS 可以在描述符空间里按\"最远优先\"的原则挑出最不相似的子集，保留多样性去掉冗余。"
+"**诊断思路：** 卡片生成的候选集有大量统计冗余。比如 `Random Vacancy` 生成了 200 个空位结构，但从描述符角度看可能只有 15 "
+"种真正不同的局域环境。FPS 可以在描述符空间里按\"最远优先\"的原则挑出最不相似的子集，保留多样性去掉冗余。"
 msgstr ""
+"**Diagnosis:** Generated pools often contain statistical redundancy: 200 "
+"random vacancies may represent only 15 distinct local environments. FPS "
+"greedily chooses points farthest from the selected set in descriptor space, "
+"preserving diversity while removing near-duplicates."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:23
 #: b3845798ed2844adb5555a7894082dc2
 msgid "**输入：** 2000 个候选结构，以及一个可用的 `nep89.txt` 模型文件"
-msgstr ""
+msgstr "**Input:** 2,000 cleaned candidates and a usable NEP model file."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:25
 #: 629a0615fff0447c9415551f9d2f3d68
 msgid "**目标：** 从 2000 个中挑出 200 个最具代表性的结构"
-msgstr ""
+msgstr "**Objective:** Select 200 representative structures."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:27
 #: 19a78215d7524403a25cf6b47328efd6
 msgid "**参数设置：**"
-msgstr ""
+msgstr "**Parameters:**"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:28
 #: 4ea9804758114315b328e09d97ce1b14
 msgid "`Nep Path` = 指向你的 NEP 模型文件路径"
-msgstr ""
+msgstr "`Nep Path` = path to the NEP model"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:29
 #: 0223969724e6421e9e5324d8048797fb
@@ -114,81 +125,89 @@ msgstr ""
 #: a1cf63035a8d492d861ed902a5bd3bd1
 msgid "**输出：** 200 个结构，在描述符空间中两两距离尽可能大，覆盖输入集的多样性"
 msgstr ""
+"**Output:** Up to 200 structures chosen to spread coverage through the input"
+" descriptor space."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:34
 #: 02c94e8674284b7f94fe706bffc4e28a
 msgid "**怎么验证挑选质量：**"
-msgstr ""
+msgstr "**How to verify selection quality:**"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:35
 #: a5c4b94dc9ef4725b94b729e8cfa69db
 msgid "重训后用同一组测试集对比：FPS 精选 200 个 vs 随机抽 200 个，前者精度应更高"
 msgstr ""
+"Train on 200 FPS-selected versus 200 randomly selected structures and "
+"compare on the same test set; FPS should improve or preserve accuracy."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:36
 #: fd8b72105e714d34950252ab2d6370e1
 msgid "如果 200 个不够，增大 `num_condition` 到 500"
-msgstr ""
+msgstr "If 200 is insufficient, increase `num_condition`, for example to 500."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:37
 #: 5dcd8650b6744425b898beb72876a33c
 msgid "如果挑出的结构仍有重复感，增大 `min_distance_condition` 到 0.05~0.1"
 msgstr ""
+"If selected structures remain redundant, test a larger "
+"`min_distance_condition`, such as 0.05-0.1."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:38
 #: 7160f1c18df349d7824870032ac99467
 msgid "注意：FPS 只挑不造——如果输入池本身没有某类构型，FPS 不会凭空变出来"
 msgstr ""
+"FPS selects but never generates. A missing configuration family cannot "
+"appear unless it exists in the input pool."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:40
 #: 2304191cc7dc4ed7ba0b9985b44a5128
 msgid "什么时候加这张卡、什么时候不加"
-msgstr ""
+msgstr "When to add this card"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:42
 #: b64a07f0466c4eb5a7f8d81d3ffbb6f8
 msgid "**加：**"
-msgstr ""
+msgstr "**Add it when:**"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:43
 #: 365bbe91dce7488fac8f7baccabec529
 msgid "生成链条产生了大量结构（>500），需要去冗余"
-msgstr ""
+msgstr "A generation chain produced hundreds of structures and needs deduplication"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:44
 #: 0c765b946f8a4d3db636d51920682f02
 msgid "怀疑训练集有大量重复/高度相似的构型"
-msgstr ""
+msgstr "The pool likely contains many duplicate or highly similar configurations"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:45
 #: 1339c2d088494976aee7c9812368120d
 msgid "需要在保持覆盖的前提下压缩训练集体积"
-msgstr ""
+msgstr "The dataset must be compressed while retaining coverage"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:47
 #: ff9a91431a204ce387a0fc65b1a5f4af
 msgid "**不加：**"
-msgstr ""
+msgstr "**Do not add it when:**"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:48
 #: 0fb9e116056242ec919496c802856258
 msgid "还在生成阶段，结构数量很少（<50）"
-msgstr ""
+msgstr "The pool is still small"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:49
 #: 5deda45531cc449f976710389c029b73
 msgid "输入池本身还没经过物理清洗（如已用 NEP 预筛、剔除异常结构）"
-msgstr ""
+msgstr "The input pool has not yet been physically cleaned"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:50
 #: ae68e092493e4fb4b456514d7575608d
 msgid "模型还没训练出来——FPS 需要一个可用的 NEP 模型来生成描述符"
-msgstr ""
+msgstr "No suitable NEP model is available for descriptors"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:52
 #: 74fe518f453c46689db44fc8dc931254
 msgid "参数说明"
-msgstr ""
+msgstr "Parameters"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:53
 #: 03550fdf2eef4dd7b491d435d3584390
@@ -201,6 +220,8 @@ msgid ""
 "`str`，默认 `MISSING`。指向用于生成 NEP 描述符的模型文件，必须是一个可用的 NEP 模型文件（如 `nep.txt` 或内置 "
 "`nep89.txt`）。路径为空或文件不存在时卡片直接报错。"
 msgstr ""
+"`str`, default `MISSING`. Path to a usable NEP model such as `nep.txt` or "
+"bundled `nep89.txt`. The card fails if the path is empty or nonexistent."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:56
 #: 7821ca48854f45369be46c7d0caf5a34
@@ -213,6 +234,9 @@ msgid ""
 "`int`，默认 100。FPS 过滤后保留的代表结构数。这是输出数量，不是上游生成数量——DFT "
 "预算固定时直接设你计划算的上限；但设太小会把稀有构型也筛掉。"
 msgstr ""
+"`int`, default `100`. Maximum representative outputs. It is an output count,"
+" not an upstream generation count. Match it to the DFT budget while leaving "
+"enough capacity for rare families."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:59
 #: 1641fabb61974b13ae4feb7e476c4628
@@ -223,6 +247,9 @@ msgstr ""
 #: c6a3d6e0599c4c1b950ee2ec7d3e53bb
 msgid "`float`，默认 0.01。描述符空间中的最小距离阈值。值越大去重越激进，但设太大 FPS 会过早停、选不够数；设太小又可能混入近重复结构。"
 msgstr ""
+"`float`, default `0.01`. Minimum distance in descriptor space. Larger values"
+" deduplicate more aggressively but can stop before reaching the requested "
+"count; smaller values admit near-duplicates."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:62
 #: 0b533c1b4fa84f9583b333452bf90f2b
@@ -235,6 +262,8 @@ msgid ""
 "`str`，默认 `'auto'`。描述符计算后端。正常保持 `auto` 让程序自己选可用的 NEP "
 "后端；只有在你需要调试性能或对比后端差异时才手动指定。"
 msgstr ""
+"`str`, default `'auto'`. Descriptor backend. Keep automatic selection unless"
+" diagnosing performance or backend differences."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:65
 #: d62a0f8c6192465f8b355ffd15b6d9b8
@@ -245,16 +274,19 @@ msgstr ""
 #: bb0bafefd4a34b55975004120aef1510
 msgid "`int`，默认 1000。描述符批处理大小，只影响吞吐和内存。GPU 或大体系可以调大加速，内存紧张时适当调小。"
 msgstr ""
+"`int`, default `1000`. Descriptor batch size; affects throughput and memory "
+"only. Increase when the backend and memory allow, and reduce under memory "
+"pressure."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:68
 #: 0520a571c8164e7ca7d7b511222b0125
 msgid "推荐预设"
-msgstr ""
+msgstr "Recommended presets"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:70
 #: 365d0a69dcbf4eb58b6f3ff558ec038a
 msgid "轻度去重（保留 100 个，min_dist 0.01）"
-msgstr ""
+msgstr "Light deduplication (keep 100, min_dist 0.01)"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:71
 #: b38c725a1a064a16b271ef0dec5b77c1
@@ -276,7 +308,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:85
 #: c5e6bef8be0a41f49e030831abce48fb
 msgid "常规去重（保留 200 个，min_dist 0.03）"
-msgstr ""
+msgstr "Routine deduplication (keep 200, min_dist 0.03)"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:86
 #: f4928e46d8ed4e0b815d922b9f36c7ba
@@ -298,7 +330,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:100
 #: be1efc63a5b14cc882c0379099a0ad7c
 msgid "强去重（保留 50 个，min_dist 0.06）"
-msgstr ""
+msgstr "Strong deduplication (keep 50, min_dist 0.06)"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:101
 #: 823ef6dba70e488cad2c0c7ddf1a2f53
@@ -320,32 +352,36 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:115
 #: 01b7283e74a947abb07888a12b8ac579
 msgid "推荐组合"
-msgstr ""
+msgstr "Recommended combinations"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:117
 #: 5f63eab2f3914841a72fd283c8d54e10
 msgid "任意生成链 → `NEP Dataset Display` 清洗 → `FPS Filter`：先去掉明显坏结构，再做代表性筛选"
 msgstr ""
+"Any generation chain -> clean in `NEP Dataset Display` -> `FPS Filter`: "
+"remove invalid geometry before representative sampling"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:118
 #: 869b83f366a244c2be10842d3171c466
 msgid "`FPS Filter` → 导出 DFT 计算：控制进入 DFT 计算的结构数量，节省计算资源"
-msgstr ""
+msgstr "`FPS Filter` -> DFT export: bound the number of expensive labels"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:119
 #: a83738135c4343529c6665d1c0afcc7c
 msgid "多分支汇总后 → `FPS Filter`：先汇总各分支输出，再统一挑选"
 msgstr ""
+"Merged branch outputs -> `FPS Filter`: select across all branches "
+"consistently"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:121
 #: 6a1ec7bcbbe14e4f9982c6e25c465b4e
 msgid "常见问题"
-msgstr ""
+msgstr "Common questions"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:123
 #: 0d7c2937acba445c88dda134d03754bb
 msgid "**卡片报错\"NEP file does not exist\"。** `nep_path` 指向的文件不存在。确认路径正确。"
-msgstr ""
+msgstr "**`NEP file does not exist`.** Correct `nep_path` to an existing model file."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:125
 #: 64b48ab0ea694d2687075565b7f67659
@@ -353,33 +389,44 @@ msgid ""
 "**输出数量远小于 `num_condition`。** `min_distance_condition` "
 "太严，无法选出足够多满足距离约束的结构。降低该阈值。"
 msgstr ""
+"**Output is far below `num_condition`.** `min_distance_condition` is too "
+"strict; lower it to allow more selections."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:127
 #: cabd2c4f49334172aeca9b213be44145
 msgid "**挑出的结构覆盖不全。** FPS 只能从现有池里选。如果某些局域环境在输入池里本来就没有，FPS 也无法补充。回到上游增加生成多样性。"
 msgstr ""
+"**Coverage remains incomplete.** FPS cannot create absent environments. Add "
+"the missing diversity upstream."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:129
 #: 707f7946d48342b080acd46b88788b9d
 msgid "**描述符计算很慢。** 大批量（>5000）时描述符计算可能耗时。先用 `FPS Filter` 之前控制好上游输出量。"
 msgstr ""
+"**Descriptor calculation is slow.** Pools above several thousand structures "
+"can be expensive. Bound upstream generation and tune batch size before "
+"sampling."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:131
 #: cead5fc7d4fc4344bdf6ebc0d5c7be91
 msgid "输出标签"
-msgstr ""
+msgstr "Output labels"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:133
 #: 9da1de09275a45cfbabb962acbb4b546
 msgid "不新增专用 Config_type 标签。输出结构保留原标签。"
 msgstr ""
+"No dedicated `Config_type` is added; selected structures preserve their "
+"existing labels."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:135
 #: 41212fac47cd424bbe66a95267edd4bd
 msgid "可复现性"
-msgstr ""
+msgstr "Reproducibility"
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:137
 #: 23fd8b95c838402ca8ce00257deab4c6
 msgid "无随机性。同参数同输入 → 严格一致输出。FPS 是确定性贪心算法。"
 msgstr ""
+"Deterministic: identical inputs and parameters produce identical output "
+"because FPS is a deterministic greedy algorithm."

@@ -29,23 +29,27 @@ msgid ""
 "这页按“你手里有什么文件”来选入口。NepTrainKit 会把常见结构和训练结果转换成内部 `Structure` "
 "表示，用于显示、筛选、生成候选结构或导出。"
 msgstr ""
+"Use this page to choose an entry point from the files you already have. "
+"NepTrainKit converts common structure files and training outputs to its "
+"internal `Structure` representation for visualization, filtering, candidate "
+"generation, and export."
 
 #: ../../source/formats.md:6 624b09267918454b9e3b60b07ddb1069
 msgid "结构文件"
-msgstr ""
+msgstr "Structure files"
 
 #: ../../source/formats.md 73b945dcc09446b4a4aad9231698ab33
 #: d6a3c5be7d1142878bbf514f5e4f8605
 msgid "文件"
-msgstr ""
+msgstr "File"
 
 #: ../../source/formats.md d1a8cf6e8cb748dc9325a43f77cc8cf3
 msgid "推荐入口"
-msgstr ""
+msgstr "Recommended entry point"
 
 #: ../../source/formats.md 136a29b8f27642648fdda7c33587b218
 msgid "常见用途"
-msgstr ""
+msgstr "Typical use"
 
 #: ../../source/formats.md feae16b5b3e6490ab9e2e8f1aaf7bc41
 msgid "`.xyz` / `.extxyz`"
@@ -53,11 +57,11 @@ msgstr ""
 
 #: ../../source/formats.md 21247a1bcb4c4d819ee426b5bd22dec5
 msgid "`Make Dataset` 或 `NEP Dataset Display`"
-msgstr ""
+msgstr "`Make Dataset` or `NEP Dataset Display`"
 
 #: ../../source/formats.md 5cb9d13b1adc4a18a913841f1dbd0b5a
 msgid "作为初始结构、候选池或训练集"
-msgstr ""
+msgstr "Starting structures, a candidate pool, or a training set"
 
 #: ../../source/formats.md b806c34f2d8a4b9d9b9206152c234084
 msgid "`POSCAR` / `CONTCAR`"
@@ -70,7 +74,7 @@ msgstr ""
 
 #: ../../source/formats.md 4430bb99d23045e59d475f2d8180af76
 msgid "作为初始晶体结构生成候选池"
-msgstr ""
+msgstr "Generate a candidate pool from an initial crystal structure"
 
 #: ../../source/formats.md ff7ec82f2601436980243a9f46aeecf7
 msgid "`CIF`"
@@ -78,7 +82,7 @@ msgstr ""
 
 #: ../../source/formats.md 03b90f09dce84df4b1ae2f995711aded
 msgid "从晶体结构开始构建候选集"
-msgstr ""
+msgstr "Build a candidate set from a crystal structure"
 
 #: ../../source/formats.md 188dbab4148041409014cd496d4a777f
 msgid "ASE `.traj`"
@@ -91,29 +95,32 @@ msgstr ""
 
 #: ../../source/formats.md aa9f94873a2b41e496b2932f3323809d
 msgid "查看已有轨迹或转换结构"
-msgstr ""
+msgstr "Inspect an existing trajectory or convert structures"
 
 #: ../../source/formats.md 2a964db8ee9a4bb9801d137dea70e313
 msgid "DeepMD `deepmd/npy` 目录"
-msgstr ""
+msgstr "DeepMD `deepmd/npy` directory"
 
 #: ../../source/formats.md 5686a8e5341340e09b389c405e59c737
 msgid "查看或导出 DeepMD 风格结构数据"
-msgstr ""
+msgstr "Inspect or export data in DeepMD format"
 
 #: ../../source/formats.md:16 bdc1aad9dff2491e882db74a41c5aeeb
 msgid ""
 "如果你要继续生成新结构，优先导入 `Make Dataset`。如果你要检查、删除、筛选或导出子集， 优先导入 `NEP Dataset "
 "Display`。"
 msgstr ""
+"Import the data into `Make Dataset` when you want to generate more "
+"structures. Use `NEP Dataset Display` when the next task is to inspect, "
+"remove, filter, or export a subset."
 
 #: ../../source/formats.md:19 f4a5b236ce0844a6bd0d18c80b7b7ef0
 msgid "NEP 训练相关文件"
-msgstr ""
+msgstr "NEP training files"
 
 #: ../../source/formats.md 225b3c63bcc44a95835f35674ab2d6ca
 msgid "作用"
-msgstr ""
+msgstr "Purpose"
 
 #: ../../source/formats.md 0bd31cc3847f488ca4dd08fc281cbc27
 msgid "`nep.txt`"
@@ -121,7 +128,7 @@ msgstr ""
 
 #: ../../source/formats.md 22a56c1f95c6406cba9860b570701861
 msgid "NEP 模型文件，可用于预测、回看或预筛"
-msgstr ""
+msgstr "NEP model used for prediction, retrospective inspection, or prescreening"
 
 #: ../../source/formats.md 8a59fbca097845cca201fc2a2f5c751f
 msgid "`energy_*.out`"
@@ -129,7 +136,7 @@ msgstr ""
 
 #: ../../source/formats.md 56e6fdc5615f414397235418c43ef528
 msgid "能量预测/标签结果"
-msgstr ""
+msgstr "Energy predictions or reference labels"
 
 #: ../../source/formats.md 903e9ab95faa4540bc1e26837976191c
 msgid "`force_*.out`"
@@ -137,7 +144,7 @@ msgstr ""
 
 #: ../../source/formats.md 3425b8e2d0c740abb3fd60bc40f34f9e
 msgid "力预测/标签结果"
-msgstr ""
+msgstr "Force predictions or reference labels"
 
 #: ../../source/formats.md ca2c4fd892514240aacd04964d90fb6a
 msgid "`virial_*.out`"
@@ -145,7 +152,7 @@ msgstr ""
 
 #: ../../source/formats.md cc9e2986e82d4254987c9ce0b32e4372
 msgid "virial 预测/标签结果"
-msgstr ""
+msgstr "Virial predictions or reference labels"
 
 #: ../../source/formats.md b1665a5a70d540339346711ea60b8f5c
 msgid "`stress_*.out`"
@@ -153,7 +160,7 @@ msgstr ""
 
 #: ../../source/formats.md 40c1d46e19564c749f4d8b7f0a52a4ef
 msgid "stress 预测/标签结果"
-msgstr ""
+msgstr "Stress predictions or reference labels"
 
 #: ../../source/formats.md 744b5ee75bd7495fa1693738e007a989
 msgid "`descriptor*.out`"
@@ -161,13 +168,14 @@ msgstr ""
 
 #: ../../source/formats.md 3bc25b197d18484ca7ba09d58a4bc719
 msgid "描述符输出，用于可视化或采样分析"
-msgstr ""
+msgstr "Descriptor output used for visualization or sampling analysis"
 
 #: ../../source/formats.md:30 8d125966e99245dd98d0c602d47d417f
-msgid ""
-"训练结束后，把训练结构和这些输出一起导入 `NEP Dataset Display`，可以查看散点图、 "
-"定位误差最大的结构，并导出下一轮要处理的子集。"
+msgid "训练结束后，把训练结构和这些输出一起导入 `NEP Dataset Display`，可以查看散点图、 定位误差最大的结构，并导出下一轮要处理的子集。"
 msgstr ""
+"After training, load the training structures together with these outputs in "
+"`NEP Dataset Display`. You can inspect scatter plots, locate the largest-"
+"error structures, and export a subset for the next iteration."
 
 #: ../../source/formats.md:33 6bbff08d434c44508cb0fe8f004c7918
 msgid "VASP"
@@ -175,15 +183,17 @@ msgstr ""
 
 #: ../../source/formats.md:35 457f0a07adfa49319bef09a7ab445872
 msgid "`OUTCAR`：读取晶胞、坐标、力、应力和 virial。"
-msgstr ""
+msgstr "`OUTCAR`: reads the cell, coordinates, forces, stress, and virial."
 
 #: ../../source/formats.md:36 93418f9ab4224b6b866bfc3605263911
 msgid "`XDATCAR`：读取逐帧晶胞和坐标。"
-msgstr ""
+msgstr "`XDATCAR`: reads the cell and coordinates for each frame."
 
 #: ../../source/formats.md:38 b0406520401749ef804f9a55e8cdde28
 msgid "VASP 结果通常用于把 DFT 标注转成训练结构，或在 `NEP Dataset Display` 中检查标签质量。"
 msgstr ""
+"VASP results are commonly used to convert DFT labels into training "
+"structures or to inspect label quality in `NEP Dataset Display`."
 
 #: ../../source/formats.md:40 550770ae52034cf2a0f03a1a0df164f6
 msgid "LAMMPS"
@@ -200,39 +210,51 @@ msgstr ""
 #: ../../source/formats.md:45 3fa42c1045944de9907e5b0631696c0c
 msgid "支持正交和三斜晶胞，以及常见坐标列。导入后建议先抽查晶胞、元素类型和坐标单位是否符合预期。"
 msgstr ""
+"Orthogonal and triclinic cells and common coordinate columns are supported. "
+"After import, check a few structures to confirm that the cell, element "
+"types, and coordinate units were interpreted as expected."
 
 #: ../../source/formats.md:47 45c76f76fb534a04aa83f159f114e140
 msgid "导出"
-msgstr ""
+msgstr "Export"
 
 #: ../../source/formats.md:49 8418f19c8c044c09938d828fe4a20143
 msgid "`NEP Dataset Display` 可以把当前数据导出为两类结果："
-msgstr ""
+msgstr "`NEP Dataset Display` can export the current data in two main forms:"
 
 #: ../../source/formats.md:51 8ef3cf9e3cd04a95bcc0f3386baaf940
 msgid "`xyz` / `extxyz`：适合继续回到 GPUMD、ASE 或 Make Dataset 流程。"
 msgstr ""
+"`xyz` / `extxyz`: suitable for continuing in GPUMD, ASE, or a Make Dataset "
+"workflow."
 
 #: ../../source/formats.md:52 88291e59da404e22bb0160045b5d6a48
 msgid ""
 "`deepmd/npy`：适合接入 DeepMD 风格数据管理；是否保留导入时的子目录层级由 `Settings → Keep DeepMD "
 "subfolders` 控制。"
 msgstr ""
+"`deepmd/npy`: suitable for DeepMD-style data management. `Settings → Keep "
+"DeepMD subfolders` controls whether the imported subdirectory hierarchy is "
+"preserved."
 
 #: ../../source/formats.md:54 e12e472ab1f54c7dbb2e3b7f48928606
 msgid "大数据和导入说明"
-msgstr ""
+msgstr "Large datasets and import behavior"
 
 #: ../../source/formats.md:56 3a938f0d1f984b0484f87563ddd340a0
 msgid "大数据集导入时，界面显示可能做抽样或延迟渲染；底层选择和导出仍以完整数据为准。"
 msgstr ""
+"For a large dataset, the interface may sample or defer rendering for "
+"responsiveness. Selection and export still operate on the complete dataset."
 
 #: ../../source/formats.md:57 4ca20eb04c974c54a39bd07a9eb20078
 msgid "导入过程支持中断。"
-msgstr ""
+msgstr "You can cancel an import while it is running."
 
 #: ../../source/formats.md:58 4d049707da7a4475a271bf186d7a3c13
 msgid ""
 "不同来源的文件最好保留清晰命名，例如 "
 "`candidate_pool.xyz`、`candidate_pool_clean.xyz`、`dft_labeled.xyz`。"
 msgstr ""
+"Use descriptive names for files from different stages, such as "
+"`candidate_pool.xyz`, `candidate_pool_clean.xyz`, and `dft_labeled.xyz`."

@@ -28,24 +28,28 @@ msgstr "Make Dataset Recipes"
 #: ../../source/module/make-dataset-cards/recipes.md:3
 #: abf72509494c47e7b919a28d09b79af2
 msgid "这份页面回答两个问题："
-msgstr ""
+msgstr "This page answers two questions:"
 
 #: ../../source/module/make-dataset-cards/recipes.md:5
 #: 4bff3db03fba4c8eaa22ed5a96f70d44
 msgid "多张卡片应该按什么顺序排"
-msgstr ""
+msgstr "In what order should multiple cards be connected?"
 
 #: ../../source/module/make-dataset-cards/recipes.md:6
 #: 7d1b2846951748399a75e0a737588cd3
 msgid "每一步大概会生成什么样的结果"
-msgstr ""
+msgstr "What kind of output should each step produce?"
 
 #: ../../source/module/make-dataset-cards/recipes.md:9
 #: 0519e2f27c0f4e8d80ae65215c486c25
 msgid ""
-"下面的 JSON 采用“卡片配置片段”的写法，字段名与当前 `to_dict()` 保持一致，可直接对照卡片页里的推荐预设填写。第一版 "
-"recipes 不依赖截图，也不绑定固定示例文件。"
+"下面的 JSON 采用“卡片配置片段”的写法，字段名与当前 `to_dict()` 保持一致，可直接对照卡片页里的推荐预设填写。第一版 recipes "
+"不依赖截图，也不绑定固定示例文件。"
 msgstr ""
+"The JSON examples below are card-configuration fragments. Their field names "
+"match the current `to_dict()` output, so you can compare them directly with "
+"the presets on each card page. The recipes are independent of screenshots "
+"and do not require a particular example file."
 
 #: ../../source/module/make-dataset-cards/recipes.md:12
 #: b5721db5f936426997c6b408f427dcb2
@@ -54,11 +58,17 @@ msgid ""
 "Dataset Display` 里删掉明显异常结构，再做代表性采样。 如果你有当前体系的 NEP "
 "模型，可以用它做预筛；没有时可以先做几何检查和人工抽查。"
 msgstr ""
+"Each card chain generates a candidate pool, not a labeled training set. The "
+"final `clean in NEP Dataset Display → FPS` step means: remove obvious "
+"failures first, then select representative structures. An existing NEP model"
+" for the same chemical system may help with preliminary screening; otherwise"
+" begin with geometry checks and manual inspection. In either case, final "
+"labels still come from the chosen reference calculation."
 
 #: ../../source/module/make-dataset-cards/recipes.md:16
 #: 8160942cbfe74189b065e4992b714ba9
 msgid "高熵合金"
-msgstr ""
+msgstr "High-entropy alloy"
 
 #: ../../source/module/make-dataset-cards/recipes.md:18
 #: ../../source/module/make-dataset-cards/recipes.md:136
@@ -67,12 +77,15 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/recipes.md:412
 #: 662fd375553f4a53a2d26a0c2342e4f8 d92998dfed9a45068bd5b7d58f49a509
 msgid "目标说明"
-msgstr ""
+msgstr "Goal"
 
 #: ../../source/module/make-dataset-cards/recipes.md:20
 #: 74c8d84bf9014321bf468363aaba7e74
 msgid "从单一晶体原型出发，系统扫描多组目标配比，并把目标配比真正落到原子占位上，最后补一轮随机掺杂扩大局部化学环境。"
 msgstr ""
+"Start from one crystal prototype, scan a set of target compositions, realize"
+" each composition on atomic sites, and finally add modest random "
+"substitutions to broaden local chemical environments."
 
 #: ../../source/module/make-dataset-cards/recipes.md:22
 #: ../../source/module/make-dataset-cards/recipes.md:140
@@ -81,22 +94,26 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/recipes.md:416
 #: 1aa969d1cee04bef9ed0ee8d0dc5bf54 ae4bb27ca9c24f94be814fc0fa39cb68
 msgid "输入假设"
-msgstr ""
+msgstr "Input assumptions"
 
 #: ../../source/module/make-dataset-cards/recipes.md:24
 #: deb5e02b4204453cbcea9d600dd1fbe4
 msgid "已有一个体相母相结构，或者先用 `Crystal Prototype Builder` 生成基础结构。"
 msgstr ""
+"A bulk parent structure is available, or one will be generated with `Crystal"
+" Prototype Builder`."
 
 #: ../../source/module/make-dataset-cards/recipes.md:25
 #: fe790a2a443d486eaa887de23e5d9ad4
 msgid "目标元素集合为 `Co,Cr,Ni,Al,Fe`。"
-msgstr ""
+msgstr "The target element set is `Co,Cr,Ni,Al,Fe`."
 
 #: ../../source/module/make-dataset-cards/recipes.md:26
 #: 2fb530b34d3f47acb34b7f3c88bf4136
 msgid "希望最终拿到“多配比 + 多随机占位”的 HEA 训练集。"
 msgstr ""
+"The desired candidate pool covers several compositions and several random "
+"occupations per composition."
 
 #: ../../source/module/make-dataset-cards/recipes.md:28
 #: ../../source/module/make-dataset-cards/recipes.md:145
@@ -105,14 +122,16 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/recipes.md:421
 #: 78928fcb69e34b50980cf46f6d94e3b3 f20a9a26cf2c407cb0866b297b264491
 msgid "卡片顺序"
-msgstr ""
+msgstr "Card order"
 
 #: ../../source/module/make-dataset-cards/recipes.md:30
 #: 536edfb89bb84edf8d69112a273a3280
 msgid ""
-"`Crystal Prototype Builder → Composition Sweep → Random Occupancy → "
-"Random Doping → 导出 xyz → NEP Dataset Display 清洗 → FPS`"
+"`Crystal Prototype Builder → Composition Sweep → Random Occupancy → Random "
+"Doping → 导出 xyz → NEP Dataset Display 清洗 → FPS`"
 msgstr ""
+"`Crystal Prototype Builder → Composition Sweep → Random Occupancy → Random "
+"Doping → export XYZ → clean in NEP Dataset Display → FPS`"
 
 #: ../../source/module/make-dataset-cards/recipes.md:32
 #: ../../source/module/make-dataset-cards/recipes.md:149
@@ -121,7 +140,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/recipes.md:425
 #: 0aad355ffff944bebb9e0907ea052d84 837a8fc6a9144298a3f9d1a875c2e1fa
 msgid "每步 JSON 配置"
-msgstr ""
+msgstr "JSON for each step"
 
 #: ../../source/module/make-dataset-cards/recipes.md:34
 #: ../../source/module/make-dataset-cards/recipes.md:259
@@ -152,6 +171,8 @@ msgstr ""
 #: 4083dd17e1e9416f9dc2a3309ae52278
 msgid "**每步预期输出：** 1 个基础 fcc 结构；原子数受 `max_atoms` 控制，适合作为后续配比扫描母体。"
 msgstr ""
+"**Expected output:** One base fcc structure whose atom count is controlled "
+"by `max_atoms`, suitable as the parent for the composition scan."
 
 #: ../../source/module/make-dataset-cards/recipes.md:54
 #: a477f509c7f445c8af0a13e5a8d108cd
@@ -184,6 +205,8 @@ msgstr ""
 #: 27fef699267d43dcb7e824660db85f2e
 msgid "**每步预期输出：** 24 个带 `Comp(...)` 标签的目标配比结构副本；此时还没有真正替换原子位点。"
 msgstr ""
+"**Expected output:** 24 structure copies labeled `Comp(...)`. These labels "
+"define target compositions; atomic sites have not yet been reassigned."
 
 #: ../../source/module/make-dataset-cards/recipes.md:77
 #: 8b7f34fc3b884817a1f6a41ffaadd3f1
@@ -212,6 +235,9 @@ msgstr ""
 #: ef6ce1cf103540d18a538723ba792dd7
 msgid "**每步预期输出：** 每个目标配比落点成 2 个离散占位结构；如果 Step 2 输出 24 个配比点，这一步通常得到约 48 个随机合金候选。"
 msgstr ""
+"**Expected output:** Two discrete occupations for every target composition. "
+"If Step 2 produced 24 composition points, this step usually produces about "
+"48 random-alloy candidates."
 
 #: ../../source/module/make-dataset-cards/recipes.md:96
 #: 8daf8079195f436b9bc13eac962921e1
@@ -247,6 +273,8 @@ msgstr ""
 #: 6e560996bfe64b9eb42fca7238b9c4f4
 msgid "**每步预期输出：** 对每个离散占位结构再扩出 2 个局部替换版本，进一步增加局部环境多样性。"
 msgstr ""
+"**Expected output:** Two additional local-substitution variants for each "
+"discrete occupation, broadening local chemical diversity."
 
 #: ../../source/module/make-dataset-cards/recipes.md:122
 #: ../../source/module/make-dataset-cards/recipes.md:229
@@ -255,22 +283,22 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/recipes.md:478
 #: 1b739e5d858744b6b7a3dec9173a33d1
 msgid "最终数据集特征"
-msgstr ""
+msgstr "Resulting candidate-pool coverage"
 
 #: ../../source/module/make-dataset-cards/recipes.md:124
 #: 28039fef63614974b7ee1e9c8ceada00
 msgid "同时覆盖四元和五元目标配比"
-msgstr ""
+msgstr "Includes both quaternary and quinary target compositions"
 
 #: ../../source/module/make-dataset-cards/recipes.md:125
 #: 0d86828b1b224a198ae8853f042f4760
 msgid "每个目标配比都落到了实际原子位点"
-msgstr ""
+msgstr "Realizes every target composition on actual atomic sites"
 
 #: ../../source/module/make-dataset-cards/recipes.md:126
 #: d0f94e956418405f8b0ab27031ec92ab
 msgid "局部化学环境不只来自占位，还来自额外随机替换"
-msgstr ""
+msgstr "Combines occupation diversity with additional local substitutions"
 
 #: ../../source/module/make-dataset-cards/recipes.md:128
 #: ../../source/module/make-dataset-cards/recipes.md:235
@@ -279,49 +307,62 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/recipes.md:484
 #: 37b2c427b82e4f8da9f57f2b46888417
 msgid "常见失败点"
-msgstr ""
+msgstr "Common failure modes"
 
 #: ../../source/module/make-dataset-cards/recipes.md:130
 #: 8da1731cb4e54ab5b54fa119623e462e
 msgid "只做 `Composition Sweep` 就停止：这只定义目标配比，不代表已经得到真实随机合金。"
 msgstr ""
+"Stopping after `Composition Sweep`: this defines composition targets but "
+"does not create actual random alloys."
 
 #: ../../source/module/make-dataset-cards/recipes.md:131
 #: 93553b79cdc54490ab1cb08deab4c9a0
 msgid "`Random Occupancy` 的 `source` 没有读取 `Comp(...)`：会导致输出与目标配比不一致。"
 msgstr ""
+"`Random Occupancy` does not read `Comp(...)` as its `source`: realized "
+"occupations can then disagree with the targets."
 
 #: ../../source/module/make-dataset-cards/recipes.md:132
 #: 0b04cc7acc7145199dc222261c9b18e3
 msgid "`Random Doping` 规则写得过重：容易把原本的目标配比拉偏。"
 msgstr ""
+"Overly aggressive `Random Doping` rules: they can shift the realized "
+"composition away from the intended target."
 
 #: ../../source/module/make-dataset-cards/recipes.md:134
 #: bbc76276e37e4d99ac9894cfec564501
 msgid "富缺陷表面"
-msgstr ""
+msgstr "Defect-rich surfaces"
 
 #: ../../source/module/make-dataset-cards/recipes.md:138
 #: 38679bb79f264f8bb23b6b246b633f59
 msgid "从体相结构构造多取向表面，再在表面上加入插隙/吸附和空位，得到既有表面效应又有缺陷效应的数据集。"
 msgstr ""
+"Construct several surface orientations from a bulk parent, then add "
+"adsorbates or interstitials and vacancies to combine surface and defect "
+"environments."
 
 #: ../../source/module/make-dataset-cards/recipes.md:142
 #: c10904cfe2ce4fc28fa1c7a26cfa1ce8
 msgid "输入是已弛豫的体相晶体。"
-msgstr ""
+msgstr "The input is a relaxed bulk crystal."
 
 #: ../../source/module/make-dataset-cards/recipes.md:143
 #: 3e516008835e4cb79d97c6554bb80854
 msgid "目标任务是表面反应、表面稳定性或富缺陷 slab 训练。"
 msgstr ""
+"The target task is a surface reaction, surface stability, or defect-rich "
+"slab model."
 
 #: ../../source/module/make-dataset-cards/recipes.md:147
 #: d99688b9f4d74b8881a3bbeb69b8af50
 msgid ""
-"`Super Cell → Random Slab → Insert Defect → Vacancy Defect Generation → "
-"导出 xyz → NEP Dataset Display 清洗 → FPS`"
+"`Super Cell → Random Slab → Insert Defect → Vacancy Defect Generation → 导出 "
+"xyz → NEP Dataset Display 清洗 → FPS`"
 msgstr ""
+"`Super Cell → Random Slab → Insert Defect → Vacancy Defect Generation → "
+"export XYZ → clean in NEP Dataset Display → FPS`"
 
 #: ../../source/module/make-dataset-cards/recipes.md:151
 #: 628422708747444498d1bbc1564c907e
@@ -350,6 +391,8 @@ msgstr ""
 #: 781485e116e7401d969ece3620618c71
 msgid "**每步预期输出：** 1 个横向扩展、法向保持 1 倍的母相结构；适合作为表面切片前的体相输入。"
 msgstr ""
+"**Expected output:** One parent structure enlarged in-plane while remaining "
+"one cell thick along the intended normal, ready for slab cutting."
 
 #: ../../source/module/make-dataset-cards/recipes.md:170
 #: 8f0b17c66c8242b68ef1f9855266e9ab
@@ -376,6 +419,9 @@ msgstr ""
 #: da48117d126346e8806e3d9fcfa9cca5
 msgid "**每步预期输出：** 多个低指数到中低指数 slab；真空层足够隔离上下表面，输出通常已经明显多于 Step 1。"
 msgstr ""
+"**Expected output:** Several low- to moderate-index slabs. Verify that the "
+"selected vacuum separates periodic images; the output count is already "
+"larger than in Step 1."
 
 #: ../../source/module/make-dataset-cards/recipes.md:187
 #: 0d2afe944b374b82be75f21582806d84
@@ -406,7 +452,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/recipes.md:207
 #: 6ce47059859849a4a3913d5905cff49b
 msgid "**每步预期输出：** 每个 slab 表面再分出 2 个带表面吸附或插隙的候选结构。"
-msgstr ""
+msgstr "**Expected output:** Two adsorbate or interstitial candidates for each slab."
 
 #: ../../source/module/make-dataset-cards/recipes.md:209
 #: a00182dc95a94724a5da8ce96403582a
@@ -436,70 +482,88 @@ msgstr ""
 #: f7cc396fb3484134a9db5501ec240d3a
 msgid "**每步预期输出：** 每个已有表面缺陷结构再扩出约 3 个轻度空位版本；空位强度受浓度控制，而不是固定删位数。"
 msgstr ""
+"**Expected output:** About three mild-vacancy variants for each existing "
+"surface-defect structure. Vacancy strength is controlled by concentration, "
+"not a fixed removal count."
 
 #: ../../source/module/make-dataset-cards/recipes.md:231
 #: 6816c27d65d24495bdfe1eaff50fc2ae
 msgid "同时覆盖不同 slab 取向、厚度和真空层"
-msgstr ""
+msgstr "Covers different slab orientations, thicknesses, and vacuum sizes"
 
 #: ../../source/module/make-dataset-cards/recipes.md:232
 #: b86870c0df8748b7999d360a77ab93cd
 msgid "既有表面，也有插隙/吸附和空位"
-msgstr ""
+msgstr "Combines surfaces with interstitials or adsorbates and vacancies"
 
 #: ../../source/module/make-dataset-cards/recipes.md:233
 #: b0c0c92db1d945e190642284f5a914ff
 msgid "缺陷强度可控，适合做表面缺陷多样性训练"
 msgstr ""
+"Keeps defect concentration controllable while broadening surface-defect "
+"environments"
 
 #: ../../source/module/make-dataset-cards/recipes.md:237
 #: 344ecbf47e1743fd88e70dcee1ffc13c
 msgid "先做空位再做 slab：会把“体相删位”误当成“表面缺陷”。"
 msgstr ""
+"Creating vacancies before cutting slabs: bulk removals are then mistaken for"
+" deliberately selected surface defects."
 
 #: ../../source/module/make-dataset-cards/recipes.md:238
 #: 9c2078c29c414192903d679a6c0e939a
 msgid "`vacuum_range` 过小：上下表面镜像相互作用会污染结果。"
 msgstr ""
+"An undersized `vacuum_range`: interactions between periodic slab images "
+"contaminate the calculation."
 
 #: ../../source/module/make-dataset-cards/recipes.md:239
 #: 6619b2adb1254d7eabdd4de008f72ef9
 msgid "`concentration_condition` 设得过大：slab 太薄时容易直接破坏表面骨架。"
 msgstr ""
+"An excessive `concentration_condition`: a thin slab can lose its surface "
+"framework."
 
 #: ../../source/module/make-dataset-cards/recipes.md:241
 #: f8d9892adf584ac88abea8ae99a0dc82
 msgid "GSFE 路径"
-msgstr ""
+msgstr "GSFE path"
 
 #: ../../source/module/make-dataset-cards/recipes.md:245
 #: 4d6e91dc81bb4732abe0bc625a13fbba
-msgid ""
-"为指定滑移系统生成一条未弛豫 GSFE 路径。这个配方适合模型在层错能、滑移势垒或局部极小位置上明显偏离 "
-"DFT，而训练集中又缺少系统层间错排结构的情况。"
+msgid "为指定滑移系统生成一条未弛豫 GSFE 路径。这个配方适合模型在层错能、滑移势垒或局部极小位置上明显偏离 DFT，而训练集中又缺少系统层间错排结构的情况。"
 msgstr ""
+"Generate an unrelaxed GSFE path for a specified slip system. Use this recipe"
+" when stacking-fault energies, slip barriers, or local minima disagree with "
+"DFT and the training set lacks a systematic interlayer-displacement path."
 
 #: ../../source/module/make-dataset-cards/recipes.md:249
 #: 94b4c8a3ed334a489ed465e2303017e3
 msgid "研究对象是 fcc 金属或近 fcc 合金。"
-msgstr ""
+msgstr "The material is an fcc metal or near-fcc alloy."
 
 #: ../../source/module/make-dataset-cards/recipes.md:250
 #: eb2873d99ba54c85974b6d22b2f16acd
 msgid "目标是先扫 fcc (111) 面内完整周期路径，而不是生成带真空的自由表面。"
 msgstr ""
+"The goal is a complete periodic in-plane path on fcc (111), not a free "
+"surface with vacuum."
 
 #: ../../source/module/make-dataset-cards/recipes.md:251
 #: 854d46df128c436ca812b1add611fb44
 msgid "后续会对输出结构做 DFT 单点或短弛豫，再加入训练集。"
 msgstr ""
+"The outputs will receive DFT single-point calculations or short relaxations "
+"before being added to the training set."
 
 #: ../../source/module/make-dataset-cards/recipes.md:255
 #: c0283b21213946068483894ad6537789
 msgid ""
-"`Crystal Prototype Builder(fcc111) → Strict GSFE Path → 导出 xyz → NEP "
-"Dataset Display 清洗 → DFT`"
+"`Crystal Prototype Builder(fcc111) → Strict GSFE Path → 导出 xyz → NEP Dataset"
+" Display 清洗 → DFT`"
 msgstr ""
+"`Crystal Prototype Builder(fcc111) → Strict GSFE Path → export XYZ → clean "
+"in NEP Dataset Display → DFT`"
 
 #: ../../source/module/make-dataset-cards/recipes.md:261
 #: 031e80c966214f059edbcc58ed53c5ed
@@ -523,9 +587,12 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/recipes.md:277
 #: 054702fc78a74c1c98aa8e60dd3757ed
 msgid ""
-"**每步预期输出：** 1 个 slab-oriented 周期 cell。当前 cell 的 `(001)` 面对应原始 fcc 的 "
-"`(111)` 面，第三晶胞方向已经垂直于层错面。"
+"**每步预期输出：** 1 个 slab-oriented 周期 cell。当前 cell 的 `(001)` 面对应原始 fcc 的 `(111)` "
+"面，第三晶胞方向已经垂直于层错面。"
 msgstr ""
+"**Expected output:** One slab-oriented periodic cell. Its current `(001)` "
+"plane corresponds to the original fcc `(111)` plane, and the third cell "
+"vector is normal to the fault plane."
 
 #: ../../source/module/make-dataset-cards/recipes.md:279
 #: b5367a03960e42eeba80f179284aa431
@@ -555,21 +622,28 @@ msgstr ""
 #: 696de8e969fd47a8802125bdc303c92a
 msgid "**每步预期输出：** 11 个沿面内周期方向滑移的层错结构。第一个和最后一个结构应回到同一个周期位置，中间结构用于 DFT 标注 GSFE 曲线。"
 msgstr ""
+"**Expected output:** Eleven structures displaced along a periodic in-plane "
+"direction. The first and last represent equivalent periodic positions; "
+"intermediate structures provide points for the DFT GSFE curve."
 
 #: ../../source/module/make-dataset-cards/recipes.md:301
 #: acd107cac28d48bc84d692e01a26d84e
 msgid "覆盖完整滑移周期，而不是单个任意层错位移"
-msgstr ""
+msgstr "Covers a complete slip period rather than one arbitrary fault displacement"
 
 #: ../../source/module/make-dataset-cards/recipes.md:302
 #: 214b7faaeaf94899b377e37edeb22213
 msgid "输出标签里保留 `hkl`、`uvw` 和位移量，方便回看曲线"
 msgstr ""
+"Preserves `hkl`, `uvw`, and displacement in output labels for reconstructing"
+" the curve"
 
 #: ../../source/module/make-dataset-cards/recipes.md:303
 #: 5e04c63d847f4457ae3bf6e96f805188
 msgid "输入几何满足 slab-oriented 要求，避免普通 cubic cell 直接扫 `(111)` 时产生错接"
 msgstr ""
+"Uses geometry that satisfies the slab-orientation contract, avoiding an "
+"invalid `(111)` scan in a conventional cubic cell"
 
 #: ../../source/module/make-dataset-cards/recipes.md:307
 #: 7d73cb352ece47ae92d25978e21b1dac
@@ -577,36 +651,47 @@ msgid ""
 "直接把普通 `fcc` cubic cell 送进 `Strict GSFE Path`：第三晶胞方向不垂直于目标 `(111)` 面，程序会报 "
 "slab-oriented 错误。"
 msgstr ""
+"Sending a conventional cubic `fcc` cell directly to `Strict GSFE Path`: its "
+"third cell vector is not normal to `(111)`, so the orientation check fails."
 
 #: ../../source/module/make-dataset-cards/recipes.md:308
 #: 86c6e775f3304f99b6001ac9d03fc409
 msgid "把这里的 `fcc111` 当成真空表面：它是周期 cell，不含真空层；如果要自由表面，用 `Random Slab`。"
 msgstr ""
+"Treating `fcc111` as a vacuum surface: it is a periodic oriented cell with "
+"no vacuum. Use `Random Slab` for a free surface."
 
 #: ../../source/module/make-dataset-cards/recipes.md:309
 #: 1e5a7c3e6293460f9785fd9e21141d7b
 msgid "位移步长太粗：0.1 适合第一轮覆盖；如果峰值附近曲线不平滑，把步长缩到 0.05。"
 msgstr ""
+"Using a displacement step that is too coarse: 0.1 is suitable for an initial"
+" path, while 0.05 can resolve an insufficiently smooth peak region."
 
 #: ../../source/module/make-dataset-cards/recipes.md:311
 #: 0be6981f59654037a0ce4e168451743c
 msgid "磁性数据"
-msgstr ""
+msgstr "Magnetic data"
 
 #: ../../source/module/make-dataset-cards/recipes.md:315
 #: a8e16e5511bd46fdb315a9691b3165e9
 msgid "从一个磁性母相结构出发，先写入分组标签，再生成 FM / AFM / PM 分支，最后对已有磁矩做旋转补样。"
 msgstr ""
+"Start from a magnetic parent, assign sublattice labels, generate FM, AFM, "
+"and PM-like branches, then rotate existing moments for local directional "
+"augmentation."
 
 #: ../../source/module/make-dataset-cards/recipes.md:319
 #: 3ea44ae6d81644c5a8ac514ffd9a3c72
 msgid "输入结构是磁性材料。"
-msgstr ""
+msgstr "The input structure is magnetic."
 
 #: ../../source/module/make-dataset-cards/recipes.md:320
 #: 9d0dd185850a4f38baef523e3d107dd3
 msgid "你希望同时覆盖多磁序，而不是只保留单一 MAGMOM 初始化。"
 msgstr ""
+"The candidate pool should cover several magnetic orders, not one MAGMOM "
+"initialization."
 
 #: ../../source/module/make-dataset-cards/recipes.md:324
 #: 9536516c277b454d9a8f5306b3aaed5e
@@ -640,6 +725,8 @@ msgid ""
 "**每步预期输出：** 1 个带 `group` 数组的结构；后续 `Magnetic Order` 若走 `group A/B` "
 "模式会直接使用这些标签。"
 msgstr ""
+"**Expected output:** One structure with a `group` array. If `Magnetic Order`"
+" uses group A/B mode, it reads these labels directly."
 
 #: ../../source/module/make-dataset-cards/recipes.md:345
 #: df163a02008f46cb8de238d92b1703a2
@@ -683,6 +770,9 @@ msgid ""
 "**每步预期输出：** 至少得到 1 个 FM、1 个 AFM 和 8 个 PM 候选；如果 `afm_mode` 设为 `group "
 "A/B`，真正起作用的是 `afm_group_a/b`，不是 `afm_kvec`。"
 msgstr ""
+"**Expected output:** At least one FM, one AFM, and eight PM-like candidates."
+" When `afm_mode` is `group A/B`, `afm_group_a/b` define the pattern and "
+"`afm_kvec` is ignored."
 
 #: ../../source/module/make-dataset-cards/recipes.md:377
 #: 77c93404fc864455b2e61da2eff71366
@@ -713,63 +803,76 @@ msgstr ""
 #: 67fe06ba53eb4d988b8251b2270028c4
 msgid "**每步预期输出：** 对每个已有磁序结构再扩出 3 个小角度旋转版本，适合补充非共线附近样本。"
 msgstr ""
+"**Expected output:** Three small-angle variants of each magnetic-order "
+"structure, adding samples near the noncollinear neighborhood."
 
 #: ../../source/module/make-dataset-cards/recipes.md:400
 #: 4fa2f2c9a4b14319a341ad44675403ff
 msgid "同时包含 FM、AFM、PM 和小角度旋转分支"
-msgstr ""
+msgstr "Includes FM, AFM, PM-like, and small-angle branches"
 
 #: ../../source/module/make-dataset-cards/recipes.md:401
 #: 361bd4fee5cc4fc5a382a07ef2a9d155
 msgid "AFM 的分组来源清晰，可追溯"
-msgstr ""
+msgstr "Makes the AFM sublattice assignment explicit and traceable"
 
 #: ../../source/module/make-dataset-cards/recipes.md:402
 #: f313352bace94a52ae1e01c1678bed32
 msgid "随机性由 seed 控制，可做重复实验"
-msgstr ""
+msgstr "Controls random branches with a seed for repeatable comparisons"
 
 #: ../../source/module/make-dataset-cards/recipes.md:406
 #: 9087644f2176409db194560638373c9b
 msgid "没有先提供 `magmom_map` 或合理 `default_moment`：生成的磁矩幅值会退化。"
 msgstr ""
+"Omitting `magmom_map` and a sensible `default_moment`: generated magnitudes "
+"become zero or otherwise unsuitable."
 
 #: ../../source/module/make-dataset-cards/recipes.md:407
 #: af789faa031d4db09f8f113b193beeb1
 msgid "`afm_mode` 设成 `group A/B` 却没有 `group` 数组：AFM 分支会失去预期分组信息。"
 msgstr ""
+"Selecting group A/B without a `group` array: the AFM branch lacks the "
+"intended sublattice definition."
 
 #: ../../source/module/make-dataset-cards/recipes.md:408
 #: de4c5605bb3a4d47a0c45eea051a58c7
 msgid "直接用 `Magmom Rotation` 处理没有初始磁矩的结构：旋转对象本身就不存在。"
 msgstr ""
+"Applying `Magmom Rotation` to a structure with no initial moments: there is "
+"nothing to rotate."
 
 #: ../../source/module/make-dataset-cards/recipes.md:410
 #: 01c25f0f31b246498e03f80ffc115720
 msgid "有机构象"
-msgstr ""
+msgstr "Organic conformations"
 
 #: ../../source/module/make-dataset-cards/recipes.md:414
 #: 3b9b8dfed9a2422f9a337819591d4a51
 msgid "为有机分子或分子晶体生成构象样本，再叠加轻微原子扰动，得到更适合 NEP 训练的局部结构分布。"
 msgstr ""
+"Generate conformations for an organic molecule or molecular crystal, then "
+"add mild atomic perturbations to broaden the local structure distribution "
+"for NEP training."
 
 #: ../../source/module/make-dataset-cards/recipes.md:418
 #: fdfe33c1b8c6403ba40ff7cbc18216d2
 msgid "输入里包含有机分子，或者是分子晶体。"
-msgstr ""
+msgstr "The input contains organic molecules or is a molecular crystal."
 
 #: ../../source/module/make-dataset-cards/recipes.md:419
 #: 69928a93aa704160bab710527eb01404
 msgid "希望同时覆盖扭转构象和局部热噪声，而不是只做刚性平移。"
 msgstr ""
+"The data should cover both torsional conformations and local thermal-like "
+"noise, not only rigid translation."
 
 #: ../../source/module/make-dataset-cards/recipes.md:423
 #: 155d2884181b467f997f787eea0a9144
-msgid ""
-"`Organic Mol Config → Atomic Perturb → 导出 xyz → NEP Dataset Display 清洗 → "
-"FPS`"
+msgid "`Organic Mol Config → Atomic Perturb → 导出 xyz → NEP Dataset Display 清洗 → FPS`"
 msgstr ""
+"`Organic Mol Config → Atomic Perturb → export XYZ → clean in NEP Dataset "
+"Display → FPS`"
 
 #: ../../source/module/make-dataset-cards/recipes.md:427
 #: 68a18bada45044a8a823cf5aa891dd96
@@ -810,6 +913,9 @@ msgstr ""
 #: 77d28414e9d645f4b0fd21ab23fd4cc5
 msgid "**每步预期输出：** 每帧输入扩出 8 个构象版本；主变化来自扭转角和局部高斯扰动，而不是晶格变形。"
 msgstr ""
+"**Expected output:** Eight conformational variants per input frame. Their "
+"main changes come from torsions and local Gaussian displacements, not "
+"lattice deformation."
 
 #: ../../source/module/make-dataset-cards/recipes.md:458
 #: dbbbb20268074fe0aeab9784f576e2d5
@@ -839,33 +945,42 @@ msgstr ""
 #: e6a7bb3b31654fd48047ee81732bd58a
 msgid "**每步预期输出：** 每个有机构象再扩出 3 个轻微原子热扰动版本；`organic=true` 会尽量保持分子内部拓扑不被原子级随机位移破坏。"
 msgstr ""
+"**Expected output:** Three mildly perturbed variants of every conformation. "
+"With `organic=true`, molecular clusters are protected from independent "
+"atomic displacements that would otherwise damage their internal topology."
 
 #: ../../source/module/make-dataset-cards/recipes.md:480
 #: 666bbffb71b64a9c8bf8ae4a50753f54
 msgid "同时覆盖扭转构象和局部热噪声"
-msgstr ""
+msgstr "Covers torsional conformations and local thermal-like noise"
 
 #: ../../source/module/make-dataset-cards/recipes.md:481
 #: 87f5b7c85f30419eacd7bf99bcd1bc4f
 msgid "分子内部键拓扑更容易保持稳定"
-msgstr ""
+msgstr "Better preserves intramolecular bond topology"
 
 #: ../../source/module/make-dataset-cards/recipes.md:482
 #: 57e26e51834649a8af88a400d065136e
 msgid "适合作为有机体系初始训练集或补样集"
-msgstr ""
+msgstr "Suitable for an initial or augmentation set for organic systems"
 
 #: ../../source/module/make-dataset-cards/recipes.md:486
 #: 8a9523bcce6942c5b6c96f4e51d791d0
 msgid "`organic` 没开：原子级扰动更容易拉坏分子内部键。"
 msgstr ""
+"Leaving `organic` disabled: independent atomic perturbations can distort "
+"intramolecular bonds."
 
 #: ../../source/module/make-dataset-cards/recipes.md:487
 #: be4614ece1e946ae89c94b41ebd7e563
 msgid "`torsion_range_deg` 设得太宽：容易生成明显高能或自相交构象。"
 msgstr ""
+"Using an overly wide `torsion_range_deg`: candidates are more likely to be "
+"extremely high energy or self-intersecting."
 
 #: ../../source/module/make-dataset-cards/recipes.md:488
 #: 3aad7c24ddca42e1b891bb08c4ba4d46
 msgid "先做大幅原子扰动再做构象采样：会把构象变化和非物理断键混在一起。"
 msgstr ""
+"Applying large atomic perturbations before conformational sampling: physical"
+" torsion changes become mixed with unphysical bond breaking."

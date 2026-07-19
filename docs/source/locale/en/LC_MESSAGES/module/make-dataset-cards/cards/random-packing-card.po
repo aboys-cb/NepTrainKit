@@ -33,7 +33,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:7
 #: 9432b8eda7b54666a78b65b4602421bc
 msgid "功能说明"
-msgstr ""
+msgstr "What the card does"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:9
 #: bb4c94aab65e4f06975fc48dfb941231
@@ -41,23 +41,33 @@ msgid ""
 "`Random Packing` 是原子坐标卡，不是磁性卡。它保留输入结构的 `cell` 和 `pbc`，按输入组成或手动精确组成在 cell "
 "内重新随机放置原子，并用全局和 pair-specific 最小距离约束挡掉明显不可能的短键初态。"
 msgstr ""
+"`Random Packing` operates on atomic coordinates, not magnetic moments. It "
+"preserves the input `cell` and `pbc`, then redistributes atoms inside the "
+"cell using either the input composition or an explicitly specified integer "
+"composition. Global and pair-specific minimum distances reject clearly "
+"impossible short-contact starting states."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:11
 #: 85b2d026cf61463c824fed9bff29e81e
 msgid ""
-"这张卡解决的是“训练集缺少无序初始构型”，不是“缺少磁矩无序”。磁矩无序使用 `Spin Disorder` 或 `Correlated "
-"Random Spin`。"
+"这张卡解决的是“训练集缺少无序初始构型”，不是“缺少磁矩无序”。磁矩无序使用 `Spin Disorder` 或 `Correlated Random "
+"Spin`。"
 msgstr ""
+"Use this card when the training set lacks structurally disordered starting "
+"configurations. For disordered magnetic moments, use `Spin Disorder` or "
+"`Correlated Random Spin` instead."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:13
 #: 0fff41827e8045ad8766c601ca4145ee
 msgid "操作示例"
-msgstr ""
+msgstr "Example workflow"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:15
 #: cc691bff773947bebd1abdd55b3d037e
 msgid "场景：模型只见过有序晶格，遇到无序初态能量排序不稳定"
 msgstr ""
+"Scenario: a model trained only on ordered lattices gives unstable energy "
+"rankings for disordered starting states"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:17
 #: fa01db7acbec4466be23358dac331cbc
@@ -65,6 +75,10 @@ msgid ""
 "输入是一个已有 cell 和组成的候选结构。你希望在相同 cell 和元素计数下生成 20 个随机原子 packing，用于 amorphous "
 "seed、液相初态或高温无序初态的 DFT 采样。"
 msgstr ""
+"The input is a candidate structure with a defined cell and composition. You "
+"want 20 random packings with the same cell and element counts for use as "
+"amorphous seeds, liquid starting states, or high-temperature disordered "
+"configurations for DFT sampling."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:19
 #: 01e35e358f7b45238c7b2ce45a6757bd
@@ -72,6 +86,9 @@ msgid ""
 "参数设置：`structures=20`，`composition=\"\"`，`min_distance=1.5`，`pair_min_distances=\"Fe-O:1.8,O-O:1.2\"`，`strict_mode=True`，打开"
 " `use_seed`。"
 msgstr ""
+"Set `structures=20`, `composition=\"\"`, `min_distance=1.5`, "
+"`pair_min_distances=\"Fe-O:1.8,O-O:1.2\"`, and `strict_mode=True`, then "
+"enable `use_seed`."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:21
 #: f4399ee0d8ff4a24876c667158ece3c5
@@ -79,16 +96,20 @@ msgid ""
 "输出结构保留原 cell/pbc 和元素计数，坐标随机重排，`Config_type` 追加 "
 "`RandPack(...)`。检查输出时重点看最短距离分布和后续 DFT 是否仍有明显短键崩溃。"
 msgstr ""
+"Each output preserves the original cell, periodicity, and element counts "
+"while randomizing coordinates. `RandPack(...)` is appended to `Config_type`."
+" Validate the minimum-distance distribution and check whether subsequent DFT"
+" calculations still fail because of short contacts."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:23
 #: 91c11f194c87420099b232a29bb3335b
 msgid "参数说明"
-msgstr ""
+msgstr "Parameters"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:25
 #: 9c0feb67bd214960b25f94dcab345c88
 msgid "组成和数量"
-msgstr ""
+msgstr "Composition and count"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:27
 #: ecff83a2b6324e13b99f7ded6c82db6a
@@ -99,11 +120,16 @@ msgstr ""
 #: e5fc622c07a74dce9429034878639d6d
 msgid "`int`，默认 1。每个输入结构生成几个独立的随机 packing 版本。"
 msgstr ""
+"`int`, default: `1`. Number of independent random packings generated for "
+"each input structure."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:31
 #: 615f9f79639d44c88e8965e360f322e8
 msgid "10-20 个适合无序初始构型试探；50+ 时注意——每个输出结构都要靠随机试错来放置，高密度体系会显著变慢，而且 DFT 预算也成倍放大。"
 msgstr ""
+"Use 10–20 to probe disordered starting states. At 50 or more, placement can "
+"become slow in dense systems because each structure relies on repeated "
+"random trials, and the downstream DFT cost grows proportionally."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:33
 #: 65c71b091ac1463788c76ff538074fdb
@@ -114,21 +140,29 @@ msgstr ""
 #: b1884016f25548edabbb019af73bef89
 msgid "`str`，默认空。留空 = 沿用输入结构的元素种类和原子计数。手动指定时写整数计数，如 `Fe:32, O:64`。"
 msgstr ""
+"`str`, default: empty. Leave empty to preserve the input elements and atom "
+"counts. To override them, provide integer counts such as `Fe:32, O:64`."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:37
 #: 86c2f418c1084efabdac507944f1ac58
 msgid "注意这一卡不接受比例（不接受 `Fe:0.33` 这种写法）。因为随机 packing 需要确切知道每个种类有多少个原子才能放置。"
 msgstr ""
+"Fractions such as `Fe:0.33` are not accepted. Random packing requires an "
+"exact integer count for every species before placement begins."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:39
 #: 53cf8507b29b4b20b41219efeb7263a2
 msgid "距离约束"
-msgstr ""
+msgstr "Distance constraints"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:41
 #: 80e4eae68e484628a636fd3537d43ab7
 msgid "原子是一个一个随机扔进盒子里的。每扔一个，都要检查它跟已经放置的所有原子之间的距离够不够大。下面三个参数控制\"多大算够大\"以及\"试多少次放弃\"。"
 msgstr ""
+"Atoms are placed one at a time. Every candidate position is checked against "
+"all atoms already placed. The following parameters define the required "
+"separation and the number of failed trials allowed before placement gives "
+"up."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:43
 #: 1ade061ec2374e4883fd324a24c57580
@@ -139,13 +173,20 @@ msgstr ""
 #: a893961d1008480b931b6d2929a82627
 msgid "`float`，默认 1.5 Å。全局最小原子对距离——任何两个原子都不允许比这个值更近。"
 msgstr ""
+"`float`, default: `1.5` Å. Global minimum pair distance; no two atoms may be"
+" closer than this value."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:47
 #: a621709fd3d34be89024140afa8d686c
 msgid ""
-"设太小会放行短键坏结构，设太大在高密度 cell 里可能根本放不下所有原子。一个安全的起点是：取体系最短合理键长的 70-90%。比如 Si-Si"
-" 键约 2.35 Å，设 1.8 Å 通常没问题。"
+"设太小会放行短键坏结构，设太大在高密度 cell 里可能根本放不下所有原子。一个安全的起点是：取体系最短合理键长的 70-90%。比如 Si-Si 键约"
+" 2.35 Å，设 1.8 Å 通常没问题。"
 msgstr ""
+"A value that is too small admits bad short-contact structures, while one "
+"that is too large may make a dense cell impossible to fill. A useful "
+"starting point is 70–90% of the shortest chemically reasonable bond length. "
+"For example, with a Si–Si bond near 2.35 Å, 1.8 Å is often a sensible "
+"initial constraint."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:49
 #: 682918f5e75847f0a3ada3a74fdd8c40
@@ -156,13 +197,18 @@ msgstr ""
 #: e46ccdaf8eb341448ff5708c9fcac549
 msgid "`str`，默认空。按元素对覆盖全局距离。例如 `Fe-O:1.8, O-O:1.2`。"
 msgstr ""
+"`str`, default: empty. Element-pair overrides for the global distance, for "
+"example `Fe-O:1.8, O-O:1.2`."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:53
 #: 9f87e8c369634d80a139cab47343ebfe
 msgid ""
-"元素半径差异大时你会想用这个——O-O 通常比 Fe-O 可以更近一些，同时 Fe-O 可能需要比全局 `min_distance` 更宽松。写在"
-" pair 里的距离覆盖全局值，没写的元素对仍然用 `min_distance`。"
+"元素半径差异大时你会想用这个——O-O 通常比 Fe-O 可以更近一些，同时 Fe-O 可能需要比全局 `min_distance` 更宽松。写在 "
+"pair 里的距离覆盖全局值，没写的元素对仍然用 `min_distance`。"
 msgstr ""
+"Use pair overrides when species have substantially different sizes or "
+"contact requirements. A listed pair replaces the global constraint; unlisted"
+" pairs continue to use `min_distance`."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:55
 #: 8e4e6b01ba4748d9accb297e88e2b1f0
@@ -173,13 +219,19 @@ msgstr ""
 #: 814c0e02f84a4bedab252dadce63c1b6
 msgid "`int`，默认 500。每个原子最多随机尝试多少次放置位置，超过就认为放不下。"
 msgstr ""
+"`int`, default: `500`. Maximum random position trials for each atom before "
+"that placement is considered impossible."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:59
 #: a933a656c8ed49268b8bc99e4800e09e
 msgid ""
-"增大它只增加搜索时间，不改变物理可行性。如果你发现它一直失败（几乎每次都触达 500 次上限），不是该调大它——是你的 "
-"`min_distance` 设大了，或者 cell 相对原子数太小。先调松距离或扩胞。"
+"增大它只增加搜索时间，不改变物理可行性。如果你发现它一直失败（几乎每次都触达 500 次上限），不是该调大它——是你的 `min_distance` "
+"设大了，或者 cell 相对原子数太小。先调松距离或扩胞。"
 msgstr ""
+"Increasing this limit only spends more search time; it cannot make an "
+"infeasible packing physically possible. If most placements exhaust all 500 "
+"attempts, reduce `min_distance` or use a larger cell before increasing the "
+"attempt count."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:61
 #: 8fcc904794bb4f18a1eb7bb6a6bda559
@@ -189,19 +241,25 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:63
 #: 072ad9a2d7e2409da29c022c3a5cdd07
 msgid ""
-"`bool`，默认 true。打开：只要有一个原子放不下，整个样本就报错，保证输出数量 = 设定值。关闭：放不下的样本被跳过，最终输出可能比你设的"
-" `structures` 少。"
+"`bool`，默认 true。打开：只要有一个原子放不下，整个样本就报错，保证输出数量 = 设定值。关闭：放不下的样本被跳过，最终输出可能比你设的 "
+"`structures` 少。"
 msgstr ""
+"`bool`, default: `true`. When enabled, failure to place any atom raises an "
+"error for the sample, enforcing the requested output-count contract. When "
+"disabled, failed samples are skipped and the output count may be lower than "
+"`structures`."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:65
 #: 0d41dc6b8393475c80aee189de6fa733
 msgid "如果你在做参数扫描、不确定什么约束组合能放得下→ 先关掉 strict，看实际产出了几个样本，再决定要不要调参数。"
 msgstr ""
+"When scanning uncertain constraint combinations, disable strict mode first "
+"and inspect how many samples are accepted before tuning the parameters."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:67
 #: 0013c9feeace4455b831ec4e2df0b16f
 msgid "随机性"
-msgstr ""
+msgstr "Randomness"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:69
 #: cd26319b140c411486c3fc75b36cd6b5
@@ -212,6 +270,9 @@ msgstr ""
 #: 239b3e6b42394f9b9f14a42d7d6679ce
 msgid "`bool`，默认 false。打开后同参数同输入 → 相同的 packing 结果。对比实验时开，纯探索可以关。"
 msgstr ""
+"`bool`, default: `false`. Enable it to reproduce the same packing from the "
+"same input and parameters. Use it for controlled comparisons; it may remain "
+"disabled during exploration."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:73
 #: 8dbfc37ea192432eb6f9a705ce049989
@@ -221,17 +282,17 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:75
 #: 9901f559b8204c5882ecbef72f0f25ec
 msgid "`int`，默认 0。仅 `use_seed` 打开时生效。"
-msgstr ""
+msgstr "`int`, default: `0`. Used only when `use_seed` is enabled."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:77
 #: 4deb53049a6c48dba305bdc09ebb0c34
 msgid "推荐预设"
-msgstr ""
+msgstr "Recommended presets"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:79
 #: d18f2587e1a846759cffe3be404921e2
 msgid "保持输入组成"
-msgstr ""
+msgstr "Preserve the input composition"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:81
 #: 10e95200d0d2403b83cabfe1e93416b2
@@ -255,7 +316,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:97
 #: fbd46c30ea334cbf89e8f2e5dfade2d6
 msgid "手动精确组成"
-msgstr ""
+msgstr "Specify an exact composition"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:99
 #: 03d9da791d13470ba28c55ffb34ad9d2
@@ -279,61 +340,80 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:115
 #: 7d6304af55ae4886aa53d2673bd1d254
 msgid "推荐组合"
-msgstr ""
+msgstr "Recommended combinations"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:117
 #: eb8e198968444068b325dc1c4fbd8bde
 msgid ""
-"`Crystal Prototype Builder → Super Cell → Random Packing`：复用目标 cell "
-"尺度生成无序 seed。"
+"`Crystal Prototype Builder → Super Cell → Random Packing`：复用目标 cell 尺度生成无序 "
+"seed。"
 msgstr ""
+"`Crystal Prototype Builder → Super Cell → Random Packing`: establish the "
+"target cell size, then generate disordered seeds in that cell."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:118
 #: 40b35c2d8220400982ce2160cce7f63b
 msgid "`Random Packing → Geometry Filter`：先生成，再过滤短键、体积和密度异常。"
 msgstr ""
+"`Random Packing → Geometry Filter`: generate candidates, then reject "
+"abnormal contacts, volumes, or densities."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:119
 #: fa6422fef3104c1e9d799f51283e3fb9
 msgid "`Random Packing → Atomic Perturb`：在已经满足硬距离约束的无序 seed 上叠加小位移噪声。"
 msgstr ""
+"`Random Packing → Atomic Perturb`: add small displacement noise to a "
+"disordered seed that already satisfies hard distance constraints."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:121
 #: e874a60567644fa494aac675a1e63286
 msgid "常见问题"
-msgstr ""
+msgstr "Common questions"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:123
 #: 7d1977f4cd094ee080161527c2c8c507
 msgid "**为什么不接受比例组成？** 因为这张卡生成真实原子列表，必须知道整数原子数。比例到整数的舍入会改变组成语义，应该在上游先确定超胞和计数。"
 msgstr ""
+"**Why are fractional compositions not accepted?** The card must construct a "
+"concrete atom list with integer counts. Rounding fractions would change "
+"their composition semantics, so determine the supercell and exact counts "
+"upstream."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:125
 #: ea59b03691674dc68845e24627f7775a
 msgid "**为什么默认 strict？** 链式卡片里输出数量通常会继续相乘。默认跳过失败样本会让后续数量偏离用户设定，所以默认保持严格数量契约。"
 msgstr ""
+"**Why is strict mode the default?** In a card chain, downstream operations "
+"often multiply the current output count. Silently skipping failed samples "
+"would make later counts diverge from the user's plan, so the default "
+"enforces an explicit count contract."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:127
 #: 57664f40688845f7931b62ee5f169820
 msgid "输出标签"
-msgstr ""
+msgstr "Output labels"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:129
 #: 78e7818d2ee14f389942089ba4c178c0
 #, python-brace-format
 msgid ""
-"`RandPack(n={atom_count},d={min_distance},s={seed})`。`s` 只在 "
-"`use_seed=True` 时出现。"
+"`RandPack(n={atom_count},d={min_distance},s={seed})`。`s` 只在 `use_seed=True` "
+"时出现。"
 msgstr ""
+"`RandPack(n={atom_count},d={min_distance},s={seed})`. The `s` field appears "
+"only when `use_seed=True`."
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:131
 #: dddb2ae238ef4cc7af8be0b693757f33
 msgid "可复现性"
-msgstr ""
+msgstr "Reproducibility"
 
 #: ../../source/module/make-dataset-cards/cards/random-packing-card.md:133
 #: 0a0cb4b1c6dc4804bfb614cd48d57a1f
 msgid ""
-"开启 `use_seed` 后，随机 packing 由 `seed`、输入结构稳定 ID 和 sample "
-"序号共同决定。相同输入、相同参数、相同 seed 会生成相同坐标。"
+"开启 `use_seed` 后，随机 packing 由 `seed`、输入结构稳定 ID 和 sample 序号共同决定。相同输入、相同参数、相同 "
+"seed 会生成相同坐标。"
 msgstr ""
+"With `use_seed` enabled, the packing is determined jointly by `seed`, the "
+"input structure's stable ID, and the sample index. The same input, "
+"parameters, and seed reproduce the same coordinates."

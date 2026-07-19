@@ -29,25 +29,27 @@ msgid ""
 "本页以操作演示为主。完整工具说明与参数手册请见： [`NEP Dataset Display 详细参考`](../module/show-nep-"
 "reference.md)"
 msgstr ""
+"This page is a task-oriented walkthrough. For the complete tool and "
+"parameter reference, see [the detailed NEP Dataset Display "
+"reference](../module/show-nep-reference.md)."
 
 #: ../../source/example/NEP-display.md:6 4a5df3ed61ec4a07b1e7a4f42f173eed
 msgid "数据导入"
-msgstr ""
+msgstr "Import data"
 
 #: ../../source/example/NEP-display.md:8 24481be576fd429883a2305a809b524e
 msgid "使用 `nep.txt` 与 `train.xyz` 作为最小输入；支持拖拽导入。"
 msgstr ""
+"Use `nep.txt` and `train.xyz` as the minimal input pair. You can also drag "
+"and drop them into the application."
 
 #: ../../source/example/NEP-display.md:10 acc353fbce9b4decae9d9ef0212ba29b
 msgid "![GIF Image](../_static/image/example/display/import.gif)"
 msgstr ""
 
-#: ../../source/example/NEP-display.md:10
-#: ../../source/example/NEP-display.md:18
-#: ../../source/example/NEP-display.md:22
-#: ../../source/example/NEP-display.md:23
-#: ../../source/example/NEP-display.md:24
-#: ../../source/example/NEP-display.md:25
+#: ../../source/example/NEP-display.md:10 ../../source/example/NEP-display.md:18
+#: ../../source/example/NEP-display.md:22 ../../source/example/NEP-display.md:23
+#: ../../source/example/NEP-display.md:24 ../../source/example/NEP-display.md:25
 #: ../../source/example/NEP-display.md:31 0bb5bd5792b84a88a135863ad1079083
 #: 0cdbd2b45de1466e9576b976995414e0 370956a7f59648159074624229f899a4
 #: 37aa6d7bf2be4316bd8d7e2377d03e96 405babf95456480087d693ae19c67717
@@ -61,11 +63,11 @@ msgstr ""
 
 #: ../../source/example/NEP-display.md:12 ba3a6934f13c4a4481102ba7d1355ec1
 msgid "轨迹播放"
-msgstr ""
+msgstr "Play a trajectory"
 
 #: ../../source/example/NEP-display.md:14 62bf651f2c714416bd6bce20824067a5
 msgid "点击播放按钮可逐帧预览结构："
-msgstr ""
+msgstr "Click the play button to inspect the structures frame by frame:"
 
 #: ../../source/example/NEP-display.md:16 b4193a29c72d4edd8063cdac2f97340b
 msgid "play"
@@ -85,11 +87,13 @@ msgstr ""
 
 #: ../../source/example/NEP-display.md:20 222729be159f437abdd3cc3285d92dbf
 msgid "数据筛选"
-msgstr ""
+msgstr "Filter the dataset"
 
 #: ../../source/example/NEP-display.md:22 53014a51838c4264a817b8108c4e9be0
 msgid "最大误差点筛选：![GIF Image](../_static/image/example/display/maxerror.gif)"
 msgstr ""
+"Select the largest-error structures: ![GIF "
+"Image](../_static/image/example/display/maxerror.gif)"
 
 #: ../../source/example/NEP-display.md:22 37aa6d7bf2be4316bd8d7e2377d03e96
 msgid ".. image:: ../_static/image/example/display/maxerror.gif"
@@ -98,6 +102,8 @@ msgstr ""
 #: ../../source/example/NEP-display.md:23 0c0e48facb4b461ca0adf57e61115b00
 msgid "FPS 稀疏采样：![GIF Image](../_static/image/example/display/fps.gif)"
 msgstr ""
+"Select representative structures with FPS: ![GIF "
+"Image](../_static/image/example/display/fps.gif)"
 
 #: ../../source/example/NEP-display.md:23 ea65577bc3da46ba8375579eac77f43d
 msgid ".. image:: ../_static/image/example/display/fps.gif"
@@ -106,16 +112,18 @@ msgstr ""
 #: ../../source/example/NEP-display.md:24 3ff9ade5f14c42ae96ef7a9ea78e8369
 msgid "鼠标选择/反选：![GIF Image](../_static/image/example/display/mouse.gif)"
 msgstr ""
+"Select or deselect structures with the mouse: ![GIF "
+"Image](../_static/image/example/display/mouse.gif)"
 
 #: ../../source/example/NEP-display.md:24 0bb5bd5792b84a88a135863ad1079083
 msgid ".. image:: ../_static/image/example/display/mouse.gif"
 msgstr ""
 
 #: ../../source/example/NEP-display.md:25 f37f8a4bc73e4f8e9d92dc4316f7e85b
-msgid ""
-"`Config_type` 组合筛选：![GIF "
-"Image](../_static/image/example/display/config1.gif)"
+msgid "`Config_type` 组合筛选：![GIF Image](../_static/image/example/display/config1.gif)"
 msgstr ""
+"Filter by combinations of `Config_type` values: ![GIF "
+"Image](../_static/image/example/display/config1.gif)"
 
 #: ../../source/example/NEP-display.md:25 0cdbd2b45de1466e9576b976995414e0
 msgid ".. image:: ../_static/image/example/display/config1.gif"
@@ -123,11 +131,11 @@ msgstr ""
 
 #: ../../source/example/NEP-display.md:27 30d678b3cb244d97b8930cf03d2060df
 msgid "导出"
-msgstr ""
+msgstr "Export"
 
 #: ../../source/example/NEP-display.md:29 473ef8684b014607894b3c2636b75570
 msgid "过滤完成后导出数据："
-msgstr ""
+msgstr "Export the filtered dataset when the selection is ready:"
 
 #: ../../source/example/NEP-display.md:31 23b41630cc5744a29569028b4cff4bab
 msgid "![GIF Image](../_static/image/example/display/save.gif)"
@@ -139,16 +147,20 @@ msgstr ""
 
 #: ../../source/example/NEP-display.md:35 d7826ab26abe46aabfb8e8988a4cb880
 msgid "更多细节："
-msgstr ""
+msgstr "For more detail:"
 
 #: ../../source/example/NEP-display.md:37 863b8f9540e340f7b6b852cb3da995de
 msgid ""
 "图标对照与每个工具逻辑：[`../module/show-nep-reference.md`](../module/show-nep-"
 "reference.md)"
 msgstr ""
+"For the icon legend and the behavior of each tool, see the [detailed "
+"reference](../module/show-nep-reference.md)."
 
 #: ../../source/example/NEP-display.md:38 e09ed2d4bfed47429e321292e30ef334
 msgid ""
-"导入导出分支、NEP 模型切换、搜索语法：[`../module/show-nep-reference.md`](../module/show-"
-"nep-reference.md)"
+"导入导出分支、NEP 模型切换、搜索语法：[`../module/show-nep-reference.md`](../module/show-nep-"
+"reference.md)"
 msgstr ""
+"For import and export paths, switching NEP models, and search syntax, see "
+"the [detailed reference](../module/show-nep-reference.md)."

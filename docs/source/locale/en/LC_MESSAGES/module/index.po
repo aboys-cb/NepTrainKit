@@ -146,8 +146,9 @@ msgstr "Defaults suited to the local machine"
 
 #: ../../source/module/index.rst:31 14e9281f6cdb449cab6e722210f79aba
 msgid ""
-"如果你还不确定该从哪开始，先看 :doc:`../quickstart`；如果你已经有一批候选结构， 直接看 :doc:`../workflows/clean-candidate-"
-"structures`。"
+"如果你还不确定该从哪开始，先看 :doc:`../quickstart`；如果你已经有一批候选结构， 直接看 :doc:`../workflows"
+"/clean-candidate-structures`。"
 msgstr ""
-"If you are not sure where to begin, start with :doc:`../quickstart`. If you already have a "
-"candidate pool, go directly to :doc:`../workflows/clean-candidate-structures`."
+"If you are not sure where to begin, start with :doc:`../quickstart`. If you "
+"already have a candidate pool, go directly to :doc:`../workflows/clean-"
+"candidate-structures`."

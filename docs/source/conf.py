@@ -106,32 +106,42 @@ rst_prolog = """
 .. |ΣF| replace:: ΣF
 """
 
-REVIEWED_ENGLISH_PAGES = {
-    'index',
-    'quickstart',
-    'module/index',
-    'module/NEP-dataset-display',
-    'module/training-set-assessment',
-}
+_BILINGUAL_SCREENSHOTS = (
+    'make_data_empty.png',
+    'make_data_lattice_strain.png',
+    'show_nep_overview.png',
+    'training_set_audit_overview.png',
+    'training_set_audit_structure_map.png',
+    'g_index_dialog.png',
+    'g_range_dialog.png',
+    'g_lattice_dialog.png',
+    'g_maxerr_dialog.png',
+    'g_sparse_dialog.png',
+    'g_force_dialog.png',
+    'g_editinfo_dialog.png',
+    'g_shift_dialog.png',
+    'g_dftd3_dialog.png',
+    'g_summary_dialog.png',
+    'g_dist_dialog.png',
+    's_arrow_dialog.png',
+    's_export_format.png',
+    's_dropbad_confirm.png',
+)
 
 
-def _add_translation_status(app, pagename, templatename, context, doctree):
-    if (
-        doctree is None
-        or app.config.language != 'en'
-        or pagename in REVIEWED_ENGLISH_PAGES
-    ):
+def _use_english_screenshots(app, docname, source):
+    if app.config.language != 'en':
         return
 
-    notice = (
-        '<aside class="docs-translation-status" role="note">'
-        '<strong>English review in progress.</strong> '
-        'This page currently falls back to the Chinese source so that no technical detail is hidden. '
-        'The five core entry pages are already available in reviewed English.'
-        '</aside>'
+    for filename in _BILINGUAL_SCREENSHOTS:
+        english_filename = f'{Path(filename).stem}_en{Path(filename).suffix}'
+        source[0] = source[0].replace(filename, english_filename)
+
+    source[0] = source[0].replace(
+        '../_static/image/example/display/main.png',
+        '../_static/image/generated/show_nep_overview_en.png',
     )
-    context['body'] = notice + context['body']
 
 
 def setup(app):
-    app.connect('html-page-context', _add_translation_status)
+    app.connect('source-read', _use_english_screenshots)

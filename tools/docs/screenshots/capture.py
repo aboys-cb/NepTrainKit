@@ -21,6 +21,7 @@ import argparse
 import hashlib
 import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 from PySide6.QtGui import QImage
@@ -34,7 +35,7 @@ for path in (SRC_DIR, SCRIPT_DIR):
         sys.path.insert(0, str(path))
 
 from annotator import annotate
-from registry import SCENARIOS, ScenarioSpec
+from registry import SCENARIOS, ScenarioSpec, localized_text
 from scenarios import RUNNERS, create_context, pump_events
 
 
@@ -97,11 +98,12 @@ def _select_specs(names: list[str], all_scenarios: bool) -> list[ScenarioSpec]:
     return [SCENARIOS[name] for name in names]
 
 
-def _save_manifest_entry(spec: ScenarioSpec, output: Path) -> dict[str, object]:
+def _save_manifest_entry(spec: ScenarioSpec, output: Path, language: str) -> dict[str, object]:
     return {
         "scenario": spec.name,
         "title": spec.title,
         "description": spec.description,
+        "language": language,
         "output": output.relative_to(REPO_ROOT).as_posix(),
         "window_size": list(spec.window_size),
         "sha256": _sha256(output),
@@ -123,13 +125,26 @@ def _write_manifest(entries: dict[str, object]) -> None:
         handle.write("\n")
 
 
-def capture(spec: ScenarioSpec, output: Path) -> Path:
+def _language_output(spec: ScenarioSpec, language: str) -> Path:
+    if language == "zh_CN":
+        return spec.output
+    return spec.output.with_name(f"{spec.output.stem}_en{spec.output.suffix}")
+
+
+def _localized_annotations(spec: ScenarioSpec, language: str):
+    return tuple(
+        replace(annotation, label=localized_text(annotation.label, language))
+        for annotation in spec.annotations
+    )
+
+
+def capture(spec: ScenarioSpec, output: Path, language: str) -> Path:
     """Run one scenario and write its annotated screenshot."""
     runner = RUNNERS.get(spec.runner)
     if runner is None:
         raise RuntimeError(f"No runner registered for scenario '{spec.runner}'")
 
-    context = create_context(REPO_ROOT, spec.window_size)
+    context = create_context(REPO_ROOT, spec.window_size, language)
     try:
         runner(context)
         pump_events(context.app, 80)
@@ -137,7 +152,12 @@ def capture(spec: ScenarioSpec, output: Path) -> Path:
         pixmap = capture_widget.grab()
         if pixmap.isNull():
             raise RuntimeError(f"Qt returned an empty screenshot for {spec.name}")
-        pixmap = annotate(pixmap, capture_widget, spec.annotations, spec.title)
+        pixmap = annotate(
+            pixmap,
+            capture_widget,
+            _localized_annotations(spec, language),
+            localized_text(spec.title, language),
+        )
         output.parent.mkdir(parents=True, exist_ok=True)
         if not pixmap.save(str(output)):
             raise RuntimeError(f"Failed to save screenshot: {output}")
@@ -159,9 +179,11 @@ def command_update(args: argparse.Namespace) -> int:
     specs = _select_specs(args.names, args.all)
     manifest = _read_manifest()
     for spec in specs:
-        output = REPO_ROOT / spec.output
-        capture(spec, output)
-        manifest[spec.name] = _save_manifest_entry(spec, output)
+        relative_output = _language_output(spec, args.language)
+        output = REPO_ROOT / relative_output
+        capture(spec, output, args.language)
+        manifest_key = spec.name if args.language == "zh_CN" else f"{spec.name}_en"
+        manifest[manifest_key] = _save_manifest_entry(spec, output, args.language)
         print(f"updated {spec.name}: {output.relative_to(REPO_ROOT).as_posix()}")
     _write_manifest(manifest)
     return 0
@@ -172,9 +194,10 @@ def command_check(args: argparse.Namespace) -> int:
     CHECK_DIR.mkdir(parents=True, exist_ok=True)
     failed = False
     for spec in specs:
-        expected = REPO_ROOT / spec.output
-        actual = CHECK_DIR / spec.output.name
-        capture(spec, actual)
+        relative_output = _language_output(spec, args.language)
+        expected = REPO_ROOT / relative_output
+        actual = CHECK_DIR / relative_output.name
+        capture(spec, actual, args.language)
         if not expected.exists():
             print(f"missing {spec.name}: {expected.relative_to(REPO_ROOT).as_posix()}")
             failed = True
@@ -205,6 +228,12 @@ def build_parser() -> argparse.ArgumentParser:
         subparser = subparsers.add_parser(name, help=help_text)
         subparser.add_argument("names", nargs="*", help="Scenario names.")
         subparser.add_argument("--all", action="store_true", help="Run all scenarios.")
+        subparser.add_argument(
+            "--language",
+            choices=("zh_CN", "en_US"),
+            default="zh_CN",
+            help="UI language to capture; English outputs receive an _en suffix.",
+        )
         if name == "check":
             subparser.add_argument(
                 "--max-diff-ratio",

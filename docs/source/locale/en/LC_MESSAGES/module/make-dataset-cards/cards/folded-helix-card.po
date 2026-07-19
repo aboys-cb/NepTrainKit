@@ -23,7 +23,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:3
 #: 2e035971d8224109963bf00ab33fcfa7
 msgid "折返螺旋（Folded Helix）"
-msgstr ""
+msgstr "Folded Helix"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:5
 #: f87121f702f4426ea0d237061cbc3634
@@ -33,7 +33,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:7
 #: 8868239b6a974097881addf549027921
 msgid "功能说明"
-msgstr ""
+msgstr "What the card does"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:9
 #: e8fa9b0936934365b66179deef9706e2
@@ -41,6 +41,12 @@ msgid ""
 "按层离散定义对称折返螺旋磁矩纹理。磁矩被限制在垂直于 `plane_normal` 的平面内，沿 `layer_axis` "
 "方向在前半周期逐层按固定角度旋转、到转折层后按相同步长反向旋转，形成一个\"先顺时针、到中间再逆时针\"的三角相位轮廓。"
 msgstr ""
+"Construct a symmetric folded-helix magnetic-moment texture on discrete "
+"atomic layers. Moments are confined to the plane normal to `plane_normal`. "
+"Along `layer_axis`, they rotate by a fixed angle from one layer to the next "
+"during the first half-period, then reverse by the same increment after the "
+"turning layer. The result is a triangular phase profile that rotates in one "
+"direction and folds back at the midpoint."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:11
 #: d07a2021100d4e0399a220de4ae494a9
@@ -57,6 +63,9 @@ msgstr ""
 #: 0d384bd491544543ad10bff2e06a54ad
 msgid "默认 `half_period_mode = Auto from layer count`，会在当前层范围上自动构造首尾闭合的折返周期。"
 msgstr ""
+"With the default `half_period_mode = Auto from layer count`, the card "
+"derives a folded period from the detected layers so that the phase closes "
+"from the first layer to the last."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:17
 #: fc184578dc5f456897635974571d46fd
@@ -64,23 +73,34 @@ msgid ""
 "**和 `Spin Spiral` 的区别：** `Spin Spiral` "
 "沿传播轴连续旋转（单向、不折返）。本卡生成的是\"走一段、折回来\"的分层离散纹理，更适合二维磁体、异质结界面或需要镜像对称磁矩分布的场景。"
 msgstr ""
+"**How this differs from `Spin Spiral`:** `Spin Spiral` rotates continuously "
+"and in one direction along its propagation axis. This card creates a layer-"
+"discrete texture that advances and then folds back, making it better suited "
+"to two-dimensional magnets, heterostructure interfaces, and mirror-symmetric"
+" moment distributions."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:19
 #: 9bfd5812b21f4fcd8b79bc6e9dcc79b5
 msgid "操作示例"
-msgstr ""
+msgstr "Example workflow"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:21
 #: af42d14d88fc4b36ba3134e518ab875b
 msgid "场景：层状反铁磁模型在非均匀自旋纹理上预测崩塌"
-msgstr ""
+msgstr "Scenario: a layered antiferromagnetic model fails on nonuniform spin textures"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:23
 #: 49e767a1e05b4d4490d32368d1e2e790
 msgid ""
-"你训练了一个层状磁性模型（如 CrI3 双层），训练数据里层内是 FM、层间是 AFM——这是完美均匀的磁序。但实验发现施加电场后，顶层磁矩偏了 "
-"15 度而底层偏了 -15 度——这是一个非单调的、分层的自旋纹理。模型对此完全无法预测。"
+"你训练了一个层状磁性模型（如 CrI3 双层），训练数据里层内是 FM、层间是 AFM——这是完美均匀的磁序。但实验发现施加电场后，顶层磁矩偏了 15 "
+"度而底层偏了 -15 度——这是一个非单调的、分层的自旋纹理。模型对此完全无法预测。"
 msgstr ""
+"Suppose you trained a model for a layered magnet such as bilayer CrI3. Its "
+"training data are ferromagnetic within each layer and antiferromagnetic "
+"between layers: perfectly uniform magnetic order. Under an applied electric "
+"field, however, the top-layer moments may tilt by 15° while the bottom-layer"
+" moments tilt by −15°. This is a nonmonotonic, layer-dependent spin texture "
+"that the model has never learned."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:25
 #: 9f40b0e6a03c449280b79795c56b0d64
@@ -88,13 +108,21 @@ msgid ""
 "**诊断思路：** "
 "训练集里的自旋变化是单调的（要么全同向、要么交替翻转）。模型从未见过磁矩方向在空间中\"先转过去、再转回来\"的纹理。需要生成按层离散的折返螺旋构型，让模型学习分层磁矩分布的能量面。"
 msgstr ""
+"**Diagnosis:** Spin variation in the training set is monotonic: moments are "
+"either aligned or alternate between opposite directions. The model has never"
+" seen a texture whose direction rotates away and then returns. Generate "
+"layer-discrete folded helices so the model can learn the energy surface "
+"associated with nonuniform moment distributions across layers."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:27
 #: 56a46a580a7a4762a229b9273e91851a
 msgid ""
-"**输入：** 一个已有 `initial_magmoms` 的层状磁性结构（或通过 `magnitude_source = "
-"Map/default magnitude` 指定磁矩模长）"
+"**输入：** 一个已有 `initial_magmoms` 的层状磁性结构（或通过 `magnitude_source = Map/default "
+"magnitude` 指定磁矩模长）"
 msgstr ""
+"**Input:** A layered magnetic structure with `initial_magmoms`, or a "
+"structure for which moment magnitudes can be supplied with `magnitude_source"
+" = Map/default magnitude`."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:29
 #: 0fb307eefc384c66bad282fe8b06d971
@@ -102,21 +130,25 @@ msgid ""
 "**目标：** 用 auto 模式自动适配当前层数，生成 3 个层间转角（15/30/45 度）、4 个全局相位（0/30/60/90 度）、2 "
 "种手性顺序，共 3x4x2 = 24 个折返螺旋构型"
 msgstr ""
+"**Goal:** Let automatic mode adapt to the detected layer count and generate "
+"three interlayer rotation angles (15°, 30°, and 45°), four global phases "
+"(0°, 30°, 60°, and 90°), and two chirality sequences, for a total of 3 × 4 ×"
+" 2 = 24 folded-helix configurations."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:31
 #: 6f5c878c175448dda0ef8784416147fa
 msgid "**参数设置：**"
-msgstr ""
+msgstr "**Parameters:**"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:32
 #: 4ac57b2055da4eb990402848412d48d5
 msgid "`Layer Axis` = `[0, 0, 1]`（沿 z 轴分层）"
-msgstr ""
+msgstr "`Layer Axis` = `[0, 0, 1]` (identify layers along *z*)"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:33
 #: 016cbb7e6d3c4b02b2f96d57a6b2c435
 msgid "`Plane Normal` = `[0, 0, 1]`（磁矩在 xy 面内旋转）"
-msgstr ""
+msgstr "`Plane Normal` = `[0, 0, 1]` (rotate moments in the *xy* plane)"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:34
 #: e7bbd349dc814107a3b488da0a24cbbe
@@ -144,21 +176,30 @@ msgid ""
 "**输出：** 24 个结构，磁矩在 xy 面内按层折返旋转，带 "
 "`FoldedHelix(h=...,da=...,ph=...,seq=...,ax=...,pn=...)` 标签。"
 msgstr ""
+"**Output:** 24 structures whose moments fold back layer by layer in the *xy*"
+" plane, labeled `FoldedHelix(h=...,da=...,ph=...,seq=...,ax=...,pn=...)`."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:41
 #: e18f307fcdb24d0485e6c5c65e0ccfb0
 msgid "**怎么验证训练集质量改善：**"
-msgstr ""
+msgstr "**How to verify that training-set quality improved:**"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:42
 #: d3edb5f0e7174198909c6abd3bb441c4
 msgid "重训后跑几组不同层间转角的测试构型，能量排序应合理（近 FM 的转角能量低，近 180 度的高）"
 msgstr ""
+"After retraining, evaluate several test configurations with different "
+"interlayer angles. Their energy ordering should be physically reasonable for"
+" the target system—for example, angles near its preferred FM alignment "
+"should be lower than strongly misaligned states."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:43
 #: 9aa6885ac149493ca7d38062c3df0962
 msgid "抽查输出：层 0 磁矩方向 = 全局相位，中间层达到最大转角，顶层回到接近全局相位"
 msgstr ""
+"Inspect several outputs: layer 0 should start at the global phase, the "
+"middle layer should reach the largest rotation, and the top layer should "
+"return close to the global phase."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:44
 #: 04e99a6957de45b2ba265ee77a87636c
@@ -166,61 +207,74 @@ msgid ""
 "如果 auto 模式给出的半周期不合适——比如你的结构有 10 层但 auto 给了 h=4——切到 manual 模式手动指定 "
 "`half_period_layers`"
 msgstr ""
+"If automatic mode chooses an unsuitable half-period—for example, `h=4` for a"
+" ten-layer structure—switch to manual mode and set `half_period_layers` "
+"explicitly."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:46
 #: d7d5a8b4cea8450ea73d8b670b7a1857
 msgid "什么时候加这张卡、什么时候不加"
-msgstr ""
+msgstr "When to add this card"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:48
 #: 741577e6ac0f41bc9a9f7d52776e3671
 msgid "**加：**"
-msgstr ""
+msgstr "**Add it when:**"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:49
 #: 96cbfaa2c5aa4453860c78ada1232f0f
 msgid "层状磁体（vdW 磁体、异质结、超晶格）需要非单调的分层磁矩纹理"
 msgstr ""
+"A layered magnet, such as a van der Waals magnet, heterostructure, or "
+"superlattice, needs a nonmonotonic layer-dependent moment texture."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:50
 #: ef4a5d0664f54f49a9536909a2cf044f
 msgid "想构造镜像对称的自旋分布（两半周期互为镜像）"
 msgstr ""
+"You want a mirror-symmetric spin distribution whose two half-periods reflect"
+" one another."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:51
 #: 81b31223af2a493da38942322f7e3c9c
 msgid "需要同层原子共享磁矩方向（layer-locked 行为是内置的）"
 msgstr ""
+"Atoms in the same layer should share one moment direction; layer locking is "
+"built in."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:53
 #: 0e22c8f1927b4b779d2b6ee204c3bf31
 msgid "**不加：**"
-msgstr ""
+msgstr "**Do not add it when:**"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:54
 #: 88d0438dd09149ae92f48e3bd4b93ec5
 msgid "需要标准单向传播的螺旋 → 用 `Spin Spiral`"
-msgstr ""
+msgstr "You need a conventional one-way propagating spiral → use `Spin Spiral`."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:55
 #: ce92fa1c03474f31a12e1a259327362c
 msgid "需要连续坐标依赖的相位（非分层）→ 用 `Spin Spiral` 的 continuous 模式"
 msgstr ""
+"You need a phase that varies continuously with position rather than by layer"
+" → use the continuous mode of `Spin Spiral`."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:56
 #: 84724e627c2247efb162ad4d2b41cfcb
 msgid "体系没有层状结构 → 分层无意义"
 msgstr ""
+"The structure is not layered, so a layer-based texture has no physical "
+"meaning."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:58
 #: 140748b6506a401d84ecfc14ce1b864a
 msgid "参数说明"
-msgstr ""
+msgstr "Parameters"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:60
 #: 6ee9a053aff240caacbb5c2ceeb04933
 msgid "分层定义"
-msgstr ""
+msgstr "Layer definition"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:62
 #: f61f1d9654e445ea978e7291f79e2bf1
@@ -233,6 +287,9 @@ msgid ""
 "`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, "
 "1.0)`。原子坐标沿此方向投影后用于分层，格式 `[x, y, z]`。"
 msgstr ""
+"`list[float] | tuple[float, float, float]`, default: `(0.0, 0.0, 1.0)`. "
+"Direction onto which atomic positions are projected to identify layers, "
+"expressed as `[x, y, z]`."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:66
 #: 92ffdeddeb13416e8a31aa671a0f1454
@@ -242,9 +299,12 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:68
 #: 1d1cf0244b6a4048a691cddcc39ad314
 msgid ""
-"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, "
-"1.0)`。磁矩旋转平面的法向。例如 `[0, 0, 1]` 表示磁矩在 xy 面内旋转。"
+"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。磁矩旋转平面的法向。例如"
+" `[0, 0, 1]` 表示磁矩在 xy 面内旋转。"
 msgstr ""
+"`list[float] | tuple[float, float, float]`, default: `(0.0, 0.0, 1.0)`. "
+"Normal vector of the plane in which moments rotate. For example, `[0, 0, 1]`"
+" constrains them to the *xy* plane."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:70
 #: 5356c233ac064a1d9c373e876a813648
@@ -255,26 +315,28 @@ msgstr ""
 #: 2d88f2d9fd38480ba8c860beba0d7a38
 msgid "`float`，默认 `0.05`。投影坐标差不超过此阈值的原子归为同一层，单位 Å。"
 msgstr ""
+"`float`, default: `0.05`. Atoms whose projected coordinates differ by no "
+"more than this tolerance are assigned to the same layer. Unit: Å."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:73
 #: 13212db5121342a69a1ca8d5b1dd01f8
 msgid "保守：`0.01`（严格分层）"
-msgstr ""
+msgstr "Conservative: `0.01` (strict layer separation)"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:74
 #: 7ad73943217340c6b44ceebf1fcd281d
 msgid "平衡：`0.03~0.10`（容忍小幅层内起伏）"
-msgstr ""
+msgstr "Balanced: `0.03–0.10` (allows modest intralayer rumpling)"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:75
 #: 2f6acd2fa6e9443590a350a69aff1142
 msgid "如果层内有明显 rumpling，适当放宽"
-msgstr ""
+msgstr "Increase the tolerance if atoms within a layer show appreciable rumpling."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:77
 #: d8a13d0ca9ac47808beaab5d3c19b278
 msgid "半周期控制"
-msgstr ""
+msgstr "Half-period control"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:79
 #: 69f25f5452d24a48b0f25e69cb670ab6
@@ -288,6 +350,11 @@ msgid ""
 "由当前层数自动推导半周期，保证首尾闭合（大多数情况推荐这个）。`Manual` 手动指定 `half_period_layers` "
 "扫描范围，适合比较不同折返周期。"
 msgstr ""
+"`str`, default: `'Auto from layer count'`. `Auto from layer count` derives a"
+" half-period from the detected layers and closes the phase between the first"
+" and last layers; this is recommended in most cases. `Manual` scans the "
+"range set by `half_period_layers` and is useful for comparing different "
+"folded periods."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:83
 #: 5f384870f1b545c0b3651462d632f697
@@ -300,26 +367,29 @@ msgid ""
 "`list[int] | tuple[int, int, int]`，默认 `(2, 4, 1)`。仅在 manual 模式下生效。`[min, "
 "max, step]` 格式，半周期的层步进数。"
 msgstr ""
+"`list[int] | tuple[int, int, int]`, default: `(2, 4, 1)`. Used only in "
+"manual mode. Expressed as `[minimum, maximum, step]`, it scans the number of"
+" layer intervals in one half-period."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:86
 #: 3cf849bf9be14fc4bc0f0bf9de8c7dab
 msgid "保守：`[2, 2, 1]`（最短折返）"
-msgstr ""
+msgstr "Conservative: `[2, 2, 1]` (shortest fold)"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:87
 #: 2ef84be948b14ee186b76da4db45620d
 msgid "平衡：`[2, 6, 1]`"
-msgstr ""
+msgstr "Balanced: `[2, 6, 1]`"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:88
 #: c11b8999b4124c4b87453cf074b91173
 msgid "探索：`[4, 12, 2]`"
-msgstr ""
+msgstr "Exploratory: `[4, 12, 2]`"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:90
 #: ec446676f475430a8bea76116cffea72
 msgid "旋转参数"
-msgstr ""
+msgstr "Rotation parameters"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:92
 #: 8e168ad1af674d46a628d448cd584bf9
@@ -329,24 +399,27 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:94
 #: fb18c4f75c424156b6e91e98c01f02d3
 msgid ""
-"`list[float] | tuple[float, float, float]`，默认 `(15.0, 45.0, 15.0)`。`[min,"
-" max, step]`，相邻层之间的面内转角，单位度。"
+"`list[float] | tuple[float, float, float]`，默认 `(15.0, 45.0, 15.0)`。`[min, "
+"max, step]`，相邻层之间的面内转角，单位度。"
 msgstr ""
+"`list[float] | tuple[float, float, float]`, default: `(15.0, 45.0, 15.0)`. "
+"In-plane rotation between adjacent layers, in degrees, expressed as "
+"`[minimum, maximum, step]`."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:95
 #: c6ec7e1596b042c9991ced199a9ce2f8
 msgid "保守：`[5, 15, 5]`（小转角）"
-msgstr ""
+msgstr "Conservative: `[5, 15, 5]` (small rotations)"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:96
 #: 3a19a8a5c1b648de9b1e65ffd587a34c
 msgid "平衡：`[15, 45, 15]`（中转角）"
-msgstr ""
+msgstr "Balanced: `[15, 45, 15]` (moderate rotations)"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:97
 #: 44a829b73ee541af9b623b361f419d45
 msgid "探索：`[30, 90, 15]`（大转角）"
-msgstr ""
+msgstr "Exploratory: `[30, 90, 15]` (large rotations)"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:99
 #: 1d49bf3f55724b43a58101c71ccdc640
@@ -356,24 +429,26 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:101
 #: 46c0a1430db647eb9ffedb95c0eea96a
 msgid ""
-"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 15.0)`。`[min, "
-"max, step]`，全局相位偏移，单位度。"
+"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 15.0)`。`[min, max,"
+" step]`，全局相位偏移，单位度。"
 msgstr ""
+"`list[float] | tuple[float, float, float]`, default `(0.0, 0.0, 15.0)`. "
+"Global phase offsets as `[min, max, step]` in degrees."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:102
 #: 9db9e865f8c5468c9711f5a6f9e35ab8
 msgid "保守：`[0, 0, 15]`"
-msgstr ""
+msgstr "Conservative: `[0, 0, 15]`"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:103
 #: a4eadf261de5441c90b4454ecd342987
 msgid "平衡：`[0, 90, 30]`"
-msgstr ""
+msgstr "Balanced: `[0, 90, 30]`"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:104
 #: 8b7707469d004d5f924b3a7925205bcf
 msgid "探索：`[-180, 180, 30]`"
-msgstr ""
+msgstr "Exploratory: `[-180, 180, 30]`"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:106
 #: 380f7dbe2d66469b900582df66c72156
@@ -387,11 +462,15 @@ msgid ""
 "counterclockwise` 前半周期顺时针、后半周期逆时针；`Counterclockwise then clockwise` "
 "相反；`Both` 两种都生成。"
 msgstr ""
+"`str`, default: `'Clockwise then counterclockwise'`. `Clockwise then "
+"counterclockwise` uses clockwise rotation in the first half-period and "
+"counterclockwise rotation in the second. `Counterclockwise then clockwise` "
+"reverses that order. `Both` generates both sequences."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:110
 #: abc320ddef384054bb0fff657b701c5a
 msgid "磁矩幅值"
-msgstr ""
+msgstr "Moment magnitudes"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:112
 #: 9633cef9bbae4e4a9e8b4a6e89bfcc65
@@ -401,14 +480,19 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:114
 #: 20b60301e0084c63943248e23ce82200
 msgid ""
-"`str`，默认 `'Existing initial magmoms'`。可选 `Existing initial magmoms` "
-"复用已有磁矩，或 `Map/default magnitude` 用元素映射生成幅值。"
+"`str`，默认 `'Existing initial magmoms'`。可选 `Existing initial magmoms` 复用已有磁矩，或"
+" `Map/default magnitude` 用元素映射生成幅值。"
 msgstr ""
+"`str`, default `'Existing initial magmoms'`. Choose `Existing initial "
+"magmoms` to reuse stored moments or `Map/default magnitude` to create "
+"magnitudes from an element map."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:116
 #: b27b929adf454d9789010ef69ed87d5e
 msgid "**`Magmom Map`** / **`Default Moment`**：仅在 `Map/default magnitude` 模式下生效。"
 msgstr ""
+"**`Magmom Map`** / **`Default Moment`**: used only in `Map/default "
+"magnitude` mode."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:118
 #: 9998540f2c4f4fef9b3f9ef0385d8a66
@@ -419,6 +503,9 @@ msgstr ""
 #: 2364b20266d14823bdca171f17939303
 msgid "`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。"
 msgstr ""
+"`str`, default `''`. Provide known element-resolved local moments "
+"explicitly, for example `Fe:2.2,Ni:0.6`. Do not invent a prior for an "
+"unknown element through a default value."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:122
 #: 8b456d5599354d7497b2579f09998e8a
@@ -429,6 +516,9 @@ msgstr ""
 #: 8d1fe5384c82442e989073a1f963ef34
 msgid "`float`，默认 `0.0`。只作为 `magmom_map` 未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。"
 msgstr ""
+"`float`, default `0.0`. Used only when an element is absent from "
+"`magmom_map`. List important magnetic elements explicitly; nonmagnetic "
+"elements should normally remain at 0."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:126
 #: aca3de0a167b47a6b82d9f251e4b9802
@@ -439,11 +529,13 @@ msgstr ""
 #: 5c826b93e6244fb68f26137dca125702
 msgid "`str`，默认 `''`。限制哪些元素施加折返纹理，留空则全部参与。"
 msgstr ""
+"`str`, default: `''`. Restricts the folded texture to selected elements. "
+"Leave empty to include all elements."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:130
 #: b071aa3bb0de494688a6871cbca932e2
 msgid "输出预算"
-msgstr ""
+msgstr "Output budget"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:132
 #: 9766b0ea9fe147529b2253e2ac1161d8
@@ -454,16 +546,21 @@ msgstr ""
 #: 7f86f66acf7a4367a7d61cf5a239f568
 msgid "`int`，默认 `100`。半周期、角度、相位和手性会相乘放大输出数量。先用几十个确认相位和层识别无误，再放大到研究级扫描。"
 msgstr ""
+"`int`, default: `100`. Half-periods, angles, phases, and chirality sequences"
+" multiply the output count. Start with a few dozen structures to verify "
+"layer detection and phase conventions before scaling up to a research scan."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:136
 #: 396791e92da64b8ab4d4811a156e919a
 msgid "推荐预设"
-msgstr ""
+msgstr "Recommended presets"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:138
 #: a42204a37caf4a439acb28d6d7ee6914
 msgid "auto 模式单折返验证（~2 个输出，先确认分层和方向正确）"
 msgstr ""
+"Single-fold automatic-mode check (~2 outputs; verify layers and directions "
+"first)"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:139
 #: 27893757b1ce416ca9e739ec9b2eca7b
@@ -492,6 +589,8 @@ msgstr ""
 #: 94b55a293c0d4f77b5ffe7308edd27d2
 msgid "多转角多相位常规覆盖（~24 个输出，适合层状磁体训练）"
 msgstr ""
+"Routine coverage of several rotations and phases (~24 outputs; suitable for "
+"layered-magnet training)"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:160
 #: 22c05ad128624720b27e1ce6eeaa08f1
@@ -519,7 +618,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:180
 #: a18936deaf794b49a2876bfceab90613
 msgid "手动多周期 + 全相位探索（~500 个输出，研究级）"
-msgstr ""
+msgstr "Manual multiple-period, full-phase exploration (~500 outputs; research scale)"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:181
 #: 5fd38823761445f993b33e7793f3fa7b
@@ -547,27 +646,33 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:201
 #: 598db73d6dd24d0fad64f62ffd5ba741
 msgid "推荐组合"
-msgstr ""
+msgstr "Recommended combinations"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:203
 #: 87584037289e419db663d9aecd32f4ec
 msgid "`Magnetic Order` → `Folded Helix`：先建立 FM/AFM 局域磁矩模长，再按层折返旋转"
 msgstr ""
+"`Magnetic Order` → `Folded Helix`: establish local FM/AFM moment magnitudes,"
+" then rotate them in a folded layer pattern."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:204
 #: 8c0cfd48ec2048858e5935f6738ea9bb
 msgid "`Set Magnetic Moments` → `Folded Helix`：手动指定元素模长，再生成折返纹理"
 msgstr ""
+"`Set Magnetic Moments` → `Folded Helix`: assign element-specific magnitudes "
+"manually, then generate the folded texture."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:205
 #: c7f0dc3e5ecf477ca8eb06e0562a340a
 msgid "`Group Label` → `Folded Helix`：先打 group 标签，再在特定子晶格上施加折返"
 msgstr ""
+"`Group Label` → `Folded Helix`: label groups first, then apply the fold to a"
+" selected sublattice."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:207
 #: 2abeb6dd575c4f92a126a62bd8167efa
 msgid "常见问题"
-msgstr ""
+msgstr "Common questions"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:209
 #: 7beac037d25c497aa1c209bf5d6581f0
@@ -575,11 +680,17 @@ msgid ""
 "**输出只有原始输入。** 磁矩幅值全为 0。检查 `magnitude_source` 和 `magmom_map`。结构只有 1 "
 "层时折返无意义——至少需要 2 层。"
 msgstr ""
+"**Only the original input is returned.** All moment magnitudes are zero. "
+"Check `magnitude_source` and `magmom_map`. A fold is undefined for a one-"
+"layer structure; at least two layers are required."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:211
 #: df2169a3604e4667849255f62ecd3150
 msgid "**分层结果不符合预期。** `layer_axis` 方向是否正确？调整 `layer_tolerance`——太小把同层拆散，太大把不同层合并。"
 msgstr ""
+"**Layer detection is incorrect.** Check the direction of `layer_axis`, then "
+"adjust `layer_tolerance`: a value that is too small splits one physical "
+"layer, while a value that is too large merges neighboring layers."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:213
 #: bb1ef391f517428f88d5ae32f4e763d3
@@ -587,16 +698,23 @@ msgid ""
 "**auto 模式的半周期太小或太大。** auto 模式取 `(总层数 - 1) // 2`。如果结构有偶数层且你期望一个层作为转折峰，切到 "
 "manual 模式手动指定 `half_period_layers`。"
 msgstr ""
+"**The automatic half-period is too short or too long.** Automatic mode uses "
+"`(number of layers - 1) // 2`. For an even number of layers, if you need a "
+"particular layer to be the turning peak, switch to manual mode and set "
+"`half_period_layers`."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:215
 #: d400272209f7436f941760d9057af0a2
 msgid "**输出相位看起来没有折返。** 如果层数太少（如 3 层），折返曲线不明显。用 6 层以上的结构效果更直观。"
 msgstr ""
+"**The output phase does not appear to fold.** With very few layers, such as "
+"three, the triangular profile is difficult to see. A structure with at least"
+" six layers makes the fold clearer."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:217
 #: f2f7f537f8ed4ae8a3b9d6b5b0d1264d
 msgid "输出标签"
-msgstr ""
+msgstr "Output labels"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:219
 #: 9ecad10d39f4459bb497d7cb999e0d31
@@ -606,44 +724,47 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:220
 #: c1409cb736324997bf8036de58225c6f
 msgid "`h`：半周期层步数"
-msgstr ""
+msgstr "`h`: number of layer intervals in one half-period"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:221
 #: 567d029782c0425c87ccdbc9cc4dabd0
 msgid "`da`：层间转角"
-msgstr ""
+msgstr "`da`: interlayer rotation angle"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:222
 #: 952f87d027754ccc9ca76601288a407f
 msgid "`ph`：全局相位"
-msgstr ""
+msgstr "`ph`: global phase"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:223
 #: c0007b1968874bcaae52b098fd2b00c3
 msgid "`seq`：手性顺序（`cw-ccw` 或 `ccw-cw`）"
-msgstr ""
+msgstr "`seq`: chirality sequence (`cw-ccw` or `ccw-cw`)"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:224
 #: a3ed46c0a793469fa2451c5d86dca848
 msgid "`ax`：分层轴标签"
-msgstr ""
+msgstr "`ax`: layer-axis label"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:225
 #: ea990286440e42a693674725c88a981a
 msgid "`pn`：旋转平面法向标签"
-msgstr ""
+msgstr "`pn`: rotation-plane-normal label"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:227
 #: 1b342687b0954d9ebae7238cfa4192d1
 msgid "所有输出写入 `initial_magmoms` 三列向量。"
-msgstr ""
+msgstr "All outputs are written as three-component vectors in `initial_magmoms`."
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:229
 #: d68d2f6feb774f529d4b2632f8c54ee8
 msgid "可复现性"
-msgstr ""
+msgstr "Reproducibility"
 
 #: ../../source/module/make-dataset-cards/cards/folded-helix-card.md:231
 #: e5ab92e6ff5c432998f7f8526b4ca1c8
 msgid "无随机性。相同输入结构和相同参数 → 严格一致输出。分层原点固定为沿 `layer_axis` 投影后的最小层号。"
 msgstr ""
+"Deterministic. Identical input structures and parameters produce identical "
+"output. The layer origin is fixed at the smallest projected coordinate along"
+" `layer_axis`."

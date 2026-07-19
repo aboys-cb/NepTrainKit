@@ -31,3 +31,7 @@ msgstr "Workflows"
 #: ../../source/workflows/index.rst:4 c3e1509f024d41b88f7d330fc32505e3
 msgid "这里的页面按真实任务组织，而不是按按钮组织。按钮细节可以查模块参考；工作流页只回答： 数据从哪里来，在哪一步该判断什么，最后输出给谁。"
 msgstr ""
+"These pages are organized by real tasks rather than toolbar buttons. Use the"
+" module reference for individual controls; use workflow pages to understand "
+"where data comes from, what to decide at each stage, and where the result "
+"goes next."

@@ -12,6 +12,7 @@ from PySide6.QtWidgets import QApplication, QWidget
 from qfluentwidgets import CaptionLabel, MessageBoxBase
 
 from NepTrainKit.main import create_app, create_main_window
+from NepTrainKit.i18n import install_translator
 from NepTrainKit.ui.widgets.dialog import (
     ArrowMessageBox,
     DatasetSummaryMessageBox,
@@ -36,7 +37,11 @@ class ScenarioContext:
     app: QApplication
     window: object
     repo_root: Path
+    language: str
     capture_widget: QWidget | None = None
+
+    def text(self, english: str, chinese: str) -> str:
+        return chinese if self.language == "zh_CN" else english
 
 
 def pump_events(app: QApplication, cycles: int = 80, delay_ms: int = 5) -> None:
@@ -66,13 +71,14 @@ def dismiss_transient_notifications(app: QApplication) -> None:
     pump_events(app, 20)
 
 
-def create_context(repo_root: Path, window_size: tuple[int, int]) -> ScenarioContext:
+def create_context(repo_root: Path, window_size: tuple[int, int], language: str) -> ScenarioContext:
     """Create a configured main window without entering the Qt event loop."""
     app = create_app(["capture-ui"])
+    install_translator(app, language)
     window = create_main_window(show=True)
     window.resize(*window_size)
     pump_events(app, 80)
-    return ScenarioContext(app=app, window=window, repo_root=repo_root)
+    return ScenarioContext(app=app, window=window, repo_root=repo_root, language=language)
 
 
 def prepare_nep_demo_data(ctx: ScenarioContext) -> Path:
@@ -184,32 +190,32 @@ def _show_dialog(ctx: ScenarioContext, dialog: QWidget, *, width: int | None = N
 
 
 def show_nep_index_dialog(ctx: ScenarioContext) -> None:
-    _show_dialog(ctx, IndexSelectMessageBox(ctx.window, "Specify index or slice"))
+    _show_dialog(ctx, IndexSelectMessageBox(ctx.window, ctx.text("Specify index or slice", "指定索引或切片")))
 
 
 def show_nep_range_dialog(ctx: ScenarioContext) -> None:
-    _show_dialog(ctx, RangeSelectMessageBox(ctx.window, "Specify x/y range"))
+    _show_dialog(ctx, RangeSelectMessageBox(ctx.window, ctx.text("Specify x/y range", "指定 x/y 范围")))
 
 
 def show_nep_lattice_dialog(ctx: ScenarioContext) -> None:
-    _show_dialog(ctx, LatticeRangeSelectMessageBox(ctx.window, "Specify lattice parameters range"))
+    _show_dialog(ctx, LatticeRangeSelectMessageBox(ctx.window, ctx.text("Specify lattice-parameter range", "指定晶格参数范围")))
 
 
 def show_nep_max_error_dialog(ctx: ScenarioContext) -> None:
-    dialog = GetIntMessageBox(ctx.window, "Enter the number of maximum-error structures")
+    dialog = GetIntMessageBox(ctx.window, ctx.text("Enter the number of maximum-error structures", "输入最大误差结构数量"))
     dialog.intSpinBox.setValue(10)
     _show_dialog(ctx, dialog)
 
 
 def show_nep_sparse_dialog(ctx: ScenarioContext) -> None:
-    dialog = SparseMessageBox(ctx.window, "Sparse samples")
+    dialog = SparseMessageBox(ctx.window, ctx.text("Sparse samples", "稀疏采样"))
     dialog.intSpinBox.setValue(100)
     dialog.doubleSpinBox.setValue(0.05)
     _show_dialog(ctx, dialog)
 
 
 def show_nep_force_dialog(ctx: ScenarioContext) -> None:
-    dialog = GetFloatMessageBox(ctx.window, "Net force threshold")
+    dialog = GetFloatMessageBox(ctx.window, ctx.text("Net force threshold", "净力阈值"))
     dialog.doubleSpinBox.setValue(0.1)
     _show_dialog(ctx, dialog)
 
@@ -222,7 +228,7 @@ def show_nep_edit_info_dialog(ctx: ScenarioContext) -> None:
 
 
 def show_nep_shift_dialog(ctx: ScenarioContext) -> None:
-    dialog = ShiftEnergyMessageBox(ctx.window, "Group regex patterns (comma separated)")
+    dialog = ShiftEnergyMessageBox(ctx.window, ctx.text("Group regex patterns (comma separated)", "分组正则表达式（逗号分隔）"))
     dialog.groupEdit.setText("bulk.*,surface.*")
     dialog.genSpinBox.setValue(200)
     dialog.sizeSpinBox.setValue(20)
@@ -231,7 +237,7 @@ def show_nep_shift_dialog(ctx: ScenarioContext) -> None:
 
 
 def show_nep_dftd3_dialog(ctx: ScenarioContext) -> None:
-    dialog = DFTD3MessageBox(ctx.window, "DFTD3 correction")
+    dialog = DFTD3MessageBox(ctx.window, ctx.text("DFT-D3 correction", "DFT-D3 校正"))
     dialog.functionEdit.setCurrentText("pbe")
     _show_dialog(ctx, dialog)
 
@@ -268,17 +274,20 @@ def show_nep_export_format_dialog(ctx: ScenarioContext) -> None:
 
 def show_nep_drop_bad_dialog(ctx: ScenarioContext) -> None:
     dialog = MessageBoxBase(ctx.window)
-    dialog.titleLabel = CaptionLabel("Confirm", dialog)
+    dialog.titleLabel = CaptionLabel(ctx.text("Confirm", "确认"), dialog)
     dialog.contentLabel = CaptionLabel(
-        "This will delete 1 structures marked as bad.\nDo you want to continue?",
+        ctx.text(
+            "This will delete 1 structure marked as bad.\nDo you want to continue?",
+            "这将删除 1 个标记为不良的结构。\n是否继续？",
+        ),
         dialog,
     )
     dialog.contentLabel.setWordWrap(True)
     dialog.viewLayout.addWidget(dialog.titleLabel)
     dialog.viewLayout.addWidget(dialog.contentLabel)
     dialog.widget.setMinimumWidth(360)
-    dialog.yesButton.setText("OK")
-    dialog.cancelButton.setText("Cancel")
+    dialog.yesButton.setText(ctx.text("OK", "确定"))
+    dialog.cancelButton.setText(ctx.text("Cancel", "取消"))
     _show_dialog(ctx, dialog)
 
 

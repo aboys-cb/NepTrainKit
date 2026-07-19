@@ -1,0 +1,391 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:3
+#: 5b491b3b511a4307b0916630cb66c7d5
+msgid "自旋无序（Spin Disorder）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:5
+#: d142b96bb6534f85a7a2dde4afd5b034
+msgid "`Group`: `Magnetism` | `Class`: `SpinDisorderCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:7
+#: 7136b4d24faa449a9160d1a81d1e3928
+msgid "功能说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:9
+#: e0da927a55f14535b25444cf04ddfebe
+msgid ""
+"`Spin Disorder` 从已有磁矩或元素磁矩表出发，按指定无序比例生成中间磁态。它覆盖 FM/AFM 到 PM 之间的离散翻转、随机方向和"
+" cone disorder，不把这些离散无序混进 `Magmom Rotation` 的连续小角扰动语义里。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:11
+#: 8020c71cd9f44b8b9ec576a852351f39
+msgid "操作示例"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:13
+#: 667fc3ac3bae444e8c71b8c56779f006
+msgid "场景：模型只见过 FM/AFM 和完全随机 PM"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:15
+#: 78df2ac064ea43b5a1b0688f8d684140
+#, python-format
+msgid "FeCo 训练集包含 FM、AFM 和完全随机 PM，但缺少 10%-70% 局部翻转的中间无序态。模型在有限温度磁态上能量排序不稳定。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:17
+#: dcc8f2179aba48e6a134f3d554c62306
+msgid ""
+"**输入：** 已经通过 `Magnetic Order` 或 `Set Magnetic Moments` 写入磁矩的结构。 **目标：** "
+"生成 `0.1,0.3,0.5,0.7` 四档局部翻转，让训练集覆盖有序到无序的连续路径。 **参数设置：** `mode=Flip "
+"fraction`，`fractions=0.1,0.3,0.5,0.7`，`samples_per_fraction=3`，开启 "
+"`use_seed`。 **输出：** 每个输入结构生成 12 个自旋无序结构。 **怎么验证训练集质量改善：** "
+"重训后，中间翻转比例测试集的能量/磁力误差应不再显著高于 FM/AFM 端点。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:23
+#: 32acbbadf8c045509304dc7596d3e76a
+msgid "参数说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:25
+#: 83248d6df55d4057b6d0df051a97e4f0
+msgid "无序模型"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:27
+#: a727634375a44c769741ad6219ad8837
+msgid "Mode（mode）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:29
+#: 3d6f7386cafd417aa0cef9be1361db6f
+msgid ""
+"`str`，默认 `'Flip fraction'`。`Flip fraction` 保持共线轴只翻转符号，适合 FM/AFM 到 PM "
+"的离散无序梯度；`Randomize fraction` 把选中自旋完全随机化；`Cone disorder` "
+"保持围绕参考方向的有限温非共线扰动。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:31
+#: f0ccc72c005d4bdca496cac9154aa303
+msgid "Fractions（fractions）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:33
+#: 4d5ac42add2347aba37d6ec94483e54e
+msgid ""
+"`str`，默认 `'0.1,0.3,0.5,0.7'`。被翻转或随机化的自旋比例，从 0 到 1。0.1/0.3/0.5/0.7 可覆盖 "
+"FM/AFM 到 PM 之间的无序梯度。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:35
+#: 3aba8e07812a46fea589c1492d3d1cbf
+msgid "Samples Per Fraction（samples_per_fraction）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:37
+#: c0eda30ace1c4b3184ee6bc0633fda14
+msgid "`int`，默认 `1`。同一无序度下不同随机选择会给不同局域环境。1 个用于路径扫描，3-10 个用于统计训练。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:39
+#: 6b85a5d41ddf4c2488fbb6d4f2e94987
+msgid "Cone Angle（cone_angle）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:41
+#: fa90dacb08b247779a171ffa3746b79b
+msgid ""
+"`float`，默认 `30.0`。Cone disorder 中限制随机方向偏离参考轴的最大角。10-30° 表示有序态附近有限温扰动；接近 "
+"90° 时已接近强无序。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:43
+#: 4b66249c1a124cea8d2ce5f4b388af92
+msgid "生效条件：`mode` 或方向模型选择 cone/noncollinear 随机化时。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:45
+#: 5091dd84f0e74a4d8eedc2c4f0e79f40
+msgid "磁矩幅值"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:47
+#: 2ad91bb9bdfd497d82acb2002e22f71d
+msgid "Magnitude Source（magnitude_source）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:49
+#: 209eed05e4e84439a580c8b98d64cfc8
+msgid ""
+"`str`，默认 `'Existing initial magmoms'`。已有 `initial_magmoms` "
+"时复用它最安全；没有磁矩输入时用 `magmom_map`/`default_moment` 构造幅值。不要用默认幅值替代已知元素磁矩。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:51
+#: eed10a72d7e941ecb736d4767b4cd5a9
+msgid "Magmom Map（magmom_map）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:53
+#: 6761b4f98dc04c48b703936064b96ef2
+msgid "`str`，默认 `''`。已知元素局域磁矩时显式写入，如 `Fe:2.2,Ni:0.6`。未知元素不要用默认值伪造先验。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:55
+#: f4970fc0265d453db00dec51bca4739d
+msgid "Default Moment（default_moment）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:57
+#: 0c3d60d36bbd402bb54c4f9b745a7f49
+msgid "`float`，默认 `0.0`。只作为 `magmom_map` 未命中元素的兜底幅值。关键磁性元素应显式列出，非磁元素通常保持 0。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:59
+#: a02db1e630f349d0b8706cda42a3521c
+msgid "Lift Scalar（lift_scalar）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:61
+#: 4635310bc429405a89dd90547e485860
+msgid "`bool`，默认 `True`。输入是标量磁矩但下游需要非共线向量时打开；如果原始数据已有方向信息，不要重新提升覆盖它。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:63
+#: 67470d571a5540dea3efdca2dadd49bd
+msgid "Axis（axis）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:65
+#: c7121474f7554a8187e1ff5c8235884f
+msgid ""
+"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, "
+"1.0)`。这是方向参考，不是普通数值——改它会改变分层、表面法向或磁矩方向。使用前先确认 cell 取向和目标物理方向。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:67
+#: e6ea4bc24151434882ba283b73b8de11
+msgid "生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:69
+#: 40ce52a9613a46768afd2c39e1870a9b
+msgid "Apply Elements（apply_elements）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:71
+#: 2aaa77b09ec34ba89744bcb9f660e4f1
+msgid "`str`，默认 `''`。只对列出的磁性元素翻转或随机化。合金/界面里应显式列出磁性元素，避免给非磁原子写入无意义磁矩。留空则全部参与。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:73
+#: 19a306463fb04b0181669d795748e819
+msgid "随机性和预算"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:75
+#: d1a1dbf0cdcb4a88a93c1506067d4d94
+msgid "Use Seed（use_seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:77
+#: 4b6c3b42d2374a558527f39672dd71cf
+msgid "`bool`，默认 `False`。勾选后固定种子可复现。对比实验时开，最终大规模随机探索可以关——但关后结果不能逐帧复现。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:79
+#: 34ec06a6389c479aa1c7f9cf358ef8a3
+msgid "Seed（seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:81
+#: 468da7e265d54137bedbc277748f035f
+msgid "`int`，默认 `0`。同一输入、同一参数和同一 seed 应生成同一批候选。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:83
+#: eb42cf1f06ae4e9ebe1d1787b2e10b4b
+msgid "生效条件：`use_seed=True`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:85
+#: 57d2650c6d9d441bb6dff7d1e21271ef
+msgid "Max Outputs（max_outputs）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:87
+#: 7bb6645368264099b8c19fd4b72f890d
+msgid ""
+"`int`，默认 `100`。总输出约等于 fractions 数量乘以 "
+"samples_per_fraction。链式输入多时必须设上限，避免磁无序样本淹没结构样本。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:89
+#: ae7ee35d8d5942299aefb9f02a494ba1
+msgid "推荐预设"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:91
+#: 2a46119e36c0476898e0aeb86585566d
+msgid "共线翻转梯度"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:93
+#: d63ab420f9e542ff8c7b86bb314a76cd
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"SpinDisorderCard\",\n"
+"  \"params\": {\n"
+"    \"mode\": \"Flip fraction\",\n"
+"    \"fractions\": \"0.1,0.3,0.5,0.7\",\n"
+"    \"samples_per_fraction\": 3,\n"
+"    \"cone_angle\": 30.0,\n"
+"    \"magnitude_source\": \"Existing initial magmoms\",\n"
+"    \"magmom_map\": \"\",\n"
+"    \"default_moment\": 0.0,\n"
+"    \"lift_scalar\": true,\n"
+"    \"axis\": [0.0, 0.0, 1.0],\n"
+"    \"apply_elements\": \"\",\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42,\n"
+"    \"max_outputs\": 100\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:114
+#: cd0ad24d6f0c4b3b8c752ce05a6c7bac
+msgid "用于从 FM/AFM 参考态生成局部翻转比例扫描。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:116
+#: fe0db0a2f1fd48b48d4fb144076653a5
+msgid "非共线 cone disorder"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:118
+#: f8fe1b17d08248ab9fa4f13323c1cdef
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"SpinDisorderCard\",\n"
+"  \"params\": {\n"
+"    \"mode\": \"Cone disorder\",\n"
+"    \"fractions\": \"0.25,0.5,0.75\",\n"
+"    \"samples_per_fraction\": 2,\n"
+"    \"cone_angle\": 20.0,\n"
+"    \"magnitude_source\": \"Existing initial magmoms\",\n"
+"    \"magmom_map\": \"\",\n"
+"    \"default_moment\": 0.0,\n"
+"    \"lift_scalar\": true,\n"
+"    \"axis\": [0.0, 0.0, 1.0],\n"
+"    \"apply_elements\": \"Fe,Co\",\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 7,\n"
+"    \"max_outputs\": 50\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:139
+#: 733041c671b6424cbcee1e00edd667c2
+msgid "用于有限温度附近的非共线方向扰动。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:141
+#: d8a8860c061a42169e7985c181972e4e
+msgid "推荐组合"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:143
+#: 0d2c82a532a54b5390d4cc09cb26bbe0
+msgid "`Magnetic Order → Spin Disorder`：先建立 FM/AFM 参考态，再生成中间无序比例。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:144
+#: 11ad0cc7328c4df9a0e02fb3b17f83b8
+msgid ""
+"`Set Magnetic Moments → Spin Disorder → Small-Angle Spin "
+"Tilt`：先统一磁矩模长，再做无序化和小角偏转。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:145
+#: 077a7c8f269d45c79131bb53501ee385
+msgid "`Spin Disorder → Geometry Filter`：磁性结构如果同时经过强几何扰动，后面接几何清洗。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:147
+#: 2836b381fb5b454ea2387dd99decc0e1
+msgid "常见问题"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:149
+#: 907c139017214f1090463e92fa57678f
+msgid ""
+"**运行报错：找不到 eligible magnetic moments。** 输入没有可用磁矩，或 `apply_elements` "
+"没有匹配任何非零磁矩。先用 `Set Magnetic Moments` 或 `Magnetic Order` 初始化。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:151
+#: 2fec83f56404475a8697b2f0e56b5899
+msgid ""
+"**翻转数量不是精确小数比例。** 原子数是离散的，程序按 fraction 转成整数个原子，至少选 1 个且不超过 eligible atom "
+"数。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:153
+#: e927317918e842f19784d0799a9841ec
+msgid ""
+"**`Cone disorder` 看起来和 PM 不一样。** cone disorder 只在参考方向附近随机，不是全空间 PM。全空间随机用"
+" `Randomize fraction`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:155
+#: a0dab9836810400e983855e75f911ef7
+msgid "输出标签"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:157
+#: eefab29ab6b34b95bde355411a02d3ac
+#, python-brace-format
+msgid ""
+"`SpinDis(f={fraction},n={count},mode={flip|rand|cone},s={seed},a={cone_angle})`。`s`"
+" 只在 `use_seed=True` 时出现，`a` 只在 cone disorder 输出中出现。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:159
+#: f1cbb65bc0784ba8910f97e95cdb3666
+msgid "可复现性"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:161
+#: 1db1fcd34e70442c946460ce54e9699f
+msgid "开启 `use_seed` 后，随机原子选择和方向采样由 `seed`、输入结构标识、fraction 序号和 sample 序号共同决定。"
+msgstr ""

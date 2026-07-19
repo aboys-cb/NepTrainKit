@@ -4,6 +4,7 @@
 /dist
 /docs/build
 /docs/_build
+/docs/source/locale/**/*.mo
 /docs/superpowers/
 /.tmp/docs-screenshots
 .idea/

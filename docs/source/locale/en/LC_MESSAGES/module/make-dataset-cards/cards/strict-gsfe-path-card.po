@@ -1,0 +1,512 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:3
+#: 5b9ce37c18c84b38b047dc3edf43db8c
+msgid "严格 GSFE 路径（Strict GSFE Path）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:5
+#: 73d4cf1ecee24aacb8b40fe66f5266f6
+msgid "`Group`: `Defect` | `Class`: `StrictGSFEPathCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:7
+#: 4cdc502bf36545db9e1f9cd22fb86230
+msgid "功能说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:9
+#: 40f44594f44745a6b197ee3ce386b439
+msgid ""
+"按显式晶面 `hkl` 和滑移方向 `uvw` 生成未弛豫的广义层错能（GSFE）路径结构。输入必须已经是 slab-oriented "
+"cell：第三晶胞方向要垂直于 `plane_hkl`，否则周期边界会把断层面错接成重合或过近原子，程序会直接报错。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:11
+#: 8e62921566144df9b7bef63c713b06c8
+msgid ""
+"相比 `Stacking Fault`，这张卡把滑移方向写成明确的晶向，并提供 "
+"`middle`、`fractional`、`layer_index` 三种切面选择。它适合你已经知道目标滑移系统，想要严格控制 GSFE "
+"路径几何的场景。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:13
+#: 3f30c70d908e40d3ac9908faff548ee1
+msgid "操作示例"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:15
+#: 67bc038a3c914e4b9b65abf60f887ea6
+msgid "场景：模型在指定滑移系的 GSFE 峰值严重偏低"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:17
+#: be42a435d0e543be83d6c1955cc98eca
+msgid ""
+"你在 fcc Ni 上训练了 NEP，体相和弹性响应都不错，但 (111)<112> 的 GSFE 峰值比 DFT "
+"低很多。训练集里虽然有随机扰动和表面，但没有沿这个滑移系系统移动半晶体的结构，模型没学到层间错排的能量代价。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:19
+#: a8aa6c3933d34ad6915f410e0ac7d675
+msgid ""
+"**输入：** 一个 fcc111 slab-oriented 周期超胞，例如 `Crystal Prototype Builder` 的 "
+"`fcc111` 原型。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:21
+#: d10632830e334c2aa828f402ebb99c49
+msgid ""
+"**目标：** 沿 slab cell 的 `(001)` 面和面内 `[100]` 周期方向生成 0 到 1 个滑移向量的路径，步长 "
+"0.1；这个 `(001)` 就是原始 fcc 的 `(111)` 面。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:23
+#: 56c4b01605d34e0bb021ac70e6e02804
+msgid "**参数设置：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:24
+#: ef1a6c7abbe444cd9d995aa936353a06
+msgid "`plane_hkl = [0, 0, 1]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:25
+#: 627acf378104411182c2ce6d7237a752
+msgid "`slip_uvw = [1, 0, 0]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:26
+#: a2763274dd7040179f07bc7a92fa3047
+msgid "`displacement_range = [0.0, 1.0, 0.1]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:27
+#: 2d6403aa873f4e52a2af554a1afe34ac
+msgid "`displacement_unit = \"fraction_of_vector\"`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:28
+#: 9091b6aed4df4f0f9754cf87e97a80d2
+msgid "`cut_mode = \"middle\"`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:30
+#: 83911295eab44747be881f53752c0d32
+msgid "**输出：** 11 个未弛豫层错结构，带 `GSFE(hkl=001,uvw=100,d=...)` 标签。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:32
+#: 7fab8110670f400cb143d9524c2bd1d5
+msgid ""
+"**怎么验证训练集质量改善：** 对输出结构做 DFT 单点或短弛豫后加入训练集，重训再扫同一 GSFE "
+"路径。峰值、局部极小位置和曲线对称性应更接近 DFT；如果只有峰值改善但曲线仍有锯齿，把步长从 0.1 缩到 0.05。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:34
+#: 28062cec71e7411c854471c1814cdf3b
+msgid "参数说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:36
+#: 5aa1a1cdbb094a5e8f2414512354b791
+msgid "Plane HKL（plane_hkl）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:38
+#: d67e289f6264438080336320578bffe2
+msgid "`Sequence[int]`，默认 `(0, 0, 1)`。Miller 指数，定义哪一个晶面作为层错切面；该面的法向必须平行于第三晶胞方向。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:40
+#: 51119331faff409a82d8bc4b3ad0f345
+msgid ""
+"低指数面最常用：fcc111 slab cell 里用 `(001)` 表示原始 fcc `(111)` 面。`(0, 0, 0)` "
+"没有物理意义，程序会直接报错。普通 cubic fcc cell 里的 `(111)` 不满足 slab-oriented 要求，不能直接使用。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:42
+#: b54c2390d8a14f01899c537e376f49a5
+msgid "Slip UVW（slip_uvw）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:44
+#: 255d98a3264f41d1b748c4407e6a5fe8
+msgid "`Sequence[int]`，默认 `(1, 0, 0)`。晶向指数，定义滑移方向；程序会把它投影到 `plane_hkl` 所在平面内。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:46
+#: 22d8b85006f949d4a4157696759c5e80
+msgid ""
+"如果 `slip_uvw` 平行于晶面法向，投影后长度为零，程序会报错。对于 fcc111 slab cell，先用 `[100]` "
+"或另一个面内周期方向做完整周期路径；如果要扫特定 partial 位移，需要把 slab cell 的面内基矢先构造成对应路径。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:48
+#: fa9a31c7e6c6417298dd49f70e615cd0
+msgid "Displacement Range（displacement_range）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:50
+#: 906f1c1aa6f84f59bd688d815361bdb5
+msgid "`Sequence[float]`，默认 `(0.0, 1.0, 0.5)`。格式是 `[起点, 终点, 步长]`，扫描滑移位移。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:52
+#: 4c7492ed17274d94861839fbf5afb41b
+msgid ""
+"如果 `displacement_unit = \"fraction_of_vector\"`，`1.0` 表示完整投影滑移向量；如果单位是 "
+"`angstrom`，数值就是 A。GSFE 曲线通常需要至少 0.05-0.1 的分辨率；只做 smoke 时可以用 0、0.5、1.0 "
+"三个点快速确认几何没错。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:54
+#: 052a2c89074447c68e180f7fe6c45c68
+msgid "Displacement Unit（displacement_unit）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:56
+#: 50d343396bf747d7868a615a78bf8da4
+msgid "`str`，默认 `\"fraction_of_vector\"`。决定 `displacement_range` 里的数值怎么转成真实位移。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: 0a6ff4dfadd44dbd973df7d28d6fda11 3c2a285834404ac88e019ba422940e7e
+msgid "选项"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: a629c8ef0a004553bcdb27061a7866ec eda6ecb20011455784846b59c6f2c34d
+msgid "含义"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: 93b11598df8c402daa0a65eb2f666f71 d3687ee8c6a7494d92d2542d83ab5f3d
+msgid "什么时候选"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: e4450768f03d455dbce9740e7274dd69
+msgid "`fraction_of_vector`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: 75b2694af2fd4ff8ad69625b3077c3c5
+msgid "位移 = 数值乘以投影后的 `slip_uvw` 向量"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: cc22b60f01c142a780efebc0b37c0bbb
+msgid "扫完整 GSFE 周期或按晶向分数描述路径"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: a4134f571fb54e048fe1e68be7e12abd
+msgid "`angstrom`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: 408cb0561995489ba3f3ecf233416a62
+msgid "位移 = 数值 A，方向为投影滑移方向的单位向量"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: 19ac35f89e384f4ea751348e72bf7ac2
+msgid "已经知道实际位移长度，或只想小范围推开层间结构"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:63
+#: 847dea73fd9c49b681d41a52d9e65fd0
+msgid "Cut Mode（cut_mode）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:65
+#: 2722debb6d0c45409b7ff124f13ae90b
+msgid "`str`，默认 `\"middle\"`。决定哪一侧原子会被整体滑移。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: bcce84a3c6394d64836c35979bdb7bff
+msgid "`middle`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: 616b988923ec45f690ac0cac554b0155
+msgid "按投影坐标中位数切开"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: 07a88b2132d948a5988dc2efbb38b867
+msgid "普通超胞快速生成上下两半"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: 9455c0f4178a454e8e05cbe6709711b8
+msgid "`fractional`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: d9e3f43172bd48139e3ac4a5ee95b2b3
+msgid "按投影坐标范围的 `cut_fraction` 位置切开"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: 9c824cfbbbed497da734460ab8cd31f2
+msgid "想明确控制切面在胞内的相对高度"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: dc604bc0214943e4a0a77bb1e3819be0
+msgid "`layer_index`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: 25654be66dec4c5c915b4f155e7bf5ee
+msgid "按排序后的离散层位置切开"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md
+#: 994660b94c374995a74862f785dd30c8
+msgid "层状结构或 slab 中想从第几层上方开始滑移"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:73
+#: d07db32a09104754b8aea5b9beba273a
+msgid "Cut Fraction（cut_fraction）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:75
+#: 7c7e3e8f07344fcbb80183ffdad1cb7e
+msgid "`float`，默认 `0.5`。当 `cut_mode = \"fractional\"` 时使用，范围是 0 到 1。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:77
+#: 2e55cc26d9a641d88d3e327330bd73f1
+msgid ""
+"`0.5` 接近中间切面；`0.25` 会让更多原子处在上半部分并被滑移；`0.75` 则只移动靠近上侧的原子。这个值越靠近 0 或 "
+"1，移动的原子数越不平衡，适合 slab 或非均匀层结构，不适合普通体相路径的第一轮扫描。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:79
+#: 98c0518e89fa453f9fb1f048db1db154
+msgid "生效条件：`cut_mode` 必须是 `fractional`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:81
+#: a0ba2cfe9b1a4e0795bfce7144d17d37
+msgid "Layer Index（layer_index）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:83
+#: 3c2ae7808f4d45f2b89aa2c606a42155
+msgid "`int`，默认 `0`。当 `cut_mode = \"layer_index\"` 时使用，选择哪一层下面保持不动、上面的层整体滑移。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:85
+#: 797bdf549fa34fa59ce30fcefc512901
+msgid ""
+"索引从 0 开始，必须选到顶层以下的位置；如果选到最后一层，程序会报错，因为那样没有上半部分可移动。层状材料、slab "
+"或你已经知道滑移面夹在哪两层之间时，用它比 `middle` 更明确。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:87
+#: fac56ce5a0c145698433f6d5aa246832
+msgid "生效条件：`cut_mode` 必须是 `layer_index`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:89
+#: 2a665611a3b646c392ef100ee3873049
+msgid "Wrap（wrap）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:91
+#: 9306bf8a38c842dc9dee34977882f3cb
+msgid "`bool`，默认 `true`。打开后把滑移后的原子坐标包回周期晶胞内；关闭则保留真实 Cartesian 位移。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:93
+#: f20fe5138f4846f2b5fb554fe75d5d55
+msgid ""
+"训练集导出通常建议打开，避免原子跑出可视化盒子导致后续工具误判。做几何调试或想直接看半晶体移动了多远时可以关闭；关闭后输出仍然是同一个周期 "
+"cell，但坐标可能超过原胞边界。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:95
+#: d5bfe676e2b747c4a0f18b2f1d52dd9d
+msgid "推荐预设"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:97
+#: 2d4fb19c64e144bbab6123a72f90d039
+msgid "fcc111 slab 完整分数路径"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:99
+#: 3d93cbf44d5c401c9b5ed039e2c63fb8
+msgid "适合 GSFE 曲线第一轮覆盖，输出 11 个结构。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:101
+#: d09adf6b2cb644f9a47e451157ba49aa
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"StrictGSFEPathCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"plane_hkl\": [0, 0, 1],\n"
+"    \"slip_uvw\": [1, 0, 0],\n"
+"    \"displacement_range\": [0.0, 1.0, 0.1],\n"
+"    \"displacement_unit\": \"fraction_of_vector\",\n"
+"    \"cut_mode\": \"middle\",\n"
+"    \"cut_fraction\": 0.5,\n"
+"    \"layer_index\": 0,\n"
+"    \"wrap\": true\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:118
+#: 338aebbf953448c0b9161ad283ad9306
+msgid "小位移 Angstrom 探针"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:120
+#: 1de79603e1a64ad688d55c0e75d8813e
+msgid "适合只想补层间微小错排，不扫完整滑移周期。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:122
+#: 142e237672c54599a4f1d91164e6eed3
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"StrictGSFEPathCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"plane_hkl\": [0, 0, 1],\n"
+"    \"slip_uvw\": [1, 0, 0],\n"
+"    \"displacement_range\": [0.0, 0.5, 0.1],\n"
+"    \"displacement_unit\": \"angstrom\",\n"
+"    \"cut_mode\": \"middle\",\n"
+"    \"cut_fraction\": 0.5,\n"
+"    \"layer_index\": 0,\n"
+"    \"wrap\": true\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:139
+#: b4645193dac346bd810762e11c8573e9
+msgid "指定层间切面"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:141
+#: 94b9d5408946404aa3e784b9eb362696
+msgid "适合 slab 或层状材料，希望从第 2 层上方开始滑移。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:143
+#: d58e7344d4374254bd77e3b13a2d298d
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"StrictGSFEPathCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"plane_hkl\": [0, 0, 1],\n"
+"    \"slip_uvw\": [1, 0, 0],\n"
+"    \"displacement_range\": [0.0, 1.0, 0.25],\n"
+"    \"displacement_unit\": \"angstrom\",\n"
+"    \"cut_mode\": \"layer_index\",\n"
+"    \"cut_fraction\": 0.5,\n"
+"    \"layer_index\": 1,\n"
+"    \"wrap\": false\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:160
+#: 898847f97aab46368cb0f3692e5d2fc6
+msgid "推荐组合"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:162
+#: 5d6d36b225ba4d0ca081775cca3d57f1
+msgid "`Super Cell` → `Strict GSFE Path`：先扩胞，再切面滑移，降低小胞周期重复带来的假相互作用。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:163
+#: 2ba82ee930684370bc41ad4f7275e21f
+msgid ""
+"`Strict GSFE Path` → `Atomic "
+"Perturb`：在每个位移点附近加入小扰动，让模型不仅见过理想路径，也见过热扰动后的层错环境。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:164
+#: eb8b0d8408c147bebf189bafb2436b7d
+msgid "`Bain Path` → `Strict GSFE Path`：先改变晶胞形状，再扫层错路径，用于相变或应变下的 GSFE 数据。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:166
+#: 7493eabc6675413ab3d27261b71b019a
+msgid "常见问题"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:168
+#: f3555d83e85c45bd9475cbf8ba46e4a1
+msgid "**程序提示 slip_uvw 平行于 plane normal。** 这个方向投影到晶面内后长度为零，不能作为滑移方向。换一个面内晶向。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:170
+#: 287ce8a0055c469e90f1bbff158684c2
+msgid ""
+"**移动的原子层不是预期那一半。** 先切到 `layer_index` 模式，用离散层索引明确切面；普通 `middle` "
+"适合均匀体相，不一定适合 slab。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:172
+#: 10381fdfe09142deae5146c5c19a7683
+msgid "**输出坐标超过晶胞边界。** 打开 `wrap`。如果你为了检查真实位移故意关闭了 `wrap`，这不是错误，但后续导出和可视化要知道坐标未包回。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:174
+#: 65fdccee4a77401aa68cf217271f420c
+msgid "输出标签"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:176
+#: e1345091b10a4574af606a97e314b0b6
+#, python-brace-format
+msgid "`GSFE(hkl={hkl},uvw={uvw},d={位移量})`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:178
+#: f9a0c8b5db614cd0a7fcc68060a0ca40
+msgid "可复现性"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/strict-gsfe-path-card.md:180
+#: 644778cd62a64856a2e0e5007edb0b37
+msgid "无随机性。同一输入结构和同一参数会生成完全一致的结构列表。"
+msgstr ""

@@ -1,0 +1,153 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 17:56+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: NepTrainKit documentation team\n"
+"Language: en\n"
+"Language-Team: English\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/index.rst:34
+msgid "NEP 数据展示"
+msgstr "NEP Dataset Display"
+
+#: ../../source/module/index.rst:34
+msgid "训练集评估"
+msgstr "Training Set Audit"
+
+#: ../../source/module/index.rst:34
+msgid "NEP Dataset Display 详细参考"
+msgstr "NEP Dataset Display reference"
+
+#: ../../source/module/index.rst:34
+msgid "数据生成（Make dataset）"
+msgstr "Generate data (Make Dataset)"
+
+#: ../../source/module/index.rst:34
+msgid "数据生成卡片手册"
+msgstr "Make Dataset card manual"
+
+#: ../../source/module/index.rst:34
+msgid "自定义卡片开发"
+msgstr "Develop custom cards"
+
+#: ../../source/module/index.rst:34
+msgid "数据管理"
+msgstr "Data management"
+
+#: ../../source/module/index.rst:34
+msgid "设置"
+msgstr "Settings"
+
+#: ../../source/module/index.rst:2 4d47c9fc1ddb48b485a77932853b6e0f
+msgid "功能模块"
+msgstr "Features"
+
+#: ../../source/module/index.rst:4 96ceeab6b63c4d0d9cf35676f5c2b46a
+msgid "NepTrainKit 的页面可以按数据流理解，而不是按菜单名称死记："
+msgstr "Think of NepTrainKit as a data flow rather than a list of menu names:"
+
+#: ../../source/module/index.rst:9 518b39c2886644cfb35c404d1f3e8789
+msgid "你现在要做什么"
+msgstr "What do you need to do?"
+
+#: ../../source/module/index.rst:10 75628927ba71487e87c7b4a499602af3
+msgid "进入哪里"
+msgstr "Where to go"
+
+#: ../../source/module/index.rst:11 5b3e6a15b5ff4cedb4b7678510360d8c
+msgid "典型输出"
+msgstr "Typical output"
+
+#: ../../source/module/index.rst:12 ad39a4550ff0478796edd4cfd1e49bbe
+msgid "制作一批候选训练结构"
+msgstr "Generate candidate training structures"
+
+#: ../../source/module/index.rst:13 f4d17710880842919c0b6e1711423e10
+msgid ":doc:`make-dataset`"
+msgstr ""
+
+#: ../../source/module/index.rst:14 a59eae9dd1504055aebabd7d2ceb6707
+msgid "``candidate_pool.xyz``"
+msgstr ""
+
+#: ../../source/module/index.rst:15 dd9ca2eb4964421aa9485ab5d81d1a59
+msgid "清洗候选结构、删除异常样本"
+msgstr "Clean candidates and remove problematic samples"
+
+#: ../../source/module/index.rst:16 6bb397afbad14e3aae38a6fc981ffabe
+msgid ":doc:`NEP-dataset-display`"
+msgstr ""
+
+#: ../../source/module/index.rst:17 f7c1715b25944da5bcd347044c8119f9
+msgid "``candidate_pool_clean.xyz``"
+msgstr ""
+
+#: ../../source/module/index.rst:18 589d36b9060949ddaf4b49397a3be4e8
+msgid "检查训练数据质量和分布线索"
+msgstr "Inspect training-data quality and distribution signals"
+
+#: ../../source/module/index.rst:19 ac98402d99b7461e99be6fe82d041372
+msgid ":doc:`training-set-assessment`"
+msgstr ""
+
+#: ../../source/module/index.rst:20 0b26ae5278d54dd78a797cdd12a4ffae
+msgid "可追溯的 Findings 和结构子集"
+msgstr "Traceable findings and structure subsets"
+
+#: ../../source/module/index.rst:21 a4dc55d5ccc44d0fb8ed7742871b3dd2
+msgid "查每张生成卡片的用途和参数"
+msgstr "Look up the purpose and parameters of a generation card"
+
+#: ../../source/module/index.rst:22 efb01a444d104be58e602ec14731bf34
+msgid ":doc:`make-dataset-cards/index`"
+msgstr ""
+
+#: ../../source/module/index.rst:23 9829e99e998f409b9ec6ad64cdf93018
+msgid "可复用的卡片配置"
+msgstr "Reusable card configurations"
+
+#: ../../source/module/index.rst:24 8f6b0250b1d1490c911aa6c2d4dffb80
+msgid "管理多个项目、模型版本和结果路径"
+msgstr "Manage projects, model versions, and result paths"
+
+#: ../../source/module/index.rst:25 dcfb1144d2de46348121c265a71b2d71
+msgid ":doc:`data-management`"
+msgstr ""
+
+#: ../../source/module/index.rst:26 a48495afc55e4904bf1f0c21d9c7fec5
+msgid "可检索的实验记录"
+msgstr "Searchable experiment records"
+
+#: ../../source/module/index.rst:27 b05d5564eabe49b7859b88b430500714
+msgid "调整显示、后端和性能行为"
+msgstr "Adjust display, backend, and performance behavior"
+
+#: ../../source/module/index.rst:28 0b0fadc934824302899f13ff5adeacc7
+msgid ":doc:`settings`"
+msgstr ""
+
+#: ../../source/module/index.rst:29 af0fdfed2f8243caa343f697c6e4a30f
+msgid "更适合本机环境的默认行为"
+msgstr "Defaults suited to the local machine"
+
+#: ../../source/module/index.rst:31 14e9281f6cdb449cab6e722210f79aba
+msgid ""
+"如果你还不确定该从哪开始，先看 :doc:`../quickstart`；如果你已经有一批候选结构， 直接看 :doc:`../workflows/clean-candidate-"
+"structures`。"
+msgstr ""
+"If you are not sure where to begin, start with :doc:`../quickstart`. If you already have a "
+"candidate pool, go directly to :doc:`../workflows/clean-candidate-structures`."

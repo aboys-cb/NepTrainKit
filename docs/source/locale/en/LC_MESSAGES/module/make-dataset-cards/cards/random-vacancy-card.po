@@ -1,0 +1,466 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:3
+#: 0848944173f44ec59938bb56b3db0a37
+msgid "随机空位（Random Vacancy）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:5
+#: 303844407f76460c85b5dd226d57cf7d
+msgid "`Group`: `Defect` | `Class`: `RandomVacancyCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:7
+#: b95b46303be249f3992f1832605d09ba
+msgid "功能说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:9
+#: 8f2e4f4918b643ffb75f95bbb09e73fc
+msgid ""
+"按规则表对指定元素原子做删除操作，生成可控的空位缺陷结构。每条规则精确控制\"删除什么元素、删多少个、在哪个 region 删\"，支持元素过滤和"
+" group 区域约束。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:11
+#: dba77503d4fe413b91b8ea942daceb9e
+msgid "**和 `Vacancy Defect Generation` 的区别：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:12
+#: 727096fe237b4ea0ad585bc9e446551a
+msgid "`Random Vacancy`：规则驱动，按元素+group 精确删除位点，适合定向研究某类空位缺陷"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:13
+#: d5ec9bba7e1d4a4eb43ee7440cc2c744
+msgid "`Vacancy Defect Generation`：统计驱动，按整体浓度或数量随机删除，适合快速生成低/中/高缺陷强度的分布样本"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:15
+#: c40852ae76d5429cbf0422470897d22c
+msgid "操作示例"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:17
+#: 0076c59c9d2b49c7ab9cb29b9445ed86
+msgid "场景：模型对表面氧空位预测完全错误"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:19
+#: e8868c358dc540e89dc673c65716feb7
+msgid ""
+"你在 LiCoO2 上训练了一个 NEP 模型，体相性质预测很好，但一跑表面 slab 加氧空位的构型，能量误差是体相的 3 "
+"倍。检查发现训练集里没有缺氧的结构，模型根本不知道氧空位附近 Co 原子的局域环境长什么样。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:21
+#: 82744443cca24affa7c6ae0697160c1c
+msgid ""
+"**诊断思路：** 氧空位周围，Co 原子从正常的 Co-O "
+"八面体配位变成五配位甚至四配位，键长、电荷分布都变了。训练集里只有完美晶体结构，模型完全靠外推处理这些配位变化。需要往训练集中加入精确控制的氧空位构型，让模型见过\"氧被拿走\"之后的配位环境。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:23
+#: 1d3c17c7e55c469895a140bc72cad3da
+msgid "**输入：** 一个 LiCoO2 的 slab 结构，已经用 `Group Label` 标记了表面层和体相的 group"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:25
+#: 8c34f23646e64cc2ade359446a0a68fe
+msgid "**目标：** 只删表面层的氧原子，每次删 1~3 个，每帧生成 20 个不同落点的空位版本"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:27
+#: e1a59ae2faaa4ecbbbd9c68a934e4436
+msgid "**参数设置：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:28
+#: 50aa4d1e5dac4812b7b44aa1c8045e8e
+#, python-brace-format
+msgid "`Rules`：`[{\"element\":\"O\",\"count\":[1,3],\"group\":[\"surface\"]}]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:29
+#: 376f3d19a0d847478820d88a639db80f
+msgid "`Structures`：`[20]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:30
+#: 019b320011cc493998340f92fef34bf8
+msgid "`Use Seed`：勾选，`Seed`：`[42]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:32
+#: c99e3de6e60e4669b1404213b8b3ae4d
+msgid "**输出：** 20 个空位结构，每帧中 1~3 个表面氧被删除，带 `Vac(n=...)` 标签"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:34
+#: fa6b886efb6d477782f422d0aa4504f0
+msgid "**怎么验证训练集质量改善：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:35
+#: a414499a252644819c0ac51c3f29aa9c
+msgid "重训后用同样含氧空位的表面结构推理，能量误差应显著下降"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:36
+#: bc720099efc744f4a13dbc4c90e0e057
+msgid "抽查删除位置最近邻 Co 原子的键长分布是否在物理合理范围"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:37
+#: 65a3e182cc8e455b841f0c3e20962ddf
+msgid "如果只有表面需要空位，坚持用 group 约束；去掉 group 会生成体相空位，稀释训练数据"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:38
+#: 88fdb793c55843708557fe674a49c0e4
+msgid "如果需要同时覆盖体相和表面空位，加第二条规则不带 group"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:40
+#: 555a151189304b9fb711ed1def971d09
+msgid "什么时候加这张卡、什么时候不加"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:42
+#: ab361633c1d54f93b06a6ea7f3f2c57e
+msgid "**加：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:43
+#: ba896604f2a040499c35d4b24e3e7035
+msgid "需要按元素和 group 精确控制空位位置，而不是按整体浓度随机删"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:44
+#: 03d3066709074add83e1b53d120f412b
+msgid "研究特定元素的空位缺陷对模型预测的影响"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:45
+#: ee247f6a398947dcb31899b2a45ab8f4
+msgid "下游磁性卡需要特定子晶格有明确的 vacancy pattern"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:47
+#: 69f07aae964442988751a496b543a05b
+msgid "**不加：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:48
+#: 23fc35f5a38546baa4502545afe95bab
+msgid "只需要整体浓度覆盖 → 用 `Vacancy Defect Generation`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:49
+#: fbe00b85f3d746d8aba948cc5719d2c2
+msgid "体系本身原子数很少（<10），删任何一个都会剧烈改变化学计量比"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:51
+#: 22e5cfaee10a472a9b005c57612de14d
+msgid "参数说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:53
+#: 51b24187100b49cb8a562c6470a29ebe
+msgid "Rules（rules）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:55
+#: d8f73705d1ba4981a3f28ee8eadac1d4
+msgid "`list[dict[str, Any]]`，默认空列表。在界面里写简化语法即可，程序会自动转成 JSON。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:57
+#: 5c41f4b6637e4f8b85e32de9d307c55c
+msgid "每条 rule 控制一次删除——删什么元素、删几个、在哪个 region 删："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: 9ad2f4774e524d8e9cdcb0261bdb7814
+msgid "字段"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: 018d998c46224a9aaecf32e14e1abcf1
+msgid "类型"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: f2743a6c18174ae09079accbbacfbfc8
+msgid "说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: e33402102a044b12936e6b3809c9103e
+msgid "`element`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: 12f5939ed02847d1b8201126eb2dd94a ace6fa44cbc54102a333115d9dcd7aab
+msgid "string"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: 6304e37ba5fd4bd1b88ced13678ac4d0
+msgid "被删除的元素，如 `O`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: 7e514c5581b7407d8702abf276cac6fe
+msgid "`count_mode`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: 22c1f0a6ddfb4e85ad5c38a79aff4bcb
+msgid "`fixed` 精确删除 `count[0]` 个原子；`random` 在 `count[0]..count[1]` 之间随机"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: 89724087284644f88c818dc0afc997e3
+msgid "`count`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: 5bef031e538d484683935ae6a9639256
+msgid "[min, max]"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: feb127c23a8743bf9fcea977862b5a17
+msgid "固定数量写 `[n,n]`，随机范围写 `[min,max]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: 2c6aaef257f545de987bb644c7fa7ffb
+msgid "`group`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: 1fce14700bd743bb949bdd1a395ff43b
+msgid "string / list（可选）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md
+#: 47d804b8787d4aefb17a76a8ebcdc736
+msgid ""
+"限制只删除特定 group 标签内的原子。需要输入有 `atoms.arrays['group']`。界面里写成 "
+"`surface_top,surface_bottom`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:66
+#: e0dd9d2986344c0daf7ea976ecbb23eb
+msgid "规则为空时，卡片不产生任何删除，输出 = 输入。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:68
+#: e69d774d765047599da62753f22cb1bb
+msgid "多条规则按顺序执行。如果两条规则操作同一个元素，第二条会在第一条的结果上继续删除——别设计互相冲突的规则。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:70
+#: 10b5de9aca674aedb93e84d2e661b671
+msgid "Max Structures（max_structures）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:72
+#: afe2b97bc2244a3da816604254898613
+msgid "`int`，默认 1。每输入帧生成多少个空位版本。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:74
+#: 99840796b0464567b0a539b631289a91
+msgid "10~30 做定向验证，30~50 做常规覆盖，50~100 建议后接一张 `FPS Filter`，否则很多空位落点在描述符空间里高度重复。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:76
+#: 4af2d3ee7a334b5d9ad0db1c055e9474
+msgid "Use Seed（use_seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:78
+#: 6e2eae7143c7415bbcb59327e2997c57
+msgid "`bool`，默认 false。打开后同一输入 + 同一参数 + 同一 seed → 完全相同的删除结果。对比实验时开，探索阶段关。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:80
+#: b527423d7d7b4bf9aa45a825fa987f3e
+msgid "Seed（seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:82
+#: 72d182f3f55c4369a077dc36e61ee67f
+msgid "`int`，默认 0。随机种子值。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:84
+#: 95ae9bb644f5466b81d40919dd978181
+msgid "生效条件：`use_seed=True`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:86
+#: 9b1bc53558144f8b8cdb57094af00fb4
+msgid "推荐预设"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:88
+#: 7bd0c4ad97e14e10ab98d37673937664
+msgid "单元素单空位（2 个输出，验证规则命中用）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:89
+#: b61e1ca8b4684d52b99a352f87ff84c7
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"RandomVacancyCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"rules\": [\n"
+"      {\"element\": \"O\", \"count_mode\": \"fixed\", \"count\": [1, 1]}\n"
+"    ],\n"
+"    \"max_structures\": 2,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:104
+#: 11307d9894f94d3eaf46136b02eac0db
+msgid "单元素低浓度空位（20 个输出，常规覆盖）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:105
+#: 0b575ef631db4e70bb51ea38eef27959
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"RandomVacancyCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"rules\": [\n"
+"      {\"element\": \"O\", \"count_mode\": \"random\", \"count\": [1, 3]}"
+"\n"
+"    ],\n"
+"    \"max_structures\": 20,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:120
+#: 71ffacbba2f746d988a3e326d6f352cd
+msgid "多元素带 group 约束（20 个输出，表面定向空位）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:121
+#: 3385b9d0f6d04fddbdcdc6138dd25a78
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"RandomVacancyCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"rules\": [\n"
+"      {\"element\": \"O\", \"count_mode\": \"random\", \"count\": [1, 3],"
+" \"group\": [\"surface\"]},\n"
+"      {\"element\": \"Li\", \"count_mode\": \"fixed\", \"count\": [1, 1],"
+" \"group\": [\"surface\"]}\n"
+"    ],\n"
+"    \"max_structures\": 20,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:137
+#: 61a5561bcb154ce3ab14350d673720e6
+msgid "推荐组合"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:139
+#: 4768040c4efc4660ab0dfd1a47ad2965
+msgid "`Group Label` → `Random Vacancy`：先标记 surface/bulk group，再定向删位"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:140
+#: 1d5f99de90284d71913bc7152bb51fb1
+msgid "`Super Cell` → `Random Vacancy`：先扩胞到足够大，避免小胞里缺陷相互作用过强"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:141
+#: ab45a8b56612453da1f619dff13f9a97
+msgid "`Random Vacancy` → `FPS Filter`：大批量生成后做代表性筛选"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:143
+#: a2816203cfde4d898886d9bab6680670
+msgid "常见问题"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:145
+#: deb71621ace8481eb9b4c0546d04982a
+msgid "**输出和输入一样，没有删除。** 检查 rules 是否为空、element 是否真的存在于输入结构中、group 过滤是否把候选位点全滤掉了。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:147
+#: b2b1056179c44559b5432bb86b98e252
+msgid "**删完骨架塌缩。** 检查 count 上限是否太长。在 20 原子小胞里删 10 个必然崩。先扩胞再删。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:149
+#: 234e25b14e8c4e719f4e1958adb79ab7
+msgid "**多条规则交互异常。** 规则顺序执行。如果一条规则删了大量原子，下一条规则的候选池可能已经变了。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:151
+#: 171e28831f7f4c41be29781c57095f5d
+msgid "输出标签"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:153
+#: d6baaf24f7764b8e9de4947f4af9cacb
+#, python-brace-format
+msgid "`Vac(n={删除原子数})`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:155
+#: d05469229c8f4c16ae9b21a89de3eb0b
+msgid "可复现性"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-vacancy-card.md:157
+#: a084d2d17c514404b2e273d723c5f221
+msgid ""
+"勾选 `use_seed` + 固定 `seed` → 相同输入可复现。输入结构顺序变化也会影响结果，建议把 seed 与 pipeline "
+"配置一起版本化。"
+msgstr ""

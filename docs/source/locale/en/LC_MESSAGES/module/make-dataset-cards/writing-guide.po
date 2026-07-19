@@ -1,0 +1,701 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:1
+#: 7b4beff83d1f4b248428b6beaeaeec29
+msgid "卡片文档编写规范"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:3
+#: c1a544a7c2994580a0cfa2897f15dd7d
+msgid "目标：让用户从\"模型哪里不行 → 训练集缺什么数据 → 选哪张卡 → 设什么参数 → 怎么判断改善\"一路走通，而不是只解释每个参数的抽象含义。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:5
+#: b24cab451af445b5b0993d54b5e67a4c
+msgid "语言风格"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:7
+#: 27f78baa31a44cb29d0d6309cd84e600
+msgid "核心原则：像人在给你讲，不像在查 schema"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:9
+#: 85d95b75acda418594c237f762bc4793
+msgid "参数说明是写给用户的，不是写给数据库的。如果 33 张卡、每张卡 5-20 个参数，全用同一个句式写，用户读 3 张就疲劳了。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:11
+#: 6ae9f551b03349f98065d57bd15e1853
+msgid "禁止的写法"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:13
+#: 50f89992d6c44b5c844e388fbe752a8d
+msgid "每段以独立一行的 \"类型：X。默认：Y。\" 开头，然后再换行另起一段\"解释\"。类型和默认值是背景信息，不是段落主角。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:14
+#: 1b47c6624f824718b7c603ece1ee9617
+msgid "所有参数用同一个句式：\"设置 XXX。\"\"决定是否 XXX。\"\"选择 XXX。\""
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:15
+#: 7128f242e7cd443a87ac038d1aeaef91
+msgid "第一行和第二行语义重复——先说\"设置位移距离\"，再换行说\"每个原子的位移\"。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:16
+#: 2b7e0470a91d4fc8afbf5c36f9833082
+msgid "通篇没有\"你\"——读者感觉是在看机器生成的规格书，不是有人在跟自己说话。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:18
+#: 125f9882c719492cad0717c50af35bd4
+msgid "推荐写法"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:20
+#: cb086969c3ca4566977c2a47b3d67267
+msgid "类型和默认值压缩成一句话，然后直接进入读者真正关心的内容。句式要有变化，要敢用\"你\"。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:22
+#: 7a88e40cbdb543d9bcff4f09bb348fe9
+msgid "**改前（机器感）：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:24
+#: c8b67677b3ef414584587c6046fa4541
+msgid ""
+"### Max Distance（max_distance）\n"
+"类型：`float`。默认：`0.3`。设置原子随机位移的最大距离。\n"
+"\n"
+"每个原子的最大位移向量长度。这是绝对长度（单位 Å），不是每个 Cartesian 分量的上限，也不是百分比。室温下典型固体原子振动幅度约 "
+"0.05~0.1 Å，设 0.15~0.3 Å 通常合适。含 H 等轻元素时考虑开启 `use_element_scaling` 单独调大 H "
+"的幅度。\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:31
+#: 323adb0d3297477aa2c074016fb90b37
+msgid "**改后：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:33
+#: 822b8a9a2b6d4504b791157afe914290
+msgid ""
+"### Max Distance（max_distance）\n"
+"\n"
+"`float`，默认 0.3。每个原子的最大位移，单位 Å。\n"
+"\n"
+"这个值不是 Cartesian 分量上限，也不是应变百分比——就是一个原子最多被挪多远。室温下原子振动幅度约 0.05~0.1 Å，设 "
+"0.15~0.3 Å 通常够用。如果体系含 H 等轻元素，H 的振幅天然更大，建议同时开启 `use_element_scaling` 单独给 H"
+" 调大。设到 0.3~0.5 Å 以上时，跑完务必抽查最近邻键长——这个量级已经可能拉断键了。\n"
+"\n"
+"生效条件：开启 `use_element_scaling` 后，对在 `element_scalings` 中列出的元素，这个值会被覆盖。\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:43
+#: 5b982cfa1f8947918c702c40b0f55323
+msgid "变化点："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:44
+#: 4dfa990de9b348748a29e13b2beedc68
+msgid "第一行不再是独立的 \"类型：X。默认：Y。\"，而是压缩成 `类型，默认值。描述。`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:45
+#: 5fdc2aee45a64d4898e8f795d1608042
+msgid "\"你\"出现了——用户在读一个人写的东西"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:46
+#: 77492e2a192f4a2ab13ded9c28437300
+msgid "\"如果...建议...\" 替代了 \"考虑开启\""
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:47
+#: 9a8e974200664d1095b3f18e0b2f2d35
+msgid "\"务必\" 替代 \"需要\"——人的语气"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:48
+#: 4bb5410a097e462f9bf17186c51514ce
+msgid "没有重复解释——不说一遍\"设置位移\"，又说一遍\"位移长度\""
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:49
+#: e2069aea0bbf456c9010d226f68d7641
+msgid "生效条件放在末尾，不和主描述抢节奏"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:51
+#: 95e138ccd6ad421f8870cc96426d79ad
+msgid "句式要有变化"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: f6061bd672e24e23ba5fd89d1f3c2f00
+msgid "不要总用"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 5fb1483dab1443e59e96809b78dc1ad8
+msgid "偶尔换成"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 3859e1a751104d9e8cc4392a7cde1206
+msgid "设置 XXX。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 9a2f4c31fafb446eb28ef818084c15ca
+msgid "XXX 控制... / 这个值决定... / 改了它会影响..."
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 3459984ed4fe4e00b6edcd5131dc2111
+msgid "决定是否 XXX。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: b79f625a36084cd19ef3db770e9a4109
+msgid "打开之后... / 关了的话..."
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 2a0a3ffcc6304d28801f245d453d4c8f
+msgid "选择 XXX。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 526fa71c1dc14205ab4aad35b9e68a69
+msgid "有两种模式：... / 可选值：... / 通常用..."
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 3f0c0364fb7d45299a0285e6bf5eb68e
+msgid "建议..."
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 35faccd68d2a4b51bc78a44d1b055106
+msgid "你很可能只需要... / 大多数情况... / 除非...否则不用动"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:60
+#: 9d028fb7d62a4f39ad74f5a306045c47
+msgid "什么时候用\"你\""
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:62
+#: a59f50f3e1db4622833e472aed1fe2bd
+msgid "以下情况应该用\"你\"："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:63
+#: f40423f96f3142a4ac362489206a2593
+msgid "给建议时：\"你很可能只需要默认值\""
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:64
+#: 393fa9bf9b484d4cb22a36e10cd0543a
+msgid "警告时：\"设太大可能会拉断键，你最好先抽查几个输出\""
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:65
+#: ffea576b035347d282e2bb319bbeecfd
+msgid "解释选择时：\"选 Exact 还是 Random 取决于你要不要严格配比\""
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:67
+#: 70937e5b40a84f738508c6022f534de1
+msgid "以下情况不用："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:68
+#: 63623cc9e0864dc3adde110b41f07d4c
+msgid "类型和枚举列表：\"`str`，可选 `sphere` 或 `cone`\""
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:69
+#: 53156c5262a745809d55951e43ead71b
+msgid "纯事实陈述：\"PM 默认关闭，因为会显著增大输出规模\""
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:71
+#: e2b5dc0e92dd4844acd57c96442216b0
+msgid "必备章节"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:73
+#: cf2aaba21ae64a0dbaf7c3743bcdeb9f
+msgid "每张卡片页必须包含以下内容（标题可以调整，但信息不能缺）："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: fbb65a281f444bc3be55a4111f40eca6
+msgid "#"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 075c5fe4566247809277c07f00fc5d7b
+msgid "必须回答的问题"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 032deae87d334fc6b540130f6e555422
+msgid "推荐标题"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 2eb11b2144d549ccb6dca3e5caf61ce5
+msgid "1"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: bf4de5ece5fd40be9a860fc0329f71c6
+msgid "这张卡做什么"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: d3e3b332fe654307bc6267f48f56fbf6
+msgid "`## 功能说明`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: d369572d92b540499053857da7d9d8aa
+msgid "2"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: b1fd253ed1f443de851580338dff23e8
+msgid "模型出了什么问题要加这张卡，具体怎么操作，怎么验证改善"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 45f877509a9140b8acb2b40a04d25673
+msgid "`## 操作示例`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 612834d998ae49bc9542c8446b18dd45
+msgid "3"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: b32f858d5f584442913d004f04a24962
+msgid "每个参数的含义、类型、默认值和场景化建议"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 5f01791f843c4c979453bb264a625e15
+msgid "`## 参数说明`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 28ddb0ea8fa842d2931f278843fc1bdf
+msgid "4"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 719abb5687bf400da4829d28a98c6646
+msgid "可复制的 JSON 预设"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 4993c45604424ed69207c8854841a383
+msgid "`## 推荐预设`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 6b46f26065144efa9c9079a72bf664c9
+msgid "5"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: b5463a03f7f84666bf950249c2a12116
+msgid "和哪些卡片配合，怎么串"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: bcf39eb40a1d4485b40187a9c26ec5fb
+msgid "`## 推荐组合`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 04714e5f57c24ce5b05e5dabe831888b
+msgid "6"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: e211f5d147854ff882d790f2396221c8
+msgid "出错了怎么排查"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: b398decc46fd4131917b48172f370f06
+msgid "`## 常见问题`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 9163811685134e9b80f1de9f98d8c3fb
+msgid "7"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: cd537cfa31ff46f7839571aff851e23c
+msgid "输出的 Config_type 标签是什么"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: adbc095bd36c41a2a0092e5604b4edfa
+msgid "`## 输出标签`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 6846f1d0bbab4c34934023508ee457a5
+msgid "8"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 2b0055d951594fb69728b80d7b09b516
+msgid "随机性、可复现条件"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md
+#: 936e6147dac145ac845d772185b6f10f
+msgid "`## 可复现性`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:86
+#: 245313a9a613475195eedca70ed49014
+msgid "`适用场景与不适用场景` 和 `输入前提` 不再要求独立章节——合并到操作示例（\"什么时候加这张卡\"）和参数说明中。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:88
+#: 9450ac77f7104379ab702e9d87d8fd75
+msgid "操作示例模板（最重要）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:90
+#: 42bbe5ff39e541a6bebb79df0082e305
+msgid "操作示例必须从**训练集诊断**出发，不能只写\"设参数→得结果\"。结构："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:92
+#: 1c29c96fe5064e0fa2475f9bd1c72a98
+msgid ""
+"### 场景：模型在 [具体任务] 上 [具体失败表现]\n"
+"\n"
+"[一句话诊断根因：训练集缺什么数据]\n"
+"\n"
+"**输入：** [具体结构]\n"
+"**目标：** [加入什么数据，预期解决什么问题]\n"
+"**参数设置：** [具体参数值]\n"
+"**输出：** [预期输出描述]\n"
+"**怎么验证训练集质量改善：** [重训后应看到什么变化；不够的话下一步怎么调]\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:104
+#: 711d31550f774df3a08df4954d155476
+msgid "示例（Lattice Strain）："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:106
+#: 0a06a66d484245cebca51dd88485a67d
+msgid ""
+"### 场景：模型预测的弹性常数偏差太大\n"
+"\n"
+"NEP 模型 C11 比 DFT 参考值高 15%。训练集所有结构都处在平衡体积附近，模型没见过被拉伸/压缩的晶胞，只能外推。\n"
+"\n"
+"**输入：** 弛豫好的 Si 单胞\n"
+"**目标：** 加入 ±2% 单轴应变结构，让模型在弹性区内有内插依据\n"
+"**参数设置：** Axes=uniaxial, x_range=[-2, 2, 1]\n"
+"**输出：** 5 个结构（-2%, -1%, 0%, +1%, +2%）\n"
+"**怎么验证训练集质量改善：** 重训后 C11 应接近 DFT 参考值；不够则扩到 ±5%\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:118
+#: 2e21743fac7a42fcab465bc720f06323
+msgid "示例（Magnetic Order）："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:120
+#: 7c7c16a501d14bb891799e246b3169cd
+msgid ""
+"### 场景：FM 模型在 AFM 相上预测崩了\n"
+"\n"
+"bcc Fe 的 NEP 模型，FM 构型推理准确但 AFM 构型能量误差是 FM 的 5 倍。训练集只有一种磁序。\n"
+"\n"
+"**输入：** bcc Fe 晶体，已知 Fe 磁矩约 2.2 μB\n"
+"**目标：** 生成 1 FM + 1 AFM + 8 PM，让模型见过不同磁序的局域磁环境\n"
+"**参数设置：** magmom_map=Fe:2.2, gen_fm+gen_afm+gen_pm, pm_count=[8]\n"
+"**输出：** 10 个不同磁序结构\n"
+"**怎么验证训练集质量改善：** 重训后 FM/AFM 推理能量误差差距应显著缩小\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:132
+#: cc700b100fb648d2ab19b747d3ce71b1
+msgid "示例（Random Doping）："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:134
+#: 70cbbb6754f341ccbf99b44f015a8345
+msgid ""
+"### 场景：纯元素模型在掺杂体系上完全失效\n"
+"\n"
+"纯 Si 训练的 NEP 模型碰到 Si:Ge 合金，力误差跳了一个数量级。模型从来没见过 Ge 原子。\n"
+"\n"
+"**输入：** 纯 Si 超胞\n"
+"**目标：** 替换 3-8% 的 Si 为 Ge，每帧生成 20 个掺杂版本\n"
+"**参数设置：** "
+"rules(target=Si,dopants=Ge:1.0,use=atomic_percent,percent=[3,8]), "
+"doping_type=Exact, max_structures=20\n"
+"**输出：** 20 个掺杂结构\n"
+"**怎么验证训练集质量改善：** 重训后 Si:Ge 测试集力 MAE 应回到纯 Si 水平\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:146
+#: 343ad87df68145d8beb568b281a2f255
+msgid "参数说明写法"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:148
+#: 5a88105fe4cc4549bf88c3d548999638
+msgid "只允许一种参数写法：每个 `Params dataclass` 字段必须有独立标题，标题里的 key 必须和代码字段完全一致。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:150
+#: c6fd708e14c9424880d5cbc381c4034f
+msgid "参数少、没有明显功能组时，直接使用三级标题："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:152
+#: c64bb7805c4e4ad1868b7cbb7b858856
+msgid ""
+"### Axes（axes）\n"
+"\n"
+"类型：`str`。默认：`\"uniaxial\"`。决定对哪些晶格轴施加应变。\n"
+"\n"
+"物理直觉：单轴用于补 C11/C22/C33；双轴用于泊松耦合；各向同性用于 EOS 或体模量附近采样。\n"
+"\n"
+"| 选项 | 含义 | 什么时候选 |\n"
+"|------|------|-----------|\n"
+"| `uniaxial` | 一次只拉压一个轴 | 弹性常数、各向异性响应 |\n"
+"| `biaxial` | 两两组合 | 面内耦合、薄膜应变 |\n"
+"| `isotropic` | 三轴等比例 | 体积-能量曲线 |\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:166
+#: c7b91feb600a4b6aa4d69066aa46fd02
+msgid "参数多且存在天然功能组时，用三级标题表示功能组，用四级标题表示参数："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:168
+#: 06c041b4b0fb46f18542ad32228f848d
+msgid ""
+"### 磁矩幅值来源\n"
+"\n"
+"#### Magmom Map（magmom_map）\n"
+"\n"
+"类型：`str`。默认：`\"\"`。按元素指定磁矩幅值，例如 `Fe:2.2, Ni:0.6`。\n"
+"\n"
+"物理直觉：已知元素局域磁矩时优先用它，避免不同磁性卡各自写一套不一致的幅值。\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:178
+#: 9223cf93fcdb4d5396f3ff83858b0aca
+msgid "每个参数 block 固定包含："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:180
+#: 2220e53d3b7147c0a1f00fc9cf09de19
+msgid "第一段：类型、默认值、这个参数实际控制什么。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:181
+#: 82075b45c94e4f3ca00445914c0b749a
+msgid "第二段：物理直觉或数据集使用场景，必须给量级或判断依据。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:182
+#: 00c4fb78f522496e9b623af1d45080c4
+msgid "枚举参数：加表格，列出选项、含义、什么时候选。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:183
+#: 7d35cc796fac499eba0fbb430f55d293
+msgid "条件参数：单独写 `生效条件：...`，不要让用户猜这个参数什么时候会被忽略。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:185
+#: ccb922ea9d924f00b79f5d2adfead000
+msgid ""
+"禁止把多个 key 合在一个标题里，例如 `Use Seed / Seed（use_seed / seed）`。必须拆成 `### Use "
+"Seed（use_seed）` 和 `### Seed（seed）`。 禁止用占位表格，例如 `以 UI 下拉项为准`。枚举表必须写出真实选项，如"
+" Sobol/Uniform、Collinear/Non-collinear、sphere/cone。 "
+"禁止用可套在任何参数上的模板句。`物理直觉` 必须能回答这个参数调大、调小、切换选项时具体改变了什么物理状态或数据分布。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:189
+#: adca7134708d4f108502d81bd70441aa
+msgid "**禁止在参数说明中出现的内容：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:190
+#: 95294550f3d040cd96591206af57cf4c
+msgid "`UI Label`、`字段映射`、`控件标签`、`控件解释` 等 UI 实现细节"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:191
+#: 422d69af45da458386d6af482a6ea52b
+msgid "序列化格式说明（如\"这是序列化结构字段，不是用户开关\"）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:192
+#: 0cee774856c442c0a34db78071a3cc39
+msgid "`params` 作为独立参数块列出——这是内部实现，用户不需要知道"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:193
+#: da7cd7737dd44d1a9b3dde916560a27e
+msgid "\"先用默认值跑小样本；只有当你能明确说明它会改变当前结果分布时再主动偏离\" 等模板填充句"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:195
+#: 1e32924a72d64542a248cfcfd5ba1e7b
+msgid "常见问题"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:197
+#: b8da0f025335453c89a89a4b90769346
+msgid "至少覆盖以下 3 类真问题（不要泛化模板句）："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:199
+#: 66fc69c040004fb4add98d3623b6a344
+msgid "输出为空时**这张卡最常见的原因**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:200
+#: 030628ae6d0a4334ab42e475ccdc4945
+msgid "输出不合理时**具体怎么判断和回调**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:201
+#: 95f40da35d2a4c728d907e5527b706c1
+msgid "参数冲突或越界时**程序的实际行为**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:203
+#: 59841880741d497eb6c8414db6fb4b08
+msgid "描述行为只能写代码的真实逻辑，不要臆造不存在的自动修复。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:205
+#: 2650dd8d7195415385640f47770cf451
+msgid "推荐组合"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:207
+#: dd0ed940ed5147b8894292b409751b4c
+msgid "必须写具体的卡片名，例如 `Lattice Strain → Atomic Perturb`，不要写\"当前卡片 → 目标变换卡\"。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:208
+#: a8467960a9154ee38a35a9379198e122
+msgid "至少 2 条不同目的的组合建议。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:210
+#: 8d6010f168854979a680bf093ea2e2ed
+msgid "推荐预设"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:212
+#: f6673496025742779a0a394424a8c217
+msgid "每档必须有实质性参数差异，不要三档 JSON 几乎一样。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:213
+#: ddcfc8022bf6482fb648a53f79391364
+msgid "每个 JSON 附带一行说明，解释\"这个预设解决什么问题，什么情况下选这一档\"。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:214
+#: f9b83dd96dd04f83a4298f0026dd3b96
+msgid "如果卡片参数少、不需要三档，允许只保留 1-2 个预设。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:216
+#: db14df8888134d268ff8a0339f4f2252
+msgid "禁止内容"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:218
+#: 0dff90c676c04635a6cbcfc14b8ac6fb
+msgid "\"先保守再放大\" 类空泛建议。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:219
+#: 2589882560644f6192d4de4d9a88716c
+msgid "\"先用默认值跑小样本\" 类模板填充句。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:220
+#: 4f651ff6326d4ca6a6bf2641f5d09153
+msgid "与卡片无关的统一 Physics caution 模板句。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:221
+#: 2a9ef29a500f42fcacf81d2df5dab57f
+msgid "\"需要启用 XXX 对应行为时开启 / 希望保持默认时关闭\" 类同义反复。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:222
+#: ad24829cab994003899dc5cb5a0b8472
+msgid "没有输入、没有目标、没有验证条件的\"伪示例\"。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:223
+#: 28f9bc927a4f48d8ab006e89fcdbd64f
+msgid "`params` 字段作为用户文档列在参数说明中。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:225
+#: bcfa5985c0f843b79c90a32b31983500
+msgid "维护命令"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:227
+#: 49cd4c2407314c9fa96290ff99ae482c
+msgid "`python tools/docs/audit_card_docs.py` — 检查 key 一致性和默认值"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/writing-guide.md:228
+#: 4d4c82b1040e4cb182cf1e0a23eff1bc
+msgid "`python -m sphinx -W -b html docs/source docs/build/html` — 文档构建"
+msgstr ""

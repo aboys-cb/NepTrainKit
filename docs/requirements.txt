@@ -4,6 +4,7 @@ sphinx-autodoc-typehints
 sphinx_design
 sphinx-copybutton
 sphinx_rtd_theme
+sphinx-intl
 sqlalchemy
 numpy
 scipy

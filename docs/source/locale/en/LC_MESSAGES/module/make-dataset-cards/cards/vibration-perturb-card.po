@@ -1,0 +1,542 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:3
+#: 2c2d4d2f42054bb1ba2395c042a1b29f
+msgid "振动模态扰动（Vib Mode Perturb）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:5
+#: 8d7868e03ec64f0697c3343f55995161
+msgid "`Group`: `Perturbation` | `Class`: `VibrationModePerturbCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:7
+#: b8a70482c5e6458f92bf80121add18ca
+msgid "功能说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:9
+#: f5ce60d81e334a6ea2352b8138c5f4b8
+msgid "沿声子振动模态方向施加位移扰动，比纯随机扰动更贴近动力学自由度。每个输出结构随机选取若干振动模态，按幅值叠加位移。可选按频率缩放（高频模态贡献更小）和排除近零频模态（避免平移/旋转伪模）。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:11
+#: 92e7c2b942f74fab971e14f98712be6e
+msgid ""
+"\\mathbf{r}'=\\mathbf{r}+A\\sum_{k\\in\\mathcal{K}} "
+"c_k\\mathbf{u}_k,\\quad c_k\\sim\\mathcal{N}(0,1)\\ \\text{or}\\ "
+"\\mathcal{U}(-1,1)"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:13
+#: a2cdd00a642549d29a32e969bb9ce960
+msgid ""
+"**关键前置条件：** 输入结构必须携带振动模态数据。如果来自 EXTXYZ 文件，需要包含 `mode_N_x/y/z` 和 "
+"`frequency_N` 列，或者整块数组 `modes` / `vibration_modes` 和 `frequencies` / "
+"`vibration_frequencies`。没有模态数据时，卡片返回空结果。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:15
+#: c4218acb4740499581c7c92e21b681f9
+msgid "操作示例"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:17
+#: 6793c679785e4be196a9ec5a3d065d07
+msgid "场景：加了 Atomic Perturb 后力 MAE 改善有限，低频声子支的预测仍然很差"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:19
+#: f92552fd70b1434db418af377e17a17f
+msgid ""
+"你在 Si 上训练了一个 NEP 模型。加了 `Atomic Perturb`（0.2 Å 随机位移）后，力的 MAE 从 150 meV/A "
+"降到了 80 "
+"meV/A，但计算出的声子色散在低频声学支上误差仍然很大。诊断发现：纯随机扰动在所有方向上均匀采样，但低频声子对应的是长波长的协同原子运动——纯随机扰动几乎不可能恰好对齐这些方向。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:21
+#: 9f0a329b01c74e4096f9deb218e6b7fc
+msgid ""
+"**诊断思路：** "
+"声子频率对位移的灵敏度在各个模态方向上差异巨大。低频声学模涉及大范围原子协同位移，但在局部键长上变化很小——纯随机扰动倾向于产生\"局域键长变化大\"的构型，这恰好是高频光学模的特征，不是低频模的特征。需要沿准确的振动模本征方向施加位移，让模型在模态坐标上也有训练点。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:23
+#: 6072feed8b14498b922a39e890af1775
+msgid ""
+"**输入：** 一个 Si 超胞，EXTXYZ 文件已包含 phonopy 计算出的振动模态数据（`mode_1_x/y/z` 到 "
+"`mode_N_x/y/z` 和 `frequency_1` 到 `frequency_N`）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:25
+#: 8849fffcc91f42cdae548a486f37cf70
+msgid ""
+"**目标：** 生成 32 个扰动结构，每次随机选 3 个模态叠加，幅值 0.05，只使用频率 > 10 THz 的模态（或 < 10 "
+"的具体看体系）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:27
+#: d77644f1007c4f1e8fc7dd4116f31aae
+msgid "**参数设置：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:28
+#: 2767967befb14f9c8d79c33e551f11b7
+msgid "`amplitude` = `0.05`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:29
+#: 94ebe78698764944bc569b1e3b887e1a
+msgid "`modes_per_sample` = `3`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:30
+#: 594c1394ddd543899211fff8ca5e5743
+msgid "`max_num` = `32`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:31
+#: e839f070d11a4a5caa34e35a5831acf8
+msgid "`min_frequency` = `0.0` （或设一个合理的过滤值）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:32
+#: 03976c15d80b430b9372a036704404ec
+msgid "`distribution` = `0` （高斯分布）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:33
+#: d6061adf6f2c4878a1625643ec6697ec
+msgid "`scale_by_frequency` = `true` （高频模自动衰减）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:35
+#: f7cd1eabbc5b4ac4bc26ae5029cf7380
+msgid "**输出：** 32 个结构，每个沿 3 个随机选取的振动模态方向偏移，位移幅值按频率缩放"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:37
+#: 2aecafad948e43c48dd36cc455257a59
+msgid "**怎么验证训练集质量改善：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:38
+#: 98cef686be9849b9989e40e7de04ae1a
+msgid "重训后重新计算声子色散，低频声学支应更接近 DFT 结果"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:39
+#: 7046baff3a3245bebeb57955753e7491
+msgid "检查输出中哪些模态被选中——如果低频模态总是被 `min_frequency` 排除，降低此阈值"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:40
+#: a98c4241bf4b492ea1b1e809076299a0
+msgid "如果模型对高频光学支仍然不准，增大 `modes_per_sample` 到 4~5，或增大 `max_num`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:41
+#: 91c8498ff1274967a60e5607f0865dc4
+msgid "如果 `scale_by_frequency` 导致高频模位移太小（几乎看不到变化），关闭此开关试一批"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:43
+#: e4fc057611b04e1ab7772ac700f4bc86
+msgid "什么时候加这张卡、什么时候不加"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:45
+#: 17a3c23225e34668ad5a80a4945a95ae
+msgid "**加：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:46
+#: 8a41a825b8bc4697a839afb8c9af015d
+msgid "已有可信的振动模态数据，需要沿模态方向补充训练样本"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:47
+#: a2b9416503d8428596bd4bc9656dc8b4
+msgid "纯随机扰动改进有限，声子或振动相关性质仍有偏差"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:48
+#: e3a3d721e8944caca4b8b0d06378bde2
+msgid "需要模型学到模态方向上的势能面曲率"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:50
+#: d77ada76a9b3410e8dc8cafbbdf1c325
+msgid "**不加：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:51
+#: 564e0131101c4c4eb6fd935c5639b363
+msgid "输入结构没有模态数据——卡片直接返回空，先跑 phonopy/DFPT 生成模态"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:52
+#: f5580119d74442169ed21fa20e9aa400
+msgid "模态是从低精度方法（如经验势）算出来的——沿错误模态方向扰动只会引入噪声"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:53
+#: 3b26b17d18d84e77b4cd2a260abade0e
+msgid "只需要覆盖高频局域环境——用 `Atomic Perturb` 更简单直接"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:55
+#: 1a4969360f8642e485bd9be7fe44ce64
+msgid "输入格式：振动模态数据"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:57
+#: fcadc93628394d0ca08a925f6df4515b
+msgid "输入结构需要以下数组之一（EXTXYZ 格式优先）："
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:59
+#: 1602d3a3129c49d48a02351300e80c77
+msgid "**方式一：按模态拆列（推荐，手写最友好）**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:60
+#: 63d7c44707014656b2e0f30d3e2c9ba3
+msgid ""
+"2\n"
+"Properties=species:S:1:pos:R:3:mode_1_x:R:1:mode_1_y:R:1:mode_1_z:R:1:frequency_1:R:1"
+" pbc=\"F F F\"\n"
+"H 0.000 0.000 0.000 0.10 0.00 0.00 1500.0\n"
+"H 0.740 0.000 0.000 -0.10 0.00 0.00 1500.0\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:66
+#: 9779071de89f40ab970b9e1a98ad2400
+msgid "`mode_N_x/y/z`：第 N 个模态在每个原子上的位移分量。`frequency_N`：第 N 个模态的频率，每个原子行重复同一值。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:68
+#: b1ec7e20d5bb4ad8952eca831881a03e
+msgid "**方式二：整块数组（适合多模态）**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:69
+#: e0f79f459c044a83800927d7a4d61ba6
+msgid ""
+"2\n"
+"Properties=species:S:1:pos:R:3:modes:R:3N:frequencies:R:N pbc=\"F F F\"\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:73
+#: 8f763c0d3642495f8918e7a5db532697
+msgid ""
+"`modes:R:3N` 表示 N 个模态的位移分量，按 mode1_xyz + mode2_xyz + ... "
+"顺序。`frequencies:R:N` 表示 N 个频率值，每行重复同一组。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:75
+#: c59a241702e84c3aabccc1beb1240ce4
+msgid ""
+"代码接受的键名：`vibration_modes` / `normal_modes` / `modes`，以及 "
+"`vibration_frequencies` / `normal_mode_frequencies` / `frequencies` / "
+"`freqs`。列名或形状不对时，卡片将该结构视为\"没有可用模态\"并跳过。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:77
+#: 1e0781fb0d6f4b86ab2fc677f24b940e
+msgid "参数说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:79
+#: c831fc098ba64226b1baa83f7bec06d3
+msgid "Distribution（distribution）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:81
+#: a561d681ce7948a5b0556ce12fb5f71e
+msgid ""
+"`int`，默认 0。模态系数的采样分布。`0` = 高斯（均值 0，大幅位移概率更低，更接近热振动统计）；`1` = "
+"均匀。通常高斯更物理——你不希望模型被极端大位移的训练点带偏。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:83
+#: 36dde7630ca84d38ac0e30a1575a864e
+msgid "Amplitude（amplitude）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:85
+#: 9b592e599d2b453f865f105d038af968
+msgid ""
+"`float`，默认 `0.05`。模态叠加的总幅值系数，实际位移 = `amplitude * sum(coefficient * "
+"mode_vector)`。注意这个幅值是乘在归一化后的模态矢量上的——如果上游的模态归一化方式不同（mass-weighted vs. "
+"不归一化），同样的 amplitude 产生的实际原子位移也不一样。0.01~0.03 适合微扰验证；0.05~0.08 常规补充；设到 0.1 "
+"以上建议后筛检查最近邻距离。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:87
+#: fc7d1e1a1f7148ffa152a0ece0375204
+msgid "Modes Per Sample（modes_per_sample）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:89
+#: 8892b9368d8f4023ad53e53df04d54f9
+msgid ""
+"`int`，默认 2。每个输出结构随机选几个模态来叠加。1~2 个适合单模态方向验证，能清楚看到每个模态的贡献；3~4 个做多模态混合覆盖；5 "
+"个以上单个模态的贡献会被稀释，而且组合数指数增长——通常 2~4 就够了。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:91
+#: fa49cbde986c455782ceaea103af16c3
+msgid "Min Frequency（min_frequency）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:93
+#: 48bdbf8092924e34b800098e0d9de695
+msgid ""
+"`float`，默认 `10.0`。频率低于这个值的模态不参与采样。仅在 `exclude_near_zero=true` 时生效。设 0 "
+"则不过滤。典型值：排除平移/旋转伪模设 0.1~1.0 THz；排除软模设 1~10 THz，具体看你的体系。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:95
+#: b3e01b25152c4921bb4785d35a1e5b33
+msgid "Max Num（max_num）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:97
+#: 61b78d88d22f4622b9b4a6c198a28339
+msgid ""
+"`int`，默认 32。每个输入结构生成多少个扰动样本。20~40 常规覆盖，50~100 高密度覆盖。建议后面接一张 `FPS Filter` "
+"去重。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:99
+#: d5153a35070141c5943ab8e91f9ce080
+msgid "Scale BY Frequency（scale_by_frequency）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:101
+#: 23a7f99b78994328816138dc5fe96280
+msgid ""
+"`bool`，默认 `true`。打开后每个模态系数除以 "
+"sqrt(frequency)，高频模态的贡献自动衰减。这是物理上更合理的设置——同样的位移幅值，高频模态需要的能量远大于低频模。如果你在研究大位移的非谐效应，可以临时关掉，但注意关掉后高频模方向可能被过度采样，建议同时降低"
+" `amplitude`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:103
+#: f4c6c4a6ce0f421797dcb902a3f1a923
+msgid "Exclude Near Zero（exclude_near_zero）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:105
+#: 71300820c4004c0bbdfef2aa2ddbd104
+msgid ""
+"`bool`，默认 `true`。打开后用 `min_frequency` "
+"做阈值过滤，排除近零频模态。一般建议保持打开——平移和旋转伪模的频率接近 0，沿这些\"模态\"做位移会产生异常大的整体漂移。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:107
+#: 52abbc4ded384aeba71e0fb64bf16603
+msgid "Use Seed（use_seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:109
+#: 62db6f0470e24273a8efb31be2044f62
+msgid ""
+"`bool`，默认 `false`。打开后每次同一输入 + 同一参数 + 同一 seed "
+"得到完全相同的扰动结果。对比实验或需要复现时打开，纯探索阶段可以关着。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:111
+#: 75660e0488a14cb9aecced0b38ea16c4
+msgid "Seed（seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:113
+#: bdda0c7f1fa24ee89ea47f111291cc36
+msgid "`int`，默认 0。随机种子值。仅在 `use_seed` 打开时生效。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:115
+#: d33a4bccc2b24c4e9e29b013fe10b546
+msgid "生效条件：`use_seed=True`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:117
+#: 526497dc66944734a09824b26c767309
+msgid "推荐预设"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:119
+#: cfec1412018546d9a58ad41876b6e285
+msgid "微扰验证（幅值 0.02，2 模态，20 样本，高斯）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:120
+#: 41e19256766c4e5ea72bd496f941467f
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"VibrationModePerturbCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"distribution\": 0,\n"
+"    \"amplitude\": 0.02,\n"
+"    \"modes_per_sample\": 2,\n"
+"    \"min_frequency\": 0.1,\n"
+"    \"max_num\": 20,\n"
+"    \"scale_by_frequency\": true,\n"
+"    \"exclude_near_zero\": true,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:138
+#: 2100772d668746dd91fa3a56613205ce
+msgid "常规声子覆盖（幅值 0.05，3 模态，32 样本，高斯）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:139
+#: 17aec9cde5ca415194b10dc5b244cce2
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"VibrationModePerturbCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"distribution\": 0,\n"
+"    \"amplitude\": 0.05,\n"
+"    \"modes_per_sample\": 3,\n"
+"    \"min_frequency\": 0.1,\n"
+"    \"max_num\": 32,\n"
+"    \"scale_by_frequency\": true,\n"
+"    \"exclude_near_zero\": true,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:157
+#: 31c6a1d5def04e70adf7bfedb76e7318
+msgid "大位移非谐探索（幅值 0.1，5 模态，50 样本，不缩放）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:158
+#: 2a271374547c4e92a88bce7f7ac7f548
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"VibrationModePerturbCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"distribution\": 1,\n"
+"    \"amplitude\": 0.1,\n"
+"    \"modes_per_sample\": 5,\n"
+"    \"min_frequency\": 0.0,\n"
+"    \"max_num\": 50,\n"
+"    \"scale_by_frequency\": false,\n"
+"    \"exclude_near_zero\": false,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:176
+#: f6f22d0f9d8743b7a9723367c3b90e3a
+msgid "推荐组合"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:178
+#: c980603793d142d4bc4f672f33644bd9
+msgid "`Vib Mode Perturb` → `Atomic Perturb`：先沿模态方向扰动，再补充纯随机方向"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:179
+#: 90e22148ba164babaf7056a5ba8f09ac
+msgid "`phonopy/DFPT` 生成模态 → `Vib Mode Perturb`：计算完模态后直接喂入生成训练数据"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:180
+#: aa7c044b79d446929b016b4abd59fff3
+msgid "`Vib Mode Perturb` → `FPS Filter`：大批量生成后去重"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:182
+#: 5e98635a2446490ca18a6e11f3c4ee08
+msgid "常见问题"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:184
+#: ff45fe370522472cae962214d65ae462
+msgid ""
+"**输出为空（无结构生成）。** 输入结构没有可识别的模态数据。检查：列名是否正确（`mode_1_x` 不是 "
+"`mode1_x`），频率列是否存在且命名正确，数组形状是否和原子数一致。可以用 ASE 读取 EXTXYZ 文件后查看 `arrays` "
+"确认键名。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:186
+#: b782ee403952460d866a4cc4d2143296
+msgid ""
+"**部分模态始终没被选中。** 这是随机采样的正常现象。`modes_per_sample` 较小时（1~2），样本数不够覆盖所有模态。增大 "
+"`max_num` 或 `modes_per_sample` 提高覆盖率。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:188
+#: 951cfff816dd4e5ca3d458d143f51b87
+msgid ""
+"**关闭 `scale_by_frequency` 后高频模位移过大。** 这是预期行为——`1/sqrt(frequency)` "
+"的缩放会显著衰减高频贡献。需要研究高频非谐效应时关闭，但注意高频模方向上的大幅位移很容易进入非物理区。建议关闭后降低 `amplitude` "
+"补偿。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:190
+#: 28c4c557fa6141ffad6f5d7f8ded6a95
+msgid ""
+"**`min_frequency` 过滤后模态太少。** "
+"如果体系存在大量软模（近零频），高阶阈值会把模态池缩到很小。先检查软模是否物理（有可能是没弛豫好），然后适当降低 `min_frequency` "
+"或关闭 `exclude_near_zero`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:192
+#: 62320578e36b499fb2d3d0c98bb7089c
+msgid "输出标签"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:194
+#: 137eef2ff6b34add8f3c1d9c783f9aa5
+#, python-brace-format
+msgid "`Vib(a={amplitude},m={modes_per_sample})`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:196
+#: 1690c24c3a044872a42125a2342bf8c9
+msgid "可复现性"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vibration-perturb-card.md:198
+#: eeef08c912c448d7bdae9431e7e9e8cc
+msgid "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。模态选择、系数采样均受 seed 控制。"
+msgstr ""

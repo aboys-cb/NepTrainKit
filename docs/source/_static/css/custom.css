@@ -31,3 +31,18 @@ pre {
 .rst-content .sd-card-title {
     font-weight: 700;
 }
+
+.docs-translation-status {
+    margin: 0 0 1.5rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid #d9a441;
+    border-left-width: 4px;
+    border-radius: 4px;
+    background: #fff9e8;
+    color: #4d3a12;
+    line-height: 1.55;
+}
+
+.docs-translation-status strong {
+    color: #392805;
+}

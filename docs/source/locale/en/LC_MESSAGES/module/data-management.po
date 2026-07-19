@@ -1,0 +1,162 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/data-management.md:1 86dce6f6633042d8b949bab8eca65870
+msgid "数据管理（Data Management）"
+msgstr "Data Management"
+
+#: ../../source/module/data-management.md:3 97afea26ca8146a8abb86350822f31d2
+msgid ""
+"`Data Management` 用来记录项目、模型版本、数据路径和备注。它不负责生成结构，也不负责训练； 它解决的是另一个问题：当你有很多轮 "
+"DFT、很多个 `nep.txt`、很多个候选池和训练结果时， 还能知道每个文件属于哪一次实验。"
+msgstr ""
+
+#: ../../source/module/data-management.md:7 c6a659d87fd5478ea91f79db489e205d
+msgid "什么时候值得用"
+msgstr ""
+
+#: ../../source/module/data-management.md:9 103b379204cf43b3b5b7cfff3531aaec
+msgid "下面这些情况建议开始记录："
+msgstr ""
+
+#: ../../source/module/data-management.md:11 8ab6ca66ef17411a8e216c97b56bdc6e
+msgid "同一个材料体系已经做了多轮主动学习。"
+msgstr ""
+
+#: ../../source/module/data-management.md:12 1125511b993e4a528415effe33f69f06
+msgid "每一轮都有候选结构、清洗结构、DFT 结果、训练模型和测试结果。"
+msgstr ""
+
+#: ../../source/module/data-management.md:13 fa0e571e43f54f098daa4e20d6e6c18b
+msgid "你需要对比不同 `nep.txt` 的误差、备注和适用范围。"
+msgstr ""
+
+#: ../../source/module/data-management.md:14 0450d733a716403c887edf6aacb9767c
+msgid "你经常回头找“上次那个效果好的模型在哪个目录”。"
+msgstr ""
+
+#: ../../source/module/data-management.md:16 58a0aed9ff0c450dbd9bbfb62575e2e7
+msgid "如果只是临时试一张卡片，不一定需要马上建项目。"
+msgstr ""
+
+#: ../../source/module/data-management.md:18 5e43ad94f3a442e88732ab2a0a82dec6
+msgid "推荐记录方式"
+msgstr ""
+
+#: ../../source/module/data-management.md:20 9dba1108cb7c4073bc50e2268b4ab56c
+msgid "可以按材料体系或研究主题建立 `Project`，再把每一轮模型作为 `Model(version)` 记录进去。"
+msgstr ""
+
+#: ../../source/module/data-management.md:22 0a620d54fa5241979089a526cb797802
+msgid "一个常见结构是："
+msgstr ""
+
+#: ../../source/module/data-management.md:24 d6d407bff76143278aa391bcb10d3630
+msgid ""
+"Project: TiH2 surface defects\n"
+"  v001: 初始 bulk + surface 数据\n"
+"  v002: 加入 vacancy / adsorbate 候选结构\n"
+"  v003: 清洗后 FPS 采样并完成 DFT\n"
+"  v004: 回看训练误差后补高力结构\n"
+msgstr ""
+
+#: ../../source/module/data-management.md:32 d3ad3ccca67040d89877408b48f57025
+msgid "每个版本建议至少记录："
+msgstr ""
+
+#: ../../source/module/data-management.md:34 f90986c7a26b42429b2b2c3b1b4b6175
+msgid "模型或结果目录路径。"
+msgstr ""
+
+#: ../../source/module/data-management.md:35 b37df5cd093b46d99528e87016e14e6a
+msgid "对应的训练集来源。"
+msgstr ""
+
+#: ../../source/module/data-management.md:36 1b1524aa243f4763b772e7aa63555a16
+msgid "简短备注：这一轮补了什么结构、删了什么异常、模型适合什么范围。"
+msgstr ""
+
+#: ../../source/module/data-management.md:37 08556454b8934eed862b9aadf37f7456
+msgid "标签：例如 `surface`、`defect`、`magnetic`、`failed`、`baseline`。"
+msgstr ""
+
+#: ../../source/module/data-management.md:39 0da85fafcbee464d8e8c717ce182cb21
+msgid "和主流程的关系"
+msgstr ""
+
+#: ../../source/module/data-management.md:41 ea47193b359b46b9875afe4ac82c119c
+msgid "`Data Management` 更适合放在每轮流程结束后使用："
+msgstr ""
+
+#: ../../source/module/data-management.md:43 969684eafbc34ccf9f57c64651f4aaf5
+msgid ""
+"Make Dataset 生成候选结构\n"
+"-> NEP Dataset Display 清洗\n"
+"-> DFT\n"
+"-> GPUMD 训练\n"
+"-> NEP Dataset Display 回看\n"
+"-> Data Management 记录这一轮\n"
+msgstr ""
+
+#: ../../source/module/data-management.md:52 eb4d6e2907fc4b2baa211a68ded3f6e3
+msgid "这样记录的是已经有明确意义的版本，而不是每个临时文件。"
+msgstr ""
+
+#: ../../source/module/data-management.md:54 25fa3f06542544beaee16b73506a33cc
+msgid "常用操作"
+msgstr ""
+
+#: ../../source/module/data-management.md:56 4035a85138b24d9f8f743976f4bf3f49
+msgid "新建、修改、删除 `Project`。"
+msgstr ""
+
+#: ../../source/module/data-management.md:57 9a433420f7ee41ba8c8d2d90332183a4
+msgid "新建、修改、删除 `Model(version)`。"
+msgstr ""
+
+#: ../../source/module/data-management.md:58 1c341896265a42e7bd5d52d0cee99605
+msgid "打开本地目录或 URL。"
+msgstr ""
+
+#: ../../source/module/data-management.md:59 3bfe414dcae543b3921593a984604bb0
+msgid "用 `Ctrl+F` 搜索项目、标签、备注或路径。"
+msgstr ""
+
+#: ../../source/module/data-management.md:61 b2071031317041349eb62de4927d5342
+msgid "存储位置"
+msgstr ""
+
+#: ../../source/module/data-management.md:63 9b9518b2fc2b4d25b778c1bf9b1b373b
+msgid "本地数据库默认放在用户配置目录："
+msgstr ""
+
+#: ../../source/module/data-management.md:65 eac47f9d3f194cd7ba7538d8e1d5209c
+msgid "Windows：`C:\\Users\\<You>\\AppData\\Local\\NepTrainKit\\mlpman.db`"
+msgstr ""
+
+#: ../../source/module/data-management.md:66 834773945777479d9982753d95185c0e
+msgid "Linux：`~/.config/NepTrainKit/mlpman.db`"
+msgstr ""
+
+#: ../../source/module/data-management.md:68 7dbae516e17044f98a6162f03f62c2e1
+msgid "这个数据库只记录管理信息，不会自动复制你的大体积训练数据。移动训练目录后，记得更新记录里的路径。"
+msgstr ""

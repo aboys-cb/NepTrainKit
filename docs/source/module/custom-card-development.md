@@ -62,7 +62,7 @@ from .operation import StructureOperation  # 或 DatasetOperation / GeneratorOpe
 class MyCardOperation(StructureOperation):
     """Pure logic for my card."""
 
-    def run_structure(self, structure, params: MyCardParams) → list:
+    def run_structure(self, structure, params: MyCardParams) -> list:
         # 校验
         if params.param_b <= 0:
             raise ValueError("param_b must be > 0")
@@ -111,14 +111,14 @@ class MyCard(MakeDataCard):
     def create_operation(self):
         return MyCardOperation()
 
-    def get_params(self) → MyCardParams:
+    def get_params(self) -> MyCardParams:
         return MyCardParams(
             param_a=self.combo.currentText(),
             param_b=float(self.spinbox.get_input_value()[0]),
             ...
         )
 
-    def set_params(self, params: MyCardParams) → None:
+    def set_params(self, params: MyCardParams) -> None:
         self.combo.setText(params.param_a)
         self.spinbox.set_input_value([params.param_b])
         ...

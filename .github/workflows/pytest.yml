@@ -39,9 +39,9 @@ jobs:
       run: |
         python tools/docs/audit_card_docs.py
 
-    - name: Build docs (warnings as errors)
+    - name: Build bilingual docs (warnings as errors)
       run: |
-        python -m sphinx -W -b html docs/source docs/build/html
+        python tools/docs/i18n.py build
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5

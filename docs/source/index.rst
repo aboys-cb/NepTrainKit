@@ -132,7 +132,7 @@ DFT 和训练流程。
    }
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: 文档目录
 
    快速开始 <quickstart>

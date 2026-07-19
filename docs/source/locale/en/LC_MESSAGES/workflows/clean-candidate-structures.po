@@ -1,0 +1,329 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/workflows/clean-candidate-structures.md:1
+#: aa6e095d448a4bf4ac47f8fe1ff6002d
+msgid "候选结构清洗后再进入 DFT"
+msgstr "Clean Candidate Structures Before DFT"
+
+#: ../../source/workflows/clean-candidate-structures.md:3
+#: 877399ad3de34d4cad2e497899cf57e2
+msgid ""
+"这条流程适合处理 `Make Dataset` 生成的大批候选结构。目标不是在本地得到最终训练标签， 而是在 DFT "
+"之前删掉明显不值得计算的结构，避免把计算资源花在坏构型和重复构型上。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:6
+#: db5a556904bd4733ad206285982591f9
+msgid "一条稳妥路线是："
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:8
+#: 97934abfea604937abf5f2ef88c58d0a
+msgid ""
+"弛豫好的初始结构\n"
+"-> Make Dataset 生成候选结构\n"
+"-> NEP Dataset Display 查看和清洗异常结构\n"
+"-> FPS Filter 或其他采样方法选择代表结构\n"
+"-> DFT 标注\n"
+"-> GPUMD 训练\n"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:17
+#: e8d0dcba7c4c422994555202d1e5b69c
+msgid "1. 从初始结构开始"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:19
+#: 185a919bda81409f9dd1dd530e0b3575
+msgid "先准备一批可信的初始结构。它们通常来自已有训练集、弛豫后的晶体、表面模型、缺陷模型或手工构建的原型。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:21
+#: d228b825119d4940b3b6f88fcfcac911
+msgid "在 `Make Dataset` 页面，先用顶部 `Open` 导入这些初始结构，再添加生成卡片。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:23
+#: 182b7a6e96694d7a80a5ba52d78feb0f
+msgid "Make Dataset input and workspace"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:23
+#: 182b7a6e96694d7a80a5ba52d78feb0f
+msgid ".. image:: ../_static/image/generated/make_data_empty.png"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:28
+#: ef0d257af50f4267b8ff18050436c881
+msgid ""
+"这一步不要跳过。没有初始结构时，大多数构型生成卡没有明确的处理对象；即使某些生成卡能从零创建结构， "
+"也应该单独确认它的输出是否符合你要研究的材料体系。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:31
+#: abf1daa267a4454ea272f725beb80383
+msgid "2. 生成候选结构，不要急着 DFT"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:33
+#: 05c815d5b585435a8e606fa4caf03603
+msgid "`Make Dataset` 负责把初始结构扩展成候选池。例如："
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:35
+#: 031c4f8a83054a209dcb83442cd07a28
+msgid "`Lattice Strain` / `Shear Strain`：补应变附近结构。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:36
+#: d7cba7344d1e4e828abd0d6f84eeb8db
+msgid "`Atomic Perturb` / `Vibration Perturb`：补近平衡扰动。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:37
+#: 9c2ac5ead5e14730bb02875fbb4ca0b6
+msgid "`Random Vacancy` / `Vacancy Defect` / `Insert Defect`：补缺陷环境。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:38
+#: 07f33a45424e42ec832f8a812a6c33bb
+msgid "`Random Slab` / `Stacking Fault`：补表面和层错。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:39
+#: 5302e560b9354febbe434e321c0fe7d0
+msgid "`Random Doping` / `Random Occupancy`：补合金或占位变化。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:41
+#: 27a0a502cb27472c8023679d639f757a
+msgid ""
+"这些操作会扩大覆盖，但也会引入坏结构。比如扰动过大导致原子距离过近，随机占位产生极端局部环境， "
+"表面或缺陷生成后出现不合理配位。候选结构应该先导出为一个中间文件，例如 `candidate_pool.xyz`，再进入下一步清洗。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:45
+#: 53eaba34fdf64911ba543110aaca3b08
+msgid "3. 在 NEP Dataset Display 里先看结构"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:47
+#: 1b4d0167ed634fb8babeaa519e1a71e4
+msgid "把 `candidate_pool.xyz` 导入 `NEP Dataset Display`。这一步先做肉眼和几何层面的检查："
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:49
+#: a69f5ab613a44f4eb78ef5cd8e321785
+msgid "结构是否明显破碎或重叠。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:50
+#: f439896bf4e14398af8806c97ed7f0b6
+msgid "元素组成是否符合预期。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:51
+#: 69c43ebad245426686986ab76b89dacc
+msgid "`Config_type` 是否能追溯到生成来源。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:52
+#: 856a38809f2f43e7bb28cc74e83c43cf
+msgid "是否存在明显过短键长或非物理局部环境。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:54
+#: 4230e4046be74480a739d0228c1a9f28
+msgid "NEP Dataset Display candidate inspection"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:54
+#: 4230e4046be74480a739d0228c1a9f28
+msgid ".. image:: ../_static/image/generated/show_nep_overview.png"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:59
+#: a6773f58318e4f51b16764cb3d2b2eea
+msgid "建议先用这些工具："
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:61
+#: 7097170f4e5541a1bedfff678625ef0f
+msgid "`Finding non-physical structures`：按近邻距离快速找疑似坏构型。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:62
+#: 4c62ade7fe0a4c0b97f7469d12d17506
+msgid "`Select by Range`：按图上范围选择异常点。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:63
+#: ed92fedea3464a3293b89d723d4cc944
+msgid "`Find Max Error Point`：在有参考或预测结果时定位最极端样本。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:64
+#: 209f89d1e07b4046ba77b88747e1eef2
+msgid "搜索框：按 `Config_type`、元素或表达式筛某一类结构。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:65
+#: dd14d50ccf4549e1a6d4ff2cece64d34
+msgid "`Delete Selected Items` / `Undo Delete`：删除和撤销。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:67
+#: 30d84ff8c11043e4a0a34a3d36a84179
+msgid "4. 用 NEP 预测做快速预筛"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:69
+#: 746f1882e6db479bac3eed40adbacc0f
+msgid ""
+"如果你有可用的预筛模型，可以让 `NEP Dataset Display` 给候选结构做快速预测。 这里的预测值不是 DFT "
+"标签，也不能当作训练真值；它只用于发现明显离谱的候选样本。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:72
+#: f2d502db24d34653963d5910affb2ffe
+msgid "常见判断包括："
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:74
+#: c69b2e5743034d18841c09fa4f04e955
+msgid "某些结构预测力远高于同批样本，大概率有过近原子或极端局部环境。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:75
+#: 68915d7b0bf64df8a5f1ff0b0fca1a5d
+msgid "能量分布出现孤立长尾，需要回到结构视图确认。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:76
+#: cf5bb4de638a4c1fb3b865e6476b307f
+msgid "某一类 `Config_type` 系统性异常，说明上游卡片参数可能过激。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:78
+#: ec9662336bb044d6b4ce84aac6c7f393
+msgid "如果没有可信预筛模型，也不要强行依赖预测值。先做几何检查和人工抽查，再保守地缩小生成参数。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:80
+#: 64083610a05746a48c1e6c879ac78fd5
+msgid "5. 先清洗，再 FPS"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:82
+#: e7fc8f59f6da45d9be7db0779b74950e
+msgid "`FPS Filter` 的作用是从候选池里选代表结构，不是判断结构是否物理合理。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:84
+#: 34528d46a4e94284944e49f5cd749f1a
+msgid ""
+"如果候选池里混入很多坏结构，直接 FPS 会有一个风险：坏结构在描述符空间里往往很“远”， 因此可能被优先选中。结果看起来覆盖更广，实际却把 "
+"DFT 预算花在不该算的结构上。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:87
+#: 88d283f8091247acba15bd109fd9b858
+msgid "更稳的顺序是："
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:89
+#: e319b78fd3564e21a6afcac4d3b03b74
+msgid ""
+"候选池\n"
+"-> 删除明显坏结构\n"
+"-> 删除或隔离预测力极大的结构\n"
+"-> 检查每类 Config_type 是否还保留足够样本\n"
+"-> 再用 FPS Filter 做代表性采样\n"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:97
+#: 032b7b935e8a4ef5848e7d65350f0d25
+msgid ""
+"清洗后的输出可以命名为 `candidate_pool_clean.xyz`。如果之后做 FPS，输出可以命名为 "
+"`candidate_pool_fps.xyz`，这样每一步都能追溯。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:100
+#: c5e2380eb56a4915b75a2dab04996ae4
+msgid "6. 送去 DFT 后再回看"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:102
+#: eaaca370c22d4b019afe7e76d6cf8c06
+msgid "DFT 标注完成后，把带有能量、力、应力的结构再导入 `NEP Dataset Display`。 这时检查重点会变化："
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:105
+#: 6a47f40305c04ba3a5377f58d476e67e
+msgid "是否有 DFT 未收敛或异常标签。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:106
+#: cd207d047ba34376984f8f52f543d506
+msgid "力和能量分布是否出现不合理长尾。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:107
+#: 631d89f63eab40bebc52e6008d67e82e
+msgid "某些构型族是否过多或过少。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:108
+#: fdd657ae4b604ed892203fe2751af1e0
+msgid "训练后模型在哪些结构上误差最大。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:110
+#: 61d2c16f0c2b40378591244d48e94de9
+msgid "这一步的输出会决定下一轮 `Make Dataset` 应该补什么：是补某类缺陷、某个应变范围， 还是缩小某张生成卡的参数范围。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:113
+#: c66e4523e05b42aaa45229b0dd791ee2
+msgid "常见误区"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:115
+#: 690f470787e04903acf7ba90870e04a0
+msgid "**误区 1：生成后直接 DFT。** 候选结构不是最终训练集。先清洗通常比事后处理失败 DFT 更省时间。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:118
+#: d5cd5a40026a456f9b4a0ca472f43b6d
+msgid "**误区 2：先 FPS 再清洗。** FPS 不知道物理合理性，只知道描述符距离。坏结构可能因为“特别不一样”被选中。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:121
+#: 2d369c5e342e4600ba15a97c7f6eba14
+msgid "**误区 3：把 NEP 预测当作 DFT 标签。** NEP 预测只适合预筛和排序，最终训练标签仍然来自 DFT。"
+msgstr ""
+
+#: ../../source/workflows/clean-candidate-structures.md:124
+#: 85980aefd4bc4ddf9f44d6c9083567c2
+msgid "**误区 4：只看总数量。** 候选池有 5000 个结构不等于覆盖好。更重要的是每类 `Config_type` 的质量和多样性。"
+msgstr ""

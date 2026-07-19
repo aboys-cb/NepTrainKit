@@ -32,7 +32,7 @@ NepTrainKit 的页面可以按数据流理解，而不是按菜单名称死记�
 直接看 :doc:`../workflows/clean-candidate-structures`。
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    NEP 数据展示 <NEP-dataset-display>
    训练集评估 <training-set-assessment>

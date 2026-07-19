@@ -1,0 +1,397 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:3
+#: fd325ab56f214617b53a879a980b0c64
+msgid "剪切矩阵应变（Shear Matrix Strain）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:5
+#: b535401b734847b9aef7235430de8277
+msgid "`Group`: `Lattice` | `Class`: `ShearMatrixCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:7
+#: 66c63170745f4c4990a35ae81dfec7c5
+msgid "功能说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:9
+#: 8334b8b9d9054777be84bd55ca2dc107
+msgid "通过 xy/yz/xz 剪切矩阵分量生成非对角形变样本。对晶格矢量的三个剪切通道做系统扫描，每个通道独立控制 min/max/step。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:11
+#: a45142fd537045bcb2fd7afad362f4bf
+msgid ""
+"\\gamma_{xy}=\\frac{s_{xy}}{100},\\quad "
+"\\mathbf{S}=\\begin{bmatrix}1&\\gamma_{xy}&\\gamma_{xz}\\\\0&1&\\gamma_{yz}\\\\0&0&1\\end{bmatrix},\\quad"
+" \\mathbf{C}'=\\mathbf{C}\\mathbf{S}"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:13
+#: 83fbc621f35d49f8bdd42c8481c89e3c
+msgid "`symmetric=true` 时填充 S 的下三角对应项，使剪切路径更接近对称形变。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:15
+#: 09fedff555ad4d2db0860353996516b5
+msgid "操作示例"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:17
+#: 5c325f86934d43ad81a01aeccb4d2529
+msgid "场景：模型预测剪切模量 C44 比 DFT 低 40%"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:19
+#: a2df45dfe05449a7813f83e281e9e617
+msgid ""
+"你在 fcc Al 上训练了一个 NEP 模型，C11/C12 都对，但 C44 只有 DFT 值的 60%。诊断发现：C44 是对应于 "
+"xy/yz/xz 方向剪切的分量，而训练集里所有结构都是轴向拉伸/压缩（通过 `Lattice Strain` "
+"生成的），模型没见过非对角剪切变形。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:21
+#: 713e14d369f64407b0cfc48e1ab6c4a4
+msgid ""
+"**诊断思路：** 剪切弹性常数来源于非对角应变。如果训练集只覆盖对角应变（axial "
+"strain），模型对剪切方向的刚度完全靠外推。需要往训练集里加入已知剪切分量的结构。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:23
+#: bd12cdb724d34754a068765774149b51
+msgid "**输入：** 一个弛豫好的 fcc Al 单胞"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:25
+#: df4c58b03f524e138ccc08e654cc19ea
+msgid "**目标：** 沿 xy 方向做 -3% 到 +3% 剪切，步长 1%，对称模式，共 7 个结构"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:27
+#: 744ce74c26494e50adb4295af0afe5c6
+msgid "**参数设置：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:28
+#: c3d908b3ef0944efa4b3697e240b24ab
+msgid "`xy_range` = `[-3, 3, 1]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:29
+#: 8429775f40714defbb76cf85e6fe2b5e
+msgid "`yz_range` = `[0, 0, 1]` （不扫 yz）—— 注意要把步长非零的值写进去，否则 range 为空不生成"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:30
+#: d0749a8d2de14ee08243908b02aff727
+msgid "`xz_range` = `[0, 0, 1]` （不扫 xz）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:31
+#: eee54a5a92e34d0b92fdfed2ea10b848
+msgid "`symmetric` = `true`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:33
+#: 84c7c7d1c9c04fd4ae4f98e88311436c
+msgid "**输出：** 7 个结构，剪切矩阵的 xy 分量从 -0.03 到 +0.03，yz 和 xz 分量为 0"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:35
+#: 5277a45352314cb2901a390ebec9b64d
+msgid "**怎么验证训练集质量改善：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:36
+#: 9c5dd83a63dd4f2aabfc527243b9b71b
+msgid "重训后重新计算弹性常数矩阵，C44 应该更接近 DFT 参考值"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:37
+#: 123c00f261124c29bac17eea1960d879
+msgid "检查输出结构的晶格角变化：单斜/triclinic 体系剪切后角度会偏离正交，确认变化在物理合理范围"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:38
+#: ff9e306ee429464c90187504f42d92cf
+msgid "如果 C44 改善但 C55/C66 仍有偏差，再单独扫 yz_range 和 xz_range"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:39
+#: 6d37212442064ca0b951ed068a496ee5
+msgid "如果三个分量都需要同时补，再同时放开三个 range —— 但注意输出数 = Nxy * Nyz * Nxz，组合数很快爆炸"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:41
+#: db6753f54bc8479abf65d8bc9cc2da23
+msgid "什么时候加这张卡、什么时候不加"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:43
+#: cb6f9bd078bf46dcaa39311f46161c88
+msgid "**加：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:44
+#: eca3363082d841768aad2ce857281f2b
+msgid "模型剪切模量、非对角弹性常数系统性偏差"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:45
+#: a106ee344a4f470295165bb80ec63491
+msgid "训练集缺少非正交晶格构型、所有结构都在高对称格点"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:46
+#: d412136c8ff043a6858a0a67c8b0a370
+msgid "需要覆盖剪切方向的应力-应变响应"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:48
+#: 8702d90b72494bd7b6f53b20afc83a89
+msgid "**不加：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:49
+#: 633b91a19b9a4944b5372c8c4700a4f8
+msgid "只需要体积和单轴应变 → `Lattice Strain` 更直接"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:50
+#: e1b6dac8187f416f9104a5a7fb0eb784
+msgid "想通过角度而非矩阵分量控制剪切 → `Shear Angle Strain` 更适合"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:51
+#: ce356b650c874a6f89a09195cc47bc43
+msgid "体系本身是刚性分子晶体，剪切只会破坏分子内拓扑 → 考虑 `identify_organic`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:53
+#: f0c5c7147cee41ed85b767def8518025
+msgid "参数说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:55
+#: b6227a7c3aeb4989bdd0e50592903325
+msgid "XY Range（xy_range）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:57
+#: 22345b7543594a3fa11834cee30654cc
+msgid ""
+"`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。剪切矩阵 xy 分量的扫描区间，格式 "
+"`[min, max, step]`，单位 %。比如 `sxy=5` 对应剪切矩阵分量 "
+"0.05。如果你只扫一个分量，把另外两个设为一个点就行——但注意不能设成 `[0, 0, 0]`（步长为 0 会让 range 变空），正确写法是"
+" `[0, 0, 1]` 保证至少生成一个 0 点。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:59
+#: e630c8982e474a2cbfb7ee739113901d
+msgid "YZ Range（yz_range）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:61
+#: 51afd086246c4aceb04cf6ff4175bcdc
+msgid ""
+"`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。yz 分量的扫描区间，单位和语法同 "
+"xy_range。同理，不扫时写 `[0, 0, 1]`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:63
+#: 1c9b11f19c3e40e989b17e69a8306e55
+msgid "XZ Range（xz_range）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:65
+#: 2d55489925904bb6ae311220cd9044eb
+msgid ""
+"`tuple[float, float, float]`，默认 `(-5.0, 5.0, 1.0)`。xz 分量的扫描区间，同上。不扫时写 "
+"`[0, 0, 1]`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:67
+#: 35f35f948b204b0aad281f1d08b4b2cb
+msgid "输出总数 = Nxy * Nyz * Nxz。三个通道同时按默认值跑 = 11^3 = 1331 个结构。建议先单通道试跑验证参数，再逐步加通道。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:69
+#: 29c75a93114848318b9ed5c9d9e74b18
+msgid "Symmetric（symmetric）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:71
+#: bce59586accd4f15bcb8d4c0a2e229a9
+msgid ""
+"`bool`，默认 `true`。打开后剪切矩阵下三角同步填充（比如 `S[1,0] = "
+"S[0,1]`），形变路径更接近物理上的对称剪切。如果你在研究非对称畸变（比如某些铁弹相变），把这个关掉。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:73
+#: d8bb2c160c4e46abb335360a47785ce8
+msgid "Identify Organic（identify_organic）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:75
+#: 37c54fa736af49a1874b4b5dd89f8d53
+msgid "`bool`，默认 `false`。分子晶体必须打开——否则剪切变形会撕裂分子内键。纯无机体系关着即可。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:77
+#: 7443a784a2ee48b4a77868afc65932b8
+msgid "推荐预设"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:79
+#: 7383019914d7498dbcd58157e41ae7fd
+msgid "单分量弹性补样（仅 xy，±3%，对称）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:80
+#: eeb19f041d1a44c9854afd48fd2dd6c2
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"ShearMatrixCard\",\n"
+"  \"check_state\": true,\n"
+"  \"xy_range\": [-3, 3, 1],\n"
+"  \"yz_range\": [0, 0, 1],\n"
+"  \"xz_range\": [0, 0, 1],\n"
+"  \"symmetric\": true,\n"
+"  \"identify_organic\": false\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:92
+#: 9161ad5f5a7a4369ae9cf9fa97246c42
+msgid "双分量剪切覆盖（xy+yz，±5%，对称，~121 个输出）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:93
+#: 7f8af607dc76411ab9410143bd407c55
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"ShearMatrixCard\",\n"
+"  \"check_state\": true,\n"
+"  \"xy_range\": [-5, 5, 1],\n"
+"  \"yz_range\": [-5, 5, 1],\n"
+"  \"xz_range\": [0, 0, 1],\n"
+"  \"symmetric\": true,\n"
+"  \"identify_organic\": false\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:105
+#: 0254e167b88d4b7d9ac2d009025b145c
+msgid "三通道研究级（xy+yz+xz，±6%，步长 2%，非对称，~343 个输出）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:106
+#: 368fe2fec4614a7a8b57ec4a1737d7e5
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"ShearMatrixCard\",\n"
+"  \"check_state\": true,\n"
+"  \"xy_range\": [-6, 6, 2],\n"
+"  \"yz_range\": [-6, 6, 2],\n"
+"  \"xz_range\": [-6, 6, 2],\n"
+"  \"symmetric\": false,\n"
+"  \"identify_organic\": false\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:118
+#: 2c0705dac03543b0a4dc4f5125a9aba4
+msgid "推荐组合"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:120
+#: 4e2c724f9a044ae9a103c2e044efb6d2
+msgid "`Lattice Strain` → `Shear Matrix Strain`：先补轴向应变，再补剪切分量，覆盖完整弹性张量"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:121
+#: 05e1e3ff2db742cba9ddbc34c6d99034
+msgid "`Shear Matrix Strain` → `Atomic Perturb`：剪切变形后加坐标噪声"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:122
+#: 769abc89c177474abd7d7a1b2c370863
+msgid "`Super Cell` → `Shear Matrix Strain`：先扩胞再剪切，适合研究大尺度剪切响应"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:124
+#: e6f6281e6a5341e2b5c674e95b358158
+msgid "常见问题"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:126
+#: 3a681acb5f194402a91d5f9132cfd7a0
+msgid ""
+"**输出为空。** 检查 range 的步长是否 > 0。如果不扫某个分量，不能设置 `[0, 0, 0]` —— 步长为 0 会导致 range"
+" 为空。应该设置 `[0, 0, 1]` 确保至少生成一个点（0）。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:128
+#: 1bf181bad5f04950b740f0f53dc0cbfa
+msgid ""
+"**输出数量爆炸。** 三通道联扫的输出数 = Nxy * Nyz * Nxz。默认 `[-5, 5, 1]` 三个通道同时开 = 11^3 = "
+"1331 个结构。建议先单通道试跑验证参数合理性后再加通道。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:130
+#: 13fb524f1e924f8b8b5e54ea0766767c
+msgid "**剪切后结构物理不合理。** 剪切幅度过大导致晶格条件数恶化（接近奇异）。抽查最近邻距离和晶格行列式。±5% 以上建议逐步增加并每步检查。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:132
+#: 8856e05e39c74e03a6ac7940c7dac39f
+msgid ""
+"**vs Shear Angle Strain 如何选择。** Shear Matrix "
+"在笛卡尔坐标下直接修改剪切矩阵分量，适合和弹性常数计算对齐；Shear Angle 修改晶胞角度 alpha/beta/gamma，适合和 "
+"XRD/晶体学角度对齐。两者产生不同的形变路径，可以互补使用。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:134
+#: 884b832a43844d328118629b04ed76e6
+msgid "输出标签"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:136
+#: d71771f1775a495995d425fa3c39413e
+#, python-brace-format
+msgid "`Shr(xy={sxy}%,yz={syz}%,xz={sxz}%,sym={0|1})`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:138
+#: c27f9c18b37143d980e77e413a17e99a
+msgid "可复现性"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-matrix-card.md:140
+#: 320fec7c46424e3f9a8c92d1274d299b
+msgid "无随机性。同参数同输入 → 严格一致输出。所有剪切分量按固定网格扫描。"
+msgstr ""

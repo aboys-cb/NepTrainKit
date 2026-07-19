@@ -1,0 +1,545 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:3
+#: c5db6f452e25490a8212cfe08a6af32d
+msgid "层复制（Layer Copy）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:5
+#: 69d47356621546209224e79fccae8d92
+msgid "`Group`: `Structure` | `Class`: `LayerCopyCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:7
+#: ac4a251713ca4a6fbda95871bff004ab
+msgid "功能说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:9
+#: 434c1dbfdb7a449eb9f62c625fb9214b
+msgid ""
+"对选定原子的 z 坐标施加表达式调制 `dz = f(x, y, z)`，然后将变形后的层按指定层间距和层数沿 z 方向堆叠复制。可选扩胞 z "
+"向盒子和增加真空。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:11
+#: 4a8a3381274a4a4895c9f721e236b66b
+msgid "操作示例"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:13
+#: 01f9abc271a6445db1ee8a6b80a0d14e
+msgid "场景：模型在多层异质结的层间耦合上预测失败"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:15
+#: 300721fe58f44b5985df5a2d40a68b7d
+msgid "你在单层 MoS2 上训练了一个 NEP 模型，单层性质很好。然后尝试跑双层 MoS2——层间距离预测偏了 0.5 Å，层间滑移能垒完全不对。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:17
+#: 864e2018938446cfb2f585547eb98dc4
+msgid ""
+"**诊断思路：** 单层 MoS2 里所有原子都是表面原子（双面都有真空），但双层结构中层间区域的 S 原子面对的是另一层 "
+"S，局域环境完全不同。训练集里只有单层数据，模型没见过\"上下都有近邻原子\"的层间环境。需要从单层出发，复制出多层堆叠结构。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:19
+#: ba0e7c23d01145e494e3fb1e42d01e28
+msgid "**输入：** 一个弛豫好的单层 MoS2 slab"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:21
+#: b7307fdb565b483e83dee78a97a46afb
+msgid "**目标：** 用 sin 调制给层加起伏，然后复制 3 层，层间距 6.5 Å"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:23
+#: 85101086deeb495b96c85a8b89501ca7
+msgid "**参数设置：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:24
+#: 4ec1da81469843fab4181bd7110bc884
+msgid "`Preset Index` = `1`（自定义 dz 表达式）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:25
+#: 2b170360c3de4d0fb373d27a9518aa49
+msgid "`Dz Expr` = `sin(x/pi) + sin(y/pi)`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:26
+#: acf00afef897487c87c2b0c81c44c181
+msgid "`Layers` = `[3]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:27
+#: 96aa4889dfa4468daee5f875c09ff369
+msgid "`Distance` = `[6.5]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:28
+#: 96dceff65e7e4394a7604f2ba256dd70
+msgid "`Extend Cell Z` = 勾选"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:30
+#: 0a5873d0729a4247a302ab261b60d1a2
+msgid "**输出：** 3 层 MoS2，每层原子 z 位置有起伏调制，盒子高度自动扩展，带 `SWC(L=3,dz=6.5)` 标签"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:32
+#: 334766f73b314f1ca2c857ea589b578d
+msgid "**怎么验证训练集质量改善：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:33
+#: 5e785ecbcdd64c3ebc0ce444ce4a4fbf
+msgid "重训后计算双层 MoS2 的层间距和层间滑移能垒，应接近 DFT 参考"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:34
+#: 46258e8092a24cbe960349eab411e8bb
+msgid "检查层间是否重叠：最低层的顶部原子和上一层的底部原子距离应 > 2.5 Å"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:35
+#: 88ae20f1cb7c4899a3ae428e336362ff
+msgid "如果模型只对平整层好而对起伏层差，增大 `dz_expr` 的振幅或者换更复杂的位移函数"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:36
+#: 94fd8353244a4058b661f6cc594ae470
+msgid "如果需要构建多层异质结（如 MoS2/WS2），先用两张独立的 Layer Copy 卡分别处理，再拼接"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:38
+#: a4de722e993549258dce745d1a3c7af9
+msgid "什么时候加这张卡、什么时候不加"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:40
+#: 104b35b56964457c85d835eb9a5b035c
+msgid "**加：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:41
+#: 8c607a652b48476abda33b2b1c272392
+msgid "研究二维材料、层状材料（MoS2、石墨、BN）的多层性质"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:42
+#: 96cfae0c8cd44d4db5ff72ded4f4ae6a
+msgid "需要从单层/少层出发构造多层堆叠"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:43
+#: 1dc304c267f640bb8071674b90aef991
+msgid "需要给平整层加波纹、起伏等层间调制"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:45
+#: 4b727dbaa97248f4804e48375b856e41
+msgid "**不加：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:46
+#: c99467e8e0aa4d07b679a67fe22e253d
+msgid "体系不是层状结构（体相晶体、分子团簇）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:47
+#: 011888113d5c4f0da70f35f307d730f0
+msgid "只需要简单扩胞 → 用 `Super Cell`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:49
+#: 12174f4d05c34afa8273267dc28c392f
+msgid "参数说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:51
+#: f8d153ad2b904d749e7a2978d5efc8be
+msgid "预设和位移表达式"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:53
+#: 5afdf45bf16840e3919ccb229a8d2359
+msgid "Preset Index（preset_index）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:55
+#: 53331aaafd2a44eca65d87b0e04f9797
+msgid "`int`，默认 1。选择内置的变换模板。`1` 是自定义模式，配合下面的 `Dz Expr` 写你自己的位移表达式。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:57
+#: 7af7703fc7ea4234960d49d5b5d70645
+msgid "DZ Expr（dz_expr）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:59
+#: c1ab09076d5b46dfb2647493a690f096
+msgid ""
+"`str`，默认 `sin(x/pi) + sin(y/pi)`。z 方向位移表达式，支持三角函数、指数等数学函数。可用变量：`x`, `y`, "
+"`z`, `pi`, `e`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:61
+#: 2eba82f53d594b3ab9fca40fcb924428
+msgid "`sin(x/pi) + sin(y/pi)`——双向波纹，适合模拟热起伏或应变波"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:62
+#: f07090349a6d4d49a77b6dd471ca6016
+msgid "`0.5 * sin(x/3)`——单向正弦起伏"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:63
+#: c44594e682c34961b776a7f49338cb8f
+msgid "`0`——纯堆叠，不给层加任何调制"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:65
+#: ae143f6861344697baf34e68bf6011fd
+msgid "通过 `Expression Params` 字段可以定义表达式中引用的额外标量参数，格式 `name=value, name=value`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:67
+#: 06f70348e89b46a1859a847c0621b600
+msgid "Expression Params（expression_params）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:69
+#: ffc515d82beb4d7fbdc5a5e81eaf01e1
+msgid "`str`，默认空。你写在位移表达式里引用的自定义参数，用 `name=value, name=value` 的格式填。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:71
+#: 698edf3c8cfc4dca90b8177c819df8f0
+msgid "作用范围"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:73
+#: 161777f2ce2a4a22afdaa2bff542dcde
+msgid "Apply Mode（apply_mode）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:75
+#: dbd080beecc54c56af95905f7739cb52
+msgid "`int`，默认 0。决定层复制和调制作用在哪些原子上。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md
+#: 6e0d04fc475546c4b38bff9a21ad5161
+msgid "值"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md
+#: bfbbe2a407624d17bf22459bd82ddf1e
+msgid "模式"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md
+#: 6ecf32ebb8044cb2b5d674dc1ad61177
+msgid "行为"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md
+#: e0f63d6046f34571861f15b6e1c3ebba
+msgid "`0`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md
+#: 00f5f1e6706548c2a4dfa454d8e27da7
+msgid "全局"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md
+#: 1e87a0fdda20421fb7b689e66a57db14
+msgid "所有原子都参与调制"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md
+#: a946835cf356494f919cebb59dad6477
+msgid "`1`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md
+#: 3e50b7d4d73b409c9f87b649b56fb133
+msgid "按元素"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md
+#: 933c35a9b9c443cebde2aa9dd274df7f
+msgid "仅 `Elements` 列出的元素参与"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md
+#: 3811b2838ef146e2898f8b73740bbf78
+msgid "`2`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md
+#: 723650040488405a8d92f675f582cbec
+msgid "按 z 范围"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md
+#: 777eac8010a14ebeb1522e2c970e66eb
+msgid "仅 `Z Range` 内的原子参与"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:83
+#: f16852e532544c1eb1542f1e08a77355
+msgid "如果你只想给某一种元素（比如表面 S）加起伏而 Mo 不动，切到按元素模式再填 `Elements`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:85
+#: c30e6b12b6974dc09322d0ceb5f8054d
+msgid "Elements（elements）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:87
+#: f658bd2ac77b42919764ba7eae0ee2ad
+msgid "`str`，默认空。仅 `apply_mode=1` 时生效。逗号分隔的元素列表，如 `S,Mo`——注意大小写要和结构里的一致。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:89
+#: 440ca5fda99c441da61222ea4fb632cc
+msgid "Z Range（z_range）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:91
+#: d14510027e0d47029819bcee442151f7
+msgid ""
+"`tuple[float, float]`，默认 (-1000000.0, 1000000.0)。仅 `apply_mode=2` "
+"时生效。`[最小值, 最大值]`，按 z 坐标筛选参与调制的原子。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:93
+#: 3e44bc54ce8c47bcbe4bafa6fa04eb54
+msgid "层复制和晶胞"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:95
+#: da4a777bfb564139a88d3285b59dd6e9
+msgid "Layers（layers）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:97
+#: ce9545947d684718a80e56465a3d2abb
+msgid "`int`，默认 3。复制出几层。`2` 是双层堆叠，`3` 是三层，以此类推。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:99
+#: 9b635bda23ab411081e2d1ea1febdc42
+msgid "Distance（distance）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:101
+#: 1c5e2f2154174eadaa499be4d1a4ee89
+msgid "`float`，默认 3.0。层间距离，单位 Å。这个值要根据你的层状材料来设——MoS2 约 6.5 Å，石墨约 3.35 Å。设小了层间会重叠。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:103
+#: bcbb9bf7c78f4d0cb236a93e294d62b2
+msgid "Wrap（wrap）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:105
+#: 875b7194313d41499a98db67929143b3
+msgid "`bool`，默认 false。勾选后把复制出来的坐标 wrap 回周期盒里。大多数场景不需要开，保持默认就行。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:107
+#: af48be396c6c443598c74e3c442a39b6
+msgid "Extend Cell Z（extend_cell_z）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:109
+#: 022413d9c4954af480835b103137d30a
+msgid "`bool`，默认 true。勾选后自动扩展 z 向盒子高度以容纳所有复制出来的层。建议保持开启，否则新层可能跑到盒子外面去。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:111
+#: a2c8d94cfc72450096cf8260f17de73a
+msgid "Extra Vacuum（extra_vacuum）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:113
+#: 942b6c5a36f746bd9326756ea4d54c0f
+msgid "`float`，默认 0.0。在自动扩展盒子高度的基础上额外加的真空长度。0~5 Å 对大多数场景足够了。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:115
+#: 24103d72e7634ec3ab50080de0091e1f
+msgid "推荐预设"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:117
+#: f326b21d00194ef8aacf41c13076d5e8
+msgid "双层（平整堆叠，2 层，间距 6.5 Å）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:118
+#: b7ca2e2788bf44ecb77af2f5529838ee
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"LayerCopyCard\",\n"
+"  \"check_state\": true,\n"
+"  \"preset_index\": 1,\n"
+"  \"dz_expr\": \"0\",\n"
+"  \"params\": \"\",\n"
+"  \"apply_mode\": 0,\n"
+"  \"elements\": \"\",\n"
+"  \"z_range\": [-5, 5],\n"
+"  \"wrap\": false,\n"
+"  \"extend_cell_z\": true,\n"
+"  \"extra_vacuum\": [0.0],\n"
+"  \"layers\": [2],\n"
+"  \"distance\": [6.5]\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:136
+#: 0cb022edf5454129851928ecfee804a6
+msgid "三层起伏（sin 调制，3 层，间距 3.5 Å）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:137
+#: cd3d4f4f5b574e1cbc5d39400be07066
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"LayerCopyCard\",\n"
+"  \"check_state\": true,\n"
+"  \"preset_index\": 1,\n"
+"  \"dz_expr\": \"sin(x/pi) + sin(y/pi)\",\n"
+"  \"params\": \"\",\n"
+"  \"apply_mode\": 0,\n"
+"  \"elements\": \"\",\n"
+"  \"z_range\": [-5, 5],\n"
+"  \"wrap\": false,\n"
+"  \"extend_cell_z\": true,\n"
+"  \"extra_vacuum\": [5.0],\n"
+"  \"layers\": [3],\n"
+"  \"distance\": [3.5]\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:155
+#: 93107c413c2a42478e8f7c0fb54849c3
+msgid "多层大起伏（cos 调制，6 层，间距 3.0 Å）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:156
+#: aa840fefe9824ad28afc4193ec5439f1
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"LayerCopyCard\",\n"
+"  \"check_state\": true,\n"
+"  \"preset_index\": 1,\n"
+"  \"dz_expr\": \"2 * cos(x/2) + sin(y/2)\",\n"
+"  \"params\": \"\",\n"
+"  \"apply_mode\": 0,\n"
+"  \"elements\": \"\",\n"
+"  \"z_range\": [-10, 10],\n"
+"  \"wrap\": false,\n"
+"  \"extend_cell_z\": true,\n"
+"  \"extra_vacuum\": [10.0],\n"
+"  \"layers\": [6],\n"
+"  \"distance\": [3.0]\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:174
+#: 465c1469dac14796b3b4aa5764a683e9
+msgid "推荐组合"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:176
+#: c0f29528754a4d81a1598b39f73b4829
+msgid "`Layer Copy` → `Insert Defect`：先构建多层结构，再采样层间插隙位点"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:177
+#: ca02b87aae294a38be9956280653a653
+msgid "`Layer Copy` → `Atomic Perturb`：层堆叠 → 加局域热噪声"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:178
+#: 066c031843fd42539935d6acb049911b
+msgid "`Super Cell` → `Layer Copy`：先扩胞增大面内尺寸，再沿 z 堆叠"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:180
+#: 5c75ddbf9b6b431583551bf149812722
+msgid "常见问题"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:182
+#: 1c808b4e8b2149989bcb772f621d588b
+msgid "**输出只有一个结构（没有复制）。** `layers` = 1 时只产生单层。确认 `layers` >= 2。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:184
+#: 82880e11fe25477ab40862afb213d335
+msgid "**层间重叠。** `distance` 太小。检查输入层的 z 方向厚度，distance 应大于该厚度。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:186
+#: 2979fc3a7aee463a8d3afcbfc70a79c3
+msgid "**表达式报错。** 检查 `dz_expr` 语法，支持的函数列表见参数说明。先用 `0` 测试流水线是否打通。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:188
+#: 4a01214e20dc4a63903162d80eb9518d
+msgid ""
+"**Apply Mode 过滤后没有原子参与。** 检查 `elements` 拼写是否和结构中的元素名一致，或者 `z_range` "
+"是否覆盖了原子所在的 z 区间。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:190
+#: e418af26d1d842e78112cab821eac1fa
+msgid "输出标签"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:192
+#: 909b4a99c921485285eb8efd6fb8fe44
+#, python-brace-format
+msgid "`SWC(L={层数},dz={层间距})`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:194
+#: 7c9cf7353ba741cb891a4f4c74a883a8
+msgid "可复现性"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/layer-copy-card.md:196
+#: 6d848511b5d34d31ad93879dabb7cfb8
+msgid "无随机性。同参数同输入 → 严格一致输出。"
+msgstr ""

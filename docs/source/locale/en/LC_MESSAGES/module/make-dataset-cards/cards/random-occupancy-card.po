@@ -1,0 +1,415 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:3
+#: 9a51caf9aedb4968a75fc023eebcc5bc
+msgid "随机占位（Random Occupancy）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:5
+#: 6d8cc8807766401ab42b0133ef610a8c
+msgid "`Group`: `Alloy` | `Class`: `RandomOccupancyCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:7
+#: 346a76a8b1c34d5696f5b27c5e77acaa
+msgid "功能说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:9
+#: 86536067d1504739854590e103c1e39a
+msgid ""
+"在给定总成分约束下，将目标配比真正落到原子占位上。读取 `Comp(...)` "
+"标签或手工输入的成分字符串，用精确或随机模式把各元素分配到离散晶格位点，输出带 `Occ(...)` 标签的真实化学占位结构。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:11
+#: ca6b45edd3bd4ffe824db79d9da08fee
+msgid "典型用法：接在 `Composition Sweep` 之后，把目标配比计划转化为可以跑 DFT/NEP 的实际结构。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:13
+#: be3f8be4bb8a41fd8e144e9fd4c970d7
+msgid "操作示例"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:15
+#: 51e124f7574344eca4573d5f444c8eae
+msgid "场景：同成分不同排布下的能量预测，模型偏差从 5 跳到 50 meV/atom"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:17
+#: aae0853860384f158f5ea480f85a9d2a
+msgid ""
+"你在 CoCrNi 训练集上跑了 `Composition Sweep`，覆盖了从纯元素到等摩尔的各种配比。但每个配比只生成了一个占位结构——对 "
+"Co0.33Cr0.33Ni0.33，训练集里 Cr 永远在角落、Co 永远在面心。模型学到的不是\"这个成分\"，而是\"这个成分 + "
+"这个特定排布\"。拿到另一个同样成分但 Cr/Co 位置互换的结构，能量预测偏差从 5 meV/atom 跳到了 50 meV/atom。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:19
+#: 10a8abb54dae417b83e807120aad3f14
+msgid ""
+"**诊断思路：** "
+"对给定成分，短程化学有序度——哪种原子偏好和哪种原子做邻居——显著影响总能量和局域力。训练集里每种成分只有一个排布样本，模型就把成分和特定排布绑死了。解决：给每个目标配比生成多个不同占位版本。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:21
+#: 4435c4d7205a4e619239cef3eb0232ad
+msgid ""
+"**输入：** 一批带 `Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` 标签的结构（来自上游 `Composition"
+" Sweep`）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:23
+#: 6bc2770a0f8f440786bbf163f8ac4075
+msgid "**目标：** 每个目标配比生成 5 个不同原子排布版本，覆盖排布多样性"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:25
+#: 987297f6a1cf43f2bb10562082b319db
+msgid "**参数设置：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:26
+#: d42035928c4f4a609f7e039777102e5c
+msgid "`source` = `Auto (Comp tag)` （自动读取上游 Comp 标签）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:27
+#: f2f1e6b830c34393836c03660efb1d27
+msgid "`mode` = `Exact` （精确匹配目标配比，每次排布不同但元素计数一致）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:28
+#: f38f15ebb684414f9c4ab0f3cb2ef0a3
+msgid "`samples` = `5`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:30
+#: bef667e758484ee8aba5d2c958bcc9ea
+msgid "**输出：** 每个输入结构产生 5 个带 `Occ(E)` 标签的结构，元素组成与 Comp 标签一致但原子排布各不相同"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:32
+#: d7a7d93b94c54315b479e70e5ad14669
+msgid "**怎么验证训练集质量改善：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:33
+#: 750a4c9e51ba4bed85222b155cd9614b
+msgid "重训后对同一成分的不同排布跑推理，能量方差应该合理——不应全坍缩到一个值，也不应异常发散"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:34
+#: 7ac08b541a9745a88096ff704e382fb1
+msgid "抽查几个占位输出，确认元素计数与目标配比一致（Exact 模式）或统计上接近（Random 模式）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:35
+#: 7fad001646374c828490047d0fe99453
+msgid "如果不同排布之间的能量差异非常小且体系对排布不敏感，可以减少 `samples`；差异大则增大"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:36
+#: 2d92cb051fd449f1995c718ca81993f6
+msgid "如果上游没有 `Comp(...)` 标签导致输出=输入，切换到手工模式并填写 `manual` 成分字符串"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:38
+#: 96d6d212064549b28987ba3bb0b248b4
+msgid "什么时候加这张卡、什么时候不加"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:40
+#: 4f3eff0f7e584cf09923d9f810426857
+msgid "**加：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:41
+#: 88e839a97366451b96981721d055d531
+msgid "上游有 `Composition Sweep` 或手工定义了目标配比，需要落到具体原子占位"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:42
+#: de2b937052374209a48de30ba227a86a
+msgid "同一成分下需要多个不同原子排布来覆盖短程化学有序度"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:43
+#: 5b8db9e7de264ddb82841acc29fda7d0
+msgid "高熵合金、固溶体等需要成分-排布联合采样的体系"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:45
+#: b66faf7653d44f008c61f84b298e78d5
+msgid "**不加：**"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:46
+#: 56a6a8c93e9046cdac54db334ef1c9c9
+msgid "不需要改变原子占位"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:47
+#: 40e5f7969b574511b1b6ff4ac9ca092b
+msgid "需要直接指定替换规则而非从配比出发 → 用 `Random Doping`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:48
+#: 843887d403bf4c8ea1486bda8a075f64
+msgid "输入本身已经是真实的离散占位结构且不再需要多样性"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:50
+#: 2a2d5eee29c7414fbe27e15feeddcae6
+msgid "参数说明"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:52
+#: 959063a489a44227a20766586465966c
+msgid "Source（source）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:54
+#: d355ba0855e345559e3012d24a8db991
+msgid ""
+"`str`，默认 `Auto (Comp tag)`。`Auto` 从输入结构的 `Config_type` 中读取 `Comp(...)` "
+"标签作为目标配比，适合接在 `Composition Sweep` 之后。`Manual` 从下面的 `manual` 字段读取手工配比字符串。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:56
+#: 609384a3b41a40e48b164a2f789d69e4
+msgid "Manual（manual）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:58
+#: 22490d7740b3426e84a1bb563547663d
+msgid ""
+"`str`，默认空。成分字符串，如 `Co:0.333,Cr:0.333,Ni:0.334`，仅在 `source=Manual` "
+"时生效。比例会被自动归一化。只输入单个元素如 `Ge` 时按 `Ge:1.0` 处理；输入 `Ge,C` 则两个元素默认权重都是 1.0。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:60
+#: 63dde2297d1d45e1887ea1be7c31b73b
+msgid "Mode（mode）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:62
+#: 06aaae94c104464290ecbf7d997e5c75
+msgid ""
+"`str`，默认 `Exact`。`Exact` "
+"精确匹配目标配比，每个原子的元素分配满足目标计数（向下取整后按余数补足），适合对比实验。`Random` "
+"按目标比例概率采样，整体统计接近但不严格匹配，适合探索性跑样。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:64
+#: 156cb444cd5b407ebaa69bec5c29da39
+msgid "Samples（samples）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:66
+#: df7a1b85295d44008eaaed39201ea851
+msgid "`int`，默认 1。每个输入结构为每个目标配比生成多少个不同占位版本。典型值 1-20。注意总输出 = 上游配比点数 x 这个值，先估算规模再跑。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:68
+#: cfe5906c48f948fba1f957f0f42b09f5
+msgid "Group Filter（group_filter）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:70
+#: 8ad9b8e6ccf543de868da52fb09893f8
+msgid ""
+"`str`，默认空。逗号分隔的 group 标签，如 `A,B`。限制只在这些 group 内的位点上做占位分配。需要输入结构已带 "
+"`atoms.arrays['group']`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:72
+#: b229c4b8a5114ecabb73c78cd0025cc9
+msgid "Use Seed（use_seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:74
+#: 1dd885a9d1b1412d895f7005c816f0e3
+msgid ""
+"`bool`，默认 false。打开后固定随机路径，`seed` 不同取值产生不同占位分布。程序会结合输入结构的 stable config ID"
+" 为每个样本派生独立种子。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:76
+#: 51268ff37b1a4d348cab9ecfe3aa500f
+msgid "Seed（seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:78
+#: 7cacb7d1c6b44ed48c2eb2921c5e8210
+msgid "`int`，默认 0。不同取值产生不同的占位分布。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:80
+#: 312ae6797b66467480dde2da83b33d68
+msgid "生效条件：`use_seed=True`。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:82
+#: 65b138fba1b74b6fa0721c849def6d2e
+msgid "推荐预设"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:84
+#: f715145c55314fceb03077b00d56d1b8
+msgid "单样本落地（每配比 1 排布，快速验证占位路径）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:85
+#: 2bb9e18ef3484626a31467248cffd5ad
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"RandomOccupancyCard\",\n"
+"  \"check_state\": true,\n"
+"  \"source\": \"Auto (Comp tag)\",\n"
+"  \"manual\": \"\",\n"
+"  \"mode\": \"Exact\",\n"
+"  \"samples\": [1],\n"
+"  \"group_filter\": \"\",\n"
+"  \"use_seed\": false,\n"
+"  \"seed\": [0]\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:99
+#: 128fb64e0b994933954fea3c83257ac0
+msgid "多样性占位（每配比 5 排布，常规训练用）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:100
+#: f784ecb329a14a6d8822e051c188e183
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"RandomOccupancyCard\",\n"
+"  \"check_state\": true,\n"
+"  \"source\": \"Auto (Comp tag)\",\n"
+"  \"manual\": \"\",\n"
+"  \"mode\": \"Exact\",\n"
+"  \"samples\": [5],\n"
+"  \"group_filter\": \"\",\n"
+"  \"use_seed\": true,\n"
+"  \"seed\": [42]\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:114
+#: 508bd7ecf88a4efebff0500d9d564971
+msgid "高多样性子晶格（每配比 20 排布，仅限 group A）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:115
+#: 9907d03775bf414fb1480f72236ccdcd
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"RandomOccupancyCard\",\n"
+"  \"check_state\": true,\n"
+"  \"source\": \"Auto (Comp tag)\",\n"
+"  \"manual\": \"\",\n"
+"  \"mode\": \"Random\",\n"
+"  \"samples\": [20],\n"
+"  \"group_filter\": \"A\",\n"
+"  \"use_seed\": true,\n"
+"  \"seed\": [42]\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:129
+#: bff5ba4e7e7c4b45ab61e30ed815ea1d
+msgid "推荐组合"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:131
+#: e676401b3a5d41b486989faea0c2920a
+msgid "`Composition Sweep` → `Random Occupancy`：标准合金 pipeline，配比 → 落位。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:132
+#: 19a52d753bee493b81c2291a58520d03
+msgid "`Group Label` → `Random Occupancy`：先打 group 标签，再限制占位区域。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:133
+#: 2a21e3de603e4ad8bcc30d493e1eb46f
+msgid "`Random Occupancy` → `Atomic Perturb`：占位后加坐标噪声松驰局部应力。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:135
+#: 0bdf5480edb2475e89849b582160d7cc
+msgid "常见问题"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:137
+#: 191b19f22b1e4a01a865585513ef2139
+msgid ""
+"**输出 = 输入，没有变化。** 上游没有 `Comp(...)` 标签且 `manual` 为空。检查 `source` 设置，或切换到 "
+"Manual 模式并填写成分。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:139
+#: e6fa72b8231a4533965a68f3ce20f2ab
+msgid "**占位后元素数量与标签不一致。** `Random` 模式下统计浮动是正常的。换 `Exact` 模式可精确匹配。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:141
+#: dfa0e6e5093947bb84c413ac931200d4
+msgid ""
+"**输出数量远超预期。** 输出 = 输入帧数 x `samples`。上游 500 个配比点 x `samples=5` = 2500 "
+"个结构。先估算总规模再跑。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:143
+#: 44c5f1fce58a44e6aaf26ea43234cee7
+msgid "**group_filter 不生效。** 检查输入结构是否有 `atoms.arrays['group']` 且标签拼写完全匹配。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:145
+#: cf4cb44178ea4f5eaf1199a04366d47d
+msgid "输出标签"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:147
+#: cef8937084004528b37312ab6e51a132
+msgid ""
+"`Occ(E)` / `Occ(R)` / `Occ(E,s=...)` / `Occ(R,s=...)`。E = Exact，R = "
+"Random。使用 seed 时附加种子值便于追踪。"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:149
+#: 410a4e3637e74aa28afe67568e290c0d
+msgid "可复现性"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-occupancy-card.md:151
+#: 26c9486cbda941f9a5b1e2abac1fd099
+msgid ""
+"勾选 `use_seed` + 固定 `seed` 可复现。种子与输入结构的 stable config ID 联合派生样本级种子，相同配置 + "
+"相同 seed → 相同占位序列。注意输入结构顺序变化会影响结果。"
+msgstr ""

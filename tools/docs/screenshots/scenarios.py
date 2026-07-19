@@ -113,6 +113,49 @@ def show_nep_overview(ctx: ScenarioContext) -> None:
     pump_events(ctx.app, 220)
 
 
+def training_set_audit_overview(ctx: ScenarioContext) -> None:
+    """Open the deterministic audit summary for the tracked NEP fixture."""
+    show_nep_overview(ctx)
+    data = ctx.window.show_nep_interface.nep_result_data
+    ctx.window.open_training_set_audit(data)
+
+    def loaded() -> bool:
+        return getattr(ctx.window.training_set_audit_interface, "_result", None) is not None
+
+    if not wait_until(ctx.app, loaded, cycles=2400):
+        raise RuntimeError("Timed out building the Training Set Audit overview")
+    audit = ctx.window.training_set_audit_interface
+    audit.page_tabs.setCurrentIndex(0)
+    ctx.capture_widget = audit
+    dismiss_transient_notifications(ctx.app)
+    pump_events(ctx.app, 220)
+
+
+def training_set_audit_structure_map(ctx: ScenarioContext) -> None:
+    """Run on-demand phase evidence and show it on the composition map."""
+    training_set_audit_overview(ctx)
+    audit = ctx.window.training_set_audit_interface
+    audit.page_tabs.setCurrentIndex(1)
+    audit.data_map_tabs.setCurrentIndex(0)
+    audit.composition_evidence_button.click()
+
+    def analysis_complete() -> bool:
+        result = getattr(audit, "_result", None)
+        return bool(
+            result is not None
+            and result.phase_inventory is not None
+            and audit.composition_view_selector.currentData() == "structural"
+        )
+
+    if not wait_until(ctx.app, analysis_complete, cycles=6000):
+        raise RuntimeError("Timed out building structural-phase evidence for the audit map")
+    audit.page_tabs.setCurrentIndex(1)
+    audit.data_map_tabs.setCurrentIndex(0)
+    ctx.capture_widget = audit
+    dismiss_transient_notifications(ctx.app)
+    pump_events(ctx.app, 260)
+
+
 def make_data_empty(ctx: ScenarioContext) -> None:
     """Prepare an empty Make Data workspace."""
     ctx.window.switchTo(ctx.window.make_data_interface)
@@ -241,6 +284,8 @@ def show_nep_drop_bad_dialog(ctx: ScenarioContext) -> None:
 
 RUNNERS: dict[str, Callable[[ScenarioContext], None]] = {
     "show_nep_overview": show_nep_overview,
+    "training_set_audit_overview": training_set_audit_overview,
+    "training_set_audit_structure_map": training_set_audit_structure_map,
     "show_nep_index_dialog": show_nep_index_dialog,
     "show_nep_range_dialog": show_nep_range_dialog,
     "show_nep_lattice_dialog": show_nep_lattice_dialog,

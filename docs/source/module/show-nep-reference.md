@@ -57,6 +57,9 @@
 | <img src="../_static/image/generated/show_nep_icons/open.svg" width="20" /> | `Open File...` | 是 | 选择 `*.xyz` |
 | <img src="../_static/image/generated/show_nep_icons/open.svg" width="20" /> | `Open Folder...` | 是 | 选择目录（常用于 `deepmd/npy`） |
 | <img src="../_static/image/generated/show_nep_icons/save.svg" width="20" /> | `Export All...` 等导出菜单 | 是 | 先选 `ExportFormat`，再选保存路径 |
+| <img src="../_static/image/generated/show_nep_icons/summary.svg" width="20" /> | `评估当前数据集` | 否（打开训练集评估页面） | 检查当前活动结构的数据质量、组分、标签、局域环境、相结构和磁序 |
+
+`评估当前数据集` 位于顶部 `Save` 分裂菜单中。第一次使用时，先加载数据，再从这个入口运行完整检查。页面用法、相识别、磁序识别和公式见 [训练集评估](training-set-assessment.md)。
 
 ## 3. 主图工具栏（按按钮查）
 
@@ -191,6 +194,18 @@
 - Reference / Prediction / Error 只在底层数据支持时产生有效结果。
 
 原有独立窗口暂时作为兼容实现保留，但工具栏入口已经切换到统一页面。
+
+#### N. `评估当前数据集`
+
+- 位置：顶部 `Save` 分裂菜单。
+- 评估范围：当前活动结构；已经删除的结构不参与。
+- 初始结果：数据质量、精确组分、标签范围、重复与风险复核项；有 `nep.txt` 时还会计算模型 cutoff 内的局域化学和元素对接触。
+- 相和磁：进入 `数据地图 → 组分地图`，点击 `分析相结构与磁序` 后遍历全部活动结构。磁序只读取逐原子 `spin:R:3`，不把 `mforce` 或 `force_mag` 当作自旋。
+- 结构回选：点击图表、表格或复核项后，可把真实结构索引送回 `NEP Dataset Display`。
+- 数据变更：删除结构、修改标签、切换数据或模型后，点击 `重新检查`，不要继续使用旧快照。
+- 报告：`导出 HTML 报告` 保存本次评估范围、指纹、证据、判据和限制。
+
+完整操作顺序和识别原理见 [训练集评估](training-set-assessment.md)。
 
 ## 4. 结构工具栏（按按钮查）
 

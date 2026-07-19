@@ -2,8 +2,11 @@ from pathlib import Path
 
 from NepTrainKit.core.audit.report import render_audit_report_html, write_audit_report_html
 from NepTrainKit.core.audit.result import (
+    AuditAction,
     AuditBiasType,
     AuditDimension,
+    AuditFinding,
+    AuditFindingKind,
     AuditResult,
     AuditSeverity,
     AuditSlice,
@@ -251,3 +254,50 @@ def test_report_uses_the_same_consolidated_findings_as_the_gui_contract():
     assert html.count('<section class="finding">') == 1
     assert "Fe composition has 2 low-frequency ranges" in html
     assert "2 structures" in html
+
+
+def test_report_leads_with_decision_and_collapses_dense_evidence():
+    result = AuditResult(
+        dataset_id="train.xyz",
+        generated_at="now",
+        inputs={"structure_count": 12},
+        findings=(
+            AuditFinding(
+                id="labels:missing",
+                title="Missing force labels",
+                dimension_id="labels",
+                kind=AuditFindingKind.BLOCKER,
+                signal_type=AuditBiasType.INFORMATIONAL,
+                structure_indices=(2, 5),
+                conclusion="The affected structures cannot supervise forces.",
+                observed="2 structures do not contain force labels.",
+                rule="All structures selected for force training require force labels.",
+                limit="This check does not assess label accuracy.",
+                actions=(AuditAction("show_structures", "Show 2 structures in Dataset Display"),),
+            ),
+            AuditFinding(
+                id="force:tail",
+                title="High-force review group",
+                dimension_id="labels",
+                kind=AuditFindingKind.REVIEW,
+                signal_type=AuditBiasType.RISK_CONCENTRATION,
+                structure_indices=(7,),
+                conclusion="Inspect this structure before training.",
+                observed="1 structure is in the high-force tail.",
+                rule="Top 10% by maximum force.",
+                limit="High force can be intentional.",
+            ),
+        ),
+    )
+
+    html = render_audit_report_html(result)
+
+    assert "Action required before training" in html
+    assert "Blocking findings</span><strong>1" in html
+    assert "Review groups</span><strong>1" in html
+    assert "<strong>Next:</strong> Show 2 structures in Dataset Display" in html
+    assert html.index("Start here") < html.index("Dataset inventory")
+    assert '<details class="finding-group" open><summary><span>Required action' in html
+    assert '<details class="finding-group"><summary><span>Review next' in html
+    assert '<details class="card dataset-details">' in html
+    assert '<details class="card technical-details">' in html

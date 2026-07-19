@@ -140,7 +140,7 @@
       1200,
       700
     ],
-    "sha256": "98dbb898da62ed1ac40e2be9b6d1e60fff29fb66250b1a497c9edf1ca18439ec"
+    "sha256": "ff4d60d2af16d46edaaaf5b80ff4f62d74d7cf5b87de93bb67ca96e9c2958b92"
   },
   "show_nep_range_dialog": {
     "scenario": "show_nep_range_dialog",
@@ -185,5 +185,27 @@
       700
     ],
     "sha256": "ef0c70df550ca4891e264c4ed1e46b4867078e5387a899d756c4024d584514b1"
+  },
+  "training_set_audit_overview": {
+    "scenario": "training_set_audit_overview",
+    "title": "Training Set Audit overview",
+    "description": "Audit overview showing the conclusion, dataset summary, review queue, and report export.",
+    "output": "docs/source/_static/image/generated/training_set_audit_overview.png",
+    "window_size": [
+      1440,
+      860
+    ],
+    "sha256": "3e1b508af680097d297c3c5ba9d0c782697202e7d266b9bdcfc8b96a61854b83"
+  },
+  "training_set_audit_structure_map": {
+    "scenario": "training_set_audit_structure_map",
+    "title": "Phase evidence on the composition map",
+    "description": "Composition map after on-demand structural-phase analysis.",
+    "output": "docs/source/_static/image/generated/training_set_audit_structure_map.png",
+    "window_size": [
+      1440,
+      860
+    ],
+    "sha256": "6622a86c4c7f260d1d9f7498434bec2eb0c2625bfecff51441d1278e72baf7dd"
   }
 }

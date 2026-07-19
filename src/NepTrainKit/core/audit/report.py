@@ -61,6 +61,9 @@ def _render_kv_list(items: Iterable[tuple[str, object]], empty_text: str) -> str
 
 
 def _render_finding(finding: AuditFinding) -> str:
+    actions = "".join(
+        f'<li>{escape(action.label)}</li>' for action in finding.actions
+    )
     return (
         '<section class="finding">'
         f"<h2>{escape(finding.title)}</h2>"
@@ -74,7 +77,50 @@ def _render_finding(finding: AuditFinding) -> str:
         f"<p><strong>Conclusion / Interpretation</strong>: {escape(finding.conclusion)}</p>"
         f"<p><strong>Rule</strong>: {escape(finding.rule)}</p>"
         f"<p><strong>Limit</strong>: {escape(finding.limit)}</p>"
-        "</section>"
+        + (
+            '<div class="finding-action"><strong>Next action</strong><ul>'
+            f"{actions}</ul></div>"
+            if actions
+            else ""
+        )
+        + "</section>"
+    )
+
+
+def _render_priority_finding(finding: AuditFinding, rank: int) -> str:
+    action = (
+        finding.actions[0].label
+        if finding.actions
+        else "Inspect the affected structures and confirm whether they are intentional."
+    )
+    return (
+        '<article class="priority-item">'
+        f'<span class="priority-rank">{rank}</span>'
+        '<div class="priority-copy">'
+        f'<div class="priority-heading"><h3>{escape(finding.title)}</h3>'
+        f'<span class="pill kind-{escape(finding.kind.value)}">{escape(finding.kind.value)}</span></div>'
+        f'<p>{escape(finding.observed)}</p>'
+        f'<p class="next-action"><strong>Next:</strong> {escape(action)}</p>'
+        '</div></article>'
+    )
+
+
+def _finding_group(
+    title: str,
+    description: str,
+    findings: tuple[AuditFinding, ...],
+    *,
+    open_by_default: bool,
+) -> str:
+    if not findings:
+        return ""
+    open_attribute = " open" if open_by_default else ""
+    return (
+        f'<details class="finding-group"{open_attribute}>'
+        f'<summary><span>{escape(title)}</span><strong>{len(findings)}</strong></summary>'
+        f'<p class="group-description">{escape(description)}</p>'
+        + "".join(_render_finding(item) for item in findings)
+        + "</details>"
     )
 
 
@@ -432,10 +478,96 @@ def render_audit_report_html(result: AuditResult) -> str:
         dimension_rows.append('<p class="muted">No dimensions were recorded.</p>')
 
     findings = canonical_findings(result)
-    if findings:
-        finding_html = "\n".join(_render_finding(item) for item in findings)
+    blockers = tuple(item for item in findings if item.kind.value == "blocker")
+    reviews = tuple(item for item in findings if item.kind.value == "review")
+    evidence = tuple(item for item in findings if item.kind.value == "evidence")
+    unavailable = tuple(item for item in findings if item.kind.value == "unavailable")
+
+    if blockers:
+        status_class = "status-blocker"
+        status_label = "Action required before training"
+        status_copy = (
+            f"Resolve {len(blockers)} blocking finding"
+            f"{'s' if len(blockers) != 1 else ''} first, then review the remaining evidence."
+        )
+    elif reviews:
+        status_class = "status-review"
+        status_label = "Review recommended before training"
+        status_copy = (
+            f"No blockers were found. Check {len(reviews)} review group"
+            f"{'s' if len(reviews) != 1 else ''} before deciding whether the dataset is ready."
+        )
     else:
-        finding_html = '<p class="empty">No audit findings were generated.</p>'
+        status_class = "status-clear"
+        status_label = "No blocking issues found"
+        status_copy = (
+            "The deterministic checks did not produce a blocker or review group. "
+            "This is not a guarantee of global coverage."
+        )
+
+    structure_count = (
+        result.inventory.structure_count
+        if result.inventory is not None
+        else int(result.overview_metrics.get("structures", result.inputs.get("structure_count", 0)) or 0)
+    )
+    composition_count = (
+        len(result.inventory.composition_points) if result.inventory is not None else 0
+    )
+    phase_summary = (
+        f"{result.phase_inventory.analyzed_structure_count:,} / {result.phase_inventory.source_structure_count:,}"
+        if result.phase_inventory is not None
+        else "Not run"
+    )
+    if result.magnetic_inventory is None:
+        magnetic_summary = "Not run"
+    elif result.magnetic_inventory.analyzed_structure_count:
+        magnetic_summary = (
+            f"{result.magnetic_inventory.analyzed_structure_count:,} / "
+            f"{result.magnetic_inventory.source_structure_count:,}"
+        )
+    else:
+        magnetic_summary = "No spin data"
+
+    priorities = (blockers + reviews)[:3]
+    if priorities:
+        priority_html = "".join(
+            _render_priority_finding(item, rank)
+            for rank, item in enumerate(priorities, start=1)
+        )
+    else:
+        priority_html = (
+            '<div class="empty-state"><strong>No immediate action was generated.</strong>'
+            '<span>Use the dataset map and detailed evidence below for context.</span></div>'
+        )
+
+    finding_groups = "".join(
+        (
+            _finding_group(
+                "Required action",
+                "These findings can invalidate or materially weaken the intended training set.",
+                blockers,
+                open_by_default=True,
+            ),
+            _finding_group(
+                "Review next",
+                "These groups deserve inspection, but are not automatic deletion recommendations.",
+                reviews,
+                open_by_default=False,
+            ),
+            _finding_group(
+                "Supporting evidence",
+                "Deterministic dataset observations that provide context rather than a pass/fail verdict.",
+                evidence,
+                open_by_default=False,
+            ),
+            _finding_group(
+                "Unavailable checks",
+                "Checks that could not be evaluated from the fields present in this dataset.",
+                unavailable,
+                open_by_default=False,
+            ),
+        )
+    ) or '<p class="empty">No audit findings were generated.</p>'
 
     return (
         "<!doctype html>\n"
@@ -446,14 +578,40 @@ def render_audit_report_html(result: AuditResult) -> str:
         "  <title>Training Set Audit Report</title>\n"
         "  <style>\n"
         "    :root { color-scheme: light; }\n"
-        "    body { margin: 0; padding: 32px; background: #f6f7f8; color: #182026; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; }\n"
-        "    .report { max-width: 1100px; margin: 0 auto; }\n"
-        "    h1 { margin: 0 0 12px; font-size: 30px; line-height: 1.1; }\n"
-        "    h2 { margin: 0 0 10px; font-size: 19px; }\n"
-        "    .subtitle { margin: 0 0 20px; color: #52606d; }\n"
-        "    .card, .finding { background: #fff; border: 1px solid #d8dee4; border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(16, 24, 40, 0.03); }\n"
-        "    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }\n"
-        "    .section-title { margin: 0 0 10px; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; }\n"
+        "    * { box-sizing: border-box; }\n"
+        "    body { margin: 0; padding: 36px 24px 64px; background: #f4f7f7; color: #16252a; font: 16px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; }\n"
+        "    .report { max-width: 1080px; margin: 0 auto; }\n"
+        "    h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 38px); line-height: 1.12; letter-spacing: -.025em; }\n"
+        "    h2 { margin: 0 0 10px; font-size: 21px; }\n"
+        "    h3 { margin: 0; font-size: 17px; line-height: 1.35; }\n"
+        "    .subtitle { margin: 0; color: #5c6c72; }\n"
+        "    .report-header { display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 24px; }\n"
+        "    .report-meta { color: #5c6c72; font-size: 14px; text-align: right; }\n"
+        "    .card, .finding, .finding-group { background: #fff; border: 1px solid #d6e0e2; border-radius: 14px; box-shadow: 0 4px 18px rgba(29, 54, 60, .045); }\n"
+        "    .card { padding: 22px; margin-bottom: 18px; }\n"
+        "    .section-heading { margin-bottom: 14px; }\n"
+        "    .section-heading p { margin: 4px 0 0; color: #64767c; }\n"
+        "    .section-title { margin: 0 0 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #5f7379; }\n"
+        "    .status-banner { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; padding: 20px 22px; margin-bottom: 16px; border: 1px solid; border-radius: 14px; }\n"
+        "    .status-banner::before { content: \"\"; width: 12px; height: 12px; margin-top: 7px; border-radius: 50%; background: currentColor; }\n"
+        "    .status-banner strong { display: block; font-size: 22px; line-height: 1.3; color: #16252a; }\n"
+        "    .status-banner p { margin: 4px 0 0; color: #42565d; }\n"
+        "    .status-blocker { color: #b42318; background: #fff2f0; border-color: #f0b5ae; }\n"
+        "    .status-review { color: #a15c00; background: #fff8e7; border-color: #ecd391; }\n"
+        "    .status-clear { color: #13795b; background: #edf9f4; border-color: #a8d9c8; }\n"
+        "    .metric-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin-bottom: 18px; }\n"
+        "    .metric { min-height: 98px; padding: 14px; background: #fff; border: 1px solid #d6e0e2; border-radius: 12px; }\n"
+        "    .metric span { display: block; min-height: 38px; color: #64767c; font-size: 13px; line-height: 1.35; }\n"
+        "    .metric strong { display: block; margin-top: 7px; font-size: 22px; line-height: 1.2; }\n"
+        "    .priority-list { display: grid; gap: 0; }\n"
+        "    .priority-item { display: grid; grid-template-columns: 34px 1fr; gap: 14px; padding: 17px 0; border-top: 1px solid #e6edef; }\n"
+        "    .priority-item:first-child { padding-top: 2px; border-top: 0; }\n"
+        "    .priority-rank { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: #173f48; color: #fff; font-weight: 700; }\n"
+        "    .priority-heading { display: flex; justify-content: space-between; gap: 12px; align-items: start; }\n"
+        "    .priority-copy p { margin: 7px 0 0; color: #50636a; }\n"
+        "    .priority-copy .next-action { color: #21383f; }\n"
+        "    .empty-state { display: flex; flex-direction: column; gap: 4px; padding: 18px; background: #f3f8f7; border-radius: 10px; color: #50636a; }\n"
+        "    .empty-state strong { color: #183a34; }\n"
         "    .kv-row, .metric-row, .dimension-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #edf1f4; }\n"
         "    .kv-row:last-child, .metric-row:last-child, .dimension-row:last-child { border-bottom: 0; padding-bottom: 0; }\n"
         "    .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }\n"
@@ -463,7 +621,20 @@ def render_audit_report_html(result: AuditResult) -> str:
         "    .kind-evidence { background: #e0f2fe; border-color: #7dd3fc; color: #075985; }\n"
         "    .muted { color: #64748b; }\n"
         "    .empty { color: #52606d; font-style: italic; }\n"
-        "    .note { margin-top: 8px; padding: 10px 12px; border-left: 3px solid #205a69; background: #eef6f7; color: #174c58; border-radius: 6px; }\n"
+        "    .note { margin: 14px 0 0; padding: 11px 13px; border-left: 3px solid #2b6874; background: #eef6f7; color: #174c58; border-radius: 7px; font-size: 14px; }\n"
+        "    .finding-groups { display: grid; gap: 12px; margin-bottom: 18px; }\n"
+        "    .finding-group { padding: 0 20px; }\n"
+        "    .finding-group > summary, .dataset-details > summary, .technical-details > summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 18px 0; font-size: 18px; font-weight: 700; }\n"
+        "    .finding-group > summary::-webkit-details-marker, .dataset-details > summary::-webkit-details-marker, .technical-details > summary::-webkit-details-marker { display: none; }\n"
+        "    .finding-group > summary strong { display: grid; place-items: center; min-width: 30px; height: 26px; border-radius: 999px; background: #edf3f4; color: #3f555c; font-size: 13px; }\n"
+        "    .group-description { margin: -8px 0 16px; color: #64767c; }\n"
+        "    .finding { margin-bottom: 14px; padding: 18px; box-shadow: none; }\n"
+        "    .finding-action { margin-top: 14px; padding: 12px 14px; background: #f1f7f7; border-radius: 8px; }\n"
+        "    .finding-action ul { margin: 5px 0 0; padding-left: 20px; }\n"
+        "    .dataset-details, .technical-details { padding: 0 22px 20px; }\n"
+        "    .details-body { padding-top: 2px; border-top: 1px solid #e6edef; }\n"
+        "    .technical-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; padding-top: 18px; }\n"
+        "    .technical-block { min-width: 0; }\n"
         "    .table-wrap { overflow-x: auto; }\n"
         "    .phase-map-heading { display: flex; justify-content: space-between; gap: 12px; margin: 18px 0 8px; }\n"
         "    .phase-map-heading span { color: #64748b; font-size: 12px; }\n"
@@ -484,57 +655,50 @@ def render_audit_report_html(result: AuditResult) -> str:
         "    table { width: 100%; border-collapse: collapse; }\n"
         "    th, td { padding: 8px; text-align: left; border-bottom: 1px solid #edf1f4; }\n"
         "    th { color: #52606d; font-size: 12px; }\n"
-        "    @media (max-width: 900px) { body { padding: 18px; } .grid { grid-template-columns: 1fr; } }\n"
+        "    @media (max-width: 900px) { .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }\n"
+        "    @media (max-width: 640px) { body { padding: 20px 12px 40px; } .report-header { display: block; } .report-meta { margin-top: 10px; text-align: left; } .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .technical-grid { grid-template-columns: 1fr; } .priority-heading { display: block; } .priority-heading .pill { margin-top: 8px; } .phase-map-heading { display: block; } }\n"
         "  </style>\n"
         "</head>\n"
         "<body>\n"
         '  <main class="report">\n'
-        "    <h1>Training Set Audit Report</h1>\n"
-        '    <p class="subtitle">Static export of the current audit result.</p>\n'
+        '    <header class="report-header">\n'
+        '      <div><h1>Training Set Audit Report</h1>\n'
+        '      <p class="subtitle">Decision summary first; evidence and provenance remain available below.</p></div>\n'
+        f'      <div class="report-meta"><strong>{escape(result.dataset_id)}</strong><br>{escape(result.generated_at)}</div>\n'
+        '    </header>\n'
+        f'    <section class="status-banner {status_class}"><div><strong>{escape(status_label)}</strong>'
+        f'<p>{escape(status_copy)}</p></div></section>\n'
+        '    <section class="metric-grid" aria-label="Audit summary">\n'
+        f'      <div class="metric"><span>Structures</span><strong>{structure_count:,}</strong></div>\n'
+        f'      <div class="metric"><span>Exact compositions</span><strong>{composition_count:,}</strong></div>\n'
+        f'      <div class="metric"><span>Blocking findings</span><strong>{len(blockers)}</strong></div>\n'
+        f'      <div class="metric"><span>Review groups</span><strong>{len(reviews)}</strong></div>\n'
+        f'      <div class="metric"><span>Phase analyzed</span><strong>{escape(phase_summary)}</strong></div>\n'
+        f'      <div class="metric"><span>Spin analyzed</span><strong>{escape(magnetic_summary)}</strong></div>\n'
+        '    </section>\n'
         '    <section class="card">\n'
-        '      <div class="grid">\n'
-        '        <div>\n'
-        '          <div class="section-title">Dataset</div>\n'
-        f'          <div>{escape(result.dataset_id)}</div>\n'
-        "        </div>\n"
-        "        <div>\n"
-        '          <div class="section-title">Generated</div>\n'
-        f'          <div>{escape(result.generated_at)}</div>\n'
-        "        </div>\n"
-        "        <div>\n"
-        '          <div class="section-title">Inputs</div>\n'
-        f'          <div>{escape(str(result.inputs.get("structure_count", "n/a")))}</div>\n'
-        "        </div>\n"
-        "      </div>\n"
+        '      <div class="section-heading"><h2>Start here</h2><p>Highest-priority checks and the next concrete action.</p></div>\n'
+        f'      <div class="priority-list">{priority_html}</div>\n'
         f'      <p class="note">{escape(DISCLAIMER)}</p>\n'
-        "    </section>\n"
-        '    <section class="card">\n'
-        '      <div class="section-title">Dataset inventory</div>\n'
+        '    </section>\n'
+        f'    <section class="finding-groups" aria-label="Detailed findings">{finding_groups}</section>\n'
+        '    <details class="card dataset-details">\n'
+        '      <summary><span>Dataset inventory and phase / magnetic maps</span><span class="muted">Open evidence</span></summary>\n'
+        '      <div class="details-body"><div class="section-title">Dataset inventory</div>\n'
         f"{_render_inventory(result)}\n"
         f"{_render_phase_composition_maps(result)}\n"
         f"{_render_magnetic_composition_maps(result)}\n"
-        f"{_render_magnetic_cross_evidence(result)}\n"
-        "    </section>\n"
-        '    <section class="card">\n'
-        '      <div class="section-title">Inputs</div>\n'
-        f"{inputs_rows}\n"
-        "    </section>\n"
-        '    <section class="card">\n'
-        '      <div class="section-title">Dimensions</div>\n'
-        f"{''.join(dimension_rows)}\n"
-        "    </section>\n"
-        '    <section class="card">\n'
-        '      <div class="section-title">Run identity</div>\n'
-        f"{fingerprint_rows}\n"
-        "    </section>\n"
-        '    <section class="card">\n'
-        '      <div class="section-title">Overview metrics</div>\n'
-        f"{overview_rows}\n"
-        "    </section>\n"
-        '    <section class="card">\n'
-        '      <div class="section-title">Findings</div>\n'
-        f"{finding_html}\n"
-        "    </section>\n"
+        f"{_render_magnetic_cross_evidence(result)}</div>\n"
+        "    </details>\n"
+        '    <details class="card technical-details">\n'
+        '      <summary><span>Technical provenance</span><span class="muted">Inputs, checks and fingerprints</span></summary>\n'
+        '      <div class="details-body technical-grid">\n'
+        f'        <div class="technical-block"><div class="section-title">Inputs</div>{inputs_rows}</div>\n'
+        f'        <div class="technical-block"><div class="section-title">Dimensions</div>{"".join(dimension_rows)}</div>\n'
+        f'        <div class="technical-block"><div class="section-title">Run identity</div>{fingerprint_rows}</div>\n'
+        f'        <div class="technical-block"><div class="section-title">Overview metrics</div>{overview_rows}</div>\n'
+        "      </div>\n"
+        "    </details>\n"
         "  </main>\n"
         "</body>\n"
         "</html>\n"

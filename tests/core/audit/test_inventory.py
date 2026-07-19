@@ -35,6 +35,7 @@ def test_inventory_merges_equivalent_compositions_across_supercell_sizes():
     assert mixed.structure_indices == (2, 8)
     assert mixed.atom_counts == ((16, 1), (32, 1))
     assert mixed.config_types == (("bulk", 1), ("vacancy", 1))
+    assert mixed.config_type_indices == (("bulk", (2,)), ("vacancy", (8,)))
 
 
 def test_target_comparison_uses_only_explicit_count_rule():
@@ -97,3 +98,54 @@ def test_target_comparison_aggregates_multinary_points_with_same_element_fractio
     assert cells[0].status == TargetSupportStatus.SUPPORTED
     assert cells[0].observed_count == 2
     assert cells[0].structure_indices == (0, 1)
+
+
+def test_target_without_quantity_rule_only_checks_exact_sample_presence():
+    inventory = build_dataset_inventory(
+        [_record(0, fe=16, ni=0, atoms=16, formula="Fe16")]
+    )
+
+    cells = compare_composition_target(
+        inventory,
+        CompositionTarget(
+            element="Ni",
+            minimum=0.0,
+            maximum=0.5,
+            key_points=(0.0, 0.25),
+        ),
+    )
+
+    assert [cell.status for cell in cells] == [
+        TargetSupportStatus.SUPPORTED,
+        TargetSupportStatus.NO_SAMPLE,
+    ]
+
+
+def test_target_config_type_distinguishes_absent_and_missing_metadata():
+    inventory = build_dataset_inventory(
+        [
+            _record(0, fe=16, ni=0, atoms=16, formula="Fe16", config_type="bulk"),
+            _record(1, fe=16, ni=0, atoms=16, formula="Fe16", config_type=""),
+            _record(2, fe=14, ni=2, atoms=16, formula="Fe14Ni2", config_type="bulk"),
+        ]
+    )
+
+    cells = compare_composition_target(
+        inventory,
+        CompositionTarget(
+            element="Ni",
+            minimum=0.0,
+            maximum=0.5,
+            key_points=(0.0, 0.125),
+            config_types=("bulk", "vacancy"),
+        ),
+    )
+
+    assert [cell.status for cell in cells] == [
+        TargetSupportStatus.SUPPORTED,
+        TargetSupportStatus.UNJUDGEABLE,
+        TargetSupportStatus.SUPPORTED,
+        TargetSupportStatus.NO_CONFIG_TYPE,
+    ]
+    assert cells[0].structure_indices == (0,)
+    assert cells[1].missing_config_type_count == 1

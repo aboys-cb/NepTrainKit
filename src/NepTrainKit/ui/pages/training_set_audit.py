@@ -17,6 +17,7 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QCheckBox,
     QFrame,
     QFormLayout,
     QGridLayout,
@@ -101,6 +102,7 @@ class TrainingSetAuditWidget(QWidget):
 
     selectStructuresSignal = Signal(list)
     rerunAuditSignal = Signal()
+    requestStructureEvidenceSignal = Signal()
     phaseAnalysisProgressSignal = Signal(int, int)
 
     def __init__(self, parent=None):
@@ -108,6 +110,7 @@ class TrainingSetAuditWidget(QWidget):
         self.setObjectName("TrainingSetAuditWidget")
         self._result: AuditResult | None = None
         self._all_slices: list[AuditSlice] = []
+        self._all_topics: list[_AuditTopic] = []
         self._topics: list[_AuditTopic] = []
         self._dimensions: dict[str, AuditDimension] = {}
         self._active_plots: list[dict[str, Any]] = []
@@ -118,7 +121,10 @@ class TrainingSetAuditWidget(QWidget):
         self._selected_magnetic_indices: list[int] = []
         self._selected_composition_key: tuple[int, ...] | None = None
         self._selected_target_indices: list[int] = []
-        self._review_states: dict[str, str] = {}
+        self._review_states: dict[tuple[str, str], str] = {}
+        self._target_configured = False
+        self._target_dataset_fingerprint = ""
+        self._requested_composition_view = ""
         self._build_ui()
         self.phaseAnalysisProgressSignal.connect(
             self.update_phase_analysis_progress
@@ -250,8 +256,11 @@ class TrainingSetAuditWidget(QWidget):
         inventory_layout.addWidget(inventory_title)
         inventory_layout.addWidget(self.inventory_summary_label)
         inventory_layout.addWidget(self.composition_highlights_label, stretch=1)
+        self.composition_action_rows = QVBoxLayout()
+        self.composition_action_rows.setSpacing(4)
+        inventory_layout.addLayout(self.composition_action_rows)
         self.open_data_map_button = PushButton(
-            FluentIcon.VIEW, self.tr("Open composition and structure map"), self.inventory_panel
+            FluentIcon.VIEW, self.tr("View all exact composition points"), self.inventory_panel
         )
         self.open_data_map_button.clicked.connect(lambda: self.page_tabs.setCurrentIndex(1))
         inventory_layout.addWidget(self.open_data_map_button, alignment=Qt.AlignmentFlag.AlignRight)
@@ -412,23 +421,24 @@ class TrainingSetAuditWidget(QWidget):
         composition_text.addWidget(self.composition_map_hint)
         composition_header_layout.addLayout(composition_text, stretch=1)
         self.composition_element_selector = ComboBox(composition_header)
-        self.composition_element_selector.setMinimumWidth(100)
+        self.composition_element_selector.setFixedWidth(86)
         self.composition_element_selector.currentIndexChanged.connect(
             self._refresh_composition_map
         )
         composition_header_layout.addWidget(self.composition_element_selector)
-        self.composition_order_selector = ComboBox(composition_header)
-        self.composition_order_selector.setMinimumWidth(150)
-        self.composition_order_selector.addItem(
-            self.tr("Structural phase"), userData="structural"
-        )
-        self.composition_order_selector.addItem(
-            self.tr("Magnetic order"), userData="magnetic"
-        )
-        self.composition_order_selector.currentIndexChanged.connect(
+        self.composition_view_selector = ComboBox(composition_header)
+        self.composition_view_selector.setFixedWidth(170)
+        self.composition_view_selector.currentIndexChanged.connect(
             self._refresh_composition_map
         )
-        composition_header_layout.addWidget(self.composition_order_selector)
+        composition_header_layout.addWidget(self.composition_view_selector)
+        self.composition_evidence_button = PushButton(
+            self.tr("Analyze phases and magnetic order"), composition_header
+        )
+        self.composition_evidence_button.clicked.connect(
+            self._request_composition_structure_evidence
+        )
+        composition_header_layout.addWidget(self.composition_evidence_button)
         composition_layout.addWidget(composition_header)
 
         self.composition_splitter = QSplitter(
@@ -451,6 +461,10 @@ class TrainingSetAuditWidget(QWidget):
             Qt.TextInteractionFlag.TextSelectableByMouse
         )
         composition_visual_layout.addWidget(self.composition_phase_summary_label)
+        self.composition_map_progress = ProgressBar(composition_visual_panel)
+        self.composition_map_progress.setRange(0, 100)
+        self.composition_map_progress.hide()
+        composition_visual_layout.addWidget(self.composition_map_progress)
         self.composition_phase_progress = ProgressBar(composition_visual_panel)
         self.composition_phase_progress.setRange(0, 100)
         self.composition_phase_progress.hide()
@@ -475,14 +489,12 @@ class TrainingSetAuditWidget(QWidget):
 
         self.composition_table = TableWidget(composition_table_panel)
         self.composition_table.setObjectName("auditCompositionTable")
-        self.composition_table.setColumnCount(7)
+        self.composition_table.setColumnCount(5)
         self.composition_table.setHorizontalHeaderLabels(
             [
                 self.tr("Exact composition"),
                 self.tr("Structures"),
                 self.tr("Share"),
-                self.tr("Structural / magnetic order"),
-                self.tr("Evidence coverage"),
                 self.tr("Atom counts"),
                 self.tr("Configuration types"),
             ]
@@ -503,10 +515,6 @@ class TrainingSetAuditWidget(QWidget):
         composition_table_header.setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
         composition_table_header.setSectionResizeMode(3, QHeaderView.ResizeMode.Stretch)
         composition_table_header.setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
-        composition_table_header.setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
-        composition_table_header.setSectionResizeMode(6, QHeaderView.ResizeMode.Stretch)
-        self.composition_table.setColumnHidden(5, True)
-        self.composition_table.setColumnHidden(6, True)
         self.composition_table.itemSelectionChanged.connect(
             self._on_composition_table_selection_changed
         )
@@ -525,6 +533,8 @@ class TrainingSetAuditWidget(QWidget):
         self.composition_magnetic_selector.currentIndexChanged.connect(
             self._refresh_phase_drilldown
         )
+        self.composition_phase_selector.hide()
+        self.composition_magnetic_selector.hide()
         self.composition_show_button = PrimaryPushButton(
             self.tr("Show selected structures"), composition_table_panel
         )
@@ -566,6 +576,14 @@ class TrainingSetAuditWidget(QWidget):
         self.dimension_list.currentRowChanged.connect(self._apply_dimension_filter)
         rail_layout.addWidget(rail_title)
         rail_layout.addWidget(self.dimension_list, stretch=1)
+        self.analyze_structure_evidence_button = PushButton(
+            self.tr("Analyze structure evidence"), self.dimension_rail
+        )
+        self.analyze_structure_evidence_button.clicked.connect(
+            self.requestStructureEvidenceSignal.emit
+        )
+        rail_layout.addWidget(self.analyze_structure_evidence_button)
+        rail_layout.addWidget(self.composition_phase_progress)
         self.label_availability_title = QLabel(
             self.tr("Label availability"), self.dimension_rail
         )
@@ -744,13 +762,26 @@ class TrainingSetAuditWidget(QWidget):
         self.target_points_edit.setPlaceholderText(
             self.tr("Optional, e.g. 0, 12.5, 25, 37.5")
         )
+        self.target_config_types_edit = QLineEdit(self.target_definition_panel)
+        self.target_config_types_edit.setPlaceholderText(
+            self.tr("Optional exact config_type values, e.g. bulk, vacancy")
+        )
+        self.target_quantity_rule_check = QCheckBox(
+            self.tr("Use a minimum support rule"), self.target_definition_panel
+        )
         self.target_minimum_count_spin = QSpinBox(self.target_definition_panel)
         self.target_minimum_count_spin.setRange(1, 1_000_000_000)
         self.target_minimum_count_spin.setValue(1000)
+        self.target_minimum_count_spin.setEnabled(False)
+        self.target_quantity_rule_check.toggled.connect(
+            self.target_minimum_count_spin.setEnabled
+        )
         target_form.addRow(self.tr("Element"), self.target_element_selector)
         target_form.addRow(self.tr("Range"), self.target_minimum_spin)
         target_form.addRow(self.tr("to"), self.target_maximum_spin)
         target_form.addRow(self.tr("Key points (optional)"), self.target_points_edit)
+        target_form.addRow(self.tr("Structure families"), self.target_config_types_edit)
+        target_form.addRow(self.target_quantity_rule_check)
         target_form.addRow(self.tr("Minimum structures / point"), self.target_minimum_count_spin)
         target_definition_layout.addLayout(target_form, stretch=1)
         target_explanation = QVBoxLayout()
@@ -786,10 +817,11 @@ class TrainingSetAuditWidget(QWidget):
         self.target_chart.selectedGroupSignal.connect(self._on_target_group_selected)
         target_main.addWidget(self.target_chart, stretch=3)
         self.target_table = TableWidget(target_tab)
-        self.target_table.setColumnCount(5)
+        self.target_table.setColumnCount(6)
         self.target_table.setHorizontalHeaderLabels(
             [
                 self.tr("Composition point"),
+                self.tr("Structure family"),
                 self.tr("Status"),
                 self.tr("Observed"),
                 self.tr("Nearest point"),
@@ -890,6 +922,7 @@ class TrainingSetAuditWidget(QWidget):
     def _set_empty_state(self) -> None:
         self._result = None
         self._all_slices = []
+        self._all_topics = []
         self._topics = []
         self._dimensions = {}
         self._active_plots = []
@@ -909,6 +942,8 @@ class TrainingSetAuditWidget(QWidget):
         self.chart_selection_label.clear()
         self.chart_send_button.setEnabled(False)
         self.composition_element_selector.clear()
+        self.composition_view_selector.clear()
+        self.composition_evidence_button.hide()
         self.target_element_selector.clear()
         self.composition_chart.clear()
         self.composition_phase_summary_label.clear()
@@ -917,7 +952,14 @@ class TrainingSetAuditWidget(QWidget):
         self.target_chart.clear()
         self.composition_table.setRowCount(0)
         self.target_table.setRowCount(0)
-        self.target_result_summary_label.clear()
+        self._target_configured = False
+        self._target_dataset_fingerprint = ""
+        self._requested_composition_view = ""
+        self.target_result_summary_label.setText(
+            self.tr(
+                "No target has been set. The dataset inventory remains valid; define a range or key points before comparing support."
+            )
+        )
         self.composition_selection_label.clear()
         self.composition_phase_selector.clear()
         self.composition_phase_selector.setEnabled(False)
@@ -928,6 +970,7 @@ class TrainingSetAuditWidget(QWidget):
         self.target_show_button.setEnabled(False)
         self.inventory_summary_label.clear()
         self.composition_highlights_label.clear()
+        self._clear_layout(self.composition_action_rows)
         self.next_actions_label.clear()
         self.review_summary_label.clear()
         self.label_availability_value.clear()
@@ -969,6 +1012,12 @@ class TrainingSetAuditWidget(QWidget):
             return None
         return self._result.inventory
 
+    @staticmethod
+    def _dataset_state_key(result: AuditResult | None) -> str:
+        if result is None:
+            return ""
+        return result.fingerprints.dataset or result.dataset_id
+
     def _populate_inventory_views(self) -> None:
         inventory = self._inventory()
         preferred_composition_element = self.composition_element_selector.currentData()
@@ -996,12 +1045,76 @@ class TrainingSetAuditWidget(QWidget):
             )
         self.composition_element_selector.blockSignals(False)
         self.target_element_selector.blockSignals(False)
-        magnetic = self._result.magnetic_inventory if self._result is not None else None
-        magnetic_available = magnetic is not None and magnetic.analyzed_structure_count > 0
-        if not magnetic_available and self.composition_order_selector.currentData() == "magnetic":
-            self.composition_order_selector.setCurrentIndex(0)
+        phase_ready, magnetic_ready, _ = self._structure_evidence_state()
+        self.composition_phase_selector.setVisible(phase_ready)
+        self.composition_magnetic_selector.setVisible(magnetic_ready)
+        self._populate_composition_view_selector()
         self._refresh_composition_map()
-        self._apply_composition_target()
+        if self._target_configured:
+            self._apply_composition_target()
+        else:
+            self.target_table.setRowCount(0)
+            self.target_chart.clear()
+            self.target_result_summary_label.setText(
+                self.tr(
+                    "No target has been set. The dataset inventory remains valid; define a range or key points before comparing support."
+                )
+            )
+
+    def _structure_evidence_state(self) -> tuple[bool, bool, bool]:
+        if self._result is None:
+            return False, False, False
+        phase_ready = self._result.phase_inventory is not None
+        magnetic_ready = self._result.magnetic_inventory is not None
+        magnetic_meta = self._result.overview_metrics.get("magnetic_inventory", {})
+        no_spin = (
+            isinstance(magnetic_meta, Mapping)
+            and magnetic_meta.get("status") == "no-spin"
+        )
+        return phase_ready, magnetic_ready, no_spin
+
+    def _populate_composition_view_selector(self) -> None:
+        current_mode = self.composition_view_selector.currentData() or "count"
+        phase_ready, magnetic_ready, no_spin = self._structure_evidence_state()
+        self.composition_view_selector.blockSignals(True)
+        self.composition_view_selector.clear()
+        self.composition_view_selector.addItem(
+            self.tr("Sample counts"), userData="count"
+        )
+        if phase_ready:
+            self.composition_view_selector.addItem(
+                self.tr("Counts colored by structural phase"), userData="structural"
+            )
+        if magnetic_ready:
+            self.composition_view_selector.addItem(
+                self.tr("Counts colored by magnetic order"), userData="magnetic"
+            )
+        selected_index = self.composition_view_selector.findData(current_mode)
+        self.composition_view_selector.setCurrentIndex(max(0, selected_index))
+        self.composition_view_selector.blockSignals(False)
+
+        evidence_complete = phase_ready and (magnetic_ready or no_spin)
+        evidence_partial = phase_ready or magnetic_ready
+        self.composition_evidence_button.setVisible(not evidence_complete)
+        self.composition_evidence_button.setText(
+            self.tr("Analyze remaining evidence")
+            if evidence_partial
+            else self.tr("Analyze phases and magnetic order")
+        )
+        self.analyze_structure_evidence_button.setEnabled(not evidence_complete)
+        self.analyze_structure_evidence_button.setText(
+            self.tr("Structure evidence available")
+            if evidence_complete
+            else (
+                self.tr("Analyze remaining evidence")
+                if evidence_partial
+                else self.tr("Analyze structure evidence")
+            )
+        )
+
+    def _request_composition_structure_evidence(self) -> None:
+        self._requested_composition_view = "structural"
+        self.requestStructureEvidenceSignal.emit()
 
     @staticmethod
     def _composition_formula(elements: tuple[str, ...], fractions: tuple[float, ...]) -> str:
@@ -1035,41 +1148,54 @@ class TrainingSetAuditWidget(QWidget):
         if inventory is None or element not in inventory.elements:
             return None
         groups = self._element_fraction_groups(inventory, element)
-        mode = self.composition_order_selector.currentData() or "structural"
-        inventory_result = None
+        mode = self.composition_view_selector.currentData() or "count"
         labels_by_index: dict[int, str] = {}
-        if mode == "magnetic" and self._result is not None:
-            inventory_result = self._result.magnetic_inventory
-            if inventory_result is not None:
+        if mode == "structural" and self._result is not None:
+            phase_inventory = self._result.phase_inventory
+            if phase_inventory is not None:
                 labels_by_index = {
-                    structure.source_index: structure.order_label
-                    for point in inventory_result.composition_points
+                    structure.source_index: structure.phase_label
+                    for point in phase_inventory.composition_points
                     for structure in point.structures
                 }
             ordered_labels = (
-                "fm", "afm", "ferrimagnetic", "spin_spiral",
-                "noncollinear", "collinear_mixed", "spin_disordered", "low_moment",
+                "fcc", "bcc", "hcp", "l12", "c14", "c15", "unresolved"
+            )
+            display_name = self._phase_display_name
+            title = self.tr(
+                "Sample counts by {element} concentration, colored by structural phase"
+            ).format(element=element)
+            plot_id = f"inventory:composition-phase:{element}"
+        elif mode == "magnetic" and self._result is not None:
+            magnetic_inventory = self._result.magnetic_inventory
+            if magnetic_inventory is not None:
+                labels_by_index = {
+                    structure.source_index: structure.order_label
+                    for point in magnetic_inventory.composition_points
+                    for structure in point.structures
+                }
+            ordered_labels = (
+                "fm",
+                "afm",
+                "ferrimagnetic",
+                "spin_spiral",
+                "noncollinear",
+                "collinear_mixed",
+                "spin_disordered",
+                "low_moment",
+                "no_spin",
             )
             display_name = self._magnetic_display_name
             title = self.tr(
-                "Magnetic-order distribution by {element} concentration"
+                "Sample counts by {element} concentration, colored by magnetic order"
             ).format(element=element)
             plot_id = f"inventory:composition-magnetism:{element}"
         else:
-            inventory_result = self._result.phase_inventory if self._result is not None else None
-            if inventory_result is not None:
-                labels_by_index = {
-                    structure.source_index: structure.phase_label
-                    for point in inventory_result.composition_points
-                    for structure in point.structures
-                }
-            ordered_labels = ("fcc", "bcc", "hcp", "l12", "c14", "c15", "unresolved")
-            display_name = self._phase_display_name
-            title = self.tr(
-                "Phase distribution by {element} concentration"
-            ).format(element=element)
-            plot_id = f"inventory:composition-phase:{element}"
-        if inventory_result is not None and labels_by_index:
+            ordered_labels = ()
+            display_name = str
+            title = ""
+            plot_id = ""
+        if ordered_labels and labels_by_index:
             stacked_series = []
             for label in ordered_labels:
                 index_groups = tuple(
@@ -1078,7 +1204,10 @@ class TrainingSetAuditWidget(QWidget):
                             index
                             for point in points
                             for index in point.structure_indices
-                            if labels_by_index.get(index) == label
+                            if (
+                                labels_by_index.get(index) == label
+                                or (label == "no_spin" and index not in labels_by_index)
+                            )
                         )
                     )
                     for _, points in groups
@@ -1173,17 +1302,36 @@ class TrainingSetAuditWidget(QWidget):
             self.composition_phase_summary_label.hide()
             self.composition_table.setRowCount(0)
             return
-        self.composition_map_hint.setText(
-            self.tr(
+        hint = self.tr(
                 "{points} exact normalized composition points across {structures:,} structures. "
                 "Supercells with the same atomic fractions are merged."
             ).format(
                 points=len(inventory.composition_points),
                 structures=inventory.structure_count,
             )
-        )
+        if len(inventory.elements) > 2:
+            hint += " " + self.tr(
+                "This chart is a one-element projection; one plotted concentration may contain multiple exact multicomponent compositions."
+            )
+        mode = self.composition_view_selector.currentData() or "count"
+        if mode == "structural":
+            self.composition_phase_summary_label.setText(
+                self.tr(
+                    "Bar height is the sample count. Colored segments show the snapshot structural-phase shares within that concentration; click a segment to open those structures."
+                )
+            )
+            self.composition_phase_summary_label.show()
+        elif mode == "magnetic":
+            self.composition_phase_summary_label.setText(
+                self.tr(
+                    "Bar height is the sample count. Colored segments show the snapshot magnetic-order shares within that concentration; structures without a valid spin field remain a separate group. Click a segment to open those structures."
+                )
+            )
+            self.composition_phase_summary_label.show()
+        else:
+            self.composition_phase_summary_label.hide()
+        self.composition_map_hint.setText(hint)
         self.composition_chart.set_plot(self._composition_plot(element))
-        self._render_phase_summary()
         self._populate_composition_table(element)
 
     def _phase_display_name(self, label: str) -> str:
@@ -1207,6 +1355,7 @@ class TrainingSetAuditWidget(QWidget):
             "collinear_mixed": self.tr("Mixed collinear"),
             "spin_disordered": self.tr("Spin-disordered-like"),
             "low_moment": self.tr("Low / zero moment"),
+            "no_spin": self.tr("No valid spin field"),
         }.get(label, label)
 
     def _element_order_display_name(self, label: str) -> str:
@@ -1404,85 +1553,11 @@ class TrainingSetAuditWidget(QWidget):
             share_item = QTableWidgetItem(f"{point.share:.2%}")
             share_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
             self.composition_table.setItem(row, 2, share_item)
-            phase_point = self._phase_point_for_reduced_counts(point.reduced_counts)
-            if phase_point is None or not phase_point.structure_phase_fractions:
-                dominant_phase = "—"
-                phase_evidence = self.tr("Not analyzed")
-                phase_tooltip = ""
-            else:
-                phase_label, phase_fraction = phase_point.structure_phase_fractions[0]
-                if phase_fraction > 0.50:
-                    dominant_phase = self.tr("{phase} ({share:.0%})").format(
-                        phase=self._phase_display_name(phase_label),
-                        share=phase_fraction,
-                    )
-                else:
-                    dominant_phase = self.tr("Mixed ({phase} {share:.0%})").format(
-                        phase=self._phase_display_name(phase_label),
-                        share=phase_fraction,
-                    )
-                confidence = dict(phase_point.confidence_counts)
-                phase_evidence = self.tr("Strong {strong}/{analyzed} · analyzed all").format(
-                    strong=confidence.get("strong", 0),
-                    analyzed=phase_point.analyzed_structure_count,
-                )
-                phase_tooltip = " · ".join(
-                    f"{self._phase_display_name(label)} {fraction:.1%}"
-                    for label, fraction in phase_point.local_phase_fractions
-                )
-            magnetic_point = self._magnetic_point_for_reduced_counts(point.reduced_counts)
-            if self._result is None or self._result.magnetic_inventory is None:
-                dominant_magnetic = ""
-                magnetic_evidence = ""
-                magnetic_tooltip = ""
-            elif magnetic_point is None or not magnetic_point.order_fractions:
-                dominant_magnetic = self.tr("No spin")
-                magnetic_evidence = self.tr("spin 0/{count}").format(
-                    count=point.structure_count
-                )
-                magnetic_tooltip = self.tr("No valid per-atom spin:R:3 field")
-            else:
-                magnetic_label, magnetic_fraction = magnetic_point.order_fractions[0]
-                dominant_magnetic = self.tr("{order} ({share:.0%})").format(
-                    order=self._magnetic_display_name(magnetic_label),
-                    share=magnetic_fraction,
-                )
-                magnetic_evidence = self.tr("spin {analyzed}/{total}").format(
-                    analyzed=magnetic_point.analyzed_structure_count,
-                    total=magnetic_point.source_structure_count,
-                )
-                magnetic_tooltip = " · ".join(
-                    f"{self._magnetic_display_name(label)} {fraction:.1%}"
-                    for label, fraction in magnetic_point.order_fractions
-                )
-                magnetic_tooltip += self.tr(
-                    " · net {net:.2f} · collinearity {col:.2f} · q-peak {q:.2f}"
-                ).format(
-                    net=magnetic_point.mean_net_moment_ratio,
-                    col=magnetic_point.mean_collinearity,
-                    q=magnetic_point.mean_q_peak_strength,
-                )
-            dominant_item = QTableWidgetItem(
-                "  ·  ".join(filter(None, (dominant_phase, dominant_magnetic)))
-            )
-            dominant_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            dominant_item.setToolTip(
-                self.tr("Structural: {phase}\nMagnetic: {magnetic}").format(
-                    phase=phase_tooltip or dominant_phase,
-                    magnetic=magnetic_tooltip,
-                )
-            )
-            self.composition_table.setItem(row, 3, dominant_item)
-            evidence_item = QTableWidgetItem(
-                "  ·  ".join(filter(None, (phase_evidence, magnetic_evidence)))
-            )
-            evidence_item.setToolTip(f"{phase_tooltip}\n{magnetic_tooltip}")
-            self.composition_table.setItem(row, 4, evidence_item)
             atom_counts = ", ".join(
                 f"{count} atoms × {structures:,}"
                 for count, structures in point.atom_counts
             ) or "—"
-            self.composition_table.setItem(row, 5, QTableWidgetItem(atom_counts))
+            self.composition_table.setItem(row, 3, QTableWidgetItem(atom_counts))
             all_config_types = ", ".join(
                 f"{name} × {count:,}" for name, count in point.config_types
             )
@@ -1497,7 +1572,7 @@ class TrainingSetAuditWidget(QWidget):
                 visible_config_types or self.tr("Not labeled")
             )
             config_item.setToolTip(all_config_types)
-            self.composition_table.setItem(row, 6, config_item)
+            self.composition_table.setItem(row, 4, config_item)
             formula_item.setToolTip(
                 f"{self.tr('Atom counts')}: {atom_counts}\n"
                 f"{self.tr('Configuration types')}: "
@@ -1536,7 +1611,6 @@ class TrainingSetAuditWidget(QWidget):
             self.tr("Show {count:,} structures").format(count=count)
         )
         self.composition_show_button.setEnabled(bool(structure_indices))
-        self._render_phase_summary(structure_indices)
         self._refresh_phase_drilldown()
 
     def _selected_phase_evidence(self):
@@ -1628,18 +1702,37 @@ class TrainingSetAuditWidget(QWidget):
         self.composition_show_button.setEnabled(bool(selected_indices))
     def start_phase_analysis(self, total: int) -> None:
         del total
+        self.analyze_structure_evidence_button.setEnabled(False)
+        self.analyze_structure_evidence_button.setText(
+            self.tr("Analyzing structure evidence...")
+        )
+        self.composition_evidence_button.show()
+        self.composition_evidence_button.setEnabled(False)
+        self.composition_evidence_button.setText(
+            self.tr("Analyzing phases and magnetic order...")
+        )
         self.export_report_button.setEnabled(False)
         self.export_report_button.setToolTip(
             self.tr("Wait for complete structural and magnetic-order analysis before exporting the report.")
         )
         self.composition_phase_progress.setValue(0)
         self.composition_phase_progress.show()
-        self._render_phase_summary(tuple(self._selected_composition_indices))
+        self.composition_map_progress.setValue(0)
+        self.composition_map_progress.show()
+        self.analysis_status_label.setText(
+            self.tr("Structural and magnetic snapshot evidence is being analyzed on demand.")
+        )
+        self.composition_phase_summary_label.setText(
+            self.tr("Structural and magnetic snapshot evidence is being analyzed on demand.")
+        )
+        self.composition_phase_summary_label.show()
 
     def update_phase_analysis_progress(self, completed: int, total: int) -> None:
         total = max(1, int(total))
         completed = min(total, max(0, int(completed)))
-        self.composition_phase_progress.setValue(round(100 * completed / total))
+        progress = round(100 * completed / total)
+        self.composition_phase_progress.setValue(progress)
+        self.composition_map_progress.setValue(progress)
         if total == self._structure_count():
             progress_text = self.tr(
                 "Analyzing local phases: {completed:,}/{total:,} structures. "
@@ -1654,6 +1747,7 @@ class TrainingSetAuditWidget(QWidget):
                 total=total,
                 structures=self._structure_count(),
             )
+        self.analysis_status_label.setText(progress_text)
         self.composition_phase_summary_label.setText(progress_text)
         self.composition_phase_summary_label.show()
 
@@ -1665,8 +1759,20 @@ class TrainingSetAuditWidget(QWidget):
         self.export_report_button.setEnabled(True)
         self.export_report_button.setToolTip("")
         self.composition_phase_progress.hide()
+        self.composition_map_progress.hide()
+        self.analysis_status_label.setText(
+            self.tr("Structural and magnetic snapshot evidence is available.")
+        )
         self._update_summary()
         self._populate_inventory_views()
+        self.composition_evidence_button.setEnabled(True)
+        if self._requested_composition_view:
+            requested_index = self.composition_view_selector.findData(
+                self._requested_composition_view
+            )
+            if requested_index >= 0:
+                self.composition_view_selector.setCurrentIndex(requested_index)
+            self._requested_composition_view = ""
         self._sync_phase_dimension_item()
         self._sync_magnetic_dimension_item()
         if selected_key is not None:
@@ -1693,12 +1799,26 @@ class TrainingSetAuditWidget(QWidget):
             overview["magnetic_inventory"] = magnetic_meta
             self._result = replace(self._result, overview_metrics=overview)
         self.composition_phase_progress.hide()
+        self.composition_map_progress.hide()
+        self.analyze_structure_evidence_button.setEnabled(True)
+        self.analyze_structure_evidence_button.setText(
+            self.tr("Retry structure evidence")
+        )
+        self.composition_evidence_button.show()
+        self.composition_evidence_button.setEnabled(True)
+        self.composition_evidence_button.setText(
+            self.tr("Retry phases and magnetic order")
+        )
         self.export_report_button.setEnabled(True)
         self.export_report_button.setToolTip("")
+        self.analysis_status_label.setText(
+            self.tr("Structural or magnetic-order analysis failed: {message}").format(message=message)
+        )
         self.composition_phase_summary_label.setText(
             self.tr("Structural or magnetic-order analysis failed: {message}").format(message=message)
         )
         self.composition_phase_summary_label.show()
+        self._requested_composition_view = ""
         self._update_summary()
         self._sync_phase_dimension_item()
         self._sync_magnetic_dimension_item()
@@ -1724,7 +1844,7 @@ class TrainingSetAuditWidget(QWidget):
         state = self.review_state_selector.currentData()
         if topic is None or not isinstance(state, str):
             return
-        self._review_states[topic.id] = state
+        self._review_states[self._review_state_key(topic)] = state
         row = self.slice_table.currentRow()
         if row >= 0:
             self.slice_table.setItem(
@@ -1743,7 +1863,10 @@ class TrainingSetAuditWidget(QWidget):
                 for index in topic.structure_indices
             }
         )
-        decided = sum(topic.id in self._review_states for topic in self._topics)
+        decided = sum(
+            self._review_states.get(self._review_state_key(topic), "pending") != "pending"
+            for topic in self._topics
+        )
         data_quality = (
             self._result.overview_metrics.get("data_quality", {})
             if self._result is not None
@@ -1783,6 +1906,15 @@ class TrainingSetAuditWidget(QWidget):
                 values.append(value)
         return tuple(sorted(values))
 
+    def _parse_target_config_types(self) -> tuple[str, ...]:
+        return tuple(
+            dict.fromkeys(
+                token.strip()
+                for token in re.split(r"[,，;；]", self.target_config_types_edit.text())
+                if token.strip()
+            )
+        )
+
     def _apply_composition_target(self) -> None:
         inventory = self._inventory()
         element = self.target_element_selector.currentData()
@@ -1793,6 +1925,8 @@ class TrainingSetAuditWidget(QWidget):
                 self.tr("Load a dataset before comparing a target.")
             )
             return
+        self._target_configured = True
+        self._target_dataset_fingerprint = self._dataset_state_key(self._result)
         minimum = self.target_minimum_spin.value() / 100.0
         maximum = self.target_maximum_spin.value() / 100.0
         if maximum < minimum:
@@ -1815,8 +1949,8 @@ class TrainingSetAuditWidget(QWidget):
             )
             mode_summary = self.tr(
                 "No key points were entered. Showing {count} existing {element} fraction points "
-                "inside the selected range; this can reveal thin existing points, but not missing "
-                "points between them."
+                "inside the selected range. This is an inventory view and cannot reveal missing "
+                "points between existing samples."
             ).format(count=len(points), element=element)
         self.target_chart.set_plot(
             self._composition_plot(element, target_points=chart_target_points)
@@ -1830,70 +1964,109 @@ class TrainingSetAuditWidget(QWidget):
                 QTableWidgetItem(f"{minimum:.2%}–{maximum:.2%}"),
             )
             self.target_table.setItem(
-                0, 1, QTableWidgetItem(self.tr("No sample in range"))
+                0, 2, QTableWidgetItem(self.tr("No sample in range"))
             )
-            self.target_table.setItem(0, 2, QTableWidgetItem("0"))
-            self.target_table.setItem(0, 3, QTableWidgetItem("—"))
+            self.target_table.setItem(0, 1, QTableWidgetItem(self.tr("All structures")))
+            self.target_table.setItem(0, 3, QTableWidgetItem("0"))
+            self.target_table.setItem(0, 4, QTableWidgetItem("—"))
             self.target_table.setItem(
-                0, 4, QTableWidgetItem(self.tr("Plan sampling"))
+                0, 5, QTableWidgetItem(self.tr("Review nearby compositions"))
             )
             self.target_result_summary_label.setText(mode_summary)
             self._selected_target_indices = []
             self.target_selection_label.clear()
             self.target_show_button.setEnabled(False)
             return
+        config_types = self._parse_target_config_types()
+        minimum_structure_count = (
+            self.target_minimum_count_spin.value()
+            if self.target_quantity_rule_check.isChecked()
+            else None
+        )
         target = CompositionTarget(
             element=element,
             minimum=minimum,
             maximum=maximum,
             key_points=points,
-            minimum_structure_count=self.target_minimum_count_spin.value(),
+            minimum_structure_count=minimum_structure_count,
+            config_types=config_types,
         )
         cells = compare_composition_target(inventory, target)
         status_counts = {
             status: sum(cell.status == status for cell in cells)
             for status in TargetSupportStatus
         }
-        self.target_result_summary_label.setText(
-            mode_summary
-            + " "
-            + self.tr(
-                "Quantity rule met: {supported} · thin: {thin} · no exact sample: {missing}."
+        if minimum_structure_count is None:
+            rule_summary = self.tr(
+                "Minimum support rule is off. Exact samples: {supported} · no matching sample: {missing} · metadata incomplete: {unknown}."
             ).format(
                 supported=status_counts[TargetSupportStatus.SUPPORTED],
-                thin=status_counts[TargetSupportStatus.THIN],
-                missing=status_counts[TargetSupportStatus.NO_SAMPLE],
+                missing=status_counts[TargetSupportStatus.NO_SAMPLE]
+                + status_counts[TargetSupportStatus.NO_CONFIG_TYPE],
+                unknown=status_counts[TargetSupportStatus.UNJUDGEABLE],
             )
-        )
+        else:
+            rule_summary = self.tr(
+                "Using your rule of at least {minimum:,} structures per point: met {supported} · below rule {thin} · no matching sample {missing} · cannot fully evaluate {unknown}."
+            ).format(
+                minimum=minimum_structure_count,
+                supported=status_counts[TargetSupportStatus.SUPPORTED],
+                thin=status_counts[TargetSupportStatus.THIN],
+                missing=status_counts[TargetSupportStatus.NO_SAMPLE]
+                + status_counts[TargetSupportStatus.NO_CONFIG_TYPE],
+                unknown=status_counts[TargetSupportStatus.UNJUDGEABLE],
+            )
+        self.target_result_summary_label.setText(mode_summary + " " + rule_summary)
         self.target_table.clearContents()
         self.target_table.setRowCount(len(cells))
         status_text = {
-            TargetSupportStatus.SUPPORTED: self.tr("Quantity rule met"),
-            TargetSupportStatus.THIN: self.tr("Thin"),
-            TargetSupportStatus.NO_SAMPLE: self.tr("No exact sample"),
-            TargetSupportStatus.UNJUDGEABLE: self.tr("Cannot evaluate"),
+            TargetSupportStatus.SUPPORTED: (
+                self.tr("Meets your quantity rule")
+                if minimum_structure_count is not None
+                else self.tr("Exact samples available")
+            ),
+            TargetSupportStatus.THIN: self.tr("Below your quantity rule"),
+            TargetSupportStatus.NO_SAMPLE: self.tr("No exact composition sample"),
+            TargetSupportStatus.NO_CONFIG_TYPE: self.tr("No matching structure family"),
+            TargetSupportStatus.UNJUDGEABLE: self.tr(
+                "Metadata incomplete; cannot fully evaluate"
+            ),
         }
         for row, cell in enumerate(cells):
             self.target_table.setItem(row, 0, QTableWidgetItem(f"{cell.target_fraction:.2%}"))
-            self.target_table.setItem(row, 1, QTableWidgetItem(status_text[cell.status]))
-            self.target_table.setItem(row, 2, QTableWidgetItem(f"{cell.observed_count:,}"))
+            self.target_table.setItem(
+                row, 1, QTableWidgetItem(cell.config_type or self.tr("All structures"))
+            )
+            status_item = QTableWidgetItem(status_text[cell.status])
+            if cell.missing_config_type_count:
+                status_item.setToolTip(
+                    self.tr(
+                        "{count:,} structures at this composition have no usable config_type."
+                    ).format(count=cell.missing_config_type_count)
+                )
+            self.target_table.setItem(row, 2, status_item)
+            self.target_table.setItem(row, 3, QTableWidgetItem(f"{cell.observed_count:,}"))
             nearest = "—" if cell.nearest_fraction is None else f"{cell.nearest_fraction:.2%}"
-            self.target_table.setItem(row, 3, QTableWidgetItem(nearest))
+            self.target_table.setItem(row, 4, QTableWidgetItem(nearest))
             action = {
-                TargetSupportStatus.SUPPORTED: self.tr("Review structures"),
-                TargetSupportStatus.THIN: self.tr("Add structures"),
-                TargetSupportStatus.NO_SAMPLE: self.tr("Plan sampling"),
-                TargetSupportStatus.UNJUDGEABLE: self.tr("Check target"),
+                TargetSupportStatus.SUPPORTED: self.tr("View structures"),
+                TargetSupportStatus.THIN: self.tr("Review sources before deciding"),
+                TargetSupportStatus.NO_SAMPLE: self.tr("Review nearby compositions"),
+                TargetSupportStatus.NO_CONFIG_TYPE: self.tr(
+                    "Review structure-family plan"
+                ),
+                TargetSupportStatus.UNJUDGEABLE: self.tr("Inspect missing metadata"),
             }[cell.status]
             action_item = QTableWidgetItem(action)
             action_item.setData(Qt.ItemDataRole.UserRole, cell.structure_indices)
-            self.target_table.setItem(row, 4, action_item)
+            self.target_table.setItem(row, 5, action_item)
         if cells:
             self.target_table.selectRow(0)
+        self._update_summary()
 
     def _on_target_selection_changed(self) -> None:
         row = self.target_table.currentRow()
-        item = self.target_table.item(row, 4) if row >= 0 else None
+        item = self.target_table.item(row, 5) if row >= 0 else None
         value = item.data(Qt.ItemDataRole.UserRole) if item is not None else ()
         indices = value if isinstance(value, tuple) else ()
         self._selected_target_indices = list(indices)
@@ -1937,8 +2110,10 @@ class TrainingSetAuditWidget(QWidget):
         if not declared:
             self.model_empty_label.setText(
                 self.tr(
-                    "No prediction or error result is attached. Open Show NEP and calculate results, "
-                    "then return here to compare model errors by composition and review group."
+                    "No independent model evidence is attached. There are no reference and prediction values "
+                    "that have passed structure mapping and unit checks. Show NEP predictions on the current "
+                    "training data may be used for error browsing, but are not automatically treated as "
+                    "independent model validation evidence."
                 )
             )
             self.model_empty_label.setToolTip("")
@@ -1950,7 +2125,8 @@ class TrainingSetAuditWidget(QWidget):
                     "The model declares {declared} elements; this dataset contains {present}: {elements}. "
                     "The other {absent} model elements are absent, so their compositions and local environments "
                     "cannot be audited here. Neighbor analysis computes only present elements. This is informational "
-                    "and may be intentional for a subsystem or universal model. Model errors were not evaluated."
+                    "and may be intentional for a subsystem or universal model. Independent reference and prediction "
+                    "evidence has not been attached."
                 ).format(
                     declared=len(declared),
                     present=len(analyzed),
@@ -1967,7 +2143,7 @@ class TrainingSetAuditWidget(QWidget):
         self.model_empty_label.setText(
             self.tr(
                 "All {count} model-declared elements occur in this dataset: {elements}. "
-                "Model errors were not evaluated."
+                "Independent reference and prediction evidence has not been attached."
             ).format(count=len(declared), elements=present_text)
         )
         self.model_empty_label.setToolTip("")
@@ -1976,10 +2152,20 @@ class TrainingSetAuditWidget(QWidget):
         render_started = perf_counter()
         render_timings_ms: dict[str, float] = {}
         stage_started = perf_counter()
+        incoming_state_key = self._dataset_state_key(result)
+        if (
+            self._target_dataset_fingerprint
+            and self._target_dataset_fingerprint != incoming_state_key
+        ):
+            self._target_configured = False
+            self.target_table.setRowCount(0)
+            self.target_chart.clear()
+        self._target_dataset_fingerprint = incoming_state_key
         self._result = result
         self._all_slices = list(result.slices)
         self._dimensions = {dimension.id: dimension for dimension in result.dimensions}
-        self._topics = self._build_topics()
+        self._all_topics = self._build_topics()
+        self._topics = self._build_review_topics(self._all_topics)
         render_timings_ms["topic_prepare"] = (perf_counter() - stage_started) * 1000.0
         self._selected_chart_indices = []
         self._selected_composition_indices = []
@@ -2056,7 +2242,7 @@ class TrainingSetAuditWidget(QWidget):
             for dimension in result.dimensions:
                 status = self._status_text(dimension.status)
                 topic_count = sum(
-                    topic.dimension_id == dimension.id for topic in self._topics
+                    topic.dimension_id == dimension.id for topic in self._all_topics
                 )
                 item = QListWidgetItem(
                     f"{self._dimension_title(dimension.id)}\n"
@@ -2076,7 +2262,7 @@ class TrainingSetAuditWidget(QWidget):
                 seen.add(audit_slice.dimension_id)
                 topic_count = sum(
                     topic.dimension_id == audit_slice.dimension_id
-                    for topic in self._topics
+                    for topic in self._all_topics
                 )
                 item = QListWidgetItem(
                     f"{self._dimension_title(audit_slice.dimension_id)}\n"
@@ -2232,6 +2418,93 @@ class TrainingSetAuditWidget(QWidget):
         }
         topics.sort(key=lambda topic: priority.get(topic.category, 9))
         return topics
+
+    def _build_review_topics(
+        self, topics: list[_AuditTopic]
+    ) -> list[_AuditTopic]:
+        """Return only actionable work, expanding repeated geometry per group."""
+        actionable = [
+            topic for topic in topics if topic.category in {"blocker", "review"}
+        ]
+        duplicate_topic = next(
+            (
+                topic
+                for topic in actionable
+                if topic.id == "data_quality:exact_duplicates"
+            ),
+            None,
+        )
+        if duplicate_topic is None or self._result is None:
+            return actionable
+        data_quality = self._result.overview_metrics.get("data_quality", {})
+        duplicate_groups = (
+            data_quality.get("duplicate_groups", ())
+            if isinstance(data_quality, Mapping)
+            else ()
+        )
+        expanded: list[_AuditTopic] = []
+        for topic in actionable:
+            if topic is not duplicate_topic:
+                expanded.append(topic)
+                continue
+            for group_number, group in enumerate(duplicate_groups, start=1):
+                indices = tuple(sorted(int(index) for index in group))
+                expanded.append(
+                    replace(
+                        topic,
+                        id=f"{topic.id}:group:{group_number}",
+                        title=self.tr("Repeated geometry group {group}").format(
+                            group=group_number
+                        ),
+                        structure_indices=indices,
+                        observed=self.tr(
+                            "This repeated-geometry group contains {count} structures."
+                        ).format(count=len(indices)),
+                    )
+                )
+        return expanded
+
+    def _review_state_key(self, topic: _AuditTopic) -> tuple[str, str]:
+        return self._dataset_state_key(self._result), topic.id
+
+    def _review_state_options(
+        self, topic: _AuditTopic
+    ) -> tuple[tuple[str, str], ...]:
+        if topic.id.startswith("data_quality:exact_duplicates:group:"):
+            return (
+                (self.tr("Pending"), "pending"),
+                (self.tr("Intentionally retained"), "keep"),
+                (self.tr("Isolation candidate"), "isolate"),
+                (self.tr("Recalculation needed"), "recalculate"),
+            )
+        if topic.category == "blocker":
+            return (
+                (self.tr("Unresolved"), "pending"),
+                (self.tr("Resolved and rechecked"), "resolved"),
+            )
+        if topic.id == "data_quality:label_conflicts":
+            return (
+                (self.tr("Pending"), "pending"),
+                (self.tr("Trusted source identified"), "trusted_source"),
+                (self.tr("Recalculation needed"), "recalculate"),
+            )
+        return (
+            (self.tr("Pending"), "pending"),
+            (self.tr("Physically reasonable"), "keep"),
+            (self.tr("Inspect geometry"), "inspect_geometry"),
+        )
+
+    def _sync_review_state_selector(self, topic: _AuditTopic) -> None:
+        current_state = self._review_states.get(
+            self._review_state_key(topic), "pending"
+        )
+        self.review_state_selector.blockSignals(True)
+        self.review_state_selector.clear()
+        for label, value in self._review_state_options(topic):
+            self.review_state_selector.addItem(label, userData=value)
+        index = self.review_state_selector.findData(current_state)
+        self.review_state_selector.setCurrentIndex(max(0, index))
+        self.review_state_selector.blockSignals(False)
 
     def _topic_from_finding(self, finding, source_slices: tuple[AuditSlice, ...] = ()) -> _AuditTopic:
         category = {
@@ -2680,11 +2953,6 @@ class TrainingSetAuditWidget(QWidget):
     def _update_summary(self) -> None:
         blocker_topics = [topic for topic in self._topics if topic.category == "blocker"]
         review_topics = [topic for topic in self._topics if topic.category == "review"]
-        thin_topics = [
-            topic
-            for topic in self._topics
-            if topic.category in {"thin", "imbalance", "redundancy"}
-        ]
         attention_topics = blocker_topics + review_topics
         blocker_indices = {
             int(index)
@@ -2725,29 +2993,30 @@ class TrainingSetAuditWidget(QWidget):
             ).format(groups=len(review_topics), structures=len(review_indices))
         else:
             lead = self.tr("No structure group requires priority review from the current checks.")
-        if thin_topics:
-            distribution = self.tr(
-                "The data also contains {count} grouped low-frequency distribution signals."
-            ).format(count=len(thin_topics))
-        else:
-            distribution = self.tr("No populated low-frequency distribution signal was found.")
         complete_labels = total > 0 and all(count == total for count in counts.values())
         label_text = (
             self.tr("Energy, force, and virial labels are complete.")
             if complete_labels
             else self.tr("Some energy, force, or virial labels are missing; see Detailed data.")
         )
-        phase_text = self._phase_overview_sentence()
-        self.summary_conclusion_label.setText(
-            self.tr(
-                "{lead} {phase} {distribution} {labels} Model errors were not evaluated."
-            ).format(
-                lead=lead,
-                phase=phase_text,
-                distribution=distribution,
-                labels=label_text,
+        target_text = (
+            self.tr("A target has been set; see Target & model for the comparison.")
+            if self._target_configured
+            else self.tr(
+                "No target range is set, so this audit cannot judge real composition or structure-family gaps."
             )
         )
+        self.summary_conclusion_label.setText(
+            self.tr(
+                "{lead} {labels} {target} Independent model evidence has not been attached."
+            ).format(
+                lead=lead,
+                labels=label_text,
+                target=target_text,
+            )
+        )
+
+        self._clear_layout(self.composition_action_rows)
 
         if inventory is None:
             self.inventory_summary_label.setText(
@@ -2755,16 +3024,21 @@ class TrainingSetAuditWidget(QWidget):
             )
             self.composition_highlights_label.clear()
         else:
+            structures_text = self.tr("structures")
+            exact_points_text = self.tr("exact composition points")
+            atom_counts_text = self.tr("Atom counts")
+            main_points_text = self.tr("Main composition points")
+            pure_endpoints_text = self.tr("Pure-element endpoints")
             self.inventory_summary_label.setText(
                 "<div style='color:#425257'>"
                 f"<span style='font-size:16px; font-weight:600; color:#183b38'>"
-                f"{inventory.structure_count:,}</span> {escape(self.tr('structures'))}"
+                f"{inventory.structure_count:,}</span> {escape(structures_text)}"
                 "&nbsp;&nbsp;·&nbsp;&nbsp;"
                 f"<span style='font-size:16px; font-weight:600; color:#183b38'>"
                 f"{len(inventory.composition_points)}</span> "
-                f"{escape(self.tr('exact composition points'))}"
+                f"{escape(exact_points_text)}"
                 "&nbsp;&nbsp;·&nbsp;&nbsp;"
-                f"<span style='font-weight:600'>{escape(self.tr('Atom counts'))}</span> "
+                f"<span style='font-weight:600'>{escape(atom_counts_text)}</span> "
                 f"{escape(', '.join(f'{count} × {structures:,}' for count, structures in inventory.atom_counts) or '—')}"
                 "</div>"
             )
@@ -2803,7 +3077,7 @@ class TrainingSetAuditWidget(QWidget):
                     )
                 pure_summary = (
                     "<div style='margin-top:8px; padding-top:6px; color:#425257'>"
-                    f"<b>{escape(self.tr('Pure-element endpoints'))}</b>&nbsp;&nbsp;"
+                    f"<b>{escape(pure_endpoints_text)}</b>&nbsp;&nbsp;"
                     f"{escape('   ·   '.join(pure_items))}</div>"
                 )
             concentration = escape(
@@ -2813,11 +3087,49 @@ class TrainingSetAuditWidget(QWidget):
             )
             self.composition_highlights_label.setText(
                 "<div style='margin-top:8px'>"
-                f"<div style='font-weight:600; color:#243135'>{escape(self.tr('Main composition points'))}</div>"
+                f"<div style='font-weight:600; color:#243135'>{escape(main_points_text)}</div>"
                 f"<div style='color:#657579; margin-bottom:4px'>{concentration}</div>"
                 f"<table cellspacing='0' width='100%'>{rows}</table>"
                 f"{pure_summary}</div>"
             )
+            action_points = list(top_points)
+            known_keys = {point.reduced_counts for point in action_points}
+            action_points.extend(
+                point
+                for point in pure_points
+                if point.reduced_counts not in known_keys
+            )
+            for point in action_points:
+                row_widget = QWidget(self.inventory_panel)
+                row_layout = QHBoxLayout(row_widget)
+                row_layout.setContentsMargins(0, 0, 0, 0)
+                row_layout.setSpacing(8)
+                fact = QLabel(
+                    self.tr("{formula} · {count:,} structures · {share:.2%}").format(
+                        formula=self._composition_formula(
+                            inventory.elements, point.fractions
+                        ),
+                        count=point.structure_count,
+                        share=point.share,
+                    ),
+                    row_widget,
+                )
+                fact.setWordWrap(True)
+                action = PushButton(
+                    self.tr("View {count:,} structures").format(
+                        count=point.structure_count
+                    ),
+                    row_widget,
+                )
+                indices = list(point.structure_indices)
+                action.clicked.connect(
+                    lambda checked=False, selected=indices: self.selectStructuresSignal.emit(
+                        selected
+                    )
+                )
+                row_layout.addWidget(fact, stretch=1)
+                row_layout.addWidget(action)
+                self.composition_action_rows.addWidget(row_widget)
 
         data_quality = (
             self._result.overview_metrics.get("data_quality", {})
@@ -2851,16 +3163,20 @@ class TrainingSetAuditWidget(QWidget):
                 )
         else:
             next_steps.append(self.tr("1. No priority data-quality review is pending."))
+        next_steps.append(self.tr("2. Open a main composition point and verify its sources and structure types."))
         next_steps.append(
-            self.tr(
-                "2. Inspect how phase labels change with composition and open unresolved structures."
-            )
-        )
-        next_steps.append(
-            self.tr("3. Define the intended target range to expose missing or thin points.")
+            self.tr("3. Define the intended target range before judging missing or thin support.")
         )
         self.next_actions_label.setText("\n".join(next_steps))
         self.open_review_button.setEnabled(bool(self._topics))
+
+    @staticmethod
+    def _clear_layout(layout: QVBoxLayout) -> None:
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
 
     def _phase_overview_sentence(self) -> str:
         if self._result is None or self._result.phase_inventory is None:
@@ -3261,13 +3577,12 @@ class TrainingSetAuditWidget(QWidget):
             evidence_item = QTableWidgetItem(topic.observed)
             evidence_item.setToolTip(topic.observed)
             self.slice_table.setItem(row, 3, evidence_item)
-            state = self._review_states.get(topic.id, "pending")
-            state_labels = {
-                "pending": self.tr("Pending"),
-                "keep": self.tr("Keep"),
-                "exclude": self.tr("Exclude later"),
-                "duplicate": self.tr("Known duplicate"),
-            }
+            state = self._review_states.get(
+                self._review_state_key(topic), "pending"
+            )
+            state_labels = dict(
+                (value, label) for label, value in self._review_state_options(topic)
+            )
             self.slice_table.setItem(
                 row, 4, QTableWidgetItem(state_labels.get(state, state))
             )
@@ -3321,11 +3636,7 @@ class TrainingSetAuditWidget(QWidget):
         )
         self.send_button.setEnabled(bool(topic.structure_indices))
         self.view_distribution_button.setEnabled(bool(topic.plot_id))
-        state_index = self.review_state_selector.findData(
-            self._review_states.get(topic.id, "pending")
-        )
-        if state_index >= 0:
-            self.review_state_selector.setCurrentIndex(state_index)
+        self._sync_review_state_selector(topic)
 
     def _emit_selected_structures(self) -> None:
         topic = self._selected_topic()

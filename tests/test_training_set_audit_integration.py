@@ -213,6 +213,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             set_distribution_context=MagicMock(),
             show_distribution_explorer=MagicMock(),
         )
+        window._start_training_set_phase_analysis = MagicMock()
         window.stackedWidget = SimpleNamespace(setCurrentWidget=MagicMock())
         callbacks = {}
 
@@ -246,6 +247,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window.stackedWidget.setCurrentWidget.assert_called_with(
             window.training_set_audit_interface
         )
+        window._start_training_set_phase_analysis.assert_not_called()
 
     def test_main_window_reuses_unchanged_training_set_audit_result(self):
         window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
@@ -401,11 +403,14 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window.training_set_audit_interface = main_module.TrainingSetAuditWidget()
         window.handle_training_set_audit_selection = MagicMock()
         window.open_training_set_audit = MagicMock()
+        window._request_training_set_structure_evidence = MagicMock()
         main_module.NepTrainKitMainWindow._connect_training_set_audit_signals(window)
 
         window.training_set_audit_interface.rerunAuditSignal.emit()
+        window.training_set_audit_interface.requestStructureEvidenceSignal.emit()
 
         window.open_training_set_audit.assert_called_once_with(force=True)
+        window._request_training_set_structure_evidence.assert_called_once_with()
 
     def test_shipped_chinese_catalog_translates_audit_integration_contexts(self):
         catalog = (

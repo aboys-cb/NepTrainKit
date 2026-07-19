@@ -65,6 +65,7 @@ class TargetSupportStatus(str, Enum):
     SUPPORTED = "supported"
     THIN = "thin"
     NO_SAMPLE = "no_sample"
+    NO_CONFIG_TYPE = "no_config_type"
     UNJUDGEABLE = "unjudgeable"
 
 
@@ -116,6 +117,8 @@ class CompositionPoint:
     atom_counts: tuple[tuple[int, int], ...] = ()
     formula_variants: tuple[tuple[str, int], ...] = ()
     config_types: tuple[tuple[str, int], ...] = ()
+    config_type_indices: tuple[tuple[str, tuple[int, ...]], ...] = ()
+    missing_config_type_count: int = 0
 
 
 @dataclass(frozen=True)
@@ -325,6 +328,8 @@ class TargetSupportCell:
     observed_count: int
     structure_indices: tuple[int, ...] = ()
     nearest_fraction: float | None = None
+    config_type: str = ""
+    missing_config_type_count: int = 0
 
 
 @dataclass(frozen=True)

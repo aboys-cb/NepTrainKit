@@ -7,7 +7,7 @@ from pathlib import Path
 
 from PySide6.QtCore import QCoreApplication, QTranslator, Qt
 from PySide6.QtWidgets import QApplication, QLabel
-from qfluentwidgets import ComboBox, ListWidget, PrimaryPushButton, TableWidget
+from qfluentwidgets import ComboBox, ListWidget, PrimaryPushButton, PushButton, TableWidget
 
 from NepTrainKit.core.audit.result import (
     AuditBiasType,
@@ -215,11 +215,19 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.selectStructuresSignal.connect(selected.append)
 
         widget.set_result(result)
-        widget.composition_order_selector.setCurrentIndex(1)
 
-        self.assertIn("composition-magnetism", widget.composition_chart.plot_id)
-        self.assertIn("AFM-like", widget.composition_table.item(0, 3).text())
-        self.assertIn("snapshot-pattern classification", widget.composition_phase_summary_label.text())
+        self.assertEqual(widget.composition_chart.plot_id, "inventory:composition:Ni")
+        self.assertTrue(widget.composition_phase_summary_label.isHidden())
+        self.assertEqual(widget.analyze_structure_evidence_button.text(), "Analyze remaining evidence")
+        magnetic_view = widget.composition_view_selector.findData("magnetic")
+        self.assertGreaterEqual(magnetic_view, 0)
+        widget.composition_view_selector.setCurrentIndex(magnetic_view)
+        self.assertEqual(
+            widget.composition_chart.plot_id,
+            "inventory:composition-magnetism:Ni",
+        )
+        self.assertEqual(widget.composition_chart._plot["counts"], (1.0, 2.0))
+        self.assertIn("Bar height is the sample count", widget.composition_phase_summary_label.text())
         magnetic_row = next(
             row for row in range(widget.dimension_list.count())
             if widget.dimension_list.item(row).data(Qt.ItemDataRole.UserRole)
@@ -581,7 +589,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.metric_dimension_value.text(), "Fe · Ni")
         self.assertEqual(widget.metric_context_label.text(), "Label availability")
         self.assertEqual(widget.metric_context_value.text(), "E 100% · F 67% · V 0%")
-        self.assertEqual(widget.dimension_list.item(0).text(), "Overview\n2 topics")
+        self.assertEqual(widget.dimension_list.item(0).text(), "Overview\n1 topic")
         self.assertEqual(
             widget.dimension_list.item(1).text(),
             "Phases and local structure\nNot calculated",
@@ -605,11 +613,11 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.composition_splitter.orientation(), Qt.Orientation.Horizontal)
         self.assertEqual(widget.composition_splitter.count(), 2)
         self.assertFalse(widget.composition_table.isColumnHidden(0))
-        self.assertTrue(widget.composition_table.isColumnHidden(5))
-        self.assertTrue(widget.composition_table.isColumnHidden(6))
+        self.assertFalse(widget.composition_table.isColumnHidden(3))
+        self.assertFalse(widget.composition_table.isColumnHidden(4))
         self.assertIn("<table", widget.composition_highlights_label.text())
         self.assertEqual(widget.chart_widget.plot_id, "composition:Fe")
-        self.assertEqual(widget.slice_table.rowCount(), 2)
+        self.assertEqual(widget.slice_table.rowCount(), 1)
         self.assertEqual(widget.audit_header.objectName(), "auditHeader")
         self.assertEqual(widget.dimension_rail.objectName(), "auditDimensionRail")
         self.assertEqual(widget.metric_band.objectName(), "auditMetricBand")
@@ -659,7 +667,8 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.dimension_list.setCurrentRow(2)
         self.assertEqual(widget.plot_selector.count(), 2)
         self.assertEqual(widget.chart_widget.plot_id, "composition:Fe")
-        self.assertEqual(widget.slice_table.rowCount(), 2)
+        self.assertEqual(widget.slice_table.rowCount(), 1)
+        self.assertEqual(len(widget._all_topics), 2)
 
         widget.plot_selector.setCurrentIndex(1)
         self.assertEqual(widget.chart_widget.plot_id, "composition:O")
@@ -729,14 +738,20 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
 
         widget.set_result(result)
 
-        self.assertFalse(widget.composition_phase_summary_label.isHidden())
-        self.assertIn("FCC", widget.composition_phase_summary_label.text())
-        self.assertIn("Analyzed all 2 structures", widget.composition_phase_summary_label.text())
-        self.assertIn("does not predict thermodynamic stability", widget.composition_phase_summary_label.text())
-        self.assertEqual(widget.composition_chart._plot["kind"], "composition_phase_stacks")
-        self.assertEqual(widget.composition_table.columnCount(), 7)
-        self.assertIn(widget.composition_table.item(0, 3).text(), {"Mixed (BCC 50%)", "FCC (100%)"})
-        self.assertIn("analyzed all", widget.composition_table.item(0, 4).text())
+        self.assertTrue(widget.composition_phase_summary_label.isHidden())
+        self.assertEqual(widget.composition_chart._plot["kind"], "composition_stems")
+        self.assertEqual(widget.composition_table.columnCount(), 5)
+        self.assertIn("atoms", widget.composition_table.item(0, 3).text())
+        self.assertEqual(widget.analyze_structure_evidence_button.text(), "Analyze remaining evidence")
+        widget.composition_evidence_button.click()
+        widget.finish_phase_analysis(result)
+        self.assertEqual(widget.composition_view_selector.currentData(), "structural")
+        self.assertEqual(
+            widget.composition_chart.plot_id,
+            "inventory:composition-phase:Ni",
+        )
+        self.assertEqual(widget.composition_chart._plot["counts"], (1.0, 2.0))
+        self.assertIn("Bar height is the sample count", widget.composition_phase_summary_label.text())
 
         selected = []
         widget.selectStructuresSignal.connect(selected.append)
@@ -785,31 +800,35 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.update_phase_analysis_progress(2, 3)
 
         self.assertFalse(widget.composition_phase_progress.isHidden())
+        self.assertFalse(widget.composition_map_progress.isHidden())
         self.assertEqual(widget.composition_phase_progress.value(), 67)
-        self.assertIn("2/3 structures", widget.composition_phase_summary_label.text())
-        self.assertNotIn("sampled", widget.composition_phase_summary_label.text())
+        self.assertEqual(widget.composition_map_progress.value(), 67)
+        self.assertIn("2/3 structures", widget.analysis_status_label.text())
+        self.assertNotIn("sampled", widget.analysis_status_label.text())
         self.assertEqual(widget.composition_chart.plot_id, "inventory:composition:Ni")
         self.assertIn("Calculating all structures", widget.dimension_list.item(1).text())
 
     def test_composition_target_distinguishes_supported_thin_and_missing_points(self):
         widget = TrainingSetAuditWidget()
         widget.set_result(self._dashboard_result())
+        self.assertEqual(widget.target_table.rowCount(), 0)
+        self.assertIn("No target has been set", widget.target_result_summary_label.text())
         widget.target_points_edit.setText("0, 25, 50")
+        widget.target_quantity_rule_check.setChecked(True)
         widget.target_minimum_count_spin.setValue(2)
 
         widget.apply_target_button.click()
 
         self.assertEqual(widget.target_table.rowCount(), 3)
-        self.assertEqual(widget.target_table.item(0, 1).text(), "Thin")
-        self.assertEqual(widget.target_table.item(1, 1).text(), "No exact sample")
-        self.assertEqual(widget.target_table.item(2, 1).text(), "Quantity rule met")
+        self.assertEqual(widget.target_table.item(0, 2).text(), "Below your quantity rule")
+        self.assertEqual(widget.target_table.item(1, 2).text(), "No exact composition sample")
+        self.assertEqual(widget.target_table.item(2, 2).text(), "Meets your quantity rule")
         self.assertEqual(widget.target_chart.plot_id, "inventory:composition:Ni")
 
     def test_blank_target_key_points_uses_existing_fraction_points_in_range(self):
         widget = TrainingSetAuditWidget()
         widget.set_result(self._dashboard_result())
         widget.target_points_edit.clear()
-        widget.target_minimum_count_spin.setValue(2)
 
         widget.apply_target_button.click()
 
@@ -817,6 +836,42 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertIn("No key points were entered", widget.target_result_summary_label.text())
         self.assertEqual(widget.target_table.item(0, 0).text(), "0.00%")
         self.assertEqual(widget.target_table.item(1, 0).text(), "50.00%")
+
+    def test_target_structure_family_distinguishes_missing_metadata(self):
+        widget = TrainingSetAuditWidget()
+        result = replace(
+            self._dashboard_result(),
+            inventory=DatasetInventory(
+                structure_count=3,
+                elements=("Fe", "Ni"),
+                composition_points=(
+                    CompositionPoint(
+                        (1, 1),
+                        (0.5, 0.5),
+                        3,
+                        1.0,
+                        (0, 1, 2),
+                        config_types=(("bulk", 2),),
+                        config_type_indices=(("bulk", (0, 1)),),
+                        missing_config_type_count=1,
+                    ),
+                ),
+                config_types=(("bulk", 2),),
+                missing_config_type_count=1,
+            ),
+        )
+        widget.set_result(result)
+        widget.target_points_edit.setText("50")
+        widget.target_config_types_edit.setText("bulk, vacancy")
+
+        widget.apply_target_button.click()
+
+        self.assertEqual(widget.target_table.rowCount(), 2)
+        self.assertEqual(widget.target_table.item(0, 2).text(), "Exact samples available")
+        self.assertEqual(
+            widget.target_table.item(1, 2).text(),
+            "Metadata incomplete; cannot fully evaluate",
+        )
 
     def test_multinary_chart_aggregates_exact_compositions_at_same_element_fraction(self):
         widget = TrainingSetAuditWidget()
@@ -841,7 +896,8 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.composition_chart._plot["x_values"], (0.0, 0.25))
         self.assertEqual(widget.composition_chart._plot["counts"], (5.0, 4.0))
         self.assertEqual(widget.composition_table.rowCount(), 3)
-        self.assertEqual(widget.target_table.rowCount(), 2)
+        self.assertEqual(widget.target_table.rowCount(), 0)
+        self.assertIn("one-element projection", widget.composition_map_hint.text())
 
     def test_composition_table_hands_exact_point_indices_to_dataset_display(self):
         widget = TrainingSetAuditWidget()
@@ -851,6 +907,35 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
 
         widget.composition_table.selectRow(0)
         widget.composition_show_button.click()
+
+        self.assertEqual(received, [[1, 2]])
+
+    def test_composition_map_keeps_counts_default_and_requests_optional_evidence(self):
+        widget = TrainingSetAuditWidget()
+        requests = []
+        widget.requestStructureEvidenceSignal.connect(lambda: requests.append(True))
+
+        widget.set_result(self._dashboard_result())
+
+        self.assertEqual(widget.composition_view_selector.count(), 1)
+        self.assertEqual(widget.composition_view_selector.currentData(), "count")
+        self.assertFalse(widget.composition_evidence_button.isHidden())
+        widget.composition_evidence_button.click()
+        self.assertEqual(requests, [True])
+
+    def test_overview_main_composition_has_direct_structure_action(self):
+        widget = TrainingSetAuditWidget()
+        received = []
+        widget.selectStructuresSignal.connect(received.append)
+        widget.set_result(self._dashboard_result())
+
+        first_row = widget.composition_action_rows.itemAt(0).widget()
+        button = next(
+            child
+            for child in first_row.findChildren(PushButton)
+            if child.text().startswith("View ")
+        )
+        button.click()
 
         self.assertEqual(received, [[1, 2]])
 
@@ -888,9 +973,9 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             )
         )
 
-        self.assertEqual(widget.slice_table.rowCount(), 1)
-        self.assertEqual(widget.slice_table.item(0, 0).text(), "Thin distribution")
-        self.assertEqual(len(widget._topics[0].source_slices), 2)
+        self.assertEqual(widget.slice_table.rowCount(), 0)
+        self.assertEqual(len(widget._all_topics), 1)
+        self.assertEqual(len(widget._all_topics[0].source_slices), 2)
 
     def test_set_result_resets_to_summary_and_first_topic(self):
         widget = TrainingSetAuditWidget()
@@ -912,7 +997,56 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.page_tabs.currentIndex(), 0)
         self.assertEqual(widget.slice_table.currentRow(), 0)
         self.assertEqual(widget.selected_topic_label.text(), widget._topics[0].title)
+        self.assertEqual(widget.slice_table.rowCount(), 1)
+
+    def test_review_queue_expands_duplicate_groups_and_namespaces_states(self):
+        duplicate_slice = AuditSlice(
+            id="data_quality:exact_duplicates",
+            title="Repeated geometries",
+            dimension_id="data_quality",
+            severity=AuditSeverity.HIGH,
+            bias_type=AuditBiasType.REDUNDANCY,
+            finding_kind=AuditFindingKind.REVIEW,
+            structure_indices=(0, 1, 2, 3),
+            observed="Four structures belong to two repeated-geometry groups.",
+            interpretation="Review provenance.",
+            limit="Repeated structures may be intentional.",
+        )
+
+        def result(dataset_id):
+            return AuditResult(
+                dataset_id=dataset_id,
+                generated_at="now",
+                inputs={"structure_count": 4},
+                slices=(duplicate_slice,),
+                overview_metrics={
+                    "structures": 4,
+                    "data_quality": {
+                        "duplicate_group_count": 2,
+                        "duplicate_groups": ((0, 1), (2, 3)),
+                    },
+                },
+            )
+
+        widget = TrainingSetAuditWidget()
+        widget.set_result(result("first.xyz"))
+
         self.assertEqual(widget.slice_table.rowCount(), 2)
+        self.assertEqual(widget._topics[0].structure_indices, (0, 1))
+        self.assertEqual(widget._topics[1].structure_indices, (2, 3))
+        self.assertEqual(
+            [
+                widget.review_state_selector.itemData(index)
+                for index in range(widget.review_state_selector.count())
+            ],
+            ["pending", "keep", "isolate", "recalculate"],
+        )
+        widget.review_state_selector.setCurrentIndex(1)
+        widget.apply_review_state_button.click()
+        self.assertIn("Intentionally retained", widget.slice_table.item(0, 4).text())
+
+        widget.set_result(result("second.xyz"))
+        self.assertEqual(widget.slice_table.item(0, 4).text(), "Pending")
 
     def test_topic_categories_use_approved_foreground_colors(self):
         widget = TrainingSetAuditWidget()
@@ -947,11 +1081,10 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(
             widget.slice_table.item(0, 0).foreground().color().name(), "#a14d16"
         )
+        self.assertEqual(widget.slice_table.rowCount(), 1)
         self.assertEqual(
-            widget.slice_table.item(1, 0).foreground().color().name(), "#087f78"
-        )
-        self.assertEqual(
-            widget.slice_table.item(2, 0).foreground().color().name(), "#526267"
+            {topic.category for topic in widget._all_topics},
+            {"review", "thin", "info"},
         )
 
     def test_findings_columns_adapt_and_restore_without_horizontal_scrolling(self):
@@ -1118,6 +1251,12 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             self.assertEqual(widget.dimension_rail.findChild(QLabel, "panelTitle").text(), "检查项目")
             self.assertEqual(widget.rerun_button.text(), "重新检查")
             self.assertEqual(widget.export_report_button.text(), "导出 HTML 报告")
+            self.assertEqual(
+                widget.target_quantity_rule_check.text(), "启用最低支持量规则"
+            )
+            self.assertEqual(
+                widget.analyze_structure_evidence_button.text(), "分析结构证据"
+            )
             self.assertEqual(
                 QCoreApplication.translate(
                     "TrainingSetAuditWidget",
@@ -1295,12 +1434,14 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             widget.analysis_status_label.text(),
             "Available on labeled subsets only: force (2/3).",
         )
-        row = next(
-            row
-            for row in range(widget.slice_table.rowCount())
-            if widget.slice_table.item(row, 1).text() == long_title
+        self.assertIn(long_title, {topic.title for topic in widget._all_topics})
+        self.assertNotIn(
+            long_title,
+            {
+                widget.slice_table.item(row, 1).text()
+                for row in range(widget.slice_table.rowCount())
+            },
         )
-        self.assertEqual(widget.slice_table.item(row, 1).toolTip(), long_title)
 
     def test_set_result_populates_slice_table_and_evidence(self):
         widget = TrainingSetAuditWidget()
@@ -1395,9 +1536,9 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.set_result(result)
         widget.dimension_list.setCurrentRow(2)
 
-        self.assertEqual(widget.slice_table.rowCount(), 2)
+        self.assertEqual(widget.slice_table.rowCount(), 1)
+        self.assertEqual(len(widget._all_topics), 2)
         self.assertEqual(widget.slice_table.item(0, 0).text(), "Review")
-        self.assertEqual(widget.slice_table.item(1, 0).text(), "Thin distribution")
 
     def test_dimension_filter_defaults_to_all_dimensions(self):
         widget = TrainingSetAuditWidget()

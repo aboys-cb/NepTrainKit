@@ -175,6 +175,19 @@ class NepTrainKitMainWindow(FluentWindow):
         self.training_set_audit_interface.rerunAuditSignal.connect(
             lambda: self.open_training_set_audit(force=True)
         )
+        self.training_set_audit_interface.requestStructureEvidenceSignal.connect(
+            self._request_training_set_structure_evidence
+        )
+
+    def _request_training_set_structure_evidence(self) -> None:
+        """Run optional structure and magnetic evidence for the active audit."""
+        data = getattr(self, "_audited_result_data", None)
+        result = getattr(self, "_audited_result", None)
+        if data is None or result is None:
+            return
+        if getattr(self.show_nep_interface, "nep_result_data", None) is not data:
+            return
+        self._start_training_set_phase_analysis(data, result)
 
     def initWindow(self) -> None:
         """Configure top-level window parameters such as size and title."""
@@ -254,11 +267,6 @@ class NepTrainKitMainWindow(FluentWindow):
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
             self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
-            if (
-                getattr(cached_result, "phase_inventory", object()) is None
-                or getattr(cached_result, "magnetic_inventory", object()) is None
-            ):
-                self._start_training_set_phase_analysis(data, cached_result)
             return
         self.training_set_audit_interface.set_distribution_context(data=None)
         self.training_set_audit_interface.set_loading(dataset_id)
@@ -280,7 +288,6 @@ class NepTrainKitMainWindow(FluentWindow):
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
             self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
-            self._start_training_set_phase_analysis(data, result)
 
         def report_error(message: str) -> None:
             self._training_set_audit_thread = None
@@ -323,7 +330,11 @@ class NepTrainKitMainWindow(FluentWindow):
             return
         if (
             getattr(result, "phase_inventory", None) is not None
-            and getattr(result, "magnetic_inventory", None) is not None
+            and (
+                getattr(result, "magnetic_inventory", None) is not None
+                or result.overview_metrics.get("magnetic_inventory", {}).get("status")
+                == "no-spin"
+            )
         ):
             return
         if self._training_set_phase_result is result:

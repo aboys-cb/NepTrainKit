@@ -32,6 +32,7 @@ _PHASE_COLORS = {
     "collinear_mixed": QColor("#7B6D3D"),
     "spin_disordered": QColor("#89969A"),
     "low_moment": QColor("#C8D0D2"),
+    "no_spin": QColor("#E2E8EA"),
 }
 _EVIDENCE_COLORS = {
     "strong": QColor("#159A9C"),

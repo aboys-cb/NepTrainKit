@@ -191,13 +191,13 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
                 CompositionMagneticEvidence(
                     reduced_counts=(1, 1), source_structure_count=2,
                     analyzed_structure_count=2, missing_spin_count=0,
-                    order_fractions=(("afm", 0.5), ("spin_disordered", 0.5)),
+                    order_fractions=(("afm", 0.5), ("pm_like", 0.5)),
                     confidence_counts=(("strong", 2),),
                     mean_net_moment_ratio=0.05, mean_collinearity=0.7,
                     mean_q_peak_strength=0.55,
                     structures=(
                         self._magnetic_structure(1, "afm", 0.0, 1.0),
-                        self._magnetic_structure(2, "spin_disordered", 0.1, 0.1),
+                        self._magnetic_structure(2, "pm_like", 0.1, 0.1),
                     ),
                 ),
             ),
@@ -234,7 +234,13 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             == "magnetic_evidence"
         )
         widget.dimension_list.setCurrentRow(magnetic_row)
-        self.assertEqual(widget.plot_selector.count(), 4)
+        self.assertEqual(widget.plot_selector.count(), 1)
+        self.assertEqual(
+            widget._active_plots[0]["id"], "magnetic_evidence:overall"
+        )
+        self.assertEqual(
+            widget._active_plots[0]["kind"], "category_share_stacks"
+        )
         afm_index = widget.composition_magnetic_selector.findData("afm")
         widget.composition_magnetic_selector.setCurrentIndex(afm_index)
         widget._emit_composition_structures()
@@ -255,6 +261,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             ),
             replace(
                 self._magnetic_structure(1, "afm", 0.0, 1.0),
+                order_subtype="double_layered",
                 element_evidence=(
                     ElementMagneticEvidence(
                         element="Fe", atom_count=8, spin_atom_count=8,
@@ -277,7 +284,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
                 ),),
             ),
             replace(
-                self._magnetic_structure(2, "spin_disordered", 0.1, 0.1),
+                self._magnetic_structure(2, "pm_like", 0.1, 0.1),
                 element_evidence=(
                     ElementMagneticEvidence(
                         element="Fe", atom_count=8, spin_atom_count=8,
@@ -301,11 +308,11 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             ),
         )
         magnetic = MagneticInventory(
-            schema_version="magnetic-inventory-v2",
-            method_id="spin-order-sf-neighbor-element-v2",
+            schema_version="magnetic-inventory-v3",
+            method_id="spin-order-layer-afm-v3",
             analysis_strategy="all-spin-structures-v1",
-            source_structure_count=3, analyzed_structure_count=3,
-            missing_spin_count=0,
+            source_structure_count=3, analyzed_structure_count=2,
+            missing_spin_count=1,
             composition_points=(
                 CompositionMagneticEvidence(
                     reduced_counts=(1, 0), source_structure_count=1,
@@ -316,11 +323,11 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
                 ),
                 CompositionMagneticEvidence(
                     reduced_counts=(1, 1), source_structure_count=2,
-                    analyzed_structure_count=2, missing_spin_count=0,
-                    order_fractions=(("afm", 0.5), ("spin_disordered", 0.5)),
-                    confidence_counts=(("strong", 2),),
-                    mean_net_moment_ratio=0.05, mean_collinearity=0.7,
-                    mean_q_peak_strength=0.55, structures=magnetic_structures[1:],
+                    analyzed_structure_count=1, missing_spin_count=1,
+                    order_fractions=(("afm", 1.0),),
+                    confidence_counts=(("strong", 1),),
+                    mean_net_moment_ratio=0.0, mean_collinearity=1.0,
+                    mean_q_peak_strength=1.0, structures=(magnetic_structures[1],),
                 ),
             ),
         )
@@ -370,19 +377,44 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.dimension_list.setCurrentRow(magnetic_row)
 
         plot_ids = {plot["id"] for plot in widget._active_plots}
-        self.assertIn("magnetic_evidence:phase_order_joint", plot_ids)
-        self.assertIn("magnetic_evidence:element_local_order", plot_ids)
-        self.assertIn("magnetic_evidence:element_pair_coupling", plot_ids)
+        self.assertEqual(
+            plot_ids,
+            {
+                "magnetic_evidence:phase_to_order",
+                "magnetic_evidence:order_to_phase",
+                "magnetic_evidence:overall",
+            },
+        )
         widget._render_phase_summary()
         self.assertIn("Element-local spin patterns", widget.composition_phase_summary_label.text())
         self.assertIn("Fe", widget.composition_phase_summary_label.text())
         self.assertIn("Ni", widget.composition_phase_summary_label.text())
-        self.assertIn("Compensated (AFM-like) 67%", widget.composition_phase_summary_label.text())
-        joint_plot = next(
+        phase_to_order = next(
             plot for plot in widget._active_plots
-            if plot["id"] == "magnetic_evidence:phase_order_joint"
+            if plot["id"] == "magnetic_evidence:phase_to_order"
         )
-        self.assertTrue(any(label.startswith("FCC ·") for label in joint_plot["series"][0]["labels"]))
+        self.assertEqual(phase_to_order["kind"], "category_share_stacks")
+        double_layered = next(
+            series
+            for series in phase_to_order["series"]
+            if series["id"] == "afm_double_layered"
+        )
+        self.assertEqual(double_layered["structure_indices"][0], (1,))
+        no_spin = next(
+            series
+            for series in phase_to_order["series"]
+            if series["id"] == "no_spin"
+        )
+        self.assertEqual(no_spin["structure_indices"][1], (2,))
+        order_to_phase = next(
+            plot for plot in widget._active_plots
+            if plot["id"] == "magnetic_evidence:order_to_phase"
+        )
+        no_spin_row = order_to_phase["row_ids"].index("no_spin")
+        bcc = next(
+            series for series in order_to_phase["series"] if series["id"] == "bcc"
+        )
+        self.assertEqual(bcc["structure_indices"][no_spin_row], (2,))
 
     @staticmethod
     def _local_chemistry_plot(scope, center_element, metric_kind):
@@ -759,7 +791,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.composition_show_button.click()
 
         self.assertEqual(selected, [[1]])
-        self.assertIn("BCC", widget.composition_show_button.text())
+        self.assertIn("Mixed local structure", widget.composition_show_button.text())
 
         phase_row = next(
             row
@@ -772,7 +804,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.chart_widget.plot_id, "phase_evidence:structure_labels")
         self.assertEqual(
             widget.chart_widget._plot["bar_ids"],
-            ("fcc", "bcc", "unresolved"),
+            ("fcc", "mixed", "unresolved"),
         )
         widget.plot_selector.setCurrentIndex(1)
         self.assertEqual(

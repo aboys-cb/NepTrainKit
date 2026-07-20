@@ -30,19 +30,30 @@ from .result import (
 )
 
 
-MAGNETIC_SCHEMA_VERSION = "magnetic-inventory-v2"
-MAGNETIC_METHOD_ID = "spin-order-sf-neighbor-element-v2"
+MAGNETIC_SCHEMA_VERSION = "magnetic-inventory-v3"
+MAGNETIC_METHOD_ID = "spin-order-layer-afm-v3"
 MAGNETIC_ANALYSIS_STRATEGY = "all-spin-structures-v1"
 
 _ORDER_LABELS = (
     "fm",
     "afm",
     "ferrimagnetic",
-    "spin_spiral",
+    "pm_like",
     "noncollinear",
-    "collinear_mixed",
-    "spin_disordered",
+    "unresolved",
     "low_moment",
+)
+MAGNETIC_PARTITION_LABELS = (
+    "fm",
+    "afm_layered",
+    "afm_double_layered",
+    "afm",
+    "ferrimagnetic",
+    "pm_like",
+    "noncollinear",
+    "unresolved",
+    "low_moment",
+    "no_spin",
 )
 _ELEMENT_ORDER_LABELS = (
     "aligned",
@@ -104,6 +115,111 @@ def _spin_array(structure: Any, atom_count: int) -> np.ndarray | None:
     return spins
 
 
+def _periodic_layer_groups(
+    fractional_coordinate: np.ndarray,
+    *,
+    tolerance: float = 0.025,
+) -> tuple[np.ndarray, ...]:
+    """Group atoms into conservative periodic planes along one cell axis."""
+    values = np.mod(np.asarray(fractional_coordinate, dtype=float), 1.0)
+    if values.size < 2:
+        return ()
+    order = np.argsort(values, kind="stable")
+    sorted_values = values[order]
+    cyclic_gaps = np.diff(np.concatenate((sorted_values, sorted_values[:1] + 1.0)))
+    start = (int(np.argmax(cyclic_gaps)) + 1) % len(order)
+    cyclic_order = np.concatenate((order[start:], order[:start]))
+    unwrapped = values[cyclic_order].copy()
+    unwrapped[unwrapped < values[cyclic_order[0]] - tolerance] += 1.0
+
+    groups: list[list[int]] = [[int(cyclic_order[0])]]
+    previous = float(unwrapped[0])
+    for atom, coordinate in zip(cyclic_order[1:], unwrapped[1:]):
+        if float(coordinate) - previous > tolerance:
+            groups.append([])
+        groups[-1].append(int(atom))
+        previous = float(coordinate)
+    return tuple(np.asarray(group, dtype=np.int64) for group in groups)
+
+
+def _matches_periodic_sign_pattern(
+    signs: Sequence[int],
+    pattern: Sequence[int],
+    *,
+    minimum_repeats: int = 1,
+) -> bool:
+    count = len(signs)
+    period = len(pattern)
+    if count < period * minimum_repeats or count % period:
+        return False
+    return any(
+        all(signs[index] == pattern[(index + shift) % period] for index in range(count))
+        for shift in range(period)
+    )
+
+
+def _layer_afm_subtype(
+    positions: np.ndarray,
+    cell: np.ndarray,
+    pbc: np.ndarray,
+    spins: np.ndarray,
+) -> str:
+    """Recognize repeated collinear AFM layer sequences without guessing from q."""
+    magnitudes = np.linalg.norm(spins, axis=1)
+    active = magnitudes > 1.0e-7
+    active_indices = np.flatnonzero(active)
+    if active_indices.size < 4:
+        return ""
+    reference_atom = int(active_indices[0])
+    reference = spins[reference_atom] / magnitudes[reference_atom]
+    projections = spins @ reference
+    try:
+        fractional = positions @ np.linalg.inv(cell)
+    except np.linalg.LinAlgError:
+        return ""
+
+    candidates: list[tuple[float, int, str]] = []
+    for axis in range(3):
+        if not bool(pbc[axis]):
+            continue
+        groups = _periodic_layer_groups(fractional[:, axis])
+        layer_signs: list[int] = []
+        layer_polarizations: list[float] = []
+        for group in groups:
+            group = group[active[group]]
+            if group.size == 0:
+                layer_signs = []
+                break
+            denominator = float(np.sum(np.abs(projections[group])))
+            if denominator <= 1.0e-12:
+                layer_signs = []
+                break
+            polarization = float(np.sum(projections[group]) / denominator)
+            if abs(polarization) < 0.80:
+                layer_signs = []
+                break
+            layer_signs.append(1 if polarization > 0.0 else -1)
+            layer_polarizations.append(abs(polarization))
+        if not layer_signs:
+            continue
+        score = float(np.mean(layer_polarizations))
+        if _matches_periodic_sign_pattern(layer_signs, (1, 1, -1, -1)):
+            candidates.append((score, 1, "double_layered"))
+        elif _matches_periodic_sign_pattern(layer_signs, (1, -1)):
+            candidates.append((score, 0, "layered"))
+    return max(candidates, default=(0.0, -1, ""))[2]
+
+
+def magnetic_partition_label(structure: StructureMagneticEvidence) -> str:
+    """Return the user-facing partition key, preserving confirmed AFM subtypes."""
+    if structure.order_label == "afm":
+        if structure.order_subtype == "layered":
+            return "afm_layered"
+        if structure.order_subtype == "double_layered":
+            return "afm_double_layered"
+    return structure.order_label
+
+
 def _analyze_structure(
     native: Any,
     source_index: int,
@@ -151,6 +267,12 @@ def _analyze_structure(
         )
         for row in pair_rows
     )
+    order_label = str(values[14])
+    order_subtype = (
+        _layer_afm_subtype(positions, cell, pbc, spins)
+        if order_label == "afm"
+        else ""
+    )
     return StructureMagneticEvidence(
         source_index=int(source_index),
         atom_count=len(positions),
@@ -166,10 +288,11 @@ def _analyze_structure(
         antiparallel_fraction=float(values[9]),
         q_peak_strength=float(values[10]),
         q_vector=(int(values[11]), int(values[12]), int(values[13])),
-        order_label=str(values[14]),
+        order_label=order_label,
         confidence_state=str(values[15]),
         element_evidence=element_evidence,
         element_pair_evidence=pair_evidence,
+        order_subtype=order_subtype,
     )
 
 

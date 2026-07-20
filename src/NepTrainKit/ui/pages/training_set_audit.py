@@ -50,8 +50,16 @@ from NepTrainKit.core import MessageManager
 from NepTrainKit.core.audit.report import write_audit_report_html
 from NepTrainKit.core.audit.findings import canonical_findings
 from NepTrainKit.core.audit.inventory import compare_composition_target
-from NepTrainKit.core.audit.magnetic_inventory import summarize_magnetic_inventory
-from NepTrainKit.core.audit.phase_inventory import summarize_phase_inventory
+from NepTrainKit.core.audit.magnetic_inventory import (
+    MAGNETIC_PARTITION_LABELS,
+    magnetic_partition_label,
+    summarize_magnetic_inventory,
+)
+from NepTrainKit.core.audit.phase_inventory import (
+    PHASE_PARTITION_LABELS,
+    phase_partition_label,
+    summarize_phase_inventory,
+)
 from NepTrainKit.core.audit.result import (
     AuditBiasType,
     AuditDimension,
@@ -1154,13 +1162,11 @@ class TrainingSetAuditWidget(QWidget):
             phase_inventory = self._result.phase_inventory
             if phase_inventory is not None:
                 labels_by_index = {
-                    structure.source_index: structure.phase_label
+                    structure.source_index: phase_partition_label(structure)
                     for point in phase_inventory.composition_points
                     for structure in point.structures
                 }
-            ordered_labels = (
-                "fcc", "bcc", "hcp", "l12", "c14", "c15", "unresolved"
-            )
+            ordered_labels = PHASE_PARTITION_LABELS
             display_name = self._phase_display_name
             title = self.tr(
                 "Sample counts by {element} concentration, colored by structural phase"
@@ -1170,21 +1176,11 @@ class TrainingSetAuditWidget(QWidget):
             magnetic_inventory = self._result.magnetic_inventory
             if magnetic_inventory is not None:
                 labels_by_index = {
-                    structure.source_index: structure.order_label
+                    structure.source_index: magnetic_partition_label(structure)
                     for point in magnetic_inventory.composition_points
                     for structure in point.structures
                 }
-            ordered_labels = (
-                "fm",
-                "afm",
-                "ferrimagnetic",
-                "spin_spiral",
-                "noncollinear",
-                "collinear_mixed",
-                "spin_disordered",
-                "low_moment",
-                "no_spin",
-            )
+            ordered_labels = MAGNETIC_PARTITION_LABELS
             display_name = self._magnetic_display_name
             title = self.tr(
                 "Sample counts by {element} concentration, colored by magnetic order"
@@ -1342,18 +1338,20 @@ class TrainingSetAuditWidget(QWidget):
             "l12": "L1₂",
             "c14": "C14 Laves",
             "c15": "C15 Laves",
+            "mixed": self.tr("Mixed local structure"),
             "unresolved": self.tr("Unresolved"),
         }.get(label, label)
 
     def _magnetic_display_name(self, label: str) -> str:
         return {
-            "fm": self.tr("FM-like"),
-            "afm": self.tr("AFM-like"),
-            "ferrimagnetic": self.tr("Ferrimagnetic-like"),
-            "spin_spiral": self.tr("Spin spiral-like"),
-            "noncollinear": self.tr("Noncollinear ordered"),
-            "collinear_mixed": self.tr("Mixed collinear"),
-            "spin_disordered": self.tr("Spin-disordered-like"),
+            "fm": self.tr("FM"),
+            "afm": self.tr("AFM"),
+            "afm_layered": self.tr("Layered AFM (↑↓)"),
+            "afm_double_layered": self.tr("Double-layer AFM (↑↑↓↓)"),
+            "ferrimagnetic": self.tr("FiM"),
+            "pm_like": self.tr("PM-like (spin-disordered)"),
+            "noncollinear": self.tr("Other noncollinear"),
+            "unresolved": self.tr("Unresolved magnetic type"),
             "low_moment": self.tr("Low / zero moment"),
             "no_spin": self.tr("No valid spin field"),
         }.get(label, label)
@@ -1642,10 +1640,10 @@ class TrainingSetAuditWidget(QWidget):
         phase_evidence = self._selected_phase_evidence()
         magnetic_evidence = self._selected_magnetic_evidence()
 
-        def populate(selector, evidence, attribute, display, previous, all_text):
+        def populate(selector, evidence, value_getter, display, previous, all_text):
             counts: dict[str, int] = {}
             for structure in evidence:
-                label = getattr(structure, attribute)
+                label = value_getter(structure)
                 counts[label] = counts.get(label, 0) + 1
             selector.blockSignals(True)
             selector.clear()
@@ -1665,11 +1663,13 @@ class TrainingSetAuditWidget(QWidget):
             selector.blockSignals(False)
 
         populate(
-            self.composition_phase_selector, phase_evidence, "phase_label",
+            self.composition_phase_selector, phase_evidence,
+            phase_partition_label,
             self._phase_display_name, phase_previous, self.tr("All structural phases")
         )
         populate(
-            self.composition_magnetic_selector, magnetic_evidence, "order_label",
+            self.composition_magnetic_selector, magnetic_evidence,
+            magnetic_partition_label,
             self._magnetic_display_name, magnetic_previous, self.tr("All magnetic orders")
         )
         selected_phase = self.composition_phase_selector.currentData() or ""
@@ -1679,13 +1679,13 @@ class TrainingSetAuditWidget(QWidget):
             selected_indices.intersection_update(
                 structure.source_index
                 for structure in phase_evidence
-                if structure.phase_label == selected_phase
+                if phase_partition_label(structure) == selected_phase
             )
         if selected_magnetic:
             selected_indices.intersection_update(
                 structure.source_index
                 for structure in magnetic_evidence
-                if structure.order_label == selected_magnetic
+                if magnetic_partition_label(structure) == selected_magnetic
             )
         self._selected_phase_indices = sorted(selected_indices)
         self._selected_magnetic_indices = sorted(selected_indices)
@@ -3192,7 +3192,8 @@ class TrainingSetAuditWidget(QWidget):
         counts: dict[str, int] = {}
         for point in phase_inventory.composition_points:
             for structure in point.structures:
-                counts[structure.phase_label] = counts.get(structure.phase_label, 0) + 1
+                label = phase_partition_label(structure)
+                counts[label] = counts.get(label, 0) + 1
         total = phase_inventory.analyzed_structure_count
         ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
         key_items = ranked[:3]
@@ -3722,12 +3723,12 @@ class TrainingSetAuditWidget(QWidget):
             for point in self._result.phase_inventory.composition_points
             for structure in point.structures
         )
-        phase_order = ("fcc", "bcc", "hcp", "l12", "c14", "c15", "unresolved")
+        phase_order = PHASE_PARTITION_LABELS
         phase_groups = tuple(
             tuple(
                 structure.source_index
                 for structure in structures
-                if structure.phase_label == label
+                if phase_partition_label(structure) == label
             )
             for label in phase_order
         )
@@ -3810,176 +3811,143 @@ class TrainingSetAuditWidget(QWidget):
         )
 
     def _magnetic_evidence_plots(self) -> list[dict[str, Any]]:
-        if self._result is None or self._result.magnetic_inventory is None:
+        if (
+            self._result is None
+            or self._result.inventory is None
+            or self._result.magnetic_inventory is None
+        ):
             return []
-        structures = tuple(
+        magnetic_structures = tuple(
             structure
             for point in self._result.magnetic_inventory.composition_points
             for structure in point.structures
         )
-        if not structures:
-            return []
-        order = (
-            "fm", "afm", "ferrimagnetic", "spin_spiral", "noncollinear",
-            "collinear_mixed", "spin_disordered", "low_moment",
+        magnetic_by_index = {
+            structure.source_index: magnetic_partition_label(structure)
+            for structure in magnetic_structures
+        }
+        all_indices = tuple(
+            sorted(
+                {
+                    index
+                    for point in self._result.inventory.composition_points
+                    for index in point.structure_indices
+                }
+            )
         )
-        labels = tuple(label for label in order if any(s.order_label == label for s in structures))
-        groups = tuple(
-            tuple(s.source_index for s in structures if s.order_label == label)
-            for label in labels
+        magnetic_by_index.update(
+            (index, "no_spin") for index in all_indices if index not in magnetic_by_index
         )
-        metric_specs = (
-            ("net", self.tr("Net moment ratio"), "net_moment_ratio"),
-            ("collinearity", self.tr("Spin collinearity"), "collinearity"),
-            ("q_peak", self.tr("Nonzero-q peak strength"), "q_peak_strength"),
-        )
-        plots: list[dict[str, Any]] = [
-            {
-                "kind": "categorical_bars",
-                "id": "magnetic_evidence:orders",
-                "title": self.tr("Structure-level magnetic-pattern labels"),
-                "x_label": self.tr("Structures"),
-                "y_label": self.tr("Magnetic order"),
-                "series": ({
-                    "labels": tuple(self._magnetic_display_name(label) for label in labels),
-                    "bar_ids": labels,
-                    "counts": tuple(len(group) for group in groups),
-                    "structure_indices": groups,
-                },),
+
+        def ordered_present(values, preferred):
+            present = set(values)
+            return tuple(label for label in preferred if label in present) + tuple(
+                sorted(present.difference(preferred))
+            )
+
+        def partition_plot(
+            *,
+            plot_id: str,
+            title: str,
+            row_by_index: Mapping[int, str],
+            segment_by_index: Mapping[int, str],
+            row_order: tuple[str, ...],
+            segment_order: tuple[str, ...],
+            row_display,
+            segment_display,
+            y_label: str,
+        ) -> dict[str, Any] | None:
+            row_ids = ordered_present(row_by_index.values(), row_order)
+            segment_ids = ordered_present(segment_by_index.values(), segment_order)
+            if not row_ids or not segment_ids:
+                return None
+            series = []
+            for segment in segment_ids:
+                groups = tuple(
+                    tuple(
+                        index
+                        for index in all_indices
+                        if row_by_index.get(index) == row
+                        and segment_by_index.get(index) == segment
+                    )
+                    for row in row_ids
+                )
+                if any(groups):
+                    series.append(
+                        {
+                            "id": segment,
+                            "label": segment_display(segment),
+                            "counts": tuple(len(group) for group in groups),
+                            "structure_indices": groups,
+                        }
+                    )
+            if not series:
+                return None
+            return {
+                "kind": "category_share_stacks",
+                "id": plot_id,
+                "title": title,
+                "x_label": self.tr("Share of structure frames"),
+                "y_label": y_label,
+                "row_ids": row_ids,
+                "row_labels": tuple(row_display(row) for row in row_ids),
+                "series": tuple(series),
             }
-        ]
+
+        plots: list[dict[str, Any]] = []
         phase_inventory = self._result.phase_inventory
         if phase_inventory is not None:
             phase_by_index = {
-                structure.source_index: structure.phase_label
+                structure.source_index: phase_partition_label(structure)
                 for point in phase_inventory.composition_points
                 for structure in point.structures
             }
-            joint_groups: dict[tuple[str, str], list[int]] = {}
-            for structure in structures:
-                phase_label = phase_by_index.get(structure.source_index)
-                if phase_label is None:
-                    continue
-                joint_groups.setdefault(
-                    (phase_label, structure.order_label), []
-                ).append(structure.source_index)
-            if joint_groups:
-                ranked_joint = sorted(
-                    joint_groups,
-                    key=lambda key: (-len(joint_groups[key]), key[0], key[1]),
-                )
-                plots.append({
-                    "kind": "categorical_bars",
-                    "id": "magnetic_evidence:phase_order_joint",
-                    "title": self.tr("Magnetic order inside each structural phase"),
-                    "x_label": self.tr("Structures"),
-                    "y_label": self.tr("Structural phase · magnetic order"),
-                    "series": ({
-                        "labels": tuple(
-                            self.tr("{phase} · {order}").format(
-                                phase=self._phase_display_name(phase),
-                                order=self._magnetic_display_name(magnetic),
-                            )
-                            for phase, magnetic in ranked_joint
-                        ),
-                        "bar_ids": tuple(
-                            f"{phase}:{magnetic}" for phase, magnetic in ranked_joint
-                        ),
-                        "counts": tuple(len(joint_groups[key]) for key in ranked_joint),
-                        "structure_indices": tuple(
-                            tuple(joint_groups[key]) for key in ranked_joint
-                        ),
-                    },),
-                })
-        element_groups: dict[tuple[str, str], list[int]] = {}
-        pair_groups: dict[tuple[str, str, str], list[int]] = {}
-        for structure in structures:
-            for evidence in structure.element_evidence:
-                element_groups.setdefault(
-                    (evidence.element, evidence.order_label), []
-                ).append(structure.source_index)
-            for evidence in structure.element_pair_evidence:
-                pair_groups.setdefault(
-                    (evidence.element_a, evidence.element_b, evidence.coupling_label), []
-                ).append(structure.source_index)
-        if element_groups:
-            ranked_elements = sorted(
-                element_groups,
-                key=lambda key: (key[0], -len(element_groups[key]), key[1]),
+            phase_by_index.update(
+                (index, "unresolved")
+                for index in all_indices
+                if index not in phase_by_index
             )
-            plots.append({
-                "kind": "categorical_bars",
-                "id": "magnetic_evidence:element_local_order",
-                "title": self.tr("Element-local spin patterns"),
-                "x_label": self.tr("Structures containing the element"),
-                "y_label": self.tr("Element · local spin pattern"),
-                "series": ({
-                    "labels": tuple(
-                        self.tr("{element} · {order}").format(
-                            element=element,
-                            order=self._element_order_display_name(label),
-                        )
-                        for element, label in ranked_elements
-                    ),
-                    "bar_ids": tuple(
-                        f"{element}:{label}" for element, label in ranked_elements
-                    ),
-                    "counts": tuple(len(element_groups[key]) for key in ranked_elements),
-                    "structure_indices": tuple(
-                        tuple(element_groups[key]) for key in ranked_elements
-                    ),
-                },),
-            })
-        if pair_groups:
-            ranked_pairs = sorted(
-                pair_groups,
-                key=lambda key: (key[0], key[1], -len(pair_groups[key]), key[2]),
+            phase_order = PHASE_PARTITION_LABELS
+            phase_to_magnetic = partition_plot(
+                plot_id="magnetic_evidence:phase_to_order",
+                title=self.tr("Magnetic types inside each structural phase"),
+                row_by_index=phase_by_index,
+                segment_by_index=magnetic_by_index,
+                row_order=phase_order,
+                segment_order=MAGNETIC_PARTITION_LABELS,
+                row_display=self._phase_display_name,
+                segment_display=self._magnetic_display_name,
+                y_label=self.tr("Structural phase"),
             )
-            plots.append({
-                "kind": "categorical_bars",
-                "id": "magnetic_evidence:element_pair_coupling",
-                "title": self.tr("Neighboring element-pair spin coupling"),
-                "x_label": self.tr("Structures containing the pair"),
-                "y_label": self.tr("Element pair · coupling"),
-                "series": ({
-                    "labels": tuple(
-                        self.tr("{element_a}–{element_b} · {coupling}").format(
-                            element_a=element_a,
-                            element_b=element_b,
-                            coupling=self._coupling_display_name(label),
-                        )
-                        for element_a, element_b, label in ranked_pairs
-                    ),
-                    "bar_ids": tuple(
-                        f"{element_a}:{element_b}:{label}"
-                        for element_a, element_b, label in ranked_pairs
-                    ),
-                    "counts": tuple(len(pair_groups[key]) for key in ranked_pairs),
-                    "structure_indices": tuple(
-                        tuple(pair_groups[key]) for key in ranked_pairs
-                    ),
-                },),
-            })
-        for metric_id, title, attribute in metric_specs:
-            bin_count = 10
-            bin_groups: list[list[int]] = [[] for _ in range(bin_count)]
-            for structure in structures:
-                value = max(0.0, min(1.0, float(getattr(structure, attribute))))
-                bin_groups[min(bin_count - 1, int(value * bin_count))].append(
-                    structure.source_index
-                )
-            plots.append({
-                "kind": "histogram",
-                "id": f"magnetic_evidence:{metric_id}",
-                "title": title,
-                "x_label": title,
-                "y_label": self.tr("Structures"),
-                "series": ({
-                    "counts": tuple(len(group) for group in bin_groups),
-                    "bin_edges": tuple(index / bin_count for index in range(bin_count + 1)),
-                    "structure_indices": tuple(tuple(group) for group in bin_groups),
-                },),
-            })
+            if phase_to_magnetic is not None:
+                plots.append(phase_to_magnetic)
+            magnetic_to_phase = partition_plot(
+                plot_id="magnetic_evidence:order_to_phase",
+                title=self.tr("Structural phases inside each magnetic type"),
+                row_by_index=magnetic_by_index,
+                segment_by_index=phase_by_index,
+                row_order=MAGNETIC_PARTITION_LABELS,
+                segment_order=phase_order,
+                row_display=self._magnetic_display_name,
+                segment_display=self._phase_display_name,
+                y_label=self.tr("Magnetic type"),
+            )
+            if magnetic_to_phase is not None:
+                plots.append(magnetic_to_phase)
+
+        overall = partition_plot(
+            plot_id="magnetic_evidence:overall",
+            title=self.tr("Magnetic-type shares in the audited dataset"),
+            row_by_index={index: "all" for index in all_indices},
+            segment_by_index=magnetic_by_index,
+            row_order=("all",),
+            segment_order=MAGNETIC_PARTITION_LABELS,
+            row_display=lambda _label: self.tr("All structures"),
+            segment_display=self._magnetic_display_name,
+            y_label=self.tr("Audited scope"),
+        )
+        if overall is not None:
+            plots.append(overall)
         return plots
 
     def _sync_phase_dimension_item(self) -> None:

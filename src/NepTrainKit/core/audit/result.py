@@ -260,6 +260,7 @@ class StructureMagneticEvidence:
     q_vector: tuple[int, int, int]
     element_evidence: tuple[ElementMagneticEvidence, ...] = ()
     element_pair_evidence: tuple[ElementPairMagneticEvidence, ...] = ()
+    order_subtype: str = ""
 
 
 @dataclass(frozen=True)

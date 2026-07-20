@@ -87,27 +87,35 @@ std::pair<std::string, std::string> classify_order(
     const double antiparallel_fraction,
     const double q_peak
 ) {
-    if (active_count < 2) return {"low_moment", "strong"};
+    if (active_count == 0) return {"low_moment", "strong"};
+    if (active_count < 2) return {"unresolved", "unresolved"};
     if (collinearity >= 0.90) {
         if (net_ratio >= 0.82 && neighbor_correlation >= 0.20) {
             return {"fm", net_ratio >= 0.92 ? "strong" : "mixed"};
         }
-        if (q_peak >= 0.45 && antiparallel_fraction >= 0.20) {
-            if (net_ratio <= 0.20) return {"afm", "strong"};
-            if (net_ratio <= 0.95) return {"ferrimagnetic", "strong"};
+        if (net_ratio <= 0.20 && (
+                q_peak >= 0.45 || neighbor_correlation <= -0.25 ||
+                antiparallel_fraction >= 0.20)) {
+            const bool strong = q_peak >= 0.45 && antiparallel_fraction >= 0.20;
+            return {"afm", strong ? "strong" : "mixed"};
         }
-        if (net_ratio <= 0.20 && neighbor_correlation <= -0.25) {
-            return {"afm", "mixed"};
+        if (net_ratio < 0.82 && antiparallel_fraction >= 0.20 && (
+                q_peak >= 0.35 || neighbor_correlation < -0.05)) {
+            return {"ferrimagnetic", "strong"};
         }
-        return {"collinear_mixed", "mixed"};
+        return {"unresolved", "unresolved"};
     }
-    if (q_peak >= 0.52 && coplanarity >= 0.72) {
-        return {"spin_spiral", q_peak >= 0.70 ? "strong" : "mixed"};
+    if (q_peak >= 0.45 && coplanarity >= 0.72) {
+        return {"noncollinear", q_peak >= 0.70 ? "strong" : "mixed"};
     }
     if (q_peak >= 0.32 || std::abs(neighbor_correlation) >= 0.30) {
         return {"noncollinear", "mixed"};
     }
-    return {"spin_disordered", q_peak <= 0.22 ? "strong" : "mixed"};
+    if (net_ratio <= 0.25 && q_peak <= 0.22 &&
+        std::abs(neighbor_correlation) <= 0.15) {
+        return {"pm_like", "strong"};
+    }
+    return {"unresolved", "unresolved"};
 }
 
 py::tuple magnetic_order_evidence(

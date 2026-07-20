@@ -92,6 +92,41 @@ def test_lammps_dump_importer_loads_scaled_coordinates_forces_and_elements(tmp_p
     np.testing.assert_allclose(structure.forces, [[1.0, 2.0, 3.0], [-1.0, -2.0, -3.0]])
 
 
+def test_lammps_dump_importer_reconstructs_spin_vectors(tmp_path):
+    path = tmp_path / "spin.dump"
+    path.write_text(
+        "\n".join(
+            [
+                "ITEM: TIMESTEP",
+                "0",
+                "ITEM: NUMBER OF ATOMS",
+                "2",
+                "ITEM: BOX BOUNDS pp pp pp",
+                "0 4",
+                "0 4",
+                "0 4",
+                "ITEM: ATOMS id element x y z c_spin[1] c_spin[2] c_spin[3] c_spin[4] c_spin[5] c_spin[6] c_spin[7]",
+                "1 Fe 0 0 0 2.0 0.0 0.6 0.8 90 91 92",
+                "2 Fe 2 2 2 1.5 -1.0 0.0 0.0 93 94 95",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    structure = import_structures(path)[0]
+
+    np.testing.assert_allclose(
+        structure.atomic_properties["spin"],
+        [[0.0, 1.2, 1.6], [-1.5, 0.0, 0.0]],
+    )
+    assert {prop["name"]: prop for prop in structure.properties}["spin"] == {
+        "name": "spin",
+        "type": "R",
+        "count": 3,
+    }
+
+
 def test_matching_invalid_lammps_dump_raises_value_error(tmp_path):
     path = tmp_path / "broken.dump"
     path.write_text("ITEM: TIMESTEP\n0\n", encoding="utf-8")

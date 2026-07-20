@@ -105,6 +105,33 @@ def composition_phase_payload():
     }
 
 
+@pytest.fixture
+def category_share_payload():
+    return {
+        "kind": "category_share_stacks",
+        "id": "magnetic_evidence:phase_to_order",
+        "title": "Magnetic types inside each structural phase",
+        "x_label": "Share of structure frames",
+        "y_label": "Structural phase",
+        "row_ids": ("fcc", "bcc"),
+        "row_labels": ("FCC", "BCC"),
+        "series": (
+            {
+                "id": "fm",
+                "label": "FM",
+                "counts": (3, 1),
+                "structure_indices": ((1, 2, 3), (6,)),
+            },
+            {
+                "id": "afm_double_layered",
+                "label": "Double-layer AFM",
+                "counts": (2, 0),
+                "structure_indices": ((4, 5), ()),
+            },
+        ),
+    }
+
+
 def test_histogram_state_can_be_set_and_cleared(app, histogram_payload):
     widget = AuditChartWidget()
 
@@ -175,6 +202,27 @@ def test_composition_phase_stacks_emit_the_clicked_phase_group(
 
     assert widget._plot["counts"] == (1.0, 3.0, 1.0)
     assert received == [[3]]
+
+
+def test_category_share_stacks_show_frame_shares_and_support_keyboard_selection(
+    app, category_share_payload
+):
+    widget = AuditChartWidget()
+    received = []
+    widget.selectedGroupSignal.connect(received.append)
+    widget.set_plot(category_share_payload)
+    widget.resize(760, 300)
+    widget.show()
+    widget.setFocus()
+    app.processEvents()
+
+    assert widget._plot["counts"] == (5.0, 1.0)
+    target = next(rect for rect, indices in widget._bar_rects if indices == [4, 5])
+    QTest.mouseClick(widget, Qt.MouseButton.LeftButton, pos=target.center().toPoint())
+    assert received[-1] == [4, 5]
+
+    QTest.keyClick(widget, Qt.Key.Key_Return)
+    assert received[-1] == [4, 5]
 
 
 def test_histogram_accepts_negative_finite_strictly_increasing_bin_edges(app, histogram_payload):

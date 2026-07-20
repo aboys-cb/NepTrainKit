@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 import numpy as np
 import pytest
+from ase.data import chemical_symbols
 
 from NepTrainKit.core.audit.magnetic_inventory import (
     build_magnetic_inventory,
@@ -26,7 +27,8 @@ def _grid(size: int = 4, cell: np.ndarray | None = None):
 def _native_evidence(spins: np.ndarray, *, cell: np.ndarray | None = None):
     from NepTrainKit._native import _magnetism
 
-    _, positions, cell = _grid(cell=cell)
+    size = round(len(spins) ** (1.0 / 3.0))
+    _, positions, cell = _grid(size=size, cell=cell)
     return _magnetism.magnetic_order_evidence(
         positions,
         cell,
@@ -52,10 +54,10 @@ def _reference_spins() -> dict[str, np.ndarray]:
         "ferrimagnetic": np.column_stack(
             [np.zeros(len(x)), np.zeros(len(x)), np.where(x % 2, -0.5, 1.0)]
         ),
-        "spin_spiral": np.column_stack(
+        "noncollinear": np.column_stack(
             [np.cos(phase), np.sin(phase), np.zeros(len(phase))]
         ),
-        "spin_disordered": random,
+        "pm_like": random,
         "low_moment": np.zeros((len(integer), 3)),
     }
 
@@ -69,7 +71,7 @@ def test_native_classifies_reference_spin_patterns(expected: str):
 
 
 def test_native_evidence_is_rotation_scale_and_cell_shape_invariant():
-    spins = _reference_spins()["spin_spiral"]
+    spins = _reference_spins()["noncollinear"]
     rotation = np.asarray(
         [[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]],
         dtype=np.float32,
@@ -81,9 +83,144 @@ def test_native_evidence_is_rotation_scale_and_cell_shape_invariant():
     baseline = _native_evidence(spins)
     transformed = _native_evidence(2.5 * spins @ rotation, cell=triclinic)
 
-    assert transformed[14] == baseline[14] == "spin_spiral"
+    assert transformed[14] == baseline[14] == "noncollinear"
     np.testing.assert_allclose(transformed[3:11], baseline[3:11], atol=2.0e-6)
     assert transformed[11:14] == baseline[11:14]
+
+
+def _inventory_structure(
+    spins: np.ndarray,
+    *,
+    atomic_numbers: np.ndarray | None = None,
+    cell: np.ndarray | None = None,
+    positions: np.ndarray | None = None,
+):
+    size = round(len(spins) ** (1.0 / 3.0))
+    _, default_positions, cell = _grid(size=size, cell=cell)
+    positions = default_positions if positions is None else np.asarray(
+        positions, dtype=np.float32
+    )
+    numbers = (
+        np.full(len(positions), 26, dtype=np.int16)
+        if atomic_numbers is None
+        else np.asarray(atomic_numbers, dtype=np.int16)
+    )
+    geometry = GeometrySnapshot(
+        source_indices=np.asarray([0], dtype=np.int64),
+        positions=positions,
+        atom_offsets=np.asarray([0, len(positions)], dtype=np.int64),
+        cells=np.asarray([cell], dtype=np.float32),
+        pbc=np.ones((1, 3), dtype=np.uint8),
+        atomic_numbers=numbers,
+    )
+    unique_numbers = tuple(sorted(int(number) for number in np.unique(numbers)))
+    counts = tuple(int(np.count_nonzero(numbers == number)) for number in unique_numbers)
+    divisor = int(np.gcd.reduce(counts))
+    point = CompositionPoint(
+        reduced_counts=tuple(count // divisor for count in counts),
+        fractions=tuple(count / len(numbers) for count in counts),
+        structure_count=1,
+        share=1.0,
+        structure_indices=(0,),
+    )
+    inventory = DatasetInventory(
+        structure_count=1,
+        elements=tuple(chemical_symbols[number] for number in unique_numbers),
+        composition_points=(point,),
+    )
+    result, _ = build_magnetic_inventory(
+        geometry,
+        inventory,
+        (SimpleNamespace(atomic_properties={"spin": spins}),),
+    )
+    return result.composition_points[0].structures[0]
+
+
+def test_one_periodic_layer_sequence_identifies_afm_subtypes():
+    integer2, _, _ = _grid(size=2)
+    x2 = integer2[:, 0].astype(int)
+    one_layered_period = np.column_stack(
+        (np.zeros(len(x2)), np.zeros(len(x2)), np.where(x2 % 2, -1.0, 1.0))
+    )
+    integer4, _, _ = _grid(size=4)
+    x4 = integer4[:, 0].astype(int)
+    one_double_period = np.column_stack(
+        (
+            np.zeros(len(x4)),
+            np.zeros(len(x4)),
+            np.where((x4 // 2) % 2, -1.0, 1.0),
+        )
+    )
+    integer8, _, _ = _grid(size=8)
+    x8 = integer8[:, 0].astype(int)
+    repeated_double = np.column_stack(
+        (
+            np.zeros(len(x8)),
+            np.zeros(len(x8)),
+            np.where((x8 // 2) % 2, -1.0, 1.0),
+        )
+    )
+
+    layered_result = _inventory_structure(one_layered_period)
+    one_double_result = _inventory_structure(one_double_period)
+    repeated_double_result = _inventory_structure(repeated_double)
+
+    assert layered_result.order_label == "afm"
+    assert layered_result.order_subtype == "layered"
+    assert one_double_result.order_label == "afm"
+    assert one_double_result.order_subtype == "double_layered"
+    assert repeated_double_result.order_label == "afm"
+    assert repeated_double_result.order_subtype == "double_layered"
+
+
+def test_double_layer_afm_subtype_survives_spin_rotation_and_small_distortion():
+    integer, positions, _ = _grid(size=8)
+    triclinic = np.asarray(
+        [[8.0, 0.0, 0.0], [1.1, 7.7, 0.0], [0.6, 0.9, 8.2]],
+        dtype=np.float32,
+    )
+    fractional = integer / 8.0
+    rng = np.random.default_rng(7)
+    fractional += rng.uniform(-0.003, 0.003, size=fractional.shape)
+    positions = np.ascontiguousarray(fractional @ triclinic, dtype=np.float32)
+    layer = integer[:, 2].astype(int)
+    direction = np.asarray([1.0, -2.0, 0.5], dtype=np.float32)
+    direction /= np.linalg.norm(direction)
+    spins = np.where(((layer // 2) % 2)[:, None], -direction, direction)
+
+    structure = _inventory_structure(
+        spins,
+        cell=triclinic,
+        positions=positions,
+    )
+
+    assert structure.order_label == "afm"
+    assert structure.order_subtype == "double_layered"
+
+
+def test_zero_moment_element_does_not_hide_magnetic_sublattice_order():
+    integer, _, _ = _grid()
+    silicon = integer[:, 1].astype(int) % 2 == 1
+    atomic_numbers = np.where(silicon, 14, 26).astype(np.int16)
+    spins = np.zeros((len(integer), 3), dtype=np.float32)
+    spins[~silicon, 2] = 2.0
+
+    structure = _inventory_structure(spins, atomic_numbers=atomic_numbers)
+
+    assert structure.order_label == "fm"
+    by_element = {item.element: item for item in structure.element_evidence}
+    assert by_element["Fe"].order_label == "aligned"
+    assert by_element["Si"].order_label == "low_moment"
+
+
+def test_single_active_spin_is_unresolved_not_nonmagnetic():
+    spins = np.zeros((64, 3), dtype=np.float32)
+    spins[0, 2] = 1.0
+
+    values = _native_evidence(spins)
+
+    assert values[14] == "unresolved"
+    assert values[15] == "unresolved"
 
 
 def test_native_resolves_element_local_order_and_pair_coupling():

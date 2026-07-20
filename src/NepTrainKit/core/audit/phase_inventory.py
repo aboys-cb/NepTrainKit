@@ -32,6 +32,23 @@ PHASE_ANALYSIS_STRATEGY = "all-structures-v1"
 
 _LOCAL_PHASES = ("fcc", "hcp", "bcc", "unresolved")
 _CNA_CODES = {1: "fcc", 2: "hcp", 3: "bcc", 0: "unresolved"}
+PHASE_PARTITION_LABELS = (
+    "fcc",
+    "bcc",
+    "hcp",
+    "l12",
+    "c14",
+    "c15",
+    "mixed",
+    "unresolved",
+)
+
+
+def phase_partition_label(structure: StructurePhaseEvidence) -> str:
+    """Keep mixed local structures out of hard phase-share buckets."""
+    if structure.confidence_state == "mixed":
+        return "mixed"
+    return structure.phase_label
 
 
 def _frame_arrays(

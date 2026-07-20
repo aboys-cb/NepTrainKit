@@ -23,14 +23,18 @@ _PHASE_COLORS = {
     "l12": QColor("#775DA6"),
     "c14": QColor("#2E8B57"),
     "c15": QColor("#B44C6C"),
+    "mixed": QColor("#C08A3E"),
     "unresolved": QColor("#89969A"),
     "fm": QColor("#D1495B"),
     "afm": QColor("#3B6FB6"),
+    "afm_layered": QColor("#5B8CD0"),
+    "afm_double_layered": QColor("#244B7E"),
     "ferrimagnetic": QColor("#A15C9B"),
     "spin_spiral": QColor("#E8871E"),
     "noncollinear": QColor("#159A9C"),
     "collinear_mixed": QColor("#7B6D3D"),
     "spin_disordered": QColor("#89969A"),
+    "pm_like": QColor("#8A6A16"),
     "low_moment": QColor("#C8D0D2"),
     "no_spin": QColor("#E2E8EA"),
 }
@@ -51,7 +55,10 @@ class AuditChartWidget(QWidget):
         self._plot: dict[str, Any] | None = None
         self._bar_rects: list[tuple[QRectF, list[int] | None]] = []
         self._bar_tooltips: list[str] = []
+        self._focused_bar_index = 0
         self.setMouseTracking(True)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.setAccessibleName(self.tr("Training-set audit chart"))
         self.setMinimumHeight(220)
 
     @property
@@ -74,6 +81,7 @@ class AuditChartWidget(QWidget):
         self._plot = self._normalize_plot(plot)
         self._bar_rects = []
         self._bar_tooltips = []
+        self._focused_bar_index = 0
         self.update()
 
     def clear(self) -> None:
@@ -81,6 +89,7 @@ class AuditChartWidget(QWidget):
         self._plot = None
         self._bar_rects = []
         self._bar_tooltips = []
+        self._focused_bar_index = 0
         self.update()
 
     @staticmethod
@@ -95,11 +104,14 @@ class AuditChartWidget(QWidget):
             "categorical_bars",
             "composition_stems",
             "composition_phase_stacks",
+            "category_share_stacks",
         } or not isinstance(plot_id, str) or not plot_id:
             return None
 
         if kind == "composition_phase_stacks":
             return AuditChartWidget._normalize_composition_phase_stacks(plot)
+        if kind == "category_share_stacks":
+            return AuditChartWidget._normalize_category_share_stacks(plot)
 
         series_items = plot.get("series")
         if not isinstance(series_items, Sequence) or isinstance(series_items, (str, bytes)) or not series_items:
@@ -266,6 +278,70 @@ class AuditChartWidget(QWidget):
         }
 
     @staticmethod
+    def _normalize_category_share_stacks(
+        plot: Mapping[str, Any],
+    ) -> dict[str, Any] | None:
+        plot_id = plot.get("id")
+        row_labels = plot.get("row_labels")
+        row_ids = plot.get("row_ids")
+        if (
+            not isinstance(plot_id, str)
+            or not plot_id
+            or not isinstance(row_labels, Sequence)
+            or isinstance(row_labels, (str, bytes))
+            or not row_labels
+            or not isinstance(row_ids, Sequence)
+            or isinstance(row_ids, (str, bytes))
+            or len(row_ids) != len(row_labels)
+        ):
+            return None
+        series_items = plot.get("series")
+        if (
+            not isinstance(series_items, Sequence)
+            or isinstance(series_items, (str, bytes))
+            or not series_items
+        ):
+            return None
+        normalized_series = []
+        totals = [0.0] * len(row_labels)
+        for item in series_items:
+            if not isinstance(item, Mapping):
+                return None
+            counts = AuditChartWidget._numeric_values(item.get("counts"))
+            if len(counts) != len(row_labels):
+                return None
+            structure_indices = AuditChartWidget._structure_groups(
+                item.get("structure_indices"), len(counts)
+            )
+            if structure_indices is None:
+                return None
+            for index, count in enumerate(counts):
+                totals[index] += count
+            normalized_series.append(
+                {
+                    "id": str(item.get("id", "")),
+                    "label": str(item.get("label", item.get("id", ""))),
+                    "counts": counts,
+                    "structure_indices": structure_indices,
+                }
+            )
+        if not any(totals):
+            return None
+        return {
+            "kind": "category_share_stacks",
+            "id": plot_id,
+            "title": str(plot.get("title", "")),
+            "x_label": str(plot.get("x_label", "")),
+            "y_label": str(plot.get("y_label", "")),
+            "row_labels": tuple(str(label) for label in row_labels),
+            "row_ids": tuple(str(row_id) for row_id in row_ids),
+            "counts": tuple(totals),
+            "series": tuple(normalized_series),
+            "highlighted_bins": frozenset(),
+            "structure_indices": tuple(None for _ in row_labels),
+        }
+
+    @staticmethod
     def _numeric_values(values: Any, *, nonnegative: bool = True) -> tuple[float, ...]:
         if not isinstance(values, Sequence) or isinstance(values, (str, bytes)):
             return ()
@@ -336,8 +412,19 @@ class AuditChartWidget(QWidget):
             self._draw_categorical_bars(painter)
         elif self._plot["kind"] == "composition_phase_stacks":
             self._draw_composition_phase_stacks(painter)
+        elif self._plot["kind"] == "category_share_stacks":
+            self._draw_category_share_stacks(painter)
         else:
             self._draw_composition_stems(painter)
+        if self.hasFocus() and self._bar_rects:
+            self._focused_bar_index = min(
+                self._focused_bar_index, len(self._bar_rects) - 1
+            )
+            painter.setPen(QPen(_TEXT, 2, Qt.PenStyle.DashLine))
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.drawRect(
+                self._bar_rects[self._focused_bar_index][0].adjusted(-2, -2, 2, 2)
+            )
 
     def _draw_title(self, painter: QPainter) -> None:
         title_font = QFont(painter.font())
@@ -705,6 +792,101 @@ class AuditChartWidget(QWidget):
             )
         self._draw_axis_labels(painter, chart, y_label_above=True)
 
+    def _draw_category_share_stacks(self, painter: QPainter) -> None:
+        legend_y = 32.0
+        metrics = QFontMetrics(painter.font())
+        legend_x = 10.0
+        for series in self._plot["series"]:
+            label = series["label"]
+            width = metrics.horizontalAdvance(label) + 34
+            if legend_x + width > self.width() - 8:
+                legend_x = 10.0
+                legend_y += 20.0
+            painter.fillRect(
+                QRectF(legend_x, legend_y + 3, 11, 11),
+                _PHASE_COLORS.get(series["id"], _TEAL),
+            )
+            painter.setPen(_TEXT)
+            painter.drawText(
+                QRectF(legend_x + 16, legend_y, width - 16, 17),
+                Qt.AlignmentFlag.AlignVCenter,
+                label,
+            )
+            legend_x += width
+
+        left_margin = min(190.0, max(110.0, self.width() * 0.24))
+        chart_top = legend_y + 28.0
+        chart = QRectF(
+            left_margin,
+            chart_top,
+            max(1.0, self.width() - left_margin - 82.0),
+            max(1.0, self.height() - chart_top - 46.0),
+        )
+        row_count = len(self._plot["row_labels"])
+        row_height = chart.height() / row_count
+        bar_height = max(14.0, min(30.0, row_height * 0.62))
+        for tick in range(5):
+            fraction = tick / 4
+            x = chart.left() + chart.width() * fraction
+            painter.setPen(QPen(_GRID, 1))
+            painter.drawLine(x, chart.top(), x, chart.bottom())
+            label = f"{fraction:.0%}"
+            width = metrics.horizontalAdvance(label) + 4
+            painter.setPen(_TEXT)
+            painter.drawText(
+                QRectF(x - width / 2, chart.bottom() + 4, width, 16),
+                Qt.AlignmentFlag.AlignCenter,
+                label,
+            )
+
+        for row, (label, total) in enumerate(
+            zip(self._plot["row_labels"], self._plot["counts"])
+        ):
+            y = chart.top() + row * row_height + (row_height - bar_height) / 2
+            elided = metrics.elidedText(
+                label, Qt.TextElideMode.ElideRight, int(left_margin - 18)
+            )
+            painter.setPen(_TEXT)
+            painter.drawText(
+                QRectF(6, y, left_margin - 14, bar_height),
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+                elided,
+            )
+            left = chart.left()
+            for series in self._plot["series"]:
+                count = series["counts"][row]
+                if count <= 0 or total <= 0:
+                    continue
+                share = count / total
+                width = chart.width() * share
+                rect = QRectF(left, y, width, bar_height)
+                painter.fillRect(rect, _PHASE_COLORS.get(series["id"], _TEAL))
+                painter.setPen(QPen(_BACKGROUND, 0.7))
+                painter.drawRect(rect)
+                self._bar_rects.append(
+                    (rect, series["structure_indices"][row])
+                )
+                self._bar_tooltips.append(
+                    f"{label} · {series['label']}: {count:,.0f} ({share:.1%})"
+                )
+                if width >= 54:
+                    painter.setPen(_BACKGROUND if series["id"] not in {
+                        "low_moment", "no_spin"
+                    } else _TEXT)
+                    painter.drawText(
+                        rect.adjusted(3, 0, -3, 0),
+                        Qt.AlignmentFlag.AlignCenter,
+                        f"{share:.0%}",
+                    )
+                left += width
+            painter.setPen(_TEXT)
+            painter.drawText(
+                QRectF(chart.right() + 6, y, 72, bar_height),
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+                f"{total:,.0f}",
+            )
+        self._draw_axis_labels(painter, chart, y_label_above=True)
+
     def _draw_grid(self, painter: QPainter, chart: QRectF, *, horizontal: bool) -> None:
         painter.setPen(QPen(_GRID, 1))
         max_count = max(self._plot["counts"]) if max(self._plot["counts"]) > 0 else 1.0
@@ -763,12 +945,40 @@ class AuditChartWidget(QWidget):
     def mouseReleaseEvent(self, event) -> None:  # noqa: N802 - Qt hook
         if event.button() == Qt.MouseButton.LeftButton:
             point = event.position()
-            for rect, structure_indices in self._bar_rects:
+            for index, (rect, structure_indices) in enumerate(self._bar_rects):
                 if rect.contains(point):
+                    self._focused_bar_index = index
+                    self.setFocus(Qt.FocusReason.MouseFocusReason)
                     if structure_indices is not None:
                         self.selectedGroupSignal.emit(list(structure_indices))
                     break
         super().mouseReleaseEvent(event)
+
+    def keyPressEvent(self, event) -> None:  # noqa: N802 - Qt hook
+        if self._bar_rects and event.key() in {
+            Qt.Key.Key_Left,
+            Qt.Key.Key_Up,
+            Qt.Key.Key_Right,
+            Qt.Key.Key_Down,
+        }:
+            step = -1 if event.key() in {Qt.Key.Key_Left, Qt.Key.Key_Up} else 1
+            self._focused_bar_index = (
+                self._focused_bar_index + step
+            ) % len(self._bar_rects)
+            self.update()
+            event.accept()
+            return
+        if self._bar_rects and event.key() in {
+            Qt.Key.Key_Return,
+            Qt.Key.Key_Enter,
+            Qt.Key.Key_Space,
+        }:
+            indices = self._bar_rects[self._focused_bar_index][1]
+            if indices is not None:
+                self.selectedGroupSignal.emit(list(indices))
+            event.accept()
+            return
+        super().keyPressEvent(event)
 
     def mouseMoveEvent(self, event) -> None:  # noqa: N802 - Qt hook
         point = event.position()

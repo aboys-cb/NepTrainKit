@@ -6,6 +6,7 @@ import numpy as np
 
 from NepTrainKit.core.audit.phase_inventory import (
     build_phase_inventory,
+    phase_partition_label,
     summarize_phase_inventory,
 )
 from NepTrainKit.core.audit.result import (
@@ -13,6 +14,7 @@ from NepTrainKit.core.audit.result import (
     CompositionPoint,
     DatasetInventory,
     PhaseInventory,
+    StructurePhaseEvidence,
 )
 from NepTrainKit.core.geometry_cache import GeometrySnapshot
 
@@ -168,3 +170,15 @@ def test_phase_summary_weights_exact_compositions_by_analyzed_atoms():
         "bcc": 0.1,
         "unresolved": 0.0,
     }
+
+
+def test_mixed_structure_evidence_is_not_counted_as_a_hard_phase_label():
+    structure = StructurePhaseEvidence(
+        source_index=7,
+        atom_count=32,
+        phase_label="bcc",
+        confidence_state="mixed",
+        local_phase_fractions=(("bcc", 0.5), ("fcc", 0.5)),
+    )
+
+    assert phase_partition_label(structure) == "mixed"

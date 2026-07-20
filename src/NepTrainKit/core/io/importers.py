@@ -718,9 +718,12 @@ class LammpsDumpImporter:
                 has_cart = all(k in idx for k in ("x", "y", "z"))
                 has_unwrapped = all(k in idx for k in ("xu", "yu", "zu"))
                 has_forces = all(k in idx for k in ("fx", "fy", "fz"))
+                spin_columns = tuple(f"c_spin[{column}]" for column in range(1, 5))
+                has_spin = all(column in idx for column in spin_columns)
                 species_col = "element" if "element" in idx else ("type" if "type" in idx else None)
                 positions = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype())
                 forces = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype()) if has_forces else None
+                spins = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype()) if has_spin else None
                 species_list: list[str] = []
                 types_buffer = np.zeros((n_atoms,), dtype=np.int32) if species_col == "type" else None
                 for i in range(n_atoms):
@@ -767,6 +770,11 @@ class LammpsDumpImporter:
                         forces[i, 0] = float(parts[idx["fx"]])
                         forces[i, 1] = float(parts[idx["fy"]])
                         forces[i, 2] = float(parts[idx["fz"]])
+                    if has_spin and spins is not None:
+                        magnitude = float(parts[idx["c_spin[1]"]])
+                        spins[i, 0] = magnitude * float(parts[idx["c_spin[2]"]])
+                        spins[i, 1] = magnitude * float(parts[idx["c_spin[3]"]])
+                        spins[i, 2] = magnitude * float(parts[idx["c_spin[4]"]])
                 # Resolve missing type->element mapping if needed
                 if species_col == "type" and types_buffer is not None:
                     missing = sorted({int(t) for t in types_buffer.tolist() if int(t) >= 1 and int(t) not in type_to_elem})
@@ -804,6 +812,9 @@ class LammpsDumpImporter:
                 if has_forces and forces is not None:
                     properties.append({"name": "forces", "type": "R", "count": 3})
                     atom_props["forces"] = forces
+                if has_spin and spins is not None:
+                    properties.append({"name": "spin", "type": "R", "count": 3})
+                    atom_props["spin"] = spins
                 additional_fields = {
                     "Config_type": f"LAMMPS_{timestep}",
                     "pbc": "T T T",

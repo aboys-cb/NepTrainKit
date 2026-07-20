@@ -112,6 +112,7 @@ _BILINGUAL_SCREENSHOTS = (
     'show_nep_overview.png',
     'training_set_audit_overview.png',
     'training_set_audit_structure_map.png',
+    'training_set_audit_magnetic_shares.png',
     'g_index_dialog.png',
     'g_range_dialog.png',
     'g_lattice_dialog.png',

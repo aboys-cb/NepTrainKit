@@ -28,13 +28,13 @@ msgstr "Training Set Audit"
 #: ../../source/module/training-set-assessment.md:3
 #: 6699bedd19ba4fbe95b17c97b4e01057
 msgid ""
-"「训练集评估」用于检查当前训练数据：先找会阻止训练的技术问题，再查看组分、标签、局域环境、结构相和磁序在数据内部如何分布。每一项结果都能回到 `NEP "
+"「训练集评估」用于检查当前训练数据：先找会阻止训练的技术问题，再查看组分、标签、局域环境、结构相和磁类型在数据内部如何分布。每一项结果都能回到 `NEP "
 "Dataset Display` 中的原始结构，便于继续查看、选择或导出。"
 msgstr ""
 "Training Set Audit inspects the active training data in two stages: it first"
 " finds technical problems that can block training, then shows how "
 "composition, labels, local environments, structural phases, and magnetic "
-"order are distributed within the dataset. Every result keeps the original "
+"types are distributed within the dataset. Every result keeps the original "
 "structure indices so that you can return to `NEP Dataset Display` to "
 "inspect, select, or export the affected structures."
 
@@ -183,8 +183,8 @@ msgstr ""
 
 #: ../../source/module/training-set-assessment.md:42
 #: d5d79373769e42d8be5e44267e8a95d8
-msgid "2. 在「数据地图」查看组分、相和磁序"
-msgstr "Step 2: Inspect composition, structural phase, and magnetic order in Data map"
+msgid "2. 在「数据地图」查看组分、相和磁类型"
+msgstr "Step 2: Inspect composition, structural phase, and magnetic type in Data map"
 
 #: ../../source/module/training-set-assessment.md:44
 #: 043386637a75498c89281021fa493457
@@ -208,34 +208,51 @@ msgstr ""
 
 #: ../../source/module/training-set-assessment.md:48
 #: b6dcdb3c4dc44f239ba3ee5dca404b41
-msgid "**结构相：** FCC、HCP、BCC、L1₂、C14 Laves、C15 Laves 和未解析；"
+msgid "**结构相：** FCC、HCP、BCC、L1₂、C14 Laves、C15 Laves、混合局域结构和未解析；"
 msgstr ""
-"**Structural phase:** FCC, HCP, BCC, L1₂, C14 Laves, C15 Laves, and "
-"unresolved;"
+"**Structural phase:** FCC, HCP, BCC, L1₂, C14 Laves, C15 Laves, mixed local "
+"structure, and unresolved;"
 
 #: ../../source/module/training-set-assessment.md:49
 #: d30818cc1abf4109b3ea337f646f11f7
-msgid "**磁序：** 类 FM、类 AFM、类亚铁磁、类自旋螺旋、非共线有序、混合共线、类自旋无序、低／零磁矩和无有效 `spin` 字段。"
+msgid "**磁类型：** FM、AFM（未细分）、逐层 AFM（`↑↓`）、双层 AFM（`↑↑↓↓`）、FiM、PM-like（自旋无序）、其他非共线、未识别、低／零磁矩和无有效 `spin` 字段。"
 msgstr ""
-"**Magnetic order:** FM-like, AFM-like, ferrimagnetic-like, spin-spiral-like,"
-" noncollinear order, mixed collinear, spin-disordered-like, low/zero moment,"
-" and no valid `spin` field."
+"**Magnetic type:** FM, AFM (unsubtyped), layered AFM (`↑↓`), double-layer "
+"AFM (`↑↑↓↓`), FiM, PM-like (spin-disordered), other noncollinear, "
+"unresolved, low/zero moment, and no valid `spin` field."
 
 #: ../../source/module/training-set-assessment.md:51
 #: f4712e13b1494d418274a174d972c57c
-msgid "分析结束后，可以先选组分，再用相结构和磁序下拉框继续筛选。点击「查看选中的结构」即可回到 `NEP Dataset Display`。"
+msgid "分析结束后，可以先选组分，再用结构相和磁类型下拉框继续筛选。点击「查看选中的结构」即可回到 `NEP Dataset Display`。"
 msgstr ""
 "When analysis finishes, select a composition and refine it with the "
-"structural-phase and magnetic-order filters. Click `Show selected "
+"structural-phase and magnetic-type filters. Click `Show selected "
 "structures` to return to `NEP Dataset Display`."
 
 #: ../../source/module/training-set-assessment.md:53
 #: 93e9c1baa001465cb63d1fc0679b78fc
-msgid "相和磁是两条独立证据。同一个 FCC 或 BCC 骨架可以承载不同磁序，所以页面不会把它们合成一个不可拆分的标签。"
+msgid "相和磁是两条独立证据。同一个 FCC 或 BCC 骨架可以承载不同磁结构，所以页面不会把它们合成一个不可拆分的标签。`Config_type` 只是来源元数据，不参与结构相或磁类型判断。"
 msgstr ""
-"Structural phase and magnetic order are independent evidence layers. The "
-"same FCC or BCC framework can carry different magnetic orders, so the "
-"interface does not collapse them into a single inseparable label."
+"Structural phase and magnetism are independent evidence layers. The same "
+"FCC or BCC framework can carry different magnetic structures, so the "
+"interface does not collapse them into a single inseparable label. "
+"`Config_type` is source metadata only and does not participate in structural-"
+"phase or magnetic-type classification."
+
+#: ../../source/module/training-set-assessment.md:55
+#: 17bf302dfb28404bbdceb2817adadedf
+msgid "在「进阶证据 → 磁序」中还可以切换三张按结构帧数归一化的 100% 堆叠图：每个结构相中的磁类型占比、每个磁类型中的结构相占比，以及整个评估范围的磁类型占比。颜色段中的百分比和右侧帧数分别回答“占多少”和“有多少帧”；点击任一颜色段可回选对应结构。"
+msgstr "Under `Advanced evidence → Magnetic order`, switch among three 100% stacked charts normalized by structure-frame count: magnetic-type shares within each structural phase, structural-phase shares within each magnetic type, and magnetic-type shares across the full audit scope. Percentages inside colored segments show the share, counts at the right show the number of frames, and clicking a segment selects its structures."
+
+#: ../../source/module/training-set-assessment.md:57
+#: 277da8a81e1d460dbf8e119e9b9d388b
+msgid "训练集评估的磁类型占比视图，显示图表切换、结构帧占比、颜色图例和结构回选入口"
+msgstr "Magnetic-type share view with chart switching, structure-frame percentages, a color legend, and the structure-selection action"
+
+#: ../../source/module/training-set-assessment.md:57
+#: 277da8a81e1d460dbf8e119e9b9d388b
+msgid ".. image:: ../_static/image/generated/training_set_audit_magnetic_shares.png"
+msgstr ""
 
 #: ../../source/module/training-set-assessment.md:55
 #: 892a6ae6ab4e496ca9878d72b8ad3376
@@ -299,10 +316,10 @@ msgstr "label distributions, the high-force tail, and the high-energy tail."
 
 #: ../../source/module/training-set-assessment.md:70
 #: 8c329ebb7a624f639992f14e273da37a
-msgid "没有 `nep.txt` 时，数据质量、组分、标签、结构相和磁序仍可使用；依赖模型 cutoff 的局域化学与元素对接触会显示为不可用。"
+msgid "没有 `nep.txt` 时，数据质量、组分、标签、结构相和磁类型仍可使用；依赖模型 cutoff 的局域化学与元素对接触会显示为不可用。"
 msgstr ""
 "Without `nep.txt`, data quality, composition, labels, structural phase, and "
-"magnetic order remain available. Local-chemistry and element-pair contact "
+"magnetic type remain available. Local-chemistry and element-pair contact "
 "checks that require model cutoffs are marked unavailable."
 
 #: ../../source/module/training-set-assessment.md:72
@@ -703,8 +720,8 @@ msgstr ""
 
 #: ../../source/module/training-set-assessment.md:171
 #: 13618249aa594b228b6283df0e880ae7
-msgid "磁序如何识别"
-msgstr "How magnetic order is identified"
+msgid "磁类型如何识别"
+msgstr "How magnetic types are identified"
 
 #: ../../source/module/training-set-assessment.md:173
 #: 9ef27a19efbf44309611cde3c70034a3
@@ -713,9 +730,9 @@ msgstr "Input requirement"
 
 #: ../../source/module/training-set-assessment.md:175
 #: 83de5186a6f1405c8757ec07813f6154
-msgid "磁序只读取逐原子的 `spin:R:3`，即每个原子一个三分量自旋向量："
+msgid "磁类型分析只读取逐原子的 `spin:R:3`，即每个原子一个三分量自旋向量："
 msgstr ""
-"Magnetic analysis reads only per-atom `spin:R:3`: one three-component spin "
+"Magnetic-type analysis reads only per-atom `spin:R:3`: one three-component spin "
 "vector for each atom."
 
 #: ../../source/module/training-set-assessment.md:177
@@ -865,8 +882,8 @@ msgstr ""
 
 #: ../../source/module/training-set-assessment.md:227
 #: 9e39cb50b15442eb8123ccbdacdc073b
-msgid "结构级磁序标签"
-msgstr "Structure-level magnetic labels"
+msgid "结构级磁类型标签"
+msgstr "Structure-level magnetic-type labels"
 
 #: ../../source/module/training-set-assessment.md:229
 #: 239ad874095a4254a0cdb040b58a2337
@@ -888,91 +905,75 @@ msgstr "Current criterion"
 msgid "低／零磁矩"
 msgstr "Low / zero moment"
 
-#: ../../source/module/training-set-assessment.md:55
-#: a824261256c94a6abc09f70017584691
-msgid "有效磁矩原子少于 2 个"
-msgstr "fewer than two atoms with effective moments"
+#: ../../source/module/training-set-assessment.md:57
+#: 6446cf8afa234c14a2102d49052a3fea
+msgid "没有大于 `1 × 10⁻⁷` 的有效磁矩"
+msgstr "No valid moment is greater than `1 × 10⁻⁷`"
 
-#: ../../source/module/training-set-assessment.md:55
+#: ../../source/module/training-set-assessment.md:57
+#: fec0e6a9a57e463380ad06f039c0653a
+msgid "未识别"
+msgstr "Unresolved"
+
+#: ../../source/module/training-set-assessment.md:57
+#: 56b7514d63754076a07571c19ca719a2
+msgid "只有 1 个有效磁矩；或后续证据不足以落入其他类型"
+msgstr "Only one valid moment, or insufficient evidence for any other type"
+
+#: ../../source/module/training-set-assessment.md:57
 #: bd6652c69c2d436589b01a83fc77268f
-msgid "类 FM"
-msgstr "FM-like"
+msgid "FM"
+msgstr "FM"
 
-#: ../../source/module/training-set-assessment.md:55
+#: ../../source/module/training-set-assessment.md:57
 #: f7485b7b08274dfeb16e573cc02f6ee7
 msgid "$C\\ge0.90$、$R_M\\ge0.82$、$\\bar c\\ge0.20$"
-msgstr ""
+msgstr "$C\\ge0.90$, $R_M\\ge0.82$, and $\\bar c\\ge0.20$"
 
-#: ../../source/module/training-set-assessment.md:55
+#: ../../source/module/training-set-assessment.md:57
 #: 31861865dd524bc78fca82d2fe552d2b
-msgid "类 AFM"
-msgstr "AFM-like"
+msgid "AFM"
+msgstr "AFM"
 
-#: ../../source/module/training-set-assessment.md:55
+#: ../../source/module/training-set-assessment.md:57
+#: 1a2c607306f842eba190f16e95a2fff6
+msgid "$C\\ge0.90$、$R_M\\le0.20$，并且满足 $S_\\mathrm{max}\\ge0.45$、$\\bar c\\le-0.25$ 或反平行近邻比例至少 `0.20` 中的任一项"
+msgstr "$C\\ge0.90$, $R_M\\le0.20$, and at least one of: $S_\\mathrm{max}\\ge0.45$, $\\bar c\\le-0.25$, or an antiparallel-neighbor fraction of at least `0.20`"
+
+#: ../../source/module/training-set-assessment.md:57
+#: b89b6cd8028242fa828a9b99a8c8a74d
+msgid "FiM"
+msgstr "FiM"
+
+#: ../../source/module/training-set-assessment.md:57
 #: a433bba2ec1447c4a4f9890be518c147
-#, python-brace-format
-msgid ""
-"$C\\ge0.90$，并且满足以下任一条件：$S_\\mathrm{max}\\ge0.45$、反平行近邻比例至少 "
-"`0.20`、$R_M\\le0.20$；或 $R_M\\le0.20$ 且 $\\bar c\\le-0.25$"
-msgstr ""
-"$C\\ge0.90$ and at least one of the following: $S_\\mathrm{max}\\ge0.45$, "
-"antiparallel-neighbor fraction at least `0.20`, or $R_M\\le0.20$; "
-"alternatively $R_M\\le0.20$ and $\\bar c\\le-0.25$"
+msgid "$C\\ge0.90$、$R_M<0.82$、反平行近邻比例至少 `0.20`，并且 $S_\\mathrm{max}\\ge0.35$ 或 $\\bar c<-0.05$"
+msgstr "$C\\ge0.90$, $R_M<0.82$, an antiparallel-neighbor fraction of at least `0.20`, and either $S_\\mathrm{max}\\ge0.35$ or $\\bar c<-0.05$"
 
-#: ../../source/module/training-set-assessment.md:55
-#: 8ff8a04e11424516a5b076023f49d89d
-msgid "类亚铁磁"
-msgstr "Ferrimagnetic-like"
+#: ../../source/module/training-set-assessment.md:57
+#: 6a6d457a4eb542ecbcf1fd1dbf39caa9
+msgid "其他非共线"
+msgstr "Other noncollinear"
 
-#: ../../source/module/training-set-assessment.md:55
-#: ee5126d2716a49f4845d5d650d9717d0
-#, python-brace-format
-msgid "$C\\ge0.90$、$S_\\mathrm{max}\\ge0.45$、反平行近邻比例至少 `0.20`，且 $0.20<R_M\\le0.95$"
-msgstr ""
-"$C\\ge0.90$, $S_\\mathrm{max}\\ge0.45$, antiparallel-neighbor fraction at "
-"least `0.20`, and $0.20<R_M\\le0.95$"
+#: ../../source/module/training-set-assessment.md:57
+#: a433bba2ec1447c4a4f9890be518c147
+msgid "$C<0.90$，且满足 $S_\\mathrm{max}\\ge0.45$ 与 $P\\ge0.72$；或满足 $S_\\mathrm{max}\\ge0.32$、$\\lvert\\bar c\\rvert\\ge0.30$ 中的任一项"
+msgstr "$C<0.90$ and either both $S_\\mathrm{max}\\ge0.45$ and $P\\ge0.72$, or at least one of $S_\\mathrm{max}\\ge0.32$ and $\\lvert\\bar c\\rvert\\ge0.30$"
 
-#: ../../source/module/training-set-assessment.md:55
-#: f8d5f9e7ff5b491089f4cb1c20146196
-msgid "混合共线"
-msgstr "Mixed collinear"
+#: ../../source/module/training-set-assessment.md:57
+#: 77753f8c2c73494fba5e63a9a224961b
+msgid "PM-like（自旋无序）"
+msgstr "PM-like (spin-disordered)"
 
-#: ../../source/module/training-set-assessment.md:55
-#: ae4ece5fadba4eec88f9ba08b31a095a
-msgid "已满足 $C\\ge0.90$，但不满足上述共线磁序条件"
-msgstr "$C\\ge0.90$, without satisfying one of the preceding collinear-order rules"
+#: ../../source/module/training-set-assessment.md:57
+#: a433bba2ec1447c4a4f9890be518c147
+msgid "$R_M\\le0.25$、$S_\\mathrm{max}\\le0.22$ 且 $\\lvert\\bar c\\rvert\\le0.15$"
+msgstr "$R_M\\le0.25$, $S_\\mathrm{max}\\le0.22$, and $\\lvert\\bar c\\rvert\\le0.15$"
 
-#: ../../source/module/training-set-assessment.md:55
-#: 538c51e216e34a668a238e5880a95541
-msgid "类自旋螺旋"
-msgstr "Spin-spiral-like"
-
-#: ../../source/module/training-set-assessment.md:55
-#: e88c468a3216494c8439475f1068e198
-#, python-brace-format
-msgid "$C<0.90$、$S_\\mathrm{max}\\ge0.52$、$P\\ge0.72$"
-msgstr ""
-
-#: ../../source/module/training-set-assessment.md:55
-#: 713c1a1da81d40898260d8e9214dca84
-msgid "非共线有序"
-msgstr "Noncollinear order"
-
-#: ../../source/module/training-set-assessment.md:55
-#: b1a237f57de44b09b944a82e42289eb4
-#, python-brace-format
-msgid "$C<0.90$，且 $S_\\mathrm{max}\\ge0.32$ 或 $"
-msgstr "$C<0.90$, and either $S_\\mathrm{max}\\ge0.32$ or $|\\bar c|\\ge0.30$"
-
-#: ../../source/module/training-set-assessment.md:55
-#: 264c0083e2aa485db15c08ce2be588f2
-msgid "类自旋无序"
-msgstr "Spin-disordered-like"
-
-#: ../../source/module/training-set-assessment.md:55
-#: a51caf4bb34f4ae3aa820795dae0ed14
-msgid "其余情况"
-msgstr "all remaining cases"
+#: ../../source/module/training-set-assessment.md:258
+#: 426608c950264fbc8f4e449063b56b9f
+msgid "只有结构级结果已经属于 AFM，程序才继续检查层序。它沿周期晶格方向用分数坐标聚合磁层；同一方向上分数坐标间隔不超过 `0.025` 的原子归入同一层，层内极化绝对值必须至少为 `0.80`。层序细分至少需要 4 个有效磁矩原子。一个完整的周期 `↑↓` 标为「逐层 AFM」，`↑↑↓↓` 标为「双层 AFM」。周期边界会继续重复该层序，因此不要求同一晶胞内再出现第二遍。没有通过层序门槛的 AFM 显示为「AFM（未细分）」。"
+msgstr "The program checks layer sequences only after the structure-level result is AFM. It groups atoms whose fractional-coordinate separation along the same periodic direction is at most `0.025` into one magnetic layer and requires an absolute within-layer polarization of at least `0.80`. Subtype recognition requires at least four atoms with valid moments. One complete `↑↓` period is labeled layered AFM, while `↑↑↓↓` is labeled double-layer AFM. Periodic boundaries repeat the sequence, so a second copy inside the same cell is unnecessary. AFM structures that do not pass the layer-sequence gate are shown as AFM (unsubtyped)."
 
 #: ../../source/module/training-set-assessment.md:242
 #: 76337b4e7d55403591ed9adac63c694b
@@ -989,20 +990,22 @@ msgstr ""
 
 #: ../../source/module/training-set-assessment.md:244
 #: f2ba8086aca549029a49934ea5e6b11b
-msgid "磁序标签的边界"
-msgstr "Limits of magnetic-order labels"
+msgid "磁类型标签的边界"
+msgstr "Limits of magnetic-type labels"
 
 #: ../../source/module/training-set-assessment.md:246
 #: a3f175cf9c214c1ca7abde5a7940e111
-msgid "这些标签描述单帧自旋快照，不是有限温度磁相判定。波矢扫描只覆盖当前超胞可表示的低阶整数点；非公度螺旋、更长周期调制、强缺陷结构或尺寸很小的结构可能落入「混合」或「未解析」。判断相变温度、磁畴稳定性或自由能仍需要独立模拟和物理验证。"
+msgid "这些标签描述单帧自旋快照，不是有限温度磁相判定。`PM-like` 只表示这一帧在当前判据下呈现低净磁矩、低 q 峰和弱近邻相关，不能据此声明热力学顺磁相。波矢扫描只覆盖当前超胞可表示的低阶整数点；非公度螺旋、更长周期调制、强缺陷结构或尺寸很小的结构可能落入「其他非共线」或「未识别」。判断相变温度、磁畴稳定性或自由能仍需要独立模拟和物理验证。"
 msgstr ""
-"These labels describe a single saved spin snapshot, not a finite-temperature"
-" magnetic phase. The wave-vector scan covers only the low-order integer "
-"points representable in the current supercell. Incommensurate spirals, "
-"longer-period modulation, strongly defective structures, or very small cells"
-" may be reported as mixed or unresolved. Transition temperatures, domain "
-"stability, and free energies require separate simulations and physical "
-"validation."
+"These labels describe a single saved spin snapshot, not a finite-temperature "
+"magnetic phase. PM-like means only that this frame has low net moment, a weak "
+"q peak, and weak neighbor correlation under the current criteria; it does not "
+"establish a thermodynamic paramagnetic phase. The wave-vector scan covers only "
+"low-order integer points representable in the current supercell. Incommensurate "
+"spirals, longer-period modulation, strongly defective structures, or very small "
+"cells may be reported as other noncollinear or unresolved. Transition "
+"temperatures, domain stability, and free energies require separate simulations "
+"and physical validation."
 
 #: ../../source/module/training-set-assessment.md:249
 #: 1b25cfb5ee664cc5a3a01a50b37443b9
@@ -1067,10 +1070,10 @@ msgstr "audit scope, generation time, and data/model fingerprints;"
 
 #: ../../source/module/training-set-assessment.md:262
 #: b2474dfeb2ad439ca6b64f0a0c5a8f30
-msgid "数据质量、组分、标签、局域环境、相结构和磁序摘要；"
+msgid "数据质量、组分、标签、局域环境、结构相和磁类型摘要；"
 msgstr ""
 "summaries of data quality, composition, labels, local environments, "
-"structural phase, and magnetic order;"
+"structural phase, and magnetic type;"
 
 #: ../../source/module/training-set-assessment.md:263
 #: a914d4ad781c4fcfa812f04d8b9a617c

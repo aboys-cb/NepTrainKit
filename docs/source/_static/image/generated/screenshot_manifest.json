@@ -407,6 +407,30 @@
     ],
     "sha256": "06779fb5dff8f06522427e6acb2c0573c22ce84f360b302c18601c49696ef904"
   },
+  "training_set_audit_magnetic_shares": {
+    "scenario": "training_set_audit_magnetic_shares",
+    "title": "Magnetic-type shares",
+    "description": "Frame-normalized magnetic-type shares in Advanced evidence.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/training_set_audit_magnetic_shares.png",
+    "window_size": [
+      1440,
+      860
+    ],
+    "sha256": "581bc2524efe41fb96634b1909a7974b90f67d3008bb74432688fd9c0ea177a6"
+  },
+  "training_set_audit_magnetic_shares_en": {
+    "scenario": "training_set_audit_magnetic_shares",
+    "title": "Magnetic-type shares",
+    "description": "Frame-normalized magnetic-type shares in Advanced evidence.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/training_set_audit_magnetic_shares_en.png",
+    "window_size": [
+      1440,
+      860
+    ],
+    "sha256": "fd7251e73d21c82c9be6b285b21b082cc5a9c48ac32e8cf12b07c0123d991c51"
+  },
   "training_set_audit_overview": {
     "scenario": "training_set_audit_overview",
     "title": "Training Set Audit overview",
@@ -417,7 +441,7 @@
       1440,
       860
     ],
-    "sha256": "f425d0a47b40148a3ac61db2887db8e1bfd596edc70f6000988e289872e839ea"
+    "sha256": "8334bd143a0a6fcaaca42cd0bb3e4714634bae0e1c0dc9cfe84a9e66f0a74383"
   },
   "training_set_audit_overview_en": {
     "scenario": "training_set_audit_overview",
@@ -429,7 +453,7 @@
       1440,
       860
     ],
-    "sha256": "5c08190ff8867547daa7d7134c44419a2be73315985ca95f8e0c3179874b1eb1"
+    "sha256": "b97c1427624d05c21ffaa383f1e676cc2db9c3674c9e733a9818e57ce8432ba1"
   },
   "training_set_audit_structure_map": {
     "scenario": "training_set_audit_structure_map",

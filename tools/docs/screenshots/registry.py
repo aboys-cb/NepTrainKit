@@ -18,6 +18,7 @@ ZH_TEXT = {
     "Search and selection": "搜索与选择",
     "Training Set Audit overview": "训练集评估总览",
     "Phase evidence on the composition map": "组分地图中的相结构证据",
+    "Magnetic-type shares": "磁类型占比",
     "Make Data workspace": "Make Data 工作区",
     "Open input structures": "打开输入结构",
     "Add new card": "添加卡片",
@@ -38,6 +39,10 @@ EN_TEXT = {
     "相分布随成分变化": "Phase distribution across composition",
     "精确成分与结构数": "Exact composition and structure count",
     "筛选相并回看结构": "Filter phases and inspect structures",
+    "选择磁类型证据": "Select magnetic-type evidence",
+    "切换三种占比关系": "Switch among three share views",
+    "按结构帧查看占比": "Inspect shares by structure frame",
+    "点击色块回看结构": "Click a segment to inspect structures",
 }
 
 
@@ -114,6 +119,20 @@ SCENARIOS: dict[str, ScenarioSpec] = {
             Annotation("2", "相分布随成分变化", "widget:composition_chart", "top-left"),
             Annotation("3", "精确成分与结构数", "widget:composition_table", "top-right"),
             Annotation("4", "筛选相并回看结构", "widget:composition_phase_selector", "left"),
+        ),
+    ),
+    "training_set_audit_magnetic_shares": ScenarioSpec(
+        name="training_set_audit_magnetic_shares",
+        title="Magnetic-type shares",
+        runner="training_set_audit_magnetic_shares",
+        output=DEFAULT_OUTPUT_DIR / "training_set_audit_magnetic_shares.png",
+        window_size=(1440, 860),
+        description="Frame-normalized magnetic-type shares in Advanced evidence.",
+        annotations=(
+            Annotation("1", "选择磁类型证据", "widget:dimension_list", "right"),
+            Annotation("2", "切换三种占比关系", "widget:plot_selector", "left"),
+            Annotation("3", "按结构帧查看占比", "widget:chart_widget", "top-right"),
+            Annotation("4", "点击色块回看结构", "widget:chart_send_button", "left"),
         ),
     ),
     "show_nep_index_dialog": ScenarioSpec(

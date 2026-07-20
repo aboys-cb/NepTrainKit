@@ -182,13 +182,15 @@ msgstr ""
 
 #: ../../source/module/NEP-dataset-display.md:46 c3ac71772c5442909b0e62e67e205e06
 msgid ""
-"训练集评估还可以按精确组分查看结构数量，并对全部结构分析 FCC、HCP、BCC、L1₂、Laves 相结构和 `spin:R:3` "
-"磁序。完整用法、判据、公式和限制见 [训练集评估](training-set-assessment.md)。"
+"训练集评估还可以按精确组分查看结构数量，并对全部结构分析 FCC、HCP、BCC、L1₂、Laves 相结构，以及 "
+"FM、AFM、FiM、PM-like 等 `spin:R:3` 磁类型。完整用法、判据、占比视图和限制见 "
+"[训练集评估](training-set-assessment.md)。"
 msgstr ""
-"Training Set Audit also groups structures by exact composition and can "
-"analyze FCC, HCP, BCC, L1₂, and Laves structural evidence together with "
-"`spin:R:3` magnetic order. See [Training Set Audit](training-set-"
-"assessment.md) for the workflow, criteria, formulas, and limitations."
+"Training Set Audit also groups structures by exact composition and analyzes "
+"FCC, HCP, BCC, L1₂, and Laves structural phases together with `spin:R:3` "
+"magnetic types such as FM, AFM, FiM, and PM-like. See [Training Set Audit]"
+"(training-set-assessment.md) for the workflow, criteria, share views, and "
+"limitations."
 
 #: ../../source/module/NEP-dataset-display.md:48 cc5953354ee44db6995a390bafc9cd03
 msgid "按目的选工具"
@@ -313,10 +315,10 @@ msgid "顶部 `Save` → `评估当前数据集`"
 msgstr "Title-bar `Save` → `Check current dataset`"
 
 #: ../../source/module/NEP-dataset-display.md:11 0e0654043c404332858f18879d01ba9e
-msgid "查看阻塞项、组分、局域环境、相结构、磁序和复核队列"
+msgid "查看阻塞项、组分、局域环境、结构相、磁类型和复核队列"
 msgstr ""
 "Review blockers, composition, local chemistry, structural phase, magnetic "
-"order, and the review queue"
+"type, and the review queue"
 
 #: ../../source/module/NEP-dataset-display.md:11 ce91f385c8e2458ebd9f0ff4f3e380f0
 msgid "看数值分布"

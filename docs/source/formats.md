@@ -44,6 +44,24 @@ VASP 结果通常用于把 DFT 标注转成训练结构，或在 `NEP Dataset Di
 
 支持正交和三斜晶胞，以及常见坐标列。导入后建议先抽查晶胞、元素类型和坐标单位是否符合预期。
 
+### 带自旋的推荐 dump
+
+使用 spin LAMMPS 时，推荐按下面的列名输出磁矩：
+
+```text
+compute spin all property/atom sp spx spy spz fmx fmy fmz fx fy fz
+dump dpgen_dump all custom 100 traj.dump id type x y z c_spin[1] c_spin[2] c_spin[3] c_spin[4] c_spin[5] c_spin[6] c_spin[7]
+```
+
+导入器把 `c_spin[1]` 解释为磁矩模长，把 `c_spin[2]`、`c_spin[3]`、`c_spin[4]` 解释为三个方向分量，并重建逐原子自旋向量：
+
+$$
+\mathbf s_i=c_{\mathrm{spin}[1]}
+\left(c_{\mathrm{spin}[2]},c_{\mathrm{spin}[3]},c_{\mathrm{spin}[4]}\right).
+$$
+
+`c_spin[5]`、`c_spin[6]`、`c_spin[7]` 是磁力分量，不会写入 `spin:R:3`。如果缺少 `c_spin[1:4]` 中任意一列，导入器不会为该帧生成自旋字段。
+
 ## 导出
 
 `NEP Dataset Display` 可以把当前数据导出为两类结果：

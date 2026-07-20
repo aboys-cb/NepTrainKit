@@ -214,6 +214,35 @@ msgstr ""
 "After import, check a few structures to confirm that the cell, element "
 "types, and coordinate units were interpreted as expected."
 
+#: ../../source/formats.md:47 19d4ae08c8014cef9835d832ff44479e
+msgid "带自旋的推荐 dump"
+msgstr "Recommended dump format with spins"
+
+#: ../../source/formats.md:49 f0a3aeb5c68a4ba8ab1545a8f4a86542
+msgid "使用 spin LAMMPS 时，推荐按下面的列名输出磁矩："
+msgstr "When using spin LAMMPS, use the following column names to output magnetic moments:"
+
+#: ../../source/formats.md:51 330eecb051fd46eea7a0fea93f467a01
+msgid "compute spin all property/atom sp spx spy spz fmx fmy fmz fx fy fz\n"
+"dump dpgen_dump all custom 100 traj.dump id type x y z c_spin[1] c_spin[2] c_spin[3] c_spin[4] c_spin[5] c_spin[6] c_spin[7]\n"
+""
+msgstr ""
+
+#: ../../source/formats.md:56 3b52d2a1e78a40f09be51cb1fe20f0c6
+msgid "导入器把 `c_spin[1]` 解释为磁矩模长，把 `c_spin[2]`、`c_spin[3]`、`c_spin[4]` 解释为三个方向分量，并重建逐原子自旋向量："
+msgstr "The importer treats `c_spin[1]` as the moment magnitude and `c_spin[2]`, `c_spin[3]`, and `c_spin[4]` as the three direction components, then reconstructs the per-atom spin vector:"
+
+#: ../../source/formats.md:58 3620f2b3d8c4400d926ef57f02dbf8be
+msgid "\n"
+"\\mathbf s_i=c_{\\mathrm{spin}[1]}\n"
+"\\left(c_{\\mathrm{spin}[2]},c_{\\mathrm{spin}[3]},c_{\\mathrm{spin}[4]}\\right).\n"
+""
+msgstr ""
+
+#: ../../source/formats.md:63 d96e134b9baf478f985dfa37ba410d31
+msgid "`c_spin[5]`、`c_spin[6]`、`c_spin[7]` 是磁力分量，不会写入 `spin:R:3`。如果缺少 `c_spin[1:4]` 中任意一列，导入器不会为该帧生成自旋字段。"
+msgstr "`c_spin[5]`, `c_spin[6]`, and `c_spin[7]` are magnetic-force components and are not written to `spin:R:3`. If any column in `c_spin[1:4]` is missing, the importer does not create a spin field for that frame."
+
 #: ../../source/formats.md:47 45c76f76fb534a04aa83f159f114e140
 msgid "导出"
 msgstr "Export"

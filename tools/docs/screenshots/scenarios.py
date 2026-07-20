@@ -7,7 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from PySide6.QtCore import QThread
+import numpy as np
+from PySide6.QtCore import QThread, Qt
 from PySide6.QtWidgets import QApplication, QWidget
 from qfluentwidgets import CaptionLabel, MessageBoxBase
 
@@ -131,6 +132,14 @@ def training_set_audit_overview(ctx: ScenarioContext) -> None:
     if not wait_until(ctx.app, loaded, cycles=2400):
         raise RuntimeError("Timed out building the Training Set Audit overview")
     audit = ctx.window.training_set_audit_interface
+    audit.dataset_label.setText(
+        audit.tr("{dataset} · {scope} scope · {count}/{total} structures").format(
+            dataset="train.xyz",
+            scope="active",
+            count=25,
+            total=25,
+        )
+    )
     audit.page_tabs.setCurrentIndex(0)
     ctx.capture_widget = audit
     dismiss_transient_notifications(ctx.app)
@@ -157,6 +166,58 @@ def training_set_audit_structure_map(ctx: ScenarioContext) -> None:
         raise RuntimeError("Timed out building structural-phase evidence for the audit map")
     audit.page_tabs.setCurrentIndex(1)
     audit.data_map_tabs.setCurrentIndex(0)
+    ctx.capture_widget = audit
+    dismiss_transient_notifications(ctx.app)
+    pump_events(ctx.app, 260)
+
+
+def training_set_audit_magnetic_shares(ctx: ScenarioContext) -> None:
+    """Show frame-normalized magnetic-type shares with deterministic spin data."""
+    show_nep_overview(ctx)
+    data = ctx.window.show_nep_interface.nep_result_data
+    structures = data.structure.all_data
+    for index, structure in enumerate(structures):
+        atom_count = len(structure.atomic_properties["species"])
+        if index < 10:
+            spins = np.zeros((atom_count, 3), dtype=np.float32)
+            spins[:, 2] = 2.0
+            structure.atomic_properties["spin"] = spins
+        elif index < 18:
+            structure.atomic_properties["spin"] = np.zeros(
+                (atom_count, 3), dtype=np.float32
+            )
+        else:
+            structure.atomic_properties.pop("spin", None)
+
+    ctx.window.open_training_set_audit(data)
+    audit = ctx.window.training_set_audit_interface
+
+    def loaded() -> bool:
+        return getattr(audit, "_result", None) is not None
+
+    if not wait_until(ctx.app, loaded, cycles=2400):
+        raise RuntimeError("Timed out building the magnetic screenshot audit")
+    audit.composition_evidence_button.click()
+
+    def analysis_complete() -> bool:
+        result = getattr(audit, "_result", None)
+        return bool(
+            result is not None
+            and result.phase_inventory is not None
+            and result.magnetic_inventory is not None
+        )
+
+    if not wait_until(ctx.app, analysis_complete, cycles=6000):
+        raise RuntimeError("Timed out building magnetic evidence for the audit map")
+    audit.page_tabs.setCurrentIndex(1)
+    audit.data_map_tabs.setCurrentIndex(1)
+    for row in range(audit.dimension_list.count()):
+        item = audit.dimension_list.item(row)
+        if item.data(Qt.ItemDataRole.UserRole) == "magnetic_evidence":
+            audit.dimension_list.setCurrentItem(item)
+            break
+    else:
+        raise RuntimeError("Magnetic evidence dimension is unavailable")
     ctx.capture_widget = audit
     dismiss_transient_notifications(ctx.app)
     pump_events(ctx.app, 260)
@@ -295,6 +356,7 @@ RUNNERS: dict[str, Callable[[ScenarioContext], None]] = {
     "show_nep_overview": show_nep_overview,
     "training_set_audit_overview": training_set_audit_overview,
     "training_set_audit_structure_map": training_set_audit_structure_map,
+    "training_set_audit_magnetic_shares": training_set_audit_magnetic_shares,
     "show_nep_index_dialog": show_nep_index_dialog,
     "show_nep_range_dialog": show_nep_range_dialog,
     "show_nep_lattice_dialog": show_nep_lattice_dialog,

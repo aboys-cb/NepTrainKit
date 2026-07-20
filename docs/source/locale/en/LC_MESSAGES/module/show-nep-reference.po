@@ -752,19 +752,20 @@ msgid "`评估当前数据集`"
 msgstr "`Audit Current Dataset`"
 
 #: ../../source/module/show-nep-reference.md:60 d33552bc2781408ebeb202b8182ffaf0
-msgid "检查当前活动结构的数据质量、组分、标签、局域环境、相结构和磁序"
+msgid "检查当前活动结构的数据质量、组分、标签、局域环境、结构相和磁类型"
 msgstr ""
 "Audit data quality, composition, labels, local environments, structural "
-"phases, and magnetic orders for active structures"
+"phases, and magnetic types for active structures"
 
 #: ../../source/module/show-nep-reference.md:62 9202a93880174dc79e5c3e7ba1666d9b
 msgid ""
-"`评估当前数据集` 位于顶部 `Save` 分裂菜单中。第一次使用时，先加载数据，再从这个入口运行完整检查。页面用法、相识别、磁序识别和公式见 "
+"`评估当前数据集` 位于顶部 `Save` 分裂菜单中。第一次使用时，先加载数据，再从这个入口运行完整检查。页面用法、结构相识别、磁类型识别和公式见 "
 "[训练集评估](training-set-assessment.md)。"
 msgstr ""
 "`Audit Current Dataset` is in the top `Save` split menu. Load a dataset "
 "first, then use this entry to run the full audit. For workflow details, "
-"phase and magnetic-order recognition, and formulas, see [Training Set Audit"
+"structural-phase and magnetic-type recognition, and formulas, see [Training "
+"Set Audit"
 "](training-set-assessment.md)."
 
 #: ../../source/module/show-nep-reference.md:64 e2ea7d16a3fe48af9ad9145232c58a03
@@ -1277,12 +1278,12 @@ msgstr ""
 
 #: ../../source/module/show-nep-reference.md:203 be138becd7694393ac2acff57312f17b
 msgid ""
-"相和磁：进入 `数据地图 → 组分地图`，点击 `分析相结构与磁序` 后遍历全部活动结构。磁序只读取逐原子 `spin:R:3`，不把 `mforce`"
-" 或 `force_mag` 当作自旋。"
+"相和磁：进入 `数据地图 → 组分地图`，点击 `分析相结构与磁序` 后遍历全部活动结构。磁类型只读取逐原子 "
+"`spin:R:3`，不把 `mforce` 或 `force_mag` 当作自旋。"
 msgstr ""
 "Phases and magnetism: open `Data Maps → Composition Map` and click `Analyze "
-"Phases and Magnetic Orders` to process all active structures. Magnetic-order"
-" recognition reads only per-atom `spin:R:3`; it never treats `mforce` or "
+"Phases and Magnetic Orders` to process all active structures. Magnetic-type "
+"analysis reads only per-atom `spin:R:3`; it does not treat `mforce` or "
 "`force_mag` as spin."
 
 #: ../../source/module/show-nep-reference.md:204 b73375183f124220aad6f51e16a6318f

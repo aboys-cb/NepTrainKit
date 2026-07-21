@@ -152,12 +152,13 @@ class TestCardLibraryDialog(unittest.TestCase):
         self.assertEqual(console.find_card_button.text(), "Find card")
         self.assertTrue(console.find_card_button.isEnabled())
 
-    def test_console_exposes_completed_output_handoff_action(self):
+    def test_console_exposes_selected_output_handoff_action(self):
         console = ConsoleWidget()
         requests = []
         console.viewOutputSignal.connect(lambda: requests.append(True))
 
         self.assertFalse(console.view_output_button.isEnabled())
+        self.assertEqual(console.view_output_button.text(), "View selected outputs")
         console.set_output_available(True)
         console.view_output_button.click()
 

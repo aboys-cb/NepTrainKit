@@ -10,6 +10,7 @@ from PySide6.QtCore import QTranslator
 from PySide6.QtWidgets import QApplication
 
 from NepTrainKit.ui.pages.makedata import MakeDataWidget
+from NepTrainKit.ui.widgets.card_widget import MakeDataCard
 
 
 def _card(name, *, enabled=True, output_count=1):
@@ -106,20 +107,37 @@ class TestMakeDataExportScope(unittest.TestCase):
                 widget.export_all_outputs_action.text(), "导出全部可用卡片输出"
             )
             self.assertEqual(
-                widget.setting_group.view_output_button.text(), "查看输出"
+                widget.setting_group.view_output_button.text(), "查看勾选输出"
             )
         finally:
             self._app.removeTranslator(translator)
 
-    def test_completed_output_is_emitted_for_dataset_display(self):
+    def test_all_checked_outputs_are_emitted_for_dataset_display(self):
         widget = MakeDataWidget()
-        structures = [object(), object()]
-        final = SimpleNamespace(result_dataset=structures)
-        widget._cards_for_export = MagicMock(return_value=[final])
+        first_structures = [object()]
+        final_structures = [object(), object()]
+        first = SimpleNamespace(result_dataset=first_structures)
+        final = SimpleNamespace(result_dataset=final_structures)
+        widget._cards_for_export = MagicMock(return_value=[first, final])
         requested = []
         widget.finalOutputRequestedSignal.connect(requested.append)
 
-        widget.request_final_output()
+        widget.request_selected_outputs()
+
+        widget._cards_for_export.assert_called_once_with(include_all=True)
+        self.assertEqual(requested, [first_structures + final_structures])
+
+    def test_card_output_action_emits_only_that_card_result(self):
+        widget = MakeDataWidget()
+        card = MakeDataCard(widget)
+        structures = [object(), object()]
+        card.result_dataset = structures
+        card.set_output_available(True)
+        widget._connect_card_output_actions(card)
+        requested = []
+        widget.finalOutputRequestedSignal.connect(requested.append)
+
+        card.view_output_button.click()
 
         self.assertEqual(requested, [structures])
 

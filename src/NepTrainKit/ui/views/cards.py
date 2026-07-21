@@ -155,12 +155,15 @@ class ConsoleWidget(QWidget):
 
         self.view_output_button = PushButton(
             QIcon(r":/images/src/images/show_nep.svg"),
-            self.tr("View output"),
+            self.tr("View selected outputs"),
             self,
         )
         self.view_output_button.setToolTip(
-            self.tr("Open the final workflow output in NEP Dataset Display")
+            self.tr(
+                "Open outputs from all checked cards in NEP Dataset Display"
+            )
         )
+        self.view_output_button.setAccessibleName(self.tr("View selected outputs"))
         self.view_output_button.setEnabled(False)
         self.view_output_button.clicked.connect(self.view_output)
         self.setting_command.addWidget(self.view_output_button)
@@ -220,7 +223,7 @@ class ConsoleWidget(QWidget):
         self.copySignal.emit()
 
     def view_output(self, *args, **kwargs):
-        """Request opening the completed workflow output."""
+        """Request opening outputs from all checked workflow cards."""
         self.viewOutputSignal.emit()
 
     def set_output_available(self, available: bool) -> None:

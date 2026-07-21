@@ -114,6 +114,7 @@ class CardGroup(MakeDataCardWidget):
         """
         self.dataset =dataset
         self.result_dataset=[]
+        self.set_output_available(False)
 
     def add_card(self, card):
         """Insert a card widget into the group layout.
@@ -206,6 +207,7 @@ class CardGroup(MakeDataCardWidget):
         if self.current_index < len(self.cards_to_run):
             self.start_next_card()
         else:
+            self.set_output_available(bool(self.result_dataset))
             self.runFinishedSignal.emit(self.index)
             if self.filter_card and isValid(self.filter_card) and self.filter_card.check_state:
                 self.filter_card.set_dataset(self.result_dataset)
@@ -222,6 +224,7 @@ class CardGroup(MakeDataCardWidget):
             card.stop()
         if self.filter_card:
             self.filter_card.stop()
+        self.set_output_available(bool(self.result_dataset))
 
     def run(self):
         """Run all child cards sequentially while sharing the same input dataset."""
@@ -231,9 +234,11 @@ class CardGroup(MakeDataCardWidget):
 
         if self.check_state and self.run_card_num > 0:
             self.result_dataset = []
+            self.set_output_available(False)
             self.start_next_card()
         else:
             self.result_dataset = self.dataset
+            self.set_output_available(bool(self.result_dataset))
             self.runFinishedSignal.emit(self.index)
 
     def start_next_card(self):

@@ -273,7 +273,7 @@ class MakeDataWidget(QWidget):
         self.setting_group.newCardSignal.connect(self.add_card)
         self.setting_group.pasteSignal.connect(self.paste_card_config_from_clipboard)
         self.setting_group.copySignal.connect(self.copy_card_config_to_clipboard)
-        self.setting_group.viewOutputSignal.connect(self.request_final_output)
+        self.setting_group.viewOutputSignal.connect(self.request_selected_outputs)
 
         self.path_label = HyperlinkLabel(self)
         self.path_label.setFixedHeight(30)
@@ -565,22 +565,62 @@ class MakeDataWidget(QWidget):
             next_card.run()
         else:
             self.setting_group.set_output_available(
-                bool(current_card.result_dataset)
+                bool(self._cards_for_export(include_all=True))
             )
             MessageManager.send_success_message(
                 self.tr("Perturbation training set created successfully.")
             )
 
-    def request_final_output(self) -> None:
-        """Send the completed workflow output to the main-window handoff."""
-        cards = self._cards_for_export(include_all=False)
+    def request_selected_outputs(self) -> None:
+        """Send all checked card outputs to the main-window handoff."""
+        cards = self._cards_for_export(include_all=True)
         if not cards:
-            MessageManager.send_info_message(
-                self.tr("Run the workflow to create an output first.")
-            )
+            if any(card.check_state for card in self.workspace_card_widget.cards):
+                message = self.tr(
+                    "No checked card has output. Run the workflow first."
+                )
+            else:
+                message = self.tr("No checked cards to view.")
+            MessageManager.send_info_message(message)
             self.setting_group.set_output_available(False)
             return
-        self.finalOutputRequestedSignal.emit(list(cards[0].result_dataset))
+        outputs = [
+            structure
+            for card in cards
+            for structure in card.result_dataset
+        ]
+        self.finalOutputRequestedSignal.emit(outputs)
+
+    def _refresh_selected_output_available(self, *_args) -> None:
+        """Refresh the workflow-level view action after selection changes."""
+        self.setting_group.set_output_available(
+            bool(self._cards_for_export(include_all=True))
+        )
+
+    def _connect_card_output_actions(self, card) -> None:
+        """Connect output actions for a card and any nested group cards."""
+        if getattr(card, "_output_actions_owner", None) is not self:
+            card.viewOutputSignal.connect(self.request_card_output)
+            card.state_checkbox.stateChanged.connect(
+                self._refresh_selected_output_available
+            )
+            card._output_actions_owner = self
+        for child in getattr(card, "card_list", []):
+            self._connect_card_output_actions(child)
+        filter_card = getattr(card, "filter_card", None)
+        if filter_card is not None:
+            self._connect_card_output_actions(filter_card)
+
+    def request_card_output(self, card) -> None:
+        """Send one card's current output to the main-window handoff."""
+        outputs = list(getattr(card, "result_dataset", None) or [])
+        if not outputs:
+            card.set_output_available(False)
+            MessageManager.send_info_message(
+                self.tr("Run this card to create an output first.")
+            )
+            return
+        self.finalOutputRequestedSignal.emit(outputs)
 
     def stop_run_card(self):
         """Stop all running cards and disconnect scheduling hooks.
@@ -619,6 +659,7 @@ class MakeDataWidget(QWidget):
             MessageManager.send_warning_message(self.tr("no card"))
             return None
         card=CardManager.card_info_dict[card_name](self)
+        self._connect_card_output_actions(card)
         self.workspace_card_widget.add_card(card)
         return card
 
@@ -769,6 +810,7 @@ class MakeDataWidget(QWidget):
                         self.tr("Failed to load {name}: {error}").format(name=name, error=exc)
                     )
                     continue
+                self._connect_card_output_actions(card_widget)
                 added_count += 1
         if added_count:
             MessageManager.send_success_message(

@@ -1859,13 +1859,13 @@
     </message>
     <message>
         <location filename="../ui/views/cards.py" line="158" />
-        <source>View output</source>
-        <translation>查看输出</translation>
+        <source>View selected outputs</source>
+        <translation>查看勾选输出</translation>
     </message>
     <message>
         <location filename="../ui/views/cards.py" line="162" />
-        <source>Open the final workflow output in NEP Dataset Display</source>
-        <translation>在 NEP 数据集查看中打开工作流最终输出</translation>
+        <source>Open outputs from all checked cards in NEP Dataset Display</source>
+        <translation>在 NEP 数据集查看中打开所有已勾选卡片的输出</translation>
     </message>
     <message>
         <location filename="../ui/views/cards.py" line="171" />
@@ -3784,6 +3784,10 @@
 <context>
     <name>MakeDataCardWidget</name>
     <message>
+        <source>View this card output</source>
+        <translation>查看此卡片输出</translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/card_widget.py" line="281" />
         <source>Collapse or expand card</source>
         <translation>折叠或展开卡片</translation>
@@ -3902,8 +3906,16 @@
     </message>
     <message>
         <location filename="../ui/pages/makedata.py" line="579" />
-        <source>Run the workflow to create an output first.</source>
-        <translation>请先运行工作流生成输出。</translation>
+        <source>No checked card has output. Run the workflow first.</source>
+        <translation>已勾选的卡片尚无输出，请先运行工作流。</translation>
+    </message>
+    <message>
+        <source>No checked cards to view.</source>
+        <translation>没有可查看的已勾选卡片。</translation>
+    </message>
+    <message>
+        <source>Run this card to create an output first.</source>
+        <translation>请先运行此卡片生成输出。</translation>
     </message>
     <message>
         <location filename="../ui/pages/makedata.py" line="619" />

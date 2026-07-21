@@ -4,7 +4,7 @@ import os
 
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex, Signal, QPoint, QUrl
 from PySide6.QtGui import QCursor, QColor, QIcon, QDesktopServices, QShortcut, QKeySequence
-from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QHeaderView
 from qfluentwidgets import (
     Action,
     BodyLabel,
@@ -51,8 +51,6 @@ class ModelItemWidget(QWidget, DatasetManager):
         self._view = TreeView()
         self._view.clicked.connect(self.item_clicked)
         self._view.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-        self._view.header().setDefaultSectionSize(50)
-        self._view.header().setStretchLastSection(True)
 
         self._model = TreeModel()
         self._view.setModel(self._model)
@@ -67,9 +65,15 @@ class ModelItemWidget(QWidget, DatasetManager):
             self.tr("Created at"),
         ])
         self._view.setItemDelegateForColumn(6, TagDelegate(self._model))
-        width = [90, 200, 60, 90, 80, 90, 200, 30]
-        for col, w in enumerate(width):
-            self._view.setColumnWidth(col, w)
+        header = self._view.header()
+        header.setStretchLastSection(False)
+        header.setMinimumSectionSize(48)
+        for column in (0, 2, 3, 4, 5, 7):
+            header.setSectionResizeMode(
+                column, QHeaderView.ResizeMode.ResizeToContents
+            )
+        for column in (1, 6):
+            header.setSectionResizeMode(column, QHeaderView.ResizeMode.Stretch)
 
         self.create_menu()
         self._layout = QVBoxLayout(self)

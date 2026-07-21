@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from PySide6.QtCore import QTranslator, Qt
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QHeaderView
 
 import NepTrainKit.ui.pages.data_manager as data_manager_module
 import NepTrainKit.ui.views.project_view as project_view_module
@@ -90,6 +90,22 @@ class TestDataManagerUi(unittest.TestCase):
         model_widget.load_models_by_project(project)
 
         self.assertTrue(model_widget.new_model_button.isEnabled())
+
+    def test_model_table_keeps_created_at_header_visible(self):
+        model_widget = ModelItemWidget()
+        header = model_widget._view.header()
+
+        self.assertFalse(header.stretchLastSection())
+        self.assertEqual(
+            header.sectionResizeMode(7),
+            QHeaderView.ResizeMode.ResizeToContents,
+        )
+        self.assertGreaterEqual(
+            header.sectionSizeHint(7),
+            header.fontMetrics().horizontalAdvance(
+                model_widget._model.headerData(7, Qt.Orientation.Horizontal)
+            ),
+        )
 
     def test_dropped_path_prefills_existing_model_editor(self):
         model_widget = ModelItemWidget()

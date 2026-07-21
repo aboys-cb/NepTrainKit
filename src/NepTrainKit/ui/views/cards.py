@@ -117,18 +117,19 @@ class ConsoleWidget(QWidget):
         self.new_card_button.setMenu(self.menu)
         self.setting_command.addWidget(self.new_card_button)
 
-        library_action = Action(
+        self.find_card_button = PushButton(
             FluentIcon.SEARCH,
             self.tr("Find card"),
-            triggered=self.show_card_library,
+            self,
         )
-        library_action.setToolTip(
+        self.find_card_button.setToolTip(
             self.tr("Search cards and add the selected card to the workspace")
         )
-        library_action.installEventFilter(
-            ToolTipFilter(library_action, 300, ToolTipPosition.TOP)
+        self.find_card_button.installEventFilter(
+            ToolTipFilter(self.find_card_button, 300, ToolTipPosition.TOP)
         )
-        self.setting_command.addAction(library_action)
+        self.find_card_button.clicked.connect(self.show_card_library)
+        self.setting_command.addWidget(self.find_card_button)
 
         paste_action = Action(
             FluentIcon.PASTE,

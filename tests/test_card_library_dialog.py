@@ -81,6 +81,12 @@ class TestCardLibraryDialog(unittest.TestCase):
 
         self.assertEqual(requested, ["CrystalPrototypeBuilderCard"])
 
+    def test_console_exposes_labeled_card_search_button(self):
+        console = ConsoleWidget()
+
+        self.assertEqual(console.find_card_button.text(), "Find card")
+        self.assertTrue(console.find_card_button.isEnabled())
+
     def test_console_exposes_completed_output_handoff_action(self):
         console = ConsoleWidget()
         requests = []

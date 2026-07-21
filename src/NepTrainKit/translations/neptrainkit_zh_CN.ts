@@ -1333,52 +1333,52 @@
         <translation>搜索卡片，并将所选卡片添加到工作区</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="135" />
+        <location filename="../ui/views/cards.py" line="136" />
         <source>Paste JSON</source>
         <translation>粘贴 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="138" />
+        <location filename="../ui/views/cards.py" line="139" />
         <source>Create card(s) from clipboard JSON</source>
         <translation>从剪贴板 JSON 创建卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="146" />
+        <location filename="../ui/views/cards.py" line="147" />
         <source>Copy JSON</source>
         <translation>复制 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="149" />
+        <location filename="../ui/views/cards.py" line="150" />
         <source>Copy current workflow card JSON</source>
         <translation>复制当前工作流卡片 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="157" />
+        <location filename="../ui/views/cards.py" line="158" />
         <source>View output</source>
         <translation>查看输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="161" />
+        <location filename="../ui/views/cards.py" line="162" />
         <source>Open the final workflow output in NEP Dataset Display</source>
         <translation>在 NEP 数据集查看中打开工作流最终输出</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="170" />
+        <location filename="../ui/views/cards.py" line="171" />
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="173" />
+        <location filename="../ui/views/cards.py" line="174" />
         <source>Run selected cards</source>
         <translation>运行选中的卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="181" />
+        <location filename="../ui/views/cards.py" line="182" />
         <source>Stop</source>
         <translation>停止</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="184" />
+        <location filename="../ui/views/cards.py" line="185" />
         <source>Stop running cards</source>
         <translation>停止正在运行的卡片</translation>
     </message>

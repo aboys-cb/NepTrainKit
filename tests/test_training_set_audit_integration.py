@@ -149,7 +149,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         audited_data = object()
         current_data = object()
         window._audited_result_data = audited_data
-        window.stackedWidget = SimpleNamespace(setCurrentWidget=MagicMock())
+        window.switchTo = MagicMock()
         window.show_nep_interface = SimpleNamespace(
             nep_result_data=current_data,
             select_structure_indices=MagicMock(),
@@ -158,7 +158,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             main_module.NepTrainKitMainWindow.handle_training_set_audit_selection(window, [1, 2])
 
         window.show_nep_interface.select_structure_indices.assert_not_called()
-        window.stackedWidget.setCurrentWidget.assert_not_called()
+        window.switchTo.assert_not_called()
         info_mock.assert_called_once()
 
     def test_main_window_audit_messages_use_window_translation_context(self):
@@ -215,7 +215,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             show_distribution_explorer=MagicMock(),
         )
         window._start_training_set_phase_analysis = MagicMock()
-        window.stackedWidget = SimpleNamespace(setCurrentWidget=MagicMock())
+        window.switchTo = MagicMock()
         callbacks = {}
 
         def fake_run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs):
@@ -237,15 +237,15 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window.training_set_audit_interface.set_loading.assert_called_once_with(
             "train.xyz"
         )
-        window.stackedWidget.setCurrentWidget.assert_called_once_with(
+        window.switchTo.assert_called_once_with(
             window.training_set_audit_interface
         )
         window.training_set_audit_interface.set_result.assert_not_called()
         callbacks["on_finished"](audit_result)
         window.training_set_audit_interface.set_result.assert_called_once_with(audit_result)
         window.training_set_audit_interface.show_distribution_explorer.assert_not_called()
-        self.assertEqual(window.stackedWidget.setCurrentWidget.call_count, 2)
-        window.stackedWidget.setCurrentWidget.assert_called_with(
+        self.assertEqual(window.switchTo.call_count, 2)
+        window.switchTo.assert_called_with(
             window.training_set_audit_interface
         )
         window._start_training_set_phase_analysis.assert_not_called()
@@ -265,7 +265,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             set_distribution_context=MagicMock(),
             show_distribution_explorer=MagicMock(),
         )
-        window.stackedWidget = SimpleNamespace(setCurrentWidget=MagicMock())
+        window.switchTo = MagicMock()
         signature = main_module.NepTrainKitMainWindow._training_set_audit_signature(window, data)
         window._audited_result_data = data
         window._audited_result_signature = signature
@@ -277,7 +277,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         thread_mock.assert_not_called()
         window.training_set_audit_interface.set_loading.assert_not_called()
         window.training_set_audit_interface.set_result.assert_called_once_with(cached_result)
-        window.stackedWidget.setCurrentWidget.assert_called_once_with(
+        window.switchTo.assert_called_once_with(
             window.training_set_audit_interface
         )
 
@@ -300,14 +300,14 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             nep_result_data=shared_data,
             select_structure_indices=MagicMock(),
         )
-        window.stackedWidget = SimpleNamespace(setCurrentWidget=MagicMock())
+        window.switchTo = MagicMock()
 
         main_module.NepTrainKitMainWindow.handle_training_set_audit_selection(
             window, [4, 0]
         )
 
         window.show_nep_interface.select_structure_indices.assert_called_once_with([4, 0])
-        window.stackedWidget.setCurrentWidget.assert_called_once_with(
+        window.switchTo.assert_called_once_with(
             window.show_nep_interface
         )
 

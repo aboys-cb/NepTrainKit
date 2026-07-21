@@ -370,11 +370,11 @@ class NepTrainKitMainWindow(FluentWindow):
             )
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
-            self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
+            self.switchTo(self.training_set_audit_interface)
             return
         self.training_set_audit_interface.set_distribution_context(data=None)
         self.training_set_audit_interface.set_loading(dataset_id)
-        self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
+        self.switchTo(self.training_set_audit_interface)
 
         def apply_result(result) -> None:
             self._training_set_audit_thread = None
@@ -391,7 +391,7 @@ class NepTrainKitMainWindow(FluentWindow):
             )
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
-            self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
+            self.switchTo(self.training_set_audit_interface)
 
         def report_error(message: str) -> None:
             self._training_set_audit_thread = None
@@ -426,7 +426,7 @@ class NepTrainKitMainWindow(FluentWindow):
             )
             return
         self.show_nep_interface.select_structure_indices(indices)
-        self.stackedWidget.setCurrentWidget(self.show_nep_interface)
+        self.switchTo(self.show_nep_interface)
 
     def _start_training_set_phase_analysis(self, data, result) -> None:
         """Analyze every structure in the audited scope without blocking the page."""

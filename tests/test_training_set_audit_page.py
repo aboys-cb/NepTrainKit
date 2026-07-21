@@ -1231,6 +1231,21 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.dimension_list.count(), 4)
         self.assertFalse(widget.chart_widget.isHidden())
 
+    def test_empty_state_reserves_full_wrapped_hint_height(self):
+        widget = TrainingSetAuditWidget()
+        widget.resize(600, 260)
+        widget.show()
+        self._app.processEvents()
+
+        hint = widget.no_dataset_hint
+        self.assertGreaterEqual(widget.no_dataset_panel.width(), 430)
+        self.assertGreaterEqual(
+            widget.no_dataset_state.height(),
+            widget.no_dataset_state.sizeHint().height(),
+        )
+        self.assertGreater(hint.width(), 0)
+        self.assertGreaterEqual(hint.height(), hint.heightForWidth(hint.width()))
+
     def test_empty_state_open_action_requests_dataset_picker(self):
         widget = TrainingSetAuditWidget()
         requests = []

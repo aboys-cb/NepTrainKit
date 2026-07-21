@@ -157,6 +157,10 @@ class TrainingSetAuditWidget(QWidget):
         )
         self.no_dataset_state.setObjectName("auditNoDatasetState")
         self.no_dataset_state.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.no_dataset_state.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Minimum,
+        )
         self.no_dataset_hint = QLabel(
             self.tr(
                 "Open a structure or result file in NEP Dataset Display before running checks."
@@ -166,6 +170,12 @@ class TrainingSetAuditWidget(QWidget):
         self.no_dataset_hint.setObjectName("auditNoDatasetHint")
         self.no_dataset_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.no_dataset_hint.setWordWrap(True)
+        self.no_dataset_hint.setMinimumWidth(360)
+        self.no_dataset_hint.setMaximumWidth(480)
+        self.no_dataset_hint.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Minimum,
+        )
         self.no_dataset_action_button = PrimaryPushButton(
             self.tr("Open dataset"), self.no_dataset_panel
         )
@@ -177,6 +187,8 @@ class TrainingSetAuditWidget(QWidget):
             self.no_dataset_action_button,
             alignment=Qt.AlignmentFlag.AlignHCenter,
         )
+        self.no_dataset_panel.setMinimumWidth(430)
+        self.no_dataset_panel.setMaximumWidth(560)
         root.addWidget(
             self.no_dataset_panel,
             stretch=1,
@@ -1022,6 +1034,7 @@ class TrainingSetAuditWidget(QWidget):
                 "Open a structure or result file in NEP Dataset Display before running checks."
             )
         )
+        self._reserve_no_dataset_hint_height()
         self.no_dataset_action_button.show()
         self.no_dataset_panel.show()
         self.no_dataset_state.show()
@@ -1035,7 +1048,18 @@ class TrainingSetAuditWidget(QWidget):
             self.tr("Analyzing {dataset}...").format(dataset=dataset_id)
         )
         self.no_dataset_hint.setText(self.tr("Please wait while the checks run."))
+        self._reserve_no_dataset_hint_height()
         self.no_dataset_action_button.hide()
+
+    def _reserve_no_dataset_hint_height(self) -> None:
+        """Keep every wrapped hint line visible at the active font scale."""
+        self.no_dataset_state.setMinimumHeight(
+            self.no_dataset_state.sizeHint().height()
+        )
+        hint_width = max(1, self.no_dataset_hint.minimumWidth())
+        required_height = self.no_dataset_hint.heightForWidth(hint_width)
+        if required_height > 0:
+            self.no_dataset_hint.setMinimumHeight(required_height)
 
     def open_file(self) -> None:
         """Ask the main window to open a dataset for this page."""

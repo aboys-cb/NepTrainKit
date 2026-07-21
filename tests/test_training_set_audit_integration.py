@@ -457,9 +457,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window._make_dataset_handoff_thread = None
         window._make_dataset_handoff_dir = None
         window._make_dataset_handoff_pending_dir = None
-        window.show_nep_interface = SimpleNamespace(
-            open_structure_preview=MagicMock()
-        )
+        window.show_nep_interface = SimpleNamespace(check_nep_result=MagicMock())
         window.switchTo = MagicMock()
         callbacks = {}
 
@@ -483,7 +481,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
 
         self.assertTrue(Path(result_path).is_file())
         window.switchTo.assert_called_once_with(window.show_nep_interface)
-        window.show_nep_interface.open_structure_preview.assert_called_once_with(
+        window.show_nep_interface.check_nep_result.assert_called_once_with(
             result_path
         )
         self.assertIsNone(window._make_dataset_handoff_thread)
@@ -500,9 +498,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window._make_dataset_handoff_thread = DeletedThread()
         window._make_dataset_handoff_dir = None
         window._make_dataset_handoff_pending_dir = None
-        window.show_nep_interface = SimpleNamespace(
-            open_structure_preview=MagicMock()
-        )
+        window.show_nep_interface = SimpleNamespace(check_nep_result=MagicMock())
         window.switchTo = MagicMock()
         replacement_thread = SimpleNamespace(isRunning=lambda: False)
 

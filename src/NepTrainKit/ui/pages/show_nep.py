@@ -25,12 +25,7 @@ from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
 
 from NepTrainKit.ui.widgets import ConfigTypeSearchLineEdit, ArrowMessageBox, ExportFormatMessageBox
-from NepTrainKit.core.io import (
-    ResultData,
-    StructurePreviewResultData,
-    load_result_data,
-    matches_result_loader,
-)
+from NepTrainKit.core.io import (ResultData, load_result_data, matches_result_loader)
 
 from NepTrainKit.core.precision import get_export_significant_digits
 from NepTrainKit.core.structure import table_info, atomic_numbers
@@ -1130,10 +1125,7 @@ class ShowNepWidget(QWidget):
         self.nep_result_data.updateInfoSignal.emit()
         # Cache current dataset by its NEP model path for fast switching
         nep_path = getattr(self.nep_result_data, "nep_txt_path", None)
-        if (
-            isinstance(nep_path, Path)
-            and not getattr(self.nep_result_data, "is_structure_preview", False)
-        ):
+        if isinstance(nep_path, Path):
             try:
                 self._nep_result_cache[nep_path.resolve()] = self.nep_result_data
             except Exception:
@@ -1145,14 +1137,7 @@ class ShowNepWidget(QWidget):
             self._structure_mask_version_seen = None
         self.struct_index_spinbox.valueChanged.emit(0)
 
-    def open_structure_preview(self, path: str) -> None:
-        """Open generated structures without running an implicit NEP model."""
-        self.check_nep_result(
-            path,
-            result_data=StructurePreviewResultData(path),
-        )
-
-    def check_nep_result(self, path, *, result_data=None):
+    def check_nep_result(self, path):
         """Load NEP metadata and start the background loading thread.
 
         Parameters
@@ -1185,11 +1170,7 @@ class ShowNepWidget(QWidget):
         
         load_error = None
         try:
-            self.nep_result_data = (
-                result_data
-                if result_data is not None
-                else load_result_data(path)
-            )  # type: ignore
+            self.nep_result_data = load_result_data(path)  # type: ignore
         except Exception as error:
             load_error = error
             logger.debug(traceback.format_exc())
@@ -1214,26 +1195,18 @@ class ShowNepWidget(QWidget):
         )
         self.path_label.setUrl(QUrl.fromLocalFile(show_path))
         
-        structure_preview = bool(
-            getattr(self.nep_result_data, "is_structure_preview", False)
-        )
-        if structure_preview:
-            self.nep_model_combo.clear()
-            self.nep_model_combo.hide()
-            self._available_nep_files = []
-        else:
-            # Detect and populate NEP model files for combo box
+        # Detect and populate NEP model files for combo box
+        model_dir = show_path
+        try:
+            nep_txt_path = getattr(self.nep_result_data, "nep_txt_path", None)
+            if isinstance(nep_txt_path, Path):
+                model_dir = str(nep_txt_path.parent)
+        except Exception:
             model_dir = show_path
-            try:
-                nep_txt_path = getattr(self.nep_result_data, "nep_txt_path", None)
-                if isinstance(nep_txt_path, Path):
-                    model_dir = str(nep_txt_path.parent)
-            except Exception:
-                model_dir = show_path
-            self._update_nep_model_combo(model_dir)
+        self._update_nep_model_combo(model_dir)
         
         # Set the current model in combo box without triggering change event
-        if not structure_preview and self._available_nep_files:
+        if self._available_nep_files:
             self._updating_nep_combo = True
             current_nep = self.nep_result_data.nep_txt_path
             

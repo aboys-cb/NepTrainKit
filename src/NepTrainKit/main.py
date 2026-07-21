@@ -292,7 +292,7 @@ class NepTrainKitMainWindow(FluentWindow):
             self._make_dataset_handoff_dir = handoff_dir
             self._make_dataset_handoff_pending_dir = None
             self.switchTo(self.show_nep_interface)
-            self.show_nep_interface.open_structure_preview(result_path)
+            self.show_nep_interface.check_nep_result(result_path)
             if previous_dir is not None:
                 previous_dir.cleanup()
 

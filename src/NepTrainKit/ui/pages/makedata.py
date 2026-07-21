@@ -76,6 +76,7 @@ class MakeDataWidget(QWidget):
         self.setObjectName("MakeDataWidget")
         self.setAcceptDrops(True)
         self.nep_result_data=None
+        self._last_completed_card_index = None
         self._clipboard_shortcut_filter_installed = False
         self.init_action()
         self.init_ui()
@@ -190,6 +191,8 @@ class MakeDataWidget(QWidget):
             self._parent.load_menu.addAction(self.load_card_config_action)  # pyright:ignore
             self._parent.load_menu.addAction(self.paste_card_config_action)  # pyright:ignore
         if hasattr(self._parent,"save_menu"):
+            self._parent.save_menu.addAction(self.export_final_output_action)  # pyright:ignore
+            self._parent.save_menu.addAction(self.export_all_outputs_action)  # pyright:ignore
             self._parent.save_menu.addAction(self.export_card_config_action)  # pyright:ignore
         self._install_clipboard_shortcut_filter()
 
@@ -210,6 +213,8 @@ class MakeDataWidget(QWidget):
             self._parent.load_menu.removeAction(self.load_card_config_action)  # pyright:ignore
             self._parent.load_menu.removeAction(self.paste_card_config_action)  # pyright:ignore
         if hasattr(self._parent,"save_menu"):
+            self._parent.save_menu.removeAction(self.export_final_output_action)  # pyright:ignore
+            self._parent.save_menu.removeAction(self.export_all_outputs_action)  # pyright:ignore
             self._parent.save_menu.removeAction(self.export_card_config_action)   # pyright:ignore
         self._remove_clipboard_shortcut_filter()
 
@@ -221,6 +226,16 @@ class MakeDataWidget(QWidget):
         None
             QAction instances are stored on the widget.
         """
+        self.export_final_output_action = QAction(
+            QIcon(r":/images/src/images/save.svg"),
+            self.tr("Export final workflow output"),
+        )
+        self.export_final_output_action.triggered.connect(self.export_file)
+        self.export_all_outputs_action = QAction(
+            QIcon(r":/images/src/images/save.svg"),
+            self.tr("Export all available card outputs"),
+        )
+        self.export_all_outputs_action.triggered.connect(self.export_all_outputs)
         self.export_card_config_action = QAction(
             QIcon(r":/images/src/images/save.svg"),
             self.tr("Export Card Config"),
@@ -350,8 +365,38 @@ class MakeDataWidget(QWidget):
         if path:
             self.load_base_structure(path)
 
-    def _export_file(self,path):
-        """Write selected card datasets to the given path.
+    def _cards_for_export(self, include_all: bool):
+        """Return available outputs for the requested workflow export scope."""
+        enabled_cards = [
+            card
+            for card in self.workspace_card_widget.cards
+            if card.check_state
+        ]
+        if not enabled_cards:
+            return []
+        if not include_all:
+            if hasattr(self, "_last_completed_card_index"):
+                completed_index = self._last_completed_card_index
+                if completed_index is None:
+                    return []
+                cards = self.workspace_card_widget.cards
+                if not 0 <= completed_index < len(cards):
+                    return []
+                final_card = cards[completed_index]
+                if not final_card.check_state:
+                    return []
+            else:
+                final_card = enabled_cards[-1]
+            final_output = getattr(final_card, "result_dataset", None) or []
+            return [final_card] if len(final_output) > 0 else []
+        return [
+            card
+            for card in enabled_cards
+            if len(getattr(card, "result_dataset", None) or []) > 0
+        ]
+
+    def _export_file(self, path, cards):
+        """Write the explicitly selected card outputs to the given path.
 
         Parameters
         ----------
@@ -361,19 +406,17 @@ class MakeDataWidget(QWidget):
         Returns
         -------
         None
-            Serialises the active cards into a single dataset file.
+            Serialises the provided card outputs into a single dataset file.
         """
         if os.path.exists(path):
             os.remove(path)
         with open(path, "w",encoding="utf8") as file:
-            for card in self.workspace_card_widget.cards:
-                if card.check_state:
-
-                    card.write_result_dataset(file,append=True)
+            for index, card in enumerate(cards):
+                card.write_result_dataset(file, append=index > 0)
 
 
     def export_file(self):
-        """Export selected card outputs to a dataset file asynchronously.
+        """Export only the final available workflow output asynchronously.
 
         Returns
         -------
@@ -381,10 +424,42 @@ class MakeDataWidget(QWidget):
             Starts a background job to write the dataset.
         """
 
-        path = call_path_dialog(self, "Choose a file save location", "file",default_filename="make_dataset.xyz")
+        self._start_export(include_all=False)
+
+    def export_all_outputs(self):
+        """Export every available enabled card output for diagnostic use."""
+        self._start_export(include_all=True)
+
+    def _start_export(self, include_all: bool) -> None:
+        cards = self._cards_for_export(include_all)
+        if not cards:
+            if not any(
+                card.check_state for card in self.workspace_card_widget.cards
+            ):
+                message = self.tr("No enabled cards to export.")
+            elif include_all:
+                message = self.tr(
+                    "No enabled card has output. Run the workflow first."
+                )
+            else:
+                message = self.tr(
+                    "The final enabled card has no output. Run the workflow first."
+                )
+            MessageManager.send_info_message(message)
+            return
+        path = call_path_dialog(
+            self,
+            self.tr("Choose a file save location"),
+            "file",
+            default_filename="make_dataset.xyz",
+        )
         if path:
-            thread = LoadingThread(self, show_tip=True, title="Exporting data")
-            thread.start_work(self._export_file, path)
+            thread = LoadingThread(
+                self,
+                show_tip=True,
+                title=self.tr("Exporting data"),
+            )
+            thread.start_work(self._export_file, path, cards)
 
     def run_card(self):
         """Run the next enabled card using the currently loaded dataset.
@@ -400,6 +475,7 @@ class MakeDataWidget(QWidget):
             )
             return
         self.stop_run_card()
+        self._last_completed_card_index = None
         first_card=self._next_card(-1)
         if first_card:
             needs_input = bool(getattr(first_card, "requires_input_dataset", True))
@@ -474,6 +550,7 @@ class MakeDataWidget(QWidget):
 
         cards=self.workspace_card_widget.cards
         current_card=cards[current_card_index]
+        self._last_completed_card_index = current_card_index
         current_card.runFinishedSignal.disconnect(self._run_next_card)
 
         next_card=self._next_card(current_card_index )

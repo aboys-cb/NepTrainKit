@@ -3286,108 +3286,143 @@
         <translation>仅支持导入 .xyz、.extxyz、.vasp、.cif、POSCAR、CONTCAR 或 JSON 文件。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="226" />
+        <location filename="../ui/pages/makedata.py" line="230" />
+        <source>Export final workflow output</source>
+        <translation>导出工作流最终输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/makedata.py" line="235" />
+        <source>Export all available card outputs</source>
+        <translation>导出全部可用卡片输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/makedata.py" line="240" />
         <source>Export Card Config</source>
         <translation>导出卡片配置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="231" />
+        <location filename="../ui/pages/makedata.py" line="245" />
         <source>Import Card Config</source>
         <translation>导入卡片配置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="236" />
+        <location filename="../ui/pages/makedata.py" line="250" />
         <source>Paste Card JSON</source>
         <translation>粘贴卡片 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="263" />
+        <location filename="../ui/pages/makedata.py" line="277" />
         <source>Folder for Custom Cards</source>
         <translation>自定义卡片目录</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="296" />
+        <location filename="../ui/pages/makedata.py" line="310" />
         <source>Load structure failed: {path}</source>
         <translation>加载结构失败：{path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="327" />
+        <location filename="../ui/pages/makedata.py" line="341" />
         <source>success load {count} structures.</source>
         <translation>已成功加载 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="330" />
+        <location filename="../ui/pages/makedata.py" line="344" />
         <source>Success load {count} structures.</source>
         <translation>已成功加载 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="343" />
+        <location filename="../ui/pages/makedata.py" line="357" />
         <source>Please choose the structure files</source>
         <translation>请选择结构文件</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="346" />
+        <location filename="../ui/pages/makedata.py" line="360" />
         <source>Structure files (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;All files (*)</source>
         <translation>结构文件 (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="399" />
+        <location filename="../ui/pages/makedata.py" line="422" />
+        <source>No enabled cards to export.</source>
+        <translation>没有可导出的已启用卡片。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/makedata.py" line="425" />
+        <source>No enabled card has output. Run the workflow first.</source>
+        <translation>已启用卡片尚无输出，请先运行工作流。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/makedata.py" line="429" />
+        <source>The final enabled card has no output. Run the workflow first.</source>
+        <translation>最后一张已启用卡片尚无输出，请先运行工作流。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/makedata.py" line="435" />
+        <source>Choose a file save location</source>
+        <translation>选择文件保存位置</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/makedata.py" line="443" />
+        <source>Exporting data</source>
+        <translation>正在导出数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/makedata.py" line="457" />
         <source>Cards are still running. Please wait for the current run to finish.</source>
         <translation>卡片仍在运行，请等待当前任务完成。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="408" />
+        <location filename="../ui/pages/makedata.py" line="466" />
         <source>Please import the structure file first. You can drag it in directly or import it from the upper left corner!</source>
         <translation>请先导入结构文件。你可以直接拖入，或从左上角导入。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="417" />
+        <location filename="../ui/pages/makedata.py" line="475" />
         <source>No card selected. Please select a card in the workspace.</source>
         <translation>尚未选择卡片，请先在工作区选择一个卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="487" />
+        <location filename="../ui/pages/makedata.py" line="545" />
         <source>Perturbation training set created successfully.</source>
         <translation>扰动训练集已创建。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="524" />
+        <location filename="../ui/pages/makedata.py" line="582" />
         <source>no card</source>
         <translation>没有卡片</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="540" />
-        <location filename="../ui/pages/makedata.py" line="563" />
+        <location filename="../ui/pages/makedata.py" line="598" />
+        <location filename="../ui/pages/makedata.py" line="621" />
         <source>No cards in workspace.</source>
         <translation>工作区中没有卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="549" />
+        <location filename="../ui/pages/makedata.py" line="607" />
         <source>Card configuration exported successfully.</source>
         <translation>卡片配置已导出。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="567" />
+        <location filename="../ui/pages/makedata.py" line="625" />
         <source>Card configuration JSON copied to clipboard.</source>
         <translation>卡片配置 JSON 已复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="598" />
+        <location filename="../ui/pages/makedata.py" line="656" />
         <source>Clipboard does not contain card JSON.</source>
         <translation>剪贴板中没有卡片 JSON。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="628" />
+        <location filename="../ui/pages/makedata.py" line="686" />
         <source>Invalid card configuration file: {error}</source>
         <translation>卡片配置文件无效：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="674" />
+        <location filename="../ui/pages/makedata.py" line="732" />
         <source>Failed to load {name}: {error}</source>
         <translation>加载 {name} 失败：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="680" />
+        <location filename="../ui/pages/makedata.py" line="738" />
         <source>Added {count} card configuration(s).</source>
         <translation>已添加 {count} 个卡片配置。</translation>
     </message>

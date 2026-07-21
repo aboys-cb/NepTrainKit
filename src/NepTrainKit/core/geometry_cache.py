@@ -43,7 +43,7 @@ class GeometrySnapshot:
         return int(self.positions.shape[0])
 
 
-def _pbc_flags(structure: Any) -> np.ndarray:
+def structure_pbc_flags(structure: Any) -> np.ndarray:
     value = getattr(structure, "additional_fields", {}).get("pbc", "T T T")
     if isinstance(value, str):
         tokens = value.replace(",", " ").split()
@@ -146,7 +146,7 @@ class StructureGeometryCache:
                 raise ValueError("A structure contains an unknown element.") from exc
             positions.append(frame_positions)
             cells.append(frame_cell)
-            pbc.append(_pbc_flags(structure))
+            pbc.append(structure_pbc_flags(structure))
             numbers.append(frame_numbers)
             atom_counts[row] = len(symbols)
         atom_offsets = np.empty(len(self._structures) + 1, dtype=np.int64)

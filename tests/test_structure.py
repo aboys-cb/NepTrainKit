@@ -6,7 +6,7 @@ import unittest
 import os
 from io import StringIO
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 
@@ -14,6 +14,7 @@ os.environ["LOCALAPPDATA"] = str(Path(__file__).resolve().parent / "_localappdat
 
 from NepTrainKit.config import Config
 from NepTrainKit.core.precision import get_storage_precision
+import NepTrainKit.core.structure as structure_module
 from NepTrainKit.core.structure import Structure, load_npy_structure, save_npy_structure
 from NepTrainKit.core.types import DataPrecision
 
@@ -89,13 +90,15 @@ class TestStructure(unittest.TestCase):
             {},
         )
 
-        with patch.object(large_structure, "get_all_distances") as get_all_distances:
+        with patch.object(structure_module, "_native_audit", None), patch.object(
+            large_structure, "get_all_distances"
+        ) as get_all_distances:
             self.assertEqual(large_structure.get_bad_bond_pairs(max_atoms=500), [])
 
         get_all_distances.assert_not_called()
 
     def test_bad_bond_scan_keeps_complete_analysis_by_default(self):
-        with patch.object(
+        with patch.object(structure_module, "_native_audit", None), patch.object(
             self.structure,
             "get_all_distances",
             return_value=np.array([[0.0, 0.1], [0.1, 0.0]]),
@@ -103,6 +106,33 @@ class TestStructure(unittest.TestCase):
             self.assertEqual(self.structure.get_bad_bond_pairs(), [(0, 1)])
 
         get_all_distances.assert_called_once_with()
+
+    def test_bad_bond_scan_uses_native_pairs_without_size_limit(self):
+        native_scan = MagicMock()
+        native_scan.scaled_radii_collision_pairs.return_value = np.array(
+            [[0, 1]], dtype=np.int32
+        )
+        large_structure = Structure(
+            np.eye(3) * 100,
+            {
+                "species": ["H"] * 501,
+                "pos": np.arange(1503, dtype=np.float32).reshape(501, 3),
+            },
+            [
+                {"name": "species", "type": "S", "count": 1},
+                {"name": "pos", "type": "R", "count": 3},
+            ],
+            {},
+        )
+
+        with patch.object(structure_module, "_native_audit", native_scan), patch.object(
+            large_structure, "get_all_distances"
+        ) as get_all_distances:
+            pairs = large_structure.get_bad_bond_pairs(max_atoms=500)
+
+        self.assertEqual(pairs, [(0, 1)])
+        native_scan.scaled_radii_collision_pairs.assert_called_once()
+        get_all_distances.assert_not_called()
 
     def test_lattice_operations(self):
         new_lattice = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 2]], dtype=np.float32)

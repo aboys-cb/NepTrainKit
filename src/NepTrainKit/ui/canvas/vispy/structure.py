@@ -21,6 +21,27 @@ from vispy.color import Color, get_colormap
 
 AUTO_BAD_BOND_HIGHLIGHT_MAX_ATOMS = 500
 
+_MAX_TABLE_ATOMIC_NUMBER = max(int(number) for number in table_info)
+_ATOM_RADIUS_LOOKUP = np.full(
+    _MAX_TABLE_ATOMIC_NUMBER + 1,
+    70.0 / 150.0,
+    dtype=np.float32,
+)
+_ATOM_COLOR_LOOKUP = np.tile(
+    np.asarray(Color("#808080").rgba, dtype=np.float32),
+    (_MAX_TABLE_ATOMIC_NUMBER + 1, 1),
+)
+for _number, _info in table_info.items():
+    _index = int(_number)
+    _ATOM_RADIUS_LOOKUP[_index] = float(_info.get("radii", 70)) / 150.0
+    try:
+        _ATOM_COLOR_LOOKUP[_index] = np.asarray(
+            Color(_info.get("color", "#808080")).rgba,
+            dtype=np.float32,
+        )
+    except ValueError:
+        pass
+
 
 class _ReusableSphereMeshData(MeshData):
     """Mesh data whose sphere normals remain valid when atoms only translate."""
@@ -899,14 +920,15 @@ class StructurePlotWidget(scene.SceneCanvas):
 
         signature_changed = self._atom_signature != signature
         if signature_changed:
-            sizes = np.array(
-                [table_info.get(str(n), {'radii': 70})['radii'] / 150 * self.scale_factor for n in numbers],
-                dtype=np.float32,
+            style_indices = np.asarray(numbers, dtype=np.intp)
+            style_indices = np.where(
+                (style_indices >= 0)
+                & (style_indices <= _MAX_TABLE_ATOMIC_NUMBER),
+                style_indices,
+                0,
             )
-            colors_by_atom = np.array(
-                [Color(table_info.get(str(n), {'color': '#808080'})['color']).rgba for n in numbers],
-                dtype=np.float32,
-            )
+            sizes = _ATOM_RADIUS_LOOKUP[style_indices] * self.scale_factor
+            colors_by_atom = _ATOM_COLOR_LOOKUP[style_indices]
             offsets = np.arange(numbers.size, dtype=np.int32) * sphere_vertices_size
             self._atom_template_vertices = (
                 np.asarray(sphere_vertices, dtype=np.float32)[None, :, :] * sizes[:, None, None]

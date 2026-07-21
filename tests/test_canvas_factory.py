@@ -15,6 +15,7 @@ from NepTrainKit.config import Config
 from NepTrainKit.core.io.base import NepPlotData
 from NepTrainKit.core.types import Brushes, CanvasMode, Pens
 import NepTrainKit.ui.canvas.canvas_factory as canvas_factory
+import NepTrainKit.ui.canvas.vispy.structure as vispy_structure
 
 
 class _ArrowCapable:
@@ -934,6 +935,23 @@ class TestCanvasFactory(unittest.TestCase):
         plot.show_structure(structure_1)
         atom_mesh = plot._atom_mesh
         atom_meshdata = plot._atom_meshdata
+        expected_fe_color = np.asarray(
+            vispy_structure.Color(vispy_structure.table_info["26"]["color"]).rgba,
+            dtype=np.float32,
+        )
+        np.testing.assert_allclose(
+            plot._atom_colors_by_atom,
+            np.tile(expected_fe_color, (3, 1)),
+            atol=1.0e-6,
+        )
+        np.testing.assert_allclose(
+            plot._atom_sizes,
+            np.full(
+                3,
+                vispy_structure.table_info["26"]["radii"] / 150,
+                dtype=np.float32,
+            ),
+        )
         expected_normals = np.tile(
             plot.sphere_meshdata.get_vertex_normals(),
             (len(structure_1.numbers), 1),

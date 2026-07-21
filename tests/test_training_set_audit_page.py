@@ -775,6 +775,8 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.composition_table.columnCount(), 5)
         self.assertIn("atoms", widget.composition_table.item(0, 3).text())
         self.assertEqual(widget.analyze_structure_evidence_button.text(), "Analyze remaining evidence")
+        widget.finish_phase_analysis(result)
+        self.assertEqual(widget.composition_view_selector.currentData(), "count")
         widget.composition_evidence_button.click()
         widget.finish_phase_analysis(result)
         self.assertEqual(widget.composition_view_selector.currentData(), "structural")

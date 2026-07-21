@@ -34,6 +34,7 @@ from NepTrainKit.core.audit import (
     build_phase_inventory,
     build_training_set_audit,
 )
+from NepTrainKit.config import Config
 from NepTrainKit.ui.pages import *
 from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.threads import run_in_thread
@@ -203,6 +204,13 @@ class NepTrainKitMainWindow(FluentWindow):
             return
         self._start_training_set_phase_analysis(data, result)
 
+    def _schedule_training_set_structure_evidence(self) -> None:
+        """Start deferred audit evidence automatically when enabled."""
+        if Config.getboolean(
+            "training_set_audit", "auto_structure_evidence", True
+        ):
+            QTimer.singleShot(0, self._request_training_set_structure_evidence)
+
     def initWindow(self) -> None:
         """Configure top-level window parameters such as size and title."""
         self.resize(1200, 700)
@@ -371,6 +379,7 @@ class NepTrainKitMainWindow(FluentWindow):
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
             self.switchTo(self.training_set_audit_interface)
+            self._schedule_training_set_structure_evidence()
             return
         self.training_set_audit_interface.set_distribution_context(data=None)
         self.training_set_audit_interface.set_loading(dataset_id)
@@ -392,6 +401,7 @@ class NepTrainKitMainWindow(FluentWindow):
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
             self.switchTo(self.training_set_audit_interface)
+            self._schedule_training_set_structure_evidence()
 
         def report_error(message: str) -> None:
             self._training_set_audit_thread = None

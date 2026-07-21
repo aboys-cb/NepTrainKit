@@ -5506,6 +5506,16 @@ All child items will also be deleted.</source>
         <translation>缓存 *.out 和 descriptor.out，加快 NEP 与 DeepMD 重新加载</translation>
     </message>
     <message>
+        <location filename="../ui/pages/settings.py" line="185" />
+        <source>Automatically analyze structure evidence</source>
+        <translation>自动分析结构证据</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="187" />
+        <source>After the basic dataset audit appears, analyze phases and magnetic order in the background</source>
+        <translation>基础诊断显示后，在后台分析相结构与磁序</translation>
+    </message>
+    <message>
         <location filename="../ui/pages/settings.py" line="183" />
         <source>Export significant digits</source>
         <translation>导出有效数字</translation>

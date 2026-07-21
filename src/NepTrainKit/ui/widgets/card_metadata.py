@@ -9,12 +9,16 @@ from pathlib import Path
 from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtWidgets import (
     QDialog,
+    QFrame,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QListWidget,
     QListWidgetItem,
     QPushButton,
+    QSizePolicy,
+    QSplitter,
     QTextBrowser,
     QVBoxLayout,
 )
@@ -611,7 +615,8 @@ class CardLibraryDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle(self.tr("Card library"))
-        self.resize(880, 560)
+        self.resize(940, 600)
+        self.setMinimumSize(720, 500)
         self._metadata_by_class = dict(CardManager.card_metadata_dict)
 
         root = QVBoxLayout(self)
@@ -633,11 +638,12 @@ class CardLibraryDialog(QDialog):
         self.search_edit.textChanged.connect(self._filter_cards)
         root.addWidget(self.search_edit)
 
-        body = QHBoxLayout()
-        body.setSpacing(10)
+        body = QSplitter(Qt.Orientation.Horizontal, self)
+        body.setChildrenCollapsible(False)
+        body.setHandleWidth(8)
 
         self.card_list = QListWidget(self)
-        self.card_list.setMinimumWidth(280)
+        self.card_list.setMinimumWidth(250)
         self.card_list.setStyleSheet(
             "QListWidget {"
             "  background: #ffffff;"
@@ -660,18 +666,165 @@ class CardLibraryDialog(QDialog):
             "}"
         )
 
-        self.detail = QTextBrowser(self)
-        self.detail.setOpenExternalLinks(True)
+        self.detail = QFrame(self)
+        self.detail.setObjectName("cardDetailPanel")
+        self.detail.setMinimumWidth(360)
         self.detail.setStyleSheet(
-            "QTextBrowser {"
+            "QFrame#cardDetailPanel {"
+            "  background: #ffffff;"
+            "  border: 1px solid #e2e8f0;"
+            "  border-radius: 10px;"
+            "}"
+            "QFrame#cardDetailPanel QLabel { border: 0; background: transparent; }"
+            "QLabel#cardGroupChip {"
+            "  color: #4338ca;"
+            "  background: #eef2ff;"
+            "  border-radius: 8px;"
+            "  padding: 4px 10px;"
+            "  font-size: 12px;"
+            "  font-weight: 600;"
+            "}"
+            "QLabel#cardDetailTitle {"
+            "  color: #0f172a;"
+            "  font-size: 22px;"
+            "  font-weight: 700;"
+            "}"
+            "QLabel#cardCanonicalName { color: #64748b; font-size: 12px; }"
+            "QLabel#cardDescription { color: #334155; font-size: 14px; }"
+            "QLabel#cardSectionTitle {"
+            "  color: #0f172a;"
+            "  font-size: 13px;"
+            "  font-weight: 700;"
+            "}"
+            "QLabel#cardInfoKey { color: #64748b; font-size: 12px; }"
+            "QLabel#cardInfoValue { color: #1f2937; font-size: 13px; }"
+            "QFrame#cardTechnicalPanel {"
+            "  background: #f8fafc;"
             "  border: 1px solid #e2e8f0;"
             "  border-radius: 8px;"
-            "  background: #f4f6fb;"
             "}"
         )
-        body.addWidget(self.card_list, 1)
-        body.addWidget(self.detail, 2)
-        root.addLayout(body)
+        detail_layout = QVBoxLayout(self.detail)
+        detail_layout.setContentsMargins(22, 20, 22, 18)
+        detail_layout.setSpacing(10)
+
+        self.detail_group_label = QLabel(self.detail)
+        self.detail_group_label.setObjectName("cardGroupChip")
+        self.detail_group_label.setSizePolicy(
+            QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred
+        )
+        detail_layout.addWidget(self.detail_group_label)
+
+        self.detail_title_label = QLabel(self.detail)
+        self.detail_title_label.setObjectName("cardDetailTitle")
+        self.detail_title_label.setWordWrap(True)
+        detail_layout.addWidget(self.detail_title_label)
+
+        self.detail_canonical_label = QLabel(self.detail)
+        self.detail_canonical_label.setObjectName("cardCanonicalName")
+        self.detail_canonical_label.setWordWrap(True)
+        detail_layout.addWidget(self.detail_canonical_label)
+
+        self.detail_description_label = QLabel(self.detail)
+        self.detail_description_label.setObjectName("cardDescription")
+        self.detail_description_label.setWordWrap(True)
+        detail_layout.addWidget(self.detail_description_label)
+
+        divider = QFrame(self.detail)
+        divider.setFrameShape(QFrame.Shape.HLine)
+        divider.setStyleSheet("color: #e2e8f0;")
+        detail_layout.addWidget(divider)
+
+        about_label = QLabel(self.tr("About"), self.detail)
+        about_label.setObjectName("cardSectionTitle")
+        detail_layout.addWidget(about_label)
+
+        info_layout = QGridLayout()
+        info_layout.setContentsMargins(0, 0, 0, 0)
+        info_layout.setHorizontalSpacing(18)
+        info_layout.setVerticalSpacing(9)
+        info_layout.setColumnStretch(1, 1)
+        self._info_rows = []
+        for row, key in enumerate(
+            (
+                self.tr("Contributors"),
+                self.tr("Source"),
+                self.tr("Version"),
+                self.tr("License"),
+                self.tr("Documentation"),
+            )
+        ):
+            key_label = QLabel(key, self.detail)
+            key_label.setObjectName("cardInfoKey")
+            value_label = QLabel(self.detail)
+            value_label.setObjectName("cardInfoValue")
+            value_label.setWordWrap(True)
+            value_label.setTextInteractionFlags(
+                Qt.TextInteractionFlag.TextSelectableByMouse
+            )
+            info_layout.addWidget(key_label, row, 0, Qt.AlignmentFlag.AlignTop)
+            info_layout.addWidget(value_label, row, 1)
+            self._info_rows.append((key_label, value_label))
+        self.detail_contributors_label = self._info_rows[0][1]
+        self.detail_source_label = self._info_rows[1][1]
+        self.detail_version_label = self._info_rows[2][1]
+        self.detail_license_label = self._info_rows[3][1]
+        self.detail_docs_label = self._info_rows[4][1]
+        self.detail_docs_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextBrowserInteraction
+        )
+        self.detail_docs_label.setOpenExternalLinks(True)
+        detail_layout.addLayout(info_layout)
+
+        self.detail_technical_button = QPushButton(
+            self.tr("Technical details"), self.detail
+        )
+        self.detail_technical_button.setCheckable(True)
+        self.detail_technical_button.setStyleSheet(
+            "QPushButton {"
+            "  color: #475569;"
+            "  background: transparent;"
+            "  border: 0;"
+            "  padding: 6px 0;"
+            "  text-align: left;"
+            "}"
+            "QPushButton:hover { color: #4338ca; }"
+        )
+        self.detail_technical_button.toggled.connect(
+            self._toggle_technical_details
+        )
+        detail_layout.addWidget(self.detail_technical_button)
+
+        self.detail_technical_panel = QFrame(self.detail)
+        self.detail_technical_panel.setObjectName("cardTechnicalPanel")
+        technical_layout = QGridLayout(self.detail_technical_panel)
+        technical_layout.setContentsMargins(12, 10, 12, 10)
+        technical_layout.setHorizontalSpacing(16)
+        technical_layout.setVerticalSpacing(7)
+        technical_layout.addWidget(QLabel(self.tr("Class")), 0, 0)
+        self.detail_class_value = QLabel(self.detail_technical_panel)
+        self.detail_class_value.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        technical_layout.addWidget(self.detail_class_value, 0, 1)
+        technical_layout.addWidget(QLabel(self.tr("Source file")), 1, 0)
+        self.detail_path_value = QLabel(self.detail_technical_panel)
+        self.detail_path_value.setWordWrap(True)
+        self.detail_path_value.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        technical_layout.addWidget(self.detail_path_value, 1, 1)
+        technical_layout.setColumnStretch(1, 1)
+        self.detail_technical_panel.hide()
+        detail_layout.addWidget(self.detail_technical_panel)
+        detail_layout.addStretch(1)
+
+        body.addWidget(self.card_list)
+        body.addWidget(self.detail)
+        body.setStretchFactor(0, 0)
+        body.setStretchFactor(1, 1)
+        body.setSizes([300, 610])
+        root.addWidget(body, 1)
 
         footer = QHBoxLayout()
         self.result_count_label = QLabel(self)
@@ -709,17 +862,83 @@ class CardLibraryDialog(QDialog):
 
     def _show_item(self, item, _previous=None):
         if item is None:
-            self.detail.clear()
+            self._clear_detail()
             self.add_button.setEnabled(False)
             return
         class_name = item.data(Qt.ItemDataRole.UserRole)
         metadata = self._metadata_by_class.get(class_name)
         if metadata is None:
-            self.detail.clear()
+            self._clear_detail()
             self.add_button.setEnabled(False)
             return
-        self.detail.setHtml(metadata_html(metadata))
+        localized_name = localized_card_name(metadata)
+        self.detail_group_label.setText(localized_card_group(metadata))
+        self.detail_group_label.setVisible(bool(self.detail_group_label.text()))
+        self.detail_title_label.setText(localized_name)
+        canonical_name = metadata.card_name if metadata.card_name != localized_name else ""
+        self.detail_canonical_label.setText(canonical_name)
+        self.detail_canonical_label.setVisible(bool(canonical_name))
+        self.detail_description_label.setText(
+            localized_card_description(metadata)
+            or self.tr("No description provided.")
+        )
+
+        values = (
+            contributors_text(metadata),
+            _source_label(metadata),
+            metadata.version,
+            metadata.license,
+            metadata.docs_url,
+        )
+        for index, ((key_label, value_label), value) in enumerate(
+            zip(self._info_rows, values)
+        ):
+            if index == 4 and value:
+                escaped_url = escape(str(value))
+                link_text = escape(self.tr("Open documentation"))
+                value_label.setText(
+                    f'<a href="{escaped_url}">{link_text}</a>'
+                )
+            else:
+                value_label.setText(str(value or ""))
+            key_label.setVisible(bool(value))
+            value_label.setVisible(bool(value))
+
+        self.detail_class_value.setText(metadata.class_name)
+        source_path = Path(metadata.source_path) if metadata.source_path else None
+        self.detail_path_value.setText(
+            source_path.name if source_path else self.tr("Not specified")
+        )
+        full_path = str(source_path) if source_path else ""
+        self.detail_path_value.setToolTip(full_path)
+        self.detail_technical_button.setChecked(False)
+        self.detail_technical_button.setEnabled(True)
         self.add_button.setEnabled(True)
+
+    def _clear_detail(self) -> None:
+        for label in (
+            self.detail_group_label,
+            self.detail_title_label,
+            self.detail_canonical_label,
+            self.detail_description_label,
+            self.detail_class_value,
+            self.detail_path_value,
+        ):
+            label.clear()
+        for key_label, value_label in self._info_rows:
+            key_label.hide()
+            value_label.clear()
+            value_label.hide()
+        self.detail_technical_button.setChecked(False)
+        self.detail_technical_button.setEnabled(False)
+
+    def _toggle_technical_details(self, expanded: bool) -> None:
+        self.detail_technical_panel.setVisible(expanded)
+        self.detail_technical_button.setText(
+            self.tr("Hide technical details")
+            if expanded
+            else self.tr("Technical details")
+        )
 
     def _filter_cards(self, text: str) -> None:
         """Filter the library across user-facing card metadata."""

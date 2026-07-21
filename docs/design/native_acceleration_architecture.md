@@ -15,19 +15,22 @@ src/native/
 │   └── fast_float.h
 ├── audit/
 │   └── module.cpp              # Audit 批处理与聚合原语
+├── magnetism/
+│   └── module.cpp              # 磁矩布局与统计原语
 └── phase/
     └── module.cpp              # PhaseSketch 与候选相细化原语
 
 src/NepTrainKit/_native/
 ├── _io.*
 ├── _audit.*
+├── _magnetism.*
 └── _phase.*
 
 src/NepTrainKit/core/
 └── geometry_cache.py            # 跟随 StructureData 生命周期的只读几何快照
 ```
 
-`nep_cpu` 和 `nep_gpu` 是模型计算后端，继续保持独立；它们不属于应用层 `_native` 模块。
+NEP 模型计算由独立的 `nep-adapters` 运行时提供；它不属于应用层 `_native` 模块，也不在 NepTrainKit 内复制后端实现。
 
 ## 共享邻居契约
 
@@ -57,6 +60,7 @@ src/NepTrainKit/core/
 
 - `_io`：只解析和索引 EXTXYZ，不理解训练集审查规则。
 - `_audit`：只做批量几何搜索、标签数组聚合和数值统计，不生成产品结论。
+- `_magnetism`：只做磁矩布局识别和批量统计，不决定磁性分类文案。
 - `_phase`：只做局域特征与候选相数值指标，不决定 UI 文案或下一步建议。
 - Python 层负责输入适配、审查阈值、finding、排序、报告和交互。
 - 已下沉且经过验证的热点不保留第二套 Python 算法；原生模块缺失或输入不受支持时明确报错。

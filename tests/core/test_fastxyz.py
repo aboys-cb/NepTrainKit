@@ -41,7 +41,7 @@ def test_parallel_parse_keeps_pos_first_frame_boundaries(monkeypatch):
 
 
 def test_parse_escaped_json_keeps_following_fields(monkeypatch):
-    fastxyz = pytest.importorskip("NepTrainKit.core._fastxyz")
+    fastxyz = pytest.importorskip("NepTrainKit._native._io")
     monkeypatch.setenv("NEPKIT_FASTXYZ_SPECIES_MODE", "str")
 
     frame = fastxyz.parse_all(memoryview(_escaped_json_trajectory()), 1)[0]

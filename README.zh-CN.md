@@ -40,41 +40,24 @@ nepkit
 NepTrainKit
 ```
 
-### GPU 后端
+### NEP 计算后端
 
-安装程序会先构建 CPU 后端；如果能找到可用的 CUDA 工具包和 NVCC，也会尝试构建 GPU 后端。CUDA 未准备好时，安装程序会跳过 GPU 扩展，NepTrainKit 仍可使用 CPU 后端正常运行。
+NepTrainKit 不再编译或捆绑 NEP 计算后端。执行 `pip install NepTrainKit` 时，会安装独立的 `nep-adapters` 依赖：
 
-Linux 或 WSL2：
+| 平台 | 安装的后端 |
+| --- | --- |
+| macOS / Windows | CPU |
+| Linux x86_64 | 同一个 wheel 包含 CPU 和 CUDA |
 
-```bash
-export CUDA_HOME=/usr/local/cuda-12.4
-export PATH="$CUDA_HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH}"
-pip install NepTrainKit
-```
+Linux CUDA 路径需要兼容的 NVIDIA 驱动，但安装 wheel 不要求本机安装 CUDA Toolkit 或 NVCC。源码构建和受支持的 CUDA 架构见 [NEPAdapters 仓库](https://github.com/MagTheoryLab/NEPAdapters)。
 
-Windows PowerShell：
+启动后，可以在 `Settings → NEP Backend` 中选择 `Auto`、`CPU` 或 `CUDA`。`Auto` 会在 wheel、驱动和模型都支持时使用 CUDA；否则 NepTrainKit 会说明原因并继续使用 CPU。明确选择 `CUDA` 时如果不可用会直接报错，不会静默切换后端。
 
-```powershell
-$env:CUDA_PATH = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
-$env:Path = "$env:CUDA_PATH\bin;" + $env:Path
-pip install NepTrainKit
-```
-
-如果希望明确跳过 GPU 构建，可以设置：
+可以用下面的命令确认当前运行时：
 
 ```bash
-NEPKIT_BUILD_GPU=0 pip install NepTrainKit
+python -c "import nep_adapters as n; print(n.backend_status('cpu')); print(n.backend_status('cuda'))"
 ```
-
-如需指定 GPU 架构，请在安装前设置 `NEP_GPU_GENCODE`。例如：
-
-```bash
-export NEP_GPU_GENCODE="arch=compute_89,code=sm_89"
-pip install NepTrainKit
-```
-
-启动后，可以在 `Settings → NEP Backend` 中选择 `Auto`、`CPU` 或 `GPU`。如果遇到 `CUDA driver version is insufficient for CUDA runtime version`，请先切换到 `CPU` 后端，再检查驱动和 CUDA 版本。
 
 ### Windows 可执行包
 
@@ -111,9 +94,6 @@ author = {Chengbing Chen and Yutong Li and Rui Zhao and Zhoulin Liu and Zheyong 
 
 本仓库使用 GNU General Public License v3.0 or later，详见 [LICENSE](./LICENSE)。
 
-NepTrainKit 包含并改写了部分第三方代码：
+NEP 计算由独立依赖 [nep-adapters](https://github.com/MagTheoryLab/NEPAdapters) 提供。NepTrainKit 已不再内置 NEP_CPU 或 GPUMD 后端源码。
 
-- [NEP_CPU](https://github.com/brucefan1983/NEP_CPU)：Zheyong Fan、Junjie Wang、Eric Lindgren 及贡献者，GPL-3.0-or-later。
-- [GPUMD](https://github.com/brucefan1983/GPUMD)：Zheyong Fan 和 GPUMD 开发团队，GPL-3.0-or-later。
-
-目录级来源说明见 [src/nep_cpu/README.md](./src/nep_cpu/README.md)、[src/nep_gpu/README.md](./src/nep_gpu/README.md) 和 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。再分发时请保留版权和许可证说明。
+本仓库仍需保留的来源说明见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)。`nep-adapters` 发行包会携带其后端源码对应的许可证和来源说明。

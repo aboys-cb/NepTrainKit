@@ -40,41 +40,24 @@ nepkit
 NepTrainKit
 ```
 
-### GPU backend
+### NEP compute backend
 
-The installer builds the CPU backend first. If a usable CUDA toolkit and NVCC are available, it also attempts to build the GPU backend. When CUDA is unavailable, the GPU extension is skipped and NepTrainKit remains fully usable with the CPU backend.
+NepTrainKit does not compile or bundle an NEP compute backend. `pip` installs the separate `nep-adapters` dependency:
 
-On Linux or WSL2:
+| Platform | Installed backend |
+| --- | --- |
+| macOS / Windows | CPU |
+| Linux x86_64 | CPU and CUDA in one wheel |
 
-```bash
-export CUDA_HOME=/usr/local/cuda-12.4
-export PATH="$CUDA_HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH}"
-pip install NepTrainKit
-```
+The Linux CUDA path requires a compatible NVIDIA driver, but installing the wheel does not require a local CUDA toolkit or NVCC. Source builds and supported CUDA architectures are documented in the [NEPAdapters repository](https://github.com/MagTheoryLab/NEPAdapters).
 
-In Windows PowerShell:
+After launching NepTrainKit, select `Auto`, `CPU`, or `CUDA` under `Settings → NEP Backend`. `Auto` uses CUDA when the installed wheel, driver, and model support it; otherwise NepTrainKit explains why it is continuing on CPU. Explicit `CUDA` requests fail instead of silently changing backend.
 
-```powershell
-$env:CUDA_PATH = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
-$env:Path = "$env:CUDA_PATH\bin;" + $env:Path
-pip install NepTrainKit
-```
-
-To explicitly skip the GPU build:
+Confirm the installed runtime with:
 
 ```bash
-NEPKIT_BUILD_GPU=0 pip install NepTrainKit
+python -c "import nep_adapters as n; print(n.backend_status('cpu')); print(n.backend_status('cuda'))"
 ```
-
-To target a specific GPU architecture, set `NEP_GPU_GENCODE` before installation. For example:
-
-```bash
-export NEP_GPU_GENCODE="arch=compute_89,code=sm_89"
-pip install NepTrainKit
-```
-
-After launching NepTrainKit, select `Auto`, `CPU`, or `GPU` under `Settings → NEP Backend`. If you encounter `CUDA driver version is insufficient for CUDA runtime version`, switch to the `CPU` backend first, then check the installed driver and CUDA versions.
 
 ### Windows package
 
@@ -111,9 +94,6 @@ author = {Chengbing Chen and Yutong Li and Rui Zhao and Zhoulin Liu and Zheyong 
 
 NepTrainKit is licensed under the GNU General Public License v3.0 or later. See [LICENSE](./LICENSE) for details.
 
-This repository includes modified portions of third-party projects:
+NEP computation is provided by the separate [nep-adapters](https://github.com/MagTheoryLab/NEPAdapters) dependency. NepTrainKit no longer vendors the NEP_CPU or GPUMD backend source trees.
 
-- [NEP_CPU](https://github.com/brucefan1983/NEP_CPU): Zheyong Fan, Junjie Wang, Eric Lindgren, and contributors; GPL-3.0-or-later.
-- [GPUMD](https://github.com/brucefan1983/GPUMD): Zheyong Fan and the GPUMD development team; GPL-3.0-or-later.
-
-For component-level provenance, see [src/nep_cpu/README.md](./src/nep_cpu/README.md), [src/nep_gpu/README.md](./src/nep_gpu/README.md), and [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md). Preserve the copyright and license notices when redistributing the software.
+See [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for the remaining attribution in this repository. The `nep-adapters` distribution carries its own backend source notices and licenses.

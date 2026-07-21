@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-21 13:06+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: NepTrainKit documentation team\n"
 "Language: en\n"
@@ -20,31 +20,31 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: ../../source/index.rst:134
+#: ../../source/index.rst:135
 msgid "快速开始"
 msgstr "Quick start"
 
-#: ../../source/index.rst:134
+#: ../../source/index.rst:135
 msgid "工作流"
 msgstr "Workflows"
 
-#: ../../source/index.rst:134
+#: ../../source/index.rst:135
 msgid "支持格式"
 msgstr "Supported formats"
 
-#: ../../source/index.rst:134
+#: ../../source/index.rst:135
 msgid "功能模块"
 msgstr "Features"
 
-#: ../../source/index.rst:134
+#: ../../source/index.rst:135
 msgid "示例"
 msgstr "Examples"
 
-#: ../../source/index.rst:134
+#: ../../source/index.rst:135
 msgid "API 参考"
 msgstr "API reference"
 
-#: ../../source/index.rst:134
+#: ../../source/index.rst:135
 msgid "文档目录"
 msgstr "Documentation"
 
@@ -59,18 +59,18 @@ msgid ""
 "和训练流程。"
 msgstr ""
 "NepTrainKit is a desktop application for preparing, inspecting, and "
-"visualizing NEP datasets. It does not replace long GPUMD training runs on a "
-"server or the underlying DFT calculations. Instead, it handles the "
+"visualizing NEP datasets. It does not replace long GPUMD training runs on"
+" a server or the underlying DFT calculations. Instead, it handles the "
 "repetitive work around those stages: generating candidate structures, "
-"checking whether structures are physically sensible, removing bad samples, "
-"selecting representative subsets, and exporting clean data back into the DFT"
-" and training workflow."
+"checking whether structures are physically sensible, removing bad "
+"samples, selecting representative subsets, and exporting clean data back "
+"into the DFT and training workflow."
 
 #: ../../source/index.rst:9 49dbf7460db841169b3e4e3311b2da8a
 msgid "如果你第一次打开软件，可以先按下面两条主线理解界面。"
 msgstr ""
-"If this is your first time using NepTrainKit, start with the two workflows "
-"below."
+"If this is your first time using NepTrainKit, start with the two "
+"workflows below."
 
 #: ../../source/index.rst:12 2d8492a1483b446e893299daf65ef655
 msgid "制作一批候选结构"
@@ -85,8 +85,8 @@ msgstr ""
 "These structures are not normally ready for training as soon as they are "
 "generated. Perturbations, defects, surfaces, and random occupations can "
 "produce atoms that are too close, unusually large forces, or otherwise "
-"unreasonable configurations. Inspect and clean the candidates before sending"
-" them to DFT."
+"unreasonable configurations. Inspect and clean the candidates before "
+"sending them to DFT."
 
 #: ../../source/index.rst:18 ef27a07fe110446590ffa51068c11b38
 msgid "Empty Make Data workspace annotated overview"
@@ -119,9 +119,9 @@ msgstr "Check each card's inputs, parameters, and output count in the workspace.
 #: ../../source/index.rst:29 84d19bd7d86f4582a2186dfe6d41253b
 msgid "下面是一张 ``Lattice Strain`` 卡配置后的样子。它会对输入结构施加一组受控晶格应变， 适合用来补弹性响应附近的数据。"
 msgstr ""
-"The example below shows a configured ``Lattice Strain`` card. It applies a "
-"controlled set of cell strains and is useful for adding structures near the "
-"elastic-response regime."
+"The example below shows a configured ``Lattice Strain`` card. It applies "
+"a controlled set of cell strains and is useful for adding structures near"
+" the elastic-response regime."
 
 #: ../../source/index.rst:32 4b94f03ad29f4ce98c9e273639bcdaaa
 msgid "Lattice Strain card annotated quickstart"
@@ -134,13 +134,13 @@ msgstr ""
 #: ../../source/index.rst:36 e5b1dd65f3d845939e5f7fb370c85dbe
 msgid ""
 "不知道该选哪张卡时，先看 :doc:`module/make-dataset-cards/index`；已经知道目标时， 可以直接查 "
-":doc:`module/make-dataset-cards/recipes`。完整的候选结构清洗路线见 :doc:`workflows/clean-"
-"candidate-structures`。"
+":doc:`module/make-dataset-cards/recipes`。完整的候选结构清洗路线见 :doc:`workflows"
+"/clean-candidate-structures`。"
 msgstr ""
 "If you are unsure which card to choose, start with :doc:`module/make-"
 "dataset-cards/index`. If you already know the physical objective, use "
-":doc:`module/make-dataset-cards/recipes`. The complete candidate-cleaning "
-"workflow is documented in :doc:`workflows/clean-candidate-structures`."
+":doc:`module/make-dataset-cards/recipes`. The complete candidate-cleaning"
+" workflow is documented in :doc:`workflows/clean-candidate-structures`."
 
 #: ../../source/index.rst:41 31b2d01f3cdd4ac5b8e0f4aba67ecbfc
 msgid "检查和筛选结构"
@@ -148,16 +148,17 @@ msgstr "Inspect and select structures"
 
 #: ../../source/index.rst:43 9aebbb5aef1b461aab97ba91fb0da3a2
 msgid ""
-"``NEP Dataset Display`` 不只用于训练结束后的误差分析。只要你已经有一批结构， 就可以把它们导入这里查看、标记、删除和导出。对于 "
-"``Make Dataset`` 生成的大批候选结构， 一个常见做法是先用内置或已有 NEP "
+"``NEP Dataset Display`` 不只用于训练结束后的误差分析。只要你已经有一批结构， "
+"就可以把它们导入这里查看、标记、删除和导出。对于 ``Make Dataset`` 生成的大批候选结构， 一个常见做法是先用内置或已有 NEP "
 "模型做快速预测，去掉明显异常的结构，例如预测力特别大的样本； 清洗后再做最远点采样，最后把代表结构送去 DFT。"
 msgstr ""
 "``NEP Dataset Display`` is useful before training as well as after it. "
-"Import any collection of structures to inspect, tag, remove, or export them."
-" For a large candidate pool from ``Make Dataset``, a practical workflow is "
-"to run a quick prediction with the bundled or an existing NEP model, remove "
-"clearly problematic structures such as extreme-force cases, then apply "
-"farthest-point sampling and send only the representative structures to DFT."
+"Import any collection of structures to inspect, tag, remove, or export "
+"them. For a large candidate pool from ``Make Dataset``, a practical "
+"workflow is to run a quick prediction with the bundled or an existing NEP"
+" model, remove clearly problematic structures such as extreme-force "
+"cases, then apply farthest-point sampling and send only the "
+"representative structures to DFT."
 
 #: ../../source/index.rst:48 02154d2c83a84bfd8dcab9079d8d1883
 msgid "NEP Dataset Display annotated overview"
@@ -211,11 +212,13 @@ msgid ""
 "→ NEP Dataset Display 回看训练结果并继续迭代"
 msgstr ""
 "Make Dataset: generate candidate structures\n"
-"→ NEP Dataset Display: inspect candidates and remove unphysical structures\n"
+"→ NEP Dataset Display: inspect candidates and remove unphysical "
+"structures\n"
 "→ FPS Filter or another selector: choose representative structures\n"
 "→ DFT: label energies, forces, and stresses\n"
 "→ GPUMD: train the NEP model\n"
-"→ NEP Dataset Display: inspect the trained model and start the next iteration"
+"→ NEP Dataset Display: inspect the trained model and start the next "
+"iteration"
 
 #: ../../source/index.rst:73 7c4e6721e91c4a4eac64931b8138d702
 msgid "从哪里开始"
@@ -238,8 +241,8 @@ msgstr "Clean candidate structures"
 #: ../../source/index.rst:88 525e026c61f044ee834a74ac29b85ca8
 msgid "从 Make Dataset 输出候选池，到 NEP Dataset Display 删除异常结构，再采样去 DFT。"
 msgstr ""
-"Take a pool from Make Dataset, remove problematic structures in NEP Dataset "
-"Display, then sample representatives for DFT."
+"Take a pool from Make Dataset, remove problematic structures in NEP "
+"Dataset Display, then sample representatives for DFT."
 
 #: ../../source/index.rst:90 424c4da6108942c2a673cebe8d2ed5f7
 msgid "我想分析已有训练结果"
@@ -258,8 +261,8 @@ msgstr "Expand a training set systematically"
 #: ../../source/index.rst:100 6e03579399b74019993611fedc9f9fb3
 msgid "按物理目的生成候选结构，然后接入清洗和采样流程。"
 msgstr ""
-"Generate candidates for a specific physical objective, then connect them to "
-"the cleaning and sampling workflow."
+"Generate candidates for a specific physical objective, then connect them "
+"to the cleaning and sampling workflow."
 
 #: ../../source/index.rst:102 c9321c8dfccf4312ba9552b7db7df39d
 msgid "我想写自己的卡片"
@@ -273,26 +276,27 @@ msgstr "Package an existing script as a reusable Make Dataset card for the team.
 msgid "安装提示"
 msgstr "Installation note"
 
-#: ../../source/index.rst:111 aaf6ea47e62a4f5eb68ab6accad9d12b
+#: ../../source/index.rst:111 232f87feb5654764bd1d0b80940f1eb8
 msgid ""
-"使用 ``pip`` 安装时会自动检测 CUDA。若检测到可用 CUDA，将构建 GPU backend； 否则构建 CPU "
-"backend。如需手动指定 CUDA，请在安装前设置 ``CUDA_HOME`` 或 ``CUDA_PATH``。完整命令见 "
-":doc:`quickstart`。"
+"NepTrainKit 通过独立的 ``nep-adapters`` wheel 获得计算后端。macOS 和 Windows 提供 "
+"CPU；Linux x86_64 的 wheel 同时提供 CPU 和 CUDA。安装 wheel 不要求本机 安装 CUDA "
+"Toolkit；CUDA 计算仍需要兼容的 NVIDIA 驱动。确认命令见 :doc:`quickstart`。"
 msgstr ""
-"A ``pip`` installation detects CUDA automatically. It builds the GPU backend"
-" when a usable CUDA installation is found and otherwise builds the CPU "
-"backend. To select CUDA explicitly, set ``CUDA_HOME`` or ``CUDA_PATH`` "
-"before installing. See :doc:`quickstart` for the complete commands."
+"NepTrainKit obtains its compute backends from the separate ``nep-adapters`` "
+"wheel. macOS and Windows provide CPU support; the Linux x86_64 wheel includes "
+"both CPU and CUDA. Installing the wheel does not require a local CUDA Toolkit, "
+"but CUDA calculations still require a compatible NVIDIA driver. See "
+":doc:`quickstart` for the verification command."
 
-#: ../../source/index.rst:116 dbf80166911c416e8258036a9a145c1c
+#: ../../source/index.rst:117 dbf80166911c416e8258036a9a145c1c
 msgid "引用 NepTrainKit"
 msgstr "Citing NepTrainKit"
 
-#: ../../source/index.rst:118 d5d3f7d493c945a488b9530bb171f57d
+#: ../../source/index.rst:119 d5d3f7d493c945a488b9530bb171f57d
 msgid "如果你的研究使用了 NepTrainKit，请引用："
 msgstr "If you use NepTrainKit in your research, please cite:"
 
-#: ../../source/index.rst:120 c947c6a794904643b862e3088475ba0c
+#: ../../source/index.rst:121 c947c6a794904643b862e3088475ba0c
 msgid ""
 "@article{CHEN2025109859,\n"
 "title = {NepTrain and NepTrainKit: Automated active learning and "
@@ -303,8 +307,8 @@ msgid ""
 "year = {2025},\n"
 "issn = {0010-4655},\n"
 "doi = {https://doi.org/10.1016/j.cpc.2025.109859},\n"
-"url = {https://www.sciencedirect.com/science/article/pii/S0010465525003613},"
-"\n"
+"url = "
+"{https://www.sciencedirect.com/science/article/pii/S0010465525003613},\n"
 "author = {Chengbing Chen and Yutong Li and Rui Zhao and Zhoulin Liu and "
 "Zheyong Fan and Gang Tang and Zhiyong Wang},\n"
 "}"

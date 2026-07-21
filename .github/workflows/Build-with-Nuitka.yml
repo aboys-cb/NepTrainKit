@@ -33,6 +33,7 @@ jobs:
           
           pip install -r requirements.txt
           pip install imageio
+          python -c "import nep_adapters; assert nep_adapters.backend_status('cpu').available"
           python -m setuptools_scm  --force-write-version-files
 
 
@@ -41,7 +42,7 @@ jobs:
         with:
           nuitka-version: main
           script-name: NepTrainKit/main.py
-          include-package: NepTrainKit
+          include-package: NepTrainKit,nep_adapters
           output-file: NepTrainKit.exe
           mode: standalone
           windows-console-mode: disable
@@ -58,18 +59,6 @@ jobs:
           $dist = "${{ github.workspace }}/src/build/main.dist"
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/Config -Destination "$dist/Config" -Force
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe "$dist/update.exe"
-          Copy-Item ${{ github.workspace }}/src/NepTrainKit/nep_cpu.cp310-win_amd64.pyd "$dist/nep_cpu.pyd"
-          Copy-Item ${{ github.workspace }}/src/NepTrainKit/nep_gpu.cp310-win_amd64.pyd "$dist/nep_gpu.pyd"
-          Copy-Item ${{ github.workspace }}/src/NepTrainKit/core/_fastxyz.cp310-win_amd64.pyd "$dist/_fastxyz.pyd"
-          
-          # 3. 正则匹配拷贝：cudart64_12、msvcp140、vcomp140 
-          @('cudart64_12', 'msvcp140', 'vcomp140' ) |
-              ForEach-Object {
-                  $pfx = [regex]::Escape($_)
-                  Get-ChildItem -Path "${{ github.workspace }}/src/NepTrainKit" -File |
-                      Where-Object { $_.Name -match "^$pfx-.+\.dll$" }
-              } |
-              Copy-Item -Destination "$dist/" -Force -Verbose
 
           Remove-Item -Path "$dist/NepTrainKit" -Recurse -Force
           New-Item -ItemType Directory -Force "$dist/Log"

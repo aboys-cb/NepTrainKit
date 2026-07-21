@@ -149,25 +149,6 @@ jobs:
       with:
         arch: x64
 
- 
-    - name: Setup CUDA (Windows)
-      if: runner.os == 'Windows'
-      id: cuda-toolkit
-      uses: N-Storm/cuda-toolkit@master
-      with:
-        cuda: '12.4.0'
-        method: 'local'          # 首次会下载，后续命中缓存
-#        sub-packages: '["nvcc", "cudart", "cublas","cusolver","curand"]'
-        use-github-cache: true
- 
-
-
-#    - name: Install CUDA
-#      if: ${{ matrix.buildplat[1] == 'win_amd64' }}
-#      run: |
-#        choco install cuda --version=12.4.0.551 --no-progress --yes
-#
-
     - name: Build wheels
       uses: pypa/cibuildwheel@d04cacbc9866d432033b1d09142936e6a0e2121a  # v2.23.2
       env:
@@ -175,39 +156,15 @@ jobs:
 #        CIBW_MANYLINUX_X86_64_IMAGE: quay.io/pypa/manylinux_2_28_x86_64
 #        CIBW_MANYLINUX_AARCH64_IMAGE: quay.io/pypa/manylinux_2_28_aarch64
         CIBW_BUILD: ${{ matrix.python }}-${{ matrix.buildplat[1] }}
-        # Install CUDA toolchain inside manylinux container (x86_64 only) and expose env
         CIBW_BEFORE_BUILD_LINUX: |
           cat /etc/os-release
 
           set -euxo pipefail
           yum install -y libgomp yum-utils
-#          ARCH="$(uname -m)"
-#          if [ "$ARCH" = "x86_64" ]; then
-#            yum-config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo"
-#            yum clean all
-#            yum -y install cuda-toolkit-11-8
-#            ln -s /usr/local/cuda-11.8 /usr/local/cuda || true
-#            echo "CUDA installed at /usr/local/cuda"
-#          else
-#            yum-config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel8/sbsa/cuda-rhel8.repo"
-#            yum clean all
-#            yum -y install cuda-toolkit-11-8
-#            ln -s /usr/local/cuda-11.8 /usr/local/cuda || true
-#            echo "CUDA installed at /usr/local/cuda"
-#
-#          fi
-#        CIBW_ENVIRONMENT_LINUX: |
-#          CUDA_HOME=/usr/local/cuda
-#          PATH=/usr/local/cuda/bin:$PATH
-#          LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
-        # Try to repair with auditwheel; if CUDA libs cannot be bundled, keep original wheel
         CIBW_REPAIR_WHEEL_COMMAND_LINUX: |
           find {wheel} -name '*.so*' -exec strip --strip-unneeded {} \;
           auditwheel repair -w {dest_dir} {wheel} || cp {wheel} {dest_dir}/
-
-#        CIBW_ENVIRONMENT_WINDOWS: >
-#          CUDA_PATH=${{steps.cuda-toolkit.outputs.CUDA_PATH}} CUDA_HOME=${{steps.cuda-toolkit.outputs.CUDA_PATH}}
 
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=15.0' || 'MACOSX_DEPLOYMENT_TARGET=15.0' }}
@@ -215,7 +172,7 @@ jobs:
         CIBW_BEFORE_BUILD_WINDOWS: |
           pip install delvewheel
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
-            python -m delvewheel repair --add-path "%CUDA_PATH%\bin" -w {dest_dir} {wheel}
+            python -m delvewheel repair -w {dest_dir} {wheel}
 
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:

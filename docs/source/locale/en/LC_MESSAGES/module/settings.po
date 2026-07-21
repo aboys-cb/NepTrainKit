@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 17:56+0800\n"
+"POT-Creation-Date: 2026-07-21 13:06+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -27,13 +27,13 @@ msgstr "Settings"
 #: ../../source/module/settings.md:3 9de26f7dd2eb41299eb364f8b0737255
 msgid ""
 "`Settings` 用来调整显示、导入导出、NEP "
-"后端和绘图样式。刚开始不需要全部改；只有当你遇到加载慢、显示卡顿、预测慢、导出格式不符合下游要求，或想切换 CPU/GPU 后端时，再来这里。"
+"后端和绘图样式。刚开始不需要全部改；只有当你遇到加载慢、显示卡顿、预测慢、导出格式不符合下游要求，或想切换 CPU/CUDA 后端时，再来这里。"
 msgstr ""
 "Use `Settings` to adjust rendering, import and export behavior, the NEP "
 "backend, and plot styles. You do not need to tune everything at first. "
 "Change a setting when you encounter slow loading or rendering, slow "
-"prediction, an incompatible export format, or a need to switch between CPU "
-"and GPU."
+"prediction, an incompatible export format, or a need to switch between "
+"CPU and CUDA."
 
 #: ../../source/module/settings.md:5 d1fe25b5213243688f7946c6b94ecc70
 msgid "先改哪些"
@@ -180,38 +180,40 @@ msgid "NEP 后端"
 msgstr "NEP backend"
 
 #: ../../source/module/settings.md:22 4e65d83b4b6942c68b7ab7e541f03011
-msgid "`NEP Backend` 控制预测时优先使用 CPU、GPU 还是自动选择。"
-msgstr ""
-"`NEP Backend` controls whether prediction uses the CPU, the GPU, or "
-"automatic backend selection."
+msgid "`NEP Backend` 控制预测时使用 CPU、CUDA，还是由程序自动选择。"
+msgstr "`NEP Backend` controls whether prediction uses CPU, CUDA, or automatic backend selection."
 
-#: ../../source/module/settings.md:24 bc80fb7e504c4cd696b48107b4bf9848
-msgid "`Auto`：默认路径，程序优先尝试可用后端。"
-msgstr "`Auto`: the default path; NepTrainKit selects an available backend."
+#: ../../source/module/settings.md:24 3ead8a38dc4a48b0aec2fdb3611a46f5
+msgid "`Auto`：默认路径；CUDA 可用且当前模型受支持时使用 CUDA，否则在任务开始前明确提示并使用 CPU。运行中不会静默切换后端。"
+msgstr "`Auto`: the default path. It uses CUDA when available and supported by the current model; otherwise it explains the decision before the task starts and uses CPU. It does not silently switch backend during execution."
 
 #: ../../source/module/settings.md:25 05d9a494b1e8432d964dcfd2991a640a
 msgid "`CPU`：适合没有可用 GPU、驱动不匹配，或只是少量结构快速查看。"
 msgstr ""
-"`CPU`: use when no compatible GPU is available or when inspecting only a few"
-" structures."
+"`CPU`: use when no compatible GPU is available or when inspecting only a "
+"few structures."
 
-#: ../../source/module/settings.md:26 982b2512c787414496b364b6d2edff37
-msgid "`GPU`：适合批量预测或较大候选池。"
-msgstr "`GPU`: use for batch prediction or a large candidate pool."
+#: ../../source/module/settings.md:26 c979b8ecf3fa4b6aa5f9372ab22266a6
+msgid "`CUDA`：明确要求 NVIDIA CUDA 后端；不可用时直接报错并说明驱动或安装问题。"
+msgstr "`CUDA`: explicitly require the NVIDIA CUDA backend. If unavailable, the application reports the driver or installation problem instead of changing backend."
 
-#: ../../source/module/settings.md:28 30ec64af30d44c2a9114191a907e8c67
-msgid "`GPU Batch Size` 决定一次送入 GPU 的结构数量。显存不足时调小；显存充足但吞吐低时可以调大。"
+#: ../../source/module/settings.md:28 a8f93a888370441bb4cdaa85f4e73434
+msgid ""
+"`NEP Chunk Max Atoms` 决定一次预测分块包含的总原子数，CPU 和 CUDA "
+"使用相同语义。遇到显存或内存不足时调小；单个结构本身超过 CUDA 可用规模时应改用 CPU，因为单结构不能安全拆分。"
 msgstr ""
-"`GPU Batch Size` controls how many structures are sent to the GPU at once. "
-"Reduce it after an out-of-memory failure; increase it when memory is "
-"available but throughput is low."
+"`NEP Chunk Max Atoms` sets the total atom count allowed in one prediction "
+"chunk, with the same meaning on CPU and CUDA. Reduce it when device or host "
+"memory is insufficient. If one structure alone exceeds the CUDA capacity, "
+"use CPU because a single structure cannot be split safely."
 
 #: ../../source/module/settings.md:30 1d885540c61147aea05cb251bd97284a
 msgid "`Data Precision` 控制导入 DFT/结构数据后的存储精度。常规可保持默认；只有在内存压力明显或需要保留更高精度数值时再改。"
 msgstr ""
 "`Data Precision` controls the storage precision of imported DFT and "
-"structure data. Keep the default for normal work. Change it only to address "
-"clear memory pressure or a requirement to retain higher-precision values."
+"structure data. Keep the default for normal work. Change it only to "
+"address clear memory pressure or a requirement to retain higher-precision"
+" values."
 
 #: ../../source/module/settings.md:32 302fddf6ed234a638cc10db030b816f0
 msgid "绘图和结构显示"
@@ -234,30 +236,30 @@ msgid ""
 "`PyQtGraph scatter size` / `VisPy scatter size` / `VisPy "
 "antialias`：不同画布后端的点大小和抗锯齿。"
 msgstr ""
-"`PyQtGraph scatter size`, `VisPy scatter size`, and `VisPy antialias`: point"
-" size and antialiasing for each canvas backend."
+"`PyQtGraph scatter size`, `VisPy scatter size`, and `VisPy antialias`: "
+"point size and antialiasing for each canvas backend."
 
 #: ../../source/module/settings.md:38 767edd6558494cf9965e145611ccccfa
 msgid "`Structure background` / `Lattice line color`：结构视图背景和晶格线颜色。"
 msgstr ""
-"`Structure background` and `Lattice line color`: background and cell-line "
-"colors in the structure view."
+"`Structure background` and `Lattice line color`: background and cell-line"
+" colors in the structure view."
 
 #: ../../source/module/settings.md:39 c4f017ba91c641469e5ffa726180165c
 msgid ""
-"`Selected color` / `Show color` / `Current marker color` / `Current marker "
-"size`：选中点、高亮点和当前结构标记的显示样式。"
+"`Selected color` / `Show color` / `Current marker color` / `Current "
+"marker size`：选中点、高亮点和当前结构标记的显示样式。"
 msgstr ""
-"`Selected color`, `Show color`, `Current marker color`, and `Current marker "
-"size`: styles for selected points, highlighted points, and the current-"
-"structure marker."
+"`Selected color`, `Show color`, `Current marker color`, and `Current "
+"marker size`: styles for selected points, highlighted points, and the "
+"current-structure marker."
 
 #: ../../source/module/settings.md:41 31b443422d8e478fab30d28f30a7a151
 msgid "如果只是想判断结构是否异常，优先调整点大小和当前结构标记；不要为了配色反复改变数据筛选流程。"
 msgstr ""
 "When the goal is to spot anomalous structures, adjust point size and the "
-"current-structure marker first. Do not change the filtering workflow merely "
-"to compensate for plot colors."
+"current-structure marker first. Do not change the filtering workflow "
+"merely to compensate for plot colors."
 
 #: ../../source/module/settings.md:43 a2a37bc203c5442fb470d23e8fed6944
 msgid "NEP89 和更新"
@@ -269,23 +271,24 @@ msgid ""
 "可以用于某些候选结构的快速预筛，但它不是所有材料体系的可靠模型。使用时把它当作异常结构筛查工具，不要当作 DFT 标签来源。"
 msgstr ""
 "`About NEP89` checks for and updates the bundled `nep89.txt`. NEP89 can "
-"quickly prescreen candidates for some systems, but it is not reliable for "
-"every material. Use it to flag anomalies, never as a source of DFT labels."
+"quickly prescreen candidates for some systems, but it is not reliable for"
+" every material. Use it to flag anomalies, never as a source of DFT "
+"labels."
 
 #: ../../source/module/settings.md:47 fad2428b89014dc89d163c754cbaf154
 msgid "如果你有当前体系自己的 NEP 模型，优先使用自己的模型做预筛。"
 msgstr ""
-"If a NEP model trained for the current system is available, prefer it for "
-"prescreening."
+"If a NEP model trained for the current system is available, prefer it for"
+" prescreening."
 
 #: ../../source/module/settings.md:49 48a260f27cdd45b0873cebcf06af8144
 msgid ""
 "`About` 里的 `Check for Updates` 用于检查 NepTrainKit "
 "新版本。这个检查只影响软件版本提示，不会自动修改你的训练数据。"
 msgstr ""
-"`Check for Updates` under `About` checks for a newer NepTrainKit release. It"
-" only updates the version notification and never modifies training data "
-"automatically."
+"`Check for Updates` under `About` checks for a newer NepTrainKit release."
+" It only updates the version notification and never modifies training "
+"data automatically."
 
 #: ../../source/module/settings.md:51 b863b219e86c4e9abbe8d97a4ca7c7f5
 msgid "修改设置的原则"
@@ -306,3 +309,18 @@ msgid "涉及数据清洗阈值时，改完要抽查被选中的结构，而不�
 msgstr ""
 "After changing a data-cleaning threshold, inspect some of the selected "
 "structures rather than judging the change only by the count."
+
+#~ msgid "`Auto`：默认路径，程序优先尝试可用后端。"
+#~ msgstr "`Auto`: the default path; NepTrainKit selects an available backend."
+
+#~ msgid "`GPU`：适合批量预测或较大候选池。"
+#~ msgstr "`GPU`: use for batch prediction or a large candidate pool."
+
+#~ msgid "`GPU Batch Size` 决定一次送入 GPU 的结构数量。显存不足时调小；显存充足但吞吐低时可以调大。"
+#~ msgstr ""
+#~ "`GPU Batch Size` controls how many "
+#~ "structures are sent to the GPU at"
+#~ " once. Reduce it after an out-"
+#~ "of-memory failure; increase it when "
+#~ "memory is available but throughput is"
+#~ " low."

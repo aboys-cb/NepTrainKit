@@ -108,9 +108,10 @@ DFT 和训练流程。
 安装提示
 --------
 
-使用 ``pip`` 安装时会自动检测 CUDA。若检测到可用 CUDA，将构建 GPU backend；
-否则构建 CPU backend。如需手动指定 CUDA，请在安装前设置 ``CUDA_HOME`` 或
-``CUDA_PATH``。完整命令见 :doc:`quickstart`。
+NepTrainKit 通过独立的 ``nep-adapters`` wheel 获得计算后端。macOS 和 Windows
+提供 CPU；Linux x86_64 的 wheel 同时提供 CPU 和 CUDA。安装 wheel 不要求本机
+安装 CUDA Toolkit；CUDA 计算仍需要兼容的 NVIDIA 驱动。确认命令见
+:doc:`quickstart`。
 
 引用 NepTrainKit
 ----------------

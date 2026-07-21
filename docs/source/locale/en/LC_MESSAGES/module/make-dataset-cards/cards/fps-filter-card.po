@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-21 13:06+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -42,9 +42,9 @@ msgid ""
 "`nep89.txt` 或你自己训练的模型）用于生成描述符。"
 msgstr ""
 "Use farthest-point sampling (FPS) in NEP descriptor space to select a "
-"representative subset from a large pool, reducing redundancy while retaining"
-" diversity. A usable NEP model, such as the bundled `nep89.txt` or a system-"
-"specific model, is required to compute descriptors."
+"representative subset from a large pool, reducing redundancy while "
+"retaining diversity. A usable NEP model, such as the bundled `nep89.txt` "
+"or a system-specific model, is required to compute descriptors."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:11
 #: 7ef8cabec21e45f0835d1f2e5ba83719
@@ -76,20 +76,20 @@ msgid ""
 "你用多张生成卡产出了 2000 个候选结构，全部丢进训练集跑了 DFT 计算。重训后模型精度比只用前 200 个结构手动挑的版本还差——2000 "
 "个结构里大量重复构型，有效多样性反而被稀释了。"
 msgstr ""
-"Several generators produce 2,000 candidates and all are labeled by DFT, yet "
-"the retrained model is worse than one trained on 200 manually selected "
-"structures. Heavy duplication diluted effective diversity."
+"Several generators produce 2,000 candidates and all are labeled by DFT, "
+"yet the retrained model is worse than one trained on 200 manually "
+"selected structures. Heavy duplication diluted effective diversity."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:21
 #: b115bb80195047c3aacd49d3d5bfd158
 msgid ""
-"**诊断思路：** 卡片生成的候选集有大量统计冗余。比如 `Random Vacancy` 生成了 200 个空位结构，但从描述符角度看可能只有 15 "
-"种真正不同的局域环境。FPS 可以在描述符空间里按\"最远优先\"的原则挑出最不相似的子集，保留多样性去掉冗余。"
+"**诊断思路：** 卡片生成的候选集有大量统计冗余。比如 `Random Vacancy` 生成了 200 个空位结构，但从描述符角度看可能只有 "
+"15 种真正不同的局域环境。FPS 可以在描述符空间里按\"最远优先\"的原则挑出最不相似的子集，保留多样性去掉冗余。"
 msgstr ""
 "**Diagnosis:** Generated pools often contain statistical redundancy: 200 "
 "random vacancies may represent only 15 distinct local environments. FPS "
-"greedily chooses points farthest from the selected set in descriptor space, "
-"preserving diversity while removing near-duplicates."
+"greedily chooses points farthest from the selected set in descriptor "
+"space, preserving diversity while removing near-duplicates."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:23
 #: b3845798ed2844adb5555a7894082dc2
@@ -125,8 +125,8 @@ msgstr ""
 #: a1cf63035a8d492d861ed902a5bd3bd1
 msgid "**输出：** 200 个结构，在描述符空间中两两距离尽可能大，覆盖输入集的多样性"
 msgstr ""
-"**Output:** Up to 200 structures chosen to spread coverage through the input"
-" descriptor space."
+"**Output:** Up to 200 structures chosen to spread coverage through the "
+"input descriptor space."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:34
 #: 02c94e8674284b7f94fe706bffc4e28a
@@ -220,8 +220,8 @@ msgid ""
 "`str`，默认 `MISSING`。指向用于生成 NEP 描述符的模型文件，必须是一个可用的 NEP 模型文件（如 `nep.txt` 或内置 "
 "`nep89.txt`）。路径为空或文件不存在时卡片直接报错。"
 msgstr ""
-"`str`, default `MISSING`. Path to a usable NEP model such as `nep.txt` or "
-"bundled `nep89.txt`. The card fails if the path is empty or nonexistent."
+"`str`, default `MISSING`. Path to a usable NEP model such as `nep.txt` or"
+" bundled `nep89.txt`. The card fails if the path is empty or nonexistent."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:56
 #: 7821ca48854f45369be46c7d0caf5a34
@@ -234,9 +234,9 @@ msgid ""
 "`int`，默认 100。FPS 过滤后保留的代表结构数。这是输出数量，不是上游生成数量——DFT "
 "预算固定时直接设你计划算的上限；但设太小会把稀有构型也筛掉。"
 msgstr ""
-"`int`, default `100`. Maximum representative outputs. It is an output count,"
-" not an upstream generation count. Match it to the DFT budget while leaving "
-"enough capacity for rare families."
+"`int`, default `100`. Maximum representative outputs. It is an output "
+"count, not an upstream generation count. Match it to the DFT budget while"
+" leaving enough capacity for rare families."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:59
 #: 1641fabb61974b13ae4feb7e476c4628
@@ -247,9 +247,9 @@ msgstr ""
 #: c6a3d6e0599c4c1b950ee2ec7d3e53bb
 msgid "`float`，默认 0.01。描述符空间中的最小距离阈值。值越大去重越激进，但设太大 FPS 会过早停、选不够数；设太小又可能混入近重复结构。"
 msgstr ""
-"`float`, default `0.01`. Minimum distance in descriptor space. Larger values"
-" deduplicate more aggressively but can stop before reaching the requested "
-"count; smaller values admit near-duplicates."
+"`float`, default `0.01`. Minimum distance in descriptor space. Larger "
+"values deduplicate more aggressively but can stop before reaching the "
+"requested count; smaller values admit near-duplicates."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:62
 #: 0b533c1b4fa84f9583b333452bf90f2b
@@ -262,21 +262,24 @@ msgid ""
 "`str`，默认 `'auto'`。描述符计算后端。正常保持 `auto` 让程序自己选可用的 NEP "
 "后端；只有在你需要调试性能或对比后端差异时才手动指定。"
 msgstr ""
-"`str`, default `'auto'`. Descriptor backend. Keep automatic selection unless"
-" diagnosing performance or backend differences."
+"`str`, default `'auto'`. Descriptor backend. Keep automatic selection "
+"unless diagnosing performance or backend differences."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:65
-#: d62a0f8c6192465f8b355ffd15b6d9b8
-msgid "Batch Size（batch_size）"
+#: 7cffd7209ed14125a5663fd64c439599
+msgid "Chunk Max Atoms（chunk_max_atoms）"
 msgstr ""
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:66
-#: bb0bafefd4a34b55975004120aef1510
-msgid "`int`，默认 1000。描述符批处理大小，只影响吞吐和内存。GPU 或大体系可以调大加速，内存紧张时适当调小。"
+#: 0319454850834a6087f1c938c259d232
+msgid ""
+"`int`，默认 100000。每个描述符计算分块允许的总原子数，CPU 和 CUDA "
+"使用同一语义。显存或内存不足时调小；它不是结构数量，同一分块中所有结构的原子数之和不能超过该值。"
 msgstr ""
-"`int`, default `1000`. Descriptor batch size; affects throughput and memory "
-"only. Increase when the backend and memory allow, and reduce under memory "
-"pressure."
+"`int`, default 100000. Maximum total atom count in each descriptor calculation "
+"chunk, with the same meaning on CPU and CUDA. Reduce it when device or host "
+"memory is insufficient. This is not a structure count; it limits the sum of "
+"atoms across all structures in the chunk."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:68
 #: 0520a571c8164e7ca7d7b511222b0125
@@ -300,7 +303,7 @@ msgid ""
 "    \"n_samples\": 100,\n"
 "    \"min_distance\": 0.01,\n"
 "    \"backend\": \"auto\",\n"
-"    \"batch_size\": 1000\n"
+"    \"chunk_max_atoms\": 100000\n"
 "  }\n"
 "}\n"
 msgstr ""
@@ -322,7 +325,7 @@ msgid ""
 "    \"n_samples\": 200,\n"
 "    \"min_distance\": 0.03,\n"
 "    \"backend\": \"auto\",\n"
-"    \"batch_size\": 1000\n"
+"    \"chunk_max_atoms\": 100000\n"
 "  }\n"
 "}\n"
 msgstr ""
@@ -344,7 +347,7 @@ msgid ""
 "    \"n_samples\": 50,\n"
 "    \"min_distance\": 0.06,\n"
 "    \"backend\": \"auto\",\n"
-"    \"batch_size\": 1000\n"
+"    \"chunk_max_atoms\": 100000\n"
 "  }\n"
 "}\n"
 msgstr ""
@@ -381,7 +384,9 @@ msgstr "Common questions"
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:123
 #: 0d7c2937acba445c88dda134d03754bb
 msgid "**卡片报错\"NEP file does not exist\"。** `nep_path` 指向的文件不存在。确认路径正确。"
-msgstr "**`NEP file does not exist`.** Correct `nep_path` to an existing model file."
+msgstr ""
+"**`NEP file does not exist`.** Correct `nep_path` to an existing model "
+"file."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:125
 #: 64b48ab0ea694d2687075565b7f67659
@@ -396,16 +401,16 @@ msgstr ""
 #: cabd2c4f49334172aeca9b213be44145
 msgid "**挑出的结构覆盖不全。** FPS 只能从现有池里选。如果某些局域环境在输入池里本来就没有，FPS 也无法补充。回到上游增加生成多样性。"
 msgstr ""
-"**Coverage remains incomplete.** FPS cannot create absent environments. Add "
-"the missing diversity upstream."
+"**Coverage remains incomplete.** FPS cannot create absent environments. "
+"Add the missing diversity upstream."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:129
 #: 707f7946d48342b080acd46b88788b9d
 msgid "**描述符计算很慢。** 大批量（>5000）时描述符计算可能耗时。先用 `FPS Filter` 之前控制好上游输出量。"
 msgstr ""
-"**Descriptor calculation is slow.** Pools above several thousand structures "
-"can be expensive. Bound upstream generation and tune batch size before "
-"sampling."
+"**Descriptor calculation is slow.** Pools above several thousand "
+"structures can be expensive. Bound upstream generation and tune batch "
+"size before sampling."
 
 #: ../../source/module/make-dataset-cards/cards/fps-filter-card.md:131
 #: cead5fc7d4fc4344bdf6ebc0d5c7be91
@@ -430,3 +435,56 @@ msgid "无随机性。同参数同输入 → 严格一致输出。FPS 是确定�
 msgstr ""
 "Deterministic: identical inputs and parameters produce identical output "
 "because FPS is a deterministic greedy algorithm."
+
+#~ msgid "Batch Size（batch_size）"
+#~ msgstr ""
+
+#~ msgid "`int`，默认 1000。描述符批处理大小，只影响吞吐和内存。GPU 或大体系可以调大加速，内存紧张时适当调小。"
+#~ msgstr ""
+#~ "`int`, default `1000`. Descriptor batch "
+#~ "size; affects throughput and memory "
+#~ "only. Increase when the backend and "
+#~ "memory allow, and reduce under memory"
+#~ " pressure."
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"FPSFilterDataCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"nep_path\": \"path/to/nep.txt\",\n"
+#~ "    \"n_samples\": 100,\n"
+#~ "    \"min_distance\": 0.01,\n"
+#~ "    \"backend\": \"auto\",\n"
+#~ "    \"batch_size\": 1000\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"FPSFilterDataCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"nep_path\": \"path/to/nep.txt\",\n"
+#~ "    \"n_samples\": 200,\n"
+#~ "    \"min_distance\": 0.03,\n"
+#~ "    \"backend\": \"auto\",\n"
+#~ "    \"batch_size\": 1000\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""
+
+#~ msgid ""
+#~ "{\n"
+#~ "  \"class\": \"FPSFilterDataCard\",\n"
+#~ "  \"check_state\": true,\n"
+#~ "  \"params\": {\n"
+#~ "    \"nep_path\": \"path/to/nep.txt\",\n"
+#~ "    \"n_samples\": 50,\n"
+#~ "    \"min_distance\": 0.06,\n"
+#~ "    \"backend\": \"auto\",\n"
+#~ "    \"batch_size\": 1000\n"
+#~ "  }\n"
+#~ "}\n"
+#~ msgstr ""

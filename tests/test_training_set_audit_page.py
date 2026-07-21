@@ -1246,6 +1246,20 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertGreater(hint.width(), 0)
         self.assertGreaterEqual(hint.height(), hint.heightForWidth(hint.width()))
 
+    def test_empty_state_remeasures_hint_after_late_font_polish(self):
+        widget = TrainingSetAuditWidget()
+        widget.no_dataset_hint.setStyleSheet("font-size: 24px;")
+        widget.resize(1151, 651)
+        widget.show()
+        self._app.processEvents()
+        self._app.processEvents()
+
+        hint = widget.no_dataset_hint
+        self.assertGreaterEqual(
+            hint.minimumHeight(),
+            hint.heightForWidth(hint.width()),
+        )
+
     def test_empty_state_open_action_requests_dataset_picker(self):
         widget = TrainingSetAuditWidget()
         requests = []

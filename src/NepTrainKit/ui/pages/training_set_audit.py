@@ -13,7 +13,7 @@ from time import perf_counter
 from typing import Any
 
 from loguru import logger
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -1053,13 +1053,26 @@ class TrainingSetAuditWidget(QWidget):
 
     def _reserve_no_dataset_hint_height(self) -> None:
         """Keep every wrapped hint line visible at the active font scale."""
+        self.no_dataset_hint.ensurePolished()
         self.no_dataset_state.setMinimumHeight(
             self.no_dataset_state.sizeHint().height()
         )
-        hint_width = max(1, self.no_dataset_hint.minimumWidth())
+        hint_width = max(
+            1,
+            self.no_dataset_hint.width(),
+            self.no_dataset_hint.minimumWidth(),
+        )
         required_height = self.no_dataset_hint.heightForWidth(hint_width)
         if required_height > 0:
             self.no_dataset_hint.setMinimumHeight(required_height)
+            self.no_dataset_hint.updateGeometry()
+            self.no_dataset_panel.updateGeometry()
+
+    def showEvent(self, event) -> None:
+        """Re-measure the empty-state hint after the active style is polished."""
+        super().showEvent(event)
+        if self.no_dataset_panel.isVisible():
+            QTimer.singleShot(0, self._reserve_no_dataset_hint_height)
 
     def open_file(self) -> None:
         """Ask the main window to open a dataset for this page."""

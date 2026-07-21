@@ -8613,7 +8613,7 @@ Do you want to continue?</source>
         <location filename="../ui/pages/training_set_audit.py" line="162" />
         <location filename="../ui/pages/training_set_audit.py" line="1022" />
         <source>Open a structure or result file in NEP Dataset Display before running checks.</source>
-        <translation>请先在 NEP 数据集查看中打开结构或结果文件，再执行检查。</translation>
+        <translation>请先在 NEP 数据集查看中打开结构或结果文件。</translation>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="170" />

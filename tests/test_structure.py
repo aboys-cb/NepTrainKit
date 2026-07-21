@@ -6,6 +6,7 @@ import unittest
 import os
 from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 
@@ -73,6 +74,35 @@ class TestStructure(unittest.TestCase):
 
     def test_energy_calculations(self):
         self.assertEqual(self.structure.per_atom_energy, 0.5)
+
+    def test_bad_bond_scan_can_skip_large_structures(self):
+        large_structure = Structure(
+            np.eye(3),
+            {
+                "species": ["H"] * 501,
+                "pos": np.zeros((501, 3), dtype=np.float32),
+            },
+            [
+                {"name": "species", "type": "S", "count": 1},
+                {"name": "pos", "type": "R", "count": 3},
+            ],
+            {},
+        )
+
+        with patch.object(large_structure, "get_all_distances") as get_all_distances:
+            self.assertEqual(large_structure.get_bad_bond_pairs(max_atoms=500), [])
+
+        get_all_distances.assert_not_called()
+
+    def test_bad_bond_scan_keeps_complete_analysis_by_default(self):
+        with patch.object(
+            self.structure,
+            "get_all_distances",
+            return_value=np.array([[0.0, 0.1], [0.1, 0.0]]),
+        ) as get_all_distances:
+            self.assertEqual(self.structure.get_bad_bond_pairs(), [(0, 1)])
+
+        get_all_distances.assert_called_once_with()
 
     def test_lattice_operations(self):
         new_lattice = np.array([[2, 0, 0], [0, 2, 0], [0, 0, 2]], dtype=np.float32)

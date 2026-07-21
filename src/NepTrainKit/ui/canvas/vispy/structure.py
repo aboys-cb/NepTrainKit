@@ -19,6 +19,9 @@ from vispy.scene.visuals import Mesh, Line, Text
 from vispy.color import Color, get_colormap
 
 
+AUTO_BAD_BOND_HIGHLIGHT_MAX_ATOMS = 500
+
+
 class StructureTurntableCamera(scene.cameras.TurntableCamera):
     """Turntable camera with structure-view mouse bindings."""
 
@@ -928,7 +931,10 @@ class StructurePlotWidget(scene.SceneCanvas):
 
         radius_coefficient = Config.getfloat("widget", "radius_coefficient", 0.7)
 
-        bond_pairs = structure.get_bad_bond_pairs(radius_coefficient)
+        bond_pairs = structure.get_bad_bond_pairs(
+            radius_coefficient,
+            max_atoms=AUTO_BAD_BOND_HIGHLIGHT_MAX_ATOMS,
+        )
 
         for pair in bond_pairs:
             self.highlight_atom(pair[0])

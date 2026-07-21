@@ -1214,7 +1214,7 @@ class Structure:
         bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
         return bond_pairs
 
-    def get_bad_bond_pairs(self, coefficient=0.8):
+    def get_bad_bond_pairs(self, coefficient=0.8, max_atoms: int | None = None):
         
         """Pairs that violate a short-bond threshold.
 
@@ -1222,12 +1222,18 @@ class Structure:
         ----------
         coefficient : float, default=0.8
             Threshold relative to the sum of covalent radii.
+        max_atoms : int or None, default=None
+            Skip the all-pairs scan when the structure exceeds this size.
+            ``None`` keeps the complete analysis behavior.
 
         Returns
         -------
         list[tuple[int, int]]
             Upper-triangular pairs shorter than the threshold.
         """
+        if max_atoms is not None and len(self) > max_atoms:
+            return []
+
         i, j = np.triu_indices(len(self), k=1)
         distances = self.get_all_distances()
         upper_distances = distances[i, j]

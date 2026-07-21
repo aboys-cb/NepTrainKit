@@ -26,6 +26,7 @@ from qfluentwidgets import (
     InfoBadge,
     InfoBadgePosition,
 )
+from ase.io import write as ase_write
 from loguru import logger
 
 from NepTrainKit.core.audit import (
@@ -169,7 +170,13 @@ class NepTrainKitMainWindow(FluentWindow):
         self._training_set_phase_thread = None
         self._training_set_phase_result = None
         self._training_set_phase_token = None
+        self._make_dataset_handoff_thread = None
+        self._make_dataset_handoff_dir = None
+        self._make_dataset_handoff_pending_dir = None
         self._connect_training_set_audit_signals()
+        self.make_data_interface.finalOutputRequestedSignal.connect(
+            self.open_make_dataset_output
+        )
 
     def _connect_training_set_audit_signals(self) -> None:
         """Wire Training Set Audit page actions back into the main window."""
@@ -241,6 +248,62 @@ class NepTrainKitMainWindow(FluentWindow):
         """Switch to Dataset Display and open a file for a future audit."""
         self.switchTo(self.show_nep_interface)
         self.show_nep_interface.open_file()
+
+    def open_make_dataset_output(self, structures: list) -> None:
+        """Persist a temporary handoff and open it in Dataset Display."""
+        if not structures:
+            MessageManager.send_info_message(
+                self.tr("The workflow output is empty.")
+            )
+            return
+        thread = getattr(self, "_make_dataset_handoff_thread", None)
+        if thread is not None and thread.isRunning():
+            MessageManager.send_info_message(
+                self.tr("Dataset handoff is already in progress.")
+            )
+            return
+
+        handoff_dir = tempfile.TemporaryDirectory(
+            prefix="neptrainkit-make-dataset-"
+        )
+        path = Path(handoff_dir.name) / "make_dataset.xyz"
+        self._make_dataset_handoff_pending_dir = handoff_dir
+        MessageManager.send_info_message(
+            self.tr("Preparing the workflow output for display...")
+        )
+
+        def _write_handoff() -> str:
+            ase_write(path, structures, format="extxyz")
+            return str(path)
+
+        def _open_handoff(result_path: str) -> None:
+            if self._make_dataset_handoff_pending_dir is not handoff_dir:
+                handoff_dir.cleanup()
+                return
+            previous_dir = self._make_dataset_handoff_dir
+            self._make_dataset_handoff_dir = handoff_dir
+            self._make_dataset_handoff_pending_dir = None
+            self.switchTo(self.show_nep_interface)
+            self.show_nep_interface.check_nep_result(result_path)
+            if previous_dir is not None:
+                previous_dir.cleanup()
+
+        def _handoff_failed(message: str) -> None:
+            if self._make_dataset_handoff_pending_dir is handoff_dir:
+                self._make_dataset_handoff_pending_dir = None
+            handoff_dir.cleanup()
+            MessageManager.send_error_message(
+                self.tr("Failed to prepare workflow output: {message}").format(
+                    message=message
+                )
+            )
+
+        self._make_dataset_handoff_thread = run_in_thread(
+            self,
+            _write_handoff,
+            on_finished=_open_handoff,
+            on_error=_handoff_failed,
+        )
 
     def _training_set_audit_signature(self, result_data) -> tuple[object, ...]:
         """Return a cheap snapshot for safe reuse of an unchanged audit run."""

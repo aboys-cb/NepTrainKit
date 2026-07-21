@@ -8,7 +8,7 @@ import re
 from pathlib import Path
 
 import numpy as np
-from PySide6.QtCore import QEvent, Qt
+from PySide6.QtCore import QEvent, Qt, Signal
 from PySide6.QtGui import QAction, QIcon, QKeySequence
 from PySide6.QtWidgets import (
     QAbstractSpinBox,
@@ -62,6 +62,8 @@ class MakeDataWidget(QWidget):
     parent : QWidget | None
         Optional owner widget that embeds this page.
     """
+
+    finalOutputRequestedSignal = Signal(list)
 
     def __init__(self,parent=None):
         """Initialise the workflow editor and runtime state.
@@ -271,6 +273,7 @@ class MakeDataWidget(QWidget):
         self.setting_group.newCardSignal.connect(self.add_card)
         self.setting_group.pasteSignal.connect(self.paste_card_config_from_clipboard)
         self.setting_group.copySignal.connect(self.copy_card_config_to_clipboard)
+        self.setting_group.viewOutputSignal.connect(self.request_final_output)
 
         self.path_label = HyperlinkLabel(self)
         self.path_label.setFixedHeight(30)
@@ -476,6 +479,7 @@ class MakeDataWidget(QWidget):
             return
         self.stop_run_card()
         self._last_completed_card_index = None
+        self.setting_group.set_output_available(False)
         first_card=self._next_card(-1)
         if first_card:
             needs_input = bool(getattr(first_card, "requires_input_dataset", True))
@@ -560,9 +564,23 @@ class MakeDataWidget(QWidget):
             next_card.runFinishedSignal.connect(self._run_next_card)
             next_card.run()
         else:
+            self.setting_group.set_output_available(
+                bool(current_card.result_dataset)
+            )
             MessageManager.send_success_message(
                 self.tr("Perturbation training set created successfully.")
             )
+
+    def request_final_output(self) -> None:
+        """Send the completed workflow output to the main-window handoff."""
+        cards = self._cards_for_export(include_all=False)
+        if not cards:
+            MessageManager.send_info_message(
+                self.tr("Run the workflow to create an output first.")
+            )
+            self.setting_group.set_output_available(False)
+            return
+        self.finalOutputRequestedSignal.emit(list(cards[0].result_dataset))
 
     def stop_run_card(self):
         """Stop all running cards and disconnect scheduling hooks.

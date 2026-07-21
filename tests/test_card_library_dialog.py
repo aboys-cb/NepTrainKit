@@ -81,6 +81,17 @@ class TestCardLibraryDialog(unittest.TestCase):
 
         self.assertEqual(requested, ["CrystalPrototypeBuilderCard"])
 
+    def test_console_exposes_completed_output_handoff_action(self):
+        console = ConsoleWidget()
+        requests = []
+        console.viewOutputSignal.connect(lambda: requests.append(True))
+
+        self.assertFalse(console.view_output_button.isEnabled())
+        console.set_output_available(True)
+        console.view_output_button.click()
+
+        self.assertEqual(requests, [True])
+
 
 if __name__ == "__main__":
     unittest.main()

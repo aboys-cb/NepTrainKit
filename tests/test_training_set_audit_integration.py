@@ -7,6 +7,7 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+from ase import Atoms
 from PySide6.QtCore import QCoreApplication, QTranslator
 from PySide6.QtWidgets import QApplication
 
@@ -449,6 +450,40 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         self.assertFalse(window.save_dir_button.enabled)
         self.assertIn("not available", window.save_dir_button.tooltip)
 
+    def test_make_dataset_output_handoff_opens_temporary_dataset_directly(self):
+        window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
+        window._make_dataset_handoff_thread = None
+        window._make_dataset_handoff_dir = None
+        window._make_dataset_handoff_pending_dir = None
+        window.show_nep_interface = SimpleNamespace(check_nep_result=MagicMock())
+        window.switchTo = MagicMock()
+        callbacks = {}
+
+        def fake_run_in_thread(
+            _parent, func, *args, on_finished=None, on_error=None, **kwargs
+        ):
+            del args, kwargs
+            callbacks["func"] = func
+            callbacks["finished"] = on_finished
+            callbacks["error"] = on_error
+            return SimpleNamespace(isRunning=lambda: False)
+
+        with patch.object(main_module, "run_in_thread", side_effect=fake_run_in_thread):
+            main_module.NepTrainKitMainWindow.open_make_dataset_output(
+                window,
+                [Atoms("Fe", positions=[[0.0, 0.0, 0.0]])],
+            )
+
+        result_path = callbacks["func"]()
+        callbacks["finished"](result_path)
+
+        self.assertTrue(Path(result_path).is_file())
+        window.switchTo.assert_called_once_with(window.show_nep_interface)
+        window.show_nep_interface.check_nep_result.assert_called_once_with(
+            result_path
+        )
+        window._make_dataset_handoff_dir.cleanup()
+
     def test_shipped_chinese_catalog_translates_audit_integration_contexts(self):
         catalog = (
             Path(__file__).resolve().parents[1]
@@ -466,6 +501,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
                 "Open is not available on this page": "当前页面不支持打开操作",
                 "Save data from this page": "保存当前页面的数据",
                 "Save is not available on this page": "当前页面不支持保存操作",
+                "Preparing the workflow output for display...": "正在准备工作流输出以供查看...",
                 "Training Set Check": "训练集评估",
                 "current dataset": "当前数据集",
                 "Please load a dataset before running Training Set Check.": "请先加载数据集，再运行训练集评估。",

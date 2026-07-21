@@ -6,6 +6,7 @@ from PySide6.QtWidgets import QGridLayout, QWidget
 from qfluentwidgets import (
     RoundMenu,
     PrimaryDropDownPushButton,
+    PushButton,
     CommandBar,
     Action,
     FluentIcon,
@@ -50,6 +51,7 @@ class ConsoleWidget(QWidget):
     newCardSignal = Signal(str)
     pasteSignal = Signal()
     copySignal = Signal()
+    viewOutputSignal = Signal()
     stopSignal = Signal()
     runSignal = Signal()
 
@@ -150,6 +152,18 @@ class ConsoleWidget(QWidget):
         )
         self.setting_command.addAction(copy_action)
 
+        self.view_output_button = PushButton(
+            QIcon(r":/images/src/images/show_nep.svg"),
+            self.tr("View output"),
+            self,
+        )
+        self.view_output_button.setToolTip(
+            self.tr("Open the final workflow output in NEP Dataset Display")
+        )
+        self.view_output_button.setEnabled(False)
+        self.view_output_button.clicked.connect(self.view_output)
+        self.setting_command.addWidget(self.view_output_button)
+
         self.setting_command.addSeparator()
         run_action = Action(
             QIcon(r":/images/src/images/run.svg"),
@@ -203,6 +217,14 @@ class ConsoleWidget(QWidget):
     def copy(self, *args, **kwargs):
         """Emit the copy signal to copy workflow JSON to the clipboard."""
         self.copySignal.emit()
+
+    def view_output(self, *args, **kwargs):
+        """Request opening the completed workflow output."""
+        self.viewOutputSignal.emit()
+
+    def set_output_available(self, available: bool) -> None:
+        """Keep the output handoff action aligned with workflow state."""
+        self.view_output_button.setEnabled(bool(available))
 
     def stop(self, *args, **kwargs):
         """Emit the stop signal to abort card execution."""

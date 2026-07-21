@@ -1305,12 +1305,12 @@
 <context>
     <name>ConsoleWidget</name>
     <message>
-        <location filename="../ui/views/cards.py" line="70" />
+        <location filename="../ui/views/cards.py" line="72" />
         <source>Add new card</source>
         <translation>添加新卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="76" />
+        <location filename="../ui/views/cards.py" line="78" />
         <source>Add a new card</source>
         <translation>添加一张新卡片</translation>
     </message>
@@ -1323,52 +1323,62 @@
         <translation type="vanished">查看卡片贡献者和元数据</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="120" />
+        <location filename="../ui/views/cards.py" line="122" />
         <source>Find card</source>
         <translation>查找卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="124" />
+        <location filename="../ui/views/cards.py" line="126" />
         <source>Search cards and add the selected card to the workspace</source>
         <translation>搜索卡片，并将所选卡片添加到工作区</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="133" />
+        <location filename="../ui/views/cards.py" line="135" />
         <source>Paste JSON</source>
         <translation>粘贴 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="136" />
+        <location filename="../ui/views/cards.py" line="138" />
         <source>Create card(s) from clipboard JSON</source>
         <translation>从剪贴板 JSON 创建卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="144" />
+        <location filename="../ui/views/cards.py" line="146" />
         <source>Copy JSON</source>
         <translation>复制 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="147" />
+        <location filename="../ui/views/cards.py" line="149" />
         <source>Copy current workflow card JSON</source>
         <translation>复制当前工作流卡片 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="156" />
+        <location filename="../ui/views/cards.py" line="157" />
+        <source>View output</source>
+        <translation>查看输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/cards.py" line="161" />
+        <source>Open the final workflow output in NEP Dataset Display</source>
+        <translation>在 NEP 数据集查看中打开工作流最终输出</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/cards.py" line="170" />
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="159" />
+        <location filename="../ui/views/cards.py" line="173" />
         <source>Run selected cards</source>
         <translation>运行选中的卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="167" />
+        <location filename="../ui/views/cards.py" line="181" />
         <source>Stop</source>
         <translation>停止</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="170" />
+        <location filename="../ui/views/cards.py" line="184" />
         <source>Stop running cards</source>
         <translation>停止正在运行的卡片</translation>
     </message>
@@ -3281,148 +3291,153 @@
         <translation type="vanished">仅支持导入 .xyz、.vasp、.cif 或 json 文件。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="168" />
+        <location filename="../ui/pages/makedata.py" line="171" />
         <source>Only .xyz, .extxyz, .vasp, .cif, POSCAR, CONTCAR, or JSON files are supported for import.</source>
         <translation>仅支持导入 .xyz、.extxyz、.vasp、.cif、POSCAR、CONTCAR 或 JSON 文件。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="230" />
+        <location filename="../ui/pages/makedata.py" line="233" />
         <source>Export final workflow output</source>
         <translation>导出工作流最终输出</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="235" />
+        <location filename="../ui/pages/makedata.py" line="238" />
         <source>Export all available card outputs</source>
         <translation>导出全部可用卡片输出</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="240" />
+        <location filename="../ui/pages/makedata.py" line="243" />
         <source>Export Card Config</source>
         <translation>导出卡片配置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="245" />
+        <location filename="../ui/pages/makedata.py" line="248" />
         <source>Import Card Config</source>
         <translation>导入卡片配置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="250" />
+        <location filename="../ui/pages/makedata.py" line="253" />
         <source>Paste Card JSON</source>
         <translation>粘贴卡片 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="277" />
+        <location filename="../ui/pages/makedata.py" line="281" />
         <source>Folder for Custom Cards</source>
         <translation>自定义卡片目录</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="310" />
+        <location filename="../ui/pages/makedata.py" line="314" />
         <source>Load structure failed: {path}</source>
         <translation>加载结构失败：{path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="341" />
+        <location filename="../ui/pages/makedata.py" line="345" />
         <source>success load {count} structures.</source>
         <translation>已成功加载 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="344" />
+        <location filename="../ui/pages/makedata.py" line="348" />
         <source>Success load {count} structures.</source>
         <translation>已成功加载 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="357" />
+        <location filename="../ui/pages/makedata.py" line="361" />
         <source>Please choose the structure files</source>
         <translation>请选择结构文件</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="360" />
+        <location filename="../ui/pages/makedata.py" line="364" />
         <source>Structure files (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;All files (*)</source>
         <translation>结构文件 (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="422" />
+        <location filename="../ui/pages/makedata.py" line="442" />
         <source>No enabled cards to export.</source>
         <translation>没有可导出的已启用卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="425" />
+        <location filename="../ui/pages/makedata.py" line="445" />
         <source>No enabled card has output. Run the workflow first.</source>
         <translation>已启用卡片尚无输出，请先运行工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="429" />
+        <location filename="../ui/pages/makedata.py" line="449" />
         <source>The final enabled card has no output. Run the workflow first.</source>
         <translation>最后一张已启用卡片尚无输出，请先运行工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="435" />
+        <location filename="../ui/pages/makedata.py" line="455" />
         <source>Choose a file save location</source>
         <translation>选择文件保存位置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="443" />
+        <location filename="../ui/pages/makedata.py" line="463" />
         <source>Exporting data</source>
         <translation>正在导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="457" />
+        <location filename="../ui/pages/makedata.py" line="477" />
         <source>Cards are still running. Please wait for the current run to finish.</source>
         <translation>卡片仍在运行，请等待当前任务完成。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="466" />
+        <location filename="../ui/pages/makedata.py" line="488" />
         <source>Please import the structure file first. You can drag it in directly or import it from the upper left corner!</source>
         <translation>请先导入结构文件。你可以直接拖入，或从左上角导入。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="475" />
+        <location filename="../ui/pages/makedata.py" line="497" />
         <source>No card selected. Please select a card in the workspace.</source>
         <translation>尚未选择卡片，请先在工作区选择一个卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="545" />
+        <location filename="../ui/pages/makedata.py" line="571" />
         <source>Perturbation training set created successfully.</source>
         <translation>扰动训练集已创建。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="582" />
+        <location filename="../ui/pages/makedata.py" line="579" />
+        <source>Run the workflow to create an output first.</source>
+        <translation>请先运行工作流生成输出。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/makedata.py" line="619" />
         <source>no card</source>
         <translation>没有卡片</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="598" />
-        <location filename="../ui/pages/makedata.py" line="621" />
+        <location filename="../ui/pages/makedata.py" line="635" />
+        <location filename="../ui/pages/makedata.py" line="658" />
         <source>No cards in workspace.</source>
         <translation>工作区中没有卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="607" />
+        <location filename="../ui/pages/makedata.py" line="644" />
         <source>Card configuration exported successfully.</source>
         <translation>卡片配置已导出。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="625" />
+        <location filename="../ui/pages/makedata.py" line="662" />
         <source>Card configuration JSON copied to clipboard.</source>
         <translation>卡片配置 JSON 已复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="656" />
+        <location filename="../ui/pages/makedata.py" line="693" />
         <source>Clipboard does not contain card JSON.</source>
         <translation>剪贴板中没有卡片 JSON。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="686" />
+        <location filename="../ui/pages/makedata.py" line="723" />
         <source>Invalid card configuration file: {error}</source>
         <translation>卡片配置文件无效：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="732" />
+        <location filename="../ui/pages/makedata.py" line="769" />
         <source>Failed to load {name}: {error}</source>
         <translation>加载 {name} 失败：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="738" />
+        <location filename="../ui/pages/makedata.py" line="775" />
         <source>Added {count} card configuration(s).</source>
         <translation>已添加 {count} 个卡片配置。</translation>
     </message>
@@ -3851,72 +3866,92 @@ All child items will also be deleted.</source>
 <context>
     <name>NepTrainKitMainWindow</name>
     <message>
-        <location filename="../main.py" line="104" />
+        <location filename="../main.py" line="105" />
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../main.py" line="110" />
+        <location filename="../main.py" line="111" />
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../main.py" line="134" />
+        <location filename="../main.py" line="135" />
         <source>NEP Dataset Display</source>
         <translation>NEP 数据集查看</translation>
     </message>
     <message>
-        <location filename="../main.py" line="139" />
+        <location filename="../main.py" line="140" />
         <source>Training Set Check</source>
         <translation>训练集评估</translation>
     </message>
     <message>
-        <location filename="../main.py" line="144" />
+        <location filename="../main.py" line="145" />
         <source>Make Data</source>
         <translation>构建数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="149" />
+        <location filename="../main.py" line="150" />
         <source>Data Management</source>
         <translation>数据管理</translation>
     </message>
     <message>
-        <location filename="../main.py" line="154" />
+        <location filename="../main.py" line="155" />
         <source>Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../main.py" line="230" />
+        <location filename="../main.py" line="237" />
         <source>Open data for this page</source>
         <translation>打开当前页面的数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="232" />
+        <location filename="../main.py" line="239" />
         <source>Open is not available on this page</source>
         <translation>当前页面不支持打开操作</translation>
     </message>
     <message>
-        <location filename="../main.py" line="235" />
+        <location filename="../main.py" line="242" />
         <source>Save data from this page</source>
         <translation>保存当前页面的数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="237" />
+        <location filename="../main.py" line="244" />
         <source>Save is not available on this page</source>
         <translation>当前页面不支持保存操作</translation>
     </message>
     <message>
-        <location filename="../main.py" line="281" />
+        <location filename="../main.py" line="256" />
+        <source>The workflow output is empty.</source>
+        <translation>工作流输出为空。</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="262" />
+        <source>Dataset handoff is already in progress.</source>
+        <translation>正在传递数据集，请稍候。</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="272" />
+        <source>Preparing the workflow output for display...</source>
+        <translation>正在准备工作流输出以供查看...</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="296" />
+        <source>Failed to prepare workflow output: {message}</source>
+        <translation>准备工作流输出失败：{message}</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="344" />
         <source>Please load a dataset before running Training Set Check.</source>
         <translation>请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="327" />
+        <location filename="../main.py" line="390" />
         <source>Training Set Check failed: {message}</source>
         <translation>训练集评估失败：{message}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="352" />
+        <location filename="../main.py" line="415" />
         <source>Training Set Check results are stale. Please rerun the checks for the current dataset.</source>
         <translation>训练集评估结果已过期，请针对当前数据集重新检查。</translation>
     </message>
@@ -3929,7 +3964,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">请先加载数据集，再运行训练集检查。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="284" />
+        <location filename="../main.py" line="347" />
         <source>current dataset</source>
         <translation>当前数据集</translation>
     </message>
@@ -3942,7 +3977,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">训练集检查结果已过期，请针对当前数据集重新检查。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="479" />
+        <location filename="../main.py" line="542" />
         <source>Full phase analysis failed: {message}</source>
         <translation>完整相分析失败：{message}</translation>
     </message>

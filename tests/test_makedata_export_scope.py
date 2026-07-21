@@ -105,8 +105,23 @@ class TestMakeDataExportScope(unittest.TestCase):
             self.assertEqual(
                 widget.export_all_outputs_action.text(), "导出全部可用卡片输出"
             )
+            self.assertEqual(
+                widget.setting_group.view_output_button.text(), "查看输出"
+            )
         finally:
             self._app.removeTranslator(translator)
+
+    def test_completed_output_is_emitted_for_dataset_display(self):
+        widget = MakeDataWidget()
+        structures = [object(), object()]
+        final = SimpleNamespace(result_dataset=structures)
+        widget._cards_for_export = MagicMock(return_value=[final])
+        requested = []
+        widget.finalOutputRequestedSignal.connect(requested.append)
+
+        widget.request_final_output()
+
+        self.assertEqual(requested, [structures])
 
     @patch("NepTrainKit.ui.pages.makedata.call_path_dialog")
     @patch("NepTrainKit.ui.pages.makedata.MessageManager.send_info_message")

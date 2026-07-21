@@ -502,6 +502,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
                 "Save data from this page": "保存当前页面的数据",
                 "Save is not available on this page": "当前页面不支持保存操作",
                 "Preparing the workflow output for display...": "正在准备工作流输出以供查看...",
+                "Make Dataset": "构建数据集",
                 "Training Set Check": "训练集评估",
                 "current dataset": "当前数据集",
                 "Please load a dataset before running Training Set Check.": "请先加载数据集，再运行训练集评估。",

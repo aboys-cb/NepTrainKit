@@ -142,7 +142,7 @@ class NepTrainKitMainWindow(FluentWindow):
         self.addSubInterface(
             self.make_data_interface,
             QIcon(':/images/src/images/make.svg'),
-            self.tr('Make Data'),
+            self.tr('Make Dataset'),
         )
         self.addSubInterface(
             self.data_manager_interface,

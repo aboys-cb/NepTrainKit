@@ -3886,9 +3886,13 @@ All child items will also be deleted.</source>
         <translation>训练集评估</translation>
     </message>
     <message>
-        <location filename="../main.py" line="145" />
         <source>Make Data</source>
-        <translation>构建数据</translation>
+        <translation type="vanished">构建数据</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="145" />
+        <source>Make Dataset</source>
+        <translation>构建数据集</translation>
     </message>
     <message>
         <location filename="../main.py" line="150" />

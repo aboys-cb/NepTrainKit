@@ -5,6 +5,7 @@
 import json
 import os.path
 import re
+from pathlib import Path
 
 import numpy as np
 from PySide6.QtCore import QEvent, Qt
@@ -34,6 +35,22 @@ from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import LoadingThread
 from NepTrainKit.paths import get_user_config_path
 from ase.io import read as ase_read
+
+
+MAKE_DATA_STRUCTURE_FILE_FILTER = (
+    "Structure files (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;All files (*)"
+)
+_MAKE_DATA_STRUCTURE_SUFFIXES = {".xyz", ".extxyz", ".vasp", ".cif"}
+_MAKE_DATA_STRUCTURE_NAMES = {"POSCAR", "CONTCAR"}
+
+
+def is_make_data_structure_path(path: str | os.PathLike[str]) -> bool:
+    """Return whether ``path`` is a structure file accepted by Make Dataset."""
+    candidate = Path(path)
+    return (
+        candidate.suffix.lower() in _MAKE_DATA_STRUCTURE_SUFFIXES
+        or candidate.name.upper() in _MAKE_DATA_STRUCTURE_NAMES
+    )
 
 
 
@@ -140,16 +157,16 @@ class MakeDataWidget(QWidget):
             structures_path = []
             for url in urls:
                 file_path = url.toLocalFile()
-                if (file_path.endswith(".xyz") or
-                    file_path.endswith(".vasp") or
-                    file_path.endswith(".cif")):
+                if is_make_data_structure_path(file_path):
                     structures_path.append(file_path)
 
                 elif file_path.endswith(".json"):
                     self.parse_card_config(file_path)
                 else:
                     MessageManager.send_info_message(
-                        self.tr("Only .xyz .vasp .cif or json files are supported for import.")
+                        self.tr(
+                            "Only .xyz, .extxyz, .vasp, .cif, POSCAR, CONTCAR, or JSON files are supported for import."
+                        )
                     )
             if structures_path:
                 self.load_base_structure(structures_path)
@@ -321,8 +338,14 @@ class MakeDataWidget(QWidget):
         None
             Selected files are passed to ``load_base_structure``.
         """
-        path = call_path_dialog(self,"Please choose the structure files",
-                                      "selects",file_filter="Structure Files (*.xyz *.vasp *.cif)")
+        path = call_path_dialog(
+            self,
+            self.tr("Please choose the structure files"),
+            "selects",
+            file_filter=self.tr(
+                "Structure files (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;All files (*)"
+            ),
+        )
 
         if path:
             self.load_base_structure(path)

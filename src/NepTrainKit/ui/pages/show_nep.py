@@ -65,6 +65,11 @@ _ARROW_VECTOR_SOURCES = (
     (("_spin_force_vector_dataset", "_mforce_vector_dataset", "spin_force", "mforce"), (_ARROW_DFT_MFORCE, _ARROW_ML_MFORCE, _ARROW_MFORCE_ERROR)),
 )
 
+RESULT_DATA_FILE_FILTER = (
+    "Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj "
+    "OUTCAR OUTCAR* XDATCAR XDATCAR*);;All files (*)"
+)
+
 
 
 class ShowNepWidget(QWidget):
@@ -914,7 +919,15 @@ class ShowNepWidget(QWidget):
         None
             Updates the working dataset when a file is chosen.
         """
-        path = call_path_dialog(self,"Please choose the XYZ file","select",file_filter="XYZ files (*.xyz)")
+        path = call_path_dialog(
+            self,
+            self.tr("Please choose the data file"),
+            "select",
+            file_filter=self.tr(
+                "Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj "
+                "OUTCAR OUTCAR* XDATCAR XDATCAR*);;All files (*)"
+            ),
+        )
         if path:
             self.set_work_path(path)
 

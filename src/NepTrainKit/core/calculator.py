@@ -12,18 +12,32 @@ from ase import Atoms
 from ase.calculators.calculator import Calculator, all_changes
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase.stress import full_3x3_to_voigt_6_stress
-from nep_adapters import (
-    BackendStatus,
-    BackendUnavailableError,
-    ChargePrediction,
-    ModelInfo,
-    NEPCalculator as AdapterCalculator,
-    OutOfMemoryError,
-    Prediction,
-    SpinPrediction,
-    UnsupportedModelError,
-    backend_status,
-)
+try:
+    from nep_adapters import (
+        BackendStatus,
+        BackendUnavailableError,
+        ChargePrediction,
+        ModelInfo,
+        NEPCalculator as AdapterCalculator,
+        OutOfMemoryError,
+        Prediction,
+        SpinPrediction,
+        UnsupportedModelError,
+        backend_status,
+    )
+except ImportError:
+    BackendStatus = None  # type: ignore[assignment]
+    BackendUnavailableError = Exception  # type: ignore[assignment]
+    ChargePrediction = None  # type: ignore[assignment]
+    ModelInfo = None  # type: ignore[assignment]
+    AdapterCalculator = None  # type: ignore[assignment]
+    OutOfMemoryError = Exception  # type: ignore[assignment]
+    Prediction = None  # type: ignore[assignment]
+    SpinPrediction = None  # type: ignore[assignment]
+    UnsupportedModelError = Exception  # type: ignore[assignment]
+
+    def backend_status(backend: str | None = None):
+        raise ImportError("nep-adapters is not installed")
 
 from NepTrainKit.core.types import NepBackend
 from NepTrainKit.core.utils import aggregate_per_atom_to_structure

@@ -211,8 +211,13 @@ class SettingsWidget(ScrollArea):
 
         # NEP backend selection
         nep_backend_default = Config.get("nep", "backend","auto")
+        try:
+            nep_backend_enum = NepBackend(nep_backend_default)
+        except ValueError:
+            nep_backend_enum = NepBackend.AUTO
+            nep_backend_default = nep_backend_enum.value
         self.nep_backend_card = MyComboBoxSettingCard(
-            OptionsConfigItem("nep", "backend", NepBackend(nep_backend_default), OptionsValidator(NepBackend),
+            OptionsConfigItem("nep", "backend", nep_backend_enum, OptionsValidator(NepBackend),
                               EnumSerializer(NepBackend)),
             QIcon(":/images/src/images/gpu.svg"),
             self.tr('NEP Backend'),

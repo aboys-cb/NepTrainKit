@@ -13,9 +13,9 @@ from loguru import logger
 import numpy as np
 from PySide6.QtCore import QUrl, QTimer, Qt, Signal, QThread
 from PySide6.QtGui import QIcon, QFont
-from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame, QSizePolicy
-from qfluentwidgets import HyperlinkLabel, MessageBox, SpinBox, \
-    StrongBodyLabel, getFont, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
+from PySide6.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame, QSizePolicy
+from qfluentwidgets import FluentIcon, HyperlinkLabel, MessageBox, SpinBox, \
+    StrongBodyLabel, getFont, ToolButton, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
     Action, StateToolTip,ComboBox
 
 from NepTrainKit.ui.dialogs import call_path_dialog
@@ -24,12 +24,12 @@ from NepTrainKit.config import Config
 
 from NepTrainKit.core import MessageManager
 
-from NepTrainKit.ui.widgets import ConfigTypeSearchLineEdit, ArrowMessageBox, ExportFormatMessageBox
+from NepTrainKit.ui.widgets import ConfigTypeSearchLineEdit, TagFilterDialog, ElementsFilterDialog, ExpressionFilterDialog, ArrowMessageBox, ExportFormatMessageBox
 from NepTrainKit.core.io import (ResultData, load_result_data, matches_result_loader)
 
 from NepTrainKit.core.precision import get_export_significant_digits
 from NepTrainKit.core.structure import table_info, atomic_numbers
-from NepTrainKit.core.types import Brushes, CanvasMode, SearchType
+from NepTrainKit.core.types import Brushes, CanvasMode, SearchType, TagFilterSpec
 from NepTrainKit.paths import get_bundled_nep89_path
 from NepTrainKit.ui.canvas.canvas_factory import (
     create_structure_plot,
@@ -335,6 +335,9 @@ class ShowNepWidget(QWidget):
 
         combo = getattr(self, "search_mode_combo", None)
         search_type = combo.itemData(idx) if combo is not None and idx >= 0 else None
+        search_type = search_type or SearchType.TAG
+        use_filter = search_type in (SearchType.TAG, SearchType.FORMULA, SearchType.ELEMENTS, SearchType.EXPRESSION)
+        self.filter_edit_btn.setVisible(use_filter)
         self.search_lineEdit.set_search_type(search_type or SearchType.TAG)
 
     def _on_nep_model_changed(self, index):
@@ -713,6 +716,15 @@ class ShowNepWidget(QWidget):
         self.search_lineEdit.uncheckSignal.connect(self.uncheck_config_type)
         self.search_lineEdit.typeChangeSignal.connect(self._on_search_type_changed)
 
+        self.filter_edit_btn = TransparentToolButton(FluentIcon.FILTER, self.plot_widget)
+        self.filter_edit_btn.setToolTip(self.tr("Edit filter"))
+        self.filter_edit_btn.clicked.connect(self._on_filter_edit_clicked)
+        self.filter_edit_btn.hide()
+
+        self.filter_clear_btn = ToolButton(FluentIcon.CLOSE, self.plot_widget)
+        self.filter_clear_btn.setToolTip(self.tr("Cancel all marked structure selections"))
+        self.filter_clear_btn.clicked.connect(self._on_clear_all_selections)
+        self.filter_clear_btn.setStyleSheet("ToolButton { color: #e81123; }")
 
         self.search_mode_combo = ComboBox(frame)
         self.search_mode_combo.addItem(self.tr("Config_type"), userData=SearchType.TAG)
@@ -727,6 +739,8 @@ class ShowNepWidget(QWidget):
         frame_layout.addWidget(self.search_mode_combo)
 
         frame_layout.addWidget(self.search_lineEdit)
+        frame_layout.addWidget(self.filter_edit_btn)
+        frame_layout.addWidget(self.filter_clear_btn)
         self.search_status_label = BodyLabel(frame)
         self.search_status_label.setStyleSheet("color: gray;")
         self.search_status_label.setVisible(False)
@@ -771,6 +785,8 @@ class ShowNepWidget(QWidget):
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
         self.updateBondInfoSignal.connect(self.bond_label.setText)
         self._refresh_export_actions()
+        self.search_mode_combo.setCurrentIndex(0)
+        self._on_search_mode_changed(0)
 
     def _update_structure_arrow_availability(self) -> None:
         """Enable or disable arrow controls based on canvas capabilities."""
@@ -1884,6 +1900,129 @@ class ShowNepWidget(QWidget):
             search_type,
             lambda indexes: self.graph_widget.canvas.update_scatter_color(indexes, Brushes.Show),
         )
+
+    def _on_filter_edit_clicked(self):
+        """Open the filter dialog for the current search type."""
+        search_type = self.search_lineEdit.search_type
+
+        if search_type == SearchType.EXPRESSION:
+            expr = self.search_lineEdit.text().strip()
+            dlg = ExpressionFilterDialog(expr, self)
+            if dlg.exec() == QDialog.DialogCode.Accepted:
+                self.search_lineEdit.setText(dlg.result())
+            dlg.deleteLater()
+            return
+
+        if search_type == SearchType.ELEMENTS:
+            expr = self.search_lineEdit.text().strip()
+            cache = {}
+            try:
+                data = getattr(self, "nep_result_data", None)
+                if data is not None:
+                    cache = data.get_completer_cache(search_type, max_items=self._get_completer_max_items())
+            except Exception:
+                pass
+            dlg = ElementsFilterDialog(expr, cache if cache else None, self)
+            if dlg.exec() == QDialog.DialogCode.Accepted:
+                self.search_lineEdit.setText(dlg.result())
+            dlg.deleteLater()
+            return
+
+        spec = getattr(self, "_current_filter_spec", TagFilterSpec())
+        cache = {}
+        try:
+            data = getattr(self, "nep_result_data", None)
+            if data is not None:
+                cache = data.get_completer_cache(search_type, max_items=self._get_completer_max_items())
+        except Exception:
+            pass
+
+        dlg = TagFilterDialog(spec, cache, search_type, self)
+        if dlg.exec() == QDialog.DialogCode.Accepted:
+            self._current_filter_spec = dlg._spec
+            expr = dlg._spec.to_expression()
+            self.search_lineEdit.setText(expr)
+            self._on_tag_filter_search(dlg._spec.to_dict(), search_type)
+        dlg.deleteLater()
+
+    def _on_clear_all_selections(self):
+        """Clear all structure selections."""
+        data = getattr(self, "nep_result_data", None)
+        if data is None:
+            return
+        try:
+            all_indices = data.structure.group_array.now_data.tolist()
+            if all_indices:
+                self.graph_widget.canvas.select_index(all_indices, True)
+        except Exception:
+            pass
+
+    def _on_tag_filter_search(self, filter_spec: dict, search_type: SearchType):
+        """Highlight structures matching the tag filter spec."""
+        if self.nep_result_data is None:
+            return
+        self._run_async_tags_search(
+            filter_spec,
+            search_type,
+            lambda indexes: self.graph_widget.canvas.update_scatter_color(
+                list(indexes) if isinstance(indexes, (list, tuple, set)) else [], Brushes.Show
+            ),
+        )
+
+    def _on_tag_filter_check(self, filter_spec: dict, search_type: SearchType):
+        """Select structures matching the tag filter spec."""
+        if self.nep_result_data is None:
+            return
+        self._run_async_tags_search(
+            filter_spec,
+            search_type,
+            lambda indexes: self.graph_widget.canvas.select_index(indexes, False),
+        )
+
+    def _on_tag_filter_uncheck(self, filter_spec: dict, search_type: SearchType):
+        """Deselect structures matching the tag filter spec."""
+        if self.nep_result_data is None:
+            return
+        self._run_async_tags_search(
+            filter_spec,
+            search_type,
+            lambda indexes: self.graph_widget.canvas.select_index(indexes, True),
+        )
+
+    def _run_async_tags_search(self, filter_spec: dict, search_type: SearchType, apply_result) -> None:
+        """Run a tag filter search in background; apply_result runs on UI thread."""
+        data = getattr(self, "nep_result_data", None)
+        if data is None:
+            return
+        self._search_job_id += 1
+        job_id = self._search_job_id
+        dataset_id = id(data)
+        self._begin_search()
+
+        def _compute():
+            return data.search_config_tags(filter_spec, search_type)
+
+        def _on_done(indexes: object) -> None:
+            try:
+                if job_id != self._search_job_id:
+                    return
+                current = getattr(self, "nep_result_data", None)
+                if current is None or id(current) != dataset_id:
+                    return
+                apply_result(list(indexes) if isinstance(indexes, (list, tuple, set)) else indexes)
+            finally:
+                self._end_search()
+
+        def _on_err(msg: str) -> None:
+            try:
+                MessageManager.send_warning_message(
+                    self.tr("Search failed: {msg}").format(msg=msg)
+                )
+            finally:
+                self._end_search()
+
+        thread = run_in_thread(self, _compute, on_finished=_on_done, on_error=_on_err)
+        self._track_worker_thread(thread)
 
     def checked_config_type(self, config:str,search_type:SearchType):
         """Select structures matching the given configuration criteria.

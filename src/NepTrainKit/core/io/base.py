@@ -25,7 +25,14 @@ from PySide6.QtCore import QObject, Signal
 from loguru import logger
 from typing import Any, Callable, Iterable, Mapping, Optional, Sequence
 import numpy.typing as npt
-from nep_adapters import NepAdaptersError
+try:
+    from nep_adapters import NepAdaptersError
+except ImportError:
+    class NepAdaptersError(Exception):
+        """Fallback when nep-adapters is not installed."""
+        def __init__(self, *args, code: int = -1):
+            super().__init__(*args)
+            self.code = code
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
@@ -706,6 +713,62 @@ class StructureData(NepData):
                         outside |= values > 0
                 mask &= ~outside
             result_index = np.nonzero(mask)[0]
+        return self.group_array[result_index].tolist()
+
+    def search_config_tags(self, filter_spec: dict, search_type: SearchType) -> list[int]:
+        """Return structure indices matching a tag/formula filter spec.
+
+        Uses simple substring matching (not regex) with group-based logic:
+        groups are AND'd, conditions within a group use AND/OR per group mode.
+
+        Parameters
+        ----------
+        filter_spec : dict
+            Dictionary with ``groups`` (list of group dicts, each having
+            ``conditions`` and ``mode`` keys).
+        search_type : SearchType
+            One of :attr:`SearchType.TAG` or :attr:`SearchType.FORMULA`.
+
+        Returns
+        -------
+        list[int]
+            Matching structure indices.
+        """
+        from NepTrainKit.core.types import TagFilterSpec
+
+        spec = TagFilterSpec.from_dict(filter_spec) if isinstance(filter_spec, dict) else filter_spec
+        if spec.is_empty():
+            return []
+
+        if search_type == SearchType.TAG:
+            values = [getattr(s, "tag", "") or "" for s in self.now_data]
+        elif search_type == SearchType.FORMULA:
+            values = [getattr(s, "formula", "") or "" for s in self.now_data]
+        else:
+            return []
+
+        active_count = len(values)
+        mask = np.ones(active_count, dtype=bool)
+
+        for group in spec.groups:
+            if group.is_empty():
+                continue
+            group_mask: np.ndarray | None = None
+            for cond in group.conditions:
+                text = str(cond.text)
+                if not text:
+                    continue
+                row_match = np.array([text in v for v in values], dtype=bool)
+                if cond.negate:
+                    row_match = ~row_match
+                if group.mode == "and":
+                    group_mask = row_match.copy() if group_mask is None else group_mask & row_match
+                else:
+                    group_mask = row_match if group_mask is None else group_mask | row_match
+            if group_mask is not None:
+                mask &= group_mask
+
+        result_index = np.nonzero(mask)[0]
         return self.group_array[result_index].tolist()
 
 
@@ -1785,6 +1848,10 @@ class ResultData(QObject):
         if search_type == SearchType.EXPRESSION:
             return self._search_expression(config)
         return self.structure.search_config(config, search_type)
+
+    def search_config_tags(self, filter_spec: dict, search_type: SearchType) -> list[int]:
+        """Return structure indices matching a tag/formula filter spec."""
+        return self.structure.search_config_tags(filter_spec, search_type)
     def sync_structures(self, fields: Iterable[str] | None = None, structure_indices: Sequence[int] | None = None) -> None:
         """Apply registered :class:`StructureSyncRule` objects to datasets.
 

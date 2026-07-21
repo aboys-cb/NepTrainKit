@@ -93,8 +93,8 @@ class ConfigTypeSearchLineEdit(SearchLineEdit):
             label = "Config_type"
             example = ""
         elif search_type == SearchType.FORMULA:
-            label = self.tr("formula (regex)")
-            example = self.tr(" e.g. Fe.*O")
+            label = self.tr("formula")
+            example = self.tr(" e.g. Fe,O")
         elif search_type == SearchType.ELEMENTS:
             label = self.tr("elements")
             example = self.tr(" e.g. Fe,O or +Fe,-H")

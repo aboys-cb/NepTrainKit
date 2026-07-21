@@ -13,6 +13,7 @@ Examples
 """
 import re
 import sys
+from dataclasses import dataclass, field
 from enum import Enum
 
 from PySide6.QtCore import Qt
@@ -145,6 +146,106 @@ class SearchType(StrEnum):
     FORMULA = "formula"
     ELEMENTS = "elements"
     EXPRESSION = "expression"
+
+
+@dataclass
+class FilterCondition:
+    """A single filter condition (substring to match)."""
+
+    text: str = ""
+    negate: bool = False
+
+    def to_dict(self) -> dict:
+        return {"text": self.text, "negate": self.negate}
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "FilterCondition":
+        return cls(text=str(d.get("text", "")), negate=bool(d.get("negate", False)))
+
+
+@dataclass
+class FilterGroup:
+    """A group of conditions combined with AND/OR logic. Groups are AND'd together."""
+
+    conditions: list[FilterCondition] = field(default_factory=list)
+    mode: str = "or"
+
+    def is_empty(self) -> bool:
+        return not self.conditions
+
+    def to_dict(self) -> dict:
+        return {
+            "conditions": [c.to_dict() for c in self.conditions],
+            "mode": self.mode,
+        }
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "FilterGroup":
+        return cls(
+            conditions=[FilterCondition.from_dict(c) for c in d.get("conditions", [])],
+            mode=str(d.get("mode", "or")),
+        )
+
+
+@dataclass
+class TagFilterSpec:
+    """Structured filter spec for tag/formula search.
+
+    Multiple groups are AND'd together. Within each group, conditions
+    use the group's ``mode`` (AND/OR). Each condition can be negated.
+    """
+
+    groups: list[FilterGroup] = field(default_factory=list)
+
+    def is_empty(self) -> bool:
+        return all(g.is_empty() for g in self.groups)
+
+    def to_expression(self) -> str:
+        parts: list[str] = []
+        for group in self.groups:
+            if group.is_empty():
+                continue
+            cond_strs: list[str] = []
+            negate_group = False
+            for cond in group.conditions:
+                if cond.negate:
+                    negate_group = True
+                cond_strs.append(cond.text)
+            if not cond_strs:
+                continue
+            if len(cond_strs) == 1:
+                inner = cond_strs[0]
+            else:
+                inner = " | ".join(cond_strs)
+            if negate_group:
+                inner = f"!({inner})" if len(cond_strs) > 1 else f"!{inner}"
+            parts.append(inner)
+        return ", ".join(parts) if parts else ""
+
+    def to_dict(self) -> dict:
+        return {"groups": [g.to_dict() for g in self.groups]}
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "TagFilterSpec":
+        groups_data = d.get("groups")
+        if groups_data:
+            return cls(groups=[FilterGroup.from_dict(g) for g in groups_data])
+        # backward compatible: migrate old include/exclude/mode format
+        include = list(d.get("include", []))
+        exclude = list(d.get("exclude", []))
+        mode = str(d.get("mode", "or"))
+        groups = []
+        if include:
+            groups.append(FilterGroup(
+                conditions=[FilterCondition(text=t) for t in include],
+                mode=mode,
+            ))
+        if exclude:
+            groups.append(FilterGroup(
+                conditions=[FilterCondition(text=t, negate=True) for t in exclude],
+                mode="or",
+            ))
+        return cls(groups=groups)
 
 
 class FieldValueShape(StrEnum):

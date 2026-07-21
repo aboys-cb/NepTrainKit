@@ -524,6 +524,27 @@ expression 模式使用单独的动态补全，不和 `tag/formula/elements` 共
 - `Invalid expression syntax`
   - 语法不完整，例如 `force.x >`
 
+#### 6.3.11 表达式构建器弹窗
+
+搜索框选择 `expression` 模式后，点击输入框右侧的编辑按钮可打开 `Expression Filter` 弹窗。弹窗提供可视化方式构建表达式，尤其适合多条件组合。
+
+- **条件组（卡片）**：每个卡片是一个条件组，组与组之间为 **AND**。
+- **组内条件行**：点击卡片内的 `+` 可添加多行，同一卡片内的行之间为 **OR**。
+- **Include / Exclude**：将卡片设为 `Exclude` 等价于在该组表达式前加 `not`。
+- **单位提示**：数值输入框右侧会根据当前字段显示单位，例如 `natoms` 显示 `count`，`energy_per_atom` 显示 `eV/atom`。
+- **状态保持**：关闭弹窗后再打开，会恢复上一次的组和行结构；多个 OR 行不会被合并成一行。
+- **实时预览**：弹窗底部会实时显示当前构建出的表达式。
+- **应用**：点击 `Apply` 后，表达式会回写到搜索框，随后可用搜索/勾选/反选按钮处理结果。
+
+示例对应关系：
+
+| 弹窗结构 | 生成的表达式 |
+|---|---|
+| 一个卡片，一行 `natoms > 100` | `natoms > 100` |
+| 一个卡片，两行 `natoms > 100` 或 `energy_per_atom < -5` | `(natoms > 100 or energy_per_atom < -5)` |
+| 两个卡片，每个卡片一行 | `natoms > 100 and energy_per_atom < -5` |
+| 一个卡片设为 `Exclude`，两行 OR | `not ((natoms > 100 or energy_per_atom < -5))` |
+
 ![Search Modes](../_static/image/show_nep/q_search_modes.png)
 
 ## 7. 状态与常见提示

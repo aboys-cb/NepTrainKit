@@ -9,12 +9,20 @@ from pathlib import Path
 from typing import Any
 import numpy.typing as npt
 import numpy as np
-from nep_adapters import (
-    ChargePrediction,
-    SpinPrediction,
-    __version__ as nep_adapters_version,
-    inspect_model,
-)
+try:
+    from nep_adapters import (
+        ChargePrediction,
+        SpinPrediction,
+        __version__ as nep_adapters_version,
+        inspect_model,
+    )
+except ImportError:
+    ChargePrediction = None  # type: ignore[assignment]
+    SpinPrediction = None  # type: ignore[assignment]
+    nep_adapters_version = "0.0.0"
+
+    def inspect_model(model_path, **kwargs):
+        raise ImportError("nep-adapters is not installed")
 from NepTrainKit import module_path
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.structure import Structure

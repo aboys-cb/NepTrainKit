@@ -46,6 +46,7 @@ from .doping_rule import DopingRulesWidget
 from .vacancy_rule import VacancyRulesWidget
 from .docker import MakeWorkflowArea
 from .search_widget import ConfigTypeSearchLineEdit
+from .filter_bar import TagFilterDialog, ElementsFilterDialog, ExpressionFilterDialog
 from .settingscard import MyComboBoxSettingCard, DoubleSpinBoxSettingCard, LineEditSettingCard, ColorSettingCard
 from .table import IdNameTableModel
 from .tree import TreeModel, TreeItem, TagDelegate
@@ -84,6 +85,9 @@ __all__ = [
     "FilterDataCard",
     "MakeWorkflowArea",
     "ConfigTypeSearchLineEdit",
+    "TagFilterDialog",
+    "ElementsFilterDialog",
+    "ExpressionFilterDialog",
     "MyComboBoxSettingCard",
     "DoubleSpinBoxSettingCard",
     "LineEditSettingCard",

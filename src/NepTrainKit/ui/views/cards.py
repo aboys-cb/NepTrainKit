@@ -24,6 +24,7 @@ from NepTrainKit.ui.views._card import *  # noqa: F401, F403
 
 
 card_path = ensure_directory(get_user_config_path() / "cards")
+_CARD_MENU_MAX_VISIBLE_ITEMS = 10
 
 load_cards_from_directory(card_path)
 
@@ -113,6 +114,7 @@ class ConsoleWidget(QWidget):
                     action.setToolTip(card_tooltip(metadata))
                 self.menu.addAction(action)
 
+        self.menu.view.setMaxVisibleItems(_CARD_MENU_MAX_VISIBLE_ITEMS)
         self.menu.triggered.connect(self.menu_clicked)
         self.new_card_button.setMenu(self.menu)
         self.setting_command.addWidget(self.new_card_button)

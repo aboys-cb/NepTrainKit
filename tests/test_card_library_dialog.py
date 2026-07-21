@@ -152,6 +152,12 @@ class TestCardLibraryDialog(unittest.TestCase):
         self.assertEqual(console.find_card_button.text(), "Find card")
         self.assertTrue(console.find_card_button.isEnabled())
 
+    def test_console_card_menu_scrolls_instead_of_exceeding_screen_height(self):
+        console = ConsoleWidget()
+
+        self.assertEqual(console.menu.view.maxVisibleItems(), 10)
+        self.assertGreater(len(console.menu.actions()), 10)
+
     def test_console_exposes_selected_output_handoff_action(self):
         console = ConsoleWidget()
         requests = []

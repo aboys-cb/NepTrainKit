@@ -234,6 +234,24 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertFalse(thumbnail.text.visible)
         self.assertTrue(main_plot.text.visible)
 
+    def test_vispy_reused_parity_plot_hides_diagonal_for_descriptor(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        plot.title = "energy"
+        plot.scatter(
+            np.array([0.0, 1.0], dtype=np.float32),
+            np.array([0.0, 1.0], dtype=np.float32),
+            np.array([0, 1], dtype=np.int32),
+        )
+        self.assertTrue(plot._diagonal.visible)
+
+        plot.parity_mode = False
+        plot.title = "descriptor"
+        plot.update_diagonal()
+
+        self.assertFalse(plot._diagonal.visible)
+
     def test_vispy_empty_scatter_does_not_auto_range_from_missing_marker_data(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
         canvas.init_axes(1)

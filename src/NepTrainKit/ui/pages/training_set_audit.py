@@ -110,6 +110,7 @@ class TrainingSetAuditWidget(QWidget):
 
     selectStructuresSignal = Signal(list)
     rerunAuditSignal = Signal()
+    requestDatasetOpenSignal = Signal()
     requestStructureEvidenceSignal = Signal()
     phaseAnalysisProgressSignal = Signal(int, int)
 
@@ -144,13 +145,43 @@ class TrainingSetAuditWidget(QWidget):
         root.setContentsMargins(16, 14, 16, 16)
         root.setSpacing(10)
 
-        self.no_dataset_state = QLabel(self.tr("No dataset loaded"), self)
+        self.no_dataset_panel = QFrame(self)
+        self.no_dataset_panel.setObjectName("auditNoDatasetPanel")
+        no_dataset_layout = QVBoxLayout(self.no_dataset_panel)
+        no_dataset_layout.setContentsMargins(28, 28, 28, 28)
+        no_dataset_layout.setSpacing(10)
+        no_dataset_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.no_dataset_state = QLabel(
+            self.tr("No dataset loaded"), self.no_dataset_panel
+        )
         self.no_dataset_state.setObjectName("auditNoDatasetState")
         self.no_dataset_state.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.no_dataset_state.setSizePolicy(
-            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        self.no_dataset_hint = QLabel(
+            self.tr(
+                "Open a structure or result file in NEP Dataset Display before running checks."
+            ),
+            self.no_dataset_panel,
         )
-        root.addWidget(self.no_dataset_state, stretch=1)
+        self.no_dataset_hint.setObjectName("auditNoDatasetHint")
+        self.no_dataset_hint.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.no_dataset_hint.setWordWrap(True)
+        self.no_dataset_action_button = PrimaryPushButton(
+            self.tr("Open dataset"), self.no_dataset_panel
+        )
+        self.no_dataset_action_button.setAccessibleName(self.tr("Open dataset"))
+        self.no_dataset_action_button.clicked.connect(self.requestDatasetOpenSignal)
+        no_dataset_layout.addWidget(self.no_dataset_state)
+        no_dataset_layout.addWidget(self.no_dataset_hint)
+        no_dataset_layout.addWidget(
+            self.no_dataset_action_button,
+            alignment=Qt.AlignmentFlag.AlignHCenter,
+        )
+        root.addWidget(
+            self.no_dataset_panel,
+            stretch=1,
+            alignment=Qt.AlignmentFlag.AlignCenter,
+        )
 
         self.audit_header = QFrame(self)
         self.audit_header.setObjectName("auditHeader")
@@ -985,6 +1016,14 @@ class TrainingSetAuditWidget(QWidget):
         self._populate_slice_table()
         self._clear_evidence()
         self.summary_conclusion_label.clear()
+        self.no_dataset_state.setText(self.tr("No dataset loaded"))
+        self.no_dataset_hint.setText(
+            self.tr(
+                "Open a structure or result file in NEP Dataset Display before running checks."
+            )
+        )
+        self.no_dataset_action_button.show()
+        self.no_dataset_panel.show()
         self.no_dataset_state.show()
         self.audit_header.hide()
         self.dashboard_body.hide()
@@ -995,6 +1034,12 @@ class TrainingSetAuditWidget(QWidget):
         self.no_dataset_state.setText(
             self.tr("Analyzing {dataset}...").format(dataset=dataset_id)
         )
+        self.no_dataset_hint.setText(self.tr("Please wait while the checks run."))
+        self.no_dataset_action_button.hide()
+
+    def open_file(self) -> None:
+        """Ask the main window to open a dataset for this page."""
+        self.requestDatasetOpenSignal.emit()
 
     def set_distribution_context(
         self,
@@ -2169,6 +2214,7 @@ class TrainingSetAuditWidget(QWidget):
         render_timings_ms["topic_prepare"] = (perf_counter() - stage_started) * 1000.0
         self._selected_chart_indices = []
         self._selected_composition_indices = []
+        self.no_dataset_panel.hide()
         self.no_dataset_state.hide()
         self.audit_header.show()
         self.dashboard_body.show()
@@ -4067,6 +4113,18 @@ class TrainingSetAuditWidget(QWidget):
                 color: #243135;
             }
             QLabel#auditNoDatasetState {
+                color: #243135;
+                font-size: 18px;
+                font-weight: 600;
+            }
+            QFrame#auditNoDatasetPanel {
+                min-width: 430px;
+                max-width: 560px;
+                background: #ffffff;
+                border: 1px solid #dfe6e8;
+                border-radius: 10px;
+            }
+            QLabel#auditNoDatasetHint {
                 color: #657579;
                 font-size: 13px;
             }

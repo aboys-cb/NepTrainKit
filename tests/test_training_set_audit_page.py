@@ -1213,6 +1213,8 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget = TrainingSetAuditWidget()
 
         self.assertFalse(widget.no_dataset_state.isHidden())
+        self.assertFalse(widget.no_dataset_action_button.isHidden())
+        self.assertIn("NEP Dataset Display", widget.no_dataset_hint.text())
         self.assertTrue(widget.audit_header.isHidden())
         self.assertTrue(widget.dashboard_body.isHidden())
         self.assertEqual(widget.dimension_list.count(), 0)
@@ -1223,10 +1225,29 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.set_result(self._dashboard_result())
 
         self.assertTrue(widget.no_dataset_state.isHidden())
+        self.assertTrue(widget.no_dataset_panel.isHidden())
         self.assertFalse(widget.audit_header.isHidden())
         self.assertFalse(widget.dashboard_body.isHidden())
         self.assertEqual(widget.dimension_list.count(), 4)
         self.assertFalse(widget.chart_widget.isHidden())
+
+    def test_empty_state_open_action_requests_dataset_picker(self):
+        widget = TrainingSetAuditWidget()
+        requests = []
+        widget.requestDatasetOpenSignal.connect(lambda: requests.append(True))
+
+        widget.no_dataset_action_button.click()
+
+        self.assertEqual(requests, [True])
+
+    def test_loading_state_hides_open_action(self):
+        widget = TrainingSetAuditWidget()
+
+        widget.set_loading("train.xyz")
+
+        self.assertIn("train.xyz", widget.no_dataset_state.text())
+        self.assertTrue(widget.no_dataset_action_button.isHidden())
+        self.assertIn("wait", widget.no_dataset_hint.text().lower())
 
     def test_display_text_uses_widget_translation_before_ui_construction(self):
         class TranslationProbeWidget(TrainingSetAuditWidget):
@@ -1278,6 +1299,9 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self._app.installTranslator(translator)
         try:
             widget = TrainingSetAuditWidget()
+            self.assertEqual(widget.no_dataset_state.text(), "未加载数据集")
+            self.assertEqual(widget.no_dataset_action_button.text(), "打开数据集")
+            self.assertIn("NEP 数据集查看", widget.no_dataset_hint.text())
             self.assertEqual(widget.header_label.text(), "训练集评估")
             self.assertEqual(widget.slice_table.horizontalHeaderItem(0).text(), "类型")
             self.assertEqual(widget.dimension_rail.findChild(QLabel, "panelTitle").text(), "检查项目")

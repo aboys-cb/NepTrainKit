@@ -403,14 +403,51 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window.training_set_audit_interface = main_module.TrainingSetAuditWidget()
         window.handle_training_set_audit_selection = MagicMock()
         window.open_training_set_audit = MagicMock()
+        window.open_dataset_for_training_set_audit = MagicMock()
         window._request_training_set_structure_evidence = MagicMock()
         main_module.NepTrainKitMainWindow._connect_training_set_audit_signals(window)
 
         window.training_set_audit_interface.rerunAuditSignal.emit()
         window.training_set_audit_interface.requestStructureEvidenceSignal.emit()
+        window.training_set_audit_interface.requestDatasetOpenSignal.emit()
 
         window.open_training_set_audit.assert_called_once_with(force=True)
         window._request_training_set_structure_evidence.assert_called_once_with()
+        window.open_dataset_for_training_set_audit.assert_called_once_with()
+
+    def test_audit_open_action_switches_to_display_before_opening(self):
+        window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
+        window.show_nep_interface = SimpleNamespace(open_file=MagicMock())
+        window.switchTo = MagicMock()
+
+        main_module.NepTrainKitMainWindow.open_dataset_for_training_set_audit(window)
+
+        window.switchTo.assert_called_once_with(window.show_nep_interface)
+        window.show_nep_interface.open_file.assert_called_once_with()
+
+    def test_global_actions_follow_current_page_capabilities(self):
+        class ActionProbe:
+            def __init__(self):
+                self.enabled = None
+                self.tooltip = ""
+
+            def setEnabled(self, enabled):
+                self.enabled = enabled
+
+            def setToolTip(self, tooltip):
+                self.tooltip = tooltip
+
+        window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
+        window.open_dir_button = ActionProbe()
+        window.save_dir_button = ActionProbe()
+        current_page = SimpleNamespace(open_file=lambda: None)
+        window.stackedWidget = SimpleNamespace(currentWidget=lambda: current_page)
+
+        main_module.NepTrainKitMainWindow._refresh_page_actions(window)
+
+        self.assertTrue(window.open_dir_button.enabled)
+        self.assertFalse(window.save_dir_button.enabled)
+        self.assertIn("not available", window.save_dir_button.tooltip)
 
     def test_shipped_chinese_catalog_translates_audit_integration_contexts(self):
         catalog = (
@@ -425,6 +462,10 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         self._app.installTranslator(translator)
         try:
             main_context = {
+                "Open data for this page": "打开当前页面的数据",
+                "Open is not available on this page": "当前页面不支持打开操作",
+                "Save data from this page": "保存当前页面的数据",
+                "Save is not available on this page": "当前页面不支持保存操作",
                 "Training Set Check": "训练集评估",
                 "current dataset": "当前数据集",
                 "Please load a dataset before running Training Set Check.": "请先加载数据集，再运行训练集评估。",

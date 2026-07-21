@@ -89,6 +89,8 @@ class NepTrainKitMainWindow(FluentWindow):
         self.init_widget()
         self.init_navigation()
         self.initWindow()
+        self.stackedWidget.currentChanged.connect(self._refresh_page_actions)
+        self._refresh_page_actions()
 
     def init_menu(self) -> None:
         """Create the toolbar housing common open/save actions."""
@@ -99,11 +101,13 @@ class NepTrainKitMainWindow(FluentWindow):
         self.menu_gridLayout.setSpacing(1)
 
         self.open_dir_button = SplitToolButton(QIcon(':/images/src/images/open.svg'), self.menu_widget)
+        self.open_dir_button.setAccessibleName(self.tr("Open"))
         self.open_dir_button.clicked.connect(self.open_file_dialog)
         self.load_menu = RoundMenu(parent=self)
         self.open_dir_button.setFlyout(self.load_menu)
 
         self.save_dir_button = SplitToolButton(QIcon(':/images/src/images/save.svg'), self.menu_widget)
+        self.save_dir_button.setAccessibleName(self.tr("Save"))
         self.save_dir_button.clicked.connect(self.export_file_dialog)
 
         self.save_menu = RoundMenu(parent=self)
@@ -175,6 +179,9 @@ class NepTrainKitMainWindow(FluentWindow):
         self.training_set_audit_interface.rerunAuditSignal.connect(
             lambda: self.open_training_set_audit(force=True)
         )
+        self.training_set_audit_interface.requestDatasetOpenSignal.connect(
+            self.open_dataset_for_training_set_audit
+        )
         self.training_set_audit_interface.requestStructureEvidenceSignal.connect(
             self._request_training_set_structure_evidence
         )
@@ -201,14 +208,39 @@ class NepTrainKitMainWindow(FluentWindow):
     def open_file_dialog(self) -> None:
         """Delegate to the current widget's ``open_file`` handler when available."""
         widget = self.stackedWidget.currentWidget()
-        if hasattr(widget, "open_file"):
-            widget.open_file()  # pyright: ignore[attr-defined]
+        handler = getattr(widget, "open_file", None)
+        if callable(handler):
+            handler()
 
     def export_file_dialog(self) -> None:
         """Delegate to the current widget's ``export_file`` handler when available."""
         widget = self.stackedWidget.currentWidget()
-        if hasattr(widget, "export_file"):
-            widget.export_file()  # pyright: ignore[attr-defined]
+        handler = getattr(widget, "export_file", None)
+        if callable(handler):
+            handler()
+
+    def _refresh_page_actions(self, *_args) -> None:
+        """Enable global actions only when the active page implements them."""
+        widget = self.stackedWidget.currentWidget()
+        can_open = callable(getattr(widget, "open_file", None))
+        can_save = callable(getattr(widget, "export_file", None))
+        self.open_dir_button.setEnabled(can_open)
+        self.save_dir_button.setEnabled(can_save)
+        self.open_dir_button.setToolTip(
+            self.tr("Open data for this page")
+            if can_open
+            else self.tr("Open is not available on this page")
+        )
+        self.save_dir_button.setToolTip(
+            self.tr("Save data from this page")
+            if can_save
+            else self.tr("Save is not available on this page")
+        )
+
+    def open_dataset_for_training_set_audit(self) -> None:
+        """Switch to Dataset Display and open a file for a future audit."""
+        self.switchTo(self.show_nep_interface)
+        self.show_nep_interface.open_file()
 
     def _training_set_audit_signature(self, result_data) -> tuple[object, ...]:
         """Return a cheap snapshot for safe reuse of an unchanged audit run."""

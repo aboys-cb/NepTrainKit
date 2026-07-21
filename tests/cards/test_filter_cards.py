@@ -1,4 +1,6 @@
 from .card_test_base import *
+from unittest.mock import patch
+
 from NepTrainKit.ui.views._card.fps_filter_card import FPSFilterDataCard
 
 
@@ -18,12 +20,111 @@ class TestFilterCards(BaseCardTest):
                 min_distance=0.125,
                 backend="cuda",
                 chunk_max_atoms=54321,
+                strategy="element_set",
+                existing_dataset_path="/tmp/train.xyz",
             )
         )
         restored = FPSFilterDataCard()
         restored.from_dict(card.to_dict())
 
         self.assertEqual(restored.get_params(), card.get_params())
+        self.assertEqual(restored.strategy_combo.currentData(), "element_set")
+        self.assertTrue(restored.advanced_button.isChecked())
+
+    def test_fps_filter_legacy_roundtrip_keeps_global_strategy(self):
+        restored = FPSFilterDataCard()
+        restored.from_dict(
+            {
+                "class": "FPSFilterDataCard",
+                "check_state": True,
+                "nep_path": "/tmp/nep.txt",
+                "num_condition": [12],
+                "min_distance_condition": [0.02],
+            }
+        )
+
+        self.assertEqual(restored.get_params().strategy, "global")
+        self.assertEqual(restored.get_params().existing_dataset_path, "")
+
+    def test_element_set_fps_covers_groups_and_records_report(self):
+        dataset = [
+            Atoms("H", positions=[[0.0, 0.0, 0.0]]),
+            Atoms("H", positions=[[1.0, 0.0, 0.0]]),
+            Atoms("H", positions=[[2.0, 0.0, 0.0]]),
+            Atoms("He", positions=[[0.0, 0.0, 0.0]]),
+            Atoms("He", positions=[[1.0, 0.0, 0.0]]),
+            Atoms("HHe", positions=[[0.0, 0.0, 0.0], [1.0, 0.0, 0.0]]),
+        ]
+        descriptors = np.arange(len(dataset), dtype=float)[:, None]
+        params = FPSFilterParams(
+            nep_path=str(self.test_dir / "data" / "nep" / "nep.txt"),
+            n_samples=5,
+            min_distance=0.0,
+            strategy="element_set",
+        )
+        operation = FPSFilterOperation()
+        with patch("NepTrainKit.core.cards.filter.NepCalculator") as calculator_class:
+            calculator_class.return_value.descriptors.return_value = descriptors
+            selected = operation.run_dataset(dataset, params)
+
+        self.assertEqual(len(selected), 5)
+        self.assertEqual(
+            {operation.element_set_key(structure) for structure in selected},
+            {("H",), ("He",), ("H", "He")},
+        )
+        self.assertEqual(sum(item.selected_count for item in operation.last_group_report.values()), 5)
+
+    def test_element_set_fps_rejects_budget_smaller_than_group_count(self):
+        with self.assertRaisesRegex(ValueError, "smaller than"):
+            FPSFilterOperation.allocate_sqrt_quotas({("H",): 4, ("He",): 2}, 1)
+
+    def test_element_set_fps_center_start_and_warm_start(self):
+        points = np.asarray([[0.0], [4.0], [5.0], [6.0], [10.0]])
+
+        self.assertEqual(
+            FPSFilterOperation.centered_fps(points, n_samples=1, min_dist=0.0),
+            [2],
+        )
+        self.assertEqual(
+            FPSFilterOperation.centered_fps(
+                points,
+                n_samples=1,
+                min_dist=0.0,
+                selected_data=np.asarray([[0.0]]),
+            ),
+            [4],
+        )
+
+    def test_element_set_fps_operation_uses_matching_warm_start(self):
+        dataset = [
+            Atoms("H", positions=[[0.0, 0.0, 0.0]]),
+            Atoms("H", positions=[[1.0, 0.0, 0.0]]),
+            Atoms("H", positions=[[2.0, 0.0, 0.0]]),
+        ]
+        existing_path = self.test_dir / "data" / "nep" / "train.xyz"
+        params = FPSFilterParams(
+            nep_path=str(self.test_dir / "data" / "nep" / "nep.txt"),
+            n_samples=1,
+            min_distance=0.0,
+            strategy="element_set",
+            existing_dataset_path=str(existing_path),
+        )
+        operation = FPSFilterOperation()
+
+        with (
+            patch("NepTrainKit.core.cards.filter.import_structures", return_value=[dataset[0]]),
+            patch("NepTrainKit.core.cards.filter.NepCalculator") as calculator_class,
+        ):
+            calculator_class.return_value.descriptors.side_effect = [
+                np.asarray([[0.0], [3.0], [10.0]]),
+                np.asarray([[0.0]]),
+            ]
+            selected = operation.run_dataset(dataset, params)
+
+        self.assertEqual(selected, [dataset[2]])
+        report = operation.last_group_report[("H",)]
+        self.assertEqual(report.existing_count, 1)
+        self.assertEqual(report.selected_count, 1)
 
     def test_geometry_filter_operation_and_card_roundtrip(self):
         good = Atoms(

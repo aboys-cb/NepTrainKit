@@ -120,6 +120,9 @@
 #### E. `Sparse samples`
 
 - 输入控件：
+  - `Selection strategy`：
+    - `Global FPS (compatible)`：保留原有全局 FPS 行为；
+    - `Element-set balanced FPS`：按元素集合分组，每组至少保留一个名额，其余名额按组大小平方根分配，并从各组描述符中心开始采样。
   - `Sampling mode`：`Fixed count (FPS)` / `R^2 stop (FPS)`
   - `Max num`：`[0, 9999999]`
   - `Min distance`：`[0, 10]`，5 位小数
@@ -128,7 +131,9 @@
   - `Training dataset`：可选 `.xyz` 或目录
   - `Use current selection as region`
   - `Show training overlay`：采样后在 PCA 空间叠加训练集、当前数据和选中结构
-- 执行结果：运行 FPS 后更新选择集。
+- 平衡模式固定使用结构级原始描述符和固定数量采样，因此会锁定 `Sampling mode` 与 `Descriptor source`；全局模式仍可自由选择原有选项。
+- 提供训练集时，全局模式延续原有整体 warm start；平衡模式只使用元素集合相同的已有结构初始化距离。
+- 执行结果：运行 FPS 后更新选择集；平衡模式完成后会提示实际选择数量和覆盖的元素集合数。
 
 ![Sparse Samples Dialog](../_static/image/generated/show_nep_reference/g_sparse_dialog.png)
 

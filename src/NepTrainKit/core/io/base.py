@@ -3858,6 +3858,7 @@ class ResultData(QObject):
         training_path: str | None = None,
         sampling_mode: str = "count",
         r2_threshold: float = 0.9,
+        selection_strategy: str = "global",
     ) -> tuple[list[int], bool]:
         """Delegate sparse sampling to the sampler helper."""
         return self._sampler.sparse_point_selection(
@@ -3868,6 +3869,7 @@ class ResultData(QObject):
             training_path=training_path,
             sampling_mode=sampling_mode,
             r2_threshold=r2_threshold,
+            selection_strategy=selection_strategy,
         )
 
     def export_descriptor_data(self, path: str | Path) -> None:

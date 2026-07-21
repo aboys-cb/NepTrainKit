@@ -272,6 +272,8 @@ def show_nep_sparse_dialog(ctx: ScenarioContext) -> None:
     dialog = SparseMessageBox(ctx.window, ctx.text("Sparse samples", "稀疏采样"))
     dialog.intSpinBox.setValue(100)
     dialog.doubleSpinBox.setValue(0.05)
+    dialog.strategyCombo.setCurrentIndex(dialog.strategyCombo.findData("element_set"))
+    dialog.trainingPathEdit.setText("train.xyz")
     _show_dialog(ctx, dialog)
 
 

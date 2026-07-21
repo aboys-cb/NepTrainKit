@@ -647,8 +647,9 @@ class TestTrainingOverlayDialog(unittest.TestCase):
 
 
 class _SparseBoxControl:
-    def __init__(self, value):
+    def __init__(self, value, items=None):
         self._value = value
+        self._items = list(items or [])
 
     def value(self):
         return self._value
@@ -662,6 +663,17 @@ class _SparseBoxControl:
     def setCurrentIndex(self, value):
         self._value = value
 
+    def currentData(self):
+        if self._items and isinstance(self._value, int) and 0 <= self._value < len(self._items):
+            return self._items[self._value]
+        return self._value
+
+    def findData(self, value):
+        try:
+            return self._items.index(value)
+        except ValueError:
+            return -1
+
     def text(self):
         return self._value
 
@@ -673,13 +685,23 @@ class _SparseBoxControl:
 
 
 class _SparseBox:
-    def __init__(self, accepted=True, training_path="train.xyz", show_overlay=True):
+    def __init__(
+        self,
+        accepted=True,
+        training_path="train.xyz",
+        show_overlay=True,
+        selection_strategy="global",
+    ):
         self._accepted = accepted
         self.intSpinBox = _SparseBoxControl(5)
         self.doubleSpinBox = _SparseBoxControl(0.1)
         self.regionCheck = _SparseBoxControl(False)
-        self.descriptorCombo = _SparseBoxControl(0)
-        self.modeCombo = _SparseBoxControl(0)
+        self.descriptorCombo = _SparseBoxControl(0, ["reduced", "raw"])
+        self.modeCombo = _SparseBoxControl(0, ["count", "r2"])
+        self.strategyCombo = _SparseBoxControl(
+            1 if selection_strategy == "element_set" else 0,
+            ["global", "element_set"],
+        )
         self.r2SpinBox = _SparseBoxControl(0.9)
         self.trainingPathEdit = _SparseBoxControl(training_path)
         self.trainingOverlayCheck = _SparseBoxControl(show_overlay)
@@ -707,14 +729,43 @@ class _OverlayDialogRecorder:
         type(self).shown = True
 
 
+class TestSparseMessageBoxStrategy(unittest.TestCase):
+    def test_balanced_strategy_locks_validated_descriptor_and_mode(self):
+        from PySide6.QtWidgets import QWidget
+
+        self._app = QApplication.instance() or QApplication([])
+        parent = QWidget()
+        box = dialog_module.SparseMessageBox(parent)
+        box.modeCombo.setCurrentIndex(box.modeCombo.findData("r2"))
+        box.descriptorCombo.setCurrentIndex(box.descriptorCombo.findData("reduced"))
+
+        box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("element_set"))
+
+        self.assertEqual(box.modeCombo.currentData(), "count")
+        self.assertEqual(box.descriptorCombo.currentData(), "raw")
+        self.assertFalse(box.modeCombo.isEnabled())
+        self.assertFalse(box.descriptorCombo.isEnabled())
+        self.assertTrue(box.r2SpinBox.isHidden())
+
+        box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("global"))
+        self.assertEqual(box.modeCombo.currentData(), "r2")
+        self.assertEqual(box.descriptorCombo.currentData(), "reduced")
+        self.assertTrue(box.modeCombo.isEnabled())
+        self.assertTrue(box.descriptorCombo.isEnabled())
+        self.assertFalse(box.r2SpinBox.isHidden())
+
+
 class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
     def setUp(self):
         self._prev_canvas = Config.get("widget", "canvas_type", "pyqtgraph")
         self._prev_training_path = Config.get("widget", "sparse_training_path", "")
+        self._prev_strategy = Config.get("widget", "sparse_selection_strategy", "global")
+        Config.set("widget", "sparse_selection_strategy", "global")
 
     def tearDown(self):
         Config.set("widget", "canvas_type", self._prev_canvas)
         Config.set("widget", "sparse_training_path", self._prev_training_path)
+        Config.set("widget", "sparse_selection_strategy", self._prev_strategy)
         _OverlayDialogRecorder.last_kwargs = None
         _OverlayDialogRecorder.shown = False
 
@@ -739,6 +790,10 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
             nep_view_module.NepResultPlotWidget.sparse_point(widget)
 
         data.sparse_point_selection.assert_called_once()
+        self.assertEqual(
+            data.sparse_point_selection.call_args.kwargs["selection_strategy"],
+            "global",
+        )
         widget.canvas.select_index.assert_called_once_with([3], False)
         self.assertTrue(_OverlayDialogRecorder.shown)
         self.assertEqual(_OverlayDialogRecorder.last_kwargs["canvas_type"], "vispy")
@@ -763,6 +818,36 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
             nep_view_module.NepResultPlotWidget.sparse_point(widget)
 
         self.assertIsNone(_OverlayDialogRecorder.last_kwargs)
+
+    def test_sparse_point_passes_element_set_strategy_with_raw_fixed_count(self):
+        Config.set("widget", "sparse_selection_strategy", "element_set")
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._parent = None
+        data = SimpleNamespace(
+            sparse_point_selection=MagicMock(return_value=([1, 4], False)),
+            _last_sparse_group_report={("H",): {}, ("He",): {}},
+        )
+        widget.canvas = SimpleNamespace(
+            nep_result_data=data,
+            select_index=MagicMock(),
+        )
+
+        with patch.object(
+            nep_view_module,
+            "SparseMessageBox",
+            return_value=_SparseBox(
+                training_path="",
+                show_overlay=False,
+                selection_strategy="element_set",
+            ),
+        ), patch.object(nep_view_module.MessageManager, "send_info_message"):
+            nep_view_module.NepResultPlotWidget.sparse_point(widget)
+
+        kwargs = data.sparse_point_selection.call_args.kwargs
+        self.assertEqual(kwargs["selection_strategy"], "element_set")
+        self.assertEqual(kwargs["descriptor_source"], "raw")
+        self.assertEqual(kwargs["sampling_mode"], "count")
+        widget.canvas.select_index.assert_called_once_with([1, 4], False)
 
 
 class TestShowNepWidgetArrowCapability(unittest.TestCase):

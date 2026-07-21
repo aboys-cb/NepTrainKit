@@ -2563,47 +2563,139 @@
 <context>
     <name>FPSFilterDataCard</name>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="42" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="57" />
         <source>Filter by FPS</source>
         <translation>按 FPS 筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="49" />
-        <source>NEP file path: </source>
-        <translation>NEP 文件路径：</translation>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="64" />
+        <source>Sampling strategy</source>
+        <translation>采样方式</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="52" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="66" />
+        <source>Global FPS (compatible)</source>
+        <translation>全局 FPS（兼容旧流程）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="67" />
+        <source>Element-set balanced FPS</source>
+        <translation>元素集合平衡 FPS</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="69" />
+        <source>Global keeps the existing behavior. Balanced FPS assigns a quota to each element set.</source>
+        <translation>全局模式保留现有行为；平衡模式为每种元素集合分配名额。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="78" />
+        <source>Max selected</source>
+        <translation>最多保留</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="83" />
+        <source>Maximum number of structures to keep</source>
+        <translation>最多保留的结构数量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="86" />
+        <source>NEP model</source>
+        <translation>NEP 模型</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="89" />
         <source>nep.txt path</source>
         <translation>nep.txt 路径</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="53" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="91" />
         <source>Path to NEP model</source>
         <translation>NEP 模型路径</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="60" />
-        <source>Max selected</source>
-        <translation>最多选择</translation>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="102" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="103" />
+        <source>Browse for a NEP model</source>
+        <translation>浏览 NEP 模型</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="66" />
-        <source>Number of structures to keep</source>
-        <translation>要保留的结构数量</translation>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="109" />
+        <source>Advanced settings</source>
+        <translation>高级设置</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="75" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="113" />
+        <source>Show minimum distance and warm-start options</source>
+        <translation>显示最小距离和 warm start 选项</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="127" />
         <source>Min distance</source>
         <translation>最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="76" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="128" />
         <source>Minimum distance between samples</source>
-        <translation>最小 距离 between samples</translation>
+        <translation>样本之间的最小描述符距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="127" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="132" />
+        <source>Existing training set</source>
+        <translation>已有训练集</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="134" />
+        <source>Optional train.xyz for warm start</source>
+        <translation>可选的 train.xyz，用于 warm start</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="137" />
+        <source>Balanced FPS compares candidates only with existing structures that have the same element set.</source>
+        <translation>平衡 FPS 只会将候选结构与元素集合相同的已有结构比较。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="151" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="152" />
+        <source>Browse for an existing XYZ training set</source>
+        <translation>浏览已有 XYZ 训练集</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="178" />
+        <source>Select NEP model</source>
+        <translation>选择 NEP 模型</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="180" />
+        <source>NEP model (*.txt);;All files (*.*)</source>
+        <translation>NEP 模型 (*.txt);;所有文件 (*.*)</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="188" />
+        <source>Select existing training dataset</source>
+        <translation>选择已有训练集</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="190" />
+        <source>XYZ files (*.xyz *.extxyz);;All files (*.*)</source>
+        <translation>XYZ 文件 (*.xyz *.extxyz);;所有文件 (*.*)</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="202" />
+        <source>Groups by element set, assigns sqrt-size quotas, and starts from each group center.</source>
+        <translation>按元素集合分组，以组大小平方根分配名额，并从各组中心开始采样。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="206" />
+        <source>Uses the existing global mean-descriptor FPS behavior.</source>
+        <translation>使用现有的全局结构均值描述符 FPS。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="256" />
+        <source>{summary} | Element groups: {count}</source>
+        <translation>{summary} | 元素组：{count}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/_card/fps_filter_card.py" line="278" />
         <source>Generating descriptors...</source>
         <translation>正在生成描述符……</translation>
     </message>
@@ -4311,6 +4403,11 @@ All child items will also be deleted.</source>
 </context>
 <context>
     <name>NepResultPlotWidget</name>
+    <message>
+        <location filename="../ui/views/nep.py" line="329" />
+        <source>Balanced FPS selected {selected} structures across {groups} element sets.</source>
+        <translation>元素集合平衡 FPS 已在 {groups} 个元素集合中选出 {selected} 个结构。</translation>
+    </message>
     <message>
         <location filename="../ui/views/nep.py" line="218" />
         <source>Finding non-physical structures</source>
@@ -6733,6 +6830,31 @@ Do you want to continue?</source>
 </context>
 <context>
     <name>SparseMessageBox</name>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1275" />
+        <source>Global FPS (compatible)</source>
+        <translation>全局 FPS（兼容模式）</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1277" />
+        <source>Element-set balanced FPS</source>
+        <translation>元素集合平衡 FPS</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1282" />
+        <source>Selection strategy</source>
+        <translation>选择策略</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1405" />
+        <source>Groups by element set, assigns sqrt-size quotas, and uses raw descriptors.</source>
+        <translation>按元素集合分组，以组大小平方根分配名额，并使用原始描述符。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1411" />
+        <source>Uses the existing global FPS behavior and descriptor options.</source>
+        <translation>使用原有全局 FPS 行为和描述符选项。</translation>
+    </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="1274" />
         <source>Fixed count (FPS)</source>

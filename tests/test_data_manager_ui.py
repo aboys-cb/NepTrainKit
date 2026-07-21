@@ -5,7 +5,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
-from PySide6.QtCore import QTranslator
+from PySide6.QtCore import QTranslator, Qt
 from PySide6.QtWidgets import QApplication
 
 import NepTrainKit.ui.pages.data_manager as data_manager_module
@@ -72,6 +72,10 @@ class TestDataManagerUi(unittest.TestCase):
         self.assertFalse(project_widget.modify_project_button.isEnabled())
         self.assertFalse(project_widget.delete_project_button.isEnabled())
         self.assertEqual(model_widget.new_model_button.text(), "New model")
+        self.assertEqual(
+            model_widget._model.headerData(4, Qt.Orientation.Horizontal),
+            "F(meV/Å)",
+        )
         self.assertEqual(model_widget.search_button.text(), "Search")
         self.assertFalse(model_widget.new_model_button.isEnabled())
         self.assertFalse(model_widget.open_folder_button.isEnabled())

@@ -61,7 +61,7 @@ class ModelItemWidget(QWidget, DatasetManager):
             self.tr("Name"),
             self.tr("Size"),
             "E(meV/atom)",
-            "F(meV/?)",
+            "F(meV/Å)",
             "V(meV/atom)",
             self.tr("Tags"),
             self.tr("Created at"),

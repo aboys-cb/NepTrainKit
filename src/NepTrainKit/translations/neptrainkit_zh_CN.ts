@@ -1610,6 +1610,14 @@
     </message>
 </context>
 <context>
+    <name>DataManagerWidget</name>
+    <message>
+        <location filename="../ui/pages/data_manager.py" line="91" />
+        <source>Select a project before dropping a model folder</source>
+        <translation>请先选择项目，再拖入模型文件夹</translation>
+    </message>
+</context>
+<context>
     <name>DatasetSummaryMessageBox</name>
     <message>
         <location filename="../ui/widgets/dialog.py" line="170" />
@@ -3491,91 +3499,126 @@
 <context>
     <name>ModelItemWidget</name>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="53" />
+        <location filename="../ui/views/dataset_widget.py" line="61" />
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="54" />
+        <location filename="../ui/views/dataset_widget.py" line="62" />
         <source>Size</source>
         <translation>大小</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="58" />
+        <location filename="../ui/views/dataset_widget.py" line="66" />
         <source>Tags</source>
         <translation>标签</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="59" />
+        <location filename="../ui/views/dataset_widget.py" line="67" />
         <source>Created at</source>
         <translation>创建时间</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="95" />
+        <location filename="../ui/views/dataset_widget.py" line="136" />
         <source>New</source>
         <translation>新建</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="99" />
+        <location filename="../ui/views/dataset_widget.py" line="84" />
+        <location filename="../ui/views/dataset_widget.py" line="140" />
         <source>Modify</source>
         <translation>修改</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="103" />
+        <location filename="../ui/views/dataset_widget.py" line="81" />
+        <source>Models</source>
+        <translation>模型</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/dataset_widget.py" line="83" />
+        <source>New model</source>
+        <translation>新建模型</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/dataset_widget.py" line="85" />
+        <location filename="../ui/views/dataset_widget.py" line="144" />
         <source>Open folder</source>
         <translation>打开文件夹</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="107" />
+        <location filename="../ui/views/dataset_widget.py" line="86" />
+        <location filename="../ui/views/dataset_widget.py" line="148" />
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="111" />
+        <location filename="../ui/views/dataset_widget.py" line="87" />
+        <location filename="../ui/views/dataset_widget.py" line="152" />
         <source>Manage tags</source>
         <translation>管理标签</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="205" />
+        <location filename="../ui/views/dataset_widget.py" line="88" />
+        <source>Search</source>
+        <translation>搜索</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/dataset_widget.py" line="268" />
+        <source>Select a project first</source>
+        <translation>请先选择项目</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/dataset_widget.py" line="272" />
         <source>Top model</source>
         <translation>顶层模型</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="222" />
+        <location filename="../ui/views/dataset_widget.py" line="289" />
         <source>Model info</source>
         <translation>模型信息</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="252" />
+        <location filename="../ui/views/dataset_widget.py" line="321" />
         <source>Model modified successfully</source>
         <translation>模型修改成功</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="257" />
+        <location filename="../ui/views/dataset_widget.py" line="326" />
         <source>Failed to create model</source>
         <translation>模型创建失败</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="259" />
+        <location filename="../ui/views/dataset_widget.py" line="328" />
         <source>Model created successfully</source>
         <translation>模型创建成功</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="272" />
+        <location filename="../ui/views/dataset_widget.py" line="336" />
+        <location filename="../ui/views/dataset_widget.py" line="359" />
+        <source>Select a model first</source>
+        <translation>请先选择模型</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/dataset_widget.py" line="342" />
         <source>Confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="273" />
+        <location filename="../ui/views/dataset_widget.py" line="343" />
         <source>Do you want to delete this item?
 All child items will also be deleted.</source>
         <translation>是否删除此项？
 所有子项也会被删除。</translation>
     </message>
     <message>
-        <location filename="../ui/views/dataset_widget.py" line="281" />
+        <location filename="../ui/views/dataset_widget.py" line="351" />
         <source>Model deleted successfully</source>
         <translation>模型删除成功</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/dataset_widget.py" line="373" />
+        <source>Model folder does not exist: {path}</source>
+        <translation>模型文件夹不存在：{path}</translation>
     </message>
 </context>
 <context>
@@ -4176,64 +4219,76 @@ All child items will also be deleted.</source>
 <context>
     <name>ProjectWidget</name>
     <message>
-        <location filename="../ui/views/project_view.py" line="45" />
+        <location filename="../ui/views/project_view.py" line="52" />
         <source>(ID) Project name</source>
         <translation>(ID) 项目名称</translation>
     </message>
     <message>
-        <location filename="../ui/views/project_view.py" line="74" />
+        <location filename="../ui/views/project_view.py" line="101" />
         <source>New</source>
         <translation>新建</translation>
     </message>
     <message>
-        <location filename="../ui/views/project_view.py" line="78" />
+        <location filename="../ui/views/project_view.py" line="63" />
+        <location filename="../ui/views/project_view.py" line="105" />
         <source>Modify</source>
         <translation>修改</translation>
     </message>
     <message>
-        <location filename="../ui/views/project_view.py" line="82" />
+        <location filename="../ui/views/project_view.py" line="62" />
+        <source>New project</source>
+        <translation>新建项目</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/project_view.py" line="64" />
+        <location filename="../ui/views/project_view.py" line="109" />
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../ui/views/project_view.py" line="109" />
+        <location filename="../ui/views/project_view.py" line="152" />
         <source>Top project</source>
         <translation>顶层项目</translation>
     </message>
     <message>
-        <location filename="../ui/views/project_view.py" line="124" />
+        <location filename="../ui/views/project_view.py" line="167" />
         <source>Project info</source>
         <translation>项目信息</translation>
     </message>
     <message>
-        <location filename="../ui/views/project_view.py" line="150" />
+        <location filename="../ui/views/project_view.py" line="193" />
         <source>Project modified successfully</source>
         <translation>项目修改成功</translation>
     </message>
     <message>
-        <location filename="../ui/views/project_view.py" line="159" />
+        <location filename="../ui/views/project_view.py" line="202" />
         <source>Failed to create project</source>
         <translation>项目创建失败</translation>
     </message>
     <message>
-        <location filename="../ui/views/project_view.py" line="161" />
+        <location filename="../ui/views/project_view.py" line="204" />
         <source>Project created successfully</source>
         <translation>项目创建成功</translation>
     </message>
     <message>
-        <location filename="../ui/views/project_view.py" line="173" />
+        <location filename="../ui/views/project_view.py" line="211" />
+        <source>Select a project first</source>
+        <translation>请先选择项目</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/project_view.py" line="217" />
         <source>Confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../ui/views/project_view.py" line="174" />
+        <location filename="../ui/views/project_view.py" line="218" />
         <source>Do you want to delete this item?
 All child items will also be deleted.</source>
         <translation>是否删除此项？
 所有子项也会被删除。</translation>
     </message>
     <message>
-        <location filename="../ui/views/project_view.py" line="182" />
+        <location filename="../ui/views/project_view.py" line="226" />
         <source>Project deleted successfully</source>
         <translation>项目删除成功</translation>
     </message>

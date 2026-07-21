@@ -1,9 +1,16 @@
 """Project tree widgets for managing NEP training datasets."""
 
-from PySide6.QtCore import QTimer, Qt, QPoint, Signal
+from PySide6.QtCore import QModelIndex, QTimer, Qt, QPoint, Signal
 
-from PySide6.QtWidgets import QWidget, QVBoxLayout
-from qfluentwidgets import RoundMenu, Action, TreeView, MessageBox, FluentIcon
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
+from qfluentwidgets import (
+    Action,
+    FluentIcon,
+    MessageBox,
+    PushButton,
+    RoundMenu,
+    TreeView,
+)
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset import DatasetManager
@@ -49,9 +56,29 @@ class ProjectWidget(QWidget, DatasetManager):
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
+        toolbar = QHBoxLayout()
+        toolbar.setContentsMargins(10, 8, 8, 8)
+        toolbar.setSpacing(6)
+        self.new_project_button = PushButton(self.tr("New project"), self)
+        self.modify_project_button = PushButton(self.tr("Modify"), self)
+        self.delete_project_button = PushButton(self.tr("Delete"), self)
+        toolbar.addWidget(self.new_project_button)
+        toolbar.addWidget(self.modify_project_button)
+        toolbar.addWidget(self.delete_project_button)
+        toolbar.addStretch(1)
+        self._layout.addLayout(toolbar)
         self._layout.addWidget(self._view)
 
         self.create_menu()
+        self.new_project_button.clicked.connect(
+            lambda: self.create_project(modify=False)
+        )
+        self.modify_project_button.clicked.connect(
+            lambda: self.create_project(modify=True)
+        )
+        self.delete_project_button.clicked.connect(self.remove_project)
+        self._view.selectionModel().currentChanged.connect(self._update_action_state)
+        self._update_action_state()
         QTimer.singleShot(1, self.load)
 
     def item_clicked(self, index):
@@ -94,7 +121,23 @@ class ProjectWidget(QWidget, DatasetManager):
             Location where the context menu should appear.
         """
         self._menu_pos = pos
-        self.menu.exec_(self.mapToGlobal(pos))
+        index = self._view.indexAt(pos)
+        if index.isValid():
+            self._view.setCurrentIndex(index)
+        else:
+            self._view.clearSelection()
+            self._view.setCurrentIndex(QModelIndex())
+        self._update_action_state()
+        self.menu.exec_(self._view.viewport().mapToGlobal(pos))
+
+    def _current_index(self):
+        """Return the row selected for toolbar or context-menu actions."""
+        return self._view.currentIndex()
+
+    def _update_action_state(self, *_args) -> None:
+        has_selection = self._current_index().isValid()
+        self.modify_project_button.setEnabled(has_selection)
+        self.delete_project_button.setEnabled(has_selection)
 
     def create_project(self, modify: bool = False) -> None:
         """Create a new project or update the currently selected project.
@@ -105,7 +148,7 @@ class ProjectWidget(QWidget, DatasetManager):
             When ``True`` the selected project is updated instead of creating a new entry.
         """
         box = ProjectInfoMessageBox(self._parent)
-        index = self._view.indexAt(self._menu_pos)
+        index = self._current_index()
         box.parent_combox.addItem(self.tr("Top project"), userData=None)
         for project in self.project_item_dict.values():
             box.parent_combox.addItem(project.name, userData=project.project_id)
@@ -163,8 +206,9 @@ class ProjectWidget(QWidget, DatasetManager):
 
     def remove_project(self) -> None:
         """Remove the selected project after user confirmation."""
-        index = self._view.indexAt(self._menu_pos)
-        if index.row() == -1:
+        index = self._current_index()
+        if not index.isValid():
+            MessageManager.send_info_message(self.tr("Select a project first"))
             return
 
         item = index.internalPointer()

@@ -4,8 +4,16 @@ import os
 
 from PySide6.QtCore import Qt, QAbstractItemModel, QModelIndex, Signal, QPoint, QUrl
 from PySide6.QtGui import QCursor, QColor, QIcon, QDesktopServices, QShortcut, QKeySequence
-from PySide6.QtWidgets import QWidget, QVBoxLayout
-from qfluentwidgets import TreeItemDelegate, TreeView, RoundMenu, Action, MessageBox
+from PySide6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout
+from qfluentwidgets import (
+    Action,
+    BodyLabel,
+    MessageBox,
+    PushButton,
+    RoundMenu,
+    TreeItemDelegate,
+    TreeView,
+)
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset import DatasetManager
@@ -67,7 +75,40 @@ class ModelItemWidget(QWidget, DatasetManager):
         self._layout = QVBoxLayout(self)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
+        toolbar = QHBoxLayout()
+        toolbar.setContentsMargins(8, 8, 10, 8)
+        toolbar.setSpacing(6)
+        toolbar.addWidget(BodyLabel(self.tr("Models"), self))
+        toolbar.addStretch(1)
+        self.new_model_button = PushButton(self.tr("New model"), self)
+        self.modify_model_button = PushButton(self.tr("Modify"), self)
+        self.open_folder_button = PushButton(self.tr("Open folder"), self)
+        self.delete_model_button = PushButton(self.tr("Delete"), self)
+        self.manage_tags_button = PushButton(self.tr("Manage tags"), self)
+        self.search_button = PushButton(self.tr("Search"), self)
+        for button in (
+            self.new_model_button,
+            self.modify_model_button,
+            self.open_folder_button,
+            self.delete_model_button,
+            self.manage_tags_button,
+            self.search_button,
+        ):
+            toolbar.addWidget(button)
+        self._layout.addLayout(toolbar)
         self._layout.addWidget(self._view)
+        self.new_model_button.clicked.connect(
+            lambda: self.create_model(modify=False)
+        )
+        self.modify_model_button.clicked.connect(
+            lambda: self.create_model(modify=True)
+        )
+        self.open_folder_button.clicked.connect(self.open_folder)
+        self.delete_model_button.clicked.connect(self.remove_model)
+        self.manage_tags_button.clicked.connect(self.manage_tags)
+        self.search_button.clicked.connect(self.show_search_dialog)
+        self._view.selectionModel().currentChanged.connect(self._update_action_state)
+        self._update_action_state()
 
         self.search_shortcut = QShortcut(
             QKeySequence("Ctrl+F"),
@@ -123,7 +164,29 @@ class ModelItemWidget(QWidget, DatasetManager):
             Position in viewport coordinates where the menu is requested.
         """
         self._menu_pos = pos
-        self.menu.exec_(self.mapToGlobal(pos))
+        index = self._view.indexAt(pos)
+        if index.isValid():
+            self._view.setCurrentIndex(index)
+        else:
+            self._view.clearSelection()
+            self._view.setCurrentIndex(QModelIndex())
+        self._update_action_state()
+        self.menu.exec_(self._view.viewport().mapToGlobal(pos))
+
+    def _current_index(self):
+        """Return the row selected for toolbar or context-menu actions."""
+        return self._view.currentIndex()
+
+    def _update_action_state(self, *_args) -> None:
+        has_project = hasattr(self, "project")
+        has_selection = self._current_index().isValid()
+        self.new_model_button.setEnabled(has_project)
+        for button in (
+            self.modify_model_button,
+            self.open_folder_button,
+            self.delete_model_button,
+        ):
+            button.setEnabled(has_selection)
 
     def manage_tags(self) -> None:
         """Open the tag management dialog and refresh tag data on close."""
@@ -175,6 +238,7 @@ class ModelItemWidget(QWidget, DatasetManager):
         """
         self._model.clear()
         self.project = project
+        self._update_action_state()
         models = self.model_service.get_models_by_project_id(project.project_id)
         self.add_models_to_table(models)
 
@@ -191,7 +255,7 @@ class ModelItemWidget(QWidget, DatasetManager):
             self._build_tree(model, self._model.rootItem)
         self._model.endResetModel()
 
-    def create_model(self, modify: bool = False) -> None:
+    def create_model(self, modify: bool = False, initial_path: str = "") -> None:
         """Create a new model or update the currently selected one.
 
         Parameters
@@ -200,8 +264,11 @@ class ModelItemWidget(QWidget, DatasetManager):
             When ``True`` the selected model is updated; otherwise a new
             version entry is inserted.
         """
+        if not hasattr(self, "project"):
+            MessageManager.send_info_message(self.tr("Select a project first"))
+            return
         box = ModelInfoMessageBox(self._parent)
-        index = self._view.indexAt(self._menu_pos)
+        index = self._current_index()
         box.parent_combox.addItem(self.tr("Top model"), userData=None)
         for model in self.model_item_dict.values():
             box.parent_combox.addItem(
@@ -220,6 +287,8 @@ class ModelItemWidget(QWidget, DatasetManager):
             model_id = None
 
         box.setWindowTitle(self.tr("Model info"))
+        if initial_path and not modify:
+            box.train_path_edit.setText(initial_path)
         if modify:
             current_model = self.model_item_dict[model_id]
             box.model_name_edit.setText(current_model.name)
@@ -261,9 +330,10 @@ class ModelItemWidget(QWidget, DatasetManager):
 
     def remove_model(self) -> None:
         """Delete the currently highlighted model after confirmation."""
-        index = self._view.indexAt(self._menu_pos)
+        index = self._current_index()
 
-        if index.row() == -1:
+        if not index.isValid():
+            MessageManager.send_info_message(self.tr("Select a model first"))
             return
 
         item = index.internalPointer()
@@ -283,9 +353,10 @@ class ModelItemWidget(QWidget, DatasetManager):
 
     def open_folder(self) -> None:
         """Open the directory or URL associated with the selected model."""
-        index = self._view.indexAt(self._menu_pos)
+        index = self._current_index()
 
-        if index.row() == -1:
+        if not index.isValid():
+            MessageManager.send_info_message(self.tr("Select a model first"))
             return
 
         item = index.internalPointer()
@@ -297,6 +368,10 @@ class ModelItemWidget(QWidget, DatasetManager):
         else:
             if os.path.exists(path):
                 QDesktopServices.openUrl(QUrl("file:///" + path))
+            else:
+                MessageManager.send_info_message(
+                    self.tr("Model folder does not exist: {path}").format(path=path)
+                )
 
     def on_search(self, params: dict) -> None:
         """Run an advanced search and refresh the table with the results.

@@ -101,6 +101,56 @@ def test_scaled_radii_collision_scan_handles_orthogonal_triclinic_and_large_fram
     assert find_scaled_radii_collision_structure_indices(geometry, 0.0) == ()
 
 
+def test_native_scaled_radii_collision_pairs_returns_unique_atom_indices():
+    native_scan = neighbor_scan._native_scan
+    assert native_scan is not None
+    assert hasattr(native_scan, "scaled_radii_collision_pairs")
+    nickel_radius = np.asarray([1.24, 1.24], dtype=np.float32)
+    positions = np.asarray([[0.1, 1.0, 1.0], [4.9, 1.0, 1.0]], dtype=np.float32)
+    cell = np.eye(3, dtype=np.float32) * 5.0
+
+    periodic_pairs = native_scan.scaled_radii_collision_pairs(
+        positions,
+        cell,
+        np.ones(3, dtype=np.uint8),
+        nickel_radius,
+        0.7,
+    )
+    nonperiodic_pairs = native_scan.scaled_radii_collision_pairs(
+        positions,
+        cell,
+        np.zeros(3, dtype=np.uint8),
+        nickel_radius,
+        0.7,
+    )
+
+    np.testing.assert_array_equal(periodic_pairs, np.asarray([[0, 1]], dtype=np.int32))
+    assert nonperiodic_pairs.shape == (0, 2)
+
+
+def test_native_scaled_radii_collision_pairs_handles_large_frame():
+    positions = np.stack(
+        np.meshgrid(
+            np.arange(8, dtype=np.float32) * 2.5,
+            np.arange(4, dtype=np.float32) * 2.5,
+            np.arange(4, dtype=np.float32) * 2.5,
+            indexing="ij",
+        ),
+        axis=-1,
+    ).reshape(-1, 3)
+    positions[1] = positions[0] + np.asarray([0.1, 0.0, 0.0], dtype=np.float32)
+
+    pairs = neighbor_scan._native_scan.scaled_radii_collision_pairs(
+        positions,
+        np.eye(3, dtype=np.float32) * 30.0,
+        np.ones(3, dtype=np.uint8),
+        np.full(len(positions), 0.31, dtype=np.float32),
+        0.7,
+    )
+
+    np.testing.assert_array_equal(pairs, np.asarray([[0, 1]], dtype=np.int32))
+
+
 def test_batch_scan_handles_triclinic_minimum_image():
     cell = np.asarray(
         [

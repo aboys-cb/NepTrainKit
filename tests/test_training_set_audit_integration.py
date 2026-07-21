@@ -7,11 +7,14 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import numpy as np
+from ase import Atoms
 from PySide6.QtCore import QCoreApplication, QTranslator
 from PySide6.QtWidgets import QApplication
 
 import NepTrainKit.main as main_module
 import NepTrainKit.ui.pages.show_nep as show_nep_module
+from NepTrainKit.config import Config
+from NepTrainKit.ui.pages.settings import SettingsWidget
 from NepTrainKit.ui.pages.show_nep import ShowNepWidget
 from NepTrainKit.core.audit.result import (
     AuditResult,
@@ -148,7 +151,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         audited_data = object()
         current_data = object()
         window._audited_result_data = audited_data
-        window.stackedWidget = SimpleNamespace(setCurrentWidget=MagicMock())
+        window.switchTo = MagicMock()
         window.show_nep_interface = SimpleNamespace(
             nep_result_data=current_data,
             select_structure_indices=MagicMock(),
@@ -157,7 +160,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             main_module.NepTrainKitMainWindow.handle_training_set_audit_selection(window, [1, 2])
 
         window.show_nep_interface.select_structure_indices.assert_not_called()
-        window.stackedWidget.setCurrentWidget.assert_not_called()
+        window.switchTo.assert_not_called()
         info_mock.assert_called_once()
 
     def test_main_window_audit_messages_use_window_translation_context(self):
@@ -214,8 +217,9 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             show_distribution_explorer=MagicMock(),
         )
         window._start_training_set_phase_analysis = MagicMock()
-        window.stackedWidget = SimpleNamespace(setCurrentWidget=MagicMock())
+        window.switchTo = MagicMock()
         callbacks = {}
+        scheduled = []
 
         def fake_run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs):
             callbacks["parent"] = parent
@@ -228,26 +232,37 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         with (
             patch.object(main_module, "run_in_thread", side_effect=fake_run_in_thread),
             patch.object(main_module, "build_training_set_audit", return_value=audit_result),
+            patch.object(
+                main_module.QTimer,
+                "singleShot",
+                side_effect=lambda delay, callback: scheduled.append((delay, callback)),
+            ),
+            patch.object(main_module.Config, "getboolean", return_value=True),
         ):
             main_module.NepTrainKitMainWindow.open_training_set_audit(window, data)
+            window.training_set_audit_interface.set_result.assert_not_called()
+            window.switchTo.assert_called_once_with(
+                window.training_set_audit_interface
+            )
+            callbacks["on_finished"](audit_result)
 
         self.assertIs(callbacks["parent"], window)
         self.assertEqual(callbacks["args"], (data,))
         window.training_set_audit_interface.set_loading.assert_called_once_with(
             "train.xyz"
         )
-        window.stackedWidget.setCurrentWidget.assert_called_once_with(
-            window.training_set_audit_interface
-        )
-        window.training_set_audit_interface.set_result.assert_not_called()
-        callbacks["on_finished"](audit_result)
         window.training_set_audit_interface.set_result.assert_called_once_with(audit_result)
         window.training_set_audit_interface.show_distribution_explorer.assert_not_called()
-        self.assertEqual(window.stackedWidget.setCurrentWidget.call_count, 2)
-        window.stackedWidget.setCurrentWidget.assert_called_with(
+        self.assertEqual(window.switchTo.call_count, 2)
+        window.switchTo.assert_called_with(
             window.training_set_audit_interface
         )
-        window._start_training_set_phase_analysis.assert_not_called()
+        self.assertEqual(len(scheduled), 1)
+        self.assertEqual(scheduled[0][0], 0)
+        scheduled[0][1]()
+        window._start_training_set_phase_analysis.assert_called_once_with(
+            data, audit_result
+        )
 
     def test_main_window_reuses_unchanged_training_set_audit_result(self):
         window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
@@ -264,21 +279,74 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             set_distribution_context=MagicMock(),
             show_distribution_explorer=MagicMock(),
         )
-        window.stackedWidget = SimpleNamespace(setCurrentWidget=MagicMock())
+        window.switchTo = MagicMock()
         signature = main_module.NepTrainKitMainWindow._training_set_audit_signature(window, data)
         window._audited_result_data = data
         window._audited_result_signature = signature
         window._audited_result = cached_result
+        window._start_training_set_phase_analysis = MagicMock()
+        scheduled = []
 
-        with patch.object(main_module, "run_in_thread") as thread_mock:
+        with (
+            patch.object(main_module, "run_in_thread") as thread_mock,
+            patch.object(
+                main_module.QTimer,
+                "singleShot",
+                side_effect=lambda delay, callback: scheduled.append((delay, callback)),
+            ),
+            patch.object(main_module.Config, "getboolean", return_value=True),
+        ):
             main_module.NepTrainKitMainWindow.open_training_set_audit(window, data)
 
         thread_mock.assert_not_called()
         window.training_set_audit_interface.set_loading.assert_not_called()
         window.training_set_audit_interface.set_result.assert_called_once_with(cached_result)
-        window.stackedWidget.setCurrentWidget.assert_called_once_with(
+        window.switchTo.assert_called_once_with(
             window.training_set_audit_interface
         )
+        self.assertEqual(len(scheduled), 1)
+        self.assertEqual(scheduled[0][0], 0)
+        scheduled[0][1]()
+        window._start_training_set_phase_analysis.assert_called_once_with(
+            data, cached_result
+        )
+
+    def test_main_window_does_not_schedule_structure_evidence_when_disabled(self):
+        window = main_module.NepTrainKitMainWindow.__new__(
+            main_module.NepTrainKitMainWindow
+        )
+        window._request_training_set_structure_evidence = MagicMock()
+
+        with (
+            patch.object(main_module.Config, "getboolean", return_value=False),
+            patch.object(main_module.QTimer, "singleShot") as timer_mock,
+        ):
+            window._schedule_training_set_structure_evidence()
+
+        timer_mock.assert_not_called()
+
+    def test_settings_default_and_persist_auto_structure_evidence(self):
+        previous = Config.get(
+            "training_set_audit", "auto_structure_evidence"
+        )
+        try:
+            Config.delete("training_set_audit", "auto_structure_evidence")
+            widget = SettingsWidget(None)
+
+            self.assertTrue(widget.auto_structure_evidence_card.isChecked())
+            widget.auto_structure_evidence_card.setValue(False)
+            self.assertFalse(
+                Config.getboolean(
+                    "training_set_audit", "auto_structure_evidence", True
+                )
+            )
+        finally:
+            if previous is None:
+                Config.delete("training_set_audit", "auto_structure_evidence")
+            else:
+                Config.set(
+                    "training_set_audit", "auto_structure_evidence", previous
+                )
 
     def test_main_window_successful_audit_selection_selects_and_navigates_to_dataset_display(self):
         window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
@@ -299,14 +367,14 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             nep_result_data=shared_data,
             select_structure_indices=MagicMock(),
         )
-        window.stackedWidget = SimpleNamespace(setCurrentWidget=MagicMock())
+        window.switchTo = MagicMock()
 
         main_module.NepTrainKitMainWindow.handle_training_set_audit_selection(
             window, [4, 0]
         )
 
         window.show_nep_interface.select_structure_indices.assert_called_once_with([4, 0])
-        window.stackedWidget.setCurrentWidget.assert_called_once_with(
+        window.switchTo.assert_called_once_with(
             window.show_nep_interface
         )
 
@@ -403,14 +471,115 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window.training_set_audit_interface = main_module.TrainingSetAuditWidget()
         window.handle_training_set_audit_selection = MagicMock()
         window.open_training_set_audit = MagicMock()
+        window.open_dataset_for_training_set_audit = MagicMock()
         window._request_training_set_structure_evidence = MagicMock()
         main_module.NepTrainKitMainWindow._connect_training_set_audit_signals(window)
 
         window.training_set_audit_interface.rerunAuditSignal.emit()
         window.training_set_audit_interface.requestStructureEvidenceSignal.emit()
+        window.training_set_audit_interface.requestDatasetOpenSignal.emit()
 
         window.open_training_set_audit.assert_called_once_with(force=True)
         window._request_training_set_structure_evidence.assert_called_once_with()
+        window.open_dataset_for_training_set_audit.assert_called_once_with()
+
+    def test_audit_open_action_switches_to_display_before_opening(self):
+        window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
+        window.show_nep_interface = SimpleNamespace(open_file=MagicMock())
+        window.switchTo = MagicMock()
+
+        main_module.NepTrainKitMainWindow.open_dataset_for_training_set_audit(window)
+
+        window.switchTo.assert_called_once_with(window.show_nep_interface)
+        window.show_nep_interface.open_file.assert_called_once_with()
+
+    def test_global_actions_follow_current_page_capabilities(self):
+        class ActionProbe:
+            def __init__(self):
+                self.enabled = None
+                self.tooltip = ""
+
+            def setEnabled(self, enabled):
+                self.enabled = enabled
+
+            def setToolTip(self, tooltip):
+                self.tooltip = tooltip
+
+        window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
+        window.open_dir_button = ActionProbe()
+        window.save_dir_button = ActionProbe()
+        current_page = SimpleNamespace(open_file=lambda: None)
+        window.stackedWidget = SimpleNamespace(currentWidget=lambda: current_page)
+
+        main_module.NepTrainKitMainWindow._refresh_page_actions(window)
+
+        self.assertTrue(window.open_dir_button.enabled)
+        self.assertFalse(window.save_dir_button.enabled)
+        self.assertIn("not available", window.save_dir_button.tooltip)
+
+    def test_make_dataset_output_handoff_opens_temporary_dataset_directly(self):
+        window = main_module.NepTrainKitMainWindow.__new__(
+            main_module.NepTrainKitMainWindow
+        )
+        window._make_dataset_handoff_thread = None
+        window._make_dataset_handoff_dir = None
+        window._make_dataset_handoff_pending_dir = None
+        window.show_nep_interface = SimpleNamespace(check_nep_result=MagicMock())
+        window.switchTo = MagicMock()
+        callbacks = {}
+
+        def fake_run_in_thread(
+            _parent, func, *args, on_finished=None, on_error=None, **kwargs
+        ):
+            del args, kwargs
+            callbacks["func"] = func
+            callbacks["finished"] = on_finished
+            callbacks["error"] = on_error
+            return SimpleNamespace(isRunning=lambda: False)
+
+        with patch.object(main_module, "run_in_thread", side_effect=fake_run_in_thread):
+            main_module.NepTrainKitMainWindow.open_make_dataset_output(
+                window,
+                [Atoms("Fe", positions=[[0.0, 0.0, 0.0]])],
+            )
+
+        result_path = callbacks["func"]()
+        callbacks["finished"](result_path)
+
+        self.assertTrue(Path(result_path).is_file())
+        window.switchTo.assert_called_once_with(window.show_nep_interface)
+        window.show_nep_interface.check_nep_result.assert_called_once_with(
+            result_path
+        )
+        self.assertIsNone(window._make_dataset_handoff_thread)
+        window._make_dataset_handoff_dir.cleanup()
+
+    def test_make_dataset_handoff_recovers_from_deleted_worker_wrapper(self):
+        class DeletedThread:
+            def isRunning(self):
+                raise RuntimeError("Internal C++ object already deleted")
+
+        window = main_module.NepTrainKitMainWindow.__new__(
+            main_module.NepTrainKitMainWindow
+        )
+        window._make_dataset_handoff_thread = DeletedThread()
+        window._make_dataset_handoff_dir = None
+        window._make_dataset_handoff_pending_dir = None
+        window.show_nep_interface = SimpleNamespace(check_nep_result=MagicMock())
+        window.switchTo = MagicMock()
+        replacement_thread = SimpleNamespace(isRunning=lambda: False)
+
+        with patch.object(
+            main_module, "run_in_thread", return_value=replacement_thread
+        ) as run_mock:
+            main_module.NepTrainKitMainWindow.open_make_dataset_output(
+                window,
+                [Atoms("Fe", positions=[[0.0, 0.0, 0.0]])],
+            )
+
+        run_mock.assert_called_once()
+        self.assertIs(window._make_dataset_handoff_thread, replacement_thread)
+        window._make_dataset_handoff_pending_dir.cleanup()
 
     def test_shipped_chinese_catalog_translates_audit_integration_contexts(self):
         catalog = (
@@ -425,6 +594,12 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         self._app.installTranslator(translator)
         try:
             main_context = {
+                "Open data for this page": "打开当前页面的数据",
+                "Open is not available on this page": "当前页面不支持打开操作",
+                "Save data from this page": "保存当前页面的数据",
+                "Save is not available on this page": "当前页面不支持保存操作",
+                "Preparing the workflow output for display...": "正在准备工作流输出以供查看...",
+                "Make Dataset": "构建数据集",
                 "Training Set Check": "训练集评估",
                 "current dataset": "当前数据集",
                 "Please load a dataset before running Training Set Check.": "请先加载数据集，再运行训练集评估。",
@@ -436,6 +611,10 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
                 "Please load a dataset before running Training Set Check.": "请先加载数据集，再运行训练集评估。",
                 "Training Set Check page is not available.": "训练集评估页面不可用。",
             }
+            settings_context = {
+                "Automatically analyze structure evidence": "自动分析结构证据",
+                "After the basic dataset audit appears, analyze phases and magnetic order in the background": "基础诊断显示后，在后台分析相结构与磁序",
+            }
             for source, expected in main_context.items():
                 self.assertEqual(
                     QCoreApplication.translate("NepTrainKitMainWindow", source),
@@ -444,6 +623,11 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             for source, expected in show_nep_context.items():
                 self.assertEqual(
                     QCoreApplication.translate("ShowNepWidget", source),
+                    expected,
+                )
+            for source, expected in settings_context.items():
+                self.assertEqual(
+                    QCoreApplication.translate("SettingsWidget", source),
                     expected,
                 )
         finally:

@@ -769,6 +769,11 @@ class ViewBoxWidget(scene.Widget):
         """
         if self._diagonal is None:
             return None
+        self._diagonal.visible = bool(
+            self.parity_mode and self.title not in ("", "descriptor")
+        )
+        if not self._diagonal.visible:
+            return None
         if self.xaxis is None:
             return None
         x_domain = self.xaxis.axis.domain

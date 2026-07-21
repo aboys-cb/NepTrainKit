@@ -43,6 +43,8 @@ class TestMakeDataSourceCard(unittest.TestCase):
         loop.exec()
 
         self.assertGreater(len(card.result_dataset), 0)
+        self.assertTrue(widget.setting_group.view_output_button.isEnabled())
+        self.assertEqual(widget._last_completed_card_index, 0)
 
     def test_copy_single_card_json_can_be_pasted_back(self):
         widget = MakeDataWidget()

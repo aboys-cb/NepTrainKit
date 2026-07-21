@@ -26,6 +26,7 @@ from qfluentwidgets import (
     InfoBadge,
     InfoBadgePosition,
 )
+from ase.io import write as ase_write
 from loguru import logger
 
 from NepTrainKit.core.audit import (
@@ -33,6 +34,7 @@ from NepTrainKit.core.audit import (
     build_phase_inventory,
     build_training_set_audit,
 )
+from NepTrainKit.config import Config
 from NepTrainKit.ui.pages import *
 from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.threads import run_in_thread
@@ -89,6 +91,8 @@ class NepTrainKitMainWindow(FluentWindow):
         self.init_widget()
         self.init_navigation()
         self.initWindow()
+        self.stackedWidget.currentChanged.connect(self._refresh_page_actions)
+        self._refresh_page_actions()
 
     def init_menu(self) -> None:
         """Create the toolbar housing common open/save actions."""
@@ -99,11 +103,13 @@ class NepTrainKitMainWindow(FluentWindow):
         self.menu_gridLayout.setSpacing(1)
 
         self.open_dir_button = SplitToolButton(QIcon(':/images/src/images/open.svg'), self.menu_widget)
+        self.open_dir_button.setAccessibleName(self.tr("Open"))
         self.open_dir_button.clicked.connect(self.open_file_dialog)
         self.load_menu = RoundMenu(parent=self)
         self.open_dir_button.setFlyout(self.load_menu)
 
         self.save_dir_button = SplitToolButton(QIcon(':/images/src/images/save.svg'), self.menu_widget)
+        self.save_dir_button.setAccessibleName(self.tr("Save"))
         self.save_dir_button.clicked.connect(self.export_file_dialog)
 
         self.save_menu = RoundMenu(parent=self)
@@ -137,7 +143,7 @@ class NepTrainKitMainWindow(FluentWindow):
         self.addSubInterface(
             self.make_data_interface,
             QIcon(':/images/src/images/make.svg'),
-            self.tr('Make Data'),
+            self.tr('Make Dataset'),
         )
         self.addSubInterface(
             self.data_manager_interface,
@@ -165,7 +171,13 @@ class NepTrainKitMainWindow(FluentWindow):
         self._training_set_phase_thread = None
         self._training_set_phase_result = None
         self._training_set_phase_token = None
+        self._make_dataset_handoff_thread = None
+        self._make_dataset_handoff_dir = None
+        self._make_dataset_handoff_pending_dir = None
         self._connect_training_set_audit_signals()
+        self.make_data_interface.finalOutputRequestedSignal.connect(
+            self.open_make_dataset_output
+        )
 
     def _connect_training_set_audit_signals(self) -> None:
         """Wire Training Set Audit page actions back into the main window."""
@@ -174,6 +186,9 @@ class NepTrainKitMainWindow(FluentWindow):
         )
         self.training_set_audit_interface.rerunAuditSignal.connect(
             lambda: self.open_training_set_audit(force=True)
+        )
+        self.training_set_audit_interface.requestDatasetOpenSignal.connect(
+            self.open_dataset_for_training_set_audit
         )
         self.training_set_audit_interface.requestStructureEvidenceSignal.connect(
             self._request_training_set_structure_evidence
@@ -189,6 +204,13 @@ class NepTrainKitMainWindow(FluentWindow):
             return
         self._start_training_set_phase_analysis(data, result)
 
+    def _schedule_training_set_structure_evidence(self) -> None:
+        """Start deferred audit evidence automatically when enabled."""
+        if Config.getboolean(
+            "training_set_audit", "auto_structure_evidence", True
+        ):
+            QTimer.singleShot(0, self._request_training_set_structure_evidence)
+
     def initWindow(self) -> None:
         """Configure top-level window parameters such as size and title."""
         self.resize(1200, 700)
@@ -201,14 +223,104 @@ class NepTrainKitMainWindow(FluentWindow):
     def open_file_dialog(self) -> None:
         """Delegate to the current widget's ``open_file`` handler when available."""
         widget = self.stackedWidget.currentWidget()
-        if hasattr(widget, "open_file"):
-            widget.open_file()  # pyright: ignore[attr-defined]
+        handler = getattr(widget, "open_file", None)
+        if callable(handler):
+            handler()
 
     def export_file_dialog(self) -> None:
         """Delegate to the current widget's ``export_file`` handler when available."""
         widget = self.stackedWidget.currentWidget()
-        if hasattr(widget, "export_file"):
-            widget.export_file()  # pyright: ignore[attr-defined]
+        handler = getattr(widget, "export_file", None)
+        if callable(handler):
+            handler()
+
+    def _refresh_page_actions(self, *_args) -> None:
+        """Enable global actions only when the active page implements them."""
+        widget = self.stackedWidget.currentWidget()
+        can_open = callable(getattr(widget, "open_file", None))
+        can_save = callable(getattr(widget, "export_file", None))
+        self.open_dir_button.setEnabled(can_open)
+        self.save_dir_button.setEnabled(can_save)
+        self.open_dir_button.setToolTip(
+            self.tr("Open data for this page")
+            if can_open
+            else self.tr("Open is not available on this page")
+        )
+        self.save_dir_button.setToolTip(
+            self.tr("Save data from this page")
+            if can_save
+            else self.tr("Save is not available on this page")
+        )
+
+    def open_dataset_for_training_set_audit(self) -> None:
+        """Switch to Dataset Display and open a file for a future audit."""
+        self.switchTo(self.show_nep_interface)
+        self.show_nep_interface.open_file()
+
+    def open_make_dataset_output(self, structures: list) -> None:
+        """Persist a temporary handoff and open it in Dataset Display."""
+        if not structures:
+            MessageManager.send_info_message(
+                self.tr("The workflow output is empty.")
+            )
+            return
+        thread = getattr(self, "_make_dataset_handoff_thread", None)
+        try:
+            handoff_running = thread is not None and thread.isRunning()
+        except RuntimeError:
+            # run_in_thread deletes its QThread after completion.  Do not keep
+            # querying a stale PySide wrapper on the next handoff request.
+            self._make_dataset_handoff_thread = None
+            handoff_running = False
+        if handoff_running:
+            MessageManager.send_info_message(
+                self.tr("Dataset handoff is already in progress.")
+            )
+            return
+
+        handoff_dir = tempfile.TemporaryDirectory(
+            prefix="neptrainkit-make-dataset-"
+        )
+        path = Path(handoff_dir.name) / "make_dataset.xyz"
+        self._make_dataset_handoff_pending_dir = handoff_dir
+        MessageManager.send_info_message(
+            self.tr("Preparing the workflow output for display...")
+        )
+
+        def _write_handoff() -> str:
+            ase_write(path, structures, format="extxyz")
+            return str(path)
+
+        def _open_handoff(result_path: str) -> None:
+            if self._make_dataset_handoff_pending_dir is not handoff_dir:
+                handoff_dir.cleanup()
+                return
+            self._make_dataset_handoff_thread = None
+            previous_dir = self._make_dataset_handoff_dir
+            self._make_dataset_handoff_dir = handoff_dir
+            self._make_dataset_handoff_pending_dir = None
+            self.switchTo(self.show_nep_interface)
+            self.show_nep_interface.check_nep_result(result_path)
+            if previous_dir is not None:
+                previous_dir.cleanup()
+
+        def _handoff_failed(message: str) -> None:
+            if self._make_dataset_handoff_pending_dir is handoff_dir:
+                self._make_dataset_handoff_pending_dir = None
+                self._make_dataset_handoff_thread = None
+            handoff_dir.cleanup()
+            MessageManager.send_error_message(
+                self.tr("Failed to prepare workflow output: {message}").format(
+                    message=message
+                )
+            )
+
+        self._make_dataset_handoff_thread = run_in_thread(
+            self,
+            _write_handoff,
+            on_finished=_open_handoff,
+            on_error=_handoff_failed,
+        )
 
     def _training_set_audit_signature(self, result_data) -> tuple[object, ...]:
         """Return a cheap snapshot for safe reuse of an unchanged audit run."""
@@ -266,11 +378,12 @@ class NepTrainKitMainWindow(FluentWindow):
             )
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
-            self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
+            self.switchTo(self.training_set_audit_interface)
+            self._schedule_training_set_structure_evidence()
             return
         self.training_set_audit_interface.set_distribution_context(data=None)
         self.training_set_audit_interface.set_loading(dataset_id)
-        self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
+        self.switchTo(self.training_set_audit_interface)
 
         def apply_result(result) -> None:
             self._training_set_audit_thread = None
@@ -287,7 +400,8 @@ class NepTrainKitMainWindow(FluentWindow):
             )
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
-            self.stackedWidget.setCurrentWidget(self.training_set_audit_interface)
+            self.switchTo(self.training_set_audit_interface)
+            self._schedule_training_set_structure_evidence()
 
         def report_error(message: str) -> None:
             self._training_set_audit_thread = None
@@ -322,7 +436,7 @@ class NepTrainKitMainWindow(FluentWindow):
             )
             return
         self.show_nep_interface.select_structure_indices(indices)
-        self.stackedWidget.setCurrentWidget(self.show_nep_interface)
+        self.switchTo(self.show_nep_interface)
 
     def _start_training_set_phase_analysis(self, data, result) -> None:
         """Analyze every structure in the audited scope without blocking the page."""

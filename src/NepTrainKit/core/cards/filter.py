@@ -10,7 +10,13 @@ from ase.data import atomic_masses, atomic_numbers
 from ase.neighborlist import neighbor_list
 
 from NepTrainKit.core.calculator import NepCalculator
-from NepTrainKit.core.io import farthest_point_sampling
+from NepTrainKit.core.io import (
+    allocate_sqrt_quotas,
+    centered_fps,
+    farthest_point_sampling,
+    structure_element_set_key,
+)
+from NepTrainKit.core.io.importers import import_structures
 from NepTrainKit.core.types import NepBackend
 
 from .operation import DatasetOperation
@@ -25,14 +31,37 @@ class FPSFilterParams:
     min_distance: float = 0.01
     backend: str = "auto"
     chunk_max_atoms: int = 100000
+    strategy: str = "global"
+    existing_dataset_path: str = ""
+
+
+@dataclass(frozen=True)
+class FPSGroupReport:
+    """Candidate, warm-start, and selected counts for one element set."""
+
+    candidate_count: int
+    existing_count: int
+    selected_count: int
 
 
 class FPSFilterOperation(DatasetOperation):
     """Select representative structures using NEP descriptors and FPS."""
 
+    VALID_STRATEGIES = {"global", "element_set"}
+
+    def __init__(self) -> None:
+        self.last_group_report: dict[tuple[str, ...], FPSGroupReport] = {}
+
     def run_dataset(self, dataset, params: FPSFilterParams) -> list:
+        self.last_group_report = {}
         if not dataset:
             return []
+        strategy = str(params.strategy).strip().lower()
+        if strategy not in self.VALID_STRATEGIES:
+            raise ValueError(
+                f"Unsupported FPS strategy '{params.strategy}'. "
+                f"Expected one of {sorted(self.VALID_STRATEGIES)}."
+            )
         nep_path = Path(params.nep_path)
         if not nep_path.exists():
             raise FileNotFoundError(f"NEP file does not exist: {nep_path}")
@@ -43,12 +72,92 @@ class FPSFilterOperation(DatasetOperation):
             chunk_max_atoms=int(params.chunk_max_atoms),
         )
         desc_array = nep_calc.descriptors(dataset)
+        if strategy == "element_set":
+            return self._run_element_set_fps(dataset, desc_array, nep_calc, params)
+
         remaining_indices = farthest_point_sampling(
             desc_array,
             n_samples=int(params.n_samples),
             min_dist=float(params.min_distance),
         )
         return [dataset[i] for i in remaining_indices]
+
+    def _run_element_set_fps(self, dataset, descriptors, nep_calc, params: FPSFilterParams) -> list:
+        groups = self.group_indices_by_element_set(dataset)
+        quotas = self.allocate_sqrt_quotas(
+            {key: len(indices) for key, indices in groups.items()},
+            int(params.n_samples),
+        )
+        existing_groups: dict[tuple[str, ...], list] = {}
+        existing_descriptors = np.empty((0, descriptors.shape[1]), dtype=float)
+        existing_structures: list = []
+        if params.existing_dataset_path.strip():
+            existing_path = Path(params.existing_dataset_path).expanduser()
+            if not existing_path.exists():
+                raise FileNotFoundError(f"Existing training dataset does not exist: {existing_path}")
+            existing_structures = list(import_structures(existing_path))
+            if not existing_structures:
+                raise ValueError(f"Existing training dataset contains no structures: {existing_path}")
+            existing_descriptors = nep_calc.descriptors(existing_structures)
+            existing_groups = self.group_indices_by_element_set(existing_structures)
+
+        selected_global_indices: list[int] = []
+        for key in sorted(groups):
+            candidate_indices = groups[key]
+            candidate_descriptors = np.asarray(descriptors[candidate_indices], dtype=float)
+            warm_indices = existing_groups.get(key, [])
+            warm_descriptors = (
+                np.asarray(existing_descriptors[warm_indices], dtype=float)
+                if warm_indices
+                else None
+            )
+            local_indices = self.centered_fps(
+                candidate_descriptors,
+                n_samples=quotas[key],
+                min_dist=float(params.min_distance),
+                selected_data=warm_descriptors,
+            )
+            chosen = [candidate_indices[index] for index in local_indices]
+            selected_global_indices.extend(chosen)
+            self.last_group_report[key] = FPSGroupReport(
+                candidate_count=len(candidate_indices),
+                existing_count=len(warm_indices),
+                selected_count=len(chosen),
+            )
+
+        selected_set = set(selected_global_indices)
+        return [structure for index, structure in enumerate(dataset) if index in selected_set]
+
+    @staticmethod
+    def element_set_key(structure) -> tuple[str, ...]:
+        """Return a stable element-set key for a structure."""
+        return structure_element_set_key(structure)
+
+    @classmethod
+    def group_indices_by_element_set(cls, structures) -> dict[tuple[str, ...], list[int]]:
+        """Group structure indices by their set of chemical elements."""
+        groups: dict[tuple[str, ...], list[int]] = {}
+        for index, structure in enumerate(structures):
+            groups.setdefault(cls.element_set_key(structure), []).append(index)
+        return groups
+
+    @staticmethod
+    def allocate_sqrt_quotas(
+        group_sizes: dict,
+        n_samples: int,
+    ) -> dict:
+        """Allocate one slot per group, then distribute the rest by sqrt(size)."""
+        return allocate_sqrt_quotas(group_sizes, n_samples)
+
+    @staticmethod
+    def centered_fps(
+        points,
+        n_samples: int,
+        min_dist: float,
+        selected_data=None,
+    ) -> list[int]:
+        """Run FPS from the feature-space center, or from a warm-start set."""
+        return centered_fps(points, n_samples, min_dist, selected_data=selected_data)
 
 
 @dataclass(frozen=True)

@@ -15,6 +15,7 @@ from NepTrainKit.config import Config
 from NepTrainKit.core.io.base import NepPlotData
 from NepTrainKit.core.types import Brushes, CanvasMode, Pens
 import NepTrainKit.ui.canvas.canvas_factory as canvas_factory
+import NepTrainKit.ui.canvas.vispy.structure as vispy_structure
 
 
 class _ArrowCapable:
@@ -233,6 +234,24 @@ class TestCanvasFactory(unittest.TestCase):
 
         self.assertFalse(thumbnail.text.visible)
         self.assertTrue(main_plot.text.visible)
+
+    def test_vispy_reused_parity_plot_hides_diagonal_for_descriptor(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        plot.title = "energy"
+        plot.scatter(
+            np.array([0.0, 1.0], dtype=np.float32),
+            np.array([0.0, 1.0], dtype=np.float32),
+            np.array([0, 1], dtype=np.int32),
+        )
+        self.assertTrue(plot._diagonal.visible)
+
+        plot.parity_mode = False
+        plot.title = "descriptor"
+        plot.update_diagonal()
+
+        self.assertFalse(plot._diagonal.visible)
 
     def test_vispy_empty_scatter_does_not_auto_range_from_missing_marker_data(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
@@ -915,12 +934,40 @@ class TestCanvasFactory(unittest.TestCase):
 
         plot.show_structure(structure_1)
         atom_mesh = plot._atom_mesh
+        atom_meshdata = plot._atom_meshdata
+        expected_fe_color = np.asarray(
+            vispy_structure.Color(vispy_structure.table_info["26"]["color"]).rgba,
+            dtype=np.float32,
+        )
+        np.testing.assert_allclose(
+            plot._atom_colors_by_atom,
+            np.tile(expected_fe_color, (3, 1)),
+            atol=1.0e-6,
+        )
+        np.testing.assert_allclose(
+            plot._atom_sizes,
+            np.full(
+                3,
+                vispy_structure.table_info["26"]["radii"] / 150,
+                dtype=np.float32,
+            ),
+        )
+        expected_normals = np.tile(
+            plot.sphere_meshdata.get_vertex_normals(),
+            (len(structure_1.numbers), 1),
+        )
+        np.testing.assert_allclose(
+            atom_meshdata.get_vertex_normals(),
+            expected_normals,
+            atol=1.0e-6,
+        )
         lattice_item = plot.lattice_item
         axes = plot.axes
 
         plot.show_structure(structure_2)
 
         self.assertIs(plot._atom_mesh, atom_mesh)
+        self.assertIs(plot._atom_meshdata, atom_meshdata)
         self.assertIs(plot.lattice_item, lattice_item)
         self.assertIs(plot.axes, axes)
 

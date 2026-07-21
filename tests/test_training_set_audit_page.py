@@ -775,6 +775,8 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.composition_table.columnCount(), 5)
         self.assertIn("atoms", widget.composition_table.item(0, 3).text())
         self.assertEqual(widget.analyze_structure_evidence_button.text(), "Analyze remaining evidence")
+        widget.finish_phase_analysis(result)
+        self.assertEqual(widget.composition_view_selector.currentData(), "count")
         widget.composition_evidence_button.click()
         widget.finish_phase_analysis(result)
         self.assertEqual(widget.composition_view_selector.currentData(), "structural")
@@ -1213,6 +1215,8 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget = TrainingSetAuditWidget()
 
         self.assertFalse(widget.no_dataset_state.isHidden())
+        self.assertFalse(widget.no_dataset_action_button.isHidden())
+        self.assertIn("NEP Dataset Display", widget.no_dataset_hint.text())
         self.assertTrue(widget.audit_header.isHidden())
         self.assertTrue(widget.dashboard_body.isHidden())
         self.assertEqual(widget.dimension_list.count(), 0)
@@ -1223,10 +1227,58 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.set_result(self._dashboard_result())
 
         self.assertTrue(widget.no_dataset_state.isHidden())
+        self.assertTrue(widget.no_dataset_panel.isHidden())
         self.assertFalse(widget.audit_header.isHidden())
         self.assertFalse(widget.dashboard_body.isHidden())
         self.assertEqual(widget.dimension_list.count(), 4)
         self.assertFalse(widget.chart_widget.isHidden())
+
+    def test_empty_state_reserves_full_wrapped_hint_height(self):
+        widget = TrainingSetAuditWidget()
+        widget.resize(600, 260)
+        widget.show()
+        self._app.processEvents()
+
+        hint = widget.no_dataset_hint
+        self.assertGreaterEqual(widget.no_dataset_panel.width(), 430)
+        self.assertGreaterEqual(
+            widget.no_dataset_state.height(),
+            widget.no_dataset_state.sizeHint().height(),
+        )
+        self.assertGreater(hint.width(), 0)
+        self.assertGreaterEqual(hint.height(), hint.heightForWidth(hint.width()))
+
+    def test_empty_state_remeasures_hint_after_late_font_polish(self):
+        widget = TrainingSetAuditWidget()
+        widget.no_dataset_hint.setStyleSheet("font-size: 24px;")
+        widget.resize(1151, 651)
+        widget.show()
+        self._app.processEvents()
+        self._app.processEvents()
+
+        hint = widget.no_dataset_hint
+        self.assertGreaterEqual(
+            hint.minimumHeight(),
+            hint.heightForWidth(hint.width()),
+        )
+
+    def test_empty_state_open_action_requests_dataset_picker(self):
+        widget = TrainingSetAuditWidget()
+        requests = []
+        widget.requestDatasetOpenSignal.connect(lambda: requests.append(True))
+
+        widget.no_dataset_action_button.click()
+
+        self.assertEqual(requests, [True])
+
+    def test_loading_state_hides_open_action(self):
+        widget = TrainingSetAuditWidget()
+
+        widget.set_loading("train.xyz")
+
+        self.assertIn("train.xyz", widget.no_dataset_state.text())
+        self.assertTrue(widget.no_dataset_action_button.isHidden())
+        self.assertIn("wait", widget.no_dataset_hint.text().lower())
 
     def test_display_text_uses_widget_translation_before_ui_construction(self):
         class TranslationProbeWidget(TrainingSetAuditWidget):
@@ -1278,6 +1330,9 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self._app.installTranslator(translator)
         try:
             widget = TrainingSetAuditWidget()
+            self.assertEqual(widget.no_dataset_state.text(), "未加载数据集")
+            self.assertEqual(widget.no_dataset_action_button.text(), "打开数据集")
+            self.assertIn("NEP 数据集查看", widget.no_dataset_hint.text())
             self.assertEqual(widget.header_label.text(), "训练集评估")
             self.assertEqual(widget.slice_table.horizontalHeaderItem(0).text(), "类型")
             self.assertEqual(widget.dimension_rail.findChild(QLabel, "panelTitle").text(), "检查项目")

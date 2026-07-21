@@ -116,6 +116,8 @@ def test_deepmd_cached_outputs_can_generate_missing_descriptor(tmp_path: Path):
     result._load_descriptors()
 
     np.testing.assert_allclose(result.descriptor.now_data, np.array([[1.0, 2.0]], dtype=np.float32))
+    assert result.descriptor.parity_mode is False
+    assert result.descriptor.show_rmse is False
 
 
 def test_deepmd_cached_outputs_read_predictions_while_generating_descriptor(tmp_path: Path):

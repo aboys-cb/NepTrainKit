@@ -266,6 +266,11 @@ class NepResultPlotWidget(QWidget):
 
         descriptor_source_default = Config.get("widget", "sparse_descriptor_source", "reduced").lower()
         sampling_mode_default = Config.get("widget", "sparse_sampling_mode", "count").lower()
+        selection_strategy_default = Config.get(
+            "widget",
+            "sparse_selection_strategy",
+            "global",
+        ).lower()
         r2_threshold_default = Config.getfloat("widget", "sparse_r2_threshold", 0.9)
 
         training_path_default = Config.get("widget", "sparse_training_path", "")
@@ -276,6 +281,8 @@ class NepResultPlotWidget(QWidget):
         box.descriptorCombo.setCurrentIndex(1 if descriptor_source_default == "raw" else 0)
         box.modeCombo.setCurrentIndex(1 if sampling_mode_default == "r2" else 0)
         box.r2SpinBox.setValue(r2_threshold_default if r2_threshold_default is not None else 0.9)
+        strategy_index = box.strategyCombo.findData(selection_strategy_default)
+        box.strategyCombo.setCurrentIndex(strategy_index if strategy_index >= 0 else 0)
 
         box.trainingPathEdit.setText(training_path_default)
 
@@ -286,8 +293,12 @@ class NepResultPlotWidget(QWidget):
         distance = box.doubleSpinBox.value()
         use_selection_region = bool(getattr(box, "regionCheck", None) and box.regionCheck.isChecked())
 
-        descriptor_source = "raw" if box.descriptorCombo.currentIndex() == 1 else "reduced"
-        sampling_mode = "r2" if box.modeCombo.currentIndex() == 1 else "count"
+        selection_strategy = str(box.strategyCombo.currentData() or "global")
+        descriptor_source = str(box.descriptorCombo.currentData() or "reduced")
+        sampling_mode = str(box.modeCombo.currentData() or "count")
+        if selection_strategy == "element_set":
+            descriptor_source = "raw"
+            sampling_mode = "count"
         r2_threshold = box.r2SpinBox.value()
 
         training_path = box.trainingPathEdit.text().strip()
@@ -295,8 +306,10 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget", "sparse_num_value", n_samples)
         Config.set("widget", "sparse_distance_value", distance)
 
-        Config.set("widget", "sparse_descriptor_source", descriptor_source)
-        Config.set("widget", "sparse_sampling_mode", sampling_mode)
+        Config.set("widget", "sparse_selection_strategy", selection_strategy)
+        if selection_strategy == "global":
+            Config.set("widget", "sparse_descriptor_source", descriptor_source)
+            Config.set("widget", "sparse_sampling_mode", sampling_mode)
         Config.set("widget", "sparse_r2_threshold", r2_threshold)
 
         Config.set("widget", "sparse_training_path", training_path)
@@ -309,9 +322,17 @@ class NepResultPlotWidget(QWidget):
             training_path=training_path or None,
             sampling_mode=sampling_mode,
             r2_threshold=r2_threshold,
+            selection_strategy=selection_strategy,
         )
         if structures:
             self.canvas.select_index(structures, reverse)
+            if selection_strategy == "element_set":
+                report = getattr(data, "_last_sparse_group_report", {}) or {}
+                MessageManager.send_info_message(
+                    self.tr(
+                        "Balanced FPS selected {selected} structures across {groups} element sets."
+                    ).format(selected=len(structures), groups=len(report))
+                )
 
             # Show training overlay if requested - pre-compute PCA then show dialog
             show_overlay = bool(getattr(box, "trainingOverlayCheck", None) and box.trainingOverlayCheck.isChecked())

@@ -6,6 +6,7 @@
 #include <pybind11/pybind11.h>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdint>
 #include <stdexcept>
@@ -210,6 +211,90 @@ py::array_t<std::uint8_t> scaled_radii_collision_mask(
                 radius_data + begin, coefficient
             ) ? 1 : 0;
         }
+    }
+    return result;
+}
+
+py::array_t<std::int32_t> scaled_radii_collision_pairs(
+    py::array_t<float, py::array::c_style | py::array::forcecast> positions,
+    py::array_t<float, py::array::c_style | py::array::forcecast> cell,
+    py::array_t<std::uint8_t, py::array::c_style | py::array::forcecast> pbc,
+    py::array_t<float, py::array::c_style | py::array::forcecast> radii,
+    float coefficient
+) {
+    const auto position_info = positions.request();
+    const auto cell_info = cell.request();
+    const auto pbc_info = pbc.request();
+    const auto radius_info = radii.request();
+    if (!(coefficient >= 0.0f) || !std::isfinite(coefficient)) {
+        throw std::invalid_argument("radius coefficient must be finite and non-negative");
+    }
+    if (position_info.ndim != 2 || position_info.shape[1] != 3) {
+        throw std::invalid_argument("positions must have shape (N, 3)");
+    }
+    if (cell_info.ndim != 2 || cell_info.shape[0] != 3 || cell_info.shape[1] != 3) {
+        throw std::invalid_argument("cell must have shape (3, 3)");
+    }
+    if (pbc_info.ndim != 1 || pbc_info.shape[0] != 3) {
+        throw std::invalid_argument("pbc must have shape (3,)");
+    }
+    if (radius_info.ndim != 1 || radius_info.shape[0] != position_info.shape[0]) {
+        throw std::invalid_argument("radii must contain one value per atom");
+    }
+
+    const auto atom_count = static_cast<std::int64_t>(position_info.shape[0]);
+    const auto* position_data = static_cast<const float*>(position_info.ptr);
+    const auto* cell_data = static_cast<const float*>(cell_info.ptr);
+    const auto* pbc_data = static_cast<const std::uint8_t*>(pbc_info.ptr);
+    const auto* radius_data = static_cast<const float*>(radius_info.ptr);
+    const bool flags[3] = {
+        pbc_data[0] != 0, pbc_data[1] != 0, pbc_data[2] != 0
+    };
+    if ((flags[0] || flags[1] || flags[2]) &&
+        std::abs(determinant(cell_data)) <= 1.0e-8f) {
+        throw std::invalid_argument("periodic collision scans require a nonsingular cell");
+    }
+
+    float maximum_radius = 0.0f;
+    for (std::int64_t atom = 0; atom < atom_count; ++atom) {
+        const float radius = radius_data[atom];
+        if (!(radius >= 0.0f) || !std::isfinite(radius)) {
+            throw std::invalid_argument("atomic radii must be finite and non-negative");
+        }
+        maximum_radius = std::max(maximum_radius, radius);
+    }
+
+    std::vector<std::pair<std::int32_t, std::int32_t>> pairs;
+    const float maximum_cutoff = 2.0f * coefficient * maximum_radius;
+    if (atom_count >= 2 && maximum_cutoff > 0.0f) {
+        py::gil_scoped_release release;
+        const neptrainkit::native::PeriodicNeighborSearch<float> search(
+            position_data, atom_count, cell_data, flags
+        );
+        const auto neighbors = search.query_radius(maximum_cutoff);
+        pairs.reserve(neighbors.centers.size() / 2);
+        for (std::size_t index = 0; index < neighbors.centers.size(); ++index) {
+            const std::int32_t center = neighbors.centers[index];
+            const std::int32_t source = neighbors.sources[index];
+            if (center >= source) continue;
+            const float cutoff = coefficient * (
+                radius_data[center] + radius_data[source]
+            );
+            if (neighbors.distances[index] < cutoff) {
+                pairs.emplace_back(center, source);
+            }
+        }
+        std::sort(pairs.begin(), pairs.end());
+        pairs.erase(std::unique(pairs.begin(), pairs.end()), pairs.end());
+    }
+
+    py::array_t<std::int32_t> result({
+        static_cast<py::ssize_t>(pairs.size()), py::ssize_t(2)
+    });
+    auto output = result.mutable_unchecked<2>();
+    for (py::ssize_t row = 0; row < static_cast<py::ssize_t>(pairs.size()); ++row) {
+        output(row, 0) = pairs[static_cast<std::size_t>(row)].first;
+        output(row, 1) = pairs[static_cast<std::size_t>(row)].second;
     }
     return result;
 }
@@ -719,6 +804,16 @@ PYBIND11_MODULE(_audit, module) {
         py::arg("pbc"),
         py::arg("cutoff"),
         "Return one uint8 collision flag per structure."
+    );
+    module.def(
+        "scaled_radii_collision_pairs",
+        &scaled_radii_collision_pairs,
+        py::arg("positions"),
+        py::arg("cell"),
+        py::arg("pbc"),
+        py::arg("radii"),
+        py::arg("coefficient"),
+        "Return unique local atom-index pairs below scaled atomic radii."
     );
     module.def(
         "cell_status_mask",

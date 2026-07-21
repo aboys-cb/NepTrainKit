@@ -39,7 +39,8 @@ _SHOW_NEP_PATH = Path(__file__).resolve().parents[1] / "src" / "NepTrainKit" / "
 _UPDATE_PATH = Path(__file__).resolve().parents[1] / "src" / "NepTrainKit" / "ui" / "update.py"
 
 _TASK5_MAKE_DATA_MARKERS = (
-    'self.tr("Only .xyz .vasp .cif or json files are supported for import.")',
+    'self.tr("Please choose the structure files")',
+    '"Only .xyz, .extxyz, .vasp, .cif, POSCAR, CONTCAR, or JSON files are supported for import."',
     'self.tr("Folder for Custom Cards")',
     'self.tr("success load {count} structures.")',
     'self.tr("Success load {count} structures.")',
@@ -85,6 +86,7 @@ _TASK5_SHOW_NEP_MARKERS = (
     'self.tr("The distance between atoms is too small, and the structure may be unreasonable.")',
     'self.tr("Please enter a search query.")',
     'self.tr("unsupported file format")',
+    'self.tr("Please choose the data file")',
     'self.tr("Failed to switch NEP model")',
 )
 
@@ -102,7 +104,9 @@ _FINAL_REVIEW_UPDATE_MARKERS = (
 
 _TASK5_TRANSLATIONS = {
     "MakeDataWidget": {
-        "Only .xyz .vasp .cif or json files are supported for import.": "仅支持导入 .xyz、.vasp、.cif 或 json 文件。",
+        "Only .xyz, .extxyz, .vasp, .cif, POSCAR, CONTCAR, or JSON files are supported for import.": "仅支持导入 .xyz、.extxyz、.vasp、.cif、POSCAR、CONTCAR 或 JSON 文件。",
+        "Please choose the structure files": "请选择结构文件",
+        "Structure files (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;All files (*)": "结构文件 (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;所有文件 (*)",
         "Folder for Custom Cards": "自定义卡片目录",
         "success load {count} structures.": "已成功加载 {count} 个结构。",
         "Success load {count} structures.": "已成功加载 {count} 个结构。",
@@ -151,6 +155,8 @@ _TASK5_TRANSLATIONS = {
         "The distance between atoms is too small, and the structure may be unreasonable.": "原子间距过小，结构可能不合理。",
         "Please enter a search query.": "请输入搜索内容。",
         "unsupported file format": "不支持的文件格式",
+        "Please choose the data file": "请选择数据文件",
+        "Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;All files (*)": "支持的数据文件 (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;所有文件 (*)",
         "Failed to switch NEP model": "切换 NEP 模型失败",
     },
     "Update": {

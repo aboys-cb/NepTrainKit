@@ -1,14 +1,16 @@
 """Console toolbar for managing registered card widgets."""
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QPoint, Signal
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import QGridLayout, QWidget
 from qfluentwidgets import (
     RoundMenu,
     PrimaryDropDownPushButton,
+    PushButton,
     CommandBar,
     Action,
     FluentIcon,
+    MenuAnimationType,
     ToolTipFilter,
     ToolTipPosition,
 )
@@ -23,8 +25,21 @@ from NepTrainKit.ui.views._card import *  # noqa: F401, F403
 
 
 card_path = ensure_directory(get_user_config_path() / "cards")
+_CARD_MENU_MAX_VISIBLE_ITEMS = 16
 
 load_cards_from_directory(card_path)
+
+
+class _ScreenSafeRoundMenu(RoundMenu):
+    """Show the tall card menu without an off-screen start animation."""
+
+    def exec(
+        self,
+        pos: QPoint,
+        ani: bool = True,
+        aniType: MenuAnimationType = MenuAnimationType.DROP_DOWN,
+    ) -> None:
+        super().exec(pos, ani=False, aniType=MenuAnimationType.NONE)
 
 
 class ConsoleWidget(QWidget):
@@ -50,6 +65,7 @@ class ConsoleWidget(QWidget):
     newCardSignal = Signal(str)
     pasteSignal = Signal()
     copySignal = Signal()
+    viewOutputSignal = Signal()
     stopSignal = Signal()
     runSignal = Signal()
 
@@ -78,7 +94,7 @@ class ConsoleWidget(QWidget):
             ToolTipFilter(self.new_card_button, 300, ToolTipPosition.TOP)
         )
 
-        self.menu = RoundMenu(parent=self)
+        self.menu = _ScreenSafeRoundMenu(parent=self)
 
         use_group_menu = Config.getboolean("widget", "use_group_menu", False)
         if use_group_menu:
@@ -111,20 +127,24 @@ class ConsoleWidget(QWidget):
                     action.setToolTip(card_tooltip(metadata))
                 self.menu.addAction(action)
 
+        self.menu.view.setMaxVisibleItems(_CARD_MENU_MAX_VISIBLE_ITEMS)
         self.menu.triggered.connect(self.menu_clicked)
         self.new_card_button.setMenu(self.menu)
         self.setting_command.addWidget(self.new_card_button)
 
-        library_action = Action(
-            FluentIcon.INFO,
-            self.tr("Card library"),
-            triggered=self.show_card_library,
+        self.find_card_button = PushButton(
+            FluentIcon.SEARCH,
+            self.tr("Find card"),
+            self,
         )
-        library_action.setToolTip(self.tr("Show card contributors and metadata"))
-        library_action.installEventFilter(
-            ToolTipFilter(library_action, 300, ToolTipPosition.TOP)
+        self.find_card_button.setToolTip(
+            self.tr("Search cards and add the selected card to the workspace")
         )
-        self.setting_command.addAction(library_action)
+        self.find_card_button.installEventFilter(
+            ToolTipFilter(self.find_card_button, 300, ToolTipPosition.TOP)
+        )
+        self.find_card_button.clicked.connect(self.show_card_library)
+        self.setting_command.addWidget(self.find_card_button)
 
         paste_action = Action(
             FluentIcon.PASTE,
@@ -147,6 +167,21 @@ class ConsoleWidget(QWidget):
             ToolTipFilter(copy_action, 300, ToolTipPosition.TOP)
         )
         self.setting_command.addAction(copy_action)
+
+        self.view_output_button = PushButton(
+            QIcon(r":/images/src/images/show_nep.svg"),
+            self.tr("View selected outputs"),
+            self,
+        )
+        self.view_output_button.setToolTip(
+            self.tr(
+                "Open outputs from all checked cards in NEP Dataset Display"
+            )
+        )
+        self.view_output_button.setAccessibleName(self.tr("View selected outputs"))
+        self.view_output_button.setEnabled(False)
+        self.view_output_button.clicked.connect(self.view_output)
+        self.setting_command.addWidget(self.view_output_button)
 
         self.setting_command.addSeparator()
         run_action = Action(
@@ -185,8 +220,9 @@ class ConsoleWidget(QWidget):
         self.newCardSignal.emit(action.objectName())
 
     def show_card_library(self):
-        """Open the registered card metadata browser."""
+        """Open the searchable card browser and forward add requests."""
         dialog = CardLibraryDialog(self)
+        dialog.cardRequested.connect(self.newCardSignal.emit)
         dialog.exec()
 
     def run(self, *args, **kwargs):
@@ -200,6 +236,14 @@ class ConsoleWidget(QWidget):
     def copy(self, *args, **kwargs):
         """Emit the copy signal to copy workflow JSON to the clipboard."""
         self.copySignal.emit()
+
+    def view_output(self, *args, **kwargs):
+        """Request opening outputs from all checked workflow cards."""
+        self.viewOutputSignal.emit()
+
+    def set_output_available(self, available: bool) -> None:
+        """Keep the output handoff action aligned with workflow state."""
+        self.view_output_button.setEnabled(bool(available))
 
     def stop(self, *args, **kwargs):
         """Emit the stop signal to abort card execution."""

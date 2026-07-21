@@ -19,6 +19,54 @@ from vispy.scene.visuals import Mesh, Line, Text
 from vispy.color import Color, get_colormap
 
 
+AUTO_BAD_BOND_HIGHLIGHT_MAX_ATOMS = 500
+
+_MAX_TABLE_ATOMIC_NUMBER = max(int(number) for number in table_info)
+_ATOM_RADIUS_LOOKUP = np.full(
+    _MAX_TABLE_ATOMIC_NUMBER + 1,
+    70.0 / 150.0,
+    dtype=np.float32,
+)
+_ATOM_COLOR_LOOKUP = np.tile(
+    np.asarray(Color("#808080").rgba, dtype=np.float32),
+    (_MAX_TABLE_ATOMIC_NUMBER + 1, 1),
+)
+for _number, _info in table_info.items():
+    _index = int(_number)
+    _ATOM_RADIUS_LOOKUP[_index] = float(_info.get("radii", 70)) / 150.0
+    try:
+        _ATOM_COLOR_LOOKUP[_index] = np.asarray(
+            Color(_info.get("color", "#808080")).rgba,
+            dtype=np.float32,
+        )
+    except ValueError:
+        pass
+
+
+class _ReusableSphereMeshData(MeshData):
+    """Mesh data whose sphere normals remain valid when atoms only translate."""
+
+    def __init__(self, *, vertices, faces, vertex_colors, vertex_normals):
+        super().__init__(
+            vertices=vertices,
+            faces=faces,
+            vertex_colors=vertex_colors,
+        )
+        self._fixed_vertex_normals = np.ascontiguousarray(
+            vertex_normals, dtype=np.float32
+        )
+        self._fixed_face_vertex_normals = np.ascontiguousarray(
+            self._fixed_vertex_normals[np.asarray(faces)], dtype=np.float32
+        )
+
+    def get_vertex_normals(self, indexed=None):
+        if indexed is None:
+            return self._fixed_vertex_normals
+        if indexed == "faces":
+            return self._fixed_face_vertex_normals
+        raise ValueError("Invalid indexing mode. Accepts: None, 'faces'")
+
+
 class StructureTurntableCamera(scene.cameras.TurntableCamera):
     """Turntable camera with structure-view mouse bindings."""
 
@@ -381,10 +429,13 @@ class StructurePlotWidget(scene.SceneCanvas):
         self._arrow_colorbar_signature = None
         self._rotation_center_marker = None
         self._atom_mesh = None
+        self._atom_meshdata = None
         self._atom_signature = None
         self._atom_template_vertices = None
         self._atom_faces = None
         self._atom_colors = None
+        self._atom_sizes = None
+        self._atom_colors_by_atom = None
         self._axes_signature = None
         self._lighting_initialized = False
         self.arrow_config:dict[str,Any]
@@ -867,54 +918,61 @@ class StructurePlotWidget(scene.SceneCanvas):
         positions = np.asarray(structure.positions, dtype=np.float32)
         signature = (tuple(int(n) for n in numbers.tolist()), float(self.scale_factor), sphere_vertices_size)
 
-        if self._atom_signature != signature:
-            sizes = np.array(
-                [table_info.get(str(n), {'radii': 70})['radii'] / 150 * self.scale_factor for n in numbers],
-                dtype=np.float32,
+        signature_changed = self._atom_signature != signature
+        if signature_changed:
+            style_indices = np.asarray(numbers, dtype=np.intp)
+            style_indices = np.where(
+                (style_indices >= 0)
+                & (style_indices <= _MAX_TABLE_ATOMIC_NUMBER),
+                style_indices,
+                0,
             )
-            colors_by_atom = np.array(
-                [Color(table_info.get(str(n), {'color': '#808080'})['color']).rgba for n in numbers],
-                dtype=np.float32,
-            )
+            sizes = _ATOM_RADIUS_LOOKUP[style_indices] * self.scale_factor
+            colors_by_atom = _ATOM_COLOR_LOOKUP[style_indices]
             offsets = np.arange(numbers.size, dtype=np.int32) * sphere_vertices_size
             self._atom_template_vertices = (
                 np.asarray(sphere_vertices, dtype=np.float32)[None, :, :] * sizes[:, None, None]
             )
             self._atom_faces = (sphere_faces[None, :, :] + offsets[:, None, None]).reshape(-1, 3)
             self._atom_colors = np.repeat(colors_by_atom, sphere_vertices_size, axis=0)
+            self._atom_sizes = sizes
+            self._atom_colors_by_atom = colors_by_atom
             self._atom_signature = signature
 
         if numbers.size == 0:
             if self._atom_mesh is not None:
                 self._atom_mesh.parent = None
                 self._atom_mesh = None
+            self._atom_meshdata = None
             return
 
         vertices = (self._atom_template_vertices + positions[:, None, :]).reshape(-1, 3)
-        if self._atom_mesh is None:
-            self._atom_mesh = Mesh(
+        if signature_changed or self._atom_meshdata is None:
+            sphere_normals = np.asarray(
+                self.sphere_meshdata.get_vertex_normals(), dtype=np.float32
+            )
+            vertex_normals = np.tile(sphere_normals, (numbers.size, 1))
+            self._atom_meshdata = _ReusableSphereMeshData(
                 vertices=vertices,
                 faces=self._atom_faces,
                 vertex_colors=self._atom_colors,
+                vertex_normals=vertex_normals,
+            )
+        else:
+            self._atom_meshdata.set_vertices(vertices, reset_normals=False)
+
+        if self._atom_mesh is None:
+            self._atom_mesh = Mesh(
+                meshdata=self._atom_meshdata,
                 parent=self.view.scene
             )
             self._atom_mesh.attach(self.shading_filter)
         else:
-            self._atom_mesh.set_data(
-                vertices=vertices,
-                faces=self._atom_faces,
-                vertex_colors=self._atom_colors,
-            )
+            self._atom_mesh.set_data(meshdata=self._atom_meshdata)
 
-        sizes = np.array(
-            [table_info.get(str(n), {'radii': 70})['radii'] / 150 * self.scale_factor for n in numbers],
-            dtype=np.float32,
-        )
-        colors_by_atom = np.array(
-            [Color(table_info.get(str(n), {'color': '#808080'})['color']).rgba for n in numbers],
-            dtype=np.float32,
-        )
-        for idx, (p, color, size) in enumerate(zip(positions, colors_by_atom, sizes)):
+        for idx, (p, color, size) in enumerate(
+            zip(positions, self._atom_colors_by_atom, self._atom_sizes)
+        ):
             self.atom_items.append({
                 'mesh': self._atom_mesh,
                 'position': p,
@@ -928,7 +986,10 @@ class StructurePlotWidget(scene.SceneCanvas):
 
         radius_coefficient = Config.getfloat("widget", "radius_coefficient", 0.7)
 
-        bond_pairs = structure.get_bad_bond_pairs(radius_coefficient)
+        bond_pairs = structure.get_bad_bond_pairs(
+            radius_coefficient,
+            max_atoms=AUTO_BAD_BOND_HIGHLIGHT_MAX_ATOMS,
+        )
 
         for pair in bond_pairs:
             self.highlight_atom(pair[0])

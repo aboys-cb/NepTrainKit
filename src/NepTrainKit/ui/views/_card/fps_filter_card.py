@@ -1,12 +1,26 @@
 """Filter card that keeps representative points via farthest point sampling."""
 
-from qfluentwidgets import BodyLabel, ToolTipFilter, ToolTipPosition, LineEdit
+from __future__ import annotations
+
+from PySide6.QtWidgets import QFrame, QGridLayout, QHBoxLayout, QWidget
+from qfluentwidgets import (
+    BodyLabel,
+    CaptionLabel,
+    ComboBox,
+    FluentIcon,
+    LineEdit,
+    PushButton,
+    ToolTipFilter,
+    ToolTipPosition,
+    TransparentToolButton,
+)
 
 from NepTrainKit import module_path
 from NepTrainKit.config import Config
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
 from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import FilterDataCard
 
@@ -39,33 +53,71 @@ class FPSFilterDataCard(FilterDataCard):
         super().__init__(parent)
         self._backend = Config.get("nep", "backend", "auto")
         self._chunk_max_atoms = Config.getint("nep", "chunk_max_atoms", 100000)
+        self._last_group_report = {}
         self.setTitle(self.tr("Filter by FPS"))
         self.init_ui()
 
     def init_ui(self):
-        """Build the form controls that expose the card configuration.
-        """
+        """Build a compact Fluent form with progressive disclosure."""
         self.setObjectName("fps_filter_card_widget")
-        self.nep_path_label = BodyLabel(self.tr("NEP file path: "), self.setting_widget)
+
+        self.strategy_label = BodyLabel(self.tr("Sampling strategy"), self.setting_widget)
+        self.strategy_combo = ComboBox(self.setting_widget)
+        self.strategy_combo.addItem(self.tr("Global FPS (compatible)"), userData="global")
+        self.strategy_combo.addItem(self.tr("Element-set balanced FPS"), userData="element_set")
+        self.strategy_label.setToolTip(
+            self.tr("Global keeps the existing behavior. Balanced FPS assigns a quota to each element set.")
+        )
+        self.strategy_label.installEventFilter(
+            ToolTipFilter(self.strategy_label, 300, ToolTipPosition.TOP)
+        )
+
+        self.strategy_hint = CaptionLabel("", self.setting_widget)
+        self.strategy_hint.setWordWrap(True)
+
+        self.num_label = BodyLabel(self.tr("Max selected"), self.setting_widget)
+        self.num_condition_frame = SpinBoxUnitInputFrame(self)
+        self.num_condition_frame.set_input("", 1, "int")
+        self.num_condition_frame.setRange(1, 10000000)
+        self.num_condition_frame.set_input_value([100])
+        self.num_label.setToolTip(self.tr("Maximum number of structures to keep"))
+        self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
+
+        self.nep_path_label = BodyLabel(self.tr("NEP model"), self.setting_widget)
 
         self.nep_path_lineedit = LineEdit(self.setting_widget)
         self.nep_path_lineedit.setPlaceholderText(self.tr("nep.txt path"))
+        self.nep_path_lineedit.setClearButtonEnabled(True)
         self.nep_path_label.setToolTip(self.tr("Path to NEP model"))
         self.nep_path_label.installEventFilter(ToolTipFilter(self.nep_path_label, 300, ToolTipPosition.TOP))
 
         self.nep89_path = str(module_path/ "Config/nep89.txt" )
         self.nep_path_lineedit.setText(self.nep89_path )
+        self.nep_path_widget = QWidget(self.setting_widget)
+        self.nep_path_layout = QHBoxLayout(self.nep_path_widget)
+        self.nep_path_layout.setContentsMargins(0, 0, 0, 0)
+        self.nep_path_layout.setSpacing(4)
+        self.nep_path_layout.addWidget(self.nep_path_lineedit, 1)
+        self.nep_browse_button = TransparentToolButton(FluentIcon.FOLDER, self.nep_path_widget)
+        self.nep_browse_button.setToolTip(self.tr("Browse for a NEP model"))
+        self.nep_browse_button.setAccessibleName(self.tr("Browse for a NEP model"))
+        self.nep_browse_button.clicked.connect(self._browse_nep_model)
+        self.nep_path_layout.addWidget(self.nep_browse_button, 0)
 
+        self.advanced_button = PushButton(
+            FluentIcon.SETTING,
+            self.tr("Advanced settings"),
+            self.setting_widget,
+        )
+        self.advanced_button.setCheckable(True)
+        self.advanced_button.setToolTip(self.tr("Show minimum distance and warm-start options"))
+        self.advanced_button.toggled.connect(self._set_advanced_visible)
 
-        self.num_label = BodyLabel(self.tr("Max selected"), self.setting_widget)
-
-        self.num_condition_frame = SpinBoxUnitInputFrame(self)
-        self.num_condition_frame.set_input("unit", 1, "int")
-        self.num_condition_frame.setRange(1, 10000)
-        self.num_condition_frame.set_input_value([100])
-        self.num_label.setToolTip(self.tr("Number of structures to keep"))
-        self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
-
+        self.advanced_frame = QFrame(self.setting_widget)
+        self.advanced_layout = QGridLayout(self.advanced_frame)
+        self.advanced_layout.setContentsMargins(0, 2, 0, 0)
+        self.advanced_layout.setHorizontalSpacing(4)
+        self.advanced_layout.setVerticalSpacing(4)
         self.min_distance_condition_frame = SpinBoxUnitInputFrame(self)
         self.min_distance_condition_frame.set_input("", 1,"float")
         self.min_distance_condition_frame.setRange(0, 100)
@@ -77,14 +129,84 @@ class FPSFilterDataCard(FilterDataCard):
 
         self.min_distance_label.installEventFilter(ToolTipFilter(self.min_distance_label, 300, ToolTipPosition.TOP))
 
-        self.settingLayout.addWidget(self.num_label, 0, 0, 1, 1)
-        self.settingLayout.addWidget(self.num_condition_frame, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.min_distance_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.min_distance_condition_frame, 1, 1, 1, 2)
+        self.existing_dataset_label = BodyLabel(self.tr("Existing training set"), self.advanced_frame)
+        self.existing_dataset_lineedit = LineEdit(self.advanced_frame)
+        self.existing_dataset_lineedit.setPlaceholderText(self.tr("Optional train.xyz for warm start"))
+        self.existing_dataset_lineedit.setClearButtonEnabled(True)
+        self.existing_dataset_label.setToolTip(
+            self.tr("Balanced FPS compares candidates only with existing structures that have the same element set.")
+        )
+        self.existing_dataset_label.installEventFilter(
+            ToolTipFilter(self.existing_dataset_label, 300, ToolTipPosition.TOP)
+        )
+        self.existing_dataset_widget = QWidget(self.advanced_frame)
+        self.existing_dataset_layout = QHBoxLayout(self.existing_dataset_widget)
+        self.existing_dataset_layout.setContentsMargins(0, 0, 0, 0)
+        self.existing_dataset_layout.setSpacing(4)
+        self.existing_dataset_layout.addWidget(self.existing_dataset_lineedit, 1)
+        self.existing_browse_button = TransparentToolButton(
+            FluentIcon.FOLDER,
+            self.existing_dataset_widget,
+        )
+        self.existing_browse_button.setToolTip(self.tr("Browse for an existing XYZ training set"))
+        self.existing_browse_button.setAccessibleName(self.tr("Browse for an existing XYZ training set"))
+        self.existing_browse_button.clicked.connect(self._browse_existing_dataset)
+        self.existing_dataset_layout.addWidget(self.existing_browse_button, 0)
 
+        self.advanced_layout.addWidget(self.min_distance_label, 0, 0, 1, 1)
+        self.advanced_layout.addWidget(self.min_distance_condition_frame, 0, 1, 1, 2)
+        self.advanced_layout.addWidget(self.existing_dataset_label, 1, 0, 1, 1)
+        self.advanced_layout.addWidget(self.existing_dataset_widget, 1, 1, 1, 2)
 
-        self.settingLayout.addWidget(self.nep_path_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.nep_path_lineedit, 2, 1, 1, 2)
+        self.settingLayout.addWidget(self.strategy_label, 0, 0, 1, 1)
+        self.settingLayout.addWidget(self.strategy_combo, 0, 1, 1, 2)
+        self.settingLayout.addWidget(self.strategy_hint, 1, 1, 1, 2)
+        self.settingLayout.addWidget(self.num_label, 2, 0, 1, 1)
+        self.settingLayout.addWidget(self.num_condition_frame, 2, 1, 1, 2)
+        self.settingLayout.addWidget(self.nep_path_label, 3, 0, 1, 1)
+        self.settingLayout.addWidget(self.nep_path_widget, 3, 1, 1, 2)
+        self.settingLayout.addWidget(self.advanced_button, 4, 1, 1, 2)
+        self.settingLayout.addWidget(self.advanced_frame, 5, 0, 1, 3)
+
+        self.strategy_combo.currentIndexChanged.connect(self._update_strategy_ui)
+        self._set_advanced_visible(False)
+        self._update_strategy_ui()
+
+    def _browse_nep_model(self) -> None:
+        path = call_path_dialog(
+            self,
+            self.tr("Select NEP model"),
+            "select",
+            file_filter=self.tr("NEP model (*.txt);;All files (*.*)"),
+        )
+        if path:
+            self.nep_path_lineedit.setText(str(path))
+
+    def _browse_existing_dataset(self) -> None:
+        path = call_path_dialog(
+            self,
+            self.tr("Select existing training dataset"),
+            "select",
+            file_filter=self.tr("XYZ files (*.xyz *.extxyz);;All files (*.*)"),
+        )
+        if path:
+            self.existing_dataset_lineedit.setText(str(path))
+
+    def _set_advanced_visible(self, visible: bool) -> None:
+        self.advanced_frame.setVisible(bool(visible))
+
+    def _update_strategy_ui(self) -> None:
+        balanced = self.strategy_combo.currentData() == "element_set"
+        if balanced:
+            self.strategy_hint.setText(
+                self.tr("Groups by element set, assigns sqrt-size quotas, and starts from each group center.")
+            )
+        else:
+            self.strategy_hint.setText(
+                self.tr("Uses the existing global mean-descriptor FPS behavior.")
+            )
+        self.existing_dataset_label.setVisible(balanced)
+        self.existing_dataset_widget.setVisible(balanced)
 
     def create_operation(self):
         """Return the UI-independent FPS operation."""
@@ -92,12 +214,17 @@ class FPSFilterDataCard(FilterDataCard):
 
     def get_params(self) -> FPSFilterParams:
         """Read FPS parameters from UI controls."""
+        strategy = str(self.strategy_combo.currentData() or "global")
         return FPSFilterParams(
             nep_path=self.nep_path_lineedit.text(),
             n_samples=int(self.num_condition_frame.get_input_value()[0]),
             min_distance=float(self.min_distance_condition_frame.get_input_value()[0]),
             backend=self._backend,
             chunk_max_atoms=self._chunk_max_atoms,
+            strategy=strategy,
+            existing_dataset_path=(
+                self.existing_dataset_lineedit.text() if strategy == "element_set" else ""
+            ),
         )
 
     def set_params(self, params: FPSFilterParams) -> None:
@@ -107,6 +234,30 @@ class FPSFilterDataCard(FilterDataCard):
         self.min_distance_condition_frame.set_input_value([float(params.min_distance)])
         self._backend = params.backend
         self._chunk_max_atoms = int(params.chunk_max_atoms)
+        strategy_index = self.strategy_combo.findData(params.strategy)
+        self.strategy_combo.setCurrentIndex(strategy_index if strategy_index >= 0 else 0)
+        self.existing_dataset_lineedit.setText(params.existing_dataset_path)
+        show_advanced = bool(params.existing_dataset_path) or float(params.min_distance) != 0.01
+        self.advanced_button.setChecked(show_advanced)
+        self._update_strategy_ui()
+
+    def set_dataset(self, dataset):
+        self._last_group_report = {}
+        super().set_dataset(dataset)
+
+    def on_processing_finished(self):
+        operation = getattr(getattr(self, "worker_thread", None), "operation", None)
+        self._last_group_report = dict(getattr(operation, "last_group_report", {}) or {})
+        super().on_processing_finished()
+
+    def _format_dataset_info(self) -> str:
+        text = super()._format_dataset_info()
+        if self._last_group_report:
+            text = self.tr("{summary} | Element groups: {count}").format(
+                summary=text,
+                count=len(self._last_group_report),
+            )
+        return text
 
     def stop(self):
         """Stop background processing and release any worker threads.
@@ -149,6 +300,8 @@ class FPSFilterDataCard(FilterDataCard):
                 min_distance=raw_params.get("min_distance", 0.01),
                 backend=raw_params.get("backend", Config.get("nep", "backend", "auto")),
                 chunk_max_atoms=raw_params.get("chunk_max_atoms", Config.getint("nep", "chunk_max_atoms", 100000)),
+                strategy=raw_params.get("strategy", "global"),
+                existing_dataset_path=raw_params.get("existing_dataset_path", ""),
             )
         else:
             params = FPSFilterParams(
@@ -157,5 +310,7 @@ class FPSFilterDataCard(FilterDataCard):
                 min_distance=data_dict.get("min_distance_condition", [0.01])[0],
                 backend=Config.get("nep", "backend", "auto"),
                 chunk_max_atoms=Config.getint("nep", "chunk_max_atoms", 100000),
+                strategy="global",
+                existing_dataset_path="",
             )
         self.set_params(params)

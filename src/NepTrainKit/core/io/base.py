@@ -3925,6 +3925,7 @@ class ResultData(QObject):
         training_path: str | None = None,
         sampling_mode: str = "count",
         r2_threshold: float = 0.9,
+        selection_strategy: str = "global",
     ) -> tuple[list[int], bool]:
         """Delegate sparse sampling to the sampler helper."""
         return self._sampler.sparse_point_selection(
@@ -3935,6 +3936,7 @@ class ResultData(QObject):
             training_path=training_path,
             sampling_mode=sampling_mode,
             r2_threshold=r2_threshold,
+            selection_strategy=selection_strategy,
         )
 
     def export_descriptor_data(self, path: str | Path) -> None:
@@ -4144,7 +4146,12 @@ class ResultData(QObject):
         if desc_array.size == 0:
             if getattr(self, "nep_calc", None) is None:
                 self._descriptor_raw_all = np.array([], dtype=np.float32)
-                self._descriptor_dataset = NepPlotData([], title="descriptor")
+                self._descriptor_dataset = NepPlotData(
+                    [],
+                    title="descriptor",
+                    parity_mode=False,
+                    show_rmse=False,
+                )
                 return
             desc_array = self._generate_missing_descriptors()
             if desc_array.size != 0 and self.cache_outputs_enabled():
@@ -4161,7 +4168,12 @@ class ResultData(QObject):
         reduced = self._descriptor_raw_all
         if reduced.size != 0 and reduced.shape[1] > 2:
             reduced = self._load_or_compute_descriptor_pca(reduced)
-        self._descriptor_dataset = NepPlotData(reduced, title="descriptor")
+        self._descriptor_dataset = NepPlotData(
+            reduced,
+            title="descriptor",
+            parity_mode=False,
+            show_rmse=False,
+        )
 
     def _generate_missing_descriptors(self) -> npt.NDArray[np.float64]:
         """Generate descriptors when no usable descriptor cache exists."""

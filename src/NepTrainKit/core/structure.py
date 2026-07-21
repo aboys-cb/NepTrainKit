@@ -16,6 +16,7 @@ from typing import Any,IO
 import numpy as np
 import numpy.typing as npt
 from ase import neighborlist
+from ase.data import covalent_radii as ase_covalent_radii
 
 from loguru import logger
 from scipy.sparse.csgraph import connected_components
@@ -23,7 +24,13 @@ from collections import defaultdict, Counter
 from NepTrainKit.utils import timeit
 from NepTrainKit.config import Config
 from NepTrainKit.core.precision import as_storage_float_array, get_export_significant_digits, get_storage_float_dtype
+from NepTrainKit.core.geometry_cache import structure_pbc_flags
 from NepTrainKit.paths import PathLike, as_path, ensure_directory
+
+try:
+    from NepTrainKit._native import _audit as _native_audit
+except ImportError:
+    _native_audit = None
 
 from NepTrainKit import module_path
 ptable_path = module_path / "Config/ptable.json"
@@ -1214,7 +1221,7 @@ class Structure:
         bond_pairs = [(i[k], j[k]) for k in np.where(bond_mask)[0]]
         return bond_pairs
 
-    def get_bad_bond_pairs(self, coefficient=0.8):
+    def get_bad_bond_pairs(self, coefficient=0.8, max_atoms: int | None = None):
         
         """Pairs that violate a short-bond threshold.
 
@@ -1222,12 +1229,41 @@ class Structure:
         ----------
         coefficient : float, default=0.8
             Threshold relative to the sum of covalent radii.
+        max_atoms : int or None, default=None
+            Skip the Python fallback when the structure exceeds this size.
+            Native scans are not size-limited. ``None`` keeps the complete
+            fallback behavior.
 
         Returns
         -------
         list[tuple[int, int]]
             Upper-triangular pairs shorter than the threshold.
         """
+        if _native_audit is not None and hasattr(
+            _native_audit, "scaled_radii_collision_pairs"
+        ):
+            try:
+                numbers = np.asarray(self.numbers, dtype=np.int64)
+                radii = np.ascontiguousarray(
+                    ase_covalent_radii[numbers], dtype=np.float32
+                )
+                pairs = np.asarray(
+                    _native_audit.scaled_radii_collision_pairs(
+                        np.ascontiguousarray(self.positions, dtype=np.float32),
+                        np.ascontiguousarray(self.cell, dtype=np.float32),
+                        structure_pbc_flags(self),
+                        radii,
+                        float(coefficient),
+                    ),
+                    dtype=np.int32,
+                )
+                return [tuple(map(int, pair)) for pair in pairs]
+            except (RuntimeError, ValueError):
+                logger.debug("Native short-bond pair scan failed; using Python fallback.")
+
+        if max_atoms is not None and len(self) > max_atoms:
+            return []
+
         i, j = np.triu_indices(len(self), k=1)
         distances = self.get_all_distances()
         upper_distances = distances[i, j]

@@ -263,6 +263,7 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
     docs_url = ""
 
     windowStateChangedSignal = Signal()
+    viewOutputSignal = Signal(object)
 
     def __init__(self, parent=None):
         """Configure collapse controls and state tracking.
@@ -276,6 +277,23 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         self.setMouseTracking(True)
         self.window_state = "expand"
         self._drag_start_pos = None
+        self.view_output_button = TransparentToolButton(
+            QIcon(":/images/src/images/show_nep.svg"),
+            self,
+        )
+        self.view_output_button.setEnabled(False)
+        self.view_output_button.setToolTip(self.tr("View this card output"))
+        self.view_output_button.setAccessibleName(self.tr("View this card output"))
+        self.view_output_button.installEventFilter(
+            ToolTipFilter(self.view_output_button, 300, ToolTipPosition.TOP)
+        )
+        self.view_output_button.clicked.connect(self.request_view_output)
+        self.headerLayout.insertWidget(
+            self.headerLayout.indexOf(self.export_button),
+            self.view_output_button,
+            0,
+            Qt.AlignmentFlag.AlignRight,
+        )
         self.collapse_button = TransparentToolButton(QIcon(":/images/src/images/collapse.svg"), self)
         self.collapse_button.clicked.connect(self.collapse)
         self.collapse_button.setToolTip(self.tr("Collapse or expand card"))
@@ -283,6 +301,14 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
 
         self.headerLayout.insertWidget(0, self.collapse_button, 0, Qt.AlignmentFlag.AlignLeft)
         self.windowStateChangedSignal.connect(self.update_window_state)
+
+    def request_view_output(self) -> None:
+        """Request opening this card's current result dataset."""
+        self.viewOutputSignal.emit(self)
+
+    def set_output_available(self, available: bool) -> None:
+        """Keep the card-level output action aligned with its result state."""
+        self.view_output_button.setEnabled(bool(available))
 
     def mousePressEvent(self, e):
         """Remember where a possible card drag started."""
@@ -532,6 +558,7 @@ class MakeDataCard(MakeDataCardWidget):
         if self.check_state:
             if hasattr(self, "worker_thread") and self.worker_thread.isRunning():
                 return
+            self.set_output_available(False)
             operation = self.create_operation()
             params = self.get_params()
             if isinstance(operation, StructureOperation):
@@ -613,6 +640,7 @@ class MakeDataCard(MakeDataCardWidget):
 
     def update_dataset_info(self):
         """Display dataset statistics in the status label."""
+        self.set_output_available(bool(self.result_dataset))
         self.status_label.setText(self._format_dataset_info())
 
     def _format_dataset_info(self) -> str:
@@ -682,4 +710,5 @@ class FilterDataCard(MakeDataCard):
 
     def update_dataset_info(self):
         """Display the number of structures kept by the filter."""
+        self.set_output_available(bool(self.result_dataset))
         self.status_label.setText(self._format_dataset_info())

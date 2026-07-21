@@ -177,6 +177,19 @@ class SettingsWidget(ScrollArea):
         )
         self.cache_outputs_card.setValue(cache_outputs)
 
+        auto_structure_evidence = Config.getboolean(
+            "training_set_audit", "auto_structure_evidence", True
+        )
+        self.auto_structure_evidence_card = SwitchSettingCard(
+            FluentIcon.SYNC,
+            self.tr("Automatically analyze structure evidence"),
+            self.tr(
+                "After the basic dataset audit appears, analyze phases and magnetic order in the background"
+            ),
+            parent=self.personal_group,
+        )
+        self.auto_structure_evidence_card.setValue(auto_structure_evidence)
+
         export_digits = Config.getint("io", "export_significant_digits", 10) or 10
         self.export_digits_card = DoubleSpinBoxSettingCard(
             FluentIcon.SAVE,
@@ -431,6 +444,7 @@ class SettingsWidget(ScrollArea):
         self.personal_group.addSettingCard(self.use_group_menu_card)
         self.personal_group.addSettingCard(self.deepmd_preserve_card)
         self.personal_group.addSettingCard(self.cache_outputs_card)
+        self.personal_group.addSettingCard(self.auto_structure_evidence_card)
         self.personal_group.addSettingCard(self.export_digits_card)
         self.personal_group.addSettingCard(self.default_cfg_type_card)
 
@@ -491,6 +505,11 @@ class SettingsWidget(ScrollArea):
         self.use_group_menu_card.checkedChanged.connect(lambda state:Config.set("widget","use_group_menu",state))
         self.deepmd_preserve_card.checkedChanged.connect(lambda state: Config.set("widget", "deepmd_preserve_subfolders", state))
         self.cache_outputs_card.checkedChanged.connect(lambda state: Config.set("io", "cache_outputs", state))
+        self.auto_structure_evidence_card.checkedChanged.connect(
+            lambda state: Config.set(
+                "training_set_audit", "auto_structure_evidence", state
+            )
+        )
         self.export_digits_card.valueChanged.connect(lambda value: Config.set("io", "export_significant_digits", int(value)))
         self.default_cfg_type_card.textChanged.connect(lambda v: Config.set("widget", "default_config_type", v))
         # plot settings

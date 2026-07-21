@@ -15,6 +15,9 @@ from PySide6.QtGui import QColor,QMatrix4x4
 from NepTrainKit.core.structure import table_info
 
 
+AUTO_BAD_BOND_HIGHLIGHT_MAX_ATOMS = 500
+
+
 class StructurePlotWidget(gl.GLViewWidget):
     """Interactive OpenGL widget for rendering atomic structures with configurable projections and overlays.
     """
@@ -412,7 +415,10 @@ class StructurePlotWidget(gl.GLViewWidget):
             self.atom_items.append({"mesh": m, "position": p, "original_color": color, "size": size, "halo": None})
         self.addItems(atom_items)
         radius_coefficient_config = Config.getfloat("widget", "radius_coefficient", 0.7)
-        bond_pairs = structure.get_bad_bond_pairs( radius_coefficient_config)
+        bond_pairs = structure.get_bad_bond_pairs(
+            radius_coefficient_config,
+            max_atoms=AUTO_BAD_BOND_HIGHLIGHT_MAX_ATOMS,
+        )
         for pair in bond_pairs:
 
             self.highlight_atom(pair[0])

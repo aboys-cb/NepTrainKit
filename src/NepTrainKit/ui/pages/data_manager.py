@@ -9,6 +9,7 @@ from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QApplication, QSplitter
 
 from NepTrainKit.paths import get_user_config_path
+from NepTrainKit.core import MessageManager
 from NepTrainKit.core.dataset.database import Database
 from NepTrainKit.core.dataset.seed import seed_nep_data_git
 from NepTrainKit.core.dataset.services import ModelService, ProjectService, TagService
@@ -46,7 +47,7 @@ class DataManagerWidget(QWidget):
         seed_nep_data_git(self._db, self.project_service, self.model_service)
 
     def dragEnterEvent(self, event):
-        """Accept drag events that provide file URLs.
+        """Accept one or more local model directories.
 
         Parameters
         ----------
@@ -58,13 +59,14 @@ class DataManagerWidget(QWidget):
         None
             This handler updates the event acceptance state.
         """
-        if event.mimeData().hasUrls():
+        urls = event.mimeData().urls() if event.mimeData().hasUrls() else []
+        if any(url.isLocalFile() and os.path.isdir(url.toLocalFile()) for url in urls):
             event.acceptProposedAction()
         else:
             event.ignore()
 
     def dropEvent(self, event):
-        """Handle dropped file URLs and queue them for import.
+        """Open model creation with the first dropped directory prefilled.
 
         Parameters
         ----------
@@ -74,12 +76,24 @@ class DataManagerWidget(QWidget):
         Returns
         -------
         None
-            This handler defers processing of dropped files to child widgets.
+            This handler opens the existing model editor for the selected project.
         """
-        urls = event.mimeData().urls()
-        if urls:
-            for url in urls:
-                pass
+        paths = [
+            url.toLocalFile()
+            for url in event.mimeData().urls()
+            if url.isLocalFile() and os.path.isdir(url.toLocalFile())
+        ]
+        if not paths:
+            event.ignore()
+            return
+        if not hasattr(self.data_item_widget, "project"):
+            MessageManager.send_info_message(
+                self.tr("Select a project before dropping a model folder")
+            )
+            event.ignore()
+            return
+        self.data_item_widget.create_model(initial_path=paths[0])
+        event.acceptProposedAction()
 
     def init_ui(self):
         """Build the project and model split view.
@@ -102,7 +116,6 @@ class DataManagerWidget(QWidget):
         self.project_widget.project_service=self.project_service
         self.project_widget.model_service=self.model_service
         self.project_widget.tag_service=self.tag_service
-        self.splitter.addWidget(self.project_widget)
         self.data_item_widget = ModelItemWidget(self)
         self.data_item_widget.db=self._db
         self.data_item_widget.project_service=self.project_service
@@ -118,7 +131,7 @@ class DataManagerWidget(QWidget):
         self.splitter.addWidget(self.data_item_widget)
         # self.splitter.addWidget(self.data_info_widget)
 
-        self.splitter.setSizes([170,800,200])
+        self.splitter.setSizes([260,740])
         self.splitter.setStretchFactor(0, 1)
         self.splitter.setStretchFactor(1, 8)
         # self.splitter.setStretchFactor(2, 2)

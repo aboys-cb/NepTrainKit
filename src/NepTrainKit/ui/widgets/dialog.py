@@ -1270,32 +1270,46 @@ class SparseMessageBox(MessageBoxBase):
         self.doubleSpinBox.setMinimum(0)
         self.doubleSpinBox.setMaximum(10)
 
+        self.strategyCombo = ComboBox(self)
+        self.strategyCombo.addItem(self.tr("Global FPS (compatible)"), userData="global")
+        self.strategyCombo.addItem(
+            self.tr("Element-set balanced FPS"),
+            userData="element_set",
+        )
+        self.strategyHint = CaptionLabel("", self)
+        self.strategyHint.setWordWrap(True)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Selection strategy"), self), 0, 0, 1, 1)
+        self.frame_layout.addWidget(self.strategyCombo, 0, 1, 1, 2)
+        self.frame_layout.addWidget(self.strategyHint, 1, 1, 1, 2)
+
         self.modeCombo = ComboBox(self)
         self.modeCombo.addItem(self.tr("Fixed count (FPS)"), userData="count")
         self.modeCombo.addItem(self.tr("R^2 stop (FPS)"), userData="r2")
-        self.frame_layout.addWidget(CaptionLabel(self.tr("Sampling mode"), self), 0, 0, 1, 1)
-        self.frame_layout.addWidget(self.modeCombo, 0, 1, 1, 2)
+        self.modeLabel = CaptionLabel(self.tr("Sampling mode"), self)
+        self.frame_layout.addWidget(self.modeLabel, 2, 0, 1, 1)
+        self.frame_layout.addWidget(self.modeCombo, 2, 1, 1, 2)
 
         self.maxNumLabel = CaptionLabel(self.tr("Sample limit"), self)
-        self.frame_layout.addWidget(self.maxNumLabel, 1, 0, 1, 1)
-        self.frame_layout.addWidget(self.intSpinBox, 1, 1, 1, 2)
-        self.frame_layout.addWidget(CaptionLabel(self.tr("Min distance"), self), 2, 0, 1, 1)
+        self.frame_layout.addWidget(self.maxNumLabel, 3, 0, 1, 1)
+        self.frame_layout.addWidget(self.intSpinBox, 3, 1, 1, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Min distance"), self), 4, 0, 1, 1)
 
-        self.frame_layout.addWidget(self.doubleSpinBox, 2, 1, 1, 2)
+        self.frame_layout.addWidget(self.doubleSpinBox, 4, 1, 1, 2)
 
         self.r2Label = CaptionLabel(self.tr("R^2 threshold"), self)
         self.r2SpinBox = DoubleSpinBox(self)
         self.r2SpinBox.setDecimals(4)
         self.r2SpinBox.setRange(0.0, 1.0)
         self.r2SpinBox.setSingleStep(0.01)
-        self.frame_layout.addWidget(self.r2Label, 3, 0, 1, 1)
-        self.frame_layout.addWidget(self.r2SpinBox, 3, 1, 1, 2)
+        self.frame_layout.addWidget(self.r2Label, 5, 0, 1, 1)
+        self.frame_layout.addWidget(self.r2SpinBox, 5, 1, 1, 2)
 
         self.descriptorCombo = ComboBox(self)
         self.descriptorCombo.addItem(self.tr("Reduced (PCA)"), userData="reduced")
         self.descriptorCombo.addItem(self.tr("Raw descriptor"), userData="raw")
-        self.frame_layout.addWidget(CaptionLabel(self.tr("Descriptor source"), self), 4, 0, 1, 1)
-        self.frame_layout.addWidget(self.descriptorCombo, 4, 1, 1, 2)
+        self.descriptorLabel = CaptionLabel(self.tr("Descriptor source"), self)
+        self.frame_layout.addWidget(self.descriptorLabel, 6, 0, 1, 1)
+        self.frame_layout.addWidget(self.descriptorCombo, 6, 1, 1, 2)
 
         self.advancedFrame = QFrame(self)
         self.advancedFrame.setVisible(False)
@@ -1315,6 +1329,9 @@ class SparseMessageBox(MessageBoxBase):
         trainingPathLayout.addWidget(self.trainingBrowseButton, 0)
         self.trainingBrowseButton.clicked.connect(self._pick_training_path)
         self.trainingBrowseButton.setToolTip(self.tr("Browse for an existing training dataset"))
+        self.trainingBrowseButton.setAccessibleName(
+            self.tr("Browse for an existing training dataset")
+        )
 
         self.advancedLayout.addWidget(CaptionLabel(self.tr("Training dataset"), self), 1, 0)
         self.advancedLayout.addWidget(trainingPathWidget, 1, 1)
@@ -1342,10 +1359,12 @@ class SparseMessageBox(MessageBoxBase):
         self.yesButton.setText(self.tr("OK"))
         self.cancelButton.setText(self.tr("Cancel"))
 
-        self.widget.setMinimumWidth(200)
+        self.widget.setMinimumWidth(420)
         self.advancedFrame.setVisible(True)
+        self._balanced_strategy_active = False
         self.modeCombo.currentIndexChanged.connect(self._update_mode_visibility)
-        self._update_mode_visibility()
+        self.strategyCombo.currentIndexChanged.connect(self._update_strategy_visibility)
+        self._update_strategy_visibility()
 
     def _pick_training_path(self):
         """Prompt the user to choose a training dataset path."""
@@ -1362,11 +1381,41 @@ class SparseMessageBox(MessageBoxBase):
 
     def _update_mode_visibility(self):
         """Toggle UI elements based on sampling mode selection."""
-        r2_mode = self.modeCombo.currentIndex() == 1
+        balanced = self.strategyCombo.currentData() == "element_set"
+        r2_mode = not balanced and self.modeCombo.currentData() == "r2"
         self.maxNumLabel.setVisible(True)
         self.intSpinBox.setVisible(True)
         self.r2Label.setVisible(r2_mode)
         self.r2SpinBox.setVisible(r2_mode)
+
+    def _update_strategy_visibility(self):
+        """Keep balanced FPS on the validated raw, fixed-count workflow."""
+        balanced = self.strategyCombo.currentData() == "element_set"
+        if balanced and not self._balanced_strategy_active:
+            self._global_mode_index = self.modeCombo.currentIndex()
+            self._global_descriptor_index = self.descriptorCombo.currentIndex()
+        elif not balanced and self._balanced_strategy_active:
+            self.modeCombo.setCurrentIndex(getattr(self, "_global_mode_index", 0))
+            self.descriptorCombo.setCurrentIndex(
+                getattr(self, "_global_descriptor_index", 0)
+            )
+
+        self._balanced_strategy_active = balanced
+        if balanced:
+            self.modeCombo.setCurrentIndex(self.modeCombo.findData("count"))
+            self.descriptorCombo.setCurrentIndex(self.descriptorCombo.findData("raw"))
+            self.strategyHint.setText(
+                self.tr(
+                    "Groups by element set, assigns sqrt-size quotas, and uses raw descriptors."
+                )
+            )
+        else:
+            self.strategyHint.setText(
+                self.tr("Uses the existing global FPS behavior and descriptor options.")
+            )
+        self.modeCombo.setEnabled(not balanced)
+        self.descriptorCombo.setEnabled(not balanced)
+        self._update_mode_visibility()
 
 
 class IndexSelectMessageBox(MessageBoxBase):

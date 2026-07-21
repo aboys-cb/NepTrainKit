@@ -699,111 +699,126 @@
 <context>
     <name>CardLibraryDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="406" />
+        <location filename="../ui/widgets/card_metadata.py" line="409" />
         <source>Card library</source>
         <translation>卡片库</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="414" />
+        <location filename="../ui/widgets/card_metadata.py" line="417" />
         <source>Make Dataset cards</source>
         <translation>Make Dataset 卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="461" />
+        <location filename="../ui/widgets/card_metadata.py" line="427" />
+        <source>Search by card name, group, or description</source>
+        <translation>按卡片名称、分组或说明搜索</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="476" />
+        <source>Add selected card</source>
+        <translation>添加所选卡片</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="481" />
         <source>Close</source>
         <translation>关闭</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="547" />
+        <source>{count} cards</source>
+        <translation>{count} 张卡片</translation>
     </message>
 </context>
 <context>
     <name>CardMetadata</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="36" />
+        <location filename="../ui/widgets/card_metadata.py" line="37" />
         <source>Not specified</source>
         <translation>未填写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="45" />
+        <location filename="../ui/widgets/card_metadata.py" line="46" />
         <source>Contributors: {contributors}</source>
         <translation>贡献者：{contributors}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="47" />
+        <location filename="../ui/widgets/card_metadata.py" line="48" />
         <source>Version: {version}</source>
         <translation>版本：{version}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="54" />
+        <location filename="../ui/widgets/card_metadata.py" line="55" />
         <source>Built-in</source>
         <translation>内置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="56" />
+        <location filename="../ui/widgets/card_metadata.py" line="57" />
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="57" />
+        <location filename="../ui/widgets/card_metadata.py" line="58" />
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="68" />
-        <location filename="../ui/widgets/card_metadata.py" line="101" />
+        <location filename="../ui/widgets/card_metadata.py" line="69" />
+        <location filename="../ui/widgets/card_metadata.py" line="102" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="69" />
+        <location filename="../ui/widgets/card_metadata.py" line="70" />
         <source>No public contributor metadata yet.</source>
         <translation>暂无公开贡献者元数据。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="109" />
+        <location filename="../ui/widgets/card_metadata.py" line="110" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="110" />
+        <location filename="../ui/widgets/card_metadata.py" line="111" />
         <source>Group</source>
         <translation>分组方式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="111" />
+        <location filename="../ui/widgets/card_metadata.py" line="112" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="112" />
+        <location filename="../ui/widgets/card_metadata.py" line="113" />
         <source>Maintainer</source>
         <translation>维护者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="113" />
+        <location filename="../ui/widgets/card_metadata.py" line="114" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="114" />
+        <location filename="../ui/widgets/card_metadata.py" line="115" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="115" />
+        <location filename="../ui/widgets/card_metadata.py" line="116" />
         <source>Source path</source>
         <translation>源路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="322" />
+        <location filename="../ui/widgets/card_metadata.py" line="323" />
         <source>Make Dataset Card</source>
         <translation>Make Dataset 卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="353" />
+        <location filename="../ui/widgets/card_metadata.py" line="354" />
         <source>Metadata</source>
         <translation>元数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="365" />
+        <location filename="../ui/widgets/card_metadata.py" line="366" />
         <source>Citation</source>
         <translation>引用</translation>
     </message>
@@ -811,12 +826,12 @@
 <context>
     <name>CardMetadataDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="378" />
+        <location filename="../ui/widgets/card_metadata.py" line="379" />
         <source>Card info - {card_name}</source>
         <translation>卡片信息 - {card_name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="393" />
+        <location filename="../ui/widgets/card_metadata.py" line="394" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
@@ -1300,52 +1315,60 @@
         <translation>添加一张新卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="120" />
         <source>Card library</source>
-        <translation>卡片库</translation>
+        <translation type="vanished">卡片库</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="123" />
         <source>Show card contributors and metadata</source>
-        <translation>查看卡片贡献者和元数据</translation>
+        <translation type="vanished">查看卡片贡献者和元数据</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="131" />
+        <location filename="../ui/views/cards.py" line="120" />
+        <source>Find card</source>
+        <translation>查找卡片</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/cards.py" line="124" />
+        <source>Search cards and add the selected card to the workspace</source>
+        <translation>搜索卡片，并将所选卡片添加到工作区</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/cards.py" line="133" />
         <source>Paste JSON</source>
         <translation>粘贴 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="134" />
+        <location filename="../ui/views/cards.py" line="136" />
         <source>Create card(s) from clipboard JSON</source>
         <translation>从剪贴板 JSON 创建卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="142" />
+        <location filename="../ui/views/cards.py" line="144" />
         <source>Copy JSON</source>
         <translation>复制 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="145" />
+        <location filename="../ui/views/cards.py" line="147" />
         <source>Copy current workflow card JSON</source>
         <translation>复制当前工作流卡片 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="154" />
+        <location filename="../ui/views/cards.py" line="156" />
         <source>Run</source>
         <translation>运行</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="157" />
+        <location filename="../ui/views/cards.py" line="159" />
         <source>Run selected cards</source>
         <translation>运行选中的卡片</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="165" />
+        <location filename="../ui/views/cards.py" line="167" />
         <source>Stop</source>
         <translation>停止</translation>
     </message>
     <message>
-        <location filename="../ui/views/cards.py" line="168" />
+        <location filename="../ui/views/cards.py" line="170" />
         <source>Stop running cards</source>
         <translation>停止正在运行的卡片</translation>
     </message>

@@ -116,11 +116,13 @@ class ConsoleWidget(QWidget):
         self.setting_command.addWidget(self.new_card_button)
 
         library_action = Action(
-            FluentIcon.INFO,
-            self.tr("Card library"),
+            FluentIcon.SEARCH,
+            self.tr("Find card"),
             triggered=self.show_card_library,
         )
-        library_action.setToolTip(self.tr("Show card contributors and metadata"))
+        library_action.setToolTip(
+            self.tr("Search cards and add the selected card to the workspace")
+        )
         library_action.installEventFilter(
             ToolTipFilter(library_action, 300, ToolTipPosition.TOP)
         )
@@ -185,8 +187,9 @@ class ConsoleWidget(QWidget):
         self.newCardSignal.emit(action.objectName())
 
     def show_card_library(self):
-        """Open the registered card metadata browser."""
+        """Open the searchable card browser and forward add requests."""
         dialog = CardLibraryDialog(self)
+        dialog.cardRequested.connect(self.newCardSignal.emit)
         dialog.exec()
 
     def run(self, *args, **kwargs):

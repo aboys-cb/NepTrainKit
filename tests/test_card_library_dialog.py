@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import unittest
+from unittest.mock import patch
+
+from PySide6.QtCore import QObject, Qt, Signal
+from PySide6.QtWidgets import QApplication
+
+from NepTrainKit.ui.views.cards import ConsoleWidget
+from NepTrainKit.ui.widgets.card_metadata import CardLibraryDialog
+
+
+class TestCardLibraryDialog(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls._app = QApplication.instance() or QApplication([])
+
+    @classmethod
+    def tearDownClass(cls):
+        if cls._app is not None:
+            cls._app.quit()
+            cls._app = None
+
+    def test_library_search_filters_card_metadata(self):
+        dialog = CardLibraryDialog()
+        self.assertGreater(dialog.card_list.count(), 1)
+        class_name, _metadata = next(iter(dialog._metadata_by_class.items()))
+
+        dialog.search_edit.setText(class_name)
+
+        visible = [
+            dialog.card_list.item(row)
+            for row in range(dialog.card_list.count())
+            if not dialog.card_list.item(row).isHidden()
+        ]
+        self.assertGreaterEqual(len(visible), 1)
+        self.assertTrue(
+            any(
+                item.data(Qt.ItemDataRole.UserRole) == class_name
+                for item in visible
+            )
+        )
+        self.assertIn(str(len(visible)), dialog.result_count_label.text())
+
+    def test_add_button_emits_selected_card_class(self):
+        dialog = CardLibraryDialog()
+        requested = []
+        dialog.cardRequested.connect(requested.append)
+        selected = dialog.card_list.currentItem()
+        class_name = selected.data(Qt.ItemDataRole.UserRole)
+
+        dialog.add_button.click()
+
+        self.assertEqual(requested, [class_name])
+
+    def test_empty_search_result_disables_add_action(self):
+        dialog = CardLibraryDialog()
+
+        dialog.search_edit.setText("card-name-that-does-not-exist")
+
+        self.assertFalse(dialog.add_button.isEnabled())
+        self.assertTrue(dialog.result_count_label.text().startswith("0"))
+
+    def test_console_forwards_library_add_request(self):
+        class FakeLibraryDialog(QObject):
+            cardRequested = Signal(str)
+
+            def __init__(self, parent=None):
+                super().__init__(parent)
+
+            def exec(self):
+                self.cardRequested.emit("CrystalPrototypeBuilderCard")
+
+        console = ConsoleWidget()
+        requested = []
+        console.newCardSignal.connect(requested.append)
+        with patch(
+            "NepTrainKit.ui.views.cards.CardLibraryDialog", FakeLibraryDialog
+        ):
+            console.show_card_library()
+
+        self.assertEqual(requested, ["CrystalPrototypeBuilderCard"])
+
+
+if __name__ == "__main__":
+    unittest.main()

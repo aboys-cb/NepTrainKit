@@ -5,11 +5,12 @@ from __future__ import annotations
 from html import escape
 from pathlib import Path
 
-from PySide6.QtCore import QCoreApplication, Qt
+from PySide6.QtCore import QCoreApplication, Qt, Signal
 from PySide6.QtWidgets import (
     QDialog,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QListWidget,
     QListWidgetItem,
     QPushButton,
@@ -401,6 +402,8 @@ class CardMetadataDialog(QDialog):
 class CardLibraryDialog(QDialog):
     """Dialog listing all registered cards and their public metadata."""
 
+    cardRequested = Signal(str)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle(self.tr("Card library"))
@@ -417,6 +420,14 @@ class CardLibraryDialog(QDialog):
             "padding: 4px 2px; }"
         )
         root.addWidget(title)
+
+        self.search_edit = QLineEdit(self)
+        self.search_edit.setClearButtonEnabled(True)
+        self.search_edit.setPlaceholderText(
+            self.tr("Search by card name, group, or description")
+        )
+        self.search_edit.textChanged.connect(self._filter_cards)
+        root.addWidget(self.search_edit)
 
         body = QHBoxLayout()
         body.setSpacing(10)
@@ -458,10 +469,20 @@ class CardLibraryDialog(QDialog):
         body.addWidget(self.detail, 2)
         root.addLayout(body)
 
+        footer = QHBoxLayout()
+        self.result_count_label = QLabel(self)
+        footer.addWidget(self.result_count_label)
+        footer.addStretch(1)
+        self.add_button = QPushButton(self.tr("Add selected card"), self)
+        self.add_button.setMinimumWidth(128)
+        self.add_button.setEnabled(False)
+        self.add_button.clicked.connect(self._add_current_card)
+        footer.addWidget(self.add_button)
         close_button = QPushButton(self.tr("Close"), self)
         close_button.setMinimumWidth(96)
         close_button.clicked.connect(self.accept)
-        root.addWidget(close_button, alignment=Qt.AlignmentFlag.AlignRight)
+        footer.addWidget(close_button)
+        root.addLayout(footer)
 
         for class_name, metadata in sorted(
             self._metadata_by_class.items(),
@@ -474,16 +495,62 @@ class CardLibraryDialog(QDialog):
             self.card_list.addItem(item)
 
         self.card_list.currentItemChanged.connect(self._show_item)
+        self.card_list.itemDoubleClicked.connect(
+            lambda _item: self._add_current_card()
+        )
         if self.card_list.count():
             self.card_list.setCurrentRow(0)
+        self._update_result_count()
 
     def _show_item(self, item, _previous=None):
         if item is None:
             self.detail.clear()
+            self.add_button.setEnabled(False)
             return
         class_name = item.data(Qt.ItemDataRole.UserRole)
         metadata = self._metadata_by_class.get(class_name)
         if metadata is None:
             self.detail.clear()
+            self.add_button.setEnabled(False)
             return
         self.detail.setHtml(metadata_html(metadata))
+        self.add_button.setEnabled(True)
+
+    def _filter_cards(self, text: str) -> None:
+        """Filter the library across user-facing card metadata."""
+        query = text.strip().casefold()
+        first_visible = None
+        for row in range(self.card_list.count()):
+            item = self.card_list.item(row)
+            class_name = item.data(Qt.ItemDataRole.UserRole)
+            metadata = self._metadata_by_class.get(class_name)
+            searchable = " ".join(
+                (
+                    class_name or "",
+                    getattr(metadata, "card_name", ""),
+                    getattr(metadata, "group", "") or "",
+                    getattr(metadata, "description", "") or "",
+                )
+            ).casefold()
+            item.setHidden(bool(query and query not in searchable))
+            if not item.isHidden() and first_visible is None:
+                first_visible = item
+        self.card_list.setCurrentItem(first_visible)
+        self._update_result_count()
+
+    def _update_result_count(self) -> None:
+        visible_count = sum(
+            not self.card_list.item(row).isHidden()
+            for row in range(self.card_list.count())
+        )
+        self.result_count_label.setText(
+            self.tr("{count} cards").format(count=visible_count)
+        )
+
+    def _add_current_card(self) -> None:
+        item = self.card_list.currentItem()
+        if item is None or item.isHidden():
+            return
+        class_name = item.data(Qt.ItemDataRole.UserRole)
+        if class_name:
+            self.cardRequested.emit(class_name)

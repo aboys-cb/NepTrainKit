@@ -4435,32 +4435,32 @@ All child items will also be deleted.</source>
         <translation>工作流输出为空。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="262" />
+        <location filename="../main.py" line="269" />
         <source>Dataset handoff is already in progress.</source>
         <translation>正在传递数据集，请稍候。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="272" />
+        <location filename="../main.py" line="279" />
         <source>Preparing the workflow output for display...</source>
         <translation>正在准备工作流输出以供查看...</translation>
     </message>
     <message>
-        <location filename="../main.py" line="296" />
+        <location filename="../main.py" line="305" />
         <source>Failed to prepare workflow output: {message}</source>
         <translation>准备工作流输出失败：{message}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="344" />
+        <location filename="../main.py" line="353" />
         <source>Please load a dataset before running Training Set Check.</source>
         <translation>请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="390" />
+        <location filename="../main.py" line="399" />
         <source>Training Set Check failed: {message}</source>
         <translation>训练集评估失败：{message}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="415" />
+        <location filename="../main.py" line="424" />
         <source>Training Set Check results are stale. Please rerun the checks for the current dataset.</source>
         <translation>训练集评估结果已过期，请针对当前数据集重新检查。</translation>
     </message>
@@ -4473,7 +4473,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">请先加载数据集，再运行训练集检查。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="347" />
+        <location filename="../main.py" line="356" />
         <source>current dataset</source>
         <translation>当前数据集</translation>
     </message>
@@ -4486,7 +4486,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">训练集检查结果已过期，请针对当前数据集重新检查。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="542" />
+        <location filename="../main.py" line="551" />
         <source>Full phase analysis failed: {message}</source>
         <translation>完整相分析失败：{message}</translation>
     </message>
@@ -5978,250 +5978,250 @@ All child items will also be deleted.</source>
 <context>
     <name>ShowNepWidget</name>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="216" />
+        <location filename="../ui/pages/show_nep.py" line="221" />
         <source>Open File…</source>
         <translation>打开文件…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="219" />
+        <location filename="../ui/pages/show_nep.py" line="224" />
         <source>Open Folder…</source>
         <translation>打开文件夹…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="222" />
+        <location filename="../ui/pages/show_nep.py" line="227" />
         <source>Export All…</source>
         <translation>导出全部…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="227" />
-        <location filename="../ui/pages/show_nep.py" line="316" />
+        <location filename="../ui/pages/show_nep.py" line="232" />
+        <location filename="../ui/pages/show_nep.py" line="321" />
         <source>Export Selected ({selected})…</source>
         <translation>导出已选择结构（{selected}）…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="233" />
-        <location filename="../ui/pages/show_nep.py" line="319" />
+        <location filename="../ui/pages/show_nep.py" line="238" />
+        <location filename="../ui/pages/show_nep.py" line="324" />
         <source>Export Removed ({removed})…</source>
         <translation>导出已移除结构（{removed}）…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="239" />
-        <location filename="../ui/pages/show_nep.py" line="322" />
+        <location filename="../ui/pages/show_nep.py" line="244" />
+        <location filename="../ui/pages/show_nep.py" line="327" />
         <source>Export Active ({active})…</source>
         <translation>导出当前保留结构（{active}）…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="245" />
+        <location filename="../ui/pages/show_nep.py" line="250" />
         <source>Check current dataset</source>
         <translation>评估当前数据集</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="522" />
+        <location filename="../ui/pages/show_nep.py" line="527" />
         <source>Switching NEP model</source>
         <translation>正在切换 NEP 模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="522" />
+        <location filename="../ui/pages/show_nep.py" line="527" />
         <source>Please wait...</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="575" />
+        <location filename="../ui/pages/show_nep.py" line="580" />
         <source>Failed to switch NEP model</source>
         <translation>切换 NEP 模型失败</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="649" />
+        <location filename="../ui/pages/show_nep.py" line="654" />
         <source>Current structure (original file index):</source>
         <translation>当前结构（原始文件序号）：</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="677" />
+        <location filename="../ui/pages/show_nep.py" line="682" />
         <source>Tip is the minimum distance between atoms in the current structure, in Å.</source>
         <translation>Tip 表示当前结构中原子间的最小距离，单位为 Å。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="686" />
+        <location filename="../ui/pages/show_nep.py" line="691" />
         <source>Net force of the current structure (sum of all atomic forces).</source>
         <translation>当前结构的净力（所有原子力之和）。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="723" />
+        <location filename="../ui/pages/show_nep.py" line="728" />
         <source>Config_type</source>
         <translation>Config_type</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="724" />
+        <location filename="../ui/pages/show_nep.py" line="729" />
         <source>Formula</source>
         <translation>化学式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="725" />
+        <location filename="../ui/pages/show_nep.py" line="730" />
         <source>Elements</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="726" />
+        <location filename="../ui/pages/show_nep.py" line="731" />
         <source>Expression</source>
         <translation>表达式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="727" />
+        <location filename="../ui/pages/show_nep.py" line="732" />
         <source>Switch search mode</source>
         <translation>切换搜索模式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="753" />
+        <location filename="../ui/pages/show_nep.py" line="758" />
         <source>Switch NEP model</source>
         <translation>切换 NEP 模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="790" />
+        <location filename="../ui/pages/show_nep.py" line="795" />
         <source>Arrow overlay is available only for vispy structure canvas.</source>
         <translation>箭头叠加只在 vispy 结构画布中可用。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="804" />
+        <location filename="../ui/pages/show_nep.py" line="809" />
         <source>Searching…</source>
         <translation>正在搜索…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="808" />
+        <location filename="../ui/pages/show_nep.py" line="813" />
         <source>Indexing…</source>
         <translation>正在建立索引…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="912" />
-        <location filename="../ui/pages/show_nep.py" line="1076" />
-        <location filename="../ui/pages/show_nep.py" line="1189" />
+        <location filename="../ui/pages/show_nep.py" line="917" />
+        <location filename="../ui/pages/show_nep.py" line="1081" />
+        <location filename="../ui/pages/show_nep.py" line="1208" />
         <source>unsupported file format</source>
         <translation>不支持的文件格式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="924" />
+        <location filename="../ui/pages/show_nep.py" line="929" />
         <source>Please choose the data file</source>
         <translation>请选择数据文件</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="927" />
+        <location filename="../ui/pages/show_nep.py" line="932" />
         <source>Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;All files (*)</source>
         <translation>支持的数据文件 (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="947" />
-        <location filename="../ui/pages/show_nep.py" line="964" />
-        <location filename="../ui/pages/show_nep.py" line="1004" />
-        <location filename="../ui/pages/show_nep.py" line="1034" />
-        <location filename="../ui/pages/show_nep.py" line="1468" />
-        <location filename="../ui/pages/show_nep.py" line="1789" />
+        <location filename="../ui/pages/show_nep.py" line="952" />
+        <location filename="../ui/pages/show_nep.py" line="969" />
+        <location filename="../ui/pages/show_nep.py" line="1009" />
+        <location filename="../ui/pages/show_nep.py" line="1039" />
+        <location filename="../ui/pages/show_nep.py" line="1495" />
+        <location filename="../ui/pages/show_nep.py" line="1816" />
         <source>NEP data has not been loaded yet!</source>
         <translation>尚未加载 NEP 数据！</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="971" />
+        <location filename="../ui/pages/show_nep.py" line="976" />
         <source>No active structures to export.</source>
         <translation>没有可导出的保留结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1007" />
+        <location filename="../ui/pages/show_nep.py" line="1012" />
         <source>Please select some structures first!</source>
         <translation>请先选择一些结构！</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1038" />
+        <location filename="../ui/pages/show_nep.py" line="1043" />
         <source>No removed structures to export.</source>
         <translation>没有可导出的已移除结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1088" />
-        <location filename="../ui/pages/show_nep.py" line="1799" />
+        <location filename="../ui/pages/show_nep.py" line="1093" />
+        <location filename="../ui/pages/show_nep.py" line="1826" />
         <source>Confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1089" />
+        <location filename="../ui/pages/show_nep.py" line="1094" />
         <source>A working directory already exists. Loading a new directory will erase the previous results.
 Do you want to load the new working path?</source>
         <translation>已有工作目录。加载新目录会清除之前的结果。
 仍要加载新的工作路径吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1194" />
+        <location filename="../ui/pages/show_nep.py" line="1213" />
         <source>Current file: {file_name}</source>
         <translation>当前文件：{file_name}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1232" />
+        <location filename="../ui/pages/show_nep.py" line="1259" />
         <source>Loading</source>
         <translation>正在加载</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1232" />
+        <location filename="../ui/pages/show_nep.py" line="1259" />
         <source>Please wait patiently...</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1329" />
+        <location filename="../ui/pages/show_nep.py" line="1356" />
         <source>Failed to build search completer cache: {msg}</source>
         <translation>构建搜索补全缓存失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1368" />
+        <location filename="../ui/pages/show_nep.py" line="1395" />
         <source>Search failed: {msg}</source>
         <translation>搜索失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1462" />
+        <location filename="../ui/pages/show_nep.py" line="1489" />
         <source>File exported to: {save_file_path}</source>
         <translation>文件已导出到：{save_file_path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1640" />
+        <location filename="../ui/pages/show_nep.py" line="1667" />
         <source>Arrow overlay is unavailable for current structure canvas backend.</source>
         <translation>当前结构绘图后端不支持箭头叠加。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1651" />
+        <location filename="../ui/pages/show_nep.py" line="1678" />
         <source>No vector data available</source>
         <translation>没有可用的矢量数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1794" />
+        <location filename="../ui/pages/show_nep.py" line="1821" />
         <source>No bad structures tagged.</source>
         <translation>没有标记为异常的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1800" />
+        <location filename="../ui/pages/show_nep.py" line="1827" />
         <source>This will delete {count} structures marked as bad.
 Do you want to continue?</source>
         <translation>这将删除 {count} 个标记为异常的结构。
 要继续吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1811" />
+        <location filename="../ui/pages/show_nep.py" line="1838" />
         <source>Failed to delete rejected structures.</source>
         <translation>删除已剔除结构失败。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1874" />
+        <location filename="../ui/pages/show_nep.py" line="1901" />
         <source>The distance between atoms is too small, and the structure may be unreasonable.</source>
         <translation>原子间距过小，结构可能不合理。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1919" />
-        <location filename="../ui/pages/show_nep.py" line="2007" />
+        <location filename="../ui/pages/show_nep.py" line="1946" />
+        <location filename="../ui/pages/show_nep.py" line="2034" />
         <source>Please enter a search query.</source>
         <translation>请输入搜索内容。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1931" />
-        <location filename="../ui/pages/show_nep.py" line="1945" />
+        <location filename="../ui/pages/show_nep.py" line="1958" />
+        <location filename="../ui/pages/show_nep.py" line="1972" />
         <source>Please load a dataset before running Training Set Check.</source>
         <translation>请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1938" />
-        <location filename="../ui/pages/show_nep.py" line="1955" />
+        <location filename="../ui/pages/show_nep.py" line="1965" />
+        <location filename="../ui/pages/show_nep.py" line="1982" />
         <source>Training Set Check page is not available.</source>
         <translation>训练集评估页面不可用。</translation>
     </message>
@@ -10326,4 +10326,24 @@ Magnetic: {magnetic}</source>
         <translation>启用可复现的随机采样</translation>
     </message>
 </context>
-</TS>
+<context><name>StructurePreviewResultData</name><message>
+        <location filename="../core/io/preview.py" line="56" />
+        <source>Structure overview</source>
+        <translation>结构概览</translation>
+    </message>
+    <message>
+        <location filename="../core/io/preview.py" line="57" />
+        <source>Structure index</source>
+        <translation>结构序号</translation>
+    </message>
+    <message>
+        <location filename="../core/io/preview.py" line="58" />
+        <source>Atoms</source>
+        <translation>原子数</translation>
+    </message>
+    <message>
+        <location filename="../core/io/preview.py" line="66" />
+        <source>Failed to load generated structures: {message}</source>
+        <translation>加载生成结构失败：{message}</translation>
+    </message>
+    </context></TS>

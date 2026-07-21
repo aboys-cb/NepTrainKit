@@ -6,6 +6,7 @@ from __future__ import annotations
 __all__ = [
     # base
     'ResultData','StructureSyncRule',"NepPlotData","StructureData",
+    'StructurePreviewResultData',
     # nep
     'NepTrainResultData', 'NepPolarizabilityResultData', 'NepDipoleResultData',
     # tace
@@ -18,9 +19,9 @@ __all__ = [
     'farthest_point_sampling'
 ]
 from .base import ResultData,StructureSyncRule,NepPlotData,StructureData
+from .preview import StructurePreviewResultData
 from .deepmd import DeepmdResultData, is_deepmd_path
 from .nep import NepTrainResultData, NepPolarizabilityResultData, NepDipoleResultData
 from .tace import TaceResultData
 from .registry import load_result_data, register_result_loader, matches_result_loader
 from .sampler import farthest_point_sampling,SparseSampler
-

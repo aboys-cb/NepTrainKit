@@ -348,7 +348,7 @@ class SparseSampler:
                 t_desc = read_nep_out_file(t_desc_path, dtype=np.float32, ndmin=2)
                 if t_desc.size == 0 and t_structs:
                     # Compute if file missing
-                    t_desc = self._result.nep_calc.get_structures_descriptor(t_structs,True)
+                    t_desc = self._result.nep_calc.descriptors(t_structs, mean=True)
                 # Aggregate per-atom to per-structure if needed
                 if t_desc.size != 0 and t_structs:
                     if t_desc.shape[0] == int(np.sum(t_counts)):
@@ -357,7 +357,7 @@ class SparseSampler:
                         pass
                     else:
                         # Shape mismatch; best-effort fallback to compute
-                        t_desc = self._result.nep_calc.get_structures_descriptor(t_structs,True)
+                        t_desc = self._result.nep_calc.descriptors(t_structs, mean=True)
                         if t_desc.size != 0:
                             t_desc = aggregate_per_atom_to_structure(t_desc, t_counts, map_func=np.mean, axis=0)
                 selected_data = np.asarray(t_desc, dtype=np.float32) if (t_desc is not None and t_desc.size != 0) else None

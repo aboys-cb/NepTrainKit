@@ -453,7 +453,16 @@ def test_apply_dft_d3_correction_keeps_energy_float64():
     zero_virials = [np.zeros(9, dtype=np.float32) for _ in data.structure.now_data]
 
     with patch("NepTrainKit.core.io.base.NepCalculator") as calc_cls:
-        calc_cls.return_value.calculate_dftd3.return_value = (potentials, zero_forces, zero_virials)
+        prediction = type(
+            "Prediction",
+            (),
+            {
+                "energy": np.asarray(potentials),
+                "force_blocks": lambda self: zero_forces,
+                "structure_virials": np.asarray(zero_virials),
+            },
+        )()
+        calc_cls.return_value.predict_dftd3.return_value = prediction
         data.apply_dft_d3_correction(mode=0, functional="pbe", cutoff=12.0, cutoff_cn=10.0)
 
     shifted = np.array([structure.energy for structure in data.structure.now_data], dtype=np.float64)

@@ -24,7 +24,7 @@ class FPSFilterParams:
     n_samples: int = 100
     min_distance: float = 0.01
     backend: str = "auto"
-    batch_size: int = 1000
+    chunk_max_atoms: int = 100000
 
 
 class FPSFilterOperation(DatasetOperation):
@@ -40,9 +40,9 @@ class FPSFilterOperation(DatasetOperation):
         nep_calc = NepCalculator(
             model_file=str(nep_path),
             backend=NepBackend(params.backend),
-            batch_size=int(params.batch_size),
+            chunk_max_atoms=int(params.chunk_max_atoms),
         )
-        desc_array = nep_calc.get_structures_descriptor(dataset)
+        desc_array = nep_calc.descriptors(dataset)
         remaining_indices = farthest_point_sampling(
             desc_array,
             n_samples=int(params.n_samples),

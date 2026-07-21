@@ -3,11 +3,18 @@
 """Core NEP result data loaders and helpers."""
 import traceback
 import json
+import hashlib
 from loguru import logger
 from pathlib import Path
 from typing import Any
 import numpy.typing as npt
 import numpy as np
+from nep_adapters import (
+    ChargePrediction,
+    SpinPrediction,
+    __version__ as nep_adapters_version,
+    inspect_model,
+)
 from NepTrainKit import module_path
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.structure import Structure
@@ -28,8 +35,6 @@ from NepTrainKit.core.utils import (
     aggregate_per_atom_to_structure,
     check_fullbatch,
     concat_nep_dft_array,
-    is_charge_model,
-    is_spin_model,
     read_nep_in,
     read_nep_out_file,
 )
@@ -132,14 +137,23 @@ class NepTrainResultData(ResultData):
         self.virial_out_path = Path(virial_out_path)
         self.charge_out_path = Path(charge_out_path) if charge_out_path else None
         self.bec_out_path = Path(bec_out_path) if bec_out_path else None
-        self.is_charge_model = bool(charge_model) if charge_model is not None else is_charge_model(self.nep_txt_path)
-        self.is_spin_model = bool(spin_model) if spin_model is not None else is_spin_model(self.nep_txt_path)
+        if charge_model is None and spin_model is None:
+            model_info = inspect_model(self.nep_txt_path)
+            detected_charge = model_info.model_type == "charge"
+            detected_spin = model_info.model_type == "spin"
+        else:
+            detected_charge = bool(charge_model)
+            detected_spin = bool(spin_model)
+        self.is_charge_model = detected_charge if charge_model is None else bool(charge_model)
+        self.is_spin_model = detected_spin if spin_model is None else bool(spin_model)
         self.spin_force_out_path = Path(spin_force_out_path) if spin_force_out_path else None
+        self.prediction_meta_path = self.energy_out_path.parent / "prediction.meta.json"
         self.has_virial_structure_index_list = None
         self._bec_dataset = None
         self._spin_force_dataset = None
         self._force_vector_dataset = None
         self._spin_force_vector_dataset = None
+        self._pending_prediction: Prediction | None = None
     @property
     def datasets(self):
         """Return datasets exposed to the UI in display order."""
@@ -228,13 +242,6 @@ class NepTrainResultData(ResultData):
         # Coerce to Path for downstream logic
         nep_txt_path = Path(nep_txt_path)
 
-        has_spin = is_spin_model(nep_txt_path)
-
-        if model_type>2 and not has_spin:
-            nep_txt_path = get_bundled_nep89_path()
-            MessageManager.send_warning_message(f"NEPKit currently does not support model_type={model_type}; the program will use nep89 instead.")
-            has_spin = False
-
         # Determine output directory based on NEP model filename
         nep_stem = nep_txt_path.stem
         if nep_stem == "nep":
@@ -254,12 +261,9 @@ class NepTrainResultData(ResultData):
         stress_out_path = output_dir / f"stress_{output_suffix}.out"
         virial_out_path = output_dir / f"virial_{output_suffix}.out"
         
-        # optional spin force output (magnetic)
-        spin_force_out_path = None
-        if has_spin:
-            candidate_spin = output_dir / f"mforce_{output_suffix}.out"
-            if candidate_spin.exists():
-                spin_force_out_path = candidate_spin
+        # Optional spin-force output (magnetic).  Its presence also identifies
+        # cached spin results without requiring the model parser.
+        spin_force_out_path_candidate = output_dir / f"mforce_{output_suffix}.out"
         
         if file_name=="train":
             descriptor_path = output_dir / f"descriptor.out"
@@ -268,6 +272,26 @@ class NepTrainResultData(ResultData):
         
         charge_out_path = output_dir / f"charge_{output_suffix}.out"
         bec_out_path = output_dir / f"bec_{output_suffix}.out"
+
+        # Official training outputs are self-describing enough to display.  Do
+        # not make an older/unsupported model format a prerequisite for opening
+        # results that GPUMD has already written.
+        base_outputs = (energy_out_path, force_out_path, virial_out_path)
+        has_base_outputs = all(output.exists() for output in base_outputs)
+        has_spin_output = has_base_outputs and spin_force_out_path_candidate.exists()
+        has_charge_outputs = (
+            has_base_outputs and charge_out_path.exists() and bec_out_path.exists()
+        )
+        has_standard_outputs = has_base_outputs and stress_out_path.exists()
+        if has_spin_output or has_charge_outputs or has_standard_outputs:
+            has_spin = has_spin_output
+            has_charge = has_charge_outputs and not has_spin
+        else:
+            model_info = inspect_model(nep_txt_path)
+            has_spin = model_info.model_type == "spin"
+            has_charge = model_info.model_type == "charge"
+
+        spin_force_out_path = spin_force_out_path_candidate if has_spin else None
         
         inst = cls(
             nep_txt_path,
@@ -279,7 +303,7 @@ class NepTrainResultData(ResultData):
             descriptor_path,
             charge_out_path,
             bec_out_path,
-            is_charge_model(nep_txt_path),
+            has_charge,
             spin_force_out_path,
             has_spin,
         )
@@ -289,6 +313,19 @@ class NepTrainResultData(ResultData):
             except Exception:
                 pass
         return inst
+
+    def _can_load_without_calculator(self) -> bool:
+        """Return whether complete official outputs can be displayed directly."""
+        required_paths = [
+            self.energy_out_path,
+            self.force_out_path,
+            self.virial_out_path,
+            self.spin_force_out_path if self.is_spin_model else self.stress_out_path,
+        ]
+        if self.is_charge_model:
+            required_paths.extend((self.charge_out_path, self.bec_out_path))
+        return all(path is not None and path.exists() for path in required_paths)
+
     def _load_dataset(self) -> None:
         """Populate plot datasets from cached outputs or by recalculating with NEP."""
         nep_in = read_nep_in(self.data_xyz_path.with_name("nep.in"))
@@ -299,6 +336,8 @@ class NepTrainResultData(ResultData):
             results = self._recalculate_and_save()
             if getattr(self, "is_charge_model", False):
                 energy_array, force_array, virial_array, stress_array, charge_array, bec_array = results
+            elif getattr(self, "is_spin_model", False):
+                energy_array, force_array, virial_array, stress_array, spin_force_array = results
             else:
                 energy_array, force_array, virial_array, stress_array = results
         else:
@@ -314,17 +353,12 @@ class NepTrainResultData(ResultData):
                     charge_array = read_nep_out_file(self.charge_out_path, dtype=storage_dtype, ndmin=2)
                 if self.bec_out_path:
                     bec_array = read_nep_out_file(self.bec_out_path, dtype=storage_dtype, ndmin=2)
-            if energy_array.shape[0] != self.atoms_num_list.shape[0] and not getattr(self, "is_spin_model", False):
-                if self.cache_outputs_enabled():
-                    for p in [self.energy_out_path, self.force_out_path, self.virial_out_path, self.stress_out_path, self.spin_force_out_path, getattr(self, "charge_out_path", None), getattr(self, "bec_out_path", None)]:
-                        if p:
-                            Path(p).unlink(True)
-                    return self._load_dataset()
-                results = self._recalculate_and_save()
-                if getattr(self, "is_charge_model", False):
-                    energy_array, force_array, virial_array, stress_array, charge_array, bec_array = results
-                else:
-                    energy_array, force_array, virial_array, stress_array = results
+            if energy_array.shape[0] != self.atoms_num_list.shape[0]:
+                raise ValueError(
+                    f"{self.energy_out_path.name} contains {energy_array.shape[0]} structures, "
+                    f"but {self.data_xyz_path.name} contains {self.atoms_num_list.shape[0]}. "
+                    "Move the existing official .out files aside before generating new predictions."
+                )
         self._energy_dataset = NepPlotData(energy_array, title="energy")
         default_forces = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
         self._force_vector_dataset = (
@@ -369,22 +403,65 @@ class NepTrainResultData(ResultData):
         bool
             ``True`` if NEP predictions need to be regenerated.
         """
-        if getattr(self, "is_spin_model", False):
-            return False
-        required = [
-            self.energy_out_path.exists(),
-            self.force_out_path.exists(),
-            self.virial_out_path.exists(),
+        if not self.cache_outputs_enabled():
+            return True
+        required_paths = [
+            self.energy_out_path,
+            self.force_out_path,
+            self.virial_out_path,
         ]
         if not getattr(self, "is_spin_model", False):
-            required.append(self.stress_out_path.exists())
+            required_paths.append(self.stress_out_path)
+        else:
+            required_paths.append(self.spin_force_out_path)
         if getattr(self, "is_charge_model", False):
             if self.charge_out_path:
-                required.append(self.charge_out_path.exists())
+                required_paths.append(self.charge_out_path)
             if self.bec_out_path:
-                required.append(self.bec_out_path.exists())
-        output_files_exist = all(required)
-        return not check_fullbatch(nep_in, len(self.atoms_num_list)) or not output_files_exist
+                required_paths.append(self.bec_out_path)
+        required_paths = [path for path in required_paths if path is not None]
+        existing = [path.exists() for path in required_paths]
+        metadata = None
+        record = None
+        if self.prediction_meta_path.exists():
+            try:
+                metadata = json.loads(
+                    self.prediction_meta_path.read_text(encoding="utf-8")
+                )
+            except (OSError, json.JSONDecodeError) as error:
+                raise ValueError(
+                    f"Cannot validate {self.prediction_meta_path.name}: {error}. "
+                    "Move the manifest aside to treat the .out files as external results."
+                ) from error
+            if metadata.get("schema_version") != 1:
+                raise ValueError(
+                    f"Unsupported {self.prediction_meta_path.name} schema. "
+                    "Move the manifest aside to treat the .out files as external results."
+                )
+            record = metadata.get("predictions", {}).get(self.data_xyz_path.name)
+        if all(existing):
+            if record is None or getattr(self, "nep_calc", None) is None:
+                return False
+            expected_model = self.nep_calc.model_info.sha256
+            expected_dataset = self._sha256(self.data_xyz_path)
+            return not (
+                record.get("model", {}).get("sha256") == expected_model
+                and record.get("dataset", {}).get("sha256") == expected_dataset
+                and record.get("dataset", {}).get("structures")
+                == int(len(self.atoms_num_list))
+            )
+        if record is not None:
+            return True
+        if any(existing):
+            existing_names = ", ".join(
+                path.name for path, exists in zip(required_paths, existing) if exists
+            )
+            raise FileExistsError(
+                "Found partial official NEP outputs without prediction.meta.json: "
+                f"{existing_names}. NepTrainKit will not overwrite them automatically; "
+                "move the existing .out files aside and retry."
+            )
+        return True
     def _save_energy_data(self, potentials:npt.NDArray[np.floating]) -> npt.NDArray[Any]:
         """Persist per-structure energy comparisons to disk.
         
@@ -457,7 +534,11 @@ class NepTrainResultData(ResultData):
         stress_array = np.asarray(stress_array, dtype=get_storage_float_dtype())
         if virials_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.virial_out_path, virials_array, fmt='%.17g')
-        if stress_array.size != 0 and self.cache_outputs_enabled():
+        if (
+            stress_array.size != 0
+            and self.cache_outputs_enabled()
+            and not getattr(self, "is_spin_model", False)
+        ):
             np.savetxt(self.stress_out_path, stress_array, fmt='%.17g')
         return virials_array, stress_array
     def _save_charge_data(self, charges: npt.NDArray[np.floating]) -> npt.NDArray[Any]:
@@ -484,44 +565,167 @@ class NepTrainResultData(ResultData):
         if getattr(self, "bec_out_path", None) and bec_array.size != 0 and self.cache_outputs_enabled():
             np.savetxt(self.bec_out_path, bec_array, fmt='%.17g')
         return bec_array
+
+    def _save_spin_force_data(self, mforces: npt.NDArray[np.floating]) -> npt.NDArray[Any]:
+        """Persist magnetic force comparisons in the official ``mforce_*.out`` format."""
+        reference = np.vstack(
+            [
+                np.asarray(structure.atomic_properties["force_mag"], dtype=np.float64)
+                if "force_mag" in structure.atomic_properties
+                else np.full((len(structure), 3), np.nan, dtype=np.float64)
+                for structure in self.structure.now_data
+            ]
+        )
+        values = concat_nep_dft_array(
+            np.asarray(mforces, dtype=np.float64),
+            reference,
+            quantity="magnetic forces",
+        )
+        values = np.asarray(values, dtype=get_storage_float_dtype())
+        if values.size and self.spin_force_out_path and self.cache_outputs_enabled():
+            np.savetxt(self.spin_force_out_path, values, fmt="%.17g")
+        return values
+
+    @staticmethod
+    def _sha256(path: Path) -> str:
+        digest = hashlib.sha256()
+        with path.open("rb") as handle:
+            for block in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(block)
+        return digest.hexdigest()
+
+    def _write_prediction_meta(self) -> None:
+        if not self.cache_outputs_enabled():
+            return
+        output_paths = [
+            self.energy_out_path,
+            self.force_out_path,
+            self.virial_out_path,
+        ]
+        if not self.is_spin_model:
+            output_paths.append(self.stress_out_path)
+        if self.spin_force_out_path:
+            output_paths.append(self.spin_force_out_path)
+        if self.is_charge_model:
+            output_paths.extend(
+                path for path in (self.charge_out_path, self.bec_out_path) if path
+            )
+        record = {
+            "nep_adapters_version": nep_adapters_version,
+            "model": {
+                "path": str(self.nep_txt_path.resolve()),
+                "sha256": self.nep_calc.model_info.sha256,
+                "type": self.nep_calc.model_info.model_type,
+            },
+            "dataset": {
+                "path": str(self.data_xyz_path.resolve()),
+                "sha256": self._sha256(self.data_xyz_path),
+                "structures": int(len(self.atoms_num_list)),
+                "atoms": int(np.sum(self.atoms_num_list)),
+            },
+            "backend": {
+                "requested": self.nep_calc.selection.requested.value,
+                "resolved": self.nep_calc.selection.resolved.value,
+                "reason": self.nep_calc.selection.reason,
+            },
+            "chunk_max_atoms": self.nep_calc.chunk_max_atoms,
+            "outputs": [
+                {"name": path.name, "size": path.stat().st_size}
+                for path in output_paths
+                if path.exists()
+            ],
+        }
+        payload = {
+            "schema_version": 1,
+            "producer": "NepTrainKit",
+            "predictions": {},
+        }
+        if self.prediction_meta_path.exists():
+            try:
+                existing = json.loads(
+                    self.prediction_meta_path.read_text(encoding="utf-8")
+                )
+            except (OSError, json.JSONDecodeError):
+                existing = None
+            if isinstance(existing, dict) and existing.get("schema_version") == 1:
+                payload["predictions"].update(existing.get("predictions", {}))
+        payload["predictions"][self.data_xyz_path.name] = record
+        temporary = self.prediction_meta_path.with_suffix(".json.tmp")
+        temporary.write_text(
+            json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        temporary.replace(self.prediction_meta_path)
+
     def _recalculate_and_save(self ):
         """Recompute NEP predictions and update on-disk comparison files."""
-        try:
-            if getattr(self, "is_charge_model", False):
-                outputs = self.nep_calc.calculate(self.structure.now_data.tolist(), return_charge=True)
-                nep_potentials_list, nep_forces_list, nep_virials_list, nep_charges_list, nep_bec_list = outputs
-            else:
-                nep_potentials_list, nep_forces_list, nep_virials_list = self.nep_calc.calculate(self.structure.now_data.tolist())
-                nep_charges_list = []
-                nep_bec_list = []
+        prediction = self._pending_prediction
+        self._pending_prediction = None
+        if prediction is None:
+            prediction = self.nep_calc.predict(
+                self.structure.now_data.tolist(),
+                progress=lambda done, total: self.predictionStatusSignal.emit(
+                    self.tr("Running NEP prediction: {done}/{total} structures").format(
+                        done=done, total=total
+                    )
+                ),
+            )
+        energy_array = self._save_energy_data(prediction.energy)
+        force_array = self._save_force_data(prediction.forces)
+        virial_array, stress_array = self._save_virial_and_stress_data(
+            prediction.structure_virials[:, [0, 4, 8, 1, 5, 6]]
+        )
 
-            nep_potentials_array = np.array(nep_potentials_list, dtype=np.float64)
-            nep_forces_array = np.asarray(np.vstack(nep_forces_list), dtype=np.float64)
-            nep_virials_array = np.asarray(np.vstack(nep_virials_list), dtype=np.float64)
-            if nep_potentials_array.size == 0:
-                MessageManager.send_warning_message("The nep calculator fails to calculate the potentials, use the original potentials instead.")
-            energy_array = self._save_energy_data(nep_potentials_array)
-            force_array = self._save_force_data(nep_forces_array)
-            virial_array, stress_array = self._save_virial_and_stress_data(nep_virials_array[:, [0, 4, 8, 1, 5, 6]])
+        if isinstance(prediction, ChargePrediction):
+            charge_array = self._save_charge_data(prediction.charges)
+            bec_array = self._save_bec_data(prediction.becs)
+            result = (
+                energy_array,
+                force_array,
+                virial_array,
+                stress_array,
+                charge_array,
+                bec_array,
+            )
+        elif isinstance(prediction, SpinPrediction):
+            spin_force_array = self._save_spin_force_data(prediction.mforces)
+            result = (
+                energy_array,
+                force_array,
+                virial_array,
+                stress_array,
+                spin_force_array,
+            )
+        else:
+            result = energy_array, force_array, virial_array, stress_array
 
-            charge_array = np.array([])
-            bec_array = np.array([])
-            if getattr(self, "is_charge_model", False):
-                charge_array = self._save_charge_data(np.concatenate(nep_charges_list, axis=0) if nep_charges_list else np.array([]))
-                bec_array = self._save_bec_data(np.vstack(nep_bec_list) if nep_bec_list else np.array([]))
+        self.write_prediction()
+        self._write_prediction_meta()
+        return result
 
-            self.write_prediction()
-            if getattr(self, "is_charge_model", False):
-                return energy_array, force_array, virial_array, stress_array, charge_array, bec_array
-            return energy_array, force_array, virial_array, stress_array
-        except Exception as e:
-            logger.debug(traceback.format_exc())
-            MessageManager.send_error_message(f"An error occurred while running NEP calculator: {e}")
-            if getattr(self, "is_charge_model", False):
-                return np.array([]), np.array([]), np.array([]), np.array([]), np.array([]), np.array([])
-            return np.array([]), np.array([]), np.array([]), np.array([])
+    def _generate_missing_descriptors(self) -> npt.NDArray[np.float64]:
+        nep_in = read_nep_in(self.data_xyz_path.with_name("nep.in"))
+        if not self._should_recalculate(nep_in):
+            return super()._generate_missing_descriptors()
+
+        self.predictionStatusSignal.emit(
+            self.tr(
+                "Generating NEP descriptors and predictions together to avoid duplicate work."
+            )
+        )
+        prediction, descriptors = self.nep_calc.predict_with_descriptors(
+            self.structure.now_data.tolist(),
+            progress=lambda done, total: self.predictionStatusSignal.emit(
+                self.tr(
+                    "Running combined NEP calculation: {done}/{total} structures"
+                ).format(done=done, total=total)
+            ),
+        )
+        self._pending_prediction = prediction
+        return descriptors
 class NepPolarizabilityResultData(ResultData):
     """Result loader for NEP polarizability evaluations."""
+    FORCE_CPU_BACKEND = True
     _polarizability_diagonal_dataset: NepPlotData
     _polarizability_no_diagonal_dataset: NepPlotData
     def __init__(self,
@@ -545,10 +749,6 @@ class NepPolarizabilityResultData(ResultData):
         """
         super().__init__(nep_txt_path,data_xyz_path,descriptor_path)
         self.polarizability_out_path = Path(polarizability_out_path)
-        # self.nep_calc = NepCalculator(model_file=self.nep_txt_path.as_posix(),
-        #                               backend=NepBackend.CPU,
-        #                               batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-        #                               )
     @property
     def datasets(self):
         """Return the polarizability datasets in display order."""
@@ -624,7 +824,7 @@ class NepPolarizabilityResultData(ResultData):
         try:
             # nep_polarizability_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
             #                                                        self.structure.now_data, "polarizability")
-            nep_polarizability_array = self.nep_calc.get_structures_polarizability(self.structure.now_data.tolist())
+            nep_polarizability_array = self.nep_calc.polarizabilities(self.structure.now_data.tolist())
             # nep_polarizability_array=self.nep_calc_thread.func_result
             if nep_polarizability_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the polarizability, use the original polarizability instead.")
@@ -680,6 +880,7 @@ class NepPolarizabilityResultData(ResultData):
         self._polarizability_no_diagonal_dataset = NepPlotData(polarizability_array[:, [3,4,5,9,10,11]], title="Polar NoDiag")
 class NepDipoleResultData(ResultData):
     """Result loader for NEP dipole predictions."""
+    FORCE_CPU_BACKEND = True
     _dipole_dataset: NepPlotData
     def __init__(self,
                  nep_txt_path: Path|str,
@@ -702,10 +903,6 @@ class NepDipoleResultData(ResultData):
         """
         super().__init__(nep_txt_path, data_xyz_path, descriptor_path)
         self.dipole_out_path = Path(dipole_out_path)
-        # self.nep_calc = NepCalculator(model_file=self.nep_txt_path.as_posix(),
-        #                      backend=NepBackend.CPU,
-        #                      batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-        #                      )
     @property
     def datasets(self):
         """Return the dipole datasets in display order."""
@@ -777,7 +974,7 @@ class NepDipoleResultData(ResultData):
         try:
             # nep_dipole_array = run_nep3_calculator_process(self.nep_txt_path.as_posix(),
             #                                                self.structure.now_data, "dipole")
-            nep_dipole_array = self.nep_calc.get_structures_dipole(self.structure.now_data.tolist())
+            nep_dipole_array = self.nep_calc.dipoles(self.structure.now_data.tolist())
             # nep_dipole_array=self.nep_calc_thread.func_result
             if nep_dipole_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the dipole, use the original dipole instead.")

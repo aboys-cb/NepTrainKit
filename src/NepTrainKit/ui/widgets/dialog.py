@@ -2863,7 +2863,7 @@ class TrainingOverlayDialog(FramelessDialog):
                         if t_desc.size == 0:
                             nep_calc = getattr(result_data, "nep_calc", None)
                             if nep_calc:
-                                t_desc = nep_calc.get_structures_descriptor(t_structs, True)
+                                t_desc = nep_calc.descriptors(t_structs, mean=True)
                         if t_desc.size != 0:
                             if t_desc.shape[0] == int(np.sum(t_counts)):
                                 t_desc = aggregate_per_atom_to_structure(t_desc, t_counts, map_func=np.mean, axis=0)

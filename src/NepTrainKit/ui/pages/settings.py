@@ -216,7 +216,7 @@ class SettingsWidget(ScrollArea):
                               EnumSerializer(NepBackend)),
             QIcon(":/images/src/images/gpu.svg"),
             self.tr('NEP Backend'),
-            self.tr('Select CPU/GPU or Auto detection'),
+            self.tr('Select CPU/CUDA or let Auto use CUDA when available'),
             texts=[mode.value for mode in NepBackend],
             default=nep_backend_default,
             parent=self.nep_group
@@ -239,16 +239,15 @@ class SettingsWidget(ScrollArea):
             parent=self.nep_group
         )
 
-        # GPU batch size
-        gpu_bs_default = Config.getint("nep", "gpu_batch_size", 1000) or 1000
-        self.gpu_bs_card = DoubleSpinBoxSettingCard(
+        chunk_max_atoms = Config.getint("nep", "chunk_max_atoms", 100000) or 100000
+        self.chunk_max_atoms_card = DoubleSpinBoxSettingCard(
             FluentIcon.SPEED_HIGH,
-            self.tr('GPU Batch Size'),
-            self.tr('Batch of frames processed GPU slice'),
+            self.tr('NEP Chunk Max Atoms'),
+            self.tr('Maximum total atoms per prediction chunk on CPU or CUDA'),
             self.nep_group
         )
-        self.gpu_bs_card.setRange(0, 10000000)
-        self.gpu_bs_card.setValue(float(gpu_bs_default))
+        self.chunk_max_atoms_card.setRange(1, 100000000)
+        self.chunk_max_atoms_card.setValue(float(chunk_max_atoms))
 
         # Plot settings defaults
         edge_color = Config.get("plot", "marker_edge_color", "#07519C")
@@ -432,7 +431,7 @@ class SettingsWidget(ScrollArea):
 
         self.nep_group.addSettingCard(self.nep_backend_card)
         self.nep_group.addSettingCard(self.data_precision_card)
-        self.nep_group.addSettingCard(self.gpu_bs_card)
+        self.nep_group.addSettingCard(self.chunk_max_atoms_card)
 
  
 
@@ -480,7 +479,7 @@ class SettingsWidget(ScrollArea):
 
         self.nep_backend_card.optionChanged.connect(lambda option: Config.set("nep", "backend", option))
         self.data_precision_card.optionChanged.connect(lambda option: Config.set("nep", "data_precision", option))
-        self.gpu_bs_card.valueChanged.connect(lambda value: Config.set("nep", "gpu_batch_size", int(value)))
+        self.chunk_max_atoms_card.valueChanged.connect(lambda value: Config.set("nep", "chunk_max_atoms", int(value)))
 
         self.auto_load_card.checkedChanged.connect(lambda state:Config.set("widget","auto_load",state))
         self.sort_atoms_card.checkedChanged.connect(lambda state:Config.set("widget","sort_atoms",state))

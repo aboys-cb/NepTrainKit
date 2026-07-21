@@ -16,6 +16,9 @@ def _zh_runtime_messages_enabled() -> bool:
 
 
 _RUNTIME_PREFIX_REPLACEMENTS = (
+    ("Failed to load dataset: ", "加载数据集失败："),
+    ("NEP calculation failed [", "NEP 计算失败 ["),
+    ("NEP Auto selected CPU because CUDA is unavailable ", "NEP 自动选择 CPU，因为 CUDA 不可用 "),
     ("Error occurred: ", "发生错误："),
     ("Failed to load ", "加载失败："),
     ("Unknown card class: ", "未知卡片类："),
@@ -47,6 +50,14 @@ _RUNTIME_PREFIX_REPLACEMENTS = (
 
 
 _RUNTIME_TEXT_REPLACEMENTS = (
+    ("NEP Auto selected CUDA acceleration for this model.", "NEP 自动为当前模型启用了 CUDA 加速。"),
+    ("Dipole and polarizability models are CPU-only; NepTrainKit will use CPU regardless of the selected NEP backend.", "偶极矩和极化率模型仅支持 CPU；无论 NEP 后端设置为何，NepTrainKit 都会使用 CPU。"),
+    ("DFT-D3 calculations are CPU-only; NepTrainKit will use CPU regardless of the selected NEP backend.", "DFT-D3 计算仅支持 CPU；无论 NEP 后端设置为何，NepTrainKit 都会使用 CPU。"),
+    ("Loading existing official NEP .out files without opening the model.", "已直接加载现有的官方 NEP .out 文件，无需打开模型。"),
+    (" descriptor.out is missing, so descriptor plots and FPS are unavailable. Install a nep-adapters version that supports this model to generate descriptors.", " 缺少 descriptor.out，因此描述符图和 FPS 暂不可用。如需生成描述符，请安装支持该模型的 nep-adapters 版本。"),
+    ("If official NEP .out files already exist, keep a complete set of energy, force, virial, and stress or mforce outputs in the dataset directory.", "如果已有官方 NEP .out 文件，请在数据集目录中保留完整的 energy、force、virial，以及 stress 或 mforce 输出。"),
+    ("The calculation will continue on CPU. ", "本次计算将继续使用 CPU。"),
+    ("To enable CUDA, install a Linux CPU+CUDA nep-adapters wheel with a compatible NVIDIA driver.", "如需启用 CUDA，请在 Linux 上安装包含 CPU 和 CUDA 后端的 nep-adapters wheel，并使用兼容的 NVIDIA 驱动。"),
     ("Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph.", "当前画布后端是 vispy，但 vispy 画布初始化失败；已回退到 pyqtgraph。"),
     ("No data selected!", "未选择数据！"),
     ("NEP data has not been loaded yet!", "尚未加载 NEP 数据！"),

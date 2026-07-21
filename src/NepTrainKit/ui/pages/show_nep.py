@@ -550,19 +550,25 @@ class ShowNepWidget(QWidget):
             tip.closedSignal.connect(self.stop_loading)
             self.nep_result_data.moveToThread(self.load_thread)
             self.load_thread.finished.connect(self.set_dataset)
-            self.load_thread.finished.connect(lambda: tip.setState(True))
+            result_data = self.nep_result_data
+            self.load_thread.finished.connect(
+                lambda: tip.setState(bool(result_data.load_flag))
+            )
             self.load_thread.finished.connect(lambda: self._restore_reject(reject_indices))
             self.load_thread.finished.connect(lambda: self._restore_selection(selected_indices))
 
             self.nep_result_data.loadFinishedSignal.connect(self.load_thread.quit)
+            self.nep_result_data.predictionStatusSignal.connect(tip.setContent)
             self.load_thread.started.connect(self.nep_result_data.load)
             self.load_thread.start()
             self._refresh_export_actions()
 
-        except Exception:
+        except Exception as error:
             logger.debug(traceback.format_exc())
             tip.setState(False)
-            MessageManager.send_error_message(self.tr("Failed to switch NEP model"))
+            MessageManager.send_error_message(
+                self.tr("Failed to switch NEP model") + f": {error}"
+            )
     
     def _restore_selection(self, indices):
         """Restore previously selected structure indices after reload.
@@ -1149,14 +1155,26 @@ class ShowNepWidget(QWidget):
             self._nep_result_cache.clear()
             self._nep_cache_dir = resolved_dir
         
+        load_error = None
         try:
             self.nep_result_data = load_result_data(path)  # type: ignore
-        except Exception:
+        except Exception as error:
+            load_error = error
             logger.debug(traceback.format_exc())
             self.nep_result_data = None   # pyright:ignore
+            MessageManager.send_error_message(
+                f"Failed to load dataset: {error}. "
+                "If official NEP .out files already exist, keep a complete set "
+                "of energy, force, virial, and stress or mforce outputs in the "
+                "dataset directory."
+            )
 
         if self.nep_result_data is None:
             self._initial_loading = False
+            if load_error is None:
+                MessageManager.send_warning_message(
+                    self.tr("unsupported file format")
+                )
             return
 
         self.path_label.setText(
@@ -1203,10 +1221,14 @@ class ShowNepWidget(QWidget):
         tip.closedSignal.connect(self.stop_loading)
         self.nep_result_data.moveToThread(self.load_thread)
         self.load_thread.finished.connect(self.set_dataset)
-        self.load_thread.finished.connect(lambda :tip.setState(True))
+        result_data = self.nep_result_data
+        self.load_thread.finished.connect(
+            lambda: tip.setState(bool(result_data.load_flag))
+        )
         self.load_thread.finished.connect(self._on_initial_load_complete)
 
         self.nep_result_data.loadFinishedSignal.connect(self.load_thread.quit)
+        self.nep_result_data.predictionStatusSignal.connect(tip.setContent)
         self.load_thread.started.connect(self.nep_result_data.load)
         self.load_thread.start()
 

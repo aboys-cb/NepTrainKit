@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 import importlib
-import traceback
 from typing import Protocol
 
 from loguru import logger
@@ -122,14 +121,29 @@ def load_result_data(path: PathLike)->"ResultData"|None:
         """
 
     candidate = as_path(path)
+    last_error: Exception | None = None
     for loader in _RESULT_LOADERS:
         try:
-            if loader.matches(candidate):
-                return loader.load(candidate)
-        except Exception:  # pragma: no cover - defensive
-            print(traceback.format_exc())
-            logger.debug(f"{ loader.name} failed to load {candidate}")
+            matched = loader.matches(candidate)
+        except Exception as error:  # pragma: no cover - defensive
+            logger.debug(
+                f"{getattr(loader, 'name', type(loader).__name__)} failed to "
+                f"inspect {candidate}: {error}"
+            )
             continue
+        if not matched:
+            continue
+        try:
+            return loader.load(candidate)
+        except Exception as error:  # pragma: no cover - defensive
+            last_error = error
+            logger.debug(
+                f"{getattr(loader, 'name', type(loader).__name__)} failed to load "
+                f"{candidate}: {error}"
+            )
+            continue
+    if last_error is not None:
+        raise last_error
     return None
 
 
@@ -220,6 +234,8 @@ class NepModelTypeLoader(ResultLoader):
 
 class OtherLoader(ResultLoader):
     """Fallback loader that delegates to registered importers."""
+
+    name = "other"
 
     def matches(self, path: PathLike) -> bool:
         """Return ``True`` when a registered importer can parse ``path``."""

@@ -107,7 +107,7 @@ def test_deepmd_cached_outputs_can_generate_missing_descriptor(tmp_path: Path):
     result.atoms_num_list = np.array([1], dtype=np.int64)
 
     class FakeCalculator:
-        def get_structures_descriptor(self, structures):
+        def descriptors(self, structures, **_kwargs):
             assert len(structures) == 1
             return np.array([[1.0, 2.0]], dtype=np.float32)
 
@@ -138,10 +138,10 @@ def test_deepmd_cached_outputs_read_predictions_while_generating_descriptor(tmp_
     result.load_structures()
 
     class FakeCalculator:
-        def calculate(self, _structures):
+        def predict(self, _structures):
             raise AssertionError("cached DeepMD outputs must not be recalculated")
 
-        def get_structures_descriptor(self, structures):
+        def descriptors(self, structures, **_kwargs):
             assert len(structures) == 1
             return np.array([[7.0, 8.0]], dtype=np.float32)
 

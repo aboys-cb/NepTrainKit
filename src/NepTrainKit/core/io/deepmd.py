@@ -362,10 +362,10 @@ class DeepmdResultData(ResultData):
             Energy, force, and virial arrays that were written to disk.
         """
         try:
-            nep_potentials_list, nep_forces_list, nep_virials_list = self.nep_calc.calculate(self.structure.now_data.tolist())
-            nep_potentials_array = np.array(nep_potentials_list, dtype=np.float64)
-            nep_forces_array = np.asarray(np.vstack(nep_forces_list), dtype=np.float64)
-            nep_virials_array = np.asarray(np.vstack(nep_virials_list), dtype=np.float64)
+            prediction = self.nep_calc.predict(self.structure.now_data.tolist())
+            nep_potentials_array = np.asarray(prediction.energy, dtype=np.float64)
+            nep_forces_array = np.asarray(prediction.forces, dtype=np.float64)
+            nep_virials_array = np.asarray(prediction.structure_virials, dtype=np.float64)
             if nep_potentials_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the potentials, use the original potentials instead.")
             energy_array = self._save_energy_data(nep_potentials_array)

@@ -62,8 +62,8 @@ $$i_t=\arg\max_j\ \min_{i\in S_{t-1}}\lVert\mathbf{d}_j-\mathbf{d}_i\rVert_2,\qu
 ### Backend（backend）
 `str`，默认 `'auto'`。描述符计算后端。正常保持 `auto` 让程序自己选可用的 NEP 后端；只有在你需要调试性能或对比后端差异时才手动指定。
 
-### Batch Size（batch_size）
-`int`，默认 1000。描述符批处理大小，只影响吞吐和内存。GPU 或大体系可以调大加速，内存紧张时适当调小。
+### Chunk Max Atoms（chunk_max_atoms）
+`int`，默认 100000。每个描述符计算分块允许的总原子数，CPU 和 CUDA 使用同一语义。显存或内存不足时调小；它不是结构数量，同一分块中所有结构的原子数之和不能超过该值。
 
 ## 推荐预设
 
@@ -77,7 +77,7 @@ $$i_t=\arg\max_j\ \min_{i\in S_{t-1}}\lVert\mathbf{d}_j-\mathbf{d}_i\rVert_2,\qu
     "n_samples": 100,
     "min_distance": 0.01,
     "backend": "auto",
-    "batch_size": 1000
+    "chunk_max_atoms": 100000
   }
 }
 ```
@@ -92,7 +92,7 @@ $$i_t=\arg\max_j\ \min_{i\in S_{t-1}}\lVert\mathbf{d}_j-\mathbf{d}_i\rVert_2,\qu
     "n_samples": 200,
     "min_distance": 0.03,
     "backend": "auto",
-    "batch_size": 1000
+    "chunk_max_atoms": 100000
   }
 }
 ```
@@ -107,7 +107,7 @@ $$i_t=\arg\max_j\ \min_{i\in S_{t-1}}\lVert\mathbf{d}_j-\mathbf{d}_i\rVert_2,\qu
     "n_samples": 50,
     "min_distance": 0.06,
     "backend": "auto",
-    "batch_size": 1000
+    "chunk_max_atoms": 100000
   }
 }
 ```

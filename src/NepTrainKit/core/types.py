@@ -197,8 +197,8 @@ class DistributionCurveStyle(StrEnum):
 class NepBackend(StrEnum):
     """NEP calculator backend preference."""
     AUTO = "auto"
-    GPU = "gpu"
     CPU = "cpu"
+    CUDA = "cuda"
 
 
 class DataPrecision(StrEnum):

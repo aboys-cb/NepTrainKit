@@ -1,4 +1,5 @@
 from .card_test_base import *
+from NepTrainKit.ui.views._card.fps_filter_card import FPSFilterDataCard
 
 
 class TestFilterCards(BaseCardTest):
@@ -7,6 +8,22 @@ class TestFilterCards(BaseCardTest):
 
         with self.assertRaises(FileNotFoundError):
             FPSFilterOperation().run_dataset([self.structure.copy()], params)
+
+    def test_fps_filter_card_roundtrip_preserves_backend_policy(self):
+        card = FPSFilterDataCard()
+        card.set_params(
+            FPSFilterParams(
+                nep_path="/tmp/nep.txt",
+                n_samples=42,
+                min_distance=0.125,
+                backend="cuda",
+                chunk_max_atoms=54321,
+            )
+        )
+        restored = FPSFilterDataCard()
+        restored.from_dict(card.to_dict())
+
+        self.assertEqual(restored.get_params(), card.get_params())
 
     def test_geometry_filter_operation_and_card_roundtrip(self):
         good = Atoms(

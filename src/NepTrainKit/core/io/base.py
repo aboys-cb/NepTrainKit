@@ -25,6 +25,7 @@ from PySide6.QtCore import QObject, Signal
 from loguru import logger
 from typing import Any, Callable, Iterable, Mapping, Optional, Sequence
 import numpy.typing as npt
+from nep_adapters import NepAdaptersError
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
@@ -950,8 +951,10 @@ class ResultData(QObject):
     synchronisation utilities shared by the GUI.
     """
     STRUCTURE_SYNC_RULES: dict[str, StructureSyncRule] = {}
+    FORCE_CPU_BACKEND = False
     updateInfoSignal = Signal( )
     loadFinishedSignal = Signal()
+    predictionStatusSignal = Signal(str)
     atoms_num_list: npt.NDArray
     _atoms_dataset: StructureData
     _abcs: npt.NDArray[np.float32]
@@ -1829,6 +1832,17 @@ class ResultData(QObject):
     def cache_outputs_enabled() -> bool:
         """Return whether loader-generated cache files should be written."""
         return bool(Config.getboolean("io", "cache_outputs", True))
+
+    def _can_load_without_calculator(self) -> bool:
+        """Return whether this result can be loaded from existing outputs alone."""
+        return False
+
+    def _calculation_backend(self) -> NepBackend:
+        """Resolve the backend used when this result requires calculations."""
+        if self.FORCE_CPU_BACKEND:
+            return NepBackend.CPU
+        return NepBackend(Config.get("nep", "backend", "auto"))
+
     def load(self):
         """Load structures, descriptors, and dataset arrays in sequence.
         The routine instantiates a calculator (optionally via ``calculator_factory``),
@@ -1836,25 +1850,65 @@ class ResultData(QObject):
         dataset-specific properties.
         """
         try:
-            # Calculator injection (default to NEP). Subclasses can pass in a factory for other ML potentials.
-            if self.calculator_factory is None:
-                self.nep_calc = NepCalculator(
-                    model_file=self.nep_txt_path.as_posix(),
-                    backend=NepBackend(Config.get("nep", "backend", "auto")),
-                    batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-                )
+            load_from_outputs = self._can_load_without_calculator()
+            if load_from_outputs:
+                self.nep_calc = None
+                if self.descriptor_path.exists():
+                    status = (
+                        "Loading existing official NEP .out files without opening "
+                        "the model."
+                    )
+                    notify = MessageManager.send_info_message
+                else:
+                    status = (
+                        "Loading existing official NEP .out files without opening "
+                        "the model. descriptor.out is missing, so descriptor plots "
+                        "and FPS are unavailable. Install a nep-adapters version that "
+                        "supports this model to generate descriptors."
+                    )
+                    notify = MessageManager.send_warning_message
+                self.predictionStatusSignal.emit(status)
+                notify(status)
             else:
-                # Factory is responsible for creating a calculator compatible with this ResultData subclass
-                try:
-                    self.nep_calc = self.calculator_factory(self.nep_txt_path.as_posix())
-                except Exception:
-                    logger.debug(traceback.format_exc())
-                    MessageManager.send_warning_message("Failed to create custom calculator; falling back to NEP.")
+                calculation_backend = self._calculation_backend()
+                # Calculator injection (default to NEP). Subclasses can pass in a factory for other ML potentials.
+                if self.calculator_factory is None:
                     self.nep_calc = NepCalculator(
                         model_file=self.nep_txt_path.as_posix(),
-                        backend=NepBackend(Config.get("nep", "backend", "auto")),
-                        batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+                        backend=calculation_backend,
+                        chunk_max_atoms=Config.getint("nep", "chunk_max_atoms", 100000),
                     )
+                else:
+                    # Factory is responsible for creating a calculator compatible with this ResultData subclass
+                    try:
+                        self.nep_calc = self.calculator_factory(self.nep_txt_path.as_posix())
+                    except Exception:
+                        logger.debug(traceback.format_exc())
+                        MessageManager.send_warning_message("Failed to create custom calculator; falling back to NEP.")
+                        self.nep_calc = NepCalculator(
+                            model_file=self.nep_txt_path.as_posix(),
+                            backend=calculation_backend,
+                            chunk_max_atoms=Config.getint("nep", "chunk_max_atoms", 100000),
+                        )
+                selection = getattr(self.nep_calc, "selection", None)
+                if self.FORCE_CPU_BACKEND:
+                    MessageManager.send_info_message(
+                        "Dipole and polarizability models are CPU-only; "
+                        "NepTrainKit will use CPU regardless of the selected NEP backend."
+                    )
+                elif selection is not None and selection.requested is NepBackend.AUTO:
+                    if selection.resolved is NepBackend.CUDA:
+                        MessageManager.send_info_message(
+                            "NEP Auto selected CUDA acceleration for this model."
+                        )
+                    else:
+                        detail = getattr(selection.cuda_status, "detail", selection.reason)
+                        MessageManager.send_warning_message(
+                            "NEP Auto selected CPU because CUDA is unavailable "
+                            f"({detail}). The calculation will continue on CPU. "
+                            "To enable CUDA, install a Linux CPU+CUDA nep-adapters wheel "
+                            "with a compatible NVIDIA driver."
+                        )
             # If subclass overrides load_structures, defer to it; otherwise do cancel-aware read
             self.load_structures()
             # Pre-build completer caches so UI mode switching remains smooth for large datasets.
@@ -1881,9 +1935,19 @@ class ResultData(QObject):
                     self.load_flag=True
             else:
                 MessageManager.send_warning_message("No structures were loaded.")
-        except:
+        except NepAdaptersError as error:
             logger.error(traceback.format_exc())
-            MessageManager.send_error_message("load dataset error!")
+            message = (
+                f"NEP calculation failed [{error.code}]: {error} "
+                "Check the selected backend, model type, spin fields, and chunk size."
+            )
+            self.predictionStatusSignal.emit(message)
+            MessageManager.send_error_message(message)
+        except Exception as error:
+            logger.error(traceback.format_exc())
+            message = f"Failed to load dataset: {error}"
+            self.predictionStatusSignal.emit(message)
+            MessageManager.send_error_message(message)
         self.loadFinishedSignal.emit()
     def _load_dataset(self):
         """Populate subclass-specific datasets (must be implemented by subclasses)."""
@@ -3950,18 +4014,25 @@ class ResultData(QObject):
         cutoff_cn: float,
     ) -> None:
         """Apply DFT-D3 corrections and synchronise dependent datasets."""
+        MessageManager.send_info_message(
+            "DFT-D3 calculations are CPU-only; NepTrainKit will use CPU "
+            "regardless of the selected NEP backend."
+        )
         nep_calc = NepCalculator(
             model_file=self.nep_txt_path.as_posix(),
             backend=NepBackend.CPU,
-            batch_size=Config.getint("nep", "gpu_batch_size", 1000),
+            chunk_max_atoms=Config.getint("nep", "chunk_max_atoms", 100000),
         )
 
-        potentials, forces, virials = nep_calc.calculate_dftd3(
+        prediction = nep_calc.predict_dftd3(
             self.structure.now_data.tolist(),
             functional=functional,
             cutoff=cutoff,
             cutoff_cn=cutoff_cn,
         )
+        potentials = prediction.energy
+        forces = prediction.force_blocks()
+        virials = prediction.structure_virials
 
         if self.structure.now_data.size == 0:
             return
@@ -4004,7 +4075,11 @@ class ResultData(QObject):
                 desc_array = np.array([])
 
         if desc_array.size == 0:
-            desc_array = self.nep_calc.get_structures_descriptor(self.structure.now_data.tolist())
+            if getattr(self, "nep_calc", None) is None:
+                self._descriptor_raw_all = np.array([], dtype=np.float32)
+                self._descriptor_dataset = NepPlotData([], title="descriptor")
+                return
+            desc_array = self._generate_missing_descriptors()
             if desc_array.size != 0 and self.cache_outputs_enabled():
                 np.savetxt(self.descriptor_path, desc_array, fmt='%.6g')
         # Cache raw (pre-PCA) per-structure descriptors to avoid reloading later
@@ -4020,6 +4095,17 @@ class ResultData(QObject):
         if reduced.size != 0 and reduced.shape[1] > 2:
             reduced = self._load_or_compute_descriptor_pca(reduced)
         self._descriptor_dataset = NepPlotData(reduced, title="descriptor")
+
+    def _generate_missing_descriptors(self) -> npt.NDArray[np.float64]:
+        """Generate descriptors when no usable descriptor cache exists."""
+        return self.nep_calc.descriptors(
+            self.structure.now_data.tolist(),
+            progress=lambda done, total: self.predictionStatusSignal.emit(
+                self.tr(
+                    "Generating NEP descriptors: {done}/{total} structures"
+                ).format(done=done, total=total)
+            ),
+        )
 
     def _descriptor_pca_cache_paths(self) -> tuple[Path, Path]:
         cache_path = self.descriptor_path.with_suffix(".pca2.npy")

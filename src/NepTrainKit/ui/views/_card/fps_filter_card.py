@@ -37,6 +37,8 @@ class FPSFilterDataCard(FilterDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
+        self._backend = Config.get("nep", "backend", "auto")
+        self._chunk_max_atoms = Config.getint("nep", "chunk_max_atoms", 100000)
         self.setTitle(self.tr("Filter by FPS"))
         self.init_ui()
 
@@ -94,8 +96,8 @@ class FPSFilterDataCard(FilterDataCard):
             nep_path=self.nep_path_lineedit.text(),
             n_samples=int(self.num_condition_frame.get_input_value()[0]),
             min_distance=float(self.min_distance_condition_frame.get_input_value()[0]),
-            backend=Config.get("nep", "backend", "auto"),
-            batch_size=Config.getint("nep", "gpu_batch_size", 1000),
+            backend=self._backend,
+            chunk_max_atoms=self._chunk_max_atoms,
         )
 
     def set_params(self, params: FPSFilterParams) -> None:
@@ -103,6 +105,8 @@ class FPSFilterDataCard(FilterDataCard):
         self.nep_path_lineedit.setText(params.nep_path)
         self.num_condition_frame.set_input_value([int(params.n_samples)])
         self.min_distance_condition_frame.set_input_value([float(params.min_distance)])
+        self._backend = params.backend
+        self._chunk_max_atoms = int(params.chunk_max_atoms)
 
     def stop(self):
         """Stop background processing and release any worker threads.
@@ -144,7 +148,7 @@ class FPSFilterDataCard(FilterDataCard):
                 n_samples=raw_params.get("n_samples", 100),
                 min_distance=raw_params.get("min_distance", 0.01),
                 backend=raw_params.get("backend", Config.get("nep", "backend", "auto")),
-                batch_size=raw_params.get("batch_size", Config.getint("nep", "gpu_batch_size", 1000)),
+                chunk_max_atoms=raw_params.get("chunk_max_atoms", Config.getint("nep", "chunk_max_atoms", 100000)),
             )
         else:
             params = FPSFilterParams(
@@ -152,6 +156,6 @@ class FPSFilterDataCard(FilterDataCard):
                 n_samples=data_dict.get("num_condition", [100])[0],
                 min_distance=data_dict.get("min_distance_condition", [0.01])[0],
                 backend=Config.get("nep", "backend", "auto"),
-                batch_size=Config.getint("nep", "gpu_batch_size", 1000),
+                chunk_max_atoms=Config.getint("nep", "chunk_max_atoms", 100000),
             )
         self.set_params(params)

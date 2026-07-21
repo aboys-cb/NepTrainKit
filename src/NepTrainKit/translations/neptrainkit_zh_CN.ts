@@ -2017,47 +2017,47 @@
 <context>
     <name>FPSFilterDataCard</name>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="40" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="42" />
         <source>Filter by FPS</source>
         <translation>按 FPS 筛选</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="47" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="49" />
         <source>NEP file path: </source>
         <translation>NEP 文件路径：</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="50" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="52" />
         <source>nep.txt path</source>
         <translation>nep.txt 路径</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="51" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="53" />
         <source>Path to NEP model</source>
         <translation>NEP 模型路径</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="58" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="60" />
         <source>Max selected</source>
         <translation>最多选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="64" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="66" />
         <source>Number of structures to keep</source>
         <translation>要保留的结构数量</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="73" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="75" />
         <source>Min distance</source>
         <translation>最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="74" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="76" />
         <source>Minimum distance between samples</source>
         <translation>最小 距离 between samples</translation>
     </message>
     <message>
-        <location filename="../ui/views/_card/fps_filter_card.py" line="123" />
+        <location filename="../ui/views/_card/fps_filter_card.py" line="127" />
         <source>Generating descriptors...</source>
         <translation>正在生成描述符……</translation>
     </message>
@@ -3350,23 +3350,23 @@
 <context>
     <name>MessageManager</name>
     <message>
-        <location filename="../ui/messages.py" line="255" />
-        <location filename="../ui/messages.py" line="295" />
+        <location filename="../ui/messages.py" line="266" />
+        <location filename="../ui/messages.py" line="306" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="265" />
+        <location filename="../ui/messages.py" line="276" />
         <source>Success</source>
         <translation>成功</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="275" />
+        <location filename="../ui/messages.py" line="286" />
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../ui/messages.py" line="285" />
+        <location filename="../ui/messages.py" line="296" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -3800,6 +3800,14 @@ All child items will also be deleted.</source>
         <location filename="../main.py" line="447" />
         <source>Full phase analysis failed: {message}</source>
         <translation>完整相分析失败：{message}</translation>
+    </message>
+</context>
+<context>
+    <name>NepTrainResultData</name>
+    <message>
+        <location filename="../core/io/nep.py" line="664" />
+        <source>Running NEP prediction: {done}/{total} structures</source>
+        <translation>正在运行 NEP 预测：{done}/{total} 个结构</translation>
     </message>
 </context>
 <context>
@@ -4543,10 +4551,18 @@ All child items will also be deleted.</source>
     </message>
 </context>
 <context>
+    <name>ResultData</name>
+    <message>
+        <location filename="../core/io/base.py" line="4086" />
+        <source>Generating NEP descriptors: {done}/{total} structures</source>
+        <translation>正在生成 NEP 描述符：{done}/{total} 个结构</translation>
+    </message>
+</context>
+<context>
     <name>RuntimeMessage</name>
     <message>
         <location filename="../ui/messages.py" line="15" />
-        <location filename="../ui/messages.py" line="212" />
+        <location filename="../ui/messages.py" line="223" />
         <source>__language_probe__</source>
         <translation>zh_CN</translation>
     </message>
@@ -4802,9 +4818,8 @@ All child items will also be deleted.</source>
         <translation>NEP 后端</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="219" />
         <source>Select CPU/GPU or Auto detection</source>
-        <translation>选择 CPU、GPU 或自动检测</translation>
+        <translation type="vanished">选择 CPU、GPU 或自动检测</translation>
     </message>
     <message>
         <location filename="../ui/pages/settings.py" line="235" />
@@ -4817,204 +4832,217 @@ All child items will also be deleted.</source>
         <translation>选择导入 DFT/结构数据的存储精度</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="246" />
         <source>GPU Batch Size</source>
-        <translation>GPU 批大小</translation>
+        <translation type="vanished">GPU 批大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="247" />
         <source>Batch of frames processed GPU slice</source>
-        <translation>GPU 每次处理的结构帧数</translation>
+        <translation type="vanished">GPU 每次处理的结构帧数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="269" />
+        <location filename="../ui/pages/settings.py" line="219" />
+        <source>Select CPU/CUDA or let Auto use CUDA when available</source>
+        <translation>选择 CPU/CUDA，或让自动模式在可用时使用 CUDA</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="245" />
+        <source>NEP Chunk Max Atoms</source>
+        <translation>NEP 分块最大原子数</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="246" />
+        <source>Maximum total atoms per prediction chunk on CPU or CUDA</source>
+        <translation>CPU 或 CUDA 单个预测分块允许的最大总原子数</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="268" />
         <source>Scatter edge color</source>
         <translation>散点边缘颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="270" />
+        <location filename="../ui/pages/settings.py" line="269" />
         <source>Default edge color for points</source>
         <translation>点的默认边缘颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="277" />
+        <location filename="../ui/pages/settings.py" line="276" />
         <source>Scatter face color</source>
         <translation>散点填充颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="278" />
+        <location filename="../ui/pages/settings.py" line="277" />
         <source>Default fill color for points</source>
         <translation>点的默认填充颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="285" />
+        <location filename="../ui/pages/settings.py" line="284" />
         <source>Face alpha (0-255)</source>
         <translation>填充透明度 (0-255)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="286" />
+        <location filename="../ui/pages/settings.py" line="285" />
         <source>Alpha channel for fill color</source>
         <translation>填充颜色的 Alpha 通道</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="294" />
+        <location filename="../ui/pages/settings.py" line="293" />
         <source>PyQtGraph scatter size</source>
         <translation>PyQtGraph 散点大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="295" />
+        <location filename="../ui/pages/settings.py" line="294" />
         <source>Marker size for PyQtGraph canvas</source>
         <translation>PyQtGraph 画布上的标记大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="303" />
+        <location filename="../ui/pages/settings.py" line="302" />
         <source>VisPy scatter size</source>
         <translation>VisPy 散点大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="304" />
+        <location filename="../ui/pages/settings.py" line="303" />
         <source>Marker size for VisPy canvas</source>
         <translation>VisPy 画布上的标记大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="312" />
+        <location filename="../ui/pages/settings.py" line="311" />
         <source>VisPy antialias</source>
         <translation>VisPy 抗锯齿</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="313" />
+        <location filename="../ui/pages/settings.py" line="312" />
         <source>Marker antialias value for VisPy (0-2)</source>
         <translation>VisPy 标记抗锯齿值 (0-2)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="321" />
+        <location filename="../ui/pages/settings.py" line="320" />
         <source>Structure background</source>
         <translation>结构背景</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="322" />
+        <location filename="../ui/pages/settings.py" line="321" />
         <source>Background color for lattice/structure viewer</source>
         <translation>晶格/结构查看器的背景颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="329" />
+        <location filename="../ui/pages/settings.py" line="328" />
         <source>Lattice line color</source>
         <translation>晶格线颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="330" />
+        <location filename="../ui/pages/settings.py" line="329" />
         <source>Line color for lattice edges in structure viewer</source>
         <translation>结构查看器中晶格边线的颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="337" />
+        <location filename="../ui/pages/settings.py" line="336" />
         <source>Selected color</source>
         <translation>选中颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="338" />
+        <location filename="../ui/pages/settings.py" line="337" />
         <source>Color for selected points</source>
         <translation>选中点的颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="345" />
+        <location filename="../ui/pages/settings.py" line="344" />
         <source>Show color</source>
         <translation>显示颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="346" />
+        <location filename="../ui/pages/settings.py" line="345" />
         <source>Color for highlighted "show" points</source>
         <translation>高亮“show”点的颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="353" />
+        <location filename="../ui/pages/settings.py" line="352" />
         <source>Current marker color</source>
         <translation>当前标记颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="354" />
+        <location filename="../ui/pages/settings.py" line="353" />
         <source>Color for current star marker</source>
         <translation>当前星形标记的颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="361" />
+        <location filename="../ui/pages/settings.py" line="360" />
         <source>Current marker size</source>
         <translation>当前标记大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="362" />
+        <location filename="../ui/pages/settings.py" line="361" />
         <source>Size of current star marker</source>
         <translation>当前星形标记的大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="369" />
-        <location filename="../ui/pages/settings.py" line="389" />
+        <location filename="../ui/pages/settings.py" line="368" />
+        <location filename="../ui/pages/settings.py" line="388" />
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="372" />
+        <location filename="../ui/pages/settings.py" line="371" />
         <source>Open Help Page</source>
         <translation>打开帮助页面</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="374" />
+        <location filename="../ui/pages/settings.py" line="373" />
         <source>Help</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="375" />
+        <location filename="../ui/pages/settings.py" line="374" />
         <source>Discover new features and learn useful tips about NepTrainKit.</source>
         <translation>了解 NepTrainKit 的新功能与实用技巧。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="379" />
-        <location filename="../ui/pages/settings.py" line="381" />
+        <location filename="../ui/pages/settings.py" line="378" />
+        <location filename="../ui/pages/settings.py" line="380" />
         <source>Submit Feedback</source>
         <translation>提交反馈</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="383" />
+        <location filename="../ui/pages/settings.py" line="382" />
         <source>Help us improve NepTrainKit by providing feedback.</source>
         <translation>帮助我们改进 NepTrainKit，欢迎提交反馈。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="387" />
+        <location filename="../ui/pages/settings.py" line="386" />
         <source>Check for Updates</source>
         <translation>检查更新</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="394" />
+        <location filename="../ui/pages/settings.py" line="393" />
         <source>Check and update</source>
         <translation>检查并更新</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="396" />
+        <location filename="../ui/pages/settings.py" line="395" />
         <source>About NEP89</source>
         <translation>关于 NEP89</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="397" />
+        <location filename="../ui/pages/settings.py" line="396" />
         <source>NEP official NEP89 large model</source>
         <translation>NEP 官方 NEP89 大模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="522" />
+        <location filename="../ui/pages/settings.py" line="521" />
         <source>Language saved. Restart NepTrainKit to apply it.</source>
         <translation>语言设置已保存，重启 NepTrainKit 后生效。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="523" />
+        <location filename="../ui/pages/settings.py" line="522" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="556" />
+        <location filename="../ui/pages/settings.py" line="555" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="563" />
+        <location filename="../ui/pages/settings.py" line="562" />
         <source>New version available: v</source>
         <translation>发现新版本：v</translation>
     </message>
@@ -5287,191 +5315,192 @@ All child items will also be deleted.</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="565" />
+        <location filename="../ui/pages/show_nep.py" line="570" />
         <source>Failed to switch NEP model</source>
         <translation>切换 NEP 模型失败</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="638" />
+        <location filename="../ui/pages/show_nep.py" line="644" />
         <source>Current structure (original file index):</source>
         <translation>当前结构（原始文件序号）：</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="666" />
+        <location filename="../ui/pages/show_nep.py" line="672" />
         <source>Tip is the minimum distance between atoms in the current structure, in Å.</source>
         <translation>Tip 表示当前结构中原子间的最小距离，单位为 Å。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="675" />
+        <location filename="../ui/pages/show_nep.py" line="681" />
         <source>Net force of the current structure (sum of all atomic forces).</source>
         <translation>当前结构的净力（所有原子力之和）。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="712" />
+        <location filename="../ui/pages/show_nep.py" line="718" />
         <source>Config_type</source>
         <translation>Config_type</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="713" />
+        <location filename="../ui/pages/show_nep.py" line="719" />
         <source>Formula</source>
         <translation>化学式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="714" />
+        <location filename="../ui/pages/show_nep.py" line="720" />
         <source>Elements</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="715" />
+        <location filename="../ui/pages/show_nep.py" line="721" />
         <source>Expression</source>
         <translation>表达式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="716" />
+        <location filename="../ui/pages/show_nep.py" line="722" />
         <source>Switch search mode</source>
         <translation>切换搜索模式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="742" />
+        <location filename="../ui/pages/show_nep.py" line="748" />
         <source>Switch NEP model</source>
         <translation>切换 NEP 模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="779" />
+        <location filename="../ui/pages/show_nep.py" line="785" />
         <source>Arrow overlay is available only for vispy structure canvas.</source>
         <translation>箭头叠加只在 vispy 结构画布中可用。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="793" />
+        <location filename="../ui/pages/show_nep.py" line="799" />
         <source>Searching…</source>
         <translation>正在搜索…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="797" />
+        <location filename="../ui/pages/show_nep.py" line="803" />
         <source>Indexing…</source>
         <translation>正在建立索引…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="901" />
-        <location filename="../ui/pages/show_nep.py" line="1057" />
+        <location filename="../ui/pages/show_nep.py" line="907" />
+        <location filename="../ui/pages/show_nep.py" line="1063" />
+        <location filename="../ui/pages/show_nep.py" line="1176" />
         <source>unsupported file format</source>
         <translation>不支持的文件格式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="928" />
-        <location filename="../ui/pages/show_nep.py" line="945" />
-        <location filename="../ui/pages/show_nep.py" line="985" />
-        <location filename="../ui/pages/show_nep.py" line="1015" />
-        <location filename="../ui/pages/show_nep.py" line="1433" />
-        <location filename="../ui/pages/show_nep.py" line="1754" />
+        <location filename="../ui/pages/show_nep.py" line="934" />
+        <location filename="../ui/pages/show_nep.py" line="951" />
+        <location filename="../ui/pages/show_nep.py" line="991" />
+        <location filename="../ui/pages/show_nep.py" line="1021" />
+        <location filename="../ui/pages/show_nep.py" line="1455" />
+        <location filename="../ui/pages/show_nep.py" line="1776" />
         <source>NEP data has not been loaded yet!</source>
         <translation>尚未加载 NEP 数据！</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="952" />
+        <location filename="../ui/pages/show_nep.py" line="958" />
         <source>No active structures to export.</source>
         <translation>没有可导出的保留结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="988" />
+        <location filename="../ui/pages/show_nep.py" line="994" />
         <source>Please select some structures first!</source>
         <translation>请先选择一些结构！</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1019" />
+        <location filename="../ui/pages/show_nep.py" line="1025" />
         <source>No removed structures to export.</source>
         <translation>没有可导出的已移除结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1069" />
-        <location filename="../ui/pages/show_nep.py" line="1764" />
+        <location filename="../ui/pages/show_nep.py" line="1075" />
+        <location filename="../ui/pages/show_nep.py" line="1786" />
         <source>Confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1070" />
+        <location filename="../ui/pages/show_nep.py" line="1076" />
         <source>A working directory already exists. Loading a new directory will erase the previous results.
 Do you want to load the new working path?</source>
         <translation>已有工作目录。加载新目录会清除之前的结果。
 仍要加载新的工作路径吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1163" />
+        <location filename="../ui/pages/show_nep.py" line="1181" />
         <source>Current file: {file_name}</source>
         <translation>当前文件：{file_name}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1201" />
+        <location filename="../ui/pages/show_nep.py" line="1219" />
         <source>Loading</source>
         <translation>正在加载</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1201" />
+        <location filename="../ui/pages/show_nep.py" line="1219" />
         <source>Please wait patiently...</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1294" />
+        <location filename="../ui/pages/show_nep.py" line="1316" />
         <source>Failed to build search completer cache: {msg}</source>
         <translation>构建搜索补全缓存失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1333" />
+        <location filename="../ui/pages/show_nep.py" line="1355" />
         <source>Search failed: {msg}</source>
         <translation>搜索失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1427" />
+        <location filename="../ui/pages/show_nep.py" line="1449" />
         <source>File exported to: {save_file_path}</source>
         <translation>文件已导出到：{save_file_path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1605" />
+        <location filename="../ui/pages/show_nep.py" line="1627" />
         <source>Arrow overlay is unavailable for current structure canvas backend.</source>
         <translation>当前结构绘图后端不支持箭头叠加。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1616" />
+        <location filename="../ui/pages/show_nep.py" line="1638" />
         <source>No vector data available</source>
         <translation>没有可用的矢量数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1759" />
+        <location filename="../ui/pages/show_nep.py" line="1781" />
         <source>No bad structures tagged.</source>
         <translation>没有标记为异常的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1765" />
+        <location filename="../ui/pages/show_nep.py" line="1787" />
         <source>This will delete {count} structures marked as bad.
 Do you want to continue?</source>
         <translation>这将删除 {count} 个标记为异常的结构。
 要继续吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1776" />
+        <location filename="../ui/pages/show_nep.py" line="1798" />
         <source>Failed to delete rejected structures.</source>
         <translation>删除已剔除结构失败。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1839" />
+        <location filename="../ui/pages/show_nep.py" line="1861" />
         <source>The distance between atoms is too small, and the structure may be unreasonable.</source>
         <translation>原子间距过小，结构可能不合理。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1884" />
-        <location filename="../ui/pages/show_nep.py" line="1972" />
+        <location filename="../ui/pages/show_nep.py" line="1906" />
+        <location filename="../ui/pages/show_nep.py" line="1994" />
         <source>Please enter a search query.</source>
         <translation>请输入搜索内容。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1896" />
-        <location filename="../ui/pages/show_nep.py" line="1910" />
+        <location filename="../ui/pages/show_nep.py" line="1918" />
+        <location filename="../ui/pages/show_nep.py" line="1932" />
         <source>Please load a dataset before running Training Set Check.</source>
         <translation>请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1903" />
-        <location filename="../ui/pages/show_nep.py" line="1920" />
+        <location filename="../ui/pages/show_nep.py" line="1925" />
+        <location filename="../ui/pages/show_nep.py" line="1942" />
         <source>Training Set Check page is not available.</source>
         <translation>训练集评估页面不可用。</translation>
     </message>
@@ -7868,74 +7897,74 @@ Do you want to continue?</source>
         <translation>元素对支持</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3888" />
+        <location filename="../ui/pages/training_set_audit.py" line="3890" />
         <source>Share of structure frames</source>
         <translation>结构帧占比</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3906" />
+        <location filename="../ui/pages/training_set_audit.py" line="3913" />
         <source>Magnetic types inside each structural phase</source>
         <translation>各结构相中的磁类型占比</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3919" />
+        <location filename="../ui/pages/training_set_audit.py" line="3926" />
         <source>Structural phases inside each magnetic type</source>
         <translation>各磁类型中的结构相占比</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3926" />
+        <location filename="../ui/pages/training_set_audit.py" line="3933" />
         <source>Magnetic type</source>
         <translation>磁类型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3933" />
+        <location filename="../ui/pages/training_set_audit.py" line="3940" />
         <source>Magnetic-type shares in the audited dataset</source>
         <translation>当前训练集的磁类型占比</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3940" />
+        <location filename="../ui/pages/training_set_audit.py" line="3947" />
         <source>Audited scope</source>
         <translation>当前评估范围</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4015" />
+        <location filename="../ui/pages/training_set_audit.py" line="4022" />
         <source>Data blocker</source>
         <translation>数据阻塞</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4016" />
+        <location filename="../ui/pages/training_set_audit.py" line="4023" />
         <source>Review</source>
         <translation>建议复核</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4017" />
+        <location filename="../ui/pages/training_set_audit.py" line="4024" />
         <source>Thin distribution</source>
         <translation>样本较少</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4019" />
+        <location filename="../ui/pages/training_set_audit.py" line="4026" />
         <source>Possible redundancy</source>
         <translation>可能冗余</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4020" />
+        <location filename="../ui/pages/training_set_audit.py" line="4027" />
         <source>Information</source>
         <translation>信息</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4025" />
+        <location filename="../ui/pages/training_set_audit.py" line="4032" />
         <source>Calculated</source>
         <translation>已计算</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4026" />
+        <location filename="../ui/pages/training_set_audit.py" line="4033" />
         <source>Partial data</source>
         <translation>部分数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3972" />
-        <location filename="../ui/pages/training_set_audit.py" line="4009" />
-        <location filename="../ui/pages/training_set_audit.py" line="4027" />
+        <location filename="../ui/pages/training_set_audit.py" line="3979" />
+        <location filename="../ui/pages/training_set_audit.py" line="4016" />
+        <location filename="../ui/pages/training_set_audit.py" line="4034" />
         <source>Not calculated</source>
         <translation>未计算</translation>
     </message>
@@ -8155,7 +8184,7 @@ Do you want to continue?</source>
         <translation type="vanished">元素对接触</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4018" />
+        <location filename="../ui/pages/training_set_audit.py" line="4025" />
         <source>Imbalance</source>
         <translation>不平衡</translation>
     </message>
@@ -8188,17 +8217,17 @@ Do you want to continue?</source>
         <translation type="vanished">不可用</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4039" />
+        <location filename="../ui/pages/training_set_audit.py" line="4046" />
         <source>Run Training Set Audit before exporting a report.</source>
         <translation>请先运行训练集评估，再导出报告。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4044" />
+        <location filename="../ui/pages/training_set_audit.py" line="4051" />
         <source>Export Training Set Audit report</source>
         <translation>导出训练集评估报告</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4052" />
+        <location filename="../ui/pages/training_set_audit.py" line="4059" />
         <source>Training Set Audit report exported to: {path}</source>
         <translation>训练集评估报告已导出至：{path}</translation>
     </message>
@@ -8281,7 +8310,7 @@ Do you want to continue?</source>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="1969" />
         <location filename="../ui/pages/training_set_audit.py" line="2038" />
-        <location filename="../ui/pages/training_set_audit.py" line="3938" />
+        <location filename="../ui/pages/training_set_audit.py" line="3945" />
         <source>All structures</source>
         <translation>全部结构</translation>
     </message>
@@ -8419,12 +8448,12 @@ Do you want to continue?</source>
         <translation>混合局域结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3966" />
+        <location filename="../ui/pages/training_set_audit.py" line="3973" />
         <source>Calculated · {count:,} structures</source>
         <translation>已计算 · {count:,} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3970" />
+        <location filename="../ui/pages/training_set_audit.py" line="3977" />
         <source>Calculating all structures</source>
         <translation>正在计算全部结构</translation>
     </message>
@@ -8814,7 +8843,7 @@ Do you want to continue?</source>
         <translation>界面渲染：{milliseconds} 毫秒</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3913" />
+        <location filename="../ui/pages/training_set_audit.py" line="3920" />
         <source>Structural phase</source>
         <translation>结构相</translation>
     </message>
@@ -9062,17 +9091,17 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">结构级磁序模式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4001" />
+        <location filename="../ui/pages/training_set_audit.py" line="4008" />
         <source>Calculated · {count:,} spin structures</source>
         <translation>已计算 · {count:,} 个含自旋结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4005" />
+        <location filename="../ui/pages/training_set_audit.py" line="4012" />
         <source>Calculating all spin structures</source>
         <translation>正在计算全部含自旋结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4007" />
+        <location filename="../ui/pages/training_set_audit.py" line="4014" />
         <source>No spin:R:3 data</source>
         <translation>无 spin:R:3 数据</translation>
     </message>

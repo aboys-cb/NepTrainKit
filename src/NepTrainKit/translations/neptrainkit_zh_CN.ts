@@ -256,6 +256,444 @@
     </message>
     </context>
 <context>
+    <name>CardCatalog</name>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="34" />
+        <source>Bain Path</source>
+        <translation>Bain 路径</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="35" />
+        <source>Generate fixed-structure Bain/tetragonal distortion paths.</source>
+        <translation>生成固定原子结构的 Bain/四方畸变路径。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="38" />
+        <source>Card Group</source>
+        <translation>卡片组</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="39" />
+        <source>Group container that executes child cards in sequence and aggregates outputs.</source>
+        <translation>将子卡片按顺序执行并汇总输出的容器。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="42" />
+        <source>Lattice Perturb</source>
+        <translation>晶格随机扰动</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="43" />
+        <source>Generate perturbed lattice structures using stochastic scaling factors.</source>
+        <translation>使用随机缩放因子生成晶格扰动结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="46" />
+        <source>Lattice Strain</source>
+        <translation>晶格应变</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="47" />
+        <source>Produce strained lattice variants along user-selected axes and ranges.</source>
+        <translation>沿用户选择的轴和范围生成晶格应变结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="50" />
+        <source>Composition Gradient</source>
+        <translation>组分梯度</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="51" />
+        <source>Assign atom types from a layerwise composition gradient.</source>
+        <translation>按分层组分梯度分配原子种类。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="54" />
+        <source>Composition Sweep</source>
+        <translation>组分扫描</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="55" />
+        <source>Create multiple copies per input structure, each annotated with a target composition.</source>
+        <translation>为每个输入结构生成多份副本，并分别标注目标组分。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="58" />
+        <source>Conditional Replace</source>
+        <translation>条件替换</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="59" />
+        <source>Replace atoms in the active structures using spatial conditions and ratios.</source>
+        <translation>按空间条件和比例替换当前结构中的原子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="62" />
+        <source>Correlated Random Spin</source>
+        <translation>关联随机自旋</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="63" />
+        <source>Generate non-collinear random spins with an explicit spatial correlation length.</source>
+        <translation>生成具有明确空间关联长度的非共线随机自旋。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="66" />
+        <source>Crystal Prototype Builder</source>
+        <translation>晶体原型构建</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="67" />
+        <source>Generate simple bulk crystal prototypes without requiring input structures.</source>
+        <translation>无需输入结构即可生成常见块体晶体原型。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="70" />
+        <source>FPS Filter</source>
+        <translation>FPS 筛选</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="71" />
+        <source>Filter dataset entries via farthest point sampling computed from NEP descriptors.</source>
+        <translation>基于 NEP 描述符计算最远点采样，筛选数据集结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="74" />
+        <source>Folded Helix</source>
+        <translation>折返螺旋磁序</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="75" />
+        <source>Assign symmetric clockwise-then-counterclockwise layered helix moments.</source>
+        <translation>分层设置先顺时针后逆时针的对称折返螺旋磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="78" />
+        <source>Geometry Filter</source>
+        <translation>几何筛选</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="79" />
+        <source>Reject structures that violate explicit geometry-quality thresholds.</source>
+        <translation>剔除违反明确几何质量阈值的结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="82" />
+        <source>Group Label</source>
+        <translation>分组标记</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="83" />
+        <source>Attach atoms.arrays['group'] labels using common, lattice-agnostic rules.</source>
+        <translation>按通用且不依赖晶格的规则写入 atoms.arrays['group'] 分组标签。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="86" />
+        <source>Insert Defect</source>
+        <translation>插入缺陷</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="87" />
+        <source>Create interstitial or surface-adsorbate configurations.</source>
+        <translation>生成间隙缺陷或表面吸附构型。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="90" />
+        <source>Layer Copy</source>
+        <translation>层复制</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="91" />
+        <source>Warp a structure by dz=f(x,y), then copy and translate it along z into one stack.</source>
+        <translation>先按 dz=f(x,y) 翘曲结构，再沿 z 方向复制平移并合并为堆叠结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="94" />
+        <source>Local Solvation</source>
+        <translation>局域溶剂化</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="95" />
+        <source>Generate local solvent shells around selected atoms.</source>
+        <translation>在选定原子周围生成局域溶剂壳层。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="98" />
+        <source>Magmom Rotation</source>
+        <translation>磁矩旋转</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="99" />
+        <source>Rotate and optionally rescale atomic magnetic moments for selected species.</source>
+        <translation>旋转选定元素的原子磁矩，并可调整其大小。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="102" />
+        <source>Magnetic Order</source>
+        <translation>磁序</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="103" />
+        <source>Assign initial magnetic moments and generate common collinear spin patterns.</source>
+        <translation>设置初始磁矩并生成常见共线磁序构型。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="106" />
+        <source>Organic Mol Config</source>
+        <translation>有机分子构型</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="107" />
+        <source>Create torsion-driven molecular configurations using the TorsionGuard PBC workflow.</source>
+        <translation>使用 TorsionGuard 周期性边界流程生成扭转驱动的分子构型。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="110" />
+        <source>Atomic Perturb</source>
+        <translation>原子扰动</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="111" />
+        <source>Apply random atomic displacements within a configurable distance budget.</source>
+        <translation>在可配置的位移范围内随机扰动原子位置。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="114" />
+        <source>Random Doping</source>
+        <translation>随机掺杂</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="115" />
+        <source>Perform random atomic substitutions according to user-specified doping rules.</source>
+        <translation>按用户设定的掺杂规则随机替换原子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="118" />
+        <source>Random Occupancy</source>
+        <translation>随机占位</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="119" />
+        <source>Assign alloy elements to all or grouped lattice sites using a target composition.</source>
+        <translation>按目标组分向全部或指定分组的晶格位点分配合金元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="122" />
+        <source>Random Packing</source>
+        <translation>随机原子堆积</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="123" />
+        <source>Generate random atomic coordinates while preserving cell constraints.</source>
+        <translation>在保持晶胞约束的前提下生成随机原子坐标。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="126" />
+        <source>Random Slab</source>
+        <translation>随机表面板层</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="127" />
+        <source>Construct surface slabs across multiple Miller indices and thicknesses.</source>
+        <translation>针对多个 Miller 指数和厚度构建表面板层。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="130" />
+        <source>Random Vacancy</source>
+        <translation>随机空位</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="131" />
+        <source>Create vacancy structures by probabilistically removing atoms according to rules.</source>
+        <translation>按规则以概率方式移除原子，生成空位结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="134" />
+        <source>Set Magnetic Moments</source>
+        <translation>设置磁矩</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="135" />
+        <source>Set or convert magnetic moments into a consistent scalar or vector representation.</source>
+        <translation>设置磁矩，或在标量与矢量表示之间转换。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="138" />
+        <source>Shear Angle Strain</source>
+        <translation>剪切角应变</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="139" />
+        <source>Perturb lattice angles while preserving cell lengths.</source>
+        <translation>保持晶胞边长不变，扰动晶格角度。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="142" />
+        <source>Shear Matrix Strain</source>
+        <translation>剪切矩阵应变</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="143" />
+        <source>Apply shear matrices along the principal lattice planes.</source>
+        <translation>沿主要晶格平面施加剪切矩阵。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="146" />
+        <source>Small-Angle Spin Tilt</source>
+        <translation>小角度自旋倾斜</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="147" />
+        <source>Generate deterministic single-spin small-angle tilt configurations.</source>
+        <translation>生成确定性的单自旋小角度倾斜构型。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="150" />
+        <source>Solvent Box Fill</source>
+        <translation>溶剂盒填充</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="151" />
+        <source>Fill an existing periodic cell with solvent molecules.</source>
+        <translation>向现有周期性晶胞填充溶剂分子。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="154" />
+        <source>Spin Disorder</source>
+        <translation>自旋无序</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="155" />
+        <source>Generate spin states with explicit disorder fractions.</source>
+        <translation>按明确的无序比例生成自旋状态。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="158" />
+        <source>Spin Spiral</source>
+        <translation>自旋螺旋</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="159" />
+        <source>Assign non-collinear spiral magnetic moments using a 1D phase field.</source>
+        <translation>使用一维相位场设置非共线螺旋磁矩。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="162" />
+        <source>Stacking Fault</source>
+        <translation>层错</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="163" />
+        <source>Generate stacking-fault or twin structures.</source>
+        <translation>生成层错或孪晶结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="166" />
+        <source>Strict GSFE Path</source>
+        <translation>严格 GSFE 路径</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="167" />
+        <source>Generate unrelaxed GSFE structures with an explicit plane and slip direction.</source>
+        <translation>按明确的滑移面和滑移方向生成未弛豫 GSFE 结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="170" />
+        <source>Super Cell</source>
+        <translation>扩胞</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="171" />
+        <source>Create supercells from fixed scale factors, target lattice lengths, or atom limits.</source>
+        <translation>按固定扩胞倍数、目标晶格长度或原子数上限生成超胞。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="174" />
+        <source>Vacancy Defect Generation</source>
+        <translation>空位缺陷生成</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="175" />
+        <source>Sample vacancy defects by concentration or explicit counts.</source>
+        <translation>按空位浓度或明确数量采样空位缺陷。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="178" />
+        <source>Vib Mode Perturb</source>
+        <translation>振动模式扰动</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="179" />
+        <source>Generate perturbations along precomputed vibrational modes.</source>
+        <translation>沿预先计算的振动模式生成扰动结构。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="183" />
+        <source>Alloy</source>
+        <translation>合金与组分</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="184" />
+        <source>Container</source>
+        <translation>容器</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="185" />
+        <source>Defect</source>
+        <translation>缺陷</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="186" />
+        <source>Filter</source>
+        <translation>筛选</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="187" />
+        <source>Lattice</source>
+        <translation>晶格</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="188" />
+        <source>Magnetism</source>
+        <translation>磁性</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="189" />
+        <source>Organic</source>
+        <translation>分子与溶剂</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="190" />
+        <source>Perturbation</source>
+        <translation>扰动</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="191" />
+        <source>Structure</source>
+        <translation>结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="192" />
+        <source>Surface</source>
+        <translation>表面</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="195" />
+        <source>author</source>
+        <translation>作者</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="196" />
+        <source>maintainer</source>
+        <translation>维护者</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="197" />
+        <source>contributor</source>
+        <translation>贡献者</translation>
+    </message>
+</context>
+<context>
     <name>CardCombo</name>
     <message>
         <location filename="../ui/views/_card/i18n_utils.py" line="30" />
@@ -699,32 +1137,32 @@
 <context>
     <name>CardLibraryDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="409" />
+        <location filename="../ui/widgets/card_metadata.py" line="609" />
         <source>Card library</source>
         <translation>卡片库</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="417" />
+        <location filename="../ui/widgets/card_metadata.py" line="617" />
         <source>Make Dataset cards</source>
         <translation>Make Dataset 卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="427" />
+        <location filename="../ui/widgets/card_metadata.py" line="627" />
         <source>Search by card name, group, or description</source>
         <translation>按卡片名称、分组或说明搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="476" />
+        <location filename="../ui/widgets/card_metadata.py" line="676" />
         <source>Add selected card</source>
         <translation>添加所选卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="481" />
+        <location filename="../ui/widgets/card_metadata.py" line="681" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="547" />
+        <location filename="../ui/widgets/card_metadata.py" line="751" />
         <source>{count} cards</source>
         <translation>{count} 张卡片</translation>
     </message>
@@ -732,93 +1170,94 @@
 <context>
     <name>CardMetadata</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="37" />
-        <source>Not specified</source>
-        <translation>未填写</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/card_metadata.py" line="46" />
-        <source>Contributors: {contributors}</source>
-        <translation>贡献者：{contributors}</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/card_metadata.py" line="48" />
-        <source>Version: {version}</source>
-        <translation>版本：{version}</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/card_metadata.py" line="55" />
+        <location filename="../ui/widgets/card_metadata.py" line="203" />
+        <location filename="../ui/widgets/card_metadata.py" line="252" />
         <source>Built-in</source>
         <translation>内置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="57" />
+        <location filename="../ui/widgets/card_metadata.py" line="233" />
+        <source>Not specified</source>
+        <translation>未填写</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="243" />
+        <source>Contributors: {contributors}</source>
+        <translation>贡献者：{contributors}</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="245" />
+        <source>Version: {version}</source>
+        <translation>版本：{version}</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_metadata.py" line="254" />
         <source>Custom</source>
         <translation>自定义</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="58" />
+        <location filename="../ui/widgets/card_metadata.py" line="255" />
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="69" />
-        <location filename="../ui/widgets/card_metadata.py" line="102" />
+        <location filename="../ui/widgets/card_metadata.py" line="266" />
+        <location filename="../ui/widgets/card_metadata.py" line="299" />
         <source>Contributors</source>
         <translation>贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="70" />
+        <location filename="../ui/widgets/card_metadata.py" line="267" />
         <source>No public contributor metadata yet.</source>
         <translation>暂无公开贡献者元数据。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="110" />
+        <location filename="../ui/widgets/card_metadata.py" line="310" />
         <source>Class</source>
         <translation>类名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="111" />
+        <location filename="../ui/widgets/card_metadata.py" line="311" />
         <source>Group</source>
         <translation>分组方式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="112" />
+        <location filename="../ui/widgets/card_metadata.py" line="312" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="113" />
+        <location filename="../ui/widgets/card_metadata.py" line="313" />
         <source>Maintainer</source>
         <translation>维护者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="114" />
+        <location filename="../ui/widgets/card_metadata.py" line="314" />
         <source>License</source>
         <translation>许可证</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="115" />
+        <location filename="../ui/widgets/card_metadata.py" line="315" />
         <source>Source</source>
         <translation>来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="116" />
+        <location filename="../ui/widgets/card_metadata.py" line="316" />
         <source>Source path</source>
         <translation>源路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="323" />
+        <location filename="../ui/widgets/card_metadata.py" line="523" />
         <source>Make Dataset Card</source>
         <translation>Make Dataset 卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="354" />
+        <location filename="../ui/widgets/card_metadata.py" line="554" />
         <source>Metadata</source>
         <translation>元数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="366" />
+        <location filename="../ui/widgets/card_metadata.py" line="566" />
         <source>Citation</source>
         <translation>引用</translation>
     </message>
@@ -826,12 +1265,12 @@
 <context>
     <name>CardMetadataDialog</name>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="379" />
+        <location filename="../ui/widgets/card_metadata.py" line="579" />
         <source>Card info - {card_name}</source>
         <translation>卡片信息 - {card_name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_metadata.py" line="394" />
+        <location filename="../ui/widgets/card_metadata.py" line="594" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>

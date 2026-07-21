@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from html import escape
 from pathlib import Path
 
@@ -25,9 +26,208 @@ def _tr(text: str) -> str:
     return QCoreApplication.translate("CardMetadata", text)
 
 
+@lru_cache(maxsize=4)
+def _localized_catalog(_language_marker: str):
+    """Return card catalog text for the currently installed Qt translator."""
+    names_and_descriptions = {
+        "BainPathCard": (
+            QCoreApplication.translate("CardCatalog", "Bain Path"),
+            QCoreApplication.translate("CardCatalog", "Generate fixed-structure Bain/tetragonal distortion paths."),
+        ),
+        "CardGroup": (
+            QCoreApplication.translate("CardCatalog", "Card Group"),
+            QCoreApplication.translate("CardCatalog", "Group container that executes child cards in sequence and aggregates outputs."),
+        ),
+        "CellScalingCard": (
+            QCoreApplication.translate("CardCatalog", "Lattice Perturb"),
+            QCoreApplication.translate("CardCatalog", "Generate perturbed lattice structures using stochastic scaling factors."),
+        ),
+        "CellStrainCard": (
+            QCoreApplication.translate("CardCatalog", "Lattice Strain"),
+            QCoreApplication.translate("CardCatalog", "Produce strained lattice variants along user-selected axes and ranges."),
+        ),
+        "CompositionGradientCard": (
+            QCoreApplication.translate("CardCatalog", "Composition Gradient"),
+            QCoreApplication.translate("CardCatalog", "Assign atom types from a layerwise composition gradient."),
+        ),
+        "CompositionSweepCard": (
+            QCoreApplication.translate("CardCatalog", "Composition Sweep"),
+            QCoreApplication.translate("CardCatalog", "Create multiple copies per input structure, each annotated with a target composition."),
+        ),
+        "ConditionalReplaceCard": (
+            QCoreApplication.translate("CardCatalog", "Conditional Replace"),
+            QCoreApplication.translate("CardCatalog", "Replace atoms in the active structures using spatial conditions and ratios."),
+        ),
+        "CorrelatedRandomSpinCard": (
+            QCoreApplication.translate("CardCatalog", "Correlated Random Spin"),
+            QCoreApplication.translate("CardCatalog", "Generate non-collinear random spins with an explicit spatial correlation length."),
+        ),
+        "CrystalPrototypeBuilderCard": (
+            QCoreApplication.translate("CardCatalog", "Crystal Prototype Builder"),
+            QCoreApplication.translate("CardCatalog", "Generate simple bulk crystal prototypes without requiring input structures."),
+        ),
+        "FPSFilterDataCard": (
+            QCoreApplication.translate("CardCatalog", "FPS Filter"),
+            QCoreApplication.translate("CardCatalog", "Filter dataset entries via farthest point sampling computed from NEP descriptors."),
+        ),
+        "FoldedHelixCard": (
+            QCoreApplication.translate("CardCatalog", "Folded Helix"),
+            QCoreApplication.translate("CardCatalog", "Assign symmetric clockwise-then-counterclockwise layered helix moments."),
+        ),
+        "GeometryFilterCard": (
+            QCoreApplication.translate("CardCatalog", "Geometry Filter"),
+            QCoreApplication.translate("CardCatalog", "Reject structures that violate explicit geometry-quality thresholds."),
+        ),
+        "GroupLabelCard": (
+            QCoreApplication.translate("CardCatalog", "Group Label"),
+            QCoreApplication.translate("CardCatalog", "Attach atoms.arrays['group'] labels using common, lattice-agnostic rules."),
+        ),
+        "InsertDefectCard": (
+            QCoreApplication.translate("CardCatalog", "Insert Defect"),
+            QCoreApplication.translate("CardCatalog", "Create interstitial or surface-adsorbate configurations."),
+        ),
+        "LayerCopyCard": (
+            QCoreApplication.translate("CardCatalog", "Layer Copy"),
+            QCoreApplication.translate("CardCatalog", "Warp a structure by dz=f(x,y), then copy and translate it along z into one stack."),
+        ),
+        "LocalSolvationCard": (
+            QCoreApplication.translate("CardCatalog", "Local Solvation"),
+            QCoreApplication.translate("CardCatalog", "Generate local solvent shells around selected atoms."),
+        ),
+        "MagneticMomentRotationCard": (
+            QCoreApplication.translate("CardCatalog", "Magmom Rotation"),
+            QCoreApplication.translate("CardCatalog", "Rotate and optionally rescale atomic magnetic moments for selected species."),
+        ),
+        "MagneticOrderCard": (
+            QCoreApplication.translate("CardCatalog", "Magnetic Order"),
+            QCoreApplication.translate("CardCatalog", "Assign initial magnetic moments and generate common collinear spin patterns."),
+        ),
+        "OrganicMolConfigPBCCard": (
+            QCoreApplication.translate("CardCatalog", "Organic Mol Config"),
+            QCoreApplication.translate("CardCatalog", "Create torsion-driven molecular configurations using the TorsionGuard PBC workflow."),
+        ),
+        "PerturbCard": (
+            QCoreApplication.translate("CardCatalog", "Atomic Perturb"),
+            QCoreApplication.translate("CardCatalog", "Apply random atomic displacements within a configurable distance budget."),
+        ),
+        "RandomDopingCard": (
+            QCoreApplication.translate("CardCatalog", "Random Doping"),
+            QCoreApplication.translate("CardCatalog", "Perform random atomic substitutions according to user-specified doping rules."),
+        ),
+        "RandomOccupancyCard": (
+            QCoreApplication.translate("CardCatalog", "Random Occupancy"),
+            QCoreApplication.translate("CardCatalog", "Assign alloy elements to all or grouped lattice sites using a target composition."),
+        ),
+        "RandomPackingCard": (
+            QCoreApplication.translate("CardCatalog", "Random Packing"),
+            QCoreApplication.translate("CardCatalog", "Generate random atomic coordinates while preserving cell constraints."),
+        ),
+        "RandomSlabCard": (
+            QCoreApplication.translate("CardCatalog", "Random Slab"),
+            QCoreApplication.translate("CardCatalog", "Construct surface slabs across multiple Miller indices and thicknesses."),
+        ),
+        "RandomVacancyCard": (
+            QCoreApplication.translate("CardCatalog", "Random Vacancy"),
+            QCoreApplication.translate("CardCatalog", "Create vacancy structures by probabilistically removing atoms according to rules."),
+        ),
+        "SetMagneticMomentsCard": (
+            QCoreApplication.translate("CardCatalog", "Set Magnetic Moments"),
+            QCoreApplication.translate("CardCatalog", "Set or convert magnetic moments into a consistent scalar or vector representation."),
+        ),
+        "ShearAngleCard": (
+            QCoreApplication.translate("CardCatalog", "Shear Angle Strain"),
+            QCoreApplication.translate("CardCatalog", "Perturb lattice angles while preserving cell lengths."),
+        ),
+        "ShearMatrixCard": (
+            QCoreApplication.translate("CardCatalog", "Shear Matrix Strain"),
+            QCoreApplication.translate("CardCatalog", "Apply shear matrices along the principal lattice planes."),
+        ),
+        "SmallAngleSpinTiltCard": (
+            QCoreApplication.translate("CardCatalog", "Small-Angle Spin Tilt"),
+            QCoreApplication.translate("CardCatalog", "Generate deterministic single-spin small-angle tilt configurations."),
+        ),
+        "SolventBoxFillCard": (
+            QCoreApplication.translate("CardCatalog", "Solvent Box Fill"),
+            QCoreApplication.translate("CardCatalog", "Fill an existing periodic cell with solvent molecules."),
+        ),
+        "SpinDisorderCard": (
+            QCoreApplication.translate("CardCatalog", "Spin Disorder"),
+            QCoreApplication.translate("CardCatalog", "Generate spin states with explicit disorder fractions."),
+        ),
+        "SpinSpiralCard": (
+            QCoreApplication.translate("CardCatalog", "Spin Spiral"),
+            QCoreApplication.translate("CardCatalog", "Assign non-collinear spiral magnetic moments using a 1D phase field."),
+        ),
+        "StackingFaultCard": (
+            QCoreApplication.translate("CardCatalog", "Stacking Fault"),
+            QCoreApplication.translate("CardCatalog", "Generate stacking-fault or twin structures."),
+        ),
+        "StrictGSFEPathCard": (
+            QCoreApplication.translate("CardCatalog", "Strict GSFE Path"),
+            QCoreApplication.translate("CardCatalog", "Generate unrelaxed GSFE structures with an explicit plane and slip direction."),
+        ),
+        "SuperCellCard": (
+            QCoreApplication.translate("CardCatalog", "Super Cell"),
+            QCoreApplication.translate("CardCatalog", "Create supercells from fixed scale factors, target lattice lengths, or atom limits."),
+        ),
+        "VacancyDefectCard": (
+            QCoreApplication.translate("CardCatalog", "Vacancy Defect Generation"),
+            QCoreApplication.translate("CardCatalog", "Sample vacancy defects by concentration or explicit counts."),
+        ),
+        "VibrationModePerturbCard": (
+            QCoreApplication.translate("CardCatalog", "Vib Mode Perturb"),
+            QCoreApplication.translate("CardCatalog", "Generate perturbations along precomputed vibrational modes."),
+        ),
+    }
+    groups = {
+        "Alloy": QCoreApplication.translate("CardCatalog", "Alloy"),
+        "Container": QCoreApplication.translate("CardCatalog", "Container"),
+        "Defect": QCoreApplication.translate("CardCatalog", "Defect"),
+        "Filter": QCoreApplication.translate("CardCatalog", "Filter"),
+        "Lattice": QCoreApplication.translate("CardCatalog", "Lattice"),
+        "Magnetism": QCoreApplication.translate("CardCatalog", "Magnetism"),
+        "Organic": QCoreApplication.translate("CardCatalog", "Organic"),
+        "Perturbation": QCoreApplication.translate("CardCatalog", "Perturbation"),
+        "Structure": QCoreApplication.translate("CardCatalog", "Structure"),
+        "Surface": QCoreApplication.translate("CardCatalog", "Surface"),
+    }
+    roles = {
+        "author": QCoreApplication.translate("CardCatalog", "author"),
+        "maintainer": QCoreApplication.translate("CardCatalog", "maintainer"),
+        "contributor": QCoreApplication.translate("CardCatalog", "contributor"),
+    }
+    return names_and_descriptions, groups, roles
+
+
+def _catalog():
+    return _localized_catalog(_tr("Built-in"))
+
+
+def localized_card_name(metadata: CardMetadata) -> str:
+    entry = _catalog()[0].get(metadata.class_name)
+    return entry[0] if entry else metadata.card_name
+
+
+def localized_card_description(metadata: CardMetadata) -> str:
+    entry = _catalog()[0].get(metadata.class_name)
+    return entry[1] if entry else metadata.description
+
+
+def localized_card_group(metadata: CardMetadata) -> str:
+    return _catalog()[1].get(metadata.group, metadata.group or "")
+
+
+def localized_contributor_role(role: str) -> str:
+    return _catalog()[2].get(role.strip().lower(), role)
+
+
 def contributor_label(contributor) -> str:
     """Return a compact public label for one contributor."""
-    role = f" ({contributor.role})" if contributor.role else ""
+    role = (
+        f" ({localized_contributor_role(contributor.role)})"
+        if contributor.role
+        else ""
+    )
     return f"{contributor.name}{role}"
 
 
@@ -40,9 +240,10 @@ def contributors_text(metadata: CardMetadata) -> str:
 
 def card_tooltip(metadata: CardMetadata) -> str:
     """Build a short tooltip for an Add Card action."""
-    lines = [metadata.card_name]
-    if metadata.description:
-        lines.append(metadata.description)
+    lines = [localized_card_name(metadata)]
+    description = localized_card_description(metadata)
+    if description:
+        lines.append(description)
     lines.append(_tr("Contributors: {contributors}").format(contributors=contributors_text(metadata)))
     if metadata.version:
         lines.append(_tr("Version: {version}").format(version=metadata.version))
@@ -73,7 +274,7 @@ def _contributors_html(metadata: CardMetadata) -> str:
     rows = []
     for contributor in metadata.contributors:
         name = escape(contributor.name)
-        role = escape(contributor.role or "author")
+        role = escape(localized_contributor_role(contributor.role or "author"))
         lines = [
             f'<div class="contributor-name">{name}</div>',
             f'<span class="role-chip">{role}</span>',
@@ -106,9 +307,12 @@ def _contributors_html(metadata: CardMetadata) -> str:
 
 def metadata_html(metadata: CardMetadata) -> str:
     """Render card metadata as compact HTML."""
+    card_name = localized_card_name(metadata)
+    description_text = localized_card_description(metadata)
+    group_text = localized_card_group(metadata)
     fields = [
         (_tr("Class"), metadata.class_name),
-        (_tr("Group"), metadata.group or ""),
+        (_tr("Group"), group_text),
         (_tr("Version"), metadata.version),
         (_tr("Maintainer"), metadata.maintainer),
         (_tr("License"), metadata.license),
@@ -117,14 +321,14 @@ def metadata_html(metadata: CardMetadata) -> str:
     ]
 
     chips = [f'<span class="chip chip-source">{escape(_source_label(metadata))}</span>']
-    if metadata.group:
-        chips.append(f'<span class="chip chip-group">{escape(metadata.group)}</span>')
+    if group_text:
+        chips.append(f'<span class="chip chip-group">{escape(group_text)}</span>')
     if metadata.version:
         chips.append(f'<span class="chip chip-version">v{escape(metadata.version)}</span>')
 
     description = (
-        f'<p class="description">{escape(metadata.description)}</p>'
-        if metadata.description
+        f'<p class="description">{escape(description_text)}</p>'
+        if description_text
         else f'<p class="description muted">{escape(_tr("No description provided."))}</p>'
     )
 
@@ -317,7 +521,7 @@ h3 {
   <div>{chips}</div>
 </div>
 """.format(
-            name=escape(metadata.card_name),
+            name=escape(card_name),
             description=description,
             chips=" ".join(chips),
             eyebrow=escape(_tr("Make Dataset Card")),
@@ -488,8 +692,9 @@ class CardLibraryDialog(QDialog):
             self._metadata_by_class.items(),
             key=lambda item: ((item[1].group or ""), item[1].card_name),
         ):
-            prefix = f"[{metadata.group}]  " if metadata.group else ""
-            item = QListWidgetItem(f"{prefix}{metadata.card_name}")
+            group = localized_card_group(metadata)
+            prefix = f"[{group}]  " if group else ""
+            item = QListWidgetItem(f"{prefix}{localized_card_name(metadata)}")
             item.setData(Qt.ItemDataRole.UserRole, class_name)
             item.setToolTip(card_tooltip(metadata))
             self.card_list.addItem(item)
@@ -530,6 +735,9 @@ class CardLibraryDialog(QDialog):
                     getattr(metadata, "card_name", ""),
                     getattr(metadata, "group", "") or "",
                     getattr(metadata, "description", "") or "",
+                    localized_card_name(metadata),
+                    localized_card_group(metadata),
+                    localized_card_description(metadata),
                 )
             ).casefold()
             item.setHidden(bool(query and query not in searchable))

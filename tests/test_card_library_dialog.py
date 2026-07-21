@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
-from PySide6.QtCore import QObject, Qt, Signal
+from PySide6.QtCore import QObject, Qt, QTranslator, Signal
 from PySide6.QtWidgets import QApplication
 
 from NepTrainKit.ui.views.cards import ConsoleWidget
@@ -60,6 +61,39 @@ class TestCardLibraryDialog(unittest.TestCase):
 
         self.assertFalse(dialog.add_button.isEnabled())
         self.assertTrue(dialog.result_count_label.text().startswith("0"))
+
+    def test_chinese_catalog_localizes_dynamic_card_metadata(self):
+        translator = QTranslator(self._app)
+        qm_path = (
+            Path(__file__).parents[1]
+            / "src"
+            / "NepTrainKit"
+            / "translations"
+            / "neptrainkit_zh_CN.qm"
+        )
+        self.assertTrue(translator.load(str(qm_path)))
+        self._app.installTranslator(translator)
+        try:
+            dialog = CardLibraryDialog()
+            item = next(
+                dialog.card_list.item(row)
+                for row in range(dialog.card_list.count())
+                if dialog.card_list.item(row).data(Qt.ItemDataRole.UserRole)
+                == "CompositionGradientCard"
+            )
+
+            self.assertIn("[合金与组分]", item.text())
+            self.assertIn("组分梯度", item.text())
+            dialog.card_list.setCurrentItem(item)
+            detail_text = dialog.detail.toPlainText()
+            self.assertIn("组分梯度", detail_text)
+            self.assertIn("按分层组分梯度分配原子种类", detail_text)
+            self.assertIn("作者", detail_text)
+
+            dialog.search_edit.setText("组分梯度")
+            self.assertFalse(item.isHidden())
+        finally:
+            self._app.removeTranslator(translator)
 
     def test_console_forwards_library_add_request(self):
         class FakeLibraryDialog(QObject):

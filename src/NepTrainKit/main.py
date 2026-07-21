@@ -257,7 +257,14 @@ class NepTrainKitMainWindow(FluentWindow):
             )
             return
         thread = getattr(self, "_make_dataset_handoff_thread", None)
-        if thread is not None and thread.isRunning():
+        try:
+            handoff_running = thread is not None and thread.isRunning()
+        except RuntimeError:
+            # run_in_thread deletes its QThread after completion.  Do not keep
+            # querying a stale PySide wrapper on the next handoff request.
+            self._make_dataset_handoff_thread = None
+            handoff_running = False
+        if handoff_running:
             MessageManager.send_info_message(
                 self.tr("Dataset handoff is already in progress.")
             )
@@ -280,6 +287,7 @@ class NepTrainKitMainWindow(FluentWindow):
             if self._make_dataset_handoff_pending_dir is not handoff_dir:
                 handoff_dir.cleanup()
                 return
+            self._make_dataset_handoff_thread = None
             previous_dir = self._make_dataset_handoff_dir
             self._make_dataset_handoff_dir = handoff_dir
             self._make_dataset_handoff_pending_dir = None
@@ -291,6 +299,7 @@ class NepTrainKitMainWindow(FluentWindow):
         def _handoff_failed(message: str) -> None:
             if self._make_dataset_handoff_pending_dir is handoff_dir:
                 self._make_dataset_handoff_pending_dir = None
+                self._make_dataset_handoff_thread = None
             handoff_dir.cleanup()
             MessageManager.send_error_message(
                 self.tr("Failed to prepare workflow output: {message}").format(

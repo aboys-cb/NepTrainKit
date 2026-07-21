@@ -451,7 +451,9 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         self.assertIn("not available", window.save_dir_button.tooltip)
 
     def test_make_dataset_output_handoff_opens_temporary_dataset_directly(self):
-        window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
+        window = main_module.NepTrainKitMainWindow.__new__(
+            main_module.NepTrainKitMainWindow
+        )
         window._make_dataset_handoff_thread = None
         window._make_dataset_handoff_dir = None
         window._make_dataset_handoff_pending_dir = None
@@ -482,7 +484,35 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window.show_nep_interface.check_nep_result.assert_called_once_with(
             result_path
         )
+        self.assertIsNone(window._make_dataset_handoff_thread)
         window._make_dataset_handoff_dir.cleanup()
+
+    def test_make_dataset_handoff_recovers_from_deleted_worker_wrapper(self):
+        class DeletedThread:
+            def isRunning(self):
+                raise RuntimeError("Internal C++ object already deleted")
+
+        window = main_module.NepTrainKitMainWindow.__new__(
+            main_module.NepTrainKitMainWindow
+        )
+        window._make_dataset_handoff_thread = DeletedThread()
+        window._make_dataset_handoff_dir = None
+        window._make_dataset_handoff_pending_dir = None
+        window.show_nep_interface = SimpleNamespace(check_nep_result=MagicMock())
+        window.switchTo = MagicMock()
+        replacement_thread = SimpleNamespace(isRunning=lambda: False)
+
+        with patch.object(
+            main_module, "run_in_thread", return_value=replacement_thread
+        ) as run_mock:
+            main_module.NepTrainKitMainWindow.open_make_dataset_output(
+                window,
+                [Atoms("Fe", positions=[[0.0, 0.0, 0.0]])],
+            )
+
+        run_mock.assert_called_once()
+        self.assertIs(window._make_dataset_handoff_thread, replacement_thread)
+        window._make_dataset_handoff_pending_dir.cleanup()
 
     def test_shipped_chinese_catalog_translates_audit_integration_contexts(self):
         catalog = (

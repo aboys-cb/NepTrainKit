@@ -933,12 +933,23 @@ class TestCanvasFactory(unittest.TestCase):
 
         plot.show_structure(structure_1)
         atom_mesh = plot._atom_mesh
+        atom_meshdata = plot._atom_meshdata
+        expected_normals = np.tile(
+            plot.sphere_meshdata.get_vertex_normals(),
+            (len(structure_1.numbers), 1),
+        )
+        np.testing.assert_allclose(
+            atom_meshdata.get_vertex_normals(),
+            expected_normals,
+            atol=1.0e-6,
+        )
         lattice_item = plot.lattice_item
         axes = plot.axes
 
         plot.show_structure(structure_2)
 
         self.assertIs(plot._atom_mesh, atom_mesh)
+        self.assertIs(plot._atom_meshdata, atom_meshdata)
         self.assertIs(plot.lattice_item, lattice_item)
         self.assertIs(plot.axes, axes)
 

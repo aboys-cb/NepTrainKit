@@ -1,6 +1,6 @@
 """Console toolbar for managing registered card widgets."""
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import QPoint, Signal
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtWidgets import QGridLayout, QWidget
 from qfluentwidgets import (
@@ -10,6 +10,7 @@ from qfluentwidgets import (
     CommandBar,
     Action,
     FluentIcon,
+    MenuAnimationType,
     ToolTipFilter,
     ToolTipPosition,
 )
@@ -24,9 +25,21 @@ from NepTrainKit.ui.views._card import *  # noqa: F401, F403
 
 
 card_path = ensure_directory(get_user_config_path() / "cards")
-_CARD_MENU_MAX_VISIBLE_ITEMS = 10
+_CARD_MENU_MAX_VISIBLE_ITEMS = 16
 
 load_cards_from_directory(card_path)
+
+
+class _ScreenSafeRoundMenu(RoundMenu):
+    """Show the tall card menu without an off-screen start animation."""
+
+    def exec(
+        self,
+        pos: QPoint,
+        ani: bool = True,
+        aniType: MenuAnimationType = MenuAnimationType.DROP_DOWN,
+    ) -> None:
+        super().exec(pos, ani=False, aniType=MenuAnimationType.NONE)
 
 
 class ConsoleWidget(QWidget):
@@ -81,7 +94,7 @@ class ConsoleWidget(QWidget):
             ToolTipFilter(self.new_card_button, 300, ToolTipPosition.TOP)
         )
 
-        self.menu = RoundMenu(parent=self)
+        self.menu = _ScreenSafeRoundMenu(parent=self)
 
         use_group_menu = Config.getboolean("widget", "use_group_menu", False)
         if use_group_menu:

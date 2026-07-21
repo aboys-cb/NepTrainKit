@@ -4,8 +4,9 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from PySide6.QtCore import QObject, Qt, QTranslator, Signal
+from PySide6.QtCore import QObject, QPoint, Qt, QTranslator, Signal
 from PySide6.QtWidgets import QApplication
+from qfluentwidgets import MenuAnimationType, RoundMenu
 
 from NepTrainKit.ui.views.cards import ConsoleWidget
 from NepTrainKit.ui.widgets.card_metadata import CardLibraryDialog
@@ -155,8 +156,22 @@ class TestCardLibraryDialog(unittest.TestCase):
     def test_console_card_menu_scrolls_instead_of_exceeding_screen_height(self):
         console = ConsoleWidget()
 
-        self.assertEqual(console.menu.view.maxVisibleItems(), 10)
-        self.assertGreater(len(console.menu.actions()), 10)
+        self.assertEqual(console.menu.view.maxVisibleItems(), 16)
+        self.assertGreater(len(console.menu.actions()), 16)
+
+    def test_console_card_menu_skips_off_screen_start_animation(self):
+        console = ConsoleWidget()
+        with patch.object(RoundMenu, "exec") as exec_mock:
+            console.menu.exec(
+                QPoint(10, 20),
+                aniType=MenuAnimationType.DROP_DOWN,
+            )
+
+        exec_mock.assert_called_once_with(
+            QPoint(10, 20),
+            ani=False,
+            aniType=MenuAnimationType.NONE,
+        )
 
     def test_console_exposes_selected_output_handoff_action(self):
         console = ConsoleWidget()

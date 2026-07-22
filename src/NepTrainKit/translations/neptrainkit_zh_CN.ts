@@ -2241,8 +2241,8 @@
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="871" />
-        <source>Error</source>
-        <translation>错误</translation>
+        <source>Error (pred - ref)</source>
+        <translation>误差（预测-参考）</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="875" />
@@ -2296,13 +2296,51 @@
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="899" />
-        <source>Group</source>
+        <source>Group by</source>
         <translation>分组方式</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="918" />
+        <source>Value source</source>
+        <translation>值来源</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="919" />
+        <source>Custom group data</source>
+        <translation>自定义分组数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="921" />
+        <source>Edit groups</source>
+        <translation>编辑分组</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="928" />
+        <source>Curve</source>
+        <translation>曲线</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="932" />
+        <source>Bins</source>
+        <translation>分箱数</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="941" />
+        <source>All groups</source>
+        <translation>全部分组</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="900" />
         <source>Scope</source>
         <translation>数据范围</translation>
+    </message>
+    <message>
+        <source>All data</source>
+        <translation>全部数据</translation>
+    </message>
+    <message>
+        <source>Selected data</source>
+        <translation>当前选择数据</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="901" />

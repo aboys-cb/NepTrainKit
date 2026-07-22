@@ -372,6 +372,8 @@ class DistributionGroupMode(StrEnum):
     """Grouping mode for distribution analysis."""
     FORMULA = "formula"
     ELEMENT = "element"
+    VALUE_VIEW = "value_view"
+    CUSTOM = "custom"
 
 
 class DistributionValueView(StrEnum):

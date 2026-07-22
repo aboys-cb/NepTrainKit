@@ -11,24 +11,25 @@ from pathlib import Path
 from loguru import logger
 
 import numpy as np
-from PySide6.QtCore import QUrl, QTimer, Qt, Signal, QThread
-from PySide6.QtGui import QIcon, QFont
+from PySide6.QtCore import QUrl, QTimer, Qt, QThread
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame, QSizePolicy
 from qfluentwidgets import FluentIcon, HyperlinkLabel, MessageBox, SpinBox, \
-    StrongBodyLabel, getFont, ToolButton, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
-    Action, StateToolTip,ComboBox
+    ToolButton, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
+    Action, StateToolTip, ComboBox, CaptionLabel, SimpleCardWidget
 
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import LoadingThread, run_in_thread
 from NepTrainKit.config import Config
 
 from NepTrainKit.core import MessageManager
+from NepTrainKit.core.audit import analyze_structure_phase
 
 from NepTrainKit.ui.widgets import ConfigTypeSearchLineEdit, TagFilterDialog, ElementsFilterDialog, ExpressionFilterDialog, ArrowMessageBox, ExportFormatMessageBox
 from NepTrainKit.core.io import (ResultData, load_result_data, matches_result_loader)
 
 from NepTrainKit.core.precision import get_export_significant_digits
-from NepTrainKit.core.structure import table_info, atomic_numbers
+from NepTrainKit.core.structure_inspection import inspect_structure
 from NepTrainKit.core.types import Brushes, CanvasMode, SearchType, TagFilterSpec
 from NepTrainKit.paths import get_bundled_nep89_path
 from NepTrainKit.ui.canvas.canvas_factory import (
@@ -80,8 +81,6 @@ class ShowNepWidget(QWidget):
     parent : QWidget | None
         Optional owner widget that embeds this viewer.
     """
-    updateBondInfoSignal=Signal(str)
-
     def __init__(self,parent=None):
         """Initialise plotting widgets, actions, and viewer state.
 
@@ -111,9 +110,12 @@ class ShowNepWidget(QWidget):
         self._structure_canvas_fallback_warned = False
         self._pending_structure_index: int | None = None
         self._structure_update_scheduled = False
+        self._structure_analysis_job_id = 0
+        self._structure_analysis_cache: dict[tuple[int, int], tuple[object, object]] = {}
+        self._phase_evidence_dataset_id: int | None = None
+        self._phase_evidence_lookup: dict[int, object] = {}
         self.init_action()
         self.init_ui()
-        self.calculate_bond_thread:LoadingThread
         self.load_thread:QThread
         self.first_show=True
 
@@ -646,60 +648,58 @@ class ShowNepWidget(QWidget):
             self.structure_toolbar.dropRejectSignal.connect(self._drop_all_reject)
 
         self.struct_info_widget = StructureInfoWidget(self.struct_widget)
-        self.struct_index_widget = QWidget(self)
+        self.struct_index_widget = SimpleCardWidget(self)
+        self.struct_index_widget.setObjectName("structureNavigatorCard")
         self.struct_index_widget_layout = QHBoxLayout(self.struct_index_widget)
-        self.struct_index_label = BodyLabel(self.struct_index_widget)
-        self.struct_index_label.setText(self.tr("Current structure (original file index):"))
+        self.struct_index_widget_layout.setContentsMargins(10, 5, 10, 5)
+        self.struct_index_widget_layout.setSpacing(6)
+        self.struct_index_label = CaptionLabel(self.struct_index_widget)
+        self.struct_index_label.setText(self.tr("Original index"))
 
         self.struct_index_spinbox = SpinBox(self.struct_index_widget)
-
-        self.struct_index_spinbox.upButton.clicked.disconnect(self.struct_index_spinbox.stepUp)
-        self.struct_index_spinbox.downButton.clicked.disconnect(self.struct_index_spinbox.stepDown)
-        self.struct_index_spinbox.downButton.clicked.connect(self.to_last_structure)
-        self.struct_index_spinbox.upButton.clicked.connect(self.to_next_structure)
+        self.struct_index_spinbox.setFixedWidth(150)
+        self.struct_index_spinbox.setAlignment(Qt.AlignCenter)
+        self.struct_index_spinbox.setAccessibleName(self.tr("Original structure index"))
+        try:
+            self.struct_index_spinbox.upButton.hide()
+            self.struct_index_spinbox.downButton.hide()
+        except AttributeError:
+            pass
         self.struct_index_spinbox.setMinimum(0)
         self.struct_index_spinbox.setMaximum(0)
+        self.struct_count_label = CaptionLabel(self.tr("/ 0 frames"), self.struct_index_widget)
+        self.previous_structure_button = ToolButton(FluentIcon.LEFT_ARROW, self.struct_index_widget)
+        self.previous_structure_button.setToolTip(self.tr("Previous structure"))
+        self.previous_structure_button.setAccessibleName(self.tr("Previous structure"))
+        self.previous_structure_button.clicked.connect(self.to_last_structure)
+        self.next_structure_button = ToolButton(FluentIcon.RIGHT_ARROW, self.struct_index_widget)
+        self.next_structure_button.setToolTip(self.tr("Next structure"))
+        self.next_structure_button.setAccessibleName(self.tr("Next structure"))
+        self.next_structure_button.clicked.connect(self.to_next_structure)
         self.play_timer=QTimer(self)
         self.play_timer.timeout.connect(self.play_show_structures)
 
-        self.auto_switch_button = TransparentToolButton(QIcon(':/images/src/images/play.svg') ,self.struct_index_widget)
+        self.auto_switch_button = TransparentToolButton(FluentIcon.PLAY, self.struct_index_widget)
+        self.auto_switch_button.setToolTip(self.tr("Play structures"))
+        self.auto_switch_button.setAccessibleName(self.tr("Play structures"))
         self.auto_switch_button.clicked.connect(self.start_play)
         self.auto_switch_button.setCheckable(True)
 
-
         self.struct_index_widget_layout.addWidget(self.struct_index_label)
+        self.struct_index_widget_layout.addStretch(1)
+        self.struct_index_widget_layout.addWidget(self.previous_structure_button)
         self.struct_index_widget_layout.addWidget(self.struct_index_spinbox)
-
+        self.struct_index_widget_layout.addWidget(self.struct_count_label)
+        self.struct_index_widget_layout.addWidget(self.next_structure_button)
         self.struct_index_widget_layout.addWidget(self.auto_switch_button)
         self.struct_index_spinbox.valueChanged.connect(self.show_current_structure)
-
-        self.bond_label=StrongBodyLabel(self.struct_widget)
-        self.bond_label.setFont(getFont(20, QFont.Weight.DemiBold))
-        self.bond_label.setWordWrap(True)
-        # self.bond_label.setStyleSheet("QLabel { background-color: #f3f3f3; color: black; padding: 5px; }")
-        self.bond_label.setToolTip(self.tr("Tip is the minimum distance between atoms in the current structure, in Å."))
-
-        self.bond_label.installEventFilter(ToolTipFilter(self.bond_label, 300, ToolTipPosition.TOP))
-
-
         self.struct_widget_layout.addWidget(self.structure_toolbar, 0, 0, 1, 1)
-
-        self.force_label = StrongBodyLabel(self.struct_widget)
-        self.force_label.setWordWrap(True)
-        self.force_label.setToolTip(self.tr("Net force of the current structure (sum of all atomic forces)."))
-
-        # self.struct_widget_layout.addWidget(self.export_single_struct_button, 1, 0, 1, 1, alignment=Qt.AlignRight)
         self.struct_widget_layout.addWidget(self.struct_info_widget, 2, 0, 1, 1)
-        self.struct_widget_layout.addWidget(self.bond_label,3, 0, 1, 1)
-        self.struct_widget_layout.addWidget(self.force_label,4, 0, 1, 1)
+        self.struct_widget_layout.addWidget(self.struct_index_widget, 3, 0, 1, 1)
 
-        self.struct_widget_layout.addWidget(self.struct_index_widget, 5, 0, 1, 1)
-
-        self.struct_widget_layout.setRowStretch(0, 3)
         self.struct_widget_layout.setRowStretch(1, 1)
-        self.struct_widget_layout.setRowStretch(2, 0)
-        self.struct_widget_layout.setSpacing(1)
-        self.struct_widget_layout.setContentsMargins(0, 0, 0, 0)
+        self.struct_widget_layout.setSpacing(6)
+        self.struct_widget_layout.setContentsMargins(6, 6, 6, 6)
 
         self.plot_widget = QWidget(self)
 
@@ -788,7 +788,6 @@ class ShowNepWidget(QWidget):
         self.splitter.setStretchFactor(0, 4)
         self.splitter.setStretchFactor(1, 2)
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
-        self.updateBondInfoSignal.connect(self.bond_label.setText)
         self._refresh_export_actions()
         self.search_mode_combo.setCurrentIndex(0)
         self._on_search_mode_changed(0)
@@ -1132,7 +1131,18 @@ class ShowNepWidget(QWidget):
             return
         if not hasattr(self.nep_result_data, "reject_index") or self.nep_result_data.reject_index is None:
             self.nep_result_data.reject_index = set()
-        self.struct_index_spinbox.setMaximum(self.nep_result_data.num)
+        structure_count = int(self.nep_result_data.structure.all_data.shape[0])
+        self.struct_index_spinbox.setMaximum(max(0, structure_count - 1))
+        self.struct_index_spinbox.lineEdit().setText(
+            str(self.struct_index_spinbox.value())
+        )
+        self.struct_count_label.setText(
+            self.tr("/ {count:,} frames").format(count=structure_count)
+        )
+        self._structure_analysis_job_id += 1
+        self._structure_analysis_cache.clear()
+        self._phase_evidence_dataset_id = None
+        self._phase_evidence_lookup.clear()
         self.graph_widget.set_dataset(self.nep_result_data)
         # Avoid duplicate signal connections for cached datasets
         if not getattr(self.nep_result_data, "_info_connected", False):
@@ -1447,10 +1457,14 @@ class ShowNepWidget(QWidget):
             Starts or stops the play timer based on the toggle state.
         """
         if self.auto_switch_button.isChecked():
-            self.auto_switch_button.setIcon(QIcon(':/images/src/images/pause.svg'))
+            self.auto_switch_button.setIcon(FluentIcon.PAUSE)
+            self.auto_switch_button.setToolTip(self.tr("Pause structures"))
+            self.auto_switch_button.setAccessibleName(self.tr("Pause structures"))
             self.play_timer.start(50)
         else:
-            self.auto_switch_button.setIcon(QIcon(':/images/src/images/play.svg'))
+            self.auto_switch_button.setIcon(FluentIcon.PLAY)
+            self.auto_switch_button.setToolTip(self.tr("Play structures"))
+            self.auto_switch_button.setAccessibleName(self.tr("Play structures"))
             self.play_timer.stop()
 
     def play_show_structures(self):
@@ -1732,25 +1746,124 @@ class ShowNepWidget(QWidget):
         display_atoms = self._copy_structure_for_display(atoms)
         self._inject_ml_arrow_vectors(display_atoms, int(current_index))
         self.show_struct_widget.show_structure(display_atoms)
-        self.update_structure_bond_info(atoms)
         self.struct_info_widget.show_structure_info(atoms)
-
-        # Update net force label for the current structure
-        force_text = "Net force: N/A"
-        try:
-            if getattr(atoms, "has_forces", False):
-                forces = np.asarray(atoms.forces, dtype=np.float64)
-                if forces.size != 0:
-                    net = forces.sum(axis=0)
-                    norm = float(np.linalg.norm(net))
-                    force_text = (
-                        f"Net force: ({net[0]:.3e}, {net[1]:.3e}, {net[2]:.3e}) | "
-                        f"|ΣF| = {norm:.3e}"
-                    )
-        except Exception:
-            logger.debug(traceback.format_exc())
-        self.force_label.setText(force_text)
+        if hasattr(self, "_structure_analysis_cache"):
+            self._schedule_structure_analysis(atoms, int(current_index))
         self._refresh_export_actions()
+
+    def set_phase_inventory(self, inventory, result_data=None) -> None:
+        """Reuse completed Audit phase evidence in the per-frame inspector."""
+        data = getattr(self, "nep_result_data", None)
+        if data is None or (result_data is not None and result_data is not data):
+            return
+        lookup = {
+            int(structure.source_index): structure
+            for point in getattr(inventory, "composition_points", ())
+            for structure in getattr(point, "structures", ())
+        }
+        self._phase_evidence_dataset_id = id(data)
+        self._phase_evidence_lookup = lookup
+        for key, (inspection, phase) in list(self._structure_analysis_cache.items()):
+            if key[0] != id(data) or key[1] not in lookup:
+                continue
+            self._structure_analysis_cache[key] = (inspection, lookup[key[1]])
+        try:
+            current_index = int(self.struct_index_spinbox.value())
+        except Exception:
+            return
+        phase = lookup.get(current_index)
+        if phase is not None:
+            self.struct_info_widget.show_phase_evidence(phase)
+
+    def _phase_evidence_for_index(self, structure_index: int):
+        data = getattr(self, "nep_result_data", None)
+        if data is None or self._phase_evidence_dataset_id != id(data):
+            return None
+        return self._phase_evidence_lookup.get(int(structure_index))
+
+    def _schedule_structure_analysis(self, atoms, structure_index: int) -> None:
+        """Debounce expensive frame analysis and reject stale worker results."""
+        data = getattr(self, "nep_result_data", None)
+        if data is None:
+            return
+        dataset_id = id(data)
+        cache_key = (dataset_id, int(structure_index))
+        cached = self._structure_analysis_cache.get(cache_key)
+        if cached is not None:
+            self.struct_info_widget.show_analysis(*cached)
+            return
+
+        self._structure_analysis_job_id += 1
+        job_id = self._structure_analysis_job_id
+        QTimer.singleShot(
+            100,
+            lambda: self._start_structure_analysis(
+                atoms,
+                int(structure_index),
+                dataset_id,
+                job_id,
+            ),
+        )
+
+    def _start_structure_analysis(
+        self,
+        atoms,
+        structure_index: int,
+        dataset_id: int,
+        job_id: int,
+    ) -> None:
+        if job_id != self._structure_analysis_job_id:
+            return
+        data = getattr(self, "nep_result_data", None)
+        if data is None or id(data) != dataset_id:
+            return
+        cached_phase = self._phase_evidence_for_index(structure_index)
+        radius_coefficient = Config.getfloat("widget", "radius_coefficient", 0.7)
+
+        def compute():
+            inspection = inspect_structure(
+                atoms,
+                radius_coefficient=radius_coefficient,
+            )
+            phase = cached_phase
+            if phase is None:
+                try:
+                    phase = analyze_structure_phase(
+                        atoms,
+                        source_index=structure_index,
+                    )
+                except Exception:
+                    logger.debug(traceback.format_exc())
+                    phase = None
+            return inspection, phase
+
+        def apply_result(payload) -> None:
+            self._structure_analysis_cache[(dataset_id, structure_index)] = payload
+            if job_id != self._structure_analysis_job_id:
+                return
+            current = getattr(self, "nep_result_data", None)
+            if current is None or id(current) != dataset_id:
+                return
+            if int(self.struct_index_spinbox.value()) != structure_index:
+                return
+            self.struct_info_widget.show_analysis(*payload)
+
+        def report_error(_message: str) -> None:
+            if job_id != self._structure_analysis_job_id:
+                return
+            current = getattr(self, "nep_result_data", None)
+            if current is None or id(current) != dataset_id:
+                return
+            if int(self.struct_index_spinbox.value()) == structure_index:
+                self.struct_info_widget.show_analysis_unavailable()
+
+        thread = run_in_thread(
+            self,
+            compute,
+            on_finished=apply_result,
+            on_error=report_error,
+        )
+        self._track_worker_thread(thread)
 
     def _active_reject_indices(self) -> set[int]:
         """Return rejected indices that are still active in the dataset."""
@@ -1839,56 +1952,6 @@ class ShowNepWidget(QWidget):
         except Exception:
             pass
         self.update_dataset_info()
-
-    def update_structure_bond_info(self,atoms):
-        """Schedule bond statistics computation for the displayed structure.
-
-        Parameters
-        ----------
-        atoms : Atoms
-            Structure currently shown in the viewer.
-
-        Returns
-        -------
-        None
-            Starts background computation of bond distances.
-        """
-        self.calculate_bond_thread=LoadingThread(self,show_tip=False )
-        self.calculate_bond_thread.start_work(self.calculate_bond_info,atoms)
-
-    def calculate_bond_info(self,atoms):
-        """Calculate bond lengths and highlight potentially unreasonable distances.
-
-        Parameters
-        ----------
-        atoms : Atoms
-            Structure currently shown in the viewer.
-
-        Returns
-        -------
-        None
-            Emits updated bond text and warning messages when needed.
-        """
-        distance_info = atoms.get_mini_distance_info()
-        bond_text = ""
-        radius_coefficient_config = Config.getfloat("widget","radius_coefficient",0.7)
-        unreasonable = False
-
-        for elems,bond_length in distance_info.items():
-            elem0_info = table_info[str(atomic_numbers[elems[0]])]
-            elem1_info = table_info[str(atomic_numbers[elems[1]])]
-
-            if (elem0_info["radii"] + elem1_info["radii"]) * radius_coefficient_config > bond_length*100:
-                bond_text += f"{elems[0]}-{elems[1]}:"
-
-                bond_text += f'<font color="red">{bond_length:.2f}</font> Å | '
-                unreasonable = True
-            # else:
-        self.updateBondInfoSignal.emit( bond_text )
-        if unreasonable:
-            MessageManager.send_info_message(
-                self.tr("The distance between atoms is too small, and the structure may be unreasonable.")
-            )
 
     def search_config_type(self,config:str,search_type:SearchType):
         """Highlight structures matching the provided configuration query.

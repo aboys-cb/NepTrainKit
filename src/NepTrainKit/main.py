@@ -371,6 +371,11 @@ class NepTrainKitMainWindow(FluentWindow):
             and getattr(self, "_audited_result_signature", None) == signature
         ):
             self.training_set_audit_interface.set_result(cached_result)
+            if getattr(cached_result, "phase_inventory", None) is not None:
+                self.show_nep_interface.set_phase_inventory(
+                    cached_result.phase_inventory,
+                    data,
+                )
             self.training_set_audit_interface.set_distribution_context(
                 data=data,
                 run_analysis_callback=self.show_nep_interface.run_distribution_analysis,
@@ -549,6 +554,7 @@ class NepTrainKitMainWindow(FluentWindow):
                 magnetic_inventory=magnetic_inventory,
             )
             self._audited_result = updated_result
+            self.show_nep_interface.set_phase_inventory(phase_inventory, data)
             self.training_set_audit_interface.finish_phase_analysis(updated_result)
 
         def report_error(message: str) -> None:

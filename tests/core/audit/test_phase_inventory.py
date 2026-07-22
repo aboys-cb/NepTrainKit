@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
 from unittest.mock import patch
 
 import numpy as np
 
 from NepTrainKit.core.audit.phase_inventory import (
+    analyze_structure_phase,
     build_phase_inventory,
     phase_partition_label,
     summarize_phase_inventory,
@@ -130,6 +132,36 @@ def test_phase_inventory_analyzes_every_structure_and_is_dataset_cached():
         "l12",
         "unresolved",
     )
+
+
+def test_single_structure_phase_api_preserves_source_index_and_local_fractions():
+    structure = SimpleNamespace(
+        positions=np.zeros((4, 3), dtype=np.float32),
+        cell=np.eye(3, dtype=np.float32),
+        additional_fields={"pbc": "T T T"},
+        numbers=[28, 28, 28, 28],
+    )
+    with (
+        patch(
+            "NepTrainKit.core.audit.phase_inventory._local_phase_counts",
+            return_value={"fcc": 3, "unresolved": 1},
+        ),
+        patch(
+            "NepTrainKit.core.audit.phase_inventory._confirmed_ordering",
+            return_value=None,
+        ),
+    ):
+        result = analyze_structure_phase(structure, source_index=19)
+
+    assert result.source_index == 19
+    assert result.phase_label == "fcc"
+    assert result.confidence_state == "mixed"
+    assert dict(result.local_phase_fractions) == {
+        "fcc": 0.75,
+        "hcp": 0.0,
+        "bcc": 0.0,
+        "unresolved": 0.25,
+    }
 
 
 def test_phase_summary_weights_exact_compositions_by_analyzed_atoms():

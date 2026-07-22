@@ -13,6 +13,7 @@ from typing import Any
 import numpy as np
 
 from NepTrainKit.core.geometry_cache import GeometrySnapshot
+from NepTrainKit.core.geometry_cache import structure_pbc_flags
 
 from .phase_refinement import refine_l12, refine_laves
 from .result import (
@@ -125,6 +126,64 @@ def _phase_label_and_confidence(
     return "unresolved", "unresolved"
 
 
+def _classify_structure_arrays(
+    positions: np.ndarray,
+    cell: np.ndarray,
+    pbc: np.ndarray,
+    atom_types: np.ndarray,
+    *,
+    source_index: int,
+) -> tuple[StructurePhaseEvidence, Counter[str], str | None]:
+    """Classify one structure while preserving local-topology evidence."""
+    try:
+        local_counts = _local_phase_counts(positions, cell, pbc)
+    except ValueError:
+        local_counts = Counter({"unresolved": len(atom_types)})
+    try:
+        ordering = _confirmed_ordering(positions, cell, pbc, atom_types)
+    except ValueError:
+        ordering = None
+    label, confidence = _phase_label_and_confidence(local_counts, ordering)
+    atom_count = len(atom_types)
+    local_total = sum(local_counts.values())
+    evidence = StructurePhaseEvidence(
+        source_index=int(source_index),
+        atom_count=atom_count,
+        phase_label=label,
+        confidence_state=confidence,
+        local_phase_fractions=tuple(
+            (
+                phase,
+                0.0 if local_total <= 0 else local_counts.get(phase, 0) / local_total,
+            )
+            for phase in _LOCAL_PHASES
+        ),
+    )
+    return evidence, local_counts, ordering
+
+
+def analyze_structure_phase(
+    structure: Any,
+    *,
+    source_index: int = 0,
+) -> StructurePhaseEvidence:
+    """Return conservative structural-phase evidence for one structure frame."""
+    positions = np.ascontiguousarray(structure.positions, dtype=np.float32)
+    cell = np.ascontiguousarray(structure.cell, dtype=np.float32)
+    pbc = np.ascontiguousarray(structure_pbc_flags(structure), dtype=bool)
+    atom_types = np.ascontiguousarray(structure.numbers, dtype=np.int16)
+    if positions.shape != (len(atom_types), 3) or cell.shape != (3, 3):
+        raise ValueError("A structure has invalid positions or cell data.")
+    evidence, _local_counts, _ordering = _classify_structure_arrays(
+        positions,
+        cell,
+        pbc,
+        atom_types,
+        source_index=source_index,
+    )
+    return evidence
+
+
 def _analyze_composition_point(
     geometry: GeometrySnapshot,
     source_rows: dict[int, int],
@@ -142,38 +201,17 @@ def _analyze_composition_point(
         if row is None:
             continue
         positions, cell, pbc, atom_types = _frame_arrays(geometry, row)
-        try:
-            current_local_counts = _local_phase_counts(positions, cell, pbc)
-        except ValueError:
-            current_local_counts = Counter({"unresolved": len(atom_types)})
-        try:
-            ordering = _confirmed_ordering(positions, cell, pbc, atom_types)
-        except ValueError:
-            ordering = None
-        label, confidence = _phase_label_and_confidence(
-            current_local_counts,
-            ordering,
+        evidence, current_local_counts, ordering = _classify_structure_arrays(
+            positions,
+            cell,
+            pbc,
+            atom_types,
+            source_index=int(source_index),
         )
-        atom_count = len(atom_types)
-        current_total = sum(current_local_counts.values())
-        current_fractions = tuple(
-            (
-                phase,
-                0.0
-                if current_total <= 0
-                else current_local_counts.get(phase, 0) / current_total,
-            )
-            for phase in _LOCAL_PHASES
-        )
-        structure_evidence.append(
-            StructurePhaseEvidence(
-                source_index=int(source_index),
-                atom_count=atom_count,
-                phase_label=label,
-                confidence_state=confidence,
-                local_phase_fractions=current_fractions,
-            )
-        )
+        structure_evidence.append(evidence)
+        label = evidence.phase_label
+        confidence = evidence.confidence_state
+        atom_count = evidence.atom_count
         local_counts.update(current_local_counts)
         structure_labels[label] += 1
         confidence_counts[confidence] += 1

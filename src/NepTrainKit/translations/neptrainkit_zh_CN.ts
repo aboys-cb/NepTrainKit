@@ -6160,19 +6160,44 @@ All child items will also be deleted.</source>
         <translation>切换 NEP 模型失败</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="649" />
-        <source>Current structure (original file index):</source>
-        <translation>当前结构（原始文件序号）：</translation>
+        <location filename="../ui/pages/show_nep.py" line="656" />
+        <source>Original index</source>
+        <translation>原始索引</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="677" />
-        <source>Tip is the minimum distance between atoms in the current structure, in Å.</source>
-        <translation>Tip 表示当前结构中原子间的最小距离，单位为 Å。</translation>
+        <location filename="../ui/pages/show_nep.py" line="661" />
+        <source>Original structure index</source>
+        <translation>结构的原始文件索引</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="686" />
-        <source>Net force of the current structure (sum of all atomic forces).</source>
-        <translation>当前结构的净力（所有原子力之和）。</translation>
+        <location filename="../ui/pages/show_nep.py" line="670" />
+        <source>/ 0 frames</source>
+        <translation>/ 0 帧</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="672" />
+        <source>Previous structure</source>
+        <translation>上一个结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="676" />
+        <source>Next structure</source>
+        <translation>下一个结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="683" />
+        <source>Play structures</source>
+        <translation>连续播放结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1136" />
+        <source>/ {count:,} frames</source>
+        <translation>/ {count:,} 帧</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1455" />
+        <source>Pause structures</source>
+        <translation>暂停播放结构</translation>
     </message>
     <message>
         <location filename="../ui/pages/show_nep.py" line="723" />
@@ -7366,24 +7391,150 @@ Do you want to continue?</source>
 <context>
     <name>StructureInfoWidget</name>
     <message>
-        <location filename="../ui/views/structure.py" line="31" />
-        <source>Atoms:</source>
-        <translation>原子数：</translation>
+        <location filename="../ui/views/structure.py" line="49" />
+        <source>Structure information</source>
+        <translation>结构信息</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="35" />
-        <source>Formula:</source>
-        <translation>化学式：</translation>
+        <location filename="../ui/views/structure.py" line="52" />
+        <source>Not analyzed</source>
+        <translation>尚未分析</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="41" />
-        <source>Lattice:</source>
-        <translation>晶格：</translation>
+        <location filename="../ui/views/structure.py" line="54" />
+        <source>Snapshot structural classification from local topology evidence.</source>
+        <translation>基于当前快照的局域拓扑证据识别结构类型。</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="50" />
-        <source>Angles:</source>
-        <translation>角度：</translation>
+        <location filename="../ui/views/structure.py" line="63" />
+        <source>Local topology evidence has not been analyzed.</source>
+        <translation>尚未分析局域拓扑证据。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="70" />
+        <source>Config type</source>
+        <translation>构型类型</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="84" />
+        <source>Formula</source>
+        <translation>化学式</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="85" />
+        <source>Atoms</source>
+        <translation>原子数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="86" />
+        <source>Cell volume</source>
+        <translation>晶胞体积</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="87" />
+        <source>Density</source>
+        <translation>密度</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="88" />
+        <source>Cell</source>
+        <translation>晶胞参数</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="99" />
+        <source>Frame signals</source>
+        <translation>逐帧检查</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="102" />
+        <location filename="../ui/views/structure.py" line="198" />
+        <source>Analyzing…</source>
+        <translation>分析中…</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="114" />
+        <source>Shortest contact</source>
+        <translation>最短原子间距</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="117" />
+        <source>Energy / atom</source>
+        <translation>单原子能量</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="120" />
+        <source>Max |Fᵢ|</source>
+        <translation>最大 |Fᵢ|</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="123" />
+        <source>RMS |Fᵢ|</source>
+        <translation>RMS |Fᵢ|</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="126" />
+        <source>Net force |ΣF|</source>
+        <translation>净力 |ΣF|</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="196" />
+        <source>Classifying local topology for this frame…</source>
+        <translation>正在识别当前帧的局域拓扑…</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="216" />
+        <source>Total energy: {value}</source>
+        <translation>总能量：{value}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="231" />
+        <source>Unavailable</source>
+        <translation>不可用</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="240" />
+        <source>Below threshold</source>
+        <translation>低于阈值</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="249" />
+        <source>Within threshold</source>
+        <translation>间距正常</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="251" />
+        <source>No element-pair minimum is below the configured radius threshold.</source>
+        <translation>没有元素对的最小间距低于当前半径阈值。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="261" />
+        <source>Local topology evidence is unavailable for this frame.</source>
+        <translation>当前帧没有可用的局域拓扑证据。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="282" />
+        <source>Confirmed ordering</source>
+        <translation>有序占位已确认</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="283" />
+        <source>Strong evidence</source>
+        <translation>强证据</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="288" />
+        <source>Mixed local structure</source>
+        <translation>混合局域结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="291" />
+        <source>Unresolved</source>
+        <translation>未解析</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="300" />
+        <source>Local topology</source>
+        <translation>局域拓扑</translation>
     </message>
 </context>
 <context>

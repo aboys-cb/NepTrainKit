@@ -20,6 +20,7 @@ from .magnetic_inventory import (
 from .nep_cutoff import NepCutoffProfile, parse_nep_cutoff
 from .phase_refinement import PhaseRefinement, refine_l12, refine_laves
 from .phase_inventory import (
+    analyze_structure_phase,
     build_phase_inventory,
     summarize_phase_inventory,
 )
@@ -105,6 +106,7 @@ __all__ = [
     "audit_local_chemistry",
     "audit_data_quality",
     "audit_config_types",
+    "analyze_structure_phase",
     "build_audit",
     "build_dataset_inventory",
     "build_findings",

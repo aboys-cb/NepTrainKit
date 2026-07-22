@@ -657,7 +657,7 @@
       1200,
       700
     ],
-    "sha256": "2b49b492bda45f5762aeef67ca362b4666e89892be8044411e40100010a9e020"
+    "sha256": "fbe54228db8b70beea5556dbeb5fd00d486ec726cecbf58aee19643a0de1f09c"
   },
   "show_nep_overview_en": {
     "scenario": "show_nep_overview",
@@ -669,7 +669,7 @@
       1200,
       700
     ],
-    "sha256": "59727fd1e4938a5b0baf6e58747358869889a01e127a3cf774ee497fa411313c"
+    "sha256": "ad3b03f30dabf1df544eeb7341e3742d919f71237ba7b844ec6af68a0d9d5a97"
   },
   "show_nep_range_dialog": {
     "scenario": "show_nep_range_dialog",

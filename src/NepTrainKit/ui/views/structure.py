@@ -1,86 +1,309 @@
-"""Widgets for displaying structural metadata inside the NEP UI."""
+"""Widgets for displaying trustworthy per-frame structural information."""
+from __future__ import annotations
 
 import numpy as np
-from PySide6.QtWidgets import QWidget, QGridLayout, QSizePolicy
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QFont
+from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
 
-from qfluentwidgets import BodyLabel
+from qfluentwidgets import (
+    BodyLabel,
+    CaptionLabel,
+    InfoBadge,
+    InfoLevel,
+    SimpleCardWidget,
+    StrongBodyLabel,
+    setFont,
+)
+from qfluentwidgets.components.widgets.card_widget import CardSeparator
+
+from NepTrainKit.core.audit import StructurePhaseEvidence
+from NepTrainKit.core.structure_inspection import StructureInspection
 
 
 class StructureInfoWidget(QWidget):
-    """Display atomic counts, lattice metrics, and configuration metadata.
+    """Compact card that prioritizes one frame's phase and quality signals."""
 
-    Parameters
-    ----------
-    parent : QWidget, optional
-        Parent widget used to embed the info panel.
-    """
+    _ORDERED_LOCAL_PHASES = ("fcc", "hcp", "bcc", "unresolved")
 
     def __init__(self, parent=None):
-        """Initialize labels and layout placeholders."""
         super().__init__(parent)
-        self.init_ui()
+        self._metric_values: dict[str, StrongBodyLabel] = {}
+        self._init_ui()
 
-    def init_ui(self) -> None:
-        """Construct the labels that show structure metadata."""
-        self._layout = QGridLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
-        self.setLayout(self._layout)
+    def _init_ui(self) -> None:
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        outer.setSpacing(0)
 
-        self.atom_label = BodyLabel(self)
-        self.atom_label.setText(self.tr("Atoms:"))
-        self.atom_num_text = BodyLabel(self)
+        self.card = SimpleCardWidget(self)
+        self.card.setObjectName("structureInspectorCard")
+        outer.addWidget(self.card)
 
-        self.formula_label = BodyLabel(self)
-        self.formula_label.setText(self.tr("Formula:"))
-        self.formula_text = BodyLabel(self)
-        self.formula_text.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
-        self.formula_text.setWordWrap(True)
+        card_layout = QVBoxLayout(self.card)
+        card_layout.setContentsMargins(12, 8, 12, 8)
+        card_layout.setSpacing(3)
 
-        self.lattice_label = BodyLabel(self)
-        self.lattice_label.setText(self.tr("Lattice:"))
-        self.lattice_text = BodyLabel(self)
-        self.lattice_text.setWordWrap(True)
+        header_layout = QHBoxLayout()
+        header_layout.setContentsMargins(0, 0, 0, 0)
+        self.title_label = StrongBodyLabel(self.tr("Structure information"), self.card)
+        setFont(self.title_label, 14, QFont.Weight.DemiBold)
+        self.phase_badge = InfoBadge(self.card, InfoLevel.ATTENTION)
+        self.phase_badge.setText(self.tr("Not analyzed"))
+        self.phase_badge.setToolTip(
+            self.tr("Snapshot structural classification from local topology evidence.")
+        )
+        header_layout.addWidget(self.title_label)
+        header_layout.addStretch(1)
+        header_layout.addWidget(self.phase_badge)
+        card_layout.addLayout(header_layout)
 
-        self.length_label = BodyLabel(self)
-        self.length_label.setText("a b c:")
-        self.length_text = BodyLabel(self)
+        self.phase_summary_label = CaptionLabel(self.card)
+        self.phase_summary_label.setWordWrap(True)
+        self.phase_summary_label.setText(self.tr("Local topology evidence has not been analyzed."))
+        card_layout.addWidget(self.phase_summary_label)
 
-        self.angle_label = BodyLabel(self)
-        self.angle_label.setText(self.tr("Angles:"))
-        self.angle_text = BodyLabel(self)
-
-        self.config_label = BodyLabel(self)
-        self.config_label.setText("Config_type:")
-        self.config_text = BodyLabel(self)
-        self.config_text.setMaximumWidth(400)
-        self.config_text.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        config_layout = QHBoxLayout()
+        config_layout.setContentsMargins(0, 1, 0, 1)
+        config_layout.setSpacing(8)
+        self.config_label = CaptionLabel(self.tr("Config type"), self.card)
+        self.config_text = BodyLabel("—", self.card)
         self.config_text.setWordWrap(True)
+        self.config_text.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        config_layout.addWidget(self.config_label, 0, Qt.AlignTop)
+        config_layout.addWidget(self.config_text, 1)
+        card_layout.addLayout(config_layout)
 
-        self._layout.addWidget(self.atom_label, 0, 0, 1, 1)
-        self._layout.addWidget(self.atom_num_text, 0, 1, 1, 3)
-        self._layout.addWidget(self.formula_label, 1, 0, 1, 1)
-        self._layout.addWidget(self.formula_text, 1, 1, 1, 3)
-        self._layout.addWidget(self.config_label, 2, 0, 1, 1)
-        self._layout.addWidget(self.config_text, 2, 1, 1, 3)
-        self._layout.addWidget(self.lattice_label, 3, 0, 1, 1)
-        self._layout.addWidget(self.lattice_text, 3, 1, 1, 3)
-        self._layout.addWidget(self.length_label, 4, 0, 1, 1)
-        self._layout.addWidget(self.length_text, 4, 1, 1, 3)
-        self._layout.addWidget(self.angle_label, 5, 0, 1, 1)
-        self._layout.addWidget(self.angle_text, 5, 1, 1, 3)
+        summary_grid = QGridLayout()
+        summary_grid.setContentsMargins(0, 0, 0, 0)
+        summary_grid.setHorizontalSpacing(8)
+        summary_grid.setVerticalSpacing(1)
+        self.formula_text = self._add_metric(summary_grid, 0, 0, self.tr("Formula"), "formula")
+        self.atom_num_text = self._add_metric(summary_grid, 0, 1, self.tr("Atoms"), "atoms")
+        self.volume_text = self._add_metric(summary_grid, 1, 0, self.tr("Cell volume"), "volume")
+        self.density_text = self._add_metric(summary_grid, 1, 1, self.tr("Density"), "density")
+        self.length_text = self._add_wide_metric(summary_grid, 2, self.tr("Cell"), "cell")
+        summary_grid.setColumnStretch(1, 1)
+        summary_grid.setColumnStretch(3, 1)
+        card_layout.addLayout(summary_grid)
+
+        card_layout.addWidget(CardSeparator(self.card))
+
+        signal_header = QHBoxLayout()
+        signal_header.setContentsMargins(0, 1, 0, 0)
+        self.signal_title_label = StrongBodyLabel(self.tr("Frame signals"), self.card)
+        setFont(self.signal_title_label, 13, QFont.Weight.Medium)
+        self.contact_badge = InfoBadge(self.card, InfoLevel.ATTENTION)
+        self.contact_badge.setText(self.tr("Analyzing…"))
+        signal_header.addWidget(self.signal_title_label)
+        signal_header.addStretch(1)
+        signal_header.addWidget(self.contact_badge)
+        card_layout.addLayout(signal_header)
+
+        signal_grid = QGridLayout()
+        signal_grid.setContentsMargins(0, 0, 0, 0)
+        signal_grid.setHorizontalSpacing(8)
+        signal_grid.setVerticalSpacing(1)
+        self.shortest_text = self._add_wide_metric(
+            signal_grid, 0, self.tr("Shortest contact"), "shortest"
+        )
+        self.per_atom_energy_text = self._add_metric(
+            signal_grid, 1, 0, self.tr("Energy / atom"), "per_atom_energy"
+        )
+        self.maximum_force_text = self._add_metric(
+            signal_grid, 1, 1, self.tr("Max |Fᵢ|"), "maximum_force"
+        )
+        self.rms_force_text = self._add_metric(
+            signal_grid, 2, 0, self.tr("RMS |Fᵢ|"), "rms_force"
+        )
+        self.net_force_text = self._add_metric(
+            signal_grid, 2, 1, self.tr("Net force |ΣF|"), "net_force"
+        )
+        signal_grid.setColumnStretch(1, 1)
+        signal_grid.setColumnStretch(3, 1)
+        card_layout.addLayout(signal_grid)
+
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
+
+    def _add_metric(
+        self,
+        layout: QGridLayout,
+        row: int,
+        column_group: int,
+        title: str,
+        key: str,
+    ) -> StrongBodyLabel:
+        base_column = column_group * 2
+        caption = CaptionLabel(title, self.card)
+        value = StrongBodyLabel("—", self.card)
+        value.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        layout.addWidget(caption, row, base_column)
+        layout.addWidget(value, row, base_column + 1)
+        self._metric_values[key] = value
+        return value
+
+    def _add_wide_metric(
+        self,
+        layout: QGridLayout,
+        row: int,
+        title: str,
+        key: str,
+    ) -> StrongBodyLabel:
+        caption = CaptionLabel(title, self.card)
+        value = StrongBodyLabel("—", self.card)
+        value.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        layout.addWidget(caption, row, 0)
+        layout.addWidget(value, row, 1, 1, 3)
+        self._metric_values[key] = value
+        return value
+
+    @staticmethod
+    def _number(value: float | None, unit: str, *, digits: int = 3) -> str:
+        if value is None or not np.isfinite(value):
+            return "—"
+        magnitude = abs(value)
+        if magnitude != 0.0 and (magnitude < 1.0e-3 or magnitude >= 1.0e4):
+            text = f"{value:.3e}"
+        else:
+            text = f"{value:.{digits}f}"
+        return f"{text} {unit}".strip()
 
     def show_structure_info(self, structure) -> None:
-        """Populate the labels using the provided ASE structure.
+        """Populate immediately available metadata, then await heavy analysis."""
+        self.atom_num_text.setText(f"{len(structure):,}")
+        self.formula_text.setText(structure.html_formula or "—")
+        self.formula_text.setTextFormat(Qt.RichText)
+        tag = str(getattr(structure, "tag", "") or "").strip()
+        self.config_text.setText(tag or "—")
+        lengths = " / ".join(f"{float(value):.3f}" for value in structure.abc)
+        angles = " / ".join(f"{float(value):.1f}°" for value in structure.angles)
+        self.length_text.setText(f"{lengths} Å  ·  {angles}")
+        try:
+            volume = float(structure.volume)
+        except (TypeError, ValueError, np.linalg.LinAlgError):
+            volume = None
+        self.volume_text.setText(self._number(volume, "Å³"))
+        self.set_analysis_pending()
 
-        Parameters
-        ----------
-        structure : ase.Atoms
-            Structure whose metadata will be rendered.
-        """
-        self.atom_num_text.setText(str(len(structure)))
-        self.formula_text.setText(structure.html_formula)
-        self.lattice_text.setText(str(np.round(structure.lattice, 3)))
-        self.length_text.setText(" ".join(f"{x:.3f}" for x in structure.abc))
-        self.angle_text.setText(" ".join(f"{x:.2f} °" for x in structure.angles))
-        self.config_text.setText('\n'.join(structure.tag[i:i + 50] for i in range(0, len(structure.tag), 50)))
+    def set_analysis_pending(self) -> None:
+        self.phase_badge.setLevel(InfoLevel.INFOAMTION)
+        self.phase_badge.setText(self.tr("Analyzing…"))
+        self.phase_summary_label.setText(self.tr("Classifying local topology for this frame…"))
+        self.contact_badge.setLevel(InfoLevel.INFOAMTION)
+        self.contact_badge.setText(self.tr("Analyzing…"))
+        for key in (
+            "density",
+            "shortest",
+            "per_atom_energy",
+            "maximum_force",
+            "rms_force",
+            "net_force",
+        ):
+            self._metric_values[key].setText("—")
+
+    def show_analysis(
+        self,
+        inspection: StructureInspection,
+        phase: StructurePhaseEvidence | None,
+    ) -> None:
+        """Render cached or freshly computed phase and frame-quality evidence."""
+        self.density_text.setText(self._number(inspection.mass_density, "g/cm³"))
+        self.per_atom_energy_text.setText(
+            self._number(inspection.per_atom_energy, "eV/atom", digits=4)
+        )
+        self.per_atom_energy_text.setToolTip(
+            self.tr("Total energy: {value}").format(
+                value=self._number(inspection.energy, "eV", digits=4)
+            )
+        )
+        self.maximum_force_text.setText(
+            self._number(inspection.maximum_force, "eV/Å")
+        )
+        self.rms_force_text.setText(self._number(inspection.rms_force, "eV/Å"))
+        self.net_force_text.setText(self._number(inspection.net_force, "eV/Å"))
+
+        if inspection.shortest_distance is None or inspection.shortest_pair is None:
+            self.shortest_text.setText("—")
+            self.contact_badge.setLevel(InfoLevel.ATTENTION)
+            self.contact_badge.setText(self.tr("Unavailable"))
+        else:
+            pair = "–".join(inspection.shortest_pair)
+            self.shortest_text.setText(
+                f"{inspection.shortest_distance:.3f} Å  ·  {pair}"
+            )
+            if inspection.short_contacts:
+                self.contact_badge.setLevel(InfoLevel.WARNING)
+                self.contact_badge.setText(self.tr("Below threshold"))
+                details = " · ".join(
+                    f"{'–'.join(elements)} {distance:.3f} Å"
+                    for elements, distance in inspection.short_contacts[:4]
+                )
+                self.contact_badge.setToolTip(details)
+            else:
+                self.contact_badge.setLevel(InfoLevel.SUCCESS)
+                self.contact_badge.setText(self.tr("Within threshold"))
+                self.contact_badge.setToolTip(
+                    self.tr("No element-pair minimum is below the configured radius threshold.")
+                )
+
+        self.show_phase_evidence(phase)
+
+    def show_analysis_unavailable(self) -> None:
+        self.phase_badge.setLevel(InfoLevel.ATTENTION)
+        self.phase_badge.setText(self.tr("Unavailable"))
+        self.phase_summary_label.setText(
+            self.tr("Local topology evidence is unavailable for this frame.")
+        )
+        self.contact_badge.setLevel(InfoLevel.ATTENTION)
+        self.contact_badge.setText(self.tr("Unavailable"))
+
+    def show_phase_evidence(self, phase: StructurePhaseEvidence | None) -> None:
+        if phase is None:
+            self.phase_badge.setLevel(InfoLevel.ATTENTION)
+            self.phase_badge.setText(self.tr("Unavailable"))
+            self.phase_summary_label.setText(
+                self.tr("Local topology evidence is unavailable for this frame.")
+            )
+            return
+
+        label = self._phase_display_name(phase.phase_label)
+        if phase.confidence_state == "strong":
+            self.phase_badge.setLevel(InfoLevel.SUCCESS)
+            suffix = (
+                self.tr("Confirmed ordering")
+                if phase.phase_label in {"l12", "c14", "c15"}
+                else self.tr("Strong evidence")
+            )
+            self.phase_badge.setText(f"{label} · {suffix}")
+        elif phase.confidence_state == "mixed":
+            self.phase_badge.setLevel(InfoLevel.WARNING)
+            self.phase_badge.setText(self.tr("Mixed local structure"))
+        else:
+            self.phase_badge.setLevel(InfoLevel.ATTENTION)
+            self.phase_badge.setText(self.tr("Unresolved"))
+
+        fractions = dict(phase.local_phase_fractions)
+        visible = [
+            f"{self._phase_display_name(key)} {fractions.get(key, 0.0):.1%}"
+            for key in self._ORDERED_LOCAL_PHASES
+            if fractions.get(key, 0.0) >= 0.001
+        ]
+        prefix = self.tr("Local topology")
+        self.phase_summary_label.setText(
+            f"{prefix}: {' · '.join(visible)}" if visible else f"{prefix}: —"
+        )
+
+    def _phase_display_name(self, label: str) -> str:
+        return {
+            "fcc": "FCC",
+            "hcp": "HCP",
+            "bcc": "BCC",
+            "l12": "L1₂",
+            "c14": "C14 Laves",
+            "c15": "C15 Laves",
+            "mixed": self.tr("Mixed local structure"),
+            "unresolved": self.tr("Unresolved"),
+        }.get(label, label)
+
+
+__all__ = ["StructureInfoWidget"]

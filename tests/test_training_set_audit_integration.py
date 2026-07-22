@@ -404,7 +404,10 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             scope=AuditScope(AuditScopeKind.ACTIVE, (0, 1), 2),
             inventory=DatasetInventory(2, ("Ni",), ()),
         )
-        window.show_nep_interface = SimpleNamespace(nep_result_data=data)
+        window.show_nep_interface = SimpleNamespace(
+            nep_result_data=data,
+            set_phase_inventory=MagicMock(),
+        )
         window.training_set_audit_interface = SimpleNamespace(
             start_phase_analysis=MagicMock(),
             finish_phase_analysis=MagicMock(),
@@ -437,6 +440,11 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             )
             payload = callbacks["func"]()
             callbacks["on_finished"](payload)
+
+        window.show_nep_interface.set_phase_inventory.assert_called_once_with(
+            phase,
+            data,
+        )
 
         structure.geometry_snapshot.assert_called_once_with((0, 1))
         phase_mock.assert_called_once()

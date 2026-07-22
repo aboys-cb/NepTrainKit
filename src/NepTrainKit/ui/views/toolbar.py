@@ -106,6 +106,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             self.tr("Select by Index"),
             QIcon(":/images/src/images/index.svg"),
             self.selectIndexSignal,
+            action_key="select_by_index",
         )
         self.addButton(
             self.tr("Select by Range"),
@@ -121,11 +122,13 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             self.tr("Find Max Error Point"),
             QIcon(":/images/src/images/find_max.svg"),
             self.findMaxSignal,
+            action_key="find_max_error",
         )
         sparse_action = self.addButton(
             self.tr("Sparse samples"),
             QIcon(":/images/src/images/sparse.svg"),
             self.sparseSignal,
+            action_key="sparse_samples",
         )
 
         pen_action = self.addButton(
@@ -144,11 +147,13 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             self.tr("Find non-physical structures"),
             QIcon(":/images/src/images/discovery.svg"),
             self.discoverySignal,
+            action_key="find_non_physical",
         )
         self.addButton(
             self.tr("Check net force"),
             QIcon(":/images/src/images/inspect.svg"),
             self.forceBalanceSignal,
+            action_key="check_net_force",
         )
         inverse_action = self.addButton(
             self.tr("Invert selection"),
@@ -176,6 +181,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             self.tr("Edit info"),
             QIcon(":/images/src/images/edit_info.svg"),
             self.editInfoSignal,
+            action_key="edit_info",
         )
         export_action = self.addButton(
             self.tr("Export structure descriptor"),
@@ -187,22 +193,26 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             self.tr("Energy baseline shift"),
             QIcon(":/images/src/images/alignment.svg"),
             self.shiftEnergySignal,
+            action_key="energy_baseline_shift",
         )
         self.addButton(
             "DFT D3",
             QIcon(":/images/src/images/dft_d3.png"),
             self.dftd3Signal,
+            action_key="dft_d3",
         )
         self.addSeparator()
         self.addButton(
             self.tr("Dataset summary"),
             QIcon(":/images/src/images/summary.svg"),
             self.summarySignal,
+            action_key="dataset_summary",
         )
         self.addButton(
             self.tr("Explore distributions"),
             QIcon(distribution_icon_path),
             self.distributionSignal,
+            action_key="explore_distributions",
         )
 
 

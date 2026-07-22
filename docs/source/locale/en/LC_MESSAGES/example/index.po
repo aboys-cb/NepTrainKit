@@ -4,12 +4,11 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 17:56+0800\n"
+"POT-Creation-Date: 2026-07-22 10:24+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -19,6 +18,42 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
+
+#: ../../source/example/index.rst:4
+msgid "能量基线平移"
+msgstr "Energy Baseline Shift"
+
+#: ../../source/example/index.rst:4
+msgid "按索引选择结构"
+msgstr "Select Structures by Index"
+
+#: ../../source/example/index.rst:4
+msgid "清理可疑结构"
+msgstr "Review Suspicious Structures"
+
+#: ../../source/example/index.rst:4
+msgid "最大误差结构复核"
+msgstr "Review Largest-Error Structures"
+
+#: ../../source/example/index.rst:4
+msgid "最远点采样"
+msgstr "Farthest-Point Sampling"
+
+#: ../../source/example/index.rst:4
+msgid "批量编辑结构元数据"
+msgstr "Edit Structure Metadata in Batches"
+
+#: ../../source/example/index.rst:4
+msgid "数据集摘要与分布"
+msgstr "Dataset Summary and Distributions"
+
+#: ../../source/example/index.rst:4
+msgid "加上或减去 DFT-D3"
+msgstr "Add or Subtract DFT-D3"
+
+#: ../../source/example/index.rst:4
+msgid "用一条流程学会卡片系统"
+msgstr "Learn the Card System with One Workflow"
 
 #: ../../source/example/index.rst:4
 msgid "NEP 数据展示示例"

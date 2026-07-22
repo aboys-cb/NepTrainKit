@@ -4429,6 +4429,11 @@ All child items will also be deleted.</source>
         <translation>配置最远点采样</translation>
     </message>
     <message>
+        <location filename="../ui/views/nep.py" line="402" />
+        <source>Use .* for one shared baseline; separate different Config_type baseline groups with semicolons.</source>
+        <translation>同一能量基线填写 .*；不同 Config_type 基线组用英文分号分隔。</translation>
+    </message>
+    <message>
         <location filename="../ui/views/nep.py" line="495" />
         <location filename="../ui/views/nep.py" line="631" />
         <location filename="../ui/views/nep.py" line="663" />

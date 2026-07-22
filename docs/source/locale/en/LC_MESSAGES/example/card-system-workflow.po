@@ -1,0 +1,568 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-22 10:31+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/example/card-system-workflow.md:1
+#: 86c1f79fc290477390d1fb6d30e8b8d3
+msgid "用一条流程学会 Make Dataset 卡片系统"
+msgstr "Learn the Make Dataset Card System with One Workflow"
+
+#: ../../source/example/card-system-workflow.md:3
+#: 6e9ae79192b142ad99a4ac2bf8e993f8
+msgid ""
+"这不是四张卡片的功能介绍，而是一个完整的工作流示例。目标是从 2 原子的 Si "
+"晶胞出发，同时生成掺杂和空位两类候选，再做小幅扰动和几何筛选。走完一次后，你应该能看懂卡片顺序、`Card Group` "
+"分支、启停状态、输入输出数量以及流程复用方式。"
+msgstr ""
+"This is not a feature tour of four separate cards. It is one complete "
+"workflow: start from a two-atom Si cell, generate doped and vacancy "
+"candidates in parallel, then apply a small perturbation and a geometry "
+"filter. After completing it once, you should understand card order, `Card"
+" Group` branches, enabled states, input/output counts, and workflow "
+"reuse."
+
+#: ../../source/example/card-system-workflow.md:5
+#: 4c661aefa010489cbb9bfeebbd35a02f
+msgid "先认清每张卡片上的按钮"
+msgstr "First, Understand the Buttons on Every Card"
+
+#: ../../source/example/card-system-workflow.md:7
+#: f353a164767d42188db397634d539178
+msgid "所有卡片共用同一组标题栏按钮："
+msgstr "Every card uses the same title-bar controls:"
+
+#: ../../source/example/card-system-workflow.md:9
+#: eea89eeb3ca1403fb76ebd3f3b1a5d91
+msgid "Make Dataset 卡片标题栏通用按钮"
+msgstr "Shared Make Dataset card title-bar controls"
+
+#: ../../source/example/card-system-workflow.md:9
+#: eea89eeb3ca1403fb76ebd3f3b1a5d91
+msgid ".. image:: ../_static/image/generated/tutorials/card_system_controls.png"
+msgstr ".. image:: ../_static/image/generated/tutorials/card_system_controls.png"
+
+#: ../../source/example/card-system-workflow.md:9
+#: 692d2329c8b7427a8b7c0afc47c93ecf
+msgid "编号"
+msgstr "No."
+
+#: ../../source/example/card-system-workflow.md:9
+#: d7b6925f859e445d80fd638cbec388a8
+msgid "功能"
+msgstr "Function"
+
+#: ../../source/example/card-system-workflow.md:9
+#: d1477cfae7a24ad8b2d4d2e3eef8f709
+msgid "什么时候用"
+msgstr "When to use it"
+
+#: ../../source/example/card-system-workflow.md:9
+#: 2a59e107efc14851a2b16edcf755f910
+msgid "1"
+msgstr "1"
+
+#: ../../source/example/card-system-workflow.md:9
+#: c81662ebbf0241a6bce07f4002fee25d
+msgid "启用或跳过卡片"
+msgstr "Enable or skip the card"
+
+#: ../../source/example/card-system-workflow.md:9
+#: c53831772511452d9afbc213cba9679a
+msgid "取消勾选后，运行流程时会跳过这张卡；下游接收上一张已启用卡片的输出"
+msgstr ""
+"Clear the checkbox to skip this card when the workflow runs. The next "
+"card receives the output of the previous enabled card."
+
+#: ../../source/example/card-system-workflow.md:9
+#: ef8559dfe5f7418fb6d8f3987f087838
+msgid "2"
+msgstr "2"
+
+#: ../../source/example/card-system-workflow.md:9
+#: b754e7d4432c473bb9b5530b05a230dd
+msgid "折叠或展开"
+msgstr "Collapse or expand"
+
+#: ../../source/example/card-system-workflow.md:9
+#: 9e3380f483aa4ec8affb5db648729451
+msgid "参数设置完成后折叠，便于查看整条流程和拖动排序"
+msgstr ""
+"Collapse a configured card to see the whole workflow and reorder cards "
+"more easily."
+
+#: ../../source/example/card-system-workflow.md:9
+#: 200c3a34459e4e2498510c42d55d4ad9
+msgid "3"
+msgstr "3"
+
+#: ../../source/example/card-system-workflow.md:9
+#: b2f64912d79a482f874650e697c4c288
+msgid "在线手册"
+msgstr "Online manual"
+
+#: ../../source/example/card-system-workflow.md:9
+#: dfc4e316cfcd4943a9590a612c60993a
+msgid "查看这张卡片的完整参数、限制和适用场景"
+msgstr ""
+"Read the full parameter reference, limitations, and intended use cases "
+"for this card."
+
+#: ../../source/example/card-system-workflow.md:9
+#: d1a680162b05400d9f5011eeaa2c28f9
+msgid "4"
+msgstr "4"
+
+#: ../../source/example/card-system-workflow.md:9
+#: 8f799ec6d62d4d4fba16dcb88e469870
+msgid "卡片信息"
+msgstr "Card information"
+
+#: ../../source/example/card-system-workflow.md:9
+#: 973a828c6e8549d2ac7df08ab24a3c66
+msgid "查看版本、维护者和来源信息"
+msgstr "View version, maintainer, and provenance information."
+
+#: ../../source/example/card-system-workflow.md:9
+#: ca0d059ca75549068648345dfba25e80
+msgid "5"
+msgstr "5"
+
+#: ../../source/example/card-system-workflow.md:9
+#: 6d31f1d6a41f4b8999bf076e27114775
+msgid "复制单张卡片 JSON"
+msgstr "Copy this card as JSON"
+
+#: ../../source/example/card-system-workflow.md:9
+#: 541d7809e626475c8b74c7e6d33b239b
+msgid "复制当前参数，之后用顶部 `Paste JSON` 追加一张相同卡片"
+msgstr ""
+"Copy the current parameters, then use `Paste JSON` at the top to append "
+"an identical card."
+
+#: ../../source/example/card-system-workflow.md:9
+#: 43fda028b4634f688ab51e52ea469963
+msgid "6"
+msgstr "6"
+
+#: ../../source/example/card-system-workflow.md:9
+#: f925a4401a88442d89084f4d23e1645e
+msgid "查看本卡输出"
+msgstr "View this card's output"
+
+#: ../../source/example/card-system-workflow.md:9
+#: af344ef2c19044f9b8d8d672814a54a6
+msgid "运行成功后才可用，只把这张卡片的结果送到 `NEP Dataset Display`"
+msgstr ""
+"Available after a successful run. It sends only this card's results to "
+"`NEP Dataset Display`."
+
+#: ../../source/example/card-system-workflow.md:9
+#: 679c8741dc004a21a12f178613a9701d
+msgid "7"
+msgstr "7"
+
+#: ../../source/example/card-system-workflow.md:9
+#: dbfe88ad09024f7a995a89b473b58783
+msgid "导出本卡输出"
+msgstr "Export this card's output"
+
+#: ../../source/example/card-system-workflow.md:9
+#: 18ba7fdd55f04402ac10930d42f59034
+msgid "保存这一步的中间结构，不等于保存整条流程"
+msgstr ""
+"Save the intermediate structures from this step; this does not save the "
+"workflow itself."
+
+#: ../../source/example/card-system-workflow.md:9
+#: d1519f341c7c4964b5e5f6925b84dc62
+msgid "8"
+msgstr "8"
+
+#: ../../source/example/card-system-workflow.md:9
+#: bcf52a613fd64210944a220cfbca1978
+msgid "关闭卡片"
+msgstr "Close the card"
+
+#: ../../source/example/card-system-workflow.md:9
+#: a18b64355a18401caa16a299287675a6
+msgid "从工作区移除；不会删除已经导出的文件"
+msgstr "Remove it from the workspace. Previously exported files are not deleted."
+
+#: ../../source/example/card-system-workflow.md:25
+#: 39897be7377a4488a0acf85a1a15ba9a
+msgid "拖动卡片标题栏可以调整顺序。改完顺序必须重新运行，因为顶层卡片的输出会依次传给下一张已启用卡片。"
+msgstr ""
+"Drag a card by its title bar to change the order. Run the workflow again "
+"after reordering because each top-level card passes its output to the "
+"next enabled card."
+
+#: ../../source/example/card-system-workflow.md:27
+#: 1963c894ae574ead80990b926937ce4c
+msgid "组装这个例子"
+msgstr "Build the Example"
+
+#: ../../source/example/card-system-workflow.md:29
+#: 972a0ba63b144083a9f5d8416f49a420
+msgid "用左上角 `Load` 导入 `Si2.vasp`。"
+msgstr "Use `Load` in the upper-left corner to import `Si2.vasp`."
+
+#: ../../source/example/card-system-workflow.md:30
+#: fcaa2b37b2f5493aa465c669e0b946ce
+msgid ""
+"用 `Add new card` 或 `Find card` 依次添加 `Super Cell`、`Card Group`、`Random "
+"Doping`、`Vacancy Defect`、`Atomic Perturb` 和 `Geometry Filter`。新卡片先出现在顶层。"
+msgstr ""
+"Use `Add new card` or `Find card` to add `Super Cell`, `Card Group`, `Random Doping`, "
+"`Vacancy Defect`, `Atomic Perturb`, and `Geometry Filter` in that order. New cards first "
+"appear at the top level."
+
+#: ../../source/example/card-system-workflow.md:31
+#: 5f054d3dde794ed5a215824e8a4e4403
+msgid ""
+"按住 `Random Doping` 的标题栏，把它拖进 `Card Group` 的空白区域；再用同样方法拖入 `Vacancy "
+"Defect`。拖错时，把子卡片拖回工作区空白处即可回到顶层。"
+msgstr ""
+"Drag `Random Doping` by its title bar into the empty area of `Card Group`, then do the "
+"same with `Vacancy Defect`. If a card is grouped by mistake, drag it back to an empty "
+"area of the workspace to return it to the top level."
+
+#: ../../source/example/card-system-workflow.md:32
+#: b22fcff548b946baa85fe8d423d32ffc
+msgid "拖动标题栏，把剩余顶层卡片排成下面的顺序，再填写参数。"
+msgstr "Drag the title bars to arrange the remaining top-level cards as shown below, then enter the parameters."
+
+#: ../../source/example/card-system-workflow.md:34
+#: f283bce5df854b0cbb2d26583efd2edc
+msgid ""
+"Super Cell\n"
+"→ Card Group [Random Doping | Vacancy Defect]\n"
+"→ Atomic Perturb\n"
+"→ Geometry Filter\n"
+msgstr ""
+"Super Cell\n"
+"→ Card Group [Random Doping | Vacancy Defect]\n"
+"→ Atomic Perturb\n"
+"→ Geometry Filter\n"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 62a45a181e5e46aa94e735e17dffd22e
+msgid "包含线性步骤和并行分支的完整卡片流程"
+msgstr "A complete card workflow with sequential steps and parallel branches"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 62a45a181e5e46aa94e735e17dffd22e
+msgid ".. image:: ../_static/image/generated/tutorials/card_system_workflow.png"
+msgstr ".. image:: ../_static/image/generated/tutorials/card_system_workflow.png"
+
+#: ../../source/example/card-system-workflow.md:46
+#: 317b028983ce44d3bc2f61c7dd7c5b1f
+msgid ""
+"顶部按钮控制整条流程：`Copy JSON` 复制当前全部卡片，`Paste JSON` 把剪贴板中的配置追加到现有流程，`Run` "
+"运行所有已启用卡片，`Stop` 中止正在运行的卡片。标题栏里的 `Copy JSON` 只复制单张卡片，两者不要混用。"
+msgstr ""
+"The top controls operate on the whole workflow: `Copy JSON` copies all current cards, "
+"`Paste JSON` appends clipboard configuration to the existing workflow, `Run` executes all "
+"enabled cards, and `Stop` aborts the running cards. `Copy JSON` in a card title bar copies "
+"only that card, so do not confuse the two."
+
+#: ../../source/example/card-system-workflow.md:48
+#: 4d4b2429acc74d9eb9746b0cdd5907f4
+msgid "本例使用的参数只用于把数据流讲清楚："
+msgstr "These parameters are chosen only to make the data flow easy to follow:"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 0b6c0b8a184f4460845a42191943fa13
+msgid "步骤"
+msgstr "Step"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 1cf10182459f4de19c1bd7c03b6fa25a
+msgid "关键输入"
+msgstr "Key settings"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 769bca415ac54807bcf961438e496062
+msgid "预期输出"
+msgstr "Expected output"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 26267bde6c9648939d2e0e22b6a9a7a3
+msgid "`Super Cell`"
+msgstr "`Super Cell`"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 792b30bb94d34fbba132c6bc84a55ce3
+msgid "`2 × 2 × 2`"
+msgstr "`2 × 2 × 2`"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 57843c0021f843bca0229b5d38cd6f43
+msgid "1 个 16 原子 Si 超胞"
+msgstr "One 16-atom Si supercell"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 9c26e5bb021e466b8dd48ac18f7a974c
+msgid "`Random Doping`"
+msgstr "`Random Doping`"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 0968cdde5f1c4c32bea6dad3c19360eb
+msgid "目标 `Si`；掺杂元素直接填 `Ge`；固定替换 1 个；生成 2 个；seed `42`"
+msgstr ""
+"Target `Si`; enter `Ge` directly as the dopant; replace exactly 1 atom; "
+"generate 2 structures; seed `42`"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 0ed4fbcbd87b4e2b99c830317c4c1cee
+msgid "2 个 `Si15Ge`"
+msgstr "Two `Si15Ge` structures"
+
+#: ../../source/example/card-system-workflow.md:41
+#: c2345dd5a8094f77a9ce4bb92293393d
+msgid "`Vacancy Defect`"
+msgstr "`Vacancy Defect`"
+
+#: ../../source/example/card-system-workflow.md:41
+#: d51aee1bed3444efaee2de61f3cd0aa7
+msgid "固定移除 1 个原子；生成 2 个；seed `42`"
+msgstr "Remove exactly 1 atom; generate 2 structures; seed `42`"
+
+#: ../../source/example/card-system-workflow.md:41
+#: a3fecccae25a446a8360274bc84fe6fd
+msgid "2 个 15 原子 Si 空位结构"
+msgstr "Two 15-atom Si vacancy structures"
+
+#: ../../source/example/card-system-workflow.md:41
+#: a5e245a18a614f40a038ad1c96654e7c
+msgid "`Atomic Perturb`"
+msgstr "`Atomic Perturb`"
+
+#: ../../source/example/card-system-workflow.md:41
+#: f9d24aa1845a464e889c8b8ed1ec3ff1
+msgid "最大位移 `0.05 Å`；每个输入生成 2 个；seed `42`"
+msgstr "Maximum displacement `0.05 Å`; generate 2 structures per input; seed `42`"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 891e1595ec5b4529afed275d35741179
+msgid "$4\\times2=8$ 个扰动结构"
+msgstr "$4\\times2=8$ perturbed structures"
+
+#: ../../source/example/card-system-workflow.md:41
+#: f72a4cd7676f450a93d99d66e85c55f3
+msgid "`Geometry Filter`"
+msgstr "`Geometry Filter`"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 3f1682c9c8f94c2198b4ef6934dd3752
+msgid "最短距离 `1.5 Å`；要求有限晶胞"
+msgstr "Minimum distance `1.5 Å`; require a finite cell"
+
+#: ../../source/example/card-system-workflow.md:41
+#: 273dca8ab3df49b3aadba07e16e0d9c9
+msgid "筛掉明显碰撞或无效晶胞"
+msgstr "Remove obvious collisions and invalid cells"
+
+#: ../../source/example/card-system-workflow.md:58
+#: 90f5c21669eb49c592f2644aa5a7e175
+msgid ""
+"掺杂元素输入框不是 JSON。单一元素直接写 `Ge`；多元素比例写 "
+"`Ge:0.7,C:0.3`。界面恢复已保存参数时也会保持这种写法，便于直接照着修改。"
+msgstr ""
+"The dopant field does not use JSON. Enter `Ge` for one element or "
+"`Ge:0.7,C:0.3` for a multi-element ratio. Restored settings keep this "
+"editable notation so you can copy and adjust it directly."
+
+#: ../../source/example/card-system-workflow.md:60
+#: 5b6f45c203b74059ad408c99e2ab5ac2
+msgid "线性链和 Card Group 不要混淆"
+msgstr "Do Not Confuse a Sequential Chain with Card Group"
+
+#: ../../source/example/card-system-workflow.md:62
+#: 1875e35099754970a9430e63d4c287b1
+msgid ""
+"顶层卡片是**串行**的：`Super Cell` 的输出进入 `Card Group`，分支汇总结果再进入 `Atomic "
+"Perturb`，最后交给 `Geometry Filter`。所以扩胞应放在缺陷生成前，筛选应放在随机生成后。"
+msgstr ""
+"Top-level cards run **sequentially**: the `Super Cell` output enters "
+"`Card Group`, the merged branch results enter `Atomic Perturb`, and the "
+"result finally goes to `Geometry Filter`. This is why supercell "
+"generation belongs before defect generation and filtering belongs after "
+"random generation."
+
+#: ../../source/example/card-system-workflow.md:64
+#: fe56931e687b40e2ad2028fc9fd4c1d1
+msgid "`Card Group` 内部是**并行分支**。本例的掺杂卡和空位卡都收到同一个 16 原子 Si 超胞，它们不会前后相接："
+msgstr ""
+"Cards inside `Card Group` are **parallel branches**. In this example, "
+"both Random Doping and Vacancy Defect receive the same 16-atom Si "
+"supercell; one does not feed into the other:"
+
+#: ../../source/example/card-system-workflow.md:66
+#: 0d792b48247e4bc492734dc4c8fe0e73
+msgid ""
+"                 ┌→ Random Doping ─┐\n"
+"Si16 → Card Group│                  ├→ 汇总为 4 个结构\n"
+"                 └→ Vacancy Defect ┘\n"
+msgstr ""
+"                 ┌→ Random Doping ─┐\n"
+"Si16 → Card Group│                  ├→ merge into 4 structures\n"
+"                 └→ Vacancy Defect ┘\n"
+
+#: ../../source/example/card-system-workflow.md:72
+#: f4d8920cd36b429d8103539a6b87b3c4
+msgid ""
+"只有“同一个输入要走几条不同路线”时才使用 `Card Group`。如果你想先掺杂、再从掺杂结构中造空位，就应把两张卡放在顶层，按 "
+"`Random Doping → Vacancy Defect` 排列，而不是放进同一个组。"
+msgstr ""
+"Use `Card Group` only when the same input should follow several "
+"independent routes. If you want to dope first and then create vacancies "
+"in the doped structures, place both cards at the top level in the order "
+"`Random Doping → Vacancy Defect` instead of putting them in one group."
+
+#: ../../source/example/card-system-workflow.md:74
+#: a2a060e5b0124d0da67dfe8c1b1715c1
+msgid "运行后沿着数量检查"
+msgstr "Check the Counts after Running"
+
+#: ../../source/example/card-system-workflow.md:76
+#: cb1ad9484b524155a331d296882de502
+msgid "勾选需要参与流程的卡片，点击顶部 `Run`："
+msgstr "Select the cards that should participate, then click `Run` at the top:"
+
+#: ../../source/example/card-system-workflow.md:78
+#: 4a7dd3cd867840cca9db1f9d5900718f
+msgid "卡片流程各步骤的真实输入输出数量"
+msgstr "Verified input and output counts for every workflow step"
+
+#: ../../source/example/card-system-workflow.md:78
+#: 4a7dd3cd867840cca9db1f9d5900718f
+msgid ".. image:: ../_static/image/generated/tutorials/card_system_result.png"
+msgstr ".. image:: ../_static/image/generated/tutorials/card_system_result.png"
+
+#: ../../source/example/card-system-workflow.md:83
+#: c473790963f34a399471c4886e2c8179
+msgid "本例真实运行结果为："
+msgstr "The verified result of this example is:"
+
+#: ../../source/example/card-system-workflow.md:85
+#: f01e101c8bea4be09c81172c93c1af29
+msgid ""
+"1 个 Si2\n"
+"→ 1 个 Si16\n"
+"→ 2 个 Si15Ge + 2 个 Si15，共 4 个分支结果\n"
+"→ 8 个扰动结构\n"
+"→ 几何筛选保留 8 个\n"
+msgstr ""
+"1 Si2 structure\n"
+"→ 1 Si16 structure\n"
+"→ 2 Si15Ge + 2 Si15 structures, giving 4 branch results\n"
+"→ 8 perturbed structures\n"
+"→ 8 structures retained by the geometry filter\n"
+
+#: ../../source/example/card-system-workflow.md:93
+#: 5b95a8cb52fc4ff28ced2790e3cb57e3
+msgid ""
+"每张卡底部都显示 `Input → Output / "
+"Time`。数量从哪一步开始不符合预期，就先检查那一步，不要只看最终文件。如果某张卡输出为空，流程会停在这里，下游卡片不会继续运行。"
+msgstr ""
+"Each card shows `Input → Output / Time` at the bottom. If a count first "
+"becomes unexpected at a particular step, inspect that step instead of "
+"checking only the final file. If a card produces no output, the workflow "
+"stops there and downstream cards do not run."
+
+#: ../../source/example/card-system-workflow.md:95
+#: e4d58967703a4dbfa0f6f2b0c6aea287
+msgid "运行完成后有三种查看或导出范围："
+msgstr "After the run, there are three viewing or export scopes:"
+
+#: ../../source/example/card-system-workflow.md:97
+#: 31a23a88900a4f20a6eec84dbeeefbbf
+msgid "卡片标题栏的查看、导出按钮：只处理这一张卡片的输出。"
+msgstr ""
+"The view and export buttons in a card title bar operate only on that "
+"card's output."
+
+#: ../../source/example/card-system-workflow.md:98
+#: 756391d3f57d4dc98e0f4254755cb344
+msgid "顶部 `View selected outputs`：合并查看所有已勾选且已经产生结果的卡片，包含中间步骤。"
+msgstr ""
+"`View selected outputs` at the top merges the outputs of all checked "
+"cards that have results, including intermediate steps."
+
+#: ../../source/example/card-system-workflow.md:99
+#: 6636a467578c4537a27a9fb48a003b03
+msgid ""
+"顶部 `Save` 菜单中的 `Export final workflow output`：只保存最后完成的已启用卡片输出；`Export all"
+" available card outputs` 用于保留全部中间结果。"
+msgstr ""
+"`Export final workflow output` in the top `Save` menu saves only the "
+"output of the last completed enabled card. Use `Export all available card"
+" outputs` to keep all intermediate results."
+
+#: ../../source/example/card-system-workflow.md:101
+#: 4652ed62dd1d41ec9bd2d4138f36f244
+msgid "保存的是结构，还是流程"
+msgstr "Are You Saving Structures or the Workflow?"
+
+#: ../../source/example/card-system-workflow.md:103
+#: 16866574cea943f1a9567e7b7f1d1f75
+msgid "这两个概念必须分开："
+msgstr "Keep these two concepts separate:"
+
+#: ../../source/example/card-system-workflow.md:105
+#: 5601a762b90a4dc2841b8c3075e6aaa0
+msgid "`Copy JSON` 或 `Save → Export Card Config` 保存卡片顺序、参数和启停状态，**不包含生成结构**。"
+msgstr ""
+"`Copy JSON` or `Save → Export Card Config` saves card order, parameters, "
+"and enabled states. It **does not contain generated structures**."
+
+#: ../../source/example/card-system-workflow.md:106
+#: 80892b729de243a68396f39cd6df3f8c
+msgid "`Paste JSON` 会把剪贴板中的单张卡片、卡片列表或完整流程追加到当前工作区，不会自动清空原卡片。"
+msgstr ""
+"`Paste JSON` appends a single card, a card list, or a complete workflow "
+"from the clipboard to the current workspace. It does not clear existing "
+"cards."
+
+#: ../../source/example/card-system-workflow.md:107
+#: a4a41b111e114911baeff630c2741d04
+msgid "`Load → Import Card Config` 用于从 JSON 文件恢复流程。"
+msgstr "Use `Load → Import Card Config` to restore a workflow from a JSON file."
+
+#: ../../source/example/card-system-workflow.md:108
+#: 2e192dc75a524cafa4c5bc81fc622f7c
+msgid "导出卡片输出或最终流程输出，保存的才是结构数据。"
+msgstr ""
+"Exporting a card output or the final workflow output is what saves "
+"structure data."
+
+#: ../../source/example/card-system-workflow.md:110
+#: 2aead3356fe840e4acdb3520c7f35071
+msgid ""
+"第一次把流程调通后，建议保存一份流程 "
+"JSON。更换输入结构时先检查元素、原子数和晶胞是否仍满足这些参数，再运行；不要把同一份流程配置当作所有材料都适用的物理方案。"
+msgstr ""
+"After the workflow works as intended, save a copy of its JSON. When "
+"changing the input structures, check that their elements, atom counts, "
+"and cells still fit these parameters before running. A reusable workflow "
+"configuration is not a physically valid recipe for every material."
+
+#~ msgid "导入 `Si2.vasp` 后，按下面的顺序添加卡片："
+#~ msgstr "After importing `Si2.vasp`, add cards in this order:"

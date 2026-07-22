@@ -20,6 +20,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
+import subprocess
 import sys
 from dataclasses import replace
 from pathlib import Path
@@ -41,6 +43,7 @@ from scenarios import RUNNERS, create_context, pump_events
 
 MANIFEST_PATH = REPO_ROOT / "docs/source/_static/image/generated/screenshot_manifest.json"
 CHECK_DIR = REPO_ROOT / ".tmp/docs-screenshots"
+SCALE_ENV = "NEPTRAIN_SCREENSHOT_SCALE_FACTOR"
 
 
 def _sha256(path: Path) -> str:
@@ -140,6 +143,30 @@ def _localized_annotations(spec: ScenarioSpec, language: str):
 
 def capture(spec: ScenarioSpec, output: Path, language: str) -> Path:
     """Run one scenario and write its annotated screenshot."""
+    render_scale = int(spec.options.get("render_scale", 1))
+    if render_scale < 1:
+        raise ValueError(f"render_scale must be at least 1 for {spec.name}")
+    if render_scale > 1 and spec.annotations:
+        raise ValueError(f"render_scale with annotations is not supported for {spec.name}")
+    if render_scale > 1 and os.environ.get(SCALE_ENV) != str(render_scale):
+        env = os.environ.copy()
+        env["QT_SCALE_FACTOR"] = str(render_scale)
+        env[SCALE_ENV] = str(render_scale)
+        subprocess.run(
+            [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "_capture-one",
+                spec.name,
+                str(output),
+                "--language",
+                language,
+            ],
+            check=True,
+            env=env,
+        )
+        return output
+
     runner = RUNNERS.get(spec.runner)
     if runner is None:
         raise RuntimeError(f"No runner registered for scenario '{spec.runner}'")
@@ -214,9 +241,21 @@ def command_check(args: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
+def command_capture_one(args: argparse.Namespace) -> int:
+    spec = SCENARIOS[args.name]
+    capture(spec, Path(args.output), args.language)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Generate NepTrainKit documentation screenshots.")
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    capture_one_parser = subparsers.add_parser("_capture-one", help=argparse.SUPPRESS)
+    capture_one_parser.add_argument("name", choices=tuple(SCENARIOS))
+    capture_one_parser.add_argument("output")
+    capture_one_parser.add_argument("--language", choices=("zh_CN", "en_US"), required=True)
+    capture_one_parser.set_defaults(func=command_capture_one)
 
     list_parser = subparsers.add_parser("list", help="List available screenshot scenarios.")
     list_parser.set_defaults(func=command_list)

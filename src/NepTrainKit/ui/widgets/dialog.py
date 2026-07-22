@@ -1862,7 +1862,11 @@ class ShiftEnergyDialogValues:
 class ShiftEnergyMessageBox(MessageBoxBase):
     """Dialog for energy baseline shift parameters."""
 
-    def __init__(self, parent=None, tip="Group regex patterns (comma separated)"):
+    def __init__(
+        self,
+        parent=None,
+        tip="Use .* for one shared baseline; separate different Config_type baseline groups with semicolons.",
+    ):
         super().__init__(parent)
         self._preset_placeholder = "None"
         self.titleLabel = CaptionLabel(tip, self)

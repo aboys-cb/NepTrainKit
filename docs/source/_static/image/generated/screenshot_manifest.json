@@ -1,4 +1,292 @@
 {
+  "dataset_summary_result": {
+    "scenario": "dataset_summary_result",
+    "title": "Dataset summary from real data",
+    "description": "Show a summary computed from the tracked 25-structure demo dataset.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/dataset_summary.png",
+    "window_size": [
+      1600,
+      900
+    ],
+    "sha256": "0ecc5f1d8b55df6394a548c4b0c4c45ad8c110f79fde71b76796aa73cf9ad3d9"
+  },
+  "dataset_summary_result_en": {
+    "scenario": "dataset_summary_result",
+    "title": "Dataset summary from real data",
+    "description": "Show a summary computed from the tracked 25-structure demo dataset.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/dataset_summary_en.png",
+    "window_size": [
+      1600,
+      900
+    ],
+    "sha256": "efee54e99ff84074ab40bc75295857996ba0e1cc697233c3bd04ced2a5244afd"
+  },
+  "dft_d3_entry_en": {
+    "scenario": "dft_d3_entry",
+    "title": "DFT-D3 correction entry",
+    "description": "Show the reference energy plot and DFT-D3 action.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/dft_d3_entry_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "e49c4f1d8b8f6c021db4caeea701bd688df117a7edf4cea94ef8b79d943bd93c"
+  },
+  "dft_d3_result_en": {
+    "scenario": "dft_d3_result",
+    "title": "Energy plot after adding DFT-D3",
+    "description": "Show the real demo labels after adding a PBE DFT-D3 correction.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/dft_d3_result_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "a02b6bf03959f52c6119cf6c75ad44c829d0e708551c118f0bc3d3e3aec6136a"
+  },
+  "distribution_analysis_result": {
+    "scenario": "distribution_analysis_result",
+    "title": "Force distribution from real data",
+    "description": "Show a real force-component distribution analysis.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/force_distribution.png",
+    "window_size": [
+      1600,
+      900
+    ],
+    "sha256": "2bb30c301250fb9974ac286b8114425a4800cd93d5a37f6177416ddc33c1e40d"
+  },
+  "distribution_analysis_result_en": {
+    "scenario": "distribution_analysis_result",
+    "title": "Force distribution from real data",
+    "description": "Show a real force-component distribution analysis.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/force_distribution_en.png",
+    "window_size": [
+      1600,
+      900
+    ],
+    "sha256": "0709c9235a04d2eb05d1d19661a0b762e6d7a37d5ab25086ea789c9c5c4186cc"
+  },
+  "edit_metadata_entry": {
+    "scenario": "edit_metadata_entry",
+    "title": "Edit selected metadata",
+    "description": "Show metadata editing after selecting three structures.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/edit_metadata_entry.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "c9a8d6014fa6f80ec95033f9a6e6907e9f4d5f63f115bb1c0e474c6a85387100"
+  },
+  "edit_metadata_entry_en": {
+    "scenario": "edit_metadata_entry",
+    "title": "Edit selected metadata",
+    "description": "Show metadata editing after selecting three structures.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/edit_metadata_entry_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "1af228d7bacb524fb791b3f02b9d8af79f4767079b56708c81474f08bc46f185"
+  },
+  "edit_metadata_result": {
+    "scenario": "edit_metadata_result",
+    "title": "Edit selected metadata",
+    "description": "Show the updated Config_type on the selected structures.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/edit_metadata_result.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "786001c06fd014dfdc8abc13a3962f04b61b1eb86f708bb1ef326623107a32d4"
+  },
+  "edit_metadata_result_en": {
+    "scenario": "edit_metadata_result",
+    "title": "Edit selected metadata",
+    "description": "Show the updated Config_type on the selected structures.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/edit_metadata_result_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "77bbee2532b65fad246f751fad3f28099b2c6e26b11e36dae57975d75cb82539"
+  },
+  "energy_baseline_shift_entry": {
+    "scenario": "energy_baseline_shift_entry",
+    "title": "Energy baseline shift entry",
+    "description": "Show the energy plot and the energy-baseline shift action.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/energy_baseline_shift_entry.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "301cb5451e0dad6f71dc97213768e1e43237216fdf99ec963f9f528c2d9fb714"
+  },
+  "energy_baseline_shift_entry_en": {
+    "scenario": "energy_baseline_shift_entry",
+    "title": "Energy baseline shift entry",
+    "description": "Show the energy plot and the energy-baseline shift action.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/energy_baseline_shift_entry_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "4a00b0c08dce1e8ccdc3a0e1b80bd79841d86b75b091f99464906cbfcc7c92ca"
+  },
+  "energy_baseline_shift_result": {
+    "scenario": "energy_baseline_shift_result",
+    "title": "Energy plot after baseline shift",
+    "description": "Show the energy plot after removing the tutorial's known atomic baseline.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/energy_baseline_shift_result.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "c420f88516a7198adf8feba709afd5f54ea8f043e2cefce8a4e76ab0c43738d8"
+  },
+  "energy_baseline_shift_result_en": {
+    "scenario": "energy_baseline_shift_result",
+    "title": "Energy plot after baseline shift",
+    "description": "Show the energy plot after removing the tutorial's known atomic baseline.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/energy_baseline_shift_result_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "31f003f50787777653cbcad57db8c431ed200a64c79fcc9f5fb110d6aa36087c"
+  },
+  "fps_sampling_entry": {
+    "scenario": "fps_sampling_entry",
+    "title": "Farthest point sampling",
+    "description": "Show the descriptor plot and farthest-point sampling action.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/fps_sampling_entry.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "b401506b2cedb982a9de94391b9f86bd46fc62741fd76cb8347dfe23e9aa5f01"
+  },
+  "fps_sampling_entry_en": {
+    "scenario": "fps_sampling_entry",
+    "title": "Farthest point sampling",
+    "description": "Show the descriptor plot and farthest-point sampling action.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/fps_sampling_entry_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "c49fdbee7914dfc9a1c4b4ba11b715c1d1443d062966464c3b4662bf54654d19"
+  },
+  "fps_sampling_result": {
+    "scenario": "fps_sampling_result",
+    "title": "FPS representatives",
+    "description": "Show eight structures selected by the tutorial FPS settings.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/fps_sampling_result.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "6fde20df28a648a0bc5635ff065b56dfc52cfa51b3a2336813f257de7182c43b"
+  },
+  "fps_sampling_result_en": {
+    "scenario": "fps_sampling_result",
+    "title": "FPS representatives",
+    "description": "Show eight structures selected by the tutorial FPS settings.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/fps_sampling_result_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "bc5900a8d14bfb85013dd20e1a1c81de91ab853e4972830e953fcda182838227"
+  },
+  "make_data_card_system_controls": {
+    "scenario": "make_data_card_system_controls",
+    "title": "Shared card controls",
+    "description": "Show the controls shared by Make Dataset cards.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/card_system_controls.png",
+    "window_size": [
+      1500,
+      820
+    ],
+    "sha256": "138634f537fdc951ea503a81169afaac81aacbeac342150bdc33995059a5ef6a"
+  },
+  "make_data_card_system_controls_en": {
+    "scenario": "make_data_card_system_controls",
+    "title": "Shared card controls",
+    "description": "Show the controls shared by Make Dataset cards.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/card_system_controls_en.png",
+    "window_size": [
+      1500,
+      820
+    ],
+    "sha256": "5f1e07bc4d21ce93c5285c0c4fca322121753af08a52a580360da5a7d35eb850"
+  },
+  "make_data_card_system_result": {
+    "scenario": "make_data_card_system_result",
+    "title": "Verified workflow result",
+    "description": "Show verified intermediate and final output counts for the card workflow.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/card_system_result.png",
+    "window_size": [
+      1800,
+      1000
+    ],
+    "sha256": "c375fb526dbfa60fdff4dc0a297a415b67b5aa39a8d17772e7aebd11f725dabd"
+  },
+  "make_data_card_system_result_en": {
+    "scenario": "make_data_card_system_result",
+    "title": "Verified workflow result",
+    "description": "Show verified intermediate and final output counts for the card workflow.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/card_system_result_en.png",
+    "window_size": [
+      1800,
+      1000
+    ],
+    "sha256": "16dc67e72ce547a7e799f6e2987b2fc74d88c2594035f0c8d056e110c5972807"
+  },
+  "make_data_card_system_workflow": {
+    "scenario": "make_data_card_system_workflow",
+    "title": "A complete card workflow",
+    "description": "Show an ordered workflow with a two-branch Card Group.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/card_system_workflow.png",
+    "window_size": [
+      1800,
+      1000
+    ],
+    "sha256": "5caa54191082cf54674307e8fadb436156d61b0aa525f765c09e77054a75d6f1"
+  },
+  "make_data_card_system_workflow_en": {
+    "scenario": "make_data_card_system_workflow",
+    "title": "A complete card workflow",
+    "description": "Show an ordered workflow with a two-branch Card Group.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/card_system_workflow_en.png",
+    "window_size": [
+      1800,
+      1000
+    ],
+    "sha256": "9e140c160561a21a9fb6856a8641b630f3468af4a1f33758e8ec5e34eed36346"
+  },
   "make_data_empty": {
     "scenario": "make_data_empty",
     "title": "Make Data workspace",
@@ -47,6 +335,78 @@
     ],
     "sha256": "d5c8e65e6b6e5d76ab35daa5ec9ad3ffdecc637cdec43de240755c4d6f85dc2e"
   },
+  "max_error_review_entry_en": {
+    "scenario": "max_error_review_entry",
+    "title": "Maximum-error review",
+    "description": "Show the active energy plot and maximum-error action.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/max_error_review_entry_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "e0d72af18dacfd63f0dee52ee11cad64b633fe6207e68de6c8801d130424a82a"
+  },
+  "max_error_review_result_en": {
+    "scenario": "max_error_review_result",
+    "title": "Selected structures need review",
+    "description": "Show five structures selected by energy error for manual review.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/max_error_review_result_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "71774706e2063fe659edd07ff18912bccb42d71a262cb0ca369858e8c7710f23"
+  },
+  "select_by_index_entry": {
+    "scenario": "select_by_index_entry",
+    "title": "Select structures by index",
+    "description": "Show index selection on a loaded NEP dataset.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/select_by_index_entry.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "f949f70b35281f89ac07eafa311f9f92be1cad9a24e8e7a0af17a28145244d47"
+  },
+  "select_by_index_entry_en": {
+    "scenario": "select_by_index_entry",
+    "title": "Select structures by index",
+    "description": "Show index selection on a loaded NEP dataset.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/select_by_index_entry_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "f8a93436da85b1350d778461282b339753a26129249601be5cf267e71a2139ab"
+  },
+  "select_by_index_result": {
+    "scenario": "select_by_index_result",
+    "title": "Select structures by index",
+    "description": "Show the five structures resolved from the tutorial index expression.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/select_by_index_result.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "7e8c9bbfd52dac2b0c5eb6e3e29d6c57b45345e719830a9d6c7040ce67e38d88"
+  },
+  "select_by_index_result_en": {
+    "scenario": "select_by_index_result",
+    "title": "Select structures by index",
+    "description": "Show the five structures resolved from the tutorial index expression.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/select_by_index_result_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "867410f249162932859457605451f63b7e6a5b1216fc43ddfb8fedb6be2ff0c6"
+  },
   "show_nep_arrow_dialog": {
     "scenario": "show_nep_arrow_dialog",
     "title": "Show arrows dialog",
@@ -93,7 +453,7 @@
       1200,
       700
     ],
-    "sha256": "07b95c08d75a52972dda69bcdc02929d845976601443a1e8410b90a04cd3b797"
+    "sha256": "dd7948025134a91d91ad2d5f0ae3816c8147cf75b1c59589bc252853c21f9522"
   },
   "show_nep_distribution_dialog": {
     "scenario": "show_nep_distribution_dialog",
@@ -153,7 +513,7 @@
       1200,
       700
     ],
-    "sha256": "c13b6c00882d9849a29a0a84d5f97c86fb4c4348600e3d4b126a26e543cdebf1"
+    "sha256": "e4e3b9904a891596fbe541c4a0506845324b36edc74770c1d88c0394ecf1d752"
   },
   "show_nep_edit_info_dialog_en": {
     "scenario": "show_nep_edit_info_dialog",
@@ -165,7 +525,7 @@
       1200,
       700
     ],
-    "sha256": "77207f071df95fbc8b01e6490337f18f11c93ec2d1c88684050be25687947865"
+    "sha256": "56aa3a8709d999939a7d1d38d82945634a92fb897257af6ad7ddb712287b3650"
   },
   "show_nep_export_format_dialog": {
     "scenario": "show_nep_export_format_dialog",
@@ -201,7 +561,7 @@
       1200,
       700
     ],
-    "sha256": "8a3aa6c8d4c58cd68bb71c4160e42e2dc7d6acbe8849f9f95bf7a7f6fd2ad4df"
+    "sha256": "6eb5e56ac219dc810d81b5d1a3680b4b73047fd6639ccf7662596d3e6fdb02c9"
   },
   "show_nep_force_dialog_en": {
     "scenario": "show_nep_force_dialog",
@@ -213,7 +573,7 @@
       1200,
       700
     ],
-    "sha256": "3447db9c4c4abbc969f5a0bc11d2ad667dd448f7099a19cd0a2df229ae7a6317"
+    "sha256": "f89aa750cd9c109e653f2e8646603b5bad92fc6b3a54b033068f2dff4b07941a"
   },
   "show_nep_index_dialog": {
     "scenario": "show_nep_index_dialog",
@@ -225,7 +585,7 @@
       1200,
       700
     ],
-    "sha256": "1dbdb4d9762eb3880eef335c9880b7119211b9dcfbd1acacc8a95417efad2f4b"
+    "sha256": "fa2743df6df9078b31ed42591af1b2bc3c85241a3216ec0681dae8d561db4965"
   },
   "show_nep_index_dialog_en": {
     "scenario": "show_nep_index_dialog",
@@ -237,7 +597,7 @@
       1200,
       700
     ],
-    "sha256": "3408282c86424963d55e9f44f1b320ff049a5038d9f8233b816196a034692a0c"
+    "sha256": "445daaf6b14d8c89851f01a20f012c1c9462c71af805c313bf1704d2c379a2c5"
   },
   "show_nep_lattice_dialog": {
     "scenario": "show_nep_lattice_dialog",
@@ -285,7 +645,7 @@
       1200,
       700
     ],
-    "sha256": "44254fc7aeba12e44ac8754ac2172880533af00293899e7f566cf9e5de64e90c"
+    "sha256": "775a617613b4fd195994a7dce9bfe4273c129b703642a7cf55d9a3fafe6fffc3"
   },
   "show_nep_overview": {
     "scenario": "show_nep_overview",
@@ -345,7 +705,7 @@
       1200,
       700
     ],
-    "sha256": "8642000ae7f9345212b6922e2bd2bacdc17b63fac6bc55bb36c2748e610bd424"
+    "sha256": "ba3a0578fb313962e673a6121df7170b02a0be6a72b0ff984e8103cce96c60aa"
   },
   "show_nep_shift_dialog_en": {
     "scenario": "show_nep_shift_dialog",
@@ -357,7 +717,7 @@
       1200,
       700
     ],
-    "sha256": "05a3af233f524bc511be549dab5e909f64d4bc3b113a5e1b3a20fab3b1735ab6"
+    "sha256": "acc037a1757381e335c2cd377f50033b8e830db05b357697d5a0b52b9f4b8046"
   },
   "show_nep_sparse_dialog": {
     "scenario": "show_nep_sparse_dialog",
@@ -381,7 +741,7 @@
       1200,
       700
     ],
-    "sha256": "f52ca6fef3051ec70ee9bdc7aad318dac914a0b07d82debabd101fdb5cb711ce"
+    "sha256": "31b2ccebd4360623596ff4b12257bea942fff88ef6ac1b9681a4fbee35a81d36"
   },
   "show_nep_summary_dialog": {
     "scenario": "show_nep_summary_dialog",
@@ -406,6 +766,54 @@
       700
     ],
     "sha256": "06779fb5dff8f06522427e6acb2c0573c22ce84f360b302c18601c49696ef904"
+  },
+  "suspicious_structure_scan_entry": {
+    "scenario": "suspicious_structure_scan_entry",
+    "title": "Structure quality checks",
+    "description": "Show the distance and net-force quality checks.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/structure_quality_checks.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "6240b946d5691964b95f6cdf4fb9e1d03fab9d8f88b6be26fda76c2bda575682"
+  },
+  "suspicious_structure_scan_entry_en": {
+    "scenario": "suspicious_structure_scan_entry",
+    "title": "Structure quality checks",
+    "description": "Show the distance and net-force quality checks.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/structure_quality_checks_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "e242ccd386dffa27382e02954327d0c8441bcdd2eee880dbabccf380796c1a6d"
+  },
+  "suspicious_structure_scan_result": {
+    "scenario": "suspicious_structure_scan_result",
+    "title": "Structure quality checks",
+    "description": "Show real selections from deliberately corrupted geometry and force labels.",
+    "language": "zh_CN",
+    "output": "docs/source/_static/image/generated/tutorials/structure_quality_result.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "9f25b3ddbe4aeaa56ae0f69aefc382e157c6a2a66aa266141ddf9abf829f1a72"
+  },
+  "suspicious_structure_scan_result_en": {
+    "scenario": "suspicious_structure_scan_result",
+    "title": "Structure quality checks",
+    "description": "Show real selections from deliberately corrupted geometry and force labels.",
+    "language": "en_US",
+    "output": "docs/source/_static/image/generated/tutorials/structure_quality_result_en.png",
+    "window_size": [
+      1600,
+      850
+    ],
+    "sha256": "387eab53bb4d2db14d5ff60ba10081b7347c57978ff6b114fa9e72e5cd3a8a93"
   },
   "training_set_audit_magnetic_shares": {
     "scenario": "training_set_audit_magnetic_shares",

@@ -1,6 +1,5 @@
 """Widgets for configuring random doping rules."""
 
-import json
 import traceback
 from typing import Any
 
@@ -27,7 +26,7 @@ from qfluentwidgets import (
     ToolTipPosition,
     PushButton,
 )
-from NepTrainKit.core.alloy import parse_composition
+from NepTrainKit.core.alloy import format_composition, parse_composition
 
 from .input import SpinBoxUnitInputFrame
 
@@ -235,7 +234,11 @@ class DopingRuleItem(QFrame):
         self.target_edit.setText(str(rule.get("target", "")))
         dopants = rule.get("dopants")
         if dopants is not None:
-            self.dopants_edit.setText(json.dumps(dopants))
+            dopant_items = dict(dopants)
+            if len(dopant_items) == 1 and float(next(iter(dopant_items.values()))) == 1.0:
+                self.dopants_edit.setText(str(next(iter(dopant_items))))
+            else:
+                self.dopants_edit.setText(format_composition(dopant_items))
         if "percent" in rule:
             self.percent_frame.set_input_value(rule["percent"])
         if "count" in rule:

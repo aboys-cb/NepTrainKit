@@ -398,7 +398,9 @@ class NepResultPlotWidget(QWidget):
         """Create and wire the shift-energy dialog."""
         box = ShiftEnergyMessageBox(
             self._parent,
-            "Specify regex groups for Config_type (comma separated)",
+            self.tr(
+                "Use .* for one shared baseline; separate different Config_type baseline groups with semicolons."
+            ),
         )
         preset_placeholder = "None"
         box.set_defaults(suggested_patterns, max_generations, population_size, convergence_tol)

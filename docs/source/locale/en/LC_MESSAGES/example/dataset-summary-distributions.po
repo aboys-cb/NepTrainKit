@@ -1,0 +1,111 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-21 23:13+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/example/dataset-summary-distributions.md:1
+#: 1a0908194499436a9187e8fa6546ddb8
+msgid "一分钟看懂数据集组成和分布"
+msgstr "Understand Dataset Composition and Distributions in One Minute"
+
+#: ../../source/example/dataset-summary-distributions.md:3
+#: 6df2bda5597c459591b09853f99e0aa9
+msgid ""
+"拿到陌生训练集时，先回答两个问题：数据由哪些组和元素组成，关键物理量是否有异常长尾。`Dataset summary` 给出总体组成，`Explore "
+"distributions` 再把具体字段展开。"
+msgstr ""
+"For an unfamiliar training set, start with two questions: which groups and "
+"elements are present, and whether important physical quantities have unusual"
+" tails. `Dataset summary` shows the overall composition, while `Explore "
+"distributions` examines individual fields."
+
+#: ../../source/example/dataset-summary-distributions.md:5
+#: 2294b2544fcb416fa1f0cb63c1573284
+msgid "先看总体组成"
+msgstr "Inspect the Overall Composition"
+
+#: ../../source/example/dataset-summary-distributions.md:7
+#: 72f06093e18749d78b93e03f00d02d01
+msgid "点击 `Dataset summary`。分组方式跟随顶部当前的搜索模式：选择 `Config_type` 时按配置类型统计，选择化学式时按化学式统计。"
+msgstr ""
+"Click `Dataset summary`. The grouping follows the current search mode at the"
+" top: `Config_type` groups by configuration type, while the formula mode "
+"groups by chemical formula."
+
+#: ../../source/example/dataset-summary-distributions.md:9
+#: f5e3e2c3d15745658b0be41b25f44686
+msgid "数据集摘要窗口"
+msgstr "Dataset summary dialog"
+
+#: ../../source/example/dataset-summary-distributions.md:9
+#: f5e3e2c3d15745658b0be41b25f44686
+msgid ".. image:: ../_static/image/generated/tutorials/dataset_summary.png"
+msgstr ".. image:: ../_static/image/generated/tutorials/dataset_summary.png"
+
+#: ../../source/example/dataset-summary-distributions.md:14
+#: 86bde113e0274780b2232ad93bf432ef
+msgid ""
+"本例共有 25 个活动结构、6250 个原子，Pb 和 Te 各占 50%，所有结构属于同一个 "
+"`Config_type`。先在这里发现结构数、元素比例或分组数量不符合预期，再回头检查合并与导入步骤。"
+msgstr ""
+"This example contains 25 active structures and 6,250 atoms, with Pb and Te "
+"each contributing 50%, and all structures sharing one `Config_type`. If the "
+"structure count, element fractions, or group count are unexpected, inspect "
+"the merge and import steps before continuing."
+
+#: ../../source/example/dataset-summary-distributions.md:16
+#: d3b65a11942b4e05a9d2d2d4b9f051bc
+msgid "再看力等关键字段"
+msgstr "Inspect Forces and Other Key Fields"
+
+#: ../../source/example/dataset-summary-distributions.md:18
+#: da952f5c546e4045a8fce9947e89c2fa
+msgid "打开 `Explore distributions`，选择数据字段、统计范围和分组方式。本例查看 `force`，按元素分组，并用力的模长作横坐标："
+msgstr ""
+"Open `Explore distributions` and choose a data field, scope, and grouping "
+"mode. This example displays `force`, grouped by element, with force "
+"magnitude on the horizontal axis:"
+
+#: ../../source/example/dataset-summary-distributions.md:20
+#: 9d3b866e89414f86b50ca0fd25595586
+msgid "按元素统计的原子力分布"
+msgstr "Atomic-force distributions grouped by element"
+
+#: ../../source/example/dataset-summary-distributions.md:20
+#: 9d3b866e89414f86b50ca0fd25595586
+msgid ".. image:: ../_static/image/generated/tutorials/force_distribution.png"
+msgstr ".. image:: ../_static/image/generated/tutorials/force_distribution.png"
+
+#: ../../source/example/dataset-summary-distributions.md:25
+#: 53104544693e410f9d40ec72dada97aa
+msgid "结果使用了全部 6250 个原子样本，可以直接比较 Pb、Te 的覆盖范围。还可以切换参考值、预测值或误差，用同样方法检查能量、应力和磁力等字段。"
+msgstr ""
+"The result uses all 6,250 atomic samples, making the coverage of Pb and Te "
+"directly comparable. Switch among reference, prediction, and error data to "
+"inspect energy, stress, magnetic force, and other fields in the same way."
+
+#: ../../source/example/dataset-summary-distributions.md:27
+#: 1e0abce2659a44a68982b3cec9a82a15
+msgid "分布图只负责暴露覆盖和异常，不替你判断数据好坏。发现孤立尖峰、异常长尾或某个组明显偏移后，再回到主界面选中对应结构，结合几何和原始计算结果复核。"
+msgstr ""
+"A distribution plot reveals coverage and outliers; it does not decide "
+"whether data are good or bad. When you find an isolated spike, unusual tail,"
+" or shifted group, return to the main view, select the corresponding "
+"structures, and review them together with their geometry and original "
+"calculation output."

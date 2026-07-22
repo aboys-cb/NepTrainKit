@@ -35,6 +35,17 @@ class TestAlloyCards(BaseCardTest):
         self.assertEqual(rule["count"], [1, 1])
         self.assertEqual(rule["count_mode"], "fixed")
 
+    def test_random_doping_rule_restores_user_friendly_dopant_text(self):
+        item = DopingRuleItem()
+
+        item.from_rule({"target": "Si", "dopants": {"Ge": 1.0}})
+        self.assertEqual(item.dopants_edit.text(), "Ge")
+
+        item.from_rule({"target": "Si", "dopants": {"Ge": 0.7, "C": 0.3}})
+
+        self.assertEqual(item.dopants_edit.text(), "Ge:0.7,C:0.3")
+        self.assertEqual(item.to_rule()["dopants"], {"Ge": 0.7, "C": 0.3})
+
     def test_random_doping_count_mode_distinguishes_fixed_and_range(self):
         structure = Atoms("Si5", positions=np.arange(15, dtype=float).reshape(5, 3), cell=[10, 10, 10], pbc=True)
 

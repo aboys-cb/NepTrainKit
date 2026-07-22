@@ -6,11 +6,11 @@ from functools import partial
 import numpy as np
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QBrush, QFont
 from pyqtgraph import GraphicsLayoutWidget, ScatterPlotItem, PlotItem, ViewBox, TextItem
 
 from NepTrainKit.utils import timeit
-from NepTrainKit.core.types import Brushes, Pens
+from NepTrainKit.core.types import Brushes, Pens, mkPen
 from NepTrainKit.config import Config
 from ..base.canvas import CanvasLayoutBase
 from NepTrainKit.core.io import NepTrainResultData
@@ -40,6 +40,9 @@ class MyPlotItem(PlotItem):
 
         self.current_point = ScatterPlotItem()
         self.current_point.setZValue(100)
+        self.search_highlight = ScatterPlotItem()
+        self.search_highlight.setZValue(80)
+        self.addItem(self.search_highlight)
         self.parity_mode = True
         self._overlay_base_brush = None
         if "title" in kwargs:
@@ -72,6 +75,18 @@ class MyPlotItem(PlotItem):
                                    symbol='star', size=current_size)
         if self.current_point not in self.items:
             self.addItem(self.current_point)
+
+    def set_search_highlight(self, x, y):
+        """Draw a hollow halo without replacing base or selection brushes."""
+        marker_size = Config.getint("widget", "pg_marker_size", 7) or 7
+        self.search_highlight.setData(
+            x,
+            y,
+            brush=QBrush(Qt.BrushStyle.NoBrush),
+            pen=mkPen(color=Brushes.Show.color(), width=1.8),
+            symbol="o",
+            size=marker_size + 4,
+        )
 
     def add_diagonal(self):
         """Draw a unit diagonal line used for parity-style plots.
@@ -313,6 +328,8 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         reject = getattr(self.nep_result_data, "reject_index", None)
         if reject:
             self.set_reject_highlight(list(reject), True)
+        if self._search_highlight_indices:
+            self.set_search_highlight(self._search_highlight_indices)
 
     def plot_current_point(self, structure_index):
         """Highlight the selected structure across all axes.
@@ -396,6 +413,10 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             Brush applied to the selected points.
         """
 
+        if color is Brushes.Show:
+            self.set_search_highlight(structure_index)
+            return
+
         for i, plot in enumerate(self.axes_list):
 
             if not plot._scatter:
@@ -407,6 +428,25 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             plot._scatter.data['sourceRect'][index_list] = (0, 0, 0, 0)
 
             plot._scatter.updateSpots()
+
+    def set_search_highlight(self, indices):
+        """Replace the current search halo on every result subplot."""
+        super().set_search_highlight(indices)
+        wanted = self._search_highlight_indices
+        for plot in self.axes_list:
+            scatter = getattr(plot, "_scatter", None)
+            if scatter is None or scatter.data is None or len(scatter.data) == 0:
+                plot.set_search_highlight([], [])
+                continue
+            structure_ids = np.asarray(scatter.data["data"], dtype=np.int64)
+            mask = np.isin(structure_ids, np.fromiter(wanted, dtype=np.int64)) if wanted else np.zeros(structure_ids.size, dtype=bool)
+            plot.set_search_highlight(scatter.data["x"][mask], scatter.data["y"][mask])
+
+    def clear_search_highlight(self):
+        """Remove every search halo while preserving selection and reject state."""
+        super().clear_search_highlight()
+        for plot in self.axes_list:
+            plot.set_search_highlight([], [])
 
     def rebuild_selection_display(self):
         """Rebuild point brushes from the current selection set."""
@@ -473,6 +513,8 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         """Apply read-only overlay coloring for a synthetic single-plot dataset."""
         if self.nep_result_data is None:
             return
+
+        self.clear_search_highlight()
 
         loaded_ids = {int(v) for v in np.atleast_1d(np.asarray(loaded_index, dtype=np.int64)).tolist()} if loaded_index is not None else set()
         selected_ids = {int(v) for v in np.atleast_1d(np.asarray(selected_index, dtype=np.int64)).tolist()} if selected_index is not None else set()

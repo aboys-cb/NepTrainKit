@@ -47,6 +47,7 @@ from .vacancy_rule import VacancyRulesWidget
 from .docker import MakeWorkflowArea
 from .search_widget import ConfigTypeSearchLineEdit
 from .filter_bar import TagFilterDialog, ElementsFilterDialog, ExpressionFilterDialog
+from .structure_filter_bar import StructureFilterBar, StructureFilterEditorPopup
 from .settingscard import MyComboBoxSettingCard, DoubleSpinBoxSettingCard, LineEditSettingCard, ColorSettingCard
 from .table import IdNameTableModel
 from .tree import TreeModel, TreeItem, TagDelegate
@@ -88,6 +89,8 @@ __all__ = [
     "TagFilterDialog",
     "ElementsFilterDialog",
     "ExpressionFilterDialog",
+    "StructureFilterBar",
+    "StructureFilterEditorPopup",
     "MyComboBoxSettingCard",
     "DoubleSpinBoxSettingCard",
     "LineEditSettingCard",

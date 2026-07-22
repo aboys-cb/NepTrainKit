@@ -706,6 +706,42 @@ def test_expression_search_supports_builtins_elements_and_dynamic_fields():
     assert data.search_config("force.err.x > 0.005", SearchType.EXPRESSION) == [0, 1]
 
 
+def test_expression_search_accepts_explicit_boolean_predicates():
+    data = _build_dummy_result()
+
+    assert data.search_config("has_energy", SearchType.EXPRESSION) == [0, 1]
+    assert data.search_config("has.H", SearchType.EXPRESSION) == [0]
+    assert data.search_config("!has.H", SearchType.EXPRESSION) == [1]
+    assert data.search_config("has_energy && natoms > 2", SearchType.EXPRESSION) == [1]
+
+
+@pytest.mark.parametrize(
+    ("expression", "message"),
+    [
+        ("natoms", "must be a condition"),
+        ("energy_per_atom", "must be a condition"),
+        ("natoms / 2", "must be a condition"),
+        ("natoms && energy", "must be a condition"),
+        ("True", "at least one structure field"),
+        ("1 < 2", "at least one structure field"),
+    ],
+)
+def test_expression_search_rejects_values_that_would_be_cast_to_boolean(expression, message):
+    data = _build_dummy_result()
+
+    with pytest.raises(ValueError, match=message):
+        data.search_config(expression, SearchType.EXPRESSION)
+
+
+def test_expression_validation_does_not_disappear_on_an_empty_dataset():
+    data = _build_dummy_result()
+    data.remove([0, 1])
+
+    with pytest.raises(ValueError, match="must be a condition"):
+        data.search_config("natoms", SearchType.EXPRESSION)
+    assert data.search_config("natoms > 0", SearchType.EXPRESSION) == []
+
+
 def test_expression_search_skips_dynamic_discovery_for_simple_references():
     data = _build_dummy_result()
 

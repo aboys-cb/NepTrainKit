@@ -148,6 +148,112 @@ class SearchType(StrEnum):
     EXPRESSION = "expression"
 
 
+class FilterLogic(StrEnum):
+    """How enabled structure-filter conditions are combined."""
+
+    ALL = "all"
+    ANY = "any"
+
+
+class FilterField(StrEnum):
+    """Supported fields in the composite structure filter."""
+
+    CONFIG_TYPE = "config_type"
+    FORMULA = "formula"
+    ELEMENT_REQUIRED = "element_required"
+    ELEMENT_EXCLUDED = "element_excluded"
+    ELEMENT_ALLOWED = "element_allowed"
+    EXPRESSION = "expression"
+
+
+class TextMatchMode(StrEnum):
+    """Text comparison used by Config type and Formula conditions."""
+
+    CONTAINS = "contains"
+    EXACT = "exact"
+    PREFIX = "prefix"
+    SUFFIX = "suffix"
+    REGEX = "regex"
+
+
+@dataclass(frozen=True)
+class StructureFilterCondition:
+    """One independently editable structure-filter condition."""
+
+    condition_id: str
+    field: FilterField
+    enabled: bool = True
+    text_values: tuple[str, ...] = ()
+    match_mode: TextMatchMode | None = None
+    case_sensitive: bool = False
+
+    def to_dict(self) -> dict:
+        return {
+            "condition_id": self.condition_id,
+            "field": self.field.value,
+            "enabled": self.enabled,
+            "text_values": list(self.text_values),
+            "match_mode": self.match_mode.value if self.match_mode is not None else None,
+            "case_sensitive": self.case_sensitive,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "StructureFilterCondition":
+        mode = data.get("match_mode")
+        return cls(
+            condition_id=str(data.get("condition_id", "")),
+            field=FilterField(data.get("field", FilterField.CONFIG_TYPE.value)),
+            enabled=bool(data.get("enabled", True)),
+            text_values=tuple(str(value) for value in data.get("text_values", ())),
+            match_mode=TextMatchMode(mode) if mode else None,
+            case_sensitive=bool(data.get("case_sensitive", False)),
+        )
+
+
+@dataclass(frozen=True)
+class StructureFilterSpec:
+    """Typed composite query used as the single source of filter state."""
+
+    conditions: tuple[StructureFilterCondition, ...] = ()
+    logic: FilterLogic = FilterLogic.ALL
+
+    def enabled_conditions(self) -> tuple[StructureFilterCondition, ...]:
+        return tuple(condition for condition in self.conditions if condition.enabled)
+
+    def is_empty(self) -> bool:
+        return not any(
+            condition.enabled and any(str(value).strip() for value in condition.text_values)
+            for condition in self.conditions
+        )
+
+    def to_dict(self) -> dict:
+        return {
+            "logic": self.logic.value,
+            "conditions": [condition.to_dict() for condition in self.conditions],
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "StructureFilterSpec":
+        return cls(
+            conditions=tuple(
+                StructureFilterCondition.from_dict(condition)
+                for condition in data.get("conditions", ())
+            ),
+            logic=FilterLogic(data.get("logic", FilterLogic.ALL.value)),
+        )
+
+
+@dataclass(frozen=True)
+class StructureFilterResult:
+    """Cached result produced by evaluating one structure-filter snapshot."""
+
+    indices: tuple[int, ...]
+    active_count: int
+    dataset_version: int | None
+    elapsed_ms: float
+    spec: StructureFilterSpec
+
+
 @dataclass
 class FilterCondition:
     """A single filter condition (substring to match)."""

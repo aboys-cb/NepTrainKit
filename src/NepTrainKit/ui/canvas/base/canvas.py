@@ -146,6 +146,7 @@ class CanvasLayoutBase(CanvasBase):
         self.draw_mode = False
         self.structure_index = 0
         self.axes_list = []
+        self._search_highlight_indices: set[int] = set()
         self.CurrentAxesChanged.connect(self.set_view_layout)
 
     @abstractmethod
@@ -214,6 +215,7 @@ class CanvasLayoutBase(CanvasBase):
         """Delete selected structures and refresh the canvas."""
 
         if self.nep_result_data is not None and self.nep_result_data.select_index:
+            self.clear_search_highlight()
             self.nep_result_data.delete_selected()
             self.plot_nep_result()
 
@@ -221,6 +223,7 @@ class CanvasLayoutBase(CanvasBase):
         """Undo the most recent deletion when possible."""
 
         if self.nep_result_data and self.nep_result_data.is_revoke:
+            self.clear_search_highlight()
             self.nep_result_data.revoke()
             self.plot_nep_result()
         else:
@@ -260,6 +263,23 @@ class CanvasLayoutBase(CanvasBase):
         selected = set(getattr(self.nep_result_data, "select_index", set()))
         if selected:
             self.update_scatter_color(sorted(selected), Brushes.Selected)
+
+    def set_search_highlight(self, indices):
+        """Replace the current non-destructive search preview."""
+        self._search_highlight_indices = {int(index) for index in indices}
+
+    def clear_search_highlight(self):
+        """Clear the non-destructive search preview."""
+        self._search_highlight_indices.clear()
+
+    def apply_selection_result(self, indices, mode: str) -> bool:
+        """Apply one cached match set and refresh selection visuals once."""
+        if self.nep_result_data is None:
+            return False
+        changed = bool(self.nep_result_data.apply_selection(indices, mode))
+        if changed:
+            self.rebuild_selection_display()
+        return changed
 
     def undo_selection(self):
         """Undo the most recent selection change."""

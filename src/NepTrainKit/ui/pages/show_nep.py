@@ -13,7 +13,7 @@ from loguru import logger
 import numpy as np
 from PySide6.QtCore import QUrl, QTimer, Qt, QThread
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QDialog, QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame, QSizePolicy
+from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame, QSizePolicy
 from qfluentwidgets import FluentIcon, HyperlinkLabel, MessageBox, SpinBox, \
     ToolButton, ToolTipFilter, ToolTipPosition, TransparentToolButton, BodyLabel, \
     Action, StateToolTip, ComboBox, CaptionLabel, SimpleCardWidget
@@ -25,12 +25,17 @@ from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.audit import analyze_structure_phase
 
-from NepTrainKit.ui.widgets import ConfigTypeSearchLineEdit, TagFilterDialog, ElementsFilterDialog, ExpressionFilterDialog, ArrowMessageBox, ExportFormatMessageBox
+from NepTrainKit.ui.widgets import (
+    StructureFilterBar,
+    ArrowMessageBox,
+    ExportFormatMessageBox,
+)
+from NepTrainKit.ui.controllers import StructureFilterController
 from NepTrainKit.core.io import (ResultData, load_result_data, matches_result_loader)
 
 from NepTrainKit.core.precision import get_export_significant_digits
 from NepTrainKit.core.structure_inspection import inspect_structure
-from NepTrainKit.core.types import Brushes, CanvasMode, SearchType, TagFilterSpec
+from NepTrainKit.core.types import Brushes, CanvasMode, SearchType
 from NepTrainKit.paths import get_bundled_nep89_path
 from NepTrainKit.ui.canvas.canvas_factory import (
     create_structure_plot,
@@ -114,6 +119,7 @@ class ShowNepWidget(QWidget):
         self._structure_analysis_cache: dict[tuple[int, int], tuple[object, object]] = {}
         self._phase_evidence_dataset_id: int | None = None
         self._phase_evidence_lookup: dict[int, object] = {}
+        self.structure_filter_controller = StructureFilterController(self)
         self.init_action()
         self.init_ui()
         self.load_thread:QThread
@@ -335,6 +341,8 @@ class ShowNepWidget(QWidget):
 
     def _on_search_mode_changed(self, index):
         """Sync the search mode combo-box with the search line-edit."""
+        if not hasattr(self, "search_lineEdit"):
+            return
         try:
             idx = int(index)
         except Exception:
@@ -344,7 +352,8 @@ class ShowNepWidget(QWidget):
         search_type = combo.itemData(idx) if combo is not None and idx >= 0 else None
         search_type = search_type or SearchType.TAG
         use_filter = search_type in (SearchType.TAG, SearchType.FORMULA, SearchType.ELEMENTS, SearchType.EXPRESSION)
-        self.filter_edit_btn.setVisible(use_filter)
+        if hasattr(self, "filter_edit_btn"):
+            self.filter_edit_btn.setVisible(use_filter)
         self.search_lineEdit.set_search_type(search_type or SearchType.TAG)
 
     def _on_nep_model_changed(self, index):
@@ -715,42 +724,15 @@ class ShowNepWidget(QWidget):
         self.graph_widget.set_tool_bar(self.graph_toolbar)
         frame = QFrame(self.plot_widget)
         frame_layout = QHBoxLayout(frame)
-        self.search_lineEdit = ConfigTypeSearchLineEdit(self.plot_widget)
-        self.search_lineEdit.searchSignal.connect(self.search_config_type)
-        self.search_lineEdit.checkSignal.connect(self.checked_config_type)
-        self.search_lineEdit.uncheckSignal.connect(self.uncheck_config_type)
-        self.search_lineEdit.typeChangeSignal.connect(self._on_search_type_changed)
-
-        self.filter_edit_btn = TransparentToolButton(FluentIcon.FILTER, self.plot_widget)
-        self.filter_edit_btn.setToolTip(self.tr("Edit filter"))
-        self.filter_edit_btn.clicked.connect(self._on_filter_edit_clicked)
-        self.filter_edit_btn.hide()
-
-        self.filter_clear_btn = ToolButton(FluentIcon.CLOSE, self.plot_widget)
-        self.filter_clear_btn.setToolTip(self.tr("Cancel all marked structure selections"))
-        self.filter_clear_btn.clicked.connect(self._on_clear_all_selections)
-        self.filter_clear_btn.setStyleSheet("ToolButton { color: #e81123; }")
-
-        self.search_mode_combo = ComboBox(frame)
-        self.search_mode_combo.addItem(self.tr("Config_type"), userData=SearchType.TAG)
-        self.search_mode_combo.addItem(self.tr("Formula"), userData=SearchType.FORMULA)
-        self.search_mode_combo.addItem(self.tr("Elements"), userData=SearchType.ELEMENTS)
-        self.search_mode_combo.addItem(self.tr("Expression"), userData=SearchType.EXPRESSION)
-        self.search_mode_combo.setToolTip(self.tr("Switch search mode"))
-        self.search_mode_combo.installEventFilter(ToolTipFilter(self.search_mode_combo, 300, ToolTipPosition.TOP))
-        self.search_mode_combo.currentIndexChanged.connect(self._on_search_mode_changed)
-        if hasattr(self.search_mode_combo, "activated"):
-            self.search_mode_combo.activated.connect(self._on_search_mode_changed)
-        frame_layout.addWidget(self.search_mode_combo)
-
-        frame_layout.addWidget(self.search_lineEdit)
-        frame_layout.addWidget(self.filter_edit_btn)
-        frame_layout.addWidget(self.filter_clear_btn)
-        self.search_status_label = BodyLabel(frame)
-        self.search_status_label.setStyleSheet("color: gray;")
-        self.search_status_label.setVisible(False)
-        self.search_status_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        frame_layout.addWidget(self.search_status_label)
+        frame_layout.setContentsMargins(0, 0, 0, 0)
+        self.structure_filter_bar = StructureFilterBar(frame)
+        self.structure_filter_bar.specChanged.connect(self._on_structure_filter_spec_changed)
+        self.structure_filter_bar.previewRequested.connect(self._preview_structure_filter)
+        self.structure_filter_bar.applyRequested.connect(self._apply_structure_filter_result)
+        self.structure_filter_controller.stateChanged.connect(self._on_structure_filter_state_changed)
+        self.structure_filter_controller.previewReady.connect(self._on_structure_filter_preview_ready)
+        self.structure_filter_controller.previewFailed.connect(self._on_structure_filter_preview_failed)
+        frame_layout.addWidget(self.structure_filter_bar, 1)
         self.path_label = HyperlinkLabel(self.plot_widget)
         self.path_label.setFixedHeight(30)
 
@@ -795,8 +777,6 @@ class ShowNepWidget(QWidget):
         self.splitter.setStretchFactor(1, 40)
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
         self._refresh_export_actions()
-        self.search_mode_combo.setCurrentIndex(0)
-        self._on_search_mode_changed(0)
 
     def _update_structure_arrow_availability(self) -> None:
         """Enable or disable arrow controls based on canvas capabilities."""
@@ -876,6 +856,9 @@ class ShowNepWidget(QWidget):
         self._search_running = 0
         self._index_running = 0
         self._update_search_status_label()
+        controller = getattr(self, "structure_filter_controller", None)
+        if controller is not None:
+            controller.invalidate_result()
 
     def dragEnterEvent(self, event):
         """Accept drag events carrying file URLs for NEP datasets.
@@ -1150,6 +1133,11 @@ class ShowNepWidget(QWidget):
         self._phase_evidence_dataset_id = None
         self._phase_evidence_lookup.clear()
         self.graph_widget.set_dataset(self.nep_result_data)
+        self.structure_filter_controller.set_dataset(self.nep_result_data)
+        self._update_structure_filter_suggestions()
+        self.structure_filter_bar.set_selection_count(len(self.nep_result_data.select_index))
+        self.structure_filter_bar.set_stale()
+        self.graph_widget.canvas.clear_search_highlight()
         # Avoid duplicate signal connections for cached datasets
         if not getattr(self.nep_result_data, "_info_connected", False):
             self.nep_result_data.updateInfoSignal.connect(self.update_dataset_info)
@@ -1162,7 +1150,6 @@ class ShowNepWidget(QWidget):
                 self._nep_result_cache[nep_path.resolve()] = self.nep_result_data
             except Exception:
                 pass
-        self.search_lineEdit.typeChangeSignal.emit(self.search_lineEdit.search_type)
         try:
             self._structure_mask_version_seen = int(self.nep_result_data.structure.data.version)
         except Exception:
@@ -1171,6 +1158,27 @@ class ShowNepWidget(QWidget):
         if callable(reset_camera_fit):
             reset_camera_fit()
         self.struct_index_spinbox.valueChanged.emit(0)
+
+    def _update_structure_filter_suggestions(self) -> None:
+        """Reuse the loaded search caches in the composite filter editor."""
+        data = getattr(self, "nep_result_data", None)
+        if data is None:
+            self.structure_filter_bar.set_suggestions({})
+            return
+        max_items = self._get_completer_max_items()
+        suggestions = {}
+        for search_type in (
+            SearchType.TAG,
+            SearchType.FORMULA,
+            SearchType.ELEMENTS,
+            SearchType.EXPRESSION,
+        ):
+            try:
+                if data.has_completer_cache(search_type, max_items=max_items):
+                    suggestions[search_type] = data.get_completer_cache(search_type, max_items=max_items)
+            except Exception:
+                logger.debug(traceback.format_exc())
+        self.structure_filter_bar.set_suggestions(suggestions)
 
     def check_nep_result(self, path):
         """Load NEP metadata and start the background loading thread.
@@ -1319,6 +1327,8 @@ class ShowNepWidget(QWidget):
 
     def _on_search_type_changed(self, search_type: SearchType) -> None:
         """Apply a cached completer dictionary for the given search type without blocking UI."""
+        if not hasattr(self, "search_lineEdit"):
+            return
         data = getattr(self, "nep_result_data", None)
         if data is None:
             return
@@ -1983,52 +1993,72 @@ class ShowNepWidget(QWidget):
         self._run_async_search(
             config,
             search_type,
-            lambda indexes: self.graph_widget.canvas.update_scatter_color(indexes, Brushes.Show),
+            lambda indexes: self.graph_widget.canvas.set_search_highlight(indexes),
         )
 
+    def _on_structure_filter_spec_changed(self, spec) -> None:
+        """Invalidate the old preview whenever the typed query changes."""
+        canvas = getattr(getattr(self, "graph_widget", None), "canvas", None)
+        if canvas is not None:
+            canvas.clear_search_highlight()
+        if spec.is_empty():
+            self.structure_filter_controller.clear()
+            self.structure_filter_bar.clear_state()
+            return
+        self.structure_filter_controller.set_spec(spec)
+        self.structure_filter_bar.set_stale()
+
+    def _preview_structure_filter(self) -> None:
+        """Evaluate the current query asynchronously without changing selection."""
+        if self.structure_filter_bar.spec.is_empty():
+            return
+        self.structure_filter_controller.preview()
+
+    def _on_structure_filter_state_changed(self, state) -> None:
+        self.structure_filter_bar.set_running(bool(state.running))
+        if state.stale:
+            self.structure_filter_bar.set_stale()
+
+    def _on_structure_filter_preview_ready(self, result) -> None:
+        canvas = getattr(getattr(self, "graph_widget", None), "canvas", None)
+        if canvas is not None:
+            canvas.set_search_highlight(result.indices)
+        self.structure_filter_bar.set_result(
+            len(result.indices),
+            result.active_count,
+            result.elapsed_ms,
+        )
+
+    def _on_structure_filter_preview_failed(self, error) -> None:
+        self.structure_filter_bar.set_error(error)
+        if not self.structure_filter_bar.editor_is_open:
+            MessageManager.send_warning_message(
+                self.tr("Filter failed: {message}").format(message=error.message)
+            )
+
+    def _apply_structure_filter_result(self, mode: str) -> None:
+        """Apply cached matches as one undoable selection operation."""
+        data = getattr(self, "nep_result_data", None)
+        canvas = getattr(getattr(self, "graph_widget", None), "canvas", None)
+        if data is None or canvas is None:
+            return
+        if mode == "clear":
+            canvas.apply_selection_result((), "clear")
+            self.structure_filter_bar.set_selection_count(len(data.select_index))
+            return
+        if not self.structure_filter_controller.result_is_current():
+            self.structure_filter_bar.set_stale()
+            MessageManager.send_info_message(self.tr("The filter result has expired. Preview it again before applying."))
+            return
+        result = self.structure_filter_controller.state.result
+        if result is None:
+            return
+        canvas.apply_selection_result(result.indices, mode)
+        self.structure_filter_bar.set_selection_count(len(data.select_index))
+
     def _on_filter_edit_clicked(self):
-        """Open the filter dialog for the current search type."""
-        search_type = self.search_lineEdit.search_type
-
-        if search_type == SearchType.EXPRESSION:
-            expr = self.search_lineEdit.text().strip()
-            dlg = ExpressionFilterDialog(expr, self)
-            if dlg.exec() == QDialog.DialogCode.Accepted:
-                self.search_lineEdit.setText(dlg.result())
-            dlg.deleteLater()
-            return
-
-        if search_type == SearchType.ELEMENTS:
-            expr = self.search_lineEdit.text().strip()
-            cache = {}
-            try:
-                data = getattr(self, "nep_result_data", None)
-                if data is not None:
-                    cache = data.get_completer_cache(search_type, max_items=self._get_completer_max_items())
-            except Exception:
-                pass
-            dlg = ElementsFilterDialog(expr, cache if cache else None, self)
-            if dlg.exec() == QDialog.DialogCode.Accepted:
-                self.search_lineEdit.setText(dlg.result())
-            dlg.deleteLater()
-            return
-
-        spec = getattr(self, "_current_filter_spec", TagFilterSpec())
-        cache = {}
-        try:
-            data = getattr(self, "nep_result_data", None)
-            if data is not None:
-                cache = data.get_completer_cache(search_type, max_items=self._get_completer_max_items())
-        except Exception:
-            pass
-
-        dlg = TagFilterDialog(spec, cache, search_type, self)
-        if dlg.exec() == QDialog.DialogCode.Accepted:
-            self._current_filter_spec = dlg._spec
-            expr = dlg._spec.to_expression()
-            self.search_lineEdit.setText(expr)
-            self._on_tag_filter_search(dlg._spec.to_dict(), search_type)
-        dlg.deleteLater()
+        """Open the composite filter editor (legacy action compatibility)."""
+        self.structure_filter_bar.open_editor(None, add_if_empty=True)
 
     def _on_clear_all_selections(self):
         """Clear all structure selections."""
@@ -2239,15 +2269,20 @@ class ShowNepWidget(QWidget):
         info=f"Data: Orig: {self.nep_result_data.atoms_num_list.shape[0]} Now: {self.nep_result_data.structure.now_data.shape[0]} "\
         f"Rm: {self.nep_result_data.structure.remove_data.shape[0]} Sel: {len(self.nep_result_data.select_index)} Unsel: {self.nep_result_data.structure.now_data.shape[0]-len(self.nep_result_data.select_index)} Rej: {rej}"
         self.dataset_info_label.setText(info)
+        if hasattr(self, "structure_filter_bar"):
+            self.structure_filter_bar.set_selection_count(len(self.nep_result_data.select_index))
         self._refresh_export_actions()
-        # If structures were removed/revoked, refresh completer cache against latest active set.
+        # Active-mask changes invalidate cached filter indices.
         try:
             current_ver = int(self.nep_result_data.structure.data.version)
         except Exception:
             current_ver = None
         if current_ver is not None and current_ver != self._structure_mask_version_seen:
             self._structure_mask_version_seen = current_ver
-            try:
-                self._on_search_type_changed(self.search_lineEdit.search_type)
-            except Exception:
-                pass
+            if hasattr(self, "structure_filter_controller"):
+                self.structure_filter_controller.invalidate_result()
+            if hasattr(self, "structure_filter_bar"):
+                self.structure_filter_bar.set_stale()
+            canvas = getattr(getattr(self, "graph_widget", None), "canvas", None)
+            if canvas is not None:
+                canvas.clear_search_highlight()

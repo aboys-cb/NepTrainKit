@@ -85,6 +85,14 @@ def test_inspect_structure_preserves_short_contact_warning():
     assert result.short_contacts == ((('H', 'H'), pytest.approx(0.2)),)
 
 
+def test_structure_info_widget_starts_idle_until_structure_is_loaded(app):
+    widget = StructureInfoWidget()
+
+    assert widget.phase_badge.text() == "Not analyzed"
+    assert widget.contact_badge.text() == "Not analyzed"
+    assert all(value.text() == "—" for value in widget._metric_values.values())
+
+
 def test_structure_info_widget_prioritizes_phase_and_quality(app):
     widget = StructureInfoWidget()
     widget.show_structure_info(_structure())

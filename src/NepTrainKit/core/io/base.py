@@ -1217,7 +1217,7 @@ class ResultData(QObject):
         text = text.replace("&&", " and ")
         text = text.replace("||", " or ")
         text = re.sub(r"(?<![<>=!])!(?!=)", " not ", text)
-        return text
+        return text.strip()
     @staticmethod
     def _contains_numeric_component_reference(expr: str) -> bool:
         pattern = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*\.\d+\b")
@@ -1283,6 +1283,22 @@ class ResultData(QObject):
             if not all(isinstance(op, (ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE)) for op in node.ops):
                 return False
         return all(ResultData._is_allowed_expression_node(child) for child in ast.iter_child_nodes(node))
+    @staticmethod
+    def _is_expression_predicate(node: ast.AST) -> bool:
+        """Return whether an expression node has explicit boolean semantics."""
+        chain = ResultData._expression_ast_chain(node)
+        if chain is not None:
+            root = chain[0].lower()
+            return root in {"has_energy", "has_forces", "has_virial", "has_bec"} or (
+                root == "has" and len(chain) == 2
+            )
+        if isinstance(node, ast.Compare):
+            return True
+        if isinstance(node, ast.BoolOp):
+            return all(ResultData._is_expression_predicate(value) for value in node.values)
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+            return ResultData._is_expression_predicate(node.operand)
+        return False
     def _discover_expression_fields(
         self,
         structure_indices: npt.NDArray[np.int64],
@@ -1791,9 +1807,6 @@ class ResultData(QObject):
             return result
         raise ValueError("Unsupported expression syntax.")
     def _search_expression(self, expr: str) -> list[int]:
-        active_indices = self._normalize_structure_indices(None)
-        if active_indices.size == 0:
-            return []
         text = self._normalise_expression_text(expr)
         if self._contains_numeric_component_reference(text):
             raise ValueError("Numeric component suffixes are not supported in expressions.")
@@ -1804,6 +1817,15 @@ class ResultData(QObject):
         if not self._is_allowed_expression_node(parsed):
             raise ValueError("Expression contains unsupported syntax.")
         references = self._expression_reference_chains(parsed.body)
+        if not references:
+            raise ValueError("Expression must reference at least one structure field.")
+        if not self._is_expression_predicate(parsed.body):
+            raise ValueError(
+                "Expression must be a condition. Add a comparison, for example: natoms > 100."
+            )
+        active_indices = self._normalize_structure_indices(None)
+        if active_indices.size == 0:
+            return []
         builtin_tokens = {
             "natoms",
             "n_atoms",
@@ -1852,6 +1874,12 @@ class ResultData(QObject):
     def search_config_tags(self, filter_spec: dict, search_type: SearchType) -> list[int]:
         """Return structure indices matching a tag/formula filter spec."""
         return self.structure.search_config_tags(filter_spec, search_type)
+
+    def search_structures(self, filter_spec):
+        """Evaluate a typed composite structure filter without changing selection."""
+        from NepTrainKit.core.search import StructureFilterEngine
+
+        return StructureFilterEngine.evaluate(self, filter_spec)
     def sync_structures(self, fields: Iterable[str] | None = None, structure_indices: Sequence[int] | None = None) -> None:
         """Apply registered :class:`StructureSyncRule` objects to datasets.
 
@@ -2131,6 +2159,22 @@ class ResultData(QObject):
         """Invert the current selection over the active structure set."""
         active_indices = set(self.structure.data.now_indices.tolist())
         self._set_selection(active_indices - set(self.select_index))
+
+    def apply_selection(self, indices: Iterable[int], mode: str) -> bool:
+        """Apply one cached result to selection as a single undoable change."""
+        matched = self._active_selection(indices)
+        current = set(self.select_index)
+        if mode == "replace":
+            target = matched
+        elif mode == "add":
+            target = current | matched
+        elif mode == "remove":
+            target = current - matched
+        elif mode == "clear":
+            target = set()
+        else:
+            raise ValueError(f"Unsupported selection mode: {mode}")
+        return self._set_selection(target)
     def select_structures_by_index(self, index_expression: str, use_origin: bool = True) -> list[int]:
         """Resolve an index expression into raw structure indices."""
         if not index_expression:

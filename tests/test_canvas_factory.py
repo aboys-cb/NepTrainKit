@@ -736,6 +736,49 @@ class TestCanvasFactory(unittest.TestCase):
         overlay = plot._overlays["selected"].positions
         np.testing.assert_array_equal(overlay[:, :2], np.array([[2.0, 3.0], [3.0, 4.0]], dtype=np.float32))
 
+    def test_pyqtgraph_search_highlight_replaces_previous_preview(self):
+        canvas = canvas_factory._create_pyqtgraph_result_canvas(None)
+        canvas.init_axes(1)
+        dataset = NepPlotData(
+            np.array([[0.0, 0.1], [1.0, 1.1], [2.0, 2.1]], dtype=np.float32),
+            index_list=np.array([0, 1, 2], dtype=np.int32),
+            title="energy",
+        )
+        dataset.show_rmse = False
+        canvas.nep_result_data = SimpleNamespace(datasets=[dataset], select_index=set(), reject_index=set())
+        canvas.plot_nep_result()
+
+        canvas.set_search_highlight([0, 1])
+        canvas.set_search_highlight([2])
+
+        overlay = canvas.axes_list[0].search_highlight.data
+        self.assertEqual(canvas._search_highlight_indices, {2})
+        np.testing.assert_allclose(overlay["x"], np.array([2.1], dtype=np.float32))
+        canvas.clear_search_highlight()
+        self.assertEqual(len(canvas.axes_list[0].search_highlight.data), 0)
+
+    def test_vispy_search_highlight_replaces_and_coexists_with_selection(self):
+        canvas = canvas_factory._create_vispy_result_canvas(None)
+        canvas.init_axes(1)
+        plot = canvas.axes_list[0]
+        dataset = SimpleNamespace(
+            title="energy",
+            x=np.array([0.0, 1.0, 2.0], dtype=np.float32),
+            y=np.array([1.0, 2.0, 3.0], dtype=np.float32),
+            structure_index=np.array([0, 1, 2], dtype=np.int32),
+        )
+        canvas.nep_result_data = SimpleNamespace(datasets=[dataset], select_index={2}, reject_index=set())
+        plot.scatter(dataset.x, dataset.y, dataset.structure_index)
+
+        canvas.set_search_highlight([0, 1])
+        canvas.set_search_highlight([2])
+        canvas.rebuild_selection_display()
+
+        self.assertEqual(canvas._show_by_plot[plot], {2})
+        self.assertEqual(canvas._selected_by_plot[plot], {2})
+        canvas.clear_search_highlight()
+        self.assertEqual(canvas._show_by_plot[plot], set())
+
     def test_vispy_inverse_select_from_empty_refreshes_selected_overlay(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)
         canvas.init_axes(1)

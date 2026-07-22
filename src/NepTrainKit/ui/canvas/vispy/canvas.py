@@ -1375,6 +1375,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         reject = sorted(getattr(self.nep_result_data, "reject_index", set()) or [])
         if reject:
             self.set_reject_highlight(reject, True)
+        if self._search_highlight_indices:
+            self.set_search_highlight(self._search_highlight_indices)
         self._refresh_current_axes_annotations()
         self._refresh_current_point_marker()
 
@@ -1734,6 +1736,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             self.set_reject_highlight(list(reject), True)
         self._refresh_current_point_marker()
         self.prewarm_overlay_position_cache()
+        if self._search_highlight_indices:
+            self.set_search_highlight(self._search_highlight_indices)
 
     def _refresh_current_axes_annotations(self):
         """Refresh labels and RMSE text after promoting a thumbnail to the main plot."""
@@ -2123,6 +2127,10 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         color : Any, optional
             Brush applied to the selected points.
         """
+        if color is Brushes.Show:
+            self.set_search_highlight(structure_index)
+            return
+
         total_t0 = time.perf_counter()
         idx = np.atleast_1d(np.asarray(structure_index)).astype(np.int64)
         if idx.size == 0:
@@ -2148,28 +2156,16 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             sets_t0 = time.perf_counter()
             dirty_layers = set()
             if color is Brushes.Default:
-                # remove from both overlays
+                # Selection changes never mutate the independent search preview.
                 self._selected_by_plot[plot].difference_update(idx_list)
-                self._show_by_plot[plot].difference_update(idx_list)
                 self._loaded_by_plot[plot].difference_update(idx_list)
-                dirty_layers.update(("selected", "show", "loaded"))
+                dirty_layers.update(("selected", "loaded"))
             elif color is Brushes.Selected:
-                # add to selected, remove from show to avoid duplicates
-                show_dirty = bool(self._show_by_plot[plot].intersection(idx_set))
+                # Search halo remains visible around selected points.
                 loaded_dirty = bool(self._loaded_by_plot[plot].intersection(idx_set))
                 self._selected_by_plot[plot].update(idx_list)
-                self._show_by_plot[plot].difference_update(idx_list)
                 self._loaded_by_plot[plot].difference_update(idx_list)
                 dirty_layers.add("selected")
-                if show_dirty:
-                    dirty_layers.add("show")
-                if loaded_dirty:
-                    dirty_layers.add("loaded")
-            elif color is Brushes.Show:
-                loaded_dirty = bool(self._loaded_by_plot[plot].intersection(idx_set))
-                self._show_by_plot[plot].update(idx_list)
-                self._loaded_by_plot[plot].difference_update(idx_list)
-                dirty_layers.add("show")
                 if loaded_dirty:
                     dirty_layers.add("loaded")
             elif color is Brushes.LoadedOverlay:
@@ -2255,6 +2251,38 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             total_ms=f"{_elapsed_ms(total_t0):.3f}",
         )
 
+    def set_search_highlight(self, indices):
+        """Replace the current search overlay on every result subplot."""
+        super().set_search_highlight(indices)
+        wanted = set(self._search_highlight_indices)
+        for plot in self.axes_list:
+            self._show_by_plot[plot] = set(wanted)
+            dataset = self.get_axes_dataset(plot)
+            if dataset is None:
+                continue
+            overlay_size = (Config.getint("widget", "vispy_marker_size", 6) or 6) + 4
+            if not getattr(plot, "_full_detail", False):
+                preview_range = getattr(plot, "_preview_image_range", None)
+                image = self._preview_overlay_image_for_indices(plot, dataset, wanted, Brushes.Show)
+                if image is not None and preview_range is not None:
+                    plot.set_overlay_image("show", image, *preview_range)
+                    continue
+                overlay_size = max(4, int(overlay_size * 0.65))
+            positions = self._overlay_positions_for_indices(dataset, wanted)
+            plot.set_overlay_positions("show", positions, color=Brushes.Show, size=overlay_size)
+
+    def clear_search_highlight(self):
+        """Clear only the search overlay, preserving selection and rejects."""
+        super().clear_search_highlight()
+        empty = np.empty((0, 2), dtype=np.float32)
+        for plot in self.axes_list:
+            self._show_by_plot.setdefault(plot, set()).clear()
+            overlay_size = Config.getint("widget", "vispy_marker_size", 6) or 6
+            plot.set_overlay_positions("show", empty, color=Brushes.Show, size=overlay_size)
+            preview_range = getattr(plot, "_preview_image_range", None)
+            if preview_range is not None:
+                plot.set_overlay_image("show", None, *preview_range)
+
     def rebuild_selection_display(self):
         """Rebuild selected overlays from the current selection set."""
         if self.nep_result_data is None:
@@ -2272,7 +2300,6 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
             if plot not in self._loaded_by_plot:
                 self._loaded_by_plot[plot] = set()
             self._selected_by_plot[plot] = set(selected)
-            self._show_by_plot[plot].difference_update(selected)
             self._loaded_by_plot[plot].difference_update(selected)
             size = overlay_size
             if not getattr(plot, "_full_detail", False):
@@ -2346,6 +2373,8 @@ class VispyCanvas(VispyCanvasLayoutBase, scene.SceneCanvas, metaclass=CombinedMe
         """Apply read-only overlay coloring for a synthetic single-plot dataset."""
         if self.nep_result_data is None:
             return
+
+        self.clear_search_highlight()
 
         loaded_ids = {int(v) for v in np.atleast_1d(np.asarray(loaded_index, dtype=np.int64)).tolist()} if loaded_index is not None else set()
         selected_ids = {int(v) for v in np.atleast_1d(np.asarray(selected_index, dtype=np.int64)).tolist()} if selected_index is not None else set()

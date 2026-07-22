@@ -94,7 +94,7 @@ class StructureInfoWidget(QWidget):
         self.signal_title_label = StrongBodyLabel(self.tr("Frame signals"), self.card)
         setFont(self.signal_title_label, 13, QFont.Weight.Medium)
         self.contact_badge = InfoBadge(self.card, InfoLevel.ATTENTION)
-        self.contact_badge.setText(self.tr("Analyzing…"))
+        self.contact_badge.setText(self.tr("Not analyzed"))
         signal_header.addWidget(self.signal_title_label)
         signal_header.addStretch(1)
         signal_header.addWidget(self.contact_badge)

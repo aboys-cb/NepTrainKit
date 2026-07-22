@@ -825,7 +825,7 @@
       1440,
       860
     ],
-    "sha256": "581bc2524efe41fb96634b1909a7974b90f67d3008bb74432688fd9c0ea177a6"
+    "sha256": "561151c4ec99f8cfd24a2062347d480d26e3a0a30e3ec94ec9a11f2d0dc803f4"
   },
   "training_set_audit_magnetic_shares_en": {
     "scenario": "training_set_audit_magnetic_shares",
@@ -837,7 +837,7 @@
       1440,
       860
     ],
-    "sha256": "fd7251e73d21c82c9be6b285b21b082cc5a9c48ac32e8cf12b07c0123d991c51"
+    "sha256": "1c1e602a635405bc193f6e9320de65349729f8f5e065e2c72b59497cde60c0bd"
   },
   "training_set_audit_overview": {
     "scenario": "training_set_audit_overview",
@@ -849,7 +849,7 @@
       1440,
       860
     ],
-    "sha256": "8334bd143a0a6fcaaca42cd0bb3e4714634bae0e1c0dc9cfe84a9e66f0a74383"
+    "sha256": "bde99d57411ee85a7770ec87a2ee7dd64c7e8da7bdd77106165bb7a32df3c36f"
   },
   "training_set_audit_overview_en": {
     "scenario": "training_set_audit_overview",
@@ -861,7 +861,7 @@
       1440,
       860
     ],
-    "sha256": "b97c1427624d05c21ffaa383f1e676cc2db9c3674c9e733a9818e57ce8432ba1"
+    "sha256": "c25d61e6a852424153db882328182d6da3a19d1dc024225c8b5619a3def572f5"
   },
   "training_set_audit_structure_map": {
     "scenario": "training_set_audit_structure_map",

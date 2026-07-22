@@ -9,13 +9,19 @@ from unittest.mock import MagicMock, patch
 import numpy as np
 from ase import Atoms
 from PySide6.QtCore import QCoreApplication, QTranslator
-from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QCloseEvent
+from PySide6.QtTest import QSignalSpy
+from PySide6.QtWidgets import QApplication, QSizePolicy, QWidget
 
 import NepTrainKit.main as main_module
 import NepTrainKit.ui.pages.show_nep as show_nep_module
 from NepTrainKit.config import Config
 from NepTrainKit.ui.pages.settings import SettingsWidget
 from NepTrainKit.ui.pages.show_nep import ShowNepWidget
+from NepTrainKit.ui.widgets.training_set_audit_window import (
+    TrainingSetAuditHost,
+    TrainingSetAuditWindow,
+)
 from NepTrainKit.core.audit.result import (
     AuditResult,
     AuditScope,
@@ -477,6 +483,11 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
     def test_main_window_connects_rerun_signal_to_open_training_set_audit(self):
         window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
         window.training_set_audit_interface = main_module.TrainingSetAuditWidget()
+        window._audit_window_owner = QWidget()
+        window.training_set_audit_host = TrainingSetAuditHost()
+        window.training_set_audit_window = TrainingSetAuditWindow(
+            window._audit_window_owner
+        )
         window.handle_training_set_audit_selection = MagicMock()
         window.open_training_set_audit = MagicMock()
         window.open_dataset_for_training_set_audit = MagicMock()
@@ -490,6 +501,99 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window.open_training_set_audit.assert_called_once_with(force=True)
         window._request_training_set_structure_evidence.assert_called_once_with()
         window.open_dataset_for_training_set_audit.assert_called_once_with()
+
+    def test_training_set_audit_moves_between_host_and_owned_window(self):
+        owner = QWidget()
+        host = TrainingSetAuditHost(owner)
+        audit = main_module.TrainingSetAuditWidget(host)
+        host.attach(audit)
+        self.assertEqual(
+            audit.sizePolicy().horizontalPolicy(),
+            QSizePolicy.Policy.Ignored,
+        )
+        floating = TrainingSetAuditWindow(owner)
+        window = main_module.NepTrainKitMainWindow.__new__(
+            main_module.NepTrainKitMainWindow
+        )
+        window.training_set_audit_host = host
+        window.training_set_audit_interface = audit
+        window.training_set_audit_window = floating
+        window.show_nep_interface = QWidget()
+        window.switchTo = MagicMock()
+
+        with patch.object(floating, "show_owned") as show_mock:
+            main_module.NepTrainKitMainWindow.detach_training_set_audit(window)
+
+        self.assertIsNone(host.content)
+        self.assertIs(floating.content, audit)
+        self.assertIs(audit.parentWidget(), floating)
+        self.assertEqual(
+            audit.sizePolicy().horizontalPolicy(),
+            QSizePolicy.Policy.Expanding,
+        )
+        self.assertFalse(host.placeholder.isHidden())
+        self.assertIn("Return", audit.detach_button.toolTip())
+        show_mock.assert_called_once_with()
+        window.switchTo.assert_called_once_with(window.show_nep_interface)
+
+        window.switchTo.reset_mock()
+        with patch.object(floating, "remember_geometry") as remember_mock:
+            main_module.NepTrainKitMainWindow.restore_training_set_audit(window)
+
+        remember_mock.assert_called_once_with()
+        self.assertIsNone(floating.content)
+        self.assertIs(host.content, audit)
+        self.assertIs(audit.parentWidget(), host)
+        self.assertEqual(
+            audit.sizePolicy().horizontalPolicy(),
+            QSizePolicy.Policy.Ignored,
+        )
+        self.assertTrue(host.placeholder.isHidden())
+        self.assertIn("separate", audit.detach_button.toolTip())
+        window.switchTo.assert_called_once_with(host)
+
+    def test_owned_audit_window_close_requests_return_without_destroying_content(self):
+        owner = QWidget()
+        floating = TrainingSetAuditWindow(owner)
+        content = QWidget()
+        floating.attach(content)
+        spy = QSignalSpy(floating.returnRequested)
+        event = QCloseEvent()
+
+        floating.closeEvent(event)
+
+        self.assertFalse(event.isAccepted())
+        self.assertEqual(spy.count(), 1)
+        self.assertIs(floating.content, content)
+
+    def test_audit_host_preserves_global_open_action_while_detached(self):
+        host = TrainingSetAuditHost()
+        audit = main_module.TrainingSetAuditWidget(host)
+        host.attach(audit)
+        spy = QSignalSpy(audit.requestDatasetOpenSignal)
+
+        host.open_file()
+        detached = host.take()
+        host.open_file()
+
+        self.assertIs(detached, audit)
+        self.assertEqual(spy.count(), 2)
+
+    def test_opening_audit_raises_existing_owned_window(self):
+        window = main_module.NepTrainKitMainWindow.__new__(
+            main_module.NepTrainKitMainWindow
+        )
+        window.training_set_audit_interface = object()
+        window.training_set_audit_window = SimpleNamespace(
+            is_detached=True,
+            show_owned=MagicMock(),
+        )
+        window.switchTo = MagicMock()
+
+        main_module.NepTrainKitMainWindow._show_training_set_audit_surface(window)
+
+        window.training_set_audit_window.show_owned.assert_called_once_with()
+        window.switchTo.assert_not_called()
 
     def test_audit_open_action_switches_to_display_before_opening(self):
         window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)

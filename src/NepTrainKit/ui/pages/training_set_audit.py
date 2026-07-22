@@ -44,6 +44,7 @@ from qfluentwidgets import (
     ProgressBar,
     PushButton,
     TableWidget,
+    ToolButton,
 )
 
 from NepTrainKit.core import MessageManager
@@ -112,6 +113,7 @@ class TrainingSetAuditWidget(QWidget):
     rerunAuditSignal = Signal()
     requestDatasetOpenSignal = Signal()
     requestStructureEvidenceSignal = Signal()
+    detachRequestedSignal = Signal()
     phaseAnalysisProgressSignal = Signal(int, int)
 
     def __init__(self, parent=None):
@@ -234,6 +236,16 @@ class TrainingSetAuditWidget(QWidget):
         self.page_tabs = QTabWidget(self)
         self.page_tabs.setObjectName("auditPageTabs")
         self.page_tabs.setDocumentMode(True)
+        self.detach_button = ToolButton(FluentIcon.FULL_SCREEN, self.page_tabs)
+        self.detach_button.setToolTip(self.tr("Open in separate window"))
+        self.detach_button.setAccessibleName(
+            self.tr("Open Training Set Check in a separate window")
+        )
+        self.detach_button.clicked.connect(self.detachRequestedSignal)
+        self.page_tabs.setCornerWidget(
+            self.detach_button,
+            Qt.Corner.TopRightCorner,
+        )
         self.dashboard_body = self.page_tabs
 
         summary_tab = QWidget(self.page_tabs)
@@ -922,6 +934,17 @@ class TrainingSetAuditWidget(QWidget):
         root.addWidget(self.page_tabs, stretch=1)
         self._apply_stylesheet()
         self._update_responsive_columns(self.width())
+
+    def set_detached_state(self, detached: bool) -> None:
+        """Keep the compact header action honest about the current host."""
+        if detached:
+            self.detach_button.setIcon(FluentIcon.BACK_TO_WINDOW)
+            text = self.tr("Return to main window")
+        else:
+            self.detach_button.setIcon(FluentIcon.FULL_SCREEN)
+            text = self.tr("Open in separate window")
+        self.detach_button.setToolTip(text)
+        self.detach_button.setAccessibleName(text)
 
     def _add_metric(
         self,

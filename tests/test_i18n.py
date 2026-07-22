@@ -167,6 +167,18 @@ _TASK5_TRANSLATIONS = {
         "Unresolved": "未解析",
         "Within threshold": "间距正常",
     },
+    "TrainingSetAuditHost": {
+        "Training Set Check is open in a separate window": "训练集检查已在独立窗口中打开",
+        "Locate window": "定位窗口",
+        "Return to main window": "收回主窗口",
+    },
+    "TrainingSetAuditWindow": {
+        "Training Set Check — NepTrainKit": "训练集检查 — NepTrainKit",
+    },
+    "TrainingSetAuditWidget": {
+        "Open in separate window": "在独立窗口中打开",
+        "Return to main window": "收回主窗口",
+    },
     "Update": {
         "Upgrade command: {command}": "升级命令：{command}",
         "Pip Upgrade": "Pip 升级",

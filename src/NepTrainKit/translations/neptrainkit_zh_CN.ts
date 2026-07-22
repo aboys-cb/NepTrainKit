@@ -7797,6 +7797,47 @@ Do you want to continue?</source>
     </message>
 </context>
 <context>
+    <name>TrainingSetAuditHost</name>
+    <message>
+        <location filename="../ui/widgets/training_set_audit_window.py" line="52" />
+        <source>Training Set Check is open in a separate window</source>
+        <translation>训练集检查已在独立窗口中打开</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/training_set_audit_window.py" line="58" />
+        <source>Keep Dataset Display on this screen and move the check window to another screen for linked review.</source>
+        <translation>可在当前屏幕保留数据集展示，并将检查窗口移到另一块屏幕联动查看。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/training_set_audit_window.py" line="72" />
+        <source>Locate window</source>
+        <translation>定位窗口</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/training_set_audit_window.py" line="75" />
+        <source>Locate Training Set Check window</source>
+        <translation>定位训练集检查窗口</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/training_set_audit_window.py" line="79" />
+        <source>Return to main window</source>
+        <translation>收回主窗口</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/training_set_audit_window.py" line="82" />
+        <source>Return Training Set Check to main window</source>
+        <translation>将训练集检查收回主窗口</translation>
+    </message>
+</context>
+<context>
+    <name>TrainingSetAuditWindow</name>
+    <message>
+        <location filename="../ui/widgets/training_set_audit_window.py" line="132" />
+        <source>Training Set Check — NepTrainKit</source>
+        <translation>训练集检查 — NepTrainKit</translation>
+    </message>
+</context>
+<context>
     <name>TrainingSetAuditWidget</name>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="207" />
@@ -7818,6 +7859,21 @@ Do you want to continue?</source>
         <location filename="../ui/pages/training_set_audit.py" line="228" />
         <source>Export HTML report</source>
         <translation>导出 HTML 报告</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="235" />
+        <source>Open in separate window</source>
+        <translation>在独立窗口中打开</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="237" />
+        <source>Open Training Set Check in a separate window</source>
+        <translation>在独立窗口中打开训练集检查</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="945" />
+        <source>Return to main window</source>
+        <translation>收回主窗口</translation>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="251" />

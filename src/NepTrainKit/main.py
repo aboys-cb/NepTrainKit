@@ -38,6 +38,10 @@ from NepTrainKit.config import Config
 from NepTrainKit.ui.pages import *
 from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.threads import run_in_thread
+from NepTrainKit.ui.widgets.training_set_audit_window import (
+    TrainingSetAuditHost,
+    TrainingSetAuditWindow,
+)
 from NepTrainKit.ui.update import AutoUpdateNotifier, get_pending_update_version
 from NepTrainKit.utils import timeit
 from NepTrainKit.ui.updater import unzip
@@ -136,7 +140,7 @@ class NepTrainKitMainWindow(FluentWindow):
             self.tr('NEP Dataset Display'),
         )
         self.addSubInterface(
-            self.training_set_audit_interface,
+            self.training_set_audit_host,
             QIcon(':/images/src/images/summary.svg'),
             self.tr('Training Set Check'),
         )
@@ -161,7 +165,12 @@ class NepTrainKitMainWindow(FluentWindow):
     def init_widget(self) -> None:
         """Instantiate the page widgets used by the navigation interface."""
         self.show_nep_interface = ShowNepWidget(self)
-        self.training_set_audit_interface = TrainingSetAuditWidget(self)
+        self.training_set_audit_host = TrainingSetAuditHost(self)
+        self.training_set_audit_interface = TrainingSetAuditWidget(
+            self.training_set_audit_host
+        )
+        self.training_set_audit_host.attach(self.training_set_audit_interface)
+        self.training_set_audit_window = TrainingSetAuditWindow(self)
         self.make_data_interface = MakeDataWidget(self)
         self.setting_interface = SettingsWidget(self)
         self.data_manager_interface = DataManagerWidget(self)
@@ -193,6 +202,62 @@ class NepTrainKitMainWindow(FluentWindow):
         self.training_set_audit_interface.requestStructureEvidenceSignal.connect(
             self._request_training_set_structure_evidence
         )
+        self.training_set_audit_interface.detachRequestedSignal.connect(
+            self.toggle_training_set_audit_window
+        )
+        self.training_set_audit_host.locateRequested.connect(
+            self.training_set_audit_window.show_owned
+        )
+        self.training_set_audit_host.restoreRequested.connect(
+            self.restore_training_set_audit
+        )
+        self.training_set_audit_window.returnRequested.connect(
+            self.restore_training_set_audit
+        )
+
+    def _show_training_set_audit_surface(self) -> None:
+        """Show the audit in its current host without creating another instance."""
+        floating = getattr(self, "training_set_audit_window", None)
+        if floating is not None and floating.is_detached:
+            floating.show_owned()
+            return
+        host = getattr(
+            self,
+            "training_set_audit_host",
+            self.training_set_audit_interface,
+        )
+        self.switchTo(host)
+
+    def toggle_training_set_audit_window(self) -> None:
+        """Move the shared audit page between the navigation page and child window."""
+        if self.training_set_audit_window.is_detached:
+            self.restore_training_set_audit()
+        else:
+            self.detach_training_set_audit()
+
+    def detach_training_set_audit(self) -> None:
+        """Pop the audit into a non-modal window owned by this main window."""
+        if self.training_set_audit_window.is_detached:
+            self.training_set_audit_window.show_owned()
+            return
+        widget = self.training_set_audit_host.take()
+        if widget is None:
+            return
+        self.training_set_audit_window.attach(widget)
+        self.training_set_audit_interface.set_detached_state(True)
+        self.training_set_audit_window.show_owned()
+        self.switchTo(self.show_nep_interface)
+
+    def restore_training_set_audit(self) -> None:
+        """Dock the audit page back into navigation and focus it."""
+        widget = self.training_set_audit_window.take()
+        if widget is None:
+            return
+        self.training_set_audit_window.remember_geometry()
+        self.training_set_audit_window.hide()
+        self.training_set_audit_host.attach(widget)
+        self.training_set_audit_interface.set_detached_state(False)
+        self.switchTo(self.training_set_audit_host)
 
     def _request_training_set_structure_evidence(self) -> None:
         """Run optional structure and magnetic evidence for the active audit."""
@@ -219,6 +284,13 @@ class NepTrainKitMainWindow(FluentWindow):
         desktop = QApplication.screens()[0].availableGeometry()
         width, height = desktop.width(), desktop.height()
         self.move(width // 2 - self.width() // 2, height // 2 - self.height() // 2)
+
+    def closeEvent(self, event) -> None:
+        """Close the owned audit window together with the application."""
+        floating = getattr(self, "training_set_audit_window", None)
+        if floating is not None:
+            floating.shutdown()
+        super().closeEvent(event)
 
     def open_file_dialog(self) -> None:
         """Delegate to the current widget's ``open_file`` handler when available."""
@@ -383,12 +455,12 @@ class NepTrainKitMainWindow(FluentWindow):
             )
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
-            self.switchTo(self.training_set_audit_interface)
+            self._show_training_set_audit_surface()
             self._schedule_training_set_structure_evidence()
             return
         self.training_set_audit_interface.set_distribution_context(data=None)
         self.training_set_audit_interface.set_loading(dataset_id)
-        self.switchTo(self.training_set_audit_interface)
+        self._show_training_set_audit_surface()
 
         def apply_result(result) -> None:
             self._training_set_audit_thread = None
@@ -405,7 +477,7 @@ class NepTrainKitMainWindow(FluentWindow):
             )
             if initial_section == "distribution":
                 self.training_set_audit_interface.show_distribution_explorer()
-            self.switchTo(self.training_set_audit_interface)
+            self._show_training_set_audit_surface()
             self._schedule_training_set_structure_evidence()
 
         def report_error(message: str) -> None:

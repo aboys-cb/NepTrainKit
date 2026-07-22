@@ -7659,6 +7659,14 @@ Elapsed: {elapsed:.1f} ms</source>
     </message>
 </context>
 <context>
+    <name>_PresetNameDialog</name>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="480" />
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+</context>
+<context>
     <name>StructureFilterEditorPopup</name>
     <message>
         <location filename="../ui/widgets/structure_filter_bar.py" line="472" />
@@ -7666,9 +7674,139 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation>结构筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="474" />
         <source>Different conditions are combined below</source>
-        <translation>条件按右侧关系组合</translation>
+        <translation type="vanished">条件按右侧关系组合</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="538" />
+        <source>Saved filters</source>
+        <translation>常用筛选</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="541" />
+        <source>Load or save frequently used filter conditions</source>
+        <translation>加载或保存常用筛选条件</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="637" />
+        <source>No saved filters</source>
+        <translation>暂无常用筛选</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="644" />
+        <source>Save current conditions…</source>
+        <translation>保存当前条件…</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="651" />
+        <source>Manage saved filters</source>
+        <translation>管理常用筛选</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="652" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="749" />
+        <source>Rename</source>
+        <translation>重命名</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="653" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="777" />
+        <source>Delete</source>
+        <translation>删除</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="684" />
+        <source>Preset name</source>
+        <translation>常用筛选名称</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="696" />
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="708" />
+        <source>Saved filter '{name}' is unavailable or damaged.</source>
+        <translation>常用筛选“{name}”不可用或已损坏。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="715" />
+        <source>Loaded saved filter: {name}</source>
+        <translation>已加载常用筛选：{name}</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="722" />
+        <source>Save current conditions</source>
+        <translation>保存当前条件</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="723" />
+        <source>Save</source>
+        <translation>保存</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="728" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="755" />
+        <source>Overwrite saved filter?</source>
+        <translation>覆盖常用筛选？</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="729" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="756" />
+        <source>A saved filter named '{name}' already exists.</source>
+        <translation>已存在名为“{name}”的常用筛选。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="730" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="757" />
+        <source>Overwrite</source>
+        <translation>覆盖</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="736" />
+        <source>Saved filter: {name}</source>
+        <translation>已保存常用筛选：{name}</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="740" />
+        <source>Complete or remove empty conditions before saving.</source>
+        <translation>请补全或删除空白条件后再保存。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="748" />
+        <source>Rename saved filter</source>
+        <translation>重命名常用筛选</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="761" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="768" />
+        <source>Saved filter could not be renamed.</source>
+        <translation>无法重命名常用筛选。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="765" />
+        <source>Renamed saved filter to: {name}</source>
+        <translation>常用筛选已重命名为：{name}</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="775" />
+        <source>Delete saved filter?</source>
+        <translation>删除常用筛选？</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="776" />
+        <source>Delete saved filter '{name}'?</source>
+        <translation>确定删除常用筛选“{name}”吗？</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="781" />
+        <source>Saved filter could not be deleted.</source>
+        <translation>无法删除常用筛选。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="785" />
+        <source>Deleted saved filter: {name}</source>
+        <translation>已删除常用筛选：{name}</translation>
     </message>
     <message>
         <location filename="../ui/widgets/structure_filter_bar.py" line="479" />

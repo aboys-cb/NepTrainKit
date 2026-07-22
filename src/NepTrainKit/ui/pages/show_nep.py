@@ -2003,7 +2003,12 @@ class ShowNepWidget(QWidget):
             canvas.clear_search_highlight()
         if spec.is_empty():
             self.structure_filter_controller.clear()
-            self.structure_filter_bar.clear_state()
+            # A blank row is an editor draft, not a request to delete the
+            # filter UI.  Only an actually empty condition list clears it.
+            if not spec.conditions:
+                self.structure_filter_bar.clear_state()
+            else:
+                self.structure_filter_bar.set_stale()
             return
         self.structure_filter_controller.set_spec(spec)
         self.structure_filter_bar.set_stale()

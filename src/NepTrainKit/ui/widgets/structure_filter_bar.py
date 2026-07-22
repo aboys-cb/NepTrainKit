@@ -23,8 +23,11 @@ from qfluentwidgets import (
     BodyLabel,
     CaptionLabel,
     ComboBox,
+    DropDownPushButton,
     FluentIcon,
     LineEdit,
+    MessageBox,
+    MessageBoxBase,
     PrimaryPushButton,
     PushButton,
     RoundMenu,
@@ -39,6 +42,15 @@ from qfluentwidgets import (
 )
 from qfluentwidgets.components.widgets.line_edit import CompleterMenu
 
+from NepTrainKit.core.filter_presets import (
+    delete_structure_filter_preset,
+    list_structure_filter_preset_names,
+    load_structure_filter_preset,
+    rename_structure_filter_preset,
+    save_structure_filter_preset,
+    structure_filter_preset_exists,
+)
+from NepTrainKit.core.message import MessageManager
 from NepTrainKit.core.search import StructureFilterValidationError
 from NepTrainKit.core.types import (
     FilterField,
@@ -450,6 +462,30 @@ class _ConditionRow(QFrame):
         )
 
 
+class _PresetNameDialog(MessageBoxBase):
+    """Small Fluent dialog used only to name or rename a saved filter."""
+
+    def __init__(self, title: str, prompt: str, accept_text: str, initial: str = "", parent=None):
+        super().__init__(parent)
+        self.title_label = StrongBodyLabel(title, self)
+        self.prompt_label = CaptionLabel(prompt, self)
+        self.name_edit = LineEdit(self)
+        self.name_edit.setMaxLength(80)
+        self.name_edit.setText(initial)
+        self.name_edit.selectAll()
+        self.viewLayout.addWidget(self.title_label)
+        self.viewLayout.addWidget(self.prompt_label)
+        self.viewLayout.addWidget(self.name_edit)
+        self.yesButton.setText(accept_text)
+        self.cancelButton.setText(self.tr("Cancel"))
+        self.yesButton.setEnabled(bool(initial.strip()))
+        self.name_edit.textChanged.connect(lambda text: self.yesButton.setEnabled(bool(text.strip())))
+        self.widget.setMinimumWidth(360)
+
+    def value(self) -> str:
+        return self.name_edit.text().strip()
+
+
 class StructureFilterEditorPopup(QFrame):
     """Anchored, non-modal editor for a flat AND/OR condition list."""
 
@@ -496,13 +532,19 @@ class StructureFilterEditorPopup(QFrame):
         header = QHBoxLayout()
         self.title_label = StrongBodyLabel(self.tr("Edit structure filter"), self)
         header.addWidget(self.title_label)
-        self.subtitle_label = CaptionLabel(self.tr("Different conditions are combined below"), self)
-        header.addWidget(self.subtitle_label)
         header.addStretch()
+        self.preset_button = DropDownPushButton(FluentIcon.FILTER, self.tr("Saved filters"), self)
+        self.preset_button.setFixedHeight(30)
+        self.preset_button.setMinimumWidth(self.preset_button.sizeHint().width())
+        self.preset_button.setToolTip(self.tr("Load or save frequently used filter conditions"))
+        self.preset_button.setAccessibleName(self.tr("Saved filters"))
+        self.preset_menu = None
+        header.addWidget(self.preset_button)
         self.logic_combo = ComboBox(self)
         self.logic_combo.setFixedHeight(30)
         self.logic_combo.addItem(self.tr("Match all conditions (AND)"), userData=FilterLogic.ALL)
         self.logic_combo.addItem(self.tr("Match any condition (OR)"), userData=FilterLogic.ANY)
+        self.logic_combo.setMinimumWidth(self.logic_combo.sizeHint().width())
         self.logic_combo.currentIndexChanged.connect(lambda _index: self._emit_spec())
         header.addWidget(self.logic_combo)
         outer.addLayout(header)
@@ -552,6 +594,7 @@ class StructureFilterEditorPopup(QFrame):
         self.done_button.clicked.connect(self._done)
         footer.addWidget(self.done_button)
         outer.addLayout(footer)
+        self._refresh_preset_menu()
         self._refresh_style()
 
     def _refresh_style(self) -> None:
@@ -564,7 +607,6 @@ class StructureFilterEditorPopup(QFrame):
         self.scroll.setStyleSheet("QScrollArea { background: transparent; border: none; }")
         self.scroll.viewport().setStyleSheet("background: transparent;")
         self.rows_widget.setStyleSheet("QWidget#structureFilterRows { background: transparent; }")
-        self.subtitle_label.setStyleSheet(f"color: {muted}; border: none; background: transparent;")
         self.title_label.setStyleSheet(f"color: {text}; border: none; background: transparent;")
         self.estimate_label.setStyleSheet(f"color: {muted}; border: none; background: transparent;")
         error_color = "#ff8a8a" if isDarkTheme() else "#b10e1e"
@@ -572,9 +614,183 @@ class StructureFilterEditorPopup(QFrame):
         for row in self._rows:
             row._refresh_style()
 
-    def resizeEvent(self, event):
-        self.subtitle_label.setVisible(event.size().width() >= 640)
-        super().resizeEvent(event)
+    def _refresh_preset_menu(self) -> None:
+        names = list_structure_filter_preset_names()
+        old_menu = self.preset_menu
+        self.preset_menu = RoundMenu(parent=self)
+        self.preset_menu.view.setMaxVisibleItems(10)
+        self.preset_button.setMenu(self.preset_menu)
+        self._manage_preset_menu = None
+        self._rename_preset_menu = None
+        self._delete_preset_menu = None
+        if names:
+            for name in names:
+                action = Action(
+                    FluentIcon.FILTER,
+                    name,
+                    triggered=lambda _checked=False, preset_name=name: self._load_preset(preset_name),
+                )
+                self.preset_menu.addAction(action)
+        else:
+            empty = Action(FluentIcon.FILTER, self.tr("No saved filters"))
+            empty.setEnabled(False)
+            self.preset_menu.addAction(empty)
+
+        self.preset_menu.addSeparator()
+        self._save_preset_action = Action(
+            FluentIcon.SAVE,
+            self.tr("Save current conditions…"),
+            triggered=lambda _checked=False: self._save_current_preset(),
+        )
+        self._save_preset_action.setEnabled(not self.spec().is_empty())
+        self.preset_menu.addAction(self._save_preset_action)
+
+        if names:
+            manage_menu = RoundMenu(self.tr("Manage saved filters"), self.preset_menu)
+            rename_menu = RoundMenu(self.tr("Rename"), manage_menu)
+            delete_menu = RoundMenu(self.tr("Delete"), manage_menu)
+            self._manage_preset_menu = manage_menu
+            self._rename_preset_menu = rename_menu
+            self._delete_preset_menu = delete_menu
+            for name in names:
+                rename_menu.addAction(
+                    Action(
+                        FluentIcon.EDIT,
+                        name,
+                        triggered=lambda _checked=False, preset_name=name: self._rename_preset(preset_name),
+                    )
+                )
+                delete_menu.addAction(
+                    Action(
+                        FluentIcon.DELETE,
+                        name,
+                        triggered=lambda _checked=False, preset_name=name: self._delete_preset(preset_name),
+                    )
+                )
+            manage_menu.addMenu(rename_menu)
+            manage_menu.addMenu(delete_menu)
+            self.preset_menu.addMenu(manage_menu)
+
+        if old_menu is not None:
+            old_menu.close()
+            old_menu.deleteLater()
+
+    def refresh_presets(self) -> None:
+        """Refresh the menu from the user configuration database."""
+        self._refresh_preset_menu()
+
+    def _dialog_parent(self):
+        owner = self.parentWidget()
+        return owner.window() if owner is not None else self
+
+    def _prompt_preset_name(self, title: str, accept_text: str, initial: str = "") -> str | None:
+        dialog = _PresetNameDialog(
+            title,
+            self.tr("Preset name"),
+            accept_text,
+            initial,
+            self._dialog_parent(),
+        )
+        if not dialog.exec():
+            return None
+        return dialog.value()
+
+    def _confirm(self, title: str, message: str, accept_text: str) -> bool:
+        box = MessageBox(title, message, self._dialog_parent())
+        box.yesButton.setText(accept_text)
+        box.cancelButton.setText(self.tr("Cancel"))
+        return bool(box.exec())
+
+    def _restore_after_dialog(self) -> None:
+        owner = self.parentWidget()
+        if owner is not None and hasattr(owner, "open_editor"):
+            QTimer.singleShot(0, owner.open_editor)
+
+    def _load_preset(self, name: str) -> None:
+        spec = load_structure_filter_preset(name)
+        if spec is None:
+            MessageManager.send_warning_message(
+                self.tr("Saved filter '{name}' is unavailable or damaged.").format(name=name)
+            )
+            self._refresh_preset_menu()
+            return
+        self.set_spec(spec)
+        self._emit_spec()
+        MessageManager.send_success_message(
+            self.tr("Loaded saved filter: {name}").format(name=name)
+        )
+
+    def _save_current_preset(self) -> None:
+        spec = self.spec()
+        try:
+            name = self._prompt_preset_name(
+                self.tr("Save current conditions"),
+                self.tr("Save"),
+            )
+            if not name:
+                return
+            if structure_filter_preset_exists(name) and not self._confirm(
+                self.tr("Overwrite saved filter?"),
+                self.tr("A saved filter named '{name}' already exists.").format(name=name),
+                self.tr("Overwrite"),
+            ):
+                return
+            save_structure_filter_preset(name, spec)
+            self._refresh_preset_menu()
+            MessageManager.send_success_message(
+                self.tr("Saved filter: {name}").format(name=name)
+            )
+        except ValueError:
+            MessageManager.send_warning_message(
+                self.tr("Complete or remove empty conditions before saving.")
+            )
+        finally:
+            self._restore_after_dialog()
+
+    def _rename_preset(self, old_name: str) -> None:
+        try:
+            new_name = self._prompt_preset_name(
+                self.tr("Rename saved filter"),
+                self.tr("Rename"),
+                old_name,
+            )
+            if not new_name or new_name == old_name:
+                return
+            if structure_filter_preset_exists(new_name) and not self._confirm(
+                self.tr("Overwrite saved filter?"),
+                self.tr("A saved filter named '{name}' already exists.").format(name=new_name),
+                self.tr("Overwrite"),
+            ):
+                return
+            if not rename_structure_filter_preset(old_name, new_name):
+                MessageManager.send_warning_message(self.tr("Saved filter could not be renamed."))
+                return
+            self._refresh_preset_menu()
+            MessageManager.send_success_message(
+                self.tr("Renamed saved filter to: {name}").format(name=new_name)
+            )
+        except ValueError:
+            MessageManager.send_warning_message(self.tr("Saved filter could not be renamed."))
+        finally:
+            self._restore_after_dialog()
+
+    def _delete_preset(self, name: str) -> None:
+        try:
+            if not self._confirm(
+                self.tr("Delete saved filter?"),
+                self.tr("Delete saved filter '{name}'?").format(name=name),
+                self.tr("Delete"),
+            ):
+                return
+            if not delete_structure_filter_preset(name):
+                MessageManager.send_warning_message(self.tr("Saved filter could not be deleted."))
+                return
+            self._refresh_preset_menu()
+            MessageManager.send_success_message(
+                self.tr("Deleted saved filter: {name}").format(name=name)
+            )
+        finally:
+            self._restore_after_dialog()
 
     def set_spec(self, spec: StructureFilterSpec) -> None:
         self._syncing = True
@@ -591,6 +807,8 @@ class StructureFilterEditorPopup(QFrame):
             self._syncing = False
         self.clear_error()
         self._update_content_height()
+        if hasattr(self, "_save_preset_action"):
+            self._save_preset_action.setEnabled(not spec.is_empty())
 
     def _append_row(self, condition: StructureFilterCondition) -> _ConditionRow:
         row = _ConditionRow(condition, self._suggestions, self.rows_widget)
@@ -679,8 +897,11 @@ class StructureFilterEditorPopup(QFrame):
         if self._syncing:
             return
         self.clear_error()
-        self.specChanged.emit(self.spec())
-        if not self.spec().is_empty():
+        spec = self.spec()
+        if hasattr(self, "_save_preset_action"):
+            self._save_preset_action.setEnabled(not spec.is_empty())
+        self.specChanged.emit(spec)
+        if not spec.is_empty():
             self._debounce.start()
 
     def _done(self) -> None:
@@ -870,6 +1091,7 @@ class StructureFilterBar(QFrame):
 
     def open_editor(self, condition_id: str | None = None, *, add_if_empty: bool = False) -> None:
         self._popup.set_spec(self._spec)
+        self._popup.refresh_presets()
         if add_if_empty and not self._spec.conditions:
             self._popup.add_condition()
         width = max(self._popup.minimumWidth(), min(self._popup.maximumWidth(), self.width()))

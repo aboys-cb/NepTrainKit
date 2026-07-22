@@ -1,6 +1,10 @@
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+from PySide6.QtCore import Qt
+from PySide6.QtTest import QTest
+from PySide6.QtWidgets import QApplication
+
 from NepTrainKit.core.search import StructureFilterValidationError
 from NepTrainKit.core.types import (
     FilterField,
@@ -11,6 +15,7 @@ from NepTrainKit.core.types import (
 from NepTrainKit.ui.controllers import structure_filter_controller as controller_module
 from NepTrainKit.ui.controllers.structure_filter_controller import StructureFilterController
 from NepTrainKit.ui.pages.show_nep import ShowNepWidget
+from NepTrainKit.ui.widgets.structure_filter_bar import StructureFilterBar
 
 
 def _dataset(version=1):
@@ -159,3 +164,61 @@ def test_removing_the_last_condition_clears_preview_state_and_highlight():
     page.structure_filter_bar.clear_state.assert_called_once_with()
     page.structure_filter_bar.set_stale.assert_not_called()
     canvas.clear_search_highlight.assert_called_once_with()
+
+
+def test_blank_editor_row_clears_preview_without_deleting_the_draft_condition():
+    blank_spec = StructureFilterSpec(
+        conditions=(
+            StructureFilterCondition(
+                condition_id="draft",
+                field=FilterField.CONFIG_TYPE,
+                text_values=(),
+            ),
+        )
+    )
+    page = SimpleNamespace(
+        structure_filter_controller=SimpleNamespace(
+            clear=MagicMock(),
+            set_spec=MagicMock(),
+        ),
+        structure_filter_bar=SimpleNamespace(
+            clear_state=MagicMock(),
+            set_stale=MagicMock(),
+        ),
+        graph_widget=SimpleNamespace(canvas=SimpleNamespace(clear_search_highlight=MagicMock())),
+    )
+
+    ShowNepWidget._on_structure_filter_spec_changed(page, blank_spec)
+
+    page.structure_filter_controller.clear.assert_called_once_with()
+    page.structure_filter_controller.set_spec.assert_not_called()
+    page.structure_filter_bar.clear_state.assert_not_called()
+    page.structure_filter_bar.set_stale.assert_called_once_with()
+
+
+def test_real_filter_bar_can_add_blank_rows_when_connected_to_show_nep_page():
+    app = QApplication.instance() or QApplication([])
+    bar = StructureFilterBar()
+    page = SimpleNamespace(
+        structure_filter_controller=SimpleNamespace(
+            clear=MagicMock(),
+            set_spec=MagicMock(),
+        ),
+        structure_filter_bar=bar,
+        graph_widget=SimpleNamespace(canvas=SimpleNamespace(clear_search_highlight=MagicMock())),
+    )
+    bar.specChanged.connect(
+        lambda spec: ShowNepWidget._on_structure_filter_spec_changed(page, spec)
+    )
+    bar.resize(700, 38)
+    bar.show()
+    app.processEvents()
+
+    QTest.mouseClick(bar.chip_layout.itemAt(0).widget(), Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert len(bar._popup._rows) == 1
+
+    QTest.mouseClick(bar._popup.add_button, Qt.MouseButton.LeftButton)
+    app.processEvents()
+    assert len(bar._popup._rows) == 2
+    bar.close()

@@ -14,6 +14,7 @@ from NepTrainKit.core.types import (
     StructureFilterSpec,
     TextMatchMode,
 )
+from NepTrainKit.ui.widgets import structure_filter_bar as filter_bar_module
 from NepTrainKit.ui.widgets.structure_filter_bar import StructureFilterBar
 
 
@@ -322,6 +323,179 @@ def test_dataset_suggestions_follow_field_and_replace_only_the_active_token(bar,
     bar._popup.close()
 
 
+def test_saved_filters_menu_is_in_the_editor_header_and_tracks_current_spec(bar, monkeypatch):
+    monkeypatch.setattr(
+        filter_bar_module,
+        "list_structure_filter_preset_names",
+        lambda: ["Fe-O cleanup", "Surface structures"],
+    )
+    popup = bar._popup
+    popup.refresh_presets()
+
+    assert popup.preset_button.text() == popup.tr("Saved filters")
+    assert popup.preset_button.height() == popup.logic_combo.height()
+    assert [action.text() for action in popup.preset_menu.actions()[:2]] == [
+        "Fe-O cleanup",
+        "Surface structures",
+    ]
+    assert not popup._save_preset_action.isEnabled()
+
+    bar.set_spec(_spec(_condition("tag", FilterField.CONFIG_TYPE, "surface")))
+    assert popup._save_preset_action.isEnabled()
+
+
+def test_loading_saved_filter_replaces_conditions_and_never_applies_selection(bar, monkeypatch, qapp):
+    saved = _spec(
+        _condition("saved", FilterField.CONFIG_TYPE, "bulk", mode=TextMatchMode.EXACT),
+        _condition("oxygen", FilterField.ELEMENT_REQUIRED, "O"),
+    )
+    monkeypatch.setattr(filter_bar_module, "load_structure_filter_preset", lambda name: saved)
+    applied = []
+    bar.applyRequested.connect(applied.append)
+
+    bar._popup._load_preset("Fe-O cleanup")
+    qapp.processEvents()
+
+    assert bar.spec == saved
+    assert len(bar._popup._rows) == 2
+    assert applied == []
+    bar._popup._debounce.stop()
+
+
+def test_save_menu_action_consumes_qaction_signal_and_persists_only_the_spec(
+    bar,
+    monkeypatch,
+    qapp,
+):
+    bar.set_spec(
+        _spec(
+            _condition(
+                "tag",
+                FilterField.CONFIG_TYPE,
+                "surface",
+                mode=TextMatchMode.CONTAINS,
+            )
+        )
+    )
+    saved = []
+    monkeypatch.setattr(bar._popup, "_prompt_preset_name", lambda *args: "My filter")
+    monkeypatch.setattr(bar._popup, "_restore_after_dialog", lambda: None)
+    monkeypatch.setattr(filter_bar_module, "structure_filter_preset_exists", lambda name: False)
+    monkeypatch.setattr(
+        filter_bar_module,
+        "save_structure_filter_preset",
+        lambda name, spec: saved.append((name, spec)),
+    )
+    monkeypatch.setattr(filter_bar_module, "list_structure_filter_preset_names", lambda: [])
+    bar._popup.refresh_presets()
+
+    bar._popup._save_preset_action.trigger()
+    qapp.processEvents()
+
+    assert saved == [("My filter", bar.spec)]
+
+
+def test_refusing_overwrite_keeps_the_existing_saved_filter(bar, monkeypatch):
+    bar.set_spec(
+        _spec(_condition("tag", FilterField.CONFIG_TYPE, "surface", mode=TextMatchMode.CONTAINS))
+    )
+    saved = []
+    monkeypatch.setattr(bar._popup, "_prompt_preset_name", lambda *args: "Existing")
+    monkeypatch.setattr(bar._popup, "_confirm", lambda *args: False)
+    monkeypatch.setattr(bar._popup, "_restore_after_dialog", lambda: None)
+    monkeypatch.setattr(filter_bar_module, "structure_filter_preset_exists", lambda name: True)
+    monkeypatch.setattr(
+        filter_bar_module,
+        "save_structure_filter_preset",
+        lambda name, spec: saved.append((name, spec)),
+    )
+
+    bar._popup._save_current_preset()
+
+    assert saved == []
+
+
+def test_saved_filter_can_be_renamed_and_deleted_from_the_menu(bar, monkeypatch):
+    names = ["Old name"]
+    monkeypatch.setattr(filter_bar_module, "list_structure_filter_preset_names", lambda: list(names))
+    monkeypatch.setattr(bar._popup, "_restore_after_dialog", lambda: None)
+    monkeypatch.setattr(bar._popup, "_prompt_preset_name", lambda *args: "New name")
+    monkeypatch.setattr(bar._popup, "_confirm", lambda *args: True)
+    monkeypatch.setattr(filter_bar_module, "structure_filter_preset_exists", lambda name: False)
+
+    renamed = []
+
+    def rename(old_name, new_name):
+        renamed.append((old_name, new_name))
+        names[:] = [new_name]
+        return True
+
+    deleted = []
+
+    def delete(name):
+        deleted.append(name)
+        names.clear()
+        return True
+
+    monkeypatch.setattr(filter_bar_module, "rename_structure_filter_preset", rename)
+    monkeypatch.setattr(filter_bar_module, "delete_structure_filter_preset", delete)
+    bar._popup.refresh_presets()
+
+    bar._popup._rename_preset_menu.actions()[0].trigger()
+    assert renamed == [("Old name", "New name")]
+    assert bar._popup.preset_menu.actions()[0].text() == "New name"
+
+    bar._popup._delete_preset_menu.actions()[0].trigger()
+    assert deleted == ["New name"]
+    assert bar._popup.preset_menu.actions()[0].text() == bar._popup.tr("No saved filters")
+
+
+def test_damaged_saved_filter_does_not_change_current_conditions(bar, monkeypatch):
+    current = _spec(
+        _condition("tag", FilterField.CONFIG_TYPE, "surface", mode=TextMatchMode.CONTAINS)
+    )
+    bar.set_spec(current)
+    warnings = []
+    applied = []
+    bar.applyRequested.connect(applied.append)
+    monkeypatch.setattr(filter_bar_module, "load_structure_filter_preset", lambda name: None)
+    monkeypatch.setattr(filter_bar_module, "list_structure_filter_preset_names", lambda: [])
+    monkeypatch.setattr(
+        filter_bar_module.MessageManager,
+        "send_warning_message",
+        lambda message: warnings.append(message),
+    )
+
+    bar._popup._load_preset("Broken")
+
+    assert bar.spec == current
+    assert applied == []
+    assert warnings
+
+
+def test_rebuilding_saved_filter_menu_does_not_reuse_deleted_qt_actions(bar, monkeypatch, qapp):
+    monkeypatch.setattr(filter_bar_module, "list_structure_filter_preset_names", lambda: ["Common"])
+    loaded = []
+    saved = _spec(
+        _condition("saved", FilterField.CONFIG_TYPE, "bulk", mode=TextMatchMode.CONTAINS)
+    )
+    monkeypatch.setattr(filter_bar_module, "load_structure_filter_preset", lambda name: saved)
+    monkeypatch.setattr(filter_bar_module.MessageManager, "send_success_message", lambda message: None)
+    bar.specChanged.connect(lambda spec: loaded.append(spec))
+
+    for _ in range(20):
+        bar._popup.refresh_presets()
+        QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+        qapp.processEvents()
+        assert bar._popup.preset_menu.view.count() == 4
+
+    action = bar._popup.preset_menu.actions()[0]
+    assert shiboken6.isValid(action)
+    action.trigger()
+    qapp.processEvents()
+    assert loaded
+
+
 def test_narrow_english_layout_does_not_clip_header_rows_footer_or_bar_actions(bar, qapp):
     bar.resize(560, 38)
     entry = bar.chip_layout.itemAt(0).widget()
@@ -333,10 +507,12 @@ def test_narrow_english_layout_does_not_clip_header_rows_footer_or_bar_actions(b
     qapp.processEvents()
 
     assert popup.width() == popup.minimumWidth() == 620
-    assert popup.subtitle_label.isHidden()
     assert popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     assert popup.graphicsEffect() is None
     assert popup.card.graphicsEffect() is not None
+    assert popup.preset_button.geometry().right() < popup.logic_combo.geometry().left()
+    assert popup.preset_button.width() >= popup.preset_button.sizeHint().width()
+    assert popup.logic_combo.width() >= popup.logic_combo.sizeHint().width()
     assert popup.done_button.width() >= popup.done_button.sizeHint().width()
     for widget in (popup.add_button, popup.estimate_label, popup.clear_button, popup.done_button):
         assert widget.geometry().right() <= popup.width() - 10

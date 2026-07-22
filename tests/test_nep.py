@@ -30,6 +30,7 @@ import NepTrainKit.ui.widgets.dialog as dialog_module
 import NepTrainKit.ui.views.nep as nep_view_module
 import NepTrainKit.ui.pages.show_nep as show_nep_module
 from NepTrainKit.ui.canvas.vispy.structure import StructurePlotWidget, StructureTurntableCamera
+from NepTrainKit.ui.canvas.structure_view import structure_view_state
 
 Config()
 Config.set("nep", "backend","cpu")
@@ -1138,6 +1139,84 @@ class TestStructurePlotWidgetInteraction(unittest.TestCase):
             canvas.close()
             app.processEvents()
 
+    def test_initial_structure_view_includes_cell_and_avoids_origin_bias(self):
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        structure = Structure(
+            np.eye(3) * 4.0,
+            {
+                "pos": np.array([[10.0, 10.0, 10.0], [11.0, 10.0, 10.0]], dtype=np.float32),
+                "species": np.array(["H", "H"]),
+            },
+            props,
+            {},
+        )
+
+        center, distance, _elevation, _azimuth = structure_view_state(structure)
+
+        np.testing.assert_allclose(center, np.array([5.5, 5.0, 5.0]))
+        self.assertGreater(distance, 0.0)
+
+    def test_first_structure_is_fitted_without_enabling_continuous_auto_view(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        structure = Structure(
+            np.eye(3) * 4.0,
+            {
+                "pos": np.array([[10.0, 10.0, 10.0], [11.0, 10.0, 10.0]], dtype=np.float32),
+                "species": np.array(["H", "H"]),
+            },
+            props,
+            {},
+        )
+        try:
+            canvas.show_structure(structure)
+
+            self.assertFalse(canvas.auto_view)
+            np.testing.assert_allclose(canvas.view.camera.center, np.array([5.5, 5.0, 5.0]))
+            self.assertGreater(float(canvas.view.camera.distance), 0.0)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_manual_camera_center_is_preserved_until_next_dataset_fit(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        first = Structure(
+            np.eye(3) * 4.0,
+            {"pos": np.array([[1.0, 1.0, 1.0]], dtype=np.float32), "species": np.array(["H"])},
+            props,
+            {},
+        )
+        second = Structure(
+            np.eye(3) * 8.0,
+            {"pos": np.array([[7.0, 7.0, 7.0]], dtype=np.float32), "species": np.array(["H"])},
+            props,
+            {},
+        )
+        try:
+            canvas.show_structure(first)
+            canvas.view.camera.center = (20.0, 21.0, 22.0)
+            canvas.show_structure(second)
+            np.testing.assert_allclose(canvas.view.camera.center, np.array([20.0, 21.0, 22.0]))
+
+            canvas.reset_camera_fit()
+            canvas.show_structure(second)
+            np.testing.assert_allclose(canvas.view.camera.center, np.array([4.0, 4.0, 4.0]))
+        finally:
+            canvas.close()
+            app.processEvents()
+
     def test_nearest_atom_for_double_click_uses_screen_distance(self):
         app = QApplication.instance() or QApplication([])
         canvas = StructurePlotWidget(show=False, size=(200, 150))
@@ -1183,10 +1262,9 @@ class TestStructurePlotWidgetInteraction(unittest.TestCase):
             ]
         )
         event = SimpleNamespace(button=1, pos=np.array([31.0, 29.0]), handled=False)
-        original_center = tuple(canvas.view.camera.center)
-
         try:
             canvas.show_structure(structure)
+            original_center = tuple(canvas.view.camera.center)
             with patch.object(canvas.view.scene, "node_transform", return_value=projection), patch.object(
                 canvas, "update"
             ) as update_mock:

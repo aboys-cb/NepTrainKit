@@ -784,9 +784,15 @@ class ShowNepWidget(QWidget):
         self.splitter = QSplitter(Qt.Orientation.Horizontal, self)
         self.splitter.addWidget(self.plot_widget)
         self.splitter.addWidget(self.struct_widget)
-        self.splitter.setSizes([400,200])
-        self.splitter.setStretchFactor(0, 4)
-        self.splitter.setStretchFactor(1, 2)
+        for pane in (self.plot_widget, self.struct_widget):
+            pane_policy = pane.sizePolicy()
+            pane_policy.setHorizontalPolicy(QSizePolicy.Policy.Ignored)
+            pane.setSizePolicy(pane_policy)
+        self.struct_widget.setMinimumWidth(460)
+        self.splitter.setChildrenCollapsible(False)
+        self.splitter.setSizes([690, 460])
+        self.splitter.setStretchFactor(0, 60)
+        self.splitter.setStretchFactor(1, 40)
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
         self._refresh_export_actions()
         self.search_mode_combo.setCurrentIndex(0)
@@ -1161,6 +1167,9 @@ class ShowNepWidget(QWidget):
             self._structure_mask_version_seen = int(self.nep_result_data.structure.data.version)
         except Exception:
             self._structure_mask_version_seen = None
+        reset_camera_fit = getattr(self.show_struct_widget, "reset_camera_fit", None)
+        if callable(reset_camera_fit):
+            reset_camera_fit()
         self.struct_index_spinbox.valueChanged.emit(0)
 
     def check_nep_result(self, path):

@@ -7,6 +7,7 @@ import pyqtgraph.opengl as gl
 import numpy as np
 from OpenGL.GL import GL_PROJECTION, glLoadMatrixf, glMatrixMode
 from NepTrainKit.config import Config
+from NepTrainKit.ui.canvas.structure_view import structure_view_state
 
 
 from PySide6.QtCore import Qt
@@ -40,6 +41,7 @@ class StructurePlotWidget(gl.GLViewWidget):
         self.setCameraPosition(distance=80, elevation=30, azimuth=30)
         self.atom_items = []
         self.auto_view=False
+        self._has_fitted_structure = False
 
         self.structure = None
         self.show_bond_flag = None
@@ -93,6 +95,10 @@ class StructurePlotWidget(gl.GLViewWidget):
         self.auto_view = auto_view
         if self.structure is not None:
             self.show_structure(self.structure)
+
+    def reset_camera_fit(self):
+        """Fit the next displayed structure without enabling continuous auto view."""
+        self._has_fitted_structure = False
 
     def set_projection(self,ortho=True):
         """Switch between orthographic and perspective projections.
@@ -497,39 +503,13 @@ class StructurePlotWidget(gl.GLViewWidget):
         self.show_elem(structure)
         self.show_bond(structure )
 
-        if self.auto_view:
-            coords = structure.positions
-            min_coords = coords.min(axis=0)
-            max_coords = coords.max(axis=0)
-            center = (min_coords + max_coords) / 2
-            size = max_coords - min_coords
-            max_dimension = np.max(size)
-            fov = 60
-            distance = max_dimension / (2 * np.tan(np.radians(fov / 2))) * 2.8
+        if self.auto_view or not self._has_fitted_structure:
+            center, distance, elevation, azimuth = structure_view_state(structure)
             self.opts['center'] = pg.Vector(center[0], center[1], center[2])
             self.opts['distance'] = distance
-            aspect_ratio = size / np.max(size)
-            # print("aspect_ratio", aspect_ratio)
-            flat_threshold=0.5
-            if (aspect_ratio[0] < flat_threshold
-                    and aspect_ratio[1] >= flat_threshold
-                    and aspect_ratio[2] >= flat_threshold):
-                self.opts['elevation'] = 0
-                self.opts['azimuth'] = 0
-            elif (aspect_ratio[1] < flat_threshold
-                  and aspect_ratio[0] >= flat_threshold
-                  and aspect_ratio[2] >= flat_threshold):
-                self.opts['elevation'] = 0
-                self.opts['azimuth'] = 0
-            elif (aspect_ratio[2] < flat_threshold
-                  and aspect_ratio[0] >= flat_threshold
-                  and aspect_ratio[1] >= flat_threshold):
-                self.opts['elevation'] = 90
-                self.opts['azimuth'] = 0
-            else:
-                self.opts['elevation'] = 30
-                self.opts['azimuth'] = 45
-
+            self.opts['elevation'] = elevation
+            self.opts['azimuth'] = azimuth
+            self._has_fitted_structure = True
             self.setCameraPosition( )
 
 

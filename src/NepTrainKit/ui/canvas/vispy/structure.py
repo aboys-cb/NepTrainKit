@@ -11,6 +11,7 @@ from vispy.util import keys
 
 from NepTrainKit.config import Config
 from NepTrainKit.core.structure import table_info
+from NepTrainKit.ui.canvas.structure_view import structure_view_state
 import numpy as np
 from vispy.util.transforms import rotate
 from vispy import app, scene, visuals
@@ -417,6 +418,7 @@ class StructurePlotWidget(scene.SceneCanvas):
 
         self.view.camera = 'turntable'  # Interactive camera
         self.auto_view=False
+        self._has_fitted_structure = False
         self.ortho = False
         self.atom_items = []  # Store atom meshes and metadata
         self.bond_items = []  # Store bond meshes
@@ -642,6 +644,10 @@ class StructurePlotWidget(scene.SceneCanvas):
         if self.structure is not None:
 
             self.show_structure(self.structure)
+
+    def reset_camera_fit(self):
+        """Fit the next displayed structure without enabling continuous auto view."""
+        self._has_fitted_structure = False
 
 
     def set_projection(self, ortho=True):
@@ -1188,27 +1194,8 @@ class StructurePlotWidget(scene.SceneCanvas):
         self.apply_style_from_config(redraw_lattice=False)
 
 
-        if self.auto_view:
-            coords = structure.positions
-            min_coords = coords.min(axis=0)
-            max_coords = coords.max(axis=0)
-            center = (min_coords + max_coords) / 2
-            size = max_coords - min_coords
-            max_dimension = np.max(size)
-            fov = 60
-            distance = max_dimension / (2 * np.tan(np.radians(fov / 2))) * 2.8
-            aspect_ratio = size / np.max(size)
-            flat_threshold = 0.5
-            if aspect_ratio[0] < flat_threshold and aspect_ratio[1] >= flat_threshold and aspect_ratio[2] >= flat_threshold:
-                elevation, azimuth = 0, 0
-            elif aspect_ratio[1] < flat_threshold and aspect_ratio[0] >= flat_threshold and aspect_ratio[
-                2] >= flat_threshold:
-                elevation, azimuth = 0, 0
-            elif aspect_ratio[2] < flat_threshold and aspect_ratio[0] >= flat_threshold and aspect_ratio[
-                1] >= flat_threshold:
-                elevation, azimuth = 90, 0
-            else:
-                elevation, azimuth = 30, 45
+        if self.auto_view or not self._has_fitted_structure:
+            center, distance, elevation, azimuth = structure_view_state(structure)
             self.view.camera.set_state({
                 'center': tuple(center),
                 'elevation': elevation,
@@ -1216,6 +1203,7 @@ class StructurePlotWidget(scene.SceneCanvas):
 
             })
             self.view.camera.distance=distance
+            self._has_fitted_structure = True
 
         self.show_lattice(structure)
         self.show_elem(structure)

@@ -2555,3 +2555,500 @@ msgstr "Feature overview: [`NEP-dataset-display.md`](NEP-dataset-display.md)"
 #: ../../source/module/show-nep-reference.md:555 f062d2d556ac42a299175942060f9e69
 msgid "示例页：[`../example/NEP-display.md`](../example/NEP-display.md)"
 msgstr "Example: [`../example/NEP-display.md`](../example/NEP-display.md)"
+
+#: ../../source/module/show-nep-reference.md:123
+#: b55dca08da194c6fa3e4bffa93d19907
+msgid "`Selection strategy`："
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:124
+#: 744222a5210b4db5a482304bb005e86e
+msgid "`Global FPS (compatible)`：保留原有全局 FPS 行为；"
+msgstr "`Global FPS (compatible)`: preserves the original global FPS behavior;"
+
+#: ../../source/module/show-nep-reference.md:125
+#: 80e57f85e6f0452a90ffd2c8a569c528
+msgid "`Element-set balanced FPS`：按元素集合分组，每组至少保留一个名额，其余名额按组大小平方根分配，并从各组描述符中心开始采样。"
+msgstr ""
+"`Element-set balanced FPS`: groups structures by element set, reserves at"
+" least one slot per group, distributes the remaining slots in proportion "
+"to the square root of group size, and starts sampling from each group's "
+"descriptor center."
+
+#: ../../source/module/show-nep-reference.md:134
+#: 8daf93575fc649eab7c7ddf757f242e6
+msgid ""
+"平衡模式固定使用结构级原始描述符和固定数量采样，因此会锁定 `Sampling mode` 与 `Descriptor "
+"source`；全局模式仍可自由选择原有选项。"
+msgstr ""
+"Balanced mode always uses raw structure-level descriptors and a fixed "
+"sample count, so `Sampling mode` and `Descriptor source` are locked. "
+"Global mode continues to allow the original options."
+
+#: ../../source/module/show-nep-reference.md:135
+#: 75ba4b1757004f18ac749c54cf89ac14
+msgid "提供训练集时，全局模式延续原有整体 warm start；平衡模式只使用元素集合相同的已有结构初始化距离。"
+msgstr ""
+"With a training set, global mode keeps the original whole-dataset warm "
+"start, while balanced mode initializes distances only from existing "
+"structures with the same element set."
+
+#: ../../source/module/show-nep-reference.md:136
+#: 3a3da1bf75fd44aeb032ecd918040036
+msgid "执行结果：运行 FPS 后更新选择集；平衡模式完成后会提示实际选择数量和覆盖的元素集合数。"
+msgstr ""
+"Result: FPS updates the selection set. Balanced mode also reports the "
+"actual number selected and the number of element sets covered."
+
+#: ../../source/module/show-nep-reference.md:281
+#: bcc7713523a84109b843cfc8815d1f8b
+msgid "6. 结构筛选栏"
+msgstr "6 — Structure filter bar"
+
+#: ../../source/module/show-nep-reference.md:283
+#: 93d94e6b6efa46bf9541f40a5673be20
+msgid "结构筛选栏可以同时使用配置类型、化学式、元素和自定义表达式。条件默认取交集；经常重复使用的组合可以保存为“常用筛选”。"
+msgstr ""
+"The structure filter bar combines configuration type, formula, element, "
+"and custom-expression conditions. Conditions use intersection logic by "
+"default, and combinations you use repeatedly can be saved under `Saved "
+"filters`."
+
+#: ../../source/module/show-nep-reference.md:285
+#: ac8b906259524589a91b1d825d18fdde
+msgid "![结构筛选栏与条件编辑器](../_static/image/generated/show_nep_reference/g_structure_filter.png)"
+msgstr ""
+"![Structure filter bar and condition "
+"editor](../_static/image/generated/show_nep_reference/g_structure_filter.png)"
+
+#: ../../source/module/show-nep-reference.md:285
+#: 2eaa8e8e9056454986903d2240040c0a
+msgid "结构筛选栏与条件编辑器"
+msgstr "Structure filter bar and condition editor"
+
+#: ../../source/module/show-nep-reference.md:285
+#: 2eaa8e8e9056454986903d2240040c0a
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_structure_filter.png"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:287
+#: cbf9386933d74766bf5bd0b283392cfb
+msgid "6.1 基本流程"
+msgstr "6.1 Basic workflow"
+
+#: ../../source/module/show-nep-reference.md:289
+#: 4b942c1b0e4a48b1877c55eb94784584
+msgid "点击“筛选条件”打开编辑器。空筛选会自动出现第一行。"
+msgstr ""
+"Click `Filter conditions` to open the editor. An empty filter starts with"
+" one blank row."
+
+#: ../../source/module/show-nep-reference.md:290
+#: a278b864277840c1b8eaa6781af5dcc0
+msgid "在左下角点击“+”继续添加条件，例如“配置类型包含 `surface`”“必须包含 `Fe,O`”“不得包含 `H`”。"
+msgstr ""
+"Click `+` in the lower-left corner to add more conditions, such as "
+"`Config type contains surface`, `Must contain Fe,O`, and `Must not "
+"contain H`."
+
+#: ../../source/module/show-nep-reference.md:291
+#: f4ec7603fea946e68756a53bac78d167
+msgid "在右上角选择“满足全部条件（AND）”或“满足任一条件（OR）”。"
+msgstr ""
+"Choose `Match all conditions (AND)` or `Match any condition (OR)` in the "
+"upper-right corner."
+
+#: ../../source/module/show-nep-reference.md:292
+#: 2c0d64efaa4948ab868e7315b816ce50
+msgid "点击“完成并预览”。图中的匹配高亮只用于预览，不会改变当前选择。"
+msgstr ""
+"Click `Done and preview`. The highlighted matches in the plot are only a "
+"preview and do not change the current selection."
+
+#: ../../source/module/show-nep-reference.md:293
+#: 65ea37573a9145ce8387681bf07b551a
+msgid "确认匹配数量后，在“应用结果”中选择“替换当前选择”“加入当前选择”或“从当前选择中移除”。"
+msgstr ""
+"After checking the match count, choose `Replace current selection`, `Add "
+"to current selection`, or `Remove from current selection` from `Apply "
+"result`."
+
+#: ../../source/module/show-nep-reference.md:295
+#: 029ab9dd39f74a1c991e008a92431691
+msgid "修改条件后，旧匹配结果会显示为“结果已过期”。重新预览前不能继续应用旧结果。"
+msgstr ""
+"After a condition changes, the previous match result is marked `Result is"
+" stale` and cannot be applied until you preview again."
+
+#: ../../source/module/show-nep-reference.md:297
+#: 1a09df6b424349329a224fc29754bc18
+msgid "编辑器右下角的垃圾篓按钮只清空筛选条件和匹配高亮，**不会清空当前选择**。清空选择位于“应用结果”菜单中。"
+msgstr ""
+"The trash button in the lower-right corner of the editor clears only the "
+"filter conditions and match highlight; it **does not clear the current "
+"selection**. Use `Clear current selection` in the `Apply result` menu for"
+" that action."
+
+#: ../../source/module/show-nep-reference.md:299
+#: bf7855d08e1e42f5807c2390ac3beb9d
+msgid "6.2 条件含义"
+msgstr "6.2 Condition semantics"
+
+#: ../../source/module/show-nep-reference.md:60
+#: c5dfceae340e42d898dbaacda1dedbf8
+msgid "条件"
+msgstr "Condition"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 657eb27c18244043bd7f6341d008f216
+msgid "配置类型"
+msgstr "Configuration type"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 38816f8c4a7f4039b643fe3e8c2ccf04
+msgid "包含、完全等于、开头、结尾或正则匹配"
+msgstr "Contains, exact, starts with, ends with, or regular expression"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 459b720fe9df4f6398b4b782b6038c1c
+msgid "`surface`"
+msgstr "`surface`"
+
+#: ../../source/module/show-nep-reference.md:60
+#: a7e3d40b84ab43768142ce52ae5300a7
+msgid "化学式"
+msgstr "Formula"
+
+#: ../../source/module/show-nep-reference.md:60
+#: c7543c5b2617410093bbb102ca4fd8c8
+msgid "默认完全等于，也可选择包含或正则匹配"
+msgstr ""
+"Exact by default; contains and regular-expression matching are also "
+"available"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 2d8f6ce9d4b94d33aab6ccdedfdfaeb0
+msgid "`Fe2O3`"
+msgstr "`Fe2O3`"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 322a06ba11194093b0dbad39bed7145e
+msgid "必须包含元素"
+msgstr "Must contain elements"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 12acdc4cd6ab4385937f90e96d2dc45a
+msgid "所列元素必须全部存在，允许还有其他元素"
+msgstr "Every listed element must be present; additional elements are allowed"
+
+#: ../../source/module/show-nep-reference.md:60
+#: fa32a1556fa14bf3a9644467a21224b6
+msgid "`Fe,O` 可匹配 FeO 和 FeOC"
+msgstr "`Fe,O` matches FeO and FeOC"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 322a06ba11194093b0dbad39bed7145e
+msgid "不得包含元素"
+msgstr "Must not contain elements"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 2613ba9fc8ad412db5b19495aa48de30
+msgid "所列元素必须全部不存在"
+msgstr "None of the listed elements may be present"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 873819738644446ba834b61bdaf68c29
+msgid "`H` 排除含 H 结构"
+msgstr "`H` excludes structures containing H"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 118f72d0c42f4e4ba38043e304c1144e
+msgid "只允许这些元素"
+msgstr "Allow only these elements"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 7a18d21feab14cca9a7714e6deea058d
+msgid "结构中不能出现列表外元素"
+msgstr "The structure cannot contain elements outside the list"
+
+#: ../../source/module/show-nep-reference.md:60
+#: ec78e052f53946e085b754c3890921ba
+msgid "`Fe,O` 可匹配 Fe、O 和 FeO"
+msgstr "`Fe,O` matches Fe, O, and FeO"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 2b9c62278c7e44878ab3441670cfbdd7
+msgid "自定义表达式"
+msgstr "Custom expression"
+
+#: ../../source/module/show-nep-reference.md:60
+#: 65718fb3d36f4471a06d64497687ecf0
+msgid "使用现有结构表达式引擎"
+msgstr "Uses the existing structure-expression engine"
+
+#: ../../source/module/show-nep-reference.md:310
+#: 5676754a58da42858fff7d8030bcd808
+msgid "同一条配置类型或化学式条件可以用分号输入多个值，多个值之间取“任一匹配”。元素之间使用逗号或空格分隔，例如 `Fe, O`。"
+msgstr ""
+"Enter multiple values in one configuration-type or formula condition by "
+"separating them with semicolons; matching any value is sufficient. "
+"Separate elements with commas or spaces, for example `Fe, O`."
+
+#: ../../source/module/show-nep-reference.md:312
+#: 1568604ce02845aa9ae4010bc168d89a
+msgid "每行左侧的开关控制该条件是否参与筛选。关闭条件不会删除输入内容。配置类型和化学式右侧的 `Aa` 控制是否区分大小写；高亮时区分，未高亮时不区分。"
+msgstr ""
+"The switch on the left of each row controls whether that condition takes "
+"part in filtering. Turning it off keeps the entered value. For config "
+"type and formula conditions, `Aa` controls case sensitivity: highlighted "
+"means case-sensitive; otherwise matching is case-insensitive."
+
+#: ../../source/module/show-nep-reference.md:314
+#: ccb6d3612dc3476eab8cadaa40c27dbc
+msgid "非法正则、未知元素或错误表达式会直接标记对应条件，不会被当成“0 个匹配”，也不会意外匹配全部结构。"
+msgstr ""
+"An invalid regular expression, unknown element, or invalid expression "
+"marks the corresponding condition directly. It is not treated as zero "
+"matches and cannot accidentally match every structure."
+
+#: ../../source/module/show-nep-reference.md:316
+#: f7f67dbd2f8e4eb7b79ecd1d239393c8
+msgid "6.3 保存和复用常用筛选"
+msgstr "6.3 Save and reuse filters"
+
+#: ../../source/module/show-nep-reference.md:318
+#: bbac0d55058b4dd2bfc2f55f6cff453d
+msgid "如果经常清理同一类数据，可以保存整个条件组合。例如，一个常用组合可以是："
+msgstr ""
+"If you repeatedly clean the same kind of data, save the whole condition "
+"set. For example:"
+
+#: ../../source/module/show-nep-reference.md:320
+#: ../../source/module/show-nep-reference.md:587
+#: 98ebe84c8b3c4bd6bd7595af49051a04
+msgid "配置类型包含 `surface`"
+msgstr "Configuration type contains `surface`"
+
+#: ../../source/module/show-nep-reference.md:321
+#: ../../source/module/show-nep-reference.md:588
+#: 3b4a660a6172419da984a79a7b33abce
+msgid "必须包含元素 `Fe,O`"
+msgstr "Must contain elements `Fe,O`"
+
+#: ../../source/module/show-nep-reference.md:322
+#: 3b4a660a6172419da984a79a7b33abce
+msgid "不得包含元素 `H`"
+msgstr "Must not contain element `H`"
+
+#: ../../source/module/show-nep-reference.md:323
+#: deb73797b5c34e13a2bb4c543e19323e
+msgid "条件关系为“满足全部条件（AND）”"
+msgstr "Logic set to `Match all conditions (AND)`"
+
+#: ../../source/module/show-nep-reference.md:325
+#: 8af802ea298d4d209c77feb65e082c8c
+msgid "保存一次后，下次不需要逐行重填："
+msgstr "After saving it once, you do not need to re-enter every row next time:"
+
+#: ../../source/module/show-nep-reference.md:327
+#: e302deb021a9473d95302dda252050be
+msgid "先把条件、AND/OR 关系和 `Aa` 状态设置好。"
+msgstr "Set the conditions, AND/OR logic, and `Aa` states."
+
+#: ../../source/module/show-nep-reference.md:328
+#: ee8b9054704049039dac77da849a3eb5
+msgid "点击“常用筛选 → 保存当前条件…”。"
+msgstr "Choose `Saved filters → Save current conditions…`."
+
+#: ../../source/module/show-nep-reference.md:329
+#: c9638eb152cc495c97eb050492263008
+msgid "输入容易识别的名称，例如 `Fe-O surface`，然后点击“保存”。"
+msgstr "Enter a recognizable name such as `Fe-O surface`, then click `Save`."
+
+#: ../../source/module/show-nep-reference.md:330
+#: 321d5def47c9417fbeaec8b8a20634bc
+msgid "下次打开编辑器时，点击“常用筛选”，再直接点击该名称。"
+msgstr ""
+"The next time you open the editor, click `Saved filters`, then click that"
+" name."
+
+#: ../../source/module/show-nep-reference.md:332
+#: 8e396800295d404e9df85fd12b2866f7
+msgid "![常用筛选菜单](../_static/image/generated/show_nep_reference/g_structure_filter_presets.png)"
+msgstr ""
+"![Saved filters "
+"menu](../_static/image/generated/show_nep_reference/g_structure_filter_presets.png)"
+
+#: ../../source/module/show-nep-reference.md:332
+#: 6cfe72227ca34765a07378bd41483e41
+msgid "常用筛选菜单"
+msgstr "Saved filters menu"
+
+#: ../../source/module/show-nep-reference.md:332
+#: 6cfe72227ca34765a07378bd41483e41
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_structure_filter_presets.png"
+msgstr ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_structure_filter_presets.png"
+
+#: ../../source/module/show-nep-reference.md:334
+#: cc75d05e51524fd3a0c3969fe5053c89
+msgid "加载常用筛选会**替换编辑器里的当前条件**，随后更新预览；它不会自动执行“应用结果”，也不会改变当前选择。"
+msgstr ""
+"Loading a saved filter **replaces the conditions currently in the "
+"editor** and then refreshes the preview. It does not run `Apply result` "
+"automatically and does not change the current selection."
+
+#: ../../source/module/show-nep-reference.md:336
+#: bfa0939e425e490da2c628d18b779d67
+msgid "保存内容包括："
+msgstr "A saved filter includes:"
+
+#: ../../source/module/show-nep-reference.md:338
+#: 5ed0c9cad72640acabbf023d82ebdea2
+msgid "每条条件的类型、输入值和启用状态"
+msgstr "Each condition's type, entered values, and enabled state"
+
+#: ../../source/module/show-nep-reference.md:339
+#: 095c22f5b7d34a47a2aa901e0d5003a2
+msgid "配置类型或化学式的匹配方式与 `Aa` 状态"
+msgstr "The match mode and `Aa` state for config type or formula conditions"
+
+#: ../../source/module/show-nep-reference.md:340
+#: bafb21946a7d4d5eb0d76c2c90bef8e4
+msgid "“满足全部条件（AND）”或“满足任一条件（OR）”"
+msgstr "`Match all conditions (AND)` or `Match any condition (OR)`"
+
+#: ../../source/module/show-nep-reference.md:342
+#: 80a1ec04a5d248c096c8ba060671f25f
+msgid ""
+"常用筛选保存在本机用户配置中，关闭并重新打开软件后仍可使用。它不会保存当前匹配结果、当前选择、数据集路径或 NEP "
+"模型；保存的是筛选条件，不是自动处理流程。"
+msgstr ""
+"Saved filters are stored in the local user configuration and remain "
+"available after restarting the application. They do not store the current "
+"match result, current selection, dataset path, or NEP model; this feature "
+"stores filter conditions, not an automated processing workflow."
+
+#: ../../source/module/show-nep-reference.md:344
+#: bef5ff945f8b4687a2c955609f292006
+msgid "需要维护已有条目时，进入“常用筛选 → 管理常用筛选”："
+msgstr "To maintain existing entries, open `Saved filters → Manage saved filters`:"
+
+#: ../../source/module/show-nep-reference.md:346
+#: 8b5e285cd9a944369abe809ffbd13094
+msgid "“重命名”只修改名称，不改变条件。"
+msgstr "`Rename` changes only the name, not the conditions."
+
+#: ../../source/module/show-nep-reference.md:347
+#: 03415c4d92744c5ab54e2df1c13cbfff
+msgid "“删除”只删除保存的条目，不清空编辑器中的当前条件。"
+msgstr ""
+"`Delete` removes only the saved entry; it does not clear the current "
+"editor conditions."
+
+#: ../../source/module/show-nep-reference.md:348
+#: 7e81316b6ef04a9a96f763f71802f9cc
+msgid "保存或重命名为已有名称时，软件会先询问是否覆盖。"
+msgstr ""
+"When saving or renaming to an existing name, the application asks before "
+"overwriting it."
+
+#: ../../source/module/show-nep-reference.md:350
+#: a71aaf6aac124a6d98d373b5a5929106
+msgid "如果条件中仍有空白行，软件不会保存。请补全该行，或用行尾的“×”先删除它。"
+msgstr ""
+"A filter with a blank row cannot be saved. Complete that row or remove it"
+" with the `×` at the end."
+
+#: ../../source/module/show-nep-reference.md:353
+#: fe24fbbef0644cd79cd0682afd2fe793
+msgid "6.4 `expression` 用法总览"
+msgstr "6.4 `expression` overview"
+
+#: ../../source/module/show-nep-reference.md:362
+#: 5f5b4b1de420420ebdc3b61897fe33f9
+msgid "6.4.1 支持的运算符"
+msgstr "6.4.1 Supported operators"
+
+#: ../../source/module/show-nep-reference.md:376
+#: 38a8baa2c10846c4816c9ceefae4fdd5
+msgid "6.4.2 不支持的语法"
+msgstr "6.4.2 Unsupported syntax"
+
+#: ../../source/module/show-nep-reference.md:385
+#: d1491b3b9b8c4e039805d1c94e71368e
+msgid "6.4.3 内置结构字段"
+msgstr "6.4.3 Built-in structure fields"
+
+#: ../../source/module/show-nep-reference.md:412
+#: a937d8617c234acf9818742473870faa
+msgid "6.4.4 元素统计字段"
+msgstr "6.4.4 Element-statistics fields"
+
+#: ../../source/module/show-nep-reference.md:428
+#: 68bb5bfbfba74dd8936eb9e1b198f048
+msgid "6.4.5 动态数据字段"
+msgstr "6.4.5 Dynamic data fields"
+
+#: ../../source/module/show-nep-reference.md:440
+#: a77dfc5e8d6244999f53b8db3f76dab7
+msgid "6.4.6 后缀规则"
+msgstr "6.4.6 Suffix rules"
+
+#: ../../source/module/show-nep-reference.md:484
+#: 16da6b89665f4ef790261606a064ec83
+msgid "6.4.7 原子级字段如何聚合到结构级"
+msgstr "6.4.7 Aggregating atomic fields to structures"
+
+#: ../../source/module/show-nep-reference.md:501
+#: a1cc0aa89dd1498dbb48f7a0c026a022
+msgid "6.4.8 常用表达式示例"
+msgstr "6.4.8 Common expression examples"
+
+#: ../../source/module/show-nep-reference.md:543
+#: 9a1c512d59854ec09a8972d812025148
+msgid "6.4.9 补全与右侧数量说明"
+msgstr "6.4.9 Autocomplete and availability counts"
+
+#: ../../source/module/show-nep-reference.md:564
+#: 07e88271b65e48e5bf95ddc82c84a30d
+msgid "6.4.10 错误与排查"
+msgstr "6.4.10 Errors and troubleshooting"
+
+#: ../../source/module/show-nep-reference.md:581
+#: e7cb41854e5242329bbf8e32072d4d3a
+msgid "6.4.11 在结构筛选器中使用表达式"
+msgstr "6.4.11 Using expressions in the structure filter"
+
+#: ../../source/module/show-nep-reference.md:583
+#: 0752c5f2c6c94942a30422749bfe4a4a
+msgid "添加“自定义表达式”条件后，直接输入完整表达式。表达式仍由原有求值器执行，因此本节列出的字段、运算符和动态数据能力都可以继续使用。"
+msgstr ""
+"After adding a `Custom expression` condition, enter the complete "
+"expression directly. The existing evaluator still executes it, so all "
+"fields, operators, and dynamic-data capabilities described in this "
+"section remain available."
+
+#: ../../source/module/show-nep-reference.md:585
+#: 1d22d17981cf4e72b3b72c1aa9b856cb
+msgid "表达式可以和其他条件组合。例如："
+msgstr "An expression can be combined with other conditions. For example:"
+
+#: ../../source/module/show-nep-reference.md:589
+#: a9ee89162b6443f6ad07ed7f47c7a8b6
+msgid "自定义表达式 `natoms >= 64 && force.error.norm < 0.2`"
+msgstr "Custom expression `natoms >= 64 && force.error.norm < 0.2`"
+
+#: ../../source/module/show-nep-reference.md:591
+#: 22b81088529a4d62ab636277649d6aa5
+msgid "三条条件在“满足全部条件”下会取交集。筛选器不会把表达式转换成另一套简化语法，因此不会丢失 `!=`、晶格角、布尔字段或动态字段。"
+msgstr ""
+"With `Match all conditions`, the three conditions are intersected. The "
+"filter does not convert expressions into a second simplified syntax, so "
+"operators such as `!=`, lattice angles, Boolean fields, and dynamic "
+"fields are preserved."

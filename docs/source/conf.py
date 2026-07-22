@@ -121,6 +121,8 @@ _BILINGUAL_SCREENSHOTS = (
     'g_force_dialog.png',
     'g_editinfo_dialog.png',
     'g_shift_dialog.png',
+    'g_structure_filter.png',
+    'g_structure_filter_presets.png',
     'energy_baseline_shift_entry.png',
     'energy_baseline_shift_result.png',
     'fps_sampling_entry.png',

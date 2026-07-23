@@ -27,6 +27,7 @@ from NepTrainKit.core.audit.result import (
     AuditScope,
     AuditScopeKind,
     DatasetInventory,
+    MagneticInventory,
     PhaseInventory,
 )
 
@@ -458,6 +459,111 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         window.training_set_audit_interface.start_phase_analysis.assert_called_once_with(2)
         window.training_set_audit_interface.finish_phase_analysis.assert_called_once_with(
             window._audited_result
+        )
+
+    def test_main_window_reuses_persistent_phase_and_magnetic_evidence(self):
+        window = main_module.NepTrainKitMainWindow.__new__(
+            main_module.NepTrainKitMainWindow
+        )
+        structure = SimpleNamespace(
+            data=SimpleNamespace(version=3),
+            now_indices=np.array([0, 1], dtype=int),
+            geometry_snapshot=MagicMock(return_value="geometry"),
+        )
+        data = SimpleNamespace(structure=structure)
+        phase = PhaseInventory(
+            schema_version="phase-inventory-v2",
+            method_id="adaptive-cna-ordering-v1",
+            reference_bank_id="aflow-l12-laves-v1",
+            analysis_strategy="all-structures-v1",
+            source_structure_count=2,
+            analyzed_structure_count=2,
+            analyzed_atom_count=32,
+            composition_points=(),
+        )
+        magnetic = MagneticInventory(
+            schema_version="magnetic-inventory-v3",
+            method_id="spin-order-layer-afm-v3",
+            analysis_strategy="all-spin-structures-v1",
+            source_structure_count=2,
+            analyzed_structure_count=2,
+            missing_spin_count=0,
+            composition_points=(),
+        )
+        result = AuditResult(
+            dataset_id="train.xyz",
+            generated_at="now",
+            inputs={"structure_count": 2},
+            overview_metrics={
+                "phase_inventory": {"available": False, "status": "pending"}
+            },
+            scope=AuditScope(AuditScopeKind.ACTIVE, (0, 1), 2),
+            inventory=DatasetInventory(2, ("Ni",), ()),
+        )
+        window.show_nep_interface = SimpleNamespace(
+            nep_result_data=data,
+            set_phase_inventory=MagicMock(),
+        )
+        window.training_set_audit_interface = SimpleNamespace(
+            start_phase_analysis=MagicMock(),
+            finish_phase_analysis=MagicMock(),
+            fail_phase_analysis=MagicMock(),
+            phaseAnalysisProgressSignal=SimpleNamespace(emit=MagicMock()),
+        )
+        window._audited_result_data = data
+        window._audited_result = result
+        window._training_set_phase_thread = None
+        window._training_set_phase_result = None
+        window._training_set_phase_token = None
+        window._audited_result_signature = (
+            main_module.NepTrainKitMainWindow._training_set_audit_signature(
+                window, data
+            )
+        )
+        callbacks = {}
+        cache = SimpleNamespace(
+            load_phase=MagicMock(return_value=phase),
+            load_magnetic=MagicMock(return_value=magnetic),
+            save_phase=MagicMock(),
+            save_magnetic=MagicMock(),
+        )
+
+        def fake_run_in_thread(
+            parent,
+            func,
+            *args,
+            on_finished=None,
+            on_error=None,
+            **kwargs,
+        ):
+            callbacks.update(func=func, on_finished=on_finished, on_error=on_error)
+            return "phase-thread"
+
+        with (
+            patch.object(main_module, "run_in_thread", side_effect=fake_run_in_thread),
+            patch.object(
+                main_module.TrainingSetEvidenceCache,
+                "from_result_data",
+                return_value=cache,
+            ),
+            patch.object(main_module, "build_phase_inventory") as phase_build,
+            patch.object(main_module, "build_magnetic_inventory") as magnetic_build,
+        ):
+            main_module.NepTrainKitMainWindow._start_training_set_phase_analysis(
+                window, data, result
+            )
+            payload = callbacks["func"]()
+            callbacks["on_finished"](payload)
+
+        phase_build.assert_not_called()
+        magnetic_build.assert_not_called()
+        cache.save_phase.assert_not_called()
+        cache.save_magnetic.assert_not_called()
+        self.assertTrue(
+            window._audited_result.overview_metrics["phase_inventory"]["cache_hit"]
+        )
+        self.assertTrue(
+            window._audited_result.overview_metrics["magnetic_inventory"]["cache_hit"]
         )
 
     def test_main_window_rejects_same_object_when_active_signature_changes(self):

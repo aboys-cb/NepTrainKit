@@ -34,6 +34,18 @@ from NepTrainKit.core.audit import (
     build_phase_inventory,
     build_training_set_audit,
 )
+from NepTrainKit.core.audit.evidence_cache import TrainingSetEvidenceCache
+from NepTrainKit.core.audit.magnetic_inventory import (
+    MAGNETIC_ANALYSIS_STRATEGY,
+    MAGNETIC_METHOD_ID,
+    MAGNETIC_SCHEMA_VERSION,
+)
+from NepTrainKit.core.audit.phase_inventory import (
+    PHASE_ANALYSIS_STRATEGY,
+    PHASE_METHOD_ID,
+    PHASE_REFERENCE_BANK_ID,
+    PHASE_SCHEMA_VERSION,
+)
 from NepTrainKit.config import Config
 from NepTrainKit.ui.pages import *
 from NepTrainKit.ui.messages import MessageManager
@@ -540,20 +552,52 @@ class NepTrainKitMainWindow(FluentWindow):
         def compute():
             scope_indices = result.scope.indices if result.scope is not None else None
             geometry = data.structure.geometry_snapshot(scope_indices)
-            phase_payload = build_phase_inventory(
-                geometry,
-                result.inventory,
-                cache_owner=data.structure,
-                progress=lambda completed, total: (
-                    self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
-                        completed, total * 2
-                    )
-                    if token is self._training_set_phase_token
-                    else None
-                ),
+            evidence_cache = TrainingSetEvidenceCache.from_result_data(data, result)
+
+            phase_inventory = (
+                evidence_cache.load_phase(
+                    schema_version=PHASE_SCHEMA_VERSION,
+                    method_id=PHASE_METHOD_ID,
+                    reference_bank_id=PHASE_REFERENCE_BANK_ID,
+                    analysis_strategy=PHASE_ANALYSIS_STRATEGY,
+                )
+                if evidence_cache is not None
+                else None
             )
-            magnetic_payload = (
-                build_magnetic_inventory(
+            if phase_inventory is None:
+                phase_payload = build_phase_inventory(
+                    geometry,
+                    result.inventory,
+                    cache_owner=data.structure,
+                    progress=lambda completed, total: (
+                        self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
+                            completed, total * 2
+                        )
+                        if token is self._training_set_phase_token
+                        else None
+                    ),
+                )
+                if evidence_cache is not None:
+                    evidence_cache.save_phase(phase_payload[0])
+            else:
+                phase_payload = (phase_inventory, True)
+                if token is self._training_set_phase_token:
+                    self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
+                        phase_inventory.analyzed_structure_count,
+                        phase_inventory.source_structure_count * 2,
+                    )
+
+            magnetic_inventory = (
+                evidence_cache.load_magnetic(
+                    schema_version=MAGNETIC_SCHEMA_VERSION,
+                    method_id=MAGNETIC_METHOD_ID,
+                    analysis_strategy=MAGNETIC_ANALYSIS_STRATEGY,
+                )
+                if evidence_cache is not None
+                else None
+            )
+            if magnetic_inventory is None and hasattr(geometry, "source_indices"):
+                magnetic_payload = build_magnetic_inventory(
                     geometry,
                     result.inventory,
                     getattr(data.structure, "all_data", ()),
@@ -566,9 +610,17 @@ class NepTrainKitMainWindow(FluentWindow):
                         else None
                     ),
                 )
-                if hasattr(geometry, "source_indices")
-                else (None, False)
-            )
+                if evidence_cache is not None:
+                    evidence_cache.save_magnetic(magnetic_payload[0])
+            elif magnetic_inventory is not None:
+                magnetic_payload = (magnetic_inventory, True)
+                if token is self._training_set_phase_token:
+                    self.training_set_audit_interface.phaseAnalysisProgressSignal.emit(
+                        magnetic_inventory.source_structure_count * 2,
+                        magnetic_inventory.source_structure_count * 2,
+                    )
+            else:
+                magnetic_payload = (None, False)
             return phase_payload, magnetic_payload
 
         def apply_completed(payload) -> None:

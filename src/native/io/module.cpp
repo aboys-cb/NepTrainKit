@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <memory>
 #include <system_error>
+#include <thread>
 
 // Use single-header fast_float colocated in this directory
 #include "fast_float.h"
@@ -46,6 +47,15 @@ struct ScopedReleaseIfHeld {
     ScopedReleaseIfHeld(const ScopedReleaseIfHeld&) = delete;
     ScopedReleaseIfHeld& operator=(const ScopedReleaseIfHeld&) = delete;
 };
+
+constexpr size_t kPythonYieldInterval = 256;
+
+inline void cooperative_python_yield(const size_t completed) {
+    if (completed == 0 || completed % kPythonYieldInterval != 0) return;
+    ScopedReleaseIfHeld release;
+    std::this_thread::yield();
+}
+
 struct PropDesc {
     std::string name;
     char dtype{'S'}; // 'S','R','I','L'
@@ -728,6 +738,7 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
         frame["additional_fields"] = add;
 
         out.append(frame);
+        cooperative_python_yield(fi + 1);
         if (dbg) {
             std::fprintf(stderr, "[fastxyz] convert frame %zu done\n", fi);
             std::fflush(stderr);
@@ -748,6 +759,13 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
         std::fflush(stderr);
     }
 
+    // The parsed C++ graph can contain millions of temporary strings.  Free it
+    // without monopolising the interpreter after the Python result is ready.
+    {
+        ScopedReleaseIfHeld release;
+        std::vector<Parsed>().swap(parsed);
+        std::vector<FrameIndex>().swap(frames);
+    }
     return out;
 }
 
@@ -758,9 +776,14 @@ static py::list index_only_impl(py::buffer bbuf) {
     }
     const char* base = static_cast<const char*>(info.ptr);
     size_t nbytes = static_cast<size_t>(info.size);
-    auto frames = index_frames(base, nbytes);
+    std::vector<FrameIndex> frames;
+    {
+        ScopedReleaseIfHeld release;
+        frames = index_frames(base, nbytes);
+    }
     py::list out;
-    for (auto& fi : frames) {
+    for (size_t index = 0; index < frames.size(); ++index) {
+        const auto& fi = frames[index];
         py::dict d;
         d["offset_num"] = static_cast<py::ssize_t>(fi.off_num);
         d["offset_header"] = static_cast<py::ssize_t>(fi.off_header);
@@ -768,6 +791,7 @@ static py::list index_only_impl(py::buffer bbuf) {
         d["end"] = static_cast<py::ssize_t>(fi.end);
         d["num_atoms"] = fi.num_atoms;
         out.append(d);
+        cooperative_python_yield(index + 1);
     }
     return out;
 }

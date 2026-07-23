@@ -62,7 +62,7 @@ std::array<double, 9> inverse_cell(const float* cell) {
         cell[1] * (cell[3] * cell[8] - cell[5] * cell[6]) +
         cell[2] * (cell[3] * cell[7] - cell[4] * cell[6]);
     if (std::abs(determinant) <= 1.0e-12) {
-        throw py::value_error("periodic cell must be invertible");
+        throw std::invalid_argument("periodic cell must be invertible");
     }
     const double scale = 1.0 / determinant;
     return {{
@@ -118,6 +118,45 @@ std::pair<std::string, std::string> classify_order(
     return {"unresolved", "unresolved"};
 }
 
+struct MagneticOrderResult {
+    std::int64_t active_count = 0;
+    double mean_magnitude = 0.0;
+    double moment_std = 0.0;
+    double net_ratio = 0.0;
+    double collinearity = 0.0;
+    double coplanarity = 0.0;
+    double neighbor_correlation = 0.0;
+    double neighbor_abs_correlation = 0.0;
+    double parallel_fraction = 0.0;
+    double antiparallel_fraction = 0.0;
+    double q_peak = 0.0;
+    std::array<int, 3> q_vector{{0, 0, 0}};
+    std::string order_label;
+    std::string confidence_state;
+};
+
+struct ElementRow {
+    std::int16_t atomic_number = 0;
+    std::int64_t atom_count = 0;
+    std::int64_t active_count = 0;
+    double mean_magnitude = 0.0;
+    double net_ratio = 0.0;
+    double collinearity = 0.0;
+    double intra_correlation = 0.0;
+    std::int64_t intra_pair_count = 0;
+    double q_peak = 0.0;
+    std::array<int, 3> q_vector{{0, 0, 0}};
+    std::string label;
+};
+
+struct PairRow {
+    std::int16_t atomic_number_a = 0;
+    std::int16_t atomic_number_b = 0;
+    std::int64_t pair_count = 0;
+    double correlation = 0.0;
+    std::string label;
+};
+
 py::tuple magnetic_order_evidence(
     py::array_t<float, py::array::c_style | py::array::forcecast> positions_array,
     py::array_t<float, py::array::c_style | py::array::forcecast> cell_array,
@@ -138,6 +177,9 @@ py::tuple magnetic_order_evidence(
     }
     const std::int64_t atom_count = static_cast<std::int64_t>(positions_array.shape(0));
     const float* spins = spins_array.data();
+    MagneticOrderResult result;
+    {
+    py::gil_scoped_release release;
     std::vector<double> magnitudes(static_cast<std::size_t>(atom_count), 0.0);
     std::vector<std::array<double, 3>> unit_spins(static_cast<std::size_t>(atom_count));
     std::int64_t active_count = 0;
@@ -264,11 +306,28 @@ py::tuple magnetic_order_evidence(
     const auto classification = classify_order(
         active_count, net_ratio, collinearity, coplanarity,
         neighbor_correlation, antiparallel_fraction, q_peak);
+    result.active_count = active_count;
+    result.mean_magnitude = mean_magnitude;
+    result.moment_std = std::sqrt(variance);
+    result.net_ratio = net_ratio;
+    result.collinearity = collinearity;
+    result.coplanarity = coplanarity;
+    result.neighbor_correlation = neighbor_correlation;
+    result.neighbor_abs_correlation = neighbor_abs_correlation;
+    result.parallel_fraction = parallel_fraction;
+    result.antiparallel_fraction = antiparallel_fraction;
+    result.q_peak = q_peak;
+    result.q_vector = q_vector;
+    result.order_label = classification.first;
+    result.confidence_state = classification.second;
+    }
     return py::make_tuple(
-        active_count, mean_magnitude, std::sqrt(variance), net_ratio,
-        collinearity, coplanarity, neighbor_correlation, neighbor_abs_correlation,
-        parallel_fraction, antiparallel_fraction, q_peak,
-        q_vector[0], q_vector[1], q_vector[2], classification.first, classification.second);
+        result.active_count, result.mean_magnitude, result.moment_std, result.net_ratio,
+        result.collinearity, result.coplanarity, result.neighbor_correlation,
+        result.neighbor_abs_correlation, result.parallel_fraction,
+        result.antiparallel_fraction, result.q_peak,
+        result.q_vector[0], result.q_vector[1], result.q_vector[2],
+        result.order_label, result.confidence_state);
 }
 
 std::string classify_element_order(
@@ -323,6 +382,11 @@ py::tuple element_magnetic_evidence(
     const std::int64_t atom_count = static_cast<std::int64_t>(positions_array.shape(0));
     const float* spins = spins_array.data();
     const std::int16_t* atomic_numbers = atomic_numbers_array.data();
+    const bool* pbc = pbc_array.data();
+    std::vector<ElementRow> element_rows;
+    std::vector<PairRow> pair_rows;
+    {
+    py::gil_scoped_release release;
     std::map<std::int16_t, std::vector<std::int64_t>> atoms_by_element;
     std::vector<double> magnitudes(static_cast<std::size_t>(atom_count), 0.0);
     std::vector<std::array<double, 3>> unit_spins(static_cast<std::size_t>(atom_count));
@@ -363,8 +427,6 @@ py::tuple element_magnetic_evidence(
         neighbors.resize(static_cast<std::size_t>(atom_count));
     }
 
-    py::list element_rows;
-    const bool* pbc = pbc_array.data();
     for (const auto& entry : atoms_by_element) {
         const std::int16_t atomic_number = entry.first;
         const auto& atoms = entry.second;
@@ -453,10 +515,19 @@ py::tuple element_magnetic_evidence(
         const std::string label = classify_element_order(
             active_count, net_ratio, collinearity, coplanarity, q_peak,
             intra_correlation, intra_pair_count);
-        element_rows.append(py::make_tuple(
-            atomic_number, static_cast<std::int64_t>(atoms.size()), active_count,
-            mean_magnitude, net_ratio, collinearity, intra_correlation,
-            intra_pair_count, q_peak, q_vector[0], q_vector[1], q_vector[2], label));
+        ElementRow row;
+        row.atomic_number = atomic_number;
+        row.atom_count = static_cast<std::int64_t>(atoms.size());
+        row.active_count = active_count;
+        row.mean_magnitude = mean_magnitude;
+        row.net_ratio = net_ratio;
+        row.collinearity = collinearity;
+        row.intra_correlation = intra_correlation;
+        row.intra_pair_count = intra_pair_count;
+        row.q_peak = q_peak;
+        row.q_vector = q_vector;
+        row.label = label;
+        element_rows.push_back(row);
     }
 
     struct PairAccumulator {
@@ -479,17 +550,35 @@ py::tuple element_magnetic_evidence(
             ++accumulator.count;
         }
     }
-    py::list pair_rows;
     for (const auto& entry : pair_accumulators) {
         const double correlation = entry.second.count > 0
             ? entry.second.correlation / entry.second.count : 0.0;
         const std::string label = correlation >= 0.50
             ? "parallel" : correlation <= -0.50 ? "antiparallel" : "mixed";
-        pair_rows.append(py::make_tuple(
-            entry.first.first, entry.first.second, entry.second.count,
-            correlation, label));
+        PairRow row;
+        row.atomic_number_a = entry.first.first;
+        row.atomic_number_b = entry.first.second;
+        row.pair_count = entry.second.count;
+        row.correlation = correlation;
+        row.label = label;
+        pair_rows.push_back(row);
     }
-    return py::make_tuple(element_rows, pair_rows);
+    }
+    py::list python_element_rows;
+    for (const auto& row : element_rows) {
+        python_element_rows.append(py::make_tuple(
+            row.atomic_number, row.atom_count, row.active_count,
+            row.mean_magnitude, row.net_ratio, row.collinearity,
+            row.intra_correlation, row.intra_pair_count, row.q_peak,
+            row.q_vector[0], row.q_vector[1], row.q_vector[2], row.label));
+    }
+    py::list python_pair_rows;
+    for (const auto& row : pair_rows) {
+        python_pair_rows.append(py::make_tuple(
+            row.atomic_number_a, row.atomic_number_b, row.pair_count,
+            row.correlation, row.label));
+    }
+    return py::make_tuple(python_element_rows, python_pair_rows);
 }
 
 }  // namespace

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import threading
+import time
+
 import pytest
 
 
@@ -28,6 +31,15 @@ def _escaped_json_trajectory() -> bytes:
     ).encode("ascii")
 
 
+def _single_atom_trajectory(frame_count: int) -> bytes:
+    frame = (
+        b"1\n"
+        b'Properties=species:S:1:pos:R:3 Lattice="3 0 0 0 3 0 0 0 3"\n'
+        b"Fe 0 0 0\n"
+    )
+    return frame * frame_count
+
+
 def test_parallel_parse_keeps_pos_first_frame_boundaries(monkeypatch):
     fastxyz = pytest.importorskip("NepTrainKit._native._io")
     monkeypatch.setenv("NEPKIT_FASTXYZ_SPECIES_MODE", "str")
@@ -52,3 +64,24 @@ def test_parse_escaped_json_keeps_following_fields(monkeypatch):
     assert additional_fields["energy"] == -10.25
     assert additional_fields["stress"].shape == (9,)
     assert additional_fields["pbc"] == "T T T"
+
+
+def test_index_frames_yields_the_gil_during_large_scans():
+    fastxyz = pytest.importorskip("NepTrainKit._native._io")
+    payload = memoryview(_single_atom_trajectory(50_000))
+    result = {}
+
+    def run_index():
+        result["frames"] = fastxyz.index_frames(payload)
+
+    thread = threading.Thread(target=run_index)
+    thread.start()
+    responsive_ticks = 0
+    while thread.is_alive():
+        time.sleep(0.001)
+        if thread.is_alive():
+            responsive_ticks += 1
+    thread.join()
+
+    assert len(result["frames"]) == 50_000
+    assert responsive_ticks > 0

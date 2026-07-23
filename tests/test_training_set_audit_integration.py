@@ -18,6 +18,7 @@ import NepTrainKit.ui.pages.show_nep as show_nep_module
 from NepTrainKit.config import Config
 from NepTrainKit.ui.pages.settings import SettingsWidget
 from NepTrainKit.ui.pages.show_nep import ShowNepWidget
+from NepTrainKit.ui.views.toolbar import NepDisplayGraphicsToolBar
 from NepTrainKit.ui.widgets.training_set_audit_window import (
     TrainingSetAuditHost,
     TrainingSetAuditWindow,
@@ -133,7 +134,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         tr_mock.assert_called_once_with("Training Set Check page is not available.")
         warning_mock.assert_called_once_with("translated unavailable audit page")
 
-    def test_show_event_and_hide_event_manage_audit_action_lifecycle(self):
+    def test_show_event_and_hide_event_keep_audit_out_of_save_menu(self):
         save_menu = _Menu()
         widget = ShowNepWidget.__new__(ShowNepWidget)
         widget._parent = SimpleNamespace(save_menu=save_menu)
@@ -141,17 +142,55 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         widget.export_selected_action = object()
         widget.export_removed_action = object()
         widget.export_current_action = object()
-        widget.audit_current_dataset_action = object()
 
         ShowNepWidget.showEvent(widget, None)
-        self.assertEqual(save_menu.actions[-1], widget.audit_current_dataset_action)
-        self.assertEqual(save_menu.actions.count(widget.audit_current_dataset_action), 1)
+        self.assertEqual(
+            save_menu.actions,
+            [
+                widget.export_all_action,
+                widget.export_selected_action,
+                widget.export_removed_action,
+                widget.export_current_action,
+            ],
+        )
 
         ShowNepWidget.showEvent(widget, None)
-        self.assertEqual(save_menu.actions.count(widget.audit_current_dataset_action), 1)
+        self.assertEqual(len(save_menu.actions), 4)
 
         ShowNepWidget.hideEvent(widget, None)
-        self.assertNotIn(widget.audit_current_dataset_action, save_menu.actions)
+        self.assertEqual(save_menu.actions, [])
+
+    def test_result_toolbar_exposes_training_set_check_instead_of_summary(self):
+        toolbar = NepDisplayGraphicsToolBar()
+        spy = QSignalSpy(toolbar.trainingSetCheckSignal)
+
+        self.assertIn("training_set_check", toolbar._actions)
+        self.assertNotIn("dataset_summary", toolbar._actions)
+        self.assertNotIn("explore_distributions", toolbar._actions)
+        actions = list(toolbar._actions.values())
+        delete_index = next(
+            index
+            for index, action in enumerate(actions)
+            if action.text() == "Delete selected items"
+        )
+        self.assertIs(actions[delete_index + 1], toolbar._actions["training_set_check"])
+        toolbar_widgets = toolbar.bar._widgets
+        check_index = next(
+            index
+            for index, widget in enumerate(toolbar_widgets)
+            if callable(getattr(widget, "action", None))
+            and widget.action() is toolbar._actions["training_set_check"]
+        )
+        self.assertEqual(
+            type(toolbar_widgets[check_index - 1]).__name__,
+            "CommandSeparator",
+        )
+        toolbar.set_training_set_check_enabled(False)
+        self.assertFalse(toolbar._actions["training_set_check"].isEnabled())
+        toolbar.set_training_set_check_enabled(True)
+        toolbar._actions["training_set_check"].trigger()
+
+        self.assertEqual(spy.count(), 1)
 
     def test_main_window_rejects_stale_training_set_audit_selection(self):
         window = main_module.NepTrainKitMainWindow.__new__(main_module.NepTrainKitMainWindow)
@@ -825,9 +864,11 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
                 "Full phase analysis failed: {message}": "完整相分析失败：{message}",
             }
             show_nep_context = {
-                "Check current dataset": "评估当前数据集",
                 "Please load a dataset before running Training Set Check.": "请先加载数据集，再运行训练集评估。",
                 "Training Set Check page is not available.": "训练集评估页面不可用。",
+            }
+            toolbar_context = {
+                "Training Set Check": "训练集评估",
             }
             settings_context = {
                 "Automatically analyze structure evidence": "自动分析结构证据",
@@ -841,6 +882,11 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             for source, expected in show_nep_context.items():
                 self.assertEqual(
                     QCoreApplication.translate("ShowNepWidget", source),
+                    expected,
+                )
+            for source, expected in toolbar_context.items():
+                self.assertEqual(
+                    QCoreApplication.translate("NepDisplayGraphicsToolBar", source),
                     expected,
                 )
             for source, expected in settings_context.items():

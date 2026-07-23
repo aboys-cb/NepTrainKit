@@ -8,6 +8,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from html import escape
+from itertools import combinations
+from math import log1p
 from pathlib import Path
 from time import perf_counter
 from typing import Any
@@ -28,7 +30,6 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QListWidgetItem,
     QDoubleSpinBox,
-    QScrollArea,
     QSizePolicy,
     QSplitter,
     QSpinBox,
@@ -46,6 +47,7 @@ from qfluentwidgets import (
     ProgressBar,
     PushButton,
     TableWidget,
+    TableItemDelegate,
     ToolButton,
 )
 
@@ -82,7 +84,17 @@ from NepTrainKit.ui.widgets.dialog import DistributionExplorerWidget
 
 _OVERVIEW = "__audit_overview__"
 _DIMENSION_COLUMN_MIN_WIDTH = 840
-_OVERVIEW_STACK_MIN_WIDTH = 1080
+_OVERVIEW_JET_COLORS = (
+    "#000080",
+    "#0000ff",
+    "#007fff",
+    "#00dfff",
+    "#40ff80",
+    "#dfff20",
+    "#ffbf00",
+    "#ff4000",
+    "#800000",
+)
 _TOPIC_CATEGORY_COLORS = {
     "blocker": (QColor("#a61b1b"), QColor("#fdecec")),
     "review": (QColor("#a14d16"), QColor("#fff1df")),
@@ -107,6 +119,23 @@ class _AuditTopic:
     limit: str
     plot_id: str = ""
     source_slices: tuple[AuditSlice, ...] = ()
+
+
+@dataclass(frozen=True)
+class _ElementSetSummary:
+    """One exact set of present elements, aggregated across stoichiometries."""
+
+    elements: tuple[str, ...]
+    structure_count: int
+    structure_indices: tuple[int, ...]
+
+
+class _MatrixItemDelegate(TableItemDelegate):
+    """Keep cell selection without the row-oriented Fluent indicator."""
+
+    def setSelectedRows(self, indexes) -> None:
+        del indexes
+        self.selectedRows.clear()
 
 
 class TrainingSetAuditWidget(QWidget):
@@ -138,6 +167,18 @@ class TrainingSetAuditWidget(QWidget):
         self._review_states: dict[tuple[str, str], str] = {}
         self._target_configured = False
         self._target_dataset_fingerprint = ""
+        self._overview_element_sets: tuple[_ElementSetSummary, ...] = ()
+        self._overview_elements: tuple[str, ...] = ()
+        self._overview_structure_count = 0
+        self._overview_element_counts: dict[str, int] = {}
+        self._overview_pair_counts: dict[tuple[str, str], int] = {}
+        self._overview_exact_pair_counts: dict[tuple[str, str], int] = {}
+        self._overview_pure_counts: dict[str, int] = {}
+        self._overview_basis_elements: tuple[str, ...] = ()
+        self._selected_overview_elements: tuple[str, ...] = ()
+        self._selected_overview_cell: tuple[int, int] | None = None
+        self._selected_overview_mode = ""
+        self._selected_overview_indices: list[int] = []
         self._requested_composition_view = ""
         self._build_ui()
         self.phaseAnalysisProgressSignal.connect(
@@ -261,30 +302,6 @@ class TrainingSetAuditWidget(QWidget):
         self.summary_tab = summary_tab
         summary_layout.addWidget(self.audit_header)
 
-        self.summary_panel = QFrame(summary_tab)
-        self.summary_panel.setObjectName("auditSummaryPanel")
-        summary_panel_layout = QVBoxLayout(self.summary_panel)
-        summary_panel_layout.setContentsMargins(16, 12, 16, 12)
-        summary_panel_layout.setSpacing(4)
-        summary_kicker = QLabel(self.tr("Current conclusion"), self.summary_panel)
-        summary_kicker.setObjectName("summaryKicker")
-        self.summary_conclusion_label = QLabel("", self.summary_panel)
-        self.summary_conclusion_label.setObjectName("summaryConclusion")
-        self.summary_conclusion_label.setWordWrap(True)
-        self.summary_limit_label = QLabel(
-            self.tr(
-                "This is a relative check inside the current dataset. It does not prove "
-                "that the training set is complete or that the potential is reliable."
-            ),
-            self.summary_panel,
-        )
-        self.summary_limit_label.setObjectName("summaryLimit")
-        self.summary_limit_label.setWordWrap(True)
-        summary_panel_layout.addWidget(summary_kicker)
-        summary_panel_layout.addWidget(self.summary_conclusion_label)
-        summary_panel_layout.addWidget(self.summary_limit_label)
-        summary_layout.addWidget(self.summary_panel)
-
         self.metric_band = QFrame(summary_tab)
         self.metric_band.setObjectName("auditMetricBand")
         metric_layout = QHBoxLayout(self.metric_band)
@@ -300,70 +317,242 @@ class TrainingSetAuditWidget(QWidget):
             metric_layout, self.tr("Elements"), "—"
         )
         self.metric_context_value, self.metric_context_label = self._add_metric(
-            metric_layout, self.tr("Label availability"), "E — · F — · V —", last=True
+            metric_layout, self.tr("Label availability"), "E — · F — · V —"
+        )
+        self.fact_total_atoms_value, self.fact_total_atoms_label = self._add_metric(
+            metric_layout,
+            self.tr("Total atoms"),
+            "—",
+        )
+        self.fact_atom_range_value, self.fact_atom_range_label = self._add_metric(
+            metric_layout,
+            self.tr("Atoms per structure"),
+            "—",
+        )
+        self.fact_atom_center_value, self.fact_atom_center_label = self._add_metric(
+            metric_layout,
+            self.tr("Mean / median atoms"),
+            "—",
+            last=True,
         )
         summary_layout.addWidget(self.metric_band)
 
         self.overview_columns = QBoxLayout(QBoxLayout.Direction.LeftToRight)
         self.overview_columns.setContentsMargins(0, 0, 0, 0)
         self.overview_columns.setSpacing(10)
-        self.inventory_panel = QFrame(summary_tab)
-        self.inventory_panel.setObjectName("auditInventoryPanel")
-        inventory_layout = QVBoxLayout(self.inventory_panel)
-        inventory_layout.setContentsMargins(14, 12, 14, 12)
-        inventory_layout.setSpacing(7)
-        inventory_title = QLabel(self.tr("What this dataset contains"), self.inventory_panel)
-        inventory_title.setObjectName("panelTitle")
-        self.inventory_summary_label = QLabel("", self.inventory_panel)
-        self.inventory_summary_label.setObjectName("inventorySummary")
-        self.inventory_summary_label.setTextFormat(Qt.TextFormat.RichText)
-        self.inventory_summary_label.setWordWrap(True)
-        self.composition_highlights_label = QLabel("", self.inventory_panel)
-        self.composition_highlights_label.setObjectName("inventoryDetails")
-        self.composition_highlights_label.setTextFormat(Qt.TextFormat.RichText)
-        self.composition_highlights_label.setWordWrap(True)
-        inventory_layout.addWidget(inventory_title)
-        inventory_layout.addWidget(self.inventory_summary_label)
-        inventory_layout.addWidget(self.composition_highlights_label, stretch=1)
-        self.composition_action_rows = QVBoxLayout()
-        self.composition_action_rows.setSpacing(4)
-        inventory_layout.addLayout(self.composition_action_rows)
-        self.open_data_map_button = PushButton(
-            FluentIcon.VIEW, self.tr("View all exact composition points"), self.inventory_panel
-        )
-        self.open_data_map_button.setMinimumWidth(
-            self.open_data_map_button.sizeHint().width()
-        )
-        self.open_data_map_button.clicked.connect(lambda: self.page_tabs.setCurrentIndex(1))
-        inventory_layout.addWidget(self.open_data_map_button, alignment=Qt.AlignmentFlag.AlignRight)
-        self.overview_columns.addWidget(self.inventory_panel, stretch=3)
 
-        self.next_actions_panel = QFrame(summary_tab)
-        self.next_actions_panel.setObjectName("auditNextActionsPanel")
-        actions_layout = QVBoxLayout(self.next_actions_panel)
-        actions_layout.setContentsMargins(14, 12, 14, 12)
-        actions_layout.setSpacing(7)
-        actions_title = QLabel(self.tr("Recommended next steps"), self.next_actions_panel)
-        actions_title.setObjectName("panelTitle")
-        self.next_actions_label = QLabel("", self.next_actions_panel)
-        self.next_actions_label.setObjectName("nextActionsText")
-        self.next_actions_label.setWordWrap(True)
-        actions_layout.addWidget(actions_title)
-        actions_layout.addWidget(self.next_actions_label, stretch=1)
-        action_buttons = QHBoxLayout()
-        self.open_review_button = PrimaryPushButton(
-            self.tr("Open review queue"), self.next_actions_panel
+        self.cooccurrence_panel = QFrame(summary_tab)
+        self.cooccurrence_panel.setObjectName("auditCooccurrencePanel")
+        cooccurrence_layout = QVBoxLayout(self.cooccurrence_panel)
+        cooccurrence_layout.setContentsMargins(14, 12, 14, 12)
+        cooccurrence_layout.setSpacing(7)
+        cooccurrence_header = QHBoxLayout()
+        cooccurrence_text = QVBoxLayout()
+        cooccurrence_title = QLabel(
+            self.tr("Element co-occurrence map"), self.cooccurrence_panel
         )
-        self.open_review_button.clicked.connect(lambda: self.page_tabs.setCurrentIndex(2))
-        self.open_target_button = PushButton(
-            self.tr("Set target"), self.next_actions_panel
+        cooccurrence_title.setObjectName("panelTitle")
+        self.cooccurrence_hint = QLabel(
+            self.tr(
+                "Upper triangle: global pair co-occurrence · Diagonal: element presence · "
+                "Select an upper pair to reveal related third and fourth elements below"
+            ),
+            self.cooccurrence_panel,
         )
-        self.open_target_button.clicked.connect(lambda: self.page_tabs.setCurrentIndex(3))
-        action_buttons.addWidget(self.open_review_button)
-        action_buttons.addWidget(self.open_target_button)
-        actions_layout.addLayout(action_buttons)
-        self.overview_columns.addWidget(self.next_actions_panel, stretch=2)
-        summary_layout.addLayout(self.overview_columns)
+        self.cooccurrence_hint.setObjectName("panelHint")
+        self.cooccurrence_hint.setWordWrap(True)
+        cooccurrence_text.addWidget(cooccurrence_title)
+        cooccurrence_text.addWidget(self.cooccurrence_hint)
+        cooccurrence_header.addLayout(cooccurrence_text, stretch=1)
+        self.pair_coverage_label = QLabel("—", self.cooccurrence_panel)
+        self.pair_coverage_label.setObjectName("coverageBadge")
+        self.pair_coverage_label.setWordWrap(True)
+        self.pair_coverage_label.setMaximumWidth(300)
+        self.pair_coverage_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        cooccurrence_header.addWidget(
+            self.pair_coverage_label,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight,
+        )
+        cooccurrence_layout.addLayout(cooccurrence_header)
+        self.order_summary_layout = QHBoxLayout()
+        self.order_summary_layout.setContentsMargins(0, 2, 0, 2)
+        self.order_summary_layout.setSpacing(6)
+        self.order_summary_values: dict[str, QLabel] = {}
+        for key, label in (
+            ("1", self.tr("Unary")),
+            ("2", self.tr("Binary")),
+            ("3", self.tr("Ternary")),
+            ("4+", self.tr("Quaternary+")),
+        ):
+            card = QFrame(self.cooccurrence_panel)
+            card.setObjectName("overviewOrderCard")
+            card_layout = QVBoxLayout(card)
+            card_layout.setContentsMargins(9, 5, 9, 5)
+            card_layout.setSpacing(0)
+            value = QLabel("—", card)
+            value.setObjectName("overviewOrderValue")
+            caption = QLabel(label, card)
+            caption.setObjectName("overviewOrderLabel")
+            card_layout.addWidget(value)
+            card_layout.addWidget(caption)
+            self.order_summary_values[key] = value
+            self.order_summary_layout.addWidget(card, stretch=1)
+        cooccurrence_layout.addLayout(self.order_summary_layout)
+
+        heat_legend = QHBoxLayout()
+        heat_legend.setContentsMargins(0, 0, 0, 0)
+        heat_legend.setSpacing(3)
+        heat_legend.addStretch(1)
+        heat_legend.addWidget(
+            QLabel(self.tr("Relative count"), self.cooccurrence_panel)
+        )
+        heat_legend.addWidget(QLabel(self.tr("Low"), self.cooccurrence_panel))
+        self.heat_legend_bar = QFrame(self.cooccurrence_panel)
+        self.heat_legend_bar.setObjectName("overviewHeatLegend")
+        self.heat_legend_bar.setAccessibleName(self.tr("Relative count color scale"))
+        heat_legend_bar_layout = QHBoxLayout(self.heat_legend_bar)
+        heat_legend_bar_layout.setContentsMargins(0, 0, 0, 0)
+        heat_legend_bar_layout.setSpacing(0)
+        for color in _OVERVIEW_JET_COLORS:
+            swatch = QFrame(self.heat_legend_bar)
+            swatch.setFixedSize(20, 9)
+            swatch.setStyleSheet(f"background: {color}; border: 0;")
+            heat_legend_bar_layout.addWidget(swatch)
+        heat_legend.addWidget(self.heat_legend_bar)
+        heat_legend.addWidget(QLabel(self.tr("High"), self.cooccurrence_panel))
+        heat_legend.addStretch(1)
+        cooccurrence_layout.addLayout(heat_legend)
+
+        self.matrix_selection_label = QLabel(
+            self.tr("Filter: none · Click a cell"),
+            self.cooccurrence_panel,
+        )
+        self.matrix_selection_label.setObjectName("matrixSelectionStatus")
+        self.matrix_selection_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.matrix_selection_label.setWordWrap(True)
+        cooccurrence_layout.addWidget(self.matrix_selection_label)
+
+        self.cooccurrence_table = TableWidget(self.cooccurrence_panel)
+        self.cooccurrence_table.setObjectName("elementCooccurrenceTable")
+        default_matrix_delegate = self.cooccurrence_table.delegate
+        matrix_delegate = _MatrixItemDelegate(
+            self.cooccurrence_table
+        )
+        self.cooccurrence_table.delegate = matrix_delegate
+        self.cooccurrence_table.setItemDelegate(matrix_delegate)
+        default_matrix_delegate.deleteLater()
+        self.cooccurrence_table.setEditTriggers(
+            QAbstractItemView.EditTrigger.NoEditTriggers
+        )
+        self.cooccurrence_table.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+        )
+        self.cooccurrence_table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectItems
+        )
+        self.cooccurrence_table.setShowGrid(True)
+        self.cooccurrence_table.setAlternatingRowColors(False)
+        self.cooccurrence_table.setCheckedColor(
+            QColor(Qt.GlobalColor.transparent),
+            QColor(Qt.GlobalColor.transparent),
+        )
+        self.cooccurrence_table.setMinimumHeight(260)
+        self.cooccurrence_table.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.cooccurrence_table.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.cooccurrence_table.verticalHeader().setDefaultSectionSize(26)
+        self.cooccurrence_table.horizontalHeader().setDefaultSectionSize(26)
+        self.cooccurrence_table.horizontalHeader().setMinimumSectionSize(18)
+        self.cooccurrence_table.verticalHeader().setMinimumSectionSize(18)
+        self.cooccurrence_table.cellClicked.connect(
+            self._on_overview_matrix_cell_clicked
+        )
+        self.cooccurrence_table.cellActivated.connect(
+            self._on_overview_matrix_cell_clicked
+        )
+        cooccurrence_layout.addWidget(self.cooccurrence_table, stretch=1)
+        self.overview_columns.addWidget(self.cooccurrence_panel, stretch=3)
+
+        self.element_sets_panel = QFrame(summary_tab)
+        self.element_sets_panel.setObjectName("auditElementSetsPanel")
+        element_sets_layout = QVBoxLayout(self.element_sets_panel)
+        element_sets_layout.setContentsMargins(14, 12, 14, 12)
+        element_sets_layout.setSpacing(7)
+        element_sets_title = QLabel(
+            self.tr("Main element sets"), self.element_sets_panel
+        )
+        element_sets_title.setObjectName("panelTitle")
+        self.element_sets_summary_label = QLabel("", self.element_sets_panel)
+        self.element_sets_summary_label.setObjectName("panelHint")
+        self.element_sets_summary_label.setWordWrap(True)
+        self.clear_element_filter_button = PushButton(
+            self.tr("Show all element sets"), self.element_sets_panel
+        )
+        self.clear_element_filter_button.clicked.connect(
+            self._clear_overview_element_filter
+        )
+        self.clear_element_filter_button.hide()
+        element_sets_layout.addWidget(element_sets_title)
+        element_sets_layout.addWidget(self.element_sets_summary_label)
+        element_sets_layout.addWidget(
+            self.clear_element_filter_button,
+            alignment=Qt.AlignmentFlag.AlignLeft,
+        )
+        self.element_sets_table = TableWidget(self.element_sets_panel)
+        self.element_sets_table.setObjectName("overviewElementSetsTable")
+        self.element_sets_table.setColumnCount(3)
+        self.element_sets_table.setHorizontalHeaderLabels(
+            [self.tr("Element set"), self.tr("Structures"), self.tr("Share")]
+        )
+        self.element_sets_table.setEditTriggers(
+            QAbstractItemView.EditTrigger.NoEditTriggers
+        )
+        self.element_sets_table.setSelectionBehavior(
+            QAbstractItemView.SelectionBehavior.SelectRows
+        )
+        self.element_sets_table.setSelectionMode(
+            QAbstractItemView.SelectionMode.SingleSelection
+        )
+        self.element_sets_table.setShowGrid(False)
+        self.element_sets_table.setAlternatingRowColors(True)
+        self.element_sets_table.setVerticalScrollMode(
+            QAbstractItemView.ScrollMode.ScrollPerPixel
+        )
+        self.element_sets_table.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        self.element_sets_table.verticalHeader().setVisible(False)
+        self.element_sets_table.verticalHeader().setDefaultSectionSize(30)
+        element_sets_header = self.element_sets_table.horizontalHeader()
+        element_sets_header.setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        element_sets_header.setSectionResizeMode(
+            1, QHeaderView.ResizeMode.Fixed
+        )
+        element_sets_header.setSectionResizeMode(
+            2, QHeaderView.ResizeMode.Fixed
+        )
+        self.element_sets_table.itemSelectionChanged.connect(
+            self._on_overview_element_set_selected
+        )
+        element_sets_layout.addWidget(self.element_sets_table, stretch=1)
+        self.view_element_set_button = PrimaryPushButton(
+            self.tr("View selected structures"), self.element_sets_panel
+        )
+        self.view_element_set_button.setEnabled(False)
+        self.view_element_set_button.clicked.connect(
+            lambda: self.selectStructuresSignal.emit(
+                list(self._selected_overview_indices)
+            )
+        )
+        element_sets_layout.addWidget(
+            self.view_element_set_button,
+            alignment=Qt.AlignmentFlag.AlignRight,
+        )
+        self.overview_columns.addWidget(self.element_sets_panel, stretch=2)
+        summary_layout.addLayout(self.overview_columns, stretch=1)
 
         self.findings_panel = QFrame(summary_tab)
         self.findings_panel.setObjectName("auditFindingsPanel")
@@ -462,17 +651,7 @@ class TrainingSetAuditWidget(QWidget):
         evidence_actions.addWidget(self.view_distribution_button)
         evidence_actions.addWidget(self.send_button)
         evidence_layout.addLayout(evidence_actions, 3, 0, 1, 3)
-        summary_layout.addStretch(1)
-
-        self.summary_scroll = QScrollArea(self.page_tabs)
-        self.summary_scroll.setObjectName("auditSummaryScroll")
-        self.summary_scroll.setWidgetResizable(True)
-        self.summary_scroll.setFrameShape(QFrame.Shape.NoFrame)
-        self.summary_scroll.setHorizontalScrollBarPolicy(
-            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
-        )
-        self.summary_scroll.setWidget(summary_tab)
-        self.page_tabs.addTab(self.summary_scroll, self.tr("Overview"))
+        self.page_tabs.addTab(summary_tab, self.tr("Overview"))
 
         detail_tab = QWidget(self.page_tabs)
         detail_layout = QVBoxLayout(detail_tab)
@@ -973,14 +1152,28 @@ class TrainingSetAuditWidget(QWidget):
     ) -> tuple[QLabel, QLabel]:
         cell = QWidget(self.metric_band)
         cell.setObjectName("auditMetricCell")
-        cell.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        cell.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
         cell_layout = QVBoxLayout(cell)
         cell_layout.setContentsMargins(10, 0, 10, 0)
         cell_layout.setSpacing(1)
         value = QLabel(value_text, cell)
         value.setObjectName("metricValue")
+        value.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        value.setMinimumWidth(0)
+        value.setWordWrap(True)
+        value.setSizePolicy(
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
+        )
         label = QLabel(label_text, cell)
         label.setObjectName("metricLabel")
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        label.setWordWrap(True)
+        label.setMinimumWidth(0)
+        label.setSizePolicy(
+            QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Preferred
+        )
         cell_layout.addWidget(value)
         cell_layout.addWidget(label)
         layout.addWidget(cell, stretch=1)
@@ -1059,15 +1252,32 @@ class TrainingSetAuditWidget(QWidget):
         self.composition_show_button.setEnabled(False)
         self.target_selection_label.clear()
         self.target_show_button.setEnabled(False)
-        self.inventory_summary_label.clear()
-        self.composition_highlights_label.clear()
-        self._clear_layout(self.composition_action_rows)
-        self.next_actions_label.clear()
+        self._overview_element_sets = ()
+        self._overview_elements = ()
+        self._overview_structure_count = 0
+        self._overview_element_counts = {}
+        self._overview_pair_counts = {}
+        self._overview_exact_pair_counts = {}
+        self._overview_pure_counts = {}
+        self._overview_basis_elements = ()
+        self._selected_overview_elements = ()
+        self._selected_overview_cell = None
+        self._selected_overview_mode = ""
+        self._selected_overview_indices = []
+        self.cooccurrence_table.setRowCount(0)
+        self.cooccurrence_table.setColumnCount(0)
+        self.element_sets_table.setRowCount(0)
+        self.element_sets_summary_label.clear()
+        self.pair_coverage_label.setText("—")
+        self.clear_element_filter_button.hide()
+        self.view_element_set_button.setEnabled(False)
+        self._update_overview_selection_status()
+        for value in self.order_summary_values.values():
+            value.setText("—")
         self.review_summary_label.clear()
         self.label_availability_value.clear()
         self._populate_slice_table()
         self._clear_evidence()
-        self.summary_conclusion_label.clear()
         self.no_dataset_state.setText(self.tr("No dataset loaded"))
         self.no_dataset_hint.setText(
             self.tr(
@@ -1113,6 +1323,8 @@ class TrainingSetAuditWidget(QWidget):
         super().showEvent(event)
         if self.no_dataset_panel.isVisible():
             QTimer.singleShot(0, self._reserve_no_dataset_hint_height)
+        if hasattr(self, "cooccurrence_table"):
+            QTimer.singleShot(0, self._resize_overview_matrix)
 
     def open_file(self) -> None:
         """Ask the main window to open a dataset for this page."""
@@ -3084,43 +3296,95 @@ class TrainingSetAuditWidget(QWidget):
         super().resizeEvent(event)
         if hasattr(self, "slice_table"):
             self._update_responsive_columns(event.size().width())
-        if hasattr(self, "overview_columns"):
-            self._update_overview_layout(event.size().width())
+        if hasattr(self, "cooccurrence_table"):
+            QTimer.singleShot(0, self._resize_overview_matrix)
 
     def _update_responsive_columns(self, width: int) -> None:
         self.slice_table.setColumnHidden(3, width < _DIMENSION_COLUMN_MIN_WIDTH)
         self.slice_table.setColumnHidden(2, width < 650)
 
-    def _update_overview_layout(self, width: int) -> None:
-        direction = (
-            QBoxLayout.Direction.TopToBottom
-            if width < _OVERVIEW_STACK_MIN_WIDTH
-            else QBoxLayout.Direction.LeftToRight
-        )
-        if self.overview_columns.direction() == direction:
+    def _resize_overview_matrix(self) -> None:
+        """Fill the matrix viewport while retaining usable cells for large systems."""
+        table = self.cooccurrence_table
+        count = table.columnCount()
+        if count <= 0 or table.rowCount() != count:
             return
-        self.overview_columns.setDirection(direction)
-        if direction == QBoxLayout.Direction.TopToBottom:
-            self.overview_columns.setStretch(0, 0)
-            self.overview_columns.setStretch(1, 0)
+
+        available_width = max(1, table.viewport().width())
+        available_height = max(1, table.viewport().height())
+        minimum_cell = 18
+        fits_width = available_width >= count * minimum_cell
+        fits_height = available_height >= count * minimum_cell
+        table.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+            if fits_width
+            else Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        table.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+            if fits_height
+            else Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+
+        column_base, column_extra = divmod(available_width, count)
+        row_base, row_extra = divmod(available_height, count)
+        column_base = max(minimum_cell, column_base)
+        row_base = max(minimum_cell, row_base)
+        table.setUpdatesEnabled(False)
+        for index in range(count):
+            table.setColumnWidth(
+                index,
+                column_base + (1 if fits_width and index < column_extra else 0),
+            )
+            table.setRowHeight(
+                index,
+                row_base + (1 if fits_height and index < row_extra else 0),
+            )
+        table.setUpdatesEnabled(True)
+
+    def _update_dataset_facts(self, inventory: DatasetInventory | None) -> None:
+        if inventory is None:
+            for label in (
+                self.fact_total_atoms_value,
+                self.fact_atom_range_value,
+                self.fact_atom_center_value,
+            ):
+                label.setText("—")
+            return
+
+        atom_counts = sorted(
+            (int(atom_count), int(structure_count))
+            for atom_count, structure_count in inventory.atom_counts
+            if int(structure_count) > 0
+        )
+        structure_count = sum(count for _, count in atom_counts)
+        total_atoms = sum(atom_count * count for atom_count, count in atom_counts)
+        self.fact_total_atoms_value.setText(f"{total_atoms:,}")
+        if not atom_counts or structure_count <= 0:
+            self.fact_atom_range_value.setText("—")
+            self.fact_atom_center_value.setText("—")
         else:
-            self.overview_columns.setStretch(0, 3)
-            self.overview_columns.setStretch(1, 2)
+            minimum = atom_counts[0][0]
+            maximum = atom_counts[-1][0]
+            self.fact_atom_range_value.setText(
+                f"{minimum:,}" if minimum == maximum else f"{minimum:,}–{maximum:,}"
+            )
+            mean = total_atoms / structure_count
+            middle_positions = ((structure_count - 1) // 2, structure_count // 2)
+            middle_values: list[int] = []
+            cumulative = 0
+            for atom_count, count in atom_counts:
+                next_cumulative = cumulative + count
+                for position in middle_positions[len(middle_values):]:
+                    if position < next_cumulative:
+                        middle_values.append(atom_count)
+                cumulative = next_cumulative
+                if len(middle_values) == 2:
+                    break
+            median = sum(middle_values) / len(middle_values)
+            self.fact_atom_center_value.setText(f"{mean:.1f} / {median:.1f}")
 
     def _update_summary(self) -> None:
-        blocker_topics = [topic for topic in self._topics if topic.category == "blocker"]
-        review_topics = [topic for topic in self._topics if topic.category == "review"]
-        attention_topics = blocker_topics + review_topics
-        blocker_indices = {
-            int(index)
-            for topic in blocker_topics
-            for index in topic.structure_indices
-        }
-        review_indices = {
-            int(index)
-            for topic in attention_topics
-            for index in topic.structure_indices
-        }
         total = self._structure_count()
         inventory = self._inventory()
         self.metric_structure_value.setText(f"{total:,}")
@@ -3129,6 +3393,9 @@ class TrainingSetAuditWidget(QWidget):
         )
         self.metric_dimension_value.setText(
             " · ".join(inventory.elements) if inventory is not None else "—"
+        )
+        self.metric_dimension_value.setToolTip(
+            " · ".join(inventory.elements) if inventory is not None else ""
         )
         counts = self._overview_label_counts()
         if total > 0:
@@ -3139,265 +3406,573 @@ class TrainingSetAuditWidget(QWidget):
         else:
             coverage = "E 0% · F 0% · V 0%"
         self.metric_context_value.setText(coverage)
-
-        if blocker_topics:
-            lead = self.tr(
-                "Resolve {groups} data blockers affecting {structures} unique structures before training."
-            ).format(groups=len(blocker_topics), structures=len(blocker_indices))
-        elif review_topics:
-            lead = self.tr(
-                "Start with {groups} review groups covering {structures} unique structures."
-            ).format(groups=len(review_topics), structures=len(review_indices))
-        else:
-            lead = self.tr("No structure group requires priority review from the current checks.")
-        complete_labels = total > 0 and all(count == total for count in counts.values())
-        label_text = (
-            self.tr("Energy, force, and virial labels are complete.")
-            if complete_labels
-            else self.tr("Some energy, force, or virial labels are missing; see Detailed data.")
-        )
-        target_text = (
-            self.tr("A target has been set; see Target & model for the comparison.")
-            if self._target_configured
-            else self.tr(
-                "No target range is set, so this audit cannot judge real composition or structure-family gaps."
-            )
-        )
-        self.summary_conclusion_label.setText(
-            self.tr(
-                "{lead} {labels} {target} Independent model evidence has not been attached."
-            ).format(
-                lead=lead,
-                labels=label_text,
-                target=target_text,
-            )
-        )
-
-        self._clear_layout(self.composition_action_rows)
-
-        if inventory is None:
-            self.inventory_summary_label.setText(
-                self.tr("No exact composition inventory is available.")
-            )
-            self.composition_highlights_label.clear()
-        else:
-            structures_text = self.tr("structures")
-            exact_points_text = self.tr("exact composition points")
-            atom_counts_text = self.tr("Atom counts")
-            main_points_text = self.tr("Main composition points")
-            pure_endpoints_text = self.tr("Pure-element endpoints")
-            self.inventory_summary_label.setText(
-                "<div style='color:#425257'>"
-                "<div>"
-                f"<span style='font-size:16px; font-weight:600; color:#183b38'>"
-                f"{inventory.structure_count:,}</span> {escape(structures_text)}"
-                " &nbsp;·&nbsp; "
-                f"<span style='font-size:16px; font-weight:600; color:#183b38'>"
-                f"{len(inventory.composition_points)}</span> "
-                f"{escape(exact_points_text)}"
-                "</div>"
-                "<div style='margin-top:3px'>"
-                f"<span style='font-weight:600'>{escape(atom_counts_text)}</span> "
-                f"{escape(', '.join(f'{count} × {structures:,}' for count, structures in inventory.atom_counts) or '—')}"
-                "</div>"
-                "</div>"
-            )
-            top_points = sorted(
-                inventory.composition_points,
-                key=lambda point: point.structure_count,
-                reverse=True,
-            )[:3]
-            top_share = sum(point.share for point in top_points)
-            pure_points = [
-                point
-                for point in inventory.composition_points
-                if max(point.fractions, default=0.0) >= 1.0 - 1e-8
-            ]
-            rows = "".join(
-                "<tr>"
-                f"<td style='padding:3px 12px 3px 0'>{escape(self._composition_formula(inventory.elements, point.fractions))}</td>"
-                f"<td align='right' style='padding:3px 8px'><b>{point.structure_count:,}</b></td>"
-                f"<td align='right' style='padding:3px 0; color:#657579'>{point.share:.2%}</td>"
-                "</tr>"
-                for point in top_points
-            )
-            pure_summary = ""
-            if pure_points:
-                pure_items = []
-                for point in pure_points:
-                    element_index = max(
-                        range(len(point.fractions)),
-                        key=point.fractions.__getitem__,
-                    )
-                    pure_items.append(
-                        self.tr("Pure {element} {count:,}").format(
-                            element=inventory.elements[element_index],
-                            count=point.structure_count,
-                        )
-                    )
-                pure_summary = (
-                    "<div style='margin-top:8px; padding-top:6px; color:#425257'>"
-                    f"<b>{escape(pure_endpoints_text)}</b>&nbsp;&nbsp;"
-                    f"{escape('   ·   '.join(pure_items))}</div>"
-                )
-            concentration = escape(
-                self.tr(
-                    "Top {count} composition points contain {share:.1%} of structures."
-                ).format(count=len(top_points), share=top_share)
-            )
-            self.composition_highlights_label.setText(
-                "<div style='margin-top:8px'>"
-                f"<div style='font-weight:600; color:#243135'>{escape(main_points_text)}</div>"
-                f"<div style='color:#657579; margin-bottom:4px'>{concentration}</div>"
-                f"<table cellspacing='0' width='100%'>{rows}</table>"
-                f"{pure_summary}</div>"
-            )
-            action_points = list(top_points)
-            known_keys = {point.reduced_counts for point in action_points}
-            action_points.extend(
-                point
-                for point in pure_points
-                if point.reduced_counts not in known_keys
-            )
-            for point in action_points:
-                row_widget = QWidget(self.inventory_panel)
-                row_layout = QHBoxLayout(row_widget)
-                row_layout.setContentsMargins(0, 0, 0, 0)
-                row_layout.setSpacing(8)
-                fact = QLabel(
-                    self.tr("{formula} · {count:,} structures · {share:.2%}").format(
-                        formula=self._composition_formula(
-                            inventory.elements, point.fractions
-                        ),
-                        count=point.structure_count,
-                        share=point.share,
-                    ),
-                    row_widget,
-                )
-                fact.setWordWrap(True)
-                fact.setMinimumWidth(0)
-                fact.setSizePolicy(
-                    QSizePolicy.Policy.Ignored,
-                    QSizePolicy.Policy.Preferred,
-                )
-                action = PushButton(
-                    self.tr("View {count:,} structures").format(
-                        count=point.structure_count
-                    ),
-                    row_widget,
-                )
-                action.setSizePolicy(
-                    QSizePolicy.Policy.Fixed,
-                    QSizePolicy.Policy.Fixed,
-                )
-                action.setMinimumWidth(action.sizeHint().width())
-                indices = list(point.structure_indices)
-                action.clicked.connect(
-                    lambda checked=False, selected=indices: self.selectStructuresSignal.emit(
-                        selected
-                    )
-                )
-                row_layout.addWidget(fact, stretch=1)
-                row_layout.addWidget(action)
-                self.composition_action_rows.addWidget(row_widget)
-
-        data_quality = (
-            self._result.overview_metrics.get("data_quality", {})
-            if self._result is not None
-            else {}
-        )
-        duplicate_groups = (
-            int(data_quality.get("duplicate_group_count", 0) or 0)
-            if isinstance(data_quality, Mapping)
-            else 0
-        )
-        next_steps: list[str] = []
-        if blocker_topics:
-            next_steps.append(
-                self.tr("1. Resolve {count} blocker topics before training.").format(
-                    count=len(blocker_topics)
-                )
-            )
-        elif review_topics:
-            if duplicate_groups:
-                next_steps.append(
-                    self.tr(
-                        "1. Review {groups} repeated-geometry groups before deciding whether to keep or exclude them."
-                    ).format(groups=duplicate_groups)
-                )
-            else:
-                next_steps.append(
-                    self.tr("1. Review {count} priority topics.").format(
-                        count=len(review_topics)
-                    )
-                )
-        else:
-            next_steps.append(self.tr("1. No priority data-quality review is pending."))
-        next_steps.append(self.tr("2. Open a main composition point and verify its sources and structure types."))
-        next_steps.append(
-            self.tr("3. Define the intended target range before judging missing or thin support.")
-        )
-        self.next_actions_label.setText("\n".join(next_steps))
-        self.open_review_button.setEnabled(bool(self._topics))
+        self.metric_context_value.setToolTip(coverage)
+        self._update_dataset_facts(inventory)
+        self._update_element_overview(inventory)
 
     @staticmethod
-    def _clear_layout(layout: QVBoxLayout) -> None:
-        while layout.count():
-            item = layout.takeAt(0)
-            widget = item.widget()
-            if widget is not None:
-                widget.deleteLater()
+    def _pair_key(first: str, second: str) -> tuple[str, str]:
+        return tuple(sorted((first, second)))
 
-    def _phase_overview_sentence(self) -> str:
-        if self._result is None or self._result.phase_inventory is None:
-            phase_meta = (
-                self._result.overview_metrics.get("phase_inventory", {})
-                if self._result is not None
-                else {}
-            )
-            if isinstance(phase_meta, Mapping) and phase_meta.get("status") == "pending":
-                return self.tr("Full phase analysis is continuing in the background.")
-            return self.tr("Phase evidence is unavailable for the current data.")
-        phase_inventory = self._result.phase_inventory
-        counts: dict[str, int] = {}
-        for point in phase_inventory.composition_points:
-            for structure in point.structures:
-                label = phase_partition_label(structure)
-                counts[label] = counts.get(label, 0) + 1
-        total = phase_inventory.analyzed_structure_count
-        ranked = sorted(counts.items(), key=lambda item: (-item[1], item[0]))
-        key_items = ranked[:3]
-        values = ", ".join(
-            self.tr("{phase} {share:.1%}").format(
-                phase=self._phase_display_name(label),
-                share=0.0 if total <= 0 else count / total,
-            )
-            for label, count in key_items
+    @staticmethod
+    def _overview_heat_color(value: int, maximum: int) -> QColor:
+        if value <= 0 or maximum <= 0:
+            return QColor("#f8fafc")
+        strength = log1p(value) / log1p(maximum)
+        palette_index = min(
+            len(_OVERVIEW_JET_COLORS) - 1,
+            round(strength * (len(_OVERVIEW_JET_COLORS) - 1)),
         )
-        structural = self.tr("Structure-level phase labels: {values}.").format(
-            values=values or self.tr("none")
+        return QColor(_OVERVIEW_JET_COLORS[palette_index])
+
+    @staticmethod
+    def _element_set_summaries(
+        inventory: DatasetInventory,
+    ) -> tuple[_ElementSetSummary, ...]:
+        grouped_counts: dict[tuple[str, ...], int] = {}
+        grouped_indices: dict[tuple[str, ...], set[int]] = {}
+        for point in inventory.composition_points:
+            element_set = tuple(
+                element
+                for element, count in zip(inventory.elements, point.reduced_counts)
+                if int(count) > 0
+            )
+            if not element_set:
+                continue
+            grouped_counts[element_set] = (
+                grouped_counts.get(element_set, 0) + int(point.structure_count)
+            )
+            grouped_indices.setdefault(element_set, set()).update(
+                int(index) for index in point.structure_indices
+            )
+        return tuple(
+            sorted(
+                (
+                    _ElementSetSummary(
+                        elements=elements,
+                        structure_count=grouped_counts[elements],
+                        structure_indices=tuple(sorted(grouped_indices[elements])),
+                    )
+                    for elements in grouped_counts
+                ),
+                key=lambda item: (-item.structure_count, item.elements),
+            )
         )
-        magnetic_inventory = self._result.magnetic_inventory
-        if magnetic_inventory is None or magnetic_inventory.analyzed_structure_count <= 0:
-            return structural + " " + self.tr("No valid spin:R:3 states were found.")
-        magnetic_counts: dict[str, int] = {}
-        for point in magnetic_inventory.composition_points:
-            for structure in point.structures:
-                magnetic_counts[structure.order_label] = (
-                    magnetic_counts.get(structure.order_label, 0) + 1
+
+    def _update_element_overview(
+        self, inventory: DatasetInventory | None
+    ) -> None:
+        if inventory is None:
+            self._overview_element_sets = ()
+            self._overview_elements = ()
+            self._overview_structure_count = 0
+            self._overview_element_counts = {}
+            self._overview_pair_counts = {}
+            self._overview_exact_pair_counts = {}
+            self._overview_pure_counts = {}
+            self._overview_basis_elements = ()
+            self._selected_overview_elements = ()
+            self._selected_overview_cell = None
+            self._selected_overview_mode = ""
+            self.cooccurrence_table.setRowCount(0)
+            self.cooccurrence_table.setColumnCount(0)
+            self.element_sets_table.setRowCount(0)
+            self.element_sets_summary_label.setText(
+                self.tr("No exact element-set inventory is available.")
+            )
+            self.pair_coverage_label.setText("—")
+            self._update_overview_selection_status()
+            for value in self.order_summary_values.values():
+                value.setText("—")
+            return
+
+        self._overview_element_sets = self._element_set_summaries(inventory)
+        self._overview_elements = tuple(inventory.elements)
+        self._overview_structure_count = int(inventory.structure_count)
+        self._overview_basis_elements = ()
+        self._selected_overview_elements = ()
+        self._selected_overview_cell = None
+        self._selected_overview_mode = ""
+        self._selected_overview_indices = []
+        self._update_overview_selection_status()
+        self._overview_element_counts = {
+            element: sum(
+                item.structure_count
+                for item in self._overview_element_sets
+                if element in item.elements
+            )
+            for element in self._overview_elements
+        }
+        self._overview_pure_counts = {
+            item.elements[0]: item.structure_count
+            for item in self._overview_element_sets
+            if len(item.elements) == 1
+        }
+        pair_counts: dict[tuple[str, str], int] = {}
+        exact_pair_counts: dict[tuple[str, str], int] = {}
+        for row, first in enumerate(self._overview_elements):
+            for second in self._overview_elements[row + 1 :]:
+                key = self._pair_key(first, second)
+                pair_counts[key] = sum(
+                    item.structure_count
+                    for item in self._overview_element_sets
+                    if first in item.elements and second in item.elements
                 )
-        magnetic_total = magnetic_inventory.analyzed_structure_count
-        magnetic_values = ", ".join(
-            self.tr("{order} {share:.1%}").format(
-                order=self._magnetic_display_name(label), share=count / magnetic_total
+                exact_pair_counts[key] = sum(
+                    item.structure_count
+                    for item in self._overview_element_sets
+                    if len(item.elements) == 2
+                    and set(item.elements) == set(key)
+                )
+        self._overview_pair_counts = pair_counts
+        self._overview_exact_pair_counts = exact_pair_counts
+
+        order_counts = {"1": 0, "2": 0, "3": 0, "4+": 0}
+        for item in self._overview_element_sets:
+            key = "4+" if len(item.elements) >= 4 else str(len(item.elements))
+            order_counts[key] += item.structure_count
+        for key, value in self.order_summary_values.items():
+            count = order_counts[key]
+            share = (
+                0.0
+                if self._overview_structure_count <= 0
+                else count / self._overview_structure_count
             )
-            for label, count in sorted(
-                magnetic_counts.items(), key=lambda item: (-item[1], item[0])
-            )[:3]
+            value.setText(
+                self.tr("{share:.1%} · {count:,}").format(
+                    share=share,
+                    count=count,
+                )
+            )
+
+        possible_pairs = len(pair_counts)
+        covered_pairs = sum(count > 0 for count in pair_counts.values())
+        exact_pairs = sum(count > 0 for count in exact_pair_counts.values())
+        self.pair_coverage_label.setText(
+            self.tr(
+                "{covered}/{possible} pairs co-occur · "
+                "{exact}/{possible} have exact binary structures"
+            ).format(
+                covered=covered_pairs,
+                exact=exact_pairs,
+                possible=possible_pairs,
+            )
         )
-        return structural + " " + self.tr(
-            "Magnetic-pattern labels: {values}."
-        ).format(values=magnetic_values)
+        self._populate_overview_matrix()
+        self._populate_overview_element_sets()
+
+    def _populate_overview_matrix(self) -> None:
+        elements = self._overview_elements
+        table = self.cooccurrence_table
+        table.blockSignals(True)
+        table.clear()
+        table.clearSelection()
+        table.setRowCount(len(elements))
+        table.setColumnCount(len(elements))
+        table.setHorizontalHeaderLabels(elements)
+        table.setVerticalHeaderLabels(elements)
+        max_element_count = max(self._overview_element_counts.values(), default=1)
+        max_pair_count = max(self._overview_pair_counts.values(), default=1)
+        selected = set(self._selected_overview_elements)
+        basis = set(self._overview_basis_elements)
+        basis_count = (
+            self._overview_pair_counts.get(
+                self._pair_key(*self._overview_basis_elements),
+                0,
+            )
+            if len(self._overview_basis_elements) == 2
+            else 0
+        )
+        related_element_counts: dict[str, int] = {}
+        related_pair_counts: dict[tuple[str, str], int] = {}
+        if basis:
+            for summary in self._overview_element_sets:
+                if not basis.issubset(summary.elements):
+                    continue
+                extras = sorted(set(summary.elements).difference(basis))
+                for element in extras:
+                    related_element_counts[element] = (
+                        related_element_counts.get(element, 0)
+                        + summary.structure_count
+                    )
+                for first, second in combinations(extras, 2):
+                    pair = self._pair_key(first, second)
+                    related_pair_counts[pair] = (
+                        related_pair_counts.get(pair, 0)
+                        + summary.structure_count
+                    )
+        max_related_element_count = max(related_element_counts.values(), default=1)
+        max_related_pair_count = max(related_pair_counts.values(), default=1)
+
+        for index, element in enumerate(elements):
+            horizontal = table.horizontalHeaderItem(index)
+            vertical = table.verticalHeaderItem(index)
+            if element in selected:
+                horizontal.setForeground(QColor("#c2410c"))
+                vertical.setForeground(QColor("#c2410c"))
+            horizontal.setToolTip(element)
+            vertical.setToolTip(element)
+
+        for row, first in enumerate(elements):
+            for column, second in enumerate(elements):
+                diagonal = row == column
+                upper = column > row
+                pair = self._pair_key(first, second)
+                visible = True
+                if diagonal:
+                    if basis:
+                        if first in basis:
+                            value = 0
+                            maximum = 1
+                            cell_elements = ()
+                            tooltip = self.tr(
+                                "{element} is part of the selected basis {basis}."
+                            ).format(
+                                element=first,
+                                basis=" + ".join(self._overview_basis_elements),
+                            )
+                        else:
+                            value = related_element_counts.get(first, 0)
+                            maximum = max_related_element_count
+                            cell_elements = tuple(sorted((*basis, first)))
+                            tooltip = self.tr(
+                                "{basis} + {element}: {count:,} structures "
+                                "({share:.1%} of the selected pair)."
+                            ).format(
+                                basis=" + ".join(self._overview_basis_elements),
+                                element=first,
+                                count=value,
+                                share=(
+                                    0.0
+                                    if basis_count <= 0
+                                    else value / basis_count
+                                ),
+                            )
+                    else:
+                        value = self._overview_element_counts.get(first, 0)
+                        maximum = max_element_count
+                        pure = self._overview_pure_counts.get(first, 0)
+                        tooltip = self.tr(
+                            "{element}: {count:,} related structures ({share:.1%}); "
+                            "pure-element structures: {pure:,}."
+                        ).format(
+                            element=first,
+                            count=value,
+                            share=(
+                                0.0
+                                if self._overview_structure_count <= 0
+                                else value / self._overview_structure_count
+                            ),
+                            pure=pure,
+                        )
+                        cell_elements = (first,)
+                elif upper:
+                    value = self._overview_pair_counts.get(pair, 0)
+                    maximum = max_pair_count
+                    tooltip = self.tr(
+                        "{first} + {second}: {count:,} co-occurring structures "
+                        "across binary and higher-order sets."
+                    ).format(first=first, second=second, count=value)
+                    cell_elements = pair
+                    if basis and set(pair) != basis:
+                        visible = False
+                    elif (
+                        not basis
+                        and self._selected_overview_mode == "element"
+                        and not selected.intersection(pair)
+                    ):
+                        visible = False
+                else:
+                    if basis and not basis.intersection(pair):
+                        value = related_pair_counts.get(pair, 0)
+                        maximum = max_related_pair_count
+                        cell_elements = tuple(sorted((*basis, *pair)))
+                        tooltip = self.tr(
+                            "{basis} + {first} + {second}: {count:,} structures "
+                            "({share:.1%} of the selected pair)."
+                        ).format(
+                            basis=" + ".join(self._overview_basis_elements),
+                            first=first,
+                            second=second,
+                            count=value,
+                            share=(
+                                0.0
+                                if basis_count <= 0
+                                else value / basis_count
+                            ),
+                        )
+                    else:
+                        value = 0
+                        maximum = 1
+                        cell_elements = ()
+                        tooltip = (
+                            self.tr(
+                                "Select an upper-triangle element pair to show "
+                                "its related third and fourth elements."
+                            )
+                            if not basis
+                            else self.tr(
+                                "This cell repeats a selected basis element."
+                            )
+                        )
+
+                if value <= 0 or not visible:
+                    cell_elements = ()
+                item = QTableWidgetItem()
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                item.setData(Qt.ItemDataRole.UserRole, cell_elements)
+                item.setToolTip(tooltip)
+                item.setBackground(
+                    self._overview_heat_color(value, maximum)
+                    if cell_elements
+                    else QColor(Qt.GlobalColor.transparent)
+                )
+                item.setFlags(
+                    Qt.ItemFlag.ItemIsEnabled
+                    | (
+                        Qt.ItemFlag.ItemIsSelectable
+                        if cell_elements and value > 0
+                        else Qt.ItemFlag.NoItemFlags
+                    )
+                )
+                if (
+                    diagonal
+                    and not basis
+                    and self._overview_pure_counts.get(first, 0) <= 0
+                ):
+                    item.setText("—")
+                    item.setForeground(QColor("#64748b"))
+                table.setItem(row, column, item)
+
+        for index in range(len(elements)):
+            table.setColumnWidth(index, 26)
+            table.setRowHeight(index, 26)
+        if self._selected_overview_cell is not None:
+            selected_row, selected_column = self._selected_overview_cell
+            if (
+                0 <= selected_row < len(elements)
+                and 0 <= selected_column < len(elements)
+            ):
+                table.setCurrentCell(selected_row, selected_column)
+                selected_item = table.item(selected_row, selected_column)
+                if selected_item is not None:
+                    selected_item.setText("✓")
+                    background = selected_item.background().color()
+                    luminance = (
+                        0.2126 * background.red()
+                        + 0.7152 * background.green()
+                        + 0.0722 * background.blue()
+                    )
+                    selected_item.setForeground(
+                        QColor("#ffffff" if luminance < 145 else "#111827")
+                    )
+                    font = selected_item.font()
+                    font.setBold(True)
+                    selected_item.setFont(font)
+                    selected_item.setSelected(True)
+        table.blockSignals(False)
+        QTimer.singleShot(0, self._resize_overview_matrix)
+
+    def _on_overview_matrix_cell_clicked(self, row: int, column: int) -> None:
+        item = self.cooccurrence_table.item(row, column)
+        value = item.data(Qt.ItemDataRole.UserRole) if item is not None else ()
+        elements = tuple(value) if isinstance(value, tuple) else ()
+        if not elements:
+            return
+        if self._selected_overview_cell == (row, column):
+            self._clear_overview_element_filter()
+            return
+        self._selected_overview_elements = elements
+        self._selected_overview_cell = (row, column)
+        if column > row:
+            self._overview_basis_elements = elements
+            self._selected_overview_mode = "cooccurrence"
+        elif self._overview_basis_elements:
+            self._selected_overview_mode = "conditional"
+        else:
+            self._selected_overview_mode = "element"
+        self._selected_overview_indices = []
+        self.view_element_set_button.setEnabled(False)
+        self.clear_element_filter_button.show()
+        self._update_overview_selection_status()
+        self._populate_overview_matrix()
+        self._populate_overview_element_sets()
+
+    def _clear_overview_element_filter(self) -> None:
+        self._overview_basis_elements = ()
+        self._selected_overview_elements = ()
+        self._selected_overview_cell = None
+        self._selected_overview_mode = ""
+        self._selected_overview_indices = []
+        self.clear_element_filter_button.hide()
+        self.view_element_set_button.setEnabled(False)
+        self._update_overview_selection_status()
+        self._populate_overview_matrix()
+        self._populate_overview_element_sets()
+
+    def _update_overview_selection_status(self) -> None:
+        elements = " + ".join(self._selected_overview_elements)
+        if self._selected_overview_mode == "conditional":
+            text = self.tr(
+                "Selected: {elements} · based on {basis}"
+            ).format(
+                elements=elements,
+                basis=" + ".join(self._overview_basis_elements),
+            )
+        elif self._selected_overview_mode == "cooccurrence":
+            text = self.tr(
+                "Basis: {elements} · related-element view"
+            ).format(elements=elements)
+        elif self._selected_overview_mode == "element":
+            text = self.tr(
+                "Selected element: {elements} · element presence"
+            ).format(
+                elements=elements,
+            )
+        else:
+            text = self.tr("Filter: none · Click a cell")
+        self.matrix_selection_label.setText(text)
+        self.matrix_selection_label.setProperty(
+            "active", bool(elements and self._selected_overview_mode)
+        )
+        self.matrix_selection_label.style().unpolish(
+            self.matrix_selection_label
+        )
+        self.matrix_selection_label.style().polish(
+            self.matrix_selection_label
+        )
+
+    def _populate_overview_element_sets(self) -> None:
+        selected = set(self._selected_overview_elements)
+        items = [
+            item
+            for item in self._overview_element_sets
+            if selected.issubset(item.elements)
+        ]
+        total = sum(item.structure_count for item in items)
+        if not selected:
+            self.element_sets_summary_label.setText(
+                self.tr(
+                    "{count} exact element sets, sorted by structure count."
+                ).format(count=len(items))
+            )
+        elif self._selected_overview_mode == "element":
+            element = self._selected_overview_elements[0]
+            self.element_sets_summary_label.setText(
+                self.tr(
+                    "{count} sets · {structures:,} related structures · "
+                    "{pure:,} pure-element structures"
+                ).format(
+                    count=len(items),
+                    structures=total,
+                    pure=self._overview_pure_counts.get(element, 0),
+                )
+            )
+        elif self._selected_overview_mode == "conditional":
+            self.element_sets_summary_label.setText(
+                self.tr(
+                    "{count} sets · {structures:,} structures · based on {basis}"
+                ).format(
+                    count=len(items),
+                    structures=total,
+                    basis=" + ".join(self._overview_basis_elements),
+                )
+            )
+        else:
+            pair = self._pair_key(*self._selected_overview_elements)
+            self.element_sets_summary_label.setText(
+                self.tr(
+                    "{count} sets · {structures:,} co-occurring structures · "
+                    "{binary:,} exact binary structures"
+                ).format(
+                    count=len(items),
+                    structures=total,
+                    binary=self._overview_exact_pair_counts.get(pair, 0),
+                )
+            )
+
+        table = self.element_sets_table
+        table.blockSignals(True)
+        table.setUpdatesEnabled(False)
+        table.setRowCount(len(items))
+        count_texts: list[str] = []
+        share_texts: list[str] = []
+        for row, item in enumerate(items):
+            formula = "–".join(item.elements)
+            formula_item = QTableWidgetItem(formula)
+            formula_item.setData(
+                Qt.ItemDataRole.UserRole, item.structure_indices
+            )
+            formula_item.setToolTip(formula)
+            count_text = f"{item.structure_count:,}"
+            count_texts.append(count_text)
+            count_item = QTableWidgetItem(count_text)
+            share = (
+                0.0
+                if self._overview_structure_count <= 0
+                else item.structure_count / self._overview_structure_count
+            )
+            share_text = f"{share:.2%}"
+            share_texts.append(share_text)
+            share_item = QTableWidgetItem(share_text)
+            count_item.setTextAlignment(
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            )
+            share_item.setTextAlignment(
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            )
+            table.setItem(row, 0, formula_item)
+            table.setItem(row, 1, count_item)
+            table.setItem(row, 2, share_item)
+        metrics = table.fontMetrics()
+        count_header = table.horizontalHeaderItem(1).text()
+        share_header = table.horizontalHeaderItem(2).text()
+        table.setColumnWidth(
+            1,
+            max(
+                [
+                    metrics.horizontalAdvance(count_header),
+                    *(metrics.horizontalAdvance(text) for text in count_texts),
+                ]
+            )
+            + 24,
+        )
+        table.setColumnWidth(
+            2,
+            max(
+                [
+                    metrics.horizontalAdvance(share_header),
+                    *(metrics.horizontalAdvance(text) for text in share_texts),
+                ]
+            )
+            + 40,
+        )
+        table.clearSelection()
+        table.setUpdatesEnabled(True)
+        table.blockSignals(False)
+        self._selected_overview_indices = []
+        self.view_element_set_button.setEnabled(False)
+
+    def _on_overview_element_set_selected(self) -> None:
+        row = self.element_sets_table.currentRow()
+        item = self.element_sets_table.item(row, 0) if row >= 0 else None
+        indices = (
+            item.data(Qt.ItemDataRole.UserRole)
+            if item is not None
+            else ()
+        )
+        self._selected_overview_indices = (
+            [int(index) for index in indices]
+            if isinstance(indices, (tuple, list))
+            else []
+        )
+        count = len(self._selected_overview_indices)
+        self.view_element_set_button.setEnabled(count > 0)
+        self.view_element_set_button.setText(
+            self.tr("View {count:,} structures").format(count=count)
+            if count
+            else self.tr("View selected structures")
+        )
 
     def _update_analysis(self, dimension_id: str) -> None:
         self.plot_selector.blockSignals(True)
@@ -3644,6 +4219,19 @@ class TrainingSetAuditWidget(QWidget):
                 return self.tr("{element} concentration distribution").format(
                     element=element
                 )
+        if plot_id.startswith("pair_contacts:"):
+            scope_key = plot_id.split(":", 1)[1]
+            scope = (
+                self.tr("Angular neighbors")
+                if scope_key == "angular"
+                else self.tr("Radial neighbors")
+            )
+            if text == f"{scope_key.title()} element-pair contact edges":
+                return self.tr("{scope}: element-pair contact edges").format(
+                    scope=scope
+                )
+            if text == scope_key:
+                return scope
 
         translations = {
             "Energy per atom distribution": self.tr(
@@ -3656,6 +4244,10 @@ class TrainingSetAuditWidget(QWidget):
             "Energy per atom": self.tr("Energy per atom"),
             "Maximum force": self.tr("Maximum force"),
             "Virial norm": self.tr("Virial norm"),
+            "Directed NEP-cutoff contact edges": self.tr(
+                "Directed NEP-cutoff contact edges"
+            ),
+            "Element pair": self.tr("Element pair"),
         }
         return translations.get(text, text)
 
@@ -4239,11 +4831,6 @@ class TrainingSetAuditWidget(QWidget):
                 background: #f5f7f8;
                 color: #243135;
             }
-            QScrollArea#auditSummaryScroll,
-            QScrollArea#auditSummaryScroll > QWidget > QWidget {
-                background: transparent;
-                border: none;
-            }
             QLabel#auditNoDatasetState {
                 color: #243135;
                 font-size: 18px;
@@ -4265,10 +4852,9 @@ class TrainingSetAuditWidget(QWidget):
             QFrame#auditMetricBand,
             QFrame#auditAnalysisPanel,
             QFrame#auditFindingsPanel,
-            QFrame#auditSummaryPanel,
             QFrame#auditEvidencePanel,
-            QFrame#auditInventoryPanel,
-            QFrame#auditNextActionsPanel,
+            QFrame#auditCooccurrencePanel,
+            QFrame#auditElementSetsPanel,
             QFrame#auditCompositionHeader,
             QFrame#auditReviewBanner,
             QFrame#auditTargetDefinitionPanel,
@@ -4277,14 +4863,18 @@ class TrainingSetAuditWidget(QWidget):
                 border: 1px solid #d9e1e3;
                 border-radius: 5px;
             }
-            QFrame#auditSummaryPanel {
-                background: #eef8f6;
-                border: 1px solid #b9dcd7;
-                border-left: 4px solid #087f78;
-            }
             QFrame#auditReviewBanner {
                 background: #eef8f6;
                 border-color: #b9dcd7;
+            }
+            QFrame#overviewOrderCard {
+                background: #f7f9fa;
+                border: 1px solid #e1e7e9;
+                border-radius: 4px;
+            }
+            QFrame#overviewHeatLegend {
+                background: transparent;
+                border: 1px solid #cbd5e1;
             }
             QLabel#auditTitle {
                 color: #18272b;
@@ -4295,38 +4885,53 @@ class TrainingSetAuditWidget(QWidget):
             QLabel#auditGeneratedAt,
             QLabel#metricLabel,
             QLabel#auditChartSelection,
-            QLabel#panelHint,
-            QLabel#summaryLimit {
+            QLabel#panelHint {
                 color: #657579;
                 font-size: 11px;
             }
             QLabel#panelTitle,
             QLabel#evidenceHeading,
-            QLabel#railMetaTitle,
-            QLabel#summaryKicker {
+            QLabel#railMetaTitle {
                 color: #243135;
                 font-size: 12px;
                 font-weight: 600;
             }
-            QLabel#summaryKicker {
-                color: #087f78;
-                font-size: 11px;
-            }
-            QLabel#summaryConclusion {
-                color: #183b38;
-                font-size: 14px;
-                font-weight: 600;
-            }
-            QLabel#inventorySummary,
             QLabel#reviewSummary {
                 color: #183b38;
                 font-size: 13px;
                 font-weight: 600;
             }
-            QLabel#inventoryDetails,
-            QLabel#nextActionsText {
-                color: #425257;
-                font-size: 12px;
+            QLabel#coverageBadge {
+                color: #4338ca;
+                background: #eef2ff;
+                border: 1px solid #c7d2fe;
+                border-radius: 9px;
+                padding: 4px 8px;
+                font-size: 10px;
+                font-weight: 600;
+            }
+            QLabel#overviewOrderValue {
+                color: #243135;
+                font-size: 13px;
+                font-weight: 600;
+            }
+            QLabel#overviewOrderLabel {
+                color: #657579;
+                font-size: 10px;
+            }
+            QLabel#matrixSelectionStatus {
+                color: #526267;
+                background: #f8fafc;
+                border: 1px solid #dbe3e6;
+                border-radius: 4px;
+                padding: 4px 8px;
+                font-size: 11px;
+            }
+            QLabel#matrixSelectionStatus[active="true"] {
+                color: #9a3412;
+                background: #fff7ed;
+                border-color: #fb923c;
+                font-weight: 600;
             }
             QLabel#targetResultSummary {
                 color: #315b57;
@@ -4347,12 +4952,34 @@ class TrainingSetAuditWidget(QWidget):
             }
             QLabel#metricValue {
                 color: #087f78;
-                font-size: 16px;
+                font-size: 14px;
                 font-weight: 600;
             }
             QFrame#metricDivider {
                 color: #d9e1e3;
                 max-width: 1px;
+            }
+            QTableWidget#elementCooccurrenceTable {
+                background: #ffffff;
+                alternate-background-color: #ffffff;
+                gridline-color: #ffffff;
+                border: 1px solid #e1e7e9;
+                border-radius: 4px;
+                outline: 0;
+            }
+            QTableWidget#elementCooccurrenceTable::item {
+                padding: 0;
+                border: 1px solid #ffffff;
+            }
+            QTableWidget#elementCooccurrenceTable::item:selected {
+                border: 3px solid #f97316;
+            }
+            QTableWidget#overviewElementSetsTable {
+                background: #ffffff;
+                alternate-background-color: #f7f9fa;
+                border: 1px solid #e1e7e9;
+                border-radius: 4px;
+                outline: 0;
             }
             QListWidget#auditDimensionList {
                 background: transparent;

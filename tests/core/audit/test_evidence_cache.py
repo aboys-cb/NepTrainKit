@@ -192,6 +192,27 @@ def test_evidence_cache_uses_result_directory_and_respects_output_setting(tmp_pa
     cache = TrainingSetEvidenceCache.from_result_data(result_data, audit_result)
 
     assert cache is not None
-    assert cache.directory == descriptor.parent / ".neptrainkit-cache"
+    assert cache.directory == descriptor.parent
+    assert cache.path_for("phase").parent == descriptor.parent
     result_data.cache_outputs_enabled = lambda: False
     assert TrainingSetEvidenceCache.from_result_data(result_data, audit_result) is None
+
+
+def test_evidence_cache_promotes_legacy_hidden_files(tmp_path):
+    cache = TrainingSetEvidenceCache(tmp_path, "train", "dataset-fp", "scope-fp")
+    phase = _phase_inventory()
+    assert cache.save_phase(phase)
+    visible_path = cache.path_for("phase")
+    legacy_directory = tmp_path / ".neptrainkit-cache"
+    legacy_directory.mkdir()
+    legacy_path = legacy_directory / visible_path.name
+    visible_path.replace(legacy_path)
+
+    assert cache.load_phase(
+        schema_version=phase.schema_version,
+        method_id=phase.method_id,
+        reference_bank_id=phase.reference_bank_id,
+        analysis_strategy=phase.analysis_strategy,
+    ) == phase
+    assert visible_path.is_file()
+    assert not legacy_path.exists()

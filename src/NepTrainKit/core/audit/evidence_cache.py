@@ -25,7 +25,7 @@ from .result import (
 
 
 EVIDENCE_CACHE_FORMAT_VERSION = 1
-_CACHE_DIRECTORY = ".neptrainkit-cache"
+_LEGACY_CACHE_DIRECTORY = ".neptrainkit-cache"
 
 
 def _jsonable(value: Any) -> Any:
@@ -195,7 +195,8 @@ class TrainingSetEvidenceCache:
         scope_fingerprint: str,
     ) -> None:
         safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", dataset_name).strip("._")
-        self.directory = Path(output_directory) / _CACHE_DIRECTORY
+        self.directory = Path(output_directory)
+        self._legacy_directory = self.directory / _LEGACY_CACHE_DIRECTORY
         self.dataset_name = safe_name or "dataset"
         self.dataset_fingerprint = dataset_fingerprint
         self.scope_fingerprint = scope_fingerprint
@@ -228,6 +229,33 @@ class TrainingSetEvidenceCache:
     def _path(self, kind: str) -> Path:
         scope_tag = self.scope_fingerprint[:16]
         return self.directory / f"{self.dataset_name}.{scope_tag}.{kind}.jsonl.gz"
+
+    def _load_path(self, kind: str) -> Path:
+        path = self._path(kind)
+        if path.is_file():
+            return path
+        legacy_path = self._legacy_directory / path.name
+        return legacy_path if legacy_path.is_file() else path
+
+    def _promote_legacy_path(self, path: Path, kind: str) -> None:
+        target = self._path(kind)
+        if path == target or target.exists():
+            return
+        try:
+            path.replace(target)
+        except OSError as error:
+            logger.warning(
+                "Could not move legacy {} evidence cache {} to {}: {}",
+                kind,
+                path,
+                target,
+                error,
+            )
+            return
+        try:
+            self._legacy_directory.rmdir()
+        except OSError:
+            pass
 
     def _header(self, kind: str, inventory: Any) -> dict[str, Any]:
         header = {
@@ -291,7 +319,7 @@ class TrainingSetEvidenceCache:
         reference_bank_id: str,
         analysis_strategy: str,
     ) -> PhaseInventory | None:
-        path = self._path("phase")
+        path = self._load_path("phase")
         if not path.is_file():
             return None
         try:
@@ -335,6 +363,8 @@ class TrainingSetEvidenceCache:
                 != sum(point.analyzed_structure_count for point in points)
             ):
                 raise ValueError("The phase cache structure count is inconsistent.")
+            self._promote_legacy_path(path, "phase")
+            logger.info("Loaded phase evidence cache: {}", self._path("phase"))
             return inventory
         except (EOFError, OSError, TypeError, ValueError, KeyError, json.JSONDecodeError) as error:
             logger.warning("Ignoring invalid phase evidence cache {}: {}", path, error)
@@ -347,7 +377,7 @@ class TrainingSetEvidenceCache:
         method_id: str,
         analysis_strategy: str,
     ) -> MagneticInventory | None:
-        path = self._path("magnetic")
+        path = self._load_path("magnetic")
         if not path.is_file():
             return None
         try:
@@ -384,6 +414,8 @@ class TrainingSetEvidenceCache:
                 != sum(point.analyzed_structure_count for point in points)
             ):
                 raise ValueError("The magnetic cache structure count is inconsistent.")
+            self._promote_legacy_path(path, "magnetic")
+            logger.info("Loaded magnetic evidence cache: {}", self._path("magnetic"))
             return inventory
         except (EOFError, OSError, TypeError, ValueError, KeyError, json.JSONDecodeError) as error:
             logger.warning("Ignoring invalid magnetic evidence cache {}: {}", path, error)
@@ -407,6 +439,7 @@ class TrainingSetEvidenceCache:
                     for structure in point.structures:
                         self._write_line(handle, _jsonable(structure))
             temporary.replace(path)
+            logger.info("Saved {} evidence cache: {}", kind, path)
             return True
         except (OSError, TypeError, ValueError) as error:
             logger.warning("Could not write {} evidence cache {}: {}", kind, path, error)

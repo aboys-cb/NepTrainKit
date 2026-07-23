@@ -1,11 +1,8 @@
 """Toolbar widgets that expose plotting and structure manipulation actions."""
 
-from pathlib import Path
-
 from PySide6.QtCore import Signal, QSize
 from PySide6.QtGui import QAction, QIcon, QActionGroup
 from qfluentwidgets import CommandBar, Action, CommandBarView
-from NepTrainKit import module_path
 
 
 class KitToolBarBase(CommandBarView):
@@ -82,9 +79,8 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
     rangeSignal = Signal()
     latticeRangeSignal = Signal()
     dftd3Signal = Signal()
-    summarySignal = Signal()
+    trainingSetCheckSignal = Signal()
     forceBalanceSignal = Signal()
-    distributionSignal = Signal()
 
     def __init__(self, parent=None):
         """Initialise toolbar actions and keep a reference to the action group."""
@@ -93,8 +89,6 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
 
     def init_actions(self):
         """Populate toolbar actions for interacting with NEP plots."""
-        distribution_icon = Path(module_path) / "src" / "images" / "distribution_inspector.svg"
-        distribution_icon_path = str(distribution_icon) if distribution_icon.exists() else ":/images/src/images/inspect.svg"
         self.addButton(self.tr("Reset View"), QIcon(":/images/src/images/init.svg"), self.resetSignal)
         pan_action = self.addButton(
             self.tr("Pan View"),
@@ -178,6 +172,12 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
 
         self.addSeparator()
         self.addButton(
+            self.tr("Training Set Check"),
+            QIcon(":/images/src/images/summary.svg"),
+            self.trainingSetCheckSignal,
+            action_key="training_set_check",
+        )
+        self.addButton(
             self.tr("Edit info"),
             QIcon(":/images/src/images/edit_info.svg"),
             self.editInfoSignal,
@@ -201,20 +201,12 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
             self.dftd3Signal,
             action_key="dft_d3",
         )
-        self.addSeparator()
-        self.addButton(
-            self.tr("Dataset summary"),
-            QIcon(":/images/src/images/summary.svg"),
-            self.summarySignal,
-            action_key="dataset_summary",
-        )
-        self.addButton(
-            self.tr("Explore distributions"),
-            QIcon(distribution_icon_path),
-            self.distributionSignal,
-            action_key="explore_distributions",
-        )
 
+    def set_training_set_check_enabled(self, enabled: bool) -> None:
+        """Enable the dataset-wide Training Set Check entry."""
+        action = self._actions.get("training_set_check")
+        if action is not None:
+            action.setEnabled(bool(enabled))
 
     def reset(self) -> None:
         """Clear any mutually exclusive toggle that is still checked."""

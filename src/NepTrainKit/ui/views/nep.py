@@ -26,7 +26,6 @@ from NepTrainKit.ui.widgets import (
     EditInfoMessageBox,
     ShiftEnergyMessageBox,
     DFTD3MessageBox,
-    DatasetSummaryMessageBox,
     DistributionInspectorMessageBox,
     TrainingOverlayDialog,
 )
@@ -191,9 +190,7 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.latticeRangeSignal.connect(self.select_by_lattice_range)
         self.tool_bar.dftd3Signal.connect(self.calc_dft_d3)
         self.tool_bar.editInfoSignal.connect(self.edit_structure_info)
-        self.tool_bar.summarySignal.connect(self.show_dataset_summary)
         self.tool_bar.forceBalanceSignal.connect(self.check_force_balance)
-        self.tool_bar.distributionSignal.connect(self.show_distribution_inspector)
 
     def closeEvent(self, event):
         """Ensure auxiliary non-modal inspectors are closed with this widget."""
@@ -632,52 +629,6 @@ class NepResultPlotWidget(QWidget):
         thread = LoadingThread(self._parent, show_tip=True, title=self.tr("Calculating DFT-D3"))
         thread.start_work(data.apply_dft_d3_correction, mode, functional, d3_cutoff, d3_cutoff_cn)
         thread.finished.connect(self.canvas.plot_nep_result)
-
-    def show_dataset_summary(self):
-        """Compute and display dataset-wide summary statistics."""
-        data = self.canvas.nep_result_data
-        if data is None:
-            MessageManager.send_info_message("NEP data has not been loaded yet!")
-            return
-        group_by = SearchType.TAG
-        parent = getattr(self, "_parent", None)
-        search = getattr(parent, "search_lineEdit", None) if parent is not None else None
-        search_type = getattr(search, "search_type", None)
-        if isinstance(search_type, SearchType):
-            group_by = search_type
-        structures = getattr(data, "structure", None)
-        if structures is None or structures.now_data.size == 0:
-            MessageManager.send_info_message(self.tr("No active structures to summarise."))
-            return
-        total_structures = int(structures.now_data.shape[0])
-
-        progress_diag = QProgressDialog("", self.tr("Cancel"), 0, total_structures, self._parent)
-        progress_diag.setFixedSize(300, 100)
-        progress_diag.setWindowTitle(self.tr("Summarising dataset"))
-        progress_diag.setAutoClose(True)
-        progress_diag.setAutoReset(True)
-        thread = LoadingThread(self._parent, show_tip=False)
-        thread.progressSignal.connect(progress_diag.setValue)
-        thread.finished.connect(lambda: progress_diag.setValue(total_structures))
-        thread.finished.connect(progress_diag.accept)
-        thread.finished.connect(lambda: self._show_dataset_summary_dialog(data))
-        progress_diag.canceled.connect(thread.stop_work)
-        thread.start_work(data.iter_dataset_summary, group_by=group_by)
-        progress_diag.exec()
-
-    def _show_dataset_summary_dialog(self, data):
-        """Instantiate and execute the dataset summary dialog."""
-        try:
-            summary = data.get_dataset_summary()
-        except Exception:  # noqa: BLE001
-            MessageManager.send_warning_message(self.tr("Failed to build dataset summary."))
-            logger.debug(traceback.format_exc())
-            return
-        if not summary:
-            MessageManager.send_info_message(self.tr("Dataset summary is empty."))
-            return
-        dlg = DatasetSummaryMessageBox(self._parent, summary)
-        dlg.exec()
 
     def _run_distribution_analysis_task(self, data, request) -> dict:
         """Run distribution analysis in a worker thread and return the payload."""

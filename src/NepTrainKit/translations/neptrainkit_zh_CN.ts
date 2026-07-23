@@ -2240,10 +2240,8 @@
         <translation>预测值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="876" />
-        <location filename="../ui/widgets/dialog.py" line="885" />
-        <source>Error (pred - ref)</source>
-        <translation>误差（预测-参考）</translation>
+        <source>Error</source>
+        <translation type="vanished">错误</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="895" />
@@ -2259,6 +2257,39 @@
         <location filename="../ui/widgets/dialog.py" line="894" />
         <source>None</source>
         <translation>无</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="862" />
+        <location filename="../ui/widgets/dialog.py" line="931" />
+        <source>Value source</source>
+        <translation>值来源</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="863" />
+        <location filename="../ui/widgets/dialog.py" line="939" />
+        <source>Custom group data</source>
+        <translation>自定义分组数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="867" />
+        <source>All data</source>
+        <translation>全部数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="868" />
+        <source>Selected data</source>
+        <translation>当前选择数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="876" />
+        <location filename="../ui/widgets/dialog.py" line="885" />
+        <source>Error (pred - ref)</source>
+        <translation>误差（预测-参考）</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="889" />
+        <source>Edit groups</source>
+        <translation>编辑分组</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="904" />
@@ -2296,56 +2327,18 @@
         <translation>字段</translation>
     </message>
     <message>
+        <source>Group</source>
+        <translation type="vanished">分组方式</translation>
+    </message>
+    <message>
         <location filename="../ui/widgets/dialog.py" line="918" />
         <source>Group by</source>
         <translation>分组方式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="862" />
-        <location filename="../ui/widgets/dialog.py" line="931" />
-        <source>Value source</source>
-        <translation>值来源</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="863" />
-        <location filename="../ui/widgets/dialog.py" line="939" />
-        <source>Custom group data</source>
-        <translation>自定义分组数据</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="889" />
-        <source>Edit groups</source>
-        <translation>编辑分组</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="923" />
-        <source>Curve</source>
-        <translation>曲线</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="922" />
-        <source>Bins</source>
-        <translation>分箱数</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="1352" />
-        <source>All groups</source>
-        <translation>全部分组</translation>
-    </message>
-    <message>
         <location filename="../ui/widgets/dialog.py" line="919" />
         <source>Scope</source>
         <translation>数据范围</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="867" />
-        <source>All data</source>
-        <translation>全部数据</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="868" />
-        <source>Selected data</source>
-        <translation>当前选择数据</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="920" />
@@ -2356,6 +2349,16 @@
         <location filename="../ui/widgets/dialog.py" line="921" />
         <source>Select mode</source>
         <translation>选择方式</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="922" />
+        <source>Bins</source>
+        <translation>分箱数</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="923" />
+        <source>Curve</source>
+        <translation>辅助曲线</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="968" />
@@ -2441,6 +2444,11 @@
         <location filename="../ui/widgets/dialog.py" line="1334" />
         <source>{count} metrics generated.</source>
         <translation>已生成 {count} 个指标。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1352" />
+        <source>All groups</source>
+        <translation>全部分组</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="1366" />
@@ -4482,72 +4490,72 @@ All child items will also be deleted.</source>
 <context>
     <name>NepDisplayGraphicsToolBar</name>
     <message>
-        <location filename="../ui/views/toolbar.py" line="98" />
+        <location filename="../ui/views/toolbar.py" line="92" />
         <source>Reset View</source>
         <translation>重置视图</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="100" />
+        <location filename="../ui/views/toolbar.py" line="94" />
         <source>Pan View</source>
         <translation>平移视图</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="106" />
+        <location filename="../ui/views/toolbar.py" line="100" />
         <source>Select by Index</source>
         <translation>按索引选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="112" />
+        <location filename="../ui/views/toolbar.py" line="106" />
         <source>Select by Range</source>
         <translation>按范围选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="117" />
+        <location filename="../ui/views/toolbar.py" line="111" />
         <source>Select by Lattice</source>
         <translation>按晶格选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="122" />
+        <location filename="../ui/views/toolbar.py" line="116" />
         <source>Find Max Error Point</source>
         <translation>查找最大误差点</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="128" />
+        <location filename="../ui/views/toolbar.py" line="122" />
         <source>Sparse samples</source>
         <translation>稀疏采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="135" />
+        <location filename="../ui/views/toolbar.py" line="129" />
         <source>Mouse Selection</source>
         <translation>鼠标选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="147" />
+        <location filename="../ui/views/toolbar.py" line="141" />
         <source>Find non-physical structures</source>
         <translation>查找非物理结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="153" />
+        <location filename="../ui/views/toolbar.py" line="147" />
         <source>Check net force</source>
         <translation>检查净力</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="159" />
+        <location filename="../ui/views/toolbar.py" line="153" />
         <source>Invert selection</source>
         <translation>反选</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="164" />
+        <location filename="../ui/views/toolbar.py" line="158" />
         <source>Undo selection</source>
         <translation>撤销选择</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="169" />
+        <location filename="../ui/views/toolbar.py" line="163" />
         <source>Undo delete</source>
         <translation>撤销删除</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="174" />
+        <location filename="../ui/views/toolbar.py" line="168" />
         <source>Delete selected items</source>
         <translation>删除选中项</translation>
     </message>
@@ -4567,93 +4575,91 @@ All child items will also be deleted.</source>
         <translation>能量基线平移</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="206" />
-        <source>Dataset summary</source>
-        <translation>数据集概览</translation>
+        <location filename="../ui/views/toolbar.py" line="175" />
+        <source>Training Set Check</source>
+        <translation>训练集评估</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="212" />
+        <source>Dataset summary</source>
+        <translation type="vanished">数据集概览</translation>
+    </message>
+    <message>
         <source>Explore distributions</source>
-        <translation>查看数据分布</translation>
+        <translation type="vanished">查看数据分布</translation>
     </message>
 </context>
 <context>
     <name>NepResultPlotWidget</name>
     <message>
-        <location filename="../ui/views/nep.py" line="333" />
+        <location filename="../ui/views/nep.py" line="330" />
         <source>Balanced FPS selected {selected} structures across {groups} element sets.</source>
         <translation>元素集合平衡 FPS 已在 {groups} 个元素集合中选出 {selected} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="218" />
+        <location filename="../ui/views/nep.py" line="215" />
         <source>Finding non-physical structures</source>
         <translation>正在查找非物理结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="244" />
+        <location filename="../ui/views/nep.py" line="241" />
         <source>Enter an integer N to find the top N structures with the largest errors.</source>
         <translation>输入整数 N，用于查找误差最大的前 N 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="263" />
+        <location filename="../ui/views/nep.py" line="260" />
         <source>Configure farthest point sampling</source>
         <translation>配置最远点采样</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="402" />
+        <location filename="../ui/views/nep.py" line="399" />
         <source>Use .* for one shared baseline; separate different Config_type baseline groups with semicolons.</source>
         <translation>同一能量基线填写 .*；不同 Config_type 基线组用英文分号分隔。</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="518" />
-        <location filename="../ui/views/nep.py" line="654" />
-        <location filename="../ui/views/nep.py" line="686" />
-        <location filename="../ui/views/nep.py" line="887" />
+        <location filename="../ui/views/nep.py" line="515" />
+        <location filename="../ui/views/nep.py" line="637" />
+        <location filename="../ui/views/nep.py" line="838" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="521" />
+        <location filename="../ui/views/nep.py" line="518" />
         <source>Shift energies</source>
         <translation>平移能量</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="632" />
+        <location filename="../ui/views/nep.py" line="629" />
         <source>Calculating DFT-D3</source>
         <translation>正在计算 DFT-D3</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="650" />
         <source>No active structures to summarise.</source>
-        <translation>没有可用于汇总的当前结构。</translation>
+        <translation type="vanished">没有可用于汇总的当前结构。</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="656" />
         <source>Summarising dataset</source>
-        <translation>正在汇总数据集</translation>
+        <translation type="vanished">正在汇总数据集</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="673" />
         <source>Failed to build dataset summary.</source>
-        <translation>数据集概览生成失败。</translation>
+        <translation type="vanished">数据集概览生成失败。</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="677" />
         <source>Dataset summary is empty.</source>
-        <translation>数据集概览为空。</translation>
+        <translation type="vanished">数据集概览为空。</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="688" />
+        <location filename="../ui/views/nep.py" line="639" />
         <source>Building distributions</source>
         <translation>正在构建分布</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="884" />
+        <location filename="../ui/views/nep.py" line="835" />
         <source>No active structures to scan.</source>
         <translation>没有可扫描的当前结构。</translation>
     </message>
     <message>
-        <location filename="../ui/views/nep.py" line="889" />
+        <location filename="../ui/views/nep.py" line="840" />
         <source>Checking net forces</source>
         <translation>正在检查净力</translation>
     </message>
@@ -4661,22 +4667,22 @@ All child items will also be deleted.</source>
 <context>
     <name>NepTrainKitMainWindow</name>
     <message>
-        <location filename="../main.py" line="110" />
+        <location filename="../main.py" line="122" />
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../main.py" line="116" />
+        <location filename="../main.py" line="128" />
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../main.py" line="140" />
+        <location filename="../main.py" line="152" />
         <source>NEP Dataset Display</source>
         <translation>NEP 数据集查看</translation>
     </message>
     <message>
-        <location filename="../main.py" line="145" />
+        <location filename="../main.py" line="157" />
         <source>Training Set Check</source>
         <translation>训练集评估</translation>
     </message>
@@ -4685,72 +4691,72 @@ All child items will also be deleted.</source>
         <translation type="vanished">构建数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="150" />
+        <location filename="../main.py" line="162" />
         <source>Make Dataset</source>
         <translation>构建数据集</translation>
     </message>
     <message>
-        <location filename="../main.py" line="155" />
+        <location filename="../main.py" line="167" />
         <source>Data Management</source>
         <translation>数据管理</translation>
     </message>
     <message>
-        <location filename="../main.py" line="160" />
+        <location filename="../main.py" line="172" />
         <source>Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../main.py" line="317" />
+        <location filename="../main.py" line="329" />
         <source>Open data for this page</source>
         <translation>打开当前页面的数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="319" />
+        <location filename="../main.py" line="331" />
         <source>Open is not available on this page</source>
         <translation>当前页面不支持打开操作</translation>
     </message>
     <message>
-        <location filename="../main.py" line="322" />
+        <location filename="../main.py" line="334" />
         <source>Save data from this page</source>
         <translation>保存当前页面的数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="324" />
+        <location filename="../main.py" line="336" />
         <source>Save is not available on this page</source>
         <translation>当前页面不支持保存操作</translation>
     </message>
     <message>
-        <location filename="../main.py" line="336" />
+        <location filename="../main.py" line="348" />
         <source>The workflow output is empty.</source>
         <translation>工作流输出为空。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="349" />
+        <location filename="../main.py" line="361" />
         <source>Dataset handoff is already in progress.</source>
         <translation>正在传递数据集，请稍候。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="359" />
+        <location filename="../main.py" line="371" />
         <source>Preparing the workflow output for display...</source>
         <translation>正在准备工作流输出以供查看...</translation>
     </message>
     <message>
-        <location filename="../main.py" line="385" />
+        <location filename="../main.py" line="397" />
         <source>Failed to prepare workflow output: {message}</source>
         <translation>准备工作流输出失败：{message}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="433" />
+        <location filename="../main.py" line="445" />
         <source>Please load a dataset before running Training Set Check.</source>
         <translation>请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="486" />
+        <location filename="../main.py" line="498" />
         <source>Training Set Check failed: {message}</source>
         <translation>训练集评估失败：{message}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="511" />
+        <location filename="../main.py" line="523" />
         <source>Training Set Check results are stale. Please rerun the checks for the current dataset.</source>
         <translation>训练集评估结果已过期，请针对当前数据集重新检查。</translation>
     </message>
@@ -4763,7 +4769,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">请先加载数据集，再运行训练集检查。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="436" />
+        <location filename="../main.py" line="448" />
         <source>current dataset</source>
         <translation>当前数据集</translation>
     </message>
@@ -4776,7 +4782,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">训练集检查结果已过期，请针对当前数据集重新检查。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="639" />
+        <location filename="../main.py" line="691" />
         <source>Full phase analysis failed: {message}</source>
         <translation>完整相分析失败：{message}</translation>
     </message>
@@ -5554,7 +5560,7 @@ All child items will also be deleted.</source>
 <context>
     <name>ResultData</name>
     <message>
-        <location filename="../core/io/base.py" line="4377" />
+        <location filename="../core/io/base.py" line="4402" />
         <source>Generating NEP descriptors: {done}/{total} structures</source>
         <translation>正在生成 NEP 描述符：{done}/{total} 个结构</translation>
     </message>
@@ -6278,101 +6284,100 @@ All child items will also be deleted.</source>
 <context>
     <name>ShowNepWidget</name>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="224" />
+        <location filename="../ui/pages/show_nep.py" line="289" />
         <source>Open File…</source>
         <translation>打开文件…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="227" />
+        <location filename="../ui/pages/show_nep.py" line="292" />
         <source>Open Folder…</source>
         <translation>打开文件夹…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="230" />
+        <location filename="../ui/pages/show_nep.py" line="295" />
         <source>Export All…</source>
         <translation>导出全部…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="235" />
-        <location filename="../ui/pages/show_nep.py" line="324" />
+        <location filename="../ui/pages/show_nep.py" line="300" />
+        <location filename="../ui/pages/show_nep.py" line="383" />
         <source>Export Selected ({selected})…</source>
         <translation>导出已选择结构（{selected}）…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="241" />
-        <location filename="../ui/pages/show_nep.py" line="327" />
+        <location filename="../ui/pages/show_nep.py" line="306" />
+        <location filename="../ui/pages/show_nep.py" line="386" />
         <source>Export Removed ({removed})…</source>
         <translation>导出已移除结构（{removed}）…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="247" />
-        <location filename="../ui/pages/show_nep.py" line="330" />
+        <location filename="../ui/pages/show_nep.py" line="312" />
+        <location filename="../ui/pages/show_nep.py" line="389" />
         <source>Export Active ({active})…</source>
         <translation>导出当前保留结构（{active}）…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="253" />
         <source>Check current dataset</source>
-        <translation>评估当前数据集</translation>
+        <translation type="vanished">评估当前数据集</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="536" />
+        <location filename="../ui/pages/show_nep.py" line="598" />
         <source>Switching NEP model</source>
         <translation>正在切换 NEP 模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="536" />
+        <location filename="../ui/pages/show_nep.py" line="598" />
         <source>Please wait...</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="589" />
+        <location filename="../ui/pages/show_nep.py" line="658" />
         <source>Failed to switch NEP model</source>
         <translation>切换 NEP 模型失败</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="666" />
+        <location filename="../ui/pages/show_nep.py" line="735" />
         <source>Original index</source>
         <translation>原始索引</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="671" />
+        <location filename="../ui/pages/show_nep.py" line="740" />
         <source>Original structure index</source>
         <translation>结构的原始文件索引</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="679" />
+        <location filename="../ui/pages/show_nep.py" line="748" />
         <source>/ 0 frames</source>
         <translation>/ 0 帧</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="681" />
-        <location filename="../ui/pages/show_nep.py" line="682" />
+        <location filename="../ui/pages/show_nep.py" line="750" />
+        <location filename="../ui/pages/show_nep.py" line="751" />
         <source>Previous structure</source>
         <translation>上一个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="685" />
-        <location filename="../ui/pages/show_nep.py" line="686" />
+        <location filename="../ui/pages/show_nep.py" line="754" />
+        <location filename="../ui/pages/show_nep.py" line="755" />
         <source>Next structure</source>
         <translation>下一个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="692" />
-        <location filename="../ui/pages/show_nep.py" line="693" />
-        <location filename="../ui/pages/show_nep.py" line="1485" />
-        <location filename="../ui/pages/show_nep.py" line="1486" />
+        <location filename="../ui/pages/show_nep.py" line="761" />
+        <location filename="../ui/pages/show_nep.py" line="762" />
+        <location filename="../ui/pages/show_nep.py" line="1560" />
+        <location filename="../ui/pages/show_nep.py" line="1561" />
         <source>Play structures</source>
         <translation>连续播放结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1129" />
+        <location filename="../ui/pages/show_nep.py" line="1200" />
         <source>/ {count:,} frames</source>
         <translation>/ {count:,} 帧</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1480" />
-        <location filename="../ui/pages/show_nep.py" line="1481" />
+        <location filename="../ui/pages/show_nep.py" line="1555" />
+        <location filename="../ui/pages/show_nep.py" line="1556" />
         <source>Pause structures</source>
         <translation>暂停播放结构</translation>
     </message>
@@ -6397,145 +6402,145 @@ All child items will also be deleted.</source>
         <translation type="vanished">切换搜索模式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="749" />
+        <location filename="../ui/pages/show_nep.py" line="821" />
         <source>Switch NEP model</source>
         <translation>切换 NEP 模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="791" />
+        <location filename="../ui/pages/show_nep.py" line="863" />
         <source>Arrow overlay is available only for vispy structure canvas.</source>
         <translation>箭头叠加只在 vispy 结构画布中可用。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="805" />
+        <location filename="../ui/pages/show_nep.py" line="877" />
         <source>Searching…</source>
         <translation>正在搜索…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="809" />
+        <location filename="../ui/pages/show_nep.py" line="881" />
         <source>Indexing…</source>
         <translation>正在建立索引…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="916" />
-        <location filename="../ui/pages/show_nep.py" line="1080" />
-        <location filename="../ui/pages/show_nep.py" line="1232" />
+        <location filename="../ui/pages/show_nep.py" line="987" />
+        <location filename="../ui/pages/show_nep.py" line="1151" />
+        <location filename="../ui/pages/show_nep.py" line="1303" />
         <source>unsupported file format</source>
         <translation>不支持的文件格式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="928" />
+        <location filename="../ui/pages/show_nep.py" line="999" />
         <source>Please choose the data file</source>
         <translation>请选择数据文件</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="931" />
+        <location filename="../ui/pages/show_nep.py" line="1002" />
         <source>Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;All files (*)</source>
         <translation>支持的数据文件 (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="951" />
-        <location filename="../ui/pages/show_nep.py" line="968" />
-        <location filename="../ui/pages/show_nep.py" line="1008" />
-        <location filename="../ui/pages/show_nep.py" line="1038" />
-        <location filename="../ui/pages/show_nep.py" line="1517" />
-        <location filename="../ui/pages/show_nep.py" line="1937" />
+        <location filename="../ui/pages/show_nep.py" line="1022" />
+        <location filename="../ui/pages/show_nep.py" line="1039" />
+        <location filename="../ui/pages/show_nep.py" line="1079" />
+        <location filename="../ui/pages/show_nep.py" line="1109" />
+        <location filename="../ui/pages/show_nep.py" line="1592" />
+        <location filename="../ui/pages/show_nep.py" line="2012" />
         <source>NEP data has not been loaded yet!</source>
         <translation>尚未加载 NEP 数据！</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="975" />
+        <location filename="../ui/pages/show_nep.py" line="1046" />
         <source>No active structures to export.</source>
         <translation>没有可导出的保留结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1011" />
+        <location filename="../ui/pages/show_nep.py" line="1082" />
         <source>Please select some structures first!</source>
         <translation>请先选择一些结构！</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1042" />
+        <location filename="../ui/pages/show_nep.py" line="1113" />
         <source>No removed structures to export.</source>
         <translation>没有可导出的已移除结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1092" />
-        <location filename="../ui/pages/show_nep.py" line="1947" />
+        <location filename="../ui/pages/show_nep.py" line="1163" />
+        <location filename="../ui/pages/show_nep.py" line="2022" />
         <source>Confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1093" />
+        <location filename="../ui/pages/show_nep.py" line="1164" />
         <source>A working directory already exists. Loading a new directory will erase the previous results.
 Do you want to load the new working path?</source>
         <translation>已有工作目录。加载新目录会清除之前的结果。
 仍要加载新的工作路径吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1237" />
+        <location filename="../ui/pages/show_nep.py" line="1308" />
         <source>Current file: {file_name}</source>
         <translation>当前文件：{file_name}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1275" />
+        <location filename="../ui/pages/show_nep.py" line="1346" />
         <source>Loading</source>
         <translation>正在加载</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1275" />
+        <location filename="../ui/pages/show_nep.py" line="1346" />
         <source>Please wait patiently...</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1374" />
+        <location filename="../ui/pages/show_nep.py" line="1449" />
         <source>Failed to build search completer cache: {msg}</source>
         <translation>构建搜索补全缓存失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1413" />
-        <location filename="../ui/pages/show_nep.py" line="2139" />
+        <location filename="../ui/pages/show_nep.py" line="1488" />
+        <location filename="../ui/pages/show_nep.py" line="2214" />
         <source>Search failed: {msg}</source>
         <translation>搜索失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1511" />
+        <location filename="../ui/pages/show_nep.py" line="1586" />
         <source>File exported to: {save_file_path}</source>
         <translation>文件已导出到：{save_file_path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1689" />
+        <location filename="../ui/pages/show_nep.py" line="1764" />
         <source>Arrow overlay is unavailable for current structure canvas backend.</source>
         <translation>当前结构绘图后端不支持箭头叠加。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1700" />
+        <location filename="../ui/pages/show_nep.py" line="1775" />
         <source>No vector data available</source>
         <translation>没有可用的矢量数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1942" />
+        <location filename="../ui/pages/show_nep.py" line="2017" />
         <source>No bad structures tagged.</source>
         <translation>没有标记为异常的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1948" />
+        <location filename="../ui/pages/show_nep.py" line="2023" />
         <source>This will delete {count} structures marked as bad.
 Do you want to continue?</source>
         <translation>这将删除 {count} 个标记为异常的结构。
 要继续吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1959" />
+        <location filename="../ui/pages/show_nep.py" line="2034" />
         <source>Failed to delete rejected structures.</source>
         <translation>删除已剔除结构失败。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2041" />
+        <location filename="../ui/pages/show_nep.py" line="2116" />
         <source>Filter failed: {message}</source>
         <translation>筛选失败：{message}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2056" />
+        <location filename="../ui/pages/show_nep.py" line="2131" />
         <source>The filter result has expired. Preview it again before applying.</source>
         <translation>筛选结果已过期，请重新预览后再应用。</translation>
     </message>
@@ -6544,20 +6549,20 @@ Do you want to continue?</source>
         <translation type="vanished">原子间距过小，结构可能不合理。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2165" />
-        <location filename="../ui/pages/show_nep.py" line="2253" />
+        <location filename="../ui/pages/show_nep.py" line="2240" />
+        <location filename="../ui/pages/show_nep.py" line="2328" />
         <source>Please enter a search query.</source>
         <translation>请输入搜索内容。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2177" />
-        <location filename="../ui/pages/show_nep.py" line="2191" />
+        <location filename="../ui/pages/show_nep.py" line="2252" />
+        <location filename="../ui/pages/show_nep.py" line="2266" />
         <source>Please load a dataset before running Training Set Check.</source>
         <translation>请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2184" />
-        <location filename="../ui/pages/show_nep.py" line="2201" />
+        <location filename="../ui/pages/show_nep.py" line="2259" />
+        <location filename="../ui/pages/show_nep.py" line="2276" />
         <source>Training Set Check page is not available.</source>
         <translation>训练集评估页面不可用。</translation>
     </message>
@@ -8074,38 +8079,38 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>StructureToolBar</name>
     <message>
-        <location filename="../ui/views/toolbar.py" line="260" />
+        <location filename="../ui/views/toolbar.py" line="252" />
         <source>Orthographic view</source>
         <translation>正交视图</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="266" />
+        <location filename="../ui/views/toolbar.py" line="258" />
         <source>Auto view</source>
         <translation>自动视图</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="272" />
+        <location filename="../ui/views/toolbar.py" line="264" />
         <source>Show bonds</source>
         <translation>显示键</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="280" />
-        <location filename="../ui/views/toolbar.py" line="329" />
+        <location filename="../ui/views/toolbar.py" line="272" />
+        <location filename="../ui/views/toolbar.py" line="321" />
         <source>Show arrows</source>
         <translation>显示箭头</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="287" />
+        <location filename="../ui/views/toolbar.py" line="279" />
         <source>Export current structure</source>
         <translation>导出当前结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="293" />
+        <location filename="../ui/views/toolbar.py" line="285" />
         <source>Mark bad (reject)</source>
         <translation>标记为坏点（reject）</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="300" />
+        <location filename="../ui/views/toolbar.py" line="292" />
         <source>Drop all bad</source>
         <translation>删除所有坏点</translation>
     </message>
@@ -8450,14 +8455,61 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>TrainingSetAuditWidget</name>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="209" />
+        <location filename="../ui/pages/training_set_audit.py" line="253" />
         <source>Training Set Audit</source>
         <translation>训练集评估</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="158" />
-        <location filename="../ui/pages/training_set_audit.py" line="211" />
-        <location filename="../ui/pages/training_set_audit.py" line="1054" />
+        <source>Dataset facts</source>
+        <translation type="vanished">数据集事实</translation>
+    </message>
+    <message>
+        <source>Composition snapshot</source>
+        <translation type="vanished">组成快照</translation>
+    </message>
+    <message>
+        <source>Pure-element endpoints are included below.</source>
+        <translation type="vanished">纯元素端点已包含在下方列表中。</translation>
+    </message>
+    <message>
+        <source>{count:,} structures · {share:.2%}</source>
+        <translation type="vanished">{count:,} 个结构 · {share:.2%}</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="324" />
+        <source>Total atoms</source>
+        <translation>原子总数</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="329" />
+        <source>Atoms per structure</source>
+        <translation>每结构原子数</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="334" />
+        <source>Mean / median atoms</source>
+        <translation>平均 / 中位原子数</translation>
+    </message>
+    <message>
+        <source>Config_type coverage</source>
+        <translation type="vanished">Config_type 覆盖</translation>
+    </message>
+    <message>
+        <source>{labeled:,}/{total:,} · {groups} groups</source>
+        <translation type="vanished">{labeled:,}/{total:,} · {groups} 组</translation>
+    </message>
+    <message>
+        <source>Largest Config_type groups: {groups}</source>
+        <translation type="vanished">主要 Config_type 分组：{groups}</translation>
+    </message>
+    <message>
+        <source>No Config_type labels are available in this scope.</source>
+        <translation type="vanished">当前范围没有 Config_type 标签。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="202" />
+        <location filename="../ui/pages/training_set_audit.py" line="255" />
+        <location filename="../ui/pages/training_set_audit.py" line="1281" />
         <source>No dataset loaded</source>
         <translation>未加载数据集</translation>
     </message>
@@ -8466,35 +8518,33 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">重新检查</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="230" />
+        <location filename="../ui/pages/training_set_audit.py" line="274" />
         <source>Export HTML report</source>
         <translation>导出 HTML 报告</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="240" />
-        <location filename="../ui/pages/training_set_audit.py" line="945" />
+        <location filename="../ui/pages/training_set_audit.py" line="287" />
+        <location filename="../ui/pages/training_set_audit.py" line="1141" />
         <source>Open in separate window</source>
         <translation>在独立窗口中打开</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="242" />
+        <location filename="../ui/pages/training_set_audit.py" line="289" />
         <source>Open Training Set Check in a separate window</source>
         <translation>在独立窗口中打开训练集检查</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="942" />
+        <location filename="../ui/pages/training_set_audit.py" line="1138" />
         <source>Return to main window</source>
         <translation>收回主窗口</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="263" />
         <source>Current conclusion</source>
-        <translation>当前结论</translation>
+        <translation type="vanished">当前结论</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="270" />
         <source>This is a relative check inside the current dataset. It does not prove that the training set is complete or that the potential is reliable.</source>
-        <translation>这是当前数据集内部的相对检查，不能证明训练集已经完整，也不能直接证明势函数可靠。</translation>
+        <translation type="vanished">这是当前数据集内部的相对检查，不能证明训练集已经完整，也不能直接证明势函数可靠。</translation>
     </message>
     <message>
         <source>Review groups</source>
@@ -8517,48 +8567,48 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">未评估</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="364" />
+        <location filename="../ui/pages/training_set_audit.py" line="562" />
         <source>Review first</source>
         <translation>建议先看</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="368" />
+        <location filename="../ui/pages/training_set_audit.py" line="566" />
         <source>Related low-frequency bins are grouped into one topic instead of many alarms.</source>
         <translation>相邻的少样本分箱会合并成一个问题，不再拆成大量报警。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="386" />
+        <location filename="../ui/pages/training_set_audit.py" line="584" />
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="387" />
+        <location filename="../ui/pages/training_set_audit.py" line="585" />
         <source>What to review</source>
         <translation>建议查看</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="424" />
-        <location filename="../ui/pages/training_set_audit.py" line="3720" />
+        <location filename="../ui/pages/training_set_audit.py" line="622" />
+        <location filename="../ui/pages/training_set_audit.py" line="4377" />
         <source>Select a review topic to see the evidence.</source>
         <translation>选择一个问题查看依据。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="430" />
+        <location filename="../ui/pages/training_set_audit.py" line="628" />
         <source>What the data says</source>
         <translation>数据现象</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="433" />
+        <location filename="../ui/pages/training_set_audit.py" line="631" />
         <source>Why it matters</source>
         <translation>为什么值得看</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="436" />
+        <location filename="../ui/pages/training_set_audit.py" line="634" />
         <source>Keep in mind</source>
         <translation>注意</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="442" />
+        <location filename="../ui/pages/training_set_audit.py" line="640" />
         <source>View distribution</source>
         <translation>查看分布</translation>
     </message>
@@ -8571,20 +8621,21 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">检查项目</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="297" />
-        <location filename="../ui/pages/training_set_audit.py" line="651" />
+        <location filename="../ui/pages/training_set_audit.py" line="320" />
+        <location filename="../ui/pages/training_set_audit.py" line="847" />
         <source>Label availability</source>
         <translation>标签情况</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="288" />
-        <location filename="../ui/pages/training_set_audit.py" line="388" />
-        <location filename="../ui/pages/training_set_audit.py" line="559" />
-        <location filename="../ui/pages/training_set_audit.py" line="1333" />
-        <location filename="../ui/pages/training_set_audit.py" line="1357" />
-        <location filename="../ui/pages/training_set_audit.py" line="3591" />
-        <location filename="../ui/pages/training_set_audit.py" line="3864" />
-        <location filename="../ui/pages/training_set_audit.py" line="3881" />
+        <location filename="../ui/pages/training_set_audit.py" line="311" />
+        <location filename="../ui/pages/training_set_audit.py" line="508" />
+        <location filename="../ui/pages/training_set_audit.py" line="586" />
+        <location filename="../ui/pages/training_set_audit.py" line="755" />
+        <location filename="../ui/pages/training_set_audit.py" line="1572" />
+        <location filename="../ui/pages/training_set_audit.py" line="1596" />
+        <location filename="../ui/pages/training_set_audit.py" line="4243" />
+        <location filename="../ui/pages/training_set_audit.py" line="4523" />
+        <location filename="../ui/pages/training_set_audit.py" line="4540" />
         <source>Structures</source>
         <translation>结构数</translation>
     </message>
@@ -8609,9 +8660,9 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">分析</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="708" />
-        <location filename="../ui/pages/training_set_audit.py" line="3532" />
-        <location filename="../ui/pages/training_set_audit.py" line="3537" />
+        <location filename="../ui/pages/training_set_audit.py" line="904" />
+        <location filename="../ui/pages/training_set_audit.py" line="4171" />
+        <location filename="../ui/pages/training_set_audit.py" line="4176" />
         <source>Distribution</source>
         <translation>分布</translation>
     </message>
@@ -8620,7 +8671,7 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">图表</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="889" />
+        <location filename="../ui/pages/training_set_audit.py" line="1085" />
         <source>Observed</source>
         <translation>实际结构数</translation>
     </message>
@@ -8633,12 +8684,12 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">限制</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="449" />
+        <location filename="../ui/pages/training_set_audit.py" line="647" />
         <source>Show 0 structures in Dataset Display</source>
         <translation>在数据集显示中显示 0 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="389" />
+        <location filename="../ui/pages/training_set_audit.py" line="587" />
         <source>Evidence</source>
         <translation>证据</translation>
     </message>
@@ -8651,16 +8702,18 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">全部</translation>
     </message>
     <message>
+        <location filename="../ui/pages/training_set_audit.py" line="422" />
         <source>High</source>
-        <translation type="vanished">高</translation>
+        <translation>高</translation>
     </message>
     <message>
         <source>Medium</source>
         <translation type="vanished">中</translation>
     </message>
     <message>
+        <location filename="../ui/pages/training_set_audit.py" line="409" />
         <source>Low</source>
-        <translation type="vanished">低</translation>
+        <translation>低</translation>
     </message>
     <message>
         <source>Finding</source>
@@ -8675,13 +8728,13 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">信号</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="458" />
-        <location filename="../ui/pages/training_set_audit.py" line="2339" />
+        <location filename="../ui/pages/training_set_audit.py" line="654" />
+        <location filename="../ui/pages/training_set_audit.py" line="2584" />
         <source>Overview</source>
         <translation>概览</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2296" />
+        <location filename="../ui/pages/training_set_audit.py" line="2541" />
         <source>{dataset} · {count} structures</source>
         <translation>{dataset} · {count} 个结构</translation>
     </message>
@@ -8690,33 +8743,38 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">训练集评估</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="224" />
+        <location filename="../ui/pages/training_set_audit.py" line="268" />
         <source>Re-run checks</source>
         <translation>重新检查</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="634" />
+        <location filename="../ui/pages/training_set_audit.py" line="357" />
+        <source>Upper triangle: global pair co-occurrence · Diagonal: element presence · Select an upper pair to reveal related third and fourth elements below</source>
+        <translation>上三角：全局元素对共现 · 对角线：元素出现率 · 选择上三角元素对后，下方显示关联的第三、第四元素</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="830" />
         <source>Check areas</source>
         <translation>检查项目</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="669" />
+        <location filename="../ui/pages/training_set_audit.py" line="865" />
         <source>Detailed distributions</source>
         <translation>详细分布</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="674" />
+        <location filename="../ui/pages/training_set_audit.py" line="870" />
         <source>Use this view to inspect raw bins, NEP-cutoff scopes, and the structures behind a selected bar.</source>
         <translation>在这里查看原始分箱、NEP 截断范围，以及每个柱子对应的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="699" />
+        <location filename="../ui/pages/training_set_audit.py" line="895" />
         <source>Center element</source>
         <translation>中心元素</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="602" />
-        <location filename="../ui/pages/training_set_audit.py" line="732" />
+        <location filename="../ui/pages/training_set_audit.py" line="798" />
+        <location filename="../ui/pages/training_set_audit.py" line="928" />
         <source>Show selected structures</source>
         <translation>查看选中的结构</translation>
     </message>
@@ -8725,149 +8783,149 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">详细数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="749" />
+        <location filename="../ui/pages/training_set_audit.py" line="945" />
         <source>Explore numeric fields</source>
         <translation>查看数值字段分布</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="754" />
+        <location filename="../ui/pages/training_set_audit.py" line="950" />
         <source>Inspect reference, prediction, or error distributions and click a bin to select its structures.</source>
         <translation>查看参考值、预测值或误差分布；点击分箱即可选中对应结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="769" />
+        <location filename="../ui/pages/training_set_audit.py" line="965" />
         <source>Explore distributions</source>
         <translation>数据分布</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="830" />
+        <location filename="../ui/pages/training_set_audit.py" line="1026" />
         <source>Optional exact config_type values, e.g. bulk, vacancy</source>
         <translation>可选：精确的 config_type 值，例如 bulk、vacancy</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="833" />
+        <location filename="../ui/pages/training_set_audit.py" line="1029" />
         <source>Use a minimum support rule</source>
         <translation>启用最低支持量规则</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="846" />
+        <location filename="../ui/pages/training_set_audit.py" line="1042" />
         <source>Structure families</source>
         <translation>结构家族</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="887" />
+        <location filename="../ui/pages/training_set_audit.py" line="1083" />
         <source>Structure family</source>
         <translation>结构家族</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1034" />
-        <location filename="../ui/pages/training_set_audit.py" line="1173" />
+        <location filename="../ui/pages/training_set_audit.py" line="1244" />
+        <location filename="../ui/pages/training_set_audit.py" line="1402" />
         <source>No target has been set. The dataset inventory remains valid; define a range or key points before comparing support.</source>
         <translation>尚未设置目标。当前数据盘点仍然有效；设置范围或重点组成后，才会比较目标支持情况。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1071" />
+        <location filename="../ui/pages/training_set_audit.py" line="1298" />
         <source>Analyzing {dataset}...</source>
         <translation>正在检查 {dataset}...</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1073" />
+        <location filename="../ui/pages/training_set_audit.py" line="1300" />
         <source>Please wait while the checks run.</source>
         <translation>正在执行检查，请稍候。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1199" />
+        <location filename="../ui/pages/training_set_audit.py" line="1428" />
         <source>Counts colored by structural phase</source>
         <translation>按结构相着色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1203" />
+        <location filename="../ui/pages/training_set_audit.py" line="1432" />
         <source>Counts colored by magnetic order</source>
         <translation>按磁序着色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1277" />
+        <location filename="../ui/pages/training_set_audit.py" line="1516" />
         <source>Sample counts by {element} concentration, colored by structural phase</source>
         <translation>不同 {element} 浓度的样本数量（按结构相着色）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1291" />
+        <location filename="../ui/pages/training_set_audit.py" line="1530" />
         <source>Sample counts by {element} concentration, colored by magnetic order</source>
         <translation>不同 {element} 浓度的样本数量（按磁序着色）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1415" />
+        <location filename="../ui/pages/training_set_audit.py" line="1654" />
         <source>This chart is a one-element projection; one plotted concentration may contain multiple exact multicomponent compositions.</source>
         <translation>这是单元素投影图；同一个浓度点可能包含多个不同的精确多元组成。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1421" />
+        <location filename="../ui/pages/training_set_audit.py" line="1660" />
         <source>Bar height is the sample count. Colored segments show the snapshot structural-phase shares within that concentration; click a segment to open those structures.</source>
         <translation>柱高表示样本数量，柱内彩色分段表示该浓度下各快照结构相的相对占比；点击色块可打开对应结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1428" />
+        <location filename="../ui/pages/training_set_audit.py" line="1667" />
         <source>Bar height is the sample count. Colored segments show the snapshot magnetic-order shares within that concentration; structures without a valid spin field remain a separate group. Click a segment to open those structures.</source>
         <translation>柱高表示样本数量，柱内彩色分段表示该浓度下各快照磁序的相对占比；缺少有效自旋场的结构会作为独立分组保留。点击色块可打开对应结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1452" />
+        <location filename="../ui/pages/training_set_audit.py" line="1691" />
         <source>FM</source>
         <translation>铁磁（FM）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1453" />
+        <location filename="../ui/pages/training_set_audit.py" line="1692" />
         <source>AFM</source>
         <translation>反铁磁（AFM）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1454" />
+        <location filename="../ui/pages/training_set_audit.py" line="1693" />
         <source>Layered AFM (↑↓)</source>
         <translation>逐层反铁磁（↑↓）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1455" />
+        <location filename="../ui/pages/training_set_audit.py" line="1694" />
         <source>Double-layer AFM (↑↑↓↓)</source>
         <translation>双层反铁磁（↑↑↓↓）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1456" />
+        <location filename="../ui/pages/training_set_audit.py" line="1695" />
         <source>FiM</source>
         <translation>亚铁磁（FiM）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1457" />
+        <location filename="../ui/pages/training_set_audit.py" line="1696" />
         <source>PM-like (spin-disordered)</source>
         <translation>类顺磁（自旋无序）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1458" />
+        <location filename="../ui/pages/training_set_audit.py" line="1697" />
         <source>Other noncollinear</source>
         <translation>其他非共线磁序</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1459" />
+        <location filename="../ui/pages/training_set_audit.py" line="1698" />
         <source>Unresolved magnetic type</source>
         <translation>未识别磁类型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1812" />
+        <location filename="../ui/pages/training_set_audit.py" line="2054" />
         <source>Analyzing evidence...</source>
         <translation>正在分析证据…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1828" />
-        <location filename="../ui/pages/training_set_audit.py" line="1831" />
+        <location filename="../ui/pages/training_set_audit.py" line="2071" />
+        <location filename="../ui/pages/training_set_audit.py" line="2074" />
         <source>Structural and magnetic snapshot evidence is being analyzed on demand.</source>
         <translation>正在按需分析结构与磁序快照证据。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1869" />
+        <location filename="../ui/pages/training_set_audit.py" line="2112" />
         <source>Structural and magnetic snapshot evidence is available.</source>
         <translation>结构与磁序快照证据已可用。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1219" />
+        <location filename="../ui/pages/training_set_audit.py" line="1450" />
         <source>Evidence available</source>
         <translation>证据已就绪</translation>
     </message>
@@ -8880,139 +8938,139 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">每根柱在该浓度内归一化为 100%。颜色表示快照磁序，缺少有效自旋场的结构会作为独立分组保留；点击色块可打开对应结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1910" />
+        <location filename="../ui/pages/training_set_audit.py" line="2154" />
         <source>Retry evidence</source>
         <translation>重试证据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2056" />
+        <location filename="../ui/pages/training_set_audit.py" line="2301" />
         <source>No key points were entered. Showing {count} existing {element} fraction points inside the selected range. This is an inventory view and cannot reveal missing points between existing samples.</source>
         <translation>未输入重点组成。当前显示所选范围内已有的 {count} 个 {element} 比例点。这只是数据盘点，不能判断已有样本之间是否缺点。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2078" />
-        <location filename="../ui/pages/training_set_audit.py" line="2159" />
+        <location filename="../ui/pages/training_set_audit.py" line="2323" />
+        <location filename="../ui/pages/training_set_audit.py" line="2404" />
         <source>Review nearby compositions</source>
         <translation>查看相邻组成</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2106" />
+        <location filename="../ui/pages/training_set_audit.py" line="2351" />
         <source>Minimum support rule is off. Exact samples: {supported} · no matching sample: {missing} · metadata incomplete: {unknown}.</source>
         <translation>最低支持量规则未启用。精确样本：{supported} · 无匹配样本：{missing} · 元数据不足：{unknown}。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2115" />
+        <location filename="../ui/pages/training_set_audit.py" line="2360" />
         <source>Using your rule of at least {minimum:,} structures per point: met {supported} · below rule {thin} · no matching sample {missing} · cannot fully evaluate {unknown}.</source>
         <translation>按你设置的每点至少 {minimum:,} 个结构：达到规则 {supported} · 低于规则 {thin} · 无匹配样本 {missing} · 无法完整判断 {unknown}。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2129" />
+        <location filename="../ui/pages/training_set_audit.py" line="2374" />
         <source>Meets your quantity rule</source>
         <translation>达到你设置的数量规则</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2131" />
+        <location filename="../ui/pages/training_set_audit.py" line="2376" />
         <source>Exact samples available</source>
         <translation>有精确样本</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2133" />
+        <location filename="../ui/pages/training_set_audit.py" line="2378" />
         <source>Below your quantity rule</source>
         <translation>低于你设置的数量规则</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2134" />
+        <location filename="../ui/pages/training_set_audit.py" line="2379" />
         <source>No exact composition sample</source>
         <translation>无精确组成样本</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2135" />
+        <location filename="../ui/pages/training_set_audit.py" line="2380" />
         <source>No matching structure family</source>
         <translation>无匹配的结构家族样本</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2137" />
+        <location filename="../ui/pages/training_set_audit.py" line="2382" />
         <source>Metadata incomplete; cannot fully evaluate</source>
         <translation>元数据不足，无法完整判断</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2149" />
+        <location filename="../ui/pages/training_set_audit.py" line="2394" />
         <source>{count:,} structures at this composition have no usable config_type.</source>
         <translation>该组成下有 {count:,} 个结构缺少可用的 config_type。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2157" />
+        <location filename="../ui/pages/training_set_audit.py" line="2402" />
         <source>View structures</source>
         <translation>查看结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2158" />
+        <location filename="../ui/pages/training_set_audit.py" line="2403" />
         <source>Review sources before deciding</source>
         <translation>查看来源后再决定</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2161" />
+        <location filename="../ui/pages/training_set_audit.py" line="2406" />
         <source>Review structure-family plan</source>
         <translation>检查结构家族计划</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2163" />
+        <location filename="../ui/pages/training_set_audit.py" line="2408" />
         <source>Inspect missing metadata</source>
         <translation>检查缺失的元数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2218" />
+        <location filename="../ui/pages/training_set_audit.py" line="2463" />
         <source>No independent model evidence is attached. There are no reference and prediction values that have passed structure mapping and unit checks. Show NEP predictions on the current training data may be used for error browsing, but are not automatically treated as independent model validation evidence.</source>
         <translation>尚未接入独立模型证据。当前没有通过结构映射和单位校验的参考值与预测值。Show NEP 对当前训练数据的预测可以用于误差浏览，但不会自动视为独立模型验收证据。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2230" />
+        <location filename="../ui/pages/training_set_audit.py" line="2475" />
         <source>The model declares {declared} elements; this dataset contains {present}: {elements}. The other {absent} model elements are absent, so their compositions and local environments cannot be audited here. Neighbor analysis computes only present elements. This is informational and may be intentional for a subsystem or universal model. Independent reference and prediction evidence has not been attached.</source>
         <translation>模型声明了 {declared} 种元素；当前数据集包含其中 {present} 种：{elements}。另外 {absent} 种模型元素未出现在数据中，因此无法在这里检查它们的组成和局域环境。邻居分析只计算实际存在的元素。这只是事实提示，对子体系或通用模型可能是有意设计。尚未接入独立的参考值与预测值证据。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2250" />
+        <location filename="../ui/pages/training_set_audit.py" line="2495" />
         <source>All {count} model-declared elements occur in this dataset: {elements}. Independent reference and prediction evidence has not been attached.</source>
         <translation>模型声明的 {count} 种元素均出现在当前数据集中：{elements}。尚未接入独立的参考值与预测值证据。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2287" />
+        <location filename="../ui/pages/training_set_audit.py" line="2532" />
         <source>{dataset} · {scope} scope · {count}/{total} structures</source>
         <translation>{dataset} · {scope} 范围 · {count}/{total} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2304" />
+        <location filename="../ui/pages/training_set_audit.py" line="2549" />
         <source>Rules {version}</source>
         <translation>规则 {version}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2308" />
+        <location filename="../ui/pages/training_set_audit.py" line="2553" />
         <source>Data {fingerprint}</source>
         <translation>数据 {fingerprint}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2314" />
+        <location filename="../ui/pages/training_set_audit.py" line="2559" />
         <source>Model {fingerprint}</source>
         <translation>模型 {fingerprint}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1213" />
-        <location filename="../ui/pages/training_set_audit.py" line="1222" />
+        <location filename="../ui/pages/training_set_audit.py" line="1443" />
         <source>Analyze remaining evidence</source>
         <translation>分析剩余证据</translation>
     </message>
     <message>
+        <location filename="../ui/pages/training_set_audit.py" line="1453" />
         <source>Analyze remaining</source>
         <translation>分析剩余项</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="499" />
-        <location filename="../ui/pages/training_set_audit.py" line="1215" />
+        <location filename="../ui/pages/training_set_audit.py" line="695" />
+        <location filename="../ui/pages/training_set_audit.py" line="1445" />
         <source>Analyze phases and magnetic order</source>
         <translation>分析相结构与磁序</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1195" />
+        <location filename="../ui/pages/training_set_audit.py" line="1424" />
         <source>Sample counts</source>
         <translation>样本数量</translation>
     </message>
@@ -9045,413 +9103,413 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">颜色表示各浓度内归一化到 100% 的快照磁序占比；缺少有效自旋场的结构会作为独立分组保留。点击色块可打开对应结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1461" />
+        <location filename="../ui/pages/training_set_audit.py" line="1700" />
         <source>No valid spin field</source>
         <translation>无有效自旋场</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1817" />
+        <location filename="../ui/pages/training_set_audit.py" line="2060" />
         <source>Analyzing phases and magnetic order...</source>
         <translation>正在分析相结构与磁序…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1915" />
+        <location filename="../ui/pages/training_set_audit.py" line="2160" />
         <source>Retry phases and magnetic order</source>
         <translation>重试相结构与磁序分析</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2483" />
+        <location filename="../ui/pages/training_set_audit.py" line="2728" />
         <source>No populated low-frequency range</source>
         <translation>没有已出现的低频区间</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2486" />
+        <location filename="../ui/pages/training_set_audit.py" line="2731" />
         <source>{first} to {last} ({count} ranges)</source>
         <translation>{first} 至 {last}（共 {count} 个区间）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2562" />
+        <location filename="../ui/pages/training_set_audit.py" line="2807" />
         <source>Repeated geometry group {group}</source>
         <translation>重复几何组 {group}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2567" />
+        <location filename="../ui/pages/training_set_audit.py" line="2812" />
         <source>This repeated-geometry group contains {count} structures.</source>
         <translation>该重复几何组包含 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2582" />
+        <location filename="../ui/pages/training_set_audit.py" line="2827" />
         <source>Intentionally retained</source>
         <translation>有意保留</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2583" />
+        <location filename="../ui/pages/training_set_audit.py" line="2828" />
         <source>Isolation candidate</source>
         <translation>隔离候选</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2584" />
-        <location filename="../ui/pages/training_set_audit.py" line="2595" />
+        <location filename="../ui/pages/training_set_audit.py" line="2829" />
+        <location filename="../ui/pages/training_set_audit.py" line="2840" />
         <source>Recalculation needed</source>
         <translation>需要重算</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2589" />
+        <location filename="../ui/pages/training_set_audit.py" line="2834" />
         <source>Resolved and rechecked</source>
         <translation>已处理并复验</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2594" />
+        <location filename="../ui/pages/training_set_audit.py" line="2839" />
         <source>Trusted source identified</source>
         <translation>已确定可信来源</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2599" />
+        <location filename="../ui/pages/training_set_audit.py" line="2844" />
         <source>Physically reasonable</source>
         <translation>物理上合理</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2600" />
+        <location filename="../ui/pages/training_set_audit.py" line="2845" />
         <source>Inspect geometry</source>
         <translation>检查几何结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2657" />
+        <location filename="../ui/pages/training_set_audit.py" line="2902" />
         <source>Empty structures</source>
         <translation>空结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2658" />
+        <location filename="../ui/pages/training_set_audit.py" line="2903" />
         <source>{count} structures contain no atoms.</source>
         <translation>{count} 个结构不包含任何原子。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2659" />
+        <location filename="../ui/pages/training_set_audit.py" line="2904" />
         <source>A zero-atom frame cannot provide an atomic training example.</source>
         <translation>零原子帧不能作为原子势训练样本。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2660" />
+        <location filename="../ui/pages/training_set_audit.py" line="2905" />
         <source>This check does not impose a minimum cell size or composition.</source>
         <translation>本检查不限制晶胞的最小尺寸或具体组成。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2663" />
+        <location filename="../ui/pages/training_set_audit.py" line="2908" />
         <source>Non-finite geometry values</source>
         <translation>几何数据包含非有限值</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2665" />
+        <location filename="../ui/pages/training_set_audit.py" line="2910" />
         <source>{count} structures have an invalid position shape or NaN/Inf positions or cell values.</source>
         <translation>{count} 个结构的位置数组形状无效，或位置、晶胞中包含 NaN/Inf。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2667" />
+        <location filename="../ui/pages/training_set_audit.py" line="2912" />
         <source>Training and neighbor calculations cannot safely consume these geometries.</source>
         <translation>训练和近邻计算无法安全处理这些几何数据。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2668" />
+        <location filename="../ui/pages/training_set_audit.py" line="2913" />
         <source>This check does not judge whether a finite geometry is physically meaningful.</source>
         <translation>本检查不判断数值有限的几何是否具有物理意义。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2671" />
+        <location filename="../ui/pages/training_set_audit.py" line="2916" />
         <source>Invalid periodic-boundary metadata</source>
         <translation>周期性边界信息无效</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2672" />
+        <location filename="../ui/pages/training_set_audit.py" line="2917" />
         <source>{count} structures do not provide three readable PBC directions.</source>
         <translation>{count} 个结构没有提供可读取的三个 PBC 方向。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2673" />
+        <location filename="../ui/pages/training_set_audit.py" line="2918" />
         <source>Periodic geometry operations need an unambiguous PBC definition.</source>
         <translation>周期几何计算需要明确的 PBC 定义。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2674" />
+        <location filename="../ui/pages/training_set_audit.py" line="2919" />
         <source>Missing PBC uses the existing NepTrainKit default and is not flagged.</source>
         <translation>缺少 PBC 时沿用 NepTrainKit 当前默认值，不会因此标记。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2677" />
+        <location filename="../ui/pages/training_set_audit.py" line="2922" />
         <source>Invalid periodic cell</source>
         <translation>周期晶胞无效</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2678" />
+        <location filename="../ui/pages/training_set_audit.py" line="2923" />
         <source>{count} structures have invalid lattice vectors for their periodic directions.</source>
         <translation>{count} 个结构在周期方向上的晶格矢量无效。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2679" />
+        <location filename="../ui/pages/training_set_audit.py" line="2924" />
         <source>Minimum-image geometry is undefined for the declared periodic directions.</source>
         <translation>这些周期方向无法定义最小镜像几何。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2680" />
+        <location filename="../ui/pages/training_set_audit.py" line="2925" />
         <source>Non-periodic directions are not required to span a three-dimensional volume.</source>
         <translation>非周期方向不要求共同张成三维体积。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2683" />
+        <location filename="../ui/pages/training_set_audit.py" line="2928" />
         <source>Invalid element information</source>
         <translation>元素信息无效</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2684" />
+        <location filename="../ui/pages/training_set_audit.py" line="2929" />
         <source>{count} structures contain unknown element symbols or a symbol-count mismatch.</source>
         <translation>{count} 个结构包含未知元素符号，或元素数量与原子数不一致。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2685" />
+        <location filename="../ui/pages/training_set_audit.py" line="2930" />
         <source>A training backend cannot map these atoms to a valid element type.</source>
         <translation>训练后端无法把这些原子映射到有效元素类型。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2686" />
+        <location filename="../ui/pages/training_set_audit.py" line="2931" />
         <source>This does not check whether the attached model supports every valid element.</source>
         <translation>本检查不判断当前模型是否支持数据中的全部有效元素。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2689" />
+        <location filename="../ui/pages/training_set_audit.py" line="2934" />
         <source>Invalid label shape</source>
         <translation>标签数组形状无效</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2690" />
+        <location filename="../ui/pages/training_set_audit.py" line="2935" />
         <source>{count} structures have energy, force, or virial labels with an invalid shape.</source>
         <translation>{count} 个结构的能量、力或 virial 标签形状无效。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2691" />
+        <location filename="../ui/pages/training_set_audit.py" line="2936" />
         <source>Mismatched labels can be assigned to the wrong atoms or rejected by training.</source>
         <translation>形状不匹配可能让标签对应到错误原子，或被训练程序拒绝。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2692" />
+        <location filename="../ui/pages/training_set_audit.py" line="2937" />
         <source>Missing labels are handled separately and are not automatically invalid.</source>
         <translation>缺失标签会单独报告，不会自动判为无效。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2695" />
+        <location filename="../ui/pages/training_set_audit.py" line="2940" />
         <source>Non-finite label values</source>
         <translation>标签包含非有限值</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2696" />
+        <location filename="../ui/pages/training_set_audit.py" line="2941" />
         <source>{count} structures contain NaN/Inf energy, force, or virial labels.</source>
         <translation>{count} 个结构的能量、力或 virial 标签包含 NaN/Inf。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2697" />
+        <location filename="../ui/pages/training_set_audit.py" line="2942" />
         <source>Non-finite targets make common training losses non-finite.</source>
         <translation>非有限目标值会让常见训练损失变成非有限值。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2698" />
+        <location filename="../ui/pages/training_set_audit.py" line="2943" />
         <source>The check does not require every supported label type to be present.</source>
         <translation>本检查不要求每个结构都具备所有标签类型。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2701" />
+        <location filename="../ui/pages/training_set_audit.py" line="2946" />
         <source>Overlapping atoms</source>
         <translation>原子疑似重叠</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2702" />
+        <location filename="../ui/pages/training_set_audit.py" line="2947" />
         <source>{count} structures contain an atom pair closer than 0.5 Å.</source>
         <translation>{count} 个结构存在距离小于 0.5 Å 的原子对。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2703" />
+        <location filename="../ui/pages/training_set_audit.py" line="2948" />
         <source>This is a conservative collision signal and should be checked before training.</source>
         <translation>这是保守的原子碰撞信号，建议在训练前复核。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2704" />
+        <location filename="../ui/pages/training_set_audit.py" line="2949" />
         <source>Specialized collision datasets may intentionally contain very short distances.</source>
         <translation>碰撞等特殊数据集可能有意包含很短的原子距离。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2707" />
+        <location filename="../ui/pages/training_set_audit.py" line="2952" />
         <source>Duplicate geometries with conflicting labels</source>
         <translation>重复几何的标签相互冲突</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2708" />
+        <location filename="../ui/pages/training_set_audit.py" line="2953" />
         <source>{count} structures share geometry but disagree in common training labels.</source>
         <translation>{count} 个结构具有相同几何，但共有训练标签不一致。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2709" />
+        <location filename="../ui/pages/training_set_audit.py" line="2954" />
         <source>The same input geometry maps to inconsistent targets and needs provenance review.</source>
         <translation>同一输入几何对应了不一致的目标值，需要检查数据来源。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2710" />
+        <location filename="../ui/pages/training_set_audit.py" line="2955" />
         <source>The check cannot decide which repeated calculation is correct.</source>
         <translation>本检查无法判断哪一次重复计算才是正确结果。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2713" />
+        <location filename="../ui/pages/training_set_audit.py" line="2958" />
         <source>Repeated geometries</source>
         <translation>重复几何</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2720" />
+        <location filename="../ui/pages/training_set_audit.py" line="2965" />
         <source>{count} structures repeat geometry already present in the current scope.</source>
         <translation>{count} 个结构与当前范围内已有几何重复。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2723" />
+        <location filename="../ui/pages/training_set_audit.py" line="2968" />
         <source>Repeated geometries may unintentionally overweight one configuration.</source>
         <translation>重复几何可能无意中提高某类构型的训练权重。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2724" />
+        <location filename="../ui/pages/training_set_audit.py" line="2969" />
         <source>They may be intentional for weighting or independent-label studies; do not delete automatically.</source>
         <translation>重复也可能用于显式加权或独立标注研究，请勿自动删除。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2737" />
+        <location filename="../ui/pages/training_set_audit.py" line="2982" />
         <source>Maximum-force review group (top 10%)</source>
         <translation>最大力较高的一组结构（最高 10%）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2741" />
+        <location filename="../ui/pages/training_set_audit.py" line="2986" />
         <source>{count} structures have maximum force above {threshold} eV/Å within {labeled} labeled structures.</source>
         <translation>在 {labeled} 个有力标签的结构中，有 {count} 个结构的最大力高于 {threshold} eV/Å。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2750" />
+        <location filename="../ui/pages/training_set_audit.py" line="2995" />
         <source>{count} structures are in the highest 10% of maximum force values.</source>
         <translation>有 {count} 个结构位于最大力最高的 10%。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2753" />
+        <location filename="../ui/pages/training_set_audit.py" line="2998" />
         <source>These structures often carry disproportionate training pressure and are worth checking for difficult environments or bad geometries.</source>
         <translation>这组结构往往对训练影响较大，值得检查是否包含困难环境或不合理几何。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2757" />
+        <location filename="../ui/pages/training_set_audit.py" line="3002" />
         <source>High force can be physically intended. This is a review group, not a delete recommendation.</source>
         <translation>较大的力可能符合物理预期。这只是建议复核的一组结构，不是删除建议。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2760" />
+        <location filename="../ui/pages/training_set_audit.py" line="3005" />
         <source>Energy-per-atom review group (top 5%)</source>
         <translation>单原子能量较高的一组结构（最高 5%）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2764" />
+        <location filename="../ui/pages/training_set_audit.py" line="3009" />
         <source>{count} structures have energy per atom above {threshold} eV/atom within {labeled} labeled structures.</source>
         <translation>在 {labeled} 个有能量标签的结构中，有 {count} 个结构的单原子能量高于 {threshold} eV/atom。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2773" />
+        <location filename="../ui/pages/training_set_audit.py" line="3018" />
         <source>{count} structures are in the highest 5% of energy-per-atom values.</source>
         <translation>有 {count} 个结构位于单原子能量最高的 5%。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2776" />
+        <location filename="../ui/pages/training_set_audit.py" line="3021" />
         <source>This group may contain strained, defective, hot, or otherwise unusual structures.</source>
         <translation>这组数据中可能包含受应变、缺陷、高温或其他较特殊的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2779" />
+        <location filename="../ui/pages/training_set_audit.py" line="3024" />
         <source>Absolute energy per atom may not be comparable across compositions. This ranking is not an anomaly verdict.</source>
         <translation>不同组分之间的绝对单原子能量可能无法直接比较；这里的排序不等于异常判定。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2814" />
+        <location filename="../ui/pages/training_set_audit.py" line="3059" />
         <source>{element} composition has {count} low-frequency ranges</source>
         <translation>{element} 组分有 {count} 个低频区间</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2820" />
+        <location filename="../ui/pages/training_set_audit.py" line="3065" />
         <source>These composition ranges contain {count} of {total} structures ({fraction}): {ranges}.</source>
         <translation>这些组分区间包含 {count}/{total} 个结构（{fraction}）：{ranges}。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2825" />
+        <location filename="../ui/pages/training_set_audit.py" line="3070" />
         <source>They are less common than other composition regions inside the current dataset.</source>
         <translation>与当前数据集中的其他组分区域相比，这些区间出现得更少。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2828" />
+        <location filename="../ui/pages/training_set_audit.py" line="3073" />
         <source>Relative sparsity matters only when the range belongs to the intended model scope.</source>
         <translation>只有当这些区间属于模型的预期使用范围时，相对偏薄才值得处理。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2843" />
+        <location filename="../ui/pages/training_set_audit.py" line="3088" />
         <source>angular-neighbor environment</source>
         <translation>角向邻居环境</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2845" />
+        <location filename="../ui/pages/training_set_audit.py" line="3090" />
         <source>radial-neighbor environment</source>
         <translation>径向邻居环境</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2867" />
+        <location filename="../ui/pages/training_set_audit.py" line="3112" />
         <source>{metric}: {ranges}; {thin} of {total} environments ({fraction}).</source>
         <translation>{metric}：{ranges}；包含 {thin}/{total} 个局域环境（{fraction}）。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2888" />
+        <location filename="../ui/pages/training_set_audit.py" line="3133" />
         <source>{center} {scope} has {count} low-frequency signals</source>
         <translation>{center} 的{scope}有 {count} 类样本较少的特征</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2898" />
+        <location filename="../ui/pages/training_set_audit.py" line="3143" />
         <source>These ranges occur in {structures} structures.</source>
         <translation>这些区间出现在 {structures} 个结构中。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2902" />
+        <location filename="../ui/pages/training_set_audit.py" line="3147" />
         <source>These environments are less common than other comparable environments in this dataset.</source>
         <translation>与数据集中其他可比较的局域环境相比，这些环境出现得更少。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2905" />
+        <location filename="../ui/pages/training_set_audit.py" line="3150" />
         <source>Relative sparsity is not a model error and is actionable only for environments relevant to use.</source>
         <translation>相对偏薄不等于模型误差；只有与实际用途相关时，才需要据此补数据。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2930" />
+        <location filename="../ui/pages/training_set_audit.py" line="3175" />
         <source>{pair} contact support ({scope})</source>
         <translation>{pair} 接触支持（{scope}）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2936" />
+        <location filename="../ui/pages/training_set_audit.py" line="3181" />
         <source>{contacts} directed cutoff contacts occur in {contact_structures} of {co_occurring} co-occurring structures.</source>
         <translation>在 {co_occurring} 个同时含有该元素对的结构中，有 {contact_structures} 个结构出现接触，共计 {contacts} 条有向截断接触边。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2944" />
+        <location filename="../ui/pages/training_set_audit.py" line="3189" />
         <source>This describes pair support in the current data; it is not a sampling recommendation.</source>
         <translation>这只描述当前数据中的元素对支持情况，不是采样建议。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2947" />
+        <location filename="../ui/pages/training_set_audit.py" line="3192" />
         <source>Raw contact counts depend on structure size and composition, so compare them cautiously.</source>
         <translation>原始接触数会受到结构大小和组分影响，比较时需要谨慎。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2984" />
+        <location filename="../ui/pages/training_set_audit.py" line="3229" />
         <source>Generated {timestamp}</source>
         <translation>生成于 {timestamp}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2988" />
+        <location filename="../ui/pages/training_set_audit.py" line="3233" />
         <source>{count} topic</source>
         <translation>{count} 个主题</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2989" />
+        <location filename="../ui/pages/training_set_audit.py" line="3234" />
         <source>{count} topics</source>
         <translation>{count} 个主题</translation>
     </message>
@@ -9460,19 +9518,16 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">{groups} 组 · {structures} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3094" />
         <source>Resolve {groups} data blockers affecting {structures} unique structures before training.</source>
-        <translation>训练前请先处理 {groups} 个数据阻塞项，涉及 {structures} 个不同结构。</translation>
+        <translation type="vanished">训练前请先处理 {groups} 个数据阻塞项，涉及 {structures} 个不同结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3098" />
         <source>Start with {groups} review groups covering {structures} unique structures.</source>
-        <translation>建议先复核 {groups} 组数据，共涉及 {structures} 个不同结构。</translation>
+        <translation type="vanished">建议先复核 {groups} 组数据，共涉及 {structures} 个不同结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3101" />
         <source>No structure group requires priority review from the current checks.</source>
-        <translation>当前检查没有发现需要优先复核的结构组。</translation>
+        <translation type="vanished">当前检查没有发现需要优先复核的结构组。</translation>
     </message>
     <message>
         <source>The data also contains {count} grouped low-frequency distribution signals.</source>
@@ -9483,14 +9538,12 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">没有发现已出现但频率较低的分布信号。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3104" />
         <source>Energy, force, and virial labels are complete.</source>
-        <translation>能量、力和维里标签完整。</translation>
+        <translation type="vanished">能量、力和维里标签完整。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3106" />
         <source>Some energy, force, or virial labels are missing; see Detailed data.</source>
-        <translation>部分能量、力或维里标签缺失，详见“详细数据”。</translation>
+        <translation type="vanished">部分能量、力或维里标签缺失，详见“详细数据”。</translation>
     </message>
     <message>
         <source>{lead} {phase} {distribution} {labels} Model errors were not evaluated.</source>
@@ -9509,177 +9562,296 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">训练集评估报告已导出到：{path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2915" />
-        <location filename="../ui/pages/training_set_audit.py" line="3417" />
-        <location filename="../ui/pages/training_set_audit.py" line="3604" />
+        <location filename="../ui/pages/training_set_audit.py" line="3160" />
+        <location filename="../ui/pages/training_set_audit.py" line="4056" />
+        <location filename="../ui/pages/training_set_audit.py" line="4225" />
+        <location filename="../ui/pages/training_set_audit.py" line="4260" />
         <source>Angular neighbors</source>
         <translation>角向邻居</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2917" />
-        <location filename="../ui/pages/training_set_audit.py" line="3419" />
-        <location filename="../ui/pages/training_set_audit.py" line="3606" />
+        <location filename="../ui/pages/training_set_audit.py" line="3162" />
+        <location filename="../ui/pages/training_set_audit.py" line="4058" />
+        <location filename="../ui/pages/training_set_audit.py" line="4227" />
+        <location filename="../ui/pages/training_set_audit.py" line="4262" />
         <source>Radial neighbors</source>
         <translation>径向邻居</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3501" />
+        <location filename="../ui/pages/training_set_audit.py" line="3629" />
+        <source>{element} is part of the selected basis {basis}.</source>
+        <translation>{element} 是当前基础元素对 {basis} 的组成元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3639" />
+        <source>{basis} + {element}: {count:,} structures ({share:.1%} of the selected pair).</source>
+        <translation>{basis} + {element}：{count:,} 个结构（占所选元素对的 {share:.1%}）。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3691" />
+        <source>{basis} + {first} + {second}: {count:,} structures ({share:.1%} of the selected pair).</source>
+        <translation>{basis} + {first} + {second}：{count:,} 个结构（占所选元素对的 {share:.1%}）。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3710" />
+        <source>Select an upper-triangle element pair to show its related third and fourth elements.</source>
+        <translation>选择上三角元素对后，这里将显示关联的第三、第四元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3715" />
+        <source>This cell repeats a selected basis element.</source>
+        <translation>此单元格包含重复的基础元素。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3817" />
+        <source>Selected: {elements} · based on {basis}</source>
+        <translation>已选择：{elements} · 基于 {basis}</translation>
+    </message>
+    <message>
+        <source>Selected</source>
+        <translation type="vanished">当前选中数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3874" />
+        <source>{count} sets · {structures:,} structures · based on {basis}</source>
+        <translation>{count} 个元素集合 · {structures:,} 个结构 · 基于 {basis}</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4140" />
         <source>Scope from the active NEP cutoffs · {scope} · center {element}. Orange marks low-frequency ranges inside the current data.</source>
         <translation>范围来自当前 NEP 截断半径 · {scope} · 中心元素 {element}。橙色表示当前数据中样本较少的区间。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3550" />
+        <location filename="../ui/pages/training_set_audit.py" line="4189" />
         <source>No active NEP model file is available.</source>
         <translation>当前没有可用的 NEP 模型文件。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3553" />
+        <location filename="../ui/pages/training_set_audit.py" line="4192" />
         <source>The active NEP model file could not be read.</source>
         <translation>无法读取当前 NEP 模型文件。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3556" />
+        <location filename="../ui/pages/training_set_audit.py" line="4195" />
         <source>Local chemistry could not be audited from the active data.</source>
         <translation>无法根据当前数据检查局域环境。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3559" />
+        <location filename="../ui/pages/training_set_audit.py" line="4198" />
         <source>Pair contacts could not be audited from the active data.</source>
         <translation>无法根据当前数据检查元素对接触。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3660" />
+        <location filename="../ui/pages/training_set_audit.py" line="4317" />
         <source>Show {count} structures</source>
         <translation>查看 {count} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3701" />
+        <location filename="../ui/pages/training_set_audit.py" line="4358" />
         <source>No review topic was generated from the current checks.</source>
         <translation>当前检查没有生成需要查看的问题。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3794" />
+        <location filename="../ui/pages/training_set_audit.py" line="4453" />
         <source>Data quality</source>
         <translation>数据质量</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3795" />
+        <location filename="../ui/pages/training_set_audit.py" line="4454" />
         <source>Composition balance</source>
         <translation>组分平衡</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="562" />
-        <location filename="../ui/pages/training_set_audit.py" line="3796" />
+        <location filename="../ui/pages/training_set_audit.py" line="758" />
+        <location filename="../ui/pages/training_set_audit.py" line="4455" />
         <source>Configuration types</source>
         <translation>构型类型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="168" />
-        <location filename="../ui/pages/training_set_audit.py" line="1057" />
+        <location filename="../ui/pages/training_set_audit.py" line="212" />
+        <location filename="../ui/pages/training_set_audit.py" line="1284" />
         <source>Open a structure or result file in NEP Dataset Display before running checks.</source>
         <translation>请先在 NEP 数据集查看中打开结构或结果文件。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="182" />
-        <location filename="../ui/pages/training_set_audit.py" line="184" />
+        <location filename="../ui/pages/training_set_audit.py" line="226" />
+        <location filename="../ui/pages/training_set_audit.py" line="228" />
         <source>Open dataset</source>
         <translation>打开数据集</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="326" />
         <source>View all exact composition points</source>
-        <translation>查看全部精确组成点</translation>
+        <translation type="vanished">查看全部精确组成点</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="643" />
-        <location filename="../ui/pages/training_set_audit.py" line="1224" />
+        <location filename="../ui/pages/training_set_audit.py" line="839" />
+        <location filename="../ui/pages/training_set_audit.py" line="1455" />
         <source>Analyze evidence</source>
         <translation>分析证据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3797" />
+        <location filename="../ui/pages/training_set_audit.py" line="3481" />
+        <source>No exact element-set inventory is available.</source>
+        <translation>没有可用的精确元素集合统计。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3542" />
+        <source>{share:.1%} · {count:,}</source>
+        <translation>{share:.1%} · {count:,}</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3553" />
+        <source>{covered}/{possible} pairs co-occur · {exact}/{possible} have exact binary structures</source>
+        <translation>{covered}/{possible} 对有共现 · {exact}/{possible} 对有精确二元结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3656" />
+        <source>{element}: {count:,} related structures ({share:.1%}); pure-element structures: {pure:,}.</source>
+        <translation>{element}：{count:,} 个相关结构（{share:.1%}）；纯元素结构：{pure:,}。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3673" />
+        <source>{first} + {second}: {count:,} co-occurring structures across binary and higher-order sets.</source>
+        <translation>{first} + {second}：在二元及更高元集合中共有 {count:,} 个共现结构。</translation>
+    </message>
+    <message>
+        <source>{first} + {second}: {count:,} exact binary structures.</source>
+        <translation type="vanished">{first} + {second}：{count:,} 个精确二元结构。</translation>
+    </message>
+    <message>
+        <source>element presence</source>
+        <translation type="vanished">元素出现</translation>
+    </message>
+    <message>
+        <source>all co-occurrence</source>
+        <translation type="vanished">所有共现</translation>
+    </message>
+    <message>
+        <source>exact binary only</source>
+        <translation type="vanished">仅精确二元</translation>
+    </message>
+    <message>
+        <source>Selected: {elements} · {status}</source>
+        <translation type="vanished">已选择：{elements} · {status}</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3856" />
+        <source>{count} exact element sets, sorted by structure count.</source>
+        <translation>{count} 个精确元素集合，按结构数量排序。</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3863" />
+        <source>{count} sets · {structures:,} related structures · {pure:,} pure-element structures</source>
+        <translation>{count} 个集合 · {structures:,} 个相关结构 · {pure:,} 个纯元素结构</translation>
+    </message>
+    <message>
+        <source>{pair} exact binary · {structures:,} structures</source>
+        <translation type="vanished">{pair} 精确二元 · {structures:,} 个结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3885" />
+        <source>{count} sets · {structures:,} co-occurring structures · {binary:,} exact binary structures</source>
+        <translation>{count} 个集合 · {structures:,} 个共现结构 · {binary:,} 个精确二元结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4230" />
+        <source>{scope}: element-pair contact edges</source>
+        <translation>{scope}：元素对接触边</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4248" />
+        <source>Directed NEP-cutoff contact edges</source>
+        <translation>有向 NEP 截断接触边</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4250" />
+        <source>Element pair</source>
+        <translation>元素对</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4456" />
         <source>Labels and extremes</source>
         <translation>标签与极端值</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3798" />
+        <location filename="../ui/pages/training_set_audit.py" line="4457" />
         <source>Local-environment support</source>
         <translation>局域环境支持</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3799" />
+        <location filename="../ui/pages/training_set_audit.py" line="4458" />
         <source>Element-pair support</source>
         <translation>元素对支持</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3996" />
+        <location filename="../ui/pages/training_set_audit.py" line="4655" />
         <source>Share of structure frames</source>
         <translation>结构帧占比</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4019" />
+        <location filename="../ui/pages/training_set_audit.py" line="4678" />
         <source>Magnetic types inside each structural phase</source>
         <translation>各结构相中的磁类型占比</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4032" />
+        <location filename="../ui/pages/training_set_audit.py" line="4691" />
         <source>Structural phases inside each magnetic type</source>
         <translation>各磁类型中的结构相占比</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4039" />
+        <location filename="../ui/pages/training_set_audit.py" line="4698" />
         <source>Magnetic type</source>
         <translation>磁类型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4046" />
+        <location filename="../ui/pages/training_set_audit.py" line="4705" />
         <source>Magnetic-type shares in the audited dataset</source>
         <translation>当前训练集的磁类型占比</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4053" />
+        <location filename="../ui/pages/training_set_audit.py" line="4712" />
         <source>Audited scope</source>
         <translation>当前评估范围</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4128" />
+        <location filename="../ui/pages/training_set_audit.py" line="4787" />
         <source>Data blocker</source>
         <translation>数据阻塞</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4129" />
+        <location filename="../ui/pages/training_set_audit.py" line="4788" />
         <source>Review</source>
         <translation>建议复核</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4130" />
+        <location filename="../ui/pages/training_set_audit.py" line="4789" />
         <source>Thin distribution</source>
         <translation>样本较少</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4132" />
+        <location filename="../ui/pages/training_set_audit.py" line="4791" />
         <source>Possible redundancy</source>
         <translation>可能冗余</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4133" />
+        <location filename="../ui/pages/training_set_audit.py" line="4792" />
         <source>Information</source>
         <translation>信息</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4138" />
+        <location filename="../ui/pages/training_set_audit.py" line="4797" />
         <source>Calculated</source>
         <translation>已计算</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4139" />
+        <location filename="../ui/pages/training_set_audit.py" line="4798" />
         <source>Partial data</source>
         <translation>部分数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4085" />
-        <location filename="../ui/pages/training_set_audit.py" line="4122" />
-        <location filename="../ui/pages/training_set_audit.py" line="4140" />
+        <location filename="../ui/pages/training_set_audit.py" line="4744" />
+        <location filename="../ui/pages/training_set_audit.py" line="4781" />
+        <location filename="../ui/pages/training_set_audit.py" line="4799" />
         <source>Not calculated</source>
         <translation>未计算</translation>
     </message>
@@ -9692,17 +9864,17 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">{count} 个发现项</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3026" />
+        <location filename="../ui/pages/training_set_audit.py" line="3271" />
         <source>Energy {count}/{total}</source>
         <translation>能量 {count}/{total}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3029" />
+        <location filename="../ui/pages/training_set_audit.py" line="3274" />
         <source>Force {count}/{total}</source>
         <translation>力 {count}/{total}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3032" />
+        <location filename="../ui/pages/training_set_audit.py" line="3277" />
         <source>Virial {count}/{total}</source>
         <translation>维里 {count}/{total}</translation>
     </message>
@@ -9727,16 +9899,16 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">可用</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3348" />
-        <location filename="../ui/pages/training_set_audit.py" line="3810" />
-        <location filename="../ui/pages/training_set_audit.py" line="3900" />
+        <location filename="../ui/pages/training_set_audit.py" line="3987" />
+        <location filename="../ui/pages/training_set_audit.py" line="4469" />
+        <location filename="../ui/pages/training_set_audit.py" line="4559" />
         <source>No audit result is loaded.</source>
         <translation>未加载训练集检查结果。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3358" />
-        <location filename="../ui/pages/training_set_audit.py" line="3383" />
-        <location filename="../ui/pages/training_set_audit.py" line="3499" />
+        <location filename="../ui/pages/training_set_audit.py" line="3997" />
+        <location filename="../ui/pages/training_set_audit.py" line="4022" />
+        <location filename="../ui/pages/training_set_audit.py" line="4138" />
         <source>No numeric distribution available.</source>
         <translation>没有可用的数值分布。</translation>
     </message>
@@ -9753,22 +9925,22 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">当前 NEP 模型 · {scope} · 元素对有效截断半径取中心元素与邻居元素截断半径的平均值 · 中心元素 {element}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3525" />
+        <location filename="../ui/pages/training_set_audit.py" line="4164" />
         <source>Neighbor count</source>
         <translation>邻居数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3529" />
+        <location filename="../ui/pages/training_set_audit.py" line="4168" />
         <source>{element} neighbor fraction</source>
         <translation>{element} 邻居比例</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3542" />
+        <location filename="../ui/pages/training_set_audit.py" line="4181" />
         <source>No structures are loaded.</source>
         <translation>未加载任何结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3544" />
+        <location filename="../ui/pages/training_set_audit.py" line="4183" />
         <source>No element information found.</source>
         <translation>未找到元素信息。</translation>
     </message>
@@ -9777,7 +9949,7 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">所有结构均缺少 Config_type 元数据。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3546" />
+        <location filename="../ui/pages/training_set_audit.py" line="4185" />
         <source>No energy, force, or virial labels found.</source>
         <translation>未找到能量、力或维里标签。</translation>
     </message>
@@ -9786,27 +9958,27 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">有 {count} 个结构缺少 Config_type 元数据。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3568" />
+        <location filename="../ui/pages/training_set_audit.py" line="4207" />
         <source>energy</source>
         <translation>能量</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3569" />
+        <location filename="../ui/pages/training_set_audit.py" line="4208" />
         <source>force</source>
         <translation>力</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3570" />
+        <location filename="../ui/pages/training_set_audit.py" line="4209" />
         <source>virial</source>
         <translation>维里</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3572" />
+        <location filename="../ui/pages/training_set_audit.py" line="4211" />
         <source>Available on labeled subsets only: {labels}.</source>
         <translation>仅在有标签的子集中可用：{labels}。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3580" />
+        <location filename="../ui/pages/training_set_audit.py" line="4219" />
         <source>{element} concentration distribution</source>
         <translation>{element} 浓度分布</translation>
     </message>
@@ -9815,22 +9987,22 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">Config_type 分布</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3586" />
+        <location filename="../ui/pages/training_set_audit.py" line="4238" />
         <source>Energy per atom distribution</source>
         <translation>单原子能量分布</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3588" />
+        <location filename="../ui/pages/training_set_audit.py" line="4240" />
         <source>Maximum force distribution</source>
         <translation>最大力分布</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3589" />
+        <location filename="../ui/pages/training_set_audit.py" line="4241" />
         <source>Virial norm distribution</source>
         <translation>维里范数分布</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3590" />
+        <location filename="../ui/pages/training_set_audit.py" line="4242" />
         <source>Atomic fraction</source>
         <translation>原子分数</translation>
     </message>
@@ -9839,32 +10011,32 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">Config_type</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3592" />
+        <location filename="../ui/pages/training_set_audit.py" line="4244" />
         <source>Energy per atom</source>
         <translation>单原子能量</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3593" />
+        <location filename="../ui/pages/training_set_audit.py" line="4245" />
         <source>Maximum force</source>
         <translation>最大力</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3594" />
+        <location filename="../ui/pages/training_set_audit.py" line="4246" />
         <source>Virial norm</source>
         <translation>维里范数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3610" />
+        <location filename="../ui/pages/training_set_audit.py" line="4266" />
         <source>{scope}: {center} {metric}</source>
         <translation>{scope}：{center} {metric}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3616" />
+        <location filename="../ui/pages/training_set_audit.py" line="4272" />
         <source>Local environments</source>
         <translation>局域环境数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3657" />
+        <location filename="../ui/pages/training_set_audit.py" line="4313" />
         <source>Chart selection: {count} structures</source>
         <translation>图表选择：{count} 个结构</translation>
     </message>
@@ -9873,8 +10045,8 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">没有符合当前筛选条件的发现项。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3726" />
-        <location filename="../ui/pages/training_set_audit.py" line="3742" />
+        <location filename="../ui/pages/training_set_audit.py" line="4384" />
+        <location filename="../ui/pages/training_set_audit.py" line="4401" />
         <source>Show {count} structures in Dataset Display</source>
         <translation>在数据集显示中显示 {count} 个结构</translation>
     </message>
@@ -9899,7 +10071,7 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">元素对接触</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4131" />
+        <location filename="../ui/pages/training_set_audit.py" line="4790" />
         <source>Imbalance</source>
         <translation>不平衡</translation>
     </message>
@@ -9932,61 +10104,57 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">不可用</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4152" />
+        <location filename="../ui/pages/training_set_audit.py" line="4811" />
         <source>Run Training Set Audit before exporting a report.</source>
         <translation>请先运行训练集评估，再导出报告。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4157" />
+        <location filename="../ui/pages/training_set_audit.py" line="4816" />
         <source>Export Training Set Audit report</source>
         <translation>导出训练集评估报告</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4165" />
+        <location filename="../ui/pages/training_set_audit.py" line="4824" />
         <source>Training Set Audit report exported to: {path}</source>
         <translation>训练集评估报告已导出至：{path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="291" />
+        <location filename="../ui/pages/training_set_audit.py" line="314" />
         <source>Exact composition points</source>
         <translation>精确组分点</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="294" />
+        <location filename="../ui/pages/training_set_audit.py" line="317" />
         <source>Elements</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="309" />
         <source>What this dataset contains</source>
-        <translation>这个数据集里有什么</translation>
+        <translation type="vanished">这个数据集里有什么</translation>
     </message>
     <message>
         <source>Open composition and structure map</source>
         <translation type="vanished">查看组分与结构地图</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="337" />
         <source>Recommended next steps</source>
-        <translation>建议下一步</translation>
+        <translation type="vanished">建议下一步</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="346" />
         <source>Open review queue</source>
-        <translation>打开复核队列</translation>
+        <translation type="vanished">打开复核队列</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="350" />
         <source>Set target</source>
-        <translation>设置目标</translation>
+        <translation type="vanished">设置目标</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="390" />
+        <location filename="../ui/pages/training_set_audit.py" line="588" />
         <source>State</source>
         <translation>状态</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="477" />
+        <location filename="../ui/pages/training_set_audit.py" line="673" />
         <source>Composition and structure map</source>
         <translation>组分与结构地图</translation>
     </message>
@@ -9999,18 +10167,18 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">对数坐标</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="558" />
+        <location filename="../ui/pages/training_set_audit.py" line="754" />
         <source>Exact composition</source>
         <translation>精确组分</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="560" />
+        <location filename="../ui/pages/training_set_audit.py" line="508" />
+        <location filename="../ui/pages/training_set_audit.py" line="756" />
         <source>Share</source>
         <translation>占比</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="561" />
-        <location filename="../ui/pages/training_set_audit.py" line="3135" />
+        <location filename="../ui/pages/training_set_audit.py" line="757" />
         <source>Atom counts</source>
         <translation>原子数</translation>
     </message>
@@ -10023,9 +10191,9 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">相证据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2074" />
-        <location filename="../ui/pages/training_set_audit.py" line="2143" />
-        <location filename="../ui/pages/training_set_audit.py" line="4051" />
+        <location filename="../ui/pages/training_set_audit.py" line="2319" />
+        <location filename="../ui/pages/training_set_audit.py" line="2388" />
+        <location filename="../ui/pages/training_set_audit.py" line="4710" />
         <source>All structures</source>
         <translation>全部结构</translation>
     </message>
@@ -10034,7 +10202,7 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">{phase} · 已分析 {count} 个</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1798" />
+        <location filename="../ui/pages/training_set_audit.py" line="2038" />
         <source>Show {count:,} {phase} structures</source>
         <translation>查看 {count:,} 个 {phase} 结构</translation>
     </message>
@@ -10051,24 +10219,24 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">当前无法获得相证据，其他审查结果仍然有效。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1447" />
-        <location filename="../ui/pages/training_set_audit.py" line="2588" />
-        <location filename="../ui/pages/training_set_audit.py" line="3857" />
+        <location filename="../ui/pages/training_set_audit.py" line="1686" />
+        <location filename="../ui/pages/training_set_audit.py" line="2833" />
+        <location filename="../ui/pages/training_set_audit.py" line="4516" />
         <source>Unresolved</source>
         <translation>未解析</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1524" />
+        <location filename="../ui/pages/training_set_audit.py" line="1763" />
         <source>Selected composition group</source>
         <translation>已选组分组</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1526" />
+        <location filename="../ui/pages/training_set_audit.py" line="1765" />
         <source>Current audited scope</source>
         <translation>当前审查范围</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1543" />
+        <location filename="../ui/pages/training_set_audit.py" line="1782" />
         <source> Confirmed ordering: {values}.</source>
         <translation> 已确认有序相：{values}。</translation>
     </message>
@@ -10093,12 +10261,12 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">强证据 {strong}/{analyzed} · 已全量分析</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1671" />
+        <location filename="../ui/pages/training_set_audit.py" line="1910" />
         <source> · +{count} more</source>
         <translation> · 另有 {count} 项</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1843" />
+        <location filename="../ui/pages/training_set_audit.py" line="2086" />
         <source>Analyzing local phases: {completed:,}/{total:,} structures. The chart will update automatically.</source>
         <translation>正在分析局域相：{completed:,}/{total:,} 个结构。图表将在完成后自动更新。</translation>
     </message>
@@ -10111,131 +10279,137 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">相分析失败：{message}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3792" />
+        <location filename="../ui/pages/training_set_audit.py" line="4451" />
         <source>Phases and local structure</source>
         <translation>相与局域结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3816" />
+        <location filename="../ui/pages/training_set_audit.py" line="4475" />
         <source>Analyzing every structure in the audited scope. Results will appear automatically.</source>
         <translation>正在分析审查范围内的全部结构，完成后结果会自动显示。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3296" />
-        <location filename="../ui/pages/training_set_audit.py" line="3818" />
+        <location filename="../ui/pages/training_set_audit.py" line="4477" />
         <source>Phase evidence is unavailable for the current data.</source>
         <translation>当前数据无法获得相证据。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3820" />
+        <location filename="../ui/pages/training_set_audit.py" line="4479" />
         <source>All {count:,} structures were analyzed. Structure labels summarize local geometry; they do not establish thermodynamic phase stability.</source>
         <translation>已分析全部 {count:,} 个结构。结构标签概括局域几何，不代表热力学相稳定性。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3863" />
+        <location filename="../ui/pages/training_set_audit.py" line="4522" />
         <source>Structure-level phase labels</source>
         <translation>结构级相别</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3865" />
+        <location filename="../ui/pages/training_set_audit.py" line="4524" />
         <source>Phase label</source>
         <translation>相别</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3880" />
+        <location filename="../ui/pages/training_set_audit.py" line="4539" />
         <source>Phase-evidence confidence</source>
         <translation>相证据可信状态</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3882" />
+        <location filename="../ui/pages/training_set_audit.py" line="4541" />
         <source>Evidence state</source>
         <translation>证据状态</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3855" />
+        <location filename="../ui/pages/training_set_audit.py" line="4514" />
         <source>Strong evidence</source>
         <translation>强证据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1446" />
-        <location filename="../ui/pages/training_set_audit.py" line="3856" />
+        <location filename="../ui/pages/training_set_audit.py" line="1685" />
+        <location filename="../ui/pages/training_set_audit.py" line="4515" />
         <source>Mixed local structure</source>
         <translation>混合局域结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4079" />
+        <location filename="../ui/pages/training_set_audit.py" line="3824" />
+        <source>Basis: {elements} · related-element view</source>
+        <translation>基础元素对：{elements} · 关联元素视图</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="3828" />
+        <source>Selected element: {elements} · element presence</source>
+        <translation>已选择元素：{elements} · 元素出现情况</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="4738" />
         <source>Calculated · {count:,} structures</source>
         <translation>已计算 · {count:,} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4083" />
+        <location filename="../ui/pages/training_set_audit.py" line="4742" />
         <source>Calculating all structures</source>
         <translation>正在计算全部结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3295" />
         <source>Full phase analysis is continuing in the background.</source>
-        <translation>全部结构的相分析正在后台继续。</translation>
+        <translation type="vanished">全部结构的相分析正在后台继续。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3307" />
         <source>{phase} {share:.1%}</source>
-        <translation>{phase} {share:.1%}</translation>
+        <translation type="vanished">{phase} {share:.1%}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3313" />
         <source>Structure-level phase labels: {values}.</source>
-        <translation>结构级相别：{values}。</translation>
+        <translation type="vanished">结构级相别：{values}。</translation>
     </message>
     <message>
         <source>2. Inspect how phase labels change with composition and open unresolved structures.</source>
         <translation type="vanished">2. 检查相别如何随组分变化，并查看未解析结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="621" />
+        <location filename="../ui/pages/training_set_audit.py" line="817" />
         <source>Composition map</source>
         <translation>组分地图</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="742" />
+        <location filename="../ui/pages/training_set_audit.py" line="938" />
         <source>Advanced evidence</source>
         <translation>进阶证据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="772" />
+        <location filename="../ui/pages/training_set_audit.py" line="968" />
         <source>Data map</source>
         <translation>数据地图</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="788" />
-        <location filename="../ui/pages/training_set_audit.py" line="2581" />
-        <location filename="../ui/pages/training_set_audit.py" line="2593" />
-        <location filename="../ui/pages/training_set_audit.py" line="2598" />
+        <location filename="../ui/pages/training_set_audit.py" line="984" />
+        <location filename="../ui/pages/training_set_audit.py" line="2826" />
+        <location filename="../ui/pages/training_set_audit.py" line="2838" />
+        <location filename="../ui/pages/training_set_audit.py" line="2843" />
         <source>Pending</source>
         <translation>待确认</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="789" />
+        <location filename="../ui/pages/training_set_audit.py" line="985" />
         <source>Keep</source>
         <translation>保留</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="790" />
+        <location filename="../ui/pages/training_set_audit.py" line="986" />
         <source>Exclude later</source>
         <translation>后续排除</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="791" />
+        <location filename="../ui/pages/training_set_audit.py" line="987" />
         <source>Known duplicate</source>
         <translation>已知重复</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="795" />
+        <location filename="../ui/pages/training_set_audit.py" line="991" />
         <source>Set state</source>
         <translation>设置状态</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="803" />
+        <location filename="../ui/pages/training_set_audit.py" line="999" />
         <source>Review queue</source>
         <translation>复核队列</translation>
     </message>
@@ -10244,17 +10418,17 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">例如 0, 12.5, 25, 37.5</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="842" />
+        <location filename="../ui/pages/training_set_audit.py" line="1038" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="843" />
+        <location filename="../ui/pages/training_set_audit.py" line="1039" />
         <source>Range</source>
         <translation>范围起点</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="844" />
+        <location filename="../ui/pages/training_set_audit.py" line="1040" />
         <source>to</source>
         <translation>范围终点</translation>
     </message>
@@ -10263,22 +10437,22 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">关键组分点（%）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="848" />
+        <location filename="../ui/pages/training_set_audit.py" line="1044" />
         <source>Minimum structures / point</source>
         <translation>每个组分点最少结构数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="851" />
+        <location filename="../ui/pages/training_set_audit.py" line="1047" />
         <source>Define the model scope you intend to support</source>
         <translation>定义模型计划支持的范围</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="855" />
+        <location filename="../ui/pages/training_set_audit.py" line="1051" />
         <source>This comparison checks whether the requested composition points have enough structures. It does not prove local-environment or physical coverage.</source>
         <translation>这里只检查目标组分点的结构数量是否达到规则，不代表局域环境或物理空间已经覆盖。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="863" />
+        <location filename="../ui/pages/training_set_audit.py" line="1059" />
         <source>Compare with dataset</source>
         <translation>与当前数据对比</translation>
     </message>
@@ -10287,84 +10461,87 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">目标组分点</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="888" />
+        <location filename="../ui/pages/training_set_audit.py" line="1084" />
         <source>Status</source>
         <translation>状态</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="890" />
+        <location filename="../ui/pages/training_set_audit.py" line="1086" />
         <source>Nearest point</source>
         <translation>最近已有点</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="891" />
+        <location filename="../ui/pages/training_set_audit.py" line="1087" />
         <source>Action</source>
         <translation>下一步</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="905" />
+        <location filename="../ui/pages/training_set_audit.py" line="1101" />
         <source>Show target structures</source>
         <translation>查看目标点结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="918" />
+        <location filename="../ui/pages/training_set_audit.py" line="1114" />
         <source>Model comparison</source>
         <translation>模型对比</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="922" />
+        <location filename="../ui/pages/training_set_audit.py" line="1118" />
         <source>No prediction or error result is attached. Open Show NEP and calculate results, then return here to compare model errors by composition and review group.</source>
         <translation>当前没有关联预测或误差结果。请先在 Show NEP 中完成计算，再回到这里按组分和复核分组比较模型误差。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="933" />
+        <location filename="../ui/pages/training_set_audit.py" line="1129" />
         <source>Target &amp; model</source>
         <translation>目标与模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1353" />
+        <location filename="../ui/pages/training_set_audit.py" line="1592" />
         <source>Exact composition support for {element}</source>
         <translation>{element} 精确组分支持情况</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1330" />
-        <location filename="../ui/pages/training_set_audit.py" line="1356" />
+        <location filename="../ui/pages/training_set_audit.py" line="1569" />
+        <location filename="../ui/pages/training_set_audit.py" line="1595" />
         <source>{element} atomic fraction</source>
         <translation>{element} 原子分数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1399" />
-        <location filename="../ui/pages/training_set_audit.py" line="3129" />
+        <source>Upper triangle: all co-occurrence · Lower triangle: exact binary · Diagonal: element presence · — missing pure-element endpoint</source>
+        <translation type="vanished">上三角：所有共现 · 下三角：精确二元 · 对角线：元素出现率 · — 表示缺少纯元素端点</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="1638" />
         <source>No exact composition inventory is available.</source>
         <translation>当前没有可用的精确组分清单。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1407" />
+        <location filename="../ui/pages/training_set_audit.py" line="1646" />
         <source>{points} exact normalized composition points across {structures:,} structures. Supercells with the same atomic fractions are merged.</source>
         <translation>{structures:,} 个结构包含 {points} 个精确归一化组分点；原子分数相同的超胞已合并统计。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1675" />
+        <location filename="../ui/pages/training_set_audit.py" line="1914" />
         <source>Not labeled</source>
         <translation>未标注</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1709" />
+        <location filename="../ui/pages/training_set_audit.py" line="1948" />
         <source>Selected composition point: {count:,} structures</source>
         <translation>已选组分点：{count:,} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1714" />
+        <location filename="../ui/pages/training_set_audit.py" line="1954" />
         <source>Show {count:,} structures</source>
         <translation>查看 {count:,} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1939" />
+        <location filename="../ui/pages/training_set_audit.py" line="2184" />
         <source>Selected chart point: {count:,} structures</source>
         <translation>已选图中组分点：{count:,} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1986" />
+        <location filename="../ui/pages/training_set_audit.py" line="2231" />
         <source>{total} review topics · {blockers} blockers · {reviews} review groups · {affected:,} affected structures · {decided} states recorded in this session</source>
         <translation>{total} 个复核主题 · {blockers} 个阻塞项 · {reviews} 个复核组 · 涉及 {affected:,} 个结构 · 本次已记录 {decided} 个状态</translation>
     </message>
@@ -10401,7 +10578,7 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">检查目标设置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2179" />
+        <location filename="../ui/pages/training_set_audit.py" line="2424" />
         <source>Selected target point: {count:,} structures</source>
         <translation>已选目标点：{count:,} 个结构</translation>
     </message>
@@ -10410,43 +10587,38 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">{structures:,} 个结构 · {points} 个精确组分点 · 原子数：{atom_counts}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3191" />
         <source>Top {count} composition points contain {share:.1%} of structures.</source>
-        <translation>数量最多的 {count} 个组分点占全部结构的 {share:.1%}。</translation>
+        <translation type="vanished">数量最多的 {count} 个组分点占全部结构的 {share:.1%}。</translation>
     </message>
     <message>
         <source>Pure-element endpoints: {points}</source>
         <translation type="vanished">纯元素端点：{points}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3253" />
         <source>1. Resolve {count} blocker topics before training.</source>
-        <translation>1. 训练前先处理 {count} 个阻塞项。</translation>
+        <translation type="vanished">1. 训练前先处理 {count} 个阻塞项。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3261" />
         <source>1. Review {groups} repeated-geometry groups before deciding whether to keep or exclude them.</source>
-        <translation>1. 复核 {groups} 组重复几何，再决定保留还是后续排除。</translation>
+        <translation type="vanished">1. 复核 {groups} 组重复几何，再决定保留还是后续排除。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2716" />
+        <location filename="../ui/pages/training_set_audit.py" line="2961" />
         <source>{count} structures belong to {groups} repeated-geometry groups.</source>
         <translation>{count} 个结构属于 {groups} 组重复几何。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1996" />
+        <location filename="../ui/pages/training_set_audit.py" line="2241" />
         <source> · {groups} repeated-geometry groups</source>
         <translation> · {groups} 组重复几何</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3266" />
         <source>1. Review {count} priority topics.</source>
-        <translation>1. 优先复核 {count} 个主题。</translation>
+        <translation type="vanished">1. 优先复核 {count} 个主题。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3271" />
         <source>1. No priority data-quality review is pending.</source>
-        <translation>1. 当前没有待处理的优先数据质量问题。</translation>
+        <translation type="vanished">1. 当前没有待处理的优先数据质量问题。</translation>
     </message>
     <message>
         <source>2. Inspect composition concentration and pure-element endpoints.</source>
@@ -10457,38 +10629,33 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">3. 设置预期使用范围，找出缺失或数量偏少的组分点。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3133" />
         <source>structures</source>
-        <translation>个结构</translation>
+        <translation type="vanished">个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3134" />
         <source>exact composition points</source>
-        <translation>个精确组分点</translation>
+        <translation type="vanished">个精确组分点</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3136" />
         <source>Main composition points</source>
-        <translation>主要组分</translation>
+        <translation type="vanished">主要组分</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3137" />
         <source>Pure-element endpoints</source>
-        <translation>纯元素端点</translation>
+        <translation type="vanished">纯元素端点</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3179" />
         <source>Pure {element} {count:,}</source>
-        <translation>纯 {element} {count:,}</translation>
+        <translation type="vanished">纯 {element} {count:,}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1340" />
-        <location filename="../ui/pages/training_set_audit.py" line="1371" />
+        <location filename="../ui/pages/training_set_audit.py" line="1579" />
+        <location filename="../ui/pages/training_set_audit.py" line="1610" />
         <source>{element} {fraction:.2%} · {count} exact compositions</source>
         <translation>{element} {fraction:.2%} · {count} 个精确组分</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="826" />
+        <location filename="../ui/pages/training_set_audit.py" line="1022" />
         <source>Optional, e.g. 0, 12.5, 25, 37.5</source>
         <translation>可选，例如 0、12.5、25、37.5</translation>
     </message>
@@ -10497,22 +10664,22 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">关键组分点（可选，%）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="845" />
+        <location filename="../ui/pages/training_set_audit.py" line="1041" />
         <source>Key points (optional)</source>
         <translation>关键组分点（可选）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="886" />
+        <location filename="../ui/pages/training_set_audit.py" line="1082" />
         <source>Composition point</source>
         <translation>组分点</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2030" />
+        <location filename="../ui/pages/training_set_audit.py" line="2275" />
         <source>Load a dataset before comparing a target.</source>
         <translation>请先加载数据集，再进行目标对比。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2044" />
+        <location filename="../ui/pages/training_set_audit.py" line="2289" />
         <source>Comparing {count} explicit {element} composition points.</source>
         <translation>正在核对 {count} 个明确的 {element} 组分点。</translation>
     </message>
@@ -10521,7 +10688,7 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">未填写关键组分点。当前显示所选范围内 {count} 个已有的 {element} 分数点；可以发现已有点数量偏少，但不能判断点与点之间是否缺样本。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2072" />
+        <location filename="../ui/pages/training_set_audit.py" line="2317" />
         <source>No sample in range</source>
         <translation>范围内没有样本</translation>
     </message>
@@ -10534,7 +10701,7 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">模型声明了 {declared} 种元素；当前数据集包含 {present} 种：{elements}。其余 {absent} 种模型元素未在数据中出现，因此无法在这里审查它们的组分与局域环境。邻居分析只计算实际出现的元素。这是一条信息提示；对于子体系或通用大模型，这种情况可能是有意的。尚未评估模型误差。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2243" />
+        <location filename="../ui/pages/training_set_audit.py" line="2488" />
         <source>Absent model elements: {elements}</source>
         <translation>数据集中未出现的模型元素：{elements}</translation>
     </message>
@@ -10543,27 +10710,27 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">模型声明的 {count} 种元素均出现在当前数据集中：{elements}。尚未评估模型误差。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2323" />
+        <location filename="../ui/pages/training_set_audit.py" line="2568" />
         <source>Audit {seconds} s</source>
         <translation>审查耗时 {seconds} 秒</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2390" />
+        <location filename="../ui/pages/training_set_audit.py" line="2635" />
         <source>Backend total: {milliseconds} ms</source>
         <translation>后端总耗时：{milliseconds} 毫秒</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="2421" />
+        <location filename="../ui/pages/training_set_audit.py" line="2666" />
         <source>UI render: {milliseconds} ms</source>
         <translation>界面渲染：{milliseconds} 毫秒</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4026" />
+        <location filename="../ui/pages/training_set_audit.py" line="4685" />
         <source>Structural phase</source>
         <translation>结构相</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3793" />
+        <location filename="../ui/pages/training_set_audit.py" line="4452" />
         <source>Magnetic order</source>
         <translation>磁序</translation>
     </message>
@@ -10600,7 +10767,7 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">非共线有序</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1470" />
+        <location filename="../ui/pages/training_set_audit.py" line="1709" />
         <source>Mixed collinear</source>
         <translation>共线混合态</translation>
     </message>
@@ -10609,38 +10776,38 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">类自旋无序</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1460" />
-        <location filename="../ui/pages/training_set_audit.py" line="1472" />
+        <location filename="../ui/pages/training_set_audit.py" line="1699" />
+        <location filename="../ui/pages/training_set_audit.py" line="1711" />
         <source>Low / zero moment</source>
         <translation>低 / 零磁矩</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1550" />
+        <location filename="../ui/pages/training_set_audit.py" line="1789" />
         <source>&lt;b&gt;{scope}: structural order&lt;/b&gt; &amp;nbsp; {phases}&lt;br&gt;Analyzed all {analyzed:,} structures; {strong:,} have strong evidence.{confirmed} This classifies local structure; it does not predict thermodynamic stability.</source>
         <translation>&lt;b&gt;{scope}：结构相&lt;/b&gt; &amp;nbsp; {phases}&lt;br&gt;已分析全部 {analyzed:,} 个结构；其中 {strong:,} 个具有强证据。{confirmed}这里只判断局域结构，不预测热力学稳定性。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1561" />
+        <location filename="../ui/pages/training_set_audit.py" line="1800" />
         <source>Structural-order analysis is running for every structure.</source>
         <translation>正在对全部结构分析结构相。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1563" />
+        <location filename="../ui/pages/training_set_audit.py" line="1802" />
         <source>Structural-order evidence is unavailable.</source>
         <translation>结构相证据不可用。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1575" />
+        <location filename="../ui/pages/training_set_audit.py" line="1814" />
         <source>&lt;b&gt;{scope}: magnetic order&lt;/b&gt; &amp;nbsp; {orders}&lt;br&gt;Analyzed {analyzed:,} spin structures; {missing:,} lack a valid spin:R:3 field. Pattern evidence: net moment ratio {net:.2f}, collinearity {col:.2f}, q-peak {q:.2f}. This is a snapshot-pattern classification, not a thermodynamic FM/AFM/PM claim.</source>
         <translation>&lt;b&gt;{scope}：磁序&lt;/b&gt; &amp;nbsp; {orders}&lt;br&gt;已分析 {analyzed:,} 个含自旋结构；{missing:,} 个缺少有效的 spin:R:3 字段。模式证据：净磁矩比 {net:.2f}、共线度 {col:.2f}、q 峰强度 {q:.2f}。这里只判断单帧自旋模式，不作热力学 FM/AFM/PM 结论。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1620" />
+        <location filename="../ui/pages/training_set_audit.py" line="1859" />
         <source>&lt;b&gt;Magnetic order&lt;/b&gt;&lt;br&gt;No valid per-atom spin:R:3 field is available in this scope. mforce and force_mag are force labels and are not used as spin states.</source>
         <translation>&lt;b&gt;磁序&lt;/b&gt;&lt;br&gt;当前范围内没有有效的逐原子 spin:R:3 字段。mforce 和 force_mag 是磁力标签，不会被当作自旋状态。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1626" />
+        <location filename="../ui/pages/training_set_audit.py" line="1865" />
         <source>Magnetic-order analysis is running for every spin structure.</source>
         <translation>正在分析全部含自旋结构的磁序。</translation>
     </message>
@@ -10675,27 +10842,27 @@ Magnetic: {magnetic}</source>
 磁序：{magnetic}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1759" />
+        <location filename="../ui/pages/training_set_audit.py" line="1999" />
         <source>{label} · {count} structures</source>
         <translation>{label} · {count} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1773" />
+        <location filename="../ui/pages/training_set_audit.py" line="2013" />
         <source>All structural phases</source>
         <translation>全部结构相</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1778" />
+        <location filename="../ui/pages/training_set_audit.py" line="2018" />
         <source>All magnetic orders</source>
         <translation>全部磁序</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1803" />
+        <location filename="../ui/pages/training_set_audit.py" line="2043" />
         <source>Show {count:,} matching structures</source>
         <translation>查看 {count:,} 个匹配结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1821" />
+        <location filename="../ui/pages/training_set_audit.py" line="2064" />
         <source>Wait for complete structural and magnetic-order analysis before exporting the report.</source>
         <translation>请等待结构相与磁序分析完成后再导出报告。</translation>
     </message>
@@ -10704,88 +10871,78 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">正在分析局域相与磁序：{completed:,}/{total:,} 个结构。图表将在完成后自动更新。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1848" />
+        <location filename="../ui/pages/training_set_audit.py" line="2091" />
         <source>Analyzing structural and magnetic order: {completed:,}/{total:,} checks across {structures:,} structures. The chart will update automatically.</source>
         <translation>正在分析结构相与磁序：{completed:,}/{total:,} 项检查，覆盖 {structures:,} 个结构。图表将在完成后自动更新。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1920" />
-        <location filename="../ui/pages/training_set_audit.py" line="1923" />
+        <location filename="../ui/pages/training_set_audit.py" line="2165" />
+        <location filename="../ui/pages/training_set_audit.py" line="2168" />
         <source>Structural or magnetic-order analysis failed: {message}</source>
         <translation>结构相或磁序分析失败：{message}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3109" />
         <source>A target has been set; see Target &amp; model for the comparison.</source>
-        <translation>目标已设置；请在“目标与模型”中查看比较结果。</translation>
+        <translation type="vanished">目标已设置；请在“目标与模型”中查看比较结果。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3112" />
         <source>No target range is set, so this audit cannot judge real composition or structure-family gaps.</source>
-        <translation>尚未设置目标范围，因此当前检查无法判断真正的组成或结构家族缺口。</translation>
+        <translation type="vanished">尚未设置目标范围，因此当前检查无法判断真正的组成或结构家族缺口。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3117" />
         <source>{lead} {labels} {target} Independent model evidence has not been attached.</source>
-        <translation>{lead} {labels} {target} 尚未接入独立模型证据。</translation>
+        <translation type="vanished">{lead} {labels} {target} 尚未接入独立模型证据。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3214" />
         <source>{formula} · {count:,} structures · {share:.2%}</source>
-        <translation>{formula} · {count:,} 个结构 · {share:.2%}</translation>
+        <translation type="vanished">{formula} · {count:,} 个结构 · {share:.2%}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3225" />
+        <location filename="../ui/pages/training_set_audit.py" line="3972" />
         <source>View {count:,} structures</source>
         <translation>查看 {count:,} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3272" />
         <source>2. Open a main composition point and verify its sources and structure types.</source>
-        <translation>2. 打开主要组成点，核对其来源和结构类型。</translation>
+        <translation type="vanished">2. 打开主要组成点，核对其来源和结构类型。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3274" />
         <source>3. Define the intended target range before judging missing or thin support.</source>
-        <translation>3. 先定义目标范围，再判断缺样或支持量偏低。</translation>
+        <translation type="vanished">3. 先定义目标范围，再判断缺样或支持量偏低。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3314" />
         <source>none</source>
-        <translation>无</translation>
+        <translation type="vanished">无</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3318" />
         <source>No valid spin:R:3 states were found.</source>
-        <translation>未发现有效的 spin:R:3 自旋状态。</translation>
+        <translation type="vanished">未发现有效的 spin:R:3 自旋状态。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3327" />
         <source>{order} {share:.1%}</source>
-        <translation>{order} {share:.1%}</translation>
+        <translation type="vanished">{order} {share:.1%}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3335" />
         <source>Magnetic-pattern labels: {values}.</source>
-        <translation>磁序模式：{values}。</translation>
+        <translation type="vanished">磁序模式：{values}。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3905" />
+        <location filename="../ui/pages/training_set_audit.py" line="4564" />
         <source>Analyzing every structure carrying spin:R:3.</source>
         <translation>正在分析每个含 spin:R:3 的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3906" />
+        <location filename="../ui/pages/training_set_audit.py" line="4565" />
         <source>Magnetic-order evidence is unavailable.</source>
         <translation>磁序证据不可用。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3909" />
+        <location filename="../ui/pages/training_set_audit.py" line="4568" />
         <source>No valid per-atom spin:R:3 field was found. mforce and force_mag are not spin states.</source>
         <translation>未发现有效的逐原子 spin:R:3 字段。mforce 和 force_mag 不是自旋状态。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="3912" />
+        <location filename="../ui/pages/training_set_audit.py" line="4571" />
         <source>All {count:,} structures carrying spin:R:3 were analyzed; {missing:,} structures lack spin. Labels describe snapshot patterns, not thermodynamic magnetic stability.</source>
         <translation>已分析全部 {count:,} 个含 spin:R:3 的结构；{missing:,} 个结构缺少自旋。标签描述单帧模式，不代表热力学磁稳定性。</translation>
     </message>
@@ -10806,62 +10963,128 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">结构级磁序模式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4114" />
+        <location filename="../ui/pages/training_set_audit.py" line="4773" />
         <source>Calculated · {count:,} spin structures</source>
         <translation>已计算 · {count:,} 个含自旋结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4118" />
+        <location filename="../ui/pages/training_set_audit.py" line="4777" />
         <source>Calculating all spin structures</source>
         <translation>正在计算全部含自旋结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="4120" />
+        <location filename="../ui/pages/training_set_audit.py" line="4779" />
         <source>No spin:R:3 data</source>
         <translation>无 spin:R:3 数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1466" />
+        <location filename="../ui/pages/training_set_audit.py" line="1705" />
         <source>Aligned (FM-like)</source>
         <translation>对齐（类铁磁）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1467" />
+        <location filename="../ui/pages/training_set_audit.py" line="352" />
+        <source>Element co-occurrence map</source>
+        <translation>元素共现地图</translation>
+    </message>
+    <message>
+        <source>Upper triangle: all co-occurrence · Lower triangle: exact binary · Diagonal: element presence · ○ missing pure-element endpoint</source>
+        <translation type="vanished">上三角：所有共现 · 下三角：精确二元 · 对角线：元素出现率 · ○ 表示缺少纯元素端点</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="382" />
+        <source>Unary</source>
+        <translation>一元</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="383" />
+        <source>Binary</source>
+        <translation>二元</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="384" />
+        <source>Ternary</source>
+        <translation>三元</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="385" />
+        <source>Quaternary+</source>
+        <translation>四元及以上</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="407" />
+        <source>Relative count</source>
+        <translation>相对数量</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="412" />
+        <source>Relative count color scale</source>
+        <translation>相对数量色标</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="427" />
+        <location filename="../ui/pages/training_set_audit.py" line="3833" />
+        <source>Filter: none · Click a cell</source>
+        <translation>未筛选 · 单击单元格</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="485" />
+        <source>Main element sets</source>
+        <translation>主要元素集合</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="492" />
+        <source>Show all element sets</source>
+        <translation>显示全部元素集合</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="508" />
+        <source>Element set</source>
+        <translation>元素集合</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="542" />
+        <location filename="../ui/pages/training_set_audit.py" line="3974" />
+        <source>View selected structures</source>
+        <translation>查看所选结构</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="1706" />
         <source>Compensated (AFM-like)</source>
         <translation>补偿（类反铁磁）</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1468" />
+        <location filename="../ui/pages/training_set_audit.py" line="1707" />
         <source>Modulated / spiral-like</source>
         <translation>调制 / 类螺旋</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1469" />
+        <location filename="../ui/pages/training_set_audit.py" line="1708" />
         <source>Noncollinear</source>
         <translation>非共线</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1471" />
+        <location filename="../ui/pages/training_set_audit.py" line="1710" />
         <source>Disordered-like</source>
         <translation>类无序</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1473" />
+        <location filename="../ui/pages/training_set_audit.py" line="1712" />
         <source>Insufficient local evidence</source>
         <translation>局部证据不足</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1478" />
+        <location filename="../ui/pages/training_set_audit.py" line="1717" />
         <source>Parallel coupling</source>
         <translation>平行耦合</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1479" />
+        <location filename="../ui/pages/training_set_audit.py" line="1718" />
         <source>Antiparallel coupling</source>
         <translation>反平行耦合</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1480" />
+        <location filename="../ui/pages/training_set_audit.py" line="1719" />
         <source>Mixed coupling</source>
         <translation>混合耦合</translation>
     </message>
@@ -10878,12 +11101,12 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">同元素相关</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1601" />
+        <location filename="../ui/pages/training_set_audit.py" line="1840" />
         <source>&lt;b&gt;Element-local spin patterns&lt;/b&gt;&lt;br&gt;{rows}These labels describe each element's spin sublattice inside the selected structures.</source>
         <translation>&lt;b&gt;元素局部自旋模式&lt;/b&gt;&lt;br&gt;{rows}这些标签描述所选结构中每种元素的自旋子晶格。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="1615" />
+        <location filename="../ui/pages/training_set_audit.py" line="1854" />
         <source>&lt;b&gt;Element-pair coupling&lt;/b&gt;&lt;br&gt;{pairs}&lt;br&gt;Correlation compares neighboring spin directions; it is not a chemical-bond label.</source>
         <translation>&lt;b&gt;元素对耦合&lt;/b&gt;&lt;br&gt;{pairs}&lt;br&gt;相关系数比较相邻自旋方向，不是化学键标签。</translation>
     </message>
@@ -10932,7 +11155,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">{element_a}–{element_b} · {coupling}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="548" />
+        <location filename="../ui/pages/training_set_audit.py" line="744" />
         <source>Exact composition groups</source>
         <translation>精确组分分组</translation>
     </message>

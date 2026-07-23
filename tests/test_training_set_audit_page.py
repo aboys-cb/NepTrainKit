@@ -6,7 +6,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from PySide6.QtCore import QCoreApplication, QTranslator, Qt
-from PySide6.QtWidgets import QApplication, QBoxLayout, QLabel
+from PySide6.QtWidgets import QApplication, QBoxLayout, QFrame, QHeaderView, QLabel
 from qfluentwidgets import ComboBox, ListWidget, PrimaryPushButton, PushButton, TableWidget
 
 from NepTrainKit.core.audit.result import (
@@ -621,6 +621,12 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.metric_dimension_value.text(), "Fe · Ni")
         self.assertEqual(widget.metric_context_label.text(), "Label availability")
         self.assertEqual(widget.metric_context_value.text(), "E 100% · F 67% · V 0%")
+        self.assertEqual(widget.fact_total_atoms_value.text(), "48")
+        self.assertEqual(widget.fact_atom_range_value.text(), "16")
+        self.assertEqual(widget.fact_atom_center_value.text(), "16.0 / 16.0")
+        self.assertIs(widget.fact_total_atoms_value.parentWidget().parentWidget(), widget.metric_band)
+        self.assertFalse(hasattr(widget, "fact_config_value"))
+        self.assertIsNone(widget.findChild(QLabel, "inventorySummary"))
         self.assertEqual(widget.dimension_list.item(0).text(), "Overview\n1 topic")
         self.assertEqual(
             widget.dimension_list.item(1).text(),
@@ -638,8 +644,8 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.page_tabs.tabText(1), "Data map")
         self.assertEqual(widget.page_tabs.tabText(2), "Review queue")
         self.assertEqual(widget.page_tabs.tabText(3), "Target & model")
-        self.assertIs(widget.page_tabs.widget(0), widget.summary_scroll)
-        self.assertIs(widget.summary_scroll.widget(), widget.summary_tab)
+        self.assertIs(widget.page_tabs.widget(0), widget.summary_tab)
+        self.assertFalse(hasattr(widget, "summary_scroll"))
         self.assertEqual(
             widget.page_tabs.tabBar().elideMode(),
             Qt.TextElideMode.ElideNone,
@@ -653,7 +659,44 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertFalse(widget.composition_table.isColumnHidden(0))
         self.assertFalse(widget.composition_table.isColumnHidden(3))
         self.assertFalse(widget.composition_table.isColumnHidden(4))
-        self.assertIn("<table", widget.composition_highlights_label.text())
+        self.assertEqual(widget.cooccurrence_table.rowCount(), 2)
+        self.assertEqual(widget.cooccurrence_table.columnCount(), 2)
+        self.assertEqual(
+            widget.cooccurrence_table.delegate.lightCheckedColor.alpha(),
+            0,
+        )
+        self.assertEqual(
+            widget.pair_coverage_label.text(),
+            "1/1 pairs co-occur · 1/1 have exact binary structures",
+        )
+        self.assertIn(
+            "co-occurring structures",
+            widget.cooccurrence_table.item(0, 1).toolTip(),
+        )
+        self.assertIn(
+            "Select an upper-triangle element pair",
+            widget.cooccurrence_table.item(1, 0).toolTip(),
+        )
+        self.assertEqual(
+            widget.cooccurrence_table.item(1, 0).background().color().alpha(),
+            0,
+        )
+
+        widget._selected_overview_elements = ("NotPresent",)
+        widget._selected_overview_mode = "element"
+        widget._populate_overview_element_sets()
+
+        self.assertEqual(widget.element_sets_table.rowCount(), 0)
+        self.assertGreater(widget.element_sets_table.columnWidth(2), 0)
+        widget._clear_overview_element_filter()
+        self.assertEqual(widget.cooccurrence_table.item(1, 1).text(), "—")
+        self.assertEqual(widget.element_sets_table.rowCount(), 2)
+        self.assertEqual(widget.order_summary_values["1"].text(), "33.3% · 1")
+        self.assertEqual(widget.order_summary_values["2"].text(), "66.7% · 2")
+        self.assertIsNone(widget.findChild(QFrame, "auditSummaryPanel"))
+        self.assertIsNone(widget.findChild(QFrame, "auditInventoryPanel"))
+        self.assertIsNone(widget.findChild(QFrame, "auditNextActionsPanel"))
+        self.assertIsNone(widget.findChild(QFrame, "auditDatasetFactsPanel"))
         self.assertEqual(widget.chart_widget.plot_id, "composition:Fe")
         self.assertEqual(widget.slice_table.rowCount(), 1)
         self.assertEqual(widget.audit_header.objectName(), "auditHeader")
@@ -661,6 +704,153 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.metric_band.objectName(), "auditMetricBand")
         self.assertEqual(widget.analysis_panel.objectName(), "auditAnalysisPanel")
         self.assertEqual(widget.findings_panel.objectName(), "auditFindingsPanel")
+        self.assertEqual(widget.cooccurrence_panel.objectName(), "auditCooccurrencePanel")
+        self.assertEqual(widget.element_sets_panel.objectName(), "auditElementSetsPanel")
+
+    def test_overview_dataset_facts_use_existing_inventory_without_another_scan(self):
+        result = self._dashboard_result()
+        inventory = replace(
+            result.inventory,
+            structure_count=4,
+            atom_counts=((16, 1), (32, 2), (64, 1)),
+            config_types=(("bulk", 3),),
+            missing_config_type_count=1,
+        )
+        widget = TrainingSetAuditWidget()
+
+        widget.set_result(replace(result, inventory=inventory))
+
+        self.assertEqual(widget.fact_total_atoms_value.text(), "144")
+        self.assertEqual(widget.fact_atom_range_value.text(), "16–64")
+        self.assertEqual(widget.fact_atom_center_value.text(), "36.0 / 32.0")
+        self.assertFalse(hasattr(widget, "fact_config_value"))
+
+    def test_overview_matrix_reveals_elements_related_to_selected_pair(self):
+        result = self._dashboard_result()
+        inventory = DatasetInventory(
+            structure_count=15,
+            elements=("Al", "Co", "Fe", "Ni"),
+            composition_points=(
+                CompositionPoint(
+                    reduced_counts=(0, 0, 1, 0),
+                    fractions=(0.0, 0.0, 1.0, 0.0),
+                    structure_count=1,
+                    share=1 / 15,
+                    structure_indices=(0,),
+                ),
+                CompositionPoint(
+                    reduced_counts=(0, 0, 1, 1),
+                    fractions=(0.0, 0.0, 0.5, 0.5),
+                    structure_count=2,
+                    share=2 / 15,
+                    structure_indices=(1, 2),
+                ),
+                CompositionPoint(
+                    reduced_counts=(1, 0, 1, 1),
+                    fractions=(1 / 3, 0.0, 1 / 3, 1 / 3),
+                    structure_count=3,
+                    share=3 / 15,
+                    structure_indices=(3, 4, 5),
+                ),
+                CompositionPoint(
+                    reduced_counts=(1, 1, 1, 1),
+                    fractions=(0.25, 0.25, 0.25, 0.25),
+                    structure_count=4,
+                    share=4 / 15,
+                    structure_indices=(6, 7, 8, 9),
+                ),
+                CompositionPoint(
+                    reduced_counts=(1, 0, 0, 1),
+                    fractions=(0.5, 0.0, 0.0, 0.5),
+                    structure_count=5,
+                    share=5 / 15,
+                    structure_indices=(10, 11, 12, 13, 14),
+                ),
+            ),
+            atom_counts=((16, 15),),
+        )
+        widget = TrainingSetAuditWidget()
+
+        widget.set_result(replace(result, inventory=inventory))
+
+        self.assertEqual(
+            widget.pair_coverage_label.text(),
+            "6/6 pairs co-occur · 2/6 have exact binary structures",
+        )
+        self.assertIn(
+            "9 co-occurring structures",
+            widget.cooccurrence_table.item(2, 3).toolTip(),
+        )
+        self.assertIn(
+            "Select an upper-triangle element pair",
+            widget.cooccurrence_table.item(3, 2).toolTip(),
+        )
+        self.assertEqual(
+            widget.cooccurrence_table.item(3, 2).background().color().alpha(),
+            0,
+        )
+        jet_colors = {
+            widget._overview_heat_color(value, 100).name()
+            for value in (1, 5, 20, 50, 100)
+        }
+        self.assertGreaterEqual(len(jet_colors), 4)
+        self.assertEqual(widget._overview_heat_color(100, 100).name(), "#800000")
+        self.assertEqual(widget.order_summary_values["1"].text(), "6.7% · 1")
+        self.assertEqual(widget.order_summary_values["2"].text(), "46.7% · 7")
+        self.assertEqual(widget.order_summary_values["3"].text(), "20.0% · 3")
+        self.assertEqual(widget.order_summary_values["4+"].text(), "26.7% · 4")
+
+        widget.cooccurrence_table.cellClicked.emit(2, 3)
+
+        self.assertEqual(widget.element_sets_table.rowCount(), 3)
+        self.assertIn("9 co-occurring structures", widget.element_sets_summary_label.text())
+        self.assertIn("2 exact binary structures", widget.element_sets_summary_label.text())
+        self.assertEqual(
+            widget.matrix_selection_label.text(),
+            "Basis: Fe + Ni · related-element view",
+        )
+        self.assertEqual(widget.cooccurrence_table.item(2, 3).text(), "✓")
+        self.assertTrue(widget.cooccurrence_table.item(2, 3).isSelected())
+        self.assertFalse(widget.cooccurrence_table.delegate.selectedRows)
+        self.assertEqual(
+            widget.cooccurrence_table.item(0, 3).background().color().alpha(),
+            0,
+        )
+        self.assertIn(
+            "7 structures",
+            widget.cooccurrence_table.item(0, 0).toolTip(),
+        )
+        self.assertIn(
+            "4 structures",
+            widget.cooccurrence_table.item(1, 1).toolTip(),
+        )
+        self.assertIn(
+            "4 structures",
+            widget.cooccurrence_table.item(1, 0).toolTip(),
+        )
+        self.assertFalse(widget.clear_element_filter_button.isHidden())
+
+        widget.cooccurrence_table.cellClicked.emit(1, 0)
+
+        self.assertEqual(widget.element_sets_table.rowCount(), 1)
+        self.assertEqual(
+            widget.matrix_selection_label.text(),
+            "Selected: Al + Co + Fe + Ni · based on Fe + Ni",
+        )
+        self.assertEqual(widget.cooccurrence_table.item(1, 0).text(), "✓")
+        self.assertIn("4 structures", widget.element_sets_summary_label.text())
+
+        widget.cooccurrence_table.cellClicked.emit(1, 0)
+
+        self.assertEqual(widget.element_sets_table.rowCount(), 5)
+        self.assertEqual(
+            widget.matrix_selection_label.text(),
+            "Filter: none · Click a cell",
+        )
+        self.assertEqual(
+            widget.cooccurrence_table.item(1, 0).background().color().alpha(),
+            0,
+        )
 
     def test_dashboard_exposes_backend_and_render_timings_without_cluttering_panels(self):
         result = self._dashboard_result()
@@ -963,19 +1153,18 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.composition_evidence_button.click()
         self.assertEqual(requests, [True])
 
-    def test_overview_main_composition_has_direct_structure_action(self):
+    def test_overview_element_set_has_direct_structure_action(self):
         widget = TrainingSetAuditWidget()
         received = []
         widget.selectStructuresSignal.connect(received.append)
         widget.set_result(self._dashboard_result())
 
-        first_row = widget.composition_action_rows.itemAt(0).widget()
-        button = next(
-            child
-            for child in first_row.findChildren(PushButton)
-            if child.text().startswith("View ")
-        )
-        button.click()
+        self.assertEqual(widget.element_sets_table.item(0, 0).text(), "Fe–Ni")
+        self.assertEqual(widget.element_sets_table.item(0, 1).text(), "2")
+        self.assertEqual(widget.element_sets_table.item(0, 2).text(), "66.67%")
+        widget.element_sets_table.selectRow(0)
+        self.assertEqual(widget.view_element_set_button.text(), "View 2 structures")
+        widget.view_element_set_button.click()
 
         self.assertEqual(received, [[1, 2]])
 
@@ -1165,7 +1354,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertFalse(widget.slice_table.isColumnHidden(3))
         widget.close()
 
-    def test_overview_cards_stack_before_inventory_actions_are_squeezed(self):
+    def test_overview_matrix_fills_available_space_without_page_scroll(self):
         widget = TrainingSetAuditWidget()
         counts = (100_000, 50_000, 12_000, 8_000, 3_331)
         fractions = (
@@ -1197,19 +1386,53 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
 
         self.assertEqual(
             widget.overview_columns.direction(),
-            QBoxLayout.Direction.TopToBottom,
+            QBoxLayout.Direction.LeftToRight,
         )
-        self.assertGreaterEqual(widget.inventory_panel.width(), 900)
-        row = widget.composition_action_rows.itemAt(0).widget()
-        action = row.findChild(PushButton)
-        fact = row.findChild(QLabel)
-        self.assertIsNotNone(action)
-        self.assertIsNotNone(fact)
-        self.assertLess(fact.geometry().right(), action.geometry().left())
-        self.assertLessEqual(action.geometry().right(), row.contentsRect().right())
-        self.assertGreaterEqual(action.width(), action.sizeHint().width())
-        self.assertTrue(widget.summary_scroll.verticalScrollBar().isVisible())
-        self.assertGreater(widget.summary_scroll.verticalScrollBar().maximum(), 0)
+        self.assertEqual(widget.cooccurrence_table.rowCount(), 5)
+        self.assertEqual(widget.element_sets_table.rowCount(), 5)
+        self.assertEqual(
+            widget.element_sets_table.horizontalHeader().sectionResizeMode(1),
+            QHeaderView.ResizeMode.Fixed,
+        )
+        self.assertEqual(
+            widget.element_sets_table.horizontalHeader().sectionResizeMode(2),
+            QHeaderView.ResizeMode.Fixed,
+        )
+        share_widths = [
+            widget.element_sets_table.fontMetrics().horizontalAdvance(
+                widget.element_sets_table.horizontalHeaderItem(2).text()
+            ),
+            *(
+                widget.element_sets_table.fontMetrics().horizontalAdvance(
+                    widget.element_sets_table.item(row, 2).text()
+                )
+                for row in range(widget.element_sets_table.rowCount())
+            ),
+        ]
+        self.assertGreaterEqual(
+            widget.element_sets_table.columnWidth(2),
+            max(share_widths) + 40,
+        )
+        self.assertFalse(hasattr(widget, "summary_scroll"))
+        self.assertFalse(
+            widget.element_sets_table.scrollDelagate.vScrollBar._isForceHidden
+        )
+        matrix_width = sum(
+            widget.cooccurrence_table.columnWidth(column)
+            for column in range(widget.cooccurrence_table.columnCount())
+        )
+        matrix_height = sum(
+            widget.cooccurrence_table.rowHeight(row)
+            for row in range(widget.cooccurrence_table.rowCount())
+        )
+        self.assertLessEqual(
+            abs(matrix_width - widget.cooccurrence_table.viewport().width()),
+            widget.cooccurrence_table.columnCount(),
+        )
+        self.assertLessEqual(
+            abs(matrix_height - widget.cooccurrence_table.viewport().height()),
+            widget.cooccurrence_table.rowCount(),
+        )
 
         widget.page_tabs.setCurrentIndex(1)
         widget.data_map_tabs.setCurrentIndex(1)
@@ -1408,6 +1631,30 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
             self.assertEqual(widget.dimension_rail.findChild(QLabel, "panelTitle").text(), "检查项目")
             self.assertEqual(widget.rerun_button.text(), "重新检查")
             self.assertEqual(widget.export_report_button.text(), "导出 HTML 报告")
+            self.assertEqual(widget.fact_total_atoms_label.text(), "原子总数")
+            self.assertEqual(widget.fact_atom_range_label.text(), "每结构原子数")
+            self.assertFalse(hasattr(widget, "fact_config_label"))
+            self.assertEqual(
+                widget.cooccurrence_hint.text(),
+                "上三角：全局元素对共现 · 对角线：元素出现率 · "
+                "选择上三角元素对后，下方显示关联的第三、第四元素",
+            )
+            self.assertEqual(
+                widget.matrix_selection_label.text(),
+                "未筛选 · 单击单元格",
+            )
+            self.assertEqual(
+                widget.element_sets_table.horizontalHeaderItem(0).text(),
+                "元素集合",
+            )
+            self.assertEqual(
+                widget.heat_legend_bar.accessibleName(),
+                "相对数量色标",
+            )
+            self.assertIn(
+                "相对数量",
+                [label.text() for label in widget.cooccurrence_panel.findChildren(QLabel)],
+            )
             self.assertEqual(
                 widget.target_quantity_rule_check.text(), "启用最低支持量规则"
             )
@@ -1428,29 +1675,6 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
                 ),
                 "结构级相别",
             )
-            self.assertEqual(
-                QCoreApplication.translate("TrainingSetAuditWidget", "structures"),
-                "个结构",
-            )
-            self.assertEqual(
-                QCoreApplication.translate(
-                    "TrainingSetAuditWidget", "exact composition points"
-                ),
-                "个精确组分点",
-            )
-            self.assertEqual(
-                QCoreApplication.translate(
-                    "TrainingSetAuditWidget", "Main composition points"
-                ),
-                "主要组分",
-            )
-            self.assertEqual(
-                QCoreApplication.translate(
-                    "TrainingSetAuditWidget", "Pure-element endpoints"
-                ),
-                "纯元素端点",
-            )
-
             energy_plot = {
                 "kind": "histogram",
                 "id": "label_ranges:energy_per_atom",
@@ -1758,7 +1982,8 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.set_result(result)
 
         self.assertEqual(widget.slice_table.item(0, 0).text(), "Data blocker")
-        self.assertIn("Resolve 1 data blockers affecting 1 unique structures", widget.summary_conclusion_label.text())
+        self.assertFalse(hasattr(widget, "summary_conclusion_label"))
+        self.assertIsNone(widget.findChild(QFrame, "auditSummaryPanel"))
         self.assertEqual(widget.metric_structure_value.text(), "3")
 
     def test_rerun_button_emits_signal(self):

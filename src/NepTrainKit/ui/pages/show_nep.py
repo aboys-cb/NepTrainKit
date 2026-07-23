@@ -214,7 +214,6 @@ class ShowNepWidget(QWidget):
                 self.export_selected_action,
                 self.export_removed_action,
                 self.export_current_action,
-                self.audit_current_dataset_action,
             ):
                 try:
                     self._parent.save_menu.removeAction(act)  # pyright: ignore[attr-defined]
@@ -266,7 +265,6 @@ class ShowNepWidget(QWidget):
                 self.export_selected_action,
                 self.export_removed_action,
                 self.export_current_action,
-                self.audit_current_dataset_action,
             ):
                 try:
                     self._parent.save_menu.removeAction(act)  # pyright:ignore
@@ -314,12 +312,6 @@ class ShowNepWidget(QWidget):
             self.tr("Export Active ({active})…").format(active=0),
         )
         self.export_current_action.triggered.connect(self.export_active_structures)
-
-        self.audit_current_dataset_action = Action(
-            QIcon(":/images/src/images/summary.svg"),
-            self.tr("Check current dataset"),
-        )
-        self.audit_current_dataset_action.triggered.connect(self.open_training_set_audit)
 
         self._refresh_export_actions()
 
@@ -401,6 +393,9 @@ class ShowNepWidget(QWidget):
         self.export_selected_action.setEnabled(ready and (selected > 0) and not busy)
         self.export_removed_action.setEnabled(ready and (removed > 0) and not busy)
         self.export_current_action.setEnabled(ready and (active > 0) and not busy)
+        toolbar = getattr(self, "graph_toolbar", None)
+        if toolbar is not None:
+            toolbar.set_training_set_check_enabled(ready and not busy)
 
         # Keep open actions usable but avoid re-entrant loads while busy.
         self.open_file_action.setEnabled(not busy)
@@ -796,6 +791,9 @@ class ShowNepWidget(QWidget):
 
         self.graph_toolbar = NepDisplayGraphicsToolBar(  self.plot_widget)
         self.graph_widget.set_tool_bar(self.graph_toolbar)
+        self.graph_toolbar.trainingSetCheckSignal.connect(
+            self.open_training_set_audit
+        )
         frame = QFrame(self.plot_widget)
         frame_layout = QHBoxLayout(frame)
         frame_layout.setContentsMargins(0, 0, 0, 0)

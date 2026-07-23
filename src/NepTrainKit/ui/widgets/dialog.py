@@ -857,9 +857,11 @@ class DistributionExplorerWidget(QWidget):
 
         self.fieldCombo = EditableComboBox(self)
         self.groupCombo = ComboBox(self)
+        self.groupCombo.addItem(self.tr("Formula"), userData=DistributionGroupMode.FORMULA.value)
+        self.groupCombo.addItem(self.tr("Element"), userData=DistributionGroupMode.ELEMENT.value)
         self.groupCombo.addItem(self.tr("Value source"), userData=DistributionGroupMode.VALUE_VIEW.value)
         self.groupCombo.addItem(self.tr("Custom group data"), userData=DistributionGroupMode.CUSTOM.value)
-        self.groupCombo.setCurrentIndex(0)
+        self.groupCombo.setCurrentIndex(2)
 
         self.scopeCombo = ComboBox(self)
         self.scopeCombo.addItem(self.tr("All data"), userData=DistributionScope.ACTIVE.value)
@@ -877,6 +879,12 @@ class DistributionExplorerWidget(QWidget):
         self.predCheck.toggled.connect(self._on_value_view_check_changed)
         self.errCheck.toggled.connect(self._on_value_view_check_changed)
 
+        self.viewCombo = ComboBox(self)
+        self.viewCombo.addItem(self.tr("Reference"), userData=DistributionValueView.REFERENCE.value)
+        self.viewCombo.addItem(self.tr("Prediction"), userData=DistributionValueView.PREDICTION.value)
+        self.viewCombo.addItem(self.tr("Error (pred - ref)"), userData=DistributionValueView.ERROR.value)
+        self.viewCombo.setCurrentIndex(0)
+
         # Custom group management
         self.customGroupBtn = PushButton(self.tr("Edit groups"), self)
         self.customGroupBtn.clicked.connect(self._edit_custom_groups)
@@ -892,6 +900,11 @@ class DistributionExplorerWidget(QWidget):
         self.binsSpin.setRange(2, 2000)
         self.binsSpin.setValue(120)
 
+        self.selectModeCombo = ComboBox(self)
+        self.selectModeCombo.addItem(self.tr("Replace"), userData=DistributionSelectMode.REPLACE.value)
+        self.selectModeCombo.addItem(self.tr("Add"), userData=DistributionSelectMode.ADD.value)
+        self.selectModeCombo.addItem(self.tr("Intersect"), userData=DistributionSelectMode.INTERSECT.value)
+
         self.includeNormCheck = CheckBox(self.tr("Include norm"), self)
         self.includeNormCheck.setChecked(True)
         self.advancedCheck = CheckBox(self.tr("Advanced options"), self)
@@ -904,6 +917,8 @@ class DistributionExplorerWidget(QWidget):
         self.fieldLabel = CaptionLabel(self.tr("Field"), self)
         self.groupLabel = CaptionLabel(self.tr("Group by"), self)
         self.scopeLabel = CaptionLabel(self.tr("Scope"), self)
+        self.viewLabel = CaptionLabel(self.tr("View"), self)
+        self.selectModeLabel = CaptionLabel(self.tr("Select mode"), self)
         self.binsLabel = CaptionLabel(self.tr("Bins"), self)
         self.curveLabel = CaptionLabel(self.tr("Curve"), self)
         control_layout.addWidget(self.fieldLabel, 0, 0)
@@ -918,6 +933,8 @@ class DistributionExplorerWidget(QWidget):
         control_layout.addWidget(self.refCheck, 2, 1)
         control_layout.addWidget(self.predCheck, 2, 2)
         control_layout.addWidget(self.errCheck, 2, 3)
+        control_layout.addWidget(self.viewLabel, 2, 0)
+        control_layout.addWidget(self.viewCombo, 2, 1, 1, 3)
         # Row 3: custom group editor (visible only in CUSTOM mode)
         self.customGroupLabel = CaptionLabel(self.tr("Custom group data"), self)
         control_layout.addWidget(self.customGroupLabel, 3, 0)
@@ -927,9 +944,11 @@ class DistributionExplorerWidget(QWidget):
         control_layout.addWidget(self.binsSpin, 4, 1)
         control_layout.addWidget(self.curveLabel, 4, 2)
         control_layout.addWidget(self.curveCombo, 4, 3)
-        control_layout.addWidget(self.advancedCheck, 5, 0, 1, 2)
-        control_layout.addWidget(self.includeNormCheck, 5, 2)
-        control_layout.addWidget(self.analyzeButton, 5, 3)
+        control_layout.addWidget(self.selectModeLabel, 5, 0)
+        control_layout.addWidget(self.selectModeCombo, 5, 1)
+        control_layout.addWidget(self.advancedCheck, 6, 0, 1, 2)
+        control_layout.addWidget(self.includeNormCheck, 6, 2)
+        control_layout.addWidget(self.analyzeButton, 6, 3)
 
         root_layout.addWidget(control_frame)
 
@@ -937,6 +956,20 @@ class DistributionExplorerWidget(QWidget):
         result_layout = QVBoxLayout(result_frame)
         result_layout.setContentsMargins(0, 0, 0, 0)
         result_layout.setSpacing(2)
+
+        result_selector = QWidget(self)
+        result_selector_layout = QHBoxLayout(result_selector)
+        result_selector_layout.setContentsMargins(0, 0, 0, 0)
+        result_selector_layout.setSpacing(6)
+        self.metricCombo = ComboBox(self)
+        self.seriesCombo = ComboBox(self)
+        self.metricCombo.currentIndexChanged.connect(self._refresh_series_combo)
+        self.seriesCombo.currentIndexChanged.connect(self._refresh_plot)
+        result_selector_layout.addWidget(CaptionLabel(self.tr("Metric"), self))
+        result_selector_layout.addWidget(self.metricCombo, 1)
+        result_selector_layout.addWidget(CaptionLabel(self.tr("Series"), self))
+        result_selector_layout.addWidget(self.seriesCombo, 1)
+        result_layout.addWidget(result_selector)
 
         self.plotHintLabel = CaptionLabel("", self)
         self.plotHintLabel.setWordWrap(True)
@@ -960,6 +993,8 @@ class DistributionExplorerWidget(QWidget):
 
     def _set_advanced_visible(self, visible: bool) -> None:
         for widget in (
+            self.selectModeLabel,
+            self.selectModeCombo,
             self.binsLabel,
             self.binsSpin,
             self.curveLabel,
@@ -973,6 +1008,10 @@ class DistributionExplorerWidget(QWidget):
         mode = str(self.groupCombo.currentData() or "")
         is_value_view = mode == DistributionGroupMode.VALUE_VIEW.value
         is_custom = mode == DistributionGroupMode.CUSTOM.value
+        is_legacy = mode in {
+            DistributionGroupMode.FORMULA.value,
+            DistributionGroupMode.ELEMENT.value,
+        }
 
         # Custom group editor
         for w in (self.customGroupLabel, self.customGroupBtn):
@@ -984,15 +1023,18 @@ class DistributionExplorerWidget(QWidget):
         show_value_checks = is_value_view or is_custom
         for w in (self.valueViewsLabel, self.refCheck, self.predCheck, self.errCheck):
             w.setVisible(show_value_checks)
+        for w in (self.viewLabel, self.viewCombo):
+            w.setVisible(is_legacy)
 
         if is_custom:
             active_groups = [g for g in self._custom_groups if g.get("enabled", True)]
             if len(active_groups) > 1:
-                # Force single-select: only reference
-                self.predCheck.setChecked(False)
-                self.errCheck.setChecked(False)
-                if not self.refCheck.isChecked():
+                checked = [w for w in (self.refCheck, self.predCheck, self.errCheck) if w.isChecked()]
+                if not checked:
                     self.refCheck.setChecked(True)
+                elif len(checked) > 1:
+                    for widget in checked[1:]:
+                        widget.setChecked(False)
 
     def _on_value_view_check_changed(self) -> None:
         """Ensure at least one value view is checked; force single-select for CUSTOM multi-group."""
@@ -1131,6 +1173,8 @@ class DistributionExplorerWidget(QWidget):
         self._apply_selection_callback = apply_selection_callback
         self._analysis = {}
         self._metric_by_key.clear()
+        self.metricCombo.clear()
+        self.seriesCombo.clear()
         self._plot_adapter.clear()
         self._reload_fields()
 
@@ -1209,9 +1253,14 @@ class DistributionExplorerWidget(QWidget):
         if group_mode == DistributionGroupMode.CUSTOM:
             active_custom_count = sum(1 for g in self._custom_groups if g.get("enabled", True))
 
-        use_value_checks = (
-            group_mode == DistributionGroupMode.VALUE_VIEW
-            or (group_mode == DistributionGroupMode.CUSTOM and active_custom_count <= 1)
+        value_view = DistributionValueView.REFERENCE
+        if group_mode in {DistributionGroupMode.FORMULA, DistributionGroupMode.ELEMENT}:
+            value_view = DistributionValueView(
+                str(self.viewCombo.currentData() or DistributionValueView.REFERENCE.value)
+            )
+
+        use_value_checks = group_mode == DistributionGroupMode.VALUE_VIEW or (
+            group_mode == DistributionGroupMode.CUSTOM and active_custom_count <= 1
         )
         if use_value_checks:
             if self.refCheck.isChecked():
@@ -1222,6 +1271,11 @@ class DistributionExplorerWidget(QWidget):
                 selected_views.append(DistributionValueView.ERROR.value)
             if not selected_views:
                 selected_views.append(DistributionValueView.REFERENCE.value)
+        elif group_mode == DistributionGroupMode.CUSTOM:
+            if self.predCheck.isChecked():
+                value_view = DistributionValueView.PREDICTION
+            elif self.errCheck.isChecked():
+                value_view = DistributionValueView.ERROR
 
         # Determine custom group specs for CUSTOM mode (only enabled groups)
         custom_specs: list[dict] = []
@@ -1231,11 +1285,13 @@ class DistributionExplorerWidget(QWidget):
         req = DistributionRequest(
             field_keys=(field_key,),
             include_norm=bool(self.includeNormCheck.isChecked()),
-            value_view=DistributionValueView.REFERENCE,
+            value_view=value_view,
             group_mode=group_mode,
             scope=DistributionScope(str(self.scopeCombo.currentData() or DistributionScope.ACTIVE.value)),
             bins=int(self.binsSpin.value()),
-            select_mode=DistributionSelectMode.REPLACE,
+            select_mode=DistributionSelectMode(
+                str(self.selectModeCombo.currentData() or DistributionSelectMode.REPLACE.value)
+            ),
             groups=(),
             curve_style=DistributionCurveStyle(str(self.curveCombo.currentData() or DistributionCurveStyle.KDE.value)),
             curve_points=240,
@@ -1249,6 +1305,8 @@ class DistributionExplorerWidget(QWidget):
 
         self._analysis = dict(analysis or {})
         self._metric_by_key.clear()
+        self.metricCombo.clear()
+        self.seriesCombo.clear()
         self._plot_adapter.clear()
 
         metrics = self._analysis.get("metrics", []) or []
@@ -1257,37 +1315,64 @@ class DistributionExplorerWidget(QWidget):
             if not m_key:
                 continue
             self._metric_by_key[m_key] = metric
+            label = (
+                f"{metric.get('field_label', metric.get('field_key', ''))}"
+                f" :: {metric.get('component', '')}"
+                f" [{metric.get('value_view', 'reference')}]"
+            )
+            self.metricCombo.addItem(label, userData=m_key)
 
         msgs = self._analysis.get("messages", []) or []
-        if not self._metric_by_key:
+        if self.metricCombo.count() == 0:
             base = self.tr("No metrics produced for current request.")
             if msgs:
                 base += f" {msgs[0]}"
             self.statusLabel.setText(base)
             return
 
-        self._refresh_plot()
-        status = self.tr("{count} metrics generated.").format(count=len(self._metric_by_key))
+        self._refresh_series_combo()
+        status = self.tr("{count} metrics generated.").format(count=self.metricCombo.count())
         if msgs:
             status += f" {msgs[0]}"
         self.statusLabel.setText(status)
 
     def _current_metric(self) -> dict[str, Any] | None:
-        if not self._metric_by_key:
+        m_key = str(self.metricCombo.currentData() or "")
+        if not m_key:
             return None
-        first_key = next(iter(self._metric_by_key))
-        return self._metric_by_key.get(first_key)
+        return self._metric_by_key.get(m_key)
 
-    def _refresh_plot(self) -> None:
+    def _current_series(self, metric: dict[str, Any] | None) -> dict[str, Any] | None:
+        if metric is None:
+            return None
+        s_key = str(self.seriesCombo.currentData() or "")
+        if not s_key:
+            return None
+        if s_key == self._ALL_SERIES_KEY:
+            return {"series_key": self._ALL_SERIES_KEY, "name": self.tr("All groups")}
+        for item in metric.get("series", []) or []:
+            if str(item.get("series_key", item.get("name", "")) or "") == s_key:
+                return item
+        return None
+
+    def _refresh_series_combo(self) -> None:
+        self.seriesCombo.clear()
         metric = self._current_metric()
         if metric is None:
             self._plot_adapter.clear()
             return
         series = metric.get("series", []) or []
         if len(series) > 1:
-            self._plot_adapter.set_payload(metric, {"series_key": self._ALL_SERIES_KEY, "name": self.tr("All groups")})
-        else:
-            self._plot_adapter.set_payload(metric, series[0] if series else None)
+            self.seriesCombo.addItem(self.tr("All groups (overlay)"), userData=self._ALL_SERIES_KEY)
+        for item in series:
+            s_key = str(item.get("series_key", item.get("name", "")) or "")
+            self.seriesCombo.addItem(str(item.get("name", s_key)), userData=s_key)
+        self._refresh_plot()
+
+    def _refresh_plot(self) -> None:
+        metric = self._current_metric()
+        series = self._current_series(metric)
+        self._plot_adapter.set_payload(metric, series)
 
     def _select_bin(self, bin_index: int) -> None:
         if self._data is None or self._apply_selection_callback is None:
@@ -1299,32 +1384,52 @@ class DistributionExplorerWidget(QWidget):
         if analysis_id <= 0:
             return
         metric_key = str(metric.get("metric_key", "") or "")
-        if not metric_key:
+        series_key = str(self.seriesCombo.currentData() or "")
+        if not metric_key or not series_key:
             return
 
-        series_list = metric.get("series", []) or []
-        merged: set[int] = set()
+        indices: list[int] = []
         sample_count = 0
-        for item in series_list:
-            s_key = str(item.get("series_key", item.get("name", "")) or "")
-            if not s_key:
-                continue
-            hist = list(item.get("hist", []) or [])
-            if 0 <= int(bin_index) < len(hist):
-                sample_count += int(hist[int(bin_index)] or 0)
+        if series_key == self._ALL_SERIES_KEY:
+            merged: set[int] = set()
+            for item in metric.get("series", []) or []:
+                s_key = str(item.get("series_key", item.get("name", "")) or "")
+                if not s_key:
+                    continue
+                hist = list(item.get("hist", []) or [])
+                if 0 <= int(bin_index) < len(hist):
+                    sample_count += int(hist[int(bin_index)] or 0)
+                try:
+                    vals = self._data.resolve_distribution_bin_indices(
+                        analysis_id, metric_key, s_key, int(bin_index)
+                    )
+                except Exception:  # noqa: BLE001
+                    vals = []
+                merged.update(int(i) for i in vals)
+            indices = sorted(merged)
+        else:
             try:
-                vals = self._data.resolve_distribution_bin_indices(analysis_id, metric_key, s_key, int(bin_index))
+                indices = self._data.resolve_distribution_bin_indices(
+                    analysis_id, metric_key, series_key, int(bin_index)
+                )
             except Exception:  # noqa: BLE001
-                vals = []
-            merged.update(int(i) for i in vals)
-        indices = sorted(merged)
+                indices = []
+            series = self._current_series(metric)
+            if series is not None:
+                hist = list(series.get("hist", []) or [])
+                if 0 <= int(bin_index) < len(hist):
+                    sample_count = int(hist[int(bin_index)] or 0)
 
-        self._apply_selection_callback(list(indices), DistributionSelectMode.REPLACE.value)
+        mode = str(self.selectModeCombo.currentData() or DistributionSelectMode.REPLACE.value)
+        self._apply_selection_callback(list(indices), mode)
+        series_label = self.tr("all groups") if series_key == self._ALL_SERIES_KEY else series_key
         self.statusLabel.setText(
-            self.tr("Applied bin {bin_index}: {sample_count} samples -> {count} structures.").format(
+            self.tr("Applied bin {bin_index} ({series_label}): {sample_count} samples -> {count} structures, mode='{mode}'.").format(
                 bin_index=bin_index,
+                series_label=series_label,
                 sample_count=sample_count,
                 count=len(indices),
+                mode=mode,
             )
         )
 

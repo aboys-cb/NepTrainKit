@@ -3208,12 +3208,35 @@ class ResultData(QObject):
                             grp = formula_map.get(sid_int, "")
                             for v in norm_vals.tolist():
                                 _append_sample(metric_key, grp, float(v), sid_int, meta)
-                        else:
+                        elif req_norm.group_mode == DistributionGroupMode.ELEMENT:
                             for aidx, v in enumerate(norm_vals.tolist()):
                                 if aidx >= elems.size:
                                     continue
                                 grp = str(elems[aidx])
                                 _append_sample(metric_key, grp, float(v), sid_int, meta)
+                        elif req_norm.group_mode == DistributionGroupMode.VALUE_VIEW:
+                            for v in norm_vals.tolist():
+                                _append_sample(
+                                    metric_key,
+                                    DistributionValueView.REFERENCE.value,
+                                    float(v),
+                                    sid_int,
+                                    meta,
+                                )
+                        elif req_norm.group_mode == DistributionGroupMode.CUSTOM:
+                            if selected_views and sid_int in custom_group_map:
+                                for v in norm_vals.tolist():
+                                    _append_sample(
+                                        metric_key,
+                                        DistributionValueView.REFERENCE.value,
+                                        float(v),
+                                        sid_int,
+                                        meta,
+                                    )
+                            elif not selected_views:
+                                for grp in custom_group_map.get(sid_int, []):
+                                    for v in norm_vals.tolist():
+                                        _append_sample(metric_key, grp, float(v), sid_int, meta)
                     yield 1
 
         lookup: dict[tuple[int, str, str, int], list[int]] = {}

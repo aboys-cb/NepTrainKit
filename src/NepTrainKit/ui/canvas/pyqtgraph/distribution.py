@@ -8,7 +8,7 @@ from typing import Any
 
 import numpy as np
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QPainter, QTransform
+from PySide6.QtGui import QPainter
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 from qfluentwidgets import CaptionLabel
 
@@ -26,7 +26,6 @@ class _RotatedLabel(QLabel):
         painter = QPainter(self)
         painter.setPen(self.palette().windowText().color())
         painter.rotate(self._angle)
-        fm = painter.fontMetrics()
         text_rect = self.rect()
         # After rotating -90°, the new origin is at bottom-left.
         # Map the text rect accordingly.
@@ -113,8 +112,6 @@ class PyqtgraphDistributionPlot(DistributionPlotBase):
             axis = plot_item.getAxis(axis_name)
             axis.setStyle(autoExpandTextSpace=True)
         self._plot.setMinimumHeight(220)
-        plot_row_layout.addWidget(self._plot, 1)
-
         # X label below the plot
         self._xlabel_label = CaptionLabel("", plot_row)
         self._xlabel_label.setStyleSheet("color: #333; font-size: 13px;")
@@ -291,7 +288,7 @@ class PyqtgraphDistributionPlot(DistributionPlotBase):
             lbl = CaptionLabel(f"■ {name}", self._legend_row)
             lbl.setStyleSheet(f"color: {hex_color}; font-size: 11px; font-weight: bold; background: transparent;")
             self._legend_labels.append(lbl)
-            # Insert before the stretch (which is at index 0)
+            # Insert before the stretch at the end of the layout.
             self._legend_layout.insertWidget(self._legend_layout.count() - 1, lbl)
         if self._legend_labels:
             self._legend_row.setVisible(True)

@@ -8559,8 +8559,8 @@ Elapsed: {elapsed:.1f} ms</source>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="442" />
-        <source>View related distribution</source>
-        <translation>查看相关分布</translation>
+        <source>View distribution</source>
+        <translation>查看分布</translation>
     </message>
     <message>
         <source>Summary</source>
@@ -8852,8 +8852,8 @@ Elapsed: {elapsed:.1f} ms</source>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="1812" />
-        <source>Analyzing structure evidence...</source>
-        <translation>正在分析结构证据…</translation>
+        <source>Analyzing evidence...</source>
+        <translation>正在分析证据…</translation>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="1828" />
@@ -8868,8 +8868,8 @@ Elapsed: {elapsed:.1f} ms</source>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="1219" />
-        <source>Structure evidence available</source>
-        <translation>结构证据已可用</translation>
+        <source>Evidence available</source>
+        <translation>证据已就绪</translation>
     </message>
     <message>
         <source>Each bar is normalized to 100% within that concentration. Colors show snapshot structural phases; the number above the bar is the structure count. Click a color segment to open those structures.</source>
@@ -8881,8 +8881,8 @@ Elapsed: {elapsed:.1f} ms</source>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="1910" />
-        <source>Retry structure evidence</source>
-        <translation>重试结构证据分析</translation>
+        <source>Retry evidence</source>
+        <translation>重试证据</translation>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="2056" />
@@ -9000,6 +9000,10 @@ Elapsed: {elapsed:.1f} ms</source>
         <location filename="../ui/pages/training_set_audit.py" line="1222" />
         <source>Analyze remaining evidence</source>
         <translation>分析剩余证据</translation>
+    </message>
+    <message>
+        <source>Analyze remaining</source>
+        <translation>分析剩余项</translation>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="499" />
@@ -9589,8 +9593,8 @@ Elapsed: {elapsed:.1f} ms</source>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="643" />
         <location filename="../ui/pages/training_set_audit.py" line="1224" />
-        <source>Analyze structure evidence</source>
-        <translation>分析结构证据</translation>
+        <source>Analyze evidence</source>
+        <translation>分析证据</translation>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="3797" />

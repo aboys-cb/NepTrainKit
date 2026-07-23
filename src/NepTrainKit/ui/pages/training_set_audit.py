@@ -17,6 +17,7 @@ from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import (
     QAbstractItemView,
+    QBoxLayout,
     QCheckBox,
     QFrame,
     QFormLayout,
@@ -27,6 +28,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QListWidgetItem,
     QDoubleSpinBox,
+    QScrollArea,
     QSizePolicy,
     QSplitter,
     QSpinBox,
@@ -80,6 +82,7 @@ from NepTrainKit.ui.widgets.dialog import DistributionExplorerWidget
 
 _OVERVIEW = "__audit_overview__"
 _DIMENSION_COLUMN_MIN_WIDTH = 840
+_OVERVIEW_STACK_MIN_WIDTH = 1080
 _TOPIC_CATEGORY_COLORS = {
     "blocker": (QColor("#a61b1b"), QColor("#fdecec")),
     "review": (QColor("#a14d16"), QColor("#fff1df")),
@@ -236,6 +239,9 @@ class TrainingSetAuditWidget(QWidget):
         self.page_tabs = QTabWidget(self)
         self.page_tabs.setObjectName("auditPageTabs")
         self.page_tabs.setDocumentMode(True)
+        self.page_tabs.tabBar().setExpanding(False)
+        self.page_tabs.tabBar().setElideMode(Qt.TextElideMode.ElideNone)
+        self.page_tabs.tabBar().setUsesScrollButtons(True)
         self.detach_button = ToolButton(FluentIcon.FULL_SCREEN, self.page_tabs)
         self.detach_button.setToolTip(self.tr("Open in separate window"))
         self.detach_button.setAccessibleName(
@@ -298,9 +304,9 @@ class TrainingSetAuditWidget(QWidget):
         )
         summary_layout.addWidget(self.metric_band)
 
-        overview_columns = QHBoxLayout()
-        overview_columns.setContentsMargins(0, 0, 0, 0)
-        overview_columns.setSpacing(10)
+        self.overview_columns = QBoxLayout(QBoxLayout.Direction.LeftToRight)
+        self.overview_columns.setContentsMargins(0, 0, 0, 0)
+        self.overview_columns.setSpacing(10)
         self.inventory_panel = QFrame(summary_tab)
         self.inventory_panel.setObjectName("auditInventoryPanel")
         inventory_layout = QVBoxLayout(self.inventory_panel)
@@ -325,9 +331,12 @@ class TrainingSetAuditWidget(QWidget):
         self.open_data_map_button = PushButton(
             FluentIcon.VIEW, self.tr("View all exact composition points"), self.inventory_panel
         )
+        self.open_data_map_button.setMinimumWidth(
+            self.open_data_map_button.sizeHint().width()
+        )
         self.open_data_map_button.clicked.connect(lambda: self.page_tabs.setCurrentIndex(1))
         inventory_layout.addWidget(self.open_data_map_button, alignment=Qt.AlignmentFlag.AlignRight)
-        overview_columns.addWidget(self.inventory_panel, stretch=3)
+        self.overview_columns.addWidget(self.inventory_panel, stretch=3)
 
         self.next_actions_panel = QFrame(summary_tab)
         self.next_actions_panel.setObjectName("auditNextActionsPanel")
@@ -353,8 +362,8 @@ class TrainingSetAuditWidget(QWidget):
         action_buttons.addWidget(self.open_review_button)
         action_buttons.addWidget(self.open_target_button)
         actions_layout.addLayout(action_buttons)
-        overview_columns.addWidget(self.next_actions_panel, stretch=2)
-        summary_layout.addLayout(overview_columns, stretch=1)
+        self.overview_columns.addWidget(self.next_actions_panel, stretch=2)
+        summary_layout.addLayout(self.overview_columns)
 
         self.findings_panel = QFrame(summary_tab)
         self.findings_panel.setObjectName("auditFindingsPanel")
@@ -439,7 +448,7 @@ class TrainingSetAuditWidget(QWidget):
         evidence_actions.addStretch(1)
         self.view_distribution_button = PushButton(
             FluentIcon.VIEW,
-            self.tr("View related distribution"),
+            self.tr("View distribution"),
             self.evidence_panel,
         )
         self.view_distribution_button.clicked.connect(
@@ -455,7 +464,15 @@ class TrainingSetAuditWidget(QWidget):
         evidence_layout.addLayout(evidence_actions, 3, 0, 1, 3)
         summary_layout.addStretch(1)
 
-        self.page_tabs.addTab(summary_tab, self.tr("Overview"))
+        self.summary_scroll = QScrollArea(self.page_tabs)
+        self.summary_scroll.setObjectName("auditSummaryScroll")
+        self.summary_scroll.setWidgetResizable(True)
+        self.summary_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self.summary_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self.summary_scroll.setWidget(summary_tab)
+        self.page_tabs.addTab(self.summary_scroll, self.tr("Overview"))
 
         detail_tab = QWidget(self.page_tabs)
         detail_layout = QVBoxLayout(detail_tab)
@@ -640,7 +657,7 @@ class TrainingSetAuditWidget(QWidget):
         rail_layout.addWidget(rail_title)
         rail_layout.addWidget(self.dimension_list, stretch=1)
         self.analyze_structure_evidence_button = PushButton(
-            self.tr("Analyze structure evidence"), self.dimension_rail
+            self.tr("Analyze evidence"), self.dimension_rail
         )
         self.analyze_structure_evidence_button.clicked.connect(
             self.requestStructureEvidenceSignal.emit
@@ -1209,25 +1226,35 @@ class TrainingSetAuditWidget(QWidget):
         evidence_complete = phase_ready and (magnetic_ready or no_spin)
         evidence_partial = phase_ready or magnetic_ready
         self.composition_evidence_button.setVisible(not evidence_complete)
-        self.composition_evidence_button.setText(
+        self._set_fitted_button_text(
+            self.composition_evidence_button,
             self.tr("Analyze remaining evidence")
             if evidence_partial
-            else self.tr("Analyze phases and magnetic order")
+            else self.tr("Analyze phases and magnetic order"),
         )
         self.analyze_structure_evidence_button.setEnabled(not evidence_complete)
-        self.analyze_structure_evidence_button.setText(
-            self.tr("Structure evidence available")
+        self._set_fitted_button_text(
+            self.analyze_structure_evidence_button,
+            self.tr("Evidence available")
             if evidence_complete
             else (
-                self.tr("Analyze remaining evidence")
+                self.tr("Analyze remaining")
                 if evidence_partial
-                else self.tr("Analyze structure evidence")
-            )
+                else self.tr("Analyze evidence")
+            ),
         )
 
     def _request_composition_structure_evidence(self) -> None:
         self._requested_composition_view = "structural"
         self.requestStructureEvidenceSignal.emit()
+
+    @staticmethod
+    def _set_fitted_button_text(button: PushButton, text: str) -> None:
+        """Update dynamic button text without retaining a stale narrow geometry."""
+        button.setText(text)
+        button.ensurePolished()
+        button.setMinimumWidth(button.sizeHint().width())
+        button.updateGeometry()
 
     @staticmethod
     def _composition_formula(elements: tuple[str, ...], fractions: tuple[float, ...]) -> str:
@@ -1710,8 +1737,9 @@ class TrainingSetAuditWidget(QWidget):
                 count=count
             )
         )
-        self.composition_show_button.setText(
-            self.tr("Show {count:,} structures").format(count=count)
+        self._set_fitted_button_text(
+            self.composition_show_button,
+            self.tr("Show {count:,} structures").format(count=count),
         )
         self.composition_show_button.setEnabled(bool(structure_indices))
         self._refresh_phase_drilldown()
@@ -1803,18 +1831,21 @@ class TrainingSetAuditWidget(QWidget):
             button_text = self.tr("Show {count:,} matching structures").format(
                 count=len(selected_indices)
             )
-        self.composition_show_button.setText(button_text)
+        self._set_fitted_button_text(self.composition_show_button, button_text)
         self.composition_show_button.setEnabled(bool(selected_indices))
+
     def start_phase_analysis(self, total: int) -> None:
         del total
         self.analyze_structure_evidence_button.setEnabled(False)
-        self.analyze_structure_evidence_button.setText(
-            self.tr("Analyzing structure evidence...")
+        self._set_fitted_button_text(
+            self.analyze_structure_evidence_button,
+            self.tr("Analyzing evidence..."),
         )
         self.composition_evidence_button.show()
         self.composition_evidence_button.setEnabled(False)
-        self.composition_evidence_button.setText(
-            self.tr("Analyzing phases and magnetic order...")
+        self._set_fitted_button_text(
+            self.composition_evidence_button,
+            self.tr("Analyzing phases and magnetic order..."),
         )
         self.export_report_button.setEnabled(False)
         self.export_report_button.setToolTip(
@@ -1906,13 +1937,15 @@ class TrainingSetAuditWidget(QWidget):
         self.composition_phase_progress.hide()
         self.composition_map_progress.hide()
         self.analyze_structure_evidence_button.setEnabled(True)
-        self.analyze_structure_evidence_button.setText(
-            self.tr("Retry structure evidence")
+        self._set_fitted_button_text(
+            self.analyze_structure_evidence_button,
+            self.tr("Retry evidence"),
         )
         self.composition_evidence_button.show()
         self.composition_evidence_button.setEnabled(True)
-        self.composition_evidence_button.setText(
-            self.tr("Retry phases and magnetic order")
+        self._set_fitted_button_text(
+            self.composition_evidence_button,
+            self.tr("Retry phases and magnetic order"),
         )
         self.export_report_button.setEnabled(True)
         self.export_report_button.setToolTip("")
@@ -3051,10 +3084,28 @@ class TrainingSetAuditWidget(QWidget):
         super().resizeEvent(event)
         if hasattr(self, "slice_table"):
             self._update_responsive_columns(event.size().width())
+        if hasattr(self, "overview_columns"):
+            self._update_overview_layout(event.size().width())
 
     def _update_responsive_columns(self, width: int) -> None:
         self.slice_table.setColumnHidden(3, width < _DIMENSION_COLUMN_MIN_WIDTH)
         self.slice_table.setColumnHidden(2, width < 650)
+
+    def _update_overview_layout(self, width: int) -> None:
+        direction = (
+            QBoxLayout.Direction.TopToBottom
+            if width < _OVERVIEW_STACK_MIN_WIDTH
+            else QBoxLayout.Direction.LeftToRight
+        )
+        if self.overview_columns.direction() == direction:
+            return
+        self.overview_columns.setDirection(direction)
+        if direction == QBoxLayout.Direction.TopToBottom:
+            self.overview_columns.setStretch(0, 0)
+            self.overview_columns.setStretch(1, 0)
+        else:
+            self.overview_columns.setStretch(0, 3)
+            self.overview_columns.setStretch(1, 2)
 
     def _update_summary(self) -> None:
         blocker_topics = [topic for topic in self._topics if topic.category == "blocker"]
@@ -3137,15 +3188,18 @@ class TrainingSetAuditWidget(QWidget):
             pure_endpoints_text = self.tr("Pure-element endpoints")
             self.inventory_summary_label.setText(
                 "<div style='color:#425257'>"
+                "<div>"
                 f"<span style='font-size:16px; font-weight:600; color:#183b38'>"
                 f"{inventory.structure_count:,}</span> {escape(structures_text)}"
-                "&nbsp;&nbsp;·&nbsp;&nbsp;"
+                " &nbsp;·&nbsp; "
                 f"<span style='font-size:16px; font-weight:600; color:#183b38'>"
                 f"{len(inventory.composition_points)}</span> "
                 f"{escape(exact_points_text)}"
-                "&nbsp;&nbsp;·&nbsp;&nbsp;"
+                "</div>"
+                "<div style='margin-top:3px'>"
                 f"<span style='font-weight:600'>{escape(atom_counts_text)}</span> "
                 f"{escape(', '.join(f'{count} × {structures:,}' for count, structures in inventory.atom_counts) or '—')}"
+                "</div>"
                 "</div>"
             )
             top_points = sorted(
@@ -3221,12 +3275,22 @@ class TrainingSetAuditWidget(QWidget):
                     row_widget,
                 )
                 fact.setWordWrap(True)
+                fact.setMinimumWidth(0)
+                fact.setSizePolicy(
+                    QSizePolicy.Policy.Ignored,
+                    QSizePolicy.Policy.Preferred,
+                )
                 action = PushButton(
                     self.tr("View {count:,} structures").format(
                         count=point.structure_count
                     ),
                     row_widget,
                 )
+                action.setSizePolicy(
+                    QSizePolicy.Policy.Fixed,
+                    QSizePolicy.Policy.Fixed,
+                )
+                action.setMinimumWidth(action.sizeHint().width())
                 indices = list(point.structure_indices)
                 action.clicked.connect(
                     lambda checked=False, selected=indices: self.selectStructuresSignal.emit(
@@ -3656,8 +3720,9 @@ class TrainingSetAuditWidget(QWidget):
         self.chart_selection_label.setText(
             self.tr("Chart selection: {count} structures").format(count=count)
         )
-        self.chart_send_button.setText(
-            self.tr("Show {count} structures").format(count=count)
+        self._set_fitted_button_text(
+            self.chart_send_button,
+            self.tr("Show {count} structures").format(count=count),
         )
         self.chart_send_button.setEnabled(bool(structure_indices))
 
@@ -3722,8 +3787,9 @@ class TrainingSetAuditWidget(QWidget):
         self.observed_label.clear()
         self.interpretation_label.clear()
         self.limit_label.clear()
-        self.send_button.setText(
-            self.tr("Show {count} structures in Dataset Display").format(count=0)
+        self._set_fitted_button_text(
+            self.send_button,
+            self.tr("Show {count} structures in Dataset Display").format(count=0),
         )
         self.send_button.setEnabled(False)
         self.view_distribution_button.setEnabled(False)
@@ -3738,8 +3804,9 @@ class TrainingSetAuditWidget(QWidget):
         self.interpretation_label.setPlainText(topic.interpretation)
         self.limit_label.setPlainText(topic.limit)
         count = len(topic.structure_indices)
-        self.send_button.setText(
-            self.tr("Show {count} structures in Dataset Display").format(count=count)
+        self._set_fitted_button_text(
+            self.send_button,
+            self.tr("Show {count} structures in Dataset Display").format(count=count),
         )
         self.send_button.setEnabled(bool(topic.structure_indices))
         self.view_distribution_button.setEnabled(bool(topic.plot_id))
@@ -4171,6 +4238,11 @@ class TrainingSetAuditWidget(QWidget):
             QWidget#TrainingSetAuditWidget {
                 background: #f5f7f8;
                 color: #243135;
+            }
+            QScrollArea#auditSummaryScroll,
+            QScrollArea#auditSummaryScroll > QWidget > QWidget {
+                background: transparent;
+                border: none;
             }
             QLabel#auditNoDatasetState {
                 color: #243135;

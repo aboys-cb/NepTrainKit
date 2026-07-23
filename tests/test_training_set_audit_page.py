@@ -6,7 +6,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from PySide6.QtCore import QCoreApplication, QTranslator, Qt
-from PySide6.QtWidgets import QApplication, QLabel
+from PySide6.QtWidgets import QApplication, QBoxLayout, QLabel
 from qfluentwidgets import ComboBox, ListWidget, PrimaryPushButton, PushButton, TableWidget
 
 from NepTrainKit.core.audit.result import (
@@ -218,7 +218,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
 
         self.assertEqual(widget.composition_chart.plot_id, "inventory:composition:Ni")
         self.assertTrue(widget.composition_phase_summary_label.isHidden())
-        self.assertEqual(widget.analyze_structure_evidence_button.text(), "Analyze remaining evidence")
+        self.assertEqual(widget.analyze_structure_evidence_button.text(), "Analyze remaining")
         magnetic_view = widget.composition_view_selector.findData("magnetic")
         self.assertGreaterEqual(magnetic_view, 0)
         widget.composition_view_selector.setCurrentIndex(magnetic_view)
@@ -638,6 +638,12 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.page_tabs.tabText(1), "Data map")
         self.assertEqual(widget.page_tabs.tabText(2), "Review queue")
         self.assertEqual(widget.page_tabs.tabText(3), "Target & model")
+        self.assertIs(widget.page_tabs.widget(0), widget.summary_scroll)
+        self.assertIs(widget.summary_scroll.widget(), widget.summary_tab)
+        self.assertEqual(
+            widget.page_tabs.tabBar().elideMode(),
+            Qt.TextElideMode.ElideNone,
+        )
         self.assertEqual(widget.data_map_tabs.count(), 3)
         self.assertEqual(widget.composition_table.rowCount(), 2)
         self.assertEqual(widget.composition_chart.plot_id, "inventory:composition:Ni")
@@ -774,7 +780,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.composition_chart._plot["kind"], "composition_stems")
         self.assertEqual(widget.composition_table.columnCount(), 5)
         self.assertIn("atoms", widget.composition_table.item(0, 3).text())
-        self.assertEqual(widget.analyze_structure_evidence_button.text(), "Analyze remaining evidence")
+        self.assertEqual(widget.analyze_structure_evidence_button.text(), "Analyze remaining")
         widget.finish_phase_analysis(result)
         self.assertEqual(widget.composition_view_selector.currentData(), "count")
         widget.composition_evidence_button.click()
@@ -1159,6 +1165,70 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertFalse(widget.slice_table.isColumnHidden(3))
         widget.close()
 
+    def test_overview_cards_stack_before_inventory_actions_are_squeezed(self):
+        widget = TrainingSetAuditWidget()
+        counts = (100_000, 50_000, 12_000, 8_000, 3_331)
+        fractions = (
+            (0.20, 0.20, 0.20, 0.20, 0.20),
+            (0.50, 0.25, 0.25, 0.00, 0.00),
+            (1.00, 0.00, 0.00, 0.00, 0.00),
+            (0.00, 1.00, 0.00, 0.00, 0.00),
+            (0.00, 0.00, 1.00, 0.00, 0.00),
+        )
+        inventory = DatasetInventory(
+            structure_count=173_331,
+            elements=("Fe", "Co", "Ni", "Ta", "Al"),
+            composition_points=tuple(
+                CompositionPoint(
+                    reduced_counts=tuple(round(value * 100) for value in point),
+                    fractions=point,
+                    structure_count=count,
+                    share=count / 173_331,
+                    structure_indices=(index,),
+                )
+                for index, (count, point) in enumerate(zip(counts, fractions))
+            ),
+            atom_counts=((64, 173_331),),
+        )
+        widget.set_result(replace(self._dashboard_result(), inventory=inventory))
+        widget.resize(999, 650)
+        widget.show()
+        self._app.processEvents()
+
+        self.assertEqual(
+            widget.overview_columns.direction(),
+            QBoxLayout.Direction.TopToBottom,
+        )
+        self.assertGreaterEqual(widget.inventory_panel.width(), 900)
+        row = widget.composition_action_rows.itemAt(0).widget()
+        action = row.findChild(PushButton)
+        fact = row.findChild(QLabel)
+        self.assertIsNotNone(action)
+        self.assertIsNotNone(fact)
+        self.assertLess(fact.geometry().right(), action.geometry().left())
+        self.assertLessEqual(action.geometry().right(), row.contentsRect().right())
+        self.assertGreaterEqual(action.width(), action.sizeHint().width())
+        self.assertTrue(widget.summary_scroll.verticalScrollBar().isVisible())
+        self.assertGreater(widget.summary_scroll.verticalScrollBar().maximum(), 0)
+
+        widget.page_tabs.setCurrentIndex(1)
+        widget.data_map_tabs.setCurrentIndex(1)
+        self._app.processEvents()
+        evidence_button = widget.analyze_structure_evidence_button
+        self.assertGreaterEqual(evidence_button.width(), evidence_button.sizeHint().width())
+        self.assertLessEqual(
+            evidence_button.geometry().right(),
+            widget.dimension_rail.contentsRect().right(),
+        )
+
+        widget.resize(1100, 760)
+        self._app.processEvents()
+        self.assertEqual(
+            widget.overview_columns.direction(),
+            QBoxLayout.Direction.LeftToRight,
+        )
+        widget.close()
+
     def test_selection_updates_evidence_and_selected_count_without_auto_handoff(self):
         widget = TrainingSetAuditWidget()
         received = []
@@ -1342,7 +1412,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
                 widget.target_quantity_rule_check.text(), "启用最低支持量规则"
             )
             self.assertEqual(
-                widget.analyze_structure_evidence_button.text(), "分析结构证据"
+                widget.analyze_structure_evidence_button.text(), "分析证据"
             )
             self.assertEqual(
                 QCoreApplication.translate(

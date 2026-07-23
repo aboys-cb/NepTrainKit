@@ -9,11 +9,13 @@ except ModuleNotFoundError:  # Python < 3.11
     import tomli as tomllib
 
 from PySide6.QtCore import QCoreApplication
-from PySide6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication, QWidget
+from qfluentwidgets import StateToolTip
 import pytest
 
 from NepTrainKit import i18n
 from NepTrainKit.ui import update
+from NepTrainKit.ui.pages.show_nep import _LoadCompletionRelay
 
 _SCRIPT_PATH = Path(__file__).resolve().parents[1] / "tools" / "update_translations.py"
 _SCRIPT_SPEC = importlib.util.spec_from_file_location("update_translations", _SCRIPT_PATH)
@@ -339,6 +341,50 @@ def test_chinese_qm_translates_helper_contexts():
 
     assert QCoreApplication.translate("MessageManager", "Tip") == "提示"
     assert QCoreApplication.translate("Update", "Update available") == "发现新版本"
+
+
+def test_result_loading_tooltip_translates_runtime_status():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+    captured: list[str] = []
+
+    assert QCoreApplication.translate("ShowNepWidget", "Loading") == "正在加载"
+    assert (
+        QCoreApplication.translate("ShowNepWidget", "Please wait patiently...")
+        == "请稍候……"
+    )
+
+    class _Tip:
+        def setContent(self, message: str) -> None:
+            captured.append(message)
+
+    relay = _LoadCompletionRelay(_Tip(), object(), ())
+    relay.update_content(
+        "Loading existing official NEP .out files without opening the model."
+    )
+
+    assert captured == ["已直接加载现有的官方 NEP .out 文件，无需打开模型。"]
+
+
+def test_result_loading_tooltip_wraps_long_runtime_status():
+    app = QApplication.instance() or QApplication([])
+    i18n.install_translator(app, "zh_CN")
+    parent = QWidget()
+    parent.resize(800, 500)
+    tip = StateToolTip("正在加载", "请稍候……", parent)
+    initial_width = tip.width()
+    relay = _LoadCompletionRelay(tip, object(), ())
+
+    relay.update_content(
+        "Loading existing official NEP .out files without opening the model. "
+        "descriptor.out is missing, so descriptor plots and FPS are unavailable. "
+        "Install a nep-adapters version that supports this model to generate descriptors."
+    )
+
+    assert tip.width() > initial_width
+    assert tip.width() <= 680
+    assert tip.height() > 51
+    assert tip.contentLabel.wordWrap()
 
 
 def test_task5_source_strings_are_marked_for_translation():

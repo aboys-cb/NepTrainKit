@@ -11,7 +11,7 @@ from pathlib import Path
 from loguru import logger
 
 import numpy as np
-from PySide6.QtCore import QUrl, QTimer, Qt, QThread
+from PySide6.QtCore import QObject, QUrl, QTimer, Qt, QThread, Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QSplitter, QFrame, QSizePolicy
 from qfluentwidgets import FluentIcon, HyperlinkLabel, MessageBox, SpinBox, \
@@ -30,6 +30,7 @@ from NepTrainKit.ui.widgets import (
     ArrowMessageBox,
     ExportFormatMessageBox,
 )
+from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.controllers import StructureFilterController
 from NepTrainKit.core.io import (ResultData, load_result_data, matches_result_loader)
 
@@ -75,6 +76,72 @@ RESULT_DATA_FILE_FILTER = (
     "Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj "
     "OUTCAR OUTCAR* XDATCAR XDATCAR*);;All files (*)"
 )
+
+
+def _set_loading_tip_content(tip, message: str) -> None:
+    """Update a state tooltip and resize it for long runtime status text."""
+    tip.setContent(message)
+    content_label = getattr(tip, "contentLabel", None)
+    title_label = getattr(tip, "titleLabel", None)
+    close_button = getattr(tip, "closeButton", None)
+    if content_label is None or title_label is None or close_button is None:
+        return
+
+    old_right = tip.x() + tip.width()
+    parent = tip.parentWidget()
+    parent_width = parent.width() if parent is not None else 0
+    max_width = min(680, parent_width - 48) if parent_width > 328 else 680
+    max_width = max(280, max_width)
+    content_metrics = content_label.fontMetrics()
+    title_width = title_label.fontMetrics().horizontalAdvance(title_label.text())
+    text_width = content_metrics.horizontalAdvance(message)
+    target_width = min(max_width, max(280, title_width + 56, text_width + 56))
+    content_width = max(200, target_width - 56)
+    should_wrap = text_width > content_width
+
+    content_label.setWordWrap(should_wrap)
+    content_label.setFixedWidth(content_width)
+    content_height = (
+        content_label.heightForWidth(content_width)
+        if should_wrap
+        else content_label.sizeHint().height()
+    )
+    content_height = max(content_metrics.height(), content_height)
+    content_label.setFixedHeight(content_height)
+    content_label.move(12, 27)
+
+    target_height = max(51, 27 + content_height + 10)
+    tip.setFixedSize(target_width, target_height)
+    close_button.move(target_width - 24, 19)
+    if tip.x() > 0:
+        tip.move(max(0, old_right - target_width), tip.y())
+
+
+class _LoadCompletionRelay(QObject):
+    """Run result-load completion callbacks safely on the GUI thread."""
+
+    def __init__(self, tip, result_data, callbacks, parent=None):
+        super().__init__(parent)
+        self._tip = tip
+        self._result_data = result_data
+        self._callbacks = tuple(callbacks)
+
+    @Slot()
+    def handle_finished(self) -> None:
+        try:
+            self._tip.setState(bool(self._result_data.load_flag))
+            for callback in self._callbacks:
+                callback()
+        finally:
+            self._callbacks = ()
+            self._result_data = None
+            self._tip = None
+            self.deleteLater()
+
+    @Slot(str)
+    def update_content(self, message: str) -> None:
+        """Translate late-bound worker status before showing it in the tooltip."""
+        _set_loading_tip_content(self._tip, translate_runtime_message(message))
 
 
 
@@ -567,17 +634,24 @@ class ShowNepWidget(QWidget):
             # Start loading in a new thread
             self.load_thread = QThread(self)
             tip.closedSignal.connect(self.stop_loading)
-            self.nep_result_data.moveToThread(self.load_thread)
-            self.load_thread.finished.connect(self.set_dataset)
+            self.nep_result_data.move_to_load_thread(self.load_thread)
             result_data = self.nep_result_data
-            self.load_thread.finished.connect(
-                lambda: tip.setState(bool(result_data.load_flag))
+            completion_relay = _LoadCompletionRelay(
+                tip,
+                result_data,
+                (
+                    self.set_dataset,
+                    lambda: self._restore_reject(reject_indices),
+                    lambda: self._restore_selection(selected_indices),
+                ),
+                self,
             )
-            self.load_thread.finished.connect(lambda: self._restore_reject(reject_indices))
-            self.load_thread.finished.connect(lambda: self._restore_selection(selected_indices))
+            self.load_thread.finished.connect(completion_relay.handle_finished)
 
             self.nep_result_data.loadFinishedSignal.connect(self.load_thread.quit)
-            self.nep_result_data.predictionStatusSignal.connect(tip.setContent)
+            self.nep_result_data.predictionStatusSignal.connect(
+                completion_relay.update_content
+            )
             self.load_thread.started.connect(self.nep_result_data.load)
             self.load_thread.start()
             self._refresh_export_actions()
@@ -837,16 +911,15 @@ class ShowNepWidget(QWidget):
     def _track_worker_thread(self, thread: QThread) -> None:
         """Keep background threads alive until they finish."""
         self._worker_threads.append(thread)
+        thread.finished.connect(self._on_worker_thread_finished)
 
-        def _cleanup() -> None:
-            try:
-                self._worker_threads.remove(thread)
-            except ValueError:
-                pass
-
+    @Slot()
+    def _on_worker_thread_finished(self) -> None:
+        """Drop a completed worker reference from the GUI thread."""
+        thread = self.sender()
         try:
-            thread.finished.connect(_cleanup)
-        except Exception:
+            self._worker_threads.remove(thread)
+        except ValueError:
             pass
 
     def _invalidate_background_jobs(self) -> None:
@@ -1275,16 +1348,20 @@ class ShowNepWidget(QWidget):
         tip = StateToolTip(self.tr("Loading"), self.tr("Please wait patiently..."), self)
         tip.show()
         tip.closedSignal.connect(self.stop_loading)
-        self.nep_result_data.moveToThread(self.load_thread)
-        self.load_thread.finished.connect(self.set_dataset)
+        self.nep_result_data.move_to_load_thread(self.load_thread)
         result_data = self.nep_result_data
-        self.load_thread.finished.connect(
-            lambda: tip.setState(bool(result_data.load_flag))
+        completion_relay = _LoadCompletionRelay(
+            tip,
+            result_data,
+            (self.set_dataset, self._on_initial_load_complete),
+            self,
         )
-        self.load_thread.finished.connect(self._on_initial_load_complete)
+        self.load_thread.finished.connect(completion_relay.handle_finished)
 
         self.nep_result_data.loadFinishedSignal.connect(self.load_thread.quit)
-        self.nep_result_data.predictionStatusSignal.connect(tip.setContent)
+        self.nep_result_data.predictionStatusSignal.connect(
+            completion_relay.update_content
+        )
         self.load_thread.started.connect(self.nep_result_data.load)
         self.load_thread.start()
 

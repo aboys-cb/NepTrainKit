@@ -21,7 +21,7 @@ from functools import cached_property
 from pathlib import Path
 from dataclasses import dataclass
 import numpy as np
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, QThread, Signal, Slot
 from loguru import logger
 from typing import Any, Callable, Iterable, Mapping, Optional, Sequence
 import numpy.typing as npt
@@ -1085,6 +1085,27 @@ class ResultData(QObject):
         self._distribution_analysis: dict[str, Any] = {}
         self._distribution_bin_lookup: dict[tuple[int, str, str, int], list[int]] = {}
         self._distribution_analysis_id: int = 0
+        self._load_origin_thread: QThread | None = None
+
+    def move_to_load_thread(self, thread: QThread) -> None:
+        """Move this long-lived result object to a loader and remember its owner."""
+        origin = self.thread()
+        if origin is not QThread.currentThread():
+            raise RuntimeError("ResultData must be moved from its current owner thread")
+        self._load_origin_thread = origin
+        self.moveToThread(thread)
+
+    @Slot()
+    def _restore_load_thread_affinity(self) -> None:
+        """Return to the original thread before publishing loaded UI state."""
+        origin = self._load_origin_thread
+        self._load_origin_thread = None
+        if origin is None or self.thread() is origin:
+            return
+        if self.thread() is not QThread.currentThread():
+            raise RuntimeError("ResultData affinity can only be restored by its load thread")
+        self.moveToThread(origin)
+
     def request_cancel(self):
         """Request cooperative cancel during load. Also forward to calculator."""
         self.cancel_event.set()
@@ -2058,6 +2079,10 @@ class ResultData(QObject):
             message = f"Failed to load dataset: {error}"
             self.predictionStatusSignal.emit(message)
             MessageManager.send_error_message(message)
+        try:
+            self._restore_load_thread_affinity()
+        except RuntimeError:
+            logger.error(traceback.format_exc())
         self.loadFinishedSignal.emit()
     def _load_dataset(self):
         """Populate subclass-specific datasets (must be implemented by subclasses)."""

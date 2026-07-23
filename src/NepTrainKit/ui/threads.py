@@ -171,22 +171,73 @@ class FunctionWorker(QObject):
 
 
 class CallbackRelay(QObject):
-    """Forward worker results back to the relay object's thread."""
+    """Forward worker results and final cleanup to the parent's thread."""
 
     def __init__(self, on_finished=None, on_error=None, parent=None):
         super().__init__(parent)
         self._on_finished = on_finished
         self._on_error = on_error
+        self._thread: QThread | None = None
+        self._worker: FunctionWorker | None = None
+        self._outcome: tuple[str, object] | None = None
+        self._thread_finished = False
+        self._worker_destroyed = False
+
+    def bind_job(self, thread: QThread, worker: FunctionWorker) -> None:
+        """Retain the job objects until the worker thread has fully stopped."""
+        self._thread = thread
+        self._worker = worker
 
     @Slot(object)
-    def handle_finished(self, result) -> None:
-        if self._on_finished is not None:
-            self._on_finished(result)
+    def capture_finished(self, result) -> None:
+        self._outcome = ("finished", result)
+        self._finalize_if_ready()
 
     @Slot(str)
-    def handle_error(self, message: str) -> None:
-        if self._on_error is not None:
-            self._on_error(message)
+    def capture_error(self, message: str) -> None:
+        self._outcome = ("error", message)
+        self._finalize_if_ready()
+
+    @Slot()
+    def handle_thread_finished(self) -> None:
+        self._thread_finished = True
+        self._finalize_if_ready()
+
+    @Slot()
+    def handle_worker_destroyed(self) -> None:
+        self._worker_destroyed = True
+        self._finalize_if_ready()
+
+    def _finalize_if_ready(self) -> None:
+        """Publish the result only after native thread and worker teardown."""
+        if (
+            self._outcome is None
+            or not self._thread_finished
+            or not self._worker_destroyed
+        ):
+            return
+
+        thread = self._thread
+        outcome, payload = self._outcome
+        try:
+            # ``QThread.finished`` is emitted before all thread-local cleanup is
+            # complete.  Synchronize here before any owner can release QThread.
+            if thread is not None:
+                thread.wait()
+            if outcome == "finished":
+                if self._on_finished is not None:
+                    self._on_finished(payload)
+            elif self._on_error is not None:
+                self._on_error(str(payload))
+        finally:
+            self._worker = None
+            self._thread = None
+            self._outcome = None
+            self._on_finished = None
+            self._on_error = None
+            if thread is not None:
+                thread.deleteLater()
+            self.deleteLater()
 
 
 def run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs) -> QThread:
@@ -203,25 +254,24 @@ def run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs
     thread.setStackSize(_NUMPY_WORKER_STACK_SIZE)
     worker = FunctionWorker(func, args=args, kwargs=kwargs)
     worker.moveToThread(thread)
-    # Keep a strong Python reference so the worker is not GC'd before `thread.started`.
-    # (If GC'd early, the thread event loop can keep running and callers may never
-    # receive finished/error signals.)
-    setattr(thread, "_ntk_worker", worker)
     relay = CallbackRelay(on_finished=on_finished, on_error=on_error, parent=parent)
-    setattr(thread, "_ntk_callback_relay", relay)
+    # The main-thread relay owns the Python references.  Never clear these from
+    # a context-less ``QThread.finished`` lambda: that signal is emitted by the
+    # worker thread and can race Shiboken wrapper destruction.
+    relay.bind_job(thread, worker)
 
     thread.started.connect(worker.run)
     worker.finished.connect(thread.quit)
     worker.error.connect(thread.quit)
 
-    worker.finished.connect(relay.handle_finished)
-    worker.error.connect(relay.handle_error)
+    worker.finished.connect(relay.capture_finished)
+    worker.error.connect(relay.capture_error)
 
-    worker.finished.connect(worker.deleteLater)
-    worker.error.connect(worker.deleteLater)
-    thread.finished.connect(lambda: setattr(thread, "_ntk_worker", None))
-    thread.finished.connect(lambda: setattr(thread, "_ntk_callback_relay", None))
-    thread.finished.connect(thread.deleteLater)
+    # QThread guarantees that deferred deletions posted from ``finished`` are
+    # processed before the native thread is fully torn down.
+    thread.finished.connect(worker.deleteLater)
+    worker.destroyed.connect(relay.handle_worker_destroyed)
+    thread.finished.connect(relay.handle_thread_finished)
 
     thread.start()
     return thread

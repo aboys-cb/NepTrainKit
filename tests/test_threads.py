@@ -1,9 +1,11 @@
 import threading
 import time
+from pathlib import Path
 
 from PySide6.QtCore import QObject, QThread
 from PySide6.QtWidgets import QApplication
 
+from NepTrainKit.core.io.base import ResultData
 from NepTrainKit.ui.threads import LoadingThread, run_in_thread
 
 
@@ -47,7 +49,6 @@ def test_run_in_thread_finished_callback_runs_on_parent_thread():
     assert state["worker_ident"] != main_ident
     assert state["callback_ident"] == main_ident
     assert state["callback_thread"] is main_thread
-    assert thread.isFinished()
 
 
 def test_run_in_thread_error_callback_runs_on_parent_thread():
@@ -72,4 +73,45 @@ def test_run_in_thread_error_callback_runs_on_parent_thread():
     assert state["message"] == "boom"
     assert state["callback_ident"] == main_ident
     assert state["callback_thread"] is main_thread
-    assert thread.isFinished()
+
+
+def test_run_in_thread_repeated_cleanup_stays_on_parent_thread():
+    QApplication.instance() or QApplication([])
+    parent = QObject()
+    main_ident = threading.get_ident()
+    callback_threads: list[int] = []
+    target = 100
+
+    def launch_next() -> None:
+        run_in_thread(
+            parent,
+            lambda: None,
+            on_finished=lambda _result: handle_finished(),
+        )
+
+    def handle_finished() -> None:
+        callback_threads.append(threading.get_ident())
+        if len(callback_threads) < target:
+            launch_next()
+
+    launch_next()
+    assert _wait_until(lambda: len(callback_threads) == target, timeout=10.0)
+    assert callback_threads == [main_ident] * target
+
+
+def test_result_data_returns_to_origin_thread_after_background_load():
+    app = QApplication.instance() or QApplication([])
+    data = ResultData(Path("nep.txt"), Path("train.xyz"), Path("descriptor.out"))
+    origin = data.thread()
+    loader = QThread()
+
+    data.move_to_load_thread(loader)
+    assert data.thread() is loader
+    loader.started.connect(data._restore_load_thread_affinity)
+    loader.started.connect(loader.quit)
+    loader.start()
+
+    assert _wait_until(loader.isFinished)
+    app.processEvents()
+    assert data.thread() is origin
+    loader.deleteLater()

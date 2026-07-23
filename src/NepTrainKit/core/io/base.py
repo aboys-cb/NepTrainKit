@@ -824,6 +824,8 @@ class DistributionRequest:
     groups: tuple[str, ...] = ()
     curve_style: DistributionCurveStyle = DistributionCurveStyle.KDE
     curve_points: int = 240
+    selected_value_views: tuple[str, ...] = ()
+    custom_group_specs: tuple[dict[str, Any], ...] = ()
 
     @classmethod
     def from_any(cls, request: Any) -> "DistributionRequest":
@@ -844,6 +846,11 @@ class DistributionRequest:
                     request.curve_style, DistributionCurveStyle, DistributionCurveStyle.KDE
                 ),
                 curve_points=curve_points,
+                selected_value_views=tuple(str(i) for i in getattr(request, "selected_value_views", ()) if str(i)),
+                custom_group_specs=tuple(
+                    dict(i) if isinstance(i, dict) else dict(i) if hasattr(i, "items") else {}
+                    for i in getattr(request, "custom_group_specs", ())
+                ),
             )
         if isinstance(request, Mapping):
             field_keys = request.get("field_keys", ())
@@ -854,6 +861,12 @@ class DistributionRequest:
                 groups = [groups]
             bins = int(max(2, min(5000, int(request.get("bins", 120) or 120))))
             curve_points = int(max(64, min(1024, int(request.get("curve_points", 240) or 240))))
+            raw_views = request.get("selected_value_views", ())
+            if isinstance(raw_views, str):
+                raw_views = [raw_views]
+            raw_specs = request.get("custom_group_specs", ())
+            if isinstance(raw_specs, dict):
+                raw_specs = [raw_specs]
             return cls(
                 field_keys=tuple(str(i) for i in field_keys if str(i)),
                 include_norm=bool(request.get("include_norm", True)),
@@ -885,6 +898,8 @@ class DistributionRequest:
                     DistributionCurveStyle.KDE,
                 ),
                 curve_points=curve_points,
+                selected_value_views=tuple(str(i) for i in raw_views if str(i)),
+                custom_group_specs=tuple(dict(i) if isinstance(i, dict) else dict(i) if hasattr(i, "items") else {} for i in raw_specs),
             )
         return cls()
 @dataclass(frozen=True)
@@ -2850,6 +2865,8 @@ class ResultData(QObject):
             groups=tuple(str(i) for i in req.groups if str(i)),
             curve_style=req.curve_style,
             curve_points=int(max(64, min(1024, req.curve_points))),
+            selected_value_views=tuple(str(i) for i in req.selected_value_views if str(i)),
+            custom_group_specs=tuple(dict(i) if isinstance(i, dict) else {} for i in req.custom_group_specs),
         )
         scope_key = tuple(int(i) for i in scope_indices.tolist()) if req_norm.scope == DistributionScope.SELECTED else ()
         cache_key = (structure_version, req_norm, force_mode, scope_key)
@@ -2876,6 +2893,52 @@ class ResultData(QObject):
                 elems = np.empty((0,), dtype=object)
             elem_array_map[int(sid)] = elems
             elem_set_map[int(sid)] = set(str(e) for e in elems.tolist())
+
+        # Custom group evaluation: map structure_id -> list of group labels
+        custom_group_map: dict[int, list[str]] = {}
+        custom_group_labels: list[str] = []
+        if req_norm.group_mode == DistributionGroupMode.CUSTOM and req_norm.custom_group_specs:
+            from NepTrainKit.core.search import StructureFilterEngine, StructureFilterValidationError
+            from NepTrainKit.core.types import StructureFilterSpec
+
+            for spec_data in req_norm.custom_group_specs:
+                label = str(spec_data.get("label", "") or "").strip()
+                if not label:
+                    continue
+                custom_group_labels.append(label)
+                try:
+                    spec = StructureFilterSpec.from_dict(spec_data.get("spec", {}))
+                except Exception:
+                    continue
+                if spec.is_empty():
+                    continue
+                try:
+                    result = StructureFilterEngine.evaluate(self, spec)
+                    matched_sids = set(result.indices)
+                except StructureFilterValidationError:
+                    continue
+                for sid in matched_sids:
+                    sid_int = int(sid)
+                    if sid_int in formula_map or sid_int in elem_set_map:
+                        custom_group_map.setdefault(sid_int, []).append(label)
+
+        # Value view group evaluation: which value views to include
+        selected_views: list[DistributionValueView] = []
+        if req_norm.group_mode == DistributionGroupMode.VALUE_VIEW:
+            for v in req_norm.selected_value_views:
+                try:
+                    selected_views.append(DistributionValueView(v))
+                except ValueError:
+                    pass
+            if not selected_views:
+                selected_views = [DistributionValueView.REFERENCE]
+        elif req_norm.group_mode == DistributionGroupMode.CUSTOM:
+            for v in req_norm.selected_value_views:
+                try:
+                    selected_views.append(DistributionValueView(v))
+                except ValueError:
+                    pass
+            # CUSTOM: if no views selected, leave empty -> group by custom label
 
         metric_values: dict[str, dict[str, list[float]]] = {}
         metric_structs: dict[str, dict[str, list[int]]] = {}
@@ -2954,63 +3017,113 @@ class ResultData(QObject):
                     if row_elem_all is not None and row_elem_all.shape[0] == data_all.shape[0]:
                         row_elem = np.asarray(row_elem_all[scope_mask], dtype=object).reshape(-1)
 
-                for ci, comp_name in enumerate(comp_names):
-                    metric_key = f"{field_key}|{comp_name}"
-                    meta = {
-                        "field_key": field_key,
-                        "field_label": spec.label or field_key,
-                        "component": str(comp_name),
-                        "unit": spec.unit_guess,
-                        "value_view": view.value,
-                        "has_prediction_pair": bool(spec.has_prediction_pair),
-                        "available_views": [
-                            DistributionValueView.REFERENCE.value,
-                            DistributionValueView.PREDICTION.value,
-                            DistributionValueView.ERROR.value,
-                        ],
-                    }
-                    col = values[:, ci]
-                    for ridx, sid_raw in enumerate(row_struct.tolist()):
-                        sid = int(sid_raw)
-                        v = float(col[ridx])
-                        if req_norm.group_mode == DistributionGroupMode.FORMULA:
-                            groups = [formula_map.get(sid, "")]
-                        else:
-                            if row_elem is not None:
-                                groups = [str(row_elem[ridx])]
-                            else:
-                                groups = sorted(elem_set_map.get(sid, set()))
-                        for grp in groups:
-                            _append_sample(metric_key, grp, v, sid, meta)
+                # Determine which value views to process
+                # - VALUE_VIEW: process all selected views as separate series
+                # - CUSTOM with single group + selected views: also process multiple views
+                # - Otherwise: single view only
+                use_multi_view = (
+                    req_norm.group_mode == DistributionGroupMode.VALUE_VIEW
+                    or (req_norm.group_mode == DistributionGroupMode.CUSTOM and selected_views)
+                )
+                if use_multi_view and spec.has_prediction_pair and selected_views:
+                    views_to_process = [(vv, vv.value) for vv in selected_views]
+                else:
+                    views_to_process = [(view, view.value)]
 
-                if req_norm.include_norm and n_comp > 1:
-                    metric_key = f"{field_key}|norm"
-                    meta = {
-                        "field_key": field_key,
-                        "field_label": spec.label or field_key,
-                        "component": "norm",
-                        "unit": spec.unit_guess,
-                        "value_view": view.value,
-                        "has_prediction_pair": bool(spec.has_prediction_pair),
-                        "available_views": [
-                            DistributionValueView.REFERENCE.value,
-                            DistributionValueView.PREDICTION.value,
-                            DistributionValueView.ERROR.value,
-                        ],
-                    }
-                    norm_vals = np.linalg.norm(values, axis=1)
-                    for ridx, sid_raw in enumerate(row_struct.tolist()):
-                        sid = int(sid_raw)
-                        v = float(norm_vals[ridx])
-                        if req_norm.group_mode == DistributionGroupMode.FORMULA:
-                            groups = [formula_map.get(sid, "")]
-                        else:
-                            if row_elem is not None:
-                                groups = [str(row_elem[ridx])]
+                for proc_view, proc_view_label in views_to_process:
+                    if proc_view == DistributionValueView.PREDICTION:
+                        proc_values = pred
+                    elif proc_view == DistributionValueView.ERROR:
+                        proc_values = pred - ref
+                    else:
+                        proc_values = ref
+                    if proc_values.ndim == 1:
+                        proc_values = proc_values.reshape(-1, 1)
+
+                    for ci, comp_name in enumerate(comp_names):
+                        metric_key = f"{field_key}|{comp_name}"
+                        meta = {
+                            "field_key": field_key,
+                            "field_label": spec.label or field_key,
+                            "component": str(comp_name),
+                            "unit": spec.unit_guess,
+                            "value_view": proc_view_label,
+                            "has_prediction_pair": bool(spec.has_prediction_pair),
+                            "available_views": [
+                                DistributionValueView.REFERENCE.value,
+                                DistributionValueView.PREDICTION.value,
+                                DistributionValueView.ERROR.value,
+                            ],
+                        }
+                        col = proc_values[:, ci]
+                        for ridx, sid_raw in enumerate(row_struct.tolist()):
+                            sid = int(sid_raw)
+                            v = float(col[ridx])
+                            if req_norm.group_mode == DistributionGroupMode.FORMULA:
+                                groups = [formula_map.get(sid, "")]
+                            elif req_norm.group_mode == DistributionGroupMode.ELEMENT:
+                                if row_elem is not None:
+                                    groups = [str(row_elem[ridx])]
+                                else:
+                                    groups = sorted(elem_set_map.get(sid, set()))
+                            elif req_norm.group_mode == DistributionGroupMode.VALUE_VIEW:
+                                groups = [proc_view_label]
+                            elif req_norm.group_mode == DistributionGroupMode.CUSTOM:
+                                if selected_views:
+                                    # CUSTOM + multi-value: group by value view, filter by custom groups
+                                    if sid in custom_group_map:
+                                        groups = [proc_view_label]
+                                    else:
+                                        groups = []
+                                else:
+                                    # CUSTOM + single value: group by custom group label
+                                    groups = custom_group_map.get(sid, [])
                             else:
-                                groups = sorted(elem_set_map.get(sid, set()))
-                        for grp in groups:
-                            _append_sample(metric_key, grp, v, sid, meta)
+                                groups = [formula_map.get(sid, "")]
+                            for grp in groups:
+                                _append_sample(metric_key, grp, v, sid, meta)
+
+                    if req_norm.include_norm and n_comp > 1:
+                        metric_key = f"{field_key}|norm"
+                        meta = {
+                            "field_key": field_key,
+                            "field_label": spec.label or field_key,
+                            "component": "norm",
+                            "unit": spec.unit_guess,
+                            "value_view": proc_view_label,
+                            "has_prediction_pair": bool(spec.has_prediction_pair),
+                            "available_views": [
+                                DistributionValueView.REFERENCE.value,
+                                DistributionValueView.PREDICTION.value,
+                                DistributionValueView.ERROR.value,
+                            ],
+                        }
+                        norm_vals = np.linalg.norm(proc_values, axis=1)
+                        for ridx, sid_raw in enumerate(row_struct.tolist()):
+                            sid = int(sid_raw)
+                            v = float(norm_vals[ridx])
+                            if req_norm.group_mode == DistributionGroupMode.FORMULA:
+                                groups = [formula_map.get(sid, "")]
+                            elif req_norm.group_mode == DistributionGroupMode.ELEMENT:
+                                if row_elem is not None:
+                                    groups = [str(row_elem[ridx])]
+                                else:
+                                    groups = sorted(elem_set_map.get(sid, set()))
+                            elif req_norm.group_mode == DistributionGroupMode.VALUE_VIEW:
+                                groups = [proc_view_label]
+                            elif req_norm.group_mode == DistributionGroupMode.CUSTOM:
+                                if selected_views:
+                                    if sid in custom_group_map:
+                                        groups = [proc_view_label]
+                                    else:
+                                        groups = []
+                                else:
+                                    groups = custom_group_map.get(sid, [])
+                            else:
+                                groups = [formula_map.get(sid, "")]
+                            for grp in groups:
+                                _append_sample(metric_key, grp, v, sid, meta)
+
                 yield 1
                 continue
 
@@ -3061,6 +3174,17 @@ class ResultData(QObject):
                             grp = formula_map.get(sid_int, "")
                             for v in col.tolist():
                                 _append_sample(metric_key, grp, float(v), sid_int, meta)
+                        elif req_norm.group_mode == DistributionGroupMode.VALUE_VIEW:
+                            for v in col.tolist():
+                                _append_sample(metric_key, DistributionValueView.REFERENCE.value, float(v), sid_int, meta)
+                        elif req_norm.group_mode == DistributionGroupMode.CUSTOM:
+                            if selected_views and sid_int in custom_group_map:
+                                for v in col.tolist():
+                                    _append_sample(metric_key, DistributionValueView.REFERENCE.value, float(v), sid_int, meta)
+                            elif not selected_views:
+                                for grp in custom_group_map.get(sid_int, []):
+                                    for v in col.tolist():
+                                        _append_sample(metric_key, grp, float(v), sid_int, meta)
                         else:
                             for aidx, v in enumerate(col.tolist()):
                                 if aidx >= elems.size:
@@ -3084,12 +3208,35 @@ class ResultData(QObject):
                             grp = formula_map.get(sid_int, "")
                             for v in norm_vals.tolist():
                                 _append_sample(metric_key, grp, float(v), sid_int, meta)
-                        else:
+                        elif req_norm.group_mode == DistributionGroupMode.ELEMENT:
                             for aidx, v in enumerate(norm_vals.tolist()):
                                 if aidx >= elems.size:
                                     continue
                                 grp = str(elems[aidx])
                                 _append_sample(metric_key, grp, float(v), sid_int, meta)
+                        elif req_norm.group_mode == DistributionGroupMode.VALUE_VIEW:
+                            for v in norm_vals.tolist():
+                                _append_sample(
+                                    metric_key,
+                                    DistributionValueView.REFERENCE.value,
+                                    float(v),
+                                    sid_int,
+                                    meta,
+                                )
+                        elif req_norm.group_mode == DistributionGroupMode.CUSTOM:
+                            if selected_views and sid_int in custom_group_map:
+                                for v in norm_vals.tolist():
+                                    _append_sample(
+                                        metric_key,
+                                        DistributionValueView.REFERENCE.value,
+                                        float(v),
+                                        sid_int,
+                                        meta,
+                                    )
+                            elif not selected_views:
+                                for grp in custom_group_map.get(sid_int, []):
+                                    for v in norm_vals.tolist():
+                                        _append_sample(metric_key, grp, float(v), sid_int, meta)
                     yield 1
 
         lookup: dict[tuple[int, str, str, int], list[int]] = {}
@@ -3196,6 +3343,8 @@ class ResultData(QObject):
                 "groups": list(req_norm.groups),
                 "curve_style": req_norm.curve_style.value,
                 "curve_points": int(req_norm.curve_points),
+                "selected_value_views": list(req_norm.selected_value_views),
+                "custom_group_specs": list(req_norm.custom_group_specs),
             },
             "field_specs": [
                 {

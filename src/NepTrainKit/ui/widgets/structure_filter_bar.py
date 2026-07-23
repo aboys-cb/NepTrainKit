@@ -70,6 +70,70 @@ _ELEMENT_FIELDS = {
     FilterField.ELEMENT_ALLOWED,
 }
 
+_EXPRESSION_FIELD_UNITS: dict[str, str] = {
+    "natoms": "count",
+    "n_atoms": "count",
+    "spin_natoms": "count",
+    "volume": "Å³",
+    "a": "Å",
+    "b": "Å",
+    "c": "Å",
+    "alpha": "°",
+    "beta": "°",
+    "gamma": "°",
+    "energy": "eV",
+    "energy_per_atom": "eV/atom",
+    "has_energy": "bool",
+    "has_forces": "bool",
+    "has_virial": "bool",
+    "has_bec": "bool",
+}
+
+_EXPRESSION_UNIT_PREFIXES: tuple[tuple[str, str], ...] = (
+    ("force", "eV/Å"),
+    ("stress", "GPa"),
+    ("virial", "eV"),
+    ("count.", "count"),
+    ("frac.", "fraction"),
+    ("has.", "bool"),
+)
+
+
+_ATOMIC_PROPERTY_UNITS: dict[str, str] = {
+    "force": "eV/Å",
+    "forces": "eV/Å",
+    "pos": "Å",
+    "spin_vec": "μB",
+    "spin_scalar": "μB",
+    "force_mag": "μB/Å",
+    "mforce": "μB/Å",
+    "magmom": "μB",
+    "charge": "e",
+    "bec": "e",
+    "dipole": "e·Å",
+    "velocity": "Å/fs",
+}
+
+
+def _detect_expression_unit(text: str) -> str:
+    """Return the unit for the first field found in an expression string."""
+    match = re.search(r"([A-Za-z_][\w]*(?:\.[A-Za-z_][\w]*)*)", text)
+    if not match:
+        return ""
+    field = match.group(1)
+    unit = _EXPRESSION_FIELD_UNITS.get(field)
+    if unit is not None:
+        return unit
+    for prefix, prefix_unit in _EXPRESSION_UNIT_PREFIXES:
+        if field.startswith(prefix):
+            return prefix_unit
+    if field.startswith("atomic."):
+        parts = field.split(".", 2)
+        if len(parts) >= 2:
+            prop = parts[1]
+            return _ATOMIC_PROPERTY_UNITS.get(prop, "")
+    return ""
+
 
 def _surface_colors() -> tuple[str, str, str, str]:
     """Return theme-aware surface, border, text, and muted-text colors."""
@@ -263,6 +327,15 @@ class _ConditionRow(QFrame):
         self.value_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         layout.addWidget(self.value_edit, 1)
 
+        self.unit_label = CaptionLabel("", self)
+        self.unit_label.setFixedHeight(30)
+        self.unit_label.setMinimumWidth(0)
+        self.unit_label.setMaximumWidth(64)
+        self.unit_label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+        self.unit_label.setStyleSheet("color: #888; font-size: 11px;")
+        self.unit_label.setVisible(False)
+        layout.addWidget(self.unit_label)
+
         self.remove_button = TransparentToolButton(FluentIcon.CLOSE, self)
         self.remove_button.setIconSize(QSize(10, 10))
         self.remove_button.setFixedSize(24, 28)
@@ -288,8 +361,9 @@ class _ConditionRow(QFrame):
         self.field_combo.currentIndexChanged.connect(self._on_field_changed)
         self.mode_combo.currentIndexChanged.connect(lambda _index: self.changed.emit())
         self.case_button.toggled.connect(self._on_case_toggled)
-        self.value_edit.textChanged.connect(lambda _text: self.changed.emit())
+        self.value_edit.textChanged.connect(self._on_value_changed)
         self._refresh_style()
+        self._update_unit_label()
 
     @staticmethod
     def _display_values(condition: StructureFilterCondition) -> str:
@@ -305,11 +379,30 @@ class _ConditionRow(QFrame):
         self._update_case_button(field == FilterField.FORMULA)
         self._update_placeholder()
         self._update_suggestions()
+        self._update_unit_label()
         self.clear_error()
         self.changed.emit()
 
+    def _update_unit_label(self) -> None:
+        field = self.field_combo.currentData()
+        if field != FilterField.EXPRESSION:
+            self.unit_label.setVisible(False)
+            self.unit_label.setText("")
+            return
+        unit = _detect_expression_unit(self.value_edit.text())
+        if unit:
+            self.unit_label.setText(unit)
+            self.unit_label.setVisible(True)
+        else:
+            self.unit_label.setText("")
+            self.unit_label.setVisible(False)
+
     def _on_case_toggled(self, _checked: bool) -> None:
         self._update_case_tooltip()
+        self.changed.emit()
+
+    def _on_value_changed(self, _text: str) -> None:
+        self._update_unit_label()
         self.changed.emit()
 
     def _update_case_button(self, checked: bool) -> None:

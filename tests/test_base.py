@@ -378,6 +378,57 @@ def test_distribution_formula_group_vector_has_norm_metric():
     assert total == 5  # two structures: 2 + 3 atoms
 
 
+def test_distribution_value_view_groups_atomic_vector_norm_as_reference():
+    data = _build_dummy_result()
+    req = DistributionRequest(
+        field_keys=("atomic:spin_vec",),
+        include_norm=True,
+        group_mode=DistributionGroupMode.VALUE_VIEW,
+        selected_value_views=(DistributionValueView.REFERENCE.value,),
+        scope=DistributionScope.ACTIVE,
+        bins=20,
+    )
+
+    list(data.iter_distribution_analysis(req))
+    metric_by_key = {
+        metric["metric_key"]: metric
+        for metric in data.get_distribution_analysis().get("metrics", [])
+    }
+
+    for component in ("x", "y", "z", "norm"):
+        series = metric_by_key[f"atomic:spin_vec|{component}"]["series"]
+        assert [item["series_key"] for item in series] == [DistributionValueView.REFERENCE.value]
+
+
+def test_distribution_value_view_emits_selected_dataset_views():
+    data = _build_dummy_result()
+    req = DistributionRequest(
+        field_keys=("dataset:force",),
+        include_norm=False,
+        group_mode=DistributionGroupMode.VALUE_VIEW,
+        selected_value_views=(
+            DistributionValueView.REFERENCE.value,
+            DistributionValueView.PREDICTION.value,
+            DistributionValueView.ERROR.value,
+        ),
+        scope=DistributionScope.ACTIVE,
+        bins=20,
+    )
+
+    list(data.iter_distribution_analysis(req))
+    metric = next(
+        item
+        for item in data.get_distribution_analysis().get("metrics", [])
+        if item.get("metric_key") == "dataset:force|x"
+    )
+
+    assert {item["series_key"] for item in metric["series"]} == {
+        DistributionValueView.REFERENCE.value,
+        DistributionValueView.PREDICTION.value,
+        DistributionValueView.ERROR.value,
+    }
+
+
 def test_distribution_element_group_counts_match_element_atoms():
     data = _build_dummy_result()
     req = DistributionRequest(

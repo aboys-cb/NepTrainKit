@@ -3,147 +3,147 @@
 <context>
     <name>AdvancedModelSearchDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2481" />
+        <location filename="../ui/widgets/dialog.py" line="2715" />
         <source>Advanced search - models</source>
         <translation>高级搜索 - 模型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2498" />
+        <location filename="../ui/widgets/dialog.py" line="2732" />
         <source>Advanced model search</source>
         <translation>高级模型搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2512" />
+        <location filename="../ui/widgets/dialog.py" line="2746" />
         <source>e.g. 1 or 1,3,5</source>
         <translation>例如 1 或 1,3,5</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2513" />
+        <location filename="../ui/widgets/dialog.py" line="2747" />
         <source>Include sub-projects</source>
         <translation>包含子项目</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2518" />
+        <location filename="../ui/widgets/dialog.py" line="2752" />
         <source>None or integer</source>
         <translation>留空或填写整数</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2522" />
+        <location filename="../ui/widgets/dialog.py" line="2756" />
         <source>contains in name</source>
         <translation>名称包含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2524" />
+        <location filename="../ui/widgets/dialog.py" line="2758" />
         <source>contains in notes</source>
         <translation>备注包含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2527" />
+        <location filename="../ui/widgets/dialog.py" line="2761" />
         <source>&lt;Any&gt;</source>
         <translation>&lt;任意&gt;</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2530" />
+        <location filename="../ui/widgets/dialog.py" line="2764" />
         <source>Other</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2533" />
+        <location filename="../ui/widgets/dialog.py" line="2767" />
         <source>tag1, tag2 (AND)</source>
         <translation>tag1, tag2（AND）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2535" />
+        <location filename="../ui/widgets/dialog.py" line="2769" />
         <source>tag1, tag2 (OR)</source>
         <translation>tag1, tag2（OR）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2537" />
+        <location filename="../ui/widgets/dialog.py" line="2771" />
         <source>tag1, tag2 (NOT)</source>
         <translation>tag1, tag2（NOT）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2539" />
+        <location filename="../ui/widgets/dialog.py" line="2773" />
         <source>Order by created_at ascending</source>
         <translation>按 created_at 升序排列</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2542" />
+        <location filename="../ui/widgets/dialog.py" line="2776" />
         <source>e.g. 100</source>
         <translation>例如 100</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2545" />
+        <location filename="../ui/widgets/dialog.py" line="2779" />
         <source>e.g. 0</source>
         <translation>例如 0</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2548" />
+        <location filename="../ui/widgets/dialog.py" line="2782" />
         <source>Project ID(s):</source>
         <translation>项目 ID：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2550" />
+        <location filename="../ui/widgets/dialog.py" line="2784" />
         <source>Parent ID:</source>
         <translation>父级 ID：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2551" />
+        <location filename="../ui/widgets/dialog.py" line="2785" />
         <source>Model type:</source>
         <translation>模型类型：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2552" />
+        <location filename="../ui/widgets/dialog.py" line="2786" />
         <source>Name contains:</source>
         <translation>名称包含：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2553" />
+        <location filename="../ui/widgets/dialog.py" line="2787" />
         <source>Notes contains:</source>
         <translation>备注包含：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2554" />
+        <location filename="../ui/widgets/dialog.py" line="2788" />
         <source>Tags (ALL):</source>
         <translation>标签（全部匹配）：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2555" />
+        <location filename="../ui/widgets/dialog.py" line="2789" />
         <source>Tags (ANY):</source>
         <translation>标签（任一匹配）：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2556" />
+        <location filename="../ui/widgets/dialog.py" line="2790" />
         <source>Tags (NOT):</source>
         <translation>标签（排除）：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2557" />
+        <location filename="../ui/widgets/dialog.py" line="2791" />
         <source>Order:</source>
         <translation>排序：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2558" />
+        <location filename="../ui/widgets/dialog.py" line="2792" />
         <source>Limit:</source>
         <translation>数量限制：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2559" />
+        <location filename="../ui/widgets/dialog.py" line="2793" />
         <source>Offset:</source>
         <translation>偏移量：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2567" />
+        <location filename="../ui/widgets/dialog.py" line="2801" />
         <source>Search</source>
         <translation>搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2568" />
+        <location filename="../ui/widgets/dialog.py" line="2802" />
         <source>Reset</source>
         <translation>重置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2569" />
+        <location filename="../ui/widgets/dialog.py" line="2803" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
@@ -151,37 +151,37 @@
 <context>
     <name>ArrowMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1579" />
+        <location filename="../ui/widgets/dialog.py" line="1813" />
         <source>Vector property</source>
         <translation>向量属性</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1599" />
+        <location filename="../ui/widgets/dialog.py" line="1833" />
         <source>Show arrows</source>
         <translation>显示箭头</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1602" />
+        <location filename="../ui/widgets/dialog.py" line="1836" />
         <source>Property</source>
         <translation>属性</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1604" />
+        <location filename="../ui/widgets/dialog.py" line="1838" />
         <source>Scale</source>
         <translation>缩放</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1606" />
+        <location filename="../ui/widgets/dialog.py" line="1840" />
         <source>Colormap</source>
         <translation>颜色映射</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1613" />
+        <location filename="../ui/widgets/dialog.py" line="1847" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1614" />
+        <location filename="../ui/widgets/dialog.py" line="1848" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -2116,42 +2116,42 @@
 <context>
     <name>DFTD3MessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2136" />
+        <location filename="../ui/widgets/dialog.py" line="2370" />
         <source>DFT D3 functional</source>
         <translation>DFT D3 泛函</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2207" />
+        <location filename="../ui/widgets/dialog.py" line="2441" />
         <source>Add DFT-D3</source>
         <translation>加上 DFT-D3</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2208" />
+        <location filename="../ui/widgets/dialog.py" line="2442" />
         <source>Subtract DFT-D3</source>
         <translation>减去 DFT-D3</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2211" />
+        <location filename="../ui/widgets/dialog.py" line="2445" />
         <source>D3 cutoff</source>
         <translation>D3 截断半径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2213" />
+        <location filename="../ui/widgets/dialog.py" line="2447" />
         <source>D3 cutoff _cn</source>
         <translation>D3 配位数截断半径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2216" />
+        <location filename="../ui/widgets/dialog.py" line="2450" />
         <source>Alignment mode</source>
         <translation>对齐模式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2223" />
+        <location filename="../ui/widgets/dialog.py" line="2457" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2224" />
+        <location filename="../ui/widgets/dialog.py" line="2458" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -2167,42 +2167,42 @@
 <context>
     <name>DatasetSummaryMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="170" />
+        <location filename="../ui/widgets/dialog.py" line="171" />
         <source>Formula</source>
         <translation>化学式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="180" />
+        <location filename="../ui/widgets/dialog.py" line="181" />
         <source>Dataset summary</source>
         <translation>数据集概览</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="254" />
+        <location filename="../ui/widgets/dialog.py" line="255" />
         <source>Element distribution (active structures):</source>
         <translation>元素分布（当前结构）：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="259" />
+        <location filename="../ui/widgets/dialog.py" line="260" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="259" />
+        <location filename="../ui/widgets/dialog.py" line="260" />
         <source>Atoms</source>
         <translation>原子数</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="259" />
+        <location filename="../ui/widgets/dialog.py" line="260" />
         <source>Structures</source>
         <translation>结构数</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="259" />
+        <location filename="../ui/widgets/dialog.py" line="260" />
         <source>Fraction</source>
         <translation>占比</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="279" />
+        <location filename="../ui/widgets/dialog.py" line="280" />
         <source>{group_label} distribution (active structures):</source>
         <translation>{group_label} 分布（当前结构）：</translation>
     </message>
@@ -2210,187 +2210,250 @@
 <context>
     <name>DistributionExplorerWidget</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="859" />
+        <location filename="../ui/widgets/dialog.py" line="860" />
         <source>Formula</source>
         <translation>化学式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="860" />
+        <location filename="../ui/widgets/dialog.py" line="861" />
         <source>Element</source>
         <translation>元素</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="864" />
         <source>Active</source>
-        <translation>当前活动数据</translation>
+        <translation type="vanished">当前活动数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="865" />
         <source>Selected</source>
-        <translation>当前选中数据</translation>
+        <translation type="vanished">当前选中数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="869" />
+        <location filename="../ui/widgets/dialog.py" line="872" />
+        <location filename="../ui/widgets/dialog.py" line="883" />
         <source>Reference</source>
         <translation>参考值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="870" />
+        <location filename="../ui/widgets/dialog.py" line="874" />
+        <location filename="../ui/widgets/dialog.py" line="884" />
         <source>Prediction</source>
         <translation>预测值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="871" />
-        <source>Error</source>
-        <translation>错误</translation>
+        <location filename="../ui/widgets/dialog.py" line="876" />
+        <location filename="../ui/widgets/dialog.py" line="885" />
+        <source>Error (pred - ref)</source>
+        <translation>误差（预测-参考）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="875" />
+        <location filename="../ui/widgets/dialog.py" line="895" />
         <source>KDE</source>
         <translation>KDE</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="876" />
+        <location filename="../ui/widgets/dialog.py" line="896" />
         <source>Normal</source>
         <translation>正态曲线</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="877" />
+        <location filename="../ui/widgets/dialog.py" line="894" />
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="881" />
+        <location filename="../ui/widgets/dialog.py" line="904" />
         <source>Replace</source>
         <translation>替换选择</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="882" />
+        <location filename="../ui/widgets/dialog.py" line="905" />
         <source>Add</source>
         <translation>追加选择</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="883" />
+        <location filename="../ui/widgets/dialog.py" line="906" />
         <source>Intersect</source>
         <translation>与当前选择求交集</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="889" />
+        <location filename="../ui/widgets/dialog.py" line="908" />
         <source>Include norm</source>
         <translation>包含向量模长</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="891" />
+        <location filename="../ui/widgets/dialog.py" line="910" />
         <source>Advanced options</source>
         <translation>高级选项</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="895" />
+        <location filename="../ui/widgets/dialog.py" line="914" />
         <source>Analyze</source>
         <translation>生成分布</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="898" />
+        <location filename="../ui/widgets/dialog.py" line="917" />
         <source>Field</source>
         <translation>字段</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="899" />
-        <source>Group</source>
+        <location filename="../ui/widgets/dialog.py" line="918" />
+        <source>Group by</source>
         <translation>分组方式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="900" />
-        <source>Scope</source>
-        <translation>数据范围</translation>
+        <location filename="../ui/widgets/dialog.py" line="862" />
+        <location filename="../ui/widgets/dialog.py" line="931" />
+        <source>Value source</source>
+        <translation>值来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="901" />
-        <source>View</source>
-        <translation>数值类型</translation>
+        <location filename="../ui/widgets/dialog.py" line="863" />
+        <location filename="../ui/widgets/dialog.py" line="939" />
+        <source>Custom group data</source>
+        <translation>自定义分组数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="902" />
-        <source>Select mode</source>
-        <translation>选择方式</translation>
+        <location filename="../ui/widgets/dialog.py" line="889" />
+        <source>Edit groups</source>
+        <translation>编辑分组</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="903" />
+        <location filename="../ui/widgets/dialog.py" line="923" />
+        <source>Curve</source>
+        <translation>曲线</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="922" />
         <source>Bins</source>
         <translation>分箱数</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="904" />
-        <source>Curve</source>
-        <translation>辅助曲线</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="935" />
-        <source>Metric</source>
-        <translation>指标</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="937" />
-        <source>Series</source>
-        <translation>数据系列</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="998" />
-        <source>Current canvas backend is vispy, but vispy plot failed to initialize; fallback to pyqtgraph.</source>
-        <translation>当前画布后端为 vispy，但 vispy 图表初始化失败，已回退到 pyqtgraph。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="1004" />
-        <source>Dataset does not support distribution analysis.</source>
-        <translation>当前数据集不支持分布分析。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="1027" />
-        <source>No numeric fields found in current scope.</source>
-        <translation>当前范围内未找到数值字段。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="1030" />
-        <source>{count} fields ready. Click Analyze.</source>
-        <translation>已准备 {count} 个字段。点击「分析」。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="1046" />
-        <source>Please select a field.</source>
-        <translation>请选择一个字段。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="1049" />
-        <source>Analyze callback is unavailable.</source>
-        <translation>分析回调不可用。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="1094" />
-        <source>No metrics produced for current request.</source>
-        <translation>当前请求未生成指标。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="1101" />
-        <source>{count} metrics generated.</source>
-        <translation>已生成 {count} 个指标。</translation>
-    </message>
-    <message>
-        <location filename="../ui/widgets/dialog.py" line="1119" />
+        <location filename="../ui/widgets/dialog.py" line="1352" />
         <source>All groups</source>
         <translation>全部分组</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1133" />
+        <location filename="../ui/widgets/dialog.py" line="919" />
+        <source>Scope</source>
+        <translation>数据范围</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="867" />
+        <source>All data</source>
+        <translation>全部数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="868" />
+        <source>Selected data</source>
+        <translation>当前选择数据</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="920" />
+        <source>View</source>
+        <translation>数值类型</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="921" />
+        <source>Select mode</source>
+        <translation>选择方式</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="968" />
+        <source>Metric</source>
+        <translation>指标</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="970" />
+        <source>Series</source>
+        <translation>数据系列</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1068" />
+        <source>Edit custom groups</source>
+        <translation>编辑自定义分组</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1086" />
+        <source>Include in plot</source>
+        <translation>在图中显示</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1088" />
+        <source>Group name</source>
+        <translation>分组名称</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1090" />
+        <source>Filter</source>
+        <translation>筛选</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1139" />
+        <source>+ Add group</source>
+        <translation>+ 添加分组</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1144" />
+        <source>OK</source>
+        <translation>确定</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1145" />
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1187" />
+        <source>Current canvas backend is vispy, but vispy plot failed to initialize; fallback to pyqtgraph.</source>
+        <translation>当前画布后端为 vispy，但 vispy 图表初始化失败，已回退到 pyqtgraph。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1193" />
+        <source>Dataset does not support distribution analysis.</source>
+        <translation>当前数据集不支持分布分析。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1218" />
+        <source>No numeric fields found in current scope.</source>
+        <translation>当前范围内未找到数值字段。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1221" />
+        <source>{count} fields ready. Click Analyze.</source>
+        <translation>已准备 {count} 个字段。点击「分析」。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1237" />
+        <source>Please select a field.</source>
+        <translation>请选择一个字段。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1240" />
+        <source>Analyze callback is unavailable.</source>
+        <translation>分析回调不可用。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1327" />
+        <source>No metrics produced for current request.</source>
+        <translation>当前请求未生成指标。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1334" />
+        <source>{count} metrics generated.</source>
+        <translation>已生成 {count} 个指标。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1366" />
         <source>All groups (overlay)</source>
         <translation>全部分组（叠加）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1191" />
+        <location filename="../ui/widgets/dialog.py" line="1425" />
         <source>all groups</source>
         <translation>全部分组</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1193" />
+        <location filename="../ui/widgets/dialog.py" line="1427" />
         <source>Applied bin {bin_index} ({series_label}): {sample_count} samples -&gt; {count} structures, mode='{mode}'.</source>
         <translation>已应用区间 {bin_index}（{series_label}）：{sample_count} 个样本 -&gt; {count} 个结构，模式为「{mode}」。</translation>
     </message>
@@ -2398,7 +2461,7 @@
 <context>
     <name>DistributionInspectorMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1216" />
+        <location filename="../ui/widgets/dialog.py" line="1450" />
         <source>Distribution inspector</source>
         <translation>分布检查器</translation>
     </message>
@@ -2528,22 +2591,22 @@
 <context>
     <name>EditInfoMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1661" />
+        <location filename="../ui/widgets/dialog.py" line="1895" />
         <source>Edit info</source>
         <translation>编辑信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1663" />
+        <location filename="../ui/widgets/dialog.py" line="1897" />
         <source>Add new tag</source>
         <translation>添加新标签</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1672" />
+        <location filename="../ui/widgets/dialog.py" line="1906" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1673" />
+        <location filename="../ui/widgets/dialog.py" line="1907" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -2602,7 +2665,7 @@
 <context>
     <name>ExportFormatMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="131" />
+        <location filename="../ui/widgets/dialog.py" line="132" />
         <source>Choose export format</source>
         <translation>选择导出格式</translation>
     </message>
@@ -2788,23 +2851,23 @@
 <context>
     <name>FilterChip</name>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="77" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="154" />
         <source>{kind}: {value}</source>
         <translation>{kind}：{value}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="85" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="162" />
         <source>{kind}:</source>
         <translation>{kind}：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="88" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="165" />
         <source>Disabled: {text}</source>
         <translation>已停用：{text}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="95" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="96" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="172" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="173" />
         <source>Remove condition</source>
         <translation>删除条件</translation>
     </message>
@@ -3099,17 +3162,17 @@
 <context>
     <name>IndexSelectMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1429" />
+        <location filename="../ui/widgets/dialog.py" line="1663" />
         <source>Use original indices</source>
         <translation>使用原始索引</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1436" />
+        <location filename="../ui/widgets/dialog.py" line="1670" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1437" />
+        <location filename="../ui/widgets/dialog.py" line="1671" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -3117,37 +3180,37 @@
 <context>
     <name>InputInfoMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1621" />
+        <location filename="../ui/widgets/dialog.py" line="1855" />
         <source>New structure info</source>
         <translation>新增结构信息</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1631" />
+        <location filename="../ui/widgets/dialog.py" line="1865" />
         <source>Key</source>
         <translation>键</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1633" />
+        <location filename="../ui/widgets/dialog.py" line="1867" />
         <source>Value</source>
         <translation>值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1638" />
+        <location filename="../ui/widgets/dialog.py" line="1872" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1639" />
+        <location filename="../ui/widgets/dialog.py" line="1873" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1647" />
+        <location filename="../ui/widgets/dialog.py" line="1881" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1648" />
+        <location filename="../ui/widgets/dialog.py" line="1882" />
         <source>A valid value must be entered</source>
         <translation>请输入有效值</translation>
     </message>
@@ -3278,72 +3341,72 @@
 <context>
     <name>LatticeRangeSelectMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1535" />
+        <location filename="../ui/widgets/dialog.py" line="1769" />
         <source>a min</source>
         <translation>a 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1537" />
+        <location filename="../ui/widgets/dialog.py" line="1771" />
         <source>a max</source>
         <translation>a 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1540" />
+        <location filename="../ui/widgets/dialog.py" line="1774" />
         <source>b min</source>
         <translation>b 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1542" />
+        <location filename="../ui/widgets/dialog.py" line="1776" />
         <source>b max</source>
         <translation>b 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1545" />
+        <location filename="../ui/widgets/dialog.py" line="1779" />
         <source>c min</source>
         <translation>c 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1547" />
+        <location filename="../ui/widgets/dialog.py" line="1781" />
         <source>c max</source>
         <translation>c 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1551" />
+        <location filename="../ui/widgets/dialog.py" line="1785" />
         <source>α min</source>
         <translation>α 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1553" />
+        <location filename="../ui/widgets/dialog.py" line="1787" />
         <source>α max</source>
         <translation>α 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1556" />
+        <location filename="../ui/widgets/dialog.py" line="1790" />
         <source>β min</source>
         <translation>β 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1558" />
+        <location filename="../ui/widgets/dialog.py" line="1792" />
         <source>β max</source>
         <translation>β 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1561" />
+        <location filename="../ui/widgets/dialog.py" line="1795" />
         <source>γ min</source>
         <translation>γ 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1563" />
+        <location filename="../ui/widgets/dialog.py" line="1797" />
         <source>γ max</source>
         <translation>γ 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1569" />
+        <location filename="../ui/widgets/dialog.py" line="1803" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1570" />
+        <location filename="../ui/widgets/dialog.py" line="1804" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -4191,102 +4254,102 @@
 <context>
     <name>ModelInfoMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2282" />
+        <location filename="../ui/widgets/dialog.py" line="2516" />
         <source>Create / edit model</source>
         <translation>创建 / 编辑模型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2298" />
+        <location filename="../ui/widgets/dialog.py" line="2532" />
         <source>Model name</source>
         <translation>模型名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2300" />
+        <location filename="../ui/widgets/dialog.py" line="2534" />
         <source>Parent</source>
         <translation>父级</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2301" />
+        <location filename="../ui/widgets/dialog.py" line="2535" />
         <source>Type</source>
         <translation>类型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2302" />
+        <location filename="../ui/widgets/dialog.py" line="2536" />
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2310" />
+        <location filename="../ui/widgets/dialog.py" line="2544" />
         <source>RMSE (energy / force / virial)</source>
         <translation>RMSE（energy / force / virial）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2330" />
+        <location filename="../ui/widgets/dialog.py" line="2564" />
         <source>energy</source>
         <translation>能量</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2334" />
+        <location filename="../ui/widgets/dialog.py" line="2568" />
         <source>force</source>
         <translation>力</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2338" />
+        <location filename="../ui/widgets/dialog.py" line="2572" />
         <source>virial</source>
         <translation>维里</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2362" />
+        <location filename="../ui/widgets/dialog.py" line="2596" />
         <source>Model training path</source>
         <translation>模型训练路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2370" />
+        <location filename="../ui/widgets/dialog.py" line="2604" />
         <source>Path</source>
         <translation>路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2381" />
+        <location filename="../ui/widgets/dialog.py" line="2615" />
         <source>Enter the tag and press Enter</source>
         <translation>输入标签后按 Enter</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2385" />
+        <location filename="../ui/widgets/dialog.py" line="2619" />
         <source>Tags</source>
         <translation>标签</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2396" />
+        <location filename="../ui/widgets/dialog.py" line="2630" />
         <source>Model notes</source>
         <translation>模型备注</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2400" />
+        <location filename="../ui/widgets/dialog.py" line="2634" />
         <source>Notes</source>
         <translation>备注</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2406" />
+        <location filename="../ui/widgets/dialog.py" line="2640" />
         <source>Select the model folder path</source>
         <translation>选择模型文件夹路径</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2414" />
+        <location filename="../ui/widgets/dialog.py" line="2648" />
         <source>{tag} already exists!</source>
         <translation>{tag} 已存在！</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2423" />
+        <location filename="../ui/widgets/dialog.py" line="2657" />
         <source>{path} does not exist!</source>
         <translation>{path} 不存在！</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2429" />
+        <location filename="../ui/widgets/dialog.py" line="2663" />
         <source>No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing.</source>
         <translation>指定路径中未找到 'nep.txt'。它不是强制要求，但请确认当前操作符合预期。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2435" />
+        <location filename="../ui/widgets/dialog.py" line="2669" />
         <source>No 'train.xyz' training data file found in the specified path. This file is required to compute training error metrics; please make sure you know what you are doing.</source>
         <translation>指定路径中未找到 'train.xyz' 训练数据文件。计算训练误差指标需要此文件，请确认当前操作符合预期。</translation>
     </message>
@@ -4922,7 +4985,7 @@ All child items will also be deleted.</source>
 <context>
     <name>PeriodicTableDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2064" />
+        <location filename="../ui/widgets/dialog.py" line="2298" />
         <source>Periodic table</source>
         <translation>元素周期表</translation>
     </message>
@@ -5028,19 +5091,19 @@ All child items will also be deleted.</source>
 <context>
     <name>ProjectInfoMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2245" />
-        <location filename="../ui/widgets/dialog.py" line="2254" />
+        <location filename="../ui/widgets/dialog.py" line="2479" />
+        <location filename="../ui/widgets/dialog.py" line="2488" />
         <source>Project name</source>
         <translation>项目名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2249" />
-        <location filename="../ui/widgets/dialog.py" line="2256" />
+        <location filename="../ui/widgets/dialog.py" line="2483" />
+        <location filename="../ui/widgets/dialog.py" line="2490" />
         <source>Project notes</source>
         <translation>项目备注</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2250" />
+        <location filename="../ui/widgets/dialog.py" line="2484" />
         <source>Parent</source>
         <translation>父级</translation>
     </message>
@@ -5425,37 +5488,37 @@ All child items will also be deleted.</source>
 <context>
     <name>RangeSelectMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1470" />
+        <location filename="../ui/widgets/dialog.py" line="1704" />
         <source>X min</source>
         <translation>X 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1472" />
+        <location filename="../ui/widgets/dialog.py" line="1706" />
         <source>X max</source>
         <translation>X 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1474" />
+        <location filename="../ui/widgets/dialog.py" line="1708" />
         <source>Y min</source>
         <translation>Y 最小值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1476" />
+        <location filename="../ui/widgets/dialog.py" line="1710" />
         <source>Y max</source>
         <translation>Y 最大值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1478" />
+        <location filename="../ui/widgets/dialog.py" line="1712" />
         <source>Logic</source>
         <translation>逻辑</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1484" />
+        <location filename="../ui/widgets/dialog.py" line="1718" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1485" />
+        <location filename="../ui/widgets/dialog.py" line="1719" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -5463,27 +5526,27 @@ All child items will also be deleted.</source>
 <context>
     <name>RenameTagMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1824" />
+        <location filename="../ui/widgets/dialog.py" line="2058" />
         <source>Rename tag: {name}</source>
         <translation>重命名标签：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1830" />
+        <location filename="../ui/widgets/dialog.py" line="2064" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1831" />
+        <location filename="../ui/widgets/dialog.py" line="2065" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1839" />
+        <location filename="../ui/widgets/dialog.py" line="2073" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1840" />
+        <location filename="../ui/widgets/dialog.py" line="2074" />
         <source>A valid value must be entered</source>
         <translation>请输入有效值</translation>
     </message>
@@ -5491,7 +5554,7 @@ All child items will also be deleted.</source>
 <context>
     <name>ResultData</name>
     <message>
-        <location filename="../core/io/base.py" line="4206" />
+        <location filename="../core/io/base.py" line="4377" />
         <source>Generating NEP descriptors: {done}/{total} structures</source>
         <translation>正在生成 NEP 描述符：{done}/{total} 个结构</translation>
     </message>
@@ -6147,67 +6210,67 @@ All child items will also be deleted.</source>
 <context>
     <name>ShiftEnergyMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1880" />
+        <location filename="../ui/widgets/dialog.py" line="2114" />
         <source>Delete selected preset</source>
         <translation>删除选中的预设</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1889" />
+        <location filename="../ui/widgets/dialog.py" line="2123" />
         <source>Save baseline as preset</source>
         <translation>将基线保存为预设</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1891" />
+        <location filename="../ui/widgets/dialog.py" line="2125" />
         <source>Preset name</source>
         <translation>预设名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1908" />
+        <location filename="../ui/widgets/dialog.py" line="2142" />
         <source>Reference group</source>
         <translation>参考分组</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1909" />
+        <location filename="../ui/widgets/dialog.py" line="2143" />
         <source>Zero baseline</source>
         <translation>零基线</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1910" />
+        <location filename="../ui/widgets/dialog.py" line="2144" />
         <source>DFT to NEP</source>
         <translation>DFT 到 NEP</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1913" />
+        <location filename="../ui/widgets/dialog.py" line="2147" />
         <source>Max generations</source>
         <translation>最大代数</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1915" />
+        <location filename="../ui/widgets/dialog.py" line="2149" />
         <source>Population size</source>
         <translation>种群大小</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1917" />
+        <location filename="../ui/widgets/dialog.py" line="2151" />
         <source>Convergence tolerance</source>
         <translation>收敛容差</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1924" />
+        <location filename="../ui/widgets/dialog.py" line="2158" />
         <source>Alignment mode</source>
         <translation>对齐模式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1933" />
+        <location filename="../ui/widgets/dialog.py" line="2167" />
         <source>Use existing preset (optional)</source>
         <translation>使用已有预设（可选）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1944" />
+        <location filename="../ui/widgets/dialog.py" line="2178" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1945" />
+        <location filename="../ui/widgets/dialog.py" line="2179" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -6297,19 +6360,19 @@ All child items will also be deleted.</source>
     <message>
         <location filename="../ui/pages/show_nep.py" line="692" />
         <location filename="../ui/pages/show_nep.py" line="693" />
+        <location filename="../ui/pages/show_nep.py" line="1485" />
         <location filename="../ui/pages/show_nep.py" line="1486" />
-        <location filename="../ui/pages/show_nep.py" line="1487" />
         <source>Play structures</source>
         <translation>连续播放结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1130" />
+        <location filename="../ui/pages/show_nep.py" line="1129" />
         <source>/ {count:,} frames</source>
         <translation>/ {count:,} 帧</translation>
     </message>
     <message>
+        <location filename="../ui/pages/show_nep.py" line="1480" />
         <location filename="../ui/pages/show_nep.py" line="1481" />
-        <location filename="../ui/pages/show_nep.py" line="1482" />
         <source>Pause structures</source>
         <translation>暂停播放结构</translation>
     </message>
@@ -6334,140 +6397,140 @@ All child items will also be deleted.</source>
         <translation type="vanished">切换搜索模式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="750" />
+        <location filename="../ui/pages/show_nep.py" line="749" />
         <source>Switch NEP model</source>
         <translation>切换 NEP 模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="792" />
+        <location filename="../ui/pages/show_nep.py" line="791" />
         <source>Arrow overlay is available only for vispy structure canvas.</source>
         <translation>箭头叠加只在 vispy 结构画布中可用。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="806" />
+        <location filename="../ui/pages/show_nep.py" line="805" />
         <source>Searching…</source>
         <translation>正在搜索…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="810" />
+        <location filename="../ui/pages/show_nep.py" line="809" />
         <source>Indexing…</source>
         <translation>正在建立索引…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="917" />
-        <location filename="../ui/pages/show_nep.py" line="1081" />
-        <location filename="../ui/pages/show_nep.py" line="1233" />
+        <location filename="../ui/pages/show_nep.py" line="916" />
+        <location filename="../ui/pages/show_nep.py" line="1080" />
+        <location filename="../ui/pages/show_nep.py" line="1232" />
         <source>unsupported file format</source>
         <translation>不支持的文件格式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="929" />
+        <location filename="../ui/pages/show_nep.py" line="928" />
         <source>Please choose the data file</source>
         <translation>请选择数据文件</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="932" />
+        <location filename="../ui/pages/show_nep.py" line="931" />
         <source>Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;All files (*)</source>
         <translation>支持的数据文件 (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="952" />
-        <location filename="../ui/pages/show_nep.py" line="969" />
-        <location filename="../ui/pages/show_nep.py" line="1009" />
-        <location filename="../ui/pages/show_nep.py" line="1039" />
-        <location filename="../ui/pages/show_nep.py" line="1518" />
-        <location filename="../ui/pages/show_nep.py" line="1938" />
+        <location filename="../ui/pages/show_nep.py" line="951" />
+        <location filename="../ui/pages/show_nep.py" line="968" />
+        <location filename="../ui/pages/show_nep.py" line="1008" />
+        <location filename="../ui/pages/show_nep.py" line="1038" />
+        <location filename="../ui/pages/show_nep.py" line="1517" />
+        <location filename="../ui/pages/show_nep.py" line="1937" />
         <source>NEP data has not been loaded yet!</source>
         <translation>尚未加载 NEP 数据！</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="976" />
+        <location filename="../ui/pages/show_nep.py" line="975" />
         <source>No active structures to export.</source>
         <translation>没有可导出的保留结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1012" />
+        <location filename="../ui/pages/show_nep.py" line="1011" />
         <source>Please select some structures first!</source>
         <translation>请先选择一些结构！</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1043" />
+        <location filename="../ui/pages/show_nep.py" line="1042" />
         <source>No removed structures to export.</source>
         <translation>没有可导出的已移除结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1093" />
-        <location filename="../ui/pages/show_nep.py" line="1948" />
+        <location filename="../ui/pages/show_nep.py" line="1092" />
+        <location filename="../ui/pages/show_nep.py" line="1947" />
         <source>Confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1094" />
+        <location filename="../ui/pages/show_nep.py" line="1093" />
         <source>A working directory already exists. Loading a new directory will erase the previous results.
 Do you want to load the new working path?</source>
         <translation>已有工作目录。加载新目录会清除之前的结果。
 仍要加载新的工作路径吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1238" />
+        <location filename="../ui/pages/show_nep.py" line="1237" />
         <source>Current file: {file_name}</source>
         <translation>当前文件：{file_name}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1276" />
+        <location filename="../ui/pages/show_nep.py" line="1275" />
         <source>Loading</source>
         <translation>正在加载</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1276" />
+        <location filename="../ui/pages/show_nep.py" line="1275" />
         <source>Please wait patiently...</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1375" />
+        <location filename="../ui/pages/show_nep.py" line="1374" />
         <source>Failed to build search completer cache: {msg}</source>
         <translation>构建搜索补全缓存失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1414" />
+        <location filename="../ui/pages/show_nep.py" line="1413" />
         <location filename="../ui/pages/show_nep.py" line="2139" />
         <source>Search failed: {msg}</source>
         <translation>搜索失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1512" />
+        <location filename="../ui/pages/show_nep.py" line="1511" />
         <source>File exported to: {save_file_path}</source>
         <translation>文件已导出到：{save_file_path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1690" />
+        <location filename="../ui/pages/show_nep.py" line="1689" />
         <source>Arrow overlay is unavailable for current structure canvas backend.</source>
         <translation>当前结构绘图后端不支持箭头叠加。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1701" />
+        <location filename="../ui/pages/show_nep.py" line="1700" />
         <source>No vector data available</source>
         <translation>没有可用的矢量数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1943" />
+        <location filename="../ui/pages/show_nep.py" line="1942" />
         <source>No bad structures tagged.</source>
         <translation>没有标记为异常的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1949" />
+        <location filename="../ui/pages/show_nep.py" line="1948" />
         <source>This will delete {count} structures marked as bad.
 Do you want to continue?</source>
         <translation>这将删除 {count} 个标记为异常的结构。
 要继续吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1960" />
+        <location filename="../ui/pages/show_nep.py" line="1959" />
         <source>Failed to delete rejected structures.</source>
         <translation>删除已剔除结构失败。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2033" />
+        <location filename="../ui/pages/show_nep.py" line="2041" />
         <source>Filter failed: {message}</source>
         <translation>筛选失败：{message}</translation>
     </message>
@@ -6985,128 +7048,128 @@ Do you want to continue?</source>
 <context>
     <name>SparseMessageBox</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1274" />
+        <location filename="../ui/widgets/dialog.py" line="1508" />
         <source>Global FPS (compatible)</source>
         <translation>全局 FPS（兼容模式）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1276" />
+        <location filename="../ui/widgets/dialog.py" line="1510" />
         <source>Element-set balanced FPS</source>
         <translation>元素集合平衡 FPS</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1281" />
+        <location filename="../ui/widgets/dialog.py" line="1515" />
         <source>Selection strategy</source>
         <translation>选择策略</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1409" />
+        <location filename="../ui/widgets/dialog.py" line="1643" />
         <source>Groups by element set, assigns sqrt-size quotas, and uses raw descriptors.</source>
         <translation>按元素集合分组，以组大小平方根分配名额，并使用原始描述符。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1414" />
+        <location filename="../ui/widgets/dialog.py" line="1648" />
         <source>Uses the existing global FPS behavior and descriptor options.</source>
         <translation>使用原有全局 FPS 行为和描述符选项。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1286" />
+        <location filename="../ui/widgets/dialog.py" line="1520" />
         <source>Fixed count (FPS)</source>
         <translation>固定数量（FPS）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1287" />
+        <location filename="../ui/widgets/dialog.py" line="1521" />
         <source>R^2 stop (FPS)</source>
         <translation>R^2 停止（FPS）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1288" />
+        <location filename="../ui/widgets/dialog.py" line="1522" />
         <source>Sampling mode</source>
         <translation>采样模式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1292" />
+        <location filename="../ui/widgets/dialog.py" line="1526" />
         <source>Sample limit</source>
         <translation>样本上限</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1295" />
+        <location filename="../ui/widgets/dialog.py" line="1529" />
         <source>Min distance</source>
         <translation>最小距离</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1299" />
+        <location filename="../ui/widgets/dialog.py" line="1533" />
         <source>R^2 threshold</source>
         <translation>R^2 阈值</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1308" />
+        <location filename="../ui/widgets/dialog.py" line="1542" />
         <source>Reduced (PCA)</source>
         <translation>降维后（PCA）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1309" />
+        <location filename="../ui/widgets/dialog.py" line="1543" />
         <source>Raw descriptor</source>
         <translation>原始描述符</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1310" />
+        <location filename="../ui/widgets/dialog.py" line="1544" />
         <source>Descriptor source</source>
         <translation>描述符来源</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1321" />
+        <location filename="../ui/widgets/dialog.py" line="1555" />
         <source>Optional training dataset path (.xyz or folder)</source>
         <translation>可选训练数据集路径（.xyz 或文件夹）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1331" />
-        <location filename="../ui/widgets/dialog.py" line="1333" />
+        <location filename="../ui/widgets/dialog.py" line="1565" />
+        <location filename="../ui/widgets/dialog.py" line="1567" />
         <source>Browse for an existing training dataset</source>
         <translation>浏览已有训练数据集</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1336" />
+        <location filename="../ui/widgets/dialog.py" line="1570" />
         <source>Training dataset</source>
         <translation>训练数据集</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1340" />
+        <location filename="../ui/widgets/dialog.py" line="1574" />
         <source>Use current selection as region</source>
         <translation>将当前选择作为区域</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1342" />
+        <location filename="../ui/widgets/dialog.py" line="1576" />
         <source>When FPS sampling is performed in the selected region, the program will automatically deselect it so you can delete it directly.</source>
         <translation>在选中区域执行 FPS 采样后，程序会自动取消选中该区域，便于直接删除。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1347" />
+        <location filename="../ui/widgets/dialog.py" line="1581" />
         <source>Show training overlay</source>
         <translation>显示训练集叠加图</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1349" />
+        <location filename="../ui/widgets/dialog.py" line="1583" />
         <source>Display a scatter plot showing training data, loaded data, and selected structures in PCA space after sampling.</source>
         <translation>采样后显示散点图，在 PCA 空间中对比训练数据、已加载数据和选中结构。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1359" />
+        <location filename="../ui/widgets/dialog.py" line="1593" />
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1360" />
+        <location filename="../ui/widgets/dialog.py" line="1594" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1373" />
+        <location filename="../ui/widgets/dialog.py" line="1607" />
         <source>Select training dataset</source>
         <translation>选择训练数据集</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1378" />
+        <location filename="../ui/widgets/dialog.py" line="1612" />
         <source>Select training dataset folder</source>
         <translation>选择训练数据集文件夹</translation>
     </message>
@@ -7515,24 +7578,24 @@ Do you want to continue?</source>
         <translation type="vanished">添加筛选条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="751" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="811" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1089" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1141" />
         <source>Preview</source>
         <translation>预览</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="757" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1095" />
         <source>No preview</source>
         <translation>尚未预览</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="763" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1101" />
         <source>Apply result ▾</source>
         <translation>应用结果 ▾</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="811" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="817" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1141" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1147" />
         <source>Calculating…</source>
         <translation>正在计算……</translation>
     </message>
@@ -7545,12 +7608,12 @@ Do you want to continue?</source>
         <translation type="vanished">条件错误</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="875" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1206" />
         <source>Config type</source>
         <translation>构型类型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="877" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1208" />
         <source>Formula</source>
         <translation>化学式</translation>
     </message>
@@ -7579,47 +7642,47 @@ Do you want to continue?</source>
         <translation type="vanished">从配置类型、元素、化学式或表达式开始筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="832" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1162" />
         <source>Expired</source>
         <translation>已过期</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="838" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1168" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="879" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1210" />
         <source>Required</source>
         <translation>必含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="881" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1212" />
         <source>Excluded</source>
         <translation>排除</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="883" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1214" />
         <source>Allowed</source>
         <translation>限定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="885" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1216" />
         <source>Expression</source>
         <translation>表达式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="903" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1234" />
         <source>Filter conditions</source>
         <translation>筛选条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="962" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1293" />
         <source>+{count} conditions</source>
         <translation>+{count} 个条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="973" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1304" />
         <source>Matched structures: {matched:,}
 Active structures: {active:,}
 Match ratio: {ratio:.2f}%
@@ -7630,22 +7693,22 @@ Elapsed: {elapsed:.1f} ms</source>
 耗时：{elapsed:.1f} ms</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="986" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1317" />
         <source>Replace current selection ({count:,})</source>
         <translation>替换当前选择（{count:,}）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="987" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1318" />
         <source>Add to current selection ({count:,})</source>
         <translation>加入当前选择（{count:,}）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="988" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1319" />
         <source>Remove from current selection ({count:,})</source>
         <translation>从当前选择中移除（{count:,}）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="997" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1328" />
         <source>Clear current selection ({count:,})</source>
         <translation>清空当前选择（{count:,}）</translation>
     </message>
@@ -7659,17 +7722,9 @@ Elapsed: {elapsed:.1f} ms</source>
     </message>
 </context>
 <context>
-    <name>_PresetNameDialog</name>
-    <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="480" />
-        <source>Cancel</source>
-        <translation>取消</translation>
-    </message>
-</context>
-<context>
     <name>StructureFilterEditorPopup</name>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="472" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="626" />
         <source>Edit structure filter</source>
         <translation>结构筛选</translation>
     </message>
@@ -7678,149 +7733,150 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">条件按右侧关系组合</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="538" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="629" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="633" />
         <source>Saved filters</source>
         <translation>常用筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="541" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="632" />
         <source>Load or save frequently used filter conditions</source>
         <translation>加载或保存常用筛选条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="637" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="728" />
         <source>No saved filters</source>
         <translation>暂无常用筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="644" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="735" />
         <source>Save current conditions…</source>
         <translation>保存当前条件…</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="651" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="742" />
         <source>Manage saved filters</source>
         <translation>管理常用筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="652" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="749" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="743" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="847" />
         <source>Rename</source>
         <translation>重命名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="653" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="777" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="744" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="875" />
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="684" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="782" />
         <source>Preset name</source>
         <translation>常用筛选名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="696" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="794" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="708" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="806" />
         <source>Saved filter '{name}' is unavailable or damaged.</source>
         <translation>常用筛选“{name}”不可用或已损坏。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="715" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="813" />
         <source>Loaded saved filter: {name}</source>
         <translation>已加载常用筛选：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="722" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="820" />
         <source>Save current conditions</source>
         <translation>保存当前条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="723" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="821" />
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="728" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="755" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="826" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="853" />
         <source>Overwrite saved filter?</source>
         <translation>覆盖常用筛选？</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="729" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="756" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="827" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="854" />
         <source>A saved filter named '{name}' already exists.</source>
         <translation>已存在名为“{name}”的常用筛选。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="730" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="757" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="828" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="855" />
         <source>Overwrite</source>
         <translation>覆盖</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="736" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="834" />
         <source>Saved filter: {name}</source>
         <translation>已保存常用筛选：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="740" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="838" />
         <source>Complete or remove empty conditions before saving.</source>
         <translation>请补全或删除空白条件后再保存。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="748" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="846" />
         <source>Rename saved filter</source>
         <translation>重命名常用筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="761" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="768" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="859" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="866" />
         <source>Saved filter could not be renamed.</source>
         <translation>无法重命名常用筛选。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="765" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="863" />
         <source>Renamed saved filter to: {name}</source>
         <translation>常用筛选已重命名为：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="775" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="873" />
         <source>Delete saved filter?</source>
         <translation>删除常用筛选？</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="776" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="874" />
         <source>Delete saved filter '{name}'?</source>
         <translation>确定删除常用筛选“{name}”吗？</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="781" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="879" />
         <source>Saved filter could not be deleted.</source>
         <translation>无法删除常用筛选。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="785" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="883" />
         <source>Deleted saved filter: {name}</source>
         <translation>已删除常用筛选：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="479" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="638" />
         <source>Match all conditions (AND)</source>
         <translation>满足全部条件（AND）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="480" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="639" />
         <source>Match any condition (OR)</source>
         <translation>满足任一条件（OR）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="512" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="513" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="672" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="673" />
         <source>Add condition</source>
         <translation>添加条件</translation>
     </message>
@@ -7829,19 +7885,19 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">+ 添加条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="516" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="680" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="676" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1019" />
         <source>Set conditions to preview matches</source>
         <translation>设置条件后可预览匹配数量</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="521" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="522" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="681" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="682" />
         <source>Clear</source>
         <translation>清空</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="525" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="685" />
         <source>Done and preview</source>
         <translation>完成并预览</translation>
     </message>
@@ -7854,7 +7910,7 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">/ {active:,} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="683" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1022" />
         <source>Estimated matches: {matched:,} / {active:,} structures</source>
         <translation>预计匹配：{matched:,} / {active:,} 个结构</translation>
     </message>
@@ -7868,6 +7924,7 @@ Elapsed: {elapsed:.1f} ms</source>
     </message>
     <message>
         <location filename="../ui/views/structure.py" line="52" />
+        <location filename="../ui/views/structure.py" line="97" />
         <source>Not analyzed</source>
         <translation>尚未分析</translation>
     </message>
@@ -7917,7 +7974,6 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation>逐帧检查</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="97" />
         <location filename="../ui/views/structure.py" line="190" />
         <location filename="../ui/views/structure.py" line="193" />
         <source>Analyzing…</source>
@@ -8178,27 +8234,27 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>TagEditDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2672" />
+        <location filename="../ui/widgets/dialog.py" line="2906" />
         <source>Edit tag</source>
         <translation>编辑标签</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2694" />
+        <location filename="../ui/widgets/dialog.py" line="2928" />
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2695" />
+        <location filename="../ui/widgets/dialog.py" line="2929" />
         <source>Color</source>
         <translation>颜色</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2696" />
+        <location filename="../ui/widgets/dialog.py" line="2930" />
         <source>Notes</source>
         <translation>备注</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2702" />
+        <location filename="../ui/widgets/dialog.py" line="2936" />
         <source>Edit tag color</source>
         <translation>编辑标签颜色</translation>
     </message>
@@ -8290,12 +8346,12 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>TagManageDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2721" />
+        <location filename="../ui/widgets/dialog.py" line="2955" />
         <source>Manage tags</source>
         <translation>管理标签</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2729" />
+        <location filename="../ui/widgets/dialog.py" line="2963" />
         <source>Enter the tag and press Enter</source>
         <translation>输入标签后按 Enter</translation>
     </message>
@@ -8303,57 +8359,57 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>TrainingOverlayDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2807" />
+        <location filename="../ui/widgets/dialog.py" line="3041" />
         <source>Training overlay</source>
         <translation>训练集叠加图</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2988" />
+        <location filename="../ui/widgets/dialog.py" line="3222" />
         <source>Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph.</source>
         <translation>当前画布后端为 vispy，但 vispy 画布初始化失败，已回退到 pyqtgraph。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="2999" />
+        <location filename="../ui/widgets/dialog.py" line="3233" />
         <source>Training</source>
         <translation>训练集</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="3000" />
+        <location filename="../ui/widgets/dialog.py" line="3234" />
         <source>Loaded</source>
         <translation>已加载</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="3001" />
+        <location filename="../ui/widgets/dialog.py" line="3235" />
         <source>Selected</source>
         <translation>当前选中数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="3030" />
+        <location filename="../ui/widgets/dialog.py" line="3264" />
         <source>Reset view</source>
         <translation>重置视图</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="3034" />
+        <location filename="../ui/widgets/dialog.py" line="3268" />
         <source>Export image</source>
         <translation>导出图片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="3038" />
+        <location filename="../ui/widgets/dialog.py" line="3272" />
         <source>Export data</source>
         <translation>导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="3071" />
+        <location filename="../ui/widgets/dialog.py" line="3305" />
         <source>Training: {count}</source>
         <translation>训练集：{count}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="3072" />
+        <location filename="../ui/widgets/dialog.py" line="3306" />
         <source>Loaded: {count}</source>
         <translation>已加载：{count}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="3073" />
+        <location filename="../ui/widgets/dialog.py" line="3307" />
         <source>Selected: {count}</source>
         <translation>已选择：{count}</translation>
     </message>
@@ -11261,119 +11317,119 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">停用</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="222" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="299" />
         <source>Enable condition</source>
         <translation>启用条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="246" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="320" />
         <source>Match case</source>
         <translation>区分大小写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="306" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="418" />
         <source>Match case: on</source>
         <translation>区分大小写：已开启</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="308" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="420" />
         <source>Match case: off</source>
         <translation>区分大小写：已关闭</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="228" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="305" />
         <source>Config type</source>
         <translation>构型类型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="229" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="306" />
         <source>Formula</source>
         <translation>化学式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="230" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="307" />
         <source>Elements</source>
         <translation>元素组成</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="231" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="308" />
         <source>Custom expression</source>
         <translation>自定义表达式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="250" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="251" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="342" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="343" />
         <source>Remove condition</source>
         <translation>删除条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="294" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="304" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="428" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="438" />
         <source>Contains</source>
         <translation>包含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="295" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="303" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="429" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="437" />
         <source>Equals</source>
         <translation>完全等于</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="296" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="305" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="430" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="439" />
         <source>Starts with</source>
         <translation>开头为</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="297" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="306" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="431" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="440" />
         <source>Ends with</source>
         <translation>结尾为</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="298" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="307" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="432" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="441" />
         <source>Regex</source>
         <translation>正则表达式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="312" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="446" />
         <source>Must contain</source>
         <translation>必须包含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="313" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="447" />
         <source>Must not contain</source>
         <translation>不得包含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="314" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="448" />
         <source>Allow only</source>
         <translation>只允许</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="318" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="452" />
         <source>Expression</source>
         <translation>表达式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="340" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="474" />
         <source>e.g. surface; bulk</source>
         <translation>例如：surface; bulk</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="373" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="376" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="475" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="478" />
         <source>Separate multiple values with ;. Use Aa to control letter case.</source>
         <translation>多个值用英文分号 ; 分隔；使用 Aa 控制是否区分大小写。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="351" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="481" />
         <source>Element symbols are normalized (fe → Fe). Use commas or spaces. Example: Fe, O</source>
         <translation>元素符号会自动规范（fe → Fe）；用逗号或空格分隔。例如：Fe, O</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="354" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="484" />
         <source>Expressions must be conditions. Add a comparison, for example: natoms &gt; 100</source>
         <translation>表达式必须是判断条件，请添加比较符。例如：natoms &gt; 100</translation>
     </message>
@@ -11382,7 +11438,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">例如：surface; bulk（多个值用英文分号 ; 分隔）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="345" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="477" />
         <source>e.g. Fe2O3; FeO</source>
         <translation>例如：Fe2O3; FeO</translation>
     </message>
@@ -11391,7 +11447,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">例如：Fe2O3; FeO（多个值用英文分号 ; 分隔）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="350" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="480" />
         <source>e.g. Fe, O</source>
         <translation>例如：Fe, O</translation>
     </message>
@@ -11400,7 +11456,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">例如：Fe, O（用逗号或空格分隔）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="353" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="483" />
         <source>e.g. natoms &gt; 100</source>
         <translation>例如：natoms &gt; 100</translation>
     </message>
@@ -11465,6 +11521,14 @@ Magnetic: {magnetic}</source>
         <location filename="../ui/widgets/filter_bar.py" line="83" />
         <source>Add condition</source>
         <translation>添加条件</translation>
+    </message>
+</context>
+<context>
+    <name>_PresetNameDialog</name>
+    <message>
+        <location filename="../ui/widgets/structure_filter_bar.py" line="573" />
+        <source>Cancel</source>
+        <translation>取消</translation>
     </message>
 </context>
 <context>

@@ -2,13 +2,21 @@ name: NepTrainKit Unit Tests
 
 on:
   push:
-    branches: [ master]
+    branches: [master, dev]
   pull_request:
-    branches: [ master ]
+    branches: [master, dev]
 
 jobs:
   test:
-    runs-on: windows-latest
+    name: Tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      QT_QPA_PLATFORM: offscreen
+      NEPKIT_OPENMP: "0"
 
     steps:
     - uses: actions/checkout@v4
@@ -23,33 +31,51 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-cov
-        pip install -e .
+        pip install -e ".[test]"
+
+    - name: Verify packaged runtimes
+      run: |
+        python -c "from NepTrainKit._native import _io, _audit, _phase, _magnetism"
+        python -c "import nep_adapters; assert nep_adapters.backend_status('cpu').available"
 
     - name: Run tests with pytest
       run: |
         pytest tests/  --cov=./src/NepTrainKit  --junitxml=junit.xml -o junit_family=legacy
 
-    - name: Install docs dependencies
-      run: |
-        pip install -r docs/requirements.txt
-
-    - name: Audit Make Dataset card docs
-      run: |
-        python tools/docs/audit_card_docs.py
-
-    - name: Build bilingual docs (warnings as errors)
-      run: |
-        python tools/docs/i18n.py build
-
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
-      if: success()
+      if: success() && matrix.os == 'ubuntu-latest'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
     - name: Upload test results to Codecov
-      if: ${{ !cancelled() }}
+      if: ${{ !cancelled() && matrix.os == 'ubuntu-latest' }}
       uses: codecov/test-results-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
+
+  lint-and-docs:
+    name: Lint and bilingual docs
+    runs-on: ubuntu-latest
+    env:
+      QT_QPA_PLATFORM: offscreen
+      NEPKIT_OPENMP: "0"
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[test]"
+        pip install -r docs/requirements.txt
+    - name: Lint fatal Python errors
+      run: python -m ruff check src/NepTrainKit --select E9,F63,F7,F82
+    - name: Audit Make Dataset card docs
+      run: python tools/docs/audit_card_docs.py
+    - name: Build bilingual docs (warnings as errors)
+      run: python tools/docs/i18n.py build

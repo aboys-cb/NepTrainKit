@@ -12,12 +12,14 @@ import numpy as np
 try:
     from nep_adapters import (
         ChargePrediction,
+        Prediction,
         SpinPrediction,
         __version__ as nep_adapters_version,
         inspect_model,
     )
 except ImportError:
     ChargePrediction = None  # type: ignore[assignment]
+    Prediction = Any
     SpinPrediction = None  # type: ignore[assignment]
     nep_adapters_version = "0.0.0"
 

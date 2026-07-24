@@ -14,12 +14,10 @@ name = "NepTrainKit"
 authors = [{ name = "Chen Cheng bing", email = "1747193328@qq.com" }]
 dynamic = ["version"]
 
-description = """
-NepTrainKit is a Python package for visualizing and manipulating training datasets for NEP.
-"""
+description = "Visualize, diagnose, and manipulate NEP training datasets."
 readme = "README.md"
 requires-python = ">=3.10"
-license = { "text"="GPL-3.0" }
+license = "GPL-3.0-or-later"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
@@ -28,7 +26,6 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Topic :: Scientific/Engineering :: Chemistry",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Scientific/Engineering :: Physics",
@@ -44,7 +41,7 @@ dependencies = [
 "numpy>=1.26.0",
 "vispy>=0.14.3",
 "ase",
-# "nep-adapters>=1.0,<2",  # temporarily disabled for local build
+"nep-adapters>=1.0,<2",
 "scipy>=1.15.0",
 "SQLAlchemy>=2.0.0"
 ]
@@ -54,6 +51,7 @@ test = [
     "pytest-qt>=4.2.0",
     "pytest-cov>=4.0.0",
     "codecov>=2.0.0",
+    "ruff>=0.12.0",
     "tomli>=2.0; python_version < '3.11'"
 ]
 
@@ -79,6 +77,7 @@ include = ["NepTrainKit", "NepTrainKit.*" ]
 [tool.setuptools.package-data]
 "NepTrainKit" = ["translations/*.qm", "translations/*.ts"]
 "NepTrainKit.Config" = ["config.sqlite","ptable.json","nep.json","nep89.txt" ]
+"NepTrainKit.core.dataset" = ["catalogs/*.json"]
 
 [tool.setuptools_scm]
 

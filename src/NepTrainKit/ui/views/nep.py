@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 from loguru import logger
 from qfluentwidgets import MessageBox
 
-from NepTrainKit.ui.threads import LoadingThread
+from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.core import MessageManager
 from NepTrainKit.config import Config
@@ -210,12 +210,12 @@ class NepResultPlotWidget(QWidget):
             return
         radius = Config.getfloat("widget", "radius_coefficient", 0.7)
         progress_diag = QProgressDialog("", "Cancel", 0, data.structure.num, self._parent)
-        thread = LoadingThread(self._parent, show_tip=False)
+        thread = BackgroundTask(self._parent, show_tip=False)
         progress_diag.setFixedSize(300, 100)
         progress_diag.setWindowTitle(self.tr("Finding non-physical structures"))
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
-        thread.finished.connect(lambda: self._apply_non_physical_selection(data))
+        thread.succeeded.connect(lambda _result: self._apply_non_physical_selection(data))
         progress_diag.canceled.connect(thread.stop_work)
         thread.start_work(
             data.iter_non_physical_structure_indices,
@@ -382,7 +382,7 @@ class NepResultPlotWidget(QWidget):
             return
         path = call_path_dialog(self, "Choose a file save ", "file", default_filename="export_descriptor_data.out")
         if path:
-            thread = LoadingThread(self, show_tip=True, title="Exporting descriptor data")
+            thread = BackgroundTask(self, show_tip=True, title="Exporting descriptor data")
             thread.start_work(data.export_descriptor_data, path)
 
     def _build_shift_energy_dialog(
@@ -513,7 +513,7 @@ class NepResultPlotWidget(QWidget):
 
         config_set = set(data.structure.get_all_config(SearchType.TAG))
         progress_diag = QProgressDialog("", self.tr("Cancel"), 0, len(config_set), self._parent)
-        thread = LoadingThread(self._parent, show_tip=False)
+        thread = BackgroundTask(self._parent, show_tip=False)
         progress_diag.setFixedSize(300, 100)
         progress_diag.setWindowTitle(self.tr("Shift energies"))
         thread.progressSignal.connect(progress_diag.setValue)
@@ -538,6 +538,13 @@ class NepResultPlotWidget(QWidget):
             source_summary=source_summary,
         )
         progress_diag.exec()
+        if thread.outcome == "canceled":
+            return None
+        if thread.outcome == "failed":
+            MessageManager.send_warning_message(
+                self.tr("Energy shift failed: {message}").format(message=thread.error_message)
+            )
+            return None
         return baseline_store
 
     def _post_shift_energy_messages(self, data, selected_preset, baseline_store, values) -> None:
@@ -596,6 +603,8 @@ class NepResultPlotWidget(QWidget):
                 return
 
         baseline_store = self._run_shift_energy_task(data, ref_index, values, selected_preset)
+        if baseline_store is None:
+            return
         self._post_shift_energy_messages(data, selected_preset, baseline_store, values)
         self.canvas.plot_nep_result()
 
@@ -626,9 +635,9 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget", "functional", functional)
         Config.set("widget", "d3_mode", mode)
 
-        thread = LoadingThread(self._parent, show_tip=True, title=self.tr("Calculating DFT-D3"))
+        thread = BackgroundTask(self._parent, show_tip=True, title=self.tr("Calculating DFT-D3"))
         thread.start_work(data.apply_dft_d3_correction, mode, functional, d3_cutoff, d3_cutoff_cn)
-        thread.finished.connect(self.canvas.plot_nep_result)
+        thread.succeeded.connect(lambda _result: self.canvas.plot_nep_result())
 
     def _run_distribution_analysis_task(self, data, request) -> dict:
         """Run distribution analysis in a worker thread and return the payload."""
@@ -637,12 +646,21 @@ class NepResultPlotWidget(QWidget):
         progress_diag = QProgressDialog("", self.tr("Cancel"), 0, max(total_structures, 1), self._parent)
         progress_diag.setFixedSize(300, 100)
         progress_diag.setWindowTitle(self.tr("Building distributions"))
-        thread = LoadingThread(self._parent, show_tip=False)
+        thread = BackgroundTask(self._parent, show_tip=False)
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
         progress_diag.canceled.connect(thread.stop_work)
         thread.start_work(data.iter_distribution_analysis, request=request)
         progress_diag.exec()
+        if thread.outcome == "canceled":
+            return {}
+        if thread.outcome == "failed":
+            MessageManager.send_warning_message(
+                self.tr("Distribution analysis failed: {message}").format(
+                    message=thread.error_message
+                )
+            )
+            return {}
         return data.get_distribution_analysis()
 
     def _apply_distribution_selection(self, data, indices: list[int], select_mode: str) -> None:
@@ -838,10 +856,12 @@ class NepResultPlotWidget(QWidget):
         progress_diag = QProgressDialog("", self.tr("Cancel"), 0, total_structures, self._parent)
         progress_diag.setFixedSize(300, 100)
         progress_diag.setWindowTitle(self.tr("Checking net forces"))
-        thread = LoadingThread(self._parent, show_tip=False)
+        thread = BackgroundTask(self._parent, show_tip=False)
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
-        thread.finished.connect(lambda: self._apply_force_balance_selection(data, threshold))
+        thread.succeeded.connect(
+            lambda _result: self._apply_force_balance_selection(data, threshold)
+        )
         progress_diag.canceled.connect(thread.stop_work)
         thread.start_work(data.iter_unbalanced_force_indices, threshold=threshold)
         progress_diag.exec()

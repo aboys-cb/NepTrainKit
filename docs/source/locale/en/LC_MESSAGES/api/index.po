@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-21 13:06+0800\n"
+"POT-Creation-Date: 2026-07-24 09:11+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -34,7 +34,7 @@ msgstr ""
 msgid "High-level data structures and helpers for NEP datasets."
 msgstr ""
 
-#: 165f8af7915a4fc0a58b0c38167e8078 640d1f8fa1544b83a66c49299b2fef78
+#: 640d1f8fa1544b83a66c49299b2fef78
 #: NepTrainKit.core.calculator.BackendSelection:1
 #: NepTrainKit.core.calculator.NepCalculator:1
 #: NepTrainKit.core.io.base.StructureSyncRule:1
@@ -47,8 +47,6 @@ msgid "Container for EXTXYZ frames (lattice, positions, species, and fields)."
 msgstr ""
 
 #: 86f74f8849f34569b5988b76f09f2362
-#: NepTrainKit.core.io.base.ResultData.iter_dataset_summary:4
-#: NepTrainKit.core.io.base.ResultData.iter_distribution_analysis:4
 #: NepTrainKit.core.io.base.StructureData.ensure_completer_cache:4
 #: NepTrainKit.core.io.deepmd.DeepmdResultData.load_structures:4
 #: NepTrainKit.core.structure.Structure:4 be85abf99b0d469d85c6f85ebf7c7d52 of
@@ -65,8 +63,7 @@ msgid ""
 "``additional_fields``."
 msgstr ""
 
-#: 00a3c572020149f8b004ae0dd33be68f 477f88aace5c4093a325efc47c5189bb
-#: 5f6bd63ebdd746e3beceaa51be646ce4 98857a15b6f74853a13bff727c25ef8c
+#: 477f88aace5c4093a325efc47c5189bb 5f6bd63ebdd746e3beceaa51be646ce4
 #: NepTrainKit.core.io.deepmd.DeepmdResultData.load_structures:9
 #: NepTrainKit.core.io.nep.NepTrainResultData:7
 #: NepTrainKit.core.io.registry.load_result_data:10
@@ -84,19 +81,14 @@ msgstr ""
 msgid "示例"
 msgstr "Examples"
 
-#: ../../source/api/index.rst 0441fc02386a49f09e8c6dcc2de0070e
-#: 0d1075c388f84e7da2c58fa2e611e74f 0f75f57d46e84ffbb11dc3eda54acced
-#: 106cc6d2f18044a8a62c56554334b949 1b0a1d4bcacc47e3b317e7a8f64f6bda
-#: 1bfb6dcb25574fa2a16184e8ee23840f 25345a0add5f4eafb86759478ff6cf14
-#: 3a39ee086e164c5ea3d0514607d79fb3 3efb5a0d118543edb012c3265018a4f6
-#: 501b71ff27de4046818877fc452a8975 5ef72ade0c024e21b356aa942f49ab51
-#: 702ce5051e554eeeb29eda3113d0786a 75f9aa13c9294a058ec68464e35ec3ff
-#: 7fcc0b19b557481c8b60da8dcb6ce8e3 80a789f6425b48d58ba45d25c03d6baf
-#: 848bbea3ed24454589ce6ca1d4930bcf 881f3945d3024ce79d8627eb5a9c2bf7
-#: 8ecddbd804e6444cb71f8c966792491b 9926104aa6564485b77b249c1e7cf3a8
+#: ../../source/api/index.rst 0d1075c388f84e7da2c58fa2e611e74f
+#: 1b0a1d4bcacc47e3b317e7a8f64f6bda 3a39ee086e164c5ea3d0514607d79fb3
+#: 501b71ff27de4046818877fc452a8975 702ce5051e554eeeb29eda3113d0786a
+#: 7fcc0b19b557481c8b60da8dcb6ce8e3 9926104aa6564485b77b249c1e7cf3a8
 #: 9b5407b7ef07410187552507a3f22a91 9eb70e067df74bcfb1389b031ee51599
 #: NepTrainKit.core.calculator.NepCalculator.predict_with_descriptors
 #: NepTrainKit.core.io.base.ResultData.apply_dft_d3_correction
+#: NepTrainKit.core.io.base.ResultData.apply_selection
 #: NepTrainKit.core.io.base.ResultData.ensure_completer_cache
 #: NepTrainKit.core.io.base.ResultData.export_active_npy
 #: NepTrainKit.core.io.base.ResultData.export_active_xyz
@@ -115,12 +107,12 @@ msgstr "Examples"
 #: NepTrainKit.core.io.base.ResultData.get_reference_per_atom_energy_array
 #: NepTrainKit.core.io.base.ResultData.has_completer_cache
 #: NepTrainKit.core.io.base.ResultData.is_select
-#: NepTrainKit.core.io.base.ResultData.iter_distribution_analysis
 #: NepTrainKit.core.io.base.ResultData.iter_non_physical_structure_indices
 #: NepTrainKit.core.io.base.ResultData.iter_shift_energy_baseline
+#: NepTrainKit.core.io.base.ResultData.move_to_load_thread
 #: NepTrainKit.core.io.base.ResultData.remove
-#: NepTrainKit.core.io.base.ResultData.resolve_distribution_bin_indices
 #: NepTrainKit.core.io.base.ResultData.search_config
+#: NepTrainKit.core.io.base.ResultData.search_config_tags
 #: NepTrainKit.core.io.base.ResultData.select
 #: NepTrainKit.core.io.base.ResultData.select_structures_by_index
 #: NepTrainKit.core.io.base.ResultData.select_structures_by_lattice_range
@@ -139,6 +131,8 @@ msgstr "Examples"
 #: NepTrainKit.core.io.registry.load_result_data
 #: NepTrainKit.core.io.registry.matches_result_loader
 #: NepTrainKit.core.io.registry.register_result_loader
+#: NepTrainKit.core.io.sampler.allocate_sqrt_quotas
+#: NepTrainKit.core.io.sampler.centered_fps
 #: NepTrainKit.core.io.sampler.farthest_point_sampling
 #: NepTrainKit.core.structure.FastStructure.iter_read_multiple
 #: NepTrainKit.core.structure.FastStructure.read_multiple
@@ -148,12 +142,9 @@ msgstr "Examples"
 #: NepTrainKit.core.structure.Structure.read_multiple_fast
 #: NepTrainKit.core.structure.is_organic_cluster
 #: NepTrainKit.core.structure.load_npy_structure
-#: ac59fa7afa11465ab02b5b0ffcdc73ef b38dc459a2ac4c11ae39f84d03e10052
-#: b5ae8112d3c84b4caea555d276f40c73 bf442fb6d1c94524b6f0454339e08224
-#: ccd7dfec4e6c45baaaf867e73b043fe0 cf4be91963e840d78849107f47fab8cf
-#: d54cba9b5fcc4cb6a0f72fa28b7c005c e1ff81139ec14fbeaa06af59131aecba
-#: ece2264123df450a9a2c02dc156a7c5a ed14a15755af42e19e99fc256cc742de
-#: f19b26087fe54ee398ce11bab191fa8e f7d1b22f177c4f50952d74328ccc4ca5 of
+#: b38dc459a2ac4c11ae39f84d03e10052 b5ae8112d3c84b4caea555d276f40c73
+#: cf4be91963e840d78849107f47fab8cf d54cba9b5fcc4cb6a0f72fa28b7c005c
+#: f19b26087fe54ee398ce11bab191fa8e of
 msgid "参数"
 msgstr "Parameters"
 
@@ -181,16 +172,15 @@ msgstr ""
 #: 13b176e3c67642b18a03573fd34548ce 19be5e8eb91042068e188762220ea57b
 #: 1a423f4c33774607913e8ff8ca19ba7b 1ae9a82252ba4300b0decbadbe96e698
 #: 2c22172678fd4c7bbd22abee853ff344 2cdcb72f15744be881a61abb60a766c6
-#: 3337faed79fd43afbe46fddc8ed9c26f 3af5ad8dc09a48d2a8266c3e9f84794c
 #: 3f4beb77540c45d8ae7ed9387f486148 452697ef7eee44e79d888c67b938a2f3
-#: 45382cfcfa444feeae0342b8ea4492da 49471499955e4e549e9d58f55bf30d76
-#: 4b76e752fc1e4e5f954ec574fd12a976 572fe8cf9c0e45e29e61d94f2347bdef
-#: 6dab15b7dc314628a626b91e330470f9 6f2781ba22034b38922bbbcef7bd54b8
-#: 72fc1e2d88bd43f4aa222dfe10011f7d 7cdfa95a9f1e42738f97352ea9d0b23b
-#: 7f23ad6d8afe4b8a8036eb5bdcf85364 802ddb4f3f114509a5a22abb31a8cc42
-#: 8130c3e201d844ffb3ba6c7eebb48350 82386d181901494092dffbd97c7096f2
-#: 840ac2027f2f4bbfa0ea3c50a604b1d0 938957f221c04c01992df7dc46fd84a0
-#: 9829849f081a441881047ac05b28c736 9edf6b4e4c0e4092ad61b12b995128f9
+#: 49471499955e4e549e9d58f55bf30d76 4b76e752fc1e4e5f954ec574fd12a976
+#: 572fe8cf9c0e45e29e61d94f2347bdef 6dab15b7dc314628a626b91e330470f9
+#: 6f2781ba22034b38922bbbcef7bd54b8 72fc1e2d88bd43f4aa222dfe10011f7d
+#: 7cdfa95a9f1e42738f97352ea9d0b23b 7f23ad6d8afe4b8a8036eb5bdcf85364
+#: 802ddb4f3f114509a5a22abb31a8cc42 8130c3e201d844ffb3ba6c7eebb48350
+#: 82386d181901494092dffbd97c7096f2 840ac2027f2f4bbfa0ea3c50a604b1d0
+#: 938957f221c04c01992df7dc46fd84a0 9829849f081a441881047ac05b28c736
+#: 9edf6b4e4c0e4092ad61b12b995128f9
 #: NepTrainKit.core.io.registry.load_result_data
 #: NepTrainKit.core.io.registry.matches_result_loader
 #: NepTrainKit.core.io.registry.register_result_loader
@@ -199,8 +189,7 @@ msgstr ""
 #: NepTrainKit.core.structure.Structure.parse_xyz
 #: NepTrainKit.core.structure.Structure.read_multiple
 #: a3df5a80577644589c8aceda651eb629 a916cef1720443838c999290ad253fd6
-#: ad60a8475a4d4efcb5c4eb19845d8c37 bb4bca3ed43747e3ade5597fdd38bdbd
-#: bccae1ec68514d06844d76725255e871 d7c28680e8024f95b70caac5de100366
+#: ad60a8475a4d4efcb5c4eb19845d8c37 d7c28680e8024f95b70caac5de100366
 #: d8de42e455214c84b27ae0a49d33965e e23f6710d47144cdbf49c7806cd931e6
 #: e2bb4a0852024050b8564a3b658042ad e89104767bb94691be5692046bff20a5 of
 msgid "返回"
@@ -212,21 +201,19 @@ msgid "Combined keys such as [\"pos\", \"energy\", ...]."
 msgstr ""
 
 #: ../../source/api/index.rst 07972b7f4a9b41bf9a2811db1c388b9f
-#: 0906696df2ed4c36a19feded202ce26f 0908de696e5d4a2484e6658c18beed02
-#: 0953efb20cc34139b5adf2761735846e 09af49a981f142569a9de89153ff1261
-#: 0e9e691369174e4380038cb029a0d1b8 20d31f20a48d4c8992fb4a5ede311bca
-#: 21812fa76fec4d759dfabef753ed8f35 25b0373e4b6244229b00647137af76b2
-#: 28c001a49c184f4581aaeccbe47fb3ed 3616a87a656f4e8781b99326d3e9570c
-#: 4ea12c89e8c3423d858de057ca4f7f0b 511544416cc14982900a41191963d0a1
-#: 5818e889d8cd436f99860fe03a6046f9 5a60f0038fd6467f9dc9520de4a74f14
-#: 5f3ecfe1943e4badb9469d50d8b9bf5b 612c0834ab164667aa58ccea1e8f7e9e
+#: 0906696df2ed4c36a19feded202ce26f 0953efb20cc34139b5adf2761735846e
+#: 09af49a981f142569a9de89153ff1261 0e9e691369174e4380038cb029a0d1b8
+#: 20d31f20a48d4c8992fb4a5ede311bca 21812fa76fec4d759dfabef753ed8f35
+#: 25b0373e4b6244229b00647137af76b2 28c001a49c184f4581aaeccbe47fb3ed
+#: 511544416cc14982900a41191963d0a1 5818e889d8cd436f99860fe03a6046f9
+#: 5a60f0038fd6467f9dc9520de4a74f14 612c0834ab164667aa58ccea1e8f7e9e
 #: 633764117ddd4195a32b042685440252 6a6a3a72d62e453587c6d8eb42d398a3
-#: 7b7e8596c88f4beeac18cee1447f6c31 7c17d188642f49718cd05ad4d3c2481b
-#: 82500d2e89504f72bd4a5182feab02f9 83cceb49225743dbb1139cea06b3848d
+#: 7c17d188642f49718cd05ad4d3c2481b 82500d2e89504f72bd4a5182feab02f9
 #: 85dbc4c528934598bcc95639a585fdef 87b635aad2954266ae49bcbbb2421f63
 #: 8b8a05a504e942fe91aaa7c84b610ecb 9ab6bda98cda4400ba65855cb8c3cf4e
 #: NepTrainKit.core.calculator.NepCalculator.predict_with_descriptors
 #: NepTrainKit.core.io.base.ResultData.apply_dft_d3_correction
+#: NepTrainKit.core.io.base.ResultData.apply_selection
 #: NepTrainKit.core.io.base.ResultData.cache_outputs_enabled
 #: NepTrainKit.core.io.base.ResultData.clear_selection_history
 #: NepTrainKit.core.io.base.ResultData.consume_non_physical_structure_indices
@@ -244,8 +231,6 @@ msgstr ""
 #: NepTrainKit.core.io.base.ResultData.export_selected_npy
 #: NepTrainKit.core.io.base.ResultData.export_selected_xyz
 #: NepTrainKit.core.io.base.ResultData.get_completer_cache
-#: NepTrainKit.core.io.base.ResultData.get_dataset_summary
-#: NepTrainKit.core.io.base.ResultData.get_distribution_analysis
 #: NepTrainKit.core.io.base.ResultData.get_editable_structure_tags
 #: NepTrainKit.core.io.base.ResultData.get_predicted_per_atom_energy_array
 #: NepTrainKit.core.io.base.ResultData.get_reference_per_atom_energy_array
@@ -253,10 +238,11 @@ msgstr ""
 #: NepTrainKit.core.io.base.ResultData.has_completer_cache
 #: NepTrainKit.core.io.base.ResultData.inverse_select
 #: NepTrainKit.core.io.base.ResultData.is_select
+#: NepTrainKit.core.io.base.ResultData.move_to_load_thread
 #: NepTrainKit.core.io.base.ResultData.remove
-#: NepTrainKit.core.io.base.ResultData.resolve_distribution_bin_indices
 #: NepTrainKit.core.io.base.ResultData.revoke
 #: NepTrainKit.core.io.base.ResultData.search_config
+#: NepTrainKit.core.io.base.ResultData.search_config_tags
 #: NepTrainKit.core.io.base.ResultData.select
 #: NepTrainKit.core.io.base.ResultData.select_structures_by_index
 #: NepTrainKit.core.io.base.ResultData.select_structures_by_lattice_range
@@ -275,21 +261,21 @@ msgstr ""
 #: NepTrainKit.core.io.registry.load_result_data
 #: NepTrainKit.core.io.registry.matches_result_loader
 #: NepTrainKit.core.io.registry.register_result_loader
+#: NepTrainKit.core.io.sampler.allocate_sqrt_quotas
+#: NepTrainKit.core.io.sampler.centered_fps
 #: NepTrainKit.core.io.sampler.farthest_point_sampling
+#: NepTrainKit.core.io.sampler.structure_element_set_key
 #: NepTrainKit.core.structure.FastStructure.read_multiple
 #: NepTrainKit.core.structure.Structure.parse_xyz
 #: NepTrainKit.core.structure.Structure.read_multiple
 #: NepTrainKit.core.structure.is_organic_cluster
 #: a3a51abffd0e43ea9c7ee5d36855326d a42529d15a0a4e7cacc4d85bacd0ab7f
 #: afea00ce4ffd4dc088f0e0d6bd0c4810 b06900b768254da59375dca06d8801ff
-#: b0d89283aada4472a90a0060e2cd3ce7 b5befc7788494558b59d6738cc7bf2f6
-#: bb98c5da75ce46d8b34f870f5f1bcd41 c369b20cecc94d0d9f63ae9ca5e62d65
-#: ca6b2da435a24cfa8a6bffead26a8110 d0521248c3f14cd18953585e8c0ca226
+#: b0d89283aada4472a90a0060e2cd3ce7 bb98c5da75ce46d8b34f870f5f1bcd41
+#: c369b20cecc94d0d9f63ae9ca5e62d65 ca6b2da435a24cfa8a6bffead26a8110
 #: d27f9c27c18643b2a84e07d9e7708aa6 d4a2afbdc58f49f5b345f69856167e0d
-#: de105fe98d434b5daf29be9aef0ec14f e3f81b949176475eab1a49160581a396
-#: ed94ceb8bf5048b7ad78d5fa494e2777 edc88b334a3a4f269454f670ca55cea7
-#: eeb77fbf784f4656b2cff9c18d125a0e ef8c3e80cb6b493d94023b6675911183
-#: ff6fe9a8e81a4987a442b560242962b7 of
+#: e3f81b949176475eab1a49160581a396 edc88b334a3a4f269454f670ca55cea7
+#: eeb77fbf784f4656b2cff9c18d125a0e ff6fe9a8e81a4987a442b560242962b7 of
 msgid "返回类型"
 msgstr "Return type"
 
@@ -324,7 +310,7 @@ msgstr ""
 msgid "Iterate frames in a multi-structure EXTXYZ file."
 msgstr ""
 
-#: 0485395a9a384ff6885f6b18d126ec0e 859ffcab8e6f4c0cb2a4a13eee970ccf
+#: 859ffcab8e6f4c0cb2a4a13eee970ccf
 #: NepTrainKit.core.structure.FastStructure.iter_read_multiple:3
 #: NepTrainKit.core.structure.FastStructure.read_multiple:3
 #: NepTrainKit.core.structure.Structure.iter_read_multiple:3
@@ -759,8 +745,16 @@ msgstr ""
 msgid "Threshold relative to the sum of covalent radii."
 msgstr ""
 
+#: NepTrainKit.core.structure.Structure.get_bad_bond_pairs:5
+#: d3003309892248ba86bf35705030802f of
+msgid ""
+"Skip the Python fallback when the structure exceeds this size. Native "
+"scans are not size-limited. ``None`` keeps the complete fallback "
+"behavior."
+msgstr ""
+
 #: 84e0c1ea26154a518feca2bdaa3ac3cb
-#: NepTrainKit.core.structure.Structure.get_bad_bond_pairs:6 of
+#: NepTrainKit.core.structure.Structure.get_bad_bond_pairs:10 of
 msgid "Upper-triangular pairs shorter than the threshold."
 msgstr ""
 
@@ -1000,9 +994,11 @@ msgid ""
 "the atoms attribute and create any missing directories."
 msgstr ""
 
-#: 223985e76ba24285a705628617eb2251 NepTrainKit.core.io.base.ResultData:1 of
-msgid "基类：:py:class:`~PySide6.QtCore.QObject`"
-msgstr "Bases: :py:class:`~PySide6.QtCore.QObject`"
+#: NepTrainKit.core.io.base.ResultData:1 eb96c8b32dca4400ac15747782f3bccd of
+msgid ""
+"基类：:py:class:`~NepTrainKit.core.io.distribution.DistributionAnalysisMixin`,"
+" :py:class:`~PySide6.QtCore.QObject`"
+msgstr "Base classes: :py:class:`~NepTrainKit.core.io.distribution.DistributionAnalysisMixin`, :py:class:`~PySide6.QtCore.QObject`"
 
 #: 8dbe385ce797449bae686a2ab5ebddab NepTrainKit.core.io.base.ResultData:1 of
 msgid ""
@@ -1010,6 +1006,11 @@ msgid ""
 "Subclasses implement :meth:`_load_dataset` and expose their plot datasets"
 " through :py:attr:`datasets`. The class also centralises selection and "
 "synchronisation utilities shared by the GUI."
+msgstr ""
+
+#: 52ed81a9a68e4f599b949450f8e8d065
+#: NepTrainKit.core.io.base.ResultData.move_to_load_thread:1 of
+msgid "Move this long-lived result object to a loader and remember its owner."
 msgstr ""
 
 #: 9ae4be200d3b47779c48ce80af1c4ddf
@@ -1057,6 +1058,17 @@ msgstr ""
 #: NepTrainKit.core.io.base.ResultData.search_config:1
 #: e34d1e09e2e04b978e3a3e4efbe04670 of
 msgid "Return structure indices matching the selected search mode."
+msgstr ""
+
+#: 1f5b3481fba94813abffd5b3209244d2
+#: NepTrainKit.core.io.base.ResultData.search_config_tags:1
+#: NepTrainKit.core.io.base.StructureData.search_config_tags:1 of
+msgid "Return structure indices matching a tag/formula filter spec."
+msgstr ""
+
+#: 5a17bc0b82f345279c37d61088eb704e
+#: NepTrainKit.core.io.base.ResultData.search_structures:1 of
+msgid "Evaluate a typed composite structure filter without changing selection."
 msgstr ""
 
 #: 0ffb4af18b9049bfbd0a470a80b59e59
@@ -1168,6 +1180,11 @@ msgstr ""
 #: 38f10ff48474461890c10c2540f15946
 #: NepTrainKit.core.io.base.ResultData.inverse_select:1 of
 msgid "Invert the current selection over the active structure set."
+msgstr ""
+
+#: NepTrainKit.core.io.base.ResultData.apply_selection:1
+#: a06b2e30b391448392fe59e7fe1f8c61 of
+msgid "Apply one cached result to selection as a single undoable change."
 msgstr ""
 
 #: 77eb9e74b0274908a63e720b202c78a4
@@ -1304,66 +1321,6 @@ msgstr ""
 #: NepTrainKit.core.io.base.ResultData.consume_unbalanced_force_indices:1
 #: db856a3051604e93a0f216766cae0f9d of
 msgid "Return and clear indices collected by the net-force scan."
-msgstr ""
-
-#: NepTrainKit.core.io.base.ResultData.discover_atomic_numeric_fields:1
-#: e97c13996da344cf9cfbedb5ab7cccd4 of
-msgid "Discover available numeric fields for distribution analysis."
-msgstr ""
-
-#: 94309d5dbf4b4e358ccab4cc62302ed6
-#: NepTrainKit.core.io.base.ResultData.discover_atomic_numeric_fields:3 of
-msgid ""
-"Structure subset to inspect. ``selected`` inspects only selected active "
-"structures."
-msgstr ""
-
-#: 1ad3e2086510492cbf141d6fb1e5f002
-#: NepTrainKit.core.io.base.ResultData.iter_distribution_analysis:1 of
-msgid "Build distribution statistics for selected numeric fields."
-msgstr ""
-
-#: 7580f2cbe5f84662b1c27817ea3fcf24
-#: NepTrainKit.core.io.base.ResultData.iter_distribution_analysis:5 of
-msgid ""
-"Results are cached by ``(structure.version, request, force_mode)`` and "
-"stored for retrieval via :meth:`get_distribution_analysis`."
-msgstr ""
-
-#: 72b12672fabd43d9bded678074bd3f7f
-#: NepTrainKit.core.io.base.ResultData.get_distribution_analysis:1 of
-msgid "Return the last computed distribution-analysis payload."
-msgstr ""
-
-#: 6b67447de092475c9ad5da2573c8138a
-#: NepTrainKit.core.io.base.ResultData.resolve_distribution_bin_indices:1 of
-msgid "Resolve structure indices represented by a histogram bin."
-msgstr ""
-
-#: NepTrainKit.core.io.base.ResultData.iter_dataset_summary:1
-#: f7358248d5d243b79229b82db8e4d4a1 of
-msgid "Aggregate dataset-wide statistics for use in summary dialogs."
-msgstr ""
-
-#: 9bc41816b9d84aa28183ae32207b9faa
-#: NepTrainKit.core.io.base.ResultData.iter_dataset_summary:5 of
-msgid ""
-"This generator yields a progress unit after each structure so that "
-"callers can drive a progress dialog. Results are cached on the instance "
-"and later returned by :meth:`get_dataset_summary`."
-msgstr ""
-
-#: 15440a60aa9f439aa2d4b2dd5238f944
-#: NepTrainKit.core.io.base.ResultData.iter_dataset_summary:9 of
-msgid ""
-"Attribute used for grouping the distribution table. ``TAG`` uses "
-"``Structure.tag`` (Config_type), while ``FORMULA`` uses "
-"``Structure.formula``."
-msgstr ""
-
-#: 3f07aaf3d1444197b4caaa7a25a2b6b2
-#: NepTrainKit.core.io.base.ResultData.get_dataset_summary:1 of
-msgid "Return the most recently computed dataset summary."
 msgstr ""
 
 #: 2b6bcdd2605f4c609a3f200a5eea9597
@@ -1508,6 +1465,30 @@ msgstr ""
 #: 906d3a46152a490abc66c12e3e194ad1
 #: NepTrainKit.core.io.base.StructureData.search_config:8 of
 msgid "Structure indices satisfying the pattern; empty on failure."
+msgstr ""
+
+#: 005942bff5b84f728e0d33f646836085
+#: NepTrainKit.core.io.base.StructureData.search_config_tags:3 of
+msgid ""
+"Uses simple substring matching (not regex) with group-based logic: groups"
+" are AND'd, conditions within a group use AND/OR per group mode."
+msgstr ""
+
+#: NepTrainKit.core.io.base.StructureData.search_config_tags:6
+#: d6dc1d0395a64316b910e0e6dcb149e2 of
+msgid ""
+"Dictionary with ``groups`` (list of group dicts, each having "
+"``conditions`` and ``mode`` keys)."
+msgstr ""
+
+#: 9a3f3020fa5d4a8a99252d521eb6bde6
+#: NepTrainKit.core.io.base.StructureData.search_config_tags:9 of
+msgid "One of :attr:`SearchType.TAG` or :attr:`SearchType.FORMULA`."
+msgstr ""
+
+#: 3abc05941e4d43d19ca415e23e8e02b6
+#: NepTrainKit.core.io.base.StructureData.search_config_tags:12 of
+msgid "Matching structure indices."
 msgstr ""
 
 #: 1f25b9021ad04bc09c60efaf28cc0a14
@@ -1839,3 +1820,65 @@ msgstr ""
 #: NepTrainKit.core.io.sampler.farthest_point_sampling:13 of
 msgid "Indices of selected points."
 msgstr ""
+
+#: 123021581d2b46318e0096f0e93d0b84
+#: NepTrainKit.core.io.sampler.allocate_sqrt_quotas:1 of
+msgid "Allocate one slot per non-empty group, then distribute by sqrt(size)."
+msgstr ""
+
+#: 30da87a6c3504b8eb4655f703a31222b NepTrainKit.core.io.sampler.centered_fps:1
+#: of
+msgid "Run FPS from the feature-space center, or from a warm-start set."
+msgstr ""
+
+#: 7f17ee2907b64d90bddca1fe05b9fd72
+#: NepTrainKit.core.io.sampler.structure_element_set_key:1 of
+msgid "Return a stable element-set key for ASE or NepTrainKit structures."
+msgstr ""
+
+#~ msgid "基类：:py:class:`~PySide6.QtCore.QObject`"
+#~ msgstr "Bases: :py:class:`~PySide6.QtCore.QObject`"
+
+#~ msgid "Discover available numeric fields for distribution analysis."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Structure subset to inspect. ``selected`` "
+#~ "inspects only selected active structures."
+#~ msgstr ""
+
+#~ msgid "Build distribution statistics for selected numeric fields."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Results are cached by ``(structure.version,"
+#~ " request, force_mode)`` and stored for "
+#~ "retrieval via :meth:`get_distribution_analysis`."
+#~ msgstr ""
+
+#~ msgid "Return the last computed distribution-analysis payload."
+#~ msgstr ""
+
+#~ msgid "Resolve structure indices represented by a histogram bin."
+#~ msgstr ""
+
+#~ msgid "Aggregate dataset-wide statistics for use in summary dialogs."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "This generator yields a progress unit"
+#~ " after each structure so that callers"
+#~ " can drive a progress dialog. Results"
+#~ " are cached on the instance and "
+#~ "later returned by :meth:`get_dataset_summary`."
+#~ msgstr ""
+
+#~ msgid ""
+#~ "Attribute used for grouping the "
+#~ "distribution table. ``TAG`` uses "
+#~ "``Structure.tag`` (Config_type), while ``FORMULA``"
+#~ " uses ``Structure.formula``."
+#~ msgstr ""
+
+#~ msgid "Return the most recently computed dataset summary."
+#~ msgstr ""

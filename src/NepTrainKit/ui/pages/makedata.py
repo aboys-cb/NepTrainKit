@@ -32,7 +32,7 @@ from NepTrainKit.ui.views import ConsoleWidget
 
 from NepTrainKit.version import __version__
 from NepTrainKit.ui.dialogs import call_path_dialog
-from NepTrainKit.ui.threads import LoadingThread
+from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.paths import get_user_config_path
 from ase.io import read as ase_read
 
@@ -457,7 +457,7 @@ class MakeDataWidget(QWidget):
             default_filename="make_dataset.xyz",
         )
         if path:
-            thread = LoadingThread(
+            thread = BackgroundTask(
                 self,
                 show_tip=True,
                 title=self.tr("Exporting data"),

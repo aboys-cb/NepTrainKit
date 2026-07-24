@@ -9,7 +9,6 @@ from dataclasses import dataclass, replace
 from datetime import datetime, timezone
 from html import escape
 from itertools import combinations
-from math import log1p
 from pathlib import Path
 from time import perf_counter
 from typing import Any
@@ -47,7 +46,6 @@ from qfluentwidgets import (
     ProgressBar,
     PushButton,
     TableWidget,
-    TableItemDelegate,
     ToolButton,
 )
 
@@ -80,21 +78,17 @@ from NepTrainKit.core.audit.result import (
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.widgets.audit_chart import AuditChartWidget
 from NepTrainKit.ui.widgets.dialog import DistributionExplorerWidget
+from NepTrainKit.ui.pages.training_set_audit_overview import (
+    OVERVIEW_JET_COLORS as _OVERVIEW_JET_COLORS,
+    ElementSetSummary as _ElementSetSummary,
+    MatrixItemDelegate as _MatrixItemDelegate,
+    element_set_summaries,
+    overview_heat_color,
+)
 
 
 _OVERVIEW = "__audit_overview__"
 _DIMENSION_COLUMN_MIN_WIDTH = 840
-_OVERVIEW_JET_COLORS = (
-    "#000080",
-    "#0000ff",
-    "#007fff",
-    "#00dfff",
-    "#40ff80",
-    "#dfff20",
-    "#ffbf00",
-    "#ff4000",
-    "#800000",
-)
 _TOPIC_CATEGORY_COLORS = {
     "blocker": (QColor("#a61b1b"), QColor("#fdecec")),
     "review": (QColor("#a14d16"), QColor("#fff1df")),
@@ -119,23 +113,6 @@ class _AuditTopic:
     limit: str
     plot_id: str = ""
     source_slices: tuple[AuditSlice, ...] = ()
-
-
-@dataclass(frozen=True)
-class _ElementSetSummary:
-    """One exact set of present elements, aggregated across stoichiometries."""
-
-    elements: tuple[str, ...]
-    structure_count: int
-    structure_indices: tuple[int, ...]
-
-
-class _MatrixItemDelegate(TableItemDelegate):
-    """Keep cell selection without the row-oriented Fluent indicator."""
-
-    def setSelectedRows(self, indexes) -> None:
-        del indexes
-        self.selectedRows.clear()
 
 
 class TrainingSetAuditWidget(QWidget):
@@ -680,13 +657,13 @@ class TrainingSetAuditWidget(QWidget):
         composition_text.addWidget(self.composition_map_hint)
         composition_header_layout.addLayout(composition_text, stretch=1)
         self.composition_element_selector = ComboBox(composition_header)
-        self.composition_element_selector.setFixedWidth(86)
+        self.composition_element_selector.setMinimumWidth(86)
         self.composition_element_selector.currentIndexChanged.connect(
             self._refresh_composition_map
         )
         composition_header_layout.addWidget(self.composition_element_selector)
         self.composition_view_selector = ComboBox(composition_header)
-        self.composition_view_selector.setFixedWidth(170)
+        self.composition_view_selector.setMinimumWidth(170)
         self.composition_view_selector.currentIndexChanged.connect(
             self._refresh_composition_map
         )
@@ -823,7 +800,10 @@ class TrainingSetAuditWidget(QWidget):
 
         self.dimension_rail = QFrame(advanced_page)
         self.dimension_rail.setObjectName("auditDimensionRail")
-        self.dimension_rail.setFixedWidth(192)
+        self.dimension_rail.setMinimumWidth(192)
+        self.dimension_rail.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding
+        )
         rail_layout = QVBoxLayout(self.dimension_rail)
         rail_layout.setContentsMargins(10, 12, 10, 10)
         rail_layout.setSpacing(8)
@@ -888,7 +868,6 @@ class TrainingSetAuditWidget(QWidget):
         self.local_scope_selector = ComboBox(self.analysis_tabs)
         self.local_scope_selector.setObjectName("auditLocalScopeSelector")
         self.local_scope_selector.setMinimumWidth(116)
-        self.local_scope_selector.setMaximumWidth(148)
         self.local_scope_selector.currentIndexChanged.connect(
             self._on_local_scope_changed
         )
@@ -897,7 +876,6 @@ class TrainingSetAuditWidget(QWidget):
         self.local_center_selector = ComboBox(self.analysis_tabs)
         self.local_center_selector.setObjectName("auditLocalCenterSelector")
         self.local_center_selector.setMinimumWidth(72)
-        self.local_center_selector.setMaximumWidth(104)
         self.local_center_selector.currentIndexChanged.connect(
             self._on_local_center_changed
         )
@@ -1387,6 +1365,7 @@ class TrainingSetAuditWidget(QWidget):
             )
         self.composition_element_selector.blockSignals(False)
         self.target_element_selector.blockSignals(False)
+        self._fit_combo_to_contents(self.composition_element_selector, 86)
         phase_ready, magnetic_ready, _ = self._structure_evidence_state()
         self.composition_phase_selector.setVisible(phase_ready)
         self.composition_magnetic_selector.setVisible(magnetic_ready)
@@ -1434,6 +1413,7 @@ class TrainingSetAuditWidget(QWidget):
         selected_index = self.composition_view_selector.findData(current_mode)
         self.composition_view_selector.setCurrentIndex(max(0, selected_index))
         self.composition_view_selector.blockSignals(False)
+        self._fit_combo_to_contents(self.composition_view_selector, 170)
 
         evidence_complete = phase_ready and (magnetic_ready or no_spin)
         evidence_partial = phase_ready or magnetic_ready
@@ -1467,6 +1447,20 @@ class TrainingSetAuditWidget(QWidget):
         button.ensurePolished()
         button.setMinimumWidth(button.sizeHint().width())
         button.updateGeometry()
+
+    @staticmethod
+    def _fit_combo_to_contents(combo: ComboBox, minimum_width: int) -> None:
+        """Reserve enough width for the longest localized item."""
+        metrics = combo.fontMetrics()
+        text_width = max(
+            (
+                metrics.horizontalAdvance(combo.itemText(index))
+                for index in range(combo.count())
+            ),
+            default=0,
+        )
+        combo.setMinimumWidth(max(minimum_width, text_width + 48))
+        combo.updateGeometry()
 
     @staticmethod
     def _composition_formula(elements: tuple[str, ...], fractions: tuple[float, ...]) -> str:
@@ -3414,50 +3408,8 @@ class TrainingSetAuditWidget(QWidget):
     def _pair_key(first: str, second: str) -> tuple[str, str]:
         return tuple(sorted((first, second)))
 
-    @staticmethod
-    def _overview_heat_color(value: int, maximum: int) -> QColor:
-        if value <= 0 or maximum <= 0:
-            return QColor("#f8fafc")
-        strength = log1p(value) / log1p(maximum)
-        palette_index = min(
-            len(_OVERVIEW_JET_COLORS) - 1,
-            round(strength * (len(_OVERVIEW_JET_COLORS) - 1)),
-        )
-        return QColor(_OVERVIEW_JET_COLORS[palette_index])
-
-    @staticmethod
-    def _element_set_summaries(
-        inventory: DatasetInventory,
-    ) -> tuple[_ElementSetSummary, ...]:
-        grouped_counts: dict[tuple[str, ...], int] = {}
-        grouped_indices: dict[tuple[str, ...], set[int]] = {}
-        for point in inventory.composition_points:
-            element_set = tuple(
-                element
-                for element, count in zip(inventory.elements, point.reduced_counts)
-                if int(count) > 0
-            )
-            if not element_set:
-                continue
-            grouped_counts[element_set] = (
-                grouped_counts.get(element_set, 0) + int(point.structure_count)
-            )
-            grouped_indices.setdefault(element_set, set()).update(
-                int(index) for index in point.structure_indices
-            )
-        return tuple(
-            sorted(
-                (
-                    _ElementSetSummary(
-                        elements=elements,
-                        structure_count=grouped_counts[elements],
-                        structure_indices=tuple(sorted(grouped_indices[elements])),
-                    )
-                    for elements in grouped_counts
-                ),
-                key=lambda item: (-item.structure_count, item.elements),
-            )
-        )
+    _overview_heat_color = staticmethod(overview_heat_color)
+    _element_set_summaries = staticmethod(element_set_summaries)
 
     def _update_element_overview(
         self, inventory: DatasetInventory | None
@@ -3968,10 +3920,11 @@ class TrainingSetAuditWidget(QWidget):
         )
         count = len(self._selected_overview_indices)
         self.view_element_set_button.setEnabled(count > 0)
-        self.view_element_set_button.setText(
+        self._set_fitted_button_text(
+            self.view_element_set_button,
             self.tr("View {count:,} structures").format(count=count)
             if count
-            else self.tr("View selected structures")
+            else self.tr("View selected structures"),
         )
 
     def _update_analysis(self, dimension_id: str) -> None:
@@ -4063,6 +4016,7 @@ class TrainingSetAuditWidget(QWidget):
             default_index if default_index >= 0 else (0 if available_scopes else -1)
         )
         self.local_scope_selector.blockSignals(False)
+        self._fit_combo_to_contents(self.local_scope_selector, 116)
         self._populate_local_center_selector()
         self._set_local_chemistry_controls_visible(bool(available_scopes))
 
@@ -4087,6 +4041,7 @@ class TrainingSetAuditWidget(QWidget):
             preferred_index if preferred_index >= 0 else (0 if centers else -1)
         )
         self.local_center_selector.blockSignals(False)
+        self._fit_combo_to_contents(self.local_center_selector, 72)
 
     def _selected_local_chemistry_plots(self) -> list[dict[str, Any]]:
         scope = self.local_scope_selector.currentData()

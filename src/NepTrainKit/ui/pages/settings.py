@@ -12,6 +12,7 @@ from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCa
     OptionsValidator, EnumSerializer, SwitchSettingCard, FluentIcon, ScrollArea, SettingCard, ComboBox
 
 from NepTrainKit.config import Config
+from NepTrainKit.core.runtime_health import RuntimeHealth, inspect_runtime_health
 from NepTrainKit.i18n import LANGUAGE_LABELS, SUPPORTED_LANGUAGES, normalize_language
 from NepTrainKit.logging_config import (
     DEFAULT_LOG_LEVEL,
@@ -62,6 +63,9 @@ class SettingsWidget(ScrollArea):
             self.tr('Personalization'), self.scrollWidget)
         self.nep_group = SettingCardGroup(
             self.tr('NEP Settings'), self.scrollWidget)
+        self.runtime_group = SettingCardGroup(
+            self.tr("Runtime status"), self.scrollWidget
+        )
         self.plot_group = SettingCardGroup(
             self.tr('Plot Settings'), self.scrollWidget)
 
@@ -267,6 +271,16 @@ class SettingsWidget(ScrollArea):
         self.chunk_max_atoms_card.setRange(1, 100000000)
         self.chunk_max_atoms_card.setValue(float(chunk_max_atoms))
 
+        self.runtime_health_card = PrimaryPushSettingCard(
+            self.tr("Refresh"),
+            FluentIcon.INFO,
+            self.tr("Runtime health"),
+            "",
+            self.runtime_group,
+        )
+        self._runtime_health = inspect_runtime_health()
+        self._refresh_runtime_health_content()
+
         # Plot settings defaults
         edge_color = Config.get("plot", "marker_edge_color", "#07519C")
         face_color = Config.get("plot", "marker_face_color", "#FFFFFF")
@@ -451,6 +465,7 @@ class SettingsWidget(ScrollArea):
         self.nep_group.addSettingCard(self.nep_backend_card)
         self.nep_group.addSettingCard(self.data_precision_card)
         self.nep_group.addSettingCard(self.chunk_max_atoms_card)
+        self.runtime_group.addSettingCard(self.runtime_health_card)
 
  
 
@@ -477,6 +492,7 @@ class SettingsWidget(ScrollArea):
         self.plot_group.addSettingCard(self.current_size_card)
         self.expand_layout.addWidget(self.plot_group)
         self.expand_layout.addWidget(self.nep_group)
+        self.expand_layout.addWidget(self.runtime_group)
 
         self.expand_layout.addWidget(self.about_group)
 
@@ -495,6 +511,7 @@ class SettingsWidget(ScrollArea):
         self.log_level_combo.currentIndexChanged.connect(self._on_log_level_changed)
         self.about_card.clicked.connect(self.check_update)
         self.about_nep89_card.clicked.connect(self.check_update_nep89)
+        self.runtime_health_card.clicked.connect(self.refresh_runtime_health)
 
         self.nep_backend_card.optionChanged.connect(lambda option: Config.set("nep", "backend", option))
         self.data_precision_card.optionChanged.connect(lambda option: Config.set("nep", "data_precision", option))
@@ -551,6 +568,59 @@ class SettingsWidget(ScrollArea):
         level = normalize_log_level(self.log_level_combo.itemData(index))
         Config.set("logging", "level", level)
         set_log_level(level)
+
+    def _runtime_health_description(self, report: RuntimeHealth) -> str:
+        """Return a compact localized capability summary."""
+        available = self.tr("Available")
+        unavailable = self.tr("Unavailable")
+        cpu_status = available if report.cpu.available else unavailable
+        cuda_status = available if report.cuda.available else unavailable
+        adapter_version = report.adapters_version or self.tr("not installed")
+        return self.tr(
+            "Native helpers: {available}/{total} · nep-adapters: {version} · "
+            "CPU: {cpu} · CUDA: {cuda}"
+        ).format(
+            available=report.native_available_count,
+            total=len(report.native),
+            version=adapter_version,
+            cpu=cpu_status,
+            cuda=cuda_status,
+        )
+
+    def _refresh_runtime_health_content(self) -> None:
+        """Render the latest runtime capability snapshot on the settings card."""
+        self.runtime_health_card.setContent(
+            self._runtime_health_description(self._runtime_health)
+        )
+
+    def refresh_runtime_health(self) -> None:
+        """Recheck native helpers and NEP backends without restarting."""
+        self._runtime_health = inspect_runtime_health()
+        self._refresh_runtime_health_content()
+        if not self._runtime_health.native_complete:
+            missing = ", ".join(
+                item.name
+                for item in self._runtime_health.native
+                if not item.available
+            )
+            MessageManager.send_warning_message(
+                self.tr(
+                    "Native helpers are incomplete ({missing}). Reinstall the "
+                    "NepTrainKit wheel for this Python version."
+                ).format(missing=missing)
+            )
+            return
+        if not self._runtime_health.cpu.available:
+            MessageManager.send_warning_message(
+                self.tr(
+                    "The NEP CPU backend is unavailable. Install "
+                    "nep-adapters>=1.0,<2 and refresh."
+                )
+            )
+            return
+        MessageManager.send_info_message(
+            self.tr("Runtime check completed.")
+        )
 
     def check_update(self):
         """Trigger the application update workflow for NepTrainKit.

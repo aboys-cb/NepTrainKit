@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QWidget, QVBoxLayout
 from shiboken6 import isValid
 
 from NepTrainKit.ui.dialogs import call_path_dialog
-from NepTrainKit.ui.threads import LoadingThread
+from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.core import CardManager
 from NepTrainKit.ui.widgets import MakeDataCardWidget, MakeDataCard, FilterDataCard
 
@@ -273,7 +273,7 @@ class CardGroup(MakeDataCardWidget):
             path = call_path_dialog(self, "Choose a file save location", "file",f"export_{self.getTitle()}_structure.xyz")
             if not path:
                 return
-            thread=LoadingThread(self,show_tip=True,title="Exporting data")
+            thread=BackgroundTask(self,show_tip=True,title="Exporting data")
             thread.start_work(self.write_result_dataset, path)
     def to_dict(self):
         data_dict = super().to_dict()

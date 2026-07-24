@@ -6,7 +6,7 @@ from PySide6.QtCore import QObject, QThread
 from PySide6.QtWidgets import QApplication
 
 from NepTrainKit.core.io.base import ResultData
-from NepTrainKit.ui.threads import LoadingThread, run_in_thread
+from NepTrainKit.ui.threads import BackgroundTask, LoadingThread, run_in_thread
 
 
 def _wait_until(predicate, timeout: float = 3.0) -> bool:
@@ -24,6 +24,41 @@ def _wait_until(predicate, timeout: float = 3.0) -> bool:
 def test_loading_thread_uses_larger_stack_for_numpy_workers():
     thread = LoadingThread(show_tip=False)
     assert thread.stackSize() >= 8 * 1024 * 1024
+
+
+def test_background_task_reports_failure_without_success():
+    task = BackgroundTask(show_tip=False)
+    outcomes: list[str] = []
+    task.succeeded.connect(lambda _result: outcomes.append("succeeded"))
+    task.failed.connect(lambda message: outcomes.append(f"failed:{message}"))
+
+    task.start_work(lambda: (_ for _ in ()).throw(ValueError("boom")))
+
+    assert _wait_until(task.isFinished)
+    assert _wait_until(lambda: bool(outcomes))
+    assert task.outcome == "failed"
+    assert task.error_message == "boom"
+    assert outcomes == ["failed:boom"]
+
+
+def test_background_task_cancels_generator_cooperatively():
+    task = BackgroundTask(show_tip=False)
+    outcomes: list[str] = []
+    task.canceled.connect(lambda: outcomes.append("canceled"))
+
+    def work():
+        for index in range(1000):
+            time.sleep(0.001)
+            yield index
+
+    task.start_work(work)
+    assert _wait_until(lambda: task.isRunning())
+    task.stop_work()
+
+    assert _wait_until(task.isFinished)
+    assert _wait_until(lambda: bool(outcomes))
+    assert task.outcome == "canceled"
+    assert outcomes == ["canceled"]
 
 
 def test_run_in_thread_finished_callback_runs_on_parent_thread():

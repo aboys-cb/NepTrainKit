@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 try:
     import tomllib
@@ -39,6 +40,13 @@ def _restore_application_language_after_test():
 _MAKE_DATA_PATH = Path(__file__).resolve().parents[1] / "src" / "NepTrainKit" / "ui" / "pages" / "makedata.py"
 _SHOW_NEP_PATH = Path(__file__).resolve().parents[1] / "src" / "NepTrainKit" / "ui" / "pages" / "show_nep.py"
 _UPDATE_PATH = Path(__file__).resolve().parents[1] / "src" / "NepTrainKit" / "ui" / "update.py"
+_ZH_TS_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "src"
+    / "NepTrainKit"
+    / "translations"
+    / "neptrainkit_zh_CN.ts"
+)
 
 _TASK5_MAKE_DATA_MARKERS = (
     'self.tr("Please choose the structure files")',
@@ -254,6 +262,18 @@ def test_pyproject_includes_translation_package_data():
     assert "NepTrainKit" in package_data
     assert "translations/*.qm" in package_data["NepTrainKit"]
     assert "translations/*.ts" in package_data["NepTrainKit"]
+
+
+def test_chinese_catalog_has_no_active_unfinished_messages():
+    root = ET.parse(_ZH_TS_PATH).getroot()
+    unfinished = []
+    for context in root.findall("context"):
+        context_name = context.findtext("name") or ""
+        for message in context.findall("message"):
+            translation = message.find("translation")
+            if translation is not None and translation.get("type") == "unfinished":
+                unfinished.append((context_name, message.findtext("source") or ""))
+    assert unfinished == []
 
 
 def test_settings_language_combo_persists_config():

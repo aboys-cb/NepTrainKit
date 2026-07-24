@@ -73,7 +73,6 @@ _RUNTIME_TEXT_REPLACEMENTS = (
     ("The index is invalid, perhaps the structure has been deleted", "索引无效，结构可能已被删除。"),
     ("Failed to switch NEP model", "切换 NEP 模型失败"),
     ("Failed to build dataset summary.", "构建数据集摘要失败。"),
-    ("Dataset summary is empty.", "数据集摘要为空。"),
     ("No structures found in this bin.", "该分箱内没有结构。"),
     ("Threshold must be positive.", "阈值必须为正数。"),
     ("Failed to consume force-balance results.", "读取力平衡结果失败。"),

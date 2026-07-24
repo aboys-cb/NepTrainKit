@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-22 10:24+0800\n"
+"POT-Creation-Date: 2026-07-24 09:11+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -44,8 +44,8 @@ msgid "批量编辑结构元数据"
 msgstr "Edit Structure Metadata in Batches"
 
 #: ../../source/example/index.rst:4
-msgid "数据集摘要与分布"
-msgstr "Dataset Summary and Distributions"
+msgid "训练集评估与分布"
+msgstr "Training set check and distributions"
 
 #: ../../source/example/index.rst:4
 msgid "加上或减去 DFT-D3"
@@ -66,3 +66,6 @@ msgstr "Descriptor Plotting Example"
 #: ../../source/example/index.rst:2 cfc54c3526ce4ed194b024122e41351e
 msgid "示例"
 msgstr "Examples"
+
+#~ msgid "数据集摘要与分布"
+#~ msgstr "Dataset Summary and Distributions"

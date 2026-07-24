@@ -1,28 +1,4 @@
 {
-  "dataset_summary_result": {
-    "scenario": "dataset_summary_result",
-    "title": "Dataset summary from real data",
-    "description": "Show a summary computed from the tracked 25-structure demo dataset.",
-    "language": "zh_CN",
-    "output": "docs/source/_static/image/generated/tutorials/dataset_summary.png",
-    "window_size": [
-      1600,
-      900
-    ],
-    "sha256": "0ecc5f1d8b55df6394a548c4b0c4c45ad8c110f79fde71b76796aa73cf9ad3d9"
-  },
-  "dataset_summary_result_en": {
-    "scenario": "dataset_summary_result",
-    "title": "Dataset summary from real data",
-    "description": "Show a summary computed from the tracked 25-structure demo dataset.",
-    "language": "en_US",
-    "output": "docs/source/_static/image/generated/tutorials/dataset_summary_en.png",
-    "window_size": [
-      1600,
-      900
-    ],
-    "sha256": "efee54e99ff84074ab40bc75295857996ba0e1cc697233c3bd04ced2a5244afd"
-  },
   "dft_d3_entry_en": {
     "scenario": "dft_d3_entry",
     "title": "DFT-D3 correction entry",
@@ -742,30 +718,6 @@
       700
     ],
     "sha256": "31b2ccebd4360623596ff4b12257bea942fff88ef6ac1b9681a4fbee35a81d36"
-  },
-  "show_nep_summary_dialog": {
-    "scenario": "show_nep_summary_dialog",
-    "title": "Dataset summary dialog",
-    "description": "Show NEP dataset summary dialog.",
-    "language": "zh_CN",
-    "output": "docs/source/_static/image/generated/show_nep_reference/g_summary_dialog.png",
-    "window_size": [
-      1200,
-      700
-    ],
-    "sha256": "0a852fa15eabc22b6e67f46755fcd372e116c3d52ea217b2de760e5a5283bbd0"
-  },
-  "show_nep_summary_dialog_en": {
-    "scenario": "show_nep_summary_dialog",
-    "title": "Dataset summary dialog",
-    "description": "Show NEP dataset summary dialog.",
-    "language": "en_US",
-    "output": "docs/source/_static/image/generated/show_nep_reference/g_summary_dialog_en.png",
-    "window_size": [
-      1200,
-      700
-    ],
-    "sha256": "06779fb5dff8f06522427e6acb2c0573c22ce84f360b302c18601c49696ef904"
   },
   "suspicious_structure_scan_entry": {
     "scenario": "suspicious_structure_scan_entry",

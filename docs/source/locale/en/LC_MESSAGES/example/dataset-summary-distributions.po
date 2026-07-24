@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-21 23:13+0800\n"
+"POT-Creation-Date: 2026-07-24 09:11+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -20,92 +20,111 @@ msgstr ""
 "Generated-By: Babel 2.18.0\n"
 
 #: ../../source/example/dataset-summary-distributions.md:1
-#: 1a0908194499436a9187e8fa6546ddb8
-msgid "一分钟看懂数据集组成和分布"
-msgstr "Understand Dataset Composition and Distributions in One Minute"
+#: f399cea6bb814b5b8eb4248e96f6d084
+msgid "从整体组成到数值分布"
+msgstr "From overall composition to numerical distributions"
 
 #: ../../source/example/dataset-summary-distributions.md:3
 #: 6df2bda5597c459591b09853f99e0aa9
 msgid ""
-"拿到陌生训练集时，先回答两个问题：数据由哪些组和元素组成，关键物理量是否有异常长尾。`Dataset summary` 给出总体组成，`Explore "
-"distributions` 再把具体字段展开。"
-msgstr ""
-"For an unfamiliar training set, start with two questions: which groups and "
-"elements are present, and whether important physical quantities have unusual"
-" tails. `Dataset summary` shows the overall composition, while `Explore "
-"distributions` examines individual fields."
+"拿到陌生训练集时，先回答两个问题：数据由哪些元素组合构成、关键物理量是否存在覆盖空缺或异常长尾。主工具栏中的 `Training set "
+"check` 负责整体组成和证据概览，`Explore distributions` 负责展开具体数值字段。"
+msgstr "When opening an unfamiliar training set, first ask which element combinations it contains and whether important physical quantities have coverage gaps or abnormal tails. `Training set check` in the main toolbar provides the overall composition and evidence overview, while `Explore distributions` expands individual numerical fields."
 
 #: ../../source/example/dataset-summary-distributions.md:5
-#: 2294b2544fcb416fa1f0cb63c1573284
-msgid "先看总体组成"
-msgstr "Inspect the Overall Composition"
+#: 8e030b1095424074a52a5a2a35928c0f
+msgid "先看训练集整体"
+msgstr "Start with the complete training set"
 
 #: ../../source/example/dataset-summary-distributions.md:7
-#: 72f06093e18749d78b93e03f00d02d01
-msgid "点击 `Dataset summary`。分组方式跟随顶部当前的搜索模式：选择 `Config_type` 时按配置类型统计，选择化学式时按化学式统计。"
-msgstr ""
-"Click `Dataset summary`. The grouping follows the current search mode at the"
-" top: `Config_type` groups by configuration type, while the formula mode "
-"groups by chemical formula."
+#: 1e71e83fad444982ac9bf57944ed8358
+msgid ""
+"加载数据后，点击主工具栏中的 `Training set "
+"check`。概览页会直接展示结构数、原子数、元素数和标签可用性，并用元素共现矩阵呈现训练集中一元、二元及多元组合的整体覆盖。"
+msgstr "After loading data, click `Training set check` in the main toolbar. The overview shows structure, atom, and element counts together with label availability, and uses an element co-occurrence matrix to summarize unary, binary, and multicomponent coverage."
 
 #: ../../source/example/dataset-summary-distributions.md:9
-#: f5e3e2c3d15745658b0be41b25f44686
-msgid "数据集摘要窗口"
-msgstr "Dataset summary dialog"
+#: 238440e6391b42cf9e8f48f3e83fbb98
+msgid "训练集评估概览"
+msgstr "Training set check overview"
 
 #: ../../source/example/dataset-summary-distributions.md:9
-#: f5e3e2c3d15745658b0be41b25f44686
-msgid ".. image:: ../_static/image/generated/tutorials/dataset_summary.png"
+#: 238440e6391b42cf9e8f48f3e83fbb98
+#, fuzzy
+msgid ".. image:: ../_static/image/generated/training_set_audit_overview.png"
 msgstr ".. image:: ../_static/image/generated/tutorials/dataset_summary.png"
 
 #: ../../source/example/dataset-summary-distributions.md:14
-#: 86bde113e0274780b2232ad93bf432ef
-msgid ""
-"本例共有 25 个活动结构、6250 个原子，Pb 和 Te 各占 50%，所有结构属于同一个 "
-"`Config_type`。先在这里发现结构数、元素比例或分组数量不符合预期，再回头检查合并与导入步骤。"
-msgstr ""
-"This example contains 25 active structures and 6,250 atoms, with Pb and Te "
-"each contributing 50%, and all structures sharing one `Config_type`. If the "
-"structure count, element fractions, or group count are unexpected, inspect "
-"the merge and import steps before continuing."
+#: 61d01da449394fe29034c159ca44f642
+msgid "共现矩阵中的非对角单元格表示两个元素在同一结构中出现的频率；对角线表示单元素结构。点击一个元素后，左侧会聚焦显示与它相关的组合，便于查看它与哪些元素共同出现、哪些组合稀少或完全缺失。元素集合表保留精确的组合与占比，适合进一步核对。"
+msgstr "Off-diagonal matrix cells show how often two elements occur in the same structure; diagonal cells represent single-element structures. Clicking an element focuses the related combinations, making rare or missing combinations easier to spot. The element-set table retains exact combinations and shares for verification."
 
 #: ../../source/example/dataset-summary-distributions.md:16
+#: b63f765878ef45be9ee05ab6a767c6a5
+msgid "这个页面取代了旧的 `Dataset summary` 弹窗。整体统计、元素组合和后续证据现在都在同一处查看，不再需要从保存菜单进入独立摘要。"
+msgstr "This page replaces the former `Dataset summary` dialog. Overall statistics, element combinations, and follow-up evidence now live in one place instead of a separate summary under the Save menu."
+
+#: ../../source/example/dataset-summary-distributions.md:18
 #: d3b65a11942b4e05a9d2d2d4b9f051bc
 msgid "再看力等关键字段"
 msgstr "Inspect Forces and Other Key Fields"
 
-#: ../../source/example/dataset-summary-distributions.md:18
-#: da952f5c546e4045a8fce9947e89c2fa
-msgid "打开 `Explore distributions`，选择数据字段、统计范围和分组方式。本例查看 `force`，按元素分组，并用力的模长作横坐标："
-msgstr ""
-"Open `Explore distributions` and choose a data field, scope, and grouping "
-"mode. This example displays `force`, grouped by element, with force "
-"magnitude on the horizontal axis:"
-
 #: ../../source/example/dataset-summary-distributions.md:20
+#: da952f5c546e4045a8fce9947e89c2fa
+msgid ""
+"回到数据展示页，打开 `Explore distributions`，选择数据字段、统计范围和分组方式。本例查看 "
+"`force`，按元素分组，并用力的模长作横坐标："
+msgstr "Return to Dataset Display, open `Explore distributions`, and choose a field, scope, and grouping mode. This example inspects `force`, groups by element, and uses force magnitude on the x-axis:"
+
+#: ../../source/example/dataset-summary-distributions.md:22
 #: 9d3b866e89414f86b50ca0fd25595586
 msgid "按元素统计的原子力分布"
 msgstr "Atomic-force distributions grouped by element"
 
-#: ../../source/example/dataset-summary-distributions.md:20
+#: ../../source/example/dataset-summary-distributions.md:22
 #: 9d3b866e89414f86b50ca0fd25595586
 msgid ".. image:: ../_static/image/generated/tutorials/force_distribution.png"
 msgstr ".. image:: ../_static/image/generated/tutorials/force_distribution.png"
 
-#: ../../source/example/dataset-summary-distributions.md:25
-#: 53104544693e410f9d40ec72dada97aa
-msgid "结果使用了全部 6250 个原子样本，可以直接比较 Pb、Te 的覆盖范围。还可以切换参考值、预测值或误差，用同样方法检查能量、应力和磁力等字段。"
-msgstr ""
-"The result uses all 6,250 atomic samples, making the coverage of Pb and Te "
-"directly comparable. Switch among reference, prediction, and error data to "
-"inspect energy, stress, magnetic force, and other fields in the same way."
-
 #: ../../source/example/dataset-summary-distributions.md:27
+#: 53104544693e410f9d40ec72dada97aa
+msgid "分布图可以比较不同元素或标签的覆盖范围，也可以切换参考值、预测值或误差，用同样方法检查能量、应力和磁力等字段。"
+msgstr "The distribution chart compares coverage across elements or labels. Switch among reference, prediction, and error views to inspect energy, stress, magnetic force, and other fields in the same way."
+
+#: ../../source/example/dataset-summary-distributions.md:29
 #: 1e0abce2659a44a68982b3cec9a82a15
-msgid "分布图只负责暴露覆盖和异常，不替你判断数据好坏。发现孤立尖峰、异常长尾或某个组明显偏移后，再回到主界面选中对应结构，结合几何和原始计算结果复核。"
-msgstr ""
-"A distribution plot reveals coverage and outliers; it does not decide "
-"whether data are good or bad. When you find an isolated spike, unusual tail,"
-" or shifted group, return to the main view, select the corresponding "
-"structures, and review them together with their geometry and original "
-"calculation output."
+msgid "概览负责发现“哪些组合存在或缺失”，数值分布负责发现“标签覆盖是否均衡”。发现孤立尖峰、异常长尾或某个组明显偏移后，再回到主界面选中对应结构，结合几何和原始计算结果复核。"
+msgstr "The overview reveals which combinations exist or are missing; numerical distributions reveal whether label coverage is balanced. After finding isolated spikes, abnormal tails, or shifted groups, return to the main view and inspect the corresponding structures against their geometry and source calculations."
+
+#~ msgid "一分钟看懂数据集组成和分布"
+#~ msgstr "Understand Dataset Composition and Distributions in One Minute"
+
+#~ msgid "先看总体组成"
+#~ msgstr "Inspect the Overall Composition"
+
+#~ msgid ""
+#~ "点击 `Dataset summary`。分组方式跟随顶部当前的搜索模式：选择 "
+#~ "`Config_type` 时按配置类型统计，选择化学式时按化学式统计。"
+#~ msgstr ""
+#~ "Click `Dataset summary`. The grouping "
+#~ "follows the current search mode at "
+#~ "the top: `Config_type` groups by "
+#~ "configuration type, while the formula "
+#~ "mode groups by chemical formula."
+
+#~ msgid "数据集摘要窗口"
+#~ msgstr "Dataset summary dialog"
+
+#~ msgid ""
+#~ "本例共有 25 个活动结构、6250 个原子，Pb 和 Te 各占"
+#~ " 50%，所有结构属于同一个 "
+#~ "`Config_type`。先在这里发现结构数、元素比例或分组数量不符合预期，再回头检查合并与导入步骤。"
+#~ msgstr ""
+#~ "This example contains 25 active "
+#~ "structures and 6,250 atoms, with Pb "
+#~ "and Te each contributing 50%, and "
+#~ "all structures sharing one `Config_type`. "
+#~ "If the structure count, element "
+#~ "fractions, or group count are "
+#~ "unexpected, inspect the merge and import"
+#~ " steps before continuing."

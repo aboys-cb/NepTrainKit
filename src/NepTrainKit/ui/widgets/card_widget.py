@@ -27,7 +27,7 @@ from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
 from NepTrainKit.core.card_manager import build_card_metadata
 from NepTrainKit.ui.dialogs import call_path_dialog
-from NepTrainKit.ui.threads import DataProcessingThread, FilterProcessingThread, LoadingThread
+from NepTrainKit.ui.threads import DataProcessingThread, FilterProcessingThread, BackgroundTask
 from NepTrainKit.version import DOCS_BASE_URL
 from .card_metadata import CardMetadataDialog
 from .label import ProcessLabel
@@ -477,7 +477,7 @@ class MakeDataCard(MakeDataCardWidget):
             )
             if not path:
                 return
-            thread = LoadingThread(self, show_tip=True, title=self.tr("Exporting data"))
+            thread = BackgroundTask(self, show_tip=True, title=self.tr("Exporting data"))
             thread.start_work(self.write_result_dataset, path)
 
     def process_structure(self, structure):

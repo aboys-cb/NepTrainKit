@@ -56,7 +56,7 @@ class ModelItem:
     data_size:int
     energy:float
     force:float
-    virial:virial
+    virial: float
     parent_id:int
     project_id:int
     model_path:str

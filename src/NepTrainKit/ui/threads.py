@@ -18,11 +18,22 @@ from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperatio
 _NUMPY_WORKER_STACK_SIZE = 8 * 1024 * 1024
 
 
-class LoadingThread(QThread):
+class BackgroundTask(QThread):
+    """Run one callable without blocking the GUI thread.
+
+    Cancellation is cooperative: generator-style jobs stop between yielded
+    items, while a blocking callable is allowed to return normally.  The task
+    never uses ``QThread.terminate()``, which can leave Python, Qt, or native
+    library state locked.
+    """
+
     progressSignal = Signal(int)
+    succeeded = Signal(object)
+    failed = Signal(str)
+    canceled = Signal()
 
     def __init__(self, parent=None, show_tip=True, title='running'):
-        super(LoadingThread, self).__init__(parent)
+        super().__init__(parent)
         self.setStackSize(_NUMPY_WORKER_STACK_SIZE)
         self.show_tip = show_tip
         self.title = self.tr("Running") if title == "running" else title
@@ -31,34 +42,96 @@ class LoadingThread(QThread):
         self._kwargs: Any
         self._args: Any
         self._func: Any
+        self._outcome = "idle"
+        self._result: Any = None
+        self._error_message = ""
+
+    @property
+    def outcome(self) -> str:
+        """Return ``idle``, ``running``, ``succeeded``, ``failed``, or ``canceled``."""
+        return self._outcome
+
+    @property
+    def result(self) -> Any:
+        return self._result
+
+    @property
+    def error_message(self) -> str:
+        return self._error_message
 
     def run(self):
-        result = self._func(*self._args, **self._kwargs)
-        if isinstance(result, Iterable):
-            for i, _ in enumerate(result):
-                self.progressSignal.emit(i)
+        self._outcome = "running"
+        try:
+            result = self._func(*self._args, **self._kwargs)
+            if isinstance(result, Iterable):
+                for i, _ in enumerate(result):
+                    if self.isInterruptionRequested():
+                        close = getattr(result, "close", None)
+                        if callable(close):
+                            close()
+                        self._outcome = "canceled"
+                        self.canceled.emit()
+                        return
+                    self.progressSignal.emit(i)
+            if self.isInterruptionRequested():
+                self._outcome = "canceled"
+                self.canceled.emit()
+                return
+        except Exception as exc:  # noqa: BLE001
+            self._outcome = "failed"
+            self._error_message = str(exc)
+            logger.debug(traceback.format_exc())
+            self.failed.emit(self._error_message)
+            return
+
+        self._result = result
+        self._outcome = "succeeded"
+        self.succeeded.emit(result)
 
     def start_work(self, func, *args, **kwargs):
+        if self.isRunning():
+            raise RuntimeError("Background task is already running.")
         if self.show_tip:
             self.tip = StateToolTip(self.title, self.tr("Please wait patiently..."), self._parent)
             self.tip.show()
-            self.finished.connect(self.__finished_work)
+            self.succeeded.connect(self.__finished_work)
+            self.failed.connect(self.__failed_work)
+            self.canceled.connect(self.__canceled_work)
             self.tip.closedSignal.connect(self.stop_work)
-            time.sleep(0.0001)
         else:
             self.tip = None  # pyright:ignore
         self._func = func
         self._args = args
         self._kwargs = kwargs
+        self._result = None
+        self._error_message = ""
         self.start()
 
-    def __finished_work(self):
+    def __finished_work(self, _result=None):
         if self.tip:
             self.tip.setContent(self.tr("Success"))
             self.tip.setState(True)
 
+    def __failed_work(self, message: str):
+        if self.tip:
+            self.tip.setContent(self.tr("Failed: {message}").format(message=message))
+            self.tip.setState(True)
+
+    def __canceled_work(self):
+        if self.tip:
+            self.tip.setContent(self.tr("Canceled"))
+            self.tip.setState(True)
+
     def stop_work(self):
-        self.terminate()
+        """Request cooperative cancellation without killing the native thread."""
+        if self.isRunning():
+            self.requestInterruption()
+
+    cancel = stop_work
+
+
+# Compatibility for external extensions.  Application code uses BackgroundTask.
+LoadingThread = BackgroundTask
 
 
 class DataProcessingThread(QThread):
@@ -278,6 +351,7 @@ def run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs
 
 
 __all__ = [
+    'BackgroundTask',
     'LoadingThread',
     'DataProcessingThread',
     'FilterProcessingThread',

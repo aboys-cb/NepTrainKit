@@ -19,7 +19,7 @@ from NepTrainKit import is_nuitka_compiled, module_path
 from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
 from NepTrainKit.version import RELEASES_LIST_API_URL, RELEASES_URL, __version__
-from NepTrainKit.ui.threads import LoadingThread
+from NepTrainKit.ui.threads import BackgroundTask
 
 AUTO_CHECK_INTERVAL_SECONDS = 24 * 60 * 60
 RELEASES_PER_PAGE = 30
@@ -248,7 +248,7 @@ class UpdateWoker(QObject):
         self._manual = True
         self._on_finished: Callable[[dict[str, Any]], None] | None = None
         self.result.connect(self._check_update_call_back)
-        self.update_thread = LoadingThread(self._parent, show_tip=False)
+        self.update_thread = BackgroundTask(self._parent, show_tip=False)
 
     def _check_update(self) -> None:
         """Query GitHub releases and emit a normalized result payload."""
@@ -441,8 +441,8 @@ class UpdateNEP89Woker(QObject):
         super().__init__(parent)
         self.func = self._check_update
         self.version.connect(self._check_update_call_back)
-        self.update_thread = LoadingThread(self._parent, show_tip=False)
-        self.down_thread = LoadingThread(self._parent, show_tip=True, title=_tr("Downloading"))
+        self.update_thread = BackgroundTask(self._parent, show_tip=False)
+        self.down_thread = BackgroundTask(self._parent, show_tip=True, title=_tr("Downloading"))
 
     def download(self, latest_date: int) -> None:
         """Download the latest ``nep89`` model and refresh metadata."""

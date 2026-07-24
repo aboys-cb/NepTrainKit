@@ -6,7 +6,13 @@ from dataclasses import replace
 from pathlib import Path
 
 from PySide6.QtCore import QCoreApplication, QTranslator, Qt
-from PySide6.QtWidgets import QApplication, QBoxLayout, QFrame, QHeaderView, QLabel
+from PySide6.QtWidgets import (
+    QApplication,
+    QBoxLayout,
+    QFrame,
+    QHeaderView,
+    QLabel,
+)
 from qfluentwidgets import ComboBox, ListWidget, PrimaryPushButton, PushButton, TableWidget
 
 from NepTrainKit.core.audit.result import (
@@ -1164,6 +1170,10 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertEqual(widget.element_sets_table.item(0, 2).text(), "66.67%")
         widget.element_sets_table.selectRow(0)
         self.assertEqual(widget.view_element_set_button.text(), "View 2 structures")
+        self.assertGreaterEqual(
+            widget.view_element_set_button.minimumWidth(),
+            widget.view_element_set_button.sizeHint().width(),
+        )
         widget.view_element_set_button.click()
 
         self.assertEqual(received, [[1, 2]])
@@ -1442,6 +1452,17 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertLessEqual(
             evidence_button.geometry().right(),
             widget.dimension_rail.contentsRect().right(),
+        )
+        self.assertGreater(widget.dimension_rail.maximumWidth(), 192)
+        longest_view_text = max(
+            widget.composition_view_selector.fontMetrics().horizontalAdvance(
+                widget.composition_view_selector.itemText(index)
+            )
+            for index in range(widget.composition_view_selector.count())
+        )
+        self.assertGreaterEqual(
+            widget.composition_view_selector.minimumWidth(),
+            longest_view_text + 48,
         )
 
         widget.resize(1100, 760)

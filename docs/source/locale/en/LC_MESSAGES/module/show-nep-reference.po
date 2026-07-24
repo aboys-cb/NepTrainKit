@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 17:56+0800\n"
+"POT-Creation-Date: 2026-07-24 09:11+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -28,8 +28,8 @@ msgstr "NEP Dataset Display Reference"
 msgid "目标：按“按钮入口”组织说明。先看按钮，再看它会不会打开设置窗口、要填什么、执行后会发生什么。"
 msgstr ""
 "This reference is organized by entry point. Find the button first, then "
-"check whether it opens a settings dialog, which values it requires, and what"
-" happens after execution."
+"check whether it opens a settings dialog, which values it requires, and "
+"what happens after execution."
 
 #: ../../source/module/show-nep-reference.md:5 38bdf570dbfb4855a102e47385244879
 msgid "1. 界面总览"
@@ -50,76 +50,81 @@ msgstr ""
 #: ../../source/module/show-nep-reference.md:9 0e3b5d64eacd455f8b122c18844122d3
 msgid "左侧：误差散点主图区（descriptor / energy / force / pressure / potential energy 等子图）。"
 msgstr ""
-"Left: the main scatter-plot area, with descriptor, energy, force, pressure, "
-"potential-energy, and related views."
+"Left: the main scatter-plot area, with descriptor, energy, force, "
+"pressure, potential-energy, and related views."
 
-#: ../../source/module/show-nep-reference.md:10 afe32fd95af04067983e7d0b6515ae72
+#: ../../source/module/show-nep-reference.md:10
+#: afe32fd95af04067983e7d0b6515ae72
 msgid "右侧：结构区（3D 结构、结构信息、最短键长、净力、索引与播放）。"
 msgstr ""
 "Right: the structure pane, including the 3D view, structure information, "
 "shortest bond, net force, frame index, and playback controls."
 
-#: ../../source/module/show-nep-reference.md:11 f80c3e60ab2b4ba5b337ae504d55954d
+#: ../../source/module/show-nep-reference.md:11
+#: f80c3e60ab2b4ba5b337ae504d55954d
 msgid "底部：数据状态行 `Orig / Now / Rm / Sel / Unsel / Rej`。"
 msgstr "Bottom: the dataset status row, `Orig / Now / Rm / Sel / Unsel / Rej`."
 
-#: ../../source/module/show-nep-reference.md:12 1ed58dbb26ce49b687c839c3fbbe0939
+#: ../../source/module/show-nep-reference.md:12
+#: 1ed58dbb26ce49b687c839c3fbbe0939
 msgid "顶部：`Open` / `Save` 分裂按钮（菜单动作会随页面显示动态注入）。"
 msgstr ""
-"Top: split `Open` and `Save` buttons. Their menu actions are populated for "
-"the active page."
+"Top: split `Open` and `Save` buttons. Their menu actions are populated "
+"for the active page."
 
-#: ../../source/module/show-nep-reference.md:14 fb6f1aa985f34d26b39cce59f4dfa2f8
+#: ../../source/module/show-nep-reference.md:14
+#: fb6f1aa985f34d26b39cce59f4dfa2f8
 msgid "2. 按钮与弹窗绑定总表"
 msgstr "2 — Button and dialog reference"
 
-#: ../../source/module/show-nep-reference.md:16 bbc3e63a897e419eaad4eea1062f637e
+#: ../../source/module/show-nep-reference.md:16
+#: bbc3e63a897e419eaad4eea1062f637e
 msgid "2.1 主图工具栏（左侧）"
 msgstr "2.1 Main-plot toolbar (left)"
 
 #: ../../source/module/show-nep-reference.md
 #: ../../source/module/show-nep-reference.md:39
 #: ../../source/module/show-nep-reference.md:51
-#: ../../source/module/show-nep-reference.md:60 0177fb1070ce4cc2a9261748899b7daf
-#: 563a968b67d24581a8003b526ef3aa6c c84f34433f7e4fd39ca8f8f71976d3a6
+#: 0177fb1070ce4cc2a9261748899b7daf 563a968b67d24581a8003b526ef3aa6c
 #: d2f2706dcbcb49a1a39057927a98c12d
 msgid "图标"
 msgstr "Icon"
 
 #: ../../source/module/show-nep-reference.md
 #: ../../source/module/show-nep-reference.md:39
-#: ../../source/module/show-nep-reference.md:60 0dbd0b5e18c647ad9b23c1745b2538aa
-#: adf2e454cc9d469a9534783882b6c33a dd2a809191c04c35be2323915fb40b66
-#: df8b870a238f4f91a4d779fe314ecf3e eb404b6ac8de4db99b2955db06db6076
+#: ../../source/module/show-nep-reference.md:59
+#: 0dbd0b5e18c647ad9b23c1745b2538aa dd2a809191c04c35be2323915fb40b66
+#: df8b870a238f4f91a4d779fe314ecf3e
 msgid "按钮"
 msgstr "Button"
 
 #: ../../source/module/show-nep-reference.md
 #: ../../source/module/show-nep-reference.md:39
-#: ../../source/module/show-nep-reference.md:51 021a5b3560ac4dca9bcb179b9418cd67
-#: 34f6cd86548d4fd0976b0c366d6acd7e db2ea3d0b5fa4a7f92db5c1f2206d1d4
+#: ../../source/module/show-nep-reference.md:51
+#: 021a5b3560ac4dca9bcb179b9418cd67 34f6cd86548d4fd0976b0c366d6acd7e
+#: db2ea3d0b5fa4a7f92db5c1f2206d1d4
 msgid "是否打开设置"
 msgstr "Opens settings?"
 
 #: ../../source/module/show-nep-reference.md
-#: ../../source/module/show-nep-reference.md:39 0c556d2672444095a4d59b8d3909dda6
-#: 3b472a2d49e749e7b26a0d12edf7bdfb
+#: ../../source/module/show-nep-reference.md:39
+#: 0c556d2672444095a4d59b8d3909dda6 3b472a2d49e749e7b26a0d12edf7bdfb
 msgid "作用"
 msgstr "Action"
 
 #: ../../source/module/show-nep-reference.md 8b1b8402207541a0b29370bf7eb0940c
 msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/init.svg\" width=\"20\""
-" />"
+"<img src=\"../_static/image/generated/show_nep_icons/init.svg\" "
+"width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md b3c695e8a33448ea8e3ad5d17bd84046
+#: ../../source/module/show-nep-reference.md e5b08b2de48c451c96891bad7f718944
 msgid ".. image:: ../_static/image/generated/show_nep_icons/init.svg"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:20
-#: ../../source/module/show-nep-reference.md:60 888073ef1c154c3d9f5815d1486c612c
-#: c4fee44f2e6f40648e948c361e315cd2
+#: ../../source/module/show-nep-reference.md:59
+#: 888073ef1c154c3d9f5815d1486c612c c4fee44f2e6f40648e948c361e315cd2
 msgid "`Reset View`"
 msgstr ""
 
@@ -127,31 +132,33 @@ msgstr ""
 #: ../../source/module/show-nep-reference.md:30
 #: ../../source/module/show-nep-reference.md:31
 #: ../../source/module/show-nep-reference.md:32
-#: ../../source/module/show-nep-reference.md:33 365b48d46cf04851b9d4ccf2640bbff7
-#: 38b6c49d9fd5451d8b8d7b0abd11faf8 70c622f1de0a4bde8f2815e6eccc2331
-#: 7d5fa31d7fc04c999a566932fe7dd5bb ba77be50b7f84c69ade195a96522bc19
+#: ../../source/module/show-nep-reference.md:33
+#: 365b48d46cf04851b9d4ccf2640bbff7 38b6c49d9fd5451d8b8d7b0abd11faf8
+#: 70c622f1de0a4bde8f2815e6eccc2331 7d5fa31d7fc04c999a566932fe7dd5bb
+#: ba77be50b7f84c69ade195a96522bc19
 msgid "否"
 msgstr "No"
 
 #: ../../source/module/show-nep-reference.md:20
-#: ../../source/module/show-nep-reference.md:60 47e32f3d40b2449eb379c5ba7046fc83
-#: 7ee10788dd5340eda170f424b4a3826a
+#: ../../source/module/show-nep-reference.md:59
+#: 47e32f3d40b2449eb379c5ba7046fc83 7ee10788dd5340eda170f424b4a3826a
 msgid "当前子图自动缩放回数据范围"
 msgstr "Fit the current plot to its data range"
 
-#: ../../source/module/show-nep-reference.md:20 8fdf1e0eacfe494db849704d313146b8
+#: ../../source/module/show-nep-reference.md:20
+#: 8fdf1e0eacfe494db849704d313146b8
 msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/pan.svg\" width=\"20\" "
-"/>"
+"<img src=\"../_static/image/generated/show_nep_icons/pan.svg\" "
+"width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 3472009e93254929a99bbd0361624d54
+#: ../../source/module/show-nep-reference.md 9e77ce88caed4d4280ba887bcafd0320
 msgid ".. image:: ../_static/image/generated/show_nep_icons/pan.svg"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:21
-#: ../../source/module/show-nep-reference.md:60 4891e297a97d4515a96abb578994b9d3
-#: e57f3fbd12f94e54a720d61deb2f5c16
+#: ../../source/module/show-nep-reference.md:59
+#: 4891e297a97d4515a96abb578994b9d3 e57f3fbd12f94e54a720d61deb2f5c16
 msgid "`Pan View`"
 msgstr ""
 
@@ -160,30 +167,32 @@ msgstr ""
 #: ../../source/module/show-nep-reference.md:45
 #: ../../source/module/show-nep-reference.md:46
 #: ../../source/module/show-nep-reference.md:47
-#: ../../source/module/show-nep-reference.md:50 1f146af7d1924775a7c89946a7574a01
-#: 3495e85269b14a7faef9ed703fcc1357 71906e97028b4b1db702744422c7e67e
-#: a05e0faeb4bb49da8483c05dbc18708e e7c790826eed4ecfb91550749d4d4a6c
-#: eb16859453354c098cb88701347020aa
+#: ../../source/module/show-nep-reference.md:50
+#: 1f146af7d1924775a7c89946a7574a01 3495e85269b14a7faef9ed703fcc1357
+#: 71906e97028b4b1db702744422c7e67e a05e0faeb4bb49da8483c05dbc18708e
+#: e7c790826eed4ecfb91550749d4d4a6c eb16859453354c098cb88701347020aa
 msgid "否（开关）"
 msgstr "No (toggle)"
 
 #: ../../source/module/show-nep-reference.md:21
-#: ../../source/module/show-nep-reference.md:60 226b11fd98d1469fa7625b6d64fbefd8
-#: 88015c5dff494cc9a6e39e24ff0788ec
+#: ../../source/module/show-nep-reference.md:59
+#: 226b11fd98d1469fa7625b6d64fbefd8 88015c5dff494cc9a6e39e24ff0788ec
 msgid "切换平移交互"
 msgstr "Toggle pan interaction"
 
-#: ../../source/module/show-nep-reference.md:21 8ef108459c6340249000a12bb46d256a
+#: ../../source/module/show-nep-reference.md:21
+#: 8ef108459c6340249000a12bb46d256a
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/index.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 9a1c871bd2b548eca4d8ad8b731057a3
+#: ../../source/module/show-nep-reference.md 11b363878a14428085056a0b836e6c04
 msgid ".. image:: ../_static/image/generated/show_nep_icons/index.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:22 ca711908cc9046d9abba46fc90c00817
+#: ../../source/module/show-nep-reference.md:22
+#: ca711908cc9046d9abba46fc90c00817
 msgid "`Select by Index`"
 msgstr ""
 
@@ -200,2373 +209,892 @@ msgstr ""
 #: ../../source/module/show-nep-reference.md:49
 #: ../../source/module/show-nep-reference.md:57
 #: ../../source/module/show-nep-reference.md:58
-#: ../../source/module/show-nep-reference.md:59 0d7fadf2b47147cc829f89481a7a55f5
-#: 0e67fe1d470143ac855e80411f223948 0ffe908bce694078918723a07c9a8d0b
-#: 4e7d5dc2f0f247f1982cc50b9b6e69b3 6118c50436b9429cbc06fc7e356de095
-#: 79d634601ca04b7e9fd4f392831e6898 a29c885ffe5e410fb64164a765886814
-#: aef88bdec4934391a9aa065b80325f3a b74b757e81e747148e6a81f549572332
-#: bb3028377a504471b2cd073a75cc559a c694bfe6334f4fd6ae49e230ee1b6353
-#: eec658870bda4e1a9d4510c038e43fa2 f286310d6a1a4de7b5c096ab7d6ebfbf
-#: fe1acef4d2ed4928953d3aa8d33579d2
+#: ../../source/module/show-nep-reference.md:59
+#: 0d7fadf2b47147cc829f89481a7a55f5 0e67fe1d470143ac855e80411f223948
+#: 0ffe908bce694078918723a07c9a8d0b 4e7d5dc2f0f247f1982cc50b9b6e69b3
+#: 6118c50436b9429cbc06fc7e356de095 79d634601ca04b7e9fd4f392831e6898
+#: a29c885ffe5e410fb64164a765886814 aef88bdec4934391a9aa065b80325f3a
+#: b74b757e81e747148e6a81f549572332 bb3028377a504471b2cd073a75cc559a
+#: c694bfe6334f4fd6ae49e230ee1b6353 eec658870bda4e1a9d4510c038e43fa2
+#: f286310d6a1a4de7b5c096ab7d6ebfbf fe1acef4d2ed4928953d3aa8d33579d2
 msgid "是"
 msgstr "Yes"
 
-#: ../../source/module/show-nep-reference.md:22 b805eb3553d44018ade975ac48df2e4d
+#: ../../source/module/show-nep-reference.md:22
+#: b805eb3553d44018ade975ac48df2e4d
 msgid "按编号或切片选择结构"
 msgstr "Select structures by index or slice"
 
-#: ../../source/module/show-nep-reference.md:22 b74f111c8b9d4ac69351940e855cc9b6
+#: ../../source/module/show-nep-reference.md:22
+#: b74f111c8b9d4ac69351940e855cc9b6
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/data_range.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 2c5714e9f73b4ed48d52ca0eb9179bcc
+#: ../../source/module/show-nep-reference.md c869b1a39388405886c454395ec924a1
 msgid ".. image:: ../_static/image/generated/show_nep_icons/data_range.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:23 bb50ab48422a4d3c967f00d794395701
+#: ../../source/module/show-nep-reference.md:23
+#: bb50ab48422a4d3c967f00d794395701
 msgid "`Select by Range`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:23 28639250e1264471bbf446200aa1d687
+#: ../../source/module/show-nep-reference.md:23
+#: 28639250e1264471bbf446200aa1d687
 msgid "按当前图的 x/y 范围选择结构"
 msgstr "Select structures by the current plot's x/y range"
 
-#: ../../source/module/show-nep-reference.md:23 e86b0058b6864c8c9bd74517c97e2f2d
+#: ../../source/module/show-nep-reference.md:23
+#: e86b0058b6864c8c9bd74517c97e2f2d
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/supercell.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 193739f1db404ff0ba9fda8932f1565a
+#: ../../source/module/show-nep-reference.md e87539d50fe6478cb612aee7ce699963
 msgid ".. image:: ../_static/image/generated/show_nep_icons/supercell.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:24 6a5fbd6f37964a1b802e899bcefbcbf7
+#: ../../source/module/show-nep-reference.md:24
+#: 6a5fbd6f37964a1b802e899bcefbcbf7
 msgid "`Select by Lattice`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:24 34500588d95244288f48c0c1e0e781a1
+#: ../../source/module/show-nep-reference.md:24
+#: 34500588d95244288f48c0c1e0e781a1
 msgid "按晶格参数范围选择结构"
 msgstr "Select structures by lattice-parameter ranges"
 
-#: ../../source/module/show-nep-reference.md:24 a6b434e8aac24062bcc3c9a62e328bb5
+#: ../../source/module/show-nep-reference.md:24
+#: a6b434e8aac24062bcc3c9a62e328bb5
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/find_max.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 8273ef63bc894bd2a68aca124af74a68
+#: ../../source/module/show-nep-reference.md a29301ce0ed64087aa5d14dd3f1090b6
 msgid ".. image:: ../_static/image/generated/show_nep_icons/find_max.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:25 592f243e78984f1e89812feb0ea4f0df
+#: ../../source/module/show-nep-reference.md:25
+#: 592f243e78984f1e89812feb0ea4f0df
 msgid "`Find Max Error Point`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:25 642737fd490b49228a8caa1d12c84896
+#: ../../source/module/show-nep-reference.md:25
+#: 642737fd490b49228a8caa1d12c84896
 msgid "选择当前轴上误差最大的前 N 个结构"
 msgstr "Select the top N errors on the current axis"
 
-#: ../../source/module/show-nep-reference.md:25 712bffb58c0440e5bec50a7c2160c6bc
+#: ../../source/module/show-nep-reference.md:25
+#: 712bffb58c0440e5bec50a7c2160c6bc
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/sparse.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md f1728f3fb9d74792a3dd52333a6300f0
+#: ../../source/module/show-nep-reference.md 3f339b8b687649e89b5460ec68d06ef3
 msgid ".. image:: ../_static/image/generated/show_nep_icons/sparse.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:26 8929dc53cd2a4188b38a4572e3b84d80
+#: ../../source/module/show-nep-reference.md:26
+#: 8929dc53cd2a4188b38a4572e3b84d80
 msgid "`Sparse samples`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:26 c0b737bd60fc4e86a2ae7f4ac215bfcb
+#: ../../source/module/show-nep-reference.md:26
+#: c0b737bd60fc4e86a2ae7f4ac215bfcb
 msgid "用 FPS 做代表性采样"
 msgstr "Run FPS representative sampling"
 
-#: ../../source/module/show-nep-reference.md:26 0ef148f282464aeea62fb17452de0468
+#: ../../source/module/show-nep-reference.md:26
+#: 0ef148f282464aeea62fb17452de0468
 msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/pen.svg\" width=\"20\" "
-"/>"
+"<img src=\"../_static/image/generated/show_nep_icons/pen.svg\" "
+"width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 6f800303aeb147829a3673df248d69af
+#: ../../source/module/show-nep-reference.md 0ad7802b35b843bcab841312dca0de8c
 msgid ".. image:: ../_static/image/generated/show_nep_icons/pen.svg"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:27
-#: ../../source/module/show-nep-reference.md:60 620ea3c16cce41cbbf085e99b960a074
-#: 8daaa2bf2b664d209c2052be061d9d95
+#: ../../source/module/show-nep-reference.md:59
+#: 620ea3c16cce41cbbf085e99b960a074 8daaa2bf2b664d209c2052be061d9d95
 msgid "`Mouse Selection`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:27 9ebf8a15685d493d93955cff9c607c2a
+#: ../../source/module/show-nep-reference.md:27
+#: 9ebf8a15685d493d93955cff9c607c2a
 msgid "切换鼠标圈选/点选"
 msgstr "Toggle polygon and point selection"
 
-#: ../../source/module/show-nep-reference.md:27 7b8e2761acfe4880b99b5952207df902
+#: ../../source/module/show-nep-reference.md:27
+#: 7b8e2761acfe4880b99b5952207df902
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/discovery.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md d7dbf7a17a5843ebb9634be53e1ced71
+#: ../../source/module/show-nep-reference.md ff6f54f1ea1a46d1aed024c02f47706f
 msgid ".. image:: ../_static/image/generated/show_nep_icons/discovery.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:28 3b27faf65e9544ef94ce0696092aa327
+#: ../../source/module/show-nep-reference.md:28
+#: 3b27faf65e9544ef94ce0696092aa327
 msgid "`Finding non-physical structures`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:28 764cac3c95df42f9829508c86ce00389
+#: ../../source/module/show-nep-reference.md:28
+#: 764cac3c95df42f9829508c86ce00389
 msgid "否（仅进度）"
 msgstr "No (progress only)"
 
-#: ../../source/module/show-nep-reference.md:28 20e95af272a349d1abb8bb0778ee7aa7
+#: ../../source/module/show-nep-reference.md:28
+#: 20e95af272a349d1abb8bb0778ee7aa7
 msgid "按近邻距离找疑似坏构型"
 msgstr "Find suspicious structures from neighbor distances"
 
-#: ../../source/module/show-nep-reference.md:28 f031671bd5c24ea7ae497755df6d6b7e
+#: ../../source/module/show-nep-reference.md:28
+#: f031671bd5c24ea7ae497755df6d6b7e
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/inspect.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md db40bbc16ade4e66ab08ed268823a2db
+#: ../../source/module/show-nep-reference.md bbefaa801065469099de40b662a7f2d2
 msgid ".. image:: ../_static/image/generated/show_nep_icons/inspect.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:29 92d2b542dbe54e88acf881cc9a76b051
+#: ../../source/module/show-nep-reference.md:29
+#: 92d2b542dbe54e88acf881cc9a76b051
 msgid "`Check Net Force`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:29 0d1c3a4d40f6445591820e8713e92855
+#: ../../source/module/show-nep-reference.md:29
+#: 0d1c3a4d40f6445591820e8713e92855
 msgid "按净力阈值选择结构"
 msgstr "Select structures by a net-force threshold"
 
-#: ../../source/module/show-nep-reference.md:29 a3f8b5e37d4446b7854b1e9425b1fa56
+#: ../../source/module/show-nep-reference.md:29
+#: a3f8b5e37d4446b7854b1e9425b1fa56
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/inverse.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 3f923bf445ba4170bcf0534d1db4f2db
+#: ../../source/module/show-nep-reference.md 1aa61749587a4e42a4ec28f1d56fe606
 msgid ".. image:: ../_static/image/generated/show_nep_icons/inverse.svg"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:30
-#: ../../source/module/show-nep-reference.md:60 8d435c8d012f4ad68b9ad6b70a59339f
-#: da497f8482244a39b7bffbc2f10333ad
+#: ../../source/module/show-nep-reference.md:59
+#: 8d435c8d012f4ad68b9ad6b70a59339f da497f8482244a39b7bffbc2f10333ad
 msgid "`Inverse Selection`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:30 953a96fbbbdb4f7f87deae44cc5b7647
+#: ../../source/module/show-nep-reference.md:30
+#: 953a96fbbbdb4f7f87deae44cc5b7647
 msgid "对当前活动结构反选"
 msgstr "Invert selection over active structures"
 
-#: ../../source/module/show-nep-reference.md:30 6614b0e77e3248389efa3acc7cc11e99
+#: ../../source/module/show-nep-reference.md:30
+#: 6614b0e77e3248389efa3acc7cc11e99
 msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/undo_selection.svg\" "
-"width=\"20\" />"
+"<img src=\"../_static/image/generated/show_nep_icons/undo_selection.svg\""
+" width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 9f193e4ed4b440c2898c5e341237d538
+#: ../../source/module/show-nep-reference.md 51489267414245309c16a185ad94f5dd
 msgid ".. image:: ../_static/image/generated/show_nep_icons/undo_selection.svg"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:31
-#: ../../source/module/show-nep-reference.md:60 2fb0d60766634596982fdd188ab8ec3f
-#: 902ee6f991d848e6a4b9e80682d330a6
+#: ../../source/module/show-nep-reference.md:59
+#: 2fb0d60766634596982fdd188ab8ec3f 902ee6f991d848e6a4b9e80682d330a6
 msgid "`Undo Selection`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:31 9835a720fa314c77aab4d52b4722ec88
+#: ../../source/module/show-nep-reference.md:31
+#: 9835a720fa314c77aab4d52b4722ec88
 msgid "撤销最近一次选择变化"
 msgstr "Undo the most recent selection change"
 
-#: ../../source/module/show-nep-reference.md:31 3ec979feabbe4943941f1ed35d284a50
+#: ../../source/module/show-nep-reference.md:31
+#: 3ec979feabbe4943941f1ed35d284a50
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/undo_delete.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 9abcbf08ad9c4ea28147d5bc810a4b30
+#: ../../source/module/show-nep-reference.md d7c8e41df54e4f5bbe552690335a7878
 msgid ".. image:: ../_static/image/generated/show_nep_icons/undo_delete.svg"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:32
-#: ../../source/module/show-nep-reference.md:60 c40ad429e16f4ca38f83c96ce4b7f409
-#: c66e384fcdea4901bfc10e34b5d6d709
+#: ../../source/module/show-nep-reference.md:59
+#: c40ad429e16f4ca38f83c96ce4b7f409 c66e384fcdea4901bfc10e34b5d6d709
 msgid "`Undo Delete`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:32 745f76c7578e46278441cd8248e183d1
+#: ../../source/module/show-nep-reference.md:32
+#: 745f76c7578e46278441cd8248e183d1
 msgid "恢复最近一次删除"
 msgstr "Restore the most recently deleted structures"
 
 #: ../../source/module/show-nep-reference.md:32
-#: ../../source/module/show-nep-reference.md:50 21c4ebf60cfa4b94bdc4bb32f66747e7
-#: e3c4619d5e174292b6c30e751947dc06
+#: ../../source/module/show-nep-reference.md:50
+#: 21c4ebf60cfa4b94bdc4bb32f66747e7 e3c4619d5e174292b6c30e751947dc06
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/delete.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 9740545238d14ab0866a71e7ba56f5f6
-#: 97d908bd8a054538b4f08d46e06360d8
+#: ../../source/module/show-nep-reference.md 4a2ff5150d024b54965ef44f3bd24632
+#: ce09de93d3f947efbb5e81ba3868b071
 msgid ".. image:: ../_static/image/generated/show_nep_icons/delete.svg"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:33
-#: ../../source/module/show-nep-reference.md:60 d6c67a84bda34d23a40c1984a006f9f1
-#: fb51cd89769344babf87a8121ccd9b3a
+#: ../../source/module/show-nep-reference.md:59
+#: d6c67a84bda34d23a40c1984a006f9f1 fb51cd89769344babf87a8121ccd9b3a
 msgid "`Delete Selected Items`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:33 bcf2b02d08fb44ab92f0b6a01bfd3b20
+#: ../../source/module/show-nep-reference.md:33
+#: bcf2b02d08fb44ab92f0b6a01bfd3b20
 msgid "删除当前选中结构"
 msgstr "Delete the selected structures"
 
-#: ../../source/module/show-nep-reference.md:33 24a4a93b9ff84245973eb0ff0c913ac7
+#: ../../source/module/show-nep-reference.md:33
+#: 24a4a93b9ff84245973eb0ff0c913ac7
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/edit_info.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 5e75c05013d048a289c62185f411214b
+#: ../../source/module/show-nep-reference.md 55e323340b79467687cf3bb9dead0664
 msgid ".. image:: ../_static/image/generated/show_nep_icons/edit_info.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:34 5829d15134dd45fcb454b217563ecc0b
+#: ../../source/module/show-nep-reference.md:34
+#: 5829d15134dd45fcb454b217563ecc0b
 msgid "`Edit Info`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:34 d664a68a7ba641f0aea536f40a80c606
+#: ../../source/module/show-nep-reference.md:34
+#: d664a68a7ba641f0aea536f40a80c606
 msgid "批量编辑结构 metadata"
 msgstr "Batch-edit structure metadata"
 
-#: ../../source/module/show-nep-reference.md:34 35e5525d8c0940ddbfa227b7a78a5190
+#: ../../source/module/show-nep-reference.md:34
+#: 35e5525d8c0940ddbfa227b7a78a5190
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/export.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md dbe66bb820a549b88d8c996b5d5e6245
+#: ../../source/module/show-nep-reference.md 76ef1f5f792a4bacbd1720d1d4282108
 msgid ".. image:: ../_static/image/generated/show_nep_icons/export.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:35 8625ed2535964de1ac84dfd56d2ff32a
+#: ../../source/module/show-nep-reference.md:35
+#: 8625ed2535964de1ac84dfd56d2ff32a
 msgid "`Export structure descriptor`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:35 d93aae5198a947b285046b74af284632
+#: ../../source/module/show-nep-reference.md:35
+#: d93aae5198a947b285046b74af284632
 msgid "是（文件路径）"
 msgstr "Yes (file path)"
 
-#: ../../source/module/show-nep-reference.md:35 8501ac2b822c43338824361e566d5d35
+#: ../../source/module/show-nep-reference.md:35
+#: 8501ac2b822c43338824361e566d5d35
 msgid "导出当前结构描述符"
 msgstr "Export descriptors for the current structures"
 
-#: ../../source/module/show-nep-reference.md:35 fff5c9b735d644a5a284b12f2f09ecc3
+#: ../../source/module/show-nep-reference.md:35
+#: fff5c9b735d644a5a284b12f2f09ecc3
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/alignment.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md b35514b0e1ea42b18b1e245f4f642fa1
+#: ../../source/module/show-nep-reference.md c5876c1b4aea46cab15e4046feec8c2f
 msgid ".. image:: ../_static/image/generated/show_nep_icons/alignment.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:36 1a4064e31b9e455991bf3d6e264cad33
+#: ../../source/module/show-nep-reference.md:36
+#: 1a4064e31b9e455991bf3d6e264cad33
 msgid "`Energy Baseline Shift`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:36 26fbd99b618f45578ec64b2a8e0c9356
+#: ../../source/module/show-nep-reference.md:36
+#: 26fbd99b618f45578ec64b2a8e0c9356
 msgid "对能量基线做平移校正"
 msgstr "Fit and apply an energy-baseline shift"
 
-#: ../../source/module/show-nep-reference.md:36 2855337d7c8c40209fed1bedf4d8114f
+#: ../../source/module/show-nep-reference.md:36
+#: 2855337d7c8c40209fed1bedf4d8114f
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/dft_d3.png\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 7dbd4ac60e0643769ab541f1163432a9
+#: ../../source/module/show-nep-reference.md 83c860422e424d009adeadefb08a7d6e
 msgid ".. image:: ../_static/image/generated/show_nep_icons/dft_d3.png"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:37 ef75957621f04a8ba0d2535c872a6b55
+#: ../../source/module/show-nep-reference.md:37
+#: ef75957621f04a8ba0d2535c872a6b55
 msgid "`DFT D3`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:37 652f55a11bbf4222bc94be6ae1953479
+#: ../../source/module/show-nep-reference.md:37
+#: 652f55a11bbf4222bc94be6ae1953479
 msgid "配置并应用 DFT-D3 校正"
 msgstr "Configure and apply a DFT-D3 correction"
 
 #: ../../source/module/show-nep-reference.md:37
-#: ../../source/module/show-nep-reference.md:59 6518050d295648a7bd680b05d4ec2372
-#: bd694e6d88ca4904a34737c55f998352
+#: 6518050d295648a7bd680b05d4ec2372
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/summary.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 052c501a7eb34e2881c060be7477c30e
-#: 405a783704ba40b39ea676b9b3dd8f6b
+#: ../../source/module/show-nep-reference.md dca97b6f66ee414fbdf44cce2b715731
 msgid ".. image:: ../_static/image/generated/show_nep_icons/summary.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:38 d5cd7d3e8fe04eab9ce10ac9acf270b2
-msgid "`Dataset Summary`"
+#: ../../source/module/show-nep-reference.md:38
+#: 81b589dc2e984a4b9a084a42e82ae847
+msgid "`Training Set Check`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:38 db8d1a88567d432f90387f7da6463575
-msgid "是（结果展示）"
-msgstr "Yes (results)"
+#: ../../source/module/show-nep-reference.md:38
+#: 990f34c050e14041a43a2a2c37cff7d3
+msgid "否（打开评估页）"
+msgstr "No (opens the audit page)"
 
-#: ../../source/module/show-nep-reference.md:38 37d3ff978fe14e72b3e61342f86ce3f6
-msgid "查看数据集摘要，可导出 HTML"
-msgstr "View a dataset summary and optionally export HTML"
+#: ../../source/module/show-nep-reference.md:38
+#: d33552bc2781408ebeb202b8182ffaf0
+msgid "查看整体组成、数据质量、标签、结构相和磁类型"
+msgstr "Inspect overall composition, data quality, labels, structural phases, and magnetic types."
 
-#: ../../source/module/show-nep-reference.md:38 8b1bc77988bf4c358ac2ec0c2942221f
+#: ../../source/module/show-nep-reference.md:38
+#: 8b1bc77988bf4c358ac2ec0c2942221f
 msgid ""
 "<img "
 "src=\"../_static/image/generated/show_nep_icons/distribution_inspector.svg\""
 " width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 0212f44319f14f64974ac44320aeb27e
+#: ../../source/module/show-nep-reference.md 1311ef5e67cb4e568b1068689f7bb24b
 msgid ""
 ".. image:: "
 "../_static/image/generated/show_nep_icons/distribution_inspector.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:39 df8a845ce6b84e34ac4ab541dbb061c2
+#: ../../source/module/show-nep-reference.md:39
+#: df8a845ce6b84e34ac4ab541dbb061c2
 msgid "`Explore distributions`"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:39
-#: ../../source/module/show-nep-reference.md:60 7369f1b9fabd4bbb8e9df57c5c8cbe5c
-#: 990f34c050e14041a43a2a2c37cff7d3
+#: 7369f1b9fabd4bbb8e9df57c5c8cbe5c
 msgid "否（打开训练集评估页面）"
 msgstr "No (opens Training Set Audit)"
 
-#: ../../source/module/show-nep-reference.md:39 9e478a4777d240e6b3458f49df7547a2
+#: ../../source/module/show-nep-reference.md:39
+#: 9e478a4777d240e6b3458f49df7547a2
 msgid "查看数值字段分布并反向选择结构"
 msgstr "Inspect numerical-field distributions and select structures from them"
 
-#: ../../source/module/show-nep-reference.md:41 0aee2c87de464fc88c5162d21e8f4ba4
+#: ../../source/module/show-nep-reference.md:41
+#: 0aee2c87de464fc88c5162d21e8f4ba4
 msgid "2.2 结构工具栏（右侧）"
 msgstr "2.2 Structure toolbar (right)"
 
-#: ../../source/module/show-nep-reference.md:39 4421846685314eddb6cd07affdbba8c3
+#: ../../source/module/show-nep-reference.md:39
+#: 4421846685314eddb6cd07affdbba8c3
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/view_change.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md d93eab15506a4db7bc08015ade13183d
+#: ../../source/module/show-nep-reference.md 478739509cc44ad8843878fc7592fb84
 msgid ".. image:: ../_static/image/generated/show_nep_icons/view_change.svg"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:45
-#: ../../source/module/show-nep-reference.md:60 5a57bd29eb724017acc113cd9c388c61
-#: cf3ddb79762949b58e984e2e5d90966c
+#: ../../source/module/show-nep-reference.md:59
+#: 5a57bd29eb724017acc113cd9c388c61 cf3ddb79762949b58e984e2e5d90966c
 msgid "`Ortho View`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:45 dfa61d3498d84292a545ba7d32361775
+#: ../../source/module/show-nep-reference.md:45
+#: dfa61d3498d84292a545ba7d32361775
 msgid "切换正交视图"
 msgstr "Toggle orthographic projection"
 
-#: ../../source/module/show-nep-reference.md:45 4c0ee5635f30404ba93846a1aa6c05b3
+#: ../../source/module/show-nep-reference.md:45
+#: 4c0ee5635f30404ba93846a1aa6c05b3
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/auto_distance.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md a06d24758d064c879f7b4cee18237a13
+#: ../../source/module/show-nep-reference.md 4b90e7900cde44fc8faed27ea0dbbcfa
 msgid ".. image:: ../_static/image/generated/show_nep_icons/auto_distance.svg"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:46
-#: ../../source/module/show-nep-reference.md:60 b288476656294670ba5de615b90915fe
-#: fa54dc90a7ff4afea8d7af4313eec6bf
+#: ../../source/module/show-nep-reference.md:59
+#: b288476656294670ba5de615b90915fe fa54dc90a7ff4afea8d7af4313eec6bf
 msgid "`Automatic View`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:46 28ac24529a7749ce9618e1a5f00f99f9
+#: ../../source/module/show-nep-reference.md:46
+#: 28ac24529a7749ce9618e1a5f00f99f9
 msgid "自动调整结构观察距离"
 msgstr "Fit the structure viewing distance"
 
-#: ../../source/module/show-nep-reference.md:46 8c871fd95b7446ba962902adcedbb112
+#: ../../source/module/show-nep-reference.md:46
+#: 8c871fd95b7446ba962902adcedbb112
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/show_bond.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md f96383b9b9ce4065840d7af2934c734a
+#: ../../source/module/show-nep-reference.md 4506a3efe3bb493b941cba55fb42897a
 msgid ".. image:: ../_static/image/generated/show_nep_icons/show_bond.svg"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:47
-#: ../../source/module/show-nep-reference.md:60 a6f2fe900e2f42ff88b305bcdce44cbe
-#: a8a1614509a44c05b5dfa40b890ccdaf
+#: ../../source/module/show-nep-reference.md:59
+#: a6f2fe900e2f42ff88b305bcdce44cbe a8a1614509a44c05b5dfa40b890ccdaf
 msgid "`Show Bonds`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:47 f89b592065f844ceb1ccb52d5b00e241
+#: ../../source/module/show-nep-reference.md:47
+#: f89b592065f844ceb1ccb52d5b00e241
 msgid "显示或隐藏键连线"
 msgstr "Show or hide bonds"
 
-#: ../../source/module/show-nep-reference.md:47 9101d933f8e942a29f4c0429f78f01e3
+#: ../../source/module/show-nep-reference.md:47
+#: 9101d933f8e942a29f4c0429f78f01e3
 msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/xyz.svg\" width=\"20\" "
-"/>"
+"<img src=\"../_static/image/generated/show_nep_icons/xyz.svg\" "
+"width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 0629af07721b41b5ad84ed9e18165d24
+#: ../../source/module/show-nep-reference.md d67a68a4e6bf41a395a6be5b417d6611
 msgid ".. image:: ../_static/image/generated/show_nep_icons/xyz.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:48 53d664053d7f4e4ca0b651c6f8f9096d
+#: ../../source/module/show-nep-reference.md:48
+#: 53d664053d7f4e4ca0b651c6f8f9096d
 msgid "`Show Arrows`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:48 46389c1b4eb44794926186ae6e4c0555
+#: ../../source/module/show-nep-reference.md:48
+#: 46389c1b4eb44794926186ae6e4c0555
 msgid "显示力、磁矩或其他向量箭头"
 msgstr "Show force, moment, or other vector arrows"
 
-#: ../../source/module/show-nep-reference.md:48 4b42de488410488b850c6b1e1469fffa
+#: ../../source/module/show-nep-reference.md:48
+#: 4b42de488410488b850c6b1e1469fffa
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/export1.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 6d42da3493e542458edd966170f636a1
+#: ../../source/module/show-nep-reference.md 03250a0248a847838eb84ee81a759209
 msgid ".. image:: ../_static/image/generated/show_nep_icons/export1.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:49 afd58ae4a77643e6814715d57f9822b7
+#: ../../source/module/show-nep-reference.md:49
+#: afd58ae4a77643e6814715d57f9822b7
 msgid "`Export current structure`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:49 9ee7bde8d74a41aaa4467927863c0ce3
+#: ../../source/module/show-nep-reference.md:49
+#: 9ee7bde8d74a41aaa4467927863c0ce3
 msgid "导出当前结构"
 msgstr "Export the current structure"
 
-#: ../../source/module/show-nep-reference.md:49 e4baf5dad3b844ee8bcfbb6306cf08cd
+#: ../../source/module/show-nep-reference.md:49
+#: e4baf5dad3b844ee8bcfbb6306cf08cd
 msgid ""
 "<img src=\"../_static/image/generated/show_nep_icons/defect.svg\" "
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 002887e93fbd4e20b630c8e9f875c186
+#: ../../source/module/show-nep-reference.md b3831d2c753d498e99646299a6c30401
 msgid ".. image:: ../_static/image/generated/show_nep_icons/defect.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:50 96fba25527a143c89e9c3bcb6d1b8751
+#: ../../source/module/show-nep-reference.md:50
+#: 96fba25527a143c89e9c3bcb6d1b8751
 msgid "`Mark Bad (Reject)`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:50 2ede29b609974efa9f2b52d12a91d0a9
+#: ../../source/module/show-nep-reference.md:50
+#: 2ede29b609974efa9f2b52d12a91d0a9
 msgid "标记当前结构为 reject"
 msgstr "Mark the current structure as rejected"
 
-#: ../../source/module/show-nep-reference.md:51 6d4b793f3aa944c7b0485dc12a2f4caf
+#: ../../source/module/show-nep-reference.md:51
+#: 6d4b793f3aa944c7b0485dc12a2f4caf
 msgid "`Drop All Bad`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:51 6c514d5fb1a04300b15f188e883ad61d
+#: ../../source/module/show-nep-reference.md:51
+#: 6c514d5fb1a04300b15f188e883ad61d
 msgid "是（确认）"
 msgstr "Yes (confirmation)"
 
-#: ../../source/module/show-nep-reference.md:51 64196d91696245f2b4d6b0d03035369a
+#: ../../source/module/show-nep-reference.md:51
+#: 64196d91696245f2b4d6b0d03035369a
 msgid "删除所有 reject 结构"
 msgstr "Delete all rejected structures"
 
-#: ../../source/module/show-nep-reference.md:53 b6e3a7bfa8044739a42d91cf5061933d
+#: ../../source/module/show-nep-reference.md:53
+#: b6e3a7bfa8044739a42d91cf5061933d
 msgid "2.3 顶部菜单动作"
 msgstr "2.3 Top-menu actions"
 
-#: ../../source/module/show-nep-reference.md:51 591f7d032ca944fa99930d5190fbe41b
+#: ../../source/module/show-nep-reference.md:51
+#: 591f7d032ca944fa99930d5190fbe41b
 msgid "菜单动作"
 msgstr "Menu action"
 
-#: ../../source/module/show-nep-reference.md:51 4b6326148a13492f8b41dab31411e668
+#: ../../source/module/show-nep-reference.md:51
+#: 4b6326148a13492f8b41dab31411e668
 msgid "说明"
 msgstr "Description"
 
 #: ../../source/module/show-nep-reference.md:51
-#: ../../source/module/show-nep-reference.md:57 618d05edd9524c21af1468dbcc477ff3
-#: b77dc3f0b0804a78b025d10f633ee3a1
+#: ../../source/module/show-nep-reference.md:57
+#: 618d05edd9524c21af1468dbcc477ff3 b77dc3f0b0804a78b025d10f633ee3a1
 msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/open.svg\" width=\"20\""
-" />"
+"<img src=\"../_static/image/generated/show_nep_icons/open.svg\" "
+"width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 430ab3c17c0b4aa39abb2f73fc20a2e1
-#: 69814520ef6f4d0ab518c8aa8b2aa065
+#: ../../source/module/show-nep-reference.md 886e0461b0c44834a01a635df8c3dbf4
+#: fbd84acfd33f418a826eb6a5f8d832f5
 msgid ".. image:: ../_static/image/generated/show_nep_icons/open.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:57 2a814b7d4eb4489eac516c893b5e04cb
+#: ../../source/module/show-nep-reference.md:57
+#: 2a814b7d4eb4489eac516c893b5e04cb
 msgid "`Open File...`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:57 1fa3d0ebb49441b0953064ffd0acc3a6
+#: ../../source/module/show-nep-reference.md:57
+#: 1fa3d0ebb49441b0953064ffd0acc3a6
 msgid "选择 `*.xyz`"
 msgstr "Choose an `*.xyz` file"
 
-#: ../../source/module/show-nep-reference.md:58 cfeac1024ddc4719833256b95724144a
+#: ../../source/module/show-nep-reference.md:58
+#: cfeac1024ddc4719833256b95724144a
 msgid "`Open Folder...`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:58 4c58e6ba38194f469a3c13ed9835969e
+#: ../../source/module/show-nep-reference.md:58
+#: 4c58e6ba38194f469a3c13ed9835969e
 msgid "选择目录（常用于 `deepmd/npy`）"
 msgstr "Choose a directory, commonly for `deepmd/npy`"
 
-#: ../../source/module/show-nep-reference.md:58 501847a906ad4e4cba894fe2afe734bf
+#: ../../source/module/show-nep-reference.md:58
+#: 501847a906ad4e4cba894fe2afe734bf
 msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/save.svg\" width=\"20\""
-" />"
+"<img src=\"../_static/image/generated/show_nep_icons/save.svg\" "
+"width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 31c498a55bb7406086ecf509a74869cf
+#: ../../source/module/show-nep-reference.md 231612332cfb46f9ae17d38040b502d6
 msgid ".. image:: ../_static/image/generated/show_nep_icons/save.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:59 b9ee91d47b32481d8ef9e9b3ed670791
+#: ../../source/module/show-nep-reference.md:59
+#: b9ee91d47b32481d8ef9e9b3ed670791
 msgid "`Export All...` 等导出菜单"
 msgstr "Export menus such as `Export All...`"
 
-#: ../../source/module/show-nep-reference.md:59 59ba9c37c6694d05857cf589bca0ffbc
+#: ../../source/module/show-nep-reference.md:59
+#: 59ba9c37c6694d05857cf589bca0ffbc
 msgid "先选 `ExportFormat`，再选保存路径"
 msgstr "Choose `ExportFormat`, then the destination path"
 
-#: ../../source/module/show-nep-reference.md:60 0efcaeeb704a4a4aba76f7ea4c3b75d2
-msgid "`评估当前数据集`"
-msgstr "`Audit Current Dataset`"
-
-#: ../../source/module/show-nep-reference.md:60 d33552bc2781408ebeb202b8182ffaf0
-msgid "检查当前活动结构的数据质量、组分、标签、局域环境、结构相和磁类型"
-msgstr ""
-"Audit data quality, composition, labels, local environments, structural "
-"phases, and magnetic types for active structures"
-
-#: ../../source/module/show-nep-reference.md:62 9202a93880174dc79e5c3e7ba1666d9b
-msgid ""
-"`评估当前数据集` 位于顶部 `Save` 分裂菜单中。第一次使用时，先加载数据，再从这个入口运行完整检查。页面用法、结构相识别、磁类型识别和公式见 "
-"[训练集评估](training-set-assessment.md)。"
-msgstr ""
-"`Audit Current Dataset` is in the top `Save` split menu. Load a dataset "
-"first, then use this entry to run the full audit. For workflow details, "
-"structural-phase and magnetic-type recognition, and formulas, see [Training "
-"Set Audit"
-"](training-set-assessment.md)."
-
-#: ../../source/module/show-nep-reference.md:64 e2ea7d16a3fe48af9ad9145232c58a03
+#: ../../source/module/show-nep-reference.md:61
+#: e2ea7d16a3fe48af9ad9145232c58a03
 msgid "3. 主图工具栏（按按钮查）"
 msgstr "3 — Main-plot toolbar by button"
 
-#: ../../source/module/show-nep-reference.md:66 368df6d169f04ac7bc54d97db3624886
+#: ../../source/module/show-nep-reference.md:63
+#: 368df6d169f04ac7bc54d97db3624886
 msgid "3.1 无弹窗按钮"
 msgstr "3.1 Buttons without dialogs"
 
-#: ../../source/module/show-nep-reference.md:60 1e58e7066f3b4a3cb8f37cb230b0fb08
-#: 5ead0db434ae455585b6f02bc2b81ea0 93779604af49464ebcd7a5634716b147
+#: ../../source/module/show-nep-reference.md:59
+#: 93779604af49464ebcd7a5634716b147
 msgid "行为"
 msgstr "Behavior"
 
-#: ../../source/module/show-nep-reference.md:60 dc1f348caee64b2cba041a27c47eb2ba
+#: ../../source/module/show-nep-reference.md:59
+#: dc1f348caee64b2cba041a27c47eb2ba
 msgid "切换多边形/点选交互"
 msgstr "Toggle polygon/point selection"
 
-#: ../../source/module/show-nep-reference.md:60 739d6b2cbdb341329145d1122ad45d60
+#: ../../source/module/show-nep-reference.md:59
+#: 739d6b2cbdb341329145d1122ad45d60
 msgid "对当前活动结构集合执行反选"
 msgstr "Invert selection across active structures"
 
-#: ../../source/module/show-nep-reference.md:60 8ac2415e39ca4fe396c21a596eb0c0df
+#: ../../source/module/show-nep-reference.md:59
+#: 8ac2415e39ca4fe396c21a596eb0c0df
 msgid "删除选中结构并重绘"
 msgstr "Delete selected structures and redraw"
 
-#: ../../source/module/show-nep-reference.md:60 ad62250106f44f278a5b205eac1da7aa
+#: ../../source/module/show-nep-reference.md:59
+#: ad62250106f44f278a5b205eac1da7aa
 msgid "撤销最近一次选择变化；无可撤销时提示 `No undoable selection!`"
 msgstr ""
-"Undo the most recent selection change. If none exists, the app reports `No "
-"undoable selection!`"
+"Undo the most recent selection change. If none exists, the app reports "
+"`No undoable selection!`"
 
-#: ../../source/module/show-nep-reference.md:60 b58b43d0bc8b4fcda45f5a54f7ecd7bb
+#: ../../source/module/show-nep-reference.md:59
+#: b58b43d0bc8b4fcda45f5a54f7ecd7bb
 msgid "撤销最近删除；无可撤销时提示 `No undoable deletion!`"
 msgstr ""
-"Undo the most recent deletion. If none exists, the app reports `No undoable "
-"deletion!`"
+"Undo the most recent deletion. If none exists, the app reports `No "
+"undoable deletion!`"
 
-#: ../../source/module/show-nep-reference.md:78 8ec89ab7988f4840a37b153213921819
+#: ../../source/module/show-nep-reference.md:75
+#: 8ec89ab7988f4840a37b153213921819
 msgid "3.2 有弹窗按钮（参数与绑定写在一起）"
 msgstr "3.2 Buttons with dialogs"
 
-#: ../../source/module/show-nep-reference.md:80 03b996b2dc28452da687f5581fded93c
+#: ../../source/module/show-nep-reference.md:77
+#: 03b996b2dc28452da687f5581fded93c
 msgid "A. `Select by Index`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:82
-#: ../../source/module/show-nep-reference.md:95
-#: ../../source/module/show-nep-reference.md:122
-#: ../../source/module/show-nep-reference.md:223 ad617c7d7ed543d8ac0f45245f98d5a1
-#: b3e990e2498e46d5919aa6f618f5f6ad b3fbdf5dac484002ad37ba0b89d8751a
+#: ../../source/module/show-nep-reference.md:79
+#: ../../source/module/show-nep-reference.md:92
+#: ../../source/module/show-nep-reference.md:119
+#: ../../source/module/show-nep-reference.md:217
 #: e1fa9267804a407bac9f6d5d996817dd
 msgid "输入控件："
 msgstr "Inputs:"
 
-#: ../../source/module/show-nep-reference.md:83 c6fe31417c9c4ab5bff26592dc69d8b2
+#: ../../source/module/show-nep-reference.md:80
+#: c6fe31417c9c4ab5bff26592dc69d8b2
 msgid "`indexEdit`：索引表达式"
 msgstr "`indexEdit`: index expression"
 
-#: ../../source/module/show-nep-reference.md:84 625005c1f1284d6989a6e5b01116ac0e
+#: ../../source/module/show-nep-reference.md:81
+#: 625005c1f1284d6989a6e5b01116ac0e
 msgid "`Use original indices`：默认勾选"
 msgstr "`Use original indices`: enabled by default"
 
-#: ../../source/module/show-nep-reference.md:85 4ed80d1c9e324ffd98a89110bda6ab1d
+#: ../../source/module/show-nep-reference.md:82
+#: 4ed80d1c9e324ffd98a89110bda6ab1d
 msgid "索引表达式支持："
 msgstr "Supported index syntax:"
 
-#: ../../source/module/show-nep-reference.md:86 bffe3752d95e466fa31ed4bc58cc226a
+#: ../../source/module/show-nep-reference.md:83
+#: bffe3752d95e466fa31ed4bc58cc226a
 msgid "单值：`3`, `-1`"
 msgstr "Single values: `3`, `-1`"
 
-#: ../../source/module/show-nep-reference.md:87 8bf7f979a41e4796824c9d31977b24ca
+#: ../../source/module/show-nep-reference.md:84
+#: 8bf7f979a41e4796824c9d31977b24ca
 msgid "切片：`1:10`, `:100`, `::3`, `10:0:-1`"
 msgstr "Slices: `1:10`, `:100`, `::3`, `10:0:-1`"
 
-#: ../../source/module/show-nep-reference.md:88 f350a28d7cda48eaa9dee200cbedfdb2
+#: ../../source/module/show-nep-reference.md:85
+#: f350a28d7cda48eaa9dee200cbedfdb2
 msgid "多段：`1:10,20,30:40:2`（逗号或空白分隔）"
 msgstr "Multiple segments: `1:10,20,30:40:2`, separated by commas or spaces"
 
-#: ../../source/module/show-nep-reference.md:89 14fc5d4386ba4652a10a4bb152a24649
+#: ../../source/module/show-nep-reference.md:86
+#: 14fc5d4386ba4652a10a4bb152a24649
 msgid "执行结果：解析后选中结构；空表达式无效果。"
 msgstr "Result: select the parsed structures. An empty expression does nothing."
 
-#: ../../source/module/show-nep-reference.md:91 a2d2f9b71d6c4356b9c2e43a85f6ca1c
+#: ../../source/module/show-nep-reference.md:88
+#: a2d2f9b71d6c4356b9c2e43a85f6ca1c
 msgid ""
 "![Select by Index "
 "Dialog](../_static/image/generated/show_nep_reference/g_index_dialog.png)"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:91 deec5441246942e1ab20c836efa5ee3b
+#: ../../source/module/show-nep-reference.md:88
+#: deec5441246942e1ab20c836efa5ee3b
 msgid "Select by Index Dialog"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:91 deec5441246942e1ab20c836efa5ee3b
-msgid ".. image:: ../_static/image/generated/show_nep_reference/g_index_dialog.png"
+#: ../../source/module/show-nep-reference.md:88
+#: deec5441246942e1ab20c836efa5ee3b
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_index_dialog.png"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:93 6859425a2df649ea81474e01f826aa9a
+#: ../../source/module/show-nep-reference.md:90
+#: 6859425a2df649ea81474e01f826aa9a
 msgid "B. `Select by Range`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:96 e8b5b7d302654c5aac038205d24a2a4c
+#: ../../source/module/show-nep-reference.md:93
+#: e8b5b7d302654c5aac038205d24a2a4c
 msgid "`xMin/xMax/yMin/yMax`：范围 `[-1e8, 1e8]`，6 位小数"
 msgstr "`xMin/xMax/yMin/yMax`: range `[-1e8, 1e8]`, six decimal places"
 
-#: ../../source/module/show-nep-reference.md:97 51b383e9be314f65890f1d913510436f
+#: ../../source/module/show-nep-reference.md:94
+#: 51b383e9be314f65890f1d913510436f
 msgid "`Logic`：`AND` / `OR`（默认 `AND`）"
 msgstr "`Logic`: `AND` or `OR` (default: `AND`)"
 
-#: ../../source/module/show-nep-reference.md:98 45492935e9934ea2bb02edbc34355f1b
+#: ../../source/module/show-nep-reference.md:95
+#: 45492935e9934ea2bb02edbc34355f1b
 msgid "默认值：打开时自动填充为当前子图数据极值。"
 msgstr ""
 "Defaults: populated from the current plot's data limits when the dialog "
 "opens."
 
-#: ../../source/module/show-nep-reference.md:99 5faa855d84ff4b81a7ed34b1efa56908
+#: ../../source/module/show-nep-reference.md:96
+#: 5faa855d84ff4b81a7ed34b1efa56908
 msgid "执行结果：按坐标窗口筛选并选中结构。"
 msgstr ""
 "Result: select structures whose plotted coordinates satisfy the chosen "
 "window and logic."
 
-#: ../../source/module/show-nep-reference.md:101 3b7d130343f74b8e9f20a59a3d109ca4
+#: ../../source/module/show-nep-reference.md:98
+#: 3b7d130343f74b8e9f20a59a3d109ca4
 msgid ""
 "![Select by Range "
 "Dialog](../_static/image/generated/show_nep_reference/g_range_dialog.png)"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:101 7398a68d4aeb46ada847dac07b590885
+#: ../../source/module/show-nep-reference.md:98
+#: 7398a68d4aeb46ada847dac07b590885
 msgid "Select by Range Dialog"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:101 7398a68d4aeb46ada847dac07b590885
-msgid ".. image:: ../_static/image/generated/show_nep_reference/g_range_dialog.png"
+#: ../../source/module/show-nep-reference.md:98
+#: 7398a68d4aeb46ada847dac07b590885
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_range_dialog.png"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:103 65b4dfe525954f80a77438cf321e9fc0
+#: ../../source/module/show-nep-reference.md:100
+#: 65b4dfe525954f80a77438cf321e9fc0
 msgid "C. `Select by Lattice`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:105 e245ae424c1c480b952b89e0c86fd21d
+#: ../../source/module/show-nep-reference.md:102
+#: e245ae424c1c480b952b89e0c86fd21d
 msgid "输入控件：`a/b/c/alpha/beta/gamma` 各 min/max。"
 msgstr "Inputs: minimum and maximum values for `a/b/c/alpha/beta/gamma`."
 
-#: ../../source/module/show-nep-reference.md:106 e3491ac4f97d4f3d8dfec943ddd2a527
+#: ../../source/module/show-nep-reference.md:103
+#: e3491ac4f97d4f3d8dfec943ddd2a527
 msgid "范围：`[0, 1e6]`，4 位小数。"
 msgstr "Range: `[0, 1e6]`, four decimal places."
 
-#: ../../source/module/show-nep-reference.md:107 0d402b78deac46329dee22dc6e3c13bb
+#: ../../source/module/show-nep-reference.md:104
+#: 0d402b78deac46329dee22dc6e3c13bb
 msgid "默认值：当前活动结构的晶格参数范围。"
 msgstr "Defaults: the lattice-parameter range of active structures."
 
-#: ../../source/module/show-nep-reference.md:108 61605fb45ad94cba8e284cd9850dc484
+#: ../../source/module/show-nep-reference.md:105
+#: 61605fb45ad94cba8e284cd9850dc484
 msgid "细节：内部比较带固定容差 `1e-4`。"
 msgstr "Detail: comparisons use a fixed internal tolerance of `1e-4`."
 
-#: ../../source/module/show-nep-reference.md:110 2f5c9309d76848aaa128d6f99fe4d5b3
+#: ../../source/module/show-nep-reference.md:107
+#: 2f5c9309d76848aaa128d6f99fe4d5b3
 msgid ""
 "![Select by Lattice "
 "Dialog](../_static/image/generated/show_nep_reference/g_lattice_dialog.png)"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:110 267d04ce139b4dd5b03db32e9a43cd82
+#: ../../source/module/show-nep-reference.md:107
+#: 267d04ce139b4dd5b03db32e9a43cd82
 msgid "Select by Lattice Dialog"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:110 267d04ce139b4dd5b03db32e9a43cd82
-msgid ".. image:: ../_static/image/generated/show_nep_reference/g_lattice_dialog.png"
+#: ../../source/module/show-nep-reference.md:107
+#: 267d04ce139b4dd5b03db32e9a43cd82
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_lattice_dialog.png"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:112 9ca0cf4623b24bccad8a53bb3a23861c
+#: ../../source/module/show-nep-reference.md:109
+#: 9ca0cf4623b24bccad8a53bb3a23861c
 msgid "D. `Find Max Error Point`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:114 cdf2057c79034263a083cf5ff82a7f68
+#: ../../source/module/show-nep-reference.md:111
+#: cdf2057c79034263a083cf5ff82a7f68
 msgid "输入控件：整数 `N`。"
 msgstr "Input: integer `N`."
 
-#: ../../source/module/show-nep-reference.md:115 f5b3d0accfe9429389ac0a192a74fc35
+#: ../../source/module/show-nep-reference.md:112
+#: f5b3d0accfe9429389ac0a192a74fc35
 msgid "默认值：`widget.max_error_value`（缺省 `10`）。"
 msgstr "Default: `widget.max_error_value`, or `10` when unset."
 
-#: ../../source/module/show-nep-reference.md:116 1ebe403e72d749fc93a778769085f8f6
+#: ../../source/module/show-nep-reference.md:113
+#: 1ebe403e72d749fc93a778769085f8f6
 msgid "执行结果：选中当前轴上误差最大的前 `N` 个结构。"
 msgstr ""
 "Result: select the `N` structures with the largest errors on the current "
 "axis."
 
-#: ../../source/module/show-nep-reference.md:118 7d1a720101594d908b30c74f1d222090
+#: ../../source/module/show-nep-reference.md:115
+#: 7d1a720101594d908b30c74f1d222090
 msgid ""
 "![Find Max Error "
 "Dialog](../_static/image/generated/show_nep_reference/g_maxerr_dialog.png)"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:118 d2ad5cbfcf7b421eb03b24dd8999c3bb
+#: ../../source/module/show-nep-reference.md:115
+#: d2ad5cbfcf7b421eb03b24dd8999c3bb
 msgid "Find Max Error Dialog"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:118 d2ad5cbfcf7b421eb03b24dd8999c3bb
-msgid ".. image:: ../_static/image/generated/show_nep_reference/g_maxerr_dialog.png"
+#: ../../source/module/show-nep-reference.md:115
+#: d2ad5cbfcf7b421eb03b24dd8999c3bb
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_maxerr_dialog.png"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:120 5658b8e7dc924c7b9709a19d1f81ad35
+#: ../../source/module/show-nep-reference.md:117
+#: 5658b8e7dc924c7b9709a19d1f81ad35
 msgid "E. `Sparse samples`"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:123 0a29cc8a888d45f59bb97714d2cdc448
-msgid "`Sampling mode`：`Fixed count (FPS)` / `R^2 stop (FPS)`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:124 8c79e278e81344fdbefb94dd0efcb3be
-msgid "`Max num`：`[0, 9999999]`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:125 6d966582f256496c8f2a3ee3e6471ab6
-msgid "`Min distance`：`[0, 10]`，5 位小数"
-msgstr "`Min distance`: `[0, 10]`, five decimal places"
-
-#: ../../source/module/show-nep-reference.md:126 1fece019c79548d288f6beddd0ef61a3
-msgid "`R^2 threshold`：`[0,1]`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:127 ad209c56050f4b28b6142b6922bf0e34
-msgid "`Descriptor source`：`Reduced (PCA)` / `Raw descriptor`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:128 81b589dc2e984a4b9a084a42e82ae847
-msgid "`Training dataset`：可选 `.xyz` 或目录"
-msgstr "`Training dataset`: optional `.xyz` file or directory"
-
-#: ../../source/module/show-nep-reference.md:129 b55dca08da194c6fa3e4bffa93d19907
-msgid "`Use current selection as region`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:130 ff1186f42b814fa2a25e7d23f1634164
-msgid "`Show training overlay`：采样后在 PCA 空间叠加训练集、当前数据和选中结构"
-msgstr ""
-"`Show training overlay`: after sampling, overlay the training set, current "
-"data, and selected structures in PCA space"
-
-#: ../../source/module/show-nep-reference.md:131 27efa0c1ac404ea1b376d4498e1baf26
-msgid "执行结果：运行 FPS 后更新选择集。"
-msgstr "Result: run FPS and update the selection set."
-
-#: ../../source/module/show-nep-reference.md:133 89eb634753084596adcabe03820a2797
-msgid ""
-"![Sparse Samples "
-"Dialog](../_static/image/generated/show_nep_reference/g_sparse_dialog.png)"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:133 39489021159e4b1684ab1f9d04fddb22
-msgid "Sparse Samples Dialog"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:133 39489021159e4b1684ab1f9d04fddb22
-msgid ".. image:: ../_static/image/generated/show_nep_reference/g_sparse_dialog.png"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:135 cb266154ce3c43a7a9f3fcd755a799d7
-msgid "F. `Finding non-physical structures`（无参数弹窗，进度条）"
-msgstr "F. `Finding non-physical structures` (no parameter dialog; progress only)"
-
-#: ../../source/module/show-nep-reference.md:137 c2999adba431475d987fd44a9d45f7f1
-msgid "参数来源：`widget.radius_coefficient`（默认 `0.7`）。"
-msgstr "Parameter source: `widget.radius_coefficient` (default: `0.7`)."
-
-#: ../../source/module/show-nep-reference.md:138 a9c85ef3bc7542a188a0116ba36b7a31
-msgid "执行结果：扫描后选中疑似非物理结构。"
-msgstr "Result: scan and select structures flagged as potentially nonphysical."
-
-#: ../../source/module/show-nep-reference.md:140 db2503156a7445c8b79b7a3a77a24db9
-msgid "G. `Check Net Force`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:142 286deea27c64465b8f96ccdcf43873bc
-msgid "输入控件：阈值 `|ΣF|`。"
-msgstr "Input: threshold for `|ΣF|`."
-
-#: ../../source/module/show-nep-reference.md:143 03113630592f4fdbae06c52b1b22e0ae
-msgid "范围：`[0, 1e6]`，10 位小数。"
-msgstr "Range: `[0, 1e6]`, ten decimal places."
-
-#: ../../source/module/show-nep-reference.md:144 2caee2db32bd4696a3466d5f0a2e0fcd
-msgid "默认值：`widget.force_balance_threshold`（缺省 `1e-3`）。"
-msgstr "Default: `widget.force_balance_threshold`, or `1e-3` when unset."
-
-#: ../../source/module/show-nep-reference.md:145 bf281a5a98e040bebf79e8b515f922d6
-msgid "执行结果：选中超阈值结构，并显示统计消息。"
-msgstr "Result: select structures above the threshold and display summary statistics."
-
-#: ../../source/module/show-nep-reference.md:147 0bf2c9d9306941b096dbb04cb0d4394b
-msgid ""
-"![Check Net Force "
-"Dialog](../_static/image/generated/show_nep_reference/g_force_dialog.png)"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:147 bd7beda012d742178baf4de078b96915
-msgid "Check Net Force Dialog"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:147 bd7beda012d742178baf4de078b96915
-msgid ".. image:: ../_static/image/generated/show_nep_reference/g_force_dialog.png"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:149 9fcf05ca8daa4a77bba9c6bd4a6d20ae
-msgid "H. `Edit Info`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:151 0ea83c5881a64619acef972c3db8ff9f
-msgid "输入能力："
-msgstr "Supported edits:"
-
-#: ../../source/module/show-nep-reference.md:152 42340db756a54bd6a33cbbc4c2c72dd1
-msgid "新增标签（`key/value`）"
-msgstr "Add labels as `key/value` pairs"
-
-#: ../../source/module/show-nep-reference.md:153 1bb48b8d3dcd4b55902dcf71f6b250ec
-msgid "删除标签"
-msgstr "Remove labels"
-
-#: ../../source/module/show-nep-reference.md:154 e84002ae8f7a4218a877556dab945348
-msgid "右键重命名标签"
-msgstr "Rename labels from the context menu"
-
-#: ../../source/module/show-nep-reference.md:155 2d61132792614a7486e8869abbdbcb49
-msgid "应用前确认：列出 `removed / renamed / added` 摘要。"
-msgstr "Confirmation before applying: lists a `removed / renamed / added` summary."
-
-#: ../../source/module/show-nep-reference.md:156 d63cbce83e13420686ecfbba8c147b3e
-msgid "执行结果：批量更新当前选中结构 metadata。"
-msgstr "Result: update metadata for all selected structures."
-
-#: ../../source/module/show-nep-reference.md:158 c20cf46509c14a16b38e24dc63aa1aef
-msgid ""
-"![Edit Info "
-"Dialog](../_static/image/generated/show_nep_reference/g_editinfo_dialog.png)"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:158 96e80a9d224746c8b269adeae303badb
-msgid "Edit Info Dialog"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:158 96e80a9d224746c8b269adeae303badb
-msgid ""
-".. image:: "
-"../_static/image/generated/show_nep_reference/g_editinfo_dialog.png"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:160 38be12aebef4409eaea5059ba58e5113
-msgid "I. `Export structure descriptor`（路径选择）"
-msgstr "I. `Export structure descriptor` (path selection)"
-
-#: ../../source/module/show-nep-reference.md:162 9c4f485507f64fe0be42ae9e8f3d0ff7
-msgid "路径对话框默认文件名：`export_descriptor_data.out`。"
-msgstr "Default filename: `export_descriptor_data.out`."
-
-#: ../../source/module/show-nep-reference.md:163 a11a50a79f1740bd9e999f796d0e4e47
-msgid "执行结果：后台导出描述符。"
-msgstr "Result: export descriptors in the background."
-
-#: ../../source/module/show-nep-reference.md:165 8b9c292b3fbf4b2d84724c3b8361906e
-msgid "J. `Energy Baseline Shift`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:167 b49c621247be4ff88188d1408b0298d2
-msgid "预设区：`presetCombo` + 导入/导出/删除按钮。"
-msgstr "Preset area: `presetCombo` plus import, export, and delete buttons."
-
-#: ../../source/module/show-nep-reference.md:168 e2fcbbb5814f4b05aa3cd838159c42ac
-msgid ""
-"参数区：`groupEdit`、`alignment mode`、`max generations`、`population "
-"size`、`convergence tol`。"
-msgstr ""
-"Parameters: `groupEdit`, `alignment mode`, `max generations`, `population "
-"size`, and `convergence tol`."
-
-#: ../../source/module/show-nep-reference.md:169 7f6b093838ad49d2b750e061541dd1a4
-msgid "保存区：`Save baseline as preset` + `Preset name`。"
-msgstr "Saving: `Save baseline as preset` plus `Preset name`."
-
-#: ../../source/module/show-nep-reference.md:170 c36df9458a8344d3840fe6d000e073e5
-msgid "执行结果：后台拟合/应用基线平移并重绘。"
-msgstr "Result: fit and apply the baseline shift in the background, then redraw."
-
-#: ../../source/module/show-nep-reference.md:172 498c7b197b324987bb36f9ee62201b49
-msgid ""
-"![Energy Baseline Shift "
-"Dialog](../_static/image/generated/show_nep_reference/g_shift_dialog.png)"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:172 e5b18e614ae44c76a8aa9f8a58db183a
-msgid "Energy Baseline Shift Dialog"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:172 e5b18e614ae44c76a8aa9f8a58db183a
-msgid ".. image:: ../_static/image/generated/show_nep_reference/g_shift_dialog.png"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:174 74938f4edb364ed985e84622a1e66f54
-msgid "K. `DFT D3`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:176 228993d8715e4a52b9955a2acd6a24c1
-msgid "输入控件：`functional`、`D3 cutoff`、`D3 cutoff_cn`、`mode(Add/Subtract)`。"
-msgstr "Inputs: `functional`, `D3 cutoff`, `D3 cutoff_cn`, and `mode (Add/Subtract)`."
-
-#: ../../source/module/show-nep-reference.md:177 b94337dd6b5f45ca8df4b0efb19e0476
-msgid "执行结果：后台应用 DFT-D3 修正并重绘。"
-msgstr "Result: apply the DFT-D3 correction in the background and redraw."
-
-#: ../../source/module/show-nep-reference.md:179 65537cf34bef40f699e47d4de8536cd6
-msgid ""
-"![DFT D3 "
-"Dialog](../_static/image/generated/show_nep_reference/g_dftd3_dialog.png)"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:179 475ad9e8b64a494691500c7537962fba
-msgid "DFT D3 Dialog"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:179 475ad9e8b64a494691500c7537962fba
-msgid ".. image:: ../_static/image/generated/show_nep_reference/g_dftd3_dialog.png"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:181 76d3ccf4fa5a415681261fd5aa55ab9a
-msgid "L. `Dataset Summary`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:183 7787ff5ccdec4007a5657b9392969491
-msgid "无前置输入；根据当前数据集统计。"
-msgstr "No additional input; statistics are calculated from the current dataset."
-
-#: ../../source/module/show-nep-reference.md:184 6228d4f10bac4ce49b098f96e2dd3215
-msgid "结果窗口内可导出 HTML。"
-msgstr "The result window can export an HTML report."
-
-#: ../../source/module/show-nep-reference.md:186 571c027bb8f04f4c9b84d4ff65b125c0
-msgid ""
-"![Dataset Summary "
-"Dialog](../_static/image/generated/show_nep_reference/g_summary_dialog.png)"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:186 67a8aadd58e24fc79f1a0f3343ca73e2
-msgid "Dataset Summary Dialog"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:186 67a8aadd58e24fc79f1a0f3343ca73e2
-msgid ".. image:: ../_static/image/generated/show_nep_reference/g_summary_dialog.png"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:188 1ed5710c51f44406aa39e8790fc9282a
-msgid "M. `Explore distributions`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:190 1f67b9228dcf4345a14845363518368e
-msgid "点击后打开 `训练集评估 → 数据分布`，不再弹出独立的 Distribution Inspector 窗口。"
-msgstr ""
-"Opens `Training Set Audit → Data Distributions`; it no longer opens a "
-"separate Distribution Inspector window."
-
-#: ../../source/module/show-nep-reference.md:191 31aaa598dc17467a91687af0eb9bac5f
-msgid "默认只需要选择 `字段 / 数值类型 / 分组方式 / 数据范围`。"
-msgstr ""
-"In the usual workflow, choose only `Field / Value Type / Group By / Data "
-"Range`."
-
-#: ../../source/module/show-nep-reference.md:192 5c8f5e79623b41c28c540670146afc87
-msgid "`选择方式 / 分箱数 / 辅助曲线 / 向量模长` 收入“高级选项”。"
-msgstr ""
-"`Selection Mode / Bins / Auxiliary Curve / Vector Norm` are under Advanced "
-"Options."
-
-#: ../../source/module/show-nep-reference.md:193 c310f5165bdd4905ba3aadb43124a243
-msgid "`Metric / Series` 与分布图联动；点击分箱会把对应结构选择回写到 Dataset Display。"
-msgstr ""
-"`Metric / Series` is linked to the distribution plot. Clicking a bin writes "
-"the corresponding structure selection back to Dataset Display."
-
-#: ../../source/module/show-nep-reference.md:194 dbcdaa47cdd54a8ba4f3d103ea0d3151
-msgid "Reference / Prediction / Error 只在底层数据支持时产生有效结果。"
-msgstr ""
-"Reference, Prediction, and Error are meaningful only when the underlying "
-"dataset provides the required paired data."
-
-#: ../../source/module/show-nep-reference.md:196 4e514b5931294809a74b63956eed6e5e
-msgid "原有独立窗口暂时作为兼容实现保留，但工具栏入口已经切换到统一页面。"
-msgstr ""
-"The former standalone window remains as a compatibility implementation, but "
-"the toolbar now opens the unified audit page."
-
-#: ../../source/module/show-nep-reference.md:198 2a7be90a6bce4ef9b925ce11c8f9e7cb
-msgid "N. `评估当前数据集`"
-msgstr "N. `Audit Current Dataset`"
-
-#: ../../source/module/show-nep-reference.md:200 d9fc81645e0f42c39309226e8ebd7b9e
-msgid "位置：顶部 `Save` 分裂菜单。"
-msgstr "Location: the top `Save` split menu."
-
-#: ../../source/module/show-nep-reference.md:201 4f81ab65dc984b6699470b013f39db75
-msgid "评估范围：当前活动结构；已经删除的结构不参与。"
-msgstr "Scope: current active structures. Deleted structures are excluded."
-
-#: ../../source/module/show-nep-reference.md:202 19ef55ebb42f4e0e8e2fe88ddec90216
-msgid "初始结果：数据质量、精确组分、标签范围、重复与风险复核项；有 `nep.txt` 时还会计算模型 cutoff 内的局域化学和元素对接触。"
-msgstr ""
-"Initial results cover data quality, exact composition, label ranges, "
-"duplicates, and risk-review items. When `nep.txt` is available, the audit "
-"also evaluates local chemistry and element-pair contacts within the model "
-"cutoff."
-
-#: ../../source/module/show-nep-reference.md:203 be138becd7694393ac2acff57312f17b
-msgid ""
-"相和磁：进入 `数据地图 → 组分地图`，点击 `分析相结构与磁序` 后遍历全部活动结构。磁类型只读取逐原子 "
-"`spin:R:3`，不把 `mforce` 或 `force_mag` 当作自旋。"
-msgstr ""
-"Phases and magnetism: open `Data Maps → Composition Map` and click `Analyze "
-"Phases and Magnetic Orders` to process all active structures. Magnetic-type "
-"analysis reads only per-atom `spin:R:3`; it does not treat `mforce` or "
-"`force_mag` as spin."
-
-#: ../../source/module/show-nep-reference.md:204 b73375183f124220aad6f51e16a6318f
-msgid "结构回选：点击图表、表格或复核项后，可把真实结构索引送回 `NEP Dataset Display`。"
-msgstr ""
-"Selection round-trip: click a chart, table row, or review item to send the "
-"corresponding real structure indices back to `NEP Dataset Display`."
-
-#: ../../source/module/show-nep-reference.md:205 bce4b6cae58046e7b782a4a4ae2575c2
-msgid "数据变更：删除结构、修改标签、切换数据或模型后，点击 `重新检查`，不要继续使用旧快照。"
-msgstr ""
-"After deleting structures, editing labels, or changing the dataset or model,"
-" click `Run Audit Again`; do not rely on the stale snapshot."
-
-#: ../../source/module/show-nep-reference.md:206 f6d43152b7694731a754fb40d99cb317
-msgid "报告：`导出 HTML 报告` 保存本次评估范围、指纹、证据、判据和限制。"
-msgstr ""
-"Report: `Export HTML Report` records the audit scope, fingerprints, "
-"evidence, criteria, and limitations."
-
-#: ../../source/module/show-nep-reference.md:208 fc620f4b5e48450d805f0be41fdb1c70
-msgid "完整操作顺序和识别原理见 [训练集评估](training-set-assessment.md)。"
-msgstr ""
-"For the full workflow and recognition principles, see [Training Set Audit"
-"](training-set-assessment.md)."
-
-#: ../../source/module/show-nep-reference.md:210 f7e9d5370d8743d68d560cf0db1d689a
-msgid "4. 结构工具栏（按按钮查）"
-msgstr "4 — Structure toolbar by button"
-
-#: ../../source/module/show-nep-reference.md:212 7f1065ab5c4e46b29fc623a88b65e2ab
-msgid "4.1 相机与显示控制"
-msgstr "4.1 Camera and display controls"
-
-#: ../../source/module/show-nep-reference.md:60 15cc670c09bb4db9bb1ec0df346f528f
-msgid "切换正交投影"
-msgstr "Toggle orthographic projection"
-
-#: ../../source/module/show-nep-reference.md:60 56068360707848fab865fe960a3847d6
-msgid "自动视角/距离对齐"
-msgstr "Fit the camera orientation and distance"
-
-#: ../../source/module/show-nep-reference.md:60 e6b03053ca3e4f698041cb390e166075
-msgid "显示/隐藏键；图标在 `show_bond/hide_bond` 间切换"
-msgstr "Show or hide bonds; the icon toggles between `show_bond` and `hide_bond`"
-
-#: ../../source/module/show-nep-reference.md:220 eebf82f030d449caaf8f5610ea15a3f0
-msgid "4.2 `Show Arrows`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:222 22449a5fcf8545509cc528a7812fb3fe
-msgid "前提：当前结构画布必须支持箭头 API（通常 vispy）。"
-msgstr ""
-"Requirement: the active structure canvas must support the arrow API, "
-"normally provided by VisPy."
-
-#: ../../source/module/show-nep-reference.md:224 e928739c638449c2a7653d6339e11e5c
-msgid "`Property`：仅 `N x 3` 原子向量属性"
-msgstr "`Property`: an atomic `N × 3` vector property only"
-
-#: ../../source/module/show-nep-reference.md:225 4e551797021840c8be58856b94589883
-msgid "`Scale`：`[0, 1000]`，默认 `1.0`"
-msgstr "`Scale`: `[0, 1000]`, default: `1.0`"
-
-#: ../../source/module/show-nep-reference.md:226 ee15b60c1aa345be9735c81a5dd84eb2
-msgid "`Colormap`：`viridis/magma/plasma/inferno/jet`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:227 7b66da9133b442eb8d909a3792a55c99
-msgid "`Show arrows`：勾选显示，取消则清除"
-msgstr "`Show arrows`: enable to display arrows; disable to clear them"
-
-#: ../../source/module/show-nep-reference.md:229 886d38745732415f81189912ae293050
-msgid ""
-"![Show Arrows "
-"Dialog](../_static/image/generated/show_nep_reference/s_arrow_dialog.png)"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:229 1c88d634d0384b2e8da58995cfcbb05b
-msgid "Show Arrows Dialog"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:229 1c88d634d0384b2e8da58995cfcbb05b
-msgid ".. image:: ../_static/image/generated/show_nep_reference/s_arrow_dialog.png"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:231 c76861b0689240f1829d8d7a2355a81c
-msgid "4.3 `Export current structure`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:233 33eeab98ca994fc8a45c22fa9bbe920d
-msgid "第一步：选格式"
-msgstr "Step 1: choose the format"
-
-#: ../../source/module/show-nep-reference.md:234 3423970234844152b2251953099a72d5
-msgid "`XYZ (.xyz / extxyz)`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:235 5099055d84e2492b9dba3151371edf2e
-msgid "`DeepMD/NPY (deepmd/npy)`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:236 86393a7163ed405dafebab388a5ed478
-msgid "第二步：选路径"
-msgstr "Step 2: choose the destination"
-
-#: ../../source/module/show-nep-reference.md:237 9f69b353d7544ff18e3399e76b77efc4
-#, python-brace-format
-msgid "`xyz`：文件保存路径（默认 `structure_{index}.xyz`）"
-msgstr "`xyz`: file path, defaulting to `structure_{index}.xyz`"
-
-#: ../../source/module/show-nep-reference.md:238 1e587f5e80f14093b9d2aff000a8e1ca
-msgid "`deepmd/npy`：目录保存路径"
-msgstr "`deepmd/npy`: directory path"
-
-#: ../../source/module/show-nep-reference.md:240 cec5550e2e6d4d2a858530135d30360a
-msgid ""
-"![Export Format "
-"Dialog](../_static/image/generated/show_nep_reference/s_export_format.png)"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:240 a2283f9101874d25a5de783974ad1f55
-msgid "Export Format Dialog"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:240 a2283f9101874d25a5de783974ad1f55
-msgid ".. image:: ../_static/image/generated/show_nep_reference/s_export_format.png"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:242 db7f639243804fb18c3e6b8bfb072f6c
-msgid "4.4 `Mark Bad (Reject)` 与 `Drop All Bad`"
-msgstr "4.4 `Mark Bad (Reject)` and `Drop All Bad`"
-
-#: ../../source/module/show-nep-reference.md:244 6595ff2c9ceb4f3a924d76708cd53093
-msgid "`Mark Bad (Reject)`：只标记，不删除；主图显示 reject 高亮。"
-msgstr ""
-"`Mark Bad (Reject)`: mark without deleting; rejected structures are "
-"highlighted in the main plot."
-
-#: ../../source/module/show-nep-reference.md:245 e08c3883537a4f44a9325a9a5ded1e3c
-msgid "`Drop All Bad`：弹确认框后删除所有 active bad；删除后清空 reject 集合并重绘。"
-msgstr ""
-"`Drop All Bad`: after confirmation, delete every active rejected structure, "
-"clear the reject set, and redraw."
-
-#: ../../source/module/show-nep-reference.md:247 fbe7ec6ae37847759d1ea801aac63104
-msgid ""
-"![Drop All Bad "
-"Confirm](../_static/image/generated/show_nep_reference/s_dropbad_confirm.png)"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:247 629549d9cea643df95dba601207d6dfe
-msgid "Drop All Bad Confirm"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:247 629549d9cea643df95dba601207d6dfe
-msgid ""
-".. image:: "
-"../_static/image/generated/show_nep_reference/s_dropbad_confirm.png"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:249 02b646d980244d9c8016fac3af292121
-msgid "5. 导入导出与 NEP 模型切换"
-msgstr "5 — Import, export, and NEP model switching"
-
-#: ../../source/module/show-nep-reference.md:251 4fd4d796d41e40eea79d5df6330ea8cc
-msgid "5.1 导入"
-msgstr "5.1 Import"
-
-#: ../../source/module/show-nep-reference.md:253 1c0178da3c344b318d61f859a0fdf349
-msgid "`Open File...`：选择 `*.xyz`。"
-msgstr "`Open File...`: choose an `*.xyz` file."
-
-#: ../../source/module/show-nep-reference.md:254 b10975a34a9f49b5bc44fa3679de1f19
-msgid "`Open Folder...`：选择目录（`deepmd/npy` 常见）。"
-msgstr "`Open Folder...`: choose a directory, commonly a `deepmd/npy` dataset."
-
-#: ../../source/module/show-nep-reference.md:255 c0da13d678eb4278840d3f8eb7b587f8
-msgid "拖拽：仅接受 `matches_result_loader()` 支持的路径。"
-msgstr "Drag and drop accepts only paths supported by `matches_result_loader()`."
-
-#: ../../source/module/show-nep-reference.md:256 b4f4a67c36194312898fdbbf18ef848f
-msgid "若已有工作路径，切换前会二次确认。"
-msgstr ""
-"If a working path is already open, the app asks for confirmation before "
-"switching."
-
-#: ../../source/module/show-nep-reference.md:257 9fdeca00846d4cf482add742b4d35e5e
-msgid "加载过程在后台线程执行；`StateToolTip` 可触发取消。"
-msgstr ""
-"Loading runs in a background thread; the `StateToolTip` can request "
-"cancellation."
-
-#: ../../source/module/show-nep-reference.md:259 4b5d83182dcf46bda6ed74d157507113
-msgid "5.2 导出菜单（顶栏 Save）"
-msgstr "5.2 Export menu (top `Save` button)"
-
-#: ../../source/module/show-nep-reference.md:261 45c68911fb6e4f7d94e68916fce96eb7
-msgid "动作：`Export All / Selected / Removed / Active`。"
-msgstr "Actions: `Export All / Selected / Removed / Active`."
-
-#: ../../source/module/show-nep-reference.md:262 8df6d37b6c5844b5ab8551fae1c39a02
-msgid "启用条件：数据已加载且非 busy；其中 `Selected/Removed/Active` 要求计数大于 0。"
-msgstr ""
-"Availability: data must be loaded and the page must not be busy. `Selected`,"
-" `Removed`, and `Active` additionally require a nonzero count."
-
-#: ../../source/module/show-nep-reference.md:263 f44e4bec97d04d5ab7c204019ec4ecb2
-msgid "统一先选 `ExportFormat`，再选路径。"
-msgstr "For every action, choose `ExportFormat` first and then the destination path."
-
-#: ../../source/module/show-nep-reference.md:265 7b5611d28a2743b582260d2eaeec7069
-msgid "![Export Menu](../_static/image/show_nep/m_export_menu.png)"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:265 326732bfce0f47089ca519a93fa45710
-msgid "Export Menu"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:265 326732bfce0f47089ca519a93fa45710
-msgid ".. image:: ../_static/image/show_nep/m_export_menu.png"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:267 c866e24a83ad4d19a878708a4b383bf2
-msgid "5.3 NEP 模型切换（路径栏右侧下拉框）"
-msgstr "5.3 Switching NEP models (dropdown to the right of the path bar)"
-
-#: ../../source/module/show-nep-reference.md:269 ef125937134b417a848758d0d106089b
-msgid "文件发现：扫描当前目录 `*.txt` 且文件名含 `nep`。"
-msgstr ""
-"Discovery: scan the current directory for `*.txt` files whose names contain "
-"`nep`."
-
-#: ../../source/module/show-nep-reference.md:270 6ddd316d20d845f89df09b62cfafaea9
-msgid "排序规则：`nep.txt` 优先，其余按字母序；最后可追加内置 `nep89`。"
-msgstr ""
-"Ordering: `nep.txt` first, then other files alphabetically, with the built-"
-"in `nep89` optionally appended."
-
-#: ../../source/module/show-nep-reference.md:271 0c757a16b2c149198f46c9f0014a6524
-msgid "切换策略：优先命中缓存（`_nep_result_cache`）；未命中时异步重载。"
-msgstr ""
-"Switching: use `_nep_result_cache` when available; otherwise reload "
-"asynchronously."
-
-#: ../../source/module/show-nep-reference.md:272 9a4f415a6fe64056955aba80e9914494
-msgid "状态保持：切换后恢复 `selected` 与 `reject`。"
-msgstr "State preservation: restore `selected` and `reject` after the switch."
-
-#: ../../source/module/show-nep-reference.md:274 3d58bc48073d451fb36a0a46aa134044
-msgid "![NEP Model Combo](../_static/image/show_nep/m_nep_combo.png)"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:274 03f6e5424adc4bedbce51f8d97aad3c2
-msgid "NEP Model Combo"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:274 03f6e5424adc4bedbce51f8d97aad3c2
-msgid ".. image:: ../_static/image/show_nep/m_nep_combo.png"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:276 ffc8bec002194330843ab77c1d82fdd6
-msgid "6. 搜索框（三按钮）"
-msgstr "6 — Search field and its three actions"
-
-#: ../../source/module/show-nep-reference.md:60 0cab01cf577d44588df7ff1014a5add9
-msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/search.svg\" "
-"width=\"18\" />"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md 671c681f0c9b4c9c94a10ed4a40ff588
-msgid ".. image:: ../_static/image/generated/show_nep_icons/search.svg"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:280 342c07be90a447918d998b7ac87af0af
-msgid "搜索"
-msgstr "Search"
-
-#: ../../source/module/show-nep-reference.md:280 d44bf5112fab4e6fb03d924ec8a8c5fe
-msgid "高亮匹配结构"
-msgstr "Highlight matching structures"
-
-#: ../../source/module/show-nep-reference.md:280 bd64098c7a2145e4b60b17ed481a98bb
-msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/check.svg\" "
-"width=\"18\" />"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md 393c0c788ad243e283c20ff5509c6054
-msgid ".. image:: ../_static/image/generated/show_nep_icons/check.svg"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:281 bd1e514252184e1084bd9452c0a2bb18
-msgid "勾选"
-msgstr "Select"
-
-#: ../../source/module/show-nep-reference.md:281 c2a17c983512424e83a56bee8f13fad9
-msgid "将匹配结构加入选择"
-msgstr "Add matches to the current selection"
-
-#: ../../source/module/show-nep-reference.md:281 4bb8c5e0688a42f28b8d0acc18849b86
-msgid ""
-"<img src=\"../_static/image/generated/show_nep_icons/uncheck.svg\" "
-"width=\"18\" />"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md 334ccbccd70749ffb0a1b32a4f000b23
-msgid ".. image:: ../_static/image/generated/show_nep_icons/uncheck.svg"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 01dcbf55acb64abaa14e3343366d299e
-msgid "反选"
-msgstr "Deselect"
-
-#: ../../source/module/show-nep-reference.md:282 cc5f1ada84874ee4a67db7ea02ad99ea
-msgid "将匹配结构移出选择"
-msgstr "Remove matches from the current selection"
-
-#: ../../source/module/show-nep-reference.md:284 8f5be29e5ffa4207a78750e1c3ff6be9
-msgid "6.1 模式"
-msgstr "6.1 Modes"
-
-#: ../../source/module/show-nep-reference.md:286 7dba90c63b9f4051aa90604cae6d0f3a
-msgid "`tag`：按 `structure.tag` 正则匹配。"
-msgstr "`tag`: regular-expression match against `structure.tag`."
-
-#: ../../source/module/show-nep-reference.md:287 edfe6af4526941ebabf8580b9a2fd590
-msgid "`formula`：按 `structure.formula` 正则匹配。"
-msgstr "`formula`: regular-expression match against `structure.formula`."
-
-#: ../../source/module/show-nep-reference.md:288 f5e1966b25d1407893d3f946563b7217
-msgid "`elements`：元素集合语法匹配（非正则）。"
-msgstr "`elements`: element-set syntax, not a regular expression."
-
-#: ../../source/module/show-nep-reference.md:289 258b9bd1a0274e15acec67c19ce12a52
-msgid "`expression`：按结构级表达式筛选；适合按原子数、元素组成、能量、力、应力、原子属性等条件批量选中。"
-msgstr ""
-"`expression`: structure-level Boolean filtering over atom counts, "
-"composition, energy, force, stress, atomic properties, and other available "
-"fields."
-
-#: ../../source/module/show-nep-reference.md:291 ed62a06a5dd84178b178496f803bea0d
-msgid "6.2 `elements` 语法"
-msgstr "6.2 `elements` syntax"
-
-#: ../../source/module/show-nep-reference.md:293 ec78e052f53946e085b754c3890921ba
-#, python-brace-format
-msgid "`Fe,O`：元素集合必须是 `{Fe,O}` 子集。"
-msgstr "`Fe,O`: the structure's element set must be a subset of `{Fe,O}`."
-
-#: ../../source/module/show-nep-reference.md:294 fa32a1556fa14bf3a9644467a21224b6
-msgid "`+Fe,+O`：必须同时包含 `Fe` 和 `O`。"
-msgstr "`+Fe,+O`: both `Fe` and `O` must be present."
-
-#: ../../source/module/show-nep-reference.md:295 a629877e3211427a884bdd0fd9fbe014
-msgid "`-H` 或 `!H`：必须不包含 `H`。"
-msgstr "`-H` or `!H`: `H` must be absent."
-
-#: ../../source/module/show-nep-reference.md:296 13171f6ec0f045d0affae5d01f588b4d
-msgid "可混合：`Fe,O,+Fe,-H`。"
-msgstr "Forms can be combined, for example `Fe,O,+Fe,-H`."
-
-#: ../../source/module/show-nep-reference.md:299 fe24fbbef0644cd79cd0682afd2fe793
-msgid "6.3 `expression` 用法总览"
-msgstr "6.3 `expression` overview"
-
-#: ../../source/module/show-nep-reference.md:301 8f69eddeac684a5fb1048e22010cd329
-msgid "目的：把“结构是否满足条件”写成一个布尔表达式，然后用搜索/勾选/反选按钮处理结果。"
-msgstr ""
-"Purpose: express whether each structure satisfies a condition, then use "
-"Search, Select, or Deselect on the matches."
-
-#: ../../source/module/show-nep-reference.md:302 273406d2ee4647b3b73d50b0a7518f6e
-msgid "作用对象：仅当前 active structures；已经删除的结构不会参与表达式计算。"
-msgstr "Scope: current active structures only. Deleted structures are not evaluated."
-
-#: ../../source/module/show-nep-reference.md:303 226d35dc3ed54be88ab5484bce5d12e4
-msgid "搜索按钮：高亮匹配结构。"
-msgstr "Search: highlight matching structures."
-
-#: ../../source/module/show-nep-reference.md:304 3869c91a47ff4d448ff39576ed540d07
-msgid "勾选按钮：把匹配结构加入当前选择集。"
-msgstr "Select: add matches to the current selection."
-
-#: ../../source/module/show-nep-reference.md:305 dedf39a4342b472fba60df3296d3ff15
-msgid "反选按钮：把匹配结构从当前选择集中移除。"
-msgstr "Deselect: remove matches from the current selection."
-
-#: ../../source/module/show-nep-reference.md:306 51d543d8fbf44596b6b27e2a36eff95d
-msgid "删除流程不变：通常是先用 expression 勾选，再点工具栏删除按钮。"
-msgstr ""
-"Deletion remains explicit: normally select with an expression, inspect the "
-"result, and then click the toolbar delete button."
-
-#: ../../source/module/show-nep-reference.md:308 5f5b4b1de420420ebdc3b61897fe33f9
-msgid "6.3.1 支持的运算符"
-msgstr "6.3.1 Supported operators"
-
-#: ../../source/module/show-nep-reference.md:310 e18a608e80b445b79d8ae48a5ef41810
-msgid "逻辑运算：`&&`、`||`、`!`"
-msgstr "Logical operators: `&&`, `||`, `!`"
-
-#: ../../source/module/show-nep-reference.md:311 010c41c101674312b3bb7c3ede8ef7f0
-msgid "逻辑关键字：`and`、`or`、`not`"
-msgstr "Logical keywords: `and`, `or`, `not`"
-
-#: ../../source/module/show-nep-reference.md:312 dd92bcb6149a44618f357201a6e0bd68
-msgid "比较运算：`>`、`>=`、`<`、`<=`、`==`、`!=`"
-msgstr "Comparison operators: `>`, `>=`, `<`, `<=`, `==`, `!=`"
-
-#: ../../source/module/show-nep-reference.md:313 89c74a86de354bdcac9bf859d9695ad1
-msgid "算术运算：`+`、`-`、`*`、`/`"
-msgstr "Arithmetic operators: `+`, `-`, `*`, `/`"
-
-#: ../../source/module/show-nep-reference.md:314 b1186b7ac57243a280b6e8db478b4b6d
-msgid "括号：`(`、`)`"
-msgstr "Parentheses: `(`, `)`"
-
-#: ../../source/module/show-nep-reference.md:316
-#: ../../source/module/show-nep-reference.md:350
-#: ../../source/module/show-nep-reference.md:398
-#: ../../source/module/show-nep-reference.md:417 5bc29998bfe54a9a8dcb0be4908e06f2
-#: 8b7ad2591b93467082517ffe83ae99d7 a712d89c3c48463aa6b5c644760001e7
-#: b020b6eeabc44237b11c1d3a512e3a93
-msgid "示例："
-msgstr "Examples:"
-
-#: ../../source/module/show-nep-reference.md:318
-#: ../../source/module/show-nep-reference.md:451 46e2496a56a749299ebdf2e40e67aed0
-#: 5b704c089ce047dc8a16854c6cfa8dfc
-msgid "`natoms > 100`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282
-#: ../../source/module/show-nep-reference.md:319 940ab47894454887b966b1be8d3003ba
-#: cf859aeef9de4ddea788acfb6f5ea555
-msgid "`has.H && natoms < 50`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:320 98c358ab9df14569b32810468614b686
-msgid "`(energy_per_atom < -3.0) && (force.norm > 10)`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:322 38a8baa2c10846c4816c9ceefae4fdd5
-msgid "6.3.2 不支持的语法"
-msgstr "6.3.2 Unsupported syntax"
-
-#: ../../source/module/show-nep-reference.md:324 5b782ed4db10400d836b0512f5bd638f
-msgid "不支持函数调用：例如 `len(structure)`、`mean(force)`、`any(...)`"
-msgstr ""
-"Function calls are unsupported, including `len(structure)`, `mean(force)`, "
-"and `any(...)`."
-
-#: ../../source/module/show-nep-reference.md:325 d719334ea76641a98e25efe4b782b802
-msgid "不支持固定原子索引：例如 `atom[3].force.x > 1`"
-msgstr "Fixed atom indexing is unsupported, for example `atom[3].force.x > 1`."
-
-#: ../../source/module/show-nep-reference.md:326 c00dff7c7b5340c1b6192b062bbf3d54
-msgid "不支持数字分量后缀：例如 `force.1`、`stress.3`"
-msgstr ""
-"Numeric component suffixes are unsupported, for example `force.1` or "
-"`stress.3`."
-
-#: ../../source/module/show-nep-reference.md:327 eef02365a33549f79e17dd7259375150
-msgid "不支持字符串函数或正则函数"
-msgstr "String and regular-expression functions are unsupported."
-
-#: ../../source/module/show-nep-reference.md:329 98568bd6580147048e8d6939d7ff0fe0
-msgid "如果需要原子数，请直接使用 `natoms`。"
-msgstr "Use `natoms` directly for the atom count."
-
-#: ../../source/module/show-nep-reference.md:331 d1491b3b9b8c4e039805d1c94e71368e
-msgid "6.3.3 内置结构字段"
-msgstr "6.3.3 Built-in structure fields"
-
-#: ../../source/module/show-nep-reference.md:333 82e5887e2a564c2382676e0f300f01e7
-msgid "下列字段不依赖当前图上显示哪一个子图，始终按当前 active structures 实时计算。"
-msgstr ""
-"These fields are calculated from active structures regardless of which "
-"subplot is currently visible."
-
-#: ../../source/module/show-nep-reference.md:282 f1306015b50b4ea2b62b30be36b754db
-msgid "字段"
-msgstr "Field"
-
-#: ../../source/module/show-nep-reference.md:282 2785f1d598ae49cbb04e11a46b788912
-#: bd48141de2f94dc4a99500db92af5511
-msgid "含义"
-msgstr "Meaning"
-
-#: ../../source/module/show-nep-reference.md:282 cf700aa805b1402dbb5791d5024818a1
-msgid "`natoms`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 1deb852759a34664866bdb67b9ab765e
-msgid "原子数"
-msgstr "Number of atoms"
-
-#: ../../source/module/show-nep-reference.md:282 2d22068812b34df4926e8e659d7a9cb4
-msgid "`n_atoms`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 16bed38d1a6f4e05aceb06a9c76cfc09
-msgid "`natoms` 的别名"
-msgstr "Alias of `natoms`"
-
-#: ../../source/module/show-nep-reference.md:282 cf2f76813d4b477d8af0db3f6847c8c7
-msgid "`volume`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 6466d634d91e4395ae488297d2521d4c
-msgid "晶胞体积"
-msgstr "Cell volume"
-
-#: ../../source/module/show-nep-reference.md:282 87e87e8fa0ab49a78dfe8aa87b330995
-msgid "`a` `b` `c`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 56b8110aad9b489398d430f1cba81154
-msgid "晶格长度"
-msgstr "Lattice lengths"
-
-#: ../../source/module/show-nep-reference.md:282 92d3ff727d534a489cb951af5116aee4
-msgid "`alpha` `beta` `gamma`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 9bc79ccbb06a4567ad806912b91a4dbd
-msgid "晶格角"
-msgstr "Lattice angles"
-
-#: ../../source/module/show-nep-reference.md:282 dd84b79025dd4c22899f378b748a5690
-msgid "`spin_natoms`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 1af629517e35455ea0f6843b5351bd44
-msgid "有磁矩原子数"
-msgstr "Number of atoms with moments"
-
-#: ../../source/module/show-nep-reference.md:282 2d8f6ce9d4b94d33aab6ccdedfdfaeb0
-msgid "`energy`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 4996f896edce46fe91b446da14132ef1
-msgid "结构总能"
-msgstr "Total structure energy"
-
-#: ../../source/module/show-nep-reference.md:282 ec5a59082eae4bf99caee505a4ee52c5
-msgid "`energy_per_atom`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 e734defc4ce9413abd72503d6d90d123
-msgid "每原子能量"
-msgstr "Energy per atom"
-
-#: ../../source/module/show-nep-reference.md:282 aca624a2ef634990bf763636098ccbc4
-msgid "`has_energy`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 e173ef43114d4f14a15739e2cb44996e
-msgid "是否存在能量"
-msgstr "Whether energy data exist"
-
-#: ../../source/module/show-nep-reference.md:282 459b720fe9df4f6398b4b782b6038c1c
-msgid "`has_forces`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 74d7c68f0317446f8fbfc1318005a121
-msgid "是否存在力"
-msgstr "Whether force data exist"
-
-#: ../../source/module/show-nep-reference.md:282 6b637aa9a9be46aaae9edb9138db255a
-msgid "`has_virial`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 b2883995cf0b453ba8ccdbbc9f7d12af
-msgid "是否存在 virial"
-msgstr "Whether virial data exist"
-
-#: ../../source/module/show-nep-reference.md:282 069883e1cd3b48bca2e1808aa9e0a9aa
-msgid "`has_bec`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 39b02f31ef524a3fb726d19b9780e4ee
-msgid "是否存在 BEC"
-msgstr "Whether BEC data exist"
-
-#: ../../source/module/show-nep-reference.md:352 d6f2efa35d864aafb587c064118f9d39
-msgid "`natoms >= 128`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:353 697bed61a4434b87ae28562e95de283d
-msgid "`volume < 500`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:354 023d553c68684408a6bbd24a1eeff830
-msgid "`a > 4.5 && c < 20`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:355 db99957016124ac9bfcd16e369202868
-msgid "`energy_per_atom < -4.2`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:356 7edf3f59e982482a81158ec7322954ff
-msgid "`has_forces && !has_bec`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:358 a937d8617c234acf9818742473870faa
-msgid "6.3.4 元素统计字段"
-msgstr "6.3.4 Element-statistics fields"
-
-#: ../../source/module/show-nep-reference.md:360 74575c0bb5dc4c678bdba48d7a18a24d
-msgid "元素字段按当前 active structures 里实际出现过的元素动态生成。"
-msgstr ""
-"Element fields are generated dynamically from species present in active "
-"structures."
-
-#: ../../source/module/show-nep-reference.md:282 da9d4a5d5ca44fe9a1c60cb5f0faa473
-msgid "字段形式"
-msgstr "Field form"
-
-#: ../../source/module/show-nep-reference.md:282 dad400f7728c41a8886f8379d1c5f896
-msgid "示例"
-msgstr "Example"
-
-#: ../../source/module/show-nep-reference.md:282 d5f74715e74a4565880834dc61e0f5c5
-msgid "`count.<Elem>`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 4695a2d0ef3f4112acad57198184a882
-msgid "指定元素个数"
-msgstr "Count of one element"
-
-#: ../../source/module/show-nep-reference.md:282 ae556941a35e422ea0cbdd29ffe5542f
-msgid "`count.Fe >= 4`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 8de427b1060e4d4caac7affdf7119cb9
-msgid "`frac.<Elem>`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 ed1c076f395748d2aca22ebdd6efa48a
-msgid "指定元素占比"
-msgstr "Fraction of one element"
-
-#: ../../source/module/show-nep-reference.md:282 f45227e9d95b4f48be4e434c5fec7218
-msgid "`frac.Li > 0.5`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 b22c7ae665974795a833fe9de79af479
-msgid "`has.<Elem>`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:282 322a06ba11194093b0dbad39bed7145e
-msgid "是否包含指定元素"
-msgstr "Whether an element is present"
-
-#: ../../source/module/show-nep-reference.md:368 efe056cc9fc44351b5e73ffee828f2c7
-msgid "补充说明："
-msgstr "Notes:"
-
-#: ../../source/module/show-nep-reference.md:370 f05037dfb6814a369a9482d46931f98d
-msgid "`<Elem>` 使用标准元素符号，例如 `H`、`O`、`Fe`、`Li`"
-msgstr "`<Elem>` uses a standard element symbol such as `H`, `O`, `Fe`, or `Li`."
-
-#: ../../source/module/show-nep-reference.md:371 b7621431cd704ebea9dbeccf1f2a317d
-msgid "区分元素符号，不区分前缀大小写的内部解析细节；文档和输入建议始终使用标准写法"
-msgstr ""
-"Although internal parsing handles prefix case, always use standard element-"
-"symbol capitalization in documentation and input."
-
-#: ../../source/module/show-nep-reference.md:372 939633a4772f4d2aa1a55b94ccbe12bd
-msgid "如果当前 active structures 中没有该元素，表达式会报错"
-msgstr ""
-"If the element is absent from all active structures, the expression reports "
-"an error."
-
-#: ../../source/module/show-nep-reference.md:374 68bb5bfbfba74dd8936eb9e1b198f048
-msgid "6.3.5 动态数据字段"
-msgstr "6.3.5 Dynamic data fields"
-
-#: ../../source/module/show-nep-reference.md:376 64939f403af24f8bafd7f9629cbbfa42
-msgid "当前结果数据里存在什么字段，expression 模式就暴露什么字段。常见来源有两类："
-msgstr ""
-"Expression mode exposes only fields that exist in the current result data. "
-"They commonly come from two sources:"
-
-#: ../../source/module/show-nep-reference.md:378 abfa1c773a8a4956a3e264d997bddb2d
-msgid "结果数据集字段：如 `force`、`mforce`、`stress`、`virial`、`dipole`、`bec`"
-msgstr ""
-"Result-dataset fields such as `force`, `mforce`, `stress`, `virial`, "
-"`dipole`, and `bec`"
-
-#: ../../source/module/show-nep-reference.md:379 fc7a5df08e4543ff8813479894e5a34e
-msgid "原子属性字段：写成 `atomic.<name>`，例如 `atomic.spin_vec`"
-msgstr ""
-"Atomic-property fields written as `atomic.<name>`, for example "
-"`atomic.spin_vec`"
-
-#: ../../source/module/show-nep-reference.md:381 a98bbfd5c6574c33b41a7c648677695f
-msgid "这意味着："
-msgstr "Consequences:"
-
-#: ../../source/module/show-nep-reference.md:383 13042856f2964c6d8f631c29e7ff9ec9
-msgid "如果当前数据里没有 `mforce`，补全中不会出现 `mforce`"
-msgstr ""
-"If the current data contain no `mforce`, autocomplete does not offer "
-"`mforce`."
-
-#: ../../source/module/show-nep-reference.md:384 adbba534b572470e99c714d6de690272
-msgid "如果手动输入了不存在的字段，例如 `mforce.ref.x > 1`，会直接报错"
-msgstr ""
-"Manually entering an unavailable field, such as `mforce.ref.x > 1`, produces"
-" an error."
-
-#: ../../source/module/show-nep-reference.md:386 a77dfc5e8d6244999f53b8db3f76dab7
-msgid "6.3.6 后缀规则"
-msgstr "6.3.6 Suffix rules"
-
-#: ../../source/module/show-nep-reference.md:388 4163f9b8610c47019260619bc61f87f1
-msgid "A. 数据视图后缀"
-msgstr "A. Data-view suffixes"
-
-#: ../../source/module/show-nep-reference.md:390 d609a8ef7ca745db80dfd81d37e12350
-msgid "对于有参考值/预测值成对存在的数据集字段，可以追加："
-msgstr ""
-"For dataset fields that provide paired reference and prediction values, "
-"append:"
-
-#: ../../source/module/show-nep-reference.md:392 34739fc6a2b24bcea78537de2445b3c3
-msgid "`.ref`：参考值"
-msgstr "`.ref`: reference value"
-
-#: ../../source/module/show-nep-reference.md:393 7c82543690ab4792b92ee3bedd386fca
-msgid "`.pred`：预测值"
-msgstr "`.pred`: predicted value"
-
-#: ../../source/module/show-nep-reference.md:394 4a1d639c1b464f70aeab9ee3f794eb91
-msgid "`.err`：误差，等价于 `pred - ref`"
-msgstr "`.err`: error, defined as `pred - ref`"
-
-#: ../../source/module/show-nep-reference.md:396 ed4f6ec9d24a4ae696a146367868a53a
-msgid "如果省略视图后缀，默认使用 `.ref`。"
-msgstr "When the data-view suffix is omitted, `.ref` is used by default."
-
-#: ../../source/module/show-nep-reference.md:400 3814ccc6c4184efc90e6bbe211b4d23b
-msgid "`force.x > 10` 等价于 `force.ref.x > 10`"
-msgstr "`force.x > 10` is equivalent to `force.ref.x > 10`."
-
-#: ../../source/module/show-nep-reference.md:401 63d2112d76ff4cc3926a903745fa2d17
-msgid "`stress.err.norm > 2`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:402 0603dda89971452291332397ab80148c
-msgid "`energy.pred > -4.0`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:404 a6db68ce0a8e4d31a4995f05bbe4836d
-msgid "并不是所有字段都支持这三个后缀："
-msgstr "Not every field supports all three suffixes:"
-
-#: ../../source/module/show-nep-reference.md:406 813e2922eb844f54bb7805f0dbb60a7f
-msgid "`atomic.<name>` 不支持 `.ref/.pred/.err`"
-msgstr "`atomic.<name>` does not support `.ref`, `.pred`, or `.err`."
-
-#: ../../source/module/show-nep-reference.md:407 d7c9d3ee8e5943a09a6fca1510336134
-msgid "非成对数据字段也不支持 `.pred/.err`"
-msgstr "Unpaired data fields do not support `.pred` or `.err`."
-
-#: ../../source/module/show-nep-reference.md:409 5d0019b51aa348c28d89219539274e7c
-msgid "B. 分量与范数后缀"
-msgstr "B. Component and norm suffixes"
-
-#: ../../source/module/show-nep-reference.md:411 b068537455f349a4b2ee43df4f2bacbc
-msgid "向量或张量字段支持命名分量后缀，例如："
-msgstr "Vector and tensor fields support named component suffixes:"
-
-#: ../../source/module/show-nep-reference.md:413 fd8c1325c93647b895690fc86ffe4cad
-msgid "三维向量：`.x`、`.y`、`.z`"
-msgstr "Three-component vectors: `.x`, `.y`, `.z`"
-
-#: ../../source/module/show-nep-reference.md:414 37f7cf24e30e42469fb701fe1f268f4e
-msgid "六分量张量：`.xx`、`.yy`、`.zz`、`.xy`、`.yz`、`.zx`"
-msgstr "Six-component tensors: `.xx`, `.yy`, `.zz`, `.xy`, `.yz`, `.zx`"
-
-#: ../../source/module/show-nep-reference.md:415 657a8783c9654b5984bc7cdb599c6645
-msgid "范数：`.norm`"
-msgstr "Norm: `.norm`"
-
-#: ../../source/module/show-nep-reference.md:419
-#: ../../source/module/show-nep-reference.md:473 7b7b1a235ab944e38f160c5ff687daef
-#: a7d49e08328c4dd88bca4c1c1b983204
-msgid "`force.x > 10`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:420 fb2c4a45a0fe4a0a8cba036cb00fd13f
-msgid "`mforce.norm > 5`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:421 67ac4c3879a44aca8933f7d9cd8a94cb
-msgid "`virial.xx < -20`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:422 8e691375d41647a7b30d5dd9328a182e
-msgid "`atomic.spin_vec.z > 0.2`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:424 6d6515f3c7ef4ca0ba7820fdec5d3354
-msgid "注意："
-msgstr "Important:"
-
-#: ../../source/module/show-nep-reference.md:426 97b5fa011c3140d2aecb1ad288fc312c
-msgid "不支持 `.1/.2/.3` 这类数字分量写法"
-msgstr "Numeric components such as `.1`, `.2`, and `.3` are unsupported."
-
-#: ../../source/module/show-nep-reference.md:427 ac9ad50e74b64fb18e6e9912a2248384
-msgid "多分量字段若不写分量或 `.norm`，表达式会报错"
-msgstr ""
-"A multicomponent field without a named component or `.norm` produces an "
-"error."
-
-#: ../../source/module/show-nep-reference.md:428 23356585442a421c87904018b67d04ab
-msgid "标量字段可以直接比较，例如 `energy > -10`"
-msgstr "Scalar fields can be compared directly, for example `energy > -10`."
-
-#: ../../source/module/show-nep-reference.md:430 16da6b89665f4ef790261606a064ec83
-msgid "6.3.7 原子级字段如何聚合到结构级"
-msgstr "6.3.7 Aggregating atomic fields to structures"
-
-#: ../../source/module/show-nep-reference.md:432 15b61ff43c0247dba13927a3273f6f4a
-msgid "表达式最终必须得到“每个结构是否命中”的结果，所以原子级数据会先聚合到结构级。"
-msgstr ""
-"An expression must return one Boolean result per structure, so atom-level "
-"data are reduced to a structure-level value first."
-
-#: ../../source/module/show-nep-reference.md:434 f9ab29b526284986a635a6b1cc24f316
-msgid "默认规则："
-msgstr "Default rule:"
-
-#: ../../source/module/show-nep-reference.md:436 4ade2cfe330347e899a24c4928759434
-msgid "先按你写的后缀取出分量或范数"
-msgstr "First extract the named component or norm."
-
-#: ../../source/module/show-nep-reference.md:437 fe4387cea11c47588720034711d9ec85
-msgid "再在该结构内部做 `max(abs(values))`"
-msgstr "Then calculate `max(abs(values))` within each structure."
-
-#: ../../source/module/show-nep-reference.md:439 68815dc77d514e24bdb7d11dea907414
-msgid "因此："
-msgstr "Therefore:"
-
-#: ../../source/module/show-nep-reference.md:441 b37efe6592e842329da14502652d19c6
-msgid "`force.x > 10` 的含义是“这个结构里是否存在原子满足 `max(abs(force_x)) > 10`”"
-msgstr "`force.x > 10` asks whether `max(abs(force_x)) > 10` within each structure."
-
-#: ../../source/module/show-nep-reference.md:442 889ee7f94f6d4a97aa2388b11eac775e
-msgid "`force.norm > 10` 的含义是“这个结构里是否存在原子满足 `max(force_norm) > 10`”"
-msgstr "`force.norm > 10` asks whether `max(force_norm) > 10` within each structure."
-
-#: ../../source/module/show-nep-reference.md:443 0460f77e64c540988dc51bdade128f46
-msgid "`atomic.spin_vec.y > 0.5` 的含义也是同样的结构级最大绝对值判断"
-msgstr ""
-"`atomic.spin_vec.y > 0.5` uses the same structure-level maximum-absolute-"
-"value reduction."
-
-#: ../../source/module/show-nep-reference.md:445 1a1ae0a9df70418d8fa2170da1bd254d
-msgid "结构级字段如 `natoms`、`volume`、`energy` 不需要额外聚合，直接逐结构比较。"
-msgstr ""
-"Structure-level fields such as `natoms`, `volume`, and `energy` are compared"
-" directly without aggregation."
-
-#: ../../source/module/show-nep-reference.md:447 a1cc0aa89dd1498dbb48f7a0c026a022
-msgid "6.3.8 常用表达式示例"
-msgstr "6.3.8 Common expression examples"
-
-#: ../../source/module/show-nep-reference.md:449 609d7ade09ba4ee89b1e092678d1a653
-msgid "按结构大小筛选"
-msgstr "Filter by structure size"
-
-#: ../../source/module/show-nep-reference.md:452 9418210d7662488cb24bd5cc76037e31
-msgid "`natoms >= 32 && natoms <= 128`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:454 85cfa642fa404cf99d02256941cdf0e9
-msgid "按晶格或体积筛选"
-msgstr "Filter by lattice or volume"
-
-#: ../../source/module/show-nep-reference.md:456 e9fb50349d7e4b04b7768fe7e548d7cb
-msgid "`volume < 1000`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:457 9cf346ea98bd4c8db8dbeb71a6118843
-msgid "`a > 3 && b > 3 && c > 3`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:458 1a876f314b0a4e6ca14fa0cf1a452973
-msgid "`gamma != 120`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:460 0a9d78c7c0f34f91acc1139ae7e64c89
-msgid "按元素组成筛选"
-msgstr "Filter by composition"
-
-#: ../../source/module/show-nep-reference.md:462 e71a19a121874d10b2871fd037cf13d2
-msgid "`count.O >= 4`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:463 834670b397634040a6f9ef84fa904b8d
-msgid "`frac.Li > 0.25`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:464 5852b208be324070b00b3d0e6d7d13ca
-msgid "`has.Fe && !has.H`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:466 94b04faaf0254138a6458725d7f24f43
-msgid "按能量筛选"
-msgstr "Filter by energy"
-
-#: ../../source/module/show-nep-reference.md:468 04e6836ad74f49fa8de226eb2071faef
-msgid "`energy_per_atom < -3.5`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:469 d879ad2098544e839b7cd68c6935ea9d
-msgid "`has_energy && energy > -500`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:471 1b1c0d0b60eb442e9738dce0dcadd877
-msgid "按力、应力、virial 筛选"
-msgstr "Filter by force, stress, or virial"
-
-#: ../../source/module/show-nep-reference.md:474 9909baec74f94cf2b1d9caa2ded58ab1
-msgid "`force.norm > 15`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:475 4237243cd2f74a24ae7d4d35bff0adc4
-msgid "`force.err.norm > 0.2`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:476 29ddceb73ad346e499be628fa0733f74
-msgid "`stress.xx > 5`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:477 4ec04aafe29e45e5928b42f808981cd1
-msgid "`virial.err.norm > 1`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:479 744682c3e1db4cd4a441d677a8185384
-msgid "按 atomic property 筛选"
-msgstr "Filter by an atomic property"
-
-#: ../../source/module/show-nep-reference.md:481 597276ee3b764226a5f00613e73a911a
-msgid "`atomic.spin_vec.norm > 1.5`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:482 6423fd1857a34c228d96ed94b0890bbd
-msgid "`atomic.spin_scalar > 0.1`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:484 c5dfceae340e42d898dbaacda1dedbf8
-msgid "组合条件"
-msgstr "Combine conditions"
-
-#: ../../source/module/show-nep-reference.md:486 a9ee89162b6443f6ad07ed7f47c7a8b6
-msgid "`has.H && natoms < 50 && energy_per_atom < -2.5`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:487 78327070b33847ce99ec9aca2764aa22
-msgid "`(count.Fe >= 2) && (force.norm > 8 || stress.norm > 2)`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:489 9a1c512d59854ec09a8972d812025148
-msgid "6.3.9 补全与右侧数量说明"
-msgstr "6.3.9 Autocomplete and availability counts"
-
-#: ../../source/module/show-nep-reference.md:491 3f4d59704edc4963b7460db14589001a
-msgid "expression 模式使用单独的动态补全，不和 `tag/formula/elements` 共用缓存。"
-msgstr ""
-"Expression mode uses its own dynamic autocomplete and does not share the "
-"cache used by `tag`, `formula`, or `elements`."
-
-#: ../../source/module/show-nep-reference.md:493 bfa0939e425e490da2c628d18b779d67
-msgid "补全来源包括："
-msgstr "Autocomplete sources include:"
-
-#: ../../source/module/show-nep-reference.md:495 19de84207a4c4a1e867db212d80e3b46
-msgid "内置结构字段，例如 `natoms`、`volume`"
-msgstr "Built-in structure fields such as `natoms` and `volume`"
-
-#: ../../source/module/show-nep-reference.md:496 bf5f702b3e2f4957a00e06c9eaf3dc5d
-msgid "元素统计字段，例如 `count.Fe`、`frac.O`"
-msgstr "Element-statistics fields such as `count.Fe` and `frac.O`"
-
-#: ../../source/module/show-nep-reference.md:497 6cc49dd2088b46b382a3a9866630b553
-msgid "当前数据集中真实存在的动态字段，例如 `force.ref.x`、`virial.ref.xx`"
-msgstr ""
-"Dynamic fields actually present in the dataset, such as `force.ref.x` and "
-"`virial.ref.xx`"
-
-#: ../../source/module/show-nep-reference.md:498 f4c457a252f04d44b6d2dc42004439c6
-msgid "当前结构里真实存在的原子属性字段，例如 `atomic.spin_vec.y`"
-msgstr ""
-"Atomic properties actually present in current structures, such as "
-"`atomic.spin_vec.y`"
-
-#: ../../source/module/show-nep-reference.md:500 7a5be8abf63942a09bedc0a09eaee47f
-msgid "补全列表右侧的数字不是“本次搜索命中数”，而是“当前 active structures 中有多少个结构对这个候选字段是可用的/有意义的”："
-msgstr ""
-"The number shown to the right of an autocomplete item is not the current "
-"search-match count. It is the number of active structures for which that "
-"candidate field is available or meaningful:"
-
-#: ../../source/module/show-nep-reference.md:502 157225493dad485ca78a3cea911f19c0
-msgid "`natoms` 右侧数字通常等于当前 active structures 总数"
-msgstr "For `natoms`, the number normally equals the active-structure count."
-
-#: ../../source/module/show-nep-reference.md:503 77e15a60bc424e4b84f47968f84c484d
-msgid "`count.Fe` 右侧数字表示包含 `Fe` 的结构数"
-msgstr "For `count.Fe`, it is the number of structures containing Fe."
-
-#: ../../source/module/show-nep-reference.md:504 873819738644446ba834b61bdaf68c29
-msgid "`has.H` 右侧数字表示包含 `H` 的结构数"
-msgstr "For `has.H`, it is the number of structures containing H."
-
-#: ../../source/module/show-nep-reference.md:505 45354470cd714f9e8157dc3ec28aae25
-msgid "`force.ref.x` 右侧数字表示当前有 `force` 数据的结构数"
-msgstr "For `force.ref.x`, it is the number of structures with force data."
-
-#: ../../source/module/show-nep-reference.md:506 d2b318bc6ca343bfb172e02fd9d0cd56
-msgid "`atomic.spin_vec.y` 右侧数字表示当前有 `spin_vec` 原子属性的结构数"
-msgstr ""
-"For `atomic.spin_vec.y`, it is the number of structures with a `spin_vec` "
-"atomic property."
-
-#: ../../source/module/show-nep-reference.md:508 501a1c4fc76a4e04a4acfe025f69635c
-msgid "这和你实际输入完整表达式后的命中数量不是一回事。"
-msgstr ""
-"This availability count is distinct from the number of matches produced by a"
-" complete expression."
-
-#: ../../source/module/show-nep-reference.md:510 07e88271b65e48e5bf95ddc82c84a30d
-msgid "6.3.10 错误与排查"
-msgstr "6.3.10 Errors and troubleshooting"
-
-#: ../../source/module/show-nep-reference.md:512 2bab9c71dfa84b9f96d431724b76c8ce
-msgid "常见错误包括："
-msgstr "Common errors include:"
-
-#: ../../source/module/show-nep-reference.md:514 425768c99dd34c848c7bff2982b62cde
-msgid "`Unknown field in expression`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:515 021e32fa650c4ab5b61b2f4a520f37dd
-msgid "字段不存在，或当前数据里没有这个字段"
-msgstr "The field does not exist or is absent from the current data."
-
-#: ../../source/module/show-nep-reference.md:516 79d965b45499403381dffeb5372856c5
-msgid "`Unknown atomic field`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:517 1855598a530b476e88c7baa299d4e3f6
-msgid "`atomic.<name>` 写错了，或当前结构没有该原子属性"
-msgstr "`atomic.<name>` is misspelled or the structures lack that atomic property."
-
-#: ../../source/module/show-nep-reference.md:518 29963ffb84144733a7aedba07fdc26de
-msgid "`Numeric component suffixes are not supported`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:519 2a37be48f02945b894fe2c46308b0617
-msgid "使用了 `.1/.2/.3` 这类数字分量"
-msgstr "A numeric component such as `.1`, `.2`, or `.3` was used."
-
-#: ../../source/module/show-nep-reference.md:520 ee8c2ad8e7dd41e5a8c7833bc83cac34
-msgid "`Field 'xxx' requires an explicit component or '.norm'`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:521 5b81aae8e1634c93b375175a0d78538f
-msgid "多分量字段没有写具体分量"
-msgstr "A multicomponent field lacks a named component or `.norm`."
-
-#: ../../source/module/show-nep-reference.md:522 ae1c7128b34b47f1b45d50427137d203
-msgid "`does not support value views`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:523 c644577cdbd14a228d69ffb8049103dc
-msgid "给不支持的字段写了 `.pred` 或 `.err`"
-msgstr "`.pred` or `.err` was appended to a field that does not support paired views."
-
-#: ../../source/module/show-nep-reference.md:524 37a229bdc0df4c87871f6e67569a8982
-msgid "`Invalid expression syntax`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:525 3468f7207ade47ad9f508d2ef2db5693
-msgid "语法不完整，例如 `force.x >`"
-msgstr "The expression is incomplete, for example `force.x >`."
-
-#: ../../source/module/show-nep-reference.md:527 f772b8a982a64a5bbc59600acb68d9fd
-msgid "![Search Modes](../_static/image/show_nep/q_search_modes.png)"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:527 025be2ece97a4ef38b44eb0c369a93a4
-msgid "Search Modes"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:527 025be2ece97a4ef38b44eb0c369a93a4
-msgid ".. image:: ../_static/image/show_nep/q_search_modes.png"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:529 f261653c14df4c94ba6da77fc69c756b
-msgid "7. 状态与常见提示"
-msgstr "7 — Status indicators and common messages"
-
-#: ../../source/module/show-nep-reference.md:531 0b0e42b04e16450ebb628d5b61f0e0c5
-msgid "数据状态：`Orig / Now / Rm / Sel / Unsel / Rej`。"
-msgstr "Dataset status: `Orig / Now / Rm / Sel / Unsel / Rej`."
-
-#: ../../source/module/show-nep-reference.md:532 cdb9591c42384da794a06965dbff59ed
-msgid "结构状态：最短键长异常会红字提示；净力显示 `|ΣF|`。"
-msgstr ""
-"Structure status: suspicious shortest bonds are shown in red; net force is "
-"displayed as `|ΣF|`."
-
-#: ../../source/module/show-nep-reference.md:533 22a43ef143b847e393a034207a7354ac
-msgid ""
-"播放按钮：<img src=\"../_static/image/generated/show_nep_icons/play.svg\" "
-"width=\"18\" /> / <img "
-"src=\"../_static/image/generated/show_nep_icons/pause.svg\" width=\"18\" />。"
-msgstr ""
-"Playback: <img src=\"../_static/image/generated/show_nep_icons/play.svg\" "
-"width=\"18\" /> / <img "
-"src=\"../_static/image/generated/show_nep_icons/pause.svg\" width=\"18\" />."
-
-#: ../../source/module/show-nep-reference.md 994279bad0564e1bb06921993c2824ef
-msgid ".. image:: ../_static/image/generated/show_nep_icons/play.svg"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md 5d37bb8ee1e24ab1af2ee6fc9e0eeec9
-msgid ".. image:: ../_static/image/generated/show_nep_icons/pause.svg"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 b5c51b2c4abd4983b2fbc85c6713e237
-msgid "提示文本"
-msgstr "Message"
-
-#: ../../source/module/show-nep-reference.md:533 94d7013982924141922ff48dcfabf22b
-msgid "触发条件"
-msgstr "Trigger"
-
-#: ../../source/module/show-nep-reference.md:533 79839dbc864f4a55814f2a52b26f9016
-msgid "`unsupported file format`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 531b3671d0bb46ceb050d64429ed1d32
-msgid "导入路径不支持"
-msgstr "The import path is unsupported"
-
-#: ../../source/module/show-nep-reference.md:533 ed6ab5e1bc5644a298a6566ab5fc69df
-msgid "`NEP data has not been loaded yet!`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 008b78e819114f42adf65cb9d79c8f41
-msgid "未加载数据即执行分析/导出"
-msgstr "An analysis or export is requested before loading data"
-
-#: ../../source/module/show-nep-reference.md:533 3f29f6eeb0e5487086fce5f2a4ab6c4e
-msgid "`Please select some structures first!`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 9f3a61ab98f943d69801ae46cb115590
-msgid "导出 selected 时无选择"
-msgstr "`Selected` export is requested with no selection"
-
-#: ../../source/module/show-nep-reference.md:533 e667c9cc1a78462fbd678a8655968afe
-msgid "`No active structures to export.`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 f20f3617851c4d70891194f9d9e6a38e
-msgid "导出 active 时为空"
-msgstr "`Active` export is requested with no active structures"
-
-#: ../../source/module/show-nep-reference.md:533 64ab0e0d6a774ed783adc34bb8fb7f42
-msgid "`No removed structures to export.`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 26afece5c59340a2a343922bfc263df3
-msgid "导出 removed 时为空"
-msgstr "`Removed` export is requested with no removed structures"
-
-#: ../../source/module/show-nep-reference.md:533 d6ec0791e11d4f1eb40395a0b4bc5bf2
-msgid "`No undoable deletion!`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 90cf70a69d23487b985774ee2d125bd6
-msgid "无可撤销删除"
-msgstr "No deletion is available to undo"
-
-#: ../../source/module/show-nep-reference.md:533 fa415a89b1924d2faa9227180884491a
-msgid "`No vector data available`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 4db7a3841320449f8e7bfa1d7d4c175c
-msgid "箭头所需向量属性不存在"
-msgstr "The vector property required for arrows is absent"
-
-#: ../../source/module/show-nep-reference.md:533 29006a6ea5fa4c04b3aa78d315e75e5c
-msgid "`Arrow overlay is unavailable...`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 98fab23f308348b38540753eab29431d
-msgid "当前结构画布不支持箭头 API"
-msgstr "The current structure canvas does not support the arrow API"
-
-#: ../../source/module/show-nep-reference.md:533 70563bea418d4a9f8003cef17ada9d0f
-msgid "`Invalid regex pattern.`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 705b0132375e4427b97370ddbbe33415
-msgid "`tag/formula` 输入非法正则"
-msgstr "`tag` or `formula` contains an invalid regular expression"
-
-#: ../../source/module/show-nep-reference.md:533 185f2c0b1ec94aaa97a26ee0a1ffbabe
-msgid "`Unknown element symbol: Xx`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 4b24b79dd69845748dc7b850a9e327e7
-msgid "`elements` 输入未知元素"
-msgstr "`elements` contains an unknown element symbol"
-
-#: ../../source/module/show-nep-reference.md:533 968bea2dbd274453a2dbb28a1d3574f3
-msgid "`Unknown field in expression: xxx`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 d1ffd104a739478c922727f97896eae7
-msgid "`expression` 使用了不存在的字段"
-msgstr "`expression` references a nonexistent or unavailable field"
-
-#: ../../source/module/show-nep-reference.md:533 103402b9554444098fba2952e1aaeef5
-msgid "`Numeric component suffixes are not supported in expressions.`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 534ad3aec09f4e3fa44813dc5f50a67b
-msgid "`expression` 使用了 `.1/.2/.3` 这类数字分量"
-msgstr "`expression` uses a numeric component such as `.1`, `.2`, or `.3`"
-
-#: ../../source/module/show-nep-reference.md:533 38eb88b58e0e4e328ac8fa72784c4e58
-msgid "`Expression contains unsupported syntax.`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 06a6a66e491f47e0846151785761d8a4
-msgid "`expression` 含有不支持的语法"
-msgstr "`expression` contains unsupported syntax"
-
-#: ../../source/module/show-nep-reference.md:533 3fadb454ddfe4f4e9c494493c5f91416
-msgid "`Invalid expression syntax.`"
-msgstr ""
-
-#: ../../source/module/show-nep-reference.md:533 215867c35b464f7b8708240a88364e7a
-msgid "`expression` 语法不完整或无法解析"
-msgstr "`expression` is incomplete or cannot be parsed"
-
-#: ../../source/module/show-nep-reference.md:552 9ec1e74e46724d9aab38c96322e28e07
-msgid "相关入口"
-msgstr "Related pages"
-
-#: ../../source/module/show-nep-reference.md:554 c8ef2d6ad7434344860e7db3ef18877b
-msgid "功能概览页：[`NEP-dataset-display.md`](NEP-dataset-display.md)"
-msgstr "Feature overview: [`NEP-dataset-display.md`](NEP-dataset-display.md)"
-
-#: ../../source/module/show-nep-reference.md:555 f062d2d556ac42a299175942060f9e69
-msgid "示例页：[`../example/NEP-display.md`](../example/NEP-display.md)"
-msgstr "Example: [`../example/NEP-display.md`](../example/NEP-display.md)"
-
-#: ../../source/module/show-nep-reference.md:123
+#: ../../source/module/show-nep-reference.md:120
 #: b55dca08da194c6fa3e4bffa93d19907
 msgid "`Selection strategy`："
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:124
+#: ../../source/module/show-nep-reference.md:121
 #: 744222a5210b4db5a482304bb005e86e
 msgid "`Global FPS (compatible)`：保留原有全局 FPS 行为；"
 msgstr "`Global FPS (compatible)`: preserves the original global FPS behavior;"
 
-#: ../../source/module/show-nep-reference.md:125
+#: ../../source/module/show-nep-reference.md:122
 #: 80e57f85e6f0452a90ffd2c8a569c528
 msgid "`Element-set balanced FPS`：按元素集合分组，每组至少保留一个名额，其余名额按组大小平方根分配，并从各组描述符中心开始采样。"
 msgstr ""
@@ -2575,7 +1103,49 @@ msgstr ""
 "to the square root of group size, and starts sampling from each group's "
 "descriptor center."
 
-#: ../../source/module/show-nep-reference.md:134
+#: ../../source/module/show-nep-reference.md:123
+#: 0a29cc8a888d45f59bb97714d2cdc448
+msgid "`Sampling mode`：`Fixed count (FPS)` / `R^2 stop (FPS)`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:124
+#: 8c79e278e81344fdbefb94dd0efcb3be
+msgid "`Max num`：`[0, 9999999]`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:125
+#: 6d966582f256496c8f2a3ee3e6471ab6
+msgid "`Min distance`：`[0, 10]`，5 位小数"
+msgstr "`Min distance`: `[0, 10]`, five decimal places"
+
+#: ../../source/module/show-nep-reference.md:126
+#: 1fece019c79548d288f6beddd0ef61a3
+msgid "`R^2 threshold`：`[0,1]`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:127
+#: ad209c56050f4b28b6142b6922bf0e34
+msgid "`Descriptor source`：`Reduced (PCA)` / `Raw descriptor`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:128
+#: 81b589dc2e984a4b9a084a42e82ae847
+msgid "`Training dataset`：可选 `.xyz` 或目录"
+msgstr "`Training dataset`: optional `.xyz` file or directory"
+
+#: ../../source/module/show-nep-reference.md:129
+#: b55dca08da194c6fa3e4bffa93d19907
+msgid "`Use current selection as region`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:130
+#: ff1186f42b814fa2a25e7d23f1634164
+msgid "`Show training overlay`：采样后在 PCA 空间叠加训练集、当前数据和选中结构"
+msgstr ""
+"`Show training overlay`: after sampling, overlay the training set, "
+"current data, and selected structures in PCA space"
+
+#: ../../source/module/show-nep-reference.md:131
 #: 8daf93575fc649eab7c7ddf757f242e6
 msgid ""
 "平衡模式固定使用结构级原始描述符和固定数量采样，因此会锁定 `Sampling mode` 与 `Descriptor "
@@ -2585,7 +1155,7 @@ msgstr ""
 "sample count, so `Sampling mode` and `Descriptor source` are locked. "
 "Global mode continues to allow the original options."
 
-#: ../../source/module/show-nep-reference.md:135
+#: ../../source/module/show-nep-reference.md:132
 #: 75ba4b1757004f18ac749c54cf89ac14
 msgid "提供训练集时，全局模式延续原有整体 warm start；平衡模式只使用元素集合相同的已有结构初始化距离。"
 msgstr ""
@@ -2593,19 +1163,638 @@ msgstr ""
 "start, while balanced mode initializes distances only from existing "
 "structures with the same element set."
 
-#: ../../source/module/show-nep-reference.md:136
+#: ../../source/module/show-nep-reference.md:133
 #: 3a3da1bf75fd44aeb032ecd918040036
 msgid "执行结果：运行 FPS 后更新选择集；平衡模式完成后会提示实际选择数量和覆盖的元素集合数。"
 msgstr ""
 "Result: FPS updates the selection set. Balanced mode also reports the "
 "actual number selected and the number of element sets covered."
 
-#: ../../source/module/show-nep-reference.md:281
+#: ../../source/module/show-nep-reference.md:135
+#: 89eb634753084596adcabe03820a2797
+msgid ""
+"![Sparse Samples "
+"Dialog](../_static/image/generated/show_nep_reference/g_sparse_dialog.png)"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:135
+#: 39489021159e4b1684ab1f9d04fddb22
+msgid "Sparse Samples Dialog"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:135
+#: 39489021159e4b1684ab1f9d04fddb22
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_sparse_dialog.png"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:137
+#: cb266154ce3c43a7a9f3fcd755a799d7
+msgid "F. `Finding non-physical structures`（无参数弹窗，进度条）"
+msgstr "F. `Finding non-physical structures` (no parameter dialog; progress only)"
+
+#: ../../source/module/show-nep-reference.md:139
+#: c2999adba431475d987fd44a9d45f7f1
+msgid "参数来源：`widget.radius_coefficient`（默认 `0.7`）。"
+msgstr "Parameter source: `widget.radius_coefficient` (default: `0.7`)."
+
+#: ../../source/module/show-nep-reference.md:140
+#: a9c85ef3bc7542a188a0116ba36b7a31
+msgid "执行结果：扫描后选中疑似非物理结构。"
+msgstr "Result: scan and select structures flagged as potentially nonphysical."
+
+#: ../../source/module/show-nep-reference.md:142
+#: db2503156a7445c8b79b7a3a77a24db9
+msgid "G. `Check Net Force`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:144
+#: 286deea27c64465b8f96ccdcf43873bc
+msgid "输入控件：阈值 `|ΣF|`。"
+msgstr "Input: threshold for `|ΣF|`."
+
+#: ../../source/module/show-nep-reference.md:145
+#: 03113630592f4fdbae06c52b1b22e0ae
+msgid "范围：`[0, 1e6]`，10 位小数。"
+msgstr "Range: `[0, 1e6]`, ten decimal places."
+
+#: ../../source/module/show-nep-reference.md:146
+#: 2caee2db32bd4696a3466d5f0a2e0fcd
+msgid "默认值：`widget.force_balance_threshold`（缺省 `1e-3`）。"
+msgstr "Default: `widget.force_balance_threshold`, or `1e-3` when unset."
+
+#: ../../source/module/show-nep-reference.md:147
+#: bf281a5a98e040bebf79e8b515f922d6
+msgid "执行结果：选中超阈值结构，并显示统计消息。"
+msgstr ""
+"Result: select structures above the threshold and display summary "
+"statistics."
+
+#: ../../source/module/show-nep-reference.md:149
+#: 0bf2c9d9306941b096dbb04cb0d4394b
+msgid ""
+"![Check Net Force "
+"Dialog](../_static/image/generated/show_nep_reference/g_force_dialog.png)"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:149
+#: bd7beda012d742178baf4de078b96915
+msgid "Check Net Force Dialog"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:149
+#: bd7beda012d742178baf4de078b96915
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_force_dialog.png"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:151
+#: 9fcf05ca8daa4a77bba9c6bd4a6d20ae
+msgid "H. `Edit Info`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:153
+#: 0ea83c5881a64619acef972c3db8ff9f
+msgid "输入能力："
+msgstr "Supported edits:"
+
+#: ../../source/module/show-nep-reference.md:154
+#: 42340db756a54bd6a33cbbc4c2c72dd1
+msgid "新增标签（`key/value`）"
+msgstr "Add labels as `key/value` pairs"
+
+#: ../../source/module/show-nep-reference.md:155
+#: 1bb48b8d3dcd4b55902dcf71f6b250ec
+msgid "删除标签"
+msgstr "Remove labels"
+
+#: ../../source/module/show-nep-reference.md:156
+#: e84002ae8f7a4218a877556dab945348
+msgid "右键重命名标签"
+msgstr "Rename labels from the context menu"
+
+#: ../../source/module/show-nep-reference.md:157
+#: 2d61132792614a7486e8869abbdbcb49
+msgid "应用前确认：列出 `removed / renamed / added` 摘要。"
+msgstr "Confirmation before applying: lists a `removed / renamed / added` summary."
+
+#: ../../source/module/show-nep-reference.md:158
+#: d63cbce83e13420686ecfbba8c147b3e
+msgid "执行结果：批量更新当前选中结构 metadata。"
+msgstr "Result: update metadata for all selected structures."
+
+#: ../../source/module/show-nep-reference.md:160
+#: c20cf46509c14a16b38e24dc63aa1aef
+msgid ""
+"![Edit Info "
+"Dialog](../_static/image/generated/show_nep_reference/g_editinfo_dialog.png)"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:160
+#: 96e80a9d224746c8b269adeae303badb
+msgid "Edit Info Dialog"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:160
+#: 96e80a9d224746c8b269adeae303badb
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_editinfo_dialog.png"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:162
+#: 38be12aebef4409eaea5059ba58e5113
+msgid "I. `Export structure descriptor`（路径选择）"
+msgstr "I. `Export structure descriptor` (path selection)"
+
+#: ../../source/module/show-nep-reference.md:164
+#: 9c4f485507f64fe0be42ae9e8f3d0ff7
+msgid "路径对话框默认文件名：`export_descriptor_data.out`。"
+msgstr "Default filename: `export_descriptor_data.out`."
+
+#: ../../source/module/show-nep-reference.md:165
+#: a11a50a79f1740bd9e999f796d0e4e47
+msgid "执行结果：后台导出描述符。"
+msgstr "Result: export descriptors in the background."
+
+#: ../../source/module/show-nep-reference.md:167
+#: 8b9c292b3fbf4b2d84724c3b8361906e
+msgid "J. `Energy Baseline Shift`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:169
+#: b49c621247be4ff88188d1408b0298d2
+msgid "预设区：`presetCombo` + 导入/导出/删除按钮。"
+msgstr "Preset area: `presetCombo` plus import, export, and delete buttons."
+
+#: ../../source/module/show-nep-reference.md:170
+#: e2fcbbb5814f4b05aa3cd838159c42ac
+msgid ""
+"参数区：`groupEdit`、`alignment mode`、`max generations`、`population "
+"size`、`convergence tol`。"
+msgstr ""
+"Parameters: `groupEdit`, `alignment mode`, `max generations`, `population"
+" size`, and `convergence tol`."
+
+#: ../../source/module/show-nep-reference.md:171
+#: 7f6b093838ad49d2b750e061541dd1a4
+msgid "保存区：`Save baseline as preset` + `Preset name`。"
+msgstr "Saving: `Save baseline as preset` plus `Preset name`."
+
+#: ../../source/module/show-nep-reference.md:172
+#: c36df9458a8344d3840fe6d000e073e5
+msgid "执行结果：后台拟合/应用基线平移并重绘。"
+msgstr "Result: fit and apply the baseline shift in the background, then redraw."
+
+#: ../../source/module/show-nep-reference.md:174
+#: 498c7b197b324987bb36f9ee62201b49
+msgid ""
+"![Energy Baseline Shift "
+"Dialog](../_static/image/generated/show_nep_reference/g_shift_dialog.png)"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:174
+#: e5b18e614ae44c76a8aa9f8a58db183a
+msgid "Energy Baseline Shift Dialog"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:174
+#: e5b18e614ae44c76a8aa9f8a58db183a
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_shift_dialog.png"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:176
+#: 74938f4edb364ed985e84622a1e66f54
+msgid "K. `DFT D3`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:178
+#: 228993d8715e4a52b9955a2acd6a24c1
+msgid "输入控件：`functional`、`D3 cutoff`、`D3 cutoff_cn`、`mode(Add/Subtract)`。"
+msgstr ""
+"Inputs: `functional`, `D3 cutoff`, `D3 cutoff_cn`, and `mode "
+"(Add/Subtract)`."
+
+#: ../../source/module/show-nep-reference.md:179
+#: b94337dd6b5f45ca8df4b0efb19e0476
+msgid "执行结果：后台应用 DFT-D3 修正并重绘。"
+msgstr "Result: apply the DFT-D3 correction in the background and redraw."
+
+#: ../../source/module/show-nep-reference.md:181
+#: 65537cf34bef40f699e47d4de8536cd6
+msgid ""
+"![DFT D3 "
+"Dialog](../_static/image/generated/show_nep_reference/g_dftd3_dialog.png)"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:181
+#: 475ad9e8b64a494691500c7537962fba
+msgid "DFT D3 Dialog"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:181
+#: 475ad9e8b64a494691500c7537962fba
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_dftd3_dialog.png"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:183
+#: bb61802b940f4a13a49fca3129f754e2
+msgid "L. `Training Set Check`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:185
+#: a865681c83714925a00e02246a2ce8c0
+msgid "位置：删除按钮后的分隔栏右侧。"
+msgstr "Location: to the right of the separator after the Delete button."
+
+#: ../../source/module/show-nep-reference.md:186
+#: 4f81ab65dc984b6699470b013f39db75
+msgid "评估范围：当前活动结构；已经删除的结构不参与。"
+msgstr "Scope: current active structures. Deleted structures are excluded."
+
+#: ../../source/module/show-nep-reference.md:187
+#: c5afe347621e4237ab805c23f17f1661
+msgid "概览：结构/原子统计、标签可用性、元素共现矩阵与精确元素集合。"
+msgstr "Overview: structure and atom statistics, label availability, the element co-occurrence matrix, and exact element sets."
+
+#: ../../source/module/show-nep-reference.md:188
+#: 780be84f5e6d417faa961e7b0aa3f3ad
+msgid "证据：数据质量、局域化学、结构相和磁类型；耗时证据在后台计算。"
+msgstr "Evidence: data quality, local chemistry, structural phases, and magnetic types; expensive evidence is computed in the background."
+
+#: ../../source/module/show-nep-reference.md:189
+#: b73375183f124220aad6f51e16a6318f
+msgid "结构回选：点击图表、表格或复核项后，可把真实结构索引送回 `NEP Dataset Display`。"
+msgstr ""
+"Selection round-trip: click a chart, table row, or review item to send "
+"the corresponding real structure indices back to `NEP Dataset Display`."
+
+#: ../../source/module/show-nep-reference.md:190
+#: f6d43152b7694731a754fb40d99cb317
+msgid "报告：`导出 HTML 报告` 保存本次评估范围、指纹、证据、判据和限制。"
+msgstr ""
+"Report: `Export HTML Report` records the audit scope, fingerprints, "
+"evidence, criteria, and limitations."
+
+#: ../../source/module/show-nep-reference.md:192
+#: fc620f4b5e48450d805f0be41fdb1c70
+msgid "完整操作顺序和识别原理见 [训练集评估](training-set-assessment.md)。"
+msgstr ""
+"For the full workflow and recognition principles, see [Training Set Audit"
+"](training-set-assessment.md)."
+
+#: ../../source/module/show-nep-reference.md:194
+#: 1ed5710c51f44406aa39e8790fc9282a
+msgid "M. `Explore distributions`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:196
+#: 1f67b9228dcf4345a14845363518368e
+msgid "点击后打开 `训练集评估 → 数据分布`，不再弹出独立的 Distribution Inspector 窗口。"
+msgstr ""
+"Opens `Training Set Audit → Data Distributions`; it no longer opens a "
+"separate Distribution Inspector window."
+
+#: ../../source/module/show-nep-reference.md:197
+#: 31aaa598dc17467a91687af0eb9bac5f
+msgid "默认只需要选择 `字段 / 数值类型 / 分组方式 / 数据范围`。"
+msgstr ""
+"In the usual workflow, choose only `Field / Value Type / Group By / Data "
+"Range`."
+
+#: ../../source/module/show-nep-reference.md:198
+#: 5c8f5e79623b41c28c540670146afc87
+msgid "`选择方式 / 分箱数 / 辅助曲线 / 向量模长` 收入“高级选项”。"
+msgstr ""
+"`Selection Mode / Bins / Auxiliary Curve / Vector Norm` are under "
+"Advanced Options."
+
+#: ../../source/module/show-nep-reference.md:199
+#: c310f5165bdd4905ba3aadb43124a243
+msgid "`Metric / Series` 与分布图联动；点击分箱会把对应结构选择回写到 Dataset Display。"
+msgstr ""
+"`Metric / Series` is linked to the distribution plot. Clicking a bin "
+"writes the corresponding structure selection back to Dataset Display."
+
+#: ../../source/module/show-nep-reference.md:200
+#: dbcdaa47cdd54a8ba4f3d103ea0d3151
+msgid "Reference / Prediction / Error 只在底层数据支持时产生有效结果。"
+msgstr ""
+"Reference, Prediction, and Error are meaningful only when the underlying "
+"dataset provides the required paired data."
+
+#: ../../source/module/show-nep-reference.md:202
+#: 4e514b5931294809a74b63956eed6e5e
+msgid "原有独立窗口暂时作为兼容实现保留，但工具栏入口已经切换到统一页面。"
+msgstr ""
+"The former standalone window remains as a compatibility implementation, "
+"but the toolbar now opens the unified audit page."
+
+#: ../../source/module/show-nep-reference.md:204
+#: f7e9d5370d8743d68d560cf0db1d689a
+msgid "4. 结构工具栏（按按钮查）"
+msgstr "4 — Structure toolbar by button"
+
+#: ../../source/module/show-nep-reference.md:206
+#: 7f1065ab5c4e46b29fc623a88b65e2ab
+msgid "4.1 相机与显示控制"
+msgstr "4.1 Camera and display controls"
+
+#: ../../source/module/show-nep-reference.md:59
+#: 15cc670c09bb4db9bb1ec0df346f528f
+msgid "切换正交投影"
+msgstr "Toggle orthographic projection"
+
+#: ../../source/module/show-nep-reference.md:59
+#: 56068360707848fab865fe960a3847d6
+msgid "自动视角/距离对齐"
+msgstr "Fit the camera orientation and distance"
+
+#: ../../source/module/show-nep-reference.md:59
+#: e6b03053ca3e4f698041cb390e166075
+msgid "显示/隐藏键；图标在 `show_bond/hide_bond` 间切换"
+msgstr "Show or hide bonds; the icon toggles between `show_bond` and `hide_bond`"
+
+#: ../../source/module/show-nep-reference.md:214
+#: eebf82f030d449caaf8f5610ea15a3f0
+msgid "4.2 `Show Arrows`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:216
+#: 22449a5fcf8545509cc528a7812fb3fe
+msgid "前提：当前结构画布必须支持箭头 API（通常 vispy）。"
+msgstr ""
+"Requirement: the active structure canvas must support the arrow API, "
+"normally provided by VisPy."
+
+#: ../../source/module/show-nep-reference.md:218
+#: e928739c638449c2a7653d6339e11e5c
+msgid "`Property`：仅 `N x 3` 原子向量属性"
+msgstr "`Property`: an atomic `N × 3` vector property only"
+
+#: ../../source/module/show-nep-reference.md:219
+#: 4e551797021840c8be58856b94589883
+msgid "`Scale`：`[0, 1000]`，默认 `1.0`"
+msgstr "`Scale`: `[0, 1000]`, default: `1.0`"
+
+#: ../../source/module/show-nep-reference.md:220
+#: ee15b60c1aa345be9735c81a5dd84eb2
+msgid "`Colormap`：`viridis/magma/plasma/inferno/jet`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:221
+#: 7b66da9133b442eb8d909a3792a55c99
+msgid "`Show arrows`：勾选显示，取消则清除"
+msgstr "`Show arrows`: enable to display arrows; disable to clear them"
+
+#: ../../source/module/show-nep-reference.md:223
+#: 886d38745732415f81189912ae293050
+msgid ""
+"![Show Arrows "
+"Dialog](../_static/image/generated/show_nep_reference/s_arrow_dialog.png)"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:223
+#: 1c88d634d0384b2e8da58995cfcbb05b
+msgid "Show Arrows Dialog"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:223
+#: 1c88d634d0384b2e8da58995cfcbb05b
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/s_arrow_dialog.png"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:225
+#: c76861b0689240f1829d8d7a2355a81c
+msgid "4.3 `Export current structure`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:227
+#: 33eeab98ca994fc8a45c22fa9bbe920d
+msgid "第一步：选格式"
+msgstr "Step 1: choose the format"
+
+#: ../../source/module/show-nep-reference.md:228
+#: 3423970234844152b2251953099a72d5
+msgid "`XYZ (.xyz / extxyz)`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:229
+#: 5099055d84e2492b9dba3151371edf2e
+msgid "`DeepMD/NPY (deepmd/npy)`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:230
+#: 86393a7163ed405dafebab388a5ed478
+msgid "第二步：选路径"
+msgstr "Step 2: choose the destination"
+
+#: ../../source/module/show-nep-reference.md:231
+#: 9f69b353d7544ff18e3399e76b77efc4
+#, python-brace-format
+msgid "`xyz`：文件保存路径（默认 `structure_{index}.xyz`）"
+msgstr "`xyz`: file path, defaulting to `structure_{index}.xyz`"
+
+#: ../../source/module/show-nep-reference.md:232
+#: 1e587f5e80f14093b9d2aff000a8e1ca
+msgid "`deepmd/npy`：目录保存路径"
+msgstr "`deepmd/npy`: directory path"
+
+#: ../../source/module/show-nep-reference.md:234
+#: cec5550e2e6d4d2a858530135d30360a
+msgid ""
+"![Export Format "
+"Dialog](../_static/image/generated/show_nep_reference/s_export_format.png)"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:234
+#: a2283f9101874d25a5de783974ad1f55
+msgid "Export Format Dialog"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:234
+#: a2283f9101874d25a5de783974ad1f55
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/s_export_format.png"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:236
+#: db7f639243804fb18c3e6b8bfb072f6c
+msgid "4.4 `Mark Bad (Reject)` 与 `Drop All Bad`"
+msgstr "4.4 `Mark Bad (Reject)` and `Drop All Bad`"
+
+#: ../../source/module/show-nep-reference.md:238
+#: 6595ff2c9ceb4f3a924d76708cd53093
+msgid "`Mark Bad (Reject)`：只标记，不删除；主图显示 reject 高亮。"
+msgstr ""
+"`Mark Bad (Reject)`: mark without deleting; rejected structures are "
+"highlighted in the main plot."
+
+#: ../../source/module/show-nep-reference.md:239
+#: e08c3883537a4f44a9325a9a5ded1e3c
+msgid "`Drop All Bad`：弹确认框后删除所有 active bad；删除后清空 reject 集合并重绘。"
+msgstr ""
+"`Drop All Bad`: after confirmation, delete every active rejected "
+"structure, clear the reject set, and redraw."
+
+#: ../../source/module/show-nep-reference.md:241
+#: fbe7ec6ae37847759d1ea801aac63104
+msgid ""
+"![Drop All Bad "
+"Confirm](../_static/image/generated/show_nep_reference/s_dropbad_confirm.png)"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:241
+#: 629549d9cea643df95dba601207d6dfe
+msgid "Drop All Bad Confirm"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:241
+#: 629549d9cea643df95dba601207d6dfe
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/s_dropbad_confirm.png"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:243
+#: 02b646d980244d9c8016fac3af292121
+msgid "5. 导入导出与 NEP 模型切换"
+msgstr "5 — Import, export, and NEP model switching"
+
+#: ../../source/module/show-nep-reference.md:245
+#: 4fd4d796d41e40eea79d5df6330ea8cc
+msgid "5.1 导入"
+msgstr "5.1 Import"
+
+#: ../../source/module/show-nep-reference.md:247
+#: 1c0178da3c344b318d61f859a0fdf349
+msgid "`Open File...`：选择 `*.xyz`。"
+msgstr "`Open File...`: choose an `*.xyz` file."
+
+#: ../../source/module/show-nep-reference.md:248
+#: b10975a34a9f49b5bc44fa3679de1f19
+msgid "`Open Folder...`：选择目录（`deepmd/npy` 常见）。"
+msgstr "`Open Folder...`: choose a directory, commonly a `deepmd/npy` dataset."
+
+#: ../../source/module/show-nep-reference.md:249
+#: c0da13d678eb4278840d3f8eb7b587f8
+msgid "拖拽：仅接受 `matches_result_loader()` 支持的路径。"
+msgstr "Drag and drop accepts only paths supported by `matches_result_loader()`."
+
+#: ../../source/module/show-nep-reference.md:250
+#: b4f4a67c36194312898fdbbf18ef848f
+msgid "若已有工作路径，切换前会二次确认。"
+msgstr ""
+"If a working path is already open, the app asks for confirmation before "
+"switching."
+
+#: ../../source/module/show-nep-reference.md:251
+#: 9fdeca00846d4cf482add742b4d35e5e
+msgid "加载过程在后台线程执行；`StateToolTip` 可触发取消。"
+msgstr ""
+"Loading runs in a background thread; the `StateToolTip` can request "
+"cancellation."
+
+#: ../../source/module/show-nep-reference.md:253
+#: 4b5d83182dcf46bda6ed74d157507113
+msgid "5.2 导出菜单（顶栏 Save）"
+msgstr "5.2 Export menu (top `Save` button)"
+
+#: ../../source/module/show-nep-reference.md:255
+#: 45c68911fb6e4f7d94e68916fce96eb7
+msgid "动作：`Export All / Selected / Removed / Active`。"
+msgstr "Actions: `Export All / Selected / Removed / Active`."
+
+#: ../../source/module/show-nep-reference.md:256
+#: 8df6d37b6c5844b5ab8551fae1c39a02
+msgid "启用条件：数据已加载且非 busy；其中 `Selected/Removed/Active` 要求计数大于 0。"
+msgstr ""
+"Availability: data must be loaded and the page must not be busy. "
+"`Selected`, `Removed`, and `Active` additionally require a nonzero count."
+
+#: ../../source/module/show-nep-reference.md:257
+#: f44e4bec97d04d5ab7c204019ec4ecb2
+msgid "统一先选 `ExportFormat`，再选路径。"
+msgstr ""
+"For every action, choose `ExportFormat` first and then the destination "
+"path."
+
+#: ../../source/module/show-nep-reference.md:259
+#: 7b5611d28a2743b582260d2eaeec7069
+msgid "![Export Menu](../_static/image/show_nep/m_export_menu.png)"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:259
+#: 326732bfce0f47089ca519a93fa45710
+msgid "Export Menu"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:259
+#: 326732bfce0f47089ca519a93fa45710
+msgid ".. image:: ../_static/image/show_nep/m_export_menu.png"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:261
+#: c866e24a83ad4d19a878708a4b383bf2
+msgid "5.3 NEP 模型切换（路径栏右侧下拉框）"
+msgstr "5.3 Switching NEP models (dropdown to the right of the path bar)"
+
+#: ../../source/module/show-nep-reference.md:263
+#: ef125937134b417a848758d0d106089b
+msgid "文件发现：扫描当前目录 `*.txt` 且文件名含 `nep`。"
+msgstr ""
+"Discovery: scan the current directory for `*.txt` files whose names "
+"contain `nep`."
+
+#: ../../source/module/show-nep-reference.md:264
+#: 6ddd316d20d845f89df09b62cfafaea9
+msgid "排序规则：`nep.txt` 优先，其余按字母序；最后可追加内置 `nep89`。"
+msgstr ""
+"Ordering: `nep.txt` first, then other files alphabetically, with the "
+"built-in `nep89` optionally appended."
+
+#: ../../source/module/show-nep-reference.md:265
+#: 0c757a16b2c149198f46c9f0014a6524
+msgid "切换策略：优先命中缓存（`_nep_result_cache`）；未命中时异步重载。"
+msgstr ""
+"Switching: use `_nep_result_cache` when available; otherwise reload "
+"asynchronously."
+
+#: ../../source/module/show-nep-reference.md:266
+#: 9a4f415a6fe64056955aba80e9914494
+msgid "状态保持：切换后恢复 `selected` 与 `reject`。"
+msgstr "State preservation: restore `selected` and `reject` after the switch."
+
+#: ../../source/module/show-nep-reference.md:268
+#: 3d58bc48073d451fb36a0a46aa134044
+msgid "![NEP Model Combo](../_static/image/show_nep/m_nep_combo.png)"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:268
+#: 03f6e5424adc4bedbce51f8d97aad3c2
+msgid "NEP Model Combo"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:268
+#: 03f6e5424adc4bedbce51f8d97aad3c2
+msgid ".. image:: ../_static/image/show_nep/m_nep_combo.png"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:270
 #: bcc7713523a84109b843cfc8815d1f8b
 msgid "6. 结构筛选栏"
 msgstr "6 — Structure filter bar"
 
-#: ../../source/module/show-nep-reference.md:283
+#: ../../source/module/show-nep-reference.md:272
 #: 93d94e6b6efa46bf9541f40a5673be20
 msgid "结构筛选栏可以同时使用配置类型、化学式、元素和自定义表达式。条件默认取交集；经常重复使用的组合可以保存为“常用筛选”。"
 msgstr ""
@@ -2614,38 +1803,38 @@ msgstr ""
 "default, and combinations you use repeatedly can be saved under `Saved "
 "filters`."
 
-#: ../../source/module/show-nep-reference.md:285
+#: ../../source/module/show-nep-reference.md:274
 #: ac8b906259524589a91b1d825d18fdde
 msgid "![结构筛选栏与条件编辑器](../_static/image/generated/show_nep_reference/g_structure_filter.png)"
 msgstr ""
 "![Structure filter bar and condition "
 "editor](../_static/image/generated/show_nep_reference/g_structure_filter.png)"
 
-#: ../../source/module/show-nep-reference.md:285
+#: ../../source/module/show-nep-reference.md:274
 #: 2eaa8e8e9056454986903d2240040c0a
 msgid "结构筛选栏与条件编辑器"
 msgstr "Structure filter bar and condition editor"
 
-#: ../../source/module/show-nep-reference.md:285
+#: ../../source/module/show-nep-reference.md:274
 #: 2eaa8e8e9056454986903d2240040c0a
 msgid ""
 ".. image:: "
 "../_static/image/generated/show_nep_reference/g_structure_filter.png"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md:287
+#: ../../source/module/show-nep-reference.md:276
 #: cbf9386933d74766bf5bd0b283392cfb
 msgid "6.1 基本流程"
 msgstr "6.1 Basic workflow"
 
-#: ../../source/module/show-nep-reference.md:289
+#: ../../source/module/show-nep-reference.md:278
 #: 4b942c1b0e4a48b1877c55eb94784584
 msgid "点击“筛选条件”打开编辑器。空筛选会自动出现第一行。"
 msgstr ""
 "Click `Filter conditions` to open the editor. An empty filter starts with"
 " one blank row."
 
-#: ../../source/module/show-nep-reference.md:290
+#: ../../source/module/show-nep-reference.md:279
 #: a278b864277840c1b8eaa6781af5dcc0
 msgid "在左下角点击“+”继续添加条件，例如“配置类型包含 `surface`”“必须包含 `Fe,O`”“不得包含 `H`”。"
 msgstr ""
@@ -2653,21 +1842,21 @@ msgstr ""
 "`Config type contains surface`, `Must contain Fe,O`, and `Must not "
 "contain H`."
 
-#: ../../source/module/show-nep-reference.md:291
+#: ../../source/module/show-nep-reference.md:280
 #: f4ec7603fea946e68756a53bac78d167
 msgid "在右上角选择“满足全部条件（AND）”或“满足任一条件（OR）”。"
 msgstr ""
 "Choose `Match all conditions (AND)` or `Match any condition (OR)` in the "
 "upper-right corner."
 
-#: ../../source/module/show-nep-reference.md:292
+#: ../../source/module/show-nep-reference.md:281
 #: 2c0d64efaa4948ab868e7315b816ce50
 msgid "点击“完成并预览”。图中的匹配高亮只用于预览，不会改变当前选择。"
 msgstr ""
 "Click `Done and preview`. The highlighted matches in the plot are only a "
 "preview and do not change the current selection."
 
-#: ../../source/module/show-nep-reference.md:293
+#: ../../source/module/show-nep-reference.md:282
 #: 65ea37573a9145ce8387681bf07b551a
 msgid "确认匹配数量后，在“应用结果”中选择“替换当前选择”“加入当前选择”或“从当前选择中移除”。"
 msgstr ""
@@ -2675,14 +1864,14 @@ msgstr ""
 "to current selection`, or `Remove from current selection` from `Apply "
 "result`."
 
-#: ../../source/module/show-nep-reference.md:295
+#: ../../source/module/show-nep-reference.md:284
 #: 029ab9dd39f74a1c991e008a92431691
 msgid "修改条件后，旧匹配结果会显示为“结果已过期”。重新预览前不能继续应用旧结果。"
 msgstr ""
 "After a condition changes, the previous match result is marked `Result is"
 " stale` and cannot be applied until you preview again."
 
-#: ../../source/module/show-nep-reference.md:297
+#: ../../source/module/show-nep-reference.md:286
 #: 1a09df6b424349329a224fc29754bc18
 msgid "编辑器右下角的垃圾篓按钮只清空筛选条件和匹配高亮，**不会清空当前选择**。清空选择位于“应用结果”菜单中。"
 msgstr ""
@@ -2691,104 +1880,121 @@ msgstr ""
 "selection**. Use `Clear current selection` in the `Apply result` menu for"
 " that action."
 
-#: ../../source/module/show-nep-reference.md:299
+#: ../../source/module/show-nep-reference.md:288
 #: bf7855d08e1e42f5807c2390ac3beb9d
 msgid "6.2 条件含义"
 msgstr "6.2 Condition semantics"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: c5dfceae340e42d898dbaacda1dedbf8
 msgid "条件"
 msgstr "Condition"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
+#: bd48141de2f94dc4a99500db92af5511
+msgid "含义"
+msgstr "Meaning"
+
+#: ../../source/module/show-nep-reference.md:59
+#: dad400f7728c41a8886f8379d1c5f896
+msgid "示例"
+msgstr "Example"
+
+#: ../../source/module/show-nep-reference.md:59
 #: 657eb27c18244043bd7f6341d008f216
 msgid "配置类型"
 msgstr "Configuration type"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: 38816f8c4a7f4039b643fe3e8c2ccf04
 msgid "包含、完全等于、开头、结尾或正则匹配"
 msgstr "Contains, exact, starts with, ends with, or regular expression"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: 459b720fe9df4f6398b4b782b6038c1c
 msgid "`surface`"
 msgstr "`surface`"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: a7e3d40b84ab43768142ce52ae5300a7
 msgid "化学式"
 msgstr "Formula"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: c7543c5b2617410093bbb102ca4fd8c8
 msgid "默认完全等于，也可选择包含或正则匹配"
 msgstr ""
 "Exact by default; contains and regular-expression matching are also "
 "available"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: 2d8f6ce9d4b94d33aab6ccdedfdfaeb0
 msgid "`Fe2O3`"
 msgstr "`Fe2O3`"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: 322a06ba11194093b0dbad39bed7145e
 msgid "必须包含元素"
 msgstr "Must contain elements"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: 12acdc4cd6ab4385937f90e96d2dc45a
 msgid "所列元素必须全部存在，允许还有其他元素"
 msgstr "Every listed element must be present; additional elements are allowed"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: fa32a1556fa14bf3a9644467a21224b6
 msgid "`Fe,O` 可匹配 FeO 和 FeOC"
 msgstr "`Fe,O` matches FeO and FeOC"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: 322a06ba11194093b0dbad39bed7145e
 msgid "不得包含元素"
 msgstr "Must not contain elements"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: 2613ba9fc8ad412db5b19495aa48de30
 msgid "所列元素必须全部不存在"
 msgstr "None of the listed elements may be present"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: 873819738644446ba834b61bdaf68c29
 msgid "`H` 排除含 H 结构"
 msgstr "`H` excludes structures containing H"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: 118f72d0c42f4e4ba38043e304c1144e
 msgid "只允许这些元素"
 msgstr "Allow only these elements"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: 7a18d21feab14cca9a7714e6deea058d
 msgid "结构中不能出现列表外元素"
 msgstr "The structure cannot contain elements outside the list"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: ec78e052f53946e085b754c3890921ba
 msgid "`Fe,O` 可匹配 Fe、O 和 FeO"
 msgstr "`Fe,O` matches Fe, O, and FeO"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: 2b9c62278c7e44878ab3441670cfbdd7
 msgid "自定义表达式"
 msgstr "Custom expression"
 
-#: ../../source/module/show-nep-reference.md:60
+#: ../../source/module/show-nep-reference.md:59
 #: 65718fb3d36f4471a06d64497687ecf0
 msgid "使用现有结构表达式引擎"
 msgstr "Uses the existing structure-expression engine"
 
-#: ../../source/module/show-nep-reference.md:310
+#: ../../source/module/show-nep-reference.md:59
+#: ../../source/module/show-nep-reference.md:361
+#: ../../source/module/show-nep-reference.md:494
+#: 5b704c089ce047dc8a16854c6cfa8dfc
+msgid "`natoms > 100`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:299
 #: 5676754a58da42858fff7d8030bcd808
 msgid "同一条配置类型或化学式条件可以用分号输入多个值，多个值之间取“任一匹配”。元素之间使用逗号或空格分隔，例如 `Fe, O`。"
 msgstr ""
@@ -2796,7 +2002,7 @@ msgstr ""
 "separating them with semicolons; matching any value is sufficient. "
 "Separate elements with commas or spaces, for example `Fe, O`."
 
-#: ../../source/module/show-nep-reference.md:312
+#: ../../source/module/show-nep-reference.md:301
 #: 1568604ce02845aa9ae4010bc168d89a
 msgid "每行左侧的开关控制该条件是否参与筛选。关闭条件不会删除输入内容。配置类型和化学式右侧的 `Aa` 控制是否区分大小写；高亮时区分，未高亮时不区分。"
 msgstr ""
@@ -2805,7 +2011,7 @@ msgstr ""
 "type and formula conditions, `Aa` controls case sensitivity: highlighted "
 "means case-sensitive; otherwise matching is case-insensitive."
 
-#: ../../source/module/show-nep-reference.md:314
+#: ../../source/module/show-nep-reference.md:303
 #: ccb6d3612dc3476eab8cadaa40c27dbc
 msgid "非法正则、未知元素或错误表达式会直接标记对应条件，不会被当成“0 个匹配”，也不会意外匹配全部结构。"
 msgstr ""
@@ -2813,80 +2019,80 @@ msgstr ""
 "marks the corresponding condition directly. It is not treated as zero "
 "matches and cannot accidentally match every structure."
 
-#: ../../source/module/show-nep-reference.md:316
+#: ../../source/module/show-nep-reference.md:305
 #: f7f67dbd2f8e4eb7b79ecd1d239393c8
 msgid "6.3 保存和复用常用筛选"
 msgstr "6.3 Save and reuse filters"
 
-#: ../../source/module/show-nep-reference.md:318
+#: ../../source/module/show-nep-reference.md:307
 #: bbac0d55058b4dd2bfc2f55f6cff453d
 msgid "如果经常清理同一类数据，可以保存整个条件组合。例如，一个常用组合可以是："
 msgstr ""
 "If you repeatedly clean the same kind of data, save the whole condition "
 "set. For example:"
 
-#: ../../source/module/show-nep-reference.md:320
-#: ../../source/module/show-nep-reference.md:587
+#: ../../source/module/show-nep-reference.md:309
+#: ../../source/module/show-nep-reference.md:576
 #: 98ebe84c8b3c4bd6bd7595af49051a04
 msgid "配置类型包含 `surface`"
 msgstr "Configuration type contains `surface`"
 
-#: ../../source/module/show-nep-reference.md:321
-#: ../../source/module/show-nep-reference.md:588
+#: ../../source/module/show-nep-reference.md:310
+#: ../../source/module/show-nep-reference.md:577
 #: 3b4a660a6172419da984a79a7b33abce
 msgid "必须包含元素 `Fe,O`"
 msgstr "Must contain elements `Fe,O`"
 
-#: ../../source/module/show-nep-reference.md:322
+#: ../../source/module/show-nep-reference.md:311
 #: 3b4a660a6172419da984a79a7b33abce
 msgid "不得包含元素 `H`"
 msgstr "Must not contain element `H`"
 
-#: ../../source/module/show-nep-reference.md:323
+#: ../../source/module/show-nep-reference.md:312
 #: deb73797b5c34e13a2bb4c543e19323e
 msgid "条件关系为“满足全部条件（AND）”"
 msgstr "Logic set to `Match all conditions (AND)`"
 
-#: ../../source/module/show-nep-reference.md:325
+#: ../../source/module/show-nep-reference.md:314
 #: 8af802ea298d4d209c77feb65e082c8c
 msgid "保存一次后，下次不需要逐行重填："
 msgstr "After saving it once, you do not need to re-enter every row next time:"
 
-#: ../../source/module/show-nep-reference.md:327
+#: ../../source/module/show-nep-reference.md:316
 #: e302deb021a9473d95302dda252050be
 msgid "先把条件、AND/OR 关系和 `Aa` 状态设置好。"
 msgstr "Set the conditions, AND/OR logic, and `Aa` states."
 
-#: ../../source/module/show-nep-reference.md:328
+#: ../../source/module/show-nep-reference.md:317
 #: ee8b9054704049039dac77da849a3eb5
 msgid "点击“常用筛选 → 保存当前条件…”。"
 msgstr "Choose `Saved filters → Save current conditions…`."
 
-#: ../../source/module/show-nep-reference.md:329
+#: ../../source/module/show-nep-reference.md:318
 #: c9638eb152cc495c97eb050492263008
 msgid "输入容易识别的名称，例如 `Fe-O surface`，然后点击“保存”。"
 msgstr "Enter a recognizable name such as `Fe-O surface`, then click `Save`."
 
-#: ../../source/module/show-nep-reference.md:330
+#: ../../source/module/show-nep-reference.md:319
 #: 321d5def47c9417fbeaec8b8a20634bc
 msgid "下次打开编辑器时，点击“常用筛选”，再直接点击该名称。"
 msgstr ""
 "The next time you open the editor, click `Saved filters`, then click that"
 " name."
 
-#: ../../source/module/show-nep-reference.md:332
+#: ../../source/module/show-nep-reference.md:321
 #: 8e396800295d404e9df85fd12b2866f7
 msgid "![常用筛选菜单](../_static/image/generated/show_nep_reference/g_structure_filter_presets.png)"
 msgstr ""
 "![Saved filters "
 "menu](../_static/image/generated/show_nep_reference/g_structure_filter_presets.png)"
 
-#: ../../source/module/show-nep-reference.md:332
+#: ../../source/module/show-nep-reference.md:321
 #: 6cfe72227ca34765a07378bd41483e41
 msgid "常用筛选菜单"
 msgstr "Saved filters menu"
 
-#: ../../source/module/show-nep-reference.md:332
+#: ../../source/module/show-nep-reference.md:321
 #: 6cfe72227ca34765a07378bd41483e41
 msgid ""
 ".. image:: "
@@ -2895,7 +2101,7 @@ msgstr ""
 ".. image:: "
 "../_static/image/generated/show_nep_reference/g_structure_filter_presets.png"
 
-#: ../../source/module/show-nep-reference.md:334
+#: ../../source/module/show-nep-reference.md:323
 #: cc75d05e51524fd3a0c3969fe5053c89
 msgid "加载常用筛选会**替换编辑器里的当前条件**，随后更新预览；它不会自动执行“应用结果”，也不会改变当前选择。"
 msgstr ""
@@ -2903,129 +2109,961 @@ msgstr ""
 "editor** and then refreshes the preview. It does not run `Apply result` "
 "automatically and does not change the current selection."
 
-#: ../../source/module/show-nep-reference.md:336
+#: ../../source/module/show-nep-reference.md:325
 #: bfa0939e425e490da2c628d18b779d67
 msgid "保存内容包括："
 msgstr "A saved filter includes:"
 
-#: ../../source/module/show-nep-reference.md:338
+#: ../../source/module/show-nep-reference.md:327
 #: 5ed0c9cad72640acabbf023d82ebdea2
 msgid "每条条件的类型、输入值和启用状态"
 msgstr "Each condition's type, entered values, and enabled state"
 
-#: ../../source/module/show-nep-reference.md:339
+#: ../../source/module/show-nep-reference.md:328
 #: 095c22f5b7d34a47a2aa901e0d5003a2
 msgid "配置类型或化学式的匹配方式与 `Aa` 状态"
 msgstr "The match mode and `Aa` state for config type or formula conditions"
 
-#: ../../source/module/show-nep-reference.md:340
+#: ../../source/module/show-nep-reference.md:329
 #: bafb21946a7d4d5eb0d76c2c90bef8e4
 msgid "“满足全部条件（AND）”或“满足任一条件（OR）”"
 msgstr "`Match all conditions (AND)` or `Match any condition (OR)`"
 
-#: ../../source/module/show-nep-reference.md:342
+#: ../../source/module/show-nep-reference.md:331
 #: 80a1ec04a5d248c096c8ba060671f25f
 msgid ""
 "常用筛选保存在本机用户配置中，关闭并重新打开软件后仍可使用。它不会保存当前匹配结果、当前选择、数据集路径或 NEP "
 "模型；保存的是筛选条件，不是自动处理流程。"
 msgstr ""
 "Saved filters are stored in the local user configuration and remain "
-"available after restarting the application. They do not store the current "
-"match result, current selection, dataset path, or NEP model; this feature "
-"stores filter conditions, not an automated processing workflow."
+"available after restarting the application. They do not store the current"
+" match result, current selection, dataset path, or NEP model; this "
+"feature stores filter conditions, not an automated processing workflow."
 
-#: ../../source/module/show-nep-reference.md:344
+#: ../../source/module/show-nep-reference.md:333
 #: bef5ff945f8b4687a2c955609f292006
 msgid "需要维护已有条目时，进入“常用筛选 → 管理常用筛选”："
 msgstr "To maintain existing entries, open `Saved filters → Manage saved filters`:"
 
-#: ../../source/module/show-nep-reference.md:346
+#: ../../source/module/show-nep-reference.md:335
 #: 8b5e285cd9a944369abe809ffbd13094
 msgid "“重命名”只修改名称，不改变条件。"
 msgstr "`Rename` changes only the name, not the conditions."
 
-#: ../../source/module/show-nep-reference.md:347
+#: ../../source/module/show-nep-reference.md:336
 #: 03415c4d92744c5ab54e2df1c13cbfff
 msgid "“删除”只删除保存的条目，不清空编辑器中的当前条件。"
 msgstr ""
 "`Delete` removes only the saved entry; it does not clear the current "
 "editor conditions."
 
-#: ../../source/module/show-nep-reference.md:348
+#: ../../source/module/show-nep-reference.md:337
 #: 7e81316b6ef04a9a96f763f71802f9cc
 msgid "保存或重命名为已有名称时，软件会先询问是否覆盖。"
 msgstr ""
 "When saving or renaming to an existing name, the application asks before "
 "overwriting it."
 
-#: ../../source/module/show-nep-reference.md:350
+#: ../../source/module/show-nep-reference.md:339
 #: a71aaf6aac124a6d98d373b5a5929106
 msgid "如果条件中仍有空白行，软件不会保存。请补全该行，或用行尾的“×”先删除它。"
 msgstr ""
 "A filter with a blank row cannot be saved. Complete that row or remove it"
 " with the `×` at the end."
 
-#: ../../source/module/show-nep-reference.md:353
+#: ../../source/module/show-nep-reference.md:342
 #: fe24fbbef0644cd79cd0682afd2fe793
 msgid "6.4 `expression` 用法总览"
 msgstr "6.4 `expression` overview"
 
-#: ../../source/module/show-nep-reference.md:362
+#: ../../source/module/show-nep-reference.md:344
+#: 8f69eddeac684a5fb1048e22010cd329
+msgid "目的：把“结构是否满足条件”写成一个布尔表达式，然后用搜索/勾选/反选按钮处理结果。"
+msgstr ""
+"Purpose: express whether each structure satisfies a condition, then use "
+"Search, Select, or Deselect on the matches."
+
+#: ../../source/module/show-nep-reference.md:345
+#: 273406d2ee4647b3b73d50b0a7518f6e
+msgid "作用对象：仅当前 active structures；已经删除的结构不会参与表达式计算。"
+msgstr ""
+"Scope: current active structures only. Deleted structures are not "
+"evaluated."
+
+#: ../../source/module/show-nep-reference.md:346
+#: 226d35dc3ed54be88ab5484bce5d12e4
+msgid "搜索按钮：高亮匹配结构。"
+msgstr "Search: highlight matching structures."
+
+#: ../../source/module/show-nep-reference.md:347
+#: 3869c91a47ff4d448ff39576ed540d07
+msgid "勾选按钮：把匹配结构加入当前选择集。"
+msgstr "Select: add matches to the current selection."
+
+#: ../../source/module/show-nep-reference.md:348
+#: dedf39a4342b472fba60df3296d3ff15
+msgid "反选按钮：把匹配结构从当前选择集中移除。"
+msgstr "Deselect: remove matches from the current selection."
+
+#: ../../source/module/show-nep-reference.md:349
+#: 51d543d8fbf44596b6b27e2a36eff95d
+msgid "删除流程不变：通常是先用 expression 勾选，再点工具栏删除按钮。"
+msgstr ""
+"Deletion remains explicit: normally select with an expression, inspect "
+"the result, and then click the toolbar delete button."
+
+#: ../../source/module/show-nep-reference.md:351
 #: 5f5b4b1de420420ebdc3b61897fe33f9
 msgid "6.4.1 支持的运算符"
 msgstr "6.4.1 Supported operators"
 
-#: ../../source/module/show-nep-reference.md:376
+#: ../../source/module/show-nep-reference.md:353
+#: e18a608e80b445b79d8ae48a5ef41810
+msgid "逻辑运算：`&&`、`||`、`!`"
+msgstr "Logical operators: `&&`, `||`, `!`"
+
+#: ../../source/module/show-nep-reference.md:354
+#: 010c41c101674312b3bb7c3ede8ef7f0
+msgid "逻辑关键字：`and`、`or`、`not`"
+msgstr "Logical keywords: `and`, `or`, `not`"
+
+#: ../../source/module/show-nep-reference.md:355
+#: dd92bcb6149a44618f357201a6e0bd68
+msgid "比较运算：`>`、`>=`、`<`、`<=`、`==`、`!=`"
+msgstr "Comparison operators: `>`, `>=`, `<`, `<=`, `==`, `!=`"
+
+#: ../../source/module/show-nep-reference.md:356
+#: 89c74a86de354bdcac9bf859d9695ad1
+msgid "算术运算：`+`、`-`、`*`、`/`"
+msgstr "Arithmetic operators: `+`, `-`, `*`, `/`"
+
+#: ../../source/module/show-nep-reference.md:357
+#: b1186b7ac57243a280b6e8db478b4b6d
+msgid "括号：`(`、`)`"
+msgstr "Parentheses: `(`, `)`"
+
+#: ../../source/module/show-nep-reference.md:359
+#: ../../source/module/show-nep-reference.md:393
+#: ../../source/module/show-nep-reference.md:441
+#: ../../source/module/show-nep-reference.md:460
+#: a712d89c3c48463aa6b5c644760001e7
+msgid "示例："
+msgstr "Examples:"
+
+#: ../../source/module/show-nep-reference.md:59
+#: ../../source/module/show-nep-reference.md:362
+#: cf859aeef9de4ddea788acfb6f5ea555
+msgid "`has.H && natoms < 50`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:363
+#: 98c358ab9df14569b32810468614b686
+msgid "`(energy_per_atom < -3.0) && (force.norm > 10)`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:365
 #: 38a8baa2c10846c4816c9ceefae4fdd5
 msgid "6.4.2 不支持的语法"
 msgstr "6.4.2 Unsupported syntax"
 
-#: ../../source/module/show-nep-reference.md:385
+#: ../../source/module/show-nep-reference.md:367
+#: 5b782ed4db10400d836b0512f5bd638f
+msgid "不支持函数调用：例如 `len(structure)`、`mean(force)`、`any(...)`"
+msgstr ""
+"Function calls are unsupported, including `len(structure)`, "
+"`mean(force)`, and `any(...)`."
+
+#: ../../source/module/show-nep-reference.md:368
+#: d719334ea76641a98e25efe4b782b802
+msgid "不支持固定原子索引：例如 `atom[3].force.x > 1`"
+msgstr "Fixed atom indexing is unsupported, for example `atom[3].force.x > 1`."
+
+#: ../../source/module/show-nep-reference.md:369
+#: c00dff7c7b5340c1b6192b062bbf3d54
+msgid "不支持数字分量后缀：例如 `force.1`、`stress.3`"
+msgstr ""
+"Numeric component suffixes are unsupported, for example `force.1` or "
+"`stress.3`."
+
+#: ../../source/module/show-nep-reference.md:370
+#: eef02365a33549f79e17dd7259375150
+msgid "不支持字符串函数或正则函数"
+msgstr "String and regular-expression functions are unsupported."
+
+#: ../../source/module/show-nep-reference.md:372
+#: 98568bd6580147048e8d6939d7ff0fe0
+msgid "如果需要原子数，请直接使用 `natoms`。"
+msgstr "Use `natoms` directly for the atom count."
+
+#: ../../source/module/show-nep-reference.md:374
 #: d1491b3b9b8c4e039805d1c94e71368e
 msgid "6.4.3 内置结构字段"
 msgstr "6.4.3 Built-in structure fields"
 
-#: ../../source/module/show-nep-reference.md:412
+#: ../../source/module/show-nep-reference.md:376
+#: 82e5887e2a564c2382676e0f300f01e7
+msgid "下列字段不依赖当前图上显示哪一个子图，始终按当前 active structures 实时计算。"
+msgstr ""
+"These fields are calculated from active structures regardless of which "
+"subplot is currently visible."
+
+#: ../../source/module/show-nep-reference.md:59
+#: f1306015b50b4ea2b62b30be36b754db
+msgid "字段"
+msgstr "Field"
+
+#: ../../source/module/show-nep-reference.md:59
+#: cf700aa805b1402dbb5791d5024818a1
+msgid "`natoms`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: 1deb852759a34664866bdb67b9ab765e
+msgid "原子数"
+msgstr "Number of atoms"
+
+#: ../../source/module/show-nep-reference.md:59
+#: 2d22068812b34df4926e8e659d7a9cb4
+msgid "`n_atoms`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: 16bed38d1a6f4e05aceb06a9c76cfc09
+msgid "`natoms` 的别名"
+msgstr "Alias of `natoms`"
+
+#: ../../source/module/show-nep-reference.md:59
+#: cf2f76813d4b477d8af0db3f6847c8c7
+msgid "`volume`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: 6466d634d91e4395ae488297d2521d4c
+msgid "晶胞体积"
+msgstr "Cell volume"
+
+#: ../../source/module/show-nep-reference.md:59
+#: 87e87e8fa0ab49a78dfe8aa87b330995
+msgid "`a` `b` `c`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: 56b8110aad9b489398d430f1cba81154
+msgid "晶格长度"
+msgstr "Lattice lengths"
+
+#: ../../source/module/show-nep-reference.md:59
+#: 92d3ff727d534a489cb951af5116aee4
+msgid "`alpha` `beta` `gamma`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: 9bc79ccbb06a4567ad806912b91a4dbd
+msgid "晶格角"
+msgstr "Lattice angles"
+
+#: ../../source/module/show-nep-reference.md:59
+#: dd84b79025dd4c22899f378b748a5690
+msgid "`spin_natoms`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: 1af629517e35455ea0f6843b5351bd44
+msgid "有磁矩原子数"
+msgstr "Number of atoms with moments"
+
+#: ../../source/module/show-nep-reference.md:59
+#: 2d8f6ce9d4b94d33aab6ccdedfdfaeb0
+msgid "`energy`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: 4996f896edce46fe91b446da14132ef1
+msgid "结构总能"
+msgstr "Total structure energy"
+
+#: ../../source/module/show-nep-reference.md:59
+#: ec5a59082eae4bf99caee505a4ee52c5
+msgid "`energy_per_atom`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: e734defc4ce9413abd72503d6d90d123
+msgid "每原子能量"
+msgstr "Energy per atom"
+
+#: ../../source/module/show-nep-reference.md:59
+#: aca624a2ef634990bf763636098ccbc4
+msgid "`has_energy`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: e173ef43114d4f14a15739e2cb44996e
+msgid "是否存在能量"
+msgstr "Whether energy data exist"
+
+#: ../../source/module/show-nep-reference.md:59
+#: 459b720fe9df4f6398b4b782b6038c1c
+msgid "`has_forces`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: 74d7c68f0317446f8fbfc1318005a121
+msgid "是否存在力"
+msgstr "Whether force data exist"
+
+#: ../../source/module/show-nep-reference.md:59
+#: 6b637aa9a9be46aaae9edb9138db255a
+msgid "`has_virial`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: b2883995cf0b453ba8ccdbbc9f7d12af
+msgid "是否存在 virial"
+msgstr "Whether virial data exist"
+
+#: ../../source/module/show-nep-reference.md:59
+#: 069883e1cd3b48bca2e1808aa9e0a9aa
+msgid "`has_bec`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: 39b02f31ef524a3fb726d19b9780e4ee
+msgid "是否存在 BEC"
+msgstr "Whether BEC data exist"
+
+#: ../../source/module/show-nep-reference.md:395
+#: d6f2efa35d864aafb587c064118f9d39
+msgid "`natoms >= 128`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:396
+#: 697bed61a4434b87ae28562e95de283d
+msgid "`volume < 500`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:397
+#: 023d553c68684408a6bbd24a1eeff830
+msgid "`a > 4.5 && c < 20`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:398
+#: db99957016124ac9bfcd16e369202868
+msgid "`energy_per_atom < -4.2`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:399
+#: 7edf3f59e982482a81158ec7322954ff
+msgid "`has_forces && !has_bec`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:401
 #: a937d8617c234acf9818742473870faa
 msgid "6.4.4 元素统计字段"
 msgstr "6.4.4 Element-statistics fields"
 
-#: ../../source/module/show-nep-reference.md:428
+#: ../../source/module/show-nep-reference.md:403
+#: 74575c0bb5dc4c678bdba48d7a18a24d
+msgid "元素字段按当前 active structures 里实际出现过的元素动态生成。"
+msgstr ""
+"Element fields are generated dynamically from species present in active "
+"structures."
+
+#: ../../source/module/show-nep-reference.md:59
+#: da9d4a5d5ca44fe9a1c60cb5f0faa473
+msgid "字段形式"
+msgstr "Field form"
+
+#: ../../source/module/show-nep-reference.md:59
+#: d5f74715e74a4565880834dc61e0f5c5
+msgid "`count.<Elem>`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: 4695a2d0ef3f4112acad57198184a882
+msgid "指定元素个数"
+msgstr "Count of one element"
+
+#: ../../source/module/show-nep-reference.md:59
+#: ae556941a35e422ea0cbdd29ffe5542f
+msgid "`count.Fe >= 4`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: 8de427b1060e4d4caac7affdf7119cb9
+msgid "`frac.<Elem>`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: ed1c076f395748d2aca22ebdd6efa48a
+msgid "指定元素占比"
+msgstr "Fraction of one element"
+
+#: ../../source/module/show-nep-reference.md:59
+#: f45227e9d95b4f48be4e434c5fec7218
+msgid "`frac.Li > 0.5`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: b22c7ae665974795a833fe9de79af479
+msgid "`has.<Elem>`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:59
+#: 322a06ba11194093b0dbad39bed7145e
+msgid "是否包含指定元素"
+msgstr "Whether an element is present"
+
+#: ../../source/module/show-nep-reference.md:411
+#: efe056cc9fc44351b5e73ffee828f2c7
+msgid "补充说明："
+msgstr "Notes:"
+
+#: ../../source/module/show-nep-reference.md:413
+#: f05037dfb6814a369a9482d46931f98d
+msgid "`<Elem>` 使用标准元素符号，例如 `H`、`O`、`Fe`、`Li`"
+msgstr "`<Elem>` uses a standard element symbol such as `H`, `O`, `Fe`, or `Li`."
+
+#: ../../source/module/show-nep-reference.md:414
+#: b7621431cd704ebea9dbeccf1f2a317d
+msgid "区分元素符号，不区分前缀大小写的内部解析细节；文档和输入建议始终使用标准写法"
+msgstr ""
+"Although internal parsing handles prefix case, always use standard "
+"element-symbol capitalization in documentation and input."
+
+#: ../../source/module/show-nep-reference.md:415
+#: 939633a4772f4d2aa1a55b94ccbe12bd
+msgid "如果当前 active structures 中没有该元素，表达式会报错"
+msgstr ""
+"If the element is absent from all active structures, the expression "
+"reports an error."
+
+#: ../../source/module/show-nep-reference.md:417
 #: 68bb5bfbfba74dd8936eb9e1b198f048
 msgid "6.4.5 动态数据字段"
 msgstr "6.4.5 Dynamic data fields"
 
-#: ../../source/module/show-nep-reference.md:440
+#: ../../source/module/show-nep-reference.md:419
+#: 64939f403af24f8bafd7f9629cbbfa42
+msgid "当前结果数据里存在什么字段，expression 模式就暴露什么字段。常见来源有两类："
+msgstr ""
+"Expression mode exposes only fields that exist in the current result "
+"data. They commonly come from two sources:"
+
+#: ../../source/module/show-nep-reference.md:421
+#: abfa1c773a8a4956a3e264d997bddb2d
+msgid "结果数据集字段：如 `force`、`mforce`、`stress`、`virial`、`dipole`、`bec`"
+msgstr ""
+"Result-dataset fields such as `force`, `mforce`, `stress`, `virial`, "
+"`dipole`, and `bec`"
+
+#: ../../source/module/show-nep-reference.md:422
+#: fc7a5df08e4543ff8813479894e5a34e
+msgid "原子属性字段：写成 `atomic.<name>`，例如 `atomic.spin_vec`"
+msgstr ""
+"Atomic-property fields written as `atomic.<name>`, for example "
+"`atomic.spin_vec`"
+
+#: ../../source/module/show-nep-reference.md:424
+#: a98bbfd5c6574c33b41a7c648677695f
+msgid "这意味着："
+msgstr "Consequences:"
+
+#: ../../source/module/show-nep-reference.md:426
+#: 13042856f2964c6d8f631c29e7ff9ec9
+msgid "如果当前数据里没有 `mforce`，补全中不会出现 `mforce`"
+msgstr ""
+"If the current data contain no `mforce`, autocomplete does not offer "
+"`mforce`."
+
+#: ../../source/module/show-nep-reference.md:427
+#: adbba534b572470e99c714d6de690272
+msgid "如果手动输入了不存在的字段，例如 `mforce.ref.x > 1`，会直接报错"
+msgstr ""
+"Manually entering an unavailable field, such as `mforce.ref.x > 1`, "
+"produces an error."
+
+#: ../../source/module/show-nep-reference.md:429
 #: a77dfc5e8d6244999f53b8db3f76dab7
 msgid "6.4.6 后缀规则"
 msgstr "6.4.6 Suffix rules"
 
-#: ../../source/module/show-nep-reference.md:484
+#: ../../source/module/show-nep-reference.md:431
+#: 4163f9b8610c47019260619bc61f87f1
+msgid "A. 数据视图后缀"
+msgstr "A. Data-view suffixes"
+
+#: ../../source/module/show-nep-reference.md:433
+#: d609a8ef7ca745db80dfd81d37e12350
+msgid "对于有参考值/预测值成对存在的数据集字段，可以追加："
+msgstr ""
+"For dataset fields that provide paired reference and prediction values, "
+"append:"
+
+#: ../../source/module/show-nep-reference.md:435
+#: 34739fc6a2b24bcea78537de2445b3c3
+msgid "`.ref`：参考值"
+msgstr "`.ref`: reference value"
+
+#: ../../source/module/show-nep-reference.md:436
+#: 7c82543690ab4792b92ee3bedd386fca
+msgid "`.pred`：预测值"
+msgstr "`.pred`: predicted value"
+
+#: ../../source/module/show-nep-reference.md:437
+#: 4a1d639c1b464f70aeab9ee3f794eb91
+msgid "`.err`：误差，等价于 `pred - ref`"
+msgstr "`.err`: error, defined as `pred - ref`"
+
+#: ../../source/module/show-nep-reference.md:439
+#: ed4f6ec9d24a4ae696a146367868a53a
+msgid "如果省略视图后缀，默认使用 `.ref`。"
+msgstr "When the data-view suffix is omitted, `.ref` is used by default."
+
+#: ../../source/module/show-nep-reference.md:443
+#: 3814ccc6c4184efc90e6bbe211b4d23b
+msgid "`force.x > 10` 等价于 `force.ref.x > 10`"
+msgstr "`force.x > 10` is equivalent to `force.ref.x > 10`."
+
+#: ../../source/module/show-nep-reference.md:444
+#: 63d2112d76ff4cc3926a903745fa2d17
+msgid "`stress.err.norm > 2`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:445
+#: 0603dda89971452291332397ab80148c
+msgid "`energy.pred > -4.0`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:447
+#: a6db68ce0a8e4d31a4995f05bbe4836d
+msgid "并不是所有字段都支持这三个后缀："
+msgstr "Not every field supports all three suffixes:"
+
+#: ../../source/module/show-nep-reference.md:449
+#: 813e2922eb844f54bb7805f0dbb60a7f
+msgid "`atomic.<name>` 不支持 `.ref/.pred/.err`"
+msgstr "`atomic.<name>` does not support `.ref`, `.pred`, or `.err`."
+
+#: ../../source/module/show-nep-reference.md:450
+#: d7c9d3ee8e5943a09a6fca1510336134
+msgid "非成对数据字段也不支持 `.pred/.err`"
+msgstr "Unpaired data fields do not support `.pred` or `.err`."
+
+#: ../../source/module/show-nep-reference.md:452
+#: 5d0019b51aa348c28d89219539274e7c
+msgid "B. 分量与范数后缀"
+msgstr "B. Component and norm suffixes"
+
+#: ../../source/module/show-nep-reference.md:454
+#: b068537455f349a4b2ee43df4f2bacbc
+msgid "向量或张量字段支持命名分量后缀，例如："
+msgstr "Vector and tensor fields support named component suffixes:"
+
+#: ../../source/module/show-nep-reference.md:456
+#: fd8c1325c93647b895690fc86ffe4cad
+msgid "三维向量：`.x`、`.y`、`.z`"
+msgstr "Three-component vectors: `.x`, `.y`, `.z`"
+
+#: ../../source/module/show-nep-reference.md:457
+#: 37f7cf24e30e42469fb701fe1f268f4e
+msgid "六分量张量：`.xx`、`.yy`、`.zz`、`.xy`、`.yz`、`.zx`"
+msgstr "Six-component tensors: `.xx`, `.yy`, `.zz`, `.xy`, `.yz`, `.zx`"
+
+#: ../../source/module/show-nep-reference.md:458
+#: 657a8783c9654b5984bc7cdb599c6645
+msgid "范数：`.norm`"
+msgstr "Norm: `.norm`"
+
+#: ../../source/module/show-nep-reference.md:462
+#: ../../source/module/show-nep-reference.md:516
+#: a7d49e08328c4dd88bca4c1c1b983204
+msgid "`force.x > 10`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:463
+#: fb2c4a45a0fe4a0a8cba036cb00fd13f
+msgid "`mforce.norm > 5`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:464
+#: 67ac4c3879a44aca8933f7d9cd8a94cb
+msgid "`virial.xx < -20`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:465
+#: 8e691375d41647a7b30d5dd9328a182e
+msgid "`atomic.spin_vec.z > 0.2`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:467
+#: 6d6515f3c7ef4ca0ba7820fdec5d3354
+msgid "注意："
+msgstr "Important:"
+
+#: ../../source/module/show-nep-reference.md:469
+#: 97b5fa011c3140d2aecb1ad288fc312c
+msgid "不支持 `.1/.2/.3` 这类数字分量写法"
+msgstr "Numeric components such as `.1`, `.2`, and `.3` are unsupported."
+
+#: ../../source/module/show-nep-reference.md:470
+#: ac9ad50e74b64fb18e6e9912a2248384
+msgid "多分量字段若不写分量或 `.norm`，表达式会报错"
+msgstr ""
+"A multicomponent field without a named component or `.norm` produces an "
+"error."
+
+#: ../../source/module/show-nep-reference.md:471
+#: 23356585442a421c87904018b67d04ab
+msgid "标量字段可以直接比较，例如 `energy > -10`"
+msgstr "Scalar fields can be compared directly, for example `energy > -10`."
+
+#: ../../source/module/show-nep-reference.md:473
 #: 16da6b89665f4ef790261606a064ec83
 msgid "6.4.7 原子级字段如何聚合到结构级"
 msgstr "6.4.7 Aggregating atomic fields to structures"
 
-#: ../../source/module/show-nep-reference.md:501
+#: ../../source/module/show-nep-reference.md:475
+#: 15b61ff43c0247dba13927a3273f6f4a
+msgid "表达式最终必须得到“每个结构是否命中”的结果，所以原子级数据会先聚合到结构级。"
+msgstr ""
+"An expression must return one Boolean result per structure, so atom-level"
+" data are reduced to a structure-level value first."
+
+#: ../../source/module/show-nep-reference.md:477
+#: f9ab29b526284986a635a6b1cc24f316
+msgid "默认规则："
+msgstr "Default rule:"
+
+#: ../../source/module/show-nep-reference.md:479
+#: 4ade2cfe330347e899a24c4928759434
+msgid "先按你写的后缀取出分量或范数"
+msgstr "First extract the named component or norm."
+
+#: ../../source/module/show-nep-reference.md:480
+#: fe4387cea11c47588720034711d9ec85
+msgid "再在该结构内部做 `max(abs(values))`"
+msgstr "Then calculate `max(abs(values))` within each structure."
+
+#: ../../source/module/show-nep-reference.md:482
+#: 68815dc77d514e24bdb7d11dea907414
+msgid "因此："
+msgstr "Therefore:"
+
+#: ../../source/module/show-nep-reference.md:484
+#: b37efe6592e842329da14502652d19c6
+msgid "`force.x > 10` 的含义是“这个结构里是否存在原子满足 `max(abs(force_x)) > 10`”"
+msgstr ""
+"`force.x > 10` asks whether `max(abs(force_x)) > 10` within each "
+"structure."
+
+#: ../../source/module/show-nep-reference.md:485
+#: 889ee7f94f6d4a97aa2388b11eac775e
+msgid "`force.norm > 10` 的含义是“这个结构里是否存在原子满足 `max(force_norm) > 10`”"
+msgstr ""
+"`force.norm > 10` asks whether `max(force_norm) > 10` within each "
+"structure."
+
+#: ../../source/module/show-nep-reference.md:486
+#: 0460f77e64c540988dc51bdade128f46
+msgid "`atomic.spin_vec.y > 0.5` 的含义也是同样的结构级最大绝对值判断"
+msgstr ""
+"`atomic.spin_vec.y > 0.5` uses the same structure-level maximum-absolute-"
+"value reduction."
+
+#: ../../source/module/show-nep-reference.md:488
+#: 1a1ae0a9df70418d8fa2170da1bd254d
+msgid "结构级字段如 `natoms`、`volume`、`energy` 不需要额外聚合，直接逐结构比较。"
+msgstr ""
+"Structure-level fields such as `natoms`, `volume`, and `energy` are "
+"compared directly without aggregation."
+
+#: ../../source/module/show-nep-reference.md:490
 #: a1cc0aa89dd1498dbb48f7a0c026a022
 msgid "6.4.8 常用表达式示例"
 msgstr "6.4.8 Common expression examples"
 
-#: ../../source/module/show-nep-reference.md:543
+#: ../../source/module/show-nep-reference.md:492
+#: 609d7ade09ba4ee89b1e092678d1a653
+msgid "按结构大小筛选"
+msgstr "Filter by structure size"
+
+#: ../../source/module/show-nep-reference.md:495
+#: 9418210d7662488cb24bd5cc76037e31
+msgid "`natoms >= 32 && natoms <= 128`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:497
+#: 85cfa642fa404cf99d02256941cdf0e9
+msgid "按晶格或体积筛选"
+msgstr "Filter by lattice or volume"
+
+#: ../../source/module/show-nep-reference.md:499
+#: e9fb50349d7e4b04b7768fe7e548d7cb
+msgid "`volume < 1000`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:500
+#: 9cf346ea98bd4c8db8dbeb71a6118843
+msgid "`a > 3 && b > 3 && c > 3`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:501
+#: 1a876f314b0a4e6ca14fa0cf1a452973
+msgid "`gamma != 120`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:503
+#: 0a9d78c7c0f34f91acc1139ae7e64c89
+msgid "按元素组成筛选"
+msgstr "Filter by composition"
+
+#: ../../source/module/show-nep-reference.md:505
+#: e71a19a121874d10b2871fd037cf13d2
+msgid "`count.O >= 4`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:506
+#: 834670b397634040a6f9ef84fa904b8d
+msgid "`frac.Li > 0.25`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:507
+#: 5852b208be324070b00b3d0e6d7d13ca
+msgid "`has.Fe && !has.H`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:509
+#: 94b04faaf0254138a6458725d7f24f43
+msgid "按能量筛选"
+msgstr "Filter by energy"
+
+#: ../../source/module/show-nep-reference.md:511
+#: 04e6836ad74f49fa8de226eb2071faef
+msgid "`energy_per_atom < -3.5`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:512
+#: d879ad2098544e839b7cd68c6935ea9d
+msgid "`has_energy && energy > -500`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:514
+#: 1b1c0d0b60eb442e9738dce0dcadd877
+msgid "按力、应力、virial 筛选"
+msgstr "Filter by force, stress, or virial"
+
+#: ../../source/module/show-nep-reference.md:517
+#: 9909baec74f94cf2b1d9caa2ded58ab1
+msgid "`force.norm > 15`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:518
+#: 4237243cd2f74a24ae7d4d35bff0adc4
+msgid "`force.err.norm > 0.2`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:519
+#: 29ddceb73ad346e499be628fa0733f74
+msgid "`stress.xx > 5`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:520
+#: 4ec04aafe29e45e5928b42f808981cd1
+msgid "`virial.err.norm > 1`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:522
+#: 744682c3e1db4cd4a441d677a8185384
+msgid "按 atomic property 筛选"
+msgstr "Filter by an atomic property"
+
+#: ../../source/module/show-nep-reference.md:524
+#: 597276ee3b764226a5f00613e73a911a
+msgid "`atomic.spin_vec.norm > 1.5`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:525
+#: 6423fd1857a34c228d96ed94b0890bbd
+msgid "`atomic.spin_scalar > 0.1`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:527
+#: c5dfceae340e42d898dbaacda1dedbf8
+msgid "组合条件"
+msgstr "Combine conditions"
+
+#: ../../source/module/show-nep-reference.md:529
+#: a9ee89162b6443f6ad07ed7f47c7a8b6
+msgid "`has.H && natoms < 50 && energy_per_atom < -2.5`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:530
+#: 78327070b33847ce99ec9aca2764aa22
+msgid "`(count.Fe >= 2) && (force.norm > 8 || stress.norm > 2)`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:532
 #: 9a1c512d59854ec09a8972d812025148
 msgid "6.4.9 补全与右侧数量说明"
 msgstr "6.4.9 Autocomplete and availability counts"
 
-#: ../../source/module/show-nep-reference.md:564
+#: ../../source/module/show-nep-reference.md:534
+#: 3f4d59704edc4963b7460db14589001a
+msgid "expression 模式使用单独的动态补全，不和 `tag/formula/elements` 共用缓存。"
+msgstr ""
+"Expression mode uses its own dynamic autocomplete and does not share the "
+"cache used by `tag`, `formula`, or `elements`."
+
+#: ../../source/module/show-nep-reference.md:536
+#: bfa0939e425e490da2c628d18b779d67
+msgid "补全来源包括："
+msgstr "Autocomplete sources include:"
+
+#: ../../source/module/show-nep-reference.md:538
+#: 19de84207a4c4a1e867db212d80e3b46
+msgid "内置结构字段，例如 `natoms`、`volume`"
+msgstr "Built-in structure fields such as `natoms` and `volume`"
+
+#: ../../source/module/show-nep-reference.md:539
+#: bf5f702b3e2f4957a00e06c9eaf3dc5d
+msgid "元素统计字段，例如 `count.Fe`、`frac.O`"
+msgstr "Element-statistics fields such as `count.Fe` and `frac.O`"
+
+#: ../../source/module/show-nep-reference.md:540
+#: 6cc49dd2088b46b382a3a9866630b553
+msgid "当前数据集中真实存在的动态字段，例如 `force.ref.x`、`virial.ref.xx`"
+msgstr ""
+"Dynamic fields actually present in the dataset, such as `force.ref.x` and"
+" `virial.ref.xx`"
+
+#: ../../source/module/show-nep-reference.md:541
+#: f4c457a252f04d44b6d2dc42004439c6
+msgid "当前结构里真实存在的原子属性字段，例如 `atomic.spin_vec.y`"
+msgstr ""
+"Atomic properties actually present in current structures, such as "
+"`atomic.spin_vec.y`"
+
+#: ../../source/module/show-nep-reference.md:543
+#: 7a5be8abf63942a09bedc0a09eaee47f
+msgid "补全列表右侧的数字不是“本次搜索命中数”，而是“当前 active structures 中有多少个结构对这个候选字段是可用的/有意义的”："
+msgstr ""
+"The number shown to the right of an autocomplete item is not the current "
+"search-match count. It is the number of active structures for which that "
+"candidate field is available or meaningful:"
+
+#: ../../source/module/show-nep-reference.md:545
+#: 157225493dad485ca78a3cea911f19c0
+msgid "`natoms` 右侧数字通常等于当前 active structures 总数"
+msgstr "For `natoms`, the number normally equals the active-structure count."
+
+#: ../../source/module/show-nep-reference.md:546
+#: 77e15a60bc424e4b84f47968f84c484d
+msgid "`count.Fe` 右侧数字表示包含 `Fe` 的结构数"
+msgstr "For `count.Fe`, it is the number of structures containing Fe."
+
+#: ../../source/module/show-nep-reference.md:547
+#: 873819738644446ba834b61bdaf68c29
+msgid "`has.H` 右侧数字表示包含 `H` 的结构数"
+msgstr "For `has.H`, it is the number of structures containing H."
+
+#: ../../source/module/show-nep-reference.md:548
+#: 45354470cd714f9e8157dc3ec28aae25
+msgid "`force.ref.x` 右侧数字表示当前有 `force` 数据的结构数"
+msgstr "For `force.ref.x`, it is the number of structures with force data."
+
+#: ../../source/module/show-nep-reference.md:549
+#: d2b318bc6ca343bfb172e02fd9d0cd56
+msgid "`atomic.spin_vec.y` 右侧数字表示当前有 `spin_vec` 原子属性的结构数"
+msgstr ""
+"For `atomic.spin_vec.y`, it is the number of structures with a `spin_vec`"
+" atomic property."
+
+#: ../../source/module/show-nep-reference.md:551
+#: 501a1c4fc76a4e04a4acfe025f69635c
+msgid "这和你实际输入完整表达式后的命中数量不是一回事。"
+msgstr ""
+"This availability count is distinct from the number of matches produced "
+"by a complete expression."
+
+#: ../../source/module/show-nep-reference.md:553
 #: 07e88271b65e48e5bf95ddc82c84a30d
 msgid "6.4.10 错误与排查"
 msgstr "6.4.10 Errors and troubleshooting"
 
-#: ../../source/module/show-nep-reference.md:581
+#: ../../source/module/show-nep-reference.md:555
+#: 2bab9c71dfa84b9f96d431724b76c8ce
+msgid "常见错误包括："
+msgstr "Common errors include:"
+
+#: ../../source/module/show-nep-reference.md:557
+#: 425768c99dd34c848c7bff2982b62cde
+msgid "`Unknown field in expression`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:558
+#: 021e32fa650c4ab5b61b2f4a520f37dd
+msgid "字段不存在，或当前数据里没有这个字段"
+msgstr "The field does not exist or is absent from the current data."
+
+#: ../../source/module/show-nep-reference.md:559
+#: 79d965b45499403381dffeb5372856c5
+msgid "`Unknown atomic field`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:560
+#: 1855598a530b476e88c7baa299d4e3f6
+msgid "`atomic.<name>` 写错了，或当前结构没有该原子属性"
+msgstr "`atomic.<name>` is misspelled or the structures lack that atomic property."
+
+#: ../../source/module/show-nep-reference.md:561
+#: 29963ffb84144733a7aedba07fdc26de
+msgid "`Numeric component suffixes are not supported`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:562
+#: 2a37be48f02945b894fe2c46308b0617
+msgid "使用了 `.1/.2/.3` 这类数字分量"
+msgstr "A numeric component such as `.1`, `.2`, or `.3` was used."
+
+#: ../../source/module/show-nep-reference.md:563
+#: ee8c2ad8e7dd41e5a8c7833bc83cac34
+msgid "`Field 'xxx' requires an explicit component or '.norm'`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:564
+#: 5b81aae8e1634c93b375175a0d78538f
+msgid "多分量字段没有写具体分量"
+msgstr "A multicomponent field lacks a named component or `.norm`."
+
+#: ../../source/module/show-nep-reference.md:565
+#: ae1c7128b34b47f1b45d50427137d203
+msgid "`does not support value views`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:566
+#: c644577cdbd14a228d69ffb8049103dc
+msgid "给不支持的字段写了 `.pred` 或 `.err`"
+msgstr ""
+"`.pred` or `.err` was appended to a field that does not support paired "
+"views."
+
+#: ../../source/module/show-nep-reference.md:567
+#: 37a229bdc0df4c87871f6e67569a8982
+msgid "`Invalid expression syntax`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:568
+#: 3468f7207ade47ad9f508d2ef2db5693
+msgid "语法不完整，例如 `force.x >`"
+msgstr "The expression is incomplete, for example `force.x >`."
+
+#: ../../source/module/show-nep-reference.md:570
 #: e7cb41854e5242329bbf8e32072d4d3a
 msgid "6.4.11 在结构筛选器中使用表达式"
 msgstr "6.4.11 Using expressions in the structure filter"
 
-#: ../../source/module/show-nep-reference.md:583
+#: ../../source/module/show-nep-reference.md:572
 #: 0752c5f2c6c94942a30422749bfe4a4a
 msgid "添加“自定义表达式”条件后，直接输入完整表达式。表达式仍由原有求值器执行，因此本节列出的字段、运算符和动态数据能力都可以继续使用。"
 msgstr ""
@@ -3034,17 +3072,17 @@ msgstr ""
 "fields, operators, and dynamic-data capabilities described in this "
 "section remain available."
 
-#: ../../source/module/show-nep-reference.md:585
+#: ../../source/module/show-nep-reference.md:574
 #: 1d22d17981cf4e72b3b72c1aa9b856cb
 msgid "表达式可以和其他条件组合。例如："
 msgstr "An expression can be combined with other conditions. For example:"
 
-#: ../../source/module/show-nep-reference.md:589
+#: ../../source/module/show-nep-reference.md:578
 #: a9ee89162b6443f6ad07ed7f47c7a8b6
 msgid "自定义表达式 `natoms >= 64 && force.error.norm < 0.2`"
 msgstr "Custom expression `natoms >= 64 && force.error.norm < 0.2`"
 
-#: ../../source/module/show-nep-reference.md:591
+#: ../../source/module/show-nep-reference.md:580
 #: 22b81088529a4d62ab636277649d6aa5
 msgid "三条条件在“满足全部条件”下会取交集。筛选器不会把表达式转换成另一套简化语法，因此不会丢失 `!=`、晶格角、布尔字段或动态字段。"
 msgstr ""
@@ -3052,3 +3090,423 @@ msgstr ""
 "filter does not convert expressions into a second simplified syntax, so "
 "operators such as `!=`, lattice angles, Boolean fields, and dynamic "
 "fields are preserved."
+
+#: ../../source/module/show-nep-reference.md:582
+#: f261653c14df4c94ba6da77fc69c756b
+msgid "7. 状态与常见提示"
+msgstr "7 — Status indicators and common messages"
+
+#: ../../source/module/show-nep-reference.md:584
+#: 0b0e42b04e16450ebb628d5b61f0e0c5
+msgid "数据状态：`Orig / Now / Rm / Sel / Unsel / Rej`。"
+msgstr "Dataset status: `Orig / Now / Rm / Sel / Unsel / Rej`."
+
+#: ../../source/module/show-nep-reference.md:585
+#: cdb9591c42384da794a06965dbff59ed
+msgid "结构状态：最短键长异常会红字提示；净力显示 `|ΣF|`。"
+msgstr ""
+"Structure status: suspicious shortest bonds are shown in red; net force "
+"is displayed as `|ΣF|`."
+
+#: ../../source/module/show-nep-reference.md:586
+#: 22a43ef143b847e393a034207a7354ac
+msgid ""
+"播放按钮：<img src=\"../_static/image/generated/show_nep_icons/play.svg\" "
+"width=\"18\" /> / <img "
+"src=\"../_static/image/generated/show_nep_icons/pause.svg\" width=\"18\" "
+"/>。"
+msgstr ""
+"Playback: <img src=\"../_static/image/generated/show_nep_icons/play.svg\""
+" width=\"18\" /> / <img "
+"src=\"../_static/image/generated/show_nep_icons/pause.svg\" width=\"18\" "
+"/>."
+
+#: ../../source/module/show-nep-reference.md ff8503c656c64a12a08e484455fe90ed
+msgid ".. image:: ../_static/image/generated/show_nep_icons/play.svg"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md 5f5cb5a0e3e5430193ef69cb720b7e6d
+msgid ".. image:: ../_static/image/generated/show_nep_icons/pause.svg"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: b5c51b2c4abd4983b2fbc85c6713e237
+msgid "提示文本"
+msgstr "Message"
+
+#: ../../source/module/show-nep-reference.md:586
+#: 94d7013982924141922ff48dcfabf22b
+msgid "触发条件"
+msgstr "Trigger"
+
+#: ../../source/module/show-nep-reference.md:586
+#: 79839dbc864f4a55814f2a52b26f9016
+msgid "`unsupported file format`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: 531b3671d0bb46ceb050d64429ed1d32
+msgid "导入路径不支持"
+msgstr "The import path is unsupported"
+
+#: ../../source/module/show-nep-reference.md:586
+#: ed6ab5e1bc5644a298a6566ab5fc69df
+msgid "`NEP data has not been loaded yet!`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: 008b78e819114f42adf65cb9d79c8f41
+msgid "未加载数据即执行分析/导出"
+msgstr "An analysis or export is requested before loading data"
+
+#: ../../source/module/show-nep-reference.md:586
+#: 3f29f6eeb0e5487086fce5f2a4ab6c4e
+msgid "`Please select some structures first!`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: 9f3a61ab98f943d69801ae46cb115590
+msgid "导出 selected 时无选择"
+msgstr "`Selected` export is requested with no selection"
+
+#: ../../source/module/show-nep-reference.md:586
+#: e667c9cc1a78462fbd678a8655968afe
+msgid "`No active structures to export.`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: f20f3617851c4d70891194f9d9e6a38e
+msgid "导出 active 时为空"
+msgstr "`Active` export is requested with no active structures"
+
+#: ../../source/module/show-nep-reference.md:586
+#: 64ab0e0d6a774ed783adc34bb8fb7f42
+msgid "`No removed structures to export.`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: 26afece5c59340a2a343922bfc263df3
+msgid "导出 removed 时为空"
+msgstr "`Removed` export is requested with no removed structures"
+
+#: ../../source/module/show-nep-reference.md:586
+#: d6ec0791e11d4f1eb40395a0b4bc5bf2
+msgid "`No undoable deletion!`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: 90cf70a69d23487b985774ee2d125bd6
+msgid "无可撤销删除"
+msgstr "No deletion is available to undo"
+
+#: ../../source/module/show-nep-reference.md:586
+#: fa415a89b1924d2faa9227180884491a
+msgid "`No vector data available`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: 4db7a3841320449f8e7bfa1d7d4c175c
+msgid "箭头所需向量属性不存在"
+msgstr "The vector property required for arrows is absent"
+
+#: ../../source/module/show-nep-reference.md:586
+#: 29006a6ea5fa4c04b3aa78d315e75e5c
+msgid "`Arrow overlay is unavailable...`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: 98fab23f308348b38540753eab29431d
+msgid "当前结构画布不支持箭头 API"
+msgstr "The current structure canvas does not support the arrow API"
+
+#: ../../source/module/show-nep-reference.md:586
+#: 70563bea418d4a9f8003cef17ada9d0f
+msgid "`Invalid regex pattern.`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: 705b0132375e4427b97370ddbbe33415
+msgid "`tag/formula` 输入非法正则"
+msgstr "`tag` or `formula` contains an invalid regular expression"
+
+#: ../../source/module/show-nep-reference.md:586
+#: 185f2c0b1ec94aaa97a26ee0a1ffbabe
+msgid "`Unknown element symbol: Xx`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: 4b24b79dd69845748dc7b850a9e327e7
+msgid "`elements` 输入未知元素"
+msgstr "`elements` contains an unknown element symbol"
+
+#: ../../source/module/show-nep-reference.md:586
+#: 968bea2dbd274453a2dbb28a1d3574f3
+msgid "`Unknown field in expression: xxx`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: d1ffd104a739478c922727f97896eae7
+msgid "`expression` 使用了不存在的字段"
+msgstr "`expression` references a nonexistent or unavailable field"
+
+#: ../../source/module/show-nep-reference.md:586
+#: 103402b9554444098fba2952e1aaeef5
+msgid "`Numeric component suffixes are not supported in expressions.`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: 534ad3aec09f4e3fa44813dc5f50a67b
+msgid "`expression` 使用了 `.1/.2/.3` 这类数字分量"
+msgstr "`expression` uses a numeric component such as `.1`, `.2`, or `.3`"
+
+#: ../../source/module/show-nep-reference.md:586
+#: 38eb88b58e0e4e328ac8fa72784c4e58
+msgid "`Expression contains unsupported syntax.`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: 06a6a66e491f47e0846151785761d8a4
+msgid "`expression` 含有不支持的语法"
+msgstr "`expression` contains unsupported syntax"
+
+#: ../../source/module/show-nep-reference.md:586
+#: 3fadb454ddfe4f4e9c494493c5f91416
+msgid "`Invalid expression syntax.`"
+msgstr ""
+
+#: ../../source/module/show-nep-reference.md:586
+#: 215867c35b464f7b8708240a88364e7a
+msgid "`expression` 语法不完整或无法解析"
+msgstr "`expression` is incomplete or cannot be parsed"
+
+#: ../../source/module/show-nep-reference.md:605
+#: 9ec1e74e46724d9aab38c96322e28e07
+msgid "相关入口"
+msgstr "Related pages"
+
+#: ../../source/module/show-nep-reference.md:607
+#: c8ef2d6ad7434344860e7db3ef18877b
+msgid "功能概览页：[`NEP-dataset-display.md`](NEP-dataset-display.md)"
+msgstr "Feature overview: [`NEP-dataset-display.md`](NEP-dataset-display.md)"
+
+#: ../../source/module/show-nep-reference.md:608
+#: f062d2d556ac42a299175942060f9e69
+msgid "示例页：[`../example/NEP-display.md`](../example/NEP-display.md)"
+msgstr "Example: [`../example/NEP-display.md`](../example/NEP-display.md)"
+
+#~ msgid "`Dataset Summary`"
+#~ msgstr ""
+
+#~ msgid "是（结果展示）"
+#~ msgstr "Yes (results)"
+
+#~ msgid "查看数据集摘要，可导出 HTML"
+#~ msgstr "View a dataset summary and optionally export HTML"
+
+#~ msgid "`评估当前数据集`"
+#~ msgstr "`Audit Current Dataset`"
+
+#~ msgid "检查当前活动结构的数据质量、组分、标签、局域环境、结构相和磁类型"
+#~ msgstr ""
+#~ "Audit data quality, composition, labels, "
+#~ "local environments, structural phases, and "
+#~ "magnetic types for active structures"
+
+#~ msgid ""
+#~ "`评估当前数据集` 位于顶部 `Save` "
+#~ "分裂菜单中。第一次使用时，先加载数据，再从这个入口运行完整检查。页面用法、结构相识别、磁类型识别和公式见 [训练集评估"
+#~ "](training-set-assessment.md)。"
+#~ msgstr ""
+#~ "`Audit Current Dataset` is in the "
+#~ "top `Save` split menu. Load a "
+#~ "dataset first, then use this entry "
+#~ "to run the full audit. For "
+#~ "workflow details, structural-phase and "
+#~ "magnetic-type recognition, and formulas, "
+#~ "see [Training Set Audit](training-set-"
+#~ "assessment.md)."
+
+#~ msgid "执行结果：运行 FPS 后更新选择集。"
+#~ msgstr "Result: run FPS and update the selection set."
+
+#~ msgid "L. `Dataset Summary`"
+#~ msgstr ""
+
+#~ msgid "无前置输入；根据当前数据集统计。"
+#~ msgstr ""
+#~ "No additional input; statistics are "
+#~ "calculated from the current dataset."
+
+#~ msgid "结果窗口内可导出 HTML。"
+#~ msgstr "The result window can export an HTML report."
+
+#~ msgid ""
+#~ "![Dataset Summary "
+#~ "Dialog](../_static/image/generated/show_nep_reference/g_summary_dialog.png)"
+#~ msgstr ""
+
+#~ msgid "Dataset Summary Dialog"
+#~ msgstr ""
+
+#~ msgid ""
+#~ ".. image:: "
+#~ "../_static/image/generated/show_nep_reference/g_summary_dialog.png"
+#~ msgstr ""
+
+#~ msgid "N. `评估当前数据集`"
+#~ msgstr "N. `Audit Current Dataset`"
+
+#~ msgid "位置：顶部 `Save` 分裂菜单。"
+#~ msgstr "Location: the top `Save` split menu."
+
+#~ msgid "初始结果：数据质量、精确组分、标签范围、重复与风险复核项；有 `nep.txt` 时还会计算模型 cutoff 内的局域化学和元素对接触。"
+#~ msgstr ""
+#~ "Initial results cover data quality, "
+#~ "exact composition, label ranges, duplicates,"
+#~ " and risk-review items. When "
+#~ "`nep.txt` is available, the audit also"
+#~ " evaluates local chemistry and element-"
+#~ "pair contacts within the model cutoff."
+
+#~ msgid ""
+#~ "相和磁：进入 `数据地图 → 组分地图`，点击 `分析相结构与磁序` "
+#~ "后遍历全部活动结构。磁类型只读取逐原子 `spin:R:3`，不把 `mforce` 或 "
+#~ "`force_mag` 当作自旋。"
+#~ msgstr ""
+#~ "Phases and magnetism: open `Data Maps"
+#~ " → Composition Map` and click "
+#~ "`Analyze Phases and Magnetic Orders` to"
+#~ " process all active structures. "
+#~ "Magnetic-type analysis reads only per-"
+#~ "atom `spin:R:3`; it does not treat "
+#~ "`mforce` or `force_mag` as spin."
+
+#~ msgid "数据变更：删除结构、修改标签、切换数据或模型后，点击 `重新检查`，不要继续使用旧快照。"
+#~ msgstr ""
+#~ "After deleting structures, editing labels, "
+#~ "or changing the dataset or model, "
+#~ "click `Run Audit Again`; do not "
+#~ "rely on the stale snapshot."
+
+#~ msgid "6. 搜索框（三按钮）"
+#~ msgstr "6 — Search field and its three actions"
+
+#~ msgid ""
+#~ "<img "
+#~ "src=\"../_static/image/generated/show_nep_icons/search.svg\" "
+#~ "width=\"18\" />"
+#~ msgstr ""
+
+#~ msgid ".. image:: ../_static/image/generated/show_nep_icons/search.svg"
+#~ msgstr ""
+
+#~ msgid "搜索"
+#~ msgstr "Search"
+
+#~ msgid "高亮匹配结构"
+#~ msgstr "Highlight matching structures"
+
+#~ msgid ""
+#~ "<img src=\"../_static/image/generated/show_nep_icons/check.svg\""
+#~ " width=\"18\" />"
+#~ msgstr ""
+
+#~ msgid ".. image:: ../_static/image/generated/show_nep_icons/check.svg"
+#~ msgstr ""
+
+#~ msgid "勾选"
+#~ msgstr "Select"
+
+#~ msgid "将匹配结构加入选择"
+#~ msgstr "Add matches to the current selection"
+
+#~ msgid ""
+#~ "<img "
+#~ "src=\"../_static/image/generated/show_nep_icons/uncheck.svg\" "
+#~ "width=\"18\" />"
+#~ msgstr ""
+
+#~ msgid ".. image:: ../_static/image/generated/show_nep_icons/uncheck.svg"
+#~ msgstr ""
+
+#~ msgid "反选"
+#~ msgstr "Deselect"
+
+#~ msgid "将匹配结构移出选择"
+#~ msgstr "Remove matches from the current selection"
+
+#~ msgid "6.1 模式"
+#~ msgstr "6.1 Modes"
+
+#~ msgid "`tag`：按 `structure.tag` 正则匹配。"
+#~ msgstr "`tag`: regular-expression match against `structure.tag`."
+
+#~ msgid "`formula`：按 `structure.formula` 正则匹配。"
+#~ msgstr "`formula`: regular-expression match against `structure.formula`."
+
+#~ msgid "`elements`：元素集合语法匹配（非正则）。"
+#~ msgstr "`elements`: element-set syntax, not a regular expression."
+
+#~ msgid "`expression`：按结构级表达式筛选；适合按原子数、元素组成、能量、力、应力、原子属性等条件批量选中。"
+#~ msgstr ""
+#~ "`expression`: structure-level Boolean "
+#~ "filtering over atom counts, composition, "
+#~ "energy, force, stress, atomic properties, "
+#~ "and other available fields."
+
+#~ msgid "6.2 `elements` 语法"
+#~ msgstr "6.2 `elements` syntax"
+
+#~ msgid "`Fe,O`：元素集合必须是 `{Fe,O}` 子集。"
+#~ msgstr "`Fe,O`: the structure's element set must be a subset of `{Fe,O}`."
+
+#~ msgid "`+Fe,+O`：必须同时包含 `Fe` 和 `O`。"
+#~ msgstr "`+Fe,+O`: both `Fe` and `O` must be present."
+
+#~ msgid "`-H` 或 `!H`：必须不包含 `H`。"
+#~ msgstr "`-H` or `!H`: `H` must be absent."
+
+#~ msgid "可混合：`Fe,O,+Fe,-H`。"
+#~ msgstr "Forms can be combined, for example `Fe,O,+Fe,-H`."
+
+#~ msgid "6.3 `expression` 用法总览"
+#~ msgstr "6.3 `expression` overview"
+
+#~ msgid "6.3.1 支持的运算符"
+#~ msgstr "6.3.1 Supported operators"
+
+#~ msgid "6.3.2 不支持的语法"
+#~ msgstr "6.3.2 Unsupported syntax"
+
+#~ msgid "6.3.3 内置结构字段"
+#~ msgstr "6.3.3 Built-in structure fields"
+
+#~ msgid "6.3.4 元素统计字段"
+#~ msgstr "6.3.4 Element-statistics fields"
+
+#~ msgid "6.3.5 动态数据字段"
+#~ msgstr "6.3.5 Dynamic data fields"
+
+#~ msgid "6.3.6 后缀规则"
+#~ msgstr "6.3.6 Suffix rules"
+
+#~ msgid "6.3.7 原子级字段如何聚合到结构级"
+#~ msgstr "6.3.7 Aggregating atomic fields to structures"
+
+#~ msgid "6.3.8 常用表达式示例"
+#~ msgstr "6.3.8 Common expression examples"
+
+#~ msgid "6.3.9 补全与右侧数量说明"
+#~ msgstr "6.3.9 Autocomplete and availability counts"
+
+#~ msgid "6.3.10 错误与排查"
+#~ msgstr "6.3.10 Errors and troubleshooting"
+
+#~ msgid "![Search Modes](../_static/image/show_nep/q_search_modes.png)"
+#~ msgstr ""
+
+#~ msgid "Search Modes"
+#~ msgstr ""
+
+#~ msgid ".. image:: ../_static/image/show_nep/q_search_modes.png"
+#~ msgstr ""

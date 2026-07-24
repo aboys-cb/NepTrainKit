@@ -19,12 +19,10 @@ from NepTrainKit.core.cards.defect import VacancyDefectParams
 from NepTrainKit.core.cards.filter import GeometryFilterParams
 from NepTrainKit.core.cards.lattice import PerturbParams, SuperCellParams
 from NepTrainKit.core.energy_shift import EnergyBaselinePreset, apply_energy_baseline
-from NepTrainKit.core.types import SearchType
 from NepTrainKit.i18n import install_translator
 from NepTrainKit.main import create_app, create_main_window
 from NepTrainKit.ui.widgets.dialog import (
     ArrowMessageBox,
-    DatasetSummaryMessageBox,
     DFTD3MessageBox,
     DistributionInspectorMessageBox,
     EditInfoMessageBox,
@@ -647,19 +645,6 @@ def edit_metadata_result(ctx: ScenarioContext) -> None:
     pump_events(ctx.app, 160)
 
 
-def dataset_summary_result(ctx: ScenarioContext) -> None:
-    """Build and show the summary from the tracked demo dataset."""
-    show_nep_overview(ctx)
-    data = ctx.window.show_nep_interface.nep_result_data
-    for _ in data.iter_dataset_summary(group_by=SearchType.TAG):
-        pass
-    summary = data.get_dataset_summary()
-    if int(summary.get("counts", {}).get("active_structures", 0)) != 25:
-        raise RuntimeError(f"Unexpected dataset summary: {summary.get('counts')}")
-    dialog = DatasetSummaryMessageBox(ctx.window, summary)
-    _show_dialog(ctx, dialog)
-
-
 def distribution_analysis_result(ctx: ScenarioContext) -> None:
     """Run a real force-distribution analysis and show its histogram."""
     show_nep_overview(ctx)
@@ -795,21 +780,6 @@ def dft_d3_result(ctx: ScenarioContext) -> None:
     pump_events(ctx.app, 180)
 
 
-def show_nep_summary_dialog(ctx: ScenarioContext) -> None:
-    summary = {
-        "data_file": "candidate_pool_clean.xyz",
-        "model_file": "nep.txt",
-        "group_by": "tag",
-        "total": 128,
-        "groups": [
-            {"name": "bulk", "count": 64, "fraction": 0.5},
-            {"name": "surface", "count": 48, "fraction": 0.375},
-            {"name": "defect", "count": 16, "fraction": 0.125},
-        ],
-    }
-    _show_dialog(ctx, DatasetSummaryMessageBox(ctx.window, summary))
-
-
 def show_nep_distribution_dialog(ctx: ScenarioContext) -> None:
     dialog = DistributionInspectorMessageBox(ctx.window, data=None, canvas_type="pyqtgraph")
     dialog.resize(760, 430)
@@ -864,7 +834,6 @@ RUNNERS: dict[str, Callable[[ScenarioContext], None]] = {
     "suspicious_structure_scan_result": suspicious_structure_scan_result,
     "edit_metadata_entry": edit_metadata_entry,
     "edit_metadata_result": edit_metadata_result,
-    "dataset_summary_result": dataset_summary_result,
     "distribution_analysis_result": distribution_analysis_result,
     "show_nep_force_dialog": show_nep_force_dialog,
     "show_nep_edit_info_dialog": show_nep_edit_info_dialog,
@@ -874,7 +843,6 @@ RUNNERS: dict[str, Callable[[ScenarioContext], None]] = {
     "show_nep_dftd3_dialog": show_nep_dftd3_dialog,
     "dft_d3_entry": dft_d3_entry,
     "dft_d3_result": dft_d3_result,
-    "show_nep_summary_dialog": show_nep_summary_dialog,
     "show_nep_distribution_dialog": show_nep_distribution_dialog,
     "show_nep_arrow_dialog": show_nep_arrow_dialog,
     "show_nep_export_format_dialog": show_nep_export_format_dialog,

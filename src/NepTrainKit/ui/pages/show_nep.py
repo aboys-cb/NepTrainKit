@@ -19,7 +19,7 @@ from qfluentwidgets import FluentIcon, HyperlinkLabel, MessageBox, SpinBox, \
     Action, StateToolTip, ComboBox, CaptionLabel, SimpleCardWidget
 
 from NepTrainKit.ui.dialogs import call_path_dialog
-from NepTrainKit.ui.threads import LoadingThread, run_in_thread
+from NepTrainKit.ui.threads import BackgroundTask, run_in_thread
 from NepTrainKit.config import Config
 
 from NepTrainKit.core import MessageManager
@@ -1027,7 +1027,7 @@ class ShowNepWidget(QWidget):
         path = call_path_dialog(self, "Choose a folder save location", "directory")
         if not path:
             return
-        thread = LoadingThread(self, show_tip=True, title="Exporting data")
+        thread = BackgroundTask(self, show_tip=True, title="Exporting data")
         if fmt == "deepmd/npy":
             thread.start_work(self.nep_result_data.export_model_npy, path)
         else:
@@ -1048,7 +1048,7 @@ class ShowNepWidget(QWidget):
         fmt = self._choose_export_format()
         if fmt is None:
             return
-        thread = LoadingThread(self, show_tip=True, title="Exporting data")
+        thread = BackgroundTask(self, show_tip=True, title="Exporting data")
         if fmt == "deepmd/npy":
             path = call_path_dialog(self, "Choose a folder save location", "directory")
             if not path:
@@ -1088,7 +1088,7 @@ class ShowNepWidget(QWidget):
             path = call_path_dialog(self, "Choose a folder save location", "directory")
             if not path:
                 return
-            thread = LoadingThread(self, show_tip=True, title="Exporting data")
+            thread = BackgroundTask(self, show_tip=True, title="Exporting data")
             thread.start_work(self.nep_result_data.export_selected_npy, path)
         else:
             path = call_path_dialog(
@@ -1100,7 +1100,7 @@ class ShowNepWidget(QWidget):
             )
             if not path:
                 return
-            thread = LoadingThread(self, show_tip=True, title="Exporting data")
+            thread = BackgroundTask(self, show_tip=True, title="Exporting data")
             thread.start_work(self.nep_result_data.export_selected_xyz, path)
 
     def export_removed_structures(self):
@@ -1119,7 +1119,7 @@ class ShowNepWidget(QWidget):
             path = call_path_dialog(self, "Choose a folder save location", "directory")
             if not path:
                 return
-            thread = LoadingThread(self, show_tip=True, title="Exporting data")
+            thread = BackgroundTask(self, show_tip=True, title="Exporting data")
             thread.start_work(self.nep_result_data.export_removed_npy, path)
         else:
             path = call_path_dialog(
@@ -1131,7 +1131,7 @@ class ShowNepWidget(QWidget):
             )
             if not path:
                 return
-            thread = LoadingThread(self, show_tip=True, title="Exporting data")
+            thread = BackgroundTask(self, show_tip=True, title="Exporting data")
             thread.start_work(self.nep_result_data.export_removed_xyz, path)
 
     def set_work_path(self, path:str):
@@ -1599,7 +1599,7 @@ class ShowNepWidget(QWidget):
             path = call_path_dialog(self, "Choose a folder save location", "directory")
             if not path:
                 return
-            thread = LoadingThread(self, show_tip=True, title="Exporting data")
+            thread = BackgroundTask(self, show_tip=True, title="Exporting data")
             thread.start_work(self.nep_result_data.export_current_npy, path, index)
             return
 
@@ -1612,7 +1612,7 @@ class ShowNepWidget(QWidget):
         )
         if not path:
             return
-        thread = LoadingThread(self, show_tip=True, title="Exporting data")
+        thread = BackgroundTask(self, show_tip=True, title="Exporting data")
         thread.start_work(self._export_current_xyz, path, index)
 
     def _get_arrow_source_dataset(self, candidate_names: tuple[str, ...]):

@@ -3,6 +3,7 @@ numpy==1.26.0
 PySide6-Fluent-Widgets==1.8.7
 loguru==0.7.2
 requests==2.32.3
+packaging>=24.0
 pyqtgraph==0.13.7
 PyOpenGL==3.1.7
 vispy==0.15.2

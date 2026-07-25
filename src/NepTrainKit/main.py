@@ -6,6 +6,13 @@ import os
 import sys
 if sys.platform == "darwin":
     os.environ["OPENBLAS_NUM_THREADS"] = "1"
+
+from NepTrainKit.runtime_package import run_runtime_health_command
+
+_runtime_health_exit = run_runtime_health_command()
+if _runtime_health_exit is not None:
+    raise SystemExit(_runtime_health_exit)
+
 import tempfile
 import traceback
 from dataclasses import replace

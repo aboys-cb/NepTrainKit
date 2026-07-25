@@ -29,6 +29,10 @@
 
 `Data Precision` 控制导入 DFT/结构数据后的存储精度。常规可保持默认；只有在内存压力明显或需要保留更高精度数值时再改。
 
+`NEP Settings` 中的运行时健康项会显示 NepTrainKit 原生辅助模块、`nep-adapters` 版本以及 CPU/CUDA 可用状态。点击 `NEP runtime updates` 可以从 PyPI 手动检查兼容更新。每次打开软件后也会在后台执行一次运行时检查：没有更新或网络检查失败时保持静默，发现新版本时弹出安装提示。程序会校验 wheel 的 SHA256，并在独立进程中确认导入和 CPU 后端可用后才切换版本；更新在重启 NepTrainKit 后生效。验证失败时继续使用原版本。
+
+通过 pip 安装 NepTrainKit 时，更新后的运行时保存在用户配置目录；Nuitka 独立版则保存在 `NepTrainKit.exe` 旁的 `runtime/nep-adapters/versions`，当前版和上一版会保留用于恢复。
+
 ## 绘图和结构显示
 
 Plot Settings 只影响显示，不改变底层数据。

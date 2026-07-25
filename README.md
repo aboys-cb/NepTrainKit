@@ -42,7 +42,7 @@ NepTrainKit
 
 ### NEP compute backend
 
-NepTrainKit does not compile or bundle an NEP compute backend. `pip` installs the separate `nep-adapters` dependency:
+NepTrainKit does not compile the NEP compute backend into the application. `pip` installs the separate `nep-adapters` dependency:
 
 | Platform | Installed backend |
 | --- | --- |
@@ -52,6 +52,8 @@ NepTrainKit does not compile or bundle an NEP compute backend. `pip` installs th
 The Linux CUDA path requires a compatible NVIDIA driver, but installing the wheel does not require a local CUDA toolkit or NVCC. Source builds and supported CUDA architectures are documented in the [NEPAdapters repository](https://github.com/MagTheoryLab/NEPAdapters).
 
 After launching NepTrainKit, select `Auto`, `CPU`, or `CUDA` under `Settings → NEP Backend`. `Auto` uses CUDA when the installed wheel, driver, and model support it; otherwise NepTrainKit explains why it is continuing on CPU. Explicit `CUDA` requests fail instead of silently changing backend.
+
+`Settings → NEP Settings → NEP runtime updates` can install a compatible `nep-adapters` update without replacing NepTrainKit. NepTrainKit also checks this runtime in the background whenever the app opens; no-update and network-failure cases stay silent, while an available update opens an installation prompt. Pip installations store the managed wheel under the user configuration directory; the Windows standalone build stores it under `runtime/nep-adapters/versions` beside `NepTrainKit.exe`. A wheel is activated only after SHA256 verification and a fresh-process health check, and takes effect after restart.
 
 Confirm the installed runtime with:
 

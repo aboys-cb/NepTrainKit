@@ -15,9 +15,16 @@ from PySide6.QtGui import QDesktopServices
 from loguru import logger
 from qfluentwidgets import CaptionLabel, MessageBox, MessageBoxBase, TextEdit
 
-from NepTrainKit import is_nuitka_compiled, module_path
+from NepTrainKit import is_nuitka_compiled, managed_runtime_root, module_path
 from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
+from NepTrainKit.runtime_package import (
+    MANAGED_RUNTIME_SPEC,
+    NEP_ADAPTERS_SPEC,
+    RuntimePackageUpdate,
+    check_runtime_package_update,
+    install_runtime_package_update,
+)
 from NepTrainKit.version import RELEASES_LIST_API_URL, RELEASES_URL, __version__
 from NepTrainKit.ui.threads import BackgroundTask
 
@@ -350,18 +357,235 @@ class UpdateWoker(QObject):
         self.update_thread.start_work(self._check_update)
 
 
+class RuntimePackageUpdateWorker(QObject):
+    """Check and install one external runtime package without replacing the app."""
+
+    check_result = Signal(object)
+    install_result = Signal(object)
+
+    def __init__(
+        self,
+        parent,
+        *,
+        spec=MANAGED_RUNTIME_SPEC,
+        runtime_name: str | None = None,
+    ):
+        """Create a worker for the selected managed-runtime specification."""
+        super().__init__(parent)
+        self._parent = parent
+        self._spec = spec
+        self._runtime_name = runtime_name or (
+            _tr("NEP runtime")
+            if spec.key == NEP_ADAPTERS_SPEC.key
+            else spec.distribution
+        )
+        self._manual = True
+        self._on_finished: Callable[[dict[str, Any]], None] | None = None
+        self._pending_update: RuntimePackageUpdate | None = None
+        self.check_thread = BackgroundTask(parent, show_tip=False)
+        self.install_thread = BackgroundTask(
+            parent,
+            show_tip=True,
+            title=_tr("Updating {runtime}").format(runtime=self._runtime_name),
+        )
+        self.check_result.connect(self._handle_check_result)
+        self.install_result.connect(self._handle_install_result)
+
+    def _check(self) -> None:
+        try:
+            update = check_runtime_package_update(
+                self._spec,
+                managed_runtime_root,
+            )
+            self.check_result.emit({"ok": True, "update": update})
+        except Exception as exc:  # noqa: BLE001 - report index/network failures
+            logger.error(traceback.format_exc())
+            self.check_result.emit({"ok": False, "error": str(exc)})
+
+    def _handle_check_result(self, result: dict[str, Any]) -> None:
+        if not result.get("ok"):
+            if self._manual:
+                MessageManager.send_error_message(
+                    str(
+                        result.get("error")
+                        or _tr("Unable to check {runtime} updates.").format(
+                            runtime=self._runtime_name
+                        )
+                    ),
+                    title=_tr("{runtime} Update Failed").format(
+                        runtime=self._runtime_name
+                    ),
+                )
+            self._finish(result)
+            return
+
+        update = result.get("update")
+        if not isinstance(update, RuntimePackageUpdate):
+            failure = {"ok": False, "error": "Invalid runtime update result."}
+            if self._manual:
+                MessageManager.send_error_message(
+                    _tr("Unable to check {runtime} updates.").format(
+                        runtime=self._runtime_name
+                    ),
+                    title=_tr("{runtime} Update Failed").format(
+                        runtime=self._runtime_name
+                    ),
+                )
+            self._finish(failure)
+            return
+
+        if not update.latest_version:
+            if self._manual:
+                MessageManager.send_warning_message(
+                    _tr(
+                        "No compatible {package} wheel is available for this "
+                        "Python version and platform."
+                    ).format(package=self._spec.distribution)
+                )
+            self._finish(
+                {
+                    "ok": True,
+                    "updated": False,
+                    "current_version": update.current_version,
+                    "compatible_wheel": False,
+                }
+            )
+            return
+
+        if not update.update_available:
+            if self._manual:
+                MessageManager.send_success_message(
+                    _tr("The {runtime} is already up to date.").format(
+                        runtime=self._runtime_name
+                    )
+                )
+            self._finish(
+                {
+                    "ok": True,
+                    "updated": False,
+                    "current_version": update.current_version,
+                }
+            )
+            return
+
+        current = update.current_version or _tr("not installed")
+        message = _tr(
+            "A new {package} version is available: {current} → {latest}. "
+            "This runtime update may be required for the latest features and "
+            "compatibility. Install it now? The new runtime will be used after "
+            "restarting NepTrainKit."
+        ).format(
+            package=self._spec.distribution,
+            current=current,
+            latest=update.latest_version,
+        )
+        box = MessageBox(
+            _tr("{runtime} Update").format(runtime=self._runtime_name),
+            message,
+            self._parent,
+        )
+        box.yesButton.setText(_tr("Install"))
+        box.cancelButton.setText(_tr("Cancel"))
+        box.exec()
+        if box.result() == 0:
+            self._finish({"ok": True, "updated": False, "cancelled": True})
+            return
+
+        self._pending_update = update
+        self.install_thread.start_work(self._install)
+
+    def _install(self) -> None:
+        try:
+            if self._pending_update is None:
+                raise RuntimeError("No runtime update is pending.")
+            installed = install_runtime_package_update(
+                self._spec,
+                managed_runtime_root,
+                self._pending_update,
+            )
+            self.install_result.emit(
+                {
+                    "ok": True,
+                    "updated": True,
+                    "version": installed.version,
+                    "path": str(installed.package_path),
+                }
+            )
+        except Exception as exc:  # noqa: BLE001 - preserve the active version
+            logger.error(traceback.format_exc())
+            self.install_result.emit({"ok": False, "error": str(exc)})
+
+    def _handle_install_result(self, result: dict[str, Any]) -> None:
+        if result.get("ok"):
+            MessageManager.send_success_message(
+                _tr(
+                    "{runtime} v{version} was installed and verified. "
+                    "Restart NepTrainKit to use it."
+                ).format(
+                    runtime=self._runtime_name,
+                    version=result.get("version", ""),
+                ),
+                title=_tr("{runtime} Updated").format(
+                    runtime=self._runtime_name
+                ),
+            )
+        else:
+            MessageManager.send_error_message(
+                str(
+                    result.get("error")
+                    or _tr("Unable to install the {runtime} update.").format(
+                        runtime=self._runtime_name
+                    )
+                ),
+                title=_tr("{runtime} Update Failed").format(
+                    runtime=self._runtime_name
+                ),
+            )
+        self._pending_update = None
+        self._finish(result)
+
+    def _finish(self, result: dict[str, Any]) -> None:
+        if self._on_finished is None:
+            return
+        try:
+            self._on_finished(result)
+        except Exception:
+            logger.error(traceback.format_exc())
+
+    def check(
+        self,
+        on_finished: Callable[[dict[str, Any]], None] | None = None,
+        *,
+        manual: bool = True,
+    ) -> None:
+        """Check for an update, suppressing routine notices during app startup."""
+        if self.check_thread.isRunning() or self.install_thread.isRunning():
+            return
+        self._manual = manual
+        self._on_finished = on_finished
+        if manual:
+            MessageManager.send_info_message(
+                _tr("Checking {runtime} updates, please wait...").format(
+                    runtime=self._runtime_name
+                )
+            )
+        self.check_thread.start_work(self._check)
+
+
 class AutoUpdateNotifier(QObject):
-    """Coordinator for startup auto-checks and non-blocking notifications."""
+    """Coordinate app-launch runtime checks and periodic app update notices."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._parent = parent
         self.update_worker = UpdateWoker(parent)
+        self.runtime_update_worker = RuntimePackageUpdateWorker(parent)
         self._startup_notice_sent = False
         self._startup_notice_version = ""
 
     def start_if_due(self) -> None:
-        """Run the auto-check only when daily interval has elapsed."""
+        """Check the runtime every app launch and the app on its daily cadence."""
+        self.runtime_update_worker.check(manual=False)
         self._show_startup_pending_notice()
         now = int(time.time())
         last_check_ts = Config.getint(UPDATE_SECTION, "last_auto_check_ts", 0) or 0
@@ -532,6 +756,7 @@ class UpdateNEP89Woker(QObject):
 __all__ = [
     "AUTO_CHECK_INTERVAL_SECONDS",
     "AutoUpdateNotifier",
+    "RuntimePackageUpdateWorker",
     "UpdateWoker",
     "UpdateNEP89Woker",
     "build_compact_summary",

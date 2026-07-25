@@ -79,3 +79,82 @@ jobs:
       run: python tools/docs/audit_card_docs.py
     - name: Build bilingual docs (warnings as errors)
       run: python tools/docs/i18n.py build
+
+  runtime-package-delivery:
+    name: Runtime package delivery (pip + Nuitka EXE)
+    runs-on: windows-latest
+    env:
+      NEPKIT_OPENMP: "0"
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+
+    - name: Build NepTrainKit wheel
+      shell: pwsh
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install build numpy pybind11 setuptools setuptools-scm wheel
+        python -m build --wheel
+
+    - name: Test updater from pip-installed NepTrainKit
+      shell: pwsh
+      run: |
+        $venv = "$env:RUNNER_TEMP/neptrainkit-runtime-venv"
+        python -m venv "$venv"
+        $python = "$venv/Scripts/python.exe"
+        $wheel = (Get-ChildItem dist/*.whl | Select-Object -First 1).FullName
+        & $python -m pip install --upgrade pip
+        & $python -m pip install --no-deps "$wheel"
+        & $python -m pip install loguru packaging requests
+        Push-Location $env:RUNNER_TEMP
+        & $python "${{ github.workspace }}/tools/ci/runtime_package_e2e.py"
+        Pop-Location
+
+    - name: Test real PyPI update and confirmation dialog
+      shell: pwsh
+      run: |
+        $venv = "$env:RUNNER_TEMP/neptrainkit-runtime-venv"
+        $python = "$venv/Scripts/python.exe"
+        & $python -m pip install `
+          "PySide6==6.9.0" `
+          "PySide6-Fluent-Widgets>=1.7.0" `
+          ase `
+          SQLAlchemy
+        $env:QT_QPA_PLATFORM = "offscreen"
+        & $python `
+          "${{ github.workspace }}/tools/ci/runtime_package_requests_ui_e2e.py" `
+          --runtime-root "$env:RUNNER_TEMP/requests-runtime" `
+          --screenshot "$env:RUNNER_TEMP/requests-runtime-update-dialog.png"
+
+    - name: Upload runtime update dialog
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: requests-runtime-update-dialog
+        path: ${{ runner.temp }}/requests-runtime-update-dialog.png
+        if-no-files-found: error
+
+    - name: Build and test standalone updater probe
+      shell: pwsh
+      run: |
+        $venv = "$env:RUNNER_TEMP/neptrainkit-runtime-venv"
+        $python = "$venv/Scripts/python.exe"
+        & $python -m pip install "Nuitka>=2.8,<3" ordered-set zstandard
+        & $python -m nuitka `
+          --mode=standalone `
+          --assume-yes-for-downloads `
+          --output-dir="$env:RUNNER_TEMP/runtime-package-nuitka" `
+          "${{ github.workspace }}/tools/ci/runtime_package_e2e.py"
+        $probe = Get-ChildItem `
+          "$env:RUNNER_TEMP/runtime-package-nuitka/runtime_package_e2e.dist/runtime_package_e2e.exe" |
+          Select-Object -First 1
+        $process = Start-Process -FilePath $probe.FullName -Wait -PassThru
+        if ($process.ExitCode -ne 0) {
+          throw "Nuitka runtime-package probe failed with exit code $($process.ExitCode)."
+        }

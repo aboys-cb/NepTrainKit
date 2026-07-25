@@ -4694,22 +4694,22 @@ All child items will also be deleted.</source>
 <context>
     <name>NepTrainKitMainWindow</name>
     <message>
-        <location filename="../main.py" line="122" />
+        <location filename="../main.py" line="129" />
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../main.py" line="128" />
+        <location filename="../main.py" line="135" />
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../main.py" line="152" />
+        <location filename="../main.py" line="159" />
         <source>NEP Dataset Display</source>
         <translation>NEP 数据集查看</translation>
     </message>
     <message>
-        <location filename="../main.py" line="157" />
+        <location filename="../main.py" line="164" />
         <source>Training Set Check</source>
         <translation>训练集评估</translation>
     </message>
@@ -4718,72 +4718,72 @@ All child items will also be deleted.</source>
         <translation type="vanished">构建数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="162" />
+        <location filename="../main.py" line="169" />
         <source>Make Dataset</source>
         <translation>构建数据集</translation>
     </message>
     <message>
-        <location filename="../main.py" line="167" />
+        <location filename="../main.py" line="174" />
         <source>Data Management</source>
         <translation>数据管理</translation>
     </message>
     <message>
-        <location filename="../main.py" line="172" />
+        <location filename="../main.py" line="179" />
         <source>Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../main.py" line="329" />
+        <location filename="../main.py" line="336" />
         <source>Open data for this page</source>
         <translation>打开当前页面的数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="331" />
+        <location filename="../main.py" line="338" />
         <source>Open is not available on this page</source>
         <translation>当前页面不支持打开操作</translation>
     </message>
     <message>
-        <location filename="../main.py" line="334" />
+        <location filename="../main.py" line="341" />
         <source>Save data from this page</source>
         <translation>保存当前页面的数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="336" />
+        <location filename="../main.py" line="343" />
         <source>Save is not available on this page</source>
         <translation>当前页面不支持保存操作</translation>
     </message>
     <message>
-        <location filename="../main.py" line="348" />
+        <location filename="../main.py" line="355" />
         <source>The workflow output is empty.</source>
         <translation>工作流输出为空。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="361" />
+        <location filename="../main.py" line="368" />
         <source>Dataset handoff is already in progress.</source>
         <translation>正在传递数据集，请稍候。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="371" />
+        <location filename="../main.py" line="378" />
         <source>Preparing the workflow output for display...</source>
         <translation>正在准备工作流输出以供查看...</translation>
     </message>
     <message>
-        <location filename="../main.py" line="397" />
+        <location filename="../main.py" line="404" />
         <source>Failed to prepare workflow output: {message}</source>
         <translation>准备工作流输出失败：{message}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="445" />
+        <location filename="../main.py" line="452" />
         <source>Please load a dataset before running Training Set Check.</source>
         <translation>请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="498" />
+        <location filename="../main.py" line="505" />
         <source>Training Set Check failed: {message}</source>
         <translation>训练集评估失败：{message}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="523" />
+        <location filename="../main.py" line="530" />
         <source>Training Set Check results are stale. Please rerun the checks for the current dataset.</source>
         <translation>训练集评估结果已过期，请针对当前数据集重新检查。</translation>
     </message>
@@ -4796,7 +4796,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">请先加载数据集，再运行训练集检查。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="448" />
+        <location filename="../main.py" line="455" />
         <source>current dataset</source>
         <translation>当前数据集</translation>
     </message>
@@ -4809,7 +4809,7 @@ All child items will also be deleted.</source>
         <translation type="vanished">训练集检查结果已过期，请针对当前数据集重新检查。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="691" />
+        <location filename="../main.py" line="698" />
         <source>Full phase analysis failed: {message}</source>
         <translation>完整相分析失败：{message}</translation>
     </message>
@@ -4817,17 +4817,17 @@ All child items will also be deleted.</source>
 <context>
     <name>NepTrainResultData</name>
     <message>
-        <location filename="../core/io/nep.py" line="678" />
+        <location filename="../core/io/nep.py" line="669" />
         <source>Running NEP prediction: {done}/{total} structures</source>
         <translation>正在运行 NEP 预测：{done}/{total} 个结构</translation>
     </message>
     <message>
-        <location filename="../core/io/nep.py" line="723" />
+        <location filename="../core/io/nep.py" line="714" />
         <source>Generating NEP descriptors and predictions together to avoid duplicate work.</source>
         <translation>正在合并生成 NEP 描述符和预测结果，以避免重复计算。</translation>
     </message>
     <message>
-        <location filename="../core/io/nep.py" line="730" />
+        <location filename="../core/io/nep.py" line="721" />
         <source>Running combined NEP calculation: {done}/{total} structures</source>
         <translation>正在运行合并的 NEP 计算：{done}/{total} 个结构</translation>
     </message>
@@ -5587,7 +5587,7 @@ All child items will also be deleted.</source>
 <context>
     <name>ResultData</name>
     <message>
-        <location filename="../core/io/base.py" line="2748" />
+        <location filename="../core/io/base.py" line="2741" />
         <source>Generating NEP descriptors: {done}/{total} structures</source>
         <translation>正在生成 NEP 描述符：{done}/{total} 个结构</translation>
     </message>
@@ -5712,171 +5712,175 @@ All child items will also be deleted.</source>
 <context>
     <name>SettingsWidget</name>
     <message>
-        <location filename="../ui/pages/settings.py" line="63" />
+        <location filename="../ui/pages/settings.py" line="69" />
         <source>Personalization</source>
         <translation>个性化</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="65" />
+        <location filename="../ui/pages/settings.py" line="71" />
         <source>NEP Settings</source>
         <translation>NEP 设置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="67" />
         <source>Runtime status</source>
-        <translation>运行环境</translation>
+        <translation type="vanished">运行环境</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="70" />
+        <location filename="../ui/pages/settings.py" line="73" />
         <source>Plot Settings</source>
         <translation>绘图设置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="78" />
+        <location filename="../ui/pages/settings.py" line="81" />
         <source>Force data format</source>
         <translation>力数据格式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="79" />
+        <location filename="../ui/pages/settings.py" line="82" />
         <source>Streamline data and speed up drawing</source>
         <translation>精简数据并提升绘图速度</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="91" />
+        <location filename="../ui/pages/settings.py" line="94" />
         <source>Canvas Engine</source>
         <translation>绘图后端</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="92" />
+        <location filename="../ui/pages/settings.py" line="95" />
         <source>Choose GPU with vispy</source>
         <translation>使用 vispy 时可选择 GPU 绘图</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="104" />
+        <location filename="../ui/pages/settings.py" line="107" />
         <source>Language</source>
         <translation>语言</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="105" />
+        <location filename="../ui/pages/settings.py" line="108" />
         <source>Restart NepTrainKit to apply language changes</source>
         <translation>重启 NepTrainKit 后应用语言设置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="120" />
+        <location filename="../ui/pages/settings.py" line="123" />
         <source>Log level</source>
         <translation>日志等级</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="122" />
+        <location filename="../ui/pages/settings.py" line="125" />
         <source>Minimum level written to the console and log file; applies immediately</source>
         <translation>控制台和日志文件输出的最低等级，修改后立即生效</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="144" />
+        <location filename="../ui/pages/settings.py" line="147" />
         <source>Auto loading</source>
         <translation>自动加载</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="145" />
+        <location filename="../ui/pages/settings.py" line="148" />
         <source>Detect startup path data and load</source>
         <translation>启动时检测路径数据并加载</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="153" />
+        <location filename="../ui/pages/settings.py" line="156" />
         <source>Sort atoms</source>
         <translation>原子排序</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="154" />
+        <location filename="../ui/pages/settings.py" line="157" />
         <source>Sort atoms in structures when processing cards</source>
         <translation>处理卡片时对结构中的原子排序</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="161" />
+        <location filename="../ui/pages/settings.py" line="164" />
         <source>Use card group menu</source>
         <translation>使用卡片分组菜单</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="162" />
+        <location filename="../ui/pages/settings.py" line="165" />
         <source>Group cards by "group" in console menu</source>
         <translation>在控制台菜单中按 group 字段分组卡片</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="169" />
+        <location filename="../ui/pages/settings.py" line="172" />
         <source>Keep DeepMD subfolders</source>
         <translation>保留 DeepMD 子目录</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="170" />
+        <location filename="../ui/pages/settings.py" line="173" />
         <source>Preserve imported folder hierarchy when exporting deepmd/npy</source>
         <translation>导出 deepmd/npy 时保留导入目录层级</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="178" />
+        <location filename="../ui/pages/settings.py" line="181" />
         <source>Cache output files</source>
         <translation>缓存输出文件</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="179" />
+        <location filename="../ui/pages/settings.py" line="182" />
         <source>Cache *.out and descriptor.out for faster reload (NEP &amp; DeepMD)</source>
         <translation>缓存 *.out 和 descriptor.out，加快 NEP 与 DeepMD 重新加载</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="189" />
+        <location filename="../ui/pages/settings.py" line="192" />
         <source>Automatically analyze structure evidence</source>
         <translation>自动分析结构证据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="191" />
+        <location filename="../ui/pages/settings.py" line="194" />
         <source>After the basic dataset audit appears, analyze phases and magnetic order in the background</source>
         <translation>基础诊断显示后，在后台分析相结构与磁序</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="200" />
+        <location filename="../ui/pages/settings.py" line="203" />
         <source>Export significant digits</source>
         <translation>导出有效数字</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="201" />
+        <location filename="../ui/pages/settings.py" line="204" />
         <source>Significant digits for per-atom XYZ/extxyz values</source>
         <translation>XYZ/extxyz 逐原子数值的有效数字</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="212" />
+        <location filename="../ui/pages/settings.py" line="215" />
         <source>Default Config_type</source>
         <translation>默认 Config_type</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="213" />
+        <location filename="../ui/pages/settings.py" line="216" />
         <source>Tag assigned when source has no Config_type</source>
         <translation>源数据缺少 Config_type 时使用的标签</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="222" />
+        <location filename="../ui/pages/settings.py" line="225" />
         <source>Covalent radius coefficient</source>
         <translation>共价半径系数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="223" />
+        <location filename="../ui/pages/settings.py" line="226" />
         <source>Coefficient used to detect bond length</source>
         <translation>用于判断键长的系数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="240" />
+        <location filename="../ui/pages/settings.py" line="243" />
         <source>NEP Backend</source>
         <translation>NEP 后端</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="655" />
+        <source>{package} v{version} is ready; restart NepTrainKit to activate it</source>
+        <translation>{package} v{version} 已就绪；重启 NepTrainKit 后生效</translation>
     </message>
     <message>
         <source>Select CPU/GPU or Auto detection</source>
         <translation type="vanished">选择 CPU、GPU 或自动检测</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="257" />
+        <location filename="../ui/pages/settings.py" line="260" />
         <source>Data Precision</source>
         <translation>数据精度</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="258" />
+        <location filename="../ui/pages/settings.py" line="261" />
         <source>Choose storage precision for imported DFT/structure data</source>
         <translation>选择导入 DFT/结构数据的存储精度</translation>
     </message>
@@ -5889,254 +5893,277 @@ All child items will also be deleted.</source>
         <translation type="vanished">GPU 每次处理的结构帧数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="241" />
+        <location filename="../ui/pages/settings.py" line="244" />
         <source>Select CPU/CUDA or let Auto use CUDA when available</source>
         <translation>选择 CPU/CUDA，或让自动模式在可用时使用 CUDA</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="267" />
+        <location filename="../ui/pages/settings.py" line="270" />
         <source>NEP Chunk Max Atoms</source>
         <translation>NEP 分块最大原子数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="268" />
+        <location filename="../ui/pages/settings.py" line="271" />
         <source>Maximum total atoms per prediction chunk on CPU or CUDA</source>
         <translation>CPU 或 CUDA 单个预测分块允许的最大总原子数</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="275" />
+        <location filename="../ui/pages/settings.py" line="278" />
         <source>Refresh</source>
         <translation>刷新</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="277" />
+        <location filename="../ui/pages/settings.py" line="280" />
         <source>Runtime health</source>
         <translation>运行环境状态</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="300" />
+        <source>NEP runtime updates</source>
+        <translation type="vanished">NEP 运行时更新</translation>
+    </message>
+    <message>
+        <source>Check PyPI for a compatible nep-adapters wheel; updates are verified before activation</source>
+        <translation type="vanished">从 PyPI 检查兼容的 nep-adapters wheel，更新通过验证后才会激活</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="315" />
         <source>Scatter edge color</source>
         <translation>散点边缘颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="301" />
+        <location filename="../ui/pages/settings.py" line="316" />
         <source>Default edge color for points</source>
         <translation>点的默认边缘颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="308" />
+        <location filename="../ui/pages/settings.py" line="323" />
         <source>Scatter face color</source>
         <translation>散点填充颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="309" />
+        <location filename="../ui/pages/settings.py" line="324" />
         <source>Default fill color for points</source>
         <translation>点的默认填充颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="316" />
+        <location filename="../ui/pages/settings.py" line="331" />
         <source>Face alpha (0-255)</source>
         <translation>填充透明度 (0-255)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="317" />
+        <location filename="../ui/pages/settings.py" line="332" />
         <source>Alpha channel for fill color</source>
         <translation>填充颜色的 Alpha 通道</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="325" />
+        <location filename="../ui/pages/settings.py" line="340" />
         <source>PyQtGraph scatter size</source>
         <translation>PyQtGraph 散点大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="326" />
+        <location filename="../ui/pages/settings.py" line="341" />
         <source>Marker size for PyQtGraph canvas</source>
         <translation>PyQtGraph 画布上的标记大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="334" />
+        <location filename="../ui/pages/settings.py" line="349" />
         <source>VisPy scatter size</source>
         <translation>VisPy 散点大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="335" />
+        <location filename="../ui/pages/settings.py" line="350" />
         <source>Marker size for VisPy canvas</source>
         <translation>VisPy 画布上的标记大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="343" />
+        <location filename="../ui/pages/settings.py" line="358" />
         <source>VisPy antialias</source>
         <translation>VisPy 抗锯齿</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="344" />
+        <location filename="../ui/pages/settings.py" line="359" />
         <source>Marker antialias value for VisPy (0-2)</source>
         <translation>VisPy 标记抗锯齿值 (0-2)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="352" />
+        <location filename="../ui/pages/settings.py" line="367" />
         <source>Structure background</source>
         <translation>结构背景</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="353" />
+        <location filename="../ui/pages/settings.py" line="368" />
         <source>Background color for lattice/structure viewer</source>
         <translation>晶格/结构查看器的背景颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="360" />
+        <location filename="../ui/pages/settings.py" line="375" />
         <source>Lattice line color</source>
         <translation>晶格线颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="361" />
+        <location filename="../ui/pages/settings.py" line="376" />
         <source>Line color for lattice edges in structure viewer</source>
         <translation>结构查看器中晶格边线的颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="368" />
+        <location filename="../ui/pages/settings.py" line="383" />
         <source>Selected color</source>
         <translation>选中颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="369" />
+        <location filename="../ui/pages/settings.py" line="384" />
         <source>Color for selected points</source>
         <translation>选中点的颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="376" />
+        <location filename="../ui/pages/settings.py" line="391" />
         <source>Show color</source>
         <translation>显示颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="377" />
+        <location filename="../ui/pages/settings.py" line="392" />
         <source>Color for highlighted "show" points</source>
         <translation>高亮“show”点的颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="384" />
+        <location filename="../ui/pages/settings.py" line="399" />
         <source>Current marker color</source>
         <translation>当前标记颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="385" />
+        <location filename="../ui/pages/settings.py" line="400" />
         <source>Color for current star marker</source>
         <translation>当前星形标记的颜色</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="392" />
+        <location filename="../ui/pages/settings.py" line="407" />
         <source>Current marker size</source>
         <translation>当前标记大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="393" />
+        <location filename="../ui/pages/settings.py" line="408" />
         <source>Size of current star marker</source>
         <translation>当前星形标记的大小</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="400" />
-        <location filename="../ui/pages/settings.py" line="420" />
+        <location filename="../ui/pages/settings.py" line="415" />
+        <location filename="../ui/pages/settings.py" line="435" />
         <source>About</source>
         <translation>关于</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="403" />
+        <location filename="../ui/pages/settings.py" line="418" />
         <source>Open Help Page</source>
         <translation>打开帮助页面</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="405" />
+        <location filename="../ui/pages/settings.py" line="420" />
         <source>Help</source>
         <translation>帮助</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="406" />
+        <location filename="../ui/pages/settings.py" line="421" />
         <source>Discover new features and learn useful tips about NepTrainKit.</source>
         <translation>了解 NepTrainKit 的新功能与实用技巧。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="410" />
-        <location filename="../ui/pages/settings.py" line="412" />
+        <location filename="../ui/pages/settings.py" line="425" />
+        <location filename="../ui/pages/settings.py" line="427" />
         <source>Submit Feedback</source>
         <translation>提交反馈</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="414" />
+        <location filename="../ui/pages/settings.py" line="429" />
         <source>Help us improve NepTrainKit by providing feedback.</source>
         <translation>帮助我们改进 NepTrainKit，欢迎提交反馈。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="418" />
+        <location filename="../ui/pages/settings.py" line="285" />
+        <location filename="../ui/pages/settings.py" line="433" />
         <source>Check for Updates</source>
         <translation>检查更新</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="425" />
+        <location filename="../ui/pages/settings.py" line="287" />
+        <source>{package} runtime updates</source>
+        <translation>{package} 运行时更新</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="291" />
+        <source>Check PyPI for a compatible {package} wheel; updates are verified before activation</source>
+        <translation>从 PyPI 检查兼容的 {package} wheel；激活前会先进行验证</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="440" />
         <source>Check and update</source>
         <translation>检查并更新</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="427" />
+        <location filename="../ui/pages/settings.py" line="442" />
         <source>About NEP89</source>
         <translation>关于 NEP89</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="428" />
+        <location filename="../ui/pages/settings.py" line="443" />
         <source>NEP official NEP89 large model</source>
         <translation>NEP 官方 NEP89 大模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="562" />
+        <location filename="../ui/pages/settings.py" line="578" />
         <source>Language saved. Restart NepTrainKit to apply it.</source>
         <translation>语言设置已保存，重启 NepTrainKit 后生效。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="563" />
+        <location filename="../ui/pages/settings.py" line="579" />
         <source>Tip</source>
         <translation>提示</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="574" />
+        <location filename="../ui/pages/settings.py" line="590" />
         <source>Available</source>
         <translation>可用</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="575" />
+        <location filename="../ui/pages/settings.py" line="591" />
         <source>Unavailable</source>
         <translation>不可用</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="578" />
+        <location filename="../ui/pages/settings.py" line="594" />
         <source>not installed</source>
         <translation>未安装</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="580" />
+        <location filename="../ui/pages/settings.py" line="596" />
         <source>Native helpers: {available}/{total} · nep-adapters: {version} · CPU: {cpu} · CUDA: {cuda}</source>
         <translation>原生模块：{available}/{total} · nep-adapters：{version} · CPU：{cpu} · CUDA：{cuda}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="608" />
+        <location filename="../ui/pages/settings.py" line="624" />
         <source>Native helpers are incomplete ({missing}). Reinstall the NepTrainKit wheel for this Python version.</source>
         <translation>原生模块不完整（{missing}）。请重新安装适配当前 Python 版本的 NepTrainKit wheel。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="616" />
+        <location filename="../ui/pages/settings.py" line="632" />
         <source>The NEP CPU backend is unavailable. Install nep-adapters&gt;=1.0,&lt;2 and refresh.</source>
         <translation>NEP CPU 后端不可用。请安装 nep-adapters&gt;=1.0,&lt;2 后刷新。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="622" />
+        <location filename="../ui/pages/settings.py" line="638" />
         <source>Runtime check completed.</source>
         <translation>运行环境检查完成。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="649" />
+        <source>nep-adapters v{version} is ready; restart NepTrainKit to activate it</source>
+        <translation type="vanished">nep-adapters v{version} 已就绪；重启 NepTrainKit 后激活</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/settings.py" line="686" />
         <source>Version</source>
         <translation>版本</translation>
     </message>
     <message>
-        <location filename="../ui/pages/settings.py" line="656" />
+        <location filename="../ui/pages/settings.py" line="693" />
         <source>New version available: v</source>
         <translation>发现新版本：v</translation>
     </message>
@@ -11248,99 +11275,221 @@ Magnetic: {magnetic}</source>
 <context>
     <name>Update</name>
     <message>
-        <location filename="../ui/update.py" line="295" />
+        <source>Updating NEP runtime</source>
+        <translation type="vanished">正在更新 NEP 运行时</translation>
+    </message>
+    <message>
+        <source>Unable to check NEP runtime updates.</source>
+        <translation type="vanished">无法检查 NEP 运行时更新。</translation>
+    </message>
+    <message>
+        <source>NEP Runtime Update Failed</source>
+        <translation type="vanished">NEP 运行时更新失败</translation>
+    </message>
+    <message>
+        <source>No compatible nep-adapters wheel is available for this Python version and platform.</source>
+        <translation type="vanished">没有适用于当前 Python 版本和平台的 nep-adapters wheel。</translation>
+    </message>
+    <message>
+        <source>The NEP runtime is already up to date.</source>
+        <translation type="vanished">NEP 运行时已是最新版本。</translation>
+    </message>
+    <message>
+        <source>A new nep-adapters version is available: {current} → {latest}. Install it now? The new runtime will be used after restarting NepTrainKit.</source>
+        <translation type="vanished">发现新的 nep-adapters 版本：{current} → {latest}。是否立即安装？重启 NepTrainKit 后将使用新运行时。</translation>
+    </message>
+    <message>
+        <source>NEP Runtime Update</source>
+        <translation type="vanished">NEP 运行时更新</translation>
+    </message>
+    <message>
+        <source>NEP runtime v{version} was installed and verified. Restart NepTrainKit to use it.</source>
+        <translation type="vanished">NEP 运行时 v{version} 已安装并通过验证。重启 NepTrainKit 后即可使用。</translation>
+    </message>
+    <message>
+        <source>NEP Runtime Updated</source>
+        <translation type="vanished">NEP 运行时已更新</translation>
+    </message>
+    <message>
+        <source>Unable to install the NEP runtime update.</source>
+        <translation type="vanished">无法安装 NEP 运行时更新。</translation>
+    </message>
+    <message>
+        <source>Checking NEP runtime updates, please wait...</source>
+        <translation type="vanished">正在检查 NEP 运行时更新，请稍候……</translation>
+    </message>
+    <message>
+        <source>A new {package} version is available: {current} → {latest}. Install it now? The new runtime will be used after restarting NepTrainKit.</source>
+        <translation type="vanished">发现新的 {package} 版本：{current} → {latest}。是否立即安装？重启 NepTrainKit 后将使用新的运行时。</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="302" />
         <source>Update Check Failed</source>
         <translation>更新检查失败</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="301" />
-        <location filename="../ui/update.py" line="513" />
+        <location filename="../ui/update.py" line="308" />
+        <location filename="../ui/update.py" line="737" />
         <source>You are already using the latest version!</source>
         <translation>当前已是最新版本！</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="311" />
+        <location filename="../ui/update.py" line="318" />
         <source>New version available: v</source>
         <translation>发现新版本：v</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="314" />
-        <location filename="../ui/update.py" line="382" />
-        <location filename="../ui/update.py" line="428" />
-        <location filename="../ui/update.py" line="516" />
+        <location filename="../ui/update.py" line="321" />
+        <location filename="../ui/update.py" line="606" />
+        <location filename="../ui/update.py" line="652" />
+        <location filename="../ui/update.py" line="740" />
         <source>Update available</source>
         <translation>发现新版本</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="316" />
+        <location filename="../ui/update.py" line="323" />
         <source>Open Releases</source>
         <translation>打开 Releases</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="317" />
+        <location filename="../ui/update.py" line="324" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="325" />
+        <location filename="../ui/update.py" line="332" />
         <source>Upgrade command: {command}</source>
         <translation>升级命令：{command}</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="326" />
+        <location filename="../ui/update.py" line="333" />
         <source>Pip Upgrade</source>
         <translation>Pip 升级</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="349" />
-        <location filename="../ui/update.py" line="476" />
+        <location filename="../ui/update.py" line="356" />
+        <location filename="../ui/update.py" line="700" />
         <source>Checking for updates, please wait...</source>
         <translation>正在检查更新，请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="379" />
+        <location filename="../ui/update.py" line="378" />
+        <source>NEP runtime</source>
+        <translation>NEP 运行时</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="389" />
+        <source>Updating {runtime}</source>
+        <translation>正在更新 {runtime}</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="411" />
+        <location filename="../ui/update.py" line="427" />
+        <source>Unable to check {runtime} updates.</source>
+        <translation>无法检查 {runtime} 的更新。</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="415" />
+        <location filename="../ui/update.py" line="430" />
+        <location filename="../ui/update.py" line="540" />
+        <source>{runtime} Update Failed</source>
+        <translation>{runtime}：更新失败</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="441" />
+        <source>No compatible {package} wheel is available for this Python version and platform.</source>
+        <translation>没有适用于当前 Python 版本和平台的 {package} wheel。</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="458" />
+        <source>The {runtime} is already up to date.</source>
+        <translation>{runtime} 已是最新版本。</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="471" />
+        <source>not installed</source>
+        <translation>未安装</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="473" />
+        <source>A new {package} version is available: {current} → {latest}. This runtime update may be required for the latest features and compatibility. Install it now? The new runtime will be used after restarting NepTrainKit.</source>
+        <translation>发现新的 {package} 版本：{current} → {latest}。此运行时更新可能是使用最新功能和保持兼容性所必需的。是否立即安装？重启 NepTrainKit 后将使用新的运行时。</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="483" />
+        <source>{runtime} Update</source>
+        <translation>{runtime}更新</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="487" />
+        <source>Install</source>
+        <translation>安装</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="488" />
+        <location filename="../ui/update.py" line="745" />
+        <source>Cancel</source>
+        <translation>取消</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="522" />
+        <source>{runtime} v{version} was installed and verified. Restart NepTrainKit to use it.</source>
+        <translation>{runtime} v{version} 已安装并通过验证。重启 NepTrainKit 后生效。</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="528" />
+        <source>{runtime} Updated</source>
+        <translation>{runtime} 已更新</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="536" />
+        <source>Unable to install the {runtime} update.</source>
+        <translation>无法安装 {runtime} 的更新。</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="568" />
+        <source>Checking {runtime} updates, please wait...</source>
+        <translation>正在检查 {runtime} 的更新，请稍候……</translation>
+    </message>
+    <message>
+        <location filename="../ui/update.py" line="603" />
         <source>New version v{version} is available. Open Settings &gt; About &gt; Check for Updates for details.</source>
         <translation>发现新版本 v{version}。请前往 设置 &gt; 关于 &gt; 检查更新 查看详情。</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="423" />
+        <location filename="../ui/update.py" line="647" />
         <source>New version v{version} is available. {summary} Open Settings &gt; About &gt; Check for Updates for details.</source>
         <translation>发现新版本 v{version}。{summary}请前往 设置 &gt; 关于 &gt; 检查更新 查看详情。</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="445" />
+        <location filename="../ui/update.py" line="669" />
         <source>Downloading</source>
         <translation>下载中</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="464" />
+        <location filename="../ui/update.py" line="688" />
         <source>Update large model completed!</source>
         <translation>大模型更新完成！</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="481" />
+        <location filename="../ui/update.py" line="705" />
         <source>Unable to access the warehouse directory, status code: {status_code}</source>
         <translation>无法访问仓库目录，状态码：{status_code}</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="502" />
+        <location filename="../ui/update.py" line="726" />
         <source>No NEP89 release directory found in upstream repository.</source>
         <translation>上游仓库中未找到 NEP89 发布目录。</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="517" />
+        <location filename="../ui/update.py" line="741" />
         <source>A new version of the large model has been detected: {version}</source>
         <translation>检测到大模型有新版本：{version}</translation>
     </message>
     <message>
-        <location filename="../ui/update.py" line="520" />
+        <location filename="../ui/update.py" line="744" />
         <source>Update</source>
         <translation>更新</translation>
-    </message>
-    <message>
-        <location filename="../ui/update.py" line="521" />
-        <source>Cancel</source>
-        <translation>取消</translation>
     </message>
     </context>
 <context>

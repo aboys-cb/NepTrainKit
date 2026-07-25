@@ -42,7 +42,7 @@ jobs:
         with:
           nuitka-version: main
           script-name: NepTrainKit/main.py
-          include-package: NepTrainKit,nep_adapters
+          include-package: NepTrainKit
           output-file: NepTrainKit.exe
           mode: standalone
           windows-console-mode: disable
@@ -63,6 +63,41 @@ jobs:
           Remove-Item -Path "$dist/NepTrainKit" -Recurse -Force
           New-Item -ItemType Directory -Force "$dist/Log"
           New-Item -ItemType File -Path "$dist/Log/.placeholder" -Force
+
+          $adapterVersion = python -c "from importlib.metadata import version; print(version('nep-adapters'))"
+          $adapterTarget = "$dist/runtime/nep-adapters/versions/$adapterVersion"
+          python -m pip install --no-deps --target "$adapterTarget" "nep-adapters==$adapterVersion"
+          $env:PYTHONPATH = "${{ github.workspace }}/src"
+          python -m NepTrainKit.runtime_package seed `
+            --runtime-root "$dist/runtime" `
+            --distribution "nep-adapters" `
+            --import-name "nep_adapters" `
+            --constraint ">=1.0,<2" `
+            --health-kind "nep_adapters_cpu" `
+            --version "$adapterVersion"
+
+      - name: Verify external NEP runtime
+        shell: pwsh
+        run: |
+          $dist = "${{ github.workspace }}/src/build/main.dist"
+          $state = Get-Content "$dist/runtime/nep-adapters/state.json" | ConvertFrom-Json
+          $adapterTarget = "$dist/runtime/nep-adapters/versions/$($state.active)"
+          $arguments = @(
+            "--neptrainkit-runtime-health-check",
+            $adapterTarget,
+            "nep_adapters",
+            "nep-adapters",
+            $state.active,
+            "nep_adapters_cpu"
+          )
+          $process = Start-Process `
+            -FilePath "$dist/NepTrainKit.exe" `
+            -ArgumentList $arguments `
+            -Wait `
+            -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "External nep-adapters health check failed with exit code $($process.ExitCode)."
+          }
 
       - name: Upload Artifact (backup)
         uses: actions/upload-artifact@v4

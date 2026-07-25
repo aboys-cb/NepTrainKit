@@ -6,6 +6,8 @@ import importlib
 from dataclasses import dataclass
 from importlib import metadata
 
+from NepTrainKit.runtime_package import NEP_ADAPTERS_SPEC
+
 
 _NATIVE_MODULES = ("_io", "_audit", "_phase", "_magnetism")
 
@@ -78,7 +80,7 @@ def inspect_runtime_health() -> RuntimeHealth:
     """Return a side-effect-free snapshot of packaged runtime capabilities."""
     native = tuple(_native_capability(name) for name in _NATIVE_MODULES)
     try:
-        adapters = importlib.import_module("nep_adapters")
+        adapters = importlib.import_module(NEP_ADAPTERS_SPEC.import_name)
     except Exception as exc:  # noqa: BLE001 - missing/broken package is report data
         unavailable = RuntimeCapability(
             name="nep-adapters",

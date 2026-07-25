@@ -14,6 +14,7 @@ def test_pyproject_declares_nep_adapters_runtime_dependency():
     dependencies = data["project"]["dependencies"]
 
     assert "nep-adapters>=1.0,<2" in dependencies
+    assert "packaging>=24.0" in dependencies
 
 
 def test_development_requirements_match_nep_adapters_contract():
@@ -24,6 +25,29 @@ def test_development_requirements_match_nep_adapters_contract():
     }
 
     assert "nep-adapters>=1.0,<2" in requirements
+    assert "packaging>=24.0" in requirements
+
+
+def test_nuitka_build_keeps_nep_adapters_outside_the_executable():
+    workflow = (
+        ROOT / ".github" / "workflows" / "Build-with-Nuitka.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "include-package: NepTrainKit,nep_adapters" not in workflow
+    assert "runtime/nep-adapters/versions" in workflow
+    assert "--neptrainkit-runtime-health-check" in workflow
+
+
+def test_runtime_delivery_ci_covers_pip_real_pypi_dialog_and_nuitka():
+    workflow = (
+        ROOT / ".github" / "workflows" / "pytest.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "runtime_package_e2e.py" in workflow
+    assert "runtime_package_requests_ui_e2e.py" in workflow
+    assert "requests-runtime-update-dialog.png" in workflow
+    assert "python -m nuitka" in workflow
+    assert "Get-ChildItem dist/*.whl" in workflow
 
 
 def test_versioned_dataset_catalog_is_packaged():

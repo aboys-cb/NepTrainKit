@@ -25,14 +25,7 @@ from PySide6.QtCore import QObject, QThread, Signal, Slot
 from loguru import logger
 from typing import Any, Callable, Iterable, Mapping, Optional, Sequence
 import numpy.typing as npt
-try:
-    from nep_adapters import NepAdaptersError
-except ImportError:
-    class NepAdaptersError(Exception):
-        """Fallback when nep-adapters is not installed."""
-        def __init__(self, *args, code: int = -1):
-            super().__init__(*args)
-            self.code = code
+from NepTrainKit.core.adapter_api import NepAdaptersError
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager

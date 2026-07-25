@@ -6419,6 +6419,11 @@ All child items will also be deleted.</source>
         <translation>NEP 后端</translation>
     </message>
     <message>
+        <location filename="../ui/pages/settings.py" line="632" />
+        <source>The NEP CPU backend is unavailable. Install nep-adapters&gt;=1.0 and refresh.</source>
+        <translation>NEP CPU 后端不可用。请安装 nep-adapters&gt;=1.0 后刷新。</translation>
+    </message>
+    <message>
         <location filename="../ui/pages/settings.py" line="655" />
         <source>{package} v{version} is ready; restart NepTrainKit to activate it</source>
         <translation>{package} v{version} 已就绪；重启 NepTrainKit 后生效</translation>
@@ -6695,11 +6700,6 @@ All child items will also be deleted.</source>
         <location filename="../ui/pages/settings.py" line="624" />
         <source>Native helpers are incomplete ({missing}). Reinstall the NepTrainKit wheel for this Python version.</source>
         <translation>原生模块不完整（{missing}）。请重新安装适配当前 Python 版本的 NepTrainKit wheel。</translation>
-    </message>
-    <message>
-        <location filename="../ui/pages/settings.py" line="632" />
-        <source>The NEP CPU backend is unavailable. Install nep-adapters&gt;=1.0,&lt;2 and refresh.</source>
-        <translation>NEP CPU 后端不可用。请安装 nep-adapters&gt;=1.0,&lt;2 后刷新。</translation>
     </message>
     <message>
         <location filename="../ui/pages/settings.py" line="638" />
@@ -8249,24 +8249,24 @@ Do you want to continue?</source>
         <translation type="vanished">添加筛选条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1089" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1141" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1150" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1202" />
         <source>Preview</source>
         <translation>预览</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1095" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1156" />
         <source>No preview</source>
         <translation>尚未预览</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1101" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1162" />
         <source>Apply result ▾</source>
         <translation>应用结果 ▾</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1141" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1147" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1202" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1208" />
         <source>Calculating…</source>
         <translation>正在计算……</translation>
     </message>
@@ -8279,12 +8279,12 @@ Do you want to continue?</source>
         <translation type="vanished">条件错误</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1206" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1267" />
         <source>Config type</source>
         <translation>构型类型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1208" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1269" />
         <source>Formula</source>
         <translation>化学式</translation>
     </message>
@@ -8313,47 +8313,47 @@ Do you want to continue?</source>
         <translation type="vanished">从配置类型、元素、化学式或表达式开始筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1162" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1223" />
         <source>Expired</source>
         <translation>已过期</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1168" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1229" />
         <source>Error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1210" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1271" />
         <source>Required</source>
         <translation>必含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1212" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1273" />
         <source>Excluded</source>
         <translation>排除</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1214" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1275" />
         <source>Allowed</source>
         <translation>限定</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1216" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1277" />
         <source>Expression</source>
         <translation>表达式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1234" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1295" />
         <source>Filter conditions</source>
         <translation>筛选条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1293" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1354" />
         <source>+{count} conditions</source>
         <translation>+{count} 个条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1304" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1365" />
         <source>Matched structures: {matched:,}
 Active structures: {active:,}
 Match ratio: {ratio:.2f}%
@@ -8364,22 +8364,22 @@ Elapsed: {elapsed:.1f} ms</source>
 耗时：{elapsed:.1f} ms</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1317" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1378" />
         <source>Replace current selection ({count:,})</source>
         <translation>替换当前选择（{count:,}）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1318" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1379" />
         <source>Add to current selection ({count:,})</source>
         <translation>加入当前选择（{count:,}）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1319" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1380" />
         <source>Remove from current selection ({count:,})</source>
         <translation>从当前选择中移除（{count:,}）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1328" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1389" />
         <source>Clear current selection ({count:,})</source>
         <translation>清空当前选择（{count:,}）</translation>
     </message>
@@ -8395,7 +8395,7 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>StructureFilterEditorPopup</name>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="626" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="655" />
         <source>Edit structure filter</source>
         <translation>结构筛选</translation>
     </message>
@@ -8404,150 +8404,150 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">条件按右侧关系组合</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="629" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="633" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="656" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="663" />
         <source>Saved filters</source>
         <translation>常用筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="632" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="662" />
         <source>Load or save frequently used filter conditions</source>
         <translation>加载或保存常用筛选条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="728" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="790" />
         <source>No saved filters</source>
         <translation>暂无常用筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="735" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="797" />
         <source>Save current conditions…</source>
         <translation>保存当前条件…</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="742" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="804" />
         <source>Manage saved filters</source>
         <translation>管理常用筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="743" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="847" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="805" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="909" />
         <source>Rename</source>
         <translation>重命名</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="744" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="875" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="806" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="937" />
         <source>Delete</source>
         <translation>删除</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="782" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="844" />
         <source>Preset name</source>
         <translation>常用筛选名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="794" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="856" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="806" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="868" />
         <source>Saved filter '{name}' is unavailable or damaged.</source>
         <translation>常用筛选“{name}”不可用或已损坏。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="813" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="875" />
         <source>Loaded saved filter: {name}</source>
         <translation>已加载常用筛选：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="820" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="882" />
         <source>Save current conditions</source>
         <translation>保存当前条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="821" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="883" />
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="826" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="853" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="888" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="915" />
         <source>Overwrite saved filter?</source>
         <translation>覆盖常用筛选？</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="827" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="854" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="889" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="916" />
         <source>A saved filter named '{name}' already exists.</source>
         <translation>已存在名为“{name}”的常用筛选。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="828" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="855" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="890" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="917" />
         <source>Overwrite</source>
         <translation>覆盖</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="834" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="896" />
         <source>Saved filter: {name}</source>
         <translation>已保存常用筛选：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="838" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="900" />
         <source>Complete or remove empty conditions before saving.</source>
         <translation>请补全或删除空白条件后再保存。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="846" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="908" />
         <source>Rename saved filter</source>
         <translation>重命名常用筛选</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="859" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="866" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="921" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="928" />
         <source>Saved filter could not be renamed.</source>
         <translation>无法重命名常用筛选。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="863" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="925" />
         <source>Renamed saved filter to: {name}</source>
         <translation>常用筛选已重命名为：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="873" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="935" />
         <source>Delete saved filter?</source>
         <translation>删除常用筛选？</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="874" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="936" />
         <source>Delete saved filter '{name}'?</source>
         <translation>确定删除常用筛选“{name}”吗？</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="879" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="941" />
         <source>Saved filter could not be deleted.</source>
         <translation>无法删除常用筛选。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="883" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="945" />
         <source>Deleted saved filter: {name}</source>
         <translation>已删除常用筛选：{name}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="638" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="667" />
         <source>Match all conditions (AND)</source>
         <translation>满足全部条件（AND）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="639" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="668" />
         <source>Match any condition (OR)</source>
         <translation>满足任一条件（OR）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="672" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="673" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="734" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="735" />
         <source>Add condition</source>
         <translation>添加条件</translation>
     </message>
@@ -8556,19 +8556,19 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">+ 添加条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="676" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1019" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="738" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1080" />
         <source>Set conditions to preview matches</source>
         <translation>设置条件后可预览匹配数量</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="681" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="682" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="743" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="744" />
         <source>Clear</source>
         <translation>清空</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="685" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="747" />
         <source>Done and preview</source>
         <translation>完成并预览</translation>
     </message>
@@ -8581,7 +8581,7 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation type="vanished">/ {active:,} 个结构</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="1022" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="1083" />
         <source>Estimated matches: {matched:,} / {active:,} structures</source>
         <translation>预计匹配：{matched:,} / {active:,} 个结构</translation>
     </message>
@@ -12378,119 +12378,119 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">停用</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="299" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="295" />
         <source>Enable condition</source>
         <translation>启用条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="320" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="312" />
         <source>Match case</source>
         <translation>区分大小写</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="418" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="444" />
         <source>Match case: on</source>
         <translation>区分大小写：已开启</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="420" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="446" />
         <source>Match case: off</source>
         <translation>区分大小写：已关闭</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="305" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="300" />
         <source>Config type</source>
         <translation>构型类型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="306" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="301" />
         <source>Formula</source>
         <translation>化学式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="307" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="302" />
         <source>Elements</source>
         <translation>元素组成</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="308" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="303" />
         <source>Custom expression</source>
         <translation>自定义表达式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="342" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="343" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="331" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="332" />
         <source>Remove condition</source>
         <translation>删除条件</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="428" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="438" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="454" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="464" />
         <source>Contains</source>
         <translation>包含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="429" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="437" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="455" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="463" />
         <source>Equals</source>
         <translation>完全等于</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="430" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="439" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="456" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="465" />
         <source>Starts with</source>
         <translation>开头为</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="431" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="440" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="457" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="466" />
         <source>Ends with</source>
         <translation>结尾为</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="432" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="441" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="458" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="467" />
         <source>Regex</source>
         <translation>正则表达式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="446" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="472" />
         <source>Must contain</source>
         <translation>必须包含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="447" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="473" />
         <source>Must not contain</source>
         <translation>不得包含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="448" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="474" />
         <source>Allow only</source>
         <translation>只允许</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="452" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="478" />
         <source>Expression</source>
         <translation>表达式</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="474" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="505" />
         <source>e.g. surface; bulk</source>
         <translation>例如：surface; bulk</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="475" />
-        <location filename="../ui/widgets/structure_filter_bar.py" line="478" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="506" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="509" />
         <source>Separate multiple values with ;. Use Aa to control letter case.</source>
         <translation>多个值用英文分号 ; 分隔；使用 Aa 控制是否区分大小写。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="481" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="512" />
         <source>Element symbols are normalized (fe → Fe). Use commas or spaces. Example: Fe, O</source>
         <translation>元素符号会自动规范（fe → Fe）；用逗号或空格分隔。例如：Fe, O</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="484" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="515" />
         <source>Expressions must be conditions. Add a comparison, for example: natoms &gt; 100</source>
         <translation>表达式必须是判断条件，请添加比较符。例如：natoms &gt; 100</translation>
     </message>
@@ -12499,7 +12499,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">例如：surface; bulk（多个值用英文分号 ; 分隔）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="477" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="508" />
         <source>e.g. Fe2O3; FeO</source>
         <translation>例如：Fe2O3; FeO</translation>
     </message>
@@ -12508,7 +12508,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">例如：Fe2O3; FeO（多个值用英文分号 ; 分隔）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="480" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="511" />
         <source>e.g. Fe, O</source>
         <translation>例如：Fe, O</translation>
     </message>
@@ -12517,7 +12517,7 @@ Magnetic: {magnetic}</source>
         <translation type="vanished">例如：Fe, O（用逗号或空格分隔）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="483" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="514" />
         <source>e.g. natoms &gt; 100</source>
         <translation>例如：natoms &gt; 100</translation>
     </message>
@@ -12587,7 +12587,7 @@ Magnetic: {magnetic}</source>
 <context>
     <name>_PresetNameDialog</name>
     <message>
-        <location filename="../ui/widgets/structure_filter_bar.py" line="573" />
+        <location filename="../ui/widgets/structure_filter_bar.py" line="604" />
         <source>Cancel</source>
         <translation>取消</translation>
     </message>

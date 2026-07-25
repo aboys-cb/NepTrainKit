@@ -59,7 +59,7 @@ class RuntimePackageSpec:
 NEP_ADAPTERS_SPEC = RuntimePackageSpec(
     distribution="nep-adapters",
     import_name="nep_adapters",
-    version_constraint=">=1.0,<2",
+    version_constraint=">=1.0",
     health_kind="nep_adapters_cpu",
 )
 

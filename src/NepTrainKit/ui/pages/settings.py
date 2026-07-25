@@ -630,7 +630,7 @@ class SettingsWidget(ScrollArea):
             MessageManager.send_warning_message(
                 self.tr(
                     "The NEP CPU backend is unavailable. Install "
-                    "nep-adapters>=1.0,<2 and refresh."
+                    "nep-adapters>=1.0 and refresh."
                 )
             )
             return

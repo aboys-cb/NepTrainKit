@@ -245,14 +245,37 @@ def simplex_sobol_points(
     seed: int | None = None,
     min_fraction: float = 0.0,
 ) -> list[tuple[float, ...]]:
-    """Generate low-discrepancy points on a simplex using Sobol + sorting map."""
+    """Generate exactly ``n_points`` valid Sobol simplex points or fail clearly."""
     if order < 2:
         raise ValueError("order must be >= 2")
     if n_points <= 0:
         return []
     min_fraction = float(min_fraction)
+    if not np.isfinite(min_fraction) or min_fraction < 0.0:
+        raise ValueError("min_fraction must be finite and non-negative.")
+    simplex_limit = 1.0 / float(order)
+    if min_fraction > simplex_limit + 1e-12:
+        raise ValueError(
+            f"Sobol simplex constraint is impossible: min_fraction={min_fraction:g} "
+            f"exceeds 1/order={simplex_limit:g}."
+        )
+    if abs(min_fraction - simplex_limit) <= 1e-12:
+        if n_points == 1:
+            return [tuple([simplex_limit] * order)]
+        raise ValueError(
+            f"Sobol simplex constraint permits only the equimolar point at "
+            f"min_fraction=1/order={simplex_limit:g}; requested {n_points} distinct points."
+        )
+
     engine = Sobol(d=order - 1, scramble=True, seed=seed)
-    u = engine.random(n_points)
+    if min_fraction <= 0.0:
+        u = engine.random(n_points)
+        max_draws = n_points
+    else:
+        requested_budget = max(4096, int(n_points) * 1024)
+        power = int(np.ceil(np.log2(requested_budget)))
+        u = engine.random_base2(power)
+        max_draws = len(u)
     out: list[tuple[float, ...]] = []
     for row in u:
         cuts = sorted(float(x) for x in row.tolist())
@@ -269,6 +292,14 @@ def simplex_sobol_points(
         if s <= 0:
             continue
         out.append(tuple(f / s for f in fracs))
+        if len(out) >= n_points:
+            return out
+    if len(out) < n_points:
+        raise ValueError(
+            f"Sobol simplex sampling accepted {len(out)}/{n_points} valid points after "
+            f"{max_draws} draws with min_fraction={min_fraction:g}; relax min_fraction "
+            "or request fewer points."
+        )
     return out
 
 

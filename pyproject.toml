@@ -2,7 +2,7 @@
 requires = [
 "wheel",
 "numpy",
-"setuptools>=68.0.0",
+"setuptools>=77.0.0",
 "pybind11>=2.12.0",
 "setuptools-scm>=8.2.0"
 ]
@@ -16,8 +16,9 @@ dynamic = ["version"]
 
 description = "Visualize, diagnose, and manipulate NEP training datasets."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.14"
 license = "GPL-3.0-or-later"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
@@ -26,6 +27,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Chemistry",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Scientific/Engineering :: Physics",
@@ -36,6 +38,7 @@ dependencies = [
 "PySide6-Fluent-Widgets>=1.7.0",
 "loguru>=0.7.2",
 "requests>=2.32.3",
+"packaging>=24.0",
 "pyqtgraph>=0.13.7",
 "PyOpenGL>=3.1.7",
 "numpy>=1.26.0",
@@ -52,6 +55,7 @@ test = [
     "pytest-cov>=4.0.0",
     "codecov>=2.0.0",
     "ruff>=0.12.0",
+    "scikit-learn>=1.5.0",
     "tomli>=2.0; python_version < '3.11'"
 ]
 

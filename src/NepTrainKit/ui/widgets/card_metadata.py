@@ -70,6 +70,13 @@ def _localized_catalog(_language_marker: str):
             QCoreApplication.translate("CardCatalog", "Crystal Prototype Builder"),
             QCoreApplication.translate("CardCatalog", "Generate simple bulk crystal prototypes without requiring input structures."),
         ),
+        "FiniteCellAlloyOccupancyCard": (
+            QCoreApplication.translate("CardCatalog", "Finite-Cell Alloy Occupancy"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Assign feasible integer alloy counts independently on crystallographic sublattices.",
+            ),
+        ),
         "FPSFilterDataCard": (
             QCoreApplication.translate("CardCatalog", "FPS Filter"),
             QCoreApplication.translate("CardCatalog", "Filter dataset entries via farthest point sampling computed from NEP descriptors."),
@@ -109,6 +116,13 @@ def _localized_catalog(_language_marker: str):
         "OrganicMolConfigPBCCard": (
             QCoreApplication.translate("CardCatalog", "Organic Mol Config"),
             QCoreApplication.translate("CardCatalog", "Create torsion-driven molecular configurations using the TorsionGuard PBC workflow."),
+        ),
+        "OrderedAlloyPrototypeCard": (
+            QCoreApplication.translate("CardCatalog", "Ordered Alloy Prototype"),
+            QCoreApplication.translate(
+                "CardCatalog",
+                "Generate periodic A1, A2, A3, L12, B2, and L10 prototypes with sublattice labels.",
+            ),
         ),
         "PerturbCard": (
             QCoreApplication.translate("CardCatalog", "Atomic Perturb"),

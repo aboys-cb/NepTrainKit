@@ -34,6 +34,24 @@ def test_settings_runtime_card_summarizes_capabilities():
     assert "1.2.3" in text
     assert "CPU: Available" in text
     assert "CUDA: Unavailable" in text
+    assert widget.runtime_update_card is not None
+    assert "nep-adapters" in widget.runtime_update_card.titleLabel.text()
+    assert "nep-adapters" in widget.runtime_update_card.contentLabel.text()
+    assert not hasattr(widget, "runtime_group")
+    assert widget.runtime_health_card.parent() is widget.nep_group
+    assert widget.runtime_update_card.parent() is widget.nep_group
+
+
+def test_settings_runtime_update_card_reports_restart_requirement():
+    QApplication.instance() or QApplication([])
+    with patch.object(settings_module, "inspect_runtime_health", return_value=_report()):
+        widget = SettingsWidget(None)
+
+    widget._on_runtime_update_finished(
+        {"ok": True, "updated": True, "version": "1.3.0"}
+    )
+
+    assert "1.3.0" in widget.runtime_update_card.contentLabel.text()
 
 
 def test_settings_runtime_refresh_reports_missing_native_helpers():

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-21 21:13+0800\n"
+"POT-Creation-Date: 2026-07-25 15:57+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: NepTrainKit documentation team\n"
 "Language: en\n"
@@ -216,7 +216,15 @@ msgstr ""
 msgid ""
 "第一次进入时，柱高表示该浓度下的结构数。基础诊断显示后，页面默认自动在后台遍历当前评估范围内的所有结构；不需要另找按钮启动。大体系如果不希望自动分析，可在「设置"
 " → 个性化」中关闭「自动分析结构证据」。分析完成后会增加两种视图，但不会擅自切换当前组分图："
-msgstr "On first entry, bar height represents the number of structures at that concentration. After the basic diagnostics appear, the page automatically scans all structures in the current audit scope in the background; no separate start button is required. For large systems, disable `Automatically analyze structure evidence` under Settings > Personalization if automatic analysis is not desired. Two additional views become available when analysis finishes, without changing the current composition view automatically:"
+msgstr ""
+"On first entry, bar height represents the number of structures at that "
+"concentration. After the basic diagnostics appear, the page automatically"
+" scans all structures in the current audit scope in the background; no "
+"separate start button is required. For large systems, disable "
+"`Automatically analyze structure evidence` under Settings > "
+"Personalization if automatic analysis is not desired. Two additional "
+"views become available when analysis finishes, without changing the "
+"current composition view automatically:"
 
 #: ../../source/module/training-set-assessment.md:48
 #: b6dcdb3c4dc44f239ba3ee5dca404b41
@@ -742,6 +750,24 @@ msgstr ""
 "separated using the centrosymmetry parameter of the B sublattice."
 
 #: ../../source/module/training-set-assessment.md:176
+#: d768912b2c5a4367889cbf7031723249
+msgid ""
+"C15 的 Pearson 符号是 `cF24`，空间群是 $Fd\\bar 3m$；这里的 `F` 表示面心立方布拉菲格子，但不表示它是 A1 "
+"型 FCC 固溶体，也不表示每个原子都具有 a-CNA 的 FCC 近邻拓扑。C15 的两类位点分别使用 Laves 的 Z12/Z16 "
+"Frank–Kasper 环境，因此界面可以同时显示「C15 Laves 已确认」和「a-CNA（仅 FCC/HCP/BCC）为其他 / "
+"未解析」。参见 [AFLOW C15 原型](https://www.aflow.org/prototype-"
+"encyclopedia/A2B_cF24_227_d_a)。"
+msgstr ""
+"C15 has Pearson symbol `cF24` and space group $Fd\\bar 3m$. The `F` "
+"denotes a face-centered cubic Bravais lattice; it does not make the "
+"structure an A1 FCC solid solution or give every atom an FCC a-CNA "
+"neighborhood. The two C15 sites instead use the Z12/Z16 Frank–Kasper "
+"environments of a Laves phase. The interface can therefore report both "
+"`C15 Laves confirmed` and `a-CNA (FCC/HCP/BCC only): other / unresolved`. "
+"See the [AFLOW C15 prototype](https://www.aflow.org/prototype-"
+"encyclopedia/A2B_cF24_227_d_a)."
+
+#: ../../source/module/training-set-assessment.md:178
 #: f8e2e44067814637b7451ef4adbbe4b3
 msgid ""
 "自动推断 A/B 角色时，实际组成与理想少数元素比例的偏差必须不超过 `3.5%`。C36 局域堆垛与 C14/C15 "
@@ -754,29 +780,29 @@ msgstr ""
 "than a confirmed C36 label. Unconfirmed means insufficient evidence, not "
 "proof that the phase is absent."
 
-#: ../../source/module/training-set-assessment.md:178
+#: ../../source/module/training-set-assessment.md:180
 #: 13618249aa594b228b6283df0e880ae7
 msgid "磁类型如何识别"
 msgstr "How magnetic types are identified"
 
-#: ../../source/module/training-set-assessment.md:180
+#: ../../source/module/training-set-assessment.md:182
 #: 9ef27a19efbf44309611cde3c70034a3
 msgid "输入条件"
 msgstr "Input requirement"
 
-#: ../../source/module/training-set-assessment.md:182
+#: ../../source/module/training-set-assessment.md:184
 #: 83de5186a6f1405c8757ec07813f6154
 msgid "磁类型分析只读取逐原子的 `spin:R:3`，即每个原子一个三分量自旋向量："
 msgstr ""
 "Magnetic-type analysis reads only per-atom `spin:R:3`: one three-"
 "component spin vector for each atom."
 
-#: ../../source/module/training-set-assessment.md:184
+#: ../../source/module/training-set-assessment.md:186
 #: f67d63dd0e8d47719084716e759c3a97
 msgid "Properties=species:S:1:pos:R:3:spin:R:3\n"
 msgstr ""
 
-#: ../../source/module/training-set-assessment.md:188
+#: ../../source/module/training-set-assessment.md:190
 #: 0031d601a3b7460894a88b7ae1513c4e
 msgid ""
 "`spin` 必须是数值型 `N × 3` 数组，并且所有分量有限。`mforce` 和 `force_mag` 是磁力标签，不能替代 "
@@ -787,12 +813,12 @@ msgstr ""
 "structure without valid `spin` data is reported as having no valid spin "
 "field; it is not guessed to be nonmagnetic."
 
-#: ../../source/module/training-set-assessment.md:190
+#: ../../source/module/training-set-assessment.md:192
 #: 58e32798caa746dba64587c67539a49b
 msgid "4 组判据"
 msgstr "Four groups of observables"
 
-#: ../../source/module/training-set-assessment.md:192
+#: ../../source/module/training-set-assessment.md:194
 #: cc1807f6e40747eab9ce0a55946f8eac
 #, python-brace-format
 msgid ""
@@ -804,12 +830,12 @@ msgstr ""
 "$\\hat{\\mathbf s}_i=\\mathbf s_i/m_i$. Moments at or below `1 × 10⁻⁷` "
 "are excluded from directional statistics."
 
-#: ../../source/module/training-set-assessment.md:194
+#: ../../source/module/training-set-assessment.md:196
 #: 1011c9d95d2b45f6908d966e1e3a4501
 msgid "**净磁矩比例**"
 msgstr "**Net-moment ratio**"
 
-#: ../../source/module/training-set-assessment.md:196
+#: ../../source/module/training-set-assessment.md:198
 #: 4b44d154df0240e9abd6fbbca3d65e00
 #, python-brace-format
 msgid ""
@@ -819,7 +845,7 @@ msgid ""
 "   "
 msgstr ""
 
-#: ../../source/module/training-set-assessment.md:200
+#: ../../source/module/training-set-assessment.md:202
 #: d6149c4422c0480aaa4d60bf6a8b84b2
 msgid "$R_M$ 接近 `1` 表示自旋净对齐，接近 `0` 表示整体补偿。它是无量纲比例；平均磁矩仍沿用输入 `spin` 的单位。"
 msgstr ""
@@ -827,12 +853,12 @@ msgstr ""
 "global compensation. The ratio is dimensionless; the mean moment retains "
 "the unit of the input `spin` vectors."
 
-#: ../../source/module/training-set-assessment.md:202
+#: ../../source/module/training-set-assessment.md:204
 #: 68cb00d2de6345d795a4b300256f40a6
 msgid "**共线性与共面性**"
 msgstr "**Collinearity and coplanarity**"
 
-#: ../../source/module/training-set-assessment.md:204
+#: ../../source/module/training-set-assessment.md:206
 #: f4b681cb63c14b0c93eb837510036f7f
 #, python-brace-format
 msgid ""
@@ -843,7 +869,7 @@ msgid ""
 "   "
 msgstr ""
 
-#: ../../source/module/training-set-assessment.md:209
+#: ../../source/module/training-set-assessment.md:211
 #: 7ecdcd628481469aa45787ae2713aae2
 msgid ""
 "共线性取 $C=\\lambda_3$，共面性取 $P=1-3\\lambda_1$。$C$ 接近 `1` 表示方向集中在同一条轴上；$P$ 接近"
@@ -853,17 +879,17 @@ msgstr ""
 "value of $C$ near `1` means the directions concentrate around one axis; "
 "$P$ near `1` means the directions lie mainly in one plane."
 
-#: ../../source/module/training-set-assessment.md:211
+#: ../../source/module/training-set-assessment.md:213
 #: 74bcb9d561f84c20944ff93d87dbd3ce
 msgid "**近邻自旋相关**"
 msgstr "**Neighbor spin correlation**"
 
-#: ../../source/module/training-set-assessment.md:213
+#: ../../source/module/training-set-assessment.md:215
 #: be37f8274eb847d0ac63b636a4a9d6fd
 msgid "每个原子最多取 12 个最近邻，计算"
 msgstr "For each atom, the audit takes up to 12 nearest neighbors and computes"
 
-#: ../../source/module/training-set-assessment.md:215
+#: ../../source/module/training-set-assessment.md:217
 #: 016bbfd1db0c4e79bbb4e25722103110
 #, python-brace-format
 msgid ""
@@ -873,7 +899,7 @@ msgid ""
 "   "
 msgstr ""
 
-#: ../../source/module/training-set-assessment.md:219
+#: ../../source/module/training-set-assessment.md:221
 #: bbb6e1fb80264674af0447b07ecb0f43
 msgid "点积不小于 `0.80` 记为平行近邻，不大于 `-0.80` 记为反平行近邻。程序还分别统计平行和反平行近邻比例。"
 msgstr ""
@@ -881,12 +907,12 @@ msgstr ""
 "value at or below `-0.80` counts as antiparallel. The parallel and "
 "antiparallel neighbor fractions are also recorded."
 
-#: ../../source/module/training-set-assessment.md:221
+#: ../../source/module/training-set-assessment.md:223
 #: 4f9031dc66d64feaa17fcf835d92b99a
 msgid "**低阶磁结构因子**"
 msgstr "**Low-order magnetic structure factor**"
 
-#: ../../source/module/training-set-assessment.md:223
+#: ../../source/module/training-set-assessment.md:225
 #: 658fea072b8c4a8dbf96a1b9f6ec4527
 msgid "对分数坐标 $\\mathbf f_i$，程序在周期方向上扫描 $|h|,|k|,|l|\\le3$ 的非零整数波矢，计算"
 msgstr ""
@@ -894,7 +920,7 @@ msgstr ""
 "integer wave vectors with $|h|,|k|,|l|\\le3$ along periodic directions "
 "and computes"
 
-#: ../../source/module/training-set-assessment.md:225
+#: ../../source/module/training-set-assessment.md:227
 #: fd0c5dde99be4bc3915f739c0cb34d46
 msgid ""
 "\n"
@@ -906,7 +932,7 @@ msgid ""
 "   "
 msgstr ""
 
-#: ../../source/module/training-set-assessment.md:232
+#: ../../source/module/training-set-assessment.md:234
 #: 0146439fb8a84d0894439f6c95ba7684
 #, python-brace-format
 msgid ""
@@ -917,12 +943,12 @@ msgstr ""
 "vector. This detects low-order modulation that the current supercell can "
 "represent; it is not a continuous reciprocal-space scan."
 
-#: ../../source/module/training-set-assessment.md:234
+#: ../../source/module/training-set-assessment.md:236
 #: 9e39cb50b15442eb8123ccbdacdc073b
 msgid "结构级磁类型标签"
 msgstr "Structure-level magnetic-type labels"
 
-#: ../../source/module/training-set-assessment.md:236
+#: ../../source/module/training-set-assessment.md:238
 #: 239ad874095a4254a0cdb040b58a2337
 msgid "判定按下表从上到下执行："
 msgstr "The first matching rule in the following table is used:"
@@ -1027,7 +1053,7 @@ msgstr ""
 "$R_M\\le0.25$, $S_\\mathrm{max}\\le0.22$, and $\\lvert\\bar "
 "c\\rvert\\le0.15$"
 
-#: ../../source/module/training-set-assessment.md:248
+#: ../../source/module/training-set-assessment.md:250
 #: 426608c950264fbc8f4e449063b56b9f
 msgid ""
 "只有结构级结果已经属于 AFM，程序才继续检查层序。它沿周期晶格方向用分数坐标聚合磁层；同一方向上分数坐标间隔不超过 `0.025` "
@@ -1045,7 +1071,7 @@ msgstr ""
 "copy inside the same cell is unnecessary. AFM structures that do not pass"
 " the layer-sequence gate are shown as AFM (unsubtyped)."
 
-#: ../../source/module/training-set-assessment.md:250
+#: ../../source/module/training-set-assessment.md:252
 #: 76337b4e7d55403591ed9adac63c694b
 msgid ""
 "逐元素结果使用相同的净磁矩、方向张量、同元素近邻相关和结构因子，给出「对齐」「补偿」「调制」「非共线」「混合共线」「无序」等快照标签。异元素近邻耦合按平均点积判断：不小于"
@@ -1058,12 +1084,12 @@ msgstr ""
 "mean dot product: at least `0.50` is parallel, at most `-0.50` is "
 "antiparallel, and intermediate values are mixed."
 
-#: ../../source/module/training-set-assessment.md:252
+#: ../../source/module/training-set-assessment.md:254
 #: f2ba8086aca549029a49934ea5e6b11b
 msgid "磁类型标签的边界"
 msgstr "Limits of magnetic-type labels"
 
-#: ../../source/module/training-set-assessment.md:254
+#: ../../source/module/training-set-assessment.md:256
 #: a3f175cf9c214c1ca7abde5a7940e111
 msgid ""
 "这些标签描述单帧自旋快照，不是有限温度磁相判定。`PM-like` 只表示这一帧在当前判据下呈现低净磁矩、低 q "
@@ -1080,12 +1106,12 @@ msgstr ""
 "temperatures, domain stability, and free energies require separate "
 "simulations and physical validation."
 
-#: ../../source/module/training-set-assessment.md:257
+#: ../../source/module/training-set-assessment.md:259
 #: 1b25cfb5ee664cc5a3a01a50b37443b9
 msgid "导出 HTML 报告"
 msgstr "Export an HTML report"
 
-#: ../../source/module/training-set-assessment.md:259
+#: ../../source/module/training-set-assessment.md:261
 #: 001e3f4c5fce48aca8fb6ccaebcd87e3
 msgid "点击页面顶部「导出 HTML 报告」，可保存本次数据快照。报告采用与页面相同的阅读优先级，不再把所有原始表格一次性铺开："
 msgstr ""
@@ -1093,28 +1119,28 @@ msgstr ""
 "snapshot. The report follows the same reading priority as the application"
 " instead of expanding every raw table at once:"
 
-#: ../../source/module/training-set-assessment.md:261
+#: ../../source/module/training-set-assessment.md:263
 #: fde9051a8f9c45cb8305311341c619bd
 msgid "第一屏先给出「训练前必须处理」「建议复核」或「未发现阻塞项」；"
 msgstr ""
 "The first screen states whether action is required before training, "
 "review is recommended, or no blocker was found."
 
-#: ../../source/module/training-set-assessment.md:262
+#: ../../source/module/training-set-assessment.md:264
 #: fabe5d83d391434fbf89bc4e666ae28e
 msgid "紧接着显示结构数、精确组分点、阻塞项数、复核组数以及相／磁分析进度；"
 msgstr ""
 "Summary cards show the structure count, exact-composition count, blocker "
 "count, review-group count, and phase/magnetic analysis progress."
 
-#: ../../source/module/training-set-assessment.md:263
+#: ../../source/module/training-set-assessment.md:265
 #: 959d62ab09ce43f99a7c2148ffd2326c
 msgid "「Start here」只列最多 3 个最高优先级问题，并给出下一步动作；"
 msgstr ""
 "`Start here` lists at most the three highest-priority findings and gives "
 "the next action for each."
 
-#: ../../source/module/training-set-assessment.md:264
+#: ../../source/module/training-set-assessment.md:266
 #: 3757202766934ab29b69dbd12aa27634
 msgid "完整复核项按「必须处理」「建议复核」「支持证据」「不可用检查」分组；只有阻塞项默认展开；"
 msgstr ""
@@ -1122,7 +1148,7 @@ msgstr ""
 "Supporting evidence, and Unavailable checks. Only blocking findings are "
 "expanded by default."
 
-#: ../../source/module/training-set-assessment.md:265
+#: ../../source/module/training-set-assessment.md:267
 #: ec370cb7e2c84bbab8ecf3155872b4d7
 msgid "普通复核详情、组分清单、相／磁地图、输入参数和运行指纹默认折叠，需要追证据时再展开。"
 msgstr ""
@@ -1130,87 +1156,87 @@ msgstr ""
 "input parameters, and run fingerprints remain collapsed until evidence is"
 " needed."
 
-#: ../../source/module/training-set-assessment.md:267
+#: ../../source/module/training-set-assessment.md:269
 #: aa0d43d1259b452daaba9f68430784ae
 msgid "因此，收到报告的人应先读状态横幅和 `Start here`，再展开与自己判断有关的证据。报告中仍保留："
 msgstr ""
 "Read the status banner and `Start here` first, then expand only the "
 "evidence needed for the decision. The report still preserves:"
 
-#: ../../source/module/training-set-assessment.md:269
+#: ../../source/module/training-set-assessment.md:271
 #: 4b2b84a711e84c159dba53cf75a562f6
 msgid "评估范围、生成时间、数据与模型指纹；"
 msgstr "audit scope, generation time, and data/model fingerprints;"
 
-#: ../../source/module/training-set-assessment.md:270
+#: ../../source/module/training-set-assessment.md:272
 #: b2474dfeb2ad439ca6b64f0a0c5a8f30
 msgid "数据质量、组分、标签、局域环境、结构相和磁类型摘要；"
 msgstr ""
 "summaries of data quality, composition, labels, local environments, "
 "structural phase, and magnetic type;"
 
-#: ../../source/module/training-set-assessment.md:271
+#: ../../source/module/training-set-assessment.md:273
 #: a914d4ad781c4fcfa812f04d8b9a617c
 msgid "复核项对应的真实结构索引；"
 msgstr "the original structure indices associated with each finding;"
 
-#: ../../source/module/training-set-assessment.md:272
+#: ../../source/module/training-set-assessment.md:274
 #: 57092c9b1f4b40b6accfba3eed58299a
 msgid "每项判据和能力边界。"
 msgstr "the rule and capability boundary for every finding."
 
-#: ../../source/module/training-set-assessment.md:274
+#: ../../source/module/training-set-assessment.md:276
 #: 26ad3b6690d7461d93e4df659942ade6
 msgid "报告用于记录和协作，不是全局覆盖证明，也不是自动采样指令。"
 msgstr ""
 "The report is a record for review and collaboration. It is not proof of "
 "global coverage and does not issue automatic sampling instructions."
 
-#: ../../source/module/training-set-assessment.md:276
+#: ../../source/module/training-set-assessment.md:278
 #: a66105121a944b59a612a706932cc90a
 msgid "当前不能单独回答什么"
 msgstr "Questions this audit cannot answer by itself"
 
-#: ../../source/module/training-set-assessment.md:278
+#: ../../source/module/training-set-assessment.md:280
 #: dc3b58f8221341adbb21fa323d42f587
 msgid "训练集评估不能单独回答："
 msgstr "Training Set Audit cannot determine by itself:"
 
-#: ../../source/module/training-set-assessment.md:280
+#: ../../source/module/training-set-assessment.md:282
 #: 717a4e144ab448d492106e79e06a7755
 msgid "数据是否覆盖某个温度、压力、缺陷、界面或相变目标；"
 msgstr ""
 "whether the data cover a target temperature, pressure, defect, interface,"
 " or phase-transition regime;"
 
-#: ../../source/module/training-set-assessment.md:281
+#: ../../source/module/training-set-assessment.md:283
 #: 27e8bafc5305412c9567e092c0f9a524
 msgid "哪种目标结构一定缺失；"
 msgstr "which target structure is definitely missing;"
 
-#: ../../source/module/training-set-assessment.md:282
+#: ../../source/module/training-set-assessment.md:284
 #: ffe98cc3d78e4ce19f9c22c1d868984e
 msgid "势函数在独立测试集上的误差；"
 msgstr "the potential error on an independent test set;"
 
-#: ../../source/module/training-set-assessment.md:283
+#: ../../source/module/training-set-assessment.md:285
 #: c1631f6c2622488eb7cf8c2671f3cfc4
 msgid "长时间分子动力学是否稳定；"
 msgstr "whether long molecular-dynamics trajectories will remain stable;"
 
-#: ../../source/module/training-set-assessment.md:284
+#: ../../source/module/training-set-assessment.md:286
 #: 7d82182e24be4ea183d3d26cab2ca269
 msgid "某项物性的误差是否可接受；"
 msgstr "whether an error in a particular property is acceptable;"
 
-#: ../../source/module/training-set-assessment.md:285
+#: ../../source/module/training-set-assessment.md:287
 #: cf91456bc1db4f159c166127e837cf3b
 msgid "单帧结构和自旋标签对应的热力学相是否稳定。"
 msgstr ""
 "whether the thermodynamic structural or magnetic phase represented by a "
 "single snapshot is stable."
 
-#: ../../source/module/training-set-assessment.md:287
+#: ../../source/module/training-set-assessment.md:289
 #: db834a8b6cf942299440bbdc507441c9
 msgid "这些问题分别需要明确的目标空间、目标结构或轨迹、模型预测、独立参考数据和物性验证协议。「当前数据中少」只表示相对稀少，不等于研究目标中缺失。"
 msgstr ""

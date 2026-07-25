@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-25 13:17+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -28,7 +28,7 @@ msgstr "Conditional Replace"
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:5
 #: 053e26f74b5942f1a9188cc620e9ce5e
 msgid "`Group`: `Alloy` | `Class`: `ConditionalReplaceCard`"
-msgstr ""
+msgstr "`Group`: `Alloy` | `Class`: `ConditionalReplaceCard`"
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:7
 #: b764b3c9ce714053a7d48bce76ca8b57
@@ -108,17 +108,17 @@ msgstr "**Parameters:**"
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:26
 #: 7ebb4b6b4fea44b1b8c713da384520ca
 msgid "`target` = `O`"
-msgstr ""
+msgstr "`target` = `O`"
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:27
 #: 1ce0bc7b4cbd48efa9e2a35732542b37
 msgid "`replacements` = `F:1.0`"
-msgstr ""
+msgstr "`replacements` = `F:1.0`"
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:28
 #: 2a5cb2559db24dd6a0594e751585d70e
 msgid "`condition` = `z>=8 and z<=10`"
-msgstr ""
+msgstr "`condition` = `z>=8 and z<=10`"
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:29
 #: b957057f9bf34805ae6692e6f79f78fd
@@ -222,7 +222,7 @@ msgstr "Parameters"
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:53
 #: 782aa23a6d694da8a0cc9b66aa3eaaf7
 msgid "Target（target）"
-msgstr ""
+msgstr "Target（target）"
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:55
 #: 3c1bb0260c764edf906b741926eccba8
@@ -234,7 +234,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:57
 #: 8839d6a5bf9a43c494d9f8061c5c3633
 msgid "Replacements（replacements）"
-msgstr ""
+msgstr "Replacements（replacements）"
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:59
 #: 1bdc19d8714c4b3a90d38014e67e50c0
@@ -250,17 +250,21 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:61
 #: 6bd2878a82744b3aaa977f503c659b07
 msgid "Condition（condition）"
-msgstr ""
+msgstr "Condition（condition）"
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:63
 #: 1f7e56de28a04d3ab02b87cac51aee47
 msgid ""
 "`str`，默认空。空间条件表达式，不填或填 `all` = 所有 target 原子都命中。支持变量 `x`/`y`/`z`（笛卡尔坐标，单位 "
-"Å），比较运算符 `<`/`>`/`<=`/`>=`/`==`/`!=`，逻辑 `and`/`or`/`not`，以及四则运算。"
+"Å），比较运算符 `<`/`>`/`<=`/`>=`/`==`/`!=`，逻辑 `and`/`or`/`not`，以及四则运算。相等判断可写 `x=0`"
+" 或 `x==0`，两者含义相同。"
 msgstr ""
-"`str`, empty by default. Spatial expression; empty or `all` selects every "
-"target atom. It supports Cartesian `x`, `y`, and `z` in Å, comparisons `<`, "
-"`>`, `<=`, `>=`, `==`, `!=`, Boolean `and`, `or`, `not`, and arithmetic."
+"`str`, empty by default. A spatial condition expression. Leave it empty or "
+"use `all` to match every target atom. Supported variables are `x`/`y`/`z` "
+"(Cartesian coordinates in Å), comparison operators "
+"`<`/`>`/`<=`/`>=`/`==`/`!=`, logical operators `and`/`or`/`not`, and "
+"arithmetic operators. Equality may be written as `x=0` or `x==0`; the two "
+"forms are equivalent."
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:65
 #: 3c59efd448e242de918c83bebf0d8d50
@@ -285,7 +289,7 @@ msgstr "`z<=4`: select only the bottom layer"
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:70
 #: c379f95874ab45a291d0e57adeaebe7d
 msgid "Mode（mode）"
-msgstr ""
+msgstr "Mode（mode）"
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:72
 #: c39ac610b0cc4467b392c3ee41ea88ee
@@ -298,7 +302,7 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:74
 #: 78e1bb105dcc4fc2a38faad6f38a7df3
 msgid "Seed（seed）"
-msgstr ""
+msgstr "Seed（seed）"
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:76
 #: d9f22c7de4eb471bab9070cccb027626
@@ -331,6 +335,15 @@ msgid ""
 "  \"mode\": 1\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"ConditionalReplaceCard\",\n"
+"  \"check_state\": true,\n"
+"  \"target\": \"O\",\n"
+"  \"replacements\": \"F:1.0\",\n"
+"  \"condition\": \"z>=8 and z<=10\",\n"
+"  \"seed\": [101],\n"
+"  \"mode\": 1\n"
+"}\n"
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:93
 #: 5c3d07b8ea9547c2b7812d235a72dc48
@@ -351,6 +364,15 @@ msgid ""
 "  \"mode\": 0\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"ConditionalReplaceCard\",\n"
+"  \"check_state\": true,\n"
+"  \"target\": \"O\",\n"
+"  \"replacements\": \"F:0.7,N:0.3\",\n"
+"  \"condition\": \"z>=6 and z<=14\",\n"
+"  \"seed\": [101],\n"
+"  \"mode\": 0\n"
+"}\n"
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:106
 #: 861d32be2bb545348c8e5dbbc5d0a509
@@ -371,6 +393,15 @@ msgid ""
 "  \"mode\": 0\n"
 "}\n"
 msgstr ""
+"{\n"
+"  \"class\": \"ConditionalReplaceCard\",\n"
+"  \"check_state\": true,\n"
+"  \"target\": \"O\",\n"
+"  \"replacements\": \"F:0.4,N:0.3,Cl:0.3\",\n"
+"  \"condition\": \"all\",\n"
+"  \"seed\": [101],\n"
+"  \"mode\": 0\n"
+"}\n"
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:119
 #: b10e61154ddc476195b423fc87e23b06
@@ -424,11 +455,15 @@ msgstr ""
 "unintuitive."
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:131
-#: 4d6fb099d88a479daad4baa6bbd32b31
-msgid "**condition 解析失败。** 检查语法：变量只能用 x/y/z，运算符拼写正确（`and` 非 `AND`，`==` 非 `=`）。"
+#: e2ad8269e31548ac8da2a51534ee9f12
+msgid ""
+"**condition 解析失败。** 检查变量是否只用了 x/y/z，并确认没有 "
+"`===`、函数调用等不支持的语法。`=`、`==`、`>=`、`<=`、`!=` 都是合法写法；非法表达式会明确抛出 `ValueError`。"
 msgstr ""
-"**The condition does not parse.** Variables are limited to x, y, and z; use "
-"lowercase `and` and comparison `==`, not assignment `=`."
+"**The condition could not be parsed.** Check that it uses only x/y/z "
+"variables and does not contain unsupported syntax such as `===` or function "
+"calls. `=`, `==`, `>=`, `<=`, and `!=` are all valid. An invalid expression "
+"raises `ValueError` explicitly."
 
 #: ../../source/module/make-dataset-cards/cards/conditional-replace-card.md:133
 #: dd68e553bd6d47d28dbd625c2f9b8942
@@ -462,3 +497,10 @@ msgstr ""
 "A fixed nonzero `seed` reproduces an input. For mixed replacements it "
 "controls which site receives each species; `seed=0` generates a new "
 "assignment each run."
+
+#~ msgid "**condition 解析失败。** 检查语法：变量只能用 x/y/z，运算符拼写正确（`and` 非 `AND`，`==` 非 `=`）。"
+#~ msgstr ""
+#~ "**The condition does not parse.** Variables"
+#~ " are limited to x, y, and z; "
+#~ "use lowercase `and` and comparison `==`,"
+#~ " not assignment `=`."

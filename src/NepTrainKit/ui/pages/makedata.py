@@ -5,6 +5,7 @@
 import json
 import os.path
 import re
+import tempfile
 from pathlib import Path
 
 import numpy as np
@@ -411,11 +412,27 @@ class MakeDataWidget(QWidget):
         None
             Serialises the provided card outputs into a single dataset file.
         """
-        if os.path.exists(path):
-            os.remove(path)
-        with open(path, "w",encoding="utf8") as file:
-            for index, card in enumerate(cards):
-                card.write_result_dataset(file, append=index > 0)
+        destination = Path(path)
+        temporary_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                encoding="utf8",
+                dir=destination.parent,
+                prefix=f".{destination.name}.",
+                suffix=".tmp",
+                delete=False,
+            ) as file:
+                temporary_path = Path(file.name)
+                for index, card in enumerate(cards):
+                    card.write_result_dataset(file, append=index > 0)
+                file.flush()
+                os.fsync(file.fileno())
+            os.replace(temporary_path, destination)
+            temporary_path = None
+        finally:
+            if temporary_path is not None:
+                temporary_path.unlink(missing_ok=True)
 
 
     def export_file(self):
@@ -480,6 +497,8 @@ class MakeDataWidget(QWidget):
         self.stop_run_card()
         self._last_completed_card_index = None
         self.setting_group.set_output_available(False)
+        for card in self.workspace_card_widget.cards:
+            card.set_dataset([])
         first_card=self._next_card(-1)
         if first_card:
             needs_input = bool(getattr(first_card, "requires_input_dataset", True))
@@ -488,7 +507,7 @@ class MakeDataWidget(QWidget):
                     self.tr("Please import the structure file first. You can drag it in directly or import it from the upper left corner!")
                 )
                 return
-            first_card.dataset = self.dataset or []
+            first_card.set_dataset(self.dataset or [])
 
             first_card.runFinishedSignal.connect(self._run_next_card)
             first_card.run()
@@ -554,8 +573,15 @@ class MakeDataWidget(QWidget):
 
         cards=self.workspace_card_widget.cards
         current_card=cards[current_card_index]
-        self._last_completed_card_index = current_card_index
         current_card.runFinishedSignal.disconnect(self._run_next_card)
+        if getattr(current_card, "run_outcome", "succeeded") != "succeeded":
+            self._last_completed_card_index = None
+            self.setting_group.set_output_available(
+                bool(self._cards_for_export(include_all=True))
+            )
+            return
+
+        self._last_completed_card_index = current_card_index
 
         next_card=self._next_card(current_card_index )
         if current_card.result_dataset and next_card:
@@ -568,7 +594,7 @@ class MakeDataWidget(QWidget):
                 bool(self._cards_for_export(include_all=True))
             )
             MessageManager.send_success_message(
-                self.tr("Perturbation training set created successfully.")
+                self.tr("Training structures generated.")
             )
 
     def request_selected_outputs(self) -> None:

@@ -58,6 +58,10 @@ Make Dataset 生成候选结构
 - 打开本地目录或 URL。
 - 用 `Ctrl+F` 搜索项目、标签、备注或路径。
 
+选择 NEP 结果目录后，软件会尝试从 `energy_train.out`、`force_train.out` 和
+`virial_train.out` 计算训练 RMSE。某个输出缺失或列格式不完整时，会指出具体文件并保留
+当前手动输入值，不会把缺失结果当作零误差。
+
 ## 存储位置
 
 本地数据库默认放在用户配置目录：

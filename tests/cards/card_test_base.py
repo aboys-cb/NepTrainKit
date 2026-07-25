@@ -19,6 +19,7 @@ from PySide6.QtWidgets import QApplication
 from NepTrainKit.ui.views._card import (
     SuperCellCard,
     CrystalPrototypeBuilderCard,
+    OrderedAlloyPrototypeCard,
     PerturbCard,
     BainPathCard,
     CellScalingCard,
@@ -30,6 +31,7 @@ from NepTrainKit.ui.views._card import (
     CompositionSweepCard,
     CompositionGradientCard,
     RandomOccupancyCard,
+    FiniteCellAlloyOccupancyCard,
     ConditionalReplaceCard,
     RandomPackingCard,
     MagneticOrderCard,
@@ -67,6 +69,11 @@ from NepTrainKit.core.cards.alloy import (
     RandomDopingParams,
     RandomOccupancyOperation,
     RandomOccupancyParams,
+    OrderedAlloyPrototypeOperation,
+    OrderedAlloyPrototypeParams,
+    FiniteCellAlloyOccupancyOperation,
+    FiniteCellAlloyOccupancyParams,
+    evaluate_condition,
 )
 from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams, GeometryFilterOperation, GeometryFilterParams
 from NepTrainKit.core.cards.operation import params_to_dict

@@ -57,6 +57,7 @@ class CardGroup(MakeDataCardWidget):
         self.filter_card=None
         self.dataset:Any=None
         self.result_dataset=[]
+        self.run_outcome = "idle"
         self.cards_to_run = []
         self.current_index = 0
         self.resize(400, 200)
@@ -114,7 +115,12 @@ class CardGroup(MakeDataCardWidget):
         """
         self.dataset =dataset
         self.result_dataset=[]
+        self.run_outcome = "idle"
         self.set_output_available(False)
+        for card in self.card_list:
+            card.set_dataset(dataset)
+        if self.filter_card and isValid(self.filter_card):
+            self.filter_card.set_dataset([])
 
     def add_card(self, card):
         """Insert a card widget into the group layout.
@@ -200,6 +206,12 @@ class CardGroup(MakeDataCardWidget):
         """
         card = self.cards_to_run[self.current_index]
         card.runFinishedSignal.disconnect(self.on_card_finished)
+        if getattr(card, "run_outcome", "succeeded") != "succeeded":
+            self.result_dataset = []
+            self.run_outcome = getattr(card, "run_outcome", "failed")
+            self.set_output_available(False)
+            self.runFinishedSignal.emit(self.index)
+            return
         self.result_dataset.extend(card.result_dataset)
         self.current_index += 1
         self.run_card_num -= 1
@@ -207,11 +219,31 @@ class CardGroup(MakeDataCardWidget):
         if self.current_index < len(self.cards_to_run):
             self.start_next_card()
         else:
-            self.set_output_available(bool(self.result_dataset))
-            self.runFinishedSignal.emit(self.index)
             if self.filter_card and isValid(self.filter_card) and self.filter_card.check_state:
                 self.filter_card.set_dataset(self.result_dataset)
+                self.filter_card.runFinishedSignal.connect(self.on_filter_finished)
                 self.filter_card.run()
+            else:
+                self.run_outcome = "succeeded"
+                self.set_output_available(bool(self.result_dataset))
+                self.runFinishedSignal.emit(self.index)
+
+    def on_filter_finished(self, _index):
+        """Finish the group only after its optional post-filter has completed."""
+        if self.filter_card is None or not isValid(self.filter_card):
+            self.result_dataset = []
+            self.run_outcome = "failed"
+        else:
+            self.filter_card.runFinishedSignal.disconnect(self.on_filter_finished)
+            self.run_outcome = getattr(self.filter_card, "run_outcome", "succeeded")
+            if self.run_outcome == "succeeded":
+                self.result_dataset = list(self.filter_card.result_dataset)
+            else:
+                self.result_dataset = []
+        self.set_output_available(
+            self.run_outcome == "succeeded" and bool(self.result_dataset)
+        )
+        self.runFinishedSignal.emit(self.index)
 
     def stop(self):
         """Stop execution across child cards and the optional filter card.
@@ -223,14 +255,25 @@ class CardGroup(MakeDataCardWidget):
                 pass
             card.stop()
         if self.filter_card:
+            try:
+                self.filter_card.runFinishedSignal.disconnect(self.on_filter_finished)
+            except Exception:
+                pass
             self.filter_card.stop()
-        self.set_output_available(bool(self.result_dataset))
+        self.result_dataset = []
+        self.run_outcome = "canceled"
+        self.set_output_available(False)
 
     def run(self):
         """Run all child cards sequentially while sharing the same input dataset."""
+        for card in self.card_list:
+            card.set_dataset(self.dataset)
+        if self.filter_card and isValid(self.filter_card):
+            self.filter_card.set_dataset([])
         self.cards_to_run = [card for card in self.card_list if card.check_state]
         self.run_card_num = len(self.cards_to_run)
         self.current_index = 0
+        self.run_outcome = "running"
 
         if self.check_state and self.run_card_num > 0:
             self.result_dataset = []
@@ -238,6 +281,7 @@ class CardGroup(MakeDataCardWidget):
             self.start_next_card()
         else:
             self.result_dataset = self.dataset
+            self.run_outcome = "succeeded"
             self.set_output_available(bool(self.result_dataset))
             self.runFinishedSignal.emit(self.index)
 
@@ -249,10 +293,14 @@ class CardGroup(MakeDataCardWidget):
             card.runFinishedSignal.connect(self.on_card_finished)
             card.run()
         else:
-            self.runFinishedSignal.emit(self.index)
             if self.filter_card and isValid(self.filter_card) and self.filter_card.check_state:
                 self.filter_card.set_dataset(self.result_dataset)
+                self.filter_card.runFinishedSignal.connect(self.on_filter_finished)
                 self.filter_card.run()
+            else:
+                self.run_outcome = "succeeded"
+                self.set_output_available(bool(self.result_dataset))
+                self.runFinishedSignal.emit(self.index)
 
     def write_result_dataset(self, file,**kwargs):
         if self.filter_card and isValid(self.filter_card) and  self.filter_card.check_state:

@@ -57,13 +57,13 @@ class TrainingSetAuditHost(QWidget):
         icon = IconWidget(FluentIcon.FULL_SCREEN, self.placeholder)
         icon.setFixedSize(36, 36)
         title = SubtitleLabel(
-            self.tr("Training Set Check is open in a separate window"),
+            self.tr("Training Set Audit is open in a separate window"),
             self.placeholder,
         )
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         hint = BodyLabel(
             self.tr(
-                "Keep Dataset Display on this screen and move the check window to another screen for linked review."
+                "Keep Dataset Display on this screen and move the audit window to another screen for linked review."
             ),
             self.placeholder,
         )
@@ -77,7 +77,7 @@ class TrainingSetAuditHost(QWidget):
             self.tr("Locate window"),
             self.placeholder,
         )
-        locate_button.setAccessibleName(self.tr("Locate Training Set Check window"))
+        locate_button.setAccessibleName(self.tr("Locate Training Set Audit window"))
         locate_button.clicked.connect(self.locateRequested)
         restore_button = PrimaryPushButton(
             FluentIcon.BACK_TO_WINDOW,
@@ -85,7 +85,7 @@ class TrainingSetAuditHost(QWidget):
             self.placeholder,
         )
         restore_button.setAccessibleName(
-            self.tr("Return Training Set Check to main window")
+            self.tr("Return Training Set Audit to main window")
         )
         restore_button.clicked.connect(self.restoreRequested)
         button_row.addWidget(locate_button)
@@ -149,7 +149,7 @@ class TrainingSetAuditWindow(QWidget):
         self.setObjectName("TrainingSetAuditWindow")
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
         self.setWindowModality(Qt.WindowModality.NonModal)
-        self.setWindowTitle(self.tr("Training Set Check — NepTrainKit"))
+        self.setWindowTitle(self.tr("Training Set Audit — NepTrainKit"))
         self.setWindowIcon(owner.windowIcon())
         self.setMinimumSize(840, 560)
         self._owner = owner

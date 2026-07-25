@@ -1361,14 +1361,56 @@ class ModelInfoMessageBox(MessageBoxBase):
                 force = 0
                 virial = 0
             else:
-                # data_size=get_xyz_nframe(data_file)
-                # if data_size
-                energy_array = read_nep_out_file(path.joinpath("energy_train.out"))
-                energy = get_rmse(energy_array[:, 0], energy_array[:, 1]) * 1000
-                force_array = read_nep_out_file(path.joinpath("force_train.out"))
-                force = get_rmse(force_array[:, :3], force_array[:, 3:]) * 1000
-                virial_array = read_nep_out_file(path.joinpath("virial_train.out"))
-                virial = get_rmse(virial_array[:, :6], virial_array[:, 6:]) * 1000
+                metric_specs = (
+                    (
+                        self.tr("energy"),
+                        path.joinpath("energy_train.out"),
+                        2,
+                        lambda array: get_rmse(array[:, 0], array[:, 1]) * 1000,
+                        self.energy_spinBox,
+                    ),
+                    (
+                        self.tr("force"),
+                        path.joinpath("force_train.out"),
+                        6,
+                        lambda array: get_rmse(array[:, :3], array[:, 3:6]) * 1000,
+                        self.force_spinBox,
+                    ),
+                    (
+                        self.tr("virial"),
+                        path.joinpath("virial_train.out"),
+                        12,
+                        lambda array: get_rmse(array[:, :6], array[:, 6:12]) * 1000,
+                        self.virial_spinBox,
+                    ),
+                )
+                for metric, output_path, min_columns, calculate, target in metric_specs:
+                    try:
+                        values = np.atleast_2d(read_nep_out_file(output_path))
+                        if values.shape[1] < min_columns:
+                            raise ValueError(
+                                self.tr("expected at least {count} columns").format(
+                                    count=min_columns,
+                                )
+                            )
+                        result = float(calculate(values))
+                        if not np.isfinite(result):
+                            raise ValueError(self.tr("result is not finite"))
+                    except Exception as exc:  # noqa: BLE001 - keep manual values editable
+                        MessageManager.send_message_box(
+                            self.tr(
+                                "Cannot calculate {metric} RMSE from {file}: {error}. "
+                                "The current manual value is kept."
+                            ).format(
+                                metric=metric,
+                                file=output_path.name,
+                                error=exc,
+                            )
+                        )
+                    else:
+                        target.setText(str(round(result, 2)))
+
+                return
 
             self.force_spinBox.setText(str(round(force, 2)))
             self.energy_spinBox.setText(str(round(energy, 2)))

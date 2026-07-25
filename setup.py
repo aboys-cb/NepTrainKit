@@ -16,7 +16,8 @@ from setuptools import Extension, setup
 
 extra_compile_args: list[str] = []
 extra_link_args: list[str] = []
-omp_mode = os.environ.get("NEPKIT_OPENMP", "auto").strip().lower()
+default_omp_mode = "0" if sys.platform == "darwin" else "auto"
+omp_mode = os.environ.get("NEPKIT_OPENMP", default_omp_mode).strip().lower()
 use_openmp = omp_mode not in {"0", "false", "off", "no"}
 
 if sys.platform == "win32":

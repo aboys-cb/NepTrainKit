@@ -36,8 +36,8 @@ msgid "1. 安装"
 msgstr "Step 1: Install NepTrainKit"
 
 #: ../../source/quickstart.md:7 ab7b2829ad7e41fa89b2be5c867b7fdd
-msgid "建议使用独立环境，Python 版本用 3.10 到 3.12。"
-msgstr "Use an isolated environment with Python 3.10 through 3.12."
+msgid "建议使用独立环境，Python 版本用 3.10 到 3.13。"
+msgstr "Use an isolated environment with Python 3.10 through 3.13."
 
 #: ../../source/quickstart.md:9 2c720e645df04729a3eb4122b608d58f
 msgid ""

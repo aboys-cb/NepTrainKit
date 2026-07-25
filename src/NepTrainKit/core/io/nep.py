@@ -9,23 +9,14 @@ from pathlib import Path
 from typing import Any
 import numpy.typing as npt
 import numpy as np
-try:
-    from nep_adapters import (
-        ChargePrediction,
-        Prediction,
-        SpinPrediction,
-        __version__ as nep_adapters_version,
-        inspect_model,
-    )
-except ImportError:
-    ChargePrediction = None  # type: ignore[assignment]
-    Prediction = Any
-    SpinPrediction = None  # type: ignore[assignment]
-    nep_adapters_version = "0.0.0"
-
-    def inspect_model(model_path, **kwargs):
-        raise ImportError("nep-adapters is not installed")
 from NepTrainKit import module_path
+from NepTrainKit.core.adapter_api import (
+    ChargePrediction,
+    Prediction,
+    SpinPrediction,
+    inspect_model,
+    nep_adapters_version,
+)
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.precision import get_storage_float_dtype

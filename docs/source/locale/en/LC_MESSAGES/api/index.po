@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-24 09:11+0800\n"
+"POT-Creation-Date: 2026-07-25 14:09+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -142,6 +142,7 @@ msgstr "Examples"
 #: NepTrainKit.core.structure.Structure.read_multiple_fast
 #: NepTrainKit.core.structure.is_organic_cluster
 #: NepTrainKit.core.structure.load_npy_structure
+#: NepTrainKit.core.structure.write_structures_extxyz_atomic
 #: b38dc459a2ac4c11ae39f84d03e10052 b5ae8112d3c84b4caea555d276f40c73
 #: cf4be91963e840d78849107f47fab8cf d54cba9b5fcc4cb6a0f72fa28b7c005c
 #: f19b26087fe54ee398ce11bab191fa8e of
@@ -208,9 +209,9 @@ msgstr ""
 #: 511544416cc14982900a41191963d0a1 5818e889d8cd436f99860fe03a6046f9
 #: 5a60f0038fd6467f9dc9520de4a74f14 612c0834ab164667aa58ccea1e8f7e9e
 #: 633764117ddd4195a32b042685440252 6a6a3a72d62e453587c6d8eb42d398a3
-#: 7c17d188642f49718cd05ad4d3c2481b 82500d2e89504f72bd4a5182feab02f9
-#: 85dbc4c528934598bcc95639a585fdef 87b635aad2954266ae49bcbbb2421f63
-#: 8b8a05a504e942fe91aaa7c84b610ecb 9ab6bda98cda4400ba65855cb8c3cf4e
+#: 7c17d188642f49718cd05ad4d3c2481b 85dbc4c528934598bcc95639a585fdef
+#: 87b635aad2954266ae49bcbbb2421f63 8b8a05a504e942fe91aaa7c84b610ecb
+#: 9ab6bda98cda4400ba65855cb8c3cf4e
 #: NepTrainKit.core.calculator.NepCalculator.predict_with_descriptors
 #: NepTrainKit.core.io.base.ResultData.apply_dft_d3_correction
 #: NepTrainKit.core.io.base.ResultData.apply_selection
@@ -269,6 +270,7 @@ msgstr ""
 #: NepTrainKit.core.structure.Structure.parse_xyz
 #: NepTrainKit.core.structure.Structure.read_multiple
 #: NepTrainKit.core.structure.is_organic_cluster
+#: NepTrainKit.core.structure.write_structures_extxyz_atomic
 #: a3a51abffd0e43ea9c7ee5d36855326d a42529d15a0a4e7cacc4d85bacd0ab7f
 #: afea00ce4ffd4dc088f0e0d6bd0c4810 b06900b768254da59375dca06d8801ff
 #: b0d89283aada4472a90a0060e2cd3ce7 bb98c5da75ce46d8b34f870f5f1bcd41
@@ -880,6 +882,11 @@ msgstr ""
 msgid "Recursively load DeepMD datasets beneath ``folders``."
 msgstr ""
 
+#: NepTrainKit.core.structure.write_structures_extxyz_atomic:1
+#: ba61a07143544beebdc21a258a19e5d1 of
+msgid "Write EXTXYZ frames without exposing a partially written destination."
+msgstr "Write EXTXYZ frames without exposing a partially written destination."
+
 #: 3147595f08864015becdbc713f3109fe
 #: NepTrainKit.core.structure.save_npy_structure:1 of
 msgid "Save structures to a DeepMD-style .npy dataset layout."
@@ -998,7 +1005,10 @@ msgstr ""
 msgid ""
 "基类：:py:class:`~NepTrainKit.core.io.distribution.DistributionAnalysisMixin`,"
 " :py:class:`~PySide6.QtCore.QObject`"
-msgstr "Base classes: :py:class:`~NepTrainKit.core.io.distribution.DistributionAnalysisMixin`, :py:class:`~PySide6.QtCore.QObject`"
+msgstr ""
+"Base classes: "
+":py:class:`~NepTrainKit.core.io.distribution.DistributionAnalysisMixin`, "
+":py:class:`~PySide6.QtCore.QObject`"
 
 #: 8dbe385ce797449bae686a2ab5ebddab NepTrainKit.core.io.base.ResultData:1 of
 msgid ""

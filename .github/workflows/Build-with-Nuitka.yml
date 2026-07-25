@@ -42,7 +42,7 @@ jobs:
         with:
           nuitka-version: main
           script-name: NepTrainKit/main.py
-          include-package: NepTrainKit,nep_adapters
+          include-package: NepTrainKit
           output-file: NepTrainKit.exe
           mode: standalone
           windows-console-mode: disable
@@ -58,11 +58,50 @@ jobs:
         run: |
           $dist = "${{ github.workspace }}/src/build/main.dist"
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/Config -Destination "$dist/Config" -Force
+          Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/translations -Destination "$dist/translations" -Force
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe "$dist/update.exe"
 
           Remove-Item -Path "$dist/NepTrainKit" -Recurse -Force
+          if (-not (Test-Path "$dist/translations/neptrainkit_zh_CN.qm")) {
+            throw "Chinese translation catalog is missing from the standalone package."
+          }
           New-Item -ItemType Directory -Force "$dist/Log"
           New-Item -ItemType File -Path "$dist/Log/.placeholder" -Force
+
+          $adapterVersion = python -c "from importlib.metadata import version; print(version('nep-adapters'))"
+          $adapterTarget = "$dist/runtime/nep-adapters/versions/$adapterVersion"
+          python -m pip install --no-deps --target "$adapterTarget" "nep-adapters==$adapterVersion"
+          $env:PYTHONPATH = "${{ github.workspace }}/src"
+          python -m NepTrainKit.runtime_package seed `
+            --runtime-root "$dist/runtime" `
+            --distribution "nep-adapters" `
+            --import-name "nep_adapters" `
+            --constraint ">=1.0,<2" `
+            --health-kind "nep_adapters_cpu" `
+            --version "$adapterVersion"
+
+      - name: Verify external NEP runtime
+        shell: pwsh
+        run: |
+          $dist = "${{ github.workspace }}/src/build/main.dist"
+          $state = Get-Content "$dist/runtime/nep-adapters/state.json" | ConvertFrom-Json
+          $adapterTarget = "$dist/runtime/nep-adapters/versions/$($state.active)"
+          $arguments = @(
+            "--neptrainkit-runtime-health-check",
+            $adapterTarget,
+            "nep_adapters",
+            "nep-adapters",
+            $state.active,
+            "nep_adapters_cpu"
+          )
+          $process = Start-Process `
+            -FilePath "$dist/NepTrainKit.exe" `
+            -ArgumentList $arguments `
+            -Wait `
+            -PassThru
+          if ($process.ExitCode -ne 0) {
+            throw "External nep-adapters health check failed with exit code $($process.ExitCode)."
+          }
 
       - name: Upload Artifact (backup)
         uses: actions/upload-artifact@v4
@@ -74,27 +113,20 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
+          python -c "import platform, struct; assert struct.calcsize('P') * 8 == 64; assert platform.machine().lower() in {'amd64', 'x86_64'}; print('Packaging Windows x86_64')"
           Set-Location ${{ github.workspace }}/src/build/main.dist/
           $compress = @{
             Path = "*"
             CompressionLevel = "Fastest"
-            DestinationPath = "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
+            DestinationPath = "${{ github.workspace }}/NepTrainKit.windows-x86_64.zip"
           }
           Compress-Archive @compress
-          Write-Host "Package created at ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
-      # 新增：重命名文件
-      - name: Rename Release Asset
-        shell: pwsh
-        run: |
-          $originalFile = "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
-          $newFile = "${{ github.workspace }}/NepTrainKit.win32.zip"  # 修改为你想要的名称
-          Move-Item -Path $originalFile -Destination $newFile -Force
-          Write-Host "Renamed file to $newFile"
+          Write-Host "Package created at ${{ github.workspace }}/NepTrainKit.windows-x86_64.zip"
 
       - name: Verify File Exists
         shell: pwsh
         run: |
-          $filePath = "${{ github.workspace }}/NepTrainKit.win32.zip"
+          $filePath = "${{ github.workspace }}/NepTrainKit.windows-x86_64.zip"
           if (-not (Test-Path -Path $filePath)) {
             Write-Error "File not found: $filePath"
             exit 1
@@ -130,7 +162,7 @@ jobs:
           tag_name: ${{ inputs.tag_name }}
           name: ${{ inputs.tag_name }}
           body: ${{ steps.get_release.outputs.body }}  # 使用获取到的现有 body
-          files: ${{ github.workspace }}/NepTrainKit.win32.zip
+          files: ${{ github.workspace }}/NepTrainKit.windows-x86_64.zip
           draft: false
           prerelease: false
         env:

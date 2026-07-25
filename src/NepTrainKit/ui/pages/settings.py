@@ -20,6 +20,7 @@ from NepTrainKit.logging_config import (
     normalize_log_level,
     set_log_level,
 )
+from NepTrainKit.runtime_package import MANAGED_RUNTIME_SPEC
 from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.widgets import MyComboBoxSettingCard, DoubleSpinBoxSettingCard, LineEditSettingCard
 from NepTrainKit.ui.widgets import ColorSettingCard
@@ -31,7 +32,12 @@ from NepTrainKit.core.types import (
     parse_forces_mode,
     parse_data_precision,
 )
-from NepTrainKit.ui.update import UpdateWoker, UpdateNEP89Woker, get_pending_update_version
+from NepTrainKit.ui.update import (
+    RuntimePackageUpdateWorker,
+    UpdateNEP89Woker,
+    UpdateWoker,
+    get_pending_update_version,
+)
 from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR
 
 
@@ -63,9 +69,6 @@ class SettingsWidget(ScrollArea):
             self.tr('Personalization'), self.scrollWidget)
         self.nep_group = SettingCardGroup(
             self.tr('NEP Settings'), self.scrollWidget)
-        self.runtime_group = SettingCardGroup(
-            self.tr("Runtime status"), self.scrollWidget
-        )
         self.plot_group = SettingCardGroup(
             self.tr('Plot Settings'), self.scrollWidget)
 
@@ -276,7 +279,19 @@ class SettingsWidget(ScrollArea):
             FluentIcon.INFO,
             self.tr("Runtime health"),
             "",
-            self.runtime_group,
+            self.nep_group,
+        )
+        self.runtime_update_card = PrimaryPushSettingCard(
+            self.tr("Check for Updates"),
+            FluentIcon.INFO,
+            self.tr("{package} runtime updates").format(
+                package=MANAGED_RUNTIME_SPEC.distribution
+            ),
+            self.tr(
+                "Check PyPI for a compatible {package} wheel; updates are "
+                "verified before activation"
+            ).format(package=MANAGED_RUNTIME_SPEC.distribution),
+            self.nep_group,
         )
         self._runtime_health = inspect_runtime_health()
         self._refresh_runtime_health_content()
@@ -465,7 +480,8 @@ class SettingsWidget(ScrollArea):
         self.nep_group.addSettingCard(self.nep_backend_card)
         self.nep_group.addSettingCard(self.data_precision_card)
         self.nep_group.addSettingCard(self.chunk_max_atoms_card)
-        self.runtime_group.addSettingCard(self.runtime_health_card)
+        self.nep_group.addSettingCard(self.runtime_health_card)
+        self.nep_group.addSettingCard(self.runtime_update_card)
 
  
 
@@ -492,7 +508,6 @@ class SettingsWidget(ScrollArea):
         self.plot_group.addSettingCard(self.current_size_card)
         self.expand_layout.addWidget(self.plot_group)
         self.expand_layout.addWidget(self.nep_group)
-        self.expand_layout.addWidget(self.runtime_group)
 
         self.expand_layout.addWidget(self.about_group)
 
@@ -512,6 +527,7 @@ class SettingsWidget(ScrollArea):
         self.about_card.clicked.connect(self.check_update)
         self.about_nep89_card.clicked.connect(self.check_update_nep89)
         self.runtime_health_card.clicked.connect(self.refresh_runtime_health)
+        self.runtime_update_card.clicked.connect(self.check_runtime_update)
 
         self.nep_backend_card.optionChanged.connect(lambda option: Config.set("nep", "backend", option))
         self.data_precision_card.optionChanged.connect(lambda option: Config.set("nep", "data_precision", option))
@@ -621,6 +637,27 @@ class SettingsWidget(ScrollArea):
         MessageManager.send_info_message(
             self.tr("Runtime check completed.")
         )
+
+    def check_runtime_update(self) -> None:
+        """Check and install the currently selected managed runtime."""
+        self._runtime_update_worker = RuntimePackageUpdateWorker(
+            self,
+            spec=MANAGED_RUNTIME_SPEC,
+        )
+        self._runtime_update_worker.check(
+            on_finished=self._on_runtime_update_finished
+        )
+
+    def _on_runtime_update_finished(self, result) -> None:
+        if result.get("ok") and result.get("updated"):
+            self.runtime_update_card.setContent(
+                self.tr(
+                    "{package} v{version} is ready; restart NepTrainKit to activate it"
+                ).format(
+                    package=MANAGED_RUNTIME_SPEC.distribution,
+                    version=result.get("version", ""),
+                )
+            )
 
     def check_update(self):
         """Trigger the application update workflow for NepTrainKit.

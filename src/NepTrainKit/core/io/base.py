@@ -25,19 +25,18 @@ from PySide6.QtCore import QObject, QThread, Signal, Slot
 from loguru import logger
 from typing import Any, Callable, Iterable, Mapping, Optional, Sequence
 import numpy.typing as npt
-try:
-    from nep_adapters import NepAdaptersError
-except ImportError:
-    class NepAdaptersError(Exception):
-        """Fallback when nep-adapters is not installed."""
-        def __init__(self, *args, code: int = -1):
-            super().__init__(*args)
-            self.code = code
+from NepTrainKit.core.adapter_api import NepAdaptersError
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
 from NepTrainKit.core.precision import get_export_significant_digits, get_storage_float_dtype
-from NepTrainKit.core.structure import Structure, atomic_numbers, get_type_map, save_npy_structure
+from NepTrainKit.core.structure import (
+    Structure,
+    atomic_numbers,
+    get_type_map,
+    save_npy_structure,
+    write_structures_extxyz_atomic,
+)
 from NepTrainKit.core.geometry_cache import GeometrySnapshot, StructureGeometryCache
 from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
 
@@ -2178,10 +2177,12 @@ class ResultData(DistributionAnalysisMixin, QObject):
         indices = list(self.select_index)
         try:
             atomic_float_digits = get_export_significant_digits()
-            with open(save_file_path, "w", encoding="utf8") as handle:
-                mapped = self.structure.convert_index(indices)
-                for structure in self.structure.all_data[mapped]:
-                    structure.write(handle, atomic_float_digits=atomic_float_digits)
+            mapped = self.structure.convert_index(indices)
+            write_structures_extxyz_atomic(
+                save_file_path,
+                self.structure.all_data[mapped],
+                atomic_float_digits=atomic_float_digits,
+            )
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
         except Exception:
             MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
@@ -2213,9 +2214,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
             if getattr(active, "size", 0) == 0:
                 MessageManager.send_info_message("No active structures to export.")
                 return
-            with open(save_file_path, "w", encoding="utf8") as handle:
-                for structure in active:
-                    structure.write(handle, atomic_float_digits=atomic_float_digits)
+            write_structures_extxyz_atomic(
+                save_file_path,
+                active,
+                atomic_float_digits=atomic_float_digits,
+            )
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
         except Exception:
             MessageManager.send_info_message(
@@ -2249,9 +2252,11 @@ class ResultData(DistributionAnalysisMixin, QObject):
             if getattr(removed, "size", 0) == 0:
                 MessageManager.send_info_message("No removed structures to export.")
                 return
-            with open(save_file_path, "w", encoding="utf8") as handle:
-                for structure in removed:
-                    structure.write(handle, atomic_float_digits=atomic_float_digits)
+            write_structures_extxyz_atomic(
+                save_file_path,
+                removed,
+                atomic_float_digits=atomic_float_digits,
+            )
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
         except Exception:
             MessageManager.send_info_message(
@@ -2298,13 +2303,17 @@ class ResultData(DistributionAnalysisMixin, QObject):
         try:
             atomic_float_digits = get_export_significant_digits()
             good_path = Path(save_path).joinpath("export_good_model.xyz")
-            with open(good_path, "w", encoding="utf8") as handle:
-                for structure in self.structure.now_data:
-                    structure.write(handle, atomic_float_digits=atomic_float_digits)
+            write_structures_extxyz_atomic(
+                good_path,
+                self.structure.now_data,
+                atomic_float_digits=atomic_float_digits,
+            )
             removed_path = Path(save_path).joinpath("export_remove_model.xyz")
-            with open(removed_path, "w", encoding="utf8") as handle:
-                for structure in self.structure.remove_data:
-                    structure.write(handle, atomic_float_digits=atomic_float_digits)
+            write_structures_extxyz_atomic(
+                removed_path,
+                self.structure.remove_data,
+                atomic_float_digits=atomic_float_digits,
+            )
             MessageManager.send_info_message(f"File exported to: {save_path}")
         except Exception:
             MessageManager.send_info_message(
@@ -2333,13 +2342,17 @@ class ResultData(DistributionAnalysisMixin, QObject):
         try:
             atomic_float_digits = get_export_significant_digits()
             good_path = Path(save_path).joinpath("export_good_model.xyz")
-            with open(good_path, "w", encoding="utf8") as handle:
-                for structure in self.structure.now_data:
-                    structure.write(handle, atomic_float_digits=atomic_float_digits)
+            write_structures_extxyz_atomic(
+                good_path,
+                self.structure.now_data,
+                atomic_float_digits=atomic_float_digits,
+            )
             removed_path = Path(save_path).joinpath("export_remove_model.xyz")
-            with open(removed_path, "w", encoding="utf8") as handle:
-                for structure in self.structure.remove_data:
-                    structure.write(handle, atomic_float_digits=atomic_float_digits)
+            write_structures_extxyz_atomic(
+                removed_path,
+                self.structure.remove_data,
+                atomic_float_digits=atomic_float_digits,
+            )
             MessageManager.send_info_message(f"File exported to: {save_path}")
         except Exception:
             MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")

@@ -286,10 +286,6 @@ class _ConditionRow(QFrame):
         self._error = False
         self._input_hint = ""
         self.setObjectName("structureFilterConditionRow")
-        self.setFixedHeight(34)
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(2, 1, 2, 1)
-        layout.setSpacing(4)
 
         self.enabled_switch = SwitchButton(self)
         self.enabled_switch.setOnText("")
@@ -297,7 +293,6 @@ class _ConditionRow(QFrame):
         self.enabled_switch.setFixedWidth(self.enabled_switch.sizeHint().width())
         self.enabled_switch.setChecked(condition.enabled)
         self.enabled_switch.setAccessibleName(self.tr("Enable condition"))
-        layout.addWidget(self.enabled_switch)
 
         self.field_combo = ComboBox(self)
         self.field_combo.setFixedWidth(112)
@@ -306,26 +301,21 @@ class _ConditionRow(QFrame):
         self.field_combo.addItem(self.tr("Formula"), userData=FilterField.FORMULA)
         self.field_combo.addItem(self.tr("Elements"), userData=FilterField.ELEMENT_REQUIRED)
         self.field_combo.addItem(self.tr("Custom expression"), userData=FilterField.EXPRESSION)
-        self._fit_combo_width(self.field_combo, 112, 176, padding=46)
-        layout.addWidget(self.field_combo)
 
         self.mode_combo = ComboBox(self)
         self.mode_combo.setFixedWidth(124)
         self.mode_combo.setFixedHeight(30)
-        layout.addWidget(self.mode_combo)
 
         self.case_button = TogglePushButton("Aa", self)
         self.case_button.setCheckable(True)
         self.case_button.setFixedSize(max(44, self.case_button.sizeHint().width()), 28)
         self.case_button.setAccessibleName(self.tr("Match case"))
-        layout.addWidget(self.case_button)
 
         self.value_edit = _SuggestionLineEdit(self)
         self.value_edit.setClearButtonEnabled(True)
         self.value_edit.setFixedHeight(30)
         self.value_edit.setMinimumWidth(120)
         self.value_edit.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        layout.addWidget(self.value_edit, 1)
 
         self.unit_label = CaptionLabel("", self)
         self.unit_label.setFixedHeight(30)
@@ -334,7 +324,6 @@ class _ConditionRow(QFrame):
         self.unit_label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
         self.unit_label.setStyleSheet("color: #888; font-size: 11px;")
         self.unit_label.setVisible(False)
-        layout.addWidget(self.unit_label)
 
         self.remove_button = TransparentToolButton(FluentIcon.CLOSE, self)
         self.remove_button.setIconSize(QSize(10, 10))
@@ -342,7 +331,42 @@ class _ConditionRow(QFrame):
         self.remove_button.setToolTip(self.tr("Remove condition"))
         self.remove_button.setAccessibleName(self.tr("Remove condition"))
         self.remove_button.clicked.connect(lambda: self.removeRequested.emit(self))
-        layout.addWidget(self.remove_button)
+
+        widest_field = max(
+            self.field_combo.fontMetrics().horizontalAdvance(self.field_combo.itemText(index))
+            for index in range(self.field_combo.count())
+        )
+        self._wrapped_layout = widest_field + 46 > 176
+        self.setFixedHeight(68 if self._wrapped_layout else 34)
+        if self._wrapped_layout:
+            layout = QVBoxLayout(self)
+            layout.setContentsMargins(2, 1, 2, 1)
+            layout.setSpacing(2)
+            selector_row = QHBoxLayout()
+            selector_row.setSpacing(4)
+            selector_row.addWidget(self.enabled_switch)
+            selector_row.addWidget(self.field_combo)
+            selector_row.addWidget(self.mode_combo)
+            selector_row.addWidget(self.case_button)
+            selector_row.addStretch()
+            selector_row.addWidget(self.remove_button)
+            layout.addLayout(selector_row)
+            value_row = QHBoxLayout()
+            value_row.setSpacing(4)
+            value_row.addWidget(self.value_edit, 1)
+            value_row.addWidget(self.unit_label)
+            layout.addLayout(value_row)
+        else:
+            layout = QHBoxLayout(self)
+            layout.setContentsMargins(2, 1, 2, 1)
+            layout.setSpacing(4)
+            layout.addWidget(self.enabled_switch)
+            layout.addWidget(self.field_combo)
+            layout.addWidget(self.mode_combo)
+            layout.addWidget(self.case_button)
+            layout.addWidget(self.value_edit, 1)
+            layout.addWidget(self.unit_label)
+            layout.addWidget(self.remove_button)
 
         initial_field = condition.field
         if initial_field in _ELEMENT_FIELDS:
@@ -351,6 +375,7 @@ class _ConditionRow(QFrame):
             if self.field_combo.itemData(index) == initial_field:
                 self.field_combo.setCurrentIndex(index)
                 break
+        self._fit_current_combo_width(self.field_combo, 112, padding=46)
         self._rebuild_modes(condition.field, condition.match_mode)
         self._update_case_button(condition.case_sensitive)
         self.value_edit.setText(self._display_values(condition))
@@ -375,6 +400,7 @@ class _ConditionRow(QFrame):
 
     def _on_field_changed(self, _index=None):
         field = self.field_combo.currentData()
+        self._fit_current_combo_width(self.field_combo, 112, padding=46)
         self._rebuild_modes(field, None)
         self._update_case_button(field == FilterField.FORMULA)
         self._update_placeholder()
@@ -457,8 +483,13 @@ class _ConditionRow(QFrame):
             if self.mode_combo.itemData(index) == selected:
                 self.mode_combo.setCurrentIndex(index)
                 break
-        self._fit_combo_width(self.mode_combo, 124, 160)
+        self._fit_combo_width(self.mode_combo, 124, 280)
         self.mode_combo.blockSignals(False)
+
+    @staticmethod
+    def _fit_current_combo_width(combo: ComboBox, minimum: int, *, padding: int = 42) -> None:
+        text_width = combo.fontMetrics().horizontalAdvance(combo.currentText())
+        combo.setFixedWidth(max(minimum, text_width + padding))
 
     @staticmethod
     def _fit_combo_width(combo: ComboBox, minimum: int, maximum: int, *, padding: int = 42) -> None:
@@ -585,7 +616,6 @@ class StructureFilterEditorPopup(QFrame):
     specChanged = Signal(object)
     previewRequested = Signal()
     _MAX_VISIBLE_ROWS = 5
-    _ROW_HEIGHT = 34
     _ROW_SPACING = 4
 
     def __init__(self, parent=None):
@@ -622,25 +652,57 @@ class StructureFilterEditorPopup(QFrame):
         outer.setContentsMargins(10, 8, 10, 8)
         outer.setSpacing(6)
 
-        header = QHBoxLayout()
         self.title_label = StrongBodyLabel(self.tr("Edit structure filter"), self)
-        header.addWidget(self.title_label)
-        header.addStretch()
         self.preset_button = DropDownPushButton(FluentIcon.FILTER, self.tr("Saved filters"), self)
         self.preset_button.setFixedHeight(30)
-        self.preset_button.setMinimumWidth(self.preset_button.sizeHint().width())
+        preset_text_width = self.preset_button.fontMetrics().horizontalAdvance(
+            self.preset_button.text()
+        )
+        self.preset_button.setFixedWidth(preset_text_width + 64)
         self.preset_button.setToolTip(self.tr("Load or save frequently used filter conditions"))
         self.preset_button.setAccessibleName(self.tr("Saved filters"))
         self.preset_menu = None
-        header.addWidget(self.preset_button)
         self.logic_combo = ComboBox(self)
         self.logic_combo.setFixedHeight(30)
         self.logic_combo.addItem(self.tr("Match all conditions (AND)"), userData=FilterLogic.ALL)
         self.logic_combo.addItem(self.tr("Match any condition (OR)"), userData=FilterLogic.ANY)
-        self.logic_combo.setMinimumWidth(self.logic_combo.sizeHint().width())
+        logic_text_width = max(
+            self.logic_combo.fontMetrics().horizontalAdvance(
+                self.logic_combo.itemText(index)
+            )
+            for index in range(self.logic_combo.count())
+        )
+        self.logic_combo.setFixedWidth(logic_text_width + 48)
         self.logic_combo.currentIndexChanged.connect(lambda _index: self._emit_spec())
-        header.addWidget(self.logic_combo)
-        outer.addLayout(header)
+
+        header_width = self.minimumWidth() - 40
+        header_spacing = 6
+        single_row_width = (
+            self.title_label.sizeHint().width()
+            + self.preset_button.width()
+            + self.logic_combo.width()
+            + 2 * header_spacing
+        )
+        if single_row_width <= header_width:
+            header = QHBoxLayout()
+            header.setSpacing(header_spacing)
+            header.addWidget(self.title_label)
+            header.addStretch()
+            header.addWidget(self.preset_button)
+            header.addWidget(self.logic_combo)
+            outer.addLayout(header)
+        else:
+            title_row = QHBoxLayout()
+            title_row.setSpacing(header_spacing)
+            title_row.addWidget(self.title_label)
+            title_row.addStretch()
+            title_row.addWidget(self.preset_button)
+            outer.addLayout(title_row)
+
+            logic_row = QHBoxLayout()
+            logic_row.addStretch()
+            logic_row.addWidget(self.logic_combo)
+            outer.addLayout(logic_row)
 
         self.scroll = QScrollArea(self)
         self.scroll.setWidgetResizable(True)
@@ -959,14 +1021,13 @@ class StructureFilterEditorPopup(QFrame):
 
     def _update_content_height(self) -> None:
         """Show up to five full rows, then keep a stable scroll viewport."""
-        content_height = (
-            len(self._rows) * self._ROW_HEIGHT + max(0, len(self._rows) - 1) * self._ROW_SPACING
-        )
+        row_heights = [row.height() for row in self._rows]
+        content_height = sum(row_heights) + max(0, len(self._rows) - 1) * self._ROW_SPACING
         self.rows_widget.setMinimumHeight(content_height)
         visible_rows = min(len(self._rows), self._MAX_VISIBLE_ROWS)
         self.scroll.setVisible(visible_rows > 0)
         if visible_rows:
-            height = visible_rows * self._ROW_HEIGHT + (visible_rows - 1) * self._ROW_SPACING + 2
+            height = sum(row_heights[:visible_rows]) + (visible_rows - 1) * self._ROW_SPACING + 2
             self.scroll.setFixedHeight(height)
         self.card.layout().invalidate()
         self.card.adjustSize()

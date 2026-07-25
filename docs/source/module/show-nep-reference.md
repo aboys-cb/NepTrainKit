@@ -35,7 +35,7 @@
 | <img src="../_static/image/generated/show_nep_icons/export.svg" width="20" /> | `Export structure descriptor` | 是（文件路径） | 导出当前结构描述符 |
 | <img src="../_static/image/generated/show_nep_icons/alignment.svg" width="20" /> | `Energy Baseline Shift` | 是 | 对能量基线做平移校正 |
 | <img src="../_static/image/generated/show_nep_icons/dft_d3.png" width="20" /> | `DFT D3` | 是 | 配置并应用 DFT-D3 校正 |
-| <img src="../_static/image/generated/show_nep_icons/summary.svg" width="20" /> | `Training Set Check` | 否（打开评估页） | 查看整体组成、数据质量、标签、结构相和磁类型 |
+| <img src="../_static/image/generated/show_nep_icons/summary.svg" width="20" /> | `Training Set Audit` | 否（打开评估页） | 查看整体组成、数据质量、标签、结构相和磁类型 |
 | <img src="../_static/image/generated/show_nep_icons/distribution_inspector.svg" width="20" /> | `Explore distributions` | 否（打开训练集评估页面） | 查看数值字段分布并反向选择结构 |
 
 ### 2.2 结构工具栏（右侧）
@@ -180,7 +180,7 @@
 
 ![DFT D3 Dialog](../_static/image/generated/show_nep_reference/g_dftd3_dialog.png)
 
-#### L. `Training Set Check`
+#### L. `Training Set Audit`
 
 - 位置：删除按钮后的分隔栏右侧。
 - 评估范围：当前活动结构；已经删除的结构不参与。

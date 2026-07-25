@@ -35,6 +35,7 @@ from NepTrainKit.ui.controllers import StructureFilterController
 from NepTrainKit.core.io import (ResultData, load_result_data, matches_result_loader)
 
 from NepTrainKit.core.precision import get_export_significant_digits
+from NepTrainKit.core.structure import write_structures_extxyz_atomic
 from NepTrainKit.core.structure_inspection import inspect_structure
 from NepTrainKit.core.types import Brushes, CanvasMode, SearchType
 from NepTrainKit.paths import get_bundled_nep89_path
@@ -74,7 +75,9 @@ _ARROW_VECTOR_SOURCES = (
 
 RESULT_DATA_FILE_FILTER = (
     "Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj "
-    "OUTCAR OUTCAR* XDATCAR XDATCAR*);;All files (*)"
+    "OUTCAR OUTCAR* XDATCAR XDATCAR*);;"
+    "Advanced / experimental structure files (*.out *.log *.data *.cfg input.data);;"
+    "All files (*)"
 )
 
 
@@ -129,7 +132,13 @@ class _LoadCompletionRelay(QObject):
     @Slot()
     def handle_finished(self) -> None:
         try:
-            self._tip.setState(bool(self._result_data.load_flag))
+            if bool(self._result_data.load_flag):
+                self._tip.setState(True)
+            else:
+                # ``StateToolTip.setState(False)`` means "still running", not
+                # "failed".  Close the spinner on failed/cancelled loads; the
+                # loader has already published the actionable error message.
+                self._tip.close()
             for callback in self._callbacks:
                 callback()
         finally:
@@ -1000,7 +1009,9 @@ class ShowNepWidget(QWidget):
             "select",
             file_filter=self.tr(
                 "Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj "
-                "OUTCAR OUTCAR* XDATCAR XDATCAR*);;All files (*)"
+                "OUTCAR OUTCAR* XDATCAR XDATCAR*);;"
+                "Advanced / experimental structure files (*.out *.log *.data *.cfg input.data);;"
+                "All files (*)"
             ),
         )
         if path:
@@ -1580,8 +1591,11 @@ class ShowNepWidget(QWidget):
         """Write a single structure to an XYZ file (runs in background thread)."""
         atoms = self.nep_result_data.get_atoms(index)
         atomic_float_digits = get_export_significant_digits()
-        with open(save_file_path, "w", encoding="utf-8") as handle:
-            atoms.write(handle, atomic_float_digits=atomic_float_digits)
+        write_structures_extxyz_atomic(
+            save_file_path,
+            [atoms],
+            atomic_float_digits=atomic_float_digits,
+        )
         MessageManager.send_info_message(
             self.tr("File exported to: {save_file_path}").format(save_file_path=save_file_path)
         )
@@ -2249,21 +2263,21 @@ class ShowNepWidget(QWidget):
         """Open Training Set Audit for the currently loaded dataset."""
         if self.nep_result_data is None or not getattr(self.nep_result_data, "load_flag", False):
             MessageManager.send_info_message(
-                self.tr("Please load a dataset before running Training Set Check.")
+                self.tr("Please load a dataset before running Training Set Audit.")
             )
             return
         if hasattr(self._parent, "open_training_set_audit"):
             self._parent.open_training_set_audit(self.nep_result_data)
             return
         MessageManager.send_warning_message(
-            self.tr("Training Set Check page is not available.")
+            self.tr("Training Set Audit page is not available.")
         )
 
     def open_training_set_distribution(self):
         """Open the unified audit page directly on numeric distributions."""
         if self.nep_result_data is None or not getattr(self.nep_result_data, "load_flag", False):
             MessageManager.send_info_message(
-                self.tr("Please load a dataset before running Training Set Check.")
+                self.tr("Please load a dataset before running Training Set Audit.")
             )
             return
         if hasattr(self._parent, "open_training_set_audit"):
@@ -2273,7 +2287,7 @@ class ShowNepWidget(QWidget):
             )
             return
         MessageManager.send_warning_message(
-            self.tr("Training Set Check page is not available.")
+            self.tr("Training Set Audit page is not available.")
         )
 
     def run_distribution_analysis(self, request):

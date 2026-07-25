@@ -1,17 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import unittest
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 from PySide6.QtCore import QTranslator, Qt
-from PySide6.QtWidgets import QApplication, QHeaderView
+from PySide6.QtWidgets import QApplication, QHeaderView, QWidget
 
 import NepTrainKit.ui.pages.data_manager as data_manager_module
 import NepTrainKit.ui.views.project_view as project_view_module
 from NepTrainKit.ui.views.dataset_widget import ModelItemWidget
 from NepTrainKit.ui.views.project_view import ProjectWidget
+from NepTrainKit.ui.widgets.dialog import ModelInfoMessageBox
 
 
 class _Url:
@@ -140,6 +142,32 @@ class TestDataManagerUi(unittest.TestCase):
             self.assertEqual(model_widget.new_model_button.text(), "新建模型")
         finally:
             self._app.removeTranslator(translator)
+
+    def test_incomplete_nep_outputs_keep_manual_metrics_without_crashing(self):
+        parent = QWidget()
+        parent.resize(900, 700)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            model_dir = Path(tmp_dir)
+            (model_dir / "train.xyz").write_text(
+                '1\nLattice="1 0 0 0 1 0 0 0 1" '
+                'Properties=species:S:1:pos:R:3 pbc="T T T"\nH 0 0 0\n',
+                encoding="utf-8",
+            )
+            box = ModelInfoMessageBox(parent)
+            box.train_path_edit.setText(str(model_dir))
+            box.energy_spinBox.setText("1.5")
+            box.force_spinBox.setText("2.5")
+            box.virial_spinBox.setText("3.5")
+
+            with patch(
+                "NepTrainKit.ui.widgets.dialog.MessageManager.send_message_box"
+            ) as message:
+                box.check_path()
+
+        self.assertEqual(box.energy_spinBox.text(), "1.5")
+        self.assertEqual(box.force_spinBox.text(), "2.5")
+        self.assertEqual(box.virial_spinBox.text(), "3.5")
+        self.assertEqual(message.call_count, 4)
 
     @patch.object(data_manager_module.os.path, "isdir", return_value=True)
     def test_dropped_model_folder_opens_prefilled_model_editor(self, _isdir):

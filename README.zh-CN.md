@@ -1,13 +1,13 @@
 <div align="center">
 <a href="https://github.com/aboys-cb/NepTrainKit">
-  <img src="./src/NepTrainKit/src/images/logo.png" width="25%" alt="NepTrainKit 标志">
+  <img src="https://raw.githubusercontent.com/aboys-cb/NepTrainKit/master/src/NepTrainKit/src/images/logo.png" width="25%" alt="NepTrainKit 标志">
 </a><br>
 <a href="https://pypi.org/project/NepTrainKit"><img src="https://img.shields.io/pypi/dm/NepTrainKit?logo=pypi&logoColor=white&color=blue&label=PyPI" alt="PyPI 下载量"></a>
-<a href="https://python.org/downloads"><img src="https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white" alt="Python 版本"></a>
+<a href="https://python.org/downloads"><img src="https://img.shields.io/badge/Python-3.10--3.13-blue.svg?logo=python&logoColor=white" alt="Python 版本"></a>
 <a href="https://codecov.io/github/aboys-cb/NepTrainKit"><img src="https://codecov.io/github/aboys-cb/NepTrainKit/graph/badge.svg?token=HQ5FMLD91F" alt="Codecov"></a>
 <a href="https://github.com/aboys-cb/NepTrainKit/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue" alt="许可证"></a>
 <br><br>
-<a href="./README.md">English</a> | <strong>简体中文</strong>
+<a href="https://github.com/aboys-cb/NepTrainKit/blob/master/README.md">English</a> | <strong>简体中文</strong>
 </div>
 
 # NepTrainKit
@@ -24,7 +24,7 @@ NepTrainKit 是面向神经演化势（NEP）训练集准备、评估和可视�
 
 ## 安装
 
-建议在独立的 Python 环境中安装 NepTrainKit。当前版本要求 Python 3.10 或更新版本。
+建议在独立的 Python 环境中安装 NepTrainKit。当前版本支持 Python 3.10 到 3.13。
 
 ```bash
 conda create -n nepkit python=3.10
@@ -42,7 +42,7 @@ NepTrainKit
 
 ### NEP 计算后端
 
-NepTrainKit 不再编译或捆绑 NEP 计算后端。执行 `pip install NepTrainKit` 时，会安装独立的 `nep-adapters` 依赖：
+NepTrainKit 不再把 NEP 计算后端编译进应用程序。执行 `pip install NepTrainKit` 时，会安装独立的 `nep-adapters` 依赖：
 
 | 平台 | 安装的后端 |
 | --- | --- |
@@ -53,6 +53,8 @@ Linux CUDA 路径需要兼容的 NVIDIA 驱动，但安装 wheel 不要求本机
 
 启动后，可以在 `Settings → NEP Backend` 中选择 `Auto`、`CPU` 或 `CUDA`。`Auto` 会在 wheel、驱动和模型都支持时使用 CUDA；否则 NepTrainKit 会说明原因并继续使用 CPU。明确选择 `CUDA` 时如果不可用会直接报错，不会静默切换后端。
 
+`设置 → NEP 设置 → NEP 运行时更新` 可以单独检查并安装兼容的 `nep-adapters` 更新，无需更新 NepTrainKit。每次打开软件后还会在后台检查运行时：没有更新或网络检查失败时保持静默，发现新版本时弹出安装提示。pip 安装版把更新后的 wheel 解压到用户配置目录；Windows 独立版放在 `NepTrainKit.exe` 旁的 `runtime/nep-adapters/versions`。新版本通过 SHA256 和独立进程健康检查后才会激活，并在重启程序后生效。
+
 可以用下面的命令确认当前运行时：
 
 ```bash
@@ -61,7 +63,7 @@ python -c "import nep_adapters as n; print(n.backend_status('cpu')); print(n.bac
 
 ### Windows 可执行包
 
-如果不想在本地编译，可以从 [GitHub Releases](https://github.com/aboys-cb/NepTrainKit/releases) 下载 `NepTrainKit.win32.zip`。该包仅面向 Windows。
+如果不想在本地编译，可以从 [GitHub Releases](https://github.com/aboys-cb/NepTrainKit/releases) 下载 `NepTrainKit.windows-x86_64.zip`。该包要求 x86_64 架构的 64 位 Windows。
 
 ## 文档与支持
 

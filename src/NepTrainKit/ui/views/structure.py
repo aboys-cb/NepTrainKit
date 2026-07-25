@@ -51,7 +51,9 @@ class StructureInfoWidget(QWidget):
         self.phase_badge = InfoBadge(self.card, InfoLevel.ATTENTION)
         self.phase_badge.setText(self.tr("Not analyzed"))
         self.phase_badge.setToolTip(
-            self.tr("Snapshot structural classification from local topology evidence.")
+            self.tr(
+                "Structure-level phase evidence combines a-CNA with ordered-phase refinement."
+            )
         )
         header_layout.addWidget(self.title_label)
         header_layout.addStretch(1)
@@ -61,6 +63,14 @@ class StructureInfoWidget(QWidget):
         self.phase_summary_label = CaptionLabel(self.card)
         self.phase_summary_label.setWordWrap(True)
         self.phase_summary_label.setText(self.tr("Local topology evidence has not been analyzed."))
+        self.phase_summary_label.setToolTip(
+            self.tr(
+                "L1₂ and Laves phases use separate geometry and chemical-ordering checks; "
+                "a-CNA only reports FCC, HCP, and BCC local environments. "
+                "A face-centered cubic Bravais lattice does not by itself make every site "
+                "an FCC a-CNA environment."
+            )
+        )
         card_layout.addWidget(self.phase_summary_label)
 
         config_layout = QHBoxLayout()
@@ -284,14 +294,19 @@ class StructureInfoWidget(QWidget):
 
         fractions = dict(phase.local_phase_fractions)
         visible = [
-            f"{self._phase_display_name(key)} {fractions.get(key, 0.0):.1%}"
+            f"{self._local_phase_display_name(key)} {fractions.get(key, 0.0):.1%}"
             for key in self._ORDERED_LOCAL_PHASES
             if fractions.get(key, 0.0) >= 0.001
         ]
-        prefix = self.tr("Local topology")
+        prefix = self.tr("a-CNA local environments (FCC/HCP/BCC only)")
         self.phase_summary_label.setText(
             f"{prefix}: {' · '.join(visible)}" if visible else f"{prefix}: —"
         )
+
+    def _local_phase_display_name(self, label: str) -> str:
+        if label == "unresolved":
+            return self.tr("Other / unresolved")
+        return self._phase_display_name(label)
 
     def _phase_display_name(self, label: str) -> str:
         return {

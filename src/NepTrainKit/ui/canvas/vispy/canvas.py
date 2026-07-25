@@ -16,6 +16,7 @@ from loguru import logger
 from vispy import scene
 
 from vispy.visuals.filters import MarkerPickingFilter
+from vispy.visuals.axis import Ticker
 from vispy.visuals.transforms import STTransform
 from NepTrainKit.utils import timeit
 from NepTrainKit.config import Config
@@ -28,6 +29,52 @@ from NepTrainKit.core.types import Brushes, Pens
 VISPY_PREVIEW_WIDTH = 640
 VISPY_PREVIEW_HEIGHT = 240
 VISPY_PREVIEW_RASTER_OVERLAY_MIN_RATIO = 0.9
+
+
+class _CompactAxisTicker(Ticker):
+    """Limit labelled ticks to the pixels available in a preview axis."""
+
+    _MIN_LABEL_SPACING = 72.0
+    _MAX_LABELS = 4
+
+    def _get_tick_frac_labels(self):
+        major, minor, labels = super()._get_tick_frac_labels()
+        if len(labels) <= 2:
+            return major, minor, labels
+
+        axis_length = float(np.linalg.norm(self.axis.pos[1] - self.axis.pos[0]))
+        max_labels = max(
+            2,
+            min(
+                self._MAX_LABELS,
+                int(axis_length // self._MIN_LABEL_SPACING) + 1,
+            ),
+        )
+        if len(labels) <= max_labels:
+            return major, minor, labels
+
+        if len(labels) >= max_labels + 2:
+            # Avoid clipping long numeric labels at the thumbnail boundaries.
+            keep = np.linspace(1, len(labels) - 2, max_labels, dtype=np.int64)
+        else:
+            keep = np.linspace(0, len(labels) - 1, max_labels, dtype=np.int64)
+        return major[keep], minor, [labels[int(index)] for index in keep]
+
+
+def _set_compact_axis_ticks(axis_widget, compact: bool) -> None:
+    """Switch an AxisWidget between normal and preview label density."""
+    axis = axis_widget.axis
+    is_compact = isinstance(axis.ticker, _CompactAxisTicker)
+    if bool(compact) == is_compact:
+        return
+    anchors = getattr(axis.ticker, "_anchors", None)
+    axis.ticker = (
+        _CompactAxisTicker(axis, anchors=anchors)
+        if compact
+        else Ticker(axis, anchors=anchors)
+    )
+    axis._need_update = True
+    axis.update()
 
 
 def _vispy_perf_enabled():
@@ -403,9 +450,11 @@ class ViewBoxWidget(scene.Widget):
         if self.xaxis is not None:
             self.xaxis.visible = True
             self.xaxis.height_max = 30 if enabled else 22
+            _set_compact_axis_ticks(self.xaxis, not enabled)
         if self.yaxis is not None:
             self.yaxis.visible = True
             self.yaxis.width_max = 50 if enabled else 38
+            _set_compact_axis_ticks(self.yaxis, not enabled)
         if self.text is not None:
             self.text.visible = bool(enabled)
         if enabled and self.parity_mode and self.title not in ("", "descriptor") and self._diagonal is None:

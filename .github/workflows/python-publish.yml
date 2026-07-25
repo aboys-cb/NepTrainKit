@@ -135,6 +135,7 @@ jobs:
         CIBW="RUNNER_OS=macOS"
         echo "CIBW_ENVIRONMENT_MACOS=$CIBW " >> "$GITHUB_ENV"
         brew install libomp
+        echo "NEPKIT_OPENMP=1" >> "$GITHUB_ENV"
         echo "OMP_INCLUDE_PATH=$(brew --prefix libomp)/include" >> $GITHUB_ENV
         echo "OMP_LIB_PATH=$(brew --prefix libomp)/lib" >> $GITHUB_ENV
     - name: Setup MSVC (x86)
@@ -169,10 +170,17 @@ jobs:
         CIBW_ENVIRONMENT_MACOS: >
             ${{ matrix.buildplat[1] == 'macosx_arm64' && 'MACOSX_DEPLOYMENT_TARGET=15.0' || 'MACOSX_DEPLOYMENT_TARGET=15.0' }}
 
+        CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
+            delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}
+
         CIBW_BEFORE_BUILD_WINDOWS: |
           pip install delvewheel
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
             python -m delvewheel repair -w {dest_dir} {wheel}
+
+    - name: Verify macOS wheel has no package-manager library paths
+      if: matrix.buildplat[0] == 'macos-15-intel' || matrix.buildplat[0] == 'macos-latest'
+      run: python tools/ci/verify_macos_wheel.py wheelhouse/*.whl
 
     - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:

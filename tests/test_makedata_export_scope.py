@@ -87,6 +87,37 @@ class TestMakeDataExportScope(unittest.TestCase):
 
             self.assertEqual(path.read_text(), "first:False\nfinal:True\n")
 
+    def test_writer_replaces_existing_file_only_after_success(self):
+        first = _card("first")
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = Path(tmp_dir) / "dataset.xyz"
+            path.write_text("old dataset\n", encoding="utf-8")
+
+            MakeDataWidget._export_file(None, str(path), [first])
+
+            self.assertEqual(path.read_text(encoding="utf-8"), "first:False\n")
+            self.assertEqual(list(path.parent.glob(f".{path.name}.*.tmp")), [])
+
+    def test_writer_preserves_existing_file_when_card_export_fails(self):
+        failing = _card("failing")
+
+        def fail_after_partial_write(file, *, append):
+            file.write("partial dataset\n")
+            raise RuntimeError("synthetic export failure")
+
+        failing.write_result_dataset.side_effect = fail_after_partial_write
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = Path(tmp_dir) / "dataset.xyz"
+            path.write_text("old dataset\n", encoding="utf-8")
+
+            with self.assertRaisesRegex(
+                RuntimeError, "synthetic export failure"
+            ):
+                MakeDataWidget._export_file(None, str(path), [failing])
+
+            self.assertEqual(path.read_text(encoding="utf-8"), "old dataset\n")
+            self.assertEqual(list(path.parent.glob(f".{path.name}.*.tmp")), [])
+
     def test_chinese_catalog_names_both_export_scopes(self):
         catalog = (
             Path(__file__).resolve().parents[1]

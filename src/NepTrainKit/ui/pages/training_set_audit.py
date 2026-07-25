@@ -263,7 +263,7 @@ class TrainingSetAuditWidget(QWidget):
         self.detach_button = ToolButton(FluentIcon.FULL_SCREEN, self.page_tabs)
         self.detach_button.setToolTip(self.tr("Open in separate window"))
         self.detach_button.setAccessibleName(
-            self.tr("Open Training Set Check in a separate window")
+            self.tr("Open Training Set Audit in a separate window")
         )
         self.detach_button.clicked.connect(self.detachRequestedSignal)
         self.page_tabs.setCornerWidget(

@@ -147,10 +147,12 @@ class DataProcessingThread(QThread):
         self.params = params
         self.result_dataset = []
         self.elapsed_seconds = 0.0
+        self.outcome = "idle"
         self.setStackSize(_NUMPY_WORKER_STACK_SIZE)
 
     def run(self):
         start = time.perf_counter()
+        self.outcome = "running"
         try:
             total = len(self.dataset)
             self.progressSignal.emit(0)
@@ -158,6 +160,7 @@ class DataProcessingThread(QThread):
             sort_atoms = Config.getboolean("widget", "sort_atoms", False)
             for index, structure in enumerate(self.dataset):
                 if self.isInterruptionRequested():
+                    self.outcome = "canceled"
                     break
                 if isinstance(self.process_func, StructureOperation):
                     processed = self.process_func.run_structure(structure, self.params)
@@ -168,11 +171,15 @@ class DataProcessingThread(QThread):
                 self.result_dataset.extend(processed)
                 self.progressSignal.emit(int((index + 1) / total * 100))
                 if self.isInterruptionRequested():
+                    self.outcome = "canceled"
                     break
             self.elapsed_seconds = time.perf_counter() - start
+            if self.outcome != "canceled":
+                self.outcome = "succeeded"
             self.finishSignal.emit()
         except Exception as e:  # noqa: BLE001
             self.elapsed_seconds = time.perf_counter() - start
+            self.outcome = "failed"
             logger.debug(traceback.format_exc())
             self.errorSignal.emit(str(e))
 
@@ -191,11 +198,18 @@ class FilterProcessingThread(QThread):
         self.params = params
         self.result_dataset = []
         self.elapsed_seconds = 0.0
+        self.outcome = "idle"
         self.setStackSize(_NUMPY_WORKER_STACK_SIZE)
 
     def run(self):
         start = time.perf_counter()
+        self.outcome = "running"
         try:
+            if self.isInterruptionRequested():
+                self.outcome = "canceled"
+                self.elapsed_seconds = time.perf_counter() - start
+                self.finishSignal.emit()
+                return
             self.progressSignal.emit(0)
             if isinstance(self.operation, DatasetOperation):
                 self.result_dataset = self.operation.run_dataset(self.dataset, self.params)
@@ -205,11 +219,18 @@ class FilterProcessingThread(QThread):
                 result = self.process_func()
                 if result is not None:
                     self.result_dataset = result
+            if self.isInterruptionRequested():
+                self.outcome = "canceled"
+                self.elapsed_seconds = time.perf_counter() - start
+                self.finishSignal.emit()
+                return
             self.progressSignal.emit(100)
             self.elapsed_seconds = time.perf_counter() - start
+            self.outcome = "succeeded"
             self.finishSignal.emit()
         except Exception as e:  # noqa: BLE001
             self.elapsed_seconds = time.perf_counter() - start
+            self.outcome = "failed"
             logger.debug(traceback.format_exc())
             self.errorSignal.emit(str(e))
 

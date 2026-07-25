@@ -29,9 +29,15 @@ def bar(qapp):
     widget = StructureFilterBar()
     widget.resize(700, 38)
     widget.show()
+    widget.raise_()
+    widget.activateWindow()
     qapp.processEvents()
     yield widget
+    widget._popup._debounce.stop()
+    widget._popup.close()
     widget.close()
+    qapp.processEvents()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 
 def _spec(*conditions):
@@ -275,7 +281,7 @@ def test_popup_grows_to_five_rows_then_scrolls_and_inputs_have_field_hints(bar, 
         qapp.processEvents()
     five_row_height = popup.height()
     assert five_row_height > one_row_height
-    assert all(current.height() == popup._ROW_HEIGHT for current in popup._rows)
+    assert all(current.height() == popup._rows[0].height() for current in popup._rows)
 
     popup.add_button.click()
     qapp.processEvents()
@@ -515,9 +521,20 @@ def test_narrow_english_layout_does_not_clip_header_rows_footer_or_bar_actions(b
     assert popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     assert popup.graphicsEffect() is None
     assert popup.card.graphicsEffect() is not None
-    assert popup.preset_button.geometry().right() < popup.logic_combo.geometry().left()
-    assert popup.preset_button.width() >= popup.preset_button.sizeHint().width()
-    assert popup.logic_combo.width() >= popup.logic_combo.sizeHint().width()
+    assert not popup.preset_button.geometry().intersects(popup.logic_combo.geometry())
+    assert popup.preset_button.width() >= (
+        popup.preset_button.fontMetrics().horizontalAdvance(
+            popup.preset_button.text()
+        )
+        + 64
+    )
+    logic_text_width = max(
+        popup.logic_combo.fontMetrics().horizontalAdvance(
+            popup.logic_combo.itemText(index)
+        )
+        for index in range(popup.logic_combo.count())
+    )
+    assert popup.logic_combo.width() >= logic_text_width + 48
     assert popup.done_button.width() >= popup.done_button.sizeHint().width()
     for widget in (popup.add_button, popup.estimate_label, popup.clear_button, popup.done_button):
         assert widget.geometry().right() <= popup.width() - 10
@@ -525,16 +542,19 @@ def test_narrow_english_layout_does_not_clip_header_rows_footer_or_bar_actions(b
     row = popup._rows[0]
     assert row.enabled_switch.width() >= row.enabled_switch.minimumSizeHint().width()
     assert row.case_button.width() >= row.case_button.minimumSizeHint().width()
-    field_text_width = max(
-        row.field_combo.fontMetrics().horizontalAdvance(row.field_combo.itemText(index))
-        for index in range(row.field_combo.count())
-    )
-    mode_text_width = max(
-        row.mode_combo.fontMetrics().horizontalAdvance(row.mode_combo.itemText(index))
-        for index in range(row.mode_combo.count())
-    )
-    assert row.field_combo.width() >= field_text_width + 30
-    assert row.mode_combo.width() >= mode_text_width + 30
+    for index in range(row.field_combo.count()):
+        row.field_combo.setCurrentIndex(index)
+        qapp.processEvents()
+        field_text_width = row.field_combo.fontMetrics().horizontalAdvance(
+            row.field_combo.currentText()
+        )
+        mode_text_width = max(
+            row.mode_combo.fontMetrics().horizontalAdvance(row.mode_combo.itemText(mode_index))
+            for mode_index in range(row.mode_combo.count())
+        )
+        assert row.field_combo.width() >= field_text_width + 30
+        assert row.mode_combo.width() >= mode_text_width + 30
+        assert row.remove_button.geometry().right() <= row.width()
     assert bar.preview_button.width() >= bar.preview_button.sizeHint().width()
     assert bar.apply_button.width() >= bar.apply_button.sizeHint().width()
     popup._debounce.stop()

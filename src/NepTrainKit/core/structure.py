@@ -6,7 +6,10 @@
 # @email    : 1747193328@qq.com
 from __future__ import annotations
 import json
+import os
 import re
+import shutil
+import tempfile
 import traceback
 from copy import deepcopy
 from pathlib import Path
@@ -39,6 +42,43 @@ with ptable_path.open("r", encoding="utf-8") as f:
 
 
 atomic_numbers={elem_info["symbol"]:elem_info["number"] for elem_info in table_info.values()}
+
+_EXTXYZ_BOOLEAN_TOKENS = {
+    "t": True,
+    "true": True,
+    "1": True,
+    "yes": True,
+    "f": False,
+    "false": False,
+    "0": False,
+    "no": False,
+}
+
+
+def _parse_extxyz_boolean_array(values: Any) -> np.ndarray:
+    """Parse EXTXYZ logical tokens without treating every non-empty string as true."""
+    raw = np.asarray(values, dtype=object)
+    parsed: list[bool] = []
+    for value in raw.reshape(-1):
+        token = str(value).strip().lower()
+        if token not in _EXTXYZ_BOOLEAN_TOKENS:
+            raise ValueError(f"Invalid EXTXYZ logical value: {value!r}")
+        parsed.append(_EXTXYZ_BOOLEAN_TOKENS[token])
+    return np.asarray(parsed, dtype=np.bool_).reshape(raw.shape)
+
+
+def _normalise_extxyz_pbc(value: Any) -> tuple[np.ndarray, str]:
+    """Return validated PBC flags and their canonical EXTXYZ representation."""
+    if isinstance(value, str):
+        tokens = value.replace(",", " ").split()
+    else:
+        tokens = np.asarray(value, dtype=object).reshape(-1).tolist()
+    if len(tokens) == 1:
+        tokens *= 3
+    if len(tokens) != 3:
+        raise ValueError("EXTXYZ pbc must contain exactly three logical values.")
+    flags = _parse_extxyz_boolean_array(tokens).reshape(3)
+    return flags, " ".join("T" if flag else "F" for flag in flags)
 
 
 def _format_float64_values(values: Any) -> str:
@@ -837,11 +877,35 @@ class Structure:
             2
             """
         if isinstance(lines, str):
-            lines = lines.strip().split('\n')
+            lines = lines.strip().splitlines()
+        if len(lines) < 2:
+            raise ValueError("Incomplete EXTXYZ frame: atom count and header are required.")
+        try:
+            declared_atoms = int(str(lines[0]).strip())
+        except ValueError as exc:
+            raise ValueError("Invalid EXTXYZ atom count.") from exc
+        if declared_atoms < 0:
+            raise ValueError("EXTXYZ atom count must be non-negative.")
+        atom_lines = list(lines[2:])
+        if len(atom_lines) != declared_atoms:
+            raise ValueError(
+                f"Incomplete EXTXYZ frame: declared {declared_atoms} atoms but found {len(atom_lines)} rows."
+            )
+
         # Parse the second line (global properties)
         global_properties = lines[1].strip()
         lattice, properties, additional_fields = cls._parse_global_properties(global_properties)
-        array = np.array([line.split() for line in lines[2:]],dtype=object )
+        if lattice is None or len(lattice) != 9 or not np.all(np.isfinite(lattice)):
+            raise ValueError("EXTXYZ Lattice must contain exactly nine finite values.")
+        cls._validate_extxyz_properties(properties)
+        expected_columns = sum(int(prop["count"]) for prop in properties)
+        rows = [line.split() for line in atom_lines]
+        for row_index, row in enumerate(rows, start=1):
+            if len(row) != expected_columns:
+                raise ValueError(
+                    f"Malformed EXTXYZ atom row {row_index}: expected {expected_columns} columns, found {len(row)}."
+                )
+        array = np.asarray(rows, dtype=object).reshape((declared_atoms, expected_columns))
 
         atomic_properties = {}
         index = 0
@@ -857,15 +921,26 @@ class Structure:
                 _info=_info.astype( np.str_)
 
             elif prop["type"] == "R":
-                _info = _info.astype(get_storage_float_dtype())
+                try:
+                    _info = _info.astype(get_storage_float_dtype())
+                except (TypeError, ValueError) as exc:
+                    raise ValueError(
+                        f"EXTXYZ property {prop['name']!r} contains a non-numeric value."
+                    ) from exc
+                if not np.all(np.isfinite(_info)):
+                    raise ValueError(
+                        f"EXTXYZ property {prop['name']!r} contains NaN or infinity."
+                    )
 
             elif prop["type"] == "L":
-                _info=_info.astype( np.bool_)
+                _info = _parse_extxyz_boolean_array(_info)
             elif  prop["type"] == "I":
-                _info=_info.astype( np.int32)
-
-            else:
-                pass
+                try:
+                    _info = _info.astype(np.int32)
+                except (TypeError, ValueError) as exc:
+                    raise ValueError(
+                        f"EXTXYZ property {prop['name']!r} contains a non-integer value."
+                    ) from exc
             if prop["count"] == 1:
                 _info = _info.flatten()
             else:
@@ -874,6 +949,12 @@ class Structure:
             atomic_properties[prop["name"]] = _info
             index += prop["count"]
         del array
+        cls._validate_extxyz_payload(
+            lattice,
+            atomic_properties,
+            properties,
+            additional_fields,
+        )
 
         # return
         return cls(lattice, atomic_properties, properties, additional_fields)
@@ -917,13 +998,150 @@ class Structure:
         tokens = properties_str.split(":")
         parsed_properties = []
         i = 0
+        if not tokens or len(tokens) % 3:
+            raise ValueError("Malformed EXTXYZ Properties descriptor.")
         while i < len(tokens):
             name = tokens[i]
             dtype = tokens[i + 1]
-            count = int(tokens[i + 2]) if i + 2 < len(tokens) else 1
+            try:
+                count = int(tokens[i + 2])
+            except ValueError as exc:
+                raise ValueError(
+                    f"Invalid EXTXYZ column count for property {name!r}."
+                ) from exc
             parsed_properties.append({"name": name, "type": dtype, "count": count})
             i += 3
         return parsed_properties
+
+    @staticmethod
+    def _validate_extxyz_properties(properties: list[dict[str, Any]]) -> None:
+        """Validate the declared per-atom EXTXYZ schema."""
+        if not properties:
+            raise ValueError("EXTXYZ Properties is required.")
+        names: set[str] = set()
+        for prop in properties:
+            name = str(prop.get("name", "")).strip()
+            dtype = str(prop.get("type", "")).strip().upper()
+            count = int(prop.get("count", 0))
+            if not name or name in names:
+                raise ValueError("EXTXYZ property names must be non-empty and unique.")
+            if dtype not in {"S", "R", "I", "L"}:
+                raise ValueError(f"Unsupported EXTXYZ property type {dtype!r}.")
+            if count <= 0:
+                raise ValueError(f"EXTXYZ property {name!r} must have a positive column count.")
+            names.add(name)
+        if "species" not in names or "pos" not in names:
+            raise ValueError("EXTXYZ Properties must include species and pos.")
+        by_name = {str(prop["name"]): prop for prop in properties}
+        if str(by_name["species"]["type"]).upper() != "S" or int(by_name["species"]["count"]) != 1:
+            raise ValueError("EXTXYZ species must use species:S:1.")
+        if str(by_name["pos"]["type"]).upper() != "R" or int(by_name["pos"]["count"]) != 3:
+            raise ValueError("EXTXYZ pos must use pos:R:3.")
+
+    @classmethod
+    def _validate_extxyz_payload(
+        cls,
+        lattice: Any,
+        atomic_properties: dict[str, Any],
+        properties: list[dict[str, Any]],
+        additional_fields: dict[str, Any],
+    ) -> None:
+        """Validate scientific shape and metadata contracts shared by both readers."""
+        cls._validate_extxyz_properties(properties)
+        cell = np.asarray(lattice, dtype=np.float64)
+        if cell.size != 9 or not np.all(np.isfinite(cell)):
+            raise ValueError("EXTXYZ Lattice must contain exactly nine finite values.")
+        cell = cell.reshape(3, 3)
+
+        pos = np.asarray(atomic_properties.get("pos"))
+        if pos.ndim != 2 or pos.shape[1] != 3 or not np.all(np.isfinite(pos)):
+            raise ValueError("EXTXYZ pos must be a finite N x 3 array.")
+        atom_count = int(pos.shape[0])
+        for prop in properties:
+            name = str(prop["name"])
+            count = int(prop["count"])
+            values = atomic_properties.get(name)
+            if values is None:
+                if (
+                    name == "species"
+                    and "species_id" in atomic_properties
+                    and "type_map" in additional_fields
+                ):
+                    continue
+                raise ValueError(f"EXTXYZ property {name!r} is missing from atom rows.")
+            array = np.asarray(values)
+            expected_shape = (atom_count,) if count == 1 else (atom_count, count)
+            if array.shape != expected_shape:
+                raise ValueError(
+                    f"EXTXYZ property {name!r} has shape {array.shape}, expected {expected_shape}."
+                )
+            if str(prop["type"]).upper() == "R" and not np.all(np.isfinite(array)):
+                raise ValueError(f"EXTXYZ property {name!r} contains NaN or infinity.")
+
+        if "species" in atomic_properties:
+            species = np.asarray(atomic_properties["species"], dtype=str).reshape(-1)
+        else:
+            type_map = list(additional_fields.get("type_map", []))
+            species_id = np.asarray(atomic_properties.get("species_id", []), dtype=np.int64).reshape(-1)
+            if len(type_map) == 0 or species_id.size != atom_count:
+                raise ValueError("EXTXYZ species data is missing.")
+            if np.any(species_id < 0) or np.any(species_id >= len(type_map)):
+                raise ValueError("EXTXYZ species_id contains an out-of-range value.")
+            species = np.asarray(type_map, dtype=str)[species_id]
+        invalid_species = sorted({symbol for symbol in species.tolist() if symbol not in atomic_numbers})
+        if invalid_species:
+            raise ValueError(
+                "EXTXYZ contains unsupported element symbols: "
+                + ", ".join(invalid_species)
+            )
+
+        for key in ("energy", "energy_original"):
+            if key not in additional_fields:
+                continue
+            value = additional_fields[key]
+            if not isinstance(value, (float, int, np.number)) or isinstance(value, (bool, np.bool_)):
+                raise ValueError(f"EXTXYZ {key} must be a finite scalar.")
+            if not np.isfinite(float(value)):
+                raise ValueError(f"EXTXYZ {key} must be a finite scalar.")
+        for key in ("virial", "stress"):
+            if key not in additional_fields:
+                continue
+            value = np.asarray(additional_fields[key], dtype=np.float64).reshape(-1)
+            if value.size not in {6, 9} or not np.all(np.isfinite(value)):
+                raise ValueError(f"EXTXYZ {key} must contain six or nine finite values.")
+
+        pbc_value = additional_fields.get("pbc", "F F F")
+        pbc, canonical_pbc = _normalise_extxyz_pbc(pbc_value)
+        additional_fields["pbc"] = canonical_pbc
+        periodic_vectors = cell[pbc]
+        if periodic_vectors.size:
+            if np.any(np.linalg.norm(periodic_vectors, axis=1) <= 1.0e-12):
+                raise ValueError("EXTXYZ periodic cell contains a zero-length periodic vector.")
+            if np.linalg.matrix_rank(periodic_vectors, tol=1.0e-12) != int(np.sum(pbc)):
+                raise ValueError("EXTXYZ periodic cell vectors are linearly dependent.")
+
+    @staticmethod
+    def _validate_native_extxyz_species(
+        atomic_properties: dict[str, Any],
+        additional_fields: dict[str, Any],
+    ) -> None:
+        """Validate element symbols not known to the format-only native parser."""
+        if "species" in atomic_properties:
+            symbols = atomic_properties["species"]
+        else:
+            symbols = additional_fields.get("type_map", [])
+        invalid_species = sorted(
+            {
+                str(symbol)
+                for symbol in symbols
+                if str(symbol) not in atomic_numbers
+            }
+        )
+        if invalid_species:
+            raise ValueError(
+                "EXTXYZ contains unsupported element symbols: "
+                + ", ".join(invalid_species)
+            )
 
     @classmethod
     @timeit
@@ -988,14 +1206,17 @@ class Structure:
         except Exception:
             print(traceback.format_exc())
             logger.warning("native EXTXYZ parser is not available; falling back to Python reader")
-            return cls.read_multiple(filename)
+            return Structure.read_multiple(filename)
 
         import mmap as _mmap
         import os as _os
         # Allow disabling fast path at runtime for stability/debugging
         if _os.environ.get("NEPKIT_DISABLE_FASTXYZ", "0") in ("1", "true", "True"):
             logger.warning("NEPKIT_DISABLE_FASTXYZ=1 set; using Python reader")
-            return cls.read_multiple(filename)
+            return Structure.read_multiple(filename)
+        cancel_event = kwargs.get("cancel_event")
+        if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
+            return []
         results = []
         workers = -1 if max_workers is None else int(max_workers)
         # Prefer numeric species IDs to avoid constructing many Python strings up front.
@@ -1009,8 +1230,10 @@ class Structure:
                 try:
                     frames = _fx.parse_all(mm, workers)
                 except Exception as e:
+                    if "Malformed EXTXYZ" in str(e):
+                        raise ValueError(str(e)) from e
                     logger.warning(f"fast parse failed: {e}; falling back to Python reader")
-                    return cls.read_multiple(filename)
+                    return Structure.read_multiple(filename)
                 finally:
                     if reset_species_env:
                         try:
@@ -1020,12 +1243,15 @@ class Structure:
 
         default_config_type = Config.get("widget", "default_config_type", "neptrainkit")
         for fr in frames:
+            if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
+                return []
             ap = fr.get("atomic_properties", {})
             additional_fields = fr.get("additional_fields", {})
             if "Config_type" not in additional_fields.keys():
                 additional_fields["Config_type"] = default_config_type
+            cls._validate_native_extxyz_species(ap, additional_fields)
 
-            results.append(Structure(
+            results.append(cls(
                 lattice=fr.get("lattice"),
                 atomic_properties=ap,
                 properties=fr.get("properties", []),
@@ -1633,10 +1859,27 @@ def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_
     if type_map_path.exists():
         type_map = np.loadtxt(type_map_path, dtype=str, ndmin=1)
     else:
-        type_map = np.array([f'Type_{i + 1}' for i in range(np.max(type_) + 1)], dtype=str, ndmin=1)
+        raise ValueError(
+            f"DeepMD dataset {folder_path} is missing type_map.raw; "
+            "chemical species cannot be reconstructed safely."
+        )
+    type_ = np.asarray(type_, dtype=np.int64).reshape(-1)
+    type_map = np.asarray(type_map, dtype=np.str_).reshape(-1)
+    if type_.size == 0 or type_map.size == 0:
+        raise ValueError(f"DeepMD dataset {folder_path} has an empty atom-type contract.")
+    if np.any(type_ < 0) or np.any(type_ >= len(type_map)):
+        raise ValueError(f"DeepMD dataset {folder_path} contains out-of-range atom types.")
+    invalid_symbols = [symbol for symbol in type_map.tolist() if symbol not in atomic_numbers]
+    if invalid_symbols:
+        raise ValueError(
+            f"DeepMD dataset {folder_path} contains unsupported element symbols: "
+            + ", ".join(invalid_symbols)
+        )
 
     nopbc = (folder_path / 'nopbc').is_file()
     sets = sorted(folder_path.glob('set.*'))
+    if not sets:
+        raise ValueError(f"DeepMD dataset {folder_path} contains no set.* directories.")
     dataset_dict: dict[str, list[np.ndarray]] = {}
     for set_path in sets:
         if cancel_event is not None and getattr(cancel_event, 'is_set', None) and cancel_event.is_set():
@@ -1665,10 +1908,29 @@ def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_
     for key in list(dataset_dict.keys()):
         dataset_dict[key] = np.concatenate(dataset_dict[key], axis=0)
 
-    if 'box' not in dataset_dict or 'coord' not in dataset_dict:
-        return structures
+    missing_required = sorted({"box", "coord"} - dataset_dict.keys())
+    if missing_required:
+        raise ValueError(
+            f"DeepMD dataset {folder_path} is missing required arrays: "
+            + ", ".join(f"{name}.npy" for name in missing_required)
+        )
 
     total_frames = int(dataset_dict['box'].shape[0])
+    if total_frames <= 0:
+        raise ValueError(f"DeepMD dataset {folder_path} contains no frames.")
+    mismatched_frames = {
+        key: int(value.shape[0])
+        for key, value in dataset_dict.items()
+        if int(value.shape[0]) != total_frames
+    }
+    if mismatched_frames:
+        details = ", ".join(
+            f"{key}={count}" for key, count in sorted(mismatched_frames.items())
+        )
+        raise ValueError(
+            f"DeepMD dataset {folder_path} has inconsistent frame counts "
+            f"(box={total_frames}, {details})."
+        )
     is_mixed = 'real_atom_types' in dataset_dict
 
     logger.debug(f"load {total_frames} structures from {folder_path}")
@@ -1676,15 +1938,48 @@ def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_
         if cancel_event is not None and getattr(cancel_event, 'is_set', None) and cancel_event.is_set():
             break
 
-        box = dataset_dict['box'][index].reshape(3, 3)
-        coords = dataset_dict['coord'][index].reshape(-1, 3)
+        box_values = np.asarray(dataset_dict['box'][index]).reshape(-1)
+        if box_values.size != 9 or not np.all(np.isfinite(box_values)):
+            raise ValueError(
+                f"DeepMD dataset {folder_path}, frame {index} has an invalid box."
+            )
+        box = box_values.reshape(3, 3)
+        coord_values = np.asarray(dataset_dict['coord'][index]).reshape(-1)
+        if coord_values.size % 3 or not np.all(np.isfinite(coord_values)):
+            raise ValueError(
+                f"DeepMD dataset {folder_path}, frame {index} has invalid coordinates."
+            )
+        coords = coord_values.reshape(-1, 3)
         atoms_num = int(coords.shape[0])
+        if atoms_num <= 0:
+            raise ValueError(
+                f"DeepMD dataset {folder_path}, frame {index} contains no atoms."
+            )
+        if not nopbc and abs(float(np.linalg.det(box))) <= 1.0e-12:
+            raise ValueError(
+                f"DeepMD periodic dataset {folder_path}, frame {index} has a singular cell."
+            )
 
         # species per frame: dpdata mixed uses real_atom_types per frame
         if is_mixed:
             real_types = dataset_dict['real_atom_types'][index].astype(int).reshape(-1)
+            if real_types.size != atoms_num:
+                raise ValueError(
+                    f"DeepMD dataset {folder_path}, frame {index} has "
+                    "real_atom_types inconsistent with its coordinates."
+                )
+            if np.any(real_types < 0) or np.any(real_types >= len(type_map)):
+                raise ValueError(
+                    f"DeepMD dataset {folder_path}, frame {index} contains "
+                    "out-of-range real_atom_types."
+                )
             species = type_map[real_types]
         else:
+            if type_.size != atoms_num:
+                raise ValueError(
+                    f"DeepMD dataset {folder_path}, frame {index} has "
+                    f"{atoms_num} coordinates but type.raw declares {type_.size} atoms."
+                )
             species = type_map[type_]
 
         properties = [
@@ -1704,10 +1999,28 @@ def _load_npy_structure(folder: PathLike, base_root: Path | None = None, cancel_
 
             prop = value[index]
             count = int(prop.shape[0])
-            if count >= atoms_num and key != 'virial':
+            if key not in {"energy", "virial", "stress"} and count >= atoms_num:
+                if count % atoms_num:
+                    raise ValueError(
+                        f"DeepMD per-atom field {key!r} is not divisible by the atom count."
+                    )
                 col = count // atoms_num
-                info[key] = prop.reshape((-1, col))
-                properties.append({'name': key, 'type': 'R', 'count': int(col)})
+                reshaped = prop.reshape((-1, col))
+                info[key] = reshaped.reshape(-1) if col == 1 else reshaped
+                kind = np.asarray(prop).dtype.kind
+                if kind in {"f", "c"}:
+                    prop_type = "R"
+                elif kind in {"i", "u"}:
+                    prop_type = "I"
+                elif kind == "b":
+                    prop_type = "L"
+                elif kind in {"S", "U"}:
+                    prop_type = "S"
+                else:
+                    raise ValueError(
+                        f"DeepMD per-atom field {key!r} has unsupported dtype {np.asarray(prop).dtype}."
+                    )
+                properties.append({'name': key, 'type': prop_type, 'count': int(col)})
             else:
                 if count == 1:
                     if key == "energy":
@@ -1865,6 +2178,123 @@ def get_type_map(structures: list[Structure]) -> list[str]:
         global_type_map.extend(map(str, type_map))
     return list(dict.fromkeys(global_type_map))
 
+
+def write_structures_extxyz_atomic(
+    destination: PathLike,
+    structures,
+    *,
+    atomic_float_digits: int | None = None,
+) -> None:
+    """Write EXTXYZ frames without exposing a partially written destination."""
+    target = as_path(destination)
+    temporary_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf8",
+            dir=target.parent,
+            prefix=f".{target.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temporary_path = Path(handle.name)
+            for structure in structures:
+                structure.write(
+                    handle,
+                    atomic_float_digits=atomic_float_digits,
+                )
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary_path, target)
+        temporary_path = None
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
+
+
+def _fsync_directory(path: Path) -> None:
+    """Flush directory entries where the platform exposes directory fsync."""
+    flags = os.O_RDONLY
+    if hasattr(os, "O_DIRECTORY"):
+        flags |= os.O_DIRECTORY
+    try:
+        descriptor = os.open(path, flags)
+    except OSError:
+        if os.name == "nt":
+            return
+        raise
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _fsync_tree(root: Path) -> None:
+    """Flush every staged file before publishing a directory tree."""
+    directories = [root]
+    for path in root.rglob("*"):
+        if path.is_file():
+            mode = "rb+" if os.name == "nt" else "rb"
+            with path.open(mode) as handle:
+                os.fsync(handle.fileno())
+        elif path.is_dir():
+            directories.append(path)
+    for directory in sorted(directories, key=lambda item: len(item.parts), reverse=True):
+        _fsync_directory(directory)
+
+
+def _unused_sibling_directory(target: Path, suffix: str) -> Path:
+    path = Path(
+        tempfile.mkdtemp(
+            dir=target.parent,
+            prefix=f".{target.name or 'deepmd'}.{suffix}.",
+        )
+    )
+    path.rmdir()
+    return path
+
+
+def _publish_directory(staging: Path, target: Path) -> None:
+    """Publish ``staging`` while retaining and restoring an existing target."""
+    if target.is_symlink() or (target.exists() and not target.is_dir()):
+        raise FileExistsError(f"DeepMD export target is not a replaceable directory: {target}")
+
+    backup: Path | None = None
+    try:
+        if target.exists():
+            backup = _unused_sibling_directory(target, "backup")
+            os.replace(target, backup)
+            _fsync_directory(target.parent)
+        os.replace(staging, target)
+        _fsync_directory(target.parent)
+    except Exception as publish_error:
+        try:
+            if target.exists() and not staging.exists():
+                os.replace(target, staging)
+            if backup is not None and backup.exists():
+                os.replace(backup, target)
+                backup = None
+                _fsync_directory(target.parent)
+        except Exception as rollback_error:
+            retained = str(backup) if backup is not None else "unavailable"
+            raise RuntimeError(
+                "DeepMD export failed and the previous dataset could not be "
+                f"restored automatically. The previous dataset is retained at: {retained}"
+            ) from rollback_error
+        raise publish_error
+
+    if backup is not None:
+        try:
+            shutil.rmtree(backup)
+            _fsync_directory(target.parent)
+        except OSError:
+            logger.warning(
+                "DeepMD export succeeded, but the previous dataset backup could "
+                "not be removed: {}",
+                backup,
+            )
+
+
 @timeit
 def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:list[str]|None=None):
 
@@ -1881,12 +2311,18 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
     type_map: list[str]
     """
     target_root = as_path(folder)
-    ensure_directory(target_root)
+    if not structures:
+        raise ValueError("Cannot export an empty DeepMD dataset.")
 
     dataset_dict = defaultdict(lambda: defaultdict(list))
     config_parts_map: dict[str, list[str]] = {}
+    config_contracts: dict[str, dict[str, Any]] = {}
     if type_map is None:
         type_map = get_type_map(structures)
+    type_map = [str(item) for item in type_map]
+    if not type_map or len(type_map) != len(set(type_map)):
+        raise ValueError("DeepMD type_map must contain unique element symbols.")
+    type_map_set = set(type_map)
     use_hierarchy = Config.getboolean("widget", "deepmd_preserve_subfolders", True)
 
     for structure in structures:
@@ -1903,10 +2339,86 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
             config_parts_map.setdefault(config_key, [config_key] if config_key else ["default"])
 
 
-        species=structure.elements
-        type_data = np.array([type_map.index(item) for item in species]).flatten()
+        species = [str(item) for item in structure.elements]
+        missing_species = sorted(set(species) - type_map_set)
+        if missing_species:
+            raise ValueError(
+                "DeepMD type_map is missing elements: " + ", ".join(missing_species)
+            )
+        type_data = np.array([type_map.index(item) for item in species], dtype=np.int32).flatten()
         sort_index = np.argsort(type_data)
-        dataset_dict[config_key]["type"] = type_data[sort_index]
+        sorted_type_data = type_data[sort_index]
+
+        if "pbc" not in structure.additional_fields:
+            raise ValueError(
+                f"DeepMD export requires explicit PBC metadata for Config_type {config_key!r}."
+            )
+        pbc = structure_pbc_flags(structure).astype(bool)
+        if np.all(pbc):
+            pbc_mode = "periodic"
+        elif not np.any(pbc):
+            pbc_mode = "nonperiodic"
+        else:
+            raise ValueError(
+                f"DeepMD export cannot represent partial PBC for Config_type {config_key!r}."
+            )
+        cell = np.asarray(structure.lattice, dtype=np.float64)
+        positions = np.asarray(structure.atomic_properties.get("pos"), dtype=np.float64)
+        if cell.shape != (3, 3) or not np.all(np.isfinite(cell)):
+            raise ValueError(f"DeepMD Config_type {config_key!r} has an invalid cell.")
+        if positions.shape != (len(species), 3) or not np.all(np.isfinite(positions)):
+            raise ValueError(f"DeepMD Config_type {config_key!r} has invalid positions.")
+        if pbc_mode == "periodic" and abs(float(np.linalg.det(cell))) <= 1.0e-12:
+            raise ValueError(
+                f"DeepMD periodic Config_type {config_key!r} requires a nonsingular cell."
+            )
+
+        property_schema = tuple(sorted(
+            (
+                str(prop["name"]),
+                str(prop["type"]).upper(),
+                int(prop["count"]),
+                np.asarray(structure.atomic_properties[str(prop["name"])]).dtype.kind,
+            )
+            for prop in structure.properties
+            if str(prop["name"]) not in {"species", "pos"}
+        ))
+        for name, prop_type, count, _dtype_kind in property_schema:
+            values = np.asarray(structure.atomic_properties[name])
+            expected_shape = (len(species),) if count == 1 else (len(species), count)
+            if values.shape != expected_shape:
+                raise ValueError(
+                    f"DeepMD per-atom field {name!r} has shape {values.shape}, expected {expected_shape}."
+                )
+            if prop_type == "R" and not np.all(np.isfinite(values)):
+                raise ValueError(f"DeepMD per-atom field {name!r} contains NaN or infinity.")
+        label_schema = (
+            "energy" in structure.additional_fields,
+            "virial" in structure.additional_fields,
+        )
+        if label_schema[0] and not np.isfinite(float(structure.energy)):
+            raise ValueError(f"DeepMD Config_type {config_key!r} has non-finite energy.")
+        if label_schema[1]:
+            virial = np.asarray(structure.additional_fields["virial"], dtype=np.float64).reshape(-1)
+            if virial.size not in {6, 9} or not np.all(np.isfinite(virial)):
+                raise ValueError(
+                    f"DeepMD Config_type {config_key!r} has an invalid virial."
+                )
+        contract = {
+            "types": tuple(int(item) for item in sorted_type_data),
+            "pbc_mode": pbc_mode,
+            "properties": property_schema,
+            "labels": label_schema,
+        }
+        previous_contract = config_contracts.get(config_key)
+        if previous_contract is not None and previous_contract != contract:
+            raise ValueError(
+                f"Structures in DeepMD Config_type {config_key!r} must share atom types, "
+                "PBC mode, per-atom fields, and label coverage."
+            )
+        config_contracts[config_key] = contract
+
+        dataset_dict[config_key]["type"] = sorted_type_data
         dataset_dict[config_key]["box"].append(structure.lattice.flatten())
         dataset_dict[config_key]["coord"].append(structure.atomic_properties["pos"][sort_index].flatten())
 
@@ -1922,24 +2434,39 @@ def save_npy_structure(folder: PathLike, structures: list[Structure],type_map:li
             dataset_dict[config_key]["energy"].append(structure.energy)
 
 
-    for config, data in dataset_dict.items():
-        config_parts = config_parts_map.get(config, [config] if config else ["default"])
-        config_dir = target_root.joinpath(*config_parts)
-        save_path = ensure_directory(config_dir / 'set.000')
+    ensure_directory(target_root.parent)
+    staging_root = Path(
+        tempfile.mkdtemp(
+            dir=target_root.parent,
+            prefix=f".{target_root.name or 'deepmd'}.staging.",
+        )
+    )
+    try:
+        for config, data in dataset_dict.items():
+            config_parts = config_parts_map.get(config, [config] if config else ["default"])
+            config_dir = staging_root.joinpath(*config_parts)
+            save_path = ensure_directory(config_dir / 'set.000')
+            if config_contracts[config]["pbc_mode"] == "nonperiodic":
+                (config_dir / "nopbc").touch()
 
-        np.savetxt(config_dir / 'type_map.raw', type_map, fmt='%s')
+            np.savetxt(config_dir / 'type_map.raw', type_map, fmt='%s')
+            np.savetxt(config_dir / 'type.raw', data['type'], fmt='%d')
+            for key, value in data.items():
+                if key == 'type':
+                    continue
+                if key == "energy":
+                    array = np.asarray(value, dtype=get_storage_float_dtype()).reshape(-1, 1)
+                else:
+                    array = np.vstack(value)
+                    if isinstance(array, np.ndarray) and array.dtype.kind == "f":
+                        array = np.asarray(array, dtype=get_storage_float_dtype())
+                np.save(save_path / f'{key}.npy', array)
 
-        np.savetxt(config_dir / 'type.raw', data['type'], fmt='%d')
-        for key, value in data.items():
-            if key == 'type':
-                continue
-            if key == "energy":
-                array = np.asarray(value, dtype=get_storage_float_dtype()).reshape(-1, 1)
-            else:
-                array = np.vstack(value)
-                if isinstance(array, np.ndarray) and array.dtype.kind == "f":
-                    array = np.asarray(array, dtype=get_storage_float_dtype())
-            np.save(save_path / f'{key}.npy', array)
+        _fsync_tree(staging_root)
+        _publish_directory(staging_root, target_root)
+    finally:
+        if staging_root.exists():
+            shutil.rmtree(staging_root)
 
 
 
@@ -1952,4 +2479,7 @@ class FastStructure(Structure):
 
     @classmethod
     def iter_read_multiple(cls, filename: str, max_workers: int | None = None):
-        yield from super(FastStructure, cls).iter_read_multiple_fast(filename, max_workers=max_workers)
+        yield from super(FastStructure, cls).read_multiple_fast(
+            filename,
+            max_workers=max_workers,
+        )

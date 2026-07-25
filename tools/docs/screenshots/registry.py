@@ -143,7 +143,7 @@ SCENARIOS: dict[str, ScenarioSpec] = {
             Annotation("1", "Open data", "widget:open_dir_button", "right"),
             Annotation("2", "Error plots", "widget:show_nep_interface.plot_widget", "top-right"),
             Annotation("3", "Structure viewer", "widget:show_nep_interface.struct_widget", "top-left"),
-            Annotation("4", "Search and selection", "widget:show_nep_interface.search_lineEdit", "right"),
+            Annotation("4", "Filter and selection", "widget:show_nep_interface.structure_filter_bar", "right"),
         ),
     ),
     "training_set_audit_overview": ScenarioSpec(

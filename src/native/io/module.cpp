@@ -16,7 +16,9 @@
 #include <stdexcept>
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <cstdio>
+#include <limits>
 #include <memory>
 #include <system_error>
 #include <thread>
@@ -101,7 +103,7 @@ inline double parse_double(const char*& p, const char* end) {
 #if defined(NEPKIT_HAVE_FAST_FLOAT)
     double v_ff = 0.0;
     auto ffres = fast_float::from_chars(p, q, v_ff, fast_float::chars_format::general);
-    if (ffres.ec == std::errc()) {
+    if (ffres.ec == std::errc() && ffres.ptr == q && std::isfinite(v_ff)) {
         p = q;
         return v_ff;
     }
@@ -110,19 +112,36 @@ inline double parse_double(const char*& p, const char* end) {
     char* e = nullptr;
     double v = std::strtod(token.c_str(), &e);
     p = q;
+    if (e != token.c_str() + token.size() || !std::isfinite(v)) {
+        return std::numeric_limits<double>::quiet_NaN();
+    }
     return v;
+}
+
+inline bool parse_double_token(const char*& p, const char* end, double& out) {
+    const char* q = p;
+    while (q < end && !std::isspace(static_cast<unsigned char>(*q))) ++q;
+    const char* next = p;
+    out = parse_double(next, q);
+    p = q;
+    return std::isfinite(out);
 }
 
 inline bool parse_int_token(const char*& p, const char* end, int& out) {
     const char* s = p;
+    const char* q = p;
+    while (q < end && !std::isspace(static_cast<unsigned char>(*q))) ++q;
     bool neg = false;
-    if (s < end && (*s == '+' || *s == '-')) { neg = (*s == '-'); ++s; }
+    if (s < q && (*s == '+' || *s == '-')) { neg = (*s == '-'); ++s; }
     long long val = 0;
     const char* start = s;
-    while (s < end && std::isdigit(static_cast<unsigned char>(*s))) { val = val * 10 + (*s - '0'); ++s; }
-    if (s == start) return false;
+    while (s < q && std::isdigit(static_cast<unsigned char>(*s))) { val = val * 10 + (*s - '0'); ++s; }
+    if (s == start || s != q) {
+        p = q;
+        return false;
+    }
     out = static_cast<int>(neg ? -val : val);
-    p = s;
+    p = q;
     return true;
 }
 
@@ -131,17 +150,24 @@ inline bool parse_bool_token(const char*& p, const char* end, uint8_t& out) {
     const char* q = s;
     while (q < end && !std::isspace(static_cast<unsigned char>(*q))) ++q;
     size_t len = static_cast<size_t>(q - s);
+    bool valid = false;
     bool v = false;
     if (len == 1) {
-        v = (*s == '1' || *s == 'T' || *s == 't');
+        if (*s == '1' || *s == 'T' || *s == 't') {
+            valid = true;
+            v = true;
+        } else if (*s == '0' || *s == 'F' || *s == 'f') {
+            valid = true;
+        }
     } else {
-        // Compare lowercase
         bool is_true = (len == 4 && (s[0]=='t'||s[0]=='T') && (s[1]=='r'||s[1]=='R') && (s[2]=='u'||s[2]=='U') && (s[3]=='e'||s[3]=='E'));
+        bool is_false = (len == 5 && (s[0]=='f'||s[0]=='F') && (s[1]=='a'||s[1]=='A') && (s[2]=='l'||s[2]=='L') && (s[3]=='s'||s[3]=='S') && (s[4]=='e'||s[4]=='E'));
+        valid = is_true || is_false;
         v = is_true;
     }
     out = v ? 1 : 0;
     p = q;
-    return true;
+    return valid;
 }
 
 inline std::string parse_token(const char*& p, const char* end) {
@@ -174,7 +200,7 @@ static std::vector<PropDesc> parse_properties_desc(const std::string& s) {
         PropDesc d;
         d.name = name;
         d.dtype = dtype.empty() ? 'S' : static_cast<char>(dtype[0]);
-        try { d.count = std::stoi(count); } catch (...) { d.count = 1; }
+        try { d.count = std::stoi(count); } catch (...) { d.count = 0; }
         props.push_back(std::move(d));
     }
     return props;
@@ -187,6 +213,88 @@ struct AddValue {
     double d{0.0};
     std::vector<float> vf;
 };
+
+static bool normalise_pbc_and_validate_cell(
+    const std::vector<float>& lattice,
+    std::unordered_map<std::string, AddValue>& additional,
+    std::string& error
+) {
+    auto pbc_it = additional.find("pbc");
+    std::string raw = pbc_it == additional.end() ? "F F F" : pbc_it->second.s;
+    std::replace(raw.begin(), raw.end(), ',', ' ');
+    std::vector<uint8_t> flags;
+    const char* cursor = raw.data();
+    const char* end = raw.data() + raw.size();
+    while (cursor < end) {
+        cursor = skip_ws(cursor, end);
+        if (cursor >= end) break;
+        uint8_t value = 0;
+        if (!parse_bool_token(cursor, end, value)) {
+            error = "pbc contains an invalid logical value";
+            return false;
+        }
+        flags.push_back(value);
+    }
+    if (flags.size() == 1) flags.resize(3, flags.front());
+    if (flags.size() != 3) {
+        error = "pbc must contain exactly three logical values";
+        return false;
+    }
+
+    AddValue canonical;
+    canonical.type = AddType::STRING;
+    canonical.s =
+        std::string(flags[0] ? "T" : "F") + " "
+        + (flags[1] ? "T" : "F") + " "
+        + (flags[2] ? "T" : "F");
+    additional["pbc"] = std::move(canonical);
+
+    std::vector<int> periodic;
+    for (int axis = 0; axis < 3; ++axis) {
+        if (flags[static_cast<size_t>(axis)] != 0) periodic.push_back(axis);
+    }
+    if (periodic.empty()) return true;
+    if (lattice.size() != 9) {
+        error = "periodic cell is missing";
+        return false;
+    }
+
+    constexpr double tolerance = 1.0e-12;
+    auto component = [&](int row, int column) {
+        return static_cast<double>(lattice[static_cast<size_t>(row * 3 + column)]);
+    };
+    for (int row : periodic) {
+        const double norm2 =
+            component(row, 0) * component(row, 0)
+            + component(row, 1) * component(row, 1)
+            + component(row, 2) * component(row, 2);
+        if (norm2 <= tolerance * tolerance) {
+            error = "periodic cell contains a zero-length periodic vector";
+            return false;
+        }
+    }
+    if (periodic.size() == 2) {
+        const int a = periodic[0];
+        const int b = periodic[1];
+        const double cx = component(a, 1) * component(b, 2) - component(a, 2) * component(b, 1);
+        const double cy = component(a, 2) * component(b, 0) - component(a, 0) * component(b, 2);
+        const double cz = component(a, 0) * component(b, 1) - component(a, 1) * component(b, 0);
+        if (cx * cx + cy * cy + cz * cz <= tolerance * tolerance) {
+            error = "periodic cell vectors are linearly dependent";
+            return false;
+        }
+    } else if (periodic.size() == 3) {
+        const double determinant =
+            component(0, 0) * (component(1, 1) * component(2, 2) - component(1, 2) * component(2, 1))
+            - component(0, 1) * (component(1, 0) * component(2, 2) - component(1, 2) * component(2, 0))
+            + component(0, 2) * (component(1, 0) * component(2, 1) - component(1, 1) * component(2, 0));
+        if (std::abs(determinant) <= tolerance) {
+            error = "periodic cell vectors are linearly dependent";
+            return false;
+        }
+    }
+    return true;
+}
 
 static void parse_header_line(const char* b, const char* e,
                               std::vector<float>& lattice_out,
@@ -289,11 +397,20 @@ static std::vector<FrameIndex> index_frames(const char* buf, size_t nbytes) {
         const char* e1 = find_eol(l1, end);
         if (l1 == e1) { if (e1 < end) { p = e1 + 1; continue; } else break; }
         int num = 0; const char* after = nullptr;
-        if (!parse_int(l1, e1, num, &after)) { // skip invalid line
-            if (e1 < end) { p = e1 + 1; continue; } else break;
+        if (!parse_int(l1, e1, num, &after) || skip_ws(after, e1) != e1 || num < 0) {
+            throw std::runtime_error(
+                "Malformed EXTXYZ frame " + std::to_string(out.size() + 1)
+                + ": invalid atom count"
+            );
         }
         // line 2: header
         const char* l2 = (e1 < end) ? e1 + 1 : end;
+        if (l2 >= end) {
+            throw std::runtime_error(
+                "Malformed EXTXYZ frame " + std::to_string(out.size() + 1)
+                + ": missing header"
+            );
+        }
         const char* e2 = find_eol(l2, end);
         // data lines
         const char* d0 = (e2 < end) ? e2 + 1 : end;
@@ -409,6 +526,7 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
         // string properties stored as tokens, converted later
         std::unordered_map<std::string, std::vector<std::string>> sprops;
         int num_atoms{0};
+        std::string error;
     };
 
     std::vector<Parsed> parsed(frames.size());
@@ -435,11 +553,14 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
                              (long long)i, (size_t)fi.off_header, (size_t)fi.off_data, (size_t)fi.end);
                 std::fflush(stderr);
             }
-            // skip malformed frame
+            p.error = "invalid frame offsets";
             parsed[static_cast<size_t>(i)] = std::move(p);
             continue;
         }
         p.num_atoms = std::max(0, fi.num_atoms);
+        if (fi.num_atoms < 0) {
+            p.error = "atom count must be non-negative";
+        }
 
         const char* h0 = base + fi.off_header;
         const char* h1 = (fi.off_data > fi.off_header) ? base + fi.off_data - 1 : base + fi.off_header;
@@ -451,10 +572,46 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
         }
         parse_header_line(h0, h1, p.lattice, p.props, p.add);
 
-        // ensure essential props exist; if none, synthesize species:S:1 pos:R:3
+        if (p.lattice.size() != 9) {
+            p.error = "Lattice must contain exactly nine finite values";
+        } else {
+            for (float value : p.lattice) {
+                if (!std::isfinite(value)) {
+                    p.error = "Lattice must contain exactly nine finite values";
+                    break;
+                }
+            }
+        }
         if (p.props.empty()) {
-            PropDesc d1; d1.name = "species"; d1.dtype = 'S'; d1.count = 1; p.props.push_back(d1);
-            PropDesc d2; d2.name = "pos";     d2.dtype = 'R'; d2.count = 3; p.props.push_back(d2);
+            p.error = "Properties is required";
+        }
+        bool has_species = false;
+        bool has_pos = false;
+        std::unordered_map<std::string, bool> property_names;
+        for (const auto& desc : p.props) {
+            if (desc.name.empty() || property_names.count(desc.name) != 0) {
+                p.error = "property names must be non-empty and unique";
+                break;
+            }
+            property_names[desc.name] = true;
+            if (
+                desc.count <= 0
+                || (desc.dtype != 'S' && desc.dtype != 'R' && desc.dtype != 'I' && desc.dtype != 'L')
+            ) {
+                p.error = "Properties contains an invalid type or column count";
+                break;
+            }
+            if (desc.name == "species") {
+                has_species = desc.dtype == 'S' && desc.count == 1;
+            } else if (desc.name == "pos") {
+                has_pos = desc.dtype == 'R' && desc.count == 3;
+            }
+        }
+        if (!has_species || !has_pos) {
+            p.error = "Properties must include species:S:1 and pos:R:3";
+        }
+        if (p.error.empty()) {
+            normalise_pbc_and_validate_cell(p.lattice, p.add, p.error);
         }
         if (dbg) {
             std::fprintf(stderr, "[fastxyz] frame %lld props=%zu\n", (long long)i, p.props.size());
@@ -484,25 +641,45 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
         const char* d = base + fi.off_data;
         const char* dend = base + fi.end;
         int actual_rows = 0;
-        for (; actual_rows < p.num_atoms && d < dend; ++actual_rows) {
+        for (; actual_rows < p.num_atoms && d < dend && p.error.empty(); ++actual_rows) {
             const char* l0 = d;
             const char* le = find_eol(l0, dend);
             const char* q = l0;
+            bool row_ok = true;
             // For speed, scan tokens sequentially across properties
             for (const auto& desc : p.props) {
                 for (int k = 0; k < desc.count; ++k) {
                     q = skip_ws(q, le);
-                    if (q >= le) break;
+                    if (q >= le) {
+                        row_ok = false;
+                        p.error = "atom row has fewer columns than declared by Properties";
+                        break;
+                    }
                     if (desc.dtype == 'R') {
-                        double v = parse_double(q, le);
+                        double v = 0.0;
+                        if (!parse_double_token(q, le, v)) {
+                            row_ok = false;
+                            p.error = "atom row contains an invalid floating-point value";
+                            break;
+                        }
                         size_t idx = static_cast<size_t>(actual_rows) * static_cast<size_t>(desc.count) + static_cast<size_t>(k);
                         p.rbuf[desc.name][idx] = static_cast<float>(v);
                     } else if (desc.dtype == 'I') {
-                        int v = 0; (void)parse_int_token(q, le, v);
+                        int v = 0;
+                        if (!parse_int_token(q, le, v)) {
+                            row_ok = false;
+                            p.error = "atom row contains an invalid integer value";
+                            break;
+                        }
                         size_t idx = static_cast<size_t>(actual_rows) * static_cast<size_t>(desc.count) + static_cast<size_t>(k);
                         p.ibuf[desc.name][idx] = v;
                     } else if (desc.dtype == 'L') {
-                        uint8_t v = 0; (void)parse_bool_token(q, le, v);
+                        uint8_t v = 0;
+                        if (!parse_bool_token(q, le, v)) {
+                            row_ok = false;
+                            p.error = "atom row contains an invalid logical value";
+                            break;
+                        }
                         size_t idx = static_cast<size_t>(actual_rows) * static_cast<size_t>(desc.count) + static_cast<size_t>(k);
                         p.lbuf[desc.name][idx] = v;
                     } else { // 'S'
@@ -514,16 +691,18 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
                         p.sprops[desc.name][idx] = std::move(tok);
                     }
                 }
+                if (!row_ok) break;
+            }
+            if (!row_ok) break;
+            q = skip_ws(q, le);
+            if (q != le) {
+                p.error = "atom row has more columns than declared by Properties";
+                break;
             }
             d = (le < dend ? le + 1 : le);
         }
-        // If file ended early, shrink num_atoms to the number of parsed rows
-        if (actual_rows < p.num_atoms) {
-            p.num_atoms = actual_rows;
-            // also shrink totals for each property to reflect actual rows
-            for (const auto& desc : p.props) {
-                p.totals[desc.name] = static_cast<size_t>(p.num_atoms) * static_cast<size_t>(desc.count);
-            }
+        if (p.error.empty() && actual_rows < p.num_atoms) {
+            p.error = "frame ended before all declared atom rows were read";
         }
 
             parsed[static_cast<size_t>(i)] = std::move(p);
@@ -531,6 +710,14 @@ static py::list parse_all_impl(py::buffer bbuf, int max_workers) {
     }
 
     auto t_par1 = clock::now();
+    for (size_t index = 0; index < parsed.size(); ++index) {
+        if (!parsed[index].error.empty()) {
+            throw std::runtime_error(
+                "Malformed EXTXYZ frame " + std::to_string(index + 1)
+                + ": " + parsed[index].error
+            );
+        }
+    }
     size_t total_atoms = 0; for (const auto& p : parsed) total_atoms += static_cast<size_t>(p.num_atoms);
 
     // Convert to Python list of dicts

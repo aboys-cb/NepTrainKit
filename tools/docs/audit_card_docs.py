@@ -287,7 +287,7 @@ def main() -> int:
         for err in errors:
             print(f"- {err}")
         return 1
-    code_count = len([p for p in CARD_DIR.glob("*.py") if p.name != "__init__.py"])
+    code_count = len(parse_code_cards())
     doc_count = len(list(DOC_DIR.glob("*.md")))
     print("Card docs audit PASSED")
     print(f"- code cards: {code_count}")

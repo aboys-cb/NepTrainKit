@@ -8,10 +8,12 @@ import sys
 from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent))
 
+_nuitka_binary_dir = None
 try:
     # Nuitka injects this name into compiled modules.
     if __nuitka_binary_dir is not None:  # type: ignore[name-defined]
         is_nuitka_compiled = True
+        _nuitka_binary_dir = Path(str(__nuitka_binary_dir)).resolve()  # type: ignore[name-defined]
     else:
         is_nuitka_compiled = False
 except NameError:
@@ -55,12 +57,12 @@ if not _is_runtime_health_check:
     _try_import_src_rc()
 
 if is_nuitka_compiled:
-    module_path = Path("./").resolve()
+    module_path = _nuitka_binary_dir
 else:
     module_path = Path(__file__).resolve().parent
 
 if not _is_runtime_health_check:
     initialize_logging(
         DEFAULT_LOG_LEVEL,
-        file_sink="./Log/{time:%Y-%m}.log" if is_nuitka_compiled else None,
+        file_sink=str(module_path / "Log/{time:%Y-%m}.log") if is_nuitka_compiled else None,
     )

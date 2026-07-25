@@ -8,12 +8,24 @@ on:
 
 jobs:
   test:
-    name: Tests (${{ matrix.os }})
+    name: Tests (${{ matrix.os }}, Python ${{ matrix.python }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            python: "3.10"
+          - os: ubuntu-latest
+            python: "3.11"
+          - os: ubuntu-latest
+            python: "3.12"
+          - os: ubuntu-latest
+            python: "3.13"
+          - os: macos-latest
+            python: "3.10"
+          - os: windows-latest
+            python: "3.10"
     env:
       QT_QPA_PLATFORM: offscreen
       NEPKIT_OPENMP: "0"
@@ -25,7 +37,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.10'
+        python-version: ${{ matrix.python }}
         cache: 'pip'
 
     - name: Install dependencies
@@ -44,11 +56,11 @@ jobs:
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v5
-      if: success() && matrix.os == 'ubuntu-latest'
+      if: success() && matrix.os == 'ubuntu-latest' && matrix.python == '3.10'
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
     - name: Upload test results to Codecov
-      if: ${{ !cancelled() && matrix.os == 'ubuntu-latest' }}
+      if: ${{ !cancelled() && matrix.os == 'ubuntu-latest' && matrix.python == '3.10' }}
       uses: codecov/test-results-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}

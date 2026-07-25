@@ -172,7 +172,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
 
         self.addSeparator()
         self.addButton(
-            self.tr("Training Set Check"),
+            self.tr("Training Set Audit"),
             QIcon(":/images/src/images/summary.svg"),
             self.trainingSetCheckSignal,
             action_key="training_set_check",
@@ -203,7 +203,7 @@ class NepDisplayGraphicsToolBar(KitToolBarBase):
         )
 
     def set_training_set_check_enabled(self, enabled: bool) -> None:
-        """Enable the dataset-wide Training Set Check entry."""
+        """Enable the dataset-wide Training Set Audit entry."""
         action = self._actions.get("training_set_check")
         if action is not None:
             action.setEnabled(bool(enabled))

@@ -166,7 +166,7 @@ _TASK5_TRANSLATIONS = {
         "Please enter a search query.": "请输入搜索内容。",
         "unsupported file format": "不支持的文件格式",
         "Please choose the data file": "请选择数据文件",
-        "Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;All files (*)": "支持的数据文件 (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;所有文件 (*)",
+        "Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;Advanced / experimental structure files (*.out *.log *.data *.cfg input.data);;All files (*)": "支持的数据文件 (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;高级 / 实验性结构文件 (*.out *.log *.data *.cfg input.data);;所有文件 (*)",
         "Failed to switch NEP model": "切换 NEP 模型失败",
     },
     "StructureInfoWidget": {
@@ -175,15 +175,19 @@ _TASK5_TRANSLATIONS = {
         "Strong evidence": "强证据",
         "Mixed local structure": "混合局域结构",
         "Unresolved": "未解析",
+        "Other / unresolved": "其他 / 未解析",
+        "a-CNA local environments (FCC/HCP/BCC only)": "a-CNA 局域环境（仅 FCC/HCP/BCC）",
+        "Structure-level phase evidence combines a-CNA with ordered-phase refinement.": "结构级相证据由 a-CNA 与有序相复核共同组成。",
+        "L1₂ and Laves phases use separate geometry and chemical-ordering checks; a-CNA only reports FCC, HCP, and BCC local environments. A face-centered cubic Bravais lattice does not by itself make every site an FCC a-CNA environment.": "L1₂ 和 Laves 相使用独立的几何与化学有序检查；a-CNA 只报告 FCC、HCP 和 BCC 局域环境。面心立方布拉菲格子本身不代表每个原子位点都是 a-CNA 的 FCC 环境。",
         "Within threshold": "间距正常",
     },
     "TrainingSetAuditHost": {
-        "Training Set Check is open in a separate window": "训练集检查已在独立窗口中打开",
+        "Training Set Audit is open in a separate window": "训练集评估已在独立窗口中打开",
         "Locate window": "定位窗口",
         "Return to main window": "收回主窗口",
     },
     "TrainingSetAuditWindow": {
-        "Training Set Check — NepTrainKit": "训练集检查 — NepTrainKit",
+        "Training Set Audit — NepTrainKit": "训练集评估 — NepTrainKit",
     },
     "TrainingSetAuditWidget": {
         "Open in separate window": "在独立窗口中打开",
@@ -203,6 +207,14 @@ def test_normalize_language_accepts_only_supported_values():
     assert i18n.normalize_language("  zh_CN  ") == "zh_CN"
     assert i18n.normalize_language("zh") == "auto"
     assert i18n.normalize_language(None) == "auto"
+
+
+def test_translation_path_uses_runtime_resource_root(monkeypatch, tmp_path):
+    monkeypatch.setattr(i18n, "module_path", tmp_path)
+
+    assert i18n.translation_path("zh_CN") == (
+        tmp_path / "translations" / "neptrainkit_zh_CN.qm"
+    )
 
 
 def test_resolve_language_from_locale_name():
@@ -274,6 +286,31 @@ def test_chinese_catalog_has_no_active_unfinished_messages():
             if translation is not None and translation.get("type") == "unfinished":
                 unfinished.append((context_name, message.findtext("source") or ""))
     assert unfinished == []
+
+
+def test_training_set_audit_uses_one_product_name_in_active_translations():
+    root = ET.parse(_ZH_TS_PATH).getroot()
+    active_messages: list[tuple[str, str]] = []
+    for message in root.findall(".//message"):
+        translation = message.find("translation")
+        if translation is None or translation.get("type") in {"vanished", "obsolete"}:
+            continue
+        active_messages.append(
+            (
+                message.findtext("source") or "",
+                "".join(translation.itertext()).strip(),
+            )
+        )
+
+    assert not any("Training Set Check" in source for source, _ in active_messages)
+    audit_messages = [
+        (source, translated)
+        for source, translated in active_messages
+        if "Training Set Audit" in source
+    ]
+    assert audit_messages
+    assert all("训练集评估" in translated for _, translated in audit_messages)
+    assert not any("训练集检查" in translated for _, translated in audit_messages)
 
 
 def test_settings_language_combo_persists_config():
@@ -405,6 +442,32 @@ def test_result_loading_tooltip_wraps_long_runtime_status():
     assert tip.width() <= 680
     assert tip.height() > 51
     assert tip.contentLabel.wordWrap()
+
+
+@pytest.mark.parametrize("load_flag", [False, True])
+def test_result_loading_tooltip_always_leaves_loading_state(load_flag):
+    app = QApplication.instance() or QApplication([])
+    events: list[object] = []
+
+    class _Tip:
+        def setState(self, state: bool) -> None:
+            events.append(("state", state))
+
+        def close(self) -> None:
+            events.append("closed")
+
+    relay = _LoadCompletionRelay(
+        _Tip(),
+        type("_Result", (), {"load_flag": load_flag})(),
+        (lambda: events.append("callback"),),
+    )
+    relay.handle_finished()
+    app.processEvents()
+
+    if load_flag:
+        assert events == [("state", True), "callback"]
+    else:
+        assert events == ["closed", "callback"]
 
 
 def test_task5_source_strings_are_marked_for_translation():

@@ -29,9 +29,15 @@ def bar(qapp):
     widget = StructureFilterBar()
     widget.resize(700, 38)
     widget.show()
+    widget.raise_()
+    widget.activateWindow()
     qapp.processEvents()
     yield widget
+    widget._popup._debounce.stop()
+    widget._popup.close()
     widget.close()
+    qapp.processEvents()
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)
 
 
 def _spec(*conditions):

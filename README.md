@@ -1,13 +1,13 @@
 <div align="center">
 <a href="https://github.com/aboys-cb/NepTrainKit">
-  <img src="./src/NepTrainKit/src/images/logo.png" width="25%" alt="NepTrainKit logo">
+  <img src="https://raw.githubusercontent.com/aboys-cb/NepTrainKit/master/src/NepTrainKit/src/images/logo.png" width="25%" alt="NepTrainKit logo">
 </a><br>
 <a href="https://pypi.org/project/NepTrainKit"><img src="https://img.shields.io/pypi/dm/NepTrainKit?logo=pypi&logoColor=white&color=blue&label=PyPI" alt="PyPI downloads"></a>
-<a href="https://python.org/downloads"><img src="https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white" alt="Python version"></a>
+<a href="https://python.org/downloads"><img src="https://img.shields.io/badge/Python-3.10--3.13-blue.svg?logo=python&logoColor=white" alt="Python version"></a>
 <a href="https://codecov.io/github/aboys-cb/NepTrainKit"><img src="https://codecov.io/github/aboys-cb/NepTrainKit/graph/badge.svg?token=HQ5FMLD91F" alt="Codecov"></a>
 <a href="https://github.com/aboys-cb/NepTrainKit/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue" alt="License"></a>
 <br><br>
-<strong>English</strong> | <a href="./README.zh-CN.md">简体中文</a>
+<strong>English</strong> | <a href="https://github.com/aboys-cb/NepTrainKit/blob/master/README.zh-CN.md">简体中文</a>
 </div>
 
 # NepTrainKit
@@ -24,7 +24,7 @@ NepTrainKit is a desktop application for preparing, auditing, and visualizing tr
 
 ## Installation
 
-We recommend installing NepTrainKit in a dedicated Python environment. Python 3.10 or later is required.
+We recommend installing NepTrainKit in a dedicated Python environment. Python 3.10 through 3.13 is supported.
 
 ```bash
 conda create -n nepkit python=3.10
@@ -63,7 +63,7 @@ python -c "import nep_adapters as n; print(n.backend_status('cpu')); print(n.bac
 
 ### Windows package
 
-If you prefer not to compile NepTrainKit locally, download `NepTrainKit.win32.zip` from [GitHub Releases](https://github.com/aboys-cb/NepTrainKit/releases). This package is for Windows only.
+If you prefer not to compile NepTrainKit locally, download `NepTrainKit.windows-x86_64.zip` from [GitHub Releases](https://github.com/aboys-cb/NepTrainKit/releases). This package requires 64-bit Windows on x86_64 hardware.
 
 ## Documentation and support
 

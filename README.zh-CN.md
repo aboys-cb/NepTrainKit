@@ -1,13 +1,13 @@
 <div align="center">
 <a href="https://github.com/aboys-cb/NepTrainKit">
-  <img src="./src/NepTrainKit/src/images/logo.png" width="25%" alt="NepTrainKit 标志">
+  <img src="https://raw.githubusercontent.com/aboys-cb/NepTrainKit/master/src/NepTrainKit/src/images/logo.png" width="25%" alt="NepTrainKit 标志">
 </a><br>
 <a href="https://pypi.org/project/NepTrainKit"><img src="https://img.shields.io/pypi/dm/NepTrainKit?logo=pypi&logoColor=white&color=blue&label=PyPI" alt="PyPI 下载量"></a>
-<a href="https://python.org/downloads"><img src="https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white" alt="Python 版本"></a>
+<a href="https://python.org/downloads"><img src="https://img.shields.io/badge/Python-3.10--3.13-blue.svg?logo=python&logoColor=white" alt="Python 版本"></a>
 <a href="https://codecov.io/github/aboys-cb/NepTrainKit"><img src="https://codecov.io/github/aboys-cb/NepTrainKit/graph/badge.svg?token=HQ5FMLD91F" alt="Codecov"></a>
 <a href="https://github.com/aboys-cb/NepTrainKit/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue" alt="许可证"></a>
 <br><br>
-<a href="./README.md">English</a> | <strong>简体中文</strong>
+<a href="https://github.com/aboys-cb/NepTrainKit/blob/master/README.md">English</a> | <strong>简体中文</strong>
 </div>
 
 # NepTrainKit
@@ -24,7 +24,7 @@ NepTrainKit 是面向神经演化势（NEP）训练集准备、评估和可视�
 
 ## 安装
 
-建议在独立的 Python 环境中安装 NepTrainKit。当前版本要求 Python 3.10 或更新版本。
+建议在独立的 Python 环境中安装 NepTrainKit。当前版本支持 Python 3.10 到 3.13。
 
 ```bash
 conda create -n nepkit python=3.10
@@ -63,7 +63,7 @@ python -c "import nep_adapters as n; print(n.backend_status('cpu')); print(n.bac
 
 ### Windows 可执行包
 
-如果不想在本地编译，可以从 [GitHub Releases](https://github.com/aboys-cb/NepTrainKit/releases) 下载 `NepTrainKit.win32.zip`。该包仅面向 Windows。
+如果不想在本地编译，可以从 [GitHub Releases](https://github.com/aboys-cb/NepTrainKit/releases) 下载 `NepTrainKit.windows-x86_64.zip`。该包要求 x86_64 架构的 64 位 Windows。
 
 ## 文档与支持
 

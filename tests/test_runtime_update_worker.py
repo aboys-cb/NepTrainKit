@@ -171,6 +171,45 @@ def test_startup_runtime_check_is_silent_when_no_update_is_available() -> None:
     ]
 
 
+def test_startup_runtime_check_is_silent_when_network_is_unavailable() -> None:
+    QApplication.instance() or QApplication([])
+    parent = QWidget()
+    finished: list[dict] = []
+
+    with (
+        patch.object(update_module, "BackgroundTask", _ImmediateTask),
+        patch.object(
+            update_module,
+            "check_runtime_package_update",
+            side_effect=ConnectionError("network unavailable"),
+        ),
+        patch.object(
+            update_module.MessageManager,
+            "send_info_message",
+        ) as info,
+        patch.object(
+            update_module.MessageManager,
+            "send_success_message",
+        ) as success,
+        patch.object(
+            update_module.MessageManager,
+            "send_warning_message",
+        ) as warning,
+        patch.object(
+            update_module.MessageManager,
+            "send_error_message",
+        ) as error,
+    ):
+        worker = RuntimePackageUpdateWorker(parent)
+        worker.check(on_finished=finished.append, manual=False)
+
+    info.assert_not_called()
+    success.assert_not_called()
+    warning.assert_not_called()
+    error.assert_not_called()
+    assert finished == [{"ok": False, "error": "network unavailable"}]
+
+
 def test_app_launch_always_starts_a_silent_runtime_check() -> None:
     QApplication.instance() or QApplication([])
     notifier = update_module.AutoUpdateNotifier()

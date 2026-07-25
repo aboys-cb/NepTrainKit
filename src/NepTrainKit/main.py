@@ -13,6 +13,10 @@ _runtime_health_exit = run_runtime_health_command()
 if _runtime_health_exit is not None:
     raise SystemExit(_runtime_health_exit)
 
+from NepTrainKit.startup import load_config_class
+
+Config = load_config_class()
+
 import tempfile
 import traceback
 from dataclasses import replace
@@ -53,7 +57,6 @@ from NepTrainKit.core.audit.phase_inventory import (
     PHASE_REFERENCE_BANK_ID,
     PHASE_SCHEMA_VERSION,
 )
-from NepTrainKit.config import Config
 from NepTrainKit.ui.pages import *
 from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.threads import run_in_thread
@@ -161,7 +164,7 @@ class NepTrainKitMainWindow(FluentWindow):
         self.addSubInterface(
             self.training_set_audit_host,
             QIcon(':/images/src/images/summary.svg'),
-            self.tr('Training Set Check'),
+            self.tr('Training Set Audit'),
         )
         self.addSubInterface(
             self.make_data_interface,
@@ -449,7 +452,7 @@ class NepTrainKitMainWindow(FluentWindow):
         data = result_data if result_data is not None else getattr(self.show_nep_interface, "nep_result_data", None)
         if data is None:
             MessageManager.send_info_message(
-                self.tr("Please load a dataset before running Training Set Check.")
+                self.tr("Please load a dataset before running Training Set Audit.")
             )
             return
         dataset_id = str(getattr(data, "data_xyz_path", self.tr("current dataset")))
@@ -502,7 +505,7 @@ class NepTrainKitMainWindow(FluentWindow):
         def report_error(message: str) -> None:
             self._training_set_audit_thread = None
             MessageManager.send_warning_message(
-                self.tr("Training Set Check failed: {message}").format(message=message)
+                self.tr("Training Set Audit failed: {message}").format(message=message)
             )
 
         self._training_set_audit_thread = run_in_thread(
@@ -527,7 +530,7 @@ class NepTrainKitMainWindow(FluentWindow):
         ):
             MessageManager.send_info_message(
                 self.tr(
-                    "Training Set Check results are stale. Please rerun the checks for the current dataset."
+                    "Training Set Audit results are stale. Please rerun the audit for the current dataset."
                 )
             )
             return

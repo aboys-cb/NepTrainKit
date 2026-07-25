@@ -100,7 +100,8 @@ def test_structure_info_widget_prioritizes_phase_and_quality(app):
 
     assert widget.phase_badge.text() == "FCC · Strong evidence"
     assert widget.phase_summary_label.text() == (
-        "Local topology: FCC 87.5% · HCP 6.2% · Unresolved 6.2%"
+        "a-CNA local environments (FCC/HCP/BCC only): "
+        "FCC 87.5% · HCP 6.2% · Other / unresolved 6.2%"
     )
     assert widget.formula_text.text() == "H<sub>2</sub>"
     assert widget.atom_num_text.text() == "2"
@@ -108,6 +109,33 @@ def test_structure_info_widget_prioritizes_phase_and_quality(app):
     assert widget.maximum_force_text.text() == "1.000 eV/Å"
     assert widget.net_force_text.text() == "0.000 eV/Å"
     assert widget.contact_badge.text() == "Within threshold"
+
+
+def test_structure_info_widget_explains_laves_vs_acna_evidence(app):
+    widget = StructureInfoWidget()
+    phase = StructurePhaseEvidence(
+        source_index=0,
+        atom_count=24,
+        phase_label="c15",
+        confidence_state="strong",
+        local_phase_fractions=(
+            ("fcc", 0.0),
+            ("hcp", 0.0),
+            ("bcc", 0.0),
+            ("unresolved", 1.0),
+        ),
+    )
+
+    widget.show_structure_info(_structure())
+    widget.show_analysis(_inspection(), phase)
+
+    assert widget.phase_badge.text() == "C15 Laves · Confirmed ordering"
+    assert widget.phase_summary_label.text() == (
+        "a-CNA local environments (FCC/HCP/BCC only): Other / unresolved 100.0%"
+    )
+    assert "separate geometry and chemical-ordering checks" in (
+        widget.phase_summary_label.toolTip()
+    )
 
 
 def test_stale_structure_analysis_result_is_cached_but_not_displayed():

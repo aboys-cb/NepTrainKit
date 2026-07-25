@@ -93,6 +93,12 @@ class MyPlotItem(PlotItem):
         """
         self.addLine(angle=45, pos=(0.5, 0.5), pen=Pens.Line)
 
+    def set_compact_axes(self, compact: bool) -> None:
+        """Show only major tick labels when this plot is a small preview."""
+        max_text_level = 0 if compact else 2
+        for name in ("bottom", "left"):
+            self.getAxis(name).setStyle(maxTextLevel=max_text_level)
+
     def item_clicked(self, scatter_item, items, event):
         """Emit the selected structure index when a scatter point is clicked.
         
@@ -246,14 +252,20 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         if not other_plots:
             self.addItem(self.current_axes, row=0, col=0, colspan=1)
             self.current_axes.rmse_size = 12
+            if hasattr(self.current_axes, "set_compact_axes"):
+                self.current_axes.set_compact_axes(False)
             self.ci.layout.setRowStretchFactor(0, 1)
             return
 
         self.addItem(self.current_axes, row=0, col=0, colspan=4)
         self.current_axes.rmse_size = 12
+        if hasattr(self.current_axes, "set_compact_axes"):
+            self.current_axes.set_compact_axes(False)
         for i, other_plot in enumerate(other_plots):
             self.addItem(other_plot, row=1, col=i)
             other_plot.rmse_size = 6
+            if hasattr(other_plot, "set_compact_axes"):
+                other_plot.set_compact_axes(True)
 
         for row, factor in enumerate([3, 1]):
             self.ci.layout.setRowStretchFactor(row, factor)

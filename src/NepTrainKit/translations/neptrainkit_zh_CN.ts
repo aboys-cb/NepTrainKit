@@ -3,147 +3,147 @@
 <context>
     <name>AdvancedModelSearchDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1403" />
+        <location filename="../ui/widgets/dialog.py" line="1445" />
         <source>Advanced search - models</source>
         <translation>高级搜索 - 模型</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1420" />
+        <location filename="../ui/widgets/dialog.py" line="1462" />
         <source>Advanced model search</source>
         <translation>高级模型搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1434" />
+        <location filename="../ui/widgets/dialog.py" line="1476" />
         <source>e.g. 1 or 1,3,5</source>
         <translation>例如 1 或 1,3,5</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1435" />
+        <location filename="../ui/widgets/dialog.py" line="1477" />
         <source>Include sub-projects</source>
         <translation>包含子项目</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1440" />
+        <location filename="../ui/widgets/dialog.py" line="1482" />
         <source>None or integer</source>
         <translation>留空或填写整数</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1444" />
+        <location filename="../ui/widgets/dialog.py" line="1486" />
         <source>contains in name</source>
         <translation>名称包含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1446" />
+        <location filename="../ui/widgets/dialog.py" line="1488" />
         <source>contains in notes</source>
         <translation>备注包含</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1449" />
+        <location filename="../ui/widgets/dialog.py" line="1491" />
         <source>&lt;Any&gt;</source>
         <translation>&lt;任意&gt;</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1452" />
+        <location filename="../ui/widgets/dialog.py" line="1494" />
         <source>Other</source>
         <translation>其他</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1455" />
+        <location filename="../ui/widgets/dialog.py" line="1497" />
         <source>tag1, tag2 (AND)</source>
         <translation>tag1, tag2（AND）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1457" />
+        <location filename="../ui/widgets/dialog.py" line="1499" />
         <source>tag1, tag2 (OR)</source>
         <translation>tag1, tag2（OR）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1459" />
+        <location filename="../ui/widgets/dialog.py" line="1501" />
         <source>tag1, tag2 (NOT)</source>
         <translation>tag1, tag2（NOT）</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1461" />
+        <location filename="../ui/widgets/dialog.py" line="1503" />
         <source>Order by created_at ascending</source>
         <translation>按 created_at 升序排列</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1464" />
+        <location filename="../ui/widgets/dialog.py" line="1506" />
         <source>e.g. 100</source>
         <translation>例如 100</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1467" />
+        <location filename="../ui/widgets/dialog.py" line="1509" />
         <source>e.g. 0</source>
         <translation>例如 0</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1470" />
+        <location filename="../ui/widgets/dialog.py" line="1512" />
         <source>Project ID(s):</source>
         <translation>项目 ID：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1472" />
+        <location filename="../ui/widgets/dialog.py" line="1514" />
         <source>Parent ID:</source>
         <translation>父级 ID：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1473" />
+        <location filename="../ui/widgets/dialog.py" line="1515" />
         <source>Model type:</source>
         <translation>模型类型：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1474" />
+        <location filename="../ui/widgets/dialog.py" line="1516" />
         <source>Name contains:</source>
         <translation>名称包含：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1475" />
+        <location filename="../ui/widgets/dialog.py" line="1517" />
         <source>Notes contains:</source>
         <translation>备注包含：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1476" />
+        <location filename="../ui/widgets/dialog.py" line="1518" />
         <source>Tags (ALL):</source>
         <translation>标签（全部匹配）：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1477" />
+        <location filename="../ui/widgets/dialog.py" line="1519" />
         <source>Tags (ANY):</source>
         <translation>标签（任一匹配）：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1478" />
+        <location filename="../ui/widgets/dialog.py" line="1520" />
         <source>Tags (NOT):</source>
         <translation>标签（排除）：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1479" />
+        <location filename="../ui/widgets/dialog.py" line="1521" />
         <source>Order:</source>
         <translation>排序：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1480" />
+        <location filename="../ui/widgets/dialog.py" line="1522" />
         <source>Limit:</source>
         <translation>数量限制：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1481" />
+        <location filename="../ui/widgets/dialog.py" line="1523" />
         <source>Offset:</source>
         <translation>偏移量：</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1489" />
+        <location filename="../ui/widgets/dialog.py" line="1531" />
         <source>Search</source>
         <translation>搜索</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1490" />
+        <location filename="../ui/widgets/dialog.py" line="1532" />
         <source>Reset</source>
         <translation>重置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1491" />
+        <location filename="../ui/widgets/dialog.py" line="1533" />
         <source>Close</source>
         <translation>关闭</translation>
     </message>
@@ -3199,19 +3199,18 @@
 <context>
     <name>FilterDataCard</name>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="666" />
+        <location filename="../ui/widgets/card_widget.py" line="717" />
         <source>Filter data</source>
         <translation>筛选数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="676" />
+        <location filename="../ui/widgets/card_widget.py" line="729" />
         <source>Processing {progress}%</source>
         <translation>处理中 {progress}%</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="709" />
         <source>Error occurred: {error}</source>
-        <translation>发生错误：{error}</translation>
+        <translation type="vanished">发生错误：{error}</translation>
     </message>
 </context>
 <context>
@@ -4460,32 +4459,51 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MakeDataCard</name>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="473" />
+        <location filename="../ui/widgets/card_widget.py" line="485" />
         <source>Choose a file save location</source>
         <translation>选择文件保存位置</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="480" />
+        <location filename="../ui/widgets/card_widget.py" line="492" />
         <source>Exporting data</source>
         <translation>正在导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="604" />
+        <location filename="../ui/widgets/card_widget.py" line="551" />
+        <source>Stopping…</source>
+        <translation>正在停止…</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_widget.py" line="634" />
         <source>Processing {progress}%</source>
         <translation>处理中 {progress}%</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="639" />
+        <location filename="../ui/widgets/card_widget.py" line="674" />
+        <source>Failed: {error}</source>
+        <translation>失败：{error}</translation>
+    </message>
+    <message>
+        <source>Failed</source>
+        <translation type="vanished">失败</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_widget.py" line="679" />
         <source>Error occurred: {error}</source>
         <translation>发生错误：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="648" />
+        <location filename="../ui/widgets/card_widget.py" line="687" />
+        <source>Stopped | Partial output: {output_count}</source>
+        <translation>已停止 | 不完整输出：{output_count}</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/card_widget.py" line="699" />
         <source>Input: {input_count} -&gt; Output: {output_count}</source>
         <translation>输入：{input_count} -&gt; 输出：{output_count}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="653" />
+        <location filename="../ui/widgets/card_widget.py" line="704" />
         <source>{summary} | Time: {seconds:.2f} s</source>
         <translation>{summary} | 用时：{seconds:.2f} s</translation>
     </message>
@@ -4493,13 +4511,14 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
 <context>
     <name>MakeDataCardWidget</name>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="285" />
-        <location filename="../ui/widgets/card_widget.py" line="286" />
+        <location filename="../ui/widgets/card_widget.py" line="292" />
+        <location filename="../ui/widgets/card_widget.py" line="293" />
         <source>View this card output</source>
         <translation>查看此卡片输出</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="299" />
+        <location filename="../ui/widgets/card_widget.py" line="306" />
+        <location filename="../ui/widgets/card_widget.py" line="307" />
         <source>Collapse or expand card</source>
         <translation>折叠或展开卡片</translation>
     </message>
@@ -4511,107 +4530,107 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">仅支持导入 .xyz、.vasp、.cif 或 json 文件。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="171" />
+        <location filename="../ui/pages/makedata.py" line="172" />
         <source>Only .xyz, .extxyz, .vasp, .cif, POSCAR, CONTCAR, or JSON files are supported for import.</source>
         <translation>仅支持导入 .xyz、.extxyz、.vasp、.cif、POSCAR、CONTCAR 或 JSON 文件。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="233" />
+        <location filename="../ui/pages/makedata.py" line="234" />
         <source>Export final workflow output</source>
         <translation>导出工作流最终输出</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="238" />
+        <location filename="../ui/pages/makedata.py" line="239" />
         <source>Export all available card outputs</source>
         <translation>导出全部可用卡片输出</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="243" />
+        <location filename="../ui/pages/makedata.py" line="244" />
         <source>Export Card Config</source>
         <translation>导出卡片配置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="248" />
+        <location filename="../ui/pages/makedata.py" line="249" />
         <source>Import Card Config</source>
         <translation>导入卡片配置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="253" />
+        <location filename="../ui/pages/makedata.py" line="254" />
         <source>Paste Card JSON</source>
         <translation>粘贴卡片 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="281" />
+        <location filename="../ui/pages/makedata.py" line="282" />
         <source>Folder for Custom Cards</source>
         <translation>自定义卡片目录</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="314" />
+        <location filename="../ui/pages/makedata.py" line="315" />
         <source>Load structure failed: {path}</source>
         <translation>加载结构失败：{path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="345" />
+        <location filename="../ui/pages/makedata.py" line="346" />
         <source>success load {count} structures.</source>
         <translation>已成功加载 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="348" />
+        <location filename="../ui/pages/makedata.py" line="349" />
         <source>Success load {count} structures.</source>
         <translation>已成功加载 {count} 个结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="361" />
+        <location filename="../ui/pages/makedata.py" line="362" />
         <source>Please choose the structure files</source>
         <translation>请选择结构文件</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="364" />
+        <location filename="../ui/pages/makedata.py" line="365" />
         <source>Structure files (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;All files (*)</source>
         <translation>结构文件 (*.xyz *.extxyz *.vasp *.cif POSCAR CONTCAR);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="442" />
+        <location filename="../ui/pages/makedata.py" line="459" />
         <source>No enabled cards to export.</source>
         <translation>没有可导出的已启用卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="445" />
+        <location filename="../ui/pages/makedata.py" line="462" />
         <source>No enabled card has output. Run the workflow first.</source>
         <translation>已启用卡片尚无输出，请先运行工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="449" />
+        <location filename="../ui/pages/makedata.py" line="466" />
         <source>The final enabled card has no output. Run the workflow first.</source>
         <translation>最后一张已启用卡片尚无输出，请先运行工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="455" />
+        <location filename="../ui/pages/makedata.py" line="472" />
         <source>Choose a file save location</source>
         <translation>选择文件保存位置</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="463" />
+        <location filename="../ui/pages/makedata.py" line="480" />
         <source>Exporting data</source>
         <translation>正在导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="477" />
+        <location filename="../ui/pages/makedata.py" line="494" />
         <source>Cards are still running. Please wait for the current run to finish.</source>
         <translation>卡片仍在运行，请等待当前任务完成。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="488" />
+        <location filename="../ui/pages/makedata.py" line="507" />
         <source>Please import the structure file first. You can drag it in directly or import it from the upper left corner!</source>
         <translation>请先导入结构文件。你可以直接拖入，或从左上角导入。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="497" />
+        <location filename="../ui/pages/makedata.py" line="516" />
         <source>No card selected. Please select a card in the workspace.</source>
         <translation>尚未选择卡片，请先在工作区选择一个卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="571" />
+        <location filename="../ui/pages/makedata.py" line="597" />
         <source>Training structures generated.</source>
         <translation>训练结构已生成。</translation>
     </message>
@@ -4620,58 +4639,58 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <translation type="vanished">扰动训练集已创建。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="580" />
+        <location filename="../ui/pages/makedata.py" line="606" />
         <source>No checked card has output. Run the workflow first.</source>
         <translation>已勾选的卡片尚无输出，请先运行工作流。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="583" />
+        <location filename="../ui/pages/makedata.py" line="609" />
         <source>No checked cards to view.</source>
         <translation>没有可查看的已勾选卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="620" />
+        <location filename="../ui/pages/makedata.py" line="646" />
         <source>Run this card to create an output first.</source>
         <translation>请先运行此卡片生成输出。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="659" />
+        <location filename="../ui/pages/makedata.py" line="685" />
         <source>no card</source>
         <translation>没有卡片</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="676" />
-        <location filename="../ui/pages/makedata.py" line="699" />
+        <location filename="../ui/pages/makedata.py" line="702" />
+        <location filename="../ui/pages/makedata.py" line="725" />
         <source>No cards in workspace.</source>
         <translation>工作区中没有卡片。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="685" />
+        <location filename="../ui/pages/makedata.py" line="711" />
         <source>Card configuration exported successfully.</source>
         <translation>卡片配置已导出。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="703" />
+        <location filename="../ui/pages/makedata.py" line="729" />
         <source>Card configuration JSON copied to clipboard.</source>
         <translation>卡片配置 JSON 已复制到剪贴板。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="734" />
+        <location filename="../ui/pages/makedata.py" line="760" />
         <source>Clipboard does not contain card JSON.</source>
         <translation>剪贴板中没有卡片 JSON。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="764" />
+        <location filename="../ui/pages/makedata.py" line="790" />
         <source>Invalid card configuration file: {error}</source>
         <translation>卡片配置文件无效：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="810" />
+        <location filename="../ui/pages/makedata.py" line="836" />
         <source>Failed to load {name}: {error}</source>
         <translation>加载 {name} 失败：{error}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/makedata.py" line="817" />
+        <location filename="../ui/pages/makedata.py" line="843" />
         <source>Added {count} card configuration(s).</source>
         <translation>已添加 {count} 个卡片配置。</translation>
     </message>
@@ -4734,16 +4753,19 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="1252" />
+        <location filename="../ui/widgets/dialog.py" line="1366" />
         <source>energy</source>
         <translation>能量</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="1256" />
+        <location filename="../ui/widgets/dialog.py" line="1373" />
         <source>force</source>
         <translation>力</translation>
     </message>
     <message>
         <location filename="../ui/widgets/dialog.py" line="1260" />
+        <location filename="../ui/widgets/dialog.py" line="1380" />
         <source>virial</source>
         <translation>维里</translation>
     </message>
@@ -4801,6 +4823,21 @@ Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · Exp
         <location filename="../ui/widgets/dialog.py" line="1357" />
         <source>No 'train.xyz' training data file found in the specified path. This file is required to compute training error metrics; please make sure you know what you are doing.</source>
         <translation>指定路径中未找到 'train.xyz' 训练数据文件。计算训练误差指标需要此文件，请确认当前操作符合预期。</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1392" />
+        <source>expected at least {count} columns</source>
+        <translation>至少需要 {count} 列</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1398" />
+        <source>result is not finite</source>
+        <translation>结果不是有限数值</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/dialog.py" line="1402" />
+        <source>Cannot calculate {metric} RMSE from {file}: {error}. The current manual value is kept.</source>
+        <translation>无法从 {file} 计算{metric} RMSE：{error}。已保留当前手动输入值。</translation>
     </message>
 </context>
 <context>
@@ -5001,6 +5038,11 @@ All child items will also be deleted.</source>
         <translation>删除选中项</translation>
     </message>
     <message>
+        <location filename="../ui/views/toolbar.py" line="175" />
+        <source>Training Set Audit</source>
+        <translation>训练集评估</translation>
+    </message>
+    <message>
         <location filename="../ui/views/toolbar.py" line="181" />
         <source>Edit info</source>
         <translation>编辑信息</translation>
@@ -5016,9 +5058,8 @@ All child items will also be deleted.</source>
         <translation>能量基线平移</translation>
     </message>
     <message>
-        <location filename="../ui/views/toolbar.py" line="175" />
         <source>Training Set Check</source>
-        <translation>训练集评估</translation>
+        <translation type="vanished">训练集评估</translation>
     </message>
     <message>
         <source>Dataset summary</source>
@@ -5118,122 +5159,122 @@ All child items will also be deleted.</source>
 <context>
     <name>NepTrainKitMainWindow</name>
     <message>
-        <location filename="../main.py" line="129" />
+        <location filename="../main.py" line="132" />
         <source>Open</source>
         <translation>打开</translation>
     </message>
     <message>
-        <location filename="../main.py" line="135" />
+        <location filename="../main.py" line="138" />
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../main.py" line="159" />
+        <location filename="../main.py" line="162" />
         <source>NEP Dataset Display</source>
         <translation>NEP 数据集查看</translation>
     </message>
     <message>
-        <location filename="../main.py" line="164" />
         <source>Training Set Check</source>
-        <translation>训练集评估</translation>
+        <translation type="vanished">训练集评估</translation>
     </message>
     <message>
         <source>Make Data</source>
         <translation type="vanished">构建数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="169" />
+        <location filename="../main.py" line="172" />
         <source>Make Dataset</source>
         <translation>构建数据集</translation>
     </message>
     <message>
-        <location filename="../main.py" line="174" />
+        <location filename="../main.py" line="177" />
         <source>Data Management</source>
         <translation>数据管理</translation>
     </message>
     <message>
-        <location filename="../main.py" line="179" />
+        <location filename="../main.py" line="182" />
         <source>Settings</source>
         <translation>设置</translation>
     </message>
     <message>
-        <location filename="../main.py" line="336" />
+        <location filename="../main.py" line="339" />
         <source>Open data for this page</source>
         <translation>打开当前页面的数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="338" />
+        <location filename="../main.py" line="341" />
         <source>Open is not available on this page</source>
         <translation>当前页面不支持打开操作</translation>
     </message>
     <message>
-        <location filename="../main.py" line="341" />
+        <location filename="../main.py" line="344" />
         <source>Save data from this page</source>
         <translation>保存当前页面的数据</translation>
     </message>
     <message>
-        <location filename="../main.py" line="343" />
+        <location filename="../main.py" line="346" />
         <source>Save is not available on this page</source>
         <translation>当前页面不支持保存操作</translation>
     </message>
     <message>
-        <location filename="../main.py" line="355" />
+        <location filename="../main.py" line="358" />
         <source>The workflow output is empty.</source>
         <translation>工作流输出为空。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="368" />
+        <location filename="../main.py" line="371" />
         <source>Dataset handoff is already in progress.</source>
         <translation>正在传递数据集，请稍候。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="378" />
+        <location filename="../main.py" line="381" />
         <source>Preparing the workflow output for display...</source>
         <translation>正在准备工作流输出以供查看...</translation>
     </message>
     <message>
-        <location filename="../main.py" line="404" />
+        <location filename="../main.py" line="407" />
         <source>Failed to prepare workflow output: {message}</source>
         <translation>准备工作流输出失败：{message}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="452" />
         <source>Please load a dataset before running Training Set Check.</source>
-        <translation>请先加载数据集，再运行训练集评估。</translation>
+        <translation type="vanished">请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="505" />
         <source>Training Set Check failed: {message}</source>
-        <translation>训练集评估失败：{message}</translation>
+        <translation type="vanished">训练集评估失败：{message}</translation>
     </message>
     <message>
-        <location filename="../main.py" line="530" />
         <source>Training Set Check results are stale. Please rerun the checks for the current dataset.</source>
-        <translation>训练集评估结果已过期，请针对当前数据集重新检查。</translation>
+        <translation type="vanished">训练集评估结果已过期，请针对当前数据集重新检查。</translation>
     </message>
     <message>
+        <location filename="../main.py" line="167" />
         <source>Training Set Audit</source>
-        <translation type="vanished">训练集评估</translation>
-    </message>
-    <message>
-        <source>Please load a dataset before running Training Set Audit.</source>
-        <translation type="vanished">请先加载数据集，再运行训练集检查。</translation>
+        <translation>训练集评估</translation>
     </message>
     <message>
         <location filename="../main.py" line="455" />
+        <source>Please load a dataset before running Training Set Audit.</source>
+        <translation>请先加载数据集，再运行训练集评估。</translation>
+    </message>
+    <message>
+        <location filename="../main.py" line="458" />
         <source>current dataset</source>
         <translation>当前数据集</translation>
     </message>
     <message>
+        <location filename="../main.py" line="508" />
         <source>Training Set Audit failed: {message}</source>
-        <translation type="vanished">训练集检查失败：{message}</translation>
+        <translation>训练集评估失败：{message}</translation>
     </message>
     <message>
+        <location filename="../main.py" line="533" />
         <source>Training Set Audit results are stale. Please rerun the audit for the current dataset.</source>
-        <translation type="vanished">训练集检查结果已过期，请针对当前数据集重新检查。</translation>
+        <translation>训练集评估结果已过期，请针对当前数据集重新评估。</translation>
     </message>
     <message>
-        <location filename="../main.py" line="698" />
+        <location filename="../main.py" line="701" />
         <source>Full phase analysis failed: {message}</source>
         <translation>完整相分析失败：{message}</translation>
     </message>
@@ -6099,7 +6140,7 @@ All child items will also be deleted.</source>
 <context>
     <name>ResultData</name>
     <message>
-        <location filename="../core/io/base.py" line="2741" />
+        <location filename="../core/io/base.py" line="2761" />
         <source>Generating NEP descriptors: {done}/{total} structures</source>
         <translation>正在生成 NEP 描述符：{done}/{total} 个结构</translation>
     </message>
@@ -6684,31 +6725,36 @@ All child items will also be deleted.</source>
     <name>ShareCheckableHeaderCardWidget</name>
     <message>
         <location filename="../ui/widgets/card_widget.py" line="161" />
+        <location filename="../ui/widgets/card_widget.py" line="162" />
         <source>Open online documentation</source>
         <translation>打开在线文档</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="166" />
+        <location filename="../ui/widgets/card_widget.py" line="167" />
+        <location filename="../ui/widgets/card_widget.py" line="169" />
         <source>Show card information and contributors</source>
         <translation>查看卡片信息和贡献者</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="171" />
+        <location filename="../ui/widgets/card_widget.py" line="175" />
+        <location filename="../ui/widgets/card_widget.py" line="176" />
         <source>Copy card JSON</source>
         <translation>复制卡片 JSON</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="176" />
+        <location filename="../ui/widgets/card_widget.py" line="181" />
+        <location filename="../ui/widgets/card_widget.py" line="182" />
         <source>Export data</source>
         <translation>导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="181" />
+        <location filename="../ui/widgets/card_widget.py" line="187" />
+        <location filename="../ui/widgets/card_widget.py" line="188" />
         <source>Close card</source>
         <translation>关闭卡片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/card_widget.py" line="246" />
+        <location filename="../ui/widgets/card_widget.py" line="253" />
         <source>Card JSON copied to clipboard.</source>
         <translation>卡片 JSON 已复制到剪贴板。</translation>
     </message>
@@ -6900,35 +6946,35 @@ All child items will also be deleted.</source>
 <context>
     <name>ShowNepWidget</name>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="289" />
+        <location filename="../ui/pages/show_nep.py" line="298" />
         <source>Open File…</source>
         <translation>打开文件…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="292" />
+        <location filename="../ui/pages/show_nep.py" line="301" />
         <source>Open Folder…</source>
         <translation>打开文件夹…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="295" />
+        <location filename="../ui/pages/show_nep.py" line="304" />
         <source>Export All…</source>
         <translation>导出全部…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="300" />
-        <location filename="../ui/pages/show_nep.py" line="383" />
+        <location filename="../ui/pages/show_nep.py" line="309" />
+        <location filename="../ui/pages/show_nep.py" line="392" />
         <source>Export Selected ({selected})…</source>
         <translation>导出已选择结构（{selected}）…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="306" />
-        <location filename="../ui/pages/show_nep.py" line="386" />
+        <location filename="../ui/pages/show_nep.py" line="315" />
+        <location filename="../ui/pages/show_nep.py" line="395" />
         <source>Export Removed ({removed})…</source>
         <translation>导出已移除结构（{removed}）…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="312" />
-        <location filename="../ui/pages/show_nep.py" line="389" />
+        <location filename="../ui/pages/show_nep.py" line="321" />
+        <location filename="../ui/pages/show_nep.py" line="398" />
         <source>Export Active ({active})…</source>
         <translation>导出当前保留结构（{active}）…</translation>
     </message>
@@ -6937,63 +6983,68 @@ All child items will also be deleted.</source>
         <translation type="vanished">评估当前数据集</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="598" />
+        <location filename="../ui/pages/show_nep.py" line="607" />
         <source>Switching NEP model</source>
         <translation>正在切换 NEP 模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="598" />
+        <location filename="../ui/pages/show_nep.py" line="607" />
         <source>Please wait...</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="658" />
+        <location filename="../ui/pages/show_nep.py" line="667" />
         <source>Failed to switch NEP model</source>
         <translation>切换 NEP 模型失败</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="735" />
+        <location filename="../ui/pages/show_nep.py" line="744" />
         <source>Original index</source>
         <translation>原始索引</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="740" />
+        <location filename="../ui/pages/show_nep.py" line="749" />
         <source>Original structure index</source>
         <translation>结构的原始文件索引</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="748" />
+        <location filename="../ui/pages/show_nep.py" line="757" />
         <source>/ 0 frames</source>
         <translation>/ 0 帧</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="750" />
-        <location filename="../ui/pages/show_nep.py" line="751" />
+        <location filename="../ui/pages/show_nep.py" line="759" />
+        <location filename="../ui/pages/show_nep.py" line="760" />
         <source>Previous structure</source>
         <translation>上一个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="754" />
-        <location filename="../ui/pages/show_nep.py" line="755" />
+        <location filename="../ui/pages/show_nep.py" line="763" />
+        <location filename="../ui/pages/show_nep.py" line="764" />
         <source>Next structure</source>
         <translation>下一个结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="761" />
-        <location filename="../ui/pages/show_nep.py" line="762" />
-        <location filename="../ui/pages/show_nep.py" line="1560" />
-        <location filename="../ui/pages/show_nep.py" line="1561" />
+        <location filename="../ui/pages/show_nep.py" line="770" />
+        <location filename="../ui/pages/show_nep.py" line="771" />
+        <location filename="../ui/pages/show_nep.py" line="1571" />
+        <location filename="../ui/pages/show_nep.py" line="1572" />
         <source>Play structures</source>
         <translation>连续播放结构</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1200" />
+        <location filename="../ui/pages/show_nep.py" line="1011" />
+        <source>Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;Advanced / experimental structure files (*.out *.log *.data *.cfg input.data);;All files (*)</source>
+        <translation>支持的数据文件 (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;高级 / 实验性结构文件 (*.out *.log *.data *.cfg input.data);;所有文件 (*)</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/show_nep.py" line="1211" />
         <source>/ {count:,} frames</source>
         <translation>/ {count:,} 帧</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1555" />
-        <location filename="../ui/pages/show_nep.py" line="1556" />
+        <location filename="../ui/pages/show_nep.py" line="1566" />
+        <location filename="../ui/pages/show_nep.py" line="1567" />
         <source>Pause structures</source>
         <translation>暂停播放结构</translation>
     </message>
@@ -7018,145 +7069,144 @@ All child items will also be deleted.</source>
         <translation type="vanished">切换搜索模式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="821" />
+        <location filename="../ui/pages/show_nep.py" line="830" />
         <source>Switch NEP model</source>
         <translation>切换 NEP 模型</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="863" />
+        <location filename="../ui/pages/show_nep.py" line="872" />
         <source>Arrow overlay is available only for vispy structure canvas.</source>
         <translation>箭头叠加只在 vispy 结构画布中可用。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="877" />
+        <location filename="../ui/pages/show_nep.py" line="886" />
         <source>Searching…</source>
         <translation>正在搜索…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="881" />
+        <location filename="../ui/pages/show_nep.py" line="890" />
         <source>Indexing…</source>
         <translation>正在建立索引…</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="987" />
-        <location filename="../ui/pages/show_nep.py" line="1151" />
-        <location filename="../ui/pages/show_nep.py" line="1303" />
+        <location filename="../ui/pages/show_nep.py" line="996" />
+        <location filename="../ui/pages/show_nep.py" line="1162" />
+        <location filename="../ui/pages/show_nep.py" line="1314" />
         <source>unsupported file format</source>
         <translation>不支持的文件格式</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="999" />
+        <location filename="../ui/pages/show_nep.py" line="1008" />
         <source>Please choose the data file</source>
         <translation>请选择数据文件</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1002" />
         <source>Supported data files (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;All files (*)</source>
-        <translation>支持的数据文件 (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;所有文件 (*)</translation>
+        <translation type="vanished">支持的数据文件 (*.xyz *.extxyz *.traj *.dump *.lammpstrj *.lammpstraj OUTCAR OUTCAR* XDATCAR XDATCAR*);;所有文件 (*)</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1022" />
-        <location filename="../ui/pages/show_nep.py" line="1039" />
-        <location filename="../ui/pages/show_nep.py" line="1079" />
-        <location filename="../ui/pages/show_nep.py" line="1109" />
-        <location filename="../ui/pages/show_nep.py" line="1592" />
-        <location filename="../ui/pages/show_nep.py" line="2012" />
+        <location filename="../ui/pages/show_nep.py" line="1033" />
+        <location filename="../ui/pages/show_nep.py" line="1050" />
+        <location filename="../ui/pages/show_nep.py" line="1090" />
+        <location filename="../ui/pages/show_nep.py" line="1120" />
+        <location filename="../ui/pages/show_nep.py" line="1606" />
+        <location filename="../ui/pages/show_nep.py" line="2026" />
         <source>NEP data has not been loaded yet!</source>
         <translation>尚未加载 NEP 数据！</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1046" />
+        <location filename="../ui/pages/show_nep.py" line="1057" />
         <source>No active structures to export.</source>
         <translation>没有可导出的保留结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1082" />
+        <location filename="../ui/pages/show_nep.py" line="1093" />
         <source>Please select some structures first!</source>
         <translation>请先选择一些结构！</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1113" />
+        <location filename="../ui/pages/show_nep.py" line="1124" />
         <source>No removed structures to export.</source>
         <translation>没有可导出的已移除结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1163" />
-        <location filename="../ui/pages/show_nep.py" line="2022" />
+        <location filename="../ui/pages/show_nep.py" line="1174" />
+        <location filename="../ui/pages/show_nep.py" line="2036" />
         <source>Confirm</source>
         <translation>确认</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1164" />
+        <location filename="../ui/pages/show_nep.py" line="1175" />
         <source>A working directory already exists. Loading a new directory will erase the previous results.
 Do you want to load the new working path?</source>
         <translation>已有工作目录。加载新目录会清除之前的结果。
 仍要加载新的工作路径吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1308" />
+        <location filename="../ui/pages/show_nep.py" line="1319" />
         <source>Current file: {file_name}</source>
         <translation>当前文件：{file_name}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1346" />
+        <location filename="../ui/pages/show_nep.py" line="1357" />
         <source>Loading</source>
         <translation>正在加载</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1346" />
+        <location filename="../ui/pages/show_nep.py" line="1357" />
         <source>Please wait patiently...</source>
         <translation>请稍候……</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1449" />
+        <location filename="../ui/pages/show_nep.py" line="1460" />
         <source>Failed to build search completer cache: {msg}</source>
         <translation>构建搜索补全缓存失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1488" />
-        <location filename="../ui/pages/show_nep.py" line="2214" />
+        <location filename="../ui/pages/show_nep.py" line="1499" />
+        <location filename="../ui/pages/show_nep.py" line="2228" />
         <source>Search failed: {msg}</source>
         <translation>搜索失败：{msg}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1586" />
+        <location filename="../ui/pages/show_nep.py" line="1600" />
         <source>File exported to: {save_file_path}</source>
         <translation>文件已导出到：{save_file_path}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1764" />
+        <location filename="../ui/pages/show_nep.py" line="1778" />
         <source>Arrow overlay is unavailable for current structure canvas backend.</source>
         <translation>当前结构绘图后端不支持箭头叠加。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="1775" />
+        <location filename="../ui/pages/show_nep.py" line="1789" />
         <source>No vector data available</source>
         <translation>没有可用的矢量数据</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2017" />
+        <location filename="../ui/pages/show_nep.py" line="2031" />
         <source>No bad structures tagged.</source>
         <translation>没有标记为异常的结构。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2023" />
+        <location filename="../ui/pages/show_nep.py" line="2037" />
         <source>This will delete {count} structures marked as bad.
 Do you want to continue?</source>
         <translation>这将删除 {count} 个标记为异常的结构。
 要继续吗？</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2034" />
+        <location filename="../ui/pages/show_nep.py" line="2048" />
         <source>Failed to delete rejected structures.</source>
         <translation>删除已剔除结构失败。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2116" />
+        <location filename="../ui/pages/show_nep.py" line="2130" />
         <source>Filter failed: {message}</source>
         <translation>筛选失败：{message}</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2131" />
+        <location filename="../ui/pages/show_nep.py" line="2145" />
         <source>The filter result has expired. Preview it again before applying.</source>
         <translation>筛选结果已过期，请重新预览后再应用。</translation>
     </message>
@@ -7165,34 +7215,34 @@ Do you want to continue?</source>
         <translation type="vanished">原子间距过小，结构可能不合理。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2240" />
-        <location filename="../ui/pages/show_nep.py" line="2328" />
+        <location filename="../ui/pages/show_nep.py" line="2254" />
+        <location filename="../ui/pages/show_nep.py" line="2342" />
         <source>Please enter a search query.</source>
         <translation>请输入搜索内容。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2252" />
-        <location filename="../ui/pages/show_nep.py" line="2266" />
         <source>Please load a dataset before running Training Set Check.</source>
-        <translation>请先加载数据集，再运行训练集评估。</translation>
+        <translation type="vanished">请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
-        <location filename="../ui/pages/show_nep.py" line="2259" />
-        <location filename="../ui/pages/show_nep.py" line="2276" />
         <source>Training Set Check page is not available.</source>
-        <translation>训练集评估页面不可用。</translation>
+        <translation type="vanished">训练集评估页面不可用。</translation>
     </message>
     <message>
         <source>Audit current dataset</source>
         <translation type="vanished">检查当前数据集</translation>
     </message>
     <message>
+        <location filename="../ui/pages/show_nep.py" line="2266" />
+        <location filename="../ui/pages/show_nep.py" line="2280" />
         <source>Please load a dataset before running Training Set Audit.</source>
-        <translation type="vanished">请先加载数据集，再运行训练集检查。</translation>
+        <translation>请先加载数据集，再运行训练集评估。</translation>
     </message>
     <message>
+        <location filename="../ui/pages/show_nep.py" line="2273" />
+        <location filename="../ui/pages/show_nep.py" line="2290" />
         <source>Training Set Audit page is not available.</source>
-        <translation type="vanished">训练集检查页面不可用。</translation>
+        <translation>训练集评估页面不可用。</translation>
     </message>
 </context>
 <context>
@@ -8545,151 +8595,173 @@ Elapsed: {elapsed:.1f} ms</source>
     </message>
     <message>
         <location filename="../ui/views/structure.py" line="52" />
-        <location filename="../ui/views/structure.py" line="97" />
+        <location filename="../ui/views/structure.py" line="107" />
         <source>Not analyzed</source>
         <translation>尚未分析</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="54" />
         <source>Snapshot structural classification from local topology evidence.</source>
-        <translation>基于当前快照的局域拓扑证据识别结构类型。</translation>
+        <translation type="vanished">基于当前快照的局域拓扑证据识别结构类型。</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="63" />
+        <location filename="../ui/views/structure.py" line="65" />
         <source>Local topology evidence has not been analyzed.</source>
         <translation>尚未分析局域拓扑证据。</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="69" />
+        <location filename="../ui/views/structure.py" line="68" />
+        <source>L1₂ and Laves phases use separate geometry and chemical-ordering checks; a-CNA only reports FCC, HCP, and BCC local environments. A face-centered cubic Bravais lattice does not by itself make every site an FCC a-CNA environment.</source>
+        <translation>L1₂ 和 Laves 相使用独立的几何与化学有序检查；a-CNA 只报告 FCC、HCP 和 BCC 局域环境。面心立方布拉菲格子本身不代表每个原子位点都是 a-CNA 的 FCC 环境。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="79" />
         <source>Config type</source>
         <translation>构型类型</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="81" />
+        <location filename="../ui/views/structure.py" line="91" />
         <source>Formula</source>
         <translation>化学式</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="82" />
+        <location filename="../ui/views/structure.py" line="92" />
         <source>Atoms</source>
         <translation>原子数</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="83" />
+        <location filename="../ui/views/structure.py" line="93" />
         <source>Cell volume</source>
         <translation>晶胞体积</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="84" />
+        <location filename="../ui/views/structure.py" line="94" />
         <source>Density</source>
         <translation>密度</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="85" />
+        <location filename="../ui/views/structure.py" line="95" />
         <source>Cell</source>
         <translation>晶胞参数</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="94" />
+        <location filename="../ui/views/structure.py" line="104" />
         <source>Frame signals</source>
         <translation>逐帧检查</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="190" />
-        <location filename="../ui/views/structure.py" line="193" />
+        <location filename="../ui/views/structure.py" line="200" />
+        <location filename="../ui/views/structure.py" line="203" />
         <source>Analyzing…</source>
         <translation>分析中…</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="108" />
+        <location filename="../ui/views/structure.py" line="118" />
         <source>Shortest contact</source>
         <translation>最短原子间距</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="111" />
+        <location filename="../ui/views/structure.py" line="55" />
+        <source>Structure-level phase evidence combines a-CNA with ordered-phase refinement.</source>
+        <translation>结构级相证据由 a-CNA 与有序相复核共同组成。</translation>
+    </message>
+    <message>
+        <source>L1₂ and Laves phases use separate geometry and chemical-ordering checks; a-CNA only reports FCC, HCP, and BCC local environments.</source>
+        <translation type="vanished">L1₂ 和 Laves 相使用独立的几何与化学有序检查；a-CNA 只报告 FCC、HCP 和 BCC 局域环境。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="121" />
         <source>Energy / atom</source>
         <translation>单原子能量</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="114" />
+        <location filename="../ui/views/structure.py" line="124" />
         <source>Max |Fᵢ|</source>
         <translation>最大 |Fᵢ|</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="117" />
+        <location filename="../ui/views/structure.py" line="127" />
         <source>RMS |Fᵢ|</source>
         <translation>RMS |Fᵢ|</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="120" />
+        <location filename="../ui/views/structure.py" line="130" />
         <source>Net force |ΣF|</source>
         <translation>净力 |ΣF|</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="191" />
+        <location filename="../ui/views/structure.py" line="201" />
         <source>Classifying local topology for this frame…</source>
         <translation>正在识别当前帧的局域拓扑…</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="215" />
+        <location filename="../ui/views/structure.py" line="225" />
         <source>Total energy: {value}</source>
         <translation>总能量：{value}</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="228" />
-        <location filename="../ui/views/structure.py" line="253" />
-        <location filename="../ui/views/structure.py" line="258" />
+        <location filename="../ui/views/structure.py" line="238" />
         <location filename="../ui/views/structure.py" line="263" />
+        <location filename="../ui/views/structure.py" line="268" />
+        <location filename="../ui/views/structure.py" line="273" />
         <source>Unavailable</source>
         <translation>不可用</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="236" />
+        <location filename="../ui/views/structure.py" line="246" />
         <source>Below threshold</source>
         <translation>低于阈值</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="244" />
+        <location filename="../ui/views/structure.py" line="254" />
         <source>Within threshold</source>
         <translation>间距正常</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="246" />
+        <location filename="../ui/views/structure.py" line="256" />
         <source>No element-pair minimum is below the configured radius threshold.</source>
         <translation>没有元素对的最小间距低于当前半径阈值。</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="255" />
         <location filename="../ui/views/structure.py" line="265" />
+        <location filename="../ui/views/structure.py" line="275" />
         <source>Local topology evidence is unavailable for this frame.</source>
         <translation>当前帧没有可用的局域拓扑证据。</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="273" />
+        <location filename="../ui/views/structure.py" line="283" />
         <source>Confirmed ordering</source>
         <translation>有序占位已确认</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="275" />
+        <location filename="../ui/views/structure.py" line="285" />
         <source>Strong evidence</source>
         <translation>强证据</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="280" />
-        <location filename="../ui/views/structure.py" line="304" />
+        <location filename="../ui/views/structure.py" line="290" />
+        <location filename="../ui/views/structure.py" line="319" />
         <source>Mixed local structure</source>
         <translation>混合局域结构</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="283" />
-        <location filename="../ui/views/structure.py" line="305" />
+        <location filename="../ui/views/structure.py" line="293" />
+        <location filename="../ui/views/structure.py" line="320" />
         <source>Unresolved</source>
         <translation>未解析</translation>
     </message>
     <message>
-        <location filename="../ui/views/structure.py" line="291" />
+        <location filename="../ui/views/structure.py" line="301" />
+        <source>a-CNA local environments (FCC/HCP/BCC only)</source>
+        <translation>a-CNA 局域环境（仅 FCC/HCP/BCC）</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="308" />
+        <source>Other / unresolved</source>
+        <translation>其他 / 未解析</translation>
+    </message>
+    <message>
         <source>Local topology</source>
-        <translation>局域拓扑</translation>
+        <translation type="vanished">局域拓扑</translation>
     </message>
 </context>
 <context>
@@ -8855,27 +8927,27 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>TagEditDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1594" />
+        <location filename="../ui/widgets/dialog.py" line="1636" />
         <source>Edit tag</source>
         <translation>编辑标签</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1616" />
+        <location filename="../ui/widgets/dialog.py" line="1658" />
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1617" />
+        <location filename="../ui/widgets/dialog.py" line="1659" />
         <source>Color</source>
         <translation>颜色</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1618" />
+        <location filename="../ui/widgets/dialog.py" line="1660" />
         <source>Notes</source>
         <translation>备注</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1624" />
+        <location filename="../ui/widgets/dialog.py" line="1666" />
         <source>Edit tag color</source>
         <translation>编辑标签颜色</translation>
     </message>
@@ -8967,12 +9039,12 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>TagManageDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1643" />
+        <location filename="../ui/widgets/dialog.py" line="1685" />
         <source>Manage tags</source>
         <translation>管理标签</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1651" />
+        <location filename="../ui/widgets/dialog.py" line="1693" />
         <source>Enter the tag and press Enter</source>
         <translation>输入标签后按 Enter</translation>
     </message>
@@ -8980,57 +9052,57 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>TrainingOverlayDialog</name>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1729" />
+        <location filename="../ui/widgets/dialog.py" line="1771" />
         <source>Training overlay</source>
         <translation>训练集叠加图</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1910" />
+        <location filename="../ui/widgets/dialog.py" line="1952" />
         <source>Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph.</source>
         <translation>当前画布后端为 vispy，但 vispy 画布初始化失败，已回退到 pyqtgraph。</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1921" />
+        <location filename="../ui/widgets/dialog.py" line="1963" />
         <source>Training</source>
         <translation>训练集</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1922" />
+        <location filename="../ui/widgets/dialog.py" line="1964" />
         <source>Loaded</source>
         <translation>已加载</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1923" />
+        <location filename="../ui/widgets/dialog.py" line="1965" />
         <source>Selected</source>
         <translation>当前选中数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1952" />
+        <location filename="../ui/widgets/dialog.py" line="1994" />
         <source>Reset view</source>
         <translation>重置视图</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1956" />
+        <location filename="../ui/widgets/dialog.py" line="1998" />
         <source>Export image</source>
         <translation>导出图片</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1960" />
+        <location filename="../ui/widgets/dialog.py" line="2002" />
         <source>Export data</source>
         <translation>导出数据</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1993" />
+        <location filename="../ui/widgets/dialog.py" line="2035" />
         <source>Training: {count}</source>
         <translation>训练集：{count}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1994" />
+        <location filename="../ui/widgets/dialog.py" line="2036" />
         <source>Loaded: {count}</source>
         <translation>已加载：{count}</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/dialog.py" line="1995" />
+        <location filename="../ui/widgets/dialog.py" line="2037" />
         <source>Selected: {count}</source>
         <translation>已选择：{count}</translation>
     </message>
@@ -9038,14 +9110,22 @@ Elapsed: {elapsed:.1f} ms</source>
 <context>
     <name>TrainingSetAuditHost</name>
     <message>
-        <location filename="../ui/widgets/training_set_audit_window.py" line="60" />
         <source>Training Set Check is open in a separate window</source>
-        <translation>训练集检查已在独立窗口中打开</translation>
+        <translation type="vanished">训练集检查已在独立窗口中打开</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/training_set_audit_window.py" line="60" />
+        <source>Training Set Audit is open in a separate window</source>
+        <translation>训练集评估已在独立窗口中打开</translation>
+    </message>
+    <message>
+        <source>Keep Dataset Display on this screen and move the check window to another screen for linked review.</source>
+        <translation type="vanished">可在当前屏幕保留数据集展示，并将检查窗口移到另一块屏幕联动查看。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/training_set_audit_window.py" line="66" />
-        <source>Keep Dataset Display on this screen and move the check window to another screen for linked review.</source>
-        <translation>可在当前屏幕保留数据集展示，并将检查窗口移到另一块屏幕联动查看。</translation>
+        <source>Keep Dataset Display on this screen and move the audit window to another screen for linked review.</source>
+        <translation>可在当前屏幕保留数据集展示，并将评估窗口移到另一块屏幕联动查看。</translation>
     </message>
     <message>
         <location filename="../ui/widgets/training_set_audit_window.py" line="77" />
@@ -9054,8 +9134,17 @@ Elapsed: {elapsed:.1f} ms</source>
     </message>
     <message>
         <location filename="../ui/widgets/training_set_audit_window.py" line="80" />
+        <source>Locate Training Set Audit window</source>
+        <translation>定位训练集评估窗口</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/training_set_audit_window.py" line="88" />
+        <source>Return Training Set Audit to main window</source>
+        <translation>将训练集评估收回主窗口</translation>
+    </message>
+    <message>
         <source>Locate Training Set Check window</source>
-        <translation>定位训练集检查窗口</translation>
+        <translation type="vanished">定位训练集检查窗口</translation>
     </message>
     <message>
         <location filename="../ui/widgets/training_set_audit_window.py" line="84" />
@@ -9063,9 +9152,8 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation>收回主窗口</translation>
     </message>
     <message>
-        <location filename="../ui/widgets/training_set_audit_window.py" line="88" />
         <source>Return Training Set Check to main window</source>
-        <translation>将训练集检查收回主窗口</translation>
+        <translation type="vanished">将训练集检查收回主窗口</translation>
     </message>
 </context>
 <context>
@@ -9145,9 +9233,8 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation>在独立窗口中打开</translation>
     </message>
     <message>
-        <location filename="../ui/pages/training_set_audit.py" line="266" />
         <source>Open Training Set Check in a separate window</source>
-        <translation>在独立窗口中打开训练集检查</translation>
+        <translation type="vanished">在独立窗口中打开训练集检查</translation>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="1116" />
@@ -9362,6 +9449,11 @@ Elapsed: {elapsed:.1f} ms</source>
         <location filename="../ui/pages/training_set_audit.py" line="245" />
         <source>Re-run checks</source>
         <translation>重新检查</translation>
+    </message>
+    <message>
+        <location filename="../ui/pages/training_set_audit.py" line="266" />
+        <source>Open Training Set Audit in a separate window</source>
+        <translation>在独立窗口中打开训练集评估</translation>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="334" />
@@ -10519,7 +10611,7 @@ Elapsed: {elapsed:.1f} ms</source>
         <location filename="../ui/pages/training_set_audit.py" line="4424" />
         <location filename="../ui/pages/training_set_audit.py" line="4514" />
         <source>No audit result is loaded.</source>
-        <translation>未加载训练集检查结果。</translation>
+        <translation>未加载训练集评估结果。</translation>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="3950" />
@@ -11779,9 +11871,13 @@ Magnetic: {magnetic}</source>
 <context>
     <name>TrainingSetAuditWindow</name>
     <message>
-        <location filename="../ui/widgets/training_set_audit_window.py" line="152" />
         <source>Training Set Check — NepTrainKit</source>
-        <translation>训练集检查 — NepTrainKit</translation>
+        <translation type="vanished">训练集检查 — NepTrainKit</translation>
+    </message>
+    <message>
+        <location filename="../ui/widgets/training_set_audit_window.py" line="152" />
+        <source>Training Set Audit — NepTrainKit</source>
+        <translation>训练集评估 — NepTrainKit</translation>
     </message>
 </context>
 <context>

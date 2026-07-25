@@ -4,7 +4,7 @@
 
 ## 1. 安装
 
-建议使用独立环境，Python 版本用 3.10 到 3.12。
+建议使用独立环境，Python 版本用 3.10 到 3.13。
 
 ```bash
 conda create -n nepkit python=3.10

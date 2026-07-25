@@ -114,7 +114,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             ShowNepWidget.open_training_set_audit(widget)
 
         tr_mock.assert_called_once_with(
-            "Please load a dataset before running Training Set Check."
+            "Please load a dataset before running Training Set Audit."
         )
         info_mock.assert_called_once_with("translated ShowNep audit message")
 
@@ -131,7 +131,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
         ):
             ShowNepWidget.open_training_set_audit(widget)
 
-        tr_mock.assert_called_once_with("Training Set Check page is not available.")
+        tr_mock.assert_called_once_with("Training Set Audit page is not available.")
         warning_mock.assert_called_once_with("translated unavailable audit page")
 
     def test_show_event_and_hide_event_keep_audit_out_of_save_menu(self):
@@ -223,7 +223,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             main_module.NepTrainKitMainWindow.open_training_set_audit(window)
 
         tr_mock.assert_called_once_with(
-            "Please load a dataset before running Training Set Check."
+            "Please load a dataset before running Training Set Audit."
         )
         info_mock.assert_called_once_with("translated main audit message")
 
@@ -243,7 +243,7 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
             )
 
         tr_mock.assert_called_once_with(
-            "Training Set Check results are stale. Please rerun the checks for the current dataset."
+            "Training Set Audit results are stale. Please rerun the audit for the current dataset."
         )
         info_mock.assert_called_once_with("translated stale audit message")
 
@@ -857,18 +857,18 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
                 "Save is not available on this page": "当前页面不支持保存操作",
                 "Preparing the workflow output for display...": "正在准备工作流输出以供查看...",
                 "Make Dataset": "构建数据集",
-                "Training Set Check": "训练集评估",
+                "Training Set Audit": "训练集评估",
                 "current dataset": "当前数据集",
-                "Please load a dataset before running Training Set Check.": "请先加载数据集，再运行训练集评估。",
-                "Training Set Check results are stale. Please rerun the checks for the current dataset.": "训练集评估结果已过期，请针对当前数据集重新检查。",
+                "Please load a dataset before running Training Set Audit.": "请先加载数据集，再运行训练集评估。",
+                "Training Set Audit results are stale. Please rerun the audit for the current dataset.": "训练集评估结果已过期，请针对当前数据集重新评估。",
                 "Full phase analysis failed: {message}": "完整相分析失败：{message}",
             }
             show_nep_context = {
-                "Please load a dataset before running Training Set Check.": "请先加载数据集，再运行训练集评估。",
-                "Training Set Check page is not available.": "训练集评估页面不可用。",
+                "Please load a dataset before running Training Set Audit.": "请先加载数据集，再运行训练集评估。",
+                "Training Set Audit page is not available.": "训练集评估页面不可用。",
             }
             toolbar_context = {
-                "Training Set Check": "训练集评估",
+                "Training Set Audit": "训练集评估",
             }
             settings_context = {
                 "Automatically analyze structure evidence": "自动分析结构证据",

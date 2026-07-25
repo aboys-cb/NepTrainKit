@@ -184,6 +184,14 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertIsNotNone(canvas.axes_list[2].xaxis)
         self.assertTrue(canvas.axes_list[1].xaxis.visible)
         self.assertFalse(canvas.axes_list[1].text.visible)
+        self.assertEqual(
+            type(canvas.axes_list[1].xaxis.axis.ticker).__name__,
+            "_CompactAxisTicker",
+        )
+        self.assertNotEqual(
+            type(canvas.axes_list[0].xaxis.axis.ticker).__name__,
+            "_CompactAxisTicker",
+        )
 
         canvas.set_current_axes(canvas.axes_list[2])
         canvas.set_view_layout()
@@ -192,6 +200,17 @@ class TestCanvasFactory(unittest.TestCase):
         self.assertTrue(canvas.axes_list[0].xaxis.visible)
         self.assertTrue(canvas.axes_list[0].text.visible)
         self.assertFalse(canvas.axes_list[2].text.visible)
+
+    def test_pyqtgraph_thumbnail_hides_minor_tick_labels(self):
+        canvas = canvas_factory._create_pyqtgraph_result_canvas(None)
+
+        canvas.init_axes(3)
+
+        self.assertEqual(canvas.axes_list[0].getAxis("bottom").style["maxTextLevel"], 2)
+        self.assertEqual(canvas.axes_list[0].getAxis("left").style["maxTextLevel"], 2)
+        for plot in canvas.axes_list[1:]:
+            self.assertEqual(plot.getAxis("bottom").style["maxTextLevel"], 0)
+            self.assertEqual(plot.getAxis("left").style["maxTextLevel"], 0)
 
     def test_vispy_layout_switch_keeps_numeric_grid_stretch(self):
         canvas = canvas_factory._create_vispy_result_canvas(None)

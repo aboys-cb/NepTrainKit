@@ -237,7 +237,7 @@
       1800,
       1000
     ],
-    "sha256": "16dc67e72ce547a7e799f6e2987b2fc74d88c2594035f0c8d056e110c5972807"
+    "sha256": "e17de8c3295ac4df5d19432aa6cee1129af0ae7cc8943b2a99b0f3cebed20674"
   },
   "make_data_card_system_workflow": {
     "scenario": "make_data_card_system_workflow",
@@ -633,7 +633,7 @@
       1200,
       700
     ],
-    "sha256": "fbe54228db8b70beea5556dbeb5fd00d486ec726cecbf58aee19643a0de1f09c"
+    "sha256": "8fb13c26d3761c345ae144a4e6384034f4a402dff4274f5bb0bbc9f4cf4cc959"
   },
   "show_nep_overview_en": {
     "scenario": "show_nep_overview",

@@ -280,7 +280,12 @@ def build_cases() -> list[BenchCase]:
             run_dataset(
                 FPSFilterOperation(),
                 pbte_dataset,
-                FPSFilterParams(nep_path=str(PROJECT_ROOT / "tests/data/nep/nep.txt"), n_samples=5, min_distance=0.0, backend="cpu", batch_size=20),
+                FPSFilterParams(
+                    nep_path=str(PROJECT_ROOT / "tests/data/nep/nep.txt"),
+                    n_samples=5,
+                    min_distance=0.0,
+                    backend="cpu",
+                ),
             ),
             lambda outputs: require_outputs(outputs, min_count=5),
             "uses bundled Pb/Te test NEP",
@@ -585,7 +590,12 @@ def build_count50_cases() -> list[BenchCase]:
             run_dataset(
                 FPSFilterOperation(),
                 pbte_dataset,
-                FPSFilterParams(nep_path=str(PROJECT_ROOT / "tests/data/nep/nep.txt"), n_samples=10, min_distance=0.0, backend="cpu", batch_size=50),
+                FPSFilterParams(
+                    nep_path=str(PROJECT_ROOT / "tests/data/nep/nep.txt"),
+                    n_samples=10,
+                    min_distance=0.0,
+                    backend="cpu",
+                ),
             ),
             lambda outputs: require_outputs(outputs, min_count=10),
             "uses bundled Pb/Te test NEP",

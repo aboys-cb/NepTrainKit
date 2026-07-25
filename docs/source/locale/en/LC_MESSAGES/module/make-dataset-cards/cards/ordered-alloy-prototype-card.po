@@ -1,0 +1,512 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-25 13:17+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:3
+#: b535085801a84973adef456a78f715ac
+msgid "有序合金原型（Ordered Alloy Prototype）"
+msgstr "Ordered Alloy Prototype"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:5
+#: cf15b9b052874532ab2863cadf9f9a09
+msgid "`Group`: `Alloy` | `Class`: `OrderedAlloyPrototypeCard`"
+msgstr "`Group`: `Alloy` | `Class`: `OrderedAlloyPrototypeCard`"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:7
+#: aa1ec799a542448ea7d0de7a334c3db8
+msgid "功能说明"
+msgstr "Purpose"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:9
+#: 4c000a3081cb4370bebca59b49baed33
+msgid ""
+"生成带晶体学子晶格身份的周期结构，首批支持 A1/fcc、A2/bcc、A3/hcp、L1₂/A3B、B2/AB 和 L1₀/AB。子晶格写入逐原子数组"
+" `atoms.arrays[\"sublattice\"]`；它不会占用 `group`，因此后续仍可独立添加磁序分层、奇偶层或区域标签。"
+msgstr ""
+"Generate periodic structures with explicit crystallographic sublattice "
+"identity. Initial support covers A1/fcc, A2/bcc, A3/hcp, L1₂/A3B, B2/AB, and"
+" L1₀/AB. Sublattices are stored in the per-atom array "
+"`atoms.arrays[\"sublattice\"]` and do not consume `group`, so magnetic-order"
+" layers, alternating layers, or region labels can still be added "
+"independently downstream."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:11
+#: e4369deff460448fa42b2d44ebaee7d3
+msgid ""
+"这张卡只建立晶胞、周期边界、分数坐标和子晶格。元素占位可以先给真实元素，也可以用 `X` 占位符，再交给 `Finite-Cell Alloy "
+"Occupancy` 生成整数可实现的有序或部分无序合金。"
+msgstr ""
+"This card creates only the cell, periodic boundaries, fractional "
+"coordinates, and sublattices. Element occupancy may use real elements "
+"immediately or the `X` placeholder, then pass to `Finite-Cell Alloy "
+"Occupancy` to generate ordered or partially disordered alloys with "
+"realizable integer counts."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:13
+#: 2e687f1cae1343a098d1452f9f4159bc
+msgid "操作示例"
+msgstr "Example"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:15
+#: 86508878147f47599eb74c4102fc95b3
+msgid "场景：L1₂ 相测试误差高，但训练集中没有保留角点/面心身份"
+msgstr ""
+"Scenario: high test error for L1₂ phases, but corner/face-center identity "
+"was not retained in the training set"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:17
+#: 66a7f00f31fd4d85b222804836f70f04
+msgid "模型在 A3B 型有序相上的力误差明显高于随机固溶体。原训练集把所有 fcc 位点混成同一个集合，无法系统覆盖 A、B 子晶格分别无序化的局域环境。"
+msgstr ""
+"The model's force error for A3B ordered phases is much higher than for "
+"random solid solutions. The original training set merged all fcc sites into "
+"one set, so it could not systematically cover local environments where the A"
+" and B sublattices are disordered independently."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:19
+#: aa33057705e64cf7ad2ae04e9f3ba0bb
+msgid ""
+"**输入：** 无需输入结构。 **目标：** 先生成 32 原子的 L1₂ 周期超胞，其中 A、B 子晶格严格为 24:8。 **参数设置：** "
+"`prototype=\"L12/A3B\"`，`a_range=[3.6,3.6,0.1]`，`sublattice_elements=\"A:X,B:X\"`，手动"
+" `rep=[2,2,2]`，`max_atoms=32`。 **输出：** 一个 32 原子周期结构，`sublattice` 中有 24 个 `A`"
+" 和 8 个 `B`。 **怎么验证训练集质量改善：** 下游分别约束 A/B 占位并完成 DFT "
+"标注后，按原型和子晶格无序程度切片比较能量/力误差；不能只看混合后的总 RMSE。"
+msgstr ""
+"**Input:** none. **Goal:** first generate a periodic 32-atom L1₂ supercell "
+"with a strict A:B sublattice ratio of 24:8. **Parameters:** "
+"`prototype=\"L12/A3B\"`, `a_range=[3.6,3.6,0.1]`, "
+"`sublattice_elements=\"A:X,B:X\"`, manual `rep=[2,2,2]`, and `max_atoms=32`."
+" **Output:** one periodic 32-atom structure whose `sublattice` array "
+"contains 24 `A` and 8 `B` entries. **How to verify improved training-set "
+"quality:** after constraining A/B occupancies downstream and obtaining DFT "
+"labels, compare energy and force errors in slices by prototype and "
+"sublattice disorder. Do not rely only on the aggregate RMSE."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:25
+#: f44c58ae5ae94d789886535379f160e4
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:27
+#: 5783e05ba5e948aa91818160cd011850
+msgid "Prototype（prototype）"
+msgstr "Prototype（prototype）"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:29
+#: 016a222e268d4a8cb449264691b2aaf2
+msgid "`str`，默认 `\"L12/A3B\"`。选择晶体原型及其固定的分数坐标和子晶格拓扑。"
+msgstr ""
+"`str`, default `\"L12/A3B\"`. Selects the crystal prototype and its fixed "
+"fractional coordinates and sublattice topology."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: aed72b9cf1fe43df92c45a926774bdb4
+msgid "选项"
+msgstr "Option"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: ba518c287b674e5bbfc729f29dcafaf8
+msgid "基胞位点"
+msgstr "Basis sites"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: 74a313e0656a483a99ee9d417c3f8fd8
+msgid "子晶格计数"
+msgstr "Sublattice counts"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: 3efb07fb1e3e459ca86318c00b6333e4
+msgid "`A1/fcc`"
+msgstr "`A1/fcc`"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: 355655a0000941019b75fa4260c09158 3fcf073eb5464ec7a6b04f420430305a
+#: 757fbd84eb024dfcbef809a0d3e9f886
+msgid "4"
+msgstr "4"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: 48a01bb7aaec421580510f662d82a21d
+msgid "A=4"
+msgstr "A=4"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: db3e2550303b4cc3abeacb9706be4421
+msgid "`A2/bcc`"
+msgstr "`A2/bcc`"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: 09bb1ca5a931417fbb0639b60abcc115 5ceec5c0e5ca4b9bb3a1e9372424196e
+#: d9ca86884d774003ac6458ddfd39a171
+msgid "2"
+msgstr "2"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: 747cd9142e4e419e8eab4a3b8daa152b dbcd0658af1543299e2f5dff59faf19d
+msgid "A=2"
+msgstr "A=2"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: aa1291315a6e400784492fea54da6390
+msgid "`A3/hcp`"
+msgstr "`A3/hcp`"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: 016b52f80641400f8bed9192c81cbec5
+msgid "`L12/A3B`"
+msgstr "`L12/A3B`"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: 5bcabcbcd331401ba6a106832c7735b0
+msgid "A=3，B=1"
+msgstr "A=3，B=1"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: d053640f274842db97f63a49dc94bc84
+msgid "`B2/AB`"
+msgstr "`B2/AB`"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: b1a4ecc182a64334a3ecc4a7443e12b7
+msgid "A=1，B=1"
+msgstr "A=1，B=1"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: 7567610f7db948dcaf9abfead477b9eb
+msgid "`L10/AB`"
+msgstr "`L10/AB`"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md
+#: 4fcae000291a4c60a009ce586e5c0a5b
+msgid "A=2，B=2"
+msgstr "A=2，B=2"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:40
+#: e1171a2ec3b64f31a1d3ee2dae768a64
+msgid "Lattice Range（a_range）"
+msgstr "Lattice Range（a_range）"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:42
+#: 56885334f93048c4889c887db2855198
+msgid "`tuple[float, float, float]`，默认 `[3.6, 3.6, 0.1]`，依次是晶格常数 `a` 的起点、终点和步长，单位 Å。"
+msgstr ""
+"`tuple[float, float, float]`, default `[3.6, 3.6, 0.1]`; the start, stop, "
+"and step of lattice constant `a`, in Å."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:44
+#: a10efba2bb664b0ab21a499e9f5a0b41
+msgid "需要补体积响应时可扫描一段窄范围；只要一个结构时令起点等于终点。每个扫描点都受 `max_outputs` 限制。"
+msgstr ""
+"Scan a narrow range when volume response is needed. Set start equal to stop "
+"when only one structure is required. Every scan point is subject to "
+"`max_outputs`."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:46
+#: 12afb19373644d828be261a09a099d54
+msgid "c/a（covera）"
+msgstr "c/a（covera）"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:48
+#: 3595aefc196c46a5bef3775add098101
+msgid ""
+"`float`，默认 1.0。A3/hcp 和 L1₀ 使用该值设置 `c/a`；立方 A1、A2、L1₂、B2 固定使用 "
+"1，并在界面中禁用该输入，避免误以为它会生效。"
+msgstr ""
+"`float`, default 1.0. A3/hcp and L1₀ use this value for `c/a`; cubic A1, A2,"
+" L1₂, and B2 fix it at 1 and disable the input in the UI so it cannot appear"
+" effective when it is not."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:50
+#: 44f8ccde99f04d4a988ad89d05baa12d
+msgid "A3 常从理想密排值约 1.633 起步；L1₀ 则应使用目标体系的四方畸变范围。不要用这个参数替代后续的系统应变扫描。"
+msgstr ""
+"For A3, the ideal close-packed value of about 1.633 is a common starting "
+"point. For L1₀, use a tetragonal distortion range appropriate to the target "
+"system. Do not use this parameter as a substitute for a systematic "
+"downstream strain scan."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:52
+#: 1b97bcdb5a404d7c9daeb681862111b2
+msgid "Sublattice Elements（sublattice_elements）"
+msgstr "Sublattice Elements（sublattice_elements）"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:54
+#: e2d4dd7860bc42618dda1335114bc4ed
+msgid "`str`，默认 `\"A:X,B:X\"`。按 `标签:元素` 指定基胞占位，例如 `A:Fe,B:Al`；`X` 表示尚未决定元素的占位符。"
+msgstr ""
+"`str`, default `\"A:X,B:X\"`. Assign basis occupancy as `label:element`, for"
+" example `A:Fe,B:Al`; `X` means the element has not yet been chosen."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:56
+#: 9aab0d7749d34b66a454704981d2416e
+msgid ""
+"元素选择不带材料先验：卡片不会假设过渡金属属于 A，也不会限制主族元素只能进入 B。切换原型时，界面明确提示所需标签和基胞计数；单子晶格原型只显示 "
+"A，不再保留一个当前不会使用的 B 配置。未知标签会明确报错。"
+msgstr ""
+"Element selection carries no material prior: the card does not assume "
+"transition metals belong on A or restrict main-group elements to B. When the"
+" prototype changes, the UI reports the required labels and basis counts. A "
+"single-sublattice prototype shows only A instead of retaining an unused B "
+"configuration. Unknown labels fail explicitly."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:58
+#: 957dda0134264420a7928eaeb33e13a5
+msgid "Auto Supercell（auto_supercell）"
+msgstr "Auto Supercell（auto_supercell）"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:60
+#: 8bf4b5d282ca4dd5bba0128eddfed587
+msgid "`bool`，默认 true。开启后，在不超过 `max_atoms` 的前提下自动选择三轴重复数。"
+msgstr ""
+"`bool`, default true. When enabled, the card automatically chooses three-"
+"axis repeat counts without exceeding `max_atoms`."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:62
+#: 1d7d37be362a404c9a04857f85804403
+msgid "自动模式适合快速得到接近预算的周期胞；需要固定 24:8、8:8 等可审计计数时，手动重复通常更直观。"
+msgstr ""
+"Automatic mode is useful for quickly approaching the atom budget. For "
+"auditable fixed counts such as 24:8 or 8:8, manual repeats are usually "
+"clearer."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:64
+#: 35aa68ef4dfa41e4b04c248296a9ecdc
+msgid "Max Atoms（max_atoms）"
+msgstr "Max Atoms（max_atoms）"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:66
+#: 4347a6a116494b76b8e27bec6ebca31c
+msgid "`int`，默认 128。每个输出结构允许的原子数硬上限。"
+msgstr "`int`, default 128. Hard upper bound on atoms in each output structure."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:68
+#: 75e6841f736b4e70b7ec0d0d392f7920
+msgid "如果基胞本身或手动 `rep` 超过这个上限，operation 直接抛出 `ValueError`，不会偷偷缩小重复数或返回超预算结构。"
+msgstr ""
+"If the basis itself or manual `rep` exceeds this bound, the operation raises"
+" `ValueError` instead of silently reducing repeat counts or returning an "
+"over-budget structure."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:70
+#: c30a015663ca4decb6996ce1eb5a8cea
+msgid "Rep（rep）"
+msgstr "Rep（rep）"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:72
+#: fa88dbe2f5d24c4c8988078985c678f7
+msgid "`tuple[int, int, int]`，默认 `[2, 2, 2]`。手动模式下沿三个晶格矢量的重复数。"
+msgstr ""
+"`tuple[int, int, int]`, default `[2, 2, 2]`. Manual repeat counts along the "
+"three lattice vectors."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:74
+#: f70e16c6228e44a2b25c3b9cbb75718c
+msgid "生效条件：`auto_supercell=false`。L1₂ 的 `[2,2,2]` 正好得到 32 原子，其中 A:B=24:8。"
+msgstr ""
+"Applies when `auto_supercell=false`. For L1₂, `[2,2,2]` produces exactly 32 "
+"atoms with A:B=24:8."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:76
+#: 80d47f54d2124fb59ffc4cc6149dd97f
+msgid "Max Outputs（max_outputs）"
+msgstr "Max Outputs（max_outputs）"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:78
+#: b29e4496fd234013b02360d3a32a1672
+msgid "`int`，默认 200。晶格常数扫描最多返回的结构数。"
+msgstr "`int`, default 200. Maximum structures returned by the lattice-constant scan."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:80
+#: 4a2fdebe791c4769bc5cfb24b7e195e8
+msgid "扫描范围很密时，它是独立于原子数的第二道预算门；达到上限后按 `a_range` 的确定顺序停止。"
+msgstr ""
+"For a dense scan, this is a second budget gate independent of atom count. "
+"Once reached, the scan stops in deterministic `a_range` order."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:82
+#: 92a4b689960e43759301ab82b9cbf33b
+msgid "推荐预设"
+msgstr "Recommended presets"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:84
+#: 0d87a08f67e74c1e884473cbcde9135e
+msgid "L1₂ 32 原子占位模板"
+msgstr "L1₂ 32-atom occupancy template"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:86
+#: aa5ff542bf2840c1905c59b356caa55b
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"OrderedAlloyPrototypeCard\",\n"
+"  \"params\": {\n"
+"    \"prototype\": \"L12/A3B\",\n"
+"    \"a_range\": [3.6, 3.6, 0.1],\n"
+"    \"covera\": 1.0,\n"
+"    \"sublattice_elements\": \"A:X,B:X\",\n"
+"    \"auto_supercell\": false,\n"
+"    \"max_atoms\": 32,\n"
+"    \"rep\": [2, 2, 2],\n"
+"    \"max_outputs\": 1\n"
+"  }\n"
+"}\n"
+msgstr ""
+"{\n"
+"  \"class\": \"OrderedAlloyPrototypeCard\",\n"
+"  \"params\": {\n"
+"    \"prototype\": \"L12/A3B\",\n"
+"    \"a_range\": [3.6, 3.6, 0.1],\n"
+"    \"covera\": 1.0,\n"
+"    \"sublattice_elements\": \"A:X,B:X\",\n"
+"    \"auto_supercell\": false,\n"
+"    \"max_atoms\": 32,\n"
+"    \"rep\": [2, 2, 2],\n"
+"    \"max_outputs\": 1\n"
+"  }\n"
+"}\n"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:102
+#: 64517282cb58406abaf079407fccf950
+msgid "L1₀ 四方参数扫描"
+msgstr "L1₀ tetragonal-parameter scan"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:104
+#: 936f7dd887db423493ae11e95c53707d
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"OrderedAlloyPrototypeCard\",\n"
+"  \"params\": {\n"
+"    \"prototype\": \"L10/AB\",\n"
+"    \"a_range\": [3.7, 3.9, 0.1],\n"
+"    \"covera\": 0.95,\n"
+"    \"sublattice_elements\": \"A:Fe,B:Pt\",\n"
+"    \"auto_supercell\": true,\n"
+"    \"max_atoms\": 64,\n"
+"    \"rep\": [2, 2, 2],\n"
+"    \"max_outputs\": 3\n"
+"  }\n"
+"}\n"
+msgstr ""
+"{\n"
+"  \"class\": \"OrderedAlloyPrototypeCard\",\n"
+"  \"params\": {\n"
+"    \"prototype\": \"L10/AB\",\n"
+"    \"a_range\": [3.7, 3.9, 0.1],\n"
+"    \"covera\": 0.95,\n"
+"    \"sublattice_elements\": \"A:Fe,B:Pt\",\n"
+"    \"auto_supercell\": true,\n"
+"    \"max_atoms\": 64,\n"
+"    \"rep\": [2, 2, 2],\n"
+"    \"max_outputs\": 3\n"
+"  }\n"
+"}\n"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:120
+#: 5ce4353592a6443b89a641bdddc2e3a5
+msgid "推荐组合"
+msgstr "Recommended combinations"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:122
+#: 327c3a457f8945ddb325569befad62cc
+msgid ""
+"`Ordered Alloy Prototype → Finite-Cell Alloy "
+"Occupancy`：先锁定晶体学子晶格，再按每个子晶格的整数计数生成占位。"
+msgstr ""
+"`Ordered Alloy Prototype → Finite-Cell Alloy Occupancy`: first fix "
+"crystallographic sublattices, then generate occupancy from integer counts on"
+" each sublattice."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:123
+#: a70d3322236f40899f28d08213142a77
+msgid "`Ordered Alloy Prototype → Lattice Strain → Atomic Perturb`：补有序相的应变和局域振动环境。"
+msgstr ""
+"`Ordered Alloy Prototype → Lattice Strain → Atomic Perturb`: add strain and "
+"local vibrational environments to the ordered phase."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:124
+#: f034ff4c79aa488aa5014e0c0068a324
+msgid ""
+"`Ordered Alloy Prototype → Magnetic Order`：晶体学 `sublattice` 与磁性 `group` "
+"分开保存，再独立构造磁序。"
+msgstr ""
+"`Ordered Alloy Prototype → Magnetic Order`: keep crystallographic "
+"`sublattice` separate from magnetic `group`, then construct magnetic order "
+"independently."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:126
+#: 51fd33adb84c4849b38c80232451aa11
+msgid "常见问题"
+msgstr "Troubleshooting"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:128
+#: 4c77898c90994074a80d577c74cf8c9f
+msgid "**提示未知子晶格标签。** 首批原型只使用 A/B；占位映射可同时保留 A、B 方便切换原型，但不能写任意新标签。"
+msgstr ""
+"**The card reports an unknown sublattice label.** Initial prototypes use "
+"only A/B. The occupancy mapping may retain both A and B to support prototype"
+" switching, but it cannot introduce arbitrary new labels."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:130
+#: 635e8f32b2fc4487b45b3a711cbababa
+msgid "**手动超胞超过 `max_atoms`。** 卡片会明确失败，不会改变用户给出的重复数。调小 `rep` 或提高原子数预算。"
+msgstr ""
+"**The manual supercell exceeds `max_atoms`.** The card fails explicitly and "
+"does not change the requested repeat counts. Reduce `rep` or raise the atom "
+"budget."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:132
+#: 76c7ef9f5a4d4c37afd2ae2de2778ddd
+msgid "**为什么没有弛豫。** 本卡只生成几何原型。弛豫、势函数调用、LAMMPS、chemical MC 和 DFT 提交不属于该卡职责。"
+msgstr ""
+"**Why is there no relaxation?** This card only generates a geometric "
+"prototype. Relaxation, potential evaluation, LAMMPS, chemical MC, and DFT "
+"submission are outside its scope."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:134
+#: c621ef993b0440589dc4c828d605e9d5
+msgid "输出标签"
+msgstr "Output labels"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:136
+#: e45d3fb246e44f8bacaf0a7a1cf7a6f8
+msgid ""
+"`Config_type` 追加 "
+"`OrderedProto(<prototype>,a=<a>,rep=<na>x<nb>x<nc>)`。`ordered_alloy_prototype`"
+" metadata 记录原型、晶格参数、重复数、子晶格元素和实际子晶格计数。"
+msgstr ""
+"`Config_type` appends `OrderedProto(<prototype>,a=<a>,rep=<na>x<nb>x<nc>)`. "
+"The `ordered_alloy_prototype` metadata records the prototype, lattice "
+"parameters, repeat counts, sublattice elements, and realized sublattice "
+"counts."
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:138
+#: c30578ef74384550beac73cd6f273887
+msgid "可复现性"
+msgstr "Reproducibility"
+
+#: ../../source/module/make-dataset-cards/cards/ordered-alloy-prototype-card.md:140
+#: 5b80daf7bdbc4acd93496c42bf290c03
+msgid "本卡没有随机采样。同一组参数总是得到相同的 cell、PBC、分数坐标、元素和 `sublattice` 数组。"
+msgstr ""
+"This card performs no random sampling. The same parameters always produce "
+"identical cell, PBC, fractional coordinates, elements, and `sublattice` "
+"array."

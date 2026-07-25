@@ -31,6 +31,8 @@ cards/cell-scaling-card
 cards/shear-matrix-card
 cards/shear-angle-card
 cards/random-slab-card
+cards/ordered-alloy-prototype-card
+cards/finite-cell-alloy-occupancy-card
 cards/random-doping-card
 cards/composition-sweep-card
 cards/composition-gradient-card
@@ -80,6 +82,8 @@ cards/card-group
 | 沿四方相变或外延方向扫 `c/a` | `Bain Path` | `Crystal Prototype Builder` / `Super Cell` | 用普通轴向应变代替系统 Bain 路径 |
 | 做剪切应变或角度应变 | `Shear Matrix Strain` / `Shear Angle Strain` | 已知目标应变方向 | 用 `Lattice Strain` 强行模拟纯剪切 |
 | 生成表面切片 | `Random Slab` | `Super Cell` | 用 `Vacancy Defect Generation` 做表面 |
+| 生成带 A/B 晶体学子晶格的有序合金原型 | `Ordered Alloy Prototype` | 无 | 用 `group` 代替 `sublattice` 身份 |
+| 在有限晶胞上枚举整数可实现的合金组成和排布 | `Finite-Cell Alloy Occupancy` | `Ordered Alloy Prototype` / `Super Cell` | 连续比例取整后仍标成精确组成 |
 | 做单点随机合金 | `Random Doping` | `Composition Sweep` 可选 | 用 `Composition Sweep` 代替具体占位落点 |
 | 扫描多种目标配比 | `Composition Sweep` | 无 | 用 `Random Doping` 手工凑配比网格 |
 | 沿空间方向做配比梯度 | `Composition Gradient` | 已扩胞且有足够层数的结构 | 用全局随机占位假装扩散偶或梯度层 |
@@ -117,6 +121,12 @@ cards/card-group
 - `Random Occupancy` 负责把目标配比真正落到离散原子位点上。
 - `Random Doping` 更适合“给定规则后直接做一次随机替换”，而不是系统地扫完整配比空间。
 
+### `Ordered Alloy Prototype` vs `Finite-Cell Alloy Occupancy`
+
+- `Ordered Alloy Prototype` 建立晶胞、周期边界、分数坐标和 A/B 晶体学子晶格，不负责枚举组成。
+- `Finite-Cell Alloy Occupancy` 接收已有位点或子晶格，先确定可实现的整数计数，再生成不重复排布。
+- 要覆盖 L1₂、B2、L1₀ 的有序到部分无序路径，通常先生成原型，再做有限晶胞占位。
+
 ### `Atomic Perturb` vs `Vib Mode Perturb`
 
 - `Atomic Perturb` 是无模型的随机位移，适合快速补近平衡噪声。
@@ -139,7 +149,7 @@ cards/card-group
 
 - `Lattice`: `Super Cell`、`Crystal Prototype Builder`、`Random Packing`、`Lattice Strain`、`Bain Path`、`Lattice Perturb`、`Shear Matrix Strain`、`Shear Angle Strain`
 - `Perturbation`: `Atomic Perturb`、`Vib Mode Perturb`
-- `Alloy`: `Composition Sweep`、`Composition Gradient`、`Random Occupancy`、`Random Doping`、`Conditional Replace`
+- `Alloy`: `Ordered Alloy Prototype`、`Finite-Cell Alloy Occupancy`、`Composition Sweep`、`Composition Gradient`、`Random Occupancy`、`Random Doping`、`Conditional Replace`
 - `Defect / Surface`: `Random Slab`、`Random Vacancy`、`Vacancy Defect Generation`、`Insert Defect`、`Stacking Fault`、`Strict GSFE Path`、`Layer Copy`
 - `Magnetism`: `Set Magnetic Moments`、`Magnetic Order`、`Spin Disorder`、`Correlated Random Spin`、`Magmom Rotation`、`Small-Angle Spin Tilt`、`Spin Spiral`、`Folded Helix`
 - `Filter / Container`: `Geometry Filter`、`FPS Filter`、`Card Group`

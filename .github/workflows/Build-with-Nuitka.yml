@@ -58,9 +58,13 @@ jobs:
         run: |
           $dist = "${{ github.workspace }}/src/build/main.dist"
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/Config -Destination "$dist/Config" -Force
+          Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/translations -Destination "$dist/translations" -Force
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe "$dist/update.exe"
 
           Remove-Item -Path "$dist/NepTrainKit" -Recurse -Force
+          if (-not (Test-Path "$dist/translations/neptrainkit_zh_CN.qm")) {
+            throw "Chinese translation catalog is missing from the standalone package."
+          }
           New-Item -ItemType Directory -Force "$dist/Log"
           New-Item -ItemType File -Path "$dist/Log/.placeholder" -Force
 
@@ -109,27 +113,20 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
+          python -c "import platform, struct; assert struct.calcsize('P') * 8 == 64; assert platform.machine().lower() in {'amd64', 'x86_64'}; print('Packaging Windows x86_64')"
           Set-Location ${{ github.workspace }}/src/build/main.dist/
           $compress = @{
             Path = "*"
             CompressionLevel = "Fastest"
-            DestinationPath = "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
+            DestinationPath = "${{ github.workspace }}/NepTrainKit.windows-x86_64.zip"
           }
           Compress-Archive @compress
-          Write-Host "Package created at ${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
-      # 新增：重命名文件
-      - name: Rename Release Asset
-        shell: pwsh
-        run: |
-          $originalFile = "${{ github.workspace }}/NepTrainKit-${{ inputs.tag_name }}-windows.zip"
-          $newFile = "${{ github.workspace }}/NepTrainKit.win32.zip"  # 修改为你想要的名称
-          Move-Item -Path $originalFile -Destination $newFile -Force
-          Write-Host "Renamed file to $newFile"
+          Write-Host "Package created at ${{ github.workspace }}/NepTrainKit.windows-x86_64.zip"
 
       - name: Verify File Exists
         shell: pwsh
         run: |
-          $filePath = "${{ github.workspace }}/NepTrainKit.win32.zip"
+          $filePath = "${{ github.workspace }}/NepTrainKit.windows-x86_64.zip"
           if (-not (Test-Path -Path $filePath)) {
             Write-Error "File not found: $filePath"
             exit 1
@@ -165,7 +162,7 @@ jobs:
           tag_name: ${{ inputs.tag_name }}
           name: ${{ inputs.tag_name }}
           body: ${{ steps.get_release.outputs.body }}  # 使用获取到的现有 body
-          files: ${{ github.workspace }}/NepTrainKit.win32.zip
+          files: ${{ github.workspace }}/NepTrainKit.windows-x86_64.zip
           draft: false
           prerelease: false
         env:

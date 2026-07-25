@@ -662,41 +662,82 @@ class LammpsDumpImporter:
                 # TIMESTEP
                 ts_line = f.readline()
                 if not ts_line:
-                    break
+                    raise ValueError("Truncated LAMMPS dump: missing timestep value")
                 try:
                     timestep = int(ts_line.strip().split()[0])
-                except Exception:
-                    timestep = 0
+                except (IndexError, ValueError) as exc:
+                    raise ValueError(
+                        f"Invalid LAMMPS timestep value: {ts_line.strip()!r}"
+                    ) from exc
                 # NUMBER OF ATOMS
                 hdr = f.readline()  # ITEM: NUMBER OF ATOMS
                 if not hdr or not hdr.strip().startswith("ITEM: NUMBER OF ATOMS"):
-                    break
+                    raise ValueError(
+                        f"LAMMPS frame {timestep} is missing 'ITEM: NUMBER OF ATOMS'"
+                    )
                 nat_line = f.readline()
                 if not nat_line:
-                    break
+                    raise ValueError(
+                        f"LAMMPS frame {timestep} is missing the atom count"
+                    )
                 try:
                     n_atoms = int(nat_line.strip().split()[0])
-                except Exception:
-                    continue
+                except (IndexError, ValueError) as exc:
+                    raise ValueError(
+                        f"Invalid LAMMPS atom count in frame {timestep}: "
+                        f"{nat_line.strip()!r}"
+                    ) from exc
+                if n_atoms <= 0:
+                    raise ValueError(
+                        f"LAMMPS frame {timestep} has invalid atom count {n_atoms}"
+                    )
                 # BOX BOUNDS
                 bounds_hdr = f.readline()
                 if not bounds_hdr or not bounds_hdr.strip().startswith("ITEM: BOX BOUNDS"):
-                    break
+                    raise ValueError(
+                        f"LAMMPS frame {timestep} is missing 'ITEM: BOX BOUNDS'"
+                    )
                 bounds_tokens = bounds_hdr.strip().split()
                 tilt_flags = {t for t in bounds_tokens if t in {"xy", "xz", "yz"}}
+                boundary_tokens = [
+                    token
+                    for token in bounds_tokens[3:]
+                    if len(token) == 2
+                    and all(char in {"p", "f", "s", "m"} for char in token.lower())
+                ]
+                if len(boundary_tokens) != 3:
+                    raise ValueError(
+                        f"LAMMPS frame {timestep} does not declare three BOX BOUNDS "
+                        "boundary flags"
+                    )
+                pbc = [token.lower() == "pp" for token in boundary_tokens]
                 def _read_bounds_line():
                     """Read a bounds line from the dump header and return floats."""
                     l = f.readline()
                     return [float(x) for x in l.strip().split()] if l else []
                 b1 = _read_bounds_line(); b2 = _read_bounds_line(); b3 = _read_bounds_line()
                 if not b1 or not b2 or not b3:
-                    break
+                    raise ValueError(
+                        f"LAMMPS frame {timestep} has truncated BOX BOUNDS"
+                    )
                 if tilt_flags:
                     # triclinic: xlo xhi xy; ylo yhi xz; zlo zhi yz
-                    xlo, xhi, xy = b1[0], b1[1], b1[2]
-                    ylo, yhi, xz = b2[0], b2[1], b2[2]
+                    if len(b1) < 3 or len(b2) < 3 or len(b3) < 3:
+                        raise ValueError(
+                            f"LAMMPS frame {timestep} has incomplete triclinic BOX BOUNDS"
+                        )
+                    xlo_bound, xhi_bound, xy = b1[0], b1[1], b1[2]
+                    ylo_bound, yhi_bound, xz = b2[0], b2[1], b2[2]
                     zlo, zhi, yz = b3[0], b3[1], b3[2]
+                    xlo = xlo_bound - min(0.0, xy, xz, xy + xz)
+                    xhi = xhi_bound - max(0.0, xy, xz, xy + xz)
+                    ylo = ylo_bound - min(0.0, yz)
+                    yhi = yhi_bound - max(0.0, yz)
                 else:
+                    if len(b1) < 2 or len(b2) < 2 or len(b3) < 2:
+                        raise ValueError(
+                            f"LAMMPS frame {timestep} has incomplete orthogonal BOX BOUNDS"
+                        )
                     xlo, xhi = b1[0], b1[1]
                     ylo, yhi = b2[0], b2[1]
                     zlo, zhi = b3[0], b3[1]
@@ -704,6 +745,14 @@ class LammpsDumpImporter:
                 lx = float(xhi - xlo)
                 ly = float(yhi - ylo)
                 lz = float(zhi - zlo)
+                cell_values = np.asarray(
+                    [lx, ly, lz, xy, xz, yz, xlo, ylo, zlo],
+                    dtype=np.float64,
+                )
+                if not np.all(np.isfinite(cell_values)) or min(lx, ly, lz) <= 0.0:
+                    raise ValueError(
+                        f"LAMMPS frame {timestep} has invalid BOX BOUNDS"
+                    )
                 a = np.array([lx, 0.0, 0.0], dtype=get_storage_float_dtype())
                 b = np.array([xy, ly, 0.0], dtype=get_storage_float_dtype())
                 c = np.array([xz, yz, lz], dtype=get_storage_float_dtype())
@@ -711,16 +760,27 @@ class LammpsDumpImporter:
                 # ATOMS header
                 atoms_hdr = f.readline()
                 if not atoms_hdr or not atoms_hdr.strip().startswith("ITEM: ATOMS"):
-                    break
+                    raise ValueError(
+                        f"LAMMPS frame {timestep} is missing 'ITEM: ATOMS'"
+                    )
                 cols = atoms_hdr.strip().split()[2:]
                 idx = {name: i for i, name in enumerate(cols)}
                 has_scaled = all(k in idx for k in ("xs", "ys", "zs"))
                 has_cart = all(k in idx for k in ("x", "y", "z"))
                 has_unwrapped = all(k in idx for k in ("xu", "yu", "zu"))
+                if not (has_scaled or has_cart or has_unwrapped):
+                    raise ValueError(
+                        f"LAMMPS frame {timestep} must contain one complete coordinate "
+                        "triplet: xs/ys/zs, x/y/z, or xu/yu/zu"
+                    )
                 has_forces = all(k in idx for k in ("fx", "fy", "fz"))
                 spin_columns = tuple(f"c_spin[{column}]" for column in range(1, 5))
                 has_spin = all(column in idx for column in spin_columns)
                 species_col = "element" if "element" in idx else ("type" if "type" in idx else None)
+                if species_col is None:
+                    raise ValueError(
+                        f"LAMMPS frame {timestep} must contain an element or type column"
+                    )
                 positions = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype())
                 forces = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype()) if has_forces else None
                 spins = np.zeros((n_atoms, 3), dtype=get_storage_float_dtype()) if has_spin else None
@@ -731,40 +791,58 @@ class LammpsDumpImporter:
                         return
                     l = f.readline()
                     if not l:
-                        break
+                        raise ValueError(
+                            f"LAMMPS frame {timestep} is truncated: expected "
+                            f"{n_atoms} atom rows, found {i}"
+                        )
                     parts = l.split()
+                    if len(parts) < len(cols):
+                        raise ValueError(
+                            f"LAMMPS frame {timestep}, atom row {i + 1} has "
+                            f"{len(parts)} columns; expected {len(cols)}"
+                        )
                     # species
-                    if species_col is None:
-                        species_list.append("X")
+                    val = parts[idx[species_col]]
+                    if species_col == "type":
+                        try:
+                            tnum = int(val)
+                        except ValueError as exc:
+                            raise ValueError(
+                                f"LAMMPS frame {timestep}, atom row {i + 1} has "
+                                f"invalid integer type {val!r}"
+                            ) from exc
+                        if tnum <= 0:
+                            raise ValueError(
+                                f"LAMMPS frame {timestep}, atom row {i + 1} has "
+                                f"invalid atom type {tnum}"
+                            )
+                        if types_buffer is not None:
+                            types_buffer[i] = tnum
+                        # Placeholder; resolve after reading all atoms.
+                        species_list.append("")
                     else:
-                        val = parts[idx[species_col]]
-                        if species_col == "type":
-                            try:
-                                tnum = int(float(val))
-                            except Exception:
-                                tnum = -1
-                            if types_buffer is not None:
-                                types_buffer[i] = tnum
-                            # placeholder; will resolve after reading all atoms
-                            species_list.append("")
-                        else:
-                            species_list.append(val)
+                        species_list.append(val)
                     # fractional
                     if has_scaled:
                         fx = float(parts[idx["xs"]]); fy = float(parts[idx["ys"]]); fz = float(parts[idx["zs"]])
+                        pos = fx * a + fy * b + fz * c
                     elif has_cart:
                         x = float(parts[idx["x"]]); y = float(parts[idx["y"]]); z = float(parts[idx["z"]])
-                        fx = (x - xlo) / lx if lx != 0 else 0.0
-                        fy = (y - ylo) / ly if ly != 0 else 0.0
-                        fz = (z - zlo) / lz if lz != 0 else 0.0
-                    elif has_unwrapped:
-                        x = float(parts[idx["xu"]]); y = float(parts[idx["yu"]]); z = float(parts[idx["zu"]])
-                        fx = (x - xlo) / lx if lx != 0 else 0.0
-                        fy = (y - ylo) / ly if ly != 0 else 0.0
-                        fz = (z - zlo) / lz if lz != 0 else 0.0
+                        pos = np.asarray(
+                            [x - xlo, y - ylo, z - zlo],
+                            dtype=get_storage_float_dtype(),
+                        )
                     else:
-                        fx = fy = fz = 0.0
-                    pos = fx * a + fy * b + fz * c
+                        x = float(parts[idx["xu"]]); y = float(parts[idx["yu"]]); z = float(parts[idx["zu"]])
+                        pos = np.asarray(
+                            [x - xlo, y - ylo, z - zlo],
+                            dtype=get_storage_float_dtype(),
+                        )
+                    if not np.all(np.isfinite(pos)):
+                        raise ValueError(
+                            f"LAMMPS frame {timestep}, atom row {i + 1} has "
+                            "non-finite coordinates"
+                        )
                     positions[i, :] = pos
                     if has_forces and forces is not None:
                         forces[i, 0] = float(parts[idx["fx"]])
@@ -793,13 +871,33 @@ class LammpsDumpImporter:
                                         type_to_elem[int(k)] = str(v)
                                     except Exception:
                                         pass
-                        except Exception:
-                            # ignore resolver errors, will fallback
-                            pass
-                    # fill species_list based on mapping (fallback to X<type>)
+                        except Exception as exc:
+                            raise ValueError(
+                                f"Failed to resolve LAMMPS atom types {missing}: {exc}"
+                            ) from exc
+                    unresolved = sorted(
+                        {
+                            int(t)
+                            for t in types_buffer.tolist()
+                            if int(t) not in type_to_elem
+                        }
+                    )
+                    if unresolved:
+                        raise ValueError(
+                            "LAMMPS numeric atom types require an explicit element "
+                            f"mapping; unresolved types: {unresolved}"
+                        )
                     for i in range(n_atoms):
                         t = int(types_buffer[i])
-                        species_list[i] = type_to_elem.get(t, f"X{t}") if t > 0 else "X"
+                        species_list[i] = type_to_elem[t]
+                invalid_species = sorted(
+                    {symbol for symbol in species_list if symbol not in atomic_numbers}
+                )
+                if invalid_species:
+                    raise ValueError(
+                        f"LAMMPS frame {timestep} contains invalid element symbols: "
+                        f"{invalid_species}"
+                    )
                 species_arr = np.array(species_list, dtype=np.str_)
                 properties = [
                     {"name": "species", "type": "S", "count": 1},
@@ -817,7 +915,7 @@ class LammpsDumpImporter:
                     atom_props["spin"] = spins
                 additional_fields = {
                     "Config_type": f"LAMMPS_{timestep}",
-                    "pbc": "T T T",
+                    "pbc": " ".join("T" if periodic else "F" for periodic in pbc),
                 }
                 yield Structure(lattice=lattice,
                                 atomic_properties=atom_props,
@@ -869,6 +967,8 @@ class Cp2kOutputImporter:
         forces: list[list[float]] = []
         energy_ev: float | None = None
         stress_gpa: np.ndarray | None = None
+        coordinate_blocks = 0
+        force_blocks = 0
         # state flags
         in_coords = False
         coords_started = False  # started reading numeric atom lines
@@ -907,6 +1007,12 @@ class Cp2kOutputImporter:
                     continue
                 # Coordinates block begin
                 if 'MODULE QUICKSTEP: ATOMIC COORDINATES IN ANGSTROM' in line:
+                    coordinate_blocks += 1
+                    if coordinate_blocks > 1:
+                        raise ValueError(
+                            "CP2K output contains multiple coordinate blocks. "
+                            "Import a single-point output or convert the CP2K trajectory to EXTXYZ."
+                        )
                     in_coords = True
                     coords_started = False
                     continue
@@ -946,6 +1052,12 @@ class Cp2kOutputImporter:
                     continue
                 # Forces block begin
                 if lstrip.startswith('ATOMIC FORCES in [a.u.]'):
+                    force_blocks += 1
+                    if force_blocks > 1:
+                        raise ValueError(
+                            "CP2K output contains multiple force blocks. "
+                            "Import a single-point output or convert the CP2K trajectory to EXTXYZ."
+                        )
                     in_forces = True
                     read_forces_header_skipped = False
                     continue
@@ -1006,9 +1118,19 @@ class Cp2kOutputImporter:
                     continue
         # Assemble lattice
         if a_vec is None or b_vec is None or c_vec is None:
-            lattice = np.eye(3, dtype=get_storage_float_dtype())
-        else:
-            lattice = np.array([a_vec, b_vec, c_vec], dtype=get_storage_float_dtype())
+            raise ValueError(
+                "CP2K output is missing complete CELL vectors; "
+                "NepTrainKit will not invent a unit cell."
+            )
+        lattice = np.array([a_vec, b_vec, c_vec], dtype=get_storage_float_dtype())
+        if not np.all(np.isfinite(lattice)) or abs(float(np.linalg.det(lattice))) <= 1.0e-12:
+            raise ValueError("CP2K output contains an invalid or singular cell.")
+        if not positions:
+            raise ValueError("CP2K output contains no atomic coordinate block.")
+        if forces and len(forces) != len(positions):
+            raise ValueError(
+                "CP2K force count does not match the imported coordinate count."
+            )
         # Compose atomic data
         properties = [
             {"name": "species", "type": "S", "count": 1},
@@ -1089,16 +1211,37 @@ class N2p2CfgImporter:
         positions: list[list[float]] | None = None
         species: list[str] | None = None
         forces: list[list[float]] | None = None
+        atom_charges: list[float] | None = None
+        atom_energies: list[float] | None = None
         energy_val: float | None = None
         charge_val: float | None = None
         comment_txt: str | None = None
         def emit_if_ready():
             """Emit the current block as a Structure when all fields are populated."""
             nonlocal block_idx
-            if positions is None or species is None or len(positions) == 0:
-                return
+            if (
+                positions is None
+                or species is None
+                or forces is None
+                or atom_charges is None
+                or atom_energies is None
+                or len(positions) == 0
+            ):
+                raise ValueError(f"n2p2 block {block_idx} contains no complete atom rows.")
+            if not (
+                len(positions)
+                == len(species)
+                == len(forces)
+                == len(atom_charges)
+                == len(atom_energies)
+            ):
+                raise ValueError(f"n2p2 block {block_idx} has inconsistent per-atom fields.")
             # lattice
-            if lattice_vecs and len(lattice_vecs) == 3:
+            if lattice_vecs and len(lattice_vecs) != 3:
+                raise ValueError(
+                    f"n2p2 block {block_idx} must contain zero or three lattice rows."
+                )
+            if lattice_vecs:
                 lattice = (np.array(lattice_vecs, dtype=get_storage_float_dtype()) * float(length_to_ang)).reshape(3, 3)
                 pbc_txt = "T T T"
             else:
@@ -1115,6 +1258,16 @@ class N2p2CfgImporter:
             if forces is not None and len(forces) == len(positions):
                 props.append({"name": "forces", "type": "R", "count": 3})
                 atom_props["forces"] = (np.array(forces, dtype=get_storage_float_dtype()) * float(force_to_ev_per_ang))
+            props.append({"name": "charge", "type": "R", "count": 1})
+            atom_props["charge"] = np.asarray(
+                atom_charges,
+                dtype=get_storage_float_dtype(),
+            )
+            props.append({"name": "atomic_energy", "type": "R", "count": 1})
+            atom_props["atomic_energy"] = (
+                np.asarray(atom_energies, dtype=get_storage_float_dtype())
+                * float(energy_to_ev)
+            )
             add = {
                 "Config_type": (comment_txt or f"N2P2_CFG_{block_idx}"),
                 "pbc": pbc_txt,
@@ -1128,8 +1281,8 @@ class N2p2CfgImporter:
                             properties=props,
                             additional_fields=add)
         # Streaming parse
-        with candidate.open('r', encoding='utf8', errors='ignore') as f:
-            for raw in f:
+        with candidate.open('r', encoding='utf8', errors='strict') as f:
+            for line_number, raw in enumerate(f, start=1):
                 if cancelled():
                     return
                 line = raw.strip()
@@ -1138,23 +1291,32 @@ class N2p2CfgImporter:
                 low = line.lower()
                 if low == 'begin':
                     # start new block
+                    if in_block:
+                        raise ValueError(
+                            f"n2p2 line {line_number} starts a new block before the previous block ended."
+                        )
                     in_block = True
                     block_idx += 1
                     lattice_vecs = []
                     positions = []
                     species = []
                     forces = []
+                    atom_charges = []
+                    atom_energies = []
                     energy_val = None
                     charge_val = None
                     comment_txt = None
                     continue
                 if low == 'end':
-                    if in_block:
-                        # emit block
-                        for st in emit_if_ready():
-                            yield st
+                    if not in_block:
+                        raise ValueError(
+                            f"n2p2 line {line_number} ends a block that was not started."
+                        )
+                    for st in emit_if_ready():
+                        yield st
                     in_block = False
                     lattice_vecs = positions = species = forces = None
+                    atom_charges = atom_energies = None
                     energy_val = charge_val = None
                     comment_txt = None
                     continue
@@ -1173,59 +1335,99 @@ class N2p2CfgImporter:
                 if low.startswith('lattice'):
                     toks = line.split()
                     # lattice ax ay az
-                    if len(toks) >= 4:
-                        try:
-                            vec = [float(toks[1]), float(toks[2]), float(toks[3])]
-                            if lattice_vecs is not None:
-                                lattice_vecs.append(vec)
-                        except Exception:
-                            pass
+                    if len(toks) < 4:
+                        raise ValueError(
+                            f"n2p2 line {line_number} has an incomplete lattice row."
+                        )
+                    try:
+                        vec = [float(toks[1]), float(toks[2]), float(toks[3])]
+                    except ValueError as exc:
+                        raise ValueError(
+                            f"n2p2 line {line_number} has a non-numeric lattice row."
+                        ) from exc
+                    if not np.all(np.isfinite(vec)):
+                        raise ValueError(
+                            f"n2p2 line {line_number} has a non-finite lattice row."
+                        )
+                    if lattice_vecs is not None:
+                        lattice_vecs.append(vec)
                     continue
                 if low.startswith('atom'):
                     # atom x y z elem c n fx fy fz
-                    # Support possible extra whitespace in element column
                     toks = raw.split()
-                    if len(toks) >= 10:
-                        try:
-                            x = float(toks[1]); y = float(toks[2]); z = float(toks[3])
-                            elem = toks[4]
-                            fx = float(toks[-3]); fy = float(toks[-2]); fz = float(toks[-1])
-                            if positions is not None and species is not None and forces is not None:
-                                positions.append([x, y, z])
-                                species.append(elem)
-                                forces.append([fx, fy, fz])
-                        except Exception:
-                            # Be tolerant: try minimal variant without forces (x y z elem)
-                            try:
-                                x = float(toks[1]); y = float(toks[2]); z = float(toks[3])
-                                elem = toks[4]
-                                if positions is not None and species is not None:
-                                    positions.append([x, y, z])
-                                    species.append(elem)
-                            except Exception:
-                                pass
+                    if len(toks) < 10:
+                        raise ValueError(
+                            f"n2p2 line {line_number} has {len(toks)} atom columns; expected 10."
+                        )
+                    try:
+                        x, y, z = (float(toks[1]), float(toks[2]), float(toks[3]))
+                        elem = toks[4]
+                        atom_charge = float(toks[5])
+                        atom_energy = float(toks[6])
+                        fx, fy, fz = (
+                            float(toks[-3]),
+                            float(toks[-2]),
+                            float(toks[-1]),
+                        )
+                    except ValueError as exc:
+                        raise ValueError(
+                            f"n2p2 line {line_number} has a non-numeric atom field."
+                        ) from exc
+                    numeric_values = [x, y, z, atom_charge, atom_energy, fx, fy, fz]
+                    if not np.all(np.isfinite(numeric_values)):
+                        raise ValueError(
+                            f"n2p2 line {line_number} has a non-finite atom field."
+                        )
+                    if elem not in atomic_numbers:
+                        raise ValueError(
+                            f"n2p2 line {line_number} has unsupported element {elem!r}."
+                        )
+                    if (
+                        positions is not None
+                        and species is not None
+                        and forces is not None
+                        and atom_charges is not None
+                        and atom_energies is not None
+                    ):
+                        positions.append([x, y, z])
+                        species.append(elem)
+                        forces.append([fx, fy, fz])
+                        atom_charges.append(atom_charge)
+                        atom_energies.append(atom_energy)
                     continue
                 if low.startswith('energy'):
                     # energy E
                     toks = line.split()
-                    if len(toks) >= 2:
-                        try:
-                            energy_val = float(toks[1])
-                        except Exception:
-                            pass
+                    if len(toks) < 2:
+                        raise ValueError(f"n2p2 line {line_number} has no energy value.")
+                    try:
+                        energy_val = float(toks[1])
+                    except ValueError as exc:
+                        raise ValueError(
+                            f"n2p2 line {line_number} has a non-numeric energy."
+                        ) from exc
+                    if not np.isfinite(energy_val):
+                        raise ValueError(
+                            f"n2p2 line {line_number} has a non-finite energy."
+                        )
                     continue
                 if low.startswith('charge'):
                     toks = line.split()
-                    if len(toks) >= 2:
-                        try:
-                            charge_val = float(toks[1])
-                        except Exception:
-                            pass
+                    if len(toks) < 2:
+                        raise ValueError(f"n2p2 line {line_number} has no charge value.")
+                    try:
+                        charge_val = float(toks[1])
+                    except ValueError as exc:
+                        raise ValueError(
+                            f"n2p2 line {line_number} has a non-numeric charge."
+                        ) from exc
+                    if not np.isfinite(charge_val):
+                        raise ValueError(
+                            f"n2p2 line {line_number} has a non-finite charge."
+                        )
                     continue
-        # No trailing 'end': emit last block if we were inside one
         if in_block:
-            for st in emit_if_ready():
-                yield st
+            raise ValueError(f"n2p2 block {block_idx} is missing its closing 'end'.")
 register_importer(N2p2CfgImporter())
 # ASE trajectory importer (uses ASE to read, converts to Structure)
 class AseTrajectoryImporter:
@@ -1239,95 +1441,142 @@ class AseTrajectoryImporter:
         ext = candidate.suffix.lower()
         # Target ASE formats that are not already handled by dedicated importers
         return ext in {".traj"}
-    def _ase_atoms_to_structure(self, atoms) -> Structure | None:
+    def _ase_atoms_to_structure(self, atoms) -> Structure:
         """Convert an ASE ``Atoms`` object into a :class:`Structure`."""
-        try:
-            # Lattice/cell
-            cell = getattr(atoms, 'cell', None)
-            if cell is None:
-                lattice = np.eye(3, dtype=get_storage_float_dtype())
+        float_dtype = get_storage_float_dtype()
+        lattice = np.asarray(atoms.cell.array, dtype=float_dtype)
+        if lattice.shape != (3, 3) or not np.all(np.isfinite(lattice)):
+            raise ValueError("ASE trajectory cell must be a finite 3 x 3 matrix.")
+
+        symbols = np.asarray(atoms.get_chemical_symbols(), dtype=np.str_)
+        positions = np.asarray(atoms.get_positions(), dtype=float_dtype)
+        if positions.shape != (len(symbols), 3) or not np.all(np.isfinite(positions)):
+            raise ValueError("ASE trajectory positions must be finite N x 3 values.")
+
+        properties = [
+            {"name": "species", "type": "S", "count": 1},
+            {"name": "pos", "type": "R", "count": 3},
+        ]
+        atomic_props: dict[str, np.ndarray] = {
+            "species": symbols,
+            "pos": positions,
+        }
+
+        def add_atomic_property(name: str, value) -> None:
+            array = np.asarray(value)
+            if array.ndim not in {1, 2} or array.shape[0] != len(symbols):
+                raise ValueError(
+                    f"ASE trajectory per-atom array {name!r} must have shape N or N x M."
+                )
+            count = 1 if array.ndim == 1 else array.shape[1]
+            if count < 1:
+                raise ValueError(f"ASE trajectory per-atom array {name!r} is empty.")
+            if array.dtype.kind == "b":
+                property_type = "L"
+                converted = np.asarray(array, dtype=np.bool_)
+            elif array.dtype.kind in {"i", "u"}:
+                property_type = "I"
+                converted = np.asarray(array, dtype=np.int32)
+            elif array.dtype.kind == "f":
+                property_type = "R"
+                converted = np.asarray(array, dtype=float_dtype)
+                if not np.all(np.isfinite(converted)):
+                    raise ValueError(
+                        f"ASE trajectory per-atom array {name!r} contains non-finite values."
+                    )
+            elif array.dtype.kind in {"S", "U"}:
+                property_type = "S"
+                converted = np.asarray(array, dtype=np.str_)
             else:
-                arr = np.array(cell.array if hasattr(cell, 'array') else cell, dtype=get_storage_float_dtype())
-                if arr.size != 9:
-                    lattice = np.eye(3, dtype=get_storage_float_dtype())
-                else:
-                    lattice = arr.reshape(3, 3)
-            # Species and positions
-            symbols = np.array(atoms.get_chemical_symbols(), dtype=np.str_)
-            positions = np.array(atoms.get_positions(), dtype=get_storage_float_dtype())
-            properties = [
-                {"name": "species", "type": "S", "count": 1},
-                {"name": "pos", "type": "R", "count": 3},
-            ]
-            atomic_props: dict[str, np.ndarray] = {
-                "species": symbols,
-                "pos": positions,
-            }
-            # Additional fields
-            info = getattr(atoms, 'info', {}) or {}
-            cfg = str(info.get('comment', info.get('Config_type', 'ASE_traj')))
-            pbc_val = getattr(atoms, 'pbc', False)
-            if isinstance(pbc_val, (list, tuple, np.ndarray)):
-                pbc_text = " ".join(["T" if bool(x) else "F" for x in list(pbc_val)[:3]])
+                raise ValueError(
+                    f"ASE trajectory per-atom array {name!r} has unsupported dtype {array.dtype}."
+                )
+            atomic_props[name] = converted
+            descriptor = {"name": name, "type": property_type, "count": count}
+            for index, existing in enumerate(properties):
+                if existing["name"] == name:
+                    properties[index] = descriptor
+                    break
             else:
-                pbc_text = "T T T" if bool(pbc_val) else "F F F"
-            add = {
-                "Config_type": cfg,
-                "pbc": pbc_text,
-            }
-            calc_result=atoms.calc.results
-            if "energy" in calc_result:
-                add["energy"]=calc_result["energy"]
-            # Optional forces from arrays to avoid calculator call
-            forces = None
-            try:
-                if hasattr(atoms, 'arrays') and isinstance(atoms.arrays, dict):
-                    if 'forces' in atoms.arrays:
-                        forces = np.array(atoms.arrays['forces'], dtype=get_storage_float_dtype())
-                if "forces" in calc_result:
-                    forces = np.array(calc_result['forces'], dtype=get_storage_float_dtype())
-            except Exception:
-                forces = None
-            if isinstance(forces, np.ndarray) and forces.shape == positions.shape:
-                properties.append({"name": "forces", "type": "R", "count": 3})
-                atomic_props["forces"] = forces
-            # Optional stress/virial if present in info with common keys
-            try:
-                if 'stress' in calc_result:
-                    s = np.array(calc_result['stress'], dtype=get_storage_float_dtype())
-                    if s.size == 9:
-                        add['stress'] = s.reshape(3, 3).reshape(-1)
-                    elif s.size == 6:
-                        # voigt -> symmetric
-                        sxx, syy, szz, syz, sxz, sxy = s.tolist()
-                        S = np.array([[sxx, sxy, sxz], [sxy, syy, syz], [sxz, syz, szz]], dtype=get_storage_float_dtype())
-                        add['stress'] = S.reshape(-1)
-                if 'virial' in info:
-                    v = np.array(info['virial'], dtype=get_storage_float_dtype())
-                    if v.size == 9:
-                        add['virial'] = v.reshape(-1)
-            except Exception:
-                pass
-            return Structure(lattice=lattice, atomic_properties=atomic_props, properties=properties, additional_fields=add)
-        except Exception:
-            return None
+                properties.append(descriptor)
+
+        arrays = getattr(atoms, "arrays", {}) or {}
+        for name, value in arrays.items():
+            if name in {"numbers", "positions", "species", "pos"}:
+                continue
+            add_atomic_property(name, value)
+
+        info = dict(getattr(atoms, "info", {}) or {})
+        config_type = str(info.pop("Config_type", info.pop("comment", "ASE_traj")))
+        info.pop("comment", None)
+        pbc = np.asarray(atoms.pbc, dtype=np.bool_).reshape(-1)
+        if pbc.size != 3:
+            raise ValueError("ASE trajectory PBC must contain exactly three logical values.")
+        additional_fields = dict(info)
+        additional_fields["Config_type"] = config_type
+        additional_fields["pbc"] = " ".join("T" if value else "F" for value in pbc)
+
+        calculator = getattr(atoms, "calc", None)
+        calc_results = dict(getattr(calculator, "results", {}) or {})
+        if "energy" in calc_results:
+            additional_fields["energy"] = calc_results["energy"]
+        elif "free_energy" in calc_results and "energy" not in additional_fields:
+            additional_fields["energy"] = calc_results["free_energy"]
+        if "forces" in calc_results:
+            add_atomic_property("forces", calc_results["forces"])
+        for name in ("charges", "magmoms"):
+            if name in calc_results:
+                add_atomic_property(name, calc_results[name])
+
+        for tensor_name in ("stress", "virial"):
+            if tensor_name not in calc_results:
+                continue
+            tensor = np.asarray(calc_results[tensor_name], dtype=float_dtype)
+            if tensor_name == "stress" and tensor.size == 6:
+                sxx, syy, szz, syz, sxz, sxy = tensor.tolist()
+                tensor = np.asarray(
+                    [
+                        [sxx, sxy, sxz],
+                        [sxy, syy, syz],
+                        [sxz, syz, szz],
+                    ],
+                    dtype=float_dtype,
+                )
+            if tensor.size != 9 or not np.all(np.isfinite(tensor)):
+                raise ValueError(
+                    f"ASE trajectory {tensor_name} must contain nine finite tensor values."
+                )
+            additional_fields[tensor_name] = tensor.reshape(-1)
+
+        for tensor_name in ("stress", "virial"):
+            if tensor_name not in additional_fields:
+                continue
+            tensor = np.asarray(additional_fields[tensor_name], dtype=float_dtype)
+            if tensor.size != 9 or not np.all(np.isfinite(tensor)):
+                raise ValueError(
+                    f"ASE trajectory {tensor_name} must contain nine finite tensor values."
+                )
+            additional_fields[tensor_name] = tensor.reshape(-1)
+
+        return Structure(
+            lattice=lattice,
+            atomic_properties=atomic_props,
+            properties=properties,
+            additional_fields=additional_fields,
+        )
     def iter_structures(self, path: PathLike, **kwargs):
         """Yield structures from ASE trajectory files."""
         candidate = as_path(path)
         cancel_event = kwargs.get("cancel_event")
-        try:
-            from ase.io import iread
-        except Exception:
-            return
+        from ase.io import iread
+
         try:
             for atoms in iread(str(candidate), index=":"):
                 if cancel_event is not None and getattr(cancel_event, "is_set", None) and cancel_event.is_set():
                     return
-                st = self._ase_atoms_to_structure(atoms)
-                if st is not None:
-                    yield st
-        except Exception:
-            return
+                yield self._ase_atoms_to_structure(atoms)
+        except Exception as exc:
+            raise ValueError(f"Failed to read ASE trajectory {candidate}: {exc}") from exc
 register_importer(AseTrajectoryImporter())
 def write_extxyz(file_path: str, structures: List[Structure]) -> str:
     """Write structures to an EXTXYZ file using Structure.write()."""

@@ -1,0 +1,182 @@
+from __future__ import annotations
+
+import time
+from unittest.mock import patch
+
+import pytest
+from ase import Atoms
+from PySide6.QtCore import QEventLoop, QTimer
+from PySide6.QtWidgets import QApplication
+
+from NepTrainKit.core.cards.operation import DatasetOperation, StructureOperation
+from NepTrainKit.ui.pages.makedata import MakeDataWidget
+from NepTrainKit.ui.views._card.card_group import CardGroup
+from NepTrainKit.ui.widgets.card_widget import FilterDataCard, MakeDataCard
+
+
+@pytest.fixture(scope="module", autouse=True)
+def _application():
+    """Keep Qt creation in test execution instead of collection."""
+    app = QApplication.instance() or QApplication([])
+    yield app
+
+
+class _CopyOperation(StructureOperation):
+    def __init__(self):
+        self.calls = 0
+
+    def run_structure(self, structure, params):
+        self.calls += 1
+        return [structure.copy()]
+
+
+class _FailAfterFirstOperation(StructureOperation):
+    def __init__(self):
+        self.calls = 0
+
+    def run_structure(self, structure, params):
+        self.calls += 1
+        if self.calls > 1:
+            raise ValueError("intentional failure")
+        return [structure.copy()]
+
+
+class _SlowOperation(StructureOperation):
+    def run_structure(self, structure, params):
+        time.sleep(0.08)
+        return [structure.copy()]
+
+
+class _KeepFirstOperation(DatasetOperation):
+    def run_dataset(self, dataset, params):
+        return list(dataset[:1])
+
+
+class _OperationCard(MakeDataCard):
+    def __init__(self, operation, parent=None):
+        self._operation = operation
+        super().__init__(parent)
+
+    def create_operation(self):
+        return self._operation
+
+
+class _FilterCard(FilterDataCard):
+    def create_operation(self):
+        return _KeepFirstOperation()
+
+
+def _wait_until(predicate, timeout_ms=3000):
+    app = QApplication.instance() or QApplication([])
+    loop = QEventLoop()
+    timer = QTimer()
+
+    def poll():
+        if predicate():
+            loop.quit()
+
+    timer.timeout.connect(poll)
+    timer.start(10)
+    QTimer.singleShot(timeout_ms, loop.quit)
+    loop.exec()
+    timer.stop()
+    return predicate()
+
+
+def test_card_header_icon_actions_have_accessible_names():
+    card = _OperationCard(_CopyOperation())
+
+    assert card.doc_button.accessibleName() == "Open online documentation"
+    assert card.info_button.accessibleName() == "Show card information and contributors"
+    assert card.copy_json_button.accessibleName() == "Copy card JSON"
+    assert card.view_output_button.accessibleName() == "View this card output"
+    assert card.export_button.accessibleName() == "Export data"
+    assert card.close_button.accessibleName() == "Close card"
+    assert card.collapse_button.accessibleName() == "Collapse or expand card"
+
+
+def test_failed_card_discards_partial_output_and_stops_page_chain():
+    page = MakeDataWidget()
+    failing = _OperationCard(_FailAfterFirstOperation(), page)
+    next_operation = _CopyOperation()
+    following = _OperationCard(next_operation, page)
+    page.workspace_card_widget.add_card(failing)
+    page.workspace_card_widget.add_card(following)
+    page.dataset = [Atoms("H"), Atoms("He")]
+    following.result_dataset = [Atoms("Li")]
+    following.set_output_available(True)
+
+    with patch(
+        "NepTrainKit.ui.widgets.card_widget.MessageManager.send_error_message"
+    ) as error_message, patch(
+        "NepTrainKit.ui.pages.makedata.MessageManager.send_success_message"
+    ) as success_message:
+        page.run_card()
+        assert _wait_until(lambda: failing.run_outcome == "failed")
+
+    assert failing.result_dataset == []
+    assert not failing.view_output_button.isEnabled()
+    assert following.run_outcome == "idle"
+    assert following.result_dataset == []
+    assert not following.view_output_button.isEnabled()
+    assert next_operation.calls == 0
+    assert page._last_completed_card_index is None
+    error_message.assert_called_once()
+    success_message.assert_not_called()
+
+
+def test_card_group_propagates_child_failure_without_running_later_children():
+    group = CardGroup()
+    failing = _OperationCard(_FailAfterFirstOperation(), group)
+    next_operation = _CopyOperation()
+    following = _OperationCard(next_operation, group)
+    group.add_card(failing)
+    group.add_card(following)
+    group.set_dataset([Atoms("H"), Atoms("He")])
+    following.result_dataset = [Atoms("Li")]
+    following.set_output_available(True)
+
+    with patch(
+        "NepTrainKit.ui.widgets.card_widget.MessageManager.send_error_message"
+    ):
+        group.run()
+        assert _wait_until(lambda: group.run_outcome == "failed")
+
+    assert group.result_dataset == []
+    assert following.result_dataset == []
+    assert not following.view_output_button.isEnabled()
+    assert next_operation.calls == 0
+    assert not group.view_output_button.isEnabled()
+
+
+def test_card_group_finishes_after_enabled_post_filter():
+    group = CardGroup()
+    child = _OperationCard(_CopyOperation(), group)
+    filter_card = _FilterCard(group)
+    group.add_card(child)
+    group.set_filter_card(filter_card)
+    group.set_dataset([Atoms("H"), Atoms("He")])
+    completions = []
+    group.runFinishedSignal.connect(completions.append)
+
+    group.run()
+    assert _wait_until(lambda: group.run_outcome == "succeeded")
+
+    assert completions == [group.index]
+    assert len(group.result_dataset) == 1
+    assert group.result_dataset == filter_card.result_dataset
+
+
+def test_stopped_card_reports_cancellation_and_disables_partial_output():
+    card = _OperationCard(_SlowOperation())
+    card.set_dataset([Atoms("H") for _ in range(8)])
+    card.run()
+    assert _wait_until(
+        lambda: hasattr(card, "worker_thread") and card.worker_thread.isRunning()
+    )
+
+    card.stop()
+    assert _wait_until(lambda: card.run_outcome == "canceled")
+
+    assert "Stopped" in card.status_label.text()
+    assert not card.view_output_button.isEnabled()

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-24 09:11+0800\n"
+"POT-Creation-Date: 2026-07-25 15:34+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -118,7 +118,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md e5b08b2de48c451c96891bad7f718944
+#: ../../source/module/show-nep-reference.md 042944dea0e242f49fc0daf9bda33055
 msgid ".. image:: ../_static/image/generated/show_nep_icons/init.svg"
 msgstr ""
 
@@ -152,7 +152,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 9e77ce88caed4d4280ba887bcafd0320
+#: ../../source/module/show-nep-reference.md 7353099cad1f4a1586ba65d11d00d879
 msgid ".. image:: ../_static/image/generated/show_nep_icons/pan.svg"
 msgstr ""
 
@@ -187,7 +187,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 11b363878a14428085056a0b836e6c04
+#: ../../source/module/show-nep-reference.md 0aab39c7907a4c16a906ff59d8535479
 msgid ".. image:: ../_static/image/generated/show_nep_icons/index.svg"
 msgstr ""
 
@@ -232,7 +232,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md c869b1a39388405886c454395ec924a1
+#: ../../source/module/show-nep-reference.md 9448565a113e4a41816e046c226b4576
 msgid ".. image:: ../_static/image/generated/show_nep_icons/data_range.svg"
 msgstr ""
 
@@ -253,7 +253,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md e87539d50fe6478cb612aee7ce699963
+#: ../../source/module/show-nep-reference.md 0793dd5c62614ba1ae996c61e5ca239c
 msgid ".. image:: ../_static/image/generated/show_nep_icons/supercell.svg"
 msgstr ""
 
@@ -274,7 +274,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md a29301ce0ed64087aa5d14dd3f1090b6
+#: ../../source/module/show-nep-reference.md f621ffb5db95430388801e24c58b2b82
 msgid ".. image:: ../_static/image/generated/show_nep_icons/find_max.svg"
 msgstr ""
 
@@ -295,7 +295,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 3f339b8b687649e89b5460ec68d06ef3
+#: ../../source/module/show-nep-reference.md 6cc67490699d4d3992e829dd42df3ca7
 msgid ".. image:: ../_static/image/generated/show_nep_icons/sparse.svg"
 msgstr ""
 
@@ -316,7 +316,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 0ad7802b35b843bcab841312dca0de8c
+#: ../../source/module/show-nep-reference.md 5b2802b0868b421796d765d0b3841bee
 msgid ".. image:: ../_static/image/generated/show_nep_icons/pen.svg"
 msgstr ""
 
@@ -338,7 +338,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md ff6f54f1ea1a46d1aed024c02f47706f
+#: ../../source/module/show-nep-reference.md e2f8aa3602104d449606d295675cec0a
 msgid ".. image:: ../_static/image/generated/show_nep_icons/discovery.svg"
 msgstr ""
 
@@ -364,7 +364,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md bbefaa801065469099de40b662a7f2d2
+#: ../../source/module/show-nep-reference.md c13ccb8edbdc40c7ad42007eaf5b5be6
 msgid ".. image:: ../_static/image/generated/show_nep_icons/inspect.svg"
 msgstr ""
 
@@ -385,7 +385,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 1aa61749587a4e42a4ec28f1d56fe606
+#: ../../source/module/show-nep-reference.md 7114f7e352f242529608f97c271113fc
 msgid ".. image:: ../_static/image/generated/show_nep_icons/inverse.svg"
 msgstr ""
 
@@ -407,7 +407,7 @@ msgid ""
 " width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 51489267414245309c16a185ad94f5dd
+#: ../../source/module/show-nep-reference.md 3d226b6ce0d544cabab6288cfdf48e1e
 msgid ".. image:: ../_static/image/generated/show_nep_icons/undo_selection.svg"
 msgstr ""
 
@@ -429,7 +429,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md d7c8e41df54e4f5bbe552690335a7878
+#: ../../source/module/show-nep-reference.md d818fe70af454d2191f54abb419f1ae9
 msgid ".. image:: ../_static/image/generated/show_nep_icons/undo_delete.svg"
 msgstr ""
 
@@ -452,8 +452,8 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 4a2ff5150d024b54965ef44f3bd24632
-#: ce09de93d3f947efbb5e81ba3868b071
+#: ../../source/module/show-nep-reference.md 6355690636db499dae261f07272c9ea2
+#: 871da166574744c2b26f48bc35ab7a68
 msgid ".. image:: ../_static/image/generated/show_nep_icons/delete.svg"
 msgstr ""
 
@@ -475,7 +475,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 55e323340b79467687cf3bb9dead0664
+#: ../../source/module/show-nep-reference.md 56cc04efc777483cb0e1d512a24abfbf
 msgid ".. image:: ../_static/image/generated/show_nep_icons/edit_info.svg"
 msgstr ""
 
@@ -496,7 +496,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 76ef1f5f792a4bacbd1720d1d4282108
+#: ../../source/module/show-nep-reference.md 05153fe5bb96419bbe450b3197983250
 msgid ".. image:: ../_static/image/generated/show_nep_icons/export.svg"
 msgstr ""
 
@@ -522,7 +522,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md c5876c1b4aea46cab15e4046feec8c2f
+#: ../../source/module/show-nep-reference.md 62dd06d1baa64d1aaa6500af9dabdf00
 msgid ".. image:: ../_static/image/generated/show_nep_icons/alignment.svg"
 msgstr ""
 
@@ -543,7 +543,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 83c860422e424d009adeadefb08a7d6e
+#: ../../source/module/show-nep-reference.md 50ce7da7a5b04fabb011b879dbce599c
 msgid ".. image:: ../_static/image/generated/show_nep_icons/dft_d3.png"
 msgstr ""
 
@@ -564,13 +564,13 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md dca97b6f66ee414fbdf44cce2b715731
+#: ../../source/module/show-nep-reference.md c303505c99c2421bb7a95d496516b6a2
 msgid ".. image:: ../_static/image/generated/show_nep_icons/summary.svg"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:38
 #: 81b589dc2e984a4b9a084a42e82ae847
-msgid "`Training Set Check`"
+msgid "`Training Set Audit`"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:38
@@ -581,7 +581,9 @@ msgstr "No (opens the audit page)"
 #: ../../source/module/show-nep-reference.md:38
 #: d33552bc2781408ebeb202b8182ffaf0
 msgid "查看整体组成、数据质量、标签、结构相和磁类型"
-msgstr "Inspect overall composition, data quality, labels, structural phases, and magnetic types."
+msgstr ""
+"Inspect overall composition, data quality, labels, structural phases, and"
+" magnetic types."
 
 #: ../../source/module/show-nep-reference.md:38
 #: 8b1bc77988bf4c358ac2ec0c2942221f
@@ -591,7 +593,7 @@ msgid ""
 " width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 1311ef5e67cb4e568b1068689f7bb24b
+#: ../../source/module/show-nep-reference.md b4b097f538e648bea04300c676321f64
 msgid ""
 ".. image:: "
 "../_static/image/generated/show_nep_icons/distribution_inspector.svg"
@@ -624,7 +626,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 478739509cc44ad8843878fc7592fb84
+#: ../../source/module/show-nep-reference.md 92d83f7b761e4c25865b47d9a73d587e
 msgid ".. image:: ../_static/image/generated/show_nep_icons/view_change.svg"
 msgstr ""
 
@@ -646,7 +648,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 4b90e7900cde44fc8faed27ea0dbbcfa
+#: ../../source/module/show-nep-reference.md 1a37000b0e894c269b4d87d9090ac8d4
 msgid ".. image:: ../_static/image/generated/show_nep_icons/auto_distance.svg"
 msgstr ""
 
@@ -668,7 +670,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 4506a3efe3bb493b941cba55fb42897a
+#: ../../source/module/show-nep-reference.md 508062ba3a2740bda0b8a6d144ac486c
 msgid ".. image:: ../_static/image/generated/show_nep_icons/show_bond.svg"
 msgstr ""
 
@@ -690,7 +692,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md d67a68a4e6bf41a395a6be5b417d6611
+#: ../../source/module/show-nep-reference.md fd15ff308bdd4ab0a6060933616f1be8
 msgid ".. image:: ../_static/image/generated/show_nep_icons/xyz.svg"
 msgstr ""
 
@@ -711,7 +713,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 03250a0248a847838eb84ee81a759209
+#: ../../source/module/show-nep-reference.md bfa788c4d61747998d8cf7f28668276b
 msgid ".. image:: ../_static/image/generated/show_nep_icons/export1.svg"
 msgstr ""
 
@@ -732,7 +734,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md b3831d2c753d498e99646299a6c30401
+#: ../../source/module/show-nep-reference.md abb142a464724e639336eb69dd453c53
 msgid ".. image:: ../_static/image/generated/show_nep_icons/defect.svg"
 msgstr ""
 
@@ -784,8 +786,8 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 886e0461b0c44834a01a635df8c3dbf4
-#: fbd84acfd33f418a826eb6a5f8d832f5
+#: ../../source/module/show-nep-reference.md b44ee66ed88b4247bc0c5264d126812a
+#: b5aa41f2d53f462391ea2a7100caf6aa
 msgid ".. image:: ../_static/image/generated/show_nep_icons/open.svg"
 msgstr ""
 
@@ -816,7 +818,7 @@ msgid ""
 "width=\"20\" />"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 231612332cfb46f9ae17d38040b502d6
+#: ../../source/module/show-nep-reference.md bba7522a8f9245beba693a1b2077e35f
 msgid ".. image:: ../_static/image/generated/show_nep_icons/save.svg"
 msgstr ""
 
@@ -1405,7 +1407,7 @@ msgstr ""
 
 #: ../../source/module/show-nep-reference.md:183
 #: bb61802b940f4a13a49fca3129f754e2
-msgid "L. `Training Set Check`"
+msgid "L. `Training Set Audit`"
 msgstr ""
 
 #: ../../source/module/show-nep-reference.md:185
@@ -1421,12 +1423,16 @@ msgstr "Scope: current active structures. Deleted structures are excluded."
 #: ../../source/module/show-nep-reference.md:187
 #: c5afe347621e4237ab805c23f17f1661
 msgid "概览：结构/原子统计、标签可用性、元素共现矩阵与精确元素集合。"
-msgstr "Overview: structure and atom statistics, label availability, the element co-occurrence matrix, and exact element sets."
+msgstr ""
+"Overview: structure and atom statistics, label availability, the element "
+"co-occurrence matrix, and exact element sets."
 
 #: ../../source/module/show-nep-reference.md:188
 #: 780be84f5e6d417faa961e7b0aa3f3ad
 msgid "证据：数据质量、局域化学、结构相和磁类型；耗时证据在后台计算。"
-msgstr "Evidence: data quality, local chemistry, structural phases, and magnetic types; expensive evidence is computed in the background."
+msgstr ""
+"Evidence: data quality, local chemistry, structural phases, and magnetic "
+"types; expensive evidence is computed in the background."
 
 #: ../../source/module/show-nep-reference.md:189
 #: b73375183f124220aad6f51e16a6318f
@@ -3121,11 +3127,11 @@ msgstr ""
 "src=\"../_static/image/generated/show_nep_icons/pause.svg\" width=\"18\" "
 "/>."
 
-#: ../../source/module/show-nep-reference.md ff8503c656c64a12a08e484455fe90ed
+#: ../../source/module/show-nep-reference.md 5a1d03313db449118b42a81e7311831e
 msgid ".. image:: ../_static/image/generated/show_nep_icons/play.svg"
 msgstr ""
 
-#: ../../source/module/show-nep-reference.md 5f5cb5a0e3e5430193ef69cb720b7e6d
+#: ../../source/module/show-nep-reference.md 452842b1807e4f71b7f2337d5a66955a
 msgid ".. image:: ../_static/image/generated/show_nep_icons/pause.svg"
 msgstr ""
 
@@ -3509,4 +3515,10 @@ msgstr "Example: [`../example/NEP-display.md`](../example/NEP-display.md)"
 #~ msgstr ""
 
 #~ msgid ".. image:: ../_static/image/show_nep/q_search_modes.png"
+#~ msgstr ""
+
+#~ msgid "`Training Set Check`"
+#~ msgstr ""
+
+#~ msgid "L. `Training Set Check`"
 #~ msgstr ""

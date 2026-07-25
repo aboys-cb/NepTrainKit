@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-25 13:17+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -168,23 +168,34 @@ msgstr "Open a local directory or URL."
 msgid "用 `Ctrl+F` 搜索项目、标签、备注或路径。"
 msgstr "Press `Ctrl+F` to search projects, tags, notes, or paths."
 
-#: ../../source/module/data-management.md:61 b2071031317041349eb62de4927d5342
+#: ../../source/module/data-management.md:61 f9b86ec423734854bf92e72bd273b603
+msgid ""
+"选择 NEP 结果目录后，软件会尝试从 `energy_train.out`、`force_train.out` 和 "
+"`virial_train.out` 计算训练 RMSE。某个输出缺失或列格式不完整时，会指出具体文件并保留 当前手动输入值，不会把缺失结果当作零误差。"
+msgstr ""
+"After you select a NEP results directory, the application attempts to "
+"calculate training RMSE from `energy_train.out`, `force_train.out`, and "
+"`virial_train.out`. If an output is missing or its columns are incomplete, "
+"the dialog identifies that file and preserves the current manual value "
+"instead of treating the missing result as zero error."
+
+#: ../../source/module/data-management.md:65 b2071031317041349eb62de4927d5342
 msgid "存储位置"
 msgstr "Storage location"
 
-#: ../../source/module/data-management.md:63 9b9518b2fc2b4d25b778c1bf9b1b373b
+#: ../../source/module/data-management.md:67 9b9518b2fc2b4d25b778c1bf9b1b373b
 msgid "本地数据库默认放在用户配置目录："
 msgstr "The local database is stored in the user configuration directory by default:"
 
-#: ../../source/module/data-management.md:65 eac47f9d3f194cd7ba7538d8e1d5209c
+#: ../../source/module/data-management.md:69 eac47f9d3f194cd7ba7538d8e1d5209c
 msgid "Windows：`C:\\Users\\<You>\\AppData\\Local\\NepTrainKit\\mlpman.db`"
-msgstr ""
+msgstr "Windows：`C:\\Users\\<You>\\AppData\\Local\\NepTrainKit\\mlpman.db`"
 
-#: ../../source/module/data-management.md:66 834773945777479d9982753d95185c0e
+#: ../../source/module/data-management.md:70 834773945777479d9982753d95185c0e
 msgid "Linux：`~/.config/NepTrainKit/mlpman.db`"
-msgstr ""
+msgstr "Linux：`~/.config/NepTrainKit/mlpman.db`"
 
-#: ../../source/module/data-management.md:68 7dbae516e17044f98a6162f03f62c2e1
+#: ../../source/module/data-management.md:72 7dbae516e17044f98a6162f03f62c2e1
 msgid "这个数据库只记录管理信息，不会自动复制你的大体积训练数据。移动训练目录后，记得更新记录里的路径。"
 msgstr ""
 "The database stores management metadata only; it does not copy large "

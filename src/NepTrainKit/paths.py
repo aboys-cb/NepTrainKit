@@ -67,8 +67,12 @@ def check_path_type(path: str | Path) -> str:
     return "file" if p.suffix else "folder"
 
 
-def get_user_config_path() -> Path:
-    """Return the user-specific configuration path as a ``Path`` instance."""
+def get_user_config_path(*, create: bool = True) -> Path:
+    """Return the user-specific configuration path as a ``Path`` instance.
+
+    ``create=False`` is reserved for startup error reporting, where attempting
+    to create the directory again would hide the original failure.
+    """
     if platform.system() == 'Windows':
         local = os.getenv('LOCALAPPDATA')
         if not local:
@@ -76,9 +80,11 @@ def get_user_config_path() -> Path:
             local_path = as_path(user_profile) / 'AppData' / 'Local' if user_profile else Path.home() / 'AppData' / 'Local'
         else:
             local_path = as_path(local)
-        return ensure_directory(local_path / 'NepTrainKit')
+        config_path = local_path / 'NepTrainKit'
+    else:
+        config_path = Path.home() / '.config' / 'NepTrainKit'
 
-    return ensure_directory(Path.home() / '.config' / 'NepTrainKit')
+    return ensure_directory(config_path) if create else config_path
 
 
 def get_bundled_nep89_path() -> Path:
@@ -98,4 +104,3 @@ __all__ = [
     'get_user_config_path',
     'get_bundled_nep89_path',
 ]
-

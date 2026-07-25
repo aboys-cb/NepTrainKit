@@ -14,6 +14,7 @@ from PySide6.QtCore import QLocale, QTranslator
 from PySide6.QtWidgets import QApplication
 from loguru import logger
 
+from NepTrainKit import module_path
 from NepTrainKit.config import Config
 
 SUPPORTED_LANGUAGES: Final[tuple[str, ...]] = ("auto", "en_US", "zh_CN")
@@ -137,7 +138,7 @@ def translation_path(language: str) -> Path | None:
     resolved = resolve_language(language, "en_US") if language == "auto" else normalize_language(language)
     if resolved != "zh_CN":
         return None
-    return Path(__file__).resolve().parent / "translations" / f"{TRANSLATION_BASENAME}_{resolved}.qm"
+    return module_path / "translations" / f"{TRANSLATION_BASENAME}_{resolved}.qm"
 
 
 def install_translator(app: QApplication, language: object | None = None) -> str:

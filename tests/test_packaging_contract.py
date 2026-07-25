@@ -15,7 +15,11 @@ def test_pyproject_declares_nep_adapters_runtime_dependency():
 
     assert data["project"]["requires-python"] == ">=3.10,<3.14"
     assert "Programming Language :: Python :: 3.13" in data["project"]["classifiers"]
-    assert "nep-adapters>=1.0,<2" in dependencies
+    assert "nep-adapters>=1.0" in dependencies
+    assert not any(
+        requirement.startswith("nep-adapters") and "<" in requirement
+        for requirement in dependencies
+    )
     assert "packaging>=24.0" in dependencies
 
 
@@ -39,7 +43,11 @@ def test_development_requirements_match_nep_adapters_contract():
         if line.strip() and not line.lstrip().startswith("#")
     }
 
-    assert "nep-adapters>=1.0,<2" in requirements
+    assert "nep-adapters>=1.0" in requirements
+    assert not any(
+        requirement.startswith("nep-adapters") and "<" in requirement
+        for requirement in requirements
+    )
     assert "packaging>=24.0" in requirements
 
 
@@ -94,6 +102,8 @@ def test_macos_wheels_use_explicit_openmp_repair_and_portability_gate():
 
     assert 'default_omp_mode = "0" if sys.platform == "darwin" else "auto"' in setup_source
     assert 'echo "NEPKIT_OPENMP=1"' in workflow
+    assert '- [macos-15, macosx_arm64, ""]' in workflow
+    assert "- [macos-latest, macosx_arm64" not in workflow
     assert "CIBW_REPAIR_WHEEL_COMMAND_MACOS" in workflow
     assert "delocate-wheel --require-archs" in workflow
     assert "verify_macos_wheel.py wheelhouse/*.whl" in workflow

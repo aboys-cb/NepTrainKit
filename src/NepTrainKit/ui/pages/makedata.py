@@ -568,7 +568,7 @@ class MakeDataWidget(QWidget):
                 bool(self._cards_for_export(include_all=True))
             )
             MessageManager.send_success_message(
-                self.tr("Perturbation training set created successfully.")
+                self.tr("Training structures generated.")
             )
 
     def request_selected_outputs(self) -> None:

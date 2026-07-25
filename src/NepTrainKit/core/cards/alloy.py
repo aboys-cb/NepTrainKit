@@ -3,18 +3,25 @@
 from __future__ import annotations
 
 import ast
+import hashlib
 import json
 import math
+import random
 import re
 from dataclasses import dataclass, field
+from functools import lru_cache
 from itertools import combinations
 from typing import Any
 
 import numpy as np
+from ase import Atoms
+from ase.build import make_supercell
 from ase.data import atomic_masses, atomic_numbers
 
 from NepTrainKit.core.alloy import (
     assign_random_occupancy,
+    best_supercell_factors_max_atoms,
+    fractions_to_counts_exact,
     parse_composition,
     parse_element_list,
     simplex_grid_points,
@@ -23,7 +30,7 @@ from NepTrainKit.core.alloy import (
 from NepTrainKit.core.config_type import append_config_tag, stable_config_id
 
 from .geometry import scaled_positions
-from .operation import StructureOperation
+from .operation import GeneratorOperation, StructureOperation
 
 
 def _as_list(value: Any) -> list:
@@ -458,6 +465,706 @@ class CompositionSweepOperation(StructureOperation):
 
 
 @dataclass(frozen=True)
+class OrderedAlloyPrototypeParams:
+    """Parameters for ordered-alloy prototype generation."""
+
+    prototype: str = "L12/A3B"
+    a_range: tuple[float, float, float] = (3.6, 3.6, 0.1)
+    covera: float = 1.0
+    sublattice_elements: str = "A:X,B:X"
+    auto_supercell: bool = True
+    max_atoms: int = 128
+    rep: tuple[int, int, int] = (2, 2, 2)
+    max_outputs: int = 200
+
+
+@dataclass(frozen=True)
+class _PrototypeDefinition:
+    key: str
+    labels: tuple[str, ...]
+    scaled_positions: tuple[tuple[float, float, float], ...]
+    cell_kind: str
+
+
+_ORDERED_PROTOTYPES = {
+    "A1": _PrototypeDefinition(
+        key="A1",
+        labels=("A", "A", "A", "A"),
+        scaled_positions=((0, 0, 0), (0, 0.5, 0.5), (0.5, 0, 0.5), (0.5, 0.5, 0)),
+        cell_kind="cubic",
+    ),
+    "A2": _PrototypeDefinition(
+        key="A2",
+        labels=("A", "A"),
+        scaled_positions=((0, 0, 0), (0.5, 0.5, 0.5)),
+        cell_kind="cubic",
+    ),
+    "A3": _PrototypeDefinition(
+        key="A3",
+        labels=("A", "A"),
+        scaled_positions=((0, 0, 0), (2 / 3, 1 / 3, 0.5)),
+        cell_kind="hexagonal",
+    ),
+    "L12": _PrototypeDefinition(
+        key="L12",
+        labels=("B", "A", "A", "A"),
+        scaled_positions=((0, 0, 0), (0, 0.5, 0.5), (0.5, 0, 0.5), (0.5, 0.5, 0)),
+        cell_kind="cubic",
+    ),
+    "B2": _PrototypeDefinition(
+        key="B2",
+        labels=("A", "B"),
+        scaled_positions=((0, 0, 0), (0.5, 0.5, 0.5)),
+        cell_kind="cubic",
+    ),
+    "L10": _PrototypeDefinition(
+        key="L10",
+        labels=("A", "A", "B", "B"),
+        scaled_positions=((0, 0, 0), (0.5, 0.5, 0), (0.5, 0, 0.5), (0, 0.5, 0.5)),
+        cell_kind="tetragonal",
+    ),
+}
+
+
+def _canonical_prototype_name(text: str) -> str:
+    normalized = re.sub(r"[^A-Za-z0-9]", "", str(text or "")).upper()
+    aliases = {
+        "A1": "A1",
+        "FCC": "A1",
+        "A1FCC": "A1",
+        "A2": "A2",
+        "BCC": "A2",
+        "A2BCC": "A2",
+        "A3": "A3",
+        "HCP": "A3",
+        "A3HCP": "A3",
+        "L12": "L12",
+        "L12A3B": "L12",
+        "A3B": "L12",
+        "B2": "B2",
+        "B2AB": "B2",
+        "L10": "L10",
+        "L10AB": "L10",
+    }
+    if normalized not in aliases:
+        supported = ", ".join(_ORDERED_PROTOTYPES)
+        raise ValueError(f"Ordered Alloy Prototype: unsupported prototype {text!r}; choose one of {supported}.")
+    return aliases[normalized]
+
+
+def _canonical_element(text: str) -> str:
+    symbol = str(text or "").strip()
+    if not symbol:
+        symbol = "X"
+    symbol = symbol[0].upper() + symbol[1:].lower()
+    if symbol not in atomic_numbers:
+        raise ValueError(
+            f"Ordered Alloy Prototype: invalid element or placeholder {text!r}. "
+            "Use an element symbol or X."
+        )
+    return symbol
+
+
+def _parse_sublattice_elements(text: str, labels: tuple[str, ...]) -> dict[str, str]:
+    raw_text = str(text or "").strip()
+    if not raw_text:
+        raw: dict[str, Any] = {}
+    elif raw_text.startswith("{"):
+        try:
+            loaded = json.loads(raw_text)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Ordered Alloy Prototype: invalid sublattice_elements JSON: {exc.msg}.") from exc
+        if not isinstance(loaded, dict):
+            raise ValueError("Ordered Alloy Prototype: sublattice_elements JSON must be an object.")
+        raw = loaded
+    else:
+        raw = {}
+        for token in raw_text.split(","):
+            if not token.strip():
+                continue
+            if ":" not in token:
+                raise ValueError("Ordered Alloy Prototype: use label:element entries such as A:Cu,B:Au.")
+            label, value = token.split(":", 1)
+            raw[label.strip()] = value.strip()
+
+    required = tuple(dict.fromkeys(labels))
+    known_labels = {label for definition in _ORDERED_PROTOTYPES.values() for label in definition.labels}
+    extra = sorted(set(str(key) for key in raw) - known_labels)
+    if extra:
+        raise ValueError(f"Ordered Alloy Prototype: unknown sublattice labels: {', '.join(extra)}.")
+    return {label: _canonical_element(raw.get(label, "X")) for label in required}
+
+
+def _scan_lattice_values(values: tuple[float, float, float]) -> list[float]:
+    if len(values) != 3:
+        raise ValueError("Ordered Alloy Prototype: a_range must contain start, stop, and step.")
+    start, stop, step = (float(value) for value in values)
+    if not np.all(np.isfinite([start, stop, step])) or start <= 0.0 or stop <= 0.0 or step <= 0.0:
+        raise ValueError("Ordered Alloy Prototype: a_range values must be finite and positive.")
+    if stop < start:
+        start, stop = stop, start
+    return [float(value) for value in np.arange(start, stop + 0.5 * step, step, dtype=float)]
+
+
+class OrderedAlloyPrototypeOperation(GeneratorOperation):
+    """Generate periodic prototypes with an independent crystallographic sublattice array."""
+
+    def generate(self, params: OrderedAlloyPrototypeParams) -> list:
+        prototype = _canonical_prototype_name(params.prototype)
+        definition = _ORDERED_PROTOTYPES[prototype]
+        occupants = _parse_sublattice_elements(params.sublattice_elements, definition.labels)
+        max_atoms = int(params.max_atoms)
+        max_outputs = int(params.max_outputs)
+        if max_atoms <= 0:
+            raise ValueError("Ordered Alloy Prototype: max_atoms must be >= 1.")
+        if max_outputs <= 0:
+            raise ValueError("Ordered Alloy Prototype: max_outputs must be >= 1.")
+        if len(definition.labels) > max_atoms:
+            raise ValueError(
+                f"Ordered Alloy Prototype: {prototype} primitive/conventional cell has "
+                f"{len(definition.labels)} atoms, exceeding max_atoms={max_atoms}."
+            )
+
+        outputs = []
+        for a in _scan_lattice_values(params.a_range):
+            base = self._build_base(definition, occupants, a, float(params.covera))
+            if params.auto_supercell:
+                factors = best_supercell_factors_max_atoms(base, max_atoms)
+                rep = (factors.na, factors.nb, factors.nc)
+            else:
+                rep = tuple(int(value) for value in params.rep)
+                if len(rep) != 3 or any(value <= 0 for value in rep):
+                    raise ValueError("Ordered Alloy Prototype: rep must contain three positive integers.")
+            atom_count = len(base) * math.prod(rep)
+            if atom_count > max_atoms:
+                raise ValueError(
+                    f"Ordered Alloy Prototype: rep={rep} produces {atom_count} atoms, "
+                    f"exceeding max_atoms={max_atoms}."
+                )
+
+            atoms = make_supercell(base, np.diag(rep))
+            atoms.wrap()
+            metadata = {
+                "prototype": prototype,
+                "a": float(a),
+                "covera": self._effective_covera(definition, float(params.covera)),
+                "rep": list(rep),
+                "sublattice_elements": occupants,
+                "sublattice_counts": {
+                    label: int(np.count_nonzero(np.asarray(atoms.arrays["sublattice"], dtype=str) == label))
+                    for label in dict.fromkeys(definition.labels)
+                },
+            }
+            atoms.info["ordered_alloy_prototype"] = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
+            append_config_tag(atoms, f"OrderedProto({prototype},a={a:.6g},rep={rep[0]}x{rep[1]}x{rep[2]})")
+            outputs.append(atoms)
+            if len(outputs) >= max_outputs:
+                break
+        return outputs
+
+    @staticmethod
+    def _effective_covera(definition: _PrototypeDefinition, covera: float) -> float:
+        if definition.cell_kind == "cubic":
+            return 1.0
+        if not np.isfinite(covera) or covera <= 0.0:
+            raise ValueError("Ordered Alloy Prototype: c/a must be finite and positive.")
+        return float(covera)
+
+    @classmethod
+    def _build_base(
+        cls,
+        definition: _PrototypeDefinition,
+        occupants: dict[str, str],
+        a: float,
+        covera: float,
+    ) -> Atoms:
+        effective_covera = cls._effective_covera(definition, covera)
+        if definition.cell_kind == "hexagonal":
+            cell = np.array(
+                [
+                    [a, 0.0, 0.0],
+                    [-0.5 * a, 0.5 * np.sqrt(3.0) * a, 0.0],
+                    [0.0, 0.0, a * effective_covera],
+                ],
+                dtype=float,
+            )
+        else:
+            cell = np.diag([a, a, a * effective_covera])
+        symbols = [occupants[label] for label in definition.labels]
+        atoms = Atoms(
+            symbols=symbols,
+            scaled_positions=np.asarray(definition.scaled_positions, dtype=float),
+            cell=cell,
+            pbc=True,
+        )
+        atoms.new_array("sublattice", np.asarray(definition.labels, dtype="U8"))
+        return atoms
+
+
+@dataclass(frozen=True)
+class FiniteCellAlloyOccupancyParams:
+    """Parameters for integer-authoritative finite-cell alloy occupancy."""
+
+    site_rules: str = (
+        '{"A":{"composition":{"X":1.0},"elements":["X"],"mode":"fixed_fraction"},'
+        '"B":{"composition":{"X":1.0},"elements":["X"],"mode":"fixed_fraction"}}'
+    )
+    arrangements_per_composition: int = 1
+    use_seed: bool = True
+    seed: int = 0
+    max_outputs: int = 200
+
+
+@dataclass(frozen=True)
+class FiniteCellAlloyEstimate:
+    """Queryable pre-run size estimate for one input structure."""
+
+    composition_count: int
+    arrangements_per_composition: int
+    estimated_total_outputs: int
+    max_outputs: int
+    site_counts: tuple[tuple[str, int], ...]
+
+
+@dataclass(frozen=True)
+class _CountSpace:
+    label: str
+    elements: tuple[str, ...]
+    lower: tuple[int, ...]
+    upper: tuple[int, ...]
+    n_sites: int
+    realization: str
+    requested: tuple[tuple[str, tuple[float, ...]], ...]
+
+    def _ways(self, position: int, remaining: int) -> int:
+        return _bounded_composition_ways(self.lower, self.upper, position, remaining)
+
+    @property
+    def capacity(self) -> int:
+        return self._ways(0, self.n_sites)
+
+    def unrank(self, rank: int) -> tuple[int, ...]:
+        if rank < 0 or rank >= self.capacity:
+            raise IndexError(f"Composition rank {rank} is outside site set {self.label!r}.")
+        remaining = self.n_sites
+        counts: list[int] = []
+        for position in range(len(self.elements)):
+            for count in range(self.lower[position], min(self.upper[position], remaining) + 1):
+                ways = self._ways(position + 1, remaining - count)
+                if rank < ways:
+                    counts.append(count)
+                    remaining -= count
+                    break
+                rank -= ways
+            else:  # pragma: no cover - guarded by capacity/unrank invariants
+                raise RuntimeError("Finite-cell composition unranking failed.")
+        return tuple(counts)
+
+
+@lru_cache(maxsize=65_536)
+def _bounded_composition_ways(
+    lower: tuple[int, ...],
+    upper: tuple[int, ...],
+    position: int,
+    remaining: int,
+) -> int:
+    if position == len(lower):
+        return int(remaining == 0)
+    minimum = lower[position]
+    maximum = min(upper[position], remaining)
+    if maximum < minimum:
+        return 0
+    return sum(
+        _bounded_composition_ways(lower, upper, position + 1, remaining - count)
+        for count in range(minimum, maximum + 1)
+    )
+
+
+class FiniteCellAlloyOccupancyOperation(StructureOperation):
+    """Assign unique alloy occupancies from feasible integer counts per site set."""
+
+    _ENUMERATION_LIMIT = 20_000
+
+    def estimate(self, structure, params: FiniteCellAlloyOccupancyParams) -> FiniteCellAlloyEstimate:
+        site_indices = self._site_indices(structure)
+        spaces = self._build_spaces(site_indices, params.site_rules)
+        composition_count = math.prod(space.capacity for space in spaces)
+        per_composition = int(params.arrangements_per_composition)
+        max_outputs = int(params.max_outputs)
+        if per_composition <= 0:
+            raise ValueError("Finite-Cell Alloy Occupancy: arrangements_per_composition must be >= 1.")
+        if max_outputs <= 0:
+            raise ValueError("Finite-Cell Alloy Occupancy: max_outputs must be >= 1.")
+        return FiniteCellAlloyEstimate(
+            composition_count=int(composition_count),
+            arrangements_per_composition=per_composition,
+            estimated_total_outputs=int(min(composition_count * per_composition, max_outputs)),
+            max_outputs=max_outputs,
+            site_counts=tuple((label, len(indices)) for label, indices in site_indices.items()),
+        )
+
+    def run_structure(self, structure, params: FiniteCellAlloyOccupancyParams) -> list:
+        site_indices = self._site_indices(structure)
+        spaces = self._build_spaces(site_indices, params.site_rules)
+        estimate = self.estimate(structure, params)
+        plan_count = estimate.composition_count
+        base_seed = int(params.seed) if params.use_seed else None
+        cfg_id = int(stable_config_id(structure))
+        selection_seed = None if base_seed is None else int(base_seed + cfg_id * 1_000_003)
+        plan_indices = self._plan_indices(
+            plan_count,
+            min(plan_count, estimate.max_outputs),
+            seed=selection_seed,
+        )
+
+        outputs = []
+        for plan_index in plan_indices:
+            plan = self._decode_plan(spaces, plan_index)
+            remaining = estimate.max_outputs - len(outputs)
+            if remaining <= 0:
+                break
+            requested = min(estimate.arrangements_per_composition, remaining)
+            theoretical = self._theoretical_arrangements(plan, spaces)
+            target = min(requested, theoretical)
+            rng, derived_seed = self._rng(base_seed, cfg_id, plan_index)
+            arrangements = self._arrangements(plan, spaces, target, theoretical, rng)
+            composition_id = self._composition_id(plan, spaces)
+            for arrangement_index, assignments in enumerate(arrangements):
+                atoms = structure.copy()
+                if "sublattice" not in atoms.arrays:
+                    atoms.new_array("sublattice", np.full(len(atoms), "all", dtype="U8"))
+                symbols = np.asarray(atoms.get_chemical_symbols(), dtype=object)
+                for space, assigned in zip(spaces, assignments):
+                    symbols[site_indices[space.label]] = np.asarray(assigned, dtype=object)
+                atoms.set_chemical_symbols(symbols.tolist())
+
+                arrangement_id = self._arrangement_id(assignments, spaces)
+                counts_meta = {
+                    space.label: {
+                        element: int(count)
+                        for element, count in zip(space.elements, counts_for_space)
+                    }
+                    for space, counts_for_space in zip(spaces, plan)
+                }
+                fractions_meta = {
+                    label: {element: count / len(site_indices[label]) for element, count in counts.items()}
+                    for label, counts in counts_meta.items()
+                }
+                metadata = {
+                    "composition_id": composition_id,
+                    "arrangement_id": arrangement_id,
+                    "arrangement_index": int(arrangement_index),
+                    "counts": counts_meta,
+                    "fractions": fractions_meta,
+                    "realization": {space.label: space.realization for space in spaces},
+                    "requested": {
+                        space.label: {
+                            element: values[0] if len(values) == 1 else list(values)
+                            for element, values in space.requested
+                        }
+                        for space in spaces
+                    },
+                    "seed": derived_seed,
+                }
+                atoms.info["finite_cell_alloy"] = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
+                append_config_tag(atoms, f"FiniteAlloy(comp={composition_id},arr={arrangement_id})")
+                outputs.append(atoms)
+                if len(outputs) >= estimate.max_outputs:
+                    return outputs
+        return outputs
+
+    @staticmethod
+    def _site_indices(structure) -> dict[str, np.ndarray]:
+        if len(structure) <= 0:
+            raise ValueError("Finite-Cell Alloy Occupancy: input structure has no sites.")
+        if "sublattice" not in structure.arrays:
+            return {"all": np.arange(len(structure), dtype=int)}
+        raw = np.asarray(structure.arrays["sublattice"], dtype=str)
+        if raw.shape != (len(structure),):
+            raise ValueError("Finite-Cell Alloy Occupancy: atoms.arrays['sublattice'] must be one label per atom.")
+        labels = list(dict.fromkeys(str(value).strip() for value in raw))
+        if any(not label for label in labels):
+            raise ValueError("Finite-Cell Alloy Occupancy: sublattice labels must be non-empty.")
+        return {label: np.nonzero(raw == label)[0].astype(int) for label in labels}
+
+    @staticmethod
+    def _plan_indices(total: int, n_pick: int, *, seed: int | None) -> list[int]:
+        total = int(total)
+        n_pick = min(max(int(n_pick), 0), total)
+        if n_pick <= 0:
+            return []
+        if n_pick == total:
+            return list(range(total))
+        rng = random.Random(seed)
+        start = rng.randrange(total)
+        stride_hint = rng.randrange(1, total)
+        stride = CompositionSweepOperation._coprime_stride(total, stride_hint)
+        return [int((start + index * stride) % total) for index in range(n_pick)]
+
+    @classmethod
+    def _build_spaces(cls, site_indices: dict[str, np.ndarray], rules_text: str) -> tuple[_CountSpace, ...]:
+        try:
+            rules = json.loads(str(rules_text or ""))
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Finite-Cell Alloy Occupancy: invalid site_rules JSON: {exc.msg}.") from exc
+        if not isinstance(rules, dict) or not rules:
+            raise ValueError("Finite-Cell Alloy Occupancy: site_rules must be a non-empty JSON object.")
+        expected = set(site_indices)
+        provided = {str(label) for label in rules}
+        missing = sorted(expected - provided)
+        extra = sorted(provided - expected)
+        if missing or extra:
+            details = []
+            if missing:
+                details.append(f"missing rules for {', '.join(missing)}")
+            if extra:
+                details.append(f"unknown site sets {', '.join(extra)}")
+            raise ValueError("Finite-Cell Alloy Occupancy: " + "; ".join(details) + ".")
+        return tuple(
+            cls._space_from_rule(label, len(site_indices[label]), rules[label])
+            for label in site_indices
+        )
+
+    @classmethod
+    def _space_from_rule(cls, label: str, n_sites: int, raw_rule: Any) -> _CountSpace:
+        if not isinstance(raw_rule, dict):
+            raise ValueError(f"Finite-Cell Alloy Occupancy: rule for {label!r} must be an object.")
+        raw_elements = raw_rule.get("elements", [])
+        if isinstance(raw_elements, str):
+            elements = tuple(parse_element_list(raw_elements))
+        elif isinstance(raw_elements, list):
+            elements = tuple(parse_element_list(",".join(str(value) for value in raw_elements)))
+        else:
+            raise ValueError(f"Finite-Cell Alloy Occupancy: elements for {label!r} must be a list or string.")
+        if not elements:
+            raise ValueError(f"Finite-Cell Alloy Occupancy: site set {label!r} has no allowed elements.")
+
+        mode = str(raw_rule.get("mode", "fixed_fraction")).strip().lower()
+        if mode == "fixed_fraction":
+            composition = cls._mapping_for_elements(raw_rule.get("composition"), elements, label, "composition")
+            values = np.asarray([composition[element] for element in elements], dtype=float)
+            if np.any(~np.isfinite(values)) or np.any(values < 0.0) or float(values.sum()) <= 0.0:
+                raise ValueError(f"Finite-Cell Alloy Occupancy: fixed composition for {label!r} is invalid.")
+            fractions = values / float(values.sum())
+            counts = fractions_to_counts_exact(fractions, n_sites)
+            exact = bool(np.allclose(fractions * n_sites, counts, atol=1e-10, rtol=0.0))
+            requested = tuple(
+                (element, (float(value),))
+                for element, value in zip(elements, fractions)
+            )
+            return _CountSpace(
+                label=label,
+                elements=elements,
+                lower=tuple(int(value) for value in counts),
+                upper=tuple(int(value) for value in counts),
+                n_sites=n_sites,
+                realization="exact" if exact else "nearest_integer",
+                requested=requested,
+            )
+
+        if mode == "fraction_range":
+            ranges = cls._range_mapping(raw_rule.get("fractions"), elements, label, fraction=True)
+            lower = tuple(int(math.ceil(ranges[element][0] * n_sites - 1e-12)) for element in elements)
+            upper = tuple(int(math.floor(ranges[element][1] * n_sites + 1e-12)) for element in elements)
+            requested = tuple((element, tuple(float(value) for value in ranges[element])) for element in elements)
+            realization = "fraction_range"
+        elif mode == "count_range":
+            ranges = cls._range_mapping(raw_rule.get("counts"), elements, label, fraction=False)
+            lower = tuple(int(ranges[element][0]) for element in elements)
+            upper = tuple(int(ranges[element][1]) for element in elements)
+            requested = tuple((element, tuple(float(value) for value in ranges[element])) for element in elements)
+            realization = "count_range"
+        else:
+            raise ValueError(
+                f"Finite-Cell Alloy Occupancy: unsupported mode {mode!r} for {label!r}; "
+                "use fixed_fraction, fraction_range, or count_range."
+            )
+
+        space = _CountSpace(
+            label=label,
+            elements=elements,
+            lower=lower,
+            upper=upper,
+            n_sites=n_sites,
+            realization=realization,
+            requested=requested,
+        )
+        if space.capacity <= 0:
+            raise ValueError(
+                f"Finite-Cell Alloy Occupancy: constraints for site set {label!r} "
+                f"have no integer count solution for {n_sites} sites."
+            )
+        return space
+
+    @staticmethod
+    def _mapping_for_elements(raw: Any, elements: tuple[str, ...], label: str, field_name: str) -> dict[str, float]:
+        if not isinstance(raw, dict):
+            raise ValueError(f"Finite-Cell Alloy Occupancy: {field_name} for {label!r} must be an object.")
+        extra = sorted(set(str(key) for key in raw) - set(elements))
+        missing = sorted(set(elements) - set(str(key) for key in raw))
+        if extra or missing:
+            raise ValueError(
+                f"Finite-Cell Alloy Occupancy: {field_name} keys for {label!r} "
+                "must exactly match its allowed elements."
+            )
+        return {element: float(raw[element]) for element in elements}
+
+    @classmethod
+    def _range_mapping(
+        cls,
+        raw: Any,
+        elements: tuple[str, ...],
+        label: str,
+        *,
+        fraction: bool,
+    ) -> dict[str, tuple[float, float]]:
+        field_name = "fractions" if fraction else "counts"
+        if not isinstance(raw, dict):
+            raise ValueError(f"Finite-Cell Alloy Occupancy: {field_name} for {label!r} must be an object.")
+        extra = sorted(set(str(key) for key in raw) - set(elements))
+        missing = sorted(set(elements) - set(str(key) for key in raw))
+        if extra or missing:
+            raise ValueError(
+                f"Finite-Cell Alloy Occupancy: {field_name} keys for {label!r} "
+                "must exactly match its allowed elements."
+            )
+        ranges: dict[str, tuple[float, float]] = {}
+        for element in elements:
+            value = raw[element]
+            if isinstance(value, (list, tuple)):
+                if len(value) != 2:
+                    raise ValueError(f"Finite-Cell Alloy Occupancy: range for {label}.{element} needs two values.")
+                low, high = float(value[0]), float(value[1])
+            else:
+                low = high = float(value)
+            if not np.all(np.isfinite([low, high])) or low < 0.0 or high < low:
+                raise ValueError(f"Finite-Cell Alloy Occupancy: invalid range for {label}.{element}.")
+            if fraction and high > 1.0 + 1e-12:
+                raise ValueError(f"Finite-Cell Alloy Occupancy: fraction for {label}.{element} exceeds 1.")
+            if not fraction and (not float(low).is_integer() or not float(high).is_integer()):
+                raise ValueError(f"Finite-Cell Alloy Occupancy: count bounds for {label}.{element} must be integers.")
+            ranges[element] = (low, high)
+        return ranges
+
+    @staticmethod
+    def _decode_plan(spaces: tuple[_CountSpace, ...], index: int) -> tuple[tuple[int, ...], ...]:
+        ranks = []
+        residual = int(index)
+        for space in reversed(spaces):
+            ranks.append(residual % space.capacity)
+            residual //= space.capacity
+        return tuple(space.unrank(rank) for space, rank in zip(spaces, reversed(ranks)))
+
+    @staticmethod
+    def _theoretical_arrangements(plan: tuple[tuple[int, ...], ...], spaces: tuple[_CountSpace, ...]) -> int:
+        total = 1
+        for counts, space in zip(plan, spaces):
+            ways = math.factorial(space.n_sites)
+            for count in counts:
+                ways //= math.factorial(int(count))
+            total *= ways
+        return int(total)
+
+    @staticmethod
+    def _rng(base_seed: int | None, cfg_id: int, plan_index: int) -> tuple[np.random.Generator, int | None]:
+        if base_seed is None:
+            return np.random.default_rng(), None
+        seed_sequence = np.random.SeedSequence([int(base_seed), int(cfg_id) & 0xFFFFFFFF, int(plan_index)])
+        derived_seed = int(seed_sequence.generate_state(1, dtype=np.uint32)[0])
+        return np.random.default_rng(derived_seed), derived_seed
+
+    @classmethod
+    def _arrangements(
+        cls,
+        plan: tuple[tuple[int, ...], ...],
+        spaces: tuple[_CountSpace, ...],
+        target: int,
+        theoretical: int,
+        rng: np.random.Generator,
+    ) -> list[tuple[tuple[str, ...], ...]]:
+        if target <= 0:
+            return []
+        if theoretical <= cls._ENUMERATION_LIMIT:
+            all_arrangements = [()]
+            for counts, space in zip(plan, spaces):
+                site_assignments = list(cls._iter_multiset_assignments(space.elements, counts))
+                all_arrangements = [
+                    prefix + (assignment,)
+                    for prefix in all_arrangements
+                    for assignment in site_assignments
+                ]
+            selected = rng.choice(len(all_arrangements), size=target, replace=False)
+            return [all_arrangements[int(index)] for index in np.atleast_1d(selected)]
+
+        seen: set[tuple[tuple[str, ...], ...]] = set()
+        outputs = []
+        max_attempts = max(1000, target * 100)
+        attempts = 0
+        while len(outputs) < target and attempts < max_attempts:
+            assignment_group = []
+            for counts, space in zip(plan, spaces):
+                pool = np.concatenate(
+                    [np.repeat(element, int(count)) for element, count in zip(space.elements, counts) if count > 0]
+                )
+                rng.shuffle(pool)
+                assignment_group.append(tuple(str(value) for value in pool.tolist()))
+            signature = tuple(assignment_group)
+            if signature not in seen:
+                seen.add(signature)
+                outputs.append(signature)
+            attempts += 1
+        if len(outputs) != target:
+            raise RuntimeError(
+                f"Finite-Cell Alloy Occupancy: generated {len(outputs)}/{target} unique arrangements "
+                f"after {attempts} deterministic attempts."
+            )
+        return outputs
+
+    @staticmethod
+    def _iter_multiset_assignments(
+        elements: tuple[str, ...],
+        counts: tuple[int, ...],
+    ):
+        n_sites = int(sum(counts))
+        assignment = [""] * n_sites
+
+        def visit(element_index: int, available: tuple[int, ...]):
+            if element_index == len(elements) - 1:
+                for position in available:
+                    assignment[position] = elements[element_index]
+                yield tuple(assignment)
+                return
+            count = int(counts[element_index])
+            for selected in combinations(available, count):
+                selected_set = set(selected)
+                for position in selected:
+                    assignment[position] = elements[element_index]
+                remaining = tuple(position for position in available if position not in selected_set)
+                yield from visit(element_index + 1, remaining)
+
+        yield from visit(0, tuple(range(n_sites)))
+
+    @staticmethod
+    def _composition_id(plan: tuple[tuple[int, ...], ...], spaces: tuple[_CountSpace, ...]) -> str:
+        payload = "|".join(
+            f"{space.label}:" + ",".join(f"{element}={count}" for element, count in zip(space.elements, counts))
+            for space, counts in zip(spaces, plan)
+        )
+        return "c" + hashlib.blake2b(payload.encode("utf-8"), digest_size=5).hexdigest()
+
+    @staticmethod
+    def _arrangement_id(
+        assignments: tuple[tuple[str, ...], ...],
+        spaces: tuple[_CountSpace, ...],
+    ) -> str:
+        payload = "|".join(
+            f"{space.label}:" + ",".join(assignment)
+            for space, assignment in zip(spaces, assignments)
+        )
+        return "a" + hashlib.blake2b(payload.encode("utf-8"), digest_size=6).hexdigest()
+
+
+@dataclass(frozen=True)
 class CompositionGradientParams:
     elements: str = "Ni,Co"
     start_composition: str = "Ni:1,Co:0"
@@ -653,7 +1360,7 @@ def normalize_condition_expr(expr: str) -> str:
     expr = re.sub(r"\bAND\b", "and", expr, flags=re.IGNORECASE)
     expr = re.sub(r"\bOR\b", "or", expr, flags=re.IGNORECASE)
     expr = re.sub(r"\bNOT\b", "not", expr, flags=re.IGNORECASE)
-    return re.sub(r"(?<![<>!])=(?!=)", "==", expr)
+    return re.sub(r"(?<![<>=!])=(?!=)", "==", expr)
 
 
 def _is_allowed_condition_node(node: ast.AST) -> bool:
@@ -752,7 +1459,10 @@ def _eval_condition_node(node: ast.AST, env: dict[str, float], tol: float) -> fl
 def evaluate_condition(expr: str, coords: np.ndarray) -> bool | np.ndarray:
     """Safely evaluate a coordinate condition against one or more positions."""
     expr_py = normalize_condition_expr(expr)
-    tree = ast.parse(expr_py, mode="eval")
+    try:
+        tree = ast.parse(expr_py, mode="eval")
+    except SyntaxError as exc:
+        raise ValueError(f"Invalid condition expression {expr!r}: {exc.msg}.") from exc
     if not _is_allowed_condition_node(tree):
         raise ValueError("Condition expression contains unsupported syntax.")
     coords_arr = np.asarray(coords, dtype=float)

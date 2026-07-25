@@ -2,6 +2,7 @@
 
 from .super_cell_card import SuperCellCard
 from .crystal_prototype_builder_card import CrystalPrototypeBuilderCard
+from .ordered_alloy_prototype_card import OrderedAlloyPrototypeCard
 from .perturb_card import PerturbCard
 from .vibration_perturb_card import VibrationModePerturbCard
 from .magmom_rotation_card import MagneticMomentRotationCard
@@ -15,6 +16,7 @@ from .random_doping_card import RandomDopingCard
 from .composition_sweep_card import CompositionSweepCard
 from .composition_gradient_card import CompositionGradientCard
 from .random_occupancy_card import RandomOccupancyCard
+from .finite_cell_alloy_occupancy_card import FiniteCellAlloyOccupancyCard
 from .conditional_replace_card import ConditionalReplaceCard
 from .random_packing_card import RandomPackingCard
 from .magnetic_order_card import MagneticOrderCard
@@ -43,6 +45,7 @@ from .card_group import CardGroup
 __all__ = [
     "SuperCellCard",
     "CrystalPrototypeBuilderCard",
+    "OrderedAlloyPrototypeCard",
     "PerturbCard",
     "VibrationModePerturbCard",
     "MagneticMomentRotationCard",
@@ -56,6 +59,7 @@ __all__ = [
     "CompositionSweepCard",
     "CompositionGradientCard",
     "RandomOccupancyCard",
+    "FiniteCellAlloyOccupancyCard",
     "ConditionalReplaceCard",
     "RandomPackingCard",
     "MagneticOrderCard",

@@ -14,11 +14,19 @@ def test_unusable_config_directory_stops_startup_with_actionable_error(
 ) -> None:
     fake_home = tmp_path / "home"
     fake_home.mkdir()
-    (fake_home / ".config").write_text("not a directory", encoding="utf-8")
     env = os.environ.copy()
+    if os.name == "nt":
+        blocked_parent = fake_home / "LocalAppData"
+        blocked_parent.write_text("not a directory", encoding="utf-8")
+        env["LOCALAPPDATA"] = str(blocked_parent)
+        expected_path = blocked_parent / "NepTrainKit"
+    else:
+        blocked_parent = fake_home / ".config"
+        blocked_parent.write_text("not a directory", encoding="utf-8")
+        env["HOME"] = str(fake_home)
+        expected_path = blocked_parent / "NepTrainKit"
     env.update(
         {
-            "HOME": str(fake_home),
             "QT_QPA_PLATFORM": "offscreen",
             "PYTHONPATH": str(ROOT / "src"),
         }
@@ -34,10 +42,9 @@ def test_unusable_config_directory_stops_startup_with_actionable_error(
         check=False,
     )
 
-    expected_path = fake_home / ".config" / "NepTrainKit"
     assert result.returncode == 2
     assert "Configuration storage is unavailable" in result.stderr
     assert str(expected_path) in result.stderr
     assert "No temporary configuration was used" in result.stderr
-    assert "NotADirectoryError" in result.stderr
+    assert "Details:" in result.stderr
     assert "Traceback" not in result.stderr

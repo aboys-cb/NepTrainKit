@@ -1349,6 +1349,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         )
         self.assertFalse(widget.slice_table.horizontalScrollBar().isVisible())
 
+        widget.setFixedWidth(760)
         widget.resize(760, 680)
         self._app.processEvents()
 
@@ -1357,6 +1358,7 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         self.assertGreaterEqual(widget.slice_table.columnWidth(1), 240)
         self.assertFalse(widget.slice_table.horizontalScrollBar().isVisible())
 
+        widget.setFixedWidth(1280)
         widget.resize(1280, 820)
         self._app.processEvents()
 

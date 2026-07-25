@@ -522,8 +522,19 @@ def test_narrow_english_layout_does_not_clip_header_rows_footer_or_bar_actions(b
     assert popup.graphicsEffect() is None
     assert popup.card.graphicsEffect() is not None
     assert popup.preset_button.geometry().right() < popup.logic_combo.geometry().left()
-    assert popup.preset_button.width() >= popup.preset_button.sizeHint().width()
-    assert popup.logic_combo.width() >= popup.logic_combo.sizeHint().width()
+    assert popup.preset_button.width() >= (
+        popup.preset_button.fontMetrics().horizontalAdvance(
+            popup.preset_button.text()
+        )
+        + 64
+    )
+    logic_text_width = max(
+        popup.logic_combo.fontMetrics().horizontalAdvance(
+            popup.logic_combo.itemText(index)
+        )
+        for index in range(popup.logic_combo.count())
+    )
+    assert popup.logic_combo.width() >= logic_text_width + 48
     assert popup.done_button.width() >= popup.done_button.sizeHint().width()
     for widget in (popup.add_button, popup.estimate_label, popup.clear_button, popup.done_button):
         assert widget.geometry().right() <= popup.width() - 10

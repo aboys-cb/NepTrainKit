@@ -2234,7 +2234,8 @@ def _fsync_tree(root: Path) -> None:
     directories = [root]
     for path in root.rglob("*"):
         if path.is_file():
-            with path.open("rb") as handle:
+            mode = "rb+" if os.name == "nt" else "rb"
+            with path.open(mode) as handle:
                 os.fsync(handle.fileno())
         elif path.is_dir():
             directories.append(path)

@@ -230,7 +230,7 @@ def main() -> int:
             prefix="neptrainkit-requests-runtime-"
         ) as temporary:
             result = _run(Path(temporary), args.screenshot, args.language)
-    print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+    print(json.dumps(result, ensure_ascii=True, sort_keys=True))
     return 0
 
 

@@ -117,9 +117,30 @@ def test_test_and_wheel_matrices_cover_documented_python_versions():
         assert tag in publish_workflow
 
 
+def test_test_ci_installs_qt_runtime_and_uses_repository_import_path():
+    workflow = (
+        ROOT / ".github" / "workflows" / "pytest.yml"
+    ).read_text(encoding="utf-8")
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+
+    assert "sudo apt-get install -y libegl1" in workflow
+    assert "python -m pytest tests/" in workflow
+    assert any(
+        requirement.startswith("scikit-learn")
+        for requirement in project["project"]["optional-dependencies"]["test"]
+    )
+    assert all(
+        not requirement.startswith("scikit-learn")
+        for requirement in project["project"]["dependencies"]
+    )
+
+
 def test_runtime_delivery_ci_covers_pip_real_pypi_dialog_and_nuitka():
     workflow = (
         ROOT / ".github" / "workflows" / "pytest.yml"
+    ).read_text(encoding="utf-8")
+    probe = (
+        ROOT / "tools" / "ci" / "runtime_package_requests_ui_e2e.py"
     ).read_text(encoding="utf-8")
 
     assert "runtime_package_e2e.py" in workflow
@@ -127,6 +148,7 @@ def test_runtime_delivery_ci_covers_pip_real_pypi_dialog_and_nuitka():
     assert "requests-runtime-update-dialog.png" in workflow
     assert "python -m nuitka" in workflow
     assert "Get-ChildItem dist/*.whl" in workflow
+    assert "json.dumps(result, ensure_ascii=True" in probe
 
 
 def test_versioned_dataset_catalog_is_packaged():

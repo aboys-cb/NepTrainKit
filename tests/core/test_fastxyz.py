@@ -50,6 +50,9 @@ def test_parallel_parse_keeps_pos_first_frame_boundaries(monkeypatch):
     assert all(frame["lattice"].shape == (9,) for frame in frames)
     assert frames[0]["atomic_properties"]["pos"].shape == (47, 3)
     assert frames[0]["atomic_properties"]["species"][0] == "Fe"
+    assert all(
+        frame["additional_fields"]["pbc"] == "T T T" for frame in frames
+    )
 
 
 def test_parse_escaped_json_keeps_following_fields(monkeypatch):

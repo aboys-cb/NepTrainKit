@@ -1110,7 +1110,7 @@ class Structure:
             if value.size not in {6, 9} or not np.all(np.isfinite(value)):
                 raise ValueError(f"EXTXYZ {key} must contain six or nine finite values.")
 
-        pbc_value = additional_fields.get("pbc", "F F F")
+        pbc_value = additional_fields.get("pbc", "T T T")
         pbc, canonical_pbc = _normalise_extxyz_pbc(pbc_value)
         additional_fields["pbc"] = canonical_pbc
         periodic_vectors = cell[pbc]

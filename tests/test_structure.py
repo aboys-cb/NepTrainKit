@@ -391,7 +391,7 @@ H 0 0 0
             with self.assertRaises(ValueError):
                 Structure.parse_xyz(text)
 
-    def test_xyz_missing_pbc_defaults_to_safe_nonperiodic_contract(self):
+    def test_xyz_missing_pbc_defaults_to_nep_periodic_contract(self):
         structure = Structure.parse_xyz(
             """1
 Lattice="2 0 0 0 2 0 0 0 2" Properties=species:S:1:pos:R:3
@@ -399,7 +399,7 @@ H 0 0 0
 """
         )
 
-        self.assertEqual(structure.additional_fields["pbc"], "F F F")
+        self.assertEqual(structure.additional_fields["pbc"], "T T T")
 
     def test_fast_structure_iterator_and_pre_canceled_import(self):
         text = """1

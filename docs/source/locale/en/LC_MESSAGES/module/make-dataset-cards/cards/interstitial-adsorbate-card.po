@@ -1,0 +1,581 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:3
+#: 46d4bc079a3e4c24912996166574a72e
+msgid "插隙/吸附缺陷（Insert Defect）"
+msgstr "Interstitial and Adsorbate Defects (Insert Defect)"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:5
+#: b9103e6c1f1a4ac094c4f7746db2216c
+msgid "`Group`: `Defect` | `Class`: `InsertDefectCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:7
+#: 8f4ba552b1364bd499b0491f2ac20a1a
+msgid "功能说明"
+msgstr "What the card does"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:9
+#: e501e3300f454081a49fc4fd587002be
+msgid ""
+"在体相或表面结构中随机插入额外原子。支持 Interstitial（体相间隙位插入）和 "
+"Adsorption（表面吸附位放置）两种模式，用最小距离约束避免原子碰撞。"
+msgstr ""
+"Randomly add atoms to bulk or surface structures. Interstitial mode places "
+"atoms at candidate sites inside a bulk cell, while Adsorption mode places "
+"them above a surface. A minimum-distance constraint prevents direct atomic "
+"overlap."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:11
+#: 363f2376f3254ca7a8c82ba41b58d8d8
+msgid "操作示例"
+msgstr "Example workflow"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:13
+#: e38d1e60696d4bc9b606086cb2bb82ce
+msgid "场景：模型对 Li 扩散路径预测完全错误"
+msgstr "Scenario: the model predicts an incorrect Li diffusion pathway"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:15
+#: 63135b2a9455401cbd783b75d72d34a2
+msgid ""
+"你在 LiCoO2 上训练了一个 NEP 模型跑 Li 扩散。模型预测的扩散势垒比 DFT "
+"低了一半——中间态的能量被严重低估。检查训练集发现：所有结构里 Li 都待在八面体位点，从来没见过 Li 在四面体间隙位的结构。"
+msgstr ""
+"You trained an NEP model for Li diffusion in LiCoO2. Its predicted diffusion"
+" barrier is only half the DFT value because the intermediate states are "
+"severely underestimated. Inspection shows that every training structure "
+"places Li at an octahedral site; none contains Li near a tetrahedral "
+"interstitial site."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:17
+#: 75a75508aa454c7699fd36616bbdcdba
+msgid ""
+"**诊断思路：** 扩散路径上的过渡态对应 Li "
+"从一个八面体位穿过四面体间隙位跃迁到相邻八面体位的过程。训练集里只有基态构型，模型自然会低估中间态能量。需要往训练集里加入 Li "
+"在四面体间隙位附近的构型，让模型见过这些局域环境。"
+msgstr ""
+"**Diagnosis:** Along this diffusion path, Li moves from one octahedral site "
+"to the next through a tetrahedral interstitial region. A training set that "
+"contains only ground-state occupations gives the model no information about "
+"those intermediate local environments. Add configurations with Li near "
+"tetrahedral interstitial sites so the model can learn their energies."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:19
+#: 8ff08ca20e8e404c91e671575c865da5
+msgid "**输入：** 一个 LiCoO2 超胞"
+msgstr "**Input:** A LiCoO2 supercell."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:21
+#: 30ed97d64b6a45c3934f33d2b967cf9b
+msgid "**目标：** 在体相中插入单个 Li 原子于随机间隙位，生成 50 个候选构型"
+msgstr ""
+"**Goal:** Generate 50 candidates by inserting one Li atom at a random "
+"interstitial position in the bulk cell."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:23
+#: 87d1aad804d24d2e92e5c7320bac9658
+msgid "**参数设置：**"
+msgstr "**Parameters:**"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:24
+#: 3ec03575c1774f36b4c670909748f39a
+msgid "`Mode` = `Interstitial`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:25
+#: e86f6a9dfe584ef7a18f8f49a02d6f07
+msgid "`Species comma-separated` = `Li`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:26
+#: 4ef31c5f07664bcea566804fae3c1ff2
+msgid "`Atoms per structure` = `[1]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:27
+#: caf02663c59e47fe98ffc827832742cd
+msgid "`Structures to generate` = `[50]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:28
+#: e458d577810942a1b235011d2cc163d8
+msgid "`Min distance (A)` = `[1.4]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:29
+#: 569a2ff4f155441eb371e22e5d347d7f
+msgid "`Max Attempts` = `[200]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:31
+#: 85f243d53c6b4ca084c88729e11b3f75
+msgid "**输出：** 50 个插隙结构，每个含一个额外 Li 原子放置于不与宿主原子碰撞的位置，带 `Ins(int,n=1)` 标签"
+msgstr ""
+"**Output:** 50 interstitial structures, each containing one additional Li "
+"atom at a position that does not collide with the host atoms, labeled "
+"`Ins(int,n=1)`."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:33
+#: 09de9f5f1b004e4d9b4ba158a1ad9ae5
+msgid "**怎么验证训练集质量改善：**"
+msgstr "**How to verify that training-set quality improved:**"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:34
+#: a68f9c43b44e4640b8e678668f5b2c37
+msgid "重训后用 NEB 算 Li 扩散势垒，应接近 DFT 参考值"
+msgstr ""
+"After DFT labeling and retraining, calculate the Li diffusion barrier with "
+"NEB and compare it with the DFT reference."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:35
+#: 9a0c36509ee14ba285dfc1075125bb0e
+msgid "抽查插入原子的最近邻距离：≥ min_distance 是底线，太近（<1.0 Å）的结构应该不会出现"
+msgstr ""
+"Inspect the nearest-neighbor distance of the inserted atom. It must be at "
+"least `min_distance`; structures with contacts below 1.0 Å should not "
+"appear."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:36
+#: 91eff818a2d148229bdf465f33831b53
+msgid "如果成功率很低（输出远少于 50 个），增大 `max_attempts` 或降低 `min_distance`"
+msgstr ""
+"If the success rate is low and far fewer than 50 structures are produced, "
+"increase `max_attempts` or reduce `min_distance`."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:37
+#: 18ea9b0471364020b6c0ff949e2a6d08
+msgid "如果是表面吸附场景，切到 `Mode` = `Adsorption`，调整 `offset` 控制吸附高度"
+msgstr ""
+"For surface adsorption, set `Mode` to `Adsorption` and use `offset` to "
+"control the adsorption height."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:39
+#: 04f0ba43b2494c309746607eed7b7f42
+msgid "什么时候加这张卡、什么时候不加"
+msgstr "When to add this card"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:41
+#: fe14b64ca55b4c93b720e757ad4b17df
+msgid "**加：**"
+msgstr "**Add it when:**"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:42
+#: 6efae16378064b7ebd0c5a4c761a9fd2
+msgid "模型对扩散、吸附、插层位点预测不准"
+msgstr "The model is inaccurate for diffusion, adsorption, or intercalation sites."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:43
+#: 9281cfeb58934ff39f1d5695899254a0
+msgid "训练集只有完美晶格占据，缺少间隙原子环境"
+msgstr ""
+"The training set contains only ideal lattice occupations and lacks "
+"interstitial environments."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:44
+#: e3e5100a48c4400990142012207ee925
+msgid "研究表面催化、电池材料离子输运"
+msgstr "You are studying surface catalysis or ion transport in battery materials."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:46
+#: a34488b8fa2440abb67e908fe4a543bb
+msgid "**不加：**"
+msgstr "**Do not add it when:**"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:47
+#: 2e0569b74ba04a84a8c2ae8706591a9b
+msgid "只需基态占据 → 不需要额外插入原子"
+msgstr "Only ground-state occupations are needed → no additional atoms are required."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:48
+#: 70c1ef21ce294690ab86dc370971fddc
+msgid "插入物种与宿主剧烈反应（如碱金属+水）→ 先确认化学可行性"
+msgstr ""
+"The inserted species can react violently with the host, such as an alkali "
+"metal with water → establish chemical feasibility first."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:50
+#: 62b1beb0276b4856aee0bd9536809a18
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:52
+#: ad10f530ffcc4245bde2587c98b827ef
+msgid "插入模式和数量"
+msgstr "Insertion mode and count"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:54
+#: 8584475dcf8641d3a7c10600b96d752b
+msgid "Mode（mode）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:56
+#: 60b3d3b1f2534a99ad0773eb8222c8d7
+msgid ""
+"`int`，默认 0。`0` = Interstitial（体相插隙），在晶胞内随机采样位点放入额外原子；`1` = "
+"Adsorption（表面吸附），沿表面法向在表面上方放置原子。"
+msgstr ""
+"`int`, default: `0`. `0` selects Interstitial mode, which samples positions "
+"inside the cell; `1` selects Adsorption mode, which places atoms above the "
+"surface along its normal."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:58
+#: dc7c261c29844237af630dea8fa7ab3f
+msgid ""
+"Interstitial 模式下 `axis` 和 `offset` 不生效。Adsorption 模式需要 slab 输入，`axis` "
+"决定了吸附原子沿哪条晶轴放。"
+msgstr ""
+"`axis` and `offset` are ignored in Interstitial mode. Adsorption mode "
+"requires a slab input, and `axis` selects the cell direction along which "
+"adsorbates are placed above the surface."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:60
+#: 818071e4835441c39503c9a3a891c824
+msgid "Species（species）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:62
+#: 9b31d8ba97d04aca85cbcdf5b74c1790
+msgid ""
+"`str`，默认空。逗号分隔的元素列表，指定要插入什么原子。支持权重写法：`Li:0.7,Na:0.3` 表示每次随机放置时有 70% 概率插 "
+"Li，30% 概率插 Na。权重不写则等概率。"
+msgstr ""
+"`str`, default: empty. Comma-separated elements to insert. Weighted entries "
+"are supported: `Li:0.7,Na:0.3` chooses Li with 70% probability and Na with "
+"30% probability for each placement. Without weights, the elements are "
+"sampled uniformly."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:64
+#: 2040e860557f4ce2821ffa37710725cd
+msgid "Insert Count（insert_count）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:66
+#: 688338c082e947cd9e2235357f34e9d4
+msgid "`int`，默认 1。每个生成结构里插几个额外原子。1~3 是常见范围——单原子插隙最容易放进去，数量越大碰撞失败概率越高。"
+msgstr ""
+"`int`, default: `1`. Number of additional atoms in each generated structure."
+" A typical range is 1–3. A single interstitial is easiest to place; larger "
+"counts increase the chance that placement fails because of collisions."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:68
+#: 91e9c79d56514763b4717ed15f94f06b
+msgid "Structure Count（structure_count）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:70
+#: 338fbe2b904a4cacbb1106c51a3f9f7e
+msgid "`int`，默认 10。每输入帧生成多少个插入版本。"
+msgstr ""
+"`int`, default: `10`. Number of inserted variants generated for each input "
+"frame."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:72
+#: 1e2aa82dcef546e9b61a50ce08b052bc
+msgid "10~50 做轻量验证，50~200 常规覆盖，200 以上建议接 `FPS Filter`。"
+msgstr ""
+"Use 10–50 for a lightweight check and 50–200 for routine coverage. For more "
+"than 200, follow this card with `FPS Filter`."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:74
+#: 9aa638c800e24fcda03aa82c5a9e9899
+msgid "几何约束"
+msgstr "Geometric constraints"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:76
+#: 3a01d193afac43808703d941c516162b
+msgid "Min Distance（min_distance）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:78
+#: 8ec1104b8a7844eb89cb8f46bbb7a79a
+msgid "`float`，默认 1.4。候选插入点与已有原子的最小允许距离，单位 Å。"
+msgstr ""
+"`float`, default: `1.4`. Minimum allowed distance, in Å, between a candidate"
+" insertion point and every existing atom."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:80
+#: 5b7b90256eb54d598cfe375ae06ff6fc
+msgid "对致密晶体，1.6~2.5 Å 比较保守安全；1.2~1.6 Å 是一个平衡点；压到 0.8~1.2 Å 碰撞风险明显升高，只有在你确信结构能容纳时才用。"
+msgstr ""
+"For dense crystals, 1.6–2.5 Å is conservative; 1.2–1.6 Å balances acceptance"
+" and separation. At 0.8–1.2 Å the collision risk rises substantially, so use"
+" such values only when the chemistry and available volume justify them."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:82
+#: ce0b0d7ff1424197aea83fdb01feb1ad
+msgid "Max Attempts（max_attempts）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:84
+#: 7aeacffa873041339a3c20ff9516aef0
+msgid ""
+"`int`，默认 200。每个待插入原子的最大随机尝试次数。增大它可以提高放置成功率，但耗时线性增长——如果你发现 200 "
+"次几乎每次都触顶失败，说明问题不是尝试次数不够，而是 `min_distance` 设大了或者胞太密。"
+msgstr ""
+"`int`, default: `200`. Maximum random placement attempts for each atom to "
+"insert. Increasing it may improve acceptance but increases cost linearly. If"
+" nearly every insertion exhausts all 200 attempts, the real problem is "
+"usually an overly large `min_distance` or an excessively dense cell."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:86
+#: 3934ad449956474c981f2a4d6f26d8ba
+msgid "表面吸附"
+msgstr "Surface adsorption"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:88
+#: a27d797b68b4436392f799b7bb776ee4
+msgid "Axis（axis）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:90
+#: 2b0539c3d4ed4dafa40b1e452a2ad8dc
+msgid ""
+"`int`，默认 2。Adsorption 模式下它是表面法向。如果你的 slab 真空沿 z，默认 2（z "
+"轴）就不用改；表面取向不同时一定要调，否则吸附高度方向会错。"
+msgstr ""
+"`int`, default: `2`. Surface-normal axis in Adsorption mode. Keep the "
+"default `2` when the slab vacuum lies along *z*. Change it for a differently"
+" oriented surface; otherwise the adsorption height will be applied along the"
+" wrong direction."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:92
+#: 769ddb7c83264a2f850ffd2bc4d83664
+msgid "生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。"
+msgstr ""
+"Used by modes that depend on a direction, layering, a surface, or vector "
+"initialization."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:94
+#: 226acf7e838e4f968016669706d5be82
+msgid "Offset（offset）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:96
+#: fb0a9d818ab04b0c92cad5b1452509ed
+msgid "`float`，默认 1.5。表面吸附时原子放在表面上方多远，单位 Å。"
+msgstr ""
+"`float`, default: `1.5`. Distance in Å above the surface at which the "
+"adsorbate is placed."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:98
+#: 9e406890a1004f7bbae5dc6ee39d2af4
+msgid "生效条件：`mode` 选择 Adsorption 时。"
+msgstr "Used only when `mode` is set to Adsorption."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:100
+#: 847c8facb9074b78b501fa5aeaf4ae13
+msgid "随机性"
+msgstr "Randomness"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:102
+#: 99cea4d8d07747eebc7c22b4ec0232f5
+msgid "Use Seed（use_seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:104
+#: 33e1d1d8254145cebf56cccb6005c9d0
+msgid "`bool`，默认 false。打开后固定 seed → 同样输入和参数每次跑出一样的插入结果。对比实验时开，纯探索可以关掉。"
+msgstr ""
+"`bool`, default: `false`. When enabled with a fixed seed, the same input and"
+" parameters reproduce the same insertions. Enable it for controlled "
+"comparisons; it can remain off during exploratory sampling."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:106
+#: 09effa8808af497e9a916ceaf4e093dd
+msgid "Seed（seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:108
+#: 4984ce76d06346d2a01a2f047522dab1
+msgid "`int`，默认 0。随机种子值。"
+msgstr "`int`, default `0`. Random seed value."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:110
+#: 2f7d4431fc084806882c21db283a32a7
+msgid "生效条件：`use_seed=True`。"
+msgstr "Active only when `use_seed=True`."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:112
+#: b159d36e882a4700854b4f8f94539c5d
+msgid "推荐预设"
+msgstr "Recommended presets"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:114
+#: edca44db38744e7da3e1172bfd4ba6f6
+msgid "体相单原子间隙（Interstitial，50 个输出）"
+msgstr "Single-atom bulk interstitials (Interstitial, 50 outputs)"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:115
+#: 8749652e673548be8c087ce2c2ed8ccc
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"InsertDefectCard\",\n"
+"  \"check_state\": true,\n"
+"  \"mode\": 0,\n"
+"  \"species\": \"Li\",\n"
+"  \"insert_count\": [1],\n"
+"  \"structure_count\": [50],\n"
+"  \"min_distance\": [1.4],\n"
+"  \"max_attempts\": [200],\n"
+"  \"use_seed\": true,\n"
+"  \"seed\": [42],\n"
+"  \"axis\": 2,\n"
+"  \"offset\": [1.5]\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:132
+#: 8f6b4c08a73e480b8123bcaada7f3197
+msgid "表面单原子吸附（Adsorption，50 个输出）"
+msgstr "Single-atom surface adsorption (Adsorption, 50 outputs)"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:133
+#: 07faac2e5c804e8a8b7203d774e8013f
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"InsertDefectCard\",\n"
+"  \"check_state\": true,\n"
+"  \"mode\": 1,\n"
+"  \"species\": \"O,H\",\n"
+"  \"insert_count\": [1],\n"
+"  \"structure_count\": [50],\n"
+"  \"min_distance\": [1.6],\n"
+"  \"max_attempts\": [300],\n"
+"  \"use_seed\": true,\n"
+"  \"seed\": [42],\n"
+"  \"axis\": 2,\n"
+"  \"offset\": [2.0]\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:150
+#: a5e2a5a9e9064c88854230d12ed7ea09
+msgid "多物种间隙探索（Interstitial，200 个输出）"
+msgstr "Multiple-species interstitial exploration (Interstitial, 200 outputs)"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:151
+#: b537cab3f45d42b1bc4ce2ca4cf28fc2
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"InsertDefectCard\",\n"
+"  \"check_state\": true,\n"
+"  \"mode\": 0,\n"
+"  \"species\": \"Li:0.5,Na:0.3,Mg:0.2\",\n"
+"  \"insert_count\": [2],\n"
+"  \"structure_count\": [200],\n"
+"  \"min_distance\": [1.2],\n"
+"  \"max_attempts\": [400],\n"
+"  \"use_seed\": true,\n"
+"  \"seed\": [42],\n"
+"  \"axis\": 2,\n"
+"  \"offset\": [1.5]\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:168
+#: 47a9bf35fd334ea9b7306577b08094c5
+msgid "推荐组合"
+msgstr "Recommended combinations"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:170
+#: 0b0b813735764bc2a239122365e98daa
+msgid "`Random Slab` → `Insert Defect`：先切表面 slab，再加吸附原子"
+msgstr "`Random Slab` → `Insert Defect`: cut a surface slab, then add adsorbates."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:171
+#: ac754936505a419692dc7cad5166856f
+msgid "`Insert Defect` → `Random Vacancy`：互补缺陷族（间隙 + 空位）"
+msgstr ""
+"`Insert Defect` → `Random Vacancy`: generate complementary defect families, "
+"interstitials and vacancies."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:172
+#: e2d0cc59468449d4a59f16fa4a89a7af
+msgid "`Insert Defect` → `FPS Filter`：大批量生成后做代表性筛选"
+msgstr ""
+"`Insert Defect` → `FPS Filter`: select representative structures after "
+"large-scale generation."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:174
+#: e35685bc02cf40e49877de94cc5e8557
+msgid "常见问题"
+msgstr "Common questions"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:176
+#: 3ce71c46006d42298d14aa3181c3f8fa
+msgid ""
+"**输出为空或数量远少于预期。** `min_distance` 太严、`max_attempts` 太小，或者输入超胞太密找不到合适位点。先放宽 "
+"min_distance 到 1.0 Å 试跑。"
+msgstr ""
+"**No output is produced, or the count is far below expectation.** "
+"`min_distance` may be too strict, `max_attempts` too small, or the input "
+"cell too dense to contain a valid site. As a diagnostic, reduce "
+"`min_distance` to 1.0 Å and try again."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:178
+#: 60c6e27b84924c178d8107fde5664390
+msgid ""
+"**插入原子和宿主重叠。** 检查 min_distance 是否 ≤ 0（被跳过）。如果 min_distance 合理但仍重叠，增大 "
+"`max_attempts`。"
+msgstr ""
+"**An inserted atom overlaps the host.** Check whether `min_distance` is "
+"nonpositive, which disables the test. If the distance is reasonable but "
+"placements still look problematic, increase `max_attempts` and inspect the "
+"accepted structures."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:180
+#: 302d5248f9ed4a1cbeb2cc4c21590c67
+msgid ""
+"**Adsorption 模式下原子放在 box 外面。** 检查 axis 是否指向了正确的表面法向。如果 slab 的 c 轴不是表面法向，需要调整"
+" axis。"
+msgstr ""
+"**Adsorption mode places atoms outside the intended region of the cell.** "
+"Check that `axis` points along the actual surface normal. If the slab's *c* "
+"axis is not normal to the surface, choose the correct axis."
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:182
+#: 7f25bea59e3d4cc58823c680029cc4c0
+msgid "输出标签"
+msgstr "Output labels"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:184
+#: 9824c0cf0d4147aa973a3c722e5b5eeb
+#, python-brace-format
+msgid "`Ins(int,n={插入数})` / `Ins(ad,n={插入数})`"
+msgstr "`Ins(int,n={number inserted})` / `Ins(ad,n={number inserted})`"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:186
+#: 0093bc8948ae44259c893bacdb99a300
+msgid "可复现性"
+msgstr "Reproducibility"
+
+#: ../../source/module/make-dataset-cards/cards/interstitial-adsorbate-card.md:188
+#: ee858b7c41124843a42e54d065e5c77b
+msgid "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。输入顺序变化也会影响随机路径。"
+msgstr ""
+"Enable `use_seed` and fix `seed` to reproduce a result for the same input. "
+"Changing the input order can still change the random path."

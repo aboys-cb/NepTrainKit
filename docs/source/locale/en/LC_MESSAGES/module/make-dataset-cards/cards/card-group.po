@@ -1,0 +1,337 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:3
+#: 756956d58d1a46e5a7f41da61e4692f8
+msgid "卡片组（Card Group）"
+msgstr "Card Group"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:5
+#: 8d25ab1eae604957bb4a90b0fd740023
+msgid "`Group`: `Container` | `Class`: `CardGroup`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:7
+#: 8376bc65f1084cf8bcfabd036503fa79
+msgid "功能说明"
+msgstr "What the card does"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:9
+#: aaf2774fd3a24a3d9cefdabef2cc2015
+msgid "把共享同一输入的多张卡片装进一个容器里，并行执行后汇总输出。适合\"同一个母相结构既要走表面链又要走缺陷链\"这种分支场景。组内卡片互不依赖、各自独立读取组输入。"
+msgstr ""
+"Place several independent cards that share one input in a container, run "
+"them as parallel branches, and merge their outputs. This is useful when the "
+"same parent structure must feed both a surface branch and a defect branch. "
+"Every card in the group reads the group input independently."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:11
+#: f57141c73ece42d598fb4f28d345908a
+msgid "**不是做什么的：** 不是过滤器、不是生成卡、不支持组内卡片之间的串行依赖。串行依赖请放在组外顺序连接。"
+msgstr ""
+"**What it is not:** A Card Group is neither a filter nor a generator, and it"
+" does not support serial dependencies between child cards. Put dependent "
+"cards in sequence outside the group."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:13
+#: 42ea8d731b8040a5a57662af55066e1a
+msgid "操作示例"
+msgstr "Example workflow"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:15
+#: 40901ee8e35348e2b7c32be06f85cb4a
+msgid "场景：一份母相结构要同时生成表面 slab 和体相空位"
+msgstr "Scenario: Generate surface slabs and bulk vacancies from one parent structure"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:17
+#: 0135cbd9fe9a4a4ba073239a4ee2c7bc
+msgid "你已经弛豫好一个 Ni 超胞，想同时做两件事：① 切不同取向的表面 slab；② 在体相内随机挖空位。两条路径互不依赖，但你不想分两次导数据。"
+msgstr ""
+"A relaxed Ni supercell must follow two independent paths: cut surface slabs "
+"with several orientations and create random bulk vacancies. A Card Group "
+"avoids importing the same data twice."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:19
+#: 6f0a7a04ab674687aeb93a022d5d0b22
+msgid "**输入：** 一个弛豫好的 Ni 4×4×4 超胞"
+msgstr "**Input:** A relaxed 4×4×4 Ni supercell."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:21
+#: 4f54a400270543d6a528cb528a482204
+msgid "**目标：** 把 `Random Slab` 和 `Random Vacancy` 放入同一组，共享输入，并行生成两个分支，统一导出"
+msgstr ""
+"**Objective:** Put `Random Slab` and `Random Vacancy` in one group, share "
+"the input, run both branches, and export their combined outputs."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:23
+#: 519efd15157248bebedf623004551a56
+msgid "**参数设置：**"
+msgstr "**Parameters:**"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:24
+#: 4a600b7b73364004830d6d5a2a7cbf70
+msgid "将 `Random Slab` 卡片拖入组内，配置好 slab 参数"
+msgstr "Drag `Random Slab` into the group and configure its slab parameters."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:25
+#: 31b6bd20d3cf4b18b2a13ba288ac064d
+msgid "将 `Random Vacancy` 卡片拖入组内，配置好空位规则"
+msgstr "Drag `Random Vacancy` into the group and configure its vacancy rules."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:26
+#: f45cccbcc8a54f0bad655f92448a705b
+#, python-brace-format
+msgid "`card_list` 自动维护为 `[{RandomSlabCard...}, {RandomVacancyCard...}]`"
+msgstr ""
+"`card_list` is maintained automatically as `[{RandomSlabCard...}, "
+"{RandomVacancyCard...}]`."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:28
+#: 2c52c0089ef0411a8acc9b8170a4d15b
+msgid "**输出：** 两个分支的并集——一批不同取向表面 slab + 一批不同空位结构，各自带独立标签"
+msgstr ""
+"**Output:** The union of both branches: surface slabs with several "
+"orientations and a set of vacancy structures, each carrying its own "
+"provenance label."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:30
+#: d99ce68ed8784a3b98dc49eba013ecf9
+msgid ""
+"**怎么验证：** 抽查输出，确认有明确不同标签来源（`Slab(...)` vs `Vac(...)`）。如果只有一种标签，检查组内卡片是否都勾选了 "
+"`check_state`。"
+msgstr ""
+"**How to verify it:** Inspect a sample and confirm distinct labels such as "
+"`Slab(...)` and `Vac(...)`. If only one label appears, confirm that "
+"`check_state` is enabled for every child card."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:32
+#: dbb33a147f144c9894b9c48fee881799
+msgid "什么时候用、什么时候不用"
+msgstr "When to use a Card Group"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:34
+#: ab82dd7048c6436394d9379113abf97a
+msgid "**用：**"
+msgstr "**Use it when:**"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:35
+#: ab40343acfd349a8bc9cc213796496b3
+msgid "同一输入需要同时喂给多张彼此无依赖的卡片"
+msgstr "One input must feed several independent cards."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:36
+#: 55dae4c833ab494ca7879f1ce6715965
+msgid "多条分支需要统一启停和导出"
+msgstr "Several branches should be enabled, disabled, and exported together."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:38
+#: e9db97cb63214979a6542555d20c63d6
+msgid "**不用：**"
+msgstr "**Do not use it when:**"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:39
+#: adf85d27dcbc4251ba5d50a8102d249b
+msgid "卡片之间有前后依赖（A 的输出是 B 的输入）→ 放在组外串行连接"
+msgstr ""
+"Cards have a dependency (B consumes A's output); connect them serially "
+"outside the group."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:40
+#: 7463dcc75046430d8a5e6816a169e190
+msgid "只需要单张卡 → 不需要组"
+msgstr "Only one card is needed."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:42
+#: 9e35235d9e8844f98e301e2cb223b43d
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:44
+#: b7125c3889eb42c391ef9bc43836e3b8
+msgid "`card_list`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:46
+#: fa3f4f7924ad483fa752ed9596a362ee
+msgid ""
+"组内的子卡片列表，由界面拖入操作自动维护，不需要你手动编辑。每项是一个完整的卡片配置 dict（含 class、check_state、params "
+"等字段），子卡片共享组输入、各自独立运行。"
+msgstr ""
+"The interface maintains the child-card list as cards are dragged into the "
+"group. Do not edit it manually. Each item is a complete card configuration "
+"dictionary containing fields such as class, check_state, and params. Child "
+"cards share the group input and run independently."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:48
+#: daa01b7dceda4eb1ac08a69e2d251d5d
+msgid "`filter_card`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:50
+#: ea9f0faa4270472d98a796cce16646e7
+msgid ""
+"dict 或 null，默认 null。选填：在组内末尾挂一张过滤卡（如 `FPS Filter`），对并行生成的汇总结果做统一筛选。留 null "
+"表示不启用组内过滤。"
+msgstr ""
+"`dict` or `null`, default `null`. Optionally attach a filter such as `FPS "
+"Filter` to the end of the group to filter the merged branch outputs. Leave "
+"it `null` to disable in-group filtering."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:52
+#: b01c35c55e73469aaf102a6122af7d5e
+msgid "组内过滤只作用于组输出，不进入下游卡片的输入流。如果你需要在组外继续处理，把过滤卡串在组后。"
+msgstr ""
+"An in-group filter acts only on group output. To continue processing in the "
+"top-level dataflow, place the filter after the group instead."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:54
+#: 41023bc654f947c9a3bcf1f257eb96c3
+msgid "推荐预设"
+msgstr "Recommended presets"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:56
+#: 8e97645aa80b4e14a6ce1e731e4d0068
+msgid "空容器（只需要拖入卡片）"
+msgstr "Empty container; drag cards into it in the interface"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:57
+#: c95a161b4e844a4897ca037cce5176e4
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"CardGroup\",\n"
+"  \"check_state\": true,\n"
+"  \"card_list\": [],\n"
+"  \"filter_card\": null\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:66
+#: dc1f658a07624364a108bc9b3d71a256
+msgid "带组内过滤（先并行生成，再 FPS 筛）"
+msgstr "Parallel generation followed by an in-group FPS filter"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:67
+#: a68502e173294463ad9e8be84dc7656e
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"CardGroup\",\n"
+"  \"check_state\": true,\n"
+"  \"card_list\": [\n"
+"    {\"class\": \"RandomSlabCard\", \"check_state\": true, \"...\": "
+"\"...\"},\n"
+"    {\"class\": \"RandomVacancyCard\", \"check_state\": true, \"...\": "
+"\"...\"}\n"
+"  ],\n"
+"  \"filter_card\": {\"class\": \"FPSFilterDataCard\", \"check_state\": true,"
+" \"nep_path\": \"...\", \"n_samples\": 50}\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:79
+#: 170638c8ffcb4a1c93057cbe4ba6607a
+msgid "推荐组合"
+msgstr "Recommended combinations"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:81
+#: 46cc440e02834452a28cf98a0f3ef98e
+msgid "`Card Group(Random Slab, Insert Defect)` → `FPS Filter`：并行生成表面+缺陷 → 组外统一筛选"
+msgstr ""
+"`Card Group(Random Slab, Insert Defect)` -> `FPS Filter`: generate surfaces "
+"and defects in parallel, then filter the merged output outside the group"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:82
+#: e00edd9b3b24466486db0b05fa5998fa
+msgid "`Card Group(Atomic Perturb, Lattice Perturb)` → export：同一输入同时补充坐标噪声+晶格噪声"
+msgstr ""
+"`Card Group(Atomic Perturb, Lattice Perturb)` -> export: add coordinate "
+"noise and lattice noise as separate branches from the same input"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:83
+#: 70edac8ff21c4dc6b9c95bad1ecdde53
+msgid "如果两条分支有严格依赖，拆回顶层串行：`Super Cell → Random Slab → Insert Defect`"
+msgstr ""
+"When branches have a strict dependency, use a top-level serial chain: `Super"
+" Cell -> Random Slab -> Insert Defect`."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:85
+#: 7e95a98d38954865b9d5e7967609303e
+msgid "常见问题"
+msgstr "Common questions"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:87
+#: 623e010a0c3a48a6ba7eb6918fc383af
+msgid "**组输出为空。** 检查组内每张子卡片是否勾选了 `check_state`、各自配置是否合法。"
+msgstr ""
+"**The group output is empty.** Confirm that `check_state` is enabled on "
+"every child and that each child configuration is valid."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:89
+#: b12a31987cb64004b0b36cd7d3f40fdc
+msgid "**分支结果混在一起分不清。** 检查每张子卡片是否产出了不同的 `Config_type` 标签。组本身不区分来源——区分靠子卡片的标签。"
+msgstr ""
+"**Branch results cannot be distinguished.** Confirm that each child produces"
+" a distinct `Config_type`. The group does not add provenance; it relies on "
+"child-card labels."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:91
+#: 5696cc1c8a8f4b35997b81ff59302f79
+msgid ""
+"**组内过滤卡把结果全筛掉了。** `filter_card` 的过滤参数可能过严（如 `n_samples` "
+"设太大但输入很少）。先调松过滤参数，或去掉组内过滤改为组外过滤。"
+msgstr ""
+"**The in-group filter removed everything.** Its parameters may be too "
+"restrictive. Relax them, or remove `filter_card` and apply a top-level "
+"filter where the intermediate output can be inspected."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:93
+#: fadf5d2e01544f288e955caa309839e2
+msgid "**想在组内串行。** 不支持。组内所有卡片共享同一输入、并行执行。串行依赖请拆到组外。"
+msgstr ""
+"**A serial chain is needed inside the group.** This is unsupported. All "
+"child cards share one input and run as parallel branches; move serial "
+"dependencies outside."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:95
+#: 74a1224b4aa540a8906a3eef124f5752
+msgid "输出标签"
+msgstr "Output labels"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:97
+#: 09386d5a3302452eb48f1be838224cb2
+msgid "该卡片本身不写入 `Config_type` 标签。标签由组内子卡片各自产生。"
+msgstr ""
+"Card Group itself does not write a `Config_type`; each child card supplies "
+"its own label."
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:99
+#: d4930b2325ac4b74a95566844f08dbb8
+msgid "可复现性"
+msgstr "Reproducibility"
+
+#: ../../source/module/make-dataset-cards/cards/card-group.md:101
+#: 73d8d240ba6949ed8f57670fea9ce196
+msgid "无自身随机性。可复现性取决于组内子卡片的 seed 配置。"
+msgstr ""
+"Card Group has no randomness of its own. Reproducibility depends on the seed"
+" settings of its child cards."

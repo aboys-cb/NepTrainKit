@@ -232,6 +232,22 @@ class TestDefectSurfaceCards(BaseCardTest):
 
         self.assertEqual(restored.get_params(), card.get_params())
 
+    def test_strict_gsfe_path_card_roundtrip(self):
+        card = StrictGSFEPathCard()
+        card.hkl_frame.set_input_value([1, 1, 0])
+        card.uvw_frame.set_input_value([1, -1, 0])
+        card.disp_frame.set_input_value([0.0, 0.5, 0.25])
+        card.unit_combo.setCurrentText("angstrom")
+        card.cut_combo.setCurrentText("layer_index")
+        card.cut_fraction_frame.set_input_value([0.25])
+        card.layer_frame.set_input_value([2])
+        card.wrap_checkbox.setChecked(False)
+
+        restored = StrictGSFEPathCard()
+        restored.from_dict(card.to_dict())
+
+        self.assertEqual(restored.get_params(), card.get_params())
+
     def test_layer_copy_operation_is_ui_independent(self):
         structure = self.structure.copy()
         results = LayerCopyOperation().run_structure(

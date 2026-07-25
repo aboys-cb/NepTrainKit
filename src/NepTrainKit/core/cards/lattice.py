@@ -8,12 +8,13 @@ from typing import Literal
 
 import numpy as np
 from ase.build import make_supercell
-from ase.geometry import cell_to_cellpar, cellpar_to_cell
+from ase.geometry import cell_to_cellpar
 from scipy.stats.qmc import Sobol
 
 from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.structure import get_clusters, process_organic_clusters
 
+from .geometry import wrapped_positions as fast_wrapped_positions
 from .operation import StructureOperation
 
 
@@ -30,6 +31,24 @@ def _scan_values(values, *, label: str) -> np.ndarray:
     return np.arange(start, stop + step * 0.5, step, dtype=float)
 
 
+def _cell_from_lengths_angles(lengths, angles_deg) -> np.ndarray:
+    """Build a cell from lengths and degree angles using ASE's default convention."""
+    a, b, c = [float(value) for value in lengths]
+    alpha, beta, gamma = np.radians(np.asarray(angles_deg, dtype=float))
+    sin_gamma = np.sin(gamma)
+    if abs(float(sin_gamma)) <= 1e-12:
+        raise ValueError("ShearAngle produced a singular gamma angle.")
+
+    cell = np.zeros((3, 3), dtype=float)
+    cell[0] = [a, 0.0, 0.0]
+    cell[1] = [b * np.cos(gamma), b * sin_gamma, 0.0]
+    cx = c * np.cos(beta)
+    cy = c * (np.cos(alpha) - np.cos(beta) * np.cos(gamma)) / sin_gamma
+    cz = np.sqrt(max(c * c - cx * cx - cy * cy, 0.0))
+    cell[2] = [cx, cy, cz]
+    return cell
+
+
 @dataclass(frozen=True)
 class CellStrainParams:
     """Parameters for axial lattice strain generation."""
@@ -39,6 +58,65 @@ class CellStrainParams:
     y_range: tuple[float, float, float] = (-5.0, 5.0, 1.0)
     z_range: tuple[float, float, float] = (-5.0, 5.0, 1.0)
     identify_organic: bool = False
+
+
+@dataclass(frozen=True)
+class BainPathParams:
+    """Parameters for Bain/tetragonal distortion path generation."""
+
+    axis: Literal["x", "y", "z"] = "z"
+    ca_range: tuple[float, float, float] = (1.0, 1.0, 1.0)
+    mode: Literal["constant_volume", "scale_volume", "free_c"] = "constant_volume"
+    volume_scale_range: tuple[float, float, float] = (1.0, 1.0, 1.0)
+    scale_atoms: bool = True
+
+
+class BainPathOperation(StructureOperation):
+    """Generate fixed-structure Bain/tetragonal distortion structures."""
+
+    def run_structure(self, structure, params: BainPathParams) -> list:
+        axis_map = {"x": 0, "y": 1, "z": 2}
+        axis = str(params.axis).lower()
+        if axis not in axis_map:
+            raise ValueError("BainPath axis must be x, y, or z.")
+        if params.mode not in {"constant_volume", "scale_volume", "free_c"}:
+            raise ValueError("BainPath mode must be constant_volume, scale_volume, or free_c.")
+
+        cell = np.asarray(structure.cell.array, dtype=float)
+        if cell.shape != (3, 3) or abs(float(np.linalg.det(cell))) <= 1e-12:
+            raise ValueError("BainPath requires a nonsingular 3x3 cell.")
+
+        ca_values = _scan_values(params.ca_range, label="ca_range")
+        if np.any(ca_values <= 0.0):
+            raise ValueError("BainPath ca_range values must be positive.")
+        volume_values = (
+            _scan_values(params.volume_scale_range, label="volume_scale_range")
+            if params.mode == "scale_volume"
+            else np.array([1.0], dtype=float)
+        )
+        if np.any(volume_values <= 0.0):
+            raise ValueError("BainPath volume_scale_range values must be positive.")
+
+        c_axis = axis_map[axis]
+        out = []
+        base_volume = abs(float(np.linalg.det(cell)))
+        for r in ca_values:
+            factors = np.ones(3, dtype=float)
+            factors[c_axis] = float(r)
+            if params.mode != "free_c":
+                for i in range(3):
+                    if i != c_axis:
+                        factors[i] = 1.0 / np.sqrt(float(r))
+            for vscale in volume_values:
+                new_cell = cell * factors[:, None]
+                if params.mode == "scale_volume":
+                    new_cell = new_cell * (float(vscale) ** (1.0 / 3.0))
+                atoms = structure.copy()
+                atoms.set_cell(new_cell, scale_atoms=bool(params.scale_atoms))
+                v_over_v0 = abs(float(np.linalg.det(new_cell))) / base_volume
+                append_config_tag(atoms, f"Bain(ax={axis},ca={float(r):g},V={v_over_v0:g},mode={params.mode})")
+                out.append(atoms)
+        return out
 
 
 class CellStrainOperation(StructureOperation):
@@ -277,7 +355,7 @@ class ShearAngleOperation(StructureOperation):
                 for dg in gamma_range:
                     new_structure = structure.copy()
                     new_angles = angles0 + np.array([da, db, dg])
-                    new_lattice = cellpar_to_cell([*lengths, *new_angles])
+                    new_lattice = _cell_from_lengths_angles(lengths, new_angles)
                     new_structure.set_cell(new_lattice, scale_atoms=True)
                     if params.identify_organic:
                         process_organic_clusters(structure, new_structure, clusters, is_organic_list)
@@ -337,6 +415,11 @@ class PerturbOperation(StructureOperation):
             axis=2,
         )
 
+    @staticmethod
+    def wrapped_positions(structure, positions: np.ndarray) -> np.ndarray:
+        """Wrap Cartesian positions through fractional coordinates without ASE's per-call solve."""
+        return fast_wrapped_positions(structure, positions)
+
     def run_structure(self, structure, params: PerturbParams) -> list:
         structure_list = []
         n_atoms = len(structure)
@@ -386,8 +469,7 @@ class PerturbOperation(StructureOperation):
                 new_positions = orig_positions + delta
 
             new_structure = structure.copy()
-            new_structure.set_positions(new_positions)
-            new_structure.wrap()
+            new_structure.set_positions(self.wrapped_positions(structure, new_positions))
             eng = "U" if params.engine_type == 1 else "S"
             append_config_tag(new_structure, f"Pert(d={params.max_distance},{eng})")
             structure_list.append(new_structure)

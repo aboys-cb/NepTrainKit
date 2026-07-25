@@ -6,11 +6,12 @@
     <file>src/images/enlarge.svg</file>
     <file>src/images/init.svg</file>
     <file>src/images/logo.png</file>
-    <file>src/images/logo.svg</file>
     <file>src/images/open.svg</file>
     <file>src/images/pan.svg</file>
     <file>src/images/pen.svg</file>
     <file>src/images/revoke.svg</file>
+    <file>src/images/undo_selection.svg</file>
+    <file>src/images/undo_delete.svg</file>
     <file>src/images/export.svg</file>
     <file>src/images/export1.svg</file>
 

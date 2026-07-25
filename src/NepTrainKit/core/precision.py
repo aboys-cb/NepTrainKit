@@ -35,6 +35,15 @@ def get_storage_float_type() -> Any:
     return get_storage_float_dtype().type
 
 
+def get_export_significant_digits() -> int:
+    """Return the configured significant digits for per-atom text exports."""
+
+    digits = Config.getint("io", "export_significant_digits", 10)
+    if digits is None:
+        return 10
+    return max(6, min(17, int(digits)))
+
+
 def as_storage_float_array(values: Any, *, copy: bool = False) -> npt.NDArray[Any]:
     """Convert ``values`` into the configured storage float dtype."""
 

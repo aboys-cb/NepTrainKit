@@ -1,0 +1,535 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:3
+#: 1358e159b74a49a6865973a30a4cfc10
+msgid "Bain 路径（Bain Path）"
+msgstr "Bain Path"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:5
+#: a6f1575c740c4351967f133894cc2c26
+msgid "`Group`: `Lattice` | `Class`: `BainPathCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:7
+#: d49b4b3524e34373abeab59a70437ca8
+msgid "功能说明"
+msgstr "What the card does"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:9
+#: 984ea7162b954b24b47c28ef3e057dc6
+msgid ""
+"沿一个指定晶轴做四方畸变，生成一组不同 `c/a` 比的晶胞。它保留原子数和元素组成，只改变晶格矢量，可用于给 bcc/fcc/fct "
+"转变、四方相变路径、近似马氏体变形等场景补训练结构。"
+msgstr ""
+"Apply a tetragonal distortion along a selected cell axis to generate cells "
+"with different `c/a` ratios. The operation preserves atom count and "
+"composition and changes only the lattice vectors. Use it to sample "
+"bcc/fcc/fct transformations, tetragonal transition paths, and approximate "
+"martensitic deformations."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:11
+#: 6900a6cd6cf143aa8daf8e9b4c7bacb1
+msgid ""
+"这张卡不是随机扰动卡。它扫描的是晶胞形状自由度：选定 `x`、`y` 或 `z` 作为 c 轴，按 `ca_range` "
+"改变该方向长度；`constant_volume` 会同步缩放另外两条轴让体积保持不变，`scale_volume` "
+"会在此基础上再扫体积，`free_c` 只改选中轴。"
+msgstr ""
+"This is not a random perturbation card. It scans cell-shape degrees of "
+"freedom. Choose `x`, `y`, or `z` as the c axis and vary its length with "
+"`ca_range`. `constant_volume` compensates with the other two axes, "
+"`scale_volume` adds a volume scan, and `free_c` changes only the selected "
+"axis."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:13
+#: 1de5d1d2084b43c2a9f50d22ebb70b0b
+msgid "操作示例"
+msgstr "Example workflow"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:15
+#: 9132190b03864ff1b17f102dc727bf4d
+msgid "场景：模型在 bcc 到 fct 变形路径上能量曲线不平滑"
+msgstr "Scenario: A jagged energy curve along a bcc-to-fct path"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:17
+#: 20955be7b32244a7b9ad1577356189c1
+msgid ""
+"你的 NEP 模型在 bcc Fe 的平衡结构附近力误差很低，但沿 Bain 路径拉伸时能量曲线出现不合理的尖峰。训练集中有平衡 bcc "
+"和少量随机应变，却缺少系统的四方畸变结构，模型只能把这条相变路径当外推。"
+msgstr ""
+"A NEP model has low force error near equilibrium bcc Fe, but its energy "
+"curve develops unphysical spikes along the Bain path. The training set "
+"contains equilibrium bcc and a few random strains but no systematic "
+"tetragonal distortions, leaving the transition path as extrapolation."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:19
+#: bbcf41b3b2ff4dbdbad62195d5fed5f3
+msgid "**输入：** 一个弛豫后的 bcc 或近 bcc 超胞。"
+msgstr "**Input:** A relaxed bcc or near-bcc supercell."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:21
+#: 07f2c0a396274c0fa94ad5a7ae4b32b3
+msgid "**目标：** 在保持体积近似不变的前提下扫描 `c/a = 0.8, 1.0, 1.2`，让模型见过从压扁到拉长的晶胞形状。"
+msgstr ""
+"**Objective:** Scan `c/a = 0.8, 1.0, 1.2` at approximately constant volume "
+"so the model sees both oblate and elongated cells."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:23
+#: 8e974cd3e9174766963e98849ac67c88
+msgid "**参数设置：**"
+msgstr "**Parameters:**"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:24
+#: 7f15daa52845454199315d1b632e77df
+msgid "`axis = \"z\"`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:25
+#: 49e5dbbef83e42e58fc476f9260f9d6b
+msgid "`ca_range = [0.8, 1.2, 0.2]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:26
+#: a1ccc9d516a146819ff2d714e83f62e3
+msgid "`mode = \"constant_volume\"`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:27
+#: 4c0d889a4db64829b62abfed822ffbb2
+msgid "`scale_atoms = true`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:29
+#: 3ffebb4d333b4ab097d03dece1f5835b
+msgid "**输出：** 3 个结构，带 `Bain(ax=z,ca=...,V=...,mode=constant_volume)` 标签。"
+msgstr ""
+"**Output:** Three structures labeled "
+"`Bain(ax=z,ca=...,V=...,mode=constant_volume)`."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:31
+#: 4dd73a2e0e35469198a35817d42d07a2
+msgid ""
+"**怎么验证训练集质量改善：** 重训后重新扫同一 Bain 路径，能量曲线应更平滑，峰值位置不应随采样点轻微移动而大幅跳变。如果仍然不稳，缩小步长到 "
+"0.05 或在 `scale_volume` 模式下给每个 `c/a` 加入 0.95、1.00、1.05 三个体积点。"
+msgstr ""
+"**How to verify the improvement:** After retraining, rescan the same Bain "
+"path. The energy curve should be smoother and peak positions should not jump"
+" after small changes in sampling points. If it remains unstable, reduce the "
+"step to 0.05 or use `scale_volume` to add volume ratios 0.95, 1.00, and 1.05"
+" at every `c/a`."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:33
+#: 07a29cccc78b4c568af48077799cbf5a
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:35
+#: 4800a98c18bb4e0689086c1353d98432
+msgid "Axis（axis）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:37
+#: e7855ff79f69453bad4fd588c6c162b2
+msgid "`str`，默认 `\"z\"`。指定哪条晶格矢量当作 Bain 路径里的 c 轴。"
+msgstr ""
+"`str`, default `\"z\"`. Selects the lattice vector used as the c axis of the"
+" Bain path."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:39
+#: ca6f4a9928cb4d80979eed8e54545b5e
+msgid ""
+"选 `z` 最常见，因为很多输入结构已经把相变或薄膜方向放在第三条晶格矢量。若你的候选畸变方向实际沿 x 或 "
+"y，直接切换即可；不要先手动换轴再跑卡片，那样更容易把后续标签和结构方向搞混。"
+msgstr ""
+"`z` is common because many inputs place the transition or film direction "
+"along the third lattice vector. Choose `x` or `y` directly when appropriate."
+" Avoid manually permuting axes first, which makes later labels easier to "
+"misinterpret."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: b9eaaa6ed22d471aac06399df9c594d3 c49b8dcb00fc4eea94b92b77e41ba69d
+msgid "选项"
+msgstr "Options"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 119790fb59a14f178a4a398030eef4e6 bafc5b62e52b488aaefeba4cb137fa60
+msgid "含义"
+msgstr "Meaning"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 344b6d46704047edb855f3e42303ebb9 f035290783724bba84f09785cfad3c52
+msgid "什么时候选"
+msgstr "When to choose it"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: b95405c536be459db0e752a41e4f1639
+msgid "`x`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 0ebfb3bcbee544da987db10c9ac7f544
+msgid "缩放第一条晶格矢量"
+msgstr "Scale the first lattice vector"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 89b297da7d444d57a049e8d4cebd2e5f
+msgid "变形方向沿 a 轴"
+msgstr "Distort along the a axis"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: bd73672a10b14e6f8c8b670bf65e2ad9
+msgid "`y`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 87dc7de985db48bb8558bf7e4b4eb0cb
+msgid "缩放第二条晶格矢量"
+msgstr "Scale the second lattice vector"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 797901ed01154ef7acd57086f7d320d0
+msgid "变形方向沿 b 轴"
+msgstr "Distort along the b axis"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 15641f920e8b46a9adeddd78c4da9ef0
+msgid "`z`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 281f6452c0c241aeab9a3f9e43eda7e8
+msgid "缩放第三条晶格矢量"
+msgstr "Scale the third lattice vector"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: de16a06dbbaa4d39b2265fe6382c2030
+msgid "变形方向沿 c 轴，默认选择"
+msgstr "Distort along the c axis; the default"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:47
+#: e54ef2f70ac34e6cbf390c6aeb97a291
+msgid "CA Range（ca_range）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:49
+#: ec429b0f8dba4039bb95495973e4ff52
+msgid ""
+"`tuple[float, float, float]`，默认 `(1.0, 1.0, 1.0)`。格式是 `[起点, 终点, "
+"步长]`，扫描选中轴的相对缩放因子。"
+msgstr ""
+"`tuple[float, float, float]`, default `(1.0, 1.0, 1.0)`. A `[start, stop, "
+"step]` scan of the relative scale factor for the selected axis."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:51
+#: 8498252d7fee422d9ad281a3e5db2526
+msgid ""
+"`1.0` 表示原始晶胞；`0.9` 是选中轴压短 10%；`1.1` 是拉长 10%。如果只是补近平衡响应，`0.95-1.05` 通常够用；研究 "
+"bcc/fcc/fct 路径时可以扩到 `0.7-1.4`，但每批输出都要检查最近邻距离和体积是否仍在你愿意做 DFT 的范围内。"
+msgstr ""
+"`1.0` keeps the original cell, `0.9` shortens the selected axis by 10%, and "
+"`1.1` lengthens it by 10%. For near-equilibrium response, `0.95-1.05` is "
+"usually sufficient. A bcc/fcc/fct study may extend to `0.7-1.4`, but check "
+"nearest-neighbor distances and volumes in every batch before committing DFT "
+"resources."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:53
+#: d3cb1b6ba1044cb4a1792d94bd93d1b3
+msgid "Mode（mode）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:55
+#: 621f24b733b44ddd8b8c2d56cba01f95
+msgid "`str`，默认 `\"constant_volume\"`。决定选中轴变化时，另外两条轴和总体积怎么处理。"
+msgstr ""
+"`str`, default `\"constant_volume\"`. Controls how the other two axes and "
+"total volume respond when the selected axis changes."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 6a58acfad5f0435095218c610b58e1e3
+msgid "`constant_volume`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 66b03dce3c544dca8311bbf5f66f0e44
+msgid "选中轴乘以 `r`，另外两轴乘以 `1/sqrt(r)`"
+msgstr "Multiply the selected axis by `r` and the other two by `1/sqrt(r)`"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 5e06cadb9a4741998df2c4f9225cc35d
+msgid "想隔离形状效应，不想把体积变化混进去"
+msgstr "Isolate shape effects without introducing volume changes"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 5ba9a8f2bd7e4f3a9f8950b13151449c
+msgid "`scale_volume`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 83639870e9bc4d48a8c6dffd1ea105b6
+msgid "先做 constant-volume Bain，再按 `volume_scale_range` 统一缩放体积"
+msgstr ""
+"Apply a constant-volume Bain distortion, then scale volume according to "
+"`volume_scale_range`"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: d88b51df1b474047b2a95861db344c35
+msgid "同时补四方畸变和体积响应"
+msgstr "Cover tetragonal distortion and volume response together"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 50cae19dbfd24790963eac5232b4bacb
+msgid "`free_c`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 02691797a19547478955372667cace4a
+msgid "只缩放选中轴，另外两轴不动"
+msgstr "Scale only the selected axis"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md
+#: 3b2e68a9d4fc40bb99ea60afc635a255
+msgid "模拟外延约束或单轴加载"
+msgstr "Approximate epitaxial constraints or uniaxial loading"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:63
+#: ba265253d3a8444bada1c979c6d34edc
+msgid "Volume Scale Range（volume_scale_range）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:65
+#: 64986f406e494133bcbb12bf8dcbc37b
+msgid ""
+"`tuple[float, float, float]`，默认 `(1.0, 1.0, 1.0)`。格式是 `[起点, 终点, "
+"步长]`，表示输出体积相对原始体积的比例。"
+msgstr ""
+"`tuple[float, float, float]`, default `(1.0, 1.0, 1.0)`. A `[start, stop, "
+"step]` scan of output volume relative to the original volume."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:67
+#: ceed1b3368c44d99b9c9dbff44ba81f6
+msgid ""
+"这个参数只在 `mode = \"scale_volume\"` 时生效。比如 `[0.95, 1.05, 0.05]` 会为每个 `c/a` 生成 "
+"0.95、1.00、1.05 三个体积点；如果 `ca_range` 有 5 个点，总输出就是 15 "
+"个结构。范围别一上来开太大，体积和形状同时扫很容易把训练集放大。"
+msgstr ""
+"This parameter is used only when `mode = \"scale_volume\"`. For example, "
+"`[0.95, 1.05, 0.05]` produces volume ratios 0.95, 1.00, and 1.05 for each "
+"`c/a`; five `ca_range` points therefore produce 15 structures. Start with a "
+"narrow range because simultaneous shape and volume scans grow quickly."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:69
+#: ca82c426ee434734842b6140fda0b1a4
+msgid "生效条件：`mode` 必须是 `scale_volume`。"
+msgstr "Active only when `mode` is `scale_volume`."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:71
+#: ba68614d317d4ceb85221ddeafdbfe8d
+msgid "Scale Atoms（scale_atoms）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:73
+#: de42c18757164ea090fa3661d2248a22
+msgid "`bool`，默认 `true`。打开后原子随晶胞一起按分数坐标缩放；关闭后保留 Cartesian 坐标，只改 cell。"
+msgstr ""
+"`bool`, default `true`. When enabled, atoms follow the cell at fixed "
+"fractional coordinates. When disabled, Cartesian coordinates remain fixed "
+"while only the cell changes."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:75
+#: 1c4f52febe6b4534a33ba16219371bd5
+msgid "训练集构型生成通常应保持打开，因为这代表结构整体经历晶格畸变。关闭更像是在改周期边界而不是改内部结构，适合少数外延盒子或调试场景；关掉后务必检查原子是否贴近边界或产生异常近邻。"
+msgstr ""
+"Keep this enabled for normal training-set generation so the entire structure"
+" undergoes the lattice distortion. Disabling it changes periodic boundaries "
+"more than internal geometry and is appropriate only for special epitaxial-"
+"box or debugging cases. Inspect boundary proximity and nearest neighbors "
+"afterward."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:77
+#: a3b06886d41248389a2a20c9708d0789
+msgid "推荐预设"
+msgstr "Recommended presets"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:79
+#: 45ed96366b874479abae5ae38e23a754
+msgid "近平衡四方响应"
+msgstr "Near-equilibrium tetragonal response"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:81
+#: fde7c1d070bd4266b935d2d9b38676bb
+msgid "适合先确认模型对小形变是否平滑，输出 3 个结构。"
+msgstr ""
+"Use to test whether the model responds smoothly to small distortions; "
+"produces three structures."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:83
+#: 3b4e622b0a5b42ac8722dbfb1f0d4873
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"BainPathCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"axis\": \"z\",\n"
+"    \"ca_range\": [0.95, 1.05, 0.05],\n"
+"    \"mode\": \"constant_volume\",\n"
+"    \"volume_scale_range\": [1.0, 1.0, 1.0],\n"
+"    \"scale_atoms\": true\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:97
+#: c37a70a12f0e452d8b547809f100aff1
+msgid "相变路径粗扫"
+msgstr "Coarse transition-path scan"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:99
+#: e65fec20c42f404cb201108265cb1a90
+msgid "适合 bcc/fct 路径先粗看能量曲线形状，输出 7 个结构。"
+msgstr "Use for a first look at the bcc/fct energy curve; produces seven structures."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:101
+#: 252a7b2689484361a1db7ef088da4e2a
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"BainPathCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"axis\": \"z\",\n"
+"    \"ca_range\": [0.7, 1.3, 0.1],\n"
+"    \"mode\": \"constant_volume\",\n"
+"    \"volume_scale_range\": [1.0, 1.0, 1.0],\n"
+"    \"scale_atoms\": true\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:115
+#: f77f2f0cfe714cf7995a1cfb7708e018
+msgid "形状加体积联合覆盖"
+msgstr "Combined shape and volume coverage"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:117
+#: 85d8558aaac848a78086d2a4a9749c2d
+msgid "适合怀疑模型同时缺体积响应和四方畸变响应时使用，输出数量是 `ca_range` 点数乘以体积点数。"
+msgstr ""
+"Use when both volume and tetragonal response appear undersampled. Output "
+"count is the number of `ca_range` points times the number of volume points."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:119
+#: f254c85964e144cba06839f7f8145fd7
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"BainPathCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"axis\": \"z\",\n"
+"    \"ca_range\": [0.9, 1.1, 0.1],\n"
+"    \"mode\": \"scale_volume\",\n"
+"    \"volume_scale_range\": [0.95, 1.05, 0.05],\n"
+"    \"scale_atoms\": true\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:133
+#: ad9555d41e5b49d2b9b75c21168c12ed
+msgid "推荐组合"
+msgstr "Recommended combinations"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:135
+#: 2350f3d740f74e97ac0ebea59e66a5f9
+msgid "`Bain Path` → `Atomic Perturb`：先补系统四方畸变，再给每个形变点加入小坐标扰动，覆盖非零温局域环境。"
+msgstr ""
+"`Bain Path` -> `Atomic Perturb`: sample systematic tetragonal distortions, "
+"then add small coordinate perturbations at each point for finite-temperature"
+" local environments."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:136
+#: 2d9f48c8bd934dedb8c0913a1d2a0cbd
+msgid "`Super Cell` → `Bain Path`：先扩胞再扫路径，避免小胞里单个缺陷或磁序周期过短。"
+msgstr ""
+"`Super Cell` -> `Bain Path`: expand first so a defect or magnetic period is "
+"not artificially confined by a small cell."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:137
+#: dbcb87744cfd4839a6c99ffb1c9eefe3
+msgid "`Bain Path` → `Lattice Strain`：先覆盖相变主路径，再补普通轴向应变，用来稳定弹性响应。"
+msgstr ""
+"`Bain Path` -> `Lattice Strain`: cover the main transition path, then add "
+"ordinary axial strains to stabilize elastic response."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:139
+#: 3acdffc3cf8b4b9098a1e9f8ad89411d
+msgid "常见问题"
+msgstr "Common questions"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:141
+#: d0b2b78653304c52973428c30b8b2a04
+msgid "**输出结构数比预期多。** `scale_volume` 会对每个 `c/a` 再乘上每个体积点；总数是两组扫描点数的乘积。"
+msgstr ""
+"**More structures than expected.** `scale_volume` combines every `c/a` with "
+"every volume point; the total is the product of both scan sizes."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:143
+#: 9a4aa339153b4b47bf54980c4b2e6a84
+msgid ""
+"**体积没有保持不变。** 检查 `mode` 是否为 `constant_volume`。`free_c` 会改变体积，`scale_volume` "
+"会按 `volume_scale_range` 继续改体积。"
+msgstr ""
+"**Volume is not constant.** Confirm that `mode` is `constant_volume`. "
+"`free_c` changes volume, while `scale_volume` varies it according to "
+"`volume_scale_range`."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:145
+#: 1119a5c0c2b54a7d8d1fe976b4d33fc5
+msgid "**结构看起来被拉得太夸张。** 缩小 `ca_range`，先用 `0.95-1.05` 验证模型响应，再决定是否覆盖更宽相变路径。"
+msgstr ""
+"**Structures are excessively distorted.** Narrow `ca_range`, validate model "
+"response over `0.95-1.05`, and only then decide whether a wider transition "
+"path is justified."
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:147
+#: c18e55cd8b5e42f1aae61d855a78de38
+msgid "输出标签"
+msgstr "Output labels"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:149
+#: 56700b4655d14a1085efe8a2e6ec0715
+#, python-brace-format
+msgid "`Bain(ax={axis},ca={r},V={V/V0},mode={mode})`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:151
+#: 637d7a48735e4d2c9a140abd7c4cf8be
+msgid "可复现性"
+msgstr "Reproducibility"
+
+#: ../../source/module/make-dataset-cards/cards/bain-path-card.md:153
+#: 9170842fd6c5498481162ee2bff19eaf
+msgid "无随机性。同一输入结构和同一参数会生成完全一致的结构列表。"
+msgstr ""
+"Deterministic: the same input structure and parameters produce exactly the "
+"same structure list."

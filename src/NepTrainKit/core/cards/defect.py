@@ -14,6 +14,7 @@ from scipy.stats.qmc import Sobol
 
 from NepTrainKit.core.config_type import append_config_tag
 
+from .geometry import wrapped_positions
 from .operation import StructureOperation
 
 
@@ -282,11 +283,130 @@ class StackingFaultOperation(StructureOperation):
             new_structure = structure.copy()
             pos = new_structure.positions.copy()
             pos[mask] += slip_direction * displacement
-            new_structure.set_positions(pos)
-            new_structure.wrap()
+            new_structure.set_positions(wrapped_positions(new_structure, pos))
             append_config_tag(new_structure, f"SF(hkl={h}{k}{l},d={displacement:g})")
             structure_list.append(new_structure)
         return structure_list
+
+
+@dataclass(frozen=True)
+class StrictGSFEPathParams:
+    """Parameters for unrelaxed GSFE path generation with explicit slip geometry."""
+
+    plane_hkl: Sequence[int] = (0, 0, 1)
+    slip_uvw: Sequence[int] = (1, 0, 0)
+    displacement_range: Sequence[float] = (0.0, 1.0, 0.5)
+    displacement_unit: str = "fraction_of_vector"
+    cut_mode: str = "middle"
+    cut_fraction: float = 0.5
+    layer_index: int = 0
+    wrap: bool = True
+
+
+class StrictGSFEPathOperation(StructureOperation):
+    """Generate unrelaxed generalized stacking-fault structures."""
+
+    def run_structure(self, structure, params: StrictGSFEPathParams) -> list:
+        if len(structure) == 0:
+            raise ValueError("StrictGSFEPath requires at least one atom.")
+        cell = np.asarray(structure.cell.array, dtype=float)
+        if cell.shape != (3, 3) or abs(float(np.linalg.det(cell))) <= 1e-12:
+            raise ValueError("StrictGSFEPath requires a nonsingular 3x3 cell.")
+
+        hkl = self._int_triplet(params.plane_hkl, "plane_hkl")
+        uvw = self._int_triplet(params.slip_uvw, "slip_uvw")
+        if not np.any(hkl):
+            raise ValueError("StrictGSFEPath plane_hkl must not be (0,0,0).")
+        if not np.any(uvw):
+            raise ValueError("StrictGSFEPath slip_uvw must not be (0,0,0).")
+
+        normal = self.plane_normal(cell, hkl)
+        self._validate_slab_oriented(cell, normal)
+        slip = np.asarray(uvw, dtype=float) @ cell
+        slip_projected = slip - np.dot(slip, normal) * normal
+        slip_norm = float(np.linalg.norm(slip_projected))
+        if slip_norm <= 1e-12:
+            raise ValueError("StrictGSFEPath slip_uvw is parallel to the plane normal.")
+
+        unit = str(params.displacement_unit)
+        if unit == "fraction_of_vector":
+            displacement_vector = slip_projected
+        elif unit == "angstrom":
+            displacement_vector = slip_projected / slip_norm
+        else:
+            raise ValueError("StrictGSFEPath displacement_unit must be fraction_of_vector or angstrom.")
+
+        positions = np.asarray(structure.get_positions(), dtype=float)
+        coord = positions @ normal
+        mask = self.cut_mask(coord, params)
+        values = _range_values(params.displacement_range)
+
+        out = []
+        for value in values:
+            atoms = structure.copy()
+            if abs(float(value)) > 1e-15:
+                new_positions = positions.copy()
+                new_positions[mask] += float(value) * displacement_vector
+                if params.wrap:
+                    new_positions = wrapped_positions(atoms, new_positions)
+                atoms.set_positions(new_positions)
+            tag = f"GSFE(hkl={self._tag_triplet(hkl)},uvw={self._tag_triplet(uvw)},d={float(value):g})"
+            append_config_tag(atoms, tag)
+            out.append(atoms)
+        return out
+
+    @staticmethod
+    def _int_triplet(values: Sequence[int], label: str) -> tuple[int, int, int]:
+        if len(values) != 3:
+            raise ValueError(f"StrictGSFEPath {label} must contain exactly three integers.")
+        return tuple(int(value) for value in values)  # pyright: ignore[reportReturnType]
+
+    @staticmethod
+    def _tag_triplet(values: Sequence[int]) -> str:
+        return "".join(str(int(value)) for value in values)
+
+    @staticmethod
+    def plane_normal(cell: np.ndarray, hkl: Sequence[int]) -> np.ndarray:
+        recip = np.linalg.inv(np.asarray(cell, dtype=float)).T
+        normal = np.asarray(hkl, dtype=float) @ recip
+        norm = float(np.linalg.norm(normal))
+        if norm <= 1e-12:
+            raise ValueError("StrictGSFEPath plane_hkl produced a zero normal.")
+        return normal / norm
+
+    @staticmethod
+    def _validate_slab_oriented(cell: np.ndarray, normal: np.ndarray) -> None:
+        c_axis = np.asarray(cell, dtype=float)[2]
+        c_norm = float(np.linalg.norm(c_axis))
+        if c_norm <= 1e-12:
+            raise ValueError("StrictGSFEPath requires a nonzero third cell vector.")
+        parallel_error = float(np.linalg.norm(np.cross(c_axis / c_norm, normal)))
+        if parallel_error > 1e-6:
+            raise ValueError(
+                "StrictGSFEPath requires a slab-oriented cell: the third cell vector must be normal to plane_hkl."
+            )
+
+    @staticmethod
+    def cut_mask(coord: np.ndarray, params: StrictGSFEPathParams) -> np.ndarray:
+        coord = np.asarray(coord, dtype=float)
+        mode = str(params.cut_mode)
+        if mode == "middle":
+            cut = float(np.median(coord))
+        elif mode == "fractional":
+            fraction = float(params.cut_fraction)
+            if not np.isfinite(fraction) or fraction < 0.0 or fraction > 1.0:
+                raise ValueError("StrictGSFEPath cut_fraction must be between 0 and 1.")
+            cut = float(coord.min() + fraction * (coord.max() - coord.min()))
+        elif mode == "layer_index":
+            layers = np.unique(np.round(coord, 8))
+            layers.sort()
+            index = int(params.layer_index)
+            if index < 0 or index >= len(layers) - 1:
+                raise ValueError("StrictGSFEPath layer_index must select a layer below the top layer.")
+            cut = float(layers[index])
+        else:
+            raise ValueError("StrictGSFEPath cut_mode must be middle, fractional, or layer_index.")
+        return coord > cut + 1e-10
 
 
 @dataclass(frozen=True)
@@ -327,7 +447,7 @@ class RandomSlabOperation(StructureOperation):
                                     vacuum=vacuum,
                                     periodic=True,
                                 )
-                                slab.wrap()
+                                slab.set_positions(wrapped_positions(slab, slab.positions))
                                 slab.info["Config_type"] = structure.info.get("Config_type", "")
                                 append_config_tag(
                                     slab,
@@ -421,7 +541,7 @@ class InsertDefectOperation(StructureOperation):
             if inserted:
                 mode_tag = "ad" if int(params.mode) == 1 else "int"
                 append_config_tag(new_structure, f"Ins({mode_tag},n={inserted})")
-            new_structure.wrap()
+            new_structure.set_positions(wrapped_positions(new_structure, new_structure.positions))
             results.append(new_structure)
         return results
 

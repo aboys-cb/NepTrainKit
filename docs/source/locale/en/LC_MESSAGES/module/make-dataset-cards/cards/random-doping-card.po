@@ -1,0 +1,489 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:3
+#: 6bc60218ba9c4407ae4b5f0e3ff32f7b
+msgid "随机掺杂（Random Doping）"
+msgstr "Random Doping"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:5
+#: d9033db3eea0484fb7325d1376a173f7
+msgid "`Group`: `Alloy` | `Class`: `RandomDopingCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:7
+#: 9d46afb7042547d6bb8f809f9dff2976
+msgid "功能说明"
+msgstr "What the card does"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:9
+#: 9932daa8645b4e929e8672223f6b1f55
+msgid "按规则表对指定元素位点做替位掺杂。可以精确控制\"替换谁、换成什么、换多少\"，支持按原子百分比、质量百分比或固定数量采样。"
+msgstr ""
+"Apply substitutional doping to specified element sites using an explicit "
+"rule table. Each rule controls which species is replaced, the dopant "
+"distribution, and the amount by atomic percentage, mass percentage, or fixed"
+" count."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:11
+#: 8f64665e26a447f6b530b7bf138226e1
+msgid "**和 `Random Occupancy` / `Composition Sweep` 的区别：**"
+msgstr "**How it differs from `Random Occupancy` and `Composition Sweep`:**"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:12
+#: d7a8cab0eaf54b32a8e2039f7c103075
+msgid "`Composition Sweep`：定义\"目标配比空间\"，不改原子占位"
+msgstr ""
+"`Composition Sweep` defines a target-composition space without changing "
+"occupations."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:13
+#: 8645356f59154fd38dcf6bb4469b8630
+msgid "`Random Occupancy`：把目标配比落到离散占位上，需要输入有 `Comp(...)` 标签"
+msgstr ""
+"`Random Occupancy` realizes target fractions as discrete occupations, "
+"usually from a `Comp(...)` label."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:14
+#: 469eb49961674f0dbb7c57914e1a96d8
+msgid "`Random Doping`：直接给定规则（target + dopants + 比例），做一次随机替换。更直接、更手工，但不扫配比空间"
+msgstr ""
+"`Random Doping` directly applies target, dopant, and amount rules. It is "
+"explicit and local, not a composition-space scan."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:16
+#: 89a62ced0fc140768d7662a5f0cbc70c
+msgid "操作示例"
+msgstr "Example workflow"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:18
+#: c8a516ab8b594d459d235a22a209359c
+msgid "场景：纯元素模型在掺杂体系上完全失效"
+msgstr "Scenario: A pure-element model fails on a doped system"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:20
+#: 833cccc438b140b3afc7d5c36a8cc550
+msgid ""
+"你在纯 Si 上训练了一个 NEP 模型，能量和力都收敛得很好。然后尝试跑 Si:Ge 合金——模型直接崩溃：碰到 Ge "
+"原子的局域环境完全没见过，力预测误差跳了一个数量级。"
+msgstr ""
+"A pure-Si NEP has converged energy and force errors, but force error "
+"increases by an order of magnitude on Si:Ge because Ge-centered local "
+"environments are absent from training."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:22
+#: d6c07e95ac5540ffbc02407ef2bcc090
+msgid ""
+"**诊断思路：** 训练集里只有 Si-Si 键环境，模型不知道 Ge 原子的存在，更不知道 Si-Ge 键和 Ge-Ge "
+"键应该长什么样。需要往训练集中加入真实的 Si 位点被 Ge 替换的结构，让模型学习掺杂原子周围的局域化学环境。"
+msgstr ""
+"**Diagnosis:** A set containing only Si-Si environments cannot represent Si-"
+"Ge or Ge-Ge chemistry. Generate actual Ge substitutions on Si sites, then "
+"relax and label them so the model learns dopant-centered environments."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:24
+#: ab2926d4e5244cfdbe56cd8f80e7cb23
+msgid "**输入：** 一个纯 Si 超胞结构，已经弛豫"
+msgstr "**Input:** A relaxed pure-Si supercell."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:26
+#: b83e21dce3be495c9593e48867c4e02d
+msgid "**目标：** 每帧替换 3~8% 的 Si 为 Ge，每帧生成 20 个版本，覆盖不同掺杂落点"
+msgstr ""
+"**Objective:** Replace 3-8% of Si with Ge and generate 20 site arrangements "
+"per input."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:28
+#: 2bdf1609212242429d5726ae736f6fa3
+msgid "**参数设置：**"
+msgstr "**Parameters:**"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:29
+#: 6597f27c12f84a60b4339c1d0fcafd10
+msgid "`Rules`：target=`Si`, dopants=`Ge`, use=`atomic_percent`, percent=`[3, 8]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:30
+#: 7fd5b5a9122b44fdb77760a7a1ea08f3
+msgid "`Doping Type`：`Exact` （对比实验需要稳定的掺杂数量）"
+msgstr "`Doping Type`: `Exact` for a stable dopant count in comparisons."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:31
+#: 298b1677ffb24fe99be5f821312e90bb
+msgid "`Structures`：`[20]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:33
+#: b72b931dd1a24152b9fdef3d5f2a7640
+msgid "**输出：** 20 个掺杂结构，每帧中 3~8% 的 Si 变成 Ge，带 `Dop(n=...)` 标签"
+msgstr ""
+"**Output:** Twenty doped structures with 3-8% of Si sites changed to Ge and "
+"label `Dop(n=...)`."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:35
+#: 6a689a8e12394efca5a797c787552ae1
+msgid "**怎么验证训练集质量改善：**"
+msgstr "**How to verify that training-set quality improved:**"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:36
+#: 763941582ba7477f9f5676b1e5e61285
+msgid "重训后跑 Si:Ge 测试集，力的 MAE 应该回到和纯 Si 训练集接近的水平"
+msgstr ""
+"After DFT labeling and retraining, force MAE on a Si:Ge test set should "
+"approach the in-domain Si error."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:37
+#: 443a8b9cfb9349428e04fa36158d1ff1
+msgid "抽查几个掺杂输出，Ge 原子的最近邻距离是否合理（Si-Ge 键长应略大于 Si-Si）"
+msgstr ""
+"Inspect dopant-centered nearest-neighbor distances and confirm they are "
+"chemically plausible."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:38
+#: e803a19229a841ea9cbe1be753716c89
+msgid "如果模型对高浓度掺杂仍然不准，扩大 `percent` 上限到 15~20%"
+msgstr ""
+"If high-concentration tests remain out of domain, extend the training range "
+"deliberately, for example toward 15-20%."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:39
+#: 4cad9587df4a4189b3083719dd8300ff
+msgid "如果只掺一种元素，dopants 可以直接写 `Ge`，等价于 `Ge:1.0`"
+msgstr "For one dopant, `Ge` is equivalent to `Ge:1.0`."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:40
+#: c6a66fc36141495c8b24ce27b8d518eb
+msgid "如果需要多元素掺杂（如同时掺 Ge 和 C），在 dopants 里写 `Ge:0.7,C:0.3`"
+msgstr "For mixed dopants, use weights such as `Ge:0.7,C:0.3`."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:42
+#: 2df05496093c4d8bad75488770b5d4cb
+msgid "什么时候加这张卡、什么时候不加"
+msgstr "When to add this card"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:44
+#: 3c1d3334d72c4523b589293068246f7c
+msgid "**加：**"
+msgstr "**Add it when:**"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:45
+#: 7f23f3c0efc84097b36954b2fdb2a2fa
+msgid "模型在掺杂/合金体系上预测质量明显差于纯元素体系"
+msgstr ""
+"Predictions on doped or alloy structures are much worse than on the pure "
+"system"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:46
+#: 3a1b1de538e041dfa8f0306bd28642b2
+msgid "需要覆盖特定掺杂元素周围的局域化学环境"
+msgstr "Local chemistry around a specific dopant is missing"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:47
+#: c171a3a9327c4f7e9d3825a72c2f20ac
+msgid "有明确的掺杂规则（target + dopants + 比例），但不需系统扫描完整配比空间"
+msgstr ""
+"An explicit target, dopant, and amount rule is known without a full "
+"composition scan"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:49
+#: a8b783058af34be7823d19e5a4438128
+msgid "**不加：**"
+msgstr "**Do not add it when:**"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:50
+#: d0b6edcef4fa434cb8798f94fd4155af
+msgid "需要系统扫配比空间 → 先用 `Composition Sweep`，再接 `Random Occupancy`"
+msgstr ""
+"A composition domain must be scanned; use `Composition Sweep` followed by "
+"`Random Occupancy`"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:51
+#: aed1a0bf3362402886bc27dc1595261e
+msgid "只需要全局随机占位 → 用 `Random Occupancy`"
+msgstr "Only global occupation diversity is needed; use `Random Occupancy`"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:53
+#: 5b79bd0c7f034003b3ca37d357a14e35
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:55
+#: 050ad163f4934ae1a576d7a4d6dcc0db
+msgid "Rules（rules）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:57
+#: ab901073aa1442cfbbcf1ee30335101f
+msgid ""
+"`list[dict[str, Any]]`，默认空列表。每条 rule 定义目标元素、替换元素、比例/计数和可选 group。复杂掺杂优先拆成多条明确"
+" rule，不要把不同物理缺陷混成一个概率池。"
+msgstr ""
+"`list[dict[str, Any]]`, empty by default. Each rule defines a target "
+"element, dopants, an amount, and an optional group. Keep distinct physical "
+"defects in separate explicit rules rather than one ambiguous probability "
+"pool."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:59
+#: 3577a922b40f43adb1aa7b5b6575f973
+msgid ""
+"rule 内的典型字段：`target`（被替换元素）、`dopants`（替换元素及权重 dict）、`use`（`atomic_percent` /"
+" `mass_percent` / `count`）、`percent`（百分比范围 `[min, max]` 或 "
+"`[fixed]`）、`count`（固定替换个数）、`group`（可选，限制只在此 group 内操作）。"
+msgstr ""
+"Typical rule fields are `target`, weighted `dopants`, `use` "
+"(`atomic_percent`, `mass_percent`, or `count`), `percent` (`[min,max]` or "
+"`[fixed]`), fixed `count`, and optional `group` restriction."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:61
+#: 7992701676af49e580bb30544123d4a7
+msgid "Doping Type（doping_type）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:63
+#: c40cada3f62e47a38d90cd1aff5cabcd
+msgid ""
+"`str`，默认 `Random`。`Random` 按权重概率随机采样，每帧替换数量有浮动。`Exact` "
+"尽量匹配精确计数，替换数量更稳定，适合对比实验。"
+msgstr ""
+"`str`, default `Random`. `Random` samples weighted probabilities and permits"
+" count fluctuations. `Exact` matches integer counts as closely as possible "
+"and is better for controlled comparisons."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:65
+#: def99d728fe84f4ea1ea8543ee3fb93e
+msgid "Max Structures（max_structures）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:67
+#: 429b2df979924e9886848ebb9d90bf4a
+msgid "`int`，默认 1。每个输入结构最多输出的掺杂构型数。低浓度精确掺杂可用 10-50，高维随机合金应后接 FPS 控制预算。"
+msgstr ""
+"`int`, default `1`. Maximum doped variants per input. Low-concentration site"
+" sampling may use 10-50; high-dimensional alloy exploration should be "
+"followed by FPS and an explicit budget."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:69
+#: ca081d1f3e4447cf809096b218609116
+msgid "Use Seed（use_seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:71
+#: dbe4f06f41854261ab8530995b6bb049
+msgid "`bool`，默认 false。打开后固定种子可复现。对比实验时开，探索阶段可以关着。"
+msgstr ""
+"`bool`, default `false`. Enable for reproducibility in controlled "
+"comparisons."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:73
+#: 3b461a21c924490dab68190f729c9064
+msgid "Seed（seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:75
+#: ffc384a3fcbe452382cd44d60e9ef8c1
+msgid "`int`，默认 0。不同取值产生不同的替换分布。"
+msgstr ""
+"`int`, default `0`. Different values generate different substitution "
+"assignments."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:77
+#: 9ae1d262e8f5424fa678452c04177061
+msgid "生效条件：`use_seed=True`。"
+msgstr "Active only when `use_seed=True`."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:79
+#: 336a88e9761b432198671f7773632968
+msgid "推荐预设"
+msgstr "Recommended presets"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:81
+#: 83093f87c236493da5510b2f1710980c
+msgid "低浓度单元素掺杂（Si:Ge, 1~2%）"
+msgstr "Low-concentration single dopant (Si:Ge, 1-2%)"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:82
+#: 5d1be054293848e3ac6eec241ae2a549
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"RandomDopingCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"rules\": [\n"
+"      {\n"
+"        \"target\": \"Si\",\n"
+"        \"dopants\": {\"Ge\": 1.0},\n"
+"        \"use\": \"atomic_percent\",\n"
+"        \"percent\": [1, 2]\n"
+"      }\n"
+"    ],\n"
+"    \"doping_type\": \"Exact\",\n"
+"    \"max_structures\": 20,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 101\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:103
+#: 7051df93b8d14022b766155f023f9b38
+msgid "中浓度双元素掺杂（Si:Ge/C, 3~8%）"
+msgstr "Moderate mixed doping (Si:Ge/C, 3-8%)"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:104
+#: 5ddaed797cbb4c4f92d718d07aa07e27
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"RandomDopingCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"rules\": [\n"
+"      {\n"
+"        \"target\": \"Si\",\n"
+"        \"dopants\": {\"Ge\": 0.7, \"C\": 0.3},\n"
+"        \"use\": \"atomic_percent\",\n"
+"        \"percent\": [3, 8]\n"
+"      }\n"
+"    ],\n"
+"    \"doping_type\": \"Exact\",\n"
+"    \"max_structures\": 20,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 101\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:125
+#: 102154b0624848fbb4bdca60296e516d
+msgid "高浓度多元素探索（Si:Ge/C/Sn, 8~20%）"
+msgstr "High-concentration multielement exploration (Si:Ge/C/Sn, 8-20%)"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:126
+#: 3cfcf08068a0452e99e42684354ee5de
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"RandomDopingCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"rules\": [\n"
+"      {\n"
+"        \"target\": \"Si\",\n"
+"        \"dopants\": {\"Ge\": 0.5, \"C\": 0.3, \"Sn\": 0.2},\n"
+"        \"use\": \"atomic_percent\",\n"
+"        \"percent\": [8, 20]\n"
+"      }\n"
+"    ],\n"
+"    \"doping_type\": \"Random\",\n"
+"    \"max_structures\": 20,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 101\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:147
+#: 499bc1bef03747119cce32105eb30121
+msgid "推荐组合"
+msgstr "Recommended combinations"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:149
+#: 93e7834d268b4a1e951bf037904ec65d
+msgid "`Group Label` → `Random Doping`：只掺杂特定子晶格/层，不污染其他区域"
+msgstr "`Group Label` -> `Random Doping`: restrict doping to a sublattice or layer"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:150
+#: 13e0329c12e14de3a5fb2a770dd519f6
+msgid ""
+"`Composition Sweep` → `Random Occupancy` → `Random Doping`：先扫配比 → 落位 → "
+"再补局部随机替换"
+msgstr ""
+"`Composition Sweep` -> `Random Occupancy` -> `Random Doping`: scan "
+"composition, realize occupations, then add targeted substitutions"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:151
+#: ef57152b03f94dad8c0c940bbd8e8dd6
+msgid "`Random Doping` → `Atomic Perturb`：掺杂后加坐标噪声，松驰局部应力"
+msgstr ""
+"`Random Doping` -> `Atomic Perturb`: add local coordinate diversity after "
+"substitution; physical labels still require relaxation"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:153
+#: f463e5a9d9374d8b8ffca5da9be93f82
+msgid "常见问题"
+msgstr "Common questions"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:155
+#: 59f1e85da09c4ea589d2185811f1c495
+msgid "**输出和输入一样，没有替换。** 检查 rules 是否为空、target 元素是否真的存在于输入结构中、group 过滤是否把候选位点全滤掉了。"
+msgstr ""
+"**Output is unchanged.** Check for nonempty rules, a target present in the "
+"input, and a group filter that leaves eligible sites."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:157
+#: e425808c366041caaa28d9046dd6d832
+msgid ""
+"**掺杂比例偏离预期。** 如果用 `Random` 模式，小样本下统计浮动大。换成 `Exact` 可以减少波动。如果用的是 "
+"`mass_percent`，确认目标元素和掺杂元素的质量差异是否导致了原子比例偏移。"
+msgstr ""
+"**Dopant fraction differs from expectation.** Small Random samples "
+"fluctuate; use Exact for stable counts. With `mass_percent`, atomic "
+"fractions also reflect target-dopant mass differences."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:159
+#: 9ee0fa21f4a94473a55069bd385a0fff
+msgid "**掺杂后键长异常。** 这是纯化学替换，不做结构弛豫。替换后键长取决于新元素的原子半径和原晶格参数的匹配度。如果键长明显不合理，建议后接弛豫计算。"
+msgstr ""
+"**Bond lengths are abnormal.** Substitution does not relax geometry. Relax "
+"before using such structures as physical training labels."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:161
+#: e6b966efebb347648e3fcdf0f29e29e3
+msgid "**多条规则之间的交互。** 规则按顺序执行。如果两条规则操作同一个 target 元素，第二条会在第一条的结果上继续替换。注意不要设计互相冲突的规则。"
+msgstr ""
+"**Rule interactions.** Rules execute in order. A later rule targeting the "
+"same species operates on the result of earlier rules, so avoid conflicts."
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:163
+#: 0c9fab34a292477ea7f154980b13599a
+msgid "输出标签"
+msgstr "Output labels"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:165
+#: 85e7a4bce827447b86c77cf90212fd84
+#, python-brace-format
+msgid "`Dop(n={替换原子数})`"
+msgstr "`Dop(n={number of substituted atoms})`"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:167
+#: 223e31ebf139406bb324ca0267018b5a
+msgid "可复现性"
+msgstr "Reproducibility"
+
+#: ../../source/module/make-dataset-cards/cards/random-doping-card.md:169
+#: 0ea24d0d20214b959018a864f76c3d6d
+msgid "勾选 `use_seed` + 固定 `seed` 可复现。注意输入结构顺序变化也会影响结果——建议把 seed 与 pipeline 配置一起版本化。"
+msgstr ""
+"Enable `use_seed` and fix `seed` for reproducibility. Input order also "
+"affects derived samples, so version the seed with the pipeline "
+"configuration."

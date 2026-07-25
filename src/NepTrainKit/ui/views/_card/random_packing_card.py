@@ -17,31 +17,34 @@ class RandomPackingCard(MakeDataCard):
     group = "Structure"
     card_name = "Random Packing"
     menu_icon = r":/images/src/images/perturb.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Random Packing")
+        self.setTitle(self.tr("Random Packing"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("random_packing_card_widget")
 
-        self.structures_label = BodyLabel("Structures", self.setting_widget)
-        self.structures_label.setToolTip("Number of random packings generated per input structure")
+        self.structures_label = BodyLabel(self.tr("Structures"), self.setting_widget)
+        self.structures_label.setToolTip(self.tr("Number of random packings generated per input structure"))
         self.structures_label.installEventFilter(ToolTipFilter(self.structures_label, 300, ToolTipPosition.TOP))
         self.structures_frame = SpinBoxUnitInputFrame(self)
         self.structures_frame.set_input("unit", 1, "int")
         self.structures_frame.setRange(1, 100000)
         self.structures_frame.set_input_value([1])
 
-        self.composition_label = BodyLabel("Composition", self.setting_widget)
-        self.composition_label.setToolTip("Empty keeps input atom counts; otherwise use exact counts such as Fe:32,O:64")
+        self.composition_label = BodyLabel(self.tr("Composition"), self.setting_widget)
+        self.composition_label.setToolTip(self.tr("Empty keeps input atom counts; otherwise use exact counts such as Fe:32,O:64"))
         self.composition_label.installEventFilter(ToolTipFilter(self.composition_label, 300, ToolTipPosition.TOP))
         self.composition_edit = LineEdit(self.setting_widget)
-        self.composition_edit.setPlaceholderText("Fe:32,O:64")
+        self.composition_edit.setPlaceholderText(self.tr("Fe:32,O:64"))
 
-        self.min_distance_label = BodyLabel("Min distance", self.setting_widget)
-        self.min_distance_label.setToolTip("Global minimum interatomic distance in Angstrom")
+        self.min_distance_label = BodyLabel(self.tr("Min distance"), self.setting_widget)
+        self.min_distance_label.setToolTip(self.tr("Global minimum interatomic distance in Angstrom"))
         self.min_distance_label.installEventFilter(ToolTipFilter(self.min_distance_label, 300, ToolTipPosition.TOP))
         self.min_distance_frame = SpinBoxUnitInputFrame(self)
         self.min_distance_frame.set_input("A", 1, "float")
@@ -49,25 +52,25 @@ class RandomPackingCard(MakeDataCard):
         self.min_distance_frame.object_list[0].setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.min_distance_frame.set_input_value([1.5])
 
-        self.pair_distance_label = BodyLabel("Pair distances", self.setting_widget)
-        self.pair_distance_label.setToolTip("Optional pair-specific overrides, for example Fe-O:1.8,O-O:1.2")
+        self.pair_distance_label = BodyLabel(self.tr("Pair distances"), self.setting_widget)
+        self.pair_distance_label.setToolTip(self.tr("Optional pair-specific overrides, for example Fe-O:1.8,O-O:1.2"))
         self.pair_distance_label.installEventFilter(ToolTipFilter(self.pair_distance_label, 300, ToolTipPosition.TOP))
         self.pair_distance_edit = LineEdit(self.setting_widget)
-        self.pair_distance_edit.setPlaceholderText("Fe-O:1.8, O-O:1.2")
+        self.pair_distance_edit.setPlaceholderText(self.tr("Fe-O:1.8, O-O:1.2"))
 
-        self.attempts_label = BodyLabel("Attempts/atom", self.setting_widget)
-        self.attempts_label.setToolTip("Maximum random placement attempts for each atom")
+        self.attempts_label = BodyLabel(self.tr("Attempts/atom"), self.setting_widget)
+        self.attempts_label.setToolTip(self.tr("Maximum random placement attempts for each atom"))
         self.attempts_label.installEventFilter(ToolTipFilter(self.attempts_label, 300, ToolTipPosition.TOP))
         self.attempts_frame = SpinBoxUnitInputFrame(self)
         self.attempts_frame.set_input("unit", 1, "int")
         self.attempts_frame.setRange(1, 1000000)
         self.attempts_frame.set_input_value([500])
 
-        self.strict_checkbox = CheckBox("Strict mode", self.setting_widget)
-        self.strict_checkbox.setToolTip("Fail the whole card when any requested sample cannot be packed")
+        self.strict_checkbox = CheckBox(self.tr("Strict mode"), self.setting_widget)
+        self.strict_checkbox.setToolTip(self.tr("Fail the whole card when any requested sample cannot be packed"))
         self.strict_checkbox.setChecked(True)
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")

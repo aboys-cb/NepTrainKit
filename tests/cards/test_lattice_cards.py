@@ -1,4 +1,5 @@
 from .card_test_base import *
+from ase.geometry import cell_to_cellpar, cellpar_to_cell
 
 
 class TestLatticeCards(BaseCardTest):
@@ -101,6 +102,19 @@ class TestLatticeCards(BaseCardTest):
         self.assertEqual(len(card_result[0]), len(op_result[0]))
         self.assertIn("params", card.to_dict())
 
+    def test_bain_path_card_roundtrip(self):
+        card = BainPathCard()
+        card.axis_combo.setCurrentText("x")
+        card.ca_frame.set_input_value([0.8, 1.2, 0.2])
+        card.mode_combo.setCurrentText("scale_volume")
+        card.volume_frame.set_input_value([0.9, 1.1, 0.1])
+        card.scale_atoms_checkbox.setChecked(False)
+
+        restored = BainPathCard()
+        restored.from_dict(card.to_dict())
+
+        self.assertEqual(restored.get_params(), card.get_params())
+
     def test_perturb_card_with_organic(self):
         card = PerturbCard()
         structure = self.structure.copy()
@@ -174,6 +188,32 @@ class TestLatticeCards(BaseCardTest):
                     element_scalings={"Si": float("nan")},
                 ),
             )
+
+    def test_perturb_wrap_matches_ase_after_lattice_change(self):
+        structure = CellStrainOperation().run_structure(
+            self.structure.copy(),
+            CellStrainParams(
+                axes="triaxial",
+                x_range=(1.0, 1.0, 1.0),
+                y_range=(-1.0, -1.0, 1.0),
+                z_range=(0.5, 0.5, 1.0),
+            ),
+        )[0]
+        params = PerturbParams(max_distance=0.2, max_num=4, use_seed=True, seed=23)
+
+        results = PerturbOperation().run_structure(structure.copy(), params)
+
+        rng = np.random.default_rng(params.seed)
+        unit_samples = rng.random((params.max_num, len(structure), 3))
+        displacements = PerturbOperation.unit_ball_displacements(
+            unit_samples,
+            np.full(len(structure), params.max_distance),
+        )
+        for result, displacement in zip(results, displacements):
+            expected = structure.copy()
+            expected.set_positions(structure.positions + displacement)
+            expected.wrap()
+            np.testing.assert_allclose(result.positions, expected.positions, atol=1e-12)
 
     def test_cell_scaling_card_options(self):
         card = CellScalingCard()
@@ -304,6 +344,33 @@ class TestLatticeCards(BaseCardTest):
         self.assertEqual(len(results), 1)
         self.assertIn("Ang(a=1)", results[0].info.get("Config_type", ""))
 
+    def test_shear_angle_operation_matches_ase_cellpar_for_skewed_cell(self):
+        structure = self.structure.copy()
+        structure.set_cell(
+            np.array(
+                [
+                    [5.4, 0.2, 0.1],
+                    [0.4, 5.6, 0.3],
+                    [0.2, 0.5, 5.7],
+                ]
+            ),
+            scale_atoms=True,
+        )
+        params = ShearAngleParams(
+            alpha_range=(1.0, 1.0, 1.0),
+            beta_range=(-1.0, -1.0, 1.0),
+            gamma_range=(0.5, 0.5, 1.0),
+        )
+
+        result = ShearAngleOperation().run_structure(structure.copy(), params)[0]
+        cellpar = cell_to_cellpar(structure.get_cell())
+        expected_cell = cellpar_to_cell([*cellpar[:3], *(cellpar[3:] + np.array([1.0, -1.0, 0.5]))])
+        expected = structure.copy()
+        expected.set_cell(expected_cell, scale_atoms=True)
+
+        np.testing.assert_allclose(result.cell.array, expected.cell.array, atol=1e-12)
+        np.testing.assert_allclose(result.positions, expected.positions, atol=1e-12)
+
     def test_vibration_mode_perturb_card(self):
         card = VibrationModePerturbCard()
         structure = self.structure.copy()
@@ -351,6 +418,24 @@ class TestLatticeCards(BaseCardTest):
             ),
         )
         self.assertEqual(len(op_results), 2)
+
+        skewed = structure.copy()
+        skewed.set_cell(
+            np.array(
+                [
+                    [5.4, 0.2, 0.1],
+                    [0.3, 5.5, 0.2],
+                    [0.1, 0.4, 5.6],
+                ]
+            ),
+            scale_atoms=True,
+        )
+        shifted_positions = skewed.positions + np.array([6.0, -5.5, 5.8])
+        expected = skewed.copy()
+        expected.set_positions(shifted_positions)
+        expected.wrap()
+        wrapped = VibrationModePerturbOperation.wrapped_positions(skewed, shifted_positions)
+        np.testing.assert_allclose(wrapped, expected.positions, atol=1e-12)
 
         restored = VibrationModePerturbCard()
         restored.from_dict(card.to_dict())

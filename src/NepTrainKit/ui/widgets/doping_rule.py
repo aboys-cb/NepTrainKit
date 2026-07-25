@@ -1,6 +1,5 @@
 """Widgets for configuring random doping rules."""
 
-import json
 import traceback
 from typing import Any
 
@@ -27,7 +26,7 @@ from qfluentwidgets import (
     ToolTipPosition,
     PushButton,
 )
-from NepTrainKit.core.alloy import parse_composition
+from NepTrainKit.core.alloy import format_composition, parse_composition
 
 from .input import SpinBoxUnitInputFrame
 
@@ -46,10 +45,10 @@ class DopingRuleItem(QFrame):
         self.setFixedSize(500, 190)
 
         self.target_edit = QLineEdit(self)
-        self.target_edit.setPlaceholderText("Cs")
+        self.target_edit.setPlaceholderText(self.tr("Cs"))
         self.target_edit.setFixedWidth(90)
         self.dopants_edit = QLineEdit(self)
-        self.dopants_edit.setPlaceholderText("Ge or Ge:0.7,C:0.3")
+        self.dopants_edit.setPlaceholderText(self.tr("Ge or Ge:0.7,C:0.3"))
         self.dopants_edit.setFixedWidth(160)
 
         self.percent_frame = SpinBoxUnitInputFrame(self)
@@ -59,10 +58,10 @@ class DopingRuleItem(QFrame):
         self.percent_frame.set_input_value([0.0, 100.0])
         self.percent_frame.setFixedWidth(180)
 
-        self.atomic_percent_radio = RadioButton("Atomic %", self)
+        self.atomic_percent_radio = RadioButton(self.tr("Atomic %"), self)
         self.atomic_percent_radio.setChecked(True)
-        self.mass_percent_radio = RadioButton("Mass %", self)
-        self.count_botton = RadioButton("Count", self)
+        self.mass_percent_radio = RadioButton(self.tr("Mass %"), self)
+        self.count_botton = RadioButton(self.tr("Count"), self)
         self.mode_group = QButtonGroup(self)
         self.mode_group.addButton(self.atomic_percent_radio)
         self.mode_group.addButton(self.mass_percent_radio)
@@ -70,11 +69,12 @@ class DopingRuleItem(QFrame):
         self.mode_group.buttonClicked.connect(self._on_mode_changed)
 
         self.count_mode_combo = ComboBox(self)
-        self.count_mode_combo.addItems(["Fixed count", "Random range"])
-        self.count_mode_combo.setCurrentText("Fixed count")
+        self.count_mode_combo.addItem(self.tr("Fixed count"), userData="fixed")
+        self.count_mode_combo.addItem(self.tr("Random range"), userData="random")
+        self.count_mode_combo.setCurrentIndex(0)
         self.count_mode_combo.setFixedWidth(180)
         self.count_mode_combo.setToolTip(
-            "Fixed count replaces exactly the first value. Random range samples between the two values."
+            self.tr("Fixed count replaces exactly the first value. Random range samples between the two values.")
         )
         self.count_mode_combo.installEventFilter(ToolTipFilter(self.count_mode_combo, 300, ToolTipPosition.TOP))
         self.count_mode_combo.currentTextChanged.connect(self._on_count_mode_changed)
@@ -92,11 +92,11 @@ class DopingRuleItem(QFrame):
         self.count_range_frame.setFixedWidth(180)
         self.count_frame = self.count_range_frame
 
-        self.ratio_type_button = PushButton("Atom Ratio", self)
+        self.ratio_type_button = PushButton(self.tr("Atom ratio"), self)
         self.ratio_type_button.setCheckable(True)
         self.ratio_type_button.setChecked(True)
         self.ratio_type_button.setFixedWidth(100)
-        self.ratio_type_button.setToolTip("Toggle between atom ratio and mass ratio for dopants")
+        self.ratio_type_button.setToolTip(self.tr("Toggle between atom ratio and mass ratio for dopants"))
         self.ratio_type_button.installEventFilter(ToolTipFilter(self.ratio_type_button, 300, ToolTipPosition.TOP))
         self.ratio_type_button.clicked.connect(self._toggle_ratio_type)
 
@@ -106,27 +106,27 @@ class DopingRuleItem(QFrame):
         self.delete_button.setFixedSize(32, 32)
         self.delete_button.clicked.connect(self._delete_self)
 
-        self.target_label = BodyLabel("Target", self)
-        self.target_label.setToolTip("Element to replace, e.g. Cs")
+        self.target_label = BodyLabel(self.tr("Target"), self)
+        self.target_label.setToolTip(self.tr("Element to replace, e.g. Cs"))
         self.target_label.installEventFilter(ToolTipFilter(self.target_label, 300, ToolTipPosition.TOP))
         self.__layout.addWidget(self.target_label, 0, 0)
         self.__layout.addWidget(self.target_edit, 0, 1)
 
-        self.group_label = BodyLabel("Group", self)
-        self.group_label.setToolTip("Optional group name")
+        self.group_label = BodyLabel(self.tr("Group"), self)
+        self.group_label.setToolTip(self.tr("Optional group name"))
         self.group_label.installEventFilter(ToolTipFilter(self.group_label, 300, ToolTipPosition.TOP))
         self.__layout.addWidget(self.group_label, 0, 2)
         self.__layout.addWidget(self.indices_edit, 0, 3)
 
-        self.dopants_label = BodyLabel("Dopants", self)
-        self.dopants_label.setToolTip("Dopant elements and ratio, e.g. Cs:0.6,Na:0.4. A bare element means ratio 1.0.")
+        self.dopants_label = BodyLabel(self.tr("Dopants"), self)
+        self.dopants_label.setToolTip(self.tr("Dopant elements and ratio, e.g. Cs:0.6,Na:0.4. A bare element means ratio 1.0."))
         self.dopants_label.installEventFilter(ToolTipFilter(self.dopants_label, 300, ToolTipPosition.TOP))
         self.__layout.addWidget(self.dopants_label, 1, 0)
         self.__layout.addWidget(self.dopants_edit, 1, 1, 1, 2)
         self.__layout.addWidget(self.ratio_type_button, 1, 3)
 
-        self.mode_label = BodyLabel("Mode", self)
-        self.mode_label.setToolTip("Select replacement mode: Atomic %, Mass %, or Count")
+        self.mode_label = BodyLabel(self.tr("Mode"), self)
+        self.mode_label.setToolTip(self.tr("Select replacement mode: Atomic %, Mass %, or Count"))
         self.mode_label.installEventFilter(ToolTipFilter(self.mode_label, 300, ToolTipPosition.TOP))
         self.__layout.addWidget(self.mode_label, 2, 0)
 
@@ -134,8 +134,8 @@ class DopingRuleItem(QFrame):
         self.__layout.addWidget(self.mass_percent_radio, 2, 2)
         self.__layout.addWidget(self.count_botton, 2, 3)
 
-        self.value_label = BodyLabel("Value", self)
-        self.value_label.setToolTip("Set value range for replacement")
+        self.value_label = BodyLabel(self.tr("Value"), self)
+        self.value_label.setToolTip(self.tr("Set value range for replacement"))
         self.value_label.installEventFilter(ToolTipFilter(self.value_label, 300, ToolTipPosition.TOP))
         self.__layout.addWidget(self.value_label, 3, 0)
         self.__layout.addWidget(self.percent_frame, 3, 1, 1, 2)
@@ -146,7 +146,7 @@ class DopingRuleItem(QFrame):
         self.__layout.addWidget(self.fixed_count_frame, 4, 1, 1, 2)
         self.__layout.addWidget(self.count_range_frame, 4, 1, 1, 2)
 
-        self.delete_button.setToolTip("Delete rule")
+        self.delete_button.setToolTip(self.tr("Delete rule"))
         self.delete_button.installEventFilter(ToolTipFilter(self.delete_button, 300, ToolTipPosition.TOP))
         self.__layout.addWidget(self.delete_button, 0, 4, 4, 1)
 
@@ -157,9 +157,9 @@ class DopingRuleItem(QFrame):
 
     def _toggle_ratio_type(self) -> None:
         if self.ratio_type_button.isChecked():
-            self.ratio_type_button.setText("Mass Ratio")
+            self.ratio_type_button.setText(self.tr("Mass ratio"))
         else:
-            self.ratio_type_button.setText("Atom Ratio")
+            self.ratio_type_button.setText(self.tr("Atom ratio"))
 
     def _on_mode_changed(self) -> None:
         is_count = self.count_botton.isChecked()
@@ -169,7 +169,7 @@ class DopingRuleItem(QFrame):
 
     def _on_count_mode_changed(self) -> None:
         is_count = self.count_botton.isChecked()
-        fixed = self.count_mode_combo.currentText() == "Fixed count"
+        fixed = self.count_mode_combo.currentData() == "fixed"
         self.fixed_count_frame.setVisible(is_count and fixed)
         self.count_range_frame.setVisible(is_count and not fixed)
 
@@ -194,7 +194,7 @@ class DopingRuleItem(QFrame):
             logger.error(traceback.format_exc())
 
         rule["percent"] = [float(v) for v in self.percent_frame.get_input_value()]
-        if self.count_mode_combo.currentText() == "Fixed count":
+        if self.count_mode_combo.currentData() == "fixed":
             count = int(self.fixed_count_frame.get_input_value()[0])
             count_values = [count, count]
             rule["count_mode"] = "fixed"
@@ -234,7 +234,11 @@ class DopingRuleItem(QFrame):
         self.target_edit.setText(str(rule.get("target", "")))
         dopants = rule.get("dopants")
         if dopants is not None:
-            self.dopants_edit.setText(json.dumps(dopants))
+            dopant_items = dict(dopants)
+            if len(dopant_items) == 1 and float(next(iter(dopant_items.values()))) == 1.0:
+                self.dopants_edit.setText(str(next(iter(dopant_items))))
+            else:
+                self.dopants_edit.setText(format_composition(dopant_items))
         if "percent" in rule:
             self.percent_frame.set_input_value(rule["percent"])
         if "count" in rule:
@@ -259,9 +263,9 @@ class DopingRuleItem(QFrame):
         count_values = list(rule.get("count", [1, 1]))
         count_mode = str(rule.get("count_mode", "")).lower()
         if count_mode == "fixed" or (not count_mode and count_values and count_values[0] == count_values[-1]):
-            self.count_mode_combo.setCurrentText("Fixed count")
+            self.count_mode_combo.setCurrentIndex(0)
         else:
-            self.count_mode_combo.setCurrentText("Random range")
+            self.count_mode_combo.setCurrentIndex(1)
         self._on_count_mode_changed()
         if "ratio_type" in rule:
             self.ratio_type_button.setChecked(rule["ratio_type"] == "atom")
@@ -282,7 +286,7 @@ class DopingRulesWidget(QWidget):
         btn_layout.setContentsMargins(0, 0, 0, 0)
         self.add_button = TransparentToolButton(FluentIcon.ADD, self)
         self.add_button.clicked.connect(self.add_rule)
-        self.add_button.setToolTip("Add rule")
+        self.add_button.setToolTip(self.tr("Add rule"))
         self.add_button.installEventFilter(ToolTipFilter(self.add_button, 300, ToolTipPosition.TOP))
         btn_layout.addWidget(self.add_button, 0, Qt.AlignmentFlag.AlignLeft)
         btn_layout.addStretch(1)

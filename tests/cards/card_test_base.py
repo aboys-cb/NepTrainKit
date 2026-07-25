@@ -19,7 +19,9 @@ from PySide6.QtWidgets import QApplication
 from NepTrainKit.ui.views._card import (
     SuperCellCard,
     CrystalPrototypeBuilderCard,
+    OrderedAlloyPrototypeCard,
     PerturbCard,
+    BainPathCard,
     CellScalingCard,
     CellStrainCard,
     ShearMatrixCard,
@@ -29,6 +31,7 @@ from NepTrainKit.ui.views._card import (
     CompositionSweepCard,
     CompositionGradientCard,
     RandomOccupancyCard,
+    FiniteCellAlloyOccupancyCard,
     ConditionalReplaceCard,
     RandomPackingCard,
     MagneticOrderCard,
@@ -43,9 +46,12 @@ from NepTrainKit.ui.views._card import (
     RandomVacancyCard,
     VacancyDefectCard,
     StackingFaultCard,
+    StrictGSFEPathCard,
     InsertDefectCard,
     LayerCopyCard,
+    LocalSolvationCard,
     OrganicMolConfigPBCCard,
+    SolventBoxFillCard,
     VibrationModePerturbCard,
     GeometryFilterCard,
 )
@@ -63,6 +69,11 @@ from NepTrainKit.core.cards.alloy import (
     RandomDopingParams,
     RandomOccupancyOperation,
     RandomOccupancyParams,
+    OrderedAlloyPrototypeOperation,
+    OrderedAlloyPrototypeParams,
+    FiniteCellAlloyOccupancyOperation,
+    FiniteCellAlloyOccupancyParams,
+    evaluate_condition,
 )
 from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams, GeometryFilterOperation, GeometryFilterParams
 from NepTrainKit.core.cards.operation import params_to_dict
@@ -79,6 +90,15 @@ from NepTrainKit.core.cards.structure import (
     VibrationModePerturbOperation,
     VibrationModePerturbParams,
 )
+from NepTrainKit.core.cards.solvation import (
+    LocalSolvationOperation,
+    LocalSolvationParams,
+    SolventBoxFillOperation,
+    SolventBoxFillParams,
+    estimate_solvent_count_from_density,
+    has_collision,
+    parse_solvent_xyz,
+)
 from NepTrainKit.core.cards.defect import (
     InsertDefectOperation,
     InsertDefectParams,
@@ -88,10 +108,14 @@ from NepTrainKit.core.cards.defect import (
     RandomVacancyParams,
     StackingFaultOperation,
     StackingFaultParams,
+    StrictGSFEPathOperation,
+    StrictGSFEPathParams,
     VacancyDefectOperation,
     VacancyDefectParams,
 )
 from NepTrainKit.core.cards.lattice import (
+    BainPathOperation,
+    BainPathParams,
     CellScalingOperation,
     CellScalingParams,
     CellStrainOperation,

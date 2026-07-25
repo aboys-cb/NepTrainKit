@@ -1,0 +1,502 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:3
+#: b4eb60f161cd487eb1b9c27d6bc0f7d5
+msgid "Correlated Random Spin"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:5
+#: c720d37d6b2646b19f61306e70672774
+msgid "`Group`: `Magnetism` | `Class`: `CorrelatedRandomSpinCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:7
+#: 9cebbd421a474e0dbc19ef73c4206b30
+msgid "功能说明"
+msgstr "What the card does"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:9
+#: 423a2b830c0441f3ab8b70631a249da4
+msgid ""
+"`Correlated Random Spin` "
+"从已有磁矩或元素磁矩表出发，生成带空间相关长度的非共线随机磁矩。它保持每个原子的磁矩模长，只改变方向；相关性由距离核函数和 "
+"`correlation_length` 控制。"
+msgstr ""
+"`Correlated Random Spin` starts from existing moments or an element-moment "
+"map and generates a noncollinear random field with a finite spatial "
+"correlation length. It preserves each moment magnitude and changes only "
+"directions; a distance kernel and `correlation_length` control the "
+"correlation."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:11
+#: 5b4ac6eac3f24d8cb9568d792f6613e1
+msgid ""
+"这张卡不叫 `Spin Glass`，因为它没有引入交换哈密顿量、frustration "
+"约束或动力学冷却过程。它只表达一个清楚的训练集状态：空间相关的随机非共线自旋场。"
+msgstr ""
+"This card is deliberately not called `Spin Glass`: it includes no exchange "
+"Hamiltonian, frustration constraint, or dynamical cooling. Its precise "
+"training-set meaning is a spatially correlated random noncollinear spin "
+"field."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:13
+#: 18f7896a78a741f2baf8440871d26109
+msgid "操作示例"
+msgstr "Example workflow"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:15
+#: b2d17ee7002e4e7b8b51351dc52f4b9c
+msgid "场景：训练集有 PM 随机态，但缺少有限相关长度的非共线态"
+msgstr ""
+"Scenario: PM-like random states exist, but finite-range noncollinear "
+"correlations are missing"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:17
+#: 91314f5bbdb440b594dd75fe44e4ce12
+msgid ""
+"模型在完全随机 PM 和有序 FM/AFM 上都能跑，但在短程相关的高温磁态上磁力误差明显偏大。用 `Correlated Random Spin` "
+"可以生成相关长度为 3 Angstrom 的非共线扰动，让相邻原子磁矩方向更相近，远距离方向逐渐失相关。"
+msgstr ""
+"A model handles fully random PM-like states and ordered FM/AFM states but "
+"has large magnetic-force error in short-range-correlated high-temperature "
+"states. Generate noncollinear fields with a 3 Å correlation length so nearby"
+" moments tend to align while distant directions decorrelate."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:19
+#: 111447a4537443f59e894ecd6820db9a
+msgid ""
+"参数设置：`mode=Cone around "
+"reference`，`correlation_kernel=exponential`，`correlation_length=3.0`，`samples=5`，`cone_angle=30.0`，`magnitude_source=Existing"
+" initial magmoms`，`max_atoms_for_full=200`。"
+msgstr ""
+"Parameters: `mode=Cone around reference`, `correlation_kernel=exponential`, "
+"`correlation_length=3.0`, `samples=5`, `cone_angle=30.0`, "
+"`magnitude_source=Existing initial magmoms`, and `max_atoms_for_full=200`."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:21
+#: 1e7254691c6b45b9ad36b49cc0267e19
+msgid ""
+"输出结构的 `initial_magmoms` 为 `(N, 3)`，`Config_type` 追加 "
+"`CorrSpin(...)`。检查时看磁矩模长是否保持、cone 角度是否符合设定，以及不同 `correlation_length` "
+"下相邻自旋相似度是否变化。"
+msgstr ""
+"Output `initial_magmoms` has shape `(N, 3)` and `Config_type` gains "
+"`CorrSpin(...)`. Verify preserved magnitudes, the requested cone bound, and "
+"a measurable change in neighbor-spin similarity as `correlation_length` "
+"changes."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:23
+#: 73b9344330a64d02bdc620d98eeb255e
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:25
+#: 81382ff73c11483b8dc4341e24f1073f
+msgid "相关随机场"
+msgstr "Correlated random field"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:27
+#: 04899abbf0c646d88a00f5c0742a50ab
+msgid "Mode（mode）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:28
+#: e5b2fafd62e64ad68267b2697ebb2e18
+msgid ""
+"`str`，默认 `'Cone around reference'`。`Cone around reference` "
+"保留有序态的方向，只叠加有限温非共线涨落；`PM-like random field` 不再围绕参考方向，适合补 PM 附近但带空间相关长度的样本。"
+msgstr ""
+"`str`, default `'Cone around reference'`. `Cone around reference` retains an"
+" ordered reference and adds finite-temperature noncollinear fluctuations. "
+"`PM-like random field` is not centered on the reference direction and "
+"targets correlated PM-like samples."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:30
+#: 1a4232bf65de41dbb6cd41c4b79cee23
+msgid "Correlation Kernel（correlation_kernel）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:31
+#: 92a0964d5ffd44a9b3f92274b546ceb9
+msgid ""
+"`str`，默认 `'exponential'`。自旋空间相关函数。`exponential` "
+"衰减更慢，保留更长尾的自旋关联；`squared_exponential` 更平滑但远距离衰减更快。有限相关长度磁无序优先选 exponential。"
+msgstr ""
+"`str`, default `'exponential'`. Spatial correlation kernel. `exponential` "
+"has a longer tail; `squared_exponential` is smoother and decays faster. "
+"Start with exponential for generic finite-range magnetic disorder."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:33
+#: aeeafde7d0204f6ca0bc607ca9a96776
+msgid "Correlation Length（correlation_length）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:34
+#: fb889ac2df6240b0ac3b6e4e286bbf04
+msgid ""
+"`float`，默认 3.0 Å。自旋随机场的空间相关长度。设得比最近邻距离还小 → 近似独立随机；放大到几倍晶格常数 → "
+"形成平滑磁畴。做有限温磁无序时不要一上来就跳到无限长相关。"
+msgstr ""
+"`float`, default `3.0` Å. Spatial correlation length. Below the nearest-"
+"neighbor distance the field approaches independent randomness; several "
+"lattice constants create smooth domains. Scan finite values before assuming "
+"long-range correlation."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:36
+#: aaa54d046aac452bacdb6274e1fb90e2
+msgid "Max Atoms For Full（max_atoms_for_full）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:37
+#: ee60fdab04a44a73a643bdd5c16971a0
+msgid ""
+"`int`，默认 200。full covariance 方法能处理的最大原子数，因为需要 O(N³) 的 Cholesky "
+"分解。小体系保持默认即可；超过几百个磁性原子时先缩小结构，不要盲目调大这个值。"
+msgstr ""
+"`int`, default `200`. Maximum atoms for full-covariance sampling, which "
+"requires an O(N³) Cholesky factorization. Keep the default for small "
+"systems; reduce a system with hundreds of magnetic atoms instead of blindly "
+"raising this limit."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:39
+#: 2e1709eb0549432d9339ee05e6863a7b
+msgid "输出和角度"
+msgstr "Outputs and angular range"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:41
+#: cba2e690764a46a7a7831f313d1b0890
+msgid "Samples（samples）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:42
+#: 2ed32006509f44f58f93b2ba584c75d9
+msgid "`int`，默认 1。每个相关长度下生成几个随机场样本。1~3 个覆盖趋势，5 个以上才开始给同一相关长度做统计。"
+msgstr ""
+"`int`, default `1`. Random fields per correlation length. One to three trace"
+" a trend; five or more begin to sample variability at one length."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:44
+#: fff0341b86fa45bbb688b9e436c6d9fa
+msgid "Cone Angle（cone_angle）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:45
+#: 28881faad16a44ccb1c8e057e7e5201d
+msgid "`float`，默认 30.0°。cone 模式下偏离参考方向的最大角度。10~30° 是有序态附近的扰动，60° 以上更接近强非共线无序。"
+msgstr ""
+"`float`, default `30.0` degrees. Maximum deviation from the reference in "
+"cone mode. About 10-30 degrees represents fluctuations near order; above 60 "
+"degrees approaches strong noncollinear disorder."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:47
+#: 5d1514d021e9461ab2e86ca253e5384d
+msgid "生效条件：`mode` 为 cone 模式时。"
+msgstr "Active when `mode` is a cone mode."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:49
+#: 2664554440584a268ff3e51d44b99cc6
+msgid "磁矩幅值"
+msgstr "Moment magnitudes"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:51
+#: fbf7bbefeda3479ebee0a1a978a7e89c
+msgid "Magnitude Source（magnitude_source）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:52
+#: 91a171decb6c4df4bff481d13404cab0
+msgid ""
+"`str`，默认 `'Existing initial magmoms'`。磁矩幅值的来源。有 `initial_magmoms` "
+"时优先复用，最安全；没有磁矩输入时用 `magmom_map` 和 `default_moment` 构造。不要用默认幅值替代已知元素的实测磁矩。"
+msgstr ""
+"`str`, default `'Existing initial magmoms'`. Source of moment magnitudes. "
+"Reuse `initial_magmoms` when present; otherwise construct magnitudes from "
+"`magmom_map` and `default_moment`. Do not replace known element moments with"
+" a generic default."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:54
+#: 07847bad30624f608cc1ca0138cf6cd0
+msgid "Magmom Map（magmom_map）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:55
+#: 708c07445d74403c85842aa28b01f587
+msgid "`str`，默认空。按元素显式指定磁矩幅值，格式如 `Fe:2.2, Ni:0.6`。已知元素局域磁矩就填进去，未知元素别用默认值伪造先验。"
+msgstr ""
+"`str`, empty by default. Explicit element magnitudes such as `Fe:2.2, "
+"Ni:0.6`. Enter known local moments and avoid inventing priors for unknown "
+"species."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:57
+#: 92cc1ea0fb1d4e3f92e0da63c7b2e498
+msgid "Default Moment（default_moment）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:58
+#: d16bd699602949d3904db53531dcbc60
+msgid ""
+"`float`，默认 0.0。作为 `magmom_map` 没命中的元素的兜底幅值。关键磁性元素应显式列在 magmom_map 里，非磁元素通常保持"
+" 0。"
+msgstr ""
+"`float`, default `0.0`. Fallback when an element is absent from "
+"`magmom_map`. List important magnetic species explicitly and normally keep "
+"nonmagnetic species at zero."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:60
+#: f593ea804507488b9e63378abaa1bc8e
+msgid "Lift Scalar（lift_scalar）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:61
+#: f784b776037f45e3bc25e31e4cdd23a2
+msgid "`bool`，默认 true。把标量磁矩提升为非共线向量。输入是标量但下游需要向量时打开；如果原始数据本身已有方向信息，不要重新提升覆盖它。"
+msgstr ""
+"`bool`, default `true`. Promote scalar moments to noncollinear vectors when "
+"required downstream. Do not overwrite input that already contains "
+"directions."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:63
+#: 6a44fd84ed5a48709ef866260ccafda8
+msgid "Axis（axis）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:64
+#: 3de876674de64fc2a6ef86cdc998a1cc
+msgid ""
+"`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, 1.0)`。cone "
+"模式下的参考磁矩方向。这不是普通数值——改它会影响分层、表面法向或磁矩取向；使用前先确认 cell 取向和目标物理方向。"
+msgstr ""
+"`list[float] | tuple[float, float, float]`, default `(0.0, 0.0, 1.0)`. "
+"Reference direction in cone mode. Confirm cell orientation and the intended "
+"physical direction before changing it."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:66
+#: 9a209c1f3a2340b9b258e4b6a1e5b680
+msgid "生效条件：涉及方向、分层、表面或向量初始化的模式。"
+msgstr ""
+"Used by modes involving a direction, layering, a surface, or vector "
+"initialization."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:68
+#: f6634b24e2c342f2bf6b717ead752423
+msgid "Apply Elements（apply_elements）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:69
+#: 9fce15b951414d4fbcf1669232698a39
+msgid "`str`，默认空（全部生效）。逗号分隔限定只处理指定元素。含非磁基底时显式列出 Fe/Co/Ni/Mn 等磁性元素，避免给无关原子写磁矩。"
+msgstr ""
+"`str`, empty by default (all atoms). A comma-separated restriction to "
+"selected elements. In a nonmagnetic host, list magnetic species such as Fe, "
+"Co, Ni, or Mn explicitly."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:71
+#: 13ecf2fc8ab04132acba787dc875d9fe
+msgid "随机性"
+msgstr "Randomness"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:73
+#: 24de5b4aaff940219b4d80cf1ea30f37
+msgid "Use Seed（use_seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:74
+#: 3263816ba42448eea31400827d1cf40f
+msgid "`bool`，默认 false。需要可复现训练集、测试或对比实验时打开；最终大规模随机探索可以关，但结果不能逐帧复现。"
+msgstr ""
+"`bool`, default `false`. Enable for reproducible datasets, tests, or "
+"comparisons. Exploratory sampling may disable it, but frames will not be "
+"reproducible."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:76
+#: 75322ee02d22477b8139d5519c934052
+msgid "Seed（seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:77
+#: 6eacad0c976c4f14b00d5bcc6d69bef6
+msgid "`int`，默认 0。固定随机种子值。相同输入、相同参数和相同 seed 生成同一批候选；只有 `use_seed=True` 时改它才会改变输出。"
+msgstr ""
+"`int`, default `0`. Fixed seed. Identical input, parameters, and seed "
+"produce identical candidates; it is used only when `use_seed=True`."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:79
+#: 9f5a162c2a4e44728189aabe46a2a6b1
+msgid "生效条件：`use_seed=True`。"
+msgstr "Active only when `use_seed=True`."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:81
+#: c343eb1178c543f0931e96d6e61644cd
+msgid "推荐预设"
+msgstr "Recommended presets"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:83
+#: 16fc2861fd7f415d96508e640e9a9e75
+msgid "有序态附近的有限温扰动"
+msgstr "Finite-temperature fluctuations near an ordered state"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:85
+#: f5f3450314664299b1888d64266d2a65
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"CorrelatedRandomSpinCard\",\n"
+"  \"params\": {\n"
+"    \"mode\": \"Cone around reference\",\n"
+"    \"correlation_kernel\": \"exponential\",\n"
+"    \"correlation_length\": 3.0,\n"
+"    \"samples\": 5,\n"
+"    \"cone_angle\": 25.0,\n"
+"    \"magnitude_source\": \"Existing initial magmoms\",\n"
+"    \"magmom_map\": \"\",\n"
+"    \"default_moment\": 0.0,\n"
+"    \"lift_scalar\": true,\n"
+"    \"axis\": [0.0, 0.0, 1.0],\n"
+"    \"apply_elements\": \"\",\n"
+"    \"max_atoms_for_full\": 200,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:107
+#: f2e80d079a5242cdba798e30c0cba576
+msgid "PM-like 相关随机方向"
+msgstr "Correlated PM-like random directions"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:109
+#: 0a9f4059b14e4a56b25086fae26867e0
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"CorrelatedRandomSpinCard\",\n"
+"  \"params\": {\n"
+"    \"mode\": \"Full random directions\",\n"
+"    \"correlation_kernel\": \"exponential\",\n"
+"    \"correlation_length\": 5.0,\n"
+"    \"samples\": 3,\n"
+"    \"cone_angle\": 30.0,\n"
+"    \"magnitude_source\": \"Map/default magnitude\",\n"
+"    \"magmom_map\": \"Fe:2.2,Co:1.7\",\n"
+"    \"default_moment\": 0.0,\n"
+"    \"lift_scalar\": true,\n"
+"    \"axis\": [0.0, 0.0, 1.0],\n"
+"    \"apply_elements\": \"Fe,Co\",\n"
+"    \"max_atoms_for_full\": 200,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 7\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:131
+#: 32cd994c03cc4255be4a06b8e7b2d904
+msgid "推荐组合"
+msgstr "Recommended combinations"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:133
+#: e2c852afa42c4dedb824d190c8da29b1
+msgid "`Set Magnetic Moments → Correlated Random Spin`：先统一磁矩模长来源，再生成相关非共线态。"
+msgstr ""
+"`Set Magnetic Moments` -> `Correlated Random Spin`: establish magnitudes "
+"before generating a correlated noncollinear state."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:134
+#: 883bccc6a99c47828e22202f1f7e623b
+msgid "`Magnetic Order → Correlated Random Spin`：从 FM/AFM 参考态生成有限温 cone disorder。"
+msgstr ""
+"`Magnetic Order` -> `Correlated Random Spin`: generate finite-temperature "
+"cone disorder from an FM or AFM reference."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:135
+#: de3f2b7234624a1b9c27b93e6270fc9e
+msgid "`Spin Disorder → Correlated Random Spin`：先做离散翻转比例，再对局部方向加空间相关扰动。"
+msgstr ""
+"`Spin Disorder` -> `Correlated Random Spin`: set a discrete flip fraction, "
+"then add spatially correlated directional fluctuations."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:137
+#: b1ac3c2fd1654924a0e6f6de0d297b0a
+msgid "常见问题"
+msgstr "Common questions"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:139
+#: ae0835c91d234b4a87b37aca5e1c5225
+msgid ""
+"**为什么超过 `max_atoms_for_full` 直接失败？** 当前实现是精确协方差采样，需要 full matrix 和 "
+"Cholesky，复杂度随原子数快速增长。自动切换近似算法会让同一张卡在不同体系大小下改变物理语义，所以 v1 明确失败。"
+msgstr ""
+"**Why does the card fail above `max_atoms_for_full`?** Exact covariance "
+"sampling needs a full matrix and Cholesky factorization. Silently changing "
+"to an approximation would change semantics with system size, so v1 fails "
+"explicitly."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:141
+#: fdd486a87085437f9f37d9b5984d91a3
+msgid ""
+"**`exponential` 和 `squared_exponential` 怎么选？** 默认用 "
+"`exponential`。如果你明确希望更平滑的随机场，再选 `squared_exponential`。"
+msgstr ""
+"**Which kernel should I use?** Start with `exponential`; choose "
+"`squared_exponential` only when a smoother, shorter-tailed field is "
+"intended."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:143
+#: 76d3272653af4471bf477e85ad376877
+msgid ""
+"**没有磁矩会怎样？** 输入没有可用 `initial_magmoms`，且没有通过 `magmom_map/default_moment` "
+"提供非零模长时，卡片会失败，不会生成零磁矩伪结果。"
+msgstr ""
+"**What if no moments are available?** The card fails when neither usable "
+"`initial_magmoms` nor nonzero mapped/default magnitudes exist. It does not "
+"emit a fake zero-moment result."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:145
+#: c4cb2276056e4a85abe29b91efd81147
+msgid "输出标签"
+msgstr "Output labels"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:147
+#: c07ebc66d80b420a9d1394b254608365
+#, python-brace-format
+msgid ""
+"`CorrSpin(xi={correlation_length},ker={kernel},mode={cone|full},n={eligible_atoms},s={seed},a={cone_angle})`。`s`"
+" 只在 `use_seed=True` 时出现，`a` 只在 cone 模式出现。"
+msgstr ""
+"`CorrSpin(xi={correlation_length},ker={kernel},mode={cone|full},n={eligible_atoms},s={seed},a={cone_angle})`;"
+" `s` appears only with `use_seed=True`, and `a` only in cone mode."
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:149
+#: 5f0bee7251494c408375e68802445964
+msgid "可复现性"
+msgstr "Reproducibility"
+
+#: ../../source/module/make-dataset-cards/cards/correlated-random-spin-card.md:151
+#: cd85b80bcf18437cb036cad29e58e3fe
+msgid ""
+"开启 `use_seed` 后，相关随机场由 `seed`、输入结构稳定 ID 和 sample 序号共同决定。相同输入、相同参数、相同 seed "
+"会生成相同磁矩方向。"
+msgstr ""
+"With `use_seed` enabled, the field is determined by the seed, stable input "
+"ID, and sample index. Identical inputs and parameters reproduce directions."

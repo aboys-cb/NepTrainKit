@@ -1,0 +1,513 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:3
+#: 898c4970c459455680f8360d5c3dbe99
+msgid "分组标记（Group Label）"
+msgstr "Group Label"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:5
+#: 8ec5739eb1f44a04a38b608d9da4252c
+msgid "`Group`: `Alloy` | `Class`: `GroupLabelCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:7
+#: f32be4702087474c9dbb8e8b07546055
+msgid "功能说明"
+msgstr "What the card does"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:9
+#: f3eb090f88264df0aaf3904bec5322ac
+msgid ""
+"为结构中每个原子写入 `atoms.arrays['group']` 标签（A 或 B），按 k-vector 层分组或分数坐标奇偶分组。这些标签供下游"
+" `Magnetic Order`（AFM group A/B 模式）、`Random Vacancy`、`Random Doping` 的 group"
+" 约束使用。"
+msgstr ""
+"Write an A/B label for every atom in `atoms.arrays['group']` using k-vector "
+"layers or fractional-coordinate parity. Downstream `Magnetic Order` (AFM "
+"group mode), `Random Vacancy`, and `Random Doping` can use these labels as "
+"region or sublattice constraints."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:11
+#: ec0991e0f7554256835a06011e56305e
+msgid "**这是一张元数据卡，不改坐标也不改元素，只写 group 标签。**"
+msgstr ""
+"**This is a metadata card. It changes neither coordinates nor species; it "
+"only writes group labels.**"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:13
+#: a9cc5757bc454fad85bb51b1abebf7e1
+msgid ""
+"g_{k\\text{-vec}}=\\left\\lfloor "
+"2(\\mathbf{s}\\cdot\\mathbf{k})\\right\\rfloor\\bmod 2,\\quad "
+"g_{parity}=\\left(\\mathrm{round}(2s_x)+\\mathrm{round}(2s_y)+\\mathrm{round}(2s_z)\\right)\\bmod"
+" 2"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:15
+#: 46518d20bf8a45699104ae6673418aa2
+msgid "操作示例"
+msgstr "Example workflow"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:17
+#: 09f2fecbfbe84639becbd3339f149637
+msgid "场景：k-vector AFM 无法匹配你的晶格，模型 AFM 能量系统性偏高"
+msgstr "Scenario: A k-vector AFM pattern does not match the lattice"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:19
+#: 0f69abf039d44fdf9c2fadf9bb611acf
+msgid ""
+"你在 NiO 上用 `Magnetic Order` 的 k-vector 111 模式生成了 AFM 结构。训练后模型对 AFM 构型的能量预测仍比 "
+"DFT 高 0.3 eV/atom——k-vector 的波节面穿过了两种不等价原子位，导致 Ni 和 O 都被混合分配正负号，没有形成\"一层 "
+"Ni↑、一层 Ni↓\"的清晰子晶格翻转。"
+msgstr ""
+"In NiO, a k-vector 111 AFM assignment crosses inequivalent sites and mixes "
+"signs across Ni and O rather than producing the intended alternating Ni "
+"layers. The resulting AFM training definition does not match the physical "
+"sublattices."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:21
+#: 7f1b2b53115a4921bba57ca11ab1928f
+msgid ""
+"**诊断思路：** k-vector 是晶体学均匀的翻转模式，适合简单 Bravais "
+"晶格。但实际磁性材料常有不等价子晶格——你需要手动定义哪些原子属于 A 子晶格（正磁矩）、哪些属于 B（负磁矩）。`Group Label` "
+"就是做这件事的：先在结构里写好 group 标签，下游 `Magnetic Order` 再用 group A/B 模式按标签翻转磁矩。"
+msgstr ""
+"**Diagnosis:** A k-vector gives a crystallographically uniform modulation "
+"and is natural for a simple Bravais lattice. With inequivalent sublattices, "
+"define membership explicitly: label A and B first, then let `Magnetic Order`"
+" assign signs by group."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:23
+#: 8771f0c604ce4fe8b4c80482970c191b
+msgid "**输入：** 一个 NiO 超胞，Ni 和 O 交替排列在 fcc 子晶格上"
+msgstr "**Input:** A NiO supercell with alternating Ni and O fcc sublattices."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:25
+#: 23a8a1321ba64e0098463de7d13ee66e
+msgid "**目标：** 按 k-vec 111 分组，奇数层 = A，偶数层 = B"
+msgstr "**Objective:** Label alternating k-vector 111 layers as A and B."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:27
+#: 11ab1c312946490e89a6601c5e00fb94
+msgid "**参数设置：**"
+msgstr "**Parameters:**"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:28
+#: 08e9396f1aed48c7bb2247fa2e296e1c
+msgid "`Mode` = `k-vector layers (recommended)`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:29
+#: eb4663d4062b486186091035a31213a2
+msgid "`Kvec` = `111`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:30
+#: 89a0b9f9ea8d4c859aa9ca2569086c50
+msgid "`Group A` = `A`，`Group B` = `B`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:31
+#: 72e765d813364816a7db81c723e5b4a5
+msgid "`Overwrite` = 勾选"
+msgstr "Enable `Overwrite`."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:33
+#: bfa83e3cb8374c79931fbf4a05dda25f
+msgid "**输出：** 结构不变，但每个原子现在有 `group` = `A` 或 `B`，带 `Grp(k111,A/B)` 标签"
+msgstr ""
+"**Output:** Unchanged geometry with per-atom `group` A or B and structure "
+"label `Grp(k111,A/B)`."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:35
+#: 079d15710e96438686a297c3c5ff3636
+msgid "**怎么验证分组正确：**"
+msgstr "**How to verify the grouping:**"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:36
+#: 38536783d1b1497a91a653b5846a3d6d
+msgid "打开输出的 extxyz 文件，检查 `group` 列是否出现 A/B 交替"
+msgstr ""
+"Open the extxyz output and inspect the `group` column for the intended A/B "
+"sequence."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:37
+#: 23aa4557d34f4b768879d6952388d17d
+msgid "对于 (111) 方向，相邻原子层应交替 A/B"
+msgstr "For a (111) layer pattern, adjacent layers should alternate A and B."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:38
+#: 16c71bd991114f069a0a307fb7039819
+msgid "用 `Magnetic Order` 的 group A/B 模式接在后面，确认 AFM 输出磁矩有正有负"
+msgstr ""
+"Follow with group-mode `Magnetic Order` and confirm the AFM moments contain "
+"both signs on the intended sites."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:39
+#: c89b981ea2eb474bb44548315af6e4cd
+msgid "如果分组几乎全是 A，换 kvec = `110` 或 `100` 验证"
+msgstr ""
+"If nearly every atom is A, inspect the orientation and test whether 110 or "
+"100 matches the actual layering."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:41
+#: 41f393f23cdf43b391d809f27ab4e52e
+msgid "什么时候加这张卡、什么时候不加"
+msgstr "When to add this card"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:43
+#: 2e19552119f1490abe3a0401ce65ca4c
+msgid "**加：**"
+msgstr "**Add it when:**"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:44
+#: ae30002aa1db42ec9de59f6ae24f1bd2
+msgid "下游有 `Magnetic Order` 的 AFM group A/B 模式"
+msgstr "Downstream AFM assignment uses explicit A/B groups"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:45
+#: 1a9fb7dee232472ab9906fcb1449b0f8
+msgid "下游 `Random Doping` / `Random Vacancy` 需要对特定区域操作（group 约束）"
+msgstr "Doping or vacancy rules must target a sublattice or region"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:46
+#: 2301bca38fb24e0da214172712e61a04
+msgid "需要在结构中定义可复用的子晶格/区域标识"
+msgstr "A reusable per-atom sublattice or region identifier is needed"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:48
+#: 05ffd0ea8d2c46d0a8e1fd8eac1b7c87
+msgid "**不加：**"
+msgstr "**Do not add it when:**"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:49
+#: 902023f8c3504a3d86f81366e18dbbb6
+msgid "全流程不依赖 group 过滤"
+msgstr "No downstream operation uses groups"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:50
+#: 35291393dcf647859a7b8da107959ee1
+msgid "下游磁序只用 k-vector 模式（不需要 group 标签）"
+msgstr "The magnetic pattern is fully represented by downstream k-vector mode"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:52
+#: d0c4680ffed542418b751fc3db054cf2
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:54
+#: 025ecc0dd715424abddf2f2445539c18
+msgid "Mode（mode）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:56
+#: d561cd9e03bd4a74979d2d04a36299a4
+msgid "`str`，默认 `k-vector layers (recommended)`。按 k-vector 分层还是按分数坐标奇偶写 group 标签。"
+msgstr ""
+"`str`, default `k-vector layers (recommended)`. Choose k-vector layers or "
+"fractional-coordinate parity."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md
+#: 813cf04dee9a494cbea8c197e5e6195e
+msgid "模式"
+msgstr "Mode"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md
+#: 8415f6721f484691a5c2c989a59bca8b
+msgid "算法"
+msgstr "Algorithm"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md
+#: e684330eff8549d4b38f706f991996e5
+msgid "适用场景"
+msgstr "Use case"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md
+#: 5550847b405543449f0a74b81fa15f72
+msgid "`k-vector layers (recommended)`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md
+#: 2eff511c2c9346c58aebb1d436a38ae1
+msgid "$$g=\\lfloor2(s\\cdot k)\\rfloor\\bmod2$$"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md
+#: 66151d688dd34078b28cc14420b19131
+msgid "层状磁序，沿 k 方向交替翻转"
+msgstr "Layered order alternating along k"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md
+#: b33f67a4cd554ebf8e00208b7eb2f94b
+msgid "`fractional parity (2x rounding)`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md
+#: f1737f3f5f3946bfa8e81928ecc8ec5b
+#, python-brace-format
+msgid "$$g=(\\text{round}(2s_x)+\\text{round}(2s_y)+\\text{round}(2s_z))\\bmod2$$"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md
+#: ab1c72deeca54a3286c1042a5581d681
+msgid "NaCl 型子晶格交替，不依赖层方向"
+msgstr "NaCl-like parity sublattices independent of a selected layer direction"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:63
+#: aee26735ece34438a783fb35d430822d
+msgid "k-vector 模式最常用，也是推荐的首选。"
+msgstr "Start with k-vector mode for a layered magnetic pattern."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:65
+#: 0d3c086e33e647e3845aa2b6b3572854
+msgid "Kvec（kvec）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:67
+#: 99204a5c547c42fc8d67ea7b99b46c70
+msgid "`str`，默认 `111`，仅 k-vector 模式。可选 `100`/`010`/`001`/`110`/`111`。"
+msgstr ""
+"`str`, default `111`; k-vector mode only. One of `100`, `010`, `001`, `110`,"
+" or `111`."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:69
+#: 6c71d34e22c14843b0714b16631a4d54
+msgid "`111`：体对角线方向分层，适合 fcc/bcc 基的 AFM（如 NiO 型）"
+msgstr ""
+"`111`: layers along a body diagonal, useful for compatible fcc/bcc-derived "
+"AFM patterns"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:70
+#: 43066a9914ae47709b9d066cfdd73b6d
+msgid "`100`/`010`/`001`：沿单轴方向分层"
+msgstr "`100`/`010`/`001`: layers along one cell direction"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:71
+#: d8b8a1b6d3cd422c9c2a3a730866c808
+msgid "`110`：面对角线方向"
+msgstr "`110`: layers along a face diagonal"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:73
+#: bc916a467f044494bea8db7f11541a1a
+msgid "Group A（group_a）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:75
+#: 2bbfd419fc2247f0b0689ad31a071e0c
+msgid "`str`，默认 `A`。可自定义为 `S1`、`up` 等，但必须与下游引用的名称完全一致（区分大小写）。"
+msgstr ""
+"`str`, default `A`. May be renamed to `S1`, `up`, or another value, but "
+"downstream references must match case exactly."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:77
+#: 2d9d47121fd04b588996fb1fbad6a6ea
+msgid "Group B（group_b）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:79
+#: b71e4484abb94eb6ba14db915a1820a8
+msgid "`str`，默认 `B`。可自定义为 `S2`、`down` 等，同样必须与下游完全一致。"
+msgstr "`str`, default `B`. May be renamed, with exact downstream matching required."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:81
+#: 46858c6033574fc0918cc622042bc844
+msgid "Overwrite（overwrite）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:83
+#: de32d87fa1214774a6ebd47348a1ac0a
+msgid "`bool`，默认 true。勾选后强制覆盖已有的 group 数组；不勾选则输入如果已有 group 就原样返回不重写。"
+msgstr ""
+"`bool`, default `true`. Overwrite an existing group array. When disabled, "
+"inputs that already have groups are returned without relabeling."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:85
+#: c80e9bca9ff7409fbedb6e15fe0e3487
+msgid ""
+"如果输入结构来自之前跑过的 `Group Label` 卡且开着 overwrite，新卡会把旧标签覆盖掉。不确定的时候先用 "
+"`overwrite=false` 检查输入是否已有 group。"
+msgstr ""
+"A later card with overwrite enabled replaces earlier labels. When provenance"
+" is uncertain, begin with `overwrite=false` and inspect the input."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:87
+#: e218af7fa74c4128a77c9c252ccdb5cf
+msgid "推荐预设"
+msgstr "Recommended presets"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:89
+#: 7f6105f1f86b4b31a0d150b5940bd7c0
+msgid "k-vector 111，标签 A/B（最常用）"
+msgstr "k-vector 111 with A/B labels"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:90
+#: 760b91b3e6dd4d39bf9484c25847899b
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"GroupLabelCard\",\n"
+"  \"check_state\": true,\n"
+"  \"mode\": \"k-vector layers (recommended)\",\n"
+"  \"kvec\": \"111\",\n"
+"  \"group_a\": \"A\",\n"
+"  \"group_b\": \"B\",\n"
+"  \"overwrite\": true\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:102
+#: c7ef856279c942109ef09085a8956902
+msgid "k-vector 110，自定义标签"
+msgstr "k-vector 110 with custom labels"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:103
+#: c8790b4098804a65ae817bd6aee0393e
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"GroupLabelCard\",\n"
+"  \"check_state\": true,\n"
+"  \"mode\": \"k-vector layers (recommended)\",\n"
+"  \"kvec\": \"110\",\n"
+"  \"group_a\": \"S1\",\n"
+"  \"group_b\": \"S2\",\n"
+"  \"overwrite\": true\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:115
+#: e7f8ca1a513642c7b1a008ff08bf11df
+msgid "Fractional parity，保留已有标签"
+msgstr "Fractional parity while preserving existing labels"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:116
+#: 09b31772c41244baac80a318e33ab61e
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"GroupLabelCard\",\n"
+"  \"check_state\": true,\n"
+"  \"mode\": \"fractional parity (2x rounding)\",\n"
+"  \"kvec\": \"111\",\n"
+"  \"group_a\": \"A\",\n"
+"  \"group_b\": \"B\",\n"
+"  \"overwrite\": false\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:128
+#: 8b71239895f64e5eb589c75184018a3c
+msgid "推荐组合"
+msgstr "Recommended combinations"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:130
+#: 6b71c5b626b742feb4ac35caa41c513c
+msgid "`Group Label` → `Magnetic Order`：AFM 的 group A/B 模式需要 group 标签"
+msgstr ""
+"`Group Label` -> `Magnetic Order`: explicit groups define an AFM sublattice "
+"pattern"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:131
+#: ad0e1f0fb5fa4a43aedc8b7b643e69d3
+msgid "`Group Label` → `Random Doping` / `Random Vacancy`：用 group 约束定向掺杂/删除"
+msgstr ""
+"`Group Label` -> `Random Doping` / `Random Vacancy`: constrain substitutions"
+" or removals"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:132
+#: 719059fd23504fe9852166ba248dc1a3
+msgid "`Group Label` → `Random Doping` → `Magnetic Order`：先标记子晶格 → 掺杂特定子晶格 → 初始化对应磁序"
+msgstr ""
+"`Group Label` -> `Random Doping` -> `Magnetic Order`: label a sublattice, "
+"dope it, then initialize its order"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:134
+#: 62dfc3a1633f4766a701b6098bd18f57
+msgid "常见问题"
+msgstr "Common questions"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:136
+#: 660d835175f340c9adb3d7ad428be56c
+msgid "**输出结构没有变化。** 这是正常的——Group Label 只改标签不改坐标。检查输出 extxyz 文件中是否有 `group` 列。"
+msgstr ""
+"**Geometry is unchanged.** This is expected. Inspect the extxyz `group` "
+"property."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:138
+#: 59524cc5de9941429190deba75e9157e
+msgid ""
+"**group 标签全是同一个值。** 结构可能根本不分层。检查结构是否有清晰的层状特征。如果晶胞只有 2 个原子（如 NaCl 单胞），k-vec "
+"分组可能全落在同一类——先扩胞再到有足够多层的时候再跑。"
+msgstr ""
+"**Every group value is the same.** The cell may not contain enough layers in"
+" the selected direction. Inspect the orientation and expand the cell if "
+"necessary."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:140
+#: c1490a1ccf794f8d845e88d3e05bb993
+msgid ""
+"**下游卡片读不到 group。** 确认 `overwrite=true`（如果之前没有 "
+"group），确认标签名和下游规则字符串完全一致（区分大小写），确认输入是 extxyz 格式（普通 xyz 不保留 group 数组）。"
+msgstr ""
+"**A downstream card cannot read groups.** Confirm that labels were written, "
+"names match case exactly, and the file format preserves arrays. Plain xyz "
+"does not preserve the group property; use extxyz."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:142
+#: 9cdfb38b2294494d88485fe7a2837477
+msgid ""
+"**EXTXYZ 文件中的 group 列。** 如果从 .xyz 导入并需要保留分组，使用 EXTXYZ 格式：在第二行加 "
+"`Properties=species:S:1:pos:R:3:group:S:1`，然后在每行坐标后加 group 值。"
+msgstr ""
+"**Group in EXTXYZ.** Include `Properties=species:S:1:pos:R:3:group:S:1` on "
+"the metadata line and one group value after each coordinate row."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:144
+#: 94521a72fa11479f8161b7214115c60c
+msgid "输出标签"
+msgstr "Output labels"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:146
+#: b7f108c11f8a4b38a0282cceed37ad52
+#, python-brace-format
+msgid "`Grp({分组模式},{A标签}/{B标签})`"
+msgstr "`Grp({grouping mode},{A label}/{B label})`"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:148
+#: b9a2f10ab0e64a75b6df7a063b86ff0c
+msgid "写入 `atoms.arrays['group']`，每个原子值为 group_a 或 group_b 字符串。"
+msgstr ""
+"Writes `atoms.arrays['group']`; each atom receives the `group_a` or "
+"`group_b` string."
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:150
+#: 60861de0b7c949f5858a3be9e1b4e5cd
+msgid "可复现性"
+msgstr "Reproducibility"
+
+#: ../../source/module/make-dataset-cards/cards/group-label-card.md:152
+#: e0e6174a1f074e52b7bdd20ceff822e2
+msgid "无随机性。同参数同输入 → 严格一致输出。k-vec 和 fractional parity 分组均为确定性算法。"
+msgstr ""
+"Deterministic: both k-vector and fractional-parity grouping produce "
+"identical results for identical inputs and parameters."

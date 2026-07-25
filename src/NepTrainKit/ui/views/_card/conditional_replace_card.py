@@ -20,40 +20,45 @@ class ConditionalReplaceCard(MakeDataCard):
     group = "Alloy"
     card_name = "Conditional Replace"
     menu_icon = r":/images/src/images/defect.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Conditional Atom Replacement")
+        self.setTitle(self.tr("Conditional Atom Replacement"))
         self._build_ui()
 
     def _build_ui(self):
-        self.target_label = BodyLabel("Target element", self.setting_widget)
+        self.target_label = BodyLabel(self.tr("Target element"), self.setting_widget)
         self.target_edit = LineEdit(self.setting_widget)
-        self.target_edit.setPlaceholderText("e.g., O")
+        self.target_edit.setPlaceholderText(self.tr("e.g., O"))
 
-        self.replacements_label = BodyLabel("Replacements", self.setting_widget)
+        self.replacements_label = BodyLabel(self.tr("Replacements"), self.setting_widget)
         self.replacements_edit = LineEdit(self.setting_widget)
-        self.replacements_edit.setPlaceholderText("Cs:0.6,Na:0.4 or Ni")
-        self.replacements_label.setToolTip("Use element:ratio pairs, comma-separated. Ratio defaults to 1.0 when omitted.")
+        self.replacements_edit.setPlaceholderText(self.tr("Cs:0.6,Na:0.4 or Ni"))
+        self.replacements_label.setToolTip(self.tr("Use element:ratio pairs, comma-separated. Ratio defaults to 1.0 when omitted."))
         self.replacements_label.installEventFilter(ToolTipFilter(self.replacements_label, 300, ToolTipPosition.TOP))
 
-        self.mode_label = BodyLabel("Mode", self.setting_widget)
+        self.mode_label = BodyLabel(self.tr("Mode"), self.setting_widget)
         self.mode_combo = ComboBox(self.setting_widget)
-        self.mode_combo.addItems(["Random", "Exact ratio"])
-        self.mode_label.setToolTip("Random: sample each atom by probability. Exact ratio: allocate counts by ratio then assign.")
+        self.mode_combo.addItems([self.tr("Random"), self.tr("Exact ratio")])
+        self.mode_label.setToolTip(self.tr("Random: sample each atom by probability. Exact ratio: allocate counts by ratio then assign."))
         self.mode_label.installEventFilter(ToolTipFilter(self.mode_label, 300, ToolTipPosition.TOP))
 
-        self.condition_label = BodyLabel("Condition", self.setting_widget)
+        self.condition_label = BodyLabel(self.tr("Condition"), self.setting_widget)
         self.condition_edit = LineEdit(self.setting_widget)
-        self.condition_edit.setPlaceholderText('Use x, y, z; e.g., "z==2.658", "z>=1.0 and z<=3.0", or "all"')
-        self.condition_label.setToolTip("Expression on coordinates; supports x, y, z with >, <, ==, >=, <=, and/or.")
+        self.condition_edit.setPlaceholderText(
+            self.tr('Use x, y, z; e.g., "z==2.658", "z>=1.0 and z<=3.0", or "all"')
+        )
+        self.condition_label.setToolTip(self.tr("Expression on coordinates; supports x, y, z with >, <, ==, >=, <=, and/or."))
         self.condition_label.installEventFilter(ToolTipFilter(self.condition_label, 300, ToolTipPosition.TOP))
 
-        self.seed_label = BodyLabel("Seed", self.setting_widget)
+        self.seed_label = BodyLabel(self.tr("Seed"), self.setting_widget)
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("seed", 1)
         self.seed_frame.setRange(0, 2**31 - 1)
-        self.seed_frame.setToolTip("Random seed (0 leaves it random)")
+        self.seed_frame.setToolTip(self.tr("Random seed (0 leaves it random)"))
         self.seed_label.installEventFilter(ToolTipFilter(self.seed_label, 300, ToolTipPosition.TOP))
 
         layout: QGridLayout = self.settingLayout

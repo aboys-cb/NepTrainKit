@@ -1,5 +1,14 @@
 from .card_test_base import *
 from .card_test_base import _ExternalTestCard, _MetadataTestCard
+from unittest.mock import patch
+import time
+
+from PySide6.QtCore import QEvent, QPointF, Qt
+from PySide6.QtGui import QMouseEvent
+
+from NepTrainKit.core.cards.operation import StructureOperation
+from NepTrainKit.ui.threads import DataProcessingThread
+from NepTrainKit.ui.widgets import FilterDataCard
 
 
 class TestCardContracts(BaseCardTest):
@@ -32,6 +41,116 @@ class TestCardContracts(BaseCardTest):
         data = card.to_dict()
         self.assertEqual(data["metadata"]["contributors"], ["Test Contributor"])
         self.assertEqual(data["metadata"]["card_version"], "0.1")
+
+    def test_builtin_cards_declare_contributor_metadata(self):
+        chen_cards = {"OrganicMolConfigPBCCard", "LocalSolvationCard", "SolventBoxFillCard"}
+        for class_name, metadata in CardManager.card_metadata_dict.items():
+            if "_card" not in metadata.source_path:
+                continue
+            self.assertTrue(metadata.contributors, f"{class_name} should declare contributor metadata")
+            contributor_names = {item.name for item in metadata.contributors}
+            if class_name in chen_cards:
+                self.assertIn("Chen Zherui", contributor_names)
+            else:
+                self.assertIn("NepTrainKit", contributor_names)
+
+    def test_card_status_summary_uses_input_output_time_format(self):
+        card = _ExternalTestCard()
+        card.set_dataset([self.structure])
+        card.result_dataset = [self.structure.copy(), self.structure.copy()]
+        card._last_elapsed_seconds = 2.414
+
+        card.update_dataset_info()
+
+        self.assertEqual(card.status_label.text(), "Input: 1 -> Output: 2 | Time: 2.41 s")
+
+    def test_filter_card_status_summary_uses_output_label(self):
+        card = FilterDataCard()
+        card.set_dataset([self.structure, self.structure.copy()])
+        card.result_dataset = [self.structure.copy()]
+        card._last_elapsed_seconds = 0.006
+
+        card.update_dataset_info()
+
+        self.assertEqual(card.status_label.text(), "Input: 2 -> Output: 1 | Time: 0.01 s")
+
+    def test_card_stop_waits_for_worker_before_deleting_reference(self):
+        class SlowOperation(StructureOperation):
+            def run_structure(self, structure, params):
+                time.sleep(0.05)
+                return [structure.copy()]
+
+        card = PerturbCard()
+        card.set_dataset([self.structure.copy()])
+        thread = DataProcessingThread([self.structure.copy() for _ in range(5)], SlowOperation(), None)
+        card.worker_thread = thread
+        thread.start()
+        deadline = time.perf_counter() + 2.0
+        while not thread.isRunning() and time.perf_counter() < deadline:
+            self._app.processEvents()
+            time.sleep(0.01)
+
+        card.stop()
+
+        self.assertFalse(thread.isRunning())
+        self.assertFalse(hasattr(card, "worker_thread"))
+
+    def test_card_drag_starts_only_after_drag_threshold(self):
+        class FakeDrag:
+            calls = 0
+
+            def __init__(self, parent):
+                FakeDrag.calls += 1
+
+            def setMimeData(self, mime):
+                pass
+
+            def setPixmap(self, pixmap):
+                pass
+
+            def setHotSpot(self, pos):
+                pass
+
+            def exec(self, action):
+                pass
+
+        card = _ExternalTestCard()
+        card.resize(420, 160)
+        card.show()
+        self._app.processEvents()
+
+        press_event = QMouseEvent(
+            QEvent.Type.MouseButtonPress,
+            QPointF(10, 10),
+            QPointF(10, 10),
+            Qt.MouseButton.LeftButton,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        small_move_event = QMouseEvent(
+            QEvent.Type.MouseMove,
+            QPointF(11, 11),
+            QPointF(11, 11),
+            Qt.MouseButton.NoButton,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+        large_move_event = QMouseEvent(
+            QEvent.Type.MouseMove,
+            QPointF(10 + QApplication.startDragDistance() + 1, 10),
+            QPointF(10 + QApplication.startDragDistance() + 1, 10),
+            Qt.MouseButton.NoButton,
+            Qt.MouseButton.LeftButton,
+            Qt.KeyboardModifier.NoModifier,
+        )
+
+        with patch("NepTrainKit.ui.widgets.card_widget.QDrag", FakeDrag):
+            card.mousePressEvent(press_event)
+            card.mouseMoveEvent(small_move_event)
+            self.assertEqual(FakeDrag.calls, 0)
+
+            card.mouseMoveEvent(large_move_event)
+            self.assertEqual(FakeDrag.calls, 1)
 
     def test_operation_cards_write_only_params(self):
         for class_name, card_cls in CardManager.card_info_dict.items():

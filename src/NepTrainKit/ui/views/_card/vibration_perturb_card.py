@@ -19,10 +19,13 @@ class VibrationModePerturbCard(MakeDataCard):
     group = "Perturbation"
     card_name = "Vib Mode Perturb"
     menu_icon = r":/images/src/images/perturb.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Make Vibrational Perturb")
+        self.setTitle(self.tr("Make Vibrational Perturb"))
         self.init_ui()
 
     def init_ui(self):
@@ -30,51 +33,51 @@ class VibrationModePerturbCard(MakeDataCard):
 
         self.setObjectName("vibration_perturb_card_widget")
 
-        self.distribution_label = BodyLabel("Amplitude distribution:", self.setting_widget)
+        self.distribution_label = BodyLabel(self.tr("Amplitude distribution:"), self.setting_widget)
         self.distribution_combo = ComboBox(self.setting_widget)
-        self.distribution_combo.addItems(["Normal", "Uniform"])
+        self.distribution_combo.addItems([self.tr("Normal"), self.tr("Uniform")])
         self.distribution_combo.setCurrentIndex(0)
-        self.distribution_label.setToolTip("Select random distribution used for mode amplitudes")
+        self.distribution_label.setToolTip(self.tr("Select random distribution used for mode amplitudes"))
         self.distribution_label.installEventFilter(ToolTipFilter(self.distribution_label, 300, ToolTipPosition.TOP))
 
-        self.amplitude_label = BodyLabel("Mode amplitude:", self.setting_widget)
+        self.amplitude_label = BodyLabel(self.tr("Mode amplitude:"), self.setting_widget)
         self.amplitude_frame = SpinBoxUnitInputFrame(self)
         self.amplitude_frame.set_input("Å", 1, "float")
         self.amplitude_frame.setDecimals(4)
         self.amplitude_frame.setSingleStep(0.01)
         self.amplitude_frame.setRange(0.0, 1.0)
         self.amplitude_frame.set_input_value([0.05])
-        self.amplitude_label.setToolTip("Global scaling factor applied to the combined vibrational displacement")
+        self.amplitude_label.setToolTip(self.tr("Global scaling factor applied to the combined vibrational displacement"))
         self.amplitude_label.installEventFilter(ToolTipFilter(self.amplitude_label, 300, ToolTipPosition.TOP))
 
-        self.modes_label = BodyLabel("Modes per sample:", self.setting_widget)
+        self.modes_label = BodyLabel(self.tr("Modes per sample:"), self.setting_widget)
         self.modes_frame = SpinBoxUnitInputFrame(self)
         self.modes_frame.set_input("mode", 1, "int")
         self.modes_frame.setRange(1, 999)
         self.modes_frame.set_input_value([2])
-        self.modes_label.setToolTip("Number of vibrational modes combined for each generated structure")
+        self.modes_label.setToolTip(self.tr("Number of vibrational modes combined for each generated structure"))
         self.modes_label.installEventFilter(ToolTipFilter(self.modes_label, 300, ToolTipPosition.TOP))
 
-        self.min_freq_label = BodyLabel("Min frequency:", self.setting_widget)
+        self.min_freq_label = BodyLabel(self.tr("Min frequency:"), self.setting_widget)
         self.min_freq_frame = SpinBoxUnitInputFrame(self)
         self.min_freq_frame.set_input("cm^-1", 1, "float")
         self.min_freq_frame.setDecimals(3)
         self.min_freq_frame.setSingleStep(1.0)
         self.min_freq_frame.setRange(0.0, 1e5)
         self.min_freq_frame.set_input_value([10.0])
-        self.min_freq_label.setToolTip("Discard modes whose |frequency| is below this threshold")
+        self.min_freq_label.setToolTip(self.tr("Discard modes whose |frequency| is below this threshold"))
         self.min_freq_label.installEventFilter(ToolTipFilter(self.min_freq_label, 300, ToolTipPosition.TOP))
 
-        self.num_label = BodyLabel("Structures", self.setting_widget)
+        self.num_label = BodyLabel(self.tr("Structures"), self.setting_widget)
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("unit", 1, "int")
         self.num_condition_frame.setRange(1, 10000)
         self.num_condition_frame.set_input_value([32])
-        self.num_label.setToolTip("Number of vibrationally perturbed structures to generate")
+        self.num_label.setToolTip(self.tr("Number of vibrationally perturbed structures to generate"))
         self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
 
-        self.optional_label = BodyLabel("Options", self.setting_widget)
-        self.optional_label.setToolTip("Optional controls for how vibrational amplitudes are scaled")
+        self.optional_label = BodyLabel(self.tr("Options"), self.setting_widget)
+        self.optional_label.setToolTip(self.tr("Optional controls for how vibrational amplitudes are scaled"))
         self.optional_label.installEventFilter(ToolTipFilter(self.optional_label, 300, ToolTipPosition.TOP))
 
         self.optional_frame = QFrame(self.setting_widget)
@@ -82,20 +85,20 @@ class VibrationModePerturbCard(MakeDataCard):
         self.optional_frame_layout.setContentsMargins(0, 0, 0, 0)
         self.optional_frame_layout.setSpacing(2)
 
-        self.scale_checkbox = CheckBox("Scale by 1/sqrt(|freq|)", self.optional_frame)
+        self.scale_checkbox = CheckBox(self.tr("Scale by 1/sqrt(|freq|)"), self.optional_frame)
         self.scale_checkbox.setChecked(True)
-        self.scale_checkbox.setToolTip("Divide sampled amplitudes by sqrt(|frequency|) to favour softer modes")
+        self.scale_checkbox.setToolTip(self.tr("Divide sampled amplitudes by sqrt(|frequency|) to favour softer modes"))
 
-        self.exclude_checkbox = CheckBox("Drop near-zero modes", self.optional_frame)
+        self.exclude_checkbox = CheckBox(self.tr("Drop near-zero modes"), self.optional_frame)
         self.exclude_checkbox.setChecked(True)
-        self.exclude_checkbox.setToolTip("Ignore translational modes below the minimum frequency threshold")
+        self.exclude_checkbox.setToolTip(self.tr("Ignore translational modes below the minimum frequency threshold"))
 
         self.optional_frame_layout.addWidget(self.scale_checkbox, 0, 0, 1, 1)
         self.optional_frame_layout.addWidget(self.exclude_checkbox, 0, 1, 1, 1)
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip("Enable reproducible random sampling")
+        self.seed_checkbox.setToolTip(self.tr("Enable reproducible random sampling"))
         self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")

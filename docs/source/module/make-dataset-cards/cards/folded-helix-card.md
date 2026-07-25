@@ -69,7 +69,7 @@ $$\phi(k)=\phi_0+\sigma\cdot s(k)\cdot\Delta\phi$$
 
 #### Layer Tolerance（layer_tolerance）
 
-`float`，默认 `0.05`。投影坐标差不超过此阈值的原子归为同一层，单位 Angstrom。
+`float`，默认 `0.05`。投影坐标差不超过此阈值的原子归为同一层，单位 Å。
 - 保守：`0.01`（严格分层）
 - 平衡：`0.03~0.10`（容忍小幅层内起伏）
 - 如果层内有明显 rumpling，适当放宽

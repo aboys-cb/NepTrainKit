@@ -106,9 +106,9 @@ Ni-Co 训练集包含纯 Ni、纯 Co 和均匀随机合金，但没有从 Ni-ric
 
 ## 推荐组合
 
-- `Super Cell -> Composition Gradient -> Geometry Filter`：先给梯度方向足够层数，再做配比梯度和几何检查。
-- `Crystal Prototype Builder -> Super Cell -> Composition Gradient -> Atomic Perturb`：先生成晶体模板，再加空间成分梯度和局部位移。
-- `Composition Gradient -> FPS Filter`：生成多组梯度结构后选代表帧。
+- `Super Cell → Composition Gradient → Geometry Filter`：先给梯度方向足够层数，再做配比梯度和几何检查。
+- `Crystal Prototype Builder → Super Cell → Composition Gradient → Atomic Perturb`：先生成晶体模板，再加空间成分梯度和局部位移。
+- `Composition Gradient → FPS Filter`：生成多组梯度结构后选代表帧。
 
 ## 常见问题
 

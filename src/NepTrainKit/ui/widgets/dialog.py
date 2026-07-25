@@ -38,6 +38,7 @@ from qfluentwidgets import (
     ColorDialog,
     TitleLabel,
     HyperlinkLabel,
+    PushButton,
     LineEdit,
     EditableComboBox,
     PrimaryPushButton,
@@ -49,13 +50,23 @@ from qfluentwidgets import (
     ToolTipFilter,
     ToolTipPosition,
 )
-from qframelesswindow import FramelessDialog
 import json
 import html
 import math
 import os
+import sys
 import numpy as np
 from .button import TagPushButton, TagGroup
+
+if sys.platform == "darwin" and os.environ.get("QT_QPA_PLATFORM", "").split(":")[0].lower() == "offscreen":
+    class FramelessDialog(QDialog):
+        """Headless-safe stand-in for qframelesswindow's mac native dialog."""
+
+        def setTitleBar(self, title_bar):
+            self.titleBar = title_bar
+            title_bar.setParent(self)
+else:
+    from qframelesswindow import FramelessDialog
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.config import Config
@@ -77,8 +88,9 @@ from NepTrainKit.ui.canvas.distribution_factory import create_distribution_plot_
 from NepTrainKit import module_path
 
 from NepTrainKit.ui.dialogs import call_path_dialog
-from NepTrainKit.ui.threads import LoadingThread
+from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.core.utils import get_xyz_nframe, read_nep_out_file, get_rmse
+from .distribution import DistributionExplorerWidget, DistributionInspectorMessageBox
 
 
 class GetIntMessageBox(MessageBoxBase):
@@ -118,7 +130,7 @@ class ExportFormatMessageBox(MessageBoxBase):
 
     def __init__(self, parent=None, default_format: str = "xyz"):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel("Choose export format", self)
+        self.titleLabel = CaptionLabel(self.tr("Choose export format"), self)
         self.titleLabel.setWordWrap(True)
 
         self.formatCombo = ComboBox(self)
@@ -143,1009 +155,6 @@ class ExportFormatMessageBox(MessageBoxBase):
             return data
         text = self.formatCombo.currentText().lower()
         return "deepmd/npy" if "deepmd" in text or "npy" in text else "xyz"
-
-
-class DatasetSummaryMessageBox(MessageBoxBase):
-    """Frameless dialog that presents dataset-wide summary statistics."""
-
-    def __init__(self, parent=None, summary: dict | None = None):
-        super().__init__(parent)
-        self._summary: dict[str, Any] = summary or {}
-        group_by = self._summary.get("group_by", SearchType.TAG.value)
-        group_by_value = group_by.value if isinstance(group_by, SearchType) else str(group_by)
-        try:
-            group_by_enum = SearchType(group_by_value)
-        except Exception:
-            group_by_enum = SearchType.FORMULA if group_by_value.endswith(".FORMULA") else SearchType.TAG
-        group_label = "Formula" if group_by_enum == SearchType.FORMULA else "Config_type"
-
-        self.widget.setMinimumWidth(460)
-        max_rows_display = 10  # limit rows shown in dialog to keep it compact
-
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
-        self.viewLayout.addLayout(layout)
-        heager_row = QHBoxLayout()
-        title = TitleLabel("Dataset Summary", self)
-
-        # Export HTML button
-        self.exportButton = TransparentToolButton(":/images/src/images/export1.svg", self)
-
-        self.exportButton.clicked.connect(self._export_html)
-        heager_row.addWidget(title)
-        heager_row.addWidget(self.exportButton, alignment=Qt.AlignmentFlag.AlignRight)
-        layout.addLayout(heager_row)
-
-        # Source info
-        source_row = QHBoxLayout()
-        data_file = self._summary.get("data_file", "")
-        model_file = self._summary.get("model_file", "")
-        data_label = CaptionLabel(f"Data: {data_file}", self)
-        model_label = CaptionLabel(f"Model: {model_file}", self)
-        for lbl in (data_label, model_label):
-            lbl.setWordWrap(True)
-            lbl.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        source_row.addWidget(data_label, 1)
-        source_row.addWidget(model_label, 1)
-        layout.addLayout(source_row)
-
-        # Basic counts and atom statistics
-        counts = self._summary.get("counts", {})
-        atoms = self._summary.get("atoms", {})
-        elements = self._summary.get("elements", [])
-
-        # Top summary cards
-        card_row = QHBoxLayout()
-        card_row.setContentsMargins(0, 0, 0, 0)
-        card_row.setSpacing(8)
-
-        def _add_card(caption: str, value: str) -> None:
-            frame = QFrame(self)
-            frame.setFrameShape(QFrame.Shape.StyledPanel)
-            frame_layout = QVBoxLayout(frame)
-            frame_layout.setContentsMargins(8, 4, 8, 4)
-            frame_layout.setSpacing(2)
-            value_label = TitleLabel(value, frame)
-            value_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-            cap_label = CaptionLabel(caption, frame)
-            cap_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-            frame_layout.addWidget(value_label)
-            frame_layout.addWidget(cap_label)
-            card_row.addWidget(frame)
-
-        active_structures = counts.get("active_structures", 0)
-        total_atoms_active = atoms.get("total_atoms_active", 0)
-
-        _add_card("Orig structures", str(counts.get("orig_structures", 0)))
-        _add_card("Active structures", str(active_structures))
-        _add_card("Removed structures", str(counts.get("removed_structures", 0)))
-        _add_card("Selected structures", str(counts.get("selected_structures", 0)))
-        layout.addLayout(card_row)
-
-        atoms_row = QHBoxLayout()
-        atoms_row.setContentsMargins(0, 0, 0, 0)
-        atoms_row.setSpacing(12)
-        atoms_row.addWidget(CaptionLabel(f"Total atoms (active): {total_atoms_active}", self))
-        atoms_row.addWidget(
-            CaptionLabel(
-                f"Atoms per structure: min={atoms.get('min_atoms', 0)}, "
-                f"max={atoms.get('max_atoms', 0)}, "
-                f"mean={atoms.get('mean_atoms', 0.0):.1f}, "
-                f"median={atoms.get('median_atoms', 0.0):.1f}",
-                self,
-            )
-        )
-        layout.addLayout(atoms_row)
-
-        # Element distribution
-        elements = sorted(self._summary.get("elements", []), key=lambda x: x.get("fraction", 0.0), reverse=True)
-        if elements:
-            elem_title = CaptionLabel("Element distribution (active structures):", self)
-            layout.addWidget(elem_title)
-            elem_grid = QGridLayout()
-            elem_grid.setContentsMargins(0, 0, 0, 0)
-            elem_grid.setSpacing(4)
-            headers = ["Element", "Atoms", "Structures", "Fraction", ""]
-            for c, h in enumerate(headers):
-                elem_grid.addWidget(CaptionLabel(h, self), 0, c)
-            for r, elem in enumerate(elements[:max_rows_display], start=1):
-                elem_grid.addWidget(CaptionLabel(str(elem.get("symbol", "")), self), r, 0)
-                elem_grid.addWidget(CaptionLabel(str(elem.get("atoms", 0)), self), r, 1)
-                elem_grid.addWidget(CaptionLabel(str(elem.get("structures", 0)), self), r, 2)
-                frac = elem.get("fraction", 0.0) * 100.0
-                elem_grid.addWidget(CaptionLabel(f"{frac:.1f} %", self), r, 3)
-                bar = ProgressBar(self)
-                bar.setRange(0, 100)
-                bar.setValue(int(max(0, min(100, frac))))
-                bar.setFixedWidth(120)
-                elem_grid.addWidget(bar, r, 4)
-            layout.addLayout(elem_grid)
-
-        # Config_type distribution
-        cfg = self._summary.get("config_types", [])
-        if cfg:
-            cfg_title = CaptionLabel(f"{group_label} distribution (active structures):", self)
-            layout.addWidget(cfg_title)
-            cfg_grid = QGridLayout()
-            cfg_grid.setContentsMargins(0, 0, 0, 0)
-            cfg_grid.setSpacing(4)
-            headers = [group_label, "Count", "Fraction", ""]
-            for c, h in enumerate(headers):
-                cfg_grid.addWidget(CaptionLabel(h, self), 0, c)
-            for r, item in enumerate(cfg[:max_rows_display], start=1):
-                cfg_grid.addWidget(CaptionLabel(str(item.get("name", "")), self), r, 0)
-                cfg_grid.addWidget(CaptionLabel(str(item.get("count", 0)), self), r, 1)
-                frac = item.get("fraction", 0.0) * 100.0
-                cfg_grid.addWidget(CaptionLabel(f"{frac:.1f} %", self), r, 2)
-                bar = ProgressBar(self)
-                bar.setRange(0, 100)
-                bar.setValue(int(max(0, min(100, frac))))
-                bar.setFixedWidth(120)
-                cfg_grid.addWidget(bar, r, 3)
-            layout.addLayout(cfg_grid)
-
-    def _export_html(self) -> None:
-        """Export the full summary (all rows) to an HTML file."""
-        path = call_path_dialog(
-            self,
-            "Export dataset summary",
-            "file",
-            default_filename="dataset_summary.html",
-            file_filter="HTML files (*.html);;All files (*.*)",
-        )
-        if not path:
-            return
-        try:
-            html = self._build_html()
-            with open(path, "w", encoding="utf-8") as handle:
-                handle.write(html)
-            MessageManager.send_info_message(f"Exported dataset summary to: {path}")
-        except Exception:  # noqa: BLE001
-            MessageManager.send_warning_message("Failed to export dataset summary.")
-
-    def _build_html(self) -> str:
-        """Render the summary into a highly decorated, professional HTML dashboard."""
-        counts = self._summary.get("counts", {})
-        atoms = self._summary.get("atoms", {})
-        elements = sorted(self._summary.get("elements", []) or [], key=lambda x: x.get("fraction", 0.0), reverse=True)
-        cfg = self._summary.get("config_types", []) or []
-        dist = self._summary.get("numeric_distributions", {}) or {}
-        dist_metrics = dist.get("metrics", []) or []
-        force_rms = self._summary.get("force_rms", {}) or {}
-        energy_stats = self._summary.get("energy", {}) or {}
-
-        # Handling Grouping Logic (Formula or Tag)
-        group_by = self._summary.get("group_by", "tag")  # Default to tag
-        group_label = "Formula" if "FORMULA" in str(group_by).upper() else "Config ID"
-        group_section_title = "Formulas" if "FORMULA" in str(group_by).upper() else "Configuration Types"
-
-        data_file = self._summary.get("data_file", "N/A")
-        model_file = self._summary.get("model_file", "N/A")
-
-        force_rms_rows = ""
-        try:
-            atoms_with_forces = int(force_rms.get("atoms_with_forces", 0) or 0)
-            if atoms_with_forces > 0:
-                rms_all = float(force_rms.get("rms_all_atoms", 0.0) or 0.0)
-                force_rms_rows = (
-                    f"<tr><td class='stat-label'>Force RMS(|F|) (all atoms)</td>"
-                    f"<td class='stat-val'>{rms_all:.4g} eV/Å</td></tr>"
-                )
-        except Exception:  # noqa: BLE001
-            force_rms_rows = ""
-
-        energy_rows = ""
-        try:
-            e_count = int(energy_stats.get("count", 0) or 0)
-            if e_count > 0:
-                e_mean = float(energy_stats.get("mean", 0.0) or 0.0)
-                e_std = float(energy_stats.get("std", 0.0) or 0.0)
-                energy_rows = (
-                    f"<tr><td class='stat-label'>Energy/atom stats</td>"
-                    f"<td class='stat-val'>{e_mean:.6g} ± {e_std:.3g} eV/atom</td></tr>"
-                )
-        except Exception:  # noqa: BLE001
-            energy_rows = ""
-
-        # CSS Styles for Decoration
-        style = """
-        <style>
-            :root {
-                --primary: #2563eb;
-                --primary-gradient: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
-                --secondary: #64748b;
-                --bg: #f8fafc;
-                --card: #ffffff;
-                --border: #e2e8f0;
-                --text-dark: #0f172a;
-                --accent-green: #10b981;
-                --dist-fill: #2563eb;
-                --dist-fill-soft: rgba(37, 99, 235, 0.18);
-                --s1: #2563eb;
-                --s2: #10b981;
-                --s3: #f59e0b;
-                --s4: #ef4444;
-                --s5: #a855f7;
-                --s6: #06b6d4;
-            }
-
-            body {
-                font-family: 'Inter', system-ui, -apple-system, sans-serif;
-                background-color: var(--bg);
-                color: var(--text-dark);
-                line-height: 1.6;
-                margin: 0;
-                padding: 40px 20px;
-                background-image: radial-gradient(#e2e8f0 0.5px, transparent 0.5px);
-                background-size: 24px 24px;
-            }
-
-            .container { max-width: 1000px; margin: 0 auto; }
-
-            header { margin-bottom: 40px; padding-bottom: 20px; position: relative; }
-            header::before {
-                content: ""; position: absolute; left: -20px; top: 0; bottom: 20px;
-                width: 4px; background: var(--primary-gradient); border-radius: 4px;
-            }
-
-            h1 { margin: 0; font-size: 32px; letter-spacing: -0.8px; font-weight: 800; }
-            .subtitle { color: var(--secondary); font-size: 14px; margin-top: 8px; font-weight: 500; }
-
-            .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 30px; }
-            
-            .card {
-                background: var(--card); border-radius: 16px; padding: 24px;
-                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-                border: 1px solid var(--border);
-                transition: transform 0.2s ease, box-shadow 0.2s ease;
-            }
-            .card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-            .card h2 { font-size: 14px; text-transform: uppercase; color: var(--secondary); margin: 0 0 20px 0; letter-spacing: 0.1em; display: flex; align-items: center; gap: 8px; }
-            .card h2::before { content: ""; display: inline-block; width: 8px; height: 8px; background: var(--primary); border-radius: 50%; }
-
-            table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
-            th { text-align: left; padding: 12px; background: #f8fafc; color: var(--secondary); font-weight: 600; border-bottom: 2px solid var(--border); text-transform: uppercase; font-size: 12px; }
-            td { padding: 14px 12px; border-bottom: 1px solid var(--border); }
-            tr:last-child td { border-bottom: none; }
-            tr:hover { background-color: #fcfdfe; }
-
-            .bar-wrap { display: flex; align-items: center; gap: 12px; }
-            .bar-bg { flex-grow: 1; height: 8px; background: #f1f5f9; border-radius: 10px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
-            .bar-fill { height: 100%; background: var(--primary-gradient); border-radius: 10px; }
-
-            .badge {
-                background: #f0f7ff; color: var(--primary); padding: 4px 10px; border-radius: 8px;
-                font-weight: 700; font-family: monospace; border: 1px solid #dbeafe;
-            }
-
-            .scroll-area { max-height: 400px; overflow-y: auto; padding-right: 4px; }
-            .scroll-area::-webkit-scrollbar { width: 6px; }
-            .scroll-area::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-
-            .stat-val { font-weight: 700; color: var(--text-dark); }
-            .stat-label { color: var(--secondary); }
-
-            .dist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
-            .dist-card {
-                border: 1px solid var(--border);
-                border-radius: 14px;
-                padding: 14px 14px 12px 14px;
-                background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-            }
-            .dist-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
-            .dist-title { font-weight: 800; font-size: 14px; letter-spacing: -0.2px; }
-            .dist-meta { color: var(--secondary); font-size: 12px; }
-            .dist-meta code { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 11px; }
-            .dist-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
-            .dist-legend-item { display: inline-flex; align-items: center; gap: 6px; color: var(--secondary); font-size: 11px; }
-            .dist-swatch { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-            .dist-axis { display: flex; justify-content: space-between; margin-top: 6px; color: var(--secondary); font-size: 11px; font-variant-numeric: tabular-nums; }
-            canvas.dist-canvas {
-                width: 100%;
-                height: 84px;
-                display: block;
-                border-radius: 10px;
-                background: #ffffff;
-            }
-            canvas.dist-canvas.dist-multi { height: 110px; }
-        </style>
-        """
-
-        # Elements Section
-        el_rows = []
-        for item in elements:
-            pct = item.get("fraction", 0.0) * 100.0
-            el_rows.append(f"""
-            <tr>
-                <td><span class="badge">{item.get("symbol", "")}</span></td>
-                <td>{item.get("atoms", 0):,}</td>
-                <td>{item.get("structures", 0)}</td>
-                <td width="45%">
-                    <div class="bar-wrap">
-                        <div class="bar-bg"><div class="bar-fill" style="width: {pct:.1f}%"></div></div>
-                        <span class="stat-val">{pct:.1f}%</span>
-                    </div>
-                </td>
-            </tr>""")
-
-        # Config Types Section
-        cfg_rows = []
-        for item in cfg:
-            cfg_rows.append(f"""
-            <tr>
-                <td style="color: var(--text-dark); font-family: monospace;">{item.get("name", "")}</td>
-                <td class="stat-val">{item.get("count", 0)}</td>
-                <td>{item.get("fraction", 0.0) * 100.0:.1f}%</td>
-            </tr>""")
-
-        # Numeric Distributions Section (histograms)
-        dist_cards = []
-        for m in dist_metrics:
-            key = str(m.get("key", ""))
-            label = str(m.get("label", key))
-            unit = str(m.get("unit", ""))
-            total = int(m.get("total", 0) or 0)
-            series = m.get("series", None)
-            mn = float(m.get("min", 0.0) or 0.0)
-            mx = float(m.get("max", 0.0) or 0.0)
-            mean = m.get("mean", None)
-            std = m.get("std", None)
-            bins = int(m.get("bins", 0) or 0)
-            if bins <= 0:
-                if isinstance(series, list) and series:
-                    bins = len(series[0].get("hist", []) or [])
-                else:
-                    bins = len(m.get("hist", []) or [])
-            unit_html = f"&nbsp;<code>{html.escape(unit)}</code>" if unit else ""
-            stats_html = ""
-            try:
-                if mean is not None:
-                    mu = float(mean)
-                    sigma = float(std) if std is not None else 0.0
-                    if math.isfinite(mu) and math.isfinite(sigma):
-                        stats_html = f" &nbsp; μ={mu:.6g}, σ={sigma:.3g}"
-            except Exception:  # noqa: BLE001
-                stats_html = ""
-
-            # Tick labels (more granular than just the two ends)
-            axis_left = float(m.get("hist_left", mn) or mn)
-            axis_right = float(m.get("hist_right", mx) or mx)
-            if axis_right == axis_left:
-                tick_vals = [axis_left, axis_left, axis_left, axis_left, axis_left]
-            else:
-                tick_vals = [
-                    axis_left,
-                    axis_left + 0.25 * (axis_right - axis_left),
-                    axis_left + 0.5 * (axis_right - axis_left),
-                    axis_left + 0.75 * (axis_right - axis_left),
-                    axis_right,
-                ]
-            ticks_html = "".join(f"<span>{v:.6g}</span>" for v in tick_vals)
-
-            legend_html = ""
-            canvas_class = "dist-canvas"
-            if isinstance(series, list) and series:
-                canvas_class = "dist-canvas dist-multi"
-                swatches = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6"]
-                parts = []
-                for i, s in enumerate(series[:6]):
-                    name = html.escape(str(s.get("name", f"s{i + 1}")))
-                    color_var = swatches[i]
-                    parts.append(
-                        f"<span class='dist-legend-item'><span class='dist-swatch' style='background: var({color_var});'></span>{name}</span>"
-                    )
-                legend_html = f"<div class='dist-legend'>{''.join(parts)}</div>"
-            dist_cards.append(
-                f"""
-                <div class="dist-card">
-                    <div class="dist-head">
-                        <div class="dist-title">{html.escape(label)}</div>
-                        <div class="dist-meta"><code>{html.escape(key)}</code>{unit_html} &nbsp; range=[{mn:.6g}, {mx:.6g}] &nbsp; N={total:,} &nbsp; bins={bins:,}{stats_html}</div>
-                    </div>
-                    {legend_html}
-                    <canvas class="{canvas_class}" width="900" height="84" data-key="{html.escape(key)}"></canvas>
-                    <div class="dist-axis">{ticks_html}</div>
-                </div>
-                """
-            )
-
-        dist_block = ""
-        if dist_cards:
-            # Embed raw JSON for the canvas renderer; escape only the closing script tag sequence.
-            dist_json = json.dumps(dist, ensure_ascii=False).replace("</", "<\\/")
-            dist_block = f"""
-            <div class="card" style="margin-top: 30px;">
-                <h2>Numeric Distributions</h2>
-                <div class="dist-grid">
-                    {"".join(dist_cards)}
-                </div>
-            </div>
-
-            <script id="dist-data" type="application/json">{dist_json}</script>
-            <script>
-            (() => {{
-                const payloadEl = document.getElementById('dist-data');
-                if (!payloadEl) return;
-                let payload = null;
-                try {{
-                    payload = JSON.parse(payloadEl.textContent || '{{}}');
-                }} catch (e) {{
-                    return;
-                }}
-                const metrics = new Map((payload.metrics || []).map(m => [m.key, m]));
-
-                function clamp(v, lo, hi) {{ return Math.min(hi, Math.max(lo, v)); }}
-
-                function computeHistogram(vals, lo, hi, bins) {{
-                    const range = hi - lo;
-                    const counts = new Array(bins).fill(0);
-                    if (!(range > 0)) return counts;
-                    for (const v of vals) {{
-                        const t = (v - lo) / range;
-                        if (t < 0 || t > 1) continue;
-                        const i = clamp(Math.floor(t * bins), 0, bins - 1);
-                        counts[i] += 1;
-                    }}
-                    return counts;
-                }}
-
-                function toRgba(color, alpha) {{
-                    const c = (color || '').trim();
-                    const a = Number(alpha);
-                    if (!Number.isFinite(a)) return c;
-                    if (c.startsWith('#')) {{
-                        const h = c.slice(1);
-                        let r = 37, g = 99, b = 235;
-                        if (h.length === 3) {{
-                            r = parseInt(h[0] + h[0], 16);
-                            g = parseInt(h[1] + h[1], 16);
-                            b = parseInt(h[2] + h[2], 16);
-                        }} else if (h.length === 6) {{
-                            r = parseInt(h.slice(0, 2), 16);
-                            g = parseInt(h.slice(2, 4), 16);
-                            b = parseInt(h.slice(4, 6), 16);
-                        }}
-                        return `rgba(${{r}}, ${{g}}, ${{b}}, ${{a}})`;
-                    }}
-                    if (c.startsWith('rgba(')) {{
-                        return c.replace(/rgba\\(([^)]+)\\)/, (_m, inner) => `rgba(${{inner.split(',').slice(0,3).join(',')}}, ${{a}})`);
-                    }}
-                    if (c.startsWith('rgb(')) {{
-                        return c.replace('rgb(', 'rgba(').replace(')', `, ${{a}})`);
-                    }}
-                    return c;
-                }}
-
-                function drawHistogram(canvas, metric) {{
-                    const ctx = canvas.getContext('2d');
-                    if (!ctx) return;
-
-                    const rect = canvas.getBoundingClientRect();
-                    const dpr = window.devicePixelRatio || 1;
-                    const w = Math.max(1, rect.width);
-                    const h = Math.max(1, rect.height);
-                    const bw = Math.max(1, Math.round(w * dpr));
-                    const bh = Math.max(1, Math.round(h * dpr));
-                    if (canvas.width !== bw || canvas.height !== bh) {{
-                        canvas.width = bw;
-                        canvas.height = bh;
-                    }}
-                    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-                    ctx.clearRect(0, 0, w, h);
-
-                    let lo = Number(metric.min);
-                    let hi = Number(metric.max);
-                    if (!Number.isFinite(lo) || !Number.isFinite(hi)) return;
-                    if (hi === lo) {{ hi = lo + 1; lo = lo - 1; }}
-
-                    const css = getComputedStyle(document.documentElement);
-                    const fill = (css.getPropertyValue('--dist-fill') || '#2563eb').trim();
-                    const fillSoft = (css.getPropertyValue('--dist-fill-soft') || 'rgba(37, 99, 235, 0.18)').trim();
-                    const border = (css.getPropertyValue('--border') || '#e2e8f0').trim();
-                    const seriesColors = [
-                        (css.getPropertyValue('--s1') || '#2563eb').trim(),
-                        (css.getPropertyValue('--s2') || '#10b981').trim(),
-                        (css.getPropertyValue('--s3') || '#f59e0b').trim(),
-                        (css.getPropertyValue('--s4') || '#ef4444').trim(),
-                        (css.getPropertyValue('--s5') || '#a855f7').trim(),
-                        (css.getPropertyValue('--s6') || '#06b6d4').trim(),
-                    ];
-
-                    const padX = 10;
-                    const padY = 10;
-                    const barW = w - padX * 2;
-                    const barH = h - padY * 2;
-
-                    const series = Array.isArray(metric.series) ? metric.series : null;
-                    const singleHist = Array.isArray(metric.hist) ? metric.hist : null;
-                    const bins = (metric.bins && Number.isFinite(metric.bins) && metric.bins > 0)
-                        ? Math.max(1, Math.floor(metric.bins))
-                        : (singleHist ? singleHist.length : (series && series.length && Array.isArray(series[0].hist) ? series[0].hist.length : 60));
-
-                    // Vertical grid lines (x ticks)
-                    ctx.strokeStyle = 'rgba(100, 116, 139, 0.18)';
-                    ctx.lineWidth = 1;
-                    for (const t of [0, 0.25, 0.5, 0.75, 1]) {{
-                        const x = padX + t * barW + 0.5;
-                        ctx.beginPath();
-                        ctx.moveTo(x, padY);
-                        ctx.lineTo(x, padY + barH);
-                        ctx.stroke();
-                    }}
-                    // Baseline
-                    ctx.strokeStyle = 'rgba(100, 116, 139, 0.28)';
-                    ctx.beginPath();
-                    ctx.moveTo(padX, padY + barH + 0.5);
-                    ctx.lineTo(padX + barW, padY + barH + 0.5);
-                    ctx.stroke();
-
-                    if (series && series.length) {{
-                        // Overlay density curves for multiple series (same x-range)
-                        const countsBySeries = [];
-                        let maxC = 1;
-                        for (const s of series.slice(0, 6)) {{
-                            const counts = Array.isArray(s.hist) ? s.hist : computeHistogram((s.sample || []).map(Number).filter(v => Number.isFinite(v)), lo, hi, bins);
-                            countsBySeries.push(counts);
-                            for (const c of counts) maxC = Math.max(maxC, c);
-                        }}
-                        const dx = bins > 1 ? (barW / (bins - 1)) : 0;
-                        for (let si = 0; si < countsBySeries.length; si++) {{
-                            const counts = countsBySeries[si];
-                            const col = seriesColors[si] || fill;
-                            ctx.beginPath();
-                            for (let i = 0; i < bins; i++) {{
-                                const x = padX + i * dx;
-                                const yNorm = counts[i] / maxC;
-                                const y = padY + (1 - yNorm) * barH;
-                                if (i === 0) ctx.moveTo(x, y);
-                                else ctx.lineTo(x, y);
-                            }}
-                            ctx.lineTo(padX + barW, padY + barH);
-                            ctx.lineTo(padX, padY + barH);
-                            ctx.closePath();
-                            ctx.fillStyle = toRgba(col, 0.14) || fillSoft;
-                            ctx.fill();
-                            ctx.strokeStyle = col;
-                            ctx.lineWidth = 1.2;
-                            ctx.stroke();
-                        }}
-                    }} else {{
-                        // Single-series histogram bars
-                        const counts = singleHist ? singleHist : computeHistogram((metric.sample || []).map(Number).filter(v => Number.isFinite(v)), lo, hi, bins);
-                        let maxC = 1;
-                        for (const c of counts) maxC = Math.max(maxC, c);
-
-                        const bw = barW / bins;
-                        const grad = ctx.createLinearGradient(0, padY, 0, padY + barH);
-                        grad.addColorStop(0, fill);
-                        grad.addColorStop(1, fillSoft);
-                        ctx.fillStyle = grad;
-                        for (let i = 0; i < bins; i++) {{
-                            const density = counts[i] / maxC;
-                            const hBar = density * barH;
-                            const x0 = padX + i * bw;
-                            const y0 = padY + (barH - hBar);
-                            ctx.fillRect(x0, y0, Math.max(1, bw - 1), hBar);
-                        }}
-                    }}
-
-                    // Border
-                    ctx.strokeStyle = border;
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(padX + 0.5, padY + 0.5, barW - 1, barH - 1);
-                }}
-
-                document.querySelectorAll('canvas.dist-canvas').forEach((c) => {{
-                    const key = c.dataset.key || '';
-                    const metric = metrics.get(key);
-                    if (metric) drawHistogram(c, metric);
-                }});
-            }})();
-            </script>
-            """
-
-        # Full HTML Template
-        return f"""<!doctype html>
-    <html lang="en">
-    <head>
-        <meta charset='utf-8'>
-        <title>Dataset Summary</title>
-        {style}
-    </head>
-    <body>
-        <div class="container">
-            <header>
-                <h1>Dataset Summary Report</h1>
-                <div class="subtitle">SOURCE: <strong>{data_file}</strong> &nbsp;&bull;&nbsp; MODEL: <strong>{model_file}</strong></div>
-            </header>
-
-            <div class="stats-grid">
-                <div class="card">
-                    <h2>Structure Overview</h2>
-                    <table>
-                        <tr><td class="stat-label">Original Count</td><td class="stat-val">{counts.get("orig_structures", 0)}</td></tr>
-                        <tr><td class="stat-label">Active Structures</td><td class="stat-val" style="color: var(--accent-green);">{counts.get("active_structures", 0)}</td></tr>
-                        <tr><td class="stat-label">Removed / Selected</td><td class="stat-val">{counts.get("removed_structures", 0)} / {counts.get("selected_structures", 0)}</td></tr>
-                        <tr><td class="stat-label">Total Atoms (Active)</td><td class="stat-val">{atoms.get("total_atoms_active", 0):,}</td></tr>
-                        {energy_rows}
-                        {force_rms_rows}
-                    </table>
-                </div>
-
-                <div class="card">
-                    <h2>Atoms per Structure</h2>
-                    <table>
-                        <tr><td class="stat-label">Minimum</td><td class="stat-val">{atoms.get("min_atoms", 0)}</td></tr>
-                        <tr><td class="stat-label">Maximum</td><td class="stat-val">{atoms.get("max_atoms", 0)}</td></tr>
-                        <tr><td class="stat-label">Mean Value</td><td class="stat-val" style="font-size: 1.1em; color: var(--primary);">{atoms.get("mean_atoms", 0.0):.1f}</td></tr>
-                        <tr><td class="stat-label">Median Value</td><td class="stat-val">{atoms.get("median_atoms", 0.0):.1f}</td></tr>
-                    </table>
-                </div>
-            </div>
-
-            {dist_block}
-
-            <div class="card" style="margin-bottom: 30px;">
-                <h2>Elemental Composition</h2>
-                <table>
-                    <thead><tr><th>Element</th><th>Atoms</th><th>Structures</th><th>Distribution (%)</th></tr></thead>
-                    <tbody>{"".join(el_rows)}</tbody>
-                </table>
-            </div>
-
-            <div class="card">
-                <h2>{group_section_title}</h2>
-                <div class="scroll-area">
-                    <table>
-                        <thead><tr><th>{group_label}</th><th>Count</th><th>Fraction</th></tr></thead>
-                        <tbody>{"".join(cfg_rows)}</tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </body>
-    </html>"""
-
-
-class DistributionInspectorMessageBox(QDialog):
-    """Dialog for inspecting distributions of numeric dataset/atomic fields."""
-
-    _ALL_SERIES_KEY = "__all__"
-
-    def __init__(
-        self,
-        parent=None,
-        data=None,
-        run_analysis_callback=None,
-        apply_selection_callback=None,
-        canvas_type: str | None = None,
-    ):
-        super().__init__(parent)
-        self._data = data
-        self._run_analysis_callback = run_analysis_callback
-        self._apply_selection_callback = apply_selection_callback
-        self._analysis: dict[str, Any] = {}
-        self._field_specs: list[Any] = []
-        self._field_by_key: dict[str, Any] = {}
-        self._metric_by_key: dict[str, dict[str, Any]] = {}
-        self._canvas_type = str(canvas_type or Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)).strip()
-        self._plot_adapter, self._vispy_fallback_warned = create_distribution_plot_adapter(self._canvas_type, self)
-        self.setWindowTitle("Distribution Inspector")
-
-        self.setWindowIcon(QIcon(":/images/src/images/distribution_inspector.svg"))
-
-        root_layout = QVBoxLayout(self)
-        root_layout.setContentsMargins(8, 8, 8, 8)
-        root_layout.setSpacing(8)
-        self.setLayout(root_layout)
-
-        control_frame = QFrame(self)
-        control_layout = QGridLayout(control_frame)
-        control_layout.setContentsMargins(0, 0, 0, 0)
-        control_layout.setSpacing(6)
-
-        self.fieldCombo = EditableComboBox(self)
-        self.groupCombo = ComboBox(self)
-        self.groupCombo.addItem("Formula", userData=DistributionGroupMode.FORMULA.value)
-        self.groupCombo.addItem("Element", userData=DistributionGroupMode.ELEMENT.value)
-        self.groupCombo.setCurrentIndex(1)
-
-        self.scopeCombo = ComboBox(self)
-        self.scopeCombo.addItem("Active", userData=DistributionScope.ACTIVE.value)
-        self.scopeCombo.addItem("Selected", userData=DistributionScope.SELECTED.value)
-        self.scopeCombo.setCurrentIndex(0)
-
-        self.viewCombo = ComboBox(self)
-        self.viewCombo.addItem("Reference", userData=DistributionValueView.REFERENCE.value)
-        self.viewCombo.addItem("Prediction", userData=DistributionValueView.PREDICTION.value)
-        self.viewCombo.addItem("Error", userData=DistributionValueView.ERROR.value)
-        self.viewCombo.setCurrentIndex(0)
-
-        self.curveCombo = ComboBox(self)
-        self.curveCombo.addItem("KDE", userData=DistributionCurveStyle.KDE.value)
-        self.curveCombo.addItem("Normal", userData=DistributionCurveStyle.NORMAL.value)
-        self.curveCombo.addItem("None", userData=DistributionCurveStyle.NONE.value)
-        self.curveCombo.setCurrentIndex(0)
-
-        self.selectModeCombo = ComboBox(self)
-        self.selectModeCombo.addItem("Replace", userData=DistributionSelectMode.REPLACE.value)
-        self.selectModeCombo.addItem("Add", userData=DistributionSelectMode.ADD.value)
-        self.selectModeCombo.addItem("Intersect", userData=DistributionSelectMode.INTERSECT.value)
-
-        self.binsSpin = SpinBox(self)
-        self.binsSpin.setRange(2, 2000)
-        self.binsSpin.setValue(120)
-
-        self.includeNormCheck = CheckBox("Include norm", self)
-        self.includeNormCheck.setChecked(True)
-
-        self.analyzeButton = PrimaryPushButton("Analyze", self)
-        self.analyzeButton.clicked.connect(self._run_analysis)
-
-        control_layout.addWidget(CaptionLabel("Field", self), 0, 0)
-        control_layout.addWidget(self.fieldCombo, 0, 1, 1, 3)
-        control_layout.addWidget(CaptionLabel("Group", self), 1, 0)
-        control_layout.addWidget(self.groupCombo, 1, 1)
-        control_layout.addWidget(CaptionLabel("Scope", self), 1, 2)
-        control_layout.addWidget(self.scopeCombo, 1, 3)
-        control_layout.addWidget(CaptionLabel("View", self), 2, 0)
-        control_layout.addWidget(self.viewCombo, 2, 1)
-        control_layout.addWidget(CaptionLabel("Select mode", self), 2, 2)
-        control_layout.addWidget(self.selectModeCombo, 2, 3)
-        control_layout.addWidget(CaptionLabel("Bins", self), 3, 0)
-        control_layout.addWidget(self.binsSpin, 3, 1)
-        control_layout.addWidget(CaptionLabel("Curve", self), 3, 2)
-        control_layout.addWidget(self.curveCombo, 3, 3)
-        control_layout.addWidget(self.includeNormCheck, 4, 2)
-        control_layout.addWidget(self.analyzeButton, 4, 3)
-
-        root_layout.addWidget(control_frame)
-
-        result_frame = QFrame(self)
-        result_layout = QGridLayout(result_frame)
-        result_layout.setContentsMargins(0, 0, 0, 0)
-        result_layout.setSpacing(6)
-
-        self.metricCombo = ComboBox(self)
-        self.seriesCombo = ComboBox(self)
-        self.metricCombo.currentIndexChanged.connect(self._refresh_series_combo)
-        self.seriesCombo.currentIndexChanged.connect(self._refresh_plot)
-
-        result_layout.addWidget(CaptionLabel("Metric", self), 0, 0)
-        result_layout.addWidget(self.metricCombo, 0, 1)
-        result_layout.addWidget(CaptionLabel("Series", self), 0, 2)
-        result_layout.addWidget(self.seriesCombo, 0, 3)
-
-        self.plotHintLabel = CaptionLabel("", self)
-        self.plotHintLabel.setWordWrap(True)
-        result_layout.addWidget(self.plotHintLabel, 1, 0, 1, 4)
-        result_layout.addWidget(self._plot_adapter.widget(), 2, 0, 1, 4)
-
-        self.statusLabel = CaptionLabel("", self)
-        self.statusLabel.setWordWrap(True)
-        result_layout.addWidget(self.statusLabel, 3, 0, 1, 4)
-
-        root_layout.addWidget(result_frame)
-
-        self.scopeCombo.currentIndexChanged.connect(self._reload_fields)
-        self.setWindowFlag(Qt.WindowType.Tool, True)
-        self.setWindowFlag(Qt.WindowType.NoDropShadowWindowHint, True)
-        self.setWindowModality(Qt.WindowModality.NonModal)
-        self.setModal(False)
-        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
-        self.setMinimumWidth(720)
-        self.setMaximumWidth(840)
-        self.resize(780, 620)
-        self._plot_adapter.set_bin_click_callback(self._select_bin)
-
-        self._reload_fields()
-
-    def _selected_scope(self) -> str:
-        data = self.scopeCombo.currentData()
-        return str(data) if data else DistributionScope.ACTIVE.value
-
-    def _reload_fields(self) -> None:
-        self.fieldCombo.clear()
-        self._field_specs = []
-        self._field_by_key.clear()
-        if self._vispy_fallback_warned:
-            self.plotHintLabel.setText(
-                "Current canvas backend is vispy, but vispy plot failed to initialize; fallback to pyqtgraph."
-            )
-        else:
-            self.plotHintLabel.setText("")
-
-        if self._data is None or not hasattr(self._data, "discover_atomic_numeric_fields"):
-            self.statusLabel.setText("Dataset does not support distribution analysis.")
-            return
-
-        try:
-            specs = self._data.discover_atomic_numeric_fields(scope=self._selected_scope())
-        except Exception:  # noqa: BLE001
-            specs = []
-        self._field_specs = list(specs or [])
-
-        for spec in self._field_specs:
-            key = str(getattr(spec, "key", "") or "")
-            if not key:
-                continue
-            source = str(getattr(spec, "source", ""))
-            label = str(getattr(spec, "label", key) or key)
-            shape = getattr(spec, "shape", None)
-            shape_text = shape.value if hasattr(shape, "value") else str(shape or "")
-            unit = str(getattr(spec, "unit_guess", "unknown") or "unknown")
-            display = f"[{source}] {label} ({shape_text}, unit={unit})"
-            self.fieldCombo.addItem(display, userData=key)
-            self._field_by_key[key] = spec
-
-        if self.fieldCombo.count() == 0:
-            self.statusLabel.setText("No numeric fields found in current scope.")
-        else:
-            self.statusLabel.setText(f"{self.fieldCombo.count()} fields ready. Click Analyze.")
-
-    def _current_field_key(self) -> str:
-        data = self.fieldCombo.currentData()
-        if data:
-            return str(data)
-        text = self.fieldCombo.currentText().strip()
-        for i in range(self.fieldCombo.count()):
-            if text == self.fieldCombo.itemText(i):
-                return str(self.fieldCombo.itemData(i) or "")
-        return ""
-
-    def _run_analysis(self) -> None:
-        field_key = self._current_field_key()
-        if not field_key:
-            self.statusLabel.setText("Please select a field.")
-            return
-        if self._run_analysis_callback is None:
-            self.statusLabel.setText("Analyze callback is unavailable.")
-            return
-
-        req = DistributionRequest(
-            field_keys=(field_key,),
-            include_norm=bool(self.includeNormCheck.isChecked()),
-            value_view=DistributionValueView(
-                str(self.viewCombo.currentData() or DistributionValueView.REFERENCE.value)
-            ),
-            group_mode=DistributionGroupMode(str(self.groupCombo.currentData() or DistributionGroupMode.ELEMENT.value)),
-            scope=DistributionScope(str(self.scopeCombo.currentData() or DistributionScope.ACTIVE.value)),
-            bins=int(self.binsSpin.value()),
-            select_mode=DistributionSelectMode(
-                str(self.selectModeCombo.currentData() or DistributionSelectMode.REPLACE.value)
-            ),
-            groups=(),
-            curve_style=DistributionCurveStyle(str(self.curveCombo.currentData() or DistributionCurveStyle.KDE.value)),
-            curve_points=240,
-        )
-        try:
-            analysis = self._run_analysis_callback(req)
-        except Exception:  # noqa: BLE001
-            analysis = {}
-
-        self._analysis = dict(analysis or {})
-        self._metric_by_key.clear()
-        self.metricCombo.clear()
-        self.seriesCombo.clear()
-        self._plot_adapter.clear()
-
-        metrics = self._analysis.get("metrics", []) or []
-        for metric in metrics:
-            m_key = str(metric.get("metric_key", "") or "")
-            if not m_key:
-                continue
-            self._metric_by_key[m_key] = metric
-            label = (
-                f"{metric.get('field_label', metric.get('field_key', ''))}"
-                f" :: {metric.get('component', '')}"
-                f" [{metric.get('value_view', 'reference')}]"
-            )
-            self.metricCombo.addItem(label, userData=m_key)
-
-        msgs = self._analysis.get("messages", []) or []
-        if self.metricCombo.count() == 0:
-            base = "No metrics produced for current request."
-            if msgs:
-                base += f" {msgs[0]}"
-            self.statusLabel.setText(base)
-            return
-
-        self._refresh_series_combo()
-        status = f"{self.metricCombo.count()} metrics generated."
-        if msgs:
-            status += f" {msgs[0]}"
-        self.statusLabel.setText(status)
-
-    def _current_metric(self) -> dict[str, Any] | None:
-        m_key = str(self.metricCombo.currentData() or "")
-        if not m_key:
-            return None
-        return self._metric_by_key.get(m_key)
-
-    def _current_series(self, metric: dict[str, Any] | None) -> dict[str, Any] | None:
-        if metric is None:
-            return None
-        s_key = str(self.seriesCombo.currentData() or "")
-        if not s_key:
-            return None
-        if s_key == self._ALL_SERIES_KEY:
-            return {"series_key": self._ALL_SERIES_KEY, "name": "All groups"}
-        for item in metric.get("series", []) or []:
-            if str(item.get("series_key", item.get("name", "")) or "") == s_key:
-                return item
-        return None
-
-    def _refresh_series_combo(self) -> None:
-        self.seriesCombo.clear()
-        metric = self._current_metric()
-        if metric is None:
-            self._plot_adapter.clear()
-            return
-        series = metric.get("series", []) or []
-        if len(series) > 1:
-            self.seriesCombo.addItem("All groups (overlay)", userData=self._ALL_SERIES_KEY)
-        for item in series:
-            s_key = str(item.get("series_key", item.get("name", "")) or "")
-            name = str(item.get("name", s_key))
-            self.seriesCombo.addItem(name, userData=s_key)
-        self._refresh_plot()
-
-    def _refresh_plot(self) -> None:
-        metric = self._current_metric()
-        series = self._current_series(metric)
-        self._plot_adapter.set_payload(metric, series)
-
-    def _select_bin(self, bin_index: int) -> None:
-        if self._data is None or self._apply_selection_callback is None:
-            return
-        metric = self._current_metric()
-        if metric is None:
-            return
-        analysis_id = int(self._analysis.get("analysis_id", 0) or 0)
-        if analysis_id <= 0:
-            return
-        metric_key = str(metric.get("metric_key", "") or "")
-        series_key = str(self.seriesCombo.currentData() or "")
-        if not metric_key or not series_key:
-            return
-
-        indices: list[int] = []
-        sample_count = 0
-        if series_key == self._ALL_SERIES_KEY:
-            merged: set[int] = set()
-            for item in metric.get("series", []) or []:
-                s_key = str(item.get("series_key", item.get("name", "")) or "")
-                if not s_key:
-                    continue
-                hist = list(item.get("hist", []) or [])
-                if 0 <= int(bin_index) < len(hist):
-                    sample_count += int(hist[int(bin_index)] or 0)
-                try:
-                    vals = self._data.resolve_distribution_bin_indices(analysis_id, metric_key, s_key, int(bin_index))
-                except Exception:  # noqa: BLE001
-                    vals = []
-                merged.update(int(i) for i in vals)
-            indices = sorted(merged)
-        else:
-            try:
-                indices = self._data.resolve_distribution_bin_indices(
-                    analysis_id, metric_key, series_key, int(bin_index)
-                )
-            except Exception:  # noqa: BLE001
-                indices = []
-            series = self._current_series(metric)
-            if series is not None:
-                hist = list(series.get("hist", []) or [])
-                if 0 <= int(bin_index) < len(hist):
-                    sample_count = int(hist[int(bin_index)] or 0)
-
-        mode = str(self.selectModeCombo.currentData() or DistributionSelectMode.REPLACE.value)
-        self._apply_selection_callback(list(indices), mode)
-        series_label = "all groups" if series_key == self._ALL_SERIES_KEY else series_key
-        self.statusLabel.setText(
-            f"Applied bin {bin_index} ({series_label}): {sample_count} samples -> {len(indices)} structures, mode='{mode}'."
-        )
 
 
 class GetStrMessageBox(MessageBoxBase):
@@ -1183,30 +192,46 @@ class SparseMessageBox(MessageBoxBase):
         self.doubleSpinBox.setMinimum(0)
         self.doubleSpinBox.setMaximum(10)
 
+        self.strategyCombo = ComboBox(self)
+        self.strategyCombo.addItem(self.tr("Global FPS (compatible)"), userData="global")
+        self.strategyCombo.addItem(
+            self.tr("Element-set balanced FPS"),
+            userData="element_set",
+        )
+        self.strategyHint = CaptionLabel("", self)
+        self.strategyHint.setWordWrap(True)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Selection strategy"), self), 0, 0, 1, 1)
+        self.frame_layout.addWidget(self.strategyCombo, 0, 1, 1, 2)
+        self.frame_layout.addWidget(self.strategyHint, 1, 1, 1, 2)
+
         self.modeCombo = ComboBox(self)
-        self.modeCombo.addItems(["Fixed count (FPS)", "R^2 stop (FPS)"])
-        self.frame_layout.addWidget(CaptionLabel("Sampling mode", self), 0, 0, 1, 1)
-        self.frame_layout.addWidget(self.modeCombo, 0, 1, 1, 2)
+        self.modeCombo.addItem(self.tr("Fixed count (FPS)"), userData="count")
+        self.modeCombo.addItem(self.tr("R^2 stop (FPS)"), userData="r2")
+        self.modeLabel = CaptionLabel(self.tr("Sampling mode"), self)
+        self.frame_layout.addWidget(self.modeLabel, 2, 0, 1, 1)
+        self.frame_layout.addWidget(self.modeCombo, 2, 1, 1, 2)
 
-        self.maxNumLabel = CaptionLabel("Sample limit", self)
-        self.frame_layout.addWidget(self.maxNumLabel, 1, 0, 1, 1)
-        self.frame_layout.addWidget(self.intSpinBox, 1, 1, 1, 2)
-        self.frame_layout.addWidget(CaptionLabel("Min distance", self), 2, 0, 1, 1)
+        self.maxNumLabel = CaptionLabel(self.tr("Sample limit"), self)
+        self.frame_layout.addWidget(self.maxNumLabel, 3, 0, 1, 1)
+        self.frame_layout.addWidget(self.intSpinBox, 3, 1, 1, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Min distance"), self), 4, 0, 1, 1)
 
-        self.frame_layout.addWidget(self.doubleSpinBox, 2, 1, 1, 2)
+        self.frame_layout.addWidget(self.doubleSpinBox, 4, 1, 1, 2)
 
-        self.r2Label = CaptionLabel("R^2 threshold", self)
+        self.r2Label = CaptionLabel(self.tr("R^2 threshold"), self)
         self.r2SpinBox = DoubleSpinBox(self)
         self.r2SpinBox.setDecimals(4)
         self.r2SpinBox.setRange(0.0, 1.0)
         self.r2SpinBox.setSingleStep(0.01)
-        self.frame_layout.addWidget(self.r2Label, 3, 0, 1, 1)
-        self.frame_layout.addWidget(self.r2SpinBox, 3, 1, 1, 2)
+        self.frame_layout.addWidget(self.r2Label, 5, 0, 1, 1)
+        self.frame_layout.addWidget(self.r2SpinBox, 5, 1, 1, 2)
 
         self.descriptorCombo = ComboBox(self)
-        self.descriptorCombo.addItems(["Reduced (PCA)", "Raw descriptor"])
-        self.frame_layout.addWidget(CaptionLabel("Descriptor source", self), 4, 0, 1, 1)
-        self.frame_layout.addWidget(self.descriptorCombo, 4, 1, 1, 2)
+        self.descriptorCombo.addItem(self.tr("Reduced (PCA)"), userData="reduced")
+        self.descriptorCombo.addItem(self.tr("Raw descriptor"), userData="raw")
+        self.descriptorLabel = CaptionLabel(self.tr("Descriptor source"), self)
+        self.frame_layout.addWidget(self.descriptorLabel, 6, 0, 1, 1)
+        self.frame_layout.addWidget(self.descriptorCombo, 6, 1, 1, 2)
 
         self.advancedFrame = QFrame(self)
         self.advancedFrame.setVisible(False)
@@ -1215,7 +240,7 @@ class SparseMessageBox(MessageBoxBase):
         self.advancedLayout.setSpacing(4)
 
         self.trainingPathEdit = LineEdit(self)
-        self.trainingPathEdit.setPlaceholderText("Optional training dataset path (.xyz or folder)")
+        self.trainingPathEdit.setPlaceholderText(self.tr("Optional training dataset path (.xyz or folder)"))
         self.trainingPathEdit.setClearButtonEnabled(True)
         trainingPathWidget = QWidget(self)
         trainingPathLayout = QHBoxLayout(trainingPathWidget)
@@ -1225,22 +250,25 @@ class SparseMessageBox(MessageBoxBase):
         self.trainingBrowseButton = TransparentToolButton(FluentIcon.FOLDER_ADD, trainingPathWidget)
         trainingPathLayout.addWidget(self.trainingBrowseButton, 0)
         self.trainingBrowseButton.clicked.connect(self._pick_training_path)
-        self.trainingBrowseButton.setToolTip("Browse for an existing training dataset")
+        self.trainingBrowseButton.setToolTip(self.tr("Browse for an existing training dataset"))
+        self.trainingBrowseButton.setAccessibleName(
+            self.tr("Browse for an existing training dataset")
+        )
 
-        self.advancedLayout.addWidget(CaptionLabel("Training dataset", self), 1, 0)
+        self.advancedLayout.addWidget(CaptionLabel(self.tr("Training dataset"), self), 1, 0)
         self.advancedLayout.addWidget(trainingPathWidget, 1, 1)
 
         # region option: use current selection as FPS region
-        self.regionCheck = CheckBox("Use current selection as region", self)
+        self.regionCheck = CheckBox(self.tr("Use current selection as region"), self)
         self.regionCheck.setToolTip(
-            "When FPS sampling is performed in the designated area, the program will automatically deselect it, just click to delete!"
+            self.tr("When FPS sampling is performed in the selected region, the program will automatically deselect it so you can delete it directly.")
         )
         self.regionCheck.installEventFilter(ToolTipFilter(self.regionCheck, 300, ToolTipPosition.TOP))
 
         # training overlay option
-        self.trainingOverlayCheck = CheckBox("Show training overlay", self)
+        self.trainingOverlayCheck = CheckBox(self.tr("Show training overlay"), self)
         self.trainingOverlayCheck.setToolTip(
-            "Display a scatter plot showing training data, loaded data, and selected structures in PCA space after sampling."
+            self.tr("Display a scatter plot showing training data, loaded data, and selected structures in PCA space after sampling.")
         )
         self.trainingOverlayCheck.installEventFilter(ToolTipFilter(self.trainingOverlayCheck, 300, ToolTipPosition.TOP))
 
@@ -1250,34 +278,66 @@ class SparseMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.regionCheck)
         self.viewLayout.addWidget(self.trainingOverlayCheck)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
 
-        self.widget.setMinimumWidth(200)
+        self.widget.setMinimumWidth(420)
         self.advancedFrame.setVisible(True)
+        self._balanced_strategy_active = False
         self.modeCombo.currentIndexChanged.connect(self._update_mode_visibility)
-        self._update_mode_visibility()
+        self.strategyCombo.currentIndexChanged.connect(self._update_strategy_visibility)
+        self._update_strategy_visibility()
 
     def _pick_training_path(self):
         """Prompt the user to choose a training dataset path."""
         path = call_path_dialog(
             self,
-            "Select training dataset",
+            self.tr("Select training dataset"),
             "select",
             file_filter="XYZ files (*.xyz);;All files (*.*)",
         )
         if not path:
-            path = call_path_dialog(self, "Select training dataset folder", "directory")
+            path = call_path_dialog(self, self.tr("Select training dataset folder"), "directory")
         if path:
             self.trainingPathEdit.setText(path)
 
     def _update_mode_visibility(self):
         """Toggle UI elements based on sampling mode selection."""
-        r2_mode = self.modeCombo.currentIndex() == 1
+        balanced = self.strategyCombo.currentData() == "element_set"
+        r2_mode = not balanced and self.modeCombo.currentData() == "r2"
         self.maxNumLabel.setVisible(True)
         self.intSpinBox.setVisible(True)
         self.r2Label.setVisible(r2_mode)
         self.r2SpinBox.setVisible(r2_mode)
+
+    def _update_strategy_visibility(self):
+        """Keep balanced FPS on the validated raw, fixed-count workflow."""
+        balanced = self.strategyCombo.currentData() == "element_set"
+        if balanced and not self._balanced_strategy_active:
+            self._global_mode_index = self.modeCombo.currentIndex()
+            self._global_descriptor_index = self.descriptorCombo.currentIndex()
+        elif not balanced and self._balanced_strategy_active:
+            self.modeCombo.setCurrentIndex(getattr(self, "_global_mode_index", 0))
+            self.descriptorCombo.setCurrentIndex(
+                getattr(self, "_global_descriptor_index", 0)
+            )
+
+        self._balanced_strategy_active = balanced
+        if balanced:
+            self.modeCombo.setCurrentIndex(self.modeCombo.findData("count"))
+            self.descriptorCombo.setCurrentIndex(self.descriptorCombo.findData("raw"))
+            self.strategyHint.setText(
+                self.tr(
+                    "Groups by element set, assigns sqrt-size quotas, and uses raw descriptors."
+                )
+            )
+        else:
+            self.strategyHint.setText(
+                self.tr("Uses the existing global FPS behavior and descriptor options.")
+            )
+        self.modeCombo.setEnabled(not balanced)
+        self.descriptorCombo.setEnabled(not balanced)
+        self._update_mode_visibility()
 
 
 class IndexSelectMessageBox(MessageBoxBase):
@@ -1288,15 +348,15 @@ class IndexSelectMessageBox(MessageBoxBase):
         self.titleLabel = CaptionLabel(tip, self)
         self.titleLabel.setWordWrap(True)
         self.indexEdit = LineEdit(self)
-        self.checkBox = CheckBox("Use original indices", self)
+        self.checkBox = CheckBox(self.tr("Use original indices"), self)
         self.checkBox.setChecked(True)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.indexEdit)
         self.viewLayout.addWidget(self.checkBox)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(200)
 
 
@@ -1329,22 +389,22 @@ class RangeSelectMessageBox(MessageBoxBase):
         self.logicCombo = ComboBox(self)
         self.logicCombo.addItems(["AND", "OR"])
 
-        self.frame_layout.addWidget(CaptionLabel("X min", self), 0, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("X min"), self), 0, 0)
         self.frame_layout.addWidget(self.xMinSpin, 0, 1)
-        self.frame_layout.addWidget(CaptionLabel("X max", self), 0, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("X max"), self), 0, 2)
         self.frame_layout.addWidget(self.xMaxSpin, 0, 3)
-        self.frame_layout.addWidget(CaptionLabel("Y min", self), 1, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Y min"), self), 1, 0)
         self.frame_layout.addWidget(self.yMinSpin, 1, 1)
-        self.frame_layout.addWidget(CaptionLabel("Y max", self), 1, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Y max"), self), 1, 2)
         self.frame_layout.addWidget(self.yMaxSpin, 1, 3)
-        self.frame_layout.addWidget(CaptionLabel("Logic", self), 2, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Logic"), self), 2, 0)
         self.frame_layout.addWidget(self.logicCombo, 2, 1, 1, 3)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(300)
 
 
@@ -1394,42 +454,42 @@ class LatticeRangeSelectMessageBox(MessageBoxBase):
             spin.setRange(0, 1e6)
 
         # Lattice constants labels
-        self.frame_layout.addWidget(CaptionLabel("a min", self), 0, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("a min"), self), 0, 0)
         self.frame_layout.addWidget(self.aMinSpin, 0, 1)
-        self.frame_layout.addWidget(CaptionLabel("a max", self), 0, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("a max"), self), 0, 2)
         self.frame_layout.addWidget(self.aMaxSpin, 0, 3)
 
-        self.frame_layout.addWidget(CaptionLabel("b min", self), 1, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("b min"), self), 1, 0)
         self.frame_layout.addWidget(self.bMinSpin, 1, 1)
-        self.frame_layout.addWidget(CaptionLabel("b max", self), 1, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("b max"), self), 1, 2)
         self.frame_layout.addWidget(self.bMaxSpin, 1, 3)
 
-        self.frame_layout.addWidget(CaptionLabel("c min", self), 2, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("c min"), self), 2, 0)
         self.frame_layout.addWidget(self.cMinSpin, 2, 1)
-        self.frame_layout.addWidget(CaptionLabel("c max", self), 2, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("c max"), self), 2, 2)
         self.frame_layout.addWidget(self.cMaxSpin, 2, 3)
 
         # Lattice angles labels
-        self.frame_layout.addWidget(CaptionLabel("α min", self), 3, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("α min"), self), 3, 0)
         self.frame_layout.addWidget(self.alphaMinSpin, 3, 1)
-        self.frame_layout.addWidget(CaptionLabel("α max", self), 3, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("α max"), self), 3, 2)
         self.frame_layout.addWidget(self.alphaMaxSpin, 3, 3)
 
-        self.frame_layout.addWidget(CaptionLabel("β min", self), 4, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("β min"), self), 4, 0)
         self.frame_layout.addWidget(self.betaMinSpin, 4, 1)
-        self.frame_layout.addWidget(CaptionLabel("β max", self), 4, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("β max"), self), 4, 2)
         self.frame_layout.addWidget(self.betaMaxSpin, 4, 3)
 
-        self.frame_layout.addWidget(CaptionLabel("γ min", self), 5, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("γ min"), self), 5, 0)
         self.frame_layout.addWidget(self.gammaMinSpin, 5, 1)
-        self.frame_layout.addWidget(CaptionLabel("γ max", self), 5, 2)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("γ max"), self), 5, 2)
         self.frame_layout.addWidget(self.gammaMaxSpin, 5, 3)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(400)
 
 
@@ -1438,7 +498,7 @@ class ArrowMessageBox(MessageBoxBase):
 
     def __init__(self, parent=None, props=None):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel("Vector property", self)
+        self.titleLabel = CaptionLabel(self.tr("Vector property"), self)
         self.titleLabel.setWordWrap(True)
 
         self._frame = QFrame(self)
@@ -1458,29 +518,29 @@ class ArrowMessageBox(MessageBoxBase):
         self.colorCombo = ComboBox(self)
         self.colorCombo.addItems(["viridis", "magma", "plasma", "inferno", "jet"])
 
-        self.showCheck = CheckBox("Show arrows", self)
+        self.showCheck = CheckBox(self.tr("Show arrows"), self)
         self.showCheck.setChecked(True)
 
-        self.frame_layout.addWidget(CaptionLabel("Property", self), 0, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Property"), self), 0, 0)
         self.frame_layout.addWidget(self.propCombo, 0, 1)
-        self.frame_layout.addWidget(CaptionLabel("Scale", self), 1, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Scale"), self), 1, 0)
         self.frame_layout.addWidget(self.scaleSpin, 1, 1)
-        self.frame_layout.addWidget(CaptionLabel("Colormap", self), 2, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Colormap"), self), 2, 0)
         self.frame_layout.addWidget(self.colorCombo, 2, 1)
         self.frame_layout.addWidget(self.showCheck, 3, 0, 1, 2)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(250)
 
 
 class InputInfoMessageBox(MessageBoxBase):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel("new structure info", self)
+        self.titleLabel = CaptionLabel(self.tr("New structure info"), self)
         self.titleLabel.setWordWrap(True)
 
         self._frame = QFrame(self)
@@ -1490,15 +550,15 @@ class InputInfoMessageBox(MessageBoxBase):
 
         self.keyEdit = LineEdit(self)
         self.valueEdit = LineEdit(self)
-        self.frame_layout.addWidget(CaptionLabel("Key", self), 1, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Key"), self), 1, 0)
         self.frame_layout.addWidget(self.keyEdit, 1, 1, 1, 3)
-        self.frame_layout.addWidget(CaptionLabel("Value", self), 2, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Value"), self), 2, 0)
         self.frame_layout.addWidget(self.valueEdit, 2, 1, 1, 3)
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(100)
 
     def validate(self):
@@ -1506,8 +566,8 @@ class InputInfoMessageBox(MessageBoxBase):
             return True
         Flyout.create(
             icon=InfoBarIcon.INFORMATION,
-            title="Tip",
-            content="A valid value must be entered",
+            title=self.tr("Tip"),
+            content=self.tr("A valid value must be entered"),
             target=self.keyEdit,
             parent=self,
             isClosable=True,
@@ -1520,9 +580,9 @@ class EditInfoMessageBox(MessageBoxBase):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel("Edit info", self)
+        self.titleLabel = CaptionLabel(self.tr("Edit info"), self)
         self.titleLabel.setWordWrap(True)
-        self.new_tag_button = PrimaryPushButton(QIcon(":/images/src/images/copy_figure.svg"), "Add new tag", self)
+        self.new_tag_button = PrimaryPushButton(QIcon(":/images/src/images/copy_figure.svg"), self.tr("Add new tag"), self)
         self.new_tag_button.setMaximumWidth(200)
         self.new_tag_button.setObjectName("new_tag_button")
         self.new_tag_button.clicked.connect(self.new_tag)
@@ -1531,8 +591,8 @@ class EditInfoMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.new_tag_button)
 
         self.viewLayout.addWidget(self.tag_group)
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(600)
         self.remove_tag = set()
         self.new_tag_info = {}
@@ -1683,14 +743,14 @@ class EditInfoMessageBox(MessageBoxBase):
 class RenameTagMessageBox(MessageBoxBase):
     def __init__(self, old_name: str, parent=None):
         super().__init__(parent)
-        self.titleLabel = CaptionLabel(f"Rename tag: {old_name}", self)
+        self.titleLabel = CaptionLabel(self.tr("Rename tag: {name}").format(name=old_name), self)
         self.titleLabel.setWordWrap(True)
         self.nameEdit = LineEdit(self)
         self.nameEdit.setText(old_name)
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.nameEdit)
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(320)
 
     def validate(self):
@@ -1698,8 +758,8 @@ class RenameTagMessageBox(MessageBoxBase):
             return True
         Flyout.create(
             icon=InfoBarIcon.INFORMATION,
-            title="Tip",
-            content="A valid value must be entered",
+            title=self.tr("Tip"),
+            content=self.tr("A valid value must be entered"),
             target=self.nameEdit,
             parent=self,
             isClosable=True,
@@ -1724,7 +784,11 @@ class ShiftEnergyDialogValues:
 class ShiftEnergyMessageBox(MessageBoxBase):
     """Dialog for energy baseline shift parameters."""
 
-    def __init__(self, parent=None, tip="Group regex patterns (comma separated)"):
+    def __init__(
+        self,
+        parent=None,
+        tip="Use .* for one shared baseline; separate different Config_type baseline groups with semicolons.",
+    ):
         super().__init__(parent)
         self._preset_placeholder = "None"
         self.titleLabel = CaptionLabel(tip, self)
@@ -1735,7 +799,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.importButton = TransparentToolButton(FluentIcon.FOLDER_ADD, self)
         self.exportButton = TransparentToolButton(FluentIcon.SAVE, self)
         self.deleteButton = TransparentToolButton(FluentIcon.DELETE, self)
-        self.deleteButton.setToolTip("Delete selected preset")
+        self.deleteButton.setToolTip(self.tr("Delete selected preset"))
         self.deleteButton.installEventFilter(ToolTipFilter(self.deleteButton, 300, ToolTipPosition.TOP))
         preset_row = QHBoxLayout()
         preset_row.setContentsMargins(0, 0, 0, 0)
@@ -1744,9 +808,9 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         preset_row.addWidget(self.importButton, 0)
         preset_row.addWidget(self.exportButton, 0)
         preset_row.addWidget(self.deleteButton, 0)
-        self.savePresetCheck = CheckBox("Save baseline as preset", self)
+        self.savePresetCheck = CheckBox(self.tr("Save baseline as preset"), self)
         self.presetNameEdit = LineEdit(self)
-        self.presetNameEdit.setPlaceholderText("Preset name")
+        self.presetNameEdit.setPlaceholderText(self.tr("Preset name"))
         self.presetNameEdit.setEnabled(False)
         self.savePresetCheck.toggled.connect(self.presetNameEdit.setEnabled)
 
@@ -1763,27 +827,23 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.tolSpinBox.setDecimals(10)
         self.tolSpinBox.setMinimum(0)
         self.modeCombo = ComboBox(self)
-        self.modeCombo.addItems(
-            [
-                "REF_GROUP",
-                "ZERO_BASELINE",
-                "DFT_TO_NEP",
-            ]
-        )
-        self.modeCombo.setCurrentText("DFT_TO_NEP")
+        self.modeCombo.addItem(self.tr("Reference group"), userData="REF_GROUP")
+        self.modeCombo.addItem(self.tr("Zero baseline"), userData="ZERO_BASELINE")
+        self.modeCombo.addItem(self.tr("DFT to NEP"), userData="DFT_TO_NEP")
+        self._set_alignment_mode("DFT_TO_NEP")
 
-        self.frame_layout.addWidget(CaptionLabel("Max generations", self), 0, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Max generations"), self), 0, 0)
         self.frame_layout.addWidget(self.genSpinBox, 0, 1)
-        self.frame_layout.addWidget(CaptionLabel("Population size", self), 1, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Population size"), self), 1, 0)
         self.frame_layout.addWidget(self.sizeSpinBox, 1, 1)
-        self.frame_layout.addWidget(CaptionLabel("Convergence tol", self), 2, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Convergence tolerance"), self), 2, 0)
         self.frame_layout.addWidget(self.tolSpinBox, 2, 1)
         self.frame_layout.addWidget(
             HyperlinkLabel(
                 QUrl(
                     "https://github.com/brucefan1983/GPUMD/tree/master/tools/Analysis_and_Processing/energy-reference-aligner"
                 ),
-                "Alignment mode",
+                self.tr("Alignment mode"),
                 self,
             ),
             3,
@@ -1792,7 +852,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.frame_layout.addWidget(self.modeCombo, 3, 1)
 
         self.viewLayout.addWidget(self.titleLabel)
-        self.viewLayout.addWidget(CaptionLabel("Use existing preset (optional)", self))
+        self.viewLayout.addWidget(CaptionLabel(self.tr("Use existing preset (optional)"), self))
         self.viewLayout.addLayout(preset_row)
         save_row = QHBoxLayout()
         save_row.setContentsMargins(0, 0, 0, 0)
@@ -1803,9 +863,20 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.viewLayout.addWidget(self.groupEdit)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(250)
+
+    def _set_alignment_mode(self, mode: str) -> None:
+        for index in range(self.modeCombo.count()):
+            if self.modeCombo.itemData(index) == mode:
+                self.modeCombo.setCurrentIndex(index)
+                return
+        self.modeCombo.setCurrentIndex(2)
+
+    def _alignment_mode(self) -> str:
+        value = self.modeCombo.currentData()
+        return str(value) if value else "DFT_TO_NEP"
 
     def set_defaults(
         self,
@@ -1844,7 +915,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
         self.groupEdit.setText(";".join(patterns) if patterns else fallback)
         mode = getattr(preset, "alignment_mode", "")
         if mode:
-            self.modeCombo.setCurrentText(str(mode))
+            self._set_alignment_mode(str(mode))
         optimizer = dict(getattr(preset, "optimizer", {}) or {})
         try:
             if "max_generations" in optimizer:
@@ -1865,7 +936,7 @@ class ShiftEnergyMessageBox(MessageBoxBase):
             selected_preset_name = ""
         return ShiftEnergyDialogValues(
             group_patterns=group_patterns,
-            alignment_mode=self.modeCombo.currentText(),
+            alignment_mode=self._alignment_mode(),
             max_generations=int(self.genSpinBox.value()),
             population_size=int(self.sizeSpinBox.value()),
             convergence_tol=float(self.tolSpinBox.value()),
@@ -1891,7 +962,7 @@ class ProgressDialog(FramelessDialog):
         self.progressBar.setValue(0)
         self.__layout.addWidget(self.progressBar)
         self.setLayout(self.__layout)
-        self.__thread = LoadingThread(self, show_tip=False)
+        self.__thread = BackgroundTask(self, show_tip=False)
         self.__thread.finished.connect(self.close)
 
         self.__thread.progressSignal.connect(self.progressBar.setValue)
@@ -1912,8 +983,8 @@ class PeriodicTableDialog(FramelessDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setTitleBar(FluentTitleBar(self))
-        self.setWindowTitle("Periodic Table")
-        self.setWindowIcon(QIcon(":/images/src/images/logo.svg"))
+        self.setWindowTitle(self.tr("Periodic table"))
+        self.setWindowIcon(QIcon(":/images/src/images/logo.png"))
         self.resize(400, 350)
 
         with open(module_path / "Config/ptable.json", "r", encoding="utf-8") as f:
@@ -1984,7 +1055,7 @@ class DFTD3MessageBox(MessageBoxBase):
         self.titleLabel = CaptionLabel(tip, self)
         self.titleLabel.setWordWrap(True)
         self.functionEdit = EditableComboBox(self)
-        self.functionEdit.setPlaceholderText("dft d3 functional")
+        self.functionEdit.setPlaceholderText(self.tr("DFT D3 functional"))
         functionals = [
             "b1b95",
             "b2gpplyp",
@@ -2055,31 +1126,24 @@ class DFTD3MessageBox(MessageBoxBase):
         self.d1cnSpinBox.setMaximum(999999)
 
         self.modeCombo = ComboBox(self)
-        self.modeCombo.addItems(
-            [
-                # "NEP Only",
-                # "DFT-D3 only",
-                # "NEP with DFT-D3",
-                "Add DFT-D3",
-                "Subtract DFT-D3",
-            ]
-        )
-        self.modeCombo.setCurrentText("NEP Only")
+        self.modeCombo.addItem(self.tr("Add DFT-D3"))
+        self.modeCombo.addItem(self.tr("Subtract DFT-D3"))
+        self.modeCombo.setCurrentIndex(0)
 
-        self.frame_layout.addWidget(CaptionLabel("D3 cutoff ", self), 0, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("D3 cutoff"), self), 0, 0)
         self.frame_layout.addWidget(self.d1SpinBox, 0, 1)
-        self.frame_layout.addWidget(CaptionLabel("D3 cutoff _cn ", self), 1, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("D3 cutoff _cn"), self), 1, 0)
         self.frame_layout.addWidget(self.d1cnSpinBox, 1, 1)
 
-        self.frame_layout.addWidget(CaptionLabel("Alignment mode", self), 3, 0)
+        self.frame_layout.addWidget(CaptionLabel(self.tr("Alignment mode"), self), 3, 0)
         self.frame_layout.addWidget(self.modeCombo, 3, 1)
 
         self.viewLayout.addWidget(self.titleLabel)
         self.viewLayout.addWidget(self.functionEdit)
         self.viewLayout.addWidget(self._frame)
 
-        self.yesButton.setText("Ok")
-        self.cancelButton.setText("Cancel")
+        self.yesButton.setText(self.tr("OK"))
+        self.cancelButton.setText(self.tr("Cancel"))
         self.widget.setMinimumWidth(250)
 
     def validate(self):
@@ -2100,18 +1164,18 @@ class ProjectInfoMessageBox(MessageBoxBase):
 
         self.parent_combox = ComboBox(self._widget)
         self.project_name = LineEdit(self._widget)
-        self.project_name.setPlaceholderText("The name of the project")
+        self.project_name.setPlaceholderText(self.tr("Project name"))
 
         self.project_note = TextEdit(self._widget)
         self.project_note.setMinimumSize(200, 100)
-        self.project_note.setPlaceholderText("Notes on the project")
-        self.widget_layout.addWidget(CaptionLabel("Parent", self), 0, 0)
+        self.project_note.setPlaceholderText(self.tr("Project notes"))
+        self.widget_layout.addWidget(CaptionLabel(self.tr("Parent"), self), 0, 0)
 
         self.widget_layout.addWidget(self.parent_combox, 0, 1)
 
-        self.widget_layout.addWidget(CaptionLabel("Project Name", self), 1, 0)
+        self.widget_layout.addWidget(CaptionLabel(self.tr("Project name"), self), 1, 0)
         self.widget_layout.addWidget(self.project_name, 1, 1)
-        self.widget_layout.addWidget(CaptionLabel("Project Note", self), 2, 0)
+        self.widget_layout.addWidget(CaptionLabel(self.tr("Project notes"), self), 2, 0)
         self.widget_layout.addWidget(self.project_note, 2, 1)
         self.viewLayout.addWidget(self._widget)
 
@@ -2137,7 +1201,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         tLayout = QHBoxLayout(titleBar)
         tLayout.setContentsMargins(0, 0, 0, 0)
         tLayout.setSpacing(0)
-        self.titleLabel = TitleLabel("Create / Edit Model", titleBar)
+        self.titleLabel = TitleLabel(self.tr("Create / edit model"), titleBar)
 
         self.titleLabel.setAlignment(Qt.AlignCenter)
         tLayout.addWidget(self.titleLabel)
@@ -2153,11 +1217,11 @@ class ModelInfoMessageBox(MessageBoxBase):
         self.model_type_combox = ComboBox(infoCard)
         self.model_type_combox.addItems(["NEP"])
         self.model_name_edit = LineEdit(infoCard)
-        self.model_name_edit.setPlaceholderText("The name of the model")
+        self.model_name_edit.setPlaceholderText(self.tr("Model name"))
 
-        info.addRow(CaptionLabel("Parent", self), self.parent_combox)
-        info.addRow(CaptionLabel("Type", self), self.model_type_combox)
-        info.addRow(CaptionLabel("Name", self), self.model_name_edit)
+        info.addRow(CaptionLabel(self.tr("Parent"), self), self.parent_combox)
+        info.addRow(CaptionLabel(self.tr("Type"), self), self.model_type_combox)
+        info.addRow(CaptionLabel(self.tr("Name"), self), self.model_name_edit)
 
         rmseCard = QFrame(self._widget)
         rmse = QGridLayout(rmseCard)
@@ -2165,7 +1229,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         rmse.setHorizontalSpacing(5)
         rmse.setVerticalSpacing(2)
 
-        titleRmse = CaptionLabel("RMSE (energy / force / virial)", self)
+        titleRmse = CaptionLabel(self.tr("RMSE (energy / force / virial)"), self)
         tf = titleRmse.font()
         tf.setBold(True)
         titleRmse.setFont(tf)
@@ -2185,15 +1249,15 @@ class ModelInfoMessageBox(MessageBoxBase):
         r = 0
         rmse.addWidget(titleRmse, r, 0, 1, 3)
         r += 1
-        rmse.addWidget(CaptionLabel("energy", self), r, 0)
+        rmse.addWidget(CaptionLabel(self.tr("energy"), self), r, 0)
         rmse.addWidget(self.energy_spinBox, r, 1)
         rmse.addWidget(CaptionLabel("meV/atom", self), r, 2)
         r += 1
-        rmse.addWidget(CaptionLabel("force", self), r, 0)
+        rmse.addWidget(CaptionLabel(self.tr("force"), self), r, 0)
         rmse.addWidget(self.force_spinBox, r, 1)
         rmse.addWidget(CaptionLabel("meV/Å", self), r, 2)
         r += 1
-        rmse.addWidget(CaptionLabel("virial", self), r, 0)
+        rmse.addWidget(CaptionLabel(self.tr("virial"), self), r, 0)
         rmse.addWidget(self.virial_spinBox, r, 1)
         rmse.addWidget(CaptionLabel("meV/atom", self), r, 2)
         r += 1
@@ -2217,7 +1281,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         h.setContentsMargins(0, 0, 0, 0)
         h.setSpacing(3)
         self.train_path_edit = LineEdit(structureRow)
-        self.train_path_edit.setPlaceholderText("model train path")
+        self.train_path_edit.setPlaceholderText(self.tr("Model training path"))
         self.train_path_edit.editingFinished.connect(self.check_path)
         browse = TransparentToolButton(FluentIcon.FOLDER_ADD, structureRow)
         browse.setFixedHeight(self.train_path_edit.sizeHint().height())
@@ -2225,7 +1289,7 @@ class ModelInfoMessageBox(MessageBoxBase):
         h.addWidget(self.train_path_edit, 1)
         h.addWidget(browse, 0)
 
-        path.addRow(CaptionLabel("Path", self), structureRow)
+        path.addRow(CaptionLabel(self.tr("Path"), self), structureRow)
 
         root.addWidget(pathCard)
 
@@ -2236,11 +1300,11 @@ class ModelInfoMessageBox(MessageBoxBase):
         tags.setVerticalSpacing(0)
 
         self.new_tag_edit = LineEdit(tagsCard)
-        self.new_tag_edit.setPlaceholderText("Enter the tag and press Enter")
+        self.new_tag_edit.setPlaceholderText(self.tr("Enter the tag and press Enter"))
         self.new_tag_edit.returnPressed.connect(lambda: self.add_tag(self.new_tag_edit.text()))
         self.tag_group = TagGroup(parent=self)
 
-        tags.addRow(CaptionLabel("Tags", self), self.new_tag_edit)
+        tags.addRow(CaptionLabel(self.tr("Tags"), self), self.new_tag_edit)
         tags.addRow(CaptionLabel(""), self.tag_group)  # 鐠?TagGroup 閻欘剙宕版稉鈧悰?
         root.addWidget(tagsCard)
 
@@ -2251,17 +1315,17 @@ class ModelInfoMessageBox(MessageBoxBase):
         notes.setVerticalSpacing(0)
 
         self.model_note_edit = TextEdit(notesCard)
-        self.model_note_edit.setPlaceholderText("Notes on the model")
+        self.model_note_edit.setPlaceholderText(self.tr("Model notes"))
         self.model_note_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         # self.model_note_edit.setMinimumHeight(30)
 
-        notes.addRow(CaptionLabel("Notes", self), self.model_note_edit)
+        notes.addRow(CaptionLabel(self.tr("Notes"), self), self.model_note_edit)
         root.addWidget(notesCard)
 
         root.addStretch(1)
 
     def _pick_file(self):
-        path = call_path_dialog(self, "Select the model folder path", "directory")
+        path = call_path_dialog(self, self.tr("Select the model folder path"), "directory")
 
         if path:
             self.train_path_edit.setText(path)
@@ -2269,7 +1333,7 @@ class ModelInfoMessageBox(MessageBoxBase):
 
     def add_tag(self, tag):
         if self.tag_group.has_tag(tag):
-            MessageManager.send_info_message(f"{tag} already exists!")
+            MessageManager.send_info_message(self.tr("{tag} already exists!").format(tag=tag))
             return
 
         self.tag_group.add_tag(tag)
@@ -2278,33 +1342,75 @@ class ModelInfoMessageBox(MessageBoxBase):
         _path = self.train_path_edit.text()
         path = Path(_path)
         if not path.exists():
-            MessageManager.send_message_box(f"{_path} does not exist!")
+            MessageManager.send_message_box(self.tr("{path} does not exist!").format(path=_path))
             return
         if self.model_type_combox.currentText() == "NEP":
             model_file = path.joinpath("nep.txt")
             if not model_file.exists():
                 MessageManager.send_message_box(
-                    "No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing."
+                    self.tr("No 'nep.txt' found in the specified path. Its presence is not strictly required, but please make sure you know what you are doing.")
                 )
 
             data_file = path.joinpath("train.xyz")
             if not data_file.exists():
                 MessageManager.send_message_box(
-                    "No 'train.xyz' training data file found in the specified path. This file is required to compute training error metrics; please make sure you know what you are doing."
+                    self.tr("No 'train.xyz' training data file found in the specified path. This file is required to compute training error metrics; please make sure you know what you are doing.")
                 )
                 # data_size=0
                 energy = 0
                 force = 0
                 virial = 0
             else:
-                # data_size=get_xyz_nframe(data_file)
-                # if data_size
-                energy_array = read_nep_out_file(path.joinpath("energy_train.out"))
-                energy = get_rmse(energy_array[:, 0], energy_array[:, 1]) * 1000
-                force_array = read_nep_out_file(path.joinpath("force_train.out"))
-                force = get_rmse(force_array[:, :3], force_array[:, 3:]) * 1000
-                virial_array = read_nep_out_file(path.joinpath("virial_train.out"))
-                virial = get_rmse(virial_array[:, :6], virial_array[:, 6:]) * 1000
+                metric_specs = (
+                    (
+                        self.tr("energy"),
+                        path.joinpath("energy_train.out"),
+                        2,
+                        lambda array: get_rmse(array[:, 0], array[:, 1]) * 1000,
+                        self.energy_spinBox,
+                    ),
+                    (
+                        self.tr("force"),
+                        path.joinpath("force_train.out"),
+                        6,
+                        lambda array: get_rmse(array[:, :3], array[:, 3:6]) * 1000,
+                        self.force_spinBox,
+                    ),
+                    (
+                        self.tr("virial"),
+                        path.joinpath("virial_train.out"),
+                        12,
+                        lambda array: get_rmse(array[:, :6], array[:, 6:12]) * 1000,
+                        self.virial_spinBox,
+                    ),
+                )
+                for metric, output_path, min_columns, calculate, target in metric_specs:
+                    try:
+                        values = np.atleast_2d(read_nep_out_file(output_path))
+                        if values.shape[1] < min_columns:
+                            raise ValueError(
+                                self.tr("expected at least {count} columns").format(
+                                    count=min_columns,
+                                )
+                            )
+                        result = float(calculate(values))
+                        if not np.isfinite(result):
+                            raise ValueError(self.tr("result is not finite"))
+                    except Exception as exc:  # noqa: BLE001 - keep manual values editable
+                        MessageManager.send_message_box(
+                            self.tr(
+                                "Cannot calculate {metric} RMSE from {file}: {error}. "
+                                "The current manual value is kept."
+                            ).format(
+                                metric=metric,
+                                file=output_path.name,
+                                error=exc,
+                            )
+                        )
+                    else:
+                        target.setText(str(round(result, 2)))
+
+                return
 
             self.force_spinBox.setText(str(round(force, 2)))
             self.energy_spinBox.setText(str(round(energy, 2)))
@@ -2336,7 +1442,7 @@ class AdvancedModelSearchDialog(MessageBoxBase):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Advanced Search - Models")
+        self.setWindowTitle(self.tr("Advanced search - models"))
         # self.setDraggable(True)
         self.setModal(False)
         # self.resize(640, 520)
@@ -2353,7 +1459,7 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         titleBar = QFrame(self)
         tLay = QHBoxLayout(titleBar)
         tLay.setContentsMargins(0, 0, 0, 0)
-        self.titleLabel = TitleLabel("Advanced Model Search", titleBar)
+        self.titleLabel = TitleLabel(self.tr("Advanced model search"), titleBar)
         # f = self.titleLabel.font(); f.setPointSize(f.pointSize() + 3); f.setBold(True)
         # self.titleLabel.setFont(f)
         self.titleLabel.setAlignment(Qt.AlignCenter)
@@ -2367,51 +1473,54 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         form.setVerticalSpacing(3)
 
         self.projectIdsEdit = LineEdit(formCard)
-        self.projectIdsEdit.setPlaceholderText("e.g. 1 or 1,3,5")
-        self.includeDescendantsChk = CheckBox("Include sub-projects", formCard)
+        self.projectIdsEdit.setPlaceholderText(self.tr("e.g. 1 or 1,3,5"))
+        self.includeDescendantsChk = CheckBox(self.tr("Include sub-projects"), formCard)
         self.includeDescendantsChk.setChecked(True)
 
         # Parent id
         self.parentIdEdit = LineEdit(formCard)
-        self.parentIdEdit.setPlaceholderText("None or integer")
+        self.parentIdEdit.setPlaceholderText(self.tr("None or integer"))
         self.parentIdEdit.setValidator(QIntValidator())
 
         self.nameContainsEdit = LineEdit(formCard)
-        self.nameContainsEdit.setPlaceholderText("contains in name")
+        self.nameContainsEdit.setPlaceholderText(self.tr("contains in name"))
         self.notesContainsEdit = LineEdit(formCard)
-        self.notesContainsEdit.setPlaceholderText("contains in notes")
+        self.notesContainsEdit.setPlaceholderText(self.tr("contains in notes"))
 
         self.modelTypeCombo = ComboBox(formCard)
-        self.modelTypeCombo.addItems(["<Any>", "NEP", "DeepMD", "Other"])
+        self.modelTypeCombo.addItem(self.tr("<Any>"), userData=None)
+        self.modelTypeCombo.addItem("NEP", userData="NEP")
+        self.modelTypeCombo.addItem("DeepMD", userData="DeepMD")
+        self.modelTypeCombo.addItem(self.tr("Other"), userData="Other")
 
         self.tagsAllEdit = LineEdit(formCard)
-        self.tagsAllEdit.setPlaceholderText("tag1, tag2 (AND)")
+        self.tagsAllEdit.setPlaceholderText(self.tr("tag1, tag2 (AND)"))
         self.tagsAnyEdit = LineEdit(formCard)
-        self.tagsAnyEdit.setPlaceholderText("tag1, tag2 (OR)")
+        self.tagsAnyEdit.setPlaceholderText(self.tr("tag1, tag2 (OR)"))
         self.tagsNoneEdit = LineEdit(formCard)
-        self.tagsNoneEdit.setPlaceholderText("tag1, tag2 (NOT)")
+        self.tagsNoneEdit.setPlaceholderText(self.tr("tag1, tag2 (NOT)"))
 
-        self.orderAscChk = CheckBox("Order by created_at ascending", formCard)
+        self.orderAscChk = CheckBox(self.tr("Order by created_at ascending"), formCard)
         self.orderAscChk.setChecked(True)
         self.limitEdit = LineEdit(formCard)
-        self.limitEdit.setPlaceholderText("e.g. 100")
+        self.limitEdit.setPlaceholderText(self.tr("e.g. 100"))
         self.limitEdit.setValidator(QIntValidator(0, 10**9))
         self.offsetEdit = LineEdit(formCard)
-        self.offsetEdit.setPlaceholderText("e.g. 0")
+        self.offsetEdit.setPlaceholderText(self.tr("e.g. 0"))
         self.offsetEdit.setValidator(QIntValidator(0, 10**9))
 
-        form.addRow(CaptionLabel("Project ID(s):", self), self.projectIdsEdit)
+        form.addRow(CaptionLabel(self.tr("Project ID(s):"), self), self.projectIdsEdit)
         form.addRow(CaptionLabel("", self), self.includeDescendantsChk)
-        form.addRow(CaptionLabel("Parent ID:", self), self.parentIdEdit)
-        form.addRow(CaptionLabel("Model Type:", self), self.modelTypeCombo)
-        form.addRow(CaptionLabel("Name contains:", self), self.nameContainsEdit)
-        form.addRow(CaptionLabel("Notes contains:", self), self.notesContainsEdit)
-        form.addRow(CaptionLabel("Tags (ALL):", self), self.tagsAllEdit)
-        form.addRow(CaptionLabel("Tags (ANY):", self), self.tagsAnyEdit)
-        form.addRow(CaptionLabel("Tags (NOT):", self), self.tagsNoneEdit)
-        form.addRow(CaptionLabel("Order:", self), self.orderAscChk)
-        form.addRow(CaptionLabel("Limit:", self), self.limitEdit)
-        form.addRow(CaptionLabel("Offset:", self), self.offsetEdit)
+        form.addRow(CaptionLabel(self.tr("Parent ID:"), self), self.parentIdEdit)
+        form.addRow(CaptionLabel(self.tr("Model type:"), self), self.modelTypeCombo)
+        form.addRow(CaptionLabel(self.tr("Name contains:"), self), self.nameContainsEdit)
+        form.addRow(CaptionLabel(self.tr("Notes contains:"), self), self.notesContainsEdit)
+        form.addRow(CaptionLabel(self.tr("Tags (ALL):"), self), self.tagsAllEdit)
+        form.addRow(CaptionLabel(self.tr("Tags (ANY):"), self), self.tagsAnyEdit)
+        form.addRow(CaptionLabel(self.tr("Tags (NOT):"), self), self.tagsNoneEdit)
+        form.addRow(CaptionLabel(self.tr("Order:"), self), self.orderAscChk)
+        form.addRow(CaptionLabel(self.tr("Limit:"), self), self.limitEdit)
+        form.addRow(CaptionLabel(self.tr("Offset:"), self), self.offsetEdit)
 
         root.addWidget(formCard)
 
@@ -2419,9 +1528,9 @@ class AdvancedModelSearchDialog(MessageBoxBase):
         self.buttonLayout.removeWidget(self.cancelButton)
         self.yesButton.hide()
         self.cancelButton.hide()
-        self.searchBtn = PrimaryPushButton("Search", self)
-        self.resetBtn = PrimaryPushButton("Reset", self)
-        self.closeBtn = PrimaryPushButton("Close", self)
+        self.searchBtn = PrimaryPushButton(self.tr("Search"), self)
+        self.resetBtn = PrimaryPushButton(self.tr("Reset"), self)
+        self.closeBtn = PrimaryPushButton(self.tr("Close"), self)
         self.buttonLayout.addWidget(self.searchBtn)
         self.buttonLayout.addWidget(self.resetBtn)
         self.buttonLayout.addWidget(self.closeBtn)
@@ -2473,8 +1582,7 @@ class AdvancedModelSearchDialog(MessageBoxBase):
     def build_params(self) -> Dict[str, Any]:
         """收集并返回与 search_models_advanced 对应的参数字典。"""
         project_ids = self._parse_project_ids(self.projectIdsEdit.text())
-        mt_text = self.modelTypeCombo.currentText()
-        model_type = None if mt_text == "<Any>" else mt_text
+        model_type = self.modelTypeCombo.currentData()
 
         parent_text = self.parentIdEdit.text().strip()
         parent_id_val = int(parent_text) if parent_text.isdigit() else None
@@ -2525,7 +1633,7 @@ class TagEditDialog(MessageBoxBase):
 
     def __init__(self, name: str, color: str, notes: str, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Edit Tag")
+        self.setWindowTitle(self.tr("Edit tag"))
         # self.resize(300, 200)
 
         layout = QVBoxLayout()
@@ -2547,15 +1655,15 @@ class TagEditDialog(MessageBoxBase):
         self.notesEdit = TextEdit(self)
         self.notesEdit.setPlainText(notes)
 
-        form.addRow("Name", self.nameEdit)
-        form.addRow("Color", colorWidget)
-        form.addRow("Notes", self.notesEdit)
+        form.addRow(self.tr("Name"), self.nameEdit)
+        form.addRow(self.tr("Color"), colorWidget)
+        form.addRow(self.tr("Notes"), self.notesEdit)
         layout.addLayout(form)
 
         self.colorBtn.clicked.connect(self._choose_color)
 
     def _choose_color(self):
-        color_dialog = ColorDialog(QColor(self.colorEdit.text()), "Edit Tag Color", self)
+        color_dialog = ColorDialog(QColor(self.colorEdit.text()), self.tr("Edit tag color"), self)
         if color_dialog.exec():
             self.colorEdit.setText(color_dialog.color.name())
 
@@ -2574,7 +1682,7 @@ class TagManageDialog(MessageBoxBase):
         super().__init__(parent)
         self._parent = parent
         self.tag_changed = False
-        self.setWindowTitle("Manage Tags")
+        self.setWindowTitle(self.tr("Manage tags"))
         self.tag_service = tag_service
         self._tag_map: dict[str, int] = {}
         # self.resize(360, 240)
@@ -2582,7 +1690,7 @@ class TagManageDialog(MessageBoxBase):
         self._layout = QVBoxLayout()
         self.new_tag_edit = LineEdit(self)
         self.new_tag_edit.setMinimumWidth(300)
-        self.new_tag_edit.setPlaceholderText("Enter the tag and press Enter")
+        self.new_tag_edit.setPlaceholderText(self.tr("Enter the tag and press Enter"))
         self.new_tag_edit.returnPressed.connect(self.add_tag)
         self.tag_group = TagGroup(parent=self)
         self.tag_group.setMinimumHeight(100)
@@ -2660,7 +1768,7 @@ class TrainingOverlayDialog(FramelessDialog):
     def __init__(self, parent=None, pca_data=None, canvas_type: str | None = None):
         super().__init__(parent)
         self.setTitleBar(FluentTitleBar(self))
-        self.setWindowTitle("Training Overlay")
+        self.setWindowTitle(self.tr("Training overlay"))
         self.setWindowFlag(Qt.WindowType.Window, True)
         self.setWindowFlag(Qt.WindowType.WindowMaximizeButtonHint, False)
         max_btn = getattr(self.titleBar, "maxBtn", None)
@@ -2772,7 +1880,7 @@ class TrainingOverlayDialog(FramelessDialog):
                         if t_desc.size == 0:
                             nep_calc = getattr(result_data, "nep_calc", None)
                             if nep_calc:
-                                t_desc = nep_calc.get_structures_descriptor(t_structs, True)
+                                t_desc = nep_calc.descriptors(t_structs, mean=True)
                         if t_desc.size != 0:
                             if t_desc.shape[0] == int(np.sum(t_counts)):
                                 t_desc = aggregate_per_atom_to_structure(t_desc, t_counts, map_func=np.mean, axis=0)
@@ -2841,7 +1949,7 @@ class TrainingOverlayDialog(FramelessDialog):
         root_layout.addWidget(canvas_host, 1)
         if fallback:
             self._plot_hint_label.setText(
-                "Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph."
+                self.tr("Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph.")
             )
             self._canvas_fallback_warned = True
 
@@ -2852,9 +1960,9 @@ class TrainingOverlayDialog(FramelessDialog):
 
         # Legend
         for label, color_rgb in [
-            ("Training", (160, 160, 160)),
-            ("Loaded", (30, 120, 215)),
-            ("Selected", (220, 30, 30)),
+            (self.tr("Training"), (160, 160, 160)),
+            (self.tr("Loaded"), (30, 120, 215)),
+            (self.tr("Selected"), (220, 30, 30)),
         ]:
             pixmap = QPixmap(14, 14)
             pixmap.fill(QColor(255, 255, 255, 0))
@@ -2883,15 +1991,15 @@ class TrainingOverlayDialog(FramelessDialog):
         bottom_layout.addStretch()
 
         # Export buttons
-        self._reset_view_btn = PrimaryPushButton("Reset View", self)
+        self._reset_view_btn = PrimaryPushButton(self.tr("Reset view"), self)
         self._reset_view_btn.clicked.connect(self._on_reset_view)
         bottom_layout.addWidget(self._reset_view_btn)
 
-        self._export_image_btn = PrimaryPushButton("Export Image", self)
+        self._export_image_btn = PrimaryPushButton(self.tr("Export image"), self)
         self._export_image_btn.clicked.connect(self._on_export_image)
         bottom_layout.addWidget(self._export_image_btn)
 
-        self._export_data_btn = PrimaryPushButton("Export Data", self)
+        self._export_data_btn = PrimaryPushButton(self.tr("Export data"), self)
         self._export_data_btn.clicked.connect(self._on_export_data)
         bottom_layout.addWidget(self._export_data_btn)
 
@@ -2924,9 +2032,9 @@ class TrainingOverlayDialog(FramelessDialog):
         ).reshape(-1)
 
         if len(self._legend_labels) >= 3:
-            self._legend_labels[0].setText(f"Training: {training_pca.shape[0]}")
-            self._legend_labels[1].setText(f"Loaded: {current_pca.shape[0]}")
-            self._legend_labels[2].setText(f"Selected: {selected_current_indices.size}")
+            self._legend_labels[0].setText(self.tr("Training: {count}").format(count=training_pca.shape[0]))
+            self._legend_labels[1].setText(self.tr("Loaded: {count}").format(count=current_pca.shape[0]))
+            self._legend_labels[2].setText(self.tr("Selected: {count}").format(count=selected_current_indices.size))
 
         result_data, loaded_ids, selected_ids = self._build_overlay_result_data(
             training_pca,

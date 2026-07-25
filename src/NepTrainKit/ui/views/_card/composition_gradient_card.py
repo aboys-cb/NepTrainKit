@@ -7,6 +7,7 @@ from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilte
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import CompositionGradientOperation, CompositionGradientParams
 from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -17,63 +18,66 @@ class CompositionGradientCard(MakeDataCard):
     group = "Alloy"
     card_name = "Composition Gradient"
     menu_icon = r":/images/src/images/defect.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Composition Gradient")
+        self.setTitle(self.tr("Composition Gradient"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("composition_gradient_card_widget")
 
-        self.elements_label = BodyLabel("Elements", self.setting_widget)
-        self.elements_label.setToolTip("Elements participating in the gradient")
+        self.elements_label = BodyLabel(self.tr("Elements"), self.setting_widget)
+        self.elements_label.setToolTip(self.tr("Elements participating in the gradient"))
         self.elements_label.installEventFilter(ToolTipFilter(self.elements_label, 300, ToolTipPosition.TOP))
         self.elements_edit = LineEdit(self.setting_widget)
         self.elements_edit.setText("Ni,Co")
 
-        self.start_label = BodyLabel("Start composition", self.setting_widget)
-        self.start_label.setToolTip("Composition at the low-coordinate end, e.g. Ni:1,Co:0")
+        self.start_label = BodyLabel(self.tr("Start composition"), self.setting_widget)
+        self.start_label.setToolTip(self.tr("Composition at the low-coordinate end, e.g. Ni:1,Co:0"))
         self.start_label.installEventFilter(ToolTipFilter(self.start_label, 300, ToolTipPosition.TOP))
         self.start_edit = LineEdit(self.setting_widget)
         self.start_edit.setText("Ni:1,Co:0")
 
-        self.end_label = BodyLabel("End composition", self.setting_widget)
-        self.end_label.setToolTip("Composition at the high-coordinate end, e.g. Ni:0,Co:1")
+        self.end_label = BodyLabel(self.tr("End composition"), self.setting_widget)
+        self.end_label.setToolTip(self.tr("Composition at the high-coordinate end, e.g. Ni:0,Co:1"))
         self.end_label.installEventFilter(ToolTipFilter(self.end_label, 300, ToolTipPosition.TOP))
         self.end_edit = LineEdit(self.setting_widget)
         self.end_edit.setText("Ni:0,Co:1")
 
-        self.axis_label = BodyLabel("Axis", self.setting_widget)
-        self.axis_label.setToolTip("Gradient direction")
+        self.axis_label = BodyLabel(self.tr("Axis"), self.setting_widget)
+        self.axis_label.setToolTip(self.tr("Gradient direction"))
         self.axis_label.installEventFilter(ToolTipFilter(self.axis_label, 300, ToolTipPosition.TOP))
         self.axis_combo = ComboBox(self.setting_widget)
-        self.axis_combo.addItems(["x", "y", "z"])
-        self.axis_combo.setCurrentText("x")
+        add_translated_items(self, self.axis_combo, ["x", "y", "z"])
+        set_combo_value(self.axis_combo, "x")
 
-        self.bins_label = BodyLabel("Bins", self.setting_widget)
-        self.bins_label.setToolTip("Number of coordinate layers used to approximate the gradient")
+        self.bins_label = BodyLabel(self.tr("Bins"), self.setting_widget)
+        self.bins_label.setToolTip(self.tr("Number of coordinate layers used to approximate the gradient"))
         self.bins_label.installEventFilter(ToolTipFilter(self.bins_label, 300, ToolTipPosition.TOP))
         self.bins_frame = SpinBoxUnitInputFrame(self)
         self.bins_frame.set_input("unit", 1, "int")
         self.bins_frame.setRange(1, 10000)
         self.bins_frame.set_input_value([8])
 
-        self.target_label = BodyLabel("Target elements", self.setting_widget)
-        self.target_label.setToolTip("Optional existing elements eligible for replacement; empty means all atoms")
+        self.target_label = BodyLabel(self.tr("Target elements"), self.setting_widget)
+        self.target_label.setToolTip(self.tr("Optional existing elements eligible for replacement; empty means all atoms"))
         self.target_label.installEventFilter(ToolTipFilter(self.target_label, 300, ToolTipPosition.TOP))
         self.target_edit = LineEdit(self.setting_widget)
-        self.target_edit.setPlaceholderText("Ni,Co")
+        self.target_edit.setPlaceholderText(self.tr("Ni,Co"))
 
-        self.samples_label = BodyLabel("Samples", self.setting_widget)
-        self.samples_label.setToolTip("Number of random assignments emitted for the same layer compositions")
+        self.samples_label = BodyLabel(self.tr("Samples"), self.setting_widget)
+        self.samples_label.setToolTip(self.tr("Number of random assignments emitted for the same layer compositions"))
         self.samples_label.installEventFilter(ToolTipFilter(self.samples_label, 300, ToolTipPosition.TOP))
         self.samples_frame = SpinBoxUnitInputFrame(self)
         self.samples_frame.set_input("unit", 1, "int")
         self.samples_frame.setRange(1, 10000)
         self.samples_frame.set_input_value([1])
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -107,7 +111,7 @@ class CompositionGradientCard(MakeDataCard):
             elements=self.elements_edit.text(),
             start_composition=self.start_edit.text(),
             end_composition=self.end_edit.text(),
-            axis=self.axis_combo.currentText(),
+            axis=combo_value(self.axis_combo),
             bins=int(self.bins_frame.get_input_value()[0]),
             target_elements=self.target_edit.text(),
             samples=int(self.samples_frame.get_input_value()[0]),
@@ -119,7 +123,7 @@ class CompositionGradientCard(MakeDataCard):
         self.elements_edit.setText(params.elements)
         self.start_edit.setText(params.start_composition)
         self.end_edit.setText(params.end_composition)
-        self.axis_combo.setCurrentText(params.axis)
+        set_combo_value(self.axis_combo, params.axis)
         self.bins_frame.set_input_value([int(params.bins)])
         self.target_edit.setText(params.target_elements)
         self.samples_frame.set_input_value([int(params.samples)])

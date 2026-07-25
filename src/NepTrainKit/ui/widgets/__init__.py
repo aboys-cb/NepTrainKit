@@ -15,7 +15,7 @@ from .dialog import (
     GetStrMessageBox,
     GetFloatMessageBox,
     ExportFormatMessageBox,
-    DatasetSummaryMessageBox,
+    DistributionExplorerWidget,
     DistributionInspectorMessageBox,
     SparseMessageBox,
     IndexSelectMessageBox,
@@ -45,9 +45,12 @@ from .doping_rule import DopingRulesWidget
 from .vacancy_rule import VacancyRulesWidget
 from .docker import MakeWorkflowArea
 from .search_widget import ConfigTypeSearchLineEdit
+from .filter_bar import TagFilterDialog, ElementsFilterDialog, ExpressionFilterDialog
+from .structure_filter_bar import StructureFilterBar, StructureFilterEditorPopup
 from .settingscard import MyComboBoxSettingCard, DoubleSpinBoxSettingCard, LineEditSettingCard, ColorSettingCard
 from .table import IdNameTableModel
 from .tree import TreeModel, TreeItem, TagDelegate
+from .audit_chart import AuditChartWidget
 
 __all__ = [
     "FlowLayout",
@@ -59,7 +62,7 @@ __all__ = [
     "GetStrMessageBox",
     "GetFloatMessageBox",
     "ExportFormatMessageBox",
-    "DatasetSummaryMessageBox",
+    "DistributionExplorerWidget",
     "DistributionInspectorMessageBox",
     "SparseMessageBox",
     "IndexSelectMessageBox",
@@ -81,6 +84,11 @@ __all__ = [
     "FilterDataCard",
     "MakeWorkflowArea",
     "ConfigTypeSearchLineEdit",
+    "TagFilterDialog",
+    "ElementsFilterDialog",
+    "ExpressionFilterDialog",
+    "StructureFilterBar",
+    "StructureFilterEditorPopup",
     "MyComboBoxSettingCard",
     "DoubleSpinBoxSettingCard",
     "LineEditSettingCard",
@@ -94,4 +102,5 @@ __all__ = [
     "TreeModel",
     "TreeItem",
     "TagDelegate",
+    "AuditChartWidget",
 ]

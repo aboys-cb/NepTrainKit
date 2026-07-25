@@ -9,13 +9,35 @@ from PySide6.QtGui import QDesktopServices, QIcon
 from PySide6.QtWidgets import QWidget
  
 from qfluentwidgets import SettingCardGroup, HyperlinkCard, PrimaryPushSettingCard, ExpandLayout, OptionsConfigItem, \
-    OptionsValidator, EnumSerializer, SwitchSettingCard,FluentIcon  , ScrollArea
+    OptionsValidator, EnumSerializer, SwitchSettingCard, FluentIcon, ScrollArea, SettingCard, ComboBox
 
 from NepTrainKit.config import Config
+from NepTrainKit.core.runtime_health import RuntimeHealth, inspect_runtime_health
+from NepTrainKit.i18n import LANGUAGE_LABELS, SUPPORTED_LANGUAGES, normalize_language
+from NepTrainKit.logging_config import (
+    DEFAULT_LOG_LEVEL,
+    LOG_LEVELS,
+    normalize_log_level,
+    set_log_level,
+)
+from NepTrainKit.runtime_package import MANAGED_RUNTIME_SPEC
+from NepTrainKit.ui.messages import MessageManager
 from NepTrainKit.ui.widgets import MyComboBoxSettingCard, DoubleSpinBoxSettingCard, LineEditSettingCard
 from NepTrainKit.ui.widgets import ColorSettingCard
-from NepTrainKit.core.types import ForcesMode, CanvasMode, NepBackend, DataPrecision, parse_forces_mode, parse_data_precision
-from NepTrainKit.ui.update import UpdateWoker, UpdateNEP89Woker, get_pending_update_version
+from NepTrainKit.core.types import (
+    ForcesMode,
+    CanvasMode,
+    NepBackend,
+    DataPrecision,
+    parse_forces_mode,
+    parse_data_precision,
+)
+from NepTrainKit.ui.update import (
+    RuntimePackageUpdateWorker,
+    UpdateNEP89Woker,
+    UpdateWoker,
+    get_pending_update_version,
+)
 from NepTrainKit.version import HELP_URL, FEEDBACK_URL, __version__, YEAR, AUTHOR
 
 
@@ -44,11 +66,11 @@ class SettingsWidget(ScrollArea):
         self.expand_layout = ExpandLayout(self.scrollWidget)
 
         self.personal_group = SettingCardGroup(
-             'Personalization' , self.scrollWidget)
+            self.tr('Personalization'), self.scrollWidget)
         self.nep_group = SettingCardGroup(
-             'NEP Settings' , self.scrollWidget)
+            self.tr('NEP Settings'), self.scrollWidget)
         self.plot_group = SettingCardGroup(
-             'Plot Settings' , self.scrollWidget)
+            self.tr('Plot Settings'), self.scrollWidget)
 
         force_mode = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
         default_forces = force_mode.value
@@ -56,21 +78,21 @@ class SettingsWidget(ScrollArea):
         self.optimization_forces_card = MyComboBoxSettingCard(
             OptionsConfigItem("forces", "forces", force_mode, OptionsValidator(ForcesMode), EnumSerializer(ForcesMode)),
             FluentIcon.BRUSH,
-            'Force data format',
-            "Streamline data and speed up drawing",
+            self.tr('Force data format'),
+            self.tr("Streamline data and speed up drawing"),
             texts=[
              mode.value for mode in    ForcesMode
             ],
             default=default_forces,
             parent=self.personal_group
         )
-        canvas_type = Config.get("widget","canvas_type",str(CanvasMode.PYQTGRAPH.value))
+        canvas_type = Config.get("widget","canvas_type",str(CanvasMode.AUTO.value))
 
         self.canvas_card = MyComboBoxSettingCard(
             OptionsConfigItem("canvas","canvas",CanvasMode(canvas_type),OptionsValidator(CanvasMode), EnumSerializer(CanvasMode)),
             FluentIcon.BRUSH,
-            'Canvas Engine',
-            "Choose GPU with vispy",
+            self.tr('Canvas Engine'),
+            self.tr("Choose GPU with vispy"),
             texts=[
              mode.value for mode in    CanvasMode
 
@@ -78,6 +100,40 @@ class SettingsWidget(ScrollArea):
             default=canvas_type,
             parent=self.personal_group
         )
+
+        language_config = normalize_language(Config.get("ui", "language", "auto"))
+        self.language_card = SettingCard(
+            FluentIcon.SETTING,
+            self.tr("Language"),
+            self.tr("Restart NepTrainKit to apply language changes"),
+            self.personal_group,
+        )
+        self.language_combo = ComboBox(self.language_card)
+        for value in SUPPORTED_LANGUAGES:
+            self.language_combo.addItem(self.tr(LANGUAGE_LABELS[value]), userData=value)
+        self.language_combo.setCurrentIndex(SUPPORTED_LANGUAGES.index(language_config))
+        self.language_card.hBoxLayout.addWidget(self.language_combo, 0, Qt.AlignmentFlag.AlignRight)
+        self.language_card.hBoxLayout.addSpacing(16)
+
+        log_level = normalize_log_level(
+            Config.get("logging", "level", DEFAULT_LOG_LEVEL)
+        )
+        self.log_level_card = SettingCard(
+            FluentIcon.INFO,
+            self.tr("Log level"),
+            self.tr(
+                "Minimum level written to the console and log file; applies immediately"
+            ),
+            self.personal_group,
+        )
+        self.log_level_combo = ComboBox(self.log_level_card)
+        for level in LOG_LEVELS:
+            self.log_level_combo.addItem(level, userData=level)
+        self.log_level_combo.setCurrentIndex(LOG_LEVELS.index(log_level))
+        self.log_level_card.hBoxLayout.addWidget(
+            self.log_level_combo, 0, Qt.AlignmentFlag.AlignRight
+        )
+        self.log_level_card.hBoxLayout.addSpacing(16)
 
 
         auto_load_config = Config.getboolean("widget","auto_load",False)
@@ -97,24 +153,24 @@ class SettingsWidget(ScrollArea):
 
         self.sort_atoms_card = SwitchSettingCard(
             QIcon(":/images/src/images/sort.svg"),
-            'Sort atoms',
-            'Sort atoms in structures when processing cards',
+            self.tr('Sort atoms'),
+            self.tr('Sort atoms in structures when processing cards'),
             parent=self.personal_group
         )
         self.sort_atoms_card.setValue(sort_atoms_config)
 
         self.use_group_menu_card = SwitchSettingCard(
             QIcon(":/images/src/images/group.svg"),
-            'Use card group menu',
-            'Group cards by "group" in console menu',
+            self.tr('Use card group menu'),
+            self.tr('Group cards by "group" in console menu'),
             parent=self.personal_group
         )
         self.use_group_menu_card.setValue(use_group_menu_config)
         preserve_deepmd = Config.getboolean("widget", "deepmd_preserve_subfolders", True)
         self.deepmd_preserve_card = SwitchSettingCard(
             FluentIcon.FOLDER,
-            'Keep DeepMD subfolders',
-            'Preserve imported folder hierarchy when exporting deepmd/npy',
+            self.tr('Keep DeepMD subfolders'),
+            self.tr('Preserve imported folder hierarchy when exporting deepmd/npy'),
             parent=self.personal_group
         )
         self.deepmd_preserve_card.setValue(preserve_deepmd)
@@ -122,17 +178,42 @@ class SettingsWidget(ScrollArea):
         cache_outputs = Config.getboolean("io", "cache_outputs", True)
         self.cache_outputs_card = SwitchSettingCard(
             FluentIcon.SAVE,
-            'Cache output files',
-            'Cache *.out and descriptor.out for faster reload (NEP & DeepMD)',
+            self.tr('Cache output files'),
+            self.tr('Cache *.out and descriptor.out for faster reload (NEP & DeepMD)'),
             parent=self.personal_group
         )
         self.cache_outputs_card.setValue(cache_outputs)
+
+        auto_structure_evidence = Config.getboolean(
+            "training_set_audit", "auto_structure_evidence", True
+        )
+        self.auto_structure_evidence_card = SwitchSettingCard(
+            FluentIcon.SYNC,
+            self.tr("Automatically analyze structure evidence"),
+            self.tr(
+                "After the basic dataset audit appears, analyze phases and magnetic order in the background"
+            ),
+            parent=self.personal_group,
+        )
+        self.auto_structure_evidence_card.setValue(auto_structure_evidence)
+
+        export_digits = Config.getint("io", "export_significant_digits", 10) or 10
+        self.export_digits_card = DoubleSpinBoxSettingCard(
+            FluentIcon.SAVE,
+            self.tr('Export significant digits'),
+            self.tr('Significant digits for per-atom XYZ/extxyz values'),
+            self.personal_group
+        )
+        self.export_digits_card.setRange(6, 17)
+        self.export_digits_card.doubleSpinBox.setDecimals(0)
+        self.export_digits_card.doubleSpinBox.setSingleStep(1)
+        self.export_digits_card.setValue(float(export_digits))
         # Default Config_type text
         default_cfg_type = Config.get("widget", "default_config_type", "neptrainkit")
         self.default_cfg_type_card = LineEditSettingCard(
             FluentIcon.TAG,
-            'Default Config_type',
-            'Tag assigned when source has no Config_type',
+            self.tr('Default Config_type'),
+            self.tr('Tag assigned when source has no Config_type'),
             self.personal_group
         )
         self.default_cfg_type_card.setValue(default_cfg_type)
@@ -141,8 +222,8 @@ class SettingsWidget(ScrollArea):
         self.radius_coefficient_Card = DoubleSpinBoxSettingCard(
 
             FluentIcon.ALBUM,
-            'Covalent radius coefficient',
-            'Coefficient used to detect bond length',
+            self.tr('Covalent radius coefficient'),
+            self.tr('Coefficient used to detect bond length'),
             self.personal_group
         )
         self.radius_coefficient_Card.setValue(radius_coefficient_config)
@@ -150,12 +231,17 @@ class SettingsWidget(ScrollArea):
 
         # NEP backend selection
         nep_backend_default = Config.get("nep", "backend","auto")
+        try:
+            nep_backend_enum = NepBackend(nep_backend_default)
+        except ValueError:
+            nep_backend_enum = NepBackend.AUTO
+            nep_backend_default = nep_backend_enum.value
         self.nep_backend_card = MyComboBoxSettingCard(
-            OptionsConfigItem("nep", "backend", NepBackend(nep_backend_default), OptionsValidator(NepBackend),
+            OptionsConfigItem("nep", "backend", nep_backend_enum, OptionsValidator(NepBackend),
                               EnumSerializer(NepBackend)),
             QIcon(":/images/src/images/gpu.svg"),
-            'NEP Backend',
-            'Select CPU/GPU or Auto detection',
+            self.tr('NEP Backend'),
+            self.tr('Select CPU/CUDA or let Auto use CUDA when available'),
             texts=[mode.value for mode in NepBackend],
             default=nep_backend_default,
             parent=self.nep_group
@@ -171,23 +257,44 @@ class SettingsWidget(ScrollArea):
                 EnumSerializer(DataPrecision),
             ),
             FluentIcon.TAG,
-            'Data Precision',
-            'Choose storage precision for imported DFT/structure data',
+            self.tr('Data Precision'),
+            self.tr('Choose storage precision for imported DFT/structure data'),
             texts=[mode.value for mode in DataPrecision],
             default=data_precision_default,
             parent=self.nep_group
         )
 
-        # GPU batch size
-        gpu_bs_default = Config.getint("nep", "gpu_batch_size", 1000) or 1000
-        self.gpu_bs_card = DoubleSpinBoxSettingCard(
+        chunk_max_atoms = Config.getint("nep", "chunk_max_atoms", 100000) or 100000
+        self.chunk_max_atoms_card = DoubleSpinBoxSettingCard(
             FluentIcon.SPEED_HIGH,
-            'GPU Batch Size',
-            'Batch of frames processed GPU slice',
+            self.tr('NEP Chunk Max Atoms'),
+            self.tr('Maximum total atoms per prediction chunk on CPU or CUDA'),
             self.nep_group
         )
-        self.gpu_bs_card.setRange(0, 10000000)
-        self.gpu_bs_card.setValue(float(gpu_bs_default))
+        self.chunk_max_atoms_card.setRange(1, 100000000)
+        self.chunk_max_atoms_card.setValue(float(chunk_max_atoms))
+
+        self.runtime_health_card = PrimaryPushSettingCard(
+            self.tr("Refresh"),
+            FluentIcon.INFO,
+            self.tr("Runtime health"),
+            "",
+            self.nep_group,
+        )
+        self.runtime_update_card = PrimaryPushSettingCard(
+            self.tr("Check for Updates"),
+            FluentIcon.INFO,
+            self.tr("{package} runtime updates").format(
+                package=MANAGED_RUNTIME_SPEC.distribution
+            ),
+            self.tr(
+                "Check PyPI for a compatible {package} wheel; updates are "
+                "verified before activation"
+            ).format(package=MANAGED_RUNTIME_SPEC.distribution),
+            self.nep_group,
+        )
+        self._runtime_health = inspect_runtime_health()
+        self._refresh_runtime_health_content()
 
         # Plot settings defaults
         edge_color = Config.get("plot", "marker_edge_color", "#07519C")
@@ -205,24 +312,24 @@ class SettingsWidget(ScrollArea):
 
         self.edge_color_card = ColorSettingCard(
             FluentIcon.BRUSH,
-            'Scatter edge color',
-            'Default edge color for points',
+            self.tr('Scatter edge color'),
+            self.tr('Default edge color for points'),
             self.plot_group
         )
         self.edge_color_card.setValue(edge_color)
 
         self.face_color_card = ColorSettingCard(
             FluentIcon.BRUSH,
-            'Scatter face color',
-            'Default fill color for points',
+            self.tr('Scatter face color'),
+            self.tr('Default fill color for points'),
             self.plot_group
         )
         self.face_color_card.setValue(face_color)
 
         self.face_alpha_card = DoubleSpinBoxSettingCard(
             FluentIcon.ALBUM,
-            'Face alpha (0-255)',
-            'Alpha channel for fill color',
+            self.tr('Face alpha (0-255)'),
+            self.tr('Alpha channel for fill color'),
             self.plot_group
         )
         self.face_alpha_card.setRange(0, 255)
@@ -230,8 +337,8 @@ class SettingsWidget(ScrollArea):
 
         self.pg_size_card = DoubleSpinBoxSettingCard(
             FluentIcon.ALBUM,
-            'PyQtGraph scatter size',
-            'Marker size for PyQtGraph canvas',
+            self.tr('PyQtGraph scatter size'),
+            self.tr('Marker size for PyQtGraph canvas'),
             self.plot_group
         )
         self.pg_size_card.setRange(1, 100)
@@ -239,8 +346,8 @@ class SettingsWidget(ScrollArea):
 
         self.vispy_size_card = DoubleSpinBoxSettingCard(
             FluentIcon.ALBUM,
-            'VisPy scatter size',
-            'Marker size for VisPy canvas',
+            self.tr('VisPy scatter size'),
+            self.tr('Marker size for VisPy canvas'),
             self.plot_group
         )
         self.vispy_size_card.setRange(1, 100)
@@ -248,8 +355,8 @@ class SettingsWidget(ScrollArea):
 
         self.vispy_aa_card = DoubleSpinBoxSettingCard(
             FluentIcon.BRUSH,
-            'VisPy antialias',
-            'Marker antialias value for VisPy (0-2)',
+            self.tr('VisPy antialias'),
+            self.tr('Marker antialias value for VisPy (0-2)'),
             self.plot_group
         )
         self.vispy_aa_card.setRange(0.0, 2.0)
@@ -257,83 +364,83 @@ class SettingsWidget(ScrollArea):
 
         self.structure_bg_color_card = ColorSettingCard(
             FluentIcon.BRUSH,
-            'Structure background',
-            'Background color for lattice/structure viewer',
+            self.tr('Structure background'),
+            self.tr('Background color for lattice/structure viewer'),
             self.plot_group
         )
         self.structure_bg_color_card.setValue(structure_bg_color)
 
         self.structure_lattice_color_card = ColorSettingCard(
             FluentIcon.BRUSH,
-            'Lattice line color',
-            'Line color for lattice edges in structure viewer',
+            self.tr('Lattice line color'),
+            self.tr('Line color for lattice edges in structure viewer'),
             self.plot_group
         )
         self.structure_lattice_color_card.setValue(structure_lattice_color)
 
         self.selected_color_card = ColorSettingCard(
             FluentIcon.BRUSH,
-            'Selected color',
-            'Color for selected points',
+            self.tr('Selected color'),
+            self.tr('Color for selected points'),
             self.plot_group
         )
         self.selected_color_card.setValue(selected_color)
 
         self.show_color_card = ColorSettingCard(
             FluentIcon.BRUSH,
-            'Show color',
-            'Color for highlighted "show" points',
+            self.tr('Show color'),
+            self.tr('Color for highlighted "show" points'),
             self.plot_group
         )
         self.show_color_card.setValue(show_color)
 
         self.current_color_card = ColorSettingCard(
             FluentIcon.BRUSH,
-            'Current marker color',
-            'Color for current star marker',
+            self.tr('Current marker color'),
+            self.tr('Color for current star marker'),
             self.plot_group
         )
         self.current_color_card.setValue(current_color)
 
         self.current_size_card = DoubleSpinBoxSettingCard(
             FluentIcon.ALBUM,
-            'Current marker size',
-            'Size of current star marker',
+            self.tr('Current marker size'),
+            self.tr('Size of current star marker'),
             self.plot_group
         )
         self.current_size_card.setRange(5, 100)
         self.current_size_card.setValue(float(current_size))
 
 
-        self.about_group = SettingCardGroup("About", self.scrollWidget)
+        self.about_group = SettingCardGroup(self.tr("About"), self.scrollWidget)
         self.help_card = HyperlinkCard(
             HELP_URL,
-             'Open Help Page' ,
+            self.tr('Open Help Page'),
             FluentIcon.HELP,
-             'Help' ,
-             'Discover new features and learn useful tips about NepTrainKit.' ,
+            self.tr('Help'),
+            self.tr('Discover new features and learn useful tips about NepTrainKit.'),
             self.about_group
         )
         self.feedback_card = PrimaryPushSettingCard(
-            "Submit Feedback",
+            self.tr("Submit Feedback"),
             FluentIcon.FEEDBACK,
-            "Submit Feedback",
+            self.tr("Submit Feedback"),
 
-            'Help us improve NepTrainKit by providing feedback.',
+            self.tr('Help us improve NepTrainKit by providing feedback.'),
             self.about_group
         )
         self.about_card = PrimaryPushSettingCard(
-            'Check for Updates',
+            self.tr('Check for Updates'),
             FluentIcon.INFO,
-            "About",
+            self.tr("About"),
             self._base_about_description(),
             self.about_group
         )
         self.about_nep89_card = PrimaryPushSettingCard(
-            'Check and update',
+            self.tr('Check and update'),
             FluentIcon.INFO,
-            "About NEP89",
-            "NEP official NEP89 large model",
+            self.tr("About NEP89"),
+            self.tr("NEP official NEP89 large model"),
             self.about_group
         )
         self._refresh_about_update_content()
@@ -358,17 +465,23 @@ class SettingsWidget(ScrollArea):
 
         self.personal_group.addSettingCard(self.optimization_forces_card)
         self.personal_group.addSettingCard(self.canvas_card)
+        self.personal_group.addSettingCard(self.language_card)
+        self.personal_group.addSettingCard(self.log_level_card)
         self.personal_group.addSettingCard(self.auto_load_card)
         self.personal_group.addSettingCard(self.radius_coefficient_Card)
         self.personal_group.addSettingCard(self.sort_atoms_card)
         self.personal_group.addSettingCard(self.use_group_menu_card)
         self.personal_group.addSettingCard(self.deepmd_preserve_card)
         self.personal_group.addSettingCard(self.cache_outputs_card)
+        self.personal_group.addSettingCard(self.auto_structure_evidence_card)
+        self.personal_group.addSettingCard(self.export_digits_card)
         self.personal_group.addSettingCard(self.default_cfg_type_card)
 
         self.nep_group.addSettingCard(self.nep_backend_card)
         self.nep_group.addSettingCard(self.data_precision_card)
-        self.nep_group.addSettingCard(self.gpu_bs_card)
+        self.nep_group.addSettingCard(self.chunk_max_atoms_card)
+        self.nep_group.addSettingCard(self.runtime_health_card)
+        self.nep_group.addSettingCard(self.runtime_update_card)
 
  
 
@@ -409,18 +522,28 @@ class SettingsWidget(ScrollArea):
         self.canvas_card.optionChanged.connect(lambda option:Config.set("widget","canvas_type",option ))
         self.radius_coefficient_Card.valueChanged.connect(lambda value:Config.set("widget","radius_coefficient",value))
         self.optimization_forces_card.optionChanged.connect(lambda option:Config.set("widget","forces_data",option ))
+        self.language_combo.currentIndexChanged.connect(self._on_language_changed)
+        self.log_level_combo.currentIndexChanged.connect(self._on_log_level_changed)
         self.about_card.clicked.connect(self.check_update)
         self.about_nep89_card.clicked.connect(self.check_update_nep89)
+        self.runtime_health_card.clicked.connect(self.refresh_runtime_health)
+        self.runtime_update_card.clicked.connect(self.check_runtime_update)
 
         self.nep_backend_card.optionChanged.connect(lambda option: Config.set("nep", "backend", option))
         self.data_precision_card.optionChanged.connect(lambda option: Config.set("nep", "data_precision", option))
-        self.gpu_bs_card.valueChanged.connect(lambda value: Config.set("nep", "gpu_batch_size", int(value)))
+        self.chunk_max_atoms_card.valueChanged.connect(lambda value: Config.set("nep", "chunk_max_atoms", int(value)))
 
         self.auto_load_card.checkedChanged.connect(lambda state:Config.set("widget","auto_load",state))
         self.sort_atoms_card.checkedChanged.connect(lambda state:Config.set("widget","sort_atoms",state))
         self.use_group_menu_card.checkedChanged.connect(lambda state:Config.set("widget","use_group_menu",state))
         self.deepmd_preserve_card.checkedChanged.connect(lambda state: Config.set("widget", "deepmd_preserve_subfolders", state))
         self.cache_outputs_card.checkedChanged.connect(lambda state: Config.set("io", "cache_outputs", state))
+        self.auto_structure_evidence_card.checkedChanged.connect(
+            lambda state: Config.set(
+                "training_set_audit", "auto_structure_evidence", state
+            )
+        )
+        self.export_digits_card.valueChanged.connect(lambda value: Config.set("io", "export_significant_digits", int(value)))
         self.default_cfg_type_card.textChanged.connect(lambda v: Config.set("widget", "default_config_type", v))
         # plot settings
         from NepTrainKit.core.types import Pens, Brushes
@@ -446,6 +569,96 @@ class SettingsWidget(ScrollArea):
         self.feedback_card.clicked.connect(
             lambda: QDesktopServices.openUrl(QUrl(FEEDBACK_URL)))
 
+    def _on_language_changed(self, index: int) -> None:
+        """Persist the selected UI language."""
+        value = self.language_combo.itemData(index)
+        value = normalize_language(value)
+        Config.set("ui", "language", value)
+        MessageManager.send_info_message(
+            self.tr("Language saved. Restart NepTrainKit to apply it."),
+            title=self.tr("Tip"),
+        )
+
+    def _on_log_level_changed(self, index: int) -> None:
+        """Persist and immediately apply the selected minimum log level."""
+        level = normalize_log_level(self.log_level_combo.itemData(index))
+        Config.set("logging", "level", level)
+        set_log_level(level)
+
+    def _runtime_health_description(self, report: RuntimeHealth) -> str:
+        """Return a compact localized capability summary."""
+        available = self.tr("Available")
+        unavailable = self.tr("Unavailable")
+        cpu_status = available if report.cpu.available else unavailable
+        cuda_status = available if report.cuda.available else unavailable
+        adapter_version = report.adapters_version or self.tr("not installed")
+        return self.tr(
+            "Native helpers: {available}/{total} · nep-adapters: {version} · "
+            "CPU: {cpu} · CUDA: {cuda}"
+        ).format(
+            available=report.native_available_count,
+            total=len(report.native),
+            version=adapter_version,
+            cpu=cpu_status,
+            cuda=cuda_status,
+        )
+
+    def _refresh_runtime_health_content(self) -> None:
+        """Render the latest runtime capability snapshot on the settings card."""
+        self.runtime_health_card.setContent(
+            self._runtime_health_description(self._runtime_health)
+        )
+
+    def refresh_runtime_health(self) -> None:
+        """Recheck native helpers and NEP backends without restarting."""
+        self._runtime_health = inspect_runtime_health()
+        self._refresh_runtime_health_content()
+        if not self._runtime_health.native_complete:
+            missing = ", ".join(
+                item.name
+                for item in self._runtime_health.native
+                if not item.available
+            )
+            MessageManager.send_warning_message(
+                self.tr(
+                    "Native helpers are incomplete ({missing}). Reinstall the "
+                    "NepTrainKit wheel for this Python version."
+                ).format(missing=missing)
+            )
+            return
+        if not self._runtime_health.cpu.available:
+            MessageManager.send_warning_message(
+                self.tr(
+                    "The NEP CPU backend is unavailable. Install "
+                    "nep-adapters>=1.0,<2 and refresh."
+                )
+            )
+            return
+        MessageManager.send_info_message(
+            self.tr("Runtime check completed.")
+        )
+
+    def check_runtime_update(self) -> None:
+        """Check and install the currently selected managed runtime."""
+        self._runtime_update_worker = RuntimePackageUpdateWorker(
+            self,
+            spec=MANAGED_RUNTIME_SPEC,
+        )
+        self._runtime_update_worker.check(
+            on_finished=self._on_runtime_update_finished
+        )
+
+    def _on_runtime_update_finished(self, result) -> None:
+        if result.get("ok") and result.get("updated"):
+            self.runtime_update_card.setContent(
+                self.tr(
+                    "{package} v{version} is ready; restart NepTrainKit to activate it"
+                ).format(
+                    package=MANAGED_RUNTIME_SPEC.distribution,
+                    version=result.get("version", ""),
+                )
+            )
+
     def check_update(self):
         """Trigger the application update workflow for NepTrainKit.
 
@@ -470,14 +683,15 @@ class SettingsWidget(ScrollArea):
 
     def _base_about_description(self) -> str:
         """Return the base About card description text."""
-        return 'Copyright @' + f" {YEAR}, {AUTHOR}. " + "Version" + f" {__version__}"
+        return 'Copyright @' + f" {YEAR}, {AUTHOR}. " + self.tr("Version") + f" {__version__}"
 
     def _refresh_about_update_content(self) -> None:
         """Refresh the About card text based on cached update status."""
         description = self._base_about_description()
         pending_version = get_pending_update_version()
         if pending_version:
-            description += f"\\nNew version available: v{pending_version}"
+            prefix = self.tr("New version available: v")
+            description += f"\n{prefix}{pending_version}"
         if hasattr(self.about_card, "setContent"):
             self.about_card.setContent(description)
 
@@ -491,5 +705,3 @@ class SettingsWidget(ScrollArea):
         win = self.window()
         if hasattr(win, "refresh_update_indicators"):
             win.refresh_update_indicators()
-
-

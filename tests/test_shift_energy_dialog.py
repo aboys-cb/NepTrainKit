@@ -45,5 +45,15 @@ class TestShiftEnergyMessageBox(unittest.TestCase):
         self.assertEqual(values.selected_preset_name, "")
         self.assertTrue(values.save_preset)
         self.assertEqual(values.preset_name, "")
+
+    def test_collect_values_splits_group_patterns_on_semicolons(self):
+        box = ShiftEnergyMessageBox(self.parent)
+        box.set_preset_names([], placeholder="None")
+        box.groupEdit.setText("bulk.*; surface.*")
+
+        values = box.collect_values()
+
+        self.assertEqual(values.group_patterns, ["bulk.*", "surface.*"])
+
 if __name__ == '__main__':
     unittest.main()

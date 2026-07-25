@@ -19,6 +19,8 @@ class Config:
 
     _instance = None
     init_flag = False
+    _missing = object()
+    _value_cache: dict[tuple[str, str], Any] = {}
 
     def __new__(cls, *args):
         if cls._instance is None:
@@ -32,6 +34,7 @@ class Config:
         self.connect_db()
 
     def connect_db(self):
+        Config._value_cache.clear()
         user_config_path = get_user_config_path()
 
         db_file = user_config_path / "config.sqlite"
@@ -117,6 +120,15 @@ class Config:
             return fallback
     @classmethod
     def get(cls,section,option,fallback=None)->Any:
+        cache_key = (section, option)
+        if cache_key in cls._value_cache:
+            cached = cls._value_cache[cache_key]
+            if cached is cls._missing:
+                if fallback is not None:
+                    cls.set(section, option, fallback)
+                    return fallback
+                return None
+            return cached
         try:
             cfg = cls._instance
             table = cfg._config_table
@@ -127,9 +139,11 @@ class Config:
                 ).limit(1)
                 result = conn.execute(stmt).scalar_one_or_none()
             if result is None:
+                cls._value_cache[cache_key] = cls._missing
                 if fallback is not None:
                     cls.set(section, option, fallback)
                 return fallback
+            cls._value_cache[cache_key] = result
             return result
         except SQLAlchemyError:
             # Fallback behavior in case of unexpected DB errors
@@ -179,6 +193,7 @@ class Config:
             if res.rowcount == 0:
                 ins = table.insert().values(section=section, option=option, value=val_str)
                 conn.execute(ins)
+        cls._value_cache[(section, option)] = val_str
 
     @classmethod
     def update_section(cls,old,new):
@@ -187,6 +202,7 @@ class Config:
         with cfg.engine.begin() as conn:
             stmt = update(table).where(table.c.section == old).values(section=new)
             conn.execute(stmt)
+        cls._value_cache.clear()
 
     @classmethod
     def delete(cls, section: str, option: str) -> int:
@@ -197,6 +213,7 @@ class Config:
             with cfg.engine.begin() as conn:
                 stmt = delete(table).where(table.c.section == section, table.c.option == option)
                 res = conn.execute(stmt)
+            cls._value_cache.pop((section, option), None)
             return int(getattr(res, "rowcount", 0) or 0)
         except SQLAlchemyError:
             return 0
@@ -210,9 +227,18 @@ class Config:
             with cfg.engine.begin() as conn:
                 stmt = delete(table).where(table.c.section == section)
                 res = conn.execute(stmt)
+            for key in list(cls._value_cache):
+                if key[0] == section:
+                    cls._value_cache.pop(key, None)
             return int(getattr(res, "rowcount", 0) or 0)
         except SQLAlchemyError:
             return 0
 Config()
 
+from NepTrainKit.logging_config import DEFAULT_LOG_LEVEL, normalize_log_level, set_log_level
 
+_stored_log_level = Config.get("logging", "level", DEFAULT_LOG_LEVEL)
+_active_log_level = normalize_log_level(_stored_log_level)
+if _active_log_level != _stored_log_level:
+    Config.set("logging", "level", _active_log_level)
+set_log_level(_active_log_level)

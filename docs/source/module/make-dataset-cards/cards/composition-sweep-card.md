@@ -66,7 +66,7 @@
 
 ### N Points（n_points）
 
-`int`，默认 50，仅 Sobol 模式生效。目标采样点数，典型值 25-200。
+`int`，默认 50，仅 Sobol 模式生效。它表示通过 `min_fraction` 约束后的目标有效点数，而不是过滤前的尝试数。operation 会继续补采样直到得到该数量；典型值 25-200。
 
 ### Min Fraction（min_fraction）
 
@@ -172,6 +172,8 @@
 **组合爆炸。** 5 元 + Grid + step=0.05 可产生上万个点。先用 `max_outputs` 卡住上限，小样本验证后再放量。
 
 **某些 order 没有输出。** 检查 `budget_mode` 分配和 element 数量。只有 3 个元素但 order 含 4 和 5 时，程序自动跳过不可执行的组合。
+
+**Sobol + min_fraction 报告有效点不足。** 下限越接近等摩尔值 `1/order`，可接受区域越小。operation 会在明确的尝试预算内补采样；仍不足时抛出 `ValueError`，报告实际接受点数、目标点数和尝试次数，不会静默返回少量结构。
 
 ## 输出标签
 

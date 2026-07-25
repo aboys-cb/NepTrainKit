@@ -7,6 +7,7 @@ from qfluentwidgets import BodyLabel, ComboBox, LineEdit, ToolTipFilter, ToolTip
 from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.magnetism import FoldedHelixOperation, FoldedHelixParams
 from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -17,17 +18,20 @@ class FoldedHelixCard(MakeDataCard):
     group = "Magnetism"
     card_name = "Folded Helix"
     menu_icon = r":/images/src/images/perturb.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Folded Helix Generator")
+        self.setTitle(self.tr("Folded Helix Generator"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("folded_helix_card_widget")
 
-        self.layer_axis_label = BodyLabel("Layer axis", self.setting_widget)
-        self.layer_axis_label.setToolTip("Axis used to project positions and group atoms into layers")
+        self.layer_axis_label = BodyLabel(self.tr("Layer axis"), self.setting_widget)
+        self.layer_axis_label.setToolTip(self.tr("Axis used to project positions and group atoms into layers"))
         self.layer_axis_label.installEventFilter(ToolTipFilter(self.layer_axis_label, 300, ToolTipPosition.TOP))
         self.layer_axis_frame = SpinBoxUnitInputFrame(self)
         self.layer_axis_frame.set_input("", 3, "float")
@@ -36,8 +40,8 @@ class FoldedHelixCard(MakeDataCard):
             obj.setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.layer_axis_frame.set_input_value([0.0, 0.0, 1.0])
 
-        self.plane_normal_label = BodyLabel("Rotation-plane normal", self.setting_widget)
-        self.plane_normal_label.setToolTip("Magnetic moments stay in the plane perpendicular to this normal")
+        self.plane_normal_label = BodyLabel(self.tr("Rotation-plane normal"), self.setting_widget)
+        self.plane_normal_label.setToolTip(self.tr("Magnetic moments stay in the plane perpendicular to this normal"))
         self.plane_normal_label.installEventFilter(ToolTipFilter(self.plane_normal_label, 300, ToolTipPosition.TOP))
         self.plane_normal_frame = SpinBoxUnitInputFrame(self)
         self.plane_normal_frame.set_input("", 3, "float")
@@ -46,8 +50,8 @@ class FoldedHelixCard(MakeDataCard):
             obj.setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.plane_normal_frame.set_input_value([0.0, 0.0, 1.0])
 
-        self.layer_tol_label = BodyLabel("Layer tolerance", self.setting_widget)
-        self.layer_tol_label.setToolTip("Atoms whose projected coordinates differ by <= tolerance are treated as one layer")
+        self.layer_tol_label = BodyLabel(self.tr("Layer tolerance"), self.setting_widget)
+        self.layer_tol_label.setToolTip(self.tr("Atoms whose projected coordinates differ by <= tolerance are treated as one layer"))
         self.layer_tol_label.installEventFilter(ToolTipFilter(self.layer_tol_label, 300, ToolTipPosition.TOP))
         self.layer_tol_frame = SpinBoxUnitInputFrame(self)
         self.layer_tol_frame.set_input("A", 1, "float")
@@ -55,25 +59,25 @@ class FoldedHelixCard(MakeDataCard):
         self.layer_tol_frame.object_list[0].setDecimals(4)  # pyright: ignore[reportAttributeAccessIssue]
         self.layer_tol_frame.set_input_value([0.05])
 
-        self.half_period_mode_label = BodyLabel("Half-period mode", self.setting_widget)
-        self.half_period_mode_label.setToolTip("Auto derives the folded half period from the detected layer count")
+        self.half_period_mode_label = BodyLabel(self.tr("Half-period mode"), self.setting_widget)
+        self.half_period_mode_label.setToolTip(self.tr("Auto derives the folded half period from the detected layer count"))
         self.half_period_mode_label.installEventFilter(
             ToolTipFilter(self.half_period_mode_label, 300, ToolTipPosition.TOP)
         )
         self.half_period_mode_combo = ComboBox(self.setting_widget)
-        self.half_period_mode_combo.addItems(["Auto from layer count", "Manual"])
-        self.half_period_mode_combo.setCurrentText("Auto from layer count")
+        add_translated_items(self, self.half_period_mode_combo, ["Auto from layer count", "Manual"])
+        set_combo_value(self.half_period_mode_combo, "Auto from layer count")
 
-        self.half_period_label = BodyLabel("Half-period layers", self.setting_widget)
-        self.half_period_label.setToolTip("Used only in Manual mode: number of layer-to-layer steps from a boundary to the turning layer")
+        self.half_period_label = BodyLabel(self.tr("Half-period layers"), self.setting_widget)
+        self.half_period_label.setToolTip(self.tr("Used only in Manual mode: number of layer-to-layer steps from a boundary to the turning layer"))
         self.half_period_label.installEventFilter(ToolTipFilter(self.half_period_label, 300, ToolTipPosition.TOP))
         self.half_period_frame = SpinBoxUnitInputFrame(self)
         self.half_period_frame.set_input(["-", "step", "layers"], 3, "int")
         self.half_period_frame.setRange(1, 999999)
         self.half_period_frame.set_input_value([2, 4, 1])
 
-        self.angle_step_label = BodyLabel("Layer angle step", self.setting_widget)
-        self.angle_step_label.setToolTip("In-plane rotation added between neighboring layers within each half period")
+        self.angle_step_label = BodyLabel(self.tr("Layer angle step"), self.setting_widget)
+        self.angle_step_label.setToolTip(self.tr("In-plane rotation added between neighboring layers within each half period"))
         self.angle_step_label.installEventFilter(ToolTipFilter(self.angle_step_label, 300, ToolTipPosition.TOP))
         self.angle_step_frame = SpinBoxUnitInputFrame(self)
         self.angle_step_frame.set_input(["-", "step", "deg"], 3, "float")
@@ -82,8 +86,8 @@ class FoldedHelixCard(MakeDataCard):
             obj.setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.angle_step_frame.set_input_value([15.0, 45.0, 15.0])
 
-        self.phase_label = BodyLabel("Phase range", self.setting_widget)
-        self.phase_label.setToolTip("Global in-plane phase offset in degrees: [min, max, step]")
+        self.phase_label = BodyLabel(self.tr("Phase range"), self.setting_widget)
+        self.phase_label.setToolTip(self.tr("Global in-plane phase offset in degrees: [min, max, step]"))
         self.phase_label.installEventFilter(ToolTipFilter(self.phase_label, 300, ToolTipPosition.TOP))
         self.phase_frame = SpinBoxUnitInputFrame(self)
         self.phase_frame.set_input(["-", "step", "deg"], 3, "float")
@@ -92,34 +96,36 @@ class FoldedHelixCard(MakeDataCard):
             obj.setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.phase_frame.set_input_value([0.0, 0.0, 15.0])
 
-        self.sequence_label = BodyLabel("Sequence", self.setting_widget)
-        self.sequence_label.setToolTip("Choose the handedness order across one folded period")
+        self.sequence_label = BodyLabel(self.tr("Sequence"), self.setting_widget)
+        self.sequence_label.setToolTip(self.tr("Choose the handedness order across one folded period"))
         self.sequence_label.installEventFilter(ToolTipFilter(self.sequence_label, 300, ToolTipPosition.TOP))
         self.sequence_combo = ComboBox(self.setting_widget)
-        self.sequence_combo.addItems(
+        add_translated_items(
+            self,
+            self.sequence_combo,
             [
                 "Clockwise then counterclockwise",
                 "Counterclockwise then clockwise",
                 "Both",
             ]
         )
-        self.sequence_combo.setCurrentText("Clockwise then counterclockwise")
+        set_combo_value(self.sequence_combo, "Clockwise then counterclockwise")
 
-        self.source_label = BodyLabel("Magnitude source", self.setting_widget)
-        self.source_label.setToolTip("Use existing initial magmoms or build magnitudes from the map/default below")
+        self.source_label = BodyLabel(self.tr("Magnitude source"), self.setting_widget)
+        self.source_label.setToolTip(self.tr("Use existing initial magmoms or build magnitudes from the map/default below"))
         self.source_label.installEventFilter(ToolTipFilter(self.source_label, 300, ToolTipPosition.TOP))
         self.source_combo = ComboBox(self.setting_widget)
-        self.source_combo.addItems(["Existing initial magmoms", "Map/default magnitude"])
-        self.source_combo.setCurrentText("Existing initial magmoms")
+        add_translated_items(self, self.source_combo, ["Existing initial magmoms", "Map/default magnitude"])
+        set_combo_value(self.source_combo, "Existing initial magmoms")
 
-        self.map_label = BodyLabel("Magmom map", self.setting_widget)
-        self.map_label.setToolTip('Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"')
+        self.map_label = BodyLabel(self.tr("Magmom map"), self.setting_widget)
+        self.map_label.setToolTip(self.tr('Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"'))
         self.map_label.installEventFilter(ToolTipFilter(self.map_label, 300, ToolTipPosition.TOP))
         self.map_edit = LineEdit(self.setting_widget)
-        self.map_edit.setPlaceholderText("Fe:2.2,Ni:0.6")
+        self.map_edit.setPlaceholderText(self.tr("Fe:2.2,Ni:0.6"))
 
-        self.default_label = BodyLabel("Default |m|", self.setting_widget)
-        self.default_label.setToolTip("Magnitude used for elements not listed in the magmom map")
+        self.default_label = BodyLabel(self.tr("Default |m|"), self.setting_widget)
+        self.default_label.setToolTip(self.tr("Magnitude used for elements not listed in the magmom map"))
         self.default_label.installEventFilter(ToolTipFilter(self.default_label, 300, ToolTipPosition.TOP))
         self.default_frame = SpinBoxUnitInputFrame(self)
         self.default_frame.set_input("", 1, "float")
@@ -127,14 +133,14 @@ class FoldedHelixCard(MakeDataCard):
         self.default_frame.object_list[0].setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.default_frame.set_input_value([0.0])
 
-        self.apply_label = BodyLabel("Apply elements", self.setting_widget)
-        self.apply_label.setToolTip("Optional comma-separated element list; empty means all atoms")
+        self.apply_label = BodyLabel(self.tr("Apply elements"), self.setting_widget)
+        self.apply_label.setToolTip(self.tr("Optional comma-separated element list; empty means all atoms"))
         self.apply_label.installEventFilter(ToolTipFilter(self.apply_label, 300, ToolTipPosition.TOP))
         self.apply_edit = LineEdit(self.setting_widget)
-        self.apply_edit.setPlaceholderText("Fe,Co,Ni")
+        self.apply_edit.setPlaceholderText(self.tr("Fe,Co,Ni"))
 
-        self.max_output_label = BodyLabel("Max outputs", self.setting_widget)
-        self.max_output_label.setToolTip("Stop after this many generated structures")
+        self.max_output_label = BodyLabel(self.tr("Max outputs"), self.setting_widget)
+        self.max_output_label.setToolTip(self.tr("Stop after this many generated structures"))
         self.max_output_label.installEventFilter(ToolTipFilter(self.max_output_label, 300, ToolTipPosition.TOP))
         self.max_output_frame = SpinBoxUnitInputFrame(self)
         self.max_output_frame.set_input("unit", 1, "int")
@@ -174,7 +180,7 @@ class FoldedHelixCard(MakeDataCard):
         self._update_half_period_mode_widgets()
 
     def _update_magnitude_source_widgets(self):
-        use_map = self.source_combo.currentText() == "Map/default magnitude"
+        use_map = combo_value(self.source_combo) == "Map/default magnitude"
         self.map_label.setEnabled(use_map)
         self.map_edit.setEnabled(use_map)
         self.map_label.setVisible(use_map)
@@ -185,7 +191,7 @@ class FoldedHelixCard(MakeDataCard):
         self.default_frame.setVisible(use_map)
 
     def _update_half_period_mode_widgets(self):
-        manual = self.half_period_mode_combo.currentText() == "Manual"
+        manual = combo_value(self.half_period_mode_combo) == "Manual"
         self.half_period_label.setEnabled(manual)
         self.half_period_frame.setEnabled(manual)
         self.half_period_label.setVisible(manual)
@@ -199,12 +205,12 @@ class FoldedHelixCard(MakeDataCard):
             layer_axis=self.layer_axis_frame.get_input_value(),
             plane_normal=self.plane_normal_frame.get_input_value(),
             layer_tolerance=float(self.layer_tol_frame.get_input_value()[0]),
-            half_period_mode=self.half_period_mode_combo.currentText(),
+            half_period_mode=combo_value(self.half_period_mode_combo),
             half_period_layers=self.half_period_frame.get_input_value(),
             angle_step_range=self.angle_step_frame.get_input_value(),
             phase_range=self.phase_frame.get_input_value(),
-            sequence_mode=self.sequence_combo.currentText(),
-            magnitude_source=self.source_combo.currentText(),
+            sequence_mode=combo_value(self.sequence_combo),
+            magnitude_source=combo_value(self.source_combo),
             magmom_map=self.map_edit.text(),
             default_moment=float(self.default_frame.get_input_value()[0]),
             apply_elements=self.apply_edit.text(),
@@ -215,12 +221,12 @@ class FoldedHelixCard(MakeDataCard):
         self.layer_axis_frame.set_input_value([float(v) for v in params.layer_axis])
         self.plane_normal_frame.set_input_value([float(v) for v in params.plane_normal])
         self.layer_tol_frame.set_input_value([float(params.layer_tolerance)])
-        self.half_period_mode_combo.setCurrentText(params.half_period_mode)
+        set_combo_value(self.half_period_mode_combo, params.half_period_mode)
         self.half_period_frame.set_input_value([int(v) for v in params.half_period_layers])
         self.angle_step_frame.set_input_value([float(v) for v in params.angle_step_range])
         self.phase_frame.set_input_value([float(v) for v in params.phase_range])
-        self.sequence_combo.setCurrentText(params.sequence_mode)
-        self.source_combo.setCurrentText(params.magnitude_source)
+        set_combo_value(self.sequence_combo, params.sequence_mode)
+        set_combo_value(self.source_combo, params.magnitude_source)
         self.map_edit.setText(params.magmom_map)
         self.default_frame.set_input_value([float(params.default_moment)])
         self.apply_edit.setText(params.apply_elements)

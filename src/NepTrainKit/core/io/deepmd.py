@@ -12,7 +12,6 @@ from .base import (
     ResultData,
     DPPlotData,
     StructureSyncRule,
-    NepPlotData,
     collect_energy_sync,
     collect_force_sync,
     collect_stress_sync,
@@ -48,7 +47,8 @@ class DeepmdResultData(ResultData):
                  force_out_path: Path|str,
                  virial_out_path: Path|str,
                  descriptor_path: Path|str,
-                 spin_out_path: Path|str|None=None
+                 spin_out_path: Path|str|None=None,
+                 cached_outputs_only: bool = False,
                  ):
         """Initialise DeepMD result paths and optional spin output.
 
@@ -69,11 +69,16 @@ class DeepmdResultData(ResultData):
         spin_out_path : Path or str, optional
             Optional file storing spin-related outputs.
         """
-        super().__init__(nep_txt_path, data_xyz_path,descriptor_path)
+        super().__init__(nep_txt_path, data_xyz_path, descriptor_path)
         self.energy_out_path = Path(energy_out_path)
         self.force_out_path = Path(force_out_path)
         self.spin_out_path = Path(spin_out_path) if spin_out_path is not None else None
         self.virial_out_path = Path(virial_out_path)
+        self._force_vector_dataset = None
+        self._spin_dataset = None
+        self._mforce_dataset = None
+        self._mforce_vector_dataset = None
+        self._cached_outputs_only = bool(cached_outputs_only)
 
     STRUCTURE_SYNC_RULES = {
         'energy': StructureSyncRule('energy', 'x_cols', collect_energy_sync),
@@ -110,21 +115,29 @@ class DeepmdResultData(ResultData):
                 nep_txt_path = get_bundled_nep89_path()
         nep_txt_path = Path(nep_txt_path)
 
-        # Match NEP loader behaviour: default nep.txt writes alongside dataset;
-        # alternate models write into dataset_path_<model> folders.
-        nep_stem = nep_txt_path.stem
-        if nep_stem == "nep":
-            output_dir = dataset_path.parent
+        candidate_output_dirs = [dataset_path, dataset_path.parent]
+        e_path = None
+        output_dir = None
+        for candidate_dir in candidate_output_dirs:
+            matches = sorted(candidate_dir.glob("*.e_peratom.out"))
+            if matches:
+                e_path = matches[0]
+                output_dir = candidate_dir
+                break
+        cached_outputs_only = e_path is not None and output_dir is not None
+        if cached_outputs_only:
+            suffix = e_path.name.replace(".e_peratom.out", "")
         else:
-            output_dir = dataset_path.parent / f"{dataset_path}_{nep_stem}"
-            output_dir.mkdir(exist_ok=True)
+            # Match NEP loader behaviour: default nep.txt writes alongside dataset;
+            # alternate models write into dataset_path_<model> folders.
+            nep_stem = nep_txt_path.stem
+            if nep_stem == "nep":
+                output_dir = dataset_path.parent
+            else:
+                output_dir = dataset_path.parent / f"{dataset_path}_{nep_stem}"
+                output_dir.mkdir(exist_ok=True)
+            suffix = "detail"
         descriptor_path = output_dir / "descriptor.out"
-        e_path = list(dataset_path.parent.glob("*.e_peratom.out") )
-        if e_path:
-            e_path = e_path[0]
-            suffix = (e_path.name.replace(".e_peratom.out",""))
-        else:
-            suffix="detail"
         energy_out_path = output_dir / f"{suffix}.e_peratom.out"
         force_out_path = output_dir / f"{suffix}.fr.out"
         if  not force_out_path.exists():
@@ -134,7 +147,16 @@ class DeepmdResultData(ResultData):
         spin_out_path=  output_dir / f"{suffix}.fm.out"
         if not spin_out_path.exists():
             spin_out_path = None
-        inst = cls(nep_txt_path,dataset_path,energy_out_path,force_out_path,virial_out_path,descriptor_path,spin_out_path=spin_out_path)
+        inst = cls(
+            nep_txt_path,
+            dataset_path,
+            energy_out_path,
+            force_out_path,
+            virial_out_path,
+            descriptor_path,
+            spin_out_path=spin_out_path,
+            cached_outputs_only=cached_outputs_only,
+        )
         if structures is not None:
             try:
                 inst.set_structures(structures)
@@ -167,7 +189,7 @@ class DeepmdResultData(ResultData):
         if self.spin_out_path is None:
             return [self.energy, self.force,  self.virial, self.descriptor]
         else:
-            return [self.energy, self.force,self.spin, self.virial, self.descriptor]
+            return [self.energy, self.force, self.mforce, self.virial, self.descriptor]
     @property
     def energy(self):
         """Return the per-atom energy dataset."""
@@ -181,6 +203,10 @@ class DeepmdResultData(ResultData):
         """Return the per-atom spin dataset."""
         return self._spin_dataset
     @property
+    def mforce(self):
+        """Return the magnetic force dataset."""
+        return self._mforce_dataset
+    @property
     def virial(self):
         """Return the per-atom virial dataset."""
         return self._virial_dataset
@@ -193,7 +219,7 @@ class DeepmdResultData(ResultData):
             energy_array = read_nep_out_file(self.energy_out_path, dtype=storage_dtype, ndmin=2)
             force_array = read_nep_out_file(self.force_out_path, dtype=storage_dtype, ndmin=2)
             virial_array = read_nep_out_file(self.virial_out_path, dtype=storage_dtype, ndmin=2)
-            if energy_array.shape[0]!=self.atoms_num_list.shape[0]:
+            if energy_array.shape[0]!=self.atoms_num_list.shape[0] and not self._cached_outputs_only:
                 if self.cache_outputs_enabled():
                     self.energy_out_path.unlink(True)
                     self.force_out_path.unlink(True)
@@ -204,6 +230,11 @@ class DeepmdResultData(ResultData):
                 energy_array, force_array, virial_array = self._recalculate_and_save()
         self._energy_dataset = DPPlotData(energy_array, title="energy")
         default_forces = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
+        self._force_vector_dataset = (
+            DPPlotData(force_array, group_list=self.atoms_num_list, title="force")
+            if force_array.size != 0
+            else None
+        )
         if force_array.size != 0 and default_forces == ForcesMode.Norm:
             force_array = aggregate_per_atom_to_structure(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
             self._force_dataset = DPPlotData(force_array, title="force")
@@ -211,12 +242,32 @@ class DeepmdResultData(ResultData):
             self._force_dataset = DPPlotData(force_array, group_list=self.atoms_num_list, title="force")
         if self.spin_out_path is not None:
             spin_array = read_nep_out_file(self.spin_out_path, dtype=get_storage_float_dtype(), ndmin=2)
-            group_list=[s.spin_num for s in self.structure.now_data]
-            if (np.sum(group_list))!=0:
-                self._spin_dataset = DPPlotData(spin_array,  group_list=group_list, title="spin")
+            group_list = self._mforce_group_list(spin_array.shape[0])
+            if spin_array.size != 0 and group_list is not None:
+                self._mforce_vector_dataset = DPPlotData(spin_array, group_list=group_list, title="mforce")
+                if default_forces == ForcesMode.Norm:
+                    mforce_array = aggregate_per_atom_to_structure(spin_array, group_list, map_func=np.linalg.norm, axis=0)
+                    self._mforce_dataset = DPPlotData(mforce_array, title="mforce")
+                else:
+                    self._mforce_dataset = DPPlotData(spin_array, group_list=group_list, title="mforce")
+                self._spin_dataset = self._mforce_dataset
             else:
                 self.spin_out_path = None
+                self._mforce_vector_dataset = None
+                self._mforce_dataset = None
+                self._spin_dataset = None
         self._virial_dataset = DPPlotData(virial_array, title="virial")
+    def _mforce_group_list(self, row_count: int) -> npt.NDArray[np.int64] | None:
+        """Resolve magnetic-force rows to structures."""
+        spin_counts = np.array([s.spin_num for s in self.structure.now_data], dtype=np.int64)
+        if spin_counts.size != 0 and int(np.sum(spin_counts)) == int(row_count):
+            return spin_counts
+        atom_counts = np.asarray(self.atoms_num_list, dtype=np.int64)
+        if atom_counts.size != 0 and int(np.sum(atom_counts)) == int(row_count):
+            return atom_counts
+        if atom_counts.size != 0 and int(atom_counts.size) == int(row_count):
+            return np.ones(atom_counts.size, dtype=np.int64)
+        return None
     def _should_recalculate(self  ) -> bool:
         """Return ``True`` when cached output files are missing.
 
@@ -225,6 +276,8 @@ class DeepmdResultData(ResultData):
         bool
             ``True`` if any required DeepMD output file is absent.
         """
+        if self._cached_outputs_only:
+            return False
         output_files_exist = any([
             self.energy_out_path.exists(),
             self.force_out_path.exists(),
@@ -309,10 +362,10 @@ class DeepmdResultData(ResultData):
             Energy, force, and virial arrays that were written to disk.
         """
         try:
-            nep_potentials_list, nep_forces_list, nep_virials_list = self.nep_calc.calculate(self.structure.now_data.tolist())
-            nep_potentials_array = np.array(nep_potentials_list, dtype=np.float64)
-            nep_forces_array = np.asarray(np.vstack(nep_forces_list), dtype=np.float64)
-            nep_virials_array = np.asarray(np.vstack(nep_virials_list), dtype=np.float64)
+            prediction = self.nep_calc.predict(self.structure.now_data.tolist())
+            nep_potentials_array = np.asarray(prediction.energy, dtype=np.float64)
+            nep_forces_array = np.asarray(prediction.forces, dtype=np.float64)
+            nep_virials_array = np.asarray(prediction.structure_virials, dtype=np.float64)
             if nep_potentials_array.size == 0:
                 MessageManager.send_warning_message("The nep calculator fails to calculate the potentials, use the original potentials instead.")
             energy_array = self._save_energy_data(nep_potentials_array)

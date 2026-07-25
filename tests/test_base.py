@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 from NepTrainKit.core.io import NepPlotData, StructureData, ResultData
+from NepTrainKit.config import Config
 from NepTrainKit.core.energy_shift import DFT_TO_NEP_ALIGNMENT
 from NepTrainKit.core.structure import Structure
 from NepTrainKit.core.types import (
@@ -48,6 +49,26 @@ def test_nep_plot_data(test_setup):
     assert data.remove_data.shape == (2, 6)
     data.revoke()
     assert data.now_data.shape == (10, 6)
+
+
+def test_nep_plot_data_max_error_uses_unique_structure_order():
+    data = np.array(
+        [
+            [10.0, 0.0],
+            [9.0, 0.0],
+            [8.0, 0.0],
+            [7.0, 0.0],
+            [6.0, 0.0],
+            [5.0, 0.0],
+            [4.0, 0.0],
+            [3.0, 0.0],
+        ],
+        dtype=np.float64,
+    )
+    plot = NepPlotData(data, group_list=[4, 2, 2], title="force")
+
+    assert plot.get_max_error_index(3) == [0, 1, 2]
+
 
 def test_structure_data(test_setup):
     """测试StructureData基本功能"""
@@ -93,6 +114,69 @@ def test_structure_data_completer_cache_counts():
     assert elem_cache["H"] == 1
     assert elem_cache["O"] == 2
     assert elem_cache["Fe"] == 2
+
+
+def test_structure_geometry_snapshot_survives_mask_changes_and_reuses_storage():
+    structures = [
+        _make_structure(["H"], "single"),
+        _make_structure(["Fe", "O"], "pair"),
+        _make_structure(["Ni"], "single"),
+    ]
+    structures[1].positions[1] = np.asarray([0.25, 0.0, 0.0], dtype=np.float32)
+    data = StructureData(structures)
+
+    full = data.geometry_snapshot()
+    assert data.geometry_snapshot() is full
+    assert full.positions.dtype == np.float32
+    assert full.atomic_numbers.tolist() == [1, 26, 8, 28]
+    assert full.atom_offsets.tolist() == [0, 1, 3, 4]
+
+    data.remove(1)
+    active = data.geometry_snapshot(data.now_indices)
+    assert active.source_indices.tolist() == [0, 2]
+    assert active.atom_offsets.tolist() == [0, 1, 2]
+    assert data.geometry_snapshot(data.now_indices) is active
+
+    data.revoke()
+    assert data.geometry_snapshot(data.now_indices) is full
+
+
+def test_structure_geometry_cache_owns_versioned_derived_analysis():
+    data = StructureData([_make_structure(["Ni"], "single")])
+    calls = []
+
+    first, first_hit = data.cached_geometry_analysis(
+        "phase",
+        ("method-v1", (0,)),
+        lambda: calls.append("built") or {"phase": "fcc"},
+    )
+    second, second_hit = data.cached_geometry_analysis(
+        "phase",
+        ("method-v1", (0,)),
+        lambda: calls.append("rebuilt") or {"phase": "bcc"},
+    )
+
+    assert first == {"phase": "fcc"}
+    assert second is first
+    assert first_hit is False
+    assert second_hit is True
+    assert calls == ["built"]
+
+
+def test_non_physical_scan_uses_active_geometry_snapshot():
+    safe = _make_structure(["H"], "safe")
+    collision = _make_structure(["Fe", "O"], "collision")
+    collision.positions[1] = np.asarray([0.1, 0.0, 0.0], dtype=np.float32)
+    owner = type("Owner", (), {})()
+    owner.structure = StructureData([safe, collision])
+    owner._pending_non_physical_indices = []
+
+    assert list(ResultData.iter_non_physical_structure_indices(owner, 0.7)) == [1, 1]
+    assert ResultData.consume_non_physical_structure_indices(owner) == [1]
+
+    owner.structure.remove(1)
+    assert list(ResultData.iter_non_physical_structure_indices(owner, 0.7)) == [1]
+    assert ResultData.consume_non_physical_structure_indices(owner) == []
 
 
 def test_completer_cache_respects_max_items():
@@ -201,6 +285,60 @@ def _build_dummy_result() -> _DummyResultData:
     return _DummyResultData(structures)
 
 
+def test_descriptor_pca_cache_reuses_matching_file(tmp_path):
+    previous_cache = Config.get("io", "cache_outputs", None)
+    try:
+        Config.set("io", "cache_outputs", True)
+        data = _build_dummy_result()
+        data.descriptor_path = tmp_path / "descriptor.out"
+        data.descriptor_path.write_text("descriptor payload", encoding="utf8")
+
+        descriptors = np.arange(30, dtype=np.float32).reshape(5, 6)
+        reduced = np.column_stack(
+            [
+                np.linspace(0.0, 1.0, num=5, dtype=np.float32),
+                np.linspace(1.0, 2.0, num=5, dtype=np.float32),
+            ]
+        )
+
+        with patch("NepTrainKit.core.io.base.pca", return_value=reduced) as pca_mock:
+            first = data._load_or_compute_descriptor_pca(descriptors)
+            second = data._load_or_compute_descriptor_pca(descriptors)
+
+        pca_mock.assert_called_once_with(descriptors, 2)
+        np.testing.assert_allclose(first, reduced)
+        np.testing.assert_allclose(second, reduced)
+    finally:
+        if previous_cache is None:
+            Config.delete("io", "cache_outputs")
+        else:
+            Config.set("io", "cache_outputs", previous_cache)
+
+
+def test_export_model_xyz_reads_export_digits_once(tmp_path):
+    previous_digits = Config.get("io", "export_significant_digits", None)
+    try:
+        Config.delete("io", "export_significant_digits")
+        data = _build_dummy_result()
+
+        with patch.object(Config, "getint", wraps=Config.getint) as getint_mock:
+            data.export_model_xyz(tmp_path)
+
+        digit_calls = [
+            call for call in getint_mock.call_args_list
+            if call.args[:2] == ("io", "export_significant_digits")
+        ]
+        assert len(digit_calls) == 1
+
+        lines = (tmp_path / "export_good_model.xyz").read_text(encoding="utf8").splitlines()
+        assert lines[2].startswith("H 0 0.009999999776 0.01999999955")
+    finally:
+        if previous_digits is None:
+            Config.delete("io", "export_significant_digits")
+        else:
+            Config.set("io", "export_significant_digits", previous_digits)
+
+
 def test_discover_atomic_numeric_fields_excludes_blacklist_and_classifies():
     data = _build_dummy_result()
     fields = data.discover_atomic_numeric_fields(scope="active")
@@ -238,6 +376,57 @@ def test_distribution_formula_group_vector_has_norm_metric():
     assert "atomic:spin_vec|norm" in metric_by_key
     total = sum(int(s.get("total", 0)) for s in metric_by_key["atomic:spin_vec|norm"].get("series", []))
     assert total == 5  # two structures: 2 + 3 atoms
+
+
+def test_distribution_value_view_groups_atomic_vector_norm_as_reference():
+    data = _build_dummy_result()
+    req = DistributionRequest(
+        field_keys=("atomic:spin_vec",),
+        include_norm=True,
+        group_mode=DistributionGroupMode.VALUE_VIEW,
+        selected_value_views=(DistributionValueView.REFERENCE.value,),
+        scope=DistributionScope.ACTIVE,
+        bins=20,
+    )
+
+    list(data.iter_distribution_analysis(req))
+    metric_by_key = {
+        metric["metric_key"]: metric
+        for metric in data.get_distribution_analysis().get("metrics", [])
+    }
+
+    for component in ("x", "y", "z", "norm"):
+        series = metric_by_key[f"atomic:spin_vec|{component}"]["series"]
+        assert [item["series_key"] for item in series] == [DistributionValueView.REFERENCE.value]
+
+
+def test_distribution_value_view_emits_selected_dataset_views():
+    data = _build_dummy_result()
+    req = DistributionRequest(
+        field_keys=("dataset:force",),
+        include_norm=False,
+        group_mode=DistributionGroupMode.VALUE_VIEW,
+        selected_value_views=(
+            DistributionValueView.REFERENCE.value,
+            DistributionValueView.PREDICTION.value,
+            DistributionValueView.ERROR.value,
+        ),
+        scope=DistributionScope.ACTIVE,
+        bins=20,
+    )
+
+    list(data.iter_distribution_analysis(req))
+    metric = next(
+        item
+        for item in data.get_distribution_analysis().get("metrics", [])
+        if item.get("metric_key") == "dataset:force|x"
+    )
+
+    assert {item["series_key"] for item in metric["series"]} == {
+        DistributionValueView.REFERENCE.value,
+        DistributionValueView.PREDICTION.value,
+        DistributionValueView.ERROR.value,
+    }
 
 
 def test_distribution_element_group_counts_match_element_atoms():
@@ -315,7 +504,16 @@ def test_apply_dft_d3_correction_keeps_energy_float64():
     zero_virials = [np.zeros(9, dtype=np.float32) for _ in data.structure.now_data]
 
     with patch("NepTrainKit.core.io.base.NepCalculator") as calc_cls:
-        calc_cls.return_value.calculate_dftd3.return_value = (potentials, zero_forces, zero_virials)
+        prediction = type(
+            "Prediction",
+            (),
+            {
+                "energy": np.asarray(potentials),
+                "force_blocks": lambda self: zero_forces,
+                "structure_virials": np.asarray(zero_virials),
+            },
+        )()
+        calc_cls.return_value.predict_dftd3.return_value = prediction
         data.apply_dft_d3_correction(mode=0, functional="pbe", cutoff=12.0, cutoff_cn=10.0)
 
     shifted = np.array([structure.energy for structure in data.structure.now_data], dtype=np.float64)
@@ -559,6 +757,50 @@ def test_expression_search_supports_builtins_elements_and_dynamic_fields():
     assert data.search_config("force.err.x > 0.005", SearchType.EXPRESSION) == [0, 1]
 
 
+def test_expression_search_accepts_explicit_boolean_predicates():
+    data = _build_dummy_result()
+
+    assert data.search_config("has_energy", SearchType.EXPRESSION) == [0, 1]
+    assert data.search_config("has.H", SearchType.EXPRESSION) == [0]
+    assert data.search_config("!has.H", SearchType.EXPRESSION) == [1]
+    assert data.search_config("has_energy && natoms > 2", SearchType.EXPRESSION) == [1]
+
+
+@pytest.mark.parametrize(
+    ("expression", "message"),
+    [
+        ("natoms", "must be a condition"),
+        ("energy_per_atom", "must be a condition"),
+        ("natoms / 2", "must be a condition"),
+        ("natoms && energy", "must be a condition"),
+        ("True", "at least one structure field"),
+        ("1 < 2", "at least one structure field"),
+    ],
+)
+def test_expression_search_rejects_values_that_would_be_cast_to_boolean(expression, message):
+    data = _build_dummy_result()
+
+    with pytest.raises(ValueError, match=message):
+        data.search_config(expression, SearchType.EXPRESSION)
+
+
+def test_expression_validation_does_not_disappear_on_an_empty_dataset():
+    data = _build_dummy_result()
+    data.remove([0, 1])
+
+    with pytest.raises(ValueError, match="must be a condition"):
+        data.search_config("natoms", SearchType.EXPRESSION)
+    assert data.search_config("natoms > 0", SearchType.EXPRESSION) == []
+
+
+def test_expression_search_skips_dynamic_discovery_for_simple_references():
+    data = _build_dummy_result()
+
+    with patch.object(data, "_discover_expression_fields", side_effect=AssertionError("unexpected dynamic scan")):
+        assert data.search_config("natoms > 2", SearchType.EXPRESSION) == [1]
+        assert data.search_config("count.Fe >= 2", SearchType.EXPRESSION) == [1]
+
+
 def test_expression_search_handles_atomic_fields_and_errors():
     data = _build_dummy_result()
 
@@ -586,4 +828,3 @@ def test_expression_completer_cache_refreshes_after_structure_removal():
     refreshed = data.get_completer_cache(SearchType.EXPRESSION, max_items=50000)
     assert "count.Fe" not in refreshed
     assert "has.H" in refreshed
-

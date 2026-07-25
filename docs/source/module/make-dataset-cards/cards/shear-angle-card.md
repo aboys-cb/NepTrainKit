@@ -109,8 +109,8 @@ $$\mathbf{C}'=\mathrm{cellpar\_to\_cell}(a,b,c,\alpha',\beta',\gamma')$$
 
 ## 推荐组合
 
-- `Lattice Strain` -> `Shear Angle Strain`：先做长度应变，再补角度剪切
-- `Shear Angle Strain` -> `Atomic Perturb`：角度畸变后加原子坐标噪声
+- `Lattice Strain` → `Shear Angle Strain`：先做长度应变，再补角度剪切
+- `Shear Angle Strain` → `Atomic Perturb`：角度畸变后加原子坐标噪声
 - `Shear Angle Strain` + `Shear Matrix Strain`：两者走不同形变路径，互补覆盖
 
 ## 常见问题

@@ -1,0 +1,286 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-21 13:06+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: NepTrainKit documentation team\n"
+"Language: en\n"
+"Language-Team: English\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/quickstart.md:1 084fd73774f64065a11753617350dd8e
+msgid "快速开始"
+msgstr "Quick start"
+
+#: ../../source/quickstart.md:3 c89a7afd6bd841ec8cc8efd827d0571e
+msgid "这页只做一件事：从安装到生成第一批候选结构。跑通以后，再去看完整清洗流程和每张卡片的参数。"
+msgstr ""
+"This page takes you from installation to a first set of candidate "
+"structures. Once that path works, continue with the full cleaning "
+"workflow and the parameter reference for individual cards."
+
+#: ../../source/quickstart.md:5 5c59a937546340d1b60ea02f6b12798a
+msgid "1. 安装"
+msgstr "Step 1: Install NepTrainKit"
+
+#: ../../source/quickstart.md:7 ab7b2829ad7e41fa89b2be5c867b7fdd
+msgid "建议使用独立环境，Python 版本用 3.10 到 3.13。"
+msgstr "Use an isolated environment with Python 3.10 through 3.13."
+
+#: ../../source/quickstart.md:9 2c720e645df04729a3eb4122b608d58f
+msgid ""
+"conda create -n nepkit python=3.10\n"
+"conda activate nepkit\n"
+"pip install NepTrainKit\n"
+msgstr ""
+
+#: ../../source/quickstart.md:15 e11f1cda3ce744ff9c345e27ddcc1fb0
+msgid ""
+"NepTrainKit 会安装独立的 `nep-adapters` 运行时。macOS 和 Windows wheel 提供 CPU；Linux "
+"x86_64 wheel 同时提供 CPU 和 CUDA。安装 wheel 不要求本机安装 CUDA Toolkit 或 NVCC，但 CUDA "
+"计算需要兼容的 NVIDIA 驱动。"
+msgstr ""
+"NepTrainKit installs the separate `nep-adapters` runtime. The macOS and "
+"Windows wheels provide CPU support, while the Linux x86_64 wheel provides "
+"both CPU and CUDA. Installing a wheel does not require a local CUDA Toolkit "
+"or NVCC, but CUDA calculations require a compatible NVIDIA driver."
+
+#: ../../source/quickstart.md:17 5fc4f671e08b4e1a947f8fe591ee5653
+msgid "安装后先确认运行时状态："
+msgstr "Confirm the runtime status after installation:"
+
+#: ../../source/quickstart.md:19 3c1967a41b7a4c3689eaf0b68703e4ac
+msgid ""
+"python -c \"import nep_adapters as n; print(n.backend_status('cpu')); "
+"print(n.backend_status('cuda'))\"\n"
+msgstr ""
+
+#: ../../source/quickstart.md:23 c12d4ce5994c44a39c50b7b25d447117
+msgid ""
+"如果 `cuda` 显示不可用，NepTrainKit 的 `Auto` 模式会说明原因并使用 CPU。只有在必须使用 CUDA 时才明确选择 "
+"`CUDA`；不可用时程序会直接报错。"
+msgstr ""
+"If `cuda` is unavailable, NepTrainKit's `Auto` mode explains why and uses "
+"the CPU. Select `CUDA` explicitly only when CUDA is required; the application "
+"will report an error if it is unavailable."
+
+#: ../../source/quickstart.md:25 7d64d0ddbec641c98740476d4e263ab7
+msgid "启动软件："
+msgstr "Launch the application:"
+
+#: ../../source/quickstart.md:27 5f056dc03d014cd48e86a5de41c7a877
+msgid "nepkit\n"
+msgstr ""
+
+#: ../../source/quickstart.md:31 87fa1e7b0a1e4d2d8b4436fd04522c9e
+msgid "2. 打开 Make Dataset"
+msgstr "Step 2: Open Make Dataset"
+
+#: ../../source/quickstart.md:33 46d7269f7b5840cdac3afa0f13fe7ce4
+msgid ""
+"第一次建议从 `Make Dataset` 开始。它的职责是制作训练集候选结构：输入一批基础结构， "
+"选择一张或多张卡片，生成应变、扰动、缺陷、表面、掺杂或磁性构型。"
+msgstr ""
+"Start with `Make Dataset` when learning the application. It turns a set "
+"of base structures into candidate configurations through one or more "
+"cards, including strain, perturbation, defects, surfaces, doping, and "
+"magnetic configurations."
+
+#: ../../source/quickstart.md:36 d10e4b3329ae419baa5a2748601467eb
+msgid ""
+"切到 `Make Dataset` 后，先点击窗口顶部的 `Open` 按钮导入初始结构。这里的初始结构 通常是已经弛豫好的 "
+"`xyz`、`extxyz`、`POSCAR` 或 `CIF` 文件；后面的卡片都会以这批结构 作为输入继续生成候选构型。"
+msgstr ""
+"Switch to `Make Dataset`, then click `Open` in the title bar and import "
+"the starting structures. These are normally relaxed `xyz`, `extxyz`, "
+"`POSCAR`, or `CIF` files. Every card added later uses this collection as "
+"its input."
+
+#: ../../source/quickstart.md:40 61954afaf02b4c9a9ea2ac0c80e4d75a
+msgid "Make Dataset empty workspace"
+msgstr ""
+
+#: ../../source/quickstart.md:40 61954afaf02b4c9a9ea2ac0c80e4d75a
+msgid ".. image:: _static/image/generated/make_data_empty.png"
+msgstr ""
+
+#: ../../source/quickstart.md:45 571f075630fe4788af262d016999c625
+msgid "图中需要记住四个位置："
+msgstr "Remember these four areas:"
+
+#: ../../source/quickstart.md:47 a1ddd92c77da4c7d81ad001af42c973a
+msgid "`Open input structures`：导入初始结构。没有输入结构时，多数生成卡片没有可处理对象。"
+msgstr ""
+"`Open input structures`: import the starting structures. Most generation "
+"cards have nothing to process until an input has been loaded."
+
+#: ../../source/quickstart.md:48 44c8469e746548e796f01d200ac33c0e
+msgid "`Add new card`：添加构型生成或筛选卡片。"
+msgstr "`Add new card`: add a structure-generation or filtering operation."
+
+#: ../../source/quickstart.md:49 263dab51af5847069307ae117e480bc8
+msgid "`Run selected cards`：只运行已勾选的卡片。"
+msgstr "`Run selected cards`: run only the cards that are currently selected."
+
+#: ../../source/quickstart.md:50 cf2cc034b2c2405c89f0a135320e1a01
+msgid "`Workflow workspace`：卡片会按顺序放在这里，后续也在这里检查结果和导出。"
+msgstr ""
+"`Workflow workspace`: cards appear here in execution order; use the same "
+"area to inspect and export their results."
+
+#: ../../source/quickstart.md:52 58404ba4028141beb06dfe618f260ddb
+msgid "3. 生成一组候选结构"
+msgstr "Step 3: Generate a candidate set"
+
+#: ../../source/quickstart.md:54 69bad9bc3feb412bb1fb174410082f75
+msgid ""
+"这里用 `Lattice Strain` 作为第一张卡。它的输入是已有结构，输出是一组晶格被拉伸或压缩后的结构。 "
+"这一步得到的是候选结构，不是最终训练集。"
+msgstr ""
+"Use `Lattice Strain` as the first card. It takes existing structures and "
+"produces variants with stretched or compressed cells. The output is a "
+"candidate set, not a finished training set."
+
+#: ../../source/quickstart.md:57 d90928237fc54e1d8ae8e7d29e0352e4
+msgid "先用 `Open` 导入初始结构。"
+msgstr "Import a starting structure with `Open`."
+
+#: ../../source/quickstart.md:58 777aef168a6c42b9b0ac9c2eb61a671b
+msgid "点击 `Add new card`。"
+msgstr "Click `Add new card`."
+
+#: ../../source/quickstart.md:59 53a3b26809ec4f7794e8316d8638372f
+msgid "选择 `Lattice Strain`。"
+msgstr "Choose `Lattice Strain`."
+
+#: ../../source/quickstart.md:60 35c4512413dd45dd9de4e8b08050e4fd
+msgid "设置一个小范围，例如 X/Y/Z 都从 `-2%` 到 `2%`，步长 `1%`。"
+msgstr ""
+"Use a small initial range, for example `-2%` to `2%` along X, Y, and Z "
+"with a `1%` step."
+
+#: ../../source/quickstart.md:61 78098a30e8a5478591aec640d6346f88
+msgid "勾选这张卡，点击顶部 `Run`。"
+msgstr "Select the card and click `Run` in the title bar."
+
+#: ../../source/quickstart.md:62 faff077e692b478c95566ed3b102b908
+msgid "运行完成后，从卡片上的导出按钮保存结果。"
+msgstr "When the run finishes, save the result with the export button on the card."
+
+#: ../../source/quickstart.md:64 2912b2c4be9b4ae184c3f00a6f83a159
+msgid "Lattice Strain quickstart"
+msgstr ""
+
+#: ../../source/quickstart.md:64 2912b2c4be9b4ae184c3f00a6f83a159
+msgid ".. image:: _static/image/generated/make_data_lattice_strain.png"
+msgstr ""
+
+#: ../../source/quickstart.md:69 b705ee6265db4a648768418b1b528bdb
+msgid "这张图对应的使用逻辑是："
+msgstr "The workflow illustrated above is deliberate:"
+
+#: ../../source/quickstart.md:71 d71050c663c84593857f9a893117e5ff
+msgid "先添加卡片，不要一开始就改很多高级参数。"
+msgstr "Add the card first; do not begin by changing every advanced option."
+
+#: ../../source/quickstart.md:72 b9cc021b03f6452cbe6d96aeea3e1be7
+msgid "只改与物理目标直接相关的范围，例如应变轴、最小值、最大值、步长。"
+msgstr ""
+"Change only the ranges tied directly to the physical objective, such as "
+"the strain axes, minimum, maximum, and step."
+
+#: ../../source/quickstart.md:73 c1e1b39b9e4642bfab1f52383dc78013
+msgid "运行后先看输出数量是否符合预期，再导出到下一步检查。"
+msgstr ""
+"Check that the output count is plausible before exporting the structures "
+"for inspection."
+
+#: ../../source/quickstart.md:75 4eebba56a7f249ba88a25f047ba0faa5
+msgid "4. 检查候选结构"
+msgstr "Step 4: Inspect the candidates"
+
+#: ../../source/quickstart.md:77 f40b3ad6a47b44fd96284b2ddb1f06a2
+msgid "`Make Dataset` 生成的是候选结构，不建议默认直接送 DFT。最短检查路径是："
+msgstr ""
+"`Make Dataset` produces candidates. Do not send them directly to DFT "
+"without inspection. The shortest reliable path is:"
+
+#: ../../source/quickstart.md:79 55c85e317b8546eda68d8dc844e42245
+msgid "NEP Dataset Display overview"
+msgstr ""
+
+#: ../../source/quickstart.md:79 55c85e317b8546eda68d8dc844e42245
+msgid ".. image:: _static/image/generated/show_nep_overview.png"
+msgstr ""
+
+#: ../../source/quickstart.md:84 5c808580b3f7489caab67e2c397aabd0
+msgid "在 `NEP Dataset Display` 打开候选结构。"
+msgstr "Open the candidates in `NEP Dataset Display`."
+
+#: ../../source/quickstart.md:85 9eed536de2f6479a9a4528cfe5b1e5cd
+msgid "先看结构和明显异常点。"
+msgstr "Inspect the structures and the most obvious outliers first."
+
+#: ../../source/quickstart.md:86 f652979546a444ff9af180b280e2a135
+msgid "删除或单独导出异常样本。"
+msgstr "Delete problematic samples or export them separately for investigation."
+
+#: ../../source/quickstart.md:87 28e499cd78e3465da655d8a430e1dd18
+msgid "清洗后再决定是否做 FPS 代表性采样。"
+msgstr "After cleaning, decide whether representative FPS sampling is needed."
+
+#: ../../source/quickstart.md:89 4e1432a8830d4155a09024e5640d8e42
+msgid "5. 进入 DFT 和训练"
+msgstr "Step 5: Continue to DFT and training"
+
+#: ../../source/quickstart.md:91 d899352f44a14818891f60b04f4e0fa6
+msgid ""
+"清洗后的结构再送去做第一性原理计算。DFT 标注完成后，用 GPUMD 训练 NEP； 训练结束后，再回到 `NEP Dataset "
+"Display` 查看训练误差。"
+msgstr ""
+"Send the cleaned structures to first-principles calculations. Once DFT "
+"labels are available, train the NEP model with GPUMD. Return to `NEP "
+"Dataset Display` after training to inspect the errors."
+
+#: ../../source/quickstart.md:94 599e8e1142914a109cf10de147b33c72
+msgid ""
+"完整的清洗顺序、为什么不要先 FPS、以及如何用 NEP 预测做预筛，见 [候选结构清洗后再进入 DFT](workflows/clean-"
+"candidate-structures.md)。"
+msgstr ""
+"See [Clean candidate structures before DFT](workflows/clean-candidate-"
+"structures.md) for the complete order of operations, why FPS should not "
+"come first, and how to use NEP predictions for prescreening."
+
+#: ../../source/quickstart.md:97 c56e3a3cc853433e90c3384528c9a0ae
+msgid ""
+"如果你在做缺陷、表面、掺杂或磁性结构，直接去看 [Make Dataset 卡片手册](module/make-dataset-"
+"cards/index.md)。手册按卡片用途组织，比逐个试菜单更快。"
+msgstr ""
+"For defects, surfaces, doping, or magnetic configurations, go directly to"
+" the [Make Dataset card manual](module/make-dataset-cards/index.md). It "
+"is organized by physical objective, which is faster than trying cards one"
+" by one."
+
+#: ../../source/quickstart.md:99 66c28a60adba4b84a7a30ed670aad652
+msgid ""
+"如果你要从标准晶体开始，而不是导入已有结构，可以先用 `Crystal Prototype Builder` 生成 "
+"`fcc`、`bcc`、`hcp` 或 `fcc111` 原型。需要扫 fcc (111) 的 GSFE 路径时，先生成 `fcc111` "
+"原型，再接 `Strict GSFE Path`；不要把普通 cubic `fcc` cell 直接拿去扫 `(111)`。"
+msgstr ""
+"To start from a standard crystal instead of importing an existing "
+"structure, use `Crystal Prototype Builder` to create an `fcc`, `bcc`, "
+"`hcp`, or `fcc111` prototype. For an fcc (111) GSFE scan, create `fcc111`"
+" first and feed it into `Strict GSFE Path`; do not use a conventional "
+"cubic `fcc` cell directly for a `(111)` scan."

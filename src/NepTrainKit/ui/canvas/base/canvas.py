@@ -3,11 +3,15 @@
 from abc import ABC, abstractmethod
 
 import numpy as np
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QCoreApplication, QObject, Signal
 
 from NepTrainKit.core import MessageManager
 from NepTrainKit.core.types import Brushes
 from NepTrainKit.ui.views import KitToolBarBase
+
+
+def _tr(text: str) -> str:
+    return QCoreApplication.translate("CanvasBase", text)
 
 
 class CanvasBase(ABC):
@@ -142,6 +146,7 @@ class CanvasLayoutBase(CanvasBase):
         self.draw_mode = False
         self.structure_index = 0
         self.axes_list = []
+        self._search_highlight_indices: set[int] = set()
         self.CurrentAxesChanged.connect(self.set_view_layout)
 
     @abstractmethod
@@ -210,6 +215,7 @@ class CanvasLayoutBase(CanvasBase):
         """Delete selected structures and refresh the canvas."""
 
         if self.nep_result_data is not None and self.nep_result_data.select_index:
+            self.clear_search_highlight()
             self.nep_result_data.delete_selected()
             self.plot_nep_result()
 
@@ -217,10 +223,73 @@ class CanvasLayoutBase(CanvasBase):
         """Undo the most recent deletion when possible."""
 
         if self.nep_result_data and self.nep_result_data.is_revoke:
+            self.clear_search_highlight()
             self.nep_result_data.revoke()
             self.plot_nep_result()
         else:
-            MessageManager.send_info_message("No undoable deletion!")
+            MessageManager.send_info_message(_tr("No undoable deletion!"))
+
+    def _restore_reject_highlight(self, indices):
+        """Restore reject color for unselected rejected structures."""
+        try:
+            reject = getattr(self.nep_result_data, "reject_index", None)
+            if reject:
+                to_reject = [idx for idx in indices if idx in reject]
+                setter = getattr(self, "set_reject_highlight", None)
+                if setter is not None and to_reject:
+                    setter(to_reject, True)
+        except Exception:
+            pass
+
+    def _sync_selection_colors(self, before, after):
+        """Update scatter colors from two selection snapshots."""
+        try:
+            active = set(self.nep_result_data.structure.now_indices.tolist())
+        except Exception:
+            active = set()
+        if not before and active and after == active:
+            self.rebuild_selection_display()
+            return
+        to_default = sorted(before - after)
+        to_selected = sorted(after - before)
+        if to_default:
+            self.update_scatter_color(to_default, Brushes.Default)
+            self._restore_reject_highlight(to_default)
+        if to_selected:
+            self.update_scatter_color(to_selected, Brushes.Selected)
+
+    def rebuild_selection_display(self):
+        """Rebuild selection visuals from the current selection set."""
+        selected = set(getattr(self.nep_result_data, "select_index", set()))
+        if selected:
+            self.update_scatter_color(sorted(selected), Brushes.Selected)
+
+    def set_search_highlight(self, indices):
+        """Replace the current non-destructive search preview."""
+        self._search_highlight_indices = {int(index) for index in indices}
+
+    def clear_search_highlight(self):
+        """Clear the non-destructive search preview."""
+        self._search_highlight_indices.clear()
+
+    def apply_selection_result(self, indices, mode: str) -> bool:
+        """Apply one cached match set and refresh selection visuals once."""
+        if self.nep_result_data is None:
+            return False
+        changed = bool(self.nep_result_data.apply_selection(indices, mode))
+        if changed:
+            self.rebuild_selection_display()
+        return changed
+
+    def undo_selection(self):
+        """Undo the most recent selection change."""
+        if self.nep_result_data is None:
+            return
+        before = set(self.nep_result_data.select_index)
+        if self.nep_result_data.undo_selection():
+            self._sync_selection_colors(before, set(self.nep_result_data.select_index))
+        else:
+            MessageManager.send_info_message(_tr("No undoable selection!"))
 
     def select_index(self, structure_index, reverse):
         """Toggle selection state for one or more structures.
@@ -240,22 +309,21 @@ class CanvasLayoutBase(CanvasBase):
 
         if not structure_index:
             return
+        selected = set(getattr(self.nep_result_data, "select_index", set()))
+        idx_set = {int(i) for i in structure_index}
         if reverse:
-            self.nep_result_data.uncheck(structure_index)
-            self.update_scatter_color(structure_index, Brushes.Default)
-            # Restore reject highlights for indices that are still tagged as bad.
-            try:
-                reject = getattr(self.nep_result_data, "reject_index", None)
-                if reject:
-                    to_reject = [idx for idx in structure_index if idx in reject]
-                    setter = getattr(self, "set_reject_highlight", None)
-                    if setter is not None and to_reject:
-                        setter(to_reject, True)
-            except Exception:
-                pass
+            changed = sorted(idx_set.intersection(selected))
+            if not changed:
+                return
+            self.nep_result_data.uncheck(changed)
+            self.update_scatter_color(changed, Brushes.Default)
+            self._restore_reject_highlight(changed)
         else:
-            self.nep_result_data.select(structure_index)
-            self.update_scatter_color(structure_index, Brushes.Selected)
+            changed = sorted(idx_set.difference(selected))
+            if not changed:
+                return
+            self.nep_result_data.select(changed)
+            self.update_scatter_color(changed, Brushes.Selected)
 
     def inverse_select(self):
         """Flip the selection state across all active structures."""
@@ -263,11 +331,9 @@ class CanvasLayoutBase(CanvasBase):
         if self.nep_result_data is None:
             return
 
-        active_indices = set(self.nep_result_data.structure.now_indices.tolist())
-        selected = set(self.nep_result_data.select_index)
-
-        self.select_index(list(selected), True)
-        self.select_index(list(active_indices - selected), False)
+        before = set(self.nep_result_data.select_index)
+        self.nep_result_data.inverse_select()
+        self._sync_selection_colors(before, set(self.nep_result_data.select_index))
 
 
 class VispyCanvasLayoutBase(CanvasLayoutBase, QObject, metaclass=CombinedMeta):

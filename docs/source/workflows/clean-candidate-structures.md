@@ -62,7 +62,7 @@
 - `Select by Range`：按图上范围选择异常点。
 - `Find Max Error Point`：在有参考或预测结果时定位最极端样本。
 - 搜索框：按 `Config_type`、元素或表达式筛某一类结构。
-- `Delete Selected Items` / `Undo`：删除和撤销。
+- `Delete Selected Items` / `Undo Delete`：删除和撤销。
 
 ## 4. 用 NEP 预测做快速预筛
 

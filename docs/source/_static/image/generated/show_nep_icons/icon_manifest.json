@@ -18,7 +18,7 @@
       "name": "check.svg",
       "source": "src/NepTrainKit/src/images/check.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/check.svg",
-      "sha256": "4bae25fe5623563971b0f18ff4dc97a5244545cdd6757d0ba17f7108f2180bd5"
+      "sha256": "59186bfaf5be1491da9cdcb1f4ef31c0cda4142079c1d265ac27af56cdd9f8bd"
     },
     {
       "name": "data_range.svg",
@@ -30,13 +30,13 @@
       "name": "defect.svg",
       "source": "src/NepTrainKit/src/images/defect.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/defect.svg",
-      "sha256": "1f115e178f29939e43662fc6308a7e9c31ec4272452b4156919fda621b7e8627"
+      "sha256": "4bcb833802c23871d02857f88969d55fc81c4fa0d4d886bfc58fb5e0c47695f5"
     },
     {
       "name": "delete.svg",
       "source": "src/NepTrainKit/src/images/delete.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/delete.svg",
-      "sha256": "d275b28a007d1d5b497dc31a20e05da0692aba901345342fc01ba0d085aa7800"
+      "sha256": "89f5dd86d12700b0ffbf3c5961a6451ce303e37104df02b0ecafca5075e06e43"
     },
     {
       "name": "dft_d3.png",
@@ -48,13 +48,13 @@
       "name": "discovery.svg",
       "source": "src/NepTrainKit/src/images/discovery.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/discovery.svg",
-      "sha256": "200b830ae5fc5ecf837900cadcc800e3d6cc559407d08eeea8b98bec4bdd84a3"
+      "sha256": "656473a9853f46b995d29793fd89050aee07580fb80f09919f4165f61825df59"
     },
     {
       "name": "distribution_inspector.svg",
       "source": "src/NepTrainKit/src/images/distribution_inspector.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/distribution_inspector.svg",
-      "sha256": "3eae194da3e564cc8f6bf0e60c481dbc32f080783c9257bba75e7ec9327fa7cd"
+      "sha256": "9a3c382368e145b0b903f90f3d98319711c88c6fe61c572ee3bfe4aa882fc2f1"
     },
     {
       "name": "edit_info.svg",
@@ -66,31 +66,31 @@
       "name": "export.svg",
       "source": "src/NepTrainKit/src/images/export.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/export.svg",
-      "sha256": "7e41f941ea31859dcd18b0c1dd4bd4aa7280d3151befa8dc1f439e3d23eca09f"
+      "sha256": "d1bdf93ff28c5c7f2cb8089e111cd223b34e2974088b98b82da5eab62943598e"
     },
     {
       "name": "export1.svg",
       "source": "src/NepTrainKit/src/images/export1.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/export1.svg",
-      "sha256": "4bc6c4d371fe268c29ad4e18e053f1ad2c764ea9eeafc0a565c168dbc1f70d53"
+      "sha256": "1cccdc356d0fd7b4213de0217a48cac32d18217ba2e9bb651ec6d514804063dd"
     },
     {
       "name": "find_max.svg",
       "source": "src/NepTrainKit/src/images/find_max.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/find_max.svg",
-      "sha256": "41bfb53af3301b6e234166c4738bae22924ead789ff3f28f8079754dfc376966"
+      "sha256": "4c9157e3ffc6f288eb8afbdefed499832a7867e480ccd68c297790ecdc44edf4"
     },
     {
       "name": "index.svg",
       "source": "src/NepTrainKit/src/images/index.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/index.svg",
-      "sha256": "badec91d2a71286d92c7c673b9e3cc5d1b90cbbf085dca2330c1418b74dbbb22"
+      "sha256": "05c8f7dd0c7021dd0a280d766bede3c872b801aac4cb1d2d457583e2d67eb73e"
     },
     {
       "name": "init.svg",
       "source": "src/NepTrainKit/src/images/init.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/init.svg",
-      "sha256": "9a18091a11627fecf706cc300cf9c8e2326cfd93282a857d21803e2548682b14"
+      "sha256": "a4bdf4b0f03a65761d97a09b4f32c479c4d48cb14338524ad24fa3e9393a06df"
     },
     {
       "name": "inspect.svg",
@@ -108,49 +108,43 @@
       "name": "open.svg",
       "source": "src/NepTrainKit/src/images/open.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/open.svg",
-      "sha256": "450611d1d3d2a17fdff0d174c3c5661b0776ab75c02215b73266e800ad37b188"
+      "sha256": "8da61c49b6d1a22fd2117b3ca91c38535375f100eb252352a7e67a5102c88e44"
     },
     {
       "name": "pan.svg",
       "source": "src/NepTrainKit/src/images/pan.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/pan.svg",
-      "sha256": "02ae70ccd356bd4708367db7e529c282296136f22d20acc9674a29c19c8e7191"
+      "sha256": "b41c166f066f7b662f1af5ab7aa30d67d6cffb4b8c455369d09266046cc1d1d4"
     },
     {
       "name": "pause.svg",
       "source": "src/NepTrainKit/src/images/pause.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/pause.svg",
-      "sha256": "f1d7a7ca240eb613846ebd88738758fafd8a870bc645c19f6e3295599757f291"
+      "sha256": "a179e689d4903cbf1e79aa6680ccd989ae32cedf4a1c46f70010b39c2bdf5928"
     },
     {
       "name": "pen.svg",
       "source": "src/NepTrainKit/src/images/pen.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/pen.svg",
-      "sha256": "a88f48cd1adf559a1b096495ed9106e822e1086414cb22a4958298c7bbf79426"
+      "sha256": "7a3fa213ac2c610ec4217084ae35935a64f52e66311b9c0491e1579a69161493"
     },
     {
       "name": "play.svg",
       "source": "src/NepTrainKit/src/images/play.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/play.svg",
-      "sha256": "14737abfb2397ed97e6aaff5e9ec1f0b19adce580c8ac4b38ab6507f4bd0b214"
-    },
-    {
-      "name": "revoke.svg",
-      "source": "src/NepTrainKit/src/images/revoke.svg",
-      "target": "docs/source/_static/image/generated/show_nep_icons/revoke.svg",
-      "sha256": "bb0f0cd9b29a77f6a7899a9cb0992da87f002fde522c39e441bb93e7e282ecfe"
+      "sha256": "ec211050b99e8787e3f52f1dea3d1c5b4cf69b282dd905cb8e227e0b4dbc1ec3"
     },
     {
       "name": "save.svg",
       "source": "src/NepTrainKit/src/images/save.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/save.svg",
-      "sha256": "e1a5197031e527eb95f767d54ffda00799db87983491ac099f735c605ad151e2"
+      "sha256": "4783a12a5be5ca9d0f5da8b1f5bfc1122aa2f39495c4015c953a29a2f17d49cb"
     },
     {
       "name": "search.svg",
       "source": "src/NepTrainKit/src/images/search.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/search.svg",
-      "sha256": "9575480b90caeb2d2f01cf740508c8abe9965bc87a1719cd3fce2d4959bfef1b"
+      "sha256": "b57f7fa196d73ea12d4c646aee3eae100670165797fa6589cf9cb206196bbb7d"
     },
     {
       "name": "show_bond.svg",
@@ -162,7 +156,7 @@
       "name": "sparse.svg",
       "source": "src/NepTrainKit/src/images/sparse.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/sparse.svg",
-      "sha256": "ece0deaead2305a5ca189b11e1b6c6ec6e05c39f1b977534352602f67e1d43a2"
+      "sha256": "306b87da8ef9f0686686384ba8773fcd03c166342b99791627335f2f65136a40"
     },
     {
       "name": "summary.svg",
@@ -174,13 +168,25 @@
       "name": "supercell.svg",
       "source": "src/NepTrainKit/src/images/supercell.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/supercell.svg",
-      "sha256": "156cff6a3fe61090b61cf2f779e0dbe44041da302f0d6f1a9bf4fb3a1c56491b"
+      "sha256": "5e78a30af21ba83e98f31765dccbc322961bc630f24795602b7a81086ecf4380"
     },
     {
       "name": "uncheck.svg",
       "source": "src/NepTrainKit/src/images/uncheck.svg",
       "target": "docs/source/_static/image/generated/show_nep_icons/uncheck.svg",
-      "sha256": "27e0e322ff67fea8285a373c7ffbf5fe488c270625236594624d4bc4ad93782d"
+      "sha256": "75e348e4c45d744d85e3000094df1a8e609eab330523fbfeb02d8b28c83dcb46"
+    },
+    {
+      "name": "undo_delete.svg",
+      "source": "src/NepTrainKit/src/images/undo_delete.svg",
+      "target": "docs/source/_static/image/generated/show_nep_icons/undo_delete.svg",
+      "sha256": "250b3e6b1a6d424500a059c43163f490062ff82d0e0b0015607ca1b1a5df2354"
+    },
+    {
+      "name": "undo_selection.svg",
+      "source": "src/NepTrainKit/src/images/undo_selection.svg",
+      "target": "docs/source/_static/image/generated/show_nep_icons/undo_selection.svg",
+      "sha256": "1b02294aec8c4c3bf57436ab7f99d338120a1f214fc466c3c9eec9350fa28f78"
     },
     {
       "name": "view_change.svg",

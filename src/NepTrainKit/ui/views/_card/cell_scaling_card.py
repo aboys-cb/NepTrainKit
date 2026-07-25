@@ -23,6 +23,9 @@ class CellScalingCard(MakeDataCard):
     group = "Lattice"
     card_name= "Lattice Perturb"
     menu_icon=r":/images/src/images/scaling.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.
         
@@ -32,7 +35,7 @@ class CellScalingCard(MakeDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self.setTitle("Make Lattice Perturb")
+        self.setTitle(self.tr("Make Lattice Perturb"))
 
         self.init_ui()
 
@@ -42,12 +45,12 @@ class CellScalingCard(MakeDataCard):
         self.setObjectName("cell_scaling_card_widget")
 
 
-        self.engine_label=BodyLabel("Random engine:",self.setting_widget)
+        self.engine_label=BodyLabel(self.tr("Random engine:"),self.setting_widget)
         self.engine_type_combo=ComboBox(self.setting_widget)
-        self.engine_type_combo.addItem("Sobol")
-        self.engine_type_combo.addItem("Uniform")
+        self.engine_type_combo.addItem(self.tr("Sobol"))
+        self.engine_type_combo.addItem(self.tr("Uniform"))
         self.engine_type_combo.setCurrentIndex(1)
-        self.engine_label.setToolTip("Select random engine")
+        self.engine_label.setToolTip(self.tr("Select random engine"))
         self.engine_label.installEventFilter(ToolTipFilter(self.engine_label, 300, ToolTipPosition.TOP))
 
 
@@ -58,8 +61,8 @@ class CellScalingCard(MakeDataCard):
         self.scaling_condition_frame.setRange(0,1)
         self.scaling_condition_frame.set_input_value([0.04])
 
-        self.scaling_radio_label=BodyLabel("Max Scaling:",self.setting_widget)
-        self.scaling_radio_label.setToolTip("Maximum scaling factor")
+        self.scaling_radio_label=BodyLabel(self.tr("Max Scaling:"),self.setting_widget)
+        self.scaling_radio_label.setToolTip(self.tr("Maximum scaling factor"))
 
         self.scaling_radio_label.installEventFilter(ToolTipFilter(self.scaling_radio_label, 300, ToolTipPosition.TOP))
 
@@ -68,16 +71,16 @@ class CellScalingCard(MakeDataCard):
         self.optional_frame_layout.setContentsMargins(0,0,0,0)
         self.optional_frame_layout.setSpacing(2)
         self.perturb_angle_checkbox=CheckBox( self.setting_widget)
-        self.perturb_angle_checkbox.setText("Perturb angle")
+        self.perturb_angle_checkbox.setText(self.tr("Perturb angle"))
         self.perturb_angle_checkbox.setChecked(True)
-        self.perturb_angle_checkbox.setToolTip("Also perturb lattice angles")
+        self.perturb_angle_checkbox.setToolTip(self.tr("Also perturb lattice angles"))
         self.perturb_angle_checkbox.installEventFilter(ToolTipFilter(self.perturb_angle_checkbox, 300, ToolTipPosition.TOP))
 
 
-        self.optional_label=BodyLabel("Optional",self.setting_widget)
-        self.organic_checkbox=CheckBox("Identify organic", self.setting_widget)
+        self.optional_label=BodyLabel(self.tr("Optional"),self.setting_widget)
+        self.organic_checkbox=CheckBox(self.tr("Identify organic"), self.setting_widget)
         self.organic_checkbox.setChecked(False)
-        self.organic_checkbox.setToolTip("Treat organic molecules as rigid units")
+        self.organic_checkbox.setToolTip(self.tr("Treat organic molecules as rigid units"))
         self.organic_checkbox.installEventFilter(ToolTipFilter(self.organic_checkbox, 300, ToolTipPosition.TOP))
 
         self.optional_frame_layout.addWidget(self.perturb_angle_checkbox,0,0,1,1)
@@ -86,14 +89,14 @@ class CellScalingCard(MakeDataCard):
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("unit",1,"int")
         self.num_condition_frame.setRange(1,10000)
-        self.num_label=BodyLabel("Structures",self.setting_widget)
+        self.num_label=BodyLabel(self.tr("Structures"),self.setting_widget)
         self.num_condition_frame.set_input_value([50])
-        self.num_label.setToolTip("Number of scaled structures to generate")
+        self.num_label.setToolTip(self.tr("Number of scaled structures to generate"))
         self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip("Enable reproducible random sampling")
+        self.seed_checkbox.setToolTip(self.tr("Enable reproducible random sampling"))
         self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")

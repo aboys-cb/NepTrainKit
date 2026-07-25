@@ -12,6 +12,7 @@ from NepTrainKit.core.cards.structure import (
     OrganicMolConfigPBCOperation,
     OrganicMolConfigPBCParams,
 )
+from NepTrainKit.ui.views._card.i18n_utils import add_translated_items, combo_value, set_combo_value
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import MakeDataCard
 
@@ -29,6 +30,9 @@ class OrganicMolConfigPBCCard(MakeDataCard):
     group = "Organic"
     card_name = "Organic Mol Config"
     menu_icon = r":/images/src/images/perturb.svg"
+    contributors = [
+        {"name": "Chen Zherui", "role": "author", "email": "chenzherui0124@foxmail.com"},
+    ]
 
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.
@@ -39,7 +43,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self.setTitle("Organic Molecular Configuration(Zherui Chen)")
+        self.setTitle(self.tr("Organic Molecular Configuration(Zherui Chen)"))
         self._init_ui()
 
     # ---------- UI ----------
@@ -51,8 +55,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row = 0
 
         # perturb_per_frame
-        self.perturb_label = BodyLabel("Confs per structure:", self.setting_widget)
-        self.perturb_label.setToolTip("Number of perturbed conformations generated per input structure")
+        self.perturb_label = BodyLabel(self.tr("Confs per structure:"), self.setting_widget)
+        self.perturb_label.setToolTip(self.tr("Number of perturbed conformations generated per input structure"))
         self.perturb_label.installEventFilter(ToolTipFilter(self.perturb_label, 300, ToolTipPosition.TOP))
         self.perturb_frame = SpinBoxUnitInputFrame(self)
         self.perturb_frame.set_input("count", 1, "int")
@@ -63,8 +67,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # torsion_range_deg
-        self.torsion_label = BodyLabel("Torsion range:", self.setting_widget)
-        self.torsion_label.setToolTip("Torsion angle range (degrees)")
+        self.torsion_label = BodyLabel(self.tr("Torsion range:"), self.setting_widget)
+        self.torsion_label.setToolTip(self.tr("Torsion angle range (degrees)"))
         self.torsion_label.installEventFilter(ToolTipFilter(self.torsion_label, 300, ToolTipPosition.TOP))
         self.torsion_frame = SpinBoxUnitInputFrame(self)
         self.torsion_frame.set_input(["°", "°"], 2, ["float", "float"])
@@ -77,8 +81,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # max_torsions_per_conf
-        self.max_torsions_label = BodyLabel("Max torsions/conf:", self.setting_widget)
-        self.max_torsions_label.setToolTip("Maximum number of torsions applied per conformation")
+        self.max_torsions_label = BodyLabel(self.tr("Max torsions/conf:"), self.setting_widget)
+        self.max_torsions_label.setToolTip(self.tr("Maximum number of torsions applied per conformation"))
         self.max_torsions_label.installEventFilter(ToolTipFilter(self.max_torsions_label, 300, ToolTipPosition.TOP))
         self.max_torsions_frame = SpinBoxUnitInputFrame(self)
         self.max_torsions_frame.set_input("", 1, "int")
@@ -89,8 +93,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # gaussian_sigma
-        self.sigma_label = BodyLabel("Gaussian sigma:", self.setting_widget)
-        self.sigma_label.setToolTip("Std dev of added Gaussian noise (Å)")
+        self.sigma_label = BodyLabel(self.tr("Gaussian sigma:"), self.setting_widget)
+        self.sigma_label.setToolTip(self.tr("Std dev of added Gaussian noise (Å)"))
         self.sigma_label.installEventFilter(ToolTipFilter(self.sigma_label, 300, ToolTipPosition.TOP))
         self.sigma_frame = SpinBoxUnitInputFrame(self)
         self.sigma_frame.set_input("Å", 1, "float")
@@ -103,20 +107,19 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # pbc mode
-        self.pbc_label = BodyLabel("PBC mode:", self.setting_widget)
-        self.pbc_label.setToolTip("auto: use cell if present; yes: force PBC; no: non-PBC")
+        self.pbc_label = BodyLabel(self.tr("PBC mode:"), self.setting_widget)
+        self.pbc_label.setToolTip(self.tr("auto: use cell if present; yes: force PBC; no: non-PBC"))
         self.pbc_label.installEventFilter(ToolTipFilter(self.pbc_label, 300, ToolTipPosition.TOP))
         self.pbc_combo = ComboBox(self.setting_widget)
-        for opt in ("auto", "yes", "no"):
-            self.pbc_combo.addItem(opt)
-        self.pbc_combo.setCurrentIndex(0)
+        add_translated_items(self, self.pbc_combo, ("auto", "yes", "no"))
+        set_combo_value(self.pbc_combo, "auto")
         self.settingLayout.addWidget(self.pbc_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.pbc_combo, row, 1, 1, 2)
         row += 1
 
         # local_mode_cutoff_atoms
-        self.local_cut_label = BodyLabel("Local-mode cutoff atoms:", self.setting_widget)
-        self.local_cut_label.setToolTip("Use local subtree rotations if atoms > this threshold")
+        self.local_cut_label = BodyLabel(self.tr("Local-mode cutoff atoms:"), self.setting_widget)
+        self.local_cut_label.setToolTip(self.tr("Use local subtree rotations if atoms > this threshold"))
         self.local_cut_label.installEventFilter(ToolTipFilter(self.local_cut_label, 300, ToolTipPosition.TOP))
         self.local_cut_frame = SpinBoxUnitInputFrame(self)
         self.local_cut_frame.set_input("atoms", 1, "int")
@@ -127,8 +130,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # local_torsion_max_subtree
-        self.local_sub_label = BodyLabel("Max subtree size:", self.setting_widget)
-        self.local_sub_label.setToolTip("Maximum atoms in rotated subtree for local mode")
+        self.local_sub_label = BodyLabel(self.tr("Max subtree size:"), self.setting_widget)
+        self.local_sub_label.setToolTip(self.tr("Maximum atoms in rotated subtree for local mode"))
         self.local_sub_label.installEventFilter(ToolTipFilter(self.local_sub_label, 300, ToolTipPosition.TOP))
         self.local_sub_frame = SpinBoxUnitInputFrame(self)
         self.local_sub_frame.set_input("atoms", 1, "int")
@@ -139,8 +142,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # bond_detect_factor
-        self.bond_detect_label = BodyLabel("Bond detect factor:", self.setting_widget)
-        self.bond_detect_label.setToolTip("Bond detection cutoff multiplier (ri+rj)")
+        self.bond_detect_label = BodyLabel(self.tr("Bond detect factor:"), self.setting_widget)
+        self.bond_detect_label.setToolTip(self.tr("Bond detection cutoff multiplier (ri+rj)"))
         self.bond_detect_label.installEventFilter(ToolTipFilter(self.bond_detect_label, 300, ToolTipPosition.TOP))
         self.bond_detect_frame = SpinBoxUnitInputFrame(self)
         self.bond_detect_frame.set_input("x", 1, "float")
@@ -153,8 +156,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # bond_keep_min_factor
-        self.bond_min_label = BodyLabel("Bond min factor:", self.setting_widget)
-        self.bond_min_label.setToolTip("Lower bound for bonded distances; 0 disables")
+        self.bond_min_label = BodyLabel(self.tr("Bond min factor:"), self.setting_widget)
+        self.bond_min_label.setToolTip(self.tr("Lower bound for bonded distances; 0 disables"))
         self.bond_min_label.installEventFilter(ToolTipFilter(self.bond_min_label, 300, ToolTipPosition.TOP))
         self.bond_min_frame = SpinBoxUnitInputFrame(self)
         self.bond_min_frame.set_input("x", 1, "float")
@@ -167,8 +170,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # Pauling bond-order params
-        self.bo_c_label = BodyLabel("Pauling c constant:", self.setting_widget)
-        self.bo_c_label.setToolTip("Bond order constant c in exp((r0-r)/c)")
+        self.bo_c_label = BodyLabel(self.tr("Pauling c constant:"), self.setting_widget)
+        self.bo_c_label.setToolTip(self.tr("Bond order constant c in exp((r0-r)/c)"))
         self.bo_c_label.installEventFilter(ToolTipFilter(self.bo_c_label, 300, ToolTipPosition.TOP))
         self.bo_c_frame = SpinBoxUnitInputFrame(self)
         self.bo_c_frame.set_input("", 1, "float")
@@ -180,8 +183,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.settingLayout.addWidget(self.bo_c_frame, row, 1, 1, 2)
         row += 1
 
-        self.bo_thr_label = BodyLabel("BondOrder threshold:", self.setting_widget)
-        self.bo_thr_label.setToolTip("Minimum bond order to form bond (default 0.2)")
+        self.bo_thr_label = BodyLabel(self.tr("BondOrder threshold:"), self.setting_widget)
+        self.bo_thr_label.setToolTip(self.tr("Minimum bond order to form bond (default 0.2)"))
         self.bo_thr_label.installEventFilter(ToolTipFilter(self.bo_thr_label, 300, ToolTipPosition.TOP))
         self.bo_thr_frame = SpinBoxUnitInputFrame(self)
         self.bo_thr_frame.set_input("", 1, "float")
@@ -194,8 +197,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # bond_keep_max_factor (optional)
-        self.bond_max_label = BodyLabel("Bond max factor:", self.setting_widget)
-        self.bond_max_label.setToolTip("Upper bound for bonded distances; uncheck to disable")
+        self.bond_max_label = BodyLabel(self.tr("Bond max factor:"), self.setting_widget)
+        self.bond_max_label.setToolTip(self.tr("Upper bound for bonded distances; uncheck to disable"))
         self.bond_max_label.installEventFilter(ToolTipFilter(self.bond_max_label, 300, ToolTipPosition.TOP))
         self.bond_max_frame = SpinBoxUnitInputFrame(self)
         self.bond_max_frame.set_input("x", 1, "float")
@@ -203,7 +206,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.bond_max_frame.setSingleStep(0.01)
         self.bond_max_frame.setRange(0, 5)
         self.bond_max_frame.set_input_value([1.15])
-        self.bond_max_enable = CheckBox("Enable upper bound", self.setting_widget)
+        self.bond_max_enable = CheckBox(self.tr("Enable upper bound"), self.setting_widget)
         self.bond_max_enable.setChecked(False)
         self.settingLayout.addWidget(self.bond_max_label, row, 0, 1, 1)
         self.settingLayout.addWidget(self.bond_max_frame, row, 1, 1, 1)
@@ -211,8 +214,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # nonbond_min_factor
-        self.nonbond_min_label = BodyLabel("Non-bonded min factor:", self.setting_widget)
-        self.nonbond_min_label.setToolTip("Minimum separation for non-bonded atoms (ri+rj) factor")
+        self.nonbond_min_label = BodyLabel(self.tr("Non-bonded min factor:"), self.setting_widget)
+        self.nonbond_min_label.setToolTip(self.tr("Minimum separation for non-bonded atoms (ri+rj) factor"))
         self.nonbond_min_label.installEventFilter(ToolTipFilter(self.nonbond_min_label, 300, ToolTipPosition.TOP))
         self.nonbond_min_frame = SpinBoxUnitInputFrame(self)
         self.nonbond_min_frame.set_input("x", 1, "float")
@@ -225,8 +228,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # max_retries_per_frame
-        self.retries_label = BodyLabel("Max retries:", self.setting_widget)
-        self.retries_label.setToolTip("Backoff retries per conformation if guards fail")
+        self.retries_label = BodyLabel(self.tr("Max retries:"), self.setting_widget)
+        self.retries_label.setToolTip(self.tr("Backoff retries per conformation if guards fail"))
         self.retries_label.installEventFilter(ToolTipFilter(self.retries_label, 300, ToolTipPosition.TOP))
         self.retries_frame = SpinBoxUnitInputFrame(self)
         self.retries_frame.set_input("tries", 1, "int")
@@ -237,8 +240,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # MULT_BOND_FACTOR
-        self.multbond_label = BodyLabel("Multi-bond factor:", self.setting_widget)
-        self.multbond_label.setToolTip("Exclude suspected multiple bonds if d < factor*(ri+rj)")
+        self.multbond_label = BodyLabel(self.tr("Multi-bond factor:"), self.setting_widget)
+        self.multbond_label.setToolTip(self.tr("Exclude suspected multiple bonds if d < factor*(ri+rj)"))
         self.multbond_label.installEventFilter(ToolTipFilter(self.multbond_label, 300, ToolTipPosition.TOP))
         self.multbond_frame = SpinBoxUnitInputFrame(self)
         self.multbond_frame.set_input("x", 1, "float")
@@ -251,8 +254,8 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         row += 1
 
         # nonpbc_box_size
-        self.box_label = BodyLabel("Non-PBC box size:", self.setting_widget)
-        self.box_label.setToolTip("Box edge for non-periodic output (Å)")
+        self.box_label = BodyLabel(self.tr("Non-PBC box size:"), self.setting_widget)
+        self.box_label.setToolTip(self.tr("Box edge for non-periodic output (Å)"))
         self.box_label.installEventFilter(ToolTipFilter(self.box_label, 300, ToolTipPosition.TOP))
         self.box_frame = SpinBoxUnitInputFrame(self)
         self.box_frame.set_input("Å", 1, "float")
@@ -264,9 +267,9 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.settingLayout.addWidget(self.box_frame, row, 1, 1, 2)
         row += 1
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip("Enable reproducible torsion/noise sampling")
+        self.seed_checkbox.setToolTip(self.tr("Enable reproducible torsion/noise sampling"))
         self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -285,7 +288,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         str
             One of ``"auto"``, ``"yes"``, or ``"no"``.
         """
-        return self.pbc_combo.currentText()
+        return combo_value(self.pbc_combo)
 
     def create_operation(self):
         return OrganicMolConfigPBCOperation()
@@ -318,7 +321,7 @@ class OrganicMolConfigPBCCard(MakeDataCard):
         self.torsion_frame.set_input_value([float(value) for value in params.torsion_range_deg])
         self.max_torsions_frame.set_input_value([int(params.max_torsions_per_conf)])
         self.sigma_frame.set_input_value([float(params.gaussian_sigma)])
-        self.pbc_combo.setCurrentIndex({"auto": 0, "yes": 1, "no": 2}.get(params.pbc_mode, 0))
+        set_combo_value(self.pbc_combo, params.pbc_mode)
         self.local_cut_frame.set_input_value([int(params.local_cutoff)])
         self.local_sub_frame.set_input_value([int(params.local_subtree)])
         self.bond_detect_frame.set_input_value([float(params.bond_detect_factor)])

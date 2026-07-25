@@ -22,6 +22,9 @@ class ShearMatrixCard(MakeDataCard):
     group = "Lattice"
     card_name = "Shear Matrix Strain"
     menu_icon = r":/images/src/images/scaling.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.
@@ -32,7 +35,7 @@ class ShearMatrixCard(MakeDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self.setTitle("Make Shear Matrix Strain")
+        self.setTitle(self.tr("Make Shear Matrix Strain"))
         self.init_ui()
 
     def init_ui(self):
@@ -44,40 +47,40 @@ class ShearMatrixCard(MakeDataCard):
         self.optional_frame_layout.setContentsMargins(0, 0, 0, 0)
         self.optional_frame_layout.setSpacing(2)
 
-        self.optional_label = BodyLabel("Optional", self.setting_widget)
-        self.organic_checkbox = CheckBox("Identify organic", self.setting_widget)
+        self.optional_label = BodyLabel(self.tr("Optional"), self.setting_widget)
+        self.organic_checkbox = CheckBox(self.tr("Identify organic"), self.setting_widget)
         self.organic_checkbox.setChecked(False)
-        self.symmetric_checkbox = CheckBox("Symmetric shear", self.setting_widget)
+        self.symmetric_checkbox = CheckBox(self.tr("Symmetric shear"), self.setting_widget)
         self.symmetric_checkbox.setChecked(True)
-        self.symmetric_checkbox.setToolTip("Apply shear symmetrically")
+        self.symmetric_checkbox.setToolTip(self.tr("Apply shear symmetrically"))
         self.symmetric_checkbox.installEventFilter(ToolTipFilter(self.symmetric_checkbox, 300, ToolTipPosition.TOP))
-        self.optional_label.setToolTip("Treat organic molecules as rigid units")
+        self.optional_label.setToolTip(self.tr("Treat organic molecules as rigid units"))
         self.optional_label.installEventFilter(ToolTipFilter(self.optional_label, 300, ToolTipPosition.TOP))
         self.optional_frame_layout.addWidget(self.organic_checkbox, 0, 0, 1, 1)
         self.optional_frame_layout.addWidget(self.symmetric_checkbox, 1, 0, 1, 1)
 
-        self.xy_label = BodyLabel("XY:", self.setting_widget)
+        self.xy_label = BodyLabel(self.tr("XY:"), self.setting_widget)
         self.xy_frame = SpinBoxUnitInputFrame(self)
         self.xy_frame.set_input(["-", "% step:", "%"], 3, "float")
         self.xy_frame.setRange(-100, 100)
         self.xy_frame.set_input_value([-5, 5, 1])
-        self.xy_label.setToolTip("XY shear strain range")
+        self.xy_label.setToolTip(self.tr("XY shear strain range"))
         self.xy_label.installEventFilter(ToolTipFilter(self.xy_label, 300, ToolTipPosition.TOP))
 
-        self.yz_label = BodyLabel("YZ:", self.setting_widget)
+        self.yz_label = BodyLabel(self.tr("YZ:"), self.setting_widget)
         self.yz_frame = SpinBoxUnitInputFrame(self)
         self.yz_frame.set_input(["-", "% step:", "%"], 3, "float")
         self.yz_frame.setRange(-100, 100)
         self.yz_frame.set_input_value([-5, 5, 1])
-        self.yz_label.setToolTip("YZ shear strain range")
+        self.yz_label.setToolTip(self.tr("YZ shear strain range"))
         self.yz_label.installEventFilter(ToolTipFilter(self.yz_label, 300, ToolTipPosition.TOP))
 
-        self.xz_label = BodyLabel("XZ:", self.setting_widget)
+        self.xz_label = BodyLabel(self.tr("XZ:"), self.setting_widget)
         self.xz_frame = SpinBoxUnitInputFrame(self)
         self.xz_frame.set_input(["-", "% step:", "%"], 3, "float")
         self.xz_frame.setRange(-100, 100)
         self.xz_frame.set_input_value([-5, 5, 1])
-        self.xz_label.setToolTip("XZ shear strain range")
+        self.xz_label.setToolTip(self.tr("XZ shear strain range"))
         self.xz_label.installEventFilter(ToolTipFilter(self.xz_label, 300, ToolTipPosition.TOP))
 
         self.settingLayout.addWidget(self.optional_label, 0, 0, 1, 1)

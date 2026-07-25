@@ -22,23 +22,23 @@ class MessageSink(Protocol):
     """Runtime contract for message sinks registered by the GUI layer."""
 
     @classmethod
-    def send_info_message(cls, message, title="Tip"):
+    def send_info_message(cls, message, title=None):
         ...
 
     @classmethod
-    def send_success_message(cls, message, title="Success"):
+    def send_success_message(cls, message, title=None):
         ...
 
     @classmethod
-    def send_warning_message(cls, message, title="Warning"):
+    def send_warning_message(cls, message, title=None):
         ...
 
     @classmethod
-    def send_error_message(cls, message, title="Error"):
+    def send_error_message(cls, message, title=None):
         ...
 
     @classmethod
-    def send_message_box(cls, message, title="Tip"):
+    def send_message_box(cls, message, title=None):
         ...
 
 
@@ -46,23 +46,23 @@ class _LoggerMessageSink:
     """Headless sink that maps user-visible messages to Loguru."""
 
     @classmethod
-    def send_info_message(cls, message, title="Tip"):
+    def send_info_message(cls, message, title=None):
         logger.info(message)
 
     @classmethod
-    def send_success_message(cls, message, title="Success"):
+    def send_success_message(cls, message, title=None):
         logger.success(message)
 
     @classmethod
-    def send_warning_message(cls, message, title="Warning"):
+    def send_warning_message(cls, message, title=None):
         logger.warning(message)
 
     @classmethod
-    def send_error_message(cls, message, title="Error"):
+    def send_error_message(cls, message, title=None):
         logger.error(message)
 
     @classmethod
-    def send_message_box(cls, message, title="Tip"):
+    def send_message_box(cls, message, title=None):
         logger.info(message)
 
 
@@ -92,66 +92,66 @@ class MessageManager:
         return cls._sink
 
     @classmethod
-    def send_info_message(cls, message, title="Tip"):
+    def send_info_message(cls, message, title=None):
         """Emit an informational message.
 
         Parameters
         ----------
         message : str
             Body text to display.
-        title : str, default='Tip'
-            Optional title for GUI message boxes.
+        title : str | None, default=None
+            Optional GUI title. ``None`` lets the active sink choose its default.
         """
         cls._sink.send_info_message(message, title)
 
     @classmethod
-    def send_success_message(cls, message, title="Success"):
+    def send_success_message(cls, message, title=None):
         """Emit a success/positive message.
 
         Parameters
         ----------
         message : str
             Body text to display.
-        title : str, default='Success'
-            Optional title for GUI message boxes.
+        title : str | None, default=None
+            Optional GUI title. ``None`` lets the active sink choose its default.
         """
         cls._sink.send_success_message(message, title)
 
     @classmethod
-    def send_warning_message(cls, message, title="Warning"):
+    def send_warning_message(cls, message, title=None):
         """Emit a warning message.
 
         Parameters
         ----------
         message : str
             Body text to display.
-        title : str, default='Warning'
-            Optional title for GUI message boxes.
+        title : str | None, default=None
+            Optional GUI title. ``None`` lets the active sink choose its default.
         """
         cls._sink.send_warning_message(message, title)
 
     @classmethod
-    def send_error_message(cls, message, title="Error"):
+    def send_error_message(cls, message, title=None):
         """Emit an error message.
 
         Parameters
         ----------
         message : str
             Body text to display.
-        title : str, default='Error'
-            Optional title for GUI message boxes.
+        title : str | None, default=None
+            Optional GUI title. ``None`` lets the active sink choose its default.
         """
         cls._sink.send_error_message(message, title)
 
     @classmethod
-    def send_message_box(cls, message, title="Tip"):
+    def send_message_box(cls, message, title=None):
         """Show a message box in GUI mode or log otherwise.
 
         Parameters
         ----------
         message : str
             Body text to display.
-        title : str, default='Tip'
-            Optional title for GUI message boxes.
+        title : str | None, default=None
+            Optional GUI title. ``None`` lets the active sink choose its default.
         """
         cls._sink.send_message_box(message, title)

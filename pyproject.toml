@@ -2,7 +2,7 @@
 requires = [
 "wheel",
 "numpy",
-"setuptools>=68.0.0",
+"setuptools>=77.0.0",
 "pybind11>=2.12.0",
 "setuptools-scm>=8.2.0"
 ]
@@ -14,12 +14,11 @@ name = "NepTrainKit"
 authors = [{ name = "Chen Cheng bing", email = "1747193328@qq.com" }]
 dynamic = ["version"]
 
-description = """
-NepTrainKit is a Python package for visualizing and manipulating training datasets for NEP.
-"""
+description = "Visualize, diagnose, and manipulate NEP training datasets."
 readme = "README.md"
-requires-python = ">=3.10"
-license = { "text"="GPL-3.0" }
+requires-python = ">=3.10,<3.14"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE", "THIRD_PARTY_NOTICES.md"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
@@ -28,7 +27,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering :: Chemistry",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Scientific/Engineering :: Physics",
@@ -39,13 +38,14 @@ dependencies = [
 "PySide6-Fluent-Widgets>=1.7.0",
 "loguru>=0.7.2",
 "requests>=2.32.3",
+"packaging>=24.0",
 "pyqtgraph>=0.13.7",
 "PyOpenGL>=3.1.7",
 "numpy>=1.26.0",
 "vispy>=0.14.3",
 "ase",
+"nep-adapters>=1.0,<2",
 "scipy>=1.15.0",
-"pybind11",
 "SQLAlchemy>=2.0.0"
 ]
 [project.optional-dependencies]
@@ -53,7 +53,10 @@ test = [
     "pytest>=7.0",
     "pytest-qt>=4.2.0",
     "pytest-cov>=4.0.0",
-    "codecov>=2.0.0"
+    "codecov>=2.0.0",
+    "ruff>=0.12.0",
+    "scikit-learn>=1.5.0",
+    "tomli>=2.0; python_version < '3.11'"
 ]
 
 [project.urls]
@@ -76,7 +79,9 @@ where = ["src"]
 include = ["NepTrainKit", "NepTrainKit.*" ]
 
 [tool.setuptools.package-data]
+"NepTrainKit" = ["translations/*.qm", "translations/*.ts"]
 "NepTrainKit.Config" = ["config.sqlite","ptable.json","nep.json","nep89.txt" ]
+"NepTrainKit.core.dataset" = ["catalogs/*.json"]
 
 [tool.setuptools_scm]
 

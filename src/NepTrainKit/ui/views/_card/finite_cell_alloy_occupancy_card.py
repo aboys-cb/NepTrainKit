@@ -1,0 +1,430 @@
+"""Card for integer-authoritative finite-cell alloy occupancies."""
+
+from __future__ import annotations
+
+import json
+import re
+from collections.abc import Mapping
+
+import numpy as np
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
+from qfluentwidgets import (
+    BodyLabel,
+    CaptionLabel,
+    CheckBox,
+    FluentIcon,
+    PlainTextEdit,
+    PushButton,
+)
+
+from NepTrainKit.core import CardManager
+from NepTrainKit.core.cards.alloy import FiniteCellAlloyOccupancyOperation, FiniteCellAlloyOccupancyParams
+from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from NepTrainKit.ui.widgets.alloy_site_rules import AlloySiteRulesEditor
+
+
+@CardManager.register_card
+class FiniteCellAlloyOccupancyCard(MakeDataCard):
+    """Assign allowed elements using feasible integer counts on each site set."""
+
+    group = "Alloy"
+    card_name = "Finite-Cell Alloy Occupancy"
+    menu_icon = r":/images/src/images/defect.svg"
+    contributors = [{"name": "NepTrainKit", "role": "author"}]
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._input_structure = None
+        self._input_counts: dict[str, int] | None = None
+        self._refreshing = False
+        self._rules_are_auto_managed = True
+        self._applying_auto_rules = False
+        self.setTitle(self.tr("Finite-Cell Alloy Occupancy"))
+        self.init_ui()
+
+    def init_ui(self):
+        self.setObjectName("finite_cell_alloy_occupancy_card_widget")
+        self.settingLayout.setContentsMargins(3, 0, 3, 0)
+        self.settingLayout.setHorizontalSpacing(6)
+        self.settingLayout.setVerticalSpacing(4)
+        self.settingLayout.setColumnStretch(1, 1)
+
+        self.rules_editor = AlloySiteRulesEditor(self.setting_widget)
+        self.rules_editor.changed.connect(self._on_rules_changed)
+        self.rules_editor.layoutChanged.connect(self._update_tab_order)
+
+        self.auto_match_label = CaptionLabel("", self.setting_widget)
+        self.auto_match_label.setWordWrap(True)
+        self.auto_match_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.auto_match_label.hide()
+
+        self.arrangements_label = BodyLabel(self.tr("Arrangements per composition"), self.setting_widget)
+        self.arrangements_frame = SpinBoxUnitInputFrame(self)
+        self.arrangements_frame.set_input("", 1, "int")
+        self.arrangements_frame.setRange(1, 999999)
+        self.arrangements_frame.set_input_value([1])
+        self.arrangements_frame.setMaximumWidth(220)
+
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
+        self.seed_checkbox.setChecked(True)
+        self.seed_frame = SpinBoxUnitInputFrame(self)
+        self.seed_frame.set_input("", 1, "int")
+        self.seed_frame.setRange(0, 2**31 - 1)
+        self.seed_frame.set_input_value([0])
+        self.seed_frame.setMaximumWidth(220)
+
+        self.max_outputs_label = BodyLabel(self.tr("Max outputs"), self.setting_widget)
+        self.max_outputs_frame = SpinBoxUnitInputFrame(self)
+        self.max_outputs_frame.set_input("", 1, "int")
+        self.max_outputs_frame.setRange(1, 999999)
+        self.max_outputs_frame.set_input_value([200])
+        self.max_outputs_frame.setMaximumWidth(220)
+
+        self.estimate_label = BodyLabel("", self.setting_widget)
+        self.estimate_label.setWordWrap(True)
+        self.estimate_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.estimate_label.setObjectName("alloyEstimateLabel")
+
+        self.advanced_button = PushButton(
+            FluentIcon.CODE,
+            self.tr("Advanced: view or paste JSON"),
+            self.setting_widget,
+        )
+        self.advanced_button.setCheckable(True)
+        self.advanced_button.setAccessibleName(self.tr("Advanced: view or paste JSON"))
+        self.advanced_button.setFixedHeight(28)
+
+        self.advanced_widget = QWidget(self.setting_widget)
+        advanced_layout = QVBoxLayout(self.advanced_widget)
+        advanced_layout.setContentsMargins(0, 0, 0, 0)
+        advanced_layout.setSpacing(6)
+        self.advanced_json_edit = PlainTextEdit(self.advanced_widget)
+        self.advanced_json_edit.setMinimumHeight(90)
+        self.advanced_json_edit.setPlaceholderText(
+            self.tr("Paste the existing site_rules JSON format here.")
+        )
+        advanced_actions = QHBoxLayout()
+        self.apply_json_button = PushButton(self.tr("Apply JSON"), self.advanced_widget)
+        self.apply_json_button.setFixedHeight(28)
+        self.site_rules_copy_button = PushButton(
+            FluentIcon.COPY,
+            self.tr("Copy JSON"),
+            self.advanced_widget,
+        )
+        self.site_rules_copy_button.setFixedHeight(28)
+        advanced_actions.addWidget(self.apply_json_button)
+        advanced_actions.addWidget(self.site_rules_copy_button)
+        advanced_actions.addStretch(1)
+        self.json_error_label = CaptionLabel("", self.advanced_widget)
+        self.json_error_label.setWordWrap(True)
+        self.json_error_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        advanced_layout.addWidget(self.advanced_json_edit)
+        advanced_layout.addLayout(advanced_actions)
+        advanced_layout.addWidget(self.json_error_label)
+        self.advanced_widget.hide()
+
+        self.settingLayout.addWidget(self.rules_editor, 0, 0, 1, 3)
+        self.settingLayout.addWidget(self.auto_match_label, 1, 0, 1, 3)
+        self.settingLayout.addWidget(self.arrangements_label, 2, 0, 1, 1)
+        self.settingLayout.addWidget(self.arrangements_frame, 2, 1, 1, 2)
+        self.settingLayout.addWidget(self.seed_checkbox, 3, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 3, 1, 1, 2)
+        self.settingLayout.addWidget(self.max_outputs_label, 4, 0, 1, 1)
+        self.settingLayout.addWidget(self.max_outputs_frame, 4, 1, 1, 2)
+        self.settingLayout.addWidget(self.estimate_label, 5, 0, 1, 3)
+        self.settingLayout.addWidget(self.advanced_button, 6, 0, 1, 3)
+        self.settingLayout.addWidget(self.advanced_widget, 7, 0, 1, 3)
+
+        self.seed_checkbox.stateChanged.connect(self._on_seed_changed)
+        self.arrangements_frame.object_list[0].valueChanged.connect(self._refresh_validation_and_estimate)
+        self.max_outputs_frame.object_list[0].valueChanged.connect(self._refresh_validation_and_estimate)
+        self.advanced_button.toggled.connect(self._toggle_advanced)
+        self.apply_json_button.clicked.connect(self.apply_advanced_json)
+        self.site_rules_copy_button.clicked.connect(self.copy_site_rules_json)
+        self._on_seed_changed()
+        self._sync_advanced_json()
+        self._refresh_validation_and_estimate()
+        self._update_tab_order()
+
+    def _on_seed_changed(self) -> None:
+        self.seed_frame.setEnabled(self.seed_checkbox.isChecked())
+
+    def _toggle_advanced(self, visible: bool) -> None:
+        if visible:
+            self._sync_advanced_json()
+        self.advanced_widget.setVisible(bool(visible))
+        self._update_tab_order()
+
+    def _on_rules_changed(self) -> None:
+        if self._refreshing:
+            return
+        if not self._applying_auto_rules:
+            self._rules_are_auto_managed = False
+            self.auto_match_label.hide()
+        self.json_error_label.clear()
+        self._sync_advanced_json()
+        self._refresh_validation_and_estimate()
+        self._update_tab_order()
+
+    def _site_rules_text(self) -> str:
+        return json.dumps(
+            self.rules_editor.to_rules(),
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+
+    def _sync_advanced_json(self) -> None:
+        if not hasattr(self, "advanced_json_edit"):
+            return
+        text = json.dumps(self.rules_editor.to_rules(), indent=2, sort_keys=True)
+        if self.advanced_json_edit.toPlainText() != text:
+            self.advanced_json_edit.setPlainText(text)
+
+    def apply_rule_json(self, text: str) -> bool:
+        """Apply site-rules JSON transactionally, preserving the current rules on failure."""
+        attempted_text = str(text or "")
+        previous = self.rules_editor.to_rules()
+        try:
+            parsed = json.loads(attempted_text)
+            if not isinstance(parsed, Mapping):
+                raise ValueError(self.tr("site_rules must be a non-empty JSON object."))
+            self.rules_editor.from_rules(parsed)
+        except (TypeError, ValueError, json.JSONDecodeError) as exc:
+            try:
+                self.rules_editor.from_rules(previous)
+            except ValueError:  # pragma: no cover - previous rules came from the editor
+                pass
+            self.json_error_label.setText(
+                "⚠ " + self.tr("JSON was not applied: {error}").format(error=str(exc))
+            )
+            self.json_error_label.show()
+            self.advanced_json_edit.setPlainText(attempted_text)
+            return False
+        self.json_error_label.clear()
+        self.json_error_label.hide()
+        self._sync_advanced_json()
+        return True
+
+    def apply_advanced_json(self) -> bool:
+        return self.apply_rule_json(self.advanced_json_edit.toPlainText())
+
+    def copy_site_rules_json(self) -> None:
+        from PySide6.QtWidgets import QApplication
+
+        text = self._site_rules_text()
+        QApplication.clipboard().setText(text)
+        self.advanced_json_edit.setPlainText(json.dumps(json.loads(text), indent=2, sort_keys=True))
+
+    def set_dataset(self, dataset) -> None:
+        super().set_dataset(dataset)
+        self._input_structure = self._first_structure(dataset)
+        self._input_counts = self._site_counts(self._input_structure)
+        self._auto_match_rules_to_input()
+        self.rules_editor.set_input_counts(self._input_counts)
+        self._refresh_validation_and_estimate()
+
+    @staticmethod
+    def _placeholder_rule() -> dict[str, object]:
+        return {
+            "elements": ["X"],
+            "mode": "fixed_fraction",
+            "composition": {"X": 1.0},
+        }
+
+    def _auto_match_rules_to_input(self) -> None:
+        """Match untouched placeholder rules to the actual input site partition."""
+        if not self._rules_are_auto_managed or not self._input_counts:
+            self.auto_match_label.hide()
+            return
+
+        labels = set(self._input_counts)
+        if labels == {"all"}:
+            ordered_labels = ("all",)
+        elif labels == {"A"}:
+            ordered_labels = ("A",)
+        elif labels == {"A", "B"}:
+            ordered_labels = ("A", "B")
+        else:
+            self.auto_match_label.hide()
+            return
+
+        target_rules = {
+            label: self._placeholder_rule()
+            for label in ordered_labels
+        }
+        if self.rules_editor.to_rules() != target_rules:
+            self._applying_auto_rules = True
+            try:
+                self.rules_editor.from_rules(target_rules)
+            finally:
+                self._applying_auto_rules = False
+
+        self.auto_match_label.setText(
+            self.tr("Automatically matched input site sets: {labels}.").format(
+                labels=", ".join(ordered_labels)
+            )
+        )
+        self.auto_match_label.show()
+
+    @staticmethod
+    def _first_structure(dataset):
+        if dataset is None:
+            return None
+        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
+            return dataset
+        try:
+            return next(iter(dataset))
+        except (StopIteration, TypeError):
+            return None
+
+    @staticmethod
+    def _site_counts(structure) -> dict[str, int] | None:
+        if structure is None:
+            return None
+        if "sublattice" not in structure.arrays:
+            return {"all": len(structure)}
+        raw = np.asarray(structure.arrays["sublattice"], dtype=str)
+        labels = list(dict.fromkeys(str(value).strip() for value in raw))
+        return {label: int(np.count_nonzero(raw == label)) for label in labels}
+
+    def _params_from_controls(self) -> FiniteCellAlloyOccupancyParams:
+        return FiniteCellAlloyOccupancyParams(
+            site_rules=self._site_rules_text(),
+            arrangements_per_composition=int(self.arrangements_frame.get_input_value()[0]),
+            use_seed=self.seed_checkbox.isChecked(),
+            seed=int(self.seed_frame.get_input_value()[0]),
+            max_outputs=int(self.max_outputs_frame.get_input_value()[0]),
+        )
+
+    def _refresh_validation_and_estimate(self) -> None:
+        if self._refreshing:
+            return
+        self._refreshing = True
+        try:
+            self.rules_editor.set_input_counts(self._input_counts)
+            errors = self.rules_editor.validation_errors(self._input_counts)
+            if self._input_structure is None:
+                self.estimate_label.setText(
+                    self.tr("Run or load an upstream structure to calculate the exact composition count.")
+                )
+                return
+            if errors:
+                self.estimate_label.setText(
+                    self.tr("Fix the highlighted site-rule errors to calculate a feasible output estimate.")
+                )
+                return
+
+            try:
+                estimate = self.create_operation().estimate(
+                    self._input_structure,
+                    self._params_from_controls(),
+                )
+            except ValueError as exc:
+                message = str(exc)
+                friendly = self._show_operation_error_near_site(message)
+                self.estimate_label.setText(
+                    self.tr("No feasible integer composition: {error}").format(error=friendly)
+                )
+                return
+
+            count_map = dict(estimate.site_counts)
+            ordered_labels = [
+                editor.label_edit.text().strip()
+                for editor in self.rules_editor.site_editors
+                if editor.label_edit.text().strip() in count_map
+            ]
+            counts = ", ".join(f"{label}={count_map[label]}" for label in ordered_labels)
+            theoretical = estimate.composition_count * estimate.arrangements_per_composition
+            truncated = theoretical > estimate.max_outputs
+            self.estimate_label.setText(
+                self.tr(
+                    "Detected sites: {counts} · Feasible integer compositions: {compositions} · "
+                    "Requested arrangements per composition: {arrangements}\n"
+                    "Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · "
+                    "Expected outputs: {actual} · Truncated by max_outputs: {truncated}"
+                ).format(
+                    counts=counts,
+                    compositions=estimate.composition_count,
+                    arrangements=estimate.arrangements_per_composition,
+                    theoretical=theoretical,
+                    maximum=estimate.max_outputs,
+                    actual=estimate.estimated_total_outputs,
+                    truncated=self.tr("Yes") if truncated else self.tr("No"),
+                )
+            )
+        finally:
+            self._refreshing = False
+
+    def _show_operation_error_near_site(self, message: str) -> str:
+        match = re.search(r"site set ['\"]([^'\"]+)['\"]", message)
+        if not match:
+            self.rules_editor.set_status_errors([message])
+            return message
+        label = match.group(1)
+        no_solution = re.search(r"no integer count solution for (\d+) sites", message)
+        friendly = message
+        if no_solution:
+            friendly = self.tr(
+                "Constraints for site set {label} have no integer count solution for {count} sites."
+            ).format(label=label, count=no_solution.group(1))
+        for editor in self.rules_editor.site_editors:
+            if editor.label_edit.text().strip() == label:
+                existing = editor.validation_errors()
+                editor.set_errors(existing + [friendly])
+                return friendly
+        self.rules_editor.set_status_errors([friendly])
+        return friendly
+
+    def _update_tab_order(self) -> None:
+        widgets = self.rules_editor.tab_widgets()
+        widgets.extend(
+            [
+                self.arrangements_frame.object_list[0],
+                self.seed_checkbox,
+                self.seed_frame.object_list[0],
+                self.max_outputs_frame.object_list[0],
+                self.advanced_button,
+            ]
+        )
+        if self.advanced_widget.isVisible():
+            widgets.extend(
+                [
+                    self.advanced_json_edit,
+                    self.apply_json_button,
+                    self.site_rules_copy_button,
+                ]
+            )
+        self.tab_order_widgets = [
+            widget for widget in widgets if widget.isEnabled() and not widget.isHidden()
+        ]
+        for previous, current in zip(self.tab_order_widgets, self.tab_order_widgets[1:]):
+            QWidget.setTabOrder(previous, current)
+
+    def create_operation(self):
+        return FiniteCellAlloyOccupancyOperation()
+
+    def get_params(self) -> FiniteCellAlloyOccupancyParams:
+        return self._params_from_controls()
+
+    def set_params(self, params: FiniteCellAlloyOccupancyParams) -> None:
+        self.apply_rule_json(params.site_rules)
+        self.arrangements_frame.set_input_value([int(params.arrangements_per_composition)])
+        self.seed_checkbox.setChecked(bool(params.use_seed))
+        self.seed_frame.setEnabled(bool(params.use_seed))
+        self.seed_frame.set_input_value([int(params.seed)])
+        self.max_outputs_frame.set_input_value([int(params.max_outputs)])
+        self._refresh_validation_and_estimate()
+        self._update_tab_order()
+
+    def to_dict(self):
+        data = super().to_dict()
+        data["params"] = params_to_dict(self.get_params())
+        return data
+
+    def from_dict(self, data_dict):
+        super().from_dict(data_dict)
+        raw = dict(data_dict.get("params") or {})
+        params = FiniteCellAlloyOccupancyParams(**raw) if raw else FiniteCellAlloyOccupancyParams()
+        self.set_params(params)

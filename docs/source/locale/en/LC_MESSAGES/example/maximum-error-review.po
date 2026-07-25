@@ -1,0 +1,135 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-21 22:27+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/example/maximum-error-review.md:1
+#: cfc308b50d8a431fadbf45b77a15ce6a
+msgid "最大误差结构：先复核，再决定删不删"
+msgstr "Largest-Error Structures: Inspect Before Deleting"
+
+#: ../../source/example/maximum-error-review.md:3
+#: cdd30287f73a40759dea0b1eada18974
+msgid ""
+"`Find Max Error Point` "
+"用来快速定位当前图上误差最大的结构。高误差不等于坏数据：它也可能表示训练集缺少这一类结构。正确顺序是先选中、看结构和 "
+"`Config_type`，再决定重新计算、保留补强或删除。"
+msgstr ""
+"`Find Max Error Point` quickly locates the structures with the largest errors "
+"on the current plot. A large error does not necessarily mean bad data; it may "
+"show that the training set lacks this type of structure. Select the points, "
+"inspect the structures and `Config_type`, then decide whether to recalculate, "
+"retain and reinforce, or delete them."
+
+#: ../../source/example/maximum-error-review.md:5
+#: 994dbd0d88084f64bc227754a35369ba
+msgid "1. 先激活要检查的图"
+msgstr "1. Activate the plot you want to inspect"
+
+#: ../../source/example/maximum-error-review.md:7
+#: 4a5dba654d804a928f539b8fd361f7b9
+msgid "打开训练结果后，双击要检查的小图，使它进入主图区。本例检查 `energy`；如果要找力误差最大的结构，应先激活 `force` 图。"
+msgstr "After opening the training results, double-click the thumbnail you want to inspect so it enters the main plot. This example checks `energy`; to find the structures with the largest force errors, activate the `force` plot first."
+
+#: ../../source/example/maximum-error-review.md:9
+#: 00a5f9d35a0b41dab2471926f3bbfa2b
+msgid "激活能量图并打开最大误差筛选"
+msgstr "Activate the energy plot and open the largest-error selector"
+
+#: ../../source/example/maximum-error-review.md:9
+#: 00a5f9d35a0b41dab2471926f3bbfa2b
+msgid ".. image:: ../_static/image/generated/tutorials/max_error_review_entry.png"
+msgstr ".. image:: ../_static/image/generated/tutorials/max_error_review_entry.png"
+
+#: ../../source/example/maximum-error-review.md:14
+#: 49fa3544eea8497fa4be05a4776da956
+msgid ""
+"点击 `Find Max Error Point`。这个按钮只针对当前主图，不会同时混合 energy、force、stress 和 virial"
+" 的误差。"
+msgstr ""
+"Click `Find Max Error Point`. This action applies only to the current main "
+"plot; it does not combine errors from energy, force, stress, and virial."
+
+#: ../../source/example/maximum-error-review.md:16
+#: 1d64639a15f74d04a8bdad4de369c7f5
+msgid "2. 输入要复核的结构数"
+msgstr "2. Enter the number of structures to review"
+
+#: ../../source/example/maximum-error-review.md:18
+#: 31222b19174f4510829d739e8a0881ca
+msgid "最大误差结构数量设置"
+msgstr "Number of largest-error structures to select"
+
+#: ../../source/example/maximum-error-review.md:18
+#: 31222b19174f4510829d739e8a0881ca
+msgid ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_maxerr_dialog.png"
+msgstr ""
+".. image:: "
+"../_static/image/generated/show_nep_reference/g_maxerr_dialog.png"
+
+#: ../../source/example/maximum-error-review.md:23
+#: d63f75a4349143a0aaaec953d4551c0f
+msgid "第一次可以先填 `5`。数量太大时容易失去重点；先看最极端的几个，确认问题类型后再扩大范围。"
+msgstr "Start with `5`. A large selection makes it harder to focus. Review the most extreme cases first, identify the problem type, and then expand the selection if needed."
+
+#: ../../source/example/maximum-error-review.md:25
+#: efa210a70ebe4bcb984aa1a507854968
+msgid "3. 逐个判断误差来源"
+msgstr "3. Determine the source of each error"
+
+#: ../../source/example/maximum-error-review.md:27
+#: 0f18ae8b824c4f4c965ba07328665d6d
+msgid "选中的五个最大能量误差结构"
+msgstr "Five selected structures with the largest energy errors"
+
+#: ../../source/example/maximum-error-review.md:27
+#: 0f18ae8b824c4f4c965ba07328665d6d
+msgid ""
+".. image:: "
+"../_static/image/generated/tutorials/max_error_review_result.png"
+msgstr ""
+".. image:: "
+"../_static/image/generated/tutorials/max_error_review_result.png"
+
+#: ../../source/example/maximum-error-review.md:32
+#: 484e15a14ec2465c8a09d774e68bf45f
+msgid "本例底部状态栏显示 `Sel: 5`。依次点击选中点，重点看右侧结构、`Config_type` 和原始文件序号："
+msgstr "The status bar in this example shows `Sel: 5`. Click the selected points one by one and inspect the structure on the right, its `Config_type`, and its source-file index:"
+
+#: ../../source/example/maximum-error-review.md:34
+#: 2bbcdd10af734323b3dacc7f9ecdeb60
+msgid "结构合理、标签可信：通常应保留，并检查这一类构型是否在训练集中覆盖不足；"
+msgstr "Reasonable structure and trustworthy label: usually retain it and check whether this configuration type is underrepresented in the training set."
+
+#: ../../source/example/maximum-error-review.md:35
+#: 6643267190364cf9aeb62bdec89c0aa3
+msgid "结构合理但 DFT 未收敛或标签异常：回到原计算重新检查，不要直接拿去重训；"
+msgstr "Reasonable structure but unconverged DFT or an abnormal label: return to the original calculation and inspect it; do not use it directly for retraining."
+
+#: ../../source/example/maximum-error-review.md:36
+#: 7c6647f8153a4145b09badc530a6f8c7
+msgid "结构明显破坏、原子重叠或来源错误：确认后再删除，或者先 `Export Selected` 单独留档。"
+msgstr "Clearly broken structure, overlapping atoms, or incorrect provenance: delete it only after confirmation, or use `Export Selected` to archive it separately first."
+
+#: ../../source/example/maximum-error-review.md:38
+#: e815a987f99c4257a7710215140ab8f2
+msgid "不要把“删除最大误差点”当成降低 RMSE 的固定步骤。未经复核地删除，可能正好删掉模型最需要补学的区域。"
+msgstr "Do not treat deleting the largest-error points as a routine way to reduce RMSE. Deleting them without review may remove exactly the region the model most needs to learn."

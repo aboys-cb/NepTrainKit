@@ -8,6 +8,7 @@ from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.magnetism import SpinDisorderOperation, SpinDisorderParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
 @CardManager.register_card
@@ -17,38 +18,41 @@ class SpinDisorderCard(MakeDataCard):
     group = "Magnetism"
     card_name = "Spin Disorder"
     menu_icon = r":/images/src/images/perturb.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Spin Disorder")
+        self.setTitle(self.tr("Spin Disorder"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("spin_disorder_card_widget")
 
-        self.mode_label = BodyLabel("Disorder mode", self.setting_widget)
-        self.mode_label.setToolTip("Flip selected moments, randomize selected directions, or sample within a cone")
+        self.mode_label = BodyLabel(self.tr("Disorder mode"), self.setting_widget)
+        self.mode_label.setToolTip(self.tr("Flip selected moments, randomize selected directions, or sample within a cone"))
         self.mode_label.installEventFilter(ToolTipFilter(self.mode_label, 300, ToolTipPosition.TOP))
         self.mode_combo = ComboBox(self.setting_widget)
-        self.mode_combo.addItems(["Flip fraction", "Randomize fraction", "Cone disorder"])
-        self.mode_combo.setCurrentText("Flip fraction")
+        add_translated_items(self, self.mode_combo, ["Flip fraction", "Randomize fraction", "Cone disorder"])
+        set_combo_value(self.mode_combo, "Flip fraction")
 
-        self.fractions_label = BodyLabel("Fractions", self.setting_widget)
-        self.fractions_label.setToolTip("Comma-separated disorder fractions, for example 0.1,0.3,0.5,0.7")
+        self.fractions_label = BodyLabel(self.tr("Fractions"), self.setting_widget)
+        self.fractions_label.setToolTip(self.tr("Comma-separated disorder fractions, for example 0.1,0.3,0.5,0.7"))
         self.fractions_label.installEventFilter(ToolTipFilter(self.fractions_label, 300, ToolTipPosition.TOP))
         self.fractions_edit = LineEdit(self.setting_widget)
         self.fractions_edit.setText("0.1,0.3,0.5,0.7")
 
-        self.samples_label = BodyLabel("Samples/fraction", self.setting_widget)
-        self.samples_label.setToolTip("Number of independent selections emitted for each disorder fraction")
+        self.samples_label = BodyLabel(self.tr("Samples/fraction"), self.setting_widget)
+        self.samples_label.setToolTip(self.tr("Number of independent selections emitted for each disorder fraction"))
         self.samples_label.installEventFilter(ToolTipFilter(self.samples_label, 300, ToolTipPosition.TOP))
         self.samples_frame = SpinBoxUnitInputFrame(self)
         self.samples_frame.set_input("unit", 1, "int")
         self.samples_frame.setRange(1, 10000)
         self.samples_frame.set_input_value([1])
 
-        self.cone_label = BodyLabel("Cone angle", self.setting_widget)
-        self.cone_label.setToolTip("Maximum cone angle in degrees for Cone disorder")
+        self.cone_label = BodyLabel(self.tr("Cone angle"), self.setting_widget)
+        self.cone_label.setToolTip(self.tr("Maximum cone angle in degrees for Cone disorder"))
         self.cone_label.installEventFilter(ToolTipFilter(self.cone_label, 300, ToolTipPosition.TOP))
         self.cone_frame = SpinBoxUnitInputFrame(self)
         self.cone_frame.set_input("deg", 1, "float")
@@ -56,21 +60,21 @@ class SpinDisorderCard(MakeDataCard):
         self.cone_frame.object_list[0].setDecimals(3)  # pyright: ignore[reportAttributeAccessIssue]
         self.cone_frame.set_input_value([30.0])
 
-        self.source_label = BodyLabel("Magnitude source", self.setting_widget)
-        self.source_label.setToolTip("Use existing initial magmoms or build a reference from map/default")
+        self.source_label = BodyLabel(self.tr("Magnitude source"), self.setting_widget)
+        self.source_label.setToolTip(self.tr("Use existing initial magmoms or build a reference from map/default"))
         self.source_label.installEventFilter(ToolTipFilter(self.source_label, 300, ToolTipPosition.TOP))
         self.source_combo = ComboBox(self.setting_widget)
-        self.source_combo.addItems(["Existing initial magmoms", "Map/default magnitude"])
-        self.source_combo.setCurrentText("Existing initial magmoms")
+        add_translated_items(self, self.source_combo, ["Existing initial magmoms", "Map/default magnitude"])
+        set_combo_value(self.source_combo, "Existing initial magmoms")
 
-        self.map_label = BodyLabel("Magmom map", self.setting_widget)
-        self.map_label.setToolTip('Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"')
+        self.map_label = BodyLabel(self.tr("Magmom map"), self.setting_widget)
+        self.map_label.setToolTip(self.tr('Used when source=Map/default magnitude, for example "Fe:2.2,Ni:0.6"'))
         self.map_label.installEventFilter(ToolTipFilter(self.map_label, 300, ToolTipPosition.TOP))
         self.map_edit = LineEdit(self.setting_widget)
-        self.map_edit.setPlaceholderText("Fe:2.2,Ni:0.6")
+        self.map_edit.setPlaceholderText(self.tr("Fe:2.2,Ni:0.6"))
 
-        self.default_label = BodyLabel("Default |m|", self.setting_widget)
-        self.default_label.setToolTip("Magnitude used for elements not listed in the magmom map")
+        self.default_label = BodyLabel(self.tr("Default |m|"), self.setting_widget)
+        self.default_label.setToolTip(self.tr("Magnitude used for elements not listed in the magmom map"))
         self.default_label.installEventFilter(ToolTipFilter(self.default_label, 300, ToolTipPosition.TOP))
         self.default_frame = SpinBoxUnitInputFrame(self)
         self.default_frame.set_input("", 1, "float")
@@ -78,11 +82,11 @@ class SpinDisorderCard(MakeDataCard):
         self.default_frame.object_list[0].setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.default_frame.set_input_value([0.0])
 
-        self.lift_scalar_checkbox = CheckBox("Lift scalar magmoms to vectors", self.setting_widget)
+        self.lift_scalar_checkbox = CheckBox(self.tr("Lift scalar magmoms to vectors"), self.setting_widget)
         self.lift_scalar_checkbox.setChecked(True)
 
-        self.axis_label = BodyLabel("Reference axis", self.setting_widget)
-        self.axis_label.setToolTip("Axis for lifted scalar magmoms and map/default reference states")
+        self.axis_label = BodyLabel(self.tr("Reference axis"), self.setting_widget)
+        self.axis_label.setToolTip(self.tr("Axis for lifted scalar magmoms and map/default reference states"))
         self.axis_label.installEventFilter(ToolTipFilter(self.axis_label, 300, ToolTipPosition.TOP))
         self.axis_frame = SpinBoxUnitInputFrame(self)
         self.axis_frame.set_input("", 3, "float")
@@ -91,13 +95,13 @@ class SpinDisorderCard(MakeDataCard):
             obj.setDecimals(6)  # pyright: ignore[reportAttributeAccessIssue]
         self.axis_frame.set_input_value([0.0, 0.0, 1.0])
 
-        self.apply_label = BodyLabel("Apply elements", self.setting_widget)
-        self.apply_label.setToolTip("Optional comma-separated element list; empty means all nonzero moments")
+        self.apply_label = BodyLabel(self.tr("Apply elements"), self.setting_widget)
+        self.apply_label.setToolTip(self.tr("Optional comma-separated element list; empty means all nonzero moments"))
         self.apply_label.installEventFilter(ToolTipFilter(self.apply_label, 300, ToolTipPosition.TOP))
         self.apply_edit = LineEdit(self.setting_widget)
-        self.apply_edit.setPlaceholderText("Fe,Co")
+        self.apply_edit.setPlaceholderText(self.tr("Fe,Co"))
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -106,8 +110,8 @@ class SpinDisorderCard(MakeDataCard):
         self.seed_frame.setEnabled(False)
         self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
 
-        self.max_output_label = BodyLabel("Max outputs", self.setting_widget)
-        self.max_output_label.setToolTip("Stop after this many generated structures")
+        self.max_output_label = BodyLabel(self.tr("Max outputs"), self.setting_widget)
+        self.max_output_label.setToolTip(self.tr("Stop after this many generated structures"))
         self.max_output_label.installEventFilter(ToolTipFilter(self.max_output_label, 300, ToolTipPosition.TOP))
         self.max_output_frame = SpinBoxUnitInputFrame(self)
         self.max_output_frame.set_input("unit", 1, "int")
@@ -144,14 +148,14 @@ class SpinDisorderCard(MakeDataCard):
         self._update_source_widgets()
 
     def _update_mode_widgets(self):
-        show_cone = self.mode_combo.currentText() == "Cone disorder"
+        show_cone = combo_value(self.mode_combo) == "Cone disorder"
         self.cone_label.setVisible(show_cone)
         self.cone_frame.setVisible(show_cone)
         self.cone_label.setEnabled(show_cone)
         self.cone_frame.setEnabled(show_cone)
 
     def _update_source_widgets(self):
-        use_map = self.source_combo.currentText() == "Map/default magnitude"
+        use_map = combo_value(self.source_combo) == "Map/default magnitude"
         for widget in (self.map_label, self.map_edit, self.default_label, self.default_frame):
             widget.setVisible(use_map)
             widget.setEnabled(use_map)
@@ -161,11 +165,11 @@ class SpinDisorderCard(MakeDataCard):
 
     def get_params(self) -> SpinDisorderParams:
         return SpinDisorderParams(
-            mode=self.mode_combo.currentText(),
+            mode=combo_value(self.mode_combo),
             fractions=self.fractions_edit.text(),
             samples_per_fraction=int(self.samples_frame.get_input_value()[0]),
             cone_angle=float(self.cone_frame.get_input_value()[0]),
-            magnitude_source=self.source_combo.currentText(),
+            magnitude_source=combo_value(self.source_combo),
             magmom_map=self.map_edit.text(),
             default_moment=float(self.default_frame.get_input_value()[0]),
             lift_scalar=self.lift_scalar_checkbox.isChecked(),
@@ -177,11 +181,11 @@ class SpinDisorderCard(MakeDataCard):
         )
 
     def set_params(self, params: SpinDisorderParams) -> None:
-        self.mode_combo.setCurrentText(params.mode)
+        set_combo_value(self.mode_combo, params.mode)
         self.fractions_edit.setText(params.fractions)
         self.samples_frame.set_input_value([int(params.samples_per_fraction)])
         self.cone_frame.set_input_value([float(params.cone_angle)])
-        self.source_combo.setCurrentText(params.magnitude_source)
+        set_combo_value(self.source_combo, params.magnitude_source)
         self.map_edit.setText(params.magmom_map)
         self.default_frame.set_input_value([float(params.default_moment)])
         self.lift_scalar_checkbox.setChecked(bool(params.lift_scalar))

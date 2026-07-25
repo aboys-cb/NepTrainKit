@@ -17,17 +17,20 @@ from unittest.mock import MagicMock, patch
 os.environ["LOCALAPPDATA"] = str(Path(__file__).resolve().parent / "_localappdata")
 
 from NepTrainKit.core.io import NepTrainResultData,NepPolarizabilityResultData,NepDipoleResultData
+from NepTrainKit.core.io.base import DPPlotData, NepPlotData
 from NepTrainKit.core.energy_shift import EnergyBaselinePreset
 from NepTrainKit.core.precision import get_storage_float_dtype
 from numpy.testing import assert_allclose
 from NepTrainKit.core.structure import Structure
-from NepTrainKit.core.types import ForcesMode
+from NepTrainKit.core.types import CanvasMode, ForcesMode
 from NepTrainKit.config import  Config
 from PySide6.QtWidgets import QApplication
 from NepTrainKit.ui.widgets.dialog import ShiftEnergyDialogValues
 import NepTrainKit.ui.widgets.dialog as dialog_module
 import NepTrainKit.ui.views.nep as nep_view_module
 import NepTrainKit.ui.pages.show_nep as show_nep_module
+from NepTrainKit.ui.canvas.vispy.structure import StructurePlotWidget, StructureTurntableCamera
+from NepTrainKit.ui.canvas.structure_view import structure_view_state
 
 Config()
 Config.set("nep", "backend","cpu")
@@ -46,7 +49,9 @@ class TestNepTrainResultData( unittest.TestCase):
 
     def test_load_train(self):
         """测试结构加载功能"""
-        result = NepTrainResultData.from_path(self.train_path)
+        tmp_dir = self._make_nep_workdir()
+        local_train = os.path.join(tmp_dir, "train.xyz")
+        result = NepTrainResultData.from_path(local_train)
 
 
         result.load()
@@ -66,35 +71,27 @@ class TestNepTrainResultData( unittest.TestCase):
         self.assertEqual(result.force.num, 5750)
         self.assertEqual(result.stress.num, 23)
         self.assertEqual(result.virial.num, 23)
-        result.export_model_xyz(self.data_dir)
+        result.export_model_xyz(tmp_dir)
         export_good_model = Structure.read_multiple(
-            os.path.join(self.data_dir,"export_good_model.xyz"))
+            os.path.join(tmp_dir,"export_good_model.xyz"))
         export_remove_model = Structure.read_multiple(
-            os.path.join(self.data_dir,"export_remove_model.xyz"))
+            os.path.join(tmp_dir,"export_remove_model.xyz"))
 
         self.assertEqual(len(export_good_model), 23)
         self.assertEqual(len(export_remove_model), 2)
-        os.remove(os.path.join(self.data_dir,"export_good_model.xyz"))
-        os.remove(os.path.join(self.data_dir,"export_remove_model.xyz"))
 
     def test_load_train2(self):
-        result = NepTrainResultData.from_path(self.train_path)
+        tmp_dir = self._make_nep_workdir()
+        local_train = os.path.join(tmp_dir, "train.xyz")
+        result = NepTrainResultData.from_path(local_train)
         result.load()
         self.assertEqual(result.energy.num, 25)
         self.assertEqual(result.force.num, 6250)
         self.assertEqual(result.stress.num, 25)
         self.assertEqual(result.virial.num, 25)
-        os.remove(os.path.join(self.data_dir,"energy_train.out"))
-        os.remove(os.path.join(self.data_dir,"force_train.out"))
-        os.remove(os.path.join(self.data_dir,"stress_train.out"))
-        os.remove(os.path.join(self.data_dir,"virial_train.out"))
-        os.remove(os.path.join(self.data_dir,"descriptor.out"))
 
     def _make_nep_workdir(self) -> str:
-        base_tmp = Path(__file__).resolve().parent / "_sandbox_tmp"
-        base_tmp.mkdir(parents=True, exist_ok=True)
-        tmp_path = base_tmp / f"nep_test_{uuid.uuid4().hex}"
-        tmp_path.mkdir(parents=True, exist_ok=False)
+        tmp_path = Path(tempfile.mkdtemp(prefix=f"nep_test_{uuid.uuid4().hex}_"))
         tmp_dir = str(tmp_path)
         self._tmp_dirs.append(tmp_dir)
         for item in os.listdir(self.data_dir):
@@ -252,6 +249,28 @@ class TestNepTrainResultData( unittest.TestCase):
         self.assertEqual(len(result.select_index), result.num-2)
         self.assertNotIn(1, result.select_index)
         self.assertNotIn(3, result.select_index)
+
+    def test_undo_selection_history(self):
+        tmp_dir = self._make_nep_workdir()
+        local_train = os.path.join(tmp_dir, "train.xyz")
+        result = NepTrainResultData.from_path(local_train)
+        result.load()
+
+        result.select([0, 1])
+        result.uncheck(0)
+        result.inverse_select()
+
+        self.assertTrue(result.undo_selection())
+        self.assertEqual(result.select_index, {1})
+        self.assertTrue(result.undo_selection())
+        self.assertEqual(result.select_index, {0, 1})
+        self.assertTrue(result.undo_selection())
+        self.assertEqual(result.select_index, set())
+        self.assertFalse(result.undo_selection())
+
+        result.select([0, 1])
+        result.delete_selected()
+        self.assertFalse(result.undo_selection())
 
 
 class _ShiftDummyStructure:
@@ -417,6 +436,105 @@ class TestNepResultPlotWidgetShiftEnergyBaseline(unittest.TestCase):
 
 
 class TestNepResultPlotWidgetCanvasFactory(unittest.TestCase):
+    def _set_canvas_config(self, canvas_type, threshold=50):
+        previous_canvas = Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH.value)
+        previous_threshold = Config.get("widget", "auto_vispy_point_threshold", None)
+        self.addCleanup(lambda: Config.set("widget", "canvas_type", previous_canvas))
+        if previous_threshold is None:
+            self.addCleanup(lambda: Config.delete("widget", "auto_vispy_point_threshold"))
+        else:
+            self.addCleanup(lambda: Config.set("widget", "auto_vispy_point_threshold", previous_threshold))
+        Config.set("widget", "canvas_type", canvas_type)
+        Config.set("widget", "auto_vispy_point_threshold", threshold)
+
+    @staticmethod
+    def _plot_dataset(points):
+        return SimpleNamespace(datasets=[SimpleNamespace(x=np.zeros(points, dtype=np.float32))])
+
+    def test_auto_canvas_prefers_pyqtgraph_below_threshold(self):
+        self._set_canvas_config(CanvasMode.AUTO.value, threshold=50)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._vispy_unavailable = False
+
+        canvas_type = nep_view_module.NepResultPlotWidget._desired_canvas_type_for_dataset(
+            widget, self._plot_dataset(49)
+        )
+
+        self.assertEqual(canvas_type, CanvasMode.PYQTGRAPH.value)
+
+    def test_auto_canvas_prefers_vispy_at_threshold(self):
+        self._set_canvas_config(CanvasMode.AUTO.value, threshold=50)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._vispy_unavailable = False
+
+        canvas_type = nep_view_module.NepResultPlotWidget._desired_canvas_type_for_dataset(
+            widget, self._plot_dataset(50)
+        )
+
+        self.assertEqual(canvas_type, CanvasMode.VISPY.value)
+
+    def test_manual_canvas_setting_overrides_auto_threshold(self):
+        self._set_canvas_config(CanvasMode.PYQTGRAPH.value, threshold=50)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._vispy_unavailable = False
+
+        canvas_type = nep_view_module.NepResultPlotWidget._desired_canvas_type_for_dataset(
+            widget, self._plot_dataset(5000)
+        )
+
+        self.assertEqual(canvas_type, CanvasMode.PYQTGRAPH.value)
+
+    def test_manual_vispy_uses_pyqtgraph_when_vispy_unavailable(self):
+        self._set_canvas_config(CanvasMode.VISPY.value, threshold=50)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._vispy_unavailable = True
+
+        canvas_type = nep_view_module.NepResultPlotWidget._desired_canvas_type_for_dataset(
+            widget, self._plot_dataset(5000)
+        )
+
+        self.assertEqual(canvas_type, CanvasMode.PYQTGRAPH.value)
+
+    def test_auto_canvas_uses_pyqtgraph_when_vispy_unavailable(self):
+        self._set_canvas_config(CanvasMode.AUTO.value, threshold=50)
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._vispy_unavailable = True
+
+        canvas_type = nep_view_module.NepResultPlotWidget._desired_canvas_type_for_dataset(
+            widget, self._plot_dataset(5000)
+        )
+
+        self.assertEqual(canvas_type, CanvasMode.PYQTGRAPH.value)
+
+    def test_set_dataset_switches_canvas_before_plotting(self):
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._canvas_type = CanvasMode.PYQTGRAPH.value
+        widget.last_figure_num = 1
+        new_canvas = SimpleNamespace(
+            init_axes=MagicMock(),
+            set_nep_result_data=MagicMock(),
+            plot_nep_result=MagicMock(),
+        )
+        dataset = SimpleNamespace(datasets=[object(), object()])
+
+        def switch_canvas(canvas_type):
+            widget._canvas_type = canvas_type
+            widget.canvas = new_canvas
+
+        widget.swith_canvas = MagicMock(side_effect=switch_canvas)
+
+        with patch.object(
+            nep_view_module.NepResultPlotWidget,
+            "_desired_canvas_type_for_dataset",
+            return_value=CanvasMode.VISPY.value,
+        ):
+            nep_view_module.NepResultPlotWidget.set_dataset(widget, dataset)
+
+        widget.swith_canvas.assert_called_once_with(CanvasMode.VISPY.value)
+        new_canvas.init_axes.assert_called_once_with(2)
+        new_canvas.set_nep_result_data.assert_called_once_with(dataset)
+        new_canvas.plot_nep_result.assert_called_once()
+
     def test_swith_canvas_uses_factory_and_host_widget(self):
         widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
         widget._layout = MagicMock()
@@ -530,8 +648,9 @@ class TestTrainingOverlayDialog(unittest.TestCase):
 
 
 class _SparseBoxControl:
-    def __init__(self, value):
+    def __init__(self, value, items=None):
         self._value = value
+        self._items = list(items or [])
 
     def value(self):
         return self._value
@@ -545,6 +664,17 @@ class _SparseBoxControl:
     def setCurrentIndex(self, value):
         self._value = value
 
+    def currentData(self):
+        if self._items and isinstance(self._value, int) and 0 <= self._value < len(self._items):
+            return self._items[self._value]
+        return self._value
+
+    def findData(self, value):
+        try:
+            return self._items.index(value)
+        except ValueError:
+            return -1
+
     def text(self):
         return self._value
 
@@ -556,13 +686,23 @@ class _SparseBoxControl:
 
 
 class _SparseBox:
-    def __init__(self, accepted=True, training_path="train.xyz", show_overlay=True):
+    def __init__(
+        self,
+        accepted=True,
+        training_path="train.xyz",
+        show_overlay=True,
+        selection_strategy="global",
+    ):
         self._accepted = accepted
         self.intSpinBox = _SparseBoxControl(5)
         self.doubleSpinBox = _SparseBoxControl(0.1)
         self.regionCheck = _SparseBoxControl(False)
-        self.descriptorCombo = _SparseBoxControl(0)
-        self.modeCombo = _SparseBoxControl(0)
+        self.descriptorCombo = _SparseBoxControl(0, ["reduced", "raw"])
+        self.modeCombo = _SparseBoxControl(0, ["count", "r2"])
+        self.strategyCombo = _SparseBoxControl(
+            1 if selection_strategy == "element_set" else 0,
+            ["global", "element_set"],
+        )
         self.r2SpinBox = _SparseBoxControl(0.9)
         self.trainingPathEdit = _SparseBoxControl(training_path)
         self.trainingOverlayCheck = _SparseBoxControl(show_overlay)
@@ -590,14 +730,43 @@ class _OverlayDialogRecorder:
         type(self).shown = True
 
 
+class TestSparseMessageBoxStrategy(unittest.TestCase):
+    def test_balanced_strategy_locks_validated_descriptor_and_mode(self):
+        from PySide6.QtWidgets import QWidget
+
+        self._app = QApplication.instance() or QApplication([])
+        parent = QWidget()
+        box = dialog_module.SparseMessageBox(parent)
+        box.modeCombo.setCurrentIndex(box.modeCombo.findData("r2"))
+        box.descriptorCombo.setCurrentIndex(box.descriptorCombo.findData("reduced"))
+
+        box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("element_set"))
+
+        self.assertEqual(box.modeCombo.currentData(), "count")
+        self.assertEqual(box.descriptorCombo.currentData(), "raw")
+        self.assertFalse(box.modeCombo.isEnabled())
+        self.assertFalse(box.descriptorCombo.isEnabled())
+        self.assertTrue(box.r2SpinBox.isHidden())
+
+        box.strategyCombo.setCurrentIndex(box.strategyCombo.findData("global"))
+        self.assertEqual(box.modeCombo.currentData(), "r2")
+        self.assertEqual(box.descriptorCombo.currentData(), "reduced")
+        self.assertTrue(box.modeCombo.isEnabled())
+        self.assertTrue(box.descriptorCombo.isEnabled())
+        self.assertFalse(box.r2SpinBox.isHidden())
+
+
 class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
     def setUp(self):
         self._prev_canvas = Config.get("widget", "canvas_type", "pyqtgraph")
         self._prev_training_path = Config.get("widget", "sparse_training_path", "")
+        self._prev_strategy = Config.get("widget", "sparse_selection_strategy", "global")
+        Config.set("widget", "sparse_selection_strategy", "global")
 
     def tearDown(self):
         Config.set("widget", "canvas_type", self._prev_canvas)
         Config.set("widget", "sparse_training_path", self._prev_training_path)
+        Config.set("widget", "sparse_selection_strategy", self._prev_strategy)
         _OverlayDialogRecorder.last_kwargs = None
         _OverlayDialogRecorder.shown = False
 
@@ -622,6 +791,10 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
             nep_view_module.NepResultPlotWidget.sparse_point(widget)
 
         data.sparse_point_selection.assert_called_once()
+        self.assertEqual(
+            data.sparse_point_selection.call_args.kwargs["selection_strategy"],
+            "global",
+        )
         widget.canvas.select_index.assert_called_once_with([3], False)
         self.assertTrue(_OverlayDialogRecorder.shown)
         self.assertEqual(_OverlayDialogRecorder.last_kwargs["canvas_type"], "vispy")
@@ -647,8 +820,54 @@ class TestNepResultPlotWidgetSparseOverlay(unittest.TestCase):
 
         self.assertIsNone(_OverlayDialogRecorder.last_kwargs)
 
+    def test_sparse_point_passes_element_set_strategy_with_raw_fixed_count(self):
+        Config.set("widget", "sparse_selection_strategy", "element_set")
+        widget = nep_view_module.NepResultPlotWidget.__new__(nep_view_module.NepResultPlotWidget)
+        widget._parent = None
+        data = SimpleNamespace(
+            sparse_point_selection=MagicMock(return_value=([1, 4], False)),
+            _last_sparse_group_report={("H",): {}, ("He",): {}},
+        )
+        widget.canvas = SimpleNamespace(
+            nep_result_data=data,
+            select_index=MagicMock(),
+        )
+
+        with patch.object(
+            nep_view_module,
+            "SparseMessageBox",
+            return_value=_SparseBox(
+                training_path="",
+                show_overlay=False,
+                selection_strategy="element_set",
+            ),
+        ), patch.object(nep_view_module.MessageManager, "send_info_message"):
+            nep_view_module.NepResultPlotWidget.sparse_point(widget)
+
+        kwargs = data.sparse_point_selection.call_args.kwargs
+        self.assertEqual(kwargs["selection_strategy"], "element_set")
+        self.assertEqual(kwargs["descriptor_source"], "raw")
+        self.assertEqual(kwargs["sampling_mode"], "count")
+        widget.canvas.select_index.assert_called_once_with([1, 4], False)
+
 
 class TestShowNepWidgetArrowCapability(unittest.TestCase):
+    class _FakeStructure:
+        def __init__(self, index=0, natoms=1):
+            self.index = index
+            self.atomic_properties = {}
+            self.has_forces = False
+            self._natoms = natoms
+
+        def __len__(self):
+            return self._natoms
+
+        def copy(self):
+            clone = TestShowNepWidgetArrowCapability._FakeStructure(self.index, self._natoms)
+            clone.atomic_properties = {key: value.copy() for key, value in self.atomic_properties.items()}
+            clone.has_forces = self.has_forces
+            return clone
+
     def test_update_structure_arrow_availability_disables_when_unsupported(self):
         widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
         widget.show_struct_widget = object()
@@ -668,6 +887,519 @@ class TestShowNepWidgetArrowCapability(unittest.TestCase):
         ) as info_mock:
             show_nep_module.ShowNepWidget.show_arrow_dialog(widget)
         info_mock.assert_called_once_with("Arrow overlay is unavailable for current structure canvas backend.")
+
+    def test_ml_arrow_vectors_use_nep_plot_column_order(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        rows = np.array(
+            [
+                [1.0, 2.0, 3.0, 10.0, 20.0, 30.0],
+                [4.0, 5.0, 6.0, 40.0, 50.0, 60.0],
+                [7.0, 8.0, 9.0, 70.0, 80.0, 90.0],
+            ],
+            dtype=np.float32,
+        )
+        widget.nep_result_data = SimpleNamespace(_force_vector_dataset=NepPlotData(rows, group_list=np.array([2, 1]), title="force"))
+        structure = self._FakeStructure(natoms=2)
+
+        show_nep_module.ShowNepWidget._inject_ml_arrow_vectors(widget, structure, 0)
+
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_ML_FORCE], rows[:2, :3])
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_DFT_FORCE], rows[:2, 3:])
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_FORCE_ERROR], rows[:2, :3] - rows[:2, 3:])
+
+    def test_ml_arrow_vectors_use_deepmd_plot_column_order(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        rows = np.array(
+            [
+                [10.0, 20.0, 30.0, 1.0, 2.0, 3.0],
+                [40.0, 50.0, 60.0, 4.0, 5.0, 6.0],
+            ],
+            dtype=np.float32,
+        )
+        widget.nep_result_data = SimpleNamespace(_force_vector_dataset=DPPlotData(rows, group_list=np.array([2]), title="force"))
+        structure = self._FakeStructure(natoms=2)
+
+        show_nep_module.ShowNepWidget._inject_ml_arrow_vectors(widget, structure, 0)
+
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_DFT_FORCE], rows[:, :3])
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_ML_FORCE], rows[:, 3:])
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_FORCE_ERROR], rows[:, 3:] - rows[:, :3])
+
+    def test_deepmd_mforce_arrow_error_does_not_require_existing_mforce_property(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        rows = np.array(
+            [
+                [10.0, 20.0, 30.0, 1.0, 2.0, 3.0],
+                [40.0, 50.0, 60.0, 4.0, 5.0, 6.0],
+            ],
+            dtype=np.float32,
+        )
+        widget.nep_result_data = SimpleNamespace(mforce=DPPlotData(rows, group_list=np.array([2]), title="mforce"))
+        structure = self._FakeStructure(natoms=2)
+        structure.atomic_properties["force"] = np.zeros((2, 3), dtype=np.float32)
+
+        show_nep_module.ShowNepWidget._inject_ml_arrow_vectors(widget, structure, 0)
+
+        self.assertNotIn("mforce", structure.atomic_properties)
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_DFT_MFORCE], rows[:, :3])
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_ML_MFORCE], rows[:, 3:])
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_MFORCE_ERROR], rows[:, 3:] - rows[:, :3])
+
+    def test_sparse_mforce_arrow_error_uses_force_mag_mask(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        rows = np.array(
+            [
+                [10.0, 20.0, 30.0, 1.0, 2.0, 3.0],
+                [40.0, 50.0, 60.0, 4.0, 5.0, 6.0],
+            ],
+            dtype=np.float32,
+        )
+        widget.nep_result_data = SimpleNamespace(mforce=DPPlotData(rows, group_list=np.array([2]), title="mforce"))
+        structure = self._FakeStructure(natoms=3)
+        structure.atomic_properties["force_mag"] = np.array(
+            [
+                [0.0, 0.0, 0.0],
+                [1.0, 0.0, 0.0],
+                [0.0, 1.0, 0.0],
+            ],
+            dtype=np.float32,
+        )
+
+        show_nep_module.ShowNepWidget._inject_ml_arrow_vectors(widget, structure, 0)
+
+        expected_error = np.zeros((3, 3), dtype=np.float32)
+        expected_error[1:] = rows[:, 3:] - rows[:, :3]
+        np.testing.assert_allclose(structure.atomic_properties[show_nep_module._ARROW_MFORCE_ERROR], expected_error)
+
+    def test_arrow_display_names_hide_internal_ml_force_keys(self):
+        labels, label_to_prop = show_nep_module.ShowNepWidget._arrow_display_names(
+            [show_nep_module._ARROW_ML_FORCE, show_nep_module._ARROW_FORCE_ERROR, "spin"]
+        )
+
+        self.assertEqual(labels, ["ML force", "Force error (ML - DFT)", "spin"])
+        self.assertEqual(label_to_prop["ML force"], show_nep_module._ARROW_ML_FORCE)
+        self.assertEqual(label_to_prop["spin"], "spin")
+
+    def test_existing_atomic_vector_properties_remain_arrow_options(self):
+        structure = self._FakeStructure(natoms=2)
+        structure.atomic_properties["spin"] = np.ones((2, 3), dtype=np.float32)
+        structure.atomic_properties[show_nep_module._ARROW_ML_FORCE] = np.zeros((2, 3), dtype=np.float32)
+
+        props = [
+            name for name, arr in structure.atomic_properties.items()
+            if isinstance(arr, np.ndarray) and arr.ndim == 2 and arr.shape[1] == 3
+        ]
+        labels, label_to_prop = show_nep_module.ShowNepWidget._arrow_display_names(props)
+
+        self.assertIn("spin", labels)
+        self.assertIn("ML force", labels)
+        self.assertEqual(label_to_prop["spin"], "spin")
+
+    def test_display_structure_copy_reuses_atomic_arrays(self):
+        source = self._FakeStructure(index=0, natoms=2)
+        spin = np.ones((2, 3), dtype=np.float32)
+        source.atomic_properties["spin"] = spin
+
+        display = show_nep_module.ShowNepWidget._copy_structure_for_display(source)
+
+        self.assertIsNot(display, source)
+        self.assertIsNot(display.atomic_properties, source.atomic_properties)
+        self.assertIs(display.atomic_properties["spin"], spin)
+        display.atomic_properties[show_nep_module._ARROW_ML_FORCE] = np.zeros((2, 3), dtype=np.float32)
+        self.assertNotIn(show_nep_module._ARROW_ML_FORCE, source.atomic_properties)
+
+    def test_show_current_structure_defers_and_coalesces_structure_render(self):
+        app = QApplication.instance() or QApplication([])
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._pending_structure_index = None
+        widget._structure_update_scheduled = False
+        widget._sync_reject_toolbar_state = MagicMock()
+        source_atoms = self._FakeStructure(index=3)
+        widget.nep_result_data = SimpleNamespace(get_atoms=MagicMock(return_value=source_atoms))
+        widget.graph_widget = SimpleNamespace(canvas=SimpleNamespace(plot_current_point=MagicMock()))
+        widget.show_struct_widget = SimpleNamespace(show_structure=MagicMock())
+        widget.update_structure_bond_info = MagicMock()
+        widget.struct_info_widget = SimpleNamespace(show_structure_info=MagicMock())
+        widget.force_label = SimpleNamespace(setText=MagicMock())
+        widget._refresh_export_actions = MagicMock()
+
+        show_nep_module.ShowNepWidget.show_current_structure(widget, 1)
+        show_nep_module.ShowNepWidget.show_current_structure(widget, 2)
+        show_nep_module.ShowNepWidget.show_current_structure(widget, 3)
+
+        self.assertEqual(widget.graph_widget.canvas.plot_current_point.call_count, 3)
+        widget.show_struct_widget.show_structure.assert_not_called()
+
+        app.processEvents()
+
+        widget.nep_result_data.get_atoms.assert_called_once_with(3)
+        widget.show_struct_widget.show_structure.assert_called_once()
+        rendered_atoms = widget.show_struct_widget.show_structure.call_args.args[0]
+        self.assertEqual(rendered_atoms.index, 3)
+        self.assertIsNot(rendered_atoms, source_atoms)
+
+    def test_ml_arrow_vectors_do_not_mutate_export_source_structure(self):
+        app = QApplication.instance() or QApplication([])
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        widget._pending_structure_index = None
+        widget._structure_update_scheduled = False
+        widget._sync_reject_toolbar_state = MagicMock()
+        source_atoms = self._FakeStructure(index=0, natoms=2)
+        rows = np.array(
+            [
+                [1.0, 2.0, 3.0, 10.0, 20.0, 30.0],
+                [4.0, 5.0, 6.0, 40.0, 50.0, 60.0],
+            ],
+            dtype=np.float32,
+        )
+        widget.nep_result_data = SimpleNamespace(
+            get_atoms=MagicMock(return_value=source_atoms),
+            _force_vector_dataset=NepPlotData(rows, group_list=np.array([2]), title="force"),
+        )
+        widget.graph_widget = SimpleNamespace(canvas=SimpleNamespace(plot_current_point=MagicMock()))
+        widget.show_struct_widget = SimpleNamespace(show_structure=MagicMock())
+        widget.update_structure_bond_info = MagicMock()
+        widget.struct_info_widget = SimpleNamespace(show_structure_info=MagicMock())
+        widget.force_label = SimpleNamespace(setText=MagicMock())
+        widget._refresh_export_actions = MagicMock()
+
+        show_nep_module.ShowNepWidget.show_current_structure(widget, 0)
+        app.processEvents()
+
+        rendered_atoms = widget.show_struct_widget.show_structure.call_args.args[0]
+        self.assertIn(show_nep_module._ARROW_ML_FORCE, rendered_atoms.atomic_properties)
+        self.assertNotIn(show_nep_module._ARROW_ML_FORCE, source_atoms.atomic_properties)
+        self.assertNotIn(show_nep_module._ARROW_DFT_FORCE, source_atoms.atomic_properties)
+        self.assertNotIn(show_nep_module._ARROW_FORCE_ERROR, source_atoms.atomic_properties)
+
+    def test_arrow_vector_lookup_keeps_force_and_mforce_cached(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        force = NepPlotData(np.zeros((2, 6), dtype=np.float32), group_list=np.array([2]), title="force")
+        mforce = NepPlotData(np.ones((2, 6), dtype=np.float32), group_list=np.array([2]), title="mforce")
+
+        show_nep_module.ShowNepWidget._arrow_vector_lookup(widget, force)
+        show_nep_module.ShowNepWidget._arrow_vector_lookup(widget, mforce)
+
+        self.assertEqual(len(widget._arrow_vector_lookup_cache), 2)
+
+    def test_arrow_vector_pair_uses_cached_sorted_lookup(self):
+        widget = show_nep_module.ShowNepWidget.__new__(show_nep_module.ShowNepWidget)
+        widget._arrow_vector_lookup_cache = {}
+        rows = np.array(
+            [
+                [1.0, 2.0, 3.0, 11.0, 12.0, 13.0],
+                [4.0, 5.0, 6.0, 14.0, 15.0, 16.0],
+                [7.0, 8.0, 9.0, 17.0, 18.0, 19.0],
+            ],
+            dtype=np.float32,
+        )
+        dataset = NepPlotData(rows, group_list=np.array([2, 1]), title="force")
+
+        dft, ml = show_nep_module.ShowNepWidget._extract_arrow_vector_pair(widget, dataset, 0, 2)
+
+        np.testing.assert_allclose(ml, rows[:2, :3])
+        np.testing.assert_allclose(dft, rows[:2, 3:])
+        self.assertEqual(len(widget._arrow_vector_lookup_cache), 1)
+
+
+class TestStructurePlotWidgetInteraction(unittest.TestCase):
+    class _Projection:
+        def __init__(self, screen_positions):
+            self.screen_positions = np.asarray(screen_positions, dtype=np.float64)
+
+        def map(self, positions):
+            positions = np.asarray(positions)
+            return np.column_stack(
+                [
+                    self.screen_positions[: positions.shape[0]],
+                    np.zeros(positions.shape[0], dtype=np.float64),
+                    np.ones(positions.shape[0], dtype=np.float64),
+                ]
+            )
+
+    def test_structure_canvas_uses_custom_turntable_camera(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        try:
+            self.assertIsInstance(canvas.view.camera, StructureTurntableCamera)
+            self.assertEqual(canvas.view.camera.translate_speed, 1.3)
+            canvas.set_projection(True)
+            self.assertIsInstance(canvas.view.camera, StructureTurntableCamera)
+            self.assertEqual(canvas.view.camera.translate_speed, 1.3)
+            canvas.set_projection(False)
+            self.assertIsInstance(canvas.view.camera, StructureTurntableCamera)
+            self.assertEqual(canvas.view.camera.translate_speed, 1.3)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_initial_structure_view_includes_cell_and_avoids_origin_bias(self):
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        structure = Structure(
+            np.eye(3) * 4.0,
+            {
+                "pos": np.array([[10.0, 10.0, 10.0], [11.0, 10.0, 10.0]], dtype=np.float32),
+                "species": np.array(["H", "H"]),
+            },
+            props,
+            {},
+        )
+
+        center, distance, _elevation, _azimuth = structure_view_state(structure)
+
+        np.testing.assert_allclose(center, np.array([5.5, 5.0, 5.0]))
+        self.assertGreater(distance, 0.0)
+
+    def test_first_structure_is_fitted_without_enabling_continuous_auto_view(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        structure = Structure(
+            np.eye(3) * 4.0,
+            {
+                "pos": np.array([[10.0, 10.0, 10.0], [11.0, 10.0, 10.0]], dtype=np.float32),
+                "species": np.array(["H", "H"]),
+            },
+            props,
+            {},
+        )
+        try:
+            canvas.show_structure(structure)
+
+            self.assertFalse(canvas.auto_view)
+            np.testing.assert_allclose(canvas.view.camera.center, np.array([5.5, 5.0, 5.0]))
+            self.assertGreater(float(canvas.view.camera.distance), 0.0)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_manual_camera_center_is_preserved_until_next_dataset_fit(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        first = Structure(
+            np.eye(3) * 4.0,
+            {"pos": np.array([[1.0, 1.0, 1.0]], dtype=np.float32), "species": np.array(["H"])},
+            props,
+            {},
+        )
+        second = Structure(
+            np.eye(3) * 8.0,
+            {"pos": np.array([[7.0, 7.0, 7.0]], dtype=np.float32), "species": np.array(["H"])},
+            props,
+            {},
+        )
+        try:
+            canvas.show_structure(first)
+            canvas.view.camera.center = (20.0, 21.0, 22.0)
+            canvas.show_structure(second)
+            np.testing.assert_allclose(canvas.view.camera.center, np.array([20.0, 21.0, 22.0]))
+
+            canvas.reset_camera_fit()
+            canvas.show_structure(second)
+            np.testing.assert_allclose(canvas.view.camera.center, np.array([4.0, 4.0, 4.0]))
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_nearest_atom_for_double_click_uses_screen_distance(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        canvas.structure = SimpleNamespace(positions=np.zeros((3, 3), dtype=np.float32))
+        projection = self._Projection(
+            [
+                [10.0, 10.0],
+                [40.0, 30.0],
+                [100.0, 100.0],
+            ]
+        )
+        try:
+            with patch.object(canvas.view.scene, "node_transform", return_value=projection):
+                atom_index = canvas._nearest_atom_index_at_canvas_pos(np.array([42.0, 31.0]))
+                blank_index = canvas._nearest_atom_index_at_canvas_pos(np.array([70.0, 70.0]), max_distance=5.0)
+
+            self.assertEqual(atom_index, 1)
+            self.assertIsNone(blank_index)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_left_double_click_sets_rotation_center_without_moving_view(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        structure = Structure(
+            np.eye(3),
+            {
+                "pos": np.array([[0.0, 0.0, 0.0], [1.0, 2.0, 3.0]], dtype=np.float32),
+                "species": np.array(["H", "H"]),
+            },
+            props,
+            {},
+        )
+        projection = self._Projection(
+            [
+                [10.0, 10.0],
+                [30.0, 30.0],
+            ]
+        )
+        event = SimpleNamespace(button=1, pos=np.array([31.0, 29.0]), handled=False)
+        try:
+            canvas.show_structure(structure)
+            original_center = tuple(canvas.view.camera.center)
+            with patch.object(canvas.view.scene, "node_transform", return_value=projection), patch.object(
+                canvas, "update"
+            ) as update_mock:
+                canvas._on_mouse_double_click(event)
+
+            self.assertEqual(tuple(canvas.view.camera.center), original_center)
+            self.assertEqual(canvas.view.camera._rotation_center, (1.0, 2.0, 3.0))
+            self.assertIsNotNone(canvas._rotation_center_marker)
+            self.assertTrue(event.handled)
+            self.assertGreaterEqual(update_mock.call_count, 1)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_show_structure_resets_to_default_rotation_center_marker(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        first = Structure(
+            np.eye(3),
+            {"pos": np.zeros((1, 3), dtype=np.float32), "species": np.array(["H"])},
+            props,
+            {},
+        )
+        second = Structure(
+            np.eye(3),
+            {"pos": np.ones((1, 3), dtype=np.float32), "species": np.array(["H"])},
+            props,
+            {},
+        )
+        try:
+            canvas.show_structure(first)
+            canvas.view.camera.set_rotation_center((1.0, 2.0, 3.0))
+            canvas._set_rotation_center_marker((1.0, 2.0, 3.0))
+            canvas.show_structure(second)
+
+            self.assertIsNone(canvas.view.camera._rotation_center)
+            self.assertIsNotNone(canvas._rotation_center_marker)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_show_structure_displays_default_rotation_center_marker(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=False, size=(200, 150))
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        structure = Structure(
+            np.eye(3),
+            {"pos": np.zeros((1, 3), dtype=np.float32), "species": np.array(["H"])},
+            props,
+            {},
+        )
+        try:
+            canvas.show_structure(structure)
+
+            self.assertIsNone(canvas.view.camera._rotation_center)
+            self.assertIsNotNone(canvas._rotation_center_marker)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_rotation_center_keeps_pivot_screen_position_stable(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=True, size=(500, 400))
+        props = [
+            {"name": "species", "type": "S", "cols": 1},
+            {"name": "pos", "type": "R", "cols": 3},
+        ]
+        structure = Structure(
+            np.eye(3) * 10,
+            {"pos": np.array([[0, 0, 0], [2, 0, 0]], dtype=np.float32), "species": np.array(["H", "H"])},
+            props,
+            {},
+        )
+        try:
+            canvas.show_structure(structure)
+            canvas.show()
+            app.processEvents()
+            camera = canvas.view.camera
+            camera.center = (0, 0, 0)
+            camera.distance = 50
+            camera.scale_factor = 10
+            camera.azimuth = 30
+            camera.elevation = 30
+            app.processEvents()
+
+            pivot = np.array([2.0, 0.0, 0.0])
+            before = camera._project_scene_point(pivot)
+            camera.set_rotation_center(pivot)
+            press = SimpleNamespace(pos=np.array([100.0, 100.0]))
+            mouse = SimpleNamespace(press_event=press, pos=np.array([120.0, 100.0]), modifiers=[])
+            camera._event_value = None
+            camera._update_rotation(SimpleNamespace(mouse_event=mouse))
+            app.processEvents()
+            after = camera._project_scene_point(pivot)
+
+            self.assertLess(float(np.linalg.norm(after - before)), 0.5)
+        finally:
+            canvas.close()
+            app.processEvents()
+
+    def test_right_drag_pan_tracks_screen_delta_after_zoom(self):
+        app = QApplication.instance() or QApplication([])
+        canvas = StructurePlotWidget(show=True, size=(500, 400))
+        try:
+            canvas.show()
+            app.processEvents()
+            camera = canvas.view.camera
+            camera.center = (0, 0, 0)
+            camera.distance = 5
+            camera.scale_factor = 1
+            camera.azimuth = 20
+            camera.elevation = 30
+            app.processEvents()
+            point = np.array([0.0, 0.0, 0.0])
+            before = camera._project_scene_point(point)
+
+            camera._event_value = None
+            camera._translate_from_mouse_delta(np.array([100.0, 100.0]), np.array([120.0, 100.0]))
+            app.processEvents()
+            after = camera._project_scene_point(point)
+
+            delta = after - before
+            self.assertGreater(float(delta[0]), 15.0)
+            self.assertLess(float(delta[0]), 30.0)
+            self.assertAlmostEqual(float(delta[1]), 0.0, delta=1.0)
+        finally:
+            canvas.close()
+            app.processEvents()
 
 
 class TestNepPolarizabilityResultData( unittest.TestCase):

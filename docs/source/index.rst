@@ -19,7 +19,7 @@ DFT 和训练流程。
    :alt: Empty Make Data workspace annotated overview
    :class: docs-screenshot
 
-最小工作流只有三步：
+最小工作流分四步：
 
 1. 先导入初始结构。
 2. 添加一张生成或变换卡片。
@@ -63,11 +63,11 @@ DFT 和训练流程。
 .. code-block:: text
 
    Make Dataset 生成候选结构
-   -> NEP Dataset Display 查看并清洗异常结构
-   -> FPS Filter 或其他方法选择代表结构
-   -> DFT 标注能量、力、应力
-   -> GPUMD 训练 NEP
-   -> NEP Dataset Display 回看训练结果并继续迭代
+   → NEP Dataset Display 查看并清洗异常结构
+   → FPS Filter 或其他方法选择代表结构
+   → DFT 标注能量、力、应力
+   → GPUMD 训练 NEP
+   → NEP Dataset Display 回看训练结果并继续迭代
 
 从哪里开始
 ----------
@@ -85,7 +85,7 @@ DFT 和训练流程。
       :link: workflows/clean-candidate-structures
       :link-type: doc
 
-      从 Make Dataset 输出候选池，到 Show NEP 删除异常结构，再采样去 DFT。
+      从 Make Dataset 输出候选池，到 NEP Dataset Display 删除异常结构，再采样去 DFT。
 
    .. grid-item-card:: 我想分析已有训练结果
       :link: module/NEP-dataset-display
@@ -108,9 +108,10 @@ DFT 和训练流程。
 安装提示
 --------
 
-使用 ``pip`` 安装时会自动检测 CUDA。若检测到可用 CUDA，将构建 GPU backend；
-否则构建 CPU backend。如需手动指定 CUDA，请在安装前设置 ``CUDA_HOME`` 或
-``CUDA_PATH``。完整命令见 :doc:`quickstart`。
+NepTrainKit 通过独立的 ``nep-adapters`` wheel 获得计算后端。macOS 和 Windows
+提供 CPU；Linux x86_64 的 wheel 同时提供 CPU 和 CUDA。安装 wheel 不要求本机
+安装 CUDA Toolkit；CUDA 计算仍需要兼容的 NVIDIA 驱动。确认命令见
+:doc:`quickstart`。
 
 引用 NepTrainKit
 ----------------
@@ -132,7 +133,7 @@ DFT 和训练流程。
    }
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: 文档目录
 
    快速开始 <quickstart>

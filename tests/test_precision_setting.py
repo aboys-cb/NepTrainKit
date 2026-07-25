@@ -64,3 +64,10 @@ def test_settings_widget_shows_float64_when_configured():
             Config.delete("nep", "data_precision")
         else:
             Config.set("nep", "data_precision", prev)
+
+
+def test_settings_widget_hides_removed_vispy_thumbnail_controls():
+    _app()
+    widget = SettingsWidget(None)
+    assert not hasattr(widget, "vispy_thumbnail_mode_card")
+    assert not hasattr(widget, "vispy_thumbnail_limit_card")

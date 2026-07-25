@@ -9,7 +9,7 @@
 下面的 JSON 采用“卡片配置片段”的写法，字段名与当前 `to_dict()` 保持一致，可直接对照卡片页里的推荐预设填写。第一版 recipes 不依赖截图，也不绑定固定示例文件。
 :::
 
-每条配方的卡片链只负责生成候选池。链条末尾写的 `Show NEP 清洗 -> FPS`
+每条配方的卡片链只负责生成候选池。链条末尾写的 `NEP Dataset Display 清洗 → FPS`
 表示后处理方向：先在 `NEP Dataset Display` 里删掉明显异常结构，再做代表性采样。
 如果你有当前体系的 NEP 模型，可以用它做预筛；没有时可以先做几何检查和人工抽查。
 
@@ -27,7 +27,7 @@
 
 ### 卡片顺序
 
-`Crystal Prototype Builder -> Composition Sweep -> Random Occupancy -> Random Doping -> 导出 xyz -> Show NEP 清洗 -> FPS`
+`Crystal Prototype Builder → Composition Sweep → Random Occupancy → Random Doping → 导出 xyz → NEP Dataset Display 清洗 → FPS`
 
 ### 每步 JSON 配置
 
@@ -144,7 +144,7 @@
 
 ### 卡片顺序
 
-`Super Cell -> Random Slab -> Insert Defect -> Vacancy Defect Generation -> 导出 xyz -> Show NEP 清洗 -> FPS`
+`Super Cell → Random Slab → Insert Defect → Vacancy Defect Generation → 导出 xyz → NEP Dataset Display 清洗 → FPS`
 
 ### 每步 JSON 配置
 
@@ -238,6 +238,76 @@
 - `vacuum_range` 过小：上下表面镜像相互作用会污染结果。
 - `concentration_condition` 设得过大：slab 太薄时容易直接破坏表面骨架。
 
+## GSFE 路径
+
+### 目标说明
+
+为指定滑移系统生成一条未弛豫 GSFE 路径。这个配方适合模型在层错能、滑移势垒或局部极小位置上明显偏离 DFT，而训练集中又缺少系统层间错排结构的情况。
+
+### 输入假设
+
+- 研究对象是 fcc 金属或近 fcc 合金。
+- 目标是先扫 fcc (111) 面内完整周期路径，而不是生成带真空的自由表面。
+- 后续会对输出结构做 DFT 单点或短弛豫，再加入训练集。
+
+### 卡片顺序
+
+`Crystal Prototype Builder(fcc111) → Strict GSFE Path → 导出 xyz → NEP Dataset Display 清洗 → DFT`
+
+### 每步 JSON 配置
+
+#### Step 1. `Crystal Prototype Builder`
+
+```json
+{
+  "class": "CrystalPrototypeBuilderCard",
+  "params": {
+    "lattice": "fcc111",
+    "element": "Ni",
+    "a_range": [3.60, 3.60, 0.1],
+    "covera": 1.633,
+    "auto_supercell": false,
+    "max_atoms": 256,
+    "rep": [2, 2, 2],
+    "max_outputs": 1
+  }
+}
+```
+
+**每步预期输出：** 1 个 slab-oriented 周期 cell。当前 cell 的 `(001)` 面对应原始 fcc 的 `(111)` 面，第三晶胞方向已经垂直于层错面。
+
+#### Step 2. `Strict GSFE Path`
+
+```json
+{
+  "class": "StrictGSFEPathCard",
+  "params": {
+    "plane_hkl": [0, 0, 1],
+    "slip_uvw": [1, 0, 0],
+    "displacement_range": [0.0, 1.0, 0.1],
+    "displacement_unit": "fraction_of_vector",
+    "cut_mode": "middle",
+    "cut_fraction": 0.5,
+    "layer_index": 0,
+    "wrap": true
+  }
+}
+```
+
+**每步预期输出：** 11 个沿面内周期方向滑移的层错结构。第一个和最后一个结构应回到同一个周期位置，中间结构用于 DFT 标注 GSFE 曲线。
+
+### 最终数据集特征
+
+- 覆盖完整滑移周期，而不是单个任意层错位移
+- 输出标签里保留 `hkl`、`uvw` 和位移量，方便回看曲线
+- 输入几何满足 slab-oriented 要求，避免普通 cubic cell 直接扫 `(111)` 时产生错接
+
+### 常见失败点
+
+- 直接把普通 `fcc` cubic cell 送进 `Strict GSFE Path`：第三晶胞方向不垂直于目标 `(111)` 面，程序会报 slab-oriented 错误。
+- 把这里的 `fcc111` 当成真空表面：它是周期 cell，不含真空层；如果要自由表面，用 `Random Slab`。
+- 位移步长太粗：0.1 适合第一轮覆盖；如果峰值附近曲线不平滑，把步长缩到 0.05。
+
 ## 磁性数据
 
 ### 目标说明
@@ -251,7 +321,7 @@
 
 ### 卡片顺序
 
-`Group Label -> Magnetic Order -> Magmom Rotation`
+`Group Label → Magnetic Order → Magmom Rotation`
 
 ### 每步 JSON 配置
 
@@ -350,7 +420,7 @@
 
 ### 卡片顺序
 
-`Organic Mol Config -> Atomic Perturb -> 导出 xyz -> Show NEP 清洗 -> FPS`
+`Organic Mol Config → Atomic Perturb → 导出 xyz → NEP Dataset Display 清洗 → FPS`
 
 ### 每步 JSON 配置
 

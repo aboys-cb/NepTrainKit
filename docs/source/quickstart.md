@@ -4,7 +4,7 @@
 
 ## 1. 安装
 
-建议使用独立环境，Python 版本用 3.10 到 3.12。
+建议使用独立环境，Python 版本用 3.10 到 3.13。
 
 ```bash
 conda create -n nepkit python=3.10
@@ -12,24 +12,15 @@ conda activate nepkit
 pip install NepTrainKit
 ```
 
-如果你需要 GPU backend，先让安装过程能找到 CUDA。
+NepTrainKit 会安装独立的 `nep-adapters` 运行时。macOS 和 Windows wheel 提供 CPU；Linux x86_64 wheel 同时提供 CPU 和 CUDA。安装 wheel 不要求本机安装 CUDA Toolkit 或 NVCC，但 CUDA 计算需要兼容的 NVIDIA 驱动。
 
-Linux / WSL2：
+安装后先确认运行时状态：
 
 ```bash
-export CUDA_HOME=/usr/local/cuda-12.4
-export PATH="$CUDA_HOME/bin:$PATH"
-export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH}"
-pip install NepTrainKit
+python -c "import nep_adapters as n; print(n.backend_status('cpu')); print(n.backend_status('cuda'))"
 ```
 
-Windows PowerShell：
-
-```powershell
-$env:CUDA_PATH = "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.4"
-$env:Path = "$env:CUDA_PATH\bin;" + $env:Path
-pip install NepTrainKit
-```
+如果 `cuda` 显示不可用，NepTrainKit 的 `Auto` 模式会说明原因并使用 CPU。只有在必须使用 CUDA 时才明确选择 `CUDA`；不可用时程序会直接报错。
 
 启动软件：
 
@@ -104,3 +95,5 @@ nepkit
 [候选结构清洗后再进入 DFT](workflows/clean-candidate-structures.md)。
 
 如果你在做缺陷、表面、掺杂或磁性结构，直接去看 [Make Dataset 卡片手册](module/make-dataset-cards/index.md)。手册按卡片用途组织，比逐个试菜单更快。
+
+如果你要从标准晶体开始，而不是导入已有结构，可以先用 `Crystal Prototype Builder` 生成 `fcc`、`bcc`、`hcp` 或 `fcc111` 原型。需要扫 fcc (111) 的 GSFE 路径时，先生成 `fcc111` 原型，再接 `Strict GSFE Path`；不要把普通 cubic `fcc` cell 直接拿去扫 `(111)`。

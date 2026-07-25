@@ -37,6 +37,14 @@
 如果你正在处理 `Make Dataset` 的候选结构，建议先看完整流程：
 [候选结构清洗后再进入 DFT](../workflows/clean-candidate-structures.md)。
 
+## 从这里打开训练集评估
+
+加载数据后，打开顶部 `Save` 分裂菜单，点击 `评估当前数据集`。软件会检查当前活动结构，并进入「训练集评估」的概览页。
+
+如果只想查看能量、力、virial、预测值或误差的分布，可以点击左侧图表工具栏中的 `查看数据分布`。它会直接打开同一页面的「数据地图 → 数据分布」，点击柱形分箱后仍可把对应结构选回 `NEP Dataset Display`。
+
+训练集评估还可以按精确组分查看结构数量，并对全部结构分析 FCC、HCP、BCC、L1₂、Laves 相结构，以及 FM、AFM、FiM、PM-like 等 `spin:R:3` 磁类型。完整用法、判据、占比视图和限制见 [训练集评估](training-set-assessment.md)。
+
 ## 按目的选工具
 
 | 目的 | 推荐入口 | 结果 |
@@ -47,12 +55,18 @@
 | 检查净力是否异常 | `Check Net Force` | 选中净力超过阈值的结构 |
 | 按来源筛结构 | 搜索框 `tag` 模式 | 按 `Config_type` 找某类生成结构 |
 | 按元素筛结构 | 搜索框 `elements` 模式 | 找含有或不含某些元素的结构 |
+| 按表达式筛结构 | 搜索框 `expression` 模式 | 用原子数、元素比例、能量、力、应力或原子属性批量选中结构 |
+| 代表性采样 | `Sparse samples` | 用 FPS 从当前数据或选区里挑代表结构 |
+| 完整检查当前数据 | 顶部 `Save` → `评估当前数据集` | 查看阻塞项、组分、局域环境、结构相、磁类型和复核队列 |
+| 看数值分布 | `查看数据分布` | 打开训练集评估中的数据分布，并可反向选择结构 |
+| 看数据概况 | `Dataset Summary` | 汇总元素、结构数量和数值分布，可导出 HTML |
 | 删除当前选中结构 | `Delete Selected Items` | 从当前数据集中移除选中结构 |
-| 后悔删除 | `Undo` | 恢复最近一次删除 |
+| 后悔选错 | `Undo Selection` | 撤销最近一次选择变化 |
+| 后悔删除 | `Undo Delete` | 恢复最近一次删除 |
 | 导出干净子集 | 顶部 `Save` / 导出菜单 | 保存后进入 DFT、FPS 或训练流程 |
 
 如果你不知道按钮图标对应哪个功能，查
-[Show NEP 详细参考](show-nep-reference.md)。参考页按按钮列出了弹窗参数和执行结果。
+[NEP Dataset Display 详细参考](show-nep-reference.md)。参考页按按钮列出了参数和执行结果。
 
 ## 候选结构清洗时怎么用
 
@@ -88,4 +102,4 @@
 - `expression`：基于结构级表达式筛选，支持 `natoms`、元素统计、能量、力、应力、virial 和 `atomic.<name>`。
 
 `expression` 的完整语法、字段规则和示例见
-[Show NEP 详细参考](show-nep-reference.md)。
+[NEP Dataset Display 详细参考](show-nep-reference.md)。

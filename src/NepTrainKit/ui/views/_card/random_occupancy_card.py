@@ -8,6 +8,7 @@ from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.alloy import RandomOccupancyOperation, RandomOccupancyParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
 @CardManager.register_card
@@ -17,48 +18,51 @@ class RandomOccupancyCard(MakeDataCard):
     group = "Alloy"
     card_name = "Random Occupancy"
     menu_icon = r":/images/src/images/defect.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Random Occupancy Assignment")
+        self.setTitle(self.tr("Random Occupancy Assignment"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("random_occupancy_card_widget")
 
-        self.source_label = BodyLabel("Composition", self.setting_widget)
+        self.source_label = BodyLabel(self.tr("Composition"), self.setting_widget)
         self.source_combo = ComboBox(self.setting_widget)
-        self.source_combo.addItems(["Auto (Comp tag)", "Manual"])
-        self.source_label.setToolTip("Auto reads Comp(...) from Config_type")
+        add_translated_items(self, self.source_combo, ["Auto (Comp tag)", "Manual"])
+        self.source_label.setToolTip(self.tr("Auto reads Comp(...) from Config_type"))
         self.source_label.installEventFilter(ToolTipFilter(self.source_label, 300, ToolTipPosition.TOP))
 
-        self.manual_label = BodyLabel("Manual comp", self.setting_widget)
+        self.manual_label = BodyLabel(self.tr("Manual comp"), self.setting_widget)
         self.manual_edit = LineEdit(self.setting_widget)
-        self.manual_edit.setPlaceholderText("Co:0.33,Cr:0.33,Ni:0.34")
-        self.manual_label.setToolTip("Element fractions. Used when 'Manual' is selected or Config_type lacks Comp(...).")
+        self.manual_edit.setPlaceholderText(self.tr("Co:0.33,Cr:0.33,Ni:0.34"))
+        self.manual_label.setToolTip(self.tr("Element fractions. Used when 'Manual' is selected or Config_type lacks Comp(...)."))
         self.manual_label.installEventFilter(ToolTipFilter(self.manual_label, 300, ToolTipPosition.TOP))
 
-        self.mode_label = BodyLabel("Mode", self.setting_widget)
+        self.mode_label = BodyLabel(self.tr("Mode"), self.setting_widget)
         self.mode_combo = ComboBox(self.setting_widget)
-        self.mode_combo.addItems(["Exact", "Random"])
-        self.mode_label.setToolTip("Exact: integer counts match fractions; Random: multinomial sampling")
+        add_translated_items(self, self.mode_combo, ["Exact", "Random"])
+        self.mode_label.setToolTip(self.tr("Exact: integer counts match fractions; Random: multinomial sampling"))
         self.mode_label.installEventFilter(ToolTipFilter(self.mode_label, 300, ToolTipPosition.TOP))
 
-        self.samples_label = BodyLabel("Structures/input", self.setting_widget)
+        self.samples_label = BodyLabel(self.tr("Structures/input"), self.setting_widget)
         self.samples_frame = SpinBoxUnitInputFrame(self)
         self.samples_frame.set_input("unit", 1, "int")
         self.samples_frame.setRange(1, 999999)
         self.samples_frame.set_input_value([1])
-        self.samples_label.setToolTip("Number of occupancy samples generated from each input structure")
+        self.samples_label.setToolTip(self.tr("Number of occupancy samples generated from each input structure"))
         self.samples_label.installEventFilter(ToolTipFilter(self.samples_label, 300, ToolTipPosition.TOP))
 
-        self.group_label = BodyLabel("Group filter", self.setting_widget)
+        self.group_label = BodyLabel(self.tr("Group filter"), self.setting_widget)
         self.group_edit = LineEdit(self.setting_widget)
-        self.group_edit.setPlaceholderText("Optional: a,b,c")
-        self.group_label.setToolTip("If the structure has arrays['group'], restrict assignment to these groups")
+        self.group_edit.setPlaceholderText(self.tr("Optional: a,b,c"))
+        self.group_label.setToolTip(self.tr("If the structure has arrays['group'], restrict assignment to these groups"))
         self.group_label.installEventFilter(ToolTipFilter(self.group_label, 300, ToolTipPosition.TOP))
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -87,9 +91,9 @@ class RandomOccupancyCard(MakeDataCard):
     def get_params(self) -> RandomOccupancyParams:
         """Read random occupancy parameters from UI controls."""
         return RandomOccupancyParams(
-            source=self.source_combo.currentText(),
+            source=combo_value(self.source_combo),
             manual=self.manual_edit.text(),
-            mode=self.mode_combo.currentText(),
+            mode=combo_value(self.mode_combo),
             samples=int(self.samples_frame.get_input_value()[0]),
             group_filter=self.group_edit.text(),
             use_seed=self.seed_checkbox.isChecked(),
@@ -98,9 +102,9 @@ class RandomOccupancyCard(MakeDataCard):
 
     def set_params(self, params: RandomOccupancyParams) -> None:
         """Apply random occupancy parameters to UI controls."""
-        self.source_combo.setCurrentText(params.source)
+        set_combo_value(self.source_combo, params.source)
         self.manual_edit.setText(params.manual)
-        self.mode_combo.setCurrentText(params.mode)
+        set_combo_value(self.mode_combo, params.mode)
         self.samples_frame.set_input_value([int(params.samples)])
         self.group_edit.setText(params.group_filter)
         self.seed_checkbox.setChecked(bool(params.use_seed))

@@ -26,10 +26,13 @@ cards/correlated-random-spin-card
 cards/spin-spiral-card
 cards/folded-helix-card
 cards/cell-strain-card
+cards/bain-path-card
 cards/cell-scaling-card
 cards/shear-matrix-card
 cards/shear-angle-card
 cards/random-slab-card
+cards/ordered-alloy-prototype-card
+cards/finite-cell-alloy-occupancy-card
 cards/random-doping-card
 cards/composition-sweep-card
 cards/composition-gradient-card
@@ -41,8 +44,11 @@ cards/magnetic-order-card
 cards/random-vacancy-card
 cards/vacancy-defect-card
 cards/stacking-fault-card
+cards/strict-gsfe-path-card
 cards/interstitial-adsorbate-card
 cards/organic-mol-config-pbc-card
+cards/local-solvation-card
+cards/solvent-box-fill-card
 cards/layer-copy-card
 cards/fps-filter-card
 cards/geometry-filter-card
@@ -73,8 +79,11 @@ cards/card-group
 | 过滤短键、异常体积或异常密度结构 | `Geometry Filter` | 强扰动、随机占位、表面或缺陷生成卡 | 把 `FPS Filter` 当成几何质量检查 |
 | 给近平衡结构加轻微坐标噪声 | `Atomic Perturb` | `Super Cell` / 已弛豫输入 | 用大幅 `Lattice Perturb` 代替原子热扰动 |
 | 给晶胞参数做体积或轴向缩放 | `Lattice Perturb` / `Lattice Strain` | `Super Cell` | 用 `Atomic Perturb` 改晶格 |
+| 沿四方相变或外延方向扫 `c/a` | `Bain Path` | `Crystal Prototype Builder` / `Super Cell` | 用普通轴向应变代替系统 Bain 路径 |
 | 做剪切应变或角度应变 | `Shear Matrix Strain` / `Shear Angle Strain` | 已知目标应变方向 | 用 `Lattice Strain` 强行模拟纯剪切 |
 | 生成表面切片 | `Random Slab` | `Super Cell` | 用 `Vacancy Defect Generation` 做表面 |
+| 生成带 A/B 晶体学子晶格的有序合金原型 | `Ordered Alloy Prototype` | 无 | 用 `group` 代替 `sublattice` 身份 |
+| 在有限晶胞上枚举整数可实现的合金组成和排布 | `Finite-Cell Alloy Occupancy` | `Ordered Alloy Prototype` / `Super Cell` | 连续比例取整后仍标成精确组成 |
 | 做单点随机合金 | `Random Doping` | `Composition Sweep` 可选 | 用 `Composition Sweep` 代替具体占位落点 |
 | 扫描多种目标配比 | `Composition Sweep` | 无 | 用 `Random Doping` 手工凑配比网格 |
 | 沿空间方向做配比梯度 | `Composition Gradient` | 已扩胞且有足够层数的结构 | 用全局随机占位假装扩散偶或梯度层 |
@@ -84,6 +93,7 @@ cards/card-group
 | 按元素或 group 精细删位 | `Random Vacancy` | `Group Label` 可选 | 用 `Vacancy Defect Generation` 写复杂规则 |
 | 做插隙或吸附缺陷 | `Insert Defect` | `Random Slab` / `Super Cell` | 用 `Random Doping` 代替插入 |
 | 做层错样本 | `Stacking Fault` | `Super Cell` | 用 `Random Slab` 代替层错位移 |
+| 严格扫描指定滑移系统的 GSFE 路径 | `Strict GSFE Path` | `Crystal Prototype Builder` 的 `fcc111` 原型 / slab-oriented cell | 用普通 cubic cell 直接扫 `(111)` |
 | 给结构打分组标签，供后续分组操作使用 | `Group Label` | `Super Cell` | 直接在磁卡里假设已有 group |
 | 初始化 FM / AFM / PM 磁序 | `Magnetic Order` | `Group Label` 可选 | 用 `Set Magnetic Moments` 代替多磁态生成 |
 | 生成 FM/AFM 到 PM 之间的无序度梯度 | `Spin Disorder` | `Set Magnetic Moments` / `Magnetic Order` | 把离散翻转塞进 `Magmom Rotation` |
@@ -92,6 +102,8 @@ cards/card-group
 | 基于已有磁矩做旋转、多步 canting、全局偏转或螺旋 | `Magmom Rotation` / `Small-Angle Spin Tilt` / `Spin Spiral` / `Folded Helix` | `Set Magnetic Moments` / `Magnetic Order` | 直接拿空白结构做旋转 |
 | 从振动模式生成位移样本 | `Vib Mode Perturb` | 已包含模态数组的结构 | 用 `Atomic Perturb` 代替模态扰动 |
 | 从有机分子构象空间采样 | `Organic Mol Config` | 已识别分子结构 | 用无机卡片强行扰动有机体系 |
+| 在局部离子、极性中心或溶质周围补溶剂壳 | `Local Solvation` | 已有溶质或离子结构 | 把它当成平衡溶剂化或量化优化 |
+| 在周期 cell 中生成整盒溶剂初态 | `Solvent Box Fill` | 已有非奇异周期 cell | 用局部溶剂壳卡替代整盒填充 |
 | 做容器化分支流程 | `Card Group` | 任意共享输入 | 把 `Card Group` 当成筛选器 |
 | 从干净候选池中选代表性结构 | `FPS Filter` | `NEP Dataset Display` 清洗后的候选池 | 把 `FPS Filter` 当成第一道质量检查 |
 
@@ -109,11 +121,23 @@ cards/card-group
 - `Random Occupancy` 负责把目标配比真正落到离散原子位点上。
 - `Random Doping` 更适合“给定规则后直接做一次随机替换”，而不是系统地扫完整配比空间。
 
+### `Ordered Alloy Prototype` vs `Finite-Cell Alloy Occupancy`
+
+- `Ordered Alloy Prototype` 建立晶胞、周期边界、分数坐标和 A/B 晶体学子晶格，不负责枚举组成。
+- `Finite-Cell Alloy Occupancy` 接收已有位点或子晶格，先确定可实现的整数计数，再生成不重复排布。
+- 要覆盖 L1₂、B2、L1₀ 的有序到部分无序路径，通常先生成原型，再做有限晶胞占位。
+
 ### `Atomic Perturb` vs `Vib Mode Perturb`
 
 - `Atomic Perturb` 是无模型的随机位移，适合快速补近平衡噪声。
 - `Vib Mode Perturb` 基于已有振动模态，适合更接近特定频率空间的位移采样。
 - 输入里没有模态数组时，不能直接用 `Vib Mode Perturb`。
+
+### `Stacking Fault` vs `Strict GSFE Path`
+
+- `Stacking Fault` 更适合快速生成层错候选，参数以滑移向量和切面比例为主。
+- `Strict GSFE Path` 适合你已经知道目标滑移系统，需要明确写出 `plane_hkl` 和 `slip_uvw`。
+- `Strict GSFE Path` 要求输入已经是 slab-oriented cell：第三晶胞方向必须垂直于 `plane_hkl`。如果只是普通 cubic fcc cell，先用 `Crystal Prototype Builder` 的 `fcc111` 原型或自己构造合适 slab cell。
 
 ### `Set Magnetic Moments` vs `Magnetic Order` vs `Magmom Rotation`
 
@@ -123,10 +147,10 @@ cards/card-group
 
 ## 按分组浏览
 
-- `Lattice`: `Super Cell`、`Crystal Prototype Builder`、`Random Packing`、`Lattice Strain`、`Lattice Perturb`、`Shear Matrix Strain`、`Shear Angle Strain`
+- `Lattice`: `Super Cell`、`Crystal Prototype Builder`、`Random Packing`、`Lattice Strain`、`Bain Path`、`Lattice Perturb`、`Shear Matrix Strain`、`Shear Angle Strain`
 - `Perturbation`: `Atomic Perturb`、`Vib Mode Perturb`
-- `Alloy`: `Composition Sweep`、`Composition Gradient`、`Random Occupancy`、`Random Doping`、`Conditional Replace`
-- `Defect / Surface`: `Random Slab`、`Random Vacancy`、`Vacancy Defect Generation`、`Insert Defect`、`Stacking Fault`、`Layer Copy`
+- `Alloy`: `Ordered Alloy Prototype`、`Finite-Cell Alloy Occupancy`、`Composition Sweep`、`Composition Gradient`、`Random Occupancy`、`Random Doping`、`Conditional Replace`
+- `Defect / Surface`: `Random Slab`、`Random Vacancy`、`Vacancy Defect Generation`、`Insert Defect`、`Stacking Fault`、`Strict GSFE Path`、`Layer Copy`
 - `Magnetism`: `Set Magnetic Moments`、`Magnetic Order`、`Spin Disorder`、`Correlated Random Spin`、`Magmom Rotation`、`Small-Angle Spin Tilt`、`Spin Spiral`、`Folded Helix`
 - `Filter / Container`: `Geometry Filter`、`FPS Filter`、`Card Group`
-- `Organic`: `Organic Mol Config`
+- `Organic`: `Organic Mol Config`、`Local Solvation`、`Solvent Box Fill`

@@ -56,7 +56,7 @@ class ModelItem:
     data_size:int
     energy:float
     force:float
-    virial:virial
+    virial: float
     parent_id:int
     project_id:int
     model_path:str
@@ -516,7 +516,7 @@ class ModelService:
                 # calc_params=calc_params,
                 energy=energy,
                 force=force,
-                virial=virial if virial<10000 else 0,
+                virial=virial,
                 notes=notes,
                 parent_id=parent_id,
                 tags=set(tag_objs)

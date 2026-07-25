@@ -1,0 +1,432 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:3
+#: a4a55c87d9eb4e68b61a89e50c8fee82
+msgid "剪切角应变（Shear Angle Strain）"
+msgstr "Shear Angle Strain"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:5
+#: a79a07e00e6449a78ffd5ae85e1b96af
+msgid "`Group`: `Lattice` | `Class`: `ShearAngleCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:7
+#: 8bed951335a6487da1d9414979f1fbf4
+msgid "功能说明"
+msgstr "What the card does"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:9
+#: c63e575add7940319a3921cdc5fbdaa2
+msgid ""
+"在保持晶格长度不变的前提下扰动 alpha/beta/gamma 角，采样角度剪切自由度。每个角度通道独立控制 "
+"min/max/step（单位：度），扫描的是相对原始角度的增量。"
+msgstr ""
+"Sample angular shear by changing alpha, beta, and gamma while preserving "
+"lattice-vector lengths. Each channel has an independent minimum, maximum, "
+"and step in degrees, interpreted as offsets from the input angle."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:11
+#: 8203b9cfa3124bb69456b46bfe709a4b
+msgid ""
+"\\alpha'=\\alpha+\\Delta\\alpha,\\quad \\beta'=\\beta+\\Delta\\beta,\\quad "
+"\\gamma'=\\gamma+\\Delta\\gamma"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:13
+#: 8f2e9198173c49949b17e274acdf6668
+#, python-brace-format
+msgid "\\mathbf{C}'=\\mathrm{cellpar\\_to\\_cell}(a,b,c,\\alpha',\\beta',\\gamma')"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:15
+#: cef5bc04fcfd4d84aac9b0a40141a75a
+msgid "操作示例"
+msgstr "Example workflow"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:17
+#: e7e8fc8e09284604bc34b36bad674f4c
+msgid "场景：模型在单斜晶系上预测崩了，但正交晶系没问题"
+msgstr "Scenario: The model fails on a monoclinic phase but not an orthogonal one"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:19
+#: 174cbd9e26f0480590815a6bc59e10e0
+msgid ""
+"你在 HfO2 上训练了一个 NEP 模型。训练集里只有一个高温四方相（正交晶格），模型对四方相的能量和力预测很好。但一跑常温单斜相，能量误差跳了 3 "
+"倍——因为单斜相的 beta 角偏离 90 度约 10 度，模型没见过非正交的晶胞角度。"
+msgstr ""
+"A HfO2 NEP trained only on a high-temperature tetragonal phase performs well"
+" there but triples its error on the monoclinic phase, whose beta angle "
+"differs from 90 degrees. Nonorthogonal cell geometry is out of domain."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:21
+#: d67bd6226ea14b3e8adda6f651a95669
+msgid ""
+"**诊断思路：** 不同晶系的本质区别是晶胞角度。模型只在正交晶格上训练，隐式地学会了\"角度总是 90 度\"的先验。只要 beta 偏离 90 "
+"度，晶格矢量在笛卡尔空间的投影关系就变了，原子间距分布也跟着变——模型全靠外推。解决办法是沿角度方向生成一组结构，让模型见过非 90 度的晶胞。"
+msgstr ""
+"**Diagnosis:** Cell angles change the Cartesian projection of lattice "
+"vectors and therefore interatomic-distance distributions. Add controlled "
+"nonorthogonal cells so target angles are interpolated rather than "
+"extrapolated."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:23
+#: aa3b18873a4b4eab866a1eafaaa3c8f4
+msgid "**输入：** 一个弛豫好的 HfO2 四方相结构（alpha=beta=gamma=90°）"
+msgstr "**Input:** Relaxed tetragonal HfO2 with alpha = beta = gamma = 90 degrees."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:25
+#: f5e37d633ccb4485a49b67847544cb88
+msgid "**目标：** 沿 beta 方向生成 -6° 到 +6° 的角度扫描，步长 2°，覆盖单斜相可能出现的 beta 偏离"
+msgstr "**Objective:** Scan beta offsets from -6 to +6 degrees in 2-degree steps."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:27
+#: fabd841b4b8347c9a8752f9b1f36346f
+msgid "**参数设置：**"
+msgstr "**Parameters:**"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:28
+#: ba4ede66310a4166a2c73e861c1542a4
+msgid "`alpha_range` = `[0, 0, 1]` （不扫 alpha）"
+msgstr "`alpha_range` = `[0, 0, 1]` (one zero offset)"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:29
+#: 54e21783b012476fb4a9efc48ac10473
+msgid "`beta_range` = `[-6, 6, 2]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:30
+#: f897d26d0cd24fe6a18dcdfd0f7d7c40
+msgid "`gamma_range` = `[0, 0, 1]` （不扫 gamma）"
+msgstr "`gamma_range` = `[0, 0, 1]` (one zero offset)"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:32
+#: 132bed5a3d5d44eb8e23217c2f3f4379
+msgid "**输出：** 7 个结构（-6°, -4°, -2°, 0°, +2°, +4°, +6°），晶格长度不变，只有 beta 角偏离 90 度"
+msgstr ""
+"**Output:** Seven structures with beta offsets -6, -4, -2, 0, +2, +4, and +6"
+" degrees and unchanged lattice lengths."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:34
+#: 0417217b03354883bc4422ece1bb20d4
+msgid "**怎么验证训练集质量改善：**"
+msgstr "**How to verify that training-set quality improved:**"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:35
+#: 1960a1efd1c349b1bd438c92b6337ac7
+msgid "重训后用单斜相参考数据做推理，能量误差应显著下降"
+msgstr ""
+"After labeling and retraining, error on held-out monoclinic references "
+"should decrease."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:36
+#: 49fd5a15f9b040008e84d568f0a37abd
+msgid "检查输出结构的体积：角度变化会轻微改变体积（晶格长度不变但矢量投影关系变了），确认体积变化 < 2%"
+msgstr ""
+"Check output volumes. Angles change vector projections even at fixed "
+"lengths, so define and verify an acceptable volume change for the study."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:37
+#: ed54d715c8b445e496d7b195f161688a
+msgid "如果模型对更多角度方向仍不准，同时放开 alpha 和 gamma 做多角度联合扫描"
+msgstr ""
+"If other angular directions remain inaccurate, add alpha and gamma scans "
+"deliberately."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:38
+#: 95c93367b1ed4394bdf9ffd44c82f786
+msgid "如果角度扫描范围 > ±10° 后结构明显非物理，可能是该体系不支持如此大的角度偏离"
+msgstr ""
+"If offsets beyond ±10 degrees produce implausible geometry, narrow the range"
+" to the material's intended phase space."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:40
+#: 1fba850faacc4af89ab2b2c88fced3d4
+msgid "什么时候加这张卡、什么时候不加"
+msgstr "When to add this card"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:42
+#: 15a9382fe451404aac0275951eb99b0d
+msgid "**加：**"
+msgstr "**Add it when:**"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:43
+#: 8392df7c19c54551928d74788e77bf4a
+msgid "训练集仅覆盖高对称晶系（立方、四方），但目标体系存在低对称相（单斜、三斜）"
+msgstr ""
+"Training covers only high-symmetry cells while target phases are monoclinic "
+"or triclinic"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:44
+#: b6e63906386042f89aa79d03e2ac226d
+msgid "模型在角度相关性质（如压电系数、角度依赖的弹性常数）上偏差大"
+msgstr ""
+"Angle-dependent properties such as piezoelectric or elastic response are "
+"inaccurate"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:45
+#: b762f4ed870d4c878aa1e6d5864b27ec
+msgid "需要区分\"角度变化\"和\"长度变化\"对模型的影响"
+msgstr "Angle and length effects need to be isolated"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:47
+#: d7a24a2de224499aa1d1130dee117711
+msgid "**不加：**"
+msgstr "**Do not add it when:**"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:48
+#: 7b7367cf1d3e45549d7cac0e59947d52
+msgid "体系始终维持高对称、角度不可能偏离 90 度 —— 加了产生无物理意义结构"
+msgstr ""
+"The intended system remains high symmetry and angular deviations are not "
+"physically relevant"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:49
+#: a2dc35a2fc2b400c996d11a3a365dd8c
+msgid "需要同时控制长度和角度 → 用 `Lattice Perturb` 同时扰动两者更方便"
+msgstr "Lengths and angles should vary stochastically together; use `Lattice Perturb`"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:50
+#: fea6e94e0cfd47e29849137597937f31
+msgid "想用矩阵分量而非角度控制剪切 → `Shear Matrix Strain` 更适合"
+msgstr "Shear should be parameterized by matrix components; use `Shear Matrix Strain`"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:52
+#: 438a10c28cad41e1825f3263efa3b336
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:54
+#: 0158d2c4508f4e81857443a494a31a0c
+msgid "Alpha Range（alpha_range）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:56
+#: 21633cdccdbf4cd3972affa036724c36
+msgid ""
+"`tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。alpha 角相对于原始值的增量扫描区间，格式 "
+"`[min, max, step]`，单位度。注意最终角度 = 原始角度 + 增量，不是直接用增量替换。不扫的通道不能设 `[0, 0, 0]`，必须写"
+" `[0, 0, 1]` 让 range 至少产生一个 0 点。"
+msgstr ""
+"`tuple[float, float, float]`, default `(-2.0, 2.0, 1.0)`. Alpha-offset scan "
+"as `[min,max,step]` in degrees. Final angle equals input plus offset. Use "
+"`[0,0,1]`, not a zero step, for an inactive channel."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:58
+#: dd2d0e632c634e339ca8e0464d92fcaa
+msgid "Beta Range（beta_range）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:60
+#: 4c276b0d614945cea47a9a61475087bf
+msgid ""
+"`tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。beta 角增量扫描区间，单位和语法同上。不扫时写"
+" `[0, 0, 1]`。"
+msgstr ""
+"`tuple[float, float, float]`, default `(-2.0, 2.0, 1.0)`. Beta offsets with "
+"the same syntax; use `[0,0,1]` when inactive."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:62
+#: 7edb99b82009426d8109a46570a5c752
+msgid "Gamma Range（gamma_range）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:64
+#: 07218fc096a443d3958d22fa3e3d7a93
+msgid ""
+"`tuple[float, float, float]`，默认 `(-2.0, 2.0, 1.0)`。gamma 角增量扫描区间，同上。不扫时写 "
+"`[0, 0, 1]`。"
+msgstr ""
+"`tuple[float, float, float]`, default `(-2.0, 2.0, 1.0)`. Gamma offsets with"
+" the same syntax; use `[0,0,1]` when inactive."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:66
+#: d647b9a7e9bc4912a23ba567b399e8a3
+msgid ""
+"输出总数 = Nalpha * Nbeta * Ngamma。三个通道同时按默认值跑 = 5^3 = 125 个结构。步长减半会 8 "
+"倍增长，建议从单通道开始逐次加。"
+msgstr ""
+"Output count is Nalpha × Nbeta × Ngamma. Three default five-point channels "
+"produce 125 structures; halving every step multiplies that by eight. Begin "
+"with one channel."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:68
+#: fa01144724ad4c2fb80e60f573045830
+msgid "Identify Organic（identify_organic）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:70
+#: 88ad8b8416df44aaa36cf066c58a7ee0
+msgid "`bool`，默认 `false`。分子晶体必须打开——角度变化会改变分子间相对取向，如果分子内键也被跟着拉伸就不对了。纯无机体系关着即可。"
+msgstr ""
+"`bool`, default `false`. Enable molecular protection for molecular crystals "
+"so angular cell changes do not distort intramolecular bonds. Leave disabled "
+"for purely inorganic systems."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:72
+#: ba2507579f5a4f3aa0848b9db95da909
+msgid "推荐预设"
+msgstr "Recommended presets"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:74
+#: 647dcf026db442ac8e943ae1145291ee
+msgid "单角度探索（仅 beta，±4°，步长 1°）"
+msgstr "Single-angle scan (beta only, ±4 degrees, step 1)"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:75
+#: 9eabee7be8804373b3e595ef2d17a8ac
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"ShearAngleCard\",\n"
+"  \"check_state\": true,\n"
+"  \"alpha_range\": [0, 0, 1],\n"
+"  \"beta_range\": [-4, 4, 1],\n"
+"  \"gamma_range\": [0, 0, 1],\n"
+"  \"identify_organic\": false\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:86
+#: 30038ada12124d52b992fd1c43564092
+msgid "双角度覆盖（beta+gamma，±3°，步长 1°，~49 个输出）"
+msgstr "Two-angle coverage (beta and gamma, ±3 degrees, about 49 outputs)"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:87
+#: 442a3a9654d04cdb9c813bb263c13cb4
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"ShearAngleCard\",\n"
+"  \"check_state\": true,\n"
+"  \"alpha_range\": [0, 0, 1],\n"
+"  \"beta_range\": [-3, 3, 1],\n"
+"  \"gamma_range\": [-3, 3, 1],\n"
+"  \"identify_organic\": false\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:98
+#: 53759c818cb74ba8b40e57f27b8e66be
+msgid "三角度全扫描（alpha+beta+gamma，±5°，步长 2°，~216 个输出）"
+msgstr "Three-angle scan (alpha, beta, gamma, ±5 degrees, step 2, about 216 outputs)"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:99
+#: ff59341106e34bb4a79f5cf442debcb5
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"ShearAngleCard\",\n"
+"  \"check_state\": true,\n"
+"  \"alpha_range\": [-5, 5, 2],\n"
+"  \"beta_range\": [-5, 5, 2],\n"
+"  \"gamma_range\": [-5, 5, 2],\n"
+"  \"identify_organic\": false\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:110
+#: 03a42064914c4b3a9bcebddf08f20719
+msgid "推荐组合"
+msgstr "Recommended combinations"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:112
+#: b1b48500eeda411d92de63733a31b8b4
+msgid "`Lattice Strain` → `Shear Angle Strain`：先做长度应变，再补角度剪切"
+msgstr ""
+"`Lattice Strain` -> `Shear Angle Strain`: add angular shear after length "
+"strains"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:113
+#: 89ba059d9e03435daec7ca8a6bff7009
+msgid "`Shear Angle Strain` → `Atomic Perturb`：角度畸变后加原子坐标噪声"
+msgstr ""
+"`Shear Angle Strain` -> `Atomic Perturb`: add coordinate fluctuations after "
+"angular distortion"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:114
+#: 7ffd386f7b7d44ecb0ba6994004cb74b
+msgid "`Shear Angle Strain` + `Shear Matrix Strain`：两者走不同形变路径，互补覆盖"
+msgstr "Use angle and matrix shear as distinct, complementary deformation paths"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:116
+#: e431710c74f34e9ab1584b5999932f89
+msgid "常见问题"
+msgstr "Common questions"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:118
+#: 9e20e099b691404482beed8b8a720a73
+msgid ""
+"**输出为空。** 检查每个 range 的步长是否 > 0。不扫的通道不能设 `[0, 0, 0]`，必须设 `[0, 0, 1]` 让 range "
+"至少产生一个 0 点。"
+msgstr ""
+"**No output.** Every step must be positive. Use `[0,0,1]` for an inactive "
+"channel."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:120
+#: 92b52acba9704479bc34be7cce5f3840
+msgid ""
+"**输出数量爆炸。** 三通道联扫 = Na * Nb * Ng。默认 `[-2, 2, 1]` 三通道 = 5^3 = 125 个结构。步长减半会 8"
+" 倍增长。建议从单通道开始逐次加。"
+msgstr ""
+"**Output explodes.** Three channels form a Cartesian product. Start with one"
+" channel and estimate the product before adding others."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:122
+#: 4e71b559f60e47dea7fbde5431c1f7db
+msgid ""
+"**角度变化后体积也变了。** 晶格长度保持不变但角度变化会改变笛卡尔空间的矢量投影，体积会轻微变化。这是正常的几何效应，不是 "
+"bug。如果体积变化超过预期，可能是角度步长太大——减小 step。"
+msgstr ""
+"**Volume changes with angle.** This follows from changed vector projections "
+"at fixed lengths. If the change exceeds the intended range, reduce angular "
+"offsets."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:124
+#: 5c60b210ea6143faa77958bef3286094
+msgid ""
+"**输出晶格接近奇异。** 如果角度偏离过大导致 cellpar_to_cell 产生的晶格矩阵接近退化，结构会不可用。典型症状是晶格行列式接近 "
+"0。把角度 range 回调到更保守的范围。"
+msgstr ""
+"**The lattice approaches singularity.** Excessive angles can make the cell "
+"matrix degenerate. Check its determinant and narrow the range."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:126
+#: a49e118fed034c5eb822942a3d2ca594
+msgid "输出标签"
+msgstr "Output labels"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:128
+#: 94048c844d074675a7706aafc6515a70
+#, python-brace-format
+msgid "`Ang(a={da}°,b={db}°,g={dg}°)` —— 只显示有非零变化的通道。"
+msgstr "`Ang(a={da}°,b={db}°,g={dg}°)`; only nonzero channels are included."
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:130
+#: 3c9f71baca094d0ab9ce28b47565b0b7
+msgid "可复现性"
+msgstr "Reproducibility"
+
+#: ../../source/module/make-dataset-cards/cards/shear-angle-card.md:132
+#: 3092d2c243f14496936ef3b8550db811
+msgid "无随机性。同参数同输入 → 严格一致输出。所有角度按固定网格扫描。"
+msgstr "Deterministic: all angles are scanned on a fixed grid."

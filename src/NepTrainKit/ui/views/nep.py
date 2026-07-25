@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QHBoxLayout, QWidget, QProgressDialog
 from loguru import logger
 from qfluentwidgets import MessageBox
 
-from NepTrainKit.ui.threads import LoadingThread
+from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.core import MessageManager
 from NepTrainKit.config import Config
@@ -26,7 +26,6 @@ from NepTrainKit.ui.widgets import (
     EditInfoMessageBox,
     ShiftEnergyMessageBox,
     DFTD3MessageBox,
-    DatasetSummaryMessageBox,
     DistributionInspectorMessageBox,
     TrainingOverlayDialog,
 )
@@ -40,6 +39,8 @@ from NepTrainKit.core.energy_shift import (
     save_energy_baseline_preset,
     suggest_group_patterns,
 )
+
+AUTO_VISPY_POINT_THRESHOLD = 50000
 
 
 class NepResultPlotWidget(QWidget):
@@ -73,13 +74,24 @@ class NepResultPlotWidget(QWidget):
         # self.setRenderHint(QPainter.Antialiasing, False)
         self._layout = QHBoxLayout(self)
         self.setLayout(self._layout)
-        canvas_type = Config.get("widget", "canvas_type", CanvasMode.PYQTGRAPH)
+        canvas_type = Config.get("widget", "canvas_type", CanvasMode.AUTO)
 
         self.last_figure_num = None
         self._distribution_inspector = None
         self._canvas_fallback_warned = False
+        self._vispy_unavailable = False
         self._overlay_dialog_refs: list[TrainingOverlayDialog] = []
         self.swith_canvas(canvas_type)
+
+    @staticmethod
+    def _canvas_mode_value(canvas_type: object) -> str:
+        """Return a supported canvas mode string from config-like values."""
+        text = str(canvas_type or "").strip().lower()
+        if text in {CanvasMode.AUTO.value, "canvasmode.auto", CanvasMode.AUTO.name.lower()}:
+            return CanvasMode.AUTO.value
+        if text in {CanvasMode.VISPY.value, "canvasmode.vispy", CanvasMode.VISPY.name.lower()}:
+            return CanvasMode.VISPY.value
+        return CanvasMode.PYQTGRAPH.value
 
     def swith_canvas(self, canvas_type: CanvasMode = "pyqtgraph"):
         """Instantiate the requested plotting backend and attach it to the layout.
@@ -89,13 +101,69 @@ class NepResultPlotWidget(QWidget):
         canvas_type : CanvasMode, default=CanvasMode.PYQTGRAPH
             Backend identifier used to select between the supported canvases.
         """
+        old_canvas = getattr(self, "canvas", None)
+        if old_canvas is not None:
+            self._disconnect_canvas_toolbar(old_canvas)
+
+        old_host = getattr(self, "_canvas_host_widget", None)
+        if old_host is not None:
+            try:
+                self._layout.removeWidget(old_host)
+            except Exception:
+                pass
+            try:
+                old_host.setParent(None)
+            except Exception:
+                pass
+
+        requested_mode = self._canvas_mode_value(canvas_type)
         self.canvas, fallback = create_result_canvas(canvas_type, self)
-        self._layout.addWidget(resolve_canvas_host_widget(self.canvas))
+        self._canvas_host_widget = resolve_canvas_host_widget(self.canvas)
+        self._layout.addWidget(self._canvas_host_widget)
+        self._canvas_type = CanvasMode.PYQTGRAPH.value if fallback or requested_mode == CanvasMode.AUTO.value else requested_mode
+        if fallback:
+            self._vispy_unavailable = True
         if fallback and not self._canvas_fallback_warned:
             MessageManager.send_warning_message(
                 "Current canvas backend is vispy, but vispy canvas failed to initialize; fallback to pyqtgraph."
             )
             self._canvas_fallback_warned = True
+        self._connect_canvas_toolbar(self.canvas)
+
+    def _connect_canvas_toolbar(self, canvas):
+        """Connect canvas-specific toolbar actions to the active canvas."""
+        tool_bar = getattr(self, "tool_bar", None)
+        if tool_bar is None:
+            return
+        tool_bar.panSignal.connect(canvas.pan)
+        tool_bar.resetSignal.connect(canvas.auto_range)
+        tool_bar.deleteSignal.connect(canvas.delete)
+        tool_bar.revokeSignal.connect(canvas.revoke)
+        tool_bar.undoSelectionSignal.connect(canvas.undo_selection)
+        tool_bar.penSignal.connect(canvas.pen)
+        canvas.tool_bar = tool_bar
+
+    def _disconnect_canvas_toolbar(self, canvas):
+        """Disconnect toolbar actions from a canvas that is being replaced."""
+        tool_bar = getattr(self, "tool_bar", None)
+        if tool_bar is None:
+            return
+        for signal, slot in (
+            (tool_bar.panSignal, canvas.pan),
+            (tool_bar.resetSignal, canvas.auto_range),
+            (tool_bar.deleteSignal, canvas.delete),
+            (tool_bar.revokeSignal, canvas.revoke),
+            (tool_bar.undoSelectionSignal, canvas.undo_selection),
+            (tool_bar.penSignal, canvas.pen),
+        ):
+            try:
+                signal.disconnect(slot)
+            except Exception:
+                pass
+        try:
+            canvas.tool_bar = None
+        except Exception:
+            pass
 
     # def clear(self):
     #     self.canvas.clear_axes()
@@ -110,11 +178,7 @@ class NepResultPlotWidget(QWidget):
             Toolbar instance whose actions manipulate the canvas.
         """
         self.tool_bar: NepDisplayGraphicsToolBar = tool
-        self.tool_bar.panSignal.connect(self.canvas.pan)
-        self.tool_bar.resetSignal.connect(self.canvas.auto_range)
-        self.tool_bar.deleteSignal.connect(self.canvas.delete)
-        self.tool_bar.revokeSignal.connect(self.canvas.revoke)
-        self.tool_bar.penSignal.connect(self.canvas.pen)
+        self._connect_canvas_toolbar(self.canvas)
         self.tool_bar.exportSignal.connect(self.export_descriptor_data)
         self.tool_bar.findMaxSignal.connect(self.find_max_error_point)
         self.tool_bar.discoverySignal.connect(self.find_non_physical_structures)
@@ -126,10 +190,7 @@ class NepResultPlotWidget(QWidget):
         self.tool_bar.latticeRangeSignal.connect(self.select_by_lattice_range)
         self.tool_bar.dftd3Signal.connect(self.calc_dft_d3)
         self.tool_bar.editInfoSignal.connect(self.edit_structure_info)
-        self.tool_bar.summarySignal.connect(self.show_dataset_summary)
         self.tool_bar.forceBalanceSignal.connect(self.check_force_balance)
-        self.tool_bar.distributionSignal.connect(self.show_distribution_inspector)
-        self.canvas.tool_bar = self.tool_bar
 
     def closeEvent(self, event):
         """Ensure auxiliary non-modal inspectors are closed with this widget."""
@@ -149,12 +210,12 @@ class NepResultPlotWidget(QWidget):
             return
         radius = Config.getfloat("widget", "radius_coefficient", 0.7)
         progress_diag = QProgressDialog("", "Cancel", 0, data.structure.num, self._parent)
-        thread = LoadingThread(self._parent, show_tip=False)
+        thread = BackgroundTask(self._parent, show_tip=False)
         progress_diag.setFixedSize(300, 100)
-        progress_diag.setWindowTitle("Finding non-physical structures")
+        progress_diag.setWindowTitle(self.tr("Finding non-physical structures"))
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
-        thread.finished.connect(lambda: self._apply_non_physical_selection(data))
+        thread.succeeded.connect(lambda _result: self._apply_non_physical_selection(data))
         progress_diag.canceled.connect(thread.stop_work)
         thread.start_work(
             data.iter_non_physical_structure_indices,
@@ -176,7 +237,8 @@ class NepResultPlotWidget(QWidget):
             return
 
         box = GetIntMessageBox(
-            self._parent, "Please enter an integer N, it will find the top N structures with the largest errors"
+            self._parent,
+            self.tr("Enter an integer N to find the top N structures with the largest errors."),
         )
         n = Config.getint("widget", "max_error_value", 10)
         box.intSpinBox.setValue(n)
@@ -195,12 +257,17 @@ class NepResultPlotWidget(QWidget):
         if data is None:
             return
 
-        box = SparseMessageBox(self._parent, "Configure farthest point sampling")
+        box = SparseMessageBox(self._parent, self.tr("Configure farthest point sampling"))
         n_samples_default = Config.getint("widget", "sparse_num_value", 10)
         distance_default = Config.getfloat("widget", "sparse_distance_value", 0.01)
 
         descriptor_source_default = Config.get("widget", "sparse_descriptor_source", "reduced").lower()
         sampling_mode_default = Config.get("widget", "sparse_sampling_mode", "count").lower()
+        selection_strategy_default = Config.get(
+            "widget",
+            "sparse_selection_strategy",
+            "global",
+        ).lower()
         r2_threshold_default = Config.getfloat("widget", "sparse_r2_threshold", 0.9)
 
         training_path_default = Config.get("widget", "sparse_training_path", "")
@@ -211,6 +278,8 @@ class NepResultPlotWidget(QWidget):
         box.descriptorCombo.setCurrentIndex(1 if descriptor_source_default == "raw" else 0)
         box.modeCombo.setCurrentIndex(1 if sampling_mode_default == "r2" else 0)
         box.r2SpinBox.setValue(r2_threshold_default if r2_threshold_default is not None else 0.9)
+        strategy_index = box.strategyCombo.findData(selection_strategy_default)
+        box.strategyCombo.setCurrentIndex(strategy_index if strategy_index >= 0 else 0)
 
         box.trainingPathEdit.setText(training_path_default)
 
@@ -221,8 +290,12 @@ class NepResultPlotWidget(QWidget):
         distance = box.doubleSpinBox.value()
         use_selection_region = bool(getattr(box, "regionCheck", None) and box.regionCheck.isChecked())
 
-        descriptor_source = "raw" if box.descriptorCombo.currentIndex() == 1 else "reduced"
-        sampling_mode = "r2" if box.modeCombo.currentIndex() == 1 else "count"
+        selection_strategy = str(box.strategyCombo.currentData() or "global")
+        descriptor_source = str(box.descriptorCombo.currentData() or "reduced")
+        sampling_mode = str(box.modeCombo.currentData() or "count")
+        if selection_strategy == "element_set":
+            descriptor_source = "raw"
+            sampling_mode = "count"
         r2_threshold = box.r2SpinBox.value()
 
         training_path = box.trainingPathEdit.text().strip()
@@ -230,8 +303,10 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget", "sparse_num_value", n_samples)
         Config.set("widget", "sparse_distance_value", distance)
 
-        Config.set("widget", "sparse_descriptor_source", descriptor_source)
-        Config.set("widget", "sparse_sampling_mode", sampling_mode)
+        Config.set("widget", "sparse_selection_strategy", selection_strategy)
+        if selection_strategy == "global":
+            Config.set("widget", "sparse_descriptor_source", descriptor_source)
+            Config.set("widget", "sparse_sampling_mode", sampling_mode)
         Config.set("widget", "sparse_r2_threshold", r2_threshold)
 
         Config.set("widget", "sparse_training_path", training_path)
@@ -244,9 +319,17 @@ class NepResultPlotWidget(QWidget):
             training_path=training_path or None,
             sampling_mode=sampling_mode,
             r2_threshold=r2_threshold,
+            selection_strategy=selection_strategy,
         )
         if structures:
             self.canvas.select_index(structures, reverse)
+            if selection_strategy == "element_set":
+                report = getattr(data, "_last_sparse_group_report", {}) or {}
+                MessageManager.send_info_message(
+                    self.tr(
+                        "Balanced FPS selected {selected} structures across {groups} element sets."
+                    ).format(selected=len(structures), groups=len(report))
+                )
 
             # Show training overlay if requested - pre-compute PCA then show dialog
             show_overlay = bool(getattr(box, "trainingOverlayCheck", None) and box.trainingOverlayCheck.isChecked())
@@ -299,7 +382,7 @@ class NepResultPlotWidget(QWidget):
             return
         path = call_path_dialog(self, "Choose a file save ", "file", default_filename="export_descriptor_data.out")
         if path:
-            thread = LoadingThread(self, show_tip=True, title="Exporting descriptor data")
+            thread = BackgroundTask(self, show_tip=True, title="Exporting descriptor data")
             thread.start_work(data.export_descriptor_data, path)
 
     def _build_shift_energy_dialog(
@@ -312,7 +395,9 @@ class NepResultPlotWidget(QWidget):
         """Create and wire the shift-energy dialog."""
         box = ShiftEnergyMessageBox(
             self._parent,
-            "Specify regex groups for Config_type (comma separated)",
+            self.tr(
+                "Use .* for one shared baseline; separate different Config_type baseline groups with semicolons."
+            ),
         )
         preset_placeholder = "None"
         box.set_defaults(suggested_patterns, max_generations, population_size, convergence_tol)
@@ -427,10 +512,10 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget", "convergence_tol", values.convergence_tol)
 
         config_set = set(data.structure.get_all_config(SearchType.TAG))
-        progress_diag = QProgressDialog("", "Cancel", 0, len(config_set), self._parent)
-        thread = LoadingThread(self._parent, show_tip=False)
+        progress_diag = QProgressDialog("", self.tr("Cancel"), 0, len(config_set), self._parent)
+        thread = BackgroundTask(self._parent, show_tip=False)
         progress_diag.setFixedSize(300, 100)
-        progress_diag.setWindowTitle("Shift energies")
+        progress_diag.setWindowTitle(self.tr("Shift energies"))
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
         progress_diag.canceled.connect(thread.stop_work)
@@ -453,6 +538,13 @@ class NepResultPlotWidget(QWidget):
             source_summary=source_summary,
         )
         progress_diag.exec()
+        if thread.outcome == "canceled":
+            return None
+        if thread.outcome == "failed":
+            MessageManager.send_warning_message(
+                self.tr("Energy shift failed: {message}").format(message=thread.error_message)
+            )
+            return None
         return baseline_store
 
     def _post_shift_energy_messages(self, data, selected_preset, baseline_store, values) -> None:
@@ -511,6 +603,8 @@ class NepResultPlotWidget(QWidget):
                 return
 
         baseline_store = self._run_shift_energy_task(data, ref_index, values, selected_preset)
+        if baseline_store is None:
+            return
         self._post_shift_energy_messages(data, selected_preset, baseline_store, values)
         self.canvas.plot_nep_result()
 
@@ -541,69 +635,32 @@ class NepResultPlotWidget(QWidget):
         Config.set("widget", "functional", functional)
         Config.set("widget", "d3_mode", mode)
 
-        thread = LoadingThread(self._parent, show_tip=True, title="calculating dftd3")
+        thread = BackgroundTask(self._parent, show_tip=True, title=self.tr("Calculating DFT-D3"))
         thread.start_work(data.apply_dft_d3_correction, mode, functional, d3_cutoff, d3_cutoff_cn)
-        thread.finished.connect(self.canvas.plot_nep_result)
-
-    def show_dataset_summary(self):
-        """Compute and display dataset-wide summary statistics."""
-        data = self.canvas.nep_result_data
-        if data is None:
-            MessageManager.send_info_message("NEP data has not been loaded yet!")
-            return
-        group_by = SearchType.TAG
-        parent = getattr(self, "_parent", None)
-        search = getattr(parent, "search_lineEdit", None) if parent is not None else None
-        search_type = getattr(search, "search_type", None)
-        if isinstance(search_type, SearchType):
-            group_by = search_type
-        structures = getattr(data, "structure", None)
-        if structures is None or structures.now_data.size == 0:
-            MessageManager.send_info_message("No active structures to summarise.")
-            return
-        total_structures = int(structures.now_data.shape[0])
-
-        progress_diag = QProgressDialog("", "Cancel", 0, total_structures, self._parent)
-        progress_diag.setFixedSize(300, 100)
-        progress_diag.setWindowTitle("Summarising dataset")
-        progress_diag.setAutoClose(True)
-        progress_diag.setAutoReset(True)
-        thread = LoadingThread(self._parent, show_tip=False)
-        thread.progressSignal.connect(progress_diag.setValue)
-        thread.finished.connect(lambda: progress_diag.setValue(total_structures))
-        thread.finished.connect(progress_diag.accept)
-        thread.finished.connect(lambda: self._show_dataset_summary_dialog(data))
-        progress_diag.canceled.connect(thread.stop_work)
-        thread.start_work(data.iter_dataset_summary, group_by=group_by)
-        progress_diag.exec()
-
-    def _show_dataset_summary_dialog(self, data):
-        """Instantiate and execute the dataset summary dialog."""
-        try:
-            summary = data.get_dataset_summary()
-        except Exception:  # noqa: BLE001
-            MessageManager.send_warning_message("Failed to build dataset summary.")
-            logger.debug(traceback.format_exc())
-            return
-        if not summary:
-            MessageManager.send_info_message("Dataset summary is empty.")
-            return
-        dlg = DatasetSummaryMessageBox(self._parent, summary)
-        dlg.exec()
+        thread.succeeded.connect(lambda _result: self.canvas.plot_nep_result())
 
     def _run_distribution_analysis_task(self, data, request) -> dict:
         """Run distribution analysis in a worker thread and return the payload."""
         structures = getattr(data, "structure", None)
         total_structures = int(getattr(structures, "now_data", np.array([])).shape[0]) if structures is not None else 0
-        progress_diag = QProgressDialog("", "Cancel", 0, max(total_structures, 1), self._parent)
+        progress_diag = QProgressDialog("", self.tr("Cancel"), 0, max(total_structures, 1), self._parent)
         progress_diag.setFixedSize(300, 100)
-        progress_diag.setWindowTitle("Building distributions")
-        thread = LoadingThread(self._parent, show_tip=False)
+        progress_diag.setWindowTitle(self.tr("Building distributions"))
+        thread = BackgroundTask(self._parent, show_tip=False)
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
         progress_diag.canceled.connect(thread.stop_work)
         thread.start_work(data.iter_distribution_analysis, request=request)
         progress_diag.exec()
+        if thread.outcome == "canceled":
+            return {}
+        if thread.outcome == "failed":
+            MessageManager.send_warning_message(
+                self.tr("Distribution analysis failed: {message}").format(
+                    message=thread.error_message
+                )
+            )
+            return {}
         return data.get_distribution_analysis()
 
     def _apply_distribution_selection(self, data, indices: list[int], select_mode: str) -> None:
@@ -630,7 +687,10 @@ class NepResultPlotWidget(QWidget):
         self.canvas.select_index(indices, False)
 
     def show_distribution_inspector(self):
-        """Open the distribution-inspector dialog for numeric fields."""
+        """Open the unified audit distribution explorer when available."""
+        if hasattr(self._parent, "open_training_set_distribution"):
+            self._parent.open_training_set_distribution()
+            return
         data = self.canvas.nep_result_data
         if data is None:
             MessageManager.send_info_message("NEP data has not been loaded yet!")
@@ -790,16 +850,18 @@ class NepResultPlotWidget(QWidget):
 
         total_structures = int(getattr(data.structure, "num", 0) or data.structure.now_data.shape[0])
         if total_structures == 0:
-            MessageManager.send_info_message("No active structures to scan.")
+            MessageManager.send_info_message(self.tr("No active structures to scan."))
             return
 
-        progress_diag = QProgressDialog("", "Cancel", 0, total_structures, self._parent)
+        progress_diag = QProgressDialog("", self.tr("Cancel"), 0, total_structures, self._parent)
         progress_diag.setFixedSize(300, 100)
-        progress_diag.setWindowTitle("Checking net forces")
-        thread = LoadingThread(self._parent, show_tip=False)
+        progress_diag.setWindowTitle(self.tr("Checking net forces"))
+        thread = BackgroundTask(self._parent, show_tip=False)
         thread.progressSignal.connect(progress_diag.setValue)
         thread.finished.connect(progress_diag.accept)
-        thread.finished.connect(lambda: self._apply_force_balance_selection(data, threshold))
+        thread.succeeded.connect(
+            lambda _result: self._apply_force_balance_selection(data, threshold)
+        )
         progress_diag.canceled.connect(thread.stop_work)
         thread.start_work(data.iter_unbalanced_force_indices, threshold=threshold)
         progress_diag.exec()
@@ -818,6 +880,46 @@ class NepResultPlotWidget(QWidget):
         else:
             MessageManager.send_info_message("All scanned structures satisfy the net-force threshold.")
 
+    @staticmethod
+    def _plot_point_count(plot_data) -> int:
+        """Return the number of scatter points a dataset will draw."""
+        try:
+            return int(np.asarray(plot_data.x).size)
+        except Exception:
+            pass
+        rows = getattr(plot_data, "now_data", None)
+        if rows is None:
+            return int(getattr(plot_data, "num", 0) or 0)
+        try:
+            cols = int(getattr(plot_data, "cols", 0) or 0)
+            row_count = int(np.asarray(rows).shape[0])
+            return row_count * cols if cols > 0 else row_count
+        except Exception:
+            return int(getattr(plot_data, "num", 0) or 0)
+
+    @classmethod
+    def _max_plot_point_count(cls, dataset) -> int:
+        """Return the largest plotted point count among result sub-datasets."""
+        return max((cls._plot_point_count(item) for item in getattr(dataset, "datasets", []) or []), default=0)
+
+    def _desired_canvas_type_for_dataset(self, dataset) -> str:
+        """Resolve the active canvas backend for this dataset and user setting."""
+        configured = self._canvas_mode_value(Config.get("widget", "canvas_type", CanvasMode.AUTO))
+        if configured == CanvasMode.VISPY.value and getattr(self, "_vispy_unavailable", False):
+            return CanvasMode.PYQTGRAPH.value
+        if configured != CanvasMode.AUTO.value:
+            return configured
+
+        if getattr(self, "_vispy_unavailable", False):
+            return CanvasMode.PYQTGRAPH.value
+
+        threshold = Config.getint("widget", "auto_vispy_point_threshold", AUTO_VISPY_POINT_THRESHOLD)
+        if threshold is None or threshold <= 0:
+            threshold = AUTO_VISPY_POINT_THRESHOLD
+        if self._max_plot_point_count(dataset) >= threshold:
+            return CanvasMode.VISPY.value
+        return CanvasMode.PYQTGRAPH.value
+
     def set_dataset(self, dataset):
         """Attach a NEP result dataset to the canvas and refresh the plots.
 
@@ -826,6 +928,11 @@ class NepResultPlotWidget(QWidget):
         dataset : Any
             Loaded NEP result container exposing descriptors and structures.
         """
+        desired_canvas_type = self._desired_canvas_type_for_dataset(dataset)
+        if getattr(self, "_canvas_type", None) != desired_canvas_type:
+            self.swith_canvas(desired_canvas_type)
+            self.last_figure_num = None
+
         if self.last_figure_num != len(dataset.datasets):
             self.canvas.init_axes(len(dataset.datasets))
             self.last_figure_num = len(dataset.datasets)

@@ -17,17 +17,20 @@ class GeometryFilterCard(MakeDataCard):
     group = "Filter"
     card_name = "Geometry Filter"
     menu_icon = r":/images/src/images/check.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Geometry Filter")
+        self.setTitle(self.tr("Geometry Filter"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("geometry_filter_card_widget")
 
-        self.min_pair_label = BodyLabel("Min pair distance", self.setting_widget)
-        self.min_pair_label.setToolTip("Reject structures whose shortest interatomic distance is below this value; 0 disables")
+        self.min_pair_label = BodyLabel(self.tr("Min pair distance"), self.setting_widget)
+        self.min_pair_label.setToolTip(self.tr("Reject structures whose shortest interatomic distance is below this value; 0 disables"))
         self.min_pair_label.installEventFilter(ToolTipFilter(self.min_pair_label, 300, ToolTipPosition.TOP))
         self.min_pair_frame = SpinBoxUnitInputFrame(self)
         self.min_pair_frame.set_input("A", 1, "float")
@@ -35,8 +38,8 @@ class GeometryFilterCard(MakeDataCard):
         self.min_pair_frame.object_list[0].setDecimals(4)  # pyright: ignore[reportAttributeAccessIssue]
         self.min_pair_frame.set_input_value([1.0])
 
-        self.min_vpa_label = BodyLabel("Min volume/atom", self.setting_widget)
-        self.min_vpa_label.setToolTip("Reject structures below this per-atom volume in A^3; 0 disables")
+        self.min_vpa_label = BodyLabel(self.tr("Min volume/atom"), self.setting_widget)
+        self.min_vpa_label.setToolTip(self.tr("Reject structures below this per-atom volume in A^3; 0 disables"))
         self.min_vpa_label.installEventFilter(ToolTipFilter(self.min_vpa_label, 300, ToolTipPosition.TOP))
         self.min_vpa_frame = SpinBoxUnitInputFrame(self)
         self.min_vpa_frame.set_input("A^3", 1, "float")
@@ -44,8 +47,8 @@ class GeometryFilterCard(MakeDataCard):
         self.min_vpa_frame.object_list[0].setDecimals(4)  # pyright: ignore[reportAttributeAccessIssue]
         self.min_vpa_frame.set_input_value([0.0])
 
-        self.max_vpa_label = BodyLabel("Max volume/atom", self.setting_widget)
-        self.max_vpa_label.setToolTip("Reject structures above this per-atom volume in A^3; 0 disables")
+        self.max_vpa_label = BodyLabel(self.tr("Max volume/atom"), self.setting_widget)
+        self.max_vpa_label.setToolTip(self.tr("Reject structures above this per-atom volume in A^3; 0 disables"))
         self.max_vpa_label.installEventFilter(ToolTipFilter(self.max_vpa_label, 300, ToolTipPosition.TOP))
         self.max_vpa_frame = SpinBoxUnitInputFrame(self)
         self.max_vpa_frame.set_input("A^3", 1, "float")
@@ -53,8 +56,8 @@ class GeometryFilterCard(MakeDataCard):
         self.max_vpa_frame.object_list[0].setDecimals(4)  # pyright: ignore[reportAttributeAccessIssue]
         self.max_vpa_frame.set_input_value([0.0])
 
-        self.min_density_label = BodyLabel("Min density", self.setting_widget)
-        self.min_density_label.setToolTip("Reject structures below this mass density in g/cm^3; 0 disables")
+        self.min_density_label = BodyLabel(self.tr("Min density"), self.setting_widget)
+        self.min_density_label.setToolTip(self.tr("Reject structures below this mass density in g/cm^3; 0 disables"))
         self.min_density_label.installEventFilter(ToolTipFilter(self.min_density_label, 300, ToolTipPosition.TOP))
         self.min_density_frame = SpinBoxUnitInputFrame(self)
         self.min_density_frame.set_input("g/cm3", 1, "float")
@@ -62,8 +65,8 @@ class GeometryFilterCard(MakeDataCard):
         self.min_density_frame.object_list[0].setDecimals(4)  # pyright: ignore[reportAttributeAccessIssue]
         self.min_density_frame.set_input_value([0.0])
 
-        self.max_density_label = BodyLabel("Max density", self.setting_widget)
-        self.max_density_label.setToolTip("Reject structures above this mass density in g/cm^3; 0 disables")
+        self.max_density_label = BodyLabel(self.tr("Max density"), self.setting_widget)
+        self.max_density_label.setToolTip(self.tr("Reject structures above this mass density in g/cm^3; 0 disables"))
         self.max_density_label.installEventFilter(ToolTipFilter(self.max_density_label, 300, ToolTipPosition.TOP))
         self.max_density_frame = SpinBoxUnitInputFrame(self)
         self.max_density_frame.set_input("g/cm3", 1, "float")
@@ -71,9 +74,9 @@ class GeometryFilterCard(MakeDataCard):
         self.max_density_frame.object_list[0].setDecimals(4)  # pyright: ignore[reportAttributeAccessIssue]
         self.max_density_frame.set_input_value([0.0])
 
-        self.require_cell_checkbox = CheckBox("Require finite cell", self.setting_widget)
+        self.require_cell_checkbox = CheckBox(self.tr("Require finite cell"), self.setting_widget)
         self.require_cell_checkbox.setChecked(False)
-        self.require_cell_checkbox.setToolTip("Reject zero-volume or invalid-cell structures even when volume/density thresholds are disabled")
+        self.require_cell_checkbox.setToolTip(self.tr("Reject zero-volume or invalid-cell structures even when volume/density thresholds are disabled"))
         self.require_cell_checkbox.installEventFilter(ToolTipFilter(self.require_cell_checkbox, 300, ToolTipPosition.TOP))
 
         self.settingLayout.addWidget(self.min_pair_label, 0, 0, 1, 1)

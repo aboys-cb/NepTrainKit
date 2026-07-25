@@ -7,6 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 from pathlib import Path
+import os
 import sys
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -70,8 +71,15 @@ myst_enable_extensions = [
 ]
 
 templates_path = ['_templates']
-# locale_dirs = ['docs/locales']  # directory for translation files
-language = 'zh_CN'
+locale_dirs = ['locale/']
+gettext_compact = False
+gettext_uuid = True
+gettext_additional_targets = {'image', 'literal-block'}
+_rtd_language = os.environ.get('READTHEDOCS_LANGUAGE', '').lower()
+language = {
+    'zh-cn': 'zh_CN',
+    'zh_cn': 'zh_CN',
+}.get(_rtd_language, _rtd_language or 'zh_CN')
 
 
 html_theme = 'sphinx_rtd_theme'
@@ -98,3 +106,62 @@ rst_prolog = """
 .. |ΣF| replace:: ΣF
 """
 
+_BILINGUAL_SCREENSHOTS = (
+    'make_data_empty.png',
+    'make_data_lattice_strain.png',
+    'show_nep_overview.png',
+    'training_set_audit_overview.png',
+    'training_set_audit_structure_map.png',
+    'training_set_audit_magnetic_shares.png',
+    'g_index_dialog.png',
+    'g_range_dialog.png',
+    'g_lattice_dialog.png',
+    'g_maxerr_dialog.png',
+    'g_sparse_dialog.png',
+    'g_force_dialog.png',
+    'g_editinfo_dialog.png',
+    'g_shift_dialog.png',
+    'g_structure_filter.png',
+    'g_structure_filter_presets.png',
+    'energy_baseline_shift_entry.png',
+    'energy_baseline_shift_result.png',
+    'fps_sampling_entry.png',
+    'fps_sampling_result.png',
+    'max_error_review_entry.png',
+    'max_error_review_result.png',
+    'dft_d3_entry.png',
+    'dft_d3_result.png',
+    'select_by_index_entry.png',
+    'select_by_index_result.png',
+    'structure_quality_checks.png',
+    'structure_quality_result.png',
+    'edit_metadata_entry.png',
+    'edit_metadata_result.png',
+    'force_distribution.png',
+    'card_system_controls.png',
+    'card_system_workflow.png',
+    'card_system_result.png',
+    'g_dftd3_dialog.png',
+    'g_dist_dialog.png',
+    's_arrow_dialog.png',
+    's_export_format.png',
+    's_dropbad_confirm.png',
+)
+
+
+def _use_english_screenshots(app, docname, source):
+    if app.config.language != 'en':
+        return
+
+    for filename in _BILINGUAL_SCREENSHOTS:
+        english_filename = f'{Path(filename).stem}_en{Path(filename).suffix}'
+        source[0] = source[0].replace(filename, english_filename)
+
+    source[0] = source[0].replace(
+        '../_static/image/example/display/main.png',
+        '../_static/image/generated/show_nep_overview_en.png',
+    )
+
+
+def setup(app):
+    app.connect('source-read', _use_english_screenshots)

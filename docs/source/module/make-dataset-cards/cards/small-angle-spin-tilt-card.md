@@ -107,7 +107,7 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 
 #### Pair Shell Tolerance（pair_shell_tolerance）
 
-`float`，默认 `0.05`。自动分壳层的距离容差，单位 Angstrom。
+`float`，默认 `0.05`。自动分壳层的距离容差，单位 Å。
 
 生效条件：`pair_source` 选择近邻自动搜索时。
 

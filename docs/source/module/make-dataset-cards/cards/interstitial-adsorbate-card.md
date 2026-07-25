@@ -32,7 +32,7 @@
 
 **怎么验证训练集质量改善：**
 - 重训后用 NEB 算 Li 扩散势垒，应接近 DFT 参考值
-- 抽查插入原子的最近邻距离：≥ min_distance 是底线，太近（<1.0 A）的结构应该不会出现
+- 抽查插入原子的最近邻距离：≥ min_distance 是底线，太近（<1.0 Å）的结构应该不会出现
 - 如果成功率很低（输出远少于 50 个），增大 `max_attempts` 或降低 `min_distance`
 - 如果是表面吸附场景，切到 `Mode` = `Adsorption`，调整 `offset` 控制吸附高度
 
@@ -75,9 +75,9 @@ Interstitial 模式下 `axis` 和 `offset` 不生效。Adsorption 模式需要 s
 
 #### Min Distance（min_distance）
 
-`float`，默认 1.4。候选插入点与已有原子的最小允许距离，单位 A。
+`float`，默认 1.4。候选插入点与已有原子的最小允许距离，单位 Å。
 
-对致密晶体，1.6~2.5 A 比较保守安全；1.2~1.6 A 是一个平衡点；压到 0.8~1.2 A 碰撞风险明显升高，只有在你确信结构能容纳时才用。
+对致密晶体，1.6~2.5 Å 比较保守安全；1.2~1.6 Å 是一个平衡点；压到 0.8~1.2 Å 碰撞风险明显升高，只有在你确信结构能容纳时才用。
 
 #### Max Attempts（max_attempts）
 
@@ -93,7 +93,7 @@ Interstitial 模式下 `axis` 和 `offset` 不生效。Adsorption 模式需要 s
 
 #### Offset（offset）
 
-`float`，默认 1.5。表面吸附时原子放在表面上方多远，单位 A。
+`float`，默认 1.5。表面吸附时原子放在表面上方多远，单位 Å。
 
 生效条件：`mode` 选择 Adsorption 时。
 
@@ -173,7 +173,7 @@ Interstitial 模式下 `axis` 和 `offset` 不生效。Adsorption 模式需要 s
 
 ## 常见问题
 
-**输出为空或数量远少于预期。** `min_distance` 太严、`max_attempts` 太小，或者输入超胞太密找不到合适位点。先放宽 min_distance 到 1.0 A 试跑。
+**输出为空或数量远少于预期。** `min_distance` 太严、`max_attempts` 太小，或者输入超胞太密找不到合适位点。先放宽 min_distance 到 1.0 Å 试跑。
 
 **插入原子和宿主重叠。** 检查 min_distance 是否 ≤ 0（被跳过）。如果 min_distance 合理但仍重叠，增大 `max_attempts`。
 

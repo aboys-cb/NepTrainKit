@@ -24,6 +24,9 @@ class RandomVacancyCard(MakeDataCard):
 
     card_name = "Random Vacancy"
     menu_icon = r":/images/src/images/defect.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         """Initialise the card and build its configuration widgets.
@@ -34,7 +37,7 @@ class RandomVacancyCard(MakeDataCard):
             Parent widget passed to the base card constructor.
         """
         super().__init__(parent)
-        self.setTitle("Random Vacancy Delete")
+        self.setTitle(self.tr("Random Vacancy Delete"))
         self.init_ui()
 
     def init_ui(self):
@@ -42,21 +45,21 @@ class RandomVacancyCard(MakeDataCard):
         """
         self.setObjectName("random_vacancy_card_widget")
 
-        self.rules_label = BodyLabel("Rules", self.setting_widget)
+        self.rules_label = BodyLabel(self.tr("Rules"), self.setting_widget)
         self.rules_widget = VacancyRulesWidget(self.setting_widget)
-        self.rules_label.setToolTip("vacancy rules")
+        self.rules_label.setToolTip(self.tr("vacancy rules"))
         self.rules_label.installEventFilter(ToolTipFilter(self.rules_label, 300, ToolTipPosition.TOP))
 
-        self.max_atoms_label = BodyLabel("Structures", self.setting_widget)
+        self.max_atoms_label = BodyLabel(self.tr("Structures"), self.setting_widget)
         self.max_atoms_condition_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_condition_frame.set_input("unit", 1)
         self.max_atoms_condition_frame.setRange(1, 10000)
-        self.max_atoms_label.setToolTip("Number of vacancy structures to generate")
+        self.max_atoms_label.setToolTip(self.tr("Number of vacancy structures to generate"))
         self.max_atoms_label.installEventFilter(ToolTipFilter(self.max_atoms_label, 300, ToolTipPosition.TOP))
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip("Enable reproducible random sampling")
+        self.seed_checkbox.setToolTip(self.tr("Enable reproducible random sampling"))
         self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")

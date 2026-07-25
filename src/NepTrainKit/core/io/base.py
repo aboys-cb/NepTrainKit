@@ -10,6 +10,7 @@ dataset synchronisation.
 
 """
 import ast
+import hashlib
 import os
 import json
 import threading
@@ -20,18 +21,31 @@ from functools import cached_property
 from pathlib import Path
 from dataclasses import dataclass
 import numpy as np
-from PySide6.QtCore import QObject, Signal
+from PySide6.QtCore import QObject, QThread, Signal, Slot
 from loguru import logger
 from typing import Any, Callable, Iterable, Mapping, Optional, Sequence
 import numpy.typing as npt
+from NepTrainKit.core.adapter_api import NepAdaptersError
 from NepTrainKit.utils import timeit, parse_index_string
 from NepTrainKit.config import Config
 from NepTrainKit.core import   MessageManager
-from NepTrainKit.core.precision import get_storage_float_dtype
-from NepTrainKit.core.structure import Structure, atomic_numbers, get_type_map, save_npy_structure
+from NepTrainKit.core.precision import get_export_significant_digits, get_storage_float_dtype
+from NepTrainKit.core.structure import (
+    Structure,
+    atomic_numbers,
+    get_type_map,
+    save_npy_structure,
+    write_structures_extxyz_atomic,
+)
+from NepTrainKit.core.geometry_cache import GeometrySnapshot, StructureGeometryCache
 from NepTrainKit.core.utils import read_nep_out_file, aggregate_per_atom_to_structure, get_rmse, split_by_natoms
 
 from .sampler import SparseSampler,farthest_point_sampling,pca
+from .distribution import (
+    DistributionAnalysisMixin,
+    DistributionRequest,
+    FieldSpec,
+)
 from NepTrainKit.core.types import (
     Brushes,
     SearchType,
@@ -290,11 +304,31 @@ class NepData:
         """Return the ``nmax`` structure indices with the largest absolute error."""
         if not self.cols:
             return []
-        error = np.sum(np.abs(self.now_data[:, : self.cols] - self.now_data[:, self.cols :]), axis=1)
-        sorted_idx = np.argsort(-error)
-        structure_index = self.group_array.now_data[sorted_idx]
-        _, unique_indices = np.unique(structure_index, return_index=True)
-        return structure_index[np.sort(unique_indices)][:nmax].tolist()
+        nmax = int(nmax)
+        if nmax <= 0:
+            return []
+        data_version = int(getattr(self.data, "version", 0) or 0)
+        cache = getattr(self, "_max_error_cache", None)
+        if cache is not None and cache[0] == data_version and cache[1] == self.cols:
+            error = cache[2]
+        else:
+            error = np.sum(np.abs(self.now_data[:, : self.cols] - self.now_data[:, self.cols :]), axis=1)
+            self._max_error_cache = (data_version, self.cols, error)
+        if error.size == 0:
+            return []
+        total = int(error.shape[0])
+        k = min(total, max(nmax * 4, nmax + 64))
+        while True:
+            if k >= total:
+                sorted_idx = np.argsort(-error)
+            else:
+                candidate_idx = np.argpartition(-error, k - 1)[:k]
+                sorted_idx = candidate_idx[np.argsort(-error[candidate_idx])]
+            structure_index = self.group_array.now_data[sorted_idx]
+            _, unique_indices = np.unique(structure_index, return_index=True)
+            if unique_indices.size >= nmax or k >= total:
+                return structure_index[np.sort(unique_indices)][:nmax].tolist()
+            k = min(total, k * 2)
 class NepPlotData(NepData):
     """Two-column plot helper that separates NEP predictions from references."""
     def __init__(self, data_list: Sequence[Any] | npt.NDArray[Any], **kwargs: Any) -> None:
@@ -347,6 +381,27 @@ class DPPlotData(NepData):
         return self.group_array[:].repeat(self.cols).astype(np.int32)
 class StructureData(NepData):
     """Utility mixin for structure-level queries."""
+
+    _geometry_cache_init_lock = threading.Lock()
+
+    def geometry_snapshot(
+        self,
+        source_indices: Sequence[int] | npt.NDArray[np.int64] | None = None,
+    ) -> GeometrySnapshot:
+        """Return cached contiguous geometry for all or selected source rows."""
+        cache = getattr(self, "_geometry_cache", None)
+        if cache is None:
+            with self._geometry_cache_init_lock:
+                cache = getattr(self, "_geometry_cache", None)
+                if cache is None:
+                    cache = StructureGeometryCache(self.all_data)
+                    self._geometry_cache = cache
+        return cache.snapshot(source_indices)
+
+    def cached_geometry_analysis(self, namespace, key, build):
+        """Cache a geometry-derived result for this immutable dataset."""
+        self.geometry_snapshot()
+        return self._geometry_cache.analysis_result(namespace, key, build)
 
     def _completer_cache_lock(self) -> threading.Lock:
         lock = getattr(self, "_completer_cache_lock_obj", None)
@@ -409,13 +464,16 @@ class StructureData(NepData):
             cache = getattr(self, "_completer_cache", None)
             cache_max_items = getattr(self, "_completer_cache_max_items", None)
             cache_version = getattr(self, "_completer_cache_data_version", None)
+            element_cache_version = getattr(self, "_element_count_cache_data_version", None)
             current_version = getattr(getattr(self, "data", None), "version", None)
             if (
                 cache is not None
                 and cache_max_items == max_items
                 and cache_version is not None
+                and element_cache_version is not None
                 and current_version is not None
                 and int(cache_version) == int(current_version)
+                and int(element_cache_version) == int(current_version)
             ):
                 return
 
@@ -427,8 +485,10 @@ class StructureData(NepData):
             tag_counter: Counter[str] = Counter()
             formula_counter: Counter[str] = Counter()
             elem_counter: Counter[str] = Counter()
+            element_counts: dict[str, npt.NDArray[np.int32]] = {}
+            active_count = int(self.now_data.shape[0])
 
-            for structure in self.now_data:
+            for row, structure in enumerate(self.now_data):
                 try:
                     tag = str(getattr(structure, "tag", "") or "").strip()
                     if tag:
@@ -442,13 +502,18 @@ class StructureData(NepData):
                 except Exception:
                     pass
                 try:
-                    elems = set(map(str, getattr(structure, "elements")))
+                    counts = Counter(self._normalise_element_symbol(str(elem)) for elem in getattr(structure, "elements"))
                 except Exception:
-                    elems = set()
-                for elem in elems:
+                    counts = Counter()
+                for elem, count in counts.items():
                     elem = str(elem or "").strip()
                     if elem:
                         elem_counter[elem] += 1
+                        values = element_counts.get(elem)
+                        if values is None:
+                            values = np.zeros(active_count, dtype=np.int32)
+                            element_counts[elem] = values
+                        values[row] = int(count)
 
             tag_map, trunc_tag = self._truncate_counter(dict(tag_counter), max_items)
             formula_map, trunc_formula = self._truncate_counter(dict(formula_counter), max_items)
@@ -480,6 +545,21 @@ class StructureData(NepData):
             }
             self._completer_cache_max_items = max_items
             self._completer_cache_data_version = start_version if start_version != -1 else 0
+            self._element_count_cache = element_counts
+            self._element_count_cache_data_version = start_version if start_version != -1 else 0
+
+    def get_element_count_cache(self, elements: set[str] | None = None) -> dict[str, npt.NDArray[np.int32]]:
+        """Return element count arrays aligned with active structures."""
+        current_version = getattr(getattr(self, "data", None), "version", None)
+        cache_version = getattr(self, "_element_count_cache_data_version", None)
+        cache = getattr(self, "_element_count_cache", None)
+        if cache is None or cache_version is None or current_version is None or int(cache_version) != int(current_version):
+            self.ensure_completer_cache(max_items=int(getattr(self, "_completer_cache_max_items", 50000) or 50000))
+            cache = getattr(self, "_element_count_cache", None) or {}
+        if elements is None:
+            return {elem: values for elem, values in cache.items()}
+        wanted = {self._normalise_element_symbol(elem) for elem in elements if str(elem or "").strip()}
+        return {elem: values for elem, values in cache.items() if elem in wanted}
 
     def get_completer_cache(self, search_type: SearchType | str | None = None, max_items: int = 50000) -> dict[str, int]:
         """Return cached completer mapping for ``search_type``; builds it if needed."""
@@ -620,137 +700,82 @@ class StructureData(NepData):
             result_index = [i for i, structure in enumerate(self.now_data) if pattern.search(structure.formula)]
         elif search_type == SearchType.ELEMENTS:
             allowed, required, excluded = self._parse_elements_query(config)
-            result_index = []
-            for i, structure in enumerate(self.now_data):
-                try:
-                    elem_set = set(map(str, structure.elements))
-                except Exception:
+            element_counts = self.get_element_count_cache()
+            active_count = int(self.now_data.shape[0])
+            mask = np.ones(active_count, dtype=bool)
+            for elem in required:
+                values = element_counts.get(elem)
+                mask &= values > 0 if values is not None else False
+            for elem in excluded:
+                values = element_counts.get(elem)
+                if values is not None:
+                    mask &= values == 0
+            if allowed:
+                outside = np.zeros(active_count, dtype=bool)
+                for elem, values in element_counts.items():
+                    if elem not in allowed:
+                        outside |= values > 0
+                mask &= ~outside
+            result_index = np.nonzero(mask)[0]
+        return self.group_array[result_index].tolist()
+
+    def search_config_tags(self, filter_spec: dict, search_type: SearchType) -> list[int]:
+        """Return structure indices matching a tag/formula filter spec.
+
+        Uses simple substring matching (not regex) with group-based logic:
+        groups are AND'd, conditions within a group use AND/OR per group mode.
+
+        Parameters
+        ----------
+        filter_spec : dict
+            Dictionary with ``groups`` (list of group dicts, each having
+            ``conditions`` and ``mode`` keys).
+        search_type : SearchType
+            One of :attr:`SearchType.TAG` or :attr:`SearchType.FORMULA`.
+
+        Returns
+        -------
+        list[int]
+            Matching structure indices.
+        """
+        from NepTrainKit.core.types import TagFilterSpec
+
+        spec = TagFilterSpec.from_dict(filter_spec) if isinstance(filter_spec, dict) else filter_spec
+        if spec.is_empty():
+            return []
+
+        if search_type == SearchType.TAG:
+            values = [getattr(s, "tag", "") or "" for s in self.now_data]
+        elif search_type == SearchType.FORMULA:
+            values = [getattr(s, "formula", "") or "" for s in self.now_data]
+        else:
+            return []
+
+        active_count = len(values)
+        mask = np.ones(active_count, dtype=bool)
+
+        for group in spec.groups:
+            if group.is_empty():
+                continue
+            group_mask: np.ndarray | None = None
+            for cond in group.conditions:
+                text = str(cond.text)
+                if not text:
                     continue
-                if excluded and elem_set.intersection(excluded):
-                    continue
-                if required and not required.issubset(elem_set):
-                    continue
-                if allowed and not elem_set.issubset(allowed):
-                    continue
-                result_index.append(i)
+                row_match = np.array([text in v for v in values], dtype=bool)
+                if cond.negate:
+                    row_match = ~row_match
+                if group.mode == "and":
+                    group_mask = row_match.copy() if group_mask is None else group_mask & row_match
+                else:
+                    group_mask = row_match if group_mask is None else group_mask | row_match
+            if group_mask is not None:
+                mask &= group_mask
+
+        result_index = np.nonzero(mask)[0]
         return self.group_array[result_index].tolist()
 
 
-def _coerce_enum(value: Any, enum_cls: Any, default: Any):
-    """Best-effort conversion to an enum value with a fallback."""
-    if isinstance(value, enum_cls):
-        return value
-    text = str(value or "").strip()
-    if not text:
-        return default
-    if text.startswith(f"{enum_cls.__name__}.") and "." in text:
-        text = text.split(".")[-1]
-        try:
-            return enum_cls[text]
-        except Exception:
-            pass
-    try:
-        return enum_cls(text)
-    except Exception:
-        pass
-    lower = text.lower()
-    for item in enum_cls:
-        if lower in {str(item.value).lower(), str(item.name).lower()}:
-            return item
-    return default
-
-
-@dataclass(frozen=True)
-class FieldSpec:
-    """Description of a discoverable numeric field for distribution analysis."""
-
-    key: str
-    source: str
-    shape: FieldValueShape
-    components: tuple[str, ...]
-    has_prediction_pair: bool
-    unit_guess: str = "unknown"
-    domain: FieldDomain = FieldDomain.ATOM
-    label: str = ""
-
-
-@dataclass(frozen=True)
-class DistributionRequest:
-    """Serializable request object for distribution analysis jobs."""
-
-    field_keys: tuple[str, ...] = ()
-    include_norm: bool = True
-    value_view: DistributionValueView = DistributionValueView.REFERENCE
-    group_mode: DistributionGroupMode = DistributionGroupMode.FORMULA
-    scope: DistributionScope = DistributionScope.ACTIVE
-    bins: int = 120
-    select_mode: DistributionSelectMode = DistributionSelectMode.REPLACE
-    groups: tuple[str, ...] = ()
-    curve_style: DistributionCurveStyle = DistributionCurveStyle.KDE
-    curve_points: int = 240
-
-    @classmethod
-    def from_any(cls, request: Any) -> "DistributionRequest":
-        """Create a normalized request from a dataclass or mapping."""
-        if isinstance(request, cls):
-            bins = int(max(2, min(5000, int(request.bins or 120))))
-            curve_points = int(max(64, min(1024, int(request.curve_points or 240))))
-            return cls(
-                field_keys=tuple(str(i) for i in request.field_keys),
-                include_norm=bool(request.include_norm),
-                value_view=_coerce_enum(request.value_view, DistributionValueView, DistributionValueView.REFERENCE),
-                group_mode=_coerce_enum(request.group_mode, DistributionGroupMode, DistributionGroupMode.FORMULA),
-                scope=_coerce_enum(request.scope, DistributionScope, DistributionScope.ACTIVE),
-                bins=bins,
-                select_mode=_coerce_enum(request.select_mode, DistributionSelectMode, DistributionSelectMode.REPLACE),
-                groups=tuple(str(i) for i in request.groups if str(i)),
-                curve_style=_coerce_enum(
-                    request.curve_style, DistributionCurveStyle, DistributionCurveStyle.KDE
-                ),
-                curve_points=curve_points,
-            )
-        if isinstance(request, Mapping):
-            field_keys = request.get("field_keys", ())
-            groups = request.get("groups", ())
-            if isinstance(field_keys, str):
-                field_keys = [field_keys]
-            if isinstance(groups, str):
-                groups = [groups]
-            bins = int(max(2, min(5000, int(request.get("bins", 120) or 120))))
-            curve_points = int(max(64, min(1024, int(request.get("curve_points", 240) or 240))))
-            return cls(
-                field_keys=tuple(str(i) for i in field_keys if str(i)),
-                include_norm=bool(request.get("include_norm", True)),
-                value_view=_coerce_enum(
-                    request.get("value_view", DistributionValueView.REFERENCE),
-                    DistributionValueView,
-                    DistributionValueView.REFERENCE,
-                ),
-                group_mode=_coerce_enum(
-                    request.get("group_mode", DistributionGroupMode.FORMULA),
-                    DistributionGroupMode,
-                    DistributionGroupMode.FORMULA,
-                ),
-                scope=_coerce_enum(
-                    request.get("scope", DistributionScope.ACTIVE),
-                    DistributionScope,
-                    DistributionScope.ACTIVE,
-                ),
-                bins=bins,
-                select_mode=_coerce_enum(
-                    request.get("select_mode", DistributionSelectMode.REPLACE),
-                    DistributionSelectMode,
-                    DistributionSelectMode.REPLACE,
-                ),
-                groups=tuple(str(i) for i in groups if str(i)),
-                curve_style=_coerce_enum(
-                    request.get("curve_style", DistributionCurveStyle.KDE),
-                    DistributionCurveStyle,
-                    DistributionCurveStyle.KDE,
-                ),
-                curve_points=curve_points,
-            )
-        return cls()
 @dataclass(frozen=True)
 class StructureSyncRule:
     """Declarative instruction that synchronises structure attributes into datasets."""
@@ -784,6 +809,7 @@ class StructureSyncRule:
             return
         target = self._resolve_target(dataset)
         dataset.all_data[row_idx, target] = values
+        dataset._plot_coord_version = int(getattr(dataset, "_plot_coord_version", 0) or 0) + 1
 
 
 def _sync_target_width(dataset: Any) -> int:
@@ -870,15 +896,17 @@ def collect_stress_sync(result_data: "ResultData", dataset: NepPlotData, structu
     return selected_indices, stress_values.astype(storage_dtype, copy=False)
 
 
-class ResultData(QObject):
+class ResultData(DistributionAnalysisMixin, QObject):
     """Manage structures, descriptors, and plots for NEP result files.
     Subclasses implement :meth:`_load_dataset` and expose their plot datasets
     through :py:attr:`datasets`. The class also centralises selection and
     synchronisation utilities shared by the GUI.
     """
     STRUCTURE_SYNC_RULES: dict[str, StructureSyncRule] = {}
+    FORCE_CPU_BACKEND = False
     updateInfoSignal = Signal( )
     loadFinishedSignal = Signal()
+    predictionStatusSignal = Signal(str)
     atoms_num_list: npt.NDArray
     _atoms_dataset: StructureData
     _abcs: npt.NDArray[np.float32]
@@ -913,6 +941,7 @@ class ResultData(QObject):
         self.data_xyz_path=Path(data_xyz_path)
         self.nep_txt_path=Path(nep_txt_path)
         self.select_index=set()
+        self._selection_history: list[set[int]] = []
         # Mark structures as "bad/reject" without interfering with selection.
         # Uses original structure indices aligned with StructureData/group_array indices.
         self.reject_index: set[int] = set()
@@ -930,6 +959,27 @@ class ResultData(QObject):
         self._distribution_analysis: dict[str, Any] = {}
         self._distribution_bin_lookup: dict[tuple[int, str, str, int], list[int]] = {}
         self._distribution_analysis_id: int = 0
+        self._load_origin_thread: QThread | None = None
+
+    def move_to_load_thread(self, thread: QThread) -> None:
+        """Move this long-lived result object to a loader and remember its owner."""
+        origin = self.thread()
+        if origin is not QThread.currentThread():
+            raise RuntimeError("ResultData must be moved from its current owner thread")
+        self._load_origin_thread = origin
+        self.moveToThread(thread)
+
+    @Slot()
+    def _restore_load_thread_affinity(self) -> None:
+        """Return to the original thread before publishing loaded UI state."""
+        origin = self._load_origin_thread
+        self._load_origin_thread = None
+        if origin is None or self.thread() is origin:
+            return
+        if self.thread() is not QThread.currentThread():
+            raise RuntimeError("ResultData affinity can only be restored by its load thread")
+        self.moveToThread(origin)
+
     def request_cancel(self):
         """Request cooperative cancel during load. Also forward to calculator."""
         self.cancel_event.set()
@@ -1077,7 +1127,7 @@ class ResultData(QObject):
         text = text.replace("&&", " and ")
         text = text.replace("||", " or ")
         text = re.sub(r"(?<![<>=!])!(?!=)", " not ", text)
-        return text
+        return text.strip()
     @staticmethod
     def _contains_numeric_component_reference(expr: str) -> bool:
         pattern = re.compile(r"\b[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*\.\d+\b")
@@ -1092,6 +1142,16 @@ class ResultData(QObject):
                 return None
             return (*base, node.attr)
         return None
+    @staticmethod
+    def _expression_reference_chains(node: ast.AST) -> set[tuple[str, ...]]:
+        """Return expression field references without counting nested attributes twice."""
+        chain = ResultData._expression_ast_chain(node)
+        if chain is not None:
+            return {chain}
+        refs: set[tuple[str, ...]] = set()
+        for child in ast.iter_child_nodes(node):
+            refs.update(ResultData._expression_reference_chains(child))
+        return refs
     @staticmethod
     def _is_allowed_expression_node(node: ast.AST) -> bool:
         chain = ResultData._expression_ast_chain(node)
@@ -1133,6 +1193,22 @@ class ResultData(QObject):
             if not all(isinstance(op, (ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE)) for op in node.ops):
                 return False
         return all(ResultData._is_allowed_expression_node(child) for child in ast.iter_child_nodes(node))
+    @staticmethod
+    def _is_expression_predicate(node: ast.AST) -> bool:
+        """Return whether an expression node has explicit boolean semantics."""
+        chain = ResultData._expression_ast_chain(node)
+        if chain is not None:
+            root = chain[0].lower()
+            return root in {"has_energy", "has_forces", "has_virial", "has_bec"} or (
+                root == "has" and len(chain) == 2
+            )
+        if isinstance(node, ast.Compare):
+            return True
+        if isinstance(node, ast.BoolOp):
+            return all(ResultData._is_expression_predicate(value) for value in node.values)
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+            return ResultData._is_expression_predicate(node.operand)
+        return False
     def _discover_expression_fields(
         self,
         structure_indices: npt.NDArray[np.int64],
@@ -1253,12 +1329,61 @@ class ResultData(QObject):
     def _build_expression_builtin_values(
         self,
         active_indices: npt.NDArray[np.int64],
+        references: set[tuple[str, ...]] | None = None,
     ) -> tuple[dict[str, npt.NDArray[Any]], dict[str, dict[str, npt.NDArray[Any]]]]:
-        structures = [self.structure.all_data[int(i)] for i in active_indices.tolist()]
-        natoms = np.array([int(len(s)) for s in structures], dtype=np.float64)
-        volumes = np.array([float(getattr(s, "volume", np.nan)) for s in structures], dtype=np.float64)
-        abcs = np.asarray(self.abcs[active_indices], dtype=np.float64) if active_indices.size else np.empty((0, 3), dtype=np.float64)
-        angles = np.asarray(self.angles[active_indices], dtype=np.float64) if active_indices.size else np.empty((0, 3), dtype=np.float64)
+        builtin_tokens = {
+            "natoms",
+            "n_atoms",
+            "volume",
+            "a",
+            "b",
+            "c",
+            "alpha",
+            "beta",
+            "gamma",
+            "spin_natoms",
+            "energy",
+            "energy_per_atom",
+            "has_energy",
+            "has_forces",
+            "has_virial",
+            "has_bec",
+        }
+        if references is None:
+            requested_builtins = set(builtin_tokens)
+            requested_elements: set[str] | None = None
+        else:
+            requested_builtins = {chain[0].lower() for chain in references if chain and chain[0].lower() in builtin_tokens}
+            requested_elements = {
+                StructureData._normalise_element_symbol(chain[1])
+                for chain in references
+                if len(chain) == 2 and chain[0].lower() in {"count", "frac", "has"}
+            }
+        needs_structures = references is None or bool(
+            requested_builtins.intersection(
+                {"volume", "spin_natoms", "energy", "energy_per_atom", "has_energy", "has_forces", "has_virial", "has_bec"}
+            )
+            or requested_elements
+        )
+        structures = [self.structure.all_data[int(i)] for i in active_indices.tolist()] if needs_structures else []
+        if {"natoms", "n_atoms"}.intersection(requested_builtins) or requested_elements:
+            try:
+                natoms = np.asarray(self.atoms_num_list[active_indices], dtype=np.float64)
+            except Exception:
+                source = structures or [self.structure.all_data[int(i)] for i in active_indices.tolist()]
+                natoms = np.array([int(len(s)) for s in source], dtype=np.float64)
+        else:
+            natoms = np.array([], dtype=np.float64)
+        abcs = (
+            np.asarray(self.abcs[active_indices], dtype=np.float64)
+            if active_indices.size and {"a", "b", "c"}.intersection(requested_builtins)
+            else np.empty((0, 3), dtype=np.float64)
+        )
+        angles = (
+            np.asarray(self.angles[active_indices], dtype=np.float64)
+            if active_indices.size and {"alpha", "beta", "gamma"}.intersection(requested_builtins)
+            else np.empty((0, 3), dtype=np.float64)
+        )
 
         def safe_scalar(getter: Callable[[Structure], float]) -> npt.NDArray[np.float64]:
             values: list[float] = []
@@ -1269,38 +1394,69 @@ class ResultData(QObject):
                     values.append(float("nan"))
             return np.asarray(values, dtype=np.float64)
 
-        builtin_values: dict[str, npt.NDArray[Any]] = {
-            "natoms": natoms,
-            "n_atoms": natoms,
-            "volume": volumes,
-            "a": abcs[:, 0] if abcs.size else np.array([], dtype=np.float64),
-            "b": abcs[:, 1] if abcs.size else np.array([], dtype=np.float64),
-            "c": abcs[:, 2] if abcs.size else np.array([], dtype=np.float64),
-            "alpha": angles[:, 0] if angles.size else np.array([], dtype=np.float64),
-            "beta": angles[:, 1] if angles.size else np.array([], dtype=np.float64),
-            "gamma": angles[:, 2] if angles.size else np.array([], dtype=np.float64),
-            "spin_natoms": np.array([int(getattr(s, "spin_num", 0) or 0) for s in structures], dtype=np.float64),
-            "energy": safe_scalar(lambda s: s.energy),
-            "energy_per_atom": safe_scalar(lambda s: s.per_atom_energy),
-            "has_energy": np.array([bool(getattr(s, "has_energy", False)) for s in structures], dtype=bool),
-            "has_forces": np.array([bool(getattr(s, "has_forces", False)) for s in structures], dtype=bool),
-            "has_virial": np.array([bool(getattr(s, "has_virial", False)) for s in structures], dtype=bool),
-            "has_bec": np.array([bool(getattr(s, "has_bec", False)) for s in structures], dtype=bool),
-        }
+        builtin_values: dict[str, npt.NDArray[Any]] = {}
+        if "natoms" in requested_builtins:
+            builtin_values["natoms"] = natoms
+        if "n_atoms" in requested_builtins:
+            builtin_values["n_atoms"] = natoms
+        if "volume" in requested_builtins:
+            builtin_values["volume"] = np.array([float(getattr(s, "volume", np.nan)) for s in structures], dtype=np.float64)
+        if "a" in requested_builtins:
+            builtin_values["a"] = abcs[:, 0] if abcs.size else np.array([], dtype=np.float64)
+        if "b" in requested_builtins:
+            builtin_values["b"] = abcs[:, 1] if abcs.size else np.array([], dtype=np.float64)
+        if "c" in requested_builtins:
+            builtin_values["c"] = abcs[:, 2] if abcs.size else np.array([], dtype=np.float64)
+        if "alpha" in requested_builtins:
+            builtin_values["alpha"] = angles[:, 0] if angles.size else np.array([], dtype=np.float64)
+        if "beta" in requested_builtins:
+            builtin_values["beta"] = angles[:, 1] if angles.size else np.array([], dtype=np.float64)
+        if "gamma" in requested_builtins:
+            builtin_values["gamma"] = angles[:, 2] if angles.size else np.array([], dtype=np.float64)
+        if "spin_natoms" in requested_builtins:
+            builtin_values["spin_natoms"] = np.array([int(getattr(s, "spin_num", 0) or 0) for s in structures], dtype=np.float64)
+        if "energy" in requested_builtins:
+            builtin_values["energy"] = safe_scalar(lambda s: s.energy)
+        if "energy_per_atom" in requested_builtins:
+            builtin_values["energy_per_atom"] = safe_scalar(lambda s: s.per_atom_energy)
+        if "has_energy" in requested_builtins:
+            builtin_values["has_energy"] = np.array([bool(getattr(s, "has_energy", False)) for s in structures], dtype=bool)
+        if "has_forces" in requested_builtins:
+            builtin_values["has_forces"] = np.array([bool(getattr(s, "has_forces", False)) for s in structures], dtype=bool)
+        if "has_virial" in requested_builtins:
+            builtin_values["has_virial"] = np.array([bool(getattr(s, "has_virial", False)) for s in structures], dtype=bool)
+        if "has_bec" in requested_builtins:
+            builtin_values["has_bec"] = np.array([bool(getattr(s, "has_bec", False)) for s in structures], dtype=bool)
         count_values: dict[str, npt.NDArray[np.float64]] = {}
         frac_values: dict[str, npt.NDArray[np.float64]] = {}
         has_values: dict[str, npt.NDArray[np.bool_]] = {}
         element_set: set[str] = set()
         counters: list[Counter[str]] = []
-        for structure in structures:
+        cached_element_counts: dict[str, npt.NDArray[np.int32]] | None = None
+        if requested_elements is not None and requested_elements:
             try:
-                cnt = Counter(map(str, structure.elements))
+                active_now = np.asarray(self.structure.group_array.now_data, dtype=np.int64).reshape(-1)
+                if active_now.shape == active_indices.shape and np.array_equal(active_now, active_indices):
+                    cached_element_counts = self.structure.get_element_count_cache(requested_elements)
             except Exception:
-                cnt = Counter()
-            counters.append(cnt)
-            element_set.update(StructureData._normalise_element_symbol(e) for e in cnt.keys())
+                cached_element_counts = None
+        if cached_element_counts is not None:
+            element_set = {e for e in requested_elements if e}
+        elif requested_elements is None or requested_elements:
+            for structure in structures:
+                try:
+                    cnt = Counter(StructureData._normalise_element_symbol(str(elem)) for elem in structure.elements)
+                except Exception:
+                    cnt = Counter()
+                counters.append(cnt)
+                element_set.update(StructureData._normalise_element_symbol(e) for e in cnt.keys())
+        if requested_elements is not None:
+            element_set = {e for e in requested_elements if e}
         for elem in sorted(e for e in element_set if e):
-            counts = np.asarray([float(counter.get(elem, 0)) for counter in counters], dtype=np.float64)
+            if cached_element_counts is not None:
+                counts = np.asarray(cached_element_counts.get(elem, np.zeros(active_indices.shape[0], dtype=np.int32)), dtype=np.float64)
+            else:
+                counts = np.asarray([float(counter.get(elem, 0)) for counter in counters], dtype=np.float64)
             count_values[elem] = counts
             with np.errstate(divide="ignore", invalid="ignore"):
                 frac_values[elem] = np.divide(
@@ -1561,11 +1717,6 @@ class ResultData(QObject):
             return result
         raise ValueError("Unsupported expression syntax.")
     def _search_expression(self, expr: str) -> list[int]:
-        active_indices = self._normalize_structure_indices(None)
-        if active_indices.size == 0:
-            return []
-        builtin_values, element_values = self._build_expression_builtin_values(active_indices)
-        dataset_fields, atomic_fields = self._discover_expression_fields(active_indices)
         text = self._normalise_expression_text(expr)
         if self._contains_numeric_component_reference(text):
             raise ValueError("Numeric component suffixes are not supported in expressions.")
@@ -1575,6 +1726,45 @@ class ResultData(QObject):
             raise ValueError("Invalid expression syntax.") from exc
         if not self._is_allowed_expression_node(parsed):
             raise ValueError("Expression contains unsupported syntax.")
+        references = self._expression_reference_chains(parsed.body)
+        if not references:
+            raise ValueError("Expression must reference at least one structure field.")
+        if not self._is_expression_predicate(parsed.body):
+            raise ValueError(
+                "Expression must be a condition. Add a comparison, for example: natoms > 100."
+            )
+        active_indices = self._normalize_structure_indices(None)
+        if active_indices.size == 0:
+            return []
+        builtin_tokens = {
+            "natoms",
+            "n_atoms",
+            "volume",
+            "a",
+            "b",
+            "c",
+            "alpha",
+            "beta",
+            "gamma",
+            "spin_natoms",
+            "energy",
+            "energy_per_atom",
+            "has_energy",
+            "has_forces",
+            "has_virial",
+            "has_bec",
+        }
+        dynamic_field_needed = any(
+            chain
+            and chain[0].lower() not in builtin_tokens
+            and chain[0].lower() not in {"count", "frac", "has"}
+            for chain in references
+        )
+        builtin_values, element_values = self._build_expression_builtin_values(active_indices, references)
+        if dynamic_field_needed:
+            dataset_fields, atomic_fields = self._discover_expression_fields(active_indices)
+        else:
+            dataset_fields, atomic_fields = {}, {}
         result = self._eval_expression_ast(parsed.body, builtin_values, element_values, dataset_fields, atomic_fields, active_indices)
         mask = np.asarray(result, dtype=bool)
         if mask.ndim == 0:
@@ -1590,6 +1780,16 @@ class ResultData(QObject):
         if search_type == SearchType.EXPRESSION:
             return self._search_expression(config)
         return self.structure.search_config(config, search_type)
+
+    def search_config_tags(self, filter_spec: dict, search_type: SearchType) -> list[int]:
+        """Return structure indices matching a tag/formula filter spec."""
+        return self.structure.search_config_tags(filter_spec, search_type)
+
+    def search_structures(self, filter_spec):
+        """Evaluate a typed composite structure filter without changing selection."""
+        from NepTrainKit.core.search import StructureFilterEngine
+
+        return StructureFilterEngine.evaluate(self, filter_spec)
     def sync_structures(self, fields: Iterable[str] | None = None, structure_indices: Sequence[int] | None = None) -> None:
         """Apply registered :class:`StructureSyncRule` objects to datasets.
 
@@ -1637,6 +1837,17 @@ class ResultData(QObject):
     def cache_outputs_enabled() -> bool:
         """Return whether loader-generated cache files should be written."""
         return bool(Config.getboolean("io", "cache_outputs", True))
+
+    def _can_load_without_calculator(self) -> bool:
+        """Return whether this result can be loaded from existing outputs alone."""
+        return False
+
+    def _calculation_backend(self) -> NepBackend:
+        """Resolve the backend used when this result requires calculations."""
+        if self.FORCE_CPU_BACKEND:
+            return NepBackend.CPU
+        return NepBackend(Config.get("nep", "backend", "auto"))
+
     def load(self):
         """Load structures, descriptors, and dataset arrays in sequence.
         The routine instantiates a calculator (optionally via ``calculator_factory``),
@@ -1644,25 +1855,65 @@ class ResultData(QObject):
         dataset-specific properties.
         """
         try:
-            # Calculator injection (default to NEP). Subclasses can pass in a factory for other ML potentials.
-            if self.calculator_factory is None:
-                self.nep_calc = NepCalculator(
-                    model_file=self.nep_txt_path.as_posix(),
-                    backend=NepBackend(Config.get("nep", "backend", "auto")),
-                    batch_size=Config.getint("nep", "gpu_batch_size", 1000)
-                )
+            load_from_outputs = self._can_load_without_calculator()
+            if load_from_outputs:
+                self.nep_calc = None
+                if self.descriptor_path.exists():
+                    status = (
+                        "Loading existing official NEP .out files without opening "
+                        "the model."
+                    )
+                    notify = MessageManager.send_info_message
+                else:
+                    status = (
+                        "Loading existing official NEP .out files without opening "
+                        "the model. descriptor.out is missing, so descriptor plots "
+                        "and FPS are unavailable. Install a nep-adapters version that "
+                        "supports this model to generate descriptors."
+                    )
+                    notify = MessageManager.send_warning_message
+                self.predictionStatusSignal.emit(status)
+                notify(status)
             else:
-                # Factory is responsible for creating a calculator compatible with this ResultData subclass
-                try:
-                    self.nep_calc = self.calculator_factory(self.nep_txt_path.as_posix())
-                except Exception:
-                    logger.debug(traceback.format_exc())
-                    MessageManager.send_warning_message("Failed to create custom calculator; falling back to NEP.")
+                calculation_backend = self._calculation_backend()
+                # Calculator injection (default to NEP). Subclasses can pass in a factory for other ML potentials.
+                if self.calculator_factory is None:
                     self.nep_calc = NepCalculator(
                         model_file=self.nep_txt_path.as_posix(),
-                        backend=NepBackend(Config.get("nep", "backend", "auto")),
-                        batch_size=Config.getint("nep", "gpu_batch_size", 1000)
+                        backend=calculation_backend,
+                        chunk_max_atoms=Config.getint("nep", "chunk_max_atoms", 100000),
                     )
+                else:
+                    # Factory is responsible for creating a calculator compatible with this ResultData subclass
+                    try:
+                        self.nep_calc = self.calculator_factory(self.nep_txt_path.as_posix())
+                    except Exception:
+                        logger.debug(traceback.format_exc())
+                        MessageManager.send_warning_message("Failed to create custom calculator; falling back to NEP.")
+                        self.nep_calc = NepCalculator(
+                            model_file=self.nep_txt_path.as_posix(),
+                            backend=calculation_backend,
+                            chunk_max_atoms=Config.getint("nep", "chunk_max_atoms", 100000),
+                        )
+                selection = getattr(self.nep_calc, "selection", None)
+                if self.FORCE_CPU_BACKEND:
+                    MessageManager.send_info_message(
+                        "Dipole and polarizability models are CPU-only; "
+                        "NepTrainKit will use CPU regardless of the selected NEP backend."
+                    )
+                elif selection is not None and selection.requested is NepBackend.AUTO:
+                    if selection.resolved is NepBackend.CUDA:
+                        MessageManager.send_info_message(
+                            "NEP Auto selected CUDA acceleration for this model."
+                        )
+                    else:
+                        detail = getattr(selection.cuda_status, "detail", selection.reason)
+                        MessageManager.send_warning_message(
+                            "NEP Auto selected CPU because CUDA is unavailable "
+                            f"({detail}). The calculation will continue on CPU. "
+                            "To enable CUDA, install a Linux CPU+CUDA nep-adapters wheel "
+                            "with a compatible NVIDIA driver."
+                        )
             # If subclass overrides load_structures, defer to it; otherwise do cancel-aware read
             self.load_structures()
             # Pre-build completer caches so UI mode switching remains smooth for large datasets.
@@ -1689,9 +1940,23 @@ class ResultData(QObject):
                     self.load_flag=True
             else:
                 MessageManager.send_warning_message("No structures were loaded.")
-        except:
+        except NepAdaptersError as error:
             logger.error(traceback.format_exc())
-            MessageManager.send_error_message("load dataset error!")
+            message = (
+                f"NEP calculation failed [{error.code}]: {error} "
+                "Check the selected backend, model type, spin fields, and chunk size."
+            )
+            self.predictionStatusSignal.emit(message)
+            MessageManager.send_error_message(message)
+        except Exception as error:
+            logger.error(traceback.format_exc())
+            message = f"Failed to load dataset: {error}"
+            self.predictionStatusSignal.emit(message)
+            MessageManager.send_error_message(message)
+        try:
+            self._restore_load_thread_affinity()
+        except RuntimeError:
+            logger.error(traceback.format_exc())
         self.loadFinishedSignal.emit()
     def _load_dataset(self):
         """Populate subclass-specific datasets (must be implemented by subclasses)."""
@@ -1746,6 +2011,41 @@ class ResultData(QObject):
     def is_select(self, i: int) -> bool:
         """Return ``True`` if the structure index is marked as selected."""
         return i in self.select_index
+    def _active_selection(self, indices: Iterable[int]) -> set[int]:
+        """Return valid active structure indices from ``indices``."""
+        active_mask = self.structure.data.mask_array
+        total = len(self.structure.all_data)
+        selected: set[int] = set()
+        for value in indices:
+            idx = int(value)
+            if 0 <= idx < total and active_mask[idx]:
+                selected.add(idx)
+        return selected
+    def _set_selection(self, selected: set[int], *, record: bool = True) -> bool:
+        """Replace the selection, optionally recording one undo step."""
+        selected = self._active_selection(selected)
+        if selected == self.select_index:
+            return False
+        if record:
+            self._selection_history.append(set(self.select_index))
+        self.select_index.clear()
+        self.select_index.update(selected)
+        self.updateInfoSignal.emit()
+        return True
+    @property
+    def can_undo_selection(self) -> bool:
+        """Return whether a previous selection state is available."""
+        return bool(self._selection_history)
+    def clear_selection_history(self) -> None:
+        """Drop stored selection undo states."""
+        self._selection_history.clear()
+    def undo_selection(self) -> bool:
+        """Restore the previous selection state."""
+        while self._selection_history:
+            selected = self._selection_history.pop()
+            if self._set_selection(selected, record=False):
+                return True
+        return False
     def select(self, indices: Sequence[int] | int) -> None:
         """Mark structures denoted by ``indices`` as selected."""
         if isinstance(indices, (int, np.integer)):
@@ -1756,27 +2056,39 @@ class ResultData(QObject):
         valid = (idx >= 0) & (idx < len(self.structure.all_data))
         valid &= self.structure.data.mask_array[idx]
         idx = idx[valid]
-        self.select_index.update(idx.tolist())
-        self.updateInfoSignal.emit()
+        selected = set(self.select_index)
+        selected.update(idx.tolist())
+        self._set_selection(selected)
     def uncheck(self, indices: Sequence[int] | int) -> None:
         """Remove structures denoted by ``indices`` from the selection set."""
         if isinstance(indices, (int, np.integer)):
             iter_indices = [int(indices)]
         else:
             iter_indices = (int(i) for i in np.asarray(indices).ravel())
+        selected = set(self.select_index)
         for idx in iter_indices:
-            self.select_index.discard(idx)
-        self.updateInfoSignal.emit()
+            selected.discard(idx)
+        self._set_selection(selected)
     def inverse_select(self) -> None:
         """Invert the current selection over the active structure set."""
         active_indices = set(self.structure.data.now_indices.tolist())
-        selected_indices = set(self.select_index)
-        to_unselect = list(selected_indices)
-        to_select = list(active_indices - selected_indices)
-        if to_unselect:
-            self.uncheck(to_unselect)
-        if to_select:
-            self.select(to_select)
+        self._set_selection(active_indices - set(self.select_index))
+
+    def apply_selection(self, indices: Iterable[int], mode: str) -> bool:
+        """Apply one cached result to selection as a single undoable change."""
+        matched = self._active_selection(indices)
+        current = set(self.select_index)
+        if mode == "replace":
+            target = matched
+        elif mode == "add":
+            target = current | matched
+        elif mode == "remove":
+            target = current - matched
+        elif mode == "clear":
+            target = set()
+        else:
+            raise ValueError(f"Unsupported selection mode: {mode}")
+        return self._set_selection(target)
     def select_structures_by_index(self, index_expression: str, use_origin: bool = True) -> list[int]:
         """Resolve an index expression into raw structure indices."""
         if not index_expression:
@@ -1864,10 +2176,13 @@ class ResultData(QObject):
         """Write the currently selected structures to ``save_file_path``."""
         indices = list(self.select_index)
         try:
-            with open(save_file_path, "w", encoding="utf8") as handle:
-                mapped = self.structure.convert_index(indices)
-                for structure in self.structure.all_data[mapped]:
-                    structure.write(handle)
+            atomic_float_digits = get_export_significant_digits()
+            mapped = self.structure.convert_index(indices)
+            write_structures_extxyz_atomic(
+                save_file_path,
+                self.structure.all_data[mapped],
+                atomic_float_digits=atomic_float_digits,
+            )
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
         except Exception:
             MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
@@ -1894,13 +2209,16 @@ class ResultData(QObject):
     def export_active_xyz(self, save_file_path: str | Path) -> None:
         """Write active (non-removed) structures to ``save_file_path``."""
         try:
+            atomic_float_digits = get_export_significant_digits()
             active = self.structure.now_data
             if getattr(active, "size", 0) == 0:
                 MessageManager.send_info_message("No active structures to export.")
                 return
-            with open(save_file_path, "w", encoding="utf8") as handle:
-                for structure in active:
-                    structure.write(handle)
+            write_structures_extxyz_atomic(
+                save_file_path,
+                active,
+                atomic_float_digits=atomic_float_digits,
+            )
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
         except Exception:
             MessageManager.send_info_message(
@@ -1929,13 +2247,16 @@ class ResultData(QObject):
     def export_removed_xyz(self, save_file_path: str | Path) -> None:
         """Write removed structures (if any) to ``save_file_path``."""
         try:
+            atomic_float_digits = get_export_significant_digits()
             removed = self.structure.remove_data
             if getattr(removed, "size", 0) == 0:
                 MessageManager.send_info_message("No removed structures to export.")
                 return
-            with open(save_file_path, "w", encoding="utf8") as handle:
-                for structure in removed:
-                    structure.write(handle)
+            write_structures_extxyz_atomic(
+                save_file_path,
+                removed,
+                atomic_float_digits=atomic_float_digits,
+            )
             MessageManager.send_info_message(f"File exported to: {save_file_path}")
         except Exception:
             MessageManager.send_info_message(
@@ -1980,14 +2301,19 @@ class ResultData(QObject):
     def export_model_extxyz(self, save_path: str | Path) -> None:
         """Export active and removed structures into ``save_path`` folder as extxyz."""
         try:
+            atomic_float_digits = get_export_significant_digits()
             good_path = Path(save_path).joinpath("export_good_model.xyz")
-            with open(good_path, "w", encoding="utf8") as handle:
-                for structure in self.structure.now_data:
-                    structure.write(handle)
+            write_structures_extxyz_atomic(
+                good_path,
+                self.structure.now_data,
+                atomic_float_digits=atomic_float_digits,
+            )
             removed_path = Path(save_path).joinpath("export_remove_model.xyz")
-            with open(removed_path, "w", encoding="utf8") as handle:
-                for structure in self.structure.remove_data:
-                    structure.write(handle)
+            write_structures_extxyz_atomic(
+                removed_path,
+                self.structure.remove_data,
+                atomic_float_digits=atomic_float_digits,
+            )
             MessageManager.send_info_message(f"File exported to: {save_path}")
         except Exception:
             MessageManager.send_info_message(
@@ -2014,14 +2340,19 @@ class ResultData(QObject):
     def export_model_xyz(self, save_path: str | Path) -> None:
         """Export active and removed structures into ``save_path`` folder."""
         try:
+            atomic_float_digits = get_export_significant_digits()
             good_path = Path(save_path).joinpath("export_good_model.xyz")
-            with open(good_path, "w", encoding="utf8") as handle:
-                for structure in self.structure.now_data:
-                    structure.write(handle)
+            write_structures_extxyz_atomic(
+                good_path,
+                self.structure.now_data,
+                atomic_float_digits=atomic_float_digits,
+            )
             removed_path = Path(save_path).joinpath("export_remove_model.xyz")
-            with open(removed_path, "w", encoding="utf8") as handle:
-                for structure in self.structure.remove_data:
-                    structure.write(handle)
+            write_structures_extxyz_atomic(
+                removed_path,
+                self.structure.remove_data,
+                atomic_float_digits=atomic_float_digits,
+            )
             MessageManager.send_info_message(f"File exported to: {save_path}")
         except Exception:
             MessageManager.send_info_message("An unknown error occurred while saving. The error message has been output to the log!")
@@ -2051,15 +2382,23 @@ class ResultData(QObject):
         """Remove and clear all currently selected structures."""
         self.remove(list(self.select_index))
         self.select_index.clear()
+        self._selection_history.clear()
         self.updateInfoSignal.emit()
     def iter_non_physical_structure_indices(self, radius_coefficient: float):
         """Yield progress increments while collecting non-physical structures."""
-        structures = self.structure.now_data
-        group_array = self.structure.group_array.now_data
-        pending: list[int] = []
-        for structure, index in zip(structures, group_array):
-            if not structure.adjust_reasonable(radius_coefficient):
-                pending.append(int(index))
+        from NepTrainKit.core.audit.neighbor_scan import (
+            find_scaled_radii_collision_structure_indices,
+        )
+
+        active_indices = self.structure.now_indices
+        geometry = self.structure.geometry_snapshot(active_indices)
+        pending = list(
+            find_scaled_radii_collision_structure_indices(
+                geometry,
+                float(radius_coefficient),
+            )
+        )
+        for _ in active_indices:
             yield 1
         self._pending_non_physical_indices = pending
 
@@ -2103,1401 +2442,6 @@ class ResultData(QObject):
         indices = getattr(self, "_pending_unbalanced_force_indices", [])
         self._pending_unbalanced_force_indices = []
         return list(indices)
-
-    @staticmethod
-    def _guess_field_unit(*, source: str, title: str = "", key: str = "") -> str:
-        """Best-effort unit guess for UI display."""
-        if source == "dataset":
-            t = str(title or "").lower()
-            if t == "energy":
-                return "eV/atom"
-            if "force" in t:
-                return "eV/A"
-            if t == "virial":
-                return "eV/atom"
-            if t == "stress":
-                return "GPa"
-            if t == "bec":
-                return "e"
-            if t == "dipole":
-                return "e*A/atom"
-        _ = key
-        return "unknown"
-
-    @staticmethod
-    def _component_names(n_comp: int) -> tuple[str, ...]:
-        """Return component names for flattened numeric vectors."""
-        n_comp = int(max(1, n_comp))
-        if n_comp == 1:
-            return ("value",)
-        if n_comp == 3:
-            return ("x", "y", "z")
-        if n_comp == 6:
-            return ("xx", "yy", "zz", "xy", "yz", "zx")
-        return tuple(f"c{i}" for i in range(n_comp))
-
-    @staticmethod
-    def _classify_field_shape(n_comp: int, rank: int) -> FieldValueShape:
-        """Classify a flattened numeric field by shape and rank."""
-        n_comp = int(max(1, n_comp))
-        rank = int(max(1, rank))
-        if n_comp == 1:
-            return FieldValueShape.SCALAR
-        if n_comp == 3:
-            return FieldValueShape.VECTOR3
-        if rank > 2:
-            return FieldValueShape.TENSOR
-        return FieldValueShape.VECTORN
-
-    def _iter_scope_structure_indices(self, scope: DistributionScope) -> npt.NDArray[np.int64]:
-        """Return active/selected structure indices according to ``scope``."""
-        active = np.asarray(self.structure.now_indices, dtype=np.int64).reshape(-1)
-        if scope != DistributionScope.SELECTED:
-            return active
-        selected = np.asarray(sorted(int(i) for i in self.select_index), dtype=np.int64).reshape(-1)
-        if selected.size == 0:
-            return np.array([], dtype=np.int64)
-        return np.intersect1d(active, selected, assume_unique=False)
-
-    def _discover_dataset_field_specs(self) -> tuple[list[FieldSpec], dict[str, Any]]:
-        """Return field specs backed by result datasets and a key->dataset map."""
-        specs: list[FieldSpec] = []
-        lookup: dict[str, Any] = {}
-        used_keys: set[str] = set()
-
-        for dataset in getattr(self, "datasets", []):
-            try:
-                title = str(getattr(dataset, "title", "") or "").strip()
-            except Exception:
-                title = ""
-            if not title or title == "descriptor":
-                continue
-            now_data = getattr(dataset, "now_data", None)
-            if now_data is None or getattr(now_data, "size", 0) == 0:
-                continue
-            cols = int(getattr(dataset, "cols", 0) or 0)
-            if cols <= 0:
-                continue
-
-            try:
-                groups = np.asarray(dataset.group_array.now_data, dtype=np.int64).reshape(-1)
-                per_atom = bool(groups.size and np.unique(groups).size != groups.size)
-            except Exception:
-                per_atom = False
-
-            base_key = f"dataset:{title}"
-            key = base_key
-            suffix = 2
-            while key in used_keys:
-                key = f"{base_key}#{suffix}"
-                suffix += 1
-            used_keys.add(key)
-
-            components = self._component_names(cols)
-            shape = self._classify_field_shape(cols, rank=2)
-            domain = FieldDomain.ATOM if per_atom else FieldDomain.STRUCTURE
-            spec = FieldSpec(
-                key=key,
-                source="dataset",
-                shape=shape,
-                components=components,
-                has_prediction_pair=True,
-                unit_guess=self._guess_field_unit(source="dataset", title=title),
-                domain=domain,
-                label=title,
-            )
-            specs.append(spec)
-            lookup[key] = dataset
-        return specs, lookup
-
-    def _discover_atomic_property_specs(self, structure_indices: npt.NDArray[np.int64]) -> list[FieldSpec]:
-        """Return discoverable numeric atomic-property field specs."""
-        if structure_indices.size == 0:
-            return []
-
-        blacklist = {"species", "species_id", "pos"}
-        stats: dict[str, dict[str, Any]] = {}
-
-        for idx in structure_indices.tolist():
-            structure = self.structure.all_data[int(idx)]
-            props = getattr(structure, "atomic_properties", {}) or {}
-            n_atoms = int(len(structure))
-            for prop_key, prop_val in props.items():
-                name = str(prop_key)
-                if name in blacklist:
-                    continue
-                try:
-                    arr = np.asarray(prop_val)
-                except Exception:
-                    continue
-                if arr.size == 0 or not np.issubdtype(arr.dtype, np.number):
-                    continue
-                if arr.ndim == 0:
-                    continue
-                if int(arr.shape[0]) != n_atoms:
-                    continue
-
-                n_comp = int(np.prod(arr.shape[1:])) if arr.ndim > 1 else 1
-                entry = stats.setdefault(
-                    name,
-                    {
-                        "n_comp": n_comp,
-                        "max_rank": int(arr.ndim),
-                        "compatible": True,
-                    },
-                )
-                if int(entry["n_comp"]) != n_comp:
-                    entry["compatible"] = False
-                entry["max_rank"] = max(int(entry["max_rank"]), int(arr.ndim))
-
-        specs: list[FieldSpec] = []
-        for prop_key in sorted(stats.keys()):
-            entry = stats[prop_key]
-            if not bool(entry.get("compatible", False)):
-                continue
-            n_comp = int(entry.get("n_comp", 1) or 1)
-            rank = int(entry.get("max_rank", 1) or 1)
-            components = self._component_names(n_comp)
-            shape = self._classify_field_shape(n_comp, rank)
-            specs.append(
-                FieldSpec(
-                    key=f"atomic:{prop_key}",
-                    source="atomic_property",
-                    shape=shape,
-                    components=components,
-                    has_prediction_pair=False,
-                    unit_guess=self._guess_field_unit(source="atomic_property", key=prop_key),
-                    domain=FieldDomain.ATOM,
-                    label=prop_key,
-                )
-            )
-        return specs
-
-    def discover_atomic_numeric_fields(self, scope: str | DistributionScope = DistributionScope.ACTIVE) -> list[FieldSpec]:
-        """Discover available numeric fields for distribution analysis.
-
-        Parameters
-        ----------
-        scope : str | DistributionScope, default="active"
-            Structure subset to inspect. ``selected`` inspects only selected
-            active structures.
-        """
-        scope_enum = _coerce_enum(scope, DistributionScope, DistributionScope.ACTIVE)
-        structure_indices = self._iter_scope_structure_indices(scope_enum)
-        dataset_specs, _ = self._discover_dataset_field_specs()
-        atomic_specs = self._discover_atomic_property_specs(structure_indices)
-        return [*dataset_specs, *atomic_specs]
-
-    def _dataset_row_element_map(self, dataset: Any) -> npt.NDArray[np.object_] | None:
-        """Map each dataset row to an element symbol when possible.
-
-        Returns ``None`` when the dataset row cardinality does not match per-atom
-        element counts (e.g. sparse spin-only outputs).
-        """
-        try:
-            row_groups = np.asarray(dataset.group_array.now_data, dtype=np.int64).reshape(-1)
-        except Exception:
-            return None
-        if row_groups.size == 0:
-            return np.empty((0,), dtype=object)
-
-        elems_by_sid: dict[int, npt.NDArray[np.object_]] = {}
-        counts_by_sid: dict[int, int] = {}
-        unique_sid, sid_counts = np.unique(row_groups, return_counts=True)
-        for sid, sid_count in zip(unique_sid.tolist(), sid_counts.tolist()):
-            try:
-                elems = np.asarray(self.structure.all_data[int(sid)].elements, dtype=object).reshape(-1)
-            except Exception:
-                return None
-            if elems.size != int(sid_count):
-                return None
-            elems_by_sid[int(sid)] = elems
-            counts_by_sid[int(sid)] = 0
-
-        out = np.empty((row_groups.size,), dtype=object)
-        for i, sid_raw in enumerate(row_groups.tolist()):
-            sid = int(sid_raw)
-            elems = elems_by_sid.get(sid)
-            if elems is None:
-                return None
-            pos = int(counts_by_sid.get(sid, 0))
-            if pos < 0 or pos >= elems.size:
-                return None
-            out[i] = str(elems[pos])
-            counts_by_sid[sid] = pos + 1
-        return out
-
-    @staticmethod
-    def _normal_pdf(x: npt.NDArray[np.float64], mean: float, std: float) -> npt.NDArray[np.float64]:
-        """Evaluate the normal PDF with safeguards for invalid ``std``."""
-        sigma = float(std)
-        if not np.isfinite(sigma) or sigma <= 0.0:
-            return np.zeros_like(x, dtype=np.float64)
-        z = (x - float(mean)) / sigma
-        coeff = 1.0 / (sigma * np.sqrt(2.0 * np.pi))
-        return coeff * np.exp(-0.5 * np.square(z))
-
-    def _build_distribution_curve(
-        self,
-        vals: npt.NDArray[np.float64],
-        lo: float,
-        hi: float,
-        bins: int,
-        style: DistributionCurveStyle,
-        points: int,
-    ) -> tuple[str, list[float], list[float], str | None]:
-        """Build an optional curve overlay scaled to histogram counts."""
-        style_norm = _coerce_enum(style, DistributionCurveStyle, DistributionCurveStyle.KDE)
-        if style_norm == DistributionCurveStyle.NONE:
-            return style_norm.value, [], [], None
-        if vals.size < 2:
-            return "none", [], [], "Curve overlay requires at least 2 samples."
-        if not (np.isfinite(lo) and np.isfinite(hi)) or hi <= lo:
-            return "none", [], [], "Invalid histogram range; curve overlay disabled."
-
-        bins_norm = int(max(1, bins))
-        points_norm = int(max(64, min(1024, points)))
-        x = np.linspace(lo, hi, points_norm, dtype=np.float64)
-        bin_width = float(hi - lo) / float(bins_norm)
-        if not np.isfinite(bin_width) or bin_width <= 0.0:
-            return "none", [], [], "Invalid histogram width; curve overlay disabled."
-
-        mean = float(np.mean(vals))
-        std = float(np.std(vals))
-        if not np.isfinite(std) or std <= 1e-15:
-            return "none", [], [], "Series variance is too small for curve fitting."
-
-        if style_norm == DistributionCurveStyle.NORMAL:
-            dens = self._normal_pdf(x, mean=mean, std=std)
-            dens = np.where(np.isfinite(dens), dens, 0.0)
-            y = np.maximum(0.0, dens) * float(vals.size) * bin_width
-            return style_norm.value, x.tolist(), y.tolist(), None
-
-        # KDE path (default)
-        sample = vals
-        if sample.size > 50000:
-            rng = np.random.default_rng(0)
-            sample = rng.choice(sample, size=50000, replace=False)
-        try:
-            from scipy.stats import gaussian_kde
-        except Exception:
-            return "none", [], [], "SciPy KDE is unavailable; curve overlay disabled."
-        try:
-            kde = gaussian_kde(sample)
-            dens = np.asarray(kde.evaluate(x), dtype=np.float64)
-        except Exception:
-            return "none", [], [], "KDE fitting failed; curve overlay disabled."
-        dens = np.where(np.isfinite(dens), dens, 0.0)
-        y = np.maximum(0.0, dens) * float(vals.size) * bin_width
-        return DistributionCurveStyle.KDE.value, x.tolist(), y.tolist(), None
-
-    @staticmethod
-    def _histogram_bin_indices(
-        vals: npt.NDArray[np.float64],
-        lo: float,
-        hi: float,
-        bins: int,
-    ) -> npt.NDArray[np.int64]:
-        """Map values to histogram bins using ``numpy.histogram`` edge semantics."""
-        bins_norm = int(max(1, bins))
-        if not (np.isfinite(lo) and np.isfinite(hi)) or hi <= lo:
-            return np.zeros((vals.size,), dtype=np.int64)
-        edges = np.linspace(lo, hi, bins_norm + 1, dtype=np.float64)
-        idx = np.searchsorted(edges, vals, side="right") - 1
-        return np.clip(idx.astype(np.int64, copy=False), 0, bins_norm - 1)
-
-    def iter_distribution_analysis(self, request: DistributionRequest | Mapping[str, Any] | None = None):
-        """Build distribution statistics for selected numeric fields.
-
-        Notes
-        -----
-        Results are cached by ``(structure.version, request, force_mode)`` and
-        stored for retrieval via :meth:`get_distribution_analysis`.
-        """
-        req = DistributionRequest.from_any(request or {})
-        structure_version = int(getattr(self.structure.data, "version", 0) or 0)
-        force_mode = str(Config.get("widget", "forces_data", "Raw"))
-        scope_indices = self._iter_scope_structure_indices(req.scope)
-
-        dataset_specs, dataset_lookup = self._discover_dataset_field_specs()
-        atomic_specs = self._discover_atomic_property_specs(scope_indices)
-        all_specs = [*dataset_specs, *atomic_specs]
-        spec_lookup = {spec.key: spec for spec in all_specs}
-
-        selected_field_keys = tuple(k for k in req.field_keys if k in spec_lookup)
-        if not selected_field_keys and all_specs:
-            selected_field_keys = (all_specs[0].key,)
-
-        req_norm = DistributionRequest(
-            field_keys=selected_field_keys,
-            include_norm=bool(req.include_norm),
-            value_view=req.value_view,
-            group_mode=req.group_mode,
-            scope=req.scope,
-            bins=int(max(2, min(5000, req.bins))),
-            select_mode=req.select_mode,
-            groups=tuple(str(i) for i in req.groups if str(i)),
-            curve_style=req.curve_style,
-            curve_points=int(max(64, min(1024, req.curve_points))),
-        )
-        scope_key = tuple(int(i) for i in scope_indices.tolist()) if req_norm.scope == DistributionScope.SELECTED else ()
-        cache_key = (structure_version, req_norm, force_mode, scope_key)
-        if cache_key == self._distribution_cache_key:
-            return
-
-        self._distribution_analysis_id += 1
-        analysis_id = int(self._distribution_analysis_id)
-        groups_filter = set(req_norm.groups) if req_norm.groups else None
-        bins = int(req_norm.bins)
-
-        formula_map: dict[int, str] = {}
-        elem_set_map: dict[int, set[str]] = {}
-        elem_array_map: dict[int, npt.NDArray[np.object_]] = {}
-        for sid in scope_indices.tolist():
-            try:
-                structure = self.structure.all_data[int(sid)]
-            except Exception:
-                continue
-            formula_map[int(sid)] = str(getattr(structure, "formula", "") or "")
-            try:
-                elems = np.asarray(structure.elements, dtype=object).reshape(-1)
-            except Exception:
-                elems = np.empty((0,), dtype=object)
-            elem_array_map[int(sid)] = elems
-            elem_set_map[int(sid)] = set(str(e) for e in elems.tolist())
-
-        metric_values: dict[str, dict[str, list[float]]] = {}
-        metric_structs: dict[str, dict[str, list[int]]] = {}
-        metric_meta: dict[str, dict[str, Any]] = {}
-        messages: list[str] = []
-        warned_view_downgrade = False
-
-        def _append_sample(metric_key: str, series_key: str, value: float, sid: int, meta: dict[str, Any]) -> None:
-            if not np.isfinite(value):
-                return
-            s_key = str(series_key or "").strip()
-            if not s_key:
-                return
-            if groups_filter is not None and s_key not in groups_filter:
-                return
-            metric_values.setdefault(metric_key, {}).setdefault(s_key, []).append(float(value))
-            metric_structs.setdefault(metric_key, {}).setdefault(s_key, []).append(int(sid))
-            if metric_key not in metric_meta:
-                metric_meta[metric_key] = dict(meta)
-
-        for field_key in req_norm.field_keys:
-            spec = spec_lookup.get(field_key)
-            if spec is None:
-                continue
-
-            if spec.source == "dataset":
-                dataset = dataset_lookup.get(field_key)
-                if dataset is None:
-                    continue
-                try:
-                    data_all = np.asarray(dataset.now_data)
-                    row_struct_all = np.asarray(dataset.group_array.now_data, dtype=np.int64).reshape(-1)
-                except Exception:
-                    continue
-                if data_all.size == 0 or row_struct_all.size == 0:
-                    continue
-                if data_all.ndim == 1:
-                    data_all = data_all.reshape(-1, 1)
-                if data_all.shape[0] != row_struct_all.shape[0]:
-                    lim = int(min(data_all.shape[0], row_struct_all.shape[0]))
-                    data_all = data_all[:lim]
-                    row_struct_all = row_struct_all[:lim]
-                scope_mask = np.isin(row_struct_all, scope_indices)
-                if not np.any(scope_mask):
-                    continue
-
-                rows = data_all[scope_mask]
-                row_struct = row_struct_all[scope_mask]
-                cols = int(getattr(dataset, "cols", 0) or 0)
-                if cols <= 0:
-                    continue
-
-                ref = np.asarray(rows[:, dataset.x_cols], dtype=np.float64)
-                pred = np.asarray(rows[:, dataset.y_cols], dtype=np.float64)
-                if ref.ndim == 1:
-                    ref = ref.reshape(-1, 1)
-                if pred.ndim == 1:
-                    pred = pred.reshape(-1, 1)
-
-                view = req_norm.value_view
-                if view == DistributionValueView.PREDICTION:
-                    values = pred
-                elif view == DistributionValueView.ERROR:
-                    values = pred - ref
-                else:
-                    values = ref
-
-                comp_names = list(spec.components)
-                n_comp = int(values.shape[1])
-                if len(comp_names) != n_comp:
-                    comp_names = list(self._component_names(n_comp))
-
-                row_elem = None
-                if req_norm.group_mode == DistributionGroupMode.ELEMENT and spec.domain == FieldDomain.ATOM:
-                    row_elem_all = self._dataset_row_element_map(dataset)
-                    if row_elem_all is not None and row_elem_all.shape[0] == data_all.shape[0]:
-                        row_elem = np.asarray(row_elem_all[scope_mask], dtype=object).reshape(-1)
-
-                for ci, comp_name in enumerate(comp_names):
-                    metric_key = f"{field_key}|{comp_name}"
-                    meta = {
-                        "field_key": field_key,
-                        "field_label": spec.label or field_key,
-                        "component": str(comp_name),
-                        "unit": spec.unit_guess,
-                        "value_view": view.value,
-                        "has_prediction_pair": bool(spec.has_prediction_pair),
-                        "available_views": [
-                            DistributionValueView.REFERENCE.value,
-                            DistributionValueView.PREDICTION.value,
-                            DistributionValueView.ERROR.value,
-                        ],
-                    }
-                    col = values[:, ci]
-                    for ridx, sid_raw in enumerate(row_struct.tolist()):
-                        sid = int(sid_raw)
-                        v = float(col[ridx])
-                        if req_norm.group_mode == DistributionGroupMode.FORMULA:
-                            groups = [formula_map.get(sid, "")]
-                        else:
-                            if row_elem is not None:
-                                groups = [str(row_elem[ridx])]
-                            else:
-                                groups = sorted(elem_set_map.get(sid, set()))
-                        for grp in groups:
-                            _append_sample(metric_key, grp, v, sid, meta)
-
-                if req_norm.include_norm and n_comp > 1:
-                    metric_key = f"{field_key}|norm"
-                    meta = {
-                        "field_key": field_key,
-                        "field_label": spec.label or field_key,
-                        "component": "norm",
-                        "unit": spec.unit_guess,
-                        "value_view": view.value,
-                        "has_prediction_pair": bool(spec.has_prediction_pair),
-                        "available_views": [
-                            DistributionValueView.REFERENCE.value,
-                            DistributionValueView.PREDICTION.value,
-                            DistributionValueView.ERROR.value,
-                        ],
-                    }
-                    norm_vals = np.linalg.norm(values, axis=1)
-                    for ridx, sid_raw in enumerate(row_struct.tolist()):
-                        sid = int(sid_raw)
-                        v = float(norm_vals[ridx])
-                        if req_norm.group_mode == DistributionGroupMode.FORMULA:
-                            groups = [formula_map.get(sid, "")]
-                        else:
-                            if row_elem is not None:
-                                groups = [str(row_elem[ridx])]
-                            else:
-                                groups = sorted(elem_set_map.get(sid, set()))
-                        for grp in groups:
-                            _append_sample(metric_key, grp, v, sid, meta)
-                yield 1
-                continue
-
-            if spec.source == "atomic_property":
-                prop_name = field_key.split(":", 1)[-1]
-                view = req_norm.value_view
-                if view != DistributionValueView.REFERENCE and not warned_view_downgrade:
-                    warned_view_downgrade = True
-                    messages.append(
-                        "Atomic-property fields do not provide prediction pairs; falling back to reference view."
-                    )
-                for sid in scope_indices.tolist():
-                    sid_int = int(sid)
-                    structure = self.structure.all_data[sid_int]
-                    props = getattr(structure, "atomic_properties", {}) or {}
-                    if prop_name not in props:
-                        continue
-                    try:
-                        arr = np.asarray(props[prop_name])
-                    except Exception:
-                        continue
-                    if arr.size == 0 or not np.issubdtype(arr.dtype, np.number):
-                        continue
-                    n_atoms = int(len(structure))
-                    if arr.ndim == 0 or int(arr.shape[0]) != n_atoms:
-                        continue
-                    mat = np.asarray(arr, dtype=np.float64).reshape(n_atoms, -1)
-                    n_comp = int(mat.shape[1])
-                    comp_names = list(spec.components)
-                    if len(comp_names) != n_comp:
-                        comp_names = list(self._component_names(n_comp))
-
-                    elems = elem_array_map.get(sid_int, np.empty((0,), dtype=object))
-
-                    for ci, comp_name in enumerate(comp_names):
-                        metric_key = f"{field_key}|{comp_name}"
-                        meta = {
-                            "field_key": field_key,
-                            "field_label": spec.label or field_key,
-                            "component": str(comp_name),
-                            "unit": spec.unit_guess,
-                            "value_view": DistributionValueView.REFERENCE.value,
-                            "has_prediction_pair": False,
-                            "available_views": [DistributionValueView.REFERENCE.value],
-                        }
-                        col = mat[:, ci]
-                        if req_norm.group_mode == DistributionGroupMode.FORMULA:
-                            grp = formula_map.get(sid_int, "")
-                            for v in col.tolist():
-                                _append_sample(metric_key, grp, float(v), sid_int, meta)
-                        else:
-                            for aidx, v in enumerate(col.tolist()):
-                                if aidx >= elems.size:
-                                    continue
-                                grp = str(elems[aidx])
-                                _append_sample(metric_key, grp, float(v), sid_int, meta)
-
-                    if req_norm.include_norm and n_comp > 1:
-                        metric_key = f"{field_key}|norm"
-                        meta = {
-                            "field_key": field_key,
-                            "field_label": spec.label or field_key,
-                            "component": "norm",
-                            "unit": spec.unit_guess,
-                            "value_view": DistributionValueView.REFERENCE.value,
-                            "has_prediction_pair": False,
-                            "available_views": [DistributionValueView.REFERENCE.value],
-                        }
-                        norm_vals = np.linalg.norm(mat, axis=1)
-                        if req_norm.group_mode == DistributionGroupMode.FORMULA:
-                            grp = formula_map.get(sid_int, "")
-                            for v in norm_vals.tolist():
-                                _append_sample(metric_key, grp, float(v), sid_int, meta)
-                        else:
-                            for aidx, v in enumerate(norm_vals.tolist()):
-                                if aidx >= elems.size:
-                                    continue
-                                grp = str(elems[aidx])
-                                _append_sample(metric_key, grp, float(v), sid_int, meta)
-                    yield 1
-
-        lookup: dict[tuple[int, str, str, int], list[int]] = {}
-        metrics: list[dict[str, Any]] = []
-        for metric_key in sorted(metric_values.keys()):
-            series_map = metric_values.get(metric_key, {})
-            if not series_map:
-                continue
-            all_vals = np.concatenate([np.asarray(v, dtype=np.float64) for v in series_map.values() if len(v)])
-            if all_vals.size == 0:
-                continue
-            all_vals = all_vals[np.isfinite(all_vals)]
-            if all_vals.size == 0:
-                continue
-            lo = float(np.min(all_vals))
-            hi = float(np.max(all_vals))
-            if not np.isfinite(lo) or not np.isfinite(hi):
-                continue
-            if hi <= lo:
-                delta = max(1e-12, abs(lo) * 1e-9 + 1e-12)
-                lo -= delta
-                hi += delta
-
-            meta = metric_meta.get(metric_key, {})
-            series_list: list[dict[str, Any]] = []
-            for series_key in sorted(series_map.keys()):
-                vals = np.asarray(series_map[series_key], dtype=np.float64)
-                if vals.size == 0:
-                    continue
-                vals = vals[np.isfinite(vals)]
-                if vals.size == 0:
-                    continue
-                sid_arr = np.asarray(metric_structs.get(metric_key, {}).get(series_key, []), dtype=np.int64)
-                if sid_arr.size != vals.size:
-                    size = int(min(sid_arr.size, vals.size))
-                    sid_arr = sid_arr[:size]
-                    vals = vals[:size]
-                hist, _ = np.histogram(vals, bins=bins, range=(lo, hi))
-                bin_idx = self._histogram_bin_indices(vals, lo=lo, hi=hi, bins=bins)
-
-                bucket: dict[int, set[int]] = {}
-                for b, sid in zip(bin_idx.tolist(), sid_arr.tolist()):
-                    bucket.setdefault(int(b), set()).add(int(sid))
-                for b, sid_set in bucket.items():
-                    lookup[(analysis_id, metric_key, str(series_key), int(b))] = sorted(sid_set)
-
-                curve_type, curve_x, curve_y, curve_msg = self._build_distribution_curve(
-                    vals=vals,
-                    lo=lo,
-                    hi=hi,
-                    bins=bins,
-                    style=req_norm.curve_style,
-                    points=req_norm.curve_points,
-                )
-                if curve_msg:
-                    messages.append(f"{metric_key} [{series_key}]: {curve_msg}")
-
-                series_list.append(
-                    {
-                        "series_key": str(series_key),
-                        "name": str(series_key),
-                        "hist": hist.astype(np.int64, copy=False).tolist(),
-                        "total": int(vals.size),
-                        "min": float(np.min(vals)),
-                        "max": float(np.max(vals)),
-                        "mean": float(np.mean(vals)),
-                        "std": float(np.std(vals)),
-                        "curve_type": str(curve_type),
-                        "curve_x": list(curve_x),
-                        "curve_y": list(curve_y),
-                        "curve_y_mode": "count",
-                    }
-                )
-            if not series_list:
-                continue
-
-            metrics.append(
-                {
-                    "metric_key": metric_key,
-                    "field_key": str(meta.get("field_key", "")),
-                    "field_label": str(meta.get("field_label", meta.get("field_key", ""))),
-                    "component": str(meta.get("component", "")),
-                    "unit": str(meta.get("unit", "unknown")),
-                    "value_view": str(meta.get("value_view", DistributionValueView.REFERENCE.value)),
-                    "has_prediction_pair": bool(meta.get("has_prediction_pair", False)),
-                    "available_views": list(meta.get("available_views", [DistributionValueView.REFERENCE.value])),
-                    "bins": int(bins),
-                    "hist_left": float(lo),
-                    "hist_right": float(hi),
-                    "series": series_list,
-                }
-            )
-
-        result = {
-            "analysis_id": analysis_id,
-            "request": {
-                "field_keys": list(req_norm.field_keys),
-                "include_norm": bool(req_norm.include_norm),
-                "value_view": req_norm.value_view.value,
-                "group_mode": req_norm.group_mode.value,
-                "scope": req_norm.scope.value,
-                "bins": int(req_norm.bins),
-                "select_mode": req_norm.select_mode.value,
-                "groups": list(req_norm.groups),
-                "curve_style": req_norm.curve_style.value,
-                "curve_points": int(req_norm.curve_points),
-            },
-            "field_specs": [
-                {
-                    "key": s.key,
-                    "source": s.source,
-                    "shape": s.shape.value,
-                    "components": list(s.components),
-                    "has_prediction_pair": bool(s.has_prediction_pair),
-                    "unit_guess": s.unit_guess,
-                    "domain": s.domain.value,
-                    "label": s.label,
-                }
-                for s in all_specs
-            ],
-            "messages": messages,
-            "metrics": metrics,
-        }
-
-        self._distribution_cache_key = cache_key
-        self._distribution_analysis = result
-        self._distribution_bin_lookup = lookup
-
-    def get_distribution_analysis(self) -> dict[str, Any]:
-        """Return the last computed distribution-analysis payload."""
-        return dict(getattr(self, "_distribution_analysis", {}) or {})
-
-    def resolve_distribution_bin_indices(
-        self,
-        analysis_id: int,
-        metric_key: str,
-        series_key: str,
-        bin_index: int,
-    ) -> list[int]:
-        """Resolve structure indices represented by a histogram bin."""
-        key = (int(analysis_id), str(metric_key), str(series_key), int(bin_index))
-        return list(getattr(self, "_distribution_bin_lookup", {}).get(key, []))
-
-    def iter_dataset_summary(self, group_by: SearchType = SearchType.TAG):
-        """Aggregate dataset-wide statistics for use in summary dialogs.
-
-        Notes
-        -----
-        This generator yields a progress unit after each structure so that
-        callers can drive a progress dialog. Results are cached on the
-        instance and later returned by :meth:`get_dataset_summary`.
-
-        Parameters
-        ----------
-        group_by : SearchType, default=SearchType.TAG
-            Attribute used for grouping the distribution table. ``TAG`` uses
-            ``Structure.tag`` (Config_type), while ``FORMULA`` uses
-            ``Structure.formula``.
-        """
-        summary: dict[str, Any] = {}
-        structures = getattr(self, "structure", None)
-        if structures is None or structures.now_data.size == 0:
-            self._dataset_summary = {}
-            return
-
-        active_structures = int(structures.now_data.shape[0])
-        orig_structures = int(self.atoms_num_list.shape[0]) if hasattr(self, "atoms_num_list") else active_structures
-        removed_structures = int(structures.remove_data.shape[0])
-        selected_structures = len(self.select_index)
-        unselected_structures = max(0, active_structures - selected_structures)
-
-        atoms_per_struct: list[int] = []
-        total_atoms_active = 0
-        element_atom_counts: dict[str, int] = {}
-        element_structure_counts: dict[str, int] = {}
-        group_counts: dict[str, int] = {}
-
-        # Numeric distributions for HTML export (exact histograms, no sampling)
-        # We keep exact min/max/total stats and build histograms online.
-        dist_metrics: dict[str, dict[str, Any]] = {}
-        hist_bins_initial = 160
-        hist_bins_max = 2000
-
-        class _StreamHist:
-            def __init__(self, *, bins_initial: int, bins_max: int):
-                self._bins_initial = int(bins_initial)
-                self._bins_max = int(bins_max)
-                self.left: float | None = None
-                self.width: float | None = None
-                self.counts: npt.NDArray[np.int64] = np.zeros(0, dtype=np.int64)
-                self.total = 0
-                self.sum = 0.0
-                self.sum_sq = 0.0
-                self.min = float("inf")
-                self.max = float("-inf")
-
-            def _ensure_range(self, mn: float, mx: float) -> None:
-                if self.left is None or self.width is None:
-                    return
-                left = float(self.left)
-                width = float(self.width)
-                if not (np.isfinite(left) and np.isfinite(width) and width > 0.0):
-                    return
-                if self.counts.size == 0:
-                    self.counts = np.zeros(self._bins_initial, dtype=np.int64)
-                min_idx = int(np.floor((mn - left) / width))
-                max_idx = int(np.floor((mx - left) / width))
-                if min_idx < 0:
-                    add = -min_idx
-                    left -= float(add) * width
-                    self.counts = np.concatenate([np.zeros(add, dtype=np.int64), self.counts])
-                if max_idx >= self.counts.size:
-                    add = max_idx - int(self.counts.size) + 1
-                    self.counts = np.concatenate([self.counts, np.zeros(add, dtype=np.int64)])
-                self.left = left
-
-            def _shrink_if_needed(self) -> None:
-                if self.width is None:
-                    return
-                while self.counts.size > self._bins_max:
-                    if self.counts.size % 2 == 1:
-                        self.counts = np.concatenate([self.counts, np.zeros(1, dtype=np.int64)])
-                    self.counts = self.counts.reshape(-1, 2).sum(axis=1)
-                    self.width = float(self.width) * 2.0
-
-            def update(self, values: Any) -> None:
-                try:
-                    arr = np.asarray(values, dtype=np.float64).reshape(-1)
-                except Exception:
-                    return
-                if arr.size == 0:
-                    return
-                arr = arr[np.isfinite(arr)]
-                if arr.size == 0:
-                    return
-
-                self.total += int(arr.size)
-                self.sum += float(arr.sum())
-                self.sum_sq += float(np.square(arr).sum())
-
-                mn = float(arr.min())
-                mx = float(arr.max())
-                self.min = float(min(self.min, mn))
-                self.max = float(max(self.max, mx))
-
-                if self.left is None or self.width is None:
-                    rng = mx - mn
-                    width = float(rng / float(self._bins_initial)) if rng > 0 else 1.0
-                    if not np.isfinite(width) or width <= 0:
-                        width = 1.0
-                    width = max(width, 1e-12)
-                    self.width = width
-                    self.left = float(np.floor(mn / width) * width)
-                    self.counts = np.zeros(self._bins_initial, dtype=np.int64)
-
-                self._ensure_range(mn, mx)
-                if self.left is None or self.width is None or self.counts.size == 0:
-                    return
-                idx = np.floor((arr - float(self.left)) / float(self.width)).astype(np.int64)
-                mask = (idx >= 0) & (idx < self.counts.size)
-                if np.any(mask):
-                    bc = np.bincount(idx[mask], minlength=self.counts.size).astype(np.int64, copy=False)
-                    self.counts += bc
-                self._shrink_if_needed()
-
-            def export(self) -> dict[str, Any]:
-                if self.left is None or self.width is None:
-                    return {"hist": [], "hist_left": 0.0, "hist_right": 0.0, "bins": 0}
-                bins = int(self.counts.size)
-                left = float(self.left)
-                right = left + float(self.width) * float(bins)
-                return {
-                    "hist": self.counts.astype(np.int64, copy=False).tolist(),
-                    "hist_left": float(left),
-                    "hist_right": float(right),
-                    "bins": bins,
-                }
-
-        class _StreamHistMulti:
-            def __init__(self, names: Sequence[str], *, bins_initial: int, bins_max: int):
-                self.names = [str(n) for n in names]
-                self._bins_initial = int(bins_initial)
-                self._bins_max = int(bins_max)
-                self.left: float | None = None
-                self.width: float | None = None
-                self.counts: npt.NDArray[np.int64] = np.zeros((len(self.names), 0), dtype=np.int64)
-                self.total = 0
-                self.min = float("inf")
-                self.max = float("-inf")
-
-            def _ensure_range(self, mn: float, mx: float) -> None:
-                if self.left is None or self.width is None:
-                    return
-                left = float(self.left)
-                width = float(self.width)
-                if not (np.isfinite(left) and np.isfinite(width) and width > 0.0):
-                    return
-                if self.counts.shape[1] == 0:
-                    self.counts = np.zeros((len(self.names), self._bins_initial), dtype=np.int64)
-                min_idx = int(np.floor((mn - left) / width))
-                max_idx = int(np.floor((mx - left) / width))
-                if min_idx < 0:
-                    add = -min_idx
-                    left -= float(add) * width
-                    pad = np.zeros((len(self.names), add), dtype=np.int64)
-                    self.counts = np.concatenate([pad, self.counts], axis=1)
-                if max_idx >= self.counts.shape[1]:
-                    add = max_idx - int(self.counts.shape[1]) + 1
-                    pad = np.zeros((len(self.names), add), dtype=np.int64)
-                    self.counts = np.concatenate([self.counts, pad], axis=1)
-                self.left = left
-
-            def _shrink_if_needed(self) -> None:
-                if self.width is None:
-                    return
-                while self.counts.shape[1] > self._bins_max:
-                    if self.counts.shape[1] % 2 == 1:
-                        pad = np.zeros((len(self.names), 1), dtype=np.int64)
-                        self.counts = np.concatenate([self.counts, pad], axis=1)
-                    # merge adjacent bins
-                    self.counts = self.counts.reshape(len(self.names), -1, 2).sum(axis=2)
-                    self.width = float(self.width) * 2.0
-
-            def update(self, values: Any) -> None:
-                try:
-                    arr = np.asarray(values, dtype=np.float64).reshape(len(self.names))
-                except Exception:
-                    return
-                if arr.size != len(self.names):
-                    return
-                if not np.all(np.isfinite(arr)):
-                    return
-                self.total += 1
-                mn = float(arr.min())
-                mx = float(arr.max())
-                self.min = float(min(self.min, mn))
-                self.max = float(max(self.max, mx))
-
-                if self.left is None or self.width is None:
-                    rng = mx - mn
-                    width = float(rng / float(self._bins_initial)) if rng > 0 else 1.0
-                    if not np.isfinite(width) or width <= 0:
-                        width = 1.0
-                    width = max(width, 1e-12)
-                    self.width = width
-                    self.left = float(np.floor(mn / width) * width)
-                    self.counts = np.zeros((len(self.names), self._bins_initial), dtype=np.int64)
-
-                self._ensure_range(mn, mx)
-                if self.left is None or self.width is None or self.counts.shape[1] == 0:
-                    return
-                idx = np.floor((arr - float(self.left)) / float(self.width)).astype(np.int64)
-                for i in range(len(self.names)):
-                    j = int(idx[i])
-                    if 0 <= j < self.counts.shape[1]:
-                        self.counts[i, j] += 1
-                self._shrink_if_needed()
-
-            def update_many(self, values: Any) -> None:
-                try:
-                    arr2 = np.asarray(values, dtype=np.float64).reshape(-1, len(self.names))
-                except Exception:
-                    return
-                if arr2.size == 0:
-                    return
-                mask = np.all(np.isfinite(arr2), axis=1)
-                if not np.any(mask):
-                    return
-                arr2 = arr2[mask]
-                self.total += int(arr2.shape[0])
-                mn = float(arr2.min())
-                mx = float(arr2.max())
-                self.min = float(min(self.min, mn))
-                self.max = float(max(self.max, mx))
-
-                if self.left is None or self.width is None:
-                    rng = mx - mn
-                    width = float(rng / float(self._bins_initial)) if rng > 0 else 1.0
-                    if not np.isfinite(width) or width <= 0:
-                        width = 1.0
-                    width = max(width, 1e-12)
-                    self.width = width
-                    self.left = float(np.floor(mn / width) * width)
-                    self.counts = np.zeros((len(self.names), self._bins_initial), dtype=np.int64)
-
-                self._ensure_range(mn, mx)
-                if self.left is None or self.width is None or self.counts.shape[1] == 0:
-                    return
-                idx = np.floor((arr2 - float(self.left)) / float(self.width)).astype(np.int64)
-                for i in range(len(self.names)):
-                    col = idx[:, i]
-                    m2 = (col >= 0) & (col < self.counts.shape[1])
-                    if np.any(m2):
-                        bc = np.bincount(col[m2], minlength=self.counts.shape[1]).astype(np.int64, copy=False)
-                        self.counts[i] += bc
-                self._shrink_if_needed()
-
-            def export(self) -> dict[str, Any]:
-                if self.left is None or self.width is None:
-                    return {"bins": 0, "hist_left": 0.0, "hist_right": 0.0, "series": []}
-                bins = int(self.counts.shape[1])
-                left = float(self.left)
-                right = left + float(self.width) * float(bins)
-                series = []
-                for i, name in enumerate(self.names):
-                    series.append(
-                        {"name": name, "hist": self.counts[i].astype(np.int64, copy=False).tolist()}
-                    )
-                return {"bins": bins, "hist_left": float(left), "hist_right": float(right), "series": series}
-
-        def _update_metric(
-            key: str,
-            *,
-            label: str,
-            unit: str = "",
-            values: npt.NDArray[np.floating[Any]]
-            | npt.NDArray[np.integer[Any]]
-            | Sequence[float]
-            | float
-            | int,
-            sample_per_structure: int = 512,
-        ) -> None:
-            metric = dist_metrics.get(key)
-            if metric is None:
-                metric = {
-                    "key": key,
-                    "label": str(label),
-                    "unit": str(unit or ""),
-                    "hist": _StreamHist(bins_initial=hist_bins_initial, bins_max=hist_bins_max),
-                }
-                dist_metrics[key] = metric
-            metric["label"] = str(label)
-            metric["unit"] = str(unit or "")
-            try:
-                metric["hist"].update(values)
-            except Exception:
-                return
-
-        # Force RMS summary (text only; no plot)
-        force_sum_sq = 0.0
-        force_count = 0
-        force_rms_per_structure: list[float] = []
-        force_structures = 0
-
-        mag_key_re = re.compile(r"(mag|spin)", re.IGNORECASE)
-
-        for s, idx in zip(structures.now_data, structures.group_array.now_data):
-            try:
-                n_atoms = int(len(s))
-            except Exception:
-                n_atoms = 0
-            atoms_per_struct.append(n_atoms)
-            total_atoms_active += n_atoms
-
-            # Element statistics
-            try:
-                elems = [str(e) for e in s.elements]
-            except Exception:
-                elems = []
-            if elems:
-                # atom counts
-                for e in elems:
-                    element_atom_counts[e] = element_atom_counts.get(e, 0) + 1
-                # per-structure presence counts
-                for e in set(elems):
-                    element_structure_counts[e] = element_structure_counts.get(e, 0) + 1
-
-            # Group distribution (Config_type via tag, or formula)
-            if group_by == SearchType.FORMULA:
-                group_value = getattr(s, "formula", "") or ""
-            else:
-                group_value = getattr(s, "tag", "") or ""
-            if isinstance(group_value, str) and group_value:
-                group_counts[group_value] = group_counts.get(group_value, 0) + 1
-
-            # Magnetism/spin numeric arrays (DFT/extxyz per-atom fields)
-            try:
-                atomic_props = getattr(s, "atomic_properties", {}) or {}
-                for prop_key, prop_val in atomic_props.items():
-                    if prop_key in {"pos", "species", "species_id"}:
-                        continue
-                    # Avoid duplicating forces handled above
-                    if prop_key == getattr(s, "force_label", ""):
-                        continue
-                    if mag_key_re.search(str(prop_key)) is None:
-                        continue
-                    try:
-                        arr = np.asarray(prop_val)
-                    except Exception:
-                        continue
-                    if arr.size == 0:
-                        continue
-                    if not np.issubdtype(arr.dtype, np.number):
-                        continue
-                    arr = np.asarray(arr, dtype=np.float64)
-                    if arr.ndim == 1:
-                        _update_metric(
-                            f"mag.{prop_key}",
-                            label=f"{prop_key} (all atoms)",
-                            unit="",
-                            values=arr,
-                            sample_per_structure=1024,
-                        )
-                    elif arr.ndim == 2 and arr.shape[1] == 1:
-                        _update_metric(
-                            f"mag.{prop_key}",
-                            label=f"{prop_key} (all atoms)",
-                            unit="",
-                            values=arr.reshape(-1),
-                            sample_per_structure=1024,
-                        )
-                    elif arr.ndim == 2 and arr.shape[1] == 3:
-                        _update_metric(
-                            f"mag.{prop_key}.component",
-                            label=f"{prop_key} components (all atoms)",
-                            unit="",
-                            values=arr.reshape(-1),
-                            sample_per_structure=2048,
-                        )
-            except Exception:
-                logger.debug(traceback.format_exc())
-
-            # Yield a progress unit for UI hooks
-            yield 1
-
-        # ------------------------------------------------------------------
-        # Prefer plot datasets for numeric distributions.
-        # In this codebase, NepPlotData/DPPlotData `.x` corresponds to the DFT/reference axis.
-        # ------------------------------------------------------------------
-        try:
-            energy_ds = getattr(self, "energy", None)
-            if energy_ds is not None and getattr(energy_ds, "now_data", None) is not None:
-                e_vals = np.asarray(energy_ds.x, dtype=np.float64).reshape(-1)
-                e_vals = e_vals[np.isfinite(e_vals)]
-                if e_vals.size:
-                    _update_metric("energy.per_atom", label="Energy per atom", unit="eV/atom", values=e_vals)
-        except Exception:
-            logger.debug(traceback.format_exc())
-
-        try:
-            force_ds = getattr(self, "force", None)
-            if force_ds is not None and getattr(force_ds, "now_data", None) is not None:
-                # Use plotted x-axis directly (DFT/reference values).
-                f_vals = np.asarray(force_ds.x, dtype=np.float64).reshape(-1)
-                f_vals = f_vals[np.isfinite(f_vals)]
-                if f_vals.size:
-                    _update_metric("force.component", label="Force components (DFT, x/y/z)", unit="eV/Å", values=f_vals)
-                # RMS + atom count when x contains 3 components per atom.
-                if f_vals.size and (f_vals.size % 3 == 0):
-                    force_mat = f_vals.reshape(-1, 3)
-                    mags = np.linalg.norm(force_mat, axis=1)
-                    mags = mags[np.isfinite(mags)]
-                    if mags.size:
-                        force_count = int(mags.size)
-                        force_sum_sq = float(np.sum(np.square(mags)))
-                        try:
-                            force_structures = int(np.unique(force_ds.group_array.now_data).size)
-                        except Exception:
-                            force_structures = 0
-                        force_rms_per_structure = []  # not displayed; keep empty
-        except Exception:
-            logger.debug(traceback.format_exc())
-
-        try:
-            virial_ds = getattr(self, "virial", None)
-            if virial_ds is not None and getattr(virial_ds, "now_data", None) is not None and virial_ds.now_data.size != 0:
-                # Use plotted x-axis directly (DFT/reference values).
-                v_flat = np.asarray(virial_ds.x, dtype=np.float64).reshape(-1)
-                if v_flat.size and (v_flat.size % 6 == 0):
-                    v6 = v_flat.reshape(-1, 6)
-                    v6 = v6[np.all(np.isfinite(v6), axis=1)]
-                    if v6.size:
-                        v_labels = ["xx", "yy", "zz", "xy", "yz", "zx"]
-                        virial_hist = _StreamHistMulti(v_labels, bins_initial=hist_bins_initial, bins_max=hist_bins_max)
-                        virial_hist.update_many(v6)
-                else:
-                    virial_hist = None  # type: ignore[assignment]
-            else:
-                virial_hist = None  # type: ignore[assignment]
-        except Exception:
-            logger.debug(traceback.format_exc())
-            virial_hist = None  # type: ignore[assignment]
-
-        try:
-            stress_ds = getattr(self, "stress", None)
-            if stress_ds is not None and getattr(stress_ds, "now_data", None) is not None and stress_ds.now_data.size != 0:
-                # Use plotted x-axis directly (DFT/reference values).
-                s_flat = np.asarray(stress_ds.x, dtype=np.float64).reshape(-1)
-                if s_flat.size and (s_flat.size % 6 == 0):
-                    s6 = s_flat.reshape(-1, 6)
-                    s6 = s6[np.all(np.isfinite(s6), axis=1)]
-                    if s6.size:
-                        s_labels = ["xx", "yy", "zz", "xy", "yz", "zx"]
-                        stress_hist = _StreamHistMulti(s_labels, bins_initial=hist_bins_initial, bins_max=hist_bins_max)
-                        stress_hist.update_many(s6)
-                        stress_unit = "GPa"
-                else:
-                    stress_hist = None  # type: ignore[assignment]
-                    stress_unit = "GPa"
-            else:
-                stress_hist = None  # type: ignore[assignment]
-                stress_unit = "GPa"
-        except Exception:
-            logger.debug(traceback.format_exc())
-            stress_hist = None  # type: ignore[assignment]
-            stress_unit = "GPa"
-
-        # Prepare counts section
-        summary_counts = {
-            "orig_structures": orig_structures,
-            "active_structures": active_structures,
-            "removed_structures": removed_structures,
-            "selected_structures": selected_structures,
-            "unselected_structures": unselected_structures,
-        }
-
-        # Atom statistics
-        atoms_array = np.asarray(atoms_per_struct, dtype=float) if atoms_per_struct else np.array([], dtype=float)
-        if atoms_array.size:
-            atoms_stats = {
-                "total_atoms_active": int(total_atoms_active),
-                "min_atoms": int(atoms_array.min()),
-                "max_atoms": int(atoms_array.max()),
-                "mean_atoms": float(atoms_array.mean()),
-                "median_atoms": float(np.median(atoms_array)),
-            }
-        else:
-            atoms_stats = {
-                "total_atoms_active": 0,
-                "min_atoms": 0,
-                "max_atoms": 0,
-                "mean_atoms": 0.0,
-                "median_atoms": 0.0,
-            }
-
-        # Element statistics table
-        elements_table: list[dict[str, Any]] = []
-        if element_atom_counts:
-            total_atoms = float(sum(element_atom_counts.values())) or 1.0
-            for symbol in sorted(element_atom_counts.keys()):
-                atoms = int(element_atom_counts[symbol])
-                structs = int(element_structure_counts.get(symbol, 0))
-                frac = atoms / total_atoms
-                elements_table.append(
-                    {
-                        "symbol": symbol,
-                        "atoms": atoms,
-                        "structures": structs,
-                        "fraction": frac,
-                    }
-                )
-
-        # Group distribution (sorted by count desc)
-        group_table: list[dict[str, Any]] = []
-        if group_counts:
-            total_groups = float(sum(group_counts.values())) or 1.0
-            for name, count in sorted(group_counts.items(), key=lambda kv: kv[1], reverse=True):
-                frac = count / total_groups
-                group_table.append(
-                    {
-                        "name": name,
-                        "count": int(count),
-                        "fraction": frac,
-                    }
-                )
-
-        # Energy statistics (prefer plot dataset x-axis = DFT/reference)
-        energy_stats: dict[str, Any] = {"count": 0}
-        try:
-            energy_ds = getattr(self, "energy", None)
-            if energy_ds is not None and getattr(energy_ds, "now_data", None) is not None:
-                e_arr = np.asarray(energy_ds.x, dtype=np.float64).reshape(-1)
-                e_arr = e_arr[np.isfinite(e_arr)]
-                if e_arr.size:
-                    energy_stats = {
-                        "count": int(e_arr.size),
-                        "min": float(e_arr.min()),
-                        "max": float(e_arr.max()),
-                        "mean": float(e_arr.mean()),
-                        "std": float(e_arr.std()),
-                        "median": float(np.median(e_arr)),
-                    }
-                    # Map back to original structure indices when one-to-one.
-                    if int(e_arr.size) == int(active_structures):
-                        try:
-                            origin_map = np.asarray(structures.group_array.now_data, dtype=np.int64).reshape(-1)
-                            if origin_map.size == e_arr.size:
-                                energy_stats["min_index"] = int(origin_map[int(np.argmin(e_arr))])
-                                energy_stats["max_index"] = int(origin_map[int(np.argmax(e_arr))])
-                        except Exception:
-                            pass
-        except Exception:
-            logger.debug(traceback.format_exc())
-
-        # Health diagnostics
-        health_messages: list[str] = []
-        # Missing energy structures
-        missing_energy = active_structures - energy_stats.get("count", 0)
-        if missing_energy > 0:
-            health_messages.append(
-                f"{missing_energy} active structures are missing energy; they are ignored in energy statistics."
-            )
-        # Element coverage
-        low_elements = [e for e in elements_table if e["fraction"] < 0.05]
-        if low_elements:
-            names = ", ".join(f"{e['symbol']} ({e['fraction']*100:.1f}%)" for e in low_elements[:5])
-            health_messages.append(f"Elements with low atomic fraction (<5%): {names}.")
-        # Dominant group label (Config_type or formula)
-        if group_table:
-            top_cfg = group_table[0]
-            if top_cfg["fraction"] > 0.7:
-                group_label = "Formula" if group_by == SearchType.FORMULA else "Config_type"
-                health_messages.append(
-                    f"{group_label} '{top_cfg['name']}' dominates {top_cfg['fraction']*100:.1f}% of active structures."
-                )
-        # Atom-count diversity
-        if atoms_stats["min_atoms"] == atoms_stats["max_atoms"] and atoms_stats["min_atoms"] > 0:
-            health_messages.append(
-                "All active structures have the same atom count; consider adding systems with different sizes."
-            )
-        # Small dataset warning
-        if active_structures < 100:
-            health_messages.append(
-                f"Only {active_structures} active structures; model training may be prone to overfitting."
-            )
-
-        summary["counts"] = summary_counts
-        summary["atoms"] = atoms_stats
-        summary["elements"] = elements_table
-        summary["config_types"] = group_table
-        summary["energy"] = energy_stats
-        summary["health"] = health_messages
-        summary["data_file"] = str(self.data_xyz_path.name)
-        summary["model_file"] = str(self.nep_txt_path.name)
-        summary["group_by"] = group_by.value
-        if force_count > 0:
-            per_struct = np.asarray(force_rms_per_structure, dtype=np.float64) if force_rms_per_structure else np.array([], dtype=np.float64)
-            summary["force_rms"] = {
-                "structures_with_forces": int(force_structures),
-                "atoms_with_forces": int(force_count),
-                "rms_all_atoms": float(np.sqrt(force_sum_sq / float(force_count))),
-                "min_rms_per_structure": float(per_struct.min()) if per_struct.size else 0.0,
-                "max_rms_per_structure": float(per_struct.max()) if per_struct.size else 0.0,
-                "mean_rms_per_structure": float(per_struct.mean()) if per_struct.size else 0.0,
-                "median_rms_per_structure": float(np.median(per_struct)) if per_struct.size else 0.0,
-            }
-        else:
-            summary["force_rms"] = {
-                "structures_with_forces": 0,
-                "atoms_with_forces": 0,
-                "rms_all_atoms": 0.0,
-            }
-
-        virial_total = int(getattr(virial_hist, "total", 0) or 0) if "virial_hist" in locals() else 0
-        stress_total = int(getattr(stress_hist, "total", 0) or 0) if "stress_hist" in locals() else 0
-        if dist_metrics or virial_total > 0 or stress_total > 0:
-            metrics_list: list[dict[str, Any]] = []
-            for item in dist_metrics.values():
-                hist: _StreamHist | None = item.get("hist")
-                if hist is None:
-                    continue
-                total = int(hist.total)
-                if total <= 0:
-                    continue
-                s1 = float(hist.sum)
-                s2 = float(hist.sum_sq)
-                mean = s1 / float(total) if total > 0 else 0.0
-                var = (s2 / float(total)) - mean * mean if total > 0 else 0.0
-                std = float(np.sqrt(max(0.0, var)))
-                exported = hist.export()
-                metrics_list.append(
-                    {
-                        "key": item.get("key", ""),
-                        "label": item.get("label", item.get("key", "")),
-                        "unit": item.get("unit", ""),
-                        "min": float(hist.min) if np.isfinite(hist.min) else 0.0,
-                        "max": float(hist.max) if np.isfinite(hist.max) else 0.0,
-                        "total": total,
-                        "mean": float(mean),
-                        "std": float(std),
-                        **exported,
-                    }
-                )
-            if virial_hist is not None and virial_total > 0 and np.isfinite(virial_hist.min) and np.isfinite(virial_hist.max):
-                exported = virial_hist.export()
-                metrics_list.append(
-                    {
-                        "key": "virial.per_atom.v6",
-                        "label": "Virial per atom (DFT, 6 components)",
-                        "unit": "eV/atom",
-                        "min": float(virial_hist.min),
-                        "max": float(virial_hist.max),
-                        "total": int(virial_total),
-                        **exported,
-                    }
-                )
-            if stress_hist is not None and stress_total > 0 and np.isfinite(stress_hist.min) and np.isfinite(stress_hist.max):
-                exported = stress_hist.export()
-                metrics_list.append(
-                    {
-                        "key": "stress.v6",
-                        "label": "Stress (DFT, 6 components)",
-                        "unit": str(stress_unit),
-                        "min": float(stress_hist.min),
-                        "max": float(stress_hist.max),
-                        "total": int(stress_total),
-                        **exported,
-                    }
-                )
-            metrics_list.sort(key=lambda d: str(d.get("key", "")))
-            summary["numeric_distributions"] = {
-                "metrics": metrics_list,
-            }
-
-        self._dataset_summary = summary
-
-    def get_dataset_summary(self) -> dict[str, Any]:
-        """Return the most recently computed dataset summary."""
-        return dict(getattr(self, "_dataset_summary", {}) or {})
 
     def sparse_descriptor_selection(
         self,
@@ -3558,6 +2502,7 @@ class ResultData(QObject):
         training_path: str | None = None,
         sampling_mode: str = "count",
         r2_threshold: float = 0.9,
+        selection_strategy: str = "global",
     ) -> tuple[list[int], bool]:
         """Delegate sparse sampling to the sampler helper."""
         return self._sampler.sparse_point_selection(
@@ -3568,6 +2513,7 @@ class ResultData(QObject):
             training_path=training_path,
             sampling_mode=sampling_mode,
             r2_threshold=r2_threshold,
+            selection_strategy=selection_strategy,
         )
 
     def export_descriptor_data(self, path: str | Path) -> None:
@@ -3714,18 +2660,25 @@ class ResultData(QObject):
         cutoff_cn: float,
     ) -> None:
         """Apply DFT-D3 corrections and synchronise dependent datasets."""
+        MessageManager.send_info_message(
+            "DFT-D3 calculations are CPU-only; NepTrainKit will use CPU "
+            "regardless of the selected NEP backend."
+        )
         nep_calc = NepCalculator(
             model_file=self.nep_txt_path.as_posix(),
             backend=NepBackend.CPU,
-            batch_size=Config.getint("nep", "gpu_batch_size", 1000),
+            chunk_max_atoms=Config.getint("nep", "chunk_max_atoms", 100000),
         )
 
-        potentials, forces, virials = nep_calc.calculate_dftd3(
+        prediction = nep_calc.predict_dftd3(
             self.structure.now_data.tolist(),
             functional=functional,
             cutoff=cutoff,
             cutoff_cn=cutoff_cn,
         )
+        potentials = prediction.energy
+        forces = prediction.force_blocks()
+        virials = prediction.structure_virials
 
         if self.structure.now_data.size == 0:
             return
@@ -3768,7 +2721,16 @@ class ResultData(QObject):
                 desc_array = np.array([])
 
         if desc_array.size == 0:
-            desc_array = self.nep_calc.get_structures_descriptor(self.structure.now_data.tolist())
+            if getattr(self, "nep_calc", None) is None:
+                self._descriptor_raw_all = np.array([], dtype=np.float32)
+                self._descriptor_dataset = NepPlotData(
+                    [],
+                    title="descriptor",
+                    parity_mode=False,
+                    show_rmse=False,
+                )
+                return
+            desc_array = self._generate_missing_descriptors()
             if desc_array.size != 0 and self.cache_outputs_enabled():
                 np.savetxt(self.descriptor_path, desc_array, fmt='%.6g')
         # Cache raw (pre-PCA) per-structure descriptors to avoid reloading later
@@ -3782,12 +2744,70 @@ class ResultData(QObject):
         # Prepare reduced (PCA) descriptors for plotting
         reduced = self._descriptor_raw_all
         if reduced.size != 0 and reduced.shape[1] > 2:
+            reduced = self._load_or_compute_descriptor_pca(reduced)
+        self._descriptor_dataset = NepPlotData(
+            reduced,
+            title="descriptor",
+            parity_mode=False,
+            show_rmse=False,
+        )
+
+    def _generate_missing_descriptors(self) -> npt.NDArray[np.float64]:
+        """Generate descriptors when no usable descriptor cache exists."""
+        return self.nep_calc.descriptors(
+            self.structure.now_data.tolist(),
+            progress=lambda done, total: self.predictionStatusSignal.emit(
+                self.tr(
+                    "Generating NEP descriptors: {done}/{total} structures"
+                ).format(done=done, total=total)
+            ),
+        )
+
+    def _descriptor_pca_cache_paths(self) -> tuple[Path, Path]:
+        cache_path = self.descriptor_path.with_suffix(".pca2.npy")
+        meta_path = self.descriptor_path.with_suffix(".pca2.json")
+        return cache_path, meta_path
+
+    def _descriptor_pca_cache_metadata(self, desc_array: npt.NDArray[Any]) -> dict[str, Any] | None:
+        try:
+            stat = self.descriptor_path.stat()
+        except OSError:
+            return None
+        atoms = np.asarray(getattr(self, "atoms_num_list", []), dtype=np.int64)
+        return {
+            "descriptor_path": self.descriptor_path.name,
+            "descriptor_size": int(stat.st_size),
+            "descriptor_mtime_ns": int(stat.st_mtime_ns),
+            "descriptor_shape": [int(v) for v in np.asarray(desc_array).shape],
+            "atoms_num_hash": hashlib.sha256(atoms.tobytes()).hexdigest(),
+        }
+
+    def _load_or_compute_descriptor_pca(self, desc_array: npt.NDArray[Any]) -> npt.NDArray[Any]:
+        metadata = self._descriptor_pca_cache_metadata(desc_array)
+        cache_path, meta_path = self._descriptor_pca_cache_paths()
+        if metadata is not None and cache_path.exists() and meta_path.exists():
             try:
-                reduced = pca(reduced, 2)
+                cached_meta = json.loads(meta_path.read_text(encoding="utf8"))
+                if cached_meta == metadata:
+                    cached = np.load(cache_path)
+                    if cached.shape[0] == desc_array.shape[0] and cached.shape[1] == 2:
+                        return np.asarray(cached, dtype=np.float32)
             except Exception:
-                MessageManager.send_error_message("PCA dimensionality reduction fails")
-                reduced = np.array([], dtype=np.float32)
-        self._descriptor_dataset = NepPlotData(reduced, title="descriptor")
+                logger.debug(traceback.format_exc())
+
+        try:
+            reduced = pca(desc_array, 2)
+        except Exception:
+            MessageManager.send_error_message("PCA dimensionality reduction fails")
+            return np.array([], dtype=np.float32)
+
+        if metadata is not None and self.cache_outputs_enabled():
+            try:
+                np.save(cache_path, np.asarray(reduced, dtype=np.float32))
+                meta_path.write_text(json.dumps(metadata, indent=2), encoding="utf8")
+            except Exception:
+                logger.debug(traceback.format_exc())
+        return reduced
     def __repr__(self):
         info = f"{self.__class__.__name__}(Orig: {self.atoms_num_list.shape[0]} Now: {self.structure.now_data.shape[0]} " \
                f"Rm: {self.structure.remove_data.shape[0]} Sel: {len(self.select_index)} Unsel: {self.structure.now_data.shape[0] - len(self.select_index)})"

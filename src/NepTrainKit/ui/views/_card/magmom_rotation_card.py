@@ -17,25 +17,28 @@ class MagneticMomentRotationCard(MakeDataCard):
     group = "Magnetism"
     card_name = "Magmom Rotation"
     menu_icon = r":/images/src/images/perturb.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Rotate Magnetic Moments")
+        self.setTitle(self.tr("Rotate Magnetic Moments"))
         self.init_ui()
 
     def init_ui(self):
         """Build card controls for magnetic moment perturbations."""
         self.setObjectName("magmom_rotation_card_widget")
 
-        self.elements_label = BodyLabel("Elements", self.setting_widget)
-        self.elements_label.setToolTip("Comma separated element symbols; empty means all atoms")
+        self.elements_label = BodyLabel(self.tr("Elements"), self.setting_widget)
+        self.elements_label.setToolTip(self.tr("Comma separated element symbols; empty means all atoms"))
         self.elements_label.installEventFilter(ToolTipFilter(self.elements_label, 300, ToolTipPosition.TOP))
         self.elements_input = LineEdit(self.setting_widget)
-        self.elements_input.setPlaceholderText("Fe,Ni")
+        self.elements_input.setPlaceholderText(self.tr("Fe,Ni"))
 
 
-        self.angle_label = BodyLabel("Max rotation", self.setting_widget)
-        self.angle_label.setToolTip("Upper bound for random rotation angles in degrees")
+        self.angle_label = BodyLabel(self.tr("Max rotation"), self.setting_widget)
+        self.angle_label.setToolTip(self.tr("Upper bound for random rotation angles in degrees"))
         self.angle_label.installEventFilter(ToolTipFilter(self.angle_label, 300, ToolTipPosition.TOP))
         self.angle_frame = SpinBoxUnitInputFrame(self)
         self.angle_frame.set_input("deg", 1, "float")
@@ -43,17 +46,17 @@ class MagneticMomentRotationCard(MakeDataCard):
         self.angle_frame.object_list[0].setDecimals(2)  # pyright:ignore
         self.angle_frame.set_input_value([10.0])
 
-        self.count_label = BodyLabel("Structures", self.setting_widget)
-        self.count_label.setToolTip("Number of perturbed structures to generate")
+        self.count_label = BodyLabel(self.tr("Structures"), self.setting_widget)
+        self.count_label.setToolTip(self.tr("Number of perturbed structures to generate"))
         self.count_label.installEventFilter(ToolTipFilter(self.count_label, 300, ToolTipPosition.TOP))
         self.count_frame = SpinBoxUnitInputFrame(self)
         self.count_frame.set_input("unit", 1, "int")
         self.count_frame.setRange(1, 100)
         self.count_frame.set_input_value([5])
 
-        self.seed_checkbox = CheckBox("Use seed", self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
         self.seed_checkbox.setChecked(False)
-        self.seed_checkbox.setToolTip("Enable reproducible random sampling")
+        self.seed_checkbox.setToolTip(self.tr("Enable reproducible random sampling"))
         self.seed_checkbox.installEventFilter(ToolTipFilter(self.seed_checkbox, 300, ToolTipPosition.TOP))
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -62,15 +65,15 @@ class MagneticMomentRotationCard(MakeDataCard):
         self.seed_frame.setEnabled(False)
         self.seed_checkbox.stateChanged.connect(lambda _s: self.seed_frame.setEnabled(self.seed_checkbox.isChecked()))
 
-        self.lift_scalar_checkbox = CheckBox("Rotate scalar magmoms (lift to vector)", self.setting_widget)
+        self.lift_scalar_checkbox = CheckBox(self.tr("Rotate scalar magmoms (lift to vector)"), self.setting_widget)
         self.lift_scalar_checkbox.setChecked(True)
-        self.lift_scalar_checkbox.setToolTip("If magmoms are scalars, treat them as vectors along Axis before rotating")
+        self.lift_scalar_checkbox.setToolTip(self.tr("If magmoms are scalars, treat them as vectors along Axis before rotating"))
         self.lift_scalar_checkbox.installEventFilter(
             ToolTipFilter(self.lift_scalar_checkbox, 300, ToolTipPosition.TOP)
         )
 
-        self.axis_label = BodyLabel("Axis (x,y,z)", self.setting_widget)
-        self.axis_label.setToolTip("Axis used when lifting scalar magmoms to vectors")
+        self.axis_label = BodyLabel(self.tr("Axis (x,y,z)"), self.setting_widget)
+        self.axis_label.setToolTip(self.tr("Axis used when lifting scalar magmoms to vectors"))
         self.axis_label.installEventFilter(ToolTipFilter(self.axis_label, 300, ToolTipPosition.TOP))
         self.axis_frame = SpinBoxUnitInputFrame(self)
         self.axis_frame.set_input("", 3, "float")
@@ -79,14 +82,14 @@ class MagneticMomentRotationCard(MakeDataCard):
             obj.setDecimals(6)  # pyright:ignore
         self.axis_frame.set_input_value([0.0, 0.0, 1.0])
 
-        self.magnitude_checkbox = CheckBox("Randomise magnitude", self.setting_widget)
+        self.magnitude_checkbox = CheckBox(self.tr("Randomise magnitude"), self.setting_widget)
         self.magnitude_checkbox.setChecked(True)
-        self.magnitude_checkbox.setToolTip("Enable scaling of magnetic-moment magnitudes")
+        self.magnitude_checkbox.setToolTip(self.tr("Enable scaling of magnetic-moment magnitudes"))
         self.magnitude_checkbox.installEventFilter(ToolTipFilter(self.magnitude_checkbox, 300, ToolTipPosition.TOP))
         self.magnitude_checkbox.stateChanged.connect(self._toggle_magnitude_inputs)
 
-        self.min_factor_label = BodyLabel("magnitude scaling factor", self.setting_widget)
-        self.min_factor_label.setToolTip("magnitude scaling factor")
+        self.min_factor_label = BodyLabel(self.tr("magnitude scaling factor"), self.setting_widget)
+        self.min_factor_label.setToolTip(self.tr("magnitude scaling factor"))
         self.min_factor_label.installEventFilter(ToolTipFilter(self.min_factor_label, 300, ToolTipPosition.TOP))
         self.magnitude_factor_frame = SpinBoxUnitInputFrame(self)
         self.magnitude_factor_frame.set_input(["-", ""], 2, "float")

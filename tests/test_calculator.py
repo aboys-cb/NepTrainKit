@@ -4,7 +4,6 @@ import unittest
 import os
 import numpy as np
 from pathlib import Path
-from types import SimpleNamespace
 from ase.io import read
 from ase.stress import full_3x3_to_voigt_6_stress,voigt_6_to_full_3x3_stress
 from NepTrainKit.core.structure import Structure
@@ -28,14 +27,16 @@ class TestNep(unittest.TestCase):
         self.assertTrue(self.calculator.initialized)
         
     def test_calculate(self):
-        potentials, forces, virials = self.calculator.calculate(self.structures)
-        forces=np.vstack(forces)
-        virials=np.vstack(virials)
-        self.assertEqual(forces.dtype, np.float64)
-        self.assertEqual(virials.dtype, np.float64)
-        np.testing.assert_array_almost_equal(self.energy, potentials,decimal=3)
-        np.testing.assert_array_almost_equal(self.forces, forces,decimal=5)
-        np.testing.assert_array_almost_equal(self.virial, virials[:,[0,4,8,1,5,6]],decimal=3)
+        prediction = self.calculator.predict(self.structures)
+        self.assertEqual(prediction.forces.dtype, np.float64)
+        self.assertEqual(prediction.structure_virials.dtype, np.float64)
+        np.testing.assert_array_almost_equal(self.energy, prediction.energy, decimal=3)
+        np.testing.assert_array_almost_equal(self.forces, prediction.forces, decimal=5)
+        np.testing.assert_array_almost_equal(
+            self.virial,
+            prediction.structure_virials[:, [0, 4, 8, 1, 5, 6]],
+            decimal=3,
+        )
 
     def test_ase_calculate(self):
 
@@ -53,53 +54,29 @@ class TestNep(unittest.TestCase):
         calc.calculate_to_ase(atoms,True)
 
     def test_calculate_dftd3_keeps_energy_float64(self):
-        atom_count = len(self.structures)
-        fake_potential = np.linspace(0.01, 0.02, num=atom_count, dtype=np.float64)
-        fake_forces = np.zeros((atom_count, 3), dtype=np.float32)
-        fake_virials = np.zeros((atom_count, 9), dtype=np.float32)
-        original_backend = self.calculator.nep3
-        self.addCleanup(lambda: setattr(self.calculator, "nep3", original_backend))
-        self.calculator.nep3 = SimpleNamespace(
-            reset_cancel=lambda: None,
-            calculate_dftd3=lambda *_args: (fake_potential, fake_forces, fake_virials),
-            calculate_with_dftd3=lambda *_args: (fake_potential, fake_forces, fake_virials),
+        prediction = self.calculator.predict_dftd3(
+            self.structures, functional="pbe", cutoff=12.0, cutoff_cn=10.0
         )
-
-        potentials, forces, virials = self.calculator.calculate_dftd3(self.structures, "pbe", 12.0, 10.0)
-
-        assert np.asarray(potentials).dtype == np.float64
-        self.assertEqual(np.vstack(forces).dtype, np.float64)
-        self.assertEqual(np.vstack(virials).dtype, np.float64)
-        self.assertAlmostEqual(potentials[0], float(np.sum(fake_potential)), places=15)
+        assert prediction.energy.dtype == np.float64
+        self.assertEqual(prediction.forces.dtype, np.float64)
+        self.assertEqual(prediction.structure_virials.dtype, np.float64)
 
     def test_calculate_with_dftd3_keeps_energy_float64(self):
-        atom_count = len(self.structures)
-        fake_potential = np.linspace(0.02, 0.03, num=atom_count, dtype=np.float64)
-        fake_forces = np.zeros((atom_count, 3), dtype=np.float32)
-        fake_virials = np.zeros((atom_count, 9), dtype=np.float32)
-        original_backend = self.calculator.nep3
-        self.addCleanup(lambda: setattr(self.calculator, "nep3", original_backend))
-        self.calculator.nep3 = SimpleNamespace(
-            reset_cancel=lambda: None,
-            calculate_dftd3=lambda *_args: (fake_potential, fake_forces, fake_virials),
-            calculate_with_dftd3=lambda *_args: (fake_potential, fake_forces, fake_virials),
+        prediction = self.calculator.predict_with_dftd3(
+            self.structures, functional="pbe", cutoff=12.0, cutoff_cn=10.0
         )
-
-        potentials, forces, virials = self.calculator.calculate_with_dftd3(self.structures, "pbe", 12.0, 10.0)
-
-        assert np.asarray(potentials).dtype == np.float64
-        self.assertEqual(np.vstack(forces).dtype, np.float64)
-        self.assertEqual(np.vstack(virials).dtype, np.float64)
-        self.assertAlmostEqual(potentials[0], float(np.sum(fake_potential)), places=15)
+        assert prediction.energy.dtype == np.float64
+        self.assertEqual(prediction.forces.dtype, np.float64)
+        self.assertEqual(prediction.structure_virials.dtype, np.float64)
 
     def test_get_descriptor(self):
-        descriptor = self.calculator.get_descriptor(self.structures)
+        descriptor = self.calculator.descriptors(self.structures, mean=False)
         local_descriptor = np.load(os.path.join(self.test_dir,"data/nep/descriptor.npy" ))
         np.testing.assert_array_almost_equal(local_descriptor, descriptor,decimal=5 )
         
     def test_get_structures_descriptor(self):
  
-        structure_descriptors = self.calculator.get_structures_descriptor(self.structures)
+        structure_descriptors = self.calculator.descriptors(self.structures)
         local_descriptor = np.load(os.path.join(self.test_dir,"data/nep/descriptor.npy" ))
         local_structure_descriptor = np.mean(local_descriptor, axis=0).reshape(-1, structure_descriptors.shape[1])
 
@@ -119,7 +96,7 @@ class TestDipole(unittest.TestCase):
         self.assertTrue(self.calculator.initialized)
 
     def test_calculate(self):
-        dipole = self.calculator.get_structures_dipole(self.structures)
+        dipole = self.calculator.dipoles(self.structures)
         self.assertEqual(dipole.dtype, np.float64)
         local_dipole = np.array([[0.15439024567604065, 0.005705520510673523, 0.0044387467205524445]], dtype=np.float64)
         np.testing.assert_allclose(local_dipole, dipole, rtol=5e-4, atol=1e-5)
@@ -139,7 +116,7 @@ class TestPolarizability(unittest.TestCase):
         self.assertTrue(self.calculator.initialized)
 
     def test_calculate(self):
-        pol = self.calculator.get_structures_polarizability(self.structures)
+        pol = self.calculator.polarizabilities(self.structures)
         self.assertEqual(pol.dtype, np.float64)
 
         local_pol = np.array([[100.79893493652344, 92.42485046386719, 56.936161041259766, 3.494504451751709, -0.08088953793048859, 0.07827239483594894]], dtype=np.float64)

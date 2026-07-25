@@ -10,22 +10,33 @@ import time
 import traceback
 from typing import Any, Callable
 
-from PySide6.QtCore import QObject, QUrl, Signal
+from PySide6.QtCore import QObject, QUrl, Signal, QCoreApplication
 from PySide6.QtGui import QDesktopServices
 from loguru import logger
 from qfluentwidgets import CaptionLabel, MessageBox, MessageBoxBase, TextEdit
 
-from NepTrainKit import is_nuitka_compiled, module_path
+from NepTrainKit import is_nuitka_compiled, managed_runtime_root, module_path
 from NepTrainKit.config import Config
 from NepTrainKit.core import MessageManager
+from NepTrainKit.runtime_package import (
+    MANAGED_RUNTIME_SPEC,
+    NEP_ADAPTERS_SPEC,
+    RuntimePackageUpdate,
+    check_runtime_package_update,
+    install_runtime_package_update,
+)
 from NepTrainKit.version import RELEASES_LIST_API_URL, RELEASES_URL, __version__
-from NepTrainKit.ui.threads import LoadingThread
+from NepTrainKit.ui.threads import BackgroundTask
 
 AUTO_CHECK_INTERVAL_SECONDS = 24 * 60 * 60
 RELEASES_PER_PAGE = 30
 REQUEST_TIMEOUT: tuple[float, float] = (2.0, 5.0)
 MAX_CACHED_NOTES_LENGTH = 12_000
 UPDATE_SECTION = "update"
+
+
+def _tr(text: str) -> str:
+    return QCoreApplication.translate("Update", text)
 
 
 def normalize_tag_version(tag: str) -> str:
@@ -244,7 +255,7 @@ class UpdateWoker(QObject):
         self._manual = True
         self._on_finished: Callable[[dict[str, Any]], None] | None = None
         self.result.connect(self._check_update_call_back)
-        self.update_thread = LoadingThread(self._parent, show_tip=False)
+        self.update_thread = BackgroundTask(self._parent, show_tip=False)
 
     def _check_update(self) -> None:
         """Query GitHub releases and emit a normalized result payload."""
@@ -288,13 +299,13 @@ class UpdateWoker(QObject):
 
         if not result.get("ok"):
             error = str(result.get("error") or "Network error!")
-            MessageManager.send_error_message(error, title="Update Check Failed")
+            MessageManager.send_error_message(error, title=_tr("Update Check Failed"))
             _finish()
             return
 
         if not result.get("has_update"):
             clear_pending_update_state()
-            MessageManager.send_success_message("You are already using the latest version!")
+            MessageManager.send_success_message(_tr("You are already using the latest version!"))
             _finish()
             return
 
@@ -303,18 +314,23 @@ class UpdateWoker(QObject):
         release_url = str(result.get("release_url") or RELEASES_URL).strip() or RELEASES_URL
         _set_pending_update_state(latest_version, notes, release_url)
 
-        title = f"New version available: v{latest_version}" if latest_version else "New version available"
+        if latest_version:
+            prefix = _tr("New version available: v")
+            title = f"{prefix}{latest_version}"
+        else:
+            title = _tr("Update available")
         box = ReleaseNotesMessageBox(title, notes, self._parent)
-        box.yesButton.setText("Open Releases")
-        box.cancelButton.setText("Close")
+        box.yesButton.setText(_tr("Open Releases"))
+        box.cancelButton.setText(_tr("Close"))
         box.exec_()
         if box.result() != 0:
             QDesktopServices.openUrl(QUrl(release_url))
 
         if not is_nuitka_compiled:
+            command = "python -m pip install -U --pre NepTrainKit"
             MessageManager.send_info_message(
-                "Upgrade command: python -m pip install -U --pre NepTrainKit",
-                title="Pip Upgrade",
+                _tr("Upgrade command: {command}").format(command=command),
+                title=_tr("Pip Upgrade"),
             )
         _finish()
 
@@ -337,22 +353,239 @@ class UpdateWoker(QObject):
         if self.update_thread.isRunning():
             return
         if manual:
-            MessageManager.send_info_message("Checking for updates, please wait...")
+            MessageManager.send_info_message(_tr("Checking for updates, please wait..."))
         self.update_thread.start_work(self._check_update)
 
 
+class RuntimePackageUpdateWorker(QObject):
+    """Check and install one external runtime package without replacing the app."""
+
+    check_result = Signal(object)
+    install_result = Signal(object)
+
+    def __init__(
+        self,
+        parent,
+        *,
+        spec=MANAGED_RUNTIME_SPEC,
+        runtime_name: str | None = None,
+    ):
+        """Create a worker for the selected managed-runtime specification."""
+        super().__init__(parent)
+        self._parent = parent
+        self._spec = spec
+        self._runtime_name = runtime_name or (
+            _tr("NEP runtime")
+            if spec.key == NEP_ADAPTERS_SPEC.key
+            else spec.distribution
+        )
+        self._manual = True
+        self._on_finished: Callable[[dict[str, Any]], None] | None = None
+        self._pending_update: RuntimePackageUpdate | None = None
+        self.check_thread = BackgroundTask(parent, show_tip=False)
+        self.install_thread = BackgroundTask(
+            parent,
+            show_tip=True,
+            title=_tr("Updating {runtime}").format(runtime=self._runtime_name),
+        )
+        self.check_result.connect(self._handle_check_result)
+        self.install_result.connect(self._handle_install_result)
+
+    def _check(self) -> None:
+        try:
+            update = check_runtime_package_update(
+                self._spec,
+                managed_runtime_root,
+            )
+            self.check_result.emit({"ok": True, "update": update})
+        except Exception as exc:  # noqa: BLE001 - report index/network failures
+            logger.error(traceback.format_exc())
+            self.check_result.emit({"ok": False, "error": str(exc)})
+
+    def _handle_check_result(self, result: dict[str, Any]) -> None:
+        if not result.get("ok"):
+            if self._manual:
+                MessageManager.send_error_message(
+                    str(
+                        result.get("error")
+                        or _tr("Unable to check {runtime} updates.").format(
+                            runtime=self._runtime_name
+                        )
+                    ),
+                    title=_tr("{runtime} Update Failed").format(
+                        runtime=self._runtime_name
+                    ),
+                )
+            self._finish(result)
+            return
+
+        update = result.get("update")
+        if not isinstance(update, RuntimePackageUpdate):
+            failure = {"ok": False, "error": "Invalid runtime update result."}
+            if self._manual:
+                MessageManager.send_error_message(
+                    _tr("Unable to check {runtime} updates.").format(
+                        runtime=self._runtime_name
+                    ),
+                    title=_tr("{runtime} Update Failed").format(
+                        runtime=self._runtime_name
+                    ),
+                )
+            self._finish(failure)
+            return
+
+        if not update.latest_version:
+            if self._manual:
+                MessageManager.send_warning_message(
+                    _tr(
+                        "No compatible {package} wheel is available for this "
+                        "Python version and platform."
+                    ).format(package=self._spec.distribution)
+                )
+            self._finish(
+                {
+                    "ok": True,
+                    "updated": False,
+                    "current_version": update.current_version,
+                    "compatible_wheel": False,
+                }
+            )
+            return
+
+        if not update.update_available:
+            if self._manual:
+                MessageManager.send_success_message(
+                    _tr("The {runtime} is already up to date.").format(
+                        runtime=self._runtime_name
+                    )
+                )
+            self._finish(
+                {
+                    "ok": True,
+                    "updated": False,
+                    "current_version": update.current_version,
+                }
+            )
+            return
+
+        current = update.current_version or _tr("not installed")
+        message = _tr(
+            "A new {package} version is available: {current} → {latest}. "
+            "This runtime update may be required for the latest features and "
+            "compatibility. Install it now? The new runtime will be used after "
+            "restarting NepTrainKit."
+        ).format(
+            package=self._spec.distribution,
+            current=current,
+            latest=update.latest_version,
+        )
+        box = MessageBox(
+            _tr("{runtime} Update").format(runtime=self._runtime_name),
+            message,
+            self._parent,
+        )
+        box.yesButton.setText(_tr("Install"))
+        box.cancelButton.setText(_tr("Cancel"))
+        box.exec()
+        if box.result() == 0:
+            self._finish({"ok": True, "updated": False, "cancelled": True})
+            return
+
+        self._pending_update = update
+        self.install_thread.start_work(self._install)
+
+    def _install(self) -> None:
+        try:
+            if self._pending_update is None:
+                raise RuntimeError("No runtime update is pending.")
+            installed = install_runtime_package_update(
+                self._spec,
+                managed_runtime_root,
+                self._pending_update,
+            )
+            self.install_result.emit(
+                {
+                    "ok": True,
+                    "updated": True,
+                    "version": installed.version,
+                    "path": str(installed.package_path),
+                }
+            )
+        except Exception as exc:  # noqa: BLE001 - preserve the active version
+            logger.error(traceback.format_exc())
+            self.install_result.emit({"ok": False, "error": str(exc)})
+
+    def _handle_install_result(self, result: dict[str, Any]) -> None:
+        if result.get("ok"):
+            MessageManager.send_success_message(
+                _tr(
+                    "{runtime} v{version} was installed and verified. "
+                    "Restart NepTrainKit to use it."
+                ).format(
+                    runtime=self._runtime_name,
+                    version=result.get("version", ""),
+                ),
+                title=_tr("{runtime} Updated").format(
+                    runtime=self._runtime_name
+                ),
+            )
+        else:
+            MessageManager.send_error_message(
+                str(
+                    result.get("error")
+                    or _tr("Unable to install the {runtime} update.").format(
+                        runtime=self._runtime_name
+                    )
+                ),
+                title=_tr("{runtime} Update Failed").format(
+                    runtime=self._runtime_name
+                ),
+            )
+        self._pending_update = None
+        self._finish(result)
+
+    def _finish(self, result: dict[str, Any]) -> None:
+        if self._on_finished is None:
+            return
+        try:
+            self._on_finished(result)
+        except Exception:
+            logger.error(traceback.format_exc())
+
+    def check(
+        self,
+        on_finished: Callable[[dict[str, Any]], None] | None = None,
+        *,
+        manual: bool = True,
+    ) -> None:
+        """Check for an update, suppressing routine notices during app startup."""
+        if self.check_thread.isRunning() or self.install_thread.isRunning():
+            return
+        self._manual = manual
+        self._on_finished = on_finished
+        if manual:
+            MessageManager.send_info_message(
+                _tr("Checking {runtime} updates, please wait...").format(
+                    runtime=self._runtime_name
+                )
+            )
+        self.check_thread.start_work(self._check)
+
+
 class AutoUpdateNotifier(QObject):
-    """Coordinator for startup auto-checks and non-blocking notifications."""
+    """Coordinate app-launch runtime checks and periodic app update notices."""
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self._parent = parent
         self.update_worker = UpdateWoker(parent)
+        self.runtime_update_worker = RuntimePackageUpdateWorker(parent)
         self._startup_notice_sent = False
         self._startup_notice_version = ""
 
     def start_if_due(self) -> None:
-        """Run the auto-check only when daily interval has elapsed."""
+        """Check the runtime every app launch and the app on its daily cadence."""
+        self.runtime_update_worker.check(manual=False)
         self._show_startup_pending_notice()
         now = int(time.time())
         last_check_ts = Config.getint(UPDATE_SECTION, "last_auto_check_ts", 0) or 0
@@ -367,8 +600,10 @@ class AutoUpdateNotifier(QObject):
         pending_version = get_pending_update_version()
         if not pending_version:
             return
-        notice = f"New version v{pending_version} is available. Open Settings > About > Check for Updates for details."
-        MessageManager.send_info_message(notice, title="Update available")
+        notice = _tr("New version v{version} is available. Open Settings > About > Check for Updates for details.").format(
+            version=pending_version
+        )
+        MessageManager.send_info_message(notice, title=_tr("Update available"))
         self._startup_notice_sent = True
         self._startup_notice_version = pending_version
 
@@ -409,10 +644,12 @@ class AutoUpdateNotifier(QObject):
             Config.set(UPDATE_SECTION, "last_notified_version", latest_version)
             return
 
-        notice = f"New version v{latest_version} is available. {summary}".strip()
+        notice = _tr("New version v{version} is available. {summary} Open Settings > About > Check for Updates for details.").format(
+            version=latest_version,
+            summary=summary,
+        ).strip()
         notice = build_compact_summary(notice, max_length=220)
-        notice += " Open Settings > About > Check for Updates for details."
-        MessageManager.send_info_message(notice, title="Update available")
+        MessageManager.send_info_message(notice, title=_tr("Update available"))
         Config.set(UPDATE_SECTION, "last_notified_version", latest_version)
 
 
@@ -428,8 +665,8 @@ class UpdateNEP89Woker(QObject):
         super().__init__(parent)
         self.func = self._check_update
         self.version.connect(self._check_update_call_back)
-        self.update_thread = LoadingThread(self._parent, show_tip=False)
-        self.down_thread = LoadingThread(self._parent, show_tip=True, title="Downloading")
+        self.update_thread = BackgroundTask(self._parent, show_tip=False)
+        self.down_thread = BackgroundTask(self._parent, show_tip=True, title=_tr("Downloading"))
 
     def download(self, latest_date: int) -> None:
         """Download the latest ``nep89`` model and refresh metadata."""
@@ -448,7 +685,7 @@ class UpdateNEP89Woker(QObject):
                 if chunk:
                     target.write(chunk)
 
-        MessageManager.send_success_message("Update large model completed!")
+        MessageManager.send_success_message(_tr("Update large model completed!"))
         nep_json_path = module_path / "Config/nep.json"
         with nep_json_path.open("r", encoding="utf-8") as config_file:
             local_nep_info = json.load(config_file)
@@ -460,12 +697,14 @@ class UpdateNEP89Woker(QObject):
         """Check the remote repository for a newer ``nep89`` dataset."""
         import requests
 
-        MessageManager.send_info_message("Checking for updates, please wait...")
+        MessageManager.send_info_message(_tr("Checking for updates, please wait..."))
         api_url = "https://api.github.com/repos/brucefan1983/GPUMD/contents/potentials/nep"
         response = requests.get(api_url, timeout=REQUEST_TIMEOUT)
         if response.status_code != 200:
             MessageManager.send_warning_message(
-                f"Unable to access the warehouse directory, status code: {response.status_code}"
+                _tr("Unable to access the warehouse directory, status code: {status_code}").format(
+                    status_code=response.status_code
+                )
             )
             return
         directories = [
@@ -484,7 +723,7 @@ class UpdateNEP89Woker(QObject):
                     latest_date = current_date
 
         if latest_date is None:
-            MessageManager.send_warning_message("No NEP89 release directory found in upstream repository.")
+            MessageManager.send_warning_message(_tr("No NEP89 release directory found in upstream repository."))
             return
 
         self.version.emit(latest_date)
@@ -495,15 +734,15 @@ class UpdateNEP89Woker(QObject):
         with nep_json_path.open("r", encoding="utf-8") as config_file:
             local_nep_info = json.load(config_file)
         if local_nep_info["date"] >= latest_date:
-            MessageManager.send_success_message("You are already using the latest version!")
+            MessageManager.send_success_message(_tr("You are already using the latest version!"))
             return
         box = MessageBox(
-            "New version",
-            f"A new version of the large model has been detected:{latest_date}",
+            _tr("Update available"),
+            _tr("A new version of the large model has been detected: {version}").format(version=latest_date),
             self._parent,
         )
-        box.yesButton.setText("Update")
-        box.cancelButton.setText("Cancel")
+        box.yesButton.setText(_tr("Update"))
+        box.cancelButton.setText(_tr("Cancel"))
         box.exec_()
         if box.result() == 0:
             return
@@ -517,6 +756,7 @@ class UpdateNEP89Woker(QObject):
 __all__ = [
     "AUTO_CHECK_INTERVAL_SECONDS",
     "AutoUpdateNotifier",
+    "RuntimePackageUpdateWorker",
     "UpdateWoker",
     "UpdateNEP89Woker",
     "build_compact_summary",

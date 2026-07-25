@@ -8,6 +8,7 @@ from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.core.cards.structure import CrystalPrototypeBuilderOperation, CrystalPrototypeBuilderParams
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
+from .i18n_utils import add_translated_items, combo_value, set_combo_value
 
 
 @CardManager.register_card
@@ -17,65 +18,68 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
     group = "Lattice"
     card_name = "Crystal Prototype Builder"
     menu_icon = r":/images/src/images/supercell.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     requires_input_dataset = False
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Crystal Prototype Builder")
+        self.setTitle(self.tr("Crystal Prototype Builder"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("crystal_prototype_builder_card_widget")
 
-        self.structure_label = BodyLabel("Lattice", self.setting_widget)
+        self.structure_label = BodyLabel(self.tr("Lattice"), self.setting_widget)
         self.structure_combo = ComboBox(self.setting_widget)
-        self.structure_combo.addItems(["fcc", "bcc", "hcp"])
-        self.structure_label.setToolTip("Crystal structure prototype")
+        add_translated_items(self, self.structure_combo, ["fcc", "bcc", "hcp", "fcc111"])
+        self.structure_label.setToolTip(self.tr("Crystal structure prototype"))
         self.structure_label.installEventFilter(ToolTipFilter(self.structure_label, 300, ToolTipPosition.TOP))
 
-        self.element_label = BodyLabel("Base element", self.setting_widget)
+        self.element_label = BodyLabel(self.tr("Base element"), self.setting_widget)
         self.element_edit = LineEdit(self.setting_widget)
-        self.element_edit.setPlaceholderText("Cu")
+        self.element_edit.setPlaceholderText(self.tr("Cu"))
         self.element_edit.setText("Cu")
-        self.element_label.setToolTip("Temporary element used to build the lattice sites")
+        self.element_label.setToolTip(self.tr("Temporary element used to build the lattice sites"))
         self.element_label.installEventFilter(ToolTipFilter(self.element_label, 300, ToolTipPosition.TOP))
 
-        self.a_label = BodyLabel("a (Å)", self.setting_widget)
+        self.a_label = BodyLabel(self.tr("a (Å)"), self.setting_widget)
         self.a_frame = SpinBoxUnitInputFrame(self)
         self.a_frame.set_input(["-", "step", "Å"], 3, "float")
         self.a_frame.setDecimals(6)
         self.a_frame.setRange(0.1, 100.0)
         self.a_frame.set_input_value([3.6, 3.6, 0.1])
-        self.a_label.setToolTip("Lattice parameter a range [min, max, step]")
+        self.a_label.setToolTip(self.tr("Lattice parameter a range [min, max, step]"))
         self.a_label.installEventFilter(ToolTipFilter(self.a_label, 300, ToolTipPosition.TOP))
 
-        self.covera_label = BodyLabel("c/a", self.setting_widget)
+        self.covera_label = BodyLabel(self.tr("c/a"), self.setting_widget)
         self.covera_frame = SpinBoxUnitInputFrame(self)
         self.covera_frame.set_input("", 1, "float")
         self.covera_frame.setDecimals(6)
         self.covera_frame.setRange(1.0, 5.0)
         self.covera_frame.set_input_value([1.633])
-        self.covera_label.setToolTip("hcp only: c/a ratio (ideal ~1.633)")
+        self.covera_label.setToolTip(self.tr("hcp only: c/a ratio (ideal ~1.633)"))
         self.covera_label.installEventFilter(ToolTipFilter(self.covera_label, 300, ToolTipPosition.TOP))
 
-        self.auto_supercell_button = RadioButton("Auto supercell (max atoms)", self.setting_widget)
+        self.auto_supercell_button = RadioButton(self.tr("Auto supercell (max atoms)"), self.setting_widget)
         self.auto_supercell_button.setChecked(True)
-        self.manual_supercell_button = RadioButton("Manual supercell", self.setting_widget)
+        self.manual_supercell_button = RadioButton(self.tr("Manual supercell"), self.setting_widget)
 
-        self.max_atoms_label = BodyLabel("Max atoms", self.setting_widget)
+        self.max_atoms_label = BodyLabel(self.tr("Max atoms"), self.setting_widget)
         self.max_atoms_frame = SpinBoxUnitInputFrame(self)
         self.max_atoms_frame.set_input("unit", 1, "int")
         self.max_atoms_frame.setRange(1, 500000)
         self.max_atoms_frame.set_input_value([512])
 
-        self.rep_label = BodyLabel("Rep (na,nb,nc)", self.setting_widget)
+        self.rep_label = BodyLabel(self.tr("Rep (na,nb,nc)"), self.setting_widget)
         self.rep_frame = SpinBoxUnitInputFrame(self)
         self.rep_frame.set_input("", 3, "int")
         self.rep_frame.setRange(1, 999)
         self.rep_frame.set_input_value([4, 4, 4])
 
-        self.max_output_label = BodyLabel("Max outputs", self.setting_widget)
+        self.max_output_label = BodyLabel(self.tr("Max outputs"), self.setting_widget)
         self.max_output_frame = SpinBoxUnitInputFrame(self)
         self.max_output_frame.set_input("unit", 1, "int")
         self.max_output_frame.setRange(1, 999999)
@@ -104,7 +108,7 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
 
     def get_params(self) -> CrystalPrototypeBuilderParams:
         return CrystalPrototypeBuilderParams(
-            lattice=self.structure_combo.currentText(),
+            lattice=combo_value(self.structure_combo),
             element=self.element_edit.text(),
             a_range=tuple(float(value) for value in self.a_frame.get_input_value()),
             covera=float(self.covera_frame.get_input_value()[0]),
@@ -115,7 +119,7 @@ class CrystalPrototypeBuilderCard(MakeDataCard):
         )
 
     def set_params(self, params: CrystalPrototypeBuilderParams) -> None:
-        self.structure_combo.setCurrentText(params.lattice)
+        set_combo_value(self.structure_combo, params.lattice)
         self.element_edit.setText(params.element)
         self.a_frame.set_input_value([float(value) for value in params.a_range])
         self.covera_frame.set_input_value([float(params.covera)])

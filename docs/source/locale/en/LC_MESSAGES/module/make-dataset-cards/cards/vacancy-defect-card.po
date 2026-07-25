@@ -1,0 +1,503 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:3
+#: a8eb2f0a245f48ac866b2a435121a9ef
+msgid "空位缺陷生成（Vacancy Defect Generation）"
+msgstr "Vacancy Defect Generation"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:5
+#: 464ed5df2a144461b609ab93b99e9d5c
+msgid "`Group`: `Defect` | `Class`: `VacancyDefectCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:7
+#: 1b7b360a4f5b4c9c9568125a30363ea3
+msgid "功能说明"
+msgstr "What the card does"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:9
+#: 1afc31b8300e45a890d88a02d9a8cf04
+msgid ""
+"按数量或比例删除原子，快速生成低到高缺陷强度的空位结构分布。支持 Sobol / Uniform 两种随机引擎，可选 count 或 fraction "
+"两种主模式，并可选择固定空位数或随机空位数。"
+msgstr ""
+"Remove atoms by count or fraction to generate vacancy configurations over a "
+"range of defect concentrations. Choose Sobol or uniform sampling, count or "
+"fraction mode, and fixed or randomized vacancy counts."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:11
+#: 84fb2559bf7a4ec2b4db3496a983e566
+msgid "**和 `Random Vacancy` 的区别：**"
+msgstr "**How it differs from `Random Vacancy`:**"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:12
+#: 19bae54bbaad4b15969b694cde7ea258
+msgid "`Vacancy Defect Generation`：统计驱动，按整体比例/数量生成空位，适合快速覆盖空位密度分布"
+msgstr ""
+"`Vacancy Defect Generation` is statistical: it samples global counts or "
+"fractions to cover a vacancy-density distribution."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:13
+#: 03afd289649843d1870866ef1d37f6ff
+msgid "`Random Vacancy`：规则驱动，按元素+group 精确删除位点，适合定向研究"
+msgstr ""
+"`Random Vacancy` is rule driven: it removes sites by element and group for "
+"targeted studies."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:15
+#: 53a9cc73f19642b489ea60201348dfd1
+msgid "操作示例"
+msgstr "Example workflow"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:17
+#: a1e019088dea4fe4a9049d62b6237372
+msgid "场景：模型把空位构型全部预测成接近完美晶体"
+msgstr "Scenario: Vacancy configurations are predicted like a perfect crystal"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:19
+#: 32e3e18190bb434cba95f5e0aa7df7bd
+msgid ""
+"你在 100 原子的 Fe 超胞上训练了一个 NEP，训练集里只有弛豫好的完美晶体。模型推理一个含 1 "
+"个空位的构型时，能量几乎和完美晶体一样——模型没学过\"少了一个原子\"是什么后果。"
+msgstr ""
+"A NEP trained only on relaxed perfect 100-atom Fe cells assigns nearly the "
+"same energy to a single-vacancy configuration because no vacancy-centered "
+"environments were labeled."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:21
+#: 8a26f1d4a5e94e53aeba2b5eeff53345
+msgid ""
+"**诊断思路：** 模型在完美晶体上收敛是因为训练集只有完美晶体。空位附近原子的力场完全不同：键断了一半，局域电子密度变化大。需要往训练集里加入从 1 "
+"个空位到 ~5% 浓度的分布，让模型覆盖低/中/高缺陷密度段。"
+msgstr ""
+"**Diagnosis:** Atoms adjacent to a vacancy have different coordination and "
+"forces. Add relaxed and labeled structures spanning single vacancies through"
+" the intended concentration range, rather than relying on perfect-crystal "
+"data."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:23
+#: 248bc2861b1248b081a0d290bd3bda1a
+msgid "**输入：** 一个 100 原子的 Fe 超胞"
+msgstr "**Input:** A 100-atom Fe supercell."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:25
+#: 31284b03a9cf4924b40e827a49094437
+msgid "**目标：** 用 fraction 模式生成 5% 空位浓度，每帧 50 个随机落点版本"
+msgstr "**Objective:** Generate 50 site arrangements at 5% vacancy fraction."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:27
+#: 97a98b623e804bf7bf85aba0ac6b87b6
+msgid "**参数设置：**"
+msgstr "**Parameters:**"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:28
+#: 304d46193fa3462b87c0faf1f9200edd
+msgid "`Vacancy Fraction`：勾选"
+msgstr "Enable `Vacancy Fraction`."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:29
+#: 0f9634ca992d4c169bbacca89c0c2d39
+msgid "`Vacancy Fraction`：`[0.05]`（100 原子里精确删除 5 个空位）"
+msgstr "Set `Vacancy Fraction` to `[0.05]`, corresponding to five removed atoms here."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:30
+#: c7050903b3e1498fad4f5e5b23f4b7bb
+msgid "`Count Mode`：`Fixed count`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:31
+#: 6961658350624790bb0780681262b0d6
+msgid "`Structures`：`[50]`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:32
+#: bc4889cc2e68497db5ff5727593422f2
+msgid "`Random Engine`：`Uniform`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:34
+#: 7e5e892a193f42838d614ad384944e3b
+msgid "**输出：** 50 个空位结构，每个都删除 5 个原子，但空位落点不同，带 `Vac(n=5)` 标签"
+msgstr ""
+"**Output:** Fifty structures with five vacancies at different sites, labeled"
+" `Vac(n=5)`."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:36
+#: dfed5e4b790b480d90b8461b45b8fe5a
+msgid "**怎么验证训练集质量改善：**"
+msgstr "**How to verify that training-set quality improved:**"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:37
+#: 73dce1505a614e88a0b58f1ac24fcafe
+msgid "重训后用含空位的测试集推理，力 MAE 应对空位近邻原子也有合理精度"
+msgstr ""
+"After DFT labeling and retraining, evaluate force errors specifically on "
+"vacancy-neighbor atoms."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:38
+#: ebb66e2816f5458eb971fcb1ef950bc3
+msgid "如果低浓度 OK 但高浓度崩，说明训练集高浓度样本不够——增加 `concentration_condition`"
+msgstr ""
+"If low concentrations pass but higher concentrations fail, extend the "
+"labeled concentration range deliberately."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:39
+#: 3dec7144bfd047c0b5f3d1003ee55e6a
+msgid "如果样本覆盖感觉不均匀，换 Sobol 引擎再跑一批对比"
+msgstr ""
+"If a small sample has uneven count/site coverage, compare with Sobol "
+"sampling."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:41
+#: 1738f06dfebd45f2adfb379701bbe118
+msgid "什么时候加这张卡、什么时候不加"
+msgstr "When to add this card"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:43
+#: 8c769b4a05474dd58cfeb592407d3c5c
+msgid "**加：**"
+msgstr "**Add it when:**"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:44
+#: f3636730029746efaac583eb2a68f25e
+msgid "需要快速覆盖\"少了一个原子\"对力/能量的影响"
+msgstr "Vacancy-induced energy and force changes need broad initial coverage"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:45
+#: 1a5cdc1049f846c9b899e20768ce8804
+msgid "训练集只有完美晶体，需要低/中/高缺陷密度梯度"
+msgstr "The dataset has only perfect crystals and needs a vacancy-density progression"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:46
+#: d5ef46eb82eb496795741af607421ace
+msgid "不需要按元素类型区分空位来源"
+msgstr "Vacancy sites need not be distinguished by element or group"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:48
+#: 36105c3253484546bd3b6288f065a753
+msgid "**不加：**"
+msgstr "**Do not add it when:**"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:49
+#: b60322a53fe946a09d25b9c7d4a485e9
+msgid "需要精确控制删哪种元素 → 用 `Random Vacancy`"
+msgstr "Removal must target an element or group; use `Random Vacancy`"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:50
+#: 6a4a220c47714d3b8cb18f620a6ff570
+msgid "缺陷浓度 >20%——此时结构通常已剧烈变形，需先确认是否物理上有意义"
+msgstr ""
+"The requested concentration exceeds 20%, where the intended physical meaning"
+" should be reassessed"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:52
+#: e585c160dec9462ebbf5dcdf8fa86500
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:54
+#: 3540e51985604e3a922030c27dc1e57e
+msgid "空位数量"
+msgstr "Vacancy amount"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:56
+#: c4f831069a8e41c594efaadb88b6aaf7
+msgid "Num Condition（num_condition）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:58
+#: 2157f1741114485d86e3f95dea6619f4
+msgid "`int`，默认 1。count 模式下的空位数量，范围 1-8。直接指定每个结构删几个原子——适合你已经想好确切数字的场景。"
+msgstr ""
+"`int`, default `1`, range 1-8. Number removed in count mode. Use when the "
+"exact vacancy count is the controlled variable."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:60
+#: 862bb7d046d0464ebbc900886cf220b0
+msgid "Use Num（use_num）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:62
+#: 46b72d7903444868a27960999e62153f
+msgid "`bool`，默认 true。打开时按绝对空位数删除，不同输入的缺陷数始终保持一致；关掉后切到浓度模式，不同超胞尺寸下自动保持相同缺陷比例。"
+msgstr ""
+"`bool`, default `true`. Enabled uses an absolute count across inputs; "
+"disabled uses a fraction so different cell sizes retain approximately the "
+"same concentration."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:64
+#: 535ce26a787f43d195f033032299580d
+msgid "Concentration Condition（concentration_condition）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:66
+#: a318505be0834e78b7d9cee048c14f6d
+msgid ""
+"`float`，默认 0.0。fraction 模式下的空位比例，如 0.02 约等于删掉 2% 的原子。推荐范围 "
+"0.005-0.08。比例太小可能一个原子都删不到，比例太大结构容易崩。"
+msgstr ""
+"`float`, default `0.0`. Vacancy fraction, for example 0.02 for about 2%. "
+"Values around 0.005-0.08 are a typical starting band; very small cells may "
+"round to zero, while large fractions can destroy the framework."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:68
+#: 031925daef374cca8291b6c51284b8e0
+msgid "Count Mode（count_mode）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:70
+#: 9590f559a7db490180aef84926740b70
+msgid ""
+"`str`，默认 `fixed`。`fixed` 精确按住上面设置的数量删；`random` 在 1 到设定值之间随机。你需要固定空位数量做对照实验就选"
+" fixed，想覆盖更多空位分布的多样性就选 random。"
+msgstr ""
+"`str`, default `fixed`. `fixed` removes the configured amount; `random` "
+"samples an amount from 1 through that maximum. Use fixed for controlled "
+"comparisons and random for count diversity."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:72
+#: e79877cd37364896b0a3fc44e7901b29
+msgid "采样和预算"
+msgstr "Sampling and budget"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:74
+#: 6ce18ccd34944def9e28a737eff25b2d
+msgid "Engine Type（engine_type）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:76
+#: f017e0d2b0b34666becada705dc93e23
+msgid "`int`，默认 1。`0` = Sobol 准随机序列，`1` = Uniform 均匀随机。"
+msgstr ""
+"`int`, default `1`. `0` selects a Sobol low-discrepancy sequence; `1` "
+"selects uniform random sampling."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:78
+#: 5bf18451347d41468d3710920c3c22c4
+msgid "样本少时 Sobol 对空位数量和位置的覆盖更均衡；大批量（100+）时两者差异很小，Uniform 更快。"
+msgstr ""
+"Sobol can distribute counts and positions more evenly in a small design. At "
+"100 or more samples, the difference from uniform sampling is usually "
+"smaller."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:80
+#: 722fe70a69714617a14328d2c447a2b1
+msgid "Max Structures（max_structures）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:82
+#: 39852349d7d54b76a89d5fcd358f2352
+msgid "`int`，默认 1。每输入帧生成多少个空位版本。"
+msgstr "`int`, default `1`. Number of vacancy variants generated per input frame."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:84
+#: 3e59387716e84092a1d0ddaabc3c5378
+msgid "10~50 够轻量补样，50~100 做常规覆盖，上了 100 建议接一张 `FPS Filter`。"
+msgstr ""
+"Use roughly 10-50 for a light addition and 50-100 for broader coverage; "
+"above that, consider `FPS Filter` to control redundancy."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:86
+#: dcb22d04126b46b18932874da7106f8e
+msgid "Use Seed（use_seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:88
+#: 39f0070a0b2c4fdd98d3da94d5cef860
+msgid "`bool`，默认 false。打开后固定 seed → 同参同输入可复现。需要对比实验时开着，纯探索可以关。"
+msgstr ""
+"`bool`, default `false`. Enable with a fixed seed for reproducible "
+"comparisons."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:90
+#: a8dad60b37794e1486680ae5f0136fa6
+msgid "Seed（seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:92
+#: 31708afd7bb34a16bd06e7c36e23c0ce
+msgid "`int`，默认 0。随机种子值。"
+msgstr "`int`, default `0`. Random seed value."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:94
+#: cb1964b4bd304871a7f19aac07a34462
+msgid "生效条件：`use_seed=True`。"
+msgstr "Active only when `use_seed=True`."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:96
+#: 7ee3c1eb0335439388efc753739e5597
+msgid "推荐预设"
+msgstr "Recommended presets"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:98
+#: b3b78d375fc04ed19593d27c589d0061
+msgid "保守（Safe，Sobol 引擎，2% 浓度，50 个输出）"
+msgstr "Safe (Sobol, 2% fraction, 50 outputs)"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:99
+#: 6c2230e2622a47ec800d73cdd4ee5c5e
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"VacancyDefectCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"engine_type\": 0,\n"
+"    \"num_condition\": 1,\n"
+"    \"use_num\": false,\n"
+"    \"concentration_condition\": 0.02,\n"
+"    \"count_mode\": \"fixed\",\n"
+"    \"max_structures\": 50,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:116
+#: 193360842cbf41858f79793efa65baf3
+msgid "平衡（Balanced，Uniform 引擎，5% 浓度，50 个输出）"
+msgstr "Balanced (uniform, 5% fraction, 50 outputs)"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:117
+#: 5507ccb0fb9e4c8ebd659b22bdbf7814
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"VacancyDefectCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"engine_type\": 1,\n"
+"    \"num_condition\": 1,\n"
+"    \"use_num\": false,\n"
+"    \"concentration_condition\": 0.05,\n"
+"    \"count_mode\": \"fixed\",\n"
+"    \"max_structures\": 50,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:134
+#: afe3f3ca3b5d464495a23970b9512492
+msgid "探索（Exploration，Sobol，10% 浓度，100 个输出）"
+msgstr "Exploration (Sobol, 10% fraction, 100 outputs)"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:135
+#: bc91fddc5d6e401f98f818763bc97811
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"VacancyDefectCard\",\n"
+"  \"check_state\": true,\n"
+"  \"params\": {\n"
+"    \"engine_type\": 0,\n"
+"    \"num_condition\": 1,\n"
+"    \"use_num\": false,\n"
+"    \"concentration_condition\": 0.10,\n"
+"    \"count_mode\": \"fixed\",\n"
+"    \"max_structures\": 100,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:152
+#: b7d897d35d7048e590637281f31cdbf7
+msgid "推荐组合"
+msgstr "Recommended combinations"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:154
+#: 109f04f3cf0f4f1da6f686b029e58208
+msgid "`Super Cell` → `Vacancy Defect Generation`：先扩胞再删，避免小胞里空位相互作用太强"
+msgstr ""
+"`Super Cell` -> `Vacancy Defect Generation`: enlarge first to reduce "
+"vacancy-image interactions"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:155
+#: b6691b4342f9417381bec6a2b7d647bc
+msgid "`Vacancy Defect Generation` → `Insert Defect`：空位 + 插隙，互补缺陷族"
+msgstr ""
+"`Vacancy Defect Generation` -> `Insert Defect`: combine vacancy and "
+"interstitial families"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:156
+#: 092110f2da4f4c41acedd8f67de0ca5f
+msgid "`Vacancy Defect Generation` → `Random Vacancy`：先覆盖密度分布，再补定向规则删除"
+msgstr ""
+"`Vacancy Defect Generation` -> `Random Vacancy`: cover global density, then "
+"add targeted removals"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:158
+#: a4658bd6a5fc42859962a4d3e83610fd
+msgid "常见问题"
+msgstr "Common questions"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:160
+#: 1ea66f3258f042fe82f7fb867ba34b38
+msgid "**输出结构数远少于预期。** 空位数为 0 时不会生成。检查浓度模式下 `concentration * n_atoms` 是否≥1。"
+msgstr ""
+"**Far fewer outputs than expected.** No structure is emitted for zero "
+"removals. Ensure fraction times atom count rounds to at least one."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:162
+#: cf8e869996dd43c384d16ceadc999bae
+msgid "**空位太多导致骨架崩坏。** 浓度模式 `0.10` 以上已到强缺陷区。先检查是否有孤立原子或明显断裂，再决定是否回调。"
+msgstr ""
+"**The framework collapses at high vacancy count.** Fractions above 0.10 are "
+"strongly defective. Inspect connectivity and isolated atoms before retaining"
+" such configurations."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:164
+#: db2b4565bafe44739e5beda9e5378296
+msgid ""
+"**count 和 fraction 怎么选。** 二者只选一个：想精确删几个原子用 `Vacancy Count`；想按体系大小等比例删用 "
+"`Vacancy Fraction`。"
+msgstr ""
+"**Count or fraction?** Use `Vacancy Count` for an absolute number and "
+"`Vacancy Fraction` for size-scaled concentration."
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:166
+#: f3b6076d4d2441ef8e0cf0eda28f362c
+msgid "输出标签"
+msgstr "Output labels"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:168
+#: d328bc79a1234118ab849290d3ec789c
+#, python-brace-format
+msgid "`Vac(n={删除原子数})`"
+msgstr "`Vac(n={number of removed atoms})`"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:170
+#: 466902e333b44d20b7364de097d485a0
+msgid "可复现性"
+msgstr "Reproducibility"
+
+#: ../../source/module/make-dataset-cards/cards/vacancy-defect-card.md:172
+#: 4e48a68b758d449c9f5319ee8b527382
+msgid "勾选 `use_seed` + 固定 `seed` → 相同输入可复现。输入结构顺序变化也会影响结果。"
+msgstr ""
+"Enable `use_seed` and fix `seed` to reproduce an input. Input order can also"
+" affect derived samples."

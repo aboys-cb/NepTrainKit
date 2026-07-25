@@ -15,46 +15,123 @@ from loguru import logger
 from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
 
 
-class LoadingThread(QThread):
+_NUMPY_WORKER_STACK_SIZE = 8 * 1024 * 1024
+
+
+class BackgroundTask(QThread):
+    """Run one callable without blocking the GUI thread.
+
+    Cancellation is cooperative: generator-style jobs stop between yielded
+    items, while a blocking callable is allowed to return normally.  The task
+    never uses ``QThread.terminate()``, which can leave Python, Qt, or native
+    library state locked.
+    """
+
     progressSignal = Signal(int)
+    succeeded = Signal(object)
+    failed = Signal(str)
+    canceled = Signal()
 
     def __init__(self, parent=None, show_tip=True, title='running'):
-        super(LoadingThread, self).__init__(parent)
+        super().__init__(parent)
+        self.setStackSize(_NUMPY_WORKER_STACK_SIZE)
         self.show_tip = show_tip
-        self.title = title
+        self.title = self.tr("Running") if title == "running" else title
         self._parent = parent
         self.tip: StateToolTip
         self._kwargs: Any
         self._args: Any
         self._func: Any
+        self._outcome = "idle"
+        self._result: Any = None
+        self._error_message = ""
+
+    @property
+    def outcome(self) -> str:
+        """Return ``idle``, ``running``, ``succeeded``, ``failed``, or ``canceled``."""
+        return self._outcome
+
+    @property
+    def result(self) -> Any:
+        return self._result
+
+    @property
+    def error_message(self) -> str:
+        return self._error_message
 
     def run(self):
-        result = self._func(*self._args, **self._kwargs)
-        if isinstance(result, Iterable):
-            for i, _ in enumerate(result):
-                self.progressSignal.emit(i)
+        self._outcome = "running"
+        try:
+            result = self._func(*self._args, **self._kwargs)
+            if isinstance(result, Iterable):
+                for i, _ in enumerate(result):
+                    if self.isInterruptionRequested():
+                        close = getattr(result, "close", None)
+                        if callable(close):
+                            close()
+                        self._outcome = "canceled"
+                        self.canceled.emit()
+                        return
+                    self.progressSignal.emit(i)
+            if self.isInterruptionRequested():
+                self._outcome = "canceled"
+                self.canceled.emit()
+                return
+        except Exception as exc:  # noqa: BLE001
+            self._outcome = "failed"
+            self._error_message = str(exc)
+            logger.debug(traceback.format_exc())
+            self.failed.emit(self._error_message)
+            return
+
+        self._result = result
+        self._outcome = "succeeded"
+        self.succeeded.emit(result)
 
     def start_work(self, func, *args, **kwargs):
+        if self.isRunning():
+            raise RuntimeError("Background task is already running.")
         if self.show_tip:
-            self.tip = StateToolTip(self.title, 'Please wait patiently~~', self._parent)
+            self.tip = StateToolTip(self.title, self.tr("Please wait patiently..."), self._parent)
             self.tip.show()
-            self.finished.connect(self.__finished_work)
+            self.succeeded.connect(self.__finished_work)
+            self.failed.connect(self.__failed_work)
+            self.canceled.connect(self.__canceled_work)
             self.tip.closedSignal.connect(self.stop_work)
-            time.sleep(0.0001)
         else:
             self.tip = None  # pyright:ignore
         self._func = func
         self._args = args
         self._kwargs = kwargs
+        self._result = None
+        self._error_message = ""
         self.start()
 
-    def __finished_work(self):
+    def __finished_work(self, _result=None):
         if self.tip:
-            self.tip.setContent('success!')
+            self.tip.setContent(self.tr("Success"))
+            self.tip.setState(True)
+
+    def __failed_work(self, message: str):
+        if self.tip:
+            self.tip.setContent(self.tr("Failed: {message}").format(message=message))
+            self.tip.setState(True)
+
+    def __canceled_work(self):
+        if self.tip:
+            self.tip.setContent(self.tr("Canceled"))
             self.tip.setState(True)
 
     def stop_work(self):
-        self.terminate()
+        """Request cooperative cancellation without killing the native thread."""
+        if self.isRunning():
+            self.requestInterruption()
+
+    cancel = stop_work
+
+
+# Compatibility for external extensions.  Application code uses BackgroundTask.
+LoadingThread = BackgroundTask
 
 
 class DataProcessingThread(QThread):
@@ -69,15 +146,22 @@ class DataProcessingThread(QThread):
         self.process_func = process_func
         self.params = params
         self.result_dataset = []
-        self.setStackSize(8 * 1024 * 1024)
+        self.elapsed_seconds = 0.0
+        self.outcome = "idle"
+        self.setStackSize(_NUMPY_WORKER_STACK_SIZE)
 
     def run(self):
+        start = time.perf_counter()
+        self.outcome = "running"
         try:
             total = len(self.dataset)
             self.progressSignal.emit(0)
             from NepTrainKit.config import Config  # Lazy import to avoid cycles
             sort_atoms = Config.getboolean("widget", "sort_atoms", False)
             for index, structure in enumerate(self.dataset):
+                if self.isInterruptionRequested():
+                    self.outcome = "canceled"
+                    break
                 if isinstance(self.process_func, StructureOperation):
                     processed = self.process_func.run_structure(structure, self.params)
                 else:
@@ -86,8 +170,16 @@ class DataProcessingThread(QThread):
                     processed = [ase_sort(s) for s in processed]
                 self.result_dataset.extend(processed)
                 self.progressSignal.emit(int((index + 1) / total * 100))
+                if self.isInterruptionRequested():
+                    self.outcome = "canceled"
+                    break
+            self.elapsed_seconds = time.perf_counter() - start
+            if self.outcome != "canceled":
+                self.outcome = "succeeded"
             self.finishSignal.emit()
         except Exception as e:  # noqa: BLE001
+            self.elapsed_seconds = time.perf_counter() - start
+            self.outcome = "failed"
             logger.debug(traceback.format_exc())
             self.errorSignal.emit(str(e))
 
@@ -105,9 +197,19 @@ class FilterProcessingThread(QThread):
         self.operation = operation
         self.params = params
         self.result_dataset = []
+        self.elapsed_seconds = 0.0
+        self.outcome = "idle"
+        self.setStackSize(_NUMPY_WORKER_STACK_SIZE)
 
     def run(self):
+        start = time.perf_counter()
+        self.outcome = "running"
         try:
+            if self.isInterruptionRequested():
+                self.outcome = "canceled"
+                self.elapsed_seconds = time.perf_counter() - start
+                self.finishSignal.emit()
+                return
             self.progressSignal.emit(0)
             if isinstance(self.operation, DatasetOperation):
                 self.result_dataset = self.operation.run_dataset(self.dataset, self.params)
@@ -117,9 +219,18 @@ class FilterProcessingThread(QThread):
                 result = self.process_func()
                 if result is not None:
                     self.result_dataset = result
+            if self.isInterruptionRequested():
+                self.outcome = "canceled"
+                self.elapsed_seconds = time.perf_counter() - start
+                self.finishSignal.emit()
+                return
             self.progressSignal.emit(100)
+            self.elapsed_seconds = time.perf_counter() - start
+            self.outcome = "succeeded"
             self.finishSignal.emit()
         except Exception as e:  # noqa: BLE001
+            self.elapsed_seconds = time.perf_counter() - start
+            self.outcome = "failed"
             logger.debug(traceback.format_exc())
             self.errorSignal.emit(str(e))
 
@@ -154,22 +265,73 @@ class FunctionWorker(QObject):
 
 
 class CallbackRelay(QObject):
-    """Forward worker results back to the relay object's thread."""
+    """Forward worker results and final cleanup to the parent's thread."""
 
     def __init__(self, on_finished=None, on_error=None, parent=None):
         super().__init__(parent)
         self._on_finished = on_finished
         self._on_error = on_error
+        self._thread: QThread | None = None
+        self._worker: FunctionWorker | None = None
+        self._outcome: tuple[str, object] | None = None
+        self._thread_finished = False
+        self._worker_destroyed = False
+
+    def bind_job(self, thread: QThread, worker: FunctionWorker) -> None:
+        """Retain the job objects until the worker thread has fully stopped."""
+        self._thread = thread
+        self._worker = worker
 
     @Slot(object)
-    def handle_finished(self, result) -> None:
-        if self._on_finished is not None:
-            self._on_finished(result)
+    def capture_finished(self, result) -> None:
+        self._outcome = ("finished", result)
+        self._finalize_if_ready()
 
     @Slot(str)
-    def handle_error(self, message: str) -> None:
-        if self._on_error is not None:
-            self._on_error(message)
+    def capture_error(self, message: str) -> None:
+        self._outcome = ("error", message)
+        self._finalize_if_ready()
+
+    @Slot()
+    def handle_thread_finished(self) -> None:
+        self._thread_finished = True
+        self._finalize_if_ready()
+
+    @Slot()
+    def handle_worker_destroyed(self) -> None:
+        self._worker_destroyed = True
+        self._finalize_if_ready()
+
+    def _finalize_if_ready(self) -> None:
+        """Publish the result only after native thread and worker teardown."""
+        if (
+            self._outcome is None
+            or not self._thread_finished
+            or not self._worker_destroyed
+        ):
+            return
+
+        thread = self._thread
+        outcome, payload = self._outcome
+        try:
+            # ``QThread.finished`` is emitted before all thread-local cleanup is
+            # complete.  Synchronize here before any owner can release QThread.
+            if thread is not None:
+                thread.wait()
+            if outcome == "finished":
+                if self._on_finished is not None:
+                    self._on_finished(payload)
+            elif self._on_error is not None:
+                self._on_error(str(payload))
+        finally:
+            self._worker = None
+            self._thread = None
+            self._outcome = None
+            self._on_finished = None
+            self._on_error = None
+            if thread is not None:
+                thread.deleteLater()
+            self.deleteLater()
 
 
 def run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs) -> QThread:
@@ -181,37 +343,39 @@ def run_in_thread(parent, func, *args, on_finished=None, on_error=None, **kwargs
         Started thread. Caller should keep a reference until finished.
     """
     thread = QThread(parent)
+    # Qt's default macOS worker stack can be as small as 544 KiB.  NumPy/SciPy
+    # routines used by background dataset analysis can exceed that limit.
+    thread.setStackSize(_NUMPY_WORKER_STACK_SIZE)
     worker = FunctionWorker(func, args=args, kwargs=kwargs)
     worker.moveToThread(thread)
-    # Keep a strong Python reference so the worker is not GC'd before `thread.started`.
-    # (If GC'd early, the thread event loop can keep running and callers may never
-    # receive finished/error signals.)
-    setattr(thread, "_ntk_worker", worker)
     relay = CallbackRelay(on_finished=on_finished, on_error=on_error, parent=parent)
-    setattr(thread, "_ntk_callback_relay", relay)
+    # The main-thread relay owns the Python references.  Never clear these from
+    # a context-less ``QThread.finished`` lambda: that signal is emitted by the
+    # worker thread and can race Shiboken wrapper destruction.
+    relay.bind_job(thread, worker)
 
     thread.started.connect(worker.run)
     worker.finished.connect(thread.quit)
     worker.error.connect(thread.quit)
 
-    worker.finished.connect(relay.handle_finished)
-    worker.error.connect(relay.handle_error)
+    worker.finished.connect(relay.capture_finished)
+    worker.error.connect(relay.capture_error)
 
-    worker.finished.connect(worker.deleteLater)
-    worker.error.connect(worker.deleteLater)
-    thread.finished.connect(lambda: setattr(thread, "_ntk_worker", None))
-    thread.finished.connect(lambda: setattr(thread, "_ntk_callback_relay", None))
-    thread.finished.connect(thread.deleteLater)
+    # QThread guarantees that deferred deletions posted from ``finished`` are
+    # processed before the native thread is fully torn down.
+    thread.finished.connect(worker.deleteLater)
+    worker.destroyed.connect(relay.handle_worker_destroyed)
+    thread.finished.connect(relay.handle_thread_finished)
 
     thread.start()
     return thread
 
 
 __all__ = [
+    'BackgroundTask',
     'LoadingThread',
     'DataProcessingThread',
     'FilterProcessingThread',
     'FunctionWorker',
     'run_in_thread',
 ]
-

@@ -15,6 +15,9 @@ NepTrainKit 的页面可以按数据流理解，而不是按菜单名称死记�
    * - 清洗候选结构、删除异常样本
      - :doc:`NEP-dataset-display`
      - ``candidate_pool_clean.xyz``
+   * - 检查训练数据质量和分布线索
+     - :doc:`training-set-assessment`
+     - 可追溯的 Findings 和结构子集
    * - 查每张生成卡片的用途和参数
      - :doc:`make-dataset-cards/index`
      - 可复用的卡片配置
@@ -29,10 +32,11 @@ NepTrainKit 的页面可以按数据流理解，而不是按菜单名称死记�
 直接看 :doc:`../workflows/clean-candidate-structures`。
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    NEP 数据展示 <NEP-dataset-display>
-   Show NEP 详细参考 <show-nep-reference>
+   训练集评估 <training-set-assessment>
+   NEP Dataset Display 详细参考 <show-nep-reference>
    数据生成（Make dataset） <make-dataset>
    数据生成卡片手册 <make-dataset-cards/index>
    自定义卡片开发 <custom-card-development>

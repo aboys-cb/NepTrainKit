@@ -52,6 +52,8 @@ class TaceResultData(ResultData):
     ) -> None:
         super().__init__(Path(nep_txt_path), Path(data_xyz_path), Path(descriptor_path), import_options=import_options)
         self._mforce_dataset = None
+        self._force_vector_dataset = None
+        self._mforce_vector_dataset = None
 
     @property
     def datasets(self) -> list[NepPlotData]:
@@ -184,6 +186,11 @@ class TaceResultData(ResultData):
         force_array = concat_nep_dft_array(pred_forces, ref_forces, quantity="forces")
 
         default_forces = parse_forces_mode(Config.get("widget", "forces_data", ForcesMode.Raw))
+        self._force_vector_dataset = (
+            NepPlotData(force_array, group_list=self.atoms_num_list, title="force")
+            if force_array.size != 0
+            else None
+        )
         if force_array.size != 0 and default_forces == ForcesMode.Norm:
             force_array = aggregate_per_atom_to_structure(force_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
             self._force_dataset = NepPlotData(force_array, title="force")
@@ -229,6 +236,7 @@ class TaceResultData(ResultData):
             ref_mf = np.vstack([self._extract_dft_mforce(s) for s in structures], dtype=np.float32)  # type: ignore[arg-type]
             pred_mf = np.vstack([self._extract_tace_mforce(s) for s in structures], dtype=np.float32)  # type: ignore[arg-type]
             mforce_array = concat_nep_dft_array(pred_mf, ref_mf, quantity="magnetic forces")
+            self._mforce_vector_dataset = NepPlotData(mforce_array, group_list=self.atoms_num_list, title="mforce")
             if mforce_array.size != 0 and default_forces == ForcesMode.Norm:
                 mforce_array = aggregate_per_atom_to_structure(mforce_array, self.atoms_num_list, map_func=np.linalg.norm, axis=0)
                 self._mforce_dataset = NepPlotData(mforce_array, title="mforce")
@@ -236,4 +244,5 @@ class TaceResultData(ResultData):
                 self._mforce_dataset = NepPlotData(mforce_array, group_list=self.atoms_num_list, title="mforce")
         except Exception:
             logger.debug(traceback.format_exc())
+            self._mforce_vector_dataset = None
             self._mforce_dataset = None

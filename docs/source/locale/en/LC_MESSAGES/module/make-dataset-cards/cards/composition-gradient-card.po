@@ -1,0 +1,368 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2024, NepTrain Team
+# This file is distributed under the same license as the NepTrainKit
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: NepTrainKit \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:3
+#: 60fc98a3fd0842e997c8721e2df4b413
+msgid "成分梯度（Composition Gradient）"
+msgstr "Composition Gradient"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:5
+#: 6704e7c24409406ba114ddce7238d840
+msgid "`Group`: `Alloy` | `Class`: `CompositionGradientCard`"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:7
+#: c0831d46ce05412a9dcb02abd3a73eb8
+msgid "功能说明"
+msgstr "What the card does"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:9
+#: a33b4cf0205d4213838f68c35828b1d2
+msgid ""
+"`Composition Gradient` 沿 x/y/z "
+"方向把结构分成若干坐标层，并在每层按起点成分到终点成分的线性插值替换元素。它用于扩散偶、梯度合金和界面过渡层，不等价于全局随机合金。"
+msgstr ""
+"`Composition Gradient` divides a structure into coordinate bins along x, y, "
+"or z and replaces elements in each bin according to a linear interpolation "
+"between endpoint compositions. It models diffusion couples, graded alloys, "
+"and interfacial transition layers, not a globally random alloy."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:11
+#: 920d924e7fd648f294684f27ebf6cd7e
+msgid "操作示例"
+msgstr "Example workflow"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:13
+#: eed6ef90babc459aa0a136ec73884c62
+msgid "场景：模型缺少扩散偶过渡层"
+msgstr "Scenario: A diffusion-couple transition layer is missing"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:15
+#: 665d33f01ea947de8c5c83e58c8a3843
+msgid "Ni-Co 训练集包含纯 Ni、纯 Co 和均匀随机合金，但没有从 Ni-rich 到 Co-rich 的空间过渡结构。模型在界面扩散偶上出现系统误差。"
+msgstr ""
+"A Ni-Co training set contains pure Ni, pure Co, and homogeneous random "
+"alloys but no spatial transition from Ni-rich to Co-rich material. The model"
+" consequently shows systematic error at a diffusion-couple interface."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:17
+#: cdd77bd99a344aef9063851c31c3529f
+msgid ""
+"**输入：** 沿 x 方向足够长的 Ni 或 Ni-Co 超胞。 **目标：** 生成 x 方向从 `Ni:1,Co:0` 到 `Ni:0,Co:1`"
+" 的配比梯度。 **参数设置：** `elements=Ni,Co`，`axis=x`，`bins=8`，`samples=3`，开启 "
+"`use_seed`。 **输出：** 每个输入结构生成 3 个具有相同层配比、不同层内随机排布的梯度结构。 **怎么验证训练集质量改善：** 按 x "
+"分层统计元素比例，应从 Ni-rich 单调过渡到 Co-rich；重训后扩散偶界面测试误差应下降。"
+msgstr ""
+"**Input:** A Ni or Ni-Co supercell long enough along x. **Objective:** "
+"Create an x-directed gradient from `Ni:1,Co:0` to `Ni:0,Co:1`. "
+"**Parameters:** `elements=Ni,Co`, `axis=x`, `bins=8`, `samples=3`, with "
+"`use_seed` enabled. **Output:** Three structures per input with identical "
+"layer compositions and different within-layer arrangements. "
+"**Verification:** Element fractions binned along x should change "
+"monotonically from Ni-rich to Co-rich, and the retrained model should reduce"
+" error on diffusion-couple interface tests."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:23
+#: 29b551b9349b4ecf85e84af0f8a549d2
+msgid "参数说明"
+msgstr "Parameters"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:25
+#: 5391c9236bbe4fd4978482e98f362b28
+msgid "Elements（elements）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:27
+#: 97ee2f8838c14714a4da9eb93989e23a
+msgid "`str`，默认 `Ni,Co`。梯度端点中参与插值的元素集合。二元扩散偶写两个元素即可，三元过渡层把你关心的所有成分变化元素都列进去。"
+msgstr ""
+"`str`, default `Ni,Co`. Elements whose endpoint fractions are interpolated. "
+"Two elements are sufficient for a binary diffusion couple; list every "
+"composition-varying element for a ternary transition layer."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:29
+#: 5be1510c7b574b9c997d64bbf0971ca7
+msgid "Start Composition（start_composition）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:31
+#: 7ad5a8cdde3d499b8481e2d7f4b634a2
+msgid "`str`，默认 `Ni:1,Co:0`。梯度起点的目标元素比例，对应 axis 低坐标端。比例不要求归一化，各元素相对比值决定第一层的目标配比。"
+msgstr ""
+"`str`, default `Ni:1,Co:0`. Target ratios at the low-coordinate end of the "
+"selected axis. Values need not be normalized; their relative magnitudes set "
+"the first bin's composition."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:33
+#: 6c2ed6193a664c0d9b302604cb2adb54
+msgid "End Composition（end_composition）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:35
+#: e66d73245e6d40ea9cebedabf74a889e
+msgid ""
+"`str`，默认 `Ni:0,Co:1`。梯度终点的目标元素比例，对应 axis 高坐标端。扩散偶通常把一个元素从 1 过渡到 0、另一个从 0 过渡到"
+" 1。"
+msgstr ""
+"`str`, default `Ni:0,Co:1`. Target ratios at the high-coordinate end. A "
+"binary diffusion couple commonly changes one element from 1 to 0 and the "
+"other from 0 to 1."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:37
+#: 3fb0dca0910941428ba303c8d27feca2
+msgid "Axis（axis）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:39
+#: 017e9afd0e1b4bd2a184b2b9a90d797b
+msgid ""
+"`str`，默认 `x`，可选 `x`/`y`/`z`。选真实扩散或界面法向方向。cell "
+"在这个方向上必须有足够层数，否则每层原子太少，整数取整会让目标比例失真。"
+msgstr ""
+"`str`, default `x`; one of `x`, `y`, or `z`. Choose the physical diffusion "
+"direction or interface normal. The cell must contain enough atomic layers "
+"along this axis, otherwise integer counts distort target fractions."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:41
+#: 3fc3749a70af4b8095a5dae17f155668
+msgid "Bins（bins）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:43
+#: 93de88e58be64b12bc4da799f0c7d1f3
+msgid ""
+"`int`，默认 8。沿梯度轴划分的组成层数。bins 越多梯度越细，但每层原子越少、取整误差越大。小超胞用 4-8 层，大超胞或界面模型可用 8-20"
+" 层。"
+msgstr ""
+"`int`, default `8`. Number of composition bins along the gradient axis. More"
+" bins make a finer gradient but leave fewer atoms per bin and larger "
+"rounding error. Use about 4-8 bins for a small supercell and 8-20 for a "
+"large interface model."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:45
+#: a3f3b8519cea4f72b330d51e2622dd47
+msgid "Target Elements（target_elements）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:47
+#: 79f3cb3e5ec24776a9b1e02e84fc57fc
+msgid "`str`，默认空。留空时所有匹配元素都可被重排；只想替换某个子晶格或特定层时，显式列出目标元素，避免把基底或不参与扩散的元素也改掉。"
+msgstr ""
+"`str`, empty by default. Empty means every matching element may be "
+"rearranged. List target elements explicitly to limit replacement to a "
+"sublattice or selected species and protect the substrate or nondiffusing "
+"elements."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:49
+#: 471d0e1e424242fa98a9d8d12ddca78c
+msgid "Samples（samples）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:51
+#: f1af123d08c5440bb2f963dd2b877321
+msgid ""
+"`int`，默认 1。每个输入结构生成几个样本。同一层目标比例下，samples 只改变层内随机排布。1-3 个适合扩散偶，5 "
+"个以上才适合做层内无序统计。"
+msgstr ""
+"`int`, default `1`. Samples generated per input. At fixed bin fractions, "
+"additional samples change only the random within-bin arrangement. One to "
+"three are typical for a diffusion couple; use five or more only to study "
+"within-layer disorder."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:53
+#: 978739214b07470c9310206c779822c0
+msgid "Use Seed（use_seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:55
+#: 9b1b411c67874e0880c9840fec4cefb0
+msgid "`bool`，默认 false。需要可复现训练集或对比实验时打开；最终大规模随机探索可以关掉，但结果不能逐帧复现。"
+msgstr ""
+"`bool`, default `false`. Enable for a reproducible training set or "
+"controlled comparison. It may be disabled for large exploratory sampling, "
+"but individual frames will not be reproducible."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:57
+#: 51fa0dacb15743c0939cb530f5c4f6f5
+msgid "Seed（seed）"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:59
+#: eb642b5e3e8849f780d84145535eb60e
+msgid "`int`，默认 0。同一输入、同一参数、同一 seed 生成同一批候选。"
+msgstr ""
+"`int`, default `0`. Identical input, parameters, and seed produce the same "
+"candidates."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:61
+#: ef1aec300a7e4f35a240ec97ba7152d5
+msgid "生效条件：`use_seed=True`。"
+msgstr "Active only when `use_seed=True`."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:63
+#: 1ef2f383f73447b9830a517100ee590a
+msgid "推荐预设"
+msgstr "Recommended presets"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:65
+#: 76738c19f31749e787ca021b6a2b4435
+msgid "二元扩散偶"
+msgstr "Binary diffusion couple"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:67
+#: f2dde31e5b844db8a54aa4047132dc72
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"CompositionGradientCard\",\n"
+"  \"params\": {\n"
+"    \"elements\": \"Ni,Co\",\n"
+"    \"start_composition\": \"Ni:1,Co:0\",\n"
+"    \"end_composition\": \"Ni:0,Co:1\",\n"
+"    \"axis\": \"x\",\n"
+"    \"bins\": 8,\n"
+"    \"target_elements\": \"\",\n"
+"    \"samples\": 3,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 42\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:84
+#: 5d6e1162d57b4da196b778fa0eed3a9c
+msgid "用于 Ni-rich 到 Co-rich 的一维过渡层。"
+msgstr "A one-dimensional transition from Ni-rich to Co-rich material."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:86
+#: ba74e0c998764fa9b4f6ffe4c236e615
+msgid "三元梯度层"
+msgstr "Ternary graded layer"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:88
+#: bd1e81e9b4184474a2b51826dd41abce
+#, python-brace-format
+msgid ""
+"{\n"
+"  \"class\": \"CompositionGradientCard\",\n"
+"  \"params\": {\n"
+"    \"elements\": \"Co,Cr,Ni\",\n"
+"    \"start_composition\": \"Co:0.8,Cr:0.1,Ni:0.1\",\n"
+"    \"end_composition\": \"Co:0.1,Cr:0.4,Ni:0.5\",\n"
+"    \"axis\": \"z\",\n"
+"    \"bins\": 10,\n"
+"    \"target_elements\": \"Co,Cr,Ni\",\n"
+"    \"samples\": 2,\n"
+"    \"use_seed\": true,\n"
+"    \"seed\": 9\n"
+"  }\n"
+"}\n"
+msgstr ""
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:105
+#: fb2a32b4616f4573ae6e6c04d8c500e1
+msgid "用于多元合金的层状成分过渡。"
+msgstr "A layered composition transition in a multicomponent alloy."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:107
+#: 1012007a1fdb460d8d4cfaf75fb9c8ec
+msgid "推荐组合"
+msgstr "Recommended combinations"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:109
+#: d1257f15159e4d0880052a2b1b186991
+msgid "`Super Cell → Composition Gradient → Geometry Filter`：先给梯度方向足够层数，再做配比梯度和几何检查。"
+msgstr ""
+"`Super Cell -> Composition Gradient -> Geometry Filter`: create enough "
+"layers along the gradient, assign compositions, then check geometry."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:110
+#: 04f441550f9f4ec4b8351e63720eb9ee
+msgid ""
+"`Crystal Prototype Builder → Super Cell → Composition Gradient → Atomic "
+"Perturb`：先生成晶体模板，再加空间成分梯度和局部位移。"
+msgstr ""
+"`Crystal Prototype Builder -> Super Cell -> Composition Gradient -> Atomic "
+"Perturb`: build a crystal template, then add a spatial composition gradient "
+"and local displacements."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:111
+#: 0fb64b1fd5a743449c09e9671d353a3b
+msgid "`Composition Gradient → FPS Filter`：生成多组梯度结构后选代表帧。"
+msgstr ""
+"`Composition Gradient -> FPS Filter`: select representative frames from "
+"several graded structures."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:113
+#: dea3cbecd92b4684bae2a9c80f0a9b0e
+msgid "常见问题"
+msgstr "Common questions"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:115
+#: 9e706190143f418da738a6e885358882
+msgid "**层内成分不等于目标小数。** 原子数是整数，每层按最接近的整数计数分配。增大超胞或减少 `bins` 可以提高每层成分分辨率。"
+msgstr ""
+"**A bin fraction does not exactly equal the requested decimal.** Atom counts"
+" are integers and use the nearest feasible allocation. Increase the "
+"supercell or reduce `bins` to improve composition resolution."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:117
+#: e5ed2383c6cc4e318572a7e65e17ebea
+msgid "**运行报错或没有输出。** `elements` 少于 2 个、起止成分解析失败，或 `target_elements` 没有匹配到原子。"
+msgstr ""
+"**The operation fails or returns no output.** Check that `elements` contains"
+" at least two species, both endpoint compositions parse correctly, and "
+"`target_elements` matches atoms in the input."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:119
+#: 4f82ce396cac49eca0fe553eba32df59
+msgid ""
+"**周期结构的起点在哪里。** 周期方向使用 wrapped fractional coordinate 排序；非周期方向使用 Cartesian "
+"coordinate 排序。"
+msgstr ""
+"**Where does a periodic gradient start?** Periodic axes are ordered by "
+"wrapped fractional coordinate; nonperiodic axes use Cartesian coordinate."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:121
+#: 57f1209db38b474d87641ec994aec9e4
+msgid "输出标签"
+msgstr "Output labels"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:123
+#: da6c34143be145c18514c1b8527037f3
+#, python-brace-format
+msgid "`CompGrad(ax={x|y|z},b={bins},s={seed})`。`s` 只在 `use_seed=True` 时出现。"
+msgstr ""
+"`CompGrad(ax={x|y|z},b={bins},s={seed})`; `s` appears only when "
+"`use_seed=True`."
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:125
+#: c63dea4afd4b4124be7277d70d45e6d2
+msgid "可复现性"
+msgstr "Reproducibility"
+
+#: ../../source/module/make-dataset-cards/cards/composition-gradient-card.md:127
+#: 62003f04b58f46aeb1a6688d1e248062
+msgid "开启 `use_seed` 后，层内元素排布由 `seed`、输入结构标识和 sample 序号共同决定。"
+msgstr ""
+"With `use_seed` enabled, the within-bin arrangement is determined by `seed`,"
+" the input-structure identity, and the sample index."

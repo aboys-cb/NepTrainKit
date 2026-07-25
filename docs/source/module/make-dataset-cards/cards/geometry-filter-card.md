@@ -12,7 +12,7 @@
 
 ### 场景：随机占位和强扰动后出现短键结构
 
-合金候选池经过 `Random Occupancy -> Atomic Perturb` 后，少量结构出现 < 1.0 A 的原子重叠。它们进入 DFT 会浪费队列，进入 FPS 会污染 descriptor 空间。
+合金候选池经过 `Random Occupancy → Atomic Perturb` 后，少量结构出现 < 1.0 Å 的原子重叠。它们进入 DFT 会浪费队列，进入 FPS 会污染 descriptor 空间。
 
 **输入：** 已生成的候选结构池。
 **目标：** 在 FPS 前删除短键和异常体积结构。
@@ -22,7 +22,7 @@
 
 ## 参数说明
 ### Min Pair Distance（min_pair_distance）
-`float`，默认 1.0 A。任意原子对允许的最近距离，硬短键门槛。应低于你目标体系的正常最近邻键长，但远高于原子明显重叠的距离——金属/氧化物通常从 1.0~1.5 A 起步。
+`float`，默认 1.0 Å。任意原子对允许的最近距离，硬短键门槛。应低于你目标体系的正常最近邻键长，但远高于原子明显重叠的距离——金属/氧化物通常从 1.0~1.5 Å 起步。
 
 ### Min Volume Per Atom（min_volume_per_atom）
 `float`，默认 0.0（关闭）。允许的最小单原子体积，过滤过度压缩的结构。阈值应来自同材料平衡体积的下界。多孔、slab 或含真空的体系不要随便打开，开了反而误删合理结构。
@@ -79,9 +79,9 @@
 
 ## 推荐组合
 
-- `Atomic Perturb -> Geometry Filter -> FPS Filter`：先生成位移扰动，再删除短键，最后做代表性采样。
-- `Random Occupancy -> Geometry Filter -> FPS Filter`：合金占位后先做几何门槛，再选代表结构去 DFT。
-- `Random Slab -> Insert Defect -> Geometry Filter`：表面插入后检查吸附物和基底是否重叠。
+- `Atomic Perturb → Geometry Filter → FPS Filter`：先生成位移扰动，再删除短键，最后做代表性采样。
+- `Random Occupancy → Geometry Filter → FPS Filter`：合金占位后先做几何门槛，再选代表结构去 DFT。
+- `Random Slab → Insert Defect → Geometry Filter`：表面插入后检查吸附物和基底是否重叠。
 
 ## 常见问题
 

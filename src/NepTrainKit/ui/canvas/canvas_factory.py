@@ -12,6 +12,8 @@ from NepTrainKit.core.types import CanvasMode
 def _normalize_canvas_type(canvas_type: object) -> str:
     """Normalize backend config values into canonical backend strings."""
     text = str(canvas_type or "").strip().lower()
+    if text in {CanvasMode.AUTO.value, "canvasmode.auto", CanvasMode.AUTO.name.lower()}:
+        return CanvasMode.AUTO.value
     if text in {CanvasMode.VISPY.value, "canvasmode.vispy", CanvasMode.VISPY.name.lower()}:
         return CanvasMode.VISPY.value
     if text in {CanvasMode.PYQTGRAPH.value, "canvasmode.pyqtgraph", CanvasMode.PYQTGRAPH.name.lower()}:

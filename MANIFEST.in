@@ -14,12 +14,9 @@ prune .github
 global-exclude *.log
 global-exclude *upx.exe
 global-exclude *update.exe
-global-exclude *nep_cpu*.pyd
-global-exclude *_fastxyz*.pyd
-global-exclude *nep_gpu*.pyd
-global-exclude *cuda*.dll
-global-exclude *vcomp140*.dll
-global-exclude *msvcp140*.dll
-global-exclude *libomp140.x86_64.dll
+global-exclude *.so
+global-exclude *.dylib
+global-exclude *.pyd
+global-exclude *.dll
 global-exclude src/NepTrainKit/src/**
 global-exclude src/NepTrainKit/src.qrc

@@ -1,10 +1,10 @@
-﻿# Show NEP 详细参考（`ShowNepWidget`）
+# NEP Dataset Display 详细参考
 
-> 目标：按“按钮入口”组织说明。先看按钮，再看它会不会弹窗、弹窗该填什么、执行后会发生什么。
+> 目标：按“按钮入口”组织说明。先看按钮，再看它会不会打开设置窗口、要填什么、执行后会发生什么。
 
 ## 1. 界面总览
 
-![Show NEP Main](../_static/image/example/display/main.png)
+![NEP Dataset Display Main](../_static/image/example/display/main.png)
 
 - 左侧：误差散点主图区（descriptor / energy / force / pressure / potential energy 等子图）。
 - 右侧：结构区（3D 结构、结构信息、最短键长、净力、索引与播放）。
@@ -15,43 +15,44 @@
 
 ### 2.1 主图工具栏（左侧）
 
-| 图标 | 按钮（Action） | 是否弹窗 | 对应弹窗类 |
+| 图标 | 按钮 | 是否打开设置 | 作用 |
 |---|---|---|---|
-| <img src="../_static/image/generated/show_nep_icons/init.svg" width="20" /> | `Reset View` | 否 | - |
-| <img src="../_static/image/generated/show_nep_icons/pan.svg" width="20" /> | `Pan View` | 否（toggle） | - |
-| <img src="../_static/image/generated/show_nep_icons/index.svg" width="20" /> | `Select by Index` | 是 | `IndexSelectMessageBox` |
-| <img src="../_static/image/generated/show_nep_icons/data_range.svg" width="20" /> | `Select by Range` | 是 | `RangeSelectMessageBox` |
-| <img src="../_static/image/generated/show_nep_icons/supercell.svg" width="20" /> | `Select by Lattice` | 是 | `LatticeRangeSelectMessageBox` |
-| <img src="../_static/image/generated/show_nep_icons/find_max.svg" width="20" /> | `Find Max Error Point` | 是 | `GetIntMessageBox` |
-| <img src="../_static/image/generated/show_nep_icons/sparse.svg" width="20" /> | `Sparse samples` | 是 | `SparseMessageBox` |
-| <img src="../_static/image/generated/show_nep_icons/pen.svg" width="20" /> | `Mouse Selection` | 否（toggle） | - |
-| <img src="../_static/image/generated/show_nep_icons/discovery.svg" width="20" /> | `Finding non-physical structures` | 否（仅进度） | `QProgressDialog` |
-| <img src="../_static/image/generated/show_nep_icons/inspect.svg" width="20" /> | `Check Net Force` | 是 | `GetFloatMessageBox` + 进度条 |
-| <img src="../_static/image/generated/show_nep_icons/inverse.svg" width="20" /> | `Inverse Selection` | 否 | - |
-| <img src="../_static/image/generated/show_nep_icons/revoke.svg" width="20" /> | `Undo` | 否 | - |
-| <img src="../_static/image/generated/show_nep_icons/delete.svg" width="20" /> | `Delete Selected Items` | 否 | - |
-| <img src="../_static/image/generated/show_nep_icons/edit_info.svg" width="20" /> | `Edit Info` | 是 | `EditInfoMessageBox` |
-| <img src="../_static/image/generated/show_nep_icons/export.svg" width="20" /> | `Export structure descriptor` | 是（文件路径） | 路径对话框 |
-| <img src="../_static/image/generated/show_nep_icons/alignment.svg" width="20" /> | `Energy Baseline Shift` | 是 | `ShiftEnergyMessageBox` |
-| <img src="../_static/image/generated/show_nep_icons/dft_d3.png" width="20" /> | `DFT D3` | 是 | `DFTD3MessageBox` |
-| <img src="../_static/image/generated/show_nep_icons/summary.svg" width="20" /> | `Dataset Summary` | 是（结果展示） | `DatasetSummaryMessageBox` |
-| <img src="../_static/image/generated/show_nep_icons/distribution_inspector.svg" width="20" /> | `Distribution Inspector` | 是（非模态） | `DistributionInspectorMessageBox` |
+| <img src="../_static/image/generated/show_nep_icons/init.svg" width="20" /> | `Reset View` | 否 | 当前子图自动缩放回数据范围 |
+| <img src="../_static/image/generated/show_nep_icons/pan.svg" width="20" /> | `Pan View` | 否（开关） | 切换平移交互 |
+| <img src="../_static/image/generated/show_nep_icons/index.svg" width="20" /> | `Select by Index` | 是 | 按编号或切片选择结构 |
+| <img src="../_static/image/generated/show_nep_icons/data_range.svg" width="20" /> | `Select by Range` | 是 | 按当前图的 x/y 范围选择结构 |
+| <img src="../_static/image/generated/show_nep_icons/supercell.svg" width="20" /> | `Select by Lattice` | 是 | 按晶格参数范围选择结构 |
+| <img src="../_static/image/generated/show_nep_icons/find_max.svg" width="20" /> | `Find Max Error Point` | 是 | 选择当前轴上误差最大的前 N 个结构 |
+| <img src="../_static/image/generated/show_nep_icons/sparse.svg" width="20" /> | `Sparse samples` | 是 | 用 FPS 做代表性采样 |
+| <img src="../_static/image/generated/show_nep_icons/pen.svg" width="20" /> | `Mouse Selection` | 否（开关） | 切换鼠标圈选/点选 |
+| <img src="../_static/image/generated/show_nep_icons/discovery.svg" width="20" /> | `Finding non-physical structures` | 否（仅进度） | 按近邻距离找疑似坏构型 |
+| <img src="../_static/image/generated/show_nep_icons/inspect.svg" width="20" /> | `Check Net Force` | 是 | 按净力阈值选择结构 |
+| <img src="../_static/image/generated/show_nep_icons/inverse.svg" width="20" /> | `Inverse Selection` | 否 | 对当前活动结构反选 |
+| <img src="../_static/image/generated/show_nep_icons/undo_selection.svg" width="20" /> | `Undo Selection` | 否 | 撤销最近一次选择变化 |
+| <img src="../_static/image/generated/show_nep_icons/undo_delete.svg" width="20" /> | `Undo Delete` | 否 | 恢复最近一次删除 |
+| <img src="../_static/image/generated/show_nep_icons/delete.svg" width="20" /> | `Delete Selected Items` | 否 | 删除当前选中结构 |
+| <img src="../_static/image/generated/show_nep_icons/edit_info.svg" width="20" /> | `Edit Info` | 是 | 批量编辑结构 metadata |
+| <img src="../_static/image/generated/show_nep_icons/export.svg" width="20" /> | `Export structure descriptor` | 是（文件路径） | 导出当前结构描述符 |
+| <img src="../_static/image/generated/show_nep_icons/alignment.svg" width="20" /> | `Energy Baseline Shift` | 是 | 对能量基线做平移校正 |
+| <img src="../_static/image/generated/show_nep_icons/dft_d3.png" width="20" /> | `DFT D3` | 是 | 配置并应用 DFT-D3 校正 |
+| <img src="../_static/image/generated/show_nep_icons/summary.svg" width="20" /> | `Training Set Audit` | 否（打开评估页） | 查看整体组成、数据质量、标签、结构相和磁类型 |
+| <img src="../_static/image/generated/show_nep_icons/distribution_inspector.svg" width="20" /> | `Explore distributions` | 否（打开训练集评估页面） | 查看数值字段分布并反向选择结构 |
 
 ### 2.2 结构工具栏（右侧）
 
-| 图标 | 按钮（Action） | 是否弹窗 | 对应弹窗类 |
+| 图标 | 按钮 | 是否打开设置 | 作用 |
 |---|---|---|---|
-| <img src="../_static/image/generated/show_nep_icons/view_change.svg" width="20" /> | `Ortho View` | 否（toggle） | - |
-| <img src="../_static/image/generated/show_nep_icons/auto_distance.svg" width="20" /> | `Automatic View` | 否（toggle） | - |
-| <img src="../_static/image/generated/show_nep_icons/show_bond.svg" width="20" /> | `Show Bonds` | 否（toggle） | - |
-| <img src="../_static/image/generated/show_nep_icons/xyz.svg" width="20" /> | `Show Arrows` | 是 | `ArrowMessageBox` |
-| <img src="../_static/image/generated/show_nep_icons/export1.svg" width="20" /> | `Export current structure` | 是 | `ExportFormatMessageBox` + 路径对话框 |
-| <img src="../_static/image/generated/show_nep_icons/defect.svg" width="20" /> | `Mark Bad (Reject)` | 否（toggle） | - |
-| <img src="../_static/image/generated/show_nep_icons/delete.svg" width="20" /> | `Drop All Bad` | 是（确认） | `MessageBox` |
+| <img src="../_static/image/generated/show_nep_icons/view_change.svg" width="20" /> | `Ortho View` | 否（开关） | 切换正交视图 |
+| <img src="../_static/image/generated/show_nep_icons/auto_distance.svg" width="20" /> | `Automatic View` | 否（开关） | 自动调整结构观察距离 |
+| <img src="../_static/image/generated/show_nep_icons/show_bond.svg" width="20" /> | `Show Bonds` | 否（开关） | 显示或隐藏键连线 |
+| <img src="../_static/image/generated/show_nep_icons/xyz.svg" width="20" /> | `Show Arrows` | 是 | 显示力、磁矩或其他向量箭头 |
+| <img src="../_static/image/generated/show_nep_icons/export1.svg" width="20" /> | `Export current structure` | 是 | 导出当前结构 |
+| <img src="../_static/image/generated/show_nep_icons/defect.svg" width="20" /> | `Mark Bad (Reject)` | 否（开关） | 标记当前结构为 reject |
+| <img src="../_static/image/generated/show_nep_icons/delete.svg" width="20" /> | `Drop All Bad` | 是（确认） | 删除所有 reject 结构 |
 
 ### 2.3 顶部菜单动作
 
-| 图标 | 菜单动作 | 是否弹窗 | 说明 |
+| 图标 | 菜单动作 | 是否打开设置 | 说明 |
 |---|---|---|---|
 | <img src="../_static/image/generated/show_nep_icons/open.svg" width="20" /> | `Open File...` | 是 | 选择 `*.xyz` |
 | <img src="../_static/image/generated/show_nep_icons/open.svg" width="20" /> | `Open Folder...` | 是 | 选择目录（常用于 `deepmd/npy`） |
@@ -68,11 +69,12 @@
 | `Mouse Selection` | 切换多边形/点选交互 |
 | `Inverse Selection` | 对当前活动结构集合执行反选 |
 | `Delete Selected Items` | 删除选中结构并重绘 |
-| `Undo` | 撤销最近删除；无可撤销时提示 `No undoable deletion!` |
+| `Undo Selection` | 撤销最近一次选择变化；无可撤销时提示 `No undoable selection!` |
+| `Undo Delete` | 撤销最近删除；无可撤销时提示 `No undoable deletion!` |
 
 ### 3.2 有弹窗按钮（参数与绑定写在一起）
 
-#### A. `Select by Index` → `IndexSelectMessageBox`
+#### A. `Select by Index`
 
 - 输入控件：
   - `indexEdit`：索引表达式
@@ -85,7 +87,7 @@
 
 ![Select by Index Dialog](../_static/image/generated/show_nep_reference/g_index_dialog.png)
 
-#### B. `Select by Range` → `RangeSelectMessageBox`
+#### B. `Select by Range`
 
 - 输入控件：
   - `xMin/xMax/yMin/yMax`：范围 `[-1e8, 1e8]`，6 位小数
@@ -95,7 +97,7 @@
 
 ![Select by Range Dialog](../_static/image/generated/show_nep_reference/g_range_dialog.png)
 
-#### C. `Select by Lattice` → `LatticeRangeSelectMessageBox`
+#### C. `Select by Lattice`
 
 - 输入控件：`a/b/c/alpha/beta/gamma` 各 min/max。
 - 范围：`[0, 1e6]`，4 位小数。
@@ -104,7 +106,7 @@
 
 ![Select by Lattice Dialog](../_static/image/generated/show_nep_reference/g_lattice_dialog.png)
 
-#### D. `Find Max Error Point` → `GetIntMessageBox`
+#### D. `Find Max Error Point`
 
 - 输入控件：整数 `N`。
 - 默认值：`widget.max_error_value`（缺省 `10`）。
@@ -112,9 +114,12 @@
 
 ![Find Max Error Dialog](../_static/image/generated/show_nep_reference/g_maxerr_dialog.png)
 
-#### E. `Sparse samples` → `SparseMessageBox`
+#### E. `Sparse samples`
 
 - 输入控件：
+  - `Selection strategy`：
+    - `Global FPS (compatible)`：保留原有全局 FPS 行为；
+    - `Element-set balanced FPS`：按元素集合分组，每组至少保留一个名额，其余名额按组大小平方根分配，并从各组描述符中心开始采样。
   - `Sampling mode`：`Fixed count (FPS)` / `R^2 stop (FPS)`
   - `Max num`：`[0, 9999999]`
   - `Min distance`：`[0, 10]`，5 位小数
@@ -122,7 +127,10 @@
   - `Descriptor source`：`Reduced (PCA)` / `Raw descriptor`
   - `Training dataset`：可选 `.xyz` 或目录
   - `Use current selection as region`
-- 执行结果：运行 FPS 后更新选择集。
+  - `Show training overlay`：采样后在 PCA 空间叠加训练集、当前数据和选中结构
+- 平衡模式固定使用结构级原始描述符和固定数量采样，因此会锁定 `Sampling mode` 与 `Descriptor source`；全局模式仍可自由选择原有选项。
+- 提供训练集时，全局模式延续原有整体 warm start；平衡模式只使用元素集合相同的已有结构初始化距离。
+- 执行结果：运行 FPS 后更新选择集；平衡模式完成后会提示实际选择数量和覆盖的元素集合数。
 
 ![Sparse Samples Dialog](../_static/image/generated/show_nep_reference/g_sparse_dialog.png)
 
@@ -131,7 +139,7 @@
 - 参数来源：`widget.radius_coefficient`（默认 `0.7`）。
 - 执行结果：扫描后选中疑似非物理结构。
 
-#### G. `Check Net Force` → `GetFloatMessageBox`
+#### G. `Check Net Force`
 
 - 输入控件：阈值 `|ΣF|`。
 - 范围：`[0, 1e6]`，10 位小数。
@@ -140,7 +148,7 @@
 
 ![Check Net Force Dialog](../_static/image/generated/show_nep_reference/g_force_dialog.png)
 
-#### H. `Edit Info` → `EditInfoMessageBox`
+#### H. `Edit Info`
 
 - 输入能力：
   - 新增标签（`key/value`）
@@ -156,7 +164,7 @@
 - 路径对话框默认文件名：`export_descriptor_data.out`。
 - 执行结果：后台导出描述符。
 
-#### J. `Energy Baseline Shift` → `ShiftEnergyMessageBox`
+#### J. `Energy Baseline Shift`
 
 - 预设区：`presetCombo` + 导入/导出/删除按钮。
 - 参数区：`groupEdit`、`alignment mode`、`max generations`、`population size`、`convergence tol`。
@@ -165,27 +173,33 @@
 
 ![Energy Baseline Shift Dialog](../_static/image/generated/show_nep_reference/g_shift_dialog.png)
 
-#### K. `DFT D3` → `DFTD3MessageBox`
+#### K. `DFT D3`
 
 - 输入控件：`functional`、`D3 cutoff`、`D3 cutoff_cn`、`mode(Add/Subtract)`。
 - 执行结果：后台应用 DFT-D3 修正并重绘。
 
 ![DFT D3 Dialog](../_static/image/generated/show_nep_reference/g_dftd3_dialog.png)
 
-#### L. `Dataset Summary` → `DatasetSummaryMessageBox`
+#### L. `Training Set Audit`
 
-- 无前置输入；根据当前数据集统计。
-- 结果窗口内可导出 HTML。
+- 位置：删除按钮后的分隔栏右侧。
+- 评估范围：当前活动结构；已经删除的结构不参与。
+- 概览：结构/原子统计、标签可用性、元素共现矩阵与精确元素集合。
+- 证据：数据质量、局域化学、结构相和磁类型；耗时证据在后台计算。
+- 结构回选：点击图表、表格或复核项后，可把真实结构索引送回 `NEP Dataset Display`。
+- 报告：`导出 HTML 报告` 保存本次评估范围、指纹、证据、判据和限制。
 
-![Dataset Summary Dialog](../_static/image/generated/show_nep_reference/g_summary_dialog.png)
+完整操作顺序和识别原理见 [训练集评估](training-set-assessment.md)。
 
-#### M. `Distribution Inspector` → `DistributionInspectorMessageBox`
+#### M. `Explore distributions`
 
-- 输入控件：`Field / Group / Scope / View / Select mode / Bins / Curve / Include norm`。
-- 结果控件：`Metric / Series` 联动图；点击 bin 反向选择结构。
-- 执行结果：分布分析 + 选择回写主图。
+- 点击后打开 `训练集评估 → 数据分布`，不再弹出独立的 Distribution Inspector 窗口。
+- 默认只需要选择 `字段 / 数值类型 / 分组方式 / 数据范围`。
+- `选择方式 / 分箱数 / 辅助曲线 / 向量模长` 收入“高级选项”。
+- `Metric / Series` 与分布图联动；点击分箱会把对应结构选择回写到 Dataset Display。
+- Reference / Prediction / Error 只在底层数据支持时产生有效结果。
 
-![Distribution Inspector](../_static/image/generated/show_nep_reference/g_dist_dialog.png)
+原有独立窗口暂时作为兼容实现保留，但工具栏入口已经切换到统一页面。
 
 ## 4. 结构工具栏（按按钮查）
 
@@ -197,7 +211,7 @@
 | `Automatic View` | 自动视角/距离对齐 |
 | `Show Bonds` | 显示/隐藏键；图标在 `show_bond/hide_bond` 间切换 |
 
-### 4.2 `Show Arrows` → `ArrowMessageBox`
+### 4.2 `Show Arrows`
 
 - 前提：当前结构画布必须支持箭头 API（通常 vispy）。
 - 输入控件：
@@ -208,7 +222,7 @@
 
 ![Show Arrows Dialog](../_static/image/generated/show_nep_reference/s_arrow_dialog.png)
 
-### 4.3 `Export current structure` → `ExportFormatMessageBox`
+### 4.3 `Export current structure`
 
 - 第一步：选格式
   - `XYZ (.xyz / extxyz)`
@@ -253,30 +267,79 @@
 
 ![NEP Model Combo](../_static/image/show_nep/m_nep_combo.png)
 
-## 6. 搜索框（三按钮）
+## 6. 结构筛选栏
 
-| 图标 | 按钮 | 行为 |
+结构筛选栏可以同时使用配置类型、化学式、元素和自定义表达式。条件默认取交集；经常重复使用的组合可以保存为“常用筛选”。
+
+![结构筛选栏与条件编辑器](../_static/image/generated/show_nep_reference/g_structure_filter.png)
+
+### 6.1 基本流程
+
+1. 点击“筛选条件”打开编辑器。空筛选会自动出现第一行。
+2. 在左下角点击“+”继续添加条件，例如“配置类型包含 `surface`”“必须包含 `Fe,O`”“不得包含 `H`”。
+3. 在右上角选择“满足全部条件（AND）”或“满足任一条件（OR）”。
+4. 点击“完成并预览”。图中的匹配高亮只用于预览，不会改变当前选择。
+5. 确认匹配数量后，在“应用结果”中选择“替换当前选择”“加入当前选择”或“从当前选择中移除”。
+
+修改条件后，旧匹配结果会显示为“结果已过期”。重新预览前不能继续应用旧结果。
+
+编辑器右下角的垃圾篓按钮只清空筛选条件和匹配高亮，**不会清空当前选择**。清空选择位于“应用结果”菜单中。
+
+### 6.2 条件含义
+
+| 条件 | 含义 | 示例 |
 |---|---|---|
-| <img src="../_static/image/generated/show_nep_icons/search.svg" width="18" /> | 搜索 | 高亮匹配结构 |
-| <img src="../_static/image/generated/show_nep_icons/check.svg" width="18" /> | 勾选 | 将匹配结构加入选择 |
-| <img src="../_static/image/generated/show_nep_icons/uncheck.svg" width="18" /> | 反选 | 将匹配结构移出选择 |
+| 配置类型 | 包含、完全等于、开头、结尾或正则匹配 | `surface` |
+| 化学式 | 默认完全等于，也可选择包含或正则匹配 | `Fe2O3` |
+| 必须包含元素 | 所列元素必须全部存在，允许还有其他元素 | `Fe,O` 可匹配 FeO 和 FeOC |
+| 不得包含元素 | 所列元素必须全部不存在 | `H` 排除含 H 结构 |
+| 只允许这些元素 | 结构中不能出现列表外元素 | `Fe,O` 可匹配 Fe、O 和 FeO |
+| 自定义表达式 | 使用现有结构表达式引擎 | `natoms > 100` |
 
-### 6.1 模式
+同一条配置类型或化学式条件可以用分号输入多个值，多个值之间取“任一匹配”。元素之间使用逗号或空格分隔，例如 `Fe, O`。
 
-- `tag`：按 `structure.tag` 正则匹配。
-- `formula`：按 `structure.formula` 正则匹配。
-- `elements`：元素集合语法匹配（非正则）。
-- `expression`：按结构级表达式筛选；适合按原子数、元素组成、能量、力、应力、原子属性等条件批量选中。
+每行左侧的开关控制该条件是否参与筛选。关闭条件不会删除输入内容。配置类型和化学式右侧的 `Aa` 控制是否区分大小写；高亮时区分，未高亮时不区分。
 
-### 6.2 `elements` 语法
+非法正则、未知元素或错误表达式会直接标记对应条件，不会被当成“0 个匹配”，也不会意外匹配全部结构。
 
-- `Fe,O`：元素集合必须是 `{Fe,O}` 子集。
-- `+Fe,+O`：必须同时包含 `Fe` 和 `O`。
-- `-H` 或 `!H`：必须不包含 `H`。
-- 可混合：`Fe,O,+Fe,-H`。
+### 6.3 保存和复用常用筛选
+
+如果经常清理同一类数据，可以保存整个条件组合。例如，一个常用组合可以是：
+
+- 配置类型包含 `surface`
+- 必须包含元素 `Fe,O`
+- 不得包含元素 `H`
+- 条件关系为“满足全部条件（AND）”
+
+保存一次后，下次不需要逐行重填：
+
+1. 先把条件、AND/OR 关系和 `Aa` 状态设置好。
+2. 点击“常用筛选 → 保存当前条件…”。
+3. 输入容易识别的名称，例如 `Fe-O surface`，然后点击“保存”。
+4. 下次打开编辑器时，点击“常用筛选”，再直接点击该名称。
+
+![常用筛选菜单](../_static/image/generated/show_nep_reference/g_structure_filter_presets.png)
+
+加载常用筛选会**替换编辑器里的当前条件**，随后更新预览；它不会自动执行“应用结果”，也不会改变当前选择。
+
+保存内容包括：
+
+- 每条条件的类型、输入值和启用状态
+- 配置类型或化学式的匹配方式与 `Aa` 状态
+- “满足全部条件（AND）”或“满足任一条件（OR）”
+
+常用筛选保存在本机用户配置中，关闭并重新打开软件后仍可使用。它不会保存当前匹配结果、当前选择、数据集路径或 NEP 模型；保存的是筛选条件，不是自动处理流程。
+
+需要维护已有条目时，进入“常用筛选 → 管理常用筛选”：
+
+- “重命名”只修改名称，不改变条件。
+- “删除”只删除保存的条目，不清空编辑器中的当前条件。
+- 保存或重命名为已有名称时，软件会先询问是否覆盖。
+
+如果条件中仍有空白行，软件不会保存。请补全该行，或用行尾的“×”先删除它。
 
 (show-nep-expression)=
-### 6.3 `expression` 用法总览
+### 6.4 `expression` 用法总览
 
 - 目的：把“结构是否满足条件”写成一个布尔表达式，然后用搜索/勾选/反选按钮处理结果。
 - 作用对象：仅当前 active structures；已经删除的结构不会参与表达式计算。
@@ -285,7 +348,7 @@
 - 反选按钮：把匹配结构从当前选择集中移除。
 - 删除流程不变：通常是先用 expression 勾选，再点工具栏删除按钮。
 
-#### 6.3.1 支持的运算符
+#### 6.4.1 支持的运算符
 
 - 逻辑运算：`&&`、`||`、`!`
 - 逻辑关键字：`and`、`or`、`not`
@@ -299,7 +362,7 @@
 - `has.H && natoms < 50`
 - `(energy_per_atom < -3.0) && (force.norm > 10)`
 
-#### 6.3.2 不支持的语法
+#### 6.4.2 不支持的语法
 
 - 不支持函数调用：例如 `len(structure)`、`mean(force)`、`any(...)`
 - 不支持固定原子索引：例如 `atom[3].force.x > 1`
@@ -308,7 +371,7 @@
 
 如果需要原子数，请直接使用 `natoms`。
 
-#### 6.3.3 内置结构字段
+#### 6.4.3 内置结构字段
 
 下列字段不依赖当前图上显示哪一个子图，始终按当前 active structures 实时计算。
 
@@ -335,7 +398,7 @@
 - `energy_per_atom < -4.2`
 - `has_forces && !has_bec`
 
-#### 6.3.4 元素统计字段
+#### 6.4.4 元素统计字段
 
 元素字段按当前 active structures 里实际出现过的元素动态生成。
 
@@ -351,7 +414,7 @@
 - 区分元素符号，不区分前缀大小写的内部解析细节；文档和输入建议始终使用标准写法
 - 如果当前 active structures 中没有该元素，表达式会报错
 
-#### 6.3.5 动态数据字段
+#### 6.4.5 动态数据字段
 
 当前结果数据里存在什么字段，expression 模式就暴露什么字段。常见来源有两类：
 
@@ -363,7 +426,7 @@
 - 如果当前数据里没有 `mforce`，补全中不会出现 `mforce`
 - 如果手动输入了不存在的字段，例如 `mforce.ref.x > 1`，会直接报错
 
-#### 6.3.6 后缀规则
+#### 6.4.6 后缀规则
 
 ##### A. 数据视图后缀
 
@@ -407,7 +470,7 @@
 - 多分量字段若不写分量或 `.norm`，表达式会报错
 - 标量字段可以直接比较，例如 `energy > -10`
 
-#### 6.3.7 原子级字段如何聚合到结构级
+#### 6.4.7 原子级字段如何聚合到结构级
 
 表达式最终必须得到“每个结构是否命中”的结果，所以原子级数据会先聚合到结构级。
 
@@ -424,7 +487,7 @@
 
 结构级字段如 `natoms`、`volume`、`energy` 不需要额外聚合，直接逐结构比较。
 
-#### 6.3.8 常用表达式示例
+#### 6.4.8 常用表达式示例
 
 ##### 按结构大小筛选
 
@@ -466,7 +529,7 @@
 - `has.H && natoms < 50 && energy_per_atom < -2.5`
 - `(count.Fe >= 2) && (force.norm > 8 || stress.norm > 2)`
 
-#### 6.3.9 补全与右侧数量说明
+#### 6.4.9 补全与右侧数量说明
 
 expression 模式使用单独的动态补全，不和 `tag/formula/elements` 共用缓存。
 
@@ -487,7 +550,7 @@ expression 模式使用单独的动态补全，不和 `tag/formula/elements` 共
 
 这和你实际输入完整表达式后的命中数量不是一回事。
 
-#### 6.3.10 错误与排查
+#### 6.4.10 错误与排查
 
 常见错误包括：
 
@@ -504,7 +567,17 @@ expression 模式使用单独的动态补全，不和 `tag/formula/elements` 共
 - `Invalid expression syntax`
   - 语法不完整，例如 `force.x >`
 
-![Search Modes](../_static/image/show_nep/q_search_modes.png)
+#### 6.4.11 在结构筛选器中使用表达式
+
+添加“自定义表达式”条件后，直接输入完整表达式。表达式仍由原有求值器执行，因此本节列出的字段、运算符和动态数据能力都可以继续使用。
+
+表达式可以和其他条件组合。例如：
+
+- 配置类型包含 `surface`
+- 必须包含元素 `Fe,O`
+- 自定义表达式 `natoms >= 64 && force.error.norm < 0.2`
+
+三条条件在“满足全部条件”下会取交集。筛选器不会把表达式转换成另一套简化语法，因此不会丢失 `!=`、晶格角、布尔字段或动态字段。
 
 ## 7. 状态与常见提示
 

@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass
+from math import sqrt
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Hashable, Optional
 
 
 from NepTrainKit.core import MessageManager
@@ -160,6 +161,95 @@ def farthest_point_sampling(points, n_samples, min_dist=0.1, selected_data=None)
     return sampled_indices
 
 
+def allocate_sqrt_quotas(
+    group_sizes: dict[Hashable, int],
+    n_samples: int,
+) -> dict[Hashable, int]:
+    """Allocate one slot per non-empty group, then distribute by sqrt(size)."""
+    sizes = {key: int(size) for key, size in group_sizes.items() if int(size) > 0}
+    if not sizes or int(n_samples) <= 0:
+        return {}
+    budget = min(int(n_samples), sum(sizes.values()))
+    if budget < len(sizes):
+        raise ValueError(
+            f"Target count {budget} is smaller than the {len(sizes)} element-set groups. "
+            "Increase the target count or remove unneeded systems."
+        )
+
+    quotas = {key: 1 for key in sizes}
+    remaining = budget - len(quotas)
+    while remaining > 0:
+        eligible = [key for key in sizes if quotas[key] < sizes[key]]
+        if not eligible:
+            break
+        weight_sum = sum(sqrt(sizes[key]) for key in eligible)
+        raw = {key: remaining * sqrt(sizes[key]) / weight_sum for key in eligible}
+        granted = 0
+        for key in eligible:
+            addition = min(sizes[key] - quotas[key], int(np.floor(raw[key])))
+            quotas[key] += addition
+            remaining -= addition
+            granted += addition
+        if remaining <= 0:
+            break
+        order = sorted(
+            eligible,
+            key=lambda key: (-(raw[key] - np.floor(raw[key])), -sizes[key], repr(key)),
+        )
+        remainder_granted = 0
+        for key in order:
+            if remaining <= 0:
+                break
+            if quotas[key] < sizes[key]:
+                quotas[key] += 1
+                remaining -= 1
+                remainder_granted += 1
+        if granted == 0 and remainder_granted == 0:
+            break
+    return quotas
+
+
+def centered_fps(
+    points,
+    n_samples: int,
+    min_dist: float,
+    selected_data=None,
+) -> list[int]:
+    """Run FPS from the feature-space center, or from a warm-start set."""
+    points = np.asarray(points)
+    if points.shape[0] == 0 or int(n_samples) <= 0:
+        return []
+    if selected_data is not None and np.asarray(selected_data).size > 0:
+        return farthest_point_sampling(
+            points,
+            n_samples=int(n_samples),
+            min_dist=float(min_dist),
+            selected_data=np.asarray(selected_data),
+        )
+
+    center = np.mean(points, axis=0)
+    center_index = int(np.argmin(np.linalg.norm(points - center, axis=1)))
+    order = np.concatenate(
+        (np.asarray([center_index], dtype=int), np.delete(np.arange(points.shape[0]), center_index))
+    )
+    local_indices = farthest_point_sampling(
+        points[order],
+        n_samples=int(n_samples),
+        min_dist=float(min_dist),
+    )
+    return order[np.asarray(local_indices, dtype=int)].tolist()
+
+
+def structure_element_set_key(structure) -> tuple[str, ...]:
+    """Return a stable element-set key for ASE or NepTrainKit structures."""
+    getter = getattr(structure, "get_chemical_symbols", None)
+    if callable(getter):
+        symbols = getter()
+    else:
+        symbols = getattr(structure, "elements", ())
+    return tuple(sorted({str(symbol) for symbol in symbols}))
+
+
 def incremental_fps_with_r2(
     points: npt.NDArray[np.float32],
     r2_threshold: float,
@@ -267,6 +357,7 @@ class SparseSampler:
         training_path: str | None = None,
         sampling_mode: str = "count",
         r2_threshold: float = 0.9,
+        selection_strategy: str = "global",
     ) -> tuple[list[int], bool]:
         """Return structure indices selected by sparse sampling strategies.
 
@@ -288,6 +379,9 @@ class SparseSampler:
             selected set reaches the target R² on the candidate points.
         r2_threshold : float, optional
             Target R² used when ``sampling_mode`` is ``"r2"``.
+        selection_strategy : {"global", "element_set"}, optional
+            ``"element_set"`` applies sqrt-size quotas and centered FPS within
+            each chemical element set. It requires raw structure descriptors.
         """
         # Validate descriptor availability
         dataset = getattr(self._result, "descriptor", None)
@@ -331,13 +425,23 @@ class SparseSampler:
         else:
             raw_now = np.array([], dtype=np.float32)
 
+        strategy = str(selection_strategy or "global").strip().lower()
+        if strategy not in {"global", "element_set"}:
+            MessageManager.send_message_box(
+                f"Unsupported FPS selection strategy: {selection_strategy}",
+                "Error",
+            )
+            return [], reverse
+
         # Optionally load/compute training descriptors
         selected_data: Optional[npt.NDArray[np.float32]] = None
+        training_structures: list[Structure] = []
         if training_path:
             try:
                 t_path = as_path(training_path)
                 # Try to read training structures for aggregation and fallback compute
                 t_structs: list[Structure] = import_structures(t_path)
+                training_structures = list(t_structs)
                 t_counts = np.array([len(s) for s in t_structs], dtype=int) if t_structs else np.array([], dtype=int)
                 # Resolve likely descriptor file next to training path
                 stem = t_path.stem
@@ -348,7 +452,7 @@ class SparseSampler:
                 t_desc = read_nep_out_file(t_desc_path, dtype=np.float32, ndmin=2)
                 if t_desc.size == 0 and t_structs:
                     # Compute if file missing
-                    t_desc = self._result.nep_calc.get_structures_descriptor(t_structs,True)
+                    t_desc = self._result.nep_calc.descriptors(t_structs, mean=True)
                 # Aggregate per-atom to per-structure if needed
                 if t_desc.size != 0 and t_structs:
                     if t_desc.shape[0] == int(np.sum(t_counts)):
@@ -357,13 +461,40 @@ class SparseSampler:
                         pass
                     else:
                         # Shape mismatch; best-effort fallback to compute
-                        t_desc = self._result.nep_calc.get_structures_descriptor(t_structs,True)
-                        if t_desc.size != 0:
-                            t_desc = aggregate_per_atom_to_structure(t_desc, t_counts, map_func=np.mean, axis=0)
+                        t_desc = self._result.nep_calc.descriptors(t_structs, mean=True)
                 selected_data = np.asarray(t_desc, dtype=np.float32) if (t_desc is not None and t_desc.size != 0) else None
-            except Exception:
+                if strategy == "element_set" and (
+                    not training_structures
+                    or selected_data is None
+                    or selected_data.shape[0] != len(training_structures)
+                ):
+                    raise ValueError("training structures and descriptors are not aligned")
+            except Exception as exc:
+                if strategy == "element_set":
+                    MessageManager.send_message_box(
+                        f"Unable to use the existing training dataset for balanced FPS: {exc}",
+                        "Error",
+                    )
+                    return [], reverse
                 # Gracefully ignore training seeding on errors
                 selected_data = None
+                training_structures = []
+
+        if strategy == "element_set":
+            descriptor_source = "raw"
+            sampling_mode = "count"
+            if raw_now.size == 0:
+                MessageManager.send_message_box(
+                    "Raw structure descriptors are required for element-set balanced FPS.",
+                    "Error",
+                )
+                return [], reverse
+            if selected_data is not None and selected_data.shape[1] != raw_now.shape[1]:
+                MessageManager.send_message_box(
+                    "Existing training descriptors do not match the loaded raw descriptor dimensions.",
+                    "Error",
+                )
+                return [], reverse
 
         # Prepare sampling points and optional selected_data in the same feature space
         if descriptor_source == "raw":
@@ -433,7 +564,52 @@ class SparseSampler:
         # Run FPS on the prepared subset
         if points_effective.size == 0:
             global_rows = np.array([], dtype=np.int64)
+        elif strategy == "element_set":
+            rows_now = np.where(mask_now)[0]
+            candidate_structure_ids = struct_ids_now[rows_now]
+            candidate_groups: dict[tuple[str, ...], list[int]] = defaultdict(list)
+            for local_row, structure_id in enumerate(candidate_structure_ids):
+                structure = self._result.structure.all_data[int(structure_id)]
+                candidate_groups[structure_element_set_key(structure)].append(local_row)
+            try:
+                quotas = allocate_sqrt_quotas(
+                    {key: len(indices) for key, indices in candidate_groups.items()},
+                    n_samples,
+                )
+            except ValueError as exc:
+                MessageManager.send_message_box(str(exc), "Error")
+                return [], reverse
+
+            training_groups: dict[tuple[str, ...], list[int]] = defaultdict(list)
+            for index, structure in enumerate(training_structures):
+                training_groups[structure_element_set_key(structure)].append(index)
+
+            selected_local_rows: list[int] = []
+            group_report: dict[tuple[str, ...], dict[str, int]] = {}
+            for key in sorted(candidate_groups):
+                candidate_rows = candidate_groups[key]
+                warm_rows = training_groups.get(key, [])
+                warm_points = (
+                    np.asarray(selected_data[warm_rows], dtype=np.float32)
+                    if selected_data is not None and warm_rows
+                    else None
+                )
+                chosen_rows = centered_fps(
+                    points_effective[candidate_rows],
+                    n_samples=quotas[key],
+                    min_dist=distance,
+                    selected_data=warm_points,
+                )
+                selected_local_rows.extend(candidate_rows[index] for index in chosen_rows)
+                group_report[key] = {
+                    "candidate_count": len(candidate_rows),
+                    "existing_count": len(warm_rows),
+                    "selected_count": len(chosen_rows),
+                }
+            self._result._last_sparse_group_report = group_report
+            global_rows = rows_now[np.asarray(sorted(selected_local_rows), dtype=np.int64)]
         else:
+            self._result._last_sparse_group_report = {}
             mode = (sampling_mode or "count").lower()
             if mode == "r2":
                 max_samples = n_samples if n_samples > 0 else points_effective.shape[0]

@@ -6,11 +6,11 @@ from functools import partial
 import numpy as np
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QBrush, QFont
 from pyqtgraph import GraphicsLayoutWidget, ScatterPlotItem, PlotItem, ViewBox, TextItem
 
 from NepTrainKit.utils import timeit
-from NepTrainKit.core.types import Brushes, Pens
+from NepTrainKit.core.types import Brushes, Pens, mkPen
 from NepTrainKit.config import Config
 from ..base.canvas import CanvasLayoutBase
 from NepTrainKit.core.io import NepTrainResultData
@@ -40,6 +40,9 @@ class MyPlotItem(PlotItem):
 
         self.current_point = ScatterPlotItem()
         self.current_point.setZValue(100)
+        self.search_highlight = ScatterPlotItem()
+        self.search_highlight.setZValue(80)
+        self.addItem(self.search_highlight)
         self.parity_mode = True
         self._overlay_base_brush = None
         if "title" in kwargs:
@@ -73,10 +76,28 @@ class MyPlotItem(PlotItem):
         if self.current_point not in self.items:
             self.addItem(self.current_point)
 
+    def set_search_highlight(self, x, y):
+        """Draw a hollow halo without replacing base or selection brushes."""
+        marker_size = Config.getint("widget", "pg_marker_size", 7) or 7
+        self.search_highlight.setData(
+            x,
+            y,
+            brush=QBrush(Qt.BrushStyle.NoBrush),
+            pen=mkPen(color=Brushes.Show.color(), width=1.8),
+            symbol="o",
+            size=marker_size + 4,
+        )
+
     def add_diagonal(self):
         """Draw a unit diagonal line used for parity-style plots.
         """
         self.addLine(angle=45, pos=(0.5, 0.5), pen=Pens.Line)
+
+    def set_compact_axes(self, compact: bool) -> None:
+        """Show only major tick labels when this plot is a small preview."""
+        max_text_level = 0 if compact else 2
+        for name in ("bottom", "left"):
+            self.getAxis(name).setStyle(maxTextLevel=max_text_level)
 
     def item_clicked(self, scatter_item, items, event):
         """Emit the selected structure index when a scatter point is clicked.
@@ -231,14 +252,20 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         if not other_plots:
             self.addItem(self.current_axes, row=0, col=0, colspan=1)
             self.current_axes.rmse_size = 12
+            if hasattr(self.current_axes, "set_compact_axes"):
+                self.current_axes.set_compact_axes(False)
             self.ci.layout.setRowStretchFactor(0, 1)
             return
 
         self.addItem(self.current_axes, row=0, col=0, colspan=4)
         self.current_axes.rmse_size = 12
+        if hasattr(self.current_axes, "set_compact_axes"):
+            self.current_axes.set_compact_axes(False)
         for i, other_plot in enumerate(other_plots):
             self.addItem(other_plot, row=1, col=i)
             other_plot.rmse_size = 6
+            if hasattr(other_plot, "set_compact_axes"):
+                other_plot.set_compact_axes(True)
 
         for row, factor in enumerate([3, 1]):
             self.ci.layout.setRowStretchFactor(row, factor)
@@ -252,6 +279,9 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         Invoked after data mutations (delete, undo, reload) to refresh the canvas.
         """
         self.nep_result_data.select_index.clear()
+        clear_selection_history = getattr(self.nep_result_data, "clear_selection_history", None)
+        if clear_selection_history is not None:
+            clear_selection_history()
 
         for index, _dataset in enumerate(self.nep_result_data.datasets):
             plot = self.axes_list[index]
@@ -310,6 +340,8 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         reject = getattr(self.nep_result_data, "reject_index", None)
         if reject:
             self.set_reject_highlight(list(reject), True)
+        if self._search_highlight_indices:
+            self.set_search_highlight(self._search_highlight_indices)
 
     def plot_current_point(self, structure_index):
         """Highlight the selected structure across all axes.
@@ -393,6 +425,10 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             Brush applied to the selected points.
         """
 
+        if color is Brushes.Show:
+            self.set_search_highlight(structure_index)
+            return
+
         for i, plot in enumerate(self.axes_list):
 
             if not plot._scatter:
@@ -404,6 +440,48 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
             plot._scatter.data['sourceRect'][index_list] = (0, 0, 0, 0)
 
             plot._scatter.updateSpots()
+
+    def set_search_highlight(self, indices):
+        """Replace the current search halo on every result subplot."""
+        super().set_search_highlight(indices)
+        wanted = self._search_highlight_indices
+        for plot in self.axes_list:
+            scatter = getattr(plot, "_scatter", None)
+            if scatter is None or scatter.data is None or len(scatter.data) == 0:
+                plot.set_search_highlight([], [])
+                continue
+            structure_ids = np.asarray(scatter.data["data"], dtype=np.int64)
+            mask = np.isin(structure_ids, np.fromiter(wanted, dtype=np.int64)) if wanted else np.zeros(structure_ids.size, dtype=bool)
+            plot.set_search_highlight(scatter.data["x"][mask], scatter.data["y"][mask])
+
+    def clear_search_highlight(self):
+        """Remove every search halo while preserving selection and reject state."""
+        super().clear_search_highlight()
+        for plot in self.axes_list:
+            plot.set_search_highlight([], [])
+
+    def rebuild_selection_display(self):
+        """Rebuild point brushes from the current selection set."""
+        if self.nep_result_data is None:
+            return
+        selected = set(getattr(self.nep_result_data, "select_index", set()))
+        reject = set(getattr(self.nep_result_data, "reject_index", set()) or set())
+        for plot in self.axes_list:
+            scatter = getattr(plot, "_scatter", None)
+            if not scatter:
+                continue
+            base = getattr(plot, "_overlay_base_brush", None)
+            if base is not None:
+                scatter.data["brush"] = np.array(base, copy=True)
+            data = scatter.data["data"]
+            selected_rows = [i for i, value in enumerate(data) if int(value) in selected]
+            reject_rows = [i for i, value in enumerate(data) if int(value) in reject and int(value) not in selected]
+            if reject_rows:
+                scatter.data["brush"][reject_rows] = Brushes.Reject
+            if selected_rows:
+                scatter.data["brush"][selected_rows] = Brushes.Selected
+            scatter.data["sourceRect"][:] = (0, 0, 0, 0)
+            scatter.updateSpots()
 
     def set_reject_highlight(self, structure_indices, enabled: bool) -> None:
         """Toggle the reject highlight for the provided structure indices.
@@ -447,6 +525,8 @@ class PyqtgraphCanvas(CanvasLayoutBase, GraphicsLayoutWidget, metaclass=Combined
         """Apply read-only overlay coloring for a synthetic single-plot dataset."""
         if self.nep_result_data is None:
             return
+
+        self.clear_search_highlight()
 
         loaded_ids = {int(v) for v in np.atleast_1d(np.asarray(loaded_index, dtype=np.int64)).tolist()} if loaded_index is not None else set()
         selected_ids = {int(v) for v in np.atleast_1d(np.asarray(selected_index, dtype=np.int64)).tolist()} if selected_index is not None else set()

@@ -1,133 +1,82 @@
 <div align="center">
 <a href="https://github.com/aboys-cb/NepTrainKit">
-  <img src="./src/NepTrainKit/src/images/logo.svg" width="25%" alt="NepTrainKit Logo">
-</a><br>    
-<a href="https://pypi.org/project/NepTrainKit"><img src="https://img.shields.io/pypi/dm/NepTrainKit?logo=pypi&logoColor=white&color=blue&label=PyPI" alt="PyPI Downloads"></a>   
-<a href="https://python.org/downloads"><img src="https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python&logoColor=white" alt="Python Version"></a>  
+  <img src="https://raw.githubusercontent.com/aboys-cb/NepTrainKit/master/src/NepTrainKit/src/images/logo.png" width="25%" alt="NepTrainKit logo">
+</a><br>
+<a href="https://pypi.org/project/NepTrainKit"><img src="https://img.shields.io/pypi/dm/NepTrainKit?logo=pypi&logoColor=white&color=blue&label=PyPI" alt="PyPI downloads"></a>
+<a href="https://python.org/downloads"><img src="https://img.shields.io/badge/Python-3.10--3.13-blue.svg?logo=python&logoColor=white" alt="Python version"></a>
 <a href="https://codecov.io/github/aboys-cb/NepTrainKit"><img src="https://codecov.io/github/aboys-cb/NepTrainKit/graph/badge.svg?token=HQ5FMLD91F" alt="Codecov"></a>
 <a href="https://github.com/aboys-cb/NepTrainKit/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0--or--later-blue" alt="License"></a>
+<br><br>
+<strong>English</strong> | <a href="https://github.com/aboys-cb/NepTrainKit/blob/master/README.zh-CN.md">简体中文</a>
 </div>
-
-
----
 
 # NepTrainKit
 
-**NepTrainKit** is a toolkit focused on the operation and visualization of **neuroevolution potential** (NEP) training datasets. It is mainly used to simplify and optimize the NEP model training process, providing an intuitive graphical interface and analysis tools to help users adjust  train dataset.
+NepTrainKit is a desktop application for preparing, auditing, and visualizing training datasets for neuroevolution potentials (NEPs). It complements, rather than replaces, long-running GPUMD training or DFT calculations. Its focus is the repetitive work around those calculations: generating candidate structures, cleaning problematic samples, selecting representative configurations, and passing a well-prepared dataset back into the DFT and GPUMD workflow.
 
----
+## What you can do
 
-## Community Support
-
-- Join the community chat: [https://qm.qq.com/q/wPDQYHMhyg](https://qm.qq.com/q/wPDQYHMhyg)
-- Report issues or contribute via [GitHub Issues](https://github.com/aboys-cb/NepTrainKit/issues)
-
----
+- **Make Dataset**: generate strained, perturbed, defective, surface, doped, magnetic, and solvated candidate structures with composable cards.
+- **NEP Dataset Display**: inspect structures, errors, and distributions; remove problematic samples; and export a clean subset.
+- **Representative selection**: reduce a candidate pool to a smaller, more representative set with methods such as farthest point sampling (FPS).
+- **Training-result inspection**: load NEP- and DeepMD-related outputs, locate high-error structures, and identify data gaps for the next iteration.
+- **Project tracking**: use Data Management to record models, dataset paths, and notes across multiple iterations.
 
 ## Installation
 
-> **It is strongly recommended to use pip for installation.**
+We recommend installing NepTrainKit in a dedicated Python environment. Python 3.10 through 3.13 is supported.
 
-### Method 1: Install via pip
+```bash
+conda create -n nepkit python=3.10
+conda activate nepkit
+pip install NepTrainKit
+```
 
-If you are using Python 3.10 or a later version, you can install `NepTrainKit` using an environment manager like `conda`:
+After installation, launch the application with either command:
 
-1. Create a new environment:
+```bash
+nepkit
+# or
+NepTrainKit
+```
 
-   ```bash
-   conda create -n nepkit python=3.10
-   ```
+### NEP compute backend
 
-2. Activate the environment:
+NepTrainKit does not compile the NEP compute backend into the application. `pip` installs the separate `nep-adapters` dependency:
 
-   ```bash
-   conda activate nepkit
-   ```
+| Platform | Installed backend |
+| --- | --- |
+| macOS / Windows | CPU |
+| Linux x86_64 | CPU and CUDA in one wheel |
 
-3. For CentOS users, install PySide6 (required for GUI functionality):
+The Linux CUDA path requires a compatible NVIDIA driver, but installing the wheel does not require a local CUDA toolkit or NVCC. Source builds and supported CUDA architectures are documented in the [NEPAdapters repository](https://github.com/MagTheoryLab/NEPAdapters).
 
-   ```bash
-   conda install -c conda-forge pyside6
-   ```
+After launching NepTrainKit, select `Auto`, `CPU`, or `CUDA` under `Settings → NEP Backend`. `Auto` uses CUDA when the installed wheel, driver, and model support it; otherwise NepTrainKit explains why it is continuing on CPU. Explicit `CUDA` requests fail instead of silently changing backend.
 
-- Install directly using the `pip install` command:
+`Settings → NEP Settings → NEP runtime updates` can install a compatible `nep-adapters` update without replacing NepTrainKit. NepTrainKit also checks this runtime in the background whenever the app opens; no-update and network-failure cases stay silent, while an available update opens an installation prompt. Pip installations store the managed wheel under the user configuration directory; the Windows standalone build stores it under `runtime/nep-adapters/versions` beside `NepTrainKit.exe`. A wheel is activated only after SHA256 verification and a fresh-process health check, and takes effect after restart.
 
-  ```bash
-  pip install NepTrainKit
-  ```
+Confirm the installed runtime with:
 
-  > **GPU build note (Linux/WSL2):** The build auto‑detects CUDA. If a compatible CUDA
-  > toolkit is present, the NEP backend is compiled with GPU acceleration; otherwise,
-  > it falls back to a CPU‑only build. If CUDA is not detected automatically, export
-  > one of `CUDA_HOME` or `CUDA_PATH` and ensure the `lib64` directory is on your loader path
-  > before running `pip install`:
+```bash
+python -c "import nep_adapters as n; print(n.backend_status('cpu')); print(n.backend_status('cuda'))"
+```
 
-  ```bash
-  # choose your installed CUDA version/path
-  export CUDA_HOME=/usr/local/cuda-12.4
-  export PATH="$CUDA_HOME/bin:$PATH"
-  export LD_LIBRARY_PATH="$CUDA_HOME/lib64:${LD_LIBRARY_PATH}"
+### Windows package
 
-  # (optional) if you need to explicitly target your GPU compute capability (SM),
-  # set NEP_GPU_GENCODE before pip install, e.g. for Turing (7.5):
-  export NEP_GPU_GENCODE="arch=compute_75,code=sm_75"
-  # or multiple targets:
-  # export NEP_GPU_GENCODE="-gencode arch=compute_75,code=sm_75 -gencode arch=compute_86,code=sm_86"
-  # now install
-  pip install NepTrainKit
-  ```
+If you prefer not to compile NepTrainKit locally, download `NepTrainKit.windows-x86_64.zip` from [GitHub Releases](https://github.com/aboys-cb/NepTrainKit/releases). This package requires 64-bit Windows on x86_64 hardware.
 
-  > **GPU build note (Windows PowerShell):** Set `CUDA_PATH` (or `CUDA_HOME`) and add
-  > `bin` to `Path` before `pip install`:
+## Documentation and support
 
-  ```powershell
-  $env:CUDA_PATH = "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.4"
-  $env:Path = "$env:CUDA_PATH\\bin;" + $env:Path
-  pip install NepTrainKit
-  ```
+- User documentation: [neptrainkit.readthedocs.io](https://neptrainkit.readthedocs.io/en/latest/)
+- Release notes: [GitHub Releases](https://github.com/aboys-cb/NepTrainKit/releases)
+- Bug reports and feature requests: [GitHub Issues](https://github.com/aboys-cb/NepTrainKit/issues)
+- Community: [QQ group invitation](https://qm.qq.com/q/wPDQYHMhyg)
 
-  After installation, you can call the program using either `NepTrainKit` or `nepkit`.
-
-- For the **latest version** (from GitHub):
-
-  ```bash
-  pip install git+https://github.com/aboys-cb/NepTrainKit.git
-  ```
-
----
-
-### Method 2: Windows Executable
-
-A standalone executable is available for Windows users.
-
-- Visit the [Releases](https://github.com/aboys-cb/NepTrainKit/releases) page
-- Download `NepTrainKit.win32.zip`
-
- > Note: Only supported on Windows platforms.
-
-### GPU Acceleration (optional)
-
-- NepTrainKit includes an optional GPU‑accelerated NEP backend.
-- Requirements: NVIDIA GPU/driver compatible with CUDA 12.4 runtime.
-- Selection: In the app, go to Settings → NEP Backend and choose Auto/CPU/GPU.
-  - Auto tries GPU first and falls back to CPU if unavailable.
-  - Adjust GPU Batch Size to balance speed and memory.
-  - If you see “CUDA driver version is insufficient for CUDA runtime version”, switch to CPU.
-
----
-
-## Documentation
-
-For detailed usage documentation and examples, please refer to the official documentation:  
-[https://neptrainkit.readthedocs.io/en/latest/index.html](https://neptrainkit.readthedocs.io/en/latest/index.html)
-
-- What's new: see [GitHub Releases](https://github.com/aboys-cb/NepTrainKit/releases).
-
----
+If this is your first time using NepTrainKit, begin with **Quickstart** and **Cleaning candidate structures before DFT** in the user documentation. If you already know which class of configurations you need, go directly to the Make Dataset card reference.
 
 ## Citation
 
-If you use NepTrainKit in academic work, please cite the following publication and acknowledge the upstream projects where appropriate:
+If NepTrainKit contributes to your research, please cite:
 
 ```bibtex
 @article{CHEN2025109859,
@@ -143,21 +92,10 @@ author = {Chengbing Chen and Yutong Li and Rui Zhao and Zhoulin Liu and Zheyong 
 }
 ```
 
-## Licensing and Attribution
+## License and third-party code
 
+NepTrainKit is licensed under the GNU General Public License v3.0 or later. See [LICENSE](./LICENSE) for details.
 
-- License: This repository is licensed under the GNU General Public License v3.0
-  (or, at your option, any later version). See `LICENSE` at the repository root.
-- Third‑party code: NepTrainKit incorporates source files and adapted logic from:
-  - NEP_CPU (by Zheyong Fan, Junjie Wang, Eric Lindgren, and contributors):
-    https://github.com/brucefan1983/NEP_CPU (GPL‑3.0‑or‑later)
-  - GPUMD (by Zheyong Fan and the GPUMD development team):
-    https://github.com/brucefan1983/GPUMD (GPL‑3.0‑or‑later)
-- Directory‑level notes: See `src/nep_cpu/README.md` and `src/nep_gpu/README.md` for
-  file‑level provenance, what was modified or added, and links to the upstream projects.
-  A consolidated overview is also available in `THIRD_PARTY_NOTICES.md`.
-- Redistribution: Any modifications and redistributions must remain under the GPL and
-  preserve copyright and license notices, per the GPL requirements.
+NEP computation is provided by the separate [nep-adapters](https://github.com/MagTheoryLab/NEPAdapters) dependency. NepTrainKit no longer vendors the NEP_CPU or GPUMD backend source trees.
 
-For academic use, cite NepTrainKit as shown above and acknowledge
-NEP_CPU and/or GPUMD as appropriate.
+See [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for the remaining attribution in this repository. The `nep-adapters` distribution carries its own backend source notices and licenses.

@@ -27,7 +27,7 @@ from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
 from NepTrainKit.core.card_manager import build_card_metadata
 from NepTrainKit.ui.dialogs import call_path_dialog
-from NepTrainKit.ui.threads import DataProcessingThread, FilterProcessingThread, LoadingThread
+from NepTrainKit.ui.threads import DataProcessingThread, FilterProcessingThread, BackgroundTask
 from NepTrainKit.version import DOCS_BASE_URL
 from .card_metadata import CardMetadataDialog
 from .label import ProcessLabel
@@ -117,7 +117,7 @@ class CheckableHeaderCardWidget(HeaderCardWidget):
         self.state_checkbox = CheckBox()
         self.state_checkbox.setChecked(True)
         self.state_checkbox.stateChanged.connect(self.state_changed)
-        self.state_checkbox.setToolTip("Enable or disable this card")
+        self.state_checkbox.setToolTip(self.tr("Enable or disable this card"))
         self.headerLayout.insertWidget(0, self.state_checkbox, 0, Qt.AlignmentFlag.AlignLeft)
         self.headerLayout.setStretch(1, 3)
         self.headerLayout.setContentsMargins(10, 0, 3, 0)
@@ -158,27 +158,34 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
         super(ShareCheckableHeaderCardWidget, self).__init__(parent)
         self.doc_button = TransparentToolButton(FluentIcon.HELP, self)
         self.doc_button.clicked.connect(self.open_online_doc)
-        self.doc_button.setToolTip("Open online documentation")
+        self.doc_button.setToolTip(self.tr("Open online documentation"))
+        self.doc_button.setAccessibleName(self.tr("Open online documentation"))
         self.doc_button.installEventFilter(ToolTipFilter(self.doc_button, 300, ToolTipPosition.TOP))
 
         self.info_button = TransparentToolButton(FluentIcon.INFO, self)
         self.info_button.clicked.connect(self.show_card_info)
-        self.info_button.setToolTip("Show card information and contributors")
+        self.info_button.setToolTip(self.tr("Show card information and contributors"))
+        self.info_button.setAccessibleName(
+            self.tr("Show card information and contributors")
+        )
         self.info_button.installEventFilter(ToolTipFilter(self.info_button, 300, ToolTipPosition.TOP))
 
         self.copy_json_button = TransparentToolButton(FluentIcon.COPY, self)
         self.copy_json_button.clicked.connect(self.copy_json_to_clipboard)
-        self.copy_json_button.setToolTip("Copy card JSON")
+        self.copy_json_button.setToolTip(self.tr("Copy card JSON"))
+        self.copy_json_button.setAccessibleName(self.tr("Copy card JSON"))
         self.copy_json_button.installEventFilter(ToolTipFilter(self.copy_json_button, 300, ToolTipPosition.TOP))
 
         self.export_button = TransparentToolButton(QIcon(":/images/src/images/export1.svg"), self)
         self.export_button.clicked.connect(self.exportSignal)
-        self.export_button.setToolTip("Export data")
+        self.export_button.setToolTip(self.tr("Export data"))
+        self.export_button.setAccessibleName(self.tr("Export data"))
         self.export_button.installEventFilter(ToolTipFilter(self.export_button, 300, ToolTipPosition.TOP))
 
         self.close_button = TransparentToolButton(FluentIcon.CLOSE, self)
         self.close_button.clicked.connect(self.close)
-        self.close_button.setToolTip("Close card")
+        self.close_button.setToolTip(self.tr("Close card"))
+        self.close_button.setAccessibleName(self.tr("Close card"))
         self.close_button.installEventFilter(ToolTipFilter(self.close_button, 300, ToolTipPosition.TOP))
 
         self.headerLayout.addWidget(self.doc_button, 0, Qt.AlignmentFlag.AlignRight)
@@ -243,7 +250,7 @@ class ShareCheckableHeaderCardWidget(CheckableHeaderCardWidget):
     def copy_json_to_clipboard(self) -> None:
         """Copy this card's current configuration JSON to the system clipboard."""
         QApplication.clipboard().setText(self.to_json_text())
-        MessageManager.send_success_message("Card JSON copied to clipboard.")
+        MessageManager.send_success_message(self.tr("Card JSON copied to clipboard."))
 
     def to_json_text(self) -> str:
         """Return this card's current configuration as pretty JSON text."""
@@ -263,6 +270,7 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
     docs_url = ""
 
     windowStateChangedSignal = Signal()
+    viewOutputSignal = Signal(object)
 
     def __init__(self, parent=None):
         """Configure collapse controls and state tracking.
@@ -275,13 +283,46 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         super().__init__(parent)
         self.setMouseTracking(True)
         self.window_state = "expand"
+        self._drag_start_pos = None
+        self.view_output_button = TransparentToolButton(
+            QIcon(":/images/src/images/show_nep.svg"),
+            self,
+        )
+        self.view_output_button.setEnabled(False)
+        self.view_output_button.setToolTip(self.tr("View this card output"))
+        self.view_output_button.setAccessibleName(self.tr("View this card output"))
+        self.view_output_button.installEventFilter(
+            ToolTipFilter(self.view_output_button, 300, ToolTipPosition.TOP)
+        )
+        self.view_output_button.clicked.connect(self.request_view_output)
+        self.headerLayout.insertWidget(
+            self.headerLayout.indexOf(self.export_button),
+            self.view_output_button,
+            0,
+            Qt.AlignmentFlag.AlignRight,
+        )
         self.collapse_button = TransparentToolButton(QIcon(":/images/src/images/collapse.svg"), self)
         self.collapse_button.clicked.connect(self.collapse)
-        self.collapse_button.setToolTip("Collapse or expand card")
+        self.collapse_button.setToolTip(self.tr("Collapse or expand card"))
+        self.collapse_button.setAccessibleName(self.tr("Collapse or expand card"))
         self.collapse_button.installEventFilter(ToolTipFilter(self.collapse_button, 300, ToolTipPosition.TOP))
 
         self.headerLayout.insertWidget(0, self.collapse_button, 0, Qt.AlignmentFlag.AlignLeft)
         self.windowStateChangedSignal.connect(self.update_window_state)
+
+    def request_view_output(self) -> None:
+        """Request opening this card's current result dataset."""
+        self.viewOutputSignal.emit(self)
+
+    def set_output_available(self, available: bool) -> None:
+        """Keep the card-level output action aligned with its result state."""
+        self.view_output_button.setEnabled(bool(available))
+
+    def mousePressEvent(self, e):
+        """Remember where a possible card drag started."""
+        if e.button() == Qt.MouseButton.LeftButton:
+            self._drag_start_pos = e.position().toPoint()
+        super().mousePressEvent(e)
 
     def mouseMoveEvent(self, e):
         """Enable drag-and-drop reordering for the card.
@@ -293,6 +334,15 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         """
         if e.buttons() != Qt.MouseButton.LeftButton:
             return
+
+        if self._drag_start_pos is None:
+            self._drag_start_pos = e.position().toPoint()
+            return
+
+        current_pos = e.position().toPoint()
+        if (current_pos - self._drag_start_pos).manhattanLength() < QApplication.startDragDistance():
+            return
+
         drag = QDrag(self)
         mime = QMimeData()
         drag.setMimeData(mime)
@@ -300,9 +350,10 @@ class MakeDataCardWidget(ShareCheckableHeaderCardWidget):
         pixmap = QPixmap(self.size())
         self.render(pixmap)
         drag.setPixmap(pixmap)
-        drag.setHotSpot(e.pos())
+        drag.setHotSpot(current_pos)
 
         drag.exec(Qt.DropAction.MoveAction)
+        self._drag_start_pos = None
 
     def collapse(self):
         """Toggle between collapsed and expanded states."""
@@ -362,7 +413,7 @@ class MakeDataCard(MakeDataCardWidget):
 
     separator = False
     card_name = "MakeDataCard"
-    menu_icon = r":/images/src/images/logo.svg"
+    menu_icon = r":/images/src/images/logo.png"
     runFinishedSignal = Signal(int)
 
     def __init__(self, parent=None):
@@ -377,6 +428,9 @@ class MakeDataCard(MakeDataCardWidget):
         self.exportSignal.connect(self.export_data)
         self.dataset: Any = None
         self.result_dataset = []
+        self._last_elapsed_seconds: float | None = None
+        self.run_outcome = "idle"
+        self._cancel_requested = False
         self.index = 0
         self.setting_widget = QWidget(self)
         self.viewLayout.setContentsMargins(3, 6, 3, 6)
@@ -405,6 +459,9 @@ class MakeDataCard(MakeDataCardWidget):
         """
         self.dataset = dataset
         self.result_dataset = []
+        self._last_elapsed_seconds = None
+        self.run_outcome = "idle"
+        self._cancel_requested = False
 
         self.update_dataset_info()
 
@@ -425,14 +482,14 @@ class MakeDataCard(MakeDataCardWidget):
         if self.dataset is not None:
             path = call_path_dialog(
                 self,
-                "Choose a file save location",
+                self.tr("Choose a file save location"),
                 "file",
                 f"export_{self.card_name.replace(' ', '_')}_structure.xyz",
                 file_filter="XYZ Files (*.xyz)",
             )
             if not path:
                 return
-            thread = LoadingThread(self, show_tip=True, title="Exporting data")
+            thread = BackgroundTask(self, show_tip=True, title=self.tr("Exporting data"))
             thread.start_work(self.write_result_dataset, path)
 
     def process_structure(self, structure):
@@ -468,26 +525,67 @@ class MakeDataCard(MakeDataCardWidget):
 
     def closeEvent(self, event):
         """Ensure worker threads are stopped before closing the card."""
-        if hasattr(self, "worker_thread"):
-            if self.worker_thread.isRunning():
-                self.worker_thread.terminate()
-                self.runFinishedSignal.emit(self.index)
-
+        was_running, stopped_now = self._stop_worker_thread(discard_results=False)
+        if was_running and stopped_now:
+            self.runFinishedSignal.emit(self.index)
+        if hasattr(self, "worker_thread") and self.worker_thread.isRunning():
+            event.ignore()
+            return
         self.deleteLater()
         super().closeEvent(event)
 
+    def _stop_worker_thread(self, discard_results: bool = False) -> tuple[bool, bool]:
+        """Request worker interruption before dropping its reference."""
+        if not hasattr(self, "worker_thread"):
+            return False, False
+
+        thread = self.worker_thread
+        was_running = thread.isRunning()
+        if was_running:
+            self._cancel_requested = True
+            thread.requestInterruption()
+            if not thread.wait(200):
+                self.run_outcome = "canceling"
+                self.set_output_available(False)
+                self.status_label.set_colors(["#d49b26"])
+                self.status_label.setText(self.tr("Stopping…"))
+                return True, False
+
+        if not discard_results:
+            self.result_dataset = thread.result_dataset
+        else:
+            self.result_dataset = []
+        self._last_elapsed_seconds = None
+        del self.worker_thread
+        if was_running:
+            self._apply_canceled_state()
+        return was_running, was_running
+
+    def _wait_for_worker_thread(self):
+        """Wait for a worker that just emitted completion before deleting it."""
+        if not hasattr(self, "worker_thread"):
+            return None
+        thread = self.worker_thread
+        if thread.isRunning():
+            thread.wait()
+        return thread
+
     def stop(self):
         """Stop any running processing thread and capture partial results."""
-        if hasattr(self, "worker_thread"):
-            if self.worker_thread.isRunning():
-                self.worker_thread.terminate()
-                self.result_dataset = self.worker_thread.result_dataset
-                self.update_dataset_info()
-                del self.worker_thread
+        was_running, stopped_now = self._stop_worker_thread(discard_results=False)
+        if was_running and stopped_now:
+            self.runFinishedSignal.emit(self.index)
 
     def run(self):
         """Launch processing in a background thread when enabled."""
         if self.check_state:
+            if hasattr(self, "worker_thread") and self.worker_thread.isRunning():
+                return
+            self.run_outcome = "running"
+            self._cancel_requested = False
+            self.result_dataset = []
+            self._last_elapsed_seconds = None
+            self.set_output_available(False)
             operation = self.create_operation()
             params = self.get_params()
             if isinstance(operation, StructureOperation):
@@ -518,6 +616,8 @@ class MakeDataCard(MakeDataCardWidget):
             self.worker_thread.start()
         else:
             self.result_dataset = self.dataset
+            self._last_elapsed_seconds = 0.0
+            self.run_outcome = "succeeded"
             self.update_dataset_info()
             self.runFinishedSignal.emit(self.index)
 
@@ -529,12 +629,24 @@ class MakeDataCard(MakeDataCardWidget):
         progress : int
             Percentage reported by the background worker.
         """
-        self.status_label.setText(f"Processing {progress}%")
+        if self.run_outcome != "running":
+            return
+        self.status_label.setText(self.tr("Processing {progress}%").format(progress=progress))
         self.status_label.set_progress(progress)
 
     def on_processing_finished(self):
         """Handle a successful run and emit the completion signal."""
-        self.result_dataset = self.worker_thread.result_dataset
+        worker_thread = self._wait_for_worker_thread()
+        if worker_thread is None:
+            return
+        self.result_dataset = worker_thread.result_dataset
+        self._last_elapsed_seconds = worker_thread.elapsed_seconds
+        if self._cancel_requested or getattr(worker_thread, "outcome", "") == "canceled":
+            del self.worker_thread
+            self._apply_canceled_state()
+            self.runFinishedSignal.emit(self.index)
+            return
+        self.run_outcome = "succeeded"
         self.update_dataset_info()
         self.status_label.set_colors(["#a5d6a7"])
         self.runFinishedSignal.emit(self.index)
@@ -551,17 +663,49 @@ class MakeDataCard(MakeDataCardWidget):
         self.close_button.setEnabled(True)
 
         self.status_label.set_colors(["red"])
-        self.result_dataset = self.worker_thread.result_dataset
+        worker_thread = self._wait_for_worker_thread()
+        if worker_thread is None:
+            return
+        self.result_dataset = []
+        self._last_elapsed_seconds = getattr(worker_thread, "elapsed_seconds", None)
         del self.worker_thread
-        self.update_dataset_info()
+        self.run_outcome = "failed"
+        self.set_output_available(False)
+        failure_text = self.tr("Failed: {error}").format(error=error)
+        self.status_label.setText(failure_text)
+        self.status_label.setToolTip(failure_text)
         self.runFinishedSignal.emit(self.index)
 
-        MessageManager.send_error_message(f"Error occurred: {error}")
+        MessageManager.send_error_message(self.tr("Error occurred: {error}").format(error=error))
+
+    def _apply_canceled_state(self) -> None:
+        """Mark partial worker output as unavailable after cancellation."""
+        self.run_outcome = "canceled"
+        self.set_output_available(False)
+        self.status_label.set_colors(["#d49b26"])
+        self.status_label.setText(
+            self.tr("Stopped | Partial output: {output_count}").format(
+                output_count=len(self.result_dataset),
+            )
+        )
 
     def update_dataset_info(self):
         """Display dataset statistics in the status label."""
-        text = f"Input structures: {len(self.dataset)} -> Output: {len(self.result_dataset)}"
-        self.status_label.setText(text)
+        self.set_output_available(bool(self.result_dataset))
+        self.status_label.setText(self._format_dataset_info())
+
+    def _format_dataset_info(self) -> str:
+        """Return the compact input/output/time summary shown below the card."""
+        text = self.tr("Input: {input_count} -> Output: {output_count}").format(
+            input_count=len(self.dataset),
+            output_count=len(self.result_dataset),
+        )
+        if self._last_elapsed_seconds is not None:
+            text = self.tr("{summary} | Time: {seconds:.2f} s").format(
+                summary=text,
+                seconds=self._last_elapsed_seconds,
+            )
+        return text
 
 
 class FilterDataCard(MakeDataCard):
@@ -570,31 +714,24 @@ class FilterDataCard(MakeDataCard):
     def __init__(self, parent=None):
         """Initialize the filter card and configure the title."""
         super().__init__(parent)
-        self.setTitle("Filter Data")
+        self.setTitle(self.tr("Filter data"))
 
     def stop(self):
         """Terminate the worker thread and discard partial results."""
-        if hasattr(self, "worker_thread"):
-            if self.worker_thread.isRunning():
-                self.worker_thread.terminate()
-                self.result_dataset = []
-                self.update_dataset_info()
-                del self.worker_thread
+        was_running, stopped_now = self._stop_worker_thread(discard_results=True)
+        if was_running and stopped_now:
+            self.runFinishedSignal.emit(self.index)
 
     def update_progress(self, progress):
         """Display worker progress in the status label."""
-        self.status_label.setText(f"Processing {progress}%")
+        if self.run_outcome != "running":
+            return
+        self.status_label.setText(self.tr("Processing {progress}%").format(progress=progress))
         self.status_label.set_progress(progress)
 
     def on_processing_finished(self):
         """Refresh status once filtering completes."""
-        if hasattr(self, "worker_thread"):
-            self.result_dataset = self.worker_thread.result_dataset
-        self.update_dataset_info()
-        self.status_label.set_colors(["#a5d6a7"])
-        self.runFinishedSignal.emit(self.index)
-        if hasattr(self, "worker_thread"):
-            del self.worker_thread
+        super().on_processing_finished()
 
     def on_processing_error(self, error):
         """Handle errors raised during filtering.
@@ -604,20 +741,9 @@ class FilterDataCard(MakeDataCard):
         error : Exception
             Exception raised by the worker thread.
         """
-        self.close_button.setEnabled(True)
-
-        self.status_label.set_colors(["red"])
-
-        del self.worker_thread
-        self.update_dataset_info()
-        self.runFinishedSignal.emit(self.index)
-
-        MessageManager.send_error_message(f"Error occurred: {error}")
+        super().on_processing_error(error)
 
     def update_dataset_info(self):
         """Display the number of structures kept by the filter."""
-        text = f"Input structures: {len(self.dataset)} -> Selected: {len(self.result_dataset)}"
-        self.status_label.setText(text)
-
-
-
+        self.set_output_available(bool(self.result_dataset))
+        self.status_label.setText(self._format_dataset_info())

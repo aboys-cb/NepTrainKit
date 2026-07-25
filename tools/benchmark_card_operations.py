@@ -52,6 +52,12 @@ from NepTrainKit.core.cards.defect import (  # noqa: E402
     VacancyDefectOperation,
     VacancyDefectParams,
 )
+from NepTrainKit.core.cards.filter import (  # noqa: E402
+    FPSFilterOperation,
+    FPSFilterParams,
+    GeometryFilterOperation,
+    GeometryFilterParams,
+)
 from NepTrainKit.core.cards.lattice import (  # noqa: E402
     CellScalingOperation,
     CellScalingParams,
@@ -69,6 +75,8 @@ from NepTrainKit.core.cards.lattice import (  # noqa: E402
 from NepTrainKit.core.cards.magnetism import (  # noqa: E402
     FoldedHelixOperation,
     FoldedHelixParams,
+    CorrelatedRandomSpinOperation,
+    CorrelatedRandomSpinParams,
     MagneticMomentRotationOperation,
     MagneticMomentRotationParams,
     MagneticOrderOperation,
@@ -91,8 +99,16 @@ from NepTrainKit.core.cards.structure import (  # noqa: E402
     LayerCopyParams,
     OrganicMolConfigPBCOperation,
     OrganicMolConfigPBCParams,
+    RandomPackingOperation,
+    RandomPackingParams,
     VibrationModePerturbOperation,
     VibrationModePerturbParams,
+)
+from NepTrainKit.core.cards.solvation import (  # noqa: E402
+    LocalSolvationOperation,
+    LocalSolvationParams,
+    SolventBoxFillOperation,
+    SolventBoxFillParams,
 )
 
 
@@ -171,6 +187,23 @@ def methane_like() -> Atoms:
     return atoms
 
 
+def pbte_pair() -> Atoms:
+    atoms = Atoms(
+        "PbTe",
+        positions=[[0.0, 0.0, 0.0], [3.0, 3.0, 3.0]],
+        cell=np.diag([12.0, 12.0, 12.0]),
+        pbc=True,
+    )
+    atoms.info["Config_type"] = "PbTe"
+    return atoms
+
+
+def sparse_box() -> Atoms:
+    atoms = Atoms("Na", positions=[[10.0, 10.0, 10.0]], cell=np.diag([30.0, 30.0, 30.0]), pbc=True)
+    atoms.info["Config_type"] = "SparseBox"
+    return atoms
+
+
 def require_outputs(outputs: list, *, min_count: int = 1, tag: str | None = None) -> None:
     if not isinstance(outputs, list):
         raise AssertionError(f"operation returned {type(outputs).__name__}, expected list")
@@ -201,11 +234,18 @@ def run_generator(operation, params) -> Runner:
     return lambda: operation.generate(params)
 
 
+def run_dataset(operation, dataset: list[Atoms], params) -> Runner:
+    return lambda: operation.run_dataset(list(dataset), params)
+
+
 def build_cases() -> list[BenchCase]:
     si = si_bulk()
     cu = cu_bulk()
     spin = fe_spin_bulk()
+    corr_spin = fe_spin_bulk((3, 3, 3))
     vib = vib_si()
+    box = sparse_box()
+    pbte_dataset = [pbte_pair() for _ in range(20)]
 
     occ = cu.copy()
     occ.info["Config_type"] = "CuBase|Comp(Ni=0.5,Co=0.5)"
@@ -222,6 +262,33 @@ def build_cases() -> list[BenchCase]:
                 CrystalPrototypeBuilderParams(lattice="fcc", element="Cu", a_range=(3.55, 3.65, 0.05), max_atoms=256, max_outputs=3),
             ),
             require_count_and_tag(3, "Proto("),
+        ),
+        BenchCase(
+            "filter",
+            "GeometryFilter:50x216",
+            run_dataset(
+                GeometryFilterOperation(),
+                [si.copy() for _ in range(50)],
+                GeometryFilterParams(min_pair_distance=1.0, require_finite_cell=True),
+            ),
+            lambda outputs: require_outputs(outputs, min_count=50),
+            "dataset filter; pair cutoff enabled",
+        ),
+        BenchCase(
+            "filter",
+            "FPSFilter:20->5",
+            run_dataset(
+                FPSFilterOperation(),
+                pbte_dataset,
+                FPSFilterParams(
+                    nep_path=str(PROJECT_ROOT / "tests/data/nep/nep.txt"),
+                    n_samples=5,
+                    min_distance=0.0,
+                    backend="cpu",
+                ),
+            ),
+            lambda outputs: require_outputs(outputs, min_count=5),
+            "uses bundled Pb/Te test NEP",
         ),
         BenchCase(
             "lattice",
@@ -303,6 +370,36 @@ def build_cases() -> list[BenchCase]:
             ),
             require_outputs,
             "small molecule, low perturb count",
+        ),
+        BenchCase(
+            "structure",
+            "RandomPacking:16x32",
+            run_structure(
+                RandomPackingOperation(),
+                box,
+                RandomPackingParams(structures=16, composition="Ar:32", min_distance=2.0, max_attempts_per_atom=500, use_seed=True, seed=17),
+            ),
+            require_count_and_tag(16, "RandPack("),
+        ),
+        BenchCase(
+            "solvation",
+            "SolventBoxFill:4x50water",
+            run_structure(
+                SolventBoxFillOperation(),
+                box,
+                SolventBoxFillParams(structures=4, solvent_count=50, min_distance=1.2, max_attempts_per_solvent=200, use_seed=True, seed=18),
+            ),
+            require_count_and_tag(4, "SolvBox("),
+        ),
+        BenchCase(
+            "solvation",
+            "LocalSolvation:4x20water",
+            run_structure(
+                LocalSolvationOperation(),
+                box,
+                LocalSolvationParams(structures=4, solvent_count=20, center_mode="all", shell=(2.5, 10.0), min_distance=1.2, max_attempts=2000, use_seed=True, seed=19),
+            ),
+            require_count_and_tag(4, "SolvLocal("),
         ),
         BenchCase(
             "alloy",
@@ -436,6 +533,16 @@ def build_cases() -> list[BenchCase]:
             run_structure(SpinDisorderOperation(), spin, SpinDisorderParams(fractions="0.1,0.3,0.5,0.7", samples_per_fraction=8, use_seed=True, seed=16, max_outputs=32)),
             require_count_and_tag(32, "SpinDis("),
         ),
+        BenchCase(
+            "magnetism",
+            "CorrelatedRandomSpin:16",
+            run_structure(
+                CorrelatedRandomSpinOperation(),
+                corr_spin,
+                CorrelatedRandomSpinParams(samples=16, correlation_length=3.0, max_atoms_for_full=200, use_seed=True, seed=20),
+            ),
+            require_count_and_tag(16, "CorrSpin("),
+        ),
     ]
 
     return cases
@@ -445,7 +552,10 @@ def build_count50_cases() -> list[BenchCase]:
     si = si_bulk()
     cu = cu_bulk()
     spin = fe_spin_bulk()
+    corr_spin = fe_spin_bulk((3, 3, 3))
     vib = vib_si()
+    box = sparse_box()
+    pbte_dataset = [pbte_pair() for _ in range(50)]
 
     occ = cu.copy()
     occ.info["Config_type"] = "CuBase|Comp(Ni=0.5,Co=0.5)"
@@ -462,6 +572,33 @@ def build_count50_cases() -> list[BenchCase]:
                 CrystalPrototypeBuilderParams(lattice="fcc", element="Cu", a_range=(3.50, 3.99, 0.01), max_atoms=256, max_outputs=50),
             ),
             require_count_and_tag(50, "Proto("),
+        ),
+        BenchCase(
+            "filter",
+            "GeometryFilter:500x216",
+            run_dataset(
+                GeometryFilterOperation(),
+                [si.copy() for _ in range(500)],
+                GeometryFilterParams(min_pair_distance=1.0, require_finite_cell=True),
+            ),
+            lambda outputs: require_outputs(outputs, min_count=500),
+            "dataset filter pressure case",
+        ),
+        BenchCase(
+            "filter",
+            "FPSFilter:50->10",
+            run_dataset(
+                FPSFilterOperation(),
+                pbte_dataset,
+                FPSFilterParams(
+                    nep_path=str(PROJECT_ROOT / "tests/data/nep/nep.txt"),
+                    n_samples=10,
+                    min_distance=0.0,
+                    backend="cpu",
+                ),
+            ),
+            lambda outputs: require_outputs(outputs, min_count=10),
+            "uses bundled Pb/Te test NEP",
         ),
         BenchCase(
             "lattice",
@@ -523,6 +660,36 @@ def build_count50_cases() -> list[BenchCase]:
                 OrganicMolConfigPBCParams(perturb_per_frame=50, max_torsions_per_conf=2, local_cutoff=64, local_subtree=32, use_seed=True, seed=5),
             ),
             lambda outputs: require_outputs(outputs, min_count=50, tag="TG("),
+        ),
+        BenchCase(
+            "structure",
+            "RandomPacking:50x32",
+            run_structure(
+                RandomPackingOperation(),
+                box,
+                RandomPackingParams(structures=50, composition="Ar:32", min_distance=2.0, max_attempts_per_atom=500, use_seed=True, seed=17),
+            ),
+            require_count_and_tag(50, "RandPack("),
+        ),
+        BenchCase(
+            "solvation",
+            "SolventBoxFill:10x50water",
+            run_structure(
+                SolventBoxFillOperation(),
+                box,
+                SolventBoxFillParams(structures=10, solvent_count=50, min_distance=1.2, max_attempts_per_solvent=200, use_seed=True, seed=18),
+            ),
+            require_count_and_tag(10, "SolvBox("),
+        ),
+        BenchCase(
+            "solvation",
+            "LocalSolvation:10x20water",
+            run_structure(
+                LocalSolvationOperation(),
+                box,
+                LocalSolvationParams(structures=10, solvent_count=20, center_mode="all", shell=(2.5, 10.0), min_distance=1.2, max_attempts=2000, use_seed=True, seed=19),
+            ),
+            require_count_and_tag(10, "SolvLocal("),
         ),
         BenchCase(
             "alloy",
@@ -644,6 +811,16 @@ def build_count50_cases() -> list[BenchCase]:
             run_structure(SpinDisorderOperation(), spin, SpinDisorderParams(fractions="0.1,0.2,0.3,0.5,0.7", samples_per_fraction=10, use_seed=True, seed=16, max_outputs=50)),
             require_count_and_tag(50, "SpinDis("),
         ),
+        BenchCase(
+            "magnetism",
+            "CorrelatedRandomSpin:50",
+            run_structure(
+                CorrelatedRandomSpinOperation(),
+                corr_spin,
+                CorrelatedRandomSpinParams(samples=50, correlation_length=3.0, max_atoms_for_full=200, use_seed=True, seed=20),
+            ),
+            require_count_and_tag(50, "CorrSpin("),
+        ),
     ]
 
 
@@ -745,7 +922,7 @@ def print_table(results: list[BenchResult]) -> None:
             print(f"{result.status:<6} {result.group:<10} {result.name:<34} {'-':>10} {'-':>10} {'-':>10} {'-':>6} {'-':>8}")
             print(f"       {result.error}")
     print()
-    print("Note: timings are operation-level and include the benchmark's fresh input copy for safety.")
+    print("Note: timings are operation-level. Structure cases copy each input before processing; dataset filters reuse the input structures.")
 
 
 def print_chain_table(results: list[BenchResult]) -> None:
@@ -784,7 +961,7 @@ def main(argv: list[str] | None = None) -> int:
     all_cases = build_count50_cases() if args.profile == "count50" else build_cases()
     cases = [case for case in all_cases if matches(case, args.only)]
     if args.chain_inputs > 0:
-        cases = [case for case in cases if case.group != "generator"]
+        cases = [case for case in cases if case.group not in {"generator", "filter"}]
     if args.list:
         for case in cases:
             print(f"{case.group}/{case.name}")

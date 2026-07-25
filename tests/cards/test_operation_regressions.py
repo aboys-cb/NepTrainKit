@@ -2,11 +2,31 @@ from .card_test_base import *
 
 from NepTrainKit.core.cards.alloy import sample_dopants
 from NepTrainKit.core.cards.defect import _range_values as defect_range_values
+from NepTrainKit.core.cards.geometry import scaled_positions, wrapped_positions
 from NepTrainKit.core.cards.magnetism import int_range_values, parse_pair_filter, range_values
 from NepTrainKit.core.io import farthest_point_sampling
 
 
 class TestOperationRegressionEdges(BaseCardTest):
+    def test_fast_geometry_wrap_matches_ase_for_skewed_partial_pbc_cell(self):
+        structure = Atoms(
+            "Si2",
+            positions=[[6.1, -5.2, 0.3], [0.2, 5.8, 5.7]],
+            cell=np.array(
+                [
+                    [5.4, 0.2, 0.1],
+                    [0.3, 5.5, 0.2],
+                    [0.1, 0.4, 5.6],
+                ]
+            ),
+            pbc=[True, False, True],
+        )
+        expected = structure.copy()
+        expected.wrap()
+
+        np.testing.assert_allclose(wrapped_positions(structure, structure.positions), expected.positions, atol=1e-12)
+        np.testing.assert_allclose(scaled_positions(structure, wrap=True), expected.get_scaled_positions(wrap=True), atol=1e-12)
+
     def test_noop_operations_return_copies(self):
         structure = self.structure.copy()
         structure.new_array("group", np.array(["A"] * len(structure), dtype=object))

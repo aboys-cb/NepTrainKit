@@ -15,24 +15,27 @@ class StackingFaultCard(MakeDataCard):
     group = "Defect"
     card_name = "Stacking Fault"
     menu_icon = r":/images/src/images/defect.svg"
+    contributors = [
+        {"name": "NepTrainKit", "role": "author"},
+    ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle("Make Stacking Fault")
+        self.setTitle(self.tr("Make Stacking Fault"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("stacking_fault_card_widget")
 
-        self.hkl_label = BodyLabel("h k l", self.setting_widget)
+        self.hkl_label = BodyLabel(self.tr("h k l"), self.setting_widget)
         self.hkl_frame = SpinBoxUnitInputFrame(self)
         self.hkl_frame.set_input("", 3, "int")
         self.hkl_frame.setRange(-10, 10)
         self.hkl_frame.set_input_value([1, 1, 1])
-        self.hkl_label.setToolTip("Enter Miller indices (h k l): Used to define the stacking fault plane.")
+        self.hkl_label.setToolTip(self.tr("Enter Miller indices (h k l): Used to define the stacking fault plane."))
         self.hkl_label.installEventFilter(ToolTipFilter(self.hkl_label, 0, ToolTipPosition.TOP))
 
-        self.step_label = BodyLabel("Displacement", self.setting_widget)
+        self.step_label = BodyLabel(self.tr("Displacement"), self.setting_widget)
         self.step_frame = SpinBoxUnitInputFrame(self)
         self.step_frame.set_input(["-", "step", "Å"], 3, "float")
         self.step_frame.setDecimals(4)
@@ -40,17 +43,17 @@ class StackingFaultCard(MakeDataCard):
         self.step_frame.setRange(-10, 10)
         self.step_frame.set_input_value([0.0, 1.0, 0.5])
         self.step_label.setToolTip(
-            "Displacement start, end, and step in Å along a deterministic in-plane slip direction."
+            self.tr("Displacement start, end, and step in Å along a deterministic in-plane slip direction.")
         )
         self.step_label.installEventFilter(ToolTipFilter(self.step_label, 0, ToolTipPosition.TOP))
 
-        self.layer_label = BodyLabel("Layers", self.setting_widget)
+        self.layer_label = BodyLabel(self.tr("Layers"), self.setting_widget)
         self.layer_frame = SpinBoxUnitInputFrame(self)
         self.layer_frame.set_input("", 1, "int")
         self.layer_frame.setRange(1, 100)
         self.layer_frame.set_input_value([1])
         self.layer_label.setToolTip(
-            "Number of layers: Controls the number of layers involved in the stacking fault."
+            self.tr("Number of layers: Controls the number of layers involved in the stacking fault.")
         )
         self.layer_label.installEventFilter(ToolTipFilter(self.layer_label, 0, ToolTipPosition.TOP))
 

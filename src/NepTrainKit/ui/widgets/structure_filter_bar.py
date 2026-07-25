@@ -622,10 +622,7 @@ class StructureFilterEditorPopup(QFrame):
         outer.setContentsMargins(10, 8, 10, 8)
         outer.setSpacing(6)
 
-        header = QHBoxLayout()
         self.title_label = StrongBodyLabel(self.tr("Edit structure filter"), self)
-        header.addWidget(self.title_label)
-        header.addStretch()
         self.preset_button = DropDownPushButton(FluentIcon.FILTER, self.tr("Saved filters"), self)
         self.preset_button.setFixedHeight(30)
         preset_text_width = self.preset_button.fontMetrics().horizontalAdvance(
@@ -635,7 +632,6 @@ class StructureFilterEditorPopup(QFrame):
         self.preset_button.setToolTip(self.tr("Load or save frequently used filter conditions"))
         self.preset_button.setAccessibleName(self.tr("Saved filters"))
         self.preset_menu = None
-        header.addWidget(self.preset_button)
         self.logic_combo = ComboBox(self)
         self.logic_combo.setFixedHeight(30)
         self.logic_combo.addItem(self.tr("Match all conditions (AND)"), userData=FilterLogic.ALL)
@@ -648,8 +644,35 @@ class StructureFilterEditorPopup(QFrame):
         )
         self.logic_combo.setFixedWidth(logic_text_width + 48)
         self.logic_combo.currentIndexChanged.connect(lambda _index: self._emit_spec())
-        header.addWidget(self.logic_combo)
-        outer.addLayout(header)
+
+        header_width = self.minimumWidth() - 40
+        header_spacing = 6
+        single_row_width = (
+            self.title_label.sizeHint().width()
+            + self.preset_button.width()
+            + self.logic_combo.width()
+            + 2 * header_spacing
+        )
+        if single_row_width <= header_width:
+            header = QHBoxLayout()
+            header.setSpacing(header_spacing)
+            header.addWidget(self.title_label)
+            header.addStretch()
+            header.addWidget(self.preset_button)
+            header.addWidget(self.logic_combo)
+            outer.addLayout(header)
+        else:
+            title_row = QHBoxLayout()
+            title_row.setSpacing(header_spacing)
+            title_row.addWidget(self.title_label)
+            title_row.addStretch()
+            title_row.addWidget(self.preset_button)
+            outer.addLayout(title_row)
+
+            logic_row = QHBoxLayout()
+            logic_row.addStretch()
+            logic_row.addWidget(self.logic_combo)
+            outer.addLayout(logic_row)
 
         self.scroll = QScrollArea(self)
         self.scroll.setWidgetResizable(True)

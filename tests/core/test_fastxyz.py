@@ -70,13 +70,19 @@ def test_index_frames_yields_the_gil_during_large_scans():
     fastxyz = pytest.importorskip("NepTrainKit._native._io")
     payload = memoryview(_single_atom_trajectory(50_000))
     result = {}
+    ready = threading.Event()
+    start = threading.Event()
 
     def run_index():
+        ready.set()
+        start.wait()
         result["frames"] = fastxyz.index_frames(payload)
 
     thread = threading.Thread(target=run_index)
     thread.start()
+    assert ready.wait(timeout=5)
     responsive_ticks = 0
+    start.set()
     while thread.is_alive():
         time.sleep(0.001)
         if thread.is_alive():

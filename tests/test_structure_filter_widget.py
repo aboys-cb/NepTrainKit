@@ -521,7 +521,7 @@ def test_narrow_english_layout_does_not_clip_header_rows_footer_or_bar_actions(b
     assert popup.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     assert popup.graphicsEffect() is None
     assert popup.card.graphicsEffect() is not None
-    assert popup.preset_button.geometry().right() < popup.logic_combo.geometry().left()
+    assert not popup.preset_button.geometry().intersects(popup.logic_combo.geometry())
     assert popup.preset_button.width() >= (
         popup.preset_button.fontMetrics().horizontalAdvance(
             popup.preset_button.text()

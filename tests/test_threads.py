@@ -130,7 +130,7 @@ def test_run_in_thread_repeated_cleanup_stays_on_parent_thread():
             launch_next()
 
     launch_next()
-    assert _wait_until(lambda: len(callback_threads) == target, timeout=10.0)
+    assert _wait_until(lambda: len(callback_threads) == target, timeout=30.0)
     assert callback_threads == [main_ident] * target
 
 

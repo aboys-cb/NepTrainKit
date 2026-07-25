@@ -631,7 +631,7 @@ class StructureFilterEditorPopup(QFrame):
         preset_text_width = self.preset_button.fontMetrics().horizontalAdvance(
             self.preset_button.text()
         )
-        self.preset_button.setMinimumWidth(preset_text_width + 64)
+        self.preset_button.setFixedWidth(preset_text_width + 64)
         self.preset_button.setToolTip(self.tr("Load or save frequently used filter conditions"))
         self.preset_button.setAccessibleName(self.tr("Saved filters"))
         self.preset_menu = None
@@ -646,7 +646,7 @@ class StructureFilterEditorPopup(QFrame):
             )
             for index in range(self.logic_combo.count())
         )
-        self.logic_combo.setMinimumWidth(logic_text_width + 48)
+        self.logic_combo.setFixedWidth(logic_text_width + 48)
         self.logic_combo.currentIndexChanged.connect(lambda _index: self._emit_spec())
         header.addWidget(self.logic_combo)
         outer.addLayout(header)

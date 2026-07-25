@@ -281,7 +281,7 @@ def test_popup_grows_to_five_rows_then_scrolls_and_inputs_have_field_hints(bar, 
         qapp.processEvents()
     five_row_height = popup.height()
     assert five_row_height > one_row_height
-    assert all(current.height() == popup._ROW_HEIGHT for current in popup._rows)
+    assert all(current.height() == popup._rows[0].height() for current in popup._rows)
 
     popup.add_button.click()
     qapp.processEvents()
@@ -542,16 +542,19 @@ def test_narrow_english_layout_does_not_clip_header_rows_footer_or_bar_actions(b
     row = popup._rows[0]
     assert row.enabled_switch.width() >= row.enabled_switch.minimumSizeHint().width()
     assert row.case_button.width() >= row.case_button.minimumSizeHint().width()
-    field_text_width = max(
-        row.field_combo.fontMetrics().horizontalAdvance(row.field_combo.itemText(index))
-        for index in range(row.field_combo.count())
-    )
-    mode_text_width = max(
-        row.mode_combo.fontMetrics().horizontalAdvance(row.mode_combo.itemText(index))
-        for index in range(row.mode_combo.count())
-    )
-    assert row.field_combo.width() >= field_text_width + 30
-    assert row.mode_combo.width() >= mode_text_width + 30
+    for index in range(row.field_combo.count()):
+        row.field_combo.setCurrentIndex(index)
+        qapp.processEvents()
+        field_text_width = row.field_combo.fontMetrics().horizontalAdvance(
+            row.field_combo.currentText()
+        )
+        mode_text_width = max(
+            row.mode_combo.fontMetrics().horizontalAdvance(row.mode_combo.itemText(mode_index))
+            for mode_index in range(row.mode_combo.count())
+        )
+        assert row.field_combo.width() >= field_text_width + 30
+        assert row.mode_combo.width() >= mode_text_width + 30
+        assert row.remove_button.geometry().right() <= row.width()
     assert bar.preview_button.width() >= bar.preview_button.sizeHint().width()
     assert bar.apply_button.width() >= bar.apply_button.sizeHint().width()
     popup._debounce.stop()

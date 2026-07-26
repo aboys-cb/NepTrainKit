@@ -54,11 +54,11 @@ Super Cell → Lattice Strain → Atomic Perturb
 | 扩大晶胞 | `Super Cell` |
 | 从标准晶体原型开始 | `Crystal Prototype Builder` |
 | 补弹性响应 | `Lattice Strain` / `Shear Matrix Strain` / `Shear Angle Strain` |
-| 补四方相变或 GSFE 路径 | `Bain Path` / `Strict GSFE Path` |
+| 补四方相变或层错 / GSFE 路径 | `Bain Path` / `Stacking Fault / GSFE Path` |
 | 补近平衡扰动 | `Atomic Perturb` / `Vibration Perturb` |
 | 做缺陷 | `Random Vacancy` / `Vacancy Defect` / `Insert Defect` |
-| 做表面或层错 | `Random Slab` / `Stacking Fault` |
-| 做合金或占位变化 | `Random Doping` / `Random Occupancy` / `Composition Sweep` |
+| 做表面或层错 | `Random Slab` / `Stacking Fault / GSFE Path` |
+| 做合金或占位变化 | `Random Doping` / `Random Occupancy` / `Composition Space Sampling` |
 | 做磁性构型 | `Magnetic Order` / `Set Magnetic Moments` / `Spin Spiral` |
 
 完整选择表见 [Make Dataset 卡片手册](make-dataset-cards/index.md)。

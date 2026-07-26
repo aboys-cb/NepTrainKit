@@ -8,8 +8,8 @@
 
 按规则表对指定元素位点做替位掺杂。可以精确控制"替换谁、换成什么、换多少"，支持按原子百分比、质量百分比或固定数量采样。
 
-**和 `Random Occupancy` / `Composition Sweep` 的区别：**
-- `Composition Sweep`：定义"目标配比空间"，不改原子占位
+**和 `Random Occupancy` / `Composition Space Sampling` 的区别：**
+- `Composition Space Sampling`：定义"目标配比空间"，不改原子占位
 - `Random Occupancy`：把目标配比落到离散占位上，需要输入有 `Comp(...)` 标签
 - `Random Doping`：直接给定规则（target + dopants + 比例），做一次随机替换。更直接、更手工，但不扫配比空间
 
@@ -47,7 +47,7 @@
 - 有明确的掺杂规则（target + dopants + 比例），但不需系统扫描完整配比空间
 
 **不加：**
-- 需要系统扫配比空间 → 先用 `Composition Sweep`，再接 `Random Occupancy`
+- 需要系统扫配比空间 → 先用 `Composition Space Sampling`，再接 `Random Occupancy`
 - 只需要全局随机占位 → 用 `Random Occupancy`
 
 ## 参数说明
@@ -147,7 +147,7 @@ rule 内的典型字段：`target`（被替换元素）、`dopants`（替换元�
 ## 推荐组合
 
 - `Group Label` → `Random Doping`：只掺杂特定子晶格/层，不污染其他区域
-- `Composition Sweep` → `Random Occupancy` → `Random Doping`：先扫配比 → 落位 → 再补局部随机替换
+- `Composition Space Sampling` → `Random Occupancy` → `Random Doping`：先扫配比 → 落位 → 再补局部随机替换
 - `Random Doping` → `Atomic Perturb`：掺杂后加坐标噪声，松驰局部应力
 
 ## 常见问题

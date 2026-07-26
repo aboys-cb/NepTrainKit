@@ -14,6 +14,7 @@ from qfluentwidgets import (
     CaptionLabel,
     CheckBox,
     FluentIcon,
+    MessageBox,
     PlainTextEdit,
     PushButton,
 )
@@ -41,6 +42,7 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self._refreshing = False
         self._rules_are_auto_managed = True
         self._applying_auto_rules = False
+        self._allow_legacy_fraction_weights = False
         self.setTitle(self.tr("Finite-Cell Alloy Occupancy"))
         self.init_ui()
 
@@ -52,6 +54,7 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self.settingLayout.setColumnStretch(1, 1)
 
         self.rules_editor = AlloySiteRulesEditor(self.setting_widget)
+        self.rules_editor.set_replacement_confirmation(self._confirm_rule_replacement)
         self.rules_editor.changed.connect(self._on_rules_changed)
         self.rules_editor.layoutChanged.connect(self._update_tab_order)
 
@@ -60,14 +63,17 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self.auto_match_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.auto_match_label.hide()
 
-        self.arrangements_label = BodyLabel(self.tr("Arrangements per composition"), self.setting_widget)
+        self.arrangements_label = BodyLabel(
+            self.tr("Arrangements per composition"),
+            self.setting_widget,
+        )
         self.arrangements_frame = SpinBoxUnitInputFrame(self)
         self.arrangements_frame.set_input("", 1, "int")
         self.arrangements_frame.setRange(1, 999999)
         self.arrangements_frame.set_input_value([1])
         self.arrangements_frame.setMaximumWidth(220)
 
-        self.seed_checkbox = CheckBox(self.tr("Use seed"), self.setting_widget)
+        self.seed_checkbox = CheckBox(self.tr("Use fixed seed"), self.setting_widget)
         self.seed_checkbox.setChecked(True)
         self.seed_frame = SpinBoxUnitInputFrame(self)
         self.seed_frame.set_input("", 1, "int")
@@ -75,7 +81,10 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self.seed_frame.set_input_value([0])
         self.seed_frame.setMaximumWidth(220)
 
-        self.max_outputs_label = BodyLabel(self.tr("Max outputs"), self.setting_widget)
+        self.max_outputs_label = BodyLabel(
+            self.tr("Max outputs per input"),
+            self.setting_widget,
+        )
         self.max_outputs_frame = SpinBoxUnitInputFrame(self)
         self.max_outputs_frame.set_input("", 1, "int")
         self.max_outputs_frame.setRange(1, 999999)
@@ -161,12 +170,45 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         if self._refreshing:
             return
         if not self._applying_auto_rules:
+            if self._rules_are_auto_managed and self._matching_placeholder_template():
+                self._auto_match_rules_to_input()
+                return
+            self._allow_legacy_fraction_weights = False
             self._rules_are_auto_managed = False
             self.auto_match_label.hide()
         self.json_error_label.clear()
         self._sync_advanced_json()
         self._refresh_validation_and_estimate()
         self._update_tab_order()
+
+    def _matching_placeholder_template(self) -> bool:
+        if not self._input_counts or self._input_structure is None:
+            return False
+        rules = self.rules_editor.to_rules()
+        if set(rules) != set(self._input_counts):
+            return False
+        return all(
+            rule.get("elements") == ["X"]
+            and rule.get("mode") == "fixed_fraction"
+            and rule.get("composition") == {"X": 1.0}
+            for rule in rules.values()
+        )
+
+    def _confirm_rule_replacement(self) -> bool:
+        if self._rules_are_auto_managed:
+            return True
+        box = MessageBox(
+            self.tr("Replace current site rules?"),
+            self.tr(
+                "Changing the site partition or applying a rule template will discard "
+                "your current site-set and element edits."
+            ),
+            self,
+        )
+        box.yesButton.setText(self.tr("Replace rules"))
+        box.cancelButton.setText(self.tr("Keep current rules"))
+        box.exec()
+        return box.result() != 0
 
     def _site_rules_text(self) -> str:
         return json.dumps(
@@ -226,34 +268,47 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         self._refresh_validation_and_estimate()
 
     @staticmethod
-    def _placeholder_rule() -> dict[str, object]:
-        return {
-            "elements": ["X"],
-            "mode": "fixed_fraction",
-            "composition": {"X": 1.0},
-        }
+    def _rules_from_structure(structure) -> dict[str, dict[str, object]]:
+        symbols = np.asarray(structure.get_chemical_symbols(), dtype=str)
+        if "sublattice" not in structure.arrays:
+            site_indices = {"all": np.arange(len(structure), dtype=int)}
+        else:
+            raw = np.asarray(structure.arrays["sublattice"], dtype=str)
+            labels = sorted({str(value).strip() for value in raw})
+            site_indices = {
+                label: np.nonzero(raw == label)[0].astype(int)
+                for label in labels
+            }
+
+        rules: dict[str, dict[str, object]] = {}
+        for label, indices in site_indices.items():
+            site_symbols = symbols[indices].tolist()
+            elements = list(dict.fromkeys(str(symbol) for symbol in site_symbols))
+            site_count = len(site_symbols)
+            composition = {
+                element: site_symbols.count(element) / site_count
+                for element in elements
+            }
+            rules[label] = {
+                "elements": elements,
+                "mode": "fixed_fraction",
+                "composition": composition,
+            }
+        return rules
 
     def _auto_match_rules_to_input(self) -> None:
-        """Match untouched placeholder rules to the actual input site partition."""
-        if not self._rules_are_auto_managed or not self._input_counts:
+        """Match untouched rules to the input partition and its current elements."""
+        if (
+            not self._rules_are_auto_managed
+            or not self._input_counts
+            or self._input_structure is None
+            or any(count <= 0 for count in self._input_counts.values())
+        ):
             self.auto_match_label.hide()
             return
 
-        labels = set(self._input_counts)
-        if labels == {"all"}:
-            ordered_labels = ("all",)
-        elif labels == {"A"}:
-            ordered_labels = ("A",)
-        elif labels == {"A", "B"}:
-            ordered_labels = ("A", "B")
-        else:
-            self.auto_match_label.hide()
-            return
-
-        target_rules = {
-            label: self._placeholder_rule()
-            for label in ordered_labels
-        }
+        target_rules = self._rules_from_structure(self._input_structure)
+        ordered_labels = tuple(target_rules)
         if self.rules_editor.to_rules() != target_rules:
             self._applying_auto_rules = True
             try:
@@ -262,7 +317,9 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
                 self._applying_auto_rules = False
 
         self.auto_match_label.setText(
-            self.tr("Automatically matched input site sets: {labels}.").format(
+            self.tr(
+                "Automatically matched site sets and current elements from input: {labels}."
+            ).format(
                 labels=", ".join(ordered_labels)
             )
         )
@@ -286,7 +343,7 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
         if "sublattice" not in structure.arrays:
             return {"all": len(structure)}
         raw = np.asarray(structure.arrays["sublattice"], dtype=str)
-        labels = list(dict.fromkeys(str(value).strip() for value in raw))
+        labels = sorted({str(value).strip() for value in raw})
         return {label: int(np.count_nonzero(raw == label)) for label in labels}
 
     def _params_from_controls(self) -> FiniteCellAlloyOccupancyParams:
@@ -307,7 +364,9 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
             errors = self.rules_editor.validation_errors(self._input_counts)
             if self._input_structure is None:
                 self.estimate_label.setText(
-                    self.tr("Run or load an upstream structure to calculate the exact composition count.")
+                    self.tr(
+                        "Load an upstream structure to estimate outputs from its first structure."
+                    )
                 )
                 return
             if errors:
@@ -340,18 +399,23 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
             truncated = theoretical > estimate.max_outputs
             self.estimate_label.setText(
                 self.tr(
-                    "Detected sites: {counts} · Feasible integer compositions: {compositions} · "
-                    "Requested arrangements per composition: {arrangements}\n"
-                    "Theoretical outputs before limit: {theoretical} · max_outputs: {maximum} · "
-                    "Expected outputs: {actual} · Truncated by max_outputs: {truncated}"
+                    "First input sites: {counts} · {compositions} feasible integer compositions · "
+                    "{arrangements} arrangements requested per composition\n"
+                    "Output upper-bound estimate: {theoretical} · Max outputs per input: {maximum} · "
+                    "{truncation}"
                 ).format(
                     counts=counts,
                     compositions=estimate.composition_count,
                     arrangements=estimate.arrangements_per_composition,
                     theoretical=theoretical,
                     maximum=estimate.max_outputs,
-                    actual=estimate.estimated_total_outputs,
-                    truncated=self.tr("Yes") if truncated else self.tr("No"),
+                    truncation=(
+                        self.tr(
+                            "Will truncate; different compositions are covered before extra arrangements."
+                        )
+                        if truncated
+                        else self.tr("Within the output limit.")
+                    ),
                 )
             )
         finally:
@@ -403,13 +467,15 @@ class FiniteCellAlloyOccupancyCard(MakeDataCard):
             QWidget.setTabOrder(previous, current)
 
     def create_operation(self):
-        return FiniteCellAlloyOccupancyOperation()
+        return FiniteCellAlloyOccupancyOperation(
+            require_normalized_fixed_fractions=not self._allow_legacy_fraction_weights
+        )
 
     def get_params(self) -> FiniteCellAlloyOccupancyParams:
         return self._params_from_controls()
 
     def set_params(self, params: FiniteCellAlloyOccupancyParams) -> None:
-        self.apply_rule_json(params.site_rules)
+        self._allow_legacy_fraction_weights = self.apply_rule_json(params.site_rules)
         self.arrangements_frame.set_input_value([int(params.arrangements_per_composition)])
         self.seed_checkbox.setChecked(bool(params.use_seed))
         self.seed_frame.setEnabled(bool(params.use_seed))

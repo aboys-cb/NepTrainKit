@@ -1,188 +1,206 @@
 <!-- card-schema: {"card_name": "Insert Defect", "source_file": "src/NepTrainKit/ui/views/_card/interstitial_adsorbate_card.py", "serialized_keys": ["params"]} -->
 
-# 插隙/吸附缺陷（Insert Defect）
+# 插隙与表面吸附（Insert Defect）
 
 `Group`: `Defect` | `Class`: `InsertDefectCard`
 
 ## 功能说明
 
-在体相或表面结构中随机插入额外原子。支持 Interstitial（体相间隙位插入）和 Adsorption（表面吸附位放置）两种模式，用最小距离约束避免原子碰撞。
+为每个输入结构生成两类未弛豫候选：
+
+- **体相随机插隙**：在晶胞内部按分数坐标均匀随机取点并插入原子。
+- **上表面随机吸附**：在指定晶格方向的上表面随机取横向位置，并放到原始宿主最高原子平面上方的固定高度。
+
+两种模式都用最小原子间距排除明显碰撞。该距离同时检查候选点到宿主原子和此前已插入原子的距离。
+
+这张卡**不识别晶体学间隙位或化学吸附位**：不会自动寻找四面体、八面体、顶位、桥位或空位，也不会弛豫坐标。它适合生成连续随机候选，再交给 DFT、几何优化、能量筛选或 `FPS Filter`；需要确定的物理路径时，应使用专门的位点或路径构造工具。
+
+## 工作原理
+
+### 体相随机插隙
+
+每次在 `[0,1)^3` 中抽取一个分数坐标并映射到晶胞。候选点满足 `min_distance` 后才会插入。若一个输出需要多个原子，后插入的原子也会避开先插入的原子。
+
+### 上表面随机吸附
+
+`axis` 指定 slab 真空所在的晶格方向 `a`、`b` 或 `c`。程序以原始宿主原子的最大分数坐标确定上表面，在该平面内随机取点，再沿真实表面法向移动 `offset`。
+
+对于倾斜晶胞，法向由对应的倒易方向计算，而不是直接沿晶格矢量移动。多个吸附原子始终以同一个原始宿主平面为参考，不会逐个向上堆叠。当前只生成上表面候选。
+
+### 完整输出约束
+
+每个输出必须插满 `insert_count` 个原子。任何一个原子在 `max_attempts` 次尝试后仍无法放置时，卡片会明确报错，不返回未修改或只完成一部分的伪成功结构。
 
 ## 操作示例
 
-### 场景：模型对 Li 扩散路径预测完全错误
+### 场景：训练集缺少表面吸附初始构型
 
-你在 LiCoO2 上训练了一个 NEP 模型跑 Li 扩散。模型预测的扩散势垒比 DFT 低了一半——中间态的能量被严重低估。检查训练集发现：所有结构里 Li 都待在八面体位点，从来没见过 Li 在四面体间隙位的结构。
+模型在洁净表面和少量弛豫吸附构型上表现正常，但对随机初始吸附位置的能量和力误差很大。这说明训练集只覆盖了稳定极小值，缺少优化路径起点和高能横向位置。
 
-**诊断思路：** 扩散路径上的过渡态对应 Li 从一个八面体位穿过四面体间隙位跃迁到相邻八面体位的过程。训练集里只有基态构型，模型自然会低估中间态能量。需要往训练集里加入 Li 在四面体间隙位附近的构型，让模型见过这些局域环境。
+**输入：** 带真空层的 slab，真空沿晶格 `c`。
 
-**输入：** 一个 LiCoO2 超胞
+**目标：** 在上表面放置一个 O 原子，生成 50 个横向位置不同的候选。
 
-**目标：** 在体相中插入单个 Li 原子于随机间隙位，生成 50 个候选构型
+**参数：**
 
-**参数设置：**
-- `Mode` = `Interstitial`
-- `Species comma-separated` = `Li`
-- `Atoms per structure` = `[1]`
-- `Structures to generate` = `[50]`
-- `Min distance (A)` = `[1.4]`
-- `Max Attempts` = `[200]`
+- `Insertion mode`：`Random upper-surface adsorption`
+- `Inserted species and weights`：`O`
+- `Atoms inserted per output`：`1`
+- `Outputs per input`：`50`
+- `Minimum atom distance`：`1.4 Å`
+- `Vacuum / surface-normal direction`：`Lattice c direction`
+- `Height above top atomic plane`：`1.8 Å`
+- `Use seed`：开启，便于比较后续筛选方案
 
-**输出：** 50 个插隙结构，每个含一个额外 Li 原子放置于不与宿主原子碰撞的位置，带 `Ins(int,n=1)` 标签
+**验证：**
 
-**怎么验证训练集质量改善：**
-- 重训后用 NEB 算 Li 扩散势垒，应接近 DFT 参考值
-- 抽查插入原子的最近邻距离：≥ min_distance 是底线，太近（<1.0 Å）的结构应该不会出现
-- 如果成功率很低（输出远少于 50 个），增大 `max_attempts` 或降低 `min_distance`
-- 如果是表面吸附场景，切到 `Mode` = `Adsorption`，调整 `offset` 控制吸附高度
-
-### 什么时候加这张卡、什么时候不加
-
-**加：**
-- 模型对扩散、吸附、插层位点预测不准
-- 训练集只有完美晶格占据，缺少间隙原子环境
-- 研究表面催化、电池材料离子输运
-
-**不加：**
-- 只需基态占据 → 不需要额外插入原子
-- 插入物种与宿主剧烈反应（如碱金属+水）→ 先确认化学可行性
+- 每个输出应比输入多一个 O，并带 `Ins(ad,n=1)` 标签。
+- 插入原子到所有宿主原子的最近距离应不小于 `1.4 Å`。
+- 50 个 O 应处于相同法向高度，但横向位置不同。
+- 几何优化或 DFT 标注后，再检查模型对吸附初始构型的能量和力误差是否下降。
 
 ## 参数说明
 
-### 插入模式和数量
+### 模式与元素
 
-#### Mode（mode）
+#### Insertion Mode（mode）
 
-`int`，默认 0。`0` = Interstitial（体相插隙），在晶胞内随机采样位点放入额外原子；`1` = Adsorption（表面吸附），沿表面法向在表面上方放置原子。
+`int`，默认 `0`。
 
-Interstitial 模式下 `axis` 和 `offset` 不生效。Adsorption 模式需要 slab 输入，`axis` 决定了吸附原子沿哪条晶轴放。
+- `0`：体相随机插隙，在整个晶胞内连续随机取点。
+- `1`：上表面随机吸附，在指定上表面随机取横向位置。
 
-#### Species（species）
+#### Inserted Species and Weights（species）
 
-`str`，默认空。逗号分隔的元素列表，指定要插入什么原子。支持权重写法：`Li:0.7,Na:0.3` 表示每次随机放置时有 70% 概率插 Li，30% 概率插 Na。权重不写则等概率。
+`str`，默认空，运行时必填。可填写单一元素 `Li`，或使用相对权重 `Li:7, Na:3`。多个插入原子会分别独立抽样，因此权重表示概率，不保证单个输出达到精确组成。
 
-#### Insert Count（insert_count）
+元素符号必须有效，权重必须为有限正数。重复元素的权重会合并。
 
-`int`，默认 1。每个生成结构里插几个额外原子。1~3 是常见范围——单原子插隙最容易放进去，数量越大碰撞失败概率越高。
+### 输出数量
 
-#### Structure Count（structure_count）
+#### Atoms Inserted per Output（insert_count）
 
-`int`，默认 10。每输入帧生成多少个插入版本。
+`int`，默认 `1`。每个成功输出必须插入的原子数，界面范围为 1–20。
 
-10~50 做轻量验证，50~200 常规覆盖，200 以上建议接 `FPS Filter`。
+#### Outputs per Input（structure_count）
 
-### 几何约束
+`int`，默认 `10`。每个输入结构生成的完整输出数，界面范围为 1–1000。
 
-#### Min Distance（min_distance）
+### 几何与尝试预算
 
-`float`，默认 1.4。候选插入点与已有原子的最小允许距离，单位 Å。
+#### Minimum Atom Distance（min_distance）
 
-对致密晶体，1.6~2.5 Å 比较保守安全；1.2~1.6 Å 是一个平衡点；压到 0.8~1.2 Å 碰撞风险明显升高，只有在你确信结构能容纳时才用。
+`float`，默认 `1.4 Å`。候选点到宿主原子和已插入原子的最小允许距离。必须为有限正数。
 
-#### Max Attempts（max_attempts）
+该值只排除明显近距离碰撞，不代表化学合理的键长。不同元素体系应按原子尺寸和预期局域环境调整。
 
-`int`，默认 200。每个待插入原子的最大随机尝试次数。增大它可以提高放置成功率，但耗时线性增长——如果你发现 200 次几乎每次都触顶失败，说明问题不是尝试次数不够，而是 `min_distance` 设大了或者胞太密。
+#### Placement Attempts per Atom（max_attempts）
+
+`int`，默认 `200`。每个待插入原子的最大随机尝试次数。达到上限仍找不到满足距离的位置时，整个操作报错。
+
+连续触发上限通常说明晶胞过密、插入数过多或 `min_distance` 过大；单纯继续提高尝试次数未必有效。
 
 ### 表面吸附
 
-#### Axis（axis）
+#### Vacuum / Surface-normal Direction（axis）
 
-`int`，默认 2。Adsorption 模式下它是表面法向。如果你的 slab 真空沿 z，默认 2（z 轴）就不用改；表面取向不同时一定要调，否则吸附高度方向会错。
+`int`，默认 `2`，仅在吸附模式生效。
 
-生效条件：涉及方向、分层、表面或向量初始化的模式都会使用。
+- `0`：真空沿晶格 `a`
+- `1`：真空沿晶格 `b`
+- `2`：真空沿晶格 `c`
 
-#### Offset（offset）
+这里选择的是晶格方向，不等同于笛卡尔 `x`、`y`、`z`。程序会据此计算真实表面法向。
 
-`float`，默认 1.5。表面吸附时原子放在表面上方多远，单位 Å。
+#### Height Above Top Atomic Plane（offset）
 
-生效条件：`mode` 选择 Adsorption 时。
+`float`，默认 `1.5 Å`，仅在吸附模式生效。表示候选原子到原始宿主最高原子平面的法向距离，必须为有限正数。
+
+该参数不会自动扩大晶胞。应先确保 slab 有足够真空容纳吸附原子。
 
 ### 随机性
 
 #### Use Seed（use_seed）
 
-`bool`，默认 false。打开后固定 seed → 同样输入和参数每次跑出一样的插入结果。对比实验时开，纯探索可以关掉。
+`bool`，默认 `false`。启用后可复现同一输入结构的元素选择和几何位置。
 
 #### Seed（seed）
 
-`int`，默认 0。随机种子值。
+`int`，默认 `0`，仅在 `use_seed=true` 时生效。种子会与结构内容共同派生，因此几何不同的输入帧不会机械地获得相同分数坐标。
 
-生效条件：`use_seed=True`。
+## 推荐配置
 
-## 推荐预设
+### 体相单原子插隙
 
-### 体相单原子间隙（Interstitial，50 个输出）
 ```json
 {
   "class": "InsertDefectCard",
   "check_state": true,
-  "mode": 0,
-  "species": "Li",
-  "insert_count": [1],
-  "structure_count": [50],
-  "min_distance": [1.4],
-  "max_attempts": [200],
-  "use_seed": true,
-  "seed": [42],
-  "axis": 2,
-  "offset": [1.5]
+  "params": {
+    "mode": 0,
+    "species": "Li",
+    "insert_count": 1,
+    "structure_count": 50,
+    "min_distance": 1.4,
+    "max_attempts": 200,
+    "use_seed": true,
+    "seed": 42,
+    "axis": 2,
+    "offset": 1.5
+  }
 }
 ```
 
-### 表面单原子吸附（Adsorption，50 个输出）
-```json
-{
-  "class": "InsertDefectCard",
-  "check_state": true,
-  "mode": 1,
-  "species": "O,H",
-  "insert_count": [1],
-  "structure_count": [50],
-  "min_distance": [1.6],
-  "max_attempts": [300],
-  "use_seed": true,
-  "seed": [42],
-  "axis": 2,
-  "offset": [2.0]
-}
-```
+### 上表面混合吸附候选
 
-### 多物种间隙探索（Interstitial，200 个输出）
 ```json
 {
   "class": "InsertDefectCard",
   "check_state": true,
-  "mode": 0,
-  "species": "Li:0.5,Na:0.3,Mg:0.2",
-  "insert_count": [2],
-  "structure_count": [200],
-  "min_distance": [1.2],
-  "max_attempts": [400],
-  "use_seed": true,
-  "seed": [42],
-  "axis": 2,
-  "offset": [1.5]
+  "params": {
+    "mode": 1,
+    "species": "O:3, H:1",
+    "insert_count": 2,
+    "structure_count": 50,
+    "min_distance": 1.2,
+    "max_attempts": 300,
+    "use_seed": true,
+    "seed": 42,
+    "axis": 2,
+    "offset": 1.8
+  }
 }
 ```
 
 ## 推荐组合
 
-- `Random Slab` → `Insert Defect`：先切表面 slab，再加吸附原子
-- `Insert Defect` → `Random Vacancy`：互补缺陷族（间隙 + 空位）
-- `Insert Defect` → `FPS Filter`：大批量生成后做代表性筛选
+- `Random Slab` → `Insert Defect`：先生成带真空层的表面，再放置上表面吸附候选。
+- `Insert Defect` → 几何优化或 DFT：本卡输出是未弛豫随机候选。
+- `Insert Defect` → `FPS Filter`：大量候选经过描述符筛选后再进入昂贵计算。
 
 ## 常见问题
 
-**输出为空或数量远少于预期。** `min_distance` 太严、`max_attempts` 太小，或者输入超胞太密找不到合适位点。先放宽 min_distance 到 1.0 Å 试跑。
+**为什么没有四面体或八面体位点选项？**
 
-**插入原子和宿主重叠。** 检查 min_distance 是否 ≤ 0（被跳过）。如果 min_distance 合理但仍重叠，增大 `max_attempts`。
+当前算法不做晶体学位点识别，只在连续空间随机采样。需要确定间隙位时，应使用专门的位点生成方法。
 
-**Adsorption 模式下原子放在 box 外面。** 检查 axis 是否指向了正确的表面法向。如果 slab 的 c 轴不是表面法向，需要调整 axis。
+**为什么运行直接报“无法放置”？**
+
+卡片不会返回插入数不足的结构。先检查 `Minimum atom distance`、插入原子数和晶胞可用空间，再决定是否增加尝试次数。
+
+**为什么吸附原子可能位于晶胞范围外？**
+
+卡片保持原晶胞和宿主坐标不变，也不会静默包裹吸附原子。请先在表面法向留出足够真空，或在后续计算前明确扩展晶胞。
+
+**如何生成下表面吸附？**
+
+当前只生成所选晶格方向的上表面。可先翻转 slab，或使用明确支持上下表面的专门工具。
 
 ## 输出标签
 
-`Ins(int,n={插入数})` / `Ins(ad,n={插入数})`
+- 体相插隙：`Ins(int,n={插入数})`
+- 上表面吸附：`Ins(ad,n={插入数})`
 
-## 可复现性
+## 兼容性
 
-勾选 `use_seed` + 固定 `seed` → 相同输入可复现。输入顺序变化也会影响随机路径。
+内部 `card_name`、类名和参数键保持不变。旧版顶层参数和当前 `params` 对象都可以读取；显示名称和失败语义已收紧。

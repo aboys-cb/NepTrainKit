@@ -2,6 +2,7 @@ from .card_test_base import *
 from unittest.mock import patch
 
 from NepTrainKit.ui.views._card.fps_filter_card import FPSFilterDataCard
+from NepTrainKit.ui.widgets.card_widget import FilterDataCard
 
 
 class TestFilterCards(BaseCardTest):
@@ -126,6 +127,78 @@ class TestFilterCards(BaseCardTest):
         self.assertEqual(report.existing_count, 1)
         self.assertEqual(report.selected_count, 1)
 
+    def test_global_fps_can_use_existing_training_set_as_warm_start(self):
+        dataset = [
+            Atoms("H", positions=[[0.0, 0.0, 0.0]]),
+            Atoms("H", positions=[[1.0, 0.0, 0.0]]),
+            Atoms("H", positions=[[2.0, 0.0, 0.0]]),
+        ]
+        existing_path = self.test_dir / "data" / "nep" / "train.xyz"
+        params = FPSFilterParams(
+            nep_path=str(self.test_dir / "data" / "nep" / "nep.txt"),
+            n_samples=1,
+            min_distance=0.0,
+            strategy="global",
+            existing_dataset_path=str(existing_path),
+        )
+        with (
+            patch("NepTrainKit.core.cards.filter.import_structures", return_value=[dataset[0]]),
+            patch("NepTrainKit.core.cards.filter.NepCalculator") as calculator_class,
+        ):
+            calculator_class.return_value.descriptors.side_effect = [
+                np.asarray([[0.0], [3.0], [10.0]]),
+                np.asarray([[0.0]]),
+            ]
+            selected = FPSFilterOperation().run_dataset(dataset, params)
+
+        self.assertEqual(selected, [dataset[2]])
+
+    def test_fps_filter_validates_parameters_and_descriptor_matrix(self):
+        model_path = str(self.test_dir / "data" / "nep" / "nep.txt")
+        dataset = [Atoms("H", positions=[[0, 0, 0]])]
+        operation = FPSFilterOperation()
+
+        with self.assertRaisesRegex(ValueError, "n_samples must be an integer"):
+            operation.run_dataset(
+                dataset,
+                FPSFilterParams(nep_path=model_path, n_samples=1.5),
+            )
+        with self.assertRaisesRegex(ValueError, "min_distance must be >= 0"):
+            operation.run_dataset(
+                dataset,
+                FPSFilterParams(nep_path=model_path, min_distance=-0.1),
+            )
+        with patch("NepTrainKit.core.cards.filter.NepCalculator") as calculator_class:
+            calculator_class.return_value.descriptors.return_value = np.asarray(
+                [[float("nan")]]
+            )
+            with self.assertRaisesRegex(ValueError, "contain NaN/Inf"):
+                operation.run_dataset(
+                    dataset,
+                    FPSFilterParams(nep_path=model_path),
+                )
+
+    def test_fps_filter_preview_explains_budget_and_group_quotas(self):
+        card = FPSFilterDataCard()
+        dataset = [
+            Atoms("H", positions=[[0, 0, 0]]),
+            Atoms("H", positions=[[1, 0, 0]]),
+            Atoms("He", positions=[[0, 0, 0]]),
+        ]
+        card.set_dataset(dataset)
+        self.assertIn("keep at most 3", card.preview_label.text())
+        self.assertIn("one global FPS budget", card.preview_label.text())
+
+        card.strategy_combo.setCurrentIndex(
+            card.strategy_combo.findData("element_set")
+        )
+        self.assertIn("H:2", card.preview_label.text())
+        self.assertIn("He:1", card.preview_label.text())
+
+        card.strategy_combo.setCurrentIndex(card.strategy_combo.findData("global"))
+        card.advanced_button.setChecked(True)
+        self.assertFalse(card.existing_dataset_widget.isHidden())
+
     def test_geometry_filter_operation_and_card_roundtrip(self):
         good = Atoms(
             symbols=["Si", "Si"],
@@ -144,6 +217,7 @@ class TestFilterCards(BaseCardTest):
         self.assertTrue(GeometryFilterOperation.has_pair_closer_than(bad, 1.0))
 
         card = GeometryFilterCard()
+        self.assertIsInstance(card, FilterDataCard)
         card.min_pair_frame.set_input_value([1.4])
         card.min_vpa_frame.set_input_value([5.0])
         card.max_vpa_frame.set_input_value([80.0])
@@ -151,3 +225,79 @@ class TestFilterCards(BaseCardTest):
         restored = GeometryFilterCard()
         restored.from_dict(card.to_dict())
         self.assertEqual(restored.get_params(), card.get_params())
+
+    def test_geometry_filter_supports_nonperiodic_molecules_for_pair_only(self):
+        molecule = Atoms(
+            "H2",
+            positions=[[0.0, 0.0, 0.0], [0.74, 0.0, 0.0]],
+        )
+        operation = GeometryFilterOperation()
+
+        self.assertTrue(
+            operation.keep_structure(
+                molecule,
+                GeometryFilterParams(min_pair_distance=0.5),
+            )
+        )
+        self.assertFalse(
+            operation.keep_structure(
+                molecule,
+                GeometryFilterParams(min_pair_distance=0.8),
+            )
+        )
+
+    def test_geometry_filter_rejects_exact_overlap_and_nonfinite_positions(self):
+        overlap = Atoms(
+            "HH",
+            positions=[[0, 0, 0], [0, 0, 0]],
+            cell=[5, 5, 5],
+            pbc=True,
+        )
+        nonfinite = Atoms("H", positions=[[0, 0, 0]])
+        nonfinite.positions[0, 0] = np.nan
+
+        self.assertEqual(
+            GeometryFilterOperation.shortest_pair_distance(overlap),
+            0.0,
+        )
+        summary = GeometryFilterOperation.filter_summary(
+            [overlap, nonfinite],
+            GeometryFilterParams(min_pair_distance=0.1),
+        )
+        self.assertEqual(summary["kept_count"], 0)
+        self.assertEqual(summary["reasons"]["pair_distance"], 1)
+        self.assertEqual(summary["reasons"]["nonfinite_positions"], 1)
+
+    def test_geometry_filter_rejects_invalid_threshold_ranges(self):
+        params = GeometryFilterParams(
+            min_volume_per_atom=10,
+            max_volume_per_atom=5,
+        )
+        with self.assertRaisesRegex(ValueError, "minimum volume/atom"):
+            GeometryFilterOperation().run_dataset([self.structure], params)
+
+        with self.assertRaisesRegex(ValueError, "finite non-negative"):
+            GeometryFilterOperation().run_dataset(
+                [self.structure],
+                GeometryFilterParams(min_pair_distance=float("nan")),
+            )
+
+    def test_geometry_filter_preview_and_progressive_bulk_controls(self):
+        good = Atoms(
+            "Si2",
+            positions=[[0, 0, 0], [2.35, 0, 0]],
+            cell=[5, 5, 5],
+            pbc=True,
+        )
+        overlap = good.copy()
+        overlap.positions[1] = overlap.positions[0]
+        card = GeometryFilterCard()
+        card.set_dataset([good, overlap])
+
+        self.assertTrue(card.min_vpa_frame.isHidden())
+        self.assertIn("keep 2", card.preview_label.text())
+        card.min_pair_frame.set_input_value([1.0])
+        self.assertIn("keep 1", card.preview_label.text())
+        self.assertIn("short pairs 1", card.preview_label.text())
+        card.bulk_checkbox.setChecked(True)
+        self.assertFalse(card.min_vpa_frame.isHidden())

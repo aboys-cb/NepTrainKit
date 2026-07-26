@@ -22,6 +22,7 @@ from NepTrainKit.core.magnetism import (
     normalize_vector,
     orthonormal_frame,
     parse_element_set,
+    parse_kvec as parse_layer_kvec,
     parse_magmom_map_any,
     random_signs,
     random_vector_moments,
@@ -408,15 +409,15 @@ class SetMagneticMomentsOperation(StructureOperation):
 
 @dataclass(frozen=True)
 class MagneticOrderParams:
-    format: str = "Collinear (scalar)"
+    format: str = "collinear"
     axis: list[float] | tuple[float, float, float] = (0.0, 0.0, 1.0)
     magmom_map: str = ""
     use_element_dirs: bool = False
     default_moment: float = 0.0
     apply_elements: str = ""
     gen_fm: bool = True
-    gen_afm: bool = True
-    afm_mode: str = "k-vector"
+    gen_afm: bool = False
+    afm_mode: str = "k_vector"
     afm_kvec: str = "111"
     afm_group_a: str = "A"
     afm_group_b: str = "B"
@@ -428,58 +429,91 @@ class MagneticOrderParams:
     pm_balanced: bool = True
     use_seed: bool = False
     seed: int = 0
+    max_outputs: int = 100
+
+
+@dataclass(frozen=True)
+class MagneticOrderPreview:
+    """Compact first-input summary for the Magnetic Order card."""
+
+    output_count: int
+    magnetic_atoms: int
+    afm_positive: int = 0
+    afm_negative: int = 0
+    afm_zero: int = 0
+
+
+@dataclass(frozen=True)
+class _MagneticOrderState:
+    spin_model: str
+    afm_mode: str
+    pm_direction: str
+    axis: np.ndarray
+    magnitudes: np.ndarray
+    directions: np.ndarray
+    afm_signs: np.ndarray | None
+    output_count: int
 
 
 class MagneticOrderOperation(StructureOperation):
     """Assign FM, AFM, and PM magnetic order patterns."""
 
+    _FORMAT_ALIASES = {
+        "collinear": "collinear",
+        "Collinear (scalar)": "collinear",
+        "noncollinear": "noncollinear",
+        "Non-collinear (vector)": "noncollinear",
+    }
+    _AFM_MODE_ALIASES = {
+        "k_vector": "k_vector",
+        "k-vector": "k_vector",
+        "group_ab": "group_ab",
+        "group A/B": "group_ab",
+    }
+    _PM_DIRECTIONS = {"sphere", "cone", "plane", "axis"}
+
     @staticmethod
     def parse_kvec(text: str) -> tuple[int, int, int]:
-        text = (text or "").strip()
-        if text in {"100", "010", "001", "110", "111"}:
-            return tuple(int(c) for c in text)  # type: ignore[return-value]
-        return (1, 1, 1)
+        return parse_layer_kvec(text)
+
+    @classmethod
+    def normalize_format(cls, value: str) -> str:
+        return cls._normalize_choice(value, cls._FORMAT_ALIASES, "spin model")
+
+    @classmethod
+    def normalize_afm_mode(cls, value: str) -> str:
+        return cls._normalize_choice(value, cls._AFM_MODE_ALIASES, "AFM mode")
 
     def run_structure(self, structure, params: MagneticOrderParams) -> list:
+        state = self._prepare(structure, params)
         outputs = []
-        if not (params.gen_fm or params.gen_afm or params.gen_pm):
-            return [structure.copy()]
 
         base_seed = int(params.seed) if params.use_seed else None
         cfg_id = stable_config_id(structure)
-        noncollinear = params.format.startswith("Non")
+        noncollinear = state.spin_model == "noncollinear"
 
         if params.gen_fm:
             signs = np.ones(len(structure), dtype=float)
-            moms = self._make_noncollinear_axis(structure, params, signs=signs) if noncollinear else self._make_collinear(structure, params, signs=signs)
+            moms = self._moments_from_signs(state, signs)
             atoms = structure.copy()
             set_initial_magmoms_safe(
                 atoms,
                 moms,
-                axis=np.asarray(params.axis, dtype=float),
+                axis=state.axis,
             )
             append_config_tag(atoms, "MagFMnc" if noncollinear else "MagFM")
             outputs.append(atoms)
 
         if params.gen_afm:
-            if params.afm_mode == "group A/B" and "group" in structure.arrays:
-                grp = np.asarray(structure.arrays["group"])
-                grp = np.array([str(g) for g in grp], dtype=object)
-                signs = np.zeros(len(structure), dtype=float)
-                signs[grp == (params.afm_group_a or "A").strip()] = 1.0
-                signs[grp == (params.afm_group_b or "B").strip()] = -1.0
-                if not params.afm_zero_unknown:
-                    signs[(grp != (params.afm_group_a or "A").strip()) & (grp != (params.afm_group_b or "B").strip())] = 1.0
-            else:
-                signs = kvec_signs(structure, self.parse_kvec(params.afm_kvec))
-            moms = self._make_noncollinear_axis(structure, params, signs=signs) if noncollinear else self._make_collinear(structure, params, signs=signs)
+            signs = np.asarray(state.afm_signs, dtype=float)
+            moms = self._moments_from_signs(state, signs)
             atoms = structure.copy()
             set_initial_magmoms_safe(
                 atoms,
                 moms,
-                axis=np.asarray(params.axis, dtype=float),
+                axis=state.axis,
             )
-            if params.afm_mode == "k-vector":
+            if state.afm_mode == "k_vector":
                 k = self.parse_kvec(params.afm_kvec)
                 append_config_tag(atoms, f"MagAFM{k[0]}{k[1]}{k[2]}" + ("nc" if noncollinear else ""))
             else:
@@ -496,29 +530,190 @@ class MagneticOrderOperation(StructureOperation):
                     rng = np.random.default_rng(derived_seed)
                     seed_note = f"s{derived_seed}"
                 if noncollinear:
-                    mags, _dirs = self._per_atom_mags_and_dirs(structure, params)
                     moms = random_vector_moments(
-                        mags,
+                        state.magnitudes,
                         rng=rng,
-                        direction_mode=params.pm_direction,
-                        axis=normalize_vector(np.array(params.axis, dtype=float)),
+                        direction_mode=state.pm_direction,
+                        axis=state.axis,
                         max_angle_deg=float(params.pm_cone_angle),
                         balanced=params.pm_balanced,
                     )
                 else:
                     signs = random_signs(len(structure), rng=rng, balanced=params.pm_balanced)
-                    moms = self._make_collinear(structure, params, signs=signs)
+                    moms = signs * state.magnitudes
                 atoms = structure.copy()
                 set_initial_magmoms_safe(
                     atoms,
                     moms,
-                    axis=np.asarray(params.axis, dtype=float),
+                    axis=state.axis,
                 )
                 base = "MagPM" + ("nc" if noncollinear else "")
                 append_config_tag(atoms, base + (f"_{seed_note}" if seed_note else ""))
                 outputs.append(atoms)
 
-        return outputs or [structure.copy()]
+        return outputs
+
+    def preview(self, structure, params: MagneticOrderParams) -> MagneticOrderPreview:
+        """Validate parameters and summarize the first input without generating outputs."""
+        state = self._prepare(structure, params)
+        positive = negative = zero = 0
+        if state.afm_signs is not None:
+            magnetic = state.magnitudes > 1.0e-12
+            positive = int(np.count_nonzero((state.afm_signs > 0.0) & magnetic))
+            negative = int(np.count_nonzero((state.afm_signs < 0.0) & magnetic))
+            zero = int(np.count_nonzero((state.afm_signs == 0.0) & magnetic))
+        return MagneticOrderPreview(
+            output_count=state.output_count,
+            magnetic_atoms=int(np.count_nonzero(state.magnitudes > 1.0e-12)),
+            afm_positive=positive,
+            afm_negative=negative,
+            afm_zero=zero,
+        )
+
+    def _prepare(self, structure, params: MagneticOrderParams) -> _MagneticOrderState:
+        spin_model = self.normalize_format(params.format)
+        if not (params.gen_fm or params.gen_afm or params.gen_pm):
+            raise ValueError("MagneticOrder: select at least one of FM, AFM, or PM.")
+
+        axis = np.asarray(params.axis, dtype=float)
+        if (
+            axis.shape != (3,)
+            or not np.isfinite(axis).all()
+            or float(np.linalg.norm(axis)) <= 1.0e-12
+        ):
+            raise ValueError("MagneticOrder: reference axis must be a finite nonzero 3-vector.")
+        axis = normalize_vector(axis)
+
+        magnitudes, directions = self._per_atom_mags_and_dirs(structure, params)
+        magnetic_mask = magnitudes > 1.0e-12
+        if not np.any(magnetic_mask):
+            raise ValueError(
+                "MagneticOrder: no nonzero magnetic moments; set an element moment "
+                "or a nonzero unlisted-element moment."
+            )
+
+        output_count = int(bool(params.gen_fm)) + int(bool(params.gen_afm))
+        pm_direction = "axis" if spin_model == "collinear" else "sphere"
+        if params.gen_pm:
+            if spin_model == "noncollinear":
+                pm_direction = str(params.pm_direction or "").strip().lower()
+                if pm_direction not in self._PM_DIRECTIONS:
+                    raise ValueError(
+                        f"MagneticOrder: unsupported PM direction {params.pm_direction!r}."
+                    )
+            pm_count = int(params.pm_count)
+            if pm_count < 1:
+                raise ValueError("MagneticOrder: PM structures must be at least 1.")
+            if (
+                spin_model == "noncollinear"
+                and pm_direction == "cone"
+                and (
+                    not np.isfinite(float(params.pm_cone_angle))
+                    or not 0.0 <= float(params.pm_cone_angle) <= 180.0
+                )
+            ):
+                raise ValueError("MagneticOrder: PM cone angle must be between 0 and 180 degrees.")
+            if params.use_seed and int(params.seed) < 0:
+                raise ValueError("MagneticOrder: seed must be nonnegative.")
+            output_count += pm_count
+
+        if params.gen_pm:
+            max_outputs = int(params.max_outputs)
+            if max_outputs < 1:
+                raise ValueError("MagneticOrder: max outputs must be at least 1.")
+            if output_count > max_outputs:
+                raise ValueError(
+                    f"MagneticOrder: requested {output_count} outputs per input, "
+                    f"above the limit of {max_outputs}."
+                )
+
+        afm_mode = "k_vector"
+        afm_signs = None
+        if params.gen_afm:
+            afm_mode = self.normalize_afm_mode(params.afm_mode)
+            if afm_mode == "group_ab":
+                afm_signs = self._group_signs(structure, params, magnetic_mask)
+            else:
+                afm_signs = kvec_signs(
+                    structure,
+                    self.parse_kvec(params.afm_kvec),
+                )
+                positive = np.count_nonzero((afm_signs > 0.0) & magnetic_mask)
+                negative = np.count_nonzero((afm_signs < 0.0) & magnetic_mask)
+                if positive == 0 or negative == 0:
+                    raise ValueError(
+                        "MagneticOrder: the selected k-vector produces only one "
+                        "AFM sign on magnetic atoms; expand the cell or choose another vector."
+                    )
+
+        return _MagneticOrderState(
+            spin_model=spin_model,
+            afm_mode=afm_mode,
+            pm_direction=pm_direction,
+            axis=axis,
+            magnitudes=magnitudes,
+            directions=directions,
+            afm_signs=afm_signs,
+            output_count=output_count,
+        )
+
+    @staticmethod
+    def _normalize_choice(value: str, aliases: dict[str, str], label: str) -> str:
+        text = str(value or "").strip()
+        normalized = aliases.get(text)
+        if normalized is None:
+            raise ValueError(f"MagneticOrder: unsupported {label} {text!r}.")
+        return normalized
+
+    @staticmethod
+    def _group_signs(
+        structure,
+        params: MagneticOrderParams,
+        magnetic_mask: np.ndarray,
+    ) -> np.ndarray:
+        if "group" not in structure.arrays:
+            raise ValueError(
+                "MagneticOrder: AFM group mode requires atoms.arrays['group']; "
+                "add Group Label upstream or choose k-vector mode."
+            )
+        group_a = str(params.afm_group_a or "").strip()
+        group_b = str(params.afm_group_b or "").strip()
+        if not group_a or not group_b:
+            raise ValueError("MagneticOrder: AFM group labels must be non-empty.")
+        if group_a == group_b:
+            raise ValueError("MagneticOrder: AFM positive and negative group labels must differ.")
+
+        groups = np.asarray(structure.arrays["group"], dtype=str)
+        mask_a = (groups == group_a) & magnetic_mask
+        mask_b = (groups == group_b) & magnetic_mask
+        if not np.any(mask_a) or not np.any(mask_b):
+            raise ValueError(
+                "MagneticOrder: AFM group mode needs at least one magnetic atom "
+                "in both the positive and negative groups."
+            )
+
+        signs = np.zeros(len(structure), dtype=float)
+        signs[groups == group_a] = 1.0
+        signs[groups == group_b] = -1.0
+        if not params.afm_zero_unknown:
+            signs[(groups != group_a) & (groups != group_b)] = 1.0
+        return signs
+
+    @staticmethod
+    def _moments_from_signs(
+        state: _MagneticOrderState,
+        signs: np.ndarray,
+    ) -> np.ndarray:
+        values = np.asarray(signs, dtype=float).reshape(-1)
+        if values.shape != state.magnitudes.shape:
+            raise ValueError("MagneticOrder: sign array length does not match atoms.")
+        if state.spin_model == "noncollinear":
+            return (
+                values[:, None]
+                * state.magnitudes[:, None]
+                * state.directions
+            )
+        return values * state.magnitudes
 
     def _per_atom_mags_and_dirs(self, structure, params: MagneticOrderParams) -> tuple[np.ndarray, np.ndarray]:
         magmom_map = parse_magmom_map_any(params.magmom_map)

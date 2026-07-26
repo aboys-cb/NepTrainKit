@@ -5,9 +5,11 @@ from __future__ import annotations
 from typing import Any
 
 import numpy as np
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QGridLayout
 from qfluentwidgets import (
     BodyLabel,
+    CaptionLabel,
     CheckBox,
     ComboBox,
     LineEdit,
@@ -26,6 +28,8 @@ from NepTrainKit.core.cards.structure import (
     evaluate_dz_expression,
     parse_dz_params,
 )
+from NepTrainKit.ui.messages import translate_runtime_message
+from NepTrainKit.ui.views._card.i18n_utils import add_translated_items
 from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 
@@ -42,48 +46,148 @@ class LayerCopyCard(MakeDataCard):
 
     _PRESETS: list[tuple[str, str, str]] = [
         ("Custom", "", ""),
-        ("Script: sin(x/pi)+sin(y/pi)", "sin(x/pi) + sin(y/pi)", ""),
-        ("Sine (2D, params)", "A*(sin(x/Lx) + sin(y/Ly))", "A=1, Lx=3.141592653589793, Ly=3.141592653589793"),
+        ("Flat stack (no warp)", "0", ""),
+        ("2D sine ripple", "A*(sin(2*pi*x/Lx) + sin(2*pi*y/Ly))", "A=0.2, Lx=10, Ly=10"),
         ("Gaussian bump", "A*exp(-((x-x0)**2 + (y-y0)**2) / (2*sigma**2))", "A=1, x0=0, y0=0, sigma=5"),
         ("Paraboloid", "A*(x**2 + y**2)", "A=0.001"),
-        ("Ripple (stripe)", "A*sin(x/Lx)", "A=1, Lx=3.141592653589793"),
+        ("Stripe ripple", "A*sin(2*pi*x/Lx)", "A=0.2, Lx=10"),
         ("Step (x>0)", "where(x > 0, A, 0)", "A=1"),
     ]
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Surface Warp (dz=f(x,y)) + Layer Copy"))
+        self._input_structure = None
+        self.setTitle(self.tr("Layer Stack (optional z warp)"))
         self._build_ui()
 
     def _build_ui(self):
         layout: QGridLayout = self.settingLayout
+        layout.setContentsMargins(3, 0, 3, 0)
+        layout.setHorizontalSpacing(6)
+        layout.setVerticalSpacing(4)
+        layout.setColumnStretch(1, 1)
+        row = 0
 
-        self.preset_label = BodyLabel(self.tr("dz preset"), self.setting_widget)
+        self.layers_label = BodyLabel(self.tr("Total layers"), self.setting_widget)
+        self.layers_label.setToolTip(
+            self.tr("Includes the original layer; 2 produces one original plus one copy")
+        )
+        self.layers_label.installEventFilter(
+            ToolTipFilter(self.layers_label, 300, ToolTipPosition.TOP)
+        )
+        self.layers_frame = SpinBoxUnitInputFrame(self)
+        self.layers_frame.set_input("layers", 1, input_type="int")
+        self.layers_frame.setRange(1, 999)
+        self.layers_frame.set_input_value([2])
+        layout.addWidget(self.layers_label, row, 0, 1, 1)
+        layout.addWidget(self.layers_frame, row, 1, 1, 2)
+        row += 1
+
+        self.distance_label = BodyLabel(
+            self.tr("Copy translation along z"),
+            self.setting_widget,
+        )
+        self.distance_label.setToolTip(
+            self.tr(
+                "Origin-to-origin translation between copies, not the surface-to-surface gap"
+            )
+        )
+        self.distance_label.installEventFilter(
+            ToolTipFilter(self.distance_label, 300, ToolTipPosition.TOP)
+        )
+        self.distance_frame = SpinBoxUnitInputFrame(self)
+        self.distance_frame.set_input("Å", 1, input_type="float")
+        self.distance_frame.setRange(0.001, 1e4)
+        self.distance_frame.set_input_value([3.35])
+        layout.addWidget(self.distance_label, row, 0, 1, 1)
+        layout.addWidget(self.distance_frame, row, 1, 1, 2)
+        row += 1
+
+        self.extend_cell_checkbox = CheckBox(
+            self.tr("Extend the cell along Cartesian z"),
+            self.setting_widget,
+        )
+        self.extend_cell_checkbox.setChecked(True)
+        self.extend_cell_checkbox.setToolTip(
+            self.tr("Adds the stack height and optional vacuum to the z component of lattice c")
+        )
+        layout.addWidget(self.extend_cell_checkbox, row, 0, 1, 3)
+        row += 1
+
+        self.vacuum_label = BodyLabel(
+            self.tr("Additional top vacuum"),
+            self.setting_widget,
+        )
+        self.vacuum_frame = SpinBoxUnitInputFrame(self)
+        self.vacuum_frame.set_input("Å", 1, input_type="float")
+        self.vacuum_frame.setRange(0.0, 1e6)
+        self.vacuum_frame.set_input_value([0.0])
+        layout.addWidget(self.vacuum_label, row, 0, 1, 1)
+        layout.addWidget(self.vacuum_frame, row, 1, 1, 2)
+        row += 1
+
+        self.wrap_checkbox = CheckBox(
+            self.tr("Wrap stacked atoms into the final periodic cell"),
+            self.setting_widget,
+        )
+        self.wrap_checkbox.setChecked(False)
+        layout.addWidget(self.wrap_checkbox, row, 0, 1, 3)
+        row += 1
+
+        self.show_warp_checkbox = CheckBox(
+            self.tr("Show optional surface-warp settings"),
+            self.setting_widget,
+        )
+        self.show_warp_checkbox.setChecked(False)
+        layout.addWidget(self.show_warp_checkbox, row, 0, 1, 3)
+        row += 1
+
+        self.preset_label = BodyLabel(self.tr("Warp preset"), self.setting_widget)
         self.preset_combo = ComboBox(self.setting_widget)
-        self.preset_combo.addItems([self.tr(name) for name, _, _ in self._PRESETS])
+        add_translated_items(
+            self,
+            self.preset_combo,
+            [(str(index), name) for index, (name, _, _) in enumerate(self._PRESETS)],
+        )
         self.preset_combo.setCurrentIndex(1)
-        self.preset_label.setToolTip(self.tr("Choose a preset dz(x,y) expression (Custom keeps your input)."))
+        self.preset_label.setToolTip(
+            self.tr("Choose a Cartesian-z displacement expression; Custom keeps your input")
+        )
         self.preset_label.installEventFilter(ToolTipFilter(self.preset_label, 300, ToolTipPosition.TOP))
 
         self.test_button = TransparentToolButton(FluentIcon.PLAY, self.setting_widget)
-        self.test_button.setToolTip(self.tr("Test dz expression on current structure"))
+        self.test_button.setToolTip(self.tr("Preview the displacement range on the first input"))
         self.test_button.installEventFilter(ToolTipFilter(self.test_button, 300, ToolTipPosition.TOP))
 
-        self.expr_label = BodyLabel(self.tr("dz expression (Å)"), self.setting_widget)
+        self.expr_label = BodyLabel(self.tr("z displacement expression"), self.setting_widget)
+        self.expr_label.setToolTip(
+            self.tr("Evaluated in Å using Cartesian x, y, and z coordinates")
+        )
         self.expr_edit = TextEdit(self.setting_widget)
-        self.expr_edit.setPlaceholderText(self.tr("e.g. sin(x/pi) + sin(y/pi)"))
-        self.expr_edit.setFixedHeight(70)
+        self.expr_edit.setPlaceholderText(self.tr("e.g. A*sin(2*pi*x/Lx)"))
+        self.expr_edit.setFixedHeight(58)
 
-        self.params_label = BodyLabel(self.tr("params"), self.setting_widget)
+        self.params_label = BodyLabel(self.tr("Expression parameters"), self.setting_widget)
         self.params_edit = LineEdit(self.setting_widget)
-        self.params_edit.setPlaceholderText(self.tr("A=1, Lx=3.14, Ly=3.14  (optional)"))
+        self.params_edit.setPlaceholderText(self.tr("A=0.2, Lx=10  (optional)"))
 
-        self.apply_label = BodyLabel(self.tr("apply to"), self.setting_widget)
+        self.apply_label = BodyLabel(self.tr("Warp which atoms"), self.setting_widget)
+        self.apply_label.setToolTip(
+            self.tr("Only limits the optional warp; every atom is copied into every layer")
+        )
         self.apply_combo = ComboBox(self.setting_widget)
-        self.apply_combo.addItems([self.tr("All atoms"), self.tr("Elements"), self.tr("Z-range")])
+        add_translated_items(
+            self,
+            self.apply_combo,
+            [
+                ("0", "All atoms"),
+                ("1", "Selected elements"),
+                ("2", "Cartesian z range"),
+            ],
+        )
 
         self.elements_edit = LineEdit(self.setting_widget)
-        self.elements_edit.setPlaceholderText(self.tr("C, Si, O"))
+        self.elements_edit.setPlaceholderText(self.tr("e.g. C, Si, O"))
         self.elements_edit.setVisible(False)
 
         self.zrange_frame = SpinBoxUnitInputFrame(self)
@@ -92,74 +196,164 @@ class LayerCopyCard(MakeDataCard):
         self.zrange_frame.set_input_value([-1e6, 1e6])
         self.zrange_frame.setVisible(False)
 
-        self.wrap_checkbox = CheckBox(self.tr("Wrap after warp/copy"), self.setting_widget)
-        self.wrap_checkbox.setChecked(False)
+        layout.addWidget(self.preset_label, row, 0, 1, 1)
+        layout.addWidget(self.preset_combo, row, 1, 1, 1)
+        layout.addWidget(self.test_button, row, 2, 1, 1)
+        row += 1
+        layout.addWidget(self.expr_label, row, 0, 1, 1)
+        layout.addWidget(self.expr_edit, row, 1, 1, 2)
+        row += 1
+        layout.addWidget(self.params_label, row, 0, 1, 1)
+        layout.addWidget(self.params_edit, row, 1, 1, 2)
+        row += 1
+        layout.addWidget(self.apply_label, row, 0, 1, 1)
+        layout.addWidget(self.apply_combo, row, 1, 1, 2)
+        row += 1
+        layout.addWidget(self.elements_edit, row, 1, 1, 2)
+        row += 1
+        layout.addWidget(self.zrange_frame, row, 1, 1, 2)
+        row += 1
 
-        self.extend_cell_checkbox = CheckBox(self.tr("Extend cell along z"), self.setting_widget)
-        self.extend_cell_checkbox.setChecked(True)
+        self.preview_label = CaptionLabel("", self.setting_widget)
+        self.preview_label.setWordWrap(True)
+        self.preview_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.TextSelectableByMouse
+        )
+        self.preview_label.setObjectName("layerCopyPreview")
+        layout.addWidget(self.preview_label, row, 0, 1, 3)
 
-        self.vacuum_label = BodyLabel(self.tr("extra vacuum (Å)"), self.setting_widget)
-        self.vacuum_frame = SpinBoxUnitInputFrame(self)
-        self.vacuum_frame.set_input("Å", 1, input_type="float")
-        self.vacuum_frame.setRange(0.0, 1e6)
-        self.vacuum_frame.set_input_value([0.0])
+        self.warp_controls = (
+            self.preset_label,
+            self.preset_combo,
+            self.test_button,
+            self.expr_label,
+            self.expr_edit,
+            self.params_label,
+            self.params_edit,
+            self.apply_label,
+            self.apply_combo,
+            self.elements_edit,
+            self.zrange_frame,
+        )
 
-        self.layers_label = BodyLabel(self.tr("Number of layers"), self.setting_widget)
-        self.layers_frame = SpinBoxUnitInputFrame(self)
-        self.layers_frame.set_input("layers", 1, input_type="int")
-        self.layers_frame.setRange(1, 999)
-
-        self.distance_label = BodyLabel(self.tr("Layer spacing (Å)"), self.setting_widget)
-        self.distance_frame = SpinBoxUnitInputFrame(self)
-        self.distance_frame.set_input("Å", 1, input_type="float")
-        self.distance_frame.setRange(-1e4, 1e4)
-
-        layout.addWidget(self.preset_label, 0, 0, 1, 1)
-        layout.addWidget(self.preset_combo, 0, 1, 1, 1)
-        layout.addWidget(self.test_button, 0, 2, 1, 1)
-
-        layout.addWidget(self.expr_label, 1, 0, 1, 1)
-        layout.addWidget(self.expr_edit, 1, 1, 1, 2)
-
-        layout.addWidget(self.params_label, 2, 0, 1, 1)
-        layout.addWidget(self.params_edit, 2, 1, 1, 2)
-
-        layout.addWidget(self.apply_label, 3, 0, 1, 1)
-        layout.addWidget(self.apply_combo, 3, 1, 1, 2)
-        layout.addWidget(self.elements_edit, 4, 1, 1, 2)
-        layout.addWidget(self.zrange_frame, 5, 1, 1, 2)
-
-        layout.addWidget(self.extend_cell_checkbox, 6, 0, 1, 1)
-        layout.addWidget(self.vacuum_label, 6, 1, 1, 1)
-        layout.addWidget(self.vacuum_frame, 6, 2, 1, 1)
-        layout.addWidget(self.wrap_checkbox, 7, 0, 1, 3)
-
-        layout.addWidget(self.layers_label, 8, 0, 1, 1)
-        layout.addWidget(self.layers_frame, 8, 1, 1, 2)
-        layout.addWidget(self.distance_label, 9, 0, 1, 1)
-        layout.addWidget(self.distance_frame, 9, 1, 1, 2)
-
-        # Defaults mirroring the provided script
-        self.layers_frame.set_input_value([3])
-        self.distance_frame.set_input_value([3.0])
-        self.expr_edit.setPlainText("sin(x/pi) + sin(y/pi)")
+        self.expr_edit.setPlainText("0")
 
         self.preset_combo.currentIndexChanged.connect(self._on_preset_changed)
         self.apply_combo.currentIndexChanged.connect(self._on_apply_changed)
         self.test_button.clicked.connect(self._test_expression)
+        self.show_warp_checkbox.stateChanged.connect(self._update_warp_visibility)
+        self.extend_cell_checkbox.stateChanged.connect(self._update_cell_visibility)
+        for control in self.layers_frame.object_list + self.distance_frame.object_list + self.vacuum_frame.object_list:
+            control.valueChanged.connect(self._refresh_preview)
+        self.wrap_checkbox.stateChanged.connect(self._refresh_preview)
+        self.expr_edit.textChanged.connect(self._refresh_preview)
+        self.params_edit.textChanged.connect(self._refresh_preview)
+        self.elements_edit.textChanged.connect(self._refresh_preview)
+        for control in self.zrange_frame.object_list:
+            control.valueChanged.connect(self._refresh_preview)
+        self._update_cell_visibility()
+        self._update_warp_visibility()
+        self._refresh_preview()
 
     def _on_preset_changed(self, index: int) -> None:
         if index <= 0 or index >= len(self._PRESETS):
+            self._refresh_preview()
             return
         _, expr, params = self._PRESETS[index]
         if expr:
             self.expr_edit.setPlainText(expr)
         self.params_edit.setText(params or "")
+        self._refresh_preview()
 
     def _on_apply_changed(self, index: int) -> None:
         # 0: all, 1: elements, 2: z-range
-        self.elements_edit.setVisible(index == 1)
-        self.zrange_frame.setVisible(index == 2)
+        visible = self.show_warp_checkbox.isChecked()
+        self.elements_edit.setVisible(visible and index == 1)
+        self.zrange_frame.setVisible(visible and index == 2)
+        self._refresh_preview()
+
+    def _update_warp_visibility(self, *_args) -> None:
+        visible = self.show_warp_checkbox.isChecked()
+        for widget in self.warp_controls:
+            widget.setVisible(visible)
+        self._on_apply_changed(self.apply_combo.currentIndex())
+
+    def _update_cell_visibility(self, *_args) -> None:
+        visible = self.extend_cell_checkbox.isChecked()
+        self.vacuum_label.setVisible(visible)
+        self.vacuum_frame.setVisible(visible)
+        self._refresh_preview()
+
+    @staticmethod
+    def _first_structure(dataset):
+        if dataset is None:
+            return None
+        if hasattr(dataset, "arrays") and hasattr(dataset, "get_chemical_symbols"):
+            return dataset
+        try:
+            return next(iter(dataset))
+        except (StopIteration, TypeError):
+            return None
+
+    def set_dataset(self, dataset) -> None:
+        super().set_dataset(dataset)
+        self._input_structure = self._first_structure(dataset)
+        self._refresh_preview()
+
+    def _refresh_preview(self, *_args) -> None:
+        if not hasattr(self, "preview_label"):
+            return
+        if self._input_structure is None:
+            self.preview_label.setText(
+                self.tr(
+                    "Load an upstream slab to preview selected atoms, displacement range, and final stack size."
+                )
+            )
+            return
+        try:
+            summary = self.create_operation().geometry_summary(
+                self._input_structure,
+                self.get_params(),
+            )
+        except (TypeError, ValueError, IndexError) as exc:
+            self.preview_label.setText(
+                "⚠ "
+                + self.tr("Preview unavailable: {error}").format(
+                    error=translate_runtime_message(exc)
+                )
+            )
+            return
+        if abs(summary["dz_min"]) <= 1e-12 and abs(summary["dz_max"]) <= 1e-12:
+            warp_text = self.tr("no surface warp")
+        else:
+            warp_text = self.tr(
+                "warp {selected} atoms / dz {minimum} to {maximum} Å"
+            ).format(
+                selected=summary["selected_atoms"],
+                minimum=f"{summary['dz_min']:.4g}",
+                maximum=f"{summary['dz_max']:.4g}",
+            )
+        if summary["extend_cell"]:
+            cell_text = self.tr("lattice c {before} → {after} Å").format(
+                before=f"{summary['cell_c_before']:.4g}",
+                after=f"{summary['cell_c_after']:.4g}",
+            )
+        else:
+            cell_text = self.tr("lattice c unchanged at {length} Å").format(
+                length=f"{summary['cell_c_before']:.4g}",
+            )
+        self.preview_label.setText(
+            self.tr(
+                "First input: {atoms} atoms · {warp} · {layers} total layers at {translation} Å translation · output {output} atoms · {cell}"
+            ).format(
+                atoms=summary["input_atoms"],
+                warp=warp_text,
+                layers=summary["layers"],
+                translation=f"{summary['translation']:.4g}",
+                output=summary["output_atoms"],
+                cell=cell_text,
+            )
+        )
 
     def create_operation(self):
         """Return the UI-independent layer-copy operation."""
@@ -194,13 +388,18 @@ class LayerCopyCard(MakeDataCard):
         self.vacuum_frame.set_input_value([float(params.extra_vacuum)])
         self.layers_frame.set_input_value([int(params.layers)])
         self.distance_frame.set_input_value([float(params.distance)])
+        if str(params.dz_expr).strip() not in {"", "0", "0.0"}:
+            self.show_warp_checkbox.setChecked(True)
+        self._update_cell_visibility()
+        self._update_warp_visibility()
         self._on_apply_changed(self.apply_combo.currentIndex())
+        self._refresh_preview()
 
     def _test_expression(self) -> None:
-        if not hasattr(self, "dataset") or not self.dataset:
+        if self._input_structure is None:
             MessageManager.send_warning_message("No input structure available to test.")
             return
-        structure = self.dataset[0]
+        structure = self._input_structure
         try:
             params = self.get_params()
             expr_params = parse_dz_params(params.expression_params)
@@ -238,7 +437,7 @@ class LayerCopyCard(MakeDataCard):
         if isinstance(raw_params, dict):
             params = LayerCopyParams(
                 preset_index=raw_params.get("preset_index", 1),
-                dz_expr=raw_params.get("dz_expr", "sin(x/pi) + sin(y/pi)"),
+                dz_expr=raw_params.get("dz_expr", "0"),
                 expression_params=raw_params.get("expression_params", ""),
                 apply_mode=raw_params.get("apply_mode", 0),
                 elements=raw_params.get("elements", ""),
@@ -256,7 +455,7 @@ class LayerCopyCard(MakeDataCard):
             distance = data_dict.get("distance", [3.0])
             params = LayerCopyParams(
                 preset_index=data_dict.get("preset_index", 1),
-                dz_expr=data_dict.get("dz_expr", "sin(x/pi) + sin(y/pi)"),
+                dz_expr=data_dict.get("dz_expr", "0"),
                 expression_params=data_dict.get("params", ""),
                 apply_mode=data_dict.get("apply_mode", 0),
                 elements=data_dict.get("elements", ""),

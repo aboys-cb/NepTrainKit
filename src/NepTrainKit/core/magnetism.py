@@ -11,6 +11,10 @@ from ase import Atoms
 
 
 _ITEM_SPLIT_RE = re.compile(r"[,\s;]+")
+_VECTOR_MAP_ITEM_RE = re.compile(
+    r"(?P<element>[A-Za-z][A-Za-z]?)\s*:\s*"
+    r"(?P<value>\[[^\]]*\]|[^,\s;]+)"
+)
 
 
 def parse_magmom_map(text: str) -> dict[str, float]:
@@ -66,17 +70,11 @@ def parse_magmom_map_any(text: str) -> dict[str, float | np.ndarray]:
                 out[sym] = float(v)
         return out
 
-    items = [t.strip() for t in _ITEM_SPLIT_RE.split(text) if t.strip()]
     out: dict[str, float | np.ndarray] = {}
-    for item in items:
-        if ":" not in item:
-            continue
-        key, val = item.split(":", 1)
-        key = key.strip()
-        if not key:
-            continue
+    for match in _VECTOR_MAP_ITEM_RE.finditer(text):
+        key = match.group("element")
+        val = match.group("value").strip()
         symbol = key[0].upper() + key[1:].lower()
-        val = val.strip()
         if val.startswith("[") and val.endswith("]"):
             vec = json.loads(val)
             if not (isinstance(vec, list) and len(vec) == 3):
@@ -85,6 +83,16 @@ def parse_magmom_map_any(text: str) -> dict[str, float | np.ndarray]:
         else:
             out[symbol] = float(val)
     return out
+
+
+def parse_kvec(text: str) -> tuple[int, int, int]:
+    """Parse one of the supported fractional-coordinate layer vectors."""
+    value = str(text or "").strip()
+    if value not in {"100", "010", "001", "110", "111"}:
+        raise ValueError(
+            f"Unsupported k-vector {value!r}; use 100, 010, 001, 110, or 111."
+        )
+    return tuple(int(component) for component in value)  # type: ignore[return-value]
 
 
 def element_mask(symbols: Iterable[str], selected: Iterable[str] | None = None) -> np.ndarray:
@@ -405,7 +413,9 @@ def kvec_signs(atoms: Atoms, kvec: tuple[int, int, int]) -> np.ndarray:
     if kvec == (0, 0, 0):
         return np.ones(len(atoms), dtype=float)
     scaled = atoms.get_scaled_positions(wrap=True)
-    phase = np.floor(2.0 * (scaled @ np.array(kvec, dtype=float))).astype(int)
+    phase = np.floor(
+        2.0 * (scaled @ np.array(kvec, dtype=float)) + 1.0e-12
+    ).astype(int)
     signs = np.where((phase % 2) == 0, 1.0, -1.0)
     return signs
 
@@ -503,23 +513,40 @@ def random_vector_moments(
 
     mode = (direction_mode or "sphere").strip().lower()
     axis_vec = normalize_vector(axis if axis is not None else np.array([0.0, 0.0, 1.0], dtype=float))
-    if mode in {"axis", "collinear"}:
-        dirs = np.repeat(axis_vec[None, :], n, axis=0)
-    elif mode in {"cone"}:
-        dirs = random_unit_vectors_cone(n, rng=rng, axis=axis_vec, max_angle_deg=max_angle_deg)
-    elif mode in {"plane", "planar"}:
-        dirs = random_unit_vectors_plane(n, rng=rng, normal=axis_vec)
-    else:
-        dirs = random_unit_vectors_sphere(n, rng=rng)
+    def sample_directions(count: int) -> np.ndarray:
+        if mode in {"axis", "collinear"}:
+            signs = rng.choice(
+                np.array([-1.0, 1.0], dtype=float),
+                size=count,
+                replace=True,
+            )
+            return signs[:, None] * axis_vec[None, :]
+        if mode == "cone":
+            return random_unit_vectors_cone(
+                count,
+                rng=rng,
+                axis=axis_vec,
+                max_angle_deg=max_angle_deg,
+            )
+        if mode in {"plane", "planar"}:
+            return random_unit_vectors_plane(count, rng=rng, normal=axis_vec)
+        return random_unit_vectors_sphere(count, rng=rng)
 
-    moments = mags[:, None] * dirs
     if not balanced:
-        return moments
+        return mags[:, None] * sample_directions(n)
 
-    # Balance by subtracting the mean vector, then renormalize to original magnitudes.
-    mean = moments.mean(axis=0)
-    moments = moments - mean[None, :]
-    norms = np.linalg.norm(moments, axis=1)
-    norms = np.where(norms > 0, norms, 1.0)
-    moments = moments / norms[:, None] * mags[:, None]
-    return moments
+    # Pair opposite directions separately for each distinct magnitude.  This
+    # preserves every requested magnitude and cancels exactly within complete
+    # pairs; one residual direction remains for odd-sized magnitude groups.
+    dirs = np.zeros((n, 3), dtype=float)
+    for magnitude in np.unique(mags):
+        indices = np.flatnonzero(mags == magnitude)
+        rng.shuffle(indices)
+        pair_count = len(indices) // 2
+        if pair_count:
+            base_dirs = sample_directions(pair_count)
+            dirs[indices[:pair_count]] = base_dirs
+            dirs[indices[pair_count : 2 * pair_count]] = -base_dirs
+        if len(indices) % 2:
+            dirs[indices[-1]] = sample_directions(1)[0]
+    return mags[:, None] * dirs

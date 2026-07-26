@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QFrame,
@@ -12,38 +12,49 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
-    QLineEdit,
 )
 from qfluentwidgets import (
     BodyLabel,
     ComboBox,
-    TransparentToolButton,
     FluentIcon,
+    LineEdit,
+    PushButton,
     ToolTipFilter,
     ToolTipPosition,
+    TransparentToolButton,
 )
+
 from .input import SpinBoxUnitInputFrame
 
 
 class VacancyRuleItem(QFrame):
     """Single vacancy rule widget."""
 
+    changed = Signal()
+    removeRequested = Signal(object)
+
     def __init__(self, parent: QWidget | None = None) -> None:
         """Build the rule editor with default inputs and labels."""
         super().__init__(parent)
         self.__layout = QGridLayout(self)
-        self.__layout.setContentsMargins(0, 0, 0, 0)
-        self.__layout.setSpacing(4)
-        self.setStyleSheet("background-color: rgb(239, 249, 254);")
+        self.__layout.setContentsMargins(8, 6, 8, 6)
+        self.__layout.setHorizontalSpacing(6)
+        self.__layout.setVerticalSpacing(4)
+        self.setFrameShape(QFrame.Shape.StyledPanel)
+        self.setObjectName("vacancyRuleItem")
 
-        self.element_edit = QLineEdit(self)
-        self.element_edit.setPlaceholderText(self.tr("Cs"))
-        self.group_edit = QLineEdit(self)
+        self.element_edit = LineEdit(self)
+        self.element_edit.setPlaceholderText(self.tr("O"))
+        self.element_edit.setAccessibleName(self.tr("Element to remove"))
+        self.group_edit = LineEdit(self)
+        self.group_edit.setPlaceholderText(self.tr("Optional, for example surface"))
+        self.group_edit.setAccessibleName(self.tr("Existing group labels"))
 
         self.count_mode_combo = ComboBox(self)
         self.count_mode_combo.addItem(self.tr("Fixed count"), userData="fixed")
         self.count_mode_combo.addItem(self.tr("Random range"), userData="random")
         self.count_mode_combo.setCurrentIndex(0)
+        self.count_mode_combo.setAccessibleName(self.tr("Count mode"))
         self.count_mode_combo.setToolTip(
             self.tr("Fixed count removes exactly this many atoms. Random range samples between min and max.")
         )
@@ -54,22 +65,31 @@ class VacancyRuleItem(QFrame):
         self.fixed_count_frame.set_input("", 1, "int")
         self.fixed_count_frame.setRange(0, 10000)
         self.fixed_count_frame.set_input_value([1])
+        self.fixed_count_frame.setAccessibleName(self.tr("Vacancy count"))
 
         self.count_range_frame = SpinBoxUnitInputFrame(self)
         self.count_range_frame.set_input(["-", ""], 2, "int")
         self.count_range_frame.setRange(0, 10000)
         self.count_range_frame.set_input_value([1, 2])
+        self.count_range_frame.setAccessibleName(self.tr("Vacancy count range"))
         self.count_range_frame.setVisible(False)
         self.count_frame = self.count_range_frame
 
         self.delete_button = TransparentToolButton(QIcon(":/images/src/images/delete.svg"), self)
+        self.delete_button.setToolTip(self.tr("Delete rule"))
+        self.delete_button.setAccessibleName(self.tr("Delete rule"))
+        self.delete_button.installEventFilter(
+            ToolTipFilter(self.delete_button, 300, ToolTipPosition.TOP)
+        )
         self.delete_button.clicked.connect(self._delete_self)
 
         self.element_label = BodyLabel(self.tr("Element"), self)
         self.element_label.setToolTip(self.tr("Element to remove"))
         self.element_label.installEventFilter(ToolTipFilter(self.element_label, 300, ToolTipPosition.TOP))
-        self.group_label = BodyLabel(self.tr("Group"), self)
-        self.group_label.setToolTip(self.tr("Optional group name"))
+        self.group_label = BodyLabel(self.tr("Existing group (optional)"), self)
+        self.group_label.setToolTip(
+            self.tr("Only match labels already stored in the input structure's group array")
+        )
         self.group_label.installEventFilter(ToolTipFilter(self.group_label, 300, ToolTipPosition.TOP))
         self.count_label = BodyLabel(self.tr("Count mode"), self)
         self.count_label.setToolTip(self.tr("Choose exact vacancy count or a random count range"))
@@ -89,10 +109,16 @@ class VacancyRuleItem(QFrame):
         self.__layout.addWidget(self.count_range_frame, 2, 1)
         self.__layout.addWidget(self.delete_button, 0, 4, 3, 1)
 
+        self.element_edit.textChanged.connect(self.changed)
+        self.group_edit.textChanged.connect(self.changed)
+        self.count_mode_combo.currentIndexChanged.connect(self.changed)
+        for frame in (self.fixed_count_frame, self.count_range_frame):
+            for spin_box in frame.object_list:
+                spin_box.valueChanged.connect(self.changed)
+
     def _delete_self(self) -> None:
-        """Detach and schedule deletion of the widget."""
-        self.setParent(None)
-        self.deleteLater()
+        """Ask the owning rule container to remove this row."""
+        self.removeRequested.emit(self)
 
     def _on_count_mode_changed(self) -> None:
         fixed = self.count_mode_combo.currentData() == "fixed"
@@ -109,8 +135,9 @@ class VacancyRuleItem(QFrame):
         """
         rule: dict[str, Any] = {}
         element = self.element_edit.text().strip()
-        if element:
-            rule["element"] = element
+        if not element:
+            return rule
+        rule["element"] = element
         if self.count_mode_combo.currentData() == "fixed":
             count = int(self.fixed_count_frame.get_input_value()[0])
             rule["count"] = [count, count]
@@ -135,7 +162,12 @@ class VacancyRuleItem(QFrame):
             return
         self.element_edit.setText(str(rule.get("element", "")))
         if "count" in rule:
-            count_values = list(rule["count"])
+            raw_count = rule["count"]
+            count_values = (
+                list(raw_count)
+                if isinstance(raw_count, (list, tuple))
+                else [raw_count]
+            )
             if count_values:
                 self.fixed_count_frame.set_input_value([int(count_values[0])])
                 if len(count_values) == 1:
@@ -149,11 +181,19 @@ class VacancyRuleItem(QFrame):
                 self.count_mode_combo.setCurrentIndex(1)
             self._on_count_mode_changed()
         if "group" in rule:
-            self.group_edit.setText(",".join(str(i) for i in rule["group"]))
+            raw_group = rule["group"]
+            group_values = (
+                list(raw_group)
+                if isinstance(raw_group, (list, tuple))
+                else [raw_group]
+            )
+            self.group_edit.setText(",".join(str(value) for value in group_values))
 
 
 class VacancyRulesWidget(QWidget):
     """Container widget for multiple vacancy rules."""
+
+    rulesChanged = Signal()
 
     def __init__(self, parent: QWidget | None = None) -> None:
         """Create the rule container and add button row."""
@@ -164,9 +204,10 @@ class VacancyRulesWidget(QWidget):
 
         btn_layout = QHBoxLayout()
         btn_layout.setContentsMargins(0, 0, 0, 0)
-        self.add_button = TransparentToolButton(FluentIcon.ADD, self)
+        self.add_button = PushButton(FluentIcon.ADD, self.tr("Add rule"), self)
         self.add_button.clicked.connect(self.add_rule)
-        self.add_button.setToolTip(self.tr("Add rule"))
+        self.add_button.setAccessibleName(self.tr("Add vacancy rule"))
+        self.add_button.setToolTip(self.tr("Add another element or group-specific vacancy rule"))
         self.add_button.installEventFilter(ToolTipFilter(self.add_button, 300, ToolTipPosition.TOP))
         btn_layout.addWidget(self.add_button, 0, Qt.AlignmentFlag.AlignLeft)
         btn_layout.addStretch(1)
@@ -177,6 +218,7 @@ class VacancyRulesWidget(QWidget):
         self.rule_layout.setContentsMargins(0, 0, 0, 0)
         self.rule_layout.setSpacing(4)
         self.__layout.addWidget(self.rule_container)
+        self.add_rule()
 
     def add_rule(self, rule: dict[str, Any] | None = None) -> VacancyRuleItem:
         """Add a vacancy rule item to the container.
@@ -193,9 +235,22 @@ class VacancyRulesWidget(QWidget):
         """
         item = VacancyRuleItem(self.rule_container)
         self.rule_layout.addWidget(item)
+        item.changed.connect(self.rulesChanged)
+        item.removeRequested.connect(self._remove_rule)
         if rule:
             item.from_rule(rule)
+        self.rulesChanged.emit()
         return item
+
+    def _remove_rule(self, item: VacancyRuleItem) -> None:
+        """Remove a rule row while keeping one editable empty row visible."""
+        self.rule_layout.removeWidget(item)
+        item.setParent(None)
+        item.deleteLater()
+        if self.rule_layout.count() == 0:
+            self.add_rule()
+        else:
+            self.rulesChanged.emit()
 
     def to_rules(self) -> list[dict[str, Any]]:
         """Collect all rule widgets into a list of dictionaries."""
@@ -208,6 +263,17 @@ class VacancyRulesWidget(QWidget):
                     rules.append(rule)
         return rules
 
+    def rule_items(self) -> list[VacancyRuleItem]:
+        """Return rule rows in their visual order."""
+        return [
+            widget
+            for index in range(self.rule_layout.count())
+            if isinstance(
+                (widget := self.rule_layout.itemAt(index).widget()),
+                VacancyRuleItem,
+            )
+        ]
+
     def from_rules(self, rules: list[dict[str, Any]]) -> None:
         """Populate the container from a list of rule dictionaries.
 
@@ -219,6 +285,11 @@ class VacancyRulesWidget(QWidget):
         while self.rule_layout.count():
             item = self.rule_layout.takeAt(0).widget()
             if item is not None:
+                item.setParent(None)
                 item.deleteLater()
-        for rule in rules or []:
-            self.add_rule(rule)
+        if rules:
+            for rule in rules:
+                self.add_rule(rule)
+        else:
+            self.add_rule()
+        self.rulesChanged.emit()

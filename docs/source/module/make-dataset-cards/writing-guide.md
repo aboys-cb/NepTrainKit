@@ -124,7 +124,7 @@ bcc Fe 的 NEP 模型，FM 构型推理准确但 AFM 构型能量误差是 FM �
 
 **输入：** bcc Fe 晶体，已知 Fe 磁矩约 2.2 μB
 **目标：** 生成 1 FM + 1 AFM + 8 PM，让模型见过不同磁序的局域磁环境
-**参数设置：** magmom_map=Fe:2.2, gen_fm+gen_afm+gen_pm, pm_count=[8]
+**参数设置：** magmom_map=Fe:2.2, gen_fm+gen_afm+gen_pm, pm_count=8
 **输出：** 10 个不同磁序结构
 **怎么验证训练集质量改善：** 重训后 FM/AFM 推理能量误差差距应显著缩小
 ```

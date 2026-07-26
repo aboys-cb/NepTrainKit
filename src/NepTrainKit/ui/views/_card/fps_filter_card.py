@@ -20,6 +20,7 @@ from NepTrainKit.config import Config
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.filter import FPSFilterOperation, FPSFilterParams
 from NepTrainKit.core.cards.operation import params_to_dict
+from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.widgets import SpinBoxUnitInputFrame
 from NepTrainKit.ui.widgets import FilterDataCard
@@ -54,7 +55,8 @@ class FPSFilterDataCard(FilterDataCard):
         self._backend = Config.get("nep", "backend", "auto")
         self._chunk_max_atoms = Config.getint("nep", "chunk_max_atoms", 100000)
         self._last_group_report = {}
-        self.setTitle(self.tr("Filter by FPS"))
+        self._input_dataset = []
+        self.setTitle(self.tr("Representative Sampling (FPS)"))
         self.init_ui()
 
     def init_ui(self):
@@ -63,10 +65,18 @@ class FPSFilterDataCard(FilterDataCard):
 
         self.strategy_label = BodyLabel(self.tr("Sampling strategy"), self.setting_widget)
         self.strategy_combo = ComboBox(self.setting_widget)
-        self.strategy_combo.addItem(self.tr("Global FPS (compatible)"), userData="global")
-        self.strategy_combo.addItem(self.tr("Element-set balanced FPS"), userData="element_set")
+        self.strategy_combo.addItem(
+            self.tr("All structures together (legacy)"),
+            userData="global",
+        )
+        self.strategy_combo.addItem(
+            self.tr("Guarantee every element set"),
+            userData="element_set",
+        )
         self.strategy_label.setToolTip(
-            self.tr("Global keeps the existing behavior. Balanced FPS assigns a quota to each element set.")
+            self.tr(
+                "Legacy global FPS starts from the first input unless an existing training set is supplied"
+            )
         )
         self.strategy_label.installEventFilter(
             ToolTipFilter(self.strategy_label, 300, ToolTipPosition.TOP)
@@ -75,20 +85,24 @@ class FPSFilterDataCard(FilterDataCard):
         self.strategy_hint = CaptionLabel("", self.setting_widget)
         self.strategy_hint.setWordWrap(True)
 
-        self.num_label = BodyLabel(self.tr("Max selected"), self.setting_widget)
+        self.num_label = BodyLabel(self.tr("Maximum structures to keep"), self.setting_widget)
         self.num_condition_frame = SpinBoxUnitInputFrame(self)
         self.num_condition_frame.set_input("", 1, "int")
         self.num_condition_frame.setRange(1, 10000000)
         self.num_condition_frame.set_input_value([100])
-        self.num_label.setToolTip(self.tr("Maximum number of structures to keep"))
+        self.num_label.setToolTip(
+            self.tr("This is an upper bound; the distance cutoff can stop selection earlier")
+        )
         self.num_label.installEventFilter(ToolTipFilter(self.num_label, 300, ToolTipPosition.TOP))
 
-        self.nep_path_label = BodyLabel(self.tr("NEP model"), self.setting_widget)
+        self.nep_path_label = BodyLabel(self.tr("Descriptor NEP model"), self.setting_widget)
 
         self.nep_path_lineedit = LineEdit(self.setting_widget)
         self.nep_path_lineedit.setPlaceholderText(self.tr("nep.txt path"))
         self.nep_path_lineedit.setClearButtonEnabled(True)
-        self.nep_path_label.setToolTip(self.tr("Path to NEP model"))
+        self.nep_path_label.setToolTip(
+            self.tr("Descriptor distances depend on this model; prefer a model relevant to the candidate chemistry")
+        )
         self.nep_path_label.installEventFilter(ToolTipFilter(self.nep_path_label, 300, ToolTipPosition.TOP))
 
         self.nep89_path = str(module_path/ "Config/nep89.txt" )
@@ -106,11 +120,13 @@ class FPSFilterDataCard(FilterDataCard):
 
         self.advanced_button = PushButton(
             FluentIcon.SETTING,
-            self.tr("Advanced settings"),
+            self.tr("Distance cutoff and existing coverage"),
             self.setting_widget,
         )
         self.advanced_button.setCheckable(True)
-        self.advanced_button.setToolTip(self.tr("Show minimum distance and warm-start options"))
+        self.advanced_button.setToolTip(
+            self.tr("Optionally stop near duplicates and avoid regions already covered by a training set")
+        )
         self.advanced_button.toggled.connect(self._set_advanced_visible)
 
         self.advanced_frame = QFrame(self.setting_widget)
@@ -122,10 +138,15 @@ class FPSFilterDataCard(FilterDataCard):
         self.min_distance_condition_frame.set_input("", 1,"float")
         self.min_distance_condition_frame.setRange(0, 100)
         self.min_distance_condition_frame.object_list[0].setDecimals(4)   # pyright:ignore
-        self.min_distance_condition_frame.set_input_value([0.01])
+        self.min_distance_condition_frame.set_input_value([0.0])
 
-        self.min_distance_label = BodyLabel(self.tr("Min distance"), self.setting_widget)
-        self.min_distance_label.setToolTip(self.tr("Minimum distance between samples"))
+        self.min_distance_label = BodyLabel(
+            self.tr("Descriptor distance cutoff"),
+            self.setting_widget,
+        )
+        self.min_distance_label.setToolTip(
+            self.tr("0 disables early stopping; the scale is model-dependent and has no physical unit")
+        )
 
         self.min_distance_label.installEventFilter(ToolTipFilter(self.min_distance_label, 300, ToolTipPosition.TOP))
 
@@ -134,7 +155,9 @@ class FPSFilterDataCard(FilterDataCard):
         self.existing_dataset_lineedit.setPlaceholderText(self.tr("Optional train.xyz for warm start"))
         self.existing_dataset_lineedit.setClearButtonEnabled(True)
         self.existing_dataset_label.setToolTip(
-            self.tr("Balanced FPS compares candidates only with existing structures that have the same element set.")
+            self.tr(
+                "Candidates near this training set are deprioritized; balanced mode compares only matching element sets"
+            )
         )
         self.existing_dataset_label.installEventFilter(
             ToolTipFilter(self.existing_dataset_label, 300, ToolTipPosition.TOP)
@@ -167,10 +190,22 @@ class FPSFilterDataCard(FilterDataCard):
         self.settingLayout.addWidget(self.nep_path_widget, 3, 1, 1, 2)
         self.settingLayout.addWidget(self.advanced_button, 4, 1, 1, 2)
         self.settingLayout.addWidget(self.advanced_frame, 5, 0, 1, 3)
+        self.preview_label = CaptionLabel("", self.setting_widget)
+        self.preview_label.setWordWrap(True)
+        self.preview_label.setObjectName("fpsFilterPreview")
+        self.settingLayout.addWidget(self.preview_label, 6, 0, 1, 3)
 
         self.strategy_combo.currentIndexChanged.connect(self._update_strategy_ui)
+        self.nep_path_lineedit.textChanged.connect(self._refresh_preview)
+        self.existing_dataset_lineedit.textChanged.connect(self._refresh_preview)
+        for control in (
+            *self.num_condition_frame.object_list,
+            *self.min_distance_condition_frame.object_list,
+        ):
+            control.valueChanged.connect(self._refresh_preview)
         self._set_advanced_visible(False)
         self._update_strategy_ui()
+        self._refresh_preview()
 
     def _browse_nep_model(self) -> None:
         path = call_path_dialog(
@@ -199,14 +234,17 @@ class FPSFilterDataCard(FilterDataCard):
         balanced = self.strategy_combo.currentData() == "element_set"
         if balanced:
             self.strategy_hint.setText(
-                self.tr("Groups by element set, assigns sqrt-size quotas, and starts from each group center.")
+                self.tr(
+                    "Each element set gets at least one slot; remaining slots follow sqrt(group size)."
+                )
             )
         else:
             self.strategy_hint.setText(
-                self.tr("Uses the existing global mean-descriptor FPS behavior.")
+                self.tr(
+                    "One shared budget; without an existing set, input 1 is always the first selected structure."
+                )
             )
-        self.existing_dataset_label.setVisible(balanced)
-        self.existing_dataset_widget.setVisible(balanced)
+        self._refresh_preview()
 
     def create_operation(self):
         """Return the UI-independent FPS operation."""
@@ -222,9 +260,7 @@ class FPSFilterDataCard(FilterDataCard):
             backend=self._backend,
             chunk_max_atoms=self._chunk_max_atoms,
             strategy=strategy,
-            existing_dataset_path=(
-                self.existing_dataset_lineedit.text() if strategy == "element_set" else ""
-            ),
+            existing_dataset_path=self.existing_dataset_lineedit.text(),
         )
 
     def set_params(self, params: FPSFilterParams) -> None:
@@ -237,13 +273,77 @@ class FPSFilterDataCard(FilterDataCard):
         strategy_index = self.strategy_combo.findData(params.strategy)
         self.strategy_combo.setCurrentIndex(strategy_index if strategy_index >= 0 else 0)
         self.existing_dataset_lineedit.setText(params.existing_dataset_path)
-        show_advanced = bool(params.existing_dataset_path) or float(params.min_distance) != 0.01
+        show_advanced = bool(params.existing_dataset_path) or float(params.min_distance) != 0.0
         self.advanced_button.setChecked(show_advanced)
         self._update_strategy_ui()
 
     def set_dataset(self, dataset):
         self._last_group_report = {}
         super().set_dataset(dataset)
+        self._input_dataset = list(dataset) if dataset is not None else []
+        self._refresh_preview()
+
+    def _refresh_preview(self, *_args) -> None:
+        if not hasattr(self, "preview_label"):
+            return
+        if not self._input_dataset:
+            self.preview_label.setText(
+                self.tr(
+                    "Load upstream structures to preview the output cap and element-set quotas."
+                )
+            )
+            return
+        try:
+            summary = self.create_operation().selection_summary(
+                self._input_dataset,
+                self.get_params(),
+            )
+        except (TypeError, ValueError) as exc:
+            self.preview_label.setText(
+                "⚠ "
+                + self.tr("Preview unavailable: {error}").format(
+                    error=translate_runtime_message(exc)
+                )
+            )
+            return
+        if summary["strategy"] == "element_set":
+            quota_items = [
+                f"{'+'.join(key) or '∅'}:{value}"
+                for key, value in sorted(summary["quotas"].items())
+            ]
+            if len(quota_items) <= 5:
+                strategy_text = self.tr("quotas {quotas}").format(
+                    quotas=", ".join(quota_items)
+                )
+            else:
+                strategy_text = self.tr(
+                    "{count} element sets with guaranteed coverage"
+                ).format(count=summary["group_count"])
+        else:
+            strategy_text = self.tr("one global FPS budget")
+        model_text = (
+            self.tr("model found: {name}").format(name=summary["model_name"])
+            if summary["model_exists"]
+            else self.tr("model path is missing")
+        )
+        cutoff_text = (
+            self.tr("no distance early-stop")
+            if summary["min_distance"] == 0.0
+            else self.tr("distance cutoff {value}").format(
+                value=f"{summary['min_distance']:.4g}"
+            )
+        )
+        self.preview_label.setText(
+            self.tr(
+                "Input {input} structures → keep at most {output} · {strategy} · {cutoff} · {model}"
+            ).format(
+                input=summary["input_count"],
+                output=summary["max_output"],
+                strategy=strategy_text,
+                cutoff=cutoff_text,
+                model=model_text,
+            )
+        )
 
     def on_processing_finished(self):
         operation = getattr(getattr(self, "worker_thread", None), "operation", None)
@@ -297,7 +397,7 @@ class FPSFilterDataCard(FilterDataCard):
             params = FPSFilterParams(
                 nep_path=raw_params.get("nep_path", self.nep89_path),
                 n_samples=raw_params.get("n_samples", 100),
-                min_distance=raw_params.get("min_distance", 0.01),
+                min_distance=raw_params.get("min_distance", 0.0),
                 backend=raw_params.get("backend", Config.get("nep", "backend", "auto")),
                 chunk_max_atoms=raw_params.get("chunk_max_atoms", Config.getint("nep", "chunk_max_atoms", 100000)),
                 strategy=raw_params.get("strategy", "global"),

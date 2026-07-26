@@ -6,9 +6,9 @@
 
 ## 功能说明
 
-按空间坐标条件对指定元素做区域选择性替换。用 x/y/z 坐标表达式（如 `z>=8 and z<=10`）筛选候选位点，只替换命中区域内的原子，未命中区域保持原样。适合表面钝化、界面修饰、层状材料选择性改性等场景。
+按空间坐标条件对指定元素做区域选择性替换。用笛卡尔 `x/y/z` 坐标表达式（如 `z>=8 and z<=10`）筛选候选位点；所有命中位点都会被替换，未命中区域保持原样。多个替换元素后面的比例只决定它们如何分配到命中位点，不表示“替换多少位点”。适合表面钝化、界面修饰、层状材料选择性改性等场景。
 
-与 `Random Doping` 的区别：`Random Doping` 对全体 target 原子做无差别随机替换；`Conditional Replace` 先用坐标条件筛选位点，再在命中区域内做替换。
+与 `Random Doping` 的区别：`Conditional Replace` 用坐标表达式精确划定空间区域，输出一个结构并替换全部命中位点；`Random Doping` 按数量或浓度做部分替位，可以生成多个结构，也可以读取 `Group Label` 写入的 group 标签。
 
 ## 操作示例
 
@@ -25,10 +25,10 @@
 **参数设置：**
 - `target` = `O`
 - `replacements` = `F:1.0`
-- `condition` = `z>=8 and z<=10`
-- `mode` = `1` （Exact 模式，确保全部命中位点被替换）
+- `condition` = `z>=14 and z<=16`
+- `mode` = `1`（只有一种替换元素时，两个分配模式的结果相同）
 
-**输出：** 1 个结构，满足 z 在 8-10 Å 的所有 O 被替换为 F，其余区域不变。带 `Repl(O->F)` 标签
+**输出：** 1 个结构，满足 z 在 14-16 Å 的所有 O 被替换为 F，其余区域不变。带 `Repl(O->F)` 标签
 
 **怎么验证训练集质量改善：**
 - 重训后跑表面吸附测试，力的 MAE 应该显著降低，不再在表面区域出现异常大力误差
@@ -46,34 +46,39 @@
 **不加：**
 - 不需要空间选择性 → 用 `Random Doping` 更直接
 - 替换规则无法用 x/y/z 表达式描述（如按近邻配位筛选）
-- 只需要全局组合配比变化 → `Composition Sweep` + `Random Occupancy`
+- 只需要全局组合配比变化 → `Composition Space Sampling` + `Random Occupancy`
 
 ## 参数说明
 
-### Target（target）
+### 目标元素（target）
 
 `str`，默认空。被替换的元素符号，如 `O`、`Si`。只替换匹配该元素且满足下面 `condition` 的那部分位点。
 
-### Replacements（replacements）
+### 替换元素及相对比例（replacements）
 
-`str`，默认空。替换配方，支持逗号冒号 `F:0.7,N:0.3` 或 JSON dict `{"F":0.7,"N":0.3}` 两种写法。比例会被自动归一化，在命中区域内按比例随机分配替换元素。
+`str`，默认空。替换配方，支持逗号冒号 `F:0.7,N:0.3` 或 JSON dict `{"F":0.7,"N":0.3}` 两种写法。比例会被自动归一化，只用于在命中位点之间分配 F 和 N；它不是替换率，所有命中位点仍然都会被替换。只填 `F` 等价于 `F:1.0`。
 
-### Condition（condition）
+### 位置筛选（condition）
 
-`str`，默认空。空间条件表达式，不填或填 `all` = 所有 target 原子都命中。支持变量 `x`/`y`/`z`（笛卡尔坐标，单位 Å），比较运算符 `<`/`>`/`<=`/`>=`/`==`/`!=`，逻辑 `and`/`or`/`not`，以及四则运算。相等判断可写 `x=0` 或 `x==0`，两者含义相同。
+`str`，默认 `all`。空间条件表达式，`all` 表示所有目标元素都命中。支持变量 `x`/`y`/`z`（笛卡尔坐标，单位 Å），比较运算符 `<`/`>`/`<=`/`>=`/`==`/`!=`，逻辑 `and`/`or`/`not`，以及四则运算。相等判断可写 `x=0` 或 `x==0`，两者含义相同；内部使用 `1e-4 Å` 容差。
 
 典型例子：
 - `z>=8 and z<=10`：替换 z 在 8-10 Å 范围内的 target 原子
 - `x>5 or y<2`：替换特定 xy 象限内的原子
 - `z<=4`：只替换底层
 
-### Mode（mode）
+### 元素分配方式（mode）
 
-`int`，默认 0。`0` = Random 模式（按比例概率随机采样），`1` = Exact 模式（尽量精确匹配比例计数）。
+`int`，默认 0。两个模式都会替换所有命中位点，区别只在多个替换元素的数量分配：
 
-### Seed（seed）
+- `0` = `逐位随机分配`：每个位点独立按相对比例抽取替换元素，最终计数可能偏离目标比例。
+- `1` = `尽量匹配整体比例`：先把比例换算成整数计数，再随机分配到命中位点，最终计数尽量接近目标比例。
 
-`int`，默认 0。非 0 时固定随机路径，控制多元素替换的分配随机性。`0` 表示每次运行随机。
+只有一个替换元素时，两个模式的结果相同。
+
+### 随机种子（seed）
+
+`int`，默认 0。界面取消勾选“使用固定种子”时保存为 `0`，表示每次运行随机；勾选后保存输入的正整数，使位点分配可复现。
 
 ## 推荐预设
 
@@ -82,11 +87,13 @@
 {
   "class": "ConditionalReplaceCard",
   "check_state": true,
-  "target": "O",
-  "replacements": "F:1.0",
-  "condition": "z>=8 and z<=10",
-  "seed": [101],
-  "mode": 1
+  "params": {
+    "target": "O",
+    "replacements": "F:1.0",
+    "condition": "z>=14 and z<=16",
+    "seed": 101,
+    "mode": 1
+  }
 }
 ```
 
@@ -95,11 +102,13 @@
 {
   "class": "ConditionalReplaceCard",
   "check_state": true,
-  "target": "O",
-  "replacements": "F:0.7,N:0.3",
-  "condition": "z>=6 and z<=14",
-  "seed": [101],
-  "mode": 0
+  "params": {
+    "target": "O",
+    "replacements": "F:0.7,N:0.3",
+    "condition": "z>=6 and z<=14",
+    "seed": 101,
+    "mode": 0
+  }
 }
 ```
 
@@ -108,19 +117,23 @@
 {
   "class": "ConditionalReplaceCard",
   "check_state": true,
-  "target": "O",
-  "replacements": "F:0.4,N:0.3,Cl:0.3",
-  "condition": "all",
-  "seed": [101],
-  "mode": 0
+  "params": {
+    "target": "O",
+    "replacements": "F:0.4,N:0.3,Cl:0.3",
+    "condition": "all",
+    "seed": 101,
+    "mode": 0
+  }
 }
 ```
 
 ## 推荐组合
 
-- `Group Label` → `Conditional Replace`：先打 group 标签分割区域，再用坐标条件做精细筛选。
-- `Conditional Replace` → `Atomic Perturb`：替换后加坐标噪声，松驰替换引入的局部应力。
+- `Crystal Prototype Builder` → `Conditional Replace`：先生成表面或界面模板，再按坐标区域做元素替换。
+- `Conditional Replace` → `Atomic Perturb`：替换后加坐标噪声，松弛替换引入的局部应力。
 - `Conditional Replace` → `Random Doping`：先做区域选择性替换覆盖表面化学，再做全局替位补样。
+
+如果需要按 group 标签选择位点，应使用 `Group Label` → `Random Doping`；本卡不读取 group 标签。
 
 ## 常见问题
 
@@ -129,6 +142,8 @@
 **替换了不该替换的位点。** condition 表达式区域范围写错了。检查结构坐标范围，确认上下限对应目标区域。Slab 的真空层可能导致 z 坐标超出预期。
 
 **condition 解析失败。** 检查变量是否只用了 x/y/z，并确认没有 `===`、函数调用等不支持的语法。`=`、`==`、`>=`、`<=`、`!=` 都是合法写法；非法表达式会明确抛出 `ValueError`。
+
+**随机模式为什么没有保留一部分原元素？** 这里的“随机”只表示在多个替换元素之间逐位随机分配，不表示随机决定是否替换。要控制替换数量或浓度，请使用 `Random Doping`。
 
 **替换后键长不合理。** 纯化学替换不做结构弛豫。如果键长明显异常，建议后接弛豫计算。
 

@@ -78,13 +78,54 @@ class TestStructureGeneratorCards(BaseCardTest):
                     seed=3,
                 ),
             )
+        with self.assertRaisesRegex(ValueError, "no solvent molecule"):
+            LocalSolvationOperation().run_structure(
+                structure,
+                LocalSolvationParams(
+                    solvent_count=2,
+                    sampling_mode="water",
+                    center_mode="all",
+                    shell=(1.8, 2.5),
+                    min_distance=1.0,
+                    max_attempts=500,
+                    strict_count=False,
+                    use_seed=True,
+                    seed=3,
+                ),
+            )
 
     def test_local_solvation_card_roundtrip(self):
         card = LocalSolvationCard()
+        self.assertTrue(card.solvent_edit.isHidden())
+        self.assertTrue(card.min_distance_frame.isHidden())
+        self.assertTrue(card.elements_edit.isHidden())
+        self.assertIn("Load an upstream structure", card.preview_label.text())
+
+        card.center_mode_combo.setCurrentIndex(
+            card.center_mode_combo.findData("elements")
+        )
+        self.assertFalse(card.elements_edit.isHidden())
+        card.elements_edit.setText("Ca")
+        card.set_dataset([Atoms("Ca", positions=[[0, 0, 0]], pbc=False)])
+        self.assertIn("centers 1 (Ca)", card.preview_label.text())
+        self.assertIn("resolved profile Ion-water first shell", card.preview_label.text())
+        self.assertIn("Ca 2.3–2.6 Å", card.preview_label.text())
+
+        card.advanced_checkbox.setChecked(True)
+        self.assertFalse(card.min_distance_frame.isHidden())
+        self.assertFalse(card.auto_box_checkbox.isHidden())
+        self.assertFalse(card.box_size_frame.isHidden())
+        self.assertTrue(card.box_frame.isHidden())
+        card.auto_box_checkbox.setChecked(True)
+        self.assertTrue(card.box_size_frame.isHidden())
+        self.assertFalse(card.box_frame.isHidden())
+
         card.structures_frame.set_input_value([2])
         card.count_frame.set_input_value([3])
-        card.mode_combo.setCurrentText("water")
-        card.center_mode_combo.setCurrentText("indices")
+        card.mode_combo.setCurrentIndex(card.mode_combo.findData("water"))
+        card.center_mode_combo.setCurrentIndex(
+            card.center_mode_combo.findData("indices")
+        )
         card.indices_edit.setText("1")
         card.shell_frame.set_input_value([2.0, 3.5])
         card.min_distance_frame.set_input_value([0.75])
@@ -99,6 +140,54 @@ class TestStructureGeneratorCards(BaseCardTest):
         restored.from_dict(card.to_dict())
 
         self.assertEqual(restored.get_params(), card.get_params())
+
+    def test_local_solvation_validates_counts_preserves_periodic_box_and_orients_water(self):
+        operation = LocalSolvationOperation()
+        periodic = Atoms(
+            "Ca",
+            positions=[[5.0, 5.0, 5.0]],
+            cell=[20, 20, 20],
+            pbc=True,
+        )
+        output = operation.run_structure(
+            periodic,
+            LocalSolvationParams(
+                solvent_count=1,
+                sampling_mode="water",
+                center_mode="all",
+                shell=(3.0, 3.1),
+                min_distance=0.5,
+                auto_box=True,
+                use_seed=True,
+                seed=9,
+            ),
+        )[0]
+
+        np.testing.assert_allclose(output.cell.array, periodic.cell.array)
+        np.testing.assert_array_equal(output.pbc, periodic.pbc)
+        positions = output.positions
+        water_com = positions[1:4].mean(axis=0)
+        oh_bisector = positions[[2, 3]].mean(axis=0) - positions[1]
+        self.assertGreater(
+            float(np.dot(oh_bisector, water_com - positions[0])),
+            0.0,
+        )
+
+        with self.assertRaisesRegex(ValueError, "structures must be an integer"):
+            operation.run_structure(
+                periodic,
+                LocalSolvationParams(structures=1.5),  # type: ignore[arg-type]
+            )
+        invalid_periodic = Atoms(
+            "Ca",
+            positions=[[0, 0, 0]],
+            pbc=True,
+        )
+        with self.assertRaisesRegex(ValueError, "periodic input"):
+            operation.run_structure(
+                invalid_periodic,
+                LocalSolvationParams(solvent_count=1),
+            )
 
     def test_solvent_box_fill_fixed_count_preserves_cell_and_is_reproducible(self):
         structure = Atoms(
@@ -125,7 +214,7 @@ class TestStructureGeneratorCards(BaseCardTest):
         self.assertTrue(np.allclose(first.cell.array, structure.cell.array))
         self.assertTrue(first.pbc.all())
         self.assertTrue(np.allclose(first.get_positions(), second.get_positions()))
-        self.assertIn("SolvBox(mode=water,n=2)", first.info.get("Config_type", ""))
+        self.assertIn("SolvBox(mode=water,req=2,ok=2)", first.info.get("Config_type", ""))
 
     def test_solvent_box_fill_density_mode_and_card_roundtrip(self):
         structure = Atoms(
@@ -147,11 +236,31 @@ class TestStructureGeneratorCards(BaseCardTest):
         self.assertGreater(len(result), len(structure))
 
         card = SolventBoxFillCard()
-        card.count_mode_combo.setCurrentText("density")
+        self.assertTrue(card.solvent_edit.isHidden())
+        self.assertTrue(card.density_frame.isHidden())
+        self.assertTrue(card.min_distance_frame.isHidden())
+        self.assertIn("Load an upstream periodic cell", card.preview_label.text())
+
+        card.set_dataset([structure])
+        self.assertIn("cell 1000 Å³", card.preview_label.text())
+        self.assertIn("target 100 molecules", card.preview_label.text())
+
+        card.count_mode_combo.setCurrentIndex(
+            card.count_mode_combo.findData("density")
+        )
+        self.assertTrue(card.count_frame.isHidden())
+        self.assertFalse(card.density_frame.isHidden())
         card.count_frame.set_input_value([9])
         card.density_frame.set_input_value([0.7])
-        card.mode_combo.setCurrentText("loose")
+        card.mode_combo.setCurrentIndex(card.mode_combo.findData("loose"))
         card.fill_packing_frame.set_input_value([0.8])
+        self.assertIn("nominal density count", card.preview_label.text())
+
+        card.advanced_checkbox.setChecked(True)
+        self.assertFalse(card.min_distance_frame.isHidden())
+        self.assertTrue(card.flex_pool_frame.isHidden())
+        card.flex_checkbox.setChecked(True)
+        self.assertFalse(card.flex_pool_frame.isHidden())
         card.min_distance_frame.set_input_value([0.6])
         card.strict_checkbox.setChecked(True)
         card.flex_checkbox.setChecked(False)
@@ -161,6 +270,53 @@ class TestStructureGeneratorCards(BaseCardTest):
         restored = SolventBoxFillCard()
         restored.from_dict(card.to_dict())
         self.assertEqual(restored.get_params(), card.get_params())
+
+    def test_solvent_box_fill_supports_empty_periodic_cell_and_validates_density_multiplier(self):
+        empty = Atoms(cell=[10, 10, 10], pbc=True)
+        operation = SolventBoxFillOperation()
+
+        output = operation.run_structure(
+            empty,
+            SolventBoxFillParams(
+                solvent_count=1,
+                min_distance=0.8,
+                use_seed=True,
+                seed=4,
+            ),
+        )[0]
+
+        self.assertEqual(len(output), 3)
+        self.assertIn(
+            "SolvBox(mode=water,req=1,ok=1)",
+            output.info.get("Config_type", ""),
+        )
+        with self.assertRaisesRegex(ValueError, "at most 1"):
+            operation.run_structure(
+                empty,
+                SolventBoxFillParams(
+                    count_mode="density",
+                    fill_packing=1.1,
+                ),
+            )
+
+        summary_empty = operation.capacity_summary(
+            empty,
+            SolventBoxFillParams(count_mode="density"),
+        )
+        occupied = Atoms(
+            "Ar20",
+            positions=np.zeros((20, 3)),
+            cell=[10, 10, 10],
+            pbc=True,
+        )
+        summary_occupied = operation.capacity_summary(
+            occupied,
+            SolventBoxFillParams(count_mode="density"),
+        )
+        self.assertEqual(
+            summary_empty["target_count"],
+            summary_occupied["target_count"],
+        )
 
     def test_solvent_box_fill_tiny_dense_cell_fails_quickly(self):
         structure = Atoms(
@@ -364,20 +520,18 @@ class TestStructureGeneratorCards(BaseCardTest):
             cell=np.diag([2.5, 2.5, 2.5]),
             pbc=True,
         )
-        result = SolventBoxFillOperation().run_structure(
-            structure,
-            SolventBoxFillParams(
-                solvent_count=10,
-                min_distance=1.0,
-                max_attempts_per_solvent=1000,
-                strict_count=False,
-                use_seed=True,
-                seed=3,
-            ),
-        )[0]
-
-        self.assertEqual(len(result), len(structure))
-        self.assertIn("SolvBox(mode=water,n=0)", result.info.get("Config_type", ""))
+        with self.assertRaisesRegex(ValueError, "no solvent molecule"):
+            SolventBoxFillOperation().run_structure(
+                structure,
+                SolventBoxFillParams(
+                    solvent_count=10,
+                    min_distance=1.0,
+                    max_attempts_per_solvent=1000,
+                    strict_count=False,
+                    use_seed=True,
+                    seed=3,
+                ),
+            )
 
     def test_solvent_box_fill_flexible_solvent_branch_runs(self):
         butane = """14
@@ -421,7 +575,10 @@ H 2.6700 0.5000 -0.8660
 
         self.assertEqual(len(result), len(structure) + 14)
         self.assertEqual(result.get_chemical_symbols().count("C"), 4)
-        self.assertIn("SolvBox(mode=general,n=1)", result.info.get("Config_type", ""))
+        self.assertIn(
+            "SolvBox(mode=general,req=1,ok=1)",
+            result.info.get("Config_type", ""),
+        )
 
     def test_random_packing_preserves_cell_composition_and_distance_constraints(self):
         structure = Atoms(
@@ -604,8 +761,8 @@ H 2.6700 0.5000 -0.8660
         base = proto.create_operation().generate(proto.get_params())[0]
 
         gl = GroupLabelCard()
-        gl.mode_combo.setCurrentText("k-vector layers (recommended)")
-        gl.kvec_combo.setCurrentText("111")
+        gl.mode_combo.setCurrentIndex(0)
+        gl.kvec_combo.setCurrentIndex(4)
         gl.group_a_edit.setText("A")
         gl.group_b_edit.setText("B")
         labeled = gl.process_structure(base)[0]
@@ -614,11 +771,11 @@ H 2.6700 0.5000 -0.8660
         self.assertTrue({"A", "B"}.issubset(groups))
 
         mag = MagneticOrderCard()
-        mag.format_combo.setCurrentText("Collinear (scalar)")
+        mag.format_combo.setCurrentIndex(0)
         mag.map_edit.setText("Fe:2.2")
         mag.fm_checkbox.setChecked(False)
         mag.afm_checkbox.setChecked(True)
-        mag.afm_mode_combo.setCurrentText("group A/B")
+        mag.afm_mode_combo.setCurrentIndex(1)
         mag.group_a_edit.setText("A")
         mag.group_b_edit.setText("B")
         mag.pm_checkbox.setChecked(False)
@@ -654,10 +811,88 @@ H 2.6700 0.5000 -0.8660
         self.assertEqual(set(str(value) for value in labeled.arrays["group"]), {"up", "down"})
         self.assertIn("Grp(k111,up/down)", labeled.info.get("Config_type", ""))
 
+    def test_group_label_parity_uses_half_up_rounding(self):
+        base = CrystalPrototypeBuilderOperation().generate(
+            CrystalPrototypeBuilderParams(
+                lattice="bcc",
+                element="Fe",
+                a_range=(2.9, 2.9, 0.1),
+                auto_supercell=False,
+                rep=(2, 2, 2),
+                max_outputs=1,
+            )
+        )[0]
+        labeled = GroupLabelOperation().run_structure(
+            base,
+            GroupLabelParams(
+                mode="fractional_parity",
+                overwrite=True,
+            ),
+        )[0]
+        counts = {
+            label: int(np.count_nonzero(labeled.arrays["group"] == label))
+            for label in ("A", "B")
+        }
+        self.assertEqual(counts, {"A": 8, "B": 8})
+
+    def test_group_label_k_vector_is_stable_on_repeated_cell_boundaries(self):
+        base = CrystalPrototypeBuilderOperation().generate(
+            CrystalPrototypeBuilderParams(
+                lattice="bcc",
+                element="Fe",
+                a_range=(2.9, 2.9, 0.1),
+                auto_supercell=False,
+                rep=(4, 4, 4),
+                max_outputs=1,
+            )
+        )[0]
+        labeled = GroupLabelOperation().run_structure(
+            base,
+            GroupLabelParams(mode="k_vector", kvec="111"),
+        )[0]
+        counts = {
+            label: int(np.count_nonzero(labeled.arrays["group"] == label))
+            for label in ("A", "B")
+        }
+        self.assertEqual(counts, {"A": 64, "B": 64})
+
+    def test_group_label_rejects_ambiguous_modes_and_labels(self):
+        base = self.structure.copy()
+        operation = GroupLabelOperation()
+        with self.assertRaisesRegex(ValueError, "unsupported mode"):
+            operation.run_structure(base, GroupLabelParams(mode="typo"))
+        with self.assertRaisesRegex(ValueError, "must be non-empty"):
+            operation.run_structure(base, GroupLabelParams(group_a=""))
+        with self.assertRaisesRegex(ValueError, "must be different"):
+            operation.run_structure(base, GroupLabelParams(group_a="same", group_b="same"))
+
+        legacy = operation.run_structure(
+            base,
+            GroupLabelParams(
+                mode="k-vector layers (recommended)",
+                overwrite=True,
+            ),
+        )[0]
+        self.assertIn("group", legacy.arrays)
+
+    def test_group_label_default_preserves_existing_groups(self):
+        base = self.structure.copy()
+        base.new_array(
+            "group",
+            np.asarray(["surface"] * len(base), dtype=object),
+        )
+        base.info["Config_type"] = "seed"
+        params = GroupLabelParams()
+        self.assertFalse(params.overwrite)
+        output = GroupLabelOperation().run_structure(base, params)[0]
+        self.assertIsNot(output, base)
+        np.testing.assert_array_equal(output.arrays["group"], base.arrays["group"])
+        self.assertEqual(output.info["Config_type"], "seed")
+
     def test_group_label_card_roundtrip(self):
         card = GroupLabelCard()
-        card.mode_combo.setCurrentText("fractional parity")
-        card.kvec_combo.setCurrentText("110")
+        card.mode_combo.setCurrentIndex(1)
+        card.kvec_combo.setCurrentIndex(3)
         card.group_a_edit.setText("alpha")
         card.group_b_edit.setText("beta")
         card.overwrite_checkbox.setChecked(False)
@@ -666,6 +901,55 @@ H 2.6700 0.5000 -0.8660
         restored.from_dict(card.to_dict())
 
         self.assertEqual(restored.get_params(), card.get_params())
+        self.assertEqual(restored.get_params().mode, "fractional_parity")
+        self.assertEqual(restored.get_params().kvec, "110")
+        self.assertFalse(restored.kvec_combo.isEnabled())
+
+        legacy = GroupLabelCard()
+        legacy.from_dict(
+            {
+                "class": "GroupLabelCard",
+                "check_state": True,
+                "mode": "k-vector layers (recommended)",
+                "kvec": "100",
+                "group_a": "old_a",
+                "group_b": "old_b",
+            }
+        )
+        self.assertEqual(legacy.get_params().mode, "k_vector")
+        self.assertEqual(legacy.get_params().kvec, "100")
+        self.assertTrue(legacy.get_params().overwrite)
+
+    def test_group_label_preview_warns_for_one_group_and_existing_labels(self):
+        fcc = Atoms(
+            symbols=["Ni"] * 4,
+            scaled_positions=[
+                [0.0, 0.0, 0.0],
+                [0.0, 0.5, 0.5],
+                [0.5, 0.0, 0.5],
+                [0.5, 0.5, 0.0],
+            ],
+            cell=np.eye(3),
+            pbc=True,
+        )
+        card = GroupLabelCard()
+        card.set_dataset([fcc])
+        self.assertIn("A=4", card.preview_label.text())
+        self.assertIn("B=0", card.preview_label.text())
+        self.assertIn("Only one group", card.preview_label.text())
+
+        existing = fcc.copy()
+        existing.new_array(
+            "group",
+            np.asarray(["surface", "surface", "bulk", "bulk"], dtype=object),
+        )
+        card.set_dataset([existing])
+        self.assertIn("output will be unchanged", card.preview_label.text())
+        self.assertIn("bulk=2", card.preview_label.text())
+        self.assertIn("surface=2", card.preview_label.text())
+
+        card.overwrite_checkbox.setChecked(True)
+        self.assertIn("will be overwritten", card.preview_label.text())
 
     def test_organic_configuration_card(self):
         card = OrganicMolConfigPBCCard()
@@ -681,6 +965,169 @@ H 2.6700 0.5000 -0.8660
         for atoms in results:
             self.assertEqual(len(atoms), len(structure))
             self.assertFalse(np.allclose(atoms.get_positions(), structure.get_positions()))
+
+    def test_organic_configuration_topology_preview_and_progressive_controls(self):
+        molecule = Atoms(
+            "C4",
+            positions=[
+                [0.0, 0.0, 0.0],
+                [1.4, 0.0, 0.0],
+                [2.8, 0.2, 0.0],
+                [4.1, 0.2, 1.0],
+            ],
+            pbc=False,
+        )
+        card = OrganicMolConfigPBCCard()
+
+        self.assertTrue(card.bond_detect_frame.isHidden())
+        self.assertIn("Load an upstream molecule", card.preview_label.text())
+        card.set_dataset([molecule])
+
+        self.assertIn("4 atoms", card.preview_label.text())
+        self.assertIn("3 detected bonds / 1 rotatable", card.preview_label.text())
+        self.assertIn("1 molecular components", card.preview_label.text())
+        self.assertIn("nonperiodic", card.preview_label.text())
+
+        card.advanced_checkbox.setChecked(True)
+        self.assertFalse(card.bond_detect_frame.isHidden())
+        self.assertFalse(card.bond_max_frame.isEnabled())
+        card.bond_max_enable.setChecked(True)
+        self.assertTrue(card.bond_max_frame.isEnabled())
+
+    def test_organic_configuration_operation_honors_boundary_state_and_guards(self):
+        molecule = Atoms(
+            "C4",
+            positions=[
+                [0.0, 0.0, 0.0],
+                [1.4, 0.0, 0.0],
+                [2.8, 0.2, 0.0],
+                [4.1, 0.2, 1.0],
+            ],
+            pbc=False,
+        )
+        operation = OrganicMolConfigPBCOperation()
+        params = OrganicMolConfigPBCParams(
+            perturb_per_frame=2,
+            torsion_range_deg=(60.0, 60.0),
+            max_torsions_per_conf=1,
+            gaussian_sigma=0.0,
+            pbc_mode="auto",
+            use_seed=True,
+            seed=4,
+        )
+
+        outputs = operation.run_structure(molecule, params)
+
+        self.assertEqual(len(outputs), 2)
+        self.assertTrue(all(not np.any(atoms.pbc) for atoms in outputs))
+        self.assertTrue(all("TG(req=2,ok=2" in atoms.info["Config_type"] for atoms in outputs))
+
+        angles = np.linspace(0.0, 2.0 * np.pi, 6, endpoint=False)
+        ring = Atoms(
+            "C6",
+            positions=np.column_stack(
+                [1.4 * np.cos(angles), 1.4 * np.sin(angles), np.zeros(6)]
+            ),
+            pbc=False,
+        )
+        ring_summary = operation.topology_summary(
+            ring,
+            OrganicMolConfigPBCParams(gaussian_sigma=0.01),
+        )
+        self.assertEqual(ring_summary["bond_count"], 6)
+        self.assertEqual(ring_summary["torsion_count"], 0)
+
+        no_bonds = operation.topology_summary(
+            molecule,
+            OrganicMolConfigPBCParams(
+                gaussian_sigma=0.01,
+                bond_detect_factor=0.5,
+            ),
+        )
+        self.assertEqual(no_bonds["bond_count"], 0)
+
+        from NepTrainKit.core.torsion_guard_pbc import (
+            bonds_within_range_nonpbc,
+        )
+
+        stretched = np.asarray([[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]])
+        radii = np.asarray([0.5, 0.5])
+        self.assertTrue(
+            bonds_within_range_nonpbc(
+                stretched,
+                [(0, 1)],
+                radii,
+                min_factor=0.0,
+                max_factor=None,
+                detect_factor=1.15,
+            )
+        )
+        self.assertFalse(
+            bonds_within_range_nonpbc(
+                stretched,
+                [(0, 1)],
+                radii,
+                min_factor=0.0,
+                max_factor=1.5,
+                detect_factor=1.15,
+            )
+        )
+
+        mixed = molecule.copy()
+        mixed.set_cell([8, 8, 8])
+        mixed.set_pbc([True, True, False])
+        with self.assertRaisesRegex(ValueError, "mixed periodic"):
+            operation.run_structure(mixed, params)
+
+        impossible = Atoms(
+            "H2",
+            positions=[[0, 0, 0], [0.7, 0, 0]],
+            cell=[5, 5, 5],
+            pbc=True,
+        )
+        with self.assertRaisesRegex(ValueError, "all requested conformers failed"):
+            operation.run_structure(
+                impossible,
+                OrganicMolConfigPBCParams(
+                    perturb_per_frame=2,
+                    gaussian_sigma=0.01,
+                    bond_keep_min_factor=2.0,
+                    max_retries=0,
+                    use_seed=True,
+                    seed=2,
+                ),
+            )
+
+    def test_organic_configuration_unwraps_pbc_spanning_molecule_before_rotation(self):
+        molecule = Atoms(
+            "C4",
+            positions=[
+                [8.3, 5.0, 5.0],
+                [9.7, 5.0, 5.0],
+                [1.1, 5.2, 5.0],
+                [2.4, 5.2, 6.0],
+            ],
+            cell=[10, 10, 10],
+            pbc=True,
+        )
+        output = OrganicMolConfigPBCOperation().run_structure(
+            molecule,
+            OrganicMolConfigPBCParams(
+                perturb_per_frame=1,
+                torsion_range_deg=(75.0, 75.0),
+                max_torsions_per_conf=1,
+                gaussian_sigma=0.0,
+                pbc_mode="auto",
+                use_seed=True,
+                seed=7,
+            ),
+        )[0]
+
+        distances = output.get_all_distances(mic=True)
+        self.assertLess(distances[0, 1], 1.7)
+        self.assertLess(distances[1, 2], 1.7)
+        self.assertLess(distances[2, 3], 1.7)
+        self.assertFalse(np.allclose(output.positions, molecule.positions))
 
     def test_organic_configuration_card_roundtrip(self):
         card = OrganicMolConfigPBCCard()

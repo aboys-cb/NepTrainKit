@@ -4,11 +4,12 @@ from typing import Any
 
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QWidget, QVBoxLayout
+from qfluentwidgets import CaptionLabel
 from shiboken6 import isValid
 
 from NepTrainKit.ui.dialogs import call_path_dialog
 from NepTrainKit.ui.threads import BackgroundTask
-from NepTrainKit.core import CardManager
+from NepTrainKit.core import CardManager, MessageManager
 from NepTrainKit.ui.widgets import MakeDataCardWidget, MakeDataCard, FilterDataCard
 
 
@@ -41,18 +42,44 @@ class CardGroup(MakeDataCardWidget):
         """Initialise layouts, drag-and-drop targets, and default execution state.
         """
         super().__init__(parent)
-        self.setTitle(self.tr("Card Group"))
+        self.setTitle(self.tr("Branch Merge Group"))
         self.setAcceptDrops(True)
         self.index=0
+        self.branch_widget = QWidget(self)
+        self.branch_layout = QVBoxLayout(self.branch_widget)
+        self.branch_layout.setContentsMargins(0, 0, 0, 0)
+        self.branch_layout.setSpacing(6)
+        self.branch_hint = CaptionLabel(
+            self.tr(
+                "Drop branch cards here. Every enabled child receives the same group input; children run one at a time and their outputs are merged."
+            ),
+            self,
+        )
+        self.branch_hint.setWordWrap(True)
+        self.branch_layout.addWidget(self.branch_hint)
         self.group_widget = QWidget(self)
         # self.setStyleSheet("CardGroup{boder: 2px solid #C0C0C0;}")
-        self.viewLayout.addWidget(self.group_widget)
         self.group_layout = QVBoxLayout(self.group_widget)
+        self.group_layout.setContentsMargins(0, 0, 0, 0)
+        self.group_layout.setSpacing(6)
+        self.branch_layout.addWidget(self.group_widget)
+        self.viewLayout.addWidget(self.branch_widget)
         self.exportSignal.connect(self.export_data)
         self.windowStateChangedSignal.connect(self.show_card_setting)
         self.filter_widget = QWidget(self)
+        self.filter_hint = CaptionLabel(
+            self.tr(
+                "Optional post-filter: drop one filter card here to process the merged branch output."
+            ),
+            self,
+        )
+        self.filter_hint.setWordWrap(True)
+        self.vBoxLayout.addWidget(self.filter_hint)
         self.filter_layout = QVBoxLayout(self.filter_widget)
         self.vBoxLayout.addWidget(self.filter_widget)
+        self.summary_label = CaptionLabel("", self)
+        self.summary_label.setWordWrap(True)
+        self.vBoxLayout.addWidget(self.summary_label)
         self.run_card_num:int
         self.filter_card=None
         self.dataset:Any=None
@@ -61,6 +88,7 @@ class CardGroup(MakeDataCardWidget):
         self.cards_to_run = []
         self.current_index = 0
         self.resize(400, 200)
+        self._refresh_summary()
 
     def set_filter_card(self,card):
         """Attach a filter card that refines results after the grouped cards run.
@@ -70,11 +98,27 @@ class CardGroup(MakeDataCardWidget):
         card : QWidget
             Filter card widget to embed beneath the grouped cards.
         """
+        if (
+            self.filter_card is not None
+            and isValid(self.filter_card)
+            and self.filter_card is not card
+        ):
+            MessageManager.send_warning_message(
+                self.tr(
+                    "This group already has a post-filter. Close or move it before adding another."
+                )
+            )
+            return False
         self.filter_card=card
         self.filter_layout.addWidget(card)
+        card.state_checkbox.stateChanged.connect(self._refresh_summary)
+        if self.dataset is not None:
+            card.set_dataset([])
+        self._refresh_summary()
+        return True
 
     def state_changed(self, state):
-        """Update the enabled state of child cards to match the group checkbox.
+        """Enable or bypass the group without changing child-card choices.
         
         Parameters
         ----------
@@ -82,8 +126,7 @@ class CardGroup(MakeDataCardWidget):
             Toggle state propagated from the group header.
         """
         super().state_changed(state)
-        for card in self.card_list:
-            card.state_checkbox.setChecked(state)
+        self._refresh_summary()
 
     @property
     def card_list(self)->list["MakeDataCard"]:
@@ -121,8 +164,9 @@ class CardGroup(MakeDataCardWidget):
             card.set_dataset(dataset)
         if self.filter_card and isValid(self.filter_card):
             self.filter_card.set_dataset([])
+        self._refresh_summary()
 
-    def add_card(self, card):
+    def add_card(self, card, *, preserve_legacy_branch: bool = False):
         """Insert a card widget into the group layout.
         
         Parameters
@@ -130,7 +174,16 @@ class CardGroup(MakeDataCardWidget):
         card : QWidget
             Card widget to append.
         """
+        if isinstance(card, FilterDataCard) and not preserve_legacy_branch:
+            return self.set_filter_card(card)
+        if card is self or card in self.card_list:
+            return False
         self.group_layout.addWidget(card)
+        card.state_checkbox.stateChanged.connect(self._refresh_summary)
+        if self.dataset is not None:
+            card.set_dataset(self.dataset)
+        self._refresh_summary()
+        return True
 
     def remove_card(self, card):
         """Remove a card widget from the group layout.
@@ -141,12 +194,48 @@ class CardGroup(MakeDataCardWidget):
             Card widget to detach.
         """
         self.group_layout.removeWidget(card)
+        card.setParent(None)
+        self._refresh_summary()
 
     def clear_cards(self):
         """Remove every child card from the layout.
         """
         for card in self.card_list:
             self.group_layout.removeWidget(card)
+            card.close()
+        self._refresh_summary()
+
+    def _refresh_summary(self, *_args) -> None:
+        if not hasattr(self, "summary_label"):
+            return
+        cards = self.card_list
+        enabled = sum(bool(card.check_state) for card in cards)
+        if self.dataset is None:
+            input_text = self.tr("input not loaded")
+        else:
+            try:
+                input_text = self.tr("{count} input structures").format(
+                    count=len(self.dataset)
+                )
+            except TypeError:
+                input_text = self.tr("input loaded")
+        filter_text = (
+            self.tr("post-filter: {name}").format(
+                name=self.filter_card.getTitle()
+            )
+            if self.filter_card is not None and isValid(self.filter_card)
+            else self.tr("no post-filter")
+        )
+        self.summary_label.setText(
+            self.tr(
+                "{input} · {enabled}/{total} branch cards enabled · merged output · {filter}"
+            ).format(
+                input=input_text,
+                enabled=enabled,
+                total=len(cards),
+                filter=filter_text,
+            )
+        )
 
     def closeEvent(self, event):
         """Close nested cards before destroying the group widget.
@@ -190,11 +279,16 @@ class CardGroup(MakeDataCardWidget):
         if widget == self:
             return
         if isinstance(widget, FilterDataCard):
-            self.set_filter_card(widget)
+            accepted = self.set_filter_card(widget)
 
         elif isinstance(widget, (MakeDataCard,CardGroup)):
-            self.add_card(widget)
-        event.acceptProposedAction()
+            accepted = self.add_card(widget)
+        else:
+            accepted = False
+        if accepted:
+            event.acceptProposedAction()
+        else:
+            event.ignore()
 
     def on_card_finished(self, index):
         """Collect results from the finished card and start the next queued card.
@@ -265,7 +359,8 @@ class CardGroup(MakeDataCardWidget):
         self.set_output_available(False)
 
     def run(self):
-        """Run all child cards sequentially while sharing the same input dataset."""
+        """Run independent child branches sequentially from the same input."""
+        self._refresh_summary()
         for card in self.card_list:
             card.set_dataset(self.dataset)
         if self.filter_card and isValid(self.filter_card):
@@ -318,10 +413,19 @@ class CardGroup(MakeDataCardWidget):
 
     def export_data(self):
         if self.dataset is not None:
-            path = call_path_dialog(self, "Choose a file save location", "file",f"export_{self.getTitle()}_structure.xyz")
+            path = call_path_dialog(
+                self,
+                self.tr("Choose a file save location"),
+                "file",
+                f"export_{self.getTitle()}_structure.xyz",
+            )
             if not path:
                 return
-            thread=BackgroundTask(self,show_tip=True,title="Exporting data")
+            thread=BackgroundTask(
+                self,
+                show_tip=True,
+                title=self.tr("Exporting data"),
+            )
             thread.start_work(self.write_result_dataset, path)
     def to_dict(self):
         data_dict = super().to_dict()
@@ -341,7 +445,7 @@ class CardGroup(MakeDataCardWidget):
         for sub_card in data_dict.get("card_list",[]):
             card_name=sub_card["class"]
             card  = CardManager.card_info_dict[card_name](self)
-            self.add_card(card)
+            self.add_card(card, preserve_legacy_branch=True)
             card.from_dict(sub_card)
 
         if data_dict.get("filter_card"):

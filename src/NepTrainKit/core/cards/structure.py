@@ -17,8 +17,15 @@ from loguru import logger
 from NepTrainKit.core.alloy import best_supercell_factors_max_atoms
 from NepTrainKit.core.config_type import append_config_tag
 from NepTrainKit.core.config_type import stable_config_id
+from NepTrainKit.core.magnetism import kvec_signs, parse_kvec
 from NepTrainKit.core.structure import get_vibration_modes
-from NepTrainKit.core.torsion_guard_pbc import TorsionGuardParams, process_single as tg_process_single
+from NepTrainKit.core.torsion_guard_pbc import (
+    TorsionGuardParams,
+    build_adjacency_nonpbc,
+    build_adjacency_pbc,
+    get_rotatable_torsions_fast,
+    process_single as tg_process_single,
+)
 
 from .geometry import scaled_positions, wrapped_positions as fast_wrapped_positions
 from .operation import GeneratorOperation, StructureOperation
@@ -150,8 +157,7 @@ def evaluate_dz_expression(expr: str, x: np.ndarray, y: np.ndarray, z: np.ndarra
 
 
 def build_layers(base_positions: np.ndarray, num_layers: int, layer_distance: float) -> list[np.ndarray]:
-    """Stack copies of positions along z."""
-    num_layers = max(1, int(num_layers))
+    """Stack copies of positions by a Cartesian-z translation."""
     offsets = np.arange(num_layers, dtype=float) * float(layer_distance)
     layers = []
     for offset in offsets:
@@ -166,7 +172,7 @@ class LayerCopyParams:
     """Parameters for surface warp and layer-copy generation."""
 
     preset_index: int = 1
-    dz_expr: str = "sin(x/pi) + sin(y/pi)"
+    dz_expr: str = "0"
     expression_params: str = ""
     apply_mode: int = 0
     elements: str = ""
@@ -181,51 +187,170 @@ class LayerCopyParams:
 class LayerCopyOperation(StructureOperation):
     """Warp selected atoms by dz=f(x,y,z) and copy into stacked layers."""
 
-    def run_structure(self, structure, params: LayerCopyParams) -> list:
-        if not params.dz_expr.strip():
-            raise ValueError("LayerCopy: dz expression is empty.")
+    @staticmethod
+    def _integer(value: object, name: str, *, minimum: int) -> int:
+        if isinstance(value, bool):
+            raise ValueError(f"LayerCopy: {name} must be an integer.")
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"LayerCopy: {name} must be an integer.") from exc
+        if not np.isfinite(numeric) or not numeric.is_integer():
+            raise ValueError(f"LayerCopy: {name} must be an integer.")
+        result = int(numeric)
+        if result < minimum:
+            raise ValueError(f"LayerCopy: {name} must be >= {minimum}.")
+        return result
 
-        base = structure.copy()
-        positions = np.asarray(base.get_positions(), dtype=float)
-        mask = self.apply_mask(base, params)
+    @staticmethod
+    def _finite(value: object, name: str, *, minimum: float | None = None) -> float:
+        try:
+            result = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"LayerCopy: {name} must be a finite number.") from exc
+        if not np.isfinite(result):
+            raise ValueError(f"LayerCopy: {name} must be a finite number.")
+        if minimum is not None and result < minimum:
+            raise ValueError(f"LayerCopy: {name} must be >= {minimum:g}.")
+        return result
+
+    @classmethod
+    def _validated_settings(cls, structure, params: LayerCopyParams) -> dict[str, Any]:
+        if len(structure) < 1:
+            raise ValueError("LayerCopy requires at least one atom.")
+        positions = np.asarray(structure.get_positions(), dtype=float)
+        if positions.shape != (len(structure), 3) or not np.all(np.isfinite(positions)):
+            raise ValueError("LayerCopy requires finite Cartesian atom positions.")
+
+        expr = str(params.dz_expr).strip()
+        if not expr:
+            raise ValueError("LayerCopy: dz expression is empty.")
+        layers = cls._integer(params.layers, "layers", minimum=1)
+        distance = cls._finite(params.distance, "layer translation")
+        if layers > 1 and distance <= 0.0:
+            raise ValueError(
+                "LayerCopy: layer translation must be positive when layers > 1."
+            )
+        extra_vacuum = cls._finite(
+            params.extra_vacuum,
+            "extra vacuum",
+            minimum=0.0,
+        )
+
+        mode = cls._integer(params.apply_mode, "apply_mode", minimum=0)
+        if mode not in {0, 1, 2}:
+            raise ValueError(f"LayerCopy: unsupported apply_mode {mode}.")
+        z_range = tuple(params.z_range)
+        if len(z_range) != 2:
+            raise ValueError("LayerCopy: z_range must contain two values.")
+        z_min = cls._finite(z_range[0], "z_range")
+        z_max = cls._finite(z_range[1], "z_range")
+        if z_min > z_max:
+            z_min, z_max = z_max, z_min
+
+        cell = np.asarray(structure.cell.array, dtype=float)
+        if cell.shape != (3, 3) or not np.all(np.isfinite(cell)):
+            raise ValueError("LayerCopy requires a finite 3x3 cell.")
+        final_cell = cell.copy()
+        if params.extend_cell_z:
+            final_cell[2, 2] += distance * (layers - 1) + extra_vacuum
+        if params.wrap and abs(float(np.linalg.det(final_cell))) <= 1e-12:
+            raise ValueError("LayerCopy: wrapping requires a nonsingular cell.")
+
+        normalized_params = LayerCopyParams(
+            preset_index=int(params.preset_index),
+            dz_expr=expr,
+            expression_params=str(params.expression_params),
+            apply_mode=mode,
+            elements=str(params.elements),
+            z_range=(z_min, z_max),
+            wrap=bool(params.wrap),
+            extend_cell_z=bool(params.extend_cell_z),
+            extra_vacuum=extra_vacuum,
+            layers=layers,
+            distance=distance,
+        )
+        mask = cls.apply_mask(structure, normalized_params)
         if not np.any(mask):
             raise ValueError("LayerCopy: no atoms selected by apply settings.")
-
-        expr_params = parse_dz_params(params.expression_params)
-        warped_positions = positions.copy()
+        expr_params = parse_dz_params(normalized_params.expression_params)
         dz = evaluate_dz_expression(
-            params.dz_expr.strip(),
+            expr,
             x=positions[mask, 0],
             y=positions[mask, 1],
             z=positions[mask, 2],
             params=expr_params,
         )
-        warped_positions[mask, 2] = warped_positions[mask, 2] + dz
+        return {
+            "positions": positions,
+            "mask": mask,
+            "dz": dz,
+            "params": normalized_params,
+            "cell": cell,
+            "final_cell": final_cell,
+        }
 
-        layers = build_layers(warped_positions, num_layers=int(params.layers), layer_distance=float(params.distance))
+    @classmethod
+    def geometry_summary(cls, structure, params: LayerCopyParams) -> dict[str, Any]:
+        """Return the resolved warp, stack, and output geometry."""
+        settings = cls._validated_settings(structure, params)
+        normalized = settings["params"]
+        c_length = float(np.linalg.norm(settings["cell"][2]))
+        final_c_length = float(np.linalg.norm(settings["final_cell"][2]))
+        return {
+            "input_atoms": len(structure),
+            "selected_atoms": int(np.count_nonzero(settings["mask"])),
+            "layers": normalized.layers,
+            "translation": normalized.distance,
+            "output_atoms": len(structure) * normalized.layers,
+            "dz_min": float(np.min(settings["dz"])),
+            "dz_max": float(np.max(settings["dz"])),
+            "cell_c_before": c_length,
+            "cell_c_after": final_c_length,
+            "extend_cell": normalized.extend_cell_z,
+            "extra_vacuum": normalized.extra_vacuum,
+            "wrap": normalized.wrap,
+        }
+
+    def run_structure(self, structure, params: LayerCopyParams) -> list:
+        settings = self._validated_settings(structure, params)
+        normalized = settings["params"]
+
+        base = structure.copy()
+        positions = settings["positions"]
+        mask = settings["mask"]
+        warped_positions = positions.copy()
+        warped_positions[mask, 2] = warped_positions[mask, 2] + settings["dz"]
+
+        layer_positions = build_layers(
+            warped_positions,
+            num_layers=normalized.layers,
+            layer_distance=normalized.distance,
+        )
         combined = base.copy()
-        combined.set_positions(layers[0])
-        for layer_pos in layers[1:]:
+        combined.set_positions(layer_positions[0])
+        for layer_pos in layer_positions[1:]:
             layer_struct = base.copy()
             layer_struct.set_positions(layer_pos)
             combined += layer_struct
 
-        if params.extend_cell_z and hasattr(combined, "cell"):
-            base_cell = np.asarray(base.cell.array, dtype=float)
-            if base_cell.shape == (3, 3) and int(params.layers) > 1:
-                dz_total = abs(float(params.distance)) * (int(params.layers) - 1) + max(0.0, float(params.extra_vacuum))
-                if dz_total > 0.0:
-                    base_cell = base_cell.copy()
-                    c_norm = float(np.linalg.norm(base_cell[2]))
-                    if c_norm <= 1e-12:
-                        raise ValueError("LayerCopy: cannot extend a zero-length c lattice vector.")
-                    base_cell[2] = base_cell[2] + dz_total * base_cell[2] / c_norm
-                    combined.set_cell(base_cell, scale_atoms=False)
+        if normalized.extend_cell_z:
+            dz_total = (
+                normalized.distance * (normalized.layers - 1)
+                + normalized.extra_vacuum
+            )
+            if dz_total > 0.0:
+                base_cell = settings["cell"].copy()
+                base_cell[2, 2] += dz_total
+                combined.set_cell(base_cell, scale_atoms=False)
 
-        if params.wrap:
+        if normalized.wrap:
             combined.set_positions(fast_wrapped_positions(combined, combined.positions))
 
-        append_config_tag(combined, f"SWC(L={int(params.layers)},dz={float(params.distance):g})")
+        append_config_tag(
+            combined,
+            f"LayerStack(L={normalized.layers},step={normalized.distance:g})",
+        )
         return [combined]
 
     @staticmethod
@@ -240,11 +365,11 @@ class LayerCopyOperation(StructureOperation):
                 return np.zeros(n_atoms, dtype=bool)
             symbols = np.asarray(structure.get_chemical_symbols(), dtype=object)
             return np.isin(symbols, np.asarray(elems, dtype=object))
+        if mode != 2:
+            raise ValueError(f"LayerCopy: unsupported apply_mode {mode}.")
         z_min, z_max = [float(value) for value in params.z_range]
         if z_min > z_max:
             z_min, z_max = z_max, z_min
-        if mode != 2:
-            raise ValueError(f"LayerCopy: unsupported apply_mode {mode}.")
         z = structure.get_positions()[:, 2]
         return (z >= z_min) & (z <= z_max)
 
@@ -319,54 +444,76 @@ class VibrationModePerturbOperation(StructureOperation):
 class GroupLabelParams:
     """Parameters for assigning atoms.arrays['group'] labels."""
 
-    mode: str = "k-vector layers (recommended)"
+    mode: str = "k_vector"
     kvec: str = "111"
     group_a: str = "A"
     group_b: str = "B"
-    overwrite: bool = True
+    overwrite: bool = False
 
 
 class GroupLabelOperation(StructureOperation):
     """Attach group labels using lattice-coordinate rules."""
 
+    _MODE_ALIASES = {
+        "k_vector": "k_vector",
+        "k-vector": "k_vector",
+        "k-vector layers": "k_vector",
+        "k-vector layers (recommended)": "k_vector",
+        "fractional_parity": "fractional_parity",
+        "fractional parity": "fractional_parity",
+        "fractional parity (2x rounding)": "fractional_parity",
+    }
+
     def run_structure(self, structure, params: GroupLabelParams) -> list:
+        mode = self.normalize_mode(params.mode)
+        a_label, b_label = self._validated_labels(params.group_a, params.group_b)
         if (not params.overwrite) and "group" in structure.arrays:
             return [structure.copy()]
         if structure.cell is None or np.linalg.det(structure.cell.array) == 0:
             raise ValueError("GroupLabel: structure has no valid cell.")
 
         atoms = structure.copy()
-        if params.mode.startswith("fractional parity"):
+        if mode == "fractional_parity":
             flags = self._label_by_parity(atoms)
             tag = "par"
         else:
             flags = self._label_by_kvec(atoms, params.kvec)
             tag = f"k{params.kvec}"
 
-        a_label = (params.group_a or "A").strip() or "A"
-        b_label = (params.group_b or "B").strip() or "B"
         atoms.arrays["group"] = np.where(flags == 0, a_label, b_label).astype(object)
         append_config_tag(atoms, f"Grp({tag},{a_label}/{b_label})")
         return [atoms]
 
-    @staticmethod
-    def _parse_kvec(text: str) -> np.ndarray:
-        text = (text or "").strip()
-        if text in {"100", "010", "001", "110", "111"}:
-            return np.array([int(value) for value in text], dtype=float)
-        raise ValueError(f"GroupLabel: unsupported k-vector '{text}'.")
-
     @classmethod
-    def _label_by_kvec(cls, atoms, kvec: str) -> np.ndarray:
-        k = cls._parse_kvec(kvec)
-        scaled = scaled_positions(atoms, wrap=True)
-        phase = np.floor(2.0 * (scaled @ k)).astype(int)
-        return (phase % 2).astype(int)
+    def normalize_mode(cls, mode: str) -> str:
+        value = str(mode or "").strip()
+        normalized = cls._MODE_ALIASES.get(value)
+        if normalized is None:
+            raise ValueError(
+                f"GroupLabel: unsupported mode {value!r}; "
+                "use k_vector or fractional_parity."
+            )
+        return normalized
+
+    @staticmethod
+    def _validated_labels(group_a: str, group_b: str) -> tuple[str, str]:
+        a_label = str(group_a or "").strip()
+        b_label = str(group_b or "").strip()
+        if not a_label or not b_label:
+            raise ValueError("GroupLabel: group labels must be non-empty.")
+        if a_label == b_label:
+            raise ValueError("GroupLabel: group A and group B labels must be different.")
+        return a_label, b_label
+
+    @staticmethod
+    def _label_by_kvec(atoms, kvec: str) -> np.ndarray:
+        signs = kvec_signs(atoms, parse_kvec(kvec))
+        return np.where(signs > 0.0, 0, 1).astype(int)
 
     @staticmethod
     def _label_by_parity(atoms) -> np.ndarray:
         scaled = scaled_positions(atoms, wrap=True)
-        ints = np.rint(2.0 * scaled).astype(int)
+        ints = np.floor(2.0 * scaled + 0.5 + 1e-12).astype(int)
         return (ints.sum(axis=1) % 2).astype(int)
 
 
@@ -376,11 +523,11 @@ class OrganicMolConfigPBCParams:
 
     perturb_per_frame: int = 100
     torsion_range_deg: tuple[float, float] = (-180.0, 180.0)
-    max_torsions_per_conf: int = 50
+    max_torsions_per_conf: int = 5
     gaussian_sigma: float = 0.03
     pbc_mode: str = "auto"
-    local_cutoff: int = 200
-    local_subtree: int = 100
+    local_cutoff: int = 150
+    local_subtree: int = 40
     bond_detect_factor: float = 1.15
     bond_keep_min_factor: float = 0.60
     bond_keep_max_factor: float = 1.15
@@ -398,30 +545,319 @@ class OrganicMolConfigPBCParams:
 class OrganicMolConfigPBCOperation(StructureOperation):
     """Generate torsion-driven molecular conformers using TorsionGuard PBC."""
 
-    def run_structure(self, structure, params: OrganicMolConfigPBCParams) -> list:
+    @staticmethod
+    def _integer(value: Any, label: str, *, minimum: int) -> int:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"OrganicMolConfig: {label} must be an integer.") from exc
+        if not np.isfinite(numeric) or not numeric.is_integer():
+            raise ValueError(f"OrganicMolConfig: {label} must be an integer.")
+        integer = int(numeric)
+        if integer < minimum:
+            raise ValueError(
+                f"OrganicMolConfig: {label} must be >= {minimum}."
+            )
+        return integer
+
+    @staticmethod
+    def _finite_float(
+        value: Any,
+        label: str,
+        *,
+        minimum: float | None = None,
+        strictly_positive: bool = False,
+    ) -> float:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"OrganicMolConfig: {label} must be a finite number."
+            ) from exc
+        if not np.isfinite(numeric):
+            raise ValueError(
+                f"OrganicMolConfig: {label} must be a finite number."
+            )
+        if strictly_positive and numeric <= 0.0:
+            raise ValueError(
+                f"OrganicMolConfig: {label} must be positive."
+            )
+        if minimum is not None and numeric < minimum:
+            raise ValueError(
+                f"OrganicMolConfig: {label} must be >= {minimum:g}."
+            )
+        return numeric
+
+    @classmethod
+    def _validated_settings(
+        cls,
+        structure,
+        params: OrganicMolConfigPBCParams,
+    ) -> dict[str, Any]:
         symbols = structure.get_chemical_symbols()
-        coords = structure.get_positions().astype(float)
-        cell_mat = self._cell_matrix(structure)
-        tg_params = TorsionGuardParams(
-            perturb_per_frame=int(params.perturb_per_frame),
-            torsion_range_deg=tuple(map(float, params.torsion_range_deg)),
-            max_torsions_per_conf=int(params.max_torsions_per_conf),
-            gaussian_sigma=float(params.gaussian_sigma),
-            pbc_mode=params.pbc_mode,
-            local_mode_cutoff_atoms=int(params.local_cutoff),
-            local_torsion_max_subtree=int(params.local_subtree),
-            bond_detect_factor=float(params.bond_detect_factor),
-            bond_keep_min_factor=float(params.bond_keep_min_factor),
-            bond_keep_max_factor=float(params.bond_keep_max_factor) if params.bond_keep_max_enable else None,
-            nonbond_min_factor=float(params.nonbond_min_factor),
-            max_retries_per_frame=int(params.max_retries),
-            mult_bond_factor=float(params.mult_bond_factor),
-            nonpbc_box_size=float(params.nonpbc_box_size),
-            bo_c_const=float(params.bo_c_const),
-            bo_threshold=float(params.bo_threshold),
-            seed=(int(params.seed) + stable_config_id(structure) * 1000003 if params.use_seed else None),
+        if not symbols:
+            raise ValueError("OrganicMolConfig requires at least one atom.")
+        coords = np.asarray(structure.get_positions(), dtype=float)
+        if coords.shape != (len(symbols), 3) or not np.all(np.isfinite(coords)):
+            raise ValueError("OrganicMolConfig requires finite Cartesian atom positions.")
+
+        pbc_mode = str(params.pbc_mode).strip().lower()
+        if pbc_mode not in {"auto", "yes", "no"}:
+            raise ValueError("OrganicMolConfig: pbc_mode must be auto, yes, or no.")
+        pbc_flags = np.asarray(structure.pbc, dtype=bool)
+        if pbc_mode == "auto" and np.any(pbc_flags) and not np.all(pbc_flags):
+            raise ValueError(
+                "OrganicMolConfig: mixed periodic boundaries are not supported; "
+                "use pbc_mode=no or provide a fully periodic molecular cell."
+            )
+        pbc_active = pbc_mode == "yes" or (
+            pbc_mode == "auto" and bool(np.all(pbc_flags))
         )
-        result_list = tg_process_single(symbols, coords, cell_mat, tg_params)
+        cell_mat = None
+        if pbc_active:
+            cell_mat = np.asarray(structure.cell.array, dtype=float)
+            if (
+                cell_mat.shape != (3, 3)
+                or not np.all(np.isfinite(cell_mat))
+                or abs(float(np.linalg.det(cell_mat))) <= 1e-12
+            ):
+                raise ValueError(
+                    "OrganicMolConfig: periodic mode requires a finite, "
+                    "nonsingular 3x3 cell."
+                )
+
+        perturb_per_frame = cls._integer(
+            params.perturb_per_frame,
+            "perturb_per_frame",
+            minimum=1,
+        )
+        max_torsions = cls._integer(
+            params.max_torsions_per_conf,
+            "max_torsions_per_conf",
+            minimum=0,
+        )
+        local_cutoff = cls._integer(
+            params.local_cutoff,
+            "local_cutoff",
+            minimum=0,
+        )
+        local_subtree = cls._integer(
+            params.local_subtree,
+            "local_subtree",
+            minimum=1,
+        )
+        max_retries = cls._integer(
+            params.max_retries,
+            "max_retries",
+            minimum=0,
+        )
+        gaussian_sigma = cls._finite_float(
+            params.gaussian_sigma,
+            "gaussian_sigma",
+            minimum=0.0,
+        )
+        if len(params.torsion_range_deg) != 2:
+            raise ValueError(
+                "OrganicMolConfig: torsion_range_deg must contain two values."
+            )
+        torsion_range = tuple(
+            cls._finite_float(value, "torsion_range_deg")
+            for value in params.torsion_range_deg
+        )
+        if torsion_range[0] > torsion_range[1]:
+            raise ValueError(
+                "OrganicMolConfig: torsion_range_deg minimum must not exceed maximum."
+            )
+        bond_detect = cls._finite_float(
+            params.bond_detect_factor,
+            "bond_detect_factor",
+            strictly_positive=True,
+        )
+        bond_min = cls._finite_float(
+            params.bond_keep_min_factor,
+            "bond_keep_min_factor",
+            minimum=0.0,
+        )
+        bond_max = None
+        if params.bond_keep_max_enable:
+            bond_max = cls._finite_float(
+                params.bond_keep_max_factor,
+                "bond_keep_max_factor",
+                strictly_positive=True,
+            )
+            if bond_max < bond_min:
+                raise ValueError(
+                    "OrganicMolConfig: bond_keep_max_factor must be >= "
+                    "bond_keep_min_factor."
+                )
+        nonbond_min = cls._finite_float(
+            params.nonbond_min_factor,
+            "nonbond_min_factor",
+            minimum=0.0,
+        )
+        mult_bond = cls._finite_float(
+            params.mult_bond_factor,
+            "mult_bond_factor",
+            minimum=0.0,
+        )
+        box_size = cls._finite_float(
+            params.nonpbc_box_size,
+            "nonpbc_box_size",
+            strictly_positive=True,
+        )
+        bo_c = cls._finite_float(
+            params.bo_c_const,
+            "bo_c_const",
+            strictly_positive=True,
+        )
+        bo_threshold = cls._finite_float(
+            params.bo_threshold,
+            "bo_threshold",
+            minimum=0.0,
+        )
+        if bo_threshold > 1.0:
+            raise ValueError(
+                "OrganicMolConfig: bo_threshold must be between 0 and 1."
+            )
+        seed = cls._integer(params.seed, "seed", minimum=0)
+
+        if pbc_active:
+            assert cell_mat is not None
+            adj, edge_len, radii, edge_order = build_adjacency_pbc(
+                symbols,
+                coords,
+                cell_mat,
+                bond_detect,
+                c_const=bo_c,
+                bo_threshold=bo_threshold,
+            )
+        else:
+            adj, edge_len, radii, edge_order = build_adjacency_nonpbc(
+                symbols,
+                coords,
+                bond_detect,
+                c_const=bo_c,
+                bo_threshold=bo_threshold,
+            )
+        torsions = get_rotatable_torsions_fast(
+            adj,
+            edge_len,
+            radii,
+            symbols,
+            mult_bond,
+            edge_order=edge_order,
+        )
+        torsion_active = bool(
+            torsions
+            and max_torsions > 0
+            and (torsion_range[0] != 0.0 or torsion_range[1] != 0.0)
+        )
+        if not torsion_active and gaussian_sigma == 0.0:
+            raise ValueError(
+                "OrganicMolConfig: the current settings cannot change any coordinates; "
+                "enable Gaussian noise or provide an active rotatable bond."
+            )
+
+        components = 0
+        visited: set[int] = set()
+        for root in range(len(adj)):
+            if root in visited:
+                continue
+            components += 1
+            stack = [root]
+            visited.add(root)
+            while stack:
+                atom = stack.pop()
+                for neighbor in adj[atom]:
+                    if neighbor not in visited:
+                        visited.add(neighbor)
+                        stack.append(neighbor)
+
+        return {
+            "symbols": symbols,
+            "coords": coords,
+            "cell_mat": cell_mat,
+            "pbc_mode": pbc_mode,
+            "pbc_active": pbc_active,
+            "perturb_per_frame": perturb_per_frame,
+            "torsion_range": torsion_range,
+            "max_torsions": max_torsions,
+            "gaussian_sigma": gaussian_sigma,
+            "local_cutoff": local_cutoff,
+            "local_subtree": local_subtree,
+            "bond_detect": bond_detect,
+            "bond_min": bond_min,
+            "bond_max": bond_max,
+            "nonbond_min": nonbond_min,
+            "max_retries": max_retries,
+            "mult_bond": mult_bond,
+            "box_size": box_size,
+            "bo_c": bo_c,
+            "bo_threshold": bo_threshold,
+            "seed": seed,
+            "bond_count": len(edge_len),
+            "torsion_count": len(torsions),
+            "component_count": components,
+            "torsion_active": torsion_active,
+        }
+
+    @classmethod
+    def topology_summary(
+        cls,
+        structure,
+        params: OrganicMolConfigPBCParams,
+    ) -> dict[str, Any]:
+        """Return resolved topology and sampling information for the UI."""
+        settings = cls._validated_settings(structure, params)
+        return {
+            "atom_count": len(settings["symbols"]),
+            "bond_count": settings["bond_count"],
+            "component_count": settings["component_count"],
+            "torsion_count": settings["torsion_count"],
+            "torsion_active": settings["torsion_active"],
+            "pbc_active": settings["pbc_active"],
+            "local_mode": (
+                len(settings["symbols"]) > settings["local_cutoff"]
+            ),
+            "requested_outputs": settings["perturb_per_frame"],
+            "gaussian_sigma": settings["gaussian_sigma"],
+        }
+
+    def run_structure(self, structure, params: OrganicMolConfigPBCParams) -> list:
+        settings = self._validated_settings(structure, params)
+        tg_params = TorsionGuardParams(
+            perturb_per_frame=settings["perturb_per_frame"],
+            torsion_range_deg=settings["torsion_range"],
+            max_torsions_per_conf=settings["max_torsions"],
+            gaussian_sigma=settings["gaussian_sigma"],
+            pbc_mode="yes" if settings["pbc_active"] else "no",
+            local_mode_cutoff_atoms=settings["local_cutoff"],
+            local_torsion_max_subtree=settings["local_subtree"],
+            bond_detect_factor=settings["bond_detect"],
+            bond_keep_min_factor=settings["bond_min"],
+            bond_keep_max_factor=settings["bond_max"],
+            nonbond_min_factor=settings["nonbond_min"],
+            max_retries_per_frame=settings["max_retries"],
+            mult_bond_factor=settings["mult_bond"],
+            nonpbc_box_size=settings["box_size"],
+            bo_c_const=settings["bo_c"],
+            bo_threshold=settings["bo_threshold"],
+            seed=(
+                settings["seed"] + stable_config_id(structure) * 1000003
+                if params.use_seed
+                else None
+            ),
+        )
+        result_list = tg_process_single(
+            settings["symbols"],
+            settings["coords"],
+            settings["cell_mat"],
+            tg_params,
+        )
+        if not result_list:
+            raise ValueError(
+                "OrganicMolConfig: all requested conformers failed the geometry guards."
+            )
 
         structures_out = []
         for _symbols, new_coords, cell, pbc_active in result_list:
@@ -435,25 +871,16 @@ class OrganicMolConfigPBCOperation(StructureOperation):
                 except Exception:
                     pass
             else:
-                box = float(params.nonpbc_box_size)
+                box = settings["box_size"]
                 new_atoms.set_cell(np.diag([box, box, box]))
                 new_atoms.set_pbc(False)
             append_config_tag(
                 new_atoms,
-                f"TG(n={int(params.perturb_per_frame)},sig={float(params.gaussian_sigma)},pbc={params.pbc_mode})",
+                f"TG(req={settings['perturb_per_frame']},ok={len(result_list)},"
+                f"sig={settings['gaussian_sigma']:g},pbc={settings['pbc_mode']})",
             )
             structures_out.append(new_atoms)
         return structures_out
-
-    @staticmethod
-    def _cell_matrix(structure) -> np.ndarray | None:
-        try:
-            cell_arr = structure.get_cell().array
-            if cell_arr is not None and np.array(cell_arr).shape == (3, 3):
-                return np.array(cell_arr, dtype=float)
-        except Exception:
-            return None
-        return None
 
 
 @dataclass(frozen=True)

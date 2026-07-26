@@ -267,6 +267,50 @@ class TestOrderedAlloyCards(BaseCardTest):
         )
         self.assertEqual(len(limited), 1)
 
+    def test_placeholder_element_x_is_never_emitted(self):
+        atoms = self._prototype("A2/bcc", max_atoms=2)
+        rules = json.dumps(
+            {
+                "A": {
+                    "elements": ["X"],
+                    "mode": "fixed_fraction",
+                    "composition": {"X": 1.0},
+                }
+            }
+        )
+        with self.assertRaisesRegex(ValueError, "placeholder element X"):
+            FiniteCellAlloyOccupancyOperation().run_structure(
+                atoms,
+                FiniteCellAlloyOccupancyParams(site_rules=rules, max_outputs=1),
+            )
+
+    def test_output_budget_covers_compositions_before_extra_arrangements(self):
+        atoms = self._prototype("A1/fcc", max_atoms=4)
+        rules = json.dumps(
+            {
+                "A": {
+                    "elements": ["Fe", "Co"],
+                    "mode": "count_range",
+                    "counts": {"Fe": [0, 4], "Co": [0, 4]},
+                }
+            }
+        )
+        outputs = FiniteCellAlloyOccupancyOperation().run_structure(
+            atoms,
+            FiniteCellAlloyOccupancyParams(
+                site_rules=rules,
+                arrangements_per_composition=3,
+                use_seed=True,
+                seed=9,
+                max_outputs=3,
+            ),
+        )
+        self.assertEqual(len(outputs), 3)
+        self.assertEqual(
+            len({self._metadata(output)["composition_id"] for output in outputs}),
+            3,
+        )
+
     def test_estimate_and_invalid_site_rules(self):
         atoms = self._prototype("B2/AB", rep=(2, 2, 2), max_atoms=16)
         rules = json.dumps(
@@ -335,7 +379,7 @@ class TestOrderedAlloyCards(BaseCardTest):
         occupancy_restored.from_dict(occupancy.to_dict())
         self.assertEqual(occupancy_restored.get_params(), occupancy.get_params())
         self.assertIn(
-            "Run or load an upstream structure",
+            "Load an upstream structure",
             occupancy_restored.estimate_label.text(),
         )
 
@@ -438,11 +482,11 @@ class TestOrderedAlloyCards(BaseCardTest):
             for editor in card.rules_editor.site_editors
         }
         self.assertEqual(counts, {"A": "24 sites", "B": "8 sites"})
-        self.assertIn("Detected sites: A=24, B=8", card.estimate_label.text())
-        self.assertIn("Feasible integer compositions: 25", card.estimate_label.text())
-        self.assertIn("Theoretical outputs before limit: 100", card.estimate_label.text())
-        self.assertIn("Expected outputs: 12", card.estimate_label.text())
-        self.assertIn("Truncated by max_outputs: Yes", card.estimate_label.text())
+        self.assertIn("First input sites: A=24, B=8", card.estimate_label.text())
+        self.assertIn("25 feasible integer compositions", card.estimate_label.text())
+        self.assertIn("Output upper-bound estimate: 100", card.estimate_label.text())
+        self.assertIn("Max outputs per input: 12", card.estimate_label.text())
+        self.assertIn("different compositions are covered", card.estimate_label.text())
 
         self.assertTrue(card.apply_rule_json(json.dumps({"A": rules["A"]})))
         self.assertIn("Missing rules for input site sets: B", card.rules_editor.status_label.text())
@@ -463,36 +507,112 @@ class TestOrderedAlloyCards(BaseCardTest):
         card = FiniteCellAlloyOccupancyCard()
         plain = self._prototype("A1/fcc", rep=(2, 2, 2), max_atoms=32)
         del plain.arrays["sublattice"]
-        card.rules_editor.load_template("all")
         card.set_dataset([plain])
         self.assertFalse(card.rules_editor.validation_errors(card._input_counts))
-        self.assertIn("Detected sites: all=32", card.estimate_label.text())
+        self.assertIn("First input sites: all=32", card.estimate_label.text())
 
         ordered = self._prototype("B2/AB", rep=(2, 2, 2), max_atoms=16)
-        card.rules_editor.load_template("ab")
         card.set_dataset([ordered])
         self.assertFalse(card.rules_editor.validation_errors(card._input_counts))
         self.assertIn("A=8, B=8", card.estimate_label.text())
+
+    def test_auto_rules_use_current_elements_and_fractions(self):
+        atoms = self._prototype("A1/fcc", max_atoms=4)
+        del atoms.arrays["sublattice"]
+        atoms.set_chemical_symbols(["Fe", "Fe", "Fe", "Co"])
+        card = FiniteCellAlloyOccupancyCard()
+        card.set_dataset([atoms])
+        rule = json.loads(card.get_params().site_rules)["all"]
+        self.assertEqual(rule["elements"], ["Fe", "Co"])
+        self.assertEqual(rule["composition"], {"Fe": 0.75, "Co": 0.25})
+        self.assertNotIn("X", card.get_params().site_rules)
+
+    def test_visual_fixed_fractions_require_sum_one_but_core_keeps_legacy_weights(self):
+        atoms = self._prototype("A1/fcc", max_atoms=4)
+        del atoms.arrays["sublattice"]
+        rules = {
+            "all": {
+                "elements": ["Fe", "Co"],
+                "mode": "fixed_fraction",
+                "composition": {"Fe": 0.8, "Co": 0.8},
+            }
+        }
+        card = FiniteCellAlloyOccupancyCard()
+        self.assertTrue(card.apply_rule_json(json.dumps(rules)))
+        card.set_dataset([atoms])
+        errors = card.rules_editor.validation_errors(card._input_counts)
+        self.assertTrue(any("must sum to 1" in error for error in errors))
+        with self.assertRaisesRegex(ValueError, "must sum to 1"):
+            card.create_operation().run_structure(atoms, card.get_params())
+
+        output = FiniteCellAlloyOccupancyOperation().run_structure(
+            atoms,
+            FiniteCellAlloyOccupancyParams(
+                site_rules=json.dumps(rules),
+                max_outputs=1,
+            ),
+        )[0]
+        self.assertEqual(self._metadata(output)["requested"]["all"], {"Co": 0.5, "Fe": 0.5})
+
+        restored = FiniteCellAlloyOccupancyCard()
+        restored.set_params(
+            FiniteCellAlloyOccupancyParams(
+                site_rules=json.dumps(rules),
+                max_outputs=1,
+            )
+        )
+        restored.set_dataset([atoms])
+        self.assertEqual(
+            len(restored.create_operation().run_structure(atoms, restored.get_params())),
+            1,
+        )
+
+    def test_rule_templates_require_confirmation_after_manual_edits(self):
+        card = FiniteCellAlloyOccupancyCard()
+        editor = card.rules_editor
+        editor.site_editors[0].element_rows[0].element_edit.setText("Fe")
+        before = editor.to_rules()
+
+        editor.set_replacement_confirmation(lambda: False)
+        editor.single_template_button.click()
+        self.assertEqual(editor.to_rules(), before)
+        all_index = editor.partition_mode_combo.findData("all")
+        editor.partition_mode_combo.setCurrentIndex(all_index)
+        self.assertEqual(editor.to_rules(), before)
+        self.assertEqual(editor.partition_mode(), "sublattices")
+
+        editor.set_replacement_confirmation(lambda: True)
+        editor.single_template_button.click()
+        self.assertEqual(set(editor.to_rules()), {"all"})
 
     def test_untouched_rules_auto_match_all_a_and_ab_inputs(self):
         card = FiniteCellAlloyOccupancyCard()
         ordered = self._prototype("L12/A3B", rep=(2, 2, 2), max_atoms=32)
         card.set_dataset([ordered])
-        self.assertEqual(set(json.loads(card.get_params().site_rules)), {"A", "B"})
+        ordered_rules = json.loads(card.get_params().site_rules)
+        self.assertEqual(set(ordered_rules), {"A", "B"})
+        self.assertEqual(ordered_rules["A"]["elements"], ["Cu"])
+        self.assertEqual(ordered_rules["B"]["elements"], ["Au"])
         self.assertIn("A, B", card.auto_match_label.text())
+        card.rules_editor.ab_template_button.click()
+        self.assertNotIn("X", card.get_params().site_rules)
 
         single_a = self._prototype("A1/fcc", rep=(2, 2, 2), max_atoms=32)
         card.set_dataset([single_a])
-        self.assertEqual(set(json.loads(card.get_params().site_rules)), {"A"})
-        self.assertIn("site sets: A", card.auto_match_label.text())
-        self.assertIn("Detected sites: A=32", card.estimate_label.text())
+        single_rules = json.loads(card.get_params().site_rules)
+        self.assertEqual(set(single_rules), {"A"})
+        self.assertEqual(single_rules["A"]["elements"], ["Cu"])
+        self.assertIn("input: A", card.auto_match_label.text())
+        self.assertIn("First input sites: A=32", card.estimate_label.text())
 
         plain = single_a.copy()
         del plain.arrays["sublattice"]
         card.set_dataset([plain])
-        self.assertEqual(set(json.loads(card.get_params().site_rules)), {"all"})
-        self.assertIn("site sets: all", card.auto_match_label.text())
-        self.assertIn("Detected sites: all=32", card.estimate_label.text())
+        plain_rules = json.loads(card.get_params().site_rules)
+        self.assertEqual(set(plain_rules), {"all"})
+        self.assertEqual(plain_rules["all"]["elements"], ["Cu"])
+        self.assertIn("input: all", card.auto_match_label.text())
+        self.assertIn("First input sites: all=32", card.estimate_label.text())
 
     def test_user_owned_rules_are_never_auto_overwritten(self):
         single_a = self._prototype("A1/fcc", rep=(2, 2, 2), max_atoms=32)

@@ -92,7 +92,7 @@ def build_adjacency_nonpbc(symbols: Sequence[str], coords: np.ndarray, bond_dete
     N = len(symbols)
     radii = np.array([COVALENT_RADII.get(s, 0.77) for s in symbols], dtype=float)
     if N == 0:
-        return [set()], {}, radii
+        return [], {}, radii, {}
     max_r = float(np.max(radii))
     h = bond_detect_factor * 2.0 * max_r + 1e-6
     inv_h = 1.0 / h
@@ -123,6 +123,8 @@ def build_adjacency_nonpbc(symbols: Sequence[str], coords: np.ndarray, bond_dete
                 rij2 = float(np.dot(pj - pi, pj - pi))
                 rx = math.sqrt(rij2)
                 r0 = (ri + rj)
+                if rx > float(bond_detect_factor) * r0:
+                    continue
                 # Linus Pauling bond order
                 bo = math.exp((r0 - rx) / float(c_const))
                 if bo <= bo_threshold:
@@ -154,6 +156,8 @@ def build_adjacency_pbc(symbols: Sequence[str], coords: np.ndarray, cell: np.nda
             d2 = float(np.dot(dvec, dvec))
             rx = math.sqrt(d2)
             r0 = (ri + rj)
+            if rx > float(bond_detect_factor) * r0:
+                continue
             bo = math.exp((r0 - rx) / float(c_const))
             if bo <= bo_threshold:
                 continue
@@ -203,7 +207,10 @@ def get_rotatable_torsions_fast(adj: Sequence[set[int]], edge_len: dict[Tuple[in
                                 radii: np.ndarray, symbols: Sequence[str], mult_bond_factor: float,
                                 edge_order: Optional[dict[Tuple[int, int], int]] = None):
     """
-    Prefer bridge edges; if none, fall back to all internal bonds (deg>1) excluding suspected multiple bonds.
+    Use bridge edges with neighbors on both sides, excluding suspected multiple bonds.
+
+    Ring bonds are intentionally excluded: removing a ring edge does not split
+    the molecular graph into a rotatable subtree.
     Returns List[(n1,a,b,n2)]
     """
     N = len(adj)
@@ -219,23 +226,19 @@ def get_rotatable_torsions_fast(adj: Sequence[set[int]], edge_len: dict[Tuple[in
                 continue
             if deg[a] <= 1 or deg[b] <= 1:
                 continue
-            # Exclude multiple bonds: prefer bond order if available, otherwise fallback to distance heuristic
-            if edge_order is not None:
-                if edge_order.get((a, b), 1) >= 2:
-                    continue
-            else:
-                if d < mult_bond_factor * (radii[a] + radii[b]):
-                    continue
+            # Exclude multiple bonds using both the estimated bond order and
+            # the explicit short-bond distance guard.
+            if edge_order is not None and edge_order.get((a, b), 1) >= 2:
+                continue
+            if d < mult_bond_factor * (radii[a] + radii[b]):
+                continue
             n1 = _prefer_neighbor(a, b, adj, symbols)
             n2 = _prefer_neighbor(b, a, adj, symbols)
             if n1 is None or n2 is None:
                 continue
             torsions.append((n1, a, b, n2))
         return torsions
-    torsions = build_from_edges(bridges)
-    if not torsions:
-        torsions = build_from_edges(edge_len.keys())
-    return torsions
+    return build_from_edges(bridges)
 def get_local_subtree_adj(adj: Sequence[set[int]], start_atom: int, exclude_atom: int,
                           max_subtree_atoms: Optional[int] = None) -> set[int]:
     visited: set[int] = set()
@@ -252,15 +255,45 @@ def get_local_subtree_adj(adj: Sequence[set[int]], start_atom: int, exclude_atom
                 return visited
             queue.append(ni)
     return visited
+
+
+def unwrap_by_adjacency(
+    coords: np.ndarray,
+    adj: Sequence[set[int]],
+    cell: np.ndarray,
+    inv_cell_T: np.ndarray,
+) -> np.ndarray:
+    """Unwrap each bonded component before rotating a PBC-spanning subtree."""
+    unwrapped = np.asarray(coords, dtype=float).copy()
+    visited: set[int] = set()
+    for root in range(len(adj)):
+        if root in visited:
+            continue
+        visited.add(root)
+        queue: deque[int] = deque([root])
+        while queue:
+            atom = queue.popleft()
+            for neighbor in adj[atom]:
+                if neighbor in visited:
+                    continue
+                delta = mic_delta(
+                    coords[neighbor] - coords[atom],
+                    cell,
+                    inv_cell_T,
+                )
+                unwrapped[neighbor] = unwrapped[atom] + delta
+                visited.add(neighbor)
+                queue.append(neighbor)
+    return unwrapped
 # ---------- Guards ----------
 def bonds_within_range_nonpbc(coords: np.ndarray, bond_pairs: Sequence[Tuple[int, int]], radii: np.ndarray,
                               min_factor: float, max_factor: Optional[float], detect_factor: float) -> bool:
-    maxf = detect_factor if max_factor is None else float(max_factor)
+    maxf = None if max_factor is None else float(max_factor)
     minf = float(min_factor) if (min_factor is not None) else 0.0
     for (i, j) in bond_pairs:
         d = float(np.linalg.norm(coords[i] - coords[j]))
         ref = radii[i] + radii[j]
-        if d > maxf * ref:
+        if maxf is not None and d > maxf * ref:
             return False
         if minf > 0.0 and d < minf * ref:
             return False
@@ -268,13 +301,13 @@ def bonds_within_range_nonpbc(coords: np.ndarray, bond_pairs: Sequence[Tuple[int
 def bonds_within_range_pbc(coords: np.ndarray, bond_pairs: Sequence[Tuple[int, int]], radii: np.ndarray,
                            min_factor: float, max_factor: Optional[float], detect_factor: float,
                            cell: np.ndarray, inv_cell_T: np.ndarray) -> bool:
-    maxf = detect_factor if max_factor is None else float(max_factor)
+    maxf = None if max_factor is None else float(max_factor)
     minf = float(min_factor) if (min_factor is not None) else 0.0
     for (i, j) in bond_pairs:
         dvec = mic_delta(coords[j] - coords[i], cell, inv_cell_T)
         d = float(np.linalg.norm(dvec))
         ref = radii[i] + radii[j]
-        if d > maxf * ref:
+        if maxf is not None and d > maxf * ref:
             return False
         if minf > 0.0 and d < minf * ref:
             return False
@@ -371,11 +404,22 @@ def process_single(symbols: Sequence[str],
                    params: TorsionGuardParams) -> list[tuple]:
     rng = np.random.default_rng(params.seed)
     # Decide PBC activation for this frame
-    has_cell = cell is not None
+    if params.pbc_mode not in {"auto", "yes", "no"}:
+        raise ValueError("TorsionGuard: pbc_mode must be auto, yes, or no.")
+    has_cell = False
+    if cell is not None:
+        cell = np.asarray(cell, dtype=float)
+        has_cell = (
+            cell.shape == (3, 3)
+            and np.all(np.isfinite(cell))
+            and abs(float(np.linalg.det(cell))) > 1e-12
+        )
     if params.pbc_mode == "yes":
-        pbc_active = bool(has_cell)
-        if not pbc_active:
-            print("[WARN] pbc=yes but no Lattice found in frame; falling back to non-PBC.", file=sys.stderr)
+        if not has_cell:
+            raise ValueError(
+                "TorsionGuard: pbc=yes requires a finite, nonsingular 3x3 cell."
+            )
+        pbc_active = True
     elif params.pbc_mode == "no":
         pbc_active = False
     else:  # "auto"
@@ -400,16 +444,23 @@ def process_single(symbols: Sequence[str],
     # Torsion set (always fast method with fallback to internal bonds)
     torsions = get_rotatable_torsions_fast(adj, edge_len, radii, symbols, params.mult_bond_factor, edge_order=edge_order)
     local_mode_flag = len(symbols) > params.local_mode_cutoff_atoms
+    base_coords = coords.copy()
+    if pbc_active and cell is not None and inv_cell_T is not None:
+        base_coords = unwrap_by_adjacency(
+            base_coords,
+            adj,
+            cell,
+            inv_cell_T,
+        )
     results: list[tuple] = []
     for _ in range(int(params.perturb_per_frame)):
-        new_coords = coords.copy()
         success = False
         for attempt in range(int(params.max_retries_per_frame) + 1):
             scale = 1.0 if attempt == 0 else (0.5 ** attempt)
             ang_lo, ang_hi = params.torsion_range_deg
             angle_range = (float(ang_lo) * scale, float(ang_hi) * scale)
             sigma_scaled = float(params.gaussian_sigma) * scale
-            new_coords = coords.copy()
+            new_coords = base_coords.copy()
             new_coords = perturb_coords_fast(
                 new_coords, adj, torsions,
                 angle_range, int(params.max_torsions_per_conf),
@@ -443,7 +494,7 @@ def process_single(symbols: Sequence[str],
             success = True
             break
         if not success:
-            new_coords = coords.copy()
+            continue
         if pbc_active and cell is not None and inv_cell_T is not None:
             new_coords = wrap_to_cell(new_coords, cell, inv_cell_T)
         else:

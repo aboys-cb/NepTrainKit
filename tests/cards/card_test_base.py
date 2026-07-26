@@ -84,6 +84,7 @@ from NepTrainKit.core.cards.structure import (
     GroupLabelParams,
     LayerCopyOperation,
     LayerCopyParams,
+    OrganicMolConfigPBCOperation,
     OrganicMolConfigPBCParams,
     RandomPackingOperation,
     RandomPackingParams,

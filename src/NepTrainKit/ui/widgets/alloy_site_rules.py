@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import Any
+from typing import Any, Callable
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QGridLayout, QHBoxLayout, QSizePolicy, QVBoxLayout, QWidget
@@ -397,12 +397,21 @@ class AlloySiteSetRuleEditor(CardWidget):
             self.add_element(str(element), values[str(element)], emit_change=False)
         self._on_mode_changed()
 
-    def validation_errors(self) -> list[str]:
+    def validation_errors(self, *, allow_placeholder: bool = False) -> list[str]:
         errors: list[str] = []
         elements = [row.element() for row in self.element_rows]
         if not elements:
             errors.append(self.tr("Add at least one element."))
-        invalid = sorted({element for element in elements if element not in atomic_numbers})
+        if not allow_placeholder and "X" in elements:
+            errors.append(self.tr("Replace placeholder X with real element symbols."))
+        invalid = sorted(
+            {
+                element
+                for element in elements
+                if element not in atomic_numbers or (element == "X" and not allow_placeholder)
+            }
+            - {"X"}
+        )
         if invalid:
             errors.append(
                 self.tr("Invalid element symbols: {elements}.").format(
@@ -420,8 +429,12 @@ class AlloySiteSetRuleEditor(CardWidget):
         mode = self.mode()
         if mode == "fixed_fraction":
             total = sum(float(row.fixed_fraction_spin.value()) for row in self.element_rows)
-            if total <= 0.0:
-                errors.append(self.tr("Fixed fractions must sum to more than zero."))
+            if abs(total - 1.0) > 1e-6:
+                errors.append(
+                    self.tr("Fixed fractions must sum to 1 (current sum: {total:.6g}).").format(
+                        total=total
+                    )
+                )
         elif mode == "fraction_range":
             for row in self.element_rows:
                 low = float(row.fraction_min_spin.value())
@@ -489,6 +502,7 @@ class AlloySiteRulesEditor(QWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._loading = False
+        self._confirm_replacement: Callable[[], bool] | None = None
         self.site_editors: list[AlloySiteSetRuleEditor] = []
 
         root = QVBoxLayout(self)
@@ -506,11 +520,11 @@ class AlloySiteRulesEditor(QWidget):
         self.partition_mode_combo.setFixedHeight(COMPACT_CONTROL_HEIGHT)
 
         self.single_template_button = PushButton(
-            self.tr("Ordinary single-sublattice alloy"),
+            self.tr("No sublattice labels (all)"),
             self,
         )
         self.ab_template_button = PushButton(
-            self.tr("A/B ordered alloy"),
+            self.tr("A/B sublattices"),
             self,
         )
         self.add_site_button = PushButton(FluentIcon.ADD, self.tr("Add site set"), self)
@@ -530,7 +544,7 @@ class AlloySiteRulesEditor(QWidget):
         template_row = QHBoxLayout()
         template_row.setContentsMargins(0, 0, 0, 0)
         template_row.setSpacing(4)
-        self.template_label = CaptionLabel(self.tr("Start from"), self)
+        self.template_label = CaptionLabel(self.tr("Rule templates"), self)
         template_row.addWidget(self.template_label)
         template_row.addWidget(self.single_template_button)
         template_row.addWidget(self.ab_template_button)
@@ -549,8 +563,8 @@ class AlloySiteRulesEditor(QWidget):
         root.addWidget(self.rules_widget)
 
         self.partition_mode_combo.currentIndexChanged.connect(self._on_partition_changed)
-        self.single_template_button.clicked.connect(lambda: self.load_template("all"))
-        self.ab_template_button.clicked.connect(lambda: self.load_template("ab"))
+        self.single_template_button.clicked.connect(lambda: self.request_template("all"))
+        self.ab_template_button.clicked.connect(lambda: self.request_template("ab"))
         self.add_site_button.clicked.connect(lambda: self.add_site_set())
         self.load_template("ab")
 
@@ -567,10 +581,19 @@ class AlloySiteRulesEditor(QWidget):
     def _on_partition_changed(self) -> None:
         if self._loading:
             return
-        if self.partition_mode() == "all":
-            self.load_template("all")
-        else:
-            self.load_template("ab")
+        template = "all" if self.partition_mode() == "all" else "ab"
+        if not self.request_template(template):
+            current_mode = "all" if set(self.to_rules()) == {"all"} else "sublattices"
+            self._set_partition_mode(current_mode)
+
+    def set_replacement_confirmation(self, callback: Callable[[], bool] | None) -> None:
+        self._confirm_replacement = callback
+
+    def request_template(self, template: str) -> bool:
+        if self._confirm_replacement is not None and not self._confirm_replacement():
+            return False
+        self.load_template(template)
+        return True
 
     def load_template(self, template: str) -> None:
         if template == "all":
@@ -718,7 +741,9 @@ class AlloySiteRulesEditor(QWidget):
                 )
 
         for editor in self.site_editors:
-            editor_errors = editor.validation_errors()
+            editor_errors = editor.validation_errors(
+                allow_placeholder=input_counts is None
+            )
             label = editor.label_edit.text().strip()
             if input_counts is not None and label and label not in input_map:
                 editor_errors.append(

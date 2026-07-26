@@ -18,7 +18,12 @@ from qfluentwidgets import (
 from NepTrainKit.paths import get_user_config_path, ensure_directory
 from NepTrainKit.core import load_cards_from_directory, CardManager
 from NepTrainKit.config import Config
-from NepTrainKit.ui.widgets.card_metadata import CardLibraryDialog, card_tooltip
+from NepTrainKit.ui.widgets.card_metadata import (
+    CardLibraryDialog,
+    card_tooltip,
+    localized_card_group,
+    localized_card_name,
+)
 
 from ase.io import extxyz, cif, vasp  # noqa: F401
 from NepTrainKit.ui.views._card import *  # noqa: F401, F403
@@ -100,29 +105,48 @@ class ConsoleWidget(QWidget):
         if use_group_menu:
             group_menus = {}
             for class_name, card_class in CardManager.card_info_dict.items():
+                if not getattr(card_class, "discoverable", True):
+                    continue
                 group = getattr(card_class, "group", None)
+                metadata = CardManager.get_card_metadata(class_name)
                 target_menu = self.menu
                 if group:
                     if group not in group_menus:
-                        group_menu = RoundMenu(group, self.menu)
+                        group_label = (
+                            localized_card_group(metadata)
+                            if metadata is not None
+                            else group
+                        )
+                        group_menu = RoundMenu(group_label, self.menu)
                         group_menus[group] = group_menu
                         self.menu.addMenu(group_menu)
                     target_menu = group_menus[group]
                 if card_class.separator:
                     target_menu.addSeparator()
-                action = QAction(QIcon(card_class.menu_icon), card_class.card_name)
+                action_text = (
+                    localized_card_name(metadata)
+                    if metadata is not None
+                    else card_class.card_name
+                )
+                action = QAction(QIcon(card_class.menu_icon), action_text)
                 action.setObjectName(class_name)
-                metadata = CardManager.get_card_metadata(class_name)
                 if metadata is not None:
                     action.setToolTip(card_tooltip(metadata))
                 target_menu.addAction(action)
         else:
             for class_name, card_class in CardManager.card_info_dict.items():
+                if not getattr(card_class, "discoverable", True):
+                    continue
                 if card_class.separator:
                     self.menu.addSeparator()
-                action = QAction(QIcon(card_class.menu_icon), card_class.card_name)
-                action.setObjectName(class_name)
                 metadata = CardManager.get_card_metadata(class_name)
+                action_text = (
+                    localized_card_name(metadata)
+                    if metadata is not None
+                    else card_class.card_name
+                )
+                action = QAction(QIcon(card_class.menu_icon), action_text)
+                action.setObjectName(class_name)
                 if metadata is not None:
                     action.setToolTip(card_tooltip(metadata))
                 self.menu.addAction(action)

@@ -32,7 +32,12 @@ from NepTrainKit.ui.widgets import (
 )
 from NepTrainKit.ui.messages import translate_runtime_message
 from NepTrainKit.ui.controllers import StructureFilterController
-from NepTrainKit.core.io import (ResultData, load_result_data, matches_result_loader)
+from NepTrainKit.core.io import (
+    NepTrainResultData,
+    ResultData,
+    load_result_data,
+    matches_result_loader,
+)
 
 from NepTrainKit.core.precision import get_export_significant_digits
 from NepTrainKit.core.structure import write_structures_extxyz_atomic
@@ -588,6 +593,11 @@ class ShowNepWidget(QWidget):
         """
         if self.nep_result_data is None:
             return
+        cache_outputs_override = getattr(
+            self.nep_result_data,
+            "_cache_outputs_override",
+            None,
+        )
 
         # Snapshot reusable structures before stopping threads (fast model switch).
         prefetched_structures = None
@@ -620,20 +630,30 @@ class ShowNepWidget(QWidget):
 
             # Rebuild result data with the selected model but reuse structures to avoid re-reading.
             model_type = getattr(self.nep_result_data, "model_type", 0)
+            reload_kwargs = {
+                "structures": prefetched_structures,
+                "nep_txt_path": nep_file,
+            }
+            if (
+                cache_outputs_override is not None
+                and issubclass(dataset_cls, NepTrainResultData)
+            ):
+                reload_kwargs["cache_outputs"] = cache_outputs_override
             try:
                 self.nep_result_data = dataset_cls.from_path(
                     data_path,
                     model_type=model_type,
-                    structures=prefetched_structures,
-                    nep_txt_path=nep_file,
+                    **reload_kwargs,
                 )
             except TypeError:
                 # Fallback for loaders that don't accept model_type.
                 self.nep_result_data = dataset_cls.from_path(
                     data_path,
-                    structures=prefetched_structures,
-                    nep_txt_path=nep_file,
+                    **reload_kwargs,
                 )
+            self.nep_result_data.set_cache_outputs_override(
+                cache_outputs_override
+            )
 
             # Start loading in a new thread
             self.load_thread = QThread(self)
@@ -1262,13 +1282,23 @@ class ShowNepWidget(QWidget):
                 logger.debug(traceback.format_exc())
         self.structure_filter_bar.set_suggestions(suggestions)
 
-    def check_nep_result(self, path):
+    def check_nep_result(
+        self,
+        path,
+        *,
+        structures=None,
+        cache_outputs: bool | None = None,
+    ):
         """Load NEP metadata and start the background loading thread.
 
         Parameters
         ----------
         path : str
             Source file or directory containing NEP outputs.
+        structures : list[Structure], optional
+            Pre-converted in-memory structures that bypass file parsing.
+        cache_outputs : bool, optional
+            Per-load cache policy. ``None`` follows the global setting.
 
         Returns
         -------
@@ -1295,7 +1325,15 @@ class ShowNepWidget(QWidget):
         
         load_error = None
         try:
-            self.nep_result_data = load_result_data(path)  # type: ignore
+            if structures is None:
+                self.nep_result_data = load_result_data(path)  # type: ignore
+            else:
+                self.nep_result_data = NepTrainResultData.from_path(
+                    path,
+                    structures=list(structures),
+                    nep_txt_path=get_bundled_nep89_path(),
+                    cache_outputs=cache_outputs,
+                )
         except Exception as error:
             load_error = error
             logger.debug(traceback.format_exc())
@@ -1314,6 +1352,7 @@ class ShowNepWidget(QWidget):
                     self.tr("unsupported file format")
                 )
             return
+        self.nep_result_data.set_cache_outputs_override(cache_outputs)
 
         self.path_label.setText(
             self.tr("Current file: {file_name}").format(file_name=file_name)

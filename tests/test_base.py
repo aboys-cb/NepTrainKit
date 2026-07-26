@@ -285,6 +285,19 @@ def _build_dummy_result() -> _DummyResultData:
     return _DummyResultData(structures)
 
 
+def test_result_cache_output_override_is_scoped_to_instance():
+    data = _build_dummy_result()
+
+    with patch.object(Config, "getboolean", return_value=True):
+        assert data.cache_outputs_enabled() is True
+        data.set_cache_outputs_override(False)
+        assert data.cache_outputs_enabled() is False
+        data.set_cache_outputs_override(True)
+        assert data.cache_outputs_enabled() is True
+        data.set_cache_outputs_override(None)
+        assert data.cache_outputs_enabled() is True
+
+
 def test_descriptor_pca_cache_reuses_matching_file(tmp_path):
     previous_cache = Config.get("io", "cache_outputs", None)
     try:

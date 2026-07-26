@@ -193,7 +193,15 @@ class NepTrainResultData(ResultData):
         """Return the magnetic force dataset when available."""
         return self._spin_force_dataset
     @classmethod
-    def from_path(cls, path ,model_type=0, *, structures: list[Structure] | None = None, nep_txt_path: Path | str | None = None)->"NepTrainResultData":
+    def from_path(
+        cls,
+        path,
+        model_type=0,
+        *,
+        structures: list[Structure] | None = None,
+        nep_txt_path: Path | str | None = None,
+        cache_outputs: bool | None = None,
+    ) -> "NepTrainResultData":
         """Create an instance from a NEP result directory.
         
         Parameters
@@ -204,6 +212,8 @@ class NepTrainResultData(ResultData):
             NEP model type hint used to select descriptor fallbacks.
         structures : list[Structure], optional
             Pre-loaded structures to attach instead of reading from disk.
+        cache_outputs : bool, optional
+            Per-result cache policy. ``False`` keeps predictions in memory.
         
         Returns
         -------
@@ -252,9 +262,11 @@ class NepTrainResultData(ResultData):
         else:
             # Other NEP files (nep1.txt, nep2.txt, etc.), create file_name_XXX directory
             output_dir = dataset_path.parent / f"{file_name}_{nep_stem}"
-            output_dir.mkdir(exist_ok=True)
+            if cache_outputs is not False:
+                output_dir.mkdir(exist_ok=True)
             output_suffix = file_name
-            logger.info(f"Output files will be saved to: {output_dir.name}/")
+            if cache_outputs is not False:
+                logger.info(f"Output files will be saved to: {output_dir.name}/")
         
         # Build output paths in the appropriate directory
         energy_out_path = output_dir / f"energy_{output_suffix}.out"
@@ -308,6 +320,7 @@ class NepTrainResultData(ResultData):
             spin_force_out_path,
             has_spin,
         )
+        inst.set_cache_outputs_override(cache_outputs)
         if structures is not None:
             try:
                 inst.set_structures(structures)

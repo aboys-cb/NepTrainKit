@@ -940,6 +940,7 @@ class ResultData(DistributionAnalysisMixin, QObject):
         self.descriptor_path=Path(descriptor_path)
         self.data_xyz_path=Path(data_xyz_path)
         self.nep_txt_path=Path(nep_txt_path)
+        self._cache_outputs_override: bool | None = None
         self.select_index=set()
         self._selection_history: list[set[int]] = []
         # Mark structures as "bad/reject" without interfering with selection.
@@ -1833,9 +1834,16 @@ class ResultData(DistributionAnalysisMixin, QObject):
                           "w", encoding="utf8") as f:
                     f.write("prediction 1 ")
 
-    @staticmethod
-    def cache_outputs_enabled() -> bool:
+    def set_cache_outputs_override(self, enabled: bool | None) -> None:
+        """Override cache persistence for this result instance only."""
+        self._cache_outputs_override = (
+            None if enabled is None else bool(enabled)
+        )
+
+    def cache_outputs_enabled(self) -> bool:
         """Return whether loader-generated cache files should be written."""
+        if self._cache_outputs_override is not None:
+            return self._cache_outputs_override
         return bool(Config.getboolean("io", "cache_outputs", True))
 
     def _can_load_without_calculator(self) -> bool:

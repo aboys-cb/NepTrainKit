@@ -6,7 +6,11 @@ from ase import Atoms
 from ase.calculators.singlepoint import SinglePointCalculator
 from ase.io import write as ase_write
 
-from NepTrainKit.core.io.importers import import_structures, is_parseable
+from NepTrainKit.core.io.importers import (
+    ase_atoms_to_structure,
+    import_structures,
+    is_parseable,
+)
 
 
 def test_extxyz_importer_loads_lattice_energy_positions_and_forces(tmp_path):
@@ -87,6 +91,44 @@ def test_ase_trajectory_without_calculator_preserves_structure_and_metadata(tmp_
     np.testing.assert_allclose(
         structure.atomic_properties["initial_magmoms"],
         [2.1, -0.2],
+    )
+
+
+def test_in_memory_ase_conversion_preserves_scientific_fields():
+    atoms = Atoms(
+        "FeO",
+        positions=[[0.0, 0.0, 0.0], [1.0, 1.5, 2.0]],
+        cell=np.diag([3.0, 4.0, 5.0]),
+        pbc=[True, True, False],
+        info={
+            "Config_type": "card-output",
+            "provenance": "Make Dataset",
+            "energy": -3.25,
+            "virial": np.arange(9, dtype=float),
+        },
+    )
+    atoms.set_array(
+        "spin",
+        np.asarray([[0.0, 0.0, 2.1], [0.0, 0.0, -0.2]]),
+    )
+    atoms.set_array(
+        "forces",
+        np.asarray([[0.1, 0.2, 0.3], [-0.1, -0.2, -0.3]]),
+    )
+
+    structure = ase_atoms_to_structure(atoms)
+
+    assert structure.additional_fields["Config_type"] == "card-output"
+    assert structure.additional_fields["provenance"] == "Make Dataset"
+    assert structure.additional_fields["pbc"] == "T T F"
+    assert structure.energy == -3.25
+    np.testing.assert_allclose(structure.lattice, np.diag([3.0, 4.0, 5.0]))
+    np.testing.assert_allclose(structure.positions, atoms.positions)
+    np.testing.assert_allclose(structure.atomic_properties["spin"], atoms.arrays["spin"])
+    np.testing.assert_allclose(structure.forces, atoms.arrays["forces"])
+    np.testing.assert_allclose(
+        structure.additional_fields["virial"],
+        np.arange(9, dtype=float),
     )
 
 

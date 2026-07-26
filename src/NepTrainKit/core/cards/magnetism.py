@@ -15,6 +15,7 @@ from NepTrainKit.core.magnetism import (
     existing_moment_magnitudes,
     existing_moment_scalars,
     existing_moment_vectors,
+    existing_moments,
     kvec_signs,
     mapped_moment_magnitudes,
     mapped_moment_vectors,
@@ -260,8 +261,8 @@ class MagneticMomentRotationOperation(StructureOperation):
         if num_structures <= 0:
             return [structure.copy()]
 
-        raw_magmoms = np.asarray(structure.get_initial_magnetic_moments(), dtype=float)
-        if raw_magmoms.size == 0:
+        raw_magmoms = existing_moments(structure)
+        if raw_magmoms is None:
             return [structure.copy()]
 
         is_vector = raw_magmoms.ndim == 2 and raw_magmoms.shape == (len(structure), 3)
@@ -336,7 +337,11 @@ class SetMagneticMomentsOperation(StructureOperation):
             return [structure.copy()]
 
         atoms = structure.copy()
-        set_initial_magmoms_safe(atoms, np.asarray(moments, dtype=float))
+        set_initial_magmoms_safe(
+            atoms,
+            np.asarray(moments, dtype=float),
+            axis=np.asarray(params.axis, dtype=float),
+        )
         source_map = {
             "Existing initial magmoms": "existing",
             "Map/default magnitude": "map",
@@ -448,7 +453,11 @@ class MagneticOrderOperation(StructureOperation):
             signs = np.ones(len(structure), dtype=float)
             moms = self._make_noncollinear_axis(structure, params, signs=signs) if noncollinear else self._make_collinear(structure, params, signs=signs)
             atoms = structure.copy()
-            set_initial_magmoms_safe(atoms, moms)
+            set_initial_magmoms_safe(
+                atoms,
+                moms,
+                axis=np.asarray(params.axis, dtype=float),
+            )
             append_config_tag(atoms, "MagFMnc" if noncollinear else "MagFM")
             outputs.append(atoms)
 
@@ -465,7 +474,11 @@ class MagneticOrderOperation(StructureOperation):
                 signs = kvec_signs(structure, self.parse_kvec(params.afm_kvec))
             moms = self._make_noncollinear_axis(structure, params, signs=signs) if noncollinear else self._make_collinear(structure, params, signs=signs)
             atoms = structure.copy()
-            set_initial_magmoms_safe(atoms, moms)
+            set_initial_magmoms_safe(
+                atoms,
+                moms,
+                axis=np.asarray(params.axis, dtype=float),
+            )
             if params.afm_mode == "k-vector":
                 k = self.parse_kvec(params.afm_kvec)
                 append_config_tag(atoms, f"MagAFM{k[0]}{k[1]}{k[2]}" + ("nc" if noncollinear else ""))
@@ -496,7 +509,11 @@ class MagneticOrderOperation(StructureOperation):
                     signs = random_signs(len(structure), rng=rng, balanced=params.pm_balanced)
                     moms = self._make_collinear(structure, params, signs=signs)
                 atoms = structure.copy()
-                set_initial_magmoms_safe(atoms, moms)
+                set_initial_magmoms_safe(
+                    atoms,
+                    moms,
+                    axis=np.asarray(params.axis, dtype=float),
+                )
                 base = "MagPM" + ("nc" if noncollinear else "")
                 append_config_tag(atoms, base + (f"_{seed_note}" if seed_note else ""))
                 outputs.append(atoms)

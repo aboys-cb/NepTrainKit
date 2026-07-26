@@ -224,7 +224,7 @@ $$\phi(k)=\phi_0+\sigma\cdot s(k)\cdot\Delta\phi$$
   - `ax`：分层轴标签
   - `pn`：旋转平面法向标签
 
-所有输出写入 `initial_magmoms` 三列向量。
+所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 三列向量别名。
 
 ## 可复现性
 

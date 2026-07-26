@@ -6,7 +6,7 @@
 
 ## 功能说明
 
-从一个磁性母相结构出发，一次性生成 FM（铁磁）、AFM（反铁磁）、PM（顺磁）多种磁序分支。每个输出结构都写入对应的 `initial_magmoms` 数组和 `Config_type` 标签。
+从一个磁性母相结构出发，一次性生成 FM（铁磁）、AFM（反铁磁）、PM（顺磁）多种磁序分支。每个输出结构都写入对应的三分量 `spin` 数组和 `Config_type` 标签；内部同时维护 ASE `initial_magmoms` 兼容别名。
 
 **关键限制：** 这张卡只写入初始磁矩，不保证生成的就是磁基态。磁矩是否收敛到合理值仍需要用 NEP/DFT 后续计算验证。
 
@@ -29,11 +29,11 @@
 - `AFM Mode` = `k-vector`，`AFM Kvec` = `111`
 - `Gen PM` = 勾选，`PM Count` = `[8]`
 
-**输出：** 1 个 FM + 1 个 AFM + 8 个 PM，全部带 `initial_magmoms` 和对应的 `Config_type` 标签
+**输出：** 1 个 FM + 1 个 AFM + 8 个 PM，全部带 `spin:R:3` 和对应的 `Config_type` 标签
 
 **怎么验证训练集质量改善：**
 - 重训后用这组数据里的 FM 和 AFM 分别做推理，能量误差差异应该显著缩小
-- 抽查 FM/AFM 的 `initial_magmoms`：FM 全正、AFM 在 111 方向上相邻层符号翻转
+- 抽查 FM/AFM 的 `spin`：FM 沿 Axis 同向，AFM 在 111 方向上相邻层符号翻转
 - 如果 AFM 效果仍差，换 `AFM Kvec` = `110` 或 `100`，覆盖不同翻转周期
 - 如果 PM 结构能量分布异常宽，可能是磁矩幅值设置不合理——检查 `magmom_map` 或 `default_moment`
 
@@ -244,7 +244,7 @@ PM 生成大量随机磁序样本。默认关闭的——因为开了输出数�
 - `MagAFMg`：group A/B 模式反铁磁
 - `MagPM` / `MagPMnc`：顺磁，可能带 seed 后缀
 
-所有输出写入 `initial_magmoms` 数组。
+所有导出输出写入 `spin:R:3`。即使选择 `Collinear (scalar)`，也会按非零 `Axis` 转换成三分量 `spin`；内部的标量 `initial_magmoms` 只用于 ASE 兼容。
 
 ## 可复现性
 

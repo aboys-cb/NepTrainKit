@@ -145,6 +145,8 @@ cards/card-group
 - `Magnetic Order` 会生成 FM / AFM / PM 等多磁态分支。
 - `Magmom Rotation` 基于已有磁矩做角度扰动，适合补充非共线或局部旋转样本。
 
+磁性卡片对外统一使用 NEP / Show NEP 的 `spin:R:3` EXTXYZ 字段。卡片内部仍同步维护 ASE 的 `initial_magmoms`，用于兼容 ASE 操作和旧工作流；导出文件只保留 `spin`。读取已有磁矩时优先使用 `spin`，只有输入没有 `spin` 时才回退到旧的 `initial_magmoms`。标量模式会按卡片中明确设置的 `Axis` 转成三分量 `spin`；零向量 Axis 会明确失败，不会静默假设方向。
+
 ## 按分组浏览
 
 - `Lattice`: `Super Cell`、`Crystal Prototype Builder`、`Random Packing`、`Lattice Strain`、`Bain Path`、`Lattice Perturb`、`Shear Matrix Strain`、`Shear Angle Strain`

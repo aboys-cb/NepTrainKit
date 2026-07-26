@@ -18,7 +18,7 @@
 
 参数设置：`mode=Cone around reference`，`correlation_kernel=exponential`，`correlation_length=3.0`，`samples=5`，`cone_angle=30.0`，`magnitude_source=Existing initial magmoms`，`max_atoms_for_full=200`。
 
-输出结构的 `initial_magmoms` 为 `(N, 3)`，`Config_type` 追加 `CorrSpin(...)`。检查时看磁矩模长是否保持、cone 角度是否符合设定，以及不同 `correlation_length` 下相邻自旋相似度是否变化。
+输出结构的 `spin` 为 `(N, 3)`，`Config_type` 追加 `CorrSpin(...)`。检查时看磁矩模长是否保持、cone 角度是否符合设定，以及不同 `correlation_length` 下相邻自旋相似度是否变化。
 
 ## 参数说明
 
@@ -49,7 +49,7 @@
 ### 磁矩幅值
 
 #### Magnitude Source（magnitude_source）
-`str`，默认 `'Existing initial magmoms'`。磁矩幅值的来源。有 `initial_magmoms` 时优先复用，最安全；没有磁矩输入时用 `magmom_map` 和 `default_moment` 构造。不要用默认幅值替代已知元素的实测磁矩。
+`str`，默认 `'Existing initial magmoms'`。磁矩幅值的来源。输入有 `spin:R:3` 时优先复用，没有时兼容旧 `initial_magmoms`；两者都没有时用 `magmom_map` 和 `default_moment` 构造。不要用默认幅值替代已知元素的实测磁矩。
 
 #### Magmom Map（magmom_map）
 `str`，默认空。按元素显式指定磁矩幅值，格式如 `Fe:2.2, Ni:0.6`。已知元素局域磁矩就填进去，未知元素别用默认值伪造先验。
@@ -140,11 +140,13 @@
 
 **`exponential` 和 `squared_exponential` 怎么选？** 默认用 `exponential`。如果你明确希望更平滑的随机场，再选 `squared_exponential`。
 
-**没有磁矩会怎样？** 输入没有可用 `initial_magmoms`，且没有通过 `magmom_map/default_moment` 提供非零模长时，卡片会失败，不会生成零磁矩伪结果。
+**没有磁矩会怎样？** 输入没有可用 `spin` 或旧 `initial_magmoms`，且没有通过 `magmom_map/default_moment` 提供非零模长时，卡片会失败，不会生成零磁矩伪结果。
 
 ## 输出标签
 
 `CorrSpin(xi={correlation_length},ker={kernel},mode={cone|full},n={eligible_atoms},s={seed},a={cone_angle})`。`s` 只在 `use_seed=True` 时出现，`a` 只在 cone 模式出现。
+
+所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 向量别名。
 
 ## 可复现性
 

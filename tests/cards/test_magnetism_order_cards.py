@@ -1,3 +1,7 @@
+import tempfile
+
+from NepTrainKit.core.io.importers import import_structures
+
 from .magnetism_test_base import *
 
 
@@ -29,6 +33,70 @@ class TestMagnetismOrderCards(MagnetismCardTest):
         afm_m = np.array(afm.get_initial_magnetic_moments(), dtype=float)
         self.assertTrue(np.all(fm_m >= 0))
         self.assertTrue(np.any(afm_m > 0) and np.any(afm_m < 0))
+        self.assertTrue(
+            np.allclose(fm.arrays["spin"][:, 2], fm_m, atol=1e-12)
+        )
+        self.assertTrue(
+            np.allclose(afm.arrays["spin"][:, 2], afm_m, atol=1e-12)
+        )
+
+    def test_canonical_spin_takes_precedence_over_conflicting_ase_magmoms(self):
+        structure = self._spin_chain()
+        canonical = np.asarray(
+            (
+                (1.0, 0.0, 0.0),
+                (0.0, 2.0, 0.0),
+                (0.0, 0.0, -3.0),
+                (-4.0, 0.0, 0.0),
+            ),
+            dtype=float,
+        )
+        structure.set_initial_magnetic_moments([9.0, 9.0, 9.0, 9.0])
+        structure.set_array("spin", canonical)
+
+        result = SetMagneticMomentsOperation().run_structure(
+            structure,
+            SetMagneticMomentsParams(
+                source="Existing initial magmoms",
+                format="Non-collinear (vector)",
+                axis=(0.0, 0.0, 1.0),
+            ),
+        )[0]
+
+        self.assertTrue(
+            np.allclose(result.get_initial_magnetic_moments(), canonical)
+        )
+        self.assertTrue(np.allclose(result.arrays["spin"], canonical))
+
+    def test_card_export_uses_show_nep_spin_contract_for_collinear_output(self):
+        structure = self._spin_chain()
+        card = MagneticOrderCard()
+        card.format_combo.setCurrentText("Collinear (scalar)")
+        card.axis_frame.set_input_value([1.0, 0.0, 0.0])
+        card.map_edit.setText("Fe:2.2")
+        card.fm_checkbox.setChecked(True)
+        card.afm_checkbox.setChecked(False)
+        card.pm_checkbox.setChecked(False)
+        result = card.process_structure(structure)[0]
+
+        scalar = np.asarray(result.get_initial_magnetic_moments(), dtype=float)
+        expected_spin = np.column_stack(
+            (scalar, np.zeros(len(result)), np.zeros(len(result)))
+        )
+        self.assertTrue(np.allclose(result.arrays["spin"], expected_spin))
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = Path(tmp_dir) / "magnetic output.xyz"
+            card.result_dataset = [result]
+            card.write_result_dataset(path)
+            text = path.read_text(encoding="utf-8")
+            loaded = import_structures(path)[0]
+
+        self.assertIn("spin:R:3", text)
+        self.assertNotIn("initial_magmoms", text)
+        self.assertTrue(
+            np.allclose(loaded.atomic_properties["spin"], expected_spin)
+        )
 
     def test_magnetic_operations_are_ui_independent(self):
         structure = self._spin_chain()
@@ -96,6 +164,81 @@ class TestMagnetismOrderCards(MagnetismCardTest):
         )[0]
         moments = np.array(rotated.get_initial_magnetic_moments(), dtype=float)
         self.assertEqual(moments.shape, (4, 3))
+        for output in (
+            set_result,
+            order_result,
+            spiral_result,
+            folded,
+            tilt_result,
+            rotated,
+        ):
+            self.assertIn("spin", output.arrays)
+            self.assertEqual(np.asarray(output.arrays["spin"]).shape, (4, 3))
+            initial = np.asarray(output.get_initial_magnetic_moments())
+            if initial.ndim == 2:
+                self.assertTrue(
+                    np.allclose(output.arrays["spin"], initial, atol=1e-12)
+                )
+
+    def test_rotation_reads_spin_without_legacy_initial_magmoms(self):
+        structure = self._spin_chain()
+        canonical = np.tile([0.0, 0.0, 2.0], (len(structure), 1))
+        structure.set_array("spin", canonical)
+
+        result = MagneticMomentRotationOperation().run_structure(
+            structure,
+            MagneticMomentRotationParams(
+                max_angle=10.0,
+                num_structures=1,
+                lift_scalar=False,
+                use_seed=True,
+                seed=71,
+            ),
+        )[0]
+
+        self.assertEqual(result.get_initial_magnetic_moments().shape, (4, 3))
+        self.assertFalse(np.allclose(result.arrays["spin"], canonical))
+        self.assertTrue(
+            np.allclose(
+                result.arrays["spin"],
+                result.get_initial_magnetic_moments(),
+                atol=1e-12,
+            )
+        )
+
+    def test_malformed_canonical_spin_fails_closed(self):
+        structure = self._spin_chain()
+        structure.set_array("spin", np.ones((len(structure), 1)))
+        structure.set_initial_magnetic_moments([2.0] * len(structure))
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "spin must be a finite numeric N x 3 array",
+        ):
+            SetMagneticMomentsOperation().run_structure(
+                structure,
+                SetMagneticMomentsParams(
+                    source="Existing initial magmoms",
+                    format="Non-collinear (vector)",
+                ),
+            )
+
+    def test_scalar_output_requires_an_explicit_nonzero_spin_axis(self):
+        structure = self._spin_chain()
+
+        with self.assertRaisesRegex(
+            ValueError,
+            "scalar magmoms require a finite nonzero axis",
+        ):
+            SetMagneticMomentsOperation().run_structure(
+                structure,
+                SetMagneticMomentsParams(
+                    source="Constant magnitude",
+                    format="Collinear (scalar)",
+                    constant_moment=2.0,
+                    axis=(0.0, 0.0, 0.0),
+                ),
+            )
 
     def test_magnetic_order_card_noncollinear_pm(self):
         proto = CrystalPrototypeBuilderCard()

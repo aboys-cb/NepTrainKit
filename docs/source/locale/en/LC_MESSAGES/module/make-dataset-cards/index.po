@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-25 13:23+0800\n"
+"POT-Creation-Date: 2026-07-26 11:17+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -299,7 +299,9 @@ msgstr "Using `group` in place of crystallographic `sublattice` identity"
 #: ../../source/module/make-dataset-cards/index.md:66
 #: 999ccd1097084e41b4901609a5bca2b2
 msgid "在有限晶胞上枚举整数可实现的合金组成和排布"
-msgstr "Enumerate integer-realizable alloy compositions and arrangements in a finite cell"
+msgstr ""
+"Enumerate integer-realizable alloy compositions and arrangements in a "
+"finite cell"
 
 #: ../../source/module/make-dataset-cards/index.md:66
 #: 56d47f95918c4f4eb9cb267349aab083
@@ -783,15 +785,16 @@ msgstr ""
 msgid "`Ordered Alloy Prototype` 建立晶胞、周期边界、分数坐标和 A/B 晶体学子晶格，不负责枚举组成。"
 msgstr ""
 "`Ordered Alloy Prototype` creates the cell, periodic boundaries, "
-"fractional coordinates, and crystallographic A/B sublattices; it does not "
-"enumerate compositions."
+"fractional coordinates, and crystallographic A/B sublattices; it does not"
+" enumerate compositions."
 
 #: ../../source/module/make-dataset-cards/index.md:127
 #: 8c2d0f3581564f288b0be1173a717ef5
 msgid "`Finite-Cell Alloy Occupancy` 接收已有位点或子晶格，先确定可实现的整数计数，再生成不重复排布。"
 msgstr ""
-"`Finite-Cell Alloy Occupancy` accepts existing sites or sublattices, first "
-"determines realizable integer counts, and then generates unique arrangements."
+"`Finite-Cell Alloy Occupancy` accepts existing sites or sublattices, "
+"first determines realizable integer counts, and then generates unique "
+"arrangements."
 
 #: ../../source/module/make-dataset-cards/index.md:128
 #: bd1cf9837ee647668ee0e9eb48282183
@@ -882,11 +885,28 @@ msgstr ""
 "noncollinear augmentation."
 
 #: ../../source/module/make-dataset-cards/index.md:148
+#: 361b554f119844ed99525f0ae3ca4478
+msgid ""
+"磁性卡片对外统一使用 NEP / Show NEP 的 `spin:R:3` EXTXYZ 字段。卡片内部仍同步维护 ASE 的 "
+"`initial_magmoms`，用于兼容 ASE 操作和旧工作流；导出文件只保留 `spin`。读取已有磁矩时优先使用 "
+"`spin`，只有输入没有 `spin` 时才回退到旧的 `initial_magmoms`。标量模式会按卡片中明确设置的 `Axis` "
+"转成三分量 `spin`；零向量 Axis 会明确失败，不会静默假设方向。"
+msgstr ""
+"Magnetic cards use the NEP / Show NEP `spin:R:3` EXTXYZ field as their "
+"external contract. Internally, they also keep ASE `initial_magmoms` in "
+"sync for ASE operations and legacy workflows; exported files retain only "
+"`spin`. Existing moments are read from `spin` first and fall back to "
+"legacy `initial_magmoms` only when `spin` is absent. Scalar mode converts "
+"values to three-component `spin` vectors using the card's explicit "
+"`Axis`; a zero Axis fails clearly instead of silently assuming a "
+"direction."
+
+#: ../../source/module/make-dataset-cards/index.md:150
 #: 8ad5274402014406b4b81e08a51caa5c
 msgid "按分组浏览"
 msgstr "Browse by category"
 
-#: ../../source/module/make-dataset-cards/index.md:150
+#: ../../source/module/make-dataset-cards/index.md:152
 #: 04b07ad7ab18476b8bcea287eb15c301
 msgid ""
 "`Lattice`: `Super Cell`、`Crystal Prototype Builder`、`Random "
@@ -894,12 +914,12 @@ msgid ""
 "Strain`、`Shear Angle Strain`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/index.md:151
+#: ../../source/module/make-dataset-cards/index.md:153
 #: 6bc6ba3f3b12492c8e3c6df921e9f36e
 msgid "`Perturbation`: `Atomic Perturb`、`Vib Mode Perturb`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/index.md:152
+#: ../../source/module/make-dataset-cards/index.md:154
 #: c93429b3d45542e6b1f651f2e9a99228
 msgid ""
 "`Alloy`: `Ordered Alloy Prototype`、`Finite-Cell Alloy "
@@ -907,7 +927,7 @@ msgid ""
 "Occupancy`、`Random Doping`、`Conditional Replace`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/index.md:153
+#: ../../source/module/make-dataset-cards/index.md:155
 #: 5feb86de4b384b8fac45e1517ac565b2
 msgid ""
 "`Defect / Surface`: `Random Slab`、`Random Vacancy`、`Vacancy Defect "
@@ -915,7 +935,7 @@ msgid ""
 "Copy`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/index.md:154
+#: ../../source/module/make-dataset-cards/index.md:156
 #: 54fc81e56f56496690a1f6e873ed5845
 msgid ""
 "`Magnetism`: `Set Magnetic Moments`、`Magnetic Order`、`Spin "
@@ -923,12 +943,12 @@ msgid ""
 "Tilt`、`Spin Spiral`、`Folded Helix`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/index.md:155
+#: ../../source/module/make-dataset-cards/index.md:157
 #: f62ea7b51a7247c4b093a28c5afca585
 msgid "`Filter / Container`: `Geometry Filter`、`FPS Filter`、`Card Group`"
 msgstr ""
 
-#: ../../source/module/make-dataset-cards/index.md:156
+#: ../../source/module/make-dataset-cards/index.md:158
 #: b4f3c0a504be46ea97f789264b38842a
 msgid "`Organic`: `Organic Mol Config`、`Local Solvation`、`Solvent Box Fill`"
 msgstr ""

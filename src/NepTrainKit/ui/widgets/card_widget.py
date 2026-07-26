@@ -24,6 +24,7 @@ from qfluentwidgets import (
 from qfluentwidgets.components.widgets.card_widget import CardSeparator, SimpleCardWidget
 
 from NepTrainKit.core import CardManager, MessageManager
+from NepTrainKit.core.magnetism import prepare_magnetic_extxyz_export
 from NepTrainKit.core.cards.operation import DatasetOperation, GeneratorOperation, StructureOperation
 from NepTrainKit.core.card_manager import build_card_metadata
 from NepTrainKit.ui.dialogs import call_path_dialog
@@ -475,7 +476,11 @@ class MakeDataCard(MakeDataCardWidget):
         **kwargs
             Additional keyword arguments forwarded to `ase.io.write`.
         """
-        ase_write(file, self.result_dataset, format="extxyz", **kwargs)
+        export_dataset = [
+            prepare_magnetic_extxyz_export(atoms)
+            for atoms in self.result_dataset
+        ]
+        ase_write(file, export_dataset, format="extxyz", **kwargs)
 
     def export_data(self):
         """Prompt the user for an export path and dump results if available."""

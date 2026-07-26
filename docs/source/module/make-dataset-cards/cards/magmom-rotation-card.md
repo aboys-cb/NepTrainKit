@@ -168,7 +168,7 @@ $$\mathbf{m}'=\lambda\,\mathbf{R}(\hat{\mathbf{n}},\theta)\,\mathbf{m},\quad \la
 - `MMR(a=10.0,s=0.95-1.05)`：向量旋转 + 模长扰动同时开启
 - `MMS(s=0.95-1.05)`：仅模长缩放（旋转角度为 0 或无向量输入）
 
-所有输出写入 `initial_magmoms` 数组。
+所有导出输出写入 `spin:R:3`；读取时优先使用 `spin`，没有时兼容旧 `initial_magmoms`。
 
 ## 可复现性
 

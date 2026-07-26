@@ -46,7 +46,7 @@ FeCo 训练集包含 FM、AFM 和完全随机 PM，但缺少 10%-70% 局部翻�
 
 #### Magnitude Source（magnitude_source）
 
-`str`，默认 `'Existing initial magmoms'`。已有 `initial_magmoms` 时复用它最安全；没有磁矩输入时用 `magmom_map`/`default_moment` 构造幅值。不要用默认幅值替代已知元素磁矩。
+`str`，默认 `'Existing initial magmoms'`。输入有 `spin:R:3` 时优先复用；没有 `spin` 时兼容旧 `initial_magmoms`。两者都没有时用 `magmom_map`/`default_moment` 构造幅值。不要用默认幅值替代已知元素磁矩。
 
 #### Magmom Map（magmom_map）
 
@@ -155,6 +155,8 @@ FeCo 训练集包含 FM、AFM 和完全随机 PM，但缺少 10%-70% 局部翻�
 ## 输出标签
 
 `SpinDis(f={fraction},n={count},mode={flip|rand|cone},s={seed},a={cone_angle})`。`s` 只在 `use_seed=True` 时出现，`a` 只在 cone disorder 输出中出现。
+
+所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 向量别名。
 
 ## 可复现性
 

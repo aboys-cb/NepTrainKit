@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-19 18:11+0800\n"
+"POT-Creation-Date: 2026-07-26 11:17+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -38,14 +38,14 @@ msgstr "What the card does"
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:9
 #: e0da927a55f14535b25444cf04ddfebe
 msgid ""
-"`Spin Disorder` 从已有磁矩或元素磁矩表出发，按指定无序比例生成中间磁态。它覆盖 FM/AFM 到 PM 之间的离散翻转、随机方向和 "
-"cone disorder，不把这些离散无序混进 `Magmom Rotation` 的连续小角扰动语义里。"
+"`Spin Disorder` 从已有磁矩或元素磁矩表出发，按指定无序比例生成中间磁态。它覆盖 FM/AFM 到 PM 之间的离散翻转、随机方向和"
+" cone disorder，不把这些离散无序混进 `Magmom Rotation` 的连续小角扰动语义里。"
 msgstr ""
-"`Spin Disorder` starts from existing moments or an element map and generates"
-" intermediate magnetic states at selected disorder fractions. It covers "
-"discrete flips, randomized directions, and cone disorder between FM/AFM and "
-"PM-like limits, keeping this discrete semantics separate from continuous "
-"small-angle `Magmom Rotation`."
+"`Spin Disorder` starts from existing moments or an element map and "
+"generates intermediate magnetic states at selected disorder fractions. It"
+" covers discrete flips, randomized directions, and cone disorder between "
+"FM/AFM and PM-like limits, keeping this discrete semantics separate from "
+"continuous small-angle `Magmom Rotation`."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:11
 #: 8020c71cd9f44b8b9ec576a852351f39
@@ -69,8 +69,8 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:17
 #: dcc8f2179aba48e6a134f3d554c62306
 msgid ""
-"**输入：** 已经通过 `Magnetic Order` 或 `Set Magnetic Moments` 写入磁矩的结构。 **目标：** 生成 "
-"`0.1,0.3,0.5,0.7` 四档局部翻转，让训练集覆盖有序到无序的连续路径。 **参数设置：** `mode=Flip "
+"**输入：** 已经通过 `Magnetic Order` 或 `Set Magnetic Moments` 写入磁矩的结构。 **目标：** "
+"生成 `0.1,0.3,0.5,0.7` 四档局部翻转，让训练集覆盖有序到无序的连续路径。 **参数设置：** `mode=Flip "
 "fraction`，`fractions=0.1,0.3,0.5,0.7`，`samples_per_fraction=3`，开启 "
 "`use_seed`。 **输出：** 每个输入结构生成 12 个自旋无序结构。 **怎么验证训练集质量改善：** "
 "重训后，中间翻转比例测试集的能量/磁力误差应不再显著高于 FM/AFM 端点。"
@@ -78,10 +78,10 @@ msgstr ""
 "**Input:** Structures initialized by `Magnetic Order` or `Set Magnetic "
 "Moments`. **Objective:** Sample flip fractions `0.1,0.3,0.5,0.7`. "
 "**Parameters:** `mode=Flip fraction`, those four fractions, "
-"`samples_per_fraction=3`, and `use_seed` enabled. **Output:** Twelve states "
-"per input. **Verification:** After retraining, energy and magnetic-force "
-"errors at intermediate fractions should no longer greatly exceed endpoint "
-"errors."
+"`samples_per_fraction=3`, and `use_seed` enabled. **Output:** Twelve "
+"states per input. **Verification:** After retraining, energy and "
+"magnetic-force errors at intermediate fractions should no longer greatly "
+"exceed endpoint errors."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:23
 #: 32acbbadf8c045509304dc7596d3e76a
@@ -102,12 +102,13 @@ msgstr ""
 #: 3d6f7386cafd417aa0cef9be1361db6f
 msgid ""
 "`str`，默认 `'Flip fraction'`。`Flip fraction` 保持共线轴只翻转符号，适合 FM/AFM 到 PM "
-"的离散无序梯度；`Randomize fraction` 把选中自旋完全随机化；`Cone disorder` 保持围绕参考方向的有限温非共线扰动。"
+"的离散无序梯度；`Randomize fraction` 把选中自旋完全随机化；`Cone disorder` "
+"保持围绕参考方向的有限温非共线扰动。"
 msgstr ""
-"`str`, default `'Flip fraction'`. `Flip fraction` preserves the collinear "
-"axis and flips signs; `Randomize fraction` assigns fully random directions "
-"to selected spins; `Cone disorder` adds finite-temperature noncollinear "
-"deviations around references."
+"`str`, default `'Flip fraction'`. `Flip fraction` preserves the collinear"
+" axis and flips signs; `Randomize fraction` assigns fully random "
+"directions to selected spins; `Cone disorder` adds finite-temperature "
+"noncollinear deviations around references."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:31
 #: f0ccc72c005d4bdca496cac9154aa303
@@ -117,11 +118,11 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:33
 #: 4d5ac42add2347aba37d6ec94483e54e
 msgid ""
-"`str`，默认 `'0.1,0.3,0.5,0.7'`。被翻转或随机化的自旋比例，从 0 到 1。0.1/0.3/0.5/0.7 可覆盖 FM/AFM"
-" 到 PM 之间的无序梯度。"
+"`str`，默认 `'0.1,0.3,0.5,0.7'`。被翻转或随机化的自旋比例，从 0 到 1。0.1/0.3/0.5/0.7 可覆盖 "
+"FM/AFM 到 PM 之间的无序梯度。"
 msgstr ""
-"`str`, default `'0.1,0.3,0.5,0.7'`. Fractions from 0 to 1 of spins to flip "
-"or randomize. The default spans an ordered-to-disordered path."
+"`str`, default `'0.1,0.3,0.5,0.7'`. Fractions from 0 to 1 of spins to "
+"flip or randomize. The default spans an ordered-to-disordered path."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:35
 #: 3aba8e07812a46fea589c1492d3d1cbf
@@ -132,8 +133,8 @@ msgstr ""
 #: c0eda30ace1c4b3184ee6bc0633fda14
 msgid "`int`，默认 `1`。同一无序度下不同随机选择会给不同局域环境。1 个用于路径扫描，3-10 个用于统计训练。"
 msgstr ""
-"`int`, default `1`. Independent site selections per fraction. One traces a "
-"path; 3-10 sample local variability."
+"`int`, default `1`. Independent site selections per fraction. One traces "
+"a path; 3-10 sample local variability."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:39
 #: 6b85a5d41ddf4c2488fbb6d4f2e94987
@@ -143,11 +144,12 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:41
 #: fa90dacb08b247779a171ffa3746b79b
 msgid ""
-"`float`，默认 `30.0`。Cone disorder 中限制随机方向偏离参考轴的最大角。10-30° 表示有序态附近有限温扰动；接近 90° "
-"时已接近强无序。"
+"`float`，默认 `30.0`。Cone disorder 中限制随机方向偏离参考轴的最大角。10-30° 表示有序态附近有限温扰动；接近 "
+"90° 时已接近强无序。"
 msgstr ""
-"`float`, default `30.0` degrees. Maximum cone deviation. About 10-30 degrees"
-" stays near order; values approaching 90 degrees represent strong disorder."
+"`float`, default `30.0` degrees. Maximum cone deviation. About 10-30 "
+"degrees stays near order; values approaching 90 degrees represent strong "
+"disorder."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:43
 #: 4b66249c1a124cea8d2ce5f4b388af92
@@ -169,13 +171,15 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:49
 #: 209eed05e4e84439a580c8b98d64cfc8
 msgid ""
-"`str`，默认 `'Existing initial magmoms'`。已有 `initial_magmoms` 时复用它最安全；没有磁矩输入时用 "
-"`magmom_map`/`default_moment` 构造幅值。不要用默认幅值替代已知元素磁矩。"
+"`str`，默认 `'Existing initial magmoms'`。输入有 `spin:R:3` 时优先复用；没有 `spin` 时兼容旧"
+" `initial_magmoms`。两者都没有时用 `magmom_map`/`default_moment` "
+"构造幅值。不要用默认幅值替代已知元素磁矩。"
 msgstr ""
-"`str`, default `'Existing initial magmoms'`. Reusing existing "
-"`initial_magmoms` is safest. Without moment input, construct magnitudes from"
-" `magmom_map` and `default_moment`; never replace known element moments with"
-" a generic default."
+"`str`, default `'Existing initial magmoms'`. Reuse `spin:R:3` when "
+"present and accept legacy `initial_magmoms` only when `spin` is absent. "
+"If neither exists, construct magnitudes from `magmom_map` and "
+"`default_moment`; never replace known element moments with a generic "
+"default."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:51
 #: eed10a72d7e941ecb736d4767b4cd5a9
@@ -213,8 +217,8 @@ msgstr ""
 msgid "`bool`，默认 `True`。输入是标量磁矩但下游需要非共线向量时打开；如果原始数据已有方向信息，不要重新提升覆盖它。"
 msgstr ""
 "`bool`, default `True`. Enable when scalar moments must be promoted to "
-"noncollinear vectors. Do not promote again when the input already contains "
-"directional information."
+"noncollinear vectors. Do not promote again when the input already "
+"contains directional information."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:63
 #: 67470d571a5540dea3efdca2dadd49bd
@@ -227,10 +231,10 @@ msgid ""
 "`list[float] | tuple[float, float, float]`，默认 `(0.0, 0.0, "
 "1.0)`。这是方向参考，不是普通数值——改它会改变分层、表面法向或磁矩方向。使用前先确认 cell 取向和目标物理方向。"
 msgstr ""
-"`list[float] | tuple[float, float, float]`, default `(0.0, 0.0, 1.0)`. This "
-"is a directional reference, not an ordinary scalar setting: changing it "
-"changes a layering direction, surface normal, or moment direction. Confirm "
-"the cell orientation and intended physical direction first."
+"`list[float] | tuple[float, float, float]`, default `(0.0, 0.0, 1.0)`. "
+"This is a directional reference, not an ordinary scalar setting: changing"
+" it changes a layering direction, surface normal, or moment direction. "
+"Confirm the cell orientation and intended physical direction first."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:67
 #: e6ea4bc24151434882ba283b73b8de11
@@ -249,8 +253,8 @@ msgstr ""
 msgid "`str`，默认 `''`。只对列出的磁性元素翻转或随机化。合金/界面里应显式列出磁性元素，避免给非磁原子写入无意义磁矩。留空则全部参与。"
 msgstr ""
 "`str`, default `''`. Limit processing to listed magnetic elements. "
-"Explicitly list them in alloys or interfaces to avoid assigning moments to a"
-" nonmagnetic host. Empty means all eligible atoms."
+"Explicitly list them in alloys or interfaces to avoid assigning moments "
+"to a nonmagnetic host. Empty means all eligible atoms."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:73
 #: 19a306463fb04b0181669d795748e819
@@ -266,8 +270,8 @@ msgstr ""
 #: 4b6c3b42d2374a558527f39672dd71cf
 msgid "`bool`，默认 `False`。勾选后固定种子可复现。对比实验时开，最终大规模随机探索可以关——但关后结果不能逐帧复现。"
 msgstr ""
-"`bool`, default `False`. Enable to reproduce with a fixed seed. It may be "
-"disabled for large exploration, but individual outputs then cannot be "
+"`bool`, default `False`. Enable to reproduce with a fixed seed. It may be"
+" disabled for large exploration, but individual outputs then cannot be "
 "reproduced."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:79
@@ -279,8 +283,8 @@ msgstr ""
 #: 468da7e265d54137bedbc277748f035f
 msgid "`int`，默认 `0`。同一输入、同一参数和同一 seed 应生成同一批候选。"
 msgstr ""
-"`int`, default `0`. Identical input, parameters, and seed produce the same "
-"candidates."
+"`int`, default `0`. Identical input, parameters, and seed produce the "
+"same candidates."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:83
 #: eb42cf1f06ae4e9ebe1d1787b2e10b4b
@@ -374,8 +378,8 @@ msgstr ""
 #: 733041c671b6424cbcee1e00edd667c2
 msgid "用于有限温度附近的非共线方向扰动。"
 msgstr ""
-"Add noncollinear directional fluctuations near an ordered finite-temperature"
-" state."
+"Add noncollinear directional fluctuations near an ordered finite-"
+"temperature state."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:141
 #: d8a8860c061a42169e7985c181972e4e
@@ -395,15 +399,16 @@ msgid ""
 "`Set Magnetic Moments → Spin Disorder → Small-Angle Spin "
 "Tilt`：先统一磁矩模长，再做无序化和小角偏转。"
 msgstr ""
-"`Set Magnetic Moments` -> `Spin Disorder` -> `Small-Angle Spin Tilt`: define"
-" magnitudes, apply discrete disorder, then add small angular deviations."
+"`Set Magnetic Moments` -> `Spin Disorder` -> `Small-Angle Spin Tilt`: "
+"define magnitudes, apply discrete disorder, then add small angular "
+"deviations."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:145
 #: 077a7c8f269d45c79131bb53501ee385
 msgid "`Spin Disorder → Geometry Filter`：磁性结构如果同时经过强几何扰动，后面接几何清洗。"
 msgstr ""
-"`Spin Disorder` -> `Geometry Filter`: clean geometry if magnetic variants "
-"also underwent strong structural perturbation."
+"`Spin Disorder` -> `Geometry Filter`: clean geometry if magnetic variants"
+" also underwent strong structural perturbation."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:147
 #: 2836b381fb5b454ea2387dd99decc0e1
@@ -417,12 +422,14 @@ msgid ""
 "没有匹配任何非零磁矩。先用 `Set Magnetic Moments` 或 `Magnetic Order` 初始化。"
 msgstr ""
 "**No eligible magnetic moments.** The input lacks usable moments or "
-"`apply_elements` matches none with nonzero magnitude. Initialize with `Set "
-"Magnetic Moments` or `Magnetic Order`."
+"`apply_elements` matches none with nonzero magnitude. Initialize with "
+"`Set Magnetic Moments` or `Magnetic Order`."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:151
 #: 2fec83f56404475a8697b2f0e56b5899
-msgid "**翻转数量不是精确小数比例。** 原子数是离散的，程序按 fraction 转成整数个原子，至少选 1 个且不超过 eligible atom 数。"
+msgid ""
+"**翻转数量不是精确小数比例。** 原子数是离散的，程序按 fraction 转成整数个原子，至少选 1 个且不超过 eligible atom "
+"数。"
 msgstr ""
 "**The flipped count is not the exact decimal fraction.** Atom counts are "
 "discrete; the fraction is converted to an integer between one and the "
@@ -431,8 +438,8 @@ msgstr ""
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:153
 #: e927317918e842f19784d0799a9841ec
 msgid ""
-"**`Cone disorder` 看起来和 PM 不一样。** cone disorder 只在参考方向附近随机，不是全空间 PM。全空间随机用 "
-"`Randomize fraction`。"
+"**`Cone disorder` 看起来和 PM 不一样。** cone disorder 只在参考方向附近随机，不是全空间 PM。全空间随机用"
+" `Randomize fraction`。"
 msgstr ""
 "**Cone disorder does not look PM-like.** It samples only near reference "
 "directions. Use `Randomize fraction` for full-sphere randomness."
@@ -453,13 +460,20 @@ msgstr ""
 " `s` appears only with `use_seed=True`, and `a` only for cone output."
 
 #: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:159
+#: 4cff6cfb16904e1483c9e2449c6d4e4b
+msgid "所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 向量别名。"
+msgstr ""
+"All exported outputs use `spin:R:3`; an ASE vector-valued "
+"`initial_magmoms` alias is kept in sync internally."
+
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:161
 #: f1cbb65bc0784ba8910f97e95cdb3666
 msgid "可复现性"
 msgstr "Reproducibility"
 
-#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:161
+#: ../../source/module/make-dataset-cards/cards/spin-disorder-card.md:163
 #: 1db1fcd34e70442c946460ce54e9699f
 msgid "开启 `use_seed` 后，随机原子选择和方向采样由 `seed`、输入结构标识、fraction 序号和 sample 序号共同决定。"
 msgstr ""
-"With `use_seed`, site selection and directions are determined by the seed, "
-"input identity, fraction index, and sample index."
+"With `use_seed`, site selection and directions are determined by the "
+"seed, input identity, fraction index, and sample index."

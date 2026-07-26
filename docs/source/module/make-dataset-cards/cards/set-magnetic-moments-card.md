@@ -6,7 +6,7 @@
 
 ## 功能说明
 
-把输入结构写成统一的 `initial_magmoms` 表示。选择磁矩来源（已有磁矩 / 元素映射 / 常数幅值）、输出格式（标量 / 向量）、参考轴方向和生效元素范围。这是一张基础层卡片——不生成多磁序分支，只为后续磁性卡片提供干净、统一的初始磁矩。
+把输入结构写成统一的 `spin:R:3` 表示。选择磁矩来源（已有磁矩 / 元素映射 / 常数幅值）、输出格式（标量 / 向量）、参考轴方向和生效元素范围。这是一张基础层卡片——不生成多磁序分支，只为后续磁性卡片提供干净、统一的初始磁矩。内部仍同步维护 ASE `initial_magmoms` 兼容别名。
 
 **和 `Magnetic Order` 的区别：** `Magnetic Order` 从一个母相出发生成 FM+AFM+PM 多分支。本卡只标准化磁矩格式，不创建新磁序。如果你的流程里多张磁性卡都在重复配 `magmom_map` 和 `axis`，用本卡统一初始化一次可以消除重复。
 
@@ -18,7 +18,7 @@
 
 **诊断思路：** 磁性流水线里，磁矩幅值的定义应该只在一处。用本卡在最前面做一次统一初始化，后续磁性卡全部选 "Existing initial magmoms" 模式，不再各自定义 magmom_map。
 
-**输入：** 一个磁性晶体结构，还没写 `initial_magmoms`
+**输入：** 一个磁性晶体结构，还没写 `spin` 或 `initial_magmoms`
 
 **目标：** 统一写入向量格式的初始磁矩，Fe 取 2.2 μB，Co 取 1.7 μB，沿 z 轴，后续卡片全部复用
 
@@ -28,7 +28,7 @@
 - `Magmom Map` = `Fe:2.2,Co:1.7`
 - `Apply Elements` = `Fe,Co`
 
-**输出：** 1 个结构，带 `MagSet(map,vec)` 标签和 `initial_magmoms` 数组。原子位置和数量不变。
+**输出：** 1 个结构，带 `MagSet(map,vec)` 标签和 `spin:R:3` 数组。原子位置和数量不变。
 
 **怎么验证训练集质量改善：**
 - 后续磁性卡全部切到 "Existing initial magmoms"，检查输出磁矩幅值是否一致
@@ -159,7 +159,7 @@
 
 ## 常见问题
 
-**输出没有磁矩。** 检查 `Source` 模式是否匹配输入。`Existing` 模式要求输入已有 `initial_magmoms`。`Map/default` 需要填写 `magmom_map` 或合理的 `default_moment`。
+**输出没有磁矩。** 检查 `Source` 模式是否匹配输入。`Existing` 模式优先读取 `spin:R:3`，没有时才读取旧 `initial_magmoms`。`Map/default` 需要填写 `magmom_map` 或合理的 `default_moment`。
 
 **标量磁矩没变成向量。** `Lift Scalar` 没开，且 `Format` 选了向量但输入只有标量。开启 `lift_scalar`。
 
@@ -169,7 +169,7 @@
 
 - `MagSet(existing,sca)` / `MagSet(map,vec)` / `MagSet(const,vec)` 等：标记磁矩来源和输出格式
 
-所有输出写入 `initial_magmoms` 数组。
+所有导出输出写入 `spin:R:3`。标量格式必须提供非零 `Axis`，程序据此构造三分量自旋，不会静默假设方向。
 
 ## 可复现性
 

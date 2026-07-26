@@ -57,11 +57,13 @@ jobs:
         shell: pwsh
         run: |
           $dist = "${{ github.workspace }}/src/build/main.dist"
+          if (-not (Test-Path -LiteralPath "$dist/NepTrainKit.exe" -PathType Leaf)) {
+            throw "Nuitka standalone executable is missing: $dist/NepTrainKit.exe"
+          }
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/Config -Destination "$dist/Config" -Force
           Copy-Item -Recurse -Path ${{ github.workspace }}/src/NepTrainKit/translations -Destination "$dist/translations" -Force
           Copy-Item ${{ github.workspace }}/src/NepTrainKit/update.exe "$dist/update.exe"
 
-          Remove-Item -Path "$dist/NepTrainKit" -Recurse -Force
           if (-not (Test-Path "$dist/translations/neptrainkit_zh_CN.qm")) {
             throw "Chinese translation catalog is missing from the standalone package."
           }

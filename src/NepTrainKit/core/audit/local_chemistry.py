@@ -9,7 +9,7 @@ from typing import Sequence
 import numpy as np
 from ase.data import chemical_symbols
 
-from NepTrainKit.core.geometry_cache import GeometrySnapshot
+from NepTrainKit.core.geometry_cache import GeometrySnapshot, structure_cell_array
 from NepTrainKit.core.structure import Structure
 
 from .nep_cutoff import NepCutoffProfile
@@ -105,7 +105,7 @@ def _geometry_arrays(
         raise ValueError("A structure contains elements not declared in the active NEP model.")
 
     positions = np.asarray(structure.positions, dtype=np.float64)
-    cell = np.asarray(structure.cell, dtype=np.float64)
+    cell = structure_cell_array(structure, dtype=np.float64)
     if positions.shape != (len(symbols), 3) or cell.shape != (3, 3):
         raise ValueError("A structure has invalid positions or cell data.")
     if not np.all(np.isfinite(positions)) or not np.all(np.isfinite(cell)):

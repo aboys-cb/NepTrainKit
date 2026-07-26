@@ -6,13 +6,15 @@ from itertools import product
 
 import numpy as np
 
+from NepTrainKit.core.geometry_cache import structure_cell_array
+
 
 def structure_view_state(structure) -> tuple[np.ndarray, float, int, int]:
     """Return center, distance, elevation, and azimuth for a structure."""
     positions = np.asarray(structure.positions, dtype=np.float64).reshape(-1, 3)
     bounds = positions
 
-    cell = np.asarray(structure.cell, dtype=np.float64).reshape(3, 3)
+    cell = structure_cell_array(structure, dtype=np.float64).reshape(3, 3)
     if np.all(np.isfinite(cell)) and np.any(np.linalg.norm(cell, axis=1) > 1e-12):
         corners = np.asarray(list(product((0.0, 1.0), repeat=3))) @ cell
         bounds = np.vstack((bounds, corners)) if bounds.size else corners

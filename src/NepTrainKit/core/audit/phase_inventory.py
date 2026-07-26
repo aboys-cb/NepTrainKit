@@ -13,6 +13,7 @@ from typing import Any
 import numpy as np
 
 from NepTrainKit.core.geometry_cache import GeometrySnapshot
+from NepTrainKit.core.geometry_cache import structure_cell_array
 from NepTrainKit.core.geometry_cache import structure_pbc_flags
 
 from .phase_refinement import refine_l12, refine_laves
@@ -260,7 +261,7 @@ def analyze_structure_phase(
 ) -> StructurePhaseEvidence:
     """Return conservative structural-phase evidence for one structure frame."""
     positions = np.ascontiguousarray(structure.positions, dtype=np.float32)
-    cell = np.ascontiguousarray(structure.cell, dtype=np.float32)
+    cell = structure_cell_array(structure, dtype=np.float32)
     pbc = np.ascontiguousarray(structure_pbc_flags(structure), dtype=bool)
     atom_types = np.ascontiguousarray(structure.numbers, dtype=np.int16)
     if positions.shape != (len(atom_types), 3) or cell.shape != (3, 3):

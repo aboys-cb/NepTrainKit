@@ -43,6 +43,17 @@ class GeometrySnapshot:
         return int(self.positions.shape[0])
 
 
+def structure_cell_array(
+    structure: Any,
+    *,
+    dtype: Any = np.float64,
+) -> np.ndarray:
+    """Return contiguous cell data for ASE and plain-array structures."""
+    cell = structure.cell
+    storage = getattr(cell, "array", cell)
+    return np.ascontiguousarray(storage, dtype=dtype)
+
+
 def structure_pbc_flags(structure: Any) -> np.ndarray:
     value = getattr(structure, "additional_fields", {}).get("pbc", "T T T")
     if isinstance(value, str):
@@ -135,7 +146,7 @@ class StructureGeometryCache:
         for row, structure in enumerate(self._structures):
             symbols = tuple(str(symbol) for symbol in structure.elements)
             frame_positions = np.ascontiguousarray(structure.positions, dtype=np.float32)
-            frame_cell = np.ascontiguousarray(structure.cell, dtype=np.float32)
+            frame_cell = structure_cell_array(structure, dtype=np.float32)
             if frame_positions.shape != (len(symbols), 3) or frame_cell.shape != (3, 3):
                 raise ValueError("A structure has invalid positions or cell data.")
             try:

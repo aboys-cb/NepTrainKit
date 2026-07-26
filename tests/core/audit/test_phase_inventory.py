@@ -34,6 +34,14 @@ class _CacheOwner:
         return value, False
 
 
+class _CellWithExplicitStorage:
+    def __init__(self, array: np.ndarray) -> None:
+        self.array = array
+
+    def __array__(self, *args, **kwargs):
+        raise AssertionError("ASE-style cell array protocol must not be invoked")
+
+
 def _geometry() -> GeometrySnapshot:
     return GeometrySnapshot(
         source_indices=np.asarray((0, 1, 2), dtype=np.int64),
@@ -137,7 +145,7 @@ def test_phase_inventory_analyzes_every_structure_and_is_dataset_cached():
 def test_single_structure_phase_api_preserves_source_index_and_local_fractions():
     structure = SimpleNamespace(
         positions=np.zeros((4, 3), dtype=np.float32),
-        cell=np.eye(3, dtype=np.float32),
+        cell=_CellWithExplicitStorage(np.eye(3, dtype=np.float64)),
         additional_fields={"pbc": "T T T"},
         numbers=[28, 28, 28, 28],
     )

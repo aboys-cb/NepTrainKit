@@ -27,7 +27,7 @@ from collections import defaultdict, Counter
 from NepTrainKit.utils import timeit
 from NepTrainKit.config import Config
 from NepTrainKit.core.precision import as_storage_float_array, get_export_significant_digits, get_storage_float_dtype
-from NepTrainKit.core.geometry_cache import structure_pbc_flags
+from NepTrainKit.core.geometry_cache import structure_cell_array, structure_pbc_flags
 from NepTrainKit.paths import PathLike, as_path, ensure_directory
 
 try:
@@ -1360,7 +1360,7 @@ class Structure:
             Map from element pair (A, B) with A <= B to the minimal distance
             across the structure.
         """
-        cell = np.asarray(self.cell, dtype=np.float64).reshape(3, 3)
+        cell = structure_cell_array(self, dtype=np.float64).reshape(3, 3)
         inv_cell = np.linalg.inv(cell)
         coords = np.asarray(self.positions, dtype=np.float64).reshape(-1, 3)
         frac = coords @ inv_cell
@@ -1476,7 +1476,7 @@ class Structure:
                 pairs = np.asarray(
                     _native_audit.scaled_radii_collision_pairs(
                         np.ascontiguousarray(self.positions, dtype=np.float32),
-                        np.ascontiguousarray(self.cell, dtype=np.float32),
+                        structure_cell_array(self, dtype=np.float32),
                         structure_pbc_flags(self),
                         radii,
                         float(coefficient),

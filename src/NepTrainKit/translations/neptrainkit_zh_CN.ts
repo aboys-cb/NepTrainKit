@@ -8610,8 +8610,38 @@ Elapsed: {elapsed:.1f} ms</source>
     </message>
     <message>
         <location filename="../ui/views/structure.py" line="68" />
-        <source>L1₂ and Laves phases use separate geometry and chemical-ordering checks; a-CNA only reports FCC, HCP, and BCC local environments. A face-centered cubic Bravais lattice does not by itself make every site an FCC a-CNA environment.</source>
-        <translation>L1₂ 和 Laves 相使用独立的几何与化学有序检查；a-CNA 只报告 FCC、HCP 和 BCC 局域环境。面心立方布拉菲格子本身不代表每个原子位点都是 a-CNA 的 FCC 环境。</translation>
+        <source>Specific prototypes use separate geometry and species-ordering checks; a-CNA only reports FCC, HCP, and BCC local environments. A face-centered cubic Bravais lattice does not by itself make every site an FCC a-CNA environment.</source>
+        <translation>具体晶体原型使用独立的几何与物种有序检查；a-CNA 只报告 FCC、HCP 和 BCC 局域环境。面心立方布拉菲格子本身不代表每个原子位点都是 a-CNA 的 FCC 环境。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="80" />
+        <source>Reference values describe the matched ideal prototype; the distorted snapshot may have lower instantaneous symmetry.</source>
+        <translation>参考值描述已匹配的理想原型；畸变后的当前快照可能具有更低的瞬时对称性。</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="350" />
+        <source>Reference crystallography (ideal prototype): {pearson} · {space_group} (No. {number}) · {bravais}</source>
+        <translation>参考晶体学（理想原型）：{pearson} · {space_group}（No. {number}）· {bravais}</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="364" />
+        <source>Face-centered cubic Bravais lattice</source>
+        <translation>面心立方布拉菲格子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="367" />
+        <source>Body-centered cubic Bravais lattice</source>
+        <translation>体心立方布拉菲格子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="370" />
+        <source>Primitive hexagonal Bravais lattice</source>
+        <translation>六方原始布拉菲格子</translation>
+    </message>
+    <message>
+        <location filename="../ui/views/structure.py" line="373" />
+        <source>Primitive cubic Bravais lattice; FCC-derived ordering</source>
+        <translation>简单立方布拉菲格子；FCC 衍生有序结构</translation>
     </message>
     <message>
         <location filename="../ui/views/structure.py" line="79" />
@@ -8733,6 +8763,10 @@ Elapsed: {elapsed:.1f} ms</source>
         <translation>有序占位已确认</translation>
     </message>
     <message>
+        <source>Confirmed prototype</source>
+        <translation>已确认原型</translation>
+    </message>
+    <message>
         <location filename="../ui/views/structure.py" line="285" />
         <source>Strong evidence</source>
         <translation>强证据</translation>
@@ -8762,6 +8796,46 @@ Elapsed: {elapsed:.1f} ms</source>
     <message>
         <source>Local topology</source>
         <translation type="vanished">局域拓扑</translation>
+    </message>
+    <message>
+        <source>Primitive tetragonal Bravais lattice; FCC-derived ordering</source>
+        <translation>简单四方布拉菲格子；FCC 衍生有序结构</translation>
+    </message>
+    <message>
+        <source>Primitive cubic Bravais lattice; BCC-derived ordering</source>
+        <translation>简单立方布拉菲格子；BCC 衍生有序结构</translation>
+    </message>
+    <message>
+        <source>Face-centered cubic Bravais lattice; BCC-derived ordering</source>
+        <translation>面心立方布拉菲格子；BCC 衍生有序结构</translation>
+    </message>
+    <message>
+        <source>Diamond (A4)</source>
+        <translation>金刚石（A4）</translation>
+    </message>
+    <message>
+        <source>B1 (rock-salt)</source>
+        <translation>B1（岩盐）</translation>
+    </message>
+    <message>
+        <source>B3 (zinc blende)</source>
+        <translation>B3（闪锌矿）</translation>
+    </message>
+    <message>
+        <source>B4 (wurtzite)</source>
+        <translation>B4（纤锌矿）</translation>
+    </message>
+    <message>
+        <source>C1 (fluorite)</source>
+        <translation>C1（萤石）</translation>
+    </message>
+    <message>
+        <source>L2₁ (full-Heusler)</source>
+        <translation>L2₁（全赫斯勒）</translation>
+    </message>
+    <message>
+        <source>C1ᵦ (half-Heusler)</source>
+        <translation>C1ᵦ（半赫斯勒）</translation>
     </message>
 </context>
 <context>
@@ -10945,8 +11019,36 @@ Elapsed: {elapsed:.1f} ms</source>
     </message>
     <message>
         <location filename="../ui/pages/training_set_audit.py" line="1776" />
-        <source> Confirmed ordering: {values}.</source>
-        <translation> 已确认有序相：{values}。</translation>
+        <source> Confirmed prototypes: {values}.</source>
+        <translation> 已确认原型：{values}。</translation>
+    </message>
+    <message>
+        <source>Diamond (A4)</source>
+        <translation>金刚石（A4）</translation>
+    </message>
+    <message>
+        <source>B1 (rock-salt)</source>
+        <translation>B1（岩盐）</translation>
+    </message>
+    <message>
+        <source>B3 (zinc blende)</source>
+        <translation>B3（闪锌矿）</translation>
+    </message>
+    <message>
+        <source>B4 (wurtzite)</source>
+        <translation>B4（纤锌矿）</translation>
+    </message>
+    <message>
+        <source>C1 (fluorite)</source>
+        <translation>C1（萤石）</translation>
+    </message>
+    <message>
+        <source>L2₁ (full-Heusler)</source>
+        <translation>L2₁（全赫斯勒）</translation>
+    </message>
+    <message>
+        <source>C1ᵦ (half-Heusler)</source>
+        <translation>C1ᵦ（半赫斯勒）</translation>
     </message>
     <message>
         <source>&lt;b&gt;{scope}: local structure evidence&lt;/b&gt; &amp;nbsp; {phases}&lt;br&gt;Analyzed all {analyzed:,} structures; {strong:,} have strong structure-level evidence.{confirmed} This classifies local structure; it does not predict thermodynamic stability. Method: {method}; reference bank: {bank}.</source>

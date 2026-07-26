@@ -127,18 +127,18 @@ PhaseSketch 最终标签与默认 PTM 的几何一致率为 68.9%。其中有 72
 - `cna_phase_fractions`：结构内 FCC-like、HCP-like、BCC-like 与 `other_or_unresolved` 的原子比例；
 - `local`：只在结构级结果不够明确时计算，包含候选相局域支持率、局域 unknown 比例、原型距离和类间 margin。
 
-这些状态的产品含义必须固定：`matched` 只表示“与当前参考库一致”；`matched_local` 表示结构摘要超出包络、但局域拓扑高度一致；`mixed_local` 表示同一结构内存在显著的 FCC/HCP 混合；`low_local_support` 表示候选相与局域证据冲突；`outside_reference` 表示结构有序但超出当前参考范围；`diffuse_structure` 表示长程平移有序不足。任何一种都不等于真实相标签。完整 PhaseSketch 分类器仍属于评估路径；Audit 首个生产契约没有在运行时拟合合成参考库，而是只发布已经独立验证的 Adaptive CNA 局域比例和 L1₂/C14/C15 保守细化。
+这些状态的产品含义必须固定：`matched` 只表示“与当前参考库一致”；`matched_local` 表示结构摘要超出包络、但局域拓扑高度一致；`mixed_local` 表示同一结构内存在显著的 FCC/HCP 混合；`low_local_support` 表示候选相与局域证据冲突；`outside_reference` 表示结构有序但超出当前参考范围；`diffuse_structure` 表示长程平移有序不足。任何一种都不等于真实相标签。完整 PhaseSketch 分类器仍属于评估路径；生产契约不在运行时拟合合成参考库，而是发布 Adaptive CNA 局域比例、L1₂/C14/C15 专用细化，以及经过竞争相反证的常见原型模板。
 
 ### 4.6 Audit 生产契约与页面落地
 
 Audit core 现已增加不可变 `PhaseInventory`，正式版本字段为：
 
 - `schema_version = phase-inventory-v2`；
-- `method_id = adaptive-cna-ordering-v1`；
-- `reference_bank_id = aflow-l12-laves-v1`；
+- `method_id = adaptive-cna-prototype-v2`；
+- `reference_bank_id = aflow-common-prototypes-v2`；
 - `analysis_strategy = all-structures-v1`。
 
-每个精确组分保存来源结构数、实际分析结构数、实际分析原子数、FCC/HCP/BCC/未解析局域比例、结构级主相比例、强/混合/未解析置信计数以及已确认的 L1₂/C14/C15 候选数。生产 Audit 不再按组分抽样或外推：当前 scope 内的每一个结构都进入相识别，精确组分、浓度聚合和相别筛选均由同一批完整结果生成。
+每个精确组分保存来源结构数、实际分析结构数、实际分析原子数、FCC/HCP/BCC/未解析局域比例、结构级主相比例、强/混合/未解析置信计数以及已确认的 A4、L1₀、L1₂、B1、B2、B3、B4、C1、B8₁、D0₃、L2₁、C1ᵦ、D0₁₉、C14、C15 候选数。生产 Audit 不再按组分抽样或外推：当前 scope 内的每一个结构都进入相识别，精确组分、浓度聚合和相别筛选均由同一批完整结果生成。
 
 结果跟随 `StructureData` 的不可变几何缓存保存，缓存键同时包含 scope 索引、方法版本、参考库版本和全量分析策略。相算法、缓存和 UI 之间只有这个结果契约，页面不直接调用 CNA 或候选细化内部函数。基础 Audit 先在工作线程中返回可用页面，相识别随后在独立工作线程中全量执行并报告精确进度；完成后以不可变结果替换缓存，重复进入页面直接命中 dataset 缓存。
 

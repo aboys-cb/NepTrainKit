@@ -4,12 +4,11 @@
 # package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: NepTrainKit \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-07-25 15:40+0800\n"
+"POT-Creation-Date: 2026-07-26 10:43+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -133,8 +132,8 @@ msgstr "EXTXYZ data contract"
 msgid ""
 "`NEP Dataset Display` 会按扩展 XYZ 契约校验原子数、`Lattice`、`Properties`、元素符号、 "
 "逐原子列数和逻辑字段。文件声明的原子数与实际行数不一致、列缺失、非法元素、非法 PBC 或周期晶胞退化时会明确失败，不会用零值补齐。与 "
-"GPUMD/NEP 的 EXTXYZ 约定一致，没有写 "
-"`pbc` 的帧默认按全周期 `T T T` 处理；非周期或部分周期数据必须在文件头明确写出。"
+"GPUMD/NEP 的 EXTXYZ 约定一致， 没有写 `pbc` 的帧默认按全周期 `T T T` "
+"处理；非周期或部分周期数据必须在文件头明确写出。"
 msgstr ""
 "`NEP Dataset Display` validates atom counts, `Lattice`, `Properties`, "
 "element symbols, per-atom column counts, and logical fields against the "

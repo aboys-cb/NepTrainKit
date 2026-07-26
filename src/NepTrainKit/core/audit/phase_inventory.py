@@ -16,6 +16,7 @@ from NepTrainKit.core.geometry_cache import GeometrySnapshot
 from NepTrainKit.core.geometry_cache import structure_pbc_flags
 
 from .phase_refinement import refine_l12, refine_laves
+from .prototype_registry import match_common_prototype
 from .result import (
     CompositionPoint,
     CompositionPhaseEvidence,
@@ -27,8 +28,8 @@ from .result import (
 
 
 PHASE_SCHEMA_VERSION = "phase-inventory-v2"
-PHASE_METHOD_ID = "adaptive-cna-ordering-v1"
-PHASE_REFERENCE_BANK_ID = "aflow-l12-laves-v1"
+PHASE_METHOD_ID = "adaptive-cna-prototype-v2"
+PHASE_REFERENCE_BANK_ID = "aflow-common-prototypes-v2"
 PHASE_ANALYSIS_STRATEGY = "all-structures-v1"
 
 _LOCAL_PHASES = ("fcc", "hcp", "bcc", "unresolved")
@@ -37,7 +38,19 @@ PHASE_PARTITION_LABELS = (
     "fcc",
     "bcc",
     "hcp",
+    "diamond",
+    "l10",
     "l12",
+    "b1",
+    "b2",
+    "b3",
+    "b4",
+    "fluorite",
+    "nias",
+    "d03",
+    "l21",
+    "c1b",
+    "d019",
     "c14",
     "c15",
     "mixed",
@@ -93,16 +106,88 @@ def _confirmed_ordering(
     cell: np.ndarray,
     pbc: np.ndarray,
     atom_types: np.ndarray,
+    local_counts: Counter[str],
 ) -> str | None:
-    if np.unique(atom_types).size != 2:
+    if not np.all(pbc):
         return None
-    l12 = refine_l12(positions, cell, pbc, atom_types)
-    if l12.confirmed:
-        return "l12"
-    laves = refine_laves(positions, cell, pbc, atom_types)
-    if laves.confirmed:
-        return laves.label
+    if np.unique(atom_types).size == 2:
+        local_total = sum(local_counts.values())
+        incompatible_l12_skeleton = (
+            local_total > 0
+            and max(
+                local_counts.get("bcc", 0),
+                local_counts.get("hcp", 0),
+            )
+            / local_total
+            >= 0.50
+        )
+        if not incompatible_l12_skeleton:
+            l12 = refine_l12(positions, cell, pbc, atom_types)
+            if l12.confirmed:
+                return "l12"
+        laves = refine_laves(positions, cell, pbc, atom_types)
+        if laves.confirmed:
+            return laves.label
+    common = match_common_prototype(
+        positions,
+        cell,
+        pbc,
+        atom_types,
+        candidate_labels=_common_prototype_candidates(atom_types, local_counts),
+    )
+    if common.confirmed:
+        return common.label
     return None
+
+
+def _common_prototype_candidates(
+    atom_types: np.ndarray,
+    local_counts: Counter[str],
+) -> tuple[str, ...]:
+    """Use composition and a-CNA skeleton evidence to narrow costly matching."""
+    _present, counts = np.unique(atom_types, return_counts=True)
+    fractions = np.sort(counts.astype(float) / float(np.sum(counts)))
+    local_total = sum(local_counts.values())
+    dominant = None
+    if local_total:
+        candidate, count = max(
+            (
+                (phase, local_counts.get(phase, 0))
+                for phase in ("fcc", "hcp", "bcc")
+            ),
+            key=lambda item: item[1],
+        )
+        if count / local_total >= 0.50:
+            dominant = candidate
+
+    def composition_is(expected: tuple[float, ...]) -> bool:
+        return len(fractions) == len(expected) and bool(
+            np.all(np.abs(fractions - np.asarray(expected)) <= 0.035)
+        )
+
+    if composition_is((1.0,)):
+        return ("diamond",) if dominant is None else ()
+    if composition_is((0.5, 0.5)):
+        if dominant == "fcc":
+            return ("l10",)
+        if dominant == "bcc":
+            return ("b2",)
+        if dominant == "hcp":
+            return ("b4", "nias")
+        return ("b1", "b3", "b4", "nias")
+    if composition_is((0.25, 0.75)):
+        if dominant == "bcc":
+            return ("d03",)
+        if dominant == "hcp":
+            return ("d019",)
+        return ("d03", "d019")
+    if composition_is((1.0 / 3.0, 2.0 / 3.0)):
+        return ("fluorite",)
+    if composition_is((0.25, 0.25, 0.50)):
+        return ("l21",)
+    if composition_is((1.0 / 3.0,) * 3):
+        return ("c1b",)
+    return ()
 
 
 def _phase_label_and_confidence(
@@ -140,7 +225,13 @@ def _classify_structure_arrays(
     except ValueError:
         local_counts = Counter({"unresolved": len(atom_types)})
     try:
-        ordering = _confirmed_ordering(positions, cell, pbc, atom_types)
+        ordering = _confirmed_ordering(
+            positions,
+            cell,
+            pbc,
+            atom_types,
+            local_counts,
+        )
     except ValueError:
         ordering = None
     label, confidence = _phase_label_and_confidence(local_counts, ordering)

@@ -107,8 +107,8 @@ def test_phase_inventory_analyzes_every_structure_and_is_dataset_cached():
     assert second is first
     assert local_mock.call_count == 3
     assert first.schema_version == "phase-inventory-v2"
-    assert first.method_id == "adaptive-cna-ordering-v1"
-    assert first.reference_bank_id == "aflow-l12-laves-v1"
+    assert first.method_id == "adaptive-cna-prototype-v2"
+    assert first.reference_bank_id == "aflow-common-prototypes-v2"
     assert first.analysis_strategy == "all-structures-v1"
     assert first.analyzed_structure_count == 3
     assert progress == [(3, 3), (3, 3)]

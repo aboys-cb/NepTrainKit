@@ -1683,7 +1683,19 @@ class TrainingSetAuditWidget(QWidget):
             "fcc": "FCC",
             "hcp": "HCP",
             "bcc": "BCC",
+            "diamond": self.tr("Diamond (A4)"),
+            "l10": "L1₀",
             "l12": "L1₂",
+            "b1": self.tr("B1 (rock-salt)"),
+            "b2": "B2 (CsCl)",
+            "b3": self.tr("B3 (zinc blende)"),
+            "b4": self.tr("B4 (wurtzite)"),
+            "fluorite": self.tr("C1 (fluorite)"),
+            "nias": "B8₁ (NiAs)",
+            "d03": "D0₃",
+            "l21": self.tr("L2₁ (full-Heusler)"),
+            "c1b": self.tr("C1ᵦ (half-Heusler)"),
+            "d019": "D0₁₉",
             "c14": "C14 Laves",
             "c15": "C15 Laves",
             "mixed": self.tr("Mixed local structure"),
@@ -1783,7 +1795,7 @@ class TrainingSetAuditWidget(QWidget):
                 )
                 confirmed_text = ""
                 if confirmed_totals:
-                    confirmed_text = self.tr(" Confirmed ordering: {values}.").format(
+                    confirmed_text = self.tr(" Confirmed prototypes: {values}.").format(
                         values=", ".join(
                             f"{escape(self._phase_display_name(label))} × {count:,}"
                             for label, count in sorted(confirmed_totals.items())

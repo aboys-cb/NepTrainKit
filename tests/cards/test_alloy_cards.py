@@ -23,6 +23,52 @@ class TestAlloyCards(BaseCardTest):
         for atoms in results:
             self.assertIn("Ge", atoms.get_chemical_symbols())
 
+    def test_random_doping_and_occupancy_cards_roundtrip_nondefault_params(self):
+        doping_params = RandomDopingParams(
+            rules=[
+                {
+                    "target": "Si",
+                    "dopants": {"Ge": 0.7, "C": 0.3},
+                    "use": "count",
+                    "count": [1, 2],
+                    "count_mode": "random",
+                    "group": ["surface"],
+                }
+            ],
+            doping_type="Exact",
+            max_structures=4,
+            use_seed=True,
+            seed=59,
+        )
+        doping = RandomDopingCard()
+        doping.set_params(doping_params)
+        normalized_doping_params = doping.get_params()
+        restored_doping = RandomDopingCard()
+        restored_doping.from_dict(doping.to_dict())
+        self.assertEqual(
+            restored_doping.get_params(),
+            normalized_doping_params,
+        )
+
+        occupancy_params = RandomOccupancyParams(
+            source="Manual",
+            manual="Co:0.4,Ni:0.6",
+            mode="Random",
+            samples=5,
+            group_filter="A,B",
+            use_seed=True,
+            seed=61,
+        )
+        occupancy = RandomOccupancyCard()
+        occupancy.set_params(occupancy_params)
+        normalized_occupancy_params = occupancy.get_params()
+        restored_occupancy = RandomOccupancyCard()
+        restored_occupancy.from_dict(occupancy.to_dict())
+        self.assertEqual(
+            restored_occupancy.get_params(),
+            normalized_occupancy_params,
+        )
+
     def test_random_doping_dopants_accept_bare_element(self):
         item = DopingRuleItem()
         item.target_edit.setText("Si")
@@ -397,6 +443,39 @@ class TestAlloyCards(BaseCardTest):
         self.assertEqual(len(occupied), 1)
         self.assertTrue(set(occupied[0].get_chemical_symbols()).issubset({"Co", "Ni"}))
 
+    def test_composition_sweep_budget_modes_fill_cap_and_cover_requested_orders(self):
+        base = self.structure.copy()
+        operation = CompositionSweepOperation()
+
+        for budget_mode in ("Equal+Reflow", "Capacity-weighted"):
+            with self.subTest(budget_mode=budget_mode):
+                params = CompositionSweepParams(
+                    elements="Co,Cr,Ni,Al",
+                    order="2,4",
+                    method="Grid",
+                    step=0.5,
+                    include_endpoints=True,
+                    use_seed=True,
+                    seed=13,
+                    max_outputs=8,
+                    budget_mode=budget_mode,
+                )
+                first = operation.run_structure(base, params)
+                repeated = operation.run_structure(base, params)
+                tags = [atoms.info.get("Config_type", "") for atoms in first]
+                repeated_tags = [
+                    atoms.info.get("Config_type", "") for atoms in repeated
+                ]
+
+                self.assertEqual(len(first), 8)
+                self.assertEqual(tags, repeated_tags)
+                composition_orders = [
+                    tag.rsplit("Comp(", 1)[1].split(")", 1)[0].count(",") + 1
+                    for tag in tags
+                ]
+                self.assertIn(2, composition_orders)
+                self.assertIn(4, composition_orders)
+
     def test_random_occupancy_group_filter_is_required_and_limits_assignment(self):
         structure = Atoms(
             "Si4",
@@ -441,6 +520,39 @@ class TestAlloyCards(BaseCardTest):
                     manual="Si",
                     samples=0,
                 ),
+            )
+
+    def test_random_occupancy_random_mode_is_seeded_and_respects_sample_contract(self):
+        structure = Atoms(
+            "Si12",
+            positions=np.column_stack(
+                [np.arange(12, dtype=float), np.zeros(12), np.zeros(12)]
+            ),
+            cell=[14.0, 4.0, 4.0],
+            pbc=True,
+        )
+        operation = RandomOccupancyOperation()
+        params = RandomOccupancyParams(
+            source="Manual",
+            manual="Co:0.25,Ni:0.75",
+            mode="Random",
+            samples=4,
+            use_seed=True,
+            seed=23,
+        )
+
+        first = operation.run_structure(structure, params)
+        repeated = operation.run_structure(structure, params)
+
+        self.assertEqual(len(first), 4)
+        self.assertEqual(
+            [atoms.get_chemical_symbols() for atoms in first],
+            [atoms.get_chemical_symbols() for atoms in repeated],
+        )
+        for atoms in first:
+            self.assertEqual(len(atoms), len(structure))
+            self.assertTrue(
+                set(atoms.get_chemical_symbols()).issubset({"Co", "Ni"})
             )
 
     def test_composition_gradient_operation_and_card_roundtrip(self):
@@ -517,6 +629,44 @@ class TestAlloyCards(BaseCardTest):
         )
         self.assertEqual(legacy.get_params().axis, "a")
         self.assertEqual(legacy.axis_combo.currentText(), "Lattice a")
+
+    def test_composition_gradient_target_elements_preserve_other_sublattice(self):
+        cell = np.asarray(
+            [
+                [5.0, 0.0, 0.0],
+                [1.5, 4.0, 0.0],
+                [0.3, 0.5, 5.0],
+            ]
+        )
+        structure = Atoms(
+            "NiONiO",
+            scaled_positions=[
+                [0.1, 0.1, 0.2],
+                [0.2, 0.2, 0.3],
+                [0.8, 0.8, 0.7],
+                [0.9, 0.9, 0.8],
+            ],
+            cell=cell,
+            pbc=True,
+        )
+        result = CompositionGradientOperation().run_structure(
+            structure,
+            CompositionGradientParams(
+                elements="Ni,Co",
+                start_composition="Ni:1,Co:0",
+                end_composition="Ni:0,Co:1",
+                axis="c",
+                bins=2,
+                target_elements="Ni",
+                samples=1,
+                use_seed=True,
+                seed=5,
+            ),
+        )[0]
+
+        self.assertEqual(result.get_chemical_symbols(), ["Ni", "O", "Co", "O"])
+        np.testing.assert_allclose(result.positions, structure.positions)
+        np.testing.assert_allclose(result.cell.array, structure.cell.array)
 
     def test_composition_sweep_quaternary_quinary(self):
         base = self.structure.copy()

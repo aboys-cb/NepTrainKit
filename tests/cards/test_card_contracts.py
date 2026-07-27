@@ -1,12 +1,17 @@
 from .card_test_base import *
 from .card_test_base import _ExternalTestCard, _MetadataTestCard
+from dataclasses import fields, is_dataclass
 from unittest.mock import patch
 import time
 
 from PySide6.QtCore import QEvent, QPointF, Qt
 from PySide6.QtGui import QMouseEvent
 
-from NepTrainKit.core.cards.operation import StructureOperation
+from NepTrainKit.core.cards.operation import (
+    DatasetOperation,
+    GeneratorOperation,
+    StructureOperation,
+)
 from NepTrainKit.ui.threads import DataProcessingThread
 from NepTrainKit.ui.widgets import FilterDataCard
 
@@ -181,6 +186,50 @@ class TestCardContracts(BaseCardTest):
                 card.get_params(),
                 f"{class_name} should preserve params through to_dict/from_dict",
             )
+
+    def test_builtin_operation_cards_expose_complete_frozen_params_contract(self):
+        operation_types = (StructureOperation, DatasetOperation, GeneratorOperation)
+        audited = 0
+        for class_name, card_cls in CardManager.card_info_dict.items():
+            if "_card" not in CardManager.card_metadata_dict[class_name].source_path:
+                continue
+            if not hasattr(card_cls, "create_operation"):
+                continue
+
+            card = card_cls()
+            operation = card.create_operation()
+            if operation is None:
+                continue
+            audited += 1
+            params = card.get_params()
+
+            self.assertIsInstance(
+                operation,
+                operation_types,
+                f"{class_name} must expose a supported operation contract",
+            )
+            self.assertTrue(
+                is_dataclass(params),
+                f"{class_name} params must be a dataclass",
+            )
+            self.assertTrue(
+                params.__dataclass_params__.frozen,
+                f"{class_name} params must be frozen",
+            )
+            self.assertEqual(
+                set(card.to_dict()["params"]),
+                {field.name for field in fields(params)},
+                f"{class_name} must serialize every params field exactly once",
+            )
+
+            needs_input = bool(getattr(card, "requires_input_dataset", True))
+            self.assertEqual(
+                isinstance(operation, GeneratorOperation),
+                not needs_input,
+                f"{class_name} generator/input-dataset contract is inconsistent",
+            )
+
+        self.assertGreaterEqual(audited, 30)
 
     def test_legacy_card_keys_still_load(self):
         strain = CellStrainCard()

@@ -404,6 +404,17 @@ class VibrationModePerturbOperation(StructureOperation):
         modes_per_sample = int(params.modes_per_sample)
         if modes_per_sample <= 0:
             raise ValueError("VibrationModePerturb: modes_per_sample must be >= 1.")
+        max_num_value = float(params.max_num)
+        if not np.isfinite(max_num_value) or not max_num_value.is_integer():
+            raise ValueError("VibrationModePerturb: max_num must be an integer.")
+        max_num = int(max_num_value)
+        if max_num <= 0:
+            raise ValueError("VibrationModePerturb: max_num must be >= 1.")
+        distribution = int(params.distribution)
+        if distribution not in {0, 1}:
+            raise ValueError(
+                "VibrationModePerturb: distribution must be 0 (Normal) or 1 (Uniform)."
+            )
 
         min_frequency = float(params.min_frequency) if params.exclude_near_zero else 0.0
         frequencies, modes = get_vibration_modes(structure, min_frequency=min_frequency)
@@ -419,9 +430,9 @@ class VibrationModePerturbOperation(StructureOperation):
         orig_positions = structure.get_positions()
 
         generated = []
-        for _ in range(int(params.max_num)):
+        for _ in range(max_num):
             indices = rng.choice(modes.shape[0], size=modes_per_sample, replace=replace)
-            if int(params.distribution) == 0:
+            if distribution == 0:
                 coeffs = rng.normal(loc=0.0, scale=1.0, size=modes_per_sample)
             else:
                 coeffs = rng.uniform(-1.0, 1.0, size=modes_per_sample)

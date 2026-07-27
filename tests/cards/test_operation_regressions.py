@@ -5,6 +5,7 @@ from NepTrainKit.core.cards.defect import _range_values as defect_range_values
 from NepTrainKit.core.cards.geometry import scaled_positions, wrapped_positions
 from NepTrainKit.core.cards.magnetism import int_range_values, parse_pair_filter, range_values
 from NepTrainKit.core.io import farthest_point_sampling
+from NepTrainKit.core.torsion_guard_pbc import build_adjacency_pbc
 
 
 class TestOperationRegressionEdges(BaseCardTest):
@@ -104,6 +105,73 @@ class TestOperationRegressionEdges(BaseCardTest):
         self.assertIsNot(result, empty)
         self.assertEqual(len(result), 0)
 
+    def test_unsupported_lattice_modes_fail_instead_of_silently_falling_back(self):
+        with self.assertRaisesRegex(ValueError, "CellStrain axes"):
+            CellStrainOperation().run_structure(
+                self.structure,
+                CellStrainParams(axes="typo"),
+            )
+        with self.assertRaisesRegex(ValueError, "engine_type"):
+            CellScalingOperation().run_structure(
+                self.structure,
+                CellScalingParams(engine_type=7, max_num=1),
+            )
+        with self.assertRaisesRegex(ValueError, "engine_type"):
+            PerturbOperation().run_structure(
+                self.structure,
+                PerturbParams(engine_type=7, max_num=1),
+            )
+        with self.assertRaisesRegex(ValueError, "behavior_type"):
+            SuperCellOperation().run_structure(
+                self.structure,
+                SuperCellParams(behavior_type=7),
+            )
+        with self.assertRaisesRegex(ValueError, "mode must be"):
+            SuperCellOperation().run_structure(
+                self.structure,
+                SuperCellParams(mode="typo"),  # type: ignore[arg-type]
+            )
+
+    def test_vibration_and_spin_disorder_invalid_output_modes_fail_explicitly(self):
+        vibration = Atoms("H", positions=[[0.0, 0.0, 0.0]])
+        vibration.new_array("vibration_mode_0_x", np.array([1.0]))
+        vibration.new_array("vibration_mode_0_y", np.array([0.0]))
+        vibration.new_array("vibration_mode_0_z", np.array([0.0]))
+        vibration.new_array("vibration_frequency_0", np.array([100.0]))
+        with self.assertRaisesRegex(ValueError, "distribution"):
+            VibrationModePerturbOperation().run_structure(
+                vibration,
+                VibrationModePerturbParams(distribution=7, max_num=1),
+            )
+        with self.assertRaisesRegex(ValueError, "max_num must be >= 1"):
+            VibrationModePerturbOperation().run_structure(
+                vibration,
+                VibrationModePerturbParams(max_num=0),
+            )
+
+        magnetic = Atoms(
+            "Fe2",
+            positions=[[0.0, 0.0, 0.0], [0.0, 0.0, 1.0]],
+            cell=[5.0, 5.0, 5.0],
+            pbc=True,
+        )
+        magnetic.set_initial_magnetic_moments([2.0, 2.0])
+        with self.assertRaisesRegex(ValueError, "mode must be"):
+            SpinDisorderOperation().run_structure(
+                magnetic,
+                SpinDisorderParams(mode="typo"),
+            )
+        with self.assertRaisesRegex(ValueError, "samples_per_fraction"):
+            SpinDisorderOperation().run_structure(
+                magnetic,
+                SpinDisorderParams(samples_per_fraction=0),
+            )
+        with self.assertRaisesRegex(ValueError, "max_outputs"):
+            SpinDisorderOperation().run_structure(
+                magnetic,
+                SpinDisorderParams(max_outputs=0),
+            )
+
     def test_alloy_invalid_rules_and_ratios_fail_explicitly(self):
         with self.assertRaisesRegex(ValueError, "positive"):
             sample_dopants(["Fe", "Co"], [0.0, 0.0], 2)
@@ -171,3 +239,16 @@ class TestOperationRegressionEdges(BaseCardTest):
     def test_filter_empty_fps_input_returns_empty_selection(self):
         indices = farthest_point_sampling(np.empty((0, 3), dtype=float), n_samples=10)
         self.assertEqual(indices, [])
+
+    def test_empty_periodic_adjacency_preserves_four_value_contract(self):
+        adjacency, edge_lengths, radii, edge_orders = build_adjacency_pbc(
+            [],
+            np.empty((0, 3), dtype=float),
+            np.eye(3),
+            1.15,
+        )
+
+        self.assertEqual(adjacency, [])
+        self.assertEqual(edge_lengths, {})
+        self.assertEqual(radii.shape, (0,))
+        self.assertEqual(edge_orders, {})

@@ -141,6 +141,61 @@ class TestStructureGeneratorCards(BaseCardTest):
 
         self.assertEqual(restored.get_params(), card.get_params())
 
+    def test_solvation_cards_roundtrip_all_flexible_solvent_controls(self):
+        local_params = LocalSolvationParams(
+            structures=2,
+            solvent_count=3,
+            sampling_mode="loose",
+            center_mode="indices",
+            center_indices="1,3",
+            shell=(2.0, 3.5),
+            min_distance=0.7,
+            collision_scale=0.8,
+            max_attempts=1234,
+            strict_count=False,
+            auto_box=True,
+            box_size=80.0,
+            box_padding=7.0,
+            min_box=25.0,
+            flex_solvent=True,
+            flex_pool=7,
+            flex_torsion_range=(-75.0, 95.0),
+            flex_max_torsions=3,
+            flex_gaussian_sigma=0.02,
+            use_seed=True,
+            seed=41,
+        )
+        local = LocalSolvationCard()
+        local.set_params(local_params)
+        restored_local = LocalSolvationCard()
+        restored_local.from_dict(local.to_dict())
+        self.assertEqual(restored_local.get_params(), local_params)
+
+        box_params = SolventBoxFillParams(
+            structures=2,
+            count_mode="density",
+            solvent_count=8,
+            density=0.75,
+            sampling_mode="loose",
+            fill_packing=0.85,
+            min_distance=0.65,
+            collision_scale=0.78,
+            max_attempts_per_solvent=321,
+            strict_count=False,
+            flex_solvent=True,
+            flex_pool=9,
+            flex_torsion_range=(-65.0, 85.0),
+            flex_max_torsions=4,
+            flex_gaussian_sigma=0.025,
+            use_seed=True,
+            seed=43,
+        )
+        box = SolventBoxFillCard()
+        box.set_params(box_params)
+        restored_box = SolventBoxFillCard()
+        restored_box.from_dict(box.to_dict())
+        self.assertEqual(restored_box.get_params(), box_params)
+
     def test_local_solvation_validates_counts_preserves_periodic_box_and_orients_water(self):
         operation = LocalSolvationOperation()
         periodic = Atoms(
@@ -447,6 +502,61 @@ class TestStructureGeneratorCards(BaseCardTest):
         near_top = np.linalg.norm(oxygen_positions - np.array([0.0, 0.0, 20.0]), axis=1)
         near_bottom = np.linalg.norm(oxygen_positions - np.array([0.0, 0.0, 0.0]), axis=1)
         self.assertTrue(np.all(near_top < near_bottom))
+
+    def test_local_solvation_indices_and_box_controls_have_observable_effect(self):
+        structure = Atoms(
+            symbols=["Ca", "Ca"],
+            positions=[[0.0, 0.0, 0.0], [0.0, 0.0, 12.0]],
+            pbc=False,
+        )
+        operation = LocalSolvationOperation()
+        auto = operation.run_structure(
+            structure,
+            LocalSolvationParams(
+                solvent_count=1,
+                sampling_mode="ion-water",
+                center_mode="indices",
+                center_indices="2",
+                shell=(2.4, 2.8),
+                min_distance=0.8,
+                auto_box=True,
+                box_padding=3.0,
+                min_box=20.0,
+                use_seed=True,
+                seed=19,
+            ),
+        )[0]
+        symbols = auto.get_chemical_symbols()
+        ca_positions = np.asarray(
+            [pos for sym, pos in zip(symbols, auto.positions) if sym == "Ca"]
+        )
+        oxygen = np.asarray(
+            [pos for sym, pos in zip(symbols, auto.positions) if sym == "O"]
+        )[0]
+
+        self.assertTrue(np.all(auto.cell.lengths() >= 20.0 - 1e-12))
+        self.assertLess(
+            np.linalg.norm(oxygen - ca_positions[1]),
+            np.linalg.norm(oxygen - ca_positions[0]),
+        )
+
+        fixed = operation.run_structure(
+            structure,
+            LocalSolvationParams(
+                solvent_count=1,
+                sampling_mode="water",
+                center_mode="indices",
+                center_indices="1",
+                shell=(2.4, 2.8),
+                min_distance=0.8,
+                auto_box=False,
+                box_size=30.0,
+                use_seed=True,
+                seed=20,
+            ),
+        )[0]
+        np.testing.assert_allclose(fixed.cell.array, np.diag([30.0, 30.0, 30.0]))
+        self.assertFalse(np.asarray(fixed.pbc, dtype=bool).any())
 
     def test_solvent_box_fill_density_count_matches_formula(self):
         structure = Atoms(
@@ -1097,6 +1207,64 @@ H 2.6700 0.5000 -0.8660
                     seed=2,
                 ),
             )
+
+    def test_organic_configuration_advanced_params_reach_topology_and_roundtrip(self):
+        molecule = Atoms(
+            "C4",
+            positions=[
+                [0.0, 0.0, 0.0],
+                [1.4, 0.0, 0.0],
+                [2.8, 0.2, 0.0],
+                [4.1, 0.2, 1.0],
+            ],
+            pbc=False,
+        )
+        params = OrganicMolConfigPBCParams(
+            perturb_per_frame=3,
+            torsion_range_deg=(-80.0, 100.0),
+            max_torsions_per_conf=2,
+            gaussian_sigma=0.01,
+            pbc_mode="no",
+            local_cutoff=3,
+            local_subtree=2,
+            bond_detect_factor=1.2,
+            bond_keep_min_factor=0.55,
+            bond_keep_max_factor=1.35,
+            bond_keep_max_enable=True,
+            nonbond_min_factor=0.75,
+            max_retries=5,
+            mult_bond_factor=0.82,
+            nonpbc_box_size=75.0,
+            bo_c_const=0.35,
+            bo_threshold=0.1,
+            use_seed=True,
+            seed=47,
+        )
+        settings = OrganicMolConfigPBCOperation._validated_settings(
+            molecule,
+            params,
+        )
+        summary = OrganicMolConfigPBCOperation.topology_summary(
+            molecule,
+            params,
+        )
+
+        self.assertEqual(settings["local_cutoff"], 3)
+        self.assertEqual(settings["local_subtree"], 2)
+        self.assertEqual(settings["bond_max"], 1.35)
+        self.assertEqual(settings["nonbond_min"], 0.75)
+        self.assertEqual(settings["mult_bond"], 0.82)
+        self.assertEqual(settings["box_size"], 75.0)
+        self.assertEqual(settings["bo_c"], 0.35)
+        self.assertEqual(settings["bo_threshold"], 0.1)
+        self.assertTrue(summary["local_mode"])
+        self.assertEqual(summary["requested_outputs"], 3)
+
+        card = OrganicMolConfigPBCCard()
+        card.set_params(params)
+        restored = OrganicMolConfigPBCCard()
+        restored.from_dict(card.to_dict())
+        self.assertEqual(restored.get_params(), params)
 
     def test_organic_configuration_unwraps_pbc_spanning_molecule_before_rotation(self):
         molecule = Atoms(

@@ -358,6 +358,63 @@ class TestFilterCards(BaseCardTest):
                 GeometryFilterParams(min_pair_distance=float("nan")),
             )
 
+    def test_geometry_filter_volume_density_truth_table_matches_summary(self):
+        low_density = Atoms(
+            "Si2",
+            positions=[[0.0, 0.0, 0.0], [2.4, 0.0, 0.0]],
+            cell=[8.0, 8.0, 8.0],
+            pbc=True,
+        )
+        accepted = Atoms(
+            "Si2",
+            positions=[[0.0, 0.0, 0.0], [2.4, 0.0, 0.0]],
+            cell=[4.0, 4.0, 4.0],
+            pbc=True,
+        )
+        high_density = Atoms(
+            "Si2",
+            positions=[[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]],
+            cell=[3.0, 3.0, 3.0],
+            pbc=True,
+        )
+        invalid_cell = Atoms(
+            "Si2",
+            positions=[[0.0, 0.0, 0.0], [2.0, 0.0, 0.0]],
+        )
+        accepted_density = GeometryFilterOperation.mass_density(
+            accepted,
+            accepted.get_volume(),
+        )
+        params = GeometryFilterParams(
+            min_volume_per_atom=10.0,
+            max_volume_per_atom=40.0,
+            min_density=accepted_density * 0.75,
+            max_density=accepted_density * 1.25,
+        )
+        dataset = [low_density, accepted, high_density, invalid_cell]
+
+        kept = GeometryFilterOperation().run_dataset(dataset, params)
+        summary = GeometryFilterOperation.filter_summary(dataset, params)
+
+        self.assertEqual(kept, [accepted])
+        self.assertEqual(summary["input_count"], 4)
+        self.assertEqual(summary["kept_count"], len(kept))
+        self.assertEqual(summary["rejected_count"], 3)
+        self.assertEqual(summary["reasons"]["volume_per_atom"], 1)
+        self.assertEqual(summary["reasons"]["density"], 1)
+        self.assertEqual(summary["reasons"]["invalid_cell"], 1)
+
+        density_only = GeometryFilterParams(
+            min_density=accepted_density * 0.75,
+            max_density=accepted_density * 1.25,
+        )
+        density_summary = GeometryFilterOperation.filter_summary(
+            [low_density, accepted, high_density],
+            density_only,
+        )
+        self.assertEqual(density_summary["reasons"]["density"], 2)
+        self.assertEqual(density_summary["kept_count"], 1)
+
     def test_geometry_filter_preview_and_progressive_bulk_controls(self):
         good = Atoms(
             "Si2",

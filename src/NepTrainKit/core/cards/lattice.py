@@ -124,7 +124,16 @@ class CellStrainOperation(StructureOperation):
 
     def run_structure(self, structure, params: CellStrainParams) -> list:
         structure_list = []
-        axes = params.axes
+        axes = str(params.axes).strip()
+        named_modes = {"isotropic", "uniaxial", "biaxial", "triaxial"}
+        if axes not in named_modes:
+            custom_axes = axes.upper()
+            if not custom_axes or any(axis not in "XYZ" for axis in custom_axes):
+                raise ValueError(
+                    "CellStrain axes must be isotropic, uniaxial, biaxial, "
+                    "triaxial, or a nonempty combination of X/Y/Z."
+                )
+            axes = custom_axes
         identify_organic = params.identify_organic
 
         if identify_organic:
@@ -203,18 +212,24 @@ class CellScalingOperation(StructureOperation):
         max_num = int(params.max_num)
         if max_num <= 0:
             raise ValueError("CellScaling: max_num must be >= 1.")
+        engine_type = int(params.engine_type)
+        if engine_type not in {0, 1}:
+            raise ValueError("CellScaling: engine_type must be 0 (Sobol) or 1 (Uniform).")
+        max_scaling = float(params.max_scaling)
+        if not np.isfinite(max_scaling) or max_scaling < 0.0:
+            raise ValueError("CellScaling: max_scaling must be finite and non-negative.")
         base_seed = int(params.seed) if params.use_seed else None
         rng = np.random.default_rng(base_seed)
         dim = 6 if params.perturb_angle else 3
 
-        if params.engine_type == 0:
+        if engine_type == 0:
             sobol_engine = Sobol(d=dim, scramble=True, seed=base_seed)
             sobol_seq = sobol_engine.random(max_num)
-            perturbation_factors = 1 + (sobol_seq - 0.5) * 2 * float(params.max_scaling)
+            perturbation_factors = 1 + (sobol_seq - 0.5) * 2 * max_scaling
         else:
             perturbation_factors = 1 + rng.uniform(
-                -float(params.max_scaling),
-                float(params.max_scaling),
+                -max_scaling,
+                max_scaling,
                 (max_num, dim),
             )
 
@@ -261,7 +276,7 @@ class CellScalingOperation(StructureOperation):
                 cz = np.sqrt(max(new_lengths[2] ** 2 - cx ** 2 - cy ** 2, 0))
                 new_lattice[2] = [cx, cy, cz]
 
-            eng = "U" if params.engine_type == 1 else "S"
+            eng = "U" if engine_type == 1 else "S"
             append_config_tag(new_structure, f"LSc(max={params.max_scaling},{eng})")
             new_structure.set_cell(new_lattice, scale_atoms=True)
             if params.identify_organic:
@@ -426,6 +441,9 @@ class PerturbOperation(StructureOperation):
         max_num = int(params.max_num)
         if max_num <= 0:
             raise ValueError("Perturb: max_num must be >= 1.")
+        engine_type = int(params.engine_type)
+        if engine_type not in {0, 1}:
+            raise ValueError("Perturb: engine_type must be 0 (Sobol) or 1 (Uniform).")
         if n_atoms == 0:
             return [structure.copy()]
         dim = n_atoms * 3
@@ -442,7 +460,7 @@ class PerturbOperation(StructureOperation):
         base_seed = int(params.seed) if params.use_seed else None
         rng = np.random.default_rng(base_seed)
 
-        if params.engine_type == 0:
+        if engine_type == 0:
             sobol_engine = Sobol(d=dim, scramble=True, seed=base_seed)
             unit_samples = sobol_engine.random(max_num).reshape(max_num, n_atoms, 3)
         else:
@@ -470,7 +488,7 @@ class PerturbOperation(StructureOperation):
 
             new_structure = structure.copy()
             new_structure.set_positions(self.wrapped_positions(structure, new_positions))
-            eng = "U" if params.engine_type == 1 else "S"
+            eng = "U" if engine_type == 1 else "S"
             append_config_tag(new_structure, f"Pert(d={params.max_distance},{eng})")
             structure_list.append(new_structure)
 
@@ -497,6 +515,8 @@ class SuperCellOperation(StructureOperation):
     """Create supercells without depending on Qt widget state."""
 
     def run_structure(self, structure, params: SuperCellParams) -> list:
+        if int(params.behavior_type) not in {0, 1, 2}:
+            raise ValueError("SuperCell: behavior_type must be 0, 1, or 2.")
         if params.mode == "scale":
             expansion_factors = self._get_scale_factors(params)
         elif params.mode == "cell":
@@ -504,7 +524,7 @@ class SuperCellOperation(StructureOperation):
         elif params.mode == "max_atoms":
             expansion_factors = self._get_max_atoms_factors(structure, params)
         else:
-            expansion_factors = [(1, 1, 1)]
+            raise ValueError("SuperCell: mode must be scale, cell, or max_atoms.")
 
         expansion_factors = self._dedupe_factors(expansion_factors, params)
         return self._generate_structures(structure, expansion_factors, params)

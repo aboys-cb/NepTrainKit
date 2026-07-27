@@ -1464,6 +1464,22 @@ class SpinDisorderOperation(StructureOperation):
     """Generate controlled spin-disorder states between ordered and PM limits."""
 
     def run_structure(self, structure, params: SpinDisorderParams) -> list:
+        valid_modes = {
+            "Flip fraction",
+            "Cone disorder",
+            "Full random directions",
+        }
+        if params.mode not in valid_modes:
+            raise ValueError(
+                "Spin Disorder mode must be Flip fraction, Cone disorder, "
+                "or Full random directions."
+            )
+        samples_per_fraction = int(params.samples_per_fraction)
+        if samples_per_fraction <= 0:
+            raise ValueError("Spin Disorder samples_per_fraction must be >= 1.")
+        max_outputs = int(params.max_outputs)
+        if max_outputs <= 0:
+            raise ValueError("Spin Disorder max_outputs must be >= 1.")
         base_moments = self.vector_moments(structure, params)
         if base_moments is None or base_moments.shape != (len(structure), 3):
             raise ValueError("Spin Disorder requires vector magnetic moments or liftable scalar magmoms.")
@@ -1479,12 +1495,11 @@ class SpinDisorderOperation(StructureOperation):
         base_seed = int(params.seed) if params.use_seed else None
         cfg_id = stable_config_id(structure)
         outputs = []
-        max_outputs = int(params.max_outputs)
         for frac_idx, fraction in enumerate(fractions):
             n_change = self.count_for_fraction(len(eligible), fraction)
             if n_change <= 0:
                 continue
-            for sample_idx in range(max(int(params.samples_per_fraction), 1)):
+            for sample_idx in range(samples_per_fraction):
                 if base_seed is None:
                     rng = np.random.default_rng()
                     seed_tag = ""

@@ -1,5 +1,6 @@
 from .card_test_base import *
 from ase.geometry import cell_to_cellpar, cellpar_to_cell
+from unittest.mock import patch
 
 
 class TestLatticeCards(BaseCardTest):
@@ -252,6 +253,47 @@ class TestLatticeCards(BaseCardTest):
         self.assertEqual(len(results), 2)
         self.assertTrue(all("LSc(max=0.05,U)" in atoms.info.get("Config_type", "") for atoms in results))
 
+    def test_cell_scaling_sobol_angle_branch_is_seeded_and_bounded(self):
+        structure = self.structure.copy()
+        structure.set_cell(
+            np.array(
+                [
+                    [5.4, 0.2, 0.1],
+                    [0.4, 5.6, 0.3],
+                    [0.2, 0.5, 5.7],
+                ]
+            ),
+            scale_atoms=True,
+        )
+        params = CellScalingParams(
+            engine_type=0,
+            max_scaling=0.08,
+            max_num=4,
+            perturb_angle=True,
+            use_seed=True,
+            seed=29,
+        )
+
+        first = CellScalingOperation().run_structure(structure, params)
+        repeated = CellScalingOperation().run_structure(structure, params)
+
+        self.assertEqual(len(first), 4)
+        original_cellpar = cell_to_cellpar(structure.cell.array)
+        changed_angle = False
+        for left, right in zip(first, repeated):
+            np.testing.assert_allclose(left.cell.array, right.cell.array, atol=1e-12)
+            cellpar = cell_to_cellpar(left.cell.array)
+            ratios = cellpar[:3] / original_cellpar[:3]
+            self.assertTrue(np.all(ratios >= 0.92 - 1e-7))
+            self.assertTrue(np.all(ratios <= 1.08 + 1e-7))
+            changed_angle = changed_angle or not np.allclose(
+                cellpar[3:],
+                original_cellpar[3:],
+                atol=1e-7,
+            )
+            self.assertIn("LSc(max=0.08,S)", left.info.get("Config_type", ""))
+        self.assertTrue(changed_angle)
+
     def test_cell_strain_card_uniaxial(self):
         card = CellStrainCard()
         structure = self.structure.copy()
@@ -288,6 +330,74 @@ class TestLatticeCards(BaseCardTest):
         self.assertEqual(len(results), 1)
         self.assertIn("Str(X=1%)", results[0].info.get("Config_type", ""))
 
+    def test_cell_strain_all_public_modes_scale_lattice_vectors(self):
+        structure = self.structure.copy()
+        structure.set_cell(
+            np.array(
+                [
+                    [5.0, 0.2, 0.1],
+                    [0.5, 5.5, 0.3],
+                    [0.2, 0.4, 6.0],
+                ]
+            ),
+            scale_atoms=True,
+        )
+        original = structure.cell.array.copy()
+        ranges = {
+            "x_range": (1.0, 1.0, 1.0),
+            "y_range": (2.0, 2.0, 1.0),
+            "z_range": (3.0, 3.0, 1.0),
+        }
+        operation = CellStrainOperation()
+
+        isotropic = operation.run_structure(
+            structure,
+            CellStrainParams(axes="isotropic", **ranges),
+        )
+        self.assertEqual(len(isotropic), 1)
+        np.testing.assert_allclose(isotropic[0].cell.array, original * 1.01)
+
+        uniaxial = operation.run_structure(
+            structure,
+            CellStrainParams(axes="uniaxial", **ranges),
+        )
+        self.assertEqual(len(uniaxial), 3)
+        for axis, result in enumerate(uniaxial):
+            expected = original.copy()
+            expected[axis] *= 1.0 + (axis + 1) / 100.0
+            np.testing.assert_allclose(result.cell.array, expected)
+
+        biaxial = operation.run_structure(
+            structure,
+            CellStrainParams(axes="biaxial", **ranges),
+        )
+        self.assertEqual(len(biaxial), 3)
+        for axes, result in zip(((0, 1), (0, 2), (1, 2)), biaxial):
+            expected = original.copy()
+            for axis in axes:
+                expected[axis] *= 1.0 + (axis + 1) / 100.0
+            np.testing.assert_allclose(result.cell.array, expected)
+
+        triaxial = operation.run_structure(
+            structure,
+            CellStrainParams(axes="triaxial", **ranges),
+        )
+        self.assertEqual(len(triaxial), 1)
+        np.testing.assert_allclose(
+            triaxial[0].cell.array,
+            original * np.array([1.01, 1.02, 1.03])[:, None],
+        )
+
+        custom = operation.run_structure(
+            structure,
+            CellStrainParams(axes="XZ", **ranges),
+        )
+        expected = original.copy()
+        expected[0] *= 1.01
+        expected[2] *= 1.03
+        self.assertEqual(len(custom), 1)
+        np.testing.assert_allclose(custom[0].cell.array, expected)
+
     def test_shear_matrix_card(self):
         card = ShearMatrixCard()
         structure = self.structure.copy()
@@ -319,6 +429,40 @@ class TestLatticeCards(BaseCardTest):
         self.assertEqual(len(results), 1)
         self.assertIn("Shr(xy=1%,sym=0)", results[0].info.get("Config_type", ""))
 
+    def test_shear_matrix_symmetric_branch_sets_both_tensor_halves(self):
+        structure = self.structure.copy()
+        structure.set_cell(
+            np.array(
+                [
+                    [5.0, 0.2, 0.1],
+                    [0.4, 5.5, 0.3],
+                    [0.2, 0.5, 6.0],
+                ]
+            ),
+            scale_atoms=True,
+        )
+        params = ShearMatrixParams(
+            xy_range=(10.0, 10.0, 1.0),
+            yz_range=(-5.0, -5.0, 1.0),
+            xz_range=(2.0, 2.0, 1.0),
+            symmetric=True,
+        )
+        result = ShearMatrixOperation().run_structure(structure, params)[0]
+        shear = np.array(
+            [
+                [1.0, 0.10, 0.02],
+                [0.10, 1.0, -0.05],
+                [0.02, -0.05, 1.0],
+            ]
+        )
+
+        np.testing.assert_allclose(
+            result.cell.array,
+            structure.cell.array @ shear,
+            atol=1e-12,
+        )
+        self.assertIn("sym=1", result.info.get("Config_type", ""))
+
     def test_shear_angle_card(self):
         card = ShearAngleCard()
         structure = self.structure.copy()
@@ -343,6 +487,48 @@ class TestLatticeCards(BaseCardTest):
 
         self.assertEqual(len(results), 1)
         self.assertIn("Ang(a=1)", results[0].info.get("Config_type", ""))
+
+    def test_scaling_and_shear_cards_roundtrip_nondefault_params(self):
+        cases = [
+            (
+                CellScalingCard,
+                CellScalingParams(
+                    engine_type=0,
+                    max_scaling=0.075,
+                    max_num=7,
+                    perturb_angle=False,
+                    identify_organic=True,
+                    use_seed=True,
+                    seed=53,
+                ),
+            ),
+            (
+                ShearMatrixCard,
+                ShearMatrixParams(
+                    xy_range=(-3.0, 4.0, 0.5),
+                    yz_range=(-2.0, 2.0, 0.25),
+                    xz_range=(1.0, 3.0, 0.5),
+                    symmetric=False,
+                    identify_organic=True,
+                ),
+            ),
+            (
+                ShearAngleCard,
+                ShearAngleParams(
+                    alpha_range=(-1.5, 2.5, 0.5),
+                    beta_range=(-2.0, 3.0, 1.0),
+                    gamma_range=(0.5, 2.0, 0.25),
+                    identify_organic=True,
+                ),
+            ),
+        ]
+        for card_cls, params in cases:
+            with self.subTest(card=card_cls.__name__):
+                card = card_cls()
+                card.set_params(params)
+                restored = card_cls()
+                restored.from_dict(card.to_dict())
+                self.assertEqual(restored.get_params(), params)
 
     def test_shear_angle_operation_matches_ase_cellpar_for_skewed_cell(self):
         structure = self.structure.copy()
@@ -440,3 +626,100 @@ class TestLatticeCards(BaseCardTest):
         restored = VibrationModePerturbCard()
         restored.from_dict(card.to_dict())
         self.assertEqual(restored.get_params(), card.get_params())
+
+    def test_vibration_mode_distribution_and_frequency_scaling_contract(self):
+        structure = Atoms(
+            "H",
+            positions=[[2.0, 2.0, 2.0]],
+            cell=[10.0, 10.0, 10.0],
+            pbc=False,
+        )
+        structure.new_array("vibration_mode_0_x", np.array([1.0]))
+        structure.new_array("vibration_mode_0_y", np.array([0.0]))
+        structure.new_array("vibration_mode_0_z", np.array([0.0]))
+        structure.new_array("vibration_frequency_0", np.array([100.0]))
+        operation = VibrationModePerturbOperation()
+
+        for distribution in (0, 1):
+            with self.subTest(distribution=distribution):
+                params = VibrationModePerturbParams(
+                    distribution=distribution,
+                    amplitude=0.2,
+                    modes_per_sample=1,
+                    min_frequency=0.0,
+                    max_num=3,
+                    scale_by_frequency=False,
+                    exclude_near_zero=False,
+                    use_seed=True,
+                    seed=17,
+                )
+                first = operation.run_structure(structure, params)
+                repeated = operation.run_structure(structure, params)
+                self.assertEqual(len(first), 3)
+                for left, right in zip(first, repeated):
+                    np.testing.assert_allclose(left.positions, right.positions)
+
+        unscaled = operation.run_structure(
+            structure,
+            VibrationModePerturbParams(
+                distribution=1,
+                amplitude=0.2,
+                modes_per_sample=1,
+                min_frequency=0.0,
+                max_num=1,
+                scale_by_frequency=False,
+                exclude_near_zero=False,
+                use_seed=True,
+                seed=7,
+            ),
+        )[0]
+        scaled = operation.run_structure(
+            structure,
+            VibrationModePerturbParams(
+                distribution=1,
+                amplitude=0.2,
+                modes_per_sample=1,
+                min_frequency=0.0,
+                max_num=1,
+                scale_by_frequency=True,
+                exclude_near_zero=False,
+                use_seed=True,
+                seed=7,
+            ),
+        )[0]
+        unscaled_delta = unscaled.positions - structure.positions
+        scaled_delta = scaled.positions - structure.positions
+        np.testing.assert_allclose(scaled_delta, unscaled_delta / 10.0, atol=1e-12)
+
+    def test_vibration_mode_zero_filter_controls_extraction_threshold(self):
+        structure = Atoms("H", positions=[[0.0, 0.0, 0.0]])
+        frequencies = np.array([100.0])
+        modes = np.array([[[1.0, 0.0, 0.0]]])
+
+        with patch(
+            "NepTrainKit.core.cards.structure.get_vibration_modes",
+            return_value=(frequencies, modes),
+        ) as get_modes:
+            VibrationModePerturbOperation().run_structure(
+                structure,
+                VibrationModePerturbParams(
+                    min_frequency=12.5,
+                    exclude_near_zero=True,
+                    max_num=1,
+                    use_seed=True,
+                    seed=2,
+                ),
+            )
+            self.assertEqual(get_modes.call_args.kwargs["min_frequency"], 12.5)
+
+            VibrationModePerturbOperation().run_structure(
+                structure,
+                VibrationModePerturbParams(
+                    min_frequency=12.5,
+                    exclude_near_zero=False,
+                    max_num=1,
+                    use_seed=True,
+                    seed=2,
+                ),
+            )
+            self.assertEqual(get_modes.call_args.kwargs["min_frequency"], 0.0)

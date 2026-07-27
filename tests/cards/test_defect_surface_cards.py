@@ -38,6 +38,34 @@ class TestDefectSurfaceCards(BaseCardTest):
         self.assertGreater(len(results), 0)
         self.assertTrue(all(len(atoms) >= len(structure) for atoms in results))
 
+    def test_random_slab_operation_enumerates_layer_vacuum_product_and_roundtrips(self):
+        structure = self.structure.copy()
+        structure.info["Config_type"] = "bulk"
+        params = RandomSlabParams(
+            h_range=(1, 1, 1),
+            k_range=(0, 0, 1),
+            l_range=(0, 0, 1),
+            layer_range=(1, 2, 1),
+            vacuum_range=(0.0, 2.0, 2.0),
+        )
+
+        results = RandomSlabOperation().run_structure(structure, params)
+
+        self.assertEqual(len(results), 4)
+        tags = [atoms.info.get("Config_type", "") for atoms in results]
+        self.assertTrue(all("Slab(hkl=100" in tag for tag in tags))
+        self.assertEqual(sum("L=1" in tag for tag in tags), 2)
+        self.assertEqual(sum("L=2" in tag for tag in tags), 2)
+        self.assertEqual(sum("vac=None" in tag for tag in tags), 2)
+        self.assertEqual(sum("vac=2.0" in tag for tag in tags), 2)
+        self.assertTrue(all(np.asarray(atoms.pbc, dtype=bool).all() for atoms in results))
+
+        card = RandomSlabCard()
+        card.set_params(params)
+        restored = RandomSlabCard()
+        restored.from_dict(card.to_dict())
+        self.assertEqual(restored.get_params(), params)
+
     def test_random_vacancy_card(self):
         card = RandomVacancyCard()
         structure = self.structure.copy()

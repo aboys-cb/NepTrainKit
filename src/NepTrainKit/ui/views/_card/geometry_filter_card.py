@@ -2,18 +2,22 @@
 
 from __future__ import annotations
 
+from PySide6.QtCore import QTimer
 from qfluentwidgets import BodyLabel, CaptionLabel, CheckBox, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.filter import GeometryFilterOperation, GeometryFilterParams
 from NepTrainKit.core.cards.operation import params_to_dict
 from NepTrainKit.ui.messages import translate_runtime_message
+from NepTrainKit.ui.threads import BackgroundTask
 from NepTrainKit.ui.widgets import FilterDataCard, SpinBoxUnitInputFrame
 
 
 @CardManager.register_card
 class GeometryFilterCard(FilterDataCard):
     """Reject structures that violate explicit geometry-quality thresholds."""
+
+    _PREVIEW_DEBOUNCE_MS = 120
 
     group = "Filter"
     card_name = "Geometry Filter"
@@ -25,6 +29,15 @@ class GeometryFilterCard(FilterDataCard):
     def __init__(self, parent=None):
         super().__init__(parent)
         self._input_dataset = []
+        self._preview_generation = 0
+        self._preview_task: BackgroundTask | None = None
+        self._active_preview_generation: int | None = None
+        self._pending_preview = None
+        self._preview_closing = False
+        self._preview_timer = QTimer(self)
+        self._preview_timer.setSingleShot(True)
+        self._preview_timer.setInterval(self._PREVIEW_DEBOUNCE_MS)
+        self._preview_timer.timeout.connect(self._start_preview)
         self.setTitle(self.tr("Geometry Sanity Filter"))
         self.init_ui()
 
@@ -155,26 +168,94 @@ class GeometryFilterCard(FilterDataCard):
     def _refresh_preview(self, *_args) -> None:
         if not hasattr(self, "preview_label"):
             return
+        self._preview_generation += 1
+        self._pending_preview = None
+        self._preview_timer.stop()
         if not self._input_dataset:
+            if self._preview_task is not None:
+                self._preview_task.stop_work()
             self.preview_label.setText(
                 self.tr(
                     "Load upstream structures to preview how many pass each active geometry limit."
                 )
             )
             return
-        try:
-            summary = self.create_operation().filter_summary(
-                self._input_dataset,
-                self.get_params(),
-            )
-        except (TypeError, ValueError) as exc:
-            self.preview_label.setText(
-                "⚠ "
-                + self.tr("Preview unavailable: {error}").format(
-                    error=translate_runtime_message(exc)
-                )
-            )
+        self.preview_label.setText(self.tr("Calculating preview in background…"))
+        self._preview_timer.start()
+
+    def _start_preview(self) -> None:
+        if self._preview_closing or not self._input_dataset:
             return
+        request = (
+            self._preview_generation,
+            list(self._input_dataset),
+            self.get_params(),
+        )
+        if self._preview_task is not None:
+            self._pending_preview = request
+            self._preview_task.stop_work()
+            return
+        self._start_preview_task(request)
+
+    def _start_preview_task(self, request) -> None:
+        request_id, dataset, params = request
+        task = BackgroundTask(self, show_tip=False)
+        self._preview_task = task
+        self._active_preview_generation = request_id
+        task.succeeded.connect(self._on_preview_succeeded)
+        task.failed.connect(self._on_preview_failed)
+        task.finished.connect(self._on_preview_task_finished)
+        task.start_work(
+            self._calculate_preview,
+            request_id,
+            dataset,
+            params,
+        )
+
+    @staticmethod
+    def _calculate_preview(request_id, dataset, params):
+        summary = GeometryFilterOperation().filter_summary(dataset, params)
+        return request_id, summary
+
+    def _on_preview_succeeded(self, result) -> None:
+        request_id, summary = result
+        if self._preview_closing or request_id != self._preview_generation:
+            return
+        self._apply_preview_summary(summary)
+
+    def _on_preview_failed(self, message: str) -> None:
+        task = self._preview_task
+        if (
+            self._preview_closing
+            or task is None
+            or self._active_preview_generation != self._preview_generation
+            or self._pending_preview is not None
+        ):
+            return
+        self.preview_label.setText(
+            "⚠ "
+            + self.tr("Preview unavailable: {error}").format(
+                error=translate_runtime_message(message)
+            )
+        )
+
+    def _on_preview_task_finished(self) -> None:
+        task = self._preview_task
+        if task is None:
+            return
+        task.wait()
+        task.deleteLater()
+        self._preview_task = None
+        self._active_preview_generation = None
+        if self._preview_closing:
+            QTimer.singleShot(0, self.close)
+            return
+        pending = self._pending_preview
+        self._pending_preview = None
+        if pending is not None and pending[0] == self._preview_generation:
+            self._start_preview_task(pending)
+
+    def _apply_preview_summary(self, summary) -> None:
         labels = {
             "empty": self.tr("empty structures"),
             "nonfinite_positions": self.tr("non-finite positions"),
@@ -203,6 +284,22 @@ class GeometryFilterCard(FilterDataCard):
                 reasons=rejected,
             )
         )
+
+    def closeEvent(self, event) -> None:
+        self._preview_closing = True
+        self._preview_generation += 1
+        self._pending_preview = None
+        self._preview_timer.stop()
+        task = self._preview_task
+        if task is not None:
+            task.stop_work()
+            if task.isRunning() and not task.wait(200):
+                event.ignore()
+                return
+            task.deleteLater()
+            self._preview_task = None
+            self._active_preview_generation = None
+        super().closeEvent(event)
 
     def create_operation(self):
         return GeometryFilterOperation()

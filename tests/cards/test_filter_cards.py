@@ -1,9 +1,23 @@
+import threading
+import time
+
 from .card_test_base import *
 from unittest.mock import patch
 
 from NepTrainKit.core.audit.neighbor_scan import find_short_distance_structure_rows
 from NepTrainKit.ui.views._card.fps_filter_card import FPSFilterDataCard
 from NepTrainKit.ui.widgets.card_widget import FilterDataCard
+
+
+def _wait_until(predicate, timeout: float = 3.0) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        QApplication.processEvents()
+        if predicate():
+            return True
+        time.sleep(0.01)
+    QApplication.processEvents()
+    return bool(predicate())
 
 
 class TestFilterCards(BaseCardTest):
@@ -357,9 +371,80 @@ class TestFilterCards(BaseCardTest):
         card.set_dataset([good, overlap])
 
         self.assertTrue(card.min_vpa_frame.isHidden())
+        self.assertTrue(_wait_until(lambda: "keep 2" in card.preview_label.text()))
         self.assertIn("keep 2", card.preview_label.text())
         card.min_pair_frame.set_input_value([1.0])
+        self.assertTrue(_wait_until(lambda: "keep 1" in card.preview_label.text()))
         self.assertIn("keep 1", card.preview_label.text())
         self.assertIn("short pairs 1", card.preview_label.text())
         card.bulk_checkbox.setChecked(True)
         self.assertFalse(card.min_vpa_frame.isHidden())
+        card.close()
+        QApplication.processEvents()
+
+    def test_geometry_filter_preview_runs_in_background_and_uses_latest_request(self):
+        structures = [
+            Atoms(
+                "Si2",
+                positions=[[0, 0, 0], [2.35, 0, 0]],
+                cell=[5, 5, 5],
+                pbc=True,
+            )
+        ]
+        started = threading.Event()
+        release = threading.Event()
+        calls = []
+        main_thread_id = threading.get_ident()
+
+        def fake_summary(dataset, params):
+            calls.append((threading.get_ident(), params.min_pair_distance))
+            if len(calls) == 1:
+                started.set()
+                release.wait(timeout=3.0)
+            rejected = int(params.min_pair_distance > 0.0)
+            return {
+                "input_count": len(dataset),
+                "kept_count": len(dataset) - rejected,
+                "rejected_count": rejected,
+                "reasons": {
+                    "empty": 0,
+                    "nonfinite_positions": 0,
+                    "invalid_cell": 0,
+                    "pair_distance": rejected,
+                    "volume_per_atom": 0,
+                    "density": 0,
+                },
+            }
+
+        card = GeometryFilterCard()
+        try:
+            with patch.object(
+                GeometryFilterOperation,
+                "filter_summary",
+                side_effect=fake_summary,
+            ):
+                card.set_dataset(structures)
+                self.assertTrue(_wait_until(started.is_set))
+                self.assertNotEqual(calls[0][0], main_thread_id)
+
+                card.min_pair_frame.set_input_value([1.0])
+                self.assertIn("background", card.preview_label.text())
+                release.set()
+
+                self.assertTrue(
+                    _wait_until(
+                        lambda: len(calls) >= 2
+                        and "keep 0" in card.preview_label.text(),
+                    )
+                )
+                self.assertEqual(calls[1][1], 1.0)
+                self.assertNotEqual(calls[1][0], main_thread_id)
+                self.assertIn("short pairs 1", card.preview_label.text())
+        finally:
+            release.set()
+            _wait_until(
+                lambda: card._preview_task is None
+                or not card._preview_task.isRunning()
+            )
+            card.close()
+            QApplication.processEvents()

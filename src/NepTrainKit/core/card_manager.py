@@ -87,17 +87,38 @@ def _normalize_contributors(raw) -> tuple[CardContributor, ...]:
     return tuple(contributors)
 
 
+def _builtin_card_docs_url(source_path: Path | None) -> str:
+    """Return the official documentation URL for a built-in card module."""
+    if source_path is None:
+        return ""
+    builtin_card_dir = (
+        Path(__file__).resolve().parents[1] / "ui" / "views" / "_card"
+    )
+    if source_path.parent != builtin_card_dir or source_path.suffix != ".py":
+        return ""
+    slug = source_path.stem.replace("_", "-")
+    return (
+        "https://neptrainkit.readthedocs.io/en/latest/"
+        f"module/make-dataset-cards/cards/{slug}.html"
+    )
+
+
 def build_card_metadata(card_class) -> CardMetadata:
     """Build display metadata from a registered card class."""
     try:
-        source_path = str(Path(inspect.getfile(card_class)).resolve())
+        source_file = Path(inspect.getfile(card_class)).resolve()
+        source_path = str(source_file)
     except (TypeError, OSError):
+        source_file = None
         source_path = ""
 
     description = str(getattr(card_class, "description", "") or "").strip()
     if not description:
         doc = inspect.getdoc(card_class) or ""
         description = doc.splitlines()[0].strip() if doc else ""
+    docs_url = str(getattr(card_class, "docs_url", "") or "").strip()
+    if not docs_url:
+        docs_url = _builtin_card_docs_url(source_file)
 
     return CardMetadata(
         class_name=card_class.__name__,
@@ -109,7 +130,7 @@ def build_card_metadata(card_class) -> CardMetadata:
         maintainer=str(getattr(card_class, "maintainer", "") or "").strip(),
         license=str(getattr(card_class, "license", "") or "").strip(),
         citation=str(getattr(card_class, "citation", "") or "").strip(),
-        docs_url=str(getattr(card_class, "docs_url", "") or "").strip(),
+        docs_url=docs_url,
         source_path=source_path,
     )
 

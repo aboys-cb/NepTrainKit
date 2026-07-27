@@ -37,7 +37,6 @@ from qfluentwidgets import (
     InfoBadge,
     InfoBadgePosition,
 )
-from ase.io import write as ase_write
 from loguru import logger
 
 from NepTrainKit.core.audit import (
@@ -46,6 +45,7 @@ from NepTrainKit.core.audit import (
     build_training_set_audit,
 )
 from NepTrainKit.core.audit.evidence_cache import TrainingSetEvidenceCache
+from NepTrainKit.core.io.importers import ase_atoms_to_structure
 from NepTrainKit.core.audit.magnetic_inventory import (
     MAGNETIC_ANALYSIS_STRATEGY,
     MAGNETIC_METHOD_ID,
@@ -352,7 +352,7 @@ class NepTrainKitMainWindow(FluentWindow):
         self.show_nep_interface.open_file()
 
     def open_make_dataset_output(self, structures: list) -> None:
-        """Persist a temporary handoff and open it in Dataset Display."""
+        """Convert card outputs in memory and open them in Dataset Display."""
         if not structures:
             MessageManager.send_info_message(
                 self.tr("The workflow output is empty.")
@@ -381,20 +381,30 @@ class NepTrainKitMainWindow(FluentWindow):
             self.tr("Preparing the workflow output for display...")
         )
 
-        def _write_handoff() -> str:
-            ase_write(path, structures, format="extxyz")
-            return str(path)
+        source_structures = list(structures)
 
-        def _open_handoff(result_path: str) -> None:
+        def _prepare_handoff() -> tuple[str, list]:
+            converted = [
+                ase_atoms_to_structure(atoms)
+                for atoms in source_structures
+            ]
+            return str(path), converted
+
+        def _open_handoff(payload: tuple[str, list]) -> None:
             if self._make_dataset_handoff_pending_dir is not handoff_dir:
                 handoff_dir.cleanup()
                 return
+            result_path, converted = payload
             self._make_dataset_handoff_thread = None
             previous_dir = self._make_dataset_handoff_dir
             self._make_dataset_handoff_dir = handoff_dir
             self._make_dataset_handoff_pending_dir = None
             self.switchTo(self.show_nep_interface)
-            self.show_nep_interface.check_nep_result(result_path)
+            self.show_nep_interface.check_nep_result(
+                result_path,
+                structures=converted,
+                cache_outputs=False,
+            )
             if previous_dir is not None:
                 previous_dir.cleanup()
 
@@ -411,7 +421,7 @@ class NepTrainKitMainWindow(FluentWindow):
 
         self._make_dataset_handoff_thread = run_in_thread(
             self,
-            _write_handoff,
+            _prepare_handoff,
             on_finished=_open_handoff,
             on_error=_handoff_failed,
         )

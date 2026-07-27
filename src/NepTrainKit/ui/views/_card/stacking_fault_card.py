@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from qfluentwidgets import BodyLabel, ToolTipFilter, ToolTipPosition
+from qfluentwidgets import BodyLabel, CaptionLabel, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.defect import StackingFaultOperation, StackingFaultParams
@@ -10,10 +10,11 @@ from NepTrainKit.ui.widgets import MakeDataCard, SpinBoxUnitInputFrame
 
 @CardManager.register_card
 class StackingFaultCard(MakeDataCard):
-    """Generate stacking fault or twin structures."""
+    """Load and reproduce the legacy automatic-direction layer-shift operation."""
 
     group = "Defect"
     card_name = "Stacking Fault"
+    discoverable = False
     menu_icon = r":/images/src/images/defect.svg"
     contributors = [
         {"name": "NepTrainKit", "role": "author"},
@@ -21,13 +22,20 @@ class StackingFaultCard(MakeDataCard):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setTitle(self.tr("Make Stacking Fault"))
+        self.setTitle(self.tr("Legacy Stacking Fault"))
         self.init_ui()
 
     def init_ui(self):
         self.setObjectName("stacking_fault_card_widget")
+        self.warning_label = CaptionLabel(
+            self.tr(
+                "Compatibility card for existing workflows. It shifts one side of a projected cut along an automatically chosen Cartesian direction; use Stacking Fault / GSFE Path to specify the physical slip direction."
+            ),
+            self.setting_widget,
+        )
+        self.warning_label.setWordWrap(True)
 
-        self.hkl_label = BodyLabel(self.tr("h k l"), self.setting_widget)
+        self.hkl_label = BodyLabel(self.tr("Approximate plane h k l"), self.setting_widget)
         self.hkl_frame = SpinBoxUnitInputFrame(self)
         self.hkl_frame.set_input("", 3, "int")
         self.hkl_frame.setRange(-10, 10)
@@ -47,22 +55,25 @@ class StackingFaultCard(MakeDataCard):
         )
         self.step_label.installEventFilter(ToolTipFilter(self.step_label, 0, ToolTipPosition.TOP))
 
-        self.layer_label = BodyLabel(self.tr("Layers"), self.setting_widget)
+        self.layer_label = BodyLabel(self.tr("Legacy projected-layer rank"), self.setting_widget)
         self.layer_frame = SpinBoxUnitInputFrame(self)
         self.layer_frame.set_input("", 1, "int")
         self.layer_frame.setRange(1, 100)
         self.layer_frame.set_input_value([1])
         self.layer_label.setToolTip(
-            self.tr("Number of layers: Controls the number of layers involved in the stacking fault.")
+            self.tr(
+                "Selects a threshold in sorted projected coordinates; rank 1 can move every atom, and out-of-range values fall back to the middle"
+            )
         )
         self.layer_label.installEventFilter(ToolTipFilter(self.layer_label, 0, ToolTipPosition.TOP))
 
-        self.settingLayout.addWidget(self.hkl_label, 0, 0, 1, 1)
-        self.settingLayout.addWidget(self.hkl_frame, 0, 1, 1, 2)
-        self.settingLayout.addWidget(self.layer_label, 1, 0, 1, 1)
-        self.settingLayout.addWidget(self.layer_frame, 1, 1, 1, 2)
-        self.settingLayout.addWidget(self.step_label, 2, 0, 1, 1)
-        self.settingLayout.addWidget(self.step_frame, 2, 1, 1, 2)
+        self.settingLayout.addWidget(self.warning_label, 0, 0, 1, 3)
+        self.settingLayout.addWidget(self.hkl_label, 1, 0, 1, 1)
+        self.settingLayout.addWidget(self.hkl_frame, 1, 1, 1, 2)
+        self.settingLayout.addWidget(self.layer_label, 2, 0, 1, 1)
+        self.settingLayout.addWidget(self.layer_frame, 2, 1, 1, 2)
+        self.settingLayout.addWidget(self.step_label, 3, 0, 1, 1)
+        self.settingLayout.addWidget(self.step_frame, 3, 1, 1, 2)
 
     def create_operation(self):
         """Return the UI-independent stacking-fault operation."""

@@ -19,6 +19,12 @@ from .magnetic_inventory import (
 )
 from .nep_cutoff import NepCutoffProfile, parse_nep_cutoff
 from .phase_refinement import PhaseRefinement, refine_l12, refine_laves
+from .prototype_registry import (
+    PrototypeMatch,
+    ReferenceCrystallography,
+    match_common_prototype,
+    reference_crystallography,
+)
 from .phase_inventory import (
     analyze_structure_phase,
     build_phase_inventory,
@@ -103,6 +109,8 @@ __all__ = [
     "StructureAuditRecord",
     "NepCutoffProfile",
     "PhaseRefinement",
+    "PrototypeMatch",
+    "ReferenceCrystallography",
     "audit_local_chemistry",
     "audit_data_quality",
     "audit_config_types",
@@ -120,6 +128,8 @@ __all__ = [
     "compare_composition_target",
     "indexed_structures_from_result_data",
     "parse_nep_cutoff",
+    "match_common_prototype",
+    "reference_crystallography",
     "refine_l12",
     "refine_laves",
     "records_from_indexed_structures",

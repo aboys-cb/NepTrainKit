@@ -8,17 +8,17 @@
 
 在给定总成分约束下，将目标配比真正落到原子占位上。读取 `Comp(...)` 标签或手工输入的成分字符串，用精确或随机模式把各元素分配到离散晶格位点，输出带 `Occ(...)` 标签的真实化学占位结构。
 
-典型用法：接在 `Composition Sweep` 之后，把目标配比计划转化为可以跑 DFT/NEP 的实际结构。
+典型用法：接在 `Composition Space Sampling` 之后，把目标配比计划转化为可以跑 DFT/NEP 的实际结构。
 
 ## 操作示例
 
 ### 场景：同成分不同排布下的能量预测，模型偏差从 5 跳到 50 meV/atom
 
-你在 CoCrNi 训练集上跑了 `Composition Sweep`，覆盖了从纯元素到等摩尔的各种配比。但每个配比只生成了一个占位结构——对 Co0.33Cr0.33Ni0.33，训练集里 Cr 永远在角落、Co 永远在面心。模型学到的不是"这个成分"，而是"这个成分 + 这个特定排布"。拿到另一个同样成分但 Cr/Co 位置互换的结构，能量预测偏差从 5 meV/atom 跳到了 50 meV/atom。
+你在 CoCrNi 训练集上跑了 `Composition Space Sampling`，覆盖了从纯元素到等摩尔的各种配比。但每个配比只生成了一个占位结构——对 Co0.33Cr0.33Ni0.33，训练集里 Cr 永远在角落、Co 永远在面心。模型学到的不是"这个成分"，而是"这个成分 + 这个特定排布"。拿到另一个同样成分但 Cr/Co 位置互换的结构，能量预测偏差从 5 meV/atom 跳到了 50 meV/atom。
 
 **诊断思路：** 对给定成分，短程化学有序度——哪种原子偏好和哪种原子做邻居——显著影响总能量和局域力。训练集里每种成分只有一个排布样本，模型就把成分和特定排布绑死了。解决：给每个目标配比生成多个不同占位版本。
 
-**输入：** 一批带 `Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` 标签的结构（来自上游 `Composition Sweep`）
+**输入：** 一批带 `Comp(Co=0.3333,Cr=0.3333,Ni=0.3333)` 标签的结构（来自上游 `Composition Space Sampling`）
 
 **目标：** 每个目标配比生成 5 个不同原子排布版本，覆盖排布多样性
 
@@ -38,7 +38,7 @@
 ### 什么时候加这张卡、什么时候不加
 
 **加：**
-- 上游有 `Composition Sweep` 或手工定义了目标配比，需要落到具体原子占位
+- 上游有 `Composition Space Sampling` 或手工定义了目标配比，需要落到具体原子占位
 - 同一成分下需要多个不同原子排布来覆盖短程化学有序度
 - 高熵合金、固溶体等需要成分-排布联合采样的体系
 
@@ -51,7 +51,7 @@
 
 ### Source（source）
 
-`str`，默认 `Auto (Comp tag)`。`Auto` 从输入结构的 `Config_type` 中读取 `Comp(...)` 标签作为目标配比，适合接在 `Composition Sweep` 之后。`Manual` 从下面的 `manual` 字段读取手工配比字符串。
+`str`，默认 `Auto (Comp tag)`。`Auto` 从输入结构的 `Config_type` 中读取 `Comp(...)` 标签作为目标配比，适合接在 `Composition Space Sampling` 之后。`Manual` 从下面的 `manual` 字段读取手工配比字符串。
 
 ### Manual（manual）
 
@@ -128,7 +128,7 @@
 
 ## 推荐组合
 
-- `Composition Sweep` → `Random Occupancy`：标准合金 pipeline，配比 → 落位。
+- `Composition Space Sampling` → `Random Occupancy`：标准合金 pipeline，配比 → 落位。
 - `Group Label` → `Random Occupancy`：先打 group 标签，再限制占位区域。
 - `Random Occupancy` → `Atomic Perturb`：占位后加坐标噪声松驰局部应力。
 

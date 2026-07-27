@@ -717,7 +717,7 @@ class FiniteCellAlloyOccupancyParams:
 
 @dataclass(frozen=True)
 class FiniteCellAlloyEstimate:
-    """Queryable pre-run size estimate for one input structure."""
+    """Queryable pre-run upper-bound estimate for one input structure."""
 
     composition_count: int
     arrangements_per_composition: int
@@ -785,9 +785,18 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
 
     _ENUMERATION_LIMIT = 20_000
 
+    def __init__(self, *, require_normalized_fixed_fractions: bool = False) -> None:
+        self.require_normalized_fixed_fractions = bool(
+            require_normalized_fixed_fractions
+        )
+
     def estimate(self, structure, params: FiniteCellAlloyOccupancyParams) -> FiniteCellAlloyEstimate:
         site_indices = self._site_indices(structure)
-        spaces = self._build_spaces(site_indices, params.site_rules)
+        spaces = self._build_spaces(
+            site_indices,
+            params.site_rules,
+            require_normalized_fixed_fractions=self.require_normalized_fixed_fractions,
+        )
         composition_count = math.prod(space.capacity for space in spaces)
         per_composition = int(params.arrangements_per_composition)
         max_outputs = int(params.max_outputs)
@@ -805,7 +814,11 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
 
     def run_structure(self, structure, params: FiniteCellAlloyOccupancyParams) -> list:
         site_indices = self._site_indices(structure)
-        spaces = self._build_spaces(site_indices, params.site_rules)
+        spaces = self._build_spaces(
+            site_indices,
+            params.site_rules,
+            require_normalized_fixed_fractions=self.require_normalized_fixed_fractions,
+        )
         estimate = self.estimate(structure, params)
         plan_count = estimate.composition_count
         base_seed = int(params.seed) if params.use_seed else None
@@ -817,19 +830,60 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
             seed=selection_seed,
         )
 
-        outputs = []
-        for plan_index in plan_indices:
-            plan = self._decode_plan(spaces, plan_index)
-            remaining = estimate.max_outputs - len(outputs)
-            if remaining <= 0:
-                break
-            requested = min(estimate.arrangements_per_composition, remaining)
-            theoretical = self._theoretical_arrangements(plan, spaces)
-            target = min(requested, theoretical)
+        plans = [self._decode_plan(spaces, plan_index) for plan_index in plan_indices]
+        theoretical_arrangements = [
+            self._theoretical_arrangements(plan, spaces)
+            for plan in plans
+        ]
+        arrangement_targets = self._arrangement_targets(
+            theoretical_arrangements,
+            estimate.arrangements_per_composition,
+            estimate.max_outputs,
+        )
+
+        prepared = []
+        for plan_index, plan, theoretical, target in zip(
+            plan_indices,
+            plans,
+            theoretical_arrangements,
+            arrangement_targets,
+        ):
+            if target <= 0:
+                continue
             rng, derived_seed = self._rng(base_seed, cfg_id, plan_index)
             arrangements = self._arrangements(plan, spaces, target, theoretical, rng)
             composition_id = self._composition_id(plan, spaces)
-            for arrangement_index, assignments in enumerate(arrangements):
+            counts_meta = {
+                space.label: {
+                    element: int(count)
+                    for element, count in zip(space.elements, counts_for_space)
+                }
+                for space, counts_for_space in zip(spaces, plan)
+            }
+            fractions_meta = {
+                label: {
+                    element: count / len(site_indices[label])
+                    for element, count in counts.items()
+                }
+                for label, counts in counts_meta.items()
+            }
+            prepared.append(
+                (
+                    arrangements,
+                    composition_id,
+                    derived_seed,
+                    counts_meta,
+                    fractions_meta,
+                )
+            )
+
+        outputs = []
+        max_rounds = max((len(item[0]) for item in prepared), default=0)
+        for arrangement_index in range(max_rounds):
+            for arrangements, composition_id, derived_seed, counts_meta, fractions_meta in prepared:
+                if arrangement_index >= len(arrangements):
+                    continue
+                assignments = arrangements[arrangement_index]
                 atoms = structure.copy()
                 if "sublattice" not in atoms.arrays:
                     atoms.new_array("sublattice", np.full(len(atoms), "all", dtype="U8"))
@@ -839,17 +893,6 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
                 atoms.set_chemical_symbols(symbols.tolist())
 
                 arrangement_id = self._arrangement_id(assignments, spaces)
-                counts_meta = {
-                    space.label: {
-                        element: int(count)
-                        for element, count in zip(space.elements, counts_for_space)
-                    }
-                    for space, counts_for_space in zip(spaces, plan)
-                }
-                fractions_meta = {
-                    label: {element: count / len(site_indices[label]) for element, count in counts.items()}
-                    for label, counts in counts_meta.items()
-                }
                 metadata = {
                     "composition_id": composition_id,
                     "arrangement_id": arrangement_id,
@@ -872,6 +915,29 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
                 if len(outputs) >= estimate.max_outputs:
                     return outputs
         return outputs
+
+    @staticmethod
+    def _arrangement_targets(
+        theoretical_arrangements: list[int],
+        requested_per_composition: int,
+        max_outputs: int,
+    ) -> list[int]:
+        """Allocate the output budget by arrangement round across compositions."""
+        targets = [0] * len(theoretical_arrangements)
+        remaining = int(max_outputs)
+        for _ in range(int(requested_per_composition)):
+            progressed = False
+            for index, theoretical in enumerate(theoretical_arrangements):
+                if remaining <= 0:
+                    return targets
+                if targets[index] >= int(theoretical):
+                    continue
+                targets[index] += 1
+                remaining -= 1
+                progressed = True
+            if not progressed:
+                break
+        return targets
 
     @staticmethod
     def _site_indices(structure) -> dict[str, np.ndarray]:
@@ -902,7 +968,13 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
         return [int((start + index * stride) % total) for index in range(n_pick)]
 
     @classmethod
-    def _build_spaces(cls, site_indices: dict[str, np.ndarray], rules_text: str) -> tuple[_CountSpace, ...]:
+    def _build_spaces(
+        cls,
+        site_indices: dict[str, np.ndarray],
+        rules_text: str,
+        *,
+        require_normalized_fixed_fractions: bool = False,
+    ) -> tuple[_CountSpace, ...]:
         try:
             rules = json.loads(str(rules_text or ""))
         except json.JSONDecodeError as exc:
@@ -921,12 +993,24 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
                 details.append(f"unknown site sets {', '.join(extra)}")
             raise ValueError("Finite-Cell Alloy Occupancy: " + "; ".join(details) + ".")
         return tuple(
-            cls._space_from_rule(label, len(site_indices[label]), rules[label])
+            cls._space_from_rule(
+                label,
+                len(site_indices[label]),
+                rules[label],
+                require_normalized_fixed_fractions=require_normalized_fixed_fractions,
+            )
             for label in site_indices
         )
 
     @classmethod
-    def _space_from_rule(cls, label: str, n_sites: int, raw_rule: Any) -> _CountSpace:
+    def _space_from_rule(
+        cls,
+        label: str,
+        n_sites: int,
+        raw_rule: Any,
+        *,
+        require_normalized_fixed_fractions: bool = False,
+    ) -> _CountSpace:
         if not isinstance(raw_rule, dict):
             raise ValueError(f"Finite-Cell Alloy Occupancy: rule for {label!r} must be an object.")
         raw_elements = raw_rule.get("elements", [])
@@ -938,6 +1022,11 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
             raise ValueError(f"Finite-Cell Alloy Occupancy: elements for {label!r} must be a list or string.")
         if not elements:
             raise ValueError(f"Finite-Cell Alloy Occupancy: site set {label!r} has no allowed elements.")
+        if "X" in elements:
+            raise ValueError(
+                f"Finite-Cell Alloy Occupancy: site set {label!r} still contains placeholder element X; "
+                "replace it with real element symbols."
+            )
 
         mode = str(raw_rule.get("mode", "fixed_fraction")).strip().lower()
         if mode == "fixed_fraction":
@@ -945,6 +1034,15 @@ class FiniteCellAlloyOccupancyOperation(StructureOperation):
             values = np.asarray([composition[element] for element in elements], dtype=float)
             if np.any(~np.isfinite(values)) or np.any(values < 0.0) or float(values.sum()) <= 0.0:
                 raise ValueError(f"Finite-Cell Alloy Occupancy: fixed composition for {label!r} is invalid.")
+            if require_normalized_fixed_fractions and not np.isclose(
+                float(values.sum()),
+                1.0,
+                atol=1e-6,
+                rtol=0.0,
+            ):
+                raise ValueError(
+                    f"Finite-Cell Alloy Occupancy: fixed fractions for {label!r} must sum to 1."
+                )
             fractions = values / float(values.sum())
             counts = fractions_to_counts_exact(fractions, n_sites)
             exact = bool(np.allclose(fractions * n_sites, counts, atol=1e-10, rtol=0.0))
@@ -1169,7 +1267,7 @@ class CompositionGradientParams:
     elements: str = "Ni,Co"
     start_composition: str = "Ni:1,Co:0"
     end_composition: str = "Ni:0,Co:1"
-    axis: str = "x"
+    axis: str = "a"
     bins: int = 8
     target_elements: str = ""
     samples: int = 1
@@ -1178,9 +1276,9 @@ class CompositionGradientParams:
 
 
 class CompositionGradientOperation(StructureOperation):
-    """Assign site species from a composition gradient along one Cartesian axis."""
+    """Assign site species from a composition gradient along one lattice coordinate."""
 
-    AXIS_INDEX = {"x": 0, "y": 1, "z": 2}
+    AXIS_INDEX = {"a": 0, "b": 1, "c": 2, "x": 0, "y": 1, "z": 2}
 
     def run_structure(self, structure, params: CompositionGradientParams) -> list:
         elements = parse_element_list(params.elements)
@@ -1196,7 +1294,10 @@ class CompositionGradientOperation(StructureOperation):
             raise ValueError("Composition Gradient found no atoms matching target_elements.")
 
         bins = max(1, int(params.bins))
-        axis_idx = self.AXIS_INDEX.get(str(params.axis).strip().lower(), 0)
+        axis_key = str(params.axis).strip().lower()
+        if axis_key not in self.AXIS_INDEX:
+            raise ValueError("Composition Gradient axis must be one of a, b, or c.")
+        axis_idx = self.AXIS_INDEX[axis_key]
         coord = self._axis_coordinate(structure, axis_idx)
         order = candidate_indices[np.argsort(coord[candidate_indices], kind="mergesort")]
         groups = [group for group in np.array_split(order, bins) if len(group) > 0]
@@ -1250,13 +1351,16 @@ class CompositionGradientOperation(StructureOperation):
 
     @staticmethod
     def _axis_coordinate(structure, axis_idx: int) -> np.ndarray:
-        if bool(np.asarray(structure.pbc, dtype=bool)[axis_idx]) and float(structure.get_volume()) > 0.0:
-            return scaled_positions(structure, wrap=True)[:, axis_idx]
-        return np.asarray(structure.get_positions(), dtype=float)[:, axis_idx]
+        if int(getattr(structure.cell, "rank", 0)) < 3:
+            raise ValueError(
+                "Composition Gradient requires a non-singular 3D cell "
+                "to use lattice directions a, b, or c."
+            )
+        return scaled_positions(structure, wrap=True)[:, axis_idx]
 
     @staticmethod
     def _axis_name(axis_idx: int) -> str:
-        return ("x", "y", "z")[int(axis_idx)]
+        return ("a", "b", "c")[int(axis_idx)]
 
     @staticmethod
     def _exact_layer_assignment(elements: list[str], comp: dict[str, float], n_sites: int, rng: np.random.Generator) -> np.ndarray:
@@ -1521,7 +1625,7 @@ class ConditionalReplaceParams:
 
     target: str = ""
     replacements: str = ""
-    condition: str = ""
+    condition: str = "all"
     seed: int = 0
     mode: int = 0
 

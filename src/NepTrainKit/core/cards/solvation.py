@@ -120,7 +120,7 @@ class LocalSolvationParams:
 
     solvent_xyz: str = DEFAULT_WATER_XYZ
     structures: int = 1
-    solvent_count: int = 30
+    solvent_count: int = 6
     sampling_mode: str = "auto"
     center_mode: str = "all"
     center_elements: str = ""
@@ -184,53 +184,280 @@ class SolventConformer:
 class LocalSolvationOperation(StructureOperation):
     """Insert solvent molecules around selected atoms."""
 
-    def run_structure(self, structure, params: LocalSolvationParams) -> list[Atoms]:
-        self._validate_common(params.solvent_xyz, params.structures, params.solvent_count)
-        if int(params.max_attempts) <= 0:
-            raise ValueError("Local Solvation: max_attempts must be >= 1.")
+    @staticmethod
+    def _integer(
+        value,
+        label: str,
+        *,
+        minimum: int,
+        prefix: str = "Local Solvation",
+    ) -> int:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"{prefix}: {label} must be an integer.") from exc
+        if not np.isfinite(numeric) or not numeric.is_integer():
+            raise ValueError(f"{prefix}: {label} must be an integer.")
+        integer = int(numeric)
+        if integer < minimum:
+            raise ValueError(
+                f"{prefix}: {label} must be >= {minimum}."
+            )
+        return integer
 
+    @staticmethod
+    def _finite(
+        value,
+        label: str,
+        *,
+        minimum: float | None = None,
+        prefix: str = "Local Solvation",
+    ) -> float:
+        try:
+            numeric = float(value)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f"{prefix}: {label} must be a finite number."
+            ) from exc
+        if not np.isfinite(numeric):
+            raise ValueError(
+                f"{prefix}: {label} must be a finite number."
+            )
+        if minimum is not None and numeric < minimum:
+            raise ValueError(
+                f"{prefix}: {label} must be >= {minimum:g}."
+            )
+        return numeric
+
+    @classmethod
+    def _validated_settings(
+        cls,
+        structure: Atoms,
+        params: LocalSolvationParams,
+    ) -> dict:
+        if len(structure) == 0:
+            raise ValueError("Local Solvation requires at least one host atom.")
+        positions = np.asarray(structure.get_positions(), dtype=float)
+        if positions.shape != (len(structure), 3) or not np.all(np.isfinite(positions)):
+            raise ValueError("Local Solvation requires finite Cartesian atom positions.")
+        pbc = np.asarray(structure.pbc, dtype=bool)
+        if np.any(pbc) and not has_valid_cell(structure):
+            raise ValueError(
+                "Local Solvation: periodic input requires a finite, nonsingular 3x3 cell."
+            )
+
+        structures = cls._integer(params.structures, "structures", minimum=1)
+        solvent_count = cls._integer(
+            params.solvent_count,
+            "solvent_count",
+            minimum=1,
+        )
+        max_attempts = cls._integer(
+            params.max_attempts,
+            "max_attempts",
+            minimum=1,
+        )
         solvent = parse_solvent_xyz(params.solvent_xyz)
-        centers = select_center_indices(structure, params.center_mode, params.center_elements, params.center_indices, params.z_range)
+        z_range = tuple(
+            cls._finite(value, "z_range")
+            for value in params.z_range
+        )
+        if len(z_range) != 2:
+            raise ValueError("Local Solvation: z_range must contain two values.")
+        centers = select_center_indices(
+            structure,
+            params.center_mode,
+            params.center_elements,
+            params.center_indices,
+            z_range,
+        )
         if not centers:
             raise ValueError("Local Solvation: no center atoms selected.")
 
         selected_elements = {structure.get_chemical_symbols()[idx] for idx in centers}
-        mode = resolve_mode(params.sampling_mode, solvent, selected_elements)
+        mode = resolve_mode(
+            str(params.sampling_mode).strip().lower(),
+            solvent,
+            selected_elements,
+        )
         profile = MODE_PROFILES[mode]
-        shell = tuple(float(v) for v in params.shell)
-        if mode == "auto":
-            raise AssertionError("mode should have been resolved")
+        if len(params.shell) != 2:
+            raise ValueError("Local Solvation: shell must contain two values.")
+        shell = tuple(cls._finite(value, "shell", minimum=0.0) for value in params.shell)
         if shell[1] <= shell[0]:
             raise ValueError("Local Solvation: shell outer radius must be larger than inner radius.")
 
-        collision_scale = float(params.collision_scale) if float(params.collision_scale) > 0 else float(profile["collision_scale"])
+        min_distance = cls._finite(
+            params.min_distance,
+            "min_distance",
+            minimum=0.0,
+        )
+        collision_override = cls._finite(
+            params.collision_scale,
+            "collision_scale",
+            minimum=0.0,
+        )
+        collision_scale = (
+            collision_override
+            if collision_override > 0.0
+            else float(profile["collision_scale"])
+        )
+        box_size = cls._finite(params.box_size, "box_size", minimum=0.0)
+        if box_size <= 0.0:
+            raise ValueError("Local Solvation: box_size must be positive.")
+        box_padding = cls._finite(
+            params.box_padding,
+            "box_padding",
+            minimum=0.0,
+        )
+        min_box = cls._finite(params.min_box, "min_box", minimum=0.0)
+        seed = cls._integer(params.seed, "seed", minimum=0)
+
+        flex_pool = cls._integer(params.flex_pool, "flex_pool", minimum=1)
+        flex_max_torsions = cls._integer(
+            params.flex_max_torsions,
+            "flex_max_torsions",
+            minimum=0,
+        )
+        flex_sigma = cls._finite(
+            params.flex_gaussian_sigma,
+            "flex_gaussian_sigma",
+            minimum=0.0,
+        )
+        if len(params.flex_torsion_range) != 2:
+            raise ValueError(
+                "Local Solvation: flex_torsion_range must contain two values."
+            )
+        flex_torsion_range = tuple(
+            cls._finite(value, "flex_torsion_range")
+            for value in params.flex_torsion_range
+        )
+        if flex_torsion_range[0] > flex_torsion_range[1]:
+            raise ValueError(
+                "Local Solvation: flex_torsion_range minimum must not exceed maximum."
+            )
+
+        return {
+            "structures": structures,
+            "solvent_count": solvent_count,
+            "max_attempts": max_attempts,
+            "solvent": solvent,
+            "centers": centers,
+            "selected_elements": selected_elements,
+            "mode": mode,
+            "profile": profile,
+            "shell": shell,
+            "min_distance": min_distance,
+            "collision_scale": collision_scale,
+            "collision_override": collision_override,
+            "box_size": box_size,
+            "box_padding": box_padding,
+            "min_box": min_box,
+            "seed": seed,
+            "flex_pool": flex_pool,
+            "flex_max_torsions": flex_max_torsions,
+            "flex_sigma": flex_sigma,
+            "flex_torsion_range": flex_torsion_range,
+        }
+
+    @classmethod
+    def placement_summary(
+        cls,
+        structure: Atoms,
+        params: LocalSolvationParams,
+    ) -> dict:
+        """Return resolved center, solvent, mode, and collision information."""
+        settings = cls._validated_settings(structure, params)
+        formula = settings["solvent"].get_chemical_formula()
+        ion_ranges = {
+            symbol: ION_WATER_PROFILES.get(
+                symbol,
+                DEFAULT_ION_WATER_PROFILE,
+            )["ion_o"]
+            for symbol in settings["selected_elements"]
+            if symbol in ION_ELEMENTS
+        }
+        return {
+            "host_atoms": len(structure),
+            "solvent_atoms": len(settings["solvent"]),
+            "solvent_formula": formula,
+            "center_count": len(settings["centers"]),
+            "selected_elements": tuple(sorted(settings["selected_elements"])),
+            "mode": settings["mode"],
+            "shell": settings["shell"],
+            "collision_scale": settings["collision_scale"],
+            "uniform_min_distance": settings["min_distance"],
+            "structures": settings["structures"],
+            "solvent_count": settings["solvent_count"],
+            "ion_oxygen_ranges": ion_ranges,
+            "periodic": bool(np.any(np.asarray(structure.pbc, dtype=bool))),
+        }
+
+    def run_structure(self, structure, params: LocalSolvationParams) -> list[Atoms]:
+        settings = self._validated_settings(structure, params)
         outputs = []
-        for sample_idx in range(int(params.structures)):
-            rng = make_rng(structure, bool(params.use_seed), int(params.seed), sample_idx)
-            conformers = solvent_conformer_pool(solvent, params, rng_seed=None if not params.use_seed else int(params.seed) + sample_idx)
-            target_count = int(params.solvent_count)
+        for sample_idx in range(settings["structures"]):
+            rng = make_rng(
+                structure,
+                bool(params.use_seed),
+                settings["seed"],
+                sample_idx,
+            )
+            conformers = solvent_conformer_pool(
+                settings["solvent"],
+                params,
+                rng_seed=(
+                    None
+                    if not params.use_seed
+                    else settings["seed"] + sample_idx
+                ),
+            )
+            target_count = settings["solvent_count"]
             atoms, placed = self._solvate_one(
                 structure,
-                centers=centers,
+                centers=settings["centers"],
                 solvent_pool=conformers,
                 target_count=target_count,
-                mode=mode,
-                shell=shell,
-                collision_scale=collision_scale,
-                min_distance=float(params.min_distance),
-                max_attempts=int(params.max_attempts),
+                mode=settings["mode"],
+                shell=settings["shell"],
+                collision_scale=settings["collision_scale"],
+                min_distance=settings["min_distance"],
+                max_attempts=settings["max_attempts"],
                 rng=rng,
             )
-            if params.strict_count and placed != target_count:
+            if placed == 0:
                 hint = ""
-                if placed == 0 and has_valid_cell(structure) and np.any(np.asarray(structure.pbc, dtype=bool)):
-                    hint = " Input appears to be a periodic dense structure with no solvent-accessible void; use a slab/box with free volume, lower solvent_count, or use Solvent Box Fill on a larger cell."
-                raise ValueError(f"Local Solvation: placed {placed}/{target_count} solvent molecules.{hint}")
-            if params.auto_box:
-                apply_auto_box(atoms, float(params.box_padding), float(params.min_box))
-            elif not has_valid_cell(structure):
-                center_in_fixed_box(atoms, float(params.box_size))
-            append_config_tag(atoms, f"SolvLocal(mode={mode},n={placed},sel={len(centers)})")
+                if has_valid_cell(structure) and np.any(
+                    np.asarray(structure.pbc, dtype=bool)
+                ):
+                    hint = (
+                        " Input appears to be a periodic dense structure with no "
+                        "solvent-accessible void; use a slab/box with free volume, "
+                        "lower solvent_count, or use Solvent Box Fill on a larger cell."
+                    )
+                raise ValueError(
+                    "Local Solvation: no solvent molecule could be placed; "
+                    "adjust the centers, shell, collision rule, or free volume."
+                    + hint
+                )
+            if params.strict_count and placed != target_count:
+                raise ValueError(
+                    f"Local Solvation: placed {placed}/{target_count} solvent molecules."
+                )
+            if not has_valid_cell(structure):
+                if params.auto_box:
+                    apply_auto_box(
+                        atoms,
+                        settings["box_padding"],
+                        settings["min_box"],
+                    )
+                else:
+                    center_in_fixed_box(atoms, settings["box_size"])
+            append_config_tag(
+                atoms,
+                f"SolvLocal(mode={settings['mode']},n={placed},"
+                f"sel={len(settings['centers'])})",
+            )
             outputs.append(atoms)
         return outputs
 
@@ -360,59 +587,257 @@ class LocalSolvationOperation(StructureOperation):
             inner, outer = shell
 
         target = center + random_unit_vector(rng) * random_radius(inner, outer, rng)
-        oriented = orient_centered_by_center(solvent.centered_positions, target, dipolar=MODE_PROFILES[mode]["dipolar"], center=center, rng=rng)
+        if solvent.water_like and MODE_PROFILES[mode]["dipolar"]:
+            oriented = orient_water_dipole_conformer(
+                solvent,
+                target,
+                center,
+                rng,
+            )
+        else:
+            oriented = orient_centered_by_center(
+                solvent.centered_positions,
+                target,
+                dipolar=False,
+                center=center,
+                rng=rng,
+            )
         return solvent.symbols, oriented, center_index
 
 
 class SolventBoxFillOperation(StructureOperation):
     """Fill a periodic cell with solvent molecules."""
 
-    def run_structure(self, structure, params: SolventBoxFillParams) -> list[Atoms]:
-        LocalSolvationOperation._validate_common(params.solvent_xyz, params.structures, params.solvent_count)
-        if params.count_mode not in {"fixed", "density"}:
+    @classmethod
+    def _validated_settings(
+        cls,
+        structure: Atoms,
+        params: SolventBoxFillParams,
+    ) -> dict:
+        positions = np.asarray(structure.get_positions(), dtype=float)
+        if positions.shape != (len(structure), 3) or not np.all(np.isfinite(positions)):
+            raise ValueError("Solvent Box Fill requires finite Cartesian atom positions.")
+        structures = LocalSolvationOperation._integer(
+            params.structures,
+            "structures",
+            minimum=1,
+            prefix="Solvent Box Fill",
+        )
+        solvent_count = LocalSolvationOperation._integer(
+            params.solvent_count,
+            "solvent_count",
+            minimum=1,
+            prefix="Solvent Box Fill",
+        )
+        count_mode = str(params.count_mode).strip().lower()
+        if count_mode not in {"fixed", "density"}:
             raise ValueError("Solvent Box Fill: count_mode must be 'fixed' or 'density'.")
-        if float(params.fill_packing) <= 0:
-            raise ValueError("Solvent Box Fill: fill_packing must be positive.")
-        if int(params.max_attempts_per_solvent) <= 0:
-            raise ValueError("Solvent Box Fill: max_attempts_per_solvent must be >= 1.")
-        if params.sampling_mode not in {"auto", "general", "water", "loose", "dense"}:
+        density = LocalSolvationOperation._finite(
+            params.density,
+            "density",
+            minimum=0.0,
+            prefix="Solvent Box Fill",
+        )
+        if density <= 0.0:
+            raise ValueError("Solvent Box Fill: density must be positive.")
+        fill_packing = LocalSolvationOperation._finite(
+            params.fill_packing,
+            "fill_packing",
+            minimum=0.0,
+            prefix="Solvent Box Fill",
+        )
+        if not 0.0 < fill_packing <= 1.0:
+            raise ValueError(
+                "Solvent Box Fill: fill_packing must be greater than 0 and at most 1."
+            )
+        max_attempts = LocalSolvationOperation._integer(
+            params.max_attempts_per_solvent,
+            "max_attempts_per_solvent",
+            minimum=1,
+            prefix="Solvent Box Fill",
+        )
+        sampling_mode = str(params.sampling_mode).strip().lower()
+        if sampling_mode not in {"auto", "general", "water", "loose", "dense"}:
             raise ValueError("Solvent Box Fill: sampling_mode must be one of auto, general, water, loose, dense.")
 
         cell = np.asarray(structure.cell.array, dtype=float)
-        if cell.shape != (3, 3) or abs(float(np.linalg.det(cell))) <= 1e-12:
-            raise ValueError("Solvent Box Fill requires a non-singular input cell.")
-        if not np.any(np.asarray(structure.pbc, dtype=bool)):
+        if (
+            cell.shape != (3, 3)
+            or not np.all(np.isfinite(cell))
+            or abs(float(np.linalg.det(cell))) <= 1e-12
+        ):
+            raise ValueError("Solvent Box Fill requires a finite, nonsingular input cell.")
+        pbc = np.asarray(structure.pbc, dtype=bool)
+        if not np.any(pbc):
             raise ValueError("Solvent Box Fill requires periodic boundary conditions.")
 
         solvent = parse_solvent_xyz(params.solvent_xyz)
-        mode = resolve_mode(params.sampling_mode, solvent, set())
+        mode = resolve_mode(sampling_mode, solvent, set())
         profile = MODE_PROFILES[mode]
-        collision_scale = float(params.collision_scale) if float(params.collision_scale) > 0 else float(profile["collision_scale"])
-        target_count = int(params.solvent_count)
-        if params.count_mode == "density":
-            target_count = estimate_solvent_count_from_density(solvent, float(params.density), cell, float(params.fill_packing))
+        min_distance = LocalSolvationOperation._finite(
+            params.min_distance,
+            "min_distance",
+            minimum=0.0,
+            prefix="Solvent Box Fill",
+        )
+        collision_override = LocalSolvationOperation._finite(
+            params.collision_scale,
+            "collision_scale",
+            minimum=0.0,
+            prefix="Solvent Box Fill",
+        )
+        collision_scale = (
+            collision_override
+            if collision_override > 0.0
+            else float(profile["collision_scale"])
+        )
+        target_count = solvent_count
+        if count_mode == "density":
+            target_count = estimate_solvent_count_from_density(
+                solvent,
+                density,
+                cell,
+                fill_packing,
+            )
+        seed = LocalSolvationOperation._integer(
+            params.seed,
+            "seed",
+            minimum=0,
+            prefix="Solvent Box Fill",
+        )
+        flex_pool = LocalSolvationOperation._integer(
+            params.flex_pool,
+            "flex_pool",
+            minimum=1,
+            prefix="Solvent Box Fill",
+        )
+        flex_max_torsions = LocalSolvationOperation._integer(
+            params.flex_max_torsions,
+            "flex_max_torsions",
+            minimum=0,
+            prefix="Solvent Box Fill",
+        )
+        flex_sigma = LocalSolvationOperation._finite(
+            params.flex_gaussian_sigma,
+            "flex_gaussian_sigma",
+            minimum=0.0,
+            prefix="Solvent Box Fill",
+        )
+        if len(params.flex_torsion_range) != 2:
+            raise ValueError(
+                "Solvent Box Fill: flex_torsion_range must contain two values."
+            )
+        flex_torsion_range = tuple(
+            LocalSolvationOperation._finite(
+                value,
+                "flex_torsion_range",
+                prefix="Solvent Box Fill",
+            )
+            for value in params.flex_torsion_range
+        )
+        if flex_torsion_range[0] > flex_torsion_range[1]:
+            raise ValueError(
+                "Solvent Box Fill: flex_torsion_range minimum must not exceed maximum."
+            )
+
+        return {
+            "structures": structures,
+            "solvent_count": solvent_count,
+            "count_mode": count_mode,
+            "density": density,
+            "fill_packing": fill_packing,
+            "max_attempts": max_attempts,
+            "cell": cell,
+            "pbc": pbc,
+            "solvent": solvent,
+            "mode": mode,
+            "min_distance": min_distance,
+            "collision_scale": collision_scale,
+            "collision_override": collision_override,
+            "target_count": target_count,
+            "seed": seed,
+            "flex_pool": flex_pool,
+            "flex_max_torsions": flex_max_torsions,
+            "flex_sigma": flex_sigma,
+            "flex_torsion_range": flex_torsion_range,
+        }
+
+    @classmethod
+    def capacity_summary(
+        cls,
+        structure: Atoms,
+        params: SolventBoxFillParams,
+    ) -> dict:
+        """Return resolved count, volume, solvent, and collision information."""
+        settings = cls._validated_settings(structure, params)
+        return {
+            "host_atoms": len(structure),
+            "volume": abs(float(np.linalg.det(settings["cell"]))),
+            "pbc_axes": tuple(
+                axis
+                for axis, enabled in zip(("a", "b", "c"), settings["pbc"])
+                if enabled
+            ),
+            "solvent_formula": settings["solvent"].get_chemical_formula(),
+            "solvent_atoms": len(settings["solvent"]),
+            "mode": settings["mode"],
+            "count_mode": settings["count_mode"],
+            "target_count": settings["target_count"],
+            "added_atoms": settings["target_count"] * len(settings["solvent"]),
+            "structures": settings["structures"],
+            "min_distance": settings["min_distance"],
+            "collision_scale": settings["collision_scale"],
+            "density": settings["density"],
+            "fill_packing": settings["fill_packing"],
+        }
+
+    def run_structure(self, structure, params: SolventBoxFillParams) -> list[Atoms]:
+        settings = self._validated_settings(structure, params)
 
         outputs = []
-        for sample_idx in range(int(params.structures)):
-            rng = make_rng(structure, bool(params.use_seed), int(params.seed), sample_idx)
-            conformers = solvent_conformer_pool(solvent, params, rng_seed=None if not params.use_seed else int(params.seed) + sample_idx)
+        for sample_idx in range(settings["structures"]):
+            rng = make_rng(
+                structure,
+                bool(params.use_seed),
+                settings["seed"],
+                sample_idx,
+            )
+            conformers = solvent_conformer_pool(
+                settings["solvent"],
+                params,
+                rng_seed=(
+                    None
+                    if not params.use_seed
+                    else settings["seed"] + sample_idx
+                ),
+            )
             atoms, placed, attempts, consecutive_failures = self._fill_one(
                 structure,
                 solvent_pool=conformers,
-                target_count=target_count,
-                collision_scale=collision_scale,
-                min_distance=float(params.min_distance),
-                max_attempts_per_solvent=int(params.max_attempts_per_solvent),
+                target_count=settings["target_count"],
+                collision_scale=settings["collision_scale"],
+                min_distance=settings["min_distance"],
+                max_attempts_per_solvent=settings["max_attempts"],
                 rng=rng,
             )
-            if params.strict_count and placed != target_count:
+            if placed == 0:
                 raise ValueError(
-                    f"Solvent Box Fill: placed {placed}/{target_count} solvent molecules. "
+                    "Solvent Box Fill: no solvent molecule could be placed; "
+                    "the cell may be too small/dense for the requested "
+                    "count and collision rule."
+                )
+            if params.strict_count and placed != settings["target_count"]:
+                raise ValueError(
+                    f"Solvent Box Fill: placed {placed}/{settings['target_count']} solvent molecules. "
                     f"Stopped after {attempts} attempts"
                     + (f" and {consecutive_failures} consecutive rejected placements." if consecutive_failures else ".")
                     + " The cell may be too small/dense for the requested solvent_count, min_distance, or density."
                 )
-            append_config_tag(atoms, f"SolvBox(mode={mode},n={placed})")
+            append_config_tag(
+                atoms,
+                f"SolvBox(mode={settings['mode']},"
+                f"req={settings['target_count']},ok={placed})",
+            )
             outputs.append(atoms)
         return outputs
 
@@ -701,6 +1126,27 @@ def orient_water_oxygen_conformer(solvent: SolventConformer, target_oxygen: np.n
     return rotated + target_oxygen
 
 
+def orient_water_dipole_conformer(
+    solvent: SolventConformer,
+    target_center: np.ndarray,
+    local_center: np.ndarray,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    """Place a water COM and point its O-to-H bisector away from the center."""
+    rotated = solvent.centered_positions @ rotation_matrix(rng).T
+    if solvent.oxygen_index is not None and solvent.hydrogen_indices:
+        oxygen = rotated[solvent.oxygen_index]
+        hydrogen_mean = rotated[list(solvent.hydrogen_indices)].mean(axis=0)
+        dipole_proxy = hydrogen_mean - oxygen
+        desired = np.asarray(target_center, dtype=float) - np.asarray(
+            local_center,
+            dtype=float,
+        )
+        if np.linalg.norm(dipole_proxy) > 1e-12 and np.linalg.norm(desired) > 1e-12:
+            rotated = rotated @ rotation_between(dipole_proxy, desired).T
+    return rotated + target_center
+
+
 def rotation_between(source: np.ndarray, target: np.ndarray) -> np.ndarray:
     a = source / np.linalg.norm(source)
     b = target / np.linalg.norm(target)
@@ -913,7 +1359,10 @@ def max_collision_cutoff(solvent_pool: list[Atoms], existing_symbols: list[str],
         return float(min_distance)
     solvent_symbols = [symbol for atoms in solvent_pool for symbol in atoms.get_chemical_symbols()]
     max_solvent = max(collision_radius(symbol) for symbol in solvent_symbols)
-    max_existing = max(collision_radius(symbol) for symbol in existing_symbols)
+    max_existing = max(
+        (collision_radius(symbol) for symbol in existing_symbols),
+        default=max_solvent,
+    )
     return float(collision_scale) * (max_solvent + max_existing)
 
 
@@ -1021,4 +1470,8 @@ def center_in_fixed_box(atoms: Atoms, box_size: float) -> None:
 
 def has_valid_cell(atoms: Atoms) -> bool:
     cell = np.asarray(atoms.cell.array, dtype=float)
-    return cell.shape == (3, 3) and abs(float(np.linalg.det(cell))) > 1e-12
+    return (
+        cell.shape == (3, 3)
+        and np.all(np.isfinite(cell))
+        and abs(float(np.linalg.det(cell))) > 1e-12
+    )

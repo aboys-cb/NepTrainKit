@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from qfluentwidgets import BodyLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
+from PySide6.QtCore import Qt
+from qfluentwidgets import BodyLabel, CaptionLabel, CheckBox, ComboBox, LineEdit, ToolTipFilter, ToolTipPosition
 
 from NepTrainKit.core import CardManager
 from NepTrainKit.core.cards.alloy import CompositionGradientOperation, CompositionGradientParams
@@ -17,6 +18,7 @@ class CompositionGradientCard(MakeDataCard):
 
     group = "Alloy"
     card_name = "Composition Gradient"
+    description = "Build a one-dimensional composition transition along lattice a, b, or c without moving atoms."
     menu_icon = r":/images/src/images/defect.svg"
     contributors = [
         {"name": "NepTrainKit", "role": "author"},
@@ -48,32 +50,50 @@ class CompositionGradientCard(MakeDataCard):
         self.end_edit = LineEdit(self.setting_widget)
         self.end_edit.setText("Ni:0,Co:1")
 
-        self.axis_label = BodyLabel(self.tr("Axis"), self.setting_widget)
-        self.axis_label.setToolTip(self.tr("Gradient direction"))
+        self.axis_label = BodyLabel(self.tr("Gradient direction"), self.setting_widget)
+        self.axis_label.setToolTip(self.tr("Lattice-coordinate direction used to order and layer atoms"))
         self.axis_label.installEventFilter(ToolTipFilter(self.axis_label, 300, ToolTipPosition.TOP))
         self.axis_combo = ComboBox(self.setting_widget)
-        add_translated_items(self, self.axis_combo, ["x", "y", "z"])
-        set_combo_value(self.axis_combo, "x")
+        add_translated_items(
+            self,
+            self.axis_combo,
+            [("a", "Lattice a"), ("b", "Lattice b"), ("c", "Lattice c")],
+        )
+        set_combo_value(self.axis_combo, "a")
+        self.direction_hint_label = CaptionLabel("", self.setting_widget)
+        self.direction_hint_label.setWordWrap(True)
+        self.direction_hint_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
-        self.bins_label = BodyLabel(self.tr("Bins"), self.setting_widget)
-        self.bins_label.setToolTip(self.tr("Number of coordinate layers used to approximate the gradient"))
+        self.bins_label = BodyLabel(self.tr("Composition layers"), self.setting_widget)
+        self.bins_label.setToolTip(
+            self.tr("Number of equal-atom groups used to approximate the gradient")
+        )
         self.bins_label.installEventFilter(ToolTipFilter(self.bins_label, 300, ToolTipPosition.TOP))
         self.bins_frame = SpinBoxUnitInputFrame(self)
-        self.bins_frame.set_input("unit", 1, "int")
+        self.bins_frame.set_input("", 1, "int")
         self.bins_frame.setRange(1, 10000)
         self.bins_frame.set_input_value([8])
 
-        self.target_label = BodyLabel(self.tr("Target elements"), self.setting_widget)
+        self.target_label = BodyLabel(self.tr("Replace existing elements"), self.setting_widget)
         self.target_label.setToolTip(self.tr("Optional existing elements eligible for replacement; empty means all atoms"))
         self.target_label.installEventFilter(ToolTipFilter(self.target_label, 300, ToolTipPosition.TOP))
         self.target_edit = LineEdit(self.setting_widget)
         self.target_edit.setPlaceholderText(self.tr("Ni,Co"))
+        self.target_hint_label = CaptionLabel(
+            self.tr(
+                "Leave empty to replace every atom. List existing elements such as Ni,Co "
+                "to preserve all other sublattices."
+            ),
+            self.setting_widget,
+        )
+        self.target_hint_label.setWordWrap(True)
+        self.target_hint_label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
-        self.samples_label = BodyLabel(self.tr("Samples"), self.setting_widget)
+        self.samples_label = BodyLabel(self.tr("Random arrangements"), self.setting_widget)
         self.samples_label.setToolTip(self.tr("Number of random assignments emitted for the same layer compositions"))
         self.samples_label.installEventFilter(ToolTipFilter(self.samples_label, 300, ToolTipPosition.TOP))
         self.samples_frame = SpinBoxUnitInputFrame(self)
-        self.samples_frame.set_input("unit", 1, "int")
+        self.samples_frame.set_input("", 1, "int")
         self.samples_frame.setRange(1, 10000)
         self.samples_frame.set_input_value([1])
 
@@ -94,14 +114,28 @@ class CompositionGradientCard(MakeDataCard):
         self.settingLayout.addWidget(self.end_edit, 2, 1, 1, 2)
         self.settingLayout.addWidget(self.axis_label, 3, 0, 1, 1)
         self.settingLayout.addWidget(self.axis_combo, 3, 1, 1, 2)
-        self.settingLayout.addWidget(self.bins_label, 4, 0, 1, 1)
-        self.settingLayout.addWidget(self.bins_frame, 4, 1, 1, 2)
-        self.settingLayout.addWidget(self.target_label, 5, 0, 1, 1)
-        self.settingLayout.addWidget(self.target_edit, 5, 1, 1, 2)
-        self.settingLayout.addWidget(self.samples_label, 6, 0, 1, 1)
-        self.settingLayout.addWidget(self.samples_frame, 6, 1, 1, 2)
-        self.settingLayout.addWidget(self.seed_checkbox, 7, 0, 1, 1)
-        self.settingLayout.addWidget(self.seed_frame, 7, 1, 1, 2)
+        self.settingLayout.addWidget(self.direction_hint_label, 4, 0, 1, 3)
+        self.settingLayout.addWidget(self.bins_label, 5, 0, 1, 1)
+        self.settingLayout.addWidget(self.bins_frame, 5, 1, 1, 2)
+        self.settingLayout.addWidget(self.target_label, 6, 0, 1, 1)
+        self.settingLayout.addWidget(self.target_edit, 6, 1, 1, 2)
+        self.settingLayout.addWidget(self.target_hint_label, 7, 0, 1, 3)
+        self.settingLayout.addWidget(self.samples_label, 8, 0, 1, 1)
+        self.settingLayout.addWidget(self.samples_frame, 8, 1, 1, 2)
+        self.settingLayout.addWidget(self.seed_checkbox, 9, 0, 1, 1)
+        self.settingLayout.addWidget(self.seed_frame, 9, 1, 1, 2)
+
+        self.axis_combo.currentIndexChanged.connect(self._update_direction_hint)
+        self._update_direction_hint()
+
+    def _update_direction_hint(self) -> None:
+        direction = combo_value(self.axis_combo, "a")
+        self.direction_hint_label.setText(
+            self.tr(
+                "Start applies to the low fractional coordinate along lattice {direction}; "
+                "end applies to the high side. Periodic boundaries join the two ends."
+            ).format(direction=direction)
+        )
 
     def create_operation(self):
         return CompositionGradientOperation()
@@ -123,7 +157,11 @@ class CompositionGradientCard(MakeDataCard):
         self.elements_edit.setText(params.elements)
         self.start_edit.setText(params.start_composition)
         self.end_edit.setText(params.end_composition)
-        set_combo_value(self.axis_combo, params.axis)
+        legacy_axis = {"x": "a", "y": "b", "z": "c"}.get(
+            str(params.axis).strip().lower(),
+            str(params.axis).strip().lower(),
+        )
+        set_combo_value(self.axis_combo, legacy_axis)
         self.bins_frame.set_input_value([int(params.bins)])
         self.target_edit.setText(params.target_elements)
         self.samples_frame.set_input_value([int(params.samples)])

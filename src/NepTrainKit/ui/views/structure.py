@@ -17,7 +17,10 @@ from qfluentwidgets import (
 )
 from qfluentwidgets.components.widgets.card_widget import CardSeparator
 
-from NepTrainKit.core.audit import StructurePhaseEvidence
+from NepTrainKit.core.audit import (
+    StructurePhaseEvidence,
+    reference_crystallography,
+)
 from NepTrainKit.core.structure_inspection import StructureInspection
 
 
@@ -25,6 +28,23 @@ class StructureInfoWidget(QWidget):
     """Compact card that prioritizes one frame's phase and quality signals."""
 
     _ORDERED_LOCAL_PHASES = ("fcc", "hcp", "bcc", "unresolved")
+    _CONFIRMED_PROTOTYPES = {
+        "diamond",
+        "l10",
+        "l12",
+        "b1",
+        "b2",
+        "b3",
+        "b4",
+        "fluorite",
+        "nias",
+        "d03",
+        "l21",
+        "c1b",
+        "d019",
+        "c14",
+        "c15",
+    }
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -60,12 +80,23 @@ class StructureInfoWidget(QWidget):
         header_layout.addWidget(self.phase_badge)
         card_layout.addLayout(header_layout)
 
+        self.crystallography_label = CaptionLabel(self.card)
+        self.crystallography_label.setWordWrap(True)
+        self.crystallography_label.setToolTip(
+            self.tr(
+                "Reference values describe the matched ideal prototype; "
+                "the distorted snapshot may have lower instantaneous symmetry."
+            )
+        )
+        self.crystallography_label.hide()
+        card_layout.addWidget(self.crystallography_label)
+
         self.phase_summary_label = CaptionLabel(self.card)
         self.phase_summary_label.setWordWrap(True)
         self.phase_summary_label.setText(self.tr("Local topology evidence has not been analyzed."))
         self.phase_summary_label.setToolTip(
             self.tr(
-                "L1₂ and Laves phases use separate geometry and chemical-ordering checks; "
+                "Specific prototypes use separate geometry and species-ordering checks; "
                 "a-CNA only reports FCC, HCP, and BCC local environments. "
                 "A face-centered cubic Bravais lattice does not by itself make every site "
                 "an FCC a-CNA environment."
@@ -199,6 +230,7 @@ class StructureInfoWidget(QWidget):
         self.phase_badge.setLevel(InfoLevel.INFOAMTION)
         self.phase_badge.setText(self.tr("Analyzing…"))
         self.phase_summary_label.setText(self.tr("Classifying local topology for this frame…"))
+        self.crystallography_label.hide()
         self.contact_badge.setLevel(InfoLevel.INFOAMTION)
         self.contact_badge.setText(self.tr("Analyzing…"))
         for key in (
@@ -264,6 +296,7 @@ class StructureInfoWidget(QWidget):
         self.phase_summary_label.setText(
             self.tr("Local topology evidence is unavailable for this frame.")
         )
+        self.crystallography_label.hide()
         self.contact_badge.setLevel(InfoLevel.ATTENTION)
         self.contact_badge.setText(self.tr("Unavailable"))
 
@@ -274,14 +307,15 @@ class StructureInfoWidget(QWidget):
             self.phase_summary_label.setText(
                 self.tr("Local topology evidence is unavailable for this frame.")
             )
+            self.crystallography_label.hide()
             return
 
         label = self._phase_display_name(phase.phase_label)
         if phase.confidence_state == "strong":
             self.phase_badge.setLevel(InfoLevel.SUCCESS)
             suffix = (
-                self.tr("Confirmed ordering")
-                if phase.phase_label in {"l12", "c14", "c15"}
+                self.tr("Confirmed prototype")
+                if phase.phase_label in self._CONFIRMED_PROTOTYPES
                 else self.tr("Strong evidence")
             )
             self.phase_badge.setText(f"{label} · {suffix}")
@@ -291,6 +325,8 @@ class StructureInfoWidget(QWidget):
         else:
             self.phase_badge.setLevel(InfoLevel.ATTENTION)
             self.phase_badge.setText(self.tr("Unresolved"))
+
+        self._show_reference_crystallography(phase)
 
         fractions = dict(phase.local_phase_fractions)
         visible = [
@@ -303,6 +339,56 @@ class StructureInfoWidget(QWidget):
             f"{prefix}: {' · '.join(visible)}" if visible else f"{prefix}: —"
         )
 
+    def _show_reference_crystallography(
+        self,
+        phase: StructurePhaseEvidence,
+    ) -> None:
+        reference = (
+            reference_crystallography(phase.phase_label)
+            if phase.confidence_state == "strong"
+            else None
+        )
+        if reference is None:
+            self.crystallography_label.hide()
+            return
+        self.crystallography_label.setText(
+            self.tr(
+                "Reference crystallography (ideal prototype): "
+                "{pearson} · {space_group} (No. {number}) · {bravais}"
+            ).format(
+                pearson=reference.pearson,
+                space_group=reference.space_group,
+                number=reference.space_group_number,
+                bravais=self._bravais_display_name(reference.bravais),
+            )
+        )
+        self.crystallography_label.show()
+
+    def _bravais_display_name(self, bravais: str) -> str:
+        return {
+            "Face-centered cubic Bravais lattice": self.tr(
+                "Face-centered cubic Bravais lattice"
+            ),
+            "Body-centered cubic Bravais lattice": self.tr(
+                "Body-centered cubic Bravais lattice"
+            ),
+            "Primitive hexagonal Bravais lattice": self.tr(
+                "Primitive hexagonal Bravais lattice"
+            ),
+            "Primitive cubic Bravais lattice; FCC-derived ordering": self.tr(
+                "Primitive cubic Bravais lattice; FCC-derived ordering"
+            ),
+            "Primitive tetragonal Bravais lattice; FCC-derived ordering": self.tr(
+                "Primitive tetragonal Bravais lattice; FCC-derived ordering"
+            ),
+            "Primitive cubic Bravais lattice; BCC-derived ordering": self.tr(
+                "Primitive cubic Bravais lattice; BCC-derived ordering"
+            ),
+            "Face-centered cubic Bravais lattice; BCC-derived ordering": self.tr(
+                "Face-centered cubic Bravais lattice; BCC-derived ordering"
+            ),
+        }[bravais]
+
     def _local_phase_display_name(self, label: str) -> str:
         if label == "unresolved":
             return self.tr("Other / unresolved")
@@ -313,7 +399,19 @@ class StructureInfoWidget(QWidget):
             "fcc": "FCC",
             "hcp": "HCP",
             "bcc": "BCC",
+            "diamond": self.tr("Diamond (A4)"),
+            "l10": "L1₀",
             "l12": "L1₂",
+            "b1": self.tr("B1 (rock-salt)"),
+            "b2": "B2 (CsCl)",
+            "b3": self.tr("B3 (zinc blende)"),
+            "b4": self.tr("B4 (wurtzite)"),
+            "fluorite": self.tr("C1 (fluorite)"),
+            "nias": "B8₁ (NiAs)",
+            "d03": "D0₃",
+            "l21": self.tr("L2₁ (full-Heusler)"),
+            "c1b": self.tr("C1ᵦ (half-Heusler)"),
+            "d019": "D0₁₉",
             "c14": "C14 Laves",
             "c15": "C15 Laves",
             "mixed": self.tr("Mixed local structure"),

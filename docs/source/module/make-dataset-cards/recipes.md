@@ -27,7 +27,7 @@
 
 ### 卡片顺序
 
-`Crystal Prototype Builder → Composition Sweep → Random Occupancy → Random Doping → 导出 xyz → NEP Dataset Display 清洗 → FPS`
+`Crystal Prototype Builder → Composition Space Sampling → Random Occupancy → Random Doping → 导出 xyz → NEP Dataset Display 清洗 → FPS`
 
 ### 每步 JSON 配置
 
@@ -51,7 +51,7 @@
 
 **每步预期输出：** 1 个基础 fcc 结构；原子数受 `max_atoms` 控制，适合作为后续配比扫描母体。
 
-#### Step 2. `Composition Sweep`
+#### Step 2. `Composition Space Sampling`
 
 ```json
 {
@@ -127,7 +127,7 @@
 
 ### 常见失败点
 
-- 只做 `Composition Sweep` 就停止：这只定义目标配比，不代表已经得到真实随机合金。
+- 只做 `Composition Space Sampling` 就停止：这只定义目标配比，不代表已经得到真实随机合金。
 - `Random Occupancy` 的 `source` 没有读取 `Comp(...)`：会导致输出与目标配比不一致。
 - `Random Doping` 规则写得过重：容易把原本的目标配比拉偏。
 
@@ -204,7 +204,7 @@
 }
 ```
 
-**每步预期输出：** 每个 slab 表面再分出 2 个带表面吸附或插隙的候选结构。
+**每步预期输出：** 每个 slab 再生成 2 个上表面随机吸附候选；这里只做连续横向采样和最小距离约束，不识别顶位、桥位或空位。
 
 #### Step 4. `Vacancy Defect Generation`
 
@@ -252,7 +252,7 @@
 
 ### 卡片顺序
 
-`Crystal Prototype Builder(fcc111) → Strict GSFE Path → 导出 xyz → NEP Dataset Display 清洗 → DFT`
+`Crystal Prototype Builder(fcc111) → Stacking Fault / GSFE Path → 导出 xyz → NEP Dataset Display 清洗 → DFT`
 
 ### 每步 JSON 配置
 
@@ -276,7 +276,7 @@
 
 **每步预期输出：** 1 个 slab-oriented 周期 cell。当前 cell 的 `(001)` 面对应原始 fcc 的 `(111)` 面，第三晶胞方向已经垂直于层错面。
 
-#### Step 2. `Strict GSFE Path`
+#### Step 2. `Stacking Fault / GSFE Path`
 
 ```json
 {
@@ -304,7 +304,7 @@
 
 ### 常见失败点
 
-- 直接把普通 `fcc` cubic cell 送进 `Strict GSFE Path`：第三晶胞方向不垂直于目标 `(111)` 面，程序会报 slab-oriented 错误。
+- 直接把普通 `fcc` cubic cell 送进 `Stacking Fault / GSFE Path`：第三晶胞方向不垂直于目标 `(111)` 面，程序会报 slab-oriented 错误。
 - 把这里的 `fcc111` 当成真空表面：它是周期 cell，不含真空层；如果要自由表面，用 `Random Slab`。
 - 位移步长太粗：0.1 适合第一轮覆盖；如果峰值附近曲线不平滑，把步长缩到 0.05。
 
@@ -331,11 +331,11 @@
 {
   "class": "GroupLabelCard",
   "params": {
-    "mode": "k-vector layers (recommended)",
+    "mode": "k_vector",
     "kvec": "111",
     "group_a": "A",
     "group_b": "B",
-    "overwrite": true
+    "overwrite": false
   }
 }
 ```
@@ -348,7 +348,7 @@
 {
   "class": "MagneticOrderCard",
   "params": {
-    "format": "Collinear (scalar)",
+    "format": "collinear",
     "axis": [0.0, 0.0, 1.0],
     "magmom_map": "Fe:2.2",
     "use_element_dirs": false,
@@ -356,7 +356,7 @@
     "apply_elements": "Fe",
     "gen_fm": true,
     "gen_afm": true,
-    "afm_mode": "group A/B",
+    "afm_mode": "group_ab",
     "afm_kvec": "111",
     "afm_group_a": "A",
     "afm_group_b": "B",
@@ -367,12 +367,13 @@
     "pm_cone_angle": 30.0,
     "pm_balanced": true,
     "use_seed": true,
-    "seed": 88
+    "seed": 88,
+    "max_outputs": 20
   }
 }
 ```
 
-**每步预期输出：** 至少得到 1 个 FM、1 个 AFM 和 8 个 PM 候选；如果 `afm_mode` 设为 `group A/B`，真正起作用的是 `afm_group_a/b`，不是 `afm_kvec`。
+**每步预期输出：** 得到 1 个 FM、1 个 AFM 和 8 个 PM 候选；`afm_mode=group_ab` 时，真正起作用的是 `afm_group_a/b`，不是 `afm_kvec`。
 
 #### Step 3. `Magmom Rotation`
 

@@ -6,147 +6,167 @@
 
 ## 功能说明
 
-为结构中每个原子写入 `atoms.arrays['group']` 标签（A 或 B），按 k-vector 层分组或分数坐标奇偶分组。这些标签供下游 `Magnetic Order`（AFM group A/B 模式）、`Random Vacancy`、`Random Doping` 的 group 约束使用。
+按当前晶胞的分数坐标规则，把原子分成两个 group，并写入 `atoms.arrays["group"]`。这些标签可供下游 `Magnetic Order`、`Random Doping` 和 `Random Vacancy` 选择对应原子。
 
-**这是一张元数据卡，不改坐标也不改元素，只写 group 标签。**
+**这是一张元数据卡：不改坐标、不改元素，也不写 `atoms.arrays["sublattice"]`。** `group` 是下游工作流使用的选择标签；`sublattice` 是晶体学位点身份，两者保持独立。
 
-$$g_{k\text{-vec}}=\left\lfloor 2(\mathbf{s}\cdot\mathbf{k})\right\rfloor\bmod 2,\quad g_{parity}=\left(\mathrm{round}(2s_x)+\mathrm{round}(2s_y)+\mathrm{round}(2s_z)\right)\bmod 2$$
+两种规则都相对于**当前晶胞和坐标原点**计算：
+
+$$g_{\mathrm{layer}}=\left\lfloor 2(\mathbf{s}\cdot\mathbf{k})\right\rfloor\bmod 2$$
+
+$$g_{\mathrm{parity}}=\left(\sum_{\alpha=x,y,z}\left\lfloor2s_\alpha+\frac{1}{2}\right\rfloor\right)\bmod 2$$
+
+其中 $\mathbf{s}$ 是包裹到当前晶胞内的分数坐标。第二式采用明确的 half-up 舍入，避免 NumPy 偶数舍入在恰好 `.5` 时造成不对称分组。
 
 ## 操作示例
 
-### 场景：k-vector AFM 无法匹配你的晶格，模型 AFM 能量系统性偏高
+### 场景：训练集缺少沿晶格体对角线交替的 AFM 层
 
-你在 NiO 上用 `Magnetic Order` 的 k-vector 111 模式生成了 AFM 结构。训练后模型对 AFM 构型的能量预测仍比 DFT 高 0.3 eV/atom——k-vector 的波节面穿过了两种不等价原子位，导致 Ni 和 O 都被混合分配正负号，没有形成"一层 Ni↑、一层 Ni↓"的清晰子晶格翻转。
+一个 2×2×2 BCC Fe 超胞的训练集主要包含 FM 构型，模型在分层 AFM 构型上的能量误差明显更大。需要先把当前超胞按 `111` 分数坐标相位分为 A/B 两组，再让 `Magnetic Order` 按 group A/B 赋予相反磁矩。
 
-**诊断思路：** k-vector 是晶体学均匀的翻转模式，适合简单 Bravais 晶格。但实际磁性材料常有不等价子晶格——你需要手动定义哪些原子属于 A 子晶格（正磁矩）、哪些属于 B（负磁矩）。`Group Label` 就是做这件事的：先在结构里写好 group 标签，下游 `Magnetic Order` 再用 group A/B 模式按标签翻转磁矩。
-
-**输入：** 一个 NiO 超胞，Ni 和 O 交替排列在 fcc 子晶格上
-
-**目标：** 按 k-vec 111 分组，奇数层 = A，偶数层 = B
+**输入：** 2×2×2 BCC Fe 周期超胞。
 
 **参数设置：**
-- `Mode` = `k-vector layers (recommended)`
-- `Kvec` = `111`
-- `Group A` = `A`，`Group B` = `B`
-- `Overwrite` = 勾选
 
-**输出：** 结构不变，但每个原子现在有 `group` = `A` 或 `B`，带 `Grp(k111,A/B)` 标签
+- `Grouping rule` = `k_vector`
+- `Layer vector` = `111`
+- `Group A label` = `A`
+- `Group B label` = `B`
+- `Overwrite existing group labels` = 关闭（输入没有 group 时仍会正常生成）
 
-**怎么验证分组正确：**
-- 打开输出的 extxyz 文件，检查 `group` 列是否出现 A/B 交替
-- 对于 (111) 方向，相邻原子层应交替 A/B
-- 用 `Magnetic Order` 的 group A/B 模式接在后面，确认 AFM 输出磁矩有正有负
-- 如果分组几乎全是 A，换 kvec = `110` 或 `100` 验证
+**运行前检查：** 卡片会以首个输入结构显示 `A=8 · B=8`。如果预览显示某一组为 0，应先扩胞或换一个 layer vector，而不是继续生成只有一种标签的伪 A/B 数据。
 
-### 什么时候加这张卡、什么时候不加
+**输出：** 结构的坐标和元素不变，新增 A/B group 标签并追加 `Grp(k111,A/B)`。
 
-**加：**
-- 下游有 `Magnetic Order` 的 AFM group A/B 模式
-- 下游 `Random Doping` / `Random Vacancy` 需要对特定区域操作（group 约束）
-- 需要在结构中定义可复用的子晶格/区域标识
+**怎么验证训练集补充有效：**
 
-**不加：**
-- 全流程不依赖 group 过滤
-- 下游磁序只用 k-vector 模式（不需要 group 标签）
+- 检查输出 EXTXYZ 的 `group` 列确实同时包含 A/B。
+- 接入 `Magnetic Order` 的 group A/B 模式，确认 Fe 磁矩同时存在正负号。
+- 用新增 AFM 构型重训后，单独比较分层 AFM 切片的能量和磁力误差。
+
+### 能力边界
+
+- 本卡只生成两类**坐标规则分组**，不是自动识别化学子晶格、表面/体相或任意区域。
+- `fractional_parity` 是当前晶胞的 half-grid 模式，不是通用 NaCl 子晶格识别器。
+- 改变超胞、重新选择晶胞或平移坐标原点，可能改变分组结果；运行前应查看计数预览并检查输出。
+- 如果结构已有可信的 `group`，保持 overwrite 关闭即可原样保留。
 
 ## 参数说明
 
-### Mode（mode）
+### 分组规则（mode）
 
-`str`，默认 `k-vector layers (recommended)`。按 k-vector 分层还是按分数坐标奇偶写 group 标签。
+`str`，默认 `k_vector`。
 
 | 模式 | 算法 | 适用场景 |
 |------|------|---------|
-| `k-vector layers (recommended)` | $$g=\lfloor2(s\cdot k)\rfloor\bmod2$$ | 层状磁序，沿 k 方向交替翻转 |
-| `fractional parity (2x rounding)` | $$g=(\text{round}(2s_x)+\text{round}(2s_y)+\text{round}(2s_z))\bmod2$$ | NaCl 型子晶格交替，不依赖层方向 |
+| `k_vector` | $\lfloor2(\mathbf{s}\cdot\mathbf{k})\rfloor\bmod2$ | 沿所选分数坐标相位生成两组层 |
+| `fractional_parity` | 对 $2\mathbf{s}$ 做 half-up 舍入后取坐标和奇偶 | 在当前晶胞的 half-grid 上生成棋盘式两组 |
 
-k-vector 模式最常用，也是推荐的首选。
+旧项目中的 `k-vector layers (recommended)`、`k-vector layers`、`fractional parity (2x rounding)` 会继续按对应新模式读取；未知值会明确报错，不再静默回退。
 
-### Kvec（kvec）
+### 层向量（kvec）
 
-`str`，默认 `111`，仅 k-vector 模式。可选 `100`/`010`/`001`/`110`/`111`。
+`str`，默认 `111`，仅 `k_vector` 模式使用。可选：
 
-- `111`：体对角线方向分层，适合 fcc/bcc 基的 AFM（如 NiO 型）
-- `100`/`010`/`001`：沿单轴方向分层
-- `110`：面对角线方向
+- `100`：沿晶格 a 的分数坐标相位。
+- `010`：沿晶格 b。
+- `001`：沿晶格 c。
+- `110`：沿 a+b。
+- `111`：沿 a+b+c。
 
-### Group A（group_a）
+这些数字描述当前晶胞的分数坐标相位，不等同于程序自动识别出的晶面族。
 
-`str`，默认 `A`。可自定义为 `S1`、`up` 等，但必须与下游引用的名称完全一致（区分大小写）。
+### A 组标签（group_a）
 
-### Group B（group_b）
+`str`，默认 `A`。写入偶相位原子的标签。必须非空，并与 `group_b` 不同；下游引用时区分大小写。
 
-`str`，默认 `B`。可自定义为 `S2`、`down` 等，同样必须与下游完全一致。
+### B 组标签（group_b）
 
-### Overwrite（overwrite）
+`str`，默认 `B`。写入奇相位原子的标签。必须非空，并与 `group_a` 不同。
 
-`bool`，默认 true。勾选后强制覆盖已有的 group 数组；不勾选则输入如果已有 group 就原样返回不重写。
+### 覆盖已有分组（overwrite）
 
-如果输入结构来自之前跑过的 `Group Label` 卡且开着 overwrite，新卡会把旧标签覆盖掉。不确定的时候先用 `overwrite=false` 检查输入是否已有 group。
+`bool`，默认 false。关闭时：
+
+- 输入没有 `group`：按当前规则正常生成。
+- 输入已有 `group`：原样保留现有标签，其他参数不再重写它。
+
+开启时会覆盖已有的 `atoms.arrays["group"]`。卡片预览会明确显示“保留”或“覆盖”状态。
 
 ## 推荐预设
 
-### k-vector 111，标签 A/B（最常用）
+### 111 分数坐标层，标签 A/B
+
 ```json
 {
   "class": "GroupLabelCard",
   "check_state": true,
-  "mode": "k-vector layers (recommended)",
-  "kvec": "111",
-  "group_a": "A",
-  "group_b": "B",
-  "overwrite": true
+  "params": {
+    "mode": "k_vector",
+    "kvec": "111",
+    "group_a": "A",
+    "group_b": "B",
+    "overwrite": false
+  }
 }
 ```
 
-### k-vector 110，自定义标签
+### 110 分数坐标层，自定义标签
+
 ```json
 {
   "class": "GroupLabelCard",
   "check_state": true,
-  "mode": "k-vector layers (recommended)",
-  "kvec": "110",
-  "group_a": "S1",
-  "group_b": "S2",
-  "overwrite": true
+  "params": {
+    "mode": "k_vector",
+    "kvec": "110",
+    "group_a": "up",
+    "group_b": "down",
+    "overwrite": true
+  }
 }
 ```
 
-### Fractional parity，保留已有标签
+### 当前晶胞 half-grid parity
+
 ```json
 {
   "class": "GroupLabelCard",
   "check_state": true,
-  "mode": "fractional parity (2x rounding)",
-  "kvec": "111",
-  "group_a": "A",
-  "group_b": "B",
-  "overwrite": false
+  "params": {
+    "mode": "fractional_parity",
+    "kvec": "111",
+    "group_a": "A",
+    "group_b": "B",
+    "overwrite": false
+  }
 }
 ```
 
 ## 推荐组合
 
-- `Group Label` → `Magnetic Order`：AFM 的 group A/B 模式需要 group 标签
-- `Group Label` → `Random Doping` / `Random Vacancy`：用 group 约束定向掺杂/删除
-- `Group Label` → `Random Doping` → `Magnetic Order`：先标记子晶格 → 掺杂特定子晶格 → 初始化对应磁序
+- `Super Cell` → `Group Label` → `Magnetic Order`：先保证当前晶胞有足够相位层，再按 group A/B 生成 AFM。
+- `Group Label` → `Random Doping` / `Random Vacancy`：只在由本卡坐标规则生成的某一组中替位或删位。
 
 ## 常见问题
 
-**输出结构没有变化。** 这是正常的——Group Label 只改标签不改坐标。检查输出 extxyz 文件中是否有 `group` 列。
+**预览只有 A 或只有 B。** 当前晶胞中的所有原子落在同一相位。先扩胞，或更换 layer vector / grouping rule。不要把单标签结果当成有效的两组分区。
 
-**group 标签全是同一个值。** 结构可能根本不分层。检查结构是否有清晰的层状特征。如果晶胞只有 2 个原子（如 NaCl 单胞），k-vec 分组可能全落在同一类——先扩胞再到有足够多层的时候再跑。
+**平移坐标或扩胞后分组变化。** 这是当前算法的定义：两种模式都锚定在当前晶胞的分数坐标和原点。需要跨不同晶胞保持固定晶体学身份时，应在结构生成阶段维护 `sublattice`，不要把本卡当作 sublattice 识别器。
 
-**下游卡片读不到 group。** 确认 `overwrite=true`（如果之前没有 group），确认标签名和下游规则字符串完全一致（区分大小写），确认输入是 extxyz 格式（普通 xyz 不保留 group 数组）。
+**输入已有 group，但参数似乎没有生效。** overwrite 默认关闭，此时卡片会保留现有 group；预览会显示已有标签计数。确认确实需要覆盖后再开启。
 
-**EXTXYZ 文件中的 group 列。** 如果从 .xyz 导入并需要保留分组，使用 EXTXYZ 格式：在第二行加 `Properties=species:S:1:pos:R:3:group:S:1`，然后在每行坐标后加 group 值。
+**下游读不到 group。** 确认输出使用 EXTXYZ 等能保存 per-atom arrays 的格式，并确保下游填写的标签与 `group_a` / `group_b` 完全一致。
 
 ## 输出标签
 
-`Grp({分组模式},{A标签}/{B标签})`
+新生成或覆盖分组时，`Config_type` 追加：
 
-写入 `atoms.arrays['group']`，每个原子值为 group_a 或 group_b 字符串。
+- `Grp(k111,A/B)`：k-vector 111。
+- `Grp(par,A/B)`：fractional parity。
+
+overwrite 关闭且输入已有 group 时，输出是原结构的副本，不追加新的 `Grp(...)` 标签。
 
 ## 可复现性
 
-无随机性。同参数同输入 → 严格一致输出。k-vec 和 fractional parity 分组均为确定性算法。
+无随机性。同一晶胞、坐标原点、原子坐标和参数会得到严格一致的 group 标签。

@@ -96,4 +96,4 @@ nepkit
 
 如果你在做缺陷、表面、掺杂或磁性结构，直接去看 [Make Dataset 卡片手册](module/make-dataset-cards/index.md)。手册按卡片用途组织，比逐个试菜单更快。
 
-如果你要从标准晶体开始，而不是导入已有结构，可以先用 `Crystal Prototype Builder` 生成 `fcc`、`bcc`、`hcp` 或 `fcc111` 原型。需要扫 fcc (111) 的 GSFE 路径时，先生成 `fcc111` 原型，再接 `Strict GSFE Path`；不要把普通 cubic `fcc` cell 直接拿去扫 `(111)`。
+如果你要从标准晶体开始，而不是导入已有结构，可以先用 `Crystal Prototype Builder` 生成 `fcc`、`bcc`、`hcp` 或 `fcc111` 原型。需要扫 fcc (111) 的 GSFE 路径时，先生成 `fcc111` 原型，再接 `Stacking Fault / GSFE Path`；不要把普通 cubic `fcc` cell 直接拿去扫 `(111)`。

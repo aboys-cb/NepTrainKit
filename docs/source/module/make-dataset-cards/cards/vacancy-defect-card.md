@@ -1,119 +1,105 @@
 <!-- card-schema: {"card_name": "Vacancy Defect Generation", "source_file": "src/NepTrainKit/ui/views/_card/vacancy_defect_card.py", "serialized_keys": ["params"]} -->
 
-# 空位缺陷生成（Vacancy Defect Generation）
+# 全局随机空位（Vacancy Defect Generation）
 
 `Group`: `Defect` | `Class`: `VacancyDefectCard`
 
 ## 功能说明
 
-按数量或比例删除原子，快速生成低到高缺陷强度的空位结构分布。支持 Sobol / Uniform 两种随机引擎，可选 count 或 fraction 两种主模式，并可选择固定空位数或随机空位数。
+在每个输入结构的**全部原子位点**中随机删除若干原子，生成一组空位落点不同的结构。可以按绝对数量或整体比例决定删除量；不区分元素，也不读取 `group`。
+
+这张卡只删除原子。保留下来的原子坐标、晶胞和周期性边界不变，因此输出是**未弛豫空位构型**。删除不同元素的概率由输入结构中的元素数量自然决定，多元素结构的实际组分可能随样本变化。
 
 **和 `Random Vacancy` 的区别：**
-- `Vacancy Defect Generation`：统计驱动，按整体比例/数量生成空位，适合快速覆盖空位密度分布
-- `Random Vacancy`：规则驱动，按元素+group 精确删除位点，适合定向研究
 
-## 操作示例
+- `Global Random Vacancy`：所有元素都可被删除，适合快速覆盖整体空位数量或比例。
+- `Random Vacancy`：按元素和可选 `group` 规则选择候选位点，适合子晶格或特定元素空位。
 
-### 场景：模型把空位构型全部预测成接近完美晶体
+## 快速使用
 
-你在 100 原子的 Fe 超胞上训练了一个 NEP，训练集里只有弛豫好的完美晶体。模型推理一个含 1 个空位的构型时，能量几乎和完美晶体一样——模型没学过"少了一个原子"是什么后果。
+以一个 100 原子的超胞为例，要为每个输入生成最多 50 个、每个含 5 个空位的构型：
 
-**诊断思路：** 模型在完美晶体上收敛是因为训练集只有完美晶体。空位附近原子的力场完全不同：键断了一半，局域电子密度变化大。需要往训练集里加入从 1 个空位到 ~5% 浓度的分布，让模型覆盖低/中/高缺陷密度段。
+1. 选择 `Vacancy fraction (0–1)`，设为 `0.05`。
+2. `Vacancies per output` 选择 `Fixed at the set value`。
+3. `Maximum outputs per input` 设为 `50`。
+4. `Site sampling` 保持 `Uniform random (recommended)`。
+5. 做对照实验时勾选 `Use seed` 并填写固定种子。
 
-**输入：** 一个 100 原子的 Fe 超胞
-
-**目标：** 用 fraction 模式生成 5% 空位浓度，每帧 50 个随机落点版本
-
-**参数设置：**
-- `Vacancy Fraction`：勾选
-- `Vacancy Fraction`：`[0.05]`（100 原子里精确删除 5 个空位）
-- `Count Mode`：`Fixed count`
-- `Structures`：`[50]`
-- `Random Engine`：`Uniform`
-
-**输出：** 50 个空位结构，每个都删除 5 个原子，但空位落点不同，带 `Vac(n=5)` 标签
-
-**怎么验证训练集质量改善：**
-- 重训后用含空位的测试集推理，力 MAE 应对空位近邻原子也有合理精度
-- 如果低浓度 OK 但高浓度崩，说明训练集高浓度样本不够——增加 `concentration_condition`
-- 如果样本覆盖感觉不均匀，换 Sobol 引擎再跑一批对比
-
-### 什么时候加这张卡、什么时候不加
-
-**加：**
-- 需要快速覆盖"少了一个原子"对力/能量的影响
-- 训练集只有完美晶体，需要低/中/高缺陷密度梯度
-- 不需要按元素类型区分空位来源
-
-**不加：**
-- 需要精确控制删哪种元素 → 用 `Random Vacancy`
-- 缺陷浓度 >20%——此时结构通常已剧烈变形，需先确认是否物理上有意义
+首帧预览会显示实际删除的原子数和最多可生成的唯一输出数。输出带有 `Vac(n=5)` 标签。
 
 ## 参数说明
 
-### 空位数量
+### 删除量
 
-#### Num Condition（num_condition）
+#### Vacancy count（num_condition）
 
-`int`，默认 1。count 模式下的空位数量，范围 1-8。直接指定每个结构删几个原子——适合你已经想好确切数字的场景。
+`int`，默认 `1`。每个输出最多删除的原子数。必须至少为 1，且必须小于输入结构的原子数，程序不会再静默缩小过大的数值。
+
+#### Vacancy fraction (0–1)（concentration_condition）
+
+`float`，默认 `0.01`。按
+
+```text
+空位数 = floor(输入原子数 × 空位比例)
+```
+
+换算删除量。例如 100 个原子、比例 `0.05` 会删除 5 个原子。比例必须在 `(0, 1)` 内；若向下取整后为 0，卡片会提示当前结构至少需要的比例。
 
 #### Use Num（use_num）
 
-`bool`，默认 true。打开时按绝对空位数删除，不同输入的缺陷数始终保持一致；关掉后切到浓度模式，不同超胞尺寸下自动保持相同缺陷比例。
+`bool`，默认 `true`。`true` 使用绝对数量；`false` 使用整体比例。界面中未选中的输入框会被禁用，避免误以为两个值会同时生效。
 
-#### Concentration Condition（concentration_condition）
+#### Vacancies per output（count_mode）
 
-`float`，默认 0.0。fraction 模式下的空位比例，如 0.02 约等于删掉 2% 的原子。推荐范围 0.005-0.08。比例太小可能一个原子都删不到，比例太大结构容易崩。
+`str`，默认 `fixed`。
 
-#### Count Mode（count_mode）
+- `fixed`：每个输出都按上面解析出的数量删除。
+- `random`：每个输出在 1 到解析值之间随机选择删除量。
 
-`str`，默认 `fixed`。`fixed` 精确按住上面设置的数量删；`random` 在 1 到设定值之间随机。你需要固定空位数量做对照实验就选 fixed，想覆盖更多空位分布的多样性就选 random。
+`random` 改变的是**每个输出的空位数**，不是仅改变空位落点。
 
-### 采样和预算
+### 采样和输出
 
-#### Engine Type（engine_type）
+#### Maximum outputs per input（max_structures）
 
-`int`，默认 1。`0` = Sobol 准随机序列，`1` = Uniform 均匀随机。
+`int`，默认 `1`。每个输入结构请求的最大输出数。相同的删除位点组合会去重；当所有可能组合少于请求值时，实际输出会更少。
 
-样本少时 Sobol 对空位数量和位置的覆盖更均衡；大批量（100+）时两者差异很小，Uniform 更快。
+#### Site sampling（engine_type）
 
-#### Max Structures（max_structures）
+`int`，默认 `1`。
 
-`int`，默认 1。每输入帧生成多少个空位版本。
+- `1`：Uniform，均匀随机，推荐作为通用默认。
+- `0`：Sobol，准随机序列，适合希望更均匀扫描落点的情况。
 
-10~50 够轻量补样，50~100 做常规覆盖，上了 100 建议接一张 `FPS Filter`。
+Sobol 受 SciPy 维数上限约束，最多支持 21,200 个原子的输入；更大的结构请使用 Uniform。两种方式都只控制如何选择被删除的位点，不会移动原子。
 
-#### Use Seed（use_seed）
+#### Use Seed / Seed（use_seed / seed）
 
-`bool`，默认 false。打开后固定 seed → 同参同输入可复现。需要对比实验时开着，纯探索可以关。
-
-#### Seed（seed）
-
-`int`，默认 0。随机种子值。
-
-生效条件：`use_seed=True`。
+默认 `false` / `0`。启用后，相同参数和相同输入结构可复现。种子会与结构内容共同派生，因此数据集中几何不同的帧不会机械地删除相同原子序号。
 
 ## 推荐预设
 
-### 保守（Safe，Sobol 引擎，2% 浓度，50 个输出）
+### 单空位对照
+
 ```json
 {
   "class": "VacancyDefectCard",
   "check_state": true,
   "params": {
-    "engine_type": 0,
+    "engine_type": 1,
     "num_condition": 1,
-    "use_num": false,
-    "concentration_condition": 0.02,
+    "use_num": true,
+    "concentration_condition": 0.01,
     "count_mode": "fixed",
-    "max_structures": 50,
+    "max_structures": 20,
     "use_seed": true,
     "seed": 42
   }
 }
 ```
 
-### 平衡（Balanced，Uniform 引擎，5% 浓度，50 个输出）
+### 5% 整体空位覆盖
+
 ```json
 {
   "class": "VacancyDefectCard",
@@ -131,42 +117,34 @@
 }
 ```
 
-### 探索（Exploration，Sobol，10% 浓度，100 个输出）
-```json
-{
-  "class": "VacancyDefectCard",
-  "check_state": true,
-  "params": {
-    "engine_type": 0,
-    "num_condition": 1,
-    "use_num": false,
-    "concentration_condition": 0.10,
-    "count_mode": "fixed",
-    "max_structures": 100,
-    "use_seed": true,
-    "seed": 42
-  }
-}
-```
-
 ## 推荐组合
 
-- `Super Cell` → `Vacancy Defect Generation`：先扩胞再删，避免小胞里空位相互作用太强
-- `Vacancy Defect Generation` → `Insert Defect`：空位 + 插隙，互补缺陷族
-- `Vacancy Defect Generation` → `Random Vacancy`：先覆盖密度分布，再补定向规则删除
+- `Super Cell` → `Global Random Vacancy`：先扩胞，再生成空位，降低周期镜像间的缺陷相互作用。
+- `Global Random Vacancy` → 几何优化或 DFT：本卡输出未弛豫，需要后续计算得到真实缺陷响应。
+- 需要按元素或子晶格删位时，改用 `Random Vacancy`，不要把两张卡串联来模拟一条规则。
 
 ## 常见问题
 
-**输出结构数远少于预期。** 空位数为 0 时不会生成。检查浓度模式下 `concentration * n_atoms` 是否≥1。
+**为什么多元素结构的组分会变化？**
 
-**空位太多导致骨架崩坏。** 浓度模式 `0.10` 以上已到强缺陷区。先检查是否有孤立原子或明显断裂，再决定是否回调。
+所有原子都是候选位点。若需要只删除 O、某种金属或某个 `group`，使用 `Random Vacancy`。
 
-**count 和 fraction 怎么选。** 二者只选一个：想精确删几个原子用 `Vacancy Count`；想按体系大小等比例删用 `Vacancy Fraction`。
+**为什么实际输出少于设置值？**
+
+卡片会删除重复的空位组合。当结构很小或空位数接近原子数时，唯一组合数可能不足。
+
+**为什么比例设置后提示删不到一个原子？**
+
+比例采用向下取整。对 `N` 个原子的结构，至少需要 `1/N` 才能删除一个原子。
+
+**Sobol 和 Uniform 控制什么？**
+
+它们只控制空位落点的抽样顺序。通常使用 Uniform；需要准随机覆盖且原子数不超过 21,200 时再选 Sobol。
 
 ## 输出标签
 
 `Vac(n={删除原子数})`
 
-## 可复现性
+## 兼容性
 
-勾选 `use_seed` + 固定 `seed` → 相同输入可复现。输入结构顺序变化也会影响结果。
+旧工作流中的 `card_name`、`class` 和参数键保持不变；旧版顶层参数与当前 `params` 对象都可读取。

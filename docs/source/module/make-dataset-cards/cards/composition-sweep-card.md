@@ -1,6 +1,6 @@
-<!-- card-schema: {"card_name": "Composition Sweep", "source_file": "src/NepTrainKit/ui/views/_card/composition_sweep_card.py", "serialized_keys": ["params"]} -->
+<!-- card-schema: {"card_name": "Composition Space Sampling", "source_file": "src/NepTrainKit/ui/views/_card/composition_sweep_card.py", "serialized_keys": ["params"]} -->
 
-# 成分扫描（Composition Sweep）
+# 成分空间采样（Composition Space Sampling）
 
 `Group`: `Alloy` | `Class`: `CompositionSweepCard`
 
@@ -52,29 +52,29 @@
 
 `str`，默认 `Co,Cr,Ni`。逗号分隔的元素列表，如 `Co,Cr,Ni,Al,Fe`。至少需要 2 个元素，程序会从中取出所有 n 元组合做配比扫描。
 
-### Order（order）
+### 组合元数（order）
 
-`str`，默认 `2,3,4,5`。按逗号分隔的整数列表决定扫描哪些元数的组合，只支持 2/3/4/5 元。也兼容旧版名称如 `Binary`、`Ternary+Quaternary`。`2,3` 适合快速覆盖，`2,3,4,5` 适合系统性高熵探索。
+`str`，默认 `2,3,4,5`。决定采样二元、三元、四元或五元成分空间。界面用“二元（2）”“二元 + 三元（2,3）”等易读名称显示，保存时仍使用 `2`、`2,3` 等稳定值。也兼容旧版名称如 `Binary`、`Ternary+Quaternary`。当候选元素不足时，不可执行的元数会自动跳过。
 
-### Method（method）
+### 采样方法（method）
 
 `str`，默认 `Grid`。`Grid` 用均匀网格采样，步长可控，适合低元数（2-3 元）。`Sobol` 用低差异序列在高维 simplex 上覆盖更均匀，适合 4-5 元或点数有限的情况。
 
-### Step（step）
+### 成分步长（step）
 
-`float`，默认 0.1，仅 Grid 模式生效。控制 simplex 网格分辨率——越小点越密、输出越多。典型值 0.05-0.15。
+`float`，默认 0.1，仅 Grid 模式生效。单位是成分分数，`0.1` 表示 10 个百分点。数值越小，网格越密、目标配比越多；典型值为 0.05-0.15。
 
-### N Points（n_points）
+### 每种元素组合的采样点数（n_points）
 
-`int`，默认 50，仅 Sobol 模式生效。它表示通过 `min_fraction` 约束后的目标有效点数，而不是过滤前的尝试数。operation 会继续补采样直到得到该数量；典型值 25-200。
+`int`，默认 50，仅 Sobol 模式生效。它表示每一种元素组合通过 `min_fraction` 约束后的目标有效点数，而不是过滤前的尝试数。operation 会继续补采样直到得到该数量；典型值为 25-200。
 
-### Min Fraction（min_fraction）
+### 元素最小占比（min_fraction）
 
 `float`，默认 0.0，范围 0-1。每个元素的最小占比下限。比如设为 0.05 意味着每个组分至少 5%，极端稀释的端点成分会被自动过滤掉。设 0 则不做下限约束。
 
-### Include Endpoints（include_endpoints）
+### 包含边界成分点（include_endpoints）
 
-`bool`，默认 true，仅 Grid 模式。勾选后保留纯端点及边界成分点，关掉则跳过这些点。
+`bool`，默认 true，仅 Grid 模式。勾选后保留纯元素端点和某个元素占比为零的边界成分；关掉后只保留所有元素占比均大于零的内部点。
 
 ### Use Seed（use_seed）
 
@@ -86,17 +86,17 @@
 
 生效条件：`use_seed=True`。
 
-### Max Outputs（max_outputs）
+### 每个输入的最大目标成分数（max_outputs）
 
-`int`，默认 500。输出总上限，防止组合爆炸。超出预算时按 `budget_mode` 规则分配到各 order。典型值 250-1500。
+`int`，默认 500。限制每个输入结构生成的目标配比总数，防止组合爆炸。超出预算时按 `budget_mode` 规则分配到各组合元数；典型值为 250-1500。
 
-### Budget Mode（budget_mode）
+### 输出预算分配（budget_mode）
 
-`str`，默认 `Equal+Reflow`。控制超出预算时如何在不同元数之间分配名额。
+`str`，默认 `Equal+Reflow`。控制输出上限如何在不同组合元数之间分配。界面使用易读名称，保存值保持不变：
 
-- `Equal+Reflow`：各 order 均分，余量回流，适合大多数场景。
-- `Capacity-weighted`：按各 order 的理论容量加权分配，高元数分到更多名额。
-- `Equal (Legacy)`：旧版均分，不做余量回流。
+- `均衡各元数`（`Equal+Reflow`）：各元数先均分，未用完的名额再分给仍有候选点的元数，适合大多数场景。
+- `侧重更大的成分空间`（`Capacity-weighted`）：按理论容量加权，更大的成分空间分到更多名额。
+- `旧版均分`（`Equal (legacy)`）：保留旧行为，各元数均分且不回流余量。
 
 ## 推荐预设
 
@@ -105,17 +105,19 @@
 {
   "class": "CompositionSweepCard",
   "check_state": true,
-  "elements": "Co,Cr,Ni",
-  "order": "2,3",
-  "method": "Grid",
-  "step": [0.1],
-  "n_points": [50],
-  "min_fraction": [0.0],
-  "include_endpoints": true,
-  "use_seed": false,
-  "seed": [0],
-  "max_outputs": [100],
-  "budget_mode": "Equal+Reflow"
+  "params": {
+    "elements": "Co,Cr,Ni",
+    "order": "2,3",
+    "method": "Grid",
+    "step": 0.1,
+    "n_points": 50,
+    "min_fraction": 0.0,
+    "include_endpoints": true,
+    "use_seed": false,
+    "seed": 0,
+    "max_outputs": 100,
+    "budget_mode": "Equal+Reflow"
+  }
 }
 ```
 
@@ -124,17 +126,19 @@
 {
   "class": "CompositionSweepCard",
   "check_state": true,
-  "elements": "Co,Cr,Ni,Al",
-  "order": "2,3,4,5",
-  "method": "Grid",
-  "step": [0.1],
-  "n_points": [50],
-  "min_fraction": [0.0],
-  "include_endpoints": true,
-  "use_seed": false,
-  "seed": [0],
-  "max_outputs": [500],
-  "budget_mode": "Equal+Reflow"
+  "params": {
+    "elements": "Co,Cr,Ni,Al",
+    "order": "2,3,4",
+    "method": "Grid",
+    "step": 0.1,
+    "n_points": 50,
+    "min_fraction": 0.0,
+    "include_endpoints": true,
+    "use_seed": false,
+    "seed": 0,
+    "max_outputs": 500,
+    "budget_mode": "Equal+Reflow"
+  }
 }
 ```
 
@@ -143,31 +147,33 @@
 {
   "class": "CompositionSweepCard",
   "check_state": true,
-  "elements": "Co,Cr,Ni,Al,Fe",
-  "order": "2,3,4,5",
-  "method": "Sobol",
-  "step": [0.1],
-  "n_points": [150],
-  "min_fraction": [0.0],
-  "include_endpoints": true,
-  "use_seed": true,
-  "seed": [42],
-  "max_outputs": [1500],
-  "budget_mode": "Capacity-weighted"
+  "params": {
+    "elements": "Co,Cr,Ni,Al,Fe",
+    "order": "2,3,4,5",
+    "method": "Sobol",
+    "step": 0.1,
+    "n_points": 150,
+    "min_fraction": 0.0,
+    "include_endpoints": true,
+    "use_seed": true,
+    "seed": 42,
+    "max_outputs": 1500,
+    "budget_mode": "Capacity-weighted"
+  }
 }
 ```
 
 ## 推荐组合
 
-- `Composition Sweep` → `Random Occupancy`：先定义目标配比，再落到离散原子占位。合金 pipeline 的标准起手式。
-- `Composition Sweep` → `Random Occupancy` → `Random Doping`：配比覆盖 + 占位多样性 + 额外局部替位。
-- `Composition Sweep` → `Random Occupancy` → `Atomic Perturb`：成分 + 占位 + 坐标噪声。
+- `Composition Space Sampling` → `Random Occupancy`：先定义目标配比，再落到离散原子占位。合金 pipeline 的标准起手式。
+- `Composition Space Sampling` → `Random Occupancy` → `Random Doping`：配比覆盖 + 占位多样性 + 额外局部替位。
+- `Composition Space Sampling` → `Random Occupancy` → `Atomic Perturb`：成分 + 占位 + 坐标噪声。
 
 ## 常见问题
 
 **输出和输入完全一样。** `elements` 少于 2 个元素，或 `order` 不合法，或 `max_outputs` <= 0。
 
-**标签成分和原子实际组成不一致。** 正常——Composition Sweep 只打目标配比标签，不改原子种类。需要接 `Random Occupancy` 才会真正替换原子。
+**标签成分和原子实际组成不一致。** 正常——Composition Space Sampling 只写目标配比标签，不改原子种类。需要接 `Random Occupancy` 才会真正替换原子。
 
 **组合爆炸。** 5 元 + Grid + step=0.05 可产生上万个点。先用 `max_outputs` 卡住上限，小样本验证后再放量。
 

@@ -665,7 +665,7 @@ class TrainingSetAuditWidget(QWidget):
         self.composition_view_selector = ComboBox(composition_header)
         self.composition_view_selector.setMinimumWidth(170)
         self.composition_view_selector.currentIndexChanged.connect(
-            self._refresh_composition_map
+            self._refresh_composition_view
         )
         composition_header_layout.addWidget(self.composition_view_selector)
         self.composition_evidence_button = PushButton(
@@ -1623,7 +1623,16 @@ class TrainingSetAuditWidget(QWidget):
             ),
         }
 
-    def _refresh_composition_map(self, index: int = -1) -> None:
+    def _refresh_composition_view(self, index: int = -1) -> None:
+        """Refresh view-dependent chart content without rebuilding the invariant table."""
+        self._refresh_composition_map(index, refresh_table=False)
+
+    def _refresh_composition_map(
+        self,
+        index: int = -1,
+        *,
+        refresh_table: bool = True,
+    ) -> None:
         del index
         inventory = self._inventory()
         element = self.composition_element_selector.currentData()
@@ -1666,14 +1675,27 @@ class TrainingSetAuditWidget(QWidget):
             self.composition_phase_summary_label.hide()
         self.composition_map_hint.setText(hint)
         self.composition_chart.set_plot(self._composition_plot(element))
-        self._populate_composition_table(element)
+        if refresh_table:
+            self._populate_composition_table(element)
 
     def _phase_display_name(self, label: str) -> str:
         return {
             "fcc": "FCC",
             "hcp": "HCP",
             "bcc": "BCC",
+            "diamond": self.tr("Diamond (A4)"),
+            "l10": "L1₀",
             "l12": "L1₂",
+            "b1": self.tr("B1 (rock-salt)"),
+            "b2": "B2 (CsCl)",
+            "b3": self.tr("B3 (zinc blende)"),
+            "b4": self.tr("B4 (wurtzite)"),
+            "fluorite": self.tr("C1 (fluorite)"),
+            "nias": "B8₁ (NiAs)",
+            "d03": "D0₃",
+            "l21": self.tr("L2₁ (full-Heusler)"),
+            "c1b": self.tr("C1ᵦ (half-Heusler)"),
+            "d019": "D0₁₉",
             "c14": "C14 Laves",
             "c15": "C15 Laves",
             "mixed": self.tr("Mixed local structure"),
@@ -1773,7 +1795,7 @@ class TrainingSetAuditWidget(QWidget):
                 )
                 confirmed_text = ""
                 if confirmed_totals:
-                    confirmed_text = self.tr(" Confirmed ordering: {values}.").format(
+                    confirmed_text = self.tr(" Confirmed prototypes: {values}.").format(
                         values=", ".join(
                             f"{escape(self._phase_display_name(label))} × {count:,}"
                             for label, count in sorted(confirmed_totals.items())
@@ -1872,50 +1894,67 @@ class TrainingSetAuditWidget(QWidget):
             inventory.composition_points,
             key=lambda point: (-point.structure_count, point.fractions[element_index]),
         )
-        self.composition_table.clearContents()
-        self.composition_table.setRowCount(len(points))
-        for row, point in enumerate(points):
-            formula = self._composition_formula(inventory.elements, point.fractions)
-            formula_item = QTableWidgetItem(formula)
-            formula_item.setData(Qt.ItemDataRole.UserRole, point.structure_indices)
-            formula_item.setData(
-                Qt.ItemDataRole.UserRole + 1,
-                point.reduced_counts,
-            )
-            self.composition_table.setItem(row, 0, formula_item)
-            count_item = QTableWidgetItem(f"{point.structure_count:,}")
-            count_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.composition_table.setItem(row, 1, count_item)
-            share_item = QTableWidgetItem(f"{point.share:.2%}")
-            share_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.composition_table.setItem(row, 2, share_item)
-            atom_counts = ", ".join(
-                f"{count} atoms × {structures:,}"
-                for count, structures in point.atom_counts
-            ) or "—"
-            self.composition_table.setItem(row, 3, QTableWidgetItem(atom_counts))
-            all_config_types = ", ".join(
-                f"{name} × {count:,}" for name, count in point.config_types
-            )
-            visible_config_types = ", ".join(
-                f"{name} × {count:,}" for name, count in point.config_types[:4]
-            )
-            if len(point.config_types) > 4:
-                visible_config_types += self.tr(" · +{count} more").format(
-                    count=len(point.config_types) - 4
+        table = self.composition_table
+        header = table.horizontalHeader()
+        resize_columns = (1, 2)
+        resize_modes = {
+            column: header.sectionResizeMode(column) for column in resize_columns
+        }
+        signals_were_blocked = table.blockSignals(True)
+        updates_were_enabled = table.updatesEnabled()
+        table.setUpdatesEnabled(False)
+        for column in resize_columns:
+            header.setSectionResizeMode(column, QHeaderView.ResizeMode.Interactive)
+        try:
+            table.clearContents()
+            table.setRowCount(len(points))
+            for row, point in enumerate(points):
+                formula = self._composition_formula(inventory.elements, point.fractions)
+                formula_item = QTableWidgetItem(formula)
+                formula_item.setData(Qt.ItemDataRole.UserRole, point.structure_indices)
+                formula_item.setData(
+                    Qt.ItemDataRole.UserRole + 1,
+                    point.reduced_counts,
                 )
-            config_item = QTableWidgetItem(
-                visible_config_types or self.tr("Not labeled")
-            )
-            config_item.setToolTip(all_config_types)
-            self.composition_table.setItem(row, 4, config_item)
-            formula_item.setToolTip(
-                f"{self.tr('Atom counts')}: {atom_counts}\n"
-                f"{self.tr('Configuration types')}: "
-                f"{all_config_types or self.tr('Not labeled')}"
-            )
+                table.setItem(row, 0, formula_item)
+                count_item = QTableWidgetItem(f"{point.structure_count:,}")
+                count_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                table.setItem(row, 1, count_item)
+                share_item = QTableWidgetItem(f"{point.share:.2%}")
+                share_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                table.setItem(row, 2, share_item)
+                atom_counts = ", ".join(
+                    f"{count} atoms × {structures:,}"
+                    for count, structures in point.atom_counts
+                ) or "—"
+                table.setItem(row, 3, QTableWidgetItem(atom_counts))
+                all_config_types = ", ".join(
+                    f"{name} × {count:,}" for name, count in point.config_types
+                )
+                visible_config_types = ", ".join(
+                    f"{name} × {count:,}" for name, count in point.config_types[:4]
+                )
+                if len(point.config_types) > 4:
+                    visible_config_types += self.tr(" · +{count} more").format(
+                        count=len(point.config_types) - 4
+                    )
+                config_item = QTableWidgetItem(
+                    visible_config_types or self.tr("Not labeled")
+                )
+                config_item.setToolTip(all_config_types)
+                table.setItem(row, 4, config_item)
+                formula_item.setToolTip(
+                    f"{self.tr('Atom counts')}: {atom_counts}\n"
+                    f"{self.tr('Configuration types')}: "
+                    f"{all_config_types or self.tr('Not labeled')}"
+                )
+        finally:
+            for column, mode in resize_modes.items():
+                header.setSectionResizeMode(column, mode)
+            table.setUpdatesEnabled(updates_were_enabled)
+            table.blockSignals(signals_were_blocked)
         if points:
-            self.composition_table.selectRow(0)
+            table.selectRow(0)
 
     def _on_composition_table_selection_changed(self) -> None:
         row = self.composition_table.currentRow()

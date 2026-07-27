@@ -220,7 +220,7 @@ static bool normalise_pbc_and_validate_cell(
     std::string& error
 ) {
     auto pbc_it = additional.find("pbc");
-    std::string raw = pbc_it == additional.end() ? "F F F" : pbc_it->second.s;
+    std::string raw = pbc_it == additional.end() ? "T T T" : pbc_it->second.s;
     std::replace(raw.begin(), raw.end(), ',', ' ');
     std::vector<uint8_t> flags;
     const char* cursor = raw.data();

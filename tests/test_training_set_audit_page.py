@@ -4,6 +4,7 @@ import importlib
 import unittest
 from dataclasses import replace
 from pathlib import Path
+from unittest.mock import patch
 
 from PySide6.QtCore import QCoreApplication, QTranslator, Qt
 from PySide6.QtWidgets import (
@@ -980,7 +981,20 @@ class TestTrainingSetAuditWidget(unittest.TestCase):
         widget.finish_phase_analysis(result)
         self.assertEqual(widget.composition_view_selector.currentData(), "count")
         widget.composition_evidence_button.click()
-        widget.finish_phase_analysis(result)
+        with patch.object(
+            widget,
+            "_populate_composition_table",
+            wraps=widget._populate_composition_table,
+        ) as populate_table:
+            widget.finish_phase_analysis(result)
+            populate_table.reset_mock()
+            widget.composition_view_selector.setCurrentIndex(
+                widget.composition_view_selector.findData("count")
+            )
+            widget.composition_view_selector.setCurrentIndex(
+                widget.composition_view_selector.findData("structural")
+            )
+            populate_table.assert_not_called()
         self.assertEqual(widget.composition_view_selector.currentData(), "structural")
         self.assertEqual(
             widget.composition_chart.plot_id,

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
+import sys
 import threading
-import time
 
 import pytest
 
@@ -50,6 +50,9 @@ def test_parallel_parse_keeps_pos_first_frame_boundaries(monkeypatch):
     assert all(frame["lattice"].shape == (9,) for frame in frames)
     assert frames[0]["atomic_properties"]["pos"].shape == (47, 3)
     assert frames[0]["atomic_properties"]["species"][0] == "Fe"
+    assert all(
+        frame["additional_fields"]["pbc"] == "T T T" for frame in frames
+    )
 
 
 def test_parse_escaped_json_keeps_following_fields(monkeypatch):
@@ -68,26 +71,34 @@ def test_parse_escaped_json_keeps_following_fields(monkeypatch):
 
 def test_index_frames_yields_the_gil_during_large_scans():
     fastxyz = pytest.importorskip("NepTrainKit._native._io")
-    payload = memoryview(_single_atom_trajectory(50_000))
-    result = {}
-    ready = threading.Event()
+    payload = memoryview(_single_atom_trajectory(250_000))
+    observer_ready = threading.Event()
     start = threading.Event()
+    observed = threading.Event()
 
-    def run_index():
-        ready.set()
+    def observe_released_gil():
+        observer_ready.set()
         start.wait()
-        result["frames"] = fastxyz.index_frames(payload)
+        observed.set()
 
-    thread = threading.Thread(target=run_index)
-    thread.start()
-    assert ready.wait(timeout=5)
-    responsive_ticks = 0
-    start.set()
-    while thread.is_alive():
-        time.sleep(0.001)
-        if thread.is_alive():
-            responsive_ticks += 1
-    thread.join()
+    observer = threading.Thread(target=observe_released_gil)
+    observer.start()
+    assert observer_ready.wait(timeout=5)
 
-    assert len(result["frames"]) == 50_000
-    assert responsive_ticks > 0
+    previous_switch_interval = sys.getswitchinterval()
+    try:
+        # Prevent an ordinary Python bytecode timeslice from satisfying the
+        # assertion.  The observer can run here only while index_frames has
+        # explicitly released the GIL around its native scan.
+        sys.setswitchinterval(60.0)
+        start.set()
+        frames = fastxyz.index_frames(payload)
+        observed_during_call = observed.is_set()
+    finally:
+        sys.setswitchinterval(previous_switch_interval)
+        start.set()
+        observer.join(timeout=5)
+
+    assert not observer.is_alive()
+    assert len(frames) == 250_000
+    assert observed_during_call

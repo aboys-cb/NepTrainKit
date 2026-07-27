@@ -332,7 +332,7 @@ $$\theta_L=+\theta/2,\qquad \theta_R=-\theta/2$$
 - `SpinPair(i=...,j=...,a=...,sg=...)`：原子对 canting
 - `SpinPairG(A=...,B=...,a=...,sg=...)`：group pair canting
 
-所有输出写入 `initial_magmoms` 向量数组。
+所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 向量别名。
 
 ## 可复现性
 

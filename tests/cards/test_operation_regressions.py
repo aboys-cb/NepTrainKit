@@ -31,13 +31,14 @@ class TestOperationRegressionEdges(BaseCardTest):
         structure = self.structure.copy()
         structure.new_array("group", np.array(["A"] * len(structure), dtype=object))
 
-        cases = [
-            MagneticOrderOperation().run_structure(
+        with self.assertRaisesRegex(ValueError, "at least one vacancy rule"):
+            RandomVacancyOperation().run_structure(
                 structure,
-                MagneticOrderParams(gen_fm=False, gen_afm=False, gen_pm=False),
-            )[0],
+                RandomVacancyParams(rules=[]),
+            )
+
+        cases = [
             RandomDopingOperation().run_structure(structure, RandomDopingParams(rules=[]))[0],
-            RandomVacancyOperation().run_structure(structure, RandomVacancyParams(rules=[]))[0],
             RandomOccupancyOperation().run_structure(structure, RandomOccupancyParams(source="Manual", manual=""))[0],
             ConditionalReplaceOperation().run_structure(structure, ConditionalReplaceParams(target=""))[0],
             GroupLabelOperation().run_structure(structure, GroupLabelParams(overwrite=False))[0],
@@ -135,7 +136,7 @@ class TestOperationRegressionEdges(BaseCardTest):
         with self.assertRaisesRegex(ValueError, "finite"):
             CompositionGradientOperation._normalized_composition("Fe:nan,Co:1", ["Fe", "Co"])
 
-    def test_defect_invalid_edges_fail_and_adsorbate_uses_current_positions(self):
+    def test_defect_invalid_edges_fail_and_adsorbate_wrapper_uses_supplied_host_positions(self):
         with self.assertRaisesRegex(ValueError, "step must be positive"):
             defect_range_values((0.0, 1.0, 0.0))
 

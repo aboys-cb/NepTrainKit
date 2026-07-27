@@ -167,6 +167,39 @@ def test_card_group_finishes_after_enabled_post_filter():
     assert group.result_dataset == filter_card.result_dataset
 
 
+def test_card_group_toggle_preserves_individual_branch_choices():
+    group = CardGroup()
+    first = _OperationCard(_CopyOperation(), group)
+    second = _OperationCard(_CopyOperation(), group)
+    group.add_card(first)
+    group.add_card(second)
+    second.state_checkbox.setChecked(False)
+
+    group.state_checkbox.setChecked(False)
+    group.state_checkbox.setChecked(True)
+
+    assert first.check_state is True
+    assert second.check_state is False
+    assert "1/2 branch cards enabled" in group.summary_label.text()
+
+
+def test_card_group_allows_only_one_post_filter_without_losing_it():
+    group = CardGroup()
+    first_filter = _FilterCard(group)
+    second_filter = _FilterCard(group)
+
+    assert group.set_filter_card(first_filter) is True
+    with patch(
+        "NepTrainKit.ui.views._card.card_group.MessageManager.send_warning_message"
+    ) as warning:
+        assert group.set_filter_card(second_filter) is False
+
+    assert group.filter_card is first_filter
+    assert group.filter_layout.indexOf(first_filter) >= 0
+    assert group.filter_layout.indexOf(second_filter) == -1
+    warning.assert_called_once()
+
+
 def test_stopped_card_reports_cancellation_and_disables_partial_output():
     card = _OperationCard(_SlowOperation())
     card.set_dataset([Atoms("H") for _ in range(8)])

@@ -21,6 +21,28 @@ DISCLAIMER = (
 )
 
 _PHASE_ORDER = PHASE_PARTITION_LABELS
+_PHASE_NAMES = {
+    "fcc": "FCC",
+    "bcc": "BCC",
+    "hcp": "HCP",
+    "diamond": "Diamond (A4)",
+    "l10": "L1₀",
+    "l12": "L1₂",
+    "b1": "B1 (rock-salt)",
+    "b2": "B2 (CsCl)",
+    "b3": "B3 (zinc blende)",
+    "b4": "B4 (wurtzite)",
+    "fluorite": "C1 (fluorite)",
+    "nias": "B8₁ (NiAs)",
+    "d03": "D0₃",
+    "l21": "L2₁ (full-Heusler)",
+    "c1b": "C1ᵦ (half-Heusler)",
+    "d019": "D0₁₉",
+    "c14": "C14 Laves",
+    "c15": "C15 Laves",
+    "mixed": "Mixed local structure",
+    "unresolved": "Unresolved",
+}
 _MAGNETIC_ORDER = MAGNETIC_PARTITION_LABELS
 _MAGNETIC_NAMES = {
     "fm": "FM",
@@ -175,7 +197,7 @@ def _render_inventory(result: AuditResult) -> str:
         else:
             phase_label, phase_fraction = phase_point.structure_phase_fractions[0]
             phase_text = (
-                f"{phase_label.upper()} {phase_fraction:.0%} "
+                f"{_PHASE_NAMES.get(phase_label, phase_label)} {phase_fraction:.0%} "
                 f"({phase_point.analyzed_structure_count}/{point.structure_count} analyzed)"
             )
         magnetic_point = magnetic_by_composition.get(point.reduced_counts)
@@ -202,7 +224,7 @@ def _render_inventory(result: AuditResult) -> str:
         f'<strong>{len(inventory.composition_points)}</strong> exact composition points · '
         f'{escape(" · ".join(inventory.elements))}</p>'
         '<div class="table-wrap"><table><thead><tr>'
-        '<th>Exact composition</th><th>Structures</th><th>Share</th><th>Main local phase</th><th>Magnetic order</th><th>Atom counts</th>'
+        '<th>Exact composition</th><th>Structures</th><th>Share</th><th>Main structural phase</th><th>Magnetic order</th><th>Atom counts</th>'
         f'</tr></thead><tbody>{"".join(rows)}</tbody></table></div>'
         + (
             '<p class="muted">Phase evidence includes every audited structure and classifies local geometry; '
@@ -265,7 +287,8 @@ def _render_phase_composition_maps(result: AuditResult) -> str:
                 segments.append(
                     f'<span class="phase-segment phase-{phase}" '
                     f'style="width:{100.0 * count / total:.6f}%" '
-                    f'title="{escape(phase.upper())}: {count:,} / {total:,}"></span>'
+                    f'title="{escape(_PHASE_NAMES.get(phase, phase))}: '
+                    f'{count:,} / {total:,}"></span>'
                 )
             rows.append(
                 '<div class="phase-map-row">'
@@ -284,7 +307,8 @@ def _render_phase_composition_maps(result: AuditResult) -> str:
     if not sections:
         return ""
     legend = "".join(
-        f'<span><i class="phase-{phase}"></i>{escape(phase.upper())}</span>'
+        f'<span><i class="phase-{phase}"></i>'
+        f'{escape(_PHASE_NAMES.get(phase, phase))}</span>'
         for phase in _PHASE_ORDER
         if any(
             phase == phase_partition_label(structure)
@@ -671,7 +695,11 @@ def render_audit_report_html(result: AuditResult) -> str:
         "    .phase-track { display: flex; height: 12px; overflow: hidden; background: #edf1f4; border-radius: 3px; }\n"
         "    .phase-segment { display: block; min-width: 1px; }\n"
         "    .phase-fcc { background: #159a9c; } .phase-bcc { background: #3b6fb6; } .phase-hcp { background: #e8871e; }\n"
-        "    .phase-l12 { background: #775da6; } .phase-c14 { background: #2e8b57; } .phase-c15 { background: #b44c6c; }\n"
+        "    .phase-diamond { background: #546e7a; } .phase-l10 { background: #9c6ade; } .phase-l12 { background: #775da6; }\n"
+        "    .phase-b1 { background: #00897b; } .phase-b2 { background: #4169a1; } .phase-b3 { background: #26a69a; }\n"
+        "    .phase-b4 { background: #d9822b; } .phase-fluorite { background: #00acc1; } .phase-nias { background: #8d6e63; }\n"
+        "    .phase-d03 { background: #5c6bc0; } .phase-l21 { background: #ab47bc; } .phase-c1b { background: #ec407a; }\n"
+        "    .phase-d019 { background: #ff7043; } .phase-c14 { background: #2e8b57; } .phase-c15 { background: #b44c6c; }\n"
         "    .phase-mixed { background: #c08a3e; } .phase-unresolved { background: #89969a; }\n"
         "    .magnetic-fm { background:#d1495b; } .magnetic-afm { background:#3b6fb6; } .magnetic-ferrimagnetic { background:#a15c9b; }\n"
         "    .magnetic-afm_layered { background:#5b8cd0; } .magnetic-afm_double_layered { background:#244b7e; }\n"

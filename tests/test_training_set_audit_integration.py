@@ -800,13 +800,17 @@ class TestTrainingSetAuditIntegration(unittest.TestCase):
                 [Atoms("Fe", positions=[[0.0, 0.0, 0.0]])],
             )
 
-        result_path = callbacks["func"]()
-        callbacks["finished"](result_path)
+        result_path, converted = callbacks["func"]()
+        callbacks["finished"]((result_path, converted))
 
-        self.assertTrue(Path(result_path).is_file())
+        self.assertFalse(Path(result_path).exists())
+        self.assertEqual(len(converted), 1)
+        self.assertEqual(converted[0].elements.tolist(), ["Fe"])
         window.switchTo.assert_called_once_with(window.show_nep_interface)
         window.show_nep_interface.check_nep_result.assert_called_once_with(
-            result_path
+            result_path,
+            structures=converted,
+            cache_outputs=False,
         )
         self.assertIsNone(window._make_dataset_handoff_thread)
         window._make_dataset_handoff_dir.cleanup()

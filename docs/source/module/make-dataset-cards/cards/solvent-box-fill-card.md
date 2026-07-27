@@ -1,14 +1,14 @@
 <!-- card-schema: {"card_name": "Solvent Box Fill", "source_file": "src/NepTrainKit/ui/views/_card/solvent_box_fill_card.py", "serialized_keys": ["params"]} -->
 
-# Solvent Box Fill
+# 周期溶剂盒（Solvent Box Fill）
 
 `Group`: `Organic` | `Class`: `SolventBoxFillCard`
 
 ## 功能说明
 
-`Solvent Box Fill` 在已有周期性晶胞中插入溶剂分子，适合从干结构或稀疏溶剂结构生成整盒溶剂候选初态。输入结构必须有非奇异 cell，并且至少一个周期方向开启。
+`Solvent Box Fill` 在已有周期性晶胞的整个 cell 中随机插入溶剂分子，适合从空盒、干结构或稀疏溶剂结构生成周期溶剂候选初态。输入可以没有原子，但必须有有限且非奇异的 cell，并且至少一个周期方向开启。
 
-它解决的是“训练集缺少周期溶剂环境”的覆盖问题，不替代分子动力学平衡或量化优化。输出仍需要做几何筛查和后续 DFT/MD 处理。
+它解决的是“训练集缺少周期溶剂环境”的覆盖问题，不替代分子动力学平衡或量化优化。各模式下分子位置和整体取向都采用随机采样；`water`、`loose`、`dense` 主要改变默认碰撞半径缩放，并不会生成局部离子水合取向。
 
 ## 操作示例
 
@@ -28,17 +28,17 @@
 
 `str`，默认是一个三原子水分子 XYZ。这里保存溶剂分子文本，而不是文件路径。
 
-#### Structures（structures）
+#### Independent outputs per input（structures）
 
 `int`，默认 1。每个输入结构生成多少个独立填充版本。
 
 ### 数量控制
 
-#### Count Mode（count_mode）
+#### Target amount（count_mode）
 
-`str`，默认 `fixed`。可选 `fixed`、`density`。`fixed` 直接使用 `solvent_count`；`density` 根据 cell 体积、溶剂分子质量、`density` 和 `fill_packing` 估算数量。
+`str`，默认 `fixed`。可选 `fixed`、`density`。`fixed` 直接使用目标分子数；`density` 根据**完整 cell 体积**、溶剂分子质量、目标密度和数量乘数估算一个名义分子数。
 
-#### Solvent Count（solvent_count）
+#### Target solvent molecules（solvent_count）
 
 `int`，默认 100。`count_mode="fixed"` 时生效。
 
@@ -46,37 +46,41 @@
 
 `float`，默认 1.0，单位 g/cm³。`count_mode="density"` 时用于估算溶剂分子数量。
 
-#### Fill Packing（fill_packing）
+#### Density count multiplier（fill_packing）
 
-`float`，默认 1.0。`count_mode="density"` 时作为密度缩放因子；小于 1 会降低目标分子数。
+`float`，默认 1.0，范围 `(0, 1]`。`count_mode="density"` 时乘到名义纯溶剂分子数上；小于 1 会降低目标数量。大于 1 没有清楚的“填充比例”含义，因此程序不再静默截断，而是直接报错。
+
+:::{warning}
+密度模式不会扣除宿主原子、已有溶剂或真空层占据的体积，也不会根据溶质质量反算最终溶液密度。对含表面、溶质或大块固体的 cell，它只是按完整 cell 体积给出的初始数量估计；请看卡片预览中的解析数量，再用 `fill_packing` 或固定数量修正。
+:::
 
 ### 采样和几何约束
 
-#### Sampling Mode（sampling_mode）
+#### Collision profile（sampling_mode）
 
-`str`，默认 `auto`。可选 `auto`、`general`、`water`、`loose`、`dense`。整盒填充不会因为盒子里有离子就自动切到 `ion-water`，因为它没有局部中心原子。
+`str`，默认 `auto`。可选 `auto`、`general`、`water`、`loose`、`dense`。`auto` 只根据溶剂分子是否恰好为 H₂O 解析成 `water` 或 `general`；整盒填充没有局部中心，因此不会进入 `ion-water`。这些配置主要控制 `min_distance=0` 时的默认元素半径缩放，分子整体取向始终是随机的。
 
-#### Min Distance（min_distance）
+#### Uniform minimum-distance override（min_distance）
 
-`float`，默认 0。大于 0 时作为全局原子-原子最小距离；等于 0 时使用元素碰撞半径和 `collision_scale`。
+`float`，默认 0。大于 0 时，所有试放溶剂原子与已有原子之间使用同一个最小距离，并忽略 `collision_scale`；等于 0 时使用元素碰撞半径。
 
-#### Collision Scale（collision_scale）
+#### Element-radius collision scale（collision_scale）
 
-`float`，默认 0。等于 0 时使用 `sampling_mode` 的内置半径缩放；大于 0 时覆盖模式默认值。
+`float`，默认 0。等于 0 时使用碰撞配置的内置缩放；大于 0 时覆盖配置默认值。仅在 `min_distance=0` 时生效。
 
 #### Max Attempts Per Solvent（max_attempts_per_solvent）
 
-`int`，默认 500。每个目标溶剂分子的最大随机放置尝试次数。高密度盒子触顶时，优先检查目标数量和 `min_distance`，再考虑增加它。
+`int`，默认 500。总尝试上限是“该值 × 目标分子数”；若连续拒绝次数达到内部停滞阈值，也会提前停止。高密度盒子触顶时，优先检查目标数量和碰撞规则，再考虑增加它。
 
 #### Strict Count（strict_count）
 
-`bool`，默认 true。打开后，未插满目标数量就失败；关闭后允许输出部分填充结果。
+`bool`，默认 true。打开后，未插满目标数量就失败；关闭后允许输出至少放入 1 个分子的部分结果。若一个分子都放不进去，仍会报错，避免把未变化的输入标成“已填盒”。
 
 ### 柔性溶剂
 
 #### Flex Solvent（flex_solvent）
 
-`bool`，默认 false。打开后复用仓库已有 torsion-guard core 生成溶剂构象池，再用于填盒。
+`bool`，默认 false。打开后复用“有机构象采样”的几何启发式拓扑生成溶剂构象池，再用于填盒。水没有可旋转单键，因此普通水盒不需要打开；打开后主要只增加高斯坐标噪声。
 
 #### Flex Pool（flex_pool）
 
@@ -84,7 +88,7 @@
 
 #### Flex Torsion Range（flex_torsion_range）
 
-`tuple[float, float]`，默认 `(-180.0, 180.0)`，单位 degree。柔性构象生成时的扭转角范围。
+`tuple[float, float]`，默认 `(-180.0, 180.0)`，单位 degree。柔性构象生成时附加的扭转角增量范围。
 
 #### Flex Max Torsions（flex_max_torsions）
 
@@ -110,7 +114,7 @@
 
 ```json
 {
-  "class": "Solvent Box Fill",
+  "class": "SolventBoxFillCard",
   "check_state": true,
   "params": {
     "structures": 1,
@@ -130,7 +134,7 @@
 
 ```json
 {
-  "class": "Solvent Box Fill",
+  "class": "SolventBoxFillCard",
   "check_state": true,
   "params": {
     "structures": 3,
@@ -155,12 +159,13 @@
 ## 常见问题
 
 - 输入没有有效周期 cell：这张卡需要非奇异 cell 和至少一个周期方向；非周期局部溶剂环境请用 `Local Solvation`。
-- 无法插满目标数量：降低 `solvent_count` 或 `fill_packing`，减小 `min_distance` 或 `collision_scale`，增大 cell；也可以关闭 `strict_count` 先保留部分可用候选。
-- 按密度估算的数量不符合预期：数量由 cell 体积、溶剂分子质量、`density` 和 `fill_packing` 共同决定，先检查 cell 单位、真空层和 `solvent_xyz` 是否正确。
+- 无法插满目标数量：降低固定数量或密度数量乘数，减小统一最小距离或元素半径缩放，增大 cell；也可以关闭严格数量先保留非零的部分结果。
+- 按密度估算的数量不符合预期：数量由完整 cell 体积、溶剂分子质量、目标密度和数量乘数共同决定，不会扣除宿主占据体积。先检查 cell 单位、真空层、已有原子和 `solvent_xyz`。
+- 想生成离子第一水合壳：改用 `Local Solvation`。整盒卡不会按离子元素选择 ion–O 距离或水分子取向。
 
 ## 输出标签
 
-`SolvBox(mode={mode},n={placed})`
+`SolvBox(mode={mode},req={目标数},ok={实际放入数})`
 
 ## 可复现性
 

@@ -1441,7 +1441,8 @@ class AseTrajectoryImporter:
         ext = candidate.suffix.lower()
         # Target ASE formats that are not already handled by dedicated importers
         return ext in {".traj"}
-    def _ase_atoms_to_structure(self, atoms) -> Structure:
+    @staticmethod
+    def _ase_atoms_to_structure(atoms) -> Structure:
         """Convert an ASE ``Atoms`` object into a :class:`Structure`."""
         float_dtype = get_storage_float_dtype()
         lattice = np.asarray(atoms.cell.array, dtype=float_dtype)
@@ -1578,6 +1579,13 @@ class AseTrajectoryImporter:
         except Exception as exc:
             raise ValueError(f"Failed to read ASE trajectory {candidate}: {exc}") from exc
 register_importer(AseTrajectoryImporter())
+
+
+def ase_atoms_to_structure(atoms) -> Structure:
+    """Convert an in-memory ASE ``Atoms`` object without a file round trip."""
+    return AseTrajectoryImporter._ase_atoms_to_structure(atoms)
+
+
 def write_extxyz(file_path: str, structures: List[Structure]) -> str:
     """Write structures to an EXTXYZ file using Structure.write()."""
     with open(file_path, "w", encoding="utf8") as f:

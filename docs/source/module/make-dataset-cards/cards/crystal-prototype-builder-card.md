@@ -53,12 +53,12 @@
 | `fcc` | 常规面心立方 cubic cell | fcc 体相、合金母相、普通应变或缺陷流程 |
 | `bcc` | 常规体心立方 cubic cell | bcc 体相、Bain 路径、空位或磁性流程 |
 | `hcp` | 六方密堆结构 | hcp 亚稳相、相稳定性对比 |
-| `fcc111` | 第三晶胞方向垂直于 fcc (111) 面的周期 slab-oriented cell | 接 `Strict GSFE Path`，扫 fcc (111) 面内滑移 |
+| `fcc111` | 第三晶胞方向垂直于 fcc (111) 面的周期 slab-oriented cell | 接 `Stacking Fault / GSFE Path`，扫 fcc (111) 面内滑移 |
 
-`fcc111` 不是带真空的表面 slab；它仍然是周期 cell，只是把原始 fcc 的 (111) 面转成当前 cell 的 `(001)` 面。这样 `Strict GSFE Path` 可以安全地按第三晶胞方向切开上下两半。
+`fcc111` 不是带真空的表面 slab；它仍然是周期 cell，只是把原始 fcc 的 (111) 面转成当前 cell 的 `(001)` 面。这样 `Stacking Fault / GSFE Path` 可以安全地按第三晶胞方向切开上下两半。
 
 ### Element（element）
-`str`，默认 `'Cu'`。元素符号，如 `Cu`、`Ni`、`Si`。对于化合物原型（如 rocksalt），这里只用第一个元素——后续需要用 `Composition Sweep` + `Random Occupancy` 来实现多元素分布。
+`str`，默认 `'Cu'`。元素符号，如 `Cu`、`Ni`、`Si`。对于化合物原型（如 rocksalt），这里只用第一个元素——后续需要用 `Composition Space Sampling` + `Random Occupancy` 来实现多元素分布。
 
 ### A Range（a_range）
 `tuple[float, float, float]`，默认 `(3.6, 3.6, 0.1)`。晶格常数 a 的扫描范围，格式 `[最小值, 最大值, 步长]`，单位 Å。单点扫描如 `[3.52, 3.52, 0.1]` 产 1 个结构；区间扫描如 `[3.50, 3.60, 0.02]` 产 6 个。步长越小结构越多，记得用 `max_outputs` 控制总量。
@@ -134,7 +134,7 @@
 }
 ```
 
-### fcc111 GSFE 起点（1 个输出，接 Strict GSFE Path）
+### fcc111 GSFE 起点（1 个输出，接 Stacking Fault / GSFE Path）
 ```json
 {
   "class": "CrystalPrototypeBuilderCard",
@@ -155,9 +155,9 @@
 ## 推荐组合
 
 - `Crystal Prototype Builder` → `Atomic Perturb`：先建原型，再加坐标噪声
-- `Crystal Prototype Builder` → `Composition Sweep` → `Random Occupancy`：先生成干净模板，再进行成分修饰
+- `Crystal Prototype Builder` → `Composition Space Sampling` → `Random Occupancy`：先生成干净模板，再进行成分修饰
 - `Crystal Prototype Builder` → `Lattice Strain`：先建原型，再做应变扫描
-- `Crystal Prototype Builder(fcc111)` → `Strict GSFE Path`：先生成 slab-oriented 周期 cell，再扫 fcc (111) 的 GSFE 路径
+- `Crystal Prototype Builder(fcc111)` → `Stacking Fault / GSFE Path`：先生成 slab-oriented 周期 cell，再扫 fcc (111) 的 GSFE 路径
 
 ## 常见问题
 
@@ -167,7 +167,7 @@
 
 **hcp 结构不是六角的。** hcp 的 ASE bulk 构造需要正确的 covera。确认 covera 在 1.6 左右。
 
-**Strict GSFE Path 报 slab-oriented 错误。** 普通 `fcc` cell 的 `(111)` 面不等于当前 cell 的 `(001)` 面，第三晶胞方向也不垂直于这个面。用 `lattice = "fcc111"` 重新生成起点结构，再在 `Strict GSFE Path` 里使用 `plane_hkl = [0, 0, 1]`。
+**Stacking Fault / GSFE Path 报 slab-oriented 错误。** 普通 `fcc` cell 的 `(111)` 面不等于当前 cell 的 `(001)` 面，第三晶胞方向也不垂直于这个面。用 `lattice = "fcc111"` 重新生成起点结构，再在层错卡中使用 `plane_hkl = [0, 0, 1]`。
 
 ## 输出标签
 

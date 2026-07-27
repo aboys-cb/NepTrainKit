@@ -71,6 +71,18 @@ def test_nuitka_build_copies_and_verifies_chinese_translation_catalog():
     assert "Chinese translation catalog is missing" in workflow
 
 
+def test_nuitka_build_validates_flat_standalone_layout():
+    workflow = (
+        ROOT / ".github" / "workflows" / "Build-with-Nuitka.yml"
+    ).read_text(encoding="utf-8")
+
+    assert (
+        'Test-Path -LiteralPath "$dist/NepTrainKit.exe" -PathType Leaf'
+        in workflow
+    )
+    assert 'Remove-Item -Path "$dist/NepTrainKit"' not in workflow
+
+
 def test_windows_standalone_name_matches_verified_x86_64_architecture():
     workflow = (
         ROOT / ".github" / "workflows" / "Build-with-Nuitka.yml"

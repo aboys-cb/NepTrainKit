@@ -98,17 +98,24 @@ class TestBenchmarkStage1Core(unittest.TestCase):
         np.testing.assert_allclose(displacement[2:], [[0.5, 0.0, 0.0], [0.5, 0.0, 0.0]], atol=1e-12)
         self.assertIn("GSFE(hkl=001,uvw=100,d=0.5)", shifted.info.get("Config_type", ""))
 
-    def test_strict_gsfe_projected_slip_is_in_plane(self):
-        cell = np.array([[2.0, 0.0, 0.0], [0.5, 2.5, 0.0], [0.1, 0.2, 3.0]])
-        hkl = (1, 1, 1)
-        uvw = (1, 1, -2)
-        normal = StrictGSFEPathOperation.plane_normal(cell, hkl)
-        slip = np.asarray(uvw, dtype=float) @ cell
-        projected = slip - np.dot(slip, normal) * normal
+    def test_strict_gsfe_rejects_a_slip_direction_with_normal_component(self):
+        atoms = Atoms(
+            "H4",
+            positions=[[0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 0, 3]],
+            cell=[8, 8, 8],
+            pbc=True,
+        )
 
-        self.assertAlmostEqual(float(np.dot(projected, normal)), 0.0, places=12)
+        with self.assertRaisesRegex(ValueError, "must lie in the fault plane"):
+            StrictGSFEPathOperation().run_structure(
+                atoms,
+                StrictGSFEPathParams(
+                    plane_hkl=(0, 0, 1),
+                    slip_uvw=(1, 0, 1),
+                ),
+            )
 
-    def test_strict_gsfe_fraction_of_vector_uses_projected_slip(self):
+    def test_strict_gsfe_fraction_of_vector_uses_explicit_slip(self):
         atoms = Atoms("H4", positions=[[0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 0, 3]], cell=[8, 8, 8], pbc=True)
 
         shifted = StrictGSFEPathOperation().run_structure(
@@ -175,6 +182,36 @@ class TestBenchmarkStage1Core(unittest.TestCase):
         self.assertTrue(np.all(wrapped.get_scaled_positions(wrap=False) >= -1e-12))
         self.assertTrue(np.all(wrapped.get_scaled_positions(wrap=False) < 1.0 + 1e-12))
 
+    def test_strict_gsfe_middle_uses_an_interlayer_gap_and_previews_geometry(self):
+        atoms = Atoms(
+            "H6",
+            positions=[
+                [0, 0, 0],
+                [1, 0, 0],
+                [0, 0, 1],
+                [1, 0, 1],
+                [0, 0, 2],
+                [1, 0, 2],
+            ],
+            cell=[4, 4, 4],
+            pbc=True,
+        )
+        params = StrictGSFEPathParams(
+            displacement_range=(0.0, 0.5, 0.25),
+            displacement_unit="angstrom",
+            cut_mode="middle",
+            wrap=False,
+        )
+
+        summary = StrictGSFEPathOperation.geometry_summary(atoms, params)
+
+        self.assertEqual(summary["layer_count"], 3)
+        self.assertEqual(summary["stationary_count"], 4)
+        self.assertEqual(summary["moved_count"], 2)
+        self.assertEqual(summary["output_count"], 3)
+        self.assertAlmostEqual(summary["cut_position"], 1.5)
+        self.assertAlmostEqual(summary["slip_length"], 4.0)
+
     def test_strict_gsfe_rejects_invalid_geometry(self):
         atoms = Atoms("H3", positions=[[0, 0, 0], [0, 0, 1], [0, 0, 2]], cell=[5, 5, 5], pbc=True)
         op = StrictGSFEPathOperation()
@@ -182,10 +219,36 @@ class TestBenchmarkStage1Core(unittest.TestCase):
             op.run_structure(atoms, StrictGSFEPathParams(plane_hkl=(0, 0, 0)))
         with self.assertRaisesRegex(ValueError, "slip_uvw"):
             op.run_structure(atoms, StrictGSFEPathParams(slip_uvw=(0, 0, 0)))
-        with self.assertRaisesRegex(ValueError, "parallel"):
+        with self.assertRaisesRegex(ValueError, "fault plane"):
             op.run_structure(atoms, StrictGSFEPathParams(plane_hkl=(0, 0, 1), slip_uvw=(0, 0, 1)))
         with self.assertRaisesRegex(ValueError, "layer_index"):
             op.run_structure(atoms, StrictGSFEPathParams(cut_mode="layer_index", layer_index=2))
+        with self.assertRaisesRegex(ValueError, "integers"):
+            op.run_structure(atoms, StrictGSFEPathParams(plane_hkl=(0, 0, 1.5)))
+        with self.assertRaisesRegex(ValueError, "integer"):
+            op.run_structure(
+                atoms,
+                StrictGSFEPathParams(
+                    cut_mode="layer_index",
+                    layer_index=0.5,  # type: ignore[arg-type]
+                ),
+            )
+        with self.assertRaisesRegex(ValueError, "both sides"):
+            op.run_structure(
+                atoms,
+                StrictGSFEPathParams(
+                    cut_mode="fractional",
+                    cut_fraction=1.0,
+                ),
+            )
+        single_layer = Atoms(
+            "H2",
+            positions=[[0, 0, 0], [1, 0, 0]],
+            cell=[5, 5, 5],
+            pbc=True,
+        )
+        with self.assertRaisesRegex(ValueError, "two distinct planes"):
+            op.run_structure(single_layer, StrictGSFEPathParams())
 
     def test_strict_gsfe_rejects_non_slab_oriented_plane(self):
         atoms = Atoms(
@@ -215,6 +278,38 @@ class TestBenchmarkStage1Core(unittest.TestCase):
             self.assertGreater(float(distances.min()), 2.0)
             self.assertFalse(np.any(distances < 1e-6))
         np.testing.assert_allclose(frames[0].get_positions(), frames[-1].get_positions(), atol=1e-12)
+
+    def test_strict_gsfe_reproduces_reference_fcc111_half_shift_path(self):
+        atoms = fcc111(
+            "Cu",
+            size=(1, 2, 4),
+            a=3.62,
+            vacuum=None,
+            periodic=True,
+            orthogonal=True,
+        )
+        frames = StrictGSFEPathOperation().run_structure(
+            atoms,
+            StrictGSFEPathParams(
+                plane_hkl=(0, 0, 1),
+                slip_uvw=(0, 1, 0),
+                displacement_range=(0.0, 1.47786, 0.073893),
+                displacement_unit="angstrom",
+                cut_mode="fractional",
+                cut_fraction=0.5,
+                wrap=False,
+            ),
+        )
+
+        self.assertEqual(len(frames), 21)
+        displacement = frames[-1].positions - atoms.positions
+        np.testing.assert_allclose(displacement[:4], 0.0, atol=1e-12)
+        np.testing.assert_allclose(
+            displacement[4:],
+            np.tile([0.0, 1.47786, 0.0], (4, 1)),
+            atol=1e-12,
+        )
+        self.assertAlmostEqual(1.47786, 3.62 / np.sqrt(6.0), places=5)
 
     def test_crystal_prototype_builder_fcc111(self):
         frames = CrystalPrototypeBuilderOperation().generate(

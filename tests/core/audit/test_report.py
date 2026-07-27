@@ -127,6 +127,64 @@ def test_report_includes_exact_dataset_inventory():
     assert "phase-fcc" in html
 
 
+def test_report_uses_readable_names_for_confirmed_prototypes():
+    result = AuditResult(
+        dataset_id="un.xyz",
+        generated_at="now",
+        inputs={"structure_count": 1},
+        inventory=DatasetInventory(
+            structure_count=1,
+            elements=("N", "U"),
+            composition_points=(
+                CompositionPoint(
+                    reduced_counts=(1, 1),
+                    fractions=(0.5, 0.5),
+                    structure_count=1,
+                    share=1.0,
+                    structure_indices=(0,),
+                    atom_counts=((8, 1),),
+                ),
+            ),
+        ),
+        phase_inventory=PhaseInventory(
+            schema_version="phase-inventory-v2",
+            method_id="adaptive-cna-prototype-v2",
+            reference_bank_id="aflow-common-prototypes-v2",
+            analysis_strategy="all-structures-v1",
+            source_structure_count=1,
+            analyzed_structure_count=1,
+            analyzed_atom_count=8,
+            composition_points=(
+                CompositionPhaseEvidence(
+                    reduced_counts=(1, 1),
+                    source_structure_count=1,
+                    analyzed_structure_count=1,
+                    analyzed_atom_count=8,
+                    local_phase_fractions=(("unresolved", 1.0),),
+                    structure_phase_fractions=(("b1", 1.0),),
+                    confidence_counts=(("strong", 1),),
+                    structures=(
+                        StructurePhaseEvidence(
+                            source_index=0,
+                            atom_count=8,
+                            phase_label="b1",
+                            confidence_state="strong",
+                            local_phase_fractions=(("unresolved", 1.0),),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    )
+
+    html = render_audit_report_html(result)
+
+    assert "B1 (rock-salt) 100% (1/1 analyzed)" in html
+    assert 'title="B1 (rock-salt): 1 / 1"' in html
+    assert '<i class="phase-b1"></i>B1 (rock-salt)' in html
+    assert ".phase-b1 { background:" in html
+
+
 def test_report_includes_magnetic_order_map_and_boundary():
     structure = StructureMagneticEvidence(
         source_index=0, atom_count=16, spin_atom_count=16,

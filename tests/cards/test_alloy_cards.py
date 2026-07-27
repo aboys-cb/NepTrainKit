@@ -97,33 +97,110 @@ class TestAlloyCards(BaseCardTest):
         self.assertEqual(parse_composition("Ge:0.7,C"), {"Ge": 0.7, "C": 1.0})
 
     def test_conditional_replace_operation_is_ui_independent(self):
-        results = ConditionalReplaceOperation().run_structure(
-            self.structure.copy(),
+        base = Atoms(
+            "Si6",
+            positions=np.column_stack(
+                [np.zeros(6), np.zeros(6), np.arange(6, dtype=float)]
+            ),
+            cell=[8.0, 8.0, 8.0],
+            pbc=True,
+        )
+        result = ConditionalReplaceOperation().run_structure(
+            base,
             ConditionalReplaceParams(
                 target="Si",
                 replacements="Ge:1",
-                condition="all",
+                condition="z>=3",
                 seed=1,
                 mode=1,
             ),
-        )
+        )[0]
 
-        self.assertEqual(len(results), 1)
-        self.assertTrue(all(symbol == "Ge" for symbol in results[0].get_chemical_symbols()))
-        self.assertIn("Repl(Si->Ge)", results[0].info.get("Config_type", ""))
+        self.assertEqual(
+            result.get_chemical_symbols(),
+            ["Si", "Si", "Si", "Ge", "Ge", "Ge"],
+        )
+        np.testing.assert_allclose(result.positions, base.positions)
+        np.testing.assert_allclose(result.cell.array, base.cell.array)
+        np.testing.assert_array_equal(result.pbc, base.pbc)
+        self.assertIn("Repl(Si->Ge)", result.info.get("Config_type", ""))
+
+    def test_conditional_replace_allocation_modes_and_seed(self):
+        base = Atoms(
+            "Si20",
+            positions=np.column_stack(
+                [np.zeros(20), np.zeros(20), np.arange(20, dtype=float)]
+            ),
+            cell=[10.0, 10.0, 22.0],
+            pbc=True,
+        )
+        operation = ConditionalReplaceOperation()
+        random_params = ConditionalReplaceParams(
+            target="Si",
+            replacements="Ge:0.5,C:0.5",
+            condition="all",
+            seed=7,
+            mode=0,
+        )
+        random_a = operation.run_structure(base, random_params)[0]
+        random_b = operation.run_structure(base, random_params)[0]
+        exact = operation.run_structure(
+            base,
+            ConditionalReplaceParams(
+                target="Si",
+                replacements="Ge:0.5,C:0.5",
+                condition="all",
+                seed=7,
+                mode=1,
+            ),
+        )[0]
+
+        self.assertEqual(
+            random_a.get_chemical_symbols(),
+            random_b.get_chemical_symbols(),
+        )
+        self.assertNotIn("Si", random_a.get_chemical_symbols())
+        self.assertEqual(random_a.get_chemical_symbols().count("Ge"), 9)
+        self.assertEqual(random_a.get_chemical_symbols().count("C"), 11)
+        self.assertEqual(exact.get_chemical_symbols().count("Ge"), 10)
+        self.assertEqual(exact.get_chemical_symbols().count("C"), 10)
 
     def test_conditional_replace_card_roundtrip(self):
         card = ConditionalReplaceCard()
+        self.assertEqual(card.condition_edit.text(), "all")
+        self.assertFalse(card.seed_checkbox.isChecked())
+        self.assertEqual(card.get_params().seed, 0)
         card.target_edit.setText("Si")
         card.replacements_edit.setText("Ge:0.5,C:0.5")
         card.condition_edit.setText("z>=0")
+        card.seed_checkbox.setChecked(True)
         card.seed_frame.set_input_value([9])
-        card.mode_combo.setCurrentIndex(1)
+        card.mode_combo.setCurrentIndex(card.mode_combo.findData(1))
 
         restored = ConditionalReplaceCard()
         restored.from_dict(card.to_dict())
 
         self.assertEqual(restored.get_params(), card.get_params())
+        self.assertTrue(restored.seed_checkbox.isChecked())
+        self.assertEqual(restored.mode_combo.currentData(), 1)
+
+        legacy = ConditionalReplaceCard()
+        legacy.from_dict(
+            {
+                "class": "ConditionalReplaceCard",
+                "check_state": True,
+                "target": "Si",
+                "new_atoms": "Ge,C",
+                "ratios": "0.5,0.5",
+                "condition": "",
+                "seed": [0],
+                "mode": 1,
+            }
+        )
+        self.assertEqual(legacy.get_params().condition, "all")
+        self.assertEqual(legacy.get_params().replacements, "Ge:0.5,C:0.5")
+        self.assertFalse(legacy.seed_checkbox.isChecked())
+        self.assertEqual(legacy.mode_combo.currentData(), 1)
 
     def test_composition_sweep_and_random_occupancy_cards(self):
         base = self.structure.copy()
@@ -131,7 +208,7 @@ class TestAlloyCards(BaseCardTest):
 
         sweep = CompositionSweepCard()
         sweep.elements_edit.setText("Co,Ni")
-        sweep.order_combo.setCurrentText("2")
+        sweep.order_combo.setCurrentIndex(sweep.order_combo.findData("2"))
         sweep.method_combo.setCurrentText("Grid")
         sweep.step_frame.set_input_value([0.5])
         sweep.include_endpoints_checkbox.setChecked(True)
@@ -173,6 +250,42 @@ class TestAlloyCards(BaseCardTest):
 
         self.assertEqual(len(swept), 3)
         self.assertTrue(all("Comp(" in atoms.info.get("Config_type", "") for atoms in swept))
+        for atoms in swept:
+            self.assertEqual(atoms.get_chemical_symbols(), base.get_chemical_symbols())
+            np.testing.assert_allclose(atoms.positions, base.positions)
+            np.testing.assert_allclose(atoms.cell.array, base.cell.array)
+            np.testing.assert_array_equal(atoms.pbc, base.pbc)
+
+        card = CompositionSweepCard()
+        card.set_params(
+            CompositionSweepParams(
+                elements="Co,Cr,Ni,Al,Fe",
+                order="5,4,3,2",
+                method="Sobol",
+                n_points=9,
+                min_fraction=0.01,
+                use_seed=True,
+                seed=7,
+                max_outputs=20,
+                budget_mode="Capacity-weighted",
+            )
+        )
+        restored = CompositionSweepCard()
+        restored.from_dict(card.to_dict())
+        self.assertEqual(restored.get_params(), card.get_params())
+        self.assertEqual(restored.order_combo.currentData(), "5,4,3,2")
+        self.assertEqual(
+            restored.budget_mode_combo.currentData(),
+            "Capacity-weighted",
+        )
+
+        restored.set_params(
+            CompositionSweepParams(
+                elements="Co,Cr,Ni,Al",
+                order="2,3,4",
+            )
+        )
+        self.assertEqual(restored.order_combo.currentData(), "2,3,4")
 
         occ_params = RandomOccupancyParams(
             source="Auto (Comp tag)",
@@ -197,7 +310,7 @@ class TestAlloyCards(BaseCardTest):
             elements="Ni,Co",
             start_composition="Ni:1,Co:0",
             end_composition="Ni:0,Co:1",
-            axis="x",
+            axis="a",
             bins=4,
             samples=2,
             use_seed=True,
@@ -205,12 +318,14 @@ class TestAlloyCards(BaseCardTest):
         )
         results = CompositionGradientOperation().run_structure(base, params)
         self.assertEqual(len(results), 2)
-        self.assertTrue(all("CompGrad(ax=x,b=4" in str(atoms.info.get("Config_type", "")) for atoms in results))
+        self.assertTrue(all("CompGrad(ax=a,b=4" in str(atoms.info.get("Config_type", "")) for atoms in results))
         self.assertEqual(results[0].get_chemical_symbols()[:2], ["Ni", "Ni"])
         self.assertEqual(results[0].get_chemical_symbols()[-2:], ["Co", "Co"])
 
         card = CompositionGradientCard()
         card.elements_edit.setText("Ni,Co")
+        self.assertEqual(card.axis_combo.currentText(), "Lattice a")
+        self.assertEqual(card.get_params().axis, "a")
         card.bins_frame.set_input_value([4])
         card.samples_frame.set_input_value([2])
         card.seed_checkbox.setChecked(True)
@@ -219,13 +334,53 @@ class TestAlloyCards(BaseCardTest):
         restored.from_dict(card.to_dict())
         self.assertEqual(restored.get_params(), card.get_params())
 
+    def test_composition_gradient_uses_lattice_coordinates_and_loads_legacy_axis(self):
+        cell = np.asarray(
+            [
+                [4.0, 0.0, 0.0],
+                [-3.0, 4.0, 0.0],
+                [0.0, 0.0, 4.0],
+            ]
+        )
+        scaled = np.asarray(
+            [
+                [0.1, 0.9, 0.5],
+                [0.9, 0.1, 0.5],
+                [0.2, 0.8, 0.5],
+                [0.8, 0.2, 0.5],
+            ]
+        )
+        base = Atoms("Ni4", cell=cell, pbc=True)
+        base.set_scaled_positions(scaled)
+
+        result = CompositionGradientOperation().run_structure(
+            base,
+            CompositionGradientParams(axis="a", bins=2, use_seed=True, seed=1),
+        )[0]
+
+        self.assertEqual(result.get_chemical_symbols(), ["Ni", "Co", "Ni", "Co"])
+
+        legacy = CompositionGradientCard()
+        legacy.from_dict(
+            {
+                "class": "CompositionGradientCard",
+                "check_state": True,
+                "params": {
+                    **params_to_dict(CompositionGradientParams()),
+                    "axis": "x",
+                },
+            }
+        )
+        self.assertEqual(legacy.get_params().axis, "a")
+        self.assertEqual(legacy.axis_combo.currentText(), "Lattice a")
+
     def test_composition_sweep_quaternary_quinary(self):
         base = self.structure.copy()
         base.info.setdefault("Config_type", "base")
 
         sweep4 = CompositionSweepCard()
         sweep4.elements_edit.setText("Co,Cr,Ni,Al,Fe")
-        sweep4.order_combo.setCurrentText("4")
+        sweep4.order_combo.setCurrentIndex(sweep4.order_combo.findData("4"))
         sweep4.method_combo.setCurrentText("Sobol")
         sweep4.n_points_frame.set_input_value([8])
         sweep4.max_output_frame.set_input_value([8])
@@ -241,7 +396,7 @@ class TestAlloyCards(BaseCardTest):
 
         sweep5 = CompositionSweepCard()
         sweep5.elements_edit.setText("Co,Cr,Ni,Al,Fe")
-        sweep5.order_combo.setCurrentText("5")
+        sweep5.order_combo.setCurrentIndex(sweep5.order_combo.findData("5"))
         sweep5.method_combo.setCurrentText("Sobol")
         sweep5.n_points_frame.set_input_value([6])
         sweep5.max_output_frame.set_input_value([6])

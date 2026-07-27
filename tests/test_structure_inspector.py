@@ -103,6 +103,11 @@ def test_structure_info_widget_prioritizes_phase_and_quality(app):
         "a-CNA local environments (FCC/HCP/BCC only): "
         "FCC 87.5% · HCP 6.2% · Other / unresolved 6.2%"
     )
+    assert widget.crystallography_label.text() == (
+        "Reference crystallography (ideal prototype): "
+        "cF4 · Fm-3m (No. 225) · Face-centered cubic Bravais lattice"
+    )
+    assert widget.crystallography_label.isVisibleTo(widget)
     assert widget.formula_text.text() == "H<sub>2</sub>"
     assert widget.atom_num_text.text() == "2"
     assert widget.shortest_text.text() == "0.740 Å  ·  H–H"
@@ -111,7 +116,7 @@ def test_structure_info_widget_prioritizes_phase_and_quality(app):
     assert widget.contact_badge.text() == "Within threshold"
 
 
-def test_structure_info_widget_explains_laves_vs_acna_evidence(app):
+def test_structure_info_widget_explains_prototype_vs_acna_evidence(app):
     widget = StructureInfoWidget()
     phase = StructurePhaseEvidence(
         source_index=0,
@@ -129,13 +134,94 @@ def test_structure_info_widget_explains_laves_vs_acna_evidence(app):
     widget.show_structure_info(_structure())
     widget.show_analysis(_inspection(), phase)
 
-    assert widget.phase_badge.text() == "C15 Laves · Confirmed ordering"
+    assert widget.phase_badge.text() == "C15 Laves · Confirmed prototype"
     assert widget.phase_summary_label.text() == (
         "a-CNA local environments (FCC/HCP/BCC only): Other / unresolved 100.0%"
     )
-    assert "separate geometry and chemical-ordering checks" in (
+    assert widget.crystallography_label.text() == (
+        "Reference crystallography (ideal prototype): "
+        "cF24 · Fd-3m (No. 227) · Face-centered cubic Bravais lattice"
+    )
+    assert widget.crystallography_label.isVisibleTo(widget)
+    assert "separate geometry and species-ordering checks" in (
         widget.phase_summary_label.toolTip()
     )
+
+
+@pytest.mark.parametrize(
+    ("phase_label", "reference"),
+    (
+        ("fcc", "cF4 · Fm-3m (No. 225) · Face-centered cubic Bravais lattice"),
+        ("bcc", "cI2 · Im-3m (No. 229) · Body-centered cubic Bravais lattice"),
+        ("hcp", "hP2 · P6₃/mmc (No. 194) · Primitive hexagonal Bravais lattice"),
+        ("diamond", "cF8 · Fd-3m (No. 227) · Face-centered cubic Bravais lattice"),
+        (
+            "l10",
+            "tP2 · P4/mmm (No. 123) · "
+            "Primitive tetragonal Bravais lattice; FCC-derived ordering",
+        ),
+        (
+            "l12",
+            "cP4 · Pm-3m (No. 221) · "
+            "Primitive cubic Bravais lattice; FCC-derived ordering",
+        ),
+        ("b1", "cF8 · Fm-3m (No. 225) · Face-centered cubic Bravais lattice"),
+        (
+            "b2",
+            "cP2 · Pm-3m (No. 221) · "
+            "Primitive cubic Bravais lattice; BCC-derived ordering",
+        ),
+        ("b3", "cF8 · F-43m (No. 216) · Face-centered cubic Bravais lattice"),
+        ("b4", "hP4 · P6₃mc (No. 186) · Primitive hexagonal Bravais lattice"),
+        ("fluorite", "cF12 · Fm-3m (No. 225) · Face-centered cubic Bravais lattice"),
+        ("nias", "hP4 · P6₃/mmc (No. 194) · Primitive hexagonal Bravais lattice"),
+        (
+            "d03",
+            "cF16 · Fm-3m (No. 225) · "
+            "Face-centered cubic Bravais lattice; BCC-derived ordering",
+        ),
+        ("l21", "cF16 · Fm-3m (No. 225) · Face-centered cubic Bravais lattice"),
+        ("c1b", "cF12 · F-43m (No. 216) · Face-centered cubic Bravais lattice"),
+        ("d019", "hP8 · P6₃/mmc (No. 194) · Primitive hexagonal Bravais lattice"),
+        ("c14", "hP12 · P6₃/mmc (No. 194) · Primitive hexagonal Bravais lattice"),
+        ("c15", "cF24 · Fd-3m (No. 227) · Face-centered cubic Bravais lattice"),
+    ),
+)
+def test_structure_info_widget_shows_reference_crystallography_for_strong_phases(
+    app,
+    phase_label,
+    reference,
+):
+    widget = StructureInfoWidget()
+    widget.show_phase_evidence(
+        StructurePhaseEvidence(
+            source_index=0,
+            atom_count=24,
+            phase_label=phase_label,
+            confidence_state="strong",
+            local_phase_fractions=(("unresolved", 1.0),),
+        )
+    )
+
+    assert widget.crystallography_label.text() == (
+        f"Reference crystallography (ideal prototype): {reference}"
+    )
+    assert widget.crystallography_label.isVisibleTo(widget)
+
+
+def test_structure_info_widget_hides_reference_crystallography_for_mixed_evidence(app):
+    widget = StructureInfoWidget()
+    widget.show_phase_evidence(
+        StructurePhaseEvidence(
+            source_index=0,
+            atom_count=24,
+            phase_label="fcc",
+            confidence_state="mixed",
+            local_phase_fractions=(("fcc", 0.5), ("hcp", 0.5)),
+        )
+    )
+
+    assert widget.crystallography_label.isHidden()
 
 
 def test_stale_structure_analysis_result_is_cached_but_not_displayed():

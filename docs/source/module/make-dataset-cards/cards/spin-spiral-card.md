@@ -232,7 +232,7 @@ $$\phi(u)=s\cdot \frac{2\pi u}{L_D}+\phi_0,\qquad s\in\{-1,+1\}$$
 - `Spiral(L=...,ph=...,mz=...,chi=...,ax=...)`：conical spiral
 - 附加 `pm=layer,ltol=...`：仅 layer-locked 模式
 
-所有输出写入 `initial_magmoms` 三列向量。
+所有导出输出写入 `spin:R:3`；内部同步维护 ASE `initial_magmoms` 三列向量别名。
 
 ## 可复现性
 

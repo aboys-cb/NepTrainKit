@@ -84,16 +84,15 @@ cards/card-group
 | 生成表面切片 | `Random Slab` | `Super Cell` | 用 `Vacancy Defect Generation` 做表面 |
 | 生成带 A/B 晶体学子晶格的有序合金原型 | `Ordered Alloy Prototype` | 无 | 用 `group` 代替 `sublattice` 身份 |
 | 在有限晶胞上枚举整数可实现的合金组成和排布 | `Finite-Cell Alloy Occupancy` | `Ordered Alloy Prototype` / `Super Cell` | 连续比例取整后仍标成精确组成 |
-| 做单点随机合金 | `Random Doping` | `Composition Sweep` 可选 | 用 `Composition Sweep` 代替具体占位落点 |
-| 扫描多种目标配比 | `Composition Sweep` | 无 | 用 `Random Doping` 手工凑配比网格 |
+| 做单点随机合金 | `Random Doping` | `Composition Space Sampling` 可选 | 用 `Composition Space Sampling` 代替具体占位落点 |
+| 扫描多种目标配比 | `Composition Space Sampling` | 无 | 用 `Random Doping` 手工凑配比网格 |
 | 沿空间方向做配比梯度 | `Composition Gradient` | 已扩胞且有足够层数的结构 | 用全局随机占位假装扩散偶或梯度层 |
-| 把目标配比真正落到原子占位上 | `Random Occupancy` | `Composition Sweep` | 只做 `Composition Sweep` 就当已经生成随机合金 |
+| 把目标配比真正落到原子占位上 | `Random Occupancy` | `Composition Space Sampling` | 只做 `Composition Space Sampling` 就当已经生成随机合金 |
 | 按条件替换某类位点 | `Conditional Replace` | `Group Label` 可选 | 用 `Random Doping` 做规则替换 |
 | 做随机空位族 | `Vacancy Defect Generation` | `Super Cell` | 用 `Random Slab` 生成空位表面 |
 | 按元素或 group 精细删位 | `Random Vacancy` | `Group Label` 可选 | 用 `Vacancy Defect Generation` 写复杂规则 |
 | 做插隙或吸附缺陷 | `Insert Defect` | `Random Slab` / `Super Cell` | 用 `Random Doping` 代替插入 |
-| 做层错样本 | `Stacking Fault` | `Super Cell` | 用 `Random Slab` 代替层错位移 |
-| 严格扫描指定滑移系统的 GSFE 路径 | `Strict GSFE Path` | `Crystal Prototype Builder` 的 `fcc111` 原型 / slab-oriented cell | 用普通 cubic cell 直接扫 `(111)` |
+| 做层错样本或扫描指定滑移系统的 GSFE 路径 | `Stacking Fault / GSFE Path` | `Crystal Prototype Builder` 的 `fcc111` 原型 / 已定向晶胞 | 用普通 cubic cell 直接扫 `(111)` |
 | 给结构打分组标签，供后续分组操作使用 | `Group Label` | `Super Cell` | 直接在磁卡里假设已有 group |
 | 初始化 FM / AFM / PM 磁序 | `Magnetic Order` | `Group Label` 可选 | 用 `Set Magnetic Moments` 代替多磁态生成 |
 | 生成 FM/AFM 到 PM 之间的无序度梯度 | `Spin Disorder` | `Set Magnetic Moments` / `Magnetic Order` | 把离散翻转塞进 `Magmom Rotation` |
@@ -115,9 +114,9 @@ cards/card-group
 - `Vacancy Defect Generation` 改的是体相或表面内部的删位强度，不会自动生成表面。
 - 想研究“表面缺陷”，通常先 `Random Slab`，再 `Insert Defect` 或 `Vacancy Defect Generation`。
 
-### `Random Doping` vs `Composition Sweep` vs `Random Occupancy`
+### `Random Doping` vs `Composition Space Sampling` vs `Random Occupancy`
 
-- `Composition Sweep` 负责定义“目标配比空间”，输出仍是带目标配比标签的结构副本。
+- `Composition Space Sampling` 负责定义“目标配比空间”，输出仍是带目标配比标签的结构副本。
 - `Random Occupancy` 负责把目标配比真正落到离散原子位点上。
 - `Random Doping` 更适合“给定规则后直接做一次随机替换”，而不是系统地扫完整配比空间。
 
@@ -133,11 +132,11 @@ cards/card-group
 - `Vib Mode Perturb` 基于已有振动模态，适合更接近特定频率空间的位移采样。
 - 输入里没有模态数组时，不能直接用 `Vib Mode Perturb`。
 
-### `Stacking Fault` vs `Strict GSFE Path`
+### 层错只保留一个新建入口
 
-- `Stacking Fault` 更适合快速生成层错候选，参数以滑移向量和切面比例为主。
-- `Strict GSFE Path` 适合你已经知道目标滑移系统，需要明确写出 `plane_hkl` 和 `slip_uvw`。
-- `Strict GSFE Path` 要求输入已经是 slab-oriented cell：第三晶胞方向必须垂直于 `plane_hkl`。如果只是普通 cubic fcc cell，先用 `Crystal Prototype Builder` 的 `fcc111` 原型或自己构造合适 slab cell。
+- 新任务统一使用 `Stacking Fault / GSFE Path`，显式填写 `plane_hkl`、位于面内的 `slip_uvw`、切面位置和位移路径。
+- 它不限材料和晶面，但要求输入已经定向：第三晶胞方向必须垂直于 `plane_hkl`。普通 cubic fcc cell 若要扫原始 `(111)` 面，应先用 `Crystal Prototype Builder` 的 `fcc111` 原型或自行构造已定向晶胞。
+- 旧 `StackingFaultCard` 仍保留在序列化注册表中，用于载入历史 JSON；因为它自动从全局笛卡尔轴推导滑移方向，所以不再显示在“添加新卡片”和“查找卡片”中。
 
 ### `Set Magnetic Moments` vs `Magnetic Order` vs `Magmom Rotation`
 
@@ -145,12 +144,14 @@ cards/card-group
 - `Magnetic Order` 会生成 FM / AFM / PM 等多磁态分支。
 - `Magmom Rotation` 基于已有磁矩做角度扰动，适合补充非共线或局部旋转样本。
 
+磁性卡片对外统一使用 NEP / Show NEP 的 `spin:R:3` EXTXYZ 字段。卡片内部仍同步维护 ASE 的 `initial_magmoms`，用于兼容 ASE 操作和旧工作流；导出文件只保留 `spin`。读取已有磁矩时优先使用 `spin`，只有输入没有 `spin` 时才回退到旧的 `initial_magmoms`。标量模式会按卡片中明确设置的 `Axis` 转成三分量 `spin`；零向量 Axis 会明确失败，不会静默假设方向。
+
 ## 按分组浏览
 
 - `Lattice`: `Super Cell`、`Crystal Prototype Builder`、`Random Packing`、`Lattice Strain`、`Bain Path`、`Lattice Perturb`、`Shear Matrix Strain`、`Shear Angle Strain`
 - `Perturbation`: `Atomic Perturb`、`Vib Mode Perturb`
-- `Alloy`: `Ordered Alloy Prototype`、`Finite-Cell Alloy Occupancy`、`Composition Sweep`、`Composition Gradient`、`Random Occupancy`、`Random Doping`、`Conditional Replace`
-- `Defect / Surface`: `Random Slab`、`Random Vacancy`、`Vacancy Defect Generation`、`Insert Defect`、`Stacking Fault`、`Strict GSFE Path`、`Layer Copy`
+- `Alloy`: `Ordered Alloy Prototype`、`Finite-Cell Alloy Occupancy`、`Composition Space Sampling`、`Composition Gradient`、`Random Occupancy`、`Random Doping`、`Conditional Replace`
+- `Defect / Surface`: `Random Slab`、`Random Vacancy`、`Vacancy Defect Generation`、`Insert Defect`、`Stacking Fault / GSFE Path`、`Layer Copy`
 - `Magnetism`: `Set Magnetic Moments`、`Magnetic Order`、`Spin Disorder`、`Correlated Random Spin`、`Magmom Rotation`、`Small-Angle Spin Tilt`、`Spin Spiral`、`Folded Helix`
 - `Filter / Container`: `Geometry Filter`、`FPS Filter`、`Card Group`
 - `Organic`: `Organic Mol Config`、`Local Solvation`、`Solvent Box Fill`

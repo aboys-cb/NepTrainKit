@@ -34,6 +34,14 @@ class _CacheOwner:
         return value, False
 
 
+class _CellWithExplicitStorage:
+    def __init__(self, array: np.ndarray) -> None:
+        self.array = array
+
+    def __array__(self, *args, **kwargs):
+        raise AssertionError("ASE-style cell array protocol must not be invoked")
+
+
 def _geometry() -> GeometrySnapshot:
     return GeometrySnapshot(
         source_indices=np.asarray((0, 1, 2), dtype=np.int64),
@@ -107,8 +115,8 @@ def test_phase_inventory_analyzes_every_structure_and_is_dataset_cached():
     assert second is first
     assert local_mock.call_count == 3
     assert first.schema_version == "phase-inventory-v2"
-    assert first.method_id == "adaptive-cna-ordering-v1"
-    assert first.reference_bank_id == "aflow-l12-laves-v1"
+    assert first.method_id == "adaptive-cna-prototype-v2"
+    assert first.reference_bank_id == "aflow-common-prototypes-v2"
     assert first.analysis_strategy == "all-structures-v1"
     assert first.analyzed_structure_count == 3
     assert progress == [(3, 3), (3, 3)]
@@ -137,7 +145,7 @@ def test_phase_inventory_analyzes_every_structure_and_is_dataset_cached():
 def test_single_structure_phase_api_preserves_source_index_and_local_fractions():
     structure = SimpleNamespace(
         positions=np.zeros((4, 3), dtype=np.float32),
-        cell=np.eye(3, dtype=np.float32),
+        cell=_CellWithExplicitStorage(np.eye(3, dtype=np.float64)),
         additional_fields={"pbc": "T T T"},
         numbers=[28, 28, 28, 28],
     )

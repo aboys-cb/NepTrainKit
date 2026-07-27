@@ -11,6 +11,10 @@ from ase import Atoms
 
 
 _ITEM_SPLIT_RE = re.compile(r"[,\s;]+")
+_VECTOR_MAP_ITEM_RE = re.compile(
+    r"(?P<element>[A-Za-z][A-Za-z]?)\s*:\s*"
+    r"(?P<value>\[[^\]]*\]|[^,\s;]+)"
+)
 
 
 def parse_magmom_map(text: str) -> dict[str, float]:
@@ -66,17 +70,11 @@ def parse_magmom_map_any(text: str) -> dict[str, float | np.ndarray]:
                 out[sym] = float(v)
         return out
 
-    items = [t.strip() for t in _ITEM_SPLIT_RE.split(text) if t.strip()]
     out: dict[str, float | np.ndarray] = {}
-    for item in items:
-        if ":" not in item:
-            continue
-        key, val = item.split(":", 1)
-        key = key.strip()
-        if not key:
-            continue
+    for match in _VECTOR_MAP_ITEM_RE.finditer(text):
+        key = match.group("element")
+        val = match.group("value").strip()
         symbol = key[0].upper() + key[1:].lower()
-        val = val.strip()
         if val.startswith("[") and val.endswith("]"):
             vec = json.loads(val)
             if not (isinstance(vec, list) and len(vec) == 3):
@@ -85,6 +83,16 @@ def parse_magmom_map_any(text: str) -> dict[str, float | np.ndarray]:
         else:
             out[symbol] = float(val)
     return out
+
+
+def parse_kvec(text: str) -> tuple[int, int, int]:
+    """Parse one of the supported fractional-coordinate layer vectors."""
+    value = str(text or "").strip()
+    if value not in {"100", "010", "001", "110", "111"}:
+        raise ValueError(
+            f"Unsupported k-vector {value!r}; use 100, 010, 001, 110, or 111."
+        )
+    return tuple(int(component) for component in value)  # type: ignore[return-value]
 
 
 def element_mask(symbols: Iterable[str], selected: Iterable[str] | None = None) -> np.ndarray:
@@ -183,10 +191,41 @@ def parse_axis(text: str, *, default: tuple[float, float, float] = (0.0, 0.0, 1.
     return normalize_vector(np.array([float(t) for t in tokens], dtype=float))
 
 
+def existing_moments(atoms: Atoms) -> np.ndarray | None:
+    """Return canonical ``spin`` values, falling back to ASE magmoms.
+
+    NEP datasets use a three-component ``spin:R:3`` field.  ASE operations use
+    ``initial_magmoms`` internally, so legacy card inputs remain accepted when
+    no canonical ``spin`` array is present.
+    """
+    arrays = getattr(atoms, "arrays", {}) or {}
+    if "spin" in arrays:
+        current = np.asarray(arrays["spin"])
+        if (
+            current.shape != (len(atoms), 3)
+            or not np.issubdtype(current.dtype, np.number)
+            or not np.isfinite(current).all()
+        ):
+            raise ValueError("spin must be a finite numeric N x 3 array")
+        return np.asarray(current, dtype=float).copy()
+    if "initial_magmoms" not in arrays:
+        return None
+    current = np.asarray(arrays["initial_magmoms"])
+    if (
+        current.shape not in {(len(atoms),), (len(atoms), 3)}
+        or not np.issubdtype(current.dtype, np.number)
+        or not np.isfinite(current).all()
+    ):
+        raise ValueError(
+            "initial_magmoms must be a finite numeric N or N x 3 array"
+        )
+    return np.asarray(current, dtype=float).copy()
+
+
 def existing_moment_magnitudes(atoms: Atoms) -> np.ndarray | None:
-    """Return per-atom magnetic-moment magnitudes from existing ``initial_magmoms``."""
-    current = np.asarray(atoms.get_initial_magnetic_moments(), dtype=float)
-    if current.size == 0:
+    """Return per-atom magnitudes, preferring canonical ``spin:R:3``."""
+    current = existing_moments(atoms)
+    if current is None:
         return None
     if current.ndim == 1 and current.shape[0] == len(atoms):
         return np.abs(current.reshape(-1))
@@ -201,9 +240,9 @@ def existing_moment_vectors(
     axis: np.ndarray | None = None,
     lift_scalar: bool = True,
 ) -> np.ndarray | None:
-    """Return vector magnetic moments from existing ``initial_magmoms`` when possible."""
-    current = np.asarray(atoms.get_initial_magnetic_moments(), dtype=float)
-    if current.size == 0:
+    """Return vectors, preferring canonical ``spin:R:3`` when available."""
+    current = existing_moments(atoms)
+    if current is None:
         return None
     if current.ndim == 2 and current.shape == (len(atoms), 3):
         return np.array(current, copy=True)
@@ -218,9 +257,9 @@ def existing_moment_scalars(
     *,
     axis: np.ndarray | None = None,
 ) -> np.ndarray | None:
-    """Return scalar magnetic moments from existing ``initial_magmoms`` when possible."""
-    current = np.asarray(atoms.get_initial_magnetic_moments(), dtype=float)
-    if current.size == 0:
+    """Return axis projections, preferring canonical ``spin:R:3``."""
+    current = existing_moments(atoms)
+    if current is None:
         return None
     if current.ndim == 1 and current.shape[0] == len(atoms):
         return np.array(current, copy=True).reshape(-1)
@@ -283,12 +322,70 @@ def mapped_moment_vectors(
     return moments
 
 
-def set_initial_magmoms_safe(atoms: Atoms, magmoms: np.ndarray) -> None:
-    """Set ``initial_magmoms`` while removing incompatible legacy array shapes."""
+def set_initial_magmoms_safe(
+    atoms: Atoms,
+    magmoms: np.ndarray,
+    *,
+    axis: np.ndarray | None = None,
+) -> None:
+    """Synchronize canonical ``spin`` with ASE's internal magmom array.
+
+    Vector input maps directly to ``spin:R:3``.  Scalar input needs an explicit
+    axis before it can be represented without inventing a direction.
+    """
     target = np.asarray(magmoms)
-    if "initial_magmoms" in atoms.arrays and np.asarray(atoms.arrays["initial_magmoms"]).shape != target.shape:
+    if (
+        target.shape not in {(len(atoms),), (len(atoms), 3)}
+        or not np.issubdtype(target.dtype, np.number)
+        or not np.isfinite(target).all()
+    ):
+        raise ValueError("magmoms must be a finite numeric N or N x 3 array")
+    target = np.asarray(target, dtype=float)
+    spin = None
+    if target.ndim == 2:
+        spin = target
+    elif axis is not None:
+        axis_vector = np.asarray(axis, dtype=float).reshape(3)
+        if (
+            not np.isfinite(axis_vector).all()
+            or float(np.linalg.norm(axis_vector)) <= 1.0e-12
+        ):
+            raise ValueError(
+                "scalar magmoms require a finite nonzero axis for spin:R:3"
+            )
+        spin = (
+            target[:, np.newaxis]
+            * normalize_vector(axis_vector)[np.newaxis, :]
+        )
+    if (
+        "initial_magmoms" in atoms.arrays
+        and np.asarray(atoms.arrays["initial_magmoms"]).shape != target.shape
+    ):
         del atoms.arrays["initial_magmoms"]
     atoms.set_initial_magnetic_moments(target)
+    if spin is None:
+        atoms.arrays.pop("spin", None)
+        return
+    if "spin" in atoms.arrays:
+        del atoms.arrays["spin"]
+    atoms.set_array("spin", np.asarray(spin, dtype=float))
+
+
+def prepare_magnetic_extxyz_export(atoms: Atoms) -> Atoms:
+    """Return an EXTXYZ view using canonical ``spin`` without ASE aliases."""
+    arrays = getattr(atoms, "arrays", {}) or {}
+    spin = existing_moments(atoms) if "spin" in arrays else None
+    if spin is None and "initial_magmoms" in arrays:
+        legacy = existing_moments(atoms)
+        if legacy is not None and legacy.ndim == 2:
+            spin = legacy
+    if spin is None:
+        return atoms
+    exported = atoms.copy()
+    exported.arrays.pop("initial_magmoms", None)
+    exported.arrays.pop("spin", None)
+    exported.set_array("spin", np.asarray(spin, dtype=float))
+    return exported
 
 
 def per_atom_magnitudes(
@@ -316,7 +413,9 @@ def kvec_signs(atoms: Atoms, kvec: tuple[int, int, int]) -> np.ndarray:
     if kvec == (0, 0, 0):
         return np.ones(len(atoms), dtype=float)
     scaled = atoms.get_scaled_positions(wrap=True)
-    phase = np.floor(2.0 * (scaled @ np.array(kvec, dtype=float))).astype(int)
+    phase = np.floor(
+        2.0 * (scaled @ np.array(kvec, dtype=float)) + 1.0e-12
+    ).astype(int)
     signs = np.where((phase % 2) == 0, 1.0, -1.0)
     return signs
 
@@ -414,23 +513,40 @@ def random_vector_moments(
 
     mode = (direction_mode or "sphere").strip().lower()
     axis_vec = normalize_vector(axis if axis is not None else np.array([0.0, 0.0, 1.0], dtype=float))
-    if mode in {"axis", "collinear"}:
-        dirs = np.repeat(axis_vec[None, :], n, axis=0)
-    elif mode in {"cone"}:
-        dirs = random_unit_vectors_cone(n, rng=rng, axis=axis_vec, max_angle_deg=max_angle_deg)
-    elif mode in {"plane", "planar"}:
-        dirs = random_unit_vectors_plane(n, rng=rng, normal=axis_vec)
-    else:
-        dirs = random_unit_vectors_sphere(n, rng=rng)
+    def sample_directions(count: int) -> np.ndarray:
+        if mode in {"axis", "collinear"}:
+            signs = rng.choice(
+                np.array([-1.0, 1.0], dtype=float),
+                size=count,
+                replace=True,
+            )
+            return signs[:, None] * axis_vec[None, :]
+        if mode == "cone":
+            return random_unit_vectors_cone(
+                count,
+                rng=rng,
+                axis=axis_vec,
+                max_angle_deg=max_angle_deg,
+            )
+        if mode in {"plane", "planar"}:
+            return random_unit_vectors_plane(count, rng=rng, normal=axis_vec)
+        return random_unit_vectors_sphere(count, rng=rng)
 
-    moments = mags[:, None] * dirs
     if not balanced:
-        return moments
+        return mags[:, None] * sample_directions(n)
 
-    # Balance by subtracting the mean vector, then renormalize to original magnitudes.
-    mean = moments.mean(axis=0)
-    moments = moments - mean[None, :]
-    norms = np.linalg.norm(moments, axis=1)
-    norms = np.where(norms > 0, norms, 1.0)
-    moments = moments / norms[:, None] * mags[:, None]
-    return moments
+    # Pair opposite directions separately for each distinct magnitude.  This
+    # preserves every requested magnitude and cancels exactly within complete
+    # pairs; one residual direction remains for odd-sized magnitude groups.
+    dirs = np.zeros((n, 3), dtype=float)
+    for magnitude in np.unique(mags):
+        indices = np.flatnonzero(mags == magnitude)
+        rng.shuffle(indices)
+        pair_count = len(indices) // 2
+        if pair_count:
+            base_dirs = sample_directions(pair_count)
+            dirs[indices[:pair_count]] = base_dirs
+            dirs[indices[pair_count : 2 * pair_count]] = -base_dirs
+        if len(indices) % 2:
+            dirs[indices[-1]] = sample_directions(1)[0]
+    return mags[:, None] * dirs

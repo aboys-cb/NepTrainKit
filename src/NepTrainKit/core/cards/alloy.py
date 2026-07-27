@@ -60,6 +60,43 @@ def _range_pair(value: Any, *, label: str) -> tuple[float, float]:
     return low, high
 
 
+def _normalized_dopant_atom_ratios(
+    dopant_list,
+    ratios,
+    ratio_type: str,
+) -> tuple[list[str], np.ndarray]:
+    """Validate dopant weights and return normalized atomic fractions."""
+    dopant_list = [str(element) for element in dopant_list]
+    ratios = np.array(list(ratios), dtype=float)
+    if not dopant_list:
+        raise ValueError("At least one dopant is required.")
+    if ratios.size != len(dopant_list) or ratios.size == 0:
+        raise ValueError("Dopant ratios must match dopant elements.")
+    if np.any(~np.isfinite(ratios)) or np.any(ratios < 0.0):
+        raise ValueError("Dopant ratios must be finite and non-negative.")
+    invalid_elements = [
+        element for element in dopant_list if element not in atomic_numbers
+    ]
+    if invalid_elements:
+        raise ValueError(
+            "Unknown dopant element symbol(s): " + ", ".join(invalid_elements) + "."
+        )
+    if ratio_type not in {"atom", "mass"}:
+        raise ValueError("Dopant ratio_type must be 'atom' or 'mass'.")
+
+    if ratio_type == "mass":
+        masses = np.array(
+            [atomic_masses[atomic_numbers[element]] for element in dopant_list]
+        )
+        atom_ratios = ratios / masses
+    else:
+        atom_ratios = ratios
+    total = float(atom_ratios.sum())
+    if total <= 0.0:
+        raise ValueError("At least one dopant ratio must be positive.")
+    return dopant_list, atom_ratios / total
+
+
 def sample_dopants(
     dopant_list,
     ratios,
@@ -69,38 +106,16 @@ def sample_dopants(
     ratio_type: str = "atom",
 ) -> list:
     """Sample dopant elements from atom or mass ratios."""
-    if rng is None:
-        rng = np.random.default_rng()
-
-    dopant_list = list(dopant_list)
-    ratios = np.array(ratios, dtype=float)
     n_items = int(n_items)
     if n_items < 0:
         raise ValueError("Dopant item count must be non-negative.")
-    if not dopant_list:
-        raise ValueError("At least one dopant is required.")
-    if ratios.size != len(dopant_list) or ratios.size == 0:
-        raise ValueError("Dopant ratios must match dopant elements.")
-    if np.any(~np.isfinite(ratios)) or np.any(ratios < 0.0):
-        raise ValueError("Dopant ratios must be finite and non-negative.")
-    invalid_elements = [str(elem) for elem in dopant_list if str(elem) not in atomic_numbers]
-    if invalid_elements:
-        raise ValueError(
-            "Unknown dopant element symbol(s): " + ", ".join(invalid_elements) + "."
-        )
-    if ratio_type not in {"atom", "mass"}:
-        raise ValueError("Dopant ratio_type must be 'atom' or 'mass'.")
-
-    if ratio_type == "mass":
-        masses = np.array([atomic_masses[atomic_numbers[elem]] for elem in dopant_list])
-        atom_ratios = ratios / masses
-        total = float(atom_ratios.sum())
-    else:
-        atom_ratios = ratios
-        total = float(atom_ratios.sum())
-    if total <= 0.0:
-        raise ValueError("At least one dopant ratio must be positive.")
-    atom_ratios = atom_ratios / total
+    dopant_list, atom_ratios = _normalized_dopant_atom_ratios(
+        dopant_list,
+        ratios,
+        ratio_type,
+    )
+    if rng is None:
+        rng = np.random.default_rng()
 
     if not exact:
         return list(rng.choice(dopant_list, size=n_items, p=atom_ratios, replace=True))
@@ -125,6 +140,214 @@ class RandomDopingParams:
 class RandomDopingOperation(StructureOperation):
     """Perform random atomic substitutions according to explicit rules."""
 
+    @staticmethod
+    def _validated_rules(
+        rules: list[dict[str, Any]],
+    ) -> list[tuple[str, dict[str, Any], str, dict[str, float]]]:
+        validated = []
+        for rule_index, rule in enumerate(rules, start=1):
+            label = f"RandomDoping rule {rule_index}"
+            if not isinstance(rule, dict):
+                raise ValueError(f"{label} must be a mapping.")
+            target = str(rule.get("target", "") or "").strip()
+            dopants = rule.get("dopants", {})
+            if not target:
+                raise ValueError(f"{label} requires a target element.")
+            if not isinstance(dopants, dict):
+                raise ValueError(
+                    f"{label} dopants must be an element->ratio mapping."
+                )
+            if not dopants:
+                raise ValueError(f"{label} requires at least one dopant element.")
+            if target not in atomic_numbers:
+                raise ValueError(
+                    f"{label} has an unknown target element '{target}'."
+                )
+            invalid_dopants = [
+                str(element)
+                for element in dopants
+                if str(element) not in atomic_numbers
+            ]
+            if invalid_dopants:
+                raise ValueError(
+                    f"{label} has unknown dopant element(s): "
+                    + ", ".join(invalid_dopants)
+                    + "."
+                )
+            if target in dopants:
+                raise ValueError(
+                    f"{label} includes target element '{target}' as its own dopant."
+                )
+            ratio_type = str(rule.get("ratio_type", "atom"))
+            try:
+                _normalized_dopant_atom_ratios(
+                    dopants.keys(),
+                    dopants.values(),
+                    ratio_type,
+                )
+            except (TypeError, ValueError) as exc:
+                raise ValueError(f"{label}: {exc}") from exc
+            validated.append((label, rule, target, dopants))
+        return validated
+
+    @staticmethod
+    def _maximum_prior_consumption(
+        current_mask: np.ndarray,
+        prior_rules: list[tuple[np.ndarray, int]],
+    ) -> int:
+        """Return the largest number of current sites earlier rules can consume."""
+        active_rules = [
+            (np.asarray(mask, dtype=bool), int(capacity))
+            for mask, capacity in prior_rules
+            if int(capacity) > 0 and np.any(current_mask & mask)
+        ]
+        if not active_rules:
+            return 0
+
+        signature_counts: dict[tuple[int, ...], int] = {}
+        for atom_index in np.nonzero(current_mask)[0]:
+            signature = tuple(
+                rule_index
+                for rule_index, (mask, _capacity) in enumerate(active_rules)
+                if mask[atom_index]
+            )
+            if signature:
+                signature_counts[signature] = signature_counts.get(signature, 0) + 1
+
+        rule_count = len(active_rules)
+        signatures = list(signature_counts)
+        source = 0
+        rule_offset = 1
+        signature_offset = rule_offset + rule_count
+        sink = signature_offset + len(signatures)
+        graph: list[list[list[int]]] = [[] for _ in range(sink + 1)]
+
+        def add_edge(left: int, right: int, capacity: int) -> None:
+            graph[left].append([right, capacity, len(graph[right])])
+            graph[right].append([left, 0, len(graph[left]) - 1])
+
+        for rule_index, (_mask, capacity) in enumerate(active_rules):
+            add_edge(source, rule_offset + rule_index, capacity)
+        for signature_index, signature in enumerate(signatures):
+            signature_node = signature_offset + signature_index
+            site_count = signature_counts[signature]
+            add_edge(signature_node, sink, site_count)
+            for rule_index in signature:
+                add_edge(rule_offset + rule_index, signature_node, site_count)
+
+        total_flow = 0
+        while True:
+            levels = [-1] * len(graph)
+            levels[source] = 0
+            queue = [source]
+            for node in queue:
+                for target, capacity, _reverse in graph[node]:
+                    if capacity > 0 and levels[target] < 0:
+                        levels[target] = levels[node] + 1
+                        queue.append(target)
+            if levels[sink] < 0:
+                return total_flow
+
+            next_edges = [0] * len(graph)
+
+            def send(node: int, flow: int) -> int:
+                if node == sink:
+                    return flow
+                while next_edges[node] < len(graph[node]):
+                    edge = graph[node][next_edges[node]]
+                    target, capacity, reverse = edge
+                    if capacity > 0 and levels[target] == levels[node] + 1:
+                        pushed = send(target, min(flow, capacity))
+                        if pushed:
+                            edge[1] -= pushed
+                            graph[target][reverse][1] += pushed
+                            return pushed
+                    next_edges[node] += 1
+                return 0
+
+            while True:
+                pushed = send(source, len(current_mask))
+                if not pushed:
+                    break
+                total_flow += pushed
+
+    def _prepared_rules(
+        self,
+        structure,
+        validated_rules,
+    ) -> list[tuple[str, dict[str, Any], str, dict[str, float], list[str]]]:
+        """Resolve rule scopes and reject seed-dependent capacity conflicts."""
+        symbols = np.asarray(structure.get_chemical_symbols(), dtype=object)
+        group_values = np.asarray(
+            structure.arrays.get("group", np.empty(0, dtype=object)),
+            dtype=object,
+        )
+        prepared = []
+        prior_by_target: dict[str, list[tuple[np.ndarray, int]]] = {}
+        for label, rule, target, dopants in validated_rules:
+            groups = rule.get("group")
+            requested_groups = [
+                str(value).strip()
+                for value in _as_list(groups)
+                if str(value).strip()
+            ]
+            candidate_mask = symbols == target
+            if requested_groups:
+                if "group" not in structure.arrays:
+                    raise ValueError(
+                        f"{label} requests group labels, but the input structure "
+                        "has no group array."
+                    )
+                candidate_mask &= np.isin(group_values, requested_groups)
+            candidate_indices = np.nonzero(candidate_mask)[0]
+            if len(candidate_indices) == 0:
+                scope = (
+                    f" in group {','.join(requested_groups)}"
+                    if requested_groups
+                    else ""
+                )
+                raise ValueError(f"{label} matched no '{target}' atoms{scope}.")
+
+            initial_max = self._doping_count(
+                structure,
+                candidate_indices,
+                target,
+                dopants,
+                rule,
+                rng=None,
+            )
+            if initial_max > len(candidate_indices):
+                raise ValueError(
+                    f"{label} can request up to {initial_max} replacements, "
+                    f"but only {len(candidate_indices)} eligible atoms are available."
+                )
+
+            prior_rules = prior_by_target.setdefault(target, [])
+            prior_consumption = self._maximum_prior_consumption(
+                candidate_mask,
+                prior_rules,
+            )
+            guaranteed_count = len(candidate_indices) - prior_consumption
+            guaranteed_indices = np.arange(guaranteed_count, dtype=int)
+            guaranteed_max = self._doping_count(
+                structure,
+                guaranteed_indices,
+                target,
+                dopants,
+                rule,
+                rng=None,
+            )
+            if guaranteed_max > guaranteed_count:
+                raise ValueError(
+                    f"{label} can request up to {guaranteed_max} replacements, "
+                    f"but earlier overlapping rules can leave only "
+                    f"{guaranteed_count} eligible atoms."
+                )
+
+            prior_rules.append((candidate_mask, initial_max))
+            prepared.append((label, rule, target, dopants, requested_groups))
+        return prepared
+
     def run_structure(self, structure, params: RandomDopingParams) -> list:
         if not isinstance(params.rules, list) or not params.rules:
             return [structure.copy()]
@@ -141,53 +364,16 @@ class RandomDopingOperation(StructureOperation):
         if params.use_seed and seed < 0:
             raise ValueError("RandomDoping: seed must be >= 0.")
         base_seed = seed if params.use_seed else None
-        rng = np.random.default_rng(base_seed)
+        validated_rules = self._validated_rules(params.rules)
+        prepared_rules = self._prepared_rules(structure, validated_rules)
+        rng: np.random.Generator | None = None
 
         for _ in range(max_structures):
             new_structure = structure.copy()
             symbols = np.asarray(new_structure.get_chemical_symbols(), dtype=object)
             total_doping = 0
-            for rule_index, rule in enumerate(params.rules, start=1):
-                label = f"RandomDoping rule {rule_index}"
-                if not isinstance(rule, dict):
-                    raise ValueError(f"{label} must be a mapping.")
-                target = str(rule.get("target", "") or "").strip()
-                dopants = rule.get("dopants", {})
-                if not target:
-                    raise ValueError(f"{label} requires a target element.")
-                if not isinstance(dopants, dict):
-                    raise ValueError(f"{label} dopants must be an element->ratio mapping.")
-                if not dopants:
-                    raise ValueError(f"{label} requires at least one dopant element.")
-                if target not in atomic_numbers:
-                    raise ValueError(f"{label} has an unknown target element '{target}'.")
-                invalid_dopants = [
-                    str(element)
-                    for element in dopants
-                    if str(element) not in atomic_numbers
-                ]
-                if invalid_dopants:
-                    raise ValueError(
-                        f"{label} has unknown dopant element(s): "
-                        + ", ".join(invalid_dopants)
-                        + "."
-                    )
-                if target in dopants:
-                    raise ValueError(
-                        f"{label} includes target element '{target}' as its own dopant."
-                    )
-
-                groups = rule.get("group")
-                requested_groups = [
-                    str(value).strip()
-                    for value in _as_list(groups)
-                    if str(value).strip()
-                ]
+            for label, rule, target, dopants, requested_groups in prepared_rules:
                 if requested_groups:
-                    if "group" not in new_structure.arrays:
-                        raise ValueError(
-                            f"{label} requests group labels, but the input structure has no group array."
-                        )
                     group_values = np.asarray(new_structure.arrays["group"], dtype=object)
                     candidate_indices = np.nonzero(
                         (symbols == target)
@@ -196,24 +382,31 @@ class RandomDopingOperation(StructureOperation):
                 else:
                     candidate_indices = np.nonzero(symbols == target)[0]
 
-                if len(candidate_indices) == 0:
-                    scope = (
-                        f" in group {','.join(requested_groups)}"
-                        if requested_groups
-                        else ""
-                    )
+                max_doping_num = self._doping_count(
+                    new_structure,
+                    candidate_indices,
+                    target,
+                    dopants,
+                    rule,
+                    rng=None,
+                )
+                if max_doping_num > len(candidate_indices):
                     raise ValueError(
-                        f"{label} matched no '{target}' atoms{scope}."
+                        f"{label} can request up to {max_doping_num} replacements, "
+                        f"but only {len(candidate_indices)} eligible atoms are available."
                     )
-
-                doping_num = self._doping_count(new_structure, candidate_indices, target, dopants, rule, rng)
+                if rng is None:
+                    rng = np.random.default_rng(base_seed)
+                doping_num = self._doping_count(
+                    new_structure,
+                    candidate_indices,
+                    target,
+                    dopants,
+                    rule,
+                    rng,
+                )
                 if doping_num < 0:
                     raise ValueError(f"{label} replacement count must be >= 0.")
-                if doping_num > len(candidate_indices):
-                    raise ValueError(
-                        f"{label} requests {doping_num} replacements, but only "
-                        f"{len(candidate_indices)} eligible atoms are available."
-                    )
                 if doping_num == 0:
                     continue
                 idxs = rng.choice(candidate_indices, doping_num, replace=False)
@@ -239,38 +432,72 @@ class RandomDopingOperation(StructureOperation):
 
         return structure_list
 
-    def _doping_count(self, structure, candidate_indices, target, dopants, rule, rng) -> int:
+    def _doping_count(
+        self,
+        structure,
+        candidate_indices,
+        target,
+        dopants,
+        rule,
+        rng: np.random.Generator | None,
+    ) -> int:
         use_mode = rule.get("use", "atomic_percent")
 
         if use_mode == "atomic_percent":
-            percent_min, percent_max = _range_pair(rule.get("percent", [0.0, 100.0]), label="percent")
+            percent_min, percent_max = _range_pair(
+                rule.get("percent", [0.0, 100.0]),
+                label="percent",
+            )
             if percent_min < 0.0 or percent_max > 100.0:
                 raise ValueError("percent must be within [0, 100].")
-            value = rng.uniform(float(percent_min), float(percent_max)) / 100.0
+            value = (
+                float(percent_max)
+                if rng is None
+                else rng.uniform(float(percent_min), float(percent_max))
+            ) / 100.0
             return int(len(candidate_indices) * value)
 
         if use_mode == "mass_percent":
-            percent_min, percent_max = _range_pair(rule.get("percent", [0.0, 100.0]), label="percent")
+            percent_min, percent_max = _range_pair(
+                rule.get("percent", [0.0, 100.0]),
+                label="percent",
+            )
             if percent_min < 0.0 or percent_max > 100.0:
                 raise ValueError("percent must be within [0, 100].")
-            target_mass_percent = rng.uniform(float(percent_min), float(percent_max)) / 100.0
+            target_mass_percent = (
+                float(percent_max)
+                if rng is None
+                else rng.uniform(float(percent_min), float(percent_max))
+            ) / 100.0
 
             target_mass = atomic_masses[atomic_numbers[target]]
             total_target_mass = len(candidate_indices) * target_mass
-            dopant_elements = list(dopants.keys())
-            if dopant_elements:
-                avg_dopant_mass = np.mean(
-                    [atomic_masses[atomic_numbers[elem]] for elem in dopant_elements]
-                )
-            else:
-                avg_dopant_mass = target_mass
+            dopant_elements, atom_ratios = _normalized_dopant_atom_ratios(
+                dopants.keys(),
+                dopants.values(),
+                str(rule.get("ratio_type", "atom")),
+            )
+            dopant_masses = np.array(
+                [
+                    atomic_masses[atomic_numbers[element]]
+                    for element in dopant_elements
+                ],
+                dtype=float,
+            )
+            avg_dopant_mass = float(np.dot(atom_ratios, dopant_masses))
 
             doped_mass = total_target_mass * target_mass_percent
             return int(doped_mass / avg_dopant_mass)
 
         if use_mode == "count":
-            count_min_f, count_max_f = _range_pair(rule.get("count", [1, 1]), label="count")
-            if not float(count_min_f).is_integer() or not float(count_max_f).is_integer():
+            count_min_f, count_max_f = _range_pair(
+                rule.get("count", [1, 1]),
+                label="count",
+            )
+            if (
+                not float(count_min_f).is_integer()
+                or not float(count_max_f).is_integer()
+            ):
                 raise ValueError("count values must be integers.")
             count_min = int(count_min_f)
             count_max = int(count_max_f)
@@ -283,6 +510,8 @@ class RandomDopingOperation(StructureOperation):
                 if count_min != count_max:
                     raise ValueError("fixed count must use the same minimum and maximum.")
                 return count_min
+            if rng is None:
+                return count_max
             return int(rng.integers(count_min, count_max + 1))
 
         raise ValueError(

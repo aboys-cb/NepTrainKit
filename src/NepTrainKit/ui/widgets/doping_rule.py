@@ -157,9 +157,9 @@ class DopingRuleItem(QFrame):
 
     def _toggle_ratio_type(self) -> None:
         if self.ratio_type_button.isChecked():
-            self.ratio_type_button.setText(self.tr("Mass ratio"))
-        else:
             self.ratio_type_button.setText(self.tr("Atom ratio"))
+        else:
+            self.ratio_type_button.setText(self.tr("Mass ratio"))
 
     def _on_mode_changed(self) -> None:
         is_count = self.count_botton.isChecked()

@@ -26,11 +26,11 @@ FeCo 训练集包含 FM、AFM 和完全随机 PM，但缺少 10%-70% 局部翻�
 
 #### Mode（mode）
 
-`str`，默认 `'Flip fraction'`。`Flip fraction` 保持共线轴只翻转符号，适合 FM/AFM 到 PM 的离散无序梯度；`Randomize fraction` 把选中自旋完全随机化；`Cone disorder` 保持围绕参考方向的有限温非共线扰动。
+`str`，默认 `'Flip fraction'`。`Flip fraction` 保持共线轴只翻转符号，适合 FM/AFM 到 PM 的离散无序梯度；`Randomize fraction` 把选中自旋方向在完整球面上随机化；`Cone disorder` 保持围绕参考方向的有限温非共线扰动。这三个值与下拉框和序列化参数完全一致。
 
 #### Fractions（fractions）
 
-`str`，默认 `'0.1,0.3,0.5,0.7'`。被翻转或随机化的自旋比例，从 0 到 1。0.1/0.3/0.5/0.7 可覆盖 FM/AFM 到 PM 之间的无序梯度。
+`str`，默认 `'0.1,0.3,0.5,0.7'`。被翻转或随机化的自旋比例，必须是逗号分隔且位于 `(0, 1]` 的有限数值；非法文本和超范围值会明确报错，不会被忽略或截断。0.1/0.3/0.5/0.7 可覆盖 FM/AFM 到 PM 之间的无序梯度。
 
 #### Samples Per Fraction（samples_per_fraction）
 

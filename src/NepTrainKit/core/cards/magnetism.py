@@ -1467,12 +1467,12 @@ class SpinDisorderOperation(StructureOperation):
         valid_modes = {
             "Flip fraction",
             "Cone disorder",
-            "Full random directions",
+            "Randomize fraction",
         }
         if params.mode not in valid_modes:
             raise ValueError(
                 "Spin Disorder mode must be Flip fraction, Cone disorder, "
-                "or Full random directions."
+                "or Randomize fraction."
             )
         samples_per_fraction = int(params.samples_per_fraction)
         if samples_per_fraction <= 0:
@@ -1480,6 +1480,24 @@ class SpinDisorderOperation(StructureOperation):
         max_outputs = int(params.max_outputs)
         if max_outputs <= 0:
             raise ValueError("Spin Disorder max_outputs must be >= 1.")
+        if params.magnitude_source not in {
+            "Existing initial magmoms",
+            "Map/default magnitude",
+        }:
+            raise ValueError(
+                "Spin Disorder magnitude_source must be Existing initial magmoms "
+                "or Map/default magnitude."
+            )
+        seed = int(params.seed)
+        if params.use_seed and seed < 0:
+            raise ValueError("Spin Disorder seed must be >= 0.")
+        fractions = self.fraction_values(params.fractions)
+        if params.mode == "Cone disorder":
+            cone_angle = float(params.cone_angle)
+            if not np.isfinite(cone_angle) or not 0.0 <= cone_angle <= 180.0:
+                raise ValueError(
+                    "Spin Disorder cone_angle must be within [0, 180] degrees."
+                )
         base_moments = self.vector_moments(structure, params)
         if base_moments is None or base_moments.shape != (len(structure), 3):
             raise ValueError("Spin Disorder requires vector magnetic moments or liftable scalar magmoms.")
@@ -1488,11 +1506,7 @@ class SpinDisorderOperation(StructureOperation):
         if eligible.size == 0:
             raise ValueError("Spin Disorder found no eligible nonzero magnetic moments.")
 
-        fractions = self.fraction_values(params.fractions)
-        if not fractions:
-            raise ValueError("Spin Disorder requires at least one positive disorder fraction.")
-
-        base_seed = int(params.seed) if params.use_seed else None
+        base_seed = seed if params.use_seed else None
         cfg_id = stable_config_id(structure)
         outputs = []
         for frac_idx, fraction in enumerate(fractions):
@@ -1544,16 +1558,23 @@ class SpinDisorderOperation(StructureOperation):
                 continue
             try:
                 value = float(token)
-            except ValueError:
-                continue
-            if value <= 0.0:
-                continue
-            value = min(value, 1.0)
+            except ValueError as exc:
+                raise ValueError(
+                    f"Spin Disorder fraction '{token}' is not a number."
+                ) from exc
+            if not np.isfinite(value) or not 0.0 < value <= 1.0:
+                raise ValueError(
+                    "Spin Disorder fractions must be finite values within (0, 1]."
+                )
             rounded = float(np.round(value, 12))
             if rounded in seen:
                 continue
             seen.add(rounded)
             values.append(rounded)
+        if not values:
+            raise ValueError(
+                "Spin Disorder requires at least one fraction within (0, 1]."
+            )
         return values
 
     @staticmethod
@@ -1636,6 +1657,13 @@ class CorrelatedRandomSpinOperation(StructureOperation):
     """Generate non-collinear magnetic moments from an exact correlated random field."""
 
     def run_structure(self, structure, params: CorrelatedRandomSpinParams) -> list:
+        if params.mode not in {
+            "Cone around reference",
+            "Full random directions",
+        }:
+            raise ValueError(
+                f"Correlated Random Spin: unsupported mode '{params.mode}'."
+            )
         samples = int(params.samples)
         if samples <= 0:
             raise ValueError("Correlated Random Spin: samples must be >= 1.")
@@ -1647,6 +1675,25 @@ class CorrelatedRandomSpinOperation(StructureOperation):
         max_atoms = int(params.max_atoms_for_full)
         if max_atoms <= 0:
             raise ValueError("Correlated Random Spin: max_atoms_for_full must be >= 1.")
+        if params.magnitude_source not in {
+            "Existing initial magmoms",
+            "Map/default magnitude",
+        }:
+            raise ValueError(
+                "Correlated Random Spin: magnitude_source must be Existing "
+                "initial magmoms or Map/default magnitude."
+            )
+        seed = int(params.seed)
+        if params.use_seed and seed < 0:
+            raise ValueError("Correlated Random Spin: seed must be >= 0.")
+        kernel = self.kernel_name(params.correlation_kernel)
+        if params.mode == "Cone around reference":
+            cone_angle = float(params.cone_angle)
+            if not np.isfinite(cone_angle) or not 0.0 <= cone_angle <= 180.0:
+                raise ValueError(
+                    "Correlated Random Spin: cone_angle must be within "
+                    "[0, 180] degrees."
+                )
 
         base_moments = self.vector_moments(structure, params)
         if base_moments is None or base_moments.shape != (len(structure), 3):
@@ -1661,7 +1708,6 @@ class CorrelatedRandomSpinOperation(StructureOperation):
                 f"{max_atoms} eligible atoms; got {selected.size}. Reduce the selection or use a smaller structure."
             )
 
-        kernel = self.kernel_name(params.correlation_kernel)
         positions = np.asarray(structure.get_positions(), dtype=float)[selected]
         _vec_matrix, distances = SmallAngleSpinTiltOperation.pair_distance_matrix(
             positions,
@@ -1674,7 +1720,7 @@ class CorrelatedRandomSpinOperation(StructureOperation):
         except np.linalg.LinAlgError as exc:
             raise ValueError("Correlated Random Spin covariance is not positive definite for this structure/kernel.") from exc
 
-        base_seed = int(params.seed) if params.use_seed else None
+        base_seed = seed if params.use_seed else None
         cfg_id = stable_config_id(structure)
         outputs = []
         for sample_idx in range(samples):
@@ -1695,9 +1741,6 @@ class CorrelatedRandomSpinOperation(StructureOperation):
             elif params.mode == "Cone around reference":
                 dirs = self.cone_directions(selected_moments, field, float(params.cone_angle), rng)
                 mode_tag = "cone"
-            else:
-                raise ValueError(f"Correlated Random Spin: unsupported mode '{params.mode}'.")
-
             moments[selected] = magnitudes[:, None] * dirs
             atoms = structure.copy()
             set_initial_magmoms_safe(atoms, moments)
